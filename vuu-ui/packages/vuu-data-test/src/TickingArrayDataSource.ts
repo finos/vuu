@@ -121,10 +121,11 @@ export class TickingArrayDataSource extends ArrayDataSource {
     if (sessionId && sessionId === this.viewport) {
       this.updateRow(row, columnName);
     } else if (sessionId) {
-      // ignore, its not for me
-    } else if (this.status === "suspended") {
+      // will never happen
+      console.warn("THIS IS NEVER EXPECTED TO HAPPEN");
+    } else if (this.#sessionDataSource) {
       // queue updates for deferred application, issue warnings when edits in progress
-      console.log("updates incoming from differenrt edit session");
+      // this.emit("remote-update-during-local-edit", row);
     } else {
       this.updateRow(row, columnName);
     }
@@ -212,6 +213,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
         this.#sessionDataSource = this.#vuuModule?.createDataSource(
           sessionTable.table,
           sessionTable.table,
+          this.config,
         );
 
         this.#sessionDataSource?.subscribe(
@@ -224,6 +226,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
         return this.#vuuModule?.createDataSource(
           sessionTable.table,
           sessionTable.table,
+          this.config,
         );
       }
 
@@ -245,7 +248,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
 
     const rpcHost = this.#sessionDataSource ?? this;
 
-    const rpcResponse = await rpcHost.rpcRequest?.({
+    return rpcHost.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "editCell",
       params: {
@@ -254,21 +257,22 @@ export class TickingArrayDataSource extends ArrayDataSource {
         key,
       },
     });
-
-    if (isRpcSuccess(rpcResponse)) {
-      console.log("edit succeeded");
-    } else {
-      throw Error("oh oh");
-    }
   }
 
   async endEditSession(saveChanges = false) {
-    console.log(`[VuuDataSource] endEditSession saveChanges ${saveChanges}`);
-
     const type = "RPC_REQUEST";
     const rpcName = "endEditSession";
 
-    const rpcHost = this.#sessionDataSource ?? this;
+    const sessionDataSource = this.#sessionDataSource;
+
+    const rpcHost = sessionDataSource ?? this;
+
+    if (sessionDataSource) {
+      // timing is important here. By breaking this reference before
+      // we send the endEdit RPC call, the application of session edits
+      // to the source table will be handled correctly.
+      this.#sessionDataSource = undefined;
+    }
 
     const rpcResponse = await rpcHost.rpcRequest?.(
       saveChanges
@@ -277,10 +281,16 @@ export class TickingArrayDataSource extends ArrayDataSource {
     );
 
     if (isRpcSuccess(rpcResponse)) {
-      this.#sessionDataSource?.unsubscribe();
+      sessionDataSource?.unsubscribe();
       this.sendRowsToClient(true);
     } else {
-      throw Error("oh oh");
+      // TODO do we reinstate the sessionDataSource ?
+      if (rpcResponse?.errorMessage === "stale update") {
+        sessionDataSource?.unsubscribe();
+        this.sendRowsToClient(true);
+      } else {
+        throw Error("unknown error");
+      }
     }
   }
 

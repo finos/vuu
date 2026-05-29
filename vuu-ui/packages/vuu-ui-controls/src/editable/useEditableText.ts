@@ -33,6 +33,7 @@ export interface EditableTextHookProps<
 }
 
 type EditState = {
+  editing: boolean;
   message?: string;
   // Set once we commit an edit, cleared when edit session is ended.
   previousValue?: string;
@@ -48,16 +49,20 @@ export const useEditableText = <T extends string | number | boolean = string>({
   type = "string",
 }: EditableTextHookProps<T>) => {
   const [editState, setEditState] = useState<EditState>({
+    editing: false,
     value: stringValueOf(value),
   });
   const initialValueRef = useRef<string>(value?.toString() ?? "");
   const isDirtyRef = useRef(false);
-  const isEditingRef = useRef(false);
 
   useMemo(() => {
     if (initialValueRef.current !== value?.toString()) {
       initialValueRef.current = stringValueOf(value);
-      setEditState({ message: undefined, value: stringValueOf(value) });
+      setEditState((editState) => ({
+        ...editState,
+        message: undefined,
+        value: stringValueOf(value),
+      }));
     }
   }, [value]);
 
@@ -73,10 +78,9 @@ export const useEditableText = <T extends string | number | boolean = string>({
     } else {
       //save initial value,it could be reset by time async operation completes
       const { current: initialValue } = initialValueRef;
+      const previousValue = getTypedValue(initialValue, type);
       try {
         const typedValue = getTypedValue(value, type, true);
-        console.log(`[useEditableText] typedValue = ${typedValue}`);
-        const previousValue = getTypedValue(initialValue, type);
         const response = await onEdit?.(
           {
             editType: "commit",
@@ -89,6 +93,7 @@ export const useEditableText = <T extends string | number | boolean = string>({
         if (isRpcSuccess(response)) {
           isDirtyRef.current = false;
           setEditState(({ previousValue, value }) => ({
+            editing: false,
             previousValue:
               previousValue === value
                 ? undefined
@@ -98,19 +103,11 @@ export const useEditableText = <T extends string | number | boolean = string>({
             value,
           }));
         } else if (isRpcError(response)) {
-          if (response.errorMessage === "CHANGE_REVERTED") {
-            setEditState(({ value }) => ({
-              previousValue: undefined,
-              value,
-            }));
-            initialValueRef.current = value;
-            return true;
-          } else {
-            setEditState((state) => ({
-              ...state,
-              message: response.errorMessage,
-            }));
-          }
+          setEditState((state) => ({
+            ...state,
+            message: response.errorMessage,
+          }));
+          return false;
         }
         initialValueRef.current = value;
         return true;
@@ -124,6 +121,15 @@ export const useEditableText = <T extends string | number | boolean = string>({
               ...state,
               message,
             }));
+            onEdit?.(
+              {
+                editType: "commit",
+                isValid: false,
+                previousValue,
+                value,
+              },
+              "commit",
+            );
           } else {
             setEditState((state) => ({
               ...state,
@@ -136,48 +142,19 @@ export const useEditableText = <T extends string | number | boolean = string>({
     return false;
   }, [column, editState, onEdit, type]);
 
-  const handleKeyDown = useCallback(
-    async (evt: KeyboardEvent<HTMLElement>) => {
-      const { key, target } = evt;
-      const input = target as HTMLInputElement;
-      if (key === "Enter") {
-        if (isEditingRef.current) {
-          if (isDirtyRef.current) {
-            const commitSuccessful = await commit();
-            if (commitSuccessful) {
-              isEditingRef.current = false;
-              dispatchCustomEvent(input, "vuu-exit-edit-mode");
-              dispatchCustomEvent(input, "vuu-commit");
-            }
-          } else {
-            isEditingRef.current = false;
-            dispatchCustomEvent(input, "vuu-exit-edit-mode");
-          }
-        } else {
-          isEditingRef.current = true;
-          dispatchCustomEvent(input, "vuu-enter-edit-mode");
-          input.select();
-        }
-      } else if (
-        key === "ArrowRight" ||
-        key === "ArrowLeft" ||
-        key === "ArrowUp" ||
-        key === "ArrowDown"
-      ) {
-        if (isEditingRef.current) {
-          evt.stopPropagation();
-        } else {
-          // console.log(
-          //   `[useEditableText] handleKeydown, arrowkey, not editing so let it bubble`,
-          // );
-          // evt.preventDefault();
-        }
-      } else if (evt.key === "Escape") {
-        if (isEditingRef.current) {
-          if (isDirtyRef.current) {
+  /**
+   * Depending on the current state (editing or not, dirty or not) activation will either be
+   * entering into edit state, leaving edit state or commiting edited value.
+   */
+  const toggleActivation = useCallback(
+    async (input: HTMLInputElement, cancel = false) => {
+      if (editState.editing) {
+        if (isDirtyRef.current) {
+          if (cancel) {
             const { value: previousValue } = editState;
             isDirtyRef.current = false;
             setEditState({
+              editing: false,
               value: initialValueRef.current,
               message: undefined,
             });
@@ -191,48 +168,82 @@ export const useEditableText = <T extends string | number | boolean = string>({
               },
               "cancel",
             );
+          } else {
+            const commitSuccessful = await commit();
+            if (commitSuccessful) {
+              setEditState((editState) => ({ ...editState, editing: false }));
+              dispatchCustomEvent(input, "vuu-commit");
+            }
           }
-          isEditingRef.current = false;
-          dispatchCustomEvent(input, "vuu-exit-edit-mode");
+        } else {
+          setEditState((editState) => ({ ...editState, editing: false }));
         }
+      } else if (!cancel) {
+        setEditState((editState) => ({ ...editState, editing: true }));
+        input.select();
       }
     },
     [commit, editState, onEdit],
   );
 
-  const beginEditHandler = useCallback((evt: Event) => {
-    isEditingRef.current = true;
-    dispatchCustomEvent(evt.target as HTMLElement, "vuu-enter-edit-mode");
-  }, []);
+  const handleKeyDown = useCallback(
+    async (evt: KeyboardEvent<HTMLElement>) => {
+      const { key, target } = evt;
+      const input = target as HTMLInputElement;
+      if (key === "Enter") {
+        toggleActivation(input);
+      } else if (
+        key === "ArrowRight" ||
+        key === "ArrowLeft" ||
+        key === "ArrowUp" ||
+        key === "ArrowDown"
+      ) {
+        if (editState.editing) {
+          evt.stopPropagation();
+        } else {
+          // console.log(
+          //   `[useEditableText] handleKeydown, arrowkey, not editing so let it bubble`,
+          // );
+          // evt.preventDefault();
+        }
+      } else if (evt.key === "Escape") {
+        toggleActivation(input, true);
+      }
+    },
+    [editState, toggleActivation],
+  );
 
   const handleFocus = useCallback<FocusEventHandler<HTMLElement>>(
     (e) => {
-      e.target.addEventListener("vuu-begin-edit", beginEditHandler, true);
-    },
-    [beginEditHandler],
-  );
-
-  const handleBlur = useCallback<FocusEventHandler<HTMLElement>>(
-    async (evt) => {
-      evt.target.removeEventListener("vuu-begin-edit", beginEditHandler, true);
-      if (isEditingRef.current) {
-        if (isDirtyRef.current) {
-          const commitSuccessful = await commit();
-          console.log({ commitSuccessful });
-        }
-        isEditingRef.current = false;
-        dispatchCustomEvent(evt.target, "vuu-exit-edit-mode");
+      // If focus is transferred from enclosing cell element, we are explicitl entering edit mode
+      const input = e.target as HTMLInputElement;
+      const source = e.relatedTarget as HTMLElement;
+      if (
+        source?.classList.contains("vuuTableCell") &&
+        source.contains(input)
+      ) {
+        toggleActivation(input);
       }
     },
-    [beginEditHandler, commit],
+    [toggleActivation],
   );
+
+  const handleBlur = useCallback<FocusEventHandler<HTMLElement>>(async () => {
+    if (editState.editing) {
+      if (isDirtyRef.current) {
+        const commitSuccessful = await commit();
+        console.log({ commitSuccessful });
+      }
+      setEditState((editState) => ({ ...editState, editing: false }));
+    }
+  }, [commit, editState]);
 
   const handleChange = useCallback<FormEventHandler>(
     (evt) => {
       const { value } = evt.target as HTMLInputElement;
       isDirtyRef.current = value !== initialValueRef.current;
       const result = column.clientSideEditValidationCheck?.(value, "change");
-      setEditState({ value });
+      setEditState({ editing: true, value });
 
       onEdit?.(
         {
@@ -244,16 +255,25 @@ export const useEditableText = <T extends string | number | boolean = string>({
         "change",
       );
       if (result?.ok === false) {
-        setEditState({ value, message: result.messages?.join(",") });
-      }
-
-      if (!isEditingRef.current) {
-        isEditingRef.current = true;
-        dispatchCustomEvent(evt.target as HTMLElement, "vuu-enter-edit-mode");
+        setEditState({
+          editing: true,
+          value,
+          message: result.messages?.join(","),
+        });
       }
     },
     [column, onEdit],
   );
+
+  // console.log(
+  //   `[useEditableText] edited = ${
+  //     editState.previousValue !== undefined &&
+  //     editState.previousValue !== editState.value
+  //   }
+  //   editState.previousValue ${editState.previousValue}
+  //   editState.value ${editState.value}
+  //   `,
+  // );
 
   return {
     /**
@@ -262,13 +282,14 @@ export const useEditableText = <T extends string | number | boolean = string>({
     edited:
       editState.previousValue !== undefined &&
       editState.previousValue !== editState.value,
-    //TODO why are we detecting commit here, why not use VuuInput ?
+    editing: editState.editing,
     inputProps: {
       onBlur: handleBlur,
       onFocus: handleFocus,
       onKeyDown: handleKeyDown,
     },
     onChange: handleChange,
+    previousValue: editState.previousValue,
     value: editState.value,
     warningMessage: editState.message,
   };

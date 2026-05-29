@@ -2,7 +2,7 @@ import type {
   DataSourceConfigChangeHandler,
   DataSourceSubscribedMessage,
 } from "@vuu-ui/vuu-data-types";
-import type { RpcResult, VuuSortType } from "@vuu-ui/vuu-protocol-types";
+import type { VuuSortType } from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDisplayActionHandler,
   useColumnActions,
@@ -11,7 +11,6 @@ import type {
   ColumnPinAction,
   ColumnDescriptor,
   ColumnMoveHandler,
-  DataCellEditEvent,
   RuntimeColumnDescriptor,
   SelectionChangeHandler,
   TableColumnResizeHandler,
@@ -115,7 +114,7 @@ export interface TableHookProps
       | "id"
       | "navigationStyle"
       | "onConfigChange"
-      | "onDataEdited"
+      // | "onDataEdited"
       | "onDragStart"
       | "onDrop"
       | "onHighlight"
@@ -159,7 +158,7 @@ export const useTable = ({
   id,
   navigationStyle = "cell",
   onConfigChange,
-  onDataEdited: onDataEditedProp,
+  // onDataEdited: onDataEditedProp,
   onDragStart,
   onDrop,
   onHighlight,
@@ -184,6 +183,8 @@ export const useTable = ({
   useMemo(() => {
     tableConfigRef.current = config;
   }, [config]);
+
+  const editSession = useEditSession();
 
   // state is mutated, so make every component gets a fresh copy
   const initialState = useMemo(() => new CellFocusState(), []);
@@ -666,6 +667,7 @@ export const useTable = ({
     columnCount,
     containerRef,
     disableFocus,
+    editSessionInProgress: editSession?.inEditMode,
     focusCell,
     headerCount: headerState.count,
     highlightedIndex: highlightedIndexProp,
@@ -684,7 +686,6 @@ export const useTable = ({
     onKeyDown: editingKeyDown,
     onFocus: editingFocus,
   } = useCellEditing({
-    focusCell,
     navigate,
   });
 
@@ -857,36 +858,34 @@ export const useTable = ({
     [onDrop],
   );
 
-  const editSession = useEditSession();
-
-  const handleDataEdited = useCallback(
-    async (editState: DataCellEditEvent): Promise<RpcResult | undefined> => {
-      const {
-        editType = "commit",
-        isValid = true,
-        dataRow,
-        columnName,
-        previousValue = "",
-        value,
-      } = editState;
-      if (editType === "commit" && isValid) {
-        if (editSession && dataRow && columnName) {
-          return editSession.commit(dataRow.key, columnName, value);
-        } else {
-          throw Error(
-            `[useTable] handleDataEdited, no editSession installed and datasource does not support RPC`,
-          );
-        }
-      } else {
-        if (editSession && dataRow && columnName) {
-          editSession.edit(dataRow.key, columnName, previousValue, value);
-        } else {
-          onDataEditedProp?.(editState);
-        }
-      }
-    },
-    [editSession, onDataEditedProp],
-  );
+  // const handleDataEdited = useCallback(
+  //   async (editState: DataCellEditEvent): Promise<RpcResult | undefined> => {
+  //     const {
+  //       editType = "commit",
+  //       isValid = true,
+  //       dataRow,
+  //       columnName,
+  //       previousValue = "",
+  //       value,
+  //     } = editState;
+  //     if (editType === "commit") {
+  //       if (editSession && dataRow && columnName) {
+  //         return editSession.commit(dataRow.key, columnName, value, isValid);
+  //       } else {
+  //         throw Error(
+  //           `[useTable] handleDataEdited, no editSession installed and datasource does not support RPC`,
+  //         );
+  //       }
+  //     } else {
+  //       if (editSession && dataRow && columnName) {
+  //         editSession.edit(dataRow.key, columnName, previousValue, value);
+  //       } else {
+  //         onDataEditedProp?.(editState);
+  //       }
+  //     }
+  //   },
+  //   [editSession, onDataEditedProp],
+  // );
 
   const handleDragStartRow = useCallback<DragStartHandler>(
     (dragDropState) => {
@@ -957,7 +956,7 @@ export const useTable = ({
     onKeyDown: handleKeyDown,
     onMouseDown: handleMouseDown,
     onContextMenu,
-    onDataEdited: handleDataEdited,
+    // onDataEdited: handleDataEdited,
     onHeaderHeightMeasured,
     onMoveColumn,
     onMoveGroupColumn,

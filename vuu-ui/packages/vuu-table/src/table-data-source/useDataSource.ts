@@ -149,20 +149,14 @@ export const useDataSource = ({
       if (message.type === "subscribed") {
         createDataRow(message.columns, message.tableSchema.columns);
         onSubscribed?.(message);
+      } else if (message.type === "subscribe-failed") {
+        console.warn(`subscribe failed ${message.msg}`);
       } else if (message.type === "viewport-update") {
         if (typeof message.size === "number") {
           onSizeChange?.(message.size);
           // const size = dataRowWindow.data.length;
           dataRowWindow.setRowCount(message.size);
           totalRowCountRef.current = message.size;
-
-          // if (dataRowWindow.data.length < size) {
-          //   if (isMounted.current === false) {
-          //     console.log("setting state whilst unmounted");
-          //   }
-
-          //   forceUpdate({});
-          // }
         }
         if (message.rows) {
           setData(message.rows);

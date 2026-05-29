@@ -9,7 +9,7 @@ import { useCell } from "../useCell";
 
 import tableCellCss from "./TableCell.css";
 import tableGroupCellCss from "./TableGroupCell.css";
-import { useHighlighting } from "../useHighlighting";
+import { applyHighlighting } from "../applyHighlighting";
 
 const classBase = "vuuTableGroupCell";
 
@@ -33,7 +33,7 @@ export const TableGroupCell = ({
 
   const { columns } = column as GroupColumnDescriptor;
   const value = getGroupValue(columns, dataRow);
-  const valueWithHighlighting = useHighlighting(value || "", searchPattern);
+  const valueWithHighlighting = applyHighlighting(value || "", searchPattern);
 
   const icon = getGroupIcon(columns, dataRow);
   const { className, style } = useCell(column, classBase);

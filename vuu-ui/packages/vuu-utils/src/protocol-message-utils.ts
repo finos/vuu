@@ -31,6 +31,11 @@ import {
   RpcResultError,
   VuuColumnDataType,
   VuuNumericType,
+  AddRowRpcServiceRequest,
+  EndEditSessionRpcServiceRequest,
+  EditCellRpcServiceRequest,
+  BeginEditSessionRpcServiceRequest,
+  ServerToClientError,
 } from "@vuu-ui/vuu-protocol-types";
 import { isView as componentInRegistry } from "./component-registry";
 
@@ -53,6 +58,12 @@ const InvalidLoginMessages: string[] = [
   INVALID_TOKEN,
   TOKEN_EXPIRED,
 ];
+
+export const isErrorMessage = (
+  message: unknown,
+): message is ServerToClientError =>
+  typeof message == "object" &&
+  (message as ServerToClientError)?.type === "ERROR";
 
 export const isLoginErrorMessage = (
   message: unknown,
@@ -230,3 +241,18 @@ export function isNumericType(
 ): dataType is VuuNumericType {
   return numericTypes.includes(dataType as VuuNumericType);
 }
+
+export const isAddRowRpcRequest = (
+  rpcRequest: VuuRpcServiceRequest,
+): rpcRequest is AddRowRpcServiceRequest => rpcRequest.rpcName === "addRow";
+export const isEditCellRpcRequest = (
+  rpcRequest: VuuRpcServiceRequest,
+): rpcRequest is EditCellRpcServiceRequest => rpcRequest.rpcName === "editCell";
+export const isBeginEditSessionRpcRequest = (
+  rpcRequest: VuuRpcServiceRequest,
+): rpcRequest is BeginEditSessionRpcServiceRequest =>
+  rpcRequest.rpcName === "beginEditSession";
+export const isEndEditSessionRpcRequest = (
+  rpcRequest: VuuRpcServiceRequest,
+): rpcRequest is EndEditSessionRpcServiceRequest =>
+  rpcRequest.rpcName === "endEditSession";

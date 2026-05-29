@@ -1,4 +1,7 @@
-export * from "./bulk-edit";
+export {
+  BulkEditPanel,
+  type BulkEditPanelProps,
+} from "./bulk-edit/BulkEditPanel";
 export * from "./cell-renderers";
 export * from "./header-cell";
 // TODO move to table extras ?
@@ -12,7 +15,7 @@ export { useTableConfig } from "./table-config/useTableConfig";
 export * from "./table-header";
 export * from "./useControlledTableNavigation";
 export * from "./useEditableCell";
-export * from "./useHighlighting";
+export * from "./applyHighlighting";
 export * from "./useKeyboardNavigation";
 export * from "./useTableContextMenu";
 export * from "./useTableModel";

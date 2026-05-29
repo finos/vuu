@@ -46,6 +46,7 @@ const datasourceMessages = [
   "vuu-menu",
   "sort",
   "subscribed",
+  "subscribe-failed",
 ];
 
 export const shouldMessageBeRoutedToDataSource = (

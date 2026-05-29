@@ -1,6 +1,6 @@
 import { ReactElement } from "react";
 
-export const useHighlighting = (
+export const applyHighlighting = (
   value: string,
   pattern: Lowercase<string>,
 ): string | ReactElement => {

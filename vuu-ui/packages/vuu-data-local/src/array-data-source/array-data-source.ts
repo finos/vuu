@@ -819,18 +819,22 @@ export class ArrayDataSource
   };
 
   protected updateRow = (row: VuuRowDataItemType[], _columnName?: string) => {
-    // TODO take sorting, filtering. grouping into account
+    // TODO take grouping into account
     const keyValue = row[this.key];
     const dataIndex = this.#data.findIndex((row) => row[KEY] === keyValue);
     if (dataIndex !== -1) {
       const dataSourceRow = toDataSourceRow(this.key)(row, dataIndex);
+
       // maybe update this in place
       this.#data[dataIndex] = dataSourceRow;
 
       const { from, to } = this.#range;
 
       const isFiltered = hasFilter(this.config) || hasBaseFilter(this.config);
+      const isSorted = hasSort(this.config);
+
       if (isFiltered) {
+        // this will accomodate sorted + filtered
         const meetsFilterCriteria = this.getFilterPredicate();
         if (meetsFilterCriteria(dataSourceRow) && this.processedData) {
           const dataIndex = this.processedData.findIndex(
@@ -847,14 +851,38 @@ export class ArrayDataSource
             if (dataIndex >= from && dataIndex < to) {
               this.sendRowsToClient(false, newFilteredRow);
             }
-
-            return;
+          }
+        } else if (this.processedData) {
+          // has the update taken the row out of the filter set ?
+          const dataIndex = this.processedData.findIndex(
+            (row) => row[KEY] === keyValue,
+          );
+          if (dataIndex !== -1) {
+            console.log(`LAMF dataRow no longer in filter set`);
           }
         }
-      }
+      } else if (isSorted) {
+        if (this.processedData) {
+          const dataIndex = this.processedData.findIndex(
+            (row) => row[KEY] === keyValue,
+          );
+          if (dataIndex !== -1) {
+            const existingRow = this.processedData[dataIndex];
+            // preserve the metadata, copy the domain data
+            const newSortedRow = existingRow
+              .slice(0, 10)
+              .concat(dataSourceRow.slice(10)) as DataSourceRow;
+            this.processedData[dataIndex] = newSortedRow;
 
-      if (dataIndex >= from && dataIndex < to) {
-        this.sendRowsToClient(false, dataSourceRow);
+            if (dataIndex >= from && dataIndex < to) {
+              this.sendRowsToClient(false, newSortedRow);
+            }
+          }
+        }
+      } else {
+        if (dataIndex >= from && dataIndex < to) {
+          this.sendRowsToClient(false, dataSourceRow);
+        }
       }
     }
   };

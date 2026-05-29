@@ -1,6 +1,6 @@
 {
   "name": "esbuild-plugin-inline-css",
-  "version": "2.1.15",
+  "version": "2.1.14",
   "private": true,
   "module": "src/index.js",
   "files": [

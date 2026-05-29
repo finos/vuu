@@ -10,7 +10,7 @@ registerComponent("FilterTableFeature", FilterTableFeature, "view");
 
 /** tags=data-consumer */
 export const DefaultFilterTableFeature = () => {
-  const schema = getSchema("instruments");
+  const schema = getSchema("parentOrders");
 
   return (
     <div style={{ height: "100%" }}>
@@ -86,17 +86,19 @@ export const FilterTableFeatureAsFeature = () => {
   const tableSchema = getSchema("instruments");
 
   return (
-    <View
-      Header={VuuBlotterHeader}
-      id="table-next-feature"
-      className="vuuTableFeature"
-      closeable
-      header
-      title="Instruments"
-      style={{ width: 700, height: 500 }}
-    >
-      <Feature ComponentProps={{ tableSchema }} url={url} css={css} />
-    </View>
+    <DemoTableContainer>
+      <View
+        Header={VuuBlotterHeader}
+        id="table-next-feature"
+        className="vuuTableFeature"
+        closeable
+        header
+        title="Instruments"
+        style={{ width: 700, height: 500 }}
+      >
+        <Feature ComponentProps={{ tableSchema }} url={url} css={css} />
+      </View>
+    </DemoTableContainer>
   );
 };
 FilterTableFeatureAsFeature.displayName = "FilterTable";

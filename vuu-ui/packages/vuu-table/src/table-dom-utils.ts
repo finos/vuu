@@ -37,12 +37,20 @@ export const getLevelUp = (
   }
   return cellPos;
 };
-export const getTableCell = (
+
+export const getTableCellElement = (
   containerRef: RefObject<HTMLElement | null>,
   [rowIdx, colIdx]: CellPos,
 ) => {
   const cssQuery = dataCellQuery(rowIdx, colIdx);
-  const cell = containerRef.current?.querySelector(cssQuery) as HTMLDivElement;
+  return containerRef.current?.querySelector(cssQuery) as HTMLDivElement;
+};
+
+export const getTableCell = (
+  containerRef: RefObject<HTMLElement | null>,
+  cellPos: CellPos,
+) => {
+  const cell = getTableCellElement(containerRef, cellPos);
 
   if (cellIsEditable(cell)) {
     // Dropdown gets focus, Input does not
@@ -170,6 +178,36 @@ export function getNextCellPos(
   }
   return [rowIdx, colIdx];
 }
+
+export const getNextEditableCellPos = (
+  containerRef: RefObject<HTMLElement | null>,
+  key: ArrowKey,
+  cellPos: CellPos,
+  columnCount: number,
+  maxRowIndex: number,
+) => {
+  let [lastRowIdx, lastColIdx] = cellPos;
+  do {
+    const [nextRowIdx, nextColIdx] = getNextCellPos(
+      key,
+      [lastRowIdx, lastColIdx],
+      columnCount,
+      maxRowIndex,
+    );
+    if (nextRowIdx === lastRowIdx && nextColIdx === lastColIdx) {
+      // we have not moved, we never found a new editable cell, bail
+      return cellPos;
+    }
+
+    const cell = getTableCellElement(containerRef, [nextRowIdx, nextColIdx]);
+    if (cellIsEditable(cell)) {
+      return [nextRowIdx, nextColIdx];
+    }
+    // keep going
+    [lastRowIdx, lastColIdx] = [nextRowIdx, nextColIdx];
+    // eslint-disable-next-line no-constant-condition
+  } while (true);
+};
 
 export type TreeNodeOperation = "expand" | "collapse" | "level-up";
 

@@ -99,7 +99,6 @@ export abstract class BaseDataSource
     }: DataSourceSubscribeProps,
     callback: DataSourceSubscribeCallback,
   ) {
-    console.log(`[BaseDataSource] subscribe to ${this.viewport}`);
     this._clientCallback = callback;
     this.viewport = viewport;
 

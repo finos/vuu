@@ -64,12 +64,14 @@ export const DropdownCell = memo(function DropdownCell({
         const response = await onEdit?.(
           {
             editType: "commit",
+            isValid: true,
             previousValue: valueRef.current?.value,
             value: selectedOption.value as VuuColumnDataType,
           },
           "commit",
         );
         if (isRpcSuccess(response)) {
+          // TODO this should be done in TableCell
           dispatchCustomEvent(evt.target as HTMLElement, "vuu-commit");
         }
       }

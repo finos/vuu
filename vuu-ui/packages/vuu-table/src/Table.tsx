@@ -5,7 +5,7 @@ import type { DataSource, SchemaColumn } from "@vuu-ui/vuu-data-types";
 import { TableProvider } from "@vuu-ui/vuu-table-extras";
 import {
   CustomHeader,
-  DataCellEditNotification,
+  // DataCellEditNotification,
   GroupToggleTarget,
   HeaderCellProps,
   RowActionHandler,
@@ -97,6 +97,20 @@ export interface TableProps
    * Allow a block of cells to be selected. Typically to be copied.
    */
   allowCellBlockSelection?: boolean;
+  /**
+   * Allow columns to be manually resized by user. Default is true. This can also be
+   * set on individual ColumnDescriptors for more fine grained control.
+   */
+  allowColumnResizing?: boolean;
+
+  /**
+   * If a ColumnPicker is offered for a table, default behaviour is to allow column
+   * addition and removal. If a ColumnMenu is configured, default behaviour is likewise
+   * to offer a 'remove' option. By setting this prop to false, column removal will not
+   * be supported. No 'remove' menu item will be made available in the column menu and the
+   * ColumnPicker will offer column position management only.
+   */
+  allowColumnRemoval?: boolean;
   /**
    * Allow column headers to be dragged to re-arrange
    */
@@ -193,7 +207,7 @@ export interface TableProps
    * a user performs any edit operation on an editable field.
    */
   // TODO can we scrap this and leave it to the editSession ?
-  onDataEdited?: DataCellEditNotification;
+  // onDataEdited?: DataCellEditNotification;
 
   onDragStart?: DragStartHandler;
   onDrop?: (dragDropState: DragDropState) => void;
@@ -319,7 +333,7 @@ const TableCore = ({
   navigationStyle = "cell",
   // onAvailableColumnsChange,
   onConfigChange,
-  onDataEdited: onDataEditedProp,
+  // onDataEdited: onDataEditedProp,
   onDragStart,
   onDrop,
   onHighlight,
@@ -371,7 +385,7 @@ const TableCore = ({
     headings,
     highlightedIndex,
     onCheckBoxColumnHeaderClick,
-    onDataEdited,
+    // onDataEdited,
     onHeaderHeightMeasured,
     onMoveColumn,
     onMoveGroupColumn,
@@ -401,7 +415,7 @@ const TableCore = ({
     id,
     navigationStyle,
     onConfigChange,
-    onDataEdited: onDataEditedProp,
+    // onDataEdited: onDataEditedProp,
     onDragStart,
     onDrop,
     onHighlight,
@@ -524,7 +538,7 @@ const TableCore = ({
                     highlighted={highlightedIndex === ariaRowIndex}
                     key={dataRow.renderIndex}
                     onClick={onRowClick}
-                    onDataEdited={onDataEdited}
+                    // onDataEdited={onDataEdited}
                     offset={showPaginationControls ? 0 : getRowOffset(dataRow)}
                     onToggleGroup={onToggleGroup}
                     showBookends={selectionBookendWidth > 0}
@@ -599,7 +613,7 @@ export const Table = forwardRef(function Table(
     navigationStyle,
     onAvailableColumnsChange,
     onConfigChange,
-    onDataEdited,
+    // onDataEdited,
     onDragStart,
     onDrop,
     onHighlight,
@@ -754,7 +768,7 @@ export const Table = forwardRef(function Table(
           navigationStyle={navigationStyle}
           onAvailableColumnsChange={onAvailableColumnsChange}
           onConfigChange={onConfigChange}
-          onDataEdited={onDataEdited}
+          // onDataEdited={onDataEdited}
           onDragStart={onDragStart}
           onDrop={onDrop}
           onHighlight={onHighlight}

@@ -75,7 +75,16 @@ export const useCellFocus = ({
             state.cellPos = cellPos;
 
             requestScroll?.({ type: "scroll-row", rowIndex: cellPos[0] });
+            // if (activeCell.classList.contains("vuuTableCell-editable")) {
+            //   const input = activeCell.querySelector("input");
+            //   if (input) {
+            //     input.focus({ preventScroll: true });
+            //   } else {
+            //     activeCell.focus({ preventScroll: true });
+            //   }
+            // } else {
             activeCell.focus({ preventScroll: true });
+            // }
           }
         }
       }
