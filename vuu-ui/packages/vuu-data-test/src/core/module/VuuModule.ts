@@ -485,6 +485,39 @@ export abstract class VuuModule<T extends string = string>
     };
   };
 
+  private addRow: ServiceHandler = async (rpcRequest) => {
+    if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
+      const { viewPortId } = rpcRequest.context;
+      const subscription = this.getSubscriptionByViewport(viewPortId);
+      const sessionTable = subscription.sessionTableName
+        ? this.#sessionTableMap[subscription.sessionTableName]
+        : undefined;
+      if (!sessionTable) {
+        return {
+          type: "ERROR_RESULT",
+          errorMessage: `addRow: no active session table for viewport ${viewPortId}`,
+        };
+      }
+      const { rowData } = rpcRequest.params as unknown as {
+        rowData: Record<string, VuuRowDataItemType>;
+      };
+      const columnMap = sessionTable.map;
+      const columnCount = Object.keys(columnMap).length;
+      const row: VuuRowDataItemType[] = new Array(columnCount).fill("");
+      for (const [col, idx] of Object.entries(columnMap)) {
+        if (Object.prototype.hasOwnProperty.call(rowData, col)) {
+          row[idx] = rowData[col];
+        }
+      }
+      sessionTable.insert(row);
+      return { type: "SUCCESS_RESULT", data: undefined };
+    }
+    return {
+      type: "ERROR_RESULT",
+      errorMessage: "addRow: invalid rpc context",
+    };
+  };
+
   private endEditSession: ServiceHandler = async (rpcRequest) => {
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
       const { viewPortId } = rpcRequest.context;
@@ -623,6 +656,10 @@ export abstract class VuuModule<T extends string = string>
    * VuuModule
    */
   #moduleServices: RpcService[] = [
+    {
+      rpcName: "addRow",
+      service: this.addRow,
+    },
     {
       rpcName: "VP_BULK_EDIT_COLUMN_CELLS_RPC",
       service: this.applyBulkEdits,
