@@ -6,7 +6,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.example.clickhouse.client.ClickHouseClient
-import org.finos.vuu.example.clickhouse.provider.filter.ClickHouseFilterVisitor
+import org.finos.vuu.example.clickhouse.provider.filter.{ClickHouseFilterFactory, ClickHouseFilterVisitor}
 import org.finos.vuu.feature.ViewPortKeys
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
@@ -28,12 +28,7 @@ class ClickHouseVirtualizedDataProvider(client: ClickHouseClient)(implicit clock
     val startIndex = Math.max((range.from - 500), 0)
     val limit = (range.to - startIndex) + 500
 
-    val whereClause = if (viewPort.filterSpec != null && viewPort.filterSpec.filter != null && viewPort.filterSpec.filter.nonEmpty) {
-      val compiledFilter = org.finos.vuu.core.filter.FilterSpecParser.parse(viewPort.filterSpec.filter, new ClickHouseFilterVisitor())
-      if (compiledFilter.nonEmpty) s"WHERE $compiledFilter" else ""
-    } else {
-      ""
-    }
+    val whereClause = ClickHouseFilterFactory.buildWhereClause(viewPort.filterSpec, viewPort.table.asTable.getTableDef)
 
     val orderByClause = if (viewPort.sortSpec != null && viewPort.sortSpec.sortDefs != null && viewPort.sortSpec.sortDefs.nonEmpty) {
       val sortItems = viewPort.sortSpec.sortDefs.map { sd =>
