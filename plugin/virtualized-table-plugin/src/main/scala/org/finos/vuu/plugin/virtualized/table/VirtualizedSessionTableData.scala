@@ -36,6 +36,7 @@ class VirtualizedSessionTableData(cacheSize: Int)(implicit clock: Clock) extends
     rowCache.removeAll()
     this
   }
+
   override def setKeyAt(index: Int, key: String): Unit = {
     keysWindow.setAtIndex(index, key)
   }

@@ -6,6 +6,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.example.clickhouse.client.ClickHouseClient
+import org.finos.vuu.example.clickhouse.provider.data.{ClickHouseRowDataProvider, ClickHouseTableSizeProvider}
 import org.finos.vuu.example.clickhouse.provider.filter.{ClickHouseFilterFactory, ClickHouseFilterVisitor}
 import org.finos.vuu.example.clickhouse.provider.sort.ClickHouseSortFactory
 import org.finos.vuu.feature.ViewPortKeys
@@ -18,6 +19,8 @@ import scala.collection.mutable.ListBuffer
 class ClickHouseVirtualizedDataProvider(table: DataTable, client: ClickHouseClient)(implicit clock: Clock)
   extends VirtualizedProvider with StrictLogging {
 
+  private val tableSizeProvider = ClickHouseTableSizeProvider(client)
+  private val rowDataProvider = ClickHouseRowDataProvider(client)
   private val logAt = new LogAtFrequency(10_000)
   
   override def runOnce(viewPort: ViewPort): Unit = {
@@ -26,50 +29,20 @@ class ClickHouseVirtualizedDataProvider(table: DataTable, client: ClickHouseClie
     val range = viewPort.getRange
     val startIndex = Math.max(range.from - 500, 0)
     val limit = (range.to - startIndex) + 500
-
     val whereClause = ClickHouseFilterFactory.build(viewPort.filterSpec, table.getTableDef)
+    val orderBy = ClickHouseSortFactory.build(viewPort.sortSpec, table.getTableDef)
 
-    val orderByClause = ClickHouseSortFactory.build(viewPort.sortSpec, table.getTableDef)
+    logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading rows from ClickHouse range $startIndex to ${startIndex + limit} filter=$whereClause sort=$orderBy")
 
-    logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading rows from ClickHouse range $startIndex to ${startIndex + limit} filter=$whereClause sort=$orderByClause")
+    val queryStart = clock.now()
+    
+    val tableSize = tableSizeProvider.getTableSize(table.name, whereClause)
+    val rowsWithData = rowDataProvider.queryForRowData(table.name, viewPort.getColumns.getColumns, 
+      whereClause, orderBy, limit, startIndex)
+    
+    val dataQueryMillis = clock.now() - queryStart
 
-    // Get total size of orders matching filter
-    val (sizeQueryMillis, totalSize) = timeIt {
-      client.executeQuery(s"SELECT count() as cnt FROM ${table.name} $whereClause") { records =>
-        val it = records.iterator()
-        if (it.hasNext) {
-          it.next().getLong("cnt").toInt
-        } else {
-          0
-        }
-      }
-    }
-
-    val columns = viewPort.getColumns.getColumns.map(_.name).mkString(", ")
-
-    // Load rows in the current range
-    val (dataQueryMillis, orders) = timeIt {
-      client.executeQuery(
-        s"SELECT $columns FROM ${table.name} $whereClause $orderByClause LIMIT $limit OFFSET $startIndex"
-      ) { records =>
-        val buffer = ListBuffer[(Int, (Long, Int, Long, String, String))]()
-        var index = startIndex
-
-        val it = records.iterator()
-        while (it.hasNext) {
-          val record = it.next()
-          val orderId = record.getLong("orderId")
-          val quantity = record.getInteger("quantity")
-          val price = record.getLong("price")
-          val side = record.getString("side")
-          val trader = record.getString("trader")
-
-          buffer.append((index, (orderId, quantity, price, side, trader)))
-          index += 1
-        }
-        buffer.toList
-      }
-    }
+    logger.trace(s"[ClickHouseVirtualizedDataProvider] Updating session table")
 
     viewPort.table.asTable match {
       case tbl: VirtualizedSessionTable =>
@@ -77,23 +50,23 @@ class ClickHouseVirtualizedDataProvider(table: DataTable, client: ClickHouseClie
         val (millisRange, _) = timeIt { tbl.setRange(VirtualizedRange(startIndex, startIndex + limit)) }
 
         logger.trace("[ClickHouseVirtualizedDataProvider] Set Size")
-        val (millisSize, _) = timeIt { tbl.setSize(totalSize) }
+        val (millisSize, _) = timeIt { tbl.setSize(tableSize) }
 
         logger.trace("[ClickHouseVirtualizedDataProvider] Adding rows")
-        val (millisRows, _) = timeIt {
-          orders.foreach { case (index, (orderId, quantity, price, side, trader)) =>
-            val rowWithData = RowWithData(
-              orderId.toString,
-              Map(
-                "orderId" -> orderId.toString,
-                "quantity" -> java.lang.Integer.valueOf(quantity),
-                "price" -> java.lang.Long.valueOf(price),
-                "side" -> side,
-                "trader" -> trader
+        val (millisRows, _) = timeIt {        
+            var i = 0
+            val n = rowsWithData.length
+            while (i < n) {
+              val rowWithData = rowsWithData(i)
+              val tableIndex = startIndex + i
+              tbl.processUpdateForIndex(
+                tableIndex,
+                rowWithData.key,
+                rowWithData,
+                clock.now()
               )
-            )
-            tbl.processUpdateForIndex(index, orderId.toString, rowWithData, clock.now())
-          }
+              i += 1
+            }
         }
 
         logger.trace("[ClickHouseVirtualizedDataProvider] Getting Primary Keys")
@@ -104,7 +77,7 @@ class ClickHouseVirtualizedDataProvider(table: DataTable, client: ClickHouseClie
 
         if (logAt.shouldLog()) {
           logger.debug(
-            s"[ClickHouseVirtualizedDataProvider] Complete runOnce sizeQuery=$sizeQueryMillis dataQuery=$dataQueryMillis millisRange=$millisRange millisSize=$millisSize millisRows=$millisRows millisGetKeys=$millisGetKeys millisSetKeys=$millisSetKeys"
+            s"[ClickHouseVirtualizedDataProvider] Complete runOnce dataQuery=$dataQueryMillis millisRange=$millisRange millisSize=$millisSize millisRows=$millisRows millisGetKeys=$millisGetKeys millisSetKeys=$millisSetKeys"
           )
         }
       case _ =>
