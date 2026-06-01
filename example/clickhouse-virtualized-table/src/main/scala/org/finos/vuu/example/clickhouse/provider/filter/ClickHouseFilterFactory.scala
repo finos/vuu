@@ -12,7 +12,7 @@ object ClickHouseFilterFactory extends StrictLogging {
   private val NO_FILTER = ""
   private val NO_RESULTS = "WHERE 1 = 0"
 
-  def buildWhereClause(filterSpec: FilterSpec, tableDef: TableDef): String = {
+  def build(filterSpec: FilterSpec, tableDef: TableDef): String = {
     if (filterSpec != null && filterSpec.filter != null && filterSpec.filter.nonEmpty) {
       parseWhereClause(filterSpec, tableDef)
     } else {

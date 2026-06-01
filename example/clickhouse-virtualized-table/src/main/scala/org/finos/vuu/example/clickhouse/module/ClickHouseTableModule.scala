@@ -18,11 +18,11 @@ object ClickHouseTableModule extends DefaultModule {
     ModuleFactory.withNamespace(NAME)
       .addSessionTable(
         VirtualizedSessionTableDef(
-          name = "clickhouseOrders",
+          name = "orders",
           keyField = "orderId",
           Columns.fromNames("orderId".string(), "quantity".int(), "price".long(), "side".string(), "trader".string())
         ),
-        (table, vs) => new ClickHouseVirtualizedDataProvider(client),
+        (table, vs) => new ClickHouseVirtualizedDataProvider(table, client),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.getColumns,
           service = new DefaultRpcHandler()(tableContainer)

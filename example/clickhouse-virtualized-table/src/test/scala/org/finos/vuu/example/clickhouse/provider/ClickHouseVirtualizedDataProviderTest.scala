@@ -44,7 +44,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
         vuuServer.login("testUser")
 
-        val table = vuuServer.tableContainer.getTable("clickhouseOrders")
+        val table = vuuServer.tableContainer.getTable("orders")
         val columns = org.finos.vuu.core.table.ViewPortColumnCreator.create(table, table.getTableDef.getColumns.map(_.name).toList)
         val testServer = vuuServer.asInstanceOf[org.finos.vuu.test.impl.TestVuuServerImpl]
         val viewport = testServer.viewPortContainer.create(
@@ -103,7 +103,9 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         |  quantity Int32,
         |  price Int64,
         |  side String,
-        |  trader String
+        |  trader String,
+        |  vuuCreatedTimestamp Int64,
+        |  vuuUpdatedTimestamp Int64
         |) ENGINE = MergeTree() ORDER BY orderId
         |""".stripMargin
     )
@@ -120,6 +122,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
     try {
       var currentId = 1
       while (currentId <= totalCount) {
+        val now = System.currentTimeMillis().toString
         val side = if (currentId % 2 == 0) "Buy" else "Sell"
         val price = currentId * 10L
         val quantity = currentId
@@ -132,6 +135,10 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         writer.write(side)
         writer.write(",trader-")
         writer.write(currentId.toString)
+        writer.write(",")
+        writer.write(now)
+        writer.write(",")
+        writer.write(now)
         writer.write('\n')
         currentId += 1
       }
@@ -145,7 +152,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         container.getUsername,
         container.getPassword,
         "orders",
-        Seq("orderId", "quantity", "price", "side", "trader"),
+        Seq("orderId", "quantity", "price", "side", "trader", "vuuCreatedTimestamp", "vuuUpdatedTimestamp"),
         tempFile
       )
     } finally {
