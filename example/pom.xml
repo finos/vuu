@@ -31,7 +31,6 @@
         <module>rest-api</module>
         <module>http2-server</module>
         <module>valkey-virtualized-table</module>
-        <module>clickhouse-virtualized-table</module>
     </modules>
 
     <build>

@@ -13,10 +13,12 @@
 
     <properties>
         <caffeine.version>3.2.3</caffeine.version>
+        <clickhouse.client.version>0.9.8</clickhouse.client.version>
     </properties>
 
     <modules>
         <module>virtualized-table-plugin</module>
+        <module>clickhouse-plugin</module>
     </modules>
 
 </project>
