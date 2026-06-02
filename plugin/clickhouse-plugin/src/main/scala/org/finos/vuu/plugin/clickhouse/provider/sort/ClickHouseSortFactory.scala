@@ -2,6 +2,7 @@ package org.finos.vuu.plugin.clickhouse.provider.sort
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.net.SortSpec
 
 object ClickHouseSortFactory extends StrictLogging {
@@ -22,7 +23,7 @@ object ClickHouseSortFactory extends StrictLogging {
 
   private def parseSort(sortSpec: SortSpec): String = {
     val sortItems = sortSpec.sortDefs.map { sd =>
-      val direction = if (sd.sortType == 'D') "DESC" else "ASC"
+      val direction = if (sd.sortType == SortDirection.DESCENDING.external) "DESC" else "ASC"
       s"${sd.column} $direction"
     }
     val orderBy = s"ORDER BY ${sortItems.mkString(", ")}"
