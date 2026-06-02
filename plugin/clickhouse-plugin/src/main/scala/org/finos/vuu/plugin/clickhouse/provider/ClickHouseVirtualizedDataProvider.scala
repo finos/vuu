@@ -27,8 +27,8 @@ class ClickHouseVirtualizedDataProvider(tableDef: TableDef, client: ClickHouseCl
     val range = viewPort.getRange
     val startIndex = Math.max(range.from - 500, 0)
     val limit = (range.to - startIndex) + 500
-    val whereClause = ClickHouseFilterFactory.build(viewPort.filterSpec, tableDef)
-    val orderBy = ClickHouseSortFactory.build(viewPort.sortSpec, tableDef)
+    val whereClause = ClickHouseFilterFactory.build(viewPort.filterSpec)
+    val orderBy = ClickHouseSortFactory.build(viewPort.sortSpec)
 
     logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading rows from ClickHouse range $startIndex to ${startIndex + limit} filter=$whereClause sort=$orderBy")
 

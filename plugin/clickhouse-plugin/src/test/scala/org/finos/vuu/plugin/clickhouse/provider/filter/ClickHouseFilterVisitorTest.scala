@@ -7,7 +7,9 @@ import org.scalatest.matchers.should.Matchers
 class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
 
   private def compile(filterStr: String): String = {
-    FilterSpecParser.parse(filterStr, new ClickHouseFilterVisitor())
+    val clickHouseFilterVisitor = new ClickHouseFilterVisitor()
+    FilterSpecParser.parse(filterStr, clickHouseFilterVisitor)
+    clickHouseFilterVisitor.getBuffer.toString
   }
 
   Feature("ClickHouseFilterVisitor compiles filter expressions to SQL clauses") {
