@@ -40,7 +40,7 @@ jobs:
       run: chmod +x mvnw
 
     - name: License XML report
-      run: ./mvnw -B -ntp clean install org.codehaus.mojo:license-maven-plugin:download-licenses -pl ${{ matrix.package-folder }} -am -DskipTests -DlicensesOutputDirectory=${{ matrix.package-folder }}
+      run: ./mvnw -B -ntp clean install org.codehaus.mojo:license-maven-plugin:download-licenses -pl ${{ matrix.package-folder }} -am -DskipTests -Dlicense.includedScopes=compile,runtime -DlicensesOutputDirectory=${{ matrix.package-folder }}
 
     - name: Validate XML report
       working-directory: ${{ matrix.package-folder }}
@@ -59,13 +59,6 @@ jobs:
           "BSD Licence 3"
           "BSD-3-Clause"
           "BSD 3-Clause \"New\" or \"Revised\" License (BSD-3-Clause)"
-          "Eclipse Public License 1.0"
-          "Eclipse Public License - v 1.0"
-          "Eclipse Public License - v 2.0"
-          "Eclipse Public License v2.0"
-          "EPL-2.0"
-          "GNU Lesser General Public License"
-          "LGPL-2.1-only"
           "MIT"
           "MIT License"
           "New BSD License"          
@@ -73,7 +66,6 @@ jobs:
           "the Apache License, ASL Version 2.0"
           "The Apache License, Version 2.0"
           "The BSD License"
-          "Unicode/ICU License"
         )
         
         #Parse unique licenses in dependencies
