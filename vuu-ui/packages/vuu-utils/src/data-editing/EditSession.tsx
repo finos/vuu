@@ -1,11 +1,9 @@
-import { DataSource } from "@vuu-ui/vuu-data-types";
+import { DataSource, EditSessionMode } from "@vuu-ui/vuu-data-types";
 import type {
   RpcResultError,
   VuuRowDataItemType,
-  VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter } from "../event-emitter";
-import { isRpcSuccess } from "../protocol-message-utils";
 
 export type EditState = "clean" | "dirty";
 
@@ -21,19 +19,25 @@ type RowEditDetails = {
   cellEdits: Map<string, CellEdit>;
 };
 
-type EditTrackerEvents = {
+type EditSessionEvents = {
   editState: (editState: EditState) => void;
 };
 
-export class EditTracker extends EventEmitter<EditTrackerEvents> {
+export class EditSession extends EventEmitter<EditSessionEvents> {
   #active = false;
   /**
    *  Row key => row edits
    */
   #rowEdits = new Map<string, RowEditDetails>();
   #editCount = 0;
-  #dataSource?: DataSource;
+  #sourceTableDataSource?: DataSource;
+  #sessionDataSource?: DataSource;
   #inEditMode = false;
+
+  constructor(dataSource: DataSource) {
+    super();
+    this.#sourceTableDataSource = dataSource;
+  }
 
   get active() {
     return this.#active;
@@ -57,30 +61,29 @@ export class EditTracker extends EventEmitter<EditTrackerEvents> {
     }
   }
 
-  set dataSource(ds: DataSource) {
-    this.#dataSource = ds;
-  }
-
   clear() {
     this.#rowEdits.clear();
     this.#editCount = 0;
   }
 
-  async enterEditMode() {
+  async begin(editSessionMode?: EditSessionMode) {
     this.#inEditMode = true;
 
-    const rpcResponse = await this.#dataSource?.rpcRequest?.({
-      type: "RPC_REQUEST",
-      rpcName: "ENTER_EDIT_MODE",
-      params: {},
-    });
+    const sessionDataSource =
+      await this.#sourceTableDataSource?.beginEditSession?.(editSessionMode);
 
-    if (isRpcSuccess(rpcResponse)) {
-      const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
-      return sessionTable;
-    } else {
-      console.log("fail");
-    }
+    this.#sessionDataSource = sessionDataSource;
+
+    return sessionDataSource;
+  }
+
+  get dataSource() {
+    return this.#sessionDataSource ?? this.#sourceTableDataSource;
+  }
+
+  async end(saveChanges = false) {
+    await this.dataSource?.endEditSession?.(saveChanges);
+    this.clear();
   }
 
   get inEditMode() {
@@ -89,26 +92,6 @@ export class EditTracker extends EventEmitter<EditTrackerEvents> {
 
   get editState(): EditState {
     return this.editCount === 0 ? "clean" : "dirty";
-  }
-
-  async cancelChanges() {
-    const rpcResponse = await this.#dataSource?.rpcRequest?.({
-      type: "RPC_REQUEST",
-      rpcName: "EXIT_EDIT_MODE",
-      params: {},
-    });
-    this.clear();
-    return rpcResponse;
-  }
-
-  async saveChanges() {
-    const rpcResponse = await this.#dataSource?.rpcRequest?.({
-      type: "RPC_REQUEST",
-      rpcName: "EXIT_EDIT_MODE",
-      params: { save: true },
-    });
-    this.clear();
-    return rpcResponse;
   }
 
   // TODO how do we deal with the '_edited' pattern
@@ -152,27 +135,22 @@ export class EditTracker extends EventEmitter<EditTrackerEvents> {
     }
   }
 
-  //TODO alow a shortcut commit that allows a value, bypassing need
-  // for edit. Thids caters for boolean values, dropdown list etc
-  // that have no intermediate edit phase
-  async commit(key: string, columnName: string) {
+  async commit(
+    key: string,
+    columnName: string,
+    typedValue: string | number | boolean,
+  ) {
     const rowEditDetails = this.#rowEdits.get(key);
     if (rowEditDetails) {
       const { cellEdits } = rowEditDetails;
       const cellEditValues = cellEdits.get(columnName);
       if (cellEditValues) {
-        const { editedValue } = cellEditValues;
-        const rpcResponse = await this.#dataSource?.rpcRequest?.({
-          type: "RPC_REQUEST",
-          rpcName: "editCell",
-          params: {
-            column: columnName,
-            data: editedValue,
-            key,
-          },
-        });
-
-        return rpcResponse;
+        try {
+          this.dataSource?.editCell?.(key, columnName, typedValue);
+        } catch (e) {
+          // ??
+          console.error(e);
+        }
       }
     } else {
       return {

@@ -4,9 +4,13 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { ChartOptionsProps, useChartOptions } from "./useChartOptions";
 import { useChartContextMenu } from "./useChartContextMenu";
+import cx from "clsx";
 
-import echartCss from "./Chart.css";
 import { ItemColorFunction } from "./ChartSeries";
+
+import chartCss from "./Chart.css";
+
+const classBase = "vuuChart";
 
 type OptionSettings = {
   notMerge: boolean;
@@ -24,15 +28,18 @@ export interface ChartProps
   itemColorFunction?: ItemColorFunction;
   optionSettings?: OptionSettings;
   palette?: string[];
+  showTooltip?: boolean;
 }
 
 export const Chart = ({
   categoryColumnName,
   chartSettings = { useCoarsePointer: true, renderer: "svg" }, // enables clicking near a line and still highlighting it
+  className,
   dataSource,
   itemColorFunction,
   optionSettings = { notMerge: true }, // don't merge two options together when updating option
   palette,
+  showTooltip,
   style = { width: "100%", height: "100%" },
   seriesColumnNames,
   ...htmlAttributes
@@ -40,7 +47,7 @@ export const Chart = ({
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-toast-notification",
-    css: echartCss,
+    css: chartCss,
     window: targetWindow,
   });
 
@@ -52,6 +59,7 @@ export const Chart = ({
     palette,
     dataSource,
     seriesColumnNames,
+    showTooltip,
   });
 
   const onContextMenu = useChartContextMenu({ categoryColumnName });
@@ -102,5 +110,12 @@ export const Chart = ({
     }
   }, [option, optionSettings]);
 
-  return <div {...htmlAttributes} ref={chartRef} style={style} />;
+  return (
+    <div
+      {...htmlAttributes}
+      className={cx(classBase, className)}
+      ref={chartRef}
+      style={style}
+    />
+  );
 };

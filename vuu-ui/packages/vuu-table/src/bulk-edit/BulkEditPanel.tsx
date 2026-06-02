@@ -26,7 +26,6 @@ export interface BulkEditPanelProps extends HTMLAttributes<HTMLDivElement> {
    * The parent dataSource. This is where the edits will be applied once confirmed
    */
   parentDs: DataSource;
-  onValidationStatusChange: (isValid: boolean) => void;
   width?: number;
 }
 
@@ -35,7 +34,6 @@ export const BulkEditPanel = ({
   columns,
   sessionDs,
   parentDs,
-  onValidationStatusChange,
   style,
   width = 600,
   ...htmlAttributes
@@ -47,22 +45,16 @@ export const BulkEditPanel = ({
     window: targetWindow,
   });
 
-  const { onBulkChange, onDataEdited, onRowChange, tableConfig } =
-    useBulkEditPanel({
-      columns,
-      sessionDs,
-      onValidationStatusChange,
-    });
+  const { onBulkChange, onRowChange, tableConfig } = useBulkEditPanel({
+    columns,
+    sessionDs,
+  });
 
   const bulkEditRow = useMemo(() => {
     return (
-      <BulkEditRow
-        dataSource={parentDs}
-        onBulkChange={onBulkChange}
-        onRowChange={onRowChange}
-      />
+      <BulkEditRow onBulkChange={onBulkChange} onRowChange={onRowChange} />
     );
-  }, [onBulkChange, onRowChange, parentDs]);
+  }, [onBulkChange, onRowChange]);
 
   return (
     <div
@@ -81,7 +73,6 @@ export const BulkEditPanel = ({
           width={width}
           showColumnHeaderMenus={false}
           selectionModel="none"
-          onDataEdited={onDataEdited}
           maxViewportRowLimit={10}
         />
       </div>

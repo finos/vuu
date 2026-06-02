@@ -18,6 +18,7 @@ export interface ChartOptionsProps {
   itemColorFunction?: ItemColorFunction;
   palette?: string[];
   seriesColumnNames: string[];
+  showTooltip?: boolean;
 }
 
 export const useChartOptions = ({
@@ -26,6 +27,7 @@ export const useChartOptions = ({
   itemColorFunction,
   palette = defaultPalette,
   seriesColumnNames,
+  showTooltip = true,
 }: ChartOptionsProps) => {
   const [, forceRender] = useState({});
 
@@ -53,6 +55,14 @@ export const useChartOptions = ({
     color: palette,
     dataZoom: [
       {
+        backgroundColor: "var(--vuuChart-zoom-background, transparent)",
+        borderColor: "var(--vuuChart-zoom-borderColor, white)",
+        handleStyle: {
+          color: "var(--vuuChart-zoom-handleColor, white)",
+        },
+        moveHandleStyle: {
+          color: "var(--vuuChart-zoom-slideColor, white)",
+        },
         type: "slider",
         start: 0,
         end: 100,
@@ -64,12 +74,25 @@ export const useChartOptions = ({
       right: 5,
     },
     series: chartSeries.series,
-    tooltip: {
-      trigger: "axis",
-    },
+    tooltip: showTooltip
+      ? {
+          backgroundColor: "",
+          borderColor: "",
+          // borderWidth: "",
+          className: "vuuChartTooltip",
+          // padding: "",
+          trigger: "axis",
+        }
+      : undefined,
     xAxis: {
       data: chartSeries.categories,
     },
-    yAxis: {},
+    yAxis: {
+      splitLine: {
+        lineStyle: {
+          color: "var(--salt-separable-tertiary-borderColor)",
+        },
+      },
+    },
   } as EChartsCoreOption;
 };

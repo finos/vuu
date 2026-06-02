@@ -40,7 +40,7 @@ import {
   PinState,
   toggleOrApplySort,
   updateColumn,
-  useEditTracker,
+  useEditSession,
   useLayoutEffectSkipFirst,
   useStableReference,
 } from "@vuu-ui/vuu-utils";
@@ -769,7 +769,12 @@ export const useTable = ({
 
   const handleRowClick = useCallback<TableRowClickHandlerInternal>(
     (evt, dataRow, rangeSelect, keepExistingSelection) => {
-      selectionHookOnRowClick(evt, dataRow, rangeSelect, keepExistingSelection);
+      selectionHookOnRowClick?.(
+        evt,
+        dataRow,
+        rangeSelect,
+        keepExistingSelection,
+      );
       onRowClickProp?.(evt, dataRow);
     },
     [onRowClickProp, selectionHookOnRowClick],
@@ -852,7 +857,7 @@ export const useTable = ({
     [onDrop],
   );
 
-  const editTracker = useEditTracker();
+  const editSession = useEditSession();
 
   const handleDataEdited = useCallback(
     async (editState: DataCellEditEvent): Promise<RpcResult | undefined> => {
@@ -865,39 +870,22 @@ export const useTable = ({
         value,
       } = editState;
       if (editType === "commit" && isValid) {
-        if (editTracker && dataRow && columnName) {
-          return editTracker.commit(dataRow.key, columnName);
-        } else if (dataSource.rpcRequest) {
-          if (columnName && dataRow) {
-            const response = await dataSource.rpcRequest({
-              params: {
-                column: columnName,
-                key: dataRow.key,
-                data: value,
-              },
-              rpcName: "editCell",
-              type: "RPC_REQUEST",
-            });
-            onDataEditedProp?.({
-              ...editState,
-              isValid: response?.type === "SUCCESS_RESULT",
-            });
-            return response;
-          }
+        if (editSession && dataRow && columnName) {
+          return editSession.commit(dataRow.key, columnName, value);
         } else {
           throw Error(
-            `[useTable] handleDataEdited, no editTracker installed and datasource does not support RPC`,
+            `[useTable] handleDataEdited, no editSession installed and datasource does not support RPC`,
           );
         }
       } else {
-        if (editTracker && dataRow && columnName) {
-          editTracker.edit(dataRow.key, columnName, previousValue, value);
+        if (editSession && dataRow && columnName) {
+          editSession.edit(dataRow.key, columnName, previousValue, value);
         } else {
           onDataEditedProp?.(editState);
         }
       }
     },
-    [dataSource, editTracker, onDataEditedProp],
+    [editSession, onDataEditedProp],
   );
 
   const handleDragStartRow = useCallback<DragStartHandler>(
@@ -954,7 +942,7 @@ export const useTable = ({
     columns,
     dataRows,
     draggableRow,
-    editSessionInProgress: editTracker?.inEditMode,
+    editSessionInProgress: editSession?.inEditMode,
     focusCellPlaceholderKeyDown,
     focusCellPlaceholderRef,
     getRowOffset,

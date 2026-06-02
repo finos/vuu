@@ -192,7 +192,7 @@ export interface TableProps
    * In a Table with editable cells, this callback will be invoked every time
    * a user performs any edit operation on an editable field.
    */
-  // TODO can we scrap this and leavr it to the editTracker ?
+  // TODO can we scrap this and leave it to the editSession ?
   onDataEdited?: DataCellEditNotification;
 
   onDragStart?: DragStartHandler;
@@ -486,7 +486,9 @@ const TableCore = ({
             <TableHeader
               HeaderCell={HeaderCell}
               allowDragColumnHeader={allowDragColumnHeader}
-              allowSelectAll={allowSelectAll}
+              allowSelectAll={
+                allowSelectAll && selectionModel !== "checkbox-disabled"
+              }
               allRowsSelected={allRowsSelected}
               // columns={scrollProps.columnsWithinViewport}
               columns={columns}

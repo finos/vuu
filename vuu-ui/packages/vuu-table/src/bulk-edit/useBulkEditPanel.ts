@@ -1,12 +1,8 @@
 import { buildValidationChecker } from "@vuu-ui/vuu-data-react";
 import { VuuRpcServiceRequest } from "@vuu-ui/vuu-protocol-types";
-import {
-  DataCellEditNotification,
-  DataValueTypeDescriptor,
-  TableConfig,
-} from "@vuu-ui/vuu-table-types";
+import { DataValueTypeDescriptor, TableConfig } from "@vuu-ui/vuu-table-types";
 import { hasValidationRules, isTypeDescriptor } from "@vuu-ui/vuu-utils";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { BulkEditPanelProps } from "./BulkEditPanel";
 import { EditValueChangeHandler } from "./useBulkEditRow";
 
@@ -22,32 +18,15 @@ const addRenderer = (
   };
 };
 
-type ErrorTuple = [number, string];
-
-const isRecorded = (index: ErrorTuple, record: ErrorTuple[]) => {
-  for (const r of record) {
-    if (isSameArray(r, index)) {
-      return true;
-    }
-  }
-  return false;
-};
-
-const isSameArray = (arr1: ErrorTuple, arr2: ErrorTuple) => {
-  return arr1[0] == arr2[0] && arr1[1] == arr2[1];
-};
-
 export type BulkEditPanelHookProps = Pick<
   BulkEditPanelProps,
-  "columns" | "sessionDs" | "onValidationStatusChange"
+  "columns" | "sessionDs"
 >;
 
 export const useBulkEditPanel = ({
   columns,
   sessionDs: dataSource,
-  onValidationStatusChange,
 }: BulkEditPanelHookProps) => {
-  const errorsRef = useRef<ErrorTuple[]>([]);
   const [rowState, setRowState] = useState(true);
 
   const tableConfig: TableConfig = useMemo(() => {
@@ -79,32 +58,6 @@ export const useBulkEditPanel = ({
     };
   }, [columns, dataSource.columns]);
 
-  const handleDataEdited = useCallback<DataCellEditNotification>(
-    ({ isValid = true, dataRow, columnName }) => {
-      if (columnName && dataRow) {
-        if (
-          !isValid &&
-          !isRecorded([dataRow.index, columnName], errorsRef.current)
-        ) {
-          errorsRef.current.push([dataRow.index, columnName]);
-        } else if (
-          isValid &&
-          isRecorded([dataRow.index, columnName], errorsRef.current)
-        ) {
-          errorsRef.current = errorsRef.current.filter(
-            (error) => !isSameArray(error, [dataRow.index, columnName]),
-          );
-        }
-        if (rowState === true && errorsRef.current.length === 0) {
-          onValidationStatusChange(true);
-        } else {
-          onValidationStatusChange(false);
-        }
-      }
-    },
-    [onValidationStatusChange, rowState],
-  );
-
   const handleRowChange = useCallback(
     (isValid: boolean) => {
       if (isValid !== rowState) {
@@ -129,7 +82,7 @@ export const useBulkEditPanel = ({
   return {
     tableConfig,
     onBulkChange: handleBulkChange,
-    onDataEdited: handleDataEdited,
+    // onDataEdited: handleDataEdited,
     onRowChange: handleRowChange,
   };
 };

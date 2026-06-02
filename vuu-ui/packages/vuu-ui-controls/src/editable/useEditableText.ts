@@ -1,7 +1,10 @@
-import type { DataValueValidationChecker } from "@vuu-ui/vuu-data-types";
 import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
-import type { TableCellEditHandler } from "@vuu-ui/vuu-table-types";
+import type {
+  RuntimeColumnDescriptor,
+  TableCellEditHandler,
+} from "@vuu-ui/vuu-table-types";
 import {
+  DataValidationError,
   dispatchCustomEvent,
   getTypedValue,
   isRpcError,
@@ -20,7 +23,10 @@ import {
 export interface EditableTextHookProps<
   T extends VuuRowDataItemType = VuuRowDataItemType,
 > {
-  clientSideEditValidationCheck?: DataValueValidationChecker;
+  column: Pick<
+    RuntimeColumnDescriptor,
+    "clientSideEditValidationCheck" | "label" | "name"
+  >;
   value?: T;
   onEdit?: TableCellEditHandler;
   type?: "string" | "number" | "boolean";
@@ -36,7 +42,7 @@ type EditState = {
 const stringValueOf = (value?: VuuRowDataItemType) => value?.toString() ?? "";
 
 export const useEditableText = <T extends string | number | boolean = string>({
-  clientSideEditValidationCheck,
+  column,
   value,
   onEdit,
   type = "string",
@@ -51,13 +57,13 @@ export const useEditableText = <T extends string | number | boolean = string>({
   useMemo(() => {
     if (initialValueRef.current !== value?.toString()) {
       initialValueRef.current = stringValueOf(value);
-      setEditState({ message: "", value: stringValueOf(value) });
+      setEditState({ message: undefined, value: stringValueOf(value) });
     }
   }, [value]);
 
   const commit = useCallback(async () => {
     const { value } = editState;
-    const result = clientSideEditValidationCheck?.(value, "*");
+    const result = column.clientSideEditValidationCheck?.(value, "*");
     if (result?.ok === false) {
       setEditState((state) => ({
         ...state,
@@ -67,48 +73,68 @@ export const useEditableText = <T extends string | number | boolean = string>({
     } else {
       //save initial value,it could be reset by time async operation completes
       const { current: initialValue } = initialValueRef;
-      const typedValue = getTypedValue(value, type, true);
-      const previousValue = getTypedValue(initialValue, type);
-      const response = await onEdit?.(
-        {
-          editType: "commit",
-          isValid: true,
-          previousValue,
-          value: typedValue,
-        },
-        "commit",
-      );
-      if (isRpcSuccess(response)) {
-        isDirtyRef.current = false;
-        setEditState(({ previousValue, value }) => ({
-          previousValue:
-            previousValue === value
-              ? undefined
-              : previousValue === undefined
-                ? initialValue
-                : previousValue,
-          value,
-        }));
-        initialValueRef.current = value;
-        return true;
-      } else if (isRpcError(response)) {
-        if (response.errorMessage === "CHANGE_REVERTED") {
-          setEditState(({ value }) => ({
-            previousValue: undefined,
+      try {
+        const typedValue = getTypedValue(value, type, true);
+        console.log(`[useEditableText] typedValue = ${typedValue}`);
+        const previousValue = getTypedValue(initialValue, type);
+        const response = await onEdit?.(
+          {
+            editType: "commit",
+            isValid: true,
+            previousValue,
+            value: typedValue,
+          },
+          "commit",
+        );
+        if (isRpcSuccess(response)) {
+          isDirtyRef.current = false;
+          setEditState(({ previousValue, value }) => ({
+            previousValue:
+              previousValue === value
+                ? undefined
+                : previousValue === undefined
+                  ? initialValue
+                  : previousValue,
             value,
           }));
-          initialValueRef.current = value;
-          return true;
-        } else {
-          setEditState((state) => ({
-            ...state,
-            message: response.errorMessage,
-          }));
+        } else if (isRpcError(response)) {
+          if (response.errorMessage === "CHANGE_REVERTED") {
+            setEditState(({ value }) => ({
+              previousValue: undefined,
+              value,
+            }));
+            initialValueRef.current = value;
+            return true;
+          } else {
+            setEditState((state) => ({
+              ...state,
+              message: response.errorMessage,
+            }));
+          }
+        }
+        initialValueRef.current = value;
+        return true;
+      } catch (e) {
+        if (e instanceof DataValidationError) {
+          const { actualType, expectedType, message } = e;
+          if (column) {
+            const { name, label = name } = column;
+            const message = `${label} is a ${expectedType} value, data entered is ${actualType} `;
+            setEditState((state) => ({
+              ...state,
+              message,
+            }));
+          } else {
+            setEditState((state) => ({
+              ...state,
+              message,
+            }));
+          }
         }
       }
     }
     return false;
-  }, [clientSideEditValidationCheck, editState, onEdit, type]);
+  }, [column, editState, onEdit, type]);
 
   const handleKeyDown = useCallback(
     async (evt: KeyboardEvent<HTMLElement>) => {
@@ -205,7 +231,7 @@ export const useEditableText = <T extends string | number | boolean = string>({
     (evt) => {
       const { value } = evt.target as HTMLInputElement;
       isDirtyRef.current = value !== initialValueRef.current;
-      const result = clientSideEditValidationCheck?.(value, "change");
+      const result = column.clientSideEditValidationCheck?.(value, "change");
       setEditState({ value });
 
       onEdit?.(
@@ -226,7 +252,7 @@ export const useEditableText = <T extends string | number | boolean = string>({
         dispatchCustomEvent(evt.target as HTMLElement, "vuu-enter-edit-mode");
       }
     },
-    [clientSideEditValidationCheck, onEdit],
+    [column, onEdit],
   );
 
   return {

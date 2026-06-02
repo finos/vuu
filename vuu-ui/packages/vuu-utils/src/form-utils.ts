@@ -16,6 +16,16 @@ import {
   ScaledDecimal8,
 } from "./ScaledDecimal";
 
+export class DataValidationError extends Error {
+  actualType: string;
+  expectedType: string;
+  constructor(message: string, expectedType: string, actualType: string) {
+    super(message);
+    this.actualType = actualType;
+    this.expectedType = expectedType;
+  }
+}
+
 /**
  * Use with the following convention:
  *
@@ -70,6 +80,19 @@ export function getTypedRange(
     getTypedValue(value2, dataType, false, options),
   ];
 }
+
+const getActualType = (
+  value: string | number | boolean,
+): "string" | "number" | "boolean" => {
+  if (typeof value === "boolean") {
+    return "boolean";
+  } else if (typeof value === "number") {
+    return "number";
+  } else if (typeof value === "string") {
+    return "string";
+  }
+  return "string";
+};
 
 /**
  * Convert a string value to the type appropriate for the associated
@@ -126,7 +149,11 @@ export function getTypedValue(
       if (stringIsValidDecimal(value)) {
         return parseFloat(value);
       } else if (throwIfInvalid) {
-        throw Error(`value ${value} is not a valid ${type}`);
+        throw new DataValidationError(
+          `value ${value} is not a valid ${type}`,
+          "decimal",
+          getActualType(value),
+        );
       } else {
         return undefined;
       }

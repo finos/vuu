@@ -122,8 +122,8 @@ export class ArrayDataSource
   extends EventEmitter<DataSourceEvents>
   implements DataSource
 {
-  private clientCallback: DataSourceSubscribeCallback | undefined;
-  private columnDescriptors: readonly ColumnDescriptor[];
+  protected clientCallback: DataSourceSubscribeCallback | undefined;
+  protected columnDescriptors: readonly ColumnDescriptor[];
   /** sorted offsets of data within raw data, reflecting sort order
    * of columns specified by client.
    */
@@ -291,6 +291,7 @@ export class ArrayDataSource
   }
 
   suspend() {
+    console.log(`[ArrayDataSource] suspend`);
     if (this.#status !== "unsubscribed") {
       info?.(`suspend #${this.viewport}, current status ${this.#status}`);
       this.#status = "suspended";

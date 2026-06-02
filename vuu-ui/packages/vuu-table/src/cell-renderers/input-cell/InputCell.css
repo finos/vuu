@@ -14,17 +14,19 @@
   --vuu-icon-size: 15px;
   --vuu-icon-width: 12px;
   border-radius: 10px;
+  cursor: pointer;
 }
 
-.vuuTableInputCell-error {
+.vuuTableInputCell-error.saltInput-bordered.saltInput {
+    border-color: red;
   .saltInput-startAdornmentContainer {
     .vuuTableInputCell-icon {
-      --vuu-icon-color: red;
+      --vuu-icon-color: var(--salt-status-error-bold-background);
     }
   }
   .saltInput-endAdornmentContainer {
     .vuuTableInputCell-icon {
-      --vuu-icon-color: red;
+      --vuu-icon-color: var(--salt-status-error-bold-background);
     }
   }
 }

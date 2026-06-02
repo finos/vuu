@@ -546,8 +546,36 @@ export declare type DataSourceSuspenseProps = {
   escalateDelay?: number;
 };
 
+/**
+ * An inline edit session allows user to apply edits directly to
+ * the existing component. e.g. directly edit cells within a table.
+ */
+export type InlineEditSessionMode = "inline-all-rows";
+/**
+ * A standalone edit session re-renders editable data in an edit component.
+ * e.g an edit panel may be displayed in a dialog.
+ */
+export type StandaloneEditSessionMode =
+  | "selected-rows"
+  | "all-rows"
+  | "empty-session-table";
+export type EditSessionMode = InlineEditSessionMode | StandaloneEditSessionMode;
+
+export interface EditApi {
+  beginEditSession?: (
+    editSessionMode?: EditSessionMode,
+  ) => Promise<DataSource | undefined>;
+  editCell?: (
+    rowKey: string,
+    colun: string,
+    value: VuuRowDataItemType,
+  ) => Promise<RpcResult> | undefined;
+  endEditSession?: (saveChanges?: boolean) => Promise<RpcResult> | undefined;
+}
+
 export interface DataSource
-  extends IEventEmitter<DataSourceEvents>,
+  extends EditApi,
+    IEventEmitter<DataSourceEvents>,
     Partial<TypeaheadSuggestionProvider> {
   aggregations: VuuAggregation[];
   closeTreeNode: (keyOrIndex: string | number, cascade?: boolean) => void;

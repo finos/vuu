@@ -194,7 +194,8 @@ export function isSessionTableActionMessage(
     isActionMessage(rpcResponse) &&
     isOpenDialogAction(rpcResponse.action) &&
     isSessionTable(rpcResponse.action.table) &&
-    rpcResponse.action?.renderComponent === "inline-form"
+    (rpcResponse.action?.renderComponent === "inline-form" ||
+      rpcResponse.action?.renderComponent === "grid")
   );
 }
 
