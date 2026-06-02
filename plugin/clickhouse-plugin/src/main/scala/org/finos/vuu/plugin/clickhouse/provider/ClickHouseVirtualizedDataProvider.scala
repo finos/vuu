@@ -88,7 +88,7 @@ class ClickHouseVirtualizedDataProvider(tableDef: TableDef, client: ClickHouseCl
   override def doInitialize(): Unit = {}
   override def doDestroy(): Unit = {}
 
-  override val lifecycleId: String = this.getClass.toString
+  override val lifecycleId: String = s"ClickHouseVirtualizedDataProvider@$hashCode"
 
   override def getUniqueValues(columnName: String): Array[String] = Array.empty
   override def getUniqueValuesStartingWith(columnName: String, starts: String): Array[String] = Array.empty
