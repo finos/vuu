@@ -1,9 +1,7 @@
 package org.finos.vuu.example.clickhouse.provider.data
 
-import com.clickhouse.client.api.metadata.TableSchema
 import com.clickhouse.client.api.query.GenericRecord
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{Column, DataType, RowWithData}
 
@@ -27,7 +25,6 @@ object ClickHouseRowDataMapper {
 private case class ClickHouseRowDataMapperImpl() extends ClickHouseRowDataMapper with StrictLogging {
 
   override def mapRowData(v1: GenericRecord, key: String, columns: List[Column]): RowWithData = {
-    val schema = v1.getSchema
     val builder = mutable.Map.empty[String, Any]
 
     var i = 0
@@ -36,7 +33,7 @@ private case class ClickHouseRowDataMapperImpl() extends ClickHouseRowDataMapper
       val col = columns(i)
       val name = col.name
 
-      if (schema.findColumnIndex(name) != -1) {
+      if (v1.hasValue(name)) {
         col.dataType match {
           case DataType.StringDataType =>
             val s = v1.getString(name)
