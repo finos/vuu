@@ -13,9 +13,8 @@
     <name>${project.artifactId}</name>
 
     <properties>
-        <sttp.client4.version>4.0.12</sttp.client4.version>
-        <typesafe.conf.version>1.4.5</typesafe.conf.version>
-        <valkey-java.version>5.5.0</valkey-java.version>
+        <sttp.client4.version>4.0.25</sttp.client4.version>
+        <typesafe.conf.version>1.4.8</typesafe.conf.version>
         <vertx.version>5.0.12</vertx.version>
     </properties>
 
@@ -30,7 +29,6 @@
         <module>virtualized-table</module>
         <module>rest-api</module>
         <module>http2-server</module>
-        <module>valkey-virtualized-table</module>
     </modules>
 
     <build>
