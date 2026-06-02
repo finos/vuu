@@ -4,6 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.logging.LogAtFrequency
 import org.finos.toolbox.time.Clock
 import org.finos.toolbox.time.TimeIt.timeIt
+import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.example.clickhouse.client.ClickHouseClient
 import org.finos.vuu.example.clickhouse.provider.data.{ClickHouseRowDataProvider, ClickHouseTableSizeProvider}
@@ -16,7 +17,7 @@ import org.finos.vuu.viewport.{ViewPort, ViewPortColumns}
 
 import scala.collection.mutable.ListBuffer
 
-class ClickHouseVirtualizedDataProvider(table: DataTable, client: ClickHouseClient)(implicit clock: Clock)
+class ClickHouseVirtualizedDataProvider(tableDef: TableDef, client: ClickHouseClient)(implicit clock: Clock)
   extends VirtualizedProvider with StrictLogging {
 
   private val tableSizeProvider = ClickHouseTableSizeProvider(client)
@@ -29,15 +30,15 @@ class ClickHouseVirtualizedDataProvider(table: DataTable, client: ClickHouseClie
     val range = viewPort.getRange
     val startIndex = Math.max(range.from - 500, 0)
     val limit = (range.to - startIndex) + 500
-    val whereClause = ClickHouseFilterFactory.build(viewPort.filterSpec, table.getTableDef)
-    val orderBy = ClickHouseSortFactory.build(viewPort.sortSpec, table.getTableDef)
+    val whereClause = ClickHouseFilterFactory.build(viewPort.filterSpec, tableDef)
+    val orderBy = ClickHouseSortFactory.build(viewPort.sortSpec, tableDef)
 
     logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading rows from ClickHouse range $startIndex to ${startIndex + limit} filter=$whereClause sort=$orderBy")
 
     val queryStart = clock.now()
     
-    val tableSize = tableSizeProvider.getTableSize(table.name, whereClause)
-    val rowsWithData = rowDataProvider.queryForRowData(table.name, viewPort.getColumns.getColumns, 
+    val tableSize = tableSizeProvider.getTableSize(tableDef, whereClause)
+    val rowsWithData = rowDataProvider.queryForRowData(tableDef, viewPort.getColumns.getColumns, 
       whereClause, orderBy, limit, startIndex)
     
     val dataQueryMillis = clock.now() - queryStart

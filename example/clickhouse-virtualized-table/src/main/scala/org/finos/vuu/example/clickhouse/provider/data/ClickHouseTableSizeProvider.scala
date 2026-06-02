@@ -1,10 +1,11 @@
 package org.finos.vuu.example.clickhouse.provider.data
 
+import org.finos.vuu.api.TableDef
 import org.finos.vuu.example.clickhouse.client.ClickHouseClient
 
 trait ClickHouseTableSizeProvider {
 
-  def getTableSize(tableDef: String, query: String): Int
+  def getTableSize(tableDef: TableDef, query: String): Int
 
 }
 
@@ -17,8 +18,8 @@ object ClickHouseTableSizeProvider {
 
 private case class ClickHouseTableSizeProviderImpl(client: ClickHouseClient) extends ClickHouseTableSizeProvider {
 
-  override def getTableSize(tableName: String, whereClause: String): Int = {
-    client.executeQuery(s"SELECT count() as cnt FROM $tableName $whereClause") {
+  override def getTableSize(tableDef: TableDef, whereClause: String): Int = {
+    client.executeQuery(s"SELECT count() as cnt FROM ${tableDef.name} $whereClause") {
       records =>
         val it = records.iterator()
         if (it.hasNext) {
