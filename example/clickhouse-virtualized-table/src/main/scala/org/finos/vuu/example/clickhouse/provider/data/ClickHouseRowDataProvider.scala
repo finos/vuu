@@ -11,7 +11,7 @@ trait ClickHouseRowDataProvider {
 
   def queryForRowData(table: TableDef, columns: List[Column],
                       whereClause: String, orderBy: String,
-                      limit: Int, startIndex: Int) : Vector[RowWithData]
+                      limit: Int, startIndex: Int) : IndexedSeq[RowWithData]
 
 }
 
@@ -28,8 +28,16 @@ private case class ClickHouseRowDataProviderImpl(client: ClickHouseClient,
 
   override def queryForRowData(tableDef: TableDef, columns: List[Column],
                                whereClause: String, orderBy: String,
-                               limit: Int, startIndex: Int): Vector[RowWithData] = {
-    val query = s"SELECT ${columns.map(_.name).mkString(", ")} FROM ${tableDef.name} $whereClause $orderBy LIMIT $limit OFFSET $startIndex"
+                               limit: Int, startIndex: Int): IndexedSeq[RowWithData] = {
+    val query =
+      s"""
+         |SELECT ${columns.map(_.name).mkString(", ")}
+         |FROM ${tableDef.name}
+         |$whereClause
+         |$orderBy
+         |LIMIT $limit
+         |OFFSET $startIndex
+         |""".stripMargin.trim
 
     client.executeQuery(query) { records =>
       val buf = new ArrayBuffer[RowWithData](records.getResultRows.toInt)
@@ -38,7 +46,7 @@ private case class ClickHouseRowDataProviderImpl(client: ClickHouseClient,
         val record = it.next()
         buf += rowDataMapper.mapRowData(record, tableDef.keyField, columns)
       }
-      buf.toVector
+      buf.toIndexedSeq
     }
   }
 

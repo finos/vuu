@@ -5,17 +5,14 @@ import org.finos.toolbox.logging.LogAtFrequency
 import org.finos.toolbox.time.Clock
 import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.example.clickhouse.client.ClickHouseClient
 import org.finos.vuu.example.clickhouse.provider.data.{ClickHouseRowDataProvider, ClickHouseTableSizeProvider}
-import org.finos.vuu.example.clickhouse.provider.filter.{ClickHouseFilterFactory, ClickHouseFilterVisitor}
+import org.finos.vuu.example.clickhouse.provider.filter.ClickHouseFilterFactory
 import org.finos.vuu.example.clickhouse.provider.sort.ClickHouseSortFactory
 import org.finos.vuu.feature.ViewPortKeys
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.viewport.{ViewPort, ViewPortColumns}
-
-import scala.collection.mutable.ListBuffer
 
 class ClickHouseVirtualizedDataProvider(tableDef: TableDef, client: ClickHouseClient)(implicit clock: Clock)
   extends VirtualizedProvider with StrictLogging {
@@ -23,7 +20,7 @@ class ClickHouseVirtualizedDataProvider(tableDef: TableDef, client: ClickHouseCl
   private val tableSizeProvider = ClickHouseTableSizeProvider(client)
   private val rowDataProvider = ClickHouseRowDataProvider(client)
   private val logAt = new LogAtFrequency(10_000)
-  
+
   override def runOnce(viewPort: ViewPort): Unit = {
     logger.trace("[ClickHouseVirtualizedDataProvider] Starting runOnce")
 
@@ -36,17 +33,16 @@ class ClickHouseVirtualizedDataProvider(tableDef: TableDef, client: ClickHouseCl
     logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading rows from ClickHouse range $startIndex to ${startIndex + limit} filter=$whereClause sort=$orderBy")
 
     val queryStart = clock.now()
-    
     val tableSize = tableSizeProvider.getTableSize(tableDef, whereClause)
-    val rowsWithData = rowDataProvider.queryForRowData(tableDef, viewPort.getColumns.getColumns, 
+    val rowsWithData = rowDataProvider.queryForRowData(tableDef, viewPort.getColumns.getColumns,
       whereClause, orderBy, limit, startIndex)
-    
     val dataQueryMillis = clock.now() - queryStart
 
     logger.trace(s"[ClickHouseVirtualizedDataProvider] Updating session table")
 
     viewPort.table.asTable match {
       case tbl: VirtualizedSessionTable =>
+
         logger.trace("[ClickHouseVirtualizedDataProvider] Set Range")
         val (millisRange, _) = timeIt { tbl.setRange(VirtualizedRange(startIndex, startIndex + limit)) }
 
@@ -54,7 +50,7 @@ class ClickHouseVirtualizedDataProvider(tableDef: TableDef, client: ClickHouseCl
         val (millisSize, _) = timeIt { tbl.setSize(tableSize) }
 
         logger.trace("[ClickHouseVirtualizedDataProvider] Adding rows")
-        val (millisRows, _) = timeIt {        
+        val (millisRows, _) = timeIt {
             var i = 0
             val n = rowsWithData.length
             while (i < n) {
