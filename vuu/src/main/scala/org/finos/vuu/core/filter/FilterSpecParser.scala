@@ -13,27 +13,11 @@ object FilterSpecParser extends StrictLogging {
       throw new ParseCancellationException(e)
   }
 
-  def parse[T](s: String, eval: FilterVisitor[T]): T = {
-    logger.debug(s"Parsing filterspec [$s]")
-
-    val input = CharStreams.fromString(s)
-    val lexer = new FilterLexer(input)
-    val tokens = new CommonTokenStream(lexer)
-    val parser = new  FilterParser(tokens)
-
-    // do not try to make sense of broken syntax
-    lexer.removeErrorListeners()
-    lexer.addErrorListener(new BailOnErrorListener)
-    parser.setErrorHandler(new BailErrorStrategy)
-
-    val tree = parser.start()
-    val result = eval.visit(tree)
-    logger.debug(s"Parsed $result")
-    result
+  def parse(s: String): FilterClause = {
+    parse(s, new FilterTreeVisitor())
   }
 
-
-  def parse(s: String): FilterClause = {
+  def parse[T](s: String, eval: FilterVisitor[T]): T = {
     logger.debug(s"Parsing filterspec [$s]")
 
     val input = CharStreams.fromString(s)
@@ -47,9 +31,9 @@ object FilterSpecParser extends StrictLogging {
     parser.setErrorHandler(new BailErrorStrategy)
 
     val tree = parser.start()
-    val eval = new FilterTreeVisitor()
     val result = eval.visit(tree)
     logger.debug(s"Parsed $result")
     result
   }
+
 }
