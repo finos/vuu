@@ -4,14 +4,12 @@ This file lists the maintainers of this repository.
 
 ## Current maintainers
 
-| GitHub Username | Name | Organization | Email |
-|----------------|------|--------------|-------|
-| @chrisjstevo | *please add name* | *please add organization* | *please add email* |
-| @ddimtirov | Dimitar Dimitrov | *please add organization* | *please add email* |
-| @heswell | heswell | *please add organization* | *please add email* |
-| @keikeicheung | *please add name* | *please add organization* | *please add email* |
-| @stonesmi | Michael Stonestreet | *please add organization* | *please add email* |
-| @tanjjj | *please add name* | *please add organization* | *please add email* |
+| GitHub Username | Name                | Organization              | Email |
+|----------------|---------------------|---------------------------|-------|
+| @chrisjstevo | Chris Stevenson     | Individual | chrisjstevo@users.noreply.github.com |
+| @heswell | Steve Heron         | Individual | heswell@users.noreply.github.com |
+| @stonesmi | Michael Stonestreet | Individual | stonesmi@users.noreply.github.com |
+| @tanjjj | Jiahui Tan | Individual | tanjjj@users.noreply.github.com |
 
 For information about maintainer responsibilities and resources, see the [FINOS Maintainers Cheatsheet](https://community.finos.org/docs/finos-maintainers-cheatsheet).
 
