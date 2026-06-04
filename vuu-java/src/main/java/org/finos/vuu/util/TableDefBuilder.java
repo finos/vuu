@@ -11,7 +11,9 @@ import org.finos.vuu.viewport.ViewPort;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import static org.finos.vuu.util.ScalaCollectionConverter.*;
+import static org.finos.vuu.util.ScalaCollectionConverter.emptyList;
+import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
+import static org.finos.vuu.util.ScalaCollectionConverter.toScalaSeq;
 
 public class TableDefBuilder {
     private String name;
