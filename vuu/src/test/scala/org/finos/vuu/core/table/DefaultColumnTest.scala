@@ -1,6 +1,6 @@
 package org.finos.vuu.core.table
 
-import org.finos.vuu.api.{Indices, TableDef}
+import org.finos.vuu.api.{Indices, SessionTableDef, TableDef}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -10,7 +10,7 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Check default column count") {
 
-      DefaultColumn.values.length shouldEqual 2
+      DefaultColumn.values.length shouldEqual 3
 
     }
 
@@ -30,11 +30,19 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
       lastUpdatedTime.dataType.isInstanceOf[DataType.EpochTimestampType.type] shouldBe true
     }
 
+    Scenario("Check vuu_msg column") {
+
+      val vuuMsg = DefaultColumn.VuuMsg
+
+      vuuMsg.name shouldEqual "vuu_msg"
+      vuuMsg.dataType.isInstanceOf[DataType.StringDataType.type] shouldBe true
+    }
+
     Scenario("Default columns are created as expected") {
 
       val customColumn: Column = SimpleColumn("name", 0, DataType.StringDataType)
 
-      val result = DefaultColumn.getDefaultColumns(Array(customColumn))
+      val result = DefaultColumn.getDefaultColumns(Array(customColumn), isSessionTable = false)
 
       result.length shouldEqual 2
       //result.head shouldEqual customColumn
@@ -83,7 +91,30 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
       DefaultColumn.isDefaultColumn(result.head) shouldBe false
     }
 
+    Scenario("Default column vuu_msg is added to SessionTableDef as expected") {
+      val customColumn: Column = SimpleColumn("keyCol", 0, DataType.StringDataType)
+      val sessionTableDef: SessionTableDef = new SessionTableDef(
+        name = "mySessionTable",
+        keyField = "keyCol",
+        customColumns = Array(customColumn),
+        joinFields = Seq.empty,
+        indices = Indices()
+      )
+      val result = sessionTableDef.getColumns
+
+      // custom + CreatedTime + LastUpdatedTime + VuuMsg = 4 columns
+      result.length shouldEqual 4
+      result.head shouldEqual customColumn
+      DefaultColumn.isDefaultColumn(result.head) shouldBe false
+      result(1).name shouldEqual DefaultColumn.CreatedTime.name
+      DefaultColumn.isDefaultColumn(result(1)) shouldBe true
+      result(2).name shouldEqual DefaultColumn.LastUpdatedTime.name
+      DefaultColumn.isDefaultColumn(result(2)) shouldBe true
+      result(3).name shouldEqual DefaultColumn.VuuMsg.name
+      DefaultColumn.isDefaultColumn(result(3)) shouldBe true
+    }
+
   }
 
-
 }
+
