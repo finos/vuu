@@ -11,7 +11,6 @@ import org.finos.vuu.viewport.ViewPort;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import static org.finos.vuu.util.ScalaCollectionConverter.emptyList;
 import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
 import static org.finos.vuu.util.ScalaCollectionConverter.toScalaSeq;
 
@@ -49,8 +48,8 @@ public class TableDefBuilder {
         return this;
     }
 
-    public TableDefBuilder autosubscribe(Boolean autosubscribe) {
-        this.autoSubscribe = autosubscribe;
+    public TableDefBuilder autoSubscribe(Boolean autoSubscribe) {
+        this.autoSubscribe = autoSubscribe;
         return this;
     }
 
