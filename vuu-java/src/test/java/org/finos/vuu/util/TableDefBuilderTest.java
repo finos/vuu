@@ -23,7 +23,7 @@ class TableDefBuilderTest {
                 .keyField("myKey")
                 .customColumns(new Column[]{new SimpleColumn("myColumn", 0, String.class)})
                 .joinFields(List.of("myJoinField"))
-                .autosubscribe(true)
+                .autoSubscribe(true)
                 .links(List.of(new Link("fromColumn", "toTable", "toColumn")))
                 .indexFields(List.of("myIndex"))
                 .withPrivateVisibility()
