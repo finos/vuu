@@ -26,7 +26,8 @@ public class TableDefBuilder {
     private TableVisibility visibility = TableVisibility.PUBLIC();
     private boolean includeDefaultColumns = true;
     private BiFunction<ViewPort, TableContainer, PermissionFilter> permissionFunction = (vp, tc) -> AllowAllPermissionFilter$.MODULE$;
-    private SortSpec defaultSort = SortSpec.apply(emptyList());
+    private SortSpec defaultSort = new SortSpecBuilder()
+            .build();
 
     public TableDefBuilder name(String name) {
         this.name = name;
