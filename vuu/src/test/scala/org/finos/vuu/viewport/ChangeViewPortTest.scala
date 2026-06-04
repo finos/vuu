@@ -325,7 +325,7 @@ class ChangeViewPortTest extends AnyFeatureSpec{
 
       viewPortContainer.runOnce()
 
-      // new filter shoul dbe applied
+      // new filter should be applied
       combinedUpdates = combineQs(viewPort2)
       key = combinedUpdates.find(p => p.index == 0)
       key.nonEmpty shouldBe true
