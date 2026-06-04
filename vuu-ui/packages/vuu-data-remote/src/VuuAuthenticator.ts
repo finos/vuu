@@ -41,9 +41,16 @@ export class VuuAuthenticator {
   };
 
   login = async (): Promise<[User, string[]] | never> => {
-    const { authorizations, user, token } = await this.authProvider.login();
+    const {
+      authorizations,
+      user,
+      token,
+      websocket = true,
+    } = await this.authProvider.login();
     if (token && user) {
-      await this.openWebsocketConnection(token);
+      if (websocket) {
+        await this.openWebsocketConnection(token);
+      }
       return [user, authorizations];
     } else {
       throw Error("[VuuAuthenticator] login failed");
