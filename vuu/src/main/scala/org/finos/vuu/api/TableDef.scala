@@ -216,7 +216,7 @@ class TableDef(val name: String,
                val permissionFunction: (ViewPort, TableContainer) => PermissionFilter = (_, _) => AllowAllPermissionFilter,
                val defaultSort: SortSpec = SortSpec(List.empty)) extends VuuInMemPluginLocator {
 
-  private val defaultColumns: Array[Column] = if (includeDefaultColumns) DefaultColumn.getDefaultColumns(customColumns) else Array.empty
+  private val defaultColumns: Array[Column] = if (includeDefaultColumns) DefaultColumn.getDefaultColumns(customColumns, this.isInstanceOf[SessionTableDef] || this.isInstanceOf[JoinSessionTableDef]) else Array.empty
   private val columns: Array[Column] = if (includeDefaultColumns) customColumns ++ defaultColumns else customColumns
   private val columnsByName: Map[String, Column] = getColumns.map(c => c.name -> c).toMap
   private val deletedColumnName: String = s"$name._isDeleted"

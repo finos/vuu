@@ -43,7 +43,7 @@ object TableAsserts {
      val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
        .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)))
        .filter(_.isInstanceOf[RowWithData])
-       .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name))
+       .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => !DefaultColumn.getDefaultColumnNames.contains(k)))
        .toArray
 
      val heading = expectation.heading
@@ -61,7 +61,7 @@ object TableAsserts {
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
       .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)))
       .filter(_.isInstanceOf[RowWithData])
-      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name))
+      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => !DefaultColumn.getDefaultColumnNames.contains(k)))
       .toArray
 
     val heading = expectation.heading
@@ -79,7 +79,7 @@ object TableAsserts {
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
       .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)))
       .filter(_.isInstanceOf[RowWithData])
-      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name))
+      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => !DefaultColumn.getDefaultColumnNames.contains(k)))
       .toArray
 
     val heading = expectation.heading
@@ -97,7 +97,7 @@ object TableAsserts {
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
       .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)))
       .filter(_.isInstanceOf[RowWithData])
-      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name))
+      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => !DefaultColumn.getDefaultColumnNames.contains(k)))
       .toArray
 
     val heading = expectation.heading
@@ -115,7 +115,7 @@ object TableAsserts {
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
       .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)))
       .filter(_.isInstanceOf[RowWithData])
-      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name))
+      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => !DefaultColumn.getDefaultColumnNames.contains(k)))
       .toArray
 
     val heading = expectation.heading
@@ -133,7 +133,7 @@ object TableAsserts {
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
       .filter(vpu => vpu.table.pullRow(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData)
       .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)))
-      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name))
+      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => !DefaultColumn.getDefaultColumnNames.contains(k)))
       .toArray
 
     val heading = expectation.heading
@@ -150,7 +150,7 @@ object TableAsserts {
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
       .filter(vpu => vpu.table.pullRow(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData)
       .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)))
-      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name))
+      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => !DefaultColumn.getDefaultColumnNames.contains(k)))
       .toArray
 
     val heading = expectation.heading
@@ -167,7 +167,7 @@ object TableAsserts {
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
       .filter(vpu => vpu.table.pullRow(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData)
       .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)))
-      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name))
+      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => !DefaultColumn.getDefaultColumnNames.contains(k)))
       .toArray
 
     val heading = expectation.heading
@@ -215,7 +215,7 @@ object TableAsserts {
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
       .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)))
       .filter(_.isInstanceOf[RowWithData])
-      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name))
+      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => !DefaultColumn.getDefaultColumnNames.contains(k)))
       .toArray
 
     val heading = expectation.heading
@@ -232,7 +232,7 @@ object TableAsserts {
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
       .map(vpu => vpu.table.pullRow(vpu.key.key, getColumns(vpu.vp.getColumns)))
       .filter(_.isInstanceOf[RowWithData])
-      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name))
+      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => !DefaultColumn.getDefaultColumnNames.contains(k)))
       .toArray
 
     val heading = expectation.heading
@@ -249,7 +249,7 @@ object TableAsserts {
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
       .map(vpu => vpu.table.pullRow(vpu.key.key, getColumns(vpu.vp.getColumns)))
       .filter(_.isInstanceOf[RowWithData])
-      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name))
+      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => !DefaultColumn.getDefaultColumnNames.contains(k)))
       .toArray
 
     val heading = expectation.heading
