@@ -8,7 +8,7 @@ enum DefaultColumn(val name: String, val dataType: Class[_], val sessionTableOnl
 
 object DefaultColumn {
 
-  val COUNT: Int = DefaultColumn.values.length
+  val COUNT: Int = DefaultColumn.values.count(c => !c.sessionTableOnly)
   val CREATED_TIME: DefaultColumn = DefaultColumn.CreatedTime
   val LAST_UPDATED_TIME: DefaultColumn = DefaultColumn.LastUpdatedTime
 

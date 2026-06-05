@@ -30,21 +30,41 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
       lastUpdatedTime.dataType.isInstanceOf[DataType.EpochTimestampType.type] shouldBe true
     }
 
-    Scenario("Default columns are created as expected") {
+    Scenario("Count of default columns is as expected") {
+      DefaultColumn.COUNT shouldEqual 2 // session table only default columns are not included
+
+    }
+    Scenario("Default columns are created as expected for non-session table") {
 
       val customColumn: Column = SimpleColumn("name", 0, DataType.StringDataType)
 
-      val result = DefaultColumn.getDefaultColumns(Array(customColumn))
+      val result = DefaultColumn.getDefaultColumns(Array(customColumn), false)
 
       result.length shouldEqual 2
-      //result.head shouldEqual customColumn
-      //DefaultColumn.isDefaultColumn(result.head) shouldBe false
       result(0).name shouldEqual DefaultColumn.CreatedTime.name
       result(0).index shouldEqual 1
       DefaultColumn.isDefaultColumn(result(0)) shouldBe true
       result(1).name shouldEqual DefaultColumn.LastUpdatedTime.name
       result(1).index shouldEqual 2
       DefaultColumn.isDefaultColumn(result(1)) shouldBe true
+    }
+
+    Scenario("Default columns are created as expected for session table") {
+
+      val customColumn: Column = SimpleColumn("name", 0, DataType.StringDataType)
+
+      val result = DefaultColumn.getDefaultColumns(Array(customColumn), true)
+
+      result.length shouldEqual 3
+      result(0).name shouldEqual DefaultColumn.CreatedTime.name
+      result(0).index shouldEqual 1
+      DefaultColumn.isDefaultColumn(result(0)) shouldBe true
+      result(1).name shouldEqual DefaultColumn.LastUpdatedTime.name
+      result(1).index shouldEqual 2
+      DefaultColumn.isDefaultColumn(result(1)) shouldBe true
+      result(2).name shouldEqual DefaultColumn.MSG.name
+      result(2).index shouldEqual 3
+      DefaultColumn.isDefaultColumn(result(2)) shouldBe true
     }
 
     Scenario("Default columns are added to TableDef as expected") {

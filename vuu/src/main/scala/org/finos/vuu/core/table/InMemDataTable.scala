@@ -212,7 +212,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
 
   private final val indices = InMemColumnIndices(tableDef)
   private final val columnValueProvider = InMemColumnValueProvider(this)
-  private final val inMemRowDataMerger = InMemRowDataMerger(timeProvider)
+  private final val inMemRowDataMerger = InMemRowDataMerger(timeProvider, tableDef.includeDefaultColumns)
 
   override def newRow(key: String): RowBuilder = {
     new InMemMapRowBuilder().setKey(key)
