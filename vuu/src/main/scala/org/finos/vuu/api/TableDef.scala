@@ -201,7 +201,7 @@ class SessionTableDef(name: String,
                       joinFields: Seq[String],
                       autosubscribe: Boolean = false,
                       links: VisualLinks = VisualLinks(),
-                      indices: Indices) extends TableDef(name, keyField, customColumns, joinFields, autosubscribe, links, indices) with VuuInMemPluginLocator
+                      indices: Indices) extends TableDef(name, keyField, customColumns, joinFields, autosubscribe, links, indices, isSessionTable = true) with VuuInMemPluginLocator
 
 
 class TableDef(val name: String,
@@ -213,10 +213,11 @@ class TableDef(val name: String,
                val indices: Indices,
                val visibility: TableVisibility = Public,
                val includeDefaultColumns: Boolean = true,
+               val isSessionTable: Boolean = false,
                val permissionFunction: (ViewPort, TableContainer) => PermissionFilter = (_, _) => AllowAllPermissionFilter,
                val defaultSort: SortSpec = SortSpec(List.empty)) extends VuuInMemPluginLocator {
 
-  private val defaultColumns: Array[Column] = if (includeDefaultColumns) DefaultColumn.getDefaultColumns(customColumns) else Array.empty
+  private val defaultColumns: Array[Column] = if (includeDefaultColumns) DefaultColumn.getDefaultColumns(customColumns, isSessionTable) else Array.empty
   private val columns: Array[Column] = if (includeDefaultColumns) customColumns ++ defaultColumns else customColumns
   private val columnsByName: Map[String, Column] = getColumns.map(c => c.name -> c).toMap
   private val deletedColumnName: String = s"$name._isDeleted"
