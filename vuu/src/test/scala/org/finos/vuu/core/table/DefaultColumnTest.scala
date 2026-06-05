@@ -10,8 +10,8 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Check default column count") {
 
-      DefaultColumn.values.length shouldEqual 2
-
+      DefaultColumn.values.length shouldEqual 3
+      DefaultColumn.COUNT shouldEqual 2 // session table only default columns are not included
     }
 
     Scenario("Check created time column") {
@@ -30,10 +30,6 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
       lastUpdatedTime.dataType.isInstanceOf[DataType.EpochTimestampType.type] shouldBe true
     }
 
-    Scenario("Count of default columns is as expected") {
-      DefaultColumn.COUNT shouldEqual 2 // session table only default columns are not included
-
-    }
     Scenario("Default columns are created as expected for non-session table") {
 
       val customColumn: Column = SimpleColumn("name", 0, DataType.StringDataType)
