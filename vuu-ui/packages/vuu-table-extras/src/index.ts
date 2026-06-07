@@ -1,4 +1,5 @@
 export { CalculatedColumnPanel } from "./calculated-column/CalculatedColumnPanel";
+export * from "./csv-upload";
 export * from "./cell-edit-validators";
 export * from "./cell-renderers";
 export * from "./column-expression-input";

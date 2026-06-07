@@ -1,0 +1,23 @@
+.vuuCsvUpload {
+  display: grid;
+  gap: var(--salt-spacing-200);
+}
+
+.vuuCsvUpload-dropZone {
+  align-items: center;
+  display: grid;
+  gap: var(--salt-spacing-100);
+  justify-items: center;
+  min-height: calc(var(--salt-size-base) * 4);
+  padding: var(--salt-spacing-300);
+  text-align: center;
+}
+
+.vuuCsvUpload-errors {
+  border: solid 1px var(--salt-status-error-borderColor);
+  border-radius: var(--salt-size-borderRadius);
+  color: var(--salt-status-error-foreground);
+  display: grid;
+  gap: var(--salt-spacing-100);
+  padding: var(--salt-spacing-200);
+}
