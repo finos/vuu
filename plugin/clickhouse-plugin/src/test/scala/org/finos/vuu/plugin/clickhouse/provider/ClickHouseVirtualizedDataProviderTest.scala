@@ -141,6 +141,8 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         writer.write(now)
         writer.write(",")
         writer.write(now)
+        writer.write(",")
+        writer.write("vuu msg")
         writer.write('\n')
         currentId += 1
       }
