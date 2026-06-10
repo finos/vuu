@@ -15,6 +15,7 @@ import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { BulkEditPanel, InputCell, Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
 import {
+  ColumnDescriptor,
   DataValueTypeDescriptor,
   TableCellEditHandler,
   TableCellRendererProps,
@@ -26,6 +27,7 @@ import {
 import { ModalProvider, useModal } from "@vuu-ui/vuu-ui-controls";
 import {
   DataEditingProvider,
+  DataSourceProvider,
   registerComponent,
   toColumnName,
   useData,
@@ -45,12 +47,32 @@ import {
 import { SimulTable } from "./SimulTableTemplate";
 import { DataSource, EditSessionMode } from "@vuu-ui/vuu-data-types";
 import { LayoutProvider, Stack, View } from "@vuu-ui/vuu-layout";
+import { ColumnFilter } from "@vuu-ui/vuu-filters";
+import {
+  ColumnFilterChangeHandler,
+  ColumnFilterCommitHandler,
+} from "@vuu-ui/vuu-filter-types";
 
 const INSTRUMENTS = { module: "SIMUL", table: "instruments" };
 const schema = getSchema("instruments");
 
+const InstrumentColumns: ColumnDescriptor[] = [
+  { name: "bbg", serverDataType: "string", width: 90 },
+  { name: "currency", serverDataType: "string", width: 80 },
+  { name: "description", serverDataType: "string", width: 150 },
+  { name: "exchange", serverDataType: "string", width: 120 },
+  { name: "isin", serverDataType: "string", width: 100 },
+  { name: "lotSize", serverDataType: "int", width: 80 },
+  { name: "ric", serverDataType: "string", width: 75 },
+  { name: "vuuCreatedTimestamp", serverDataType: "epochtimestamp", width: 160 },
+  { name: "vuuUpdatedTimestamp", serverDataType: "epochtimestamp", width: 160 },
+];
+
+let _viewportId = 1;
+
 const EditTableTemplate = ({
   editableType,
+  filterColumn,
   testId = "",
   vuuTable,
   ...htmlAttributes
@@ -59,10 +81,14 @@ const EditTableTemplate = ({
   "onDragStart" | "onDrop" | "onSelect"
 > & {
   editableType?: DataValueTypeDescriptor;
+  filterColumn?: string;
   testId?: string;
   vuuTable: VuuTable;
 }) => {
   const [editMode, setEditMode] = useState<EditMode>("view");
+  const [filterValue, setFilterValue] = useState("");
+  const [keyFilterValue, setKeyFilterValue] = useState("");
+  const { VuuDataSource } = useData();
 
   const columns = useMemo(() => schema.columns.map(toColumnName), []);
 
@@ -75,31 +101,80 @@ const EditTableTemplate = ({
     [],
   );
 
+  const sourceTableDataSource = useMemo(
+    () =>
+      new VuuDataSource({
+        columns,
+        table: schema.table,
+        viewport: `vp-${_viewportId++}`,
+      }),
+    [VuuDataSource, columns],
+  );
+
   const exitEditMode = useCallback(() => {
     setEditMode("view");
   }, []);
 
   const { dataSource, editSession, onCancel, onSave } = useEditableTable({
-    columns,
+    dataSource: sourceTableDataSource,
     isEditMode: editMode === "edit",
     onCancel: exitEditMode,
     onSave: exitEditMode,
-    table: vuuTable,
   });
 
+  const handleColumnFilterCommit = useCallback<ColumnFilterCommitHandler>(
+    (column, op, value) => {
+      if (column.name === "bbg") {
+        dataSource?.setFilter?.({
+          column: column.name,
+          op: "starts",
+          value,
+        });
+        setKeyFilterValue(`${value}`);
+      } else if (
+        op !== "between" &&
+        op !== "between-inclusive" &&
+        op !== "in"
+      ) {
+        dataSource?.setFilter?.({
+          column: column.name,
+          op,
+          value,
+        });
+        setFilterValue(`${value}`);
+      }
+    },
+    [dataSource],
+  );
+
+  const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
+    (value, column, op) => {
+      console.log(`${value} ${column.name} ${op}`);
+      if (column.name === "bbg") {
+        setKeyFilterValue(`${value}`);
+      } else {
+        setFilterValue(`${value}`);
+      }
+    },
+    [],
+  );
   const config = useMemo<TableConfig>(
     () => ({
       columns:
         editMode === "view"
-          ? schema.columns
-          : schema.columns.map((col) =>
+          ? InstrumentColumns
+          : InstrumentColumns.map((col) =>
               col.name === "lotSize"
                 ? {
                     ...col,
                     editable: true,
                     type: editableType,
                   }
-                : { ...col, editable: true },
+                : col.name === "isin" ||
+                    col.name === "vuuCreatedTimestamp" ||
+                    col.name === "vuuUpdatedTimestamp"
+                  ? col
+                  : { ...col, editable: true },
             ),
       columnDefaultWidth: 150,
       rowSeparators: true,
@@ -113,16 +188,16 @@ const EditTableTemplate = ({
       style={{
         display: "flex",
         flexDirection: "column",
-        width: 1500,
         height: 285,
       }}
     >
       <div
         style={{
           alignItems: "center",
-          display: "flex",
           background: "var(--salt-container-secondary-background)",
+          display: "flex",
           flex: "0 0 32px",
+          gap: 12,
           padding: "0 var(--salt-spacing-100)",
         }}
       >
@@ -134,6 +209,26 @@ const EditTableTemplate = ({
             Edit
           </ToggleButton>
         </ToggleButtonGroup>
+        <ColumnFilter
+          TypeaheadProps={{ minCharacterCountToTriggerSuggestions: 0 }}
+          column={{ name: "bbg", serverDataType: "string" }}
+          onColumnFilterChange={handleColumnFilterChange}
+          onCommit={handleColumnFilterCommit}
+          table={schema.table}
+          value={keyFilterValue}
+        />
+        {filterColumn ? (
+          <DataSourceProvider dataSource={dataSource}>
+            <ColumnFilter
+              TypeaheadProps={{ minCharacterCountToTriggerSuggestions: 0 }}
+              column={{ name: "currency", serverDataType: "string" }}
+              onColumnFilterChange={handleColumnFilterChange}
+              onCommit={handleColumnFilterCommit}
+              table={schema.table}
+              value={filterValue}
+            />
+          </DataSourceProvider>
+        ) : null}
       </div>
       <div style={{ flex: "1 1 auto" }}>
         <DataEditingProvider editSession={editSession}>
@@ -164,6 +259,15 @@ const EditTableTemplate = ({
 
 /** tags=data-consumer */
 export const EditableInstruments = () => {
+  return (
+    <>
+      <EditTableTemplate testId="-1" vuuTable={INSTRUMENTS} />
+    </>
+  );
+};
+
+/** tags=data-consumer */
+export const TwoEditableInstruments = () => {
   return (
     <>
       <EditTableTemplate testId="-1" vuuTable={INSTRUMENTS} />
@@ -378,6 +482,10 @@ const BulkEditTableTemplate = ({
     setEditState({ editing: true, editSessionMode: "empty-session-table" });
   }, []);
 
+  const handleSave = useCallback(() => {
+    onSave();
+  }, [onSave]);
+
   useMemo(() => {
     if (sessionDataSource) {
       showDialog(
@@ -389,7 +497,7 @@ const BulkEditTableTemplate = ({
           <Button key="cancel" onClick={onCancel}>
             Cancel
           </Button>,
-          <Button key="save" onClick={onSave}>
+          <Button key="save" onClick={handleSave}>
             Save
           </Button>,
         ],
@@ -401,8 +509,8 @@ const BulkEditTableTemplate = ({
     closeDialog,
     dataSource,
     editSession,
+    handleSave,
     onCancel,
-    onSave,
     sessionDataSource,
     showDialog,
   ]);
@@ -444,7 +552,7 @@ const WithTabbedTablesTemplate = () => {
           border: "solid 1px var(--salt-container-secondary-borderColor)",
           height: 800,
           margin: 10,
-          width: 600,
+          width: 1040,
         }}
       >
         <View title="Editable Instruments">
@@ -452,7 +560,7 @@ const WithTabbedTablesTemplate = () => {
           <EditTableTemplate vuuTable={INSTRUMENTS} />
         </View>
         <View title="Editable Instruments">
-          <EditTableTemplate vuuTable={INSTRUMENTS} />
+          <EditTableTemplate vuuTable={INSTRUMENTS} filterColumn="currency" />
         </View>
         <View title="Editable Instruments (selected only)">
           <BulkEditTableTemplate vuuTable={INSTRUMENTS} />

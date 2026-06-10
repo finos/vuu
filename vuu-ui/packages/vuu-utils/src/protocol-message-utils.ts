@@ -31,6 +31,10 @@ import {
   RpcResultError,
   VuuColumnDataType,
   VuuNumericType,
+  AddRowRpcServiceRequest,
+  EndEditSessionRpcServiceRequest,
+  EditCellRpcServiceRequest,
+  BeginEditSessionRpcServiceRequest,
 } from "@vuu-ui/vuu-protocol-types";
 import { isView as componentInRegistry } from "./component-registry";
 
@@ -230,3 +234,18 @@ export function isNumericType(
 ): dataType is VuuNumericType {
   return numericTypes.includes(dataType as VuuNumericType);
 }
+
+export const isAddRowRpcRequest = (
+  rpcRequest: VuuRpcServiceRequest,
+): rpcRequest is AddRowRpcServiceRequest => rpcRequest.rpcName === "addRow";
+export const isEditCellRpcRequest = (
+  rpcRequest: VuuRpcServiceRequest,
+): rpcRequest is EditCellRpcServiceRequest => rpcRequest.rpcName === "editCell";
+export const isBeginEditSessionRpcRequest = (
+  rpcRequest: VuuRpcServiceRequest,
+): rpcRequest is BeginEditSessionRpcServiceRequest =>
+  rpcRequest.rpcName === "beginEditSession";
+export const isEndEditSessionRpcRequest = (
+  rpcRequest: VuuRpcServiceRequest,
+): rpcRequest is EndEditSessionRpcServiceRequest =>
+  rpcRequest.rpcName === "endEditSession";

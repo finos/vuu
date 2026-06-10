@@ -6,6 +6,16 @@ export const dropLastPathSegment = (path: string, separator = "/") => {
   return path.slice(0, path.lastIndexOf(separator));
 };
 
+const getDocumentPath = (
+  dirFiles: Set<string>,
+  fileName: string,
+): string | undefined => {
+  const fileRoot = fileName.split(".").slice(0, -2).join();
+  if (dirFiles.has(`${fileRoot}.mdx`)) {
+    return `${fileRoot}.mdx`;
+  }
+};
+
 const exportPattern =
   /(export const ([A-Z][a-zA-Z]+) = )|(\/\*\*\s*tags=([-a-z]*)\s*\*\/)/g;
 
@@ -24,11 +34,20 @@ export const treeSourceFromFileSystem = (
   tags = new Set<string>(),
 ): [TreeSourceNode<NodeData>[], string[], string | undefined] => {
   const treeSourceNodes: TreeSourceNode<NodeData>[] = [];
-  let indexPath: string | undefined = undefined;
+  let documentPath: string | undefined = undefined;
+  const dirFiles = new Set<string>();
+
+  // First store all directory file name in a set so we can check membership of related files
+  // as we process
   fs.readdirSync(exhibitsPath).forEach((fileName) => {
+    dirFiles.add(fileName);
+  });
+
+  dirFiles.forEach((fileName) => {
     const filePath = path.join(exhibitsPath, fileName);
+    // console.log(`[treeSourceFromFileSystem] ${exhibitsPath}  ${filePath}`);
     if (fs.lstatSync(filePath).isDirectory()) {
-      const [childNodes, , indexPath] = treeSourceFromFileSystem(
+      const [childNodes, , documentPath] = treeSourceFromFileSystem(
         filePath,
         env,
         `${route}${fileName}/`,
@@ -41,10 +60,10 @@ export const treeSourceFromFileSystem = (
         label: fileName,
         childNodes,
       };
-      if (indexPath) {
+      if (documentPath) {
         treeSourceNode.nodeData = {
           name: fileName,
-          path: indexPath,
+          path: documentPath,
         };
       }
       if (Array.isArray(childNodes) && childNodes.length > 0) {
@@ -53,7 +72,8 @@ export const treeSourceFromFileSystem = (
     } else if (fileName.match(/examples.tsx$/)) {
       const name = dropLastPathSegment(dropLastPathSegment(fileName, "."), ".");
       const id = `${route}${name}`;
-      treeSourceNodes.push({
+
+      const treeSourceNode: TreeSourceNode<NodeData> = {
         id,
         icon: "box",
         label: name,
@@ -64,9 +84,24 @@ export const treeSourceFromFileSystem = (
           fileName,
           tags,
         ),
-      });
-    } else if (fileName.match(/^index.mdx$/)) {
-      indexPath = `${exhibitsPath}/${fileName}`;
+      };
+
+      const documentPath = getDocumentPath(dirFiles, fileName);
+      if (documentPath) {
+        treeSourceNode.nodeData = treeSourceFromDocument(
+          exhibitsPath,
+          env,
+          `${route}${name}/`,
+          documentPath,
+        );
+      }
+
+      treeSourceNodes.push(treeSourceNode);
+    } else if (fileName.match(/^[Ii]ndex.mdx$/)) {
+      documentPath = `${exhibitsPath}/${fileName}`;
+    } else if (fileName.match(/mdx$/)) {
+      // ignore
+      // assume for nown the only (non-index_ mdx files we support are ones wirth matching examples file)
     } else if (fileName.match(/.mdx$/)) {
       const name = dropLastPathSegment(fileName, ".");
       const id = `${route}${name}`;
@@ -81,13 +116,27 @@ export const treeSourceFromFileSystem = (
       });
     }
   });
-  return [treeSourceNodes, Array.from(tags), indexPath];
+  return [treeSourceNodes, Array.from(tags), documentPath];
+};
+
+const treeSourceFromDocument = (
+  exhibitsPath: string,
+  env: "development" | "production",
+  route: string,
+  fileName: string,
+): NodeData => {
+  const resolvedFileName =
+    env === "production" ? fileName.replace(/.mdx/, ".js") : fileName;
+
+  return {
+    path: `${exhibitsPath}/${resolvedFileName}`,
+  };
 };
 
 const treeSourceFromExportedComponents = (
   exhibitsPath: string,
   env: "development" | "production",
-  route,
+  route: string,
   fileName: string,
   tagsList: Set<string>,
 ) => {

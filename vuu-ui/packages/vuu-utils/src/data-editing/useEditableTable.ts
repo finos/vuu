@@ -30,7 +30,7 @@ export interface EditableTableHookProps {
 export const useEditableTable = ({
   columns,
   dataSource: dataSourceProp,
-  editSessionMode = "all-rows",
+  editSessionMode = "inline-all-rows",
   isEditMode,
   onCancel,
   onSave,
@@ -73,15 +73,22 @@ export const useEditableTable = ({
     }
   }, [editSession, onCancel]);
 
-  const handleSave = useCallback(async () => {
-    dataSource.resume?.();
-    try {
-      await editSession.end(true);
-      onSave();
-    } catch (e) {
-      // cleanup
-    }
-  }, [dataSource, editSession, onSave]);
+  const handleSave = useCallback(
+    async (force = false) => {
+      // TODO is this right
+      dataSource.resume?.();
+      try {
+        await editSession.end(true, force);
+        if (editSession.inEditMode === false) {
+          // Everything was ok data saved
+          onSave();
+        }
+      } catch (e) {
+        console.log(`[useEditableTable] handleSave ${(e as Error).message}`);
+      }
+    },
+    [dataSource, editSession, onSave],
+  );
 
   useMemo(async () => {
     console.log(`[useEditableTable] editMode ${isEditMode}`);

@@ -44,8 +44,7 @@
     outline-offset: -1px;
   }
 
-  &.vuuEditing {
-    .saltInput-bordered {
+    .saltInput-bordered.vuuEditing{
       outline: dashed var(--salt-editable-borderColor-active) 2px;
       outline-offset: -1px;
     }
@@ -53,7 +52,6 @@
     .vuuTableInputCell-error.saltInput-bordered {
         outline: dashed var(--salt-status-error-borderColor) 2px;
     }
-  }
 
 }
 

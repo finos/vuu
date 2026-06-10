@@ -4,12 +4,12 @@ import type {
   TableCellEditHandler,
   TableCellProps,
 } from "@vuu-ui/vuu-table-types";
-import { getTypedValue } from "@vuu-ui/vuu-utils";
-import { MouseEventHandler, useCallback, useState } from "react";
+import { MouseEventHandler, useCallback } from "react";
 import { useCell } from "../useCell";
 import { useHighlighting } from "../useHighlighting";
 
 import tableCellCss from "./TableCell.css";
+import { useEditSession } from "@vuu-ui/vuu-utils";
 
 const classBase = "vuuTableCell";
 
@@ -17,7 +17,6 @@ export const TableCell = ({
   column,
   dataRow,
   onClick,
-  onDataEdited,
   searchPattern = "",
 }: TableCellProps) => {
   const targetWindow = useWindow();
@@ -27,44 +26,22 @@ export const TableCell = ({
     window: targetWindow,
   });
 
-  const [hasError, setHasError] = useState(false);
+  const editSession = useEditSession();
 
-  const { className, style } = useCell(column, classBase, false, hasError);
-  const { ariaColIndex, CellRenderer, valueFormatter } = column;
-  // const dataIdx = columnMap[column.name];
+  const { className, style } = useCell(column, classBase, false);
+  const { ariaColIndex, CellRenderer, name, valueFormatter } = column;
 
   const handleDataItemEdited = useCallback<TableCellEditHandler>(
     (editState, editPhase) => {
+      const { isValid = true, previousValue = "", value } = editState;
       if (editPhase === "commit") {
-        const { serverDataType = "string" } = column;
-        const typedValue = getTypedValue(
-          String(editState.value),
-          serverDataType,
-          true,
-        );
-        return onDataEdited?.(
-          {
-            ...editState,
-            dataRow,
-            columnName: column.name,
-            value: typedValue,
-          },
-          editPhase,
-        );
+        return editSession?.commit(dataRow.key, name, value, isValid);
       } else {
-        setHasError(editState.isValid === false);
-        onDataEdited?.(
-          {
-            ...editState,
-            dataRow,
-            columnName: column.name,
-          },
-          editPhase,
-        );
+        editSession?.edit(dataRow.key, name, previousValue, value);
         return undefined;
       }
     },
-    [column, dataRow, onDataEdited],
+    [dataRow.key, editSession, name],
   );
 
   const handleClick = useCallback<MouseEventHandler>(

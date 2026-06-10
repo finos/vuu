@@ -19,6 +19,7 @@ import {
   getNextCellPos,
   getTreeNodeOperation,
   getLevelUp as getLevelUp,
+  getNextEditableCellPos,
 } from "./table-dom-utils";
 import { ScrollRequestHandler } from "./useTableScroll";
 import { FocusCell } from "./useCellFocus";
@@ -121,6 +122,7 @@ export interface NavigationHookProps {
   defaultHighlightedIndex?: number;
   disableFocus?: boolean;
   disableHighlightOnFocus?: boolean;
+  editSessionInProgress?: boolean;
   focusCell: FocusCell;
   highlightedIndex?: number;
   label?: string;
@@ -141,6 +143,7 @@ export const useKeyboardNavigation = ({
   containerRef,
   defaultHighlightedIndex,
   disableHighlightOnFocus,
+  editSessionInProgress,
   focusCell,
   headerCount,
   highlightedIndex: highlightedIndexProp,
@@ -298,6 +301,14 @@ export const useKeyboardNavigation = ({
           onToggleGroup(treeNodeOperation, rowIdx - headerCount - 1);
         } else if (treeNodeOperation === "level-up") {
           [nextRowIdx, nextColIdx] = getLevelUp(containerRef, cellPos);
+        } else if (editSessionInProgress) {
+          [nextRowIdx, nextColIdx] = getNextEditableCellPos(
+            containerRef,
+            key,
+            cellPos,
+            columnCount,
+            maxRowIndex,
+          );
         } else {
           [nextRowIdx, nextColIdx] = getNextCellPos(
             key,
@@ -317,6 +328,7 @@ export const useKeyboardNavigation = ({
       cellFocusStateRef,
       nextPageItemIdx,
       containerRef,
+      editSessionInProgress,
       onToggleGroup,
       headerCount,
       columnCount,
@@ -375,12 +387,6 @@ export const useKeyboardNavigation = ({
         return;
       }
       if (rowCount > 0 && isNavigationKey(e.key, navigationStyle)) {
-        // if (e.key === "ArrowDown" && editCellWithEditInProgress(cell)) {
-        //   //  do nothing editCellWithEditInProgress
-        // } else {
-        // console.log(
-        //   `[useKeyboardNavigation] handleKeyDown - consume the keydown event`,
-        // );
         e.preventDefault();
         e.stopPropagation();
         if (navigationStyle === "row") {

@@ -7,7 +7,6 @@ export const useCell = (
   column: RuntimeColumnDescriptor,
   classBase: string,
   isHeader?: boolean,
-  hasError?: boolean,
 ) =>
   // TODO measure perf without the memo, might not be worth the cost
   useMemo(() => {
@@ -17,7 +16,6 @@ export const useCell = (
       vuuEndPin: isHeader && column.pinnedWidth,
       [`${classBase}-editable`]: column.editable,
       [`${classBase}-right`]: column.align === "right",
-      [`${classBase}-error`]: hasError,
     });
 
     const style = getColumnStyle(column);
@@ -25,4 +23,4 @@ export const useCell = (
       className,
       style,
     };
-  }, [classBase, column, isHeader, hasError]);
+  }, [classBase, column, isHeader]);

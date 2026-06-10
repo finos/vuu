@@ -1,6 +1,7 @@
 import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { Table, buildDataColumnMapFromSchema } from "./Table";
 import { metadataKeys } from "@vuu-ui/vuu-utils";
+import { TableSchema } from "@vuu-ui/vuu-data-types";
 
 const { KEY } = metadataKeys;
 
@@ -23,3 +24,8 @@ export const createSessionTableFromSelectedRows = (
     buildDataColumnMapFromSchema(table.schema),
   );
 };
+
+export const sessionTableSchema = (schema: TableSchema): TableSchema => ({
+  ...schema,
+  columns: schema.columns.concat({ name: "vuuMsg", serverDataType: "string" }),
+});

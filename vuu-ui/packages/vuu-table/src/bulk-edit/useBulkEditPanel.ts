@@ -4,7 +4,7 @@ import { DataValueTypeDescriptor, TableConfig } from "@vuu-ui/vuu-table-types";
 import { hasValidationRules, isTypeDescriptor } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 import type { BulkEditPanelProps } from "./BulkEditPanel";
-import { EditValueChangeHandler } from "./useBulkEditRow";
+import { EditValueChangeHandler } from "./useColumnCascadingEditor";
 
 const addRenderer = (
   colType: DataValueTypeDescriptor,

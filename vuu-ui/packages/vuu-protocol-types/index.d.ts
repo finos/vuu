@@ -507,18 +507,13 @@ export declare type ClientMessageBody =
  *
  * Vuu supports two types of RPC message
  *
- * 2) VuuRpcServiceRequest
+ * 1) VuuRpcServiceRequest
  *
  *    There are no generic messages in this category, they will tend to be specific to a
  *    business module. Examples found in the Vuu project include rpcNames "createBasket",
  *    "addConstituent", "sendToMarket" etc in the BASKET module.
  *
- *    There is a new proposed set of generic rpc calls, related to bulk edit operations
- *      - "VP_BULK_EDIT_SUBMIT_RPC"
- *      - "VP_BULK_EDIT_COLUMN_CELLS_RPC"
- *    These are not yet impelmented in the Vuu server and liable to change
- *
- * 3) VuuRpcMenuRequest
+ * 2) VuuRpcMenuRequest
  *
  *    These are RPC calls submitted when user clicks a menu item from the menu structure
  *    defined on the server (see VIEW_PORT_MENUS_RESP above). There are 4 categories of
@@ -557,7 +552,56 @@ export declare type VuuRpcResponse = VuuRpcServiceResponse | VuuRpcMenuResponse;
 export declare type VuuRpcServiceRequest<T extends RpcContext = RpcContext> = {
   context: T;
   type: "RPC_REQUEST";
-  params: Record<string, VuuRowDataItemType>;
+  params: Record<string, VuuRowDataItemType> | AddRowParams;
+  rpcName: TypeAheadMethod | string;
+};
+
+export declare type AddRowParams = {
+  key: string;
+  data: Record<string, VuuRowDataItemType>;
+};
+export declare type AddRowRpcServiceRequest = {
+  context: ViewportRpcContext;
+  type: "RPC_REQUEST";
+  params: AddRowParams;
+  rpcName: "addRow";
+};
+
+export declare type EditCellParams = {
+  column: string;
+  data: VuuRowDataItemType;
+  key: string;
+};
+export declare type EditCellRpcServiceRequest = {
+  context: ViewportRpcContext;
+  type: "RPC_REQUEST";
+  params: EditCellParams;
+  rpcName: "editCell";
+};
+
+export declare type BeginEditSessionParams = {
+  editSessionMode?: "all-rows" | "selected-rows";
+};
+export declare type BeginEditSessionRpcServiceRequest = {
+  context: ViewportRpcContext;
+  type: "RPC_REQUEST";
+  params: BeginEditSessionParams;
+  rpcName: "beginEditSession";
+};
+export declare type EndEditSessionParams = {
+  save?: boolean;
+};
+export declare type EndEditSessionRpcServiceRequest = {
+  context: ViewportRpcContext;
+  type: "RPC_REQUEST";
+  params: EndEditSessionParams;
+  rpcName: "endEditSession";
+};
+
+export declare type AddRowRpcRequest = {
+  context: ViewportRpcContext;
+  type: "RPC_REQUEST";
+  params: Record<string, VuuRowDataItemType> | AddRowParams;
   rpcName: TypeAheadMethod | string;
 };
 

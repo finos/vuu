@@ -5,12 +5,16 @@ import type {
 } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter } from "../event-emitter";
 
-export type EditState = "clean" | "dirty";
+export type EditState = "clean" | "dirty" | "invalid" | "stale";
 
 type CellEdit = {
   originalValue: VuuRowDataItemType;
   editedValue: VuuRowDataItemType;
+  isValid?: boolean;
 };
+
+// TODO can add more when when we know what the server implementation of error columns will look like
+export class StaleUpdateError extends Error {}
 
 type RowEditDetails = {
   /**
@@ -24,12 +28,12 @@ type EditSessionEvents = {
 };
 
 export class EditSession extends EventEmitter<EditSessionEvents> {
-  #active = false;
   /**
    *  Row key => row edits
    */
   #rowEdits = new Map<string, RowEditDetails>();
   #editCount = 0;
+  #invalidCount = 0;
   #sourceTableDataSource?: DataSource;
   #sessionDataSource?: DataSource;
   #inEditMode = false;
@@ -37,14 +41,15 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   constructor(dataSource: DataSource) {
     super();
     this.#sourceTableDataSource = dataSource;
+
+    dataSource.on("remote-update-during-local-edit", (rows) => {
+      console.log(
+        `source table updated via another channel, whilst we have an inline edit session in progress`,
+        { rows },
+      );
+    });
   }
 
-  get active() {
-    return this.#active;
-  }
-  set active(isActive: boolean) {
-    this.#active = isActive;
-  }
   get editCount() {
     return this.#editCount;
   }
@@ -61,29 +66,57 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
   }
 
+  get invalidCount() {
+    return this.#invalidCount;
+  }
+
+  set invalidCount(val: number) {
+    if (val !== this.#invalidCount) {
+      const oldCount = this.#invalidCount;
+      this.#invalidCount = val;
+      if (val === 0) {
+        this.emit("editState", this.#editCount === 0 ? "clean" : "dirty");
+      } else if (oldCount === 0) {
+        this.emit("editState", "invalid");
+      }
+    }
+  }
+
   clear() {
     this.#rowEdits.clear();
     this.#editCount = 0;
+    this.#inEditMode = false;
   }
 
   async begin(editSessionMode?: EditSessionMode) {
-    this.#inEditMode = true;
+    try {
+      this.#inEditMode = true;
+      const sessionDataSource =
+        await this.#sourceTableDataSource?.beginEditSession?.(editSessionMode);
 
-    const sessionDataSource =
-      await this.#sourceTableDataSource?.beginEditSession?.(editSessionMode);
+      this.#sessionDataSource = sessionDataSource;
 
-    this.#sessionDataSource = sessionDataSource;
-
-    return sessionDataSource;
+      return sessionDataSource;
+    } catch (e) {
+      this.#inEditMode = false;
+    }
   }
 
   get dataSource() {
     return this.#sessionDataSource ?? this.#sourceTableDataSource;
   }
 
-  async end(saveChanges = false) {
-    await this.dataSource?.endEditSession?.(saveChanges);
-    this.clear();
+  async end(saveChanges = false, force = false) {
+    try {
+      await this.dataSource?.endEditSession?.(saveChanges, force);
+      this.clear();
+    } catch (e) {
+      if (e instanceof StaleUpdateError) {
+        this.emit("editState", "stale");
+      } else {
+        console.error(`[EditSession] ${(e as Error).message}`);
+      }
+    }
   }
 
   get inEditMode() {
@@ -94,7 +127,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     return this.editCount === 0 ? "clean" : "dirty";
   }
 
-  // TODO how do we deal with the '_edited' pattern
   edit(
     key: string,
     columnName: string,
@@ -139,24 +171,44 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     key: string,
     columnName: string,
     typedValue: string | number | boolean,
+    isValid: boolean,
   ) {
     const rowEditDetails = this.#rowEdits.get(key);
-    if (rowEditDetails) {
-      const { cellEdits } = rowEditDetails;
-      const cellEditValues = cellEdits.get(columnName);
-      if (cellEditValues) {
-        try {
-          this.dataSource?.editCell?.(key, columnName, typedValue);
-        } catch (e) {
-          // ??
-          console.error(e);
+
+    if (isValid) {
+      if (rowEditDetails) {
+        const { cellEdits } = rowEditDetails;
+        const cellEditValues = cellEdits.get(columnName);
+        if (cellEditValues) {
+          try {
+            if (cellEditValues.isValid === false) {
+              cellEditValues.isValid = true;
+              this.invalidCount -= 1;
+            }
+            return this.dataSource?.editCell?.(key, columnName, typedValue);
+          } catch (e) {
+            // ??
+            console.error(e);
+          }
         }
+      } else {
+        return {
+          errorMessage: "CHANGE_REVERTED",
+          type: "ERROR_RESULT",
+        } as RpcResultError;
       }
     } else {
-      return {
-        errorMessage: "CHANGE_REVERTED",
-        type: "ERROR_RESULT",
-      } as RpcResultError;
+      if (rowEditDetails) {
+        const { cellEdits } = rowEditDetails;
+        const cellEditValues = cellEdits.get(columnName);
+        if (cellEditValues && cellEditValues.isValid !== false) {
+          cellEditValues.isValid = false;
+          this.invalidCount += 1;
+        }
+      }
+      console.log(
+        `[EditSession] key ${key}, column ${columnName} is valid ? ${isValid} `,
+      );
     }
   }
 }

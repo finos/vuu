@@ -34,6 +34,8 @@ body {
   }
 
   &.vuuShowcase-mdx {
+    font-size: 14px;
+    line-height: 2;
     padding: var(--salt-spacing-400);
     height: auto;
   }
