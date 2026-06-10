@@ -8,20 +8,15 @@ enum DefaultColumn(val name: String, val dataType: Class[_], val sessionTableOnl
 
 object DefaultColumn {
 
-  val COUNT: Int = DefaultColumn.values.count(c => !c.sessionTableOnly) // exclude session table only columns
+  val COUNT: Int = DefaultColumn.values.length
   val CREATED_TIME: DefaultColumn = DefaultColumn.CreatedTime
   val LAST_UPDATED_TIME: DefaultColumn = DefaultColumn.LastUpdatedTime
-  val NOT_SESSION_TABLE_ONLY: Array[DefaultColumn] = DefaultColumn.values.filter(c => !c.sessionTableOnly)
+  val MAG: DefaultColumn = DefaultColumn.MSG
 
   private val allDefaults = DefaultColumn.values
 
-
-  def getDefaultColumns(customColumns: Array[Column], isSessionTable: Boolean): Array[Column] =
-    allDefaults.filter(c => !c.sessionTableOnly || (c.sessionTableOnly && isSessionTable))
-      .zipWithIndex
-      .map {
-        case (f, index) => SimpleColumn(f.name, customColumns.length + index, f.dataType)
-      }
+  def getDefaultColumns(customColumns: Array[Column]): Array[Column] =
+    allDefaults.map(f => SimpleColumn(f.name, customColumns.length + f.ordinal, f.dataType))
 
   def isDefaultColumn(column: Column): Boolean =
     allDefaults.exists(f => f.name == column.name && f.dataType == column.dataType)

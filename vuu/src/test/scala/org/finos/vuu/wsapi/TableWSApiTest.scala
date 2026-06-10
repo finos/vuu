@@ -39,7 +39,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
 
       val responseBody = assertBodyIsInstanceOf[GetTableMetaResponse](response)
       responseBody.columns.length shouldEqual 3
-      responseBody.columns should contain theSameElementsAs (Array("id") ++ DefaultColumn.NOT_SESSION_TABLE_ONLY.map(_.name))
+      responseBody.columns should contain theSameElementsAs (Array("id") ++ DefaultColumn.values.map(_.name))
     }
 
     Scenario("For a non existent table") {

@@ -11,7 +11,7 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
     Scenario("Check default column count") {
 
       DefaultColumn.values.length shouldEqual 3
-      DefaultColumn.COUNT shouldEqual 2 // session table only default columns are not included
+      DefaultColumn.COUNT shouldEqual 3
     }
 
     Scenario("Check created time column") {
@@ -30,26 +30,11 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
       lastUpdatedTime.dataType.isInstanceOf[DataType.EpochTimestampType.type] shouldBe true
     }
 
-    Scenario("Default columns are created as expected for non-session table") {
+    Scenario("Default columns are created as expected") {
 
       val customColumn: Column = SimpleColumn("name", 0, DataType.StringDataType)
 
-      val result = DefaultColumn.getDefaultColumns(Array(customColumn), false)
-
-      result.length shouldEqual 2
-      result(0).name shouldEqual DefaultColumn.CreatedTime.name
-      result(0).index shouldEqual 1
-      DefaultColumn.isDefaultColumn(result(0)) shouldBe true
-      result(1).name shouldEqual DefaultColumn.LastUpdatedTime.name
-      result(1).index shouldEqual 2
-      DefaultColumn.isDefaultColumn(result(1)) shouldBe true
-    }
-
-    Scenario("Default columns are created as expected for session table") {
-
-      val customColumn: Column = SimpleColumn("name", 0, DataType.StringDataType)
-
-      val result = DefaultColumn.getDefaultColumns(Array(customColumn), true)
+      val result = DefaultColumn.getDefaultColumns(Array(customColumn))
 
       result.length shouldEqual 3
       result(0).name shouldEqual DefaultColumn.CreatedTime.name
@@ -58,7 +43,7 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
       result(1).name shouldEqual DefaultColumn.LastUpdatedTime.name
       result(1).index shouldEqual 2
       DefaultColumn.isDefaultColumn(result(1)) shouldBe true
-      result(2).name shouldEqual DefaultColumn.MSG.name
+      result(2).name shouldEqual DefaultColumn.MAG.name
       result(2).index shouldEqual 3
       DefaultColumn.isDefaultColumn(result(2)) shouldBe true
     }
@@ -74,13 +59,15 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
         includeDefaultColumns = true)
       val result = tableDef.getColumns
 
-      result.length shouldEqual 3
+      result.length shouldEqual 4
       result.head shouldEqual customColumn
       DefaultColumn.isDefaultColumn(result.head) shouldBe false
       result(1).name shouldEqual DefaultColumn.CreatedTime.name
       DefaultColumn.isDefaultColumn(result(1)) shouldBe true
       result(2).name shouldEqual DefaultColumn.LastUpdatedTime.name
       DefaultColumn.isDefaultColumn(result(2)) shouldBe true
+      result(3).name shouldEqual DefaultColumn.MSG.name
+      DefaultColumn.isDefaultColumn(result(3)) shouldBe true
     }
 
     Scenario("Default columns are not included") {

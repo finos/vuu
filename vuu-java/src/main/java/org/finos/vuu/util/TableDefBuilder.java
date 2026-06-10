@@ -190,7 +190,6 @@ public class TableDefBuilder {
                 Indices.apply(toScalaSeq(indexFields.stream().map(Index::apply).toList())),
                 visibility,
                 includeDefaultColumns,
-                false,
                 ScalaFunctionConverter.toScala(permissionFunction),
                 defaultSort);
     }
