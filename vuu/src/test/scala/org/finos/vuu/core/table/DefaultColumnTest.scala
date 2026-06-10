@@ -11,7 +11,6 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
     Scenario("Check default column count") {
 
       DefaultColumn.values.length shouldEqual 3
-      DefaultColumn.COUNT shouldEqual 3
     }
 
     Scenario("Check created time column") {
@@ -43,7 +42,7 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
       result(1).name shouldEqual DefaultColumn.LastUpdatedTime.name
       result(1).index shouldEqual 2
       DefaultColumn.isDefaultColumn(result(1)) shouldBe true
-      result(2).name shouldEqual DefaultColumn.MAG.name
+      result(2).name shouldEqual DefaultColumn.MSG.name
       result(2).index shouldEqual 3
       DefaultColumn.isDefaultColumn(result(2)) shouldBe true
     }

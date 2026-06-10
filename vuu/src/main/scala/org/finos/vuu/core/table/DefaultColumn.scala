@@ -8,10 +8,8 @@ enum DefaultColumn(val name: String, val dataType: Class[_], val sessionTableOnl
 
 object DefaultColumn {
 
-  val COUNT: Int = DefaultColumn.values.length
   val CREATED_TIME: DefaultColumn = DefaultColumn.CreatedTime
   val LAST_UPDATED_TIME: DefaultColumn = DefaultColumn.LastUpdatedTime
-  val MAG: DefaultColumn = DefaultColumn.MSG
 
   private val allDefaults = DefaultColumn.values
 

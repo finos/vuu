@@ -11,18 +11,18 @@ trait InMemRowDataMerger {
 
 object InMemRowDataMerger {
 
-  def apply(clock: Clock, includeDefaultColumns: Boolean): InMemRowDataMerger = InMemRowDataMergerImpl(clock, includeDefaultColumns)
+  def apply(clock: Clock, defaultColumnNames: Set[String]): InMemRowDataMerger = InMemRowDataMergerImpl(clock, defaultColumnNames)
 
 }
 
-private case class InMemRowDataMergerImpl(clock: Clock, includeDefaultColumns: Boolean) extends InMemRowDataMerger {
+private case class InMemRowDataMergerImpl(clock: Clock, defaultColumnNames: Set[String]) extends InMemRowDataMerger {
 
   override def mergeLeftToRight(update: RowData, original: RowData): RowData = {
     update match {
       case u: RowWithData =>
         original match {
-          case o: RowWithData => if (includeDefaultColumns) mergeWithDefaults(u, o) else mergeWithoutDefaults(u, o)
-          case EmptyRowData => if (includeDefaultColumns) updateWithDefaults(u) else updateWithoutDefaults(u)
+          case o: RowWithData => mergeWithDefaults(u, o)
+          case EmptyRowData => updateWithDefaults(u)
         }
       case EmptyRowData => EmptyRowData
     }
@@ -30,20 +30,14 @@ private case class InMemRowDataMergerImpl(clock: Clock, includeDefaultColumns: B
 
   private def updateWithDefaults(update: RowWithData): RowWithData = {
     val builder = Map.newBuilder[String, Any]
-    builder.sizeHint(update.size + DefaultColumn.COUNT)
+    builder.sizeHint(update.size + defaultColumnNames.size)
     builder ++= update.data
 
     val now = EpochTimestamp(clock.now())
-    builder += (DefaultColumn.CREATED_TIME.name -> now)
-    builder += (DefaultColumn.LAST_UPDATED_TIME.name -> now)
-
-    RowWithData(update.key, builder.result())
-  }
-
-  private def updateWithoutDefaults(update: RowWithData): RowWithData = {
-    val builder = Map.newBuilder[String, Any]
-    builder.sizeHint(update.size + DefaultColumn.COUNT)
-    builder ++= update.data
+    if (defaultColumnNames.contains(DefaultColumn.CREATED_TIME.name))
+      builder += (DefaultColumn.CREATED_TIME.name -> now)
+    if (defaultColumnNames.contains(DefaultColumn.LAST_UPDATED_TIME.name))
+      builder += (DefaultColumn.LAST_UPDATED_TIME.name -> now)
 
     RowWithData(update.key, builder.result())
   }
@@ -55,16 +49,8 @@ private case class InMemRowDataMergerImpl(clock: Clock, includeDefaultColumns: B
     builder ++= update.data
 
     val now = EpochTimestamp(clock.now())
-    builder += (DefaultColumn.LAST_UPDATED_TIME.name -> now)
-
-    RowWithData(update.key, builder.result())
-  }
-
-  private def mergeWithoutDefaults(update: RowWithData, original: RowWithData): RowWithData = {
-    val builder = Map.newBuilder[String, Any]
-    builder.sizeHint(original.size + update.size)
-    builder ++= original.data
-    builder ++= update.data
+    if (defaultColumnNames.contains(DefaultColumn.LAST_UPDATED_TIME.name))
+      builder += (DefaultColumn.LAST_UPDATED_TIME.name -> now)
 
     RowWithData(update.key, builder.result())
   }
