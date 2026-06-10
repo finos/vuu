@@ -1,16 +1,17 @@
 {
   "name": "@vuu-ui/vuu-icons",
-  "version": "2.1.18",
+  "version": "2.1.19-beta.3",
   "description": "css embedded svg icons plus icon components for Vuu",
   "main": "src/index.ts",
   "license": "Apache-2.0",
   "style": "./index.css",
+  "type": "module",
   "files": [
     "index.css"
   ],
   "scripts": {
     "build:dev": "node ../../scripts/run-build.mjs",
-    "build": "node ../../scripts/run-build-rollup.mjs",
+    "build": "node ../../scripts/run-build-rslib.ts",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "peerDependencies": {

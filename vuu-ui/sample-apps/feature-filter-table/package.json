@@ -1,12 +1,13 @@
 {
-  "name": "feature-vuu-filter-table",
-  "version": "2.1.18",
+  "name": "feature-filter-table",
+  "version": "1.0.0",
   "description": "Vuu Filter Table",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node ../../scripts/build-feature.mjs",
-    "start": "serve -p 5002 ../../deployed_apps/app-vuu-example"
+    "build": "node ../../scripts/build-remote-module.ts",
+    "dev": "rsbuild dev",
+    "start": "serve -p 5001 ../../deployed_apps/feature-filter-table"
   },
+  "type": "module",
   "private": true,
   "keywords": [],
   "author": "heswell",
@@ -17,26 +18,27 @@
   "main": "index.ts",
   "devDependencies": {},
   "dependencies": {
-    "@vuu-ui/vuu-data-remote": "2.1.18",
-    "@vuu-ui/vuu-data-react": "2.1.18",
-    "@vuu-ui/vuu-datatable": "2.1.18",
-    "@vuu-ui/vuu-table-types": "2.1.18",
-    "@vuu-ui/vuu-filters": "2.1.18",
-    "@vuu-ui/vuu-filter-types": "2.1.18",
-    "@vuu-ui/vuu-layout": "2.1.18",
-    "@vuu-ui/vuu-popups": "2.1.18",
-    "@vuu-ui/vuu-protocol-types": "2.1.18",
-    "@vuu-ui/vuu-shell": "2.1.18",
-    "@vuu-ui/vuu-table": "2.1.18",
-    "@vuu-ui/vuu-table-extras": "2.1.18",
-    "@vuu-ui/vuu-theme": "2.1.18",
-    "@vuu-ui/vuu-utils": "2.1.18",
+    "@vuu-ui/vuu-data-remote": "2.1.19-beta.3",
+    "@vuu-ui/vuu-data-react": "2.1.19-beta.3",
+    "@vuu-ui/vuu-datatable": "2.1.19-beta.3",
+    "@vuu-ui/vuu-table-types": "2.1.19-beta.3",
+    "@vuu-ui/vuu-filters": "2.1.19-beta.3",
+    "@vuu-ui/vuu-filter-types": "2.1.19-beta.3",
+    "@vuu-ui/vuu-layout": "2.1.19-beta.3",
+    "@vuu-ui/vuu-popups": "2.1.19-beta.3",
+    "@vuu-ui/vuu-protocol-types": "2.1.19-beta.3",
+    "@vuu-ui/vuu-shell": "2.1.19-beta.3",
+    "@vuu-ui/vuu-table": "2.1.19-beta.3",
+    "@vuu-ui/vuu-table-extras": "2.1.19-beta.3",
+    "@vuu-ui/vuu-theme": "2.1.19-beta.3",
+    "@vuu-ui/vuu-utils": "2.1.19-beta.3",
+    "@vuu-ui/vuu-utils2": "2.1.19-beta.3",
     "@salt-ds/core": "1.54.1"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
   },
   "engines": {
     "node": ">=16.0.0"
@@ -44,6 +46,13 @@
   "vuu": {
     "featureProps": {
       "vuuTables": "*"
+    },
+    "module-federation": {
+      "exposes": {
+        "./VuuFilterTableFeature": "./src/VuuFilterTableFeature"
+      },
+      "name": "filterTable",
+      "port": 5003
     }
   }
 }

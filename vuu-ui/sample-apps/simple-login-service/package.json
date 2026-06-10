@@ -1,0 +1,28 @@
+{
+  "name": "simple-login-service",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "node ./scripts/rsbuild.ts"
+  },
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "type": "module",
+  "devDependencies": {
+    "rsbuild-plugin-inline-css": "1.0.0"
+  },
+  "dependencies": {
+    "@fontsource/open-sans": "^4.5.13",
+    "@vuu-ui/vuu-shell": "2.1.19-beta.3",
+    "@salt-ds/core": "1.54.1",
+    "clsx": "^2.0.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

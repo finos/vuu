@@ -1,20 +1,19 @@
-import {
+import type {
   ConnectOptions,
   VuuUIMessageIn,
   VuuUIMessageOut,
   WithRequestId,
 } from "@vuu-ui/vuu-data-types";
 import { DeferredPromise, getLoggingConfigForWorker } from "@vuu-ui/vuu-utils";
-
 // Note: inlined-worker is a generated file, it must be built
-import { workerSourceCode } from "./inlined-worker";
-import {
+import type {
   SelectRequest,
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
   VuuRpcMenuRequest,
   VuuRpcServiceRequest,
 } from "@vuu-ui/vuu-protocol-types";
+import { workerSourceCode } from "./inlined-worker";
 
 const workerBlob = new Blob([getLoggingConfigForWorker() + workerSourceCode], {
   type: "text/javascript",

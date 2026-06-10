@@ -5,10 +5,10 @@ import {
   LeftNav,
   LocalPersistenceManager,
   PersistenceProvider,
-  SettingsSchema,
+  type SettingsSchema,
   Shell,
   ShellContextProvider,
-  ShellLayoutProps,
+  type ShellLayoutProps,
 } from "@vuu-ui/vuu-shell";
 import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
@@ -73,6 +73,8 @@ export const App = ({
     }),
     [],
   );
+
+  console.log(`App user = ${user.username}`);
 
   const localPersistenceManager = useMemo(
     () => new LocalPersistenceManager(user.username),

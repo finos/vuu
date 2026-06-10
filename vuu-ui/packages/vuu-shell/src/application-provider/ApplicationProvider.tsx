@@ -1,26 +1,26 @@
-import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
-  Accent,
-  Density,
-  Mode,
+  type Accent,
+  type Density,
+  type Mode,
   SaltProviderNext,
-  ThemeContextProps,
+  type ThemeContextProps,
   useDensity,
   useTheme,
 } from "@salt-ds/core";
+import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
-  ReactElement,
-  ReactNode,
+  type ReactElement,
+  type ReactNode,
   useCallback,
   useContext,
   useMemo,
   useState,
 } from "react";
+import { usePersistenceManager } from "../persistence-manager";
 import {
   ApplicationContext,
-  ApplicationContextProps,
+  type ApplicationContextProps,
 } from "./ApplicationContext";
-import { usePersistenceManager } from "../persistence-manager";
 
 export interface ApplicationProviderProps
   extends Partial<Pick<ThemeContextProps, "theme" | "mode">>,
@@ -57,6 +57,8 @@ export const ApplicationProvider = ({
   const context = useContext(ApplicationContext);
   const [userSettings, setSettings] =
     useState<Record<string, string | number | boolean>>();
+
+  console.log(`[ApplicationProvider] user = ${user?.username}`);
 
   useMemo(async () => {
     if (persistenceManager) {

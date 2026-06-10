@@ -1,4 +1,3 @@
-import { getCookieValue } from "@vuu-ui/vuu-utils";
 import { parseVuuUserFromToken } from "./authenticate";
 
 export type User = {
@@ -45,23 +44,27 @@ export class VuuAuthProvider implements AuthProvider {
         username,
         password,
       );
-      document.cookie = `vuu-auth-user=${username};expires=${date.toUTCString()};path=/`;
-      document.cookie = `vuu-auth-password=${password};expires=${date.toUTCString()};path=/`;
-      document.cookie = `vuu-auth-token=${token};expires=${date.toUTCString()};path=/`;
-      return this.redirectToApplication() as never;
+      // document.cookie = `vuu-auth-user=${username};expires=${date.toUTCString()};path=/`;
+      // document.cookie = `vuu-auth-password=${password};expires=${date.toUTCString()};path=/`;
+      // document.cookie = `vuu-auth-token=${token};expires=${date.toUTCString()};path=/`;
+      return this.redirectToApplication(token) as never;
     } else {
-      const userName = getCookieValue("vuu-auth-user");
-      const password = getCookieValue("vuu-auth-password");
-      if (userName && password) {
-        const { authorizations, token } =
-          await this.getVuuTokenWithUsernameAndPassword(userName, password);
-        document.cookie = `vuu-auth-token=${token};expires=${date.toUTCString()};path=/`;
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+      console.log(`token ${token}`);
+
+      // const userName = getCookieValue("vuu-auth-user");
+      // const password = getCookieValue("vuu-auth-password");
+      if (token) {
+        // const { authorizations, token } =
+        //   await this.getVuuTokenWithUsernameAndPassword(userName, password);
+        // document.cookie = `vuu-auth-token=${token};expires=${date.toUTCString()};path=/`;
 
         return {
-          authorizations,
-          user: {
-            userName,
-          },
+          // authorizations,
+          // user: {
+          //   userName,
+          // },
           token,
         };
       } else {
@@ -101,20 +104,20 @@ export class VuuAuthProvider implements AuthProvider {
   }
 
   private clear() {
-    document.cookie =
-      "vuu-auth-user= ; expires = Thu, 01 Jan 1970 00:00:00 GMT";
-    document.cookie =
-      "vuu-auth-password= ; expires = Thu, 01 Jan 1970 00:00:00 GMT";
-    document.cookie =
-      "vuu-auth-token= ; expires = Thu, 01 Jan 1970 00:00:00 GMT";
+    // document.cookie =
+    //   "vuu-auth-user= ; expires = Thu, 01 Jan 1970 00:00:00 GMT";
+    // document.cookie =
+    //   "vuu-auth-password= ; expires = Thu, 01 Jan 1970 00:00:00 GMT";
+    // document.cookie =
+    //   "vuu-auth-token= ; expires = Thu, 01 Jan 1970 00:00:00 GMT";
   }
 
   private redirectToLoginPage() {
-    window.location.href = "login.html";
+    window.location.href = "http://localhost:5001/index.html";
   }
 
-  private redirectToApplication() {
-    window.location.href = "index.html";
+  private redirectToApplication(token: string) {
+    window.location.href = `http://localhost:5002/index.html?token=${token}`;
   }
 
   logout() {

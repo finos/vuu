@@ -5,7 +5,7 @@ import type {
 } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { DataProvider } from "@vuu-ui/vuu-utils";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import moduleContainer from "../core/module/ModuleContainer";
 import tableContainer from "../core/table/TableContainer";
 
@@ -60,6 +60,7 @@ class VuuDataSource {
     };
 
     const module = moduleContainer.get(table.module);
+    // biome-ignore lint/correctness/noConstructorReturn: <This 'class' is acting as a factory for new local DataSources>
     return module.createDataSource(table.table, viewport, config);
   }
 }

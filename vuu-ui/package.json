@@ -1,6 +1,6 @@
 {
   "name": "vuu-ui",
-  "version": "2.1.18",
+  "version": "2.1.19-beta.3",
   "author": "heswell <steve@heswell.com>",
   "license": "Apache-2.0",
   "private": true,
@@ -15,16 +15,16 @@
     "sample-apps/**",
     "tools/vite-plugin-inline-css",
     "tools/esbuild-plugin-inline-css",
+    "tools/rsbuild-plugin-inline-css",
     "tools/vuu-showcase"
   ],
   "scripts": {
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
-    "prettier": "prettier './**/*.{js,mjs,jsx,css,md,json}' --config ./.prettierrc",
-    "format": "prettier --write './**/*.{js,mjs,jsx,css,md,json}' --config ./.prettierrc",
-    "build": "node ./scripts/build-all-rollup.mjs",
+    "build:rollup": "node ./scripts/build-all-rollup.mjs",
+    "build": "node ./scripts/build-all-rslib.ts",
     "build:dev": "node ./scripts/build-all.mjs",
-    "build:app": "cd sample-apps/app-vuu-example && node scripts/build.mjs",
+    "build:app:es": "cd sample-apps/app-vuu-example && node scripts/build.mjs",
+    "build:app": "cd sample-apps/app-vuu-example && node scripts/rsbuild.ts",
+    "build:mf": "cd sample-apps/app-vuu-example && node scripts/rsbuild.ts && cd ../feature-simple-div && npm run build && cd ../feature-filter-table && npm run build",
     "build:app:insecure": "npm run build:app -- --insecure",
     "build:table": "cd sample-apps/standalone-table && node scripts/build.mjs",
     "build:packages": "npm run build -- --cjs --license && npm run type-defs",
@@ -34,6 +34,9 @@
     "launch:app": "node ./scripts/launch-app.mjs",
     "launch:table": "node ./scripts/launch-table.mjs",
     "launch:demo:electron": "cd tools/electron && node ./node_modules/.bin/electron .",
+    "lint": "biome check",
+    "lint:fix": "biome check --fix",
+    "lint:check:error": "biome check --diagnostic-level=error",
     "deploy:websocket-test": "node ./tools/deploy-websocket-test.mjs",
     "view-bundle": "node ./scripts/visualize-bundle.mjs",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
@@ -52,7 +55,9 @@
     "pub:debug": "node ./scripts/publish.mjs --debug",
     "typecheck": "tsc --noEmit --project tsconfig-typecheck.json",
     "patch-package": "patch-package",
-    "postinstall": "npm run patch-package"
+    "postinstall": "npm run patch-package",
+    "tsc:version": "tsc --version",
+    "tsgo:version": "tsgo --version"
   },
   "dependencies": {
     "@dnd-kit/react": "^0.1.21",
@@ -70,13 +75,19 @@
     "semver": "^7.5.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.3",
     "@lezer/generator": "^1.2.2",
+    "@module-federation/enhanced": "2.8.0",
     "@playwright/experimental-ct-react": "^1.55.0",
     "@playwright/test": "^1.43.0",
     "@rollup/plugin-commonjs": "^29.0.0",
     "@rollup/plugin-json": "6.1.0",
     "@rollup/plugin-node-resolve": "15.3.1",
     "@rollup/plugin-replace": "6.0.3",
+    "@rsbuild/core": "^2.1.3",
+    "@rsbuild/plugin-react": "^2.0.0",
+    "@rsdoctor/rspack-plugin": "^1.6.1",
+    "@rslib/core": "0.23.1",
     "@salt-ds/core": "1.54.1",
     "@testing-library/cypress": "10.0.3",
     "@testing-library/dom": "^9.0.0",
@@ -90,23 +101,15 @@
     "cypress-real-events": "1.14.0",
     "esbuild": "0.27.2",
     "esbuild-visualizer": "0.7.0",
-    "eslint": "8.36.0",
-    "eslint-config-prettier": "8.7.0",
-    "eslint-plugin-cypress": "^2.13.3",
-    "eslint-plugin-prettier": "4.2.1",
-    "eslint-plugin-react": "7.32.2",
-    "eslint-plugin-react-hooks": "4.6.0",
     "happy-dom": "^20.0.10",
+    "html-rspack-plugin": "^6.1.9",
     "local-web-server": "5.4.0",
-    "prettier": "3.3.3",
     "rollup": "4.24.4",
     "rollup-plugin-esbuild": "6.1.1",
     "rollup-plugin-import-css": "3.5.6",
-    "stylelint": "^16.10.0",
-    "stylelint-prettier": "^5.0.2",
     "tinycolor2": "1.4.2",
     "tsx": "^4.19.1",
-    "typescript": "5.8.3",
+    "typescript": "^7.0.0",
     "vite": "6.4.1",
     "vite-tsconfig-paths": "5.1.4",
     "vitest": "3.1.1"
@@ -115,6 +118,6 @@
     "@rollup/rollup-linux-x64-gnu": "4.45.0"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=24.0.0"
   }
 }

@@ -1,0 +1,42 @@
+{
+  "name": "feature-simple-div",
+  "version": "1.0.0",
+  "description": "Vuu Filter Table",
+  "scripts": {
+    "build": "node ../../scripts/build-remote-module.ts",
+    "dev": "rsbuild dev",
+    "start": "serve -p 5001 ../../deployed_apps/feature-filter-table"
+  },
+  "type": "module",
+  "private": true,
+  "keywords": [],
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "index.ts",
+  "devDependencies": {},
+  "peerDependencies": {
+    "@vuu-ui/vuu-shell": "2.1.19-beta.3",
+    "@vuu-ui/vuu-utils2": "2.1.19-beta.3",
+    "clsx": "^2.0.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "vuu": {
+    "featureProps": {
+      "vuuTables": "*"
+    },
+    "module-federation": {
+      "exposes": {
+        "./SimpleDiv": "./src/SimpleDiv"
+      },
+      "name": "simpleDiv",
+      "port": 5004
+    }
+  }
+}

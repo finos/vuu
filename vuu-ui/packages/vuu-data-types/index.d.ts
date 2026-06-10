@@ -1,5 +1,4 @@
 import type {
-  DataSourceFilter,
   MenuRpcResponse,
   Selection,
   TableSchema,
@@ -60,7 +59,7 @@ export declare type DataValueValidationResult =
   | DataValueValidationFailResult;
 
 export declare type DataValueValidationChecker = (
-  value?: VuuRowDataItemType,
+  value: VuuRowDataItemType | undefined,
   phase: EditPhase | "*",
 ) => DataValueValidationResult;
 
@@ -222,8 +221,7 @@ export interface MessageWithClientViewportId {
   clientViewportId: string;
 }
 
-export interface DataSourceAggregateMessage
-  extends MessageWithClientViewportId {
+export interface DataSourceAggregateMessage extends MessageWithClientViewportId {
   aggregations: VuuAggregation[];
   type: "aggregate";
 }
@@ -280,8 +278,7 @@ export interface DataSourceGroupByMessage extends MessageWithClientViewportId {
   groupBy: VuuGroupBy | undefined;
 }
 
-export interface DataSourceSetConfigMessage
-  extends MessageWithClientViewportId {
+export interface DataSourceSetConfigMessage extends MessageWithClientViewportId {
   type: "config";
   config: WithFullConfig;
 }
@@ -300,14 +297,12 @@ export interface DataSourceSortMessage extends MessageWithClientViewportId {
   sort: VuuSort;
 }
 
-export interface DataSourceSubscribeFailedMessage
-  extends MessageWithClientViewportId {
+export interface DataSourceSubscribeFailedMessage extends MessageWithClientViewportId {
   type: "subscribe-failed";
   msg: string;
 }
 
-export interface DataSourceSubscribedMessage
-  extends MessageWithClientViewportId {
+export interface DataSourceSubscribedMessage extends MessageWithClientViewportId {
   aggregations: VuuAggregation[];
   columns: VuuColumns;
   filterSpec: DataSourceFilter;
@@ -318,21 +313,18 @@ export interface DataSourceSubscribedMessage
   type: "subscribed";
 }
 
-export interface DataSourceVisualLinkCreatedMessage
-  extends MessageWithClientViewportId {
+export interface DataSourceVisualLinkCreatedMessage extends MessageWithClientViewportId {
   colName: string;
   parentViewportId: string;
   parentColName: string;
   type: "vuu-link-created";
 }
 
-export interface DataSourceVisualLinkRemovedMessage
-  extends MessageWithClientViewportId {
+export interface DataSourceVisualLinkRemovedMessage extends MessageWithClientViewportId {
   type: "vuu-link-removed";
 }
 
-export interface DataSourceVisualLinksMessage
-  extends MessageWithClientViewportId {
+export interface DataSourceVisualLinksMessage extends MessageWithClientViewportId {
   type: "vuu-links";
   links: VuuLinkDescriptor[];
 }
@@ -432,8 +424,7 @@ export interface WithSort extends DataSourceConfig {
   sort: VuuSort;
 }
 
-export interface DataSourceConstructorProps
-  extends WithBaseFilter<DataSourceConfig> {
+export interface DataSourceConstructorProps extends WithBaseFilter<DataSourceConfig> {
   /**
    * If provided, these column names will always be included in subscription, even
    * if not directly requested, via columns property. Useful where columns may not
@@ -455,8 +446,9 @@ export interface DataSourceConstructorProps
   viewport?: string;
 }
 
-export interface DataSourceSubscribeProps
-  extends Partial<WithBaseFilter<WithFullConfig>> {
+export interface DataSourceSubscribeProps extends Partial<
+  WithBaseFilter<WithFullConfig>
+> {
   viewport?: string;
   range?: Range;
   revealSelected?: boolean;
@@ -655,7 +647,9 @@ export declare type UndoRowChangeResult = {
 
 export interface DataSourceBase<
   T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
-> extends EditApi<T>,
+>
+  extends
+    EditApi<T>,
     IEventEmitter<DataSourceEvents>,
     Partial<TypeaheadSuggestionProvider> {
   aggregations: VuuAggregation[];
