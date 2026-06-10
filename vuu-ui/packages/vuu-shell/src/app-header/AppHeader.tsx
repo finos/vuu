@@ -2,13 +2,13 @@ import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { useLayoutOperation } from "@vuu-ui/vuu-layout";
+import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
 import { Toolbar } from "@vuu-ui/vuu-ui-controls";
 import type { ThemeMode } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import { HTMLAttributes, useCallback, useRef } from "react";
+import { type HTMLAttributes, useCallback, useRef } from "react";
+import { useLogout } from "../authentication-provider/AuthenticationProvider";
 import { usePersistenceManager } from "../persistence-manager";
-import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
-import { useLogout } from "../application-provider";
 
 import appHeaderCss from "./AppHeader.css";
 

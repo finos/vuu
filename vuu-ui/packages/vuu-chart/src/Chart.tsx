@@ -133,8 +133,6 @@ export const Chart = ({
     if (chartRef.current) {
       // Re-render chart when option changes
       const chart = getInstanceByDom(chartRef.current);
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       chart?.setOption(option, optionSettings);
     }
   }, [option, optionSettings]);

@@ -1,11 +1,10 @@
 {
-  "name": "feature-vuu-instrument-tiles",
-  "version": "2.2.1",
+  "name": "feature-instrument-tiles",
+  "version": "1.0.0",
   "description": "Instrument Price Tiles",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node ../../scripts/build-feature.mjs",
-    "start": "serve -p 5002 ../../deployed_apps/app-vuu-example"
+    "build": "node ../../scripts/build-remote-module.ts",
+    "dev": "rsbuild dev"
   },
   "private": true,
   "keywords": [],
@@ -49,6 +48,14 @@
         }
       ]
     },
+    "module-federation": {
+      "exposes": {
+        "./VuuInstrumentTilesFeature": "./src/VuuInstrumentTilesFeature"
+      },
+      "name": "instrumentTiles",
+      "port": 5006
+    },
+
     "leftNavLocation": "vuu-features"
   }
 }
