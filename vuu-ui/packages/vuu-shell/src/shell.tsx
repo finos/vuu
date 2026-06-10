@@ -5,7 +5,7 @@ import type { LayoutChangeHandler } from "@vuu-ui/vuu-layout";
 import { LayoutProvider, StackLayout } from "@vuu-ui/vuu-layout";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
-import { VuuUser, logger, registerComponent } from "@vuu-ui/vuu-utils";
+import { logger, registerComponent } from "@vuu-ui/vuu-utils";
 import {
   type HTMLAttributes,
   type ReactNode,
@@ -15,21 +15,22 @@ import {
 import { AppHeader } from "./app-header";
 import { ApplicationProvider } from "./application-provider";
 import {
-  IPersistenceManager,
+  type IPersistenceManager,
   LocalPersistenceManager,
   PersistenceProvider,
   usePersistenceManager,
 } from "./persistence-manager";
-import { ShellLayoutProps, useShellLayout } from "./shell-layout-templates";
-import { SettingsSchema, UserSettingsPanel } from "./user-settings";
+import { type ShellLayoutProps, useShellLayout } from "./shell-layout-templates";
+import { type SettingsSchema, UserSettingsPanel } from "./user-settings";
 import {
-  WorkspaceProps,
+  type WorkspaceProps,
   WorkspaceProvider,
   useWorkspace,
   useWorkspaceContextMenuItems,
 } from "./workspace-management";
 import { loadingJSON } from "./workspace-management/defaultWorkspaceJSON";
 import { useLostConnection } from "@vuu-ui/vuu-data-react";
+import { useLoggedInUser } from "./authentication-provider/AuthenticationProvider";
 
 import shellCss from "./shell.css";
 
@@ -58,7 +59,6 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   logout?: () => void;
   saveUrl?: string;
   serverUrl?: string;
-  user: VuuUser;
 }
 
 const defaultAppHeader = <AppHeader />;
@@ -138,7 +138,6 @@ const VuuApplication = ({
 
 export const Shell = ({
   logout,
-  user,
   userSettingsSchema,
   workspaceProps,
   ...props
@@ -146,6 +145,7 @@ export const Shell = ({
   // If user has provided an implementation of IPersistenceManager
   // by wrapping higher level PersistenceProvider, use it, otw
   // default to LocalPersistenceManager
+  const user = useLoggedInUser();
   const persistenceManager = usePersistenceManager();
   const localPersistenceManager = useMemo<
     IPersistenceManager | undefined
@@ -154,10 +154,10 @@ export const Shell = ({
       return undefined;
     }
     console.log(
-      `No Persistence Manager, configuration data will be persisted to Local Storage, key: 'vuu/${user.username}'`,
+      `No Persistence Manager, configuration data will be persisted to Local Storage, key: 'vuu/${user.userName}'`,
     );
-    return new LocalPersistenceManager(`vuu/${user.username}`);
-  }, [persistenceManager, user.username]);
+    return new LocalPersistenceManager(`vuu/${user.userName}`);
+  }, [persistenceManager, user.userName]);
 
   // ApplicationProvider must go outside Dialog and Notification providers
   // ApplicationProvider injects the SaltProvider and this must be the root
@@ -168,13 +168,12 @@ export const Shell = ({
       density="high"
       logout={logout}
       theme="vuu-theme"
-      user={user}
       userSettingsSchema={userSettingsSchema}
     >
       <WorkspaceProvider {...workspaceProps}>
         <ModalProvider>
           <NotificationsProvider>
-            <VuuApplication {...props} user={user} />
+            <VuuApplication {...props} />
           </NotificationsProvider>
         </ModalProvider>
       </WorkspaceProvider>

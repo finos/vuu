@@ -1,6 +1,6 @@
 import { ConnectionManager, VuuDataSource } from "@vuu-ui/vuu-data-remote";
-import { DataProvider } from "@vuu-ui/vuu-utils";
-import { ReactNode } from "react";
+import { DataProvider } from "@vuu-ui/vuu-utils2";
+import type { ReactNode } from "react";
 import { useAutoLoginToVuuServer } from "./useAutoLoginToVuuServer";
 
 const getServerAPI = () => ConnectionManager.serverAPI;

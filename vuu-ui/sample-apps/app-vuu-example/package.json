@@ -1,20 +1,21 @@
 {
   "name": "app-vuu-example",
-  "version": "2.3.0",
+  "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node ./scripts/build.mjs",
-    "build:with-ag-grid": "node ./scripts/build.mjs --features feature-vuu-blotter,feature-ag-grid",
+    "build": "node ./scripts/rsbuild.ts",
+    "build:doctor": "node ./scripts/rsbuild.ts --rsdoctor",
     "start": "serve -p 5002 ../../deployed_apps/app-vuu-example"
   },
-  "keywords": [],
   "author": "heswell",
   "license": "Apache-2.0",
   "sideEffects": [
     "**/*.css"
   ],
-  "devDependencies": {},
+  "type": "module",
+  "devDependencies": {
+    "rsbuild-plugin-inline-css": "1.0.0"
+  },
   "dependencies": {
     "@fontsource/open-sans": "^4.5.13",
     "@salt-ds/core": "1.54.1",
@@ -27,10 +28,10 @@
     "@vuu-ui/vuu-shell": "2.3.0",
     "@vuu-ui/vuu-utils": "2.3.0",
     "clsx": "^2.0.0",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.0.0"
   }
 }
