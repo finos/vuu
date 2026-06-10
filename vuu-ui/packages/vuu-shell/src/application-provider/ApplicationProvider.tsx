@@ -1,26 +1,26 @@
-import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
-  Accent,
-  Density,
-  Mode,
+  type Accent,
+  type Density,
+  type Mode,
   SaltProviderNext,
-  ThemeContextProps,
+  type ThemeContextProps,
   useDensity,
   useTheme,
 } from "@salt-ds/core";
+import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
-  ReactElement,
-  ReactNode,
+  type ReactElement,
+  type ReactNode,
   useCallback,
   useContext,
   useMemo,
   useState,
 } from "react";
+import { usePersistenceManager } from "../persistence-manager";
 import {
   ApplicationContext,
-  ApplicationContextProps,
+  type ApplicationContextProps,
 } from "./ApplicationContext";
-import { usePersistenceManager } from "../persistence-manager";
 
 export interface ApplicationProviderProps
   extends Partial<Pick<ThemeContextProps, "theme" | "mode">>,
@@ -49,7 +49,6 @@ export const ApplicationProvider = ({
   mode,
   theme,
   userSettingsSchema: userSettingsSchema,
-  user,
 }: ApplicationProviderProps): ReactElement | null => {
   const { mode: inheritedMode, theme: inheritedTheme } = useTheme();
   const density = useDensity(densityProp);
@@ -86,7 +85,6 @@ export const ApplicationProvider = ({
         onUserSettingChanged,
         userSettings,
         userSettingsSchema,
-        user: user ?? context.user,
       }}
     >
       <SaltProviderNext
@@ -100,11 +98,6 @@ export const ApplicationProvider = ({
       </SaltProviderNext>
     </ApplicationContext.Provider>
   ) : null;
-};
-
-export const useApplicationUser = () => {
-  const { user } = useContext(ApplicationContext);
-  return user;
 };
 
 //Setter method (only used within the shell)
@@ -122,9 +115,4 @@ export const useApplicationSettings = () => {
 export const useUserSetting = () => {
   const { userSettings } = useContext(ApplicationContext);
   return userSettings;
-};
-
-export const useLogout = () => {
-  const { logout } = useContext(ApplicationContext);
-  return logout;
 };

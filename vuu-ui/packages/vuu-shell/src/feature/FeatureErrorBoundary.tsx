@@ -1,14 +1,17 @@
-import { DynamicFeatureProps } from "@vuu-ui/vuu-utils";
-import React, { ErrorInfo, ReactNode } from "react";
+import type { DynamicFeatureProps } from "@vuu-ui/vuu-utils";
+import React, { type ErrorInfo, type ReactNode } from "react";
 
 export interface FeatureErrorBoundaryProps extends DynamicFeatureProps {
   children: ReactNode;
 }
 
+interface FeatureErrorBoundaryState {
+  errorMessage: string | null;
+}
+
 export class FeatureErrorBoundary extends React.Component<
   FeatureErrorBoundaryProps,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  any
+  FeatureErrorBoundaryState
 > {
   constructor(props: FeatureErrorBoundaryProps) {
     super(props);
@@ -22,7 +25,7 @@ export class FeatureErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // You can also log the error to an error reporting service
-    console.log(`error creating component at ${this.props.url}`);
+    console.log(`error creating remote module at ${this.props.mfUrl}`);
     console.log(error, errorInfo);
   }
 

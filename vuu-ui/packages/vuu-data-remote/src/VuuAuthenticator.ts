@@ -43,7 +43,7 @@ export class VuuAuthenticator {
   login = async (): Promise<[User, string[]] | never> => {
     const {
       authorizations,
-      user,
+      user = { userName: "test" },
       token,
       websocket = true,
     } = await this.authProvider.login();

@@ -2,17 +2,17 @@ import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import { FlexboxLayout, StackLayout } from "@vuu-ui/vuu-layout";
 import {
   FeatureAndLayoutProvider,
+  getRegisteredModules,
   LeftNav,
   LocalPersistenceManager,
   PersistenceProvider,
-  SettingsSchema,
+  type SettingsSchema,
   Shell,
   ShellContextProvider,
-  ShellLayoutProps,
+  type ShellLayoutProps,
 } from "@vuu-ui/vuu-shell";
 import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
-import type { VuuUser } from "@vuu-ui/vuu-utils";
 import {
   assertComponentsRegistered,
   registerComponent,
@@ -54,19 +54,16 @@ const defaultWebsocketUrl = (ssl: boolean) =>
 
 const {
   ssl,
+  moduleRegistryUrl,
+  restUrl,
   websocketUrl: serverUrl = defaultWebsocketUrl(ssl),
-  features,
 } = await vuuConfig;
+
+const features = await getRegisteredModules(moduleRegistryUrl);
 
 const dynamicFeatures = Object.values(features);
 
-export const App = ({
-  logout,
-  user,
-}: {
-  logout: () => void;
-  user: VuuUser;
-}) => {
+export const App = () => {
   const dragSource = useMemo(
     () => ({
       "basket-instruments": { dropTargets: "basket-constituents" },
@@ -74,9 +71,10 @@ export const App = ({
     [],
   );
 
+
   const localPersistenceManager = useMemo(
-    () => new LocalPersistenceManager(user.username),
-    [user.username],
+    () => new LocalPersistenceManager("steve"),
+    [],
   );
 
   const ShellLayoutProps = useMemo<ShellLayoutProps>(
@@ -99,9 +97,7 @@ export const App = ({
               <Shell
                 shellLayoutProps={ShellLayoutProps}
                 className="App"
-                logout={logout}
                 serverUrl={serverUrl}
-                user={user}
                 userSettingsSchema={userSettingsSchema}
               />
             </FeatureAndLayoutProvider>

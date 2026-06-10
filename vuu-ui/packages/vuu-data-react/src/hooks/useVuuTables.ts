@@ -1,20 +1,11 @@
 import type { TableSchema } from "@vuu-ui/vuu-data-types";
-import { useData } from "@vuu-ui/vuu-utils";
-import { useCallback, useEffect, useState } from "react";
+import { useData } from "@vuu-ui/vuu-utils2";
+import { useEffect, useState } from "react";
 
 export const useVuuTables = () => {
   const [tableSchemas, setTableSchemas] = useState<TableSchema[] | undefined>();
 
   const { getServerAPI } = useData();
-
-  const buildTables = useCallback((schemas: TableSchema[]) => {
-    const vuuTables = new Map<string, TableSchema>();
-    schemas.forEach((schema) => {
-      const { module, table } = schema.table;
-      vuuTables.set(`${module}:${table}`, schema);
-    });
-    return vuuTables;
-  }, []);
 
   useEffect(() => {
     async function fetchTableMetadata() {
@@ -33,7 +24,7 @@ export const useVuuTables = () => {
     }
 
     fetchTableMetadata();
-  }, [buildTables, getServerAPI]);
+  }, [getServerAPI]);
 
   return tableSchemas;
 };
