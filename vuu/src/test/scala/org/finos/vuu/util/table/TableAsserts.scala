@@ -13,6 +13,11 @@ object TableAsserts {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
+  def genericAssertType2(updates: Seq[ViewPortUpdate], headingAsArray: Array[String], expectationAsMap: Array[Map[Any, Any]]): Unit = {
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).filter(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns))).map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name)).toArray
+    genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
+  }
+
   def genericLogic(heading: Array[String], arraysOfMaps: Array[Map[String, Any]], expectationAsMap: Array[Map[Any, Any]]): Unit = {
 
     val actualAsMap = Map("diff" -> arraysOfMaps)
@@ -52,28 +57,6 @@ object TableAsserts {
 
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
 
-  }
-
-  def generic17Assert(updates: Seq[ViewPortUpdate], expectation: TableFor17[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]): Unit = {
-
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).filter(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns))).map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name)).toArray
-
-    val headingAsArray = expectation.heading.productIterator.map(_.toString).toArray
-
-    val expectationAsMap = expectation.map(row => expectation.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
-
-    genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
-  }
-
-  def generic19Assert(updates: Seq[ViewPortUpdate], expectation: TableFor19[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]): Unit = {
-
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).filter(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns))).map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name)).toArray
-
-    val headingAsArray = expectation.heading.productIterator.map(_.toString).toArray
-
-    val expectationAsMap = expectation.map(row => expectation.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
-
-    genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
   def generic10Assert(updates: Seq[ViewPortUpdate], expectation: TableFor10[_, _, _, _, _, _, _, _, _, _]): Unit = {
@@ -227,8 +210,14 @@ object TableAsserts {
   def assertVpEq(updates: Seq[ViewPortUpdate])(expectation: Any): Unit = {
 
     expectation match {
-      case exp: TableFor19[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _] => generic19Assert(updates, exp)
-      case exp: TableFor17[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _] => generic17Assert(updates, exp)
+      case exp: TableFor19[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _] =>
+        val headingAsArray = exp.heading.productIterator.map(_.toString).toArray
+        val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
+        genericAssertType2(updates, headingAsArray, expectationAsMap)
+      case exp: TableFor17[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _] =>
+        val headingAsArray = exp.heading.productIterator.map(_.toString).toArray
+        val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
+        genericAssertType2(updates, headingAsArray, expectationAsMap)
       case exp: TableFor16[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _] => generic16Assert(updates, exp)
       case exp: TableFor11[_, _, _, _, _, _, _, _, _, _, _] => generic11Assert(updates, exp)
       case exp: TableFor10[_, _, _, _, _, _, _, _, _, _] => generic10Assert(updates, exp)
