@@ -3,11 +3,11 @@ package org.finos.vuu.viewport
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.api.*
+import org.finos.vuu.api.{TableDef, JoinTableDef, JoinTo, JoinSpec, LeftOuterJoin, VisualLinks}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.sort.SortDirection
-import org.finos.vuu.core.table.TableTestHelper.*
+import org.finos.vuu.core.table.TableTestHelper.combineQs
 import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortDef, SortSpec}
@@ -36,7 +36,7 @@ class ChangeViewPortTest extends AnyFeatureSpec {
     viewPortContainer
   }
 
-  Feature("Check we can modify a view port") {
+  Feature("Change columns of a view port") {
 
     Scenario("Change the columns check view port reflects this") {
 
@@ -199,7 +199,9 @@ class ChangeViewPortTest extends AnyFeatureSpec {
         )
       }
     }
+  }
 
+  Feature("Change filter and sort of a view port") {
     Scenario("Change the sort check view port reflects this") {
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
