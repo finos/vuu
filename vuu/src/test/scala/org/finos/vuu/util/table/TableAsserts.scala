@@ -29,6 +29,11 @@ object TableAsserts {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
+  def genericAssertType5(updates: Seq[ViewPortUpdate], headingAsArray: Array[String], expectationAsMap: Array[Map[Any, Any]]): Unit = {
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)).asInstanceOf[RowWithData].data).toArray
+    genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
+  }
+
   def genericLogic(heading: Array[String], arraysOfMaps: Array[Map[String, Any]], expectationAsMap: Array[Map[Any, Any]]): Unit = {
 
     val actualAsMap = Map("diff" -> arraysOfMaps)
@@ -162,10 +167,9 @@ object TableAsserts {
         val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
         genericAssertType4(updates, headingAsArray, expectationAsMap)
       case exp: TableFor9[_, _, _, _, _, _, _, _, _] =>
-        val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)).asInstanceOf[RowWithData].data).toArray
         val headingAsArray = exp.heading.productIterator.map(_.toString).toArray
         val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
-        genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
+        genericAssertType5(updates, headingAsArray, expectationAsMap)
       case exp: TableFor7[_, _, _, _, _, _, _] =>
         val headingAsArray = exp.heading.productIterator.map(_.toString).toArray
         val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
