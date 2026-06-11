@@ -1,9 +1,9 @@
 package org.finos.vuu.core.table
 
-enum DefaultColumn(val name: String, val dataType: Class[_], val sessionTableOnly: Boolean = false) {
+enum DefaultColumn(val name: String, val dataType: Class[_]) {
   case CreatedTime extends DefaultColumn("vuuCreatedTimestamp", DataType.EpochTimestampType)
   case LastUpdatedTime extends DefaultColumn("vuuUpdatedTimestamp", DataType.EpochTimestampType)
-  case MSG extends DefaultColumn("vuuMsg", DataType.StringDataType, true)
+  case MSG extends DefaultColumn("vuuMsg", DataType.StringDataType)
 }
 
 object DefaultColumn {
