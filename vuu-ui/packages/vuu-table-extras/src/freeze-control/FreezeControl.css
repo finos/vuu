@@ -60,7 +60,7 @@
     overflow: visible;
   }
 
-  .vuuFreezeControl-newOrders {
+  .vuuFreezeControl-newItems {
     align-items: center;
     background-color: var(--salt-container-secondary-background);
     display: flex;
