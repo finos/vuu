@@ -8,6 +8,7 @@ import org.scalatest.prop.*
 
 object TableAsserts {
 
+  // #1652 TODO review the different types of genericAssert below and unify them
   def genericAssert(updates: Seq[ViewPortUpdate], headingAsArray: Array[String], expectationAsMap: Array[Map[Any, Any]]): Unit = {
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns))).filter(_.isInstanceOf[RowWithData]).map(_.asInstanceOf[RowWithData].data).toArray
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
@@ -148,7 +149,7 @@ object TableAsserts {
         val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
         genericAssertType3(updates, headingAsArray, expectationAsMap)
       case exp: TableFor11[_, _, _, _, _, _, _, _, _, _, _] =>
-        val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).filter(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData).map(vpu => vpu.table.pullRow(vpu.key.key, getColumns(vpu.vp.getColumns)).asInstanceOf[RowWithData].data).toArray
+        val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).filter(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)).asInstanceOf[RowWithData].data).toArray
         val headingAsArray = exp.heading.productIterator.map(_.toString).toArray
         val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
         genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
