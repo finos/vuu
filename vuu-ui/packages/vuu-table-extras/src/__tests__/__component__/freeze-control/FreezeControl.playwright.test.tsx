@@ -52,9 +52,9 @@ test.describe("Given a FreezeControl", () => {
   }) => {
     const component = await mount(<FrozenFreezeControl />);
 
-    const newOrdersSection = component.locator(".vuuFreezeControl-newOrders");
-    await expect(newOrdersSection).toBeVisible();
-    await expect(newOrdersSection).toContainText("New Orders");
+    const newItemsSection = component.locator(".vuuFreezeControl-newItems");
+    await expect(newItemsSection).toBeVisible();
+    await expect(newItemsSection).toContainText("New Orders");
 
     const badge = component.locator(".vuuFreezeControl-customBadge");
     await expect(badge).toBeVisible();
@@ -72,5 +72,19 @@ test.describe("Given a FreezeControl", () => {
     await verifyBadgeEquals(badge, 0);
     await verifyNoOverflow(badge);
     await verifyPlusSignNotVisible(component);
+  });
+
+  test("WHEN newItemsLabel prop is provided THEN custom label is displayed instead of default", async ({
+    mount,
+  }) => {
+    const customLabel = "New Trades";
+    const component = await mount(
+      <DefaultFreezeControl frozen newItemsLabel={customLabel} />
+    );
+
+    const newItemsSection = component.locator(".vuuFreezeControl-newItems");
+    await expect(newItemsSection).toBeVisible();
+    await expect(newItemsSection).toContainText(customLabel);
+    await expect(newItemsSection).not.toContainText("New Orders");
   });
 });

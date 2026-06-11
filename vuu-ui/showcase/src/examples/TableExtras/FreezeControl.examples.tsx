@@ -14,8 +14,10 @@ import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 
 export const DefaultFreezeControl = ({
   frozen = false,
+  newItemsLabel,
 }: {
   frozen?: boolean;
+  newItemsLabel?: string;
 }) => {
   const mockDataSource = useMemo<Partial<DataSource>>(
     () => ({
@@ -29,7 +31,12 @@ export const DefaultFreezeControl = ({
     [frozen],
   );
 
-  return <FreezeControl dataSource={mockDataSource as DataSource} />;
+  return (
+    <FreezeControl
+      dataSource={mockDataSource as DataSource}
+      newItemsLabel={newItemsLabel}
+    />
+  );
 };
 
 export const FrozenFreezeControl = () => {

@@ -17,6 +17,12 @@ export interface FreezeControlProps
   extends HTMLAttributes<HTMLDivElement>,
     FreezeProps {
   /**
+   * Label shown when the table is frozen next to the new record badge.
+   * @default "New Orders"
+   */
+  newItemsLabel?: string;
+
+  /**
    * Duration of the flash animation for the badge (in seconds).
    * @default 0.25
    */
@@ -26,6 +32,7 @@ export interface FreezeControlProps
 export const FreezeControl = ({
   dataSource,
   className,
+  newItemsLabel = "New Orders",
   flashDuration = 0.25,
   ...htmlAttributes
 }: FreezeControlProps) => {
@@ -95,8 +102,8 @@ export const FreezeControl = ({
           </div>
         </ToggleButtonGroup>
         {isFrozen && (
-          <div className={`${classBase}-newOrders`}>
-            New Orders
+          <div className={`${classBase}-newItems`}>
+            {newItemsLabel}
             <div
               className={cx(`${classBase}-customBadge`, {
                 [`${classBase}-customBadge-flashing`]: isFlashing,
