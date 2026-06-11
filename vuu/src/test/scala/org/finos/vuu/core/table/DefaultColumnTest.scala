@@ -10,8 +10,7 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Check default column count") {
 
-      DefaultColumn.values.length shouldEqual 2
-
+      DefaultColumn.values.length shouldEqual 3
     }
 
     Scenario("Check created time column") {
@@ -36,15 +35,16 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
 
       val result = DefaultColumn.getDefaultColumns(Array(customColumn))
 
-      result.length shouldEqual 2
-      //result.head shouldEqual customColumn
-      //DefaultColumn.isDefaultColumn(result.head) shouldBe false
+      result.length shouldEqual 3
       result(0).name shouldEqual DefaultColumn.CreatedTime.name
       result(0).index shouldEqual 1
       DefaultColumn.isDefaultColumn(result(0)) shouldBe true
       result(1).name shouldEqual DefaultColumn.LastUpdatedTime.name
       result(1).index shouldEqual 2
       DefaultColumn.isDefaultColumn(result(1)) shouldBe true
+      result(2).name shouldEqual DefaultColumn.MSG.name
+      result(2).index shouldEqual 3
+      DefaultColumn.isDefaultColumn(result(2)) shouldBe true
     }
 
     Scenario("Default columns are added to TableDef as expected") {
@@ -58,13 +58,15 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
         includeDefaultColumns = true)
       val result = tableDef.getColumns
 
-      result.length shouldEqual 3
+      result.length shouldEqual 4
       result.head shouldEqual customColumn
       DefaultColumn.isDefaultColumn(result.head) shouldBe false
       result(1).name shouldEqual DefaultColumn.CreatedTime.name
       DefaultColumn.isDefaultColumn(result(1)) shouldBe true
       result(2).name shouldEqual DefaultColumn.LastUpdatedTime.name
       DefaultColumn.isDefaultColumn(result(2)) shouldBe true
+      result(3).name shouldEqual DefaultColumn.MSG.name
+      DefaultColumn.isDefaultColumn(result(3)) shouldBe true
     }
 
     Scenario("Default columns are not included") {

@@ -11,9 +11,9 @@ class InMemRowDataMergerTest extends AnyFeatureSpec with Matchers {
   private val KEY = "row-123"
   private val FIXED_TIME = 1708639342000L // Some fixed epoch
   private val clock = new TestFriendlyClock(FIXED_TIME)
-  private val merger = InMemRowDataMerger(clock)
 
-  Feature("InMemRowDataMerger.mergeLeftToRight") {
+  Feature("InMemRowDataMerger.mergeLeftToRight with default columns") {
+    val merger = InMemRowDataMerger(clock, DefaultColumn.values.map(v=>v.name).toSet)
 
     Scenario("Merging an update into EmptyRowData (New Row Creation)") {
       val update = RowWithData(KEY, Map("price" -> 100.50, "side" -> "Buy"))
@@ -60,6 +60,54 @@ class InMemRowDataMergerTest extends AnyFeatureSpec with Matchers {
           // Last updated time should be NEW
           res.data(DefaultColumn.LAST_UPDATED_TIME.name) shouldBe EpochTimestamp(FIXED_TIME)
 
+        case _ => fail("Result should be RowWithData")
+      }
+    }
+
+    Scenario("Updating with EmptyRowData should return EmptyRowData") {
+      val update = EmptyRowData
+      val original = RowWithData(KEY, Map("Field" -> "Value"))
+
+      val result = merger.mergeLeftToRight(update, original)
+
+      result shouldBe EmptyRowData
+    }
+
+  }
+
+  Feature("InMemRowDataMerger.mergeLeftToRight without default columns") {
+    val merger = InMemRowDataMerger(clock, Set.empty[String])
+
+    Scenario("Merging an update into EmptyRowData (New Row Creation)") {
+      val update = RowWithData(KEY, Map("price" -> 100.50, "side" -> "Buy"))
+      val original = EmptyRowData
+
+      val result = merger.mergeLeftToRight(update, original)
+
+      result match {
+        case res: RowWithData =>
+          res.key shouldBe KEY
+          res.data("price") shouldBe 100.50
+          res.data("side") shouldBe "Buy"
+        case _ => fail("Result should be RowWithData")
+      }
+    }
+
+    Scenario("Merging an update into existing RowWithData (Update)") {
+      val originalData = Map("price" -> 99.00)
+      val original = RowWithData(KEY, originalData)
+
+      val update = RowWithData(KEY, Map("price" -> 101.00, "quantity" -> 500))
+
+      val result = merger.mergeLeftToRight(update, original)
+
+      result match {
+        case res: RowWithData =>
+          res.key shouldBe KEY
+          // Updated field
+          res.data("price") shouldBe 101.00
+          // New field
+          res.data("quantity") shouldBe 500
         case _ => fail("Result should be RowWithData")
       }
     }

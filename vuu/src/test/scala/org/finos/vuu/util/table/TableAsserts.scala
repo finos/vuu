@@ -410,19 +410,20 @@ object TableAsserts {
   def assertVpEq(updates: Seq[ViewPortUpdate])(expectation:Any): Unit = {
 
      //val expectation = block()
+    // #1652 commented out unused cases to help future refactoring work
     expectation match {
         case exp: TableFor19[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _] => generic19Assert(updates, exp)
-        case exp: TableFor18[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _] => generic18Assert(updates, exp)
+        //case exp: TableFor18[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _] => generic18Assert(updates, exp)
         case exp: TableFor17[_, _, _, _, _, _, _, _, _, _, _, _, _, _,_, _, _] => generic17Assert(updates, exp)
         case exp: TableFor16[_, _, _, _, _, _, _, _, _, _, _, _, _, _,_, _] => generic16Assert(updates, exp)
-        case exp: TableFor15[_, _, _, _, _, _, _, _, _, _, _, _, _, _,_] => generic15Assert(updates, exp)
-        case exp: TableFor14[_, _, _, _, _, _, _, _, _, _, _, _, _, _] => generic14Assert(updates, exp)
-        case exp: TableFor13[_, _, _, _, _, _, _, _, _, _, _, _, _] => generic13Assert(updates, exp)
-        case exp: TableFor12[_, _, _, _, _, _, _, _, _, _, _, _] => generic12Assert(updates, exp)
+        //case exp: TableFor15[_, _, _, _, _, _, _, _, _, _, _, _, _, _,_] => generic15Assert(updates, exp)
+        //case exp: TableFor14[_, _, _, _, _, _, _, _, _, _, _, _, _, _] => generic14Assert(updates, exp)
+        //case exp: TableFor13[_, _, _, _, _, _, _, _, _, _, _, _, _] => generic13Assert(updates, exp)
+        //case exp: TableFor12[_, _, _, _, _, _, _, _, _, _, _, _] => generic12Assert(updates, exp)
         case exp: TableFor11[_, _, _, _, _, _, _, _, _, _, _] => generic11Assert(updates, exp)
         case exp: TableFor10[_, _, _, _, _, _, _, _, _, _] => generic10Assert(updates, exp)
         case exp: TableFor9[_, _, _, _, _, _, _, _, _] => generic9Assert(updates, exp)
-        case exp: TableFor8[_, _, _, _, _, _, _, _] => generic8Assert(updates, exp)
+        //case exp: TableFor8[_, _, _, _, _, _, _, _] => generic8Assert(updates, exp)
         case exp: TableFor7[_, _, _, _, _, _, _] => generic7Assert(updates, exp)
         case exp: TableFor6[_, _, _, _, _, _] => generic6Assert(updates, exp)
         case exp: TableFor5[_, _, _, _, _] => generic5Assert(updates, exp)

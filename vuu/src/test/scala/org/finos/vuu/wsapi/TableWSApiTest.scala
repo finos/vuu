@@ -38,7 +38,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
       val response = vuuClient.awaitForResponse(requestId)
 
       val responseBody = assertBodyIsInstanceOf[GetTableMetaResponse](response)
-      responseBody.columns.length shouldEqual 3
+      responseBody.columns.length shouldEqual 4
       responseBody.columns should contain theSameElementsAs (Array("id") ++ DefaultColumn.values.map(_.name))
     }
 

@@ -106,7 +106,8 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         |  side String,
         |  trader String,
         |  vuuCreatedTimestamp Int64,
-        |  vuuUpdatedTimestamp Int64
+        |  vuuUpdatedTimestamp Int64,
+        |  vuuMsg String
         |) ENGINE = MergeTree() ORDER BY orderId
         |""".stripMargin
     )
@@ -140,6 +141,8 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         writer.write(now)
         writer.write(",")
         writer.write(now)
+        writer.write(",")
+        writer.write("vuu msg")
         writer.write('\n')
         currentId += 1
       }
@@ -153,7 +156,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         container.getUsername,
         container.getPassword,
         "orders",
-        Seq("orderId", "quantity", "price", "side", "trader", "vuuCreatedTimestamp", "vuuUpdatedTimestamp"),
+        Seq("orderId", "quantity", "price", "side", "trader", "vuuCreatedTimestamp", "vuuUpdatedTimestamp", "vuuMsg"),
         tempFile
       )
     } finally {

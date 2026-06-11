@@ -221,6 +221,8 @@ class TableDef(val name: String,
   private val columnsByName: Map[String, Column] = getColumns.map(c => c.name -> c).toMap
   private val deletedColumnName: String = s"$name._isDeleted"
   private var module: ViewServerModule = null
+  
+  val defaultColumnNames: Set[String] = defaultColumns.map(v=>v.name).toSet
 
   def permissionFilter(viewPort: ViewPort, tableContainer: TableContainer): PermissionFilter = {
     permissionFunction.apply(viewPort, tableContainer)

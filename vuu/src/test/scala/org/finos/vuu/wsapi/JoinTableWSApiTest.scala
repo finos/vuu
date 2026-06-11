@@ -27,8 +27,8 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
       val response = vuuClient.awaitForResponse(requestId)
 
       val responseBody = assertBodyIsInstanceOf[GetTableMetaResponse](response)
-      responseBody.columns.length shouldEqual 7
-      responseBody.columns shouldEqual Array("ric", "currency", "country", "capital", "vuuCreatedTimestamp", "unit", "vuuUpdatedTimestamp")
+      responseBody.columns.length shouldEqual 8
+      responseBody.columns shouldEqual Array("ric", "currency", "country", "capital", "vuuCreatedTimestamp", "unit", "vuuUpdatedTimestamp", "vuuMsg")
     }
 
     Scenario("Test a huge number of cascading join table updates with filter and sort") {
