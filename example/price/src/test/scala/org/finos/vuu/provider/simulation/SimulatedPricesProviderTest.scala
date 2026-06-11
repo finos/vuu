@@ -81,8 +81,7 @@ class SimulatedPricesProviderTest extends AnyFeatureSpec with Matchers {
     val currentAsk = 102.0
     Scenario("delta of min bid and current bid should be smaller than or equal to price max delta") {
       val minBid = provider.minBid(currentBid, currentAsk, spreadMultipler, priceMaxDelta)
-      //assert((currentBid - minBid).abs <= priceMaxDelta)
-      //temporarily disable
+      assert((currentBid - minBid).abs <= priceMaxDelta)
     }
 
     Scenario("delta of max bid and current bid should be smaller than or equal to price max delta") {
