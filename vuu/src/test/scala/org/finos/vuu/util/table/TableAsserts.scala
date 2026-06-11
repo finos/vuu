@@ -58,7 +58,7 @@ object TableAsserts {
 
   def generic17Assert(updates: Seq[ViewPortUpdate], expectation: TableFor17[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]): Unit = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).filter(vpu => vpu.table.pullRow(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns))).map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name)).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).filter(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns))).map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name)).toArray
 
     val heading = expectation.heading
 
@@ -71,7 +71,7 @@ object TableAsserts {
 
   def generic19Assert(updates: Seq[ViewPortUpdate], expectation: TableFor19[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]): Unit = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).filter(vpu => vpu.table.pullRow(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns))).map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name)).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).filter(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns))).map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name)).toArray
 
     val heading = expectation.heading
 
@@ -84,7 +84,7 @@ object TableAsserts {
 
   def generic10Assert(updates: Seq[ViewPortUpdate], expectation: TableFor10[_, _, _, _, _, _, _, _, _, _]): Unit = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).filter(vpu => vpu.table.pullRow(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)).asInstanceOf[RowWithData].data).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).filter(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)).asInstanceOf[RowWithData].data).toArray
 
     val heading = expectation.heading
 
@@ -98,7 +98,7 @@ object TableAsserts {
 
   def generic11Assert(updates: Seq[ViewPortUpdate], expectation: TableFor11[_, _, _, _, _, _, _, _, _, _, _]): Unit = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).filter(vpu => vpu.table.pullRow(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData).map(vpu => vpu.table.pullRow(vpu.key.key, getColumns(vpu.vp.getColumns)).asInstanceOf[RowWithData].data).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).filter(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData).map(vpu => vpu.table.pullRow(vpu.key.key, getColumns(vpu.vp.getColumns)).asInstanceOf[RowWithData].data).toArray
 
     val heading = expectation.heading
 
@@ -125,7 +125,7 @@ object TableAsserts {
 
   def generic8Assert(updates: Seq[ViewPortUpdate], expectation: TableFor8[_, _, _, _, _, _, _, _]): Unit = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, getColumns(vpu.vp.getColumns))).filter(_.isInstanceOf[RowWithData]).map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name)).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns))).filter(_.isInstanceOf[RowWithData]).map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name)).toArray
 
     val heading = expectation.heading
 
@@ -138,7 +138,7 @@ object TableAsserts {
 
   def generic6Assert(updates: Seq[ViewPortUpdate], expectation: TableFor6[_, _, _, _, _, _]): Unit = {
 
-    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, getColumns(vpu.vp.getColumns))).filter(_.isInstanceOf[RowWithData]).map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name)).toArray
+    val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns))).filter(_.isInstanceOf[RowWithData]).map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name)).toArray
 
     val heading = expectation.heading
 
