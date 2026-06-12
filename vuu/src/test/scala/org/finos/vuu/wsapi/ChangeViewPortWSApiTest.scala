@@ -41,7 +41,7 @@ class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
       columns = Array("id", "name", "unknown"))
     val requestId = vuuClient.send(sessionId, changeVPRequest)
 
-    Then("viewport is updated")
+    Then("Change viewport request is rejected")
     val changeVPResponse = vuuClient.awaitForResponse(requestId)
     val responseBody = assertBodyIsInstanceOf[ChangeViewPortReject](changeVPResponse)
     responseBody.viewPortId shouldEqual viewPortId
@@ -89,5 +89,4 @@ class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
     waitForData(2)
     viewPortId
   }
-
 }
