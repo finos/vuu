@@ -167,31 +167,32 @@ class ChangeViewPortTest extends AnyFeatureSpec {
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, DefaultRange, vpColumns)
       viewPortContainer.runOnce()
       val combinedUpdates = combineQs(viewPort)
-
-      assertVpEq(combinedUpdates) {
-        Table(
-          ("orderId", "trader"),
-          ("NYC-0001", trader),
+      // verify viewport created with expected columns
+      assertVpEq(combinedUpdates,
+        Array("orderId", "trader"),
+        Array(
+          Map("orderId" -> "NYC-0001", "trader" -> trader)
         )
-      }
+      )
 
       val invalidVpColumns = ViewPortColumnCreator.create(orders, List("invalidColumn"))
       val viewPort2 = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, DefaultRange, invalidVpColumns)
       viewPortContainer.runOnce()
       val combinedUpdates2 = combineQs(viewPort2)
-      // TODO #2171 validate exception/reject here
+      // verify invalid column not added to viewport
+      combinedUpdates2.head.vp.getColumns.getColumns.head shouldBe null
 
       val validVpColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "ric"))
       val viewPort3 = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, DefaultRange, validVpColumns)
       viewPortContainer.runOnce()
       val combinedUpdates3 = combineQs(viewPort3)
-
-      assertVpEq(combinedUpdates3) {
-        Table(
-          ("orderId", "trader", "ric"),
-          ("NYC-0001", trader, "VOD.L"),
+      // verify viewport columns changed as requested
+      assertVpEq(combinedUpdates,
+        Array("orderId", "trader", "ric"),
+        Array(
+          Map("orderId" -> "NYC-0001", "trader" -> trader, "ric" -> "VOD.L")
         )
-      }
+      )
     }
   }
 
