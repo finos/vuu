@@ -186,12 +186,12 @@ class ChangeViewPortTest extends AnyFeatureSpec {
       viewPortContainer.runOnce()
       val combinedUpdates3 = combineQs(viewPort3)
 
-      assertVpEq(combinedUpdates3) {
-        Table(
-          ("orderId", "trader", "ric"),
-          ("NYC-0001", trader, "VOD.L"),
+      assertVpEq(combinedUpdates,
+        Array("orderId", "trader", "ric"),
+        Array(
+          Map("orderId" -> "NYC-0001", "trader" -> trader, "ric" -> "VOD.L")
         )
-      }
+      )
     }
   }
 
