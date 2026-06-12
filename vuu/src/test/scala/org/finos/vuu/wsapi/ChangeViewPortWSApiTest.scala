@@ -11,7 +11,7 @@ import org.finos.vuu.net.{ChangeViewPortReject, ChangeViewPortRequest, ChangeVie
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
-import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProvider, TestProviderFactory}
+import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProviderFactory}
 
 import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
