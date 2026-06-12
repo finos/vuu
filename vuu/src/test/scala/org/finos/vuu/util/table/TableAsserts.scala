@@ -3,7 +3,8 @@ package org.finos.vuu.util.table
 import org.finos.toolbox.collection.MapDiffUtils
 import org.finos.toolbox.text.AsciiUtil
 import org.finos.vuu.core.table.{DefaultColumn, EmptyRowData, RowWithData}
-import org.finos.vuu.viewport.{ViewPortRowUpdateType, ViewPortColumns, ViewPortUpdate}
+import org.finos.vuu.viewport.{ViewPortColumns, ViewPortRowUpdateType, ViewPortUpdate}
+import org.scalatest.matchers.should.Matchers.shouldBe
 import org.scalatest.prop.*
 
 object TableAsserts {
@@ -57,6 +58,12 @@ object TableAsserts {
   }
 
   def genericLogic(heading: Array[String], arraysOfMaps: Array[Map[String, Any]], expectationAsMap: Array[Map[Any, Any]]): Unit = {
+    // validate expectationAsMap has all expected columns in each row
+    val isValidTable: Boolean = expectationAsMap.forall { rowMap =>
+      val columnNames = rowMap.keySet.map(_.toString)
+      columnNames.size == heading.length && heading.forall(columnNames.contains)
+    }
+    isValidTable shouldBe true
 
     val actualAsMap = Map("diff" -> arraysOfMaps)
     val expectAsMap = Map("diff" -> expectationAsMap)
