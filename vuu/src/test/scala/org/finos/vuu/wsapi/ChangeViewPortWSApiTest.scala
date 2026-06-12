@@ -114,7 +114,7 @@ class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
 
   private def updateTable(tableName: String): Unit = {
     val newDataSource = new FakeDataSource(ListMap(
-      "row3" -> Map("id" -> "row3", "name" -> "New Name", "account" -> 11111)
+      "row3" -> Map("id" -> "row3", "name" -> "Jim Baker", "account" -> 11111)
     ))
     testProviderFactory.getProvider(tableName).update(newDataSource)
   }
