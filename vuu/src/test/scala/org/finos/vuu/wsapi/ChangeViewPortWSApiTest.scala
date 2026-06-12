@@ -125,12 +125,14 @@ class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
     tableRowUpdates match {
       case None => fail("No table row updates")
       case Some(value) =>
-        val row = value.rows.filter(p => p.updateType == Update)
-          .filter(row => row.rowKey == rowKey)
-        if (row.isEmpty) {
+        val row = value.rows
+          .filter(p => p.updateType == Update)
+          .find(row => row.rowKey == rowKey)
+          .orNull
+        if (row == null) {
           waitForTableRowUpdate(rowKey)
         } else {
-          row.head
+          row
         }
     }
   }
