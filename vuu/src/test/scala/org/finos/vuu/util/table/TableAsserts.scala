@@ -2,7 +2,7 @@ package org.finos.vuu.util.table
 
 import org.finos.toolbox.collection.MapDiffUtils
 import org.finos.toolbox.text.AsciiUtil
-import org.finos.vuu.core.table.{DefaultColumn, EmptyRowData, RowWithData}
+import org.finos.vuu.core.table.{DefaultColumn, RowWithData}
 import org.finos.vuu.viewport.{ViewPortColumns, ViewPortRowUpdateType, ViewPortUpdate}
 import org.scalatest.matchers.should.Matchers.shouldBe
 import org.scalatest.prop.*
