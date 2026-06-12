@@ -17,12 +17,13 @@ import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 
 class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
-  private val tableName = "ChangeVPTest"
+  private val tableName1 = "ChangeVPTest1"
+  private val tableName2 = "ChangeVPTest2"
   private val moduleName = "TableWSApiTest"
   private val testProviderFactory = new TestProviderFactory
 
   Scenario("Add a valid column to viewport") {
-    val viewPortId: String = createViewPort(tableName)
+    val viewPortId: String = createViewPort(tableName1)
 
     When("Request adding a column to viewport")
     val changeVPRequest = ChangeViewPortRequest(
@@ -36,7 +37,7 @@ class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
     responseBody.viewPortId shouldEqual viewPortId
 
     When("A new row is added to table")
-    updateTable(tableName)
+    updateTable(tableName1)
 
     Then("Viewport should have 3 columns now")
     val row3 = waitForTableRowUpdate("row3")
@@ -44,7 +45,7 @@ class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
   }
 
   Scenario("Add a invalid column to viewport") {
-    val viewPortId: String = createViewPort(tableName)
+    val viewPortId: String = createViewPort(tableName2)
 
     When("Request adding a column to viewport")
     val changeVPRequest = ChangeViewPortRequest(
@@ -58,15 +59,15 @@ class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
     responseBody.viewPortId shouldEqual viewPortId
 
     When("A new row is added to table")
-    updateTable(tableName)
+    updateTable(tableName2)
 
     Then("Viewport still has 2 columns")
     val row3 = waitForTableRowUpdate("row3")
     row3.data.length shouldEqual 2
   }
 
-  protected def defineModuleWithTestTables(): ViewServerModule = {
-    val tableDef = TableDef(
+  private def createTableDef(tableName: String): TableDef = {
+    TableDef(
       name = tableName,
       keyField = "id",
       columns =
@@ -76,7 +77,9 @@ class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
           .addInt("account")
           .build()
     )
+  }
 
+  protected def defineModuleWithTestTables(): ViewServerModule = {
     val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
         columns =
@@ -95,7 +98,8 @@ class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
     val providerFactory = (table: DataTable, _: AbstractVuuServer) => testProviderFactory.create(table, dataSource)
 
     ModuleFactory.withNamespace(moduleName)
-      .addTableForTest(tableDef, viewPortDefFactory, providerFactory)
+      .addTableForTest(createTableDef(tableName1), viewPortDefFactory, providerFactory)
+      .addTableForTest(createTableDef(tableName2), viewPortDefFactory, providerFactory)
       .asModule()
   }
 
