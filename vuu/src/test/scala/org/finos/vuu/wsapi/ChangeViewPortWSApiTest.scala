@@ -4,38 +4,49 @@ import org.finos.vuu.api.{ColumnBuilder, TableDef, ViewPortDef}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
+import org.finos.vuu.net.row.RowUpdate
+import org.finos.vuu.net.row.RowUpdateType.Update
 import org.finos.vuu.net.rpc.DefaultRpcHandler
-import org.finos.vuu.net.{ChangeViewPortReject, ChangeViewPortRequest, ChangeViewPortSuccess, CreateViewPortRequest, CreateViewPortSuccess}
+import org.finos.vuu.net.{ChangeViewPortReject, ChangeViewPortRequest, ChangeViewPortSuccess, CreateViewPortRequest, CreateViewPortSuccess, TableRowUpdates}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
-import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProvider}
+import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProvider, TestProviderFactory}
 
+import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 
 class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
   private val tableName = "ChangeVPTest"
   private val moduleName = "TableWSApiTest"
+  private val testProviderFactory = new TestProviderFactory
 
   Scenario("Add a valid column to viewport") {
     val viewPortId: String = createViewPort(tableName)
 
-    When("request adding a column to viewport")
+    When("Request adding a column to viewport")
     val changeVPRequest = ChangeViewPortRequest(
       viewPortId = viewPortId,
       columns = Array("id", "name", "account"))
     val requestId = vuuClient.send(sessionId, changeVPRequest)
 
-    Then("viewport is updated")
+    Then("Viewport is updated successfully")
     val changeVPResponse = vuuClient.awaitForResponse(requestId)
     val responseBody = assertBodyIsInstanceOf[ChangeViewPortSuccess](changeVPResponse)
     responseBody.viewPortId shouldEqual viewPortId
+
+    When("A new row is added to table")
+    updateTable(tableName)
+
+    Then("Viewport should have 3 columns now")
+    val row3 = waitForTableRowUpdate("row3")
+    row3.data.length shouldEqual 3
   }
 
   Scenario("Add a invalid column to viewport") {
     val viewPortId: String = createViewPort(tableName)
 
-    When("request adding a column to viewport")
+    When("Request adding a column to viewport")
     val changeVPRequest = ChangeViewPortRequest(
       viewPortId = viewPortId,
       columns = Array("id", "name", "unknown"))
@@ -45,6 +56,13 @@ class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
     val changeVPResponse = vuuClient.awaitForResponse(requestId)
     val responseBody = assertBodyIsInstanceOf[ChangeViewPortReject](changeVPResponse)
     responseBody.viewPortId shouldEqual viewPortId
+
+    When("A new row is added to table")
+    updateTable(tableName)
+
+    Then("Viewport still has 2 columns")
+    val row3 = waitForTableRowUpdate("row3")
+    row3.data.length shouldEqual 2
   }
 
   protected def defineModuleWithTestTables(): ViewServerModule = {
@@ -74,7 +92,7 @@ class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
       "row2" -> Map("id" -> "row2", "name" -> "Tom Sawyer", "account" -> 45321)
     ))
 
-    val providerFactory = (table: DataTable, _: AbstractVuuServer) => new TestProvider(table, dataSource)
+    val providerFactory = (table: DataTable, _: AbstractVuuServer) => testProviderFactory.create(table, dataSource)
 
     ModuleFactory.withNamespace(moduleName)
       .addTableForTest(tableDef, viewPortDefFactory, providerFactory)
@@ -82,11 +100,34 @@ class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
   }
 
   private def createViewPort(tableName: String): String = {
-    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(0, 10), Array("*"))
+    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(0, 10), Array("id", "account"))
     vuuClient.send(sessionId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
     waitForData(2)
     viewPortId
+  }
+
+  private def updateTable(tableName: String): Unit = {
+    val newDataSource = new FakeDataSource(ListMap(
+      "row3" -> Map("id" -> "row3", "name" -> "New Name", "account" -> 11111)
+    ))
+    testProviderFactory.getProvider(tableName).update(newDataSource)
+  }
+
+  @tailrec
+  private def waitForTableRowUpdate(rowKey: String): RowUpdate = {
+    val tableSizeResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
+    tableSizeResponse match {
+      case None => fail("No table row updates")
+      case Some(value) =>
+        val row = value.rows.filter(p => p.updateType == Update)
+          .filter(row => row.rowKey == rowKey)
+        if (row.isEmpty) {
+          waitForTableRowUpdate(rowKey)
+        } else {
+          row.head
+        }
+    }
   }
 }
