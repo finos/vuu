@@ -8,8 +8,6 @@ import org.scalatest.matchers.should.Matchers.shouldBe
 import org.scalatest.prop.*
 
 object TableAsserts {
-
-  // #1652 TODO review the different types of assertVpEq below and unify them
   def assertVpEq(updates: Seq[ViewPortUpdate], headingAsArray: Array[String], expectationAsMap: Array[Map[Any, Any]]): Unit = {
     val arraysOfMaps = updates
       .filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
@@ -26,25 +24,6 @@ object TableAsserts {
       .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)))
       .filter(_.isInstanceOf[RowWithData])
       .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name))
-      .toArray
-    genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
-  }
-
-  def assertVpEqWithoutTimestamp(updates: Seq[ViewPortUpdate], headingAsArray: Array[String], expectationAsMap: Array[Map[Any, Any]]): Unit = {
-    val arraysOfMaps = updates
-      .filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
-      .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)))
-      .filter(_.isInstanceOf[RowWithData])
-      .map(rowWithData => rowWithData.asInstanceOf[RowWithData].data.filter((k, _) => k != DefaultColumn.CreatedTime.name && k != DefaultColumn.LastUpdatedTime.name))
-      .toArray
-    genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
-  }
-
-  def assertVpEqWithoutEmptyRowData(updates: Seq[ViewPortUpdate], headingAsArray: Array[String], expectationAsMap: Array[Map[Any, Any]]): Unit = {
-    val arraysOfMaps = updates
-      .filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
-      .filter(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData)
-      .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)).asInstanceOf[RowWithData].data)
       .toArray
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
@@ -187,19 +166,19 @@ object TableAsserts {
       case exp: TableFor16[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _] =>
         val headingAsArray = exp.heading.productIterator.map(_.toString).toArray
         val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
-        assertVpEqWithoutTimestamp(updates, headingAsArray, expectationAsMap)
+        assertVpEqWithoutEmptyRowDataWithoutTimestamp(updates, headingAsArray, expectationAsMap)
       case exp: TableFor15[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _] =>
         val headingAsArray = exp.heading.productIterator.map(_.toString).toArray
         val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
-        assertVpEqWithoutTimestamp(updates, headingAsArray, expectationAsMap)
+        assertVpEqWithoutEmptyRowDataWithoutTimestamp(updates, headingAsArray, expectationAsMap)
       case exp: TableFor11[_, _, _, _, _, _, _, _, _, _, _] =>
         val headingAsArray = exp.heading.productIterator.map(_.toString).toArray
         val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
-        assertVpEqWithoutEmptyRowData(updates, headingAsArray, expectationAsMap)
+        assertVpEq(updates, headingAsArray, expectationAsMap)
       case exp: TableFor10[_, _, _, _, _, _, _, _, _, _] =>
         val headingAsArray = exp.heading.productIterator.map(_.toString).toArray
         val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
-        assertVpEqWithoutEmptyRowData(updates, headingAsArray, expectationAsMap)
+        assertVpEq(updates, headingAsArray, expectationAsMap)
       case exp: TableFor9[_, _, _, _, _, _, _, _, _] =>
         val headingAsArray = exp.heading.productIterator.map(_.toString).toArray
         val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
@@ -207,11 +186,11 @@ object TableAsserts {
       case exp: TableFor7[_, _, _, _, _, _, _] =>
         val headingAsArray = exp.heading.productIterator.map(_.toString).toArray
         val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
-        assertVpEqWithoutTimestamp(updates, headingAsArray, expectationAsMap)
+        assertVpEqWithoutEmptyRowDataWithoutTimestamp(updates, headingAsArray, expectationAsMap)
       case exp: TableFor6[_, _, _, _, _, _] =>
         val headingAsArray = exp.heading.productIterator.map(_.toString).toArray
         val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
-        assertVpEqWithoutTimestamp(updates, headingAsArray, expectationAsMap)
+        assertVpEqWithoutEmptyRowDataWithoutTimestamp(updates, headingAsArray, expectationAsMap)
       case exp: TableFor5[_, _, _, _, _] =>
         val headingAsArray = exp.heading.productIterator.map(_.toString).toArray
         val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
