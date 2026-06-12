@@ -196,11 +196,11 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       assertVpEq(updates) {
         Table(
-          ("ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"ric"     ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
-          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0001","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0002","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0003","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L)
+          ("ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
+          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0001","chris"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0002","chris"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0003","chris"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,100       ,null      ,null      ,null      ,1437732000000L)
         )
       }
 
@@ -215,10 +215,10 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       assertVpEq(updates2) {
         Table(
-          ("ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"ric"     ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
-          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0002","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0003","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L)
+          ("ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
+          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0002","chris"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0003","chris"   ,100       ,null      ,null      ,null      ,1437732000000L),
+          ("VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,100       ,null      ,null      ,null      ,1437732000000L)
         )
       }
 
@@ -286,12 +286,12 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       assertVpEq(updates) {
         Table(
-          ("_childCount","_depth"  ,"_caption","_isOpen" ,"_treeKey","_isLeaf" ,"ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"ric"     ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
-          (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,1         ,""        ,400.0     ,""        ,""        ,""        ,""        ),
-          (0         ,2         ,"NYC-0001",false     ,"$root|chris|NYC-0001",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0001","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          (0         ,2         ,"NYC-0002",false     ,"$root|chris|NYC-0002",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0002","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          (0         ,2         ,"NYC-0003",false     ,"$root|chris|NYC-0003",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0003","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          (0         ,2         ,"NYC-0004",false     ,"$root|chris|NYC-0004",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L)
+          ("_childCount","_depth"  ,"_caption","_isOpen" ,"_treeKey","_isLeaf" ,"ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
+          (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,1         ,400.0     ,""        ,""        ,""        ,""        ),
+          (0         ,2         ,"NYC-0001",false     ,"$root|chris|NYC-0001",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0001","chris",100       ,null      ,null      ,null      ,1437732000000L),
+          (0         ,2         ,"NYC-0002",false     ,"$root|chris|NYC-0002",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0002","chris",100       ,null      ,null      ,null      ,1437732000000L),
+          (0         ,2         ,"NYC-0003",false     ,"$root|chris|NYC-0003",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0003","chris",100       ,null      ,null      ,null      ,1437732000000L),
+          (0         ,2         ,"NYC-0004",false     ,"$root|chris|NYC-0004",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0004","chris",100       ,null      ,null      ,null      ,1437732000000L)
         )
       }
 
@@ -322,12 +322,12 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       assertVpEq(combineQs(viewPort)) {
         Table(
-          ("_childCount","_depth"  ,"_caption","_isOpen" ,"_treeKey","_isLeaf" ,"ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"ric"     ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
-          (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,1         ,""        ,400.0     ,""        ,""        ,""        ,""        ),
-          (0         ,2         ,"NYC-0005",false     ,"$root|chris|NYC-0005",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0005","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          (0         ,2         ,"NYC-0006",false     ,"$root|chris|NYC-0006",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0006","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          (0         ,2         ,"NYC-0007",false     ,"$root|chris|NYC-0007",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0007","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L),
-          (0         ,2         ,"NYC-0008",false     ,"$root|chris|NYC-0008",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0008","chris"   ,"VOD.L"   ,100       ,null      ,null      ,null      ,1437732000000L)
+          ("_childCount","_depth"  ,"_caption","_isOpen" ,"_treeKey","_isLeaf" ,"ric"     ,"bid"     ,"ask"     ,"orderId" ,"trader"  ,"quantity","last"    ,"open"    ,"close"   ,"tradeTime"),
+          (4         ,1         ,"chris"   ,true      ,"$root|chris",false     ,""        ,""        ,""        ,""        ,1         ,400.0     ,""        ,""        ,""        ,""        ),
+          (0         ,2         ,"NYC-0005",false     ,"$root|chris|NYC-0005",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0005","chris",100       ,null      ,null      ,null      ,1437732000000L),
+          (0         ,2         ,"NYC-0006",false     ,"$root|chris|NYC-0006",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0006","chris",100       ,null      ,null      ,null      ,1437732000000L),
+          (0         ,2         ,"NYC-0007",false     ,"$root|chris|NYC-0007",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0007","chris",100       ,null      ,null      ,null      ,1437732000000L),
+          (0         ,2         ,"NYC-0008",false     ,"$root|chris|NYC-0008",true      ,"VOD.L"   ,220.0     ,222.0     ,"NYC-0008","chris",100       ,null      ,null      ,null      ,1437732000000L)
         )
       }
 
@@ -339,12 +339,12 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       assertVpEq(combineQs(viewPort)) {
         Table(
-          ("_childCount", "_depth", "_caption", "_isOpen", "_treeKey", "_isLeaf", "ric", "bid", "ask", "orderId", "trader", "ric", "quantity", "last", "open", "close", "tradeTime"),
-          (4, 1, "chris", true, "$root|chris", false, "", "", "", "", 1, "", 400.0, "", "", "", ""),
-          (0, 2, "NYC-0005", false, "$root|chris|NYC-0005", true, "VOD.L", 219.0, 223.0, "NYC-0005", "chris", "VOD.L", 100, null, null, null, 1437732000000L),
-          (0, 2, "NYC-0006", false, "$root|chris|NYC-0006", true, "VOD.L", 219.0, 223.0, "NYC-0006", "chris", "VOD.L", 100, null, null, null, 1437732000000L),
-          (0, 2, "NYC-0007", false, "$root|chris|NYC-0007", true, "VOD.L", 219.0, 223.0, "NYC-0007", "chris", "VOD.L", 100, null, null, null, 1437732000000L),
-          (0, 2, "NYC-0008", false, "$root|chris|NYC-0008", true, "VOD.L", 219.0, 223.0, "NYC-0008", "chris", "VOD.L", 100, null, null, null, 1437732000000L)
+          ("_childCount", "_depth", "_caption", "_isOpen", "_treeKey", "_isLeaf", "ric", "bid", "ask", "orderId", "trader", "quantity", "last", "open", "close", "tradeTime"),
+          (4, 1, "chris", true, "$root|chris", false, "", "", "", "", 1, 400.0, "", "", "", ""),
+          (0, 2, "NYC-0005", false, "$root|chris|NYC-0005", true, "VOD.L", 219.0, 223.0, "NYC-0005", "chris", 100, null, null, null, 1437732000000L),
+          (0, 2, "NYC-0006", false, "$root|chris|NYC-0006", true, "VOD.L", 219.0, 223.0, "NYC-0006", "chris", 100, null, null, null, 1437732000000L),
+          (0, 2, "NYC-0007", false, "$root|chris|NYC-0007", true, "VOD.L", 219.0, 223.0, "NYC-0007", "chris", 100, null, null, null, 1437732000000L),
+          (0, 2, "NYC-0008", false, "$root|chris|NYC-0008", true, "VOD.L", 219.0, 223.0, "NYC-0008", "chris", 100, null, null, null, 1437732000000L)
         )
       }
 
