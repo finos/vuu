@@ -188,6 +188,10 @@ object TableAsserts {
         val headingAsArray = exp.heading.productIterator.map(_.toString).toArray
         val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
         assertVpEqWithoutTimestamp(updates, headingAsArray, expectationAsMap)
+      case exp: TableFor15[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _] =>
+        val headingAsArray = exp.heading.productIterator.map(_.toString).toArray
+        val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
+        assertVpEqWithoutTimestamp(updates, headingAsArray, expectationAsMap)
       case exp: TableFor11[_, _, _, _, _, _, _, _, _, _, _] =>
         val headingAsArray = exp.heading.productIterator.map(_.toString).toArray
         val expectationAsMap = exp.map(row => exp.heading.productIterator.zip(row.productIterator).map({ case (head, data) => head -> data }).toMap).toArray
