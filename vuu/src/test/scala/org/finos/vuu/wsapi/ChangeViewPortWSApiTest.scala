@@ -121,8 +121,8 @@ class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
 
   @tailrec
   private def waitForTableRowUpdate(rowKey: String): RowUpdate = {
-    val tableSizeResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
-    tableSizeResponse match {
+    val tableRowUpdates = vuuClient.awaitForMsgWithBody[TableRowUpdates]
+    tableRowUpdates match {
       case None => fail("No table row updates")
       case Some(value) =>
         val row = value.rows.filter(p => p.updateType == Update)
