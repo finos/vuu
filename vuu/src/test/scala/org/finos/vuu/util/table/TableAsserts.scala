@@ -165,6 +165,7 @@ object TableAsserts {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
+  @deprecated("#1652 use genericAssert instead")
   def assertVpEq(updates: Seq[ViewPortUpdate])(expectation: Any): Unit = {
 
     expectation match {
