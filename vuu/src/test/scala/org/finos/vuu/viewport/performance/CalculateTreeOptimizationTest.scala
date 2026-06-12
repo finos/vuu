@@ -105,8 +105,8 @@ class CalculateTreeOptimizationTest extends AnyFeatureSpec with ViewPortSetup {
 
     assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
       Table(
-        ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
-        (1, false, "$root|chris", false, false, "chris", 0, "", "chris", "", "", "", "", "", "", "")
+        ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
+        (1, false, "$root|chris", false, "chris", 0, "", "chris", "", "", "", "", "", "", "")
       )
     }
 
@@ -116,8 +116,8 @@ class CalculateTreeOptimizationTest extends AnyFeatureSpec with ViewPortSetup {
 
     assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
       Table(
-        ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
-        (1, false, "$root|chris", false, false, "chris", 2, "", "chris", "", "", "", "", "", "", "")
+        ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
+        (1, false, "$root|chris", false, "chris", 2, "", "chris", "", "", "", "", "", "", "")
       )
     }
 
@@ -135,9 +135,9 @@ class CalculateTreeOptimizationTest extends AnyFeatureSpec with ViewPortSetup {
 
     assertVpEq(combinedUpdates3) {
       Table(
-        ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_isOpen", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
-        (1, false, "$root|BT.L", false, false, "BT.L", 0, "", "", "BT.L", "", "", "", "", "", ""),
-        (1, false, "$root|VOD.L", false, false, "VOD.L", 0, "", "", "VOD.L", "", "", "", "", "", "")
+        ("_depth", "_isOpen", "_treeKey", "_isLeaf", "_caption", "_childCount", "orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
+        (1, false, "$root|BT.L", false, "BT.L", 0, "", "", "BT.L", "", "", "", "", "", ""),
+        (1, false, "$root|VOD.L", false, "VOD.L", 0, "", "", "VOD.L", "", "", "", "", "", "")
       )
     }
 
