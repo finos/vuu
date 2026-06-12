@@ -1,14 +1,13 @@
 package org.finos.vuu.core.module.basket.service
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.JoinTableDef
 import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames as BCColumnName, BasketTradingColumnNames as BTColumnName, BasketTradingConstituentColumnNames as ColumnName}
 import org.finos.vuu.core.module.basket.result.ErrorReason
 import org.finos.vuu.core.table.*
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditTableRpcHandler, RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
+import org.finos.vuu.net.rpc.{EditTableRpcHandler, RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.viewport.*
 

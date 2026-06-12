@@ -3,26 +3,28 @@ package org.finos.vuu.viewport
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.api.*
+import org.finos.vuu.api.{TableDef, JoinTableDef, JoinTo, JoinSpec, LeftOuterJoin, VisualLinks}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.sort.SortDirection
-import org.finos.vuu.core.table.TableTestHelper.*
+import org.finos.vuu.core.table.TableTestHelper.combineQs
 import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortDef, SortSpec}
 import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.util.table.TableAsserts.*
+import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers.{shouldBe, shouldEqual}
 import org.scalatest.prop.Tables.Table
 
-class ChangeViewPortTest extends AnyFeatureSpec{
+class ChangeViewPortTest extends AnyFeatureSpec {
 
   implicit val timeProvider: Clock = new DefaultClock
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
+  val user = VuuUser("testUser")
+  val trader = "testTrader"
 
   def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer): ViewPortContainer = {
 
@@ -34,36 +36,36 @@ class ChangeViewPortTest extends AnyFeatureSpec{
     viewPortContainer
   }
 
-  Feature("Check we can modify a view port"){
+  Feature("Change columns of a view port") {
 
-    Scenario("Change the columns check view port reflects this"){
+    Scenario("Change the columns check view port reflects this") {
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      val dateTime = 1437728400000L//new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+      val dateTime = 1437728400000L //new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
 
       val ordersDef = TableDef(
         name = "orders",
         keyField = "orderId",
         columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-        joinFields =  "ric", "orderId")
+        joinFields = "ric", "orderId")
 
       val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
 
       val joinDef = JoinTableDef(
-        name          = "orderPrices",
-        baseTable     = ordersDef,
-        joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
-        joins  =
+        name = "orderPrices",
+        baseTable = ordersDef,
+        joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
+        joins =
           JoinTo(
             table = pricesDef,
-            joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
+            joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
           ),
         links = VisualLinks(),
         joinFields = Seq()
       )
 
-      val joinProvider   = JoinTableProviderImpl()
+      val joinProvider = JoinTableProviderImpl()
 
       val tableContainer = new TableContainer(joinProvider)
 
@@ -89,12 +91,12 @@ class ChangeViewPortTest extends AnyFeatureSpec{
       joinProvider.runOnce()
 
       val user = VuuUser("chris")
-      
+
       val session = ClientSessionId("sess-01", "channel")
 
       val outQueue = new OutboundRowPublishQueue()
 
-      val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask"))//.map(orderPrices.getTableDef.columnForName(_)).toList
+      val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask")) //.map(orderPrices.getTableDef.columnForName(_)).toList
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orderPrices, DefaultRange, vpcolumns)
 
@@ -102,15 +104,15 @@ class ChangeViewPortTest extends AnyFeatureSpec{
 
       val combinedUpdates = combineQs(viewPort)
 
-      assertVpEq(combinedUpdates){
+      assertVpEq(combinedUpdates) {
         Table(
-          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1437728400000L,100       ,220.0     ,222.0     ),
-          ("NYC-0002","chris"   ,"BT.L"    ,1437728400000L,100       ,500.0     ,501.0     )
+          ("orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask"),
+          ("NYC-0001", "chris", "VOD.L", 1437728400000L, 100, 220.0, 222.0),
+          ("NYC-0002", "chris", "BT.L", 1437728400000L, 100, 500.0, 501.0)
         )
       }
 
-      val vpcolumns2 = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open"))//.map(orderPrices.getTableDef.columnForName(_)).toList
+      val vpcolumns2 = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask", "last", "open")) //.map(orderPrices.getTableDef.columnForName(_)).toList
 
       val viewPort2 = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, DefaultRange, vpcolumns2)
 
@@ -118,30 +120,82 @@ class ChangeViewPortTest extends AnyFeatureSpec{
 
       val combinedUpdates2 = combineQs(viewPort2)
 
-      assertVpEq(combinedUpdates2){
+      assertVpEq(combinedUpdates2) {
         Table(
-          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1437728400000L,100       ,220.0     ,222.0     ,30        ,null      ),
-          ("NYC-0002","chris"   ,"BT.L"    ,1437728400000L,100       ,500.0     ,501.0     ,40        ,null      )
+          ("orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open"),
+          ("NYC-0001", "chris", "VOD.L", 1437728400000L, 100, 220.0, 222.0, 30, null),
+          ("NYC-0002", "chris", "BT.L", 1437728400000L, 100, 500.0, 501.0, 40, null)
         )
       }
 
-      val viewPort3 = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, DefaultRange, vpcolumns2, filterSpec = FilterSpec("ric = \"VOD.L\"") )
+      val viewPort3 = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, DefaultRange, vpcolumns2, filterSpec = FilterSpec("ric = \"VOD.L\""))
 
       viewPortContainer.runOnce()
 
       val combinedUpdates3 = combineQs(viewPort3)
 
-      assertVpEq(combinedUpdates3){
+      assertVpEq(combinedUpdates3) {
         Table(
-          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    )
-//          ("NYC-0001","chris"   ,"VOD.L"   ,1437728400000l,100       ,220.0     ,222.0     ,30        ,null      ),
-//          ("NYC-0002","chris"   ,"BT.L"    ,1437728400000l,100       ,500.0     ,501.0     ,40        ,null      )
+          ("orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open")
+          //          ("NYC-0001","chris"   ,"VOD.L"   ,1437728400000l,100       ,220.0     ,222.0     ,30        ,null      ),
+          //          ("NYC-0002","chris"   ,"BT.L"    ,1437728400000l,100       ,500.0     ,501.0     ,40        ,null      )
         )
       }
 
     }
 
+    Scenario("Add a unknown column to the view port and return ChangeViewPortReject") {
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+      val dateTime = 1437728400000L //new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+      val ordersDef = TableDef(
+        name = "orders",
+        keyField = "orderId",
+        columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"))
+      val joinProvider = JoinTableProviderImpl()
+      val tableContainer = new TableContainer(joinProvider)
+      val orders = tableContainer.createTable(ordersDef)
+      val ordersProvider = new MockProvider(orders)
+      val providerContainer = new ProviderContainer(joinProvider)
+      val viewPortContainer = setupViewPort(tableContainer, providerContainer)
+      joinProvider.start()
+      ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> trader, "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
+      joinProvider.runOnce()
+
+      val session = ClientSessionId("sess-01", "channel")
+      val outQueue = new OutboundRowPublishQueue()
+      val vpColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader"))
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, DefaultRange, vpColumns)
+      viewPortContainer.runOnce()
+      val combinedUpdates = combineQs(viewPort)
+
+      assertVpEq(combinedUpdates) {
+        Table(
+          ("orderId", "trader"),
+          ("NYC-0001", trader),
+        )
+      }
+
+      val invalidVpColumns = ViewPortColumnCreator.create(orders, List("invalidColumn"))
+      val viewPort2 = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, DefaultRange, invalidVpColumns)
+      viewPortContainer.runOnce()
+      val combinedUpdates2 = combineQs(viewPort2)
+      // TODO #2171 validate exception/reject here
+
+      val validVpColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "ric"))
+      val viewPort3 = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, DefaultRange, validVpColumns)
+      viewPortContainer.runOnce()
+      val combinedUpdates3 = combineQs(viewPort3)
+
+      assertVpEq(combinedUpdates3) {
+        Table(
+          ("orderId", "trader", "ric"),
+          ("NYC-0001", trader, "VOD.L"),
+        )
+      }
+    }
+  }
+
+  Feature("Change filter and sort of a view port") {
     Scenario("Change the sort check view port reflects this") {
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
