@@ -8,7 +8,7 @@ import org.scalatest.prop.*
 
 object TableAsserts {
 
-  // #1652 TODO review the different types of genericAssert below and unify them
+  // #1652 TODO review the different types of assertVpEq below and unify them
   def assertVpEq(updates: Seq[ViewPortUpdate], headingAsArray: Array[String], expectationAsMap: Array[Map[Any, Any]]): Unit = {
     val arraysOfMaps = updates
       .filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)

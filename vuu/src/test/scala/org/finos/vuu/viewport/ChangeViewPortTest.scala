@@ -168,12 +168,12 @@ class ChangeViewPortTest extends AnyFeatureSpec {
       viewPortContainer.runOnce()
       val combinedUpdates = combineQs(viewPort)
 
-      assertVpEq(combinedUpdates) {
-        Table(
-          ("orderId", "trader"),
-          ("NYC-0001", trader),
+      assertVpEq(combinedUpdates,
+        Array("orderId", "trader"),
+        Array(
+          Map("orderId" -> "NYC-0001", "trader" -> trader)
         )
-      }
+      )
 
       val invalidVpColumns = ViewPortColumnCreator.create(orders, List("invalidColumn"))
       val viewPort2 = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, DefaultRange, invalidVpColumns)
