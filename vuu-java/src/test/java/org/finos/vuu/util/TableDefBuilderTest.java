@@ -42,7 +42,7 @@ class TableDefBuilderTest {
         assertEquals(1, tableDef.indices().indices().length());
         assertEquals(TableVisibility.PRIVATE(), tableDef.visibility());
         assertFalse(tableDef.includeDefaultColumns());
-        assertTrue(tableDef.includeDefaultColumns());
+        assertTrue(tableDef.isEditable());
         assertNotNull(tableDef.permissionFunction());
         assertEquals(1, tableDef.defaultSort().sortDefs().length());
     }
@@ -61,7 +61,7 @@ class TableDefBuilderTest {
         assertTrue(tableDef.indices().indices().isEmpty());
         assertEquals(TableVisibility.PUBLIC(), tableDef.visibility());
         assertTrue(tableDef.includeDefaultColumns());
-        assertFalse(tableDef.includeDefaultColumns());
+        assertFalse(tableDef.isEditable());
         assertNotNull(tableDef.permissionFunction());
         assertTrue(tableDef.defaultSort().sortDefs().isEmpty());
     }
