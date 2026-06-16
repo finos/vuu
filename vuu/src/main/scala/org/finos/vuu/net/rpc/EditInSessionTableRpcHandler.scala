@@ -7,14 +7,13 @@ class EditInSessionTableRpcHandler(using val tableContainer: TableContainer) ext
   registerRpc(RpcNames.EndEditSessionRpc, this.endEditSession)
 
   def beginEditSession(params: RpcParams): RpcFunctionResult = {
+    
     // check if tabledef editable, if so create session table based on enum, if no reject
     null
   }
-
 
   def endEditSession(params: RpcParams): RpcFunctionResult = {
     // close session table
     null
   }
-
 }
