@@ -87,7 +87,7 @@ object Columns {
         SimpleColumn(name, index, dtClass)
       case _ => throw new Exception(s"Invalid format: $nameAndDt")
     }
-    
+
   }).toArray
 
   def from(table: TableDef, names: Seq[String]): Array[Column] = {
@@ -133,6 +133,8 @@ trait Column {
 
   def getDataFullyQualified(data: RowData): Any
 
+  def isEditable: Boolean = false
+
 }
 
 trait JoinColumn extends Column {
@@ -174,7 +176,7 @@ case class NoColumn() extends Column {
 
 }
 
-case class SimpleColumn(name: String, index: Int, dataType: Class[_]) extends Column {
+case class SimpleColumn(name: String, index: Int, dataType: Class[_], override val isEditable: Boolean = false) extends Column {
   override def getData(data: RowData): Any = {
     data.get(name)
   }
