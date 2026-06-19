@@ -1,0 +1,93 @@
+ ===> LOGIN
+ <=== LOGIN_SUCCESS
+
+ ===> #1 GET_TABLE_META products
+ ===> #KRvd1MG57Vrxc0Lm6Eogw CREATE_VP products
+ ===> #JNXTZWde1Iy4MKa754p4X GET_TABLE_LIST
+
+ <=== #1 TABLE_META_RESP
+ <=== #KRvd1MG57Vrxc0Lm6Eogw CREATE_VP_SUCCESS products vp VP-9a2cb7b8-901c-4e44-9721-537dde8877b2
+
+ ===> #2 GET_VP_VISUAL_LINKS vp VP-9a2cb7b8-901c-4e44-9721-537dde8877b2
+ ===> #3 GET_VIEW_PORT_MENUS vp VP-9a2cb7b8-901c-4e44-9721-537dde8877b2
+
+ <=== #JNXTZWde1Iy4MKa754p4X TABLE_LIST_RESP
+
+ ===> #b818Xk3RYJQM1uZiiaKJW GET_TABLE_META cancelOrderRequests
+ ===> #Clc8pnajR2vExrNeJ7WJB GET_TABLE_META orderCancelSelection
+ ===> #OAdQyALYwwBIdIKHd0yVO GET_TABLE_META ordersWithInstruments
+ ===> #JYUhmEEqBqQB9BmI84zpx GET_TABLE_META tradesWithInstruments
+
+ <=== #2 VP_VISUAL_LINKS_RESP
+ <=== #3 VIEW_PORT_MENUS_RESP
+ 
+ <=== #b818Xk3RYJQM1uZiiaKJW TABLE_METAR_RESP cancelOrderRequests
+ <=== #Clc8pnajR2vExrNeJ7WJB TABLE_METAR_RESP orderCancelSelection
+ <=== #OAdQyALYwwBIdIKHd0yVO TABLE_METAR_RESP ordersWithInstruments
+ <=== #JYUhmEEqBqQB9BmI84zpx TABLE_METAR_RESP tradesWithInstruments
+
+ <=== TABLE_ROW products
+     U [0, 11,16,24,25,1,21,17,12,23,10,13,2,22,4,19,18,14,3,15,5,20,6,7,8,9]
+    SIZE 39
+
+ <=== TABLE_ROW products
+     U [26,27,28,31,38,35,33,34,30,29,32,36,37]
+
+ ===> #orders-page-datasource CREATE_VP ordersWithInstruments
+ <=== #orders-page-datasource CREATE_VP_SUCCESS ordersWithInstruments vp VP-231d290d-ac87-4877-a782-dd0b4e0bac80
+
+===> #5 GET_VP_VISUAL_LINKS vp VP-231d290d-ac87-4877-a782-dd0b4e0bac80
+===> #6 GET_VIEW_PORT_MENUS vp VP-231d290d-ac87-4877-a782-dd0b4e0bac80
+===> #7 GET_VP_VISUAL_LINKS vp VP-9a2cb7b8-901c-4e44-9721-537dde8877b2
+<=== #5 VP_VISUAL_LINKS_RESP vp VP-231d290d-ac87-4877-a782-dd0b4e0bac80
+<=== #6 VIEW_PORT_MENUS_RESP vp VP-231d290d-ac87-4877-a782-dd0b4e0bac80
+<=== #7 VP_VISUAL_LINKS_RESP vp VP-9a2cb7b8-901c-4e44-9721-537dde8877b2
+
+ <=== TABLE_ROW orders
+    U [0,3,4,1,2,5]
+    SIZE 63
+
+ <=== TABLE_ROW orders
+    U [21,20,24,22,28,27,29,7,6,10,8,9,13,26,30,31,19,18,17,16,15,14,12,11,25,23]
+
+ <=== TABLE_ROW orders
+    U [38,60,55,56,53,54,58,59,57,52,34,32,36,46,47,50,51,48,49,61,62,39,41,40,45,44,43,42,37,35,33]
+
+ ===> #trades-page-datasource CREATE_VP tradesWithInstruments
+ <=== #trades-page-datasource CREATE_VP_SUCCESS ordersWithInstruments vp VP-e76e9974-2965-4f44-9ff1-9a15426e10b5
+
+===> #9 GET_VP_VISUAL_LINKS vp VP-e76e9974-2965-4f44-9ff1-9a15426e10b5
+===> #10 GET_VIEW_PORT_MENUS vp VP-e76e9974-2965-4f44-9ff1-9a15426e10b5
+===> #11 GET_VP_VISUAL_LINKS vp VP-9a2cb7b8-901c-4e44-9721-537dde8877b2
+===> #12 GET_VP_VISUAL_LINKS vp VP-231d290d-ac87-4877-a782-dd0b4e0bac80
+
+<=== TABLE_ROW trades SIZE 0
+
+<=== #9 VP_VISUAL_LINKS_RESP vp VP-e76e9974-2965-4f44-9ff1-9a15426e10b5
+<=== #10 VIEW_PORT_MENUS_RESP vp VP-e76e9974-2965-4f44-9ff1-9a15426e10b5
+<=== #11 VP_VISUAL_LINKS_RESP vp VP-9a2cb7b8-901c-4e44-9721-537dde8877b2
+<=== #12 VP_VISUAL_LINKS_RESP vp VP-231d290d-ac87-4877-a782-dd0b4e0bac80
+
+===> #13 CHANGE_VP VP-231d290d-ac87-4877-a782-dd0b4e0bac80 filter: ''
+===> #14 CHANGE_VP VP-231d290d-ac87-4877-a782-dd0b4e0bac80 filter: action = New,Updated,Part Fill
+
+<=== #13 CHANGE_VP_SUCCESS
+<=== #14 CHANGE_VP_SUCCESS
+
+<=== TABLE_ROW
+    U [22,21,25,23,29,28,30,39,61,56,57,54,55,59,6058,53,8,7,11,9,10,14,1,4,5,2,3,35,33,37,47,48,51,52,49,50,62,63,27,31,32,40,42,41,6,20,19,18,17,16,15,46,45,44,43,38,36,0,34,13,12,26,24]
+    SIZE 64
+
+<=== TABLE_ROW
+    U [21,20,24,22,28,27,29,38,60,55,56,53,54,58,59,57,52,7,6,10,8,9,13,0,34,1,2,34,32,36,46,47,50,51,48,49,61,62,26,30,31,39,41,40,5,19,18,17,16,15,14,45,44,43,42,37,35,33,12,11,25,23]
+    SIZE 63
+
+===> #15 CHANGE_VP VP-231d290d-ac87-4877-a782-dd0b4e0bac80 filter: 'action = Cancelled'
+<=== #15 CHANGE_VP_SUCCESS
+
+<=== TABLE_ROW 
+    U orders vpSize 1 [0] 'cancelled row'
+    SIZE 0
+
+===> #16 DISABLE_VP vp VP-e76e9974-2965-4f44-9ff1-9a15426e10b5
+<=== #16 DISABLE_VP_SUCCESS

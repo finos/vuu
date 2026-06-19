@@ -220,9 +220,7 @@ export class Viewport {
     this.sort = sort;
     this.title = title;
     infoEnabled &&
-      info?.(
-        `constructor #${viewport} ${table.table} bufferSize=${bufferSize}`,
-      );
+      info?.(`${table.table} #${viewport},  bufferSize=${bufferSize}`);
     this.dataWindow = new ArrayBackedMovingWindow(
       this.#clientRange,
       range,
@@ -493,11 +491,6 @@ export class Viewport {
         info(
           `updated: dataWindow clientRange (${this.dataWindow.clientRange.from}:${this.dataWindow.clientRange.to}), fullRange (${this.dataWindow.range.from}:${this.dataWindow.range.to}) serverDataRequired ${serverDataRequired ? "Y" : "N"} ${clientRows.length} rows returned from local buffer`,
         );
-      // console.log(
-      //   `[Viewport] updated: window client (${this.dataWindow.clientRange.from}:${this.dataWindow.clientRange.to}), full (${this.dataWindow.range.from}:${this.dataWindow.range.to})
-      //     serverDataRequired ${serverDataRequired ? "Y" : "N"}
-      //     ${clientRows.length} rows returned from local cache (${clientRows.map((r) => r.rowIndex).join(",")})`,
-      // );
 
       let debounceRequest: DataSourceDebounceRequest | undefined;
       // Don't use zero as a range cap, it's is likely a transient count reported immediately
@@ -634,6 +627,9 @@ export class Viewport {
 
   suspend() {
     this.suspended = true;
+    // Full set of current data will be sent to the client on 'resume'.
+    // No pendingUpdates will be queued whilst suspended
+    this.pendingUpdates.length = 0;
     info?.("suspend");
   }
 
@@ -797,11 +793,7 @@ export class Viewport {
           `ignore a SIZE=0 message on disabled viewport (${rows.length} rows)`,
         );
         return;
-      } /* else if (firstRow.updateType === "SIZE") {
-        // record all size only updates, we may throttle them and always need
-        // to know the value of last update received.
-        this.setLastSizeOnlyUpdateSize(firstRow.vpSize);
-      }*/
+      }
     }
 
     for (const row of rows) {
@@ -825,9 +817,11 @@ export class Viewport {
         }
         if (row.updateType === "U") {
           if (this.dataWindow?.setAtIndex(row)) {
-            this.hasUpdates = true;
-            if (!this.batchMode) {
-              this.pendingUpdates.push(row);
+            if (this.suspended !== true) {
+              this.hasUpdates = true;
+              if (!this.batchMode) {
+                this.pendingUpdates.push(row);
+              }
             }
           }
         }

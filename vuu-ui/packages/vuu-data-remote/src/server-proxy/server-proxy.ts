@@ -1035,24 +1035,24 @@ export class ServerProxy {
           if (process.env.NODE_ENV === "development" && debugEnabled) {
             const [firstRow] = body.rows;
             if (body.rows.length === 0) {
-              infoEnabled && info("handleMessageFromServer TABLE_ROW 0 rows");
+              infoEnabled && info("<=== TABLE_ROW 0 rows");
             } else if (firstRow?.rowIndex === -1) {
               if (body.rows.length === 1) {
                 if (firstRow.updateType === "SIZE") {
                   infoEnabled &&
                     info(
-                      `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ONLY ${firstRow.vpSize}`,
+                      `<=== [${firstRow.viewPortId}] TABLE_ROW SIZE ONLY ${firstRow.vpSize}`,
                     );
                 } else {
                   infoEnabled &&
                     info(
-                      `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ${firstRow.vpSize} rowIdx ${firstRow.rowIndex}`,
+                      `<=== [${firstRow.viewPortId}] TABLE_ROW SIZE ${firstRow.vpSize} rowIdx ${firstRow.rowIndex}`,
                     );
                 }
               } else {
                 infoEnabled &&
                   info(
-                    `handleMessageFromServer TABLE_ROW ${
+                    `<=== TABLE_ROW ${
                       body.rows.length
                     } rows, SIZE ${firstRow.vpSize}, [${body.rows
                       .map((r) => r.rowIndex)
@@ -1062,7 +1062,7 @@ export class ServerProxy {
             } else {
               infoEnabled &&
                 info(
-                  `handleMessageFromServer TABLE_ROW ${body.rows.length} rows [${body.rows
+                  `<=== TABLE_ROW ${body.rows.length} rows [${body.rows
                     .map((r) => r.rowIndex)
                     .join(",")}]`,
                 );
@@ -1090,7 +1090,9 @@ export class ServerProxy {
           if (viewport) {
             const { from, to } = body;
             infoEnabled &&
-              info(`CHANGE_VP_RANGE_SUCCESS<#${requestId}> ${from} - ${to}`);
+              info(
+                `<=== CHANGE_VP_RANGE_SUCCESS<#${requestId}> ${from} - ${to}`,
+              );
             viewport.completeOperation(requestId, from, to);
           }
         }
@@ -1251,7 +1253,7 @@ export class ServerProxy {
         break;
 
       default:
-        infoEnabled && info(`handleMessageFromServer ${body["type"]}.`);
+        infoEnabled && info(`<=== ${body["type"]}.`);
     }
   }
 
@@ -1297,19 +1299,12 @@ export class ServerProxy {
           if (size !== undefined || (rows && rows.length > 0)) {
             debugEnabled &&
               debug(
-                `postMessageToClient #${
-                  viewport.clientViewportId
-                } viewport-update ${mode}, ${
+                `===> #${viewport.clientViewportId} viewport-update ${mode}, ${
                   rows?.length ?? "no"
                 } rows, size ${size}`,
               );
 
             if (mode) {
-              // console.log(
-              //   `%c[ServerProxy] processUpdates  rows to client ${rows?.map((r) => r[0]).join(",")}`,
-              //   "color:brown",
-              // );
-
               this.postMessageToClient({
                 clientViewportId: viewport.clientViewportId,
                 mode,
