@@ -14,7 +14,7 @@ import {
   DataRow,
   TableRowSelectHandlerInternal,
 } from "@vuu-ui/vuu-table-types";
-import { MovingDataRowWindow } from "./DataRowMovingWindow";
+import { DataRowMovingWindow } from "./DataRowMovingWindow";
 import { dataRowFactory, DataRowFunc } from "../data-row/DataRow";
 
 const NullDataRow = () => ({}) as DataRow;
@@ -84,7 +84,7 @@ export const useDataSource = ({
   }, [autoSelect, dataSource, handleConfigChange]);
 
   const dataRowWindow = useMemo(
-    () => new MovingDataRowWindow(rangeRef.current.withBuffer),
+    () => new DataRowMovingWindow(rangeRef.current.withBuffer),
     [],
   );
 

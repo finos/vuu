@@ -57,13 +57,13 @@ export class ArrayBackedMovingWindow {
     return this.#range;
   }
 
-  get hasAllRowsWithinRange(): boolean {
-    return (
-      this.rowsWithinRange === this.clientRange.to - this.clientRange.from ||
-      (this.rowCount > 0 &&
-        this.clientRange.from + this.rowsWithinRange === this.rowCount)
-    );
-  }
+  // get hasAllRowsWithinRange(): boolean {
+  //   return (
+  //     this.rowsWithinRange === this.clientRange.to - this.clientRange.from ||
+  //     (this.rowCount > 0 &&
+  //       this.clientRange.from + this.rowsWithinRange === this.rowCount)
+  //   );
+  // }
 
   // Check to see if set of rows is outside the current viewport range, indicating
   // that veiwport is being scrolled quickly and server is not able to keep up.
