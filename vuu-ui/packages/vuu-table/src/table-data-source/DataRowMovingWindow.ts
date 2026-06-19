@@ -2,7 +2,7 @@ import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { DataRow } from "@vuu-ui/vuu-table-types";
 import { WindowRange } from "@vuu-ui/vuu-utils";
 
-export class MovingDataRowWindow {
+export class DataRowMovingWindow {
   public data: DataRow[];
   public rowCount = 0;
   #range: WindowRange;
@@ -42,7 +42,7 @@ export class MovingDataRowWindow {
   }
 
   isWithinRange(index: number) {
-    return this.#range.isWithin(index);
+    return index < this.rowCount && this.#range.isWithin(index);
   }
 
   setRange({ from, to }: VuuRange) {

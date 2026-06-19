@@ -82,15 +82,15 @@ const handleMessageFromClient = async ({
       webSocketConnection?.close();
       break;
     case "subscribe":
-      infoEnabled && info(`client subscribe: ${JSON.stringify(message)}`);
+      infoEnabled && info(`===> ${JSON.stringify(message)}`);
       serverProxy.subscribe(message);
       break;
     case "unsubscribe":
-      infoEnabled && info(`client unsubscribe: ${JSON.stringify(message)}`);
+      infoEnabled && info(`===> ${JSON.stringify(message)}`);
       serverProxy.unsubscribe(message.viewport);
       break;
     default:
-      infoEnabled && info(`client message: ${JSON.stringify(message)}`);
+      infoEnabled && info(`===> ${JSON.stringify(message)}`);
       serverProxy.handleMessageFromClient(message);
   }
 };

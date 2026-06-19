@@ -241,9 +241,9 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
 
   private receive = (evt: MessageEvent) => {
     if (isLoginErrorMessage(evt.data)) {
-      console.log(`[WebSocketConnection] closed because of login issue`);
+      console.warn(`[WebSocketConnection] closed because of login issue`);
       if (this.#deferredOpen) {
-        console.log(`... and qwe have a deferred connection`);
+        console.warn(`... and we have a deferred connection`);
       }
 
       this.#callback({
@@ -256,7 +256,7 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
 
       if (debugEnabled) {
         if (vuuMessageFromServer.body.type !== "HB") {
-          debug(`${vuuMessageFromServer.body.type}`);
+          debug(`<=== ${vuuMessageFromServer.body.type}`);
           if (vuuMessageFromServer.body.type === "CHANGE_VP_SUCCESS") {
             debug(JSON.stringify(vuuMessageFromServer.body));
           }
@@ -281,7 +281,7 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
   send = (msg: VuuClientMessage) => {
     if (msg.body.type === "CHANGE_VP_RANGE") {
       info?.(
-        `CHANGE_VP_RANGE<#${msg.requestId}> ${msg.body.from}-${msg.body.to}`,
+        `===> CHANGE_VP_RANGE<#${msg.requestId}> ${msg.body.from}-${msg.body.to}`,
       );
     }
     this.#ws?.send(JSON.stringify(msg));
