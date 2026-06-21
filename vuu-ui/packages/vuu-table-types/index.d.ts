@@ -131,6 +131,12 @@ export declare type TableRowClickHandlerInternal = (
 
 export interface TableCellRendererProps
   extends Omit<TableCellProps, "onDataEdited"> {
+  /**
+   * has the value of this edit control been changed during the current edit session.
+   * This can go from true to false if control is edited to revert a previous change
+   * during same session. It will be undefined if the control has not been edited.
+   */
+  editedDuringCurrentSession?: boolean;
   onEdit?: TableCellEditHandler;
 }
 

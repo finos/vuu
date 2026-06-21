@@ -2,7 +2,7 @@ import { Input, Tooltip } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
-import { Icon, useEditableText } from "@vuu-ui/vuu-ui-controls";
+import { Icon } from "@vuu-ui/vuu-ui-controls";
 import {
   dataDescriptorTypeToVuuRowDataItemType,
   getVuuEditMessage,
@@ -11,12 +11,14 @@ import {
 import cx from "clsx";
 
 import inputCellCss from "./InputCell.css";
+import { useInputCell } from "./useInputCell";
 
 const classBase = "vuuTableInputCell";
 
 export const InputCell = ({
   column,
   dataRow,
+  editedDuringCurrentSession,
   onEdit,
 }: TableCellRendererProps) => {
   const targetWindow = useWindow();
@@ -31,12 +33,11 @@ export const InputCell = ({
   const { align = "left" } = column;
 
   const {
-    edited,
     editing,
     warningMessage,
     previousValue = "",
     ...editProps
-  } = useEditableText({
+  } = useInputCell({
     column,
     onEdit,
     type: dataDescriptorTypeToVuuRowDataItemType(column),
@@ -73,7 +74,7 @@ export const InputCell = ({
       {...editProps}
       bordered
       className={cx(classBase, {
-        [`${classBase}-edited`]: edited,
+        [`${classBase}-edited`]: editedDuringCurrentSession === true,
         [`${classBase}-error`]: warningMessage !== undefined,
         [`${classBase}-warning`]: editRejected !== undefined,
         vuuEditing: editing,

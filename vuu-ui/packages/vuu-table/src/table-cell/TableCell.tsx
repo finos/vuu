@@ -5,7 +5,7 @@ import type {
   TableCellProps,
 } from "@vuu-ui/vuu-table-types";
 import { useEditSession } from "@vuu-ui/vuu-utils";
-import { MouseEventHandler, useCallback } from "react";
+import { MouseEventHandler, useCallback, useState } from "react";
 import { applyHighlighting } from "../applyHighlighting";
 import { useCell } from "../useCell";
 
@@ -30,21 +30,24 @@ export const TableCell = ({
 
   const { className, style } = useCell(column, classBase, false);
   const { ariaColIndex, CellRenderer, name, valueFormatter } = column;
+  const [editedDuringCurrentSession, setEditingDuringCurrentSession] = useState<
+    boolean | undefined
+  >(undefined);
 
   const handleDataItemEdited = useCallback<TableCellEditHandler>(
-    (editState, editPhase) => {
+    async (editState, editPhase) => {
       const { isValid = true, previousValue = "", value } = editState;
-      if (editPhase === "commit") {
-        return editSession?.commit(
-          dataRow.key,
-          name,
-          previousValue,
-          value,
-          isValid,
-        );
-      } else {
-        editSession?.edit(dataRow.key, name, previousValue, value);
-        return undefined;
+      if (editPhase === "commit" && editSession) {
+        const { editedDuringCurrentSession, ...response } =
+          await editSession.commit(
+            dataRow.key,
+            name,
+            previousValue,
+            value,
+            isValid,
+          );
+        setEditingDuringCurrentSession(editedDuringCurrentSession);
+        return response;
       }
     },
     [dataRow.key, editSession, name],
@@ -69,6 +72,7 @@ export const TableCell = ({
         <CellRenderer
           column={column}
           dataRow={dataRow}
+          editedDuringCurrentSession={editedDuringCurrentSession}
           onEdit={handleDataItemEdited}
           searchPattern={searchPattern}
         />

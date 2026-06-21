@@ -20,7 +20,7 @@ import {
   useState,
 } from "react";
 
-export interface EditableTextHookProps<
+export interface InputCellHookProps<
   T extends VuuRowDataItemType = VuuRowDataItemType,
 > {
   column: Pick<
@@ -42,13 +42,12 @@ type EditState = {
 
 const stringValueOf = (value?: VuuRowDataItemType) => value?.toString() ?? "";
 
-// @deprecated replaced by InputCell + useInputCell
-export const useEditableText = <T extends string | number | boolean = string>({
+export const useInputCell = <T extends string | number | boolean = string>({
   column,
   value,
   onEdit,
   type = "string",
-}: EditableTextHookProps<T>) => {
+}: InputCellHookProps<T>) => {
   const [editState, setEditState] = useState<EditState>({
     editing: false,
     value: stringValueOf(value),

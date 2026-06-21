@@ -1,6 +1,6 @@
 {
   "name": "chrome-devtools-protocol",
-  "version": "2.1.14",
+  "version": "2.1.16",
   "description": "",
   "main": "index.js",
   "scripts": {

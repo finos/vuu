@@ -411,4 +411,85 @@ test.describe("Edit conflicts", () => {
       await table2.assertCellIsEditable(2, 1, NOT_EDITABLE, "AAOO L");
     });
   });
+
+  test.describe("Save Cancel buttons", () => {
+    test("shown in edit mode, Save enabled on edit", async ({
+      mount,
+      page,
+    }) => {
+      await mount(
+        <LocalDataSourceProvider>
+          <EditableInstruments />
+        </LocalDataSourceProvider>,
+      );
+      const table = new TableOM(page.getByTestId("table-1"));
+      const editButton = page.getByRole("radio", { name: "Edit" });
+      await editButton.click();
+
+      const saveButton = page.getByRole("button", { name: "Save" });
+      const cancelButton = page.getByRole("button", { name: "Cancel" });
+
+      await expect(saveButton).toBeVisible();
+      await expect(saveButton).toBeDisabled();
+
+      await expect(cancelButton).toBeVisible();
+      await expect(cancelButton).toBeEnabled();
+
+      const cell = table.locateCell(3, 6);
+      await cell.dblclick();
+      await table.assertCellIsFocused(cell, "textbox");
+      await cell.pressSequentially("123");
+
+      await expect(saveButton).toBeEnabled();
+      await expect(cancelButton).toBeEnabled();
+
+      await cell.press("Escape");
+
+      await expect(saveButton).toBeDisabled();
+      await expect(cancelButton).toBeEnabled();
+    });
+
+    test("Save disabled whilst rejected edits", async ({ mount, page }) => {
+      await mount(
+        <LocalDataSourceProvider>
+          <EditableInstruments />
+        </LocalDataSourceProvider>,
+      );
+      const table = new TableOM(page.getByTestId("table-1"));
+      const editButton = page.getByRole("radio", { name: "Edit" });
+      await editButton.click();
+
+      const saveButton = page.getByRole("button", { name: "Save" });
+      const cancelButton = page.getByRole("button", { name: "Cancel" });
+
+      await expect(saveButton).toBeVisible();
+      await expect(saveButton).toBeDisabled();
+
+      await expect(cancelButton).toBeVisible();
+      await expect(cancelButton).toBeEnabled();
+
+      const cell1 = table.locateCell(3, 6);
+      await cell1.dblclick();
+      await table.assertCellIsFocused(cell1, "textbox");
+      await cell1.pressSequentially("123");
+
+      const cell2 = table.locateCell(4, 6);
+      await cell2.dblclick();
+      await table.assertCellIsFocused(cell2, "textbox");
+      await cell2.pressSequentially("abc");
+      await cell2.press("Enter");
+      await expect(cell2.locator(".saltInput")).toContainClass(
+        "vuuTableInputCell-error",
+      );
+      await expect(saveButton).toBeDisabled();
+      await expect(cancelButton).toBeEnabled();
+
+      await cell2.press("Escape");
+      await expect(cell2.locator(".saltInput")).not.toContainClass(
+        "vuuTableInputCell-error",
+      );
+      await expect(saveButton).toBeEnabled();
+      await expect(cancelButton).toBeEnabled();
+    });
+  });
 });

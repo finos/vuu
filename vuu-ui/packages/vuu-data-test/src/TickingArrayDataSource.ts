@@ -174,12 +174,11 @@ export class TickingArrayDataSource extends ArrayDataSource {
 
   handleSessionMessage = (msg: DataSourceCallbackMessage) => {
     if (msg.type === "subscribed") {
-      console.log(`[VuuDataSource subscribed to session table]`);
+      // console.log(`[VuuDataSource subscribed to session table]`);
     } else if (msg.type === "viewport-update") {
       if (msg.size !== undefined && msg.size !== this.size) {
         this.emit("resize", msg.size);
       }
-      console.log(`[VuuDataSource] clientCallback with ${msg.type}`);
       this.clientCallback?.(msg);
     }
   };

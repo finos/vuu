@@ -1,14 +1,17 @@
-import { DataSource, EditSessionMode } from "@vuu-ui/vuu-data-types";
+import { EditApi, EditSessionMode } from "@vuu-ui/vuu-data-types";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter } from "../event-emitter";
-import { isRpcError } from "../../dist/index.mjs";
+import { isRpcError } from "../protocol-message-utils";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
+
+export class EditError extends Error {}
 
 type CellEdit = {
   originalValue: VuuRowDataItemType;
   editedValue: VuuRowDataItemType;
   isValid?: boolean;
+  isDeleted?: boolean;
 };
 
 // TODO can add more when when we know what the server implementation of error columns will look like
@@ -32,20 +35,13 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   #rowEdits = new Map<string, RowEditDetails>();
   #editCount = 0;
   #invalidCount = 0;
-  #sourceTableDataSource?: DataSource;
-  #sessionDataSource?: DataSource;
+  #sourceTableDataSource?: EditApi;
+  #sessionDataSource?: EditApi;
   #inEditMode = false;
 
-  constructor(dataSource: DataSource) {
+  constructor(dataSource: EditApi) {
     super();
     this.#sourceTableDataSource = dataSource;
-
-    dataSource.on("remote-update-during-local-edit", (rows) => {
-      console.log(
-        `source table updated via another channel, whilst we have an inline edit session in progress`,
-        { rows },
-      );
-    });
   }
 
   get editCount() {
@@ -127,7 +123,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     return this.editCount === 0 ? "clean" : "dirty";
   }
 
-  getRowEdits(key: string): RowEditDetails {
+  getOrCreateRowEdits(key: string): RowEditDetails {
     const rowEditDetails = this.#rowEdits.get(key);
     if (rowEditDetails) {
       return rowEditDetails;
@@ -149,58 +145,35 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   ) {
     const cellEdit = cellEdits.get(column);
     if (cellEdit) {
-      if (isValid && cellEdit.isValid === false) {
-        cellEdit.isValid = true;
-        this.invalidCount -= 1;
+      if (cellEdit.originalValue === editedValue) {
+        cellEdits.delete(column);
+        cellEdit.isDeleted = true;
+        if (cellEdit.isValid) {
+          this.editCount -= 1;
+        } else {
+          this.invalidCount -= 1;
+        }
+      } else {
+        if (isValid && cellEdit.isValid === false) {
+          cellEdit.isValid = true;
+          cellEdit.editedValue = editedValue;
+          // do not trigger the event, save it for the editCount
+          this.#invalidCount -= 1;
+          this.editCount += 1;
+        }
       }
       return cellEdit;
     } else {
-      const cellEdit = {
+      const cellEdit: CellEdit = {
         originalValue,
         editedValue,
         isValid,
       };
       cellEdits.set(column, cellEdit);
-      this.editCount = this.#editCount + 1;
-      return cellEdit;
-    }
-  }
-
-  /**
-   * Apply incremental edit(s) to edit control value. Used for TextInput, where multiple
-   * edits may follow in sequence before value finally committed.
-   *
-   * @param key value for edited Row
-   * @param columnName
-   * @param originalValue
-   * @param newValue
-   */
-  edit(
-    key: string,
-    columnName: string,
-    originalValue: VuuRowDataItemType,
-    newValue: VuuRowDataItemType,
-  ) {
-    const { cellEdits } = this.getRowEdits(key);
-    const cellEdit = cellEdits.get(columnName);
-    if (cellEdit) {
-      if (newValue === cellEdit.originalValue) {
-        if (cellEdits.size === 1) {
-          this.#rowEdits.delete(key);
-        } else {
-          // re-editing a cell had removed the edit
-          cellEdits.delete(columnName);
-        }
-        this.editCount = this.#editCount - 1;
-      } else {
-        cellEdit.editedValue = newValue;
+      if (isValid) {
+        this.editCount += 1;
       }
-    } else {
-      cellEdits.set(columnName, {
-        originalValue,
-        editedValue: newValue,
-      });
-      this.editCount = this.#editCount + 1;
+      return cellEdit;
     }
   }
 
@@ -211,10 +184,14 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     typedValue: string | number | boolean,
     isValid: boolean,
   ) {
-    const rowEditDetails = this.getRowEdits(key);
+    if (!this.#inEditMode) {
+      throw new Error("No edit session in progress");
+    }
+    const rowEditDetails = this.getOrCreateRowEdits(key);
 
     if (isValid) {
       const { cellEdits } = rowEditDetails;
+
       const cellEdit = this.storeCellEdit(
         cellEdits,
         columnName,
@@ -223,29 +200,45 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         isValid,
       );
 
-      const response = await this.dataSource?.editCell?.(
-        key,
-        columnName,
-        typedValue,
-      );
-      if (isRpcError(response)) {
-        cellEdit.isValid = false;
-        this.invalidCount += 1;
-      }
-
-      return response;
-    } else {
-      if (rowEditDetails) {
-        const { cellEdits } = rowEditDetails;
-        const cellEditValues = cellEdits.get(columnName);
-        if (cellEditValues && cellEditValues.isValid !== false) {
-          cellEditValues.isValid = false;
-          this.invalidCount += 1;
+      if (cellEdit.isDeleted) {
+        if (rowEditDetails.cellEdits.size === 0) {
+          this.#rowEdits.delete(key);
         }
       }
-      console.log(
-        `[EditSession] key ${key}, column ${columnName} is valid ? ${isValid} `,
-      );
+
+      if (this.dataSource?.editCell) {
+        const response = await this.dataSource.editCell(
+          key,
+          columnName,
+          typedValue,
+        );
+        if (isRpcError(response)) {
+          cellEdit.isValid = false;
+          this.invalidCount += 1;
+        }
+
+        return {
+          editedDuringCurrentSession: cellEdit.originalValue !== typedValue,
+          ...response,
+        };
+      }
+    } else {
+      const { cellEdits } = rowEditDetails;
+      let cellEdit = cellEdits.get(columnName);
+      if (cellEdit && cellEdit.isValid !== false) {
+        cellEdit.isValid = false;
+        this.invalidCount += 1;
+      } else if (cellEdit === undefined) {
+        cellEdit = this.storeCellEdit(
+          cellEdits,
+          columnName,
+          originalValue,
+          typedValue,
+          isValid,
+        );
+        this.invalidCount += 1;
+      }
+      return { editedDuringCurrentSession: false };
     }
   }
 }
