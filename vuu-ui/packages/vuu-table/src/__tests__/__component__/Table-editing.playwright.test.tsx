@@ -413,7 +413,7 @@ test.describe("Edit conflicts", () => {
   });
 
   test.describe("Save Cancel buttons", () => {
-    test("shown in edit mode, Save enabled on edit", async ({
+    test("shown in edit mode, Save enabled on commit", async ({
       mount,
       page,
     }) => {
@@ -440,12 +440,12 @@ test.describe("Edit conflicts", () => {
       await table.assertCellIsFocused(cell, "textbox");
       await cell.pressSequentially("123");
 
-      await expect(saveButton).toBeEnabled();
+      await expect(saveButton).toBeDisabled();
       await expect(cancelButton).toBeEnabled();
 
-      await cell.press("Escape");
+      await cell.press("Enter");
 
-      await expect(saveButton).toBeDisabled();
+      await expect(saveButton).toBeEnabled();
       await expect(cancelButton).toBeEnabled();
     });
 

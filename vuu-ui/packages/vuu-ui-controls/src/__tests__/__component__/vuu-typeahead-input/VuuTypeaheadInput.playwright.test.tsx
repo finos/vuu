@@ -183,8 +183,6 @@ test.describe("VuuTypeaheadInput", () => {
         const options = page.getByRole("option");
         await expect(options).toHaveCount(1);
 
-        // Navigate to option and select it
-        await combobox.press("ArrowUp");
         const option = options.nth(0);
         await expect(option).toContainClass("saltOption-active");
         await expect(option).toContainClass("saltOption-focusVisible");

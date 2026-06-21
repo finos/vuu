@@ -164,7 +164,7 @@ export const useInputCell = <T extends string | number | boolean = string>({
                 editType: "cancel",
                 isValid: true,
                 previousValue,
-                value: initialValueRef.current,
+                value: getTypedValue(initialValueRef.current, type, true),
               },
               "commit",
             );
