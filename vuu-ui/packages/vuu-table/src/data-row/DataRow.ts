@@ -111,7 +111,7 @@ const formatStringNumeric = (value: string, type: StringNumericType) => {
 /**
  * DataRow wraps a vuu DataSourceRow and a columnMap to provide a more convenient
  * API for manipulating rows from server. It is now used internally by Table. This
- * removes the need to always provide a columnMap to any componnet that must work with
+ * removes the need to always provide a columnMap to any component that must work with
  * data rows. It also removes a category of timing bugs which cause the columnMap
  * to get out of sync with data.
  * Because properties are provided via a proxy, and the DataRow has the Schema, there is
@@ -214,7 +214,7 @@ function createColumnMap(
     ...ColumnMapIntrinsicColumns,
   };
 
-  columns.forEach((name, i) => {
+  columns.forEach((name, i, cols) => {
     const schemaColumn = schemaColumns.find((col) => col.name === name);
     if (schemaColumn) {
       const serverDataType = getServerDataType(schemaColumn, true);
@@ -228,11 +228,23 @@ function createColumnMap(
           `[DataRow] calculated column with invalid serverDataType ${name}`,
         );
       }
+    } else if (name === "vuuMsg" && i === cols.length - 1) {
+      // Mag column on a session table, always in last place
+      columnMap[name] = { index: i + 10, type: "string" };
     } else {
       throw Error(`[DataRow] dataRowFactory column not in schema ${name}`);
     }
   });
-  return columnMap;
+
+  if (columnMap.vuuMsg === undefined) {
+    // We will always check for vuuMsg, even if it isn't explicitly included in the subscribed columns
+    return {
+      ...columnMap,
+      vuuMsg: { index: columns.length + 10, type: "string" },
+    } as DataRowColumnMap;
+  } else {
+    return columnMap;
+  }
 }
 
 /**

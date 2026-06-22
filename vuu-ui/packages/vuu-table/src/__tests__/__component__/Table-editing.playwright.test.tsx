@@ -1,19 +1,358 @@
 import { test } from "@playwright/experimental-ct-react";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { EditableInstruments } from "../../../../../showcase/src/examples/Table/Editing.examples";
+import {
+  EditableInstruments,
+  TwoEditableInstruments,
+} from "../../../../../showcase/src/examples/Table/Editing.examples";
 import { expect } from "../../../../../playwright/customAssertions";
 import { TableOM } from "./TableOM";
 
 const IS_EDITABLE = true;
 const NOT_EDITABLE = false;
-// const NOT_EDITING = false;
+const NOT_EDITING = false;
 
-test.describe("Table Bulk Edit Panel", () => {
+test.describe("Editable table navigation", () => {
+  test("smoke test", async ({ mount, page }) => {
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstruments />
+      </LocalDataSourceProvider>,
+    );
+    const table1 = new TableOM(page.getByTestId("table-1"));
+    const editButton = page.getByRole("radio", { name: "Edit" });
+
+    await table1.assertRenderedRows({ from: 0, to: 10 }, 10, 10_000, 1);
+    await table1.assertCellIsEditable(2, 1, NOT_EDITABLE, "AAOO L");
+
+    await editButton.click();
+    await table1.assertCellIsEditable(2, 1, IS_EDITABLE, "AAOO L");
+  });
+
+  test("clicking a cell, then using arrow keys applies cell navigation ", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstruments />
+      </LocalDataSourceProvider>,
+    );
+    const table = new TableOM(page.getByRole("table"));
+    const editButton = page.getByRole("radio", { name: "Edit" });
+    await editButton.click();
+
+    // get the first data cell
+    let cell1 = table.locateCell(2, 1);
+    let cell2 = table.locateCell(3, 1);
+    let cell3 = table.locateCell(3, 2);
+    await cell1.click();
+    await table.assertCellIsFocused(cell1, "textbox");
+    await cell1.press("ArrowDown");
+    await table.assertCellIsFocused(cell2);
+    await cell2.press("ArrowRight");
+    await table.assertCellIsFocused(cell3, "combobox");
+  });
+
+  test("In edit mode, with cell navigation disabled, arrow key navigation traverses editable cells only", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstruments />
+      </LocalDataSourceProvider>,
+    );
+    const table = new TableOM(page.getByRole("table"));
+    const editButton = page.getByRole("radio", { name: "Edit" });
+    await editButton.click();
+
+    let cell4 = table.locateCell(2, 4);
+    let cell5 = table.locateCell(2, 5);
+    let cell6 = table.locateCell(2, 6);
+    let cell7 = table.locateCell(2, 7);
+
+    // focus is in not editable, followed by 2 editable cells
+    await cell5.click();
+    await table.assertCellIsFocused(cell5);
+    await cell5.press("ArrowRight");
+
+    await table.assertCellIsFocused(cell6);
+    await cell6.press("ArrowRight");
+
+    await table.assertCellIsFocused(cell7);
+    // attempts to navigate further right do nothing
+    await cell7.press("ArrowRight");
+    await table.assertCellIsFocused(cell7);
+
+    await cell7.press("ArrowLeft");
+    await table.assertCellIsFocused(cell6);
+
+    // slip the non editable cell, isin
+    await cell6.press("ArrowLeft");
+    await table.assertCellIsFocused(cell4);
+  });
+
+  test("clicking a cell applies focus, then using Enter key engages edit mode", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstruments />
+      </LocalDataSourceProvider>,
+    );
+    const table = new TableOM(page.getByRole("table"));
+    const editButton = page.getByRole("radio", { name: "Edit" });
+    await editButton.click();
+
+    // get the description  cell
+    let cell = table.locateCell(3, 3);
+    await cell.click();
+    await table.assertCellIsFocused(cell, "textbox");
+    await cell.press("Enter");
+    await table.assertCellIsFocused(cell, "textbox");
+    await table.assertCellIsEditing(cell);
+  });
+
+  test("clicking a dropdown cell applies focus and shows dropdown, current value is focused, Enter again closes", async ({
+    browserName,
+    mount,
+    page,
+  }) => {
+    // The very last assetion doesn't work in Safari - the transfer of focus on 'vuu-commit'
+    test.skip(browserName === "webkit");
+
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstruments />
+      </LocalDataSourceProvider>,
+    );
+    const table = new TableOM(page.getByRole("table"));
+    const editButton = page.getByRole("radio", { name: "Edit" });
+    await editButton.click();
+
+    // get the currency cell
+    let cell = table.locateCell(3, 2);
+    let nextCell = table.locateCell(4, 2);
+    const originalValue =
+      (await cell.getByRole("combobox").textContent()) ?? "";
+    await cell.click();
+
+    await table.assertCellIsFocused(cell, "combobox");
+    await expect(page.getByRole("listbox")).toBeVisible();
+    await cell.press("Enter");
+    await expect(page.getByRole("listbox")).not.toBeVisible();
+    await table.assertCellContent(cell, originalValue, "combobox");
+
+    await table.assertCellIsFocused(nextCell, "combobox");
+  });
+
+  test("clicking Escape in a cell in edit mode, before actual editing, exits edit mode, textbox retains focus", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstruments />
+      </LocalDataSourceProvider>,
+    );
+    const table = new TableOM(page.getByRole("table"));
+    const editButton = page.getByRole("radio", { name: "Edit" });
+    await editButton.click();
+
+    // get the description  cell
+    let cell = table.locateCell(3, 3);
+    await cell.click();
+    await table.assertCellIsFocused(cell, "textbox");
+    await cell.press("Enter");
+    await table.assertCellIsFocused(cell, "textbox");
+    await table.assertCellIsEditing(cell);
+    await cell.press("Escape");
+    await table.assertCellIsEditing(cell, NOT_EDITING);
+    await table.assertCellIsFocused(cell, "textbox");
+  });
+  test("clicking Arrow keys in a cell in edit mode, moves cursor within textbox", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstruments />
+      </LocalDataSourceProvider>,
+    );
+    const table = new TableOM(page.getByRole("table"));
+    const editButton = page.getByRole("radio", { name: "Edit" });
+    await editButton.click();
+
+    // get the description  cell
+    let cell = table.locateCell(3, 3);
+    await cell.click();
+    await table.assertCellIsFocused(cell, "textbox");
+    await cell.press("Enter");
+    await table.assertCellIsFocused(cell, "textbox");
+    await table.assertCellIsEditing(cell);
+    await cell.press("ArrowDown");
+    await table.assertCellIsFocused(cell, "textbox");
+    await table.assertCellIsEditing(cell);
+    const textbox = cell.getByRole("textbox");
+    await expect(textbox).toHaveSelection(18, 18);
+    await cell.press("ArrowUp");
+    await table.assertCellIsFocused(cell, "textbox");
+    await table.assertCellIsEditing(cell);
+    await expect(textbox).toHaveSelection(0, 0);
+    await cell.press("ArrowRight");
+    await table.assertCellIsFocused(cell, "textbox");
+    await table.assertCellIsEditing(cell);
+    await expect(textbox).toHaveSelection(1, 1);
+    await cell.press("ArrowLeft");
+    await table.assertCellIsFocused(cell, "textbox");
+    await table.assertCellIsEditing(cell);
+    await expect(textbox).toHaveSelection(0, 0);
+  });
+});
+
+test.describe("Cell editing", () => {
+  test("double clicking a cell applies focus and selection, edit to overwrite, Escape reverts", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstruments />
+      </LocalDataSourceProvider>,
+    );
+    const table = new TableOM(page.getByRole("table"));
+    const editButton = page.getByRole("radio", { name: "Edit" });
+    await editButton.click();
+
+    // get the lotsize  cell
+    let cell = table.locateCell(3, 6);
+    const originalValue = await cell.getByRole("textbox").inputValue();
+    await cell.dblclick();
+    await table.assertCellIsFocused(cell, "textbox");
+    await cell.pressSequentially("123");
+    await table.assertCellIsFocused(cell, "textbox");
+    await table.assertCellIsEditing(cell);
+
+    await table.assertCellValue(cell, "123", "textbox");
+
+    await cell.press("Escape");
+    await table.assertCellIsEditing(cell, NOT_EDITING);
+
+    await table.assertCellValue(cell, originalValue, "textbox");
+  });
+
+  test("double clicking a cell applies focus and selection, edit to overwrite, Enter commits", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstruments />
+      </LocalDataSourceProvider>,
+    );
+    const table = new TableOM(page.getByRole("table"));
+    const editButton = page.getByRole("radio", { name: "Edit" });
+    await editButton.click();
+
+    // get the lotsize  cell
+    const cell = table.locateCell(3, 6);
+    const nextCell = table.locateCell(4, 6);
+    await cell.dblclick();
+    await table.assertCellIsFocused(cell, "textbox");
+    await cell.pressSequentially("123");
+    await table.assertCellIsFocused(cell, "textbox");
+    await table.assertCellIsEditing(cell);
+
+    await table.assertCellValue(cell, "123", "textbox");
+
+    await cell.press("Enter");
+    await table.assertCellIsEditing(cell, NOT_EDITING);
+    await table.assertCellValue(cell, "123", "textbox");
+    await table.assertCellIsFocused(nextCell);
+  });
+
+  test("navigate to a cell, Enter to enter edit mode, Enter again without editing exits", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstruments />
+      </LocalDataSourceProvider>,
+    );
+    const table = new TableOM(page.getByRole("table"));
+    const editButton = page.getByRole("radio", { name: "Edit" });
+    await editButton.click();
+
+    // get the first  cell
+    const preceedingCell = table.locateCell(2, 1);
+    const cell = table.locateCell(3, 1);
+    const nextCell = table.locateCell(4, 1);
+    await preceedingCell.click();
+    await table.assertCellIsFocused(preceedingCell, "textbox");
+
+    await preceedingCell.press("ArrowDown");
+    await table.assertCellIsFocused(cell);
+
+    await cell.press("Enter");
+    await table.assertCellIsFocused(cell, "textbox");
+    await table.assertCellIsEditing(cell);
+
+    await cell.getByRole("textbox").press("Enter");
+    await table.assertCellIsFocused(cell, "textbox");
+    await table.assertCellIsEditing(cell, NOT_EDITING);
+
+    await cell.press("ArrowDown");
+    await table.assertCellIsFocused(nextCell);
+    await table.assertCellIsEditing(nextCell, NOT_EDITING);
+  });
+
+  test("navigate to a cell, type text to enter edit mode and apply edits, Escape exits, reverting edits", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstruments />
+      </LocalDataSourceProvider>,
+    );
+    const table = new TableOM(page.getByRole("table"));
+    const editButton = page.getByRole("radio", { name: "Edit" });
+    await editButton.click();
+
+    // get the first  cell
+    const preceedingCell = table.locateCell(2, 1);
+    const cell = table.locateCell(3, 1);
+    const nextCell = table.locateCell(4, 1);
+    await preceedingCell.click();
+    await table.assertCellIsFocused(preceedingCell, "textbox");
+
+    await preceedingCell.press("ArrowDown");
+    await table.assertCellIsFocused(cell);
+
+    const originalValue = await cell.getByRole("textbox").inputValue();
+    await cell.pressSequentially("123");
+    await table.assertCellIsFocused(cell, "textbox");
+    await table.assertCellIsEditing(cell);
+
+    await cell.getByRole("textbox").press("Escape");
+    await table.assertCellIsFocused(cell, "textbox");
+    await table.assertCellIsEditing(cell, NOT_EDITING);
+    await table.assertCellValue(cell, originalValue, "textbox");
+
+    await cell.press("ArrowDown");
+    await table.assertCellIsFocused(nextCell);
+    await table.assertCellIsEditing(nextCell, NOT_EDITING);
+  });
+});
+
+test.describe("Edit conflicts", () => {
   test.describe("View mode", () => {
     test("smoke test", async ({ mount, page }) => {
       await mount(
         <LocalDataSourceProvider>
-          <EditableInstruments />
+          <TwoEditableInstruments />
         </LocalDataSourceProvider>,
       );
       const table1 = new TableOM(page.getByTestId("table-1"));
@@ -31,7 +370,7 @@ test.describe("Table Bulk Edit Panel", () => {
     }) => {
       await mount(
         <LocalDataSourceProvider>
-          <EditableInstruments />
+          <TwoEditableInstruments />
         </LocalDataSourceProvider>,
       );
       const table = new TableOM(page.getByTestId("table-1"));
@@ -55,7 +394,7 @@ test.describe("Table Bulk Edit Panel", () => {
     test("smoke test", async ({ mount, page }) => {
       await mount(
         <LocalDataSourceProvider>
-          <EditableInstruments />
+          <TwoEditableInstruments />
         </LocalDataSourceProvider>,
       );
 
@@ -73,99 +412,84 @@ test.describe("Table Bulk Edit Panel", () => {
     });
   });
 
-  //   test("clicking a cell, then using arrow keys applies cell navigation ", async ({
-  //     mount,
-  //     page,
-  //   }) => {
-  //     await mount(
-  //       <LocalDataSourceProvider>
-  //         <BulkEditPanelFixture />
-  //       </LocalDataSourceProvider>,
-  //     );
-  //     const table = new TableOM(page.getByRole("table"));
-  //     // get the first data cell
-  //     let cell1 = table.locateCell(3, 1);
-  //     let cell2 = table.locateCell(4, 1);
-  //     let cell3 = table.locateCell(4, 2);
-  //     await cell1.click();
-  //     await table.assertCellIsFocused(cell1, "textbox");
-  //     await cell1.press("ArrowDown");
-  //     await table.assertCellIsFocused(cell2);
-  //     await cell2.press("ArrowRight");
-  //     await table.assertCellIsFocused(cell3);
-  //   });
-  //   test("clicking a cell applies focus, then using Enter key engages edit mode", async ({
-  //     mount,
-  //     page,
-  //   }) => {
-  //     await mount(
-  //       <LocalDataSourceProvider>
-  //         <BulkEditPanelFixture />
-  //       </LocalDataSourceProvider>,
-  //     );
-  //     const table = new TableOM(page.getByRole("table"));
-  //     // get the currency  cell
-  //     let cell = table.locateCell(3, 2);
-  //     await cell.click();
-  //     await table.assertCellIsFocused(cell, "textbox");
-  //     await cell.press("Enter");
-  //     await table.assertCellIsFocused(cell, "textbox");
-  //     await table.assertCellIsEditing(cell);
-  //   });
-  //   test("clicking Escape in a cell in edit mode, before actual editing, exits edit mode, tetxbox retains focus", async ({
-  //     mount,
-  //     page,
-  //   }) => {
-  //     await mount(
-  //       <LocalDataSourceProvider>
-  //         <BulkEditPanelFixture />
-  //       </LocalDataSourceProvider>,
-  //     );
-  //     const table = new TableOM(page.getByRole("table"));
-  //     // get the currency  cell
-  //     let cell = table.locateCell(3, 2);
-  //     await cell.click();
-  //     await table.assertCellIsFocused(cell, "textbox");
-  //     await cell.press("Enter");
-  //     await table.assertCellIsFocused(cell, "textbox");
-  //     await table.assertCellIsEditing(cell);
-  //     await cell.press("Escape");
-  //     await table.assertCellIsEditing(cell, NOT_EDITING);
-  //     await table.assertCellIsFocused(cell, "textbox");
-  //   });
-  //   test("clicking Arrow keys in a cell in edit mode, moves cursor within textbox", async ({
-  //     mount,
-  //     page,
-  //   }) => {
-  //     await mount(
-  //       <LocalDataSourceProvider>
-  //         <BulkEditPanelFixture />
-  //       </LocalDataSourceProvider>,
-  //     );
-  //     const table = new TableOM(page.getByRole("table"));
-  //     // get the currency  cell
-  //     let cell = table.locateCell(3, 2);
-  //     await cell.click();
-  //     await table.assertCellIsFocused(cell, "textbox");
-  //     await cell.press("Enter");
-  //     await table.assertCellIsFocused(cell, "textbox");
-  //     await table.assertCellIsEditing(cell);
-  //     await cell.press("ArrowDown");
-  //     await table.assertCellIsFocused(cell, "textbox");
-  //     await table.assertCellIsEditing(cell);
-  //     const textbox = cell.getByRole("textbox");
-  //     await expect(textbox).toHaveSelection(3, 3);
-  //     await cell.press("ArrowUp");
-  //     await table.assertCellIsFocused(cell, "textbox");
-  //     await table.assertCellIsEditing(cell);
-  //     await expect(textbox).toHaveSelection(0, 0);
-  //     await cell.press("ArrowRight");
-  //     await table.assertCellIsFocused(cell, "textbox");
-  //     await table.assertCellIsEditing(cell);
-  //     await expect(textbox).toHaveSelection(1, 1);
-  //     await cell.press("ArrowLeft");
-  //     await table.assertCellIsFocused(cell, "textbox");
-  //     await table.assertCellIsEditing(cell);
-  //     await expect(textbox).toHaveSelection(0, 0);
-  //   });
+  test.describe("Save Cancel buttons", () => {
+    test("shown in edit mode, Save enabled on commit", async ({
+      mount,
+      page,
+    }) => {
+      await mount(
+        <LocalDataSourceProvider>
+          <EditableInstruments />
+        </LocalDataSourceProvider>,
+      );
+      const table = new TableOM(page.getByTestId("table-1"));
+      const editButton = page.getByRole("radio", { name: "Edit" });
+      await editButton.click();
+
+      const saveButton = page.getByRole("button", { name: "Save" });
+      const cancelButton = page.getByRole("button", { name: "Cancel" });
+
+      await expect(saveButton).toBeVisible();
+      await expect(saveButton).toBeDisabled();
+
+      await expect(cancelButton).toBeVisible();
+      await expect(cancelButton).toBeEnabled();
+
+      const cell = table.locateCell(3, 6);
+      await cell.dblclick();
+      await table.assertCellIsFocused(cell, "textbox");
+      await cell.pressSequentially("123");
+
+      await expect(saveButton).toBeDisabled();
+      await expect(cancelButton).toBeEnabled();
+
+      await cell.press("Enter");
+
+      await expect(saveButton).toBeEnabled();
+      await expect(cancelButton).toBeEnabled();
+    });
+
+    test("Save disabled whilst rejected edits", async ({ mount, page }) => {
+      await mount(
+        <LocalDataSourceProvider>
+          <EditableInstruments />
+        </LocalDataSourceProvider>,
+      );
+      const table = new TableOM(page.getByTestId("table-1"));
+      const editButton = page.getByRole("radio", { name: "Edit" });
+      await editButton.click();
+
+      const saveButton = page.getByRole("button", { name: "Save" });
+      const cancelButton = page.getByRole("button", { name: "Cancel" });
+
+      await expect(saveButton).toBeVisible();
+      await expect(saveButton).toBeDisabled();
+
+      await expect(cancelButton).toBeVisible();
+      await expect(cancelButton).toBeEnabled();
+
+      const cell1 = table.locateCell(3, 6);
+      await cell1.dblclick();
+      await table.assertCellIsFocused(cell1, "textbox");
+      await cell1.pressSequentially("123");
+
+      const cell2 = table.locateCell(4, 6);
+      await cell2.dblclick();
+      await table.assertCellIsFocused(cell2, "textbox");
+      await cell2.pressSequentially("abc");
+      await cell2.press("Enter");
+      await expect(cell2.locator(".saltInput")).toContainClass(
+        "vuuTableInputCell-error",
+      );
+      await expect(saveButton).toBeDisabled();
+      await expect(cancelButton).toBeEnabled();
+
+      await cell2.press("Escape");
+      await expect(cell2.locator(".saltInput")).not.toContainClass(
+        "vuuTableInputCell-error",
+      );
+      await expect(saveButton).toBeEnabled();
+      await expect(cancelButton).toBeEnabled();
+    });
+  });
 });

@@ -33,6 +33,7 @@ import type {
   VuuRpcServiceRequest,
   VuuViewportCreateResponse,
   SelectRequest,
+  ServerToClientError,
 } from "@vuu-ui/vuu-protocol-types";
 import {
   isVuuMenuRpcRequest,
@@ -47,6 +48,7 @@ import {
   hasViewPortContext,
   isSelectRequest,
   isCreateVpSuccess,
+  isErrorMessage,
 } from "@vuu-ui/vuu-utils";
 import {
   createSchemaFromTableMetadata,
@@ -254,7 +256,13 @@ export class ServerProxy {
         pendingTableSchema,
       ]);
 
-      if (isCreateVpSuccess(subscribeResponse)) {
+      if (isErrorMessage(tableSchema)) {
+        this.postMessageToClient({
+          clientViewportId: message.viewport,
+          type: "subscribe-failed",
+          msg: `failed to fetch schema for table ${message.table.table}: ${tableSchema.msg}`,
+        });
+      } else if (isCreateVpSuccess(subscribeResponse)) {
         const { viewPortId: serverViewportId } = subscribeResponse;
         const { status: previousViewportStatus } = viewport;
         // switch storage key from client viewportId to server viewportId
@@ -318,7 +326,11 @@ export class ServerProxy {
             });
         }
       } else {
-        //TODO handle CREATE_VP_REJECT
+        this.postMessageToClient({
+          clientViewportId: message.viewport,
+          type: "subscribe-failed",
+          msg: `failed to open subscription on table ${message.table.table}: ${subscribeResponse.msg}`,
+        });
       }
     } else {
       error(`spurious subscribe call ${message.viewport}`);
@@ -435,17 +447,7 @@ export class ServerProxy {
     if (viewport.status === "subscribed") {
       info?.(`setViewRange ${message.range.from} - ${message.range.to}`);
 
-      // if (!serverRequest && !rows) {
-      //   console.log(
-      //     `%c[ServerProxy] no server request and no rows from cache`,
-      //     "color:red;font-weight:bold;",
-      //   );
-      // }
-
       if (serverRequest) {
-        // console.log(
-        //   `[ServerProxy] ==> CHANGE_VP_RANGE (${message.range.from}-${message.range.to}) => (${serverRequest.from}-${serverRequest.to})`,
-        // );
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         if (process.env.NODE_ENV === "development") {
@@ -462,10 +464,6 @@ export class ServerProxy {
 
       if (rows) {
         info?.(`setViewRange ${rows.length} rows returned from cache`);
-        // console.log(
-        //   `%c[ServerProxy] post rows to client ${rows.map((r) => r[0]).join(",")}`,
-        //   "color:brown",
-        // );
         this.postMessageToClient({
           mode: "update",
           type: "viewport-update",
@@ -800,7 +798,9 @@ export class ServerProxy {
 
         case "GET_TABLE_META": {
           this.getTableMeta(message.table, requestId).then((tableSchema) => {
-            if (tableSchema) {
+            if (isErrorMessage(tableSchema)) {
+              //
+            } else if (tableSchema) {
               this.postMessageToClient({
                 type: "TABLE_META_RESP",
                 tableSchema,
@@ -823,10 +823,11 @@ export class ServerProxy {
   private getTableMeta(table: VuuTable, requestId = nextRequestId()) {
     if (isSessionTable(table)) {
       // Do not cache session table
-      return this.awaitResponseToMessage<VuuTableMetaResponse>(
-        { type: "GET_TABLE_META", table },
-        requestId,
-      ).then(createSchemaFromTableMetadata);
+      return this.awaitResponseToMessage<
+        VuuTableMetaResponse | ServerToClientError
+      >({ type: "GET_TABLE_META", table }, requestId).then((resp) =>
+        isErrorMessage(resp) ? resp : createSchemaFromTableMetadata(resp),
+      );
     }
     const key = `${table.module}:${table.table}`;
     let tableMetaRequest = this.cachedTableMetaRequests.get(key);
@@ -837,7 +838,13 @@ export class ServerProxy {
       ) as Promise<VuuTableMetaResponse>;
       this.cachedTableMetaRequests.set(key, tableMetaRequest);
     }
-    return tableMetaRequest?.then((response) => this.cacheTableMeta(response));
+    return tableMetaRequest?.then((response) => {
+      if (isErrorMessage(response)) {
+        return response;
+      } else {
+        return this.cacheTableMeta(response);
+      }
+    });
   }
 
   private awaitResponseToMessage<T = unknown>(

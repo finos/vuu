@@ -4,10 +4,10 @@ import type {
   TableCellEditHandler,
   TableCellProps,
 } from "@vuu-ui/vuu-table-types";
-import { getTypedValue } from "@vuu-ui/vuu-utils";
+import { useEditSession } from "@vuu-ui/vuu-utils";
 import { MouseEventHandler, useCallback, useState } from "react";
+import { applyHighlighting } from "../applyHighlighting";
 import { useCell } from "../useCell";
-import { useHighlighting } from "../useHighlighting";
 
 import tableCellCss from "./TableCell.css";
 
@@ -17,7 +17,6 @@ export const TableCell = ({
   column,
   dataRow,
   onClick,
-  onDataEdited,
   searchPattern = "",
 }: TableCellProps) => {
   const targetWindow = useWindow();
@@ -27,44 +26,31 @@ export const TableCell = ({
     window: targetWindow,
   });
 
-  const [hasError, setHasError] = useState(false);
+  const editSession = useEditSession();
 
-  const { className, style } = useCell(column, classBase, false, hasError);
-  const { ariaColIndex, CellRenderer, valueFormatter } = column;
-  // const dataIdx = columnMap[column.name];
+  const { className, style } = useCell(column, classBase, false);
+  const { ariaColIndex, CellRenderer, name, valueFormatter } = column;
+  const [editedDuringCurrentSession, setEditingDuringCurrentSession] = useState<
+    boolean | undefined
+  >(undefined);
 
   const handleDataItemEdited = useCallback<TableCellEditHandler>(
-    (editState, editPhase) => {
-      if (editPhase === "commit") {
-        const { serverDataType = "string" } = column;
-        const typedValue = getTypedValue(
-          String(editState.value),
-          serverDataType,
-          true,
-        );
-        return onDataEdited?.(
-          {
-            ...editState,
-            dataRow,
-            columnName: column.name,
-            value: typedValue,
-          },
-          editPhase,
-        );
-      } else {
-        setHasError(editState.isValid === false);
-        onDataEdited?.(
-          {
-            ...editState,
-            dataRow,
-            columnName: column.name,
-          },
-          editPhase,
-        );
-        return undefined;
+    async (editState, editPhase) => {
+      const { isValid = true, previousValue = "", value } = editState;
+      if (editPhase === "commit" && editSession) {
+        const { editedDuringCurrentSession, ...response } =
+          await editSession.commit(
+            dataRow.key,
+            name,
+            previousValue,
+            value,
+            isValid,
+          );
+        setEditingDuringCurrentSession(editedDuringCurrentSession);
+        return response;
       }
     },
-    [column, dataRow, onDataEdited],
+    [dataRow.key, editSession, name],
   );
 
   const handleClick = useCallback<MouseEventHandler>(
@@ -73,9 +59,6 @@ export const TableCell = ({
     },
     [column, onClick],
   );
-
-  const value = valueFormatter(dataRow[column.name]);
-  const valueWithHighlighting = useHighlighting(value, searchPattern);
 
   return (
     <div
@@ -89,11 +72,12 @@ export const TableCell = ({
         <CellRenderer
           column={column}
           dataRow={dataRow}
+          editedDuringCurrentSession={editedDuringCurrentSession}
           onEdit={handleDataItemEdited}
           searchPattern={searchPattern}
         />
       ) : (
-        valueWithHighlighting
+        applyHighlighting(valueFormatter(dataRow[column.name]), searchPattern)
       )}
     </div>
   );

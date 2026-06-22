@@ -131,6 +131,12 @@ export declare type TableRowClickHandlerInternal = (
 
 export interface TableCellRendererProps
   extends Omit<TableCellProps, "onDataEdited"> {
+  /**
+   * has the value of this edit control been changed during the current edit session.
+   * This can go from true to false if control is edited to revert a previous change
+   * during same session. It will be undefined if the control has not been edited.
+   */
+  editedDuringCurrentSession?: boolean;
   onEdit?: TableCellEditHandler;
 }
 
@@ -280,6 +286,9 @@ export interface ColumnDescriptor extends DataValueDescriptor {
    * This property can be used to disable this feature for a single column.
    */
   allowColumnHeaderMenu?: false;
+  /**
+   * Optional additional CSS className will be applied to column header and all table cells within column.
+   */
   className?: string;
   /**
    * Allows custom content to be rendered into the column header. This will be an identifier.
@@ -306,23 +315,58 @@ export interface ColumnDescriptor extends DataValueDescriptor {
   heading?: string[];
   hidden?: boolean;
   isSystemColumn?: boolean;
-  locked?: boolean;
+  /**
+   * A 'locked' column remains in a fixed position within the columns list. It
+   * cannot be moved from this position by the user. Columns can only be locked
+   * to one or other end of the columns list , i.e a column can be locked to the end
+   * of the columns list or the begining. More than one column can be locked to
+   * either end. Note: this is different from 'pin' in that locked columns can be
+   * scrolled out of the viewport.
+   */
+  locked?: Exclude<PinLocation, "left"> | false;
   maxWidth?: number;
   minWidth?: number;
+  /**
+   * Pinned columns will 'stick' to the edge of the viewport, irrespective of their
+   * position within the columns list. Their position(s) will not change even when
+   * the viewport is scrolled horizontally. They can be pinned at the leading or
+   * trailing viewport edge. More than one column can be pinned to each edge.
+   */
   pin?: PinLocation | false;
+
+  /**
+   * A removeable column can be manually removed by user. The default value for this is true,
+   * and is determined at the table level. The default can be set to false with the table prop
+   * allowColumnRemoval. Whatever the table default, the removable prop on a column takes
+   * precedence. Note: removal by user is only possible if a ColumnMenu is configured with the
+   * appropriate menu item or the ColumnPicker is offered and allows column removal. The
+   * intended purpose of this prop is to exclude certain columns from manual removal by the user,
+   * even when removal is offered (via the menu or the columnPicker) for other columns.
+   */
+  removeable?: boolean;
+
+  /**
+   * A resizeable column can be manually resized by user. The default value for this is true,
+   * and is determined at the table level. The default can be set to false with the table prop
+   * allowColumnResizing. Whatever the table default, the resizeable prop on a column takes
+   * precedence.
+   */
   resizeable?: boolean;
 
   /**
-   * Column and all cells will be rendered in selected state;
+   * Column and all cells will be rendered in selected state. This is different from row selection
+   * and used purely to visually highlight a row. No data is actually selected.
    */
-
   selected?: boolean;
   sortable?: boolean;
   /**
-   * 'client' columns will not receive data from dataSource.
+   * 'client' columns are not directly associated with a dataSource column.
+   * They are not validated against the dataSource to ensure data is included
+   * in subscription.
    * They can be used with a custom renderer, e.g to render
-   * action buttons.
-   * default is 'server'
+   * action buttons. They do have access to the dataRow, so a custom renderer
+   * can consume data from any column included in dataSource subscription.
+   * Default is 'server'
    */
   source?: "client" | "server";
 
@@ -363,7 +407,6 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   isGroup?: boolean;
   isSystemColumn?: boolean;
   label: string;
-  locked?: boolean;
   marginLeft?: number;
   moving?: boolean;
   /** used only when column is a child of GroupColumn  */

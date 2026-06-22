@@ -27,7 +27,7 @@ import {
   Option,
   OptionProps,
 } from "@salt-ds/core";
-import { useHighlighting } from "@vuu-ui/vuu-table";
+import { applyHighlighting } from "@vuu-ui/vuu-table";
 import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
 import { ColumnChangeSource } from "./ColumnModel";
 import { ColumnPickerHookProps, useColumnPicker } from "./useColumnPicker";
@@ -79,7 +79,7 @@ const SelectedColumnListItem = ({
 }) => {
   const { handleRef, ref } = useSorting(column.name, index);
   const value = getColumnLabel(column as ColumnDescriptor);
-  const valueWithHighlighting = useHighlighting(value, searchPattern);
+  const valueWithHighlighting = applyHighlighting(value, searchPattern);
 
   const handleRemoveButtonClick = useCallback<
     MouseEventHandler<HTMLButtonElement>
@@ -135,7 +135,7 @@ const AvailableColumnListItem = ({
   searchPattern?: Lowercase<string>;
 }) => {
   const value = getColumnLabel(item as ColumnDescriptor);
-  const valueWithHighlighting = useHighlighting(value, searchPattern);
+  const valueWithHighlighting = applyHighlighting(value, searchPattern);
 
   return (
     <Option

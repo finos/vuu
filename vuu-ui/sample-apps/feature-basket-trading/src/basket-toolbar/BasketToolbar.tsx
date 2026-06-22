@@ -67,6 +67,7 @@ export const BasketToolbar = ({
     [onCommit],
   );
 
+  // TODO use an InputCell for this
   const { warningMessage: unitErrorMessage, ...unitProps } =
     useEditableText<number>({
       value: basket?.units,

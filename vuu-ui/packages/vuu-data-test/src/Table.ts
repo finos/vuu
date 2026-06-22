@@ -118,6 +118,9 @@ export class Table extends EventEmitter<TableEvents> {
       (row) => row[this.#indexOfKey] === key,
     );
     if (rowIndex !== -1) {
+      const tsIndex = this.#dataMap.vuuUpdatedTimestamp;
+      const lastUpdated = Date.now();
+      row[tsIndex] = lastUpdated;
       this.#data[rowIndex] = row;
       this.emit("update", row);
     }

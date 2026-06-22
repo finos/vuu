@@ -43,7 +43,7 @@ export const useChartContextMenu = ({
   const showContextMenu = useContextMenu();
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
+  // @ts-ignore
   const onContextMenu = useCallback<any>(
     ({
       data,

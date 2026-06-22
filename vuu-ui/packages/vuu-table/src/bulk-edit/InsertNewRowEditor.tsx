@@ -7,10 +7,10 @@ import cx from "clsx";
 import { HTMLAttributes } from "react";
 import { VirtualColSpan } from "../VirtualColSpan";
 import { useHeaderProps } from "../table-header";
-import { useBulkEditRow } from "./useBulkEditRow";
-
-import bulkEditRowCss from "./BulkEditRow.css";
+import { useBulkEditRow } from "./useColumnCascadingEditor";
 import { isNotHidden } from "@vuu-ui/vuu-utils";
+
+import bulkEditRowCss from "./InsertNewRowEditor.css";
 
 const classBase = "vuuBulkEditRow";
 
@@ -25,7 +25,7 @@ export interface BulkEditProps
   onRowChange: (isValid: boolean) => void;
 }
 
-export const BulkEditRow = ({
+export const InsertNewRowEditor = ({
   ariaRole,
   onBulkChange,
   onRowChange,

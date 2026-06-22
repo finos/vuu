@@ -1,11 +1,11 @@
 import { Button } from "@salt-ds/core";
 import { EditState, EditSession } from "./EditSession";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 export interface EditButtonProps {
   editSession?: EditSession;
   onCancel: () => void;
-  onSave: () => void;
+  onSave: (force?: boolean) => void;
 }
 
 export const EditButtons = ({
@@ -15,6 +15,10 @@ export const EditButtons = ({
 }: EditButtonProps) => {
   const [editState, setEditState] = useState<EditState>("clean");
 
+  const handleSave = useCallback(() => {
+    onSave(editState === "stale");
+  }, [editState, onSave]);
+
   useMemo(() => {
     editSession?.on("editState", setEditState);
   }, [editSession]);
@@ -22,11 +26,11 @@ export const EditButtons = ({
   return (
     <>
       <Button
-        disabled={editState === "clean"}
-        onClick={onSave}
+        disabled={editState === "clean" || editState === "invalid"}
+        onClick={handleSave}
         sentiment="accented"
       >
-        Save
+        {editState === "stale" ? "Save (force)" : "Save"}
       </Button>
       <Button onClick={onCancel}>Cancel</Button>
     </>

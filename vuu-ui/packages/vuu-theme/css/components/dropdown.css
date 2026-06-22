@@ -1,0 +1,11 @@
+.salt-theme.vuu-theme {
+    .saltDropdown {
+        .saltDropdown-toggle {
+            display: none;
+        }
+
+        .saltDropdown-activationIndicator {
+            display: none;
+        }
+    }
+}

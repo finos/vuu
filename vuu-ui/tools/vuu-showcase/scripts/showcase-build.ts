@@ -18,7 +18,7 @@ const mdxFiles = buildFileList(pathToSrc, /.mdx$/);
 const features = buildFileList("./src/features", /feature.tsx$/);
 
 // TODO use a separate build call for each theme, without bundling
-const themes = ["./src/themes/salt-theme.ts", "./src/themes/vuu-theme.ts"];
+const themes = ["./src/themes/salt-theme-next.ts", "./src/themes/vuu-theme.ts"];
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const currentDir = path.dirname(__filename); // get the name of the directory
@@ -57,7 +57,7 @@ if (!fs.existsSync(".showcase/prod")) {
 const esbuildConfig = {
   entryPoints,
   env: "production",
-  external: ["./themes/salt-theme.ts", "./themes/vuu-theme.ts"],
+  external: ["./themes/salt-theme-next.ts", "./themes/vuu-theme.ts"],
   name: "showcase",
   plugins: [cssInlinePlugin, mdx()],
   outdir: `${outdir}`,

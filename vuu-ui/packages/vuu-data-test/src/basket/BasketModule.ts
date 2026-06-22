@@ -257,7 +257,10 @@ export class BasketModule extends VuuModule<BasketsTableName> {
 
   private createNewBasket: ServiceHandler = async (rpcRequest) => {
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
-      const { sourceBasketId, tradeBasketName } = rpcRequest.params;
+      const { sourceBasketId, tradeBasketName } = rpcRequest.params as {
+        sourceBasketId: string;
+        tradeBasketName: string;
+      };
       const key = this.createTradingBasket(
         sourceBasketId as string,
         tradeBasketName as string,
@@ -273,7 +276,9 @@ export class BasketModule extends VuuModule<BasketsTableName> {
 
   private sendToMarket: ServiceHandler = async (rpcRequest) => {
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
-      const { basketInstanceId } = rpcRequest.params;
+      const { basketInstanceId } = rpcRequest.params as {
+        basketInstanceId: string;
+      };
       this.tables.basketTrading.update(
         basketInstanceId as string,
         "status",
@@ -289,7 +294,9 @@ export class BasketModule extends VuuModule<BasketsTableName> {
   };
   private takeOffMarket: ServiceHandler = async (rpcRequest) => {
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
-      const { basketInstanceId } = rpcRequest.params;
+      const { basketInstanceId } = rpcRequest.params as {
+        basketInstanceId: string;
+      };
       this.tables.basketTrading.update(
         basketInstanceId as string,
         "status",

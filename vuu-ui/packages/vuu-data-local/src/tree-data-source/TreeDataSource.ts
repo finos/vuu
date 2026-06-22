@@ -97,6 +97,8 @@ export class TreeDataSource extends BaseDataSource implements DataSource {
       this.#iconProvider,
     );
 
+    console.table(this.#data);
+
     if (this.columnDescriptors) {
       const columns = this.columnDescriptors.map((c) => c.name);
       this._configWithVisualLink = {

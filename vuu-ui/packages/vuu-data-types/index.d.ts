@@ -303,6 +303,12 @@ export interface DataSourceSortMessage extends MessageWithClientViewportId {
   sort: VuuSort;
 }
 
+export interface DataSourceSubscribeFailedMessage
+  extends MessageWithClientViewportId {
+  type: "subscribe-failed";
+  msg: string;
+}
+
 export interface DataSourceSubscribedMessage
   extends MessageWithClientViewportId {
   aggregations: VuuAggregation[];
@@ -361,6 +367,7 @@ export declare type DataSourceCallbackMessage =
   | DataSourceUnfrozenMessage
   | DataSourceMenusMessage
   | DataSourceSubscribedMessage
+  | DataSourceSubscribeFailedMessage
   | DataSourceVisualLinkCreatedMessage
   | DataSourceVisualLinkRemovedMessage
   | DataSourceVisualLinksMessage
@@ -437,6 +444,12 @@ export interface DataSourceConstructorProps
    */
   autosubscribeColumns?: string[];
   bufferSize?: number;
+  /**
+   * For datasources that support edit sessions, some services support an additional
+   * column on session tables that will be used to return status information for a row
+   * after an edit session is saved. Default is no additional column.
+   */
+  sessionTableMessageColumn?: string;
   suspenseProps?: DataSourceSuspenseProps;
   table: VuuTable;
   title?: string;
@@ -463,27 +476,30 @@ export declare type RowSelectionEventHandler = (
   selectedRowCount: number,
 ) => void;
 
-export type DataSourceConfigChangeHandler = (
+export declare type DataSourceConfigChangeHandler = (
   config: ConfigWithVisualLink,
   range: Range,
   confirmed?: boolean,
   configChanges?: DataSourceConfigChanges,
 ) => void;
 
+export declare type RemoteUpdateHandler = (rows: DataSourceRow[]) => void;
+
 export declare type DataSourceEvents = {
   config: DataSourceConfigChangeHandler;
+  disabled: DataSourceEventHandler;
+  enabled: DataSourceEventHandler;
   freeze: (isFrozen: boolean, freezeTimeStamp: number) => void;
   optimize: (optimize: OptimizeStrategy) => void;
   "page-count": (pageCount: number) => void;
   range: (range: Range) => void;
   resize: (size: number) => void;
+  resumed: DataSourceEventHandler;
+  "remote-update-during-local-edit": RemoteUpdateHandler;
   "row-selection": RowSelectionEventHandler;
   subscribed: (subscription: DataSourceSubscribedMessage) => void;
   unsubscribed: DataSourceEventHandler;
   suspended: DataSourceEventHandler;
-  resumed: DataSourceEventHandler;
-  disabled: DataSourceEventHandler;
-  enabled: DataSourceEventHandler;
   "title-changed": (id: string, title: string) => void;
   "visual-link-created": (message: DataSourceVisualLinkCreatedMessage) => void;
   "visual-link-removed": () => void;
@@ -528,7 +544,7 @@ export declare type DataSourceStatus =
 export declare type SuggestionFetcher = (
   params: TypeaheadParams,
 ) => Promise<string[] | false>;
-export type SuggestionProvider = () => SuggestionFetcher;
+export declare type SuggestionProvider = () => SuggestionFetcher;
 
 export interface TypeaheadSuggestionProvider {
   getTypeaheadSuggestions: (
@@ -550,16 +566,18 @@ export declare type DataSourceSuspenseProps = {
  * An inline edit session allows user to apply edits directly to
  * the existing component. e.g. directly edit cells within a table.
  */
-export type InlineEditSessionMode = "inline-all-rows";
+export declare type InlineEditSessionMode = "inline-all-rows";
 /**
  * A standalone edit session re-renders editable data in an edit component.
  * e.g an edit panel may be displayed in a dialog.
  */
-export type StandaloneEditSessionMode =
+export declare type StandaloneEditSessionMode =
   | "selected-rows"
   | "all-rows"
   | "empty-session-table";
-export type EditSessionMode = InlineEditSessionMode | StandaloneEditSessionMode;
+export declare type EditSessionMode =
+  | InlineEditSessionMode
+  | StandaloneEditSessionMode;
 
 export interface EditApi {
   beginEditSession?: (
@@ -570,7 +588,10 @@ export interface EditApi {
     colun: string,
     value: VuuRowDataItemType,
   ) => Promise<RpcResult> | undefined;
-  endEditSession?: (saveChanges?: boolean) => Promise<RpcResult> | undefined;
+  endEditSession?: (
+    saveChanges?: boolean,
+    force?: boolean,
+  ) => Promise<RpcResult> | undefined;
 }
 
 export interface DataSource
@@ -962,7 +983,7 @@ export declare type VuuUIMessageOut =
   | WithRequestId<VuuTableListRequest | VuuTableMetaRequest>
   | SelectRequest;
 
-export type ConnectOptions = {
+export declare type ConnectOptions = {
   url: string;
   token: string;
   protocol?: WebSocketProtocol;
