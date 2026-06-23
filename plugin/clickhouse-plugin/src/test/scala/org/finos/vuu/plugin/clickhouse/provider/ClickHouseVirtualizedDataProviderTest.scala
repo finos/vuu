@@ -105,8 +105,8 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         |  price Int64,
         |  side String,
         |  trader String,
-        |  vuuCreatedTimestamp Int64,
-        |  vuuUpdatedTimestamp Int64,
+        |  vuuCreatedTimestamp DateTime64(3, 'UTC'),
+        |  vuuUpdatedTimestamp DateTime64(3, 'UTC'),
         |  vuuMsg String
         |) ENGINE = MergeTree() ORDER BY orderId
         |""".stripMargin
