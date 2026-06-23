@@ -4,7 +4,9 @@ import com.clickhouse.client.api.query.GenericRecord
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{Column, DataType, RowWithData}
+import org.finos.vuu.plugin.clickhouse.provider.data.ClickHouseRowDataMapper.EPOCH_NAN_SENTINEL
 
+import java.time.ZonedDateTime
 import scala.collection.mutable
 
 trait ClickHouseRowDataMapper {
@@ -17,6 +19,8 @@ object ClickHouseRowDataMapper {
 
   val INT_NAN_SENTINEL: Int = Int.MinValue
   val LONG_NAN_SENTINEL: Long = Long.MinValue
+  val DOUBLE_NAN_SENTINEL: Double = java.lang.Double.NaN
+  val EPOCH_NAN_SENTINEL: EpochTimestamp = EpochTimestamp(0)
 
   def apply(): ClickHouseRowDataMapper = ClickHouseRowDataMapperImpl()
 
@@ -70,9 +74,12 @@ private case class ClickHouseRowDataMapperImpl() extends ClickHouseRowDataMapper
             }
 
           case DataType.EpochTimestampType =>
-            val ts: Long = v1.getLong(name)
-            if (ts != ClickHouseRowDataMapper.LONG_NAN_SENTINEL) {
-              builder.put(name, EpochTimestamp(ts))
+            val ts: ZonedDateTime = v1.getZonedDateTime(name)
+            if (ts != null) {
+              val epochTimestamp = EpochTimestamp(ts)
+              if (epochTimestamp != EPOCH_NAN_SENTINEL) {
+                builder.put(name, epochTimestamp)
+              }
             }
 
           case DataType.ScaledDecimal2Type =>

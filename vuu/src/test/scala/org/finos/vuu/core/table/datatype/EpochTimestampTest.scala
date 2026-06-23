@@ -6,7 +6,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
 
 import java.lang.System.currentTimeMillis
-import java.time.Instant
+import java.time.{Instant, ZoneId, ZonedDateTime}
 
 class EpochTimestampTest extends AnyFeatureSpec with Matchers with TableDrivenPropertyChecks {
 
@@ -42,6 +42,15 @@ class EpochTimestampTest extends AnyFeatureSpec with Matchers with TableDrivenPr
 
       epochTimestamp.millis shouldEqual millis
 
+    }
+
+    Scenario("Check creation via ZonedDateTime") {
+      val millis = currentTimeMillis
+      val zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.of("UTC"))
+
+      val epochTimestamp = EpochTimestamp(zonedDateTime)
+
+      epochTimestamp.millis shouldEqual millis
     }
 
   }

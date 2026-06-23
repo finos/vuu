@@ -9,6 +9,8 @@ import org.scalatest.GivenWhenThen
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.time.{Instant, ZoneId, ZonedDateTime}
+
 class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFactory with GivenWhenThen {
   behavior of "ClickHouseRowDataMapper (per-type tests)"
 
@@ -174,12 +176,56 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     row2.data.contains("charCol") shouldBe false
   }
 
-  it should "map epoch and scaled decimals from longs and omit sentinels" in {
+  it should "map EpochTimestamp only when non 0 zoned datetime provided" in {
+    Given("a GenericRecord with char column")
+    val v1 = mock[GenericRecord]
+
+    val columns = List(col("epochCol", DataType.EpochTimestampType))
+
+    (v1.hasValue(_: String)).expects("epochCol").returning(true)
+    (v1.getZonedDateTime(_: String)).expects("epochCol").returning(ZonedDateTime.ofInstant(Instant.ofEpochMilli(1), ZoneId.of("UTC")))
+    (v1.getString(_: String)).expects("pk").returning("key-6")
+
+    When("we map the record with single-character string")
+    val mapper = ClickHouseRowDataMapper()
+    val row = mapper.mapRowData(v1, "pk", columns)
+
+    Then("the char is present")
+    row.key shouldBe "key-6"
+    row.data("epochCol") shouldBe EpochTimestamp(1)
+
+    Given("the GenericRecord returns null")
+    val v2 = mock[GenericRecord]
+    (v2.hasValue(_: String)).expects("epochCol").returning(true)
+    (v2.getZonedDateTime(_: String)).expects("epochCol").returning(null)
+    (v2.getString(_: String)).expects("pk").returning("key-7")
+
+    When("we map the record again")
+    val row2 = mapper.mapRowData(v2, "pk", columns)
+
+    Then("the char is omitted")
+    row2.key shouldBe "key-7"
+    row2.data.contains("epochCol") shouldBe false
+
+    Given("the GenericRecord returns Unix Epoch 0")
+    val v3 = mock[GenericRecord]
+    (v3.hasValue(_: String)).expects("epochCol").returning(true)
+    (v3.getZonedDateTime(_: String)).expects("epochCol").returning(ZonedDateTime.ofInstant(Instant.EPOCH, ZoneId.of("UTC")))
+    (v3.getString(_: String)).expects("pk").returning("key-8")
+
+    When("we map the record again")
+    val row3 = mapper.mapRowData(v3, "pk", columns)
+
+    Then("the char is omitted")
+    row3.key shouldBe "key-8"
+    row3.data.contains("epochCol") shouldBe false
+  }
+
+  it should "map scaled decimals from longs and omit sentinels" in {
     Given("a GenericRecord with epoch and scaled decimal columns")
     val v1 = mock[GenericRecord]
 
     val columns = List(
-      col("epochCol", DataType.EpochTimestampType),
       col("dec2Col", DataType.ScaledDecimal2Type),
       col("dec4Col", DataType.ScaledDecimal4Type),
       col("dec6Col", DataType.ScaledDecimal6Type),
@@ -192,7 +238,6 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     }
     
 
-    (v1.getLong(_:String)).expects("epochCol").returning(1600000000000L)
     (v1.getLong(_:String)).expects("dec2Col").returning(250L)
     (v1.getLong(_:String)).expects("dec4Col").returning(25000L)
     (v1.getLong(_:String)).expects("dec6Col").returning(2500000L)
@@ -206,7 +251,6 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
 
     Then("epoch and scaled decimals are converted and sentinel omitted")
     row.key shouldBe "key-8"
-    row.data("epochCol") shouldBe EpochTimestamp(1600000000000L)
     row.data("dec2Col") shouldBe ScaledDecimal2(250L)
     row.data("dec4Col") shouldBe ScaledDecimal4(25000L)
     row.data("dec6Col") shouldBe ScaledDecimal6(2500000L)

@@ -2,20 +2,24 @@ package org.finos.vuu.core.table.datatype
 
 import org.finos.toolbox.time.Clock
 
-import java.time.Instant
+import java.time.{Instant, ZonedDateTime}
 
 object EpochTimestamp {
 
   def apply(): EpochTimestamp = {
     EpochTimestamp(System.currentTimeMillis())
   }
-  
+
   def apply(clock: Clock): EpochTimestamp = {
     EpochTimestamp(clock.now())
   }
 
   def apply(instant: Instant): EpochTimestamp = {
     EpochTimestamp(instant.toEpochMilli)
+  }
+
+  def apply(zdt: ZonedDateTime): EpochTimestamp = {
+    EpochTimestamp((zdt.toEpochSecond * 1_000) + (zdt.getNano / 1_000_000))
   }
 
 }
