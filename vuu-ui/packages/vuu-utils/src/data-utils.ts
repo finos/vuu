@@ -91,20 +91,35 @@ export function getMovingValueDirection(
   }
 }
 
+/**
+ * Convert a value to integer.
+ * If value is a number, remove any decimals.
+ * If value is a string, parse as integer. If NaN,
+ * return defaultValue else throw.
+ * If value is integer numeric, return value.
+ *
+ * @param value
+ * @param defaultValue
+ * @returns
+ */
 export function asInteger(
-  index: number | string | undefined,
+  value: number | string | undefined,
   defaultValue?: number,
-) {
-  if (typeof index === "number") {
-    return index;
+): number {
+  if (typeof value === "number") {
+    return Number.isInteger(value)
+      ? value
+      : value < 0
+        ? Math.ceil(value)
+        : Math.floor(value);
   } else {
-    const numIdx = parseInt(index ?? "");
-    if (!isNaN(numIdx)) {
-      return numIdx;
+    const integerValue = parseInt(value ?? "");
+    if (!isNaN(integerValue)) {
+      return integerValue;
     } else if (typeof defaultValue === "number") {
       return defaultValue;
     }
-    throw Error(`parseIndex invalid value ${index}`);
+    throw Error(`parseIndex invalid value ${value}`);
   }
 }
 

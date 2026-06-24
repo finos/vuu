@@ -113,7 +113,7 @@ const server = await createServer({
   server: {
     proxy: {
       "/api/authn": {
-        target: "http://localhost:8443",
+        target: "https://localhost:8443",
         // target: "https://localhost:8090",
         secure: false,
       },

@@ -1,6 +1,7 @@
 import {
   DataSource,
   DataSourceConfig,
+  DataSourceSubscribedMessage,
   DataSourceVisualLinkCreatedMessage,
   EditSessionMode,
   TableSchema,
@@ -116,20 +117,97 @@ export abstract class VuuModule<T extends string = string>
     return Object.keys(this.tables);
   }
 
-  protected unregisterViewport = (viewportId: string) => {
-    for (const [tableName, subscriptions] of this.#subscriptionMap) {
-      if (subscriptions[0].viewportId.toString() === viewportId) {
-        this.#subscriptionMap.delete(tableName);
-      } else {
-        const links = subscriptions[0].dataSource.links;
+  protected handlePostSubscribeActivities = ({
+    clientViewportId,
+    tableSchema,
+  }: DataSourceSubscribedMessage) => {
+    const visualLinks = this.getVisualLinks(tableSchema.table.table);
+    const { dataSource } = this.getSubscriptionByViewport(clientViewportId);
+    requestAnimationFrame(() => {
+      dataSource.links = visualLinks;
+    });
+
+    // check whether newly subscribed viewport is associated with table that is a potential
+    // visual link target. If so send links update message to any active subscription
+    // associated with a table that is a potential link source
+    if (this.visualLinks && dataSource.tableSchema) {
+      const {
+        table: { table: sourceTable },
+      } = dataSource.tableSchema;
+      for (const [table, links] of Object.entries<VuuLink[] | undefined>(
+        this.visualLinks,
+      )) {
         if (links) {
-          for (let i = 0; i < links?.length; i++) {
-            if (links[i].parentClientVpId === viewportId) {
-              links.splice(i);
+          const potentialTargets = links.filter(
+            (l) => l.toTable === sourceTable,
+          );
+          if (potentialTargets.length) {
+            for (const subscriptions of this.#subscriptionMap.values()) {
+              for (const { dataSource } of subscriptions) {
+                if (dataSource.tableSchema?.table.table === table) {
+                  dataSource.links = this.getVisualLinks(table);
+                }
+              }
             }
           }
         }
-        subscriptions[0].dataSource.links = links;
+      }
+    }
+  };
+
+  protected unregisterViewport = (viewportId: string) => {
+    const { dataSource } = this.getSubscriptionByViewport(viewportId);
+    const tableName = dataSource.tableSchema?.table.table;
+    if (tableName) {
+      const subscriptionsForTable = this.#subscriptionMap.get(tableName);
+      if (subscriptionsForTable) {
+        for (const { viewportId: vp } of subscriptionsForTable) {
+          if (vp === viewportId) {
+            if (subscriptionsForTable.length === 1) {
+              this.#subscriptionMap.delete(tableName);
+            } else {
+              this.#subscriptionMap.set(
+                tableName,
+                subscriptionsForTable.filter(
+                  (s) => s.viewportId !== viewportId,
+                ),
+              );
+            }
+          }
+        }
+      }
+    }
+
+    for (const [tableName, subscriptions] of this.#subscriptionMap) {
+      if (subscriptions[0].viewportId.toString() === viewportId) {
+        this.#subscriptionMap.delete(tableName);
+      }
+    }
+
+    // check whether newly unsubscribed viewport is associated with table that is a potential
+    // visual link target. If so send links update message to any active subscription
+    // associated with a table that is a potential link source
+    if (this.visualLinks && dataSource.tableSchema) {
+      const {
+        table: { table: sourceTable },
+      } = dataSource.tableSchema;
+      for (const [table, links] of Object.entries<VuuLink[] | undefined>(
+        this.visualLinks,
+      )) {
+        if (links) {
+          const potentialTargets = links.filter(
+            (l) => l.toTable === sourceTable,
+          );
+          if (potentialTargets.length) {
+            for (const subscriptions of this.#subscriptionMap.values()) {
+              for (const { dataSource } of subscriptions) {
+                if (dataSource.tableSchema?.table.table === table) {
+                  dataSource.links = this.getVisualLinks(table);
+                }
+              }
+            }
+          }
+        }
       }
     }
   };
@@ -226,18 +304,18 @@ export abstract class VuuModule<T extends string = string>
       }
     });
 
+  getVisualLinks = (tableName: string) => {
+    const linksForTable = this.visualLinks?.[tableName as T] as VuuLink[];
+    return linksForTable === undefined
+      ? undefined
+      : this.getLinks(this.#subscriptionMap, linksForTable);
+  };
+
   createDataSource = (
     tableName: T,
     viewport?: string,
     config?: DataSourceConfig,
   ) => {
-    const getVisualLinks = (tableName: string) => {
-      const linksForTable = this.visualLinks?.[tableName as T] as VuuLink[];
-      return linksForTable === undefined
-        ? undefined
-        : this.getLinks(this.#subscriptionMap, linksForTable);
-    };
-
     const columnDescriptors = this.getColumnDescriptors(tableName);
     const table = this.tables[tableName];
     const sessionTable = this.#sessionTableMap[tableName];
@@ -248,7 +326,7 @@ export abstract class VuuModule<T extends string = string>
     const dataSource: DataSource = new TickingArrayDataSource({
       ...config,
       columnDescriptors,
-      getVisualLinks,
+      getVisualLinks: this.getVisualLinks,
       keyColumn:
         this.schemas[tableName] === undefined
           ? this.#sessionTableMap[tableName].schema.key
@@ -263,6 +341,7 @@ export abstract class VuuModule<T extends string = string>
       vuuModule,
     });
 
+    dataSource.on("subscribed", this.handlePostSubscribeActivities);
     dataSource.on("unsubscribed", this.unregisterViewport);
 
     const existingSubscriptions = this.#subscriptionMap.get(tableName);

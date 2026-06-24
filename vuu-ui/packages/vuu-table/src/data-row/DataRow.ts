@@ -68,6 +68,10 @@ const isStringNumericType = (
   stringNumericTypes[type as StringNumericType] === true;
 
 const MAX_DECIMALS = "0000000";
+const TRAILING_ZEROES = /0+$/;
+
+const stripTrailingZeroes = (value: string) =>
+  value.endsWith("0") ? value.replace(TRAILING_ZEROES, "") : value;
 
 const injectDecimalPoint = (value: string, decimal: 2 | 4 | 6 | 8) => {
   if (value === "0" || value === "-0" || value === "") {
@@ -78,17 +82,19 @@ const injectDecimalPoint = (value: string, decimal: 2 | 4 | 6 | 8) => {
       if (digits.length < decimal) {
         return `-0.${(MAX_DECIMALS + digits).slice(-decimal)}`;
       } else if (digits.length === decimal) {
-        return `-0.${value}`;
+        return `-0.${stripTrailingZeroes(digits)}`;
       } else {
         return `-${digits.slice(0, -decimal)}.${digits.slice(-decimal)}`;
       }
     } else {
       if (value.length < decimal) {
-        return `0.${(MAX_DECIMALS + value).slice(-decimal)}`;
+        const decimals = (MAX_DECIMALS + value).slice(-decimal);
+        return `0.${stripTrailingZeroes(decimals)}`;
       } else if (value.length === decimal) {
-        return `0.${value}`;
+        return `0.${stripTrailingZeroes(value)}`;
       } else {
-        return `${value.slice(0, -decimal)}.${value.slice(-decimal)}`;
+        const decimals = value.slice(-decimal);
+        return `${value.slice(0, -decimal)}.${stripTrailingZeroes(decimals)}`;
       }
     }
   }
