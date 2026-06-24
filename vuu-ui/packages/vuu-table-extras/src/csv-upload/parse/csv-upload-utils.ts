@@ -5,7 +5,6 @@ import type { CsvParseError } from "./csv-parse";
 import { CSV_FIRST_DATA_ROW_NUMBER } from "./csv-constants";
 import type {
   CsvValidationError,
-  CsvValidationErrorType,
   CsvValidationResult,
 } from "./csv-schema-validation";
 
@@ -66,91 +65,12 @@ export const buildRowErrorMessage = (prefix: string, rowErrors: string[]) => {
   return `${prefix} for ${rowErrors.length} row(s): ${details}${suffix}`;
 };
 
-export const formatValidationErrors = (validation: CsvValidationResult) =>
-  validation.errors.slice(0, 8).map(({ column, message, rowNum }) => {
-    const rowLabel = rowNum === 1 ? "header" : `row ${rowNum}`;
-    return `${rowLabel}, column '${column}': ${message}`;
-  });
-
-export const buildPreviewRows = (
-  rows: Record<string, VuuRowDataItemType>[],
-  columns: string[],
-  validation: CsvValidationResult,
-): VuuRowDataItemType[][] => {
-  const errorsByRow = new Map<number, string[]>();
-
-  validation.errors.forEach(({ column, message, rowNum }) => {
-    if (rowNum < CSV_FIRST_DATA_ROW_NUMBER) {
-      return;
-    }
-    const rowIndex = rowNum - CSV_FIRST_DATA_ROW_NUMBER;
-    const existing = errorsByRow.get(rowIndex) ?? [];
-    existing.push(`${column}: ${message}`);
-    errorsByRow.set(rowIndex, existing);
-  });
-
-  return rows.map((row, index) => {
-    const values = columns.map((column) => row[column] ?? "");
-    const rowErrors = (errorsByRow.get(index) ?? []).join("; ");
-    return [...values, rowErrors];
-  });
-};
-
-export const buildPreviewTableData = (
-  validation: CsvValidationResult,
-): CsvUploadTableData => ({
-  columns: [...validation.columns, "validationErrors"],
-  rows: buildPreviewRows(validation.rows, validation.columns, validation),
-});
-
 export const toValidationErrorsFromParseRowErrors = (
   parseError: CsvParseError,
 ): CsvValidationError[] => {
   return parseError.errors.filter(
     (error) => error.rowNum >= CSV_FIRST_DATA_ROW_NUMBER,
   );
-};
-
-export const getValidatedRowNumbers = (validation: CsvValidationResult) => {
-  const erroredRows = new Set<number>();
-
-  validation.errors.forEach((error) => {
-    if (error.rowNum >= CSV_FIRST_DATA_ROW_NUMBER) {
-      erroredRows.add(error.rowNum);
-    }
-  });
-
-  return validation.rows
-    .map((_, index) => index + CSV_FIRST_DATA_ROW_NUMBER)
-    .filter((row) => !erroredRows.has(row));
-};
-
-export const groupValidationErrorsByRow = (
-  validation: CsvValidationResult,
-): Array<{
-  errorMap: Record<string, CsvValidationErrorType>;
-  rowNum: number;
-  rowData?: Record<string, VuuRowDataItemType>;
-}> => {
-  const groupedErrors = new Map<
-    number,
-    Record<string, CsvValidationErrorType>
-  >();
-
-  validation.errors.forEach((error) => {
-    const rowErrors = groupedErrors.get(error.rowNum) ?? {};
-    rowErrors[error.column] = error.errorEnum;
-    groupedErrors.set(error.rowNum, rowErrors);
-  });
-
-  return Array.from(groupedErrors, ([rowNum, errorMap]) => ({
-    errorMap,
-    rowNum,
-    rowData:
-      rowNum >= CSV_FIRST_DATA_ROW_NUMBER
-        ? validation.rows[rowNum - CSV_FIRST_DATA_ROW_NUMBER]
-        : undefined,
-  }));
 };
 
 export const normalizeTableData = (

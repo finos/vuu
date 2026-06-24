@@ -1,11 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
-  buildPreviewTableData,
   buildRowErrorMessage,
   executeBatchRpcCalls,
-  formatValidationErrors,
-  getValidatedRowNumbers,
-  groupValidationErrorsByRow,
   mergeValidationWithParseErrors,
   normalizeTableData,
   toValidationErrorsFromParseRowErrors,
@@ -125,86 +121,6 @@ describe("csv-upload-utils", () => {
     });
   });
 
-  it("builds preview rows with validation error details", () => {
-    const validation = createValidation({
-      errors: [
-        {
-          rowNum: 3,
-          column: "name",
-          value: "Bob",
-          message: "Value is invalid",
-          errorEnum: CsvValidationErrorEnum.TYPE_MISMATCH,
-        },
-      ],
-    });
-
-    expect(buildPreviewTableData(validation)).toEqual({
-      columns: ["id", "name", "validationErrors"],
-      rows: [
-        ["1", "Alice", ""],
-        ["2", "Bob", "name: Value is invalid"],
-        ["3", "Cara", ""],
-      ],
-    });
-  });
-
-  it("returns only row numbers with no row-level errors", () => {
-    const validation = createValidation({
-      errors: [
-        {
-          rowNum: 1,
-          column: "id",
-          value: "",
-          message: "Missing key column",
-          errorEnum: CsvValidationErrorEnum.MISSING_KEY_COLUMN,
-        },
-        {
-          rowNum: 3,
-          column: "name",
-          value: "Bob",
-          message: "Type mismatch",
-          errorEnum: CsvValidationErrorEnum.TYPE_MISMATCH,
-        },
-      ],
-    });
-
-    expect(getValidatedRowNumbers(validation)).toEqual([2, 4]);
-  });
-
-  it("groups validation errors by row and includes rowData", () => {
-    const validation = createValidation({
-      errors: [
-        {
-          rowNum: 1,
-          column: "id",
-          value: "",
-          message: "Missing key column",
-          errorEnum: CsvValidationErrorEnum.MISSING_KEY_COLUMN,
-        },
-        {
-          rowNum: 3,
-          column: "name",
-          value: "Bob",
-          message: "Type mismatch",
-          errorEnum: CsvValidationErrorEnum.TYPE_MISMATCH,
-        },
-      ],
-    });
-
-    expect(groupValidationErrorsByRow(validation)).toEqual([
-      {
-        errorMap: { id: CsvValidationErrorEnum.MISSING_KEY_COLUMN },
-        rowNum: 1,
-        rowData: undefined,
-      },
-      {
-        errorMap: { name: CsvValidationErrorEnum.TYPE_MISMATCH },
-        rowNum: 3,
-        rowData: { id: "2", name: "Bob" },
-      },
-    ]);
-  });
-
   it("normalizes valid table data and falls back for invalid inputs", () => {
     const fallback = {
       columns: ["a"],
@@ -236,116 +152,11 @@ describe("csv-upload-utils", () => {
     expect(normalizeTableData(undefined, fallback)).toBe(fallback);
   });
 
-  it("formats validation errors with 'header' label for row 1 and 'row N' for data rows", () => {
-    const validation = createValidation({
-      errors: [
-        {
-          rowNum: 1,
-          column: "id",
-          value: "",
-          message: "Missing key column",
-          errorEnum: CsvValidationErrorEnum.MISSING_KEY_COLUMN,
-        },
-        {
-          rowNum: 3,
-          column: "name",
-          value: "bad",
-          message: "Type mismatch",
-          errorEnum: CsvValidationErrorEnum.TYPE_MISMATCH,
-        },
-      ],
-    });
-
-    expect(formatValidationErrors(validation)).toEqual([
-      "header, column 'id': Missing key column",
-      "row 3, column 'name': Type mismatch",
-    ]);
-  });
-
-  it("limits formatValidationErrors output to 8 entries", () => {
-    const errors = Array.from({ length: 12 }, (_, i) => ({
-      rowNum: i + 2,
-      column: "name",
-      value: "",
-      message: "error",
-      errorEnum: CsvValidationErrorEnum.TYPE_MISMATCH,
-    }));
-    const validation = createValidation({ errors });
-
-    expect(formatValidationErrors(validation)).toHaveLength(8);
-  });
-
-  it("returns all row numbers when there are no validation errors", () => {
-    const validation = createValidation();
-
-    expect(getValidatedRowNumbers(validation)).toEqual([2, 3, 4]);
-  });
-
-  it("returns no row numbers when every row has a validation error", () => {
-    const validation = createValidation({
-      errors: [
-        {
-          rowNum: 2,
-          column: "id",
-          value: "",
-          message: "Empty value",
-          errorEnum: CsvValidationErrorEnum.EMPTY_NON_STRING_VALUE,
-        },
-        {
-          rowNum: 3,
-          column: "id",
-          value: "",
-          message: "Empty value",
-          errorEnum: CsvValidationErrorEnum.EMPTY_NON_STRING_VALUE,
-        },
-        {
-          rowNum: 4,
-          column: "id",
-          value: "",
-          message: "Empty value",
-          errorEnum: CsvValidationErrorEnum.EMPTY_NON_STRING_VALUE,
-        },
-      ],
-    });
-
-    expect(getValidatedRowNumbers(validation)).toEqual([]);
-  });
-
   it("mergeValidationWithParseErrors is a passthrough when parseError is undefined", () => {
     const validation = createValidation();
     expect(mergeValidationWithParseErrors(validation, undefined)).toBe(
       validation,
     );
-  });
-
-  it("builds preview rows with multiple errors on one row joined by semicolon", () => {
-    const validation = createValidation({
-      errors: [
-        {
-          rowNum: 2,
-          column: "id",
-          value: "",
-          message: "Empty value",
-          errorEnum: CsvValidationErrorEnum.EMPTY_NON_STRING_VALUE,
-        },
-        {
-          rowNum: 2,
-          column: "name",
-          value: "x",
-          message: "Type mismatch",
-          errorEnum: CsvValidationErrorEnum.TYPE_MISMATCH,
-        },
-      ],
-    });
-
-    expect(buildPreviewTableData(validation)).toEqual({
-      columns: ["id", "name", "validationErrors"],
-      rows: [
-        ["1", "Alice", "id: Empty value; name: Type mismatch"],
-        ["2", "Bob", ""],
-        ["3", "Cara", ""],
-      ],
-    });
   });
 
   describe("buildRowErrorMessage", () => {

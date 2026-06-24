@@ -10,7 +10,7 @@ import {
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { type ReactNode, useCallback, useEffect, useState } from "react";
+import { type ReactNode, useCallback, useState } from "react";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import type { CsvParseError, CsvParseOptions } from "./parse/csv-parse";
@@ -114,11 +114,10 @@ export const CsvUpload = (props: CsvUploadProps) => {
     validation,
   } = useCsvUpload(props);
 
-  useEffect(() => {
-    if (isImporting) {
-      onClose?.();
-    }
-  }, [isImporting, onClose]);
+  const handleImport = useCallback(async () => {
+    await importData();
+    onClose?.();
+  }, [importData, onClose]);
 
   return (
     <Dialog open={dialogOpen}>
@@ -160,7 +159,7 @@ export const CsvUpload = (props: CsvUploadProps) => {
           disabled={!canImport}
           appearance="solid"
           sentiment="accented"
-          onClick={importData}
+          onClick={handleImport}
         >
           {isProcessingFile
             ? "Validating..."

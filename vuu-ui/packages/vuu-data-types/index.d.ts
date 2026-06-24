@@ -34,6 +34,8 @@ import type {
   SelectRequest,
   SelectResponse,
   SelectSuccessWithRowCount,
+  VuuTableListRequest,
+  VuuTableMetaRequest,
 } from "@vuu-ui/vuu-protocol-types";
 import type {
   DataSourceConfigChanges,
@@ -41,21 +43,10 @@ import type {
   Range,
 } from "@vuu-ui/vuu-utils";
 import type {
-  DataSourceFilter,
-  MenuRpcResponse,
-  Selection,
-  TableSchema,
-} from "@vuu-ui/vuu-data-types";
-import type {
-  VuuTableListRequest,
-  VuuTableMetaRequest,
-} from "@vuu-ui/vuu-protocol-types";
-import {
   ColumnDescriptor,
   DataValueTypeDescriptor,
 } from "@vuu-ui/vuu-table-types";
-import { PostMessageToClientCallback } from "@vuu-ui/vuu-data-remote";
-import type { DataSourceConfigChanges, IEventEmitter } from "@vuu-ui/vuu-utils";
+import type { PostMessageToClientCallback } from "@vuu-ui/vuu-data-remote";
 
 export declare type DataValueValidationSuccessResult = {
   ok: true;

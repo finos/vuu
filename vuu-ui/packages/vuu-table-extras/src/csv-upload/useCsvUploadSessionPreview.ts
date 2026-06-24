@@ -47,8 +47,8 @@ export const useCsvUploadSessionPreview = (
 
         const columnDescriptors: ColumnDescriptor[] = schema.columns.map(
           ({ name, serverDataType }) =>
-            name === "errorMap"
-              ? { name, serverDataType, width: 300, label: "Error Map" }
+            name === "vuuMsg"
+              ? { name, serverDataType, width: 300, label: "Error" }
               : { name, serverDataType },
         );
 

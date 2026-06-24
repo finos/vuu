@@ -7,7 +7,7 @@ The `CsvUpload` component provides a dialog-based workflow for uploading, valida
 ## Usage
 
 ```tsx
-import { CsvUpload } from "@vuu-ui/vuu-data-react";
+import { CsvUpload } from "@vuu-ui/vuu-table-extras";
 
 <CsvUpload
   dataSource={dataSource}
@@ -40,7 +40,7 @@ import { CsvUpload } from "@vuu-ui/vuu-data-react";
 | `onImported` | `(result: CsvUploadImportedResult) => void` | Fired after a successful import. |
 | `onError` | `(result: CsvUploadErrorResult \| undefined) => void` | Fired when any error occurs. Called with `undefined` to clear a previous error. |
 | `onCancel` | `() => void` | Fired when the Cancel button is clicked. |
-| `onClose` | `() => void` | Fired when the dialog is about to close to begin importing (i.e. the Import button is clicked and data is committing). |
+| `onClose` | `() => void` | Fired after a successful import completes (i.e. the Import button was clicked and the session committed). |
 | `children` | `ReactNode` | Optional children rendered inside the dialog content area, below the drop zone. Useful for displaying validation error tables or status messages. |
 
 ---
@@ -94,7 +94,7 @@ If the user cancels at any point:
 | Callback | Phase transition | Notes |
 |---|---|---|
 | `onProcessingStarted` | `→ processing` | Fires before parsing begins. No data available yet. |
-| `onEditSessionStarted` | `→ preview-ready` | Provides a session `DataSource` scoped to the edit session. Apply filters and listen to events on this source to build a preview UI. |
+| `onEditSessionStarted` | `→ preview-ready` | Provides a session `DataSource`. Extract `dataSource.table` (`CsvUploadSessionTable`) and pass it to `useCsvUploadSessionPreview` to build a preview UI without mutating the shared session datasource. |
 | `onEditSessionEnded` | `→ imported` or `→ idle` | `reason` is `"saved"` on successful import, `"discarded"` on cancel, `"failed"` on error. `sessionTable` contains the Vuu session table reference. |
 | `onImported` | `→ imported` | Provides `rpcResult` and normalised `tableData`. |
 | `onError` | `→ failed` | See [Error Types](#error-types) below. |
@@ -161,15 +161,63 @@ type CsvErrorMap<TError extends string> = {
 | `EMPTY_NON_STRING_VALUE` | A non-string column cell is empty. Reported as a `rowError`. |
 | `TYPE_MISMATCH` | A cell value cannot be coerced to the column's server data type. Reported as a `rowError`. |
 
-### Accessing the error map in a session preview
+### Session preview
 
-When `onEditSessionStarted` fires, the session `DataSource` is pre-populated with one row per uploaded CSV row. Each row has a string column `errorMap` that contains a JSON-serialised `Record<string, string[]>` of column → error codes for that row, or an empty string if the row is valid.
+When `onEditSessionStarted` fires, the edit session table is populated with one row per uploaded CSV row. Each row has the source table's columns plus a `vuuMsg` column. For rows with validation errors, `vuuMsg` contains a human-readable summary including the CSV row number:
 
-To show only rows with errors, apply the filter:
-
-```ts
-dataSource.filter = { filter: 'errorMap > ""' };
 ```
+"Row 3: price: Value 'abc' is not a valid double; ric: Empty value is not allowed for non-string columns."
+```
+
+Rows that passed validation have an empty `vuuMsg`.
+
+The recommended way to build a preview UI is the `useCsvUploadSessionPreview` hook, which fetches the session table schema and creates a dedicated datasource — keeping the shared session datasource untouched:
+
+```tsx
+import {
+  CsvUpload,
+  type CsvUploadSessionTable,
+  useCsvUploadSessionPreview,
+} from "@vuu-ui/vuu-table-extras";
+
+const ErrorsTable = ({ sessionTable }: { sessionTable: CsvUploadSessionTable | undefined }) => {
+  const { isLoadingPreview, previewDataSource, previewError } =
+    useCsvUploadSessionPreview(sessionTable);
+
+  useEffect(() => {
+    if (previewDataSource) {
+      // Show only rows that have errors
+      previewDataSource.filter = { filter: 'vuuMsg > ""' };
+    }
+  }, [previewDataSource]);
+
+  if (!previewDataSource || isLoadingPreview) return null;
+  if (previewError) return <div>{previewError}</div>;
+  return <Table dataSource={previewDataSource} config={errorTableConfig} ... />;
+};
+
+const MyApp = () => {
+  const [sessionTable, setSessionTable] = useState<CsvUploadSessionTable | undefined>();
+
+  return (
+    <CsvUpload
+      dataSource={dataSource}
+      onEditSessionStarted={(sessionDs) => setSessionTable(sessionDs.table as CsvUploadSessionTable)}
+      onEditSessionEnded={() => setSessionTable(undefined)}
+    >
+      <ErrorsTable sessionTable={sessionTable} />
+    </CsvUpload>
+  );
+};
+```
+
+The `useCsvUploadSessionPreview` hook:
+- Calls `getServerAPI().getTableSchema(sessionTable)` to fetch the full schema
+- Builds `ColumnDescriptor[]` from the schema, giving the `vuuMsg` column a wider default width and the label `"Error"`
+- Creates a dedicated `VuuDataSource` for the session table
+- Cleans up when `sessionTable` becomes `undefined`
+
+To show only rows with errors, apply the filter `'vuuMsg > ""'` on the `previewDataSource` (not on the datasource from `onEditSessionStarted`).
 
 ## Parse Options
 

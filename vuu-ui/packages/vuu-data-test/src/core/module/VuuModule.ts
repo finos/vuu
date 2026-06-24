@@ -653,25 +653,17 @@ export abstract class VuuModule<T extends string = string>
             });
             updates.clear();
           } else {
-            if ("errorMap" in sessionTable.map) {
-              // CSV upload session table: has rowNum + errorMap extra columns.
-              // Only save rows with no errors, mapping back to source schema.
-              const errorMapIdx = sessionTable.map["errorMap"];
-              const sourceColumns = sourceTable.schema.columns;
-              for (let i = 0; i < sessionTable.data.length; i++) {
-                const sessionRow = sessionTable.data[i];
-                if (sessionRow[errorMapIdx]) continue;
-                const sourceRow: VuuRowDataItemType[] = sourceColumns.map(
-                  (col) => sessionRow[sessionTable.map[col.name]],
-                );
-                sourceTable.insert(sourceRow);
-              }
-            } else {
-              // empty-session-table mode: new rows to insert into the source table.
-              for (let i = 0; i < sessionTable.data.length; i++) {
-                const newRow = sessionTable.data[i];
-                sourceTable.insert(newRow);
-              }
+            // empty-session-table / csv-upload: insert only rows with no errors.
+            // vuuMsg is empty string for valid rows and non-empty for error rows.
+            const vuuMsgIdx = sessionTable.map["vuuMsg"];
+            const sourceColumns = sourceTable.schema.columns;
+            for (let i = 0; i < sessionTable.data.length; i++) {
+              const sessionRow = sessionTable.data[i];
+              if (sessionRow[vuuMsgIdx]) continue;
+              const sourceRow: VuuRowDataItemType[] = sourceColumns.map(
+                (col) => sessionRow[sessionTable.map[col.name]],
+              );
+              sourceTable.insert(sourceRow);
             }
           }
 
@@ -765,31 +757,14 @@ export abstract class VuuModule<T extends string = string>
   protected createEmptySessionTable(
     { schema }: Table,
     sessionTableName: string,
-    mode?: "csv-upload",
   ) {
     // Override schema.table.table so isSessionTable() returns true for this session.
-    const sessionSchema: typeof schema = {
+    // sessionTableSchema adds the vuuMsg column, consistent with all other session tables.
+    const sessionSchema = sessionTableSchema({
       ...schema,
       table: { ...schema.table, table: sessionTableName },
-    };
-    if (mode === "csv-upload") {
-      // Augment the schema with rowNum and errorMap so the session table
-      // carries per-row upload status. endEditSession filters error rows on save.
-      const csvSchema: typeof sessionSchema = {
-        ...sessionSchema,
-        columns: [
-          { name: "rowNum", serverDataType: "int" as const },
-          ...sessionSchema.columns,
-          { name: "errorMap", serverDataType: "string" as const },
-        ],
-      };
-      return new Table(csvSchema, [], buildDataColumnMapFromSchema(csvSchema));
-    }
-    return new Table(
-      sessionSchema,
-      [],
-      buildDataColumnMapFromSchema(sessionSchema),
-    );
+    });
+    return new Table(sessionSchema, [], buildDataColumnMapFromSchema(sessionSchema));
   }
 
   protected createSessionTableFromSelectedRows(

@@ -74,6 +74,23 @@ const createContainer = () => {
 
 const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
+const getAddRowPayloads = (dataSource: DataSource): Record<string, unknown>[] =>
+  (dataSource.rpcRequest as ReturnType<typeof vi.fn>).mock.calls.map(
+    (c: unknown[]) =>
+      (c[0] as { params: { data: Record<string, unknown> } }).params.data,
+  );
+
+const dropFile = async (
+  result: UseCsvUploadReturn | undefined,
+  content: string,
+) => {
+  await act(async () => {
+    result?.onDrop({} as React.DragEvent<HTMLDivElement>, [makeFile(content)]);
+    await tick();
+    await tick();
+  });
+};
+
 describe("useCsvUpload", () => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
@@ -130,17 +147,11 @@ describe("useCsvUpload", () => {
       await tick();
     });
 
-    await act(async () => {
-      latestResult?.onDrop({} as React.DragEvent<HTMLDivElement>, [
-        makeFile('"id","label","count"\n"a1","foo","10"'),
-      ]);
-      await tick();
-      await tick();
-    });
+    await dropFile(latestResult, '"id","label","count"\n"a1","foo","10"');
 
     expect(latestResult?.canImport).toBe(true);
     expect(latestResult?.validation?.errors).toHaveLength(0);
-    expect(dataSource.beginEditSession).toHaveBeenCalledWith("csv-upload");
+    expect(dataSource.beginEditSession).toHaveBeenCalledWith("empty-session-table");
   });
 
   it("sets canImport=false and emits an error for a file-level parse error", async () => {
@@ -160,13 +171,7 @@ describe("useCsvUpload", () => {
       await tick();
     });
 
-    await act(async () => {
-      latestResult?.onDrop({} as React.DragEvent<HTMLDivElement>, [
-        makeFile("id;label;count\na1;foo;10"),
-      ]);
-      await tick();
-      await tick();
-    });
+    await dropFile(latestResult, "id;label;count\na1;foo;10");
 
     expect(latestResult?.canImport).toBe(false);
     expect(onError).toHaveBeenCalled();
@@ -189,13 +194,7 @@ describe("useCsvUpload", () => {
       await tick();
     });
 
-    await act(async () => {
-      latestResult?.onDrop({} as React.DragEvent<HTMLDivElement>, [
-        makeFile('"label","count"\n"foo","10"'),
-      ]);
-      await tick();
-      await tick();
-    });
+    await dropFile(latestResult, '"label","count"\n"foo","10"');
 
     expect(latestResult?.canImport).toBe(false);
     expect(dataSource.beginEditSession).not.toHaveBeenCalled();
@@ -226,13 +225,7 @@ describe("useCsvUpload", () => {
       await tick();
     });
 
-    await act(async () => {
-      latestResult?.onDrop({} as React.DragEvent<HTMLDivElement>, [
-        makeFile('"id","label","count"\n"a1","foo","10"'),
-      ]);
-      await tick();
-      await tick();
-    });
+    await dropFile(latestResult, '"id","label","count"\n"a1","foo","10"');
 
     expect(onEditSessionStarted).toHaveBeenCalledWith(mockSessionDs);
   });
@@ -255,13 +248,7 @@ describe("useCsvUpload", () => {
       await tick();
     });
 
-    await act(async () => {
-      latestResult?.onDrop({} as React.DragEvent<HTMLDivElement>, [
-        makeFile('"id","label","count"\n"a1","foo","10"'),
-      ]);
-      await tick();
-      await tick();
-    });
+    await dropFile(latestResult, '"id","label","count"\n"a1","foo","10"');
 
     expect(latestResult?.canImport).toBe(true);
 
@@ -302,13 +289,7 @@ describe("useCsvUpload", () => {
     (dataSource as unknown as Record<string, unknown>).endEditSession =
       goodEndEditSession;
 
-    await act(async () => {
-      latestResult?.onDrop({} as React.DragEvent<HTMLDivElement>, [
-        makeFile('"id","label","count"\n"a1","foo","10"'),
-      ]);
-      await tick();
-      await tick();
-    });
+    await dropFile(latestResult, '"id","label","count"\n"a1","foo","10"');
 
     expect(latestResult?.canImport).toBe(true);
 
@@ -342,23 +323,11 @@ describe("useCsvUpload", () => {
       await tick();
     });
 
-    await act(async () => {
-      latestResult?.onDrop({} as React.DragEvent<HTMLDivElement>, [
-        makeFile('"id","label","count"\n"a1","foo","10"'),
-      ]);
-      await tick();
-      await tick();
-    });
+    await dropFile(latestResult, '"id","label","count"\n"a1","foo","10"');
 
     expect(latestResult?.sessionTable).toEqual(sessionTable);
 
-    await act(async () => {
-      latestResult?.onDrop({} as React.DragEvent<HTMLDivElement>, [
-        makeFile('"id","label","count"\n"a2","bar","20"'),
-      ]);
-      await tick();
-      await tick();
-    });
+    await dropFile(latestResult, '"id","label","count"\n"a2","bar","20"');
 
     expect(dataSource.endEditSession).toHaveBeenCalledWith(false);
   });
@@ -380,13 +349,7 @@ describe("useCsvUpload", () => {
       await tick();
     });
 
-    await act(async () => {
-      latestResult?.onDrop({} as React.DragEvent<HTMLDivElement>, [
-        makeFile('"id","label","count"\n"a1","foo","10"'),
-      ]);
-      await tick();
-      await tick();
-    });
+    await dropFile(latestResult, '"id","label","count"\n"a1","foo","10"');
 
     expect(onError).toHaveBeenCalled();
   });
@@ -408,13 +371,7 @@ describe("useCsvUpload", () => {
       await tick();
     });
 
-    await act(async () => {
-      latestResult?.onDrop({} as React.DragEvent<HTMLDivElement>, [
-        makeFile('"id","label","count"\n"a1","foo","10"'),
-      ]);
-      await tick();
-      await tick();
-    });
+    await dropFile(latestResult, '"id","label","count"\n"a1","foo","10"');
 
     expect(latestResult?.canImport).toBe(true);
 
@@ -446,32 +403,20 @@ describe("useCsvUpload", () => {
       await tick();
     });
 
-    await act(async () => {
-      latestResult?.onDrop({} as React.DragEvent<HTMLDivElement>, [
-        makeFile('"id","label","count"\n"a1","foo","NOT_A_NUMBER"'),
-      ]);
-      await tick();
-      await tick();
-    });
+    await dropFile(latestResult, '"id","label","count"\n"a1","foo","NOT_A_NUMBER"');
 
-    expect(dataSource.beginEditSession).toHaveBeenCalledWith("csv-upload");
+    expect(dataSource.beginEditSession).toHaveBeenCalledWith("empty-session-table");
     expect(latestResult?.canImport).toBe(false);
     expect(latestResult?.validation?.errors.length).toBeGreaterThan(0);
 
-    const addRowCalls = (
-      dataSource.rpcRequest as ReturnType<typeof vi.fn>
-    ).mock.calls.map(
-      (c: unknown[]) =>
-        (c[0] as { params: { rowData: Record<string, unknown> } }).params
-          .rowData,
-    );
+    const addRowCalls = getAddRowPayloads(dataSource);
     expect(addRowCalls).toHaveLength(1);
-    expect(addRowCalls[0]).not.toHaveProperty("id");
-    expect(addRowCalls[0]).not.toHaveProperty("label");
-    expect(addRowCalls[0]).not.toHaveProperty("count");
+    expect(addRowCalls[0]).toHaveProperty("id");
+    expect(addRowCalls[0]).toHaveProperty("label");
     expect(addRowCalls[0]).toHaveProperty("rowNum");
-    const errorMap = JSON.parse(addRowCalls[0].errorMap as string);
-    expect(errorMap).toHaveProperty("count");
+    expect(typeof addRowCalls[0].vuuMsg).toBe("string");
+    expect(addRowCalls[0].vuuMsg as string).toMatch(/^Row \d+:/);
+    expect(addRowCalls[0].vuuMsg as string).toContain("count");
   });
 
   it("sends full row data for valid rows and omits it for error rows in the same file", async () => {
@@ -490,38 +435,22 @@ describe("useCsvUpload", () => {
       await tick();
     });
 
-    await act(async () => {
-      latestResult?.onDrop({} as React.DragEvent<HTMLDivElement>, [
-        makeFile(
-          '"id","label","count"\n"a1","foo","10"\n"a2","bar","NOT_A_NUMBER"',
-        ),
-      ]);
-      await tick();
-      await tick();
-    });
+    await dropFile(latestResult, '"id","label","count"\n"a1","foo","10"\n"a2","bar","NOT_A_NUMBER"');
 
-    const addRowCalls = (
-      dataSource.rpcRequest as ReturnType<typeof vi.fn>
-    ).mock.calls.map(
-      (c: unknown[]) =>
-        (c[0] as { params: { rowData: Record<string, unknown> } }).params
-          .rowData,
-    );
+    const addRowCalls = getAddRowPayloads(dataSource);
 
     expect(addRowCalls).toHaveLength(2);
 
-    const validPayload = addRowCalls.find((p) => p.errorMap === "");
+    const validPayload = addRowCalls.find((p) => p.vuuMsg === "");
     expect(validPayload).toBeDefined();
     expect(validPayload).toHaveProperty("id", "a1");
     expect(validPayload).toHaveProperty("label", "foo");
 
-    const errorPayload = addRowCalls.find((p) => p.errorMap !== "");
+    const errorPayload = addRowCalls.find((p) => (p.vuuMsg as string) !== "");
     expect(errorPayload).toBeDefined();
-    expect(errorPayload).not.toHaveProperty("id");
-    expect(errorPayload).not.toHaveProperty("label");
-    expect(errorPayload).not.toHaveProperty("count");
-    const errorMap = JSON.parse(errorPayload!.errorMap as string);
-    expect(errorMap).toHaveProperty("count");
+    expect(errorPayload).toHaveProperty("id", "a2");
+    expect(errorPayload).toHaveProperty("label", "bar");
+    expect(errorPayload?.vuuMsg as string).toMatch(/^Row \d+:.*count/);
   });
 
   it("fires onEditSessionEnded with reason 'discarded' when a second file replaces the first", async () => {
@@ -541,26 +470,168 @@ describe("useCsvUpload", () => {
       await tick();
     });
 
-    await act(async () => {
-      latestResult?.onDrop({} as React.DragEvent<HTMLDivElement>, [
-        makeFile('"id","label","count"\n"a1","foo","10"'),
-      ]);
-      await tick();
-      await tick();
-    });
+    await dropFile(latestResult, '"id","label","count"\n"a1","foo","10"');
 
-    await act(async () => {
-      latestResult?.onDrop({} as React.DragEvent<HTMLDivElement>, [
-        makeFile('"id","label","count"\n"a2","bar","20"'),
-      ]);
-      await tick();
-      await tick();
-    });
+    await dropFile(latestResult, '"id","label","count"\n"a2","bar","20"');
 
     const discardedCall = onEditSessionEnded.mock.calls
       .map((c: unknown[]) => c[0] as CsvUploadSessionEndResult)
       .find((r) => r.reason === "discarded");
     expect(discardedCall).toBeDefined();
+  });
+
+  it("fires onProcessingStarted when a file is dropped", async () => {
+    let latestResult: UseCsvUploadReturn | undefined;
+    const onProcessingStarted = vi.fn();
+    const dataSource = makeDataSource();
+
+    await act(async () => {
+      root.render(
+        <Probe
+          props={{ dataSource, onProcessingStarted }}
+          onResult={(r) => {
+            latestResult = r;
+          }}
+        />,
+      );
+      await tick();
+    });
+
+    await dropFile(latestResult, '"id","label","count"\n"a1","foo","10"');
+
+    expect(onProcessingStarted).toHaveBeenCalledTimes(1);
+  });
+
+  it("emits a schema error and does not start a session when maxRows is exceeded", async () => {
+    let latestResult: UseCsvUploadReturn | undefined;
+    const onError = vi.fn();
+    const dataSource = makeDataSource();
+
+    await act(async () => {
+      root.render(
+        <Probe
+          props={{ dataSource, onError, maxRows: 1 }}
+          onResult={(r) => {
+            latestResult = r;
+          }}
+        />,
+      );
+      await tick();
+    });
+
+    await dropFile(latestResult, '"id","label","count"\n"a1","foo","10"\n"a2","bar","20"');
+
+    expect(latestResult?.canImport).toBe(false);
+    expect(dataSource.beginEditSession).not.toHaveBeenCalled();
+    expect(onError.mock.calls.at(-1)?.[0]?.errors.schemaError).toBeDefined();
+  });
+
+  it("formats vuuMsg as 'Row N: column: message' for a single row error", async () => {
+    let latestResult: UseCsvUploadReturn | undefined;
+    const dataSource = makeDataSource();
+
+    await act(async () => {
+      root.render(
+        <Probe
+          props={{ dataSource }}
+          onResult={(r) => {
+            latestResult = r;
+          }}
+        />,
+      );
+      await tick();
+    });
+
+    await dropFile(latestResult, '"id","label","count"\n"a1","foo","NOT_A_NUMBER"');
+
+    const payload = getAddRowPayloads(dataSource).find((p) => p.vuuMsg !== "");
+
+    expect(payload?.vuuMsg).toMatch(/^Row 2: count:/);
+  });
+
+  it("joins multiple column errors on the same row in vuuMsg with '; '", async () => {
+    const multiNumericSchema: TableSchema = {
+      key: "id",
+      columns: [
+        { name: "id", serverDataType: "string" },
+        { name: "price", serverDataType: "double" },
+        { name: "quantity", serverDataType: "int" },
+      ],
+      table: { module: "TEST", table: "items" },
+    } as unknown as TableSchema;
+    const dataSource = makeDataSource({ tableSchema: multiNumericSchema });
+
+    let latestResult: UseCsvUploadReturn | undefined;
+
+    await act(async () => {
+      root.render(
+        <Probe
+          props={{ dataSource }}
+          onResult={(r) => {
+            latestResult = r;
+          }}
+        />,
+      );
+      await tick();
+    });
+
+    await dropFile(latestResult, '"id","price","quantity"\n"a1","BAD_PRICE","BAD_QTY"');
+
+    const payload = getAddRowPayloads(dataSource).find((p) => p.vuuMsg !== "");
+
+    expect(payload?.vuuMsg).toMatch(/^Row 2: price:.*; quantity:/);
+  });
+
+  it("assigns the correct row number in vuuMsg when multiple rows have errors", async () => {
+    let latestResult: UseCsvUploadReturn | undefined;
+    const dataSource = makeDataSource();
+
+    await act(async () => {
+      root.render(
+        <Probe
+          props={{ dataSource }}
+          onResult={(r) => {
+            latestResult = r;
+          }}
+        />,
+      );
+      await tick();
+    });
+
+    await dropFile(latestResult, '"id","label","count"\n"a1","foo","10"\n"a2","bar","BAD"\n"a3","baz","ALSO_BAD"');
+
+    const payloads = getAddRowPayloads(dataSource);
+
+    expect(payloads).toHaveLength(3);
+
+    expect(payloads.find((p) => p.id === "a1")?.vuuMsg).toBe("");
+    expect(payloads.find((p) => p.id === "a2")?.vuuMsg).toMatch(/^Row 3: count:/);
+    expect(payloads.find((p) => p.id === "a3")?.vuuMsg).toMatch(/^Row 4: count:/);
+  });
+
+  it("respects parseOptions.requireQuotedValues and emits a validationError for an unquoted CSV", async () => {
+    let latestResult: UseCsvUploadReturn | undefined;
+    const onError = vi.fn();
+    const dataSource = makeDataSource();
+
+    await act(async () => {
+      root.render(
+        <Probe
+          props={{ dataSource, onError, parseOptions: { requireQuotedValues: true } }}
+          onResult={(r) => {
+            latestResult = r;
+          }}
+        />,
+      );
+      await tick();
+    });
+
+    // Unquoted header triggers a file-level UNQUOTED_VALUE parse error
+    await dropFile(latestResult, 'id,label,count\n"a1","foo","10"');
+
+    expect(latestResult?.canImport).toBe(false);
+    expect(dataSource.beginEditSession).not.toHaveBeenCalled();
+    expect(onError.mock.calls.at(-1)?.[0]?.errors.validationError).toBeDefined();
   });
 });
 

@@ -5,46 +5,81 @@ import {
   type CsvUploadPhase,
   type CsvUploadSessionEndResult,
   type CsvUploadSessionTable,
+  useCsvUploadSessionPreview,
 } from "@vuu-ui/vuu-table-extras";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
 import { Button } from "@salt-ds/core";
 import { Table } from "@vuu-ui/vuu-table";
-import type { TableConfig } from "@vuu-ui/vuu-table-types";
+import type { TableCellRendererProps, TableConfig } from "@vuu-ui/vuu-table-types";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 const LOCAL_TABLE_NAME = "instruments";
 
+const CsvRowNumCell = ({ dataRow }: TableCellRendererProps) => {
+  const msg = dataRow["vuuMsg"] as string;
+  const colonIdx = msg.indexOf(":");
+  return <>{colonIdx > 4 ? msg.slice(4, colonIdx) : ""}</>;
+};
+
+const CsvErrorDescCell = ({ dataRow }: TableCellRendererProps) => {
+  const msg = dataRow["vuuMsg"] as string;
+  const colonIdx = msg.indexOf(": ");
+  return <>{colonIdx !== -1 ? msg.slice(colonIdx + 2) : msg}</>;
+};
+
+registerComponent("csv-row-num", CsvRowNumCell, "cell-renderer");
+registerComponent("csv-error-desc", CsvErrorDescCell, "cell-renderer");
+
 const errorTableConfig: TableConfig = {
   columns: [
-    { name: "rowNum", serverDataType: "int", width: 70, label: "Row #" },
-    { name: "errorMap", serverDataType: "string", width: 400, label: "Error" },
+    {
+      name: "rowNum",
+      serverDataType: "string",
+      width: 60,
+      label: "#",
+      source: "client",
+      type: { name: "string", renderer: { name: "csv-row-num" } },
+    },
+    {
+      name: "vuuMsg",
+      serverDataType: "string",
+      width: 440,
+      label: "Error Description",
+      type: { name: "string", renderer: { name: "csv-error-desc" } },
+    },
   ],
   rowSeparators: true,
 };
 
 const SessionValidationErrorsTable = ({
-  dataSource,
+  sessionTable,
 }: {
-  dataSource: DataSource | undefined;
+  sessionTable: CsvUploadSessionTable | undefined;
 }) => {
+  const { isLoadingPreview, previewDataSource, previewError } =
+    useCsvUploadSessionPreview(sessionTable);
   const [errorRowCount, setErrorRowCount] = useState<number | undefined>();
 
   useEffect(() => {
-    if (dataSource) {
-      dataSource.filter = {
-        filter: 'errorMap > ""',
-      };
+    if (previewDataSource) {
+      previewDataSource.filter = { filter: 'vuuMsg > ""' };
       const handleResize = (size: number) => setErrorRowCount(size);
-      dataSource.on("resize", handleResize);
+      previewDataSource.on("resize", handleResize);
       return () => {
-        dataSource.removeListener("resize", handleResize);
+        previewDataSource.removeListener("resize", handleResize);
       };
     } else {
       setErrorRowCount(undefined);
     }
-  }, [dataSource]);
+  }, [previewDataSource]);
 
-  if (!dataSource || errorRowCount === 0) return null;
+  if (isLoadingPreview || !previewDataSource || errorRowCount === 0) return null;
+  if (previewError) {
+    return (
+      <div style={{ color: "#b42318", fontSize: 12 }}>{previewError}</div>
+    );
+  }
   return (
     <div
       style={{
@@ -60,7 +95,7 @@ const SessionValidationErrorsTable = ({
       <Table
         config={errorTableConfig}
         showColumnHeaderMenus={false}
-        dataSource={dataSource}
+        dataSource={previewDataSource}
         height={200}
         width="100%"
       />
@@ -75,8 +110,8 @@ const CsvUploadRpcExampleContent = () => {
   );
 
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
-  const [sessionDataSource, setSessionDataSource] = useState<
-    DataSource | undefined
+  const [sessionTable, setSessionTable] = useState<
+    CsvUploadSessionTable | undefined
   >();
   const [imported, setImported] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(true);
@@ -106,8 +141,12 @@ const CsvUploadRpcExampleContent = () => {
     setImported(true);
   }, []);
 
+  const handleEditSessionStarted = useCallback((sessionDs: DataSource) => {
+    setSessionTable(sessionDs.table as CsvUploadSessionTable);
+  }, []);
+
   const handleEditSessionEnded = useCallback(() => {
-    setSessionDataSource(undefined);
+    setSessionTable(undefined);
   }, []);
 
   return (
@@ -129,7 +168,7 @@ const CsvUploadRpcExampleContent = () => {
         onEditSessionEnded={handleEditSessionEnded}
         onError={handleError}
         onImported={handleImported}
-        onEditSessionStarted={setSessionDataSource}
+        onEditSessionStarted={handleEditSessionStarted}
         open={dialogOpen}
       >
         {errorMessage ? (
@@ -137,7 +176,7 @@ const CsvUploadRpcExampleContent = () => {
             {errorMessage}
           </div>
         ) : null}
-        <SessionValidationErrorsTable dataSource={sessionDataSource} />
+        <SessionValidationErrorsTable sessionTable={sessionTable} />
       </CsvUpload>
     </div>
   );

@@ -14,7 +14,6 @@ import {
   hasFileParseErrors,
   isCsvParseError,
   normalizeTableData,
-  getValidatedRowNumbers,
   mergeValidationWithParseErrors,
   toErrorMessage,
 } from "./parse/csv-upload-utils";
@@ -115,45 +114,46 @@ export const useCsvUpload = ({
         throw Error("CsvUpload requires dataSource.table to be defined.");
       }
 
-      const errorMapByRow = new Map<number, Record<string, string[]>>();
-      for (const { rowNum, column, errorEnum } of mergedValidation.errors) {
-        const rowMap = errorMapByRow.get(rowNum) ?? {};
-        (rowMap[column] ??= []).push(errorEnum);
-        errorMapByRow.set(rowNum, rowMap);
+      const vuuMsgByRow = new Map<number, string>();
+      for (const { rowNum, column, message } of mergedValidation.errors) {
+        if (rowNum < CSV_FIRST_DATA_ROW_NUMBER) continue;
+        const existing = vuuMsgByRow.get(rowNum);
+        const columnError = `${column}: ${message}`;
+        vuuMsgByRow.set(
+          rowNum,
+          existing ? `${existing}; ${columnError}` : `Row ${rowNum}: ${columnError}`,
+        );
       }
 
       const parsedRowCount = mergedValidation.rows.length;
-      const extraErrorRows = [...errorMapByRow.entries()]
-        .filter(
-          ([rowNum]) => rowNum - CSV_FIRST_DATA_ROW_NUMBER >= parsedRowCount,
-        )
-        .map(([rowNum, errorMap]) => ({
+      const unparsedErrorRows = [...vuuMsgByRow.keys()]
+        .filter((rowNum) => rowNum - CSV_FIRST_DATA_ROW_NUMBER >= parsedRowCount)
+        .map((rowNum) => ({
           rowNum,
           rowData: {} as Record<string, VuuRowDataItemType>,
-          errorMap,
+          vuuMsg: vuuMsgByRow.get(rowNum) ?? "",
         }));
 
       const allRows = [
         ...mergedValidation.rows.map((rowData, idx) => ({
           rowNum: idx + CSV_FIRST_DATA_ROW_NUMBER,
           rowData: rowData ?? {},
-          errorMap: errorMapByRow.get(idx + CSV_FIRST_DATA_ROW_NUMBER),
+          vuuMsg: vuuMsgByRow.get(idx + CSV_FIRST_DATA_ROW_NUMBER) ?? "",
         })),
-        ...extraErrorRows,
+        ...unparsedErrorRows,
       ];
 
       const { errors: rpcErrors } = await executeBatchRpcCalls(
         allRows,
-        async ({ rowNum, rowData, errorMap }) => {
-          const payload = errorMap
-            ? { rowNum, errorMap: JSON.stringify(errorMap) }
-            : { ...rowData, rowNum, errorMap: "" };
+        async ({ rowNum, rowData, vuuMsg }) => {
+          const payload = { ...rowData, rowNum, vuuMsg };
           const result = await dataSource.rpcRequest?.({
             type: "RPC_REQUEST",
             rpcName: "addRow",
             params: {
-              rowData: payload,
-            } as unknown as Record<string, VuuRowDataItemType>,
+              key: String(rowNum),
+              data: payload,
+            },
           });
           if (!isRpcSuccess(result)) {
             const msg =
@@ -183,11 +183,11 @@ export const useCsvUpload = ({
       throw Error("CsvUpload requires datasource beginEditSession support.");
     }
 
-    const beginSessionResult = await dataSource.beginEditSession("csv-upload");
+    const sessionDataSource = await dataSource.beginEditSession("empty-session-table");
 
-    const table = (beginSessionResult as DataSource | undefined)?.table;
-    if (table && isSessionTable(table)) {
-      setActiveSessionTable(table as CsvUploadSessionTable);
+    const sessionVuuTable = sessionDataSource?.table;
+    if (sessionVuuTable && isSessionTable(sessionVuuTable)) {
+      setActiveSessionTable(sessionVuuTable as CsvUploadSessionTable);
     }
   }, [dataSource, setActiveSessionTable]);
 
@@ -228,7 +228,6 @@ export const useCsvUpload = ({
             ),
           },
         });
-        setActiveSessionTable(undefined);
         return;
       }
 
@@ -262,11 +261,7 @@ export const useCsvUpload = ({
 
       setValidation(mergedValidation);
 
-      const validRowNumbers = getValidatedRowNumbers(mergedValidation);
-      const hasValidRows = validRowNumbers.length > 0;
-      const hasValidationErrors = mergedValidation.errors.length > 0;
-
-      if (hasValidRows || hasValidationErrors) {
+      if (mergedValidation.rows.length > 0) {
         await beginEditSession();
 
         try {
@@ -295,11 +290,10 @@ export const useCsvUpload = ({
       table,
       endEditSessionAndNotify,
       schema,
-      setActiveSessionTable,
     ],
   );
 
-  const onFiles = useCallback(
+  const handleFiles = useCallback(
     async (files: File[]) => {
       const file = files[0];
       if (file === undefined) {
@@ -335,16 +329,16 @@ export const useCsvUpload = ({
 
   const onDrop = useCallback(
     (_event: React.DragEvent<HTMLDivElement>, files: File[]) => {
-      onFiles(files);
+      handleFiles(files);
     },
-    [onFiles],
+    [handleFiles],
   );
 
   const onTriggerChange = useCallback(
     (_event: React.ChangeEvent<HTMLInputElement>, files: File[]) => {
-      onFiles(files);
+      handleFiles(files);
     },
-    [onFiles],
+    [handleFiles],
   );
 
   const canImport = useMemo(

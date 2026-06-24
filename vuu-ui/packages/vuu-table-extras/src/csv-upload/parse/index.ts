@@ -35,12 +35,8 @@ export {
 } from "./csv-schema-validation";
 
 export {
-  buildPreviewTableData,
   buildRowErrorMessage,
   executeBatchRpcCalls,
-  formatValidationErrors,
-  getValidatedRowNumbers,
-  groupValidationErrorsByRow,
   hasFileParseErrors,
   isCsvParseError,
   mergeValidationWithParseErrors,

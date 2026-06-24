@@ -75,7 +75,7 @@ describe("useCsvUploadSessionPreview", () => {
       key: "id",
       columns: [
         { name: "id", serverDataType: "string" },
-        { name: "errorMap", serverDataType: "string" },
+        { name: "vuuMsg", serverDataType: "string" },
       ],
       table: sessionTable,
     } satisfies TableSchema);
@@ -107,17 +107,17 @@ describe("useCsvUploadSessionPreview", () => {
     expect(latestResult?.previewConfig?.columns).toEqual([
       { name: "id", serverDataType: "string" },
       {
-        name: "errorMap",
+        name: "vuuMsg",
         serverDataType: "string",
         width: 300,
-        label: "Error Map",
+        label: "Error",
       },
     ]);
     expect(latestResult?.previewDataSource).toBeInstanceOf(MockVuuDataSource);
     expect(
       (latestResult?.previewDataSource as MockVuuDataSource | undefined)?.args,
     ).toEqual({
-      columns: ["id", "errorMap"],
+      columns: ["id", "vuuMsg"],
       table: sessionTable,
     });
   });
