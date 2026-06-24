@@ -4,6 +4,7 @@ import {
   DataSourceConfig,
   DataSourceDataMessage,
   DataSourceRow,
+  DataSourceVisualLinksMessage,
   TypeaheadSuggestionProvider,
   VuuUIMessageIn,
   VuuUIMessageInRPC,
@@ -297,6 +298,11 @@ export const isVisualLinkMessage = (
   msg: unknown,
 ): msg is VuuCreateVisualLink | VuuRemoveVisualLink =>
   (msg as VuuCreateVisualLink).type.endsWith("_VISUAL_LINK");
+
+export const isVisualLinksMessage = (
+  msg: unknown,
+): msg is DataSourceVisualLinksMessage =>
+  (msg as DataSourceVisualLinksMessage).type === "vuu-links";
 
 export const isViewportMessage = (
   msg: object,

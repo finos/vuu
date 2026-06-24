@@ -181,7 +181,7 @@ export const ShowcaseStandalone = ({
           </LocalDataSourceProvider>
         ) : (
           <VuuDataSourceProvider
-            authenticate={false}
+            authenticate={true}
             autoConnect
             autoLogin
             websocketUrl="wss://localhost:8090/websocket"

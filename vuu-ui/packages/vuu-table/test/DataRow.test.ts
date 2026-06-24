@@ -46,8 +46,16 @@ describe("DataRow", () => {
     expect(dataRow.price).toEqual("1234567.89");
 
     // prettier-ignore
+    const dataRowTwoDigits = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "12"]);
+    expect(dataRowTwoDigits.price).toEqual("0.12");
+
+    // prettier-ignore
     const dataRowNegativeValue = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "-123456789"]);
     expect(dataRowNegativeValue.price).toEqual("-1234567.89");
+
+    // prettier-ignore
+    const dataRowNegativeValueTwoDigits = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "-12"]);
+    expect(dataRowNegativeValueTwoDigits.price).toEqual("-0.12");
 
     // prettier-ignore
     const dataRowSmallValue = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "12"]);
@@ -63,8 +71,16 @@ describe("DataRow", () => {
     expect(dataRow.price).toEqual("12345.6789");
 
     // prettier-ignore
+    const dataRowFourDigits = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "1234"]);
+    expect(dataRowFourDigits.price).toEqual("0.1234");
+
+    // prettier-ignore
     const dataRowNegativeValue = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "-123456789"]);
     expect(dataRowNegativeValue.price).toEqual("-12345.6789");
+
+    // prettier-ignore
+    const dataRowNegativeValueFourDigits = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "-1234"]);
+    expect(dataRowNegativeValueFourDigits.price).toEqual("-0.1234");
 
     // prettier-ignore
     const dataRowSmallValue = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "12"]);
@@ -80,8 +96,16 @@ describe("DataRow", () => {
     expect(dataRow.price).toEqual("123.456789");
 
     // prettier-ignore
+    const dataRowTrailingZeroes = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "1234560000"]);
+    expect(dataRowTrailingZeroes.price).toEqual("1234.56");
+
+    // prettier-ignore
     const dataRowNegativeValue = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "-123456789"]);
     expect(dataRowNegativeValue.price).toEqual("-123.456789");
+
+    // prettier-ignore
+    const dataRowSixDigitNegative = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "-460000"]);
+    expect(dataRowSixDigitNegative.price).toEqual("-0.46");
 
     // prettier-ignore
     const dataRowSmallValue = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "-12"]);
@@ -97,7 +121,15 @@ describe("DataRow", () => {
     expect(dataRow.price).toEqual("1.23456789");
 
     // prettier-ignore
+    const dataRowTrailingZeroes = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "12340000"]);
+    expect(dataRowTrailingZeroes.price).toEqual("0.1234");
+
+    // prettier-ignore
     const dataRowNegativeValue = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "-123456789"]);
     expect(dataRowNegativeValue.price).toEqual("-1.23456789");
+
+    // prettier-ignore
+    const dataRowNegativeValueEightDigits = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "-12345678"]);
+    expect(dataRowNegativeValueEightDigits.price).toEqual("-0.12345678");
   });
 });

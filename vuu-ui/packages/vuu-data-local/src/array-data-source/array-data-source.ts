@@ -284,10 +284,10 @@ export class ArrayDataSource
   }
 
   unsubscribe() {
-    this.removeAllListeners();
-    this.clientCallback = undefined;
     this.#status = "unsubscribed";
     this.emit("unsubscribed", this.viewport);
+    this.removeAllListeners();
+    this.clientCallback = undefined;
   }
 
   suspend() {
@@ -442,6 +442,13 @@ export class ArrayDataSource
 
   set links(links: LinkDescriptorWithLabel[] | undefined) {
     this.#links = links;
+    if (links) {
+      this._clientCallback?.({
+        clientViewportId: this.viewport,
+        type: "vuu-links",
+        links,
+      });
+    }
   }
 
   get menu() {
