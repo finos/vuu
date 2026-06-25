@@ -18,7 +18,7 @@ class SessionTableDefBuilderTest {
         SessionTableDef sessionTableDef = new SessionTableDefBuilder()
                 .name("myTable")
                 .keyField("myKey")
-                .customColumns(new Column[]{new SimpleColumn("myColumn", 0, String.class)})
+                .customColumns(new Column[]{new SimpleColumn("myColumn", 0, String.class, false)})
                 .joinFields(List.of("myJoinField"))
                 .autoSubscribe(true)
                 .links(List.of(new Link("fromColumn", "toTable", "toColumn")))

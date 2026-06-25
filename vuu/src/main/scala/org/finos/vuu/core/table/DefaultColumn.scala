@@ -1,9 +1,9 @@
 package org.finos.vuu.core.table
 
-enum DefaultColumn(val name: String, val dataType: Class[_]) {
+enum DefaultColumn(val name: String, val dataType: Class[_], val isEditable: Boolean = false) {
   case CreatedTime extends DefaultColumn("vuuCreatedTimestamp", DataType.EpochTimestampType)
   case LastUpdatedTime extends DefaultColumn("vuuUpdatedTimestamp", DataType.EpochTimestampType)
-  case MSG extends DefaultColumn("vuuMsg", DataType.StringDataType)
+  case MSG extends DefaultColumn("vuuMsg", DataType.StringDataType, true)
 }
 
 object DefaultColumn {
@@ -14,7 +14,7 @@ object DefaultColumn {
   private val allDefaults = DefaultColumn.values
 
   def getDefaultColumns(customColumns: Array[Column]): Array[Column] =
-    allDefaults.map(f => SimpleColumn(f.name, customColumns.length + f.ordinal, f.dataType))
+    allDefaults.map(f => SimpleColumn(f.name, customColumns.length + f.ordinal, f.dataType, isEditable = f.isEditable))
 
   def isDefaultColumn(column: Column): Boolean =
     allDefaults.exists(f => f.name == column.name && f.dataType == column.dataType)

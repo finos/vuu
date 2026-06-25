@@ -27,6 +27,7 @@ public class TableDefBuilder {
     private List<String> indexFields = List.of();
     private TableVisibility visibility = TableVisibility.PUBLIC();
     private boolean includeDefaultColumns = true;
+    private boolean isEditable = false;
     private BiFunction<ViewPort, TableContainer, PermissionFilter> permissionFunction = (vp, tc) -> AllowAllPermissionFilter$.MODULE$;
     private SortSpec defaultSort = new SortSpecBuilder()
             .build();
@@ -151,6 +152,16 @@ public class TableDefBuilder {
         return this;
     }
 
+    /**
+     * Sets whether to allows edit mode.
+     *
+     * @param isEditable {@code true} to allow edit mode
+     * @return this builder
+     */
+    public TableDefBuilder isEditable(Boolean isEditable) {
+        this.isEditable = isEditable;
+        return this;
+    }
 
     /**
      * Sets permission filter function.
@@ -190,6 +201,7 @@ public class TableDefBuilder {
                 Indices.apply(toScalaSeq(indexFields.stream().map(Index::apply).toList())),
                 visibility,
                 includeDefaultColumns,
+                isEditable,
                 ScalaFunctionConverter.toScala(permissionFunction),
                 defaultSort);
     }

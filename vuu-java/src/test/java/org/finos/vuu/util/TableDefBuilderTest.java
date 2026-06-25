@@ -21,13 +21,14 @@ class TableDefBuilderTest {
         TableDef tableDef = new TableDefBuilder()
                 .name("myTable")
                 .keyField("myKey")
-                .customColumns(new Column[]{new SimpleColumn("myColumn", 0, String.class)})
+                .customColumns(new Column[]{new SimpleColumn("myColumn", 0, String.class, false)})
                 .joinFields(List.of("myJoinField"))
                 .autoSubscribe(true)
                 .links(List.of(new Link("fromColumn", "toTable", "toColumn")))
                 .indexFields(List.of("myIndex"))
                 .withPrivateVisibility()
                 .includeDefaultColumns(false)
+                .isEditable(true)
                 .permissionFunction((a, b) -> null)
                 .defaultSort(new SortSpec(toScala(List.of(new SortDef("myColumn", 'D')))))
                 .build();
@@ -41,6 +42,7 @@ class TableDefBuilderTest {
         assertEquals(1, tableDef.indices().indices().length());
         assertEquals(TableVisibility.PRIVATE(), tableDef.visibility());
         assertFalse(tableDef.includeDefaultColumns());
+        assertTrue(tableDef.isEditable());
         assertNotNull(tableDef.permissionFunction());
         assertEquals(1, tableDef.defaultSort().sortDefs().length());
     }
@@ -59,6 +61,7 @@ class TableDefBuilderTest {
         assertTrue(tableDef.indices().indices().isEmpty());
         assertEquals(TableVisibility.PUBLIC(), tableDef.visibility());
         assertTrue(tableDef.includeDefaultColumns());
+        assertFalse(tableDef.isEditable());
         assertNotNull(tableDef.permissionFunction());
         assertTrue(tableDef.defaultSort().sortDefs().isEmpty());
     }
