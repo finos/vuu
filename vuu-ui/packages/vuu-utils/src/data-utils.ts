@@ -7,7 +7,7 @@ export const UP2 = "up2";
 export const DOWN1 = "down1";
 export const DOWN2 = "down2";
 
-const decimalPattern = /^-?[0-9]*\.[0-9]+$/;
+const decimalPattern = /^-?[0-9]*\.[0-9]*$/;
 
 export const stringIsValidInt = (val: string) =>
   parseInt(val, 10).toString() === val;
