@@ -198,19 +198,21 @@ class JoinSessionTableDef(name: String, baseTable: TableDef, joinColumns: Array[
 class SessionTableDef(name: String,
                       keyField: String,
                       customColumns: Array[Column],
-                      joinFields: Seq[String],
+                      joinFields: Seq[String] = Seq.empty,
                       autosubscribe: Boolean = false,
                       links: VisualLinks = VisualLinks(),
-                      indices: Indices) extends TableDef(name, keyField, customColumns, joinFields, autosubscribe, links, indices) with VuuInMemPluginLocator
-
+                      indices: Indices = Indices(),
+                      visibility: TableVisibility = Public,
+                      includeDefaultColumns: Boolean = true) extends TableDef(name, keyField, customColumns, joinFields,
+  autosubscribe, links, indices, visibility, includeDefaultColumns) with VuuInMemPluginLocator
 
 class TableDef(val name: String,
                val keyField: String,
                val customColumns: Array[Column],
-               val joinFields: Seq[String],
+               val joinFields: Seq[String] = Seq.empty,
                val autosubscribe: Boolean = false,
                val links: VisualLinks = VisualLinks(),
-               val indices: Indices,
+               val indices: Indices = Indices(),
                val visibility: TableVisibility = Public,
                val includeDefaultColumns: Boolean = true,
                val permissionFunction: (ViewPort, TableContainer) => PermissionFilter = (_, _) => AllowAllPermissionFilter,

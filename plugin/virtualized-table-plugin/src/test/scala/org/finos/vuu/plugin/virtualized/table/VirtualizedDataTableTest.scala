@@ -4,7 +4,7 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.core.table.{Columns, RowWithData}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
+import org.finos.vuu.plugin.virtualized.api.{SimpleVirtualizedSessionTableDef, VirtualizedSessionTableDef}
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -19,7 +19,7 @@ class VirtualizedDataTableTest extends AnyFeatureSpec with Matchers with GivenWh
   private val sessionId = ClientSessionId("AAAA", "channel")
   private val joinProvider = new TestFriendlyJoinTableProvider
 
-  private val ordersTableDef = VirtualizedSessionTableDef("bigOrders", "orderId", Columns.fromNames("orderId:String", "ric:String", "quantity:Int", "trader: String"))
+  private val ordersTableDef = SimpleVirtualizedSessionTableDef("bigOrders", "orderId", Columns.fromNames("orderId:String", "ric:String", "quantity:Int", "trader: String"))
 
   def sampleRows: List[RowWithData] = {
     List(
