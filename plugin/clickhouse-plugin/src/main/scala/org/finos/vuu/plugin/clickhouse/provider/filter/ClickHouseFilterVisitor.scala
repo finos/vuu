@@ -1,12 +1,14 @@
 package org.finos.vuu.plugin.clickhouse.provider.filter
 
-import org.antlr.v4.runtime.tree.TerminalNode
 import org.finos.vuu.grammar.FilterBaseVisitor
 import org.finos.vuu.grammar.FilterParser.*
+import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumn
 
-class ClickHouseFilterVisitor extends FilterBaseVisitor[Unit] {
+class ClickHouseFilterVisitor(columns: List[VirtualizedSessionTableColumn]) extends FilterBaseVisitor[Unit] {
 
   private val sb = new java.lang.StringBuilder(256)
+  private lazy val remoteMapping: Map[String, String] =
+    columns.map(f => f.name -> f.remoteName).toMap
 
   def getBuffer: java.lang.StringBuilder = sb
 
@@ -24,38 +26,38 @@ class ClickHouseFilterVisitor extends FilterBaseVisitor[Unit] {
     visit(ctx.orExpression())
 
   override def visitOperationEq(ctx: OperationEqContext): Unit = {
-    sb.append(ctx.ID().getText).append(" = ")
+    sb.append(getRemoteId(ctx.ID().getText)).append(" = ")
     appendScalar(ctx.scalar())
   }
 
   override def visitOperationNeq(ctx: OperationNeqContext): Unit = {
-    sb.append(ctx.ID().getText).append(" != ")
+    sb.append(getRemoteId(ctx.ID().getText)).append(" != ")
     appendScalar(ctx.scalar())
   }
 
   override def visitOperationGt(ctx: OperationGtContext): Unit =
-    sb.append(ctx.ID().getText).append(" > ").append(ctx.NUMBER().getText)
+    sb.append(getRemoteId(ctx.ID().getText)).append(" > ").append(ctx.NUMBER().getText)
 
   override def visitOperationGte(ctx: OperationGteContext): Unit =
-    sb.append(ctx.ID().getText).append(" >= ").append(ctx.NUMBER().getText)
+    sb.append(getRemoteId(ctx.ID().getText)).append(" >= ").append(ctx.NUMBER().getText)
 
   override def visitOperationLt(ctx: OperationLtContext): Unit =
-    sb.append(ctx.ID().getText).append(" < ").append(ctx.NUMBER().getText)
+    sb.append(getRemoteId(ctx.ID().getText)).append(" < ").append(ctx.NUMBER().getText)
 
   override def visitOperationLte(ctx: OperationLteContext): Unit =
-    sb.append(ctx.ID().getText).append(" <= ").append(ctx.NUMBER().getText)
+    sb.append(getRemoteId(ctx.ID().getText)).append(" <= ").append(ctx.NUMBER().getText)
 
   override def visitOperationStarts(ctx: OperationStartsContext): Unit =
-    like(ctx.ID().getText, ctx.STRING().getText, prefix = false, suffix = true)
+    like(getRemoteId(ctx.ID().getText), ctx.STRING().getText, prefix = false, suffix = true)
 
   override def visitOperationEnds(ctx: OperationEndsContext): Unit =
-    like(ctx.ID().getText, ctx.STRING().getText, prefix = true, suffix = false)
+    like(getRemoteId(ctx.ID().getText), ctx.STRING().getText, prefix = true, suffix = false)
 
   override def visitOperationContains(ctx: OperationContainsContext): Unit =
-    like(ctx.ID().getText, ctx.STRING().getText, prefix = true, suffix = true)
+    like(getRemoteId(ctx.ID().getText), ctx.STRING().getText, prefix = true, suffix = true)
 
   override def visitOperationIn(ctx: OperationInContext): Unit = {
-    val id = ctx.ID().getText
+    val id = getRemoteId(ctx.ID().getText)
     val setCtx = ctx.set()
 
     val nums = setCtx.NUMBER()
@@ -94,6 +96,11 @@ class ClickHouseFilterVisitor extends FilterBaseVisitor[Unit] {
   // ------------------------------------------------------------
   // Helpers
   // ------------------------------------------------------------
+
+  private def getRemoteId(id: String): String = {
+    remoteMapping.getOrElse(id,
+      throw new IllegalArgumentException(s"Mapping missing for filter column: '$id'"))
+  }
 
   private def joinChildren(children: java.util.List[_ <: org.antlr.v4.runtime.tree.ParseTree], op: String): Unit = {
     val startLen = sb.length()

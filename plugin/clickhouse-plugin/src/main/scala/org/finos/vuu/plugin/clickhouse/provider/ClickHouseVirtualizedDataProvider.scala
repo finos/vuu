@@ -31,8 +31,8 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
     val columns = viewPort.getColumns.getColumns
       .filter(f => f.isInstanceOf[VirtualizedSessionTableColumn])
       .map(_.asInstanceOf[VirtualizedSessionTableColumn])
-    val whereClause = ClickHouseFilterFactory.build(viewPort.filterSpec)
-    val orderBy = ClickHouseSortFactory.build(viewPort.sortSpec)
+    val whereClause = ClickHouseFilterFactory.build(columns, viewPort.filterSpec)
+    val orderBy = ClickHouseSortFactory.build(columns, viewPort.sortSpec)
 
     logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading rows from ClickHouse range $startIndex to ${startIndex + limit} filter=$whereClause sort=$orderBy")
 
