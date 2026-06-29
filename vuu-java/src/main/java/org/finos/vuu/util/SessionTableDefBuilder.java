@@ -5,7 +5,6 @@ import org.finos.vuu.api.Indices;
 import org.finos.vuu.api.Link;
 import org.finos.vuu.api.SessionTableDef;
 import org.finos.vuu.api.TableVisibility;
-import org.finos.vuu.api.TableVisibility$;
 import org.finos.vuu.api.VisualLinks;
 import org.finos.vuu.core.table.Column;
 
@@ -122,7 +121,7 @@ public class SessionTableDefBuilder {
      * @return this builder
      */
     public SessionTableDefBuilder withPrivateVisibility() {
-        this.visibility = TableVisibility$.MODULE$.PRIVATE();
+        this.visibility = TableVisibility.PRIVATE();
         return this;
     }
 
@@ -132,7 +131,7 @@ public class SessionTableDefBuilder {
      * @return this builder
      */
     public SessionTableDefBuilder withPublicVisibility() {
-        this.visibility = TableVisibility$.MODULE$.PUBLIC();
+        this.visibility = TableVisibility.PUBLIC();
         return this;
     }
 
