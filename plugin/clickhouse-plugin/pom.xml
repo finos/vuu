@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.finos.vuu</groupId>
+        <groupId>org.finos.vuu.plugin</groupId>
         <artifactId>plugin</artifactId>
         <version>4.1.0-SNAPSHOT</version>
     </parent>
