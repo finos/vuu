@@ -11,7 +11,7 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 
-class VirtualizedDataTableTest extends AnyFeatureSpec with Matchers with GivenWhenThen {
+class VirtualizedSessionTableTest extends AnyFeatureSpec with Matchers with GivenWhenThen {
 
   private implicit val metrics: MetricsProvider = new MetricsProviderImpl
   private implicit val clock: Clock = new TestFriendlyClock(DefaultTestStartTime.TestStartTime)

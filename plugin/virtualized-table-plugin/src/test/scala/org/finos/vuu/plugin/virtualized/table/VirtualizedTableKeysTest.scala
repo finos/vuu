@@ -1,6 +1,5 @@
 package org.finos.vuu.plugin.virtualized.table
 
-import org.finos.toolbox.collection.window.ArrayBackedMovingWindow
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
