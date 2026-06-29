@@ -4,6 +4,7 @@ import com.clickhouse.client.api.metadata.TableSchema
 import com.clickhouse.client.api.query.GenericRecord
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{Column, DataType, SimpleColumn}
+import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumn
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.GivenWhenThen
 import org.scalatest.flatspec.AnyFlatSpec
@@ -14,8 +15,8 @@ import java.time.{Instant, ZoneId, ZonedDateTime}
 class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFactory with GivenWhenThen {
   behavior of "ClickHouseRowDataMapper (per-type tests)"
 
-  private def col(name: String, dataType: Class[_]): org.finos.vuu.core.table.Column =
-    SimpleColumn(name, 0, dataType)
+  private def col(name: String, dataType: Class[_]): VirtualizedSessionTableColumn =
+    VirtualizedSessionTableColumn(name, 0, dataType, name)
 
   it should "map non-empty String and omit empty String" in {
     Given("a GenericRecord with a string column and primary key")

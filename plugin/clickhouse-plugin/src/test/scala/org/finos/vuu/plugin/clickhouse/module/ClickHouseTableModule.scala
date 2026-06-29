@@ -4,12 +4,10 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
-import org.finos.vuu.core.table.{AliasedSimpleColumn, Columns}
 import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.clickhouse.provider.ClickHouseVirtualizedDataProvider
-import org.finos.vuu.plugin.virtualized.api.AliasedVirtualizedSessionTableDef
-import org.finos.vuu.plugin.virtualized.table.VirtualizedTableColumn
+import org.finos.vuu.plugin.virtualized.api.{AliasedVirtualizedSessionTableDef, VirtualizedSessionTableColumnBuilder}
 
 object ClickHouseTableModule extends DefaultModule {
 
@@ -17,13 +15,17 @@ object ClickHouseTableModule extends DefaultModule {
 
   def apply(client: ClickHouseClient)(using clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
     val tableDef = AliasedVirtualizedSessionTableDef(
-      remoteName = "order_history",
       name = "orderHistory",
       keyField = "orderId",
-      customColumns = Array(
-        new VirtualizedTableColumn("order")
-      )
-      VirtualizedTableColumn().fromNames("orderId".string(), "quantity".int(), "price".long(), "side".string(), "trader".string())
+      remoteName = "order_history",
+      remoteKeyField = "order_id",
+      remoteColumns = VirtualizedSessionTableColumnBuilder()
+        .addString("orderId", "order_id")
+        .addInt("quantity")
+        .addLong("price")
+        .addString("side")
+        .addString("trader")
+        .build()
     )
     ModuleFactory.withNamespace(NAME)
       .addSessionTable(tableDef,

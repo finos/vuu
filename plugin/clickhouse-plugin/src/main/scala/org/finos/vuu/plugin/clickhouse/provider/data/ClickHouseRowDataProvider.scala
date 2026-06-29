@@ -2,13 +2,14 @@ package org.finos.vuu.plugin.clickhouse.provider.data
 
 import org.finos.vuu.core.table.{Column, RowWithData}
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
-import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
+import org.finos.vuu.plugin.virtualized.api.{VirtualizedSessionTableColumn, VirtualizedSessionTableDef}
 
 import scala.collection.mutable.ArrayBuffer
 
 trait ClickHouseRowDataProvider {
 
-  def queryForRowData(table: VirtualizedSessionTableDef, columns: List[Column],
+  def queryForRowData(table: VirtualizedSessionTableDef,
+                      columns: List[VirtualizedSessionTableColumn],
                       whereClause: String, orderBy: String,
                       limit: Int, startIndex: Int) : IndexedSeq[RowWithData]
 
@@ -25,12 +26,13 @@ object ClickHouseRowDataProvider {
 private case class ClickHouseRowDataProviderImpl(client: ClickHouseClient,
                                                  rowDataMapper: ClickHouseRowDataMapper) extends ClickHouseRowDataProvider {
 
-  override def queryForRowData(tableDef: VirtualizedSessionTableDef, columns: List[Column],
+  override def queryForRowData(tableDef: VirtualizedSessionTableDef,
+                               columns: List[VirtualizedSessionTableColumn],
                                whereClause: String, orderBy: String,
                                limit: Int, startIndex: Int): IndexedSeq[RowWithData] = {
     val query =
       s"""
-         |SELECT ${columns.map(_.name).mkString(", ")}
+         |SELECT ${columns.map(_.remoteName).mkString(", ")}
          |FROM ${tableDef.getRemoteTableName}
          |$whereClause
          |$orderBy
@@ -43,7 +45,7 @@ private case class ClickHouseRowDataProviderImpl(client: ClickHouseClient,
       val it = records.iterator()
       while (it.hasNext) {
         val record = it.next()
-        buf += rowDataMapper.mapRowData(record, tableDef.keyField, columns)
+        buf += rowDataMapper.mapRowData(record, tableDef.getRemoteKeyField, columns)
       }
       buf.toIndexedSeq
     }

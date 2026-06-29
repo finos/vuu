@@ -1,10 +1,10 @@
-package org.finos.vuu.plugin.virtualized.table
+package org.finos.vuu.plugin.virtualized.api
 
 import org.finos.vuu.core.table.{Column, DataType, RowData}
 
-object VirtualizedTableColumn {
+object VirtualizedSessionTableColumn {
 
-  def fromNames(names: Array[String]): Array[VirtualizedTableColumn] =
+  def fromNames(names: Array[String]): Array[VirtualizedSessionTableColumn] =
     names.zipWithIndex.map({ case (nameAndDt, index) =>
 
       val splitDef = nameAndDt.split(":").toList
@@ -12,7 +12,7 @@ object VirtualizedTableColumn {
       splitDef match {
         case name :: dataType :: remoteName :: _ =>
           val dtClass = DataType.fromString(dataType)
-          VirtualizedTableColumn(name, index, dtClass, remoteName)
+          VirtualizedSessionTableColumn(name, index, dtClass, remoteName)
         case _ => throw new Exception(s"Invalid format: $nameAndDt")
       }
 
@@ -20,7 +20,7 @@ object VirtualizedTableColumn {
 
 }
 
-case class VirtualizedTableColumn(name: String, index: Int, dataType: Class[_], remoteName: String) extends Column {
+case class VirtualizedSessionTableColumn(name: String, index: Int, dataType: Class[_], remoteName: String) extends Column {
 
   override def getData(data: RowData): Any = {
     data.get(name)
@@ -28,15 +28,16 @@ case class VirtualizedTableColumn(name: String, index: Int, dataType: Class[_], 
 
   override def getDataFullyQualified(data: RowData): Any = getData(data)
 
-  private lazy val hash: Int = name.hashCode * dataType.hashCode()
+  private lazy val hash: Int = name.hashCode * dataType.hashCode() * remoteName.hashCode
 
   override def hashCode(): Int = hash
 
   override def equals(obj: scala.Any): Boolean = {
     obj match {
-      case other: VirtualizedTableColumn =>
+      case other: VirtualizedSessionTableColumn =>
         this.name == other.name &&
-          this.dataType == other.dataType
+          this.dataType == other.dataType &&
+          this.remoteName == other.remoteName
       case _ => false
     }
   }
