@@ -3,8 +3,7 @@ package org.finos.vuu.plugin.clickhouse.provider.sort
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.net.SortSpec
-import org.finos.vuu.plugin.clickhouse.provider.filter.ClickHouseFilterFactory.{NO_RESULTS, logger}
-import org.finos.vuu.plugin.virtualized.api.{VirtualizedSessionTableColumn, VirtualizedSessionTableDef}
+import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumn
 
 import scala.util.{Failure, Success, Try}
 
