@@ -12,6 +12,7 @@ class ClickHouseClientInitializer(val options: ClickHouseClientOptions) {
       .setUsername(options.username)
       .setPassword(options.password)
       .setConnectTimeout(options.timeoutMs)
+      .setDefaultDatabase(options.database)
       
     builder.build()
   }

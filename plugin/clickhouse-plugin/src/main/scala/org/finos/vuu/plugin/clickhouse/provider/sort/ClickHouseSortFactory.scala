@@ -1,34 +1,46 @@
 package org.finos.vuu.plugin.clickhouse.provider.sort
 
-import com.github.benmanes.caffeine.cache.Caffeine
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.net.SortSpec
+import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumn
+
+import scala.util.{Failure, Success, Try}
 
 object ClickHouseSortFactory extends StrictLogging {
 
   private val NO_SORT = ""
-  private val sortCache = Caffeine.newBuilder()
-    .maximumSize(1_000)
-    .build[SortSpec, String]()
 
-  def build(sortSpec: SortSpec): String = {
+  def build(columns: List[VirtualizedSessionTableColumn], sortSpec: SortSpec): String = {
     if (sortSpec != null && sortSpec.sortDefs != null && sortSpec.sortDefs.nonEmpty) {
-      sortCache.get(sortSpec, f => parseSort(f))
+      parseSort(columns, sortSpec)
     } else {
       logger.trace("No sort spec was provided")
       NO_SORT
     }
   }
 
-  private def parseSort(sortSpec: SortSpec): String = {
-    val sortItems = sortSpec.sortDefs.map { sd =>
-      val direction = if (sd.sortType == SortDirection.DESCENDING.external) "DESC" else "ASC"
-      s"${sd.column} $direction"
+  private def parseSort(columns: List[VirtualizedSessionTableColumn], sortSpec: SortSpec): String = {
+    val remoteMapping: Map[String, String] = columns.map(f => f.name -> f.remoteName).toMap
+
+    Try(parseSortItems(remoteMapping, sortSpec)) match {
+      case Success(sortItems) =>
+        val orderBy = s"ORDER BY ${sortItems.mkString(", ")}"
+        logger.debug(s"Parsed sort \"$orderBy\"")
+        orderBy
+      case Failure(err) =>
+        logger.error(s"Could not parse sort $sortSpec", err)
+        NO_SORT
     }
-    val orderBy = s"ORDER BY ${sortItems.mkString(", ")}"
-    logger.debug(s"Parsed sort \"$orderBy\"")
-    orderBy
+  }
+
+  private def parseSortItems(remoteMapping: Map[String, String], sortSpec: SortSpec): List[String] = {
+    sortSpec.sortDefs.map { sd =>
+      val direction = if (sd.sortType == SortDirection.DESCENDING.external) "DESC" else "ASC"
+      val remoteColumnName = remoteMapping.getOrElse(sd.column,
+        throw new IllegalArgumentException(s"Mapping missing for sort column: '${sd.column}'"))
+      s"$remoteColumnName $direction"
+    }
   }
 
 }

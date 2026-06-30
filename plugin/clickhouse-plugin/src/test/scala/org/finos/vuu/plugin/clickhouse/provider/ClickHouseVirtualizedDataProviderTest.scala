@@ -45,7 +45,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
         vuuServer.login("testUser")
 
-        val table = vuuServer.tableContainer.getTable("orders")
+        val table = vuuServer.tableContainer.getTable("orderHistory")
         val columns = org.finos.vuu.core.table.ViewPortColumnCreator.create(table, table.getTableDef.getColumns.map(_.name).toList)
         val testServer = vuuServer.asInstanceOf[org.finos.vuu.test.impl.TestVuuServerImpl]
         val viewport = testServer.viewPortContainer.create(
@@ -99,16 +99,13 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
     client.executeUpdate(
       """
-        |CREATE TABLE IF NOT EXISTS orders (
-        |  orderId Int64,
+        |CREATE TABLE IF NOT EXISTS order_history (
+        |  order_id Int64,
         |  quantity Int32,
         |  price Int64,
         |  side String,
-        |  trader String,
-        |  vuuCreatedTimestamp DateTime64(3, 'UTC'),
-        |  vuuUpdatedTimestamp DateTime64(3, 'UTC'),
-        |  vuuMsg String
-        |) ENGINE = MergeTree() ORDER BY orderId
+        |  trader String
+        |) ENGINE = MergeTree() ORDER BY order_id
         |""".stripMargin
     )
 
@@ -116,7 +113,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
     
     val tempDir = java.nio.file.Paths.get("target/temp-csv")
     java.nio.file.Files.createDirectories(tempDir)
-    val tempFile = java.nio.file.Files.createTempFile(tempDir, "orders", ".csv")
+    val tempFile = java.nio.file.Files.createTempFile(tempDir, "order_history", ".csv")
 
     val fos = new java.io.FileOutputStream(tempFile.toFile)
     val bos = new java.io.BufferedOutputStream(fos, 8 * 1024 * 1024) // 8MB buffer
@@ -137,13 +134,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         writer.write(side)
         writer.write(",trader-")
         writer.write(currentId.toString)
-        writer.write(",")
-        writer.write(now)
-        writer.write(",")
-        writer.write(now)
-        writer.write(",")
-        writer.write("vuu msg")
-        writer.write('\n')
+        writer.write(System.lineSeparator())
         currentId += 1
       }
     } finally {
@@ -155,8 +146,8 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         container.getEndpoint,
         container.getUsername,
         container.getPassword,
-        "orders",
-        Seq("orderId", "quantity", "price", "side", "trader", "vuuCreatedTimestamp", "vuuUpdatedTimestamp", "vuuMsg"),
+        "order_history",
+        Seq("order_id", "quantity", "price", "side", "trader"),
         tempFile
       )
     } finally {

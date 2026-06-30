@@ -126,7 +126,7 @@ public class TableDefBuilder {
      * @return this builder
      */
     public TableDefBuilder withPrivateVisibility() {
-        this.visibility = TableVisibility$.MODULE$.PRIVATE();
+        this.visibility = TableVisibility.PRIVATE();
         return this;
     }
 
@@ -136,7 +136,7 @@ public class TableDefBuilder {
      * @return this builder
      */
     public TableDefBuilder withPublicVisibility() {
-        this.visibility = TableVisibility$.MODULE$.PUBLIC();
+        this.visibility = TableVisibility.PUBLIC();
         return this;
     }
 

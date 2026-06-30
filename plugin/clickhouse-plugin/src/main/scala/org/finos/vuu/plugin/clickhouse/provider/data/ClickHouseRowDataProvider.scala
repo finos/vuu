@@ -1,15 +1,15 @@
 package org.finos.vuu.plugin.clickhouse.provider.data
 
-import com.clickhouse.client.api.query.GenericRecord
-import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.{Column, DataTable, RowWithData}
+import org.finos.vuu.core.table.{Column, RowWithData}
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
+import org.finos.vuu.plugin.virtualized.api.{VirtualizedSessionTableColumn, VirtualizedSessionTableDef}
 
 import scala.collection.mutable.ArrayBuffer
 
 trait ClickHouseRowDataProvider {
 
-  def queryForRowData(table: TableDef, columns: List[Column],
+  def queryForRowData(table: VirtualizedSessionTableDef,
+                      columns: List[VirtualizedSessionTableColumn],
                       whereClause: String, orderBy: String,
                       limit: Int, startIndex: Int) : IndexedSeq[RowWithData]
 
@@ -26,13 +26,14 @@ object ClickHouseRowDataProvider {
 private case class ClickHouseRowDataProviderImpl(client: ClickHouseClient,
                                                  rowDataMapper: ClickHouseRowDataMapper) extends ClickHouseRowDataProvider {
 
-  override def queryForRowData(tableDef: TableDef, columns: List[Column],
+  override def queryForRowData(tableDef: VirtualizedSessionTableDef,
+                               columns: List[VirtualizedSessionTableColumn],
                                whereClause: String, orderBy: String,
                                limit: Int, startIndex: Int): IndexedSeq[RowWithData] = {
     val query =
       s"""
-         |SELECT ${columns.map(_.name).mkString(", ")}
-         |FROM ${tableDef.name}
+         |SELECT ${columns.map(_.remoteName).mkString(", ")}
+         |FROM ${tableDef.getRemoteTableName}
          |$whereClause
          |$orderBy
          |LIMIT $limit
@@ -44,7 +45,7 @@ private case class ClickHouseRowDataProviderImpl(client: ClickHouseClient,
       val it = records.iterator()
       while (it.hasNext) {
         val record = it.next()
-        buf += rowDataMapper.mapRowData(record, tableDef.keyField, columns)
+        buf += rowDataMapper.mapRowData(record, tableDef.getRemoteKeyField, columns)
       }
       buf.toIndexedSeq
     }

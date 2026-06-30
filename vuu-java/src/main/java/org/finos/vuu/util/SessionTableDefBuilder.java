@@ -1,17 +1,17 @@
 package org.finos.vuu.util;
 
-import org.finos.vuu.api.*;
-import org.finos.vuu.core.filter.type.AllowAllPermissionFilter$;
-import org.finos.vuu.core.filter.type.PermissionFilter;
+import org.finos.vuu.api.Index;
+import org.finos.vuu.api.Indices;
+import org.finos.vuu.api.Link;
+import org.finos.vuu.api.SessionTableDef;
+import org.finos.vuu.api.TableVisibility;
+import org.finos.vuu.api.VisualLinks;
 import org.finos.vuu.core.table.Column;
-import org.finos.vuu.core.table.TableContainer;
-import org.finos.vuu.net.SortSpec;
-import org.finos.vuu.viewport.ViewPort;
 
 import java.util.List;
-import java.util.function.BiFunction;
 
-import static org.finos.vuu.util.ScalaCollectionConverter.*;
+import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
+import static org.finos.vuu.util.ScalaCollectionConverter.toScalaSeq;
 
 /**
  * Builder for {@link SessionTableDef}.
@@ -24,6 +24,8 @@ public class SessionTableDefBuilder {
     private boolean autoSubscribe = false;
     private List<Link> links = List.of();
     private List<String> indexFields = List.of();
+    private TableVisibility visibility = TableVisibility.PUBLIC();
+    private boolean includeDefaultColumns = true;
 
     /**
      * Sets table name.
@@ -103,6 +105,48 @@ public class SessionTableDefBuilder {
     }
 
     /**
+     * Sets table visibility.
+     *
+     * @param visibility visibility
+     * @return this builder
+     */
+    public SessionTableDefBuilder visibility(TableVisibility visibility) {
+        this.visibility = visibility;
+        return this;
+    }
+
+    /**
+     * Sets table as private.
+     *
+     * @return this builder
+     */
+    public SessionTableDefBuilder withPrivateVisibility() {
+        this.visibility = TableVisibility.PRIVATE();
+        return this;
+    }
+
+    /**
+     * Sets table as public.
+     *
+     * @return this builder
+     */
+    public SessionTableDefBuilder withPublicVisibility() {
+        this.visibility = TableVisibility.PUBLIC();
+        return this;
+    }
+
+    /**
+     * Sets whether default columns should be added to the table.
+     *
+     * @param includeDefaultColumns {@code true} to include default columns
+     * @return this builder
+     */
+    public SessionTableDefBuilder includeDefaultColumns(Boolean includeDefaultColumns) {
+        this.includeDefaultColumns = includeDefaultColumns;
+        return this;
+    }
+
+    /**
      * Builds {@link SessionTableDef}.
      *
      * @return {@link SessionTableDef}
@@ -115,6 +159,8 @@ public class SessionTableDefBuilder {
                 toScalaSeq(joinFields),
                 autoSubscribe,
                 VisualLinks.apply(toScala(links)),
-                Indices.apply(toScalaSeq(indexFields.stream().map(Index::apply).toList())));
+                Indices.apply(toScalaSeq(indexFields.stream().map(Index::apply).toList())),
+                visibility,
+                includeDefaultColumns);
     }
 }

@@ -4,17 +4,18 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.logging.LogAtFrequency
 import org.finos.toolbox.time.Clock
 import org.finos.toolbox.time.TimeIt.timeIt
-import org.finos.vuu.api.TableDef
+import org.finos.vuu.api.{GroupByTableDef, JoinTableDef, SessionTableDef, TableDef}
 import org.finos.vuu.feature.ViewPortKeys
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.clickhouse.provider.data.{ClickHouseRowDataProvider, ClickHouseTableSizeProvider}
 import org.finos.vuu.plugin.clickhouse.provider.filter.ClickHouseFilterFactory
 import org.finos.vuu.plugin.clickhouse.provider.sort.ClickHouseSortFactory
+import org.finos.vuu.plugin.virtualized.api.{VirtualizedSessionTableColumn, VirtualizedSessionTableDef}
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.viewport.{ViewPort, ViewPortColumns}
 
-class ClickHouseVirtualizedDataProvider(tableDef: TableDef, client: ClickHouseClient)(using clock: Clock)
+class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, client: ClickHouseClient)(using clock: Clock)
   extends VirtualizedProvider with StrictLogging {
 
   private val tableSizeProvider = ClickHouseTableSizeProvider(client)
@@ -27,14 +28,17 @@ class ClickHouseVirtualizedDataProvider(tableDef: TableDef, client: ClickHouseCl
     val range = viewPort.getRange
     val startIndex = Math.max(range.from - 500, 0)
     val limit = (range.to - startIndex) + 500
-    val whereClause = ClickHouseFilterFactory.build(viewPort.filterSpec)
-    val orderBy = ClickHouseSortFactory.build(viewPort.sortSpec)
+    val columns = viewPort.getColumns.getColumns
+      .filter(f => f.isInstanceOf[VirtualizedSessionTableColumn])
+      .map(_.asInstanceOf[VirtualizedSessionTableColumn])
+    val whereClause = ClickHouseFilterFactory.build(columns, viewPort.filterSpec)
+    val orderBy = ClickHouseSortFactory.build(columns, viewPort.sortSpec)
 
     logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading rows from ClickHouse range $startIndex to ${startIndex + limit} filter=$whereClause sort=$orderBy")
 
     val queryStart = clock.now()
     val tableSize = tableSizeProvider.getTableSize(tableDef, whereClause)
-    val rowsWithData = rowDataProvider.queryForRowData(tableDef, viewPort.getColumns.getColumns,
+    val rowsWithData = rowDataProvider.queryForRowData(tableDef, columns,
       whereClause, orderBy, limit, startIndex)
     val dataQueryMillis = clock.now() - queryStart
 

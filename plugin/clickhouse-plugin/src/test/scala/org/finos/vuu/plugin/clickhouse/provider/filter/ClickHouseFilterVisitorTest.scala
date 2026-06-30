@@ -1,18 +1,40 @@
 package org.finos.vuu.plugin.clickhouse.provider.filter
 
 import org.finos.vuu.core.filter.FilterSpecParser
+import org.finos.vuu.plugin.clickhouse.provider.sort.ClickHouseSortFactory
+import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumnBuilder
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
 
+  private val columns = VirtualizedSessionTableColumnBuilder()
+    .addString("orderId")
+    .addString("ric")
+    .addString("trader")
+    .addInt("quantity")
+    .addBoolean("onMkt")
+    .addDouble("price")
+    .build()
+    .toList
+
   private def compile(filterStr: String): String = {
-    val clickHouseFilterVisitor = new ClickHouseFilterVisitor()
+    val clickHouseFilterVisitor = new ClickHouseFilterVisitor(columns)
     FilterSpecParser.parse(filterStr, clickHouseFilterVisitor)
     clickHouseFilterVisitor.getBuffer.toString
   }
 
   Feature("ClickHouseFilterVisitor compiles filter expressions to SQL clauses") {
+
+    Scenario("Invalid column name throws an exception") {
+      var exception: IllegalArgumentException = null
+
+      exception = intercept[IllegalArgumentException] {
+        compile("lolcats = \"Fluffy\"")
+      }
+
+      exception.getMessage should include("Mapping missing for filter column: 'lolcats'")
+    }
 
     Scenario("Equality comparisons") {
       compile("trader = \"rahúl\"") shouldBe "trader = 'rahúl'"
