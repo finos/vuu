@@ -1,0 +1,140 @@
+import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import { isRpcError } from "@vuu-ui/vuu-utils";
+import type { CsvUploadError } from "../CsvUpload";
+import type { CsvParseError } from "./csv-parse";
+import { CSV_FIRST_DATA_ROW_NUMBER } from "./csv-constants";
+import type {
+  CsvValidationError,
+  CsvValidationResult,
+} from "./csv-schema-validation";
+
+export type CsvUploadTableData = {
+  columns: string[];
+  rows: VuuRowDataItemType[][];
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+export const toErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : String(error);
+
+export const isCsvParseError = (value: unknown): value is CsvParseError =>
+  isRecord(value) &&
+  "message" in value &&
+  typeof value.message === "string" &&
+  "errors" in value &&
+  Array.isArray(value.errors) &&
+  "errorMap" in value &&
+  isRecord(value.errorMap);
+
+export const hasFileParseErrors = (parseError: CsvParseError) =>
+  Object.keys(parseError.errorMap.fileErrors).length > 0;
+
+export const createUploadError = (
+  source: CsvUploadError["source"],
+  message: string,
+  parseError?: CsvParseError,
+  validationError?: CsvUploadError["validationError"],
+): CsvUploadError => ({
+  message,
+  parseError,
+  validationError,
+  source,
+});
+
+export const mergeValidationWithParseErrors = (
+  schemaValidation: CsvValidationResult,
+  parseError: CsvParseError | undefined,
+): CsvValidationResult =>
+  parseError
+    ? {
+        ...schemaValidation,
+        errors: [
+          ...schemaValidation.errors,
+          ...toValidationErrorsFromParseRowErrors(parseError),
+        ],
+        parseRowError: parseError,
+      }
+    : schemaValidation;
+
+export const buildRowErrorMessage = (prefix: string, rowErrors: string[]) => {
+  const details = rowErrors.slice(0, 8).join("; ");
+  const remaining = rowErrors.length - 8;
+  const suffix = remaining > 0 ? `; and ${remaining} more` : "";
+  return `${prefix} for ${rowErrors.length} row(s): ${details}${suffix}`;
+};
+
+export const toValidationErrorsFromParseRowErrors = (
+  parseError: CsvParseError,
+): CsvValidationError[] => {
+  return parseError.errors.filter(
+    (error) => error.rowNum >= CSV_FIRST_DATA_ROW_NUMBER,
+  );
+};
+
+export const normalizeTableData = (
+  value: unknown,
+  fallback: CsvUploadTableData,
+): CsvUploadTableData => {
+  const tableData =
+    isRecord(value) && "data" in value ? (value.data as unknown) : value;
+
+  if (!isRecord(tableData)) {
+    return fallback;
+  }
+
+  const columns = tableData.columns;
+  const rows = tableData.rows;
+
+  if (
+    !Array.isArray(columns) ||
+    columns.some((column) => typeof column !== "string") ||
+    !Array.isArray(rows)
+  ) {
+    return fallback;
+  }
+
+  return {
+    columns,
+    rows: rows.map((row) => {
+      if (Array.isArray(row)) {
+        return row as VuuRowDataItemType[];
+      }
+      if (!isRecord(row)) {
+        return columns.map(() => "");
+      }
+      return columns.map((column) => (row[column] as VuuRowDataItemType) ?? "");
+    }),
+  };
+};
+
+export type RpcBatchResult = {
+  errors: string[];
+  results: unknown[];
+};
+
+export const executeBatchRpcCalls = async <T>(
+  items: T[],
+  executor: (item: T) => Promise<unknown>,
+  errorFormatter: (item: T, error: string) => string,
+): Promise<RpcBatchResult> => {
+  const errors: string[] = [];
+  const results: unknown[] = [];
+
+  for (const item of items) {
+    try {
+      const result = await executor(item);
+      const rpcResult = result as RpcResult | undefined;
+      if (isRpcError(rpcResult)) {
+        errors.push(errorFormatter(item, rpcResult.errorMessage));
+      } else {
+        results.push(result);
+      }
+    } catch (err) {
+      errors.push(errorFormatter(item, toErrorMessage(err)));
+    }
+  }
+
+  return { errors, results };
+};

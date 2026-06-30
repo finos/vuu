@@ -110,7 +110,9 @@ export abstract class VuuModule<T extends string = string>
   protected abstract visualLinks?: Record<T, VuuLink[] | undefined>;
 
   getTableSchema(tableName: string) {
-    return this.schemas[tableName as T];
+    return (
+      this.schemas[tableName as T] ?? this.#sessionTableMap[tableName]?.schema
+    );
   }
 
   getTableList() {
@@ -613,9 +615,10 @@ export abstract class VuuModule<T extends string = string>
     if (isEndEditSessionRpcRequest(rpcRequest)) {
       const { viewPortId } = rpcRequest.context;
       // the viewport Id is the session table name
-      const sessionTable = this.#sessionTableMap[viewPortId];
-      delete this.#sessionTableMap[viewPortId];
-      const { dataSource } = this.getSubscriptionByViewport(viewPortId);
+      const subscription = this.getSubscriptionByViewport(viewPortId);
+      const sessionTableName = subscription.sessionTableName ?? viewPortId;
+      const sessionTable = this.#sessionTableMap[sessionTableName];
+      const { dataSource } = subscription;
 
       if (dataSource.table) {
         const sourceTable = this.tables[dataSource.table.table as T];
@@ -650,9 +653,17 @@ export abstract class VuuModule<T extends string = string>
             });
             updates.clear();
           } else {
+            // empty-session-table / csv-upload: insert only rows with no errors.
+            // vuuMsg is empty string for valid rows and non-empty for error rows.
+            const vuuMsgIdx = sessionTable.map["vuuMsg"];
+            const sourceColumns = sourceTable.schema.columns;
             for (let i = 0; i < sessionTable.data.length; i++) {
-              const newRow = sessionTable.data[i];
-              sourceTable.updateRow(newRow);
+              const sessionRow = sessionTable.data[i];
+              if (sessionRow[vuuMsgIdx]) continue;
+              const sourceRow: VuuRowDataItemType[] = sourceColumns.map(
+                (col) => sessionRow[sessionTable.map[col.name]],
+              );
+              sourceTable.insert(sourceRow);
             }
           }
 
@@ -728,7 +739,7 @@ export abstract class VuuModule<T extends string = string>
         dataSource,
       );
     } else if (editSessionMode === "empty-session-table") {
-      return this.createEmptySessionTable(sourceTable);
+      return this.createEmptySessionTable(sourceTable, sessionTableName);
     } else {
       throw Error(
         `[VuuModule] createSessionTable, invalid editSessionMode ${editSessionMode}`,
@@ -743,10 +754,17 @@ export abstract class VuuModule<T extends string = string>
     return SessionTable(sourceTable, sessionTableName);
   }
 
-  protected createEmptySessionTable({ schema }: Table) {
-    // Note we use the original table schema for the session table, including table name.
-    // This will later be used to retrieve source table
-    return new Table(schema, [], buildDataColumnMapFromSchema(schema));
+  protected createEmptySessionTable(
+    { schema }: Table,
+    sessionTableName: string,
+  ) {
+    // Override schema.table.table so isSessionTable() returns true for this session.
+    // sessionTableSchema adds the vuuMsg column, consistent with all other session tables.
+    const sessionSchema = sessionTableSchema({
+      ...schema,
+      table: { ...schema.table, table: sessionTableName },
+    });
+    return new Table(sessionSchema, [], buildDataColumnMapFromSchema(sessionSchema));
   }
 
   protected createSessionTableFromSelectedRows(
