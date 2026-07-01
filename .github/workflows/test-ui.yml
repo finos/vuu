@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - run: cd ./vuu-ui && npm run build:worker
@@ -28,39 +28,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - run: cd ./vuu-ui && npm run test:vite
-
-  # playwright:
-  #   timeout-minutes: 10
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-  #     - name: Install Node & dependencies
-  #       uses: ./.github/actions/setup-vuu-ui
-  #     - name: Install Playwright Chromium Browser
-  #       run: cd ./vuu-ui && npx playwright install --with-deps chromium
-  #     - name: Build Showcase
-  #       run: cd ./vuu-ui && npm run showcase:build
-  #     - name: Run tests
-  #       run: |
-  #         cd ./vuu-ui &&
-  #         npm run test:playwright
-  #     - uses: actions/upload-artifact@v4
-  #       if: ${{ !cancelled() }}
-  #       with:
-  #         name: playwright-report
-  #         path: ./vuu-ui/playwright/reports/
-  #         retention-days: 10
 
   cypress-component:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - name: Build Worker
@@ -88,7 +65,7 @@ jobs:
         browser: [chromium, firefox, webkit]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - name: Build Worker
@@ -98,7 +75,7 @@ jobs:
       - name: Run Playwright component tests
         run: cd ./vuu-ui && npx playwright test --config=playwright-ct.config.ts --project=${{ matrix.browser }}
       - name: Upload blob report to GitHub Actions Artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         if: always()
         with:
           name: blob-report-${{ matrix.browser }}
@@ -111,9 +88,9 @@ jobs:
     if: always()
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
       - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
         with:
           path: all-blob-reports
           pattern: blob-report-*
@@ -123,7 +100,7 @@ jobs:
       - name: Merge into HTML and JSON Reports
         run: PLAYWRIGHT_JSON_OUTPUT_FILE=playwright-report/test-results.json npx playwright merge-reports --reporter html,json ./all-blob-reports
       - name: Upload Merged Playwright Report
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         if: always()
         with:
           name: playwright-report
@@ -138,7 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - name: Build Vuu Libraries

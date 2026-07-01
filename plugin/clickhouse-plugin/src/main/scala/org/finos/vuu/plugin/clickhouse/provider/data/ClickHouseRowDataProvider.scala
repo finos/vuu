@@ -30,9 +30,13 @@ private case class ClickHouseRowDataProviderImpl(client: ClickHouseClient,
                                columns: List[VirtualizedSessionTableColumn],
                                whereClause: String, orderBy: String,
                                limit: Int, startIndex: Int): IndexedSeq[RowWithData] = {
+
+    val remoteNames = columns.map(_.remoteName)
+    val queryColumns = if (remoteNames.contains(tableDef.getRemoteKeyField)) remoteNames else remoteNames :+ tableDef.getRemoteKeyField
+    
     val query =
       s"""
-         |SELECT ${columns.map(_.remoteName).mkString(", ")}
+         |SELECT ${queryColumns.mkString(", ")}
          |FROM ${tableDef.getRemoteTableName}
          |$whereClause
          |$orderBy

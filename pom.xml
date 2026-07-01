@@ -40,8 +40,6 @@
         <maven.compiler.release>17</maven.compiler.release>
         <gpg.executable>gpg</gpg.executable>
         <publish.server.id>ossrh</publish.server.id>
-        <github.global.server>github</github.global.server>
-        <github.oauth.token>${env.GITHUB_TOKEN}</github.oauth.token>
 
         <!-- Dependencies -->
         <antlr.version>4.13.2</antlr.version>
