@@ -156,6 +156,8 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
   private def createOrderData(client: ClickHouseClient, totalCount: Int): Unit = {
 
+    client.executeUpdate("DROP TABLE IF EXISTS order_history")
+
     client.executeUpdate(
       """
         |CREATE TABLE IF NOT EXISTS order_history (
