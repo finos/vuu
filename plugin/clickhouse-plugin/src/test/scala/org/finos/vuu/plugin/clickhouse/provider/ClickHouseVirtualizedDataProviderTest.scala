@@ -93,6 +93,65 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 //        }
       }
     }
+
+    Scenario("Can query a subset of columns from CH ") {
+
+      given clock: Clock = new TestFriendlyClock(10001L)
+
+      given lifecycle: LifecycleContainer = new LifecycleContainer()
+
+      given tableDefContainer: TableDefContainer = new TableDefContainer(Map())
+
+      given metricsProvider: MetricsProvider = new MetricsProviderImpl
+
+      val client = ClickHouseClient(ClickHouseClientOptions()
+        .withEndpoint(container.getEndpoint)
+        .withUsername(container.getUsername)
+        .withPassword(container.getPassword))
+
+      lifecycle.start()
+
+      createOrderData(client, 2_000_000)
+
+      withVuuServer(ClickHouseTableModule(client)) { vuuServer =>
+
+        vuuServer.registerPlugin(VirtualizedTablePlugin)
+
+        vuuServer.login("testUser")
+
+        val table = vuuServer.tableContainer.getTable("orderHistory")
+        val columns = org.finos.vuu.core.table.ViewPortColumnCreator.create(table, List("quantity", "price", "side", "trader"))
+        val testServer = vuuServer.asInstanceOf[org.finos.vuu.test.impl.TestVuuServerImpl]
+        val viewport = testServer.viewPortContainer.create(
+          org.finos.vuu.client.messages.RequestId.oneNew(),
+          testServer.user,
+          testServer.session,
+          testServer.queue,
+          table,
+          ViewPortRange(0, 5),
+          columns,
+          sort = org.finos.vuu.net.SortSpec(List(org.finos.vuu.net.SortDef("price", 'A'))),
+          filterSpec = org.finos.vuu.net.FilterSpec("side = \"Buy\"")
+        )
+
+        val virtualizedProvider = viewport.table.asTable.getProvider.asInstanceOf[VirtualizedProvider]
+
+        virtualizedProvider.runOnce(viewport)
+
+        assertVpEq(combineQsForVp(viewport)) {
+          Table(
+            ("quantity", "price", "side", "trader"),
+            ( 10, 100L, "Buy", "trader-10"),
+            ( 2, 20L, "Buy", "trader-2"),
+            ( 4, 40L, "Buy", "trader-4"),
+            ( 6, 60L, "Buy", "trader-6"),
+            ( 8, 80L, "Buy", "trader-8")
+          )
+        }
+
+      }
+    }
+
   }
 
   private def createOrderData(client: ClickHouseClient, totalCount: Int): Unit = {
