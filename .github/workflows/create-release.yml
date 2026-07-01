@@ -13,7 +13,6 @@ on:
         default: "X.Y-SNAPSHOT"
 
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
   DEVELOPMENT_VERSION: ${{ github.event.inputs.developmentVersion }}
 
@@ -50,7 +49,7 @@ jobs:
           git config author.name "${GITHUB_ACTOR}"
 
       - name: Setup SSH Access for Commit
-        uses: kielabokkie/ssh-key-and-known-hosts-action@v1.5.0
+        uses: kielabokkie/ssh-key-and-known-hosts-action@242f53d26bbd43e843b08b0cbc8287ceb03fbe71
         with:
           ssh-private-key: ${{ secrets.COMMIT_SSH_PRIVATE_KEY }}
           ssh-host: github.com
