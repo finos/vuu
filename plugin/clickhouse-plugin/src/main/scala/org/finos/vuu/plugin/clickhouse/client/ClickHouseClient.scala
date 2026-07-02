@@ -6,6 +6,9 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import org.finos.vuu.plugin.clickhouse.client.options.ClickHouseClientOptions
 
+import java.util.concurrent.ExecutionException
+import scala.util.Using
+
 class ClickHouseClient(val options: ClickHouseClientOptions)
                       (using lifecycle: LifecycleContainer) extends LifecycleEnabled with StrictLogging {
 
@@ -17,29 +20,50 @@ class ClickHouseClient(val options: ClickHouseClientOptions)
   def executeQuery[T](sql: String)(action: Records => T): T = {
     client match {
       case Some(c) =>
-        val response = c.queryRecords(sql).get()
-        try {
-          action(response)
-        } finally {
-          response.close()
+        val response = try {
+          logger.trace(s"Executing query \"$sql\"")
+          c.queryRecords(sql).get()
+        } catch {
+          case e: ExecutionException =>
+            throw new RuntimeException(s"ClickHouse query execution failed for SQL: $sql", e.getCause)
+          case e: Exception =>
+            throw new RuntimeException(s"Unexpected error fetching records for SQL: $sql", e)
         }
-      case None => throw new IllegalStateException("ClickHouse client is not initialized.")
+
+        Using(response)(action).recover {
+          case e: Exception =>
+            throw new RuntimeException(s"Error processing query results for SQL: $sql", e)
+        }.get
+
+      case None =>
+        throw new IllegalStateException("ClickHouse client is not initialized.")
     }
   }
 
   def executeUpdate(sql: String): Int = {
     client match {
       case Some(c) =>
-        val response = c.query(sql).get()
-        try {
-          // ClickHouse native mutations/DDLs return execution metrics rather than JDBC row counts.
-          // You can inspect response.getMetrics if needed. Returning 1 to indicate success.
-          //TODO
-          1
-        } finally {
-          response.close()
+        val response = try {
+          logger.trace(s"Executing update \"$sql\"")
+          c.query(sql).get()
+        } catch {
+          case e: ExecutionException =>
+            throw new RuntimeException(s"ClickHouse update/DDL execution failed for SQL: $sql", e.getCause)
+          case e: Exception =>
+            throw new RuntimeException(s"Unexpected error executing update for SQL: $sql", e)
         }
-      case None => throw new IllegalStateException("ClickHouse client is not initialized.")
+
+        Using(response) { _ =>
+          // ClickHouse native mutations/DDLs return execution metrics rather than JDBC row counts.
+          // Returning 1 to indicate structural success.
+          1
+        }.recover {
+          case e: Exception =>
+            throw new RuntimeException(s"Error finalizing update execution for SQL: $sql", e)
+        }.get
+
+      case None =>
+        throw new IllegalStateException("ClickHouse client is not initialized.")
     }
   }
 

@@ -1,5 +1,6 @@
 package org.finos.vuu.plugin.virtualized.table
 
+import org.finos.toolbox.collection.window.MovingWindow
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -14,7 +15,7 @@ class VirtualizedTableKeysTest extends AnyFeatureSpec with Matchers with GivenWh
 
       When("We create a list of keys that we have loaded from our virtualized data source")
 
-      val window = WindowedTableKeys(100)
+      val window = MovingWindow[String](100)
       val keys = VirtualizedTableKeys(window, 100)
 
       data.zipWithIndex.foreach({case(key, index) =>  window.setAtIndex(index, key)})
@@ -36,8 +37,8 @@ class VirtualizedTableKeysTest extends AnyFeatureSpec with Matchers with GivenWh
 
       val array = newKeys.iterator.toArray
 
-      array.length should equal(10)
-      array should equal(Array("H", "I", "J", null, null, null, null, null, null, null))
+      array.length should equal(3)
+      array should equal(Array("H", "I", "J"))
     }
   }
 

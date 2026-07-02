@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.SessionTableDef
-import org.finos.vuu.core.table.{ColumnValueProvider, InMemSessionDataTable, RowData, RowWithData, TableData, TablePrimaryKeys}
+import org.finos.vuu.core.table.{ColumnValueProvider, InMemSessionDataTable, RowWithData, TableData}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.JoinTableProvider
 
@@ -14,26 +14,21 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
                               val cacheSize: Int = 10_000)
                              (implicit metrics: MetricsProvider, clock: Clock) extends InMemSessionDataTable(clientSessionId, sessionTableDef, joinTableProvider) with StrictLogging {
 
-  @volatile private var dataSetSize: Int = 0
-  @volatile private var range = VirtualizedRange(0, 0)
-
   override def toString: String = s"VirtualizedSessionTable(tableDef=${sessionTableDef.name}, name=$name)"
-
-  override def primaryKeys: TablePrimaryKeys = super.primaryKeys
 
   override protected def createDataTableData(): TableData = {
     new VirtualizedSessionTableData(cacheSize)
   }
 
   def processUpdateForIndex(index: Int, rowKey: String, rowData: RowWithData, timeStamp: Long): Unit = {
-    if(isInCurrentRange(index)){
+    if (hasRowChangedAtIndex(index, rowData)){
       data.setKeyAt(index, rowKey)
       super.processUpdate(rowKey, rowData)
     }
   }
 
-  def processDeleteForIndex(index: Int, rowKey: String, rowData: RowWithData, timeStamp: Long): Unit = {
-    super.processUpdate(rowKey, rowData)
+  def processDeleteForIndex(index: Int, rowKey: String, timeStamp: Long): Unit = {
+    //TODO
   }
 
   def hasRowChangedAtIndex(index: Int, row: RowWithData): Boolean = {
@@ -42,37 +37,23 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
     !existingRow.equals(row)
   }
 
-  /**
-   * Set the total data set size after gathering the results.
-   *
-   * @param size
-   */
   def setSize(size: Int): Unit = {
-    dataSetSize = size
     this.data match {
       case virtData: VirtualizedSessionTableData => virtData.setLength(size)
       case _ =>
         logger.error("Trying to set range on non-virtualized data, something has gone bad.")
     }
   }
-  override def processUpdate(rowKey: String, rowData: RowData): Unit = super.processUpdate(rowKey, rowData)
 
-  override def processDelete(rowKey: String): Unit = super.processDelete(rowKey)
-
-  override def getColumnValueProvider: ColumnValueProvider =
-    this.getProvider.asInstanceOf[ColumnValueProvider]
-
-  def setRange(range: VirtualizedRange): Unit = {
-    this.range = range
+  def setRange(from: Int, to: Int): Unit = {
     this.data match {
-      case virtData: VirtualizedSessionTableData => virtData.setRangeForKeys(range)
+      case virtData: VirtualizedSessionTableData => virtData.setRangeForKeys(from, to)
       case _ =>
         logger.error("Trying to set range on non-virtualized data, something has gone bad.")
     }
   }
 
-  private def isInCurrentRange(index: Int): Boolean = {
-      range.contains(index)
-  }
+  override def getColumnValueProvider: ColumnValueProvider =
+    this.getProvider.asInstanceOf[ColumnValueProvider]
 
 }

@@ -1,4 +1,4 @@
-package org.finos.vuu.plugin.virtualized.table
+package org.finos.vuu.plugin.virtualized.table.cache
 
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.RowData
@@ -11,8 +11,9 @@ trait WindowedCache[KEY, VALUE] {
   def removeAll(): Unit
 }
 
-object RowDataCache{
-  def apply(cacheSize: Int)(implicit clock: Clock): WindowedCache[String, RowData] = {
+object WindowedCache {
+
+  def apply(cacheSize: Int)(using clock: Clock): WindowedCache[String, RowData] = {
     new CaffeineWindowedRowDataCache(cacheSize)
   }
 

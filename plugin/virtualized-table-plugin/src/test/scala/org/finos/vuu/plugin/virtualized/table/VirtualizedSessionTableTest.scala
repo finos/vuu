@@ -2,9 +2,9 @@ package org.finos.vuu.plugin.virtualized.table
 
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
-import org.finos.vuu.core.table.{Columns, RowWithData}
+import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.plugin.virtualized.api.{SimpleVirtualizedSessionTableDef, VirtualizedSessionTableColumn, VirtualizedSessionTableColumnBuilder, VirtualizedSessionTableDef}
+import org.finos.vuu.plugin.virtualized.api.{SimpleVirtualizedSessionTableDef, VirtualizedSessionTableColumnBuilder}
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -14,7 +14,7 @@ import org.scalatest.matchers.should.Matchers
 class VirtualizedSessionTableTest extends AnyFeatureSpec with Matchers with GivenWhenThen {
 
   private implicit val metrics: MetricsProvider = new MetricsProviderImpl
-  private implicit val clock: Clock = new TestFriendlyClock(DefaultTestStartTime.TestStartTime)
+  private implicit val clock: Clock = new TestFriendlyClock(1311544800L)
 
   private val sessionId = ClientSessionId("AAAA", "channel")
   private val joinProvider = new TestFriendlyJoinTableProvider
@@ -67,7 +67,7 @@ class VirtualizedSessionTableTest extends AnyFeatureSpec with Matchers with Give
       val virtualizedTable = new VirtualizedSessionTable(sessionId, ordersTableDef, joinProvider, cacheSize = 10)
 
       And("we set the range (i.e. the cached amount) to between 0 and 10")
-      virtualizedTable.setRange(VirtualizedRange(0, 10))
+      virtualizedTable.setRange(0, 10)
 
       And("we set the total data set size to 1_000 (i.e. there is lots of data we haven't cached)")
       virtualizedTable.setSize(1_000)
@@ -84,13 +84,13 @@ class VirtualizedSessionTableTest extends AnyFeatureSpec with Matchers with Give
       ))
 
       And("if we move the range (this would happen if the user moved the viewport a long way away from the table cache)")
-      virtualizedTable.setRange(VirtualizedRange(5, 15))
+      virtualizedTable.setRange(5, 15)
 
       val primaryKeys2 = virtualizedTable.primaryKeys.toArray
 
       Then("we verify we don't have the data in the cache")
       primaryKeys2 should equal(
-        Array("0006", "0007", "0008", "0009", "0010", null, null, null, null, null)
+        Array("0006", "0007", "0008", "0009", "0010")
       )
 
       And("What would happen next is our loading process would then run on a thread"
@@ -113,7 +113,7 @@ class VirtualizedSessionTableTest extends AnyFeatureSpec with Matchers with Give
 
   Feature("hasRowChangedAtIndex") {
     val table = new VirtualizedSessionTable(sessionId, ordersTableDef, joinProvider)
-    table.setRange(VirtualizedRange(0, 2))
+    table.setRange(0, 2)
 
     val row1 = RowWithData("0001", Map("orderId" -> "0001", "ric" -> "VOD.L", "quantity" -> 100, "trader" -> "trader1"))
     val row2 = RowWithData("0002", Map("orderId" -> "0002", "ric" -> "VOD.L", "quantity" -> 200, "trader" -> "trader2"))

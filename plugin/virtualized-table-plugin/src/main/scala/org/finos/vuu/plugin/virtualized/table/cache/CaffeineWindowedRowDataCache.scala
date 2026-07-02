@@ -5,22 +5,24 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.logging.LogAtFrequency
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.RowData
-import org.finos.vuu.plugin.virtualized.table.WindowedCache
 
 import java.util.concurrent.atomic.AtomicInteger
 
-class CaffeineWindowedRowDataCache(val cacheSize: Int)(implicit clock: Clock) extends WindowedCache[String, RowData] with StrictLogging {
+class CaffeineWindowedRowDataCache(val cacheSize: Int)(using clock: Clock) extends WindowedCache[String, RowData] with StrictLogging {
 
-  val logAtFrequency = new LogAtFrequency(10_000)
-  val removalCounter = new AtomicInteger()
-
+  private val logAtFrequency = new LogAtFrequency(10_000)
+  private val removalCounter = new AtomicInteger()
   val cache: Cache[String, RowData] = Caffeine.newBuilder()
     .maximumSize(cacheSize)
-    .removalListener((_: String, _: RowData, _: RemovalCause) => {
-      val count = removalCounter.incrementAndGet()
-      if (logAtFrequency.shouldLog()) {
-        logger.debug(s"[ROWCACHE] Removing ${count} rowCache keys in last 10 seconds")
-        removalCounter.set(0)
+    .removalListener((_: String, _: RowData, cause: RemovalCause) => {
+      if (cause.wasEvicted()) {
+        removalCounter.incrementAndGet()
+        if (logAtFrequency.shouldLog()) {
+          val snapshotCount = removalCounter.getAndSet(0)
+          if (snapshotCount > 0) {
+            logger.debug(s"[ROWCACHE] Removed $snapshotCount rowCache keys due to size limits")
+          }
+        }
       }
     })
     .build()
