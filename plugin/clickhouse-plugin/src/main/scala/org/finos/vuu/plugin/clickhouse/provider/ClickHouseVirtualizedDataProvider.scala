@@ -47,7 +47,7 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
       case tbl: VirtualizedSessionTable =>
 
         logger.trace("[ClickHouseVirtualizedDataProvider] Set Range")
-        val (millisRange, _) = timeIt { tbl.setRange(VirtualizedRange(startIndex, startIndex + limit)) }
+        val (millisRange, _) = timeIt { tbl.setRange(startIndex, startIndex + limit) }
 
         logger.trace("[ClickHouseVirtualizedDataProvider] Set Size")
         val (millisSize, _) = timeIt { tbl.setSize(tableSize) }
