@@ -1,11 +1,10 @@
-import { DataSource, EditSessionMode } from "@vuu-ui/vuu-data-types";
-// import { useNotifications } from "@vuu-ui/vuu-notifications";
-import { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { useCallback, useMemo, useState } from "react";
+import { DataSource, DeleteRowMode, EditSessionMode } from "@vuu-ui/vuu-data-types";
+import type { SelectRowRequest, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { useCallback, useMemo, useRef, useState } from "react";
+import type { SelectionChangeHandler } from "@vuu-ui/vuu-table-types";
 import { useData } from "../context-definitions/DataProvider";
 import { useLayoutEffectSkipFirst } from "../useLayoutEffectSkipFirst";
 import { EditSession } from "./EditSession";
-// import { useNotifications } from "@vuu-ui/vuu-notifications";
 
 export type EditMode = "edit" | "view";
 
@@ -16,6 +15,7 @@ export interface EditableTableHookProps {
    */
   columns?: string[];
   dataSource?: DataSource;
+  deleteMode?: DeleteRowMode;
   editSessionMode?: EditSessionMode;
   isEditMode: boolean;
   onCancel: () => void;
@@ -30,6 +30,7 @@ export interface EditableTableHookProps {
 export const useEditableTable = ({
   columns,
   dataSource: dataSourceProp,
+  deleteMode = "soft",
   editSessionMode = "inline-all-rows",
   isEditMode,
   onCancel,
@@ -40,14 +41,12 @@ export const useEditableTable = ({
   const [sessionDataSource, setSessionDataSource] = useState<
     DataSource | undefined
   >(undefined);
-  // const { showNotification } = useNotifications();
+  const selectedKeysRef = useRef<string[]>([]);
   useLayoutEffectSkipFirst(() => {
     console.warn(`[useEditableTable] columns and or table changed`);
   }, [columns, table]);
 
   const dataSource = useMemo(() => {
-    // The dataSource would normally be managed by client and passed in, but for
-    // simple use cases we can create it here.
     if (dataSourceProp) {
       return dataSourceProp;
     } else if (table) {
@@ -59,12 +58,16 @@ export const useEditableTable = ({
     }
   }, [VuuDataSource, columns, dataSourceProp, table]);
 
-  // The editSession will be made available to all the edit controls in scope by
-  // wrapping the edit component with a DataEditingProvider.
-  const editSession = useMemo(() => new EditSession(dataSource), [dataSource]);
+  // The editSession will be made available to all the edit controls in scope
+  // by wrapping the edit component with a DataEditingProvider.
+  const editSession = useMemo(
+    () => new EditSession(dataSource, deleteMode),
+    // deleteMode is intentionally excluded — changing it mid-session is not supported
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dataSource],
+  );
 
   const handleCancel = useCallback(() => {
-    // editTracker.dataSource = dataSource;
     try {
       editSession.end();
       onCancel();
@@ -75,12 +78,10 @@ export const useEditableTable = ({
 
   const handleSave = useCallback(
     async (force = false) => {
-      // TODO is this right
       dataSource.resume?.();
       try {
         await editSession.end(true, force);
         if (editSession.inEditMode === false) {
-          // Everything was ok data saved
           onSave();
         }
       } catch (e) {
@@ -90,8 +91,38 @@ export const useEditableTable = ({
     [dataSource, editSession, onSave],
   );
 
+  const handleDelete = useCallback(() => {
+    if (selectedKeysRef.current.length > 0) {
+      editSession.deleteRows(selectedKeysRef.current);
+      selectedKeysRef.current = [];
+    }
+  }, [editSession]);
+
+  const handleSelectionChange = useCallback<SelectionChangeHandler>(
+    (change) => {
+      if (change.type === "SELECT_ROW") {
+        const { rowKey, preserveExistingSelection } =
+          change as Omit<SelectRowRequest, "vpId">;
+        selectedKeysRef.current = preserveExistingSelection
+          ? [...selectedKeysRef.current, rowKey]
+          : [rowKey];
+      } else if (change.type === "DESELECT_ROW") {
+        const { rowKey, preserveExistingSelection } =
+          change as Omit<SelectRowRequest, "vpId">;
+        selectedKeysRef.current = preserveExistingSelection
+          ? selectedKeysRef.current.filter((k) => k !== rowKey)
+          : [];
+      } else if (
+        change.type === "DESELECT_ALL" ||
+        change.type === "SELECT_ROW_RANGE"
+      ) {
+        selectedKeysRef.current = [];
+      }
+    },
+    [],
+  );
+
   useMemo(async () => {
-    console.log(`[useEditableTable] editMode ${isEditMode}`);
     if (isEditMode) {
       try {
         const sessionDataSource = await editSession.begin(editSessionMode);
@@ -99,13 +130,7 @@ export const useEditableTable = ({
           setSessionDataSource(sessionDataSource);
         }
       } catch (e) {
-        console.error(e);
-        // deal with error
-        // showNotification?.({
-        //   header: "Error unable to edit",
-        //   status: "error",
-        //   type: "toast",
-        // });
+        console.error(`[useEditableTable] begin edit session failed`, e);
         onCancel();
       }
     } else if (editSession.inEditMode) {
@@ -117,6 +142,8 @@ export const useEditableTable = ({
     dataSource,
     editSession,
     onCancel: handleCancel,
+    onDelete: handleDelete,
+    onSelectionChange: handleSelectionChange,
     onSave: handleSave,
     sessionDataSource,
   };

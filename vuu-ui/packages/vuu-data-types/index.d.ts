@@ -497,8 +497,10 @@ export declare type DataSourceEvents = {
   "visual-link-removed": () => void;
 };
 
+export declare type DeleteRowMode = "soft" | "hard";
 export declare type DataSourceDeleteHandler = (
   key: string,
+  mode?: DeleteRowMode,
 ) => Promise<true | string>;
 export declare type DataSourceInsertHandler = (
   key: string,
@@ -575,6 +577,7 @@ export interface EditApi {
   beginEditSession?: (
     editSessionMode?: EditSessionMode,
   ) => Promise<DataSource | undefined>;
+  deleteRow?: (key: string, mode?: DeleteRowMode) => Promise<RpcResult> | undefined;
   editCell?: (
     rowKey: string,
     colun: string,

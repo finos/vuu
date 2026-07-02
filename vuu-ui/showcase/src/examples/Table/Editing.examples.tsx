@@ -11,7 +11,7 @@ import {
   SimulTableName,
 } from "@vuu-ui/vuu-data-test";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
-import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import type { SelectRowRequest, VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { BulkEditPanel, InputCell, Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
 import {
@@ -66,6 +66,7 @@ const InstrumentColumns: ColumnDescriptor[] = [
   { name: "ric", serverDataType: "string", width: 75 },
   { name: "vuuCreatedTimestamp", serverDataType: "epochtimestamp", width: 160 },
   { name: "vuuUpdatedTimestamp", serverDataType: "epochtimestamp", width: 160 },
+  { name: "vuuMsg", serverDataType: "string", width: 120 },
 ];
 
 let _viewportId = 1;
@@ -286,6 +287,114 @@ export const EditableInstruments = () => {
     </>
   );
 };
+
+const DeleteSubmitTableTemplate = () => {
+  const [editMode, setEditMode] = useState<EditMode>("view");
+  const { VuuDataSource } = useData();
+
+  const columns = useMemo(() => schema.columns.map(toColumnName), []);
+
+  const sourceTableDataSource = useMemo(
+    () =>
+      new VuuDataSource({
+        columns,
+        sessionTableMessageColumn: "vuuMsg",
+        table: schema.table,
+        viewport: `vp-${_viewportId++}`,
+      }),
+    [VuuDataSource, columns],
+  );
+
+  const exitEditMode = useCallback(() => setEditMode("view"), []);
+
+  const { dataSource, editSession, onCancel, onDelete, onSelectionChange, onSave } =
+    useEditableTable({
+      dataSource: sourceTableDataSource,
+      deleteMode: "soft",
+      isEditMode: editMode === "edit",
+      onCancel: exitEditMode,
+      onSave: exitEditMode,
+    });
+
+  const onToggleEditMode = useCallback(
+    (e: SyntheticEvent<HTMLButtonElement>) => {
+      setEditMode((e.target as HTMLButtonElement).value as EditMode);
+    },
+    [],
+  );
+
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns:
+        editMode === "view"
+          ? InstrumentColumns
+          : InstrumentColumns.map((col) =>
+              col.name === "isin" ||
+              col.name === "vuuCreatedTimestamp" ||
+              col.name === "vuuUpdatedTimestamp" ||
+              col.name === "vuuMsg"
+                ? col
+                : { ...col, editable: true },
+            ),
+      columnDefaultWidth: 150,
+      rowSeparators: true,
+      zebraStripes: true,
+    }),
+    [editMode],
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: 320 }}>
+      <div
+        style={{
+          alignItems: "center",
+          background: "var(--salt-container-secondary-background)",
+          display: "flex",
+          flex: "0 0 32px",
+          gap: 12,
+          padding: "0 var(--salt-spacing-100)",
+        }}
+      >
+        <ToggleButtonGroup onChange={onToggleEditMode} value={editMode}>
+          <ToggleButton value="view">View</ToggleButton>
+          <ToggleButton value="edit">Edit</ToggleButton>
+        </ToggleButtonGroup>
+      </div>
+      <div style={{ flex: "1 1 auto" }}>
+        <DataEditingProvider editSession={editSession}>
+          <Table
+            config={config}
+            dataSource={dataSource}
+            onSelectionChange={onSelectionChange}
+            renderBufferSize={10}
+            selectionModel="checkbox"
+          />
+        </DataEditingProvider>
+      </div>
+      <TableFooter>
+        {editMode === "view" ? (
+          <DataSourceStats dataSource={dataSource} />
+        ) : (
+          <EditButtons
+            editSession={editSession}
+            onDelete={onDelete}
+            onSave={onSave}
+            saveLabel="Submit"
+          />
+        )}
+      </TableFooter>
+    </div>
+  );
+};
+
+/** tags=data-consumer */
+export const EditableInstrumentsDeleteSubmit = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <DeleteSubmitTableTemplate />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
 
 /** tags=data-consumer */
 export const TwoEditableInstruments = () => {

@@ -1,4 +1,4 @@
-import { EditApi, EditSessionMode } from "@vuu-ui/vuu-data-types";
+import { DataSource, DeleteRowMode, EditApi, EditSessionMode } from "@vuu-ui/vuu-data-types";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter } from "../event-emitter";
 import { isRpcError } from "../protocol-message-utils";
@@ -26,6 +26,7 @@ type RowEditDetails = {
 
 type EditSessionEvents = {
   editState: (editState: EditState) => void;
+  selectionCount: (count: number) => void;
 };
 
 export class EditSession extends EventEmitter<EditSessionEvents> {
@@ -33,16 +34,26 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
    *  Row key => row edits
    */
   #rowEdits = new Map<string, RowEditDetails>();
+  #deletedRows = new Set<string>();
   #editCount = 0;
+  #deleteCount = 0;
   #invalidCount = 0;
+  #selectionCount = 0;
+  #deleteMode: DeleteRowMode;
   #sourceTableDataSource?: EditApi;
   #sessionDataSource?: EditApi;
   #inEditMode = false;
   #endEditModePending = false;
 
-  constructor(dataSource: EditApi) {
+  #handleRowSelection = (count: number) => {
+    this.#selectionCount = count;
+    this.emit("selectionCount", count);
+  };
+
+  constructor(dataSource: EditApi, deleteMode: DeleteRowMode = "soft") {
     super();
     this.#sourceTableDataSource = dataSource;
+    this.#deleteMode = deleteMode;
   }
 
   get editCount() {
@@ -53,7 +64,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     if (val !== this.#editCount) {
       const oldCount = this.#editCount;
       this.#editCount = val;
-      if (val === 0) {
+      if (val === 0 && this.#deleteCount === 0) {
         this.emit("editState", "clean");
       } else if (oldCount === 0) {
         this.emit("editState", "dirty");
@@ -77,9 +88,55 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
   }
 
+  get deleteCount() {
+    return this.#deleteCount;
+  }
+
+  set deleteCount(val: number) {
+    if (val !== this.#deleteCount) {
+      const oldCount = this.#deleteCount;
+      this.#deleteCount = val;
+      if (val === 0 && this.#editCount === 0) {
+        this.emit("editState", "clean");
+      } else if (oldCount === 0) {
+        this.emit("editState", "dirty");
+      }
+    }
+  }
+
+  get selectionCount() {
+    return this.#selectionCount;
+  }
+
+  deleteRows(keys: string[]) {
+    for (const key of keys) {
+      if (!this.#deletedRows.has(key)) {
+        this.#deletedRows.add(key);
+        this.deleteCount = this.#deleteCount + 1;
+        this.dataSource?.deleteRow?.(key, this.#deleteMode);
+      }
+    }
+  }
+
+  restoreRows(keys: string[]) {
+    for (const key of keys) {
+      if (this.#deletedRows.has(key)) {
+        this.#deletedRows.delete(key);
+        this.deleteCount = this.#deleteCount - 1;
+      }
+    }
+  }
+
   clear() {
+    (this.#sourceTableDataSource as DataSource)?.removeListener?.(
+      "row-selection",
+      this.#handleRowSelection,
+    );
     this.#rowEdits.clear();
+    this.#deletedRows.clear();
     this.#editCount = 0;
+    this.#deleteCount = 0;
+    this.#selectionCount = 0;
     this.#inEditMode = false;
     this.#endEditModePending = false;
   }
@@ -87,6 +144,10 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   async begin(editSessionMode?: EditSessionMode) {
     try {
       this.#inEditMode = true;
+      (this.#sourceTableDataSource as DataSource)?.on?.(
+        "row-selection",
+        this.#handleRowSelection,
+      );
       const sessionDataSource =
         await this.#sourceTableDataSource?.beginEditSession?.(editSessionMode);
 
@@ -124,7 +185,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   get editState(): EditState {
-    return this.editCount === 0 ? "clean" : "dirty";
+    return this.editCount === 0 && this.#deleteCount === 0 ? "clean" : "dirty";
   }
 
   getOrCreateRowEdits(key: string): RowEditDetails {

@@ -6,6 +6,7 @@ import type {
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   DataSourceVisualLinkCreatedMessage,
+  DeleteRowMode,
   EditSessionMode,
   OptimizeStrategy,
   ServerAPI,
@@ -814,14 +815,16 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     //   }
     // });
   }
-  deleteRow() {
-    return Promise.resolve("not supported");
-    // return this.menuRpcCall(vuuDeleteRowRequest(rowKey)).then((response) => {
-    //   if (response?.error) {
-    //     return response.error;
-    //   } else {
-    //     return true;
-    //   }
-    // });
+  async deleteRow(key: string, mode: DeleteRowMode = "hard"): Promise<true | string> {
+    const rpcHost = this.#sessionDataSource ?? this;
+    const response = await rpcHost.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "deleteRow",
+      params: { key, mode },
+    });
+    if (isRpcSuccess(response)) {
+      return true;
+    }
+    return response?.errorMessage ?? "deleteRow failed";
   }
 }

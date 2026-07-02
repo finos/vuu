@@ -13,6 +13,7 @@ import {
   WithBaseFilter,
   WithFullConfig,
   DataSourceDeleteHandler,
+  DeleteRowMode,
 } from "@vuu-ui/vuu-data-types";
 import { filterPredicate, parseFilter } from "@vuu-ui/vuu-filter-parser";
 import type {
@@ -69,6 +70,9 @@ import { Filter } from "@vuu-ui/vuu-filter-types";
 const { debug, info } = logger("ArrayDataSource");
 
 const { KEY } = metadataKeys;
+
+const VUU_MSG_SOFT_DELETED = "SOFT_DELETED";
+const VUU_MSG_COL = "vuuMsg";
 
 export interface ArrayDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
@@ -151,6 +155,7 @@ export class ArrayDataSource
   #range = Range(0, 0);
   #status: DataSourceStatus = "initialising";
   #title: string | undefined;
+  #markedForDeletion = new Set<string>();
 
   protected _menu: VuuMenu | undefined;
   protected selectedRows = new Set<string>();
@@ -892,8 +897,30 @@ export class ArrayDataSource
     }
   };
 
-  deleteRow: DataSourceDeleteHandler = async (key) => {
+  deleteRow: DataSourceDeleteHandler = async (key, mode: DeleteRowMode = "hard") => {
     const dataIndex = this.#data.findIndex((row) => row[KEY] === key);
+
+    if (dataIndex === -1) {
+      return "row not found";
+    }
+
+    if (mode === "soft") {
+      if (!this.#markedForDeletion.has(key)) {
+        this.#markedForDeletion.add(key);
+
+        const vuuMsgColIndex = this.#columnMap[VUU_MSG_COL];
+        if (vuuMsgColIndex !== undefined) {
+          this.#data[dataIndex][vuuMsgColIndex] = VUU_MSG_SOFT_DELETED;
+          const { from, to } = this.#range;
+          if (dataIndex >= from && dataIndex < to) {
+            this.sendRowsToClient(false, this.#data[dataIndex]);
+          }
+        }
+      }
+      return true;
+    }
+
+    this.#markedForDeletion.delete(key);
     let doomedIndex: number | undefined = undefined;
 
     if (dataIndex !== -1) {

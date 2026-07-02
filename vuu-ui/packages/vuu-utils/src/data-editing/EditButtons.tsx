@@ -4,16 +4,21 @@ import { useCallback, useMemo, useState } from "react";
 
 export interface EditButtonProps {
   editSession?: EditSession;
-  onCancel: () => void;
+  onCancel?: () => void;
+  onDelete?: () => void;
   onSave: (force?: boolean) => void;
+  saveLabel?: string;
 }
 
 export const EditButtons = ({
   editSession,
   onCancel,
+  onDelete,
   onSave,
+  saveLabel = "Save",
 }: EditButtonProps) => {
   const [editState, setEditState] = useState<EditState>("clean");
+  const [selectionCount, setSelectionCount] = useState(0);
 
   const handleSave = useCallback(() => {
     onSave(editState === "stale");
@@ -21,18 +26,28 @@ export const EditButtons = ({
 
   useMemo(() => {
     editSession?.on("editState", setEditState);
+    editSession?.on("selectionCount", setSelectionCount);
   }, [editSession]);
 
   return (
     <>
+      {onDelete && (
+        <Button
+          disabled={selectionCount === 0}
+          onClick={onDelete}
+          sentiment="negative"
+        >
+          Delete
+        </Button>
+      )}
       <Button
         disabled={editState === "clean" || editState === "invalid"}
         onClick={handleSave}
         sentiment="accented"
       >
-        {editState === "stale" ? "Save (force)" : "Save"}
-      </Button>
-      <Button onClick={onCancel}>Cancel</Button>
+        {editState === "stale" ? `${saveLabel} (force)` : saveLabel}
+      </Button>      
+      {onCancel && <Button onClick={onCancel}>Cancel</Button>}
     </>
   );
 };
