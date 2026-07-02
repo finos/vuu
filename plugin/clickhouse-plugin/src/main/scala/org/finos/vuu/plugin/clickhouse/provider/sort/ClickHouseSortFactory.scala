@@ -11,12 +11,12 @@ object ClickHouseSortFactory extends StrictLogging {
 
   private val NO_SORT = ""
 
-  def build(columns: List[VirtualizedSessionTableColumn], sortSpec: SortSpec): String = {
+  def build(keyField: String, columns: List[VirtualizedSessionTableColumn], sortSpec: SortSpec): String = {
     if (sortSpec != null && sortSpec.sortDefs != null && sortSpec.sortDefs.nonEmpty) {
       parseSort(columns, sortSpec)
     } else {
-      logger.trace("No sort spec was provided")
-      NO_SORT
+      logger.trace(s"No sort spec was provided. Defaulting to $keyField ASC")
+      s"ORDER BY $keyField ASC"
     }
   }
 

@@ -4,7 +4,9 @@ import com.dimafeng.testcontainers.ForAllTestContainer
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
+import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.module.TableDefContainer
+import org.finos.vuu.net.{FilterSpec, SortDef, SortSpec}
 import org.finos.vuu.plugin.clickhouse.ClickHouseContainer
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.clickhouse.client.options.ClickHouseClientOptions
@@ -14,7 +16,7 @@ import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
-import org.finos.vuu.viewport.ViewPortRange
+import org.finos.vuu.viewport.{DefaultRange, ViewPortRange}
 import org.scalatest.prop.Tables.Table
 
 class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAllTestContainer {
@@ -23,7 +25,69 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
   Feature("ClickHouse Virtualized Table Integration Test") {
 
-    Scenario("Can create viewport with a sort and filter, view data, and scroll around") {
+    Scenario("Can create viewport with no filter or sort") {
+
+      given clock: Clock = new TestFriendlyClock(10001L)
+
+      given lifecycle: LifecycleContainer = new LifecycleContainer()
+
+      given tableDefContainer: TableDefContainer = new TableDefContainer(Map())
+
+      given metricsProvider: MetricsProvider = new MetricsProviderImpl
+
+      val client = ClickHouseClient(ClickHouseClientOptions()
+        .withEndpoint(container.getEndpoint)
+        .withUsername(container.getUsername)
+        .withPassword(container.getPassword))
+
+      lifecycle.start()
+
+      createOrderData(client, 50_000)
+
+      withVuuServer(ClickHouseTableModule(client)) { vuuServer =>
+
+        vuuServer.registerPlugin(VirtualizedTablePlugin)
+
+        vuuServer.login("testUser")
+
+        val table = vuuServer.tableContainer.getTable("orderHistory")
+        val columns = org.finos.vuu.core.table.ViewPortColumnCreator.create(table, List("quantity", "price", "side", "trader"))
+        val testServer = vuuServer.asInstanceOf[org.finos.vuu.test.impl.TestVuuServerImpl]
+        val viewport = testServer.viewPortContainer.create(
+          org.finos.vuu.client.messages.RequestId.oneNew(),
+          testServer.user,
+          testServer.session,
+          testServer.queue,
+          table,
+          ViewPortRange(0, 5),
+          columns
+        )
+
+        val virtualizedProvider = viewport.table.asTable.getProvider.asInstanceOf[VirtualizedProvider]
+
+        virtualizedProvider.runOnce(viewport)
+
+        var updates = combineQsForVp(viewport)
+        updates.length shouldBe 6
+//        assertVpEq(updates) {
+//          Table(
+//            ("quantity", "price", "side", "trader"),
+//            (10, 100L, "Buy", "trader-10"),
+//            (2, 20L, "Buy", "trader-2"),
+//            (4, 40L, "Buy", "trader-4"),
+//            (6, 60L, "Buy", "trader-6"),
+//            (8, 80L, "Buy", "trader-8")
+//          )
+//        }
+
+        //run with no changes
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 0
+      }
+    }
+
+    Scenario("Can change range and see changes") {
 
       given clock: Clock = new TestFriendlyClock(10001L)
 
@@ -72,11 +136,11 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         assertVpEq(updates) {
           Table(
             ("quantity", "price", "side", "trader"),
-            ( 10, 100L, "Buy", "trader-10"),
-            ( 2, 20L, "Buy", "trader-2"),
-            ( 4, 40L, "Buy", "trader-4"),
-            ( 6, 60L, "Buy", "trader-6"),
-            ( 8, 80L, "Buy", "trader-8")
+            (10, 100L, "Buy", "trader-10"),
+            (2, 20L, "Buy", "trader-2"),
+            (4, 40L, "Buy", "trader-4"),
+            (6, 60L, "Buy", "trader-6"),
+            (8, 80L, "Buy", "trader-8")
           )
         }
 
@@ -125,14 +189,184 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         assertVpEq(updates) {
           Table(
             ("quantity", "price", "side", "trader"),
-            ( 10, 100L, "Buy", "trader-10"),
-            ( 2, 20L, "Buy", "trader-2"),
-            ( 4, 40L, "Buy", "trader-4"),
-            ( 6, 60L, "Buy", "trader-6"),
-            ( 8, 80L, "Buy", "trader-8")
+            (10, 100L, "Buy", "trader-10"),
+            (2, 20L, "Buy", "trader-2"),
+            (4, 40L, "Buy", "trader-4"),
+            (6, 60L, "Buy", "trader-6"),
+            (8, 80L, "Buy", "trader-8")
           )
         }
       }
+    }
+
+    Scenario("Can change filter and see changes") {
+
+      given clock: Clock = new TestFriendlyClock(10001L)
+
+      given lifecycle: LifecycleContainer = new LifecycleContainer()
+
+      given tableDefContainer: TableDefContainer = new TableDefContainer(Map())
+
+      given metricsProvider: MetricsProvider = new MetricsProviderImpl
+
+      val client = ClickHouseClient(ClickHouseClientOptions()
+        .withEndpoint(container.getEndpoint)
+        .withUsername(container.getUsername)
+        .withPassword(container.getPassword))
+
+      lifecycle.start()
+
+      createOrderData(client, 50_000)
+
+      withVuuServer(ClickHouseTableModule(client)) { vuuServer =>
+
+        vuuServer.registerPlugin(VirtualizedTablePlugin)
+
+        vuuServer.login("testUser")
+
+        val table = vuuServer.tableContainer.getTable("orderHistory")
+        val columns = org.finos.vuu.core.table.ViewPortColumnCreator.create(table, List("quantity", "price", "side", "trader"))
+        val testServer = vuuServer.asInstanceOf[org.finos.vuu.test.impl.TestVuuServerImpl]
+        var viewport = testServer.viewPortContainer.create(
+          org.finos.vuu.client.messages.RequestId.oneNew(),
+          testServer.user,
+          testServer.session,
+          testServer.queue,
+          table,
+          ViewPortRange(0, 5),
+          columns,
+          sort = SortSpec(List(SortDef("price", 'A'))),
+          filterSpec = FilterSpec("side = \"Buy\"")
+        )
+
+        val virtualizedProvider = viewport.table.asTable.getProvider.asInstanceOf[VirtualizedProvider]
+
+        virtualizedProvider.runOnce(viewport)
+
+        var updates = combineQsForVp(viewport)
+        updates.length shouldBe 6
+        assertVpEq(updates) {
+          Table(
+            ("quantity", "price", "side", "trader"),
+            (10, 100L, "Buy", "trader-10"),
+            (2, 20L, "Buy", "trader-2"),
+            (4, 40L, "Buy", "trader-4"),
+            (6, 60L, "Buy", "trader-6"),
+            (8, 80L, "Buy", "trader-8")
+          )
+        }
+
+        //run with no changes
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 0
+
+        //change filter
+        viewport = testServer.viewPortContainer
+          .change(RequestId.oneNew(), testServer.session, viewport.id, DefaultRange, columns,
+            filterSpec = FilterSpec("trader = \"trader-4\""))
+
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 0
+
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 2
+        assertVpEq(updates) {
+          Table(
+            ("quantity", "price", "side", "trader"),
+            (4, 40L, "Buy", "trader-4")
+          )
+        }
+      }
+    }
+
+    Scenario("Can change sort and see changes") {
+
+      given clock: Clock = new TestFriendlyClock(10001L)
+
+      given lifecycle: LifecycleContainer = new LifecycleContainer()
+
+      given tableDefContainer: TableDefContainer = new TableDefContainer(Map())
+
+      given metricsProvider: MetricsProvider = new MetricsProviderImpl
+
+      val client = ClickHouseClient(ClickHouseClientOptions()
+        .withEndpoint(container.getEndpoint)
+        .withUsername(container.getUsername)
+        .withPassword(container.getPassword))
+
+      lifecycle.start()
+
+      createOrderData(client, 50_000)
+
+      withVuuServer(ClickHouseTableModule(client)) { vuuServer =>
+
+        vuuServer.registerPlugin(VirtualizedTablePlugin)
+
+        vuuServer.login("testUser")
+
+        val table = vuuServer.tableContainer.getTable("orderHistory")
+        val columns = org.finos.vuu.core.table.ViewPortColumnCreator.create(table, List("quantity", "price", "side", "trader"))
+        val testServer = vuuServer.asInstanceOf[org.finos.vuu.test.impl.TestVuuServerImpl]
+        var viewport = testServer.viewPortContainer.create(
+          org.finos.vuu.client.messages.RequestId.oneNew(),
+          testServer.user,
+          testServer.session,
+          testServer.queue,
+          table,
+          ViewPortRange(0, 5),
+          columns,
+          sort = SortSpec(List(SortDef("price", 'A'))),
+          filterSpec = FilterSpec("side = \"Buy\"")
+        )
+
+        val virtualizedProvider = viewport.table.asTable.getProvider.asInstanceOf[VirtualizedProvider]
+
+        virtualizedProvider.runOnce(viewport)
+
+        var updates = combineQsForVp(viewport)
+        updates.length shouldBe 6
+        assertVpEq(updates) {
+          Table(
+            ("quantity", "price", "side", "trader"),
+            (10, 100L, "Buy", "trader-10"),
+            (2, 20L, "Buy", "trader-2"),
+            (4, 40L, "Buy", "trader-4"),
+            (6, 60L, "Buy", "trader-6"),
+            (8, 80L, "Buy", "trader-8")
+          )
+        }
+
+        //run with no changes
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 0
+
+        //change filter
+        viewport = testServer.viewPortContainer
+          .change(RequestId.oneNew(), testServer.session, viewport.id, DefaultRange, columns,
+            sort = SortSpec(List(SortDef("price", 'D'))),
+            filterSpec = FilterSpec("side = \"Buy\""))
+
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 0
+
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 5
+        assertVpEq(updates) {
+          Table(
+            ("quantity", "price", "side", "trader"),
+            (49992, 499920L, "Buy", "trader-49992"),
+            (49994, 499940L, "Buy", "trader-49994"),
+            (49996, 499960L, "Buy", "trader-49996"),
+            (49998, 499980L, "Buy", "trader-49998"),
+            (50000, 500000L, "Buy", "trader-50000")
+          )
+        }
+      }
+
     }
 
   }

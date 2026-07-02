@@ -1,11 +1,9 @@
 package org.finos.vuu.plugin.clickhouse.provider.filter
 
-import com.github.benmanes.caffeine.cache.Caffeine
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.filter.FilterSpecParser
 import org.finos.vuu.net.FilterSpec
-import org.finos.vuu.plugin.virtualized.api.{VirtualizedSessionTableColumn, VirtualizedSessionTableDef}
+import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumn
 
 import java.lang
 import scala.util.{Failure, Success, Try}

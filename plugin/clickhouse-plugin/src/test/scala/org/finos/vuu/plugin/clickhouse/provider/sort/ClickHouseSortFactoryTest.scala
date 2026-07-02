@@ -3,9 +3,9 @@ package org.finos.vuu.plugin.clickhouse.provider.sort
 import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.net.{SortDef, SortSpec}
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumnBuilder
+import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.GivenWhenThen
 
 class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with Matchers {
 
@@ -24,19 +24,19 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
       val nullSpec: SortSpec = null
 
       When("building the sort query string")
-      val nullResult = ClickHouseSortFactory.build(columns, nullSpec)
+      val nullResult = ClickHouseSortFactory.build("order_id", columns, nullSpec)
 
-      Then("it should return an empty string")
-      nullResult shouldBe ""
+      Then("it should return the keyField")
+      nullResult shouldBe "ORDER BY order_id ASC"
 
       And("given an empty SortSpec object with no definitions")
       val emptySpec = SortSpec(List.empty)
 
       When("building the sort query string")
-      val emptyResult = ClickHouseSortFactory.build(columns, emptySpec)
+      val emptyResult = ClickHouseSortFactory.build("order_id", columns, emptySpec)
 
-      Then("it should also return an empty string")
-      emptyResult shouldBe ""
+      Then("it should return the keyField")
+      emptyResult shouldBe "ORDER BY order_id ASC"
     }
 
     Scenario("Generating a single column ascending sort") {
@@ -46,7 +46,7 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
       ))
 
       When("building the sort query string")
-      val result = ClickHouseSortFactory.build(columns, spec)
+      val result = ClickHouseSortFactory.build("order_id", columns, spec)
 
       Then("it should format a valid single-column ORDER BY clause")
       result shouldBe "ORDER BY quantity ASC"
@@ -59,7 +59,7 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
       ))
 
       When("building the sort query string")
-      val result = ClickHouseSortFactory.build(columns, spec)
+      val result = ClickHouseSortFactory.build("order_id", columns, spec)
 
       Then("it should format a valid single-column ORDER BY clause using the remote name")
       result shouldBe "ORDER BY order_id ASC"
@@ -72,7 +72,7 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
       ))
 
       When("building the sort query string")
-      val result = ClickHouseSortFactory.build(columns, spec)
+      val result = ClickHouseSortFactory.build("order_id", columns, spec)
 
       Then("it should return no sort as the mapping is missing")
       result shouldBe ""
@@ -86,7 +86,7 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
       ))
 
       When("building the sort query string")
-      val result = ClickHouseSortFactory.build(columns, spec)
+      val result = ClickHouseSortFactory.build("order_id", columns, spec)
 
       Then("it should chain the columns separated by commas with matching keywords")
       result shouldBe "ORDER BY price DESC, counterparty ASC"
