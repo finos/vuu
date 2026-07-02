@@ -1,6 +1,5 @@
 package org.finos.vuu.plugin.virtualized.table
 
-import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.collection.window.MovingWindow
 import org.finos.vuu.core.table.TablePrimaryKeys
 

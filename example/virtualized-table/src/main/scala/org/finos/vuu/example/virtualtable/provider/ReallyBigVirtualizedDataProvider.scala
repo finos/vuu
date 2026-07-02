@@ -40,7 +40,7 @@ class ReallyBigVirtualizedDataProvider(implicit clock: Clock) extends Virtualize
     viewPort.table.asTable match {
       case tbl: VirtualizedSessionTable =>
         logger.trace("[ReallyBigVirtualizedDataProvider] Set Range")
-        val (millisRange, _) = timeIt{tbl.setRange(VirtualizedRange(startIndex, endIndex))}
+        val (millisRange, _) = timeIt{tbl.setRange(startIndex, endIndex)}
 
         logger.trace("[ReallyBigVirtualizedDataProvider] Set Size")
         val (millisSize, _ ) = timeIt {tbl.setSize(totalSize)}

@@ -4,7 +4,6 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.logging.LogAtFrequency
 import org.finos.toolbox.time.Clock
 import org.finos.toolbox.time.TimeIt.timeIt
-import org.finos.vuu.api.{GroupByTableDef, JoinTableDef, SessionTableDef, TableDef}
 import org.finos.vuu.feature.ViewPortKeys
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.clickhouse.provider.data.{ClickHouseRowDataProvider, ClickHouseTableSizeProvider}
@@ -48,26 +47,28 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
       case tbl: VirtualizedSessionTable =>
 
         logger.trace("[ClickHouseVirtualizedDataProvider] Set Range")
-        val (millisRange, _) = timeIt { tbl.setRange(VirtualizedRange(startIndex, startIndex + limit)) }
+        val (millisRange, _) = timeIt { tbl.setRange(startIndex, startIndex + limit) }
 
         logger.trace("[ClickHouseVirtualizedDataProvider] Set Size")
         val (millisSize, _) = timeIt { tbl.setSize(tableSize) }
 
         logger.trace("[ClickHouseVirtualizedDataProvider] Adding rows")
         val (millisRows, _) = timeIt {
-            var i = 0
-            val n = rowsWithData.length
-            while (i < n) {
-              val rowWithData = rowsWithData(i)
-              val tableIndex = startIndex + i
-              tbl.processUpdateForIndex(
-                tableIndex,
-                rowWithData.key,
-                rowWithData,
-                clock.now()
-              )
-              i += 1
-            }
+          val n = rowsWithData.length
+          val now = clock.now()
+
+          var i = 0
+          while (i < n) {
+            val rowWithData = rowsWithData(i)
+            val tableIndex = startIndex + i
+            tbl.processUpdateForIndex(
+              tableIndex,
+              rowWithData.key,
+              rowWithData,
+              now
+            )
+            i += 1
+          }
         }
 
         logger.trace("[ClickHouseVirtualizedDataProvider] Getting Primary Keys")

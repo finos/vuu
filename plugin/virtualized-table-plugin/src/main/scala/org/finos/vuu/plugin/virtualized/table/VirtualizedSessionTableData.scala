@@ -2,13 +2,13 @@ package org.finos.vuu.plugin.virtualized.table
 
 import org.finos.toolbox.collection.window.MovingWindow
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.table.*
+import org.finos.vuu.core.table.{EmptyRowData, RowData, TableData, TableDataDelete, TableDataDeleted, TableDataInserted, TableDataNothingDeleted, TableDataUpdate, TableDataUpdated, TablePrimaryKeys}
+import org.finos.vuu.plugin.virtualized.table.cache.WindowedCache
 
 class VirtualizedSessionTableData(cacheSize: Int)(implicit clock: Clock) extends TableData {
 
-  final val rowCache: WindowedCache[String, RowData] = RowDataCache(cacheSize)
-  final val keysWindow: MovingWindow[String] = WindowedTableKeys(cacheSize)
-
+  private final val rowCache: WindowedCache[String, RowData] = WindowedCache(cacheSize)
+  private final val keysWindow: MovingWindow[String] = MovingWindow(cacheSize)
   @volatile var length: Int = 0
 
   override def dataByKey(key: String): RowData = {
@@ -41,8 +41,8 @@ class VirtualizedSessionTableData(cacheSize: Int)(implicit clock: Clock) extends
     keysWindow.setAtIndex(index, key)
   }
 
-  def setRangeForKeys(range: VirtualizedRange): Unit = {
-    keysWindow.setRange(range.from, range.to)
+  def setRangeForKeys(from: Int, to: Int): Unit = {
+    keysWindow.setRange(from, to)
   }
 
   def setLength(length: Int): Unit = {

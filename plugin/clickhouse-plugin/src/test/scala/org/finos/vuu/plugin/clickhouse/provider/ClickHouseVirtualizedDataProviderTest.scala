@@ -23,78 +23,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
   Feature("ClickHouse Virtualized Table Integration Test") {
 
-    Scenario("Can create viewport, fetch range, and view data from ClickHouse") {
-
-      given clock: Clock = new TestFriendlyClock(10001L)
-      given lifecycle: LifecycleContainer = new LifecycleContainer()
-      given tableDefContainer: TableDefContainer = new TableDefContainer(Map())
-      given metricsProvider: MetricsProvider = new MetricsProviderImpl
-
-      val client = ClickHouseClient(ClickHouseClientOptions()
-        .withEndpoint(container.getEndpoint)
-        .withUsername(container.getUsername)
-        .withPassword(container.getPassword))
-
-      lifecycle.start()
-
-      createOrderData(client, 2_000_000)
-
-      withVuuServer(ClickHouseTableModule(client)) { vuuServer =>
-
-        vuuServer.registerPlugin(VirtualizedTablePlugin)
-
-        vuuServer.login("testUser")
-
-        val table = vuuServer.tableContainer.getTable("orderHistory")
-        val columns = org.finos.vuu.core.table.ViewPortColumnCreator.create(table, table.getTableDef.getColumns.map(_.name).toList)
-        val testServer = vuuServer.asInstanceOf[org.finos.vuu.test.impl.TestVuuServerImpl]
-        val viewport = testServer.viewPortContainer.create(
-          org.finos.vuu.client.messages.RequestId.oneNew(),
-          testServer.user,
-          testServer.session,
-          testServer.queue,
-          table,
-          ViewPortRange(0, 5),
-          columns,
-          sort = org.finos.vuu.net.SortSpec(List(org.finos.vuu.net.SortDef("price", 'A'))),
-          filterSpec = org.finos.vuu.net.FilterSpec("side = \"Buy\"")
-        )
-
-        val virtualizedProvider = viewport.table.asTable.getProvider.asInstanceOf[VirtualizedProvider]
-
-        virtualizedProvider.runOnce(viewport)
-
-        assertVpEq(combineQsForVp(viewport)) {
-          Table(
-            ("orderId" ,"quantity","price"   ,"side"    ,"trader"  ),
-            ("10",10  ,100L,"Buy"     ,"trader-10"),
-            ("2",2  ,20L,"Buy"     ,"trader-2"),
-            ("4",4  ,40L,"Buy"     ,"trader-4"),
-            ("6",6  ,60L,"Buy"     ,"trader-6"),
-            ("8",8  ,80L,"Buy"     ,"trader-8")
-          )
-        }
-
-        //change the range
-        viewport.setRange(ViewPortRange(1_000_000, 1_000_005))
-
-        virtualizedProvider.runOnce(viewport)
-
-        //TODO below is failing, but data is there.
-//        assertVpEq(combineQsForVp(viewport)) {
-//          Table(
-//            ("orderId", "quantity", "price", "side", "trader"),
-//            ("10", 10, 100L, "Buy", "trader-10"),
-//            ("2", 2, 20L, "Buy", "trader-2"),
-//            ("4", 4, 40L, "Buy", "trader-4"),
-//            ("6", 6, 60L, "Buy", "trader-6"),
-//            ("8", 8, 80L, "Buy", "trader-8")
-//          )
-//        }
-      }
-    }
-
-    Scenario("Can query a subset of columns from CH ") {
+    Scenario("Can create viewport with a sort and filter, view data, and scroll around") {
 
       given clock: Clock = new TestFriendlyClock(10001L)
 
@@ -111,7 +40,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
       lifecycle.start()
 
-      createOrderData(client, 2_000_000)
+      createOrderData(client, 50_000)
 
       withVuuServer(ClickHouseTableModule(client)) { vuuServer =>
 
@@ -138,7 +67,9 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
         virtualizedProvider.runOnce(viewport)
 
-        assertVpEq(combineQsForVp(viewport)) {
+        var updates = combineQsForVp(viewport)
+        updates.length shouldBe 6
+        assertVpEq(updates) {
           Table(
             ("quantity", "price", "side", "trader"),
             ( 10, 100L, "Buy", "trader-10"),
@@ -149,6 +80,58 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
           )
         }
 
+        //run with no changes
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 0
+
+        //scroll down
+        viewport.setRange(ViewPortRange(21_000, 21_005))
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 5
+        assertVpEq(updates) {
+          Table(
+            ("quantity", "price", "side", "trader"),
+            (42002, 420020L, "Buy", "trader-42002"),
+            (42004, 420040L, "Buy", "trader-42004"),
+            (42006, 420060L, "Buy", "trader-42006"),
+            (42008, 420080L, "Buy", "trader-42008"),
+            (42010, 420100L, "Buy", "trader-42010")
+          )
+        }
+
+        //Jump to end
+        viewport.setRange(ViewPortRange(24_995, 25_000))
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 5
+        assertVpEq(updates) {
+          Table(
+            ("quantity", "price", "side", "trader"),
+            (49992, 499920L, "Buy", "trader-49992"),
+            (49994, 499940L, "Buy", "trader-49994"),
+            (49996, 499960L, "Buy", "trader-49996"),
+            (49998, 499980L, "Buy", "trader-49998"),
+            (50000, 500000L, "Buy", "trader-50000")
+          )
+        }
+
+        //Jump to beginning
+        viewport.setRange(ViewPortRange(0, 5))
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 5
+        assertVpEq(updates) {
+          Table(
+            ("quantity", "price", "side", "trader"),
+            ( 10, 100L, "Buy", "trader-10"),
+            ( 2, 20L, "Buy", "trader-2"),
+            ( 4, 40L, "Buy", "trader-4"),
+            ( 6, 60L, "Buy", "trader-6"),
+            ( 8, 80L, "Buy", "trader-8")
+          )
+        }
       }
     }
 

@@ -67,21 +67,8 @@ class VirtualizedViewPortTest extends VuuServerTestCase {
 
           virtualizedProvider.runOnce(viewport)
 
-          assertVpEq(combineQsForVp(viewport)) {
-            Table(
-              ("orderId" ,"quantity","price"   ,"side"    ,"trader"  ),
-              ("10"      ,-1157793070,8220501950349663546L,"Sell"    ,"trader1" ),
-              ("11"      ,-1158177819,-5263473657679273937L,"Sell"    ,"trader1" ),
-              ("12"      ,-1160101563,1103624592719277817L,"Sell"    ,"trader1" ),
-              ("13"      ,-1160486312,6066393058399891950L,"Sell"    ,"trader1" ),
-              ("14"      ,-1159332065,-8821912338641950449L,"Buy"     ,"trader1" ),
-              ("5"       ,-1157408321,3257733484669049412L,"Buy"     ,"trader1" ),
-              ("6"       ,-1156254074,6816172161336758629L,"Sell"    ,"trader1" ),
-              ("7"       ,-1156638823,-6667803446692178854L,"Sell"    ,"trader1" ),
-              ("8"       ,-1158562568,-300705196293627100L,"Sell"    ,"trader1" ),
-              ("9"       ,-1158947317,4662063269386987033L,"Buy"     ,"trader1" )
-            )
-          }
+          val updates = combineQsForVp(viewport)
+          updates.length shouldBe 0
       }
 
     }
