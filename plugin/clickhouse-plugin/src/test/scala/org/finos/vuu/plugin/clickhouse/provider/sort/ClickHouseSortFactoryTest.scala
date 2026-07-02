@@ -27,7 +27,7 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
       val nullResult = ClickHouseSortFactory.build("order_id", columns, nullSpec)
 
       Then("it should return the keyField")
-      nullResult shouldBe "ORDER BY order_id"
+      nullResult shouldBe "ORDER BY order_id ASC"
 
       And("given an empty SortSpec object with no definitions")
       val emptySpec = SortSpec(List.empty)
@@ -36,7 +36,7 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
       val emptyResult = ClickHouseSortFactory.build("order_id", columns, emptySpec)
 
       Then("it should return the keyField")
-      emptyResult shouldBe "ORDER BY order_id"
+      emptyResult shouldBe "ORDER BY order_id ASC"
     }
 
     Scenario("Generating a single column ascending sort") {
