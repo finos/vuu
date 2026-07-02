@@ -1,4 +1,4 @@
-package org.finos.vuu.plugin.clickhouse
+package org.finos.vuu
 
 import com.dimafeng.testcontainers.GenericContainer
 import org.slf4j.LoggerFactory
