@@ -10,7 +10,7 @@ import org.finos.vuu.plugin.clickhouse.provider.data.{ClickHouseRowDataProvider,
 import org.finos.vuu.plugin.clickhouse.provider.filter.ClickHouseFilterFactory
 import org.finos.vuu.plugin.clickhouse.provider.sort.ClickHouseSortFactory
 import org.finos.vuu.plugin.virtualized.api.{VirtualizedSessionTableColumn, VirtualizedSessionTableDef}
-import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
+import org.finos.vuu.plugin.virtualized.table.{VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.viewport.{ViewPort, ViewPortColumns}
 
@@ -27,11 +27,13 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
     val range = viewPort.getRange
     val startIndex = Math.max(range.from - 500, 0)
     val limit = (range.to - startIndex) + 500
+
     val columns = viewPort.getColumns.getColumns
       .filter(f => f.isInstanceOf[VirtualizedSessionTableColumn])
       .map(_.asInstanceOf[VirtualizedSessionTableColumn])
+
     val whereClause = ClickHouseFilterFactory.build(columns, viewPort.filterSpec)
-    val orderBy = ClickHouseSortFactory.build(columns, viewPort.sortSpec)
+    val orderBy = ClickHouseSortFactory.build(tableDef.getRemoteKeyField, columns, viewPort.sortSpec)
 
     logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading rows from ClickHouse range $startIndex to ${startIndex + limit} filter=$whereClause sort=$orderBy")
 
