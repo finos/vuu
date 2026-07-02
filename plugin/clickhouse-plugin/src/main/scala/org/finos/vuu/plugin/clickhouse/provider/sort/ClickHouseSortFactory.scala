@@ -15,7 +15,8 @@ object ClickHouseSortFactory extends StrictLogging {
     if (sortSpec != null && sortSpec.sortDefs != null && sortSpec.sortDefs.nonEmpty) {
       parseSort(columns, sortSpec)
     } else {
-      s"ORDER BY $keyField"
+      logger.trace(s"No sort spec was provided. Defaulting to $keyField ASC")
+      s"ORDER BY $keyField ASC"
     }
   }
 
