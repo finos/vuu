@@ -11,12 +11,14 @@ import org.finos.vuu.core.module.authn.AuthNModule
 import org.finos.vuu.core.{VuuClientConnectionOptions, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
 import org.finos.vuu.http2.server.VuuHttp2ServerFactory
 import org.finos.vuu.http2.server.config.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
-import org.finos.vuu.module.ClickHouseTableModule
 import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.net.http.HttpServerFactory
 import org.finos.vuu.net.ssl.VuuSSLByCertAndKey
+import org.finos.vuu.plugin.clickhouse.ClickHouseContainer
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.clickhouse.client.options.ClickHouseClientOptions
+import org.finos.vuu.plugin.clickhouse.module.ClickHouseTableModule
+import org.finos.vuu.plugin.clickhouse.util.ClickHouseCSVIngester
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 
 object ClickHouseMain extends App with StrictLogging {
