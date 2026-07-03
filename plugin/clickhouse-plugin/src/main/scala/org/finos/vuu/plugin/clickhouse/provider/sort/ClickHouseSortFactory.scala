@@ -3,34 +3,38 @@ package org.finos.vuu.plugin.clickhouse.provider.sort
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.net.SortSpec
-import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumn
+import org.finos.vuu.plugin.virtualized.api.{VirtualizedSessionTableColumn, VirtualizedSessionTableDef}
 
 import scala.util.{Failure, Success, Try}
 
 object ClickHouseSortFactory extends StrictLogging {
 
-  private val NO_SORT = ""
-
-  def build(keyField: String, columns: List[VirtualizedSessionTableColumn], sortSpec: SortSpec): String = {
+  def build(tableDef: VirtualizedSessionTableDef, columns: List[VirtualizedSessionTableColumn], sortSpec: SortSpec): String = {
     if (sortSpec != null && sortSpec.sortDefs != null && sortSpec.sortDefs.nonEmpty) {
-      parseSort(columns, sortSpec)
+      parseSort(tableDef, columns, sortSpec)
     } else {
-      logger.trace(s"No sort spec was provided. Defaulting to $keyField ASC")
-      s"ORDER BY $keyField ASC"
+      logger.trace(s"No sort spec was provided. Defaulting to key field ${tableDef.keyField}")
+      s"ORDER BY ${tableDef.getRemoteKeyField} ASC"
     }
   }
 
-  private def parseSort(columns: List[VirtualizedSessionTableColumn], sortSpec: SortSpec): String = {
+  private def parseSort(tableDef: VirtualizedSessionTableDef,
+                        columns: List[VirtualizedSessionTableColumn], sortSpec: SortSpec): String = {
     val remoteMapping: Map[String, String] = columns.map(f => f.name -> f.remoteName).toMap
+    val primaryKeyInSort: Boolean = sortSpec.sortDefs.exists(f => f.column == tableDef.keyField)
 
     Try(parseSortItems(remoteMapping, sortSpec)) match {
       case Success(sortItems) =>
-        val orderBy = s"ORDER BY ${sortItems.mkString(", ")}"
+        val orderBy = if (primaryKeyInSort) {
+          s"ORDER BY ${sortItems.mkString(", ")}"
+        } else {
+          s"ORDER BY ${sortItems.mkString(", ")}, ${tableDef.getRemoteKeyField} ASC"
+        }
         logger.debug(s"Parsed sort \"$orderBy\"")
         orderBy
       case Failure(err) =>
         logger.error(s"Could not parse sort $sortSpec", err)
-        NO_SORT
+        s"ORDER BY ${tableDef.getRemoteKeyField} ASC"
     }
   }
 

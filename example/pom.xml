@@ -29,6 +29,7 @@
         <module>virtualized-table</module>
         <module>rest-api</module>
         <module>http2-server</module>
+        <module>main-clickhouse</module>
     </modules>
 
     <build>
