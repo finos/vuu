@@ -405,32 +405,34 @@ export abstract class VuuModule<T extends string = string>
   protected deleteRow: ServiceHandler = async (rpcRequest) => {
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
       const { viewPortId } = rpcRequest.context;
-      const { key } = rpcRequest.params;
+      const { key, mode = "hard" } = rpcRequest.params as {
+        key: string;
+        mode?: "soft" | "hard";
+      };
       const sessionTable = this.getSessionTable(viewPortId, false);
       if (sessionTable) {
-        sessionTable.delete(key as string);
-        return {
-          type: "SUCCESS_RESULT",
-          data: undefined,
-        };
+        if (mode === "soft") {
+          sessionTable.update(key, "vuuMsg", "SOFT_DELETED");
+        } else {
+          sessionTable.delete(key);
+        }
+        return { type: "SUCCESS_RESULT", data: undefined };
       } else {
         const { dataSource } = this.getSubscriptionByViewport(viewPortId);
         if (dataSource.table) {
           const table = this.tables[dataSource.table.table as T];
           if (table) {
-            table.delete(key as string);
-            return {
-              type: "SUCCESS_RESULT",
-              data: undefined,
-            };
+            if (mode === "soft") {
+              table.update(key, "vuuMsg", "SOFT_DELETED");
+            } else {
+              table.delete(key);
+            }
+            return { type: "SUCCESS_RESULT", data: undefined };
           }
         }
       }
     }
-    return {
-      type: "ERROR_RESULT",
-      errorMessage: "something went wrong",
-    };
+    return { type: "ERROR_RESULT", errorMessage: "something went wrong" };
   };
 
   private getColumnDescriptors(tableName: T) {
@@ -810,6 +812,10 @@ export abstract class VuuModule<T extends string = string>
     {
       rpcName: "beginEditSession",
       service: this.beginEditSession,
+    },
+    {
+      rpcName: "deleteRow",
+      service: this.deleteRow,
     },
     {
       rpcName: "endEditSession",

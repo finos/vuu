@@ -11,7 +11,7 @@ import {
   SimulTableName,
 } from "@vuu-ui/vuu-data-test";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
-import type { SelectRowRequest, VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { BulkEditPanel, InputCell, Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
 import {
@@ -307,7 +307,7 @@ const DeleteSubmitTableTemplate = () => {
 
   const exitEditMode = useCallback(() => setEditMode("view"), []);
 
-  const { dataSource, editSession, onCancel, onDelete, onSelectionChange, onSave } =
+  const { dataSource, editSession, hasSelection, onCancel, onDelete, onSelectionChange, onSave } =
     useEditableTable({
       dataSource: sourceTableDataSource,
       deleteMode: "soft",
@@ -377,6 +377,7 @@ const DeleteSubmitTableTemplate = () => {
         ) : (
           <EditButtons
             editSession={editSession}
+            hasSelection={hasSelection}
             onDelete={onDelete}
             onSave={onSave}
             saveLabel="Submit"

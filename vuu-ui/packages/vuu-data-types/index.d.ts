@@ -497,6 +497,13 @@ export declare type DataSourceEvents = {
   "visual-link-removed": () => void;
 };
 
+/**
+ * Controls how a row deletion is applied.
+ * - `"soft"` - marks the row as pending deletion (e.g. sets `vuuMsg` to `"SOFT_DELETED"`)
+ *   without removing it from the table. The deletion is only committed when the edit
+ *   session ends with `saveChanges = true`.
+ * - `"hard"` - removes the row from the table immediately and irreversibly.
+ */
 export declare type DeleteRowMode = "soft" | "hard";
 export declare type DataSourceDeleteHandler = (
   key: string,

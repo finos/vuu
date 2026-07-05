@@ -8,12 +8,14 @@ import type {
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   DataSourceVisualLinkCreatedMessage,
+  DeleteRowMode,
   EditSessionMode,
 } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
   RpcResultError,
   RpcResultSuccess,
+  SelectRequest,
   VuuCreateVisualLink,
   VuuMenu,
   VuuRemoveVisualLink,
@@ -109,7 +111,9 @@ export class TickingArrayDataSource extends ArrayDataSource {
       this.tableSchema = table.schema;
       table.on("insert", this.insert);
       table.on("update", this.updateRowWithSessionCheck);
-      table.on("delete", this.deleteRow);
+      // Use the base-class low-level handler so the overridden deleteRow
+      // (which routes through rpcRequest)
+      table.on("delete", this.handleDeleteFromTable);
     }
   }
 
@@ -170,6 +174,16 @@ export class TickingArrayDataSource extends ArrayDataSource {
 
   getSelectedRowIds() {
     return Array.from(this.selectedRows);
+  }
+
+  select(selectRequest: Omit<SelectRequest, "vpId">) {
+    // Forwarding the select request to the session 
+    // datasource causes it to update its own selectedRows
+    // and re-send its rows
+    super.select(selectRequest);
+    if (this.#sessionDataSource) {
+      (this.#sessionDataSource as ArrayDataSource).select(selectRequest);
+    }
   }
 
   handleSessionMessage = (msg: DataSourceCallbackMessage) => {
@@ -257,6 +271,19 @@ export class TickingArrayDataSource extends ArrayDataSource {
       },
     });
   }
+
+  deleteRow = async (key: string, mode: DeleteRowMode = "hard"): Promise<true | string> => {
+    const rpcHost = this.#sessionDataSource ?? this;
+    const response = await rpcHost.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "deleteRow",
+      params: { key, mode },
+    });
+    if (isRpcSuccess(response)) {
+      return true;
+    }
+    return response?.errorMessage ?? "deleteRow failed";
+  };
 
   async endEditSession(saveChanges = false) {
     const type = "RPC_REQUEST";

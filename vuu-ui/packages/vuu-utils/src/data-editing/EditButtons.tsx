@@ -4,36 +4,42 @@ import { useCallback, useMemo, useState } from "react";
 
 export interface EditButtonProps {
   editSession?: EditSession;
+  hasSelection?: boolean;
   onCancel?: () => void;
   onDelete?: () => void;
   onSave: (force?: boolean) => void;
   saveLabel?: string;
+  confirmSave?: () => boolean | Promise<boolean>;
 }
 
 export const EditButtons = ({
+  confirmSave,
   editSession,
+  hasSelection = false,
   onCancel,
   onDelete,
   onSave,
   saveLabel = "Save",
 }: EditButtonProps) => {
   const [editState, setEditState] = useState<EditState>("clean");
-  const [selectionCount, setSelectionCount] = useState(0);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
+    if (confirmSave) {
+      const confirmed = await confirmSave();
+      if (!confirmed) return;
+    }
     onSave(editState === "stale");
-  }, [editState, onSave]);
+  }, [confirmSave, editState, onSave]);
 
   useMemo(() => {
     editSession?.on("editState", setEditState);
-    editSession?.on("selectionCount", setSelectionCount);
   }, [editSession]);
 
   return (
     <>
       {onDelete && (
         <Button
-          disabled={selectionCount === 0}
+          disabled={!hasSelection}
           onClick={onDelete}
           sentiment="negative"
         >
