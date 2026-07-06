@@ -370,18 +370,23 @@ class ViewPortImpl(val id: String,
 
   override def sortSpec: SortSpec = structuralFields.get().sortSpec
 
-  def sendUpdatesOnChange(currentRange: ViewPortRange): Unit = {
-
-    //val currentKeys = keys.toArray
-
+  private def sendUpdatesOnChange(currentRange: ViewPortRange): Unit = {
     val from = currentRange.from
     val to = currentRange.to
 
-    val inrangeKeys = keys.sliceToArray(from, to)
+    val inRangeKeys = keys.sliceToArray(from, to)
+    val len = inRangeKeys.length
 
-    logger.debug(s"Sending updates on ${inrangeKeys.length} inrangeKeys")
+    logger.debug(s"Sending updates on $len inRangeKeys")
 
-    inrangeKeys.zip(from to to).foreach({ case (key, index) => publishHighPriorityUpdate(key, index) })
+    var i = 0
+    while (i < len) {
+      val key = inRangeKeys(i)
+      if (key != null) {
+        publishHighPriorityUpdate(key, from + i)
+      }
+      i += 1
+    }
   }
 
   override def getColumns: ViewPortColumns = structuralFields.get().columns
@@ -448,8 +453,6 @@ class ViewPortImpl(val id: String,
     val inrangeKeys = keys.sliceToKeys(from, to)
 
     inrangeKeys
-
-    //ImmutableArray.from(inrangeKeys)
   }
 
   private def setKeysPre(newKeys: ViewPortKeys): Unit = {
@@ -538,7 +541,7 @@ class ViewPortImpl(val id: String,
           }
         }
       } else {
-        logger.warn(s"Key is null@Index=${index} in range from ${range.from} to ${range.to}. New keys length=${newKeys.length} for table ${table.name}")
+        logger.trace(s"Key is null@Index=${index} in range from ${range.from} to ${range.to}. New keys length=${newKeys.length} for table ${table.name}")
       }
 
     }
@@ -567,7 +570,7 @@ class ViewPortImpl(val id: String,
     val newKeysIterator = newKeys.iterator
     while (newKeysIterator.hasNext) {
       val key = newKeysIterator.next()      
-      if (subscribedKeys.contains(key)) {
+      if (key != null && subscribedKeys.contains(key)) {
         retainKeys.add(key)
       }
     }
@@ -577,7 +580,7 @@ class ViewPortImpl(val id: String,
     val subscribedKeysIterator = subscribedKeys.iterator()
     while (subscribedKeysIterator.hasNext) {
       val subscribedKey = subscribedKeysIterator.next()      
-      if (!retainKeys.contains(subscribedKey)) {
+      if (subscribedKey != null && !retainKeys.contains(subscribedKey)) {
         unsubscribeForKey(subscribedKey)
       }
     }

@@ -6,147 +6,143 @@ import org.scalatest.matchers.should.Matchers
 
 class ArrayBackedMovingWindowTest extends AnyFeatureSpec with Matchers with GivenWhenThen {
 
-  Feature("Dynamic Moving Window Resizing and Data Preservation") {
+  Feature("Moving Window Data Operations") {
 
-    Scenario("Expanding the window range dynamically grows the buffer size") {
-      Given("a moving window initialized with an initial size of 3")
-      val window = new ArrayBackedMovingWindow[String](3)
-      window.setAtIndex(0, "A")
-      window.setAtIndex(1, "B")
-      window.setAtIndex(2, "C")
+    Scenario("Basic reading, writing, and range verification") {
+      Given("an empty array-backed moving window of size 5")
+      val window = new ArrayBackedMovingWindow[String](initialSize = 5)
 
-      When("the window range is expanded to a larger span [0, 6)")
-      window.setRange(0, 6)
+      Then("the initial window range should be [0, 5)")
+      window.getRange shouldBe WindowRange(0, 5)
 
-      Then("the bufferSize property must dynamically grow to match")
-      window.bufferSize shouldBe 6
+      And("indices within [0, 5) should report as within range")
+      window.isWithinRange(2) shouldBe true
+      window.isWithinRange(5) shouldBe false
 
-      And("all original data elements must still be accessible at their original indexes")
-      window.getAtIndex(0) shouldBe Some("A")
-      window.getAtIndex(1) shouldBe Some("B")
-      window.getAtIndex(2) shouldBe Some("C")
+      When("data is set at valid indices")
+      window.setAtIndex(2, "Alpha")
+      window.setAtIndex(4, "Beta")
 
-      And("the newly expanded indices should be empty (None)")
-      window.getAtIndex(3) shouldBe None
-      window.getAtIndex(5) shouldBe None
-    }
+      Then("the data should be successfully retrievable")
+      window.getAtIndex(2) shouldBe Some("Alpha")
+      window.getAtIndex(4) shouldBe Some("Beta")
 
-    Scenario("Shrinking the window range drops out-of-bounds data and updates size") {
-      Given("a window of size 4 containing data entries")
-      val window = new ArrayBackedMovingWindow[String](4)
-      window.setAtIndex(0, "Drop Me")
-      window.setAtIndex(1, "Keep Me")
-      window.setAtIndex(2, "Keep Me Too")
-
-      When("the window range is shrunk down to [1, 3)")
-      window.setRange(1, 3)
-
-      Then("the buffer size must reflect the smaller configuration")
-      window.bufferSize shouldBe 2
-
-      And("retained index positions must preserve their structural data values")
-      window.getAtIndex(1) shouldBe Some("Keep Me")
-      window.getAtIndex(2) shouldBe Some("Keep Me Too")
-
-      And("dropped coordinates must no longer be within range or retrievable")
-      window.isWithinRange(0) shouldBe false
-      window.getAtIndex(0) shouldBe None
-    }
-
-    Scenario("Moving to a completely disjoint larger range resets data but grows capacity") {
-      Given("a window with an active state in range [0, 2)")
-      val window = new ArrayBackedMovingWindow[String](2)
-      window.setAtIndex(0, "Old Data")
-
-      When("shifting the window to a completely non-overlapping larger range [5, 10)")
-      window.setRange(5, 10)
-
-      Then("the new buffer size must match the new range size")
-      window.bufferSize shouldBe 5
-
-      And("the old disconnected data elements must not persist or bleed through")
+      And("uninitialized or out-of-bounds indices should return None")
       window.getAtIndex(0) shouldBe None
       window.getAtIndex(5) shouldBe None
+
+      When("the internal iterator is evaluated")
+      val iteratedElements = window.iterator.toList
+
+      Then("the iterator must reflect the explicit entries and preserve raw nulls for empty slots")
+      iteratedElements shouldBe List(null, null, "Alpha", null, "Beta")
     }
 
-    Scenario("Clean iteration behavior across expanded sparse windows") {
-      Given("a window expanded to a large size containing scattered records")
-      val window = new ArrayBackedMovingWindow[String](2)
-      window.setRange(0, 5) // Expanded to size 5
-      window.setAtIndex(1, "Data Point X")
-      window.setAtIndex(4, "Data Point Y")
+    Scenario("Creating an independent structural copy") {
+      Given("a moving window containing data")
+      val window = new ArrayBackedMovingWindow[String](initialSize = 3)
+      window.setAtIndex(0, "Original")
 
-      When("collecting values through the iterator context loop")
-      val collectedElements = window.iterator.toList
+      When("a copy of the window is created")
+      val windowCopy = window.copy()
 
-      Then("the list must only expose valid element payloads, skipping internal padding nulls")
-      collectedElements shouldBe List("Data Point X", "Data Point Y")
-    }
-  }
+      Then("the copy should initially contain the same data")
+      windowCopy.getAtIndex(0) shouldBe Some("Original")
 
-  Feature("Memory Allocation Minimization Strategy") {
+      When("the copy is mutated and the original window's range is shifted away entirely")
+      windowCopy.setAtIndex(1, "Mutation")
+      window.setRange(5, 8)
 
-    Scenario("Reusing the same array instance when shrinking or shifting within current capacity") {
-      Given("a moving window initialized with a capacity of 5")
-      val window = new ArrayBackedMovingWindow[String](5)
-      window.setAtIndex(2, "Data")
-      val originalArrayId = window.internalArrayIdentity
-
-      When("the range is modified but fits within the original capacity (e.g., shrinking to size 3)")
-      window.setRange(2, 5)
-
-      Then("the underlying array instance must remain exactly identical")
-      window.internalArrayIdentity shouldBe originalArrayId
-      window.bufferSize shouldBe 3
-      window.getAtIndex(2) shouldBe Some("Data")
-    }
-
-    Scenario("Reusing the same array instance during non-overlapping shifts within capacity") {
-      Given("a moving window with a capacity of 10")
-      val window = new ArrayBackedMovingWindow[String](10)
-      val originalArrayId = window.internalArrayIdentity
-
-      When("shifting to a completely disjoint range that still fits within the array length")
-      window.setRange(20, 25) // size 5 <= 10
-
-      Then("the array is cleared and reused without triggering a new allocation")
-      window.internalArrayIdentity shouldBe originalArrayId
-      window.bufferSize shouldBe 5
-    }
-
-    Scenario("Allocating a new array only when expanding beyond current maximum capacity") {
-      Given("a moving window with a capacity of 3")
-      val window = new ArrayBackedMovingWindow[String](3)
-      val originalArrayId = window.internalArrayIdentity
-
-      When("the range is expanded to a size greater than 3")
-      window.setRange(0, 6)
-
-      Then("the code must adapt and allocate a fresh backing array")
-      window.internalArrayIdentity shouldNot be(originalArrayId)
-      window.bufferSize shouldBe 6
-    }
-
-    Scenario("In-place shift integrity when sliding window left (backward element copy)") {
-      Given("a window with capacity 5 tracking range [2, 7)")
-      val window = new ArrayBackedMovingWindow[String](5)
-      window.setRange(2, 7)
-      window.setAtIndex(3, "X")
-      window.setAtIndex(4, "Y")
-      val originalArrayId = window.internalArrayIdentity
-
-      When("sliding the window left to range [1, 6)")
-      window.setRange(1, 6)
-
-      Then("the array must not reallocate")
-      window.internalArrayIdentity shouldBe originalArrayId
-
-      And("the data elements must shift right safely without self-corruption")
-      window.getAtIndex(3) shouldBe Some("X")
-      window.getAtIndex(4) shouldBe Some("Y")
+      Then("the original window should remain unaffected by the copy's mutation")
       window.getAtIndex(1) shouldBe None
-      window.getAtIndex(6) shouldBe None
+
+      And("the copy's range should remain unchanged")
+      windowCopy.getRange shouldBe WindowRange(0, 3)
+
+      When("both iterators are evaluated independently")
+      val originalIteratorElements = window.iterator.toList
+      val copyIteratorElements = windowCopy.iterator.toList
+
+      Then("the original iterator should reflect its new empty shifted state")
+      originalIteratorElements shouldBe List(null, null, null)
+
+      And("the copy iterator should independently preserve both the original data and its own mutation")
+      copyIteratorElements shouldBe List("Original", "Mutation", null)
     }
   }
 
+  Feature("Window Range Shifts and Data Retention") {
+
+    Scenario("Shifting the window to a partially overlapping range") {
+      Given("a window spanning [0, 5) with data at indexes 2 and 4")
+      val window = new ArrayBackedMovingWindow[String](initialSize = 5)
+      window.setAtIndex(2, "KeepMe")
+      window.setAtIndex(4, "DropMe")
+
+      When("the range is shifted from [0, 5) to [2, 7)")
+      window.setRange(2, 7)
+
+      Then("the new range should be applied")
+      window.getRange shouldBe WindowRange(2, 7)
+
+      And("data falling within the overlapping region [2, 5) should be retained")
+      window.getAtIndex(2) shouldBe Some("KeepMe")
+      window.getAtIndex(4) shouldBe Some("DropMe")
+
+      And("indices outside the new range should no longer be accessible")
+      window.isWithinRange(0) shouldBe false
+
+      When("the internal iterator is evaluated after the partial shift")
+      val iteratedElements = window.iterator.toList
+
+      Then("the shifted array data must realign to the new 0-offset index mappings")
+      // "KeepMe" (index 2) maps to array index 0 (2 - 2)
+      // "DropMe" (index 4) maps to array index 2 (4 - 2)
+      iteratedElements shouldBe List("KeepMe", null, "DropMe", null, null)
+    }
+
+    Scenario("Shifting the window to a completely non-overlapping range") {
+      Given("a window spanning [0, 4) populated with data")
+      val window = new ArrayBackedMovingWindow[String](initialSize = 4)
+      window.setAtIndex(0, "DataA")
+      window.setAtIndex(2, "DataB")
+
+      When("the window range is shifted to a completely detached range [10, 14)")
+      window.setRange(10, 14)
+
+      Then("the new range should update successfully")
+      window.getRange shouldBe WindowRange(10, 14)
+
+      And("all historical data from the old range should be missing")
+      window.getAtIndex(0) shouldBe None
+      window.getAtIndex(2) shouldBe None
+
+      When("the internal iterator is retrieved and evaluated")
+      val iteratedElements = window.iterator.toList
+
+      Then("the iterator size must match the buffer capacity")
+      iteratedElements.size shouldBe 4
+
+      And("it must explicitly yield raw null values for the uninitialized spaces")
+      iteratedElements shouldBe List(null, null, null, null)
+    }
+
+    Scenario("Expanding the window range to a larger, completely non-overlapping range") {
+      Given("a window initialized with an initial size of 3")
+      val window = new ArrayBackedMovingWindow[String](initialSize = 3)
+
+      When("the caller shifts and expands the window range to a size of 5 (from 10 to 15)")
+      window.setRange(10, 15)
+
+      Then("the new range and expanded buffer size should be successfully applied")
+      window.getRange shouldBe WindowRange(10, 15)
+      window.bufferSize shouldBe 5
+
+      When("the internal iterator is evaluated after the expansion")
+      val iteratedElements = window.iterator.toList
+
+      Then("it should return an expanded structure containing exactly 5 null elements")
+      iteratedElements shouldBe List(null, null, null, null, null)
+    }
+  }
 }

@@ -5,6 +5,8 @@ import org.finos.toolbox.thread.WorkItem
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.viewport.{ViewPort, ViewPortContainer}
 
+import scala.util.control.NonFatal
+
 object VirtualizedViewPortWorkItem extends StrictLogging{
 
   def apply(viewPort: ViewPort, container: ViewPortContainer): WorkItem[ViewPort] = {
@@ -17,7 +19,7 @@ object VirtualizedViewPortWorkItem extends StrictLogging{
           provider match {
             case virt: VirtualizedProvider =>
               virt.runOnce(viewPort)
-            case _ => logger.error("trying to calculate a virtualized table def with a non virtialized provider. Provider must extend org.finos.vuu.provider.VirtualizedProvider")
+            case _ => logger.error("trying to calculate a virtualized table def with a non virtualized provider. Provider must extend org.finos.vuu.provider.VirtualizedProvider")
           }
 
           viewPort
@@ -32,10 +34,10 @@ object VirtualizedViewPortWorkItem extends StrictLogging{
         }
       }
     } catch {
-      case e: Exception => logger.error(e.getMessage + " " + e.getStackTrace)
-        null
+      case NonFatal(e) =>
+        logger.error(s"Exception encountered during viewport work item execution: ${e.getMessage}", e)
+        throw e
     }
   }
-
 
 }

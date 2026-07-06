@@ -44,3 +44,4 @@ vuu-ui/tools/vuu-showcase/src/showcase-utils.ts
 example/order/src/main/scala/org/finos/vuu/order/oms/impl/InMemOmsApi.scala
 example/virtualized-table/src/main/scala/org/finos/vuu/example/virtualtable/bigdatacache/FakeBigDataCache.scala
 example/http2-server/src/test/resources/certs/key.pem
+example/main-clickhouse/src/main/resources/certs/key.pem

@@ -164,8 +164,7 @@
                         <argument>-Dvuu.webroot=../../vuu-ui/deployed_apps/app-vuu-example</argument>
                         <argument>-Dvuu.keyPath=src/main/resources/certs/key.pem</argument>
                         <argument>-Dvuu.certPath=src/main/resources/certs/cert.pem</argument>
-                        <argument>-Dlogback.configurationFile=logback-netty.xml</argument>
-                        <argument>org.finos.vuu.SimulMain</argument>
+                        <argument>org.finos.vuu.ClickHouseMain</argument>
                     </arguments>
                 </configuration>
             </plugin>

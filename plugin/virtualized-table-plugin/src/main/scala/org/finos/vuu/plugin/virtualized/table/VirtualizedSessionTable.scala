@@ -21,7 +21,7 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
   }
 
   def processUpdateForIndex(index: Int, rowKey: String, rowData: RowWithData, timeStamp: Long): Unit = {
-    if (hasRowChangedAtIndex(index, rowData)){
+    if (isWithinRange(index) && hasRowChangedAtIndex(index, rowData)){
       data.setKeyAt(index, rowKey)
       super.processUpdate(rowKey, rowData)
     }
@@ -55,5 +55,14 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
 
   override def getColumnValueProvider: ColumnValueProvider =
     this.getProvider.asInstanceOf[ColumnValueProvider]
+
+  def isWithinRange(index: Int): Boolean = {
+    this.data match {
+      case virtData: VirtualizedSessionTableData => virtData.isWithinRange(index)
+      case _ =>
+        logger.error("Trying to check range on non-virtualized data, something has gone bad.")
+        false
+    }
+  }
 
 }

@@ -45,6 +45,8 @@ class VirtualizedSessionTableData(cacheSize: Int)(implicit clock: Clock) extends
     keysWindow.setRange(from, to)
   }
 
+  def isWithinRange(index: Int): Boolean = keysWindow.isWithinRange(index)
+
   def setLength(length: Int): Unit = {
     this.length = length
   }

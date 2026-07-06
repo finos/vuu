@@ -1,6 +1,6 @@
 package org.finos.toolbox.collection.window
 
-class WindowRange(val from: Int, val to: Int) {
+case class WindowRange(from: Int, to: Int) {
   require(to >= from, "Window upper bound ('to') cannot be less than lower bound ('from')")
 
   def isWithin(index: Int): Boolean = {
