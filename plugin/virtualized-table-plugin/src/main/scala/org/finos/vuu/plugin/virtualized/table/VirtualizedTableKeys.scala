@@ -15,7 +15,7 @@ case class VirtualizedTableKeys(window: MovingWindow[String], dataSize: Int) ext
 
   def getAtIndex(index: Int): Option[String] = window.getAtIndex(index)
 
-  override def add(key: String): TablePrimaryKeys = ???
+  override def add(key: String): TablePrimaryKeys = throw new Exception("Cannot mutate virtualized keys")
 
   override def +(key: String): TablePrimaryKeys = throw new Exception("Cannot mutate virtualized keys")
 

@@ -1,65 +1,73 @@
 package org.finos.toolbox.collection.window
 
+import org.finos.toolbox.collection.window.ArrayBackedMovingWindow.State
+
 import scala.reflect.ClassTag
 
-class ArrayBackedMovingWindow[DATA <: AnyRef](val bufferSize: Int)(implicit m: ClassTag[DATA]) extends MovingWindow[DATA] {
+object ArrayBackedMovingWindow {
+  private[window] case class State[D](range: WindowRange, data: Array[D])
+}
 
-  val lock = new Object
+class ArrayBackedMovingWindow[DATA <: AnyRef] private (
+                                                        initialState: State[DATA]
+                                                      )(implicit m: ClassTag[DATA]) extends MovingWindow[DATA] {
 
-  //internal data is always 0 based, we add range.from to determine an offset
-  @volatile var internalData = new Array[DATA](bufferSize)
-  @volatile var range = new WindowRange(0, bufferSize)
+  @volatile private var state = initialState
+
+  def this(initialSize: Int)(implicit m: ClassTag[DATA]) = {
+    this(State(new WindowRange(0, initialSize), new Array[DATA](initialSize)))
+  }
 
   override def setAtIndex(index: Int, data: DATA): Unit = {
-    lock.synchronized {
-      if(isWithinRange(index)){
-        internalData(index - range.from) = data
-      }
+    val currentState = state
+    if (currentState.range.isWithin(index)) {
+      currentState.data(index - currentState.range.from) = data
+      state = currentState.copy()
     }
   }
 
   override def getAtIndex(index: Int): Option[DATA] = {
-    lock.synchronized {
-      if (range.isWithin(index) && internalData(index - range.from) != null) Some(internalData(index - range.from)) else None
+    val currentState = state
+    if (currentState.range.isWithin(index)) {
+      val data = currentState.data(index - currentState.range.from)
+      Option(data)
+    } else {
+      None
     }
   }
 
   override def isWithinRange(index: Int): Boolean = {
-    lock.synchronized {
-      range.isWithin(index)
-    }
+    state.range.isWithin(index)
   }
 
   override def setRange(from: Int, to: Int): Unit = {
-    lock.synchronized {
-      val (overlapFrom, overlapTo) = this.range.overlap(from, to)
+    val requestedSize = to - from
+    val currentState = state
 
-      var newData = new Array[DATA](to - from)
+    val (overlapFrom, overlapTo) = currentState.range.overlap(from, to)
 
-      (overlapFrom to (overlapTo - 1)).foreach(i => {
-        getAtIndex(i) match {
-          case Some(data) =>
-            newData(i - from) = data
-          case None =>
-        }
-      })
+    val newData = new Array[DATA](requestedSize)
 
-      internalData = newData
-
-      this.range = WindowRange(from, to)
+    (overlapFrom until overlapTo).foreach { i =>
+      val data = currentState.data(i - currentState.range.from)
+      if (data != null) {
+        newData(i - from) = data
+      }
     }
+
+    state = State(WindowRange(from, to), newData)
   }
 
-  override def getRange: WindowRange = range
+  override def bufferSize: Int = state.data.length
 
-  override def iterator: Iterator[DATA] = this.internalData.iterator
+  override def getRange: WindowRange = state.range
+
+  override def iterator: Iterator[DATA] = {
+    state.data.clone().iterator
+  }
 
   override def copy(): MovingWindow[DATA] = {
-    lock.synchronized {
-      val newWindow = new ArrayBackedMovingWindow[DATA](bufferSize = this.bufferSize)
-      newWindow.range = new WindowRange(range.from, range.to)
-      newWindow.internalData = this.internalData.clone()
-      newWindow
-    }
+    val currentState = state
+    new ArrayBackedMovingWindow[DATA](State(currentState.range, currentState.data.clone()))
   }
 }

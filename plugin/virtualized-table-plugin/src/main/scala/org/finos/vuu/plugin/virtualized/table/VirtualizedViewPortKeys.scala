@@ -1,7 +1,5 @@
 package org.finos.vuu.plugin.virtualized.table
 
-import org.finos.toolbox.collection.array.ImmutableArray
-import org.finos.toolbox.collection.window.ArrayBackedMovingWindow
 import org.finos.vuu.core.table.TablePrimaryKeys
 import org.finos.vuu.feature.ViewPortKeys
 
