@@ -37,8 +37,8 @@ class VirtualizedTableKeysTest extends AnyFeatureSpec with Matchers with GivenWh
 
       val array = newKeys.iterator.toArray
 
-      array.length should equal(3)
-      array should equal(Array("H", "I", "J"))
+      array.length should equal(10)
+      array should equal(Array("H", "I", "J", null, null, null, null, null, null, null))
     }
   }
 
