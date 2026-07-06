@@ -10,9 +10,8 @@ trait ClickHouseClientOptions {
   def withDatabase(database: String): ClickHouseClientOptions
   def withTimeoutMs(timeoutMs: Int): ClickHouseClientOptions
   
-  def withAuth(authOptions: ClickHouseClientAuthOptions): ClickHouseClientOptions
-  def withUsername(username: String): ClickHouseClientOptions
-  def withPassword(password: String): ClickHouseClientOptions
+  def withAuth(auth: ClickHouseClientAuthOptions): ClickHouseClientOptions
+  def withBasicAuth(username: String, password: String): ClickHouseClientOptions  
   def withMutualTLS(keyStorePath: String, keyStorePassword: String, trustStorePath: String, trustStorePassword: String): ClickHouseClientOptions  
 }
 
@@ -21,8 +20,8 @@ object ClickHouseClientOptions {
     ClickHouseClientOptionsImpl(
       endpoint = "http://localhost:8123",
       database = "default",
-      auth = BasicAuthOptions(username = "default", password = ""),
-      timeoutMs = 2_000
+      timeoutMs = 2_000,
+      auth = BasicAuthOptions(username = "default", password = ""),      
     )
   }
 }
@@ -36,7 +35,14 @@ private case class ClickHouseClientOptionsImpl(
 
   override def withEndpoint(endpoint: String): ClickHouseClientOptions = this.copy(endpoint = endpoint)
   override def withDatabase(database: String): ClickHouseClientOptions = this.copy(database = database)
-  override def withUsername(username: String): ClickHouseClientOptions = this.copy(username = username)
-  override def withPassword(password: String): ClickHouseClientOptions = this.copy(password = password)
   override def withTimeoutMs(timeoutMs: Int): ClickHouseClientOptions = this.copy(timeoutMs = timeoutMs)
+  override def withAuth(auth: ClickHouseClientAuthOptions): ClickHouseClientOptions = this.copy(auth = auth)  
+  override def withBasicAuth(username: String, password: String): ClickHouseClientOptions = this.copy(auth = BasicAuthOptions(username, password))
+  override def withMutualTLS(keyStorePath: String,
+                             keyStorePassword: String,
+                             trustStorePath: String,
+                             trustStorePassword: String): ClickHouseClientOptions = {
+    this.copy(auth = MTLSOptions(keyStorePath, keyStorePassword, trustStorePath, trustStorePassword))
+  }
+    
 }
