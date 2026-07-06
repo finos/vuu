@@ -90,7 +90,7 @@ class VirtualizedSessionTableTest extends AnyFeatureSpec with Matchers with Give
 
       Then("we verify we don't have the data in the cache")
       primaryKeys2 should equal(
-        Array("0006", "0007", "0008", "0009", "0010")
+        Array("0006", "0007", "0008", "0009", "0010", null, null, null, null, null)
       )
 
       And("What would happen next is our loading process would then run on a thread"
@@ -111,13 +111,35 @@ class VirtualizedSessionTableTest extends AnyFeatureSpec with Matchers with Give
     }
   }
 
+  Feature("isWithinRange") {
+    val table = new VirtualizedSessionTable(sessionId, ordersTableDef, joinProvider)
+    table.setRange(0, 2)
+
+    Scenario("WHEN in range THEN should return true") {
+      table.isWithinRange(1) should equal(true)
+    }
+
+    Scenario("WHEN start of range THEN should return true") {
+      table.isWithinRange(0) should equal(true)
+    }
+
+    Scenario("WHEN end of range THEN should return false") {
+      table.isWithinRange(2) should equal(false)
+    }
+
+    Scenario("WHEN out of range THEN should return false") {
+      table.isWithinRange(3) should equal(false)
+    }
+
+  }
+
   Feature("hasRowChangedAtIndex") {
     val table = new VirtualizedSessionTable(sessionId, ordersTableDef, joinProvider)
     table.setRange(0, 2)
 
     val row1 = RowWithData("0001", Map("orderId" -> "0001", "ric" -> "VOD.L", "quantity" -> 100, "trader" -> "trader1"))
     val row2 = RowWithData("0002", Map("orderId" -> "0002", "ric" -> "VOD.L", "quantity" -> 200, "trader" -> "trader2"))
-    List(row1, row2).zipWithIndex.foreach({ case (row, i) => table.processUpdateForIndex(i, row.key, row, clock.now())})
+    List(row1, row2).zipWithIndex.foreach({ case (row, i) => table.processUpdateForIndex(i, row.key, row, clock.now()) })
 
     Scenario("WHEN only row data changes THEN should return true") {
       val newRowAtZeroIndex = row1.copy(data = row1.data ++ Map("quantity" -> 105))
@@ -136,5 +158,7 @@ class VirtualizedSessionTableTest extends AnyFeatureSpec with Matchers with Give
     Scenario("WHEN row as well as the row index are the same THEN should return false") {
       table.hasRowChangedAtIndex(0, row1.copy()) should equal(false)
     }
+
   }
+
 }

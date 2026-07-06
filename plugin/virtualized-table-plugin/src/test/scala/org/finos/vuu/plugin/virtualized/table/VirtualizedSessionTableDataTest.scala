@@ -101,5 +101,29 @@ class VirtualizedSessionTableDataTest extends AnyFeatureSpec
       primaryKeys.get(105) shouldBe "absolute-row-105"
       primaryKeys.length shouldBe 5000
     }
+
   }
+
+  Feature("isWithinRange") {
+    val table = new VirtualizedSessionTableData(10)
+    table.setRangeForKeys(0, 2)
+
+    Scenario("WHEN in range THEN should return true") {
+      table.isWithinRange(1) should equal(true)
+    }
+
+    Scenario("WHEN start of range THEN should return true") {
+      table.isWithinRange(0) should equal(true)
+    }
+
+    Scenario("WHEN end of range THEN should return false") {
+      table.isWithinRange(2) should equal(false)
+    }
+
+    Scenario("WHEN out of range THEN should return false") {
+      table.isWithinRange(3) should equal(false)
+    }
+
+  }
+
 }

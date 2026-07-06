@@ -63,7 +63,7 @@ object ClickHouseMain extends App with StrictLogging {
 
   lifecycle.start()
 
-  createOrderData(container, client, 50_000_000)
+  createOrderData(container, client, 10_000_000)
 
   logger.info("[VUU] Ready.")
 
