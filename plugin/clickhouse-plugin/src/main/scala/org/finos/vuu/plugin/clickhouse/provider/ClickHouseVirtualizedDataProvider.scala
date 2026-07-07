@@ -48,13 +48,13 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
     viewPort.table.asTable match {
       case tbl: VirtualizedSessionTable =>
 
-        logger.trace("[ClickHouseVirtualizedDataProvider] Set Range")
+        logger.trace(s"[ClickHouseVirtualizedDataProvider] Setting range to $startIndex -> ${startIndex + limit}")
         val (millisRange, _) = timeIt { tbl.setRange(startIndex, startIndex + limit) }
 
-        logger.trace("[ClickHouseVirtualizedDataProvider] Set Size")
+        logger.trace(s"[ClickHouseVirtualizedDataProvider] Setting table size to $tableSize")
         val (millisSize, _) = timeIt { tbl.setSize(tableSize) }
 
-        logger.trace("[ClickHouseVirtualizedDataProvider] Adding rows")
+        logger.trace(s"[ClickHouseVirtualizedDataProvider] Adding ${rowsWithData.length} rows")
         val (millisRows, _) = timeIt {
           val n = rowsWithData.length
           val now = clock.now()
@@ -63,6 +63,7 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
           while (i < n) {
             val rowWithData = rowsWithData(i)
             val tableIndex = startIndex + i
+            logger.trace(s"Publishing update for $rowWithData to index $tableIndex")
             tbl.processUpdateForIndex(
               tableIndex,
               rowWithData.key,
