@@ -288,7 +288,7 @@ export const EditableInstruments = () => {
   );
 };
 
-const DeleteSubmitTableTemplate = () => {
+const InlineEditTableTemplate = () => {
   const [editMode, setEditMode] = useState<EditMode>("view");
   const { VuuDataSource } = useData();
 
@@ -298,7 +298,6 @@ const DeleteSubmitTableTemplate = () => {
     () =>
       new VuuDataSource({
         columns,
-        sessionTableMessageColumn: "vuuMsg",
         table: schema.table,
         viewport: `vp-${_viewportId++}`,
       }),
@@ -307,7 +306,7 @@ const DeleteSubmitTableTemplate = () => {
 
   const exitEditMode = useCallback(() => setEditMode("view"), []);
 
-  const { dataSource, editSession, hasSelection, onCancel, onDelete, onSelectionChange, onSave } =
+  const { dataSource, editSession, hasSelection, onAddRows, onDelete, onSelectionChange, onSave } =
     useEditableTable({
       dataSource: sourceTableDataSource,
       deleteMode: "soft",
@@ -378,6 +377,7 @@ const DeleteSubmitTableTemplate = () => {
           <EditButtons
             editSession={editSession}
             hasSelection={hasSelection}
+            onAddRows={onAddRows}
             onDelete={onDelete}
             onSave={onSave}
             saveLabel="Submit"
@@ -389,10 +389,10 @@ const DeleteSubmitTableTemplate = () => {
 };
 
 /** tags=data-consumer */
-export const EditableInstrumentsDeleteSubmit = () => (
+export const EditableInstrumentsInlineEdit = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
-      <DeleteSubmitTableTemplate />
+      <InlineEditTableTemplate />
     </NotificationsProvider>
   </LocalDataSourceProvider>
 );

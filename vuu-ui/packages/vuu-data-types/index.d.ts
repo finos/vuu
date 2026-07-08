@@ -584,10 +584,13 @@ export interface EditApi {
   beginEditSession?: (
     editSessionMode?: EditSessionMode,
   ) => Promise<DataSource | undefined>;
+  addRow?: (
+    rowData?: Record<string, VuuRowDataItemType>,
+  ) => Promise<RpcResult> | undefined;
   deleteRow?: (key: string, mode?: DeleteRowMode) => Promise<RpcResult> | undefined;
   editCell?: (
     rowKey: string,
-    colun: string,
+    column: string,
     value: VuuRowDataItemType,
   ) => Promise<RpcResult> | undefined;
   endEditSession?: (

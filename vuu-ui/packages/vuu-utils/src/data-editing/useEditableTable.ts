@@ -1,5 +1,5 @@
 import { DataSource, DeleteRowMode, EditSessionMode } from "@vuu-ui/vuu-data-types";
-import type { SelectRowRangeRequest, SelectRowRequest, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { useCallback, useMemo, useRef, useState } from "react";
 import type { SelectionChangeHandler } from "@vuu-ui/vuu-table-types";
 import { useData } from "../context-definitions/DataProvider";
@@ -15,6 +15,7 @@ export interface EditableTableHookProps {
    */
   columns?: string[];
   dataSource?: DataSource;
+  addRowsCount?: number;
   deleteMode?: DeleteRowMode;
   editSessionMode?: EditSessionMode;
   isEditMode: boolean;
@@ -28,6 +29,7 @@ export interface EditableTableHookProps {
 }
 
 export const useEditableTable = ({
+  addRowsCount = 15,
   columns,
   dataSource: dataSourceProp,
   deleteMode = "soft",
@@ -100,36 +102,19 @@ export const useEditableTable = ({
     }
   }, [editSession]);
 
+  const handleAddRows = useCallback(() => {
+    editSession.addRows(addRowsCount);
+  }, [addRowsCount, editSession]);
+
   const handleSelectionChange = useCallback<SelectionChangeHandler>(
-    (change) => {
-      if (change.type === "SELECT_ROW") {
-        const { rowKey, preserveExistingSelection } =
-          change as Omit<SelectRowRequest, "vpId">;
-        selectedKeysRef.current = preserveExistingSelection
-          ? [...selectedKeysRef.current, rowKey]
-          : [rowKey];
-        setSelectionCount(selectedKeysRef.current.length);
-      } else if (change.type === "DESELECT_ROW") {
-        const { rowKey, preserveExistingSelection } =
-          change as Omit<SelectRowRequest, "vpId">;
-        selectedKeysRef.current = preserveExistingSelection
-          ? selectedKeysRef.current.filter((k) => k !== rowKey)
-          : [];
-        setSelectionCount(selectedKeysRef.current.length);
-      } else if (change.type === "SELECT_ROW_RANGE") {
-        const { fromRowKey, toRowKey, preserveExistingSelection } =
-          change as Omit<SelectRowRangeRequest, "vpId">;
-        const rangeKeys = [fromRowKey, toRowKey];
-        selectedKeysRef.current = preserveExistingSelection
-          ? [...selectedKeysRef.current, ...rangeKeys]
-          : rangeKeys;
-        setSelectionCount(selectedKeysRef.current.length);
-      } else if (change.type === "DESELECT_ALL") {
-        selectedKeysRef.current = [];
-        setSelectionCount(0);
-      }
+    () => {
+      const dsWithIds = dataSource as unknown as {
+        getSelectedRowIds?: () => string[];
+      };
+      selectedKeysRef.current = dsWithIds.getSelectedRowIds?.() ?? [];
+      setSelectionCount(selectedKeysRef.current.length);
     },
-    [],
+    [dataSource],
   );
 
   useMemo(async () => {
@@ -152,6 +137,7 @@ export const useEditableTable = ({
     dataSource,
     editSession,
     hasSelection: selectionCount > 0,
+    onAddRows: handleAddRows,
     onCancel: handleCancel,
     onDelete: handleDelete,
     onSelectionChange: handleSelectionChange,

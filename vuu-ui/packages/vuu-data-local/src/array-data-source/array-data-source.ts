@@ -687,7 +687,7 @@ export class ArrayDataSource
 
   protected insert = (row: VuuRowDataItemType[]) => {
     // TODO take sorting, filtering. grouping into account
-    const dataSourceRow = toDataSourceRow(this.key)(row, this.size);
+    const dataSourceRow = toDataSourceRow(this.key, this.index)(row, this.size);
     (this.#data as DataSourceRow[]).push(dataSourceRow);
     const { from, to } = this.#range;
     const [rowIdx] = dataSourceRow;

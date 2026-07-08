@@ -5,6 +5,7 @@ import {
 import type {
   DataSource,
   DataSourceCallbackMessage,
+  DataSourceRow,
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   DataSourceVisualLinkCreatedMessage,
@@ -25,7 +26,7 @@ import type {
   VuuRpcServiceRequest,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-import { isRpcSuccess, isTypeaheadRequest, Range } from "@vuu-ui/vuu-utils";
+import { isRpcSuccess, isTypeaheadRequest, Range, uuid } from "@vuu-ui/vuu-utils";
 import {
   IVuuModule,
   RpcMenuService,
@@ -57,6 +58,14 @@ type LinkSubscription = {
   sourceColumnName?: string;
   columnName: string;
   linkType: "subscribe-link-filter" | "subscribe-link-select";
+};
+
+type SelectedRowIdsReader = {
+  getSelectedRowIds?: () => string[];
+};
+
+const readSelectedRowIds = (dataSource?: DataSource): string[] => {
+  return (dataSource as SelectedRowIdsReader | undefined)?.getSelectedRowIds?.() ?? [];
 };
 
 export class TickingArrayDataSource extends ArrayDataSource {
@@ -158,6 +167,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
 
   set range(range: Range) {
     super.range = range;
+    // Keep session datasource range in sync while editing.
+    if (this.#sessionDataSource) {
+      (this.#sessionDataSource as ArrayDataSource).range = range;
+    }
     // this.#updateGenerator?.setRange(range);
   }
   get range() {
@@ -172,8 +185,24 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return this.#getVisualLinks?.(this.table.table);
   }
 
-  getSelectedRowIds() {
+  getSelectedRowIds(): string[] {
+    if (this.#sessionDataSource) {
+      // Merge base and session selections.
+      const sessionIds = readSelectedRowIds(this.#sessionDataSource);
+      return [...new Set([...this.selectedRows, ...sessionIds])];
+    }
     return Array.from(this.selectedRows);
+  }
+
+  /**
+   * Suppress row updates from the main data source during an edit session
+   * to prevent overwriting the session view.
+   */
+  sendRowsToClient(forceFullRefresh = false, row?: DataSourceRow) {
+    if (this.#sessionDataSource) {
+      return;
+    }
+    super.sendRowsToClient(forceFullRefresh, row);
   }
 
   select(selectRequest: Omit<SelectRequest, "vpId">) {
@@ -271,6 +300,27 @@ export class TickingArrayDataSource extends ArrayDataSource {
       },
     });
   }
+
+  addRow = async (
+    rowData: Record<string, VuuRowDataItemType> = {},
+  ): Promise<true | string> => {
+    // Ensure each added row has a unique key.
+    const keyColumn = this.tableSchema.key;
+    const rowKey = (rowData[keyColumn] as string | undefined) ?? uuid();
+    const rowDataWithKey: Record<string, VuuRowDataItemType> = {
+      ...rowData,
+      [keyColumn]: rowKey,
+    };
+    const response = await this.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "addRow",
+      params: { key: rowKey, data: rowDataWithKey },
+    });
+    if (isRpcSuccess(response)) {
+      return true;
+    }
+    return response?.errorMessage ?? "addRow failed";
+  };
 
   deleteRow = async (key: string, mode: DeleteRowMode = "hard"): Promise<true | string> => {
     const rpcHost = this.#sessionDataSource ?? this;

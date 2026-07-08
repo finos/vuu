@@ -36,6 +36,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   #deletedRows = new Set<string>();
   #editCount = 0;
   #deleteCount = 0;
+  #addCount = 0;
   #invalidCount = 0;
   #deleteMode: DeleteRowMode;
   #sourceTableDataSource?: EditApi;
@@ -57,7 +58,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     if (val !== this.#editCount) {
       const oldCount = this.#editCount;
       this.#editCount = val;
-      if (val === 0 && this.#deleteCount === 0) {
+      if (val === 0 && this.#deleteCount === 0 && this.#addCount === 0) {
         this.emit("editState", "clean");
       } else if (oldCount === 0) {
         this.emit("editState", "dirty");
@@ -89,7 +90,23 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     if (val !== this.#deleteCount) {
       const oldCount = this.#deleteCount;
       this.#deleteCount = val;
-      if (val === 0 && this.#editCount === 0) {
+      if (val === 0 && this.#editCount === 0 && this.#addCount === 0) {
+        this.emit("editState", "clean");
+      } else if (oldCount === 0) {
+        this.emit("editState", "dirty");
+      }
+    }
+  }
+
+  get addCount() {
+    return this.#addCount;
+  }
+
+  set addCount(val: number) {
+    if (val !== this.#addCount) {
+      const oldCount = this.#addCount;
+      this.#addCount = val;
+      if (val === 0 && this.#editCount === 0 && this.#deleteCount === 0) {
         this.emit("editState", "clean");
       } else if (oldCount === 0) {
         this.emit("editState", "dirty");
@@ -107,6 +124,16 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
   }
 
+  addRows(
+    count = 15,
+    rowData: Record<string, VuuRowDataItemType> = {},
+  ) {
+    for (let i = 0; i < count; i++) {
+      this.#sourceTableDataSource?.addRow?.(rowData);
+    }
+    this.addCount = this.#addCount + count;
+  }
+
   restoreRows(keys: string[]) {
     for (const key of keys) {
       if (this.#deletedRows.has(key)) {
@@ -121,6 +148,8 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     this.#deletedRows.clear();
     this.#editCount = 0;
     this.#deleteCount = 0;
+    this.#addCount = 0;
+    this.#invalidCount = 0;
     this.#inEditMode = false;
     this.#endEditModePending = false;
   }
@@ -165,7 +194,9 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   get editState(): EditState {
-    return this.editCount === 0 && this.#deleteCount === 0 ? "clean" : "dirty";
+    return this.editCount === 0 && this.#deleteCount === 0 && this.#addCount === 0
+      ? "clean"
+      : "dirty";
   }
 
   getOrCreateRowEdits(key: string): RowEditDetails {
