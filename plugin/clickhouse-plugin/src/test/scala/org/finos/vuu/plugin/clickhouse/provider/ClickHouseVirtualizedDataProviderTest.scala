@@ -37,8 +37,8 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
       val client = ClickHouseClient(ClickHouseClientOptions()
         .withEndpoint(container.getEndpoint)
-        .withUsername(container.getUsername)
-        .withPassword(container.getPassword))
+        .withUsername(container.getDefaultUsername)
+        .withPassword(container.getDefaultPassword))
 
       lifecycle.start()
 
@@ -99,8 +99,8 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
       val client = ClickHouseClient(ClickHouseClientOptions()
         .withEndpoint(container.getEndpoint)
-        .withUsername(container.getUsername)
-        .withPassword(container.getPassword))
+        .withUsername(container.getDefaultUsername)
+        .withPassword(container.getDefaultPassword))
 
       lifecycle.start()
 
@@ -211,8 +211,8 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
       val client = ClickHouseClient(ClickHouseClientOptions()
         .withEndpoint(container.getEndpoint)
-        .withUsername(container.getUsername)
-        .withPassword(container.getPassword))
+        .withUsername(container.getDefaultUsername)
+        .withPassword(container.getDefaultPassword))
 
       lifecycle.start()
 
@@ -293,8 +293,8 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
       val client = ClickHouseClient(ClickHouseClientOptions()
         .withEndpoint(container.getEndpoint)
-        .withUsername(container.getUsername)
-        .withPassword(container.getPassword))
+        .withUsername(container.getDefaultUsername)
+        .withPassword(container.getDefaultPassword))
 
       lifecycle.start()
 
@@ -422,8 +422,8 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
     try {
       ClickHouseCSVIngester.ingestCsvFile(
         container.getEndpoint,
-        container.getUsername,
-        container.getPassword,
+        container.getDefaultUsername,
+        container.getDefaultPassword,
         "order_history",
         Seq("order_id", "quantity", "price", "side", "trader"),
         tempFile
