@@ -8,61 +8,61 @@ class ColumnBuilder {
 
   val columns = new mutable.ArrayBuilder.ofRef[String]()
 
-  def addString(columnName: String): ColumnBuilder = {
-    columns += (columnName + ":String")
+  def addString(columnName: String, isEditable: Boolean = false): ColumnBuilder = {
+    columns += (columnName + ":String:" + isEditable)
     this
   }
 
-  def addDouble(columnName: String): ColumnBuilder = {
-    columns += (columnName + ":Double")
+  def addDouble(columnName: String, isEditable: Boolean = false): ColumnBuilder = {
+    columns += (columnName + ":Double:" + isEditable)
     this
   }
 
-  def addInt(columnName: String): ColumnBuilder = {
-    columns += (columnName + ":Int")
+  def addInt(columnName: String, isEditable: Boolean = false): ColumnBuilder = {
+    columns += (columnName + ":Int:" + isEditable)
     this
   }
 
-  def addLong(columnName: String): ColumnBuilder = {
-    columns += (columnName + ":Long")
+  def addLong(columnName: String, isEditable: Boolean = false): ColumnBuilder = {
+    columns += (columnName + ":Long:" + isEditable)
     this
   }
 
-  def addBoolean(columnName: String): ColumnBuilder = {
-    columns += (columnName + ":Boolean")
+  def addBoolean(columnName: String, isEditable: Boolean = false): ColumnBuilder = {
+    columns += (columnName + ":Boolean:" + isEditable)
     this
   }
 
-  def addChar(columnName: String): ColumnBuilder = {
-    columns += (columnName + ":Char")
+  def addChar(columnName: String, isEditable: Boolean = false): ColumnBuilder = {
+    columns += (columnName + ":Char:" + isEditable)
     this
   }
 
-  def addEpochTimestamp(columnName: String): ColumnBuilder = {
-    columns += (columnName + ":EpochTimestamp")
+  def addEpochTimestamp(columnName: String, isEditable: Boolean = false): ColumnBuilder = {
+    columns += (columnName + ":EpochTimestamp:" + isEditable)
     this
   }
 
-  def addScaledDecimal2(columnName: String): ColumnBuilder = {
-    columns += (columnName + ":ScaledDecimal2")
+  def addScaledDecimal2(columnName: String, isEditable: Boolean = false): ColumnBuilder = {
+    columns += (columnName + ":ScaledDecimal2:" + isEditable)
     this
   }
 
-  def addScaledDecimal4(columnName: String): ColumnBuilder = {
-    columns += (columnName + ":ScaledDecimal4")
+  def addScaledDecimal4(columnName: String, isEditable: Boolean = false): ColumnBuilder = {
+    columns += (columnName + ":ScaledDecimal4:" + isEditable)
     this
   }
 
-  def addScaledDecimal6(columnName: String): ColumnBuilder = {
-    columns += (columnName + ":ScaledDecimal6")
+  def addScaledDecimal6(columnName: String, isEditable: Boolean = false): ColumnBuilder = {
+    columns += (columnName + ":ScaledDecimal6:" + isEditable)
     this
   }
 
-  def addScaledDecimal8(columnName: String): ColumnBuilder = {
-    columns += (columnName + ":ScaledDecimal8")
+  def addScaledDecimal8(columnName: String, isEditable: Boolean = false): ColumnBuilder = {
+    columns += (columnName + ":ScaledDecimal8:" + isEditable)
     this
   }
-  
+
   def build(): Array[Column] = Columns.fromNames(columns.result())
 }
 

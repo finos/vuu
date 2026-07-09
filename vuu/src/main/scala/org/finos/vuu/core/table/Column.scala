@@ -82,9 +82,9 @@ object Columns {
     val splitDef = nameAndDt.split(":").toList
 
     splitDef match {
-      case name :: dataType :: _ =>
+      case name :: dataType :: isEditable :: _ =>
         val dtClass = DataType.fromString(dataType)
-        SimpleColumn(name, index, dtClass)
+        SimpleColumn(name, index, dtClass, isEditable.toBoolean)
       case _ => throw new Exception(s"Invalid format: $nameAndDt")
     }
 
