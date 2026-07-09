@@ -17,13 +17,15 @@ class EditInSessionTableRpcHandler(using val tableContainer: TableContainer) ext
     val columnsToCopy = params.namedParams("columnsToCopy").asInstanceOf[String].split(",")
 
     if (!table.asTable.getTableDef.isEditable) {
-      new RpcFunctionFailure(s"Table ${table.name} is not editable")
+      return new RpcFunctionFailure(s"Table ${table.name} is not editable")
     }
 
-    val invalidColumns = table.asTable.columnsForNames(columnsToCopy.toList)
-      .filter(!_.isEditable)
+    val validColumns = table.asTable.columnsForNames(columnsToCopy.toList)
+      .filter(c => c != null && c.isEditable)
+      .map(_.name)
+    val invalidColumns = columnsToCopy.filterNot(validColumns.contains)
     if (invalidColumns.nonEmpty) {
-      new RpcFunctionFailure(s"Column ${invalidColumns.mkString(", ")} is not editable")
+      return new RpcFunctionFailure(s"Invalid or non-editable column(s) [${invalidColumns.mkString(", ")}]")
     }
 
     val sessionTableName = table.name + "_session"

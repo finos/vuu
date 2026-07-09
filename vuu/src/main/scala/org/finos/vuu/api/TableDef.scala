@@ -133,6 +133,10 @@ object TableDef {
     new TableDef(name, keyField, columns, joinFields, indices = Indices())
   }
 
+  def apply(name: String, keyField: String, columns: Array[Column], isEditable: Boolean, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, indices = Indices(), isEditable = isEditable)
+  }
+
   // just visibility
   def apply(name: String, keyField: String, columns: Array[Column], visibility: TableVisibility, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = Indices(), visibility = visibility)
