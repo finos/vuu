@@ -5,6 +5,7 @@ import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.SessionTableCopyOption.All
 import org.finos.vuu.net.rpc.SessionTableCopyOption.Empty
 import org.finos.vuu.net.rpc.SessionTableCopyOption.Selected
+import org.finos.vuu.viewport.ViewPortTable
 
 class EditInSessionTableRpcHandler(using val tableContainer: TableContainer) extends DefaultRpcHandler {
   registerRpc(RpcNames.BeginEditSessionRpc, this.beginEditSession)
@@ -28,7 +29,6 @@ class EditInSessionTableRpcHandler(using val tableContainer: TableContainer) ext
       return new RpcFunctionFailure(s"Invalid or non-editable column(s) [${invalidColumns.mkString(", ")}]")
     }
 
-    val sessionTableName = table.name + "_session"
     val sessionTable = tableContainer.createSimpleSessionTable(table, session)
 
     val size = table.asTable.size()
@@ -44,7 +44,7 @@ class EditInSessionTableRpcHandler(using val tableContainer: TableContainer) ext
       case Empty =>
 
     }
-    RpcFunctionSuccess(Some(sessionTableName))
+    RpcFunctionSuccess(Some(ViewPortTable(sessionTable.name, sessionTable.tableDef.getModule().name)))
   }
 
   def endEditSession(params: RpcParams): RpcFunctionResult = {
