@@ -5,10 +5,10 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.plugin.clickhouse.ClickHouseContainer
+import org.finos.vuu.plugin.clickhouse.client.options.{ClickHouseClientOptions, MTLSOptions}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import org.finos.vuu.plugin.clickhouse.client.options.{ClickHouseClientOptions, MTLSOptions}
 
 class ClickHouseClientTest
   extends AnyFeatureSpec with GivenWhenThen with Matchers with ForAllTestContainer {
@@ -68,7 +68,7 @@ class ClickHouseClientTest
       given lifecycle: LifecycleContainer = LifecycleContainer()
 
       val client = ClickHouseClient(ClickHouseClientOptions()
-        .withEndpoint(container.getEndpoint)
+        .withEndpoint(container.getSecureEndpoint)
         .withUsername(container.getSecureUserName)
         .withAuth(MTLSOptions(
           container.getClientCertificatePath,
