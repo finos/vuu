@@ -117,7 +117,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
 
 class TestHandler(implicit tableContainer: TableContainer) extends EndEditSessionRpcHandler with StrictLogging {
 
-  override def validData(): Boolean = ???
+  override def verify(): Boolean = ???
 
-  override def submitData(): Boolean = ???
+  override def submit(): Boolean = ???
 }

@@ -6,16 +6,21 @@ trait EndEditSessionRpcHandler(using val tableContainer: TableContainer) extends
   registerRpc(RpcNames.EndEditSessionRpc, this.endEditSession)
 
 
-  // todo when closing session table, front end sends close view port request, and then server removes session table
+  // TODO #2169 when closing session table, front end sends close view port request, and then server removes session table
 
   def endEditSession(params: RpcParams): RpcFunctionResult = {
-    // TODO #2169 validate data and update vuuMsg
-    // do expected operation - add methods in this interface
-    // close session table
-    null
+    if (!verify()) {
+      return new RpcFunctionFailure(s"Unable to submit. Error(s) found in session table ${params.viewPort.table.name}.")
+    }
+
+    if (submit()) {
+      RpcFunctionSuccess(None)
+    } else {
+      new RpcFunctionFailure(s"Failed to submit for session table ${params.viewPort.table.name}.")
+    }
   }
 
-  def validData(): Boolean
+  def verify(): Boolean
 
-  def submitData(): Boolean
+  def submit(): Boolean
 }
