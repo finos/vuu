@@ -1,5 +1,5 @@
-example/
 **/src/test/resources/
+example/**/src/main/resources
 
 vuu-ui/packages/vuu-data-local/src/array-data-source/group-utils.ts
 vuu-ui/packages/vuu-data-local/src/tree-data-source/TreeDataSource.ts

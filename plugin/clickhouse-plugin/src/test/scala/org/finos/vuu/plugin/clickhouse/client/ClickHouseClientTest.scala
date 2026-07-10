@@ -30,6 +30,9 @@ class ClickHouseClientTest
       
       lifecycle.start()
 
+      //Drop table if exists
+      client.executeUpdate("DROP TABLE IF EXISTS test_table")
+      
       // Create table
       client.executeUpdate(
         """
@@ -78,6 +81,9 @@ class ClickHouseClientTest
       )
 
       lifecycle.start()
+
+      //Drop table if exists
+      client.executeUpdate("DROP TABLE IF EXISTS test_table")
 
       // Create table
       client.executeUpdate(
