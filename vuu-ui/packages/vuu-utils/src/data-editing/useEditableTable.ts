@@ -108,7 +108,7 @@ export const useEditableTable = ({
         // });
         onCancel();
       }
-    } else {
+    } else if (editSession.inEditMode) {
       await editSession.end();
     }
   }, [editSession, editSessionMode, isEditMode, onCancel]);

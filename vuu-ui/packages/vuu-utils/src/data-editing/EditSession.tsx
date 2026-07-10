@@ -38,6 +38,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   #sourceTableDataSource?: EditApi;
   #sessionDataSource?: EditApi;
   #inEditMode = false;
+  #endEditModePending = false;
 
   constructor(dataSource: EditApi) {
     super();
@@ -80,6 +81,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     this.#rowEdits.clear();
     this.#editCount = 0;
     this.#inEditMode = false;
+    this.#endEditModePending = false;
   }
 
   async begin(editSessionMode?: EditSessionMode) {
@@ -103,10 +105,12 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   async end(saveChanges = false, force = false) {
     try {
       if (this.#inEditMode) {
+        this.#endEditModePending = true;
         await this.dataSource?.endEditSession?.(saveChanges, force);
         this.clear();
       }
     } catch (e) {
+      this.#endEditModePending = false;
       if (e instanceof StaleUpdateError) {
         this.emit("editState", "stale");
       } else {
@@ -116,7 +120,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   get inEditMode() {
-    return this.#inEditMode;
+    return this.#inEditMode === true && this.#endEditModePending === false;
   }
 
   get editState(): EditState {
