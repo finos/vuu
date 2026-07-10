@@ -36,9 +36,9 @@ public class JavaExampleModule extends DefaultModule {
                                 .name("PersonManualMapped")
                                 .keyField("id")
                                 .customColumns(new ColumnBuilder()
-                                        .addString("id", false)
-                                        .addString("name", false)
-                                        .addInt("account", false)
+                                        .addString("id")
+                                        .addString("name")
+                                        .addInt("account")
                                         .build())
                                 .defaultSort(new SortSpec(toScala(List.of(new SortDef(DefaultColumn.CREATED_TIME().name(), SortDirection.ASCENDING().external())))))
                                 .build(),
