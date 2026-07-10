@@ -1,10 +1,10 @@
 package org.finos.vuu.order.oms.impl
 
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.order.oms._
+import org.finos.vuu.order.oms.*
 
+import java.security.SecureRandom
 import java.util.concurrent.atomic.AtomicInteger
-import scala.util.Random
 
 object States {
   def ACKED = 'A'
@@ -27,7 +27,7 @@ object OrderId {
 
 class InMemOmsApi(implicit val clock: Clock) extends OmsApi {
 
-  private final val random = new Random(clock.now())
+  private final val random = new SecureRandom()
 
   @volatile private var orders = List[InMemOrderState]()
   @volatile private var listeners = List[OmsListener]()
@@ -37,7 +37,7 @@ class InMemOmsApi(implicit val clock: Clock) extends OmsApi {
 
   override def createOrder(newOrder: NewOrder): Unit = {
     orders = orders ++ List(InMemOrderState(newOrder.symbol, newOrder.qty, newOrder.price,
-      newOrder.clientOrderId, States.PENDING_ACK, clock.now() + random.between(1, MaxTimes.MAX_ACK_TIME_MS), OrderId.nextOrderId(), 0L))
+      newOrder.clientOrderId, States.PENDING_ACK, clock.now() + between(random, 1, MaxTimes.MAX_ACK_TIME_MS), OrderId.nextOrderId(), 0L))
   }
 
   override def replaceOrder(replaceOrder: ReplaceOrder): Unit = ???
@@ -61,14 +61,14 @@ class InMemOmsApi(implicit val clock: Clock) extends OmsApi {
           case '~' =>
             val orderId = OrderId.nextOrderId()
             listeners.foreach(_.onAck(Ack(orderId, orderstate.clientOrderId, orderstate.symbol, orderstate.qty, orderstate.price)))
-            orderstate.copy(state = States.ACKED, nextEventTime = clock.now() + random.between(1000, MaxTimes.MAX_FILL_TIME_MS), orderId = orderId)
+            orderstate.copy(state = States.ACKED, nextEventTime = clock.now() + between(random, 1000, MaxTimes.MAX_FILL_TIME_MS), orderId = orderId)
           case 'A' =>
             val remainingQty = orderstate.qty - orderstate.filledQty
-            val fillQty = if(remainingQty > 1) random.between(1, remainingQty) else 1
+            val fillQty = if (remainingQty > 1) between(random, 1, remainingQty) else 1
             val totalFilledQty = orderstate.filledQty + fillQty
-            val nextState = if( orderstate.qty == totalFilledQty) States.FILLED else States.ACKED
+            val nextState = if (orderstate.qty == totalFilledQty) States.FILLED else States.ACKED
             listeners.foreach(_.onFill(Fill(orderstate.orderId, fillQty, orderstate.price, orderstate.clientOrderId, totalFilledQty, orderstate.qty)))
-            orderstate.copy(state = nextState, filledQty = totalFilledQty, nextEventTime = clock.now() + random.between(1000, MaxTimes.MAX_FILL_TIME_MS))
+            orderstate.copy(state = nextState, filledQty = totalFilledQty, nextEventTime = clock.now() + between(random, 1000, MaxTimes.MAX_FILL_TIME_MS))
           case 'X' =>
             listeners.foreach(_.onCancelAck(CancelAck(orderstate.orderId, orderstate.clientOrderId)))
             orderstate
@@ -91,4 +91,35 @@ class InMemOmsApi(implicit val clock: Clock) extends OmsApi {
       case None => None
     }
   }
+
+  private def between(random: SecureRandom, min: Int, max: Int): Int = {
+    require(min < max, s"Invalid bound: min ($min) must be strictly less than max ($max)")
+
+    val range = max - min
+    if (range > 0) {
+      random.nextInt(range) + min
+    } else {
+      var r = random.nextInt()
+      while (r < min || r >= max) {
+        r = random.nextInt()
+      }
+      r
+    }
+  }
+
+  private def between(random: SecureRandom, min: Long, max: Long): Long = {
+    require(min < max, s"Invalid bound: min ($min) must be strictly less than max ($max)")
+
+    val range = max - min
+    if (range > 0) {
+      random.nextLong(range) + min
+    } else {
+      var r = random.nextLong()
+      while (r < min || r >= max) {
+        r = random.nextLong()
+      }
+      r
+    }
+  }
+
 }

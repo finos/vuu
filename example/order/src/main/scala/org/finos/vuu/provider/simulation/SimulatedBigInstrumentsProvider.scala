@@ -8,8 +8,8 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.provider.Provider
 
+import java.security.SecureRandom
 import scala.concurrent.duration.DurationInt
-import scala.util.Random
 
 class SimulatedBigInstrumentsProvider(table: DataTable)(implicit clock: Clock, lifecycle: LifecycleContainer) extends Provider with StrictLogging {
 
@@ -29,7 +29,7 @@ class SimulatedBigInstrumentsProvider(table: DataTable)(implicit clock: Clock, l
 
   def ricBuilder = for (c1 <- charMaker; c2 <- charMaker; c3 <- charMaker; suff <- suffixes) yield new String(Array(c1.toChar, c2.toChar, c3.toChar)) + suff
 
-  private val random = new Random(1234)
+  private val random = new SecureRandom()
 
   def mkRow(ric: String): Map[String, Any] = {
 

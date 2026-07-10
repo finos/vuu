@@ -1,0 +1,11 @@
+<clickhouse>
+    <logger>
+        <level>information</level>
+        <console>true</console>
+        <log remove="remove"/>
+        <errorlog remove="remove"/>
+        <formatting>
+            <type>json</type>
+        </formatting>
+    </logger>
+</clickhouse>

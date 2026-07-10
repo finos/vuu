@@ -1,0 +1,13 @@
+<clickhouse>
+    <users>
+        <java_backend_app>
+            <ssl_certificates>
+                <common_name>java-client-identity</common_name>
+            </ssl_certificates>
+            <networks>
+                <ip>0.0.0.0/0</ip>
+            </networks>
+            <profile>default</profile>
+        </java_backend_app>
+    </users>
+</clickhouse>

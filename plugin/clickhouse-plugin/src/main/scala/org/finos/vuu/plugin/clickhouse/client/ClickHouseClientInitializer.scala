@@ -1,7 +1,7 @@
 package org.finos.vuu.plugin.clickhouse.client
 
 import com.clickhouse.client.api.Client
-import org.finos.vuu.plugin.clickhouse.client.options.ClickHouseClientOptions
+import org.finos.vuu.plugin.clickhouse.client.options.{BasicAuthOptions, ClickHouseClientOptions, MTLSOptions}
 
 class ClickHouseClientInitializer(val options: ClickHouseClientOptions) {
 
@@ -9,12 +9,25 @@ class ClickHouseClientInitializer(val options: ClickHouseClientOptions) {
     
     val builder = new Client.Builder()
       .addEndpoint(options.endpoint)
-      .setUsername(options.username)
-      .setPassword(options.password)
       .setConnectTimeout(options.timeoutMs)
       .setDefaultDatabase(options.database)
-      
-    builder.build()
+      .setUsername(options.username)
+
+    val client = options.auth match {
+      case BasicAuthOptions(password) =>
+        builder
+          .setPassword(password)
+          .build()
+      case MTLSOptions(clientCertificatePath, clientKeyPath, rootCertificatePath) =>
+        builder
+          .useSSLAuthentication(true)
+          .setClientCertificate(clientCertificatePath)
+          .setClientKey(clientKeyPath)
+          .setRootCertificate(rootCertificatePath)
+          .build()
+    }
+
+    client
   }
 }
 
