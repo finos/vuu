@@ -32,7 +32,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         params = Map(
           "table" -> tableName1,
           "copyOption" -> "Empty",
-          "columnsToCopy" -> "Id, Name"
+          "columnsToCopy" -> "Id,Name"
         ))
       val requestId = vuuClient.send(sessionId, beginEditRequest)
 
@@ -49,9 +49,9 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       keyField = "Id",
       columns =
         new ColumnBuilder()
-          .addString("Id")
-          .addString("Name")
-          .addInt("Account")
+          .addString("Id", true)
+          .addString("Name", true)
+          .addInt("Account", true)
           .build(),
       isEditable = true
     )
