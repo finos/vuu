@@ -1,7 +1,5 @@
 package org.finos.vuu.example.virtualtable.bigdatacache
 
-import java.security.SecureRandom
-
 case class BigDataOrder(orderId: Long, quantity: Int, price: Long, side: String, trader: String)
 
 class FakeBigDataCache {

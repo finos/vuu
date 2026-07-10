@@ -64,9 +64,9 @@ class InMemOmsApi(implicit val clock: Clock) extends OmsApi {
             orderstate.copy(state = States.ACKED, nextEventTime = clock.now() + between(random, 1000, MaxTimes.MAX_FILL_TIME_MS), orderId = orderId)
           case 'A' =>
             val remainingQty = orderstate.qty - orderstate.filledQty
-            val fillQty = if(remainingQty > 1) between(random, 1, remainingQty) else 1
+            val fillQty = if (remainingQty > 1) between(random, 1, remainingQty) else 1
             val totalFilledQty = orderstate.filledQty + fillQty
-            val nextState = if( orderstate.qty == totalFilledQty) States.FILLED else States.ACKED
+            val nextState = if (orderstate.qty == totalFilledQty) States.FILLED else States.ACKED
             listeners.foreach(_.onFill(Fill(orderstate.orderId, fillQty, orderstate.price, orderstate.clientOrderId, totalFilledQty, orderstate.qty)))
             orderstate.copy(state = nextState, filledQty = totalFilledQty, nextEventTime = clock.now() + between(random, 1000, MaxTimes.MAX_FILL_TIME_MS))
           case 'X' =>
@@ -106,5 +106,20 @@ class InMemOmsApi(implicit val clock: Clock) extends OmsApi {
       r
     }
   }
-  
+
+  private def between(random: SecureRandom, min: Long, max: Long): Long = {
+    require(min < max, s"Invalid bound: min ($min) must be strictly less than max ($max)")
+
+    val range = max - min
+    if (range > 0) {
+      random.nextLong(range) + min
+    } else {
+      var r = random.nextLong()
+      while (r < min || r >= max) {
+        r = random.nextLong()
+      }
+      r
+    }
+  }
+
 }
