@@ -101,5 +101,4 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     waitForData(3)
     viewPortId
   }
-
 }
