@@ -23,16 +23,17 @@ class EditInSessionTableRpcHandler(using val tableContainer: TableContainer) ext
     }
 
     val validColumns = sourceTable.asTable.columnsForNames(columnsToCopy.toList)
-      .filter(c => c != null && c.isEditable)
       .map(_.name)
     val invalidColumns = columnsToCopy.filterNot(validColumns.contains)
     if (invalidColumns.nonEmpty) {
-      return new RpcFunctionFailure(s"Non-editable column(s) [${invalidColumns.mkString(", ")}]")
+      return new RpcFunctionFailure(s"Column(s) [${invalidColumns.mkString(", ")} not found in table ${sourceTable.name}]")
     }
 
     val sessionTableSource = tableContainer.getTable(sessionTableName)
     val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)
 
+    // TODO 2169 send column isEditable to UI via table meta data
+    // validate changes are not done on non-editable columns
     copyOption match {
       case All =>
         val size = sourceTable.asTable.size()
