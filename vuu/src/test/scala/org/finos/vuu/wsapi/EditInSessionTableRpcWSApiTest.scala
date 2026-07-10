@@ -1,11 +1,11 @@
 package org.finos.vuu.wsapi
 
-import org.finos.vuu.api.*
+import org.finos.vuu.api.{ColumnBuilder, SessionTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net.*
-import org.finos.vuu.net.rpc.{EditInSessionTableRpcHandler, RpcNames, RpcResult, RpcSuccessResult, ViewPortContext}
+import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, RpcRequest, RpcResponseNew}
+import org.finos.vuu.net.rpc.{EditInSessionTableRpcHandler, RpcNames, RpcSuccessResult, ViewPortContext}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension

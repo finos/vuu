@@ -1,10 +1,10 @@
 package org.finos.vuu.wsapi
 
-import org.finos.vuu.api.*
+import org.finos.vuu.api.{ColumnBuilder, JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, TableDef, ViewPortDef, VisualLinks}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
-import org.finos.vuu.net.*
+import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, FilterSpec, RpcRequest, RpcResponseNew, SortDef, SortSpec}
 import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcErrorResult, RpcNames, RpcSuccessResult, ViewPortContext}
 import org.finos.vuu.net.ui.{NoneAction, NotificationType, ShowNotificationAction}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
