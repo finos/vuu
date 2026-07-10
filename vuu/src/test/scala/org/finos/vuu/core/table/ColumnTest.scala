@@ -191,7 +191,7 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
 
   Feature("Editable columns") {
 
-    Scenario("Create join columns for all columns in table def except default columns") {
+    Scenario("Create editable columns and non-editable columns") {
       val simpleNonEditableColumn = SimpleColumn("test", 0, DataType.StringDataType)
       simpleNonEditableColumn.isEditable shouldBe false
 
