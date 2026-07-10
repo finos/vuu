@@ -5,7 +5,7 @@ import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.*
-import org.finos.vuu.net.rpc.{EditInSessionTableRpcHandler, RpcNames, ViewPortContext}
+import org.finos.vuu.net.rpc.{EditInSessionTableRpcHandler, RpcNames, RpcResult, RpcSuccessResult, ViewPortContext}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -15,6 +15,7 @@ import scala.collection.immutable.ListMap
 
 class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   private val tableName1 = "EditInSessionTest1"
+  private val sessionTableName1 = "EditInSessionTest1Session"
   private val moduleName = "EditInSessionTableRpcTest"
   private val testProviderFactory = new TestProviderFactory
 
@@ -30,7 +31,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(viewPortId),
         RpcNames.BeginEditSessionRpc,
         params = Map(
-          "table" -> tableName1,
+          "sessionTableName" -> sessionTableName1,
           "copyOption" -> "Empty",
           "columnsToCopy" -> "Id,Name"
         ))
@@ -38,8 +39,9 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
 
       Then("empty session table is created")
       val beginEditResponse = vuuClient.awaitForResponse(requestId)
-      val responseBody = assertBodyIsInstanceOf[FreezeViewPortSuccess](beginEditResponse)
-      responseBody.viewPortId shouldEqual viewPortId
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](beginEditResponse)
+      responseBody.rpcName shouldEqual RpcNames.BeginEditSessionRpc
+      val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
     }
   }
 
@@ -78,6 +80,16 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
 
     ModuleFactory.withNamespace(moduleName)
       .addTableForTest(createTableDef(tableName1), viewPortDefFactory, providerFactory)
+      .addSessionTable(SessionTableDef(
+        name = sessionTableName1,
+        keyField = "Id",
+        columns =
+          new ColumnBuilder()
+            .addString("Id")
+            .addString("Name")
+            .addInt("Account")
+            .build()
+      ), viewPortDefFactory)
       .asModule()
   }
 

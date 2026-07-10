@@ -13,29 +13,30 @@ class EditInSessionTableRpcHandler(using val tableContainer: TableContainer) ext
 
   def beginEditSession(params: RpcParams): RpcFunctionResult = {
     val session: ClientSessionId = params.ctx.session
+    val sourceTable = params.viewPort.table
     val copyOption = SessionTableCopyOption.fromString(params.namedParams("copyOption").asInstanceOf[String])
-    val table = params.viewPort.table
     val columnsToCopy = params.namedParams("columnsToCopy").asInstanceOf[String].split(",")
+    val sessionTableName = params.namedParams("sessionTableName").asInstanceOf[String]
 
-    if (!table.asTable.getTableDef.isEditable) {
-      return new RpcFunctionFailure(s"Table ${table.name} is not editable")
+    if (!sourceTable.asTable.getTableDef.isEditable) {
+      return new RpcFunctionFailure(s"Table ${sourceTable.name} is not editable")
     }
 
-    val validColumns = table.asTable.columnsForNames(columnsToCopy.toList)
+    val validColumns = sourceTable.asTable.columnsForNames(columnsToCopy.toList)
       .filter(c => c != null && c.isEditable)
       .map(_.name)
     val invalidColumns = columnsToCopy.filterNot(validColumns.contains)
     if (invalidColumns.nonEmpty) {
-      return new RpcFunctionFailure(s"Invalid or non-editable column(s) [${invalidColumns.mkString(", ")}]")
+      return new RpcFunctionFailure(s"Non-editable column(s) [${invalidColumns.mkString(", ")}]")
     }
 
-    val sessionTable = tableContainer.createSimpleSessionTable(table, session)
-
-    val size = table.asTable.size()
-    val keys = table.asTable.primaryKeys
+    val sessionTableSource = tableContainer.getTable(sessionTableName)
+    val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)
 
     copyOption match {
       case All =>
+        val size = sourceTable.asTable.size()
+        val keys = sourceTable.asTable.primaryKeys
       //TODO #2169 add a config to limit the max rows to copy
       // TODO #2169 copy all/max rows rows to session table
       case Selected =>
