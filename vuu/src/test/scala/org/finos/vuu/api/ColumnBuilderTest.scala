@@ -34,9 +34,9 @@ class ColumnBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen 
         When(s"the $typeDesc column is added")
         addFunc(builder, columnName)
 
-        Then(s"the builder should contain the formatted string '$columnName$expectedSuffix'")
+        Then(s"the builder should contain the formatted string '$columnName$expectedSuffix:false'")
         // We check the internal 'columns' array to ensure the builder logic is correct
-        builder.columns.result() should contain(columnName + expectedSuffix)
+        builder.columns.result() should contain(columnName + expectedSuffix + ":false")
 
         And("building should produce an array of Columns")
         val result = builder.build()
