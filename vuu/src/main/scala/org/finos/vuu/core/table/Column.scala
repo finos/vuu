@@ -85,6 +85,9 @@ object Columns {
       case name :: dataType :: isEditable :: _ =>
         val dtClass = DataType.fromString(dataType)
         SimpleColumn(name, index, dtClass, isEditable.toBoolean)
+      case name :: dataType :: _ =>
+        val dtClass = DataType.fromString(dataType)
+        SimpleColumn(name, index, dtClass)
       case _ => throw new Exception(s"Invalid format: $nameAndDt")
     }
 
@@ -96,6 +99,7 @@ object Columns {
 
   /**
    * Note: this method returns all columns of a given table, including the default columns
+   *
    * @return JoinColumn based on all columns of a given table except the default columns
    */
   def allFrom(table: TableDef): Array[Column] = {
@@ -139,6 +143,7 @@ trait Column {
 
 trait JoinColumn extends Column {
   def sourceTable: TableDef
+
   def sourceColumn: Column
 }
 
@@ -169,7 +174,7 @@ case class NoColumn() extends Column {
 
   override def equals(obj: scala.Any): Boolean = {
     obj match {
-      case _ : NoColumn => true
+      case _: NoColumn => true
       case _ => false
     }
   }
@@ -254,7 +259,9 @@ private case class AliasedJoinColumn(name: String, index: Int, dataType: Class[_
 case class CalculatedColumn(name: String, clause: CalculatedColumnClause, index: Int, dataType: Class[_]) extends Column with StrictLogging {
 
   override def getData(data: RowData): Any = clause.calculate(data).fold[Any](
-    errMsg  => { logger.error(errMsg + " Returning `null`."); null },
+    errMsg => {
+      logger.error(errMsg + " Returning `null`."); null
+    },
     success => success.orNull
   )
 
