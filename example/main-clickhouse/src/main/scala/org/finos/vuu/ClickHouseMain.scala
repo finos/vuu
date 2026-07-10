@@ -42,8 +42,8 @@ object ClickHouseMain extends App with StrictLogging {
 
   val client = ClickHouseClient(ClickHouseClientOptions()
     .withEndpoint(container.getEndpoint)
-    .withUsername(container.getUsername)
-    .withPassword(container.getPassword))
+    .withUsername(container.getDefaultUsername)
+    .withPassword(container.getDefaultPassword))
 
   val config = VuuServerConfig(
     createWebSocketOptions(defaultConfig),
@@ -158,8 +158,8 @@ private def createOrderData(container: ClickHouseContainer, client: ClickHouseCl
   try {
     ClickHouseCSVIngester.ingestCsvFile(
       container.getEndpoint,
-      container.getUsername,
-      container.getPassword,
+      container.getDefaultUsername,
+      container.getDefaultPassword,
       "order_history",
       Seq("order_id", "quantity", "price", "side", "trader"),
       tempFile

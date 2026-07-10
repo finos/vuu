@@ -33,9 +33,9 @@ object ClickHouseContainer {
   private val username = "default"
   private val password: String = UUID.randomUUID().toString
   private val secureUsername = "java_backend_app"
-  private val clientCertificatePath = "src/test/resources/certs/client.crt"
-  private val clientCertificateKeyPath = "src/test/resources/certs/client.key"
-  private val rootCertificatePath = "src/test/resources/certs/ca.crt"
+  private val clientCertificatePath = "certs/client.crt"
+  private val clientCertificateKeyPath = "certs/client.key"
+  private val rootCertificatePath = "certs/ca.crt"
 
   private def createContainer(tag: String): JavaGenericContainer[_] = {
     val c = new JavaGenericContainer(DockerImageName.parse(s"$imageName:$tag"))
