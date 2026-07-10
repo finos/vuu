@@ -335,6 +335,16 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return response?.errorMessage ?? "deleteRow failed";
   };
 
+  undoRowChange = async (key: string): Promise<RpcResultSuccess | RpcResultError> => {
+    const rpcHost = this.#sessionDataSource ?? this;
+    const response = await rpcHost.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "undoRowChange",
+      params: { key },
+    });
+    return response ?? { type: "ERROR_RESULT", errorMessage: "undoRowChange failed" };
+  };
+
   async endEditSession(saveChanges = false) {
     const type = "RPC_REQUEST";
     const rpcName = "endEditSession";

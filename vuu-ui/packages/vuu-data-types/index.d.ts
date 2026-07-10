@@ -593,6 +593,7 @@ export interface EditApi {
     column: string,
     value: VuuRowDataItemType,
   ) => Promise<RpcResult> | undefined;
+  undoRowChange?: (key: string) => Promise<RpcResult> | undefined;
   endEditSession?: (
     saveChanges?: boolean,
     force?: boolean,

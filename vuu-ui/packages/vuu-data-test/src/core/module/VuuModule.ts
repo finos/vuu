@@ -27,6 +27,7 @@ import {
   isEditCellRpcRequest,
   isEndEditSessionRpcRequest,
   isRpcSuccess,
+  isUndoRowChangeRpcRequest,
   uuid,
 } from "@vuu-ui/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "../../Table";
@@ -435,6 +436,41 @@ export abstract class VuuModule<T extends string = string>
     return { type: "ERROR_RESULT", errorMessage: "something went wrong" };
   };
 
+  private undoRowChange: ServiceHandler = async (rpcRequest) => {
+    if (isUndoRowChangeRpcRequest(rpcRequest)) {
+      const { viewPortId } = rpcRequest.context;
+      const { key } = rpcRequest.params;
+      const sessionTable = this.getSessionTable(viewPortId, false);
+      if (sessionTable && isProxySessionTable(sessionTable)) {
+        const updates = sessionTable.getSessionUpdates();
+        const rowUpdates = updates.get(key);
+        if (rowUpdates) {
+          const { dataSource } = this.getSubscriptionByViewport(viewPortId);
+          const sourceTable = this.tables[dataSource.table?.table as T];
+          if (!sourceTable) {
+            return {
+              type: "ERROR_RESULT",
+              errorMessage: `undoRowChange: source table not found for viewport ${viewPortId}`,
+            };
+          }
+          const sourceRow = sourceTable.findByKey(key);
+          for (const column of Object.keys(rowUpdates.cellUpdates)) {
+            const originalValue = sourceRow[sourceTable.map[column]];
+            sessionTable.update(key, column, originalValue);
+          }
+          // Remove so endEditSession won't apply stale changes
+          updates.delete(key);
+        }
+        return { type: "SUCCESS_RESULT", data: undefined };
+      }
+      return {
+        type: "ERROR_RESULT",
+        errorMessage: `undoRowChange: no active proxy session table for viewport ${viewPortId}`,
+      };
+    }
+    return { type: "ERROR_RESULT", errorMessage: "undoRowChange: invalid rpc request" };
+  };
+
   private getColumnDescriptors(tableName: T) {
     const schema =
       this.schemas[tableName] || this.getSessionTable(tableName)?.schema;
@@ -824,6 +860,10 @@ export abstract class VuuModule<T extends string = string>
     {
       rpcName: "editCell",
       service: this.editCell,
+    },
+    {
+      rpcName: "undoRowChange",
+      service: this.undoRowChange,
     },
   ];
 

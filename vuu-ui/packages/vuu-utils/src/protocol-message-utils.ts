@@ -35,6 +35,7 @@ import {
   EndEditSessionRpcServiceRequest,
   EditCellRpcServiceRequest,
   BeginEditSessionRpcServiceRequest,
+  UndoRowChangeRpcServiceRequest,
   ServerToClientError,
 } from "@vuu-ui/vuu-protocol-types";
 import { isView as componentInRegistry } from "./component-registry";
@@ -256,3 +257,7 @@ export const isEndEditSessionRpcRequest = (
   rpcRequest: VuuRpcServiceRequest,
 ): rpcRequest is EndEditSessionRpcServiceRequest =>
   rpcRequest.rpcName === "endEditSession";
+export const isUndoRowChangeRpcRequest = (
+  rpcRequest: VuuRpcServiceRequest,
+): rpcRequest is UndoRowChangeRpcServiceRequest =>
+  rpcRequest.rpcName === "undoRowChange";

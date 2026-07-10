@@ -106,6 +106,11 @@ export const useEditableTable = ({
     editSession.addRows(addRowsCount);
   }, [addRowsCount, editSession]);
 
+  const handleUndoRowChange = useCallback(
+    (key: string) => void editSession.undoRowChange(key),
+    [editSession],
+  );
+
   const handleSelectionChange = useCallback<SelectionChangeHandler>(
     () => {
       const dsWithIds = dataSource as unknown as {
@@ -142,6 +147,7 @@ export const useEditableTable = ({
     onDelete: handleDelete,
     onSelectionChange: handleSelectionChange,
     onSave: handleSave,
+    onUndoRowChange: handleUndoRowChange,
     sessionDataSource,
   };
 };

@@ -594,6 +594,15 @@ export declare type EndEditSessionRpcServiceRequest = {
   params: EndEditSessionParams;
   rpcName: "endEditSession";
 };
+export declare type UndoRowChangeParams = {
+  key: string;
+};
+export declare type UndoRowChangeRpcServiceRequest = {
+  context: ViewportRpcContext;
+  type: "RPC_REQUEST";
+  params: UndoRowChangeParams;
+  rpcName: "undoRowChange";
+};
 
 export declare type AddRowRpcRequest = {
   context: ViewportRpcContext;

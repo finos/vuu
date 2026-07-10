@@ -306,7 +306,7 @@ const InlineEditTableTemplate = () => {
 
   const exitEditMode = useCallback(() => setEditMode("view"), []);
 
-  const { dataSource, editSession, hasSelection, onAddRows, onDelete, onSelectionChange, onSave } =
+  const { dataSource, editSession, hasSelection, onAddRows, onDelete, onSelectionChange, onSave, onUndoRowChange } =
     useEditableTable({
       dataSource: sourceTableDataSource,
       deleteMode: "soft",
@@ -327,19 +327,37 @@ const InlineEditTableTemplate = () => {
       columns:
         editMode === "view"
           ? InstrumentColumns
-          : InstrumentColumns.map((col) =>
-              col.name === "isin" ||
-              col.name === "vuuCreatedTimestamp" ||
-              col.name === "vuuUpdatedTimestamp" ||
-              col.name === "vuuMsg"
-                ? col
-                : { ...col, editable: true },
-            ),
+          : [
+              ...InstrumentColumns.map((col) =>
+                col.name === "isin" ||
+                col.name === "vuuCreatedTimestamp" ||
+                col.name === "vuuUpdatedTimestamp" ||
+                col.name === "vuuMsg"
+                  ? col
+                  : { ...col, editable: true },
+              ),
+              {
+                name: "undo",
+                source: "client",
+                width: 80,
+                type: {
+                  name: "string",
+                  renderer: {
+                    name: "example.undo-cell",
+                    componentProps: {
+                      onUndo: onUndoRowChange,
+                      hasRowChanges: (key: string) =>
+                        editSession.hasRowChanges(key),
+                    },
+                  },
+                } as DataValueTypeDescriptor,
+              },
+            ],
       columnDefaultWidth: 150,
       rowSeparators: true,
       zebraStripes: true,
     }),
-    [editMode],
+    [editMode, editSession, onUndoRowChange],
   );
 
   return (
@@ -464,6 +482,25 @@ const CustomCell = ({
 };
 
 registerComponent("example.color-coded-editor", CustomCell, "cell-renderer");
+
+const UndoCellRenderer = ({ column, dataRow }: TableCellRendererProps) => {
+  const props = (column as any).type?.renderer?.componentProps ?? {};
+  const { onUndo, hasRowChanges } = props as {
+    onUndo?: (key: string) => void;
+    hasRowChanges?: (key: string) => boolean;
+  };
+  if (!hasRowChanges?.(dataRow.key)) return null;
+  return (
+    <Button
+      appearance="transparent"
+      onClick={() => onUndo?.(dataRow.key)}
+      style={{ height: "100%", width: "100%" }}
+    >
+      Undo
+    </Button>
+  );
+};
+registerComponent("example.undo-cell", UndoCellRenderer, "cell-renderer");
 
 export const EditableInstrumentsCustomCellRenderer = () => {
   const editableType = useMemo<DataValueTypeDescriptor>(

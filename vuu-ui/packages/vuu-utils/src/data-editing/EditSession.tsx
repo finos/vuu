@@ -143,6 +143,43 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
   }
 
+  hasRowChanges(key: string): boolean {
+    return this.#rowEdits.has(key) || this.#deletedRows.has(key);
+  }
+
+  async undoRowChange(key: string): Promise<void> {
+    if (!this.#inEditMode) return;
+
+    const rowEdits = this.#rowEdits.get(key);
+    const wasDeleted = this.#deletedRows.has(key);
+
+    if (!rowEdits?.cellEdits.size && !wasDeleted) return;
+
+    const response = await this.dataSource?.undoRowChange?.(key);
+
+    if (isRpcError(response)) return;
+
+    if (rowEdits) {
+      let validCount = 0;
+      let invalidCount = 0;
+      for (const [, cellEdit] of rowEdits.cellEdits) {
+        if (cellEdit.isValid === false) {
+          invalidCount++;
+        } else {
+          validCount++;
+        }
+      }
+      this.#rowEdits.delete(key);
+      this.editCount = this.#editCount - validCount;
+      this.invalidCount = this.#invalidCount - invalidCount;
+    }
+
+    if (wasDeleted) {
+      this.#deletedRows.delete(key);
+      this.deleteCount = this.#deleteCount - 1;
+    }
+  }
+
   clear() {
     this.#rowEdits.clear();
     this.#deletedRows.clear();

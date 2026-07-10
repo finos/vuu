@@ -827,4 +827,38 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
     return response?.errorMessage ?? "deleteRow failed";
   }
+
+  async addRow(
+    rowData: Record<string, VuuRowDataItemType> = {},
+  ): Promise<true | string> {
+    const keyColumn = this.tableSchema?.key ?? "id";
+    //Don't think we need to pass a unique id as service will generate one.
+    const rowKey =
+      (rowData[keyColumn] as string | undefined) ?? uuid();
+    const rowDataWithKey: Record<string, VuuRowDataItemType> = {
+      ...rowData,
+      [keyColumn]: rowKey,
+    };
+    const response = await this.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "addRow",
+      params: { key: rowKey, data: rowDataWithKey },
+    });
+    if (isRpcSuccess(response)) {
+      return true;
+    }
+    return response?.errorMessage ?? "addRow failed";
+  }
+
+  async undoRowChange(
+    key: string,
+  ): Promise<RpcResultSuccess | RpcResultError> {
+    const rpcHost = this.#sessionDataSource ?? this;
+    const response = await rpcHost.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "undoRowChange",
+      params: { key },
+    });
+    return response ?? { type: "ERROR_RESULT", errorMessage: "undoRowChange failed" };
+  }
 }
