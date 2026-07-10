@@ -48,7 +48,7 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
 
       result(2).name shouldEqual DefaultColumn.MSG.name
       result(2).index shouldEqual 3
-      result(2).isEditable shouldEqual true
+      result(2).isEditable shouldEqual false
       DefaultColumn.isDefaultColumn(result(2)) shouldBe true
     }
 
