@@ -7,9 +7,8 @@ import org.finos.vuu.net.rpc.SessionTableCopyOption.Empty
 import org.finos.vuu.net.rpc.SessionTableCopyOption.Selected
 import org.finos.vuu.viewport.ViewPortTable
 
-class EditInSessionTableRpcHandler(using val tableContainer: TableContainer) extends DefaultRpcHandler {
-  registerRpc(RpcNames.BeginEditSessionRpc, this.beginEditSession)
-  registerRpc(RpcNames.EndEditSessionRpc, this.endEditSession)
+class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) extends DefaultRpcHandler {
+  registerRpc(RpcNames.CreateSessionTableRpc, this.beginEditSession)
 
   def beginEditSession(params: RpcParams): RpcFunctionResult = {
     val session: ClientSessionId = params.ctx.session
@@ -40,6 +39,8 @@ class EditInSessionTableRpcHandler(using val tableContainer: TableContainer) ext
         val keys = sourceTable.asTable.primaryKeys
       //TODO #2169 add a config to limit the max rows to copy
       // TODO #2169 copy all/max rows rows to session table
+      // when copying data, the data has to be pulled from view port keys not from base table , in case it's not visible to user.
+      // we need the column to be aviailable in view port - how do we handle it if it's not there
       case Selected =>
       //TODO #2169 copy selected rows
       // sort keys? val keys = aSort.doSort(table.sourceTable, filteredKeys, vpColumns)
@@ -47,12 +48,5 @@ class EditInSessionTableRpcHandler(using val tableContainer: TableContainer) ext
 
     }
     RpcFunctionSuccess(Some(ViewPortTable(sessionTable.name, sessionTable.tableDef.getModule().name)))
-  }
-
-  def endEditSession(params: RpcParams): RpcFunctionResult = {
-    // TODO #2169 validate data and update vuuMsg
-    // do expected operation
-    // close session table
-    null
   }
 }

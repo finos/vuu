@@ -1,11 +1,12 @@
 package org.finos.vuu.wsapi
 
+import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.{ColumnBuilder, SessionTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, RpcRequest, RpcResponseNew}
-import org.finos.vuu.net.rpc.{EditInSessionTableRpcHandler, RpcNames, RpcSuccessResult, ViewPortContext}
+import org.finos.vuu.net.rpc.{CreateSessionTableRpcHandler, EndEditSessionRpcHandler, RpcHandler, RpcNames, RpcSuccessResult, ViewPortContext}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -29,7 +30,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       When("request beginEditSession with empty table")
       val beginEditRequest = RpcRequest(
         ViewPortContext(viewPortId),
-        RpcNames.BeginEditSessionRpc,
+        RpcNames.CreateSessionTableRpc,
         params = Map(
           "sessionTableName" -> sessionTableName1,
           "copyOption" -> "Empty",
@@ -40,7 +41,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       Then("empty session table is created")
       val beginEditResponse = vuuClient.awaitForResponse(requestId)
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](beginEditResponse)
-      responseBody.rpcName shouldEqual RpcNames.BeginEditSessionRpc
+      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
     }
   }
@@ -75,7 +76,18 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
             .addString("Name")
             .addInt("Account")
             .build(),
-        service = new EditInSessionTableRpcHandler(using tableContainer)
+        service = new CreateSessionTableRpcHandler(using tableContainer)
+      )
+
+    val viewPortDefFactoryForSessionTable = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
+      ViewPortDef(
+        columns =
+          new ColumnBuilder()
+            .addString("Id")
+            .addString("Name")
+            .addInt("Account")
+            .build(),
+        service = new TestHandler(using tableContainer)
       )
 
     ModuleFactory.withNamespace(moduleName)
@@ -89,7 +101,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
             .addString("Name")
             .addInt("Account")
             .build()
-      ), viewPortDefFactory)
+      ), viewPortDefFactoryForSessionTable)
       .asModule()
   }
 
@@ -101,4 +113,11 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     waitForData(3)
     viewPortId
   }
+}
+
+class TestHandler(implicit tableContainer: TableContainer) extends EndEditSessionRpcHandler with StrictLogging {
+
+  override def validData(): Boolean = ???
+
+  override def submitData(): Boolean = ???
 }
