@@ -1,6 +1,6 @@
 package org.finos.vuu.wsapi.helpers
 
-import org.finos.vuu.api.{JoinTableDef, SessionTableDef, TableDef, ViewPortDef}
+import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactoryNode, TableDefContainer}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
@@ -46,14 +46,5 @@ object TestExtension {
       moduleFactoryNode.addJoinTable(func)
     }
 
-    def addSessionTableForTest(
-                                sessionTableDef: SessionTableDef,
-                                viewportDef: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef
-                              ): ModuleFactoryNode = {
-      moduleFactoryNode.addSessionTable(
-        sessionTableDef,
-        viewportDef
-      )
-    }
   }
 }
