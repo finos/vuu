@@ -1,9 +1,6 @@
-vuu/src/main/resources/certs/key.pem
-example/main/src/main/resources/certs/key.pem
-example/main/src/main/resources/certs/cert.pem
-vuu/src/main/resources/www/ws-example.html
-example/order/src/main/scala/org/finos/vuu/provider/simulation/SimulatedBigInstrumentsProvider.scala
-vuu/src/main/scala/org/finos/vuu/provider/simulation/SimulatedBigInstrumentsProvider.scala
+**/src/test/resources/
+example/**/src/main/resources
+
 vuu-ui/packages/vuu-data-local/src/array-data-source/group-utils.ts
 vuu-ui/packages/vuu-data-local/src/tree-data-source/TreeDataSource.ts
 vuu-ui/packages/vuu-data-test/src/makeSuggestions.ts
@@ -20,11 +17,6 @@ vuu-ui/showcase/src/examples/Layout/Menu.examples.tsx
 vuu-ui/tools/websocket-test.html
 vuu-ui/tools/vuu-showcase/src/shared-utils.ts
 vuu-ui/tools/vuu-showcase/src/showcase-main/showcase-utils.ts
-vuu/src/test/scala/org/finos/vuu/viewport/CreateViewPortScenarioTest.scala
-vuu/src/test/scala/org/finos/vuu/net/ws/WebSocketServerClientTest.scala
-vuu/src/test/scala/org/finos/vuu/net/rpc/RpcModuleTest.scala
-vuu/src/test/resources/ws.html
-vuu/src/test/resources/certs/key.pem
 vuu-ui/sample-apps/standalone-table/scripts/build.mjs
 vuu-ui/sample-apps/app-vuu-basket-trader/scripts/build.mjs
 vuu-ui/sample-apps/app-vuu-example/scripts/build.mjs
@@ -41,7 +33,4 @@ vuu-ui/tools/vuu-showcase/scripts/build-file-list.ts
 vuu-ui/tools/vuu-showcase/scripts/utils.ts
 vuu-ui/tools/vuu-showcase/scripts/treeSourceFromFileSystem.ts
 vuu-ui/tools/vuu-showcase/src/showcase-utils.ts
-example/order/src/main/scala/org/finos/vuu/order/oms/impl/InMemOmsApi.scala
-example/virtualized-table/src/main/scala/org/finos/vuu/example/virtualtable/bigdatacache/FakeBigDataCache.scala
-example/http2-server/src/test/resources/certs/key.pem
-example/main-clickhouse/src/main/resources/certs/key.pem
+
