@@ -1,0 +1,286 @@
+# Inline Row Editing — Architecture & API
+
+This document describes how client-side inline row editing works in Vuu UI, covering the public API surface, the React hook that wires it together, and the call flow through each layer.
+
+---
+
+## Layers at a Glance
+
+```
+Consumer component (e.g. InlineEditTableTemplate)
+  └─ useEditableTable (React hook)
+       └─ EditSession (session state + orchestration)
+            └─ DataSource (EditApi)
+                 ├─ TickingArrayDataSource  (local / test)
+                 └─ VuuDataSource           (remote)
+                      └─ VuuModule / server RPC handlers
+```
+
+---
+
+## EditSession — Core API
+
+`EditSession` is a plain class (not a React component) that tracks all pending changes for one edit session and orchestrates RPC calls to the underlying datasource.
+
+### State
+
+| Property | Type | Description |
+|---|---|---|
+| `editCount` | `number` | Number of valid cell edits pending |
+| `deleteCount` | `number` | Number of rows marked for soft-deletion |
+| `addCount` | `number` | Number of rows added in this session |
+| `invalidCount` | `number` | Number of invalid cell edits |
+| `inEditMode` | `boolean` | `true` once `begin()` has resolved and before `end()` completes |
+| `editState` | `"clean" \| "dirty" \| "invalid" \| "stale"` | Derived summary; emitted via `"editState"` event |
+
+### Lifecycle
+
+```
+editSession.begin(editSessionMode?)   // opens session datasource
+  → editSession.end(save?, force?)    // commits or discards, clears all state
+```
+
+`begin()` calls `dataSource.beginEditSession()` which creates a **session datasource** (a proxy/mirror of the source table). All subsequent cell edits and row operations operate against this session datasource, leaving the source table untouched until `end(true)` is called.
+
+### Row Operations
+
+| Method | Description |
+|---|---|
+| `editSession.addRows(count, rowData?)` | Adds `count` blank rows via the source-table datasource `addRow` RPC |
+| `editSession.deleteRows(keys[])` | Soft-deletes rows (sets `vuuMsg = "SOFT_DELETED"`) via session datasource `deleteRow` RPC |
+| `editSession.restoreRows(keys[])` | Removes keys from the local deleted-rows set (does not send an RPC — use `undoRowChange` for full reversion) |
+| `editSession.undoRowChange(key)` | Reverts **all** pending changes for one row (cell edits + soft-delete) via a single `undoRowChange` RPC; only updates local counters on confirmed success |
+| `editSession.hasRowChanges(key)` | Returns `true` if the row has pending edits or is marked for deletion |
+
+### Cell Editing
+
+```
+editSession.commit(key, column, originalValue, editedValue, isValid)
+```
+
+Tracks the cell edit locally and forwards it to `dataSource.editCell()`. Handles the case where a user reverts a cell back to its original value (removes the pending edit entry).
+
+### Events
+
+```ts
+editSession.on("editState", (state: EditState) => { ... });
+```
+
+Fired whenever `editCount`, `deleteCount`, `addCount`, or `invalidCount` changes. Consumed by `EditButtons` to enable/disable the Save button.
+
+---
+
+## useEditableTable — React Hook
+
+Wraps `EditSession` for use in React components. Manages session lifecycle in response to `isEditMode` toggling.
+
+### Props
+
+| Prop | Default | Description |
+|---|---|---|
+| `dataSource` | — | Pre-existing DataSource; takes precedence over `table` |
+| `table` | — | Creates a new DataSource if `dataSource` not provided |
+| `columns` | `undefined` | Column list for the subscription |
+| `editSessionMode` | `"inline-all-rows"` | Session mode passed to `beginEditSession` |
+| `deleteMode` | `"soft"` | `"soft"` marks the row; `"hard"` deletes immediately |
+| `addRowsCount` | `15` | Number of rows added per `onAddRows` call |
+| `isEditMode` | required | Toggling to `true` calls `editSession.begin()`; to `false` calls `editSession.end()` |
+| `onCancel` | required | Called after `editSession.end()` (discard) completes |
+| `onSave` | required | Called after `editSession.end(true)` (save) completes successfully |
+
+### Return Values
+
+| Value | Description |
+|---|---|
+| `dataSource` | The (possibly newly created) DataSource |
+| `editSession` | The `EditSession` instance |
+| `sessionDataSource` | Set for standalone edit modes; `undefined` for inline |
+| `hasSelection` | `true` when one or more rows are selected |
+| `onCancel` | Async handler: `await editSession.end()` → `onCancel()` |
+| `onSave` | Async handler: `await editSession.end(true, force)` → `onSave()` |
+| `onDelete` | Deletes selected rows via `editSession.deleteRows()` |
+| `onAddRows` | Adds rows via `editSession.addRows(addRowsCount)` |
+| `onUndoRowChange` | `(key) =>` `editSession.undoRowChange(key)` |
+| `onSelectionChange` | Keeps `selectedKeysRef` and `hasSelection` up to date |
+
+---
+
+## EditButtons — UI Component
+
+Renders the action bar for an edit session. Consumes `EditSession` directly for state, takes handler callbacks from `useEditableTable`.
+
+### Props
+
+| Prop | Description |
+|---|---|
+| `editSession` | Subscribes to `"editState"` events to drive Save button state |
+| `hasSelection` | Enables the Delete button |
+| `onSave(force?)` | Called when Save is clicked (after optional `confirmSave` gate) |
+| `onCancel()` | Called when Cancel is clicked (after optional `confirmCancel` gate) |
+| `onDelete()` | Called when Delete is clicked |
+| `onAddRows()` | Called when Add Rows is clicked |
+| `saveLabel` | Label for the Save button (defaults to `"Save"`); appended with `" (force)"` when `editState === "stale"` |
+| `confirmSave?` | `() => boolean \| Promise<boolean>` — async gate; cancel is aborted if it returns `false` |
+| `confirmCancel?` | `() => boolean \| Promise<boolean>` — async gate; cancel is aborted if it returns `false` |
+
+### Save button states
+
+| `editState` | Button |
+|---|---|
+| `"clean"` | Disabled |
+| `"dirty"` | Enabled, shows `saveLabel` |
+| `"invalid"` | Disabled |
+| `"stale"` | Enabled, shows `"${saveLabel} (force)"` |
+
+---
+
+## Call Flows
+
+### Begin Edit Session
+
+```
+isEditMode → true
+  useEditableTable (useMemo)
+    editSession.begin("inline-all-rows")
+      dataSource.beginEditSession("inline-all-rows")          ← EditApi RPC
+        → "beginEditSession" RPC → VuuModule.beginEditSession
+          creates SessionTable (Proxy over source Table)
+          stores in #sessionTableMap[sessionTableName]
+          returns { table: { module, table: sessionTableName } }
+      dataSource creates #sessionDataSource for sessionTableName
+      #sessionDataSource.subscribe(range, handleSessionMessage)
+    EditSession stores #sessionDataSource
+    subsequent operations route to #sessionDataSource
+```
+
+### Cell Edit
+
+```
+User edits cell
+  editSession.commit(key, column, originalValue, editedValue, isValid)
+    editSession.storeCellEdit(...)             ← updates #rowEdits, adjusts editCount
+    dataSource.editCell(key, column, value)    ← EditApi RPC (via session datasource)
+      → "editCell" RPC → VuuModule.editCell
+          sessionTable.update(key, column, value)
+            emits "update" event → session datasource updates its cache
+            session datasource sends updated row to client
+```
+
+### Delete Row (soft)
+
+```
+User selects rows → clicks Delete
+  EditButtons.onDelete → useEditableTable.handleDelete
+    editSession.deleteRows([key, ...])
+      for each key:
+        #deletedRows.add(key)
+        deleteCount++                          ← emits "editState" → "dirty"
+        dataSource.deleteRow(key, "soft")      ← EditApi RPC (via session datasource)
+          → "deleteRow" RPC → VuuModule.deleteRow
+              sessionTable.update(key, "vuuMsg", "SOFT_DELETED")
+```
+
+### Add Row
+
+```
+User clicks Add Rows
+  EditButtons.onAddRows → useEditableTable.handleAddRows
+    editSession.addRows(count)
+      for each new row:
+        #sourceTableDataSource.addRow(rowData)  ← EditApi RPC (via SOURCE datasource, not session)
+          → "addRow" RPC → VuuModule.addRow
+              sessionTable.insert(newRow)
+              emits "insert" event → session datasource adds row to its view
+      addCount += count                         ← emits "editState" → "dirty"
+```
+
+> **Note:** `addRow` always routes through the **source** datasource (not the session datasource) because `VuuModule.addRow` looks up the session table via `subscription.sessionTableName`.
+
+### Undo Row Change
+
+```
+User clicks Undo button on a row
+  UndoCellRenderer.onClick → onUndoRowChange(key)
+    editSession.undoRowChange(key)
+      checks #rowEdits.has(key) || #deletedRows.has(key)
+      dataSource.undoRowChange(key)              ← EditApi RPC (via session datasource)
+        → "undoRowChange" RPC → VuuModule.undoRowChange
+            sourceTable = this.tables[dataSource.table.table]   ← real Table instance (avoids Proxy/private-field issue)
+            sessionUpdates = sessionTable.getSessionUpdates()
+            for each column in rowUpdates.cellUpdates:
+              originalValue = sourceTable.findByKey(key)[column]
+              sessionTable.update(key, column, originalValue)   ← emits "update" → client sees original values
+            sessionUpdates.delete(key)                          ← excluded from endEditSession commit
+      on RpcSuccess: #rowEdits.delete(key), adjust editCount / deleteCount
+      on RpcError:  local state unchanged
+```
+
+### Save (End Session)
+
+```
+User clicks Save
+  EditButtons.handleSave
+    confirmSave?.()                              ← optional async gate
+    onSave(isStale)                              ← useEditableTable.handleSave
+      dataSource.resume()
+      editSession.end(save=true, force)
+        dataSource.endEditSession(true, force)   ← EditApi RPC (via session datasource)
+          → "endEditSession" RPC → VuuModule.endEditSession
+              for each key in sessionTable.getSessionUpdates():
+                compare lastUpdateTimestamp with source table
+                if stale: write error to vuuMsg column, rejectedCount++
+                else: apply cellUpdates to source table row
+              if rejectedCount > 0 → returns ERROR_RESULT "stale update"
+                EditSession.end catches StaleUpdateError → emits "editState" "stale"
+              else → returns SUCCESS_RESULT
+        editSession.clear()                      ← resets all counters and state
+      onSave()                                   ← consumer callback
+```
+
+### Cancel (End Session — Discard)
+
+```
+User clicks Cancel
+  EditButtons.handleCancel
+    confirmCancel?.()                            ← optional async gate
+    onCancel()                                   ← useEditableTable.handleCancel
+      await editSession.end(save=false)
+        dataSource.endEditSession(false)         ← EditApi RPC (via session datasource)
+          → "endEditSession" RPC → VuuModule.endEditSession
+              save=false: skips applying updates to source table
+              sessionDataSource.unsubscribe()
+        editSession.clear()
+      onCancel()                                 ← consumer callback (e.g. toggle view mode)
+```
+
+---
+
+## EditApi — DataSource Contract
+
+All datasources used with `EditSession` must implement `EditApi` from `@vuu-ui/vuu-data-types`:
+
+```ts
+interface EditApi {
+  beginEditSession?(mode?: EditSessionMode): Promise<DataSource | undefined>;
+  addRow?(rowData?: Record<string, VuuRowDataItemType>): Promise<RpcResult> | undefined;
+  deleteRow?(key: string, mode?: DeleteRowMode): Promise<RpcResult> | undefined;
+  editCell?(rowKey: string, column: string, value: VuuRowDataItemType): Promise<RpcResult> | undefined;
+  undoRowChange?(key: string): Promise<RpcResult> | undefined;
+  endEditSession?(saveChanges?: boolean, force?: boolean): Promise<RpcResult> | undefined;
+}
+```
+
+Both `TickingArrayDataSource` (local/test) and `VuuDataSource` (remote) implement all six methods. Each method dispatches a named RPC request (`"addRow"`, `"deleteRow"`, etc.) which is registered and handled in `VuuModule.#moduleServices`.
+
+---
+
+## RPC Routing Summary
+
+| EditApi method | RPC name | Routes via | VuuModule handler |
+|---|---|---|---|
+| `addRow` | `"addRow"` | **source** datasource | `addRow` — inserts into session table |
+| `deleteRow` | `"deleteRow"` | session datasource | `deleteRow` — `sessionTable.update(key, "vuuMsg", "SOFT_DELETED")` |
+| `editCell` | `"editCell"` | session datasource | `editCell` — `sessionTable.update(key, col, val)` |
+| `undoRowChange` | `"undoRowChange"` | session datasource | `undoRowChange` — reverts all updates for key in session table |
+| `beginEditSession` | `"beginEditSession"` | source datasource | creates `SessionTable` proxy, stores in `#sessionTableMap` |
+| `endEditSession` | `"endEditSession"` | session datasource | applies (or discards) session updates to source table |
