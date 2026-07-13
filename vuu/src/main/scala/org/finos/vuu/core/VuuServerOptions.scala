@@ -187,10 +187,10 @@ case class VuuServerConfig(wsOptions: VuuWebSocketOptions = VuuWebSocketOptions(
                            threading: VuuThreadingOptions = VuuThreadingOptions(),
                            clientConnection: VuuClientConnectionOptions = VuuClientConnectionOptions(),
                            joinProvider: VuuJoinTableProviderOptions = VuuJoinTableProviderOptions(),
+                           rpcOptions: VuuRpcOptions = VuuRpcOptions(),
                            modules: List[ViewServerModule] = List(),
                            plugins: List[Plugin] = List(),
-                           httpServerFactory: HttpServerFactory = NoHttpServerFactory,
-                           rpcOptions: VuuRpcOptions) {
+                           httpServerFactory: HttpServerFactory = NoHttpServerFactory) {
   def withModule(module: ViewServerModule): VuuServerConfig = {
     this.copy(modules = modules ++ List(module))
   }

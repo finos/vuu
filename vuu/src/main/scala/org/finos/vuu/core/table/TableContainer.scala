@@ -27,10 +27,10 @@ trait TableContainerMBean {
   def getSubscribedKeys(name: String): String
 }
 
-class TableContainer(val joinTableProvider: JoinTableProvider, val rpcOptions: VuuRpcOptions)(implicit val metrics: MetricsProvider, val timeProvider: Clock) extends JmxAble with TableContainerMBean with StrictLogging {
+class TableContainer(val joinTableProvider: JoinTableProvider, val rpcOptions: VuuRpcOptions = VuuRpcOptions.apply())(implicit val metrics: MetricsProvider, val timeProvider: Clock) extends JmxAble with TableContainerMBean with StrictLogging {
 
   private val tables = new ConcurrentHashMap[String, DataTable]()
-  
+
   override def getSubscribedKeys(name: String): String = {
     val table = tables.get(name)
 

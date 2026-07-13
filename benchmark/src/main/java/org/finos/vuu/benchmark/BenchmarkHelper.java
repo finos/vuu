@@ -5,6 +5,7 @@ import org.finos.toolbox.jmx.MetricsProviderImpl;
 import org.finos.toolbox.lifecycle.LifecycleContainer;
 import org.finos.toolbox.time.Clock;
 import org.finos.toolbox.time.DefaultClock;
+import org.finos.vuu.core.VuuRpcOptions;
 import org.finos.vuu.core.filter.type.AllowAllPermissionFilter$;
 import org.finos.vuu.core.table.Column;
 import org.finos.vuu.core.table.DataTable;
@@ -36,7 +37,7 @@ public class BenchmarkHelper {
     private final LifecycleContainer lifecycleContainer = new LifecycleContainer(clock);
     private final MetricsProvider metricsProvider = new MetricsProviderImpl();
     private final JoinTableProvider joinProvider = JoinTableProviderImpl.apply(lifecycleContainer);
-    private final TableContainer tableContainer = new TableContainer(joinProvider, metricsProvider, clock);
+    private final TableContainer tableContainer = new TableContainer(joinProvider, VuuRpcOptions.apply(), metricsProvider, clock);
 
     public BenchmarkHelper() {
         tableContainer.createTable(CURRENCIES);

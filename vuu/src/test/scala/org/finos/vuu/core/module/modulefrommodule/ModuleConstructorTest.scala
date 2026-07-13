@@ -4,7 +4,6 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.{VuuSecurityOptions, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
-import org.finos.vuu.net.auth.Authenticator
 import org.finos.vuu.net.ssl.VuuSSLByCertAndKey
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
