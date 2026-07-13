@@ -82,12 +82,15 @@ object Columns {
     val splitDef = nameAndDt.split(":").toList
 
     splitDef match {
+      case name :: dataType :: isEditable :: _ =>
+        val dtClass = DataType.fromString(dataType)
+        SimpleColumn(name, index, dtClass, isEditable.toBoolean)
       case name :: dataType :: _ =>
         val dtClass = DataType.fromString(dataType)
         SimpleColumn(name, index, dtClass)
       case _ => throw new Exception(s"Invalid format: $nameAndDt")
     }
-    
+
   }).toArray
 
   def from(table: TableDef, names: Seq[String]): Array[Column] = {
@@ -96,6 +99,7 @@ object Columns {
 
   /**
    * Note: this method returns all columns of a given table, including the default columns
+   *
    * @return JoinColumn based on all columns of a given table except the default columns
    */
   def allFrom(table: TableDef): Array[Column] = {
@@ -133,10 +137,13 @@ trait Column {
 
   def getDataFullyQualified(data: RowData): Any
 
+  def isEditable: Boolean = false
+
 }
 
 trait JoinColumn extends Column {
   def sourceTable: TableDef
+
   def sourceColumn: Column
 }
 
@@ -167,14 +174,14 @@ case class NoColumn() extends Column {
 
   override def equals(obj: scala.Any): Boolean = {
     obj match {
-      case _ : NoColumn => true
+      case _: NoColumn => true
       case _ => false
     }
   }
 
 }
 
-case class SimpleColumn(name: String, index: Int, dataType: Class[_]) extends Column {
+case class SimpleColumn(name: String, index: Int, dataType: Class[_], override val isEditable: Boolean = false) extends Column {
   override def getData(data: RowData): Any = {
     data.get(name)
   }
@@ -252,7 +259,9 @@ private case class AliasedJoinColumn(name: String, index: Int, dataType: Class[_
 case class CalculatedColumn(name: String, clause: CalculatedColumnClause, index: Int, dataType: Class[_]) extends Column with StrictLogging {
 
   override def getData(data: RowData): Any = clause.calculate(data).fold[Any](
-    errMsg  => { logger.error(errMsg + " Returning `null`."); null },
+    errMsg => {
+      logger.error(errMsg + " Returning `null`."); null
+    },
     success => success.orNull
   )
 

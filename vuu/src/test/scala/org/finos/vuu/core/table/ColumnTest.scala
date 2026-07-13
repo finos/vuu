@@ -189,4 +189,25 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
 
   }
 
+  Feature("Editable columns") {
+
+    Scenario("Create editable columns and non-editable columns") {
+      val simpleNonEditableColumn = SimpleColumn("test", 0, DataType.StringDataType)
+      simpleNonEditableColumn.isEditable shouldBe false
+
+      val simpleEditableColumn = SimpleColumn("test", 0, DataType.StringDataType, true)
+      simpleEditableColumn.isEditable shouldBe true
+
+      val noColumn = NoColumn()
+      noColumn.isEditable shouldBe false
+
+      val joinedColumn = SimpleColumn("column1", 0, DataType.StringDataType)
+      val tableDef = TableDef.apply("testTable", "column1", Array(joinedColumn))
+      val simpleJoinColumn = SimpleJoinColumn("test", 0, DataType.StringDataType, tableDef, joinedColumn)
+      simpleJoinColumn.isEditable shouldBe false
+
+      val calculatedColumn = CalculatedColumn("cakes", new NullCalculatedColumnClause, 0, DataType.StringDataType)
+      calculatedColumn.isEditable shouldBe false
+    }
+  }
 }

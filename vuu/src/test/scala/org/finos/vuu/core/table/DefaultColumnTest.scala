@@ -38,12 +38,17 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
       result.length shouldEqual 3
       result(0).name shouldEqual DefaultColumn.CreatedTime.name
       result(0).index shouldEqual 1
+      result(0).isEditable shouldEqual false
       DefaultColumn.isDefaultColumn(result(0)) shouldBe true
+
       result(1).name shouldEqual DefaultColumn.LastUpdatedTime.name
       result(1).index shouldEqual 2
+      result(1).isEditable shouldEqual false
       DefaultColumn.isDefaultColumn(result(1)) shouldBe true
+
       result(2).name shouldEqual DefaultColumn.MSG.name
       result(2).index shouldEqual 3
+      result(2).isEditable shouldEqual false
       DefaultColumn.isDefaultColumn(result(2)) shouldBe true
     }
 

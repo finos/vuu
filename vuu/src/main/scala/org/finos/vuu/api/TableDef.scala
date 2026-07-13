@@ -133,6 +133,10 @@ object TableDef {
     new TableDef(name, keyField, columns, joinFields, indices = Indices())
   }
 
+  def apply(name: String, keyField: String, columns: Array[Column], isEditable: Boolean, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, indices = Indices(), isEditable = isEditable)
+  }
+
   // just visibility
   def apply(name: String, keyField: String, columns: Array[Column], visibility: TableVisibility, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = Indices(), visibility = visibility)
@@ -192,7 +196,7 @@ case class AvailableViewPortVisualLink(parentVpId: String, link: Link) {
 
 class JoinSessionTableDef(name: String, baseTable: TableDef, joinColumns: Array[Column],
                           joinFields: Seq[String], joins: JoinTo*) extends JoinTableDef(name, visibility = Public, baseTable,
-  joinColumns, links = VisualLinks(), joinFields, permissionFunction = (_,_) => AllowAllPermissionFilter,
+  joinColumns, links = VisualLinks(), joinFields, permissionFunction = (_, _) => AllowAllPermissionFilter,
   defaultSort = SortSpec(List.empty)) with VuuInMemPluginLocator
 
 class SessionTableDef(name: String,
@@ -215,6 +219,7 @@ class TableDef(val name: String,
                val indices: Indices = Indices(),
                val visibility: TableVisibility = Public,
                val includeDefaultColumns: Boolean = true,
+               val isEditable: Boolean = false,
                val permissionFunction: (ViewPort, TableContainer) => PermissionFilter = (_, _) => AllowAllPermissionFilter,
                val defaultSort: SortSpec = SortSpec(List.empty)) extends VuuInMemPluginLocator {
 
@@ -223,8 +228,8 @@ class TableDef(val name: String,
   private val columnsByName: Map[String, Column] = getColumns.map(c => c.name -> c).toMap
   private val deletedColumnName: String = s"$name._isDeleted"
   private var module: ViewServerModule = null
-  
-  val defaultColumnNames: Set[String] = defaultColumns.map(v=>v.name).toSet
+
+  val defaultColumnNames: Set[String] = defaultColumns.map(v => v.name).toSet
 
   def permissionFilter(viewPort: ViewPort, tableContainer: TableContainer): PermissionFilter = {
     permissionFunction.apply(viewPort, tableContainer)
@@ -329,13 +334,13 @@ object JoinTableDef {
 
   def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks,
             joinFields: Seq[String], joins: JoinTo): JoinTableDef = {
-    new JoinTableDef(name, Public, baseTable, joinColumns, links, joinFields, (_,_) => AllowAllPermissionFilter,
+    new JoinTableDef(name, Public, baseTable, joinColumns, links, joinFields, (_, _) => AllowAllPermissionFilter,
       SortSpec(List.empty), joins)
   }
 
   def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks,
             visibility: TableVisibility, joinFields: Seq[String], joins: JoinTo): JoinTableDef = {
-    new JoinTableDef(name, visibility, baseTable, joinColumns, links, joinFields, (_,_) => AllowAllPermissionFilter,
+    new JoinTableDef(name, visibility, baseTable, joinColumns, links, joinFields, (_, _) => AllowAllPermissionFilter,
       SortSpec(List.empty), joins)
   }
 
@@ -355,7 +360,7 @@ object JoinTableDef {
 
   def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks,
             defaultSort: SortSpec, joinFields: Seq[String], joins: JoinTo): JoinTableDef = {
-    new JoinTableDef(name, Public, baseTable, joinColumns, links, joinFields, (_,_) => AllowAllPermissionFilter,
+    new JoinTableDef(name, Public, baseTable, joinColumns, links, joinFields, (_, _) => AllowAllPermissionFilter,
       defaultSort, joins)
   }
 
