@@ -27,8 +27,8 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       Given("a view port exist")
       val viewPortId = createViewPort(tableName1)
 
-      When("request beginEditSession with empty table")
-      val beginEditRequest = RpcRequest(
+      When("request createSessionTable with empty table")
+      val createSessionTableRequest = RpcRequest(
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
         params = Map(
@@ -36,7 +36,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
           "copyOption" -> "Empty",
           "columnsToCopy" -> "Id,Name"
         ))
-      val requestId = vuuClient.send(sessionId, beginEditRequest)
+      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 
       Then("empty session table is created")
       val beginEditResponse = vuuClient.awaitForResponse(requestId)
