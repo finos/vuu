@@ -44,7 +44,7 @@ case class GetTableListResponse(tables: Array[ViewPortTable]) extends MessageBod
 
 case class GetTableMetaRequest(table: ViewPortTable) extends MessageBody
 
-case class GetTableMetaResponse(table: ViewPortTable, columns: Array[String], dataTypes: Array[String], key: String) extends MessageBody
+case class GetTableMetaResponse(table: ViewPortTable, columns: Array[String], dataTypes: Array[String], key: String, editableColumns: Array[String]) extends MessageBody
 
 case class GetViewPortMenusRequest(vpId: String) extends MessageBody
 
