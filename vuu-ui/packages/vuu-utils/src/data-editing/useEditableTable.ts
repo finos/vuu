@@ -70,9 +70,9 @@ export const useEditableTable = ({
     [dataSource],
   );
 
-  const handleCancel = useCallback(() => {
+  const handleCancel = useCallback(async () => {
     try {
-      editSession.end();
+      await editSession.end();
       onCancel();
     } catch (e) {
       //

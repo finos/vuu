@@ -11,9 +11,11 @@ export interface EditButtonProps {
   onSave: (force?: boolean) => void;
   saveLabel?: string;
   confirmSave?: () => boolean | Promise<boolean>;
+  confirmCancel?: () => boolean | Promise<boolean>;
 }
 
 export const EditButtons = ({
+  confirmCancel,
   confirmSave,
   editSession,
   hasSelection = false,
@@ -32,6 +34,14 @@ export const EditButtons = ({
     }
     onSave(editState === "stale");
   }, [confirmSave, editState, onSave]);
+
+  const handleCancel = useCallback(async () => {
+    if (confirmCancel) {
+      const confirmed = await confirmCancel();
+      if (!confirmed) return;
+    }
+    onCancel?.();
+  }, [confirmCancel, onCancel]);
 
   useMemo(() => {
     editSession?.on("editState", setEditState);
@@ -60,7 +70,7 @@ export const EditButtons = ({
       >
         {editState === "stale" ? `${saveLabel} (force)` : saveLabel}
       </Button>      
-      {onCancel && <Button onClick={onCancel}>Cancel</Button>}
+      {onCancel && <Button onClick={handleCancel}>Cancel</Button>}
     </>
   );
 };
