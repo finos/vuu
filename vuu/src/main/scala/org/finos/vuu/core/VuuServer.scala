@@ -42,7 +42,7 @@ class VuuServer(config: VuuServerConfig)
 
   final val joinProvider: JoinTableProvider = JoinTableProviderImpl(config.joinProvider)
 
-  final val tableContainer = new TableContainer(joinProvider)
+  final val tableContainer = new TableContainer(joinProvider, config.rpcOptions)
 
   final val providerContainer = new ProviderContainer(joinProvider)
   lifecycle(this).dependsOn(providerContainer)

@@ -5,13 +5,7 @@ import org.finos.toolbox.jmx.MetricsProviderImpl;
 import org.finos.toolbox.lifecycle.LifecycleContainer;
 import org.finos.toolbox.time.Clock;
 import org.finos.toolbox.time.DefaultClock;
-import org.finos.vuu.core.VuuClientConnectionOptions;
-import org.finos.vuu.core.VuuJoinTableProviderOptions;
-import org.finos.vuu.core.VuuSecurityOptions;
-import org.finos.vuu.core.VuuServer;
-import org.finos.vuu.core.VuuServerConfig;
-import org.finos.vuu.core.VuuThreadingOptions;
-import org.finos.vuu.core.VuuWebSocketOptions;
+import org.finos.vuu.core.*;
 import org.finos.vuu.core.module.TableDefContainer;
 import org.finos.vuu.core.module.ViewServerModule;
 import org.finos.vuu.core.module.authn.AuthNModule;
@@ -70,13 +64,14 @@ public class VuuExampleMain {
                 VuuHttp2ServerFactory.apply(VuuHttp2ServerOptions.apply()
                         .withWebRoot(new AbsolutePathWebRoot(webRoot, true))
                         .withSsl(new VuuSSLByCertAndKey(certPath, keyPath, Option.empty(), VuuSSLCipherSuiteOptions.apply()))
-                        .withPort(8443))
-                ).withModule(PriceModule.apply(clock, lifecycle, tableDefContainer))
-         .withModule(SimulationModule.apply(clock, lifecycle, tableDefContainer))
-         .withModule(MetricsModule.apply(clock, lifecycle, metrics, tableDefContainer))
-         .withModule(AuthNModule.apply(loginTokenService, Option.empty(), clock, lifecycle, tableDefContainer))
-         //the modules above are scala, the modules below are java...
-         .withModule(new JavaExampleModule().create(tableDefContainer, clock))       ;
+                        .withPort(8443)),
+                VuuRpcOptions.apply())
+                .withModule(PriceModule.apply(clock, lifecycle, tableDefContainer))
+                .withModule(SimulationModule.apply(clock, lifecycle, tableDefContainer))
+                .withModule(MetricsModule.apply(clock, lifecycle, metrics, tableDefContainer))
+                .withModule(AuthNModule.apply(loginTokenService, Option.empty(), clock, lifecycle, tableDefContainer))
+                //the modules above are scala, the modules below are java...
+                .withModule(new JavaExampleModule().create(tableDefContainer, clock));
 
         final VuuServer vuuServer = new VuuServer(config, lifecycle, clock, metrics);
 

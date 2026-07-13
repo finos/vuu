@@ -44,7 +44,11 @@ object VuuJoinTableProviderOptions {
   }
 }
 
-
+object VuuRpcOptions {
+  def apply() : VuuRpcOptions = {
+    VuuRpcOptionsImpl.apply(maxCopySize = 10_000)
+  }
+}
 
 trait VuuWebSocketOptions {
   def wsPort: Int
@@ -83,6 +87,10 @@ trait VuuJoinTableProviderOptions {
   def maxQueueSize: Int
   def withBatchSize(maxQueueDepth: Int): VuuJoinTableProviderOptions
   def withMaxQueueDepth(maxQueueDepth: Int): VuuJoinTableProviderOptions
+}
+
+trait VuuRpcOptions {
+  def maxCopySize: Long
 }
 
 private case class VuuWebSocketOptionsImpl(wsPort: Int,
@@ -126,6 +134,10 @@ case class VuuJoinProviderOptionsImpl(batchSize: Int, maxQueueSize: Int) extends
   override def withMaxQueueDepth(maxQueueSize: Int): VuuJoinTableProviderOptions = this.copy(maxQueueSize = maxQueueSize)
 }
 
+case class VuuRpcOptionsImpl(maxCopySize: Long) extends VuuRpcOptions {
+  override def withMaxCopySize(maxCopySize: Int): VuuRpcOptions = this.copy(maxCopySize = maxCopySize)
+}
+
 case class VuuSecurityOptionsImpl(loginTokenService: LoginTokenService) extends VuuSecurityOptions{
   override def withLoginTokenService(loginTokenService: LoginTokenService): VuuSecurityOptions =
     this.copy(loginTokenService = loginTokenService)
@@ -138,7 +150,8 @@ case class VuuServerConfig(wsOptions: VuuWebSocketOptions = VuuWebSocketOptions(
                            joinProvider: VuuJoinTableProviderOptions = VuuJoinTableProviderOptions(),
                            modules: List[ViewServerModule] = List(),
                            plugins: List[Plugin] = List(),
-                           httpServerFactory: HttpServerFactory = NoHttpServerFactory) {
+                           httpServerFactory: HttpServerFactory = NoHttpServerFactory,
+                           rpcOptions: VuuRpcOptions) {
   def withModule(module: ViewServerModule): VuuServerConfig = {
     this.copy(modules = modules ++ List(module))
   }
