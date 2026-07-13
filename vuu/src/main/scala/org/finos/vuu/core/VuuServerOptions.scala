@@ -8,10 +8,11 @@ import org.finos.vuu.plugin.Plugin
 
 trait VuuSecurityOptions {
   def loginTokenService: LoginTokenService
+
   def withLoginTokenService(tokenValidator: LoginTokenService): VuuSecurityOptions
 }
 
-object VuuSecurityOptions{
+object VuuSecurityOptions {
   def apply(): VuuSecurityOptions = {
     VuuSecurityOptionsImpl(LoginTokenService())
   }
@@ -39,106 +40,144 @@ object VuuClientConnectionOptions {
 }
 
 object VuuJoinTableProviderOptions {
-  def apply() : VuuJoinTableProviderOptions = {
+  def apply(): VuuJoinTableProviderOptions = {
     VuuJoinProviderOptionsImpl.apply(batchSize = 16_384, maxQueueSize = 32_768)
   }
 }
 
 object VuuRpcOptions {
-  def apply() : VuuRpcOptions = {
+  def apply(): VuuRpcOptions = {
     VuuRpcOptionsImpl.apply(maxCopySize = 10_000)
   }
 }
 
 trait VuuWebSocketOptions {
   def wsPort: Int
+
   def uri: String
+
   def bindAddress: String
+
   def sslOptions: VuuSSLOptions
+
   def compressionEnabled: Boolean
+
   def nativeTransportEnabled: Boolean
+
   def maxSessionsPerUser: Int
+
   def withWsPort(port: Int): VuuWebSocketOptions
+
   def withUri(uri: String): VuuWebSocketOptions
+
   def withBindAddress(address: String): VuuWebSocketOptions
+
   def withSslDisabled(): VuuWebSocketOptions
+
   def withSsl(vuuSSLOptions: VuuSSLOptions): VuuWebSocketOptions
+
   def withCompression(withCompression: Boolean): VuuWebSocketOptions
+
   def withNativeTransport(withNativeTransport: Boolean): VuuWebSocketOptions
+
   def withMaxSessionsPerUser(maxSessionsPerUser: Int): VuuWebSocketOptions
 }
 
-trait VuuThreadingOptions{
-  def withViewPortThreads(threads:Int): VuuThreadingOptions
-  def withTreeThreads(threads:Int): VuuThreadingOptions
+trait VuuThreadingOptions {
+  def withViewPortThreads(threads: Int): VuuThreadingOptions
+
+  def withTreeThreads(threads: Int): VuuThreadingOptions
+
   def viewportThreads: Int
+
   def treeThreads: Int
 }
 
 trait VuuClientConnectionOptions {
   def hasHeartbeat: Boolean
+
   def withHeartbeat(hasHeartbeat: Boolean): VuuClientConnectionOptions
+
   def withHeartbeatEnabled(): VuuClientConnectionOptions
+
   def withHeartbeatDisabled(): VuuClientConnectionOptions
 }
 
 trait VuuJoinTableProviderOptions {
   def batchSize: Int
+
   def maxQueueSize: Int
+
   def withBatchSize(maxQueueDepth: Int): VuuJoinTableProviderOptions
+
   def withMaxQueueDepth(maxQueueDepth: Int): VuuJoinTableProviderOptions
 }
 
 trait VuuRpcOptions {
-  def maxCopySize: Long
+  def maxCopySize: Int
+
+  def withMaxCopySize(maxCopySize: Int): VuuRpcOptions
 }
 
 private case class VuuWebSocketOptionsImpl(wsPort: Int,
-                                   uri: String,
-                                   bindAddress: String,
-                                   sslOptions: VuuSSLOptions,
-                                   compressionEnabled: Boolean,
-                                   nativeTransportEnabled: Boolean,
-                                   maxSessionsPerUser: Int
-                                   ) extends VuuWebSocketOptions {
+                                           uri: String,
+                                           bindAddress: String,
+                                           sslOptions: VuuSSLOptions,
+                                           compressionEnabled: Boolean,
+                                           nativeTransportEnabled: Boolean,
+                                           maxSessionsPerUser: Int
+                                          ) extends VuuWebSocketOptions {
   override def withWsPort(port: Int): VuuWebSocketOptions = this.copy(wsPort = port)
+
   override def withUri(uri: String): VuuWebSocketOptions = this.copy(uri = uri)
+
   override def withBindAddress(address: String): VuuWebSocketOptions = this.copy(bindAddress = bindAddress)
+
   override def withSslDisabled(): VuuWebSocketOptions = this.withSsl(VuuSSLDisabled)
+
   override def withSsl(sslOptions: VuuSSLOptions): VuuWebSocketOptions =
     this.copy(sslOptions = sslOptions)
-  override def withCompression(compressionEnabled: Boolean): VuuWebSocketOptions = 
+
+  override def withCompression(compressionEnabled: Boolean): VuuWebSocketOptions =
     this.copy(compressionEnabled = compressionEnabled)
+
   override def withNativeTransport(nativeTransportEnabled: Boolean): VuuWebSocketOptions =
-      this.copy(nativeTransportEnabled = nativeTransportEnabled)
+    this.copy(nativeTransportEnabled = nativeTransportEnabled)
+
   override def withMaxSessionsPerUser(maxSessionsPerUser: Int): VuuWebSocketOptions =
     this.copy(maxSessionsPerUser = maxSessionsPerUser)
 }
 
 case class VuuThreadingOptionsImpl(viewPortThreads: Int = 1, treeViewPortThreads: Int = 1) extends VuuThreadingOptions {
   override def withViewPortThreads(threads: Int): VuuThreadingOptions = this.copy(viewPortThreads = threads)
+
   override def withTreeThreads(threads: Int): VuuThreadingOptions = this.copy(treeViewPortThreads = threads)
+
   override def viewportThreads: Int = viewPortThreads
+
   override def treeThreads: Int = treeViewPortThreads
 }
 
 case class VuuClientConnectionOptionsImpl(hasHeartbeat: Boolean) extends VuuClientConnectionOptions {
   override def withHeartbeat(hasHeartbeat: Boolean): VuuClientConnectionOptions = this.copy(hasHeartbeat = hasHeartbeat)
+
   override def withHeartbeatEnabled(): VuuClientConnectionOptions = this.copy(true)
+
   override def withHeartbeatDisabled(): VuuClientConnectionOptions = this.copy(false)
 }
 
 
 case class VuuJoinProviderOptionsImpl(batchSize: Int, maxQueueSize: Int) extends VuuJoinTableProviderOptions {
   override def withBatchSize(batchSize: Int): VuuJoinTableProviderOptions = this.copy(batchSize = batchSize)
+
   override def withMaxQueueDepth(maxQueueSize: Int): VuuJoinTableProviderOptions = this.copy(maxQueueSize = maxQueueSize)
 }
 
-case class VuuRpcOptionsImpl(maxCopySize: Long) extends VuuRpcOptions {
+case class VuuRpcOptionsImpl(maxCopySize: Int) extends VuuRpcOptions {
   override def withMaxCopySize(maxCopySize: Int): VuuRpcOptions = this.copy(maxCopySize = maxCopySize)
 }
 
-case class VuuSecurityOptionsImpl(loginTokenService: LoginTokenService) extends VuuSecurityOptions{
+case class VuuSecurityOptionsImpl(loginTokenService: LoginTokenService) extends VuuSecurityOptions {
   override def withLoginTokenService(loginTokenService: LoginTokenService): VuuSecurityOptions =
     this.copy(loginTokenService = loginTokenService)
 }
