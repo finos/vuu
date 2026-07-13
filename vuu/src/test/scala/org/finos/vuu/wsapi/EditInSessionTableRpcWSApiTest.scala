@@ -52,9 +52,9 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       keyField = "Id",
       columns =
         new ColumnBuilder()
-          .addString("Id", true)
+          .addString("Id")
           .addString("Name", true)
-          .addInt("Account", true)
+          .addInt("Account")
           .build(),
       isEditable = true
     )
@@ -98,7 +98,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         columns =
           new ColumnBuilder()
             .addString("Id")
-            .addString("Name")
+            .addString("Name", true)
             .addInt("Account")
             .build()
       ), viewPortDefFactoryForSessionTable)
