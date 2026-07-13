@@ -8,9 +8,9 @@ import org.finos.vuu.net.rpc.SessionTableCopyOption.Selected
 import org.finos.vuu.viewport.ViewPortTable
 
 class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) extends DefaultRpcHandler {
-  registerRpc(RpcNames.CreateSessionTableRpc, this.beginEditSession)
+  registerRpc(RpcNames.CreateSessionTableRpc, this.createSessionTable)
 
-  def beginEditSession(params: RpcParams): RpcFunctionResult = {
+  def createSessionTable(params: RpcParams): RpcFunctionResult = {
     val session: ClientSessionId = params.ctx.session
     val sourceTable = params.viewPort.table
     val copyOption = SessionTableCopyOption.fromString(params.namedParams("copyOption").asInstanceOf[String])
