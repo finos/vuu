@@ -31,21 +31,26 @@ class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) ext
     val sessionTableSource = tableContainer.getTable(sessionTableName)
     val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)
 
-    // TODO 2169 send column isEditable to UI via table meta data
-    // validate changes are not done on non-editable columns
     copyOption match {
       case All =>
-        val size = sourceTable.asTable.size()
-        val keys = sourceTable.asTable.primaryKeys
-      //TODO #2169 add a config to limit the max rows to copy
-      // TODO #2169 copy all/max rows rows to session table
-      // when copying data, the data has to be pulled from view port keys not from base table , in case it's not visible to user.
-      // we need the column to be aviailable in view port - how do we handle it if it's not there
+        val vp = params.viewPort
+        val vpKeys = vp.getKeys
+        val to = if (vp.getKeys.length > tableContainer.rpcOptions.maxCopySize) tableContainer.rpcOptions.maxCopySize else vp.getKeys.length
+        var i = 0
+        while (i < to) {
+          sessionTable.processUpdate(vp.table.pullRow(vpKeys.get(i))) // TODO 2169 copy all columns but allow user to subscribe to a subset in session table??
+          // we need the column to be aviailable in view port - how do we handle it if it's not there
+          // make sure keys are sorted in vp?
+          i += 1
+        }
       case Selected =>
-      //TODO #2169 copy selected rows
-      // sort keys? val keys = aSort.doSort(table.sourceTable, filteredKeys, vpColumns)
+        val vp = params.viewPort
+        val vpKeys = vp.getKeys
+        val selection = vp.getSelection
+        for (key <- selection) { // TODO 2169 do we care about sorting???
+          sessionTable.processUpdate(vp.table.pullRow(key))
+        }
       case Empty =>
-
     }
     RpcFunctionSuccess(Some(ViewPortTable(sessionTable.name, sessionTable.tableDef.getModule().name)))
   }
