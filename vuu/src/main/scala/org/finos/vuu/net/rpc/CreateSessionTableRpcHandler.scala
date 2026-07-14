@@ -49,8 +49,13 @@ class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) ext
         val vp = params.viewPort
         val vpKeys = vp.getKeys
         val selection = vp.getSelection
+        val vpColumns = ViewPortColumnCreator.create(params.viewPort.table.asTable, columnsToCopy.toList)
         for (key <- selection) {
-          sessionTable.processUpdate(vp.table.pullRow(key))
+          if (columnsToCopy.isEmpty) {
+            sessionTable.processUpdate(vp.table.pullRow(key))
+          } else {
+            sessionTable.processUpdate(vp.table.pullRow(key, vpColumns))
+          }
         }
       case Empty =>
     }
