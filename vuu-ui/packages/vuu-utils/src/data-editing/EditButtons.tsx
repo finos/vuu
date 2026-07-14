@@ -1,6 +1,6 @@
 import { Button } from "@salt-ds/core";
 import { EditState, EditSession } from "./EditSession";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export interface EditButtonProps {
   editSession?: EditSession;
@@ -43,8 +43,11 @@ export const EditButtons = ({
     onCancel?.();
   }, [confirmCancel, onCancel]);
 
-  useMemo(() => {
-    editSession?.on("editState", setEditState);
+  useEffect(() => {
+    if (editSession) {
+      editSession.on("editState", setEditState);
+      return () => editSession.removeListener("editState", setEditState);
+    }
   }, [editSession]);
 
   return (

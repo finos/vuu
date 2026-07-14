@@ -552,7 +552,8 @@ export declare type VuuRpcServiceRequest<T extends RpcContext = RpcContext> = {
 };
 
 export declare type AddRowParams = {
-  key: string;
+  /** Omitted for remote datasources — the server generates the key. */
+  key?: string;
   data: Record<string, VuuRowDataItemType>;
 };
 export declare type AddRowRpcServiceRequest = {
@@ -602,6 +603,15 @@ export declare type UndoRowChangeRpcServiceRequest = {
   type: "RPC_REQUEST";
   params: UndoRowChangeParams;
   rpcName: "undoRowChange";
+};
+export declare type DeleteSelectedRowsParams = {
+  mode?: "soft" | "hard";
+};
+export declare type DeleteSelectedRowsRpcServiceRequest = {
+  context: ViewportRpcContext;
+  type: "RPC_REQUEST";
+  params: DeleteSelectedRowsParams;
+  rpcName: "deleteSelectedRows";
 };
 
 export declare type AddRowRpcRequest = {

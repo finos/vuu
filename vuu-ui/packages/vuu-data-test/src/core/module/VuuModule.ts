@@ -3,6 +3,7 @@ import {
   DataSourceConfig,
   DataSourceSubscribedMessage,
   DataSourceVisualLinkCreatedMessage,
+  DeleteRowMode,
   EditSessionMode,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
@@ -24,6 +25,7 @@ import {
 import {
   isAddRowRpcRequest,
   isBeginEditSessionRpcRequest,
+  isDeleteSelectedRowsRpcRequest,
   isEditCellRpcRequest,
   isEndEditSessionRpcRequest,
   isRpcSuccess,
@@ -436,24 +438,61 @@ export abstract class VuuModule<T extends string = string>
     return { type: "ERROR_RESULT", errorMessage: "something went wrong" };
   };
 
+  private deleteSelectedRows: ServiceHandler = async (rpcRequest) => {
+    if (isDeleteSelectedRowsRpcRequest(rpcRequest)) {
+      const { viewPortId } = rpcRequest.context;
+      const { mode = "soft" } = rpcRequest.params;
+      const sessionTable = this.getSessionTable(viewPortId, false);
+      if (sessionTable && isProxySessionTable(sessionTable)) {
+        const { dataSource } = this.getSubscriptionByViewport(viewPortId);
+        const selectedRowIds = (dataSource as TickingArrayDataSource).getSelectedRowIds();
+        const deletedKeys: string[] = [];
+        if (selectedRowIds.length > 0) {
+          for (const key of selectedRowIds) {
+            if ((mode as DeleteRowMode) === "soft") {
+              sessionTable.update(key, "vuuMsg", "SOFT_DELETED");
+            } else {
+              sessionTable.delete(key);
+            }
+            deletedKeys.push(key);
+          }
+        }
+        return { type: "SUCCESS_RESULT", data: { deletedKeys } };
+      }
+      return {
+        type: "ERROR_RESULT",
+        errorMessage: `deleteSelectedRows: no active session table for viewport ${viewPortId}`,
+      };
+    }
+    return { type: "ERROR_RESULT", errorMessage: "deleteSelectedRows: invalid rpc request" };
+  };
+
   private undoRowChange: ServiceHandler = async (rpcRequest) => {
     if (isUndoRowChangeRpcRequest(rpcRequest)) {
       const { viewPortId } = rpcRequest.context;
       const { key } = rpcRequest.params;
       const sessionTable = this.getSessionTable(viewPortId, false);
       if (sessionTable && isProxySessionTable(sessionTable)) {
+        // Get the real source Table instance to avoid Proxy/private-field issues with findByKey
+        const { dataSource } = this.getSubscriptionByViewport(viewPortId);
+        const sourceTable = this.tables[dataSource.table?.table as T];
+        if (!sourceTable) {
+          return {
+            type: "ERROR_RESULT",
+            errorMessage: `undoRowChange: source table not found for viewport ${viewPortId}`,
+          };
+        }
+        // Detect newly inserted rows — they are not present in the source table
+        const sourceRow = sourceTable.findByKey(key);
+        if (!sourceRow) {
+          // Newly added row: remove it from the session entirely
+          sessionTable.delete(key);
+          return { type: "SUCCESS_RESULT", data: { wasInsertedRow: true } };
+        }
+        // Existing source row: revert session updates back to source table values
         const updates = sessionTable.getSessionUpdates();
         const rowUpdates = updates.get(key);
         if (rowUpdates) {
-          const { dataSource } = this.getSubscriptionByViewport(viewPortId);
-          const sourceTable = this.tables[dataSource.table?.table as T];
-          if (!sourceTable) {
-            return {
-              type: "ERROR_RESULT",
-              errorMessage: `undoRowChange: source table not found for viewport ${viewPortId}`,
-            };
-          }
-          const sourceRow = sourceTable.findByKey(key);
           for (const column of Object.keys(rowUpdates.cellUpdates)) {
             const originalValue = sourceRow[sourceTable.map[column]];
             sessionTable.update(key, column, originalValue);
@@ -852,6 +891,10 @@ export abstract class VuuModule<T extends string = string>
     {
       rpcName: "deleteRow",
       service: this.deleteRow,
+    },
+    {
+      rpcName: "deleteSelectedRows",
+      service: this.deleteSelectedRows,
     },
     {
       rpcName: "endEditSession",

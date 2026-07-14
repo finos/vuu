@@ -306,7 +306,7 @@ const InlineEditTableTemplate = () => {
 
   const exitEditMode = useCallback(() => setEditMode("view"), []);
 
-  const { dataSource, editSession, hasSelection, onAddRows, onDelete, onSelectionChange, onSave, onUndoRowChange } =
+  const { dataSource, editSession, hasSelection, onAddRows, onDelete, onSave, onUndoRowChange } =
     useEditableTable({
       dataSource: sourceTableDataSource,
       deleteMode: "soft",
@@ -382,7 +382,6 @@ const InlineEditTableTemplate = () => {
           <Table
             config={config}
             dataSource={dataSource}
-            onSelectionChange={onSelectionChange}
             renderBufferSize={10}
             selectionModel="checkbox"
           />
@@ -483,13 +482,25 @@ const CustomCell = ({
 
 registerComponent("example.color-coded-editor", CustomCell, "cell-renderer");
 
+type UndoCellComponentProps = {
+  onUndo?: (key: string) => void;
+  hasRowChanges?: (key: string) => boolean;
+};
+
 const UndoCellRenderer = ({ column, dataRow }: TableCellRendererProps) => {
-  const props = (column as any).type?.renderer?.componentProps ?? {};
-  const { onUndo, hasRowChanges } = props as {
-    onUndo?: (key: string) => void;
-    hasRowChanges?: (key: string) => boolean;
-  };
-  if (!hasRowChanges?.(dataRow.key)) return null;
+  const { onUndo, hasRowChanges } =
+    (column.type as { renderer?: { componentProps?: UndoCellComponentProps } })
+      ?.renderer?.componentProps ?? {};
+
+  // For cell edits: #rowEdits is populated synchronously so hasRowChanges works immediately.
+  // For soft-deleted rows: #deletedRows is populated after the RPC await, so we read
+  // vuuMsg directly from the row data — it is always present when the row re-renders.
+  // For remote datasource this could be any column present in row data other than vuuMsg, 
+  // but for local datasource we have used vuuMsg to display the soft-deleted status.
+  const isRowChanged =
+    hasRowChanges?.(dataRow.key) || dataRow["vuuMsg"] === "SOFT_DELETED";
+
+  if (!isRowChanged) return null;
   return (
     <Button
       appearance="transparent"

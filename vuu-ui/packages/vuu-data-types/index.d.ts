@@ -588,6 +588,7 @@ export interface EditApi {
     rowData?: Record<string, VuuRowDataItemType>,
   ) => Promise<RpcResult> | undefined;
   deleteRow?: (key: string, mode?: DeleteRowMode) => Promise<RpcResult> | undefined;
+  deleteSelectedRows?: (mode?: DeleteRowMode) => Promise<RpcResult> | undefined;
   editCell?: (
     rowKey: string,
     column: string,
@@ -599,6 +600,22 @@ export interface EditApi {
     force?: boolean,
   ) => Promise<RpcResult> | undefined;
 }
+
+/**
+ * Data payload returned in RpcResultSuccess.data by the beginEditSession service.
+ * Contains the server-assigned session table reference used to create the session datasource.
+ */
+export declare type BeginEditSessionResult = {
+  table: VuuTable;
+};
+
+export declare type DeleteSelectedRowsResult = {
+  deletedKeys: string[];
+};
+
+export declare type UndoRowChangeResult = {
+  wasInsertedRow?: boolean;
+};
 
 export interface DataSource
   extends EditApi,

@@ -47,7 +47,7 @@ editSession.begin(editSessionMode?)   // opens session datasource
 | Method | Description |
 |---|---|
 | `editSession.addRows(count, rowData?)` | Adds `count` blank rows via the source-table datasource `addRow` RPC |
-| `editSession.deleteRows(keys[])` | Soft-deletes rows (sets `vuuMsg = "SOFT_DELETED"`) via session datasource `deleteRow` RPC |
+| `editSession.deleteSelectedRows()` | Deletes the rows currently selected in the server-side viewport via a single `deleteSelectedRows` RPC; updates `#deletedRows` and `deleteCount` from the returned `deletedKeys` |
 | `editSession.restoreRows(keys[])` | Removes keys from the local deleted-rows set (does not send an RPC — use `undoRowChange` for full reversion) |
 | `editSession.undoRowChange(key)` | Reverts **all** pending changes for one row (cell edits + soft-delete) via a single `undoRowChange` RPC; only updates local counters on confirmed success |
 | `editSession.hasRowChanges(key)` | Returns `true` if the row has pending edits or is marked for deletion |
@@ -98,16 +98,16 @@ Wraps `EditSession` for use in React components. Manages session lifecycle in re
 | `hasSelection` | `true` when one or more rows are selected |
 | `onCancel` | Async handler: `await editSession.end()` → `onCancel()` |
 | `onSave` | Async handler: `await editSession.end(true, force)` → `onSave()` |
-| `onDelete` | Deletes selected rows via `editSession.deleteRows()` |
+| `onDelete` | Calls `editSession.deleteSelectedRows()`; resets selection count |
 | `onAddRows` | Adds rows via `editSession.addRows(addRowsCount)` |
 | `onUndoRowChange` | `(key) =>` `editSession.undoRowChange(key)` |
-| `onSelectionChange` | Keeps `selectedKeysRef` and `hasSelection` up to date |
+| `onSelectionChange` | Reads selection count from datasource and updates `hasSelection` |
 
 ---
 
 ## EditButtons — UI Component
 
-Renders the action bar for an edit session. Consumes `EditSession` directly for state, takes handler callbacks from `useEditableTable`.
+Renders the action bar for an edit session. Subscribes to `EditSession` directly for button state, and accepts handler callbacks for each action. The handlers are typically provided by `useEditableTable`, but any callbacks that satisfy the props interface can be used — the component has no hard dependency on the hook.
 
 ### Props
 
@@ -166,19 +166,26 @@ User edits cell
             session datasource sends updated row to client
 ```
 
-### Delete Row (soft)
+### Delete Selected Rows (soft)
 
 ```
 User selects rows → clicks Delete
   EditButtons.onDelete → useEditableTable.handleDelete
-    editSession.deleteRows([key, ...])
-      for each key:
-        #deletedRows.add(key)
-        deleteCount++                          ← emits "editState" → "dirty"
-        dataSource.deleteRow(key, "soft")      ← EditApi RPC (via session datasource)
-          → "deleteRow" RPC → VuuModule.deleteRow
+    editSession.deleteSelectedRows()
+      dataSource.deleteSelectedRows("soft")      ← EditApi RPC (via session datasource)
+        → "deleteSelectedRows" RPC → VuuModule.deleteSelectedRows
+            reads selectedRows from session datasource subscription
+            for each selected key:
               sessionTable.update(key, "vuuMsg", "SOFT_DELETED")
+            returns { deletedKeys: [...] }
+      on RpcSuccess: #deletedRows.add(key) for each, deleteCount += n ← emits "editState" → "dirty"
+      on RpcError:  local state unchanged
+    setSelectionCount(0)                         ← disables Delete button
 ```
+
+> **Note:** The client does not send row keys to the server. Selection state is owned by the server-side
+> viewport. The `deletedKeys` in the response are used to populate `#deletedRows` locally so that
+> `hasRowChanges` and `undoRowChange` continue to work correctly.
 
 ### Add Row
 
@@ -264,13 +271,56 @@ interface EditApi {
   beginEditSession?(mode?: EditSessionMode): Promise<DataSource | undefined>;
   addRow?(rowData?: Record<string, VuuRowDataItemType>): Promise<RpcResult> | undefined;
   deleteRow?(key: string, mode?: DeleteRowMode): Promise<RpcResult> | undefined;
+  deleteSelectedRows?(mode?: DeleteRowMode): Promise<RpcResult> | undefined;
   editCell?(rowKey: string, column: string, value: VuuRowDataItemType): Promise<RpcResult> | undefined;
   undoRowChange?(key: string): Promise<RpcResult> | undefined;
   endEditSession?(saveChanges?: boolean, force?: boolean): Promise<RpcResult> | undefined;
 }
 ```
 
-Both `TickingArrayDataSource` (local/test) and `VuuDataSource` (remote) implement all six methods. Each method dispatches a named RPC request (`"addRow"`, `"deleteRow"`, etc.) which is registered and handled in `VuuModule.#moduleServices`.
+### RPC Success Response Payloads
+
+Each `EditApi` method returns `RpcResultSuccess` on success. The table below shows the `data` field shape for each.
+
+| Method | `data` on success | Typed as |
+|---|---|---|
+| `beginEditSession` | `{ table: VuuTable }` — the server-assigned session table | `BeginEditSessionResult` |
+| `addRow` | `undefined` | — |
+| `deleteRow` | `undefined` | — |
+| `deleteSelectedRows` | `{ deletedKeys: string[] }` | `DeleteSelectedRowsResult` |
+| `editCell` | `undefined` | — |
+| `undoRowChange` | `{ wasInsertedRow?: boolean }` | `UndoRowChangeResult` |
+| `endEditSession` | `undefined` | — |
+
+The three structured payloads are declared in `@vuu-ui/vuu-data-types`:
+
+```ts
+/** beginEditSession — session table the datasource should subscribe to */
+type BeginEditSessionResult = {
+  table: VuuTable;
+};
+
+/** deleteSelectedRows — keys of every row deleted server-side.
+ *  Used by EditSession to increment deleteCount (drives editState / Save button)
+ *  and populate #deletedRows so undoRowChange can decrement it on revert. */
+type DeleteSelectedRowsResult = {
+  deletedKeys: string[];
+};
+
+/** undoRowChange — set to true when a newly added (uncommitted) row was removed */
+type UndoRowChangeResult = {
+  wasInsertedRow?: boolean;
+};
+```
+
+`EditSession` imports and uses these types directly — no inline casts.
+
+Both `TickingArrayDataSource` (local/test) and `VuuDataSource` (remote) implement all methods.
+Each method dispatches a named RPC request which is registered and handled in `VuuModule.#moduleServices`.
+
+> **`addRow` vs `deleteSelectedRows` key ownership:**
+> - `addRow` generates a client-side UUID key (local test only); `VuuDataSource` omits the key and lets the server generate it.
+> - `deleteSelectedRows` sends no row keys at all — the server reads its own viewport selection state.
 
 ---
 
@@ -279,8 +329,9 @@ Both `TickingArrayDataSource` (local/test) and `VuuDataSource` (remote) implemen
 | EditApi method | RPC name | Routes via | VuuModule handler |
 |---|---|---|---|
 | `addRow` | `"addRow"` | **source** datasource | `addRow` — inserts into session table |
-| `deleteRow` | `"deleteRow"` | session datasource | `deleteRow` — `sessionTable.update(key, "vuuMsg", "SOFT_DELETED")` |
+| `deleteRow` | `"deleteRow"` | session datasource | `deleteRow` — direct key-based delete (for programmatic use) |
+| `deleteSelectedRows` | `"deleteSelectedRows"` | session datasource | reads `selectedRows` from session subscription; soft/hard deletes each; returns `DeleteSelectedRowsResult` |
 | `editCell` | `"editCell"` | session datasource | `editCell` — `sessionTable.update(key, col, val)` |
-| `undoRowChange` | `"undoRowChange"` | session datasource | `undoRowChange` — reverts all updates for key in session table |
+| `undoRowChange` | `"undoRowChange"` | session datasource | if key not in source table: deletes inserted row, returns `UndoRowChangeResult { wasInsertedRow: true }`; otherwise reverts `cellUpdates` to source values |
 | `beginEditSession` | `"beginEditSession"` | source datasource | creates `SessionTable` proxy, stores in `#sessionTableMap` |
 | `endEditSession` | `"endEditSession"` | session datasource | applies (or discards) session updates to source table |

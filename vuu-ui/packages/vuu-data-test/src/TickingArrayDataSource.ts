@@ -335,6 +335,16 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return response?.errorMessage ?? "deleteRow failed";
   };
 
+  deleteSelectedRows = async (mode: DeleteRowMode = "soft"): Promise<RpcResultSuccess | RpcResultError> => {
+    const rpcHost = this.#sessionDataSource ?? this;
+    const response = await rpcHost.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "deleteSelectedRows",
+      params: { mode },
+    });
+    return response ?? { type: "ERROR_RESULT", errorMessage: "deleteSelectedRows failed" };
+  };
+
   undoRowChange = async (key: string): Promise<RpcResultSuccess | RpcResultError> => {
     const rpcHost = this.#sessionDataSource ?? this;
     const response = await rpcHost.rpcRequest?.({

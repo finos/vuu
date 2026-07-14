@@ -1,7 +1,6 @@
 import { DataSource, DeleteRowMode, EditSessionMode } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { useCallback, useMemo, useRef, useState } from "react";
-import type { SelectionChangeHandler } from "@vuu-ui/vuu-table-types";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useData } from "../context-definitions/DataProvider";
 import { useLayoutEffectSkipFirst } from "../useLayoutEffectSkipFirst";
 import { EditSession } from "./EditSession";
@@ -44,7 +43,6 @@ export const useEditableTable = ({
     DataSource | undefined
   >(undefined);
   const [selectionCount, setSelectionCount] = useState(0);
-  const selectedKeysRef = useRef<string[]>([]);
   useLayoutEffectSkipFirst(() => {
     console.warn(`[useEditableTable] columns and or table changed`);
   }, [columns, table]);
@@ -94,12 +92,9 @@ export const useEditableTable = ({
     [dataSource, editSession, onSave],
   );
 
-  const handleDelete = useCallback(() => {
-    if (selectedKeysRef.current.length > 0) {
-      editSession.deleteRows(selectedKeysRef.current);
-      selectedKeysRef.current = [];
-      setSelectionCount(0);
-    }
+  const handleDelete = useCallback(async () => {
+    await editSession.deleteSelectedRows();
+    setSelectionCount(0);
   }, [editSession]);
 
   const handleAddRows = useCallback(() => {
@@ -111,16 +106,10 @@ export const useEditableTable = ({
     [editSession],
   );
 
-  const handleSelectionChange = useCallback<SelectionChangeHandler>(
-    () => {
-      const dsWithIds = dataSource as unknown as {
-        getSelectedRowIds?: () => string[];
-      };
-      selectedKeysRef.current = dsWithIds.getSelectedRowIds?.() ?? [];
-      setSelectionCount(selectedKeysRef.current.length);
-    },
-    [dataSource],
-  );
+  useEffect(() => {
+    dataSource.on("row-selection", setSelectionCount);
+    return () => dataSource.removeListener("row-selection", setSelectionCount);
+  }, [dataSource]);
 
   useMemo(async () => {
     if (isEditMode) {
@@ -145,7 +134,6 @@ export const useEditableTable = ({
     onAddRows: handleAddRows,
     onCancel: handleCancel,
     onDelete: handleDelete,
-    onSelectionChange: handleSelectionChange,
     onSave: handleSave,
     onUndoRowChange: handleUndoRowChange,
     sessionDataSource,

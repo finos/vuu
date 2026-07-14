@@ -1,4 +1,4 @@
-import { DeleteRowMode, EditApi, EditSessionMode } from "@vuu-ui/vuu-data-types";
+import { DeleteRowMode, DeleteSelectedRowsResult, EditApi, EditSessionMode, UndoRowChangeResult } from "@vuu-ui/vuu-data-types";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter } from "../event-emitter";
 import { isRpcError } from "../protocol-message-utils";
@@ -114,13 +114,16 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
   }
 
-  deleteRows(keys: string[]) {
-    for (const key of keys) {
-      if (!this.#deletedRows.has(key)) {
+  async deleteSelectedRows(): Promise<void> {
+    const response = await this.dataSource?.deleteSelectedRows?.(this.#deleteMode);
+    if (isRpcError(response)) return;
+    const deletedKeys = (response?.data as DeleteSelectedRowsResult | undefined)
+      ?.deletedKeys;
+    if (deletedKeys && deletedKeys.length > 0) {
+      for (const key of deletedKeys) {
         this.#deletedRows.add(key);
-        this.deleteCount = this.#deleteCount + 1;
-        this.dataSource?.deleteRow?.(key, this.#deleteMode);
       }
+      this.deleteCount = this.#deleteCount + deletedKeys.length;
     }
   }
 
@@ -155,10 +158,19 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
     if (!rowEdits?.cellEdits.size && !wasDeleted) return;
 
+    this.#rowEdits.delete(key);
+    if (wasDeleted) this.#deletedRows.delete(key);
+
     const response = await this.dataSource?.undoRowChange?.(key);
 
-    if (isRpcError(response)) return;
+    if (isRpcError(response)) {
+      // Restore on failure
+      if (rowEdits) this.#rowEdits.set(key, rowEdits);
+      if (wasDeleted) this.#deletedRows.add(key);
+      return;
+    }
 
+    // Update counters after confirmed success
     if (rowEdits) {
       let validCount = 0;
       let invalidCount = 0;
@@ -169,14 +181,18 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
           validCount++;
         }
       }
-      this.#rowEdits.delete(key);
       this.editCount = this.#editCount - validCount;
       this.invalidCount = this.#invalidCount - invalidCount;
     }
-
     if (wasDeleted) {
-      this.#deletedRows.delete(key);
       this.deleteCount = this.#deleteCount - 1;
+    }
+    
+    // If the server deleted a newly inserted row, decrement addCount
+    const wasInsertedRow =
+      (response?.data as UndoRowChangeResult | undefined)?.wasInsertedRow === true;
+    if (wasInsertedRow) {
+      this.addCount = this.#addCount - 1;
     }
   }
 

@@ -125,6 +125,65 @@ describe("deleteRow", () => {
   });
 });
 
+describe("deleteSelectedRows", () => {
+  it("dispatches deleteSelectedRows RPC with the given mode", async () => {
+    const ds = createDataSource();
+
+    await ds.deleteSelectedRows("hard");
+
+    expect(ds.rpcRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "RPC_REQUEST",
+        rpcName: "deleteSelectedRows",
+        params: { mode: "hard" },
+      }),
+    );
+  });
+
+  it("defaults mode to 'soft'", async () => {
+    const ds = createDataSource();
+
+    await ds.deleteSelectedRows();
+
+    expect(ds.rpcRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rpcName: "deleteSelectedRows",
+        params: { mode: "soft" },
+      }),
+    );
+  });
+
+  it("returns the RpcResult unchanged on success", async () => {
+    const ds = createDataSource();
+    const success = { type: "SUCCESS_RESULT" as const, data: { deletedKeys: ["row-001", "row-002"] } };
+    vi.mocked(ds.rpcRequest).mockResolvedValue(success);
+
+    const result = await ds.deleteSelectedRows();
+
+    expect(result).toEqual(success);
+  });
+
+  it("returns the RpcResultError unchanged on failure", async () => {
+    const ds = createDataSource();
+    const error = ERROR("no active session table");
+    vi.mocked(ds.rpcRequest).mockResolvedValue(error);
+
+    const result = await ds.deleteSelectedRows();
+
+    expect(result).toEqual(error);
+  });
+
+  it("returns a fallback error when rpcRequest yields no response", async () => {
+    const ds = createDataSource();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(ds.rpcRequest).mockResolvedValue(undefined as any);
+
+    const result = await ds.deleteSelectedRows();
+
+    expect(result).toEqual(ERROR("deleteSelectedRows failed"));
+  });
+});
+
 describe("editCell", () => {
   it("dispatches editCell RPC with key, column and data", async () => {
     const ds = createDataSource();
