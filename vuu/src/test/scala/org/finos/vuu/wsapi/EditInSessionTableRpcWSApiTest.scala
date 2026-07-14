@@ -22,13 +22,14 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     .build();
   private val tableName1 = "EditInSessionTest1"
   private val nonEditableTableName = "NonEditableTable"
-  private val sessionTableName1 = "EditInSessionTest1Session"
+  private val largeTableName = "LargeTable"
+  private val sessionTableDefName = "EditInSessionTest1Session"
   private val moduleName = "EditInSessionTableRpcTest"
   private val testProviderFactory = new TestProviderFactory
+  private val maxCopySize = 10 // configured in CoreServerApiTest
 
-  // TODO 2069
+  // TODO 2069 add test scenarios for empty but all columns, selection with all columns, selection with some columns
   // test with large data, have 10 in base table, 5 in vp, add filter and sort
-  // test table size over max copy size
   // test vp is sorted, the data copied to session table is also sorted
   // TODO 2169 do we care about sorting of viewport selection???
   Feature("[Web Socket API] create a session table and copy data from source table") {
@@ -41,7 +42,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
         params = Map(
-          "sessionTableName" -> sessionTableName1,
+          "sessionTableName" -> sessionTableDefName,
           "copyOption" -> "Empty",
           "columnsToCopy" -> "Id,Name"
         ))
@@ -65,7 +66,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
         params = Map(
-          "sessionTableName" -> sessionTableName1,
+          "sessionTableName" -> sessionTableDefName,
           "copyOption" -> "All",
           "columnsToCopy" -> "*"
         ))
@@ -89,7 +90,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
         params = Map(
-          "sessionTableName" -> sessionTableName1,
+          "sessionTableName" -> sessionTableDefName,
           "copyOption" -> "All",
           "columnsToCopy" -> "Id,Name"
         ))
@@ -104,6 +105,30 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, 0)
     }
 
+    Scenario("create a session table and copy all rows up to max threshold from source table") {
+      Given("a view port exist")
+      val viewPortId = createViewPort(largeTableName)
+
+      When("request creating a session table and copy all rows")
+      val createSessionTableRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.CreateSessionTableRpc,
+        params = Map(
+          "sessionTableName" -> sessionTableDefName,
+          "copyOption" -> "All",
+          "columnsToCopy" -> "*"
+        ))
+      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
+
+      Then("session table is created with max number of rows")
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
+      val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, maxCopySize)
+    }
+
     Scenario("Request to create a session table failed for non-editable table") {
       Given("a view port exist")
       val viewPortId = createViewPort(nonEditableTableName)
@@ -113,7 +138,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
         params = Map(
-          "sessionTableName" -> sessionTableName1,
+          "sessionTableName" -> sessionTableDefName,
           "copyOption" -> "Empty",
           "columnsToCopy" -> ""
         ))
@@ -135,7 +160,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
         params = Map(
-          "sessionTableName" -> sessionTableName1,
+          "sessionTableName" -> sessionTableDefName,
           "copyOption" -> "Empty",
           "columnsToCopy" -> "DUMMY"
         ))
@@ -165,13 +190,26 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn", "Account" -> 789),
     ))
     val providerFactory = (table: DataTable, _: AbstractVuuServer) => testProviderFactory.create(table, dataSource)
+    val largeDataSource = new FakeDataSource(ListMap(
+      "row1" -> Map("Id" -> "row1", "Name" -> "user1", "Account" -> 1),
+      "row2" -> Map("Id" -> "row2", "Name" -> "user1", "Account" -> 2),
+      "row3" -> Map("Id" -> "row3", "Name" -> "user1", "Account" -> 3),
+      "row4" -> Map("Id" -> "row4", "Name" -> "user1", "Account" -> 4),
+      "row5" -> Map("Id" -> "row5", "Name" -> "user1", "Account" -> 5),
+      "row6" -> Map("Id" -> "row6", "Name" -> "user1", "Account" -> 6),
+      "row7" -> Map("Id" -> "row7", "Name" -> "user1", "Account" -> 7),
+      "row8" -> Map("Id" -> "row8", "Name" -> "user1", "Account" -> 8),
+      "row9" -> Map("Id" -> "row9", "Name" -> "user1", "Account" -> 9),
+      "row10" -> Map("Id" -> "row10", "Name" -> "user1", "Account" -> 10),
+      "row11" -> Map("Id" -> "row11", "Name" -> "user1", "Account" -> 11),
+    ))
+    val largeProviderFactory = (table: DataTable, _: AbstractVuuServer) => testProviderFactory.create(table, largeDataSource)
 
     val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
         columns = allColumns,
         service = new CreateSessionTableRpcHandler(using tableContainer)
       )
-
     val viewPortDefFactoryForSessionTable = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
         columns = allColumns,
@@ -181,8 +219,9 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     ModuleFactory.withNamespace(moduleName)
       .addTableForTest(createTableDef(tableName1, true), viewPortDefFactory, providerFactory)
       .addTableForTest(createTableDef(nonEditableTableName, false), viewPortDefFactory, providerFactory)
+      .addTableForTest(createTableDef(largeTableName, true), viewPortDefFactory, largeProviderFactory)
       .addSessionTable(SessionTableDef(
-        name = sessionTableName1,
+        name = sessionTableDefName,
         keyField = "Id",
         columns = allColumns
       ), viewPortDefFactoryForSessionTable)

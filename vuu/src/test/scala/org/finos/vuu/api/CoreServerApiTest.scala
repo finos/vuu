@@ -22,7 +22,7 @@ class CoreServerApiTest extends AnyFeatureSpec with BeforeAndAfterEach with Give
     implicit val lifecycle: LifecycleContainer = new LifecycleContainer
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
     val joinTableProvider = JoinTableProviderImpl()
-    val rpcOptions: VuuRpcOptions = VuuRpcOptionsImpl(100)
+    val rpcOptions: VuuRpcOptions = VuuRpcOptionsImpl(10)
     val tableContainer = new TableContainer(joinTableProvider, rpcOptions)
     val providerContainer = new ProviderContainer(joinTableProvider)
     val pluginRegistry = new DefaultPluginRegistry

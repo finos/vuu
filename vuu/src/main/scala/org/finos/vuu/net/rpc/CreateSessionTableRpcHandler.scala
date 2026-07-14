@@ -2,10 +2,7 @@ package org.finos.vuu.net.rpc
 
 import org.finos.vuu.core.table.{TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.SessionTableCopyOption.All
-import org.finos.vuu.net.rpc.SessionTableCopyOption.Empty
-import org.finos.vuu.net.rpc.SessionTableCopyOption.Selected
-import org.finos.vuu.viewport.ViewPortTable
+import org.finos.vuu.net.rpc.SessionTableCopyOption.{All, Empty, Selected}
 
 class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) extends DefaultRpcHandler {
   registerRpc(RpcNames.CreateSessionTableRpc, this.createSessionTable)
