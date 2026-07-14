@@ -1,6 +1,6 @@
 package org.finos.vuu.net.rpc
 
-import org.finos.vuu.core.table.TableContainer
+import org.finos.vuu.core.table.{TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.SessionTableCopyOption.All
 import org.finos.vuu.net.rpc.SessionTableCopyOption.Empty
@@ -21,11 +21,11 @@ class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) ext
       return new RpcFunctionFailure(s"Table ${sourceTable.name} is not editable")
     }
 
-    val validColumns = sourceTable.asTable.columnsForNames(columnsToCopy.toList)
+    val columnsInSource = sourceTable.asTable.columnsForNames(columnsToCopy.toList)
       .map(_.name)
-    val invalidColumns = columnsToCopy.filterNot(validColumns.contains)
-    if (invalidColumns.nonEmpty) {
-      return new RpcFunctionFailure(s"Column(s) [${invalidColumns.mkString(", ")} not found in table ${sourceTable.name}]")
+    val columnsNotInSource = columnsToCopy.filterNot(columnsInSource.contains)
+    if (columnsNotInSource.nonEmpty) {
+      return new RpcFunctionFailure(s"Column(s) [${columnsNotInSource.mkString(", ")} not found in table ${sourceTable.name}]")
     }
 
     val sessionTableSource = tableContainer.getTable(sessionTableName)
@@ -34,20 +34,22 @@ class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) ext
     copyOption match {
       case All =>
         val vp = params.viewPort
-        val vpKeys = vp.getKeys
         val to = if (vp.getKeys.length > tableContainer.rpcOptions.maxCopySize) tableContainer.rpcOptions.maxCopySize else vp.getKeys.length
         var i = 0
+        val vpColumns = ViewPortColumnCreator.create(params.viewPort.table.asTable, columnsToCopy.toList)
         while (i < to) {
-          sessionTable.processUpdate(vp.table.pullRow(vpKeys.get(i))) // TODO 2169 copy all columns but allow user to subscribe to a subset in session table??
-          // we need the column to be aviailable in view port - how do we handle it if it's not there
-          // make sure keys are sorted in vp?
+          if (columnsToCopy.isEmpty) {
+            sessionTable.processUpdate(vp.table.pullRow(vp.getKeys.get(i)))
+          } else {
+            sessionTable.processUpdate(vp.table.pullRow(vp.getKeys.get(i), vpColumns))
+          }
           i += 1
         }
       case Selected =>
         val vp = params.viewPort
         val vpKeys = vp.getKeys
         val selection = vp.getSelection
-        for (key <- selection) { // TODO 2169 do we care about sorting???
+        for (key <- selection) {
           sessionTable.processUpdate(vp.table.pullRow(key))
         }
       case Empty =>
