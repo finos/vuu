@@ -52,10 +52,8 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-
-      val sessionTableName = rpcResult.data.asInstanceOf[ViewPortTable].table
-      val sessionTableViewPortId = createViewPort(tableName1)
-      // todo verify session table is empty
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, 0)
     }
 
     Scenario("create a session table and copy all rows from all columns from source table") {
@@ -69,16 +67,17 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         params = Map(
           "sessionTableName" -> sessionTableName1,
           "copyOption" -> "All",
-          "columnsToCopy" -> ""
+          "columnsToCopy" -> "*"
         ))
       val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 
-      Then("empty session table is created")
+      Then("session table is created with all data")
       val response = vuuClient.awaitForResponse(requestId)
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      // TODO verify session table has all 3 columns and all rows of data
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, 3)
     }
 
     Scenario("create a session table and copy all rows from some columns from source table") {
@@ -96,13 +95,13 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ))
       val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 
-      Then("empty session table is created")
+      Then("session table is created with all data")
       val response = vuuClient.awaitForResponse(requestId)
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-
-      // TODO verify session table has all rows but only 2 columns
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, 0)
     }
 
     Scenario("Request to create a session table failed for non-editable table") {
@@ -129,7 +128,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
 
     Scenario("Request to create a session table failed for copying from columns not in source table") {
       Given("a view port exist")
-      val viewPortId = createViewPort(nonEditableTableName)
+      val viewPortId = createViewPortAndVerifyDataSize(tableName1, 3)
 
       When("request createSessionTable and copy from columns not in source table")
       val createSessionTableRequest = RpcRequest(
@@ -191,11 +190,15 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   }
 
   private def createViewPort(tableName: String) = {
-    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(0, 100), columns = Array("Id", "Name", "Account"))
+    createViewPortAndVerifyDataSize(tableName, 3)
+  }
+
+  private def createViewPortAndVerifyDataSize(tableName: String, expectedRowCount: Int) = {
+    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(0, 100), columns = Array("*"))
     vuuClient.send(sessionId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
-    waitForData(3)
+    waitForData(expectedRowCount)
     viewPortId
   }
 }

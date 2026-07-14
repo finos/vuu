@@ -14,14 +14,15 @@ class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) ext
     val session: ClientSessionId = params.ctx.session
     val sourceTable = params.viewPort.table
     val copyOption = SessionTableCopyOption.fromString(params.namedParams("copyOption").asInstanceOf[String])
-    val columnsToCopy = params.namedParams("columnsToCopy").asInstanceOf[String].split(",")
+    val columnsToCopyStr = params.namedParams("columnsToCopy").asInstanceOf[String]
+    val columnsToCopy = if (columnsToCopyStr.equals("*")) List.empty[String] else columnsToCopyStr.split(",").toList
     val sessionTableName = params.namedParams("sessionTableName").asInstanceOf[String]
 
     if (!sourceTable.asTable.getTableDef.isEditable) {
       return new RpcFunctionFailure(s"Table ${sourceTable.name} is not editable")
     }
 
-    val columnsInSource = sourceTable.asTable.columnsForNames(columnsToCopy.toList)
+    val columnsInSource = sourceTable.asTable.columnsForNames(columnsToCopy)
       .map(_.name)
     val columnsNotInSource = columnsToCopy.filterNot(columnsInSource.contains)
     if (columnsNotInSource.nonEmpty) {
@@ -36,7 +37,7 @@ class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) ext
         val vp = params.viewPort
         val to = if (vp.getKeys.length > tableContainer.rpcOptions.maxCopySize) tableContainer.rpcOptions.maxCopySize else vp.getKeys.length
         var i = 0
-        val vpColumns = ViewPortColumnCreator.create(params.viewPort.table.asTable, columnsToCopy.toList)
+        val vpColumns = ViewPortColumnCreator.create(params.viewPort.table.asTable, columnsToCopy)
         while (i < to) {
           if (columnsToCopy.isEmpty) {
             sessionTable.processUpdate(vp.table.pullRow(vp.getKeys.get(i)))
@@ -59,6 +60,6 @@ class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) ext
         }
       case Empty =>
     }
-    RpcFunctionSuccess(Some(ViewPortTable(sessionTable.name, sessionTable.tableDef.getModule().name)))
+    RpcFunctionSuccess(Some(Map("sessionTable" -> sessionTable.name, "module" -> sessionTable.tableDef.getModule().name)))
   }
 }
