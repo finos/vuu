@@ -59,14 +59,14 @@ public class VuuExampleMain {
                 VuuClientConnectionOptions.apply()
                         .withHeartbeatEnabled(),
                 VuuJoinTableProviderOptions.apply(),
+                VuuRpcOptions.apply(),
                 new scala.collection.mutable.ListBuffer<ViewServerModule>().toList(),
                 new scala.collection.mutable.ListBuffer<Plugin>().toList(),
                 VuuHttp2ServerFactory.apply(VuuHttp2ServerOptions.apply()
                         .withWebRoot(new AbsolutePathWebRoot(webRoot, true))
                         .withSsl(new VuuSSLByCertAndKey(certPath, keyPath, Option.empty(), VuuSSLCipherSuiteOptions.apply()))
-                        .withPort(8443)),
-                VuuRpcOptions.apply())
-                .withModule(PriceModule.apply(clock, lifecycle, tableDefContainer))
+                        .withPort(8443))
+        ).withModule(PriceModule.apply(clock, lifecycle, tableDefContainer))
                 .withModule(SimulationModule.apply(clock, lifecycle, tableDefContainer))
                 .withModule(MetricsModule.apply(clock, lifecycle, metrics, tableDefContainer))
                 .withModule(AuthNModule.apply(loginTokenService, Option.empty(), clock, lifecycle, tableDefContainer))
