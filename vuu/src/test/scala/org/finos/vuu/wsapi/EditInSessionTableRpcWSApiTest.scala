@@ -6,7 +6,7 @@ import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, RpcRequest, RpcResponseNew}
-import org.finos.vuu.net.rpc.{CreateSessionTableRpcHandler, EndEditSessionRpcHandler, RpcErrorResult, RpcFunctionFailure, RpcNames, RpcSuccessResult, ViewPortContext}
+import org.finos.vuu.net.rpc.{CreateSessionTableRpcHandler, EndEditSessionRpcHandler, RpcErrorResult, RpcNames, RpcSuccessResult, ViewPortContext}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -32,11 +32,11 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   // test vp is sorted, the data copied to session table is also sorted
   // TODO 2169 do we care about sorting of viewport selection???
   Feature("[Web Socket API] create a session table and copy data from source table") {
-    Scenario("edit in an empty session table") {
+    Scenario("create an empty session table from source table") {
       Given("a view port exist")
       val viewPortId = createViewPort(tableName1)
 
-      When("request createSessionTable with empty table")
+      When("request creating an empty session table")
       val createSessionTableRequest = RpcRequest(
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
@@ -52,6 +52,57 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+
+      val sessionTableName = rpcResult.data.asInstanceOf[ViewPortTable].table
+      val sessionTableViewPortId = createViewPort(tableName1)
+      // todo verify session table is empty
+    }
+
+    Scenario("create a session table and copy all rows from all columns from source table") {
+      Given("a view port exist")
+      val viewPortId = createViewPort(tableName1)
+
+      When("request creating a session table and copy all rows from all columns")
+      val createSessionTableRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.CreateSessionTableRpc,
+        params = Map(
+          "sessionTableName" -> sessionTableName1,
+          "copyOption" -> "All",
+          "columnsToCopy" -> ""
+        ))
+      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
+
+      Then("empty session table is created")
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
+      val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      // TODO verify session table has all 3 columns and all rows of data
+    }
+
+    Scenario("create a session table and copy all rows from some columns from source table") {
+      Given("a view port exist")
+      val viewPortId = createViewPort(tableName1)
+
+      When("request creating a session table and copy all rows from some columns")
+      val createSessionTableRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.CreateSessionTableRpc,
+        params = Map(
+          "sessionTableName" -> sessionTableName1,
+          "copyOption" -> "All",
+          "columnsToCopy" -> "Id,Name"
+        ))
+      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
+
+      Then("empty session table is created")
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
+      val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+
+      // TODO verify session table has all rows but only 2 columns
     }
 
     Scenario("Request to create a session table failed for non-editable table") {
