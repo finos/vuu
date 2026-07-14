@@ -88,6 +88,11 @@ Wraps `EditSession` for use in React components. Manages session lifecycle in re
 | `onCancel` | required | Called after `editSession.end()` (discard) completes |
 | `onSave` | required | Called after `editSession.end(true)` (save) completes successfully |
 
+`editSessionMode` accepts any `EditSessionMode` value, including the short-form aliases introduced
+for the RPC contract (`"All"`, `"Selected"`, `"Empty"`) as well as the long-form strings
+(`"inline-all-rows"`, `"all-rows"`, `"selected-rows"`, `"empty-session-table"`). The datasource
+converts long-form values to their aliases before dispatching the RPC (see `toRpcEditSessionMode`).
+
 ### Return Values
 
 | Value | Description |
@@ -176,7 +181,7 @@ User selects rows → clicks Delete
         → "deleteSelectedRows" RPC → VuuModule.deleteSelectedRows
             reads selectedRows from session datasource subscription
             for each selected key:
-              sessionTable.update(key, "vuuMsg", "SOFT_DELETED")
+              sessionTable.update(key, sessionTableMessageColumn, "SOFT_DELETED")
             returns { deletedKeys: [...] }
       on RpcSuccess: #deletedRows.add(key) for each, deleteCount += n ← emits "editState" → "dirty"
       on RpcError:  local state unchanged
@@ -235,7 +240,7 @@ User clicks Save
           → "endEditSession" RPC → VuuModule.endEditSession
               for each key in sessionTable.getSessionUpdates():
                 compare lastUpdateTimestamp with source table
-                if stale: write error to vuuMsg column, rejectedCount++
+                if stale: write error to sessionTableMessageColumn, rejectedCount++
                 else: apply cellUpdates to source table row
               if rejectedCount > 0 → returns ERROR_RESULT "stale update"
                 EditSession.end catches StaleUpdateError → emits "editState" "stale"
@@ -322,9 +327,33 @@ Each method dispatches a named RPC request which is registered and handled in `V
 > - `addRow` generates a client-side UUID key (local test only); `VuuDataSource` omits the key and lets the server generate it.
 > - `deleteSelectedRows` sends no row keys at all — the server reads its own viewport selection state.
 
+> **`sessionTableMessageColumn`:** `VuuModule` uses a configurable column name for soft-delete and
+> stale-rejection markers (defaults to `"vuuMsg"`). Subclasses can override it via `VuuModuleOptions`:
+> ```typescript
+> super("MY_MODULE", { sessionTableMessageColumn: "statusCol" });
+> ```
+> Pass the same name as `sessionTableMessageColumn` in the `UndoCellComponentProps` so the undo
+> button correctly reads the soft-delete state from the row data.
+
 ---
 
 ## RPC Routing Summary
+
+### Request Params
+
+The `params` object sent with each RPC request (types from `@vuu-ui/vuu-protocol-types`):
+
+| RPC name | Key params sent |
+|---|---|
+| `"beginEditSession"` | `{ editSessionMode: EditSessionModeAlias \| "inline-all-rows" }` |
+| `"addRow"` | `{ data: Record<string, VuuRowDataItemType> }` — no key from remote; local adds `key` |
+| `"deleteRow"` | `{ key: string, mode: DeleteRowMode }` |
+| `"deleteSelectedRows"` | `{ mode: DeleteRowMode }` — no keys; server reads its own selection |
+| `"editCell"` | `{ key: string, column: string, data: VuuRowDataItemType }` |
+| `"undoRowChange"` | `{ key: string }` |
+| `"endEditSession"` | `{ save?: boolean, force?: boolean }` |
+
+### Routing & Handlers
 
 | EditApi method | RPC name | Routes via | VuuModule handler |
 |---|---|---|---|

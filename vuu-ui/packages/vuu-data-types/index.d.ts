@@ -568,6 +568,7 @@ export declare type DataSourceSuspenseProps = {
  * the existing component. e.g. directly edit cells within a table.
  */
 export declare type InlineEditSessionMode = "inline-all-rows";
+
 /**
  * A standalone edit session re-renders editable data in an edit component.
  * e.g an edit panel may be displayed in a dialog.
@@ -576,9 +577,22 @@ export declare type StandaloneEditSessionMode =
   | "selected-rows"
   | "all-rows"
   | "empty-session-table";
+
+/**
+ * Short-form values accepted by the beginEditSession RPC (remote and local).
+ * The client-side EditApi maps the long-form StandaloneEditSessionMode values
+ * to one of these before dispatching the RPC call:
+ * - `"All"`      ← `"all-rows"`
+ * - `"Empty"`    ← `"empty-session-table"`
+ * - `"Selected"` ← `"selected-rows"`
+ * `"inline-all-rows"` is a client-only concept and is NOT mapped — it passes
+ * through to the RPC unchanged so the server can create an all-rows session table.
+ */
+export declare type EditSessionModeAlias = "All" | "Empty" | "Selected";
 export declare type EditSessionMode =
   | InlineEditSessionMode
-  | StandaloneEditSessionMode;
+  | StandaloneEditSessionMode
+  | EditSessionModeAlias;
 
 export interface EditApi {
   beginEditSession?: (

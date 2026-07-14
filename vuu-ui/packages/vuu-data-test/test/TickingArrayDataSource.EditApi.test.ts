@@ -260,20 +260,77 @@ describe("undoRowChange", () => {
 });
 
 describe("beginEditSession", () => {
-  it("dispatches beginEditSession RPC with the given editSessionMode", async () => {
+  const sessionSuccess = {
+    type: "SUCCESS_RESULT" as const,
+    data: { table: { module: "TEST", table: "session-xyz" } },
+  };
+
+  it("keeps 'inline-all-rows' unchanged in the RPC params (client-only concept)", async () => {
     const ds = createDataSource();
-    vi.mocked(ds.rpcRequest).mockResolvedValue({
-      type: "SUCCESS_RESULT",
-      data: { table: { module: "TEST", table: "session-xyz" } },
-    });
+    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
 
     await ds.beginEditSession("inline-all-rows");
 
     expect(ds.rpcRequest).toHaveBeenCalledWith(
       expect.objectContaining({
-        type: "RPC_REQUEST",
         rpcName: "beginEditSession",
         params: { editSessionMode: "inline-all-rows" },
+      }),
+    );
+  });
+
+  it("converts 'all-rows' to alias 'All' in the RPC params", async () => {
+    const ds = createDataSource();
+    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
+
+    await ds.beginEditSession("all-rows");
+
+    expect(ds.rpcRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rpcName: "beginEditSession",
+        params: { editSessionMode: "All" },
+      }),
+    );
+  });
+
+  it("converts 'selected-rows' to alias 'Selected' in the RPC params", async () => {
+    const ds = createDataSource();
+    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
+
+    await ds.beginEditSession("selected-rows");
+
+    expect(ds.rpcRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rpcName: "beginEditSession",
+        params: { editSessionMode: "Selected" },
+      }),
+    );
+  });
+
+  it("converts 'empty-session-table' to alias 'Empty' in the RPC params", async () => {
+    const ds = createDataSource();
+    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
+
+    await ds.beginEditSession("empty-session-table");
+
+    expect(ds.rpcRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rpcName: "beginEditSession",
+        params: { editSessionMode: "Empty" },
+      }),
+    );
+  });
+
+  it("passes short-form alias 'All' through unchanged", async () => {
+    const ds = createDataSource();
+    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
+
+    await ds.beginEditSession("All");
+
+    expect(ds.rpcRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rpcName: "beginEditSession",
+        params: { editSessionMode: "All" },
       }),
     );
   });

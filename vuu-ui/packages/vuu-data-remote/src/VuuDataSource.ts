@@ -43,6 +43,7 @@ import {
   itemsOrOrderChanged,
   logger,
   Range,
+  toRpcEditSessionMode,
   StaleUpdateError,
   throttle,
   uuid,
@@ -694,7 +695,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       type: "RPC_REQUEST",
       rpcName: "beginEditSession",
       params: {
-        editSessionMode,
+        editSessionMode: toRpcEditSessionMode(editSessionMode),
       },
     });
 

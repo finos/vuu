@@ -5,6 +5,7 @@ import {
   DataSourceVisualLinkCreatedMessage,
   DeleteRowMode,
   EditSessionMode,
+  EditSessionModeAlias,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import {
@@ -28,6 +29,7 @@ import {
   isDeleteSelectedRowsRpcRequest,
   isEditCellRpcRequest,
   isEndEditSessionRpcRequest,
+  fromRpcEditSessionMode,
   isRpcSuccess,
   isUndoRowChangeRpcRequest,
   uuid,
@@ -84,6 +86,12 @@ export type RpcMenuService = {
   service: MenuServiceHandler;
 };
 
+export type VuuModuleOptions = {
+  /** Column written by session services (deleteRow, endEditSession) to report row-level status.
+   *  Defaults to `"vuuMsg"` which matches the column added by `sessionTableSchema`. */
+  sessionTableMessageColumn?: string;
+};
+
 type Subscription = {
   viewportId: string;
   dataSource: DataSource;
@@ -93,13 +101,15 @@ export abstract class VuuModule<T extends string = string>
   implements IVuuModule<T>
 {
   #name: string;
+  #sessionTableMessageColumn: string;
   #runtimeVisualLinks = new Map<string, RuntimeVisualLink>();
   #sessionTableMap: SessionTableMap = {};
   #tableServices: Record<T, RpcService[] | undefined> | undefined;
   #subscriptionMap: Map<string, Subscription[]> = new Map();
 
-  constructor(name: string) {
+  constructor(name: string, { sessionTableMessageColumn = "vuuMsg" }: VuuModuleOptions = {}) {
     this.#name = name;
+    this.#sessionTableMessageColumn = sessionTableMessageColumn;
     moduleContainer.register(this);
   }
 
@@ -415,7 +425,7 @@ export abstract class VuuModule<T extends string = string>
       const sessionTable = this.getSessionTable(viewPortId, false);
       if (sessionTable) {
         if (mode === "soft") {
-          sessionTable.update(key, "vuuMsg", "SOFT_DELETED");
+          sessionTable.update(key, this.#sessionTableMessageColumn, "SOFT_DELETED");
         } else {
           sessionTable.delete(key);
         }
@@ -426,7 +436,7 @@ export abstract class VuuModule<T extends string = string>
           const table = this.tables[dataSource.table.table as T];
           if (table) {
             if (mode === "soft") {
-              table.update(key, "vuuMsg", "SOFT_DELETED");
+              table.update(key, this.#sessionTableMessageColumn, "SOFT_DELETED");
             } else {
               table.delete(key);
             }
@@ -450,7 +460,7 @@ export abstract class VuuModule<T extends string = string>
         if (selectedRowIds.length > 0) {
           for (const key of selectedRowIds) {
             if ((mode as DeleteRowMode) === "soft") {
-              sessionTable.update(key, "vuuMsg", "SOFT_DELETED");
+              sessionTable.update(key, this.#sessionTableMessageColumn, "SOFT_DELETED");
             } else {
               sessionTable.delete(key);
             }
@@ -609,6 +619,9 @@ export abstract class VuuModule<T extends string = string>
     if (isBeginEditSessionRpcRequest(rpcRequest)) {
       const { viewPortId } = rpcRequest.context;
       const { editSessionMode = "inline-all-rows" } = rpcRequest.params;
+      const longFormMode = fromRpcEditSessionMode(
+        editSessionMode as EditSessionModeAlias,
+      );
       const subscription = this.getSubscriptionByViewport(viewPortId);
       const { dataSource } = subscription;
       const { table: vuuTable } = dataSource;
@@ -620,7 +633,7 @@ export abstract class VuuModule<T extends string = string>
             const sessionTable = this.createSessionTable(
               sourceTable,
               sessionTableName,
-              editSessionMode as EditSessionMode,
+              longFormMode,
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
               dataSource as TickingArrayDataSource,
@@ -718,7 +731,7 @@ export abstract class VuuModule<T extends string = string>
                 Object.entries(cellUpdates).forEach(([column, value]) => {
                   messages.push(`${column}:${value}`);
                 });
-                newRow[sessionTable.map.vuuMsg] = messages.join(",");
+                newRow[sessionTable.map[this.#sessionTableMessageColumn]] = messages.join(",");
                 sessionTable.updateRow(newRow);
               } else {
                 const newRow = currentRow.slice();
@@ -732,7 +745,7 @@ export abstract class VuuModule<T extends string = string>
           } else {
             // empty-session-table / csv-upload: insert only rows with no errors.
             // vuuMsg is empty string for valid rows and non-empty for error rows.
-            const vuuMsgIdx = sessionTable.map["vuuMsg"];
+            const vuuMsgIdx = sessionTable.map[this.#sessionTableMessageColumn];
             const sourceColumns = sourceTable.schema.columns;
             for (let i = 0; i < sessionTable.data.length; i++) {
               const sessionRow = sessionTable.data[i];

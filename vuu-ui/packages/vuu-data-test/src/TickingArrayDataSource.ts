@@ -26,7 +26,7 @@ import type {
   VuuRpcServiceRequest,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-import { isRpcSuccess, isTypeaheadRequest, Range, uuid } from "@vuu-ui/vuu-utils";
+import { isInlineEditingSession, isRpcSuccess, isTypeaheadRequest, Range, toRpcEditSessionMode, uuid } from "@vuu-ui/vuu-utils";
 import {
   IVuuModule,
   RpcMenuService,
@@ -35,7 +35,6 @@ import {
 } from "./core/module/VuuModule";
 import { makeSuggestions } from "./makeSuggestions";
 import { Table } from "./Table";
-import { isInlineEditingSession } from "@vuu-ui/vuu-utils";
 
 export type VisualLinkHandler = (
   message: VuuCreateVisualLink | VuuRemoveVisualLink,
@@ -244,7 +243,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
       type: "RPC_REQUEST",
       rpcName: "beginEditSession",
       params: {
-        editSessionMode,
+        editSessionMode: toRpcEditSessionMode(editSessionMode),
       },
     });
 

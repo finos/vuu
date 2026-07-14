@@ -348,6 +348,7 @@ const InlineEditTableTemplate = () => {
                       onUndo: onUndoRowChange,
                       hasRowChanges: (key: string) =>
                         editSession.hasRowChanges(key),
+                      sessionTableMessageColumn: "vuuMsg",
                     },
                   },
                 } as DataValueTypeDescriptor,
@@ -485,20 +486,21 @@ registerComponent("example.color-coded-editor", CustomCell, "cell-renderer");
 type UndoCellComponentProps = {
   onUndo?: (key: string) => void;
   hasRowChanges?: (key: string) => boolean;
+  /** Name of the session-table message column. Defaults to "vuuMsg". */
+  sessionTableMessageColumn?: string;
 };
 
 const UndoCellRenderer = ({ column, dataRow }: TableCellRendererProps) => {
-  const { onUndo, hasRowChanges } =
+  const { onUndo, hasRowChanges, sessionTableMessageColumn = "vuuMsg" } =
     (column.type as { renderer?: { componentProps?: UndoCellComponentProps } })
       ?.renderer?.componentProps ?? {};
 
   // For cell edits: #rowEdits is populated synchronously so hasRowChanges works immediately.
   // For soft-deleted rows: #deletedRows is populated after the RPC await, so we read
-  // vuuMsg directly from the row data — it is always present when the row re-renders.
-  // For remote datasource this could be any column present in row data other than vuuMsg, 
-  // but for local datasource we have used vuuMsg to display the soft-deleted status.
+  // the sessionTableMessageColumn directly from the row data — it is always present
+  // when the row re-renders.
   const isRowChanged =
-    hasRowChanges?.(dataRow.key) || dataRow["vuuMsg"] === "SOFT_DELETED";
+    hasRowChanges?.(dataRow.key) || dataRow[sessionTableMessageColumn] === "SOFT_DELETED";
 
   if (!isRowChanged) return null;
   return (
