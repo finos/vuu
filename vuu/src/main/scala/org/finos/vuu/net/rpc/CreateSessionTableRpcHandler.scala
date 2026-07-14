@@ -1,8 +1,9 @@
 package org.finos.vuu.net.rpc
 
-import org.finos.vuu.core.table.{TableContainer, ViewPortColumnCreator}
+import org.finos.vuu.core.table.{InMemSessionDataTable, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.SessionTableCopyOption.{All, Empty, Selected}
+import org.finos.vuu.viewport.{RowSource, ViewPort, ViewPortColumns}
 
 class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) extends DefaultRpcHandler {
   registerRpc(RpcNames.CreateSessionTableRpc, this.createSessionTable)
@@ -32,31 +33,26 @@ class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) ext
     copyOption match {
       case All =>
         val vp = params.viewPort
-        val to = if (vp.getKeys.length > tableContainer.rpcOptions.maxCopySize) tableContainer.rpcOptions.maxCopySize else vp.getKeys.length
-        var i = 0
         val vpColumns = ViewPortColumnCreator.create(params.viewPort.table.asTable, columnsToCopy)
-        while (i < to) {
-          if (columnsToCopy.isEmpty) {
-            sessionTable.processUpdate(vp.table.pullRow(vp.getKeys.get(i)))
-          } else {
-            sessionTable.processUpdate(vp.table.pullRow(vp.getKeys.get(i), vpColumns))
-          }
-          i += 1
-        }
+        val iterator = vp.getKeys.iterator.take(tableContainer.rpcOptions.maxCopySize)
+        copyRows(iterator, sessionTable, vp.table, vpColumns, columnsToCopy)
       case Selected =>
         val vp = params.viewPort
-        val vpKeys = vp.getKeys
-        val selection = vp.getSelection
-        val vpColumns = ViewPortColumnCreator.create(params.viewPort.table.asTable, columnsToCopy.toList)
-        for (key <- selection) {
-          if (columnsToCopy.isEmpty) {
-            sessionTable.processUpdate(vp.table.pullRow(key))
-          } else {
-            sessionTable.processUpdate(vp.table.pullRow(key, vpColumns))
-          }
-        }
+        val vpColumns = ViewPortColumnCreator.create(params.viewPort.table.asTable, columnsToCopy)
+        val iterator = vp.getSelection.iterator.take(tableContainer.rpcOptions.maxCopySize)
+        copyRows(iterator, sessionTable, vp.table, vpColumns, columnsToCopy)
       case Empty =>
     }
     RpcFunctionSuccess(Some(Map("sessionTable" -> sessionTable.name, "module" -> sessionTable.tableDef.getModule().name)))
+  }
+
+  private def copyRows(iterator: Iterator[String], sessionTable: InMemSessionDataTable, sourceTable: RowSource, vpColumns: ViewPortColumns, columnsToCopy: List[String]): Unit = {
+    while (iterator.hasNext) {
+      if (columnsToCopy.isEmpty) {
+        sessionTable.processUpdate(sourceTable.pullRow(iterator.next()))
+      } else {
+        sessionTable.processUpdate(sourceTable.pullRow(iterator.next(), vpColumns))
+      }
+    }
   }
 }

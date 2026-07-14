@@ -32,6 +32,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   // test with large data, have 10 in base table, 5 in vp, add filter and sort
   // test vp is sorted, the data copied to session table is also sorted
   // TODO 2169 do we care about sorting of viewport selection???
+  // add a test for selected rows more than max size
   Feature("[Web Socket API] create a session table and copy data from source table") {
     Scenario("create an empty session table from source table") {
       Given("a view port exist")
