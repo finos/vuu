@@ -6,7 +6,7 @@ import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, RpcRequest, RpcResponseNew}
-import org.finos.vuu.net.rpc.{CreateSessionTableRpcHandler, EndEditSessionRpcHandler, RpcHandler, RpcNames, RpcSuccessResult, ViewPortContext}
+import org.finos.vuu.net.rpc.{CreateSessionTableRpcHandler, EndEditSessionRpcHandler, RpcNames, RpcSuccessResult, ViewPortContext}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -21,7 +21,10 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   private val testProviderFactory = new TestProviderFactory
 
   // TODO 2069 add more scenarios, test non-editable table and column
-
+  // test with large data, have 10 in base table, 5 in vp, add filter and sort
+  // test table size over max copy size
+  // test vp is sorted, the data copied to session table is also sorted
+  // TODO 2169 do we care about sorting of viewport selection???
   Feature("[Web Socket API] begin and end edit in a session table") {
     Scenario("edit in an empty session table") {
       Given("a view port exist")
@@ -53,7 +56,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       columns =
         new ColumnBuilder()
           .addString("Id")
-          .addString("Name", true)
+          .addString("Name")
           .addInt("Account")
           .build(),
       isEditable = true
