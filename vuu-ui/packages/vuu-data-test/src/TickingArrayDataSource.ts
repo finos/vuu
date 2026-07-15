@@ -59,14 +59,6 @@ type LinkSubscription = {
   linkType: "subscribe-link-filter" | "subscribe-link-select";
 };
 
-type SelectedRowIdsReader = {
-  getSelectedRowIds?: () => string[];
-};
-
-const readSelectedRowIds = (dataSource?: DataSource): string[] => {
-  return (dataSource as SelectedRowIdsReader | undefined)?.getSelectedRowIds?.() ?? [];
-};
-
 export class TickingArrayDataSource extends ArrayDataSource {
   #menuRpcServices: RpcService[] | undefined;
   #pendingVisualLink?: LinkDescriptorWithLabel;
@@ -185,17 +177,21 @@ export class TickingArrayDataSource extends ArrayDataSource {
   }
 
   getSelectedRowIds(): string[] {
-    if (this.#sessionDataSource) {
-      // Merge base and session selections.
-      const sessionIds = readSelectedRowIds(this.#sessionDataSource);
-      return [...new Set([...this.selectedRows, ...sessionIds])];
-    }
     return Array.from(this.selectedRows);
   }
 
   /**
-   * Suppress row updates from the main data source during an edit session
-   * to prevent overwriting the session view.
+   * Suppress row flushes from the source datasource while a session is active.
+   *
+   * `updateRowWithSessionCheck` already blocks individual row updates arriving
+   * via the table's "update" event.  However, `sendRowsToClient` can also be
+   * reached through other paths that bypass that handler:
+   *   - `setRange` (user scrolls the viewport)
+   *   - config changes (filter / sort / group-by)
+   *   - row inserts into the backing table
+   *
+   * Without this guard those paths would push source-table rows to the
+   * client and overwrite the edited session view.
    */
   sendRowsToClient(forceFullRefresh = false, row?: DataSourceRow) {
     if (this.#sessionDataSource) {

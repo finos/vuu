@@ -2,6 +2,7 @@ import { test } from "@playwright/experimental-ct-react";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
   EditableInstruments,
+  EditableInstrumentsInlineEdit,
   TwoEditableInstruments,
 } from "../../../../../showcase/src/examples/Table/Editing.examples";
 import { expect } from "../../../../../playwright/customAssertions";
@@ -491,5 +492,150 @@ test.describe("Edit conflicts", () => {
       await expect(saveButton).toBeEnabled();
       await expect(cancelButton).toBeEnabled();
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Inline editing (session-based) — EditableInstrumentsInlineEdit
+// ---------------------------------------------------------------------------
+
+test.describe("Inline row editing (session)", () => {
+  test("entering Edit mode shows the undo column and action buttons", async ({
+    browserName,
+    mount,
+    page,
+  }) => {
+    await mount(<EditableInstrumentsInlineEdit />);
+
+    // View mode: no Delete/Add Rows/Submit buttons visible
+    await expect(page.getByRole("button", { name: "Delete" })).not.toBeVisible();
+
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    // Edit mode: action buttons appear
+    await expect(page.getByRole("button", { name: "Delete" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Add Rows" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Submit" })).toBeVisible();
+
+    // Undo column header is visible
+    await expect(page.getByRole("columnheader", { name: "undo" })).toBeVisible();
+  });
+
+  test("Submit is disabled until at least one row is changed", async ({
+    browserName,
+    mount,
+    page,
+  }) => {
+    await mount(<EditableInstrumentsInlineEdit />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const submitButton = page.getByRole("button", { name: "Submit" });
+    await expect(submitButton).toBeDisabled();
+
+    const table = new TableOM(page.getByRole("table"));
+    // Column 2 = bbg (column 1 is the checkbox selector)
+    const cell = table.locateCell(2, 2);
+    await cell.dblclick();
+    await cell.pressSequentially("X");
+    await cell.press("Enter");
+
+    await expect(submitButton).toBeEnabled();
+  });
+
+  test("soft-deleting a selected row marks it and shows the undo button", async ({
+    browserName,
+    mount,
+    page,
+  }) => {
+    test.skip(browserName === "webkit" || browserName === "firefox");
+    await mount(<EditableInstrumentsInlineEdit />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const table = new TableOM(page.getByRole("table"));
+
+    // Select first data row via checkbox
+    const checkboxCell = table.locateCell(2, 1);
+    await checkboxCell.click();
+
+    const deleteButton = page.getByRole("button", { name: "Delete" });
+    await expect(deleteButton).toBeEnabled();
+    await deleteButton.click();
+
+    // The row should now show vuuMsg = SOFT_DELETED and an Undo button
+    // Column 11 = vuuMsg (column 1 is the checkbox selector)
+    const vuuMsgCell = table.locateCell(2, 11);
+    await expect(vuuMsgCell).toContainText("SOFT_DELETED");
+
+    const undoButton = table.row(2).getByRole("button", { name: "Undo" });
+    await expect(undoButton).toBeVisible();
+
+    // Submit is now enabled
+    await expect(page.getByRole("button", { name: "Submit" })).toBeEnabled();
+  });
+
+  test("clicking Undo on a soft-deleted row reverts it", async ({
+    browserName,
+    mount,
+    page,
+  }) => {
+    await mount(<EditableInstrumentsInlineEdit />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const table = new TableOM(page.getByRole("table"));
+    const checkboxCell = table.locateCell(2, 1);
+    await checkboxCell.click();
+    await page.getByRole("button", { name: "Delete" }).click();
+
+    const undoButton = table.row(2).getByRole("button", { name: "Undo" });
+    await expect(undoButton).toBeVisible();
+    await undoButton.click();
+
+    // vuuMsg cleared, undo button gone, Submit disabled again
+    // Column 11 = vuuMsg (column 1 is the checkbox selector)
+    const vuuMsgCell = table.locateCell(2, 11);
+    await expect(vuuMsgCell).not.toContainText("SOFT_DELETED");
+    await expect(undoButton).not.toBeVisible();
+    await expect(page.getByRole("button", { name: "Submit" })).toBeDisabled();
+  });
+
+  test("Add Rows appends blank rows to the session table", async ({
+    browserName,
+    mount,
+    page,
+  }) => {
+    await mount(<EditableInstrumentsInlineEdit />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const submitButton = page.getByRole("button", { name: "Submit" });
+    await expect(submitButton).toBeDisabled();
+
+    await page.getByRole("button", { name: "Add Rows" }).click();
+
+    // Submit enabled after rows added
+    await expect(submitButton).toBeEnabled();
+  });
+
+  test("Cancel discards all changes and returns to view mode", async ({
+    browserName,
+    mount,
+    page,
+  }) => {
+    await mount(<EditableInstrumentsInlineEdit />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const table = new TableOM(page.getByRole("table"));
+    // Column 2 = bbg (column 1 is the checkbox selector)
+    const cell = table.locateCell(2, 2);
+    await cell.dblclick();
+    await cell.pressSequentially("X");
+    await cell.press("Enter");
+    await expect(page.getByRole("button", { name: "Submit" })).toBeEnabled();
+
+    // InlineEditTableTemplate has no Cancel button — clicking "View" discards the session
+    await page.getByRole("radio", { name: "View" }).click();
+
+    // Returns to view mode — action buttons gone
+    await expect(page.getByRole("button", { name: "Submit" })).not.toBeVisible();
+    await expect(page.getByRole("radio", { name: "View" })).toBeVisible();
   });
 });
