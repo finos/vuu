@@ -28,6 +28,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[GetTableMetaResponse](response)
       responseBody.columns.length shouldEqual 2
       responseBody.columns shouldEqual Array("id", "account")
+      responseBody.editableColumns shouldEqual Array("account")
     }
 
     Scenario("For a table with no view port def defined") {
@@ -115,7 +116,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
         new ColumnBuilder()
           .addString("id")
           .addString("name")
-          .addInt("account")
+          .addInt("account", true)
           .build()
     )
 

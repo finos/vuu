@@ -10,7 +10,7 @@ import org.finos.toolbox.thread.Async
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.TableDefContainer
-import org.finos.vuu.core.{VuuClientConnectionOptions, VuuJoinTableProviderOptions, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
+import org.finos.vuu.core.{VuuClientConnectionOptions, VuuJoinTableProviderOptions, VuuRpcOptions, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
 import org.finos.vuu.http2.server.VuuHttp2ServerFactory
 import org.finos.vuu.http2.server.config.VuuHttp2ServerOptions
 import org.finos.vuu.net.auth.LoginTokenService
@@ -49,6 +49,7 @@ class AuthNServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
         VuuThreadingOptions(),
         VuuClientConnectionOptions(),
         VuuJoinTableProviderOptions(),
+        VuuRpcOptions(),
         List(AuthNModule(loginTokenService, Option(Map(username -> password)))),
         List.empty,
         VuuHttp2ServerFactory(VuuHttp2ServerOptions()

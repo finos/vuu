@@ -3,7 +3,7 @@ package org.finos.vuu.api
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.TestFriendlyClock
-import org.finos.vuu.core.CoreServerApiHandler
+import org.finos.vuu.core.{CoreServerApiHandler, VuuRpcOptions, VuuRpcOptionsImpl}
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.TableContainer
 import org.finos.vuu.feature.inmem.{VuuInMemPlugin, VuuInMemPluginType}
@@ -22,7 +22,8 @@ class CoreServerApiTest extends AnyFeatureSpec with BeforeAndAfterEach with Give
     implicit val lifecycle: LifecycleContainer = new LifecycleContainer
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
     val joinTableProvider = JoinTableProviderImpl()
-    val tableContainer = new TableContainer(joinTableProvider)
+    val rpcOptions: VuuRpcOptions = VuuRpcOptionsImpl(10)
+    val tableContainer = new TableContainer(joinTableProvider, rpcOptions)
     val providerContainer = new ProviderContainer(joinTableProvider)
     val pluginRegistry = new DefaultPluginRegistry
     pluginRegistry.registerPlugin(new VuuInMemPlugin)

@@ -5,6 +5,7 @@ import org.finos.toolbox.jmx.{JmxAble, MetricsProvider}
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.TableVisibility.Private
 import org.finos.vuu.api.{JoinSessionTableDef, JoinTableDef, SessionTableDef, TableDef}
+import org.finos.vuu.core.VuuRpcOptions
 import org.finos.vuu.core.table.TableContainer.{isSessionTable, isSessionTableBlueprint, moduleName}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.net.ClientSessionId
@@ -26,11 +27,9 @@ trait TableContainerMBean {
   def getSubscribedKeys(name: String): String
 }
 
-class TableContainer(val joinTableProvider: JoinTableProvider)(implicit val metrics: MetricsProvider, val timeProvider: Clock) extends JmxAble with TableContainerMBean with StrictLogging {
+class TableContainer(val joinTableProvider: JoinTableProvider, val rpcOptions: VuuRpcOptions = VuuRpcOptions.apply())(implicit val metrics: MetricsProvider, val timeProvider: Clock) extends JmxAble with TableContainerMBean with StrictLogging {
 
   private val tables = new ConcurrentHashMap[String, DataTable]()
-
-  //private val sessionTables = new ConcurrentHashMap[String, GroupBySessionTable]()
 
   override def getSubscribedKeys(name: String): String = {
     val table = tables.get(name)
