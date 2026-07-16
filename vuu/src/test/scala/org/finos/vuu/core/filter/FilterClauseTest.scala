@@ -1,7 +1,7 @@
 package org.finos.vuu.core.filter
 
 import org.finos.vuu.core.table.datatype.Scale.{Four, Two}
-import org.finos.vuu.core.table.datatype.{EpochTimestamp, Scale, ScaledDecimal, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, Scale, ScaledDecimal, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{RowWithData, SimpleColumn}
 import org.finos.vuu.viewport.ViewPortColumns
 import org.scalatest.GivenWhenThen
@@ -29,6 +29,7 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers with GivenWhenThen w
       "false-col" -> false,
       "empty-string-col" -> "",
       "epoch-column" -> EpochTimestamp(1L),
+      "epochNano-column" -> EpochTimestampNano(10L),
       "scaled2-column" -> ScaledDecimal("2.22", Scale.Two),
       "scaled4-column" -> ScaledDecimal("4.4444", Scale.Four),
       "scaled6-column" -> ScaledDecimal("6.666666", Scale.Six),
@@ -52,6 +53,8 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers with GivenWhenThen w
         ("Boolean", "true-col", "false", false),
         ("EpochTimestamp", "epoch-column", "1", true),
         ("EpochTimestamp", "epoch-column", "2", false),
+        ("EpochTimestampNano", "epochNano-column", "10", true),
+        ("EpochTimestampNano", "epochNano-column", "20", false),
         ("ScaledDecimal2", "scaled2-column", "2.22", true),
         ("ScaledDecimal2", "scaled2-column", "3.99", false),
         ("ScaledDecimal4", "scaled4-column", "4.4444", true),
@@ -333,6 +336,30 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers with GivenWhenThen w
         (LessThanOrEqualsClause.apply _, "9", EpochTimestamp(10L), false, "LessThanOrEquals: Higher"),
         (LessThanOrEqualsClause.apply _, "11", EpochTimestamp(10L), true, "LessThanOrEquals: Lower"),
         (LessThanOrEqualsClause.apply _, "10", EpochTimestamp(10L), true, "LessThanOrEquals: Equal"),
+      )
+
+      forAll(comparisonTable) { (constructor, filterStr, datum, expected, description) =>
+        performValidation(constructor, filterStr, datum, expected, description)
+      }
+
+    }
+
+    Scenario("Validating EpochTimestampNano across all clauses") {
+
+      val comparisonTable = Table(
+        ("Clause Factory", "Filter Val", "Input Datum", "Expected", "Type Description"),
+        (GreaterThanClause.apply _, "9", EpochTimestampNano(10L), true, "GreaterThan: Higher"),
+        (GreaterThanClause.apply _, "11", EpochTimestampNano(10L), false, "GreaterThan: Lower"),
+        (GreaterThanClause.apply _, "10", EpochTimestampNano(10L), false, "GreaterThan: Equal"),
+        (GreaterThanOrEqualsClause.apply _, "9", EpochTimestampNano(10L), true, "GreaterThanOrEquals: Higher"),
+        (GreaterThanOrEqualsClause.apply _, "11", EpochTimestampNano(10L), false, "GreaterThanOrEquals: Lower"),
+        (GreaterThanOrEqualsClause.apply _, "10", EpochTimestampNano(10L), true, "GreaterThanOrEquals: Equal"),
+        (LessThanClause.apply _, "9", EpochTimestampNano(10L), false, "LessThan: Higher"),
+        (LessThanClause.apply _, "11", EpochTimestampNano(10L), true, "LessThan: Lower"),
+        (LessThanClause.apply _, "10", EpochTimestampNano(10L), false, "LessThan: Equal"),
+        (LessThanOrEqualsClause.apply _, "9", EpochTimestampNano(10L), false, "LessThanOrEquals: Higher"),
+        (LessThanOrEqualsClause.apply _, "11", EpochTimestampNano(10L), true, "LessThanOrEquals: Lower"),
+        (LessThanOrEqualsClause.apply _, "10", EpochTimestampNano(10L), true, "LessThanOrEquals: Equal"),
       )
 
       forAll(comparisonTable) { (constructor, filterStr, datum, expected, description) =>
