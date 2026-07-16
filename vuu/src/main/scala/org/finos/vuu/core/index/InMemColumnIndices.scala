@@ -1,7 +1,7 @@
 package org.finos.vuu.core.index
 
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{Column, DataType, RowData}
 
 trait InMemColumnIndices {
@@ -41,6 +41,8 @@ object InMemColumnIndices {
         new SkipListIndexedBooleanField(c)
       case DataType.EpochTimestampType =>
         new SkipListIndexedEpochTimestampField(c)
+      case DataType.EpochTimestampNanoType =>
+        new SkipListIndexedEpochTimestampNanoField(c)
       case DataType.CharDataType =>
         new SkipListIndexedCharField(c)
       case DataType.ScaledDecimal2Type =>
@@ -75,6 +77,7 @@ object InMemColumnIndices {
           case DataType.DoubleDataType => create(index.asInstanceOf[IndexedField[Double]])
           case DataType.BooleanDataType => create(index.asInstanceOf[IndexedField[Boolean]])
           case DataType.EpochTimestampType => create(index.asInstanceOf[IndexedField[EpochTimestamp]])
+          case DataType.EpochTimestampNanoType => create(index.asInstanceOf[IndexedField[EpochTimestampNano]])
           case DataType.CharDataType => create(index.asInstanceOf[IndexedField[Char]])
           case DataType.ScaledDecimal2Type => create(index.asInstanceOf[IndexedField[ScaledDecimal2]])
           case DataType.ScaledDecimal4Type => create(index.asInstanceOf[IndexedField[ScaledDecimal4]])
