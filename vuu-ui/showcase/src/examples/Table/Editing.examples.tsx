@@ -194,7 +194,8 @@ const EditTableTemplate = ({
                     }
                   : col.name === "isin" ||
                       col.name === "vuuCreatedTimestamp" ||
-                      col.name === "vuuUpdatedTimestamp"
+                      col.name === "vuuUpdatedTimestamp" ||
+                      col.name === "vuuMsg"
                     ? col
                     : { ...col, editable: true },
             ),
