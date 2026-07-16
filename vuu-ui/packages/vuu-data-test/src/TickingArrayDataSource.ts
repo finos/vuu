@@ -195,6 +195,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
    */
   sendRowsToClient(forceFullRefresh = false, row?: DataSourceRow) {
     if (this.#sessionDataSource) {
+      console.warn(
+        `[TickingArrayDataSource] sendRowsToClient suppressed during active edit session` +
+          ` (forceFullRefresh=${forceFullRefresh}, ${row ? `rowKey=${row[6]}` : "full batch - likely setRange/scroll"})`,
+      );
       return;
     }
     super.sendRowsToClient(forceFullRefresh, row);
