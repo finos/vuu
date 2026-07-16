@@ -5,7 +5,7 @@ import org.finos.vuu.api.{ColumnBuilder, SessionTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, RpcRequest, RpcResponseNew, SelectRowRangeRequest, SelectRowRangeSuccess, SelectRowRequest, SelectRowSuccess}
+import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, GetTableMetaRequest, GetTableMetaResponse, RpcRequest, RpcResponseNew, SelectRowRangeRequest, SelectRowRangeSuccess, SelectRowRequest, SelectRowSuccess}
 import org.finos.vuu.net.rpc.{CreateSessionTableRpcHandler, EndEditSessionRpcHandler, RpcErrorResult, RpcNames, RpcSuccessResult, ViewPortContext}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
@@ -28,10 +28,9 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   private val testProviderFactory = new TestProviderFactory
   private val maxCopySize = 10 // configured in CoreServerApiTest
 
-  // TODO 2069 add test scenarios for empty but all columns
-  // test with large data, have 10 in base table, 5 in vp, add filter and sort
-  // test vp is sorted, the data copied to session table is also sorted
-  // TODO 2169 do we care about sorting of viewport selection???
+  // TODO add more tests:
+  // Test when vp is filtered and sorted, the data copied to session table is also filtered and sorted
+  // Test when copying from a given list of columns, only data from those columns are copied
   Feature("[Web Socket API] create a session table and copy data from source table") {
     Scenario("create an empty session table from source table") {
       Given("a view port exist")
@@ -102,7 +101,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
-      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, 0)
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, 3)
     }
 
     Scenario("create a session table and copy all rows up to max threshold from source table") {
