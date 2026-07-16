@@ -41,7 +41,7 @@ const DataTableTemplate = ({
   const tableConfig = useMemo<TableConfig>(() => {
     return {
       ...props.config,
-      columns: schema.columns,
+      columns: schema.columns.filter(col => col.name !== 'vuuMsg'),
       rowSeparators: true,
       zebraStripes: true,
     };

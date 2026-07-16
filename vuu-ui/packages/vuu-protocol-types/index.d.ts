@@ -89,6 +89,7 @@ export interface VuuTableMetaRequest {
 export interface VuuTableMetaResponse {
   columns: VuuColumns;
   dataTypes: VuuColumnDataType[];
+  editableColumns: string[];
   key: string;
   table: VuuTable;
   type: "TABLE_META_RESP";

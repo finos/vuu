@@ -56,7 +56,7 @@ const DataTableTemplate = ({
       rowSeparators: true,
       zebraStripes: true,
       ...configProp,
-      columns: schema.columns.map<ColumnDescriptor>((col) =>
+      columns: schema.columns.filter(col => col.name !== 'vuuMsg').map<ColumnDescriptor>((col) =>
         selectedColumn.includes(col.name)
           ? {
               ...col,

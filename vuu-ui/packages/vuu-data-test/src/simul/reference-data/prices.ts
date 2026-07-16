@@ -18,6 +18,7 @@ type ric = string;
 type scenario = "close";
 type lastUpdate = number;
 type created = number;
+type vuuMsg = string;
 
 export type PricesDataRow = [
   ask,
@@ -32,6 +33,7 @@ export type PricesDataRow = [
   scenario,
   lastUpdate,
   created,
+  vuuMsg
 ];
 
 const { bid, bidSize, ask, askSize } = buildDataColumnMap(schemas, "prices");
@@ -77,6 +79,7 @@ const pricesData: Array<PricesDataRow> = instrumentsData.map((instrument) => {
     scenario,
     lastUpdate,
     created,
+    ''
   ];
 });
 
@@ -106,7 +109,8 @@ for (const [,,,lastTrade,ric] of basketConstituentData) {
       ric as string,
       scenario,
       lastUpdate,
-      created
+      created,
+      ''
     ]);
   }
 }
