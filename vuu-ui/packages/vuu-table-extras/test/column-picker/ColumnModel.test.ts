@@ -6,7 +6,8 @@ import {
 } from "../../src/column-picker/ColumnModel";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 
-const { columns } = getSchema("parentOrders");
+const { columns: parentOrderColumns } = getSchema("parentOrders");
+const columns = parentOrderColumns.filter(col => col.name !== 'vuuMsg')
 
 function shuffle<T>(arr: T[]) {
   const shuffledArray = arr.slice();

@@ -262,6 +262,7 @@ export const createSubscription = ({
       columns: ['col-1', 'col-2', 'col-3', 'col-4'],
       key: 'col-1',
       dataTypes: ['string','string','string','string'],
+      editableColumns: [],
       table: {module: "TEST", table: "test-table"},
       type: "TABLE_META_RESP"
     },
