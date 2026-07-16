@@ -8,7 +8,7 @@ import org.finos.vuu.api.{Index, Indices, TableDef}
 import org.finos.vuu.core.filter.FilterClause
 import org.finos.vuu.core.filter.`type`.AntlrBasedFilter
 import org.finos.vuu.core.table.datatype.Scale.{EIGHT, FOUR, Six, Two}
-import org.finos.vuu.core.table.datatype.{ScaledDecimal, ScaledDecimal2}
+import org.finos.vuu.core.table.datatype.{EpochTimestampNano, ScaledDecimal, ScaledDecimal2}
 import org.finos.vuu.core.table.{Columns, InMemDataTable, RowWithData, TablePrimaryKeys, ViewPortColumnCreator}
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 import org.scalatest.Assertions.fail
@@ -103,12 +103,12 @@ object FilterAndSortFixture {
   def setupTableWithCreationTime(indices: List[String])(using clock: TestFriendlyClock): InMemDataTable = {
     val now: Long = clock.now();
     val table: InMemDataTable = setupTable(indices,
-      row("tradeTime" -> 5L, "quantity" -> 500, "price" -> 283.10, "side" -> 'B', "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD", "delta" -> ScaledDecimal(1.01, Two), "tau" -> ScaledDecimal(1.0001, FOUR),"gamma" -> ScaledDecimal(1.000001, Six),"theta" -> ScaledDecimal(1.00000001, EIGHT)),
-      row("tradeTime" -> 3L, "quantity" -> 100, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD.L", "orderId" -> "LDN-0003", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "delta" -> ScaledDecimal(2.01, Two), "tau" -> ScaledDecimal(2.0001, FOUR),"gamma" -> ScaledDecimal(2.000001, Six),"theta" -> ScaledDecimal(2.00000001, EIGHT)),
+      row("tradeTime" -> 5L, "quantity" -> 500, "price" -> 283.10, "side" -> 'B', "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD", "delta" -> ScaledDecimal(1.01, Two), "tau" -> ScaledDecimal(1.0001, FOUR),"gamma" -> ScaledDecimal(1.000001, Six),"theta" -> ScaledDecimal(1.00000001, EIGHT), "nano" -> EpochTimestampNano(1111)),
+      row("tradeTime" -> 3L, "quantity" -> 100, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD.L", "orderId" -> "LDN-0003", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "delta" -> ScaledDecimal(2.01, Two), "tau" -> ScaledDecimal(2.0001, FOUR),"gamma" -> ScaledDecimal(2.000001, Six),"theta" -> ScaledDecimal(2.00000001, EIGHT), "nano" -> EpochTimestampNano(2111)),
     )(using clock)
     clock.advanceBy(1000L)
-    table.processUpdate("LDN-0001", row("tradeTime" -> 2L, "quantity" -> 100, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "delta" -> ScaledDecimal(1.01, Two), "tau" -> ScaledDecimal(1.0001, FOUR),"gamma" -> ScaledDecimal(1.000001, Six),"theta" -> ScaledDecimal(1.00000001, EIGHT)))
-    table.processUpdate("LDN-0008", row("tradeTime" -> 5L, "quantity" -> 100, "price" -> 180.50, "side" -> 'B', "ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "delta" -> ScaledDecimal(2.01, Two), "tau" -> ScaledDecimal(2.0001, FOUR),"gamma" -> ScaledDecimal(2.000001, Six),"theta" -> ScaledDecimal(2.00000001, EIGHT)))
+    table.processUpdate("LDN-0001", row("tradeTime" -> 2L, "quantity" -> 100, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "delta" -> ScaledDecimal(1.01, Two), "tau" -> ScaledDecimal(1.0001, FOUR),"gamma" -> ScaledDecimal(1.000001, Six),"theta" -> ScaledDecimal(1.00000001, EIGHT), "nano" -> EpochTimestampNano(1111)))
+    table.processUpdate("LDN-0008", row("tradeTime" -> 5L, "quantity" -> 100, "price" -> 180.50, "side" -> 'B', "ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "delta" -> ScaledDecimal(2.01, Two), "tau" -> ScaledDecimal(2.0001, FOUR),"gamma" -> ScaledDecimal(2.000001, Six),"theta" -> ScaledDecimal(2.00000001, EIGHT), "nano" -> EpochTimestampNano(2111)))
     table
   }
 
@@ -127,6 +127,7 @@ object FilterAndSortFixture {
       "tau:ScaledDecimal4",
       "gamma:ScaledDecimal6",
       "theta:ScaledDecimal8",
+      "nano:EpochTimestampNano"
     )
     val tableDef = TableDef(
       name = "orders",
