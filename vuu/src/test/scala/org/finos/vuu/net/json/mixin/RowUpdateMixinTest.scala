@@ -1,7 +1,7 @@
 package org.finos.vuu.net.json.mixin
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal2}
 import org.finos.vuu.net.row.RowUpdate
 import org.finos.vuu.net.row.RowUpdateType.Update
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -37,6 +37,7 @@ class RowUpdateMixinTest extends AnyFeatureSpec with Matchers with StrictLogging
           EpochTimestamp(456L),
           ScaledDecimal2(567L),
           678L,
+          EpochTimestampNano(789L)
         )
       )
 
@@ -44,7 +45,7 @@ class RowUpdateMixinTest extends AnyFeatureSpec with Matchers with StrictLogging
 
       serialized shouldEqual "{\"viewPortId\":\"Vp1\",\"vpSize\":1,\"rowIndex\":0,\"rowKey\":\":KEY1\"," +
         "\"updateType\":\"U\",\"ts\":100,\"sel\":0,\"vpVersion\":\"Request1\"," +
-        "\"data\":[\"foo\",\"bar\",1,\"\",456,\"567\",\"678\"]}"
+        "\"data\":[\"foo\",\"bar\",1,\"\",456,\"567\",\"678\",\"789\"]}"
 
       val deserialized = mapper.readValue(serialized, classOf[RowUpdate])
 
@@ -57,7 +58,7 @@ class RowUpdateMixinTest extends AnyFeatureSpec with Matchers with StrictLogging
       deserialized.ts shouldEqual rowUpdate.ts
       deserialized.selected shouldEqual rowUpdate.selected
 
-      deserialized.data.length shouldEqual 7
+      deserialized.data.length shouldEqual 8
       deserialized.data(0) shouldEqual "foo"
       deserialized.data(1) shouldEqual "bar"
       deserialized.data(2) shouldEqual "1"
@@ -65,6 +66,7 @@ class RowUpdateMixinTest extends AnyFeatureSpec with Matchers with StrictLogging
       deserialized.data(4) shouldEqual "456"
       deserialized.data(5) shouldEqual "567"
       deserialized.data(6) shouldEqual "678"
+      deserialized.data(7) shouldEqual "789"
     }
 
   }
