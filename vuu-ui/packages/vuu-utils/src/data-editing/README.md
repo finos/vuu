@@ -106,7 +106,9 @@ converts long-form values to their aliases before dispatching the RPC (see `toRp
 | `onDelete` | Calls `editSession.deleteSelectedRows()`; resets selection count |
 | `onAddRows` | Adds rows via `editSession.addRows(addRowsCount)` |
 | `onUndoRowChange` | `(key) =>` `editSession.undoRowChange(key)` |
-| `onSelectionChange` | Reads selection count from datasource and updates `hasSelection` |
+
+`hasSelection` is kept in sync by a `useEffect` that subscribes to the datasource's
+`"row-selection"` event — no `onSelectionChange` callback needs to be wired into the Table.
 
 ---
 
@@ -215,16 +217,23 @@ User clicks Undo button on a row
   UndoCellRenderer.onClick → onUndoRowChange(key)
     editSession.undoRowChange(key)
       checks #rowEdits.has(key) || #deletedRows.has(key)
+      deletes key from #rowEdits / #deletedRows BEFORE the RPC       ← undo button hides immediately
       dataSource.undoRowChange(key)              ← EditApi RPC (via session datasource)
         → "undoRowChange" RPC → VuuModule.undoRowChange
-            sourceTable = this.tables[dataSource.table.table]   ← real Table instance (avoids Proxy/private-field issue)
-            sessionUpdates = sessionTable.getSessionUpdates()
-            for each column in rowUpdates.cellUpdates:
-              originalValue = sourceTable.findByKey(key)[column]
-              sessionTable.update(key, column, originalValue)   ← emits "update" → client sees original values
-            sessionUpdates.delete(key)                          ← excluded from endEditSession commit
-      on RpcSuccess: #rowEdits.delete(key), adjust editCount / deleteCount
-      on RpcError:  local state unchanged
+            sourceTable = this.tables[dataSource.table.table]         ← real Table (avoids Proxy private-field issue)
+            if sourceTable.findByKey(key) === null:                   ← newly inserted row
+              sessionTable.delete(key)                                ← removes row from session view
+              returns UndoRowChangeResult { wasInsertedRow: true }
+            else:                                                     ← existing source row
+              for each column in sessionUpdates.cellUpdates:
+                originalValue = sourceTable.findByKey(key)[column]
+                sessionTable.update(key, column, originalValue)       ← emits "update" → client sees original values
+              sessionUpdates.delete(key)                              ← excluded from endEditSession commit
+      on RpcSuccess:
+        adjust editCount / invalidCount from reverted cell edits
+        if wasDeleted: deleteCount--
+        if wasInsertedRow: addCount--
+      on RpcError: restore #rowEdits / #deletedRows (undo button reappears)
 ```
 
 ### Save (End Session)
@@ -300,22 +309,23 @@ Each `EditApi` method returns `RpcResultSuccess` on success. The table below sho
 The three structured payloads are declared in `@vuu-ui/vuu-data-types`:
 
 ```ts
-/** beginEditSession — session table the datasource should subscribe to */
-type BeginEditSessionResult = {
-  table: VuuTable;
-};
+// beginEditSession — session table to subscribe to
+type BeginEditSessionResult = { table: VuuTable };
+// Example success data:
+// { table: { module: "SIMUL", table: "session-a1b2c3" } }
 
-/** deleteSelectedRows — keys of every row deleted server-side.
- *  Used by EditSession to increment deleteCount (drives editState / Save button)
- *  and populate #deletedRows so undoRowChange can decrement it on revert. */
-type DeleteSelectedRowsResult = {
-  deletedKeys: string[];
-};
+// deleteSelectedRows — keys of every row deleted server-side
+//   Used by EditSession to increment deleteCount and populate #deletedRows
+type DeleteSelectedRowsResult = { deletedKeys: string[] };
+// Example success data:
+// { deletedKeys: ["VOD.L", "AAPL.O"] }
 
-/** undoRowChange — set to true when a newly added (uncommitted) row was removed */
-type UndoRowChangeResult = {
-  wasInsertedRow?: boolean;
-};
+// undoRowChange — true when a newly added (uncommitted) row was removed entirely
+type UndoRowChangeResult = { wasInsertedRow?: boolean };
+// Example success data (existing source row reverted):
+// undefined
+// Example success data (newly added row removed):
+// { wasInsertedRow: true }
 ```
 
 `EditSession` imports and uses these types directly — no inline casts.
@@ -343,15 +353,15 @@ Each method dispatches a named RPC request which is registered and handled in `V
 
 The `params` object sent with each RPC request (types from `@vuu-ui/vuu-protocol-types`):
 
-| RPC name | Key params sent |
-|---|---|
-| `"beginEditSession"` | `{ editSessionMode: EditSessionModeAlias \| "inline-all-rows" }` |
-| `"addRow"` | `{ data: Record<string, VuuRowDataItemType> }` — no key from remote; local adds `key` |
-| `"deleteRow"` | `{ key: string, mode: DeleteRowMode }` |
-| `"deleteSelectedRows"` | `{ mode: DeleteRowMode }` — no keys; server reads its own selection |
-| `"editCell"` | `{ key: string, column: string, data: VuuRowDataItemType }` |
-| `"undoRowChange"` | `{ key: string }` |
-| `"endEditSession"` | `{ save?: boolean, force?: boolean }` |
+| RPC name | Params shape | Example |
+|---|---|---|
+| `"beginEditSession"` | `{ editSessionMode: EditSessionModeAlias \| "inline-all-rows" }` | `{ editSessionMode: "All" }` |
+| `"addRow"` | `{ data: Record<string, VuuRowDataItemType> }` — remote; local also adds `key` | `{ key: "VOD.L-a1b2", data: { ric: "VOD.L-a1b2", lotSize: 100, ... } }` |
+| `"deleteRow"` | `{ key: string, mode: DeleteRowMode }` | `{ key: "VOD.L", mode: "soft" }` |
+| `"deleteSelectedRows"` | `{ mode: DeleteRowMode }` — no keys; server reads its own selection | `{ mode: "soft" }` |
+| `"editCell"` | `{ key: string, column: string, data: VuuRowDataItemType }` | `{ key: "VOD.L", column: "lotSize", data: 500 }` |
+| `"undoRowChange"` | `{ key: string }` | `{ key: "VOD.L" }` |
+| `"endEditSession"` | `{ save?: boolean, force?: boolean }` | `{ save: true }` or `{}` (discard) |
 
 ### Routing & Handlers
 
