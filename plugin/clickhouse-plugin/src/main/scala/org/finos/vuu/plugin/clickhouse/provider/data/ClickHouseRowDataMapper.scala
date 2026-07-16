@@ -2,9 +2,9 @@ package org.finos.vuu.plugin.clickhouse.provider.data
 
 import com.clickhouse.client.api.query.GenericRecord
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{Column, DataType, RowWithData}
-import org.finos.vuu.plugin.clickhouse.provider.data.ClickHouseRowDataMapper.EPOCH_NAN_SENTINEL
+import org.finos.vuu.plugin.clickhouse.provider.data.ClickHouseRowDataMapper.{EPOCH_NANO_NAN_SENTINEL, EPOCH_NAN_SENTINEL}
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumn
 
 import java.time.ZonedDateTime
@@ -22,6 +22,7 @@ object ClickHouseRowDataMapper {
   val LONG_NAN_SENTINEL: Long = Long.MinValue
   val DOUBLE_NAN_SENTINEL: Double = java.lang.Double.NaN
   val EPOCH_NAN_SENTINEL: EpochTimestamp = EpochTimestamp(0)
+  val EPOCH_NANO_NAN_SENTINEL: EpochTimestampNano = EpochTimestampNano(0)
 
   def apply(): ClickHouseRowDataMapper = ClickHouseRowDataMapperImpl()
 
@@ -82,6 +83,15 @@ private case class ClickHouseRowDataMapperImpl() extends ClickHouseRowDataMapper
               val epochTimestamp = EpochTimestamp(ts)
               if (epochTimestamp != EPOCH_NAN_SENTINEL) {
                 builder.put(name, epochTimestamp)
+              }
+            }
+
+          case DataType.EpochTimestampNanoType =>
+            val ts: ZonedDateTime = v1.getZonedDateTime(remoteName)
+            if (ts != null) {
+              val epochTimestampNano = EpochTimestampNano(ts)
+              if (epochTimestampNano != EPOCH_NANO_NAN_SENTINEL) {
+                builder.put(name, epochTimestampNano)
               }
             }
 

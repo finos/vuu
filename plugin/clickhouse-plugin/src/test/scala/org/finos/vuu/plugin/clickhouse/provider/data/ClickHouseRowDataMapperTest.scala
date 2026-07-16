@@ -2,7 +2,7 @@ package org.finos.vuu.plugin.clickhouse.provider.data
 
 import com.clickhouse.client.api.metadata.TableSchema
 import com.clickhouse.client.api.query.GenericRecord
-import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{Column, DataType, SimpleColumn}
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumn
 import org.scalamock.scalatest.MockFactory
@@ -220,6 +220,51 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     Then("the char is omitted")
     row3.key shouldBe "key-8"
     row3.data.contains("epochCol") shouldBe false
+  }
+
+  it should "map EpochTimestampNano only when non 0 zoned datetime provided" in {
+    Given("a GenericRecord with epoch column")
+    val v1 = mock[GenericRecord]
+
+    val columns = List(col("epochNanoCol", DataType.EpochTimestampNanoType))
+
+    (v1.hasValue(_: String)).expects("epochNanoCol").returning(true)
+    (v1.getZonedDateTime(_: String)).expects("epochNanoCol").returning(ZonedDateTime.ofInstant(Instant.ofEpochMilli(1), ZoneId.of("UTC")))
+    (v1.getString(_: String)).expects("pk").returning("key-6")
+
+    When("we map the record with a valid zoned date time")
+    val mapper = ClickHouseRowDataMapper()
+    val row = mapper.mapRowData(v1, "pk", columns)
+
+    Then("the timestamp is present")
+    row.key shouldBe "key-6"
+    row.data("epochNanoCol") shouldBe EpochTimestampNano(1_000_000)
+
+    Given("the GenericRecord returns null")
+    val v2 = mock[GenericRecord]
+    (v2.hasValue(_: String)).expects("epochNanoCol").returning(true)
+    (v2.getZonedDateTime(_: String)).expects("epochNanoCol").returning(null)
+    (v2.getString(_: String)).expects("pk").returning("key-7")
+
+    When("we map the record again")
+    val row2 = mapper.mapRowData(v2, "pk", columns)
+
+    Then("the timestamp is not present")
+    row2.key shouldBe "key-7"
+    row2.data.contains("epochNanoCol") shouldBe false
+
+    Given("the GenericRecord returns Unix Epoch 0")
+    val v3 = mock[GenericRecord]
+    (v3.hasValue(_: String)).expects("epochNanoCol").returning(true)
+    (v3.getZonedDateTime(_: String)).expects("epochNanoCol").returning(ZonedDateTime.ofInstant(Instant.EPOCH, ZoneId.of("UTC")))
+    (v3.getString(_: String)).expects("pk").returning("key-8")
+
+    When("we map the record again")
+    val row3 = mapper.mapRowData(v3, "pk", columns)
+
+    Then("the timestamp is omitted")
+    row3.key shouldBe "key-8"
+    row3.data.contains("epochNanoCol") shouldBe false
   }
 
   it should "map scaled decimals from longs and omit sentinels" in {
