@@ -1,6 +1,6 @@
 package org.finos.vuu.util.types
 
-import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 
 import java.lang.*
 
@@ -11,6 +11,7 @@ object DefaultTypeConverters {
   val stringToCharConverter: TypeConverter[String, Character] = TypeConverter(classOf[String], classOf[Character], withNullSafety[String, Character](_, _.toCharArray.apply(0)))
   val stringToBooleanConverter: TypeConverter[String, Boolean] = TypeConverter(classOf[String], classOf[Boolean], withNullSafety[String, Boolean](_, _.toBoolean))
   val stringToEpochTimestampConverter: TypeConverter[String, EpochTimestamp] = TypeConverter(classOf[String], classOf[EpochTimestamp], withNullSafety[String, EpochTimestamp](_, f => EpochTimestamp(f.toLong)))
+  val stringToEpochTimestampNanoConverter: TypeConverter[String, EpochTimestampNano] = TypeConverter(classOf[String], classOf[EpochTimestampNano], withNullSafety[String, EpochTimestampNano](_, f => EpochTimestampNano(f.toLong)))
   val stringToScaledDecimal2Converter: TypeConverter[String, ScaledDecimal2] = TypeConverter(classOf[String], classOf[ScaledDecimal2], withNullSafety[String, ScaledDecimal2](_, f => ScaledDecimal2(f.toLong)))
   val stringToScaledDecimal4Converter: TypeConverter[String, ScaledDecimal4] = TypeConverter(classOf[String], classOf[ScaledDecimal4], withNullSafety[String, ScaledDecimal4](_, f => ScaledDecimal4(f.toLong)))
   val stringToScaledDecimal6Converter: TypeConverter[String, ScaledDecimal6] = TypeConverter(classOf[String], classOf[ScaledDecimal6], withNullSafety[String, ScaledDecimal6](_, f => ScaledDecimal6(f.toLong)))
@@ -33,6 +34,7 @@ object DefaultTypeConverters {
   val charToStringConverter: TypeConverter[Character, String] = TypeConverter(classOf[Character], classOf[String], withNullSafety[Character, String](_, _.toString))
 
   val epochTimestampToStringConverter : TypeConverter[EpochTimestamp, String] = TypeConverter(classOf[EpochTimestamp], classOf[String], withNullSafety[EpochTimestamp, String](_, _.toString))
+  val epochTimestampNanoToStringConverter: TypeConverter[EpochTimestampNano, String] = TypeConverter(classOf[EpochTimestampNano], classOf[String], withNullSafety[EpochTimestampNano, String](_, _.toString))
 
   val scaledDecimalToStringConverter : TypeConverter[ScaledDecimal, String] = TypeConverter(classOf[ScaledDecimal], classOf[String], withNullSafety[ScaledDecimal, String](_, _.toString))
 
