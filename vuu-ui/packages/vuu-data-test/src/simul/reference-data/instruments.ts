@@ -40,6 +40,7 @@ export type InstrumentsDataRow = [
   ric,
   date,
   date,
+  string
 ];
 
 export const InstrumentColumnMap = {
@@ -52,6 +53,7 @@ export const InstrumentColumnMap = {
   ric: 6,
   vuuCreatedTimestamp: 7,
   vuuUpdatedTimestamp: 8,
+  vuuMsg: 9
 } as const;
 
 const instrumentsData: InstrumentsDataRow[] = [];
@@ -106,6 +108,7 @@ for (const char1 of chars1) {
           ric,
           timestamp,
           timestamp,
+          ''
         ]);
         count++;
         clock.advance(random(0, 10000));

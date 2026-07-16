@@ -114,6 +114,7 @@ function createParentAndChildOrders() {
         volLimit,
         lastUpdate,
         created,
+        ''
       ],
       notifyNewOrders,
     );
@@ -139,6 +140,7 @@ function createParentAndChildOrders() {
       volLimit,
       lastUpdate,
       created,
+      ''
     ],
     notifyNewOrders,
   );

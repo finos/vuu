@@ -1253,20 +1253,20 @@ export function replaceColumn<
   return columns.map((col) => (col.name === column.name ? column : col));
 }
 
-const vuuTimestampColumns = ["vuuCreatedTimestamp", "vuuUpdatedTimestamp"];
+const vuuDefaultColumns = ["vuuCreatedTimestamp", "vuuUpdatedTimestamp","vuuMsg"];
 
-const notVuuTimestamps = (column: { name: string }) =>
-  !vuuTimestampColumns.includes(column.name);
+const notVuuDefaultColumns = (column: { name: string }) =>
+  !vuuDefaultColumns.includes(column.name);
 
 export const applyDefaultColumnConfig = (
   { columns: columnsProp, table }: TableSchema,
   getDefaultColumnConfig?: DefaultColumnConfiguration,
-  includeVuuTimestampColumns = false,
+  includeVuuDefaultColumns = false,
 ) => {
   if (typeof getDefaultColumnConfig === "function") {
-    const columns = includeVuuTimestampColumns
+    const columns = includeVuuDefaultColumns
       ? columnsProp
-      : columnsProp.filter(notVuuTimestamps);
+      : columnsProp.filter(notVuuDefaultColumns);
 
     return columns.map((column) => {
       const config = getDefaultColumnConfig(table.table, column.name);

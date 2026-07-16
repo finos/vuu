@@ -99,15 +99,13 @@ const toDataSourceRow =
     ];
   };
 
-// const isError = (err: unknown): err is { message: string } =>
-//   typeof err === "object" && err !== null && err.hasOwnProperty("message");
-
 const buildTableSchema = (
   columns: readonly ColumnDescriptor[],
   keyColumn?: string,
 ): TableSchema => {
   const schema: TableSchema = {
-    columns: columns.map(({ name, serverDataType = "string" }) => ({
+    columns: columns.map(({ editable, name, serverDataType = "string" }) => ({
+      editable, 
       name,
       serverDataType,
     })),
