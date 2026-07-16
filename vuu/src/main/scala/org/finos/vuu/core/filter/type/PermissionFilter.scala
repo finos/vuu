@@ -3,8 +3,8 @@ package org.finos.vuu.core.filter.`type`
 import com.typesafe.scalalogging.{LazyLogging, StrictLogging}
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.filter.{CompoundFilter, Filter}
-import org.finos.vuu.core.index.{BooleanIndexedField, CharIndexedField, DoubleIndexedField, EpochTimestampIndexedField, IndexedField, IntIndexedField, LongIndexedField, ScaledDecimal2IndexedField, ScaledDecimal4IndexedField, ScaledDecimal6IndexedField, ScaledDecimal8IndexedField, StringIndexedField}
-import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
+import org.finos.vuu.core.index.{BooleanIndexedField, CharIndexedField, DoubleIndexedField, EpochTimestampIndexedField, EpochTimestampNanoIndexedField, IndexedField, IntIndexedField, LongIndexedField, ScaledDecimal2IndexedField, ScaledDecimal4IndexedField, ScaledDecimal6IndexedField, ScaledDecimal8IndexedField, StringIndexedField}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{Column, DataType, EmptyTablePrimaryKeys, RowData, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
@@ -62,6 +62,7 @@ private case class ContainsPermissionFilter(columnName: String, allowedValues: S
   private lazy val doubleValues = allowedValues.map(f => f.toDouble)
   private lazy val booleanValues = allowedValues.map(f => f.toBoolean)
   private lazy val epochTimestampValues = allowedValues.map(f => EpochTimestamp(f.toLong))
+  private lazy val epochTimestampNanoValues = allowedValues.map(f => EpochTimestampNano(f.toLong))
   private lazy val charValues = allowedValues.map(f => f.charAt(0))
   private lazy val scaledDecimal2Values = allowedValues.map(s => ScaledDecimal2(s.toLong))
   private lazy val scaledDecimal4Values = allowedValues.map(s => ScaledDecimal4(s.toLong))
@@ -89,6 +90,8 @@ private case class ContainsPermissionFilter(columnName: String, allowedValues: S
           hitIndex(primaryKeys, index, booleanValues, firstInChain)
         case Some(index: EpochTimestampIndexedField) =>
           hitIndex(primaryKeys, index, epochTimestampValues, firstInChain)
+        case Some(index: EpochTimestampNanoIndexedField) =>
+          hitIndex(primaryKeys, index, epochTimestampNanoValues, firstInChain)
         case Some(index: CharIndexedField) =>
           hitIndex(primaryKeys, index, charValues, firstInChain)
         case Some(index: ScaledDecimal2IndexedField) =>
@@ -131,6 +134,8 @@ private case class ContainsPermissionFilter(columnName: String, allowedValues: S
         applyFilter(source, primaryKeys, column, booleanValues)
       case DataType.EpochTimestampType =>
         applyFilter(source, primaryKeys, column, epochTimestampValues)
+      case DataType.EpochTimestampNanoType =>
+        applyFilter(source, primaryKeys, column, epochTimestampNanoValues)
       case DataType.CharDataType =>
         applyFilter(source, primaryKeys,column, charValues)
       case DataType.ScaledDecimal2Type =>

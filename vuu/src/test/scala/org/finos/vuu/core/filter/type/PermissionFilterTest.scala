@@ -444,7 +444,7 @@ class PermissionFilterTest extends AnyFeatureSpec with Matchers {
 
   }
 
-  Feature("Contains filter - Epoch Timestamp") {
+  Feature("Contains filter - EpochTimestamp") {
 
     Scenario("Contains filter with no index") {
       val clock = TestFriendlyClock(1000L)
@@ -489,6 +489,54 @@ class PermissionFilterTest extends AnyFeatureSpec with Matchers {
       val filter = PermissionFilter(DefaultColumn.CreatedTime.name, Set(now.toString))
 
       val result = filter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0001", "LDN-0003", "NYC-0002", "NYC-0004"))), false)
+
+      result.size shouldEqual 1
+      result.toSet shouldEqual Set("LDN-0001")
+    }
+
+  }
+
+  Feature("Contains filter - EpochTimestampNano") {
+
+    Scenario("Contains filter with no index") {
+      val clock = TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List())(using clock)
+      val filter = PermissionFilter("nano", Set(1111.toString))
+
+      val result = filter.doFilter(table, table.primaryKeys, true)
+
+      result.size shouldEqual 2
+      result.toSet shouldEqual Set("LDN-0001", "NYC-0004")
+    }
+
+    Scenario("Contains filter with no index, not first in chain") {
+      val clock = TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List())(using clock)
+      val filter = PermissionFilter("nano", Set(1111.toString))
+
+      val result = filter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0001", "LDN-0003"))), false)
+
+      result.size shouldEqual 1
+      result.toSet shouldEqual Set("LDN-0001")
+    }
+
+    Scenario("Contains filter with index") {
+      val clock = new TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List("nano"))(using clock)
+      val filter = PermissionFilter("nano", Set(1111.toString))
+
+      val result = filter.doFilter(table, table.primaryKeys, true)
+
+      result.size shouldEqual 2
+      result.toSet shouldEqual Set("LDN-0001", "NYC-0004")
+    }
+
+    Scenario("Contains filter with index, not first in chain") {
+      val clock = new TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List("nano"))(using clock)
+      val filter = PermissionFilter("nano", Set(1111.toString))
+
+      val result = filter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0001", "LDN-0003"))), false)
 
       result.size shouldEqual 1
       result.toSet shouldEqual Set("LDN-0001")
