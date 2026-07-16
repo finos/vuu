@@ -4,14 +4,18 @@ import org.finos.vuu.core.table.TableContainer
 
 abstract class EditTableRpcHandler(using val tableContainer: TableContainer) extends DefaultRpcHandler {
   registerRpc(RpcNames.DeleteRowRpc, this.deleteRow)
+  registerRpc(RpcNames.DeleteSelectedRowsRpc, this.deleteSelectedRows)
   registerRpc(RpcNames.DeleteCellRpc, this.deleteCell)
   registerRpc(RpcNames.AddRowRpc, this.addRow)
   registerRpc(RpcNames.EditRowRpc, this.editRow)
   registerRpc(RpcNames.EditCellRpc, this.editCell)
   registerRpc(RpcNames.SubmitFormRpc, this.submitForm)
   registerRpc(RpcNames.CloseFormRpc, this.closeForm)
+  registerRpc(RpcNames.UndoRowChangeRpc, this.undoRowChange)
 
   def deleteRow(params: RpcParams): RpcFunctionResult
+
+  def deleteSelectedRows(params: RpcParams): RpcFunctionResult
 
   def deleteCell(params: RpcParams): RpcFunctionResult
 
@@ -24,4 +28,6 @@ abstract class EditTableRpcHandler(using val tableContainer: TableContainer) ext
   def submitForm(params: RpcParams): RpcFunctionResult
 
   def closeForm(params: RpcParams): RpcFunctionResult
+
+  def undoRowChange(params: RpcParams): RpcFunctionResult
 }
