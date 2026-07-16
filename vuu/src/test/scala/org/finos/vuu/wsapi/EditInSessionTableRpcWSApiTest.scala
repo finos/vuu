@@ -5,7 +5,7 @@ import org.finos.vuu.api.{ColumnBuilder, SessionTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, RpcRequest, RpcResponseNew}
+import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, RpcRequest, RpcResponseNew, SelectRowRequest, SelectRowSuccess}
 import org.finos.vuu.net.rpc.{CreateSessionTableRpcHandler, EndEditSessionRpcHandler, RpcErrorResult, RpcNames, RpcSuccessResult, ViewPortContext}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
@@ -128,6 +128,37 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
       val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, maxCopySize)
+    }
+
+    Scenario("create a session table from selected rows of source table") {
+      Given("a view port exist and some rows are selected")
+      val viewPortId = createViewPort(tableName1)
+
+      val selectRowRequest1 = SelectRowRequest(viewPortId, "row1", true)
+      val selectRowRequest2 = SelectRowRequest(viewPortId, "row3", true)
+      vuuClient.send(sessionId, selectRowRequest1)
+      vuuClient.awaitForMsgWithBody[SelectRowSuccess]
+      vuuClient.send(sessionId, selectRowRequest2)
+      vuuClient.awaitForMsgWithBody[SelectRowSuccess]
+
+      When("request creating a session table from selected rows")
+      val createSessionTableRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.CreateSessionTableRpc,
+        params = Map(
+          "sessionTableName" -> sessionTableDefName,
+          "copyOption" -> "Selected",
+          "columnsToCopy" -> "*"
+        ))
+      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
+
+      Then("session table is created")
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
+      val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, 2)
     }
 
     Scenario("Request to create a session table failed for non-editable table") {
