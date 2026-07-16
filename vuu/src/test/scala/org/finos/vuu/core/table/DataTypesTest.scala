@@ -6,7 +6,7 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 
 class DataTypesTest extends AnyFeatureSpec with Matchers with TableDrivenPropertyChecks {
 
-  Feature("Check data type roundtripping") {
+  Feature("Check data type round trip") {
 
     Scenario("Data types should correctly serialize to and from strings") {
 
@@ -19,6 +19,7 @@ class DataTypesTest extends AnyFeatureSpec with Matchers with TableDrivenPropert
         "double",
         "char",
         "epochtimestamp",
+        "epochtimestampnano",
         "scaleddecimal2",
         "scaleddecimal4",
         "scaleddecimal6",
