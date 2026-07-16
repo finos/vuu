@@ -29,10 +29,12 @@ const Notifications = () => {
   const [renderPostRefresh, setPostRefresh] = useState(false);
   const [icon, setIcon] = useState(true);
 
-  const { showNotification } = useNotifications();
+  const { showNotification, hideNotification } = useNotifications();
 
-  const handleNotification = () => {
-    showNotification({
+  const notificationIds: string[] = [];
+
+  const handleShowNotification = () => {
+    const notificationId = showNotification({
       animationType,
       content: body,
       dismissal,
@@ -43,9 +45,16 @@ const Notifications = () => {
       status: type,
       type: "toast",
     });
+    if (notificationId !== undefined) {
+      notificationIds.push(notificationId);
+    }
     if (renderPostRefresh) {
       location.reload();
     }
+  };
+
+  const handleHideNotification = () => {
+    notificationIds.forEach(hideNotification);
   };
 
   return (
@@ -156,7 +165,8 @@ const Notifications = () => {
           checked={renderPostRefresh}
         />
       </FormField>
-      <button onClick={handleNotification}>trigger notifications</button>
+      <button onClick={handleShowNotification}>trigger notifications</button>
+      <button onClick={handleHideNotification}>hide notifications</button>
     </div>
   );
 };
@@ -274,6 +284,35 @@ export const CustomCssOverride = () => (
         header: "This is Info Title",
         status: "success",
         type: "toast",
+      }}
+    />
+  </>
+);
+
+export const ErrorNotificationWithCustomBackground = () => (
+  <>
+    <style>{`
+        .vuuToastNotification {
+            &.vuuToastNotification-error-custom {
+              --toast-background: #ffe6e6;
+              --toast-foreground: black;
+              --vuu-icon-svg: var(--vuuToast-error-icon, var(--vuu-svg-info-circle));
+              border-color: #ff4444;
+              border-width: 2px;
+              border-style: solid;
+            }
+
+          
+        }
+    `}</style>
+    <ToastNotification
+      top={20}
+      notification={{
+        content: "This didn't work with custom styling",
+        header: "Error with Custom Background",
+        status: "error",
+        type: "toast",
+        className: "custom",
       }}
     />
   </>

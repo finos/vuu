@@ -51,7 +51,7 @@ const RuntimeToast = (
   return {
     ...toast,
     hidden: slidesIn,
-    id: getUniqueId(),
+    id: toast.id ?? getUniqueId(),
     left: document.body.clientWidth,
     opacity: slidesIn ? undefined : 0,
     size: ZeroSize,
@@ -87,20 +87,21 @@ export const NotificationsCenter = ({
   const showNotification = useCallback(
     (notification: Notification) => {
       if (isToastNotification(notification)) {
+        const runtimeToast = RuntimeToast(notification);
         if (notification.renderPostRefresh) {
           saveLocalEntity("startup-notification", {
-            ...notification,
+            ...runtimeToast,
             expires: +new Date() + 10000,
           });
         } else {
-          setNotifications(
-            notificationsRef.current.concat(RuntimeToast(notification)),
-          );
+          setNotifications(notificationsRef.current.concat(runtimeToast));
         }
+        return runtimeToast.id;
       } else if (isWorkspaceNotification(notification)) {
         setWorkspaceNotification(
           <WorkspaceNotification>{notification.content}</WorkspaceNotification>,
         );
+        return undefined;
       } else {
         throw Error("[NotificationsCenter] invalid notification received");
       }
@@ -108,9 +109,16 @@ export const NotificationsCenter = ({
     [setNotifications],
   );
 
-  const hideNotification = useCallback(() => {
-    setWorkspaceNotification(null);
-  }, []);
+  const hideNotification = useCallback(
+    (id?: string) => {
+      if (id) {
+        setNotifications(notificationsRef.current.filter((n) => n.id !== id));
+      } else {
+        setWorkspaceNotification(null);
+      }
+    },
+    [setNotifications],
+  );
 
   useMemo(() => {
     notificationsContext.setNotify(showNotification, hideNotification);

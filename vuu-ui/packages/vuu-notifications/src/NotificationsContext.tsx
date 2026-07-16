@@ -2,8 +2,10 @@ import { type ValidationStatus } from "@salt-ds/core";
 import { ValueOf } from "@vuu-ui/vuu-utils";
 import { ReactNode } from "react";
 
-export type DispatchShowNotification = (notification: Notification) => void;
-export type DispatchHideNotification = () => void;
+export type DispatchShowNotification = (
+  notification: Notification,
+) => string | undefined;
+export type DispatchHideNotification = (id?: string) => void;
 
 export const NotificationType = {
   Toast: "toast",
@@ -40,8 +42,10 @@ interface NotificationDescriptorBase<T extends NotificationType> {
 
 export interface ToastNotificationDescriptor
   extends NotificationDescriptorBase<"toast"> {
+  className?: string;
   content?: ReactNode;
   header: string;
+  id?: string;
 }
 
 export interface WorkspaceNotificationDescriptor
