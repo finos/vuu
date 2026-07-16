@@ -1,6 +1,6 @@
 package org.finos.vuu.core.row
 
-import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal}
 import org.finos.vuu.core.table.{Column, RowData, RowWithData}
 
 import scala.collection.mutable
@@ -36,6 +36,11 @@ class InMemMapRowBuilder extends RowBuilder {
   }
 
   override def setEpochTimestamp(column: Column, v: EpochTimestamp): RowBuilder = {
+    mutableMap.update(column.name, v)
+    this
+  }
+
+  override def setEpochTimestampNano(column: Column, v: EpochTimestampNano): RowBuilder = {
     mutableMap.update(column.name, v)
     this
   }
