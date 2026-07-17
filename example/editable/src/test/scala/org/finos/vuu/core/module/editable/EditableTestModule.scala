@@ -22,6 +22,18 @@ class EditTableTestService()(using tableContainer: TableContainer) extends EditT
     RpcFunctionSuccess(None)
   }
 
+  override def deleteSelectedRows(params: RpcParams): RpcFunctionResult = {
+    val vp: ViewPort = params.viewPort
+    val session: ClientSessionId = params.ctx.session
+    val selection = vp.getSelection
+
+    val iterator = selection.iterator
+    while (iterator.hasNext) {
+      vp.table.asTable.processDelete(iterator.next())
+    }
+    RpcFunctionSuccess(None)
+  }
+
   override def deleteCell(params: RpcParams): RpcFunctionResult = {
     val key: String = params.namedParams("key").asInstanceOf[String]
     val column: String = params.namedParams("column").asInstanceOf[String]
@@ -73,6 +85,16 @@ class EditTableTestService()(using tableContainer: TableContainer) extends EditT
   override def closeForm(params: RpcParams): RpcFunctionResult = {
     val vp: ViewPort = params.viewPort
     val session: ClientSessionId = params.ctx.session
+    RpcFunctionSuccess(None)
+  }
+
+  override def undoRowChange(params: RpcParams): RpcFunctionResult = {
+    val key: String = params.namedParams("key").asInstanceOf[String]
+    val vp: ViewPort = params.viewPort
+    val session: ClientSessionId = params.ctx.session
+    val originalData: Map[String, Any] = Map()
+
+    vp.table.asTable.processUpdate(key, RowWithData(key, originalData))
     RpcFunctionSuccess(None)
   }
 }
