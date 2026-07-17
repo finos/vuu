@@ -29,12 +29,12 @@ class EditableTest extends VuuServerTestCase {
           val viewport = vuuServer.createViewPort(EditTableTestModule.NAME, "editTestTable")
           val ctx = RequestContext("", VuuUser(""), ClientSessionId("", ""), null)
 
-          val data = Map("rowId" -> "key1", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)
+          val data: Map[Any, Any] = Map("rowId" -> "key1", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)
           val addRowResult = viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.AddRowRpc, new RpcParams(Map("key" -> "key1", "data" -> data), viewport, ctx))
           addRowResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
 
           vuuServer.runOnce()
-          assertVpEq(combineQsForVp(viewport), ("rowId", "A", "B", "C", "D"), Array(data))
+          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"), Array(data))
       }
     }
 
@@ -44,17 +44,17 @@ class EditableTest extends VuuServerTestCase {
           vuuServer.login("testUser")
           val viewport = vuuServer.createViewPort(EditTableTestModule.NAME, "editTestTable")
           val ctx = RequestContext("", VuuUser(""), ClientSessionId("", ""), null)
-          val data = Map("rowId" -> "key1", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)
+          val data: Map[Any, Any] = Map("rowId" -> "key1", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)
           viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.AddRowRpc, new RpcParams(Map("key" -> "key1", "data" -> data), viewport, ctx))
           vuuServer.runOnce()
-          assertVpEq(combineQsForVp(viewport), ("rowId", "A", "B", "C", "D"), Array(data))
+          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"), Array(data))
 
-          val data2 = Map("rowId" -> "key1", "A" -> "TEST2", "B" -> 2002D, "C" -> 600, "D" -> false)
+          val data2: Map[Any, Any] = Map("rowId" -> "key1", "A" -> "TEST2", "B" -> 2002D, "C" -> 600, "D" -> false)
           val editRowResult = viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.EditRowRpc, new RpcParams(Map("key" -> "key1", "data" -> data2), viewport, ctx))
           editRowResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
 
           vuuServer.runOnce()
-          assertVpEq(combineQsForVp(viewport), ("rowId", "A", "B", "C", "D"), Array(data2))
+          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"), Array(data2))
       }
     }
 
@@ -64,16 +64,16 @@ class EditableTest extends VuuServerTestCase {
           vuuServer.login("testUser")
           val viewport = vuuServer.createViewPort(EditTableTestModule.NAME, "editTestTable")
           val ctx = RequestContext("", VuuUser(""), ClientSessionId("", ""), null)
-          val data = Map("rowId" -> "key1", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)
+          val data: Map[Any, Any] = Map("rowId" -> "key1", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)
           viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.AddRowRpc, new RpcParams(Map("key" -> "key1", "data" -> data), viewport, ctx))
           vuuServer.runOnce()
-          assertVpEq(combineQsForVp(viewport), ("rowId", "A", "B", "C", "D"), Array(data))
+          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"), Array(data))
 
           val editCellResult = viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.EditCellRpc, new RpcParams(Map("key" -> "key1", "column" -> "A", "data" -> "TEST3"), viewport, ctx))
           editCellResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
 
           vuuServer.runOnce()
-          assertVpEq(combineQsForVp(viewport), ("rowId", "A", "B", "C", "D"),
+          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"),
             Array(Map("rowId" -> "key1", "A" -> "TEST3", "B" -> 1001D, "C" -> 500, "D" -> true)))
       }
     }
@@ -84,17 +84,16 @@ class EditableTest extends VuuServerTestCase {
           vuuServer.login("testUser")
           val viewport = vuuServer.createViewPort(EditTableTestModule.NAME, "editTestTable")
           val ctx = RequestContext("", VuuUser(""), ClientSessionId("", ""), null)
-          val data = Map("rowId" -> "key1", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)
+          val data: Map[Any, Any] = Map("rowId" -> "key1", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)
           viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.AddRowRpc, new RpcParams(Map("key" -> "key1", "data" -> data), viewport, ctx))
           vuuServer.runOnce()
-          assertVpEq(combineQsForVp(viewport), ("rowId", "A", "B", "C", "D"), Array(data))
+          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"), Array(data))
 
           val deleteRowResult = viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.DeleteRowRpc, new RpcParams(Map("key" -> "key1"), viewport, ctx))
           deleteRowResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
 
           vuuServer.runOnce()
-          assertVpEq(combineQsForVp(viewport), ("rowId", "A", "B", "C", "D"), Array())
-        )
+          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"), Array())
       }
     }
 
@@ -104,12 +103,12 @@ class EditableTest extends VuuServerTestCase {
           vuuServer.login("testUser")
           val viewport = vuuServer.createViewPort(EditTableTestModule.NAME, "editTestTable")
           val ctx = RequestContext("", VuuUser(""), ClientSessionId("", ""), null)
-          val data = Map("rowId" -> "key1", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)
-          val data2 = Map("rowId" -> "key2", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)
+          val data: Map[Any, Any] = Map("rowId" -> "key1", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)
+          val data2: Map[Any, Any] = Map("rowId" -> "key2", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)
           viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.AddRowRpc, new RpcParams(Map("key" -> "key1", "data" -> data), viewport, ctx))
           viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.AddRowRpc, new RpcParams(Map("key" -> "key2", "data" -> data2), viewport, ctx))
           vuuServer.runOnce()
-          assertVpEq(combineQsForVp(viewport), ("rowId", "A", "B", "C", "D"), Array(data, data2))
+          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"), Array(data, data2))
 
           viewport.selectRow("key1", false)
 
@@ -117,8 +116,7 @@ class EditableTest extends VuuServerTestCase {
           deleteSelectedRowsResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
 
           vuuServer.runOnce()
-          assertVpEq(combineQsForVp(viewport), ("rowId", "A", "B", "C", "D"), Array(data2))
-        )
+          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"), Array(data2))
       }
     }
 
@@ -128,18 +126,17 @@ class EditableTest extends VuuServerTestCase {
           vuuServer.login("testUser")
           val viewport = vuuServer.createViewPort(EditTableTestModule.NAME, "editTestTable")
           val ctx = RequestContext("", VuuUser(""), ClientSessionId("", ""), null)
-          val data = Map("rowId" -> "key1", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)
+          val data: Map[Any, Any] = Map("rowId" -> "key1", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)
           viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.AddRowRpc, new RpcParams(Map("key" -> "key1", "data" -> data), viewport, ctx))
           vuuServer.runOnce()
-          assertVpEq(combineQsForVp(viewport), ("rowId", "A", "B", "C", "D"), Array(data))
+          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"), Array(data))
 
           val deleteCellResult = viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.DeleteCellRpc, new RpcParams(Map("key" -> "key1", "column" -> "A"), viewport, ctx))
           deleteCellResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
 
           vuuServer.runOnce()
-          assertVpEq(combineQsForVp(viewport), ("rowId", "A", "B", "C", "D"),
+          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"),
             Array(Map("rowId" -> "key1", "A" -> null, "B" -> 1001D, "C" -> 500, "D" -> true)))
-        )
       }
     }
 
@@ -174,10 +171,10 @@ class EditableTest extends VuuServerTestCase {
           vuuServer.login("testUser")
           val viewport = vuuServer.createViewPort(EditTableTestModule.NAME, "editTestTable")
           val ctx = RequestContext("", VuuUser(""), ClientSessionId("", ""), null)
-          val data = Map("rowId" -> "key1", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)
+          val data: Map[Any, Any] = Map("rowId" -> "key1", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)
           viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.AddRowRpc, new RpcParams(Map("key" -> "key1", "data" -> data), viewport, ctx))
           vuuServer.runOnce()
-          assertVpEq(combineQsForVp(viewport), ("rowId", "A", "B", "C", "D"), Array(data))
+          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"), Array(data))
 
           viewport.selectRow("key1", false)
 
@@ -185,8 +182,7 @@ class EditableTest extends VuuServerTestCase {
           undoRowChangeResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
 
           vuuServer.runOnce()
-          assertVpEq(combineQsForVp(viewport), ("rowId", "A", "B", "C", "D"), Array())
-        )
+          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"), Array())
       }
     }
   }
