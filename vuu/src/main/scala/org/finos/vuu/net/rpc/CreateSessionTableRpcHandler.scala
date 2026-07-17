@@ -13,7 +13,7 @@ class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) ext
     val sourceTable = params.viewPort.table
     val copyOption = SessionTableCopyOption.fromString(params.namedParams("copyOption").asInstanceOf[String])
     val columnsToCopyStr = params.namedParams("columnsToCopy").asInstanceOf[String]
-    val columnsToCopy = if (columnsToCopyStr.equals("*")) List.empty[String] else columnsToCopyStr.split(",").toList
+    val columnsToCopy = if (columnsToCopyStr == null || columnsToCopyStr.isBlank || columnsToCopyStr.equals("*")) List.empty[String] else columnsToCopyStr.split(",").toList
     val sessionTableName = params.namedParams("sessionTableName").asInstanceOf[String]
 
     if (!sourceTable.asTable.getTableDef.isEditable) {
@@ -29,7 +29,7 @@ class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) ext
 
     val sessionTableSource = tableContainer.getTable(sessionTableName)
     val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)
-
+    // if columsntocopy not there, copy editable columns
     copyOption match {
       case All =>
         val vp = params.viewPort
