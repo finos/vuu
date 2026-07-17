@@ -182,7 +182,7 @@ class EditableTest extends VuuServerTestCase {
           undoRowChangeResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
 
           vuuServer.runOnce()
-          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"), Array())
+          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"), Array(Map("rowId" -> "key1", "A" -> null, "B" -> null, "C" -> null, "D" -> null)))
       }
     }
   }
