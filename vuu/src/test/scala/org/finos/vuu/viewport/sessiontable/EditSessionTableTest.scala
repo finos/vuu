@@ -85,11 +85,15 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
 
     override def deleteRow(params: RpcParams): RpcFunctionResult = ???
 
+    override def deleteSelectedRows(params: RpcParams): RpcFunctionResult = ???
+
     override def deleteCell(params: RpcParams): RpcFunctionResult = ???
 
     override def addRow(params: RpcParams): RpcFunctionResult = ???
 
     override def closeForm(params: RpcParams): RpcFunctionResult = ???
+
+    override def undoRowChange(params: RpcParams): RpcFunctionResult = ???
   }
 
   /**
@@ -136,6 +140,9 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       RpcFunctionSuccess(None)
     }
 
+
+    override def deleteSelectedRows(params: RpcParams): RpcFunctionResult = ???
+
     override def deleteCell(params: RpcParams): RpcFunctionResult = ???
 
     override def addRow(params: RpcParams): RpcFunctionResult = ???
@@ -145,6 +152,8 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
     override def editCell(params: RpcParams): RpcFunctionResult = ???
 
     override def closeForm(params: RpcParams): RpcFunctionResult = ???
+
+    override def undoRowChange(params: RpcParams): RpcFunctionResult = ???
   }
 
   Feature("Test full flow through editable session table") {
