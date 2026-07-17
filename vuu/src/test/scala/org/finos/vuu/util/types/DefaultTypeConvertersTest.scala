@@ -1,6 +1,6 @@
 package org.finos.vuu.util.types
 
-import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.util.types.DefaultTypeConverters.*
 import org.finos.vuu.util.types.TypeConverter
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -35,6 +35,7 @@ class DefaultTypeConvertersTest extends AnyFeatureSpec with Matchers {
       ("Boolean to String", booleanToStringConverter, true, "true"),
       ("Char to String", charToStringConverter, 'Z', "Z"),
       ("EpochTimestamp to String", epochTimestampToStringConverter, EpochTimestamp(20_000), "20000"),
+      ("EpochTimestampNano to String", epochTimestampNanoToStringConverter, EpochTimestampNano(20_000), "20000"),
       ("ScaledDecimal to String", scaledDecimalToStringConverter, ScaledDecimal2(30_000L), "30000"),
     ))((title, converter, input, expectedOutput) => {
       Scenario(title) {
@@ -71,6 +72,7 @@ class DefaultTypeConvertersTest extends AnyFeatureSpec with Matchers {
       ("Boolean to String", booleanToStringConverter),
       ("Char to String", charToStringConverter),
       ("EpochTimestamp to String", epochTimestampToStringConverter),
+      ("EpochTimestampNano to String", epochTimestampNanoToStringConverter),
       ("ScaledDecimal to String", scaledDecimalToStringConverter),
     ))((title, converter) => {
       Scenario(title) {

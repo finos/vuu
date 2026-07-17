@@ -25,6 +25,7 @@ class VirtualizedSessionTableColumnBuilderTest extends AnyFeatureSpec
         .addBoolean("boolCol")
         .addChar("charCol")
         .addEpochTimestamp("timestampCol")
+        .addEpochTimestampNano("nanoTimestampCol")
         .addScaledDecimal2("decimal2Col")
         .addScaledDecimal4("decimal4Col")
         .addScaledDecimal6("decimal6Col")
@@ -39,6 +40,7 @@ class VirtualizedSessionTableColumnBuilderTest extends AnyFeatureSpec
         "boolCol:Boolean:boolCol",
         "charCol:Char:charCol",
         "timestampCol:EpochTimestamp:timestampCol",
+        "nanoTimestampCol:EpochTimestampNano:nanoTimestampCol",
         "decimal2Col:ScaledDecimal2:decimal2Col",
         "decimal4Col:ScaledDecimal4:decimal4Col",
         "decimal6Col:ScaledDecimal6:decimal6Col",
@@ -61,6 +63,7 @@ class VirtualizedSessionTableColumnBuilderTest extends AnyFeatureSpec
         .addBoolean("boolCol", "remoteBool")
         .addChar("charCol", "remoteChar")
         .addEpochTimestamp("timestampCol", "remoteTimestamp")
+        .addEpochTimestampNano("nanoTimestampCol", "remoteNanoTimestamp")
         .addScaledDecimal2("decimal2Col", "remoteDecimal2")
         .addScaledDecimal4("decimal4Col", "remoteDecimal4")
         .addScaledDecimal6("decimal6Col", "remoteDecimal6")
@@ -75,6 +78,7 @@ class VirtualizedSessionTableColumnBuilderTest extends AnyFeatureSpec
         "boolCol:Boolean:remoteBool",
         "charCol:Char:remoteChar",
         "timestampCol:EpochTimestamp:remoteTimestamp",
+        "nanoTimestampCol:EpochTimestampNano:remoteNanoTimestamp",
         "decimal2Col:ScaledDecimal2:remoteDecimal2",
         "decimal4Col:ScaledDecimal4:remoteDecimal4",
         "decimal6Col:ScaledDecimal6:remoteDecimal6",

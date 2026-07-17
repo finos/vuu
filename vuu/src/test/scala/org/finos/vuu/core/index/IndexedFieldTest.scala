@@ -1,7 +1,7 @@
 package org.finos.vuu.core.index
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano}
 import org.finos.vuu.core.table.{DataType, SimpleColumn}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -166,5 +166,59 @@ class IndexedFieldTest extends AnyFeatureSpec with Matchers with StrictLogging {
       values.toSet shouldEqual Set("20", "21", "22", "23", "24", "25", "10", "11", "12", "13", "14", "15")
 
     }
+
+    Scenario("Create a EpochTimestampNano based index using SkipList") {
+
+      val index = new SkipListIndexedEpochTimestampNanoField(SimpleColumn("Timestamp", 0, DataType.EpochTimestampNanoType))
+
+      val times = List(EpochTimestampNano(1), EpochTimestampNano(2), EpochTimestampNano(3), EpochTimestampNano(4), EpochTimestampNano(5), EpochTimestampNano(6))
+
+      times.foreach(time => {
+        (0 to 5).foreach(i => index.insert(time, time.toString + i.toString))
+      })
+
+      val values = index.find(EpochTimestampNano(1))
+
+      values.toList shouldEqual List("10", "11", "12", "13", "14", "15")
+
+      index.remove(EpochTimestampNano(1), "15")
+
+      val values2 = index.find(EpochTimestampNano(1))
+
+      values2.toList shouldEqual List("10", "11", "12", "13", "14")
+
+      val values3 = index.find(EpochTimestampNano(-1))
+
+      values3.toList shouldEqual List()
+
+      val values4 = index.find(Set(EpochTimestampNano(2), EpochTimestampNano(3)))
+
+      values4.toList shouldEqual List("20", "21", "22", "23", "24", "25", "30", "31", "32", "33", "34", "35")
+    }
+
+    Scenario("Check ordered operations on EpochTimestampNano index") {
+
+      val index = new SkipListIndexedEpochTimestampNanoField(SimpleColumn("Timestamp", 0, DataType.EpochTimestampNanoType))
+
+      val times = List(EpochTimestampNano(1), EpochTimestampNano(2), EpochTimestampNano(3), EpochTimestampNano(4), EpochTimestampNano(5), EpochTimestampNano(6))
+
+      times.foreach(time => {
+        (0 to 5).foreach(i => index.insert(time, time.toString + i.toString))
+      })
+
+      var values = index.greaterThan(EpochTimestampNano(5))
+      values.toSet shouldEqual Set("60", "61", "62", "63", "64", "65")
+
+      values = index.greaterThanOrEqual(EpochTimestampNano(5))
+      values.toSet shouldEqual Set("60", "61", "62", "63", "64", "65", "50", "51", "52", "53", "54", "55")
+
+      values = index.lessThan(EpochTimestampNano(2))
+      values.toSet shouldEqual Set("10", "11", "12", "13", "14", "15")
+
+      values = index.lessThanOrEqual(EpochTimestampNano(2))
+      values.toSet shouldEqual Set("20", "21", "22", "23", "24", "25", "10", "11", "12", "13", "14", "15")
+
+    }
+
   }
 }

@@ -3,7 +3,7 @@ package org.finos.vuu.core.index
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.collection.set.ImmutableArraySet
 import org.finos.vuu.core.table.Column
-import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentNavigableMap, ConcurrentSkipListMap}
 import scala.jdk.CollectionConverters.*
@@ -57,6 +57,8 @@ trait StringIndexedField extends IndexedField[String]
 
 trait EpochTimestampIndexedField extends IndexedField[EpochTimestamp]
 
+trait EpochTimestampNanoIndexedField extends IndexedField[EpochTimestampNano]
+
 trait CharIndexedField extends IndexedField[Char]
 
 trait ScaledDecimal2IndexedField extends IndexedField[ScaledDecimal2]
@@ -66,6 +68,7 @@ trait ScaledDecimal4IndexedField extends IndexedField[ScaledDecimal4]
 trait ScaledDecimal6IndexedField extends IndexedField[ScaledDecimal6]
 
 trait ScaledDecimal8IndexedField extends IndexedField[ScaledDecimal8]
+
 
 class HashMapIndexedStringField(val column: Column) extends StringIndexedField with StrictLogging {
 
@@ -188,6 +191,8 @@ class SkipListIndexedLongField(column: Column) extends SkipListIndexedField[Long
 class SkipListIndexedBooleanField(column: Column) extends SkipListIndexedField[Boolean](column) with BooleanIndexedField {}
 
 class SkipListIndexedEpochTimestampField(column: Column) extends SkipListIndexedField[EpochTimestamp](column) with EpochTimestampIndexedField {}
+
+class SkipListIndexedEpochTimestampNanoField(column: Column) extends SkipListIndexedField[EpochTimestampNano](column) with EpochTimestampNanoIndexedField {}
 
 class SkipListIndexedCharField(column: Column) extends SkipListIndexedField[Char](column) with CharIndexedField {}
 

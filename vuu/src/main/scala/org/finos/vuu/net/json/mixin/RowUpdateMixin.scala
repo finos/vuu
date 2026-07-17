@@ -1,7 +1,7 @@
 package org.finos.vuu.net.json.mixin
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal}
 import org.finos.vuu.net.row.{RowUpdate, RowUpdateType}
 import org.finos.vuu.viewport.ViewPortMenu
 import tools.jackson.core.{JsonGenerator, JsonParser}
@@ -29,28 +29,40 @@ class RowUpdateSerializer extends StdSerializer[RowUpdate](classOf[ViewPortMenu]
     gen.writeNumberProperty("ts", value.ts)
     gen.writeNumberProperty("sel", value.selected)
     gen.writeStringProperty("vpVersion", value.vpVersion)
-    gen.writeArrayPropertyStart("data")
 
-    value.data.zipWithIndex.foreach {
+    gen.writeArrayPropertyStart("data")
+    val data = value.data
+    val totalElements = data.length
+    var index = 0
+    while (index < totalElements) {
+      val element = data(index)
+      writeElement(gen, element, index)
+      index += 1
+    }
+    gen.writeEndArray()
+
+    gen.writeEndObject()
+  }
+
+  private def writeElement(gen: JsonGenerator, element: Any, index: Int): Unit = {
+    element match {
       case null => gen.writeString("")
-      case (null, _) => gen.writeString("")
-      case (None, _) => gen.writeString("")
-      case (s: String, _) => gen.writeString(s)
-      case (i: Int, _) => gen.writeNumber(i)
-      case (d: Double, _) => gen.writeNumber(d)
-      case (l: Long, _) => gen.writeString(l.toString)
-      case (b: Boolean, _) => gen.writeBoolean(b)
-      case (c: Char, _) => gen.writeString(c.toString)
-      case (epoch: EpochTimestamp, _) => gen.writeNumber(epoch.millis)
-      case (scaledDecimal: ScaledDecimal, _) => gen.writeString(scaledDecimal.scaledValue.toString)
-      case (unknown: Any, index) =>
+      case None => gen.writeString("")
+      case s: String => gen.writeString(s)
+      case i: Int => gen.writeNumber(i)
+      case d: Double => gen.writeNumber(d)
+      case l: Long => gen.writeString(l.toString)
+      case b: Boolean => gen.writeBoolean(b)
+      case c: Char => gen.writeString(c.toString)
+      case epoch: EpochTimestamp => gen.writeNumber(epoch.millis)
+      case epoch: EpochTimestampNano => gen.writeString(epoch.nanos.toString)
+      case scaledDecimal: ScaledDecimal => gen.writeString(scaledDecimal.scaledValue.toString)
+      case unknown: Any =>
         logger.warn(s"Unexpected type ${unknown.getClass} at index $index")
         gen.writeString("")
     }
-
-    gen.writeEndArray()
-    gen.writeEndObject()
   }
+
 }
 
 class RowUpdateDeserializer extends StdDeserializer[RowUpdate](classOf[RowUpdate]) {

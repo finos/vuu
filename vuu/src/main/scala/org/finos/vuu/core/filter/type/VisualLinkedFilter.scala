@@ -3,8 +3,8 @@ package org.finos.vuu.core.filter.`type`
 import com.typesafe.scalalogging.LazyLogging
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.filter.ViewPortFilter
-import org.finos.vuu.core.index.{BooleanIndexedField, DoubleIndexedField, EpochTimestampIndexedField, IndexedField, IntIndexedField, LongIndexedField, ScaledDecimal2IndexedField, ScaledDecimal4IndexedField, ScaledDecimal6IndexedField, ScaledDecimal8IndexedField, StringIndexedField}
-import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
+import org.finos.vuu.core.index.{BooleanIndexedField, DoubleIndexedField, EpochTimestampIndexedField, EpochTimestampNanoIndexedField, IndexedField, IntIndexedField, LongIndexedField, ScaledDecimal2IndexedField, ScaledDecimal4IndexedField, ScaledDecimal6IndexedField, ScaledDecimal8IndexedField, StringIndexedField}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{Column, DataType, EmptyTablePrimaryKeys, TablePrimaryKeys, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
@@ -51,6 +51,9 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Vi
         case Some(index: EpochTimestampIndexedField) if childColumn.dataType == DataType.EpochTimestampType =>
           val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[EpochTimestamp])
           filterIndexByValues(index, parentSelField)
+        case Some(index: EpochTimestampNanoIndexedField) if childColumn.dataType == DataType.EpochTimestampNanoType =>
+          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[EpochTimestampNano])
+          filterIndexByValues(index, parentSelField)  
         case Some(index: ScaledDecimal2IndexedField) if childColumn.dataType == DataType.ScaledDecimal2Type =>
           val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[ScaledDecimal2])
           filterIndexByValues(index, parentSelField)

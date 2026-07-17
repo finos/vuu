@@ -5,7 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.datatype.Scale.{EIGHT, Eight, FOUR, Four, Six, Two}
-import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal, ScaledDecimal2}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal, ScaledDecimal2}
 import org.finos.vuu.core.table.{Columns, InMemDataTable}
 import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl}
 import org.scalatest.GivenWhenThen
@@ -24,12 +24,13 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
           "currency: String",
           "exchange:String",
           "lotSize:Double",
-          "lastUpdated:EpochTimeStamp",
+          "lastUpdated:EpochTimestamp",
           "shortSellRestriction:Char",
           "delta:ScaledDecimal2",
           "tau:ScaledDecimal4",
           "gamma:ScaledDecimal6",
           "theta:ScaledDecimal8",
+          "nano:EpochTimestampNano",
         ),
         joinFields = "ric"
       )
@@ -47,7 +48,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       val joinTableProvider: JoinTableProvider = JoinTableProviderImpl()
 
       val (ricColumn, descColumn, currColumn, exchangeColumn, lotSizeColumn, lastUpdatedColumn, shortSellRestrictionColumn,
-        deltaColumn, tauColumn, gammaColumn, thetaColumn) =
+        deltaColumn, tauColumn, gammaColumn, thetaColumn, nanoColumn) =
         (
           tableDef.columnForName("ric"),
           tableDef.columnForName("description"),
@@ -60,6 +61,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
           tableDef.columnForName("tau"),
           tableDef.columnForName("gamma"),
           tableDef.columnForName("theta"),
+          tableDef.columnForName("nano"),
         )
 
       val table = new InMemDataTable(tableDef, joinTableProvider)
@@ -77,6 +79,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
         .setScaledDecimal(tauColumn, ScaledDecimal(1.02, Four))
         .setScaledDecimal(gammaColumn, ScaledDecimal(1.03, Six))
         .setScaledDecimal(thetaColumn, ScaledDecimal(1.04, Eight))
+        .setEpochTimestampNano(nanoColumn, EpochTimestampNano(1_000_000))
         .build
 
       row.key should equal("FOO.L")
@@ -91,6 +94,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       row.get(tauColumn) should equal(ScaledDecimal(1.02, Four))
       row.get(gammaColumn) should equal(ScaledDecimal(1.03, Six))
       row.get(thetaColumn) should equal(ScaledDecimal(1.04, Eight))
+      row.get(nanoColumn) should equal(EpochTimestampNano(1_000_000))
     }
 
     Scenario("Test Reuse of Row Builder"){
@@ -103,7 +107,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       val joinTableProvider: JoinTableProvider = JoinTableProviderImpl()
 
       val (ricColumn, descColumn, currColumn, exchangeColumn, lotSizeColumn, lastUpdatedColumn, shortSellRestrictionColumn,
-      deltaColumn, tauColumn, gammaColumn, thetaColumn) =
+      deltaColumn, tauColumn, gammaColumn, thetaColumn, nanoColumn) =
         (
           tableDef.columnForName("ric"),
           tableDef.columnForName("description"),
@@ -116,6 +120,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
           tableDef.columnForName("tau"),
           tableDef.columnForName("gamma"),
           tableDef.columnForName("theta"),
+          tableDef.columnForName("nano"),
         )
 
       val table = new InMemDataTable(tableDef, joinTableProvider)
@@ -134,6 +139,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
         .setScaledDecimal(tauColumn, ScaledDecimal(1.02, Four))
         .setScaledDecimal(gammaColumn, ScaledDecimal(1.03, Six))
         .setScaledDecimal(thetaColumn, ScaledDecimal(1.04, Eight))
+        .setEpochTimestampNano(nanoColumn, EpochTimestampNano(1_000_000))
         .build
 
       row.key should equal("FOO.L")
@@ -148,6 +154,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       row.get(tauColumn) should equal(ScaledDecimal(1.02, Four))
       row.get(gammaColumn) should equal(ScaledDecimal(1.03, Six))
       row.get(thetaColumn) should equal(ScaledDecimal(1.04, Eight))
+      row.get(nanoColumn) should equal(EpochTimestampNano(1_000_000))
 
       intercept[RuntimeException]{
         builder.build
@@ -165,6 +172,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
         .setScaledDecimal(tauColumn, ScaledDecimal(2.02, Four))
         .setScaledDecimal(gammaColumn, ScaledDecimal(2.03, Six))
         .setScaledDecimal(thetaColumn, ScaledDecimal(2.04, Eight))
+        .setEpochTimestampNano(nanoColumn, EpochTimestampNano(2_000_000))
         .build
 
       row2.key should equal("BAR.L")
@@ -179,7 +187,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       row2.get(tauColumn) should equal(ScaledDecimal(2.02, Four))
       row2.get(gammaColumn) should equal(ScaledDecimal(2.03, Six))
       row2.get(thetaColumn) should equal(ScaledDecimal(2.04, Eight))
-
+      row2.get(nanoColumn) should equal(EpochTimestampNano(2_000_000))
     }
 
 

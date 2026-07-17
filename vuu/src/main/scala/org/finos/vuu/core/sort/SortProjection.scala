@@ -26,7 +26,8 @@ object SortProjectionComparator extends StrictLogging {
       case DataType.StringDataType =>
         if (isAscending) StringColumnSortAsc(index) else StringColumnSortDesc(index)
       case DataType.LongDataType | DataType.IntegerDataType | DataType.DoubleDataType |
-           DataType.BooleanDataType | DataType.CharDataType | DataType.EpochTimestampType |
+           DataType.BooleanDataType | DataType.CharDataType |
+           DataType.EpochTimestampType | DataType.EpochTimestampNanoType |
            DataType.ScaledDecimal2Type | DataType.ScaledDecimal4Type |
            DataType.ScaledDecimal6Type | DataType.ScaledDecimal8Type =>
         if (isAscending) ComparableColumnSortAsc(index) else ComparableColumnSortDesc(index)

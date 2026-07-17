@@ -1,7 +1,7 @@
 package org.finos.vuu.core.index
 
 import org.finos.vuu.api.{Index, Indices, TableDef}
-import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{Column, DataType, RowData, RowWithData, SimpleColumn}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -336,6 +336,42 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       result6.length shouldEqual 0
     }
 
+    Scenario("Correctly route data through IndexUpdaters for EpochTimestampNano") {
+      val (column, indices) = createIndices("testCol", DataType.EpochTimestampNanoType)
+      val rowKey = "row-1"
+      val indexField = indices.indexForColumn(column).get.asInstanceOf[IndexedField[EpochTimestampNano]]
+
+      // 1. Insert
+      indices.insert(createRow(rowKey, column, EpochTimestampNano(1L)))
+      val result = indexField.find(EpochTimestampNano(1L))
+      result.length shouldEqual 1
+      result.head shouldEqual rowKey
+
+      // 2. Update to new value
+      indices.update(createRow(rowKey, column, EpochTimestampNano(1L)), createRow(rowKey, column, EpochTimestampNano(2L)))
+      val result2 = indexField.find(EpochTimestampNano(1L))
+      result2.length shouldEqual 0
+      val result3 = indexField.find(EpochTimestampNano(2L))
+      result3.length shouldEqual 1
+      result3.head shouldEqual rowKey
+
+      // 3. Update to null
+      indices.update(createRow(rowKey, column, EpochTimestampNano(2L)), createRow(rowKey, column, null))
+      val result4 = indexField.find(EpochTimestampNano(2L))
+      result4.length shouldEqual 0
+
+      // 4. Update from null to value
+      indices.update(createRow(rowKey, column, null), createRow(rowKey, column, EpochTimestampNano(3L)))
+      val result5 = indexField.find(EpochTimestampNano(3L))
+      result5.length shouldEqual 1
+      result5.head shouldEqual rowKey
+
+      // 5. Remove
+      indices.remove(createRow(rowKey, column, EpochTimestampNano(3L)))
+      val result6 = indexField.find(EpochTimestampNano(3L))
+      result6.length shouldEqual 0
+    }
+    
     Scenario("Correctly route data through IndexUpdaters for ScaledDecimal") {
       val scaledDecimalVariants = Table(
         ("typeName", "dataType", "factory"),

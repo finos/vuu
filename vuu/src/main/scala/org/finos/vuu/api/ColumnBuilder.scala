@@ -71,6 +71,15 @@ class ColumnBuilder {
     this
   }
 
+  def addEpochTimestampNano(columnName: String): ColumnBuilder = {
+    addEpochTimestampNano(columnName, false)
+  }
+
+  def addEpochTimestampNano(columnName: String, isEditable: Boolean): ColumnBuilder = {
+    columns += (columnName + ":EpochTimestampNano:" + isEditable)
+    this
+  }
+
   def addScaledDecimal2(columnName: String): ColumnBuilder = {
     addScaledDecimal2(columnName, false)
   }

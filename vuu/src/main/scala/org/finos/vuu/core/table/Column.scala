@@ -3,7 +3,7 @@ package org.finos.vuu.core.table
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.column.CalculatedColumnClause
-import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.util.schema.ExternalEntitySchema
 import org.finos.vuu.util.types.{DefaultTypeConverters, TypeConverterContainerBuilder}
 
@@ -19,6 +19,7 @@ object DataType {
   final val LongDataType: Class[Long] = classOf[Long]
   final val DoubleDataType: Class[Double] = classOf[Double]
   final val EpochTimestampType: Class[EpochTimestamp] = classOf[EpochTimestamp]
+  final val EpochTimestampNanoType: Class[EpochTimestampNano] = classOf[EpochTimestampNano]
   final val ScaledDecimal2Type: Class[ScaledDecimal2] = classOf[ScaledDecimal2]
   final val ScaledDecimal4Type: Class[ScaledDecimal4] = classOf[ScaledDecimal4]
   final val ScaledDecimal6Type: Class[ScaledDecimal6] = classOf[ScaledDecimal6]
@@ -34,6 +35,7 @@ object DataType {
       case "int" => IntegerDataType
       case "long" => LongDataType
       case "epochtimestamp" => EpochTimestampType
+      case "epochtimestampnano" => EpochTimestampNanoType
       case "scaleddecimal2" => ScaledDecimal2Type
       case "scaleddecimal4" => ScaledDecimal4Type
       case "scaleddecimal6" => ScaledDecimal6Type
@@ -45,6 +47,7 @@ object DataType {
     c.getTypeName match {
       case "java.lang.String" => "string"
       case "org.finos.vuu.core.table.datatype.EpochTimestamp" => "epochtimestamp"
+      case "org.finos.vuu.core.table.datatype.EpochTimestampNano" => "epochtimestampnano"
       case "org.finos.vuu.core.table.datatype.ScaledDecimal2" => "scaleddecimal2"
       case "org.finos.vuu.core.table.datatype.ScaledDecimal4" => "scaleddecimal4"
       case "org.finos.vuu.core.table.datatype.ScaledDecimal6" => "scaleddecimal6"
@@ -65,6 +68,7 @@ object DataType {
     .withConverter(DefaultTypeConverters.stringToLongConverter)
     .withConverter(DefaultTypeConverters.stringToDoubleConverter)
     .withConverter(DefaultTypeConverters.stringToEpochTimestampConverter)
+    .withConverter(DefaultTypeConverters.stringToEpochTimestampNanoConverter)
     .withConverter(DefaultTypeConverters.stringToScaledDecimal2Converter)
     .withConverter(DefaultTypeConverters.stringToScaledDecimal4Converter)
     .withConverter(DefaultTypeConverters.stringToScaledDecimal6Converter)
