@@ -23,6 +23,8 @@ export const isProxySessionTable = (table: any): table is SessionTable =>
 // How can we ignore these ?
 export const SessionTable = (table: Table, sessionId: string): SessionTable => {
   const updates = new Map<string, RowUpdates>();
+  /** Rows added in this session. */
+  const insertedRows = new Map<string, VuuRowDataItemType[]>();
   const eventEmitter = new EventEmitter<TableEvents>();
 
   const getSessionUpdates = () => {
@@ -45,33 +47,62 @@ export const SessionTable = (table: Table, sessionId: string): SessionTable => {
   ) => {
     // we don't actually apply the update to the table, but we emit the updated event, so the bound
     // dataSource will update its own cache
-    const row = table.findByKey(key);
+    const sourceRow = table.findByKey(key);
+    const insertedRow = sourceRow ? undefined : insertedRows.get(key);
+    const row = sourceRow ?? insertedRow;
     if (row) {
       const tsIndex = table.map.vuuUpdatedTimestamp;
 
-      let updatesForRow = updates.get(key);
-      if (updatesForRow === undefined) {
-        updatesForRow = {
-          lastUpdateTimestamp: row[tsIndex] as number | undefined,
-          cellUpdates: {},
-        };
-        updates.set(key, updatesForRow);
+      // Only source rows go into `updates`; inserted rows are edited in-memory.
+      if (sourceRow) {
+        let updatesForRow = updates.get(key);
+        if (updatesForRow === undefined) {
+          updatesForRow = {
+            lastUpdateTimestamp: row[tsIndex] as number | undefined,
+            cellUpdates: {},
+          };
+          updates.set(key, updatesForRow);
+        }
+        updatesForRow.cellUpdates[columnName] = value;
+      } else if (insertedRow) {
+        const colIdx = table.map[columnName];
+        if (colIdx !== undefined) {
+          insertedRow[colIdx] = value;
+        }
       }
-      updatesForRow.cellUpdates[columnName] = value;
 
       const newRow = row.slice();
 
       for (const [columnName, value] of Object.entries(
-        updatesForRow.cellUpdates,
+        sourceRow ? (updates.get(key)?.cellUpdates ?? {}) : {},
       )) {
         const colIndex = table.map[columnName];
         newRow[colIndex] = value;
+      }
+      if (insertedRow) {
+        const colIdx = table.map[columnName];
+        if (colIdx !== undefined) {
+          newRow[colIdx] = value;
+        }
       }
 
       eventEmitter.emit("update", newRow, columnName, sessionId);
     } else {
       console.warn(`SessionTable update row ${key} not found`);
     }
+  };
+
+  const insert = (row: VuuRowDataItemType[]) => {
+    // Keep inserted rows by key for later updates.
+    const keyIdx = table.map[table.schema.key];
+    if (keyIdx !== undefined) {
+      insertedRows.set(`${row[keyIdx]}`, [...row]);
+    }
+    eventEmitter.emit("insert", row);
+  };
+
+  const deleteRow = (key: string) => {
+    eventEmitter.emit("delete", key);
   };
 
   return new Proxy(table, {
@@ -89,6 +120,10 @@ export const SessionTable = (table: Table, sessionId: string): SessionTable => {
         return addEventListener;
       } else if (prop === "update") {
         return update;
+      } else if (prop === "insert") {
+        return insert;
+      } else if (prop === "delete") {
+        return deleteRow;
       } else if (prop === "isProxy") {
         return true;
       }

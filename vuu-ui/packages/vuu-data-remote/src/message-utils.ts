@@ -64,7 +64,7 @@ export const groupRowsByViewport = (rows: VuuRow[]): ViewportRowMap => {
 export const createSchemaFromTableMetadata = ({
   columns,
   dataTypes,
-  editableColumns,
+  editableColumns=[],
   key,
   table,
 }: Omit<VuuTableMetaResponse, "type">): Readonly<TableSchema> => {

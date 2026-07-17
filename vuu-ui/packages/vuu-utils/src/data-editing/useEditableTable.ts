@@ -1,11 +1,9 @@
-import { DataSource, EditSessionMode } from "@vuu-ui/vuu-data-types";
-// import { useNotifications } from "@vuu-ui/vuu-notifications";
-import { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { useCallback, useMemo, useState } from "react";
+import { DataSource, DeleteRowMode, EditSessionMode } from "@vuu-ui/vuu-data-types";
+import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useData } from "../context-definitions/DataProvider";
 import { useLayoutEffectSkipFirst } from "../useLayoutEffectSkipFirst";
 import { EditSession } from "./EditSession";
-// import { useNotifications } from "@vuu-ui/vuu-notifications";
 
 export type EditMode = "edit" | "view";
 
@@ -16,6 +14,8 @@ export interface EditableTableHookProps {
    */
   columns?: string[];
   dataSource?: DataSource;
+  addRowsCount?: number;
+  deleteMode?: DeleteRowMode;
   editSessionMode?: EditSessionMode;
   isEditMode: boolean;
   onCancel: () => void;
@@ -28,8 +28,10 @@ export interface EditableTableHookProps {
 }
 
 export const useEditableTable = ({
+  addRowsCount = 15,
   columns,
   dataSource: dataSourceProp,
+  deleteMode = "soft",
   editSessionMode = "inline-all-rows",
   isEditMode,
   onCancel,
@@ -40,14 +42,12 @@ export const useEditableTable = ({
   const [sessionDataSource, setSessionDataSource] = useState<
     DataSource | undefined
   >(undefined);
-  // const { showNotification } = useNotifications();
+  const [selectionCount, setSelectionCount] = useState(0);
   useLayoutEffectSkipFirst(() => {
     console.warn(`[useEditableTable] columns and or table changed`);
   }, [columns, table]);
 
   const dataSource = useMemo(() => {
-    // The dataSource would normally be managed by client and passed in, but for
-    // simple use cases we can create it here.
     if (dataSourceProp) {
       return dataSourceProp;
     } else if (table) {
@@ -59,14 +59,18 @@ export const useEditableTable = ({
     }
   }, [VuuDataSource, columns, dataSourceProp, table]);
 
-  // The editSession will be made available to all the edit controls in scope by
-  // wrapping the edit component with a DataEditingProvider.
-  const editSession = useMemo(() => new EditSession(dataSource), [dataSource]);
+  // The editSession will be made available to all the edit controls in scope
+  // by wrapping the edit component with a DataEditingProvider.
+  const editSession = useMemo(
+    () => new EditSession(dataSource, deleteMode),
+    // deleteMode is intentionally excluded — changing it mid-session is not supported
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dataSource],
+  );
 
-  const handleCancel = useCallback(() => {
-    // editTracker.dataSource = dataSource;
+  const handleCancel = useCallback(async () => {
     try {
-      editSession.end();
+      await editSession.end();
       onCancel();
     } catch (e) {
       //
@@ -75,12 +79,10 @@ export const useEditableTable = ({
 
   const handleSave = useCallback(
     async (force = false) => {
-      // TODO is this right
       dataSource.resume?.();
       try {
         await editSession.end(true, force);
         if (editSession.inEditMode === false) {
-          // Everything was ok data saved
           onSave();
         }
       } catch (e) {
@@ -90,8 +92,26 @@ export const useEditableTable = ({
     [dataSource, editSession, onSave],
   );
 
+  const handleDelete = useCallback(async () => {
+    await editSession.deleteSelectedRows();
+    setSelectionCount(0);
+  }, [editSession]);
+
+  const handleAddRows = useCallback(() => {
+    editSession.addRows(addRowsCount);
+  }, [addRowsCount, editSession]);
+
+  const handleUndoRowChange = useCallback(
+    (key: string) => void editSession.undoRowChange(key),
+    [editSession],
+  );
+
+  useEffect(() => {
+    dataSource.on("row-selection", setSelectionCount);
+    return () => dataSource.removeListener("row-selection", setSelectionCount);
+  }, [dataSource]);
+
   useMemo(async () => {
-    console.log(`[useEditableTable] editMode ${isEditMode}`);
     if (isEditMode) {
       try {
         const sessionDataSource = await editSession.begin(editSessionMode);
@@ -99,13 +119,7 @@ export const useEditableTable = ({
           setSessionDataSource(sessionDataSource);
         }
       } catch (e) {
-        console.error(e);
-        // deal with error
-        // showNotification?.({
-        //   header: "Error unable to edit",
-        //   status: "error",
-        //   type: "toast",
-        // });
+        console.error(`[useEditableTable] begin edit session failed`, e);
         onCancel();
       }
     } else if (editSession.inEditMode) {
@@ -116,8 +130,12 @@ export const useEditableTable = ({
   return {
     dataSource,
     editSession,
+    hasSelection: selectionCount > 0,
+    onAddRows: handleAddRows,
     onCancel: handleCancel,
+    onDelete: handleDelete,
     onSave: handleSave,
+    onUndoRowChange: handleUndoRowChange,
     sessionDataSource,
   };
 };

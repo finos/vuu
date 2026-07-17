@@ -5,15 +5,18 @@ import {
 import type {
   DataSource,
   DataSourceCallbackMessage,
+  DataSourceRow,
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   DataSourceVisualLinkCreatedMessage,
+  DeleteRowMode,
   EditSessionMode,
 } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
   RpcResultError,
   RpcResultSuccess,
+  SelectRequest,
   VuuCreateVisualLink,
   VuuMenu,
   VuuRemoveVisualLink,
@@ -23,7 +26,7 @@ import type {
   VuuRpcServiceRequest,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-import { isRpcSuccess, isTypeaheadRequest, Range } from "@vuu-ui/vuu-utils";
+import { isInlineEditingSession, isRpcSuccess, isTypeaheadRequest, Range, toRpcEditSessionMode, uuid } from "@vuu-ui/vuu-utils";
 import {
   IVuuModule,
   RpcMenuService,
@@ -32,7 +35,6 @@ import {
 } from "./core/module/VuuModule";
 import { makeSuggestions } from "./makeSuggestions";
 import { Table } from "./Table";
-import { isInlineEditingSession } from "@vuu-ui/vuu-utils";
 
 export type VisualLinkHandler = (
   message: VuuCreateVisualLink | VuuRemoveVisualLink,
@@ -109,7 +111,9 @@ export class TickingArrayDataSource extends ArrayDataSource {
       this.tableSchema = table.schema;
       table.on("insert", this.insert);
       table.on("update", this.updateRowWithSessionCheck);
-      table.on("delete", this.deleteRow);
+      // Use the base-class low-level handler so the overridden deleteRow
+      // (which routes through rpcRequest)
+      table.on("delete", this.handleDeleteFromTable);
     }
   }
 
@@ -154,6 +158,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
 
   set range(range: Range) {
     super.range = range;
+    // Keep session datasource range in sync while editing.
+    if (this.#sessionDataSource) {
+      (this.#sessionDataSource as ArrayDataSource).range = range;
+    }
     // this.#updateGenerator?.setRange(range);
   }
   get range() {
@@ -168,8 +176,42 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return this.#getVisualLinks?.(this.table.table);
   }
 
-  getSelectedRowIds() {
+  getSelectedRowIds(): string[] {
     return Array.from(this.selectedRows);
+  }
+
+  /**
+   * Suppress row flushes from the source datasource while a session is active.
+   *
+   * `updateRowWithSessionCheck` already blocks individual row updates arriving
+   * via the table's "update" event.  However, `sendRowsToClient` can also be
+   * reached through other paths that bypass that handler:
+   *   - `setRange` (user scrolls the viewport)
+   *   - config changes (filter / sort / group-by)
+   *   - row inserts into the backing table
+   *
+   * Without this guard those paths would push source-table rows to the
+   * client and overwrite the edited session view.
+   */
+  sendRowsToClient(forceFullRefresh = false, row?: DataSourceRow) {
+    if (this.#sessionDataSource) {
+      console.warn(
+        `[TickingArrayDataSource] sendRowsToClient suppressed during active edit session` +
+          ` (forceFullRefresh=${forceFullRefresh}, ${row ? `rowKey=${row[6]}` : "full batch - likely setRange/scroll"})`,
+      );
+      return;
+    }
+    super.sendRowsToClient(forceFullRefresh, row);
+  }
+
+  select(selectRequest: Omit<SelectRequest, "vpId">) {
+    // Forwarding the select request to the session 
+    // datasource causes it to update its own selectedRows
+    // and re-send its rows
+    super.select(selectRequest);
+    if (this.#sessionDataSource) {
+      (this.#sessionDataSource as ArrayDataSource).select(selectRequest);
+    }
   }
 
   handleSessionMessage = (msg: DataSourceCallbackMessage) => {
@@ -201,7 +243,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
       type: "RPC_REQUEST",
       rpcName: "beginEditSession",
       params: {
-        editSessionMode,
+        editSessionMode: toRpcEditSessionMode(editSessionMode),
       },
     });
 
@@ -257,6 +299,60 @@ export class TickingArrayDataSource extends ArrayDataSource {
       },
     });
   }
+
+  addRow = async (
+    rowData: Record<string, VuuRowDataItemType> = {},
+  ): Promise<true | string> => {
+    // Ensure each added row has a unique key.
+    const keyColumn = this.tableSchema.key;
+    const rowKey = (rowData[keyColumn] as string | undefined) ?? uuid();
+    const rowDataWithKey: Record<string, VuuRowDataItemType> = {
+      ...rowData,
+      [keyColumn]: rowKey,
+    };
+    const response = await this.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "addRow",
+      params: { key: rowKey, data: rowDataWithKey },
+    });
+    if (isRpcSuccess(response)) {
+      return true;
+    }
+    return response?.errorMessage ?? "addRow failed";
+  };
+
+  deleteRow = async (key: string, mode: DeleteRowMode = "hard"): Promise<true | string> => {
+    const rpcHost = this.#sessionDataSource ?? this;
+    const response = await rpcHost.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "deleteRow",
+      params: { key, mode },
+    });
+    if (isRpcSuccess(response)) {
+      return true;
+    }
+    return response?.errorMessage ?? "deleteRow failed";
+  };
+
+  deleteSelectedRows = async (mode: DeleteRowMode = "soft"): Promise<RpcResultSuccess | RpcResultError> => {
+    const rpcHost = this.#sessionDataSource ?? this;
+    const response = await rpcHost.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "deleteSelectedRows",
+      params: { mode },
+    });
+    return response ?? { type: "ERROR_RESULT", errorMessage: "deleteSelectedRows failed" };
+  };
+
+  undoRowChange = async (key: string): Promise<RpcResultSuccess | RpcResultError> => {
+    const rpcHost = this.#sessionDataSource ?? this;
+    const response = await rpcHost.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "undoRowChange",
+      params: { key },
+    });
+    return response ?? { type: "ERROR_RESULT", errorMessage: "undoRowChange failed" };
+  };
 
   async endEditSession(saveChanges = false) {
     const type = "RPC_REQUEST";

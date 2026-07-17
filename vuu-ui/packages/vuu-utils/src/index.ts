@@ -100,7 +100,7 @@ export {
   useDataSource,
 } from "./context-definitions/DataSourceProvider";
 export * from "./context-definitions/WorkspaceContext";
-export { isInlineEditingSession } from "./data-editing/edit-utils";
+export { fromRpcEditSessionMode, isInlineEditingSession, toRpcEditSessionMode } from "./data-editing/edit-utils";
 export { PageVisibilityObserver } from "./PageVisibilityObserver";
 export * from "./ShellContext";
 export { ThemeLoadChecker } from "./theme-utils";

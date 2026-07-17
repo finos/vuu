@@ -6,6 +6,7 @@ import type {
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   DataSourceVisualLinkCreatedMessage,
+  DeleteRowMode,
   EditSessionMode,
   OptimizeStrategy,
   ServerAPI,
@@ -42,6 +43,7 @@ import {
   itemsOrOrderChanged,
   logger,
   Range,
+  toRpcEditSessionMode,
   StaleUpdateError,
   throttle,
   uuid,
@@ -693,7 +695,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       type: "RPC_REQUEST",
       rpcName: "beginEditSession",
       params: {
-        editSessionMode,
+        editSessionMode: toRpcEditSessionMode(editSessionMode),
       },
     });
 
@@ -814,14 +816,52 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     //   }
     // });
   }
-  deleteRow() {
-    return Promise.resolve("not supported");
-    // return this.menuRpcCall(vuuDeleteRowRequest(rowKey)).then((response) => {
-    //   if (response?.error) {
-    //     return response.error;
-    //   } else {
-    //     return true;
-    //   }
-    // });
+  async deleteRow(key: string, mode: DeleteRowMode = "hard"): Promise<true | string> {
+    const rpcHost = this.#sessionDataSource ?? this;
+    const response = await rpcHost.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "deleteRow",
+      params: { key, mode },
+    });
+    if (isRpcSuccess(response)) {
+      return true;
+    }
+    return response?.errorMessage ?? "deleteRow failed";
+  }
+
+  async deleteSelectedRows(mode: DeleteRowMode = "soft"): Promise<RpcResultSuccess | RpcResultError> {
+    const rpcHost = this.#sessionDataSource ?? this;
+    const response = await rpcHost.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "deleteSelectedRows",
+      params: { mode },
+    });
+    return response ?? { type: "ERROR_RESULT", errorMessage: "deleteSelectedRows failed" };
+  }
+
+  async addRow(
+    rowData: Record<string, VuuRowDataItemType> = {},
+  ): Promise<true | string> {
+    const response = await this.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "addRow",
+      params: { data: rowData },
+    });
+    if (isRpcSuccess(response)) {
+      return true;
+    }
+    return response?.errorMessage ?? "addRow failed";
+  }
+
+  async undoRowChange(
+    key: string,
+  ): Promise<RpcResultSuccess | RpcResultError> {
+    const rpcHost = this.#sessionDataSource ?? this;
+    const response = await rpcHost.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "undoRowChange",
+      params: { key },
+    });
+    return response ?? { type: "ERROR_RESULT", errorMessage: "undoRowChange failed" };
   }
 }

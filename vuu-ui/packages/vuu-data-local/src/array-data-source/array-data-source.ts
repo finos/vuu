@@ -12,7 +12,6 @@ import {
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
-  DataSourceDeleteHandler,
 } from "@vuu-ui/vuu-data-types";
 import { filterPredicate, parseFilter } from "@vuu-ui/vuu-filter-parser";
 import type {
@@ -151,7 +150,6 @@ export class ArrayDataSource
   #range = Range(0, 0);
   #status: DataSourceStatus = "initialising";
   #title: string | undefined;
-
   protected _menu: VuuMenu | undefined;
   protected selectedRows = new Set<string>();
   protected index = new Map<string, number>();
@@ -689,7 +687,7 @@ export class ArrayDataSource
 
   protected insert = (row: VuuRowDataItemType[]) => {
     // TODO take sorting, filtering. grouping into account
-    const dataSourceRow = toDataSourceRow(this.key)(row, this.size);
+    const dataSourceRow = toDataSourceRow(this.key, this.index)(row, this.size);
     (this.#data as DataSourceRow[]).push(dataSourceRow);
     const { from, to } = this.#range;
     const [rowIdx] = dataSourceRow;
@@ -892,44 +890,41 @@ export class ArrayDataSource
     }
   };
 
-  deleteRow: DataSourceDeleteHandler = async (key) => {
+  protected handleDeleteFromTable = async (key: string): Promise<true | string> => {
     const dataIndex = this.#data.findIndex((row) => row[KEY] === key);
-    let doomedIndex: number | undefined = undefined;
-
-    if (dataIndex !== -1) {
-      if (this.processedData) {
-        for (let i = 0; i < this.processedData.length; i++) {
-          if (this.processedData[i][KEY] === key) {
-            doomedIndex = i;
-          } else if (doomedIndex !== undefined) {
-            this.processedData[i][0] -= 1;
-          }
-        }
-        if (doomedIndex !== undefined) {
-          this.processedData.splice(doomedIndex, 1);
-        }
-      }
-
-      this.#data.splice(dataIndex, 1);
-      for (let i = dataIndex; i < this.#data.length; i++) {
-        this.#data[i][0] -= 1;
-      }
-
-      this.sendSizeUpdateToClient();
-
-      const { from, to } = this.#range;
-      const deletedIndex = doomedIndex ?? dataIndex;
-      if (deletedIndex >= from && deletedIndex < to) {
-        this.#keys.reset(this.range.withBuffer);
-        this.sendRowsToClient(true);
-      }
-
-      this.emit("resize", this.size);
-
-      return true;
-    } else {
+    if (dataIndex === -1) {
       return "row not found";
     }
+    let doomedIndex: number | undefined = undefined;
+    if (this.processedData) {
+      for (let i = 0; i < this.processedData.length; i++) {
+        if (this.processedData[i][KEY] === key) {
+          doomedIndex = i;
+        } else if (doomedIndex !== undefined) {
+          this.processedData[i][0] -= 1;
+        }
+      }
+      if (doomedIndex !== undefined) {
+        this.processedData.splice(doomedIndex, 1);
+      }
+    }
+
+    this.#data.splice(dataIndex, 1);
+    for (let i = dataIndex; i < this.#data.length; i++) {
+      this.#data[i][0] -= 1;
+    }
+
+    this.sendSizeUpdateToClient();
+
+    const { from, to } = this.#range;
+    const deletedIndex = doomedIndex ?? dataIndex;
+    if (deletedIndex >= from && deletedIndex < to) {
+      this.#keys.reset(this.range.withBuffer);
+      this.sendRowsToClient(true);
+    }
+
+    this.emit("resize", this.size);
+    return true;
   };
 
   private setRange(range: Range, forceFullRefresh = false) {

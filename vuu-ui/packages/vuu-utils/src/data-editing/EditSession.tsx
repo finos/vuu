@@ -1,4 +1,4 @@
-import { EditApi, EditSessionMode } from "@vuu-ui/vuu-data-types";
+import { DeleteRowMode, DeleteSelectedRowsResult, EditApi, EditSessionMode, UndoRowChangeResult } from "@vuu-ui/vuu-data-types";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter } from "../event-emitter";
 import { isRpcError } from "../protocol-message-utils";
@@ -33,16 +33,21 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
    *  Row key => row edits
    */
   #rowEdits = new Map<string, RowEditDetails>();
+  #deletedRows = new Set<string>();
   #editCount = 0;
+  #deleteCount = 0;
+  #addCount = 0;
   #invalidCount = 0;
+  #deleteMode: DeleteRowMode;
   #sourceTableDataSource?: EditApi;
   #sessionDataSource?: EditApi;
   #inEditMode = false;
   #endEditModePending = false;
 
-  constructor(dataSource: EditApi) {
+  constructor(dataSource: EditApi, deleteMode: DeleteRowMode = "soft") {
     super();
     this.#sourceTableDataSource = dataSource;
+    this.#deleteMode = deleteMode;
   }
 
   get editCount() {
@@ -53,7 +58,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     if (val !== this.#editCount) {
       const oldCount = this.#editCount;
       this.#editCount = val;
-      if (val === 0) {
+      if (val === 0 && this.#deleteCount === 0 && this.#addCount === 0) {
         this.emit("editState", "clean");
       } else if (oldCount === 0) {
         this.emit("editState", "dirty");
@@ -77,9 +82,127 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
   }
 
+  get deleteCount() {
+    return this.#deleteCount;
+  }
+
+  set deleteCount(val: number) {
+    if (val !== this.#deleteCount) {
+      const oldCount = this.#deleteCount;
+      this.#deleteCount = val;
+      if (val === 0 && this.#editCount === 0 && this.#addCount === 0) {
+        this.emit("editState", "clean");
+      } else if (oldCount === 0) {
+        this.emit("editState", "dirty");
+      }
+    }
+  }
+
+  get addCount() {
+    return this.#addCount;
+  }
+
+  set addCount(val: number) {
+    if (val !== this.#addCount) {
+      const oldCount = this.#addCount;
+      this.#addCount = val;
+      if (val === 0 && this.#editCount === 0 && this.#deleteCount === 0) {
+        this.emit("editState", "clean");
+      } else if (oldCount === 0) {
+        this.emit("editState", "dirty");
+      }
+    }
+  }
+
+  async deleteSelectedRows(): Promise<void> {
+    const response = await this.dataSource?.deleteSelectedRows?.(this.#deleteMode);
+    if (isRpcError(response)) return;
+    const deletedKeys = (response?.data as DeleteSelectedRowsResult | undefined)
+      ?.deletedKeys;
+    if (deletedKeys && deletedKeys.length > 0) {
+      for (const key of deletedKeys) {
+        this.#deletedRows.add(key);
+      }
+      this.deleteCount = this.#deleteCount + deletedKeys.length;
+    }
+  }
+
+  addRows(
+    count = 15,
+    rowData: Record<string, VuuRowDataItemType> = {},
+  ) {
+    for (let i = 0; i < count; i++) {
+      this.#sourceTableDataSource?.addRow?.(rowData);
+    }
+    this.addCount = this.#addCount + count;
+  }
+
+  restoreRows(keys: string[]) {
+    for (const key of keys) {
+      if (this.#deletedRows.has(key)) {
+        this.#deletedRows.delete(key);
+        this.deleteCount = this.#deleteCount - 1;
+      }
+    }
+  }
+
+  hasRowChanges(key: string): boolean {
+    return this.#rowEdits.has(key) || this.#deletedRows.has(key);
+  }
+
+  async undoRowChange(key: string): Promise<void> {
+    if (!this.#inEditMode) return;
+
+    const rowEdits = this.#rowEdits.get(key);
+    const wasDeleted = this.#deletedRows.has(key);
+
+    if (!rowEdits?.cellEdits.size && !wasDeleted) return;
+
+    this.#rowEdits.delete(key);
+    if (wasDeleted) this.#deletedRows.delete(key);
+
+    const response = await this.dataSource?.undoRowChange?.(key);
+
+    if (isRpcError(response)) {
+      // Restore on failure
+      if (rowEdits) this.#rowEdits.set(key, rowEdits);
+      if (wasDeleted) this.#deletedRows.add(key);
+      return;
+    }
+
+    // Update counters after confirmed success
+    if (rowEdits) {
+      let validCount = 0;
+      let invalidCount = 0;
+      for (const [, cellEdit] of rowEdits.cellEdits) {
+        if (cellEdit.isValid === false) {
+          invalidCount++;
+        } else {
+          validCount++;
+        }
+      }
+      this.editCount = this.#editCount - validCount;
+      this.invalidCount = this.#invalidCount - invalidCount;
+    }
+    if (wasDeleted) {
+      this.deleteCount = this.#deleteCount - 1;
+    }
+    
+    // If the server deleted a newly inserted row, decrement addCount
+    const wasInsertedRow =
+      (response?.data as UndoRowChangeResult | undefined)?.wasInsertedRow === true;
+    if (wasInsertedRow) {
+      this.addCount = this.#addCount - 1;
+    }
+  }
+
   clear() {
     this.#rowEdits.clear();
+    this.#deletedRows.clear();
     this.#editCount = 0;
+    this.#deleteCount = 0;
+    this.#addCount = 0;
+    this.#invalidCount = 0;
     this.#inEditMode = false;
     this.#endEditModePending = false;
   }
@@ -124,7 +247,9 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   get editState(): EditState {
-    return this.editCount === 0 ? "clean" : "dirty";
+    return this.editCount === 0 && this.#deleteCount === 0 && this.#addCount === 0
+      ? "clean"
+      : "dirty";
   }
 
   getOrCreateRowEdits(key: string): RowEditDetails {

@@ -3,7 +3,9 @@ import {
   DataSourceConfig,
   DataSourceSubscribedMessage,
   DataSourceVisualLinkCreatedMessage,
+  DeleteRowMode,
   EditSessionMode,
+  EditSessionModeAlias,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import {
@@ -24,9 +26,12 @@ import {
 import {
   isAddRowRpcRequest,
   isBeginEditSessionRpcRequest,
+  isDeleteSelectedRowsRpcRequest,
   isEditCellRpcRequest,
   isEndEditSessionRpcRequest,
+  fromRpcEditSessionMode,
   isRpcSuccess,
+  isUndoRowChangeRpcRequest,
   uuid,
 } from "@vuu-ui/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "../../Table";
@@ -81,6 +86,12 @@ export type RpcMenuService = {
   service: MenuServiceHandler;
 };
 
+export type VuuModuleOptions = {
+  /** Column written by session services (deleteRow, endEditSession) to report row-level status.
+   *  Defaults to `"vuuMsg"` which matches the column added by `sessionTableSchema`. */
+  sessionTableMessageColumn?: string;
+};
+
 type Subscription = {
   viewportId: string;
   dataSource: DataSource;
@@ -90,13 +101,15 @@ export abstract class VuuModule<T extends string = string>
   implements IVuuModule<T>
 {
   #name: string;
+  #sessionTableMessageColumn: string;
   #runtimeVisualLinks = new Map<string, RuntimeVisualLink>();
   #sessionTableMap: SessionTableMap = {};
   #tableServices: Record<T, RpcService[] | undefined> | undefined;
   #subscriptionMap: Map<string, Subscription[]> = new Map();
 
-  constructor(name: string) {
+  constructor(name: string, { sessionTableMessageColumn = "vuuMsg" }: VuuModuleOptions = {}) {
     this.#name = name;
+    this.#sessionTableMessageColumn = sessionTableMessageColumn;
     moduleContainer.register(this);
   }
 
@@ -405,32 +418,106 @@ export abstract class VuuModule<T extends string = string>
   protected deleteRow: ServiceHandler = async (rpcRequest) => {
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
       const { viewPortId } = rpcRequest.context;
-      const { key } = rpcRequest.params;
+      const { key, mode = "hard" } = rpcRequest.params as {
+        key: string;
+        mode?: "soft" | "hard";
+      };
       const sessionTable = this.getSessionTable(viewPortId, false);
       if (sessionTable) {
-        sessionTable.delete(key as string);
-        return {
-          type: "SUCCESS_RESULT",
-          data: undefined,
-        };
+        if (mode === "soft") {
+          sessionTable.update(key, this.#sessionTableMessageColumn, "SOFT_DELETED");
+        } else {
+          sessionTable.delete(key);
+        }
+        return { type: "SUCCESS_RESULT", data: undefined };
       } else {
         const { dataSource } = this.getSubscriptionByViewport(viewPortId);
         if (dataSource.table) {
           const table = this.tables[dataSource.table.table as T];
           if (table) {
-            table.delete(key as string);
-            return {
-              type: "SUCCESS_RESULT",
-              data: undefined,
-            };
+            if (mode === "soft") {
+              table.update(key, this.#sessionTableMessageColumn, "SOFT_DELETED");
+            } else {
+              table.delete(key);
+            }
+            return { type: "SUCCESS_RESULT", data: undefined };
           }
         }
       }
     }
-    return {
-      type: "ERROR_RESULT",
-      errorMessage: "something went wrong",
-    };
+    return { type: "ERROR_RESULT", errorMessage: "something went wrong" };
+  };
+
+  private deleteSelectedRows: ServiceHandler = async (rpcRequest) => {
+    if (isDeleteSelectedRowsRpcRequest(rpcRequest)) {
+      const { viewPortId } = rpcRequest.context;
+      const { mode = "soft" } = rpcRequest.params;
+      const sessionTable = this.getSessionTable(viewPortId, false);
+      if (sessionTable && isProxySessionTable(sessionTable)) {
+        const { dataSource } = this.getSubscriptionByViewport(viewPortId);
+        const selectedRowIds = (dataSource as TickingArrayDataSource).getSelectedRowIds();
+        const deletedKeys: string[] = [];
+        if (selectedRowIds.length > 0) {
+          for (const key of selectedRowIds) {
+            if ((mode as DeleteRowMode) === "soft") {
+              sessionTable.update(key, this.#sessionTableMessageColumn, "SOFT_DELETED");
+            } else {
+              sessionTable.delete(key);
+            }
+            deletedKeys.push(key);
+          }
+        }
+        return { type: "SUCCESS_RESULT", data: { deletedKeys } };
+      }
+      return {
+        type: "ERROR_RESULT",
+        errorMessage: `deleteSelectedRows: no active session table for viewport ${viewPortId}`,
+      };
+    }
+    return { type: "ERROR_RESULT", errorMessage: "deleteSelectedRows: invalid rpc request" };
+  };
+
+  private undoRowChange: ServiceHandler = async (rpcRequest) => {
+    if (isUndoRowChangeRpcRequest(rpcRequest)) {
+      const { viewPortId } = rpcRequest.context;
+      const { key } = rpcRequest.params;
+      const sessionTable = this.getSessionTable(viewPortId, false);
+      if (sessionTable && isProxySessionTable(sessionTable)) {
+        // Get the real source Table instance to avoid Proxy/private-field issues with findByKey
+        const { dataSource } = this.getSubscriptionByViewport(viewPortId);
+        const sourceTable = this.tables[dataSource.table?.table as T];
+        if (!sourceTable) {
+          return {
+            type: "ERROR_RESULT",
+            errorMessage: `undoRowChange: source table not found for viewport ${viewPortId}`,
+          };
+        }
+        // Detect newly inserted rows — they are not present in the source table
+        const sourceRow = sourceTable.findByKey(key);
+        if (!sourceRow) {
+          // Newly added row: remove it from the session entirely
+          sessionTable.delete(key);
+          return { type: "SUCCESS_RESULT", data: { wasInsertedRow: true } };
+        }
+        // Existing source row: revert session updates back to source table values
+        const updates = sessionTable.getSessionUpdates();
+        const rowUpdates = updates.get(key);
+        if (rowUpdates) {
+          for (const column of Object.keys(rowUpdates.cellUpdates)) {
+            const originalValue = sourceRow[sourceTable.map[column]];
+            sessionTable.update(key, column, originalValue);
+          }
+          // Remove so endEditSession won't apply stale changes
+          updates.delete(key);
+        }
+        return { type: "SUCCESS_RESULT", data: undefined };
+      }
+      return {
+        type: "ERROR_RESULT",
+        errorMessage: `undoRowChange: no active proxy session table for viewport ${viewPortId}`,
+      };
+    }
+    return { type: "ERROR_RESULT", errorMessage: "undoRowChange: invalid rpc request" };
   };
 
   private getColumnDescriptors(tableName: T) {
@@ -532,6 +619,9 @@ export abstract class VuuModule<T extends string = string>
     if (isBeginEditSessionRpcRequest(rpcRequest)) {
       const { viewPortId } = rpcRequest.context;
       const { editSessionMode = "inline-all-rows" } = rpcRequest.params;
+      const longFormMode = fromRpcEditSessionMode(
+        editSessionMode as EditSessionModeAlias,
+      );
       const subscription = this.getSubscriptionByViewport(viewPortId);
       const { dataSource } = subscription;
       const { table: vuuTable } = dataSource;
@@ -543,7 +633,7 @@ export abstract class VuuModule<T extends string = string>
             const sessionTable = this.createSessionTable(
               sourceTable,
               sessionTableName,
-              editSessionMode as EditSessionMode,
+              longFormMode,
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
               dataSource as TickingArrayDataSource,
@@ -641,7 +731,7 @@ export abstract class VuuModule<T extends string = string>
                 Object.entries(cellUpdates).forEach(([column, value]) => {
                   messages.push(`${column}:${value}`);
                 });
-                newRow[sessionTable.map.vuuMsg] = messages.join(",");
+                newRow[sessionTable.map[this.#sessionTableMessageColumn]] = messages.join(",");
                 sessionTable.updateRow(newRow);
               } else {
                 const newRow = currentRow.slice();
@@ -655,7 +745,7 @@ export abstract class VuuModule<T extends string = string>
           } else {
             // empty-session-table / csv-upload: insert only rows with no errors.
             // vuuMsg is empty string for valid rows and non-empty for error rows.
-            const vuuMsgIdx = sessionTable.map["vuuMsg"];
+            const vuuMsgIdx = sessionTable.map[this.#sessionTableMessageColumn];
             const sourceColumns = sourceTable.schema.columns;
             for (let i = 0; i < sessionTable.data.length; i++) {
               const sessionRow = sessionTable.data[i];
@@ -812,12 +902,24 @@ export abstract class VuuModule<T extends string = string>
       service: this.beginEditSession,
     },
     {
+      rpcName: "deleteRow",
+      service: this.deleteRow,
+    },
+    {
+      rpcName: "deleteSelectedRows",
+      service: this.deleteSelectedRows,
+    },
+    {
       rpcName: "endEditSession",
       service: this.endEditSession,
     },
     {
       rpcName: "editCell",
       service: this.editCell,
+    },
+    {
+      rpcName: "undoRowChange",
+      service: this.undoRowChange,
     },
   ];
 

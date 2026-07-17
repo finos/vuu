@@ -66,6 +66,7 @@ const InstrumentColumns: ColumnDescriptor[] = [
   { name: "ric", serverDataType: "string", width: 75 },
   { name: "vuuCreatedTimestamp", serverDataType: "epochtimestamp", width: 160 },
   { name: "vuuUpdatedTimestamp", serverDataType: "epochtimestamp", width: 160 },
+  { name: "vuuMsg", serverDataType: "string", width: 120 },
 ];
 
 let _viewportId = 1;
@@ -193,7 +194,8 @@ const EditTableTemplate = ({
                     }
                   : col.name === "isin" ||
                       col.name === "vuuCreatedTimestamp" ||
-                      col.name === "vuuUpdatedTimestamp"
+                      col.name === "vuuUpdatedTimestamp" ||
+                      col.name === "vuuMsg"
                     ? col
                     : { ...col, editable: true },
             ),
@@ -287,6 +289,133 @@ export const EditableInstruments = () => {
   );
 };
 
+const InlineEditTableTemplate = () => {
+  const [editMode, setEditMode] = useState<EditMode>("view");
+  const { VuuDataSource } = useData();
+
+  const columns = useMemo(() => schema.columns.map(toColumnName), []);
+
+  const sourceTableDataSource = useMemo(
+    () =>
+      new VuuDataSource({
+        columns,
+        table: schema.table,
+        viewport: `vp-${_viewportId++}`,
+      }),
+    [VuuDataSource, columns],
+  );
+
+  const exitEditMode = useCallback(() => setEditMode("view"), []);
+
+  const { dataSource, editSession, hasSelection, onAddRows, onDelete, onSave, onUndoRowChange } =
+    useEditableTable({
+      dataSource: sourceTableDataSource,
+      deleteMode: "soft",
+      isEditMode: editMode === "edit",
+      onCancel: exitEditMode,
+      onSave: exitEditMode,
+    });
+
+  const onToggleEditMode = useCallback(
+    (e: SyntheticEvent<HTMLButtonElement>) => {
+      setEditMode((e.target as HTMLButtonElement).value as EditMode);
+    },
+    [],
+  );
+
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns:
+        editMode === "view"
+          ? InstrumentColumns
+          : [
+              ...InstrumentColumns.map((col) =>
+                col.name === "isin" ||
+                col.name === "vuuCreatedTimestamp" ||
+                col.name === "vuuUpdatedTimestamp" ||
+                col.name === "vuuMsg"
+                  ? col
+                  : { ...col, editable: true },
+              ),
+              {
+                name: "undo",
+                source: "client",
+                width: 80,
+                type: {
+                  name: "string",
+                  renderer: {
+                    name: "example.undo-cell",
+                    componentProps: {
+                      onUndo: onUndoRowChange,
+                      hasRowChanges: (key: string) =>
+                        editSession.hasRowChanges(key),
+                      sessionTableMessageColumn: "vuuMsg",
+                    },
+                  },
+                } as DataValueTypeDescriptor,
+              },
+            ],
+      columnDefaultWidth: 150,
+      rowSeparators: true,
+      zebraStripes: true,
+    }),
+    [editMode, editSession, onUndoRowChange],
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: 320 }}>
+      <div
+        style={{
+          alignItems: "center",
+          background: "var(--salt-container-secondary-background)",
+          display: "flex",
+          flex: "0 0 32px",
+          gap: 12,
+          padding: "0 var(--salt-spacing-100)",
+        }}
+      >
+        <ToggleButtonGroup onChange={onToggleEditMode} value={editMode}>
+          <ToggleButton value="view">View</ToggleButton>
+          <ToggleButton value="edit">Edit</ToggleButton>
+        </ToggleButtonGroup>
+      </div>
+      <div style={{ flex: "1 1 auto" }}>
+        <DataEditingProvider editSession={editSession}>
+          <Table
+            config={config}
+            dataSource={dataSource}
+            renderBufferSize={10}
+            selectionModel="checkbox"
+          />
+        </DataEditingProvider>
+      </div>
+      <TableFooter>
+        {editMode === "view" ? (
+          <DataSourceStats dataSource={dataSource} />
+        ) : (
+          <EditButtons
+            editSession={editSession}
+            hasSelection={hasSelection}
+            onAddRows={onAddRows}
+            onDelete={onDelete}
+            onSave={onSave}
+            saveLabel="Submit"
+          />
+        )}
+      </TableFooter>
+    </div>
+  );
+};
+
+/** tags=data-consumer */
+export const EditableInstrumentsInlineEdit = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <InlineEditTableTemplate />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
 /** tags=data-consumer */
 export const TwoEditableInstruments = () => {
   return (
@@ -354,6 +483,38 @@ const CustomCell = ({
 };
 
 registerComponent("example.color-coded-editor", CustomCell, "cell-renderer");
+
+type UndoCellComponentProps = {
+  onUndo?: (key: string) => void;
+  hasRowChanges?: (key: string) => boolean;
+  /** Name of the session-table message column. Defaults to "vuuMsg". */
+  sessionTableMessageColumn?: string;
+};
+
+const UndoCellRenderer = ({ column, dataRow }: TableCellRendererProps) => {
+  const { onUndo, hasRowChanges, sessionTableMessageColumn = "vuuMsg" } =
+    (column.type as { renderer?: { componentProps?: UndoCellComponentProps } })
+      ?.renderer?.componentProps ?? {};
+
+  // For cell edits: #rowEdits is populated synchronously so hasRowChanges works immediately.
+  // For soft-deleted rows: #deletedRows is populated after the RPC await, so we read
+  // the sessionTableMessageColumn directly from the row data — it is always present
+  // when the row re-renders.
+  const isRowChanged =
+    hasRowChanges?.(dataRow.key) || dataRow[sessionTableMessageColumn] === "SOFT_DELETED";
+
+  if (!isRowChanged) return null;
+  return (
+    <Button
+      appearance="transparent"
+      onClick={() => onUndo?.(dataRow.key)}
+      style={{ height: "100%", width: "100%" }}
+    >
+      Undo
+    </Button>
+  );
+};
+registerComponent("example.undo-cell", UndoCellRenderer, "cell-renderer");
 
 export const EditableInstrumentsCustomCellRenderer = () => {
   const editableType = useMemo<DataValueTypeDescriptor>(

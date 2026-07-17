@@ -2,7 +2,6 @@ import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { VUU_DEFAULT_COLUMNS } from "../default-column-definitions";
 
-
 export type SimulTableName =
   | "instruments"
   | "instrumentsExtended"

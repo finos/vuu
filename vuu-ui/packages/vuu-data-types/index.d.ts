@@ -497,8 +497,17 @@ export declare type DataSourceEvents = {
   "visual-link-removed": () => void;
 };
 
+/**
+ * Controls how a row deletion is applied.
+ * - `"soft"` - marks the row as pending deletion (e.g. sets `vuuMsg` to `"SOFT_DELETED"`)
+ *   without removing it from the table. The deletion is only committed when the edit
+ *   session ends with `saveChanges = true`.
+ * - `"hard"` - removes the row from the table immediately and irreversibly.
+ */
+export declare type DeleteRowMode = "soft" | "hard";
 export declare type DataSourceDeleteHandler = (
   key: string,
+  mode?: DeleteRowMode,
 ) => Promise<true | string>;
 export declare type DataSourceInsertHandler = (
   key: string,
@@ -559,6 +568,7 @@ export declare type DataSourceSuspenseProps = {
  * the existing component. e.g. directly edit cells within a table.
  */
 export declare type InlineEditSessionMode = "inline-all-rows";
+
 /**
  * A standalone edit session re-renders editable data in an edit component.
  * e.g an edit panel may be displayed in a dialog.
@@ -567,24 +577,59 @@ export declare type StandaloneEditSessionMode =
   | "selected-rows"
   | "all-rows"
   | "empty-session-table";
+
+/**
+ * Short-form values accepted by the beginEditSession RPC (remote and local).
+ * The client-side EditApi maps the long-form StandaloneEditSessionMode values
+ * to one of these before dispatching the RPC call:
+ * - `"All"`      ← `"all-rows"`
+ * - `"Empty"`    ← `"empty-session-table"`
+ * - `"Selected"` ← `"selected-rows"`
+ * `"inline-all-rows"` is a client-only concept and is NOT mapped — it passes
+ * through to the RPC unchanged so the server can create an all-rows session table.
+ */
+export declare type EditSessionModeAlias = "All" | "Empty" | "Selected";
 export declare type EditSessionMode =
   | InlineEditSessionMode
-  | StandaloneEditSessionMode;
+  | StandaloneEditSessionMode
+  | EditSessionModeAlias;
 
 export interface EditApi {
   beginEditSession?: (
     editSessionMode?: EditSessionMode,
   ) => Promise<DataSource | undefined>;
+  addRow?: (
+    rowData?: Record<string, VuuRowDataItemType>,
+  ) => Promise<RpcResult> | undefined;
+  deleteRow?: (key: string, mode?: DeleteRowMode) => Promise<RpcResult> | undefined;
+  deleteSelectedRows?: (mode?: DeleteRowMode) => Promise<RpcResult> | undefined;
   editCell?: (
     rowKey: string,
-    colun: string,
+    column: string,
     value: VuuRowDataItemType,
   ) => Promise<RpcResult> | undefined;
+  undoRowChange?: (key: string) => Promise<RpcResult> | undefined;
   endEditSession?: (
     saveChanges?: boolean,
     force?: boolean,
   ) => Promise<RpcResult> | undefined;
 }
+
+/**
+ * Data payload returned in RpcResultSuccess.data by the beginEditSession service.
+ * Contains the server-assigned session table reference used to create the session datasource.
+ */
+export declare type BeginEditSessionResult = {
+  table: VuuTable;
+};
+
+export declare type DeleteSelectedRowsResult = {
+  deletedKeys: string[];
+};
+
+export declare type UndoRowChangeResult = {
+  wasInsertedRow?: boolean;
+};
 
 export interface DataSource
   extends EditApi,
