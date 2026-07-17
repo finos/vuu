@@ -69,6 +69,15 @@ class VirtualizedSessionTableColumnBuilder {
     this
   }
 
+  def addEpochTimestampNano(columnName: String): VirtualizedSessionTableColumnBuilder = {
+    addEpochTimestampNano(columnName, columnName)
+  }
+
+  def addEpochTimestampNano(columnName: String, remoteName: String): VirtualizedSessionTableColumnBuilder = {
+    columns += s"$columnName:EpochTimestampNano:$remoteName"
+    this
+  }
+
   def addScaledDecimal2(columnName: String): VirtualizedSessionTableColumnBuilder = {
     addScaledDecimal2(columnName, columnName)
   }
