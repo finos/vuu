@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.finos.vuu.plugin</groupId>
         <artifactId>plugin</artifactId>
-        <version>7.1.0-SNAPSHOT</version>
+        <version>7.1.0</version>
     </parent>
 
     <artifactId>clickhouse-plugin</artifactId>
@@ -15,13 +15,13 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>7.1.0-SNAPSHOT</version>
+            <version>7.1.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu.plugin</groupId>
             <artifactId>virtualized-table-plugin</artifactId>
-            <version>7.1.0-SNAPSHOT</version>
+            <version>7.1.0</version>
         </dependency>
 
         <dependency>
@@ -92,7 +92,7 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>7.1.0-SNAPSHOT</version>
+            <version>7.1.0</version>
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
