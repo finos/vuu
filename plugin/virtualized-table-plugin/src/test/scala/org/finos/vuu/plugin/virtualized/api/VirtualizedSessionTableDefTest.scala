@@ -1,10 +1,10 @@
 package org.finos.vuu.plugin.virtualized.api
 
+import org.finos.vuu.plugin.virtualized.VirtualizedTablePluginType
+import org.scalamock.scalatest.MockFactory
+import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.GivenWhenThen
-import org.scalamock.scalatest.MockFactory
-import org.finos.vuu.plugin.virtualized.VirtualizedTablePluginType
 
 class VirtualizedSessionTableDefTest extends AnyFeatureSpec
   with Matchers
@@ -65,6 +65,21 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       And("it should return the correct plugin type and remote columns")
       aliasedDef.pluginType shouldBe VirtualizedTablePluginType
       aliasedDef.getRemoteColumns shouldBe columns
+    }
+
+    Scenario("Verifying default range options") {
+      Given("a table configuration without explicit RangeOptions")
+      val tableName = "orders_no_options"
+      val keyField = "orderId"
+      val mockColumn = mock[VirtualizedSessionTableColumn]
+      val columns = Array(mockColumn)
+
+      When("a SimpleVirtualizedSessionTableDef is instantiated")
+      val defNoOptions = SimpleVirtualizedSessionTableDef(tableName, keyField, columns)
+
+      Then("it should correctly return NoRangeOptions as the default")
+      import org.finos.vuu.plugin.virtualized.table.range.NoRangeOptions
+      defNoOptions.getRangeOptions shouldBe NoRangeOptions
     }
   }
 }

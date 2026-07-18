@@ -4,11 +4,13 @@ import org.finos.vuu.api.SessionTableDef
 import org.finos.vuu.core.table.Column
 import org.finos.vuu.plugin.PluginType
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePluginType
+import org.finos.vuu.plugin.virtualized.table.range.{NoRangeOptions, RangeOptions}
 
 abstract class VirtualizedSessionTableDef(
                                            name: String,
                                            keyField: String,
                                            remoteColumns: Array[VirtualizedSessionTableColumn],
+                                           rangeOptions: RangeOptions = NoRangeOptions,
                                            includeDefaultColumns: Boolean = false,
                                          ) extends SessionTableDef(name, keyField, remoteColumns.map(f => f.asInstanceOf[Column])) {
 
@@ -19,6 +21,8 @@ abstract class VirtualizedSessionTableDef(
   def getRemoteKeyField: String = keyField
 
   def getRemoteColumns: Array[VirtualizedSessionTableColumn] = remoteColumns
+
+  def getRangeOptions: RangeOptions = rangeOptions
 
 }
 

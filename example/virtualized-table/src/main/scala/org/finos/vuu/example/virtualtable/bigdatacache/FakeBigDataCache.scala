@@ -6,6 +6,8 @@ class FakeBigDataCache {
   
   private final val DATASET_SIZE = 1_000_000_000 //this would be dynamically loaded from the data source in a real example
 
+  def getTableSize: Int = DATASET_SIZE
+
   def loadOrdersInRange(from: Int, to: Int): (Int, List[(Int, BigDataOrder)]) = {
     val bigOrdersWithIndex = (from until to).map { i =>
       val hash = scala.util.hashing.MurmurHash3.finalizeHash(i, 0).abs
