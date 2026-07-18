@@ -18,15 +18,15 @@ class MetricsViewPortParallelismProvider(table: DataTable, viewPortContainer: Vi
 
   lifecycleContainer(this).dependsOn(runner)
 
+  private val treeWorkRate = new CounterRatePerSecond(viewPortContainer.totalTreeWorkHistogram)
+  private val flatWorkRate = new CounterRatePerSecond(viewPortContainer.totalFlatWorkHistogram)
+
   private def runOnce(): Unit = {
-    val flatWorkMeter = viewPortContainer.totalFlatWorkHistogram
-    val treeWorkMeter = viewPortContainer.totalTreeWorkHistogram
+    val treeRate = treeWorkRate.perSecond() // this is ms of work done per second
+    val flatRate = flatWorkRate.perSecond()
 
-    val treeFiveMinRate = treeWorkMeter.getOneMinuteRate // this is events/sec over x minutes
-    val flatFiveMinRate = flatWorkMeter.getOneMinuteRate
-
-    val tree = Map("type" -> "tree", ViewPortParallelism.work_ms_in_1m -> treeFiveMinRate, ViewPortParallelism.work_par_ratio -> (treeFiveMinRate / 1000))
-    val flat = Map("type" -> "flat", ViewPortParallelism.work_ms_in_1m -> flatFiveMinRate, ViewPortParallelism.work_par_ratio -> (flatFiveMinRate / 1000))
+    val tree = Map("type" -> "tree", ViewPortParallelism.work_ms_in_1m -> treeRate, ViewPortParallelism.work_par_ratio -> (treeRate / 1000))
+    val flat = Map("type" -> "flat", ViewPortParallelism.work_ms_in_1m -> flatRate, ViewPortParallelism.work_par_ratio -> (flatRate / 1000))
 
     table.processUpdate("tree", RowWithData("tree", tree))
     table.processUpdate("flat", RowWithData("flat", flat))

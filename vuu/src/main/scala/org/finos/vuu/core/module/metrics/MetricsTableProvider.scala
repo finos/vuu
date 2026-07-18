@@ -9,6 +9,8 @@ import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer}
 import org.finos.vuu.provider.Provider
 import org.finos.vuu.viewport.ViewPortTable
 
+import java.util.concurrent.ConcurrentHashMap
+
 class MetricsTableProvider(table: DataTable, tableContainer: TableContainer)(implicit clock: Clock, lifecycleContainer: LifecycleContainer,
                                                                              metrics: MetricsProvider) extends Provider with StrictLogging {
 
@@ -38,16 +40,19 @@ class MetricsTableProvider(table: DataTable, tableContainer: TableContainer)(imp
     }
   }
 
+  private val updateRates = new ConcurrentHashMap[String, CounterRatePerSecond]()
+
   private def getMetricsData(vpTable: ViewPortTable): Map[String, Any] = {
     val counter = metrics.counter(vpTable.table + ".processUpdates.Counter")
     val size = tableContainer.getTable(vpTable.table).size()
-    val meter = metrics.meter(vpTable.table + ".processUpdates.Meter")
+    val updateRate = updateRates.computeIfAbsent(vpTable.table,
+      t => new CounterRatePerSecond(metrics.meter(t + ".processUpdates.Meter")))
 
     Map(
       "table" -> (vpTable.module + "-" + vpTable.table),
-      "updateCount" -> counter.getCount,
+      "updateCount" -> counter.count().toLong,
       "size" -> size,
-      "updatesPerSecond" -> meter.getOneMinuteRate
+      "updatesPerSecond" -> updateRate.perSecond()
     )
   }
 }

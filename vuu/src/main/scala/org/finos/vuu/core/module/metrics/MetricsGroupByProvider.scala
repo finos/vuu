@@ -1,7 +1,8 @@
 package org.finos.vuu.core.module.metrics
 
-import com.codahale.metrics.Histogram
 import com.typesafe.scalalogging.StrictLogging
+import io.micrometer.core.instrument.DistributionSummary
+import org.finos.vuu.core.module.metrics.MicrometerMetrics.percentileValue
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.provider.Provider
 import org.finos.vuu.viewport.ViewPortContainer
@@ -32,7 +33,7 @@ class MetricsGroupByProvider(table: DataTable, viewPortContainer: ViewPortContai
 
   override val lifecycleId: String = "metricsGroupByProvider"
 
-  def buildColumnsForHistogram(prefix: String, hist: Histogram): Map[String, Any] = {
+  def buildColumnsForHistogram(prefix: String, hist: DistributionSummary): Map[String, Any] = {
     /*
     val settree_mean = "settree_mean"
     val settree_samples = "settree_samples"
@@ -45,11 +46,11 @@ class MetricsGroupByProvider(table: DataTable, viewPortContainer: ViewPortContai
       Map()
     } else {
 
-      val snapshot = hist.getSnapshot
+      val snapshot = hist.takeSnapshot()
 
-      Map(prefix + "_mean" -> snapshot.getMean, prefix + "_samples" -> snapshot.getValues.length,
-        prefix + "_50_perc" -> snapshot.getMedian, prefix + "_75_perc" -> snapshot.get75thPercentile(),
-        prefix + "_99_perc" -> snapshot.get99thPercentile(), prefix + "_99_9_perc" -> snapshot.get999thPercentile()
+      Map(prefix + "_mean" -> snapshot.mean(), prefix + "_samples" -> snapshot.count(),
+        prefix + "_50_perc" -> percentileValue(snapshot, 0.5), prefix + "_75_perc" -> percentileValue(snapshot, 0.75),
+        prefix + "_99_perc" -> percentileValue(snapshot, 0.99), prefix + "_99_9_perc" -> percentileValue(snapshot, 0.999)
       )
     }
   }

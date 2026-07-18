@@ -14,16 +14,17 @@ class MetricsProviderTest extends AnyFeatureSpec with Matchers {
 
       val histogram = metrics.histogram("foo.bar")
 
-      histogram.update(1L)
+      histogram.record(1.0)
 
-      histogram.update(2L)
+      histogram.record(2.0)
 
-      histogram.update(3L)
+      histogram.record(3.0)
 
-      val snapshot = histogram.getSnapshot
+      val snapshot = histogram.takeSnapshot()
 
-      snapshot.getMax should equal(3L)
-      snapshot.getMin should equal(1L)
+      snapshot.max() should equal(3.0)
+      snapshot.count() should equal(3L)
+      snapshot.mean() should equal(2.0)
 
     }
 

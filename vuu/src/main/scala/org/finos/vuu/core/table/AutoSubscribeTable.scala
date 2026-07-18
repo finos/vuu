@@ -16,10 +16,10 @@ class AutoSubscribeTable(tableDef: TableDef, joinProvider: JoinTableProvider)(im
 
   def tryAndSubscribe(key: String): Unit = {
 
-    totalSubscribe.inc()
+    totalSubscribe.increment()
 
     if (!subscriptionKeys.contains(key)) {
-      onTrySubscribe.inc()
+      onTrySubscribe.increment()
 
       subscriptionKeys.add(key)
       getProvider.subscribe(key)
