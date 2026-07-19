@@ -8,111 +8,54 @@ import {
   buildColumnMap,
   ColumnMap,
   EventEmitter,
-  Range,
   metadataKeys,
+  Range,
 } from "@vuu-ui/vuu-utils";
 import { MovingDataRowWindow } from "./DataRowMovingWindow";
-
-type Series = {
-  id: string;
-  name: string;
-  label: string;
-  data: DataSourceValue<number>[];
-  lineStyle: {
-    width: number;
-  };
-  itemStyle: {
-    color: string | ItemColorFunction;
-  };
-  symbol: "emptyCircle" | "circle";
-  type: "line";
-};
-
-export type ItemColorFunction = (params: {
-  color: string;
-  data: DataSourceValue;
-  dataIndex: number;
-  name: string;
-  seriesName: string;
-}) => string;
-
-const defaultItemColorFunction: ItemColorFunction = ({ color }) => color;
+import {
+  defaultItemColorFunction,
+  LineSeries,
+  ScatterSeries,
+  Series,
+} from "./chart-types";
+import { ChartConfig, DataExclusionOptions } from "./useChartOptions";
 
 const { KEY } = metadataKeys;
 
-export type DataSourceValue<T extends VuuRowDataItemType = number> = {
+export type DataSourceValue = {
   key: string;
   readonly row: DataSourceRow;
-  value: T;
+  value: number | null;
 };
 
 function DataSourceValue<T extends VuuRowDataItemType = number>(
   key: string,
   row: DataSourceRow,
-  value: T,
-): DataSourceValue<T> {
+  value: number | null,
+): DataSourceValue {
   return { key, row, value };
-}
-
-function getCategoriesAndSeries(
-  columnMap: ColumnMap,
-  data: DataSourceRow[],
-  categoryColumn: string,
-  seriesColumns: string[],
-  itemColorFunction = defaultItemColorFunction,
-): [string[], Series[]] {
-  const categoryValues: string[] = [];
-  const seriesMap = new Map<string, Series>();
-
-  data.forEach((row) => {
-    const categoryValue = row[columnMap[categoryColumn]] as string;
-    categoryValues.push(categoryValue);
-
-    for (const seriesColumn of seriesColumns) {
-      let series = seriesMap.get(seriesColumn);
-      if (!series) {
-        series = {
-          //any reason we can't simply use col name here ?
-          id: seriesColumn,
-          name: seriesColumn,
-          label: seriesColumn,
-          data: [],
-          type: "line",
-          itemStyle: {
-            color: itemColorFunction,
-          },
-          lineStyle: {
-            width: 1.5,
-          },
-          symbol: "circle",
-        };
-        seriesMap.set(seriesColumn, series);
-      }
-
-      const key = row[KEY] as string;
-      const value = row[columnMap[seriesColumn]] as number;
-      series.data.push(DataSourceValue(key, row, value));
-    }
-  });
-
-  return [categoryValues, Array.from(seriesMap.values())];
 }
 
 export type ChartEvents = {
   update: () => void;
 };
 export interface ChartSeriesConstructorProps {
+  dataExclusions?: DataExclusionOptions;
   dataSource: DataSource;
-  itemColorFunction?: ItemColorFunction;
+  config: ChartConfig;
+  palette: string[];
 }
 
 export class ChartSeries extends EventEmitter<ChartEvents> {
   #categoryColumn = "";
+  #colorMap = new Map<string, string>();
   #columnMap: ColumnMap = {};
-  #itemColorFunction: ItemColorFunction | undefined;
+  #config: ChartConfig;
+  #dataExclusions: DataExclusionOptions | undefined;
   #dataWindow = new MovingDataRowWindow(Range(0, 1000));
 
   #dates: string[] = [];
+  #palette: string[];
   #series: Series[] = [];
   #seriesColumns: string[] = [];
 
@@ -135,13 +78,7 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
 
   buildCategoriesAndSeries() {
     if (this.#categoryColumn && this.#seriesColumns.length > 0) {
-      const [dates, series] = getCategoriesAndSeries(
-        this.#columnMap,
-        this.#dataWindow.data,
-        this.#categoryColumn,
-        this.#seriesColumns,
-        this.#itemColorFunction,
-      );
+      const [dates, series] = this.getCategoriesAndSeries();
       this.#dates = dates;
       this.#series = series;
 
@@ -149,14 +86,25 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
     }
   }
 
-  constructor({ dataSource, itemColorFunction }: ChartSeriesConstructorProps) {
+  constructor({
+    config,
+    dataExclusions,
+    dataSource,
+    palette,
+  }: ChartSeriesConstructorProps) {
     super();
-    this.#itemColorFunction = itemColorFunction;
+    this.#config = config;
+    this.#dataExclusions = dataExclusions;
+    this.#palette = palette;
     dataSource.subscribe({ range: Range(0, 1000) }, this.handleData);
   }
 
   get categoryColumn() {
     return this.#categoryColumn;
+  }
+
+  get palette() {
+    return this.#seriesColumns.map((col) => this.#colorMap.get(col));
   }
 
   set categoryColumn(categoryColumn: string) {
@@ -183,5 +131,100 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
 
   get series() {
     return this.#series;
+  }
+
+  private getCategoriesAndSeries(): [string[], Series[]] {
+    const colorMap = this.#colorMap;
+    const columnMap = this.#columnMap;
+    const data = this.#dataWindow.data;
+    const categoryColumn = this.#categoryColumn;
+    const seriesColumns = this.#seriesColumns;
+    const config = this.#config;
+
+    const categoryValues: string[] = [];
+    const seriesMap = new Map<
+      string,
+      [LineSeries, ScatterSeries] | [LineSeries]
+    >();
+    const { itemColorFunction = defaultItemColorFunction, symbolSize = 6 } =
+      config;
+
+    data.forEach((row) => {
+      const categoryValue = row[columnMap[categoryColumn]] as string;
+      categoryValues.push(categoryValue);
+
+      for (const seriesColumn of seriesColumns) {
+        let lineSeries: LineSeries;
+        let scatterSeries: ScatterSeries | undefined = undefined;
+
+        let seriesTuple = seriesMap.get(seriesColumn);
+        if (seriesTuple) {
+          [lineSeries, scatterSeries] = seriesTuple;
+        } else {
+          if (!colorMap.has(seriesColumn)) {
+            // Record palette color used for each series so we can preserve the color
+            // associations even if some series are hidden by user.
+            colorMap.set(seriesColumn, this.#palette[this.#colorMap.size]);
+          }
+
+          lineSeries = {
+            //any reason we can't simply use col name here ?
+            id: seriesColumn,
+            name: seriesColumn,
+            label: seriesColumn,
+            connectNulls: true,
+            data: [],
+            type: "line",
+            itemStyle: {
+              color: itemColorFunction,
+            },
+            lineStyle: {
+              width: 1.5,
+            },
+            symbol: "circle",
+            symbolSize,
+          };
+
+          if (this.#dataExclusions) {
+            const { symbol } = this.#dataExclusions;
+            scatterSeries = {
+              id: `${seriesColumn}-excluded`,
+              data: [],
+              itemStyle: {
+                borderColor: "#FDC82F",
+                color: "#101820",
+                borderWidth: 2,
+              },
+              label: "",
+              name: seriesColumn,
+              symbol,
+              symbolSize: 20,
+              type: "scatter",
+            };
+          }
+
+          if (scatterSeries) {
+            seriesMap.set(seriesColumn, [lineSeries, scatterSeries]);
+          } else {
+            seriesMap.set(seriesColumn, [lineSeries]);
+          }
+        }
+
+        const key = row[KEY] as string;
+        const value = row[columnMap[seriesColumn]] as number;
+
+        if (
+          this.#dataExclusions?.isExcludedData(row, columnMap, seriesColumn)
+        ) {
+          lineSeries.data.push(DataSourceValue(key, row, null));
+          scatterSeries?.data.push(DataSourceValue(key, row, value));
+        } else {
+          lineSeries.data.push(DataSourceValue(key, row, value));
+          scatterSeries?.data.push(DataSourceValue(key, row, null));
+        }
+      }
+    });
+
+    return [categoryValues, Array.from(seriesMap.values()).flat()];
   }
 }
