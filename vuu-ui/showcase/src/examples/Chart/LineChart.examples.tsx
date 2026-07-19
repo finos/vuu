@@ -16,14 +16,14 @@ import {
 import { TableContextMenuDef } from "@vuu-ui/vuu-table-types";
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { useData } from "@vuu-ui/vuu-utils";
-import { toColumnName } from "@vuu-ui/vuu-utils/dist/index.mjs";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 
 const useContextMenu = ({
   onExcludeItem,
   onIncludeItem,
 }: {
-  onExcludeItem: any;
-  onIncludeItem: any;
+  onExcludeItem: (options: ChartContextMenuOptions) => void;
+  onIncludeItem: (options: ChartContextMenuOptions) => void;
 }): TableContextMenuDef => {
   const menuBuilder: MenuBuilder<ChartMenuLocation, ChartContextMenuOptions> =
     useCallback((_location, options) => {
@@ -43,25 +43,28 @@ const useContextMenu = ({
 
   const menuActionHandler = useCallback<
     MenuActionHandler<string, ChartContextMenuOptions>
-  >((menuItemId, options) => {
-    if (options) {
-      switch (menuItemId) {
-        case "exclude": {
-          onExcludeItem(options);
-          return true;
-        }
-        case "include": {
-          onIncludeItem(options);
-          return true;
-        }
+  >(
+    (menuItemId, options) => {
+      if (options) {
+        switch (menuItemId) {
+          case "exclude": {
+            onExcludeItem(options);
+            return true;
+          }
+          case "include": {
+            onIncludeItem(options);
+            return true;
+          }
 
-        default:
-          return false;
+          default:
+            return false;
+        }
+      } else {
+        return false;
       }
-    } else {
-      return false;
-    }
-  }, []);
+    },
+    [onExcludeItem, onIncludeItem],
+  );
 
   return {
     menuBuilder,
@@ -86,7 +89,7 @@ const LineChartTemplate = ({
       columns: schema.columns.map(toColumnName),
       table: schema.table,
     });
-  }, []);
+  }, [VuuDataSource, dataSourceProp]);
 
   const config = useMemo<ChartConfig>(() => {
     return {
@@ -96,7 +99,7 @@ const LineChartTemplate = ({
         (({ data, color }) => (data.row.at(-1) === true ? "red" : color)),
       symbolSize: configProp?.symbolSize ?? symbolSize,
     };
-  }, [symbolSize]);
+  }, [configProp, symbolSize]);
 
   const onChangeSymbolSize = useCallback(
     (evt: SyntheticEvent<HTMLButtonElement>) => {
@@ -159,7 +162,7 @@ export const DataExclusions = () => {
       columns: schema.columns.map(toColumnName),
       table: schema.table,
     });
-  }, []);
+  }, [VuuDataSource]);
 
   const onExcludeItem = useCallback(
     async (options: ChartContextMenuOptions) => {
@@ -171,7 +174,7 @@ export const DataExclusions = () => {
       );
       console.log({ resp });
     },
-    [],
+    [dataSource],
   );
   const onIncludeItem = useCallback(
     async (options: ChartContextMenuOptions) => {
@@ -183,7 +186,7 @@ export const DataExclusions = () => {
       );
       console.log({ resp });
     },
-    [],
+    [dataSource],
   );
 
   const dataExclusionOptions = useMemo<DataExclusionOptions>(

@@ -3,7 +3,6 @@ import {
   DataSourceRow,
   DataSourceSubscribeCallback,
 } from "@vuu-ui/vuu-data-types";
-import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
   buildColumnMap,
   ColumnMap,
@@ -28,7 +27,7 @@ export type DataSourceValue = {
   value: number | null;
 };
 
-function DataSourceValue<T extends VuuRowDataItemType = number>(
+function DataSourceValue(
   key: string,
   row: DataSourceRow,
   value: number | null,
@@ -99,12 +98,12 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
     dataSource.subscribe({ range: Range(0, 1000) }, this.handleData);
   }
 
-  get categoryColumn() {
-    return this.#categoryColumn;
-  }
-
   get palette() {
     return this.#seriesColumns.map((col) => this.#colorMap.get(col));
+  }
+
+  get categoryColumn() {
+    return this.#categoryColumn;
   }
 
   set categoryColumn(categoryColumn: string) {
@@ -157,7 +156,7 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
         let lineSeries: LineSeries;
         let scatterSeries: ScatterSeries | undefined = undefined;
 
-        let seriesTuple = seriesMap.get(seriesColumn);
+        const seriesTuple = seriesMap.get(seriesColumn);
         if (seriesTuple) {
           [lineSeries, scatterSeries] = seriesTuple;
         } else {

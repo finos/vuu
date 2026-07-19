@@ -41,11 +41,9 @@ export interface ChartProps
   showTooltip?: boolean;
 }
 
-
-
 export const Chart = ({
   categoryColumnName,
-  chartSettings = { useCoarsePointer: true, renderer: "svg" }, 
+  chartSettings = { useCoarsePointer: true, renderer: "svg" },
   className,
   config,
   dataExclusions,
@@ -66,21 +64,30 @@ export const Chart = ({
 
   const chartRef = useRef<HTMLDivElement>(null);
 
-  const columnMap = buildColumnMap(dataSource.columns)
+  const columnMap = buildColumnMap(dataSource.columns);
 
   const onContextMenu = useChartContextMenu({ categoryColumnName, columnMap });
-  const {itemColorFunction, onClick, onMouseOut, onMouseOver, symbolSizeFunction} = useChartSelection({ categoryColumnName, selectionModel: config?.selectionModel });
+  const {
+    itemColorFunction,
+    onClick,
+    onMouseOut,
+    onMouseOver,
+    symbolSizeFunction,
+  } = useChartSelection({
+    categoryColumnName,
+    selectionModel: config?.selectionModel,
+  });
 
-    const option = useChartOptions({
-      categoryColumnName,
-      config,
-      itemColorFunction,
-      palette,
-      dataExclusions,
-      dataSource,
-      seriesColumnNames,
-      symbolSizeFunction,
-      showTooltip,
+  const option = useChartOptions({
+    categoryColumnName,
+    config,
+    itemColorFunction,
+    palette,
+    dataExclusions,
+    dataSource,
+    seriesColumnNames,
+    symbolSizeFunction,
+    showTooltip,
   });
 
   // Debounce resize event so it only fires periodically instead of constantly
@@ -120,7 +127,7 @@ export const Chart = ({
       //   }
       //   resizeObserver.disconnect();
     };
-  }, [chartSettings, onContextMenu]);
+  }, [chartSettings, onClick, onContextMenu, onMouseOver, onMouseOut]);
 
   useEffect(() => {
     if (chartRef.current) {

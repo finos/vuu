@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { ChartSeries } from "../src/ChartSeries";
 import { testModule } from "../../vuu-data-test/src/test/TestModule";
 

@@ -15,19 +15,16 @@ export type ChartContextMenuOptions = {
 
 interface ChartContextMenuHookProps {
   allowContextMenu?: boolean;
-  categoryColumnName: string;
+  categoryColumnName?: string;
   columnMap: ColumnMap;
 }
 
 export const useChartContextMenu = ({
-  categoryColumnName,
   columnMap,
 }: ChartContextMenuHookProps) => {
   const showContextMenu = useContextMenu();
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const onContextMenu = useCallback<any>(
+  const onContextMenu = useCallback(
     ({ data, event, seriesName }: ECElementEvent) => {
       if (event && seriesName) {
         event?.stop();
@@ -40,10 +37,11 @@ export const useChartContextMenu = ({
           row,
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         showContextMenu(event.event as any, "series", menuOptions);
       }
     },
-    [categoryColumnName, showContextMenu],
+    [columnMap, showContextMenu],
   );
 
   return onContextMenu;
