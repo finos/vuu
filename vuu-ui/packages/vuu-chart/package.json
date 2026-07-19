@@ -11,7 +11,8 @@
   },
   "devDependencies": {
     "@vuu-ui/vuu-data-types": "2.1.18",
-    "@vuu-ui/vuu-protocol-types": "2.1.18"
+    "@vuu-ui/vuu-protocol-types": "2.1.18",
+    "@vuu-ui/vuu-data-local": "2.1.18"
   },
   "dependencies": {
     "@salt-ds/styles": "0.2.1",

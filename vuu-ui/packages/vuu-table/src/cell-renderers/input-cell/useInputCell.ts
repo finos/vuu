@@ -183,7 +183,7 @@ export const useInputCell = <T extends string | number | boolean = string>({
         input.select();
       }
     },
-    [commit, editState, onEdit],
+    [commit, editState, onEdit, type],
   );
 
   const handleKeyDown = useCallback(
