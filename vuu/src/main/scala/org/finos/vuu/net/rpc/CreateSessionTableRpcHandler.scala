@@ -11,14 +11,16 @@ class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) ext
     val session: ClientSessionId = params.ctx.session
     val sourceTable = params.viewPort.table
     val copyOption = SessionTableCopyOption.fromString(params.namedParams("copyOption").asInstanceOf[String])
-    val columnsToCopyStr = params.namedParams.get("columnsToCopy") match {
-      case Some(value) => value.asInstanceOf[String]
-      case None => null
-    }
-    val columnsToCopy = if (columnsToCopyStr == null || columnsToCopyStr.isBlank || columnsToCopyStr.equals("*")) {
-      sourceTable.asTable.getTableDef.customColumns.map(_.name).toList // exclude default columns
-    } else {
-      columnsToCopyStr.split(",").toList
+    val columnsToCopy = params.namedParams.get("columnsToCopy") match {
+      case Some(value) =>
+        val columnsToCopyStr = value.asInstanceOf[String]
+        if (columnsToCopyStr == null || columnsToCopyStr.isBlank || columnsToCopyStr.equals("*")) {
+          sourceTable.asTable.getTableDef.customColumns.map(_.name).toList // exclude default columns
+        } else {
+          columnsToCopyStr.split(",").toList
+        }
+      case None =>
+        sourceTable.asTable.getTableDef.customColumns.map(_.name).toList // exclude default columns
     }
     val sessionTableName = params.namedParams.get("sessionTableName") match {
       case Some(value) => value.asInstanceOf[String]
