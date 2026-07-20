@@ -5,7 +5,7 @@ import org.finos.vuu.api.{ColumnBuilder, SessionTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, GetTableMetaRequest, GetTableMetaResponse, RpcRequest, RpcResponseNew, SelectRowRangeRequest, SelectRowRangeSuccess, SelectRowRequest, SelectRowSuccess}
+import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, RpcRequest, RpcResponseNew, SelectRowRangeRequest, SelectRowRangeSuccess, SelectRowRequest, SelectRowSuccess}
 import org.finos.vuu.net.rpc.{CreateSessionTableRpcHandler, EndEditSessionRpcHandler, RpcErrorResult, RpcNames, RpcSuccessResult, ViewPortContext}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
@@ -23,8 +23,8 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   private val tableName1 = "testTable1"
   private val nonEditableTableName = "nonEditableTable"
   private val largeTableName = "largeTable"
-  private val sessionTableDefName = "testSessionTable1"
   private val defaultSessionTableDefName = "edit-" + tableName1
+  private val sessionTableDefName = "testSessionTable1"
   private val moduleName = "EditInSessionTableRpcTest"
   private val testProviderFactory = new TestProviderFactory
   private val maxCopySize = 10 // configured in CoreServerApiTest
@@ -41,9 +41,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val createSessionTableRequest = RpcRequest(
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
-        params = Map(
-          "copyOption" -> "Empty"
-        ))
+        params = Map("copyOption" -> "Empty"))
       val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 
       Then("session table is created using default session table def")
@@ -87,7 +85,6 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
         params = Map(
-          "sessionTableName" -> sessionTableDefName,
           "copyOption" -> "Empty",
           "columnsToCopy" -> "Id,Name"
         ))
@@ -111,7 +108,6 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
         params = Map(
-          "sessionTableName" -> sessionTableDefName,
           "copyOption" -> "All",
           "columnsToCopy" -> "*"
         ))
@@ -135,7 +131,6 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
         params = Map(
-          "sessionTableName" -> sessionTableDefName,
           "copyOption" -> "All",
           "columnsToCopy" -> "Id,Name"
         ))
@@ -159,7 +154,6 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
         params = Map(
-          "sessionTableName" -> sessionTableDefName,
           "copyOption" -> "All",
           "columnsToCopy" -> "*"
         ))
@@ -190,9 +184,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
         params = Map(
-          "sessionTableName" -> sessionTableDefName,
-          "copyOption" -> "Selected",
-          "columnsToCopy" -> "*"
+          "copyOption" -> "Selected"
         ))
       val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 
@@ -218,9 +210,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
         params = Map(
-          "sessionTableName" -> sessionTableDefName,
-          "copyOption" -> "Selected",
-          "columnsToCopy" -> "*"
+          "copyOption" -> "Selected"
         ))
       val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 
@@ -242,9 +232,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
         params = Map(
-          "sessionTableName" -> sessionTableDefName,
-          "copyOption" -> "Empty",
-          "columnsToCopy" -> ""
+          "copyOption" -> "Empty"
         ))
       val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 
@@ -264,7 +252,6 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
         params = Map(
-          "sessionTableName" -> sessionTableDefName,
           "copyOption" -> "Empty",
           "columnsToCopy" -> "DUMMY"
         ))
@@ -329,12 +316,12 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       .addTableForTest(createTableDef(nonEditableTableName, false), viewPortDefFactory, providerFactory)
       .addTableForTest(createTableDef(largeTableName, true), viewPortDefFactory, largeProviderFactory)
       .addSessionTable(SessionTableDef(
-        name = sessionTableDefName,
+        name = defaultSessionTableDefName,
         keyField = "Id",
         columns = allColumns
       ), viewPortDefFactoryForSessionTable)
       .addSessionTable(SessionTableDef(
-        name = defaultSessionTableDefName,
+        name = sessionTableDefName,
         keyField = "Id",
         columns = allColumns
       ), viewPortDefFactoryForSessionTable)
