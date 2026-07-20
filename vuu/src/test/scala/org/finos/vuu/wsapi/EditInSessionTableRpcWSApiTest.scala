@@ -20,10 +20,11 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     .addString("Name")
     .addInt("Account")
     .build();
-  private val tableName1 = "EditInSessionTest1"
-  private val nonEditableTableName = "NonEditableTable"
-  private val largeTableName = "LargeTable"
-  private val sessionTableDefName = "EditInSessionTest1Session"
+  private val tableName1 = "testTable1"
+  private val nonEditableTableName = "nonEditableTable"
+  private val largeTableName = "largeTable"
+  private val sessionTableDefName = "testSessionTable1"
+  private val defaultSessionTableDefName = "edit-" + tableName1
   private val moduleName = "EditInSessionTableRpcTest"
   private val testProviderFactory = new TestProviderFactory
   private val maxCopySize = 10 // configured in CoreServerApiTest
@@ -32,6 +33,51 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   // Test when vp is filtered and sorted, the data copied to session table is also filtered and sorted
   // Test when copying from a given list of columns, only data from those columns are copied
   Feature("[Web Socket API] create a session table and copy data from source table") {
+    Scenario("create a session table from source table using default session table def") {
+      Given("a view port exist")
+      val viewPortId = createViewPort(tableName1)
+
+      When("request creating a session table using default session table def")
+      val createSessionTableRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.CreateSessionTableRpc,
+        params = Map(
+          "copyOption" -> "Empty"
+        ))
+      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
+
+      Then("session table is created using default session table def")
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
+      val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      sessionTableName.contains("simple-edit-testTable1") shouldBe true
+    }
+
+    Scenario("create a session table from source table using a specific session table def") {
+      Given("a view port exist")
+      val viewPortId = createViewPort(tableName1)
+
+      When("request creating a session table using given session table def")
+      val createSessionTableRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.CreateSessionTableRpc,
+        params = Map(
+          "sessionTableName" -> sessionTableDefName,
+          "copyOption" -> "Empty"
+        ))
+      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
+
+      Then("session table is created using given session table def")
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
+      val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      sessionTableName.contains("simple-testSessionTable1") shouldBe true
+    }
+
     Scenario("create an empty session table from source table") {
       Given("a view port exist")
       val viewPortId = createViewPort(tableName1)
@@ -284,6 +330,11 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       .addTableForTest(createTableDef(largeTableName, true), viewPortDefFactory, largeProviderFactory)
       .addSessionTable(SessionTableDef(
         name = sessionTableDefName,
+        keyField = "Id",
+        columns = allColumns
+      ), viewPortDefFactoryForSessionTable)
+      .addSessionTable(SessionTableDef(
+        name = defaultSessionTableDefName,
         keyField = "Id",
         columns = allColumns
       ), viewPortDefFactoryForSessionTable)

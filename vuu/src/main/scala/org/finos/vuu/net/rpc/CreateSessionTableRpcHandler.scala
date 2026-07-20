@@ -4,7 +4,7 @@ import org.finos.vuu.core.table.{TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.SessionTableCopyOption.{All, Empty, Selected}
 
-class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) extends DefaultRpcHandler {
+class CreateSessionTableRpcHandler(using tableContainer: TableContainer) extends DefaultRpcHandler {
   registerRpc(RpcNames.CreateSessionTableRpc, this.createSessionTable)
 
   def createSessionTable(params: RpcParams): RpcFunctionResult = {
@@ -24,7 +24,7 @@ class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) ext
     }
     val sessionTableName = params.namedParams.get("sessionTableName") match {
       case Some(value) => value.asInstanceOf[String]
-      case None => s"Edit-${sourceTable.name}"
+      case None => s"edit-${sourceTable.name}"
     }
 
     if (!sourceTable.asTable.getTableDef.isEditable) {
