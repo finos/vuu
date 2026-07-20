@@ -1,11 +1,11 @@
-import type { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import type { DataSourceRowWithBigint } from "@vuu-ui/vuu-data-types";
 import type { VuuSort, VuuSortType } from "@vuu-ui/vuu-protocol-types";
 import { ColumnMap } from "@vuu-ui/vuu-utils";
 
 export type ColIndexSortDef = [number, VuuSortType];
 type SortPredicate = (
-  r1: DataSourceRow,
-  r2: DataSourceRow,
+  r1: DataSourceRowWithBigint,
+  r2: DataSourceRowWithBigint,
   sortDefDef: ColIndexSortDef,
 ) => SortCompareResult;
 type SortCompareResult = 0 | 1 | -1;
@@ -14,8 +14,8 @@ type RowSortComparatorFactory = (
   test?: SortPredicate,
 ) => RowSortComparator;
 export type RowSortComparator = (
-  item1: DataSourceRow,
-  item2: DataSourceRow,
+  item1: DataSourceRowWithBigint,
+  item2: DataSourceRowWithBigint,
 ) => SortCompareResult;
 
 const defaultSortPredicate: SortPredicate = (r1, r2, [i, direction]) => {
@@ -73,7 +73,7 @@ const multiColComparator: RowSortComparatorFactory =
   };
 
 export const sortRows = (
-  rows: readonly DataSourceRow[],
+  rows: readonly DataSourceRowWithBigint[],
   { sortDefs }: VuuSort,
   columnMap: ColumnMap,
 ) => {
@@ -85,8 +85,8 @@ export const sortRows = (
 };
 
 export function binarySearch(
-  items: DataSourceRow[],
-  item: DataSourceRow,
+  items: DataSourceRowWithBigint[],
+  item: DataSourceRowWithBigint,
   comparator: RowSortComparator,
 ) {
   let l = 0;

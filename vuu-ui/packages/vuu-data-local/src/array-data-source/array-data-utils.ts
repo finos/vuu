@@ -1,4 +1,7 @@
-import type { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import type {
+  DataSourceRow,
+  DataSourceRowWithBigint,
+} from "@vuu-ui/vuu-data-types";
 import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { ColumnMap, KeySet, metadataKeys } from "@vuu-ui/vuu-utils";
 
@@ -15,7 +18,7 @@ const replaceBigInt = (
 };
 
 export const toClientRow = (
-  row: DataSourceRow,
+  row: DataSourceRowWithBigint,
   keys: KeySet,
   selectedRows: Set<string>,
   dataIndices?: number[],

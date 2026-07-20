@@ -16,8 +16,8 @@ import type {
   DataSourceSubscribeProps,
   MenuRpcResponse,
   DataSourceFilter,
-  DataSource,
   TableSchema,
+  DataSourceBase,
 } from "@vuu-ui/vuu-data-types";
 import {
   BaseDataSource,
@@ -65,7 +65,7 @@ const toClientRow = (row: DataSourceRow, keys: KeySet) => {
   return clientRow;
 };
 
-export class TreeDataSource extends BaseDataSource implements DataSource {
+export class TreeDataSource extends BaseDataSource implements DataSourceBase {
   public columnDescriptors: ColumnDescriptor[];
   private clientCallback: DataSourceSubscribeCallback | undefined;
   private expandedRows = new Set<string>();

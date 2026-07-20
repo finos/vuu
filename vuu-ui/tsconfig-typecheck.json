@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "noImplicitAny": true,
-    "target": "es2017",
+    "target": "esnext",
     "downlevelIteration": true,
     "lib": ["dom", "dom.iterable", "esnext", "WebWorker"],
     "allowJs": true,

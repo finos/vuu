@@ -733,7 +733,8 @@ export declare type VuuColumnDataType =
   | "string"
   | "char"
   | "boolean"
-  | "epochtimestamp";
+  | "epochtimestamp"
+  | "epochtimestampnano";
 
 export declare type VuuMenuContext = "cell" | "row" | "grid" | "selected-rows";
 export declare type VuuTable = {

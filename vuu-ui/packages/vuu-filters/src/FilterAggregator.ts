@@ -86,7 +86,7 @@ export class FilterAggregator {
   add(
     column: ColumnDescriptor,
     value: ColumnFilterValue,
-    op: FilterClauseOp | "between" | "between-inclusive",
+    op: FilterClauseOp | "between" | "between-inclusive" = "=",
     extendedFilterOptions?: ExtendedFilterOptions,
   ) {
     const { serverDataType = "string", type } = column;

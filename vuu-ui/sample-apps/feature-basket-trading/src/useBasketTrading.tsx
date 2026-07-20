@@ -1,8 +1,8 @@
 import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 import {
-  DataSourceRow,
   RpcResponseHandler,
   DataSourceSubscribeCallback,
+  DataSourceRowWithBigint,
 } from "@vuu-ui/vuu-data-types";
 import { useViewContext } from "@vuu-ui/vuu-layout";
 import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
@@ -24,7 +24,7 @@ const { KEY } = metadataKeys;
 export class Basket {
   basketId: string;
   basketName: string;
-  dataSourceRow: DataSourceRow;
+  dataSourceRow: DataSourceRowWithBigint;
   pctFilled: number;
   fxRateToUsd: number;
   instanceId: string;
@@ -34,7 +34,7 @@ export class Basket {
   totalNotionalUsd: number;
   units: number;
 
-  constructor(data: DataSourceRow, columnMap: ColumnMap) {
+  constructor(data: DataSourceRowWithBigint, columnMap: ColumnMap) {
     this.dataSourceRow = data;
     this.basketId = data[columnMap.basketId] as string;
     this.basketName = data[columnMap.basketName] as string;

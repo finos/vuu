@@ -9,8 +9,23 @@ export const DOWN2 = "down2";
 
 const decimalPattern = /^-?[0-9]*\.[0-9]*$/;
 
+const JAVA_LONG_MIN = BigInt("-9223372036854775808");
+const JAVA_LONG_MAX = BigInt("9223372036854775807");
+
 export const stringIsValidInt = (val: string) =>
   parseInt(val, 10).toString() === val;
+
+export const stringIsValidLong = (val: string) => {
+  if (val === "") {
+    return false;
+  }
+  try {
+    const n = BigInt(val);
+    return n <= JAVA_LONG_MAX && n >= JAVA_LONG_MIN;
+  } catch (e) {
+    return false;
+  }
+};
 
 export const stringIsValidDecimal = (val: string) =>
   stringIsValidInt(val) || decimalPattern.test(val);

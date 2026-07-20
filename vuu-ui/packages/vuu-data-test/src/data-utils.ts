@@ -16,7 +16,7 @@ export const nextRandomDouble: PriceGenerator = (min, max) =>
 
 export const initBidAsk = (
   priceMaxDelta: number,
-  nextRandomDouble: PriceGenerator
+  nextRandomDouble: PriceGenerator,
 ) => {
   const mid = nextRandomDouble(0, 1000);
   const tempBid = nextRandomDouble(mid - priceMaxDelta, mid - 1);
@@ -31,12 +31,12 @@ const maxAsk = (
   bid: number,
   ask: number,
   spreadMultipler: number,
-  priceMaxDelta: number
+  priceMaxDelta: number,
 ) => {
   const spread = ask - bid;
   return Math.min(
     ask + spreadMultipler * spread,
-    spread / 2 + bid + priceMaxDelta
+    spread / 2 + bid + priceMaxDelta,
   );
 };
 
@@ -53,13 +53,13 @@ const minBid = (
   bid: number,
   ask: number,
   spreadMultipler: number,
-  priceMaxDelta: number
+  priceMaxDelta: number,
 ) => {
   const spread = ask - bid;
   const mid = spread / 2 + bid;
   const result = Math.max(
     bid - Math.min(spreadMultipler * spread, 10),
-    mid - priceMaxDelta
+    mid - priceMaxDelta,
   );
   return result < 0 ? bid : result;
 };
@@ -69,7 +69,7 @@ export const generateNextBidAsk = (
   ask: number,
   spreadMultipler: number,
   priceMaxDelta: number,
-  nextRandomDouble: PriceGenerator
+  nextRandomDouble: PriceGenerator,
 ) => {
   let tempAsk = ask;
   if (Math.abs(bid - ask) <= 1) tempAsk = ask + 1;
@@ -82,4 +82,12 @@ export const generateNextBidAsk = (
   const newAsk =
     Math.round(nextRandomDouble(minAskValue, maxAskValue) * 100) / 100.0;
   return [newBid, newAsk];
+};
+
+export const withNanoMs = (ts: number, nanos = 0) => {
+  if (nanos > 0) {
+    return BigInt(ts) * 1_000_000n + BigInt(nanos);
+  } else {
+    return BigInt(ts) * 1_000_000n;
+  }
 };

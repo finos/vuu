@@ -188,7 +188,9 @@ export declare type IsSelected = number;
 type Timestamp = number;
 type IsNew = boolean;
 
-export declare type DataSourceRow = [
+export declare type DataSourceRow<
+  T extends bigint | VuuRowDataItemType = VuuRowDataItemType,
+> = [
   RowIndex,
   RenderKey,
   IsLeaf,
@@ -199,8 +201,12 @@ export declare type DataSourceRow = [
   IsSelected,
   Timestamp,
   IsNew,
-  ...VuuRowDataItemType[],
+  ...T[],
 ];
+
+export declare type DataSourceRowWithBigint = DataSourceRow<
+  bigint | VuuRowDataItemType
+>;
 
 export declare type DataSourceRowObject = {
   index: number;
@@ -594,14 +600,19 @@ export declare type EditSessionMode =
   | StandaloneEditSessionMode
   | EditSessionModeAlias;
 
-export interface EditApi {
+export interface EditApi<
+  T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
+> {
   beginEditSession?: (
     editSessionMode?: EditSessionMode,
-  ) => Promise<DataSource | undefined>;
+  ) => Promise<DataSource<T> | undefined>;
   addRow?: (
     rowData?: Record<string, VuuRowDataItemType>,
   ) => Promise<RpcResult> | undefined;
-  deleteRow?: (key: string, mode?: DeleteRowMode) => Promise<RpcResult> | undefined;
+  deleteRow?: (
+    key: string,
+    mode?: DeleteRowMode,
+  ) => Promise<RpcResult> | undefined;
   deleteSelectedRows?: (mode?: DeleteRowMode) => Promise<RpcResult> | undefined;
   editCell?: (
     rowKey: string,
@@ -631,8 +642,9 @@ export declare type UndoRowChangeResult = {
   wasInsertedRow?: boolean;
 };
 
-export interface DataSource
-  extends EditApi,
+export interface DataSourceBase<
+  T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
+> extends EditApi<T>,
     IEventEmitter<DataSourceEvents>,
     Partial<TypeaheadSuggestionProvider> {
   aggregations: VuuAggregation[];
@@ -684,7 +696,7 @@ export interface DataSource
    * @param table the sessionTable  (module and table name)
    * @returns
    */
-  createSessionDataSource?: (table: VuuTable) => DataSource;
+  createSessionDataSource?: (table: VuuTable) => DataSource<T>;
   /**
    * For a dataSource that has been previously disabled and is currently in disabled state , this will restore
    * the subscription to active status. Fresh data will be dispatched to client. The enable call optionally
@@ -722,16 +734,16 @@ export interface DataSource
    * @param visibleOnly
    * @returns
    */
-  getChildRows?: (rowKey: string) => DataSourceRow[];
+  getChildRows?: (rowKey: string) => T[];
 
-  getRowAtIndex?: (rowIndex: number) => DataSourceRow | undefined;
+  getRowAtIndex?: (rowIndex: number) => T | undefined;
   /**
    * Only implemented on JSON DataSource
    * @param depth
    * @param visibleOnly
    * @returns
    */
-  getRowsAtDepth?: (depth: number, visibleOnly?: boolean) => DataSourceRow[];
+  getRowsAtDepth?: (depth: number, visibleOnly?: boolean) => T[];
   groupBy?: VuuGroupBy;
   insertRow?: DataSourceInsertHandler;
   links?: LinkDescriptorWithLabel[];
@@ -764,6 +776,10 @@ export interface DataSource
   viewport?: string;
   visualLink?: LinkDescriptorWithLabel;
 }
+
+export declare type DataSource =
+  | DataSourceBase
+  | DataSourceBase<DataSourceRowWithBigint>;
 
 export interface MenuRpcResponse<
   TAction extends MenuRpcAction = MenuRpcAction,
