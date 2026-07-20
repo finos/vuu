@@ -20,11 +20,12 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     .addString("Name")
     .addInt("Account")
     .build();
-  private val tableName1 = "testTable1"
   private val nonEditableTableName = "nonEditableTable"
-  private val largeTableName = "largeTable"
+  private val tableName1 = "testTable1"
   private val defaultSessionTableDefName = "edit-" + tableName1
   private val sessionTableDefName = "testSessionTable1"
+  private val largeTableName = "largeTable"
+  private val largeSessionTableDefName = "edit-" + largeTableName
   private val moduleName = "EditInSessionTableRpcTest"
   private val testProviderFactory = new TestProviderFactory
   private val maxCopySize = 10 // configured in CoreServerApiTest
@@ -322,6 +323,11 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       ), viewPortDefFactoryForSessionTable)
       .addSessionTable(SessionTableDef(
         name = sessionTableDefName,
+        keyField = "Id",
+        columns = allColumns
+      ), viewPortDefFactoryForSessionTable)
+      .addSessionTable(SessionTableDef(
+        name = largeSessionTableDefName,
         keyField = "Id",
         columns = allColumns
       ), viewPortDefFactoryForSessionTable)
