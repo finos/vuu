@@ -11,13 +11,19 @@ class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) ext
     val session: ClientSessionId = params.ctx.session
     val sourceTable = params.viewPort.table
     val copyOption = SessionTableCopyOption.fromString(params.namedParams("copyOption").asInstanceOf[String])
-    val columnsToCopyStr = params.namedParams("columnsToCopy").asInstanceOf[String]
+    val columnsToCopyStr = params.namedParams.get("columnsToCopy") match {
+      case Some(value) => value.asInstanceOf[String]
+      case None => null
+    }
     val columnsToCopy = if (columnsToCopyStr == null || columnsToCopyStr.isBlank || columnsToCopyStr.equals("*")) {
       sourceTable.asTable.getTableDef.customColumns.map(_.name).toList // exclude default columns
     } else {
       columnsToCopyStr.split(",").toList
     }
-    val sessionTableName = params.namedParams("sessionTableName").asInstanceOf[String]
+    val sessionTableName = params.namedParams.get("sessionTableName") match {
+      case Some(value) => value.asInstanceOf[String]
+      case None => s"Edit-${sourceTable.name}"
+    }
 
     if (!sourceTable.asTable.getTableDef.isEditable) {
       return new RpcFunctionFailure(s"Table ${sourceTable.name} is not editable")
