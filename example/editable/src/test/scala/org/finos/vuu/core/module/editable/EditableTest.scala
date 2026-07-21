@@ -166,7 +166,8 @@ class EditableTest extends VuuServerTestCase {
     }
 
     Scenario("Undo row change") {
-      withVuuServer(EditTableTestModule()) {
+      val module = EditTableTestModule()
+      withVuuServer(module) {
         vuuServer =>
           vuuServer.login("testUser")
           val viewport = vuuServer.createViewPort(EditTableTestModule.NAME, "editTestTable")
@@ -182,7 +183,7 @@ class EditableTest extends VuuServerTestCase {
           undoRowChangeResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
 
           vuuServer.runOnce()
-          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"), Array(Map("rowId" -> "key1", "A" -> null, "B" -> null, "C" -> null, "D" -> null)))
+          assertVpEq(combineQsForVp(viewport), Array("rowId", "A", "B", "C", "D"), Array(module.originalData))
       }
     }
   }
