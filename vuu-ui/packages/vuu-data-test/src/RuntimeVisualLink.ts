@@ -1,16 +1,20 @@
-import { DataSource, RowSelectionEventHandler } from "@vuu-ui/vuu-data-types";
+import {
+  DataSourceBase,
+  DataSourceRowWithBigint,
+  RowSelectionEventHandler,
+} from "@vuu-ui/vuu-data-types";
 import { TickingArrayDataSource } from "./TickingArrayDataSource";
 import { buildColumnMap } from "@vuu-ui/vuu-utils";
 
 export class RuntimeVisualLink {
   #childColumnName: string;
-  #childDataSource: DataSource;
+  #childDataSource: DataSourceBase<DataSourceRowWithBigint>;
   #parentColumnName: string;
-  #parentDataSource: DataSource;
+  #parentDataSource: DataSourceBase<DataSourceRowWithBigint>;
 
   constructor(
-    childDataSource: DataSource,
-    parentDataSource: DataSource,
+    childDataSource: DataSourceBase<DataSourceRowWithBigint>,
+    parentDataSource: DataSourceBase<DataSourceRowWithBigint>,
     childColumnName: string,
     parentColumnName: string,
   ) {

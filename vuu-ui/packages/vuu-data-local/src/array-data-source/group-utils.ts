@@ -1,5 +1,8 @@
 import type { DataSourceRow } from "@vuu-ui/vuu-data-types";
-import type { VuuGroupBy } from "@vuu-ui/vuu-protocol-types";
+import type {
+  VuuGroupBy,
+  VuuRowDataItemType,
+} from "@vuu-ui/vuu-protocol-types";
 import { ColumnMap, metadataKeys } from "@vuu-ui/vuu-utils";
 
 export type KeyList = number[];
@@ -12,9 +15,9 @@ const isNew = false;
 
 export const collapseGroup = (
   key: string,
-  groupedRows: readonly DataSourceRow[],
-): DataSourceRow[] => {
-  const rows: DataSourceRow[] = [];
+  groupedRows: readonly DataSourceRow<bigint | VuuRowDataItemType>[],
+): DataSourceRow<bigint | VuuRowDataItemType>[] => {
+  const rows: DataSourceRow<bigint | VuuRowDataItemType>[] = [];
 
   for (
     let i = 0, idx = 0, collapsed = false, len = groupedRows.length;
@@ -49,7 +52,7 @@ export const collapseGroup = (
 
 export const expandGroup = (
   keys: string[],
-  sourceRows: readonly DataSourceRow[],
+  sourceRows: readonly DataSourceRow<bigint | VuuRowDataItemType>[],
   groupBy: VuuGroupBy,
   columnMap: ColumnMap,
   groupMap: GroupMap,
@@ -72,7 +75,7 @@ const dataRowsFromGroups2 = (
   groupMap: GroupMap,
   groupIndices: number[],
   openKeys: string[],
-  sourceRows: readonly DataSourceRow[] = [],
+  sourceRows: readonly DataSourceRow<bigint | VuuRowDataItemType>[] = [],
   root = "$root",
   depth = 1,
   rows: DataSourceRow[] = [],
@@ -147,7 +150,7 @@ const dataRowsFromGroups2 = (
 const pushChildren = (
   rows: DataSourceRow[],
   tree: KeyList,
-  sourceRows: readonly DataSourceRow[],
+  sourceRows: readonly DataSourceRow<bigint | VuuRowDataItemType>[],
   parentKey: string,
   depth: number,
 ) => {
@@ -163,7 +166,7 @@ const pushChildren = (
 };
 
 export const groupRows = (
-  rows: readonly DataSourceRow[],
+  rows: ReadonlyArray<Array<bigint | VuuRowDataItemType>>,
   groupBy: VuuGroupBy,
   columnMap: ColumnMap,
 ): [DataSourceRow[], GroupMap] => {
@@ -208,7 +211,10 @@ function childCount(list: GroupMap | KeyList) {
   }
 }
 
-function groupLeafRows(leafRows: readonly DataSourceRow[], groupby: number[]) {
+function groupLeafRows(
+  leafRows: ReadonlyArray<Array<bigint | VuuRowDataItemType>>,
+  groupby: number[],
+) {
   const groups: GroupMap = {};
   const levels = groupby.length;
   const lastLevel = levels - 1;

@@ -12,6 +12,7 @@ import {
 import { NullServer } from "./IServerProxy";
 import {
   DataSource,
+  DataSourceBase,
   DataSourceConstructorProps,
   DataSourceDeleteHandler,
   DataSourceInsertHandler,
@@ -26,7 +27,7 @@ import {
 } from "@vuu-ui/vuu-data-types";
 import { BaseDataSource, combineFilters } from "@vuu-ui/vuu-utils";
 
-class MockDataSourceImpl extends BaseDataSource implements DataSource {
+class MockDataSourceImpl extends BaseDataSource implements DataSourceBase {
   #server: ServerAPI = NullServer;
 
   public table: VuuTable;

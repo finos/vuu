@@ -14,7 +14,7 @@ import { ScaledDecimal } from "../ScaledDecimal";
 const filterValue = (value: string | number | boolean | ScaledDecimal) =>
   typeof value === "string"
     ? `"${value}"`
-    : value instanceof ScaledDecimal
+    : value instanceof ScaledDecimal || typeof value === "bigint"
       ? value.toString()
       : value;
 

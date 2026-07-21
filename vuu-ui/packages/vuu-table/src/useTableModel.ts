@@ -375,9 +375,17 @@ const columnDescriptorToRuntimeColumDescriptor =
       ...rest
     } = column;
 
-    const runtimeColumnWithDefaults: RuntimeColumnDescriptor = {
+    const columnWithServerDataType: ColumnDescriptor = {
       ...rest,
       align,
+      label,
+      name,
+      serverDataType,
+      source,
+    };
+
+    const runtimeColumnWithDefaults: RuntimeColumnDescriptor = {
+      ...columnWithServerDataType,
       ariaColIndex,
       CellRenderer: getCellRenderer(column),
       HeaderCellContentRenderer: getColumnHeaderContentRenderer(column),
@@ -386,11 +394,8 @@ const columnDescriptorToRuntimeColumDescriptor =
         ? buildValidationChecker(column.type.rules)
         : undefined,
       label: getLabel(label, columnFormatHeader),
-      name,
       originalIdx: ariaColIndex,
-      serverDataType,
-      source,
-      valueFormatter: getValueFormatter(column, serverDataType),
+      valueFormatter: getValueFormatter(columnWithServerDataType),
       width,
     };
 

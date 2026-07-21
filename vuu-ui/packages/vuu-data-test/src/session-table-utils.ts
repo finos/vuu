@@ -9,7 +9,7 @@ export const createSessionTableFromSelectedRows = (
   table: Table,
   selectedRowIds: string[],
 ) => {
-  const sessionData: VuuRowDataItemType[][] = [];
+  const sessionData: Array<bigint | VuuRowDataItemType>[] = [];
   for (let i = 0; i < selectedRowIds.length; i++) {
     for (let j = 0; j < table.data.length; j++) {
       if (table.data[j][KEY] === selectedRowIds[i]) {

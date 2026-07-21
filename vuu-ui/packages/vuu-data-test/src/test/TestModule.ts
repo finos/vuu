@@ -6,6 +6,7 @@ import {
 } from "../vuu-row-generator";
 import tableContainer from "../core/table/TableContainer";
 import { TableSchema } from "@vuu-ui/vuu-data-types";
+import { withNanoMs } from "../data-utils";
 
 export type TestTableName =
   | "TestDates"
@@ -31,11 +32,15 @@ class TestModule extends VuuModule<TestTableName> {
         },
         {
           name: "tradeDate",
-          serverDataType: "long",
+          serverDataType: "epochtimestamp",
         },
         {
           name: "settlementDate",
-          serverDataType: "long",
+          serverDataType: "epochtimestamp",
+        },
+        {
+          name: "nanoTimestamp",
+          serverDataType: "epochtimestampnano",
         },
       ],
       key: "id",
@@ -84,7 +89,19 @@ class TestModule extends VuuModule<TestTableName> {
   #tables: Record<TestTableName, Table> = {
     TestDates: tableContainer.createTable(
       this.#schemas.TestDates,
-      [],
+      // prettier-ignore
+      [
+        [1000000000000000001n, Date.now(), Date.now(), withNanoMs(Date.now(),1)],
+        [1000000000000000002n, Date.now(), Date.now(), withNanoMs(Date.now(),2)],
+        [1000000000000000003n, Date.now(), Date.now(), withNanoMs(Date.now(),3)],
+        [1000000000000000004n, Date.now(), Date.now(), withNanoMs(Date.now(),4)],
+        [1000000000000000005n, Date.now(), Date.now(), withNanoMs(Date.now(),5)],
+        [1000000000000000006n, Date.now(), Date.now(), withNanoMs(Date.now(),6)],
+        [1000000000000000007n, Date.now(), Date.now(), withNanoMs(Date.now(),7)],
+        [1000000000000000008n, Date.now(), Date.now(), withNanoMs(Date.now(),8)],
+        [1000000000000000009n, Date.now(), Date.now(), withNanoMs(Date.now(),9)],
+        [1000000000000000010n, Date.now(), Date.now(), withNanoMs(Date.now(),10)],
+      ],
       buildDataColumnMap(this.#schemas, "TestDates"),
     ),
     TwoHundredColumns: tableContainer.createTable(

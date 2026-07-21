@@ -1,6 +1,7 @@
 import {
-  DataSource,
+  DataSourceBase,
   DataSourceConfig,
+  DataSourceRowWithBigint,
   DataSourceSubscribedMessage,
   DataSourceVisualLinkCreatedMessage,
   DeleteRowMode,
@@ -63,7 +64,7 @@ export interface IVuuModule<T extends string = string> {
     tableName: T,
     viewport?: string,
     config?: DataSourceConfig,
-  ) => DataSource;
+  ) => DataSourceBase<DataSourceRowWithBigint>;
 }
 
 export type SessionTableMap = Record<string, SessionTable | Table>;
@@ -94,7 +95,7 @@ export type VuuModuleOptions = {
 
 type Subscription = {
   viewportId: string;
-  dataSource: DataSource;
+  dataSource: DataSourceBase<DataSourceRowWithBigint>;
   sessionTableName?: string;
 };
 export abstract class VuuModule<T extends string = string>
@@ -107,7 +108,10 @@ export abstract class VuuModule<T extends string = string>
   #tableServices: Record<T, RpcService[] | undefined> | undefined;
   #subscriptionMap: Map<string, Subscription[]> = new Map();
 
-  constructor(name: string, { sessionTableMessageColumn = "vuuMsg" }: VuuModuleOptions = {}) {
+  constructor(
+    name: string,
+    { sessionTableMessageColumn = "vuuMsg" }: VuuModuleOptions = {},
+  ) {
     this.#name = name;
     this.#sessionTableMessageColumn = sessionTableMessageColumn;
     moduleContainer.register(this);
@@ -244,7 +248,9 @@ export abstract class VuuModule<T extends string = string>
     );
   }
 
-  getSubscribedDataSource(vpId: string): DataSource {
+  getSubscribedDataSource(
+    vpId: string,
+  ): DataSourceBase<DataSourceRowWithBigint> {
     for (const subscriptions of this.#subscriptionMap.values()) {
       for (const { viewportId, dataSource } of subscriptions) {
         if (viewportId === vpId) {
@@ -338,23 +344,24 @@ export abstract class VuuModule<T extends string = string>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const vuuModule = this as IVuuModule<any>;
 
-    const dataSource: DataSource = new TickingArrayDataSource({
-      ...config,
-      columnDescriptors,
-      getVisualLinks: this.getVisualLinks,
-      keyColumn:
-        this.schemas[tableName] === undefined
-          ? this.#sessionTableMap[tableName].schema.key
-          : this.schemas[tableName].key,
-      table: table || sessionTable,
-      menu: this.menus?.[tableName],
-      rpcServices: this.getServices(tableName),
-      rpcMenuServices: this.getMenuServices(tableName),
-      sessionTables: this.#sessionTableMap,
-      viewport,
-      visualLinkService: this.visualLinkService,
-      vuuModule,
-    });
+    const dataSource: DataSourceBase<DataSourceRowWithBigint> =
+      new TickingArrayDataSource({
+        ...config,
+        columnDescriptors,
+        getVisualLinks: this.getVisualLinks,
+        keyColumn:
+          this.schemas[tableName] === undefined
+            ? this.#sessionTableMap[tableName].schema.key
+            : this.schemas[tableName].key,
+        table: table || sessionTable,
+        menu: this.menus?.[tableName],
+        rpcServices: this.getServices(tableName),
+        rpcMenuServices: this.getMenuServices(tableName),
+        sessionTables: this.#sessionTableMap,
+        viewport,
+        visualLinkService: this.visualLinkService,
+        vuuModule,
+      });
 
     dataSource.on("subscribed", this.handlePostSubscribeActivities);
     dataSource.on("unsubscribed", this.unregisterViewport);
@@ -425,7 +432,11 @@ export abstract class VuuModule<T extends string = string>
       const sessionTable = this.getSessionTable(viewPortId, false);
       if (sessionTable) {
         if (mode === "soft") {
-          sessionTable.update(key, this.#sessionTableMessageColumn, "SOFT_DELETED");
+          sessionTable.update(
+            key,
+            this.#sessionTableMessageColumn,
+            "SOFT_DELETED",
+          );
         } else {
           sessionTable.delete(key);
         }
@@ -436,7 +447,11 @@ export abstract class VuuModule<T extends string = string>
           const table = this.tables[dataSource.table.table as T];
           if (table) {
             if (mode === "soft") {
-              table.update(key, this.#sessionTableMessageColumn, "SOFT_DELETED");
+              table.update(
+                key,
+                this.#sessionTableMessageColumn,
+                "SOFT_DELETED",
+              );
             } else {
               table.delete(key);
             }
@@ -455,12 +470,18 @@ export abstract class VuuModule<T extends string = string>
       const sessionTable = this.getSessionTable(viewPortId, false);
       if (sessionTable && isProxySessionTable(sessionTable)) {
         const { dataSource } = this.getSubscriptionByViewport(viewPortId);
-        const selectedRowIds = (dataSource as TickingArrayDataSource).getSelectedRowIds();
+        const selectedRowIds = (
+          dataSource as TickingArrayDataSource
+        ).getSelectedRowIds();
         const deletedKeys: string[] = [];
         if (selectedRowIds.length > 0) {
           for (const key of selectedRowIds) {
             if ((mode as DeleteRowMode) === "soft") {
-              sessionTable.update(key, this.#sessionTableMessageColumn, "SOFT_DELETED");
+              sessionTable.update(
+                key,
+                this.#sessionTableMessageColumn,
+                "SOFT_DELETED",
+              );
             } else {
               sessionTable.delete(key);
             }
@@ -474,7 +495,10 @@ export abstract class VuuModule<T extends string = string>
         errorMessage: `deleteSelectedRows: no active session table for viewport ${viewPortId}`,
       };
     }
-    return { type: "ERROR_RESULT", errorMessage: "deleteSelectedRows: invalid rpc request" };
+    return {
+      type: "ERROR_RESULT",
+      errorMessage: "deleteSelectedRows: invalid rpc request",
+    };
   };
 
   private undoRowChange: ServiceHandler = async (rpcRequest) => {
@@ -517,7 +541,10 @@ export abstract class VuuModule<T extends string = string>
         errorMessage: `undoRowChange: no active proxy session table for viewport ${viewPortId}`,
       };
     }
-    return { type: "ERROR_RESULT", errorMessage: "undoRowChange: invalid rpc request" };
+    return {
+      type: "ERROR_RESULT",
+      errorMessage: "undoRowChange: invalid rpc request",
+    };
   };
 
   private getColumnDescriptors(tableName: T) {
@@ -731,7 +758,8 @@ export abstract class VuuModule<T extends string = string>
                 Object.entries(cellUpdates).forEach(([column, value]) => {
                   messages.push(`${column}:${value}`);
                 });
-                newRow[sessionTable.map[this.#sessionTableMessageColumn]] = messages.join(",");
+                newRow[sessionTable.map[this.#sessionTableMessageColumn]] =
+                  messages.join(",");
                 sessionTable.updateRow(newRow);
               } else {
                 const newRow = currentRow.slice();
@@ -750,9 +778,10 @@ export abstract class VuuModule<T extends string = string>
             for (let i = 0; i < sessionTable.data.length; i++) {
               const sessionRow = sessionTable.data[i];
               if (sessionRow[vuuMsgIdx]) continue;
-              const sourceRow: VuuRowDataItemType[] = sourceColumns.map(
-                (col) => sessionRow[sessionTable.map[col.name]],
-              );
+              const sourceRow: Array<bigint | VuuRowDataItemType> =
+                sourceColumns.map(
+                  (col) => sessionRow[sessionTable.map[col.name]],
+                );
               sourceTable.insert(sourceRow);
             }
           }
@@ -854,7 +883,11 @@ export abstract class VuuModule<T extends string = string>
       ...schema,
       table: { ...schema.table, table: sessionTableName },
     });
-    return new Table(sessionSchema, [], buildDataColumnMapFromSchema(sessionSchema));
+    return new Table(
+      sessionSchema,
+      [],
+      buildDataColumnMapFromSchema(sessionSchema),
+    );
   }
 
   protected createSessionTableFromSelectedRows(
@@ -864,7 +897,7 @@ export abstract class VuuModule<T extends string = string>
   ) {
     const selectedRowIds = dataSource.getSelectedRowIds();
     const keyIndex = map[schema.key];
-    const sessionData: VuuRowDataItemType[][] = [];
+    const sessionData: Array<Array<bigint | VuuRowDataItemType>> = [];
     for (let i = 0; i < selectedRowIds.length; i++) {
       for (let j = 0; j < data.length; j++) {
         if (data[j][keyIndex] === selectedRowIds[i]) {

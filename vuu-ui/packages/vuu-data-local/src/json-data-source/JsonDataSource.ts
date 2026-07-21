@@ -12,7 +12,6 @@ import type {
 import type {
   DataSourceFilter,
   DataSourceRow,
-  DataSource,
   DataSourceConstructorProps,
   DataSourceEvents,
   DataSourceStatus,
@@ -20,6 +19,7 @@ import type {
   DataSourceSubscribeProps,
   WithFullConfig,
   MenuRpcResponse,
+  DataSourceBase,
 } from "@vuu-ui/vuu-data-types";
 import {
   EventEmitter,
@@ -52,7 +52,7 @@ const toClientRow = (row: DataSourceRow, keys: KeySet) => {
 
 export class JsonDataSource
   extends EventEmitter<DataSourceEvents>
-  implements DataSource
+  implements DataSourceBase
 {
   public columnDescriptors: ColumnDescriptor[];
   private clientCallback: DataSourceSubscribeCallback | undefined;

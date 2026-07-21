@@ -1,5 +1,6 @@
 import type {
   DataSource,
+  DataSourceBase,
   DataSourceCallbackMessage,
   DataSourceConstructorProps,
   DataSourceStatus,
@@ -82,7 +83,7 @@ const combineColumnsWithAutosubscribeColumns = (
 /*---------------------------------------------------------------------
  A VuuDataSource manages a single subscription via the ServerProxy
   ---------------------------------------------------------------------*/
-export class VuuDataSource extends BaseDataSource implements DataSource {
+export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   private bufferSize: number;
   private server: ServerAPI | null = null;
   rangeRequest: RangeRequest;
@@ -816,7 +817,10 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     //   }
     // });
   }
-  async deleteRow(key: string, mode: DeleteRowMode = "hard"): Promise<true | string> {
+  async deleteRow(
+    key: string,
+    mode: DeleteRowMode = "hard",
+  ): Promise<true | string> {
     const rpcHost = this.#sessionDataSource ?? this;
     const response = await rpcHost.rpcRequest?.({
       type: "RPC_REQUEST",
@@ -829,14 +833,21 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     return response?.errorMessage ?? "deleteRow failed";
   }
 
-  async deleteSelectedRows(mode: DeleteRowMode = "soft"): Promise<RpcResultSuccess | RpcResultError> {
+  async deleteSelectedRows(
+    mode: DeleteRowMode = "soft",
+  ): Promise<RpcResultSuccess | RpcResultError> {
     const rpcHost = this.#sessionDataSource ?? this;
     const response = await rpcHost.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "deleteSelectedRows",
       params: { mode },
     });
-    return response ?? { type: "ERROR_RESULT", errorMessage: "deleteSelectedRows failed" };
+    return (
+      response ?? {
+        type: "ERROR_RESULT",
+        errorMessage: "deleteSelectedRows failed",
+      }
+    );
   }
 
   async addRow(
@@ -853,15 +864,15 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     return response?.errorMessage ?? "addRow failed";
   }
 
-  async undoRowChange(
-    key: string,
-  ): Promise<RpcResultSuccess | RpcResultError> {
+  async undoRowChange(key: string): Promise<RpcResultSuccess | RpcResultError> {
     const rpcHost = this.#sessionDataSource ?? this;
     const response = await rpcHost.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "undoRowChange",
       params: { key },
     });
-    return response ?? { type: "ERROR_RESULT", errorMessage: "undoRowChange failed" };
+    return (
+      response ?? { type: "ERROR_RESULT", errorMessage: "undoRowChange failed" }
+    );
   }
 }
