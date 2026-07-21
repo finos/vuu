@@ -22,7 +22,7 @@
     "clsx": "^2.0.0"
   },
   "peerDependencies": {
-    "echarts": "6.0.0",
+    "echarts": "6.1.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   }
