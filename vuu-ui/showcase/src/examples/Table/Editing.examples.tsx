@@ -28,6 +28,7 @@ import { ModalProvider, useModal } from "@vuu-ui/vuu-ui-controls";
 import {
   DataEditingProvider,
   DataSourceProvider,
+  isCopyOption,
   registerComponent,
   toColumnName,
   useData,
@@ -289,7 +290,11 @@ export const EditableInstruments = () => {
   );
 };
 
-const InlineEditTableTemplate = () => {
+const EditableInstrumentsTemplate = ({
+  editSessionMode,
+}: {
+  editSessionMode?: Parameters<typeof useEditableTable>[0]["editSessionMode"];
+}) => {
   const [editMode, setEditMode] = useState<EditMode>("view");
   const { VuuDataSource } = useData();
 
@@ -307,10 +312,11 @@ const InlineEditTableTemplate = () => {
 
   const exitEditMode = useCallback(() => setEditMode("view"), []);
 
-  const { dataSource, editSession, hasSelection, onAddRows, onDelete, onSave, onUndoRowChange } =
+  const { dataSource, editSession, hasSelection, onAddRows, onDelete, onSave, onUndoRowChange, sessionDataSource } =
     useEditableTable({
       dataSource: sourceTableDataSource,
       deleteMode: "soft",
+      editSessionMode,
       isEditMode: editMode === "edit",
       onCancel: exitEditMode,
       onSave: exitEditMode,
@@ -380,14 +386,20 @@ const InlineEditTableTemplate = () => {
         </ToggleButtonGroup>
       </div>
       <div style={{ flex: "1 1 auto" }}>
-        <DataEditingProvider editSession={editSession}>
-          <Table
-            config={config}
-            dataSource={dataSource}
-            renderBufferSize={10}
-            selectionModel="checkbox"
-          />
-        </DataEditingProvider>
+        {editMode === "edit" && isCopyOption(editSessionMode) && !sessionDataSource ? (
+          <div role="status" aria-label="Loading session table">
+            Loading session…
+          </div>
+        ) : (
+          <DataEditingProvider editSession={editSession}>
+            <Table
+              config={config}
+              dataSource={sessionDataSource ?? dataSource}
+              renderBufferSize={10}
+              selectionModel="checkbox"
+            />
+          </DataEditingProvider>
+        )}
       </div>
       <TableFooter>
         {editMode === "view" ? (
@@ -411,7 +423,16 @@ const InlineEditTableTemplate = () => {
 export const EditableInstrumentsInlineEdit = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
-      <InlineEditTableTemplate />
+      <EditableInstrumentsTemplate />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
+/** tags=data-consumer */
+export const CreateSessionTableInstruments = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <EditableInstrumentsTemplate editSessionMode="All" />
     </NotificationsProvider>
   </LocalDataSourceProvider>
 );

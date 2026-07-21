@@ -576,7 +576,7 @@ export declare type EditCellRpcServiceRequest = {
 };
 
 export declare type BeginEditSessionParams = {
-  editSessionMode?: "all-rows" | "selected-rows";
+  editSessionMode?: "inline-all-rows" | "all-rows" | "selected-rows" | "empty-session-table";
 };
 export declare type BeginEditSessionRpcServiceRequest = {
   context: ViewportRpcContext;
@@ -612,6 +612,19 @@ export declare type DeleteSelectedRowsRpcServiceRequest = {
   type: "RPC_REQUEST";
   params: DeleteSelectedRowsParams;
   rpcName: "deleteSelectedRows";
+};
+/**
+ * copyOption mirrors EditSessionModeAlias from vuu-data-types.
+ * Using string literals here to avoid a cross-package circular import.
+ */
+export declare type CreateSessionTableParams = {
+  copyOption: "All" | "Empty" | "Selected";
+};
+export declare type CreateSessionTableRpcServiceRequest = {
+  context: ViewportRpcContext;
+  type: "RPC_REQUEST";
+  params: CreateSessionTableParams;
+  rpcName: "createSessionTable";
 };
 
 export declare type AddRowRpcRequest = {

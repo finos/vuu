@@ -1,6 +1,7 @@
 import { test } from "@playwright/experimental-ct-react";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
+  CreateSessionTableInstruments,
   EditableInstruments,
   EditableInstrumentsInlineEdit,
   TwoEditableInstruments,
@@ -637,5 +638,98 @@ test.describe("Inline row editing (session)", () => {
     // Returns to view mode — action buttons gone
     await expect(page.getByRole("button", { name: "Submit" })).not.toBeVisible();
     await expect(page.getByRole("radio", { name: "View" })).toBeVisible();
+  });
+});
+
+test.describe("Session table editing (createSessionTable)", () => {
+  test("entering edit mode shows the session table data", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<CreateSessionTableInstruments />);
+    const table = new TableOM(page.getByRole("table"));
+
+    await page.getByRole("radio", { name: "Edit" }).click();
+    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+
+    // Column 2 = bbg (column 1 is the checkbox selector)
+    const cell = table.locateCell(2, 2);
+    await cell.dblclick();
+    await expect(cell.getByRole("textbox")).toBeVisible();
+  });
+
+  test("editing a cell marks the row with an Undo button", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<CreateSessionTableInstruments />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+
+    const table = new TableOM(page.getByRole("table"));
+    // Column 2 = bbg
+    const cell = table.locateCell(2, 2);
+    await cell.dblclick();
+    await cell.pressSequentially("EDITED");
+    await cell.press("Enter");
+
+    const undoButton = table.row(2).getByRole("button", { name: "Undo" });
+    await expect(undoButton).toBeVisible();
+    await expect(page.getByRole("button", { name: "Submit" })).toBeEnabled();
+  });
+
+  test("selecting a row enables the Delete button", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<CreateSessionTableInstruments />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+
+    const table = new TableOM(page.getByRole("table"));
+    const deleteButton = page.getByRole("button", { name: "Delete" });
+    await expect(deleteButton).toBeDisabled();
+
+    // Column 1 = checkbox selector
+    const checkboxCell = table.locateCell(2, 1);
+    await checkboxCell.click();
+    await expect(deleteButton).toBeEnabled();
+  });
+
+  test("deleting a selected row marks it SOFT_DELETED with an Undo button", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<CreateSessionTableInstruments />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+
+    const table = new TableOM(page.getByRole("table"));
+    const checkboxCell = table.locateCell(2, 1);
+    await checkboxCell.click();
+    await page.getByRole("button", { name: "Delete" }).click();
+
+    // Column 11 = vuuMsg
+    const vuuMsgCell = table.locateCell(2, 11);
+    await expect(vuuMsgCell).toContainText("SOFT_DELETED");
+
+    const undoButton = table.row(2).getByRole("button", { name: "Undo" });
+    await expect(undoButton).toBeVisible();
+    await expect(page.getByRole("button", { name: "Submit" })).toBeEnabled();
+  });
+
+  test("Add Rows appends blank rows to the session table", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<CreateSessionTableInstruments />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+
+    const submitButton = page.getByRole("button", { name: "Submit" });
+    await expect(submitButton).toBeDisabled();
+
+    await page.getByRole("button", { name: "Add Rows" }).click();
+    await expect(submitButton).toBeEnabled();
   });
 });

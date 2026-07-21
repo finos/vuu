@@ -594,11 +594,15 @@ export declare type StandaloneEditSessionMode =
  * `"inline-all-rows"` is a client-only concept and is NOT mapped — it passes
  * through to the RPC unchanged so the server can create an all-rows session table.
  */
-export declare type EditSessionModeAlias = "All" | "Empty" | "Selected";
+export declare type CopyOption = "All" | "Empty" | "Selected";
+/**
+ * @deprecated Prefer `CopyOption` ("All" | "Empty" | "Selected") for standalone
+ * edit sessions supported by vuu server. Long-form values (e.g. `"all-rows"`) are used 
+ * by `beginEditSession`; new code should use `CopyOption` with `createSessionTable`.
+ */
 export declare type EditSessionMode =
   | InlineEditSessionMode
-  | StandaloneEditSessionMode
-  | EditSessionModeAlias;
+  | StandaloneEditSessionMode;
 
 export interface EditApi<
   T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
@@ -620,6 +624,9 @@ export interface EditApi<
     value: VuuRowDataItemType,
   ) => Promise<RpcResult> | undefined;
   undoRowChange?: (key: string) => Promise<RpcResult> | undefined;
+  createSessionTable?: (
+    copyOption: CopyOption,
+  ) => Promise<DataSourceBase<T> | undefined>;
   endEditSession?: (
     saveChanges?: boolean,
     force?: boolean,
