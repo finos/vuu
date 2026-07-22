@@ -9,6 +9,7 @@ import type {
   DataSourceVisualLinkCreatedMessage,
   DeleteRowMode,
   EditSessionMode,
+  CopyOption,
   OptimizeStrategy,
   ServerAPI,
   TableSchema,
@@ -44,7 +45,6 @@ import {
   itemsOrOrderChanged,
   logger,
   Range,
-  toRpcEditSessionMode,
   StaleUpdateError,
   throttle,
   uuid,
@@ -680,15 +680,26 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     return Promise.reject<T>();
   }
 
-  createSessionDataSource(sessionTable: VuuTable) {
-    //TODO filters, sort etc
-    const columns = this.#sessionTableMessageColumn
-      ? this.columns.concat(this.#sessionTableMessageColumn)
-      : this.columns;
-    return new VuuDataSource({
-      columns: columns,
-      table: sessionTable,
+  async createSessionDataSource(
+    copyOption: CopyOption,
+  ): Promise<VuuDataSource | undefined> {
+    const rpcResponse = await this?.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "createSessionTable",
+      params: { copyOption },
     });
+    if (isRpcSuccess(rpcResponse)) {
+      const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
+      return new VuuDataSource({
+        ...this.config,
+        table: sessionTable,
+        viewport: sessionTable.table,
+      });
+    } else {
+      throw Error(
+        `[VuuDataSource] createSessionDataSource ${rpcResponse?.errorMessage}`,
+      );
+    }
   }
 
   async beginEditSession(editSessionMode: EditSessionMode = "all-rows") {
@@ -696,7 +707,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       type: "RPC_REQUEST",
       rpcName: "beginEditSession",
       params: {
-        editSessionMode: toRpcEditSessionMode(editSessionMode),
+        editSessionMode,
       },
     });
 

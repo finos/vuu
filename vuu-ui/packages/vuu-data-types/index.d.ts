@@ -594,11 +594,15 @@ export declare type StandaloneEditSessionMode =
  * `"inline-all-rows"` is a client-only concept and is NOT mapped — it passes
  * through to the RPC unchanged so the server can create an all-rows session table.
  */
-export declare type EditSessionModeAlias = "All" | "Empty" | "Selected";
+export declare type CopyOption = "All" | "Empty" | "Selected";
+/**
+ * @deprecated Prefer `CopyOption` ("All" | "Empty" | "Selected") for standalone
+ * edit sessions supported by vuu server. Long-form values (e.g. `"all-rows"`) are used 
+ * by `beginEditSession`; new code should use `CopyOption` with `createSessionDataSource`.
+ */
 export declare type EditSessionMode =
   | InlineEditSessionMode
-  | StandaloneEditSessionMode
-  | EditSessionModeAlias;
+  | StandaloneEditSessionMode;
 
 export interface EditApi<
   T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
@@ -620,6 +624,13 @@ export interface EditApi<
     value: VuuRowDataItemType,
   ) => Promise<RpcResult> | undefined;
   undoRowChange?: (key: string) => Promise<RpcResult> | undefined;
+  /**
+   * Create a session datasource by requesting the server to create a session table
+   * via the `createSessionTable` RPC and wrapping the returned table.
+   */
+  createSessionDataSource?: (
+    copyOption: CopyOption,
+  ) => Promise<DataSource<T> | undefined>;
   endEditSession?: (
     saveChanges?: boolean,
     force?: boolean,
@@ -690,13 +701,6 @@ export interface DataSourceBase<
   resume?: (callback?: DataSourceSubscribeCallback) => void;
 
   deleteRow?: DataSourceDeleteHandler;
-  /**
-   * create a DataSource on a session table. The concrete DataSource implementation that
-   * implements this method will always return a session table datasource of the same concrete type.
-   * @param table the sessionTable  (module and table name)
-   * @returns
-   */
-  createSessionDataSource?: (table: VuuTable) => DataSource<T>;
   /**
    * For a dataSource that has been previously disabled and is currently in disabled state , this will restore
    * the subscription to active status. Fresh data will be dispatched to client. The enable call optionally

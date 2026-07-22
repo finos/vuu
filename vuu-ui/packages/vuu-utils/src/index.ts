@@ -20,6 +20,7 @@ export { getVuuEditMessage } from "./data-editing/edit-utils";
 export { EditButtons, type EditButtonProps } from "./data-editing/EditButtons";
 export {
   EditSession,
+  isCopyOption,
   StaleUpdateError,
   type EditState,
 } from "./data-editing/EditSession";
@@ -100,7 +101,7 @@ export {
   useDataSource,
 } from "./context-definitions/DataSourceProvider";
 export * from "./context-definitions/WorkspaceContext";
-export { fromRpcEditSessionMode, isInlineEditingSession, toRpcEditSessionMode } from "./data-editing/edit-utils";
+export { isInlineEditingSession } from "./data-editing/edit-utils";
 export { PageVisibilityObserver } from "./PageVisibilityObserver";
 export * from "./ShellContext";
 export { ThemeLoadChecker } from "./theme-utils";

@@ -37,6 +37,7 @@ import {
   BeginEditSessionRpcServiceRequest,
   UndoRowChangeRpcServiceRequest,
   DeleteSelectedRowsRpcServiceRequest,
+  CreateSessionTableRpcServiceRequest,
   ServerToClientError,
 } from "@vuu-ui/vuu-protocol-types";
 import { isView as componentInRegistry } from "./component-registry";
@@ -266,3 +267,7 @@ export const isDeleteSelectedRowsRpcRequest = (
   rpcRequest: VuuRpcServiceRequest,
 ): rpcRequest is DeleteSelectedRowsRpcServiceRequest =>
   rpcRequest.rpcName === "deleteSelectedRows";
+export const isCreateSessionTableRpcRequest = (
+  rpcRequest: VuuRpcServiceRequest,
+): rpcRequest is CreateSessionTableRpcServiceRequest =>
+  rpcRequest.rpcName === "createSessionTable";

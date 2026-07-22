@@ -46,7 +46,7 @@ const makeDataSource = (overrides: Partial<DataSource> = {}): DataSource =>
     table: vuuTable,
     tableSchema: schema,
     columns: ["id", "label", "count"],
-    beginEditSession: vi.fn().mockResolvedValue({ table: sessionTable }),
+    createSessionDataSource: vi.fn().mockResolvedValue({ table: sessionTable }),
     endEditSession: vi.fn().mockResolvedValue({ type: "SUCCESS_RESULT" }),
     rpcRequest: vi.fn().mockResolvedValue({ type: "SUCCESS_RESULT" }),
     ...overrides,
@@ -151,7 +151,7 @@ describe("useCsvUpload", () => {
 
     expect(latestResult?.canImport).toBe(true);
     expect(latestResult?.validation?.errors).toHaveLength(0);
-    expect(dataSource.beginEditSession).toHaveBeenCalledWith("empty-session-table");
+    expect(dataSource.createSessionDataSource).toHaveBeenCalledWith("Empty");
   });
 
   it("sets canImport=false and emits an error for a file-level parse error", async () => {
@@ -197,7 +197,7 @@ describe("useCsvUpload", () => {
     await dropFile(latestResult, '"label","count"\n"foo","10"');
 
     expect(latestResult?.canImport).toBe(false);
-    expect(dataSource.beginEditSession).not.toHaveBeenCalled();
+    expect(dataSource.createSessionDataSource).not.toHaveBeenCalled();
     const schemaErrorCall = onError.mock.calls
       .map((c) => c[0])
       .filter(Boolean)
@@ -205,18 +205,18 @@ describe("useCsvUpload", () => {
     expect(schemaErrorCall?.errors.schemaError).toBeDefined();
   });
 
-  it("fires onEditSessionStarted with the session datasource when a valid CSV is processed", async () => {
+  it("fires onImportSessionStarted with the session datasource when a valid CSV is processed", async () => {
     let latestResult: UseCsvUploadReturn | undefined;
-    const onEditSessionStarted = vi.fn();
-    const mockSessionDs = {} as DataSource;
+    const onImportSessionStarted = vi.fn();
+    const mockSessionDs = { table: sessionTable } as unknown as DataSource;
     const dataSource = makeDataSource({
-      createSessionDataSource: vi.fn().mockReturnValue(mockSessionDs),
+      createSessionDataSource: vi.fn().mockResolvedValue(mockSessionDs),
     });
 
     await act(async () => {
       root.render(
         <Probe
-          props={{ dataSource, onEditSessionStarted }}
+          props={{ dataSource, onImportSessionStarted }}
           onResult={(r) => {
             latestResult = r;
           }}
@@ -227,19 +227,19 @@ describe("useCsvUpload", () => {
 
     await dropFile(latestResult, '"id","label","count"\n"a1","foo","10"');
 
-    expect(onEditSessionStarted).toHaveBeenCalledWith(mockSessionDs);
+    expect(onImportSessionStarted).toHaveBeenCalledWith(mockSessionDs);
   });
 
   it("calls endEditSession(true) and fires onImported when importData succeeds", async () => {
     let latestResult: UseCsvUploadReturn | undefined;
     const onImported = vi.fn();
-    const onEditSessionEnded = vi.fn();
+    const onImportSessionEnded = vi.fn();
     const dataSource = makeDataSource();
 
     await act(async () => {
       root.render(
         <Probe
-          props={{ dataSource, onImported, onEditSessionEnded }}
+          props={{ dataSource, onImported, onImportSessionEnded }}
           onResult={(r) => {
             latestResult = r;
           }}
@@ -260,7 +260,7 @@ describe("useCsvUpload", () => {
     expect(dataSource.endEditSession).toHaveBeenCalledWith(true);
     expect(onImported).toHaveBeenCalled();
     const endedResult: CsvUploadSessionEndResult =
-      onEditSessionEnded.mock.calls[0][0];
+      onImportSessionEnded.mock.calls[0][0];
     expect(endedResult.reason).toBe("saved");
   });
 
@@ -332,10 +332,10 @@ describe("useCsvUpload", () => {
     expect(dataSource.endEditSession).toHaveBeenCalledWith(false);
   });
 
-  it("emits an error when dataSource.beginEditSession is not defined", async () => {
+  it("emits an error when dataSource.createSessionDataSource is not defined", async () => {
     let latestResult: UseCsvUploadReturn | undefined;
     const onError = vi.fn();
-    const dataSource = makeDataSource({ beginEditSession: undefined });
+    const dataSource = makeDataSource({ createSessionDataSource: undefined });
 
     await act(async () => {
       root.render(
@@ -405,7 +405,7 @@ describe("useCsvUpload", () => {
 
     await dropFile(latestResult, '"id","label","count"\n"a1","foo","NOT_A_NUMBER"');
 
-    expect(dataSource.beginEditSession).toHaveBeenCalledWith("empty-session-table");
+    expect(dataSource.createSessionDataSource).toHaveBeenCalledWith("Empty");
     expect(latestResult?.canImport).toBe(false);
     expect(latestResult?.validation?.errors.length).toBeGreaterThan(0);
 
@@ -453,15 +453,15 @@ describe("useCsvUpload", () => {
     expect(errorPayload?.vuuMsg as string).toMatch(/^Row \d+:.*count/);
   });
 
-  it("fires onEditSessionEnded with reason 'discarded' when a second file replaces the first", async () => {
+  it("fires onImportSessionEnded with reason 'discarded' when a second file replaces the first", async () => {
     let latestResult: UseCsvUploadReturn | undefined;
-    const onEditSessionEnded = vi.fn();
+    const onImportSessionEnded = vi.fn();
     const dataSource = makeDataSource();
 
     await act(async () => {
       root.render(
         <Probe
-          props={{ dataSource, onEditSessionEnded }}
+          props={{ dataSource, onImportSessionEnded }}
           onResult={(r) => {
             latestResult = r;
           }}
@@ -474,7 +474,7 @@ describe("useCsvUpload", () => {
 
     await dropFile(latestResult, '"id","label","count"\n"a2","bar","20"');
 
-    const discardedCall = onEditSessionEnded.mock.calls
+    const discardedCall = onImportSessionEnded.mock.calls
       .map((c: unknown[]) => c[0] as CsvUploadSessionEndResult)
       .find((r) => r.reason === "discarded");
     expect(discardedCall).toBeDefined();
@@ -522,7 +522,7 @@ describe("useCsvUpload", () => {
     await dropFile(latestResult, '"id","label","count"\n"a1","foo","10"\n"a2","bar","20"');
 
     expect(latestResult?.canImport).toBe(false);
-    expect(dataSource.beginEditSession).not.toHaveBeenCalled();
+    expect(dataSource.createSessionDataSource).not.toHaveBeenCalled();
     expect(onError.mock.calls.at(-1)?.[0]?.errors.schemaError).toBeDefined();
   });
 
@@ -630,7 +630,7 @@ describe("useCsvUpload", () => {
     await dropFile(latestResult, 'id,label,count\n"a1","foo","10"');
 
     expect(latestResult?.canImport).toBe(false);
-    expect(dataSource.beginEditSession).not.toHaveBeenCalled();
+    expect(dataSource.createSessionDataSource).not.toHaveBeenCalled();
     expect(onError.mock.calls.at(-1)?.[0]?.errors.validationError).toBeDefined();
   });
 });

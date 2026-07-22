@@ -11,6 +11,7 @@ import type {
   DataSourceVisualLinkCreatedMessage,
   DeleteRowMode,
   EditSessionMode,
+  CopyOption,
 } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
@@ -31,7 +32,6 @@ import {
   isRpcSuccess,
   isTypeaheadRequest,
   Range,
-  toRpcEditSessionMode,
   uuid,
 } from "@vuu-ui/vuu-utils";
 import {
@@ -233,15 +233,24 @@ export class TickingArrayDataSource extends ArrayDataSource {
     }
   };
 
-  createSessionDataSource(sessionTable: VuuTable) {
-    if (this.#vuuModule) {
+  async createSessionDataSource(
+    copyOption: CopyOption,
+  ): Promise<DataSourceBase<DataSourceRowWithBigint> | undefined> {
+    const rpcResponse = await this?.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "createSessionTable",
+      params: { copyOption },
+    });
+    if (isRpcSuccess(rpcResponse)) {
+      const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
       return this.#vuuModule?.createDataSource(
         sessionTable.table,
         sessionTable.table,
+        this.config,
       );
     } else {
       throw Error(
-        `[TickingArrayDataSource] unable to createSessionDataSource, not constructed with VuuModule`,
+        `[TickingArrayDataSource] createSessionDataSource ${rpcResponse?.errorMessage}`,
       );
     }
   }
@@ -251,7 +260,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
       type: "RPC_REQUEST",
       rpcName: "beginEditSession",
       params: {
-        editSessionMode: toRpcEditSessionMode(editSessionMode),
+        editSessionMode,
       },
     });
 

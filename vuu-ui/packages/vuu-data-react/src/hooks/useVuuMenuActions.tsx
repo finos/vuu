@@ -371,7 +371,8 @@ export const useVuuMenuActions = ({
         );
       }
 
-      const sessionDs = await ds.createSessionDataSource?.(action.table);
+      //will the tableSchema be different to ds?
+      const sessionDs = await ds.createSessionDataSource?.('All');
       const handleSubmit = () => {
         sessionDs?.rpcRequest?.({
           params: {

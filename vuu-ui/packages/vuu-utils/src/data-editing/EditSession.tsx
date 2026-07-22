@@ -1,7 +1,10 @@
-import { DeleteRowMode, DeleteSelectedRowsResult, EditApi, EditSessionMode, UndoRowChangeResult } from "@vuu-ui/vuu-data-types";
+import { CopyOption, DataSource, DeleteRowMode, DeleteSelectedRowsResult, EditApi, EditSessionMode, UndoRowChangeResult } from "@vuu-ui/vuu-data-types";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter } from "../event-emitter";
 import { isRpcError } from "../protocol-message-utils";
+
+export const isCopyOption = (mode?: EditSessionMode | CopyOption): mode is CopyOption =>
+  mode === "All" || mode === "Empty" || mode === "Selected";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
 
@@ -207,14 +210,17 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     this.#endEditModePending = false;
   }
 
-  async begin(editSessionMode?: EditSessionMode) {
+  /** @deprecated Pass a `CopyOption` ("All" | "Empty" | "Selected") to use `createSessionDataSource` instead. Long-form `EditSessionMode` values will be removed in a future release. */
+  async begin(mode: EditSessionMode): Promise<DataSource | undefined>;
+  async begin(mode?: CopyOption): Promise<DataSource | undefined>;
+  async begin(mode?: EditSessionMode | CopyOption): Promise<DataSource | undefined> {
     try {
       this.#inEditMode = true;
-      const sessionDataSource =
-        await this.#sourceTableDataSource?.beginEditSession?.(editSessionMode);
+      const sessionDataSource = isCopyOption(mode)
+        ? await this.#sourceTableDataSource?.createSessionDataSource?.(mode)
+        : await this.#sourceTableDataSource?.beginEditSession?.(mode);
 
       this.#sessionDataSource = sessionDataSource;
-
       return sessionDataSource;
     } catch (e) {
       this.#inEditMode = false;

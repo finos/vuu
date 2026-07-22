@@ -6,7 +6,7 @@ import {
   DataSourceVisualLinkCreatedMessage,
   DeleteRowMode,
   EditSessionMode,
-  EditSessionModeAlias,
+  CopyOption,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import {
@@ -27,10 +27,10 @@ import {
 import {
   isAddRowRpcRequest,
   isBeginEditSessionRpcRequest,
+  isCreateSessionTableRpcRequest,
   isDeleteSelectedRowsRpcRequest,
   isEditCellRpcRequest,
   isEndEditSessionRpcRequest,
-  fromRpcEditSessionMode,
   isRpcSuccess,
   isUndoRowChangeRpcRequest,
   uuid,
@@ -642,13 +642,15 @@ export abstract class VuuModule<T extends string = string>
     }
   };
 
-  private beginEditSession: ServiceHandler = async (rpcRequest) => {
-    if (isBeginEditSessionRpcRequest(rpcRequest)) {
+  /**
+   * Creates a standalone session table.
+   * The `copyOption` determines which rows are copied into the session table.
+   * Returns the session table reference so the caller can subscribe to it.
+   */
+  private createSessionTableService: ServiceHandler = async (rpcRequest) => {
+    if (isCreateSessionTableRpcRequest(rpcRequest)) {
       const { viewPortId } = rpcRequest.context;
-      const { editSessionMode = "inline-all-rows" } = rpcRequest.params;
-      const longFormMode = fromRpcEditSessionMode(
-        editSessionMode as EditSessionModeAlias,
-      );
+      const { copyOption } = rpcRequest.params;
       const subscription = this.getSubscriptionByViewport(viewPortId);
       const { dataSource } = subscription;
       const { table: vuuTable } = dataSource;
@@ -660,7 +662,50 @@ export abstract class VuuModule<T extends string = string>
             const sessionTable = this.createSessionTable(
               sourceTable,
               sessionTableName,
-              longFormMode,
+              copyOption,
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              dataSource as TickingArrayDataSource,
+            );
+            this.#sessionTableMap[sessionTableName] = sessionTable;
+            subscription.sessionTableName = sessionTableName;
+            return {
+              data: {
+                table: { module: vuuTable.module, table: sessionTableName },
+              },
+              type: "SUCCESS_RESULT",
+            };
+          } catch (e) {
+            return {
+              type: "ERROR_RESULT",
+              errorMessage: (e as Error).message,
+            };
+          }
+        }
+      }
+    }
+    return {
+      type: "ERROR_RESULT",
+      errorMessage: "createSessionTable: invalid rpc request",
+    };
+  };
+
+  private beginEditSession: ServiceHandler = async (rpcRequest) => {
+    if (isBeginEditSessionRpcRequest(rpcRequest)) {
+      const { viewPortId } = rpcRequest.context;
+      const { editSessionMode = "inline-all-rows" } = rpcRequest.params;
+      const subscription = this.getSubscriptionByViewport(viewPortId);
+      const { dataSource } = subscription;
+      const { table: vuuTable } = dataSource;
+      if (vuuTable) {
+        const sourceTable = this.tables[vuuTable.table as T];
+        if (sourceTable) {
+          const sessionTableName = `session-${uuid()}`;
+          try {
+            const sessionTable = this.createSessionTable(
+              sourceTable,
+              sessionTableName,
+              editSessionMode as EditSessionMode,
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
               dataSource as TickingArrayDataSource,
@@ -846,18 +891,24 @@ export abstract class VuuModule<T extends string = string>
   protected createSessionTable(
     sourceTable: Table,
     sessionTableName: string,
-    editSessionMode: EditSessionMode = "inline-all-rows",
+    editSessionMode: EditSessionMode | CopyOption = "inline-all-rows",
     dataSource: TickingArrayDataSource,
   ) {
-    if (editSessionMode.endsWith("all-rows")) {
+    if (editSessionMode === "All" || editSessionMode.endsWith("all-rows")) {
       return this.createSessionTableWithAllRows(sourceTable, sessionTableName);
-    } else if (editSessionMode === "selected-rows") {
+    } else if (
+      editSessionMode === "Selected" ||
+      editSessionMode === "selected-rows"
+    ) {
       return this.createSessionTableFromSelectedRows(
         sourceTable,
         sessionTableName,
         dataSource,
       );
-    } else if (editSessionMode === "empty-session-table") {
+    } else if (
+      editSessionMode === "Empty" ||
+      editSessionMode === "empty-session-table"
+    ) {
       return this.createEmptySessionTable(sourceTable, sessionTableName);
     } else {
       throw Error(
@@ -929,6 +980,10 @@ export abstract class VuuModule<T extends string = string>
     {
       rpcName: "VP_BULK_EDIT_COLUMN_CELLS_RPC",
       service: this.applyBulkEdits,
+    },
+    {
+      rpcName: "createSessionTable",
+      service: this.createSessionTableService,
     },
     {
       rpcName: "beginEditSession",

@@ -30,8 +30,8 @@ import type {
 export interface CsvUploadHookProps {
   dataSource: DataSource;
   maxRows?: number;
-  onEditSessionEnded?: (result: CsvUploadSessionEndResult) => void;
-  onEditSessionStarted?: (dataSource: DataSource) => void;
+  onImportSessionEnded?: (result: CsvUploadSessionEndResult) => void;
+  onImportSessionStarted?: (dataSource: DataSource) => void;
   onError?: (result: CsvUploadErrorResult | undefined) => void;
   onImported?: (result: CsvUploadImportedResult) => void;
   onProcessingStarted?: () => void;
@@ -55,8 +55,8 @@ export type UseCsvUploadReturn = {
 
 export const useCsvUpload = ({
   dataSource,
-  onEditSessionEnded,
-  onEditSessionStarted,
+  onImportSessionEnded,
+  onImportSessionStarted,
   onError,
   onImported,
   onProcessingStarted,
@@ -76,15 +76,9 @@ export const useCsvUpload = ({
   const setActiveSessionTable = useCallback(
     (table?: CsvUploadSessionTable) => {
       sessionTableRef.current = table;
-      if (table) {
-        const sessionDs = dataSource.createSessionDataSource?.(table);
-        if (sessionDs) {
-          onEditSessionStarted?.(sessionDs);
-        }
-      }
       setSessionTable(table);
     },
-    [dataSource, onEditSessionStarted],
+    [],
   );
 
   const endEditSessionAndNotify = useCallback(
@@ -96,13 +90,13 @@ export const useCsvUpload = ({
       const result = await dataSource.endEditSession(save);
 
       setActiveSessionTable(undefined);
-      onEditSessionEnded?.({
+      onImportSessionEnded?.({
         reason,
         sessionTable: currentSessionTable,
       });
       return result;
     },
-    [dataSource, onEditSessionEnded, setActiveSessionTable],
+    [dataSource, onImportSessionEnded, setActiveSessionTable],
   );
 
   const table = dataSource.table;
@@ -179,17 +173,20 @@ export const useCsvUpload = ({
   );
 
   const beginEditSession = useCallback(async () => {
-    if (!dataSource.beginEditSession) {
-      throw Error("CsvUpload requires datasource beginEditSession support.");
+    if (!dataSource.createSessionDataSource) {
+      throw Error("CsvUpload requires datasource createSessionDataSource support.");
     }
 
-    const sessionDataSource = await dataSource.beginEditSession("empty-session-table");
+    const sessionDataSource = await dataSource.createSessionDataSource("Empty");
 
     const sessionVuuTable = sessionDataSource?.table;
     if (sessionVuuTable && isSessionTable(sessionVuuTable)) {
       setActiveSessionTable(sessionVuuTable as CsvUploadSessionTable);
+      if (sessionDataSource) {
+        onImportSessionStarted?.(sessionDataSource);
+      }
     }
-  }, [dataSource, setActiveSessionTable]);
+  }, [dataSource, onImportSessionStarted, setActiveSessionTable]);
 
   const closePendingEditSession = useCallback(
     async (save: boolean) => {
