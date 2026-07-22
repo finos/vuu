@@ -141,11 +141,11 @@ const CsvUploadRpcExampleContent = () => {
     setImported(true);
   }, []);
 
-  const handleEditSessionStarted = useCallback((sessionDs: DataSource) => {
+  const handleImportSessionStarted = useCallback((sessionDs: DataSource) => {
     setSessionTable(sessionDs.table as CsvUploadSessionTable);
   }, []);
 
-  const handleEditSessionEnded = useCallback(() => {
+  const handleImportSessionEnded = useCallback(() => {
     setSessionTable(undefined);
   }, []);
 
@@ -165,10 +165,10 @@ const CsvUploadRpcExampleContent = () => {
         maxRows={25000}
         onCancel={handleCancel}
         onClose={handleCancel}
-        onEditSessionEnded={handleEditSessionEnded}
+        onImportSessionEnded={handleImportSessionEnded}
         onError={handleError}
         onImported={handleImported}
-        onEditSessionStarted={handleEditSessionStarted}
+        onImportSessionStarted={handleImportSessionStarted}
         open={dialogOpen}
       >
         {errorMessage ? (
@@ -233,7 +233,7 @@ const CsvUploadRpcLifecycleExampleContent = () => {
     addTransition(phaseLabelById["processing"]);
   }, [addTransition]);
 
-  const handleEditSessionStarted = useCallback(
+  const handleImportSessionStarted = useCallback(
     (dataSource: DataSource) => {
       setSessionTable(dataSource.table as CsvUploadSessionTable);
       setPhase("preview-ready");
@@ -242,7 +242,7 @@ const CsvUploadRpcLifecycleExampleContent = () => {
     [addTransition],
   );
 
-  const handleEditSessionEnded = useCallback(
+  const handleImportSessionEnded = useCallback(
     (result: CsvUploadSessionEndResult) => {
       setSessionTable(undefined);
       const nextPhase = result.reason === "saved" ? "imported" : "idle";
@@ -337,8 +337,8 @@ const CsvUploadRpcLifecycleExampleContent = () => {
         onCancel={handleCancel}
         onClose={handleClose}
         onProcessingStarted={handleProcessingStarted}
-        onEditSessionStarted={handleEditSessionStarted}
-        onEditSessionEnded={handleEditSessionEnded}
+        onImportSessionStarted={handleImportSessionStarted}
+        onImportSessionEnded={handleImportSessionEnded}
         onError={handleError}
         open={dialogOpen}
       />

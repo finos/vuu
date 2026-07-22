@@ -16,8 +16,8 @@ import { CsvUpload } from "@vuu-ui/vuu-table-extras";
   onCancel={handleCancel}
   onClose={handleClose}
   onProcessingStarted={handleProcessingStarted}
-  onEditSessionStarted={handleEditSessionStarted}
-  onEditSessionEnded={handleEditSessionEnded}
+  onImportSessionStarted={handleImportSessionStarted}
+  onImportSessionEnded={handleImportSessionEnded}
   onImported={handleImported}
   onError={handleError}
 />
@@ -29,14 +29,14 @@ import { CsvUpload } from "@vuu-ui/vuu-table-extras";
 
 | Prop | Type | Description |
 |---|---|---|
-| `dataSource` | `DataSource` | **Required.** The Vuu data source for the target table. Must support `beginEditSession`, `endEditSession`, `createSessionDataSource`, and `rpcRequest`. |
+| `dataSource` | `DataSource` | **Required.** The Vuu data source for the target table. Must support `createSessionDataSource`, `endEditSession`, and `rpcRequest`. |
 | `maxRows` | `number` | Maximum number of data rows permitted in the CSV. Defaults to `25000`. |
 | `open` | `boolean` | Controls dialog open state. When provided the component is fully controlled; when omitted it manages open state internally. |
 | `dialogTitle` | `string` | Dialog header text. Defaults to `"Import CSV"`. |
 | `parseOptions` | `CsvParseOptions` | Options passed to the CSV parser (see [Parse Options](#parse-options)). |
 | `onProcessingStarted` | `() => void` | Fired when a file starts being parsed and validated. |
-| `onEditSessionStarted` | `(dataSource: DataSource) => void` | Fired when the server-side edit session is open and a session `DataSource` is available for preview. |
-| `onEditSessionEnded` | `(result: CsvUploadSessionEndResult) => void` | Fired when the edit session closes, whether by import, cancel, or failure. |
+| `onImportSessionStarted` | `(dataSource: DataSource) => void` | Fired when the server-side session is open and a session `DataSource` is available for preview. |
+| `onImportSessionEnded` | `(result: CsvUploadSessionEndResult) => void` | Fired when the import session closes, whether by import, cancel, or failure. |
 | `onImported` | `(result: CsvUploadImportedResult) => void` | Fired after a successful import. |
 | `onError` | `(result: CsvUploadErrorResult \| undefined) => void` | Fired when any error occurs. Called with `undefined` to clear a previous error. |
 | `onCancel` | `() => void` | Fired when the Cancel button is clicked. |
@@ -71,7 +71,7 @@ processing          ← onProcessingStarted()
  ├─ parse / schema / validation errors ──► failed   ← onError({ errors })
  │
  ▼
-preview-ready       ← onEditSessionStarted(sessionDataSource)
+preview-ready       ← onImportSessionStarted(sessionDataSource)
  │
  │  user clicks Import
  ▼
@@ -81,12 +81,12 @@ importing           ← onClose()
  │
  ▼
 imported            ← onImported(result)
-                    ← onEditSessionEnded({ reason: "saved" })
+                    ← onImportSessionEnded({ reason: "saved" })
 ```
 
 If the user cancels at any point:
 - `onCancel()` is called.
-- `onEditSessionEnded({ reason: "discarded" })` fires if a session was open.
+- `onImportSessionEnded({ reason: "discarded" })` fires if a session was open.
 - Phase returns to `idle`.
 
 ### Callbacks reference
@@ -94,8 +94,8 @@ If the user cancels at any point:
 | Callback | Phase transition | Notes |
 |---|---|---|
 | `onProcessingStarted` | `→ processing` | Fires before parsing begins. No data available yet. |
-| `onEditSessionStarted` | `→ preview-ready` | Provides a session `DataSource`. Extract `dataSource.table` (`CsvUploadSessionTable`) and pass it to `useCsvUploadSessionPreview` to build a preview UI without mutating the shared session datasource. |
-| `onEditSessionEnded` | `→ imported` or `→ idle` | `reason` is `"saved"` on successful import, `"discarded"` on cancel, `"failed"` on error. `sessionTable` contains the Vuu session table reference. |
+| `onImportSessionStarted` | `→ preview-ready` | Provides a session `DataSource`. Extract `dataSource.table` (`CsvUploadSessionTable`) and pass it to `useCsvUploadSessionPreview` to build a preview UI without mutating the shared session datasource. |
+| `onImportSessionEnded` | `→ imported` or `→ idle` | `reason` is `"saved"` on successful import, `"discarded"` on cancel, `"failed"` on error. `sessionTable` contains the Vuu session table reference. |
 | `onImported` | `→ imported` | Provides `rpcResult` and normalised `tableData`. |
 | `onError` | `→ failed` | See [Error Types](#error-types) below. |
 | `onClose` | `→ importing` | Dialog is closing because import was triggered. |
@@ -163,7 +163,7 @@ type CsvErrorMap<TError extends string> = {
 
 ### Session preview
 
-When `onEditSessionStarted` fires, the edit session table is populated with one row per uploaded CSV row. Each row has the source table's columns plus a `vuuMsg` column. For rows with validation errors, `vuuMsg` contains a human-readable summary including the CSV row number:
+When `onImportSessionStarted` fires, the edit session table is populated with one row per uploaded CSV row. Each row has the source table's columns plus a `vuuMsg` column. For rows with validation errors, `vuuMsg` contains a human-readable summary including the CSV row number:
 
 ```
 "Row 3: price: Value 'abc' is not a valid double; ric: Empty value is not allowed for non-string columns."
@@ -202,8 +202,8 @@ const MyApp = () => {
   return (
     <CsvUpload
       dataSource={dataSource}
-      onEditSessionStarted={(sessionDs) => setSessionTable(sessionDs.table as CsvUploadSessionTable)}
-      onEditSessionEnded={() => setSessionTable(undefined)}
+      onImportSessionStarted={(sessionDs) => setSessionTable(sessionDs.table as CsvUploadSessionTable)}
+      onImportSessionEnded={() => setSessionTable(undefined)}
     >
       <ErrorsTable sessionTable={sessionTable} />
     </CsvUpload>
@@ -217,7 +217,7 @@ The `useCsvUploadSessionPreview` hook:
 - Creates a dedicated `VuuDataSource` for the session table
 - Cleans up when `sessionTable` becomes `undefined`
 
-To show only rows with errors, apply the filter `'vuuMsg > ""'` on the `previewDataSource` (not on the datasource from `onEditSessionStarted`).
+To show only rows with errors, apply the filter `'vuuMsg > ""'` on the `previewDataSource` (not on the datasource from `onImportSessionStarted`).
 
 ## Parse Options
 

@@ -61,8 +61,8 @@ export type CsvUploadPhase =
 export interface CsvUploadProps {
   children?: ReactNode;
   dataSource: DataSource;
-  onEditSessionStarted?: (dataSource: DataSource) => void;
-  onEditSessionEnded?: (result: CsvUploadSessionEndResult) => void;
+  onImportSessionStarted?: (dataSource: DataSource) => void;
+  onImportSessionEnded?: (result: CsvUploadSessionEndResult) => void;
   onError?: (result: CsvUploadErrorResult | undefined) => void;
   onImported?: (result: CsvUploadImportedResult) => void;
   onProcessingStarted?: () => void;
