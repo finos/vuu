@@ -377,7 +377,7 @@ describe("endEditSession", () => {
   });
 });
 
-describe("createSessionTable", () => {
+describe("createSessionDataSource", () => {
   const sessionSuccess: RpcResultSuccess = {
     type: "SUCCESS_RESULT",
     data: { table: { module: "TEST", table: "session-xyz" } },
@@ -386,7 +386,7 @@ describe("createSessionTable", () => {
   it("dispatches createSessionTable RPC with copyOption 'All'", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
-    await ds.createSessionTable?.("All");
+    await ds.createSessionDataSource?.("All");
     expect(ds.rpcRequest).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "RPC_REQUEST",
@@ -399,7 +399,7 @@ describe("createSessionTable", () => {
   it("dispatches createSessionTable RPC with copyOption 'Selected'", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
-    await ds.createSessionTable?.("Selected");
+    await ds.createSessionDataSource?.("Selected");
     expect(ds.rpcRequest).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "RPC_REQUEST",
@@ -412,7 +412,7 @@ describe("createSessionTable", () => {
   it("dispatches createSessionTable RPC with copyOption 'Empty'", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
-    await ds.createSessionTable?.("Empty");
+    await ds.createSessionDataSource?.("Empty");
     expect(ds.rpcRequest).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "RPC_REQUEST",
@@ -425,7 +425,7 @@ describe("createSessionTable", () => {
   it("throws with the server error message on failure", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(ERROR("session table creation failed"));
-    await expect(ds.createSessionTable?.("All")).rejects.toThrow(
+    await expect(ds.createSessionDataSource?.("All")).rejects.toThrow(
       "session table creation failed",
     );
   });

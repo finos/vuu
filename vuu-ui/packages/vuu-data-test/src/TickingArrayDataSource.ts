@@ -233,20 +233,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     }
   };
 
-  createSessionDataSource(sessionTable: VuuTable) {
-    if (this.#vuuModule) {
-      return this.#vuuModule?.createDataSource(
-        sessionTable.table,
-        sessionTable.table,
-      );
-    } else {
-      throw Error(
-        `[TickingArrayDataSource] unable to createSessionDataSource, not constructed with VuuModule`,
-      );
-    }
-  }
-
-  async createSessionTable(
+  async createSessionDataSource(
     copyOption: CopyOption,
   ): Promise<DataSourceBase<DataSourceRowWithBigint> | undefined> {
     const rpcResponse = await this?.rpcRequest?.({
@@ -263,7 +250,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
       );
     } else {
       throw Error(
-        `[TickingArrayDataSource] createSessionTable ${rpcResponse?.errorMessage}`,
+        `[TickingArrayDataSource] createSessionDataSource ${rpcResponse?.errorMessage}`,
       );
     }
   }

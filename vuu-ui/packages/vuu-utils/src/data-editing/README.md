@@ -25,7 +25,7 @@ Two independent RPCs can initiate a session:
 | Method | RPC | Parameter | Purpose |
 |---|---|---|---|
 | `beginEditSession` | `"beginEditSession"` | `EditSessionMode` (long-form, see below) | Inline or standalone edit session tied to the source viewport |
-| `createSessionTable` | `"createSessionTable"` | `CopyOption` (`"All"` \| `"Empty"` \| `"Selected"`) | Standalone session table returned directly to the caller; no internal session state on the source datasource |
+| `createSessionDataSource` | `"createSessionTable"` | `CopyOption` (`"All"` \| `"Empty"` \| `"Selected"`) | Requests server to create a session table, then returns a session datasource; no internal session state on the source datasource |
 
 ### EditSessionMode (long-form, deprecated for new code)
 
@@ -39,7 +39,7 @@ type StandaloneEditSessionMode = "all-rows"                 // copy all rows
 type EditSessionMode = InlineEditSessionMode | StandaloneEditSessionMode;
 ```
 
-`EditSessionMode` long-form strings are sent directly to the `beginEditSession` RPC without conversion. Callers should now prefer `CopyOption` when requesting standalone sessions via `createSessionTable`.
+`EditSessionMode` long-form strings are sent directly to the `beginEditSession` RPC without conversion. Callers should now prefer `CopyOption` when requesting standalone sessions via `createSessionDataSource`.
 
 ### CopyOption (preferred for standalone sessions)
 
@@ -47,7 +47,7 @@ type EditSessionMode = InlineEditSessionMode | StandaloneEditSessionMode;
 type CopyOption = "All" | "Empty" | "Selected";
 ```
 
-Used with `createSessionTable` and accepted by `EditSession.begin()` and `useEditableTable.editSessionMode`. When a `CopyOption` is passed to `begin()`, it routes to `createSessionTable` instead of `beginEditSession`.
+Used with `createSessionDataSource` and accepted by `EditSession.begin()` and `useEditableTable.editSessionMode`. When a `CopyOption` is passed to `begin()`, it routes to `createSessionDataSource` instead of `beginEditSession`.
 
 ---
 
@@ -82,7 +82,7 @@ begin(mode: EditSessionMode): Promise<DataSource | undefined>;
 begin(mode?: CopyOption): Promise<DataSource | undefined>;
 ```
 
-Passing a `CopyOption` value routes to `createSessionTable`; anything else routes to `beginEditSession`. The returned session datasource is stored internally and returned to the caller.
+Passing a `CopyOption` value routes to `createSessionDataSource`; anything else routes to `beginEditSession`. The returned session datasource is stored internally and returned to the caller.
 
 The `isCopyOption(mode)` type guard is exported from `@vuu-ui/vuu-utils` for use at call sites that hold a `EditSessionMode | CopyOption` union:
 
@@ -133,7 +133,7 @@ Wraps `EditSession` for use in React components. Manages session lifecycle in re
 | `dataSource` | — | Pre-existing DataSource; takes precedence over `table` |
 | `table` | — | Creates a new DataSource if `dataSource` not provided |
 | `columns` | `undefined` | Column list for the subscription |
-| `editSessionMode` | `"inline-all-rows"` | Passed to `editSession.begin()`. Accepts `CopyOption` (preferred, routes to `createSessionTable`) or `EditSessionMode` long-form values (deprecated, routes to `beginEditSession`). Narrowed internally with `isCopyOption` before the call. |
+| `editSessionMode` | `"inline-all-rows"` | Passed to `editSession.begin()`. Accepts `CopyOption` (preferred, routes to `createSessionDataSource`) or `EditSessionMode` long-form values (deprecated, routes to `beginEditSession`). Narrowed internally with `isCopyOption` before the call. |
 | `deleteMode` | `"soft"` | `"soft"` marks the row; `"hard"` deletes immediately |
 | `addRowsCount` | `15` | Number of rows added per `onAddRows` call |
 | `isEditMode` | required | Toggling to `true` calls `editSession.begin()`; to `false` calls `editSession.end()` |
@@ -218,19 +218,19 @@ editSession.begin("all-rows")           // or "selected-rows" / "empty-session-t
   EditSession stores #sessionDataSource, returns it to consumer
 ```
 
-### Create Session Table (standalone via createSessionTable)
+### Create Session Datasource (standalone via createSessionDataSource)
 
 ```
 editSession.begin("All")               // or "Empty" / "Selected"
-  editSession detects CopyOption → routes to createSessionTable
-  dataSource.createSessionTable("All")
+  editSession detects CopyOption → routes to createSessionDataSource
+  dataSource.createSessionDataSource("All")
     → "createSessionTable" RPC → VuuModule.createSessionTableService
         determines mode from CopyOption directly:
           "All"      → createSessionTableWithAllRows
           "Selected" → createSessionTableFromSelectedRows
           "Empty"    → createEmptySessionTable
         returns { table: { module, table: sessionTableName } }
-    → datasource creates and returns session DataSource
+    → datasource wraps returned VuuTable in a new session DataSource
   EditSession stores #sessionDataSource, returns it to consumer
 ```
 
@@ -359,7 +359,7 @@ All datasources used with `EditSession` must implement `EditApi` from `@vuu-ui/v
 ```ts
 interface EditApi<T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow> {
   beginEditSession?(mode?: EditSessionMode): Promise<DataSourceBase<T> | undefined>;
-  createSessionTable?(copyOption: CopyOption): Promise<DataSourceBase<T> | undefined>;
+  createSessionDataSource?(copyOption: CopyOption): Promise<DataSource<T> | undefined>;
   addRow?(rowData?: Record<string, VuuRowDataItemType>): Promise<RpcResult> | undefined;
   deleteRow?(key: string, mode?: DeleteRowMode): Promise<RpcResult> | undefined;
   deleteSelectedRows?(mode?: DeleteRowMode): Promise<RpcResult> | undefined;
@@ -376,7 +376,7 @@ Each `EditApi` method returns `RpcResultSuccess` on success. The table below sho
 | Method | `data` on success | Typed as |
 |---|---|---|
 | `beginEditSession` | `{ table: VuuTable }` — the server-assigned session table | `BeginEditSessionResult` |
-| `createSessionTable` | `{ table: VuuTable }` — same shape as `beginEditSession` | `BeginEditSessionResult` |
+| `createSessionDataSource` | `{ table: VuuTable }` — same shape as `beginEditSession` | `BeginEditSessionResult` |
 | `addRow` | `undefined` | — |
 | `deleteRow` | `undefined` | — |
 | `deleteSelectedRows` | `{ deletedKeys: string[] }` | `DeleteSelectedRowsResult` |
@@ -387,7 +387,7 @@ Each `EditApi` method returns `RpcResultSuccess` on success. The table below sho
 The structured payloads are declared in `@vuu-ui/vuu-data-types`:
 
 ```ts
-// beginEditSession / createSessionTable — session table to subscribe to
+// beginEditSession / createSessionDataSource (CopyOption path) — session table to subscribe to
 type BeginEditSessionResult = { table: VuuTable };
 // Example: { table: { module: "SIMUL", table: "session-a1b2c3" } }
 
@@ -440,7 +440,7 @@ The `params` object sent with each RPC request (types from `@vuu-ui/vuu-protocol
 | EditApi method | RPC name | Routes via | VuuModule handler |
 |---|---|---|---|
 | `beginEditSession` | `"beginEditSession"` | source datasource | creates `SessionTable` proxy, stores in `#sessionTableMap`; `editSessionMode` passed through unchanged |
-| `createSessionTable` | `"createSessionTable"` | source datasource | `createSessionTableService` — resolves `CopyOption` directly in `VuuModule.createSessionTable()`, no alias conversion |
+| `createSessionDataSource` | `"createSessionTable"` | source datasource | `createSessionTableService` — resolves `CopyOption` directly in `VuuModule.createSessionTable()`, no alias conversion |
 | `addRow` | `"addRow"` | **source** datasource | `addRow` — inserts into session table |
 | `deleteRow` | `"deleteRow"` | session datasource | `deleteRow` — direct key-based delete (for programmatic use) |
 | `deleteSelectedRows` | `"deleteSelectedRows"` | session datasource | reads `selectedRows` from session subscription; soft/hard deletes each; returns `DeleteSelectedRowsResult` |

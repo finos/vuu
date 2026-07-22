@@ -598,7 +598,7 @@ export declare type CopyOption = "All" | "Empty" | "Selected";
 /**
  * @deprecated Prefer `CopyOption` ("All" | "Empty" | "Selected") for standalone
  * edit sessions supported by vuu server. Long-form values (e.g. `"all-rows"`) are used 
- * by `beginEditSession`; new code should use `CopyOption` with `createSessionTable`.
+ * by `beginEditSession`; new code should use `CopyOption` with `createSessionDataSource`.
  */
 export declare type EditSessionMode =
   | InlineEditSessionMode
@@ -624,9 +624,13 @@ export interface EditApi<
     value: VuuRowDataItemType,
   ) => Promise<RpcResult> | undefined;
   undoRowChange?: (key: string) => Promise<RpcResult> | undefined;
-  createSessionTable?: (
+  /**
+   * Create a session datasource by requesting the server to create a session table
+   * via the `createSessionTable` RPC and wrapping the returned table.
+   */
+  createSessionDataSource?: (
     copyOption: CopyOption,
-  ) => Promise<DataSourceBase<T> | undefined>;
+  ) => Promise<DataSource<T> | undefined>;
   endEditSession?: (
     saveChanges?: boolean,
     force?: boolean,
@@ -697,13 +701,6 @@ export interface DataSourceBase<
   resume?: (callback?: DataSourceSubscribeCallback) => void;
 
   deleteRow?: DataSourceDeleteHandler;
-  /**
-   * create a DataSource on a session table. The concrete DataSource implementation that
-   * implements this method will always return a session table datasource of the same concrete type.
-   * @param table the sessionTable  (module and table name)
-   * @returns
-   */
-  createSessionDataSource?: (table: VuuTable) => DataSource<T>;
   /**
    * For a dataSource that has been previously disabled and is currently in disabled state , this will restore
    * the subscription to active status. Fresh data will be dispatched to client. The enable call optionally

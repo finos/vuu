@@ -210,14 +210,14 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     this.#endEditModePending = false;
   }
 
-  /** @deprecated Pass a `CopyOption` ("All" | "Empty" | "Selected") to use `createSessionTable` instead. Long-form `EditSessionMode` values will be removed in a future release. */
+  /** @deprecated Pass a `CopyOption` ("All" | "Empty" | "Selected") to use `createSessionDataSource` instead. Long-form `EditSessionMode` values will be removed in a future release. */
   async begin(mode: EditSessionMode): Promise<DataSource | undefined>;
   async begin(mode?: CopyOption): Promise<DataSource | undefined>;
   async begin(mode?: EditSessionMode | CopyOption): Promise<DataSource | undefined> {
     try {
       this.#inEditMode = true;
       const sessionDataSource = isCopyOption(mode)
-        ? await this.#sourceTableDataSource?.createSessionTable?.(mode)
+        ? await this.#sourceTableDataSource?.createSessionDataSource?.(mode)
         : await this.#sourceTableDataSource?.beginEditSession?.(mode);
 
       this.#sessionDataSource = sessionDataSource;

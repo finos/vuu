@@ -643,7 +643,7 @@ export abstract class VuuModule<T extends string = string>
   };
 
   /**
-   * Creates a standalone session table without starting an inline edit session.
+   * Creates a standalone session table.
    * The `copyOption` determines which rows are copied into the session table.
    * Returns the session table reference so the caller can subscribe to it.
    */

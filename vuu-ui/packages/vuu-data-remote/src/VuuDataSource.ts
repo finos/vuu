@@ -680,18 +680,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     return Promise.reject<T>();
   }
 
-  createSessionDataSource(sessionTable: VuuTable) {
-    //TODO filters, sort etc
-    const columns = this.#sessionTableMessageColumn
-      ? this.columns.concat(this.#sessionTableMessageColumn)
-      : this.columns;
-    return new VuuDataSource({
-      columns: columns,
-      table: sessionTable,
-    });
-  }
-
-  async createSessionTable(
+  async createSessionDataSource(
     copyOption: CopyOption,
   ): Promise<VuuDataSource | undefined> {
     const rpcResponse = await this?.rpcRequest?.({
@@ -708,7 +697,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       });
     } else {
       throw Error(
-        `[VuuDataSource] createSessionTable ${rpcResponse?.errorMessage}`,
+        `[VuuDataSource] createSessionDataSource ${rpcResponse?.errorMessage}`,
       );
     }
   }
