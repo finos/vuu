@@ -2,7 +2,6 @@ package org.finos.vuu.wsapi.helpers
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.VuuServerConfig
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.*
 import org.finos.vuu.net.auth.LoginTokenService

@@ -1,13 +1,20 @@
 package org.finos.vuu.net.rpc
 
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.{TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.SessionTableCopyOption.{All, Empty, Selected}
 
-class CreateSessionTableRpcHandler(using tableContainer: TableContainer) extends DefaultRpcHandler {
+class CreateSessionTableRpcHandler(using tableContainer: TableContainer, rpcPermissionChecker: RpcPermissionChecker) extends DefaultRpcHandler {
   registerRpc(RpcNames.CreateSessionTableRpc, this.createSessionTable)
 
   def createSessionTable(params: RpcParams): RpcFunctionResult = {
+    val vuuUser: VuuUser = params.ctx.user
+    if (!rpcPermissionChecker.isRpcAllowed(RpcNames.CreateSessionTableRpc, vuuUser)) {
+      logger.error(s"User ${vuuUser.name} does not have permission to call ${RpcNames.CreateSessionTableRpc}")
+      return new RpcFunctionFailure(s"Failed to create session table for user ${vuuUser.name}")
+    }
+
     val session: ClientSessionId = params.ctx.session
     val sourceTable = params.viewPort.table
     val copyOption = SessionTableCopyOption.fromString(params.namedParams("copyOption").asInstanceOf[String])
