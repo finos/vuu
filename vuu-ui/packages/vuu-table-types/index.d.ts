@@ -220,7 +220,19 @@ export interface ColumnTypeRendering {
   // specific to Background renderer
   flashStyle?: "bg-only" | "arrow-bg" | "arrow";
   name: string;
+  /** Arbitrary props passed to the registered cell renderer component. */
+  componentProps?: Record<string, unknown>;
 }
+/**
+ * Per-row override props for the checkbox column cell.
+ * Returned by `checkboxRowLevelProps` on `TableProps`.
+ */
+export type CheckboxRowLevelProps = {
+  /** Override the checked state; falls back to dataRow.isSelected if absent */
+  checked?: boolean;
+  /** Disable the checkbox for this row */
+  disabled?: boolean;
+};
 export interface MappedValueTypeRenderer {
   map: ColumnTypeValueMap;
 }

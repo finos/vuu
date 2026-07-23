@@ -9,6 +9,8 @@ import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDescriptor,
   ColumnLayout,
+  CheckboxRowLevelProps,
+  DataRow,
   ResizePhase,
   RuntimeColumnDescriptor,
   TableDisplayAttributes,
@@ -69,6 +71,7 @@ const getDataType = (
 const CheckboxColumnDescriptor = (
   selectionModel: TableSelectionModel,
   width = 25,
+  checkboxRowLevelProps?: (dataRow: DataRow) => CheckboxRowLevelProps,
 ): ColumnDescriptor => ({
   allowColumnHeaderMenu: false,
   className: selectionModel === "checkbox-disabled" ? "vuuDisabled" : undefined,
@@ -82,6 +85,7 @@ const CheckboxColumnDescriptor = (
     name: "checkbox",
     renderer: {
       name: "checkbox-row-selector-cell",
+      componentProps: checkboxRowLevelProps ? { checkboxRowLevelProps } : undefined,
     },
   },
 });
@@ -89,8 +93,9 @@ const CheckboxColumnDescriptor = (
 const PinnedCheckboxColumnDescriptor = (
   selectionModel: TableSelectionModel,
   width?: number,
+  checkboxRowLevelProps?: (dataRow: DataRow) => CheckboxRowLevelProps,
 ): ColumnDescriptor => ({
-  ...CheckboxColumnDescriptor(selectionModel, width),
+  ...CheckboxColumnDescriptor(selectionModel, width, checkboxRowLevelProps),
   pin: "left",
 });
 
@@ -127,6 +132,7 @@ export interface ColumnActionInit {
   type: "init";
   tableConfig: TableConfig;
   dataSource: DataSource;
+  checkboxRowLevelProps?: (dataRow: DataRow) => CheckboxRowLevelProps;
 }
 
 export interface ColumnActionHide {
@@ -242,6 +248,7 @@ const tableModelReducer: TableModelReducer = (state, action) => {
 export interface TableModelHookProps {
   config: TableConfig;
   dataSource: DataSource;
+  checkboxRowLevelProps?: (dataRow: DataRow) => CheckboxRowLevelProps;
   selectionModel: TableSelectionModel;
   availableWidth: number;
 }
@@ -249,6 +256,7 @@ export interface TableModelHookProps {
 export const useTableModel = ({
   config: tableConfigProp,
   dataSource,
+  checkboxRowLevelProps,
   selectionModel,
   availableWidth,
 }: TableModelHookProps) => {
@@ -259,6 +267,7 @@ export const useTableModel = ({
       tableConfig: tableConfigProp,
       dataSource,
       selectionModel,
+      checkboxRowLevelProps
     },
     init,
   );
@@ -278,12 +287,13 @@ type InitialConfig = {
   availableWidth: number;
   columnLayout?: ColumnLayout;
   dataSource: DataSource;
+  checkboxRowLevelProps?: (dataRow: DataRow) => CheckboxRowLevelProps;
   selectionModel?: TableSelectionModel;
   tableConfig: TableConfig;
 };
 
 function init(
-  { availableWidth, dataSource, selectionModel, tableConfig }: InitialConfig,
+  { availableWidth, dataSource, checkboxRowLevelProps, selectionModel, tableConfig }: InitialConfig,
   previousConfig?: InternalTableModel,
 ): InternalTableModel {
   const { checkboxColumnWidth = 25, columns, ...tableAttributes } = tableConfig;
@@ -313,8 +323,8 @@ function init(
       0,
       toRuntimeColumnDescriptor(
         somePinnedLeft
-          ? PinnedCheckboxColumnDescriptor(selectionModel, checkboxColumnWidth)
-          : CheckboxColumnDescriptor(selectionModel, checkboxColumnWidth),
+          ? PinnedCheckboxColumnDescriptor(selectionModel, checkboxColumnWidth, checkboxRowLevelProps)
+          : CheckboxColumnDescriptor(selectionModel, checkboxColumnWidth, checkboxRowLevelProps),
         1,
       ),
     );

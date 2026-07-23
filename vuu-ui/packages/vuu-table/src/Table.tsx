@@ -4,8 +4,10 @@ import { useWindow } from "@salt-ds/window";
 import type { DataSource, SchemaColumn } from "@vuu-ui/vuu-data-types";
 import { TableProvider } from "@vuu-ui/vuu-table-extras";
 import {
+  CheckboxRowLevelProps,
   CustomHeader,
   // DataCellEditNotification,
+  DataRow,
   GroupToggleTarget,
   HeaderCellProps,
   RowActionHandler,
@@ -280,6 +282,11 @@ export interface TableProps
    */
   selectionModel?: TableSelectionModel;
   /**
+   * When provided, the row checkbox is rendered as disabled for any row
+   * for which this predicate returns true.
+   */
+  checkboxRowLevelProps?: (dataRow: DataRow) => CheckboxRowLevelProps;
+  /**
    * if false, table rendered without headers. Useful when table is being included in a
    * composite component.
    */
@@ -347,6 +354,7 @@ const TableCore = ({
   rowHeight,
   scrollingApiRef,
   selectionModel = "extended",
+  checkboxRowLevelProps,
   showColumnHeaders = true,
   showColumnHeaderMenus = true,
   showPaginationControls,
@@ -425,6 +433,7 @@ const TableCore = ({
     onSelectionChange,
     renderBufferSize,
     revealSelected,
+    checkboxRowLevelProps,
     rowHeight,
     scrollingApiRef,
     selectionModel,
@@ -625,6 +634,7 @@ export const Table = forwardRef(function Table(
     revealSelected,
     resizeStrategy,
     rowActionHandlers,
+    checkboxRowLevelProps,
     rowHeight: rowHeightProp,
     rowSelectionBorder,
     scrollingApiRef,
@@ -781,6 +791,7 @@ export const Table = forwardRef(function Table(
           }
           revealSelected={revealSelected}
           rowActionHandlers={rowActionHandlers}
+          checkboxRowLevelProps={checkboxRowLevelProps}
           rowHeight={rowHeight}
           scrollingApiRef={scrollingApiRef}
           lowerCaseSearchPattern={lowerCase(searchPattern)}

@@ -124,6 +124,7 @@ export interface TableHookProps
       | "onRowClick"
       | "renderBufferSize"
       | "revealSelected"
+      | "checkboxRowLevelProps"
       | "scrollingApiRef"
       | "showColumnHeaders"
       | "showPaginationControls"
@@ -168,6 +169,7 @@ export const useTable = ({
   onSelectionChange,
   renderBufferSize = 0,
   revealSelected,
+  checkboxRowLevelProps,
   rowHeight,
   scrollingApiRef,
   selectionModel,
@@ -225,7 +227,7 @@ export const useTable = ({
     headings,
     tableAttributes,
     tableConfig,
-  } = useTableModel({ config, dataSource, selectionModel, availableWidth });
+  } = useTableModel({ config, dataSource, checkboxRowLevelProps, selectionModel, availableWidth });
 
   const columnsRef = useStableReference(columns);
 
@@ -239,10 +241,12 @@ export const useTable = ({
       selectionModel,
       type: "init",
       tableConfig: tableConfigRef.current,
+      checkboxRowLevelProps,
       dataSource,
     });
   }, [
     availableWidth,
+    checkboxRowLevelProps,
     config,
     dataSource,
     dispatchTableModelAction,

@@ -119,11 +119,11 @@ export const useEditableTable = ({
   useMemo(async () => {
     if (isEditMode) {
       try {
-        const sessionDataSource = isCopyOption(editSessionMode)
+        const sessionDs = isCopyOption(editSessionMode)
           ? await editSession.begin(editSessionMode)
           : await editSession.begin(editSessionMode);
-        if (sessionDataSource) {
-          setSessionDataSource(sessionDataSource);
+        if (sessionDs) {
+          setSessionDataSource(sessionDs);
         }
       } catch (e) {
         console.error(`[useEditableTable] begin edit session failed`, e);
