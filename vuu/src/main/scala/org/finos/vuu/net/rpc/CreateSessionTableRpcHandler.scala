@@ -11,7 +11,7 @@ class CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker)(u
   def createSessionTable(params: RpcParams): RpcFunctionResult = {
     val vuuUser: VuuUser = params.ctx.user
     if (!rpcPermissionChecker.isRpcAllowed(RpcNames.CreateSessionTableRpc, vuuUser)) {
-      logger.error(s"User ${vuuUser.name} does not have permission to call ${RpcNames.CreateSessionTableRpc}")
+      logger.warn(s"User ${vuuUser.name} does not have permission to call ${RpcNames.CreateSessionTableRpc}")
       return new RpcFunctionFailure(s"Failed to create session table for user ${vuuUser.name}")
     }
 
