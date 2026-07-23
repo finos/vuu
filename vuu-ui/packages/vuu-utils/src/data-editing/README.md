@@ -195,8 +195,8 @@ Renders the action bar for an edit session. Subscribes to `EditSession` directly
 ```
 isEditMode → true
   useEditableTable (useMemo)
-    editSession.begin("inline-all-rows")
-      dataSource.beginEditSession("inline-all-rows")          ← EditApi RPC
+    editSession.begin("all-rows")
+      dataSource.beginEditSession("all-rows")          ← EditApi RPC
         → "beginEditSession" RPC → VuuModule.beginEditSession
           creates SessionTable (Proxy over source Table)
           stores in #sessionTableMap[sessionTableName]
@@ -821,3 +821,50 @@ The `params` object sent with each RPC request (types from `@vuu-ui/vuu-protocol
 | `undoRowChange` | `"undoRowChange"` | session datasource | if key not in source table: deletes inserted row, returns `UndoRowChangeResult { wasInsertedRow: true }`; otherwise reverts `cellUpdates` to source values |
 | `beginEditSession` | `"beginEditSession"` | source datasource | creates `SessionTable` proxy, stores in `#sessionTableMap` |
 | `endEditSession` | `"endEditSession"` | session datasource | applies (or discards) session updates to source table |
+
+---
+
+---
+
+## Per-Row Selectability — `isRowSelectable`
+
+When using any selection model, individual rows can be made non-selectable via the `isRowSelectable` prop on `<Table>`. 
+
+### API
+
+```typescript
+// On TableProps:
+isRowSelectable?: (dataRow: DataRow) => boolean;
+```
+
+Rows for which `isRowSelectable` returns `false`:
+- Receive a `vuuTableRow-noSelect` CSS class
+- Are skipped entirely by all selection paths in `useSelection` (single, extended, checkbox, and block)
+- The checkbox (if shown) is styled via CSS on the `noSelect` class — it requires no `disabled` prop
+
+### Soft-delete example
+
+In `EditableInstrumentsTemplate`, soft-deleted rows remain visually checked (they were selected when deleted) and cannot be re-selected or deselected:
+
+```typescript
+const isRowSelectable = useCallback(
+  (dataRow: DataRow) => dataRow.vuuMsg !== "SOFT_DELETED",
+  [],
+);
+
+<Table
+  config={config}
+  dataSource={sessionDataSource ?? dataSource}
+  isRowSelectable={editMode === "edit" ? isRowSelectable : undefined}
+  selectionModel={editMode === "edit" ? "checkbox" : "none"}
+/>
+```
+
+The `vuuTableRow-noSelect` CSS class can be used to style non-selectable rows:
+
+```css
+.vuuTableRow-noSelect .vuuCheckboxRowSelector {
+  opacity: 0.4;
+  pointer-events: none;
+}
+```

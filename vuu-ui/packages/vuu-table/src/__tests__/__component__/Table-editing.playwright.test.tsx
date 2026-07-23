@@ -732,4 +732,32 @@ test.describe("Session table editing (createSessionTable)", () => {
     await page.getByRole("button", { name: "Add Rows" }).click();
     await expect(submitButton).toBeEnabled();
   });
+
+  test("soft-deleted row checkbox is checked+disabled and stays that way after selecting another row", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<CreateSessionTableInstruments />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+
+    const table = new TableOM(page.getByRole("table"));
+
+    // Select row 2 and soft-delete it
+    const checkboxRow2 = table.locateCell(2, 1).getByRole("checkbox");
+    await checkboxRow2.click();
+    await page.getByRole("button", { name: "Delete" }).click();
+
+    // After soft-delete: row 2 checkbox should be checked AND disabled
+    await expect(checkboxRow2).toBeChecked();
+    await expect(checkboxRow2).toBeDisabled();
+
+    // Click another row's checkbox (row 3)
+    const checkboxRow3 = table.locateCell(3, 1).getByRole("checkbox");
+    await checkboxRow3.click();
+
+    // Row 2 checkbox should STILL be checked+disabled (checkboxRowLevelProps persists)
+    await expect(checkboxRow2).toBeChecked();
+    await expect(checkboxRow2).toBeDisabled();
+  });
 });

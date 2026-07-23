@@ -12,6 +12,7 @@ const inputProps = {
 };
 
 export const CheckboxRowSelectorCell: React.FC<TableCellRendererProps> = ({
+  column,
   dataRow,
 }) => {
   const targetWindow = useWindow();
@@ -21,7 +22,10 @@ export const CheckboxRowSelectorCell: React.FC<TableCellRendererProps> = ({
     window: targetWindow,
   });
 
-  const isChecked = !!dataRow.isSelected;
+  const { isRowSelectable } = column;
+  // Non-selectable rows (e.g. soft-deleted) must always appear checked even if
+  // isSelected is cleared when the user selects a different row.
+  const isChecked = (isRowSelectable && !isRowSelectable(dataRow)) || !!dataRow.isSelected;
 
   const handleClick = useCallback<MouseEventHandler>((e) => {
     const target = e.target as HTMLElement;
@@ -40,7 +44,7 @@ export const CheckboxRowSelectorCell: React.FC<TableCellRendererProps> = ({
     />
   );
 };
-CheckboxRowSelectorCell.displayName = "CheckboxCell";
+CheckboxRowSelectorCell.displayName = "CheckboxRowSelectorCell";
 
 registerComponent(
   "checkbox-row-selector-cell",

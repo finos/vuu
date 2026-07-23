@@ -220,6 +220,8 @@ export interface ColumnTypeRendering {
   // specific to Background renderer
   flashStyle?: "bg-only" | "arrow-bg" | "arrow";
   name: string;
+  /** Arbitrary props passed to the registered cell renderer component. */
+  componentProps?: Record<string, unknown>;
 }
 export interface MappedValueTypeRenderer {
   map: ColumnTypeValueMap;
@@ -388,10 +390,10 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
    * A custom Cell Renderer component, configured via the `type.renderer`
    */
   CellRenderer?: FunctionComponent<TableCellRendererProps>;
-  HeaderCellLabelRenderer?: FunctionComponent<
+  HeaderCellContentRenderer?: FunctionComponent<
     Omit<HeaderCellProps, "id" | "index">
   >;
-  HeaderCellContentRenderer?: FunctionComponent<
+  HeaderCellLabelRenderer?: FunctionComponent<
     Omit<HeaderCellProps, "id" | "index">
   >;
   canStretch?: boolean;
@@ -405,6 +407,11 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   flex?: number;
   heading?: [...string[]];
   isGroup?: boolean;
+  /**
+   * When provided on the checkbox column, rows returning false
+   * are always shown as checked (pending deletion) regardless of isSelected.
+   */
+  isRowSelectable?: (dataRow: DataRow) => boolean;
   isSystemColumn?: boolean;
   label: string;
   marginLeft?: number;
@@ -539,6 +546,11 @@ export interface RowProps extends BaseRowProps {
   dataRow: DataRow;
   groupToggleTarget?: GroupToggleTarget;
   highlighted?: boolean;
+  /**
+   * False when isRowSelectable has been provided to Table and returns false for this row.
+   * Row will receive a `vuuTableRow-noSelect` CSS class.
+   */
+  isSelectable?: boolean;
   offset: number;
   onCellEdit?: CellEditHandler;
   onClick?: TableRowClickHandlerInternal;

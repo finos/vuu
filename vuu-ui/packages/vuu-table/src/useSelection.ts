@@ -1,4 +1,5 @@
 import {
+  DataRow,
   TableRowClickHandlerInternal,
   TableRowSelectHandlerInternal,
   SelectionChangeHandler,
@@ -51,6 +52,10 @@ export interface SelectionHookProps
   containerRef: RefObject<HTMLElement | null>;
   dataSource: DataSource;
   highlightedIndexRef: RefObject<number | undefined>;
+  /**
+   * When provided, rows for which this returns false will not be selectable.
+   */
+  isRowSelectable?: (dataRow: DataRow) => boolean;
   selectionKeys?: string[];
   selectionModel: TableSelectionModel;
   onSelectionChange: SelectionChangeHandler;
@@ -62,6 +67,7 @@ export const useSelection = ({
   containerRef,
   dataSource,
   highlightedIndexRef,
+  isRowSelectable,
   onSelect,
   onSelectionChange,
   selectionKeys = defaultSelectionKeys,
@@ -96,6 +102,9 @@ export const useSelection = ({
 
   const handleRowClick = useCallback<TableRowClickHandlerInternal>(
     (e, dataRow, rangeSelect, keepExistingSelection) => {
+      if (isRowSelectable && !isRowSelectable(dataRow)) {
+        return;
+      }
       const { index: rowIdx, key: rowKey } = dataRow;
       const { current: activeRowKey } = lastActiveRef;
       const newRowIdentifier = { rowIdx, rowKey } as RowIdentifier;
@@ -141,6 +150,7 @@ export const useSelection = ({
     [
       allRowsSelected,
       allowSelectCheckboxRow,
+      isRowSelectable,
       onSelect,
       onSelectionChange,
       selectionModel,

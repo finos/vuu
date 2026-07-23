@@ -22,6 +22,7 @@ export const Row = memo(
     dataRow,
     groupToggleTarget = "group-column",
     highlighted,
+    isSelectable,
     offset,
     onCellEdit,
     onClick,
@@ -58,6 +59,7 @@ export const Row = memo(
       {
         [`${classBase}-even`]: zebraStripes && rowIndex % 2 === 0,
         [`${classBase}-highlighted`]: highlighted,
+        [`${classBase}-noSelect`]: isSelectable === false,
       },
     );
 

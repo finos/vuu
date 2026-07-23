@@ -112,6 +112,7 @@ export interface TableHookProps
       | "disableFocus"
       | "highlightedIndex"
       | "id"
+      | "isRowSelectable"
       | "navigationStyle"
       | "onConfigChange"
       // | "onDataEdited"
@@ -156,6 +157,7 @@ export const useTable = ({
   disableFocus,
   highlightedIndex: highlightedIndexProp,
   id,
+  isRowSelectable,
   navigationStyle = "cell",
   onConfigChange,
   // onDataEdited: onDataEditedProp,
@@ -225,7 +227,7 @@ export const useTable = ({
     headings,
     tableAttributes,
     tableConfig,
-  } = useTableModel({ config, dataSource, selectionModel, availableWidth });
+  } = useTableModel({ config, dataSource, isRowSelectable, selectionModel, availableWidth });
 
   const columnsRef = useStableReference(columns);
 
@@ -236,6 +238,7 @@ export const useTable = ({
   useLayoutEffectSkipFirst(() => {
     dispatchTableModelAction({
       availableWidth,
+      isRowSelectable,
       selectionModel,
       type: "init",
       tableConfig: tableConfigRef.current,
@@ -246,6 +249,7 @@ export const useTable = ({
     config,
     dataSource,
     dispatchTableModelAction,
+    isRowSelectable,
     selectionModel,
   ]);
 
@@ -741,6 +745,7 @@ export const useTable = ({
     containerRef,
     dataSource,
     highlightedIndexRef,
+    isRowSelectable,
     onSelect: handleSelect,
     onSelectionChange: handleSelectionChange,
     selectionModel,
