@@ -71,7 +71,6 @@ const getDataType = (
 const CheckboxColumnDescriptor = (
   selectionModel: TableSelectionModel,
   width = 25,
-  checkboxRowLevelProps?: (dataRow: DataRow) => CheckboxRowLevelProps,
 ): ColumnDescriptor => ({
   allowColumnHeaderMenu: false,
   className: selectionModel === "checkbox-disabled" ? "vuuDisabled" : undefined,
@@ -85,7 +84,6 @@ const CheckboxColumnDescriptor = (
     name: "checkbox",
     renderer: {
       name: "checkbox-row-selector-cell",
-      componentProps: checkboxRowLevelProps ? { checkboxRowLevelProps } : undefined,
     },
   },
 });
@@ -93,9 +91,8 @@ const CheckboxColumnDescriptor = (
 const PinnedCheckboxColumnDescriptor = (
   selectionModel: TableSelectionModel,
   width?: number,
-  checkboxRowLevelProps?: (dataRow: DataRow) => CheckboxRowLevelProps,
 ): ColumnDescriptor => ({
-  ...CheckboxColumnDescriptor(selectionModel, width, checkboxRowLevelProps),
+  ...CheckboxColumnDescriptor(selectionModel, width),
   pin: "left",
 });
 
@@ -318,16 +315,17 @@ function init(
 
   if (selectionModel?.startsWith("checkbox")) {
     const somePinnedLeft = runtimeColumns.some((col) => col.pin === "left");
-    runtimeColumns.splice(
-      0,
-      0,
-      toRuntimeColumnDescriptor(
-        somePinnedLeft
-          ? PinnedCheckboxColumnDescriptor(selectionModel, checkboxColumnWidth, checkboxRowLevelProps)
-          : CheckboxColumnDescriptor(selectionModel, checkboxColumnWidth, checkboxRowLevelProps),
-        1,
-      ),
+    const checkboxCol = toRuntimeColumnDescriptor(
+      somePinnedLeft
+        ? PinnedCheckboxColumnDescriptor(selectionModel, checkboxColumnWidth)
+        : CheckboxColumnDescriptor(selectionModel, checkboxColumnWidth),
+      1,
     );
+    
+    if (checkboxRowLevelProps) {
+      checkboxCol.checkboxRowLevelProps = checkboxRowLevelProps;
+    }
+    runtimeColumns.splice(0, 0, checkboxCol);
   }
 
   const { columnLayout = "static", selectionBookendWidth = 4 } = tableConfig;

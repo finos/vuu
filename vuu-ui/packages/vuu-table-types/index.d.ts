@@ -400,13 +400,18 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
    * A custom Cell Renderer component, configured via the `type.renderer`
    */
   CellRenderer?: FunctionComponent<TableCellRendererProps>;
-  HeaderCellLabelRenderer?: FunctionComponent<
-    Omit<HeaderCellProps, "id" | "index">
-  >;
   HeaderCellContentRenderer?: FunctionComponent<
     Omit<HeaderCellProps, "id" | "index">
   >;
+  HeaderCellLabelRenderer?: FunctionComponent<
+    Omit<HeaderCellProps, "id" | "index">
+  >;
   canStretch?: boolean;
+  /**
+   * Runtime-only (not serialized). Injected by useTableModel for the checkbox column
+   * when checkboxRowLevelProps is provided as a Table prop.
+   */
+  checkboxRowLevelProps?: (dataRow: DataRow) => CheckboxRowLevelProps;
   className?: string;
   clientSideEditValidationCheck?: DataValueValidationChecker;
   /**

@@ -124,6 +124,10 @@ export const useEditableTable = ({
           : await editSession.begin(editSessionMode);
         if (sessionDs) {
           setSessionDataSource(sessionDs);
+        } else {
+          console.warn(
+            `[useEditableTable] editSession.begin(${editSessionMode}) did not return a session DataSource`,
+          );
         }
       } catch (e) {
         console.error(`[useEditableTable] begin edit session failed`, e);

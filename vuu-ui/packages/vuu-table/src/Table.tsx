@@ -142,6 +142,12 @@ export interface TableProps
   autoSelectRowKey?: string;
 
   /**
+   * When provided, the row checkbox is rendered as disabled for any row
+   * for which this predicate returns true.
+   */
+  checkboxRowLevelProps?: (dataRow: DataRow) => CheckboxRowLevelProps;
+
+  /**
    * Pixel height of header cells. If specified here, this will take precedence over CSS
    * values and Table will not respond to density changes.
    */
@@ -282,11 +288,6 @@ export interface TableProps
    */
   selectionModel?: TableSelectionModel;
   /**
-   * When provided, the row checkbox is rendered as disabled for any row
-   * for which this predicate returns true.
-   */
-  checkboxRowLevelProps?: (dataRow: DataRow) => CheckboxRowLevelProps;
-  /**
    * if false, table rendered without headers. Useful when table is being included in a
    * composite component.
    */
@@ -327,6 +328,7 @@ const TableCore = ({
   allowSelectCheckboxRow,
   autoSelectFirstRow,
   autoSelectRowKey,
+  checkboxRowLevelProps,
   // colHeaderRowHeight,
   config,
   containerRef,
@@ -354,7 +356,6 @@ const TableCore = ({
   rowHeight,
   scrollingApiRef,
   selectionModel = "extended",
-  checkboxRowLevelProps,
   showColumnHeaders = true,
   showColumnHeaderMenus = true,
   showPaginationControls,
@@ -415,6 +416,7 @@ const TableCore = ({
     allowSelectCheckboxRow,
     autoSelectFirstRow,
     autoSelectRowKey,
+    checkboxRowLevelProps,
     config,
     containerRef,
     dataSource,
@@ -432,8 +434,7 @@ const TableCore = ({
     onSelectCellBlock,
     onSelectionChange,
     renderBufferSize,
-    revealSelected,
-    checkboxRowLevelProps,
+    revealSelected,   
     rowHeight,
     scrollingApiRef,
     selectionModel,
@@ -608,6 +609,7 @@ export const Table = forwardRef(function Table(
     allowSelectCheckboxRow,
     autoSelectFirstRow,
     autoSelectRowKey,
+    checkboxRowLevelProps,
     className: classNameProp,
     config,
     customHeader,
@@ -634,7 +636,6 @@ export const Table = forwardRef(function Table(
     revealSelected,
     resizeStrategy,
     rowActionHandlers,
-    checkboxRowLevelProps,
     rowHeight: rowHeightProp,
     rowSelectionBorder,
     scrollingApiRef,

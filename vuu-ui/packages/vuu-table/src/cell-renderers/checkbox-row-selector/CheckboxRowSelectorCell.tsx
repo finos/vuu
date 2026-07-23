@@ -22,14 +22,9 @@ export const CheckboxRowSelectorCell: React.FC<TableCellRendererProps> = ({
     window: targetWindow,
   });
 
-  const { checkboxRowLevelProps } =
-    (column.type as { renderer?: { componentProps?: { checkboxRowLevelProps?: (row: unknown) => { disabled?: boolean; checked?: boolean } } } })
-      ?.renderer?.componentProps ?? {};
+  const { checkboxRowLevelProps } = column;
   const rowProps = checkboxRowLevelProps?.(dataRow);
   const isDisabled = rowProps?.disabled ?? false;
-  console.log(
-    `[CheckboxRowSelectorCell] key=${dataRow.key} vuuMsg=${dataRow.vuuMsg} checkboxRowLevelProps=${!!checkboxRowLevelProps} rowProps=${JSON.stringify(rowProps)} isDisabled=${isDisabled} isSelected=${dataRow.isSelected}`,
-  );
   const isChecked = rowProps?.checked ?? !!dataRow.isSelected;
 
   const handleClick = useCallback<MouseEventHandler>((e) => {
