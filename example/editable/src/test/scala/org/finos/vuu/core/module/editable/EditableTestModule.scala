@@ -12,7 +12,7 @@ import org.finos.vuu.net.rpc.{EditTableRpcHandler, RpcFunctionResult, RpcFunctio
 import org.finos.vuu.viewport.ViewPort
 
 class EditTableTestService(val originalData: Map[String, Any])(using tableContainer: TableContainer) extends EditTableRpcHandler with StrictLogging {
-  
+
   override def deleteRow(params: RpcParams): RpcFunctionResult = {
     val key: String = params.namedParams("key").asInstanceOf[String]
     val vp: ViewPort = params.viewPort
@@ -101,8 +101,8 @@ class EditTableTestService(val originalData: Map[String, Any])(using tableContai
 object EditTableTestModule {
 
   final val NAME = "EDIT_TABLE_TEST"
-  final val originalData: Map[String, Any] = Map("A" -> null, "B" -> null, "C" -> null, "D" -> null)
-  
+  final val originalData: Map[Any, Any] = Map("A" -> null, "B" -> null, "C" -> null, "D" -> null)
+
   def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     ModuleFactory.withNamespace(NAME)
@@ -117,7 +117,7 @@ object EditTableTestModule {
         (table, _) => new NullProvider(),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.getColumns,
-          service = new EditTableTestService(originalData)(using tableContainer)
+          service = new EditTableTestService(originalData.asInstanceOf[Map[String, Any]])(using tableContainer)
         )
       ).asModule()
 
