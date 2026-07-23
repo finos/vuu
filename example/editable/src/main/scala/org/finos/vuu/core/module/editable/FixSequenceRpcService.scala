@@ -3,7 +3,7 @@ package org.finos.vuu.core.module.editable
 import org.finos.vuu.core.table.{RowWithData, TableContainer}
 import org.finos.vuu.net.rpc.*
 
-class FixSequenceRpcService()(using tableContainer: TableContainer) extends EditTableRpcHandler{
+class FixSequenceRpcService()(using tableContainer: TableContainer) extends EditTableRpcHandler {
 
   override def editCell(params: RpcParams): RpcFunctionResult = {
     val key: String = params.namedParams("key").asInstanceOf[String]
@@ -37,9 +37,13 @@ class FixSequenceRpcService()(using tableContainer: TableContainer) extends Edit
 
   override def deleteRow(params: RpcParams): RpcFunctionResult = ???
 
+  override def deleteSelectedRows(params: RpcParams): RpcFunctionResult = ???
+
   override def deleteCell(params: RpcParams): RpcFunctionResult = ???
 
   override def addRow(params: RpcParams): RpcFunctionResult = ???
 
   override def closeForm(params: RpcParams): RpcFunctionResult = ???
+
+  override def undoRowChange(params: RpcParams): RpcFunctionResult = ???
 }
