@@ -386,7 +386,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   }
 
   def sendToJoinSink(rowKey: String, rowData: RowData): Unit = {
-    eventIntoJoiner.inc()
+    eventIntoJoiner.increment()
     if (joinProvider.hasJoins(this.tableDef.name)) {
       val event = toEvent(rowKey, rowData)
       joinProvider.sendEvent(this.tableDef.name, event)
@@ -394,7 +394,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   }
 
   def sendDeleteToJoinSink(rowKey: String, rowData: RowData): Unit = {
-    eventIntoJoiner.inc()
+    eventIntoJoiner.increment()
     if (joinProvider.hasJoins(this.tableDef.name)) {
       val event = toDeleteEvent(rowKey, rowData)
       joinProvider.sendEvent(this.tableDef.name, event)
@@ -403,9 +403,9 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
 
   def processUpdate(rowKey: String, rowData: RowData): Unit = {
 
-    onUpdateMeter.mark()
+    onUpdateMeter.increment()
 
-    onUpdateCounter.inc()
+    onUpdateCounter.increment()
 
     val updatedRowData = update(rowKey, rowData)
 
@@ -418,9 +418,9 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
 
   def processDelete(rowKey: String): Unit = {
 
-    onDeleteMeter.mark()
+    onDeleteMeter.increment()
 
-    onUpdateCounter.inc()
+    onUpdateCounter.increment()
 
     val rowData = delete(rowKey)
 

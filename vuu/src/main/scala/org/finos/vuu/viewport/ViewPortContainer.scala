@@ -1,6 +1,6 @@
 package org.finos.vuu.viewport
 
-import com.codahale.metrics.{Histogram, Meter}
+import io.micrometer.core.instrument.{Counter, DistributionSummary}
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.jmx.{JmxAble, MetricsProvider}
@@ -54,20 +54,20 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   private val viewPortHistogram = metrics.histogram(toJmxName("thread.viewport.cycleTime"))
 
-  val viewPortHistograms = new ConcurrentHashMap[String, Histogram]()
-  val treeToKeysHistograms = new ConcurrentHashMap[String, Histogram]()
-  val treeSetKeysHistograms = new ConcurrentHashMap[String, Histogram]()
-  val treeSetTreeHistograms = new ConcurrentHashMap[String, Histogram]()
-  val treeDiffBranchesHistograms = new ConcurrentHashMap[String, Histogram]()
-  val treeBuildHistograms = new ConcurrentHashMap[String, Histogram]()
-  val filterSortHistograms = new ConcurrentHashMap[String, Histogram]()
+  val viewPortHistograms = new ConcurrentHashMap[String, DistributionSummary]()
+  val treeToKeysHistograms = new ConcurrentHashMap[String, DistributionSummary]()
+  val treeSetKeysHistograms = new ConcurrentHashMap[String, DistributionSummary]()
+  val treeSetTreeHistograms = new ConcurrentHashMap[String, DistributionSummary]()
+  val treeDiffBranchesHistograms = new ConcurrentHashMap[String, DistributionSummary]()
+  val treeBuildHistograms = new ConcurrentHashMap[String, DistributionSummary]()
+  val filterSortHistograms = new ConcurrentHashMap[String, DistributionSummary]()
 
   private val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef]()
   private val viewPorts = new ConcurrentHashMap[SessionViewPortId, ViewPort]()
   private val treeNodeStatesByVp = new ConcurrentHashMap[String, TreeNodeStateStore]()
 
-  val totalTreeWorkHistogram: Meter = metrics.meter(toJmxName("viewport.work.tree"))
-  val totalFlatWorkHistogram: Meter = metrics.meter(toJmxName("viewport.work.flat"))
+  val totalTreeWorkHistogram: Counter = metrics.meter(toJmxName("viewport.work.tree"))
+  val totalFlatWorkHistogram: Counter = metrics.meter(toJmxName("viewport.work.flat"))
 
   def getViewPorts: List[ViewPort] = CollectionHasAsScala(viewPorts.values()).asScala.toList
 
@@ -647,7 +647,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       })
     }
 
-    viewPortHistogram.update(millis)
+    viewPortHistogram.record(millis.toDouble)
   }
 
   /**
@@ -716,11 +716,11 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     val (millis, _) = timeIt{
       refreshOneTreeViewPortInternal(viewPort)
     }
-    totalTreeWorkHistogram.mark(millis)
+    totalTreeWorkHistogram.increment(millis.toDouble)
   }
 
-  private def updateHistogram(vp: ViewPort, histograms: ConcurrentHashMap[String, Histogram], suffix: String, millis: Long): Unit = {
-    histograms.computeIfAbsent(vp.id, s => metrics.histogram(toJmxName(suffix + s))).update(millis)
+  private def updateHistogram(vp: ViewPort, histograms: ConcurrentHashMap[String, DistributionSummary], suffix: String, millis: Long): Unit = {
+    histograms.computeIfAbsent(vp.id, s => metrics.histogram(toJmxName(suffix + s))).record(millis.toDouble)
   }
 
   private def refreshOneTreeViewPortInternal(viewPort: ViewPort): Unit = {
@@ -841,7 +841,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     val (millis, _) = timeIt{
       refreshOneViewPortInternal(viewPort)
     }
-    totalFlatWorkHistogram.mark(millis)
+    totalFlatWorkHistogram.increment(millis.toDouble)
   }
 
   private def refreshOneViewPortInternal(viewPort: ViewPort): Unit = {
@@ -863,7 +863,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
           viewPort.setKeys(viewPort.getKeys.create(sorted))
         }
 
-        viewPortHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram(toJmxName("vp.flat.cycle." + s))).update(millis)
+        viewPortHistograms.computeIfAbsent(viewPort.id, s => metrics.histogram(toJmxName("vp.flat.cycle." + s))).record(millis.toDouble)
         viewPort.setLastHashAndUpdateCount(currentStructureHash, currentUpdateCount)
       }
 
