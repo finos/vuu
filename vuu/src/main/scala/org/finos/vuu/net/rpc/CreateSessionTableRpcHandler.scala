@@ -1,13 +1,20 @@
 package org.finos.vuu.net.rpc
 
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.{TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.SessionTableCopyOption.{All, Empty, Selected}
 
-class CreateSessionTableRpcHandler(using tableContainer: TableContainer) extends DefaultRpcHandler {
+class CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker)(using tableContainer: TableContainer) extends DefaultRpcHandler {
   registerRpc(RpcNames.CreateSessionTableRpc, this.createSessionTable)
 
   def createSessionTable(params: RpcParams): RpcFunctionResult = {
+    val vuuUser: VuuUser = params.ctx.user
+    if (!rpcPermissionChecker.isRpcAllowed(RpcNames.CreateSessionTableRpc, vuuUser)) {
+      logger.warn(s"User ${vuuUser.name} does not have permission to call ${RpcNames.CreateSessionTableRpc}")
+      return new RpcFunctionFailure("No permission to create session table.")
+    }
+
     val session: ClientSessionId = params.ctx.session
     val sourceTable = params.viewPort.table
     val copyOption = SessionTableCopyOption.fromString(params.namedParams("copyOption").asInstanceOf[String])
@@ -28,14 +35,17 @@ class CreateSessionTableRpcHandler(using tableContainer: TableContainer) extends
     }
 
     if (!sourceTable.asTable.getTableDef.isEditable) {
-      return new RpcFunctionFailure(s"Table ${sourceTable.name} is not editable")
+      logger.warn(s"Table ${sourceTable.name} is not editable")
+      return new RpcFunctionFailure("Table not editable")
     }
 
     val columnsInSource = sourceTable.asTable.columnsForNames(columnsToCopy)
+      .filter(_ != null)
       .map(_.name)
     val columnsNotInSource = columnsToCopy.filterNot(columnsInSource.contains)
     if (columnsNotInSource.nonEmpty) {
-      return new RpcFunctionFailure(s"Column(s) [${columnsNotInSource.mkString(", ")} not found in table ${sourceTable.name}]")
+      logger.warn(s"Column(s) [${columnsNotInSource.mkString(", ")}] not found in table ${sourceTable.name}")
+      return new RpcFunctionFailure("Column(s) not found in source table.")
     }
 
     val sessionTableSource = tableContainer.getTable(sessionTableName)

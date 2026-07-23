@@ -3,10 +3,11 @@ package org.finos.vuu.wsapi
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.{ColumnBuilder, SessionTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.AbstractVuuServer
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, RpcRequest, RpcResponseNew, SelectRowRangeRequest, SelectRowRangeSuccess, SelectRowRequest, SelectRowSuccess}
-import org.finos.vuu.net.rpc.{CreateSessionTableRpcHandler, EndEditSessionRpcHandler, RpcErrorResult, RpcNames, RpcSuccessResult, ViewPortContext}
+import org.finos.vuu.net.rpc.{AllowAllRpcPermissionChecker, CreateSessionTableRpcHandler, EndEditSessionRpcHandler, RpcErrorResult, RpcNames, RpcPermissionChecker, RpcSuccessResult, ViewPortContext}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -20,6 +21,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     .addString("Name")
     .addInt("Account")
     .build();
+  private val noEnoughPermissionTableName = "noEnoughPermissionTable"
   private val nonEditableTableName = "nonEditableTable"
   private val tableName1 = "testTable1"
   private val defaultSessionTableDefName = "edit-" + tableName1
@@ -224,6 +226,27 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, maxCopySize)
     }
 
+    Scenario("Request to create a session table failed for no enough permission") {
+      Given("a view port exist")
+      val viewPortId = createViewPort(noEnoughPermissionTableName)
+
+      When("request createSessionTable")
+      val createSessionTableRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.CreateSessionTableRpc,
+        params = Map(
+          "copyOption" -> "Empty"
+        ))
+      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
+
+      Then("session table is not created")
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
+      val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
+      rpcResult.errorMessage shouldBe "No permission to create session table."
+    }
+
     Scenario("Request to create a session table failed for non-editable table") {
       Given("a view port exist")
       val viewPortId = createViewPort(nonEditableTableName)
@@ -242,6 +265,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
+      rpcResult.errorMessage shouldBe "Table not editable"
     }
 
     Scenario("Request to create a session table failed for copying from columns not in source table") {
@@ -254,7 +278,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         RpcNames.CreateSessionTableRpc,
         params = Map(
           "copyOption" -> "Empty",
-          "columnsToCopy" -> "DUMMY"
+          "columnsToCopy" -> "DUMMY1,DUMMY2"
         ))
       val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 
@@ -263,6 +287,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
+      rpcResult.errorMessage shouldBe "Column(s) not found in source table."
     }
   }
 
@@ -304,16 +329,22 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
         columns = allColumns,
-        service = new CreateSessionTableRpcHandler(using tableContainer)
+        service = new CreateSessionTableRpcHandler(AllowAllRpcPermissionChecker)(using tableContainer)
       )
     val viewPortDefFactoryForSessionTable = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
         columns = allColumns,
         service = new TestHandler(using tableContainer)
       )
+    val noEnoughPermissionViewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
+      ViewPortDef(
+        columns = allColumns,
+        service = new CreateSessionTableRpcHandler(AllDisabledRpcPermissionChecker)(using tableContainer)
+      )
 
     ModuleFactory.withNamespace(moduleName)
       .addTableForTest(createTableDef(tableName1, true), viewPortDefFactory, providerFactory)
+      .addTableForTest(createTableDef(noEnoughPermissionTableName, false), noEnoughPermissionViewPortDefFactory, providerFactory)
       .addTableForTest(createTableDef(nonEditableTableName, false), viewPortDefFactory, providerFactory)
       .addTableForTest(createTableDef(largeTableName, true), viewPortDefFactory, largeProviderFactory)
       .addSessionTable(SessionTableDef(
@@ -353,4 +384,8 @@ class TestHandler(implicit tableContainer: TableContainer) extends EndEditSessio
   override def verify(): Boolean = ???
 
   override def submit(): Boolean = ???
+}
+
+private object AllDisabledRpcPermissionChecker extends RpcPermissionChecker {
+  override def isRpcAllowed(rpcName: String, vuuUser: VuuUser): Boolean = false
 }
