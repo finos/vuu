@@ -4,8 +4,10 @@ import { useWindow } from "@salt-ds/window";
 import type { DataSource, SchemaColumn } from "@vuu-ui/vuu-data-types";
 import { TableProvider } from "@vuu-ui/vuu-table-extras";
 import {
+  CheckboxRowLevelProps,
   CustomHeader,
   // DataCellEditNotification,
+  DataRow,
   GroupToggleTarget,
   HeaderCellProps,
   RowActionHandler,
@@ -138,6 +140,12 @@ export interface TableProps
    * if provided, row with matching key will be selected. If not present, will silently fail.
    */
   autoSelectRowKey?: string;
+
+  /**
+   * When provided, the row checkbox is rendered as disabled for any row
+   * for which this predicate returns true.
+   */
+  checkboxRowLevelProps?: (dataRow: DataRow) => CheckboxRowLevelProps;
 
   /**
    * Pixel height of header cells. If specified here, this will take precedence over CSS
@@ -320,6 +328,7 @@ const TableCore = ({
   allowSelectCheckboxRow,
   autoSelectFirstRow,
   autoSelectRowKey,
+  checkboxRowLevelProps,
   // colHeaderRowHeight,
   config,
   containerRef,
@@ -407,6 +416,7 @@ const TableCore = ({
     allowSelectCheckboxRow,
     autoSelectFirstRow,
     autoSelectRowKey,
+    checkboxRowLevelProps,
     config,
     containerRef,
     dataSource,
@@ -424,7 +434,7 @@ const TableCore = ({
     onSelectCellBlock,
     onSelectionChange,
     renderBufferSize,
-    revealSelected,
+    revealSelected,   
     rowHeight,
     scrollingApiRef,
     selectionModel,
@@ -599,6 +609,7 @@ export const Table = forwardRef(function Table(
     allowSelectCheckboxRow,
     autoSelectFirstRow,
     autoSelectRowKey,
+    checkboxRowLevelProps,
     className: classNameProp,
     config,
     customHeader,
@@ -781,6 +792,7 @@ export const Table = forwardRef(function Table(
           }
           revealSelected={revealSelected}
           rowActionHandlers={rowActionHandlers}
+          checkboxRowLevelProps={checkboxRowLevelProps}
           rowHeight={rowHeight}
           scrollingApiRef={scrollingApiRef}
           lowerCaseSearchPattern={lowerCase(searchPattern)}

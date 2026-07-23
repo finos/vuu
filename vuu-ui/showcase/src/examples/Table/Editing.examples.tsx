@@ -16,6 +16,7 @@ import { BulkEditPanel, InputCell, Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
 import {
   ColumnDescriptor,
+  DataRow,
   DataValueTypeDescriptor,
   TableCellEditHandler,
   TableCellRendererProps,
@@ -329,6 +330,12 @@ const EditableInstrumentsTemplate = ({
     [],
   );
 
+  const checkboxRowLevelProps = useCallback(
+    (dataRow: DataRow) =>
+      dataRow.vuuMsg === "SOFT_DELETED" ? { disabled: true, checked: true } : {},
+    [],
+  );
+
   const config = useMemo<TableConfig>(
     () => ({
       columns:
@@ -396,7 +403,8 @@ const EditableInstrumentsTemplate = ({
               config={config}
               dataSource={sessionDataSource ?? dataSource}
               renderBufferSize={10}
-              selectionModel="checkbox"
+              checkboxRowLevelProps={editMode === "edit" ? checkboxRowLevelProps : undefined}
+              selectionModel={editMode === "edit" ? "checkbox" : "none"}
             />
           </DataEditingProvider>
         )}
@@ -423,7 +431,7 @@ const EditableInstrumentsTemplate = ({
 export const EditableInstrumentsInlineEdit = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
-      <EditableInstrumentsTemplate />
+      <EditableInstrumentsTemplate editSessionMode="all-rows" />
     </NotificationsProvider>
   </LocalDataSourceProvider>
 );

@@ -195,8 +195,8 @@ Renders the action bar for an edit session. Subscribes to `EditSession` directly
 ```
 isEditMode → true
   useEditableTable (useMemo)
-    editSession.begin("inline-all-rows")
-      dataSource.beginEditSession("inline-all-rows")          ← EditApi RPC
+    editSession.begin("all-rows")
+      dataSource.beginEditSession("all-rows")          ← EditApi RPC
         → "beginEditSession" RPC → VuuModule.beginEditSession
           creates SessionTable (Proxy over source Table)
           stores in #sessionTableMap[sessionTableName]
@@ -821,3 +821,45 @@ The `params` object sent with each RPC request (types from `@vuu-ui/vuu-protocol
 | `undoRowChange` | `"undoRowChange"` | session datasource | if key not in source table: deletes inserted row, returns `UndoRowChangeResult { wasInsertedRow: true }`; otherwise reverts `cellUpdates` to source values |
 | `beginEditSession` | `"beginEditSession"` | source datasource | creates `SessionTable` proxy, stores in `#sessionTableMap` |
 | `endEditSession` | `"endEditSession"` | session datasource | applies (or discards) session updates to source table |
+
+---
+
+## Per-Row Checkbox State — `checkboxRowLevelProps`
+
+When using checkbox selection (`selectionModel="checkbox"`) during an edit session, individual row checkboxes can be given custom `disabled` and `checked` states via the `checkboxRowLevelProps` prop on `<Table>`.
+
+### API
+
+```typescript
+// Defined in @vuu-ui/vuu-table-types
+type CheckboxRowLevelProps = {
+  /** Override the checked state; falls back to dataRow.isSelected if absent */
+  checked?: boolean;
+  /** Disable the checkbox for this row */
+  disabled?: boolean;
+};
+
+// On TableProps:
+checkboxRowLevelProps?: (dataRow: DataRow) => CheckboxRowLevelProps;
+```
+
+### Soft-delete example
+
+In `EditableInstrumentsTemplate`, soft-deleted rows show their checkbox as **checked + disabled** — visually indicating the row is pending deletion while preventing re-selection:
+
+```typescript
+const checkboxRowLevelProps = useCallback(
+  (dataRow: DataRow): CheckboxRowLevelProps =>
+    dataRow.vuuMsg === "SOFT_DELETED"
+      ? { disabled: true, checked: true }
+      : {},
+  [],
+);
+
+<Table
+  config={config}
+  dataSource={sessionDataSource ?? dataSource}
+  checkboxRowLevelProps={editMode === "edit" ? checkboxRowLevelProps : undefined}
+  selectionModel={editMode === "edit" ? "checkbox" : "none"}
+/>
+```

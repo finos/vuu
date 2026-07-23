@@ -220,7 +220,19 @@ export interface ColumnTypeRendering {
   // specific to Background renderer
   flashStyle?: "bg-only" | "arrow-bg" | "arrow";
   name: string;
+  /** Arbitrary props passed to the registered cell renderer component. */
+  componentProps?: Record<string, unknown>;
 }
+/**
+ * Per-row override props for the checkbox column cell.
+ * Returned by `checkboxRowLevelProps` on `TableProps`.
+ */
+export type CheckboxRowLevelProps = {
+  /** Override the checked state; falls back to dataRow.isSelected if absent */
+  checked?: boolean;
+  /** Disable the checkbox for this row */
+  disabled?: boolean;
+};
 export interface MappedValueTypeRenderer {
   map: ColumnTypeValueMap;
 }
@@ -388,13 +400,18 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
    * A custom Cell Renderer component, configured via the `type.renderer`
    */
   CellRenderer?: FunctionComponent<TableCellRendererProps>;
-  HeaderCellLabelRenderer?: FunctionComponent<
-    Omit<HeaderCellProps, "id" | "index">
-  >;
   HeaderCellContentRenderer?: FunctionComponent<
     Omit<HeaderCellProps, "id" | "index">
   >;
+  HeaderCellLabelRenderer?: FunctionComponent<
+    Omit<HeaderCellProps, "id" | "index">
+  >;
   canStretch?: boolean;
+  /**
+   * Runtime-only (not serialized). Injected by useTableModel for the checkbox column
+   * when checkboxRowLevelProps is provided as a Table prop.
+   */
+  checkboxRowLevelProps?: (dataRow: DataRow) => CheckboxRowLevelProps;
   className?: string;
   clientSideEditValidationCheck?: DataValueValidationChecker;
   /**
