@@ -102,6 +102,7 @@ export const ToastNotification = ({
         [`${classBase}-withIcon`]: icon !== false,
         [`${classBase}-withTransition`]: animationType !== undefined && !hidden,
         [`${classBase}-withCloseButton`]: withCloseButton,
+        [`${classBase}-${notification.status}-${notification.className}`]: notification.className !== undefined,
       })}
       id={id}
       left={left}
