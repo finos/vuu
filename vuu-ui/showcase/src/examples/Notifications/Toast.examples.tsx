@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import {
   NotificationsProvider,
   useNotifications,
@@ -31,7 +31,7 @@ const Notifications = () => {
 
   const { showNotification, hideNotification } = useNotifications();
 
-  const notificationIds: string[] = [];
+  const notificationIds = useRef<string[]>([]);
 
   const handleShowNotification = () => {
     const notificationId = showNotification({
@@ -46,7 +46,7 @@ const Notifications = () => {
       type: "toast",
     });
     if (notificationId !== undefined) {
-      notificationIds.push(notificationId);
+      notificationIds.current.push(notificationId);
     }
     if (renderPostRefresh) {
       location.reload();
@@ -54,7 +54,7 @@ const Notifications = () => {
   };
 
   const handleHideNotification = () => {
-    notificationIds.forEach(hideNotification);
+    notificationIds.current.forEach(hideNotification);
   };
 
   return (
@@ -301,8 +301,6 @@ export const ErrorNotificationWithCustomBackground = () => (
               border-width: 2px;
               border-style: solid;
             }
-
-          
         }
     `}</style>
     <ToastNotification
@@ -316,4 +314,16 @@ export const ErrorNotificationWithCustomBackground = () => (
       }}
     />
   </>
+);
+
+export const NotificationToastWithLinkInContent = () => (
+  <ToastNotification
+    top={20}
+    notification={{
+      content: <span><a href="https://example.com">This is Info Body with Link</a></span>,
+      header: "This is Info Title",
+      status: "info",
+      type: "toast",
+    }}
+  />
 );

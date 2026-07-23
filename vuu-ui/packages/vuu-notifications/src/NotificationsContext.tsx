@@ -45,7 +45,6 @@ export interface ToastNotificationDescriptor
   className?: string;
   content?: ReactNode;
   header: string;
-  id?: string;
 }
 
 export interface WorkspaceNotificationDescriptor

@@ -51,7 +51,7 @@ const RuntimeToast = (
   return {
     ...toast,
     hidden: slidesIn,
-    id: toast.id ?? getUniqueId(),
+    id: getUniqueId(),
     left: document.body.clientWidth,
     opacity: slidesIn ? undefined : 0,
     size: ZeroSize,

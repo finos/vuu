@@ -1744,6 +1744,14 @@ export default [
                   path: "src/examples/Popups/Notifications/Notifications.examples.tsx",
                 },
               },
+              {
+                id: "Popups/Notifications/Notifications/NotificationToastWithLinkInContent",
+                label: "NotificationToastWithLinkInContent",
+                nodeData: {
+                  componentName: "NotificationToastWithLinkInContent",
+                  path: "src/examples/Popups/Notifications/Notifications.examples.tsx",
+                },
+              },
             ],
           },
         ],

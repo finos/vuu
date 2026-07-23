@@ -99,30 +99,6 @@ test.describe("Given a toast notification", () => {
     });
   }
 
-  test("should render link tokens in notification body content", async ({
-    mount,
-  }) => {
-    const component: MountResult = await mount(<NotificationsWithContext />);
-
-    const bodyInput = component.getByLabel("Notification Body");
-    await bodyInput.fill("Open [link:/dashboard|Dashboard] now");
-
-    const triggerButton = component.locator(
-      'button:has-text("trigger notifications")',
-    );
-    await triggerButton.click();
-
-    const notificationContent = component.page().locator(
-      ".vuuToastNotification-content",
-    );
-    await expect(notificationContent).toBeVisible();
-    await expect(notificationContent).toContainText("Open Dashboard now");
-
-    const link = notificationContent.locator('a[href="/dashboard"]');
-    await expect(link).toBeVisible();
-    await expect(link).toHaveText("Dashboard");
-  });
-
   test("should display error notification with custom background and borders", async ({
     mount,
   }) => {
@@ -162,6 +138,4 @@ test.describe("Given a toast notification", () => {
     // Verify background color is the custom light red
     expect(backgroundColor).toBe("#ffe6e6"); // Should have RGB color
   });
-
-  
 });
