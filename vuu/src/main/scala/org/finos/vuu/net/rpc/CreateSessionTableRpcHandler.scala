@@ -5,7 +5,7 @@ import org.finos.vuu.core.table.{TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.SessionTableCopyOption.{All, Empty, Selected}
 
-class CreateSessionTableRpcHandler(using tableContainer: TableContainer, rpcPermissionChecker: RpcPermissionChecker) extends DefaultRpcHandler {
+class CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker)(using tableContainer: TableContainer) extends DefaultRpcHandler {
   registerRpc(RpcNames.CreateSessionTableRpc, this.createSessionTable)
 
   def createSessionTable(params: RpcParams): RpcFunctionResult = {
@@ -39,10 +39,11 @@ class CreateSessionTableRpcHandler(using tableContainer: TableContainer, rpcPerm
     }
 
     val columnsInSource = sourceTable.asTable.columnsForNames(columnsToCopy)
+      .filter(_ != null)
       .map(_.name)
     val columnsNotInSource = columnsToCopy.filterNot(columnsInSource.contains)
     if (columnsNotInSource.nonEmpty) {
-      return new RpcFunctionFailure(s"Column(s) [${columnsNotInSource.mkString(", ")} not found in table ${sourceTable.name}]")
+      return new RpcFunctionFailure(s"Column(s) [${columnsNotInSource.mkString(", ")}] not found in table ${sourceTable.name}")
     }
 
     val sessionTableSource = tableContainer.getTable(sessionTableName)

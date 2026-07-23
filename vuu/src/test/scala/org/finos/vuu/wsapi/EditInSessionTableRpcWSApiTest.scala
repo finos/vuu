@@ -244,6 +244,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
+      rpcResult.errorMessage shouldBe "Failed to create session table for user testUser"
     }
 
     Scenario("Request to create a session table failed for non-editable table") {
@@ -264,6 +265,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
+      rpcResult.errorMessage shouldBe s"Table ${nonEditableTableName} is not editable"
     }
 
     Scenario("Request to create a session table failed for copying from columns not in source table") {
@@ -276,7 +278,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         RpcNames.CreateSessionTableRpc,
         params = Map(
           "copyOption" -> "Empty",
-          "columnsToCopy" -> "DUMMY"
+          "columnsToCopy" -> "DUMMY1,DUMMY2"
         ))
       val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 
@@ -285,6 +287,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
+      rpcResult.errorMessage shouldBe s"Column(s) [DUMMY1, DUMMY2] not found in table ${tableName1}"
     }
   }
 
@@ -326,7 +329,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
         columns = allColumns,
-        service = new CreateSessionTableRpcHandler(using tableContainer, AllowAllRpcPermissionChecker)
+        service = new CreateSessionTableRpcHandler(AllowAllRpcPermissionChecker)(using tableContainer)
       )
     val viewPortDefFactoryForSessionTable = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
@@ -336,7 +339,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     val noEnoughPermissionViewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
         columns = allColumns,
-        service = new CreateSessionTableRpcHandler(using tableContainer, AllDisabledRpcPermissionChecker)
+        service = new CreateSessionTableRpcHandler(AllDisabledRpcPermissionChecker)(using tableContainer)
       )
 
     ModuleFactory.withNamespace(moduleName)
