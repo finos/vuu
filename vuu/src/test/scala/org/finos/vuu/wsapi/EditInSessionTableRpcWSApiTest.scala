@@ -244,7 +244,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
-      rpcResult.errorMessage shouldBe "Failed to create session table for user testUser"
+      rpcResult.errorMessage shouldBe "No permission to create session table."
     }
 
     Scenario("Request to create a session table failed for non-editable table") {
@@ -265,7 +265,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
-      rpcResult.errorMessage shouldBe s"Table ${nonEditableTableName} is not editable"
+      rpcResult.errorMessage shouldBe "Table not editable"
     }
 
     Scenario("Request to create a session table failed for copying from columns not in source table") {
@@ -287,7 +287,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
-      rpcResult.errorMessage shouldBe s"Column(s) [DUMMY1, DUMMY2] not found in table ${tableName1}"
+      rpcResult.errorMessage shouldBe "Column(s) not found in source table."
     }
   }
 

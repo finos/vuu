@@ -12,7 +12,7 @@ class CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker)(u
     val vuuUser: VuuUser = params.ctx.user
     if (!rpcPermissionChecker.isRpcAllowed(RpcNames.CreateSessionTableRpc, vuuUser)) {
       logger.warn(s"User ${vuuUser.name} does not have permission to call ${RpcNames.CreateSessionTableRpc}")
-      return new RpcFunctionFailure(s"Failed to create session table for user ${vuuUser.name}")
+      return new RpcFunctionFailure("No permission to create session table.")
     }
 
     val session: ClientSessionId = params.ctx.session
@@ -35,7 +35,8 @@ class CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker)(u
     }
 
     if (!sourceTable.asTable.getTableDef.isEditable) {
-      return new RpcFunctionFailure(s"Table ${sourceTable.name} is not editable")
+      logger.warn(s"Table ${sourceTable.name} is not editable")
+      return new RpcFunctionFailure("Table not editable")
     }
 
     val columnsInSource = sourceTable.asTable.columnsForNames(columnsToCopy)
@@ -43,7 +44,8 @@ class CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker)(u
       .map(_.name)
     val columnsNotInSource = columnsToCopy.filterNot(columnsInSource.contains)
     if (columnsNotInSource.nonEmpty) {
-      return new RpcFunctionFailure(s"Column(s) [${columnsNotInSource.mkString(", ")}] not found in table ${sourceTable.name}")
+      logger.warn(s"Column(s) [${columnsNotInSource.mkString(", ")}] not found in table ${sourceTable.name}")
+      return new RpcFunctionFailure("Column(s) not found in source table.")
     }
 
     val sessionTableSource = tableContainer.getTable(sessionTableName)
