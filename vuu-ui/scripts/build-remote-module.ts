@@ -31,6 +31,13 @@ async function build(
 
   const rsbuild = await createRsbuild({
     config: {
+      source: {
+        define: {
+          "process.env": JSON.stringify({
+            NODE_ENV: process.env.NODE_ENV || "development",
+          }),
+        },
+      },
       html: {
         template: "../remote-module-template/index.html",
         title: `${name} (standalone)`,

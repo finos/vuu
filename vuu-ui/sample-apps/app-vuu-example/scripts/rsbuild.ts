@@ -30,6 +30,13 @@ const buildManifest = () => {
           vuuTables: "*",
         },
       },
+      "user-admin": {
+        title: "Vuu User Admin",
+        mfComponent: "UserAdmin",
+        mfScope: "userAdmin",
+        mfUrl: "http://localhost:5007",
+        leftNavLocation: "vuu-features",
+      },
       "instrument-tiles": {
         title: "Instrument Price Tiles",
         mfComponent: "VuuInstrumentTilesFeature",
