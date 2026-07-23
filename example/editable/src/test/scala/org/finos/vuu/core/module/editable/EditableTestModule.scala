@@ -101,7 +101,7 @@ class EditTableTestService(val originalData: Map[String, Any])(using tableContai
 object EditTableTestModule {
 
   final val NAME = "EDIT_TABLE_TEST"
-  final val originalData: Map[Any, Any] = Map("A" -> null, "B" -> null, "C" -> null, "D" -> null)
+  final val originalData: Map[Any, Any] = Map("rowId" -> "key1", "A" -> null, "B" -> null, "C" -> null, "D" -> null)
 
   def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
