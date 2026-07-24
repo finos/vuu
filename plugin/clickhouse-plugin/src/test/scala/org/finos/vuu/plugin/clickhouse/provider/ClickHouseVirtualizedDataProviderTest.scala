@@ -181,6 +181,28 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
           )
         }
 
+        //Jump to beyond end
+        viewport.setRange(ViewPortRange(25_000, 25_005))
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 0
+
+        //Jump to end again
+        viewport.setRange(ViewPortRange(24_995, 25_000))
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 5
+        assertVpEq(updates) {
+          Table(
+            ("quantity", "price", "side", "trader"),
+            (49992, 499920L, "Buy", "trader-49992"),
+            (49994, 499940L, "Buy", "trader-49994"),
+            (49996, 499960L, "Buy", "trader-49996"),
+            (49998, 499980L, "Buy", "trader-49998"),
+            (50000, 500000L, "Buy", "trader-50000")
+          )
+        }
+
         //Jump to beginning
         viewport.setRange(ViewPortRange(0, 5))
         virtualizedProvider.runOnce(viewport)
@@ -196,6 +218,29 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
             (8, 80L, "Buy", "trader-8")
           )
         }
+
+        //Jump twice between reloads
+        viewport.setRange(ViewPortRange(5, 10))
+        viewport.setRange(ViewPortRange(10, 15))
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 5
+        assertVpEq(updates) {
+          Table(
+            ("quantity", "price", "side", "trader"),
+            (22, 220L, "Buy", "trader-22"),
+            (24, 240L, "Buy", "trader-24"),
+            (26, 260L, "Buy", "trader-26"),
+            (28, 280L, "Buy", "trader-28"),
+            (30, 300L, "Buy", "trader-30")
+          )
+        }
+
+        //Invalid range
+        val ex = intercept[Exception] {
+          viewport.setRange(ViewPortRange(0, Int.MaxValue))
+        }
+        ex.getMessage.startsWith("Requested range exceeded settings in view port VP-") shouldEqual true
       }
     }
 
