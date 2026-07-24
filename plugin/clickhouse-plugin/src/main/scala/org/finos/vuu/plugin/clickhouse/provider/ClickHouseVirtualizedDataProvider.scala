@@ -37,7 +37,7 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
     val sizeMillis = clock.now() - sizeStart
 
     val virtualizedRange = VirtualizedRangeFactory.build(
-      viewPort.getRange, tableDef.getRangeOptions, tableSize
+      viewPort.getRange, tableDef.rangeSettings, tableSize
     )
     val startIndex = virtualizedRange.from
     val limit = virtualizedRange.to - virtualizedRange.from

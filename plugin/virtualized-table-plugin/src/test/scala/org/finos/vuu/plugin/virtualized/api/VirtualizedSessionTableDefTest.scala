@@ -1,7 +1,6 @@
 package org.finos.vuu.plugin.virtualized.api
 
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePluginType
-import org.finos.vuu.plugin.virtualized.table.range.NoRangeOptions
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -40,7 +39,8 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       simpleDef.includeDefaultColumns shouldBe false
 
       And("it should have no range options by default")
-      simpleDef.rangeOptions shouldBe NoRangeOptions
+      simpleDef.rangeSettings.maxRangeEnd shouldEqual Int.MaxValue
+      simpleDef.rangeSettings.maxRangeWidth shouldEqual Int.MaxValue
     }
 
     Scenario("Creating an AliasedVirtualizedSessionTableDef") {
@@ -77,7 +77,8 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       aliasedDef.includeDefaultColumns shouldBe false
 
       And("it should have no range options by default")
-      aliasedDef.rangeOptions shouldBe NoRangeOptions
+      aliasedDef.rangeSettings.maxRangeEnd shouldEqual Int.MaxValue
+      aliasedDef.rangeSettings.maxRangeWidth shouldEqual Int.MaxValue
     }
 
 

@@ -1,5 +1,6 @@
 package org.finos.vuu.plugin.virtualized.table.range
 
+import org.finos.vuu.core.table.RangeSettings
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.GivenWhenThen
@@ -16,7 +17,7 @@ class VirtualizedRangeFactoryTest extends AnyFeatureSpec
     Scenario("Validating range against maxRangeDepth limit") {
       Given("a viewport range that exceeds the maxRangeDepth limit")
       val range = ViewPortRange(0, 1001)
-      val options = MaxRangeOptions(maxRangeEnd = Some(1000), maxRangeWidth = None)
+      val options = RangeSettings().withMaxRangeEnd(1000)
       val tableSize = 1000L
 
       When("building the virtualized range")
@@ -29,7 +30,7 @@ class VirtualizedRangeFactoryTest extends AnyFeatureSpec
     Scenario("Validating range against maxRangeWidth limit") {
       Given("a viewport range whose width exceeds the maxRangeWidth limit")
       val range = ViewPortRange(1000, 2001)
-      val options = MaxRangeOptions(maxRangeEnd = None, maxRangeWidth = Some(1000))
+      val options = RangeSettings().withMaxRangeWidth(1000)
       val tableSize = 10000L
 
       When("building the virtualized range")
@@ -42,7 +43,7 @@ class VirtualizedRangeFactoryTest extends AnyFeatureSpec
     Scenario("Calculating dynamic window size for small table size") {
       Given("a table size smaller than the min threshold (20k)")
       val range = ViewPortRange(1000, 1100)
-      val options = NoRangeOptions
+      val options = RangeSettings()
       val tableSize = 10000L // < 20,000
 
       When("building the virtualized range")
@@ -57,7 +58,7 @@ class VirtualizedRangeFactoryTest extends AnyFeatureSpec
     Scenario("Calculating dynamic window size for huge table size") {
       Given("a table size larger than the max threshold (1B)")
       val range = ViewPortRange(1000, 1100)
-      val options = NoRangeOptions
+      val options = RangeSettings()
       val tableSize = 2000000000L // > 1,000,000,000
 
       When("building the virtualized range")
@@ -72,7 +73,7 @@ class VirtualizedRangeFactoryTest extends AnyFeatureSpec
     Scenario("Calculating dynamic window size for medium table size") {
       Given("a table size between thresholds")
       val range = ViewPortRange(20000, 20100)
-      val options = NoRangeOptions
+      val options = RangeSettings()
       val tableSize = 10000000L // Between 20k and 1B
 
       When("building the virtualized range")
@@ -90,7 +91,7 @@ class VirtualizedRangeFactoryTest extends AnyFeatureSpec
     Scenario("Constraining end index by maxDepth") {
       Given("a max depth that is smaller than the requested end")
       val range = ViewPortRange(0, 100)
-      val options = MaxRangeOptions(maxRangeEnd = Some(400), maxRangeWidth = None)
+      val options = RangeSettings().withMaxRangeEnd(400)
       val tableSize = 10000L // Min window size of 500
 
       When("building the virtualized range")

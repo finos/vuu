@@ -1,9 +1,15 @@
 package org.finos.vuu.util;
 
-import org.finos.vuu.api.*;
+import org.finos.vuu.api.Index;
+import org.finos.vuu.api.Indices;
+import org.finos.vuu.api.Link;
+import org.finos.vuu.api.TableDef;
+import org.finos.vuu.api.TableVisibility;
+import org.finos.vuu.api.VisualLinks;
 import org.finos.vuu.core.filter.type.AllowAllPermissionFilter$;
 import org.finos.vuu.core.filter.type.PermissionFilter;
 import org.finos.vuu.core.table.Column;
+import org.finos.vuu.core.table.RangeSettings;
 import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.net.SortSpec;
 import org.finos.vuu.viewport.ViewPort;
@@ -31,6 +37,7 @@ public class TableDefBuilder {
     private BiFunction<ViewPort, TableContainer, PermissionFilter> permissionFunction = (vp, tc) -> AllowAllPermissionFilter$.MODULE$;
     private SortSpec defaultSort = new SortSpecBuilder()
             .build();
+    private RangeSettings rangeSettings = RangeSettings.apply();
 
     /**
      * Sets table name.
@@ -186,6 +193,17 @@ public class TableDefBuilder {
     }
 
     /**
+     * Sets the range settings
+     *
+     * @param rangeSettings the rangeSettings
+     * @return this builder
+     */
+    public TableDefBuilder rangeSettings(RangeSettings rangeSettings) {
+        this.rangeSettings = rangeSettings;
+        return this;
+    }
+
+    /**
      * Builds {@link TableDef}.
      *
      * @return {@link TableDef}
@@ -203,6 +221,7 @@ public class TableDefBuilder {
                 includeDefaultColumns,
                 isEditable,
                 ScalaFunctionConverter.toScala(permissionFunction),
-                defaultSort);
+                defaultSort,
+                rangeSettings);
     }
 }

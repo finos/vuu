@@ -1,5 +1,6 @@
 package org.finos.vuu.plugin.virtualized.table.range
 
+import org.finos.vuu.core.table.RangeSettings
 import org.finos.vuu.plugin.virtualized.table.range.VirtualizedRange
 import org.finos.vuu.viewport.ViewPortRange
 
@@ -14,12 +15,12 @@ object VirtualizedRangeFactory {
 
   def build(
              range: ViewPortRange,
-             rangeOptions: RangeOptions,
+             rangeSettings: RangeSettings,
              tableSize: Long
            ): VirtualizedRange = {
 
-    val maxEnd = rangeOptions.maxRangeEnd.getOrElse(Int.MaxValue)
-    val maxWidth = rangeOptions.maxRangeWidth.getOrElse(Int.MaxValue)
+    val maxEnd = rangeSettings.maxRangeEnd
+    val maxWidth = rangeSettings.maxRangeWidth
 
     if (range.to > maxEnd) {
       return VirtualizedRange(0, 0)

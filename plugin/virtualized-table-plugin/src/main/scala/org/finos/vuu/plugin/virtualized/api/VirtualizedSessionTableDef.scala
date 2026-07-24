@@ -1,18 +1,21 @@
 package org.finos.vuu.plugin.virtualized.api
 
 import org.finos.vuu.api.SessionTableDef
-import org.finos.vuu.core.table.Column
+import org.finos.vuu.core.table.{Column, RangeSettings}
+import org.finos.vuu.net.SortSpec
 import org.finos.vuu.plugin.PluginType
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePluginType
-import org.finos.vuu.plugin.virtualized.table.range.{NoRangeOptions, RangeOptions}
 
 abstract class VirtualizedSessionTableDef(
                                            name: String,
                                            keyField: String,
                                            remoteColumns: Array[VirtualizedSessionTableColumn],
-                                           rangeOptions: RangeOptions = NoRangeOptions,
-                                           includeDefaults: Boolean = false,
-                                         ) extends SessionTableDef(name, keyField, remoteColumns.map(f => f.asInstanceOf[Column]), includeDefaultColumns = includeDefaults) {
+                                           rangeSettings: RangeSettings,
+                                           defaultSort: SortSpec,
+                                           includeDefaults: Boolean,
+                                         ) 
+  extends SessionTableDef(name, keyField, remoteColumns.map(f => f.asInstanceOf[Column]), rangeSettings = rangeSettings,
+    defaultSort = defaultSort, includeDefaultColumns = includeDefaults) {
 
   override def pluginType: PluginType = VirtualizedTablePluginType
 
@@ -22,17 +25,16 @@ abstract class VirtualizedSessionTableDef(
 
   def getRemoteColumns: Array[VirtualizedSessionTableColumn] = remoteColumns
 
-  def getRangeOptions: RangeOptions = rangeOptions
-
 }
 
 case class SimpleVirtualizedSessionTableDef(
                                              tableName: String,
                                              tableKeyField: String,
                                              remoteColumns: Array[VirtualizedSessionTableColumn],
-                                             rangeOptions: RangeOptions = NoRangeOptions,
-                                             includeDefaults: Boolean = false
-                                           ) extends VirtualizedSessionTableDef(tableName, tableKeyField, remoteColumns, rangeOptions, includeDefaults)
+                                             range: RangeSettings = RangeSettings(),
+                                             sort: SortSpec = SortSpec(List.empty),                                             
+                                             includeDefaults: Boolean = false                                           
+                                           ) extends VirtualizedSessionTableDef(tableName, tableKeyField, remoteColumns, range, sort, includeDefaults)
 
 case class AliasedVirtualizedSessionTableDef(
                                               remoteName: String,
@@ -40,9 +42,10 @@ case class AliasedVirtualizedSessionTableDef(
                                               remoteKeyField: String,
                                               tableKeyField: String,
                                               remoteColumns: Array[VirtualizedSessionTableColumn],
-                                              rangeOptions: RangeOptions = NoRangeOptions,
+                                              range: RangeSettings = RangeSettings(),
+                                              sort: SortSpec = SortSpec(List.empty),
                                               includeDefaults: Boolean = false
-                                            ) extends VirtualizedSessionTableDef(tableName, tableKeyField, remoteColumns, rangeOptions, includeDefaults) {
+                                            ) extends VirtualizedSessionTableDef(tableName, tableKeyField, remoteColumns, range, sort, includeDefaults) {
 
   override def getRemoteTableName: String = remoteName
 

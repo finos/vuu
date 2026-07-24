@@ -29,7 +29,7 @@ class ReallyBigVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef)(imp
 
     val tableSize = cache.getTableSize
     val virtualizedRange = VirtualizedRangeFactory.build(
-      viewPort.getRange, tableDef.getRangeOptions, tableSize
+      viewPort.getRange, tableDef.rangeSettings, tableSize
     )
 
     val startIndex = virtualizedRange.from

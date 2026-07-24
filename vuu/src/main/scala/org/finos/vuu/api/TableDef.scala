@@ -3,7 +3,7 @@ package org.finos.vuu.api
 import org.finos.vuu.api.TableVisibility.Public
 import org.finos.vuu.core.filter.`type`.{AllowAllPermissionFilter, PermissionFilter}
 import org.finos.vuu.core.module.ViewServerModule
-import org.finos.vuu.core.table.{Column, Columns, DataType, DefaultColumn, JoinColumn, SimpleColumn, TableContainer}
+import org.finos.vuu.core.table.{Column, Columns, DataType, DefaultColumn, JoinColumn, RangeSettings, SimpleColumn, TableContainer}
 import org.finos.vuu.feature.inmem.VuuInMemPluginLocator
 import org.finos.vuu.net.SortSpec
 import org.finos.vuu.viewport.ViewPort
@@ -207,8 +207,12 @@ class SessionTableDef(name: String,
                       links: VisualLinks = VisualLinks(),
                       indices: Indices = Indices(),
                       visibility: TableVisibility = Public,
-                      includeDefaultColumns: Boolean = true) extends TableDef(name, keyField, customColumns, joinFields,
-  autosubscribe, links, indices, visibility, includeDefaultColumns) with VuuInMemPluginLocator
+                      includeDefaultColumns: Boolean = true,
+                      defaultSort: SortSpec = SortSpec(List.empty),
+                      rangeSettings: RangeSettings = RangeSettings()
+                     ) extends TableDef(name, keyField, customColumns, joinFields,
+  autosubscribe, links, indices, visibility, includeDefaultColumns,
+  defaultSort = defaultSort, rangeSettings = rangeSettings) with VuuInMemPluginLocator
 
 class TableDef(val name: String,
                val keyField: String,
@@ -221,7 +225,8 @@ class TableDef(val name: String,
                val includeDefaultColumns: Boolean = true,
                val isEditable: Boolean = false,
                val permissionFunction: (ViewPort, TableContainer) => PermissionFilter = (_, _) => AllowAllPermissionFilter,
-               val defaultSort: SortSpec = SortSpec(List.empty)) extends VuuInMemPluginLocator {
+               val defaultSort: SortSpec = SortSpec(List.empty),
+               val rangeSettings: RangeSettings = RangeSettings()) extends VuuInMemPluginLocator {
 
   private val defaultColumns: Array[Column] = if (includeDefaultColumns) DefaultColumn.getDefaultColumns(customColumns) else Array.empty
   private val columns: Array[Column] = if (includeDefaultColumns) customColumns ++ defaultColumns else customColumns

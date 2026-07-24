@@ -152,7 +152,8 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
       val columnNames = columns.map(_.name)
       val editableColumns = columns.filter(c => table.getTableDef.columnForName(c.name).isEditable).map(_.name)
       val dataTypes = columns.map(col => DataType.asString(col.dataType))
-      GetTableMetaResponse(msg.table, columnNames, dataTypes, table.getTableDef.keyField, editableColumns)
+      GetTableMetaResponse(msg.table, columnNames, dataTypes, table.getTableDef.keyField, editableColumns,
+        table.getTableDef.rangeSettings.maxRangeEnd, table.getTableDef.rangeSettings.maxRangeWidth)
     } else {
       throw new RuntimeException(s"Failed to find table ${msg.table.table} in module ${msg.table.module}. (${ctx.requestId})")
     }
