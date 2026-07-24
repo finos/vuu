@@ -40,7 +40,7 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
 
       And("it should have no range options by default")
       simpleDef.rangeSettings.maxRangeEnd shouldEqual Int.MaxValue
-      simpleDef.rangeSettings.maxRangeWidth shouldEqual Int.MaxValue
+      simpleDef.rangeSettings.maxRangeWidth shouldEqual 1000
     }
 
     Scenario("Creating an AliasedVirtualizedSessionTableDef") {
@@ -78,7 +78,7 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
 
       And("it should have no range options by default")
       aliasedDef.rangeSettings.maxRangeEnd shouldEqual Int.MaxValue
-      aliasedDef.rangeSettings.maxRangeWidth shouldEqual Int.MaxValue
+      aliasedDef.rangeSettings.maxRangeWidth shouldEqual 1000
     }
 
 

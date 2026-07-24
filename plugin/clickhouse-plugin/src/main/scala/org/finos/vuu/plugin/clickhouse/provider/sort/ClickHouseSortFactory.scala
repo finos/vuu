@@ -30,7 +30,7 @@ object ClickHouseSortFactory extends StrictLogging {
         } else {
           s"ORDER BY ${sortItems.mkString(", ")}, ${tableDef.getRemoteKeyField} ASC"
         }
-        logger.debug(s"Parsed sort \"$orderBy\"")
+        logger.trace(s"Parsed sort \"$orderBy\"")
         orderBy
       case Failure(err) =>
         logger.error(s"Could not parse sort $sortSpec", err)

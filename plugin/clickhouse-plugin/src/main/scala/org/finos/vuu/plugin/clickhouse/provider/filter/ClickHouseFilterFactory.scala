@@ -28,11 +28,11 @@ object ClickHouseFilterFactory extends StrictLogging {
       case Success(_) =>
         val buffer = filterVisitor.getBuffer
         if (buffer.isEmpty) {
-          logger.debug("Parsed filter was empty")
+          logger.trace("Parsed filter was empty")
           NO_FILTER
         } else {
           val whereClause = s"WHERE ${buffer.toString}" 
-          logger.debug(s"Parsed filter \"$whereClause\"")
+          logger.trace(s"Parsed filter \"$whereClause\"")
           whereClause
         }
       case Failure(err) =>

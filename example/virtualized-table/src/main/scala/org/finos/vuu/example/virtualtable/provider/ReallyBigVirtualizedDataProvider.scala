@@ -8,7 +8,6 @@ import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.example.virtualtable.bigdatacache.FakeBigDataCache
 import org.finos.vuu.feature.ViewPortKeys
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
-import org.finos.vuu.plugin.virtualized.table.range.VirtualizedRangeFactory
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.viewport.{ViewPort, ViewPortColumns}
@@ -26,14 +25,9 @@ class ReallyBigVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef)(imp
     //the provider itself, in this example, I'm going to cheat and ignore them :-)
     val sort = viewPort.getSort
     val filter = viewPort.filterSpec
-
-    val tableSize = cache.getTableSize
-    val virtualizedRange = VirtualizedRangeFactory.build(
-      viewPort.getRange, tableDef.rangeSettings, tableSize
-    )
-
-    val startIndex = virtualizedRange.from
-    val endIndex = virtualizedRange.to
+    
+    val startIndex = viewPort.getRange.from
+    val endIndex = viewPort.getRange.to
 
     logger.trace(s"[ReallyBigVirtualizedDataProvider] Loading orders from Big Data Cache $startIndex to $endIndex")
 
