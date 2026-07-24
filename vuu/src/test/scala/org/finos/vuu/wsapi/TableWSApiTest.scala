@@ -30,7 +30,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
       responseBody.columns shouldEqual Array("id", "account")
       responseBody.editableColumns shouldEqual Array("account")
       responseBody.maxRangeEnd shouldEqual Int.MaxValue
-      responseBody.maxRangeWidth shouldEqual Int.MaxValue
+      responseBody.maxRangeWidth shouldEqual 1000
     }
 
     Scenario("For a table with no view port def defined") {
