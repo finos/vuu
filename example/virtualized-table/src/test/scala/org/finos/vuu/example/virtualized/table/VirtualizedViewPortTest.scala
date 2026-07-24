@@ -37,6 +37,7 @@ class VirtualizedViewPortTest extends VuuServerTestCase {
           virtualizedProvider.runOnce(viewport)
 
           var updates = combineQsForVp(viewport)
+          updates.length shouldBe 10
           assertVpEq(updates) {
             Table(
               ("orderId" ,"quantity","price"   ,"side"    ,"trader"  ),
@@ -54,8 +55,10 @@ class VirtualizedViewPortTest extends VuuServerTestCase {
           }
 
           viewport.setRange(ViewPortRange(5, 15))
+          virtualizedProvider.runOnce(viewport)
 
           updates = combineQsForVp(viewport)
+          updates.length shouldBe 5
           assertVpEq(updates) {
             Table(
               ("orderId" ,"quantity","price"   ,"side"    ,"trader"  ),
