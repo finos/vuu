@@ -15,8 +15,8 @@ object ClickHouseTableModule extends DefaultModule {
 
   def apply(client: ClickHouseClient)(using clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
     val tableDef = AliasedVirtualizedSessionTableDef(
-      name = "orderHistory",
-      keyField = "orderId",
+      tableName = "orderHistory",
+      tableKeyField = "orderId",
       remoteName = "order_history",
       remoteKeyField = "order_id",
       remoteColumns = VirtualizedSessionTableColumnBuilder()

@@ -10,6 +10,7 @@ import org.finos.vuu.plugin.clickhouse.provider.data.{ClickHouseRowDataProvider,
 import org.finos.vuu.plugin.clickhouse.provider.filter.ClickHouseFilterFactory
 import org.finos.vuu.plugin.clickhouse.provider.sort.ClickHouseSortFactory
 import org.finos.vuu.plugin.virtualized.api.{VirtualizedSessionTableColumn, VirtualizedSessionTableDef}
+import org.finos.vuu.plugin.virtualized.table.range.VirtualizedRangeFactory
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.viewport.{ViewPort, ViewPortColumns}
@@ -24,10 +25,6 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
   override def runOnce(viewPort: ViewPort): Unit = {
     logger.trace("[ClickHouseVirtualizedDataProvider] Starting runOnce")
 
-    val range = viewPort.getRange
-    val startIndex = Math.max(range.from - 500, 0)
-    val limit = (range.to - startIndex) + 500
-
     val columns = viewPort.getColumns.getColumns
       .filter(f => f.isInstanceOf[VirtualizedSessionTableColumn])
       .map(_.asInstanceOf[VirtualizedSessionTableColumn])
@@ -35,10 +32,19 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
     val whereClause = ClickHouseFilterFactory.build(columns, viewPort.filterSpec)
     val orderBy = ClickHouseSortFactory.build(tableDef, columns, viewPort.sortSpec)
 
+    val sizeStart = clock.now()
+    val tableSize = tableSizeProvider.getTableSize(tableDef, whereClause)
+    val sizeMillis = clock.now() - sizeStart
+
+    val virtualizedRange = VirtualizedRangeFactory.build(
+      viewPort.getRange, tableDef.getRangeOptions, tableSize
+    )
+    val startIndex = virtualizedRange.from
+    val limit = virtualizedRange.to - virtualizedRange.from
+
     logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading rows from ClickHouse range $startIndex to ${startIndex + limit} filter=$whereClause sort=$orderBy")
 
     val queryStart = clock.now()
-    val tableSize = tableSizeProvider.getTableSize(tableDef, whereClause)
     val rowsWithData = rowDataProvider.queryForRowData(tableDef, columns,
       whereClause, orderBy, limit, startIndex)
     val dataQueryMillis = clock.now() - queryStart
@@ -82,7 +88,7 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
 
         if (logAt.shouldLog()) {
           logger.debug(
-            s"[ClickHouseVirtualizedDataProvider] Complete runOnce dataQuery=$dataQueryMillis millisRange=$millisRange millisSize=$millisSize millisRows=$millisRows millisGetKeys=$millisGetKeys millisSetKeys=$millisSetKeys"
+            s"[ClickHouseVirtualizedDataProvider] Complete runOnce sizeQuery=$sizeMillis dataQuery=$dataQueryMillis millisRange=$millisRange millisSize=$millisSize millisRows=$millisRows millisGetKeys=$millisGetKeys millisSetKeys=$millisSetKeys"
           )
         }
       case _ =>

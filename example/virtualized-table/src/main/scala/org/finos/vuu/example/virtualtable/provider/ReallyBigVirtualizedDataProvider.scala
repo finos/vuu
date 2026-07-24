@@ -4,18 +4,19 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.logging.LogAtFrequency
 import org.finos.toolbox.time.Clock
 import org.finos.toolbox.time.TimeIt.timeIt
-import org.finos.vuu.core.table.{DataTable, RowWithData}
+import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.example.virtualtable.bigdatacache.FakeBigDataCache
 import org.finos.vuu.feature.ViewPortKeys
-import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
+import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
+import org.finos.vuu.plugin.virtualized.table.range.VirtualizedRangeFactory
+import org.finos.vuu.plugin.virtualized.table.{VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.viewport.{ViewPort, ViewPortColumns}
 
-class ReallyBigVirtualizedDataProvider(implicit clock: Clock) extends VirtualizedProvider with StrictLogging {
+class ReallyBigVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef)(implicit clock: Clock) extends VirtualizedProvider with StrictLogging {
 
   final val cache = new FakeBigDataCache
   final val logAt = new LogAtFrequency(10_000)
-
   override def runOnce(viewPort: ViewPort): Unit = {
 
     logger.trace("[ReallyBigVirtualizedDataProvider] Starting runOnce")
@@ -26,12 +27,13 @@ class ReallyBigVirtualizedDataProvider(implicit clock: Clock) extends Virtualize
     val sort = viewPort.getSort
     val filter = viewPort.filterSpec
 
-    val range = viewPort.getRange
+    val tableSize = cache.getTableSize
+    val virtualizedRange = VirtualizedRangeFactory.build(
+      viewPort.getRange, tableDef.getRangeOptions, tableSize
+    )
 
-    //typically we would want to get a bigger data set than the viewport is specifically looking at
-    //as is probably more efficient, in this case we'll get just what they are asking for....
-    val startIndex = Math.max((range.from - 5000), 0)
-    val endIndex = range.to + 5000
+    val startIndex = virtualizedRange.from
+    val endIndex = virtualizedRange.to
 
     logger.trace(s"[ReallyBigVirtualizedDataProvider] Loading orders from Big Data Cache $startIndex to $endIndex")
 
