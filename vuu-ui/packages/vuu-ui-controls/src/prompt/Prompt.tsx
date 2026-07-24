@@ -34,6 +34,38 @@ export interface PromptButtonProps {
   ref?: RefObject<HTMLButtonElement | null>;
 }
 
+const getHeader = (
+  title: string,
+  icon?: string,
+  headerTag?: ReactNode,
+): ReactNode => {
+  if (icon && headerTag) {
+    return (
+      <>
+        <Icon name={icon} />
+        <span>{title}</span>
+        {headerTag}
+      </>
+    );
+  } else if (icon) {
+    return (
+      <>
+        <Icon name={icon} />
+        <span>{title}</span>
+      </>
+    );
+  } else if (headerTag) {
+    return (
+      <>
+        <span>{title}</span>
+        {headerTag}
+      </>
+    );
+  }
+
+  return title;
+};
+
 export interface PromptProps
   extends Pick<DialogProps, "onOpenChange" | "open" | "status">,
     Pick<DialogHeaderProps, "disableAccent">,
@@ -59,6 +91,13 @@ export interface PromptProps
    * A custom action will be displayed in Prompt button bar, before cancel/confirm buttons.
    */
   customAction?: ReactNode;
+
+  /**
+   * Intended to allow for the display of a status tag or badge in the header. It will be displayed inline
+   * after the title. A small component is expected.
+   */
+  headerTag?: ReactNode;
+
   icon?: string;
   /**
    * Set this prop if one of the three built-in buttons should receive initial focus.
@@ -84,6 +123,7 @@ export const Prompt = ({
   confirmButtonProps,
   customAction = null,
   disableAccent,
+  headerTag,
   icon,
   initialFocusedItem,
   onCancel,
@@ -156,14 +196,7 @@ export const Prompt = ({
     />
   ) : null;
 
-  const header = icon ? (
-    <>
-      <Icon name={icon} />
-      <span>{title}</span>
-    </>
-  ) : (
-    title
-  );
+  const header = getHeader(title, icon, headerTag);
 
   return (
     <Dialog

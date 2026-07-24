@@ -7,6 +7,8 @@ const PromptTemplate = ({
   cancelButtonLabel,
   confirmButtonLabel,
   customAction,
+  headerTag,
+  icon,
   initialFocusedItem,
   onCancel,
   onConfirm,
@@ -21,6 +23,8 @@ const PromptTemplate = ({
   | "confirmButtonLabel"
   | "cancelButtonLabel"
   | "customAction"
+  | "headerTag"
+  | "icon"
   | "initialFocusedItem"
   | "onConfirm"
   | "onCancel"
@@ -38,6 +42,8 @@ const PromptTemplate = ({
       cancelButtonLabel={cancelButtonLabel}
       confirmButtonLabel={confirmButtonLabel}
       customAction={customAction}
+      headerTag={headerTag}
+      icon={icon}
       initialFocusedItem={initialFocusedItem}
       onCancel={onCancel}
       onConfirm={onConfirm}
@@ -55,6 +61,35 @@ const PromptTemplate = ({
 
 export const BareBonesPrompt = () => {
   return <PromptTemplate>This is Prompt text</PromptTemplate>;
+};
+
+export const WithIcon = () => {
+  return <PromptTemplate icon="filter">This is Prompt text</PromptTemplate>;
+};
+
+export const WithHeaderTag = () => {
+  return (
+    <PromptTemplate
+      headerTag={
+        <div style={{ background: "red", padding: "0 6px" }}>Beta</div>
+      }
+    >
+      This is Prompt text
+    </PromptTemplate>
+  );
+};
+
+export const WithIconAndHeaderTag = () => {
+  return (
+    <PromptTemplate
+      headerTag={
+        <div style={{ background: "red", padding: "0 6px" }}>Beta</div>
+      }
+      icon="filter"
+    >
+      This is Prompt text
+    </PromptTemplate>
+  );
 };
 
 export const FocusOnConfirm = () => {
