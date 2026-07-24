@@ -2,7 +2,7 @@ package org.finos.vuu.plugin.virtualized.table.range
 
 trait RangeOptions {
 
-  def maxRangeDepth: Option[Int]
+  def maxRangeEnd: Option[Int]
 
   def maxRangeWidth: Option[Int]
 
@@ -10,10 +10,10 @@ trait RangeOptions {
 
 object NoRangeOptions extends RangeOptions {
 
-  override def maxRangeWidth: Option[Int] = None
+  override def maxRangeEnd: Option[Int] = None
 
-  override def maxRangeDepth: Option[Int] = None
+  override def maxRangeWidth: Option[Int] = None
 
 }
 
-case class MaxRangeOptions(maxRangeDepth: Option[Int], maxRangeWidth: Option[Int]) extends RangeOptions
+case class MaxRangeOptions(maxRangeEnd: Option[Int], maxRangeWidth: Option[Int]) extends RangeOptions

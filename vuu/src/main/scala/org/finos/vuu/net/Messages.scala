@@ -110,6 +110,8 @@ case class ChangeViewPortRange(viewPortId: String, from: Int, to: Int) extends M
 
 case class ChangeViewPortRangeSuccess(viewPortId: String, from: Int, to: Int) extends MessageBody
 
+case class ChangeViewPortRangeReject(viewPortId: String, msg: String) extends MessageBody
+
 case class OpenTreeNodeRequest(vpId: String, treeKey: String) extends MessageBody
 
 case class ViewPortMenuSelectionRpcCall(vpId: String, rpcName: String) extends MessageBody

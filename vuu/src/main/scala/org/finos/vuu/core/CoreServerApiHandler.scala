@@ -263,7 +263,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         vsMsg(ChangeViewPortRangeSuccess(msg.viewPortId, msg.from, msg.to))(ctx)
       case Failure(e) =>
         logger.error(s"[API] Failed to change range on viewport ${msg.viewPortId} in session ${ctx.session.sessionId} to [${msg.from} -> ${msg.to}]. (${ctx.requestId})", e)
-        errorMsg(s"Failed to process request ${ctx.requestId}")(ctx)
+        vsMsg(ChangeViewPortRangeReject(msg.viewPortId, s"Failed to process request ${ctx.requestId}"))(ctx)
     }
   }
 

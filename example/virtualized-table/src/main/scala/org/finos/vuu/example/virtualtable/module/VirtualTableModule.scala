@@ -15,8 +15,8 @@ object VirtualTableModule extends DefaultModule {
   def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     val tableDef = SimpleVirtualizedSessionTableDef(
-      name = "bigOrders",
-      keyField = "orderId",
+      tableName = "bigOrders",
+      tableKeyField = "orderId",
       remoteColumns = VirtualizedSessionTableColumnBuilder()
         .addString("orderId")
         .addInt("quantity")

@@ -1,6 +1,7 @@
 package org.finos.vuu.plugin.virtualized.api
 
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePluginType
+import org.finos.vuu.plugin.virtualized.table.range.NoRangeOptions
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -34,6 +35,12 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       And("the inherited base fields should also match")
       simpleDef.name shouldBe tableName
       simpleDef.keyField shouldBe keyField
+
+      And("it should have no default columns by default")
+      simpleDef.includeDefaultColumns shouldBe false
+
+      And("it should have no range options by default")
+      simpleDef.rangeOptions shouldBe NoRangeOptions
     }
 
     Scenario("Creating an AliasedVirtualizedSessionTableDef") {
@@ -48,9 +55,9 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       When("an AliasedVirtualizedSessionTableDef is instantiated")
       val aliasedDef = AliasedVirtualizedSessionTableDef(
         remoteName = remoteName,
-        name = localName,
+        tableName = localName,
         remoteKeyField = remoteKeyField,
-        keyField = localKeyField,
+        tableKeyField = localKeyField,
         remoteColumns = columns
       )
 
@@ -65,21 +72,14 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       And("it should return the correct plugin type and remote columns")
       aliasedDef.pluginType shouldBe VirtualizedTablePluginType
       aliasedDef.getRemoteColumns shouldBe columns
+
+      And("it should have no default columns by default")
+      aliasedDef.includeDefaultColumns shouldBe false
+
+      And("it should have no range options by default")
+      aliasedDef.rangeOptions shouldBe NoRangeOptions
     }
 
-    Scenario("Verifying default range options") {
-      Given("a table configuration without explicit RangeOptions")
-      val tableName = "orders_no_options"
-      val keyField = "orderId"
-      val mockColumn = mock[VirtualizedSessionTableColumn]
-      val columns = Array(mockColumn)
 
-      When("a SimpleVirtualizedSessionTableDef is instantiated")
-      val defNoOptions = SimpleVirtualizedSessionTableDef(tableName, keyField, columns)
-
-      Then("it should correctly return NoRangeOptions as the default")
-      import org.finos.vuu.plugin.virtualized.table.range.NoRangeOptions
-      defNoOptions.getRangeOptions shouldBe NoRangeOptions
-    }
   }
 }

@@ -7,7 +7,7 @@ object VirtualizedRangeFactory {
 
   private val minSize: Long = 20_000L
   private val maxSize: Long = 1_000_000_000L
-  private val minWindow: Int = 500  
+  private val minWindow: Int = 1_000
   private val maxWindow: Int = 10_000
   private val logMinSize = math.log(minSize.toDouble)
   private val logMaxSize = math.log(maxSize.toDouble)
@@ -18,10 +18,10 @@ object VirtualizedRangeFactory {
              tableSize: Long
            ): VirtualizedRange = {
 
-    val maxDepth = rangeOptions.maxRangeDepth.getOrElse(Int.MaxValue)
+    val maxEnd = rangeOptions.maxRangeEnd.getOrElse(Int.MaxValue)
     val maxWidth = rangeOptions.maxRangeWidth.getOrElse(Int.MaxValue)
 
-    if (range.to > maxDepth) {
+    if (range.to > maxEnd) {
       return VirtualizedRange(0, 0)
     }
 
@@ -35,7 +35,7 @@ object VirtualizedRangeFactory {
     val requestedStart = Math.max(range.from - windowSize, 0)
     val requestedEnd = range.to + windowSize
 
-    val endIndex = Math.min(requestedEnd, maxDepth)
+    val endIndex = Math.min(requestedEnd, maxEnd)
     val startIndex = Math.min(requestedStart, endIndex)
 
     VirtualizedRange(startIndex, endIndex)

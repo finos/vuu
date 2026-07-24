@@ -16,7 +16,7 @@ class VirtualizedRangeFactoryTest extends AnyFeatureSpec
     Scenario("Validating range against maxRangeDepth limit") {
       Given("a viewport range that exceeds the maxRangeDepth limit")
       val range = ViewPortRange(0, 1001)
-      val options = MaxRangeOptions(maxRangeDepth = Some(1000), maxRangeWidth = None)
+      val options = MaxRangeOptions(maxRangeEnd = Some(1000), maxRangeWidth = None)
       val tableSize = 1000L
 
       When("building the virtualized range")
@@ -29,7 +29,7 @@ class VirtualizedRangeFactoryTest extends AnyFeatureSpec
     Scenario("Validating range against maxRangeWidth limit") {
       Given("a viewport range whose width exceeds the maxRangeWidth limit")
       val range = ViewPortRange(1000, 2001)
-      val options = MaxRangeOptions(maxRangeDepth = None, maxRangeWidth = Some(1000))
+      val options = MaxRangeOptions(maxRangeEnd = None, maxRangeWidth = Some(1000))
       val tableSize = 10000L
 
       When("building the virtualized range")
@@ -48,10 +48,10 @@ class VirtualizedRangeFactoryTest extends AnyFeatureSpec
       When("building the virtualized range")
       val result = VirtualizedRangeFactory.build(range, options, tableSize)
 
-      Then("the window size applied should be the minimum (500)")
-      // requestedStart = max(1000 - 500, 0) = 500
-      // requestedEnd = 1100 + 500 = 1600
-      result shouldEqual VirtualizedRange(500, 1600)
+      Then("the window size applied should be the minimum (1000)")
+      // requestedStart = max(1000 - 1000, 0) = 0
+      // requestedEnd = 1100 + 1000 = 2100
+      result shouldEqual VirtualizedRange(0, 2100)
     }
 
     Scenario("Calculating dynamic window size for huge table size") {
@@ -90,7 +90,7 @@ class VirtualizedRangeFactoryTest extends AnyFeatureSpec
     Scenario("Constraining end index by maxDepth") {
       Given("a max depth that is smaller than the requested end")
       val range = ViewPortRange(0, 100)
-      val options = MaxRangeOptions(maxRangeDepth = Some(400), maxRangeWidth = None)
+      val options = MaxRangeOptions(maxRangeEnd = Some(400), maxRangeWidth = None)
       val tableSize = 10000L // Min window size of 500
 
       When("building the virtualized range")

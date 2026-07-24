@@ -11,8 +11,8 @@ abstract class VirtualizedSessionTableDef(
                                            keyField: String,
                                            remoteColumns: Array[VirtualizedSessionTableColumn],
                                            rangeOptions: RangeOptions = NoRangeOptions,
-                                           includeDefaultColumns: Boolean = false,
-                                         ) extends SessionTableDef(name, keyField, remoteColumns.map(f => f.asInstanceOf[Column])) {
+                                           includeDefaults: Boolean = false,
+                                         ) extends SessionTableDef(name, keyField, remoteColumns.map(f => f.asInstanceOf[Column]), includeDefaultColumns = includeDefaults) {
 
   override def pluginType: PluginType = VirtualizedTablePluginType
 
@@ -27,18 +27,22 @@ abstract class VirtualizedSessionTableDef(
 }
 
 case class SimpleVirtualizedSessionTableDef(
-                                             override val name: String,
-                                             override val keyField: String,
-                                             remoteColumns: Array[VirtualizedSessionTableColumn]
-                                           ) extends VirtualizedSessionTableDef(name, keyField, remoteColumns)
+                                             tableName: String,
+                                             tableKeyField: String,
+                                             remoteColumns: Array[VirtualizedSessionTableColumn],
+                                             rangeOptions: RangeOptions = NoRangeOptions,
+                                             includeDefaults: Boolean = false
+                                           ) extends VirtualizedSessionTableDef(tableName, tableKeyField, remoteColumns, rangeOptions, includeDefaults)
 
 case class AliasedVirtualizedSessionTableDef(
                                               remoteName: String,
-                                              override val name: String,
+                                              tableName: String,
                                               remoteKeyField: String,
-                                              override val keyField: String,
-                                              remoteColumns: Array[VirtualizedSessionTableColumn]
-                                            ) extends VirtualizedSessionTableDef(name, keyField, remoteColumns) {
+                                              tableKeyField: String,
+                                              remoteColumns: Array[VirtualizedSessionTableColumn],
+                                              rangeOptions: RangeOptions = NoRangeOptions,
+                                              includeDefaults: Boolean = false
+                                            ) extends VirtualizedSessionTableDef(tableName, tableKeyField, remoteColumns, rangeOptions, includeDefaults) {
 
   override def getRemoteTableName: String = remoteName
 
