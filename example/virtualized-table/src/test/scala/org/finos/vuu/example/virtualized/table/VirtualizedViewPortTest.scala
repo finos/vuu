@@ -37,7 +37,7 @@ class VirtualizedViewPortTest extends VuuServerTestCase {
           virtualizedProvider.runOnce(viewport)
 
           var updates = combineQsForVp(viewport)
-          updates.length shouldBe 10
+          updates.length shouldBe 11
           assertVpEq(updates) {
             Table(
               ("orderId" ,"quantity","price"   ,"side"    ,"trader"  ),
