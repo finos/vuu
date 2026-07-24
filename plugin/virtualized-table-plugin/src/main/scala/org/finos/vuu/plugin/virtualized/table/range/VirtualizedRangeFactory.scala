@@ -1,6 +1,5 @@
 package org.finos.vuu.plugin.virtualized.table.range
 
-import org.finos.vuu.core.table.RangeSettings
 import org.finos.vuu.plugin.virtualized.table.range.VirtualizedRange
 import org.finos.vuu.viewport.ViewPortRange
 
@@ -13,33 +12,13 @@ object VirtualizedRangeFactory {
   private val logMinSize = math.log(minSize.toDouble)
   private val logMaxSize = math.log(maxSize.toDouble)
 
-  def build(
-             range: ViewPortRange,
-             rangeSettings: RangeSettings,
-             tableSize: Long
-           ): VirtualizedRange = {
-
-    val maxEnd = rangeSettings.maxRangeEnd
-    val maxWidth = rangeSettings.maxRangeWidth
-
-    if (range.to > maxEnd) {
-      return VirtualizedRange(0, 0)
-    }
-
-    val width = range.to - range.from
-    if (width > maxWidth) {
-      return VirtualizedRange(0, 0)
-    }
+  def build(range: ViewPortRange, tableSize: Long): VirtualizedRange = {
 
     val windowSize = calculateWindowSize(tableSize)
-
     val requestedStart = Math.max(range.from - windowSize, 0)
     val requestedEnd = range.to + windowSize
 
-    val endIndex = Math.min(requestedEnd, maxEnd)
-    val startIndex = Math.min(requestedStart, endIndex)
-
-    VirtualizedRange(startIndex, endIndex)
+    VirtualizedRange(requestedStart, requestedEnd)
   }
 
   private def calculateWindowSize(tableSize: Long): Int = {

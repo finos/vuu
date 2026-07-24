@@ -26,7 +26,10 @@ case class ViewPortRange(from: Int, to: Int) {
   }
 
   def isValid(rangeSettings: RangeSettings): Boolean = {
-    to <= rangeSettings.maxRangeEnd && (to - from) <= rangeSettings.maxRangeWidth
+    from >= 0 &&
+      to >= from &&
+      to <= rangeSettings.maxRangeEnd &&
+      (to - from) <= rangeSettings.maxRangeWidth
   }
 
 }
