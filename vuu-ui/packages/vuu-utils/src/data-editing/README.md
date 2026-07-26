@@ -147,21 +147,14 @@ Wraps `EditSession` for use in React components. Manages session lifecycle in re
 | `dataSource` | The (possibly newly created) DataSource |
 | `editSession` | The `EditSession` instance |
 | `sessionDataSource` | Set for standalone modes; `undefined` for inline |
-| `hasSelection` | `true` when one or more rows are selected |
+| `hasSelection` | `true` when rows are selected OR there are pending soft-deletions (`deleteCount > 0`) |
 | `onCancel` | Async handler: `await editSession.end()` → `onCancel()` |
 | `onSave` | Async handler: `await editSession.end(true, force)` → `onSave()` |
 | `onDelete` | Calls `editSession.deleteSelectedRows()`; resets selection count |
 | `onAddRows` | Adds rows via `editSession.addRows(addRowsCount)` |
 | `onUndoRowChange` | `(key) =>` `editSession.undoRowChange(key)` |
 
-`hasSelection` is kept in sync by a `useEffect` that subscribes to the datasource's
-`"row-selection"` event — no `onSelectionChange` callback needs to be wired into the Table.
-
----
-
-## EditButtons — UI Component
-
-Renders the action bar for an edit session. Subscribes to `EditSession` directly for button state, and accepts handler callbacks for each action. The handlers are typically provided by `useEditableTable`, but any callbacks that satisfy the props interface can be used — the component has no hard dependency on the hook.
+`hasSelection` is driven by two sources: a `useEffect` subscribing to the datasource's `"row-selection"` event (newly selected rows), and a second `useEffect` subscribing to `editSession`'s `"editState"` event to sync `deleteCount`. This keeps the Delete button enabled after soft-delete and restores it correctly after undo.
 
 ### Props
 
@@ -261,9 +254,10 @@ User selects rows → clicks Delete
             for each selected key:
               sessionTable.update(key, sessionTableMessageColumn, "SOFT_DELETED")
             returns { deletedKeys: [...] }
-      on RpcSuccess: #deletedRows.add(key) for each, deleteCount += n ← emits "editState" → "dirty"
+      on RpcSuccess: #deletedRows.add(key) for each NEW key only (already-deleted keys skipped);
+                    deleteCount += newKeys.length ← emits "editState" → "dirty"
       on RpcError:  local state unchanged
-    setSelectionCount(0)                         ← disables Delete button
+    setSelectionCount(0)  ← hasSelection stays true while deleteCount > 0
 ```
 
 > **Note:** The client does not send row keys to the server. Selection state is owned by the server-side
@@ -290,7 +284,7 @@ User clicks Add Rows
 
 ```
 User clicks Undo button on a row
-  UndoCellRenderer.onClick → onUndoRowChange(key)
+  UndoCellRenderer (reads editSession via useEditSession()) -> editSession.undoRowChange(key)
     editSession.undoRowChange(key)
       checks #rowEdits.has(key) || #deletedRows.has(key)
       deletes key from #rowEdits / #deletedRows BEFORE the RPC       ← undo button hides immediately
@@ -413,7 +407,7 @@ Each method dispatches a named RPC request registered and handled in `VuuModule.
 > ```typescript
 > super("MY_MODULE", { sessionTableMessageColumn: "statusCol" });
 > ```
-> Pass the same name as `sessionTableMessageColumn` in the `UndoCellComponentProps` so the undo
+> Pass the same name as `sessionTableMessageColumn` in the `componentProps` of the undo cell column so the undo button correctly reads the soft-delete state from the row data. Functions must not be placed in `componentProps` (not serializable) - `editSession` is accessed via `useEditSession()` from `DataEditingContext` instead.
 > button correctly reads the soft-delete state from the row data.
 
 ---
@@ -547,15 +541,14 @@ converts long-form values to their aliases before dispatching the RPC (see `toRp
 | `dataSource` | The (possibly newly created) DataSource |
 | `editSession` | The `EditSession` instance |
 | `sessionDataSource` | Set for standalone edit modes; `undefined` for inline |
-| `hasSelection` | `true` when one or more rows are selected |
+| `hasSelection` | `true` when rows are selected OR there are pending soft-deletions (`deleteCount > 0`) |
 | `onCancel` | Async handler: `await editSession.end()` → `onCancel()` |
 | `onSave` | Async handler: `await editSession.end(true, force)` → `onSave()` |
 | `onDelete` | Calls `editSession.deleteSelectedRows()`; resets selection count |
 | `onAddRows` | Adds rows via `editSession.addRows(addRowsCount)` |
 | `onUndoRowChange` | `(key) =>` `editSession.undoRowChange(key)` |
 
-`hasSelection` is kept in sync by a `useEffect` that subscribes to the datasource's
-`"row-selection"` event — no `onSelectionChange` callback needs to be wired into the Table.
+`hasSelection` is driven by two sources: a `useEffect` subscribing to the datasource's `"row-selection"` event (newly selected rows), and a second `useEffect` subscribing to `editSession`'s `"editState"` event to sync `deleteCount`. This keeps the Delete button enabled after soft-delete and restores it correctly after undo.
 
 ---
 
@@ -661,7 +654,7 @@ User clicks Add Rows
 
 ```
 User clicks Undo button on a row
-  UndoCellRenderer.onClick → onUndoRowChange(key)
+  UndoCellRenderer (reads editSession via useEditSession()) -> editSession.undoRowChange(key)
     editSession.undoRowChange(key)
       checks #rowEdits.has(key) || #deletedRows.has(key)
       deletes key from #rowEdits / #deletedRows BEFORE the RPC       ← undo button hides immediately
@@ -789,7 +782,7 @@ Each method dispatches a named RPC request which is registered and handled in `V
 > ```typescript
 > super("MY_MODULE", { sessionTableMessageColumn: "statusCol" });
 > ```
-> Pass the same name as `sessionTableMessageColumn` in the `UndoCellComponentProps` so the undo
+> Pass the same name as `sessionTableMessageColumn` in the `componentProps` of the undo cell column so the undo button correctly reads the soft-delete state from the row data. Functions must not be placed in `componentProps` (not serializable) - `editSession` is accessed via `useEditSession()` from `DataEditingContext` instead.
 > button correctly reads the soft-delete state from the row data.
 
 ---

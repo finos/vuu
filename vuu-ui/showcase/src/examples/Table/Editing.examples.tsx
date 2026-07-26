@@ -16,6 +16,7 @@ import { BulkEditPanel, InputCell, Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
 import {
   ColumnDescriptor,
+  ColumnTypeRendering,
   DataRow,
   DataValueTypeDescriptor,
   TableCellEditHandler,
@@ -34,6 +35,7 @@ import {
   toColumnName,
   useData,
   useEditableTable,
+  useEditSession,
 } from "@vuu-ui/vuu-utils";
 import { EditButtons } from "@vuu-ui/vuu-utils/src/data-editing/EditButtons";
 import { EditMode } from "@vuu-ui/vuu-utils/src/data-editing/useEditableTable";
@@ -313,7 +315,7 @@ const EditableInstrumentsTemplate = ({
 
   const exitEditMode = useCallback(() => setEditMode("view"), []);
 
-  const { dataSource, editSession, hasSelection, onAddRows, onDelete, onSave, onUndoRowChange, sessionDataSource } =
+  const { dataSource, editSession, hasSelection, onAddRows, onDelete, onSave, sessionDataSource } =
     useEditableTable({
       dataSource: sourceTableDataSource,
       deleteMode: "soft",
@@ -358,9 +360,6 @@ const EditableInstrumentsTemplate = ({
                   renderer: {
                     name: "example.undo-cell",
                     componentProps: {
-                      onUndo: onUndoRowChange,
-                      hasRowChanges: (key: string) =>
-                        editSession.hasRowChanges(key),
                       sessionTableMessageColumn: "vuuMsg",
                     },
                   },
@@ -371,7 +370,7 @@ const EditableInstrumentsTemplate = ({
       rowSeparators: true,
       zebraStripes: true,
     }),
-    [editMode, editSession, onUndoRowChange],
+    [editMode],
   );
 
   return (
@@ -512,30 +511,24 @@ const CustomCell = ({
 
 registerComponent("example.color-coded-editor", CustomCell, "cell-renderer");
 
-type UndoCellComponentProps = {
-  onUndo?: (key: string) => void;
-  hasRowChanges?: (key: string) => boolean;
-  /** Name of the session-table message column. Defaults to "vuuMsg". */
-  sessionTableMessageColumn?: string;
-};
-
 const UndoCellRenderer = ({ column, dataRow }: TableCellRendererProps) => {
-  const { onUndo, hasRowChanges, sessionTableMessageColumn = "vuuMsg" } =
-    (column.type as { renderer?: { componentProps?: UndoCellComponentProps } })
-      ?.renderer?.componentProps ?? {};
+  const editSession = useEditSession();
+  const renderer = (column.type as DataValueTypeDescriptor)?.renderer as ColumnTypeRendering;
+  const sessionTableMessageColumn =
+    (renderer?.componentProps?.sessionTableMessageColumn as string) ?? "vuuMsg";
 
   // For cell edits: #rowEdits is populated synchronously so hasRowChanges works immediately.
   // For soft-deleted rows: #deletedRows is populated after the RPC await, so we read
   // the sessionTableMessageColumn directly from the row data — it is always present
   // when the row re-renders.
   const isRowChanged =
-    hasRowChanges?.(dataRow.key) || dataRow[sessionTableMessageColumn] === "SOFT_DELETED";
+    editSession?.hasRowChanges(dataRow.key) || dataRow[sessionTableMessageColumn] === "SOFT_DELETED";
 
   if (!isRowChanged) return null;
   return (
     <Button
       appearance="transparent"
-      onClick={() => onUndo?.(dataRow.key)}
+      onClick={() => editSession?.undoRowChange(dataRow.key)}
       style={{ height: "100%", width: "100%" }}
     >
       Undo

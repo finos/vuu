@@ -123,10 +123,16 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     const deletedKeys = (response?.data as DeleteSelectedRowsResult | undefined)
       ?.deletedKeys;
     if (deletedKeys && deletedKeys.length > 0) {
+      let newCount = 0;
       for (const key of deletedKeys) {
-        this.#deletedRows.add(key);
+        if (!this.#deletedRows.has(key)) {
+          this.#deletedRows.add(key);
+          newCount++;
+        }
       }
-      this.deleteCount = this.#deleteCount + deletedKeys.length;
+      if (newCount > 0) {
+        this.deleteCount = this.#deleteCount + newCount;
+      }
     }
   }
 

@@ -220,8 +220,8 @@ export interface ColumnTypeRendering {
   // specific to Background renderer
   flashStyle?: "bg-only" | "arrow-bg" | "arrow";
   name: string;
-  /** Arbitrary props passed to the registered cell renderer component. */
-  componentProps?: Record<string, unknown>;
+  /** Serializable props passed to the registered cell renderer component. */
+  componentProps?: Record<string, string | number | boolean>;
 }
 export interface MappedValueTypeRenderer {
   map: ColumnTypeValueMap;
