@@ -12,6 +12,7 @@ const buildManifest = () => {
   return {
     ssl: true,
     authUrl: "http://localhost:5001",
+    restUrl: "https://localhost:8443",
     websocketUrl: "wss://localhost:8090/websocket",
     features: {
       "simple-div": {

@@ -99,6 +99,7 @@ export function featureFromJson({ type }: { type: string }): ReactElement {
 export interface VuuConfig {
   features: DynamicFeatures;
   authUrl?: string;
+  restUrl: string;
   websocketUrl: string;
   ssl: boolean;
 }

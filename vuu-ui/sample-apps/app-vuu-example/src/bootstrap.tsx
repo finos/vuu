@@ -25,10 +25,10 @@ const CONNECTION_FAILED = "connection-failed";
 const isConnectionFailedMessage = (err: unknown) =>
   typeof err === "string" && err.includes(CONNECTION_FAILED);
 
-const { websocketUrl } = await vuuConfig;
+const { restUrl, websocketUrl } = await vuuConfig;
 
 const vuuAuth = new VuuAuthenticator({
-  authProvider: new VuuAuthProvider("/api/authn"),
+  authProvider: new VuuAuthProvider(`${restUrl}/api/authn`),
   authTokenIssuePolicy: VuuAuthTokenIssuePolicy.UsernamePassword,
   websocketUrl,
 });

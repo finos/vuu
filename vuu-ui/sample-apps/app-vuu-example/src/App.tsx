@@ -54,6 +54,7 @@ const defaultWebsocketUrl = (ssl: boolean) =>
 
 const {
   ssl,
+  restUrl,
   websocketUrl: serverUrl = defaultWebsocketUrl(ssl),
   features,
 } = await vuuConfig;
