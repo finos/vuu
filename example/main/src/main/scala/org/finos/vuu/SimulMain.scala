@@ -17,6 +17,7 @@ import org.finos.vuu.core.module.simul.SimulationModule
 import org.finos.vuu.example.rest.client.{HttpClient, StubbedBackend}
 import org.finos.vuu.example.rest.module.RestModule
 import org.finos.vuu.example.virtualtable.module.VirtualTableModule
+import org.finos.vuu.example.notifications.module.SimulatedNotificationsModule
 import org.finos.vuu.http2.server.VuuHttp2ServerFactory
 import org.finos.vuu.http2.server.config.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.finos.vuu.net.auth.LoginTokenService
@@ -68,6 +69,7 @@ object SimulMain extends App with StrictLogging {
     .withModule(BasketModule(omsApi))
     .withModule(RestModule(HttpClient(StubbedBackend()), defaultConfig.getConfig(ConfigKeys.restModuleConfig)))
     .withModule(VirtualTableModule())
+    .withModule(SimulatedNotificationsModule())
     .withPlugin(VirtualizedTablePlugin)
 
   val vuuServer = new VuuServer(config)
