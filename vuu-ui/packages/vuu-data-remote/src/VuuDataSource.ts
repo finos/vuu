@@ -88,6 +88,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   private bufferSize: number;
   private server: ServerAPI | null = null;
   rangeRequest: RangeRequest;
+  #connectionId: string;
 
   /**
    * this is the combined set of regular columns and autosubscribe columns
@@ -109,6 +110,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   public table: VuuTable;
 
   constructor({
+    connectionId = "portal",
     sessionTableMessageColumn,
     ...props
   }: DataSourceConstructorProps) {
@@ -121,6 +123,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
     this.bufferSize = bufferSize;
     this.table = table;
+    this.#connectionId = connectionId;
 
     this.#pendingVisualLink = visualLink;
     this.#sessionTableMessageColumn = sessionTableMessageColumn;
@@ -165,7 +168,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
     this.#status = "subscribing";
 
-    this.server = await ConnectionManager.serverAPI;
+    this.server = await ConnectionManager.serverAPIFor(this.#connectionId);
 
     const { bufferSize } = this;
 
