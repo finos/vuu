@@ -6,20 +6,27 @@ trait EndEditSessionRpcHandler(using val tableContainer: TableContainer) extends
   registerRpc(RpcNames.EndEditSessionRpc, this.endEditSession)
 
   def endEditSession(params: RpcParams): RpcFunctionResult = {
-    if (!verify()) {
-      logger.warn(s"Unable to submit. Error(s) found in session table ${params.viewPort.table.name}.")
-      return new RpcFunctionFailure(s"Unable to submit due to error(s) found.")
+    if (!verifyPermission(params)) {
+      logger.warn(s"Failed to end edit session for table ${params.viewPort.table.name}. No permission.")
+      return new RpcFunctionFailure(s"Unable to end edit session. No permission.")
     }
 
-    if (submit()) {
+    if (!validateDataInTable(params)) {
+      logger.warn(s"Failed to end edit session for table ${params.viewPort.table.name}. Invalid data found.")
+      return new RpcFunctionFailure(s"Unable to end edit session. Invalid data found.")
+    }
+
+    if (submit(params)) {
       RpcFunctionSuccess(None)
     } else {
-      logger.warn(s"Failed to submit for session table ${params.viewPort.table.name}.")
-      new RpcFunctionFailure(s"Failed to submit.")
+      logger.warn(s"Failed to end edit session for table ${params.viewPort.table.name}. Failed to submit.")
+      new RpcFunctionFailure(s"Failed to end edit session.")
     }
   }
 
-  def verify(): Boolean
+  def verifyPermission(params: RpcParams): Boolean
 
-  def submit(): Boolean
+  def validateDataInTable(params: RpcParams): Boolean
+
+  def submit(params: RpcParams): Boolean
 }
