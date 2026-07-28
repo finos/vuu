@@ -14,7 +14,7 @@ const buildManifest = () => {
     authUrl: "http://localhost:5001",
     moduleRegistryUrl: "/module-registry.json",
     restUrl: "https://localhost:8443",
-    websocketUrl: "wss://localhost:8090/websocket",
+    websocketUrl: "wss://localhost:8091/websocket",
   };
 };
 
