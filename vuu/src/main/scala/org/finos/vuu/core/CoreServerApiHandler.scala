@@ -152,7 +152,8 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
       val columnNames = columns.map(_.name)
       val editableColumns = columns.filter(c => table.getTableDef.columnForName(c.name).isEditable).map(_.name)
       val dataTypes = columns.map(col => DataType.asString(col.dataType))
-      GetTableMetaResponse(msg.table, columnNames, dataTypes, table.getTableDef.keyField, editableColumns)
+      GetTableMetaResponse(msg.table, columnNames, dataTypes, table.getTableDef.keyField, editableColumns,
+        table.getTableDef.rangeSettings.maxRangeEnd, table.getTableDef.rangeSettings.maxRangeWidth)
     } else {
       throw new RuntimeException(s"Failed to find table ${msg.table.table} in module ${msg.table.module}. (${ctx.requestId})")
     }
@@ -263,7 +264,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         vsMsg(ChangeViewPortRangeSuccess(msg.viewPortId, msg.from, msg.to))(ctx)
       case Failure(e) =>
         logger.error(s"[API] Failed to change range on viewport ${msg.viewPortId} in session ${ctx.session.sessionId} to [${msg.from} -> ${msg.to}]. (${ctx.requestId})", e)
-        errorMsg(s"Failed to process request ${ctx.requestId}")(ctx)
+        vsMsg(ChangeViewPortRangeReject(msg.viewPortId, s"Failed to process request ${ctx.requestId}"))(ctx)
     }
   }
 

@@ -10,8 +10,8 @@ import org.scalatest.matchers.should.Matchers
 class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with Matchers {
 
   private val tableDef = AliasedVirtualizedSessionTableDef(
-    name = "orderHistory",
-    keyField = "orderId",
+    tableName = "orderHistory",
+    tableKeyField = "orderId",
     remoteName = "order_history",
     remoteKeyField = "order_id",
     remoteColumns = VirtualizedSessionTableColumnBuilder()

@@ -135,8 +135,9 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
       val invalidRequest = ChangeViewPortRange(targetViewPortId, 100, 200)
       val requestId = attackingClient.send(attackingSessionId, invalidRequest)
 
-      val response = attackingClient.awaitForMsgWithBody[ErrorResponse]
+      val response = attackingClient.awaitForMsgWithBody[ChangeViewPortRangeReject]
       response.isEmpty shouldBe false
+      response.get.viewPortId shouldEqual targetViewPortId
       response.get.msg shouldEqual s"Failed to process request $requestId"
     }
 
