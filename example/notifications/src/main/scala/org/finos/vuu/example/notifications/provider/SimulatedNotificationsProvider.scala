@@ -10,12 +10,12 @@ import org.finos.vuu.provider.Provider
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters._
-import scala.util.Random
+import java.security.SecureRandom
 
 class SimulatedNotificationsProvider(table: DataTable)(implicit clock: Clock, lifecycleContainer: LifecycleContainer) extends Provider with StrictLogging {
 
   private val activeNotifications = new ConcurrentHashMap[String, Long]()
-  private val random = new Random()
+  private val random = new SecureRandom()
 
   private val sampleTemplates = Array(
     ("toast", "Order Execution", "Order #%04d filled %d shares of AAPL at $%d.%02d", "INFO", 12000L, "OMS", 2),
