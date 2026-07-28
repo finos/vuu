@@ -306,7 +306,7 @@ class ViewPortImpl(val id: String,
   override def getSelection: Set[String] = selection
 
   def setRange(newRange: ViewPortRange): Unit = {
-    val isValidRange = newRange.isValid(table.asTable.getTableDef.rangeSettings)
+    val isValidRange = newRange.isValid(table.asTable.getTableDef.options.rangeSettings)
 
     viewPortLock.synchronized {
       val oldRange = range.get()

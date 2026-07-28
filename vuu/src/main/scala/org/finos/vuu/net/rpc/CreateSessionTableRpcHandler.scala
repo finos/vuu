@@ -34,7 +34,7 @@ class CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker)(u
       case None => s"edit-${sourceTable.name}"
     }
 
-    if (!sourceTable.asTable.getTableDef.isEditable) {
+    if (!sourceTable.asTable.getTableDef.options.isEditable) {
       logger.warn(s"Table ${sourceTable.name} is not editable")
       return new RpcFunctionFailure("Table not editable")
     }

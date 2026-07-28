@@ -146,14 +146,15 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
 
   private def processGetTableMetaRequest(msg: GetTableMetaRequest)(ctx: RequestContext): GetTableMetaResponse = {
     val table = tableContainer.getTable(msg.table.table)
-    if (table != null && table.getTableDef.visibility == Public) {
+    val tableDefOptions = table.getTableDef.options
+    if (table != null && tableDefOptions.visibility == Public) {
       val viewPortDef = viewPortContainer.getViewPortDefinition(table)
       val columns = viewPortDef.columns.sortBy(_.index)
       val columnNames = columns.map(_.name)
       val editableColumns = columns.filter(c => table.getTableDef.columnForName(c.name).isEditable).map(_.name)
       val dataTypes = columns.map(col => DataType.asString(col.dataType))
       GetTableMetaResponse(msg.table, columnNames, dataTypes, table.getTableDef.keyField, editableColumns,
-        table.getTableDef.rangeSettings.maxRangeEnd, table.getTableDef.rangeSettings.maxRangeWidth)
+        tableDefOptions.rangeSettings.maxRangeEnd, tableDefOptions.rangeSettings.maxRangeWidth)
     } else {
       throw new RuntimeException(s"Failed to find table ${msg.table.table} in module ${msg.table.module}. (${ctx.requestId})")
     }
@@ -229,7 +230,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
 
   private def processCreate(msg: CreateViewPortRequest)(ctx: RequestContext): ViewPort = {
     val table = tableContainer.getTable(msg.table.table)
-    if (table == null || table.getTableDef.visibility != Public) {
+    if (table == null || table.getTableDef.options.visibility != Public) {
       throw new RuntimeException(s"No table found with name ${msg.table}")
     } else {
 

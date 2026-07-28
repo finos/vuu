@@ -19,7 +19,7 @@ trait InMemColumnIndices {
 object InMemColumnIndices {
 
   def apply(tableDef: TableDef): InMemColumnIndices = {
-    val indices = tableDef.indices.indices
+    val indices = tableDef.options.indices.indices
       .map(index => tableDef.columnForName(index.column))
       .map(c => c -> buildIndexForColumn(c))
       .toMap[Column, IndexedField[_]]

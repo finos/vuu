@@ -141,13 +141,6 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
 
     basketOrdersDef.setModule(module)
 
-
-    val basketOrdersPrices = JoinSessionTableDef(
-      name = "basketOrdersPrices",
-      keyField = "clientOrderId",
-      columns = Columns.fromNames("clientOrderId:String", "orderId:String", "ric:String", "lastModifiedTime:Long", "quantity:Int", "price:Long", "priceType:String", "currency:String", "exchange:String")
-    )
-
     val joinProvider = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)

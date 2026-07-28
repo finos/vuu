@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.{JmxAble, MetricsProvider}
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.TableVisibility.Private
-import org.finos.vuu.api.{JoinSessionTableDef, JoinTableDef, SessionTableDef, TableDef}
+import org.finos.vuu.api.{JoinTableDef, SessionTableDef, TableDef}
 import org.finos.vuu.core.VuuRpcOptions
 import org.finos.vuu.core.table.TableContainer.{isSessionTable, isSessionTableBlueprint, moduleName}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
@@ -81,7 +81,7 @@ class TableContainer(val joinTableProvider: JoinTableProvider, val rpcOptions: V
    */
   def getDefinedTables: Array[ViewPortTable] = {
     tables.asScala.values
-      .filter(f => !isSessionTable(f) && f.getTableDef.visibility != Private)
+      .filter(f => !isSessionTable(f) && f.getTableDef.options.visibility != Private)
       .map(table => ViewPortTable(table.getTableDef.name, moduleName(table)))
       .toArray[ViewPortTable]
       .sortBy(_.table)
@@ -164,8 +164,7 @@ object TableContainer {
   private def isSessionTable(table: DataTable): Boolean = table.isInstanceOf[SessionTable]
 
   private def isSessionTableBlueprint(table: DataTable): Boolean = {
-    !isSessionTable(table) &&
-      (table.getTableDef.isInstanceOf[SessionTableDef] || table.getTableDef.isInstanceOf[JoinSessionTableDef])
+    !isSessionTable(table) && table.getTableDef.isInstanceOf[SessionTableDef]
   }
 
   private def moduleName(table: DataTable): String = Option(table.getTableDef.getModule()).map(_.name).getOrElse("null")
