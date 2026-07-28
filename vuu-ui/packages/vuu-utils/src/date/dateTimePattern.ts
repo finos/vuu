@@ -20,6 +20,5 @@ export function dateTimePattern(
       return type.formatting.pattern;
     }
   }
-
   return fallbackDateTimePattern;
 }

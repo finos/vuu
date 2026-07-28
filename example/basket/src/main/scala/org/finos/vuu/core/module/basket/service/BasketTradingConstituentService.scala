@@ -54,9 +54,13 @@ class BasketTradingConstituentService(val table: DataTable)(using tableContainer
 
   override def deleteRow(params: RpcParams): RpcFunctionResult = ???
 
+  override def deleteSelectedRows(params: RpcParams): RpcFunctionResult = ???
+
   override def deleteCell(params: RpcParams): RpcFunctionResult = ???
 
   override def addRow(params: RpcParams): RpcFunctionResult = ???
 
   override def closeForm(params: RpcParams): RpcFunctionResult = ???
+
+  override def undoRowChange(params: RpcParams): RpcFunctionResult = ???
 }

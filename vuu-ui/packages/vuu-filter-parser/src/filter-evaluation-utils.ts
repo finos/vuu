@@ -1,4 +1,4 @@
-import { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import { DataSourceRowWithBigint } from "@vuu-ui/vuu-data-types";
 import {
   Filter,
   MultiClauseFilter,
@@ -18,7 +18,9 @@ const filterPredicateMap = new Map<string, FilterPredicate>();
 const dataRowFilterPredicateMap = new Map<string, DataRowFilterPredicate>();
 const filterReject = () => false;
 
-export type FilterPredicate = (row: DataSourceRow | VuuDataRow) => boolean;
+export type FilterPredicate = (
+  row: DataSourceRowWithBigint | VuuDataRow,
+) => boolean;
 export type DataRowFilterPredicate = (row: DataRow) => boolean;
 
 export function getFilterPredicate(

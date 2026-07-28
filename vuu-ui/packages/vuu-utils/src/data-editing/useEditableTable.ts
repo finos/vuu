@@ -1,9 +1,9 @@
-import { DataSource, DeleteRowMode, EditSessionMode } from "@vuu-ui/vuu-data-types";
+import { CopyOption, DataSource, DeleteRowMode, EditApi, EditSessionMode } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useData } from "../context-definitions/DataProvider";
 import { useLayoutEffectSkipFirst } from "../useLayoutEffectSkipFirst";
-import { EditSession } from "./EditSession";
+import { EditSession, isCopyOption } from "./EditSession";
 
 export type EditMode = "edit" | "view";
 
@@ -16,7 +16,7 @@ export interface EditableTableHookProps {
   dataSource?: DataSource;
   addRowsCount?: number;
   deleteMode?: DeleteRowMode;
-  editSessionMode?: EditSessionMode;
+  editSessionMode?: EditSessionMode | CopyOption;
   isEditMode: boolean;
   onCancel: () => void;
   onSave: () => void;
@@ -32,7 +32,7 @@ export const useEditableTable = ({
   columns,
   dataSource: dataSourceProp,
   deleteMode = "soft",
-  editSessionMode = "inline-all-rows",
+  editSessionMode = "inline-all-rows" as EditSessionMode | CopyOption,
   isEditMode,
   onCancel,
   onSave,
@@ -62,7 +62,7 @@ export const useEditableTable = ({
   // The editSession will be made available to all the edit controls in scope
   // by wrapping the edit component with a DataEditingProvider.
   const editSession = useMemo(
-    () => new EditSession(dataSource, deleteMode),
+    () => new EditSession(dataSource as EditApi, deleteMode),
     // deleteMode is intentionally excluded — changing it mid-session is not supported
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [dataSource],
@@ -71,6 +71,8 @@ export const useEditableTable = ({
   const handleCancel = useCallback(async () => {
     try {
       await editSession.end();
+      setSessionDataSource(undefined);
+      setSelectionCount(0);
       onCancel();
     } catch (e) {
       //
@@ -83,6 +85,8 @@ export const useEditableTable = ({
       try {
         await editSession.end(true, force);
         if (editSession.inEditMode === false) {
+          setSessionDataSource(undefined);
+          setSelectionCount(0);
           onSave();
         }
       } catch (e) {
@@ -107,14 +111,17 @@ export const useEditableTable = ({
   );
 
   useEffect(() => {
-    dataSource.on("row-selection", setSelectionCount);
-    return () => dataSource.removeListener("row-selection", setSelectionCount);
-  }, [dataSource]);
+    const activeDataSource = sessionDataSource ?? dataSource;
+    activeDataSource.on("row-selection", setSelectionCount);
+    return () => activeDataSource.removeListener("row-selection", setSelectionCount);
+  }, [dataSource, sessionDataSource]);
 
   useMemo(async () => {
     if (isEditMode) {
       try {
-        const sessionDataSource = await editSession.begin(editSessionMode);
+        const sessionDataSource = isCopyOption(editSessionMode)
+          ? await editSession.begin(editSessionMode)
+          : await editSession.begin(editSessionMode);
         if (sessionDataSource) {
           setSessionDataSource(sessionDataSource);
         }
@@ -124,6 +131,8 @@ export const useEditableTable = ({
       }
     } else if (editSession.inEditMode) {
       await editSession.end();
+      setSessionDataSource(undefined);
+      setSelectionCount(0);
     }
   }, [editSession, editSessionMode, isEditMode, onCancel]);
 

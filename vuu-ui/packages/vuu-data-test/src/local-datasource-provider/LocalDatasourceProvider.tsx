@@ -32,7 +32,7 @@ const serverAPI: Pick<
   },
   rpcCall: async () => {
     throw Error(
-      "RpcCall no longer supported on LocalDataSOurceProvider ServerAPI",
+      "RpcCall no longer supported on LocalDataSourceProvider ServerAPI",
     );
   },
 };

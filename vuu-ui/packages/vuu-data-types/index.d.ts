@@ -188,7 +188,9 @@ export declare type IsSelected = number;
 type Timestamp = number;
 type IsNew = boolean;
 
-export declare type DataSourceRow = [
+export declare type DataSourceRow<
+  T extends bigint | VuuRowDataItemType = VuuRowDataItemType,
+> = [
   RowIndex,
   RenderKey,
   IsLeaf,
@@ -199,8 +201,12 @@ export declare type DataSourceRow = [
   IsSelected,
   Timestamp,
   IsNew,
-  ...VuuRowDataItemType[],
+  ...T[],
 ];
+
+export declare type DataSourceRowWithBigint = DataSourceRow<
+  bigint | VuuRowDataItemType
+>;
 
 export declare type DataSourceRowObject = {
   index: number;
@@ -588,20 +594,29 @@ export declare type StandaloneEditSessionMode =
  * `"inline-all-rows"` is a client-only concept and is NOT mapped — it passes
  * through to the RPC unchanged so the server can create an all-rows session table.
  */
-export declare type EditSessionModeAlias = "All" | "Empty" | "Selected";
+export declare type CopyOption = "All" | "Empty" | "Selected";
+/**
+ * @deprecated Prefer `CopyOption` ("All" | "Empty" | "Selected") for standalone
+ * edit sessions supported by vuu server. Long-form values (e.g. `"all-rows"`) are used 
+ * by `beginEditSession`; new code should use `CopyOption` with `createSessionDataSource`.
+ */
 export declare type EditSessionMode =
   | InlineEditSessionMode
-  | StandaloneEditSessionMode
-  | EditSessionModeAlias;
+  | StandaloneEditSessionMode;
 
-export interface EditApi {
+export interface EditApi<
+  T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
+> {
   beginEditSession?: (
     editSessionMode?: EditSessionMode,
-  ) => Promise<DataSource | undefined>;
+  ) => Promise<DataSource<T> | undefined>;
   addRow?: (
     rowData?: Record<string, VuuRowDataItemType>,
   ) => Promise<RpcResult> | undefined;
-  deleteRow?: (key: string, mode?: DeleteRowMode) => Promise<RpcResult> | undefined;
+  deleteRow?: (
+    key: string,
+    mode?: DeleteRowMode,
+  ) => Promise<RpcResult> | undefined;
   deleteSelectedRows?: (mode?: DeleteRowMode) => Promise<RpcResult> | undefined;
   editCell?: (
     rowKey: string,
@@ -609,6 +624,13 @@ export interface EditApi {
     value: VuuRowDataItemType,
   ) => Promise<RpcResult> | undefined;
   undoRowChange?: (key: string) => Promise<RpcResult> | undefined;
+  /**
+   * Create a session datasource by requesting the server to create a session table
+   * via the `createSessionTable` RPC and wrapping the returned table.
+   */
+  createSessionDataSource?: (
+    copyOption: CopyOption,
+  ) => Promise<DataSource<T> | undefined>;
   endEditSession?: (
     saveChanges?: boolean,
     force?: boolean,
@@ -631,8 +653,9 @@ export declare type UndoRowChangeResult = {
   wasInsertedRow?: boolean;
 };
 
-export interface DataSource
-  extends EditApi,
+export interface DataSourceBase<
+  T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
+> extends EditApi<T>,
     IEventEmitter<DataSourceEvents>,
     Partial<TypeaheadSuggestionProvider> {
   aggregations: VuuAggregation[];
@@ -679,13 +702,6 @@ export interface DataSource
 
   deleteRow?: DataSourceDeleteHandler;
   /**
-   * create a DataSource on a session table. The concrete DataSource implementation that
-   * implements this method will always return a session table datasource of the same concrete type.
-   * @param table the sessionTable  (module and table name)
-   * @returns
-   */
-  createSessionDataSource?: (table: VuuTable) => DataSource;
-  /**
    * For a dataSource that has been previously disabled and is currently in disabled state , this will restore
    * the subscription to active status. Fresh data will be dispatched to client. The enable call optionally
    * accepts the same subscribe callback as subscribe. This allows a completely new instance of a component to
@@ -722,16 +738,16 @@ export interface DataSource
    * @param visibleOnly
    * @returns
    */
-  getChildRows?: (rowKey: string) => DataSourceRow[];
+  getChildRows?: (rowKey: string) => T[];
 
-  getRowAtIndex?: (rowIndex: number) => DataSourceRow | undefined;
+  getRowAtIndex?: (rowIndex: number) => T | undefined;
   /**
    * Only implemented on JSON DataSource
    * @param depth
    * @param visibleOnly
    * @returns
    */
-  getRowsAtDepth?: (depth: number, visibleOnly?: boolean) => DataSourceRow[];
+  getRowsAtDepth?: (depth: number, visibleOnly?: boolean) => T[];
   groupBy?: VuuGroupBy;
   insertRow?: DataSourceInsertHandler;
   links?: LinkDescriptorWithLabel[];
@@ -764,6 +780,10 @@ export interface DataSource
   viewport?: string;
   visualLink?: LinkDescriptorWithLabel;
 }
+
+export declare type DataSource =
+  | DataSourceBase
+  | DataSourceBase<DataSourceRowWithBigint>;
 
 export interface MenuRpcResponse<
   TAction extends MenuRpcAction = MenuRpcAction,

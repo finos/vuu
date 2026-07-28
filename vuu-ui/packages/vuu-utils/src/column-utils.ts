@@ -1,5 +1,6 @@
 import type {
   DataSourceRow,
+  DataValueDescriptor,
   DataValueType,
   DataValueTypeSimple,
   DateTimeDataValueDescriptor,
@@ -151,6 +152,7 @@ const VUU_COLUMN_DATA_TYPES: (string | undefined | null)[] = [
   "scaleddecimal6",
   "scaleddecimal8",
   "epochtimestamp",
+  "epochtimestampnano",
 ];
 
 export const isVuuColumnDataType = (
@@ -172,8 +174,12 @@ export const fromServerDataType = (
   }
 };
 
-export const isTimestampColumn = ({ serverDataType }: ColumnDescriptor) =>
-  serverDataType === "epochtimestamp";
+export const isNanoTimestampColumn = ({
+  serverDataType,
+}: DataValueDescriptor) => serverDataType === "epochtimestampnano";
+
+export const isTimestampColumn = (column: ColumnDescriptor) =>
+  column.serverDataType === "epochtimestamp" || isNanoTimestampColumn(column);
 
 export const isNumericColumn = ({ serverDataType, type }: ColumnDescriptor) => {
   if (
@@ -204,13 +210,8 @@ export const isTimeDataType = (
 ): column is TimeDataValueDescriptor =>
   (isTypeDescriptor(column.type) ? column.type.name : column.type) === "time";
 
-export const isDateTimeDataValue = (
-  column: ColumnDescriptor,
-  serverDataType?: VuuColumnDataType,
-) =>
-  serverDataType === "epochtimestamp" ||
-  isTimestampColumn(column) ||
-  isDateTimeDataType(column);
+export const isDateTimeDataValue = (column: ColumnDescriptor) =>
+  isTimestampColumn(column) || isDateTimeDataType(column);
 
 export const isTimeDataValue = (
   column?: ColumnDescriptor,
@@ -1253,7 +1254,11 @@ export function replaceColumn<
   return columns.map((col) => (col.name === column.name ? column : col));
 }
 
-const vuuDefaultColumns = ["vuuCreatedTimestamp", "vuuUpdatedTimestamp","vuuMsg"];
+const vuuDefaultColumns = [
+  "vuuCreatedTimestamp",
+  "vuuUpdatedTimestamp",
+  "vuuMsg",
+];
 
 const notVuuDefaultColumns = (column: { name: string }) =>
   !vuuDefaultColumns.includes(column.name);

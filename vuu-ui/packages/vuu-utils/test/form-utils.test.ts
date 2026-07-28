@@ -5,8 +5,8 @@ describe("getTypedValue", () => {
   it("handles int values", () => {
     expect(getTypedValue("1234", "int")).toEqual(1234);
     expect(getTypedValue("0", "int")).toEqual(0);
-    expect(getTypedValue("0", "long")).toEqual(0);
-    expect(getTypedValue("123456789", "long")).toEqual(123456789);
+    expect(getTypedValue("0", "long")).toEqual(0n);
+    expect(getTypedValue("123456789", "long")).toEqual(123456789n);
   });
   it("handles int number values", () => {
     expect(getTypedValue("0", "number")).toEqual(0);

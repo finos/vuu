@@ -21,7 +21,7 @@ class TableContainer {
 
   createTable = (
     schema: TableSchema,
-    data: VuuRowDataItemType[][],
+    data: Array<Array<VuuRowDataItemType | bigint>>,
     dataMap: ColumnMap,
     updateGenerator?: UpdateGenerator,
   ) => {
@@ -63,7 +63,7 @@ class TableContainer {
       })),
     };
 
-    const data: VuuRowDataItemType[][] = [];
+    const data: Array<bigint | VuuRowDataItemType>[] = [];
     const combinedColumnMap = buildDataColumnMapFromSchema(combinedSchema);
     // const start = performance.now();
     for (const row of table1.data) {

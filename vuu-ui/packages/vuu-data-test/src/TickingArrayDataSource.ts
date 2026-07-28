@@ -3,14 +3,15 @@ import {
   ArrayDataSourceConstructorProps,
 } from "@vuu-ui/vuu-data-local";
 import type {
-  DataSource,
+  DataSourceBase,
   DataSourceCallbackMessage,
-  DataSourceRow,
+  DataSourceRowWithBigint,
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   DataSourceVisualLinkCreatedMessage,
   DeleteRowMode,
   EditSessionMode,
+  CopyOption,
 } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
@@ -26,7 +27,13 @@ import type {
   VuuRpcServiceRequest,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-import { isInlineEditingSession, isRpcSuccess, isTypeaheadRequest, Range, toRpcEditSessionMode, uuid } from "@vuu-ui/vuu-utils";
+import {
+  isInlineEditingSession,
+  isRpcSuccess,
+  isTypeaheadRequest,
+  Range,
+  uuid,
+} from "@vuu-ui/vuu-utils";
 import {
   IVuuModule,
   RpcMenuService,
@@ -66,7 +73,8 @@ export class TickingArrayDataSource extends ArrayDataSource {
   #rpcServices: RpcService[] | undefined;
   // A reference to session tables hosted within client side module
   #sessionTables: SessionTableMap | undefined;
-  #sessionDataSource: DataSource | undefined = undefined;
+  #sessionDataSource: DataSourceBase<DataSourceRowWithBigint> | undefined =
+    undefined;
   #table?: Table;
   #selectionLinkSubscribers: Map<string, LinkSubscription> | undefined;
   #visualLinkService?: VisualLinkHandler;
@@ -118,7 +126,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
   }
 
   updateRowWithSessionCheck = (
-    row: VuuRowDataItemType[],
+    row: Array<bigint | VuuRowDataItemType>,
     columnName?: string,
     sessionId?: string,
   ) => {
@@ -193,7 +201,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
    * Without this guard those paths would push source-table rows to the
    * client and overwrite the edited session view.
    */
-  sendRowsToClient(forceFullRefresh = false, row?: DataSourceRow) {
+  sendRowsToClient(forceFullRefresh = false, row?: DataSourceRowWithBigint) {
     if (this.#sessionDataSource) {
       console.warn(
         `[TickingArrayDataSource] sendRowsToClient suppressed during active edit session` +
@@ -205,7 +213,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
   }
 
   select(selectRequest: Omit<SelectRequest, "vpId">) {
-    // Forwarding the select request to the session 
+    // Forwarding the select request to the session
     // datasource causes it to update its own selectedRows
     // and re-send its rows
     super.select(selectRequest);
@@ -225,15 +233,24 @@ export class TickingArrayDataSource extends ArrayDataSource {
     }
   };
 
-  createSessionDataSource(sessionTable: VuuTable) {
-    if (this.#vuuModule) {
+  async createSessionDataSource(
+    copyOption: CopyOption,
+  ): Promise<DataSourceBase<DataSourceRowWithBigint> | undefined> {
+    const rpcResponse = await this?.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "createSessionTable",
+      params: { copyOption },
+    });
+    if (isRpcSuccess(rpcResponse)) {
+      const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
       return this.#vuuModule?.createDataSource(
         sessionTable.table,
         sessionTable.table,
+        this.config,
       );
     } else {
       throw Error(
-        `[TickingArrayDataSource] unable to createSessionDataSource, not constructed with VuuModule`,
+        `[TickingArrayDataSource] createSessionDataSource ${rpcResponse?.errorMessage}`,
       );
     }
   }
@@ -243,7 +260,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
       type: "RPC_REQUEST",
       rpcName: "beginEditSession",
       params: {
-        editSessionMode: toRpcEditSessionMode(editSessionMode),
+        editSessionMode,
       },
     });
 
@@ -321,7 +338,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return response?.errorMessage ?? "addRow failed";
   };
 
-  deleteRow = async (key: string, mode: DeleteRowMode = "hard"): Promise<true | string> => {
+  deleteRow = async (
+    key: string,
+    mode: DeleteRowMode = "hard",
+  ): Promise<true | string> => {
     const rpcHost = this.#sessionDataSource ?? this;
     const response = await rpcHost.rpcRequest?.({
       type: "RPC_REQUEST",
@@ -334,24 +354,35 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return response?.errorMessage ?? "deleteRow failed";
   };
 
-  deleteSelectedRows = async (mode: DeleteRowMode = "soft"): Promise<RpcResultSuccess | RpcResultError> => {
+  deleteSelectedRows = async (
+    mode: DeleteRowMode = "soft",
+  ): Promise<RpcResultSuccess | RpcResultError> => {
     const rpcHost = this.#sessionDataSource ?? this;
     const response = await rpcHost.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "deleteSelectedRows",
       params: { mode },
     });
-    return response ?? { type: "ERROR_RESULT", errorMessage: "deleteSelectedRows failed" };
+    return (
+      response ?? {
+        type: "ERROR_RESULT",
+        errorMessage: "deleteSelectedRows failed",
+      }
+    );
   };
 
-  undoRowChange = async (key: string): Promise<RpcResultSuccess | RpcResultError> => {
+  undoRowChange = async (
+    key: string,
+  ): Promise<RpcResultSuccess | RpcResultError> => {
     const rpcHost = this.#sessionDataSource ?? this;
     const response = await rpcHost.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "undoRowChange",
       params: { key },
     });
-    return response ?? { type: "ERROR_RESULT", errorMessage: "undoRowChange failed" };
+    return (
+      response ?? { type: "ERROR_RESULT", errorMessage: "undoRowChange failed" }
+    );
   };
 
   async endEditSession(saveChanges = false) {

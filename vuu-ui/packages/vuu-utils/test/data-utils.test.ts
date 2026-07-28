@@ -4,6 +4,7 @@ import {
   numericTypeOfStringValue,
   stringIsValidDecimal,
   stringIsValidInt,
+  stringIsValidLong,
   stringIsValidNumber,
 } from "../src/data-utils";
 
@@ -24,6 +25,28 @@ describe("stringIsValidInt", () => {
     expect(stringIsValidInt("abc")).toBe(false);
     expect(stringIsValidInt("123a")).toBe(false);
     expect(stringIsValidInt("")).toBe(false);
+  });
+});
+
+describe("stringIsValidLong", () => {
+  it("accepts positive and negative integers", () => {
+    expect(stringIsValidLong("0")).toBe(true);
+    expect(stringIsValidLong("123")).toBe(true);
+    expect(stringIsValidLong("-123")).toBe(true);
+    expect(stringIsValidLong("1000000000000001234")).toBe(true);
+    expect(stringIsValidLong("-1000000000000001234")).toBe(true);
+  });
+
+  it("rejects decimals and trailing-dot strings", () => {
+    expect(stringIsValidLong("1.5")).toBe(false);
+    expect(stringIsValidLong("1.")).toBe(false);
+    expect(stringIsValidLong(".5")).toBe(false);
+  });
+
+  it("rejects non-numeric strings", () => {
+    expect(stringIsValidLong("abc")).toBe(false);
+    expect(stringIsValidLong("123a")).toBe(false);
+    expect(stringIsValidLong("")).toBe(false);
   });
 });
 

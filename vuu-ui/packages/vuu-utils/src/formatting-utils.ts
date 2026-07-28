@@ -8,6 +8,7 @@ import {
 import {
   isDateTimeDataValue,
   isMappedValueTypeRenderer,
+  isNanoTimestampColumn,
   isTimeDataValue,
   isTypeDescriptor,
 } from "./column-utils";
@@ -25,16 +26,36 @@ export const defaultValueFormatter = (value: unknown) =>
   value == null ? "" : typeof value === "string" ? value : value.toString();
 
 const dateFormatter = (column: DataValueDescriptor) => {
-  const pattern = dateTimePattern(column.type);
-  const formatter = formatDate(pattern);
+  if (isNanoTimestampColumn(column)) {
+    const pattern = dateTimePattern(column.type);
+    const formatter = formatDate(pattern);
 
-  return (value: unknown) => {
-    if (typeof value === "number" && value !== 0) {
-      return formatter(new Date(value));
-    } else {
-      return "";
-    }
-  };
+    return (value: unknown) => {
+      if (typeof value === "string" && value !== "") {
+        const bigIntValue = BigInt(value);
+        const dateTimeValue = Number(bigIntValue / 1_000_000n);
+        const nanoSeconds = (bigIntValue % 1_000_000n)
+          .toString()
+          .padStart(9, "0");
+        // TODO This needs more work to allow configuration
+        // of the subsecond value
+        return `${formatter(new Date(dateTimeValue))}.${nanoSeconds}`;
+      } else {
+        return "";
+      }
+    };
+  } else {
+    const pattern = dateTimePattern(column.type);
+    const formatter = formatDate(pattern);
+
+    return (value: unknown) => {
+      if (typeof value === "number" && value !== 0) {
+        return formatter(new Date(value));
+      } else {
+        return "";
+      }
+    };
+  }
 };
 
 export const numericFormatter = ({
@@ -103,11 +124,9 @@ const mapFormatter = (map: ColumnTypeValueMap) => {
 
 const NumericTypes = ["decimal", "number"];
 
-export const getValueFormatter = (
-  column: ColumnDescriptor,
-  serverDataType = column.serverDataType,
-): ValueFormatter => {
-  if (isDateTimeDataValue(column, serverDataType) || isTimeDataValue(column)) {
+export const getValueFormatter = (column: ColumnDescriptor): ValueFormatter => {
+  const { serverDataType = "string" } = column;
+  if (isDateTimeDataValue(column) || isTimeDataValue(column)) {
     return dateFormatter(column);
   }
 

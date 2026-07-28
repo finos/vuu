@@ -1,4 +1,5 @@
 import { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 
 const checkPattern = (value: string, pattern: string) => {
   return new RegExp(`^${pattern}`, "i").test(value);
@@ -9,7 +10,7 @@ const checkPattern = (value: string, pattern: string) => {
 // some kind of cacheKey. If same key is provided with repeat request
 // we use cached values.
 const getUniqueValues = (
-  data: DataSourceRow[],
+  data: DataSourceRow<bigint | VuuRowDataItemType>[],
   columnIndex: number,
   pattern = "",
 ) => {
@@ -32,7 +33,7 @@ const getUniqueValues = (
 };
 
 export const makeSuggestions = (
-  data: DataSourceRow[],
+  data: DataSourceRow<bigint | VuuRowDataItemType>[],
   columnIndex: number,
   pattern?: string,
 ): Promise<string[]> =>

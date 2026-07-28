@@ -1,12 +1,12 @@
-import { useRef, useEffect, HTMLAttributes } from "react";
-import { init, getInstanceByDom } from "echarts";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { ChartOptionsProps, useChartOptions } from "./useChartOptions";
-import { useChartContextMenu } from "./useChartContextMenu";
 import cx from "clsx";
-
-import { ItemColorFunction } from "./ChartSeries";
+import { getInstanceByDom, init } from "echarts";
+import { HTMLAttributes, useEffect, useRef } from "react";
+import { useChartContextMenu } from "./useChartContextMenu";
+import { ChartOptionsProps, useChartOptions } from "./useChartOptions";
+import { useChartSelection } from "./useChartSelection";
+import { buildColumnMap } from "@vuu-ui/vuu-utils";
 
 import chartCss from "./Chart.css";
 
@@ -17,26 +17,37 @@ type OptionSettings = {
 };
 
 type ChartSettings = {
+  /**
+   * Default value will be svg
+   */
   renderer: "svg" | "canvas";
+  /**
+   * Enlarges 'click zone' around interactive elements.
+   * Default value true;
+   */
   useCoarsePointer: boolean;
 };
 
 export interface ChartProps
   extends ChartOptionsProps,
     HTMLAttributes<HTMLDivElement> {
-  chartSettings?: ChartSettings;
-  itemColorFunction?: ItemColorFunction;
+  chartSettings?: Partial<ChartSettings>;
   optionSettings?: OptionSettings;
+  /**
+   * An array of color values that will be assigned, in the order given
+   * to rendered series.
+   */
   palette?: string[];
   showTooltip?: boolean;
 }
 
 export const Chart = ({
   categoryColumnName,
-  chartSettings = { useCoarsePointer: true, renderer: "svg" }, // enables clicking near a line and still highlighting it
+  chartSettings = { useCoarsePointer: true, renderer: "svg" },
   className,
+  config,
+  dataExclusions,
   dataSource,
-  itemColorFunction,
   optionSettings = { notMerge: true }, // don't merge two options together when updating option
   palette,
   showTooltip,
@@ -53,16 +64,31 @@ export const Chart = ({
 
   const chartRef = useRef<HTMLDivElement>(null);
 
-  const option = useChartOptions({
-    categoryColumnName,
+  const columnMap = buildColumnMap(dataSource.columns);
+
+  const onContextMenu = useChartContextMenu({ categoryColumnName, columnMap });
+  const {
     itemColorFunction,
-    palette,
-    dataSource,
-    seriesColumnNames,
-    showTooltip,
+    onClick,
+    onMouseOut,
+    onMouseOver,
+    symbolSizeFunction,
+  } = useChartSelection({
+    categoryColumnName,
+    selectionModel: config?.selectionModel,
   });
 
-  const onContextMenu = useChartContextMenu({ categoryColumnName });
+  const option = useChartOptions({
+    categoryColumnName,
+    config,
+    itemColorFunction,
+    palette,
+    dataExclusions,
+    dataSource,
+    seriesColumnNames,
+    symbolSizeFunction,
+    showTooltip,
+  });
 
   // Debounce resize event so it only fires periodically instead of constantly
   //   const resizeChart = useMemo(
@@ -81,6 +107,9 @@ export const Chart = ({
     const chart = init(chartRef.current, null, chartSettings);
 
     chart.on("contextmenu", onContextMenu);
+    chart.on("click", onClick);
+    chart.on("mouseover", onMouseOver);
+    chart.on("mouseout", onMouseOut);
 
     // Resize event listener
     // const resizeObserver = new ResizeObserver(() => {
@@ -98,7 +127,7 @@ export const Chart = ({
       //   }
       //   resizeObserver.disconnect();
     };
-  }, [chartSettings, onContextMenu]);
+  }, [chartSettings, onClick, onContextMenu, onMouseOver, onMouseOut]);
 
   useEffect(() => {
     if (chartRef.current) {

@@ -163,6 +163,22 @@ describe("FilterAggregator", () => {
         });
       });
     });
+
+    describe("WHEN a long value is added", () => {
+      it("THEN a single filter clause is created, ", () => {
+        const aggregator = new FilterAggregator();
+        aggregator.add(
+          { name: "id", serverDataType: "long" },
+          "1000000000000001234",
+        );
+        expect(aggregator.filter).toEqual({
+          column: "id",
+          op: "=",
+          value: 1000000000000001234n,
+        });
+      });
+    });
+
     describe("WHEN a value tuple is added", () => {
       describe("AND both tuple values are present", () => {
         it("THEN a between filter is created, with appropriate data types", () => {

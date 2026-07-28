@@ -1,10 +1,10 @@
-import {
-  DataSource,
+import type {
   DataSourceConfig,
   DataSourceConstructorProps,
   DataSourceEvents,
   DataSourceFilter,
   DataSourceRow,
+  DataSourceRowWithBigint,
   DataSourceStatus,
   DataSourceSubscribedMessage,
   DataSourceSubscribeCallback,
@@ -12,6 +12,7 @@ import {
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
+  DataSourceBase,
 } from "@vuu-ui/vuu-data-types";
 import { filterPredicate, parseFilter } from "@vuu-ui/vuu-filter-parser";
 import type {
@@ -72,7 +73,7 @@ const { KEY } = metadataKeys;
 export interface ArrayDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
   columnDescriptors: readonly ColumnDescriptor[];
-  data: Array<VuuRowDataItemType[]>;
+  data: Array<Array<bigint | VuuRowDataItemType>>;
   dataMap?: ColumnMap;
   keyColumn?: string;
   rangeChangeRowset?: "delta" | "full";
@@ -80,7 +81,10 @@ export interface ArrayDataSourceConstructorProps
 
 const toDataSourceRow =
   (indexOfKeyColumn: number, index?: Map<string, number>) =>
-  (data: VuuRowDataItemType[], idx: number): DataSourceRow => {
+  (
+    data: Array<bigint | VuuRowDataItemType>,
+    idx: number,
+  ): DataSourceRowWithBigint => {
     const key = `${data[indexOfKeyColumn]}`;
     index?.set(key, idx);
     return [
@@ -104,7 +108,7 @@ const buildTableSchema = (
 ): TableSchema => {
   const schema: TableSchema = {
     columns: columns.map(({ editable, name, serverDataType = "string" }) => ({
-      editable, 
+      editable,
       name,
       serverDataType,
     })),
@@ -117,7 +121,7 @@ const buildTableSchema = (
 
 export class ArrayDataSource
   extends EventEmitter<DataSourceEvents>
-  implements DataSource
+  implements DataSourceBase<DataSourceRowWithBigint>
 {
   protected clientCallback: DataSourceSubscribeCallback | undefined;
   protected columnDescriptors: readonly ColumnDescriptor[];
@@ -143,7 +147,7 @@ export class ArrayDataSource
   protected _config: WithBaseFilter<WithFullConfig> & {
     visualLink?: LinkDescriptorWithLabel;
   } = vanillaConfig;
-  #data: DataSourceRow[];
+  #data: DataSourceRow<bigint | VuuRowDataItemType>[];
   #freezeTimestamp: number | undefined = undefined;
   #keys = new KeySet(NULL_RANGE);
   #links: LinkDescriptorWithLabel[] | undefined;
@@ -157,7 +161,7 @@ export class ArrayDataSource
   public tableSchema: TableSchema;
   public viewport: string;
 
-  protected processedData: DataSourceRow[] | undefined = undefined;
+  protected processedData: DataSourceRowWithBigint[] | undefined = undefined;
 
   constructor({
     aggregations,
@@ -194,7 +198,9 @@ export class ArrayDataSource
     const columns = columnDescriptors.map((col) => col.name);
     this.#columnMap = buildColumnMap(columns);
     this.dataIndices = buildDataToClientMap(this.#columnMap, this.dataMap);
-    this.#data = data.map<DataSourceRow>(toDataSourceRow(this.key, this.index));
+    this.#data = data.map<DataSourceRowWithBigint>(
+      toDataSourceRow(this.key, this.index),
+    );
 
     this.config = {
       ...this._config,
@@ -499,7 +505,7 @@ export class ArrayDataSource
 
         this._config = withConfigDefaults(newConfig);
 
-        let processedData: DataSourceRow[] | undefined;
+        let processedData: Array<DataSourceRowWithBigint> | undefined;
         if (hasFilter(config) || hasBaseFilter(config)) {
           const fn = this.getFilterPredicate();
           processedData = this.#data.filter(fn);
@@ -601,7 +607,7 @@ export class ArrayDataSource
     this.dataIndices = buildDataToClientMap(this.#columnMap, this.dataMap);
   }
 
-  private indexProcessedData(data: DataSourceRow[]) {
+  private indexProcessedData(data: Array<Array<bigint | VuuRowDataItemType>>) {
     // for (let i = 0; i < data.length; i++) {
     //   data[i][0] = i;
     //   data[i][1] = i;
@@ -685,10 +691,12 @@ export class ArrayDataSource
     console.log(`delete row ${row.join(",")}`);
   }
 
-  protected insert = (row: VuuRowDataItemType[]) => {
+  protected insert = (row: Array<bigint | VuuRowDataItemType>) => {
     // TODO take sorting, filtering. grouping into account
     const dataSourceRow = toDataSourceRow(this.key, this.index)(row, this.size);
-    (this.#data as DataSourceRow[]).push(dataSourceRow);
+    (this.#data as Array<Array<bigint | VuuRowDataItemType>>).push(
+      dataSourceRow,
+    );
     const { from, to } = this.#range;
     const [rowIdx] = dataSourceRow;
     const isSorted = hasSort(this.config);
@@ -719,37 +727,35 @@ export class ArrayDataSource
     }
   };
 
-  private insertIntoSortedData(row: DataSourceRow) {
+  private insertIntoSortedData(row: DataSourceRowWithBigint) {
     const indexedSortDefs = this.config.sort.sortDefs.map<ColIndexSortDef>(
       ({ column, sortType }) => [this.columnMap[column], sortType],
     );
 
-    const comparator = sortComparator(indexedSortDefs);
-    const insertPos = binarySearch(
-      this.processedData as DataSourceRow[],
-      row,
-      comparator,
-    );
+    if (this.processedData) {
+      const comparator = sortComparator(indexedSortDefs);
+      const insertPos = binarySearch(this.processedData, row, comparator);
 
-    this.sendSizeUpdateToClient();
+      this.sendSizeUpdateToClient();
 
-    if (insertPos === -1) {
-      this.processedData?.unshift(row);
-      // this.#keys.reset(this.#range);
-      if (this.processedData) {
-        // horribly inefficient
-        this.processedData = this.indexProcessedData(this.processedData);
-      }
+      if (insertPos === -1) {
+        this.processedData?.unshift(row);
+        // this.#keys.reset(this.#range);
+        if (this.processedData) {
+          // horribly inefficient
+          this.processedData = this.indexProcessedData(this.processedData);
+        }
 
-      if (insertPos <= this.#range.to) {
-        this.sendRowsToClient(true);
-      }
-      if (this.processedData) {
-        this.emit("resize", this.processedData.length);
-      }
-    } else {
-      if (this.processedData) {
-        this.emit("resize", this.processedData.length);
+        if (insertPos <= this.#range.to) {
+          this.sendRowsToClient(true);
+        }
+        if (this.processedData) {
+          this.emit("resize", this.processedData.length);
+        }
+      } else {
+        if (this.processedData) {
+          this.emit("resize", this.processedData.length);
+        }
       }
     }
   }
@@ -821,7 +827,10 @@ export class ArrayDataSource
     return this.updateDataItem(keyValue, columnName, row[dataColIndex]);
   };
 
-  protected updateRow = (row: VuuRowDataItemType[], _columnName?: string) => {
+  protected updateRow = (
+    row: Array<bigint | VuuRowDataItemType>,
+    _columnName?: string,
+  ) => {
     // TODO take grouping into account
     const keyValue = row[this.key];
     const dataIndex = this.#data.findIndex((row) => row[KEY] === keyValue);
@@ -890,7 +899,9 @@ export class ArrayDataSource
     }
   };
 
-  protected handleDeleteFromTable = async (key: string): Promise<true | string> => {
+  protected handleDeleteFromTable = async (
+    key: string,
+  ): Promise<true | string> => {
     const dataIndex = this.#data.findIndex((row) => row[KEY] === key);
     if (dataIndex === -1) {
       return "row not found";
@@ -959,7 +970,7 @@ export class ArrayDataSource
     });
   }
 
-  sendRowsToClient(forceFullRefresh = false, row?: DataSourceRow) {
+  sendRowsToClient(forceFullRefresh = false, row?: DataSourceRowWithBigint) {
     if (row) {
       this.clientCallback?.({
         clientViewportId: this.viewport,

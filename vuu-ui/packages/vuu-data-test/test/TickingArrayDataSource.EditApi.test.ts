@@ -279,7 +279,7 @@ describe("beginEditSession", () => {
     );
   });
 
-  it("converts 'all-rows' to alias 'All' in the RPC params", async () => {
+  it("sends 'all-rows' unchanged in the RPC params", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
 
@@ -288,12 +288,12 @@ describe("beginEditSession", () => {
     expect(ds.rpcRequest).toHaveBeenCalledWith(
       expect.objectContaining({
         rpcName: "beginEditSession",
-        params: { editSessionMode: "All" },
+        params: { editSessionMode: "all-rows" },
       }),
     );
   });
 
-  it("converts 'selected-rows' to alias 'Selected' in the RPC params", async () => {
+  it("sends 'selected-rows' unchanged in the RPC params", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
 
@@ -302,12 +302,12 @@ describe("beginEditSession", () => {
     expect(ds.rpcRequest).toHaveBeenCalledWith(
       expect.objectContaining({
         rpcName: "beginEditSession",
-        params: { editSessionMode: "Selected" },
+        params: { editSessionMode: "selected-rows" },
       }),
     );
   });
 
-  it("converts 'empty-session-table' to alias 'Empty' in the RPC params", async () => {
+  it("sends 'empty-session-table' unchanged in the RPC params", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
 
@@ -316,21 +316,7 @@ describe("beginEditSession", () => {
     expect(ds.rpcRequest).toHaveBeenCalledWith(
       expect.objectContaining({
         rpcName: "beginEditSession",
-        params: { editSessionMode: "Empty" },
-      }),
-    );
-  });
-
-  it("passes short-form alias 'All' through unchanged", async () => {
-    const ds = createDataSource();
-    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
-
-    await ds.beginEditSession("All");
-
-    expect(ds.rpcRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rpcName: "beginEditSession",
-        params: { editSessionMode: "All" },
+        params: { editSessionMode: "empty-session-table" },
       }),
     );
   });
@@ -388,5 +374,59 @@ describe("endEditSession", () => {
     vi.mocked(ds.rpcRequest).mockResolvedValue(ERROR("stale update"));
 
     await expect(ds.endEditSession(true)).resolves.toBeUndefined();
+  });
+});
+
+describe("createSessionDataSource", () => {
+  const sessionSuccess: RpcResultSuccess = {
+    type: "SUCCESS_RESULT",
+    data: { table: { module: "TEST", table: "session-xyz" } },
+  };
+
+  it("dispatches createSessionTable RPC with copyOption 'All'", async () => {
+    const ds = createDataSource();
+    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
+    await ds.createSessionDataSource?.("All");
+    expect(ds.rpcRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "RPC_REQUEST",
+        rpcName: "createSessionTable",
+        params: { copyOption: "All" },
+      }),
+    );
+  });
+
+  it("dispatches createSessionTable RPC with copyOption 'Selected'", async () => {
+    const ds = createDataSource();
+    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
+    await ds.createSessionDataSource?.("Selected");
+    expect(ds.rpcRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "RPC_REQUEST",
+        rpcName: "createSessionTable",
+        params: { copyOption: "Selected" },
+      }),
+    );
+  });
+
+  it("dispatches createSessionTable RPC with copyOption 'Empty'", async () => {
+    const ds = createDataSource();
+    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
+    await ds.createSessionDataSource?.("Empty");
+    expect(ds.rpcRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "RPC_REQUEST",
+        rpcName: "createSessionTable",
+        params: { copyOption: "Empty" },
+      }),
+    );
+  });
+
+  it("throws with the server error message on failure", async () => {
+    const ds = createDataSource();
+    vi.mocked(ds.rpcRequest).mockResolvedValue(ERROR("session table creation failed"));
+    await expect(ds.createSessionDataSource?.("All")).rejects.toThrow(
+      "session table creation failed",
+    );
   });
 });

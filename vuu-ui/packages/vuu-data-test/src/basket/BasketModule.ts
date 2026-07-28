@@ -228,25 +228,26 @@ export class BasketModule extends VuuModule<BasketsTableName> {
         const venue = "venue";
 
         const basketInstanceId = basketTradingRow[instanceId];
-        const basketTradingConstituentRow: VuuRowDataItemType[] = [
-          algo,
-          algoParams,
-          basketId,
-          description,
-          basketInstanceId,
-          `${basketInstanceId}-${ric}`,
-          limitPrice,
-          notionalLocal,
-          notionalUsd,
-          pctFilled,
-          priceSpread,
-          priceStrategyId,
-          quantity,
-          ric,
-          side,
-          venue,
-          weighting,
-        ];
+        const basketTradingConstituentRow: Array<bigint | VuuRowDataItemType> =
+          [
+            algo,
+            algoParams,
+            basketId,
+            description,
+            basketInstanceId,
+            `${basketInstanceId}-${ric}`,
+            limitPrice,
+            notionalLocal,
+            notionalUsd,
+            pctFilled,
+            priceSpread,
+            priceStrategyId,
+            quantity,
+            ric,
+            side,
+            venue,
+            weighting,
+          ];
         basketTradingConstituent.insert(basketTradingConstituentRow);
       },
     );

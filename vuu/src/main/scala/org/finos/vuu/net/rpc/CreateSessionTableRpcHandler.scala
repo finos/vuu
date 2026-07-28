@@ -1,58 +1,72 @@
 package org.finos.vuu.net.rpc
 
-import org.finos.vuu.core.table.{InMemSessionDataTable, TableContainer, ViewPortColumnCreator}
+import org.finos.vuu.core.auths.VuuUser
+import org.finos.vuu.core.table.{TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.SessionTableCopyOption.{All, Empty, Selected}
-import org.finos.vuu.viewport.{RowSource, ViewPort, ViewPortColumns}
 
-class CreateSessionTableRpcHandler(using val tableContainer: TableContainer) extends DefaultRpcHandler {
+class CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker)(using tableContainer: TableContainer) extends DefaultRpcHandler {
   registerRpc(RpcNames.CreateSessionTableRpc, this.createSessionTable)
 
   def createSessionTable(params: RpcParams): RpcFunctionResult = {
+    val vuuUser: VuuUser = params.ctx.user
+    if (!rpcPermissionChecker.isRpcAllowed(RpcNames.CreateSessionTableRpc, vuuUser)) {
+      logger.warn(s"User ${vuuUser.name} does not have permission to call ${RpcNames.CreateSessionTableRpc}")
+      return new RpcFunctionFailure("No permission to create session table.")
+    }
+
     val session: ClientSessionId = params.ctx.session
     val sourceTable = params.viewPort.table
     val copyOption = SessionTableCopyOption.fromString(params.namedParams("copyOption").asInstanceOf[String])
-    val columnsToCopyStr = params.namedParams("columnsToCopy").asInstanceOf[String]
-    val columnsToCopy = if (columnsToCopyStr.equals("*")) List.empty[String] else columnsToCopyStr.split(",").toList
-    val sessionTableName = params.namedParams("sessionTableName").asInstanceOf[String]
+    val columnsToCopy = params.namedParams.get("columnsToCopy") match {
+      case Some(value) =>
+        val columnsToCopyStr = value.asInstanceOf[String]
+        if (columnsToCopyStr == null || columnsToCopyStr.isBlank || columnsToCopyStr.equals("*")) {
+          sourceTable.asTable.getTableDef.customColumns.map(_.name).toList // exclude default columns
+        } else {
+          columnsToCopyStr.split(",").toList
+        }
+      case None =>
+        sourceTable.asTable.getTableDef.customColumns.map(_.name).toList // exclude default columns
+    }
+    val sessionTableName = params.namedParams.get("sessionTableName") match {
+      case Some(value) => value.asInstanceOf[String]
+      case None => s"edit-${sourceTable.name}"
+    }
 
     if (!sourceTable.asTable.getTableDef.isEditable) {
-      return new RpcFunctionFailure(s"Table ${sourceTable.name} is not editable")
+      logger.warn(s"Table ${sourceTable.name} is not editable")
+      return new RpcFunctionFailure("Table not editable")
     }
 
     val columnsInSource = sourceTable.asTable.columnsForNames(columnsToCopy)
+      .filter(_ != null)
       .map(_.name)
     val columnsNotInSource = columnsToCopy.filterNot(columnsInSource.contains)
     if (columnsNotInSource.nonEmpty) {
-      return new RpcFunctionFailure(s"Column(s) [${columnsNotInSource.mkString(", ")} not found in table ${sourceTable.name}]")
+      logger.warn(s"Column(s) [${columnsNotInSource.mkString(", ")}] not found in table ${sourceTable.name}")
+      return new RpcFunctionFailure("Column(s) not found in source table.")
     }
 
     val sessionTableSource = tableContainer.getTable(sessionTableName)
     val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)
-
     copyOption match {
       case All =>
         val vp = params.viewPort
         val vpColumns = ViewPortColumnCreator.create(params.viewPort.table.asTable, columnsToCopy)
         val iterator = vp.getKeys.iterator.take(tableContainer.rpcOptions.maxCopySize)
-        copyRows(iterator, sessionTable, vp.table, vpColumns, columnsToCopy)
+        while (iterator.hasNext) {
+          sessionTable.processUpdate(vp.table.pullRow(iterator.next(), vpColumns))
+        }
       case Selected =>
         val vp = params.viewPort
         val vpColumns = ViewPortColumnCreator.create(params.viewPort.table.asTable, columnsToCopy)
         val iterator = vp.getSelection.iterator.take(tableContainer.rpcOptions.maxCopySize)
-        copyRows(iterator, sessionTable, vp.table, vpColumns, columnsToCopy)
+        while (iterator.hasNext) {
+          sessionTable.processUpdate(vp.table.pullRow(iterator.next(), vpColumns))
+        }
       case Empty =>
     }
     RpcFunctionSuccess(Some(Map("sessionTable" -> sessionTable.name, "module" -> sessionTable.tableDef.getModule().name)))
-  }
-
-  private def copyRows(iterator: Iterator[String], sessionTable: InMemSessionDataTable, sourceTable: RowSource, vpColumns: ViewPortColumns, columnsToCopy: List[String]): Unit = {
-    while (iterator.hasNext) {
-      if (columnsToCopy.isEmpty) {
-        sessionTable.processUpdate(sourceTable.pullRow(iterator.next()))
-      } else {
-        sessionTable.processUpdate(sourceTable.pullRow(iterator.next(), vpColumns))
-      }
-    }
   }
 }

@@ -4,7 +4,11 @@ import {
   VuuRowDataItemType,
 } from "@vuu-ui/vuu-protocol-types";
 import { KeyboardEvent, SyntheticEvent } from "react";
-import { stringIsValidDecimal, stringIsValidInt } from "./data-utils";
+import {
+  stringIsValidDecimal,
+  stringIsValidInt,
+  stringIsValidLong,
+} from "./data-utils";
 import { isValidTimeString, Time } from "./date";
 import { queryClosest } from "./html-utils";
 import { ExtendedFilterOptions } from "@vuu-ui/vuu-filter-types";
@@ -120,15 +124,21 @@ export function getTypedValue(
   type: VuuColumnDataType | DataValueTypeSimple,
   throwIfInvalid = false,
   options?: ExtendedFilterOptions,
-): VuuRowDataItemType | ScaledDecimal | undefined {
+): VuuRowDataItemType | ScaledDecimal | bigint | undefined {
   switch (type) {
-    case "int":
-    case "long": {
+    case "int": {
       if (stringIsValidInt(value)) {
         return parseInt(value, 10);
-      } else if (isValidTimeString(value)) {
-        //TOCHECK
-        return value;
+      } else if (throwIfInvalid) {
+        throw Error(`value ${value} is not a valid ${type}`);
+      } else {
+        return undefined;
+      }
+    }
+
+    case "long": {
+      if (stringIsValidLong(value)) {
+        return BigInt(value);
       } else if (throwIfInvalid) {
         throw Error(`value ${value} is not a valid ${type}`);
       } else {

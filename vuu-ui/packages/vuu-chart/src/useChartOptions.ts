@@ -1,8 +1,16 @@
+import { DataSource, DataSourceRow } from "@vuu-ui/vuu-data-types";
+import { ColumnMap, itemsChanged } from "@vuu-ui/vuu-utils";
 import { type EChartsCoreOption } from "echarts";
 import { useMemo, useState } from "react";
-import { ChartSeries, ItemColorFunction } from "./ChartSeries";
-import { DataSource } from "@vuu-ui/vuu-data-types";
-import { itemsChanged } from "@vuu-ui/vuu-utils";
+import type {
+  ChartSelectionModel,
+  ItemColorFunction,
+  SymbolSize,
+  SymbolSizeFunction,
+  SymbolType,
+} from "./chart-types";
+import { ChartSeries } from "./ChartSeries";
+import { chartTooltip } from "./chartTooltip";
 
 const defaultPalette = [
   "#4676bf",
@@ -12,34 +20,67 @@ const defaultPalette = [
   "#697694",
   "#B0549d",
 ];
+
+export interface ChartConfig {
+  itemColorFunction?: ItemColorFunction;
+  selectionModel?: ChartSelectionModel;
+  symbolSize?: SymbolSize;
+}
+
+export interface DataExclusionOptions {
+  isExcludedData: (
+    row: DataSourceRow,
+    columnMap: ColumnMap,
+    column: string,
+  ) => boolean;
+  /**
+   * An embedded SVG path. If provided, will be used to render excluded values.
+   */
+  symbol?: SymbolType;
+}
+
 export interface ChartOptionsProps {
   categoryColumnName: string;
+  config: ChartConfig;
+  dataExclusions?: DataExclusionOptions;
   dataSource: DataSource;
   itemColorFunction?: ItemColorFunction;
   palette?: string[];
   seriesColumnNames: string[];
   showTooltip?: boolean;
+  symbolSizeFunction?: SymbolSizeFunction;
 }
+
+const combineConfig = (config: ChartConfig, overrides: ChartConfig) => {
+  return {
+    ...config,
+    ...overrides,
+  };
+};
 
 export const useChartOptions = ({
   categoryColumnName,
+  config,
+  dataExclusions,
   dataSource,
   itemColorFunction,
   palette = defaultPalette,
   seriesColumnNames,
   showTooltip = true,
+  symbolSizeFunction: symbolSize,
 }: ChartOptionsProps) => {
   const [, forceRender] = useState({});
 
   const chartSeries = useMemo(() => {
-    console.log("new ChartSeries");
     const cs = new ChartSeries({
-      itemColorFunction,
+      config: combineConfig(config, { itemColorFunction, symbolSize }),
+      dataExclusions,
       dataSource,
+      palette,
     });
     cs.on("update", () => forceRender({}));
     return cs;
-  }, [dataSource, itemColorFunction]);
+  }, [dataSource, config]);
 
   useMemo(() => {
     if (categoryColumnName !== chartSeries.categoryColumn) {
@@ -52,7 +93,7 @@ export const useChartOptions = ({
 
   return {
     animation: false,
-    color: palette,
+    color: chartSeries.palette,
     dataZoom: [
       {
         backgroundColor: "var(--vuuChart-zoom-background, transparent)",
@@ -76,10 +117,13 @@ export const useChartOptions = ({
     series: chartSeries.series,
     tooltip: showTooltip
       ? {
+          alwaysShowContent: true,
           backgroundColor: "",
           borderColor: "",
           // borderWidth: "",
           className: "vuuChartTooltip",
+          enterable: true,
+          formatter: chartTooltip,
           // padding: "",
           trigger: "axis",
         }

@@ -1,4 +1,4 @@
-import type { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import type { DataSourceRowWithBigint } from "@vuu-ui/vuu-data-types";
 import type { VuuAggregation, VuuGroupBy } from "@vuu-ui/vuu-protocol-types";
 import type { ColumnMap } from "@vuu-ui/vuu-utils";
 import type { GroupMap, KeyList } from "./group-utils";
@@ -7,9 +7,9 @@ export const count = (arr: unknown[]) => arr.length;
 
 export const aggregateData = (
   aggregations: VuuAggregation[],
-  targetData: readonly DataSourceRow[],
+  targetData: readonly DataSourceRowWithBigint[],
   groupBy: VuuGroupBy,
-  leafData: readonly DataSourceRow[],
+  leafData: readonly DataSourceRowWithBigint[],
   columnMap: ColumnMap,
   groupMap: GroupMap,
 ) => {
@@ -77,7 +77,7 @@ function aggregateCount(
   groupMap: GroupMap,
   columnMap: ColumnMap,
   aggregations: VuuAggregation[],
-  targetData: readonly DataSourceRow[],
+  targetData: readonly DataSourceRowWithBigint[],
   groupIndices: number[],
 ): { [key: string]: number } {
   const counts: { [key: string]: number } = {};
@@ -119,10 +119,10 @@ function getAggColumn(columnMap: ColumnMap, aggregations: VuuAggregation[]) {
 
 function aggregateSum(
   groupMap: GroupMap,
-  leafData: readonly DataSourceRow[],
+  leafData: readonly DataSourceRowWithBigint[],
   columnMap: ColumnMap,
   aggregations: VuuAggregation[],
-  targetData: readonly DataSourceRow[],
+  targetData: readonly DataSourceRowWithBigint[],
   groupIndices: number[],
 ): { [key: string]: number } {
   const sums: { [key: string]: number } = {};
@@ -130,7 +130,7 @@ function aggregateSum(
 
   function sumRecursive(
     map: GroupMap | KeyList,
-    leafData: readonly DataSourceRow[],
+    leafData: readonly DataSourceRowWithBigint[],
     aggColumn: number,
   ) {
     if (Array.isArray(map)) {
@@ -166,10 +166,10 @@ function aggregateSum(
 
 function aggregateAverage(
   groupMap: GroupMap,
-  leafData: readonly DataSourceRow[],
+  leafData: readonly DataSourceRowWithBigint[],
   columnMap: ColumnMap,
   aggregations: VuuAggregation[],
-  targetData: readonly DataSourceRow[],
+  targetData: readonly DataSourceRowWithBigint[],
   groupIndices: number[],
 ): { [key: string]: number } {
   const averages: { [key: string]: number } = {};
@@ -212,7 +212,7 @@ function aggregateAverage(
 
 function getLeafColumnData(
   map: GroupMap | KeyList,
-  leafData: readonly DataSourceRow[],
+  leafData: readonly DataSourceRowWithBigint[],
   aggColumn: number,
 ): number[] {
   const data: number[] = [];
@@ -232,10 +232,10 @@ function getLeafColumnData(
 
 function aggregateDistinct(
   groupMap: GroupMap,
-  leafData: readonly DataSourceRow[],
+  leafData: readonly DataSourceRowWithBigint[],
   columnMap: ColumnMap,
   aggregations: VuuAggregation[],
-  targetData: readonly DataSourceRow[],
+  targetData: readonly DataSourceRowWithBigint[],
   groupIndices: number[],
 ): { [key: string]: number } {
   const distincts: { [key: string]: number } = {};
@@ -265,10 +265,10 @@ function aggregateDistinct(
 
 function aggregateHigh(
   groupMap: GroupMap,
-  leafData: readonly DataSourceRow[],
+  leafData: readonly DataSourceRowWithBigint[],
   columnMap: ColumnMap,
   aggregations: VuuAggregation[],
-  targetData: readonly DataSourceRow[],
+  targetData: readonly DataSourceRowWithBigint[],
   groupIndices: number[],
 ): { [key: string]: number } {
   const highs: { [key: string]: number } = {};
@@ -297,10 +297,10 @@ function aggregateHigh(
 
 function aggregateLow(
   groupMap: GroupMap,
-  leafData: readonly DataSourceRow[],
+  leafData: readonly DataSourceRowWithBigint[],
   columnMap: ColumnMap,
   aggregations: VuuAggregation[],
-  targetData: readonly DataSourceRow[],
+  targetData: readonly DataSourceRowWithBigint[],
   groupIndices: number[],
 ): { [key: string]: number } {
   const mins: { [key: string]: number } = {};

@@ -5,16 +5,16 @@ import { UpdateGenerator } from "./rowUpdates";
 
 export type TableEvents = {
   delete: (key: string) => void;
-  insert: (row: VuuRowDataItemType[]) => void;
+  insert: (row: Array<bigint | VuuRowDataItemType>) => void;
   update: (
-    row: VuuRowDataItemType[],
+    row: Array<bigint | VuuRowDataItemType>,
     columnName?: string,
     sessionId?: string,
   ) => void;
 };
 
 export class Table extends EventEmitter<TableEvents> {
-  #data: VuuRowDataItemType[][];
+  #data: Array<Array<VuuRowDataItemType | bigint>>;
   #dataMap: ColumnMap;
   #indexOfKey: number;
   #index = new Map<string, number>();
@@ -22,7 +22,7 @@ export class Table extends EventEmitter<TableEvents> {
 
   constructor(
     schema: TableSchema,
-    data: VuuRowDataItemType[][],
+    data: Array<Array<VuuRowDataItemType | bigint>>,
     dataMap: ColumnMap,
     updateGenerator?: UpdateGenerator,
   ) {
@@ -77,7 +77,7 @@ export class Table extends EventEmitter<TableEvents> {
     }
   }
 
-  insert(row: VuuRowDataItemType[], emitEvent = true) {
+  insert(row: Array<bigint | VuuRowDataItemType>, emitEvent = true) {
     const index = this.#data.length;
     this.#data.push(row);
     const key = row[this.#indexOfKey] as string;
@@ -92,7 +92,7 @@ export class Table extends EventEmitter<TableEvents> {
     return this.#data[index];
   }
 
-  update(key: string, columnName: string, value: VuuRowDataItemType) {
+  update(key: string, columnName: string, value: bigint | VuuRowDataItemType) {
     const rowIndex = this.#data.findIndex(
       (row) => row[this.#indexOfKey] === key,
     );
@@ -112,7 +112,7 @@ export class Table extends EventEmitter<TableEvents> {
       this.emit("update", newRow, columnName);
     }
   }
-  updateRow(row: VuuRowDataItemType[]) {
+  updateRow(row: Array<bigint | VuuRowDataItemType>) {
     const key = row[this.#indexOfKey];
     const rowIndex = this.#data.findIndex(
       (row) => row[this.#indexOfKey] === key,

@@ -1,38 +1,6 @@
-import { EditSessionMode, EditSessionModeAlias, InlineEditSessionMode, StandaloneEditSessionMode } from "@vuu-ui/vuu-data-types";
+import { EditSessionMode, InlineEditSessionMode } from "@vuu-ui/vuu-data-types";
 import { DataRow, RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { formatDate } from "../date";
-
-/**
- * Converts a StandaloneEditSessionMode long-form value to the short-form alias
- * accepted by the beginEditSession RPC.
- * `"inline-all-rows"` is NOT converted here — it is a client-only flag that
- * passes through to the RPC unchanged.
- */
-const TO_RPC_MODE: Partial<Record<string, EditSessionModeAlias>> = {
-  "all-rows": "All",
-  "empty-session-table": "Empty",
-  "selected-rows": "Selected",
-};
-
-export const toRpcEditSessionMode = (
-  mode: EditSessionMode,
-): EditSessionModeAlias =>
-  TO_RPC_MODE[mode] ?? (mode as EditSessionModeAlias);
-
-/**
- * Converts an RPC alias back to the long-form mode needed by VuuModule
- * internals (e.g. `createSessionTable`). Always returns a long-form value.
- */
-const FROM_RPC_MODE: Record<EditSessionModeAlias, InlineEditSessionMode | StandaloneEditSessionMode> = {
-  All: "all-rows",
-  Empty: "empty-session-table",
-  Selected: "selected-rows",
-};
-
-export const fromRpcEditSessionMode = (
-  alias: EditSessionModeAlias,
-): InlineEditSessionMode | StandaloneEditSessionMode =>
-  FROM_RPC_MODE[alias] ?? (alias as StandaloneEditSessionMode);
 
 export const isInlineEditingSession = (
   editSessionMode: EditSessionMode,
