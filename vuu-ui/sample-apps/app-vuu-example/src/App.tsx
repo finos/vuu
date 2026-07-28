@@ -55,13 +55,18 @@ const defaultWebsocketUrl = (ssl: boolean) =>
 const {
   ssl,
   moduleRegistryUrl,
-  restUrl,
   websocketUrl: serverUrl = defaultWebsocketUrl(ssl),
 } = await vuuConfig;
 
 const features = await getRegisteredModules(moduleRegistryUrl);
 
-const dynamicFeatures = Object.values(features);
+const dynamicFeatures = Object.values(features).map((feature) => ({
+  ...feature,
+  vuu: {
+    connectionId: feature.vuu?.connectionId ?? feature.mfScope,
+    websocketUrl: feature.vuu?.websocketUrl ?? serverUrl,
+  },
+}));
 
 export const App = () => {
   const dragSource = useMemo(

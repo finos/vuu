@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 export const useAutoLoginToVuuServer = ({
   authenticate = true,
   autoConnect = true,
+  connectionId = "portal",
   // autoLogin = true,
   secure = true,
   token: tokenProp = "no-token",
@@ -23,6 +24,7 @@ export const useAutoLoginToVuuServer = ({
    */
   autoConnect?: boolean;
   autoLogin?: boolean;
+  connectionId?: string;
   secure?: boolean;
   /**
    * use with no authenticate step, to provide auth token.
@@ -45,7 +47,7 @@ export const useAutoLoginToVuuServer = ({
         const url =
           websocketUrl ?? `${secure ? "wss" : "ws"}://localhost/8090/websocket`;
 
-        ConnectionManager.connect({
+        ConnectionManager.connectTo(connectionId, {
           url,
           token,
         });
@@ -62,10 +64,18 @@ export const useAutoLoginToVuuServer = ({
 
     return () => {
       if (autoConnect) {
-        ConnectionManager.disconnect();
+        ConnectionManager.disconnectFrom(connectionId);
       }
     };
-  }, [authenticate, autoConnect, secure, tokenProp, user, websocketUrl]);
+  }, [
+    authenticate,
+    autoConnect,
+    connectionId,
+    secure,
+    tokenProp,
+    user,
+    websocketUrl,
+  ]);
 
   if (errorMessage) {
     return (
