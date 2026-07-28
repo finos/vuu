@@ -18,7 +18,7 @@ import {
   type DynamicFeatureDescriptor,
   registerComponent,
 } from "@vuu-ui/vuu-utils";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { ConfirmSelectionPanel } from "./order-management/cancel-confirm-prompt/ConfirmSelectionPanel";
 
@@ -57,24 +57,33 @@ const defaultWebsocketUrl = (ssl: boolean) =>
 const {
   ssl,
   moduleRegistryUrl,
-  restUrl,
   websocketUrl: serverUrl = defaultWebsocketUrl(ssl),
 } = await vuuConfig;
-
-
-
 
 export const App = () => {
 
   const getBearerToken = useBearerToken();
 
-  const [dynamicFeatures, setDYnamicFeatures] = useState<DynamicFeatureDescriptor[]>([]);
-  useMemo(async () => {
-    const bearerToken = await getBearerToken();
-    const features = await getRegisteredModules(moduleRegistryUrl, bearerToken);
-    const dynamicFeatures = Object.values(features);
-    setDYnamicFeatures(dynamicFeatures)
-  }, [getBearerToken])
+  const [dynamicFeatures, setDynamicFeatures] = useState<
+    DynamicFeatureDescriptor[]
+  >([]);
+  useEffect(() => {
+    const loadFeatures = async () => {
+      const bearerToken = await getBearerToken();
+      const features = await getRegisteredModules(moduleRegistryUrl, bearerToken);
+      setDynamicFeatures(
+        Object.values(features).map((feature) => ({
+          ...feature,
+          vuu: {
+            connectionId: feature.vuu?.connectionId ?? feature.mfScope,
+            websocketUrl: feature.vuu?.websocketUrl ?? serverUrl,
+          },
+        })),
+      );
+    };
+
+    loadFeatures();
+  }, [getBearerToken]);
 
 
   const dragSource = useMemo(
