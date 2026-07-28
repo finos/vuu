@@ -1,17 +1,11 @@
+import { init } from "@module-federation/enhanced/runtime";
 import {
   ConnectionManager,
-  type ConnectionStatus,
-  LostConnectionHandler,
-  VuuAuthenticator,
-  VuuAuthProvider,
-  VuuAuthTokenIssuePolicy,
 } from "@vuu-ui/vuu-data-remote";
-import { isLoginErrorMessage, PageVisibilityObserver } from "@vuu-ui/vuu-utils";
+import { AuthenticationProvider } from "@vuu-ui/vuu-shell";
+import { PageVisibilityObserver } from "@vuu-ui/vuu-utils";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
-import { init } from "@module-federation/enhanced/runtime";
-
-console.log("bootstrap.tsx");
 
 import "@vuu-ui/vuu-icons/index.css";
 import "@vuu-ui/vuu-theme/index.css";
@@ -21,31 +15,11 @@ init({
   remotes: [],
 });
 
-const CONNECTION_FAILED = "connection-failed";
-const isConnectionFailedMessage = (err: unknown) =>
-  typeof err === "string" && err.includes(CONNECTION_FAILED);
 
-const { restUrl, websocketUrl } = await vuuConfig;
+const config = await vuuConfig;
 
-const vuuAuth = new VuuAuthenticator({
-  authProvider: new VuuAuthProvider(`${restUrl}/api/authn`),
-  authTokenIssuePolicy: VuuAuthTokenIssuePolicy.UsernamePassword,
-  websocketUrl,
-});
 
-const lostConnectionHandler = new LostConnectionHandler(vuuAuth);
-
-const onConnectionStatusChange = (connectionStatus: ConnectionStatus) => {
-  if (connectionStatus === "disconnected") {
-    // do we care about the reason ?
-    lostConnectionHandler.reconnect().then((status) => {
-      if (status === CONNECTION_FAILED) {
-        throw new Error(status);
-      }
-    });
-  }
-};
-
+// this can go in the shell
 new PageVisibilityObserver({
   onHidden: () => {
     ConnectionManager.disableActiveSubscriptions();
@@ -55,23 +29,20 @@ new PageVisibilityObserver({
   },
 });
 
+
 async function start(): Promise<void> {
   const container = document.getElementById("root");
   if (!container) {
     throw Error("No react root defined in page");
   }
   try {
-    const [{ userName }] = await vuuAuth.login();
-    ConnectionManager.on("connection-status", onConnectionStatusChange);
     const root = createRoot(container);
-    root.render(<App logout={vuuAuth.logout} user={{ username: userName }} />);
+    root.render(
+      <AuthenticationProvider authConfig={config}>
+        <App />
+      </AuthenticationProvider>);
   } catch (err: unknown) {
-    if (isLoginErrorMessage(err) || isConnectionFailedMessage(err)) {
-      const root = createRoot(container);
-      root.render(<div>{`${err}`}</div>);
-    } else {
-      vuuAuth.logout();
-    }
+      console.error(err);
   }
 }
 

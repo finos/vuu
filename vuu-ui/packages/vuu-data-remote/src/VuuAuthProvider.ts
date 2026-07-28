@@ -1,3 +1,4 @@
+import type { AuthConfig } from "@vuu-ui/vuu-utils";
 import { parseVuuUserFromToken } from "./authenticate";
 
 export type User = {
@@ -17,6 +18,8 @@ export interface AuthProvider {
   logout: () => void;
 }
 
+export type AuthProviderClass = new (config: AuthConfig) => AuthProvider;
+
 /**
  * The Vuu AuthProvider is a simple Demoware auth provider that
  * grabs username and pasdsword from. a simple login form and
@@ -29,7 +32,7 @@ export interface AuthProvider {
  * credentials and login to vuu.
  */
 export class VuuAuthProvider implements AuthProvider {
-  constructor(private authEndpoint: string) {}
+  constructor(private authConfig: AuthConfig) {}
 
   login = async (username?: string, password?: string) => {
     const date = new Date();
@@ -60,24 +63,54 @@ export class VuuAuthProvider implements AuthProvider {
         //   await this.getVuuTokenWithUsernameAndPassword(userName, password);
         // document.cookie = `vuu-auth-token=${token};expires=${date.toUTCString()};path=/`;
 
-        return {
-          // authorizations,
-          // user: {
-          //   userName,
-          // },
-          token,
-        };
+          const {authorizations, name} = parseVuuUserFromToken(token);
+          return {
+            authorizations,
+            token,
+            user: {userName: name}
+          }
+
       } else {
         return this.redirectToLoginPage() as never;
       }
     }
   };
 
+  private async getVuuTokenWithBearerToken(bearerToken: string){
+    try {
+    const response = await fetch(this.authConfig.restUrl,{
+      headers: { Authorization: `Bearer: ${bearerToken}`}
+    });
+    if (!response.ok){
+      if (response.status === 503){
+        throw new Error('Application unavailable');
+      } else {
+        throw new Error('Auth token failure'); 
+      }
+    } 
+
+    const json = await response.json();
+    if (!json.token){
+      throw new Error('Missing token in response')
+    }
+
+    const {authorizations, name} = parseVuuUserFromToken(json.token);
+    return {
+      authorizations,
+      token: json.token,
+      user: {username: name}
+    }
+  } catch(_e: unknown){
+        throw new Error('Application unavailable');
+  }
+
+  }
+
   private async getVuuTokenWithUsernameAndPassword(
     username: string,
     password: string,
   ) {
-    const response = await fetch(this.authEndpoint, {
+    const response = await fetch(this.authConfig.authUrl, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -96,7 +129,7 @@ export class VuuAuthProvider implements AuthProvider {
         const { authorizations } = parseVuuUserFromToken(vuuAuthToken);
         return { authorizations, token: vuuAuthToken };
       } else {
-        throw Error(`Authentication failed auth token not returned by server`);
+        throw Error('Authentication failed auth token not returned by server');
       }
     } else {
       throw Error(`Authentication failed, ${response.status}`);

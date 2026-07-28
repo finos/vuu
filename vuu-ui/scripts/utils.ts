@@ -1,3 +1,21 @@
+import { spawnSync } from "node:child_process";
+
+/**
+ * Runs a command synchronously, streams child output to the current terminal,
+ * and exits the current process if the command fails.
+ * Uses a shell on Windows to ensure commands like npm resolve correctly.
+ */
+export const runCommandSync = (command: string, args: string[]) => {
+  const result = spawnSync(command, args, {
+    stdio: "inherit",
+    shell: process.platform === "win32",
+  });
+
+  if (result.status !== 0) {
+    process.exit(result.status ?? 1);
+  }
+};
+
 /**
  * argName can be a simple switch e.g --watch
  * yarn style args ...

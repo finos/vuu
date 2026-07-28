@@ -49,7 +49,6 @@ export const ApplicationProvider = ({
   mode,
   theme,
   userSettingsSchema: userSettingsSchema,
-  user,
 }: ApplicationProviderProps): ReactElement | null => {
   const { mode: inheritedMode, theme: inheritedTheme } = useTheme();
   const density = useDensity(densityProp);
@@ -57,8 +56,6 @@ export const ApplicationProvider = ({
   const context = useContext(ApplicationContext);
   const [userSettings, setSettings] =
     useState<Record<string, string | number | boolean>>();
-
-  console.log(`[ApplicationProvider] user = ${user?.username}`);
 
   useMemo(async () => {
     if (persistenceManager) {
@@ -88,7 +85,6 @@ export const ApplicationProvider = ({
         onUserSettingChanged,
         userSettings,
         userSettingsSchema,
-        user: user ?? context.user,
       }}
     >
       <SaltProviderNext
@@ -102,11 +98,6 @@ export const ApplicationProvider = ({
       </SaltProviderNext>
     </ApplicationContext.Provider>
   ) : null;
-};
-
-export const useApplicationUser = () => {
-  const { user } = useContext(ApplicationContext);
-  return user;
 };
 
 //Setter method (only used within the shell)
@@ -124,9 +115,4 @@ export const useApplicationSettings = () => {
 export const useUserSetting = () => {
   const { userSettings } = useContext(ApplicationContext);
   return userSettings;
-};
-
-export const useLogout = () => {
-  const { logout } = useContext(ApplicationContext);
-  return logout;
 };

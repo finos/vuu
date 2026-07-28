@@ -96,11 +96,14 @@ export function featureFromJson({ type }: { type: string }): ReactElement {
   return React.createElement(componentType);
 }
 
-export interface VuuConfig {
-  features: DynamicFeatures;
-  authUrl?: string;
+export interface AuthConfig {
+  authUrl: string;
   restUrl: string;
   websocketUrl: string;
+}
+
+export interface VuuConfig extends AuthConfig {
+  moduleRegistryUrl: string;
   ssl: boolean;
 }
 
