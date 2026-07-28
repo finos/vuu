@@ -159,6 +159,7 @@ export class Viewport {
   private pendingOperations = new Map<string, AsyncOperation>();
   private pendingRangeRequests: (VuuViewportRangeRequest & {
     acked?: boolean;
+    nacked?: boolean;
     requestId: string;
   })[] = [];
   private postMessageToClient: (message: DataSourceCallbackMessage) => void;
@@ -321,12 +322,12 @@ export class Viewport {
       table === baseTableSchema.table.table
         ? baseTableSchema
         : {
-            ...baseTableSchema,
-            table: {
-              ...baseTableSchema.table,
-              session: table,
-            },
-          };
+          ...baseTableSchema,
+          table: {
+            ...baseTableSchema.table,
+            session: table,
+          },
+        };
 
     return {
       aggregations,
@@ -344,6 +345,31 @@ export class Viewport {
   awaitOperation(requestId: string, msg: AsyncOperation) {
     //TODO set uip a timeout mechanism here
     this.pendingOperations.set(requestId, msg);
+  }
+
+  rejectOperation(requestId: string, msg: string) {
+    const { clientViewportId, pendingOperations } = this;
+    const pendingOperation = pendingOperations.get(requestId);
+    if (!pendingOperation) {
+      error(
+        `no matching operation found to reject for requestId ${requestId}`,
+      );
+      return;
+    }
+    const { type } = pendingOperation;
+    pendingOperations.delete(requestId);
+    console.log(`pending ${type} was rejected by server`)
+
+    for (let i = this.pendingRangeRequests.length - 1; i >= 0; i--) {
+      const pendingRangeRequest = this.pendingRangeRequests[i];
+      if (pendingRangeRequest.requestId === requestId) {
+        pendingRangeRequest.nacked = true;
+        break;
+      } else {
+        warn?.("range requests sent faster than they are being ACKed");
+      }
+    }
+
   }
 
   // Return a message if we need to communicate this to client UI
@@ -499,10 +525,10 @@ export class Viewport {
       const serverRequest =
         serverDataRequired && !this.rangeRequestAlreadyPending(range)
           ? ({
-              type,
-              viewPortId: this.serverViewportId,
-              ...getFullRange(range, this.bufferSize, maxRange),
-            } as VuuViewportRangeRequest)
+            type,
+            viewPortId: this.serverViewportId,
+            ...getFullRange(range, this.bufferSize, maxRange),
+          } as VuuViewportRangeRequest)
           : null;
       if (serverRequest) {
         infoEnabled &&
@@ -712,11 +738,11 @@ export class Viewport {
         filterSpec:
           typeof filter?.filter === "string"
             ? {
-                filter: filter.filter,
-              }
+              filter: filter.filter,
+            }
             : {
-                filter: "",
-              },
+              filter: "",
+            },
       },
       true,
     );

@@ -90,6 +90,8 @@ export interface VuuTableMetaResponse {
   columns: VuuColumns;
   dataTypes: VuuColumnDataType[];
   editableColumns: string[];
+  maxRangeEnd: number;
+  maxRangeWidth: number;
   key: string;
   table: VuuTable;
   type: "TABLE_META_RESP";
@@ -204,12 +206,19 @@ export interface VuuViewportRangeRequest {
   viewPortId: string;
 }
 
-export interface VuuViewportRangeResponse {
+export interface VuuViewportRangeSucces {
   from: number;
   to: number;
   type: "CHANGE_VP_RANGE_SUCCESS";
   viewPortId: string;
 }
+export interface VuuViewportRangeReject {
+  msg: string;
+  type: "CHANGE_VP_RANGE_REJECT";
+  viewPortId: string;
+}
+
+export type VuuViewportRangeResponse = VuuViewportRangeSucces | VuuViewportRangeReject
 
 export interface VuuViewportDisableRequest {
   type: "DISABLE_VP";
