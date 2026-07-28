@@ -4,7 +4,7 @@
     "mfComponent": "SimpleDiv",
     "mfScope": "simpleDiv",
     "mfUrl": "http://localhost:5004",
-    "mleftNavLocationUrl": "vuu-features"
+    "leftNavLocation": "vuu-features"
   },
   "filter-table": {
     "title": "Vuu Filter table",
@@ -20,7 +20,7 @@
     "mfComponent": "UserAdmin",
     "mfScope": "userAdmin",
     "mfUrl": "http://localhost:5007",
-    "mleftNavLocationUrl": "vuu-features"
+    "leftNavLocation": "vuu-features"
   },
   "instrument-tiles": {
     "title": "Instrument Price Tiles",
@@ -35,7 +35,7 @@
         }
       ]
     },
-    "mleftNavLocationUrl": "vuu-features"
+    "leftNavLocation": "vuu-features"
   },
   "basket-trading": {
     "title": "Basket Trading",
@@ -65,6 +65,6 @@
         }
       ]
     },
-    "mleftNavLocationUrl": "vuu-features"
+    "leftNavLocation": "vuu-features"
   }
 }

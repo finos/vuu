@@ -1,4 +1,4 @@
-import { useApplicationUser } from "@vuu-ui/vuu-shell";
+import { useLoggedInUser } from "@vuu-ui/vuu-shell";
 import { useData } from "@vuu-ui/vuu-utils2";
 import { useMemo } from "react";
 
@@ -6,7 +6,7 @@ import "./SimpleDiv.css";
 import { Table } from "@vuu-ui/vuu-table";
 
 const SimpleDiv = () => {
-  const user = useApplicationUser();
+  const user = useLoggedInUser();
   const { VuuDataSource } = useData();
 
   const dataSource = useMemo(() => {
@@ -27,7 +27,7 @@ const SimpleDiv = () => {
   return (
     <div className="vuuSimpleDiv">
       <div>Simple Div</div>
-      <div>{`Haha sucker ${user.username}`}</div>
+      <div>{`Haha sucker ${user.userName}`}</div>
       <Table config={config} dataSource={dataSource} />
     </div>
   );

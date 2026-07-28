@@ -48,8 +48,11 @@ The previous tabbed UI can be discarded. The replacement UI must consume data fr
 - Supports row selection to drive drawer state.
 
 ### Groups Table (Drawer, Top)
-- Subscribed to KEYCLOAK_ADMIN groups.
+- Subscribed to KEYCLOAK_ADMIN user_group_roles table.
+- Column subscription includes all columns from the table schema.
+- TableConfig marks all columns as hidden except `group_name`.
 - Displayed in top section of the drawer.
+- Future: when a user is selected in the Users table, filter the Groups table by the selected user's id.
 
 ### Roles Table (Drawer, Bottom)
 - Subscribed to KEYCLOAK_ADMIN roles.

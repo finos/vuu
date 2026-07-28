@@ -10,7 +10,15 @@ import "./index.css";
 
 const vuuPurple = "purple" as Accent;
 
-const authProvider = new VuuAuthProvider("/api/authn");
+const config = {
+  "ssl": true,
+  "authUrl": "http://localhost:5001",
+  "moduleRegistryUrl": "/module-registry.json",
+  "restUrl": "api/authn",
+  "websocketUrl": "wss://localhost:8090/websocket"
+}
+
+const authProvider = new VuuAuthProvider(config);
 
 const container = document.getElementById("root");
 if (container) {

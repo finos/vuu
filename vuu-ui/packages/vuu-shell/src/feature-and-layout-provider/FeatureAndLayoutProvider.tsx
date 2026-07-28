@@ -70,8 +70,6 @@ export const FeatureAndLayoutProvider = ({
     [dynamicFeaturesProp, tableSchemas],
   );
 
-  console.log({ dynamicFeatures });
-
   return (
     <FeatureContext.Provider
       value={{

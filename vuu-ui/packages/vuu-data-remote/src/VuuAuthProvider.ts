@@ -110,7 +110,7 @@ export class VuuAuthProvider implements AuthProvider {
     username: string,
     password: string,
   ) {
-    const response = await fetch(this.authConfig.authUrl, {
+    const response = await fetch(this.authConfig.restUrl, {
       method: "POST",
       credentials: "include",
       headers: {

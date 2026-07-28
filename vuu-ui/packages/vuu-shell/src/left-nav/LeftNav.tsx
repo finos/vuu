@@ -4,7 +4,7 @@ import {
   Stack,
   useLayoutProviderDispatch,
 } from "@vuu-ui/vuu-layout";
-import { Tab, Tabstrip } from "@vuu-ui/vuu-ui-controls";
+import { IconButton, Tab, Tabstrip } from "@vuu-ui/vuu-ui-controls";
 import {
   type DynamicFeatureProps,
   type FilterTableFeatureProps,
@@ -223,14 +223,14 @@ export const LeftNav = (props: LeftNavProps) => {
           </Tabstrip>
         </div>
         <div className="vuuLeftNav-buttonBar">
-          <button
+          <IconButton
             className={cx("vuuLeftNav-toggleButton", {
               "vuuLeftNav-toggleButton-open":
                 displayStatus.startsWith("menu-full"),
               "vuuLeftNav-toggleButton-closed":
                 displayStatus.startsWith("menu-icons"),
             })}
-            data-icon={
+            icon={
               displayStatus.startsWith("menu-full")
                 ? "chevron-left"
                 : "chevron-right"
