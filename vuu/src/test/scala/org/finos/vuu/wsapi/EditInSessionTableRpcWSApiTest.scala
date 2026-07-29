@@ -383,7 +383,7 @@ class TestHandler(implicit tableContainer: TableContainer) extends EndEditSessio
 
   override def verifyPermission(params: RpcParams): Boolean = ???
 
-  override def validateDataInTable(params: RpcParams): Boolean = ???
+  override def validateData(params: RpcParams): Boolean = ???
 
   override def submit(params: RpcParams): Boolean = ???
 }

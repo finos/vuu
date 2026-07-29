@@ -11,7 +11,7 @@ trait EndEditSessionRpcHandler(using val tableContainer: TableContainer) extends
       return new RpcFunctionFailure(s"Unable to end edit session. No permission.")
     }
 
-    if (!validateDataInTable(params)) {
+    if (!validateData(params)) {
       logger.warn(s"Failed to end edit session in viewport ${params.viewPort.id} in session ${params.ctx.session.sessionId}. Invalid data found.")
       return new RpcFunctionFailure(s"Unable to end edit session. Invalid data found.")
     }
@@ -26,7 +26,7 @@ trait EndEditSessionRpcHandler(using val tableContainer: TableContainer) extends
 
   def verifyPermission(params: RpcParams): Boolean
 
-  def validateDataInTable(params: RpcParams): Boolean
+  def validateData(params: RpcParams): Boolean
 
   def submit(params: RpcParams): Boolean
 }
