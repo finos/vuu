@@ -1,8 +1,8 @@
 package org.finos.vuu.net
 
 import org.finos.vuu.api.AvailableViewPortVisualLink
-import org.finos.vuu.net.rpc.{RpcContext, RpcResult}
 import org.finos.vuu.net.row.RowUpdate
+import org.finos.vuu.net.rpc.{RpcContext, RpcResult}
 import org.finos.vuu.net.ui.UIAction
 import org.finos.vuu.viewport.{ViewPortAction, ViewPortMenu, ViewPortRange, ViewPortTable}
 
@@ -44,7 +44,8 @@ case class GetTableListResponse(tables: Array[ViewPortTable]) extends MessageBod
 
 case class GetTableMetaRequest(table: ViewPortTable) extends MessageBody
 
-case class GetTableMetaResponse(table: ViewPortTable, columns: Array[String], dataTypes: Array[String], key: String, editableColumns: Array[String]) extends MessageBody
+case class GetTableMetaResponse(table: ViewPortTable, columns: Array[String], dataTypes: Array[String], key: String,
+                                editableColumns: Array[String], maxRangeEnd: Int, maxRangeWidth: Int) extends MessageBody
 
 case class GetViewPortMenusRequest(vpId: String) extends MessageBody
 
@@ -109,6 +110,8 @@ case class ChangeViewPortReject(viewPortId: String, msg: String) extends Message
 case class ChangeViewPortRange(viewPortId: String, from: Int, to: Int) extends MessageBody
 
 case class ChangeViewPortRangeSuccess(viewPortId: String, from: Int, to: Int) extends MessageBody
+
+case class ChangeViewPortRangeReject(viewPortId: String, msg: String) extends MessageBody
 
 case class OpenTreeNodeRequest(vpId: String, treeKey: String) extends MessageBody
 

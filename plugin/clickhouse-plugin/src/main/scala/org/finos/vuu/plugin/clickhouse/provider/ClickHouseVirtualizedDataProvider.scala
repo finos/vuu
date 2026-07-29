@@ -24,10 +24,6 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
   override def runOnce(viewPort: ViewPort): Unit = {
     logger.trace("[ClickHouseVirtualizedDataProvider] Starting runOnce")
 
-    val range = viewPort.getRange
-    val startIndex = Math.max(range.from - 500, 0)
-    val limit = (range.to - startIndex) + 500
-
     val columns = viewPort.getColumns.getColumns
       .filter(f => f.isInstanceOf[VirtualizedSessionTableColumn])
       .map(_.asInstanceOf[VirtualizedSessionTableColumn])
@@ -35,7 +31,10 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
     val whereClause = ClickHouseFilterFactory.build(columns, viewPort.filterSpec)
     val orderBy = ClickHouseSortFactory.build(tableDef, columns, viewPort.sortSpec)
 
-    logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading rows from ClickHouse range $startIndex to ${startIndex + limit} filter=$whereClause sort=$orderBy")
+    val startIndex = viewPort.getRange.from
+    val limit = viewPort.getRange.to - startIndex
+
+    logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading rows from ClickHouse range ${viewPort.getRange.from} to ${viewPort.getRange.to} filter=$whereClause sort=$orderBy")
 
     val queryStart = clock.now()
     val tableSize = tableSizeProvider.getTableSize(tableDef, whereClause)
@@ -48,8 +47,8 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
     viewPort.table.asTable match {
       case tbl: VirtualizedSessionTable =>
 
-        logger.trace(s"[ClickHouseVirtualizedDataProvider] Setting range to $startIndex -> ${startIndex + limit}")
-        val (millisRange, _) = timeIt { tbl.setRange(startIndex, startIndex + limit) }
+        logger.trace(s"[ClickHouseVirtualizedDataProvider] Setting range to $startIndex -> ${startIndex + rowsWithData.length}")
+        val (millisRange, _) = timeIt { tbl.setRange(startIndex, startIndex + rowsWithData.length) }
 
         logger.trace(s"[ClickHouseVirtualizedDataProvider] Setting table size to $tableSize")
         val (millisSize, _) = timeIt { tbl.setSize(tableSize) }

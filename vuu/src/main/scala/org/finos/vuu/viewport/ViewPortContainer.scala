@@ -563,7 +563,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     val structural = viewport.ViewPortStructuralFields(aTable, columns, viewPortDef, filtAndSort, filterSpec,
       sort, groupBy, ClosedTreeNodeState, AllowAllPermissionFilter, None)
 
-    val viewPort = new ViewPortImpl(id, user, clientSession, outboundQ, new AtomicReference[ViewPortStructuralFields](structural), new AtomicReference[ViewPortRange](range))
+    val viewPort = new ViewPortImpl(id, user, clientSession, outboundQ, new AtomicReference[ViewPortStructuralFields](structural))
+    viewPort.setRange(range)
 
     val permissionFilter = table.asTable.getTableDef.permissionFilter(viewPort, tableContainer)
 

@@ -4,6 +4,7 @@ import org.finos.vuu.api.Link;
 import org.finos.vuu.api.TableDef;
 import org.finos.vuu.api.TableVisibility;
 import org.finos.vuu.core.table.Column;
+import org.finos.vuu.core.table.RangeSettings;
 import org.finos.vuu.core.table.SimpleColumn;
 import org.finos.vuu.net.SortDef;
 import org.finos.vuu.net.SortSpec;
@@ -12,7 +13,10 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TableDefBuilderTest {
 
@@ -31,6 +35,7 @@ class TableDefBuilderTest {
                 .isEditable(true)
                 .permissionFunction((a, b) -> null)
                 .defaultSort(new SortSpec(toScala(List.of(new SortDef("myColumn", 'D')))))
+                .rangeSettings(RangeSettings.apply().withMaxRangeEnd(100).withMaxRangeWidth(10))
                 .build();
 
         assertEquals("myTable", tableDef.name());
@@ -45,6 +50,8 @@ class TableDefBuilderTest {
         assertTrue(tableDef.isEditable());
         assertNotNull(tableDef.permissionFunction());
         assertEquals(1, tableDef.defaultSort().sortDefs().length());
+        assertEquals(100, tableDef.rangeSettings().maxRangeEnd());
+        assertEquals(10, tableDef.rangeSettings().maxRangeWidth());
     }
 
     @Test
@@ -64,6 +71,8 @@ class TableDefBuilderTest {
         assertFalse(tableDef.isEditable());
         assertNotNull(tableDef.permissionFunction());
         assertTrue(tableDef.defaultSort().sortDefs().isEmpty());
+        assertEquals(Integer.MAX_VALUE, tableDef.rangeSettings().maxRangeEnd());
+        assertEquals(1000, tableDef.rangeSettings().maxRangeWidth());
     }
 
 }

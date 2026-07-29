@@ -7,6 +7,8 @@ import org.finos.vuu.api.SessionTableDef;
 import org.finos.vuu.api.TableVisibility;
 import org.finos.vuu.api.VisualLinks;
 import org.finos.vuu.core.table.Column;
+import org.finos.vuu.core.table.RangeSettings;
+import org.finos.vuu.net.SortSpec;
 
 import java.util.List;
 
@@ -26,6 +28,9 @@ public class SessionTableDefBuilder {
     private List<String> indexFields = List.of();
     private TableVisibility visibility = TableVisibility.PUBLIC();
     private boolean includeDefaultColumns = true;
+    private SortSpec defaultSort = new SortSpecBuilder()
+            .build();
+    private RangeSettings rangeSettings = RangeSettings.apply();
 
     /**
      * Sets table name.
@@ -147,6 +152,28 @@ public class SessionTableDefBuilder {
     }
 
     /**
+     * Sets the default SortSpec.
+     *
+     * @param defaultSort the default SortSpec
+     * @return this builder
+     */
+    public SessionTableDefBuilder defaultSort(SortSpec defaultSort) {
+        this.defaultSort = defaultSort;
+        return this;
+    }
+
+    /**
+     * Sets the range settings
+     *
+     * @param rangeSettings the rangeSettings
+     * @return this builder
+     */
+    public SessionTableDefBuilder rangeSettings(RangeSettings rangeSettings) {
+        this.rangeSettings = rangeSettings;
+        return this;
+    }
+
+    /**
      * Builds {@link SessionTableDef}.
      *
      * @return {@link SessionTableDef}
@@ -161,6 +188,8 @@ public class SessionTableDefBuilder {
                 VisualLinks.apply(toScala(links)),
                 Indices.apply(toScalaSeq(indexFields.stream().map(Index::apply).toList())),
                 visibility,
-                includeDefaultColumns);
+                includeDefaultColumns,
+                defaultSort,
+                rangeSettings);
     }
 }
