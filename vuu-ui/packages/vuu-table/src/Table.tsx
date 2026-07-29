@@ -384,8 +384,8 @@ const TableCore = ({
     headerState: { height: headerHeight, count: headerCount },
     headings,
     highlightedIndex,
+    maxRangeEnd,
     onCheckBoxColumnHeaderClick,
-    // onDataEdited,
     onHeaderHeightMeasured,
     onMoveColumn,
     onMoveGroupColumn,
@@ -395,6 +395,7 @@ const TableCore = ({
     onSortColumn,
     onToggleGroup,
     rowClassNameGenerator,
+    scrollLimitInEffect,
     scrollProps,
     tableAttributes,
     tableBodyRef,
@@ -434,6 +435,7 @@ const TableCore = ({
   });
 
   const { selectionBookendWidth = 4 } = config;
+  const heightAdjustmentForScrollMessage = scrollLimitInEffect ? 32 : 0;
 
   const contentContainerClassName = cx(`${classBase}-contentContainer`, {
     [`${classBase}-colLines`]: tableAttributes.columnSeparators,
@@ -448,7 +450,7 @@ const TableCore = ({
 
   const cssVariables = {
     ...cssScrollbarSize,
-    "--content-height": `${viewportMeasurements.contentHeight}px`,
+    "--content-height": `${viewportMeasurements.contentHeight + heightAdjustmentForScrollMessage}px`,
     "--content-width": `${viewportMeasurements.contentWidth}px`,
     "--pinned-width-left": `${viewportMeasurements.pinnedWidthLeft}px`,
     "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
@@ -524,6 +526,11 @@ const TableCore = ({
           ) : null}
           {readyToRenderTableBody ? (
             <div className={`${classBase}-body`} ref={tableBodyRef}>
+              {scrollLimitInEffect ? (
+                <div className={`${classBase}-scrollLimitNotice`} style={{ height: heightAdjustmentForScrollMessage, background: 'red', position: 'absolute', left: 0, right: 0, bottom: 0 }}>
+                  {`There are ${dataSource.size - maxRangeEnd} more rows, but we only allow scrolling through the first ${maxRangeEnd}. Use filters to narrow down the dataset.`}
+                </div>
+              ) : null}
               {dataRows.map((dataRow) => {
                 const ariaRowIndex = dataRow.index + headerCount + 1;
                 return (
@@ -567,7 +574,6 @@ const TableCore = ({
                 ref={focusCellPlaceholderRef}
                 tabIndex={-1}
               />
-
               {cellBlock}
             </div>
           ) : null}
@@ -744,8 +750,8 @@ export const Table = forwardRef(function Table(
     >
       <RowProxy ref={rowRef} height={rowHeightProp} />
       {size &&
-      rowHeight &&
-      (footerHeight || showPaginationControls !== true) ? (
+        rowHeight &&
+        (footerHeight || showPaginationControls !== true) ? (
         <TableCore
           EmptyDisplay={EmptyDisplay}
           HeaderCell={HeaderCell}

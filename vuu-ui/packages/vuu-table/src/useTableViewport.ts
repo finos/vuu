@@ -51,8 +51,8 @@ export interface TableViewportHookResult extends ViewportMeasurements {
   setScrollTop: (scrollTop: number, scrollPct: number) => void;
 }
 
-// Too simplistic, it depends on rowHeight
-const MAX_PIXEL_HEIGHT = 10_000_000;
+// This is just below the actual max pixel height on chrome/edge and safari
+const MAX_PIXEL_HEIGHT = 33_000_000;
 
 const UNMEASURED_VIEWPORT: TableViewportHookResult = {
   appliedPageSize: 0,

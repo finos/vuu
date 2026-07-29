@@ -155,6 +155,7 @@ export class Viewport {
   private hasUpdates = false;
   private pendingUpdates: VuuRow[] = [];
   private keys: KeySet;
+  #maxRangeEnd = Number.MAX_SAFE_INTEGER;
   private pendingLinkedParent?: LinkDescriptorWithLabel;
   private pendingOperations = new Map<string, AsyncOperation>();
   private pendingRangeRequests: (VuuViewportRangeRequest & {
@@ -329,6 +330,10 @@ export class Viewport {
           },
         };
 
+    if (tableSchema.rangeLimits) {
+      this.#maxRangeEnd = tableSchema.rangeLimits?.maxRangeEnd
+    }
+
     return {
       aggregations,
       type: "subscribed",
@@ -347,8 +352,8 @@ export class Viewport {
     this.pendingOperations.set(requestId, msg);
   }
 
-  rejectOperation(requestId: string, msg: string) {
-    const { clientViewportId, pendingOperations } = this;
+  rejectOperation(requestId: string, _msg: string) {
+    const { pendingOperations } = this;
     const pendingOperation = pendingOperations.get(requestId);
     if (!pendingOperation) {
       error(
@@ -358,18 +363,18 @@ export class Viewport {
     }
     const { type } = pendingOperation;
     pendingOperations.delete(requestId);
-    console.log(`pending ${type} was rejected by server`)
 
-    for (let i = this.pendingRangeRequests.length - 1; i >= 0; i--) {
-      const pendingRangeRequest = this.pendingRangeRequests[i];
-      if (pendingRangeRequest.requestId === requestId) {
-        pendingRangeRequest.nacked = true;
-        break;
-      } else {
-        warn?.("range requests sent faster than they are being ACKed");
+    if (type === "CHANGE_VP_RANGE") {
+      for (let i = this.pendingRangeRequests.length - 1; i >= 0; i--) {
+        const pendingRangeRequest = this.pendingRangeRequests[i];
+        if (pendingRangeRequest.requestId === requestId) {
+          pendingRangeRequest.nacked = true;
+          break;
+        } else {
+          warn?.("range requests sent faster than they are being ACKed");
+        }
       }
     }
-
   }
 
   // Return a message if we need to communicate this to client UI
@@ -521,7 +526,7 @@ export class Viewport {
       let debounceRequest: DataSourceDebounceRequest | undefined;
       // Don't use zero as a range cap, it's is likely a transient count reported immediately
       // following a groupBy operation.
-      const maxRange = this.dataWindow.rowCount || undefined;
+      const maxRange = Math.min(this.dataWindow.rowCount ?? this.#maxRangeEnd, this.#maxRangeEnd);
       const serverRequest =
         serverDataRequired && !this.rangeRequestAlreadyPending(range)
           ? ({

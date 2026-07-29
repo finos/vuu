@@ -35,6 +35,7 @@ import { MenuRpcResponse } from "@vuu-ui/vuu-data-types";
 import {
   BaseDataSource,
   combineFilters,
+  constrainRange,
   debounce,
   isConfigChanged,
   isInlineEditingSession,
@@ -95,6 +96,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   #autosubscribeColumns: string[] = [];
   #pendingVisualLink?: LinkDescriptorWithLabel;
   #links: LinkDescriptorWithLabel[] | undefined;
+  #maxRangeEnd = Number.MAX_SAFE_INTEGER;
   #menu: VuuMenu | undefined;
   #optimize: OptimizeStrategy = "throttle";
   #selectedRowsCount = 0;
@@ -142,8 +144,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     const { viewport = this.viewport || (this.viewport = uuid()) } =
       subscribeProps;
 
-    console.log(`[VuuDataSource] subscribe ${this.viewport}`);
-
     if (
       this.#status === "disabled" ||
       this.#status === "disabling" ||
@@ -189,6 +189,9 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     if (message.type === "subscribed") {
       this.#status = "subscribed";
       this.tableSchema = message.tableSchema;
+      if (message.tableSchema.rangeLimits) {
+        this.#maxRangeEnd = message.tableSchema.rangeLimits?.maxRangeEnd;
+      }
       this._clientCallback?.(message);
       if (this.#pendingVisualLink) {
         this.visualLink = this.#pendingVisualLink;
@@ -211,7 +214,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       if (message.type === "viewport-update") {
         if (message.size !== undefined && message.size !== this.size) {
           this.size = message.size;
-          this.emit("resize", message.size);
+          this.emit("resize", message.size, this.#maxRangeEnd);
         }
 
         if (
@@ -265,7 +268,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
         this.size = msg.size;
         this.emit("resize", msg.size);
       }
-      console.log(`[VuuDataSource] clientCallback with ${msg.type}`);
       this._clientCallback?.(msg);
     }
   };
@@ -398,9 +400,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
         vpId: this.viewport,
       } as SelectRequest);
       if (isSelectSuccessWithRowCount(response)) {
-        console.log(
-          `[VuuDataSource] select selectedRowCount ${response.selectedRowCount}`,
-        );
         this.#selectedRowsCount = response.selectedRowCount;
         this.emit("row-selection", response.selectedRowCount);
       } else {
@@ -465,6 +464,10 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     return this.#links;
   }
 
+  get maxRangeEnd() {
+    return this.#maxRangeEnd;
+  }
+
   get menu() {
     return this.#menu;
   }
@@ -508,7 +511,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       this.server.send({
         viewport: this.viewport,
         type: "setViewRange",
-        range,
+        range: constrainRange(range, Math.min(this.size, this.#maxRangeEnd)),
       });
     }
   };
@@ -518,7 +521,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       this.server.send({
         viewport: this.viewport,
         type: "setViewRange",
-        range,
+        range: constrainRange(range, Math.min(this.size, this.#maxRangeEnd)),
       });
     }
   }, 50);

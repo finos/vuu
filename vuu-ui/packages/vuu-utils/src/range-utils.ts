@@ -72,29 +72,29 @@ export const NULL_RANGE = Range(0, 0);
 export function getFullRange(
   { from, to }: VuuRange,
   bufferSize = 0,
-  totalRowCount: number = Number.MAX_SAFE_INTEGER,
+  maxRangeEnd: number = Number.MAX_SAFE_INTEGER,
 ): FromToRange {
   if (from === 0 && to === 0) {
     return { from, to };
   } else if (bufferSize === 0) {
-    if (totalRowCount < from) {
+    if (maxRangeEnd < from) {
       return { from: 0, to: 0 };
     } else {
-      return { from, to: Math.min(to, totalRowCount) };
+      return { from, to: Math.min(to, maxRangeEnd) };
     }
   } else if (from === 0) {
-    return { from, to: Math.min(to + bufferSize, totalRowCount) };
+    return { from, to: Math.min(to + bufferSize, maxRangeEnd) };
   } else {
     const shortfallBefore = from - bufferSize < 0;
-    const shortfallAfter = totalRowCount - (to + bufferSize) < 0;
+    const shortfallAfter = maxRangeEnd - (to + bufferSize) < 0;
     if (shortfallBefore && shortfallAfter) {
-      return { from: 0, to: totalRowCount };
+      return { from: 0, to: maxRangeEnd };
     } else if (shortfallBefore) {
       return { from: 0, to: to + bufferSize };
     } else if (shortfallAfter) {
       return {
         from: Math.max(0, from - bufferSize),
-        to: totalRowCount,
+        to: maxRangeEnd,
       };
     } else {
       return { from: from - bufferSize, to: to + bufferSize };
@@ -141,5 +141,20 @@ export class WindowRange {
 
   public copy(): WindowRange {
     return new WindowRange(this.from, this.to);
+  }
+}
+
+export const constrainRange = (range: VuuRange, maxRangeEnd: number) => {
+  if (maxRangeEnd < range.to) {
+    if (maxRangeEnd > range.from) {
+      return {
+        from: range.from,
+        to: maxRangeEnd
+      };
+    } else {
+      throw Error(`constrainRange: cannot apply the maxRangeEnd ${maxRangeEnd} to range ${range.from} - ${range.to}`);
+    }
+  } else {
+    return range;
   }
 }

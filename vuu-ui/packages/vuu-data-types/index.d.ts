@@ -130,8 +130,8 @@ export declare type DecimalValueTypeSimple = "decimal" | "scaleddecimal";
 export declare type DateTimeDataValueType =
   | DateTimeColumnTypeSimple
   | (Omit<DataValueTypeDescriptor, "name"> & {
-      name: DateTimeColumnTypeSimple;
-    });
+    name: DateTimeColumnTypeSimple;
+  });
 
 export declare type BulkEdit = "bulk" | false | "read-only";
 
@@ -191,18 +191,18 @@ type IsNew = boolean;
 export declare type DataSourceRow<
   T extends bigint | VuuRowDataItemType = VuuRowDataItemType,
 > = [
-  RowIndex,
-  RenderKey,
-  IsLeaf,
-  IsExpanded,
-  Depth,
-  ChildCount,
-  RowKey,
-  IsSelected,
-  Timestamp,
-  IsNew,
-  ...T[],
-];
+    RowIndex,
+    RenderKey,
+    IsLeaf,
+    IsExpanded,
+    Depth,
+    ChildCount,
+    RowKey,
+    IsSelected,
+    Timestamp,
+    IsNew,
+    ...T[],
+  ];
 
 export declare type DataSourceRowWithBigint = DataSourceRow<
   bigint | VuuRowDataItemType
@@ -400,9 +400,18 @@ export declare type TableSchemaTable = VuuTable & {
   session?: string;
 };
 
+/**
+ * Restrictions imposed by server on scrolling operations.
+ */
+export declare type RangeLimits = {
+  maxRangeEnd: number;
+  maxRangeWidth: number;
+}
+
 export declare type TableSchema = {
   columns: readonly SchemaColumn[];
   key: readonly string;
+  rangeLimits?: RangeLimits;
   table: readonly TableSchemaTable;
 };
 
@@ -491,7 +500,7 @@ export declare type DataSourceEvents = {
   optimize: (optimize: OptimizeStrategy) => void;
   "page-count": (pageCount: number) => void;
   range: (range: Range) => void;
-  resize: (size: number) => void;
+  resize: (size: number, maxScrollEnd?: number) => void;
   resumed: DataSourceEventHandler;
   "remote-update-during-local-edit": RemoteUpdateHandler;
   "row-selection": RowSelectionEventHandler;
@@ -656,8 +665,8 @@ export declare type UndoRowChangeResult = {
 export interface DataSourceBase<
   T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
 > extends EditApi<T>,
-    IEventEmitter<DataSourceEvents>,
-    Partial<TypeaheadSuggestionProvider> {
+  IEventEmitter<DataSourceEvents>,
+  Partial<TypeaheadSuggestionProvider> {
   aggregations: VuuAggregation[];
   closeTreeNode: (keyOrIndex: string | number, cascade?: boolean) => void;
   columns: string[];
@@ -751,6 +760,7 @@ export interface DataSourceBase<
   groupBy?: VuuGroupBy;
   insertRow?: DataSourceInsertHandler;
   links?: LinkDescriptorWithLabel[];
+  maxRangeEnd?: number;
   menu?: VuuMenu;
   menuRpcCall: (
     rpcRequest: Omit<VuuRpcMenuRequest, "vpId">,
