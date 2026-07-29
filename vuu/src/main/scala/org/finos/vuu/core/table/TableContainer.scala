@@ -159,11 +159,11 @@ class TableContainer(val joinTableProvider: JoinTableProvider, val rpcOptions: V
   }
 
   def removeSessionTable(session: ClientSessionId, tableName: String): Unit = {
-    val sessionTable = SetHasAsScala(tables.entrySet()).asScala
-      .filter(entry => entry.getValue.isInstanceOf[SessionTable])
-      .filter(entry => entry.getValue.asInstanceOf[SessionTable].sessionId == session)
-      .map(_.getValue.asInstanceOf[SessionTable])
-      .filter(_.name == tableName)
+    val sessionTable = tables.values().asScala
+      .collect {
+        case table: SessionTable => table
+      }
+      .filter(table => table.sessionId == session && table.name == tableName)
       .toArray
 
     if (sessionTable.isEmpty) {
