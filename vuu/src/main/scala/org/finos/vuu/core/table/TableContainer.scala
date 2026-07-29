@@ -159,13 +159,19 @@ class TableContainer(val joinTableProvider: JoinTableProvider, val rpcOptions: V
   }
 
   def removeSessionTable(session: ClientSessionId, tableName: String): Unit = {
-    logger.debug(s"Removing session table $tableName in $session")
-    SetHasAsScala(tables.entrySet()).asScala
+    val sessionTable = SetHasAsScala(tables.entrySet()).asScala
       .filter(entry => entry.getValue.isInstanceOf[SessionTable])
       .filter(entry => entry.getValue.asInstanceOf[SessionTable].sessionId == session)
       .map(_.getValue.asInstanceOf[SessionTable])
       .filter(_.name == tableName)
-      .foreach(sessTable => tables.remove(sessTable.name))
+      .toArray
+
+    if (sessionTable.isEmpty) {
+      logger.debug(s"No session table $tableName found in $session")
+    } else {
+      logger.debug(s"Removing session table $tableName in $session")
+      sessionTable.foreach(sessTable => tables.remove(sessTable.name))
+    }
   }
 
 }
