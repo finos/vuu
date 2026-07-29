@@ -21,7 +21,8 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       val columns = Array(mockColumn)
 
       When("a SimpleVirtualizedSessionTableDef is instantiated")
-      val simpleDef = SimpleVirtualizedSessionTableDef(tableName, keyField, columns)
+      val simpleDef = SimpleVirtualizedSessionTableDef(
+        tableName, keyField, columns)
 
       Then("it should correctly map the remote table name and key field to the local values")
       simpleDef.getRemoteTableName shouldBe tableName
@@ -35,12 +36,12 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       simpleDef.name shouldBe tableName
       simpleDef.keyField shouldBe keyField
 
-      And("it should have no default columns by default")
-      simpleDef.includeDefaultColumns shouldBe false
+      And("it should have default columns by default")
+      simpleDef.options.includeDefaultColumns shouldBe true
 
       And("it should have no range options by default")
-      simpleDef.rangeSettings.maxRangeEnd shouldEqual Int.MaxValue
-      simpleDef.rangeSettings.maxRangeWidth shouldEqual 1000
+      simpleDef.options.rangeSettings.maxRangeEnd shouldEqual Int.MaxValue
+      simpleDef.options.rangeSettings.maxRangeWidth shouldEqual 1000
     }
 
     Scenario("Creating an AliasedVirtualizedSessionTableDef") {
@@ -73,12 +74,12 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       aliasedDef.pluginType shouldBe VirtualizedTablePluginType
       aliasedDef.getRemoteColumns shouldBe columns
 
-      And("it should have no default columns by default")
-      aliasedDef.includeDefaultColumns shouldBe false
+      And("it should have default columns by default")
+      aliasedDef.options.includeDefaultColumns shouldBe true
 
       And("it should have no range options by default")
-      aliasedDef.rangeSettings.maxRangeEnd shouldEqual Int.MaxValue
-      aliasedDef.rangeSettings.maxRangeWidth shouldEqual 1000
+      aliasedDef.options.rangeSettings.maxRangeEnd shouldEqual Int.MaxValue
+      aliasedDef.options.rangeSettings.maxRangeWidth shouldEqual 1000
     }
 
 
