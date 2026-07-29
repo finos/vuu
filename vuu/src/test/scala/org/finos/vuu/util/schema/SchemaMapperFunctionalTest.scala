@@ -14,8 +14,9 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
       val tableDef = TableDef(
         name = "MyExampleTable",
         keyField = "id",
-        columns = Columns.fromExternalSchema(externalEntitySchema)
+        customColumns = Columns.fromExternalSchema(externalEntitySchema)
       )
+
       val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.getColumns)
         .build()
       val table = new FakeInMemoryTable("SchemaMapTest", tableDef)
@@ -35,7 +36,7 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
       val tableDef = TableDef(
         name = "MyExampleTable",
         keyField = "id",
-        columns = new ColumnBuilder()
+        customColumns = new ColumnBuilder()
           .addString("id")
           .addDouble("notionalValue")
           .build()
@@ -65,7 +66,7 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
       val tableDef = TableDef(
         name = "MyExampleTable",
         keyField = "firstColumn",
-        columns = new ColumnBuilder()
+        customColumns = new ColumnBuilder()
           .addString("firstColumn")
           .addInt("secondColumn")
           .addDouble("thirdColumn")
@@ -91,7 +92,7 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
       val tableDef = TableDef(
         name = "MyExampleTable",
         keyField = "id",
-        columns = new ColumnBuilder()
+        customColumns = new ColumnBuilder()
           .addDouble("notionalValue")
           .addString("id")
           .addInt("clientId")
@@ -130,7 +131,7 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
       val tableDef = TableDef(
         name = "MyExampleTable",
         keyField = "id",
-        columns = new ColumnBuilder()
+        customColumns = new ColumnBuilder()
           .addString("id")
           .addDouble("doubleValue")
           .build()

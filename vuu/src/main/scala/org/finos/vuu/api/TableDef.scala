@@ -1,11 +1,9 @@
 package org.finos.vuu.api
 
-import org.finos.vuu.api.TableVisibility.Public
-import org.finos.vuu.core.filter.`type`.{AllowAllPermissionFilter, PermissionFilter}
+import org.finos.vuu.core.filter.`type`.PermissionFilter
 import org.finos.vuu.core.module.ViewServerModule
-import org.finos.vuu.core.table.{Column, Columns, DataType, DefaultColumn, JoinColumn, RangeSettings, SimpleColumn, TableContainer}
+import org.finos.vuu.core.table.{Column, Columns, DataType, DefaultColumn, JoinColumn, SimpleColumn, TableContainer}
 import org.finos.vuu.feature.inmem.VuuInMemPluginLocator
-import org.finos.vuu.net.SortSpec
 import org.finos.vuu.viewport.ViewPort
 
 object Fields {
@@ -44,8 +42,9 @@ object GroupByColumns {
     )
 }
 
-class GroupByTableDef(name: String, sourceTableDef: TableDef) 
-  extends TableDef(name, sourceTableDef.keyField, sourceTableDef.getColumns, TableDefOptions())
+class GroupByTableDef(name: String, sourceTableDef: TableDef)
+  extends TableDef(name, sourceTableDef.keyField, sourceTableDef.customColumns,
+    sourceTableDef.options)
 
 case class Link(fromColumn: String, toTable: String, toColumn: String)
 
@@ -70,13 +69,13 @@ case class AvailableViewPortVisualLink(parentVpId: String, link: Link) {
 class SessionTableDef(override val name: String,
                       override val keyField: String,
                       override val customColumns: Array[Column],
-                      override val options: TableDefOptions
+                      override val options: BaseTableDefOptions = TableDefOptions()
                      ) extends TableDef(name, keyField, customColumns, options) with VuuInMemPluginLocator
 
 class TableDef(val name: String,
                val keyField: String,
                val customColumns: Array[Column],
-               val options: TableDefOptions
+               val options: BaseTableDefOptions = TableDefOptions()
                ) extends VuuInMemPluginLocator {
 
   private val defaultColumns: Array[Column] = if (options.includeDefaultColumns) DefaultColumn.getDefaultColumns(customColumns) else Array.empty
@@ -124,10 +123,10 @@ case class JoinSpec(left: String, right: String, joinType: JoinType = LeftOuterJ
 case class JoinTo(table: TableDef, joinSpec: JoinSpec)
 
 case class JoinTableDef(override val name: String,
-                         override val options: TableDefOptions,
+                        joinOptions: JoinTableDefOptions,
                          baseTable: TableDef,
                          joinColumns: Array[Column],
-                         joins: JoinTo*) extends TableDef(name, baseTable.keyField, joinColumns, options) with VuuInMemPluginLocator {
+                        joins: JoinTo*) extends TableDef(name, baseTable.keyField, joinColumns, joinOptions) with VuuInMemPluginLocator {
 
   lazy val joinTableColumns = getJoinDefinitionColumnsInternal()
   lazy val rightTables = joins.map(join => join.table.name).toArray

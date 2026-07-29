@@ -6,67 +6,54 @@ import org.finos.vuu.core.table.{RangeSettings, TableContainer}
 import org.finos.vuu.net.SortSpec
 import org.finos.vuu.viewport.ViewPort
 
-trait TableDefOptions {
+trait BaseTableDefOptions {
+  type Self <: BaseTableDefOptions
 
   def joinFields: Seq[String]
-
   def autoSubscribe: Boolean
-
   def links: VisualLinks
-
   def indices: Indices
-
   def visibility: TableVisibility
-
   def includeDefaultColumns: Boolean
-
   def isEditable: Boolean
-
   def permissionFunction: (ViewPort, TableContainer) => PermissionFilter
-
   def defaultSort: SortSpec
-
   def rangeSettings: RangeSettings
 
-  def withJoinFields(joinFields: Seq[String]): TableDefOptions
+  def withJoinFields(joinFields: Seq[String]): Self
+
+  def withLinks(links: VisualLinks): Self
+
+  def withIndices(indices: Indices): Self
+
+  def withVisibility(visibility: TableVisibility): Self
+
+  def withIsEditable(isEditable: Boolean): Self
+
+  def withPermissionFunction(permissionFunction: (ViewPort, TableContainer) => PermissionFilter): Self
+
+  def withDefaultSort(defaultSort: SortSpec): Self
+
+  def withRangeSettings(rangeSettings: RangeSettings): Self
+}
+
+trait TableDefOptions extends BaseTableDefOptions {
+  override type Self = TableDefOptions
 
   def withAutoSubscribe(autoSubscribe: Boolean): TableDefOptions
-
-  def withLinks(links: VisualLinks): TableDefOptions
-
-  def withIndices(indices: Indices): TableDefOptions
-
-  def withVisibility(visibility: TableVisibility): TableDefOptions
-
   def withIncludeDefaultColumns(includeDefaultColumns: Boolean): TableDefOptions
+}
 
-  def withIsEditable(isEditable: Boolean): TableDefOptions
+trait JoinTableDefOptions extends BaseTableDefOptions {
+  override type Self = JoinTableDefOptions
 
-  def withPermissionFunction(permissionFunction: (ViewPort, TableContainer) => PermissionFilter): TableDefOptions
+  final def autoSubscribe: Boolean = false
 
-  def withDefaultSort(defaultSort: SortSpec): TableDefOptions
-
-  def withRangeSettings(rangeSettings: RangeSettings): TableDefOptions
+  final def includeDefaultColumns: Boolean = false
 
 }
 
 object TableDefOptions {
-
-  def apply(): TableDefOptions = {
-    TableDefOptionsImpl(
-      joinFields = Seq.empty,
-      autoSubscribe = false,
-      links = VisualLinks(),
-      indices = Indices(),
-      visibility = Public,
-      includeDefaultColumns = true,
-      isEditable = false,
-      permissionFunction = (_, _) => AllowAllPermissionFilter,
-      defaultSort = SortSpec(List.empty),
-      rangeSettings = RangeSettings()
-    )
-  }
-
   def apply(joinFields: Seq[String] = Seq.empty,
             autoSubscribe: Boolean = false,
             links: VisualLinks = VisualLinks(),
@@ -84,7 +71,6 @@ object TableDefOptions {
       permissionFunction, defaultSort, rangeSettings
     )
   }
-
 }
 
 case class TableDefOptionsImpl(joinFields: Seq[String],
@@ -99,34 +85,67 @@ case class TableDefOptionsImpl(joinFields: Seq[String],
                                rangeSettings: RangeSettings
                               ) extends TableDefOptions {
 
-  override def withJoinFields(joinFields: Seq[String]): TableDefOptions =
-    copy(joinFields = joinFields)
+  override def withJoinFields(joinFields: Seq[String]): TableDefOptions = copy(joinFields = joinFields)
 
-  override def withAutoSubscribe(autoSubscribe: Boolean): TableDefOptions =
-    copy(autoSubscribe = autoSubscribe)
+  override def withAutoSubscribe(autoSubscribe: Boolean): TableDefOptions = copy(autoSubscribe = autoSubscribe)
 
-  override def withLinks(links: VisualLinks): TableDefOptions =
-    copy(links = links)
+  override def withLinks(links: VisualLinks): TableDefOptions = copy(links = links)
 
-  override def withIndices(indices: Indices): TableDefOptions =
-    copy(indices = indices)
+  override def withIndices(indices: Indices): TableDefOptions = copy(indices = indices)
 
-  override def withVisibility(visibility: TableVisibility): TableDefOptions =
-    copy(visibility = visibility)
+  override def withVisibility(visibility: TableVisibility): TableDefOptions = copy(visibility = visibility)
 
-  override def withIncludeDefaultColumns(includeDefaultColumns: Boolean): TableDefOptions =
-    copy(includeDefaultColumns = includeDefaultColumns)
+  override def withIncludeDefaultColumns(includeDefaultColumns: Boolean): TableDefOptions = copy(includeDefaultColumns = includeDefaultColumns)
 
-  override def withIsEditable(isEditable: Boolean): TableDefOptions =
-    copy(isEditable = isEditable)
+  override def withIsEditable(isEditable: Boolean): TableDefOptions = copy(isEditable = isEditable)
 
-  override def withPermissionFunction(permissionFunction: (ViewPort, TableContainer) => PermissionFilter): TableDefOptions =
-    copy(permissionFunction = permissionFunction)
+  override def withPermissionFunction(permissionFunction: (ViewPort, TableContainer) => PermissionFilter): TableDefOptions = copy(permissionFunction = permissionFunction)
 
-  override def withDefaultSort(defaultSort: SortSpec): TableDefOptions =
-    copy(defaultSort = defaultSort)
+  override def withDefaultSort(defaultSort: SortSpec): TableDefOptions = copy(defaultSort = defaultSort)
 
-  override def withRangeSettings(rangeSettings: RangeSettings): TableDefOptions =
-    copy(rangeSettings = rangeSettings)
+  override def withRangeSettings(rangeSettings: RangeSettings): TableDefOptions = copy(rangeSettings = rangeSettings)
+}
 
+object JoinTableDefOptions {
+  def apply(joinFields: Seq[String] = Seq.empty,
+            links: VisualLinks = VisualLinks(),
+            indices: Indices = Indices(),
+            visibility: TableVisibility = Public,
+            isEditable: Boolean = false,
+            permissionFunction: (ViewPort, TableContainer) => PermissionFilter = (_, _) => AllowAllPermissionFilter,
+            defaultSort: SortSpec = SortSpec(List.empty),
+            rangeSettings: RangeSettings = RangeSettings()
+           ): JoinTableDefOptions = {
+    JoinTableDefOptionsImpl(
+      joinFields, links, indices, visibility, isEditable,
+      permissionFunction, defaultSort, rangeSettings
+    )
+  }
+}
+
+case class JoinTableDefOptionsImpl(joinFields: Seq[String],
+                                   links: VisualLinks,
+                                   indices: Indices,
+                                   visibility: TableVisibility,
+                                   isEditable: Boolean,
+                                   permissionFunction: (ViewPort, TableContainer) => PermissionFilter,
+                                   defaultSort: SortSpec,
+                                   rangeSettings: RangeSettings
+                                  ) extends JoinTableDefOptions {
+
+  override def withJoinFields(joinFields: Seq[String]): JoinTableDefOptions = copy(joinFields = joinFields)
+
+  override def withLinks(links: VisualLinks): JoinTableDefOptions = copy(links = links)
+
+  override def withIndices(indices: Indices): JoinTableDefOptions = copy(indices = indices)
+
+  override def withVisibility(visibility: TableVisibility): JoinTableDefOptions = copy(visibility = visibility)
+
+  override def withIsEditable(isEditable: Boolean): JoinTableDefOptions = copy(isEditable = isEditable)
+
+  override def withPermissionFunction(permissionFunction: (ViewPort, TableContainer) => PermissionFilter): JoinTableDefOptions = copy(permissionFunction = permissionFunction)
+
+  override def withDefaultSort(defaultSort: SortSpec): JoinTableDefOptions = copy(defaultSort = defaultSort)
+
+  override def withRangeSettings(rangeSettings: RangeSettings): JoinTableDefOptions = copy(rangeSettings = rangeSettings)
 }

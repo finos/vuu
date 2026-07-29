@@ -5,7 +5,7 @@ import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.api.{Index, Indices, TableDef}
+import org.finos.vuu.api.{Index, Indices, TableDef, TableDefOptions}
 import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
 import org.finos.vuu.core.table.*
 import org.finos.vuu.core.tree.TreeSessionTable
@@ -42,10 +42,10 @@ class BuildBigGroupByTestScenario() extends StrictLogging {
     val pricesDef = TableDef(
       "prices", "ric",
       Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double", "exchange:String"),
-      indices = Indices(
-        Index("exchange")
-      ),
-      "ric"
+      TableDefOptions(
+        indices = Indices(Index("exchange")),
+        joinFields = List("ric")
+      ),      
     )
 
     logger.trace("[PERF] Starting perf test, building flat table....")

@@ -43,21 +43,22 @@ trait AbstractSessionTestCase {
     val processDef = TableDef(
       name = "process",
       keyField = "id",
-      columns = Columns.fromNames("id".string(), "name".string(), "uptime".long(), "status".string()),
-      VisualLinks(),
-      joinFields = "id"
+      customColumns = Columns.fromNames("id".string(), "name".string(), "uptime".long(), "status".string()),
+      options = TableDefOptions(
+        joinFields = List("id")
+      )      
     )
 
     val fixSequenceDef = SessionTableDef(
       name = "fixSequenceReset",
       keyField = "process-id",
-      columns = Columns.fromNames("process-id:String", "sequenceNumber:Long")
+      customColumns = Columns.fromNames("process-id:String", "sequenceNumber:Long")
     )
 
     val stopProcessDef = SessionTableDef(
       name = "stopProcess",
       keyField = "process-id",
-      columns = Columns.fromNames("process-id:String", "status:String")
+      customColumns = Columns.fromNames("process-id:String", "status:String")
     )
 
     processDef.setModule(module)

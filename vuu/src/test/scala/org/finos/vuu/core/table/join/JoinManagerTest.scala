@@ -88,73 +88,94 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
     TableDef(
       name = "orders",
       keyField = "orderId",
-      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "currencyPair:String"),
-      joinFields = "ric", "orderId", "currencyPair")
+      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "currencyPair:String"),
+      TableDefOptions(
+        joinFields = List("ric", "orderId", "currencyPair")
+      )
+    )
   }
 
   def mkeChildOrdersDef(): TableDef = {
     TableDef(
       name = "childOrders",
       keyField = "childOrderId",
-      columns = Columns.fromNames("childOrderId:String", "orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-      joinFields = "childOrderId", "orderId")
+      customColumns = Columns.fromNames("childOrderId:String", "orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+      TableDefOptions(
+        joinFields = List("childOrderId", "orderId")
+      )
+    )
   }
 
   def mkeOrders2Def(): TableDef = {
     TableDef(
       name = "orders2",
       keyField = "orderId",
-      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String",
+      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String",
                                           "tradeTime:Long", "quantity:Double", "currencyPair: String"
                 ),
-      joinFields = "ric", "orderId", "currencyPair")
+      TableDefOptions(
+        joinFields = List("ric", "orderId", "currencyPair")
+      )
+    )
   }
 
   def mkeCcyPairDef(): TableDef = {
     TableDef(
       name = "fxRates",
       keyField = "currencyPair",
-      columns = Columns.fromNames("currencyPair:String", "fxRate:Double"),
-      joinFields = "currencyPair")
+      customColumns = Columns.fromNames("currencyPair:String", "fxRate:Double"),
+      TableDefOptions(
+        joinFields = List("currencyPair")
+      )
+    )
   }
 
   def mkeFxDef(): TableDef = {
     TableDef(
       name = "fx",
       keyField = "cross",
-      columns = Columns.fromNames("cross:String", "fxBid:Double", "fxOffer:Double"),
-      joinFields = "cross")
+      customColumns = Columns.fromNames("cross:String", "fxBid:Double", "fxOffer:Double"),
+      TableDefOptions(
+        joinFields = List("cross")
+      )
+    )
   }
 
   def mkePricesDef(): TableDef = {
-    TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+    TableDef(
+      "prices",
+      "ric",
+      Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+      TableDefOptions(
+        joinFields = List("ric")
+      )
+    )
   }
 
   def mkeOrderPricesDef(ordersDef: TableDef, pricesDef: TableDef): JoinTableDef = {
     JoinTableDef(
       name = "orderPrices",
+      joinOptions = JoinTableDefOptions(
+        joinFields = Seq("orderId", "currencyPair", "ric")
+      ),
       baseTable = ordersDef,
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins =
         JoinTo(
           table = pricesDef,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
-        ),
-      links = VisualLinks(),
-      joinFields = Seq("orderId", "currencyPair", "ric")
+        )
     )
   }
 
   def mkeOrderPricesFxDef(ordersDef: TableDef, pricesDef: TableDef, fxDef: TableDef): JoinTableDef = {
     JoinTableDef(
       name = "orderPricesFx",
-      visibility = Public,
+      joinOptions = JoinTableDefOptions(
+        joinFields = Seq("orderId"),
+      ),
       baseTable = ordersDef,
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric") ++ Columns.allFromExceptDefaultAnd(fxDef, "ric"),
-      links = VisualLinks(),
-      permissionFunction = (_,_) => AllowAllPermissionFilter,
-      defaultSort = SortSpec(List.empty),
-      joinFields = Seq("orderId"),
       JoinTo(
         table = pricesDef,
         joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
@@ -169,30 +190,25 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
   def mkeChildOrdersToOrderPricesDef(childOrders: TableDef, orderPrices: TableDef): JoinTableDef = {
     JoinTableDef(
       name = "childOrderPrices",
+      joinOptions = JoinTableDefOptions(),
       baseTable = childOrders,
       joinColumns = Columns.allFrom(orderPrices) ++ Columns.allFromExceptDefaultAnd(childOrders, "orderId"),
       joins =
         JoinTo(
           table = orderPrices,
           joinSpec = JoinSpec(left = "orderId", right = "orderId", LeftOuterJoin)
-        ),
-      links = VisualLinks(),
-      joinFields = Seq()
+        )
     )
   }
 
   def mkeOrder2PricesRatesDef(orders2Def: TableDef, pricesDef: TableDef, fxRates: TableDef): JoinTableDef = {
     JoinTableDef(
       name = "order2PricesAndFx",
-      visibility = Public,
+      joinOptions = JoinTableDefOptions(),
       baseTable = orders2Def,
       joinColumns = Columns.allFrom(orders2Def)
         ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric")
         ++ Columns.allFromExceptDefaultAnd(fxRates, "currencyPair"),
-      links = VisualLinks(),
-      permissionFunction = (_,_) => AllowAllPermissionFilter,
-      defaultSort = SortSpec(List.empty),
-      joinFields = Seq(),
       joins =
         JoinTo(
           table = pricesDef,

@@ -1,6 +1,6 @@
 package org.finos.vuu.wsapi
 
-import org.finos.vuu.api.{ColumnBuilder, JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, TableDef, VisualLinks}
+import org.finos.vuu.api.{ColumnBuilder, JoinSpec, JoinTableDef, JoinTableDefOptions, JoinTo, LeftOuterJoin, TableDef, TableDefOptions, VisualLinks}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, DefaultColumn}
@@ -221,7 +221,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     TableDef(
       name = tableName,
       keyField = "Id",
-      columns =
+      customColumns =
         new ColumnBuilder()
           .addString("Id")
           .addString("Name")
@@ -234,13 +234,14 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     TableDef(
       name = tableName,
       keyField = "Id",
-      columns =
+      customColumns =
         new ColumnBuilder()
           .addString("Id")
           .addString("Name")
           .build(),
-      VisualLinks(),
-      joinFields = "Id"
+      options = TableDefOptions(
+        joinFields = List("Id")
+      )
     )
   }
 
@@ -248,13 +249,14 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     TableDef(
       name = tableName,
       keyField = "Id",
-      columns =
+      customColumns =
         new ColumnBuilder()
           .addString("Id")
           .addString("Description")
           .build(),
-      VisualLinks(),
-      joinFields = "Id"
+      options = TableDefOptions(
+        joinFields = List("Id")
+      )
     )
   }
 
@@ -289,27 +291,25 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     val joinTableFunc1: TableDefContainer => JoinTableDef = _ => JoinTableDef(
       name = joinTableName1,
       baseTable = leftTableDef1,
+      joinOptions = JoinTableDefOptions(),
       joinColumns = Columns.allFrom(leftTableDef1) ++ Columns.allFromExceptDefaultAnd(rightTableDef1),
       joins =
         JoinTo(
           table = rightTableDef1,
           joinSpec = JoinSpec(left = "Id", right = "Id", LeftOuterJoin)
-        ),
-      links = VisualLinks(),
-      joinFields = Seq()
+        )
     )
 
     val joinTableFunc2: TableDefContainer => JoinTableDef = _ => JoinTableDef(
       name = joinTableName2,
       baseTable = leftTableDef2,
+      joinOptions = JoinTableDefOptions(),
       joinColumns = Columns.allFrom(leftTableDef2) ++ Columns.allFromExceptDefaultAnd(rightTableDef2),
       joins =
         JoinTo(
           table = rightTableDef2,
           joinSpec = JoinSpec(left = "Id", right = "Id", LeftOuterJoin)
         ),
-      links = VisualLinks(),
-      joinFields = Seq()
     )
 
     ModuleFactory.withNamespace(moduleName)

@@ -21,7 +21,7 @@ object PermissionModule extends DefaultModule{
       TableDef(
         name = "permission",
         keyField = User,
-        columns = Columns.fromNames(User.string(), Bitmask.long(), BitmaskAsString.string(), BitmaskAsRoles.string()),
+        customColumns = Columns.fromNames(User.string(), Bitmask.long(), BitmaskAsString.string(), BitmaskAsRoles.string()),
         VisualLinks(),
         joinFields = User
       ),

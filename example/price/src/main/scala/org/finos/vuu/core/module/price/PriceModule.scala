@@ -51,7 +51,7 @@ object PriceModule {
         TableDef(
           name = PriceTable,
           keyField = "ric",
-          columns = Columns.fromNames("ric".string(), "bid".double(), "bidSize".int(), "ask".double(), "askSize".int(),
+          customColumns = Columns.fromNames("ric".string(), "bid".double(), "bidSize".int(), "ask".double(), "askSize".int(),
             "last".double(), "open".double(), "close".double(), "scenario".string(), "phase".string()),
           options = TableDefOptions(
             autoSubscribe = true,

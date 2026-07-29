@@ -27,11 +27,23 @@
 //    val ordersDef = TableDef(
 //      name = "orderPermission",
 //      keyField = "orderId",
-//      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ownerMask:Int"),
-//      joinFields = "ric", "orderId"
+//      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ownerMask:Int"),
+//      options = TableDefOptions(
+joinFields = List("ric", "orderId")
+)
 //    ).withPermissions((vp, vs) => new TestFriendlyPermissionChecker(vp))
 //
-//    val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+//    val pricesDef = TableDef(
+"prices"
+,
+"ric"
+,
+Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double")
+,
+options = TableDefOptions(
+  joinFields = List("ric")
+)
+)
 //
 //    val joinDef = JoinTableDef(
 //      name = "orderPrices",

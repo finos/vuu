@@ -30,7 +30,7 @@ object BasketModule extends DefaultModule {
         TableDef(
           name = BasketTable,
           keyField = B.Id,
-          columns = Columns.fromNames(B.Id.string(), B.Name.string(), B.NotionalValue.double(), B.NotionalValueUsd.double()),
+          customColumns = Columns.fromNames(B.Id.string(), B.Name.string(), B.NotionalValue.double(), B.NotionalValueUsd.double()),
           VisualLinks(),
           joinFields = B.Id
         ),
@@ -44,7 +44,7 @@ object BasketModule extends DefaultModule {
         TableDef(
           name = BasketConstituentTable,
           keyField = BC.RicBasketId,
-          columns = Columns.fromNames(BC.RicBasketId.string(), BC.Ric.string(), BC.BasketId.string(),
+          customColumns = Columns.fromNames(BC.RicBasketId.string(), BC.Ric.string(), BC.BasketId.string(),
                                       BC.Weighting.double(), BC.LastTrade.string(), BC.Change.string(),
                                       BC.Volume.string(), BC.Side.string(), BC.Description.string()), // we can join to instruments and other tables to get the rest of the data.....
           VisualLinks(),
@@ -56,7 +56,7 @@ object BasketModule extends DefaultModule {
         TableDef(
           name = BasketTradingTable,
           keyField = BT.InstanceId,
-          columns = Columns.fromNames(BT.InstanceId.string(), BT.BasketId.string(), BT.BasketName.string(),
+          customColumns = Columns.fromNames(BT.InstanceId.string(), BT.BasketId.string(), BT.BasketName.string(),
                                       BT.Status.string(), BT.Units.int(), BT.FilledPct.double(), BT.FxRateToUsd.double(),
                                       BT.TotalNotional.double(), BT.TotalNotionalUsd.double(), BT.Side.string()
           ), // we can join to instruments and other tables to get the rest of the data.....
@@ -78,7 +78,7 @@ object BasketModule extends DefaultModule {
         TableDef(
           name = BasketTradingConstituentTable,
           keyField = BTC.InstanceIdRic,
-          columns = Columns.fromNames(BTC.Quantity.long(), BTC.Side.string(),
+          customColumns = Columns.fromNames(BTC.Quantity.long(), BTC.Side.string(),
                                       BTC.InstanceIdRic.string(), BTC.InstanceId.string(), BTC.Ric.string(),
                                       BTC.BasketId.string(), BTC.PriceStrategyId.int(),
                                       BTC.Description.string(),
@@ -110,7 +110,7 @@ object BasketModule extends DefaultModule {
         TableDef(
           name = "priceStrategyType",
           keyField = PS.Id,
-          columns = Columns.fromNames(PS.Id.int(), PS.PriceStrategy.string()), // we can join to instruments and other tables to get the rest of the data.....
+          customColumns = Columns.fromNames(PS.Id.int(), PS.PriceStrategy.string()), // we can join to instruments and other tables to get the rest of the data.....
           VisualLinks(),
           joinFields = PS.Id
         ),
@@ -121,7 +121,7 @@ object BasketModule extends DefaultModule {
         TableDef(
           name = "algoType",
           keyField = Algo.Id,
-          columns = Columns.fromNames(Algo.Id.int(), Algo.AlgoType.string()), // we can join to instruments and other tables to get the rest of the data.....
+          customColumns = Columns.fromNames(Algo.Id.int(), Algo.AlgoType.string()), // we can join to instruments and other tables to get the rest of the data.....
           VisualLinks(),
           joinFields = PS.Id
         ),

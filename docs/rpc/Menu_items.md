@@ -167,7 +167,7 @@ from the EDITABLE module definition, we include the definition of the Session Ta
         TableDef(
           name = "process",
           keyField = "id",
-          columns = Columns.fromNames("id".string(), "name".string(), "uptime".long(), "status".string()),
+          customColumns = Columns.fromNames("id".string(), "name".string(), "uptime".long(), "status".string()),
           VisualLinks(),
           joinFields = "id"
         ),
@@ -180,7 +180,7 @@ from the EDITABLE module definition, we include the definition of the Session Ta
       SessionTableDef(
         name = "fixSequenceReset",
         keyField = "process-id",
-        columns = Columns.fromNames("process-id:String", "sequenceNumber:Long")
+        customColumns = Columns.fromNames("process-id:String", "sequenceNumber:Long")
       ),
       (table, _, _, _) => ViewPortDef(
         columns = table.getTableDef.columns,

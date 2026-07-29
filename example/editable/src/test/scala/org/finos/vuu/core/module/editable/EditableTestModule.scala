@@ -110,7 +110,7 @@ object EditTableTestModule {
         TableDef(
           name = "editTestTable",
           keyField = "rowId",
-          columns = Columns.fromNames("rowId".string(), "A".string(), "B".double(), "C".int(), "D".boolean()),
+          customColumns = Columns.fromNames("rowId".string(), "A".string(), "B".double(), "C".int(), "D".boolean()),
           VisualLinks(),
           joinFields = "rowId"
         ),

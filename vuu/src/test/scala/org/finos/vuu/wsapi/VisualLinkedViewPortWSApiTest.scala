@@ -75,14 +75,16 @@ class VisualLinkedViewPortWSApiTest extends WebSocketApiTestBase {
       .addTableForTest(TableDef(
         name = tableName1,
         keyField = "Id",
-        columns =
+        customColumns =
           new ColumnBuilder()
             .addString("requestRefId")
             .addString("parentRequestRefId")
             .addInt("orderId")
             .build(),
-        links = VisualLinks(
-          Link("requestRefId", tableName1, "requestRefId")
+        options = TableDefOptions(
+          links = VisualLinks(
+            Link("requestRefId", tableName1, "requestRefId")
+          )
         ),
       ), providerFactory)
       .asModule()

@@ -132,7 +132,7 @@ object SimulationModule extends DefaultModule {
         TableDef(
           name = "instruments",
           keyField = "ric",
-          columns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(),
+          customColumns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(),
             "currency".string(), "exchange".string(), "lotSize".int()),
           VisualLinks(),
           joinFields = "ric"
@@ -183,7 +183,7 @@ object SimulationModule extends DefaultModule {
         TableDef(
           name = "permissionedOrders",
           keyField = "id",
-          columns = Columns.fromNames("id".string(), "idAsInt".int(), "ric".string(), "childCount".int(), "price".double(),
+          customColumns = Columns.fromNames("id".string(), "idAsInt".int(), "ric".string(), "childCount".int(), "price".double(),
             "quantity".int(), "side".string(), "account".string(), "exchange".string(),
             "ccy".string(), "algo".string(), "volLimit".double(), "filledQty".int(), "openQty".int(),
             "averagePrice".double(), "status".string(), "lastUpdate".long(), "owner".string(), "mask".int()),

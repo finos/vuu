@@ -17,7 +17,7 @@ object EditableModule extends DefaultModule {
         TableDef(
           name = "process",
           keyField = "id",
-          columns = Columns.fromNames("id".string(), "name".string(), "uptime".long(), "status".string()),
+          customColumns = Columns.fromNames("id".string(), "name".string(), "uptime".long(), "status".string()),
           VisualLinks(),
           joinFields = "id"
         ),
@@ -30,7 +30,7 @@ object EditableModule extends DefaultModule {
       SessionTableDef(
         name = "fixSequenceReset",
         keyField = "process-id",
-        columns = Columns.fromNames("process-id:String", "sequenceNumber:Int")
+        customColumns = Columns.fromNames("process-id:String", "sequenceNumber:Int")
       ),
       (table, _, _, tableContainer) => ViewPortDef(
         columns = table.getTableDef.getColumns,

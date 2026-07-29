@@ -114,7 +114,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
     val tableDef = TableDef(
       name = "users",
       keyField = "id",
-      columns =
+      customColumns =
         new ColumnBuilder()
           .addString("id")
           .addString("name")
@@ -154,7 +154,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
     val tableDef2 = TableDef(
       name = "default",
       keyField = "id",
-      columns =
+      customColumns =
         new ColumnBuilder()
           .addString("id")
           .build()

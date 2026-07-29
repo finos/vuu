@@ -3,7 +3,7 @@ package org.finos.vuu.core.table
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.DefaultClock
-import org.finos.vuu.api.TableDef
+import org.finos.vuu.api.{TableDef, TableDefOptions}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.TableTestHelper.*
@@ -43,7 +43,14 @@ class RpcTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest 
 
       val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
 
-      val orderEntryDef = TableDef("orderEntry", "clOrderId", Columns.fromNames("clOrderId:String", "ric:String", "quantity: Double", "orderType:String", "price: Double", "priceLevel: String"), "ric")
+      val orderEntryDef = TableDef(
+        "orderEntry",
+        "clOrderId",
+        Columns.fromNames("clOrderId:String", "ric:String", "quantity: Double", "orderType:String", "price: Double", "priceLevel: String"),
+        options = TableDefOptions(
+          joinFields = List("ric")
+        )
+      )
 
       val canons = orderEntryDef.getColumns.map( c => c.dataType.getCanonicalName )
 
