@@ -10,8 +10,9 @@ object NotificationsSchema {
   val Title = "title".string()
   val Message = "message".string()
   val Level = "level".string()
+  val Audience = "audience".string()
 
-  private final val GenericColumns: Array[String] = Array(Id, Type, ExpiryTime, Title, Message, Level)
+  private final val GenericColumns: Array[String] = Array(Id, Type, ExpiryTime, Title, Message, Level, Audience)
 
   def allFrom(): Array[Column] = Columns.fromNames(GenericColumns)
 

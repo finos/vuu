@@ -18,13 +18,13 @@ class SimulatedNotificationsProvider(table: DataTable)(implicit clock: Clock, li
   private val random = new SecureRandom()
 
   private val sampleTemplates = Array(
-    ("toast", "Order Execution", "Order #%04d filled %d shares of AAPL at $%d.%02d", "INFO", 12000L, "OMS", 2),
-    ("toast", "Risk Limit Alert", "Account ACC-%04d exceeded intraday VaR limit by %d%%", "WARNING", 15000L, "RISK", 5),
-    ("toast", "Feed Synchronization", "Connected to pricing feed NYC-%02d with latency %dms", "INFO", 10000L, "PRICING", 1),
-    ("toast", "Connection Warning", "Intermittent packet loss detected on gateway LDN-%02d", "WARNING", 14000L, "GATEWAY", 3),
-    ("toast", "Order Rejection", "Order #%04d rejected by exchange: Insufficient margin", "ERROR", 18000L, "OMS", 10),
-    ("banner", "System Maintenance", "Scheduled system maintenance will begin in %d minutes", "WARNING", 45000L, "SYSTEM", 5),
-    ("banner", "Market Status", "US Equity markets are now OPEN. Trading session #%d active", "INFO", 60000L, "SYSTEM", 1)
+    ("toast", "Order Execution", "Order #%04d filled %d shares of AAPL at $%d.%02d", "INFO", 12000L, "OMS", 2, "trader"),
+    ("toast", "Risk Limit Alert", "Account ACC-%04d exceeded intraday VaR limit by %d%%", "WARNING", 15000L, "RISK", 5, "risk_manager"),
+    ("toast", "Feed Synchronization", "Connected to pricing feed NYC-%02d with latency %dms", "INFO", 10000L, "PRICING", 1, "admin"),
+    ("toast", "Connection Warning", "Intermittent packet loss detected on gateway LDN-%02d", "WARNING", 14000L, "GATEWAY", 3, "admin"),
+    ("toast", "Order Rejection", "Order #%04d rejected by exchange: Insufficient margin", "ERROR", 18000L, "OMS", 10, "all"),
+    ("banner", "System Maintenance", "Scheduled system maintenance will begin in %d minutes", "WARNING", 45000L, "SYSTEM", 5, "all"),
+    ("banner", "Market Status", "US Equity markets are now OPEN. Trading session #%d active", "INFO", 60000L, "SYSTEM", 1, "all")
   )
 
   private val runner = new LifeCycleRunner("simulatedNotificationsProvider", () => runOnce(), minCycleTime = 4_000)
@@ -79,6 +79,7 @@ class SimulatedNotificationsProvider(table: DataTable)(implicit clock: Clock, li
     val duration = template._5
     val source = template._6
     val priority = template._7
+    val audience = template._8
     val expiryTime = now + duration
 
     val message = if (messageFormat.contains("%")) {
@@ -98,6 +99,7 @@ class SimulatedNotificationsProvider(table: DataTable)(implicit clock: Clock, li
       "title" -> title,
       "message" -> message,
       "level" -> level,
+      "audience" -> audience,
       "source" -> source,
       "priority" -> priority
     )

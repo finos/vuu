@@ -17,8 +17,8 @@ class NotificationModuleTest extends AnyFeatureSpec with Matchers with GivenWhen
       Given("The generic NotificationsSchema")
       val cols = NotificationsSchema.allFrom()
 
-      Then("It should contain the 6 generic notification columns")
-      cols.map(_.name) should contain theSameElementsAs Array("id", "type", "expiryTime", "title", "message", "level")
+      Then("It should contain the 7 generic notification columns")
+      cols.map(_.name) should contain theSameElementsAs Array("id", "type", "expiryTime", "title", "message", "level", "audience")
     }
 
     Scenario("Create generic Notifications schema columns with additional columns") {
@@ -26,7 +26,7 @@ class NotificationModuleTest extends AnyFeatureSpec with Matchers with GivenWhen
       val cols = NotificationsSchema.allFrom("source:String", "priority:Int")
 
       Then("It should contain the generic columns plus additional columns")
-      cols.map(_.name) should contain theSameElementsAs Array("id", "type", "expiryTime", "title", "message", "level", "source", "priority")
+      cols.map(_.name) should contain theSameElementsAs Array("id", "type", "expiryTime", "title", "message", "level", "audience", "source", "priority")
     }
 
     Scenario("Create the NotificationModule with a MockProvider") {
@@ -35,8 +35,9 @@ class NotificationModuleTest extends AnyFeatureSpec with Matchers with GivenWhen
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer()
       implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
-      When("The NotificationModule is instantiated with additional columns")
-      val module = NotificationModule((table, _) => new MockProvider(table), "source:String", "priority:Int")
+      When("The NotificationModule is instantiated with additional columns and a permission function")
+      import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
+      val module = NotificationModule((table, _) => new MockProvider(table), (_, _) => AllowAllPermissionFilter, "source:String", "priority:Int")
 
       Then("The module should be named NOTIFICATIONS and contain the notifications table")
       module.name should equal("NOTIFICATIONS")
@@ -55,6 +56,7 @@ class NotificationModuleTest extends AnyFeatureSpec with Matchers with GivenWhen
           "title:String",
           "message:String",
           "level:String",
+          "audience:String",
           "source:String",
           "priority:Int",
           DefaultColumn.CreatedTime.name + ":EpochTimestamp",
