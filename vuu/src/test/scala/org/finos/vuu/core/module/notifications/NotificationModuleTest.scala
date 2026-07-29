@@ -37,7 +37,13 @@ class NotificationModuleTest extends AnyFeatureSpec with Matchers with GivenWhen
 
       When("The NotificationModule is instantiated with additional columns and a permission function")
       import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
-      val module = NotificationModule((table, _) => new MockProvider(table), (_, _) => AllowAllPermissionFilter, "source:String", "priority:Int")
+      import org.finos.vuu.api.ViewPortDef
+      val module = NotificationModule(
+        (table, _) => new MockProvider(table),
+        (_, _) => AllowAllPermissionFilter,
+        (table, _, _, tc) => ViewPortDef.default(table.getTableDef.getColumns, tc),
+        "source:String", "priority:Int"
+      )
 
       Then("The module should be named NOTIFICATIONS and contain the notifications table")
       module.name should equal("NOTIFICATIONS")
