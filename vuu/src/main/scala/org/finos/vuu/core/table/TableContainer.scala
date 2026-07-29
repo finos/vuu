@@ -167,7 +167,7 @@ class TableContainer(val joinTableProvider: JoinTableProvider, val rpcOptions: V
       .toArray
 
     if (sessionTable.isEmpty) {
-      logger.debug(s"No session table $tableName found in $session")
+      logger.debug(s"Session table $tableName not found in $session")
     } else {
       logger.debug(s"Removing session table $tableName in $session")
       sessionTable.foreach(sessTable => tables.remove(sessTable.name))
