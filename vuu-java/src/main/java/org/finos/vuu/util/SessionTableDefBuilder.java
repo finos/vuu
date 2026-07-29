@@ -4,13 +4,19 @@ import org.finos.vuu.api.Index;
 import org.finos.vuu.api.Indices;
 import org.finos.vuu.api.Link;
 import org.finos.vuu.api.SessionTableDef;
+import org.finos.vuu.api.TableDefOptions;
 import org.finos.vuu.api.TableVisibility;
 import org.finos.vuu.api.VisualLinks;
+import org.finos.vuu.core.filter.type.AllowAllPermissionFilter$;
+import org.finos.vuu.core.filter.type.PermissionFilter;
 import org.finos.vuu.core.table.Column;
 import org.finos.vuu.core.table.RangeSettings;
+import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.net.SortSpec;
+import org.finos.vuu.viewport.ViewPort;
 
 import java.util.List;
+import java.util.function.BiFunction;
 
 import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
 import static org.finos.vuu.util.ScalaCollectionConverter.toScalaSeq;
@@ -28,6 +34,8 @@ public class SessionTableDefBuilder {
     private List<String> indexFields = List.of();
     private TableVisibility visibility = TableVisibility.PUBLIC();
     private boolean includeDefaultColumns = true;
+    private boolean isEditable = false;
+    private BiFunction<ViewPort, TableContainer, PermissionFilter> permissionFunction = (vp, tc) -> AllowAllPermissionFilter$.MODULE$;
     private SortSpec defaultSort = new SortSpecBuilder()
             .build();
     private RangeSettings rangeSettings = RangeSettings.apply();
@@ -152,6 +160,17 @@ public class SessionTableDefBuilder {
     }
 
     /**
+     * Sets whether the table is editable
+     *
+     * @param isEditable {@code true} to make the table editable
+     * @return this builder
+     */
+    public SessionTableDefBuilder isEditable(Boolean isEditable) {
+        this.isEditable = isEditable;
+        return this;
+    }
+
+    /**
      * Sets the default SortSpec.
      *
      * @param defaultSort the default SortSpec
@@ -183,13 +202,18 @@ public class SessionTableDefBuilder {
                 name,
                 keyField,
                 customColumns,
-                toScalaSeq(joinFields),
-                autoSubscribe,
-                VisualLinks.apply(toScala(links)),
-                Indices.apply(toScalaSeq(indexFields.stream().map(Index::apply).toList())),
-                visibility,
-                includeDefaultColumns,
-                defaultSort,
-                rangeSettings);
+                TableDefOptions.apply(
+                        toScalaSeq(joinFields),
+                        autoSubscribe,
+                        VisualLinks.apply(toScala(links)),
+                        Indices.apply(toScalaSeq(indexFields.stream().map(Index::apply).toList())),
+                        visibility,
+                        includeDefaultColumns,
+                        isEditable,
+                        ScalaFunctionConverter.toScala(permissionFunction),
+                        defaultSort,
+                        rangeSettings
+                )
+        );
     }
 }

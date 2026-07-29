@@ -41,17 +41,17 @@ class TableDefBuilderTest {
         assertEquals("myTable", tableDef.name());
         assertEquals("myKey", tableDef.keyField());
         assertEquals(1, tableDef.customColumns().length);
-        assertEquals(1, tableDef.joinFields().length());
-        assertTrue(tableDef.autosubscribe());
-        assertEquals(1, tableDef.links().links().length());
-        assertEquals(1, tableDef.indices().indices().length());
-        assertEquals(TableVisibility.PRIVATE(), tableDef.visibility());
-        assertFalse(tableDef.includeDefaultColumns());
-        assertTrue(tableDef.isEditable());
-        assertNotNull(tableDef.permissionFunction());
-        assertEquals(1, tableDef.defaultSort().sortDefs().length());
-        assertEquals(100, tableDef.rangeSettings().maxRangeEnd());
-        assertEquals(10, tableDef.rangeSettings().maxRangeWidth());
+        assertEquals(1, tableDef.options().joinFields().length());
+        assertTrue(tableDef.options().autoSubscribe());
+        assertEquals(1, tableDef.options().links().links().length());
+        assertEquals(1, tableDef.options().indices().indices().length());
+        assertEquals(TableVisibility.PRIVATE(), tableDef.options().visibility());
+        assertFalse(tableDef.options().includeDefaultColumns());
+        assertTrue(tableDef.options().isEditable());
+        assertNotNull(tableDef.options().permissionFunction());
+        assertEquals(1, tableDef.options().defaultSort().sortDefs().length());
+        assertEquals(100, tableDef.options().rangeSettings().maxRangeEnd());
+        assertEquals(10, tableDef.options().rangeSettings().maxRangeWidth());
     }
 
     @Test
@@ -62,17 +62,17 @@ class TableDefBuilderTest {
                 .build();
 
         assertEquals(0, tableDef.customColumns().length);
-        assertTrue(tableDef.joinFields().isEmpty());
-        assertFalse(tableDef.autosubscribe());
-        assertTrue(tableDef.links().links().isEmpty());
-        assertTrue(tableDef.indices().indices().isEmpty());
-        assertEquals(TableVisibility.PUBLIC(), tableDef.visibility());
-        assertTrue(tableDef.includeDefaultColumns());
-        assertFalse(tableDef.isEditable());
-        assertNotNull(tableDef.permissionFunction());
-        assertTrue(tableDef.defaultSort().sortDefs().isEmpty());
-        assertEquals(Integer.MAX_VALUE, tableDef.rangeSettings().maxRangeEnd());
-        assertEquals(1000, tableDef.rangeSettings().maxRangeWidth());
+        assertTrue(tableDef.options().joinFields().isEmpty());
+        assertFalse(tableDef.options().autoSubscribe());
+        assertTrue(tableDef.options().links().links().isEmpty());
+        assertTrue(tableDef.options().indices().indices().isEmpty());
+        assertEquals(TableVisibility.PUBLIC(), tableDef.options().visibility());
+        assertTrue(tableDef.options().includeDefaultColumns());
+        assertFalse(tableDef.options().isEditable());
+        assertNotNull(tableDef.options().permissionFunction());
+        assertTrue(tableDef.options().defaultSort().sortDefs().isEmpty());
+        assertEquals(Integer.MAX_VALUE, tableDef.options().rangeSettings().maxRangeEnd());
+        assertEquals(1000, tableDef.options().rangeSettings().maxRangeWidth());
     }
 
 }

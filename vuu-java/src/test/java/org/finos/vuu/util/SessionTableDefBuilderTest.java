@@ -33,13 +33,13 @@ class SessionTableDefBuilderTest {
         assertEquals("myTable", sessionTableDef.name());
         assertEquals("myKey", sessionTableDef.keyField());
         assertEquals(1, sessionTableDef.customColumns().length);
-        assertEquals(1, sessionTableDef.joinFields().length());
-        assertTrue(sessionTableDef.autosubscribe());
-        assertEquals(1, sessionTableDef.links().links().length());
-        assertEquals(1, sessionTableDef.indices().indices().length());
-        assertEquals(1, sessionTableDef.defaultSort().sortDefs().length());
-        assertEquals(100, sessionTableDef.rangeSettings().maxRangeEnd());
-        assertEquals(10, sessionTableDef.rangeSettings().maxRangeWidth());
+        assertEquals(1, sessionTableDef.options().joinFields().length());
+        assertTrue(sessionTableDef.options().autoSubscribe());
+        assertEquals(1, sessionTableDef.options().links().links().length());
+        assertEquals(1, sessionTableDef.options().indices().indices().length());
+        assertEquals(1, sessionTableDef.options().defaultSort().sortDefs().length());
+        assertEquals(100, sessionTableDef.options().rangeSettings().maxRangeEnd());
+        assertEquals(10, sessionTableDef.options().rangeSettings().maxRangeWidth());
     }
 
     @Test
@@ -50,13 +50,13 @@ class SessionTableDefBuilderTest {
                 .build();
 
         assertEquals(0, tableDef.customColumns().length);
-        assertTrue(tableDef.joinFields().isEmpty());
-        assertFalse(tableDef.autosubscribe());
-        assertTrue(tableDef.links().links().isEmpty());
-        assertTrue(tableDef.indices().indices().isEmpty());
-        assertTrue(tableDef.defaultSort().sortDefs().isEmpty());
-        assertEquals(Integer.MAX_VALUE, tableDef.rangeSettings().maxRangeEnd());
-        assertEquals(1000, tableDef.rangeSettings().maxRangeWidth());
+        assertTrue(tableDef.options().joinFields().isEmpty());
+        assertFalse(tableDef.options().autoSubscribe());
+        assertTrue(tableDef.options().links().links().isEmpty());
+        assertTrue(tableDef.options().indices().indices().isEmpty());
+        assertTrue(tableDef.options().defaultSort().sortDefs().isEmpty());
+        assertEquals(Integer.MAX_VALUE, tableDef.options().rangeSettings().maxRangeEnd());
+        assertEquals(1000, tableDef.options().rangeSettings().maxRangeWidth());
     }
 
 }

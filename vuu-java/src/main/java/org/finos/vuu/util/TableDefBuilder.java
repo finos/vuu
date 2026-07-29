@@ -4,6 +4,7 @@ import org.finos.vuu.api.Index;
 import org.finos.vuu.api.Indices;
 import org.finos.vuu.api.Link;
 import org.finos.vuu.api.TableDef;
+import org.finos.vuu.api.TableDefOptions;
 import org.finos.vuu.api.TableVisibility;
 import org.finos.vuu.api.VisualLinks;
 import org.finos.vuu.core.filter.type.AllowAllPermissionFilter$;
@@ -213,15 +214,18 @@ public class TableDefBuilder {
                 name,
                 keyField,
                 customColumns,
-                toScalaSeq(joinFields),
-                autoSubscribe,
-                VisualLinks.apply(toScala(links)),
-                Indices.apply(toScalaSeq(indexFields.stream().map(Index::apply).toList())),
-                visibility,
-                includeDefaultColumns,
-                isEditable,
-                ScalaFunctionConverter.toScala(permissionFunction),
-                defaultSort,
-                rangeSettings);
+                TableDefOptions.apply(
+                        toScalaSeq(joinFields),
+                        autoSubscribe,
+                        VisualLinks.apply(toScala(links)),
+                        Indices.apply(toScalaSeq(indexFields.stream().map(Index::apply).toList())),
+                        visibility,
+                        includeDefaultColumns,
+                        isEditable,
+                        ScalaFunctionConverter.toScala(permissionFunction),
+                        defaultSort,
+                        rangeSettings
+                )
+        );
     }
 }
