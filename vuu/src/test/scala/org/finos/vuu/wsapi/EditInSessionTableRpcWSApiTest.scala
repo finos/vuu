@@ -7,7 +7,7 @@ import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, RpcRequest, RpcResponseNew, SelectRowRangeRequest, SelectRowRangeSuccess, SelectRowRequest, SelectRowSuccess}
-import org.finos.vuu.net.rpc.{AllowAllRpcPermissionChecker, CreateSessionTableRpcHandler, EndEditSessionRpcHandler, RpcErrorResult, RpcNames, RpcPermissionChecker, RpcSuccessResult, ViewPortContext}
+import org.finos.vuu.net.rpc.{AllowAllRpcPermissionChecker, CreateSessionTableRpcHandler, EndEditSessionRpcHandler, RpcErrorResult, RpcNames, RpcParams, RpcPermissionChecker, RpcSuccessResult, ViewPortContext}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -381,9 +381,11 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
 
 class TestHandler(implicit tableContainer: TableContainer) extends EndEditSessionRpcHandler with StrictLogging {
 
-  override def verify(): Boolean = ???
+  override def verifyPermission(params: RpcParams): Boolean = ???
 
-  override def submit(): Boolean = ???
+  override def validateData(params: RpcParams): Boolean = ???
+
+  override def submit(params: RpcParams): Boolean = ???
 }
 
 private object AllDisabledRpcPermissionChecker extends RpcPermissionChecker {
