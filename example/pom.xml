@@ -30,6 +30,7 @@
         <module>rest-api</module>
         <module>http2-server</module>
         <module>main-clickhouse</module>
+        <module>notifications</module>
     </modules>
 
     <build>
