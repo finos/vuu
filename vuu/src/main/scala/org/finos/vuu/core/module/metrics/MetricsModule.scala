@@ -3,7 +3,7 @@ package org.finos.vuu.core.module.metrics
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{Indices, TableDef, TableDefOptions}
+import org.finos.vuu.api.{TableDef, TableDefOptions}
 import org.finos.vuu.core.module.metrics.MetricsSchema.MetricsTree.all_columns
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
@@ -84,7 +84,6 @@ object MetricsModule extends DefaultModule {
           keyField = "table",
           customColumns = Columns.fromNames("table".string(), "size".long(), "updateCount".long(), "updatesPerSecond".double()),
           options = TableDefOptions(
-            indices = Indices(),
             joinFields = List("table")
           )
         ),
@@ -97,7 +96,6 @@ object MetricsModule extends DefaultModule {
           customColumns = Columns.fromNames("id".string(), "table".string(), "structureHash".int(), "updateCount".long(),
             "keyBuildCount".long(), "mean".scaledDecimal2(), "max".long(), "75Perc".scaledDecimal4(), "99Perc".scaledDecimal6(), "99_9Perc".scaledDecimal8()),
           options = TableDefOptions(
-            indices = Indices(),
             joinFields = List("id")
           )
         ),
@@ -109,7 +107,6 @@ object MetricsModule extends DefaultModule {
           keyField = "id",
           customColumns = Columns.fromNames("id".string(), "table".string(), "realTable".string()) ++ Columns.fromNames(all_columns.map(name => name + ":Double").toArray),
           options = TableDefOptions(
-            indices = Indices(),
             joinFields = List("id")
           )
         ),
@@ -121,7 +118,6 @@ object MetricsModule extends DefaultModule {
           keyField = "mem-type",
           customColumns = Columns.fromNames("mem-type".string(), "max_MB".double(), "committed_MB".double(), "init_MB".double(), "used_MB".double(), "cpu-cores".int()),
           options = TableDefOptions(
-            indices = Indices(),
             joinFields = List("mem-type")
           )
         ),
@@ -133,7 +129,6 @@ object MetricsModule extends DefaultModule {
           keyField = "type",
           customColumns = Columns.fromNames("type".string(), "work_ms_in_1m".double(), "work_par_ratio".double()),
           options = TableDefOptions(
-            indices = Indices(),
             joinFields = List("type")
           )
         ),
