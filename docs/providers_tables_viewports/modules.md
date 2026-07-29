@@ -25,7 +25,6 @@ object VuiStateModule extends DefaultModule {
           name = "uiState",
           keyField = "uniqueId",
           customColumns = Columns.fromNames("uniqueId".string(), "user".string(), "id".string(), "lastUpdate".long()),
-          VisualLinks(),
         ),
         (table, vs) => new VuiStateStoreProvider(table, store)
       )

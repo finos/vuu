@@ -24,12 +24,15 @@ Menu items are defined on the server, alongside the table definition in the modu
 
 ```scala
       .addTable(
-        AutoSubscribeTableDef(
+  TableDef(
           name = "prices",
           keyField = "ric",
           Columns.fromNames("ric".string(), "bid".double(), "bidSize".int(), "ask".double(), "askSize".int(),
                             "last".double(), "open".double(), "close".double(), "scenario".string(), "phase".string()),
-          joinFields = "ric"
+    options = TableDefOptions(
+      joinFields = "ric",
+      autoSubscribe = true
+    )
         ),
         (table, vs) => new SimulatedPricesProvider(table, maxSleep = 800),
         //this callback explicitly adds behaviour to the menu items
