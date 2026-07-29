@@ -158,6 +158,16 @@ class TableContainer(val joinTableProvider: JoinTableProvider, val rpcOptions: V
     sessionTables.foreach(sessTable => tables.remove(sessTable.name))
   }
 
+  def removeSessionTable(session: ClientSessionId, tableName: String): Unit = {
+    logger.debug(s"Removing session table $tableName in $session")
+    SetHasAsScala(tables.entrySet()).asScala
+      .filter(entry => entry.getValue.isInstanceOf[SessionTable])
+      .filter(entry => entry.getValue.asInstanceOf[SessionTable].sessionId == session)
+      .map(_.getValue.asInstanceOf[SessionTable])
+      .filter(_.name == tableName)
+      .foreach(sessTable => tables.remove(sessTable.name))
+  }
+
 }
 
 object TableContainer {
