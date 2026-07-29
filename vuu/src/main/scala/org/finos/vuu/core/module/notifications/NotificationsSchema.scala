@@ -12,13 +12,13 @@ object NotificationsSchema {
   val Level = "level".string()
   val Audience = "audience".string()
 
-  private final val GenericColumns: Array[String] = Array(Id, Type, ExpiryTime, Title, Message, Level, Audience)
+  private final val genericColumns: Array[String] = Array(Id, Type, ExpiryTime, Title, Message, Level, Audience)
 
-  def allFrom(): Array[Column] = Columns.fromNames(GenericColumns)
+  def allFrom(): Array[Column] = Columns.fromNames(genericColumns)
 
   def allFrom(additionalColumns: Array[String]): Array[Column] =
-    Columns.fromNames(GenericColumns ++ additionalColumns)
+    Columns.fromNames(genericColumns ++ additionalColumns)
 
   def allFrom(additionalColumns: String*): Array[Column] =
-    Columns.fromNames((GenericColumns ++ additionalColumns).toArray)
+    Columns.fromNames((genericColumns ++ additionalColumns).toArray)
 }
