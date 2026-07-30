@@ -526,7 +526,12 @@ export class Viewport {
       let debounceRequest: DataSourceDebounceRequest | undefined;
       // Don't use zero as a range cap, it's is likely a transient count reported immediately
       // following a groupBy operation.
-      const maxRange = Math.min(this.dataWindow.rowCount ?? this.#maxRangeEnd, this.#maxRangeEnd);
+
+      // Do not limit the range whilst rowCount is low
+      const maxRange = this.dataWindow.rowCount
+        ? Math.min(this.dataWindow.rowCount ?? this.#maxRangeEnd, this.#maxRangeEnd)
+        : this.#maxRangeEnd;
+
       const serverRequest =
         serverDataRequired && !this.rangeRequestAlreadyPending(range)
           ? ({

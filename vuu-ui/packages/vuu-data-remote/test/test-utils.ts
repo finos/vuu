@@ -102,7 +102,7 @@ export const createTableGroupRows = (
   includeSizeRow = true,
 ): VuuServerMessage<ServerToClientTableRows> => {
   // prettier-ignore
-  const message: VuuServerMessage<ServerToClientTableRows> =  {
+  const message: VuuServerMessage<ServerToClientTableRows> = {
     ...COMMON_ATTRS,
     requestId: '1',
     body: {
@@ -124,44 +124,44 @@ export const createTableGroupRows = (
   }
 
   // prettier-ignore
-  message.body.rows.push(        
-  {
-    ...COMMON_ROW_ATTRS,
-    viewPortId: 'server-vp-1',
-    vpSize: 4,
-    rowIndex: 0,
-    rowKey: '$root|USD',
-    updateType: 'U',
-    data: [1, false, '$root|USD', false, 'USD', 43714, '', 'USD', '', '', '', '', '']
-  },
-  {
-    ...COMMON_ROW_ATTRS,
-    viewPortId: 'server-vp-1',
-    vpSize: 4,
-    rowIndex: 1,
-    rowKey: '$root|EUR',
-    updateType: 'U',
-    data: [1, false, '$root|EUR', false, 'EUR', 43941, '', 'EUR', '', '', '', '', '']
-  },
-  {
-    ...COMMON_ROW_ATTRS,
-    viewPortId: 'server-vp-1',
-    vpSize: 4,
-    rowIndex: 2,
-    rowKey: '$root|GBX',
-    updateType: 'U',
-    data: [1, false, '$root|GBX', false, 'GBX', 43997, '', 'GBX', '', '', '', '', '']
-  },
-  {
-    ...COMMON_ROW_ATTRS,
-    viewPortId: 'server-vp-1',
-    vpSize: 4,
-    rowIndex: 3,
-    rowKey: '$root|CAD',
-    updateType: 'U',
-    data: [1, false, '$root|CAD', false, 'CAD', 44108, '', 'CAD', '', '', '', '', '']
-  }
-);
+  message.body.rows.push(
+    {
+      ...COMMON_ROW_ATTRS,
+      viewPortId: 'server-vp-1',
+      vpSize: 4,
+      rowIndex: 0,
+      rowKey: '$root|USD',
+      updateType: 'U',
+      data: [1, false, '$root|USD', false, 'USD', 43714, '', 'USD', '', '', '', '', '']
+    },
+    {
+      ...COMMON_ROW_ATTRS,
+      viewPortId: 'server-vp-1',
+      vpSize: 4,
+      rowIndex: 1,
+      rowKey: '$root|EUR',
+      updateType: 'U',
+      data: [1, false, '$root|EUR', false, 'EUR', 43941, '', 'EUR', '', '', '', '', '']
+    },
+    {
+      ...COMMON_ROW_ATTRS,
+      viewPortId: 'server-vp-1',
+      vpSize: 4,
+      rowIndex: 2,
+      rowKey: '$root|GBX',
+      updateType: 'U',
+      data: [1, false, '$root|GBX', false, 'GBX', 43997, '', 'GBX', '', '', '', '', '']
+    },
+    {
+      ...COMMON_ROW_ATTRS,
+      viewPortId: 'server-vp-1',
+      vpSize: 4,
+      rowIndex: 3,
+      rowKey: '$root|CAD',
+      updateType: 'U',
+      data: [1, false, '$root|CAD', false, 'CAD', 44108, '', 'CAD', '', '', '', '', '']
+    }
+  );
 
   return message;
 };
@@ -194,6 +194,10 @@ export const testSchema: TableSchema = {
     { name: "col-4", serverDataType: "string" },
   ],
   key: "col-1",
+  rangeLimits: {
+    maxRangeEnd: 1_000_000,
+    maxRangeWidth: 1_000
+  },
   table: { module: "TEST", table: "test-table" },
 };
 
@@ -218,57 +222,59 @@ export const createSubscription = ({
   aggregations = [],
   bufferSize = 0,
   columns = ["col-1"],
-  filterSpec = { filter: ''},
+  filterSpec = { filter: '' },
   from = 0,
   groupBy = [],
   key = '1',
   to = 10,
-  sort = {sortDefs: []},
+  sort = { sortDefs: [] },
   viewport = `client-vp-${key}`
 }: CreateSubscriptionProps = {}): [
-  ServerProxySubscribeMessage, 
-  VuuServerMessage<VuuViewportCreateSuccessResponse>,
-  VuuServerMessage<VuuTableMetaResponse>
-] => [
-  { 
-    aggregations,
-    bufferSize, 
-    columns, 
-    filterSpec, 
-    groupBy, 
-    range: { from, to }, 
-    sort, 
-    table: {module: "TEST", table: 'test-table'}, 
-    viewport 
-  },
-  {
-    module: "TEST",
-    requestId: `client-vp-${key}`,
-    body: {
-      aggregations: [],
-      columns: ['col-1', 'col-2', 'col-3', 'col-4'],
+    ServerProxySubscribeMessage,
+    VuuServerMessage<VuuViewportCreateSuccessResponse>,
+    VuuServerMessage<VuuTableMetaResponse>
+  ] => [
+    {
+      aggregations,
+      bufferSize,
+      columns,
       filterSpec,
       groupBy,
-      range: { from, to: to + bufferSize },
+      range: { from, to },
       sort,
-      table: "test-table",
-      type: 'CREATE_VP_SUCCESS',
-      viewPortId: `server-vp-${key}`,
+      table: { module: "TEST", table: 'test-table' },
+      viewport
     },
-  }, {
-    module: "TEST",
-    requestId: `1`,
-    body: {
-      columns: ['col-1', 'col-2', 'col-3', 'col-4'],
-      key: 'col-1',
-      dataTypes: ['string','string','string','string'],
-      editableColumns: [],
-      table: {module: "TEST", table: "test-table"},
-      type: "TABLE_META_RESP"
-    },
+    {
+      module: "TEST",
+      requestId: `client-vp-${key}`,
+      body: {
+        aggregations: [],
+        columns: ['col-1', 'col-2', 'col-3', 'col-4'],
+        filterSpec,
+        groupBy,
+        range: { from, to: to + bufferSize },
+        sort,
+        table: "test-table",
+        type: 'CREATE_VP_SUCCESS',
+        viewPortId: `server-vp-${key}`,
+      },
+    }, {
+      module: "TEST",
+      requestId: `1`,
+      body: {
+        columns: ['col-1', 'col-2', 'col-3', 'col-4'],
+        key: 'col-1',
+        dataTypes: ['string', 'string', 'string', 'string'],
+        editableColumns: [],
+        maxRangeEnd: 1_000_000,
+        maxRangeWidth: 1_000,
+        table: { module: "TEST", table: "test-table" },
+        type: "TABLE_META_RESP"
+      },
 
-  }
-];
+    }
+  ];
 
 export const subscribe = async (
   serverProxy: ServerProxy,

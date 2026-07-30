@@ -97,6 +97,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   #pendingVisualLink?: LinkDescriptorWithLabel;
   #links: LinkDescriptorWithLabel[] | undefined;
   #maxRangeEnd = Number.MAX_SAFE_INTEGER;
+  #maxRangeWidth = Number.MAX_SAFE_INTEGER;
   #menu: VuuMenu | undefined;
   #optimize: OptimizeStrategy = "throttle";
   #selectedRowsCount = 0;
@@ -190,7 +191,8 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       this.#status = "subscribed";
       this.tableSchema = message.tableSchema;
       if (message.tableSchema.rangeLimits) {
-        this.#maxRangeEnd = message.tableSchema.rangeLimits?.maxRangeEnd;
+        this.#maxRangeEnd = message.tableSchema.rangeLimits.maxRangeEnd;
+        this.#maxRangeWidth = message.tableSchema.rangeLimits.maxRangeWidth;
       }
       this._clientCallback?.(message);
       if (this.#pendingVisualLink) {
@@ -511,7 +513,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       this.server.send({
         viewport: this.viewport,
         type: "setViewRange",
-        range: constrainRange(range, Math.min(this.size, this.#maxRangeEnd)),
+        range: constrainRange(range, Math.min(this.size, this.#maxRangeEnd), this.#maxRangeWidth),
       });
     }
   };
@@ -521,7 +523,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       this.server.send({
         viewport: this.viewport,
         type: "setViewRange",
-        range: constrainRange(range, Math.min(this.size, this.#maxRangeEnd)),
+        range: constrainRange(range, Math.min(this.size, this.#maxRangeEnd), this.#maxRangeWidth),
       });
     }
   }, 50);
@@ -531,7 +533,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       this.server.send({
         viewport: this.viewport,
         type: "setViewRange",
-        range,
+        range: constrainRange(range, Math.min(this.size, this.#maxRangeEnd), this.#maxRangeWidth),
       });
     }
   }, 80);

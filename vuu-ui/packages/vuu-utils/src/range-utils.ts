@@ -144,17 +144,28 @@ export class WindowRange {
   }
 }
 
-export const constrainRange = (range: VuuRange, maxRangeEnd: number) => {
-  if (maxRangeEnd < range.to) {
+
+const constrainRangeWidth = (range: VuuRange, maxRangeWidth = Number.MAX_SAFE_INTEGER) => {
+  if (range.to - range.from < maxRangeWidth) {
+    return range;
+  }
+  console.warn(`[range-utils] range ${range.from} - ${range.to} exceeds maxRangeWidth ${maxRangeWidth} for this table `);
+  return {
+    from: range.from,
+    to: range.from + maxRangeWidth
+  }
+}
+export const constrainRange = (range: VuuRange, maxRangeEnd: number, maxRangeWidth?: number) => {
+  if (maxRangeEnd > 0 && maxRangeEnd < range.to) {
     if (maxRangeEnd > range.from) {
-      return {
+      return constrainRangeWidth({
         from: range.from,
         to: maxRangeEnd
-      };
+      }, maxRangeWidth);
     } else {
       throw Error(`constrainRange: cannot apply the maxRangeEnd ${maxRangeEnd} to range ${range.from} - ${range.to}`);
     }
   } else {
-    return range;
+    return constrainRangeWidth(range, maxRangeWidth);
   }
 }
