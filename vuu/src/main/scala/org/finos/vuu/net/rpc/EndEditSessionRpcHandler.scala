@@ -24,9 +24,9 @@ trait EndEditSessionRpcHandler(using val tableContainer: TableContainer) extends
     }
   }
 
-  def verifyPermission(params: RpcParams): Boolean
+  protected def verifyPermission(params: RpcParams): Boolean
 
-  def validateData(params: RpcParams): Boolean
+  protected def validateData(params: RpcParams): Boolean
 
-  def submit(params: RpcParams): Boolean
+  protected def submit(params: RpcParams): Boolean
 }
