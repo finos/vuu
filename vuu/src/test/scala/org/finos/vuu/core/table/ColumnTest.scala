@@ -54,7 +54,7 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       val tableDef = TableDef(
         name = "TestTable",
         keyField = "Id",
-        columns =
+        customColumns =
           new ColumnBuilder()
             .addString("Id")
             .addString("Name")
@@ -71,7 +71,7 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       val tableDef = TableDef(
         name = "TestTable",
         keyField = "Id",
-        columns =
+        customColumns =
           new ColumnBuilder()
             .addString("Id")
             .addString("Name")
@@ -88,7 +88,7 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       val tableDef = TableDef(
         name = "TestTable",
         keyField = "Id",
-        columns =
+        customColumns =
           new ColumnBuilder()
             .addString("Id")
             .addString("Name")

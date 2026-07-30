@@ -1,6 +1,6 @@
 package org.finos.vuu.core.table
 
-import org.finos.vuu.api.{Indices, TableDef}
+import org.finos.vuu.api.{Indices, TableDef, TableDefOptions}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -58,9 +58,10 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
         name = "myTable",
         keyField = "keyCol",
         customColumns = Array(customColumn),
-        joinFields = Seq.empty,
-        indices = Indices(),
-        includeDefaultColumns = true)
+        options = TableDefOptions(
+          includeDefaultColumns = true
+        )
+      )
       val result = tableDef.getColumns
 
       result.length shouldEqual 4
@@ -80,9 +81,10 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers {
         name = "myTable",
         keyField = "keyCol",
         customColumns = Array(customColumn),
-        joinFields = Seq.empty,
-        indices = Indices(),
-        includeDefaultColumns = false)
+        options = TableDefOptions(
+          includeDefaultColumns = false
+        )
+      )
       val result = tableDef.getColumns
 
       result.length shouldEqual 1

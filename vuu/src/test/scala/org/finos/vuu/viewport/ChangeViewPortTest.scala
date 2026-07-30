@@ -3,7 +3,7 @@ package org.finos.vuu.viewport
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.api.{TableDef, JoinTableDef, JoinTo, JoinSpec, LeftOuterJoin, VisualLinks}
+import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTableDefOptions, JoinTo, LeftOuterJoin, TableDef, TableDefOptions, VisualLinks}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.sort.SortDirection
@@ -47,13 +47,24 @@ class ChangeViewPortTest extends AnyFeatureSpec {
       val ordersDef = TableDef(
         name = "orders",
         keyField = "orderId",
-        columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-        joinFields = "ric", "orderId")
+        customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+        options = TableDefOptions(
+          joinFields = List("ric", "orderId")
+        )
+      )
 
-      val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+      val pricesDef = TableDef(
+        "prices",
+        "ric",
+        Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+        options = TableDefOptions(
+          joinFields = List("ric")
+        )
+      )
 
       val joinDef = JoinTableDef(
         name = "orderPrices",
+        joinOptions = JoinTableDefOptions(),
         baseTable = ordersDef,
         joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
         joins =
@@ -61,8 +72,6 @@ class ChangeViewPortTest extends AnyFeatureSpec {
             table = pricesDef,
             joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
           ),
-        links = VisualLinks(),
-        joinFields = Seq()
       )
 
       val joinProvider = JoinTableProviderImpl()
@@ -150,7 +159,7 @@ class ChangeViewPortTest extends AnyFeatureSpec {
       val ordersDef = TableDef(
         name = "orders",
         keyField = "orderId",
-        columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"))
+        customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"))
       val joinProvider = JoinTableProviderImpl()
       val tableContainer = new TableContainer(joinProvider)
       val orders = tableContainer.createTable(ordersDef)
@@ -206,13 +215,25 @@ class ChangeViewPortTest extends AnyFeatureSpec {
       val ordersDef = TableDef(
         name = "orders",
         keyField = "orderId",
-        columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-        joinFields = "ric", "orderId")
+        customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+        options = TableDefOptions(
+          joinFields = List("ric", "orderId")
+        ))
 
-      val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+      val pricesDef = TableDef(
+        "prices",
+        "ric",
+        Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+        options = TableDefOptions(
+          joinFields = List("ric")
+        )
+      )
 
       val joinDef = JoinTableDef(
         name = "orderPrices",
+        joinOptions = JoinTableDefOptions(
+          defaultSort = SortSpec(List(SortDef("orderId", SortDirection.Descending.external))),
+        ),
         baseTable = ordersDef,
         joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
         joins =
@@ -220,9 +241,6 @@ class ChangeViewPortTest extends AnyFeatureSpec {
             table = pricesDef,
             joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
           ),
-        links = VisualLinks(),
-        defaultSort = SortSpec(List(SortDef("orderId", SortDirection.Descending.external))),
-        joinFields = Seq()
       )
 
       val joinProvider = JoinTableProviderImpl()
@@ -311,13 +329,23 @@ class ChangeViewPortTest extends AnyFeatureSpec {
       val ordersDef = TableDef(
         name = "orders",
         keyField = "orderId",
-        columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-        joinFields = "ric", "orderId")
+        customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+        options = TableDefOptions(
+          joinFields = List("ric", "orderId")
+        ))
 
-      val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+      val pricesDef = TableDef(
+        "prices",
+        "ric",
+        Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+        options = TableDefOptions(
+          joinFields = List("ric")
+        )
+      )
 
       val joinDef = JoinTableDef(
         name = "orderPrices",
+        joinOptions = JoinTableDefOptions(),
         baseTable = ordersDef,
         joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
         joins =
@@ -325,8 +353,6 @@ class ChangeViewPortTest extends AnyFeatureSpec {
             table = pricesDef,
             joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
           ),
-        links = VisualLinks(),
-        joinFields = Seq()
       )
 
       val joinProvider = JoinTableProviderImpl()

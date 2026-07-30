@@ -2,7 +2,7 @@ package org.finos.vuu.plugin.clickhouse.module
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.ViewPortDef
+import org.finos.vuu.api.{TableDefOptions, ViewPortDef}
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.RangeSettings
 import org.finos.vuu.net.rpc.DefaultRpcHandler
@@ -27,7 +27,11 @@ object ClickHouseTableModule extends DefaultModule {
         .addString("side")
         .addString("trader")
         .build(),
-      range = RangeSettings().withMaxRangeEnd(1_000_000)
+      options = TableDefOptions(
+        includeDefaultColumns = false,
+        rangeSettings = RangeSettings()
+          .withMaxRangeEnd(1_000_000)
+      )
     )
     ModuleFactory.withNamespace(NAME)
       .addSessionTable(tableDef,

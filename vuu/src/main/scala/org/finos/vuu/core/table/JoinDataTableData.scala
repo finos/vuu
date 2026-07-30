@@ -42,7 +42,7 @@ object JoinDataTableData {
       }
     ).toArray
 
-    val numberOfJoins = tableDef.joins.size + tableDef.baseTable.joinFields.size
+    val numberOfJoins = tableDef.joins.size + tableDef.baseTable.options.joinFields.size
 
     JoinDataTableDataImpl(joinTableNames, joinFields, columns, primaryKeyIndices, VectorMap[String, Array[String]](), logger)
   }

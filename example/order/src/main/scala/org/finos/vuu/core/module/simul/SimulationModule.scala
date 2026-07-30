@@ -6,6 +6,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.*
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.module.auths.OrderPermissionChecker
+import org.finos.vuu.core.module.auths.PermissionModule.ColumnNames.User
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.simul.provider.*
 import org.finos.vuu.core.module.simul.service.ParentOrdersService
@@ -132,10 +133,11 @@ object SimulationModule extends DefaultModule {
         TableDef(
           name = "instruments",
           keyField = "ric",
-          columns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(),
+          customColumns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(),
             "currency".string(), "exchange".string(), "lotSize".int()),
-          VisualLinks(),
-          joinFields = "ric"
+          options = TableDefOptions(
+            joinFields = List("ric")
+          )
         ),
         (table, vs) => new SimulatedBigInstrumentsProvider(table),
         (table, _, providerContainer, tableContainer) => ViewPortDef(
@@ -149,11 +151,13 @@ object SimulationModule extends DefaultModule {
           keyField = "orderId",
           Columns.fromNames("orderId".string(), "side".char(), "ric".string(), "ccy".string(), "quantity".double(),
             "trader".string(), "filledQuantity".double(), "lastUpdate".long(), "created".long()),
-          VisualLinks(
-            Link("ric", "instruments", "ric"),
-            Link("ric", "prices", "ric")
-          ),
-          joinFields = "orderId", "ric"
+          options = TableDefOptions(
+            joinFields = List("orderId", "ric"),
+            links = VisualLinks(
+              Link("ric", "instruments", "ric"),
+              Link("ric", "prices", "ric")
+            )
+          )
         ),
         (table, vs) => new OrdersSimulProvider(table)
       )
@@ -165,13 +169,15 @@ object SimulationModule extends DefaultModule {
             "quantity".int(), "side".string(), "account".string(), "exchange".string(),
             "ccy".string(), "algo".string(), "volLimit".double(), "filledQty".int(), "openQty".int(),
             "averagePrice".double(), "status".string(), "lastUpdate".long()),
-          VisualLinks(
-            Link("ric", "prices", "ric")
-          ),
-          indices = Indices(
-            Index("ric")
-          ),
-          joinFields = "id", "ric"
+          options = TableDefOptions(
+            joinFields = List("id", "ric"),
+            links =  VisualLinks(
+              Link("ric", "prices", "ric")
+            ),
+            indices = Indices(
+              Index("ric")
+            )
+          )
         ),
         (table, vs) => new ParentOrdersProvider(table, ordersModel),
         (table, provider, _, tableContainer) => ViewPortDef(
@@ -183,17 +189,18 @@ object SimulationModule extends DefaultModule {
         TableDef(
           name = "permissionedOrders",
           keyField = "id",
-          columns = Columns.fromNames("id".string(), "idAsInt".int(), "ric".string(), "childCount".int(), "price".double(),
+          customColumns = Columns.fromNames("id".string(), "idAsInt".int(), "ric".string(), "childCount".int(), "price".double(),
             "quantity".int(), "side".string(), "account".string(), "exchange".string(),
             "ccy".string(), "algo".string(), "volLimit".double(), "filledQty".int(), "openQty".int(),
             "averagePrice".double(), "status".string(), "lastUpdate".long(), "owner".string(), "mask".int()),
-          links = VisualLinks(),
-          indices = Indices(
-            Index("ric"),
-            Index("mask")
-          ),
-          permissionFunction = (vp, tableContainer) => new OrderPermissionChecker(vp, tableContainer),
-          joinFields = "id", "ric", "owner",
+          options = TableDefOptions(
+            joinFields = List("id", "ric", "owner"),
+            indices = Indices(
+              Index("ric"),
+              Index("mask")
+            ),
+            permissionFunction = (vp, tableContainer) => new OrderPermissionChecker(vp, tableContainer)
+          )
         ),
         (table, _) => new PermissionedOrdersProvider(table, ordersModel)
       )
@@ -205,16 +212,18 @@ object SimulationModule extends DefaultModule {
             "quantity".int(), "side".string(), "account".string(), "exchange".string(), "ccy".string(),
             "strategy".string(), "volLimit".double(), "filledQty".int(), "openQty".int(), "averagePrice".double(),
             "status".string(), "lastUpdate".long()),
-          VisualLinks(
-            Link("parentOrderId", "parentOrders", "idAsInt")
-          ),
-          indices = Indices(
-            Index("parentOrderId"),
-            Index("quantity"),
-            Index("exchange"),
-            Index("ccy"),
-          ),
-          joinFields = "id", "ric"
+          options = TableDefOptions(
+            joinFields = List("id", "ric"),
+            links = VisualLinks(
+              Link("parentOrderId", "parentOrders", "idAsInt")
+            ),
+            indices = Indices(
+              Index("parentOrderId"),
+              Index("quantity"),
+              Index("exchange"),
+              Index("ccy"),
+            ),
+          )
         ),
         (table, vs) => new ChildOrdersProvider(table, ordersModel)
       )
@@ -223,16 +232,19 @@ object SimulationModule extends DefaultModule {
           name = "orderEntry",
           keyField = "clOrderId",
           Columns.fromNames("clOrderId".string(), "ric".string(), "quantity".double(), "orderType".string(), "price".double(), "priceLevel".string()),
-          VisualLinks(
-            Link("ric", "instruments", "ric")
-          ),
-          joinFields = "ric"
+          options = TableDefOptions(
+            joinFields = List("ric"),
+            links = VisualLinks(
+              Link("ric", "instruments", "ric")
+            ),
+          )
         ),
         (table, vs) => new RpcProvider(table)
       )
       .addJoinTable(tableDefs =>
         JoinTableDef(
           name = "orderEntryPrices",
+          joinOptions = JoinTableDefOptions(),
           baseTable = tableDefs.get(NAME, "orderEntry"),
           joinColumns = Columns.allFrom(tableDefs.get(NAME, "orderEntry")) ++ Columns.allFromExceptDefaultAnd(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
@@ -240,12 +252,11 @@ object SimulationModule extends DefaultModule {
               table = tableDefs.get(PriceModule.NAME, "prices"),
               joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
             ),
-          links = VisualLinks(),
-          joinFields = Seq()
         ))
       .addJoinTable(tableDefs =>
         JoinTableDef(
           name = "instrumentPrices",
+          joinOptions = JoinTableDefOptions(),
           baseTable = tableDefs.get(NAME, "instruments"),
           joinColumns = Columns.allFrom(tableDefs.get(NAME, "instruments")) ++ Columns.allFromExceptDefaultAnd(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
@@ -253,12 +264,11 @@ object SimulationModule extends DefaultModule {
               table = tableDefs.get(PriceModule.NAME, "prices"),
               joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
             ),
-          links = VisualLinks(),
-          joinFields = Seq()
         ))
       .addJoinTable(tableDefs =>
         JoinTableDef(
           name = "ordersPrices",
+          joinOptions = JoinTableDefOptions(),
           baseTable = tableDefs.get(NAME, "orders"),
           joinColumns = Columns.allFrom(tableDefs.get(NAME, "orders")) ++ Columns.allFromExceptDefaultAnd(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
@@ -266,8 +276,6 @@ object SimulationModule extends DefaultModule {
               table = tableDefs.get(PriceModule.NAME, "prices"),
               joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
             ),
-          links = VisualLinks(),
-          joinFields = Seq()
         ))
       .asModule()
   }

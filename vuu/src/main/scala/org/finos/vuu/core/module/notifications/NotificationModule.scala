@@ -2,7 +2,7 @@ package org.finos.vuu.core.module.notifications
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{Indices, TableDef, ViewPortDef, VisualLinks}
+import org.finos.vuu.api.{Indices, TableDef, TableDefOptions, ViewPortDef, VisualLinks}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.filter.`type`.PermissionFilter
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
@@ -34,11 +34,11 @@ object NotificationModule extends DefaultModule {
         TableDef(
           name = TABLE_NAME,
           keyField = "id",
-          columns = NotificationsSchema.allFrom(additionalColumns),
-          VisualLinks(),
-          Indices(),
-          permissionFunction = permissionFunction,
-          joinFields = "id"
+          customColumns = NotificationsSchema.allFrom(additionalColumns),
+          options = TableDefOptions(
+            permissionFunction = permissionFunction,
+            joinFields = List("id")
+          )
         ),
         providerFunc,
         viewPortDefFactory

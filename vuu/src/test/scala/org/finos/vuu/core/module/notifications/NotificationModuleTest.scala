@@ -52,7 +52,7 @@ class NotificationModuleTest extends AnyFeatureSpec with Matchers with GivenWhen
       val notifTable = module.tableDefs.head
       notifTable.name should equal("notifications")
       notifTable.keyField should equal("id")
-      notifTable.joinFields should equal(Seq("id"))
+      notifTable.options.joinFields should equal(Seq("id"))
 
       notifTable.getColumns should equal(
         Columns.fromNames(

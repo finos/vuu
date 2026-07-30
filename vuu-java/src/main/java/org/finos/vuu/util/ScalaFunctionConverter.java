@@ -6,6 +6,9 @@ import java.util.function.BiFunction;
 
 public class ScalaFunctionConverter {
 
+    private ScalaFunctionConverter() {
+    }
+
     public static <T,U,R> Function2<T,U,R> toScala(BiFunction<T,U,R> function) {
         return function::apply;
     }

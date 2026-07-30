@@ -22,7 +22,7 @@
 //  val tableDef = TableDef(
 //    name = "basketConstituent",
 //    keyField = BC.RicBasketId,
-//    columns = Columns.fromNames(new FieldDefString(BC.RicBasketId).string(),
+//    customColumns = Columns.fromNames(new FieldDefString(BC.RicBasketId).string(),
 //      new FieldDefString(BC.Ric).string(),
 //      new FieldDefString(BC.BasketId).string(),
 //      new FieldDefString(BC.Weighting).double(),

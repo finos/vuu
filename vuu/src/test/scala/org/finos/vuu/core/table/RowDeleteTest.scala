@@ -3,7 +3,7 @@ package org.finos.vuu.core.table
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock, TestFriendlyClock}
-import org.finos.vuu.api.TableDef
+import org.finos.vuu.api.{TableDef, TableDefOptions}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.TableTestHelper.*
@@ -42,7 +42,14 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
 
-      val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+      val pricesDef = TableDef(
+        "prices",
+        "ric",
+        Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+        options = TableDefOptions(
+          joinFields = List("ric")
+        )
+      )
 
       val table = new InMemDataTable(pricesDef, joinProvider)
 
@@ -110,7 +117,14 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
 
-      val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+      val pricesDef = TableDef(
+        "prices",
+        "ric",
+        Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+        options = TableDefOptions(
+          joinFields = List("ric")
+        )
+      )
 
       val table = new InMemDataTable(pricesDef, joinProvider)
 

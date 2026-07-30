@@ -36,22 +36,30 @@ object TableTestHelper {
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
-      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-      joinFields = "ric", "orderId")
+      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+      options = TableDefOptions(
+        joinFields = List("ric", "orderId")
+      ))
 
-    val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+    val pricesDef = TableDef(
+      "prices",
+      "ric",
+      Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+      options = TableDefOptions(
+        joinFields = List("ric")
+      )
+    )
 
     val joinDef = JoinTableDef(
       name = "orderPrices",
       baseTable = ordersDef,
+      joinOptions = JoinTableDefOptions(),
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins =
         JoinTo(
           table = pricesDef,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
-        ),
-      links = VisualLinks(),
-      joinFields = Seq()
+        )
     )
 
     //val joinDef =  JoinTableDef("ordersPrices", ordersDef, pricesDef, JoinSpec("ric", "ric"), Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") )

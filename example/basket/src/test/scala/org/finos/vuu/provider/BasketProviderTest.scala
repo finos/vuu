@@ -22,7 +22,7 @@
 //  val tableDef = TableDef(
 //    name = "basket",
 //    keyField = B.Id,
-//    columns = Columns.fromNames(
+//    customColumns = Columns.fromNames(
 //      new FieldDefString(B.Id).string(),
 //      new FieldDefString(B.Name).string(),
 //      new FieldDefString(B.NotionalValue).double(),

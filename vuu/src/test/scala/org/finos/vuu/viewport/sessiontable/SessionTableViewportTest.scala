@@ -92,9 +92,10 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
     val instrumentsDef = TableDef(
       name = "instruments",
       keyField = "ric",
-      columns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(), "currency".string(), "exchange".string(), "lotSize".int()),
-      VisualLinks(),
-      joinFields = "ric"
+      customColumns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(), "currency".string(), "exchange".string(), "lotSize".int()),
+      options = TableDefOptions(
+        joinFields = List("ric")
+      )
     )
 
     instrumentsDef.setModule(module)
@@ -102,24 +103,34 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
-      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Int"),
-      links = VisualLinks(
-        Link("ric", "prices", "ric")
-      ),
-      indices = Indices(
-        Index("ric")
-      ),
-      joinFields = "ric", "orderId"
+      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Int"),
+      options = TableDefOptions(
+        joinFields = List("ric", "orderId"),
+        links = VisualLinks(
+          Link("ric", "prices", "ric")
+        ),
+        indices = Indices(
+          Index("ric")
+        )
+      )
     )
 
     ordersDef.setModule(module)
 
-    val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double", "exchange:String"), "ric")
+    val pricesDef = TableDef(
+      "prices",
+      "ric",
+      Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double", "exchange:String"),
+      options = TableDefOptions(
+        joinFields = List("ric")
+      )
+    )
 
     pricesDef.setModule(module)
 
     val joinDef = JoinTableDef(
       name = "orderPrices",
+      joinOptions = JoinTableDefOptions(),
       baseTable = ordersDef,
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins =
@@ -127,8 +138,6 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
           table = pricesDef,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
         ),
-      links = VisualLinks(),
-      joinFields = Seq()
     )
 
     joinDef.setModule(module)
@@ -136,17 +145,10 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
     val basketOrdersDef = SessionTableDef(
       name = "basketOrders",
       keyField = "clientOrderId",
-      columns = Columns.fromNames("clientOrderId:String", "orderId:String", "currency:String", "ric:String", "lastModifiedTime:Long", "quantity:Int", "price:Long", "priceType:String", "effectivePrice:Long", "exchange:String")
+      customColumns = Columns.fromNames("clientOrderId:String", "orderId:String", "currency:String", "ric:String", "lastModifiedTime:Long", "quantity:Int", "price:Long", "priceType:String", "effectivePrice:Long", "exchange:String")
     )
 
     basketOrdersDef.setModule(module)
-
-
-    val basketOrdersPrices = JoinSessionTableDef(
-      name = "basketOrdersPrices",
-      keyField = "clientOrderId",
-      columns = Columns.fromNames("clientOrderId:String", "orderId:String", "ric:String", "lastModifiedTime:Long", "quantity:Int", "price:Long", "priceType:String", "currency:String", "exchange:String")
-    )
 
     val joinProvider = JoinTableProviderImpl()
 

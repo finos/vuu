@@ -207,15 +207,16 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       val ordersDef = TableDef(
         name = "orders",
         keyField = "orderId",
-        columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Int"),
-        links = VisualLinks(
-          Link("orderId", "orders", "orderId")
-        ),
-        indices = Indices(
-          Index("ric")
+        customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Int"),
+        options = TableDefOptions(
+          links = VisualLinks(
+            Link("orderId", "orders", "orderId")
+          ),
+          indices = Indices(
+            Index("ric")
+          )
         )
       )
-
 
       val joinProvider = JoinTableProviderImpl()
 

@@ -3,7 +3,7 @@ package org.finos.vuu.viewport.menurpc
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
-import org.finos.vuu.api.{TableDef, ViewPortDef, VisualLinks}
+import org.finos.vuu.api.{TableDef, TableDefOptions, ViewPortDef, VisualLinks}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.ModuleFactory.stringToString
@@ -75,9 +75,10 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
     val instrumentsDef = TableDef(
       name = "instruments",
       keyField = "ric",
-      columns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(), "currency".string(), "exchange".string(), "lotSize".int()),
-      VisualLinks(),
-      joinFields = "ric"
+      customColumns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(), "currency".string(), "exchange".string(), "lotSize".int()),
+      options = TableDefOptions(
+        joinFields = List("ric")
+      )
     )
 
     val joinProvider   = JoinTableProviderImpl()

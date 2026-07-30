@@ -2,7 +2,7 @@ package org.finos.vuu.core.module.editable
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{SessionTableDef, TableDef, ViewPortDef, VisualLinks}
+import org.finos.vuu.api.{SessionTableDef, TableDef, TableDefOptions, ViewPortDef, VisualLinks}
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 
@@ -17,9 +17,10 @@ object EditableModule extends DefaultModule {
         TableDef(
           name = "process",
           keyField = "id",
-          columns = Columns.fromNames("id".string(), "name".string(), "uptime".long(), "status".string()),
-          VisualLinks(),
-          joinFields = "id"
+          customColumns = Columns.fromNames("id".string(), "name".string(), "uptime".long(), "status".string()),
+          options = TableDefOptions(
+            joinFields = List("id")
+          )
         ),
         (table, vs) => new ProcessProvider(table),
         (table, _, _, tableContainer) => ViewPortDef(
@@ -30,7 +31,7 @@ object EditableModule extends DefaultModule {
       SessionTableDef(
         name = "fixSequenceReset",
         keyField = "process-id",
-        columns = Columns.fromNames("process-id:String", "sequenceNumber:Int")
+        customColumns = Columns.fromNames("process-id:String", "sequenceNumber:Int")
       ),
       (table, _, _, tableContainer) => ViewPortDef(
         columns = table.getTableDef.getColumns,

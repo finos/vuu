@@ -108,8 +108,11 @@ class TableContainerTest extends AnyFeatureSpec with Matchers with BeforeAndAfte
 
 object TableMockFactory extends AnyFlatSpec with MockFactory {
   private def createTestTableDef(name: String, moduleName: Option[String] = None, isSessionDef: Boolean = false): TableDef = {
-    val tableDef = if (isSessionDef) new SessionTableDef(name, "id", Array.empty, joinFields = Seq.empty, indices = Indices())
-    else new TableDef(name, "id", Array.empty, Seq.empty, false, VisualLinks(), Indices())
+    val tableDef = if (isSessionDef) {
+      new SessionTableDef(name, "id", Array.empty)
+    } else {
+      new TableDef(name, "id", Array.empty)
+    }
 
     if (moduleName.nonEmpty) {
       val module = stub[ViewServerModule]

@@ -1,6 +1,6 @@
 package org.finos.vuu.wsapi
 
-import org.finos.vuu.api.{ColumnBuilder, JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, TableDef, ViewPortDef, VisualLinks}
+import org.finos.vuu.api.{ColumnBuilder, JoinSpec, JoinTableDef, JoinTableDefOptions, JoinTo, LeftOuterJoin, TableDef, TableDefOptions, ViewPortDef, VisualLinks}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
@@ -228,7 +228,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
     val tableDef = TableDef(
       name = tableName,
       keyField = "Id",
-      columns =
+      customColumns =
         new ColumnBuilder()
           .addString("Id")
           .addString("Name")
@@ -270,7 +270,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
     val tableDefEmpty = TableDef(
       name = tableNameEmpty,
       keyField = "Id",
-      columns =
+      customColumns =
         new ColumnBuilder()
           .addString("Id")
           .build()
@@ -279,28 +279,31 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
     val baseTableDef = TableDef(
       name = baseTableName,
       keyField = "Id",
-      columns =
+      customColumns =
         new ColumnBuilder()
           .addString("Id")
           .addString("Name")
           .addInt("Account")
           .addInt("HiddenColumn")
           .build(),
-      VisualLinks(),
-      joinFields = "Id"
+      options = TableDefOptions(
+        joinFields = List("Id")
+      )
     )
+
     val baseProviderFactory = (table: DataTable, _: AbstractVuuServer) => new TestProvider(table, dataSource)
 
     val rightTableDef = TableDef(
       name = rightTableName,
       keyField = "Id",
-      columns =
+      customColumns =
         new ColumnBuilder()
           .addString("Id")
           .addString("Description")
           .build(),
-      VisualLinks(),
-      joinFields = "Id"
+      options = TableDefOptions(
+        joinFields = List("Id")
+      )
     )
 
     val rightDataSource = new FakeDataSource(ListMap(
@@ -324,6 +327,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
     val joinTableFunc: TableDefContainer => JoinTableDef = _ => JoinTableDef(
       name = joinTableName,
+      joinOptions = JoinTableDefOptions(),
       baseTable = baseTableDef,
       joinColumns = Columns.allFrom(baseTableDef),
       joins =
@@ -331,8 +335,6 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
           table = rightTableDef,
           joinSpec = JoinSpec(left = "Id", right = "Id", LeftOuterJoin)
         ),
-      links = VisualLinks(),
-      joinFields = Seq()
     )
     ModuleFactory.withNamespace(moduleName)
       .addTableForTest(tableDef, viewPortDefFactory, providerFactory)

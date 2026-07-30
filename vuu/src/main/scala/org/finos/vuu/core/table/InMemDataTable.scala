@@ -354,7 +354,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
 
     val ev = new util.HashMap[String, Any]()
 
-    this.tableDef.joinFields.foreach(field => {
+    this.tableDef.options.joinFields.foreach(field => {
       val column = this.tableDef.columnForName(field)
       ev.put(column.name, rowData.get(column))
     }
@@ -371,7 +371,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
 
     val ev = new util.HashMap[String, Any]()
 
-    this.tableDef.joinFields.foreach(field => {
+    this.tableDef.options.joinFields.foreach(field => {
       val column = this.tableDef.columnForName(field)
       ev.put(column.name, rowData.get(column))
     }

@@ -41,22 +41,31 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
-      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Int"),
-      joinFields = "ric", "orderId")
+      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Int"),
+      options = TableDefOptions(
+        joinFields = List("ric", "orderId")
+      )
+    )
 
-    val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+    val pricesDef = TableDef(
+      "prices",
+      "ric",
+      Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+      options = TableDefOptions(
+        joinFields = List("ric")
+      )
+    )
 
     val joinDef = JoinTableDef(
       name = "orderPrices",
       baseTable = ordersDef,
+      joinOptions = JoinTableDefOptions(),
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins =
         JoinTo(
           table = pricesDef,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
         ),
-      links = VisualLinks(),
-      joinFields = Seq()
     )
 
     val joinProvider = JoinTableProviderImpl()
@@ -93,30 +102,35 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
-      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Int"),
-      visibility = Private,
-      joinFields = "ric", "orderId"
+      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Int"),
+      options = TableDefOptions(
+        visibility = Private,
+        joinFields = List("ric", "orderId")
+      )
     )
 
     val pricesDef = TableDef(
       "prices",
       "ric",
       Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
-      visibility = Private,
-      "ric")
+      options = TableDefOptions(
+        visibility = Private,
+        joinFields = List("ric")
+      )
+    )
 
     val joinDef = JoinTableDef(
       name = "orderPrices",
-      visibility = Private,
       baseTable = ordersDef,
+      joinOptions = JoinTableDefOptions(
+        visibility = Private
+      ),
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins =
         JoinTo(
           table = pricesDef,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
         ),
-      links = VisualLinks(),
-      joinFields = Seq()
     )
 
     val joinProvider = JoinTableProviderImpl()
@@ -153,29 +167,37 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
-      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Int"),
-      links = VisualLinks(
-        Link("ric", "prices", "ric")
-      ),
-      indices = Indices(
-        Index("ric")
-      ),
-      joinFields = "ric", "orderId"
+      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Int"),
+      options = TableDefOptions(
+        links = VisualLinks(
+          Link("ric", "prices", "ric")
+        ),
+        indices = Indices(
+          Index("ric")
+        ),
+        joinFields = List("ric", "orderId")
+      )
     )
 
-    val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double", "exchange:String"), "ric")
+    val pricesDef = TableDef(
+      "prices",
+      "ric",
+      Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double", "exchange:String"),
+      options = TableDefOptions(
+        joinFields = List("ric")
+      )
+    )
 
     val joinDef = JoinTableDef(
       name = "orderPrices",
       baseTable = ordersDef,
+      joinOptions = JoinTableDefOptions(),
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins =
         JoinTo(
           table = pricesDef,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
         ),
-      links = VisualLinks(),
-      joinFields = Seq()
     )
 
     val joinProvider = JoinTableProviderImpl()

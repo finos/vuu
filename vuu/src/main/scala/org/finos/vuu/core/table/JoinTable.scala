@@ -102,7 +102,7 @@ class JoinTable(val tableDef: JoinTableDef,
 
     val ev = new util.HashMap[String, Any]()
 
-    this.tableDef.joinFields.foreach(field => {
+    this.tableDef.options.joinFields.foreach(field => {
       val column = this.tableDef.columnForName(field)
       ev.put(column.name, rowData.getFullyQualified(column))
     }
@@ -228,7 +228,7 @@ class JoinTable(val tableDef: JoinTableDef,
 
     val ev = new util.HashMap[String, Any]()
 
-    this.tableDef.joinFields.foreach(field => {
+    this.tableDef.options.joinFields.foreach(field => {
       val column = this.tableDef.columnForName(field)
       ev.put(column.name, rowData.get(column))
     }

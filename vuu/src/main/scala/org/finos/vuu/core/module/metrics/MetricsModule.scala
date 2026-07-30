@@ -3,7 +3,7 @@ package org.finos.vuu.core.module.metrics
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{Indices, TableDef}
+import org.finos.vuu.api.{TableDef, TableDefOptions}
 import org.finos.vuu.core.module.metrics.MetricsSchema.MetricsTree.all_columns
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
@@ -82,9 +82,10 @@ object MetricsModule extends DefaultModule {
         TableDef(
           name = "metricsTables",
           keyField = "table",
-          columns = Columns.fromNames("table".string(), "size".long(), "updateCount".long(), "updatesPerSecond".double()),
-          indices = Indices(),
-          joinFields = "table"
+          customColumns = Columns.fromNames("table".string(), "size".long(), "updateCount".long(), "updatesPerSecond".double()),
+          options = TableDefOptions(
+            joinFields = List("table")
+          )
         ),
         (table, vs) => new MetricsTableProvider(table, vs.tableContainer)
       )
@@ -92,10 +93,11 @@ object MetricsModule extends DefaultModule {
         TableDef(
           name = "metricsViewports",
           keyField = "id",
-          columns = Columns.fromNames("id".string(), "table".string(), "structureHash".int(), "updateCount".long(),
+          customColumns = Columns.fromNames("id".string(), "table".string(), "structureHash".int(), "updateCount".long(),
             "keyBuildCount".long(), "mean".scaledDecimal2(), "max".long(), "75Perc".scaledDecimal4(), "99Perc".scaledDecimal6(), "99_9Perc".scaledDecimal8()),
-          indices = Indices(),
-          joinFields = "id"
+          options = TableDefOptions(
+            joinFields = List("id")
+          )
         ),
         (table, vs) => new MetricsViewPortProvider(table, vs.viewPortContainer)
       )
@@ -103,9 +105,10 @@ object MetricsModule extends DefaultModule {
         TableDef(
           name = "metricsTree",
           keyField = "id",
-          columns = Columns.fromNames("id".string(), "table".string(), "realTable".string()) ++ Columns.fromNames(all_columns.map(name => name + ":Double").toArray),
-          indices = Indices(),
-          joinFields = "id"
+          customColumns = Columns.fromNames("id".string(), "table".string(), "realTable".string()) ++ Columns.fromNames(all_columns.map(name => name + ":Double").toArray),
+          options = TableDefOptions(
+            joinFields = List("id")
+          )
         ),
         (table, vs) => new MetricsGroupByProvider(table, vs.viewPortContainer)
       )
@@ -113,9 +116,10 @@ object MetricsModule extends DefaultModule {
         TableDef(
           name = "metricsJVM",
           keyField = "mem-type",
-          columns = Columns.fromNames("mem-type".string(), "max_MB".double(), "committed_MB".double(), "init_MB".double(), "used_MB".double(), "cpu-cores".int()),
-          indices = Indices(),
-          joinFields = "mem-type"
+          customColumns = Columns.fromNames("mem-type".string(), "max_MB".double(), "committed_MB".double(), "init_MB".double(), "used_MB".double(), "cpu-cores".int()),
+          options = TableDefOptions(
+            joinFields = List("mem-type")
+          )
         ),
         (table, vs) => new MetricsJVMProvider(table, vs.viewPortContainer)
       )
@@ -123,9 +127,10 @@ object MetricsModule extends DefaultModule {
         TableDef(
           name = "metricsViewPortWork",
           keyField = "type",
-          columns = Columns.fromNames("type".string(), "work_ms_in_1m".double(), "work_par_ratio".double()),
-          indices = Indices(),
-          joinFields = "type"
+          customColumns = Columns.fromNames("type".string(), "work_ms_in_1m".double(), "work_par_ratio".double()),
+          options = TableDefOptions(
+            joinFields = List("type")
+          )
         ),
         (table, vs) => new MetricsViewPortParallelismProvider(table, vs.viewPortContainer)
       )

@@ -25,22 +25,24 @@ object TestModule2 extends DefaultModule {
           TableDef(
             name = "instruments",
             keyField = "ric",
-            columns = Columns.fromNames(
+            customColumns = Columns.fromNames(
               "ric".string(),
               "description".string(),
               "currency".string(),
               "exchange".string(),
               "lotSize".double()
             ),
-            joinFields = "ric"
+            options = TableDefOptions(
+              joinFields = List("ric")
+            )
           ),
           (table, vs) => new TestProvider(a, table)
         )
         .addTable(
-          AutoSubscribeTableDef(
+          TableDef(
             name = "prices",
             keyField = "ric",
-            columns = Columns.fromNames("ric".string(),
+            customColumns = Columns.fromNames("ric".string(),
               "bid".double(),
               "ask".double(),
               "last".double(),
@@ -48,13 +50,17 @@ object TestModule2 extends DefaultModule {
               "close".double(),
               "scenario".string()
             ),
-            joinFields = "ric"
+            options = TableDefOptions(
+              joinFields = List("ric"),
+              autoSubscribe = true
+            )
           ),
           (table, vs) => new TestProvider(a, table)
         )
         .addJoinTable( tableDefs =>
           JoinTableDef(
             name = "instrumentPrices",
+            joinOptions = JoinTableDefOptions(),
             baseTable = tableDefs.get("TEST", "instruments"),
             joinColumns = Columns.allFrom(tableDefs.get("TEST", "instruments")) 
               ++ Columns.allFromExceptDefaultAnd(tableDefs.get("TEST", "prices"), "ric"),
@@ -64,9 +70,7 @@ object TestModule2 extends DefaultModule {
                 joinSpec = JoinSpec(left = "ric",
                   right = "ric",
                   LeftOuterJoin)
-              ),
-            links = VisualLinks(),
-            joinFields = Seq()
+              )
           ))
         .asModule()
     }

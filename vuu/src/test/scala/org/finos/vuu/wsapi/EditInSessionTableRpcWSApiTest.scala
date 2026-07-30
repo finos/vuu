@@ -1,7 +1,7 @@
 package org.finos.vuu.wsapi
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.api.{ColumnBuilder, SessionTableDef, TableDef, ViewPortDef}
+import org.finos.vuu.api.{ColumnBuilder, SessionTableDef, TableDef, TableDefOptions, ViewPortDef}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
@@ -295,8 +295,10 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     TableDef(
       name = tableName,
       keyField = "Id",
-      columns = allColumns,
-      isEditable = isEditable
+      customColumns = allColumns,
+      options = TableDefOptions(
+        isEditable = isEditable
+      )      
     )
   }
 
@@ -350,17 +352,17 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       .addSessionTable(SessionTableDef(
         name = defaultSessionTableDefName,
         keyField = "Id",
-        columns = allColumns
+        customColumns = allColumns
       ), viewPortDefFactoryForSessionTable)
       .addSessionTable(SessionTableDef(
         name = sessionTableDefName,
         keyField = "Id",
-        columns = allColumns
+        customColumns = allColumns
       ), viewPortDefFactoryForSessionTable)
       .addSessionTable(SessionTableDef(
         name = largeSessionTableDefName,
         keyField = "Id",
-        columns = allColumns
+        customColumns = allColumns
       ), viewPortDefFactoryForSessionTable)
       .asModule()
   }
