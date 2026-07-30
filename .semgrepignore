@@ -30,6 +30,8 @@ vuu-ui/scripts/utils.mjs
 vuu-ui/scripts/build.mjs
 vuu-ui/scripts/build-typelib.mjs
 vuu-ui/tools/vuu-showcase/scripts/build-file-list.ts
+vuu-ui/tools/vuu-showcase/scripts/showcase-build.ts
+vuu-ui/tools/vuu-showcase/scripts/showcase-dev.ts
 vuu-ui/tools/vuu-showcase/scripts/utils.ts
 vuu-ui/tools/vuu-showcase/scripts/treeSourceFromFileSystem.ts
 vuu-ui/tools/vuu-showcase/src/showcase-utils.ts

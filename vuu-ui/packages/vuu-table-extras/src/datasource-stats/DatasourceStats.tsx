@@ -81,13 +81,6 @@ export const DataSourceStats = ({
             </span>
             <span className={`${classBase}-label`}>of</span>
             <span className={`${classBase}-value`}>{value}</span>
-            {
-              maxScroll !== Number.MAX_SAFE_INTEGER ? (
-                <span
-                  className={cx(`${classBase}-label`, `${classBase}-selected`)}
-                >{`( Scrolling restricted to first ${maxScroll.toLocaleString()} rows)`}</span>
-              ) : null
-            }
             {selectedCount > 0 ? (
               <span
                 className={cx(`${classBase}-label`, `${classBase}-selected`)}

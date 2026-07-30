@@ -513,7 +513,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       this.server.send({
         viewport: this.viewport,
         type: "setViewRange",
-        range: constrainRange(range, Math.min(this.size, this.#maxRangeEnd), this.#maxRangeWidth),
+        range: constrainRange(range, this.#maxRangeEnd, this.#maxRangeWidth),
       });
     }
   };
@@ -523,7 +523,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       this.server.send({
         viewport: this.viewport,
         type: "setViewRange",
-        range: constrainRange(range, Math.min(this.size, this.#maxRangeEnd), this.#maxRangeWidth),
+        range: constrainRange(range, this.#maxRangeEnd, this.#maxRangeWidth),
       });
     }
   }, 50);
@@ -533,7 +533,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       this.server.send({
         viewport: this.viewport,
         type: "setViewRange",
-        range: constrainRange(range, Math.min(this.size, this.#maxRangeEnd), this.#maxRangeWidth),
+        range: constrainRange(range, this.#maxRangeEnd, this.#maxRangeWidth),
       });
     }
   }, 80);

@@ -157,8 +157,13 @@
 }
 
 .vuuTable-body {
-  height: var(--content-height);
+  --scrollLimitNotice-height: 0px;
+  height: calc(var(--content-height) + var(--scrollLimitNotice-height));
   position: relative;
+}
+
+.vuuTable-body.vuuTable-scrollLimitInEffect {
+  --scrollLimitNotice-height: var(--vuuScrollLimitNotice-height, 32px);
 }
 
 .vuuTable-focusCellPlaceholder {
@@ -251,7 +256,10 @@
   }
 
   .vuuTable-body {
-    height: calc(var(--content-height) - var(--total-header-height));
+    height: calc(
+      var(--content-height) - var(--total-header-height) +
+        var(--scrollLimitNotice-height)
+    );
     position: relative;
   }
 

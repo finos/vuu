@@ -864,7 +864,7 @@ describe("ServerProxy", () => {
           viewPortId: "server-vp-1",
           type: "CHANGE_VP_RANGE",
           from: 4875,
-          to: 5000,
+          to: 5100,
         },
         module: "CORE",
         requestId: "1",
@@ -878,7 +878,7 @@ describe("ServerProxy", () => {
           type: "CHANGE_VP_RANGE_SUCCESS",
           viewPortId: "server-vp-1",
           from: 4975,
-          to: 5000,
+          to: 5100,
         },
       });
 
@@ -4512,7 +4512,7 @@ describe("ServerProxy", () => {
       expect(serverProxy["queuedRequests"].length).toEqual(0);
     });
 
-    it.only("queues range requests sent before subscription completes, sends to server after subscription completes", async () => {
+    it("queues range requests sent before subscription completes, sends to server after subscription completes", async () => {
       const connection = createConnection();
       const postMessageToClient = vi.fn();
       const serverProxy = new ServerProxy(connection, postMessageToClient);

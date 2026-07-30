@@ -32,10 +32,18 @@ const TestTableTemplate = ({ tableName }: { tableName: TestTableName }) => {
   return <Table {...tableProps} renderBufferSize={50} />;
 };
 
-export const BasketConstituent = () => (
+export const TestDates = () => (
   <LocalDataSourceProvider>
     <DemoTableContainer>
       <TestTableTemplate tableName="TestDates" />
+    </DemoTableContainer>
+  </LocalDataSourceProvider>
+);
+
+export const MaxScrollEndTable = () => (
+  <LocalDataSourceProvider>
+    <DemoTableContainer>
+      <TestTableTemplate tableName="MaxScrollEndTable" />
     </DemoTableContainer>
   </LocalDataSourceProvider>
 );

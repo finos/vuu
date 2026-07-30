@@ -1,0 +1,13 @@
+.vuuScrollLimitNotice {
+  align-items: center;
+  background: var(--vuuScrollLimitNotice-background, var(--salt-container-secondary-background));
+  bottom: 0;
+  color: var(--vuuScrollLimitNotice-color, var(--salt-content-primary-foreground));
+  display: flex;
+  font-size: var(--salt-text-label-fontSize);
+  height: var(--scrollLimitNotice-height);
+  left: 0;
+  padding: var(--vuuScrollLimitNotice-padding, 0 var(--salt-spacing-200));
+  position: absolute;
+  right: 0;
+}

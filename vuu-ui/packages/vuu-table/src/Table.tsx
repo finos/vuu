@@ -44,6 +44,7 @@ import {
 import { Row as DefaultRow } from "./Row";
 import { TableCellBlock } from "./cell-block/cellblock-utils";
 import { PaginationControl } from "./pagination";
+import { ScrollLimitNotice } from "./scroll-limit-notice";
 import { TableHeader } from "./table-header";
 import { useMeasuredHeight } from "./useMeasuredHeight";
 import { useTable } from "./useTable";
@@ -435,7 +436,6 @@ const TableCore = ({
   });
 
   const { selectionBookendWidth = 4 } = config;
-  const heightAdjustmentForScrollMessage = scrollLimitInEffect ? 32 : 0;
 
   const contentContainerClassName = cx(`${classBase}-contentContainer`, {
     [`${classBase}-colLines`]: tableAttributes.columnSeparators,
@@ -450,7 +450,7 @@ const TableCore = ({
 
   const cssVariables = {
     ...cssScrollbarSize,
-    "--content-height": `${viewportMeasurements.contentHeight + heightAdjustmentForScrollMessage}px`,
+    "--content-height": `${viewportMeasurements.contentHeight}px`,
     "--content-width": `${viewportMeasurements.contentWidth}px`,
     "--pinned-width-left": `${viewportMeasurements.pinnedWidthLeft}px`,
     "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
@@ -525,11 +525,17 @@ const TableCore = ({
             />
           ) : null}
           {readyToRenderTableBody ? (
-            <div className={`${classBase}-body`} ref={tableBodyRef}>
+            <div
+              className={cx(`${classBase}-body`, {
+                [`${classBase}-scrollLimitInEffect`]: scrollLimitInEffect,
+              })}
+              ref={tableBodyRef}
+            >
               {scrollLimitInEffect ? (
-                <div className={`${classBase}-scrollLimitNotice`} style={{ height: heightAdjustmentForScrollMessage, background: 'red', position: 'absolute', left: 0, right: 0, bottom: 0 }}>
-                  {`There are ${dataSource.size - maxRangeEnd} more rows, but we only allow scrolling through the first ${maxRangeEnd}. Use filters to narrow down the dataset.`}
-                </div>
+                <ScrollLimitNotice
+                  maxScrollEnd={maxRangeEnd}
+                  rowCount={dataSource.size}
+                />
               ) : null}
               {dataRows.map((dataRow) => {
                 const ariaRowIndex = dataRow.index + headerCount + 1;
