@@ -4,7 +4,7 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.time.TestFriendlyClock
-import org.finos.vuu.api.TableDef
+import org.finos.vuu.api.{TableDef, TableDefOptions}
 import org.finos.vuu.core.table.{Columns, InMemDataTable, ViewPortColumnCreator}
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -30,9 +30,14 @@ class SimulatedPricesProviderTest extends AnyFeatureSpec with Matchers {
 
   def getDef: TableDef = {
 
-    val pricesDef = TableDef("prices", "ric",
+    val pricesDef = TableDef(
+      "prices", 
+      "ric",
       Columns.fromNames("ric:String", "bid:Double", "ask:Double", "bidSize: Double", "askSize:Double", "last:Double", "open:Double", "close:Double", "scenario: String"),
-      "ric")
+      options = TableDefOptions(
+        joinFields = List("ric")
+      )
+    )
 
     pricesDef
   }
@@ -41,7 +46,7 @@ class SimulatedPricesProviderTest extends AnyFeatureSpec with Matchers {
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
   implicit val lifecycleContainer: LifecycleContainer = new LifecycleContainer
   val joinProvider = new TestFriendlyJoinTableProvider
-  val pricesDef = getDef
+  val pricesDef: TableDef = getDef
   val table = new InMemDataTable(pricesDef, joinProvider)
   val provider = new SimulatedPricesProvider(table)
 

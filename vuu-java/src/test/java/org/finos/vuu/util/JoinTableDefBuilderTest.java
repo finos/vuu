@@ -1,7 +1,10 @@
 package org.finos.vuu.util;
 
+import org.finos.vuu.api.JoinSpec;
+import org.finos.vuu.api.JoinTableDef;
+import org.finos.vuu.api.JoinTo;
+import org.finos.vuu.api.LeftOuterJoin$;
 import org.finos.vuu.api.Link;
-import org.finos.vuu.api.SessionTableDef;
 import org.finos.vuu.api.TableDef;
 import org.finos.vuu.api.TableVisibility;
 import org.finos.vuu.core.table.Column;
@@ -19,20 +22,30 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class SessionTableDefBuilderTest {
+class JoinTableDefBuilderTest {
+
+    private final TableDef baseTable = new TableDefBuilder()
+            .name("myTable")
+            .keyField("myKey")
+            .build();
+    private final TableDef rightTable = new TableDefBuilder()
+            .name("myTable2")
+            .keyField("myKey")
+            .build();
 
     @Test
     void buildWithAllParameters() {
-        SessionTableDef tableDef = new SessionTableDefBuilder()
+        JoinTableDef tableDef = new JoinTableDefBuilder()
                 .name("myTable")
-                .keyField("myKey")
-                .customColumns(new Column[]{new SimpleColumn("myColumn", 0, String.class, false)})
+                .baseTable(baseTable)
+                .joinTos(List.of(JoinTo.apply(rightTable, JoinSpec.apply(
+                        "myKey", "myKey", LeftOuterJoin$.MODULE$
+                ))))
+                .joinColumns(new Column[]{new SimpleColumn("myColumn", 0, String.class, false)})
                 .joinFields(List.of("myJoinField"))
-                .autoSubscribe(true)
                 .links(List.of(new Link("fromColumn", "toTable", "toColumn")))
                 .indexFields(List.of("myIndex"))
                 .withPrivateVisibility()
-                .includeDefaultColumns(false)
                 .isEditable(true)
                 .permissionFunction((a, b) -> null)
                 .defaultSort(new SortSpec(toScala(List.of(new SortDef("myColumn", 'D')))))
@@ -41,9 +54,10 @@ class SessionTableDefBuilderTest {
 
         assertEquals("myTable", tableDef.name());
         assertEquals("myKey", tableDef.keyField());
-        assertEquals(1, tableDef.customColumns().length);
+        assertEquals(1, tableDef.joinColumns().length);
+        assertEquals(1, tableDef.joins().length());
         assertEquals(1, tableDef.options().joinFields().length());
-        assertTrue(tableDef.options().autoSubscribe());
+        assertFalse(tableDef.options().autoSubscribe());
         assertEquals(1, tableDef.options().links().links().length());
         assertEquals(1, tableDef.options().indices().indices().length());
         assertEquals(TableVisibility.PRIVATE(), tableDef.options().visibility());
@@ -57,18 +71,19 @@ class SessionTableDefBuilderTest {
 
     @Test
     void buildWithDefaultValues() {
-        TableDef tableDef = new TableDefBuilder()
+        JoinTableDef tableDef = new JoinTableDefBuilder()
                 .name("myTable")
-                .keyField("myKey")
+                .baseTable(baseTable)
                 .build();
 
-        assertEquals(0, tableDef.customColumns().length);
+        assertEquals(0, tableDef.joinColumns().length);
+        assertEquals(0, tableDef.joins().length());
         assertTrue(tableDef.options().joinFields().isEmpty());
         assertFalse(tableDef.options().autoSubscribe());
         assertTrue(tableDef.options().links().links().isEmpty());
         assertTrue(tableDef.options().indices().indices().isEmpty());
         assertEquals(TableVisibility.PUBLIC(), tableDef.options().visibility());
-        assertTrue(tableDef.options().includeDefaultColumns());
+        assertFalse(tableDef.options().includeDefaultColumns());
         assertFalse(tableDef.options().isEditable());
         assertNotNull(tableDef.options().permissionFunction());
         assertTrue(tableDef.options().defaultSort().sortDefs().isEmpty());

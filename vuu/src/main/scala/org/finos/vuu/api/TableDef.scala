@@ -124,8 +124,8 @@ case class JoinTo(table: TableDef, joinSpec: JoinSpec)
 
 case class JoinTableDef(override val name: String,
                         joinOptions: JoinTableDefOptions,
-                         baseTable: TableDef,
-                         joinColumns: Array[Column],
+                        baseTable: TableDef,
+                        joinColumns: Array[Column],
                         joins: JoinTo*) extends TableDef(name, baseTable.keyField, joinColumns, joinOptions) with VuuInMemPluginLocator {
 
   lazy val joinTableColumns = getJoinDefinitionColumnsInternal()

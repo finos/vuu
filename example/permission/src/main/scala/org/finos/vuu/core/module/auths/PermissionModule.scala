@@ -2,7 +2,7 @@ package org.finos.vuu.core.module.auths
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{TableDef, ViewPortDef, VisualLinks}
+import org.finos.vuu.api.{TableDef, TableDefOptions, ViewPortDef, VisualLinks}
 import org.finos.vuu.core.module.auths.provider.PermissionsProvider
 import org.finos.vuu.core.module.auths.service.PermissionsRpcService
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
@@ -22,8 +22,9 @@ object PermissionModule extends DefaultModule{
         name = "permission",
         keyField = User,
         customColumns = Columns.fromNames(User.string(), Bitmask.long(), BitmaskAsString.string(), BitmaskAsRoles.string()),
-        VisualLinks(),
-        joinFields = User
+        options = TableDefOptions(
+          joinFields = List(User)
+        )
       ),
       (table, vs) => new PermissionsProvider(table, vs.viewPortContainer),
       (table, _, _, tableContainer) => ViewPortDef(

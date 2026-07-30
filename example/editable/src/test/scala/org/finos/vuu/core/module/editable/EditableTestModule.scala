@@ -3,7 +3,7 @@ package org.finos.vuu.core.module.editable
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{TableDef, ViewPortDef, VisualLinks}
+import org.finos.vuu.api.{TableDef, TableDefOptions, ViewPortDef, VisualLinks}
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, RowWithData, TableContainer}
@@ -111,8 +111,9 @@ object EditTableTestModule {
           name = "editTestTable",
           keyField = "rowId",
           customColumns = Columns.fromNames("rowId".string(), "A".string(), "B".double(), "C".int(), "D".boolean()),
-          VisualLinks(),
-          joinFields = "rowId"
+          options= TableDefOptions(
+            joinFields = List("rowId")
+          )
         ),
         (table, _) => new NullProvider(),
         (table, _, _, tableContainer) => ViewPortDef(

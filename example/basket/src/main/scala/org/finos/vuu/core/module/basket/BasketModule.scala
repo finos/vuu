@@ -31,8 +31,9 @@ object BasketModule extends DefaultModule {
           name = BasketTable,
           keyField = B.Id,
           customColumns = Columns.fromNames(B.Id.string(), B.Name.string(), B.NotionalValue.double(), B.NotionalValueUsd.double()),
-          VisualLinks(),
-          joinFields = B.Id
+          options = TableDefOptions(
+            joinFields = List(B.Id)
+          )
         ),
         (table, _) => new BasketProvider(table),
         (table, _, _, tableContainer) => ViewPortDef(
@@ -47,8 +48,9 @@ object BasketModule extends DefaultModule {
           customColumns = Columns.fromNames(BC.RicBasketId.string(), BC.Ric.string(), BC.BasketId.string(),
                                       BC.Weighting.double(), BC.LastTrade.string(), BC.Change.string(),
                                       BC.Volume.string(), BC.Side.string(), BC.Description.string()), // we can join to instruments and other tables to get the rest of the data.....
-          VisualLinks(),
-          joinFields = BC.RicBasketId, BC.Ric
+          options = TableDefOptions(
+            joinFields = List(BC.RicBasketId, BC.Ric)
+          )
         ),
         (table, vs) => new BasketConstituentProvider(table),
       )
@@ -59,14 +61,16 @@ object BasketModule extends DefaultModule {
           customColumns = Columns.fromNames(BT.InstanceId.string(), BT.BasketId.string(), BT.BasketName.string(),
                                       BT.Status.string(), BT.Units.int(), BT.FilledPct.double(), BT.FxRateToUsd.double(),
                                       BT.TotalNotional.double(), BT.TotalNotionalUsd.double(), BT.Side.string()
-          ), // we can join to instruments and other tables to get the rest of the data.....
-          VisualLinks(
-            Link(BT.InstanceId, BasketTradingTable, BT.InstanceId)
           ),
-          indices = Indices(
-            Index(BT.InstanceId)
-          ),
-          joinFields = BT.BasketId
+          options = TableDefOptions(
+            joinFields = List(BT.BasketId),
+            indices = Indices(
+              Index(BT.InstanceId)
+            ),
+            links = VisualLinks(
+              Link(BT.InstanceId, BasketTradingTable, BT.InstanceId)
+            )
+          )
         ),
         (table, vs) => new BasketTradingProvider(table, vs.tableContainer),
         (table, _, _, tableContainer) => ViewPortDef(
@@ -90,14 +94,16 @@ object BasketModule extends DefaultModule {
                                       BTC.LimitPrice.double(),
                                       BTC.FilledQty.long(),
                                       BTC.OrderStatus.string()
-          ),// we can join to instruments and other tables to get the rest of the data.....
-          VisualLinks(
-            Link(BTC.BasketId, BasketTradingTable, BT.BasketId),
           ),
-          indices = Indices(
-            Index(BTC.BasketId)
-          ),
-          joinFields = BTC.InstanceIdRic, BTC.Ric
+          options = TableDefOptions(
+            joinFields = List(BTC.InstanceIdRic, BTC.Ric),
+            indices = Indices(
+              Index(BTC.BasketId)
+            ),
+            links = VisualLinks(
+              Link(BTC.BasketId, BasketTradingTable, BT.BasketId),
+            )
+          )
         ),
         (table, vs) => new BasketTradingConstituentProvider(table, omsApi),
         (table, _, _, tableContainer) => ViewPortDef(
@@ -111,36 +117,39 @@ object BasketModule extends DefaultModule {
           name = "priceStrategyType",
           keyField = PS.Id,
           customColumns = Columns.fromNames(PS.Id.int(), PS.PriceStrategy.string()), // we can join to instruments and other tables to get the rest of the data.....
-          VisualLinks(),
-          joinFields = PS.Id
+          options = TableDefOptions(
+            joinFields = List(PS.Id)
+          )
         ),
         (table, _) => new PriceStrategyProvider(table)
       )
       .addTable(
-        //lookup table for price strategies....
+        //lookup table for algos....
         TableDef(
           name = "algoType",
           keyField = Algo.Id,
           customColumns = Columns.fromNames(Algo.Id.int(), Algo.AlgoType.string()), // we can join to instruments and other tables to get the rest of the data.....
-          VisualLinks(),
-          joinFields = PS.Id
+          options = TableDefOptions(
+            joinFields = List(Algo.Id)
+          )
         ),
         (table, _) => new AlgoProvider(table)
       )
       .addJoinTable(tableDefs =>
         JoinTableDef(
           name = BasketTradingConstituentJoin,
+          joinOptions = JoinTableDefOptions(
+            links = VisualLinks(
+              Link(BTC.BasketId, BasketTradingTable, BT.BasketId)
+            )
+          ),
           baseTable = tableDefs.get(NAME, BasketTradingConstituentTable),
           joinColumns = Columns.allFrom(tableDefs.get(NAME, BasketTradingConstituentTable)) ++ Columns.allFromExceptDefaultAnd(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
-          VisualLinks(
-            Link(BTC.BasketId, BasketTradingTable, BT.BasketId)
-          ),
           joins =
             JoinTo(
               table = tableDefs.get(PriceModule.NAME, PriceModule.PriceTable),
               joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
             ),
-          joinFields = Seq(),
         ),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.getColumns,

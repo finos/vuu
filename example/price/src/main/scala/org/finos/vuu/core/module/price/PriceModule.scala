@@ -3,7 +3,7 @@ package org.finos.vuu.core.module.price
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{AutoSubscribeTableDef, TableDefOptions, ViewPortDef}
+import org.finos.vuu.api.{TableDef, TableDefOptions, ViewPortDef}
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
@@ -12,7 +12,6 @@ import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.provider.Provider
 import org.finos.vuu.provider.simulation.SimulatedPricesProvider
 import org.finos.vuu.viewport.*
-
 
 class PricesService(val table: DataTable, val provider: Provider)(implicit tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
 
@@ -55,7 +54,7 @@ object PriceModule {
             "last".double(), "open".double(), "close".double(), "scenario".string(), "phase".string()),
           options = TableDefOptions(
             autoSubscribe = true,
-            joinFields = "ric"
+            joinFields = List("ric")
           )
         ),
         (table, vs) => new SimulatedPricesProvider(table, maxSleep = 800),

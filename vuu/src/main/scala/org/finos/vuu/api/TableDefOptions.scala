@@ -54,6 +54,9 @@ trait JoinTableDefOptions extends BaseTableDefOptions {
 }
 
 object TableDefOptions {
+
+  val DefaultTableDefOptions: TableDefOptions = apply()
+
   def apply(joinFields: Seq[String] = Seq.empty,
             autoSubscribe: Boolean = false,
             links: VisualLinks = VisualLinks(),
@@ -107,6 +110,9 @@ case class TableDefOptionsImpl(joinFields: Seq[String],
 }
 
 object JoinTableDefOptions {
+
+  val DefaultJoinTableDefOptions: JoinTableDefOptions = apply()
+
   def apply(joinFields: Seq[String] = Seq.empty,
             links: VisualLinks = VisualLinks(),
             indices: Indices = Indices(),

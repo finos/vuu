@@ -2,7 +2,7 @@ package org.finos.vuu.core.module.editable
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{SessionTableDef, TableDef, ViewPortDef, VisualLinks}
+import org.finos.vuu.api.{SessionTableDef, TableDef, TableDefOptions, ViewPortDef, VisualLinks}
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 
@@ -18,8 +18,9 @@ object EditableModule extends DefaultModule {
           name = "process",
           keyField = "id",
           customColumns = Columns.fromNames("id".string(), "name".string(), "uptime".long(), "status".string()),
-          VisualLinks(),
-          joinFields = "id"
+          options = TableDefOptions(
+            joinFields = List("id")
+          )
         ),
         (table, vs) => new ProcessProvider(table),
         (table, _, _, tableContainer) => ViewPortDef(

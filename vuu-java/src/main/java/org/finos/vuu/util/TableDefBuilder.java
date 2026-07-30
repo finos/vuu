@@ -7,7 +7,6 @@ import org.finos.vuu.api.TableDef;
 import org.finos.vuu.api.TableDefOptions;
 import org.finos.vuu.api.TableVisibility;
 import org.finos.vuu.api.VisualLinks;
-import org.finos.vuu.core.filter.type.AllowAllPermissionFilter$;
 import org.finos.vuu.core.filter.type.PermissionFilter;
 import org.finos.vuu.core.table.Column;
 import org.finos.vuu.core.table.RangeSettings;
@@ -16,6 +15,7 @@ import org.finos.vuu.net.SortSpec;
 import org.finos.vuu.viewport.ViewPort;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiFunction;
 
 import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
@@ -28,17 +28,7 @@ public class TableDefBuilder {
     private String name;
     private String keyField;
     private Column[] customColumns = new Column[0];
-    private List<String> joinFields = List.of();
-    private boolean autoSubscribe = false;
-    private List<Link> links = List.of();
-    private List<String> indexFields = List.of();
-    private TableVisibility visibility = TableVisibility.PUBLIC();
-    private boolean includeDefaultColumns = true;
-    private boolean isEditable = false;
-    private BiFunction<ViewPort, TableContainer, PermissionFilter> permissionFunction = (vp, tc) -> AllowAllPermissionFilter$.MODULE$;
-    private SortSpec defaultSort = new SortSpecBuilder()
-            .build();
-    private RangeSettings rangeSettings = RangeSettings.apply();
+    private TableDefOptions tableDefOptions = TableDefOptions.DefaultTableDefOptions();
 
     /**
      * Sets table name.
@@ -47,6 +37,7 @@ public class TableDefBuilder {
      * @return this builder
      */
     public TableDefBuilder name(String name) {
+        Objects.requireNonNull(name);
         this.name = name;
         return this;
     }
@@ -59,6 +50,7 @@ public class TableDefBuilder {
      * @return this builder
      */
     public TableDefBuilder keyField(String keyField) {
+        Objects.requireNonNull(keyField);
         this.keyField = keyField;
         return this;
     }
@@ -70,6 +62,7 @@ public class TableDefBuilder {
      * @return this builder
      */
     public TableDefBuilder customColumns(Column[] customColumns) {
+        Objects.requireNonNull(customColumns);
         this.customColumns = customColumns;
         return this;
     }
@@ -81,18 +74,19 @@ public class TableDefBuilder {
      * @return this builder
      */
     public TableDefBuilder joinFields(List<String> joinFields) {
-        this.joinFields = joinFields;
+        Objects.requireNonNull(joinFields);
+        this.tableDefOptions = (TableDefOptions) tableDefOptions.withJoinFields(toScalaSeq(joinFields));
         return this;
     }
 
     /**
-     * Sets autosubscribe flag.
+     * Sets autoSubscribe flag.
      *
-     * @param autoSubscribe {@code true} to enable autosubscribe
+     * @param autoSubscribe {@code true} to enable autoSubscribe
      * @return this builder
      */
-    public TableDefBuilder autoSubscribe(Boolean autoSubscribe) {
-        this.autoSubscribe = autoSubscribe;
+    public TableDefBuilder autoSubscribe(boolean autoSubscribe) {
+        this.tableDefOptions = tableDefOptions.withAutoSubscribe(autoSubscribe);
         return this;
     }
 
@@ -103,7 +97,9 @@ public class TableDefBuilder {
      * @return this builder
      */
     public TableDefBuilder links(List<Link> links) {
-        this.links = links;
+        Objects.requireNonNull(links);
+        var visualLinks = VisualLinks.apply(toScala(links));
+        this.tableDefOptions = (TableDefOptions) tableDefOptions.withLinks(visualLinks);
         return this;
     }
 
@@ -114,7 +110,9 @@ public class TableDefBuilder {
      * @return this builder
      */
     public TableDefBuilder indexFields(List<String> indexFields) {
-        this.indexFields = indexFields;
+        Objects.requireNonNull(indexFields);
+        var indices = Indices.apply(toScalaSeq(indexFields.stream().map(Index::apply).toList()));
+        this.tableDefOptions = (TableDefOptions) tableDefOptions.withIndices(indices);
         return this;
     }
 
@@ -125,7 +123,8 @@ public class TableDefBuilder {
      * @return this builder
      */
     public TableDefBuilder visibility(TableVisibility visibility) {
-        this.visibility = visibility;
+        Objects.requireNonNull(visibility);
+        this.tableDefOptions = (TableDefOptions) tableDefOptions.withVisibility(visibility);
         return this;
     }
 
@@ -135,8 +134,7 @@ public class TableDefBuilder {
      * @return this builder
      */
     public TableDefBuilder withPrivateVisibility() {
-        this.visibility = TableVisibility.PRIVATE();
-        return this;
+        return visibility(TableVisibility.PRIVATE());
     }
 
     /**
@@ -145,8 +143,7 @@ public class TableDefBuilder {
      * @return this builder
      */
     public TableDefBuilder withPublicVisibility() {
-        this.visibility = TableVisibility.PUBLIC();
-        return this;
+        return visibility(TableVisibility.PUBLIC());
     }
 
     /**
@@ -155,8 +152,8 @@ public class TableDefBuilder {
      * @param includeDefaultColumns {@code true} to include default columns
      * @return this builder
      */
-    public TableDefBuilder includeDefaultColumns(Boolean includeDefaultColumns) {
-        this.includeDefaultColumns = includeDefaultColumns;
+    public TableDefBuilder includeDefaultColumns(boolean includeDefaultColumns) {
+        this.tableDefOptions = tableDefOptions.withIncludeDefaultColumns(includeDefaultColumns);
         return this;
     }
 
@@ -166,8 +163,8 @@ public class TableDefBuilder {
      * @param isEditable {@code true} to allow edit mode
      * @return this builder
      */
-    public TableDefBuilder isEditable(Boolean isEditable) {
-        this.isEditable = isEditable;
+    public TableDefBuilder isEditable(boolean isEditable) {
+        this.tableDefOptions = (TableDefOptions) tableDefOptions.withIsEditable(isEditable);
         return this;
     }
 
@@ -178,7 +175,9 @@ public class TableDefBuilder {
      * @return this builder
      */
     public TableDefBuilder permissionFunction(BiFunction<ViewPort, TableContainer, PermissionFilter> permissionFunction) {
-        this.permissionFunction = permissionFunction;
+        Objects.requireNonNull(permissionFunction);
+        var function2 = ScalaFunctionConverter.toScala(permissionFunction);
+        this.tableDefOptions = (TableDefOptions) tableDefOptions.withPermissionFunction(function2);
         return this;
     }
 
@@ -189,7 +188,8 @@ public class TableDefBuilder {
      * @return this builder
      */
     public TableDefBuilder defaultSort(SortSpec defaultSort) {
-        this.defaultSort = defaultSort;
+        Objects.requireNonNull(defaultSort);
+        this.tableDefOptions = (TableDefOptions) tableDefOptions.withDefaultSort(defaultSort);
         return this;
     }
 
@@ -200,7 +200,8 @@ public class TableDefBuilder {
      * @return this builder
      */
     public TableDefBuilder rangeSettings(RangeSettings rangeSettings) {
-        this.rangeSettings = rangeSettings;
+        Objects.requireNonNull(rangeSettings);
+        this.tableDefOptions = (TableDefOptions) tableDefOptions.withRangeSettings(rangeSettings);
         return this;
     }
 
@@ -210,22 +211,14 @@ public class TableDefBuilder {
      * @return {@link TableDef}
      */
     public TableDef build() {
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(keyField);
         return new TableDef(
                 name,
                 keyField,
                 customColumns,
-                TableDefOptions.apply(
-                        toScalaSeq(joinFields),
-                        autoSubscribe,
-                        VisualLinks.apply(toScala(links)),
-                        Indices.apply(toScalaSeq(indexFields.stream().map(Index::apply).toList())),
-                        visibility,
-                        includeDefaultColumns,
-                        isEditable,
-                        ScalaFunctionConverter.toScala(permissionFunction),
-                        defaultSort,
-                        rangeSettings
-                )
+                tableDefOptions
         );
     }
+
 }

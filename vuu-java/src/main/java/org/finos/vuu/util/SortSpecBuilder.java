@@ -7,7 +7,7 @@ import org.finos.vuu.net.SortSpec;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.finos.vuu.util.ScalaCollectionConverter.toScalaSeq;
+import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
 
 /**
  * Builder for {@link SortSpec}.
@@ -66,6 +66,6 @@ public class SortSpecBuilder {
      * @return SortSpec
      */
     public SortSpec build() {
-        return new SortSpec(toScalaSeq(sortDefs).toList());
+        return new SortSpec(toScala(sortDefs));
     }
 }
