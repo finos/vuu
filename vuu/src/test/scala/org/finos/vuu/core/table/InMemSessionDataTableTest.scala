@@ -33,8 +33,8 @@ class InMemSessionDataTableTest extends AnyFeatureSpec with Matchers {
       val counter = metricsProvider.counter(inMemSessionDataTable.name + ".processUpdates.Counter")
       val meter = metricsProvider.meter(inMemSessionDataTable.name + ".processUpdates.Meter")
 
-      counter.getCount shouldEqual 2
-      meter.getCount shouldEqual 2
+      counter.count() shouldEqual 2.0
+      meter.count() shouldEqual 2.0
     }
   }
 

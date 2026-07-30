@@ -79,7 +79,7 @@ class JoinTable(val tableDef: JoinTableDef,
 
   override def processUpdate(rowKey: String, rowUpdate: RowData): Unit = {
 
-    onUpdateMeter.mark()
+    onUpdateMeter.increment()
 
     logger.trace(s"$name processing row update: $rowKey $rowUpdate")
 
