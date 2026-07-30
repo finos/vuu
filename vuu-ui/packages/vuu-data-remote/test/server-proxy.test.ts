@@ -142,17 +142,17 @@ describe("ServerProxy", () => {
         {
           mode: "update",
           rows: [
-            [0,0,true,false,0,0,'key-00', 0,1, false,'key-00', 'name 00',1000,true],
-            [1,1,true,false,0,0,"key-01",0,1, false,"key-01","name 01",1001,true],
-            [2,2,true,false,0,0,"key-02",0,1, false,"key-02","name 02",1002,true],
-            [3,3,true,false,0,0,"key-03",0,1, false,"key-03","name 03",1003,true],
-            [4,4,true,false,0,0,"key-04",0,1, false,"key-04","name 04",1004,true],
-            [5,5,true,false,0,0,"key-05",0,1, false,"key-05","name 05",1005,true],
-            [6,6,true,false,0,0,"key-06",0,1, false,"key-06","name 06",1006,true],
-            [7,7,true,false,0,0,"key-07",0,1, false,"key-07","name 07",1007,true],
-            [8,8,true,false,0,0,"key-08",0,1, false,"key-08","name 08",1008,true],
-            [9,9,true,false,0,0,"key-09",0,1, false,"key-09","name 09",1009,true]
-        ],
+            [0, 0, true, false, 0, 0, 'key-00', 0, 1, false, 'key-00', 'name 00', 1000, true],
+            [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+            [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+            [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+            [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
+            [5, 5, true, false, 0, 0, "key-05", 0, 1, false, "key-05", "name 05", 1005, true],
+            [6, 6, true, false, 0, 0, "key-06", 0, 1, false, "key-06", "name 06", 1006, true],
+            [7, 7, true, false, 0, 0, "key-07", 0, 1, false, "key-07", "name 07", 1007, true],
+            [8, 8, true, false, 0, 0, "key-08", 0, 1, false, "key-08", "name 08", 1008, true],
+            [9, 9, true, false, 0, 0, "key-09", 0, 1, false, "key-09", "name 09", 1009, true]
+          ],
           size: 100,
           type: 'viewport-update',
           clientViewportId: 'client-vp-1'
@@ -176,11 +176,11 @@ describe("ServerProxy", () => {
           clientViewportId: 'client-vp-1',
           mode: "update",
           rows: [
-            [0,0,true,false,0,0,"key-00", 0,1, false,"key-00", 'name 00',1000,true],
-            [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-            [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-            [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-            [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
+            [0, 0, true, false, 0, 0, "key-00", 0, 1, false, "key-00", 'name 00', 1000, true],
+            [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+            [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+            [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+            [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
           ],
           size: 100,
           type: 'viewport-update',
@@ -200,12 +200,12 @@ describe("ServerProxy", () => {
         {
           mode: "update",
           rows: [
-            [5,5,true,false,0,0,"key-05",0,2,false,"key-05","name 05",1005,true],
-            [6,6,true,false,0,0,"key-06",0,2,false,"key-06","name 06",1006,true],
-            [7,7,true,false,0,0,"key-07",0,2,false,"key-07","name 07",1007,true],
-            [8,8,true,false,0,0,"key-08",0,2,false,"key-08","name 08",1008,true],
-            [9,9,true,false,0,0,"key-09",0,2,false,"key-09","name 09",1009,true]
-        ],
+            [5, 5, true, false, 0, 0, "key-05", 0, 2, false, "key-05", "name 05", 1005, true],
+            [6, 6, true, false, 0, 0, "key-06", 0, 2, false, "key-06", "name 06", 1006, true],
+            [7, 7, true, false, 0, 0, "key-07", 0, 2, false, "key-07", "name 07", 1007, true],
+            [8, 8, true, false, 0, 0, "key-08", 0, 2, false, "key-08", "name 08", 1008, true],
+            [9, 9, true, false, 0, 0, "key-09", 0, 2, false, "key-09", "name 09", 1009, true]
+          ],
           type: 'viewport-update',
           clientViewportId: 'client-vp-1'
         }
@@ -253,16 +253,16 @@ describe("ServerProxy", () => {
         {
           mode: "update",
           rows: [
-            [0,0,true,false,0,0,'key-00',0,1, false, 'key-00', 'name 00',1000,true],
-            [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-            [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-            [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-            [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
-            [5,5,true,false,0,0,"key-05",0,1,false,"key-05","name 05",1005,true],
-            [6,6,true,false,0,0,"key-06",0,1,false,"key-06","name 06",1006,true],
-            [7,7,true,false,0,0,"key-07",0,1,false,"key-07","name 07",1007,true],
-            [8,8,true,false,0,0,"key-08",0,1,false,"key-08","name 08",1008,true],
-            [9,9,true,false,0,0,"key-09",0,1,false,"key-09","name 09",1009,true]
+            [0, 0, true, false, 0, 0, 'key-00', 0, 1, false, 'key-00', 'name 00', 1000, true],
+            [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+            [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+            [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+            [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
+            [5, 5, true, false, 0, 0, "key-05", 0, 1, false, "key-05", "name 05", 1005, true],
+            [6, 6, true, false, 0, 0, "key-06", 0, 1, false, "key-06", "name 06", 1006, true],
+            [7, 7, true, false, 0, 0, "key-07", 0, 1, false, "key-07", "name 07", 1007, true],
+            [8, 8, true, false, 0, 0, "key-08", 0, 1, false, "key-08", "name 08", 1008, true],
+            [9, 9, true, false, 0, 0, "key-09", 0, 1, false, "key-09", "name 09", 1009, true]
           ],
           size: 100,
           type: 'viewport-update',
@@ -325,7 +325,7 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [0,0,true,false,0,0,'key-00',0,1, false, 'key-00', 'name 00',1000,true],
+          [0, 0, true, false, 0, 0, 'key-00', 0, 1, false, 'key-00', 'name 00', 1000, true],
         ],
         size: 1,
       });
@@ -347,7 +347,7 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [1,1,true,false,0,0,'key-01',0,1, false, 'key-01', 'name 01',1001,true],
+          [1, 1, true, false, 0, 0, 'key-01', 0, 1, false, 'key-01', 'name 01', 1001, true],
         ],
         size: 2,
       });
@@ -368,7 +368,7 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [2,2,true,false,0,0,'key-02',0,1, false, 'key-02', 'name 02',1002,true],
+          [2, 2, true, false, 0, 0, 'key-02', 0, 1, false, 'key-02', 'name 02', 1002, true],
         ],
         size: 3,
       });
@@ -404,13 +404,13 @@ describe("ServerProxy", () => {
         {
           mode: "update",
           rows: [
-            [0,0,true,false,0,0,'key-00',0,1, false, 'key-00', 'name 00',1000,true],
-            [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-            [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-            [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-            [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
-            [5,5,true,false,0,0,"key-05",0,1,false,"key-05","name 05",1005,true],
-            [6,6,true,false,0,0,"key-06",0,1,false,"key-06","name 06",1006,true],
+            [0, 0, true, false, 0, 0, 'key-00', 0, 1, false, 'key-00', 'name 00', 1000, true],
+            [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+            [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+            [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+            [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
+            [5, 5, true, false, 0, 0, "key-05", 0, 1, false, "key-05", "name 05", 1005, true],
+            [6, 6, true, false, 0, 0, "key-06", 0, 1, false, "key-06", "name 06", 1006, true],
           ],
           size: 100,
           type: 'viewport-update',
@@ -431,9 +431,9 @@ describe("ServerProxy", () => {
         {
           mode: "update",
           rows: [
-            [7,7,true,false,0,0,"key-07",0,1,false,"key-07","name 07",1007,true],
-            [8,8,true,false,0,0,"key-08",0,1,false,"key-08","name 08",1008,true],
-            [9,9,true,false,0,0,"key-09",0,1,false,"key-09","name 09",1009,true]
+            [7, 7, true, false, 0, 0, "key-07", 0, 1, false, "key-07", "name 07", 1007, true],
+            [8, 8, true, false, 0, 0, "key-08", 0, 1, false, "key-08", "name 08", 1008, true],
+            [9, 9, true, false, 0, 0, "key-09", 0, 1, false, "key-09", "name 09", 1009, true]
           ],
           type: 'viewport-update',
           clientViewportId: 'client-vp-1'
@@ -483,8 +483,8 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [10,0,true,false,0,0,"key-10",0,1,false,"key-10","name 10",1010,true],
-          [11,1,true,false,0,0,"key-11",0,1,false,"key-11","name 11",1011,true],
+          [10, 0, true, false, 0, 0, "key-10", 0, 1, false, "key-10", "name 10", 1010, true],
+          [11, 1, true, false, 0, 0, "key-11", 0, 1, false, "key-11", "name 11", 1011, true],
         ],
       });
     });
@@ -529,16 +529,16 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [20,0,true,false,0,0,"key-20",0,1,false,"key-20","name 20",1020,true,],
-          [21,1,true,false,0,0,"key-21",0,1,false,"key-21","name 21",1021,true],
-          [22,2,true,false,0,0,"key-22",0,1,false,"key-22","name 22",1022,true],
-          [23,3,true,false,0,0,"key-23",0,1,false,"key-23","name 23",1023,true],
-          [24,4,true,false,0,0,"key-24",0,1,false,"key-24","name 24",1024,true],
-          [25,5,true,false,0,0,"key-25",0,1,false,"key-25","name 25",1025,true],
-          [26,6,true,false,0,0,"key-26",0,1,false,"key-26","name 26",1026,true],
-          [27,7,true,false,0,0,"key-27",0,1,false,"key-27","name 27",1027,true],
-          [28,8,true,false,0,0,"key-28",0,1,false,"key-28","name 28",1028,true],
-          [29,9,true,false,0,0,"key-29",0,1,false,"key-29","name 29",1029,true,],
+          [20, 0, true, false, 0, 0, "key-20", 0, 1, false, "key-20", "name 20", 1020, true,],
+          [21, 1, true, false, 0, 0, "key-21", 0, 1, false, "key-21", "name 21", 1021, true],
+          [22, 2, true, false, 0, 0, "key-22", 0, 1, false, "key-22", "name 22", 1022, true],
+          [23, 3, true, false, 0, 0, "key-23", 0, 1, false, "key-23", "name 23", 1023, true],
+          [24, 4, true, false, 0, 0, "key-24", 0, 1, false, "key-24", "name 24", 1024, true],
+          [25, 5, true, false, 0, 0, "key-25", 0, 1, false, "key-25", "name 25", 1025, true],
+          [26, 6, true, false, 0, 0, "key-26", 0, 1, false, "key-26", "name 26", 1026, true],
+          [27, 7, true, false, 0, 0, "key-27", 0, 1, false, "key-27", "name 27", 1027, true],
+          [28, 8, true, false, 0, 0, "key-28", 0, 1, false, "key-28", "name 28", 1028, true],
+          [29, 9, true, false, 0, 0, "key-29", 0, 1, false, "key-29", "name 29", 1029, true,],
         ],
       });
     });
@@ -573,7 +573,7 @@ describe("ServerProxy", () => {
         mode: "update",
         clientViewportId: "client-vp-1",
         rows: [
-          [3,3,true,false,0,0,"key-03",0,2,false,"key-03","name 03",2003, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 2, false, "key-03", "name 03", 2003, true],
         ],
       });
     });
@@ -618,16 +618,16 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [0,0,true,false,0,0,"key-00",0,1,false,"key-00","name 00",1000,true],
-          [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-          [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-          [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-          [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
-          [5,5,true,false,0,0,"key-05",0,1,false,"key-05","name 05",1005,true],
-          [6,6,true,false,0,0,"key-06",0,1,false,"key-06","name 06",1006,true,],
-          [7,7,true,false,0,0,"key-07",0,1,false,"key-07","name 07",1007,true],
-          [8,8,true,false,0,0,"key-08",0,1,false,"key-08","name 08",1008,true],
-          [9,9,true,false,0,0,"key-09",0,1,false,"key-09","name 09",1009,true],
+          [0, 0, true, false, 0, 0, "key-00", 0, 1, false, "key-00", "name 00", 1000, true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+          [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
+          [5, 5, true, false, 0, 0, "key-05", 0, 1, false, "key-05", "name 05", 1005, true],
+          [6, 6, true, false, 0, 0, "key-06", 0, 1, false, "key-06", "name 06", 1006, true,],
+          [7, 7, true, false, 0, 0, "key-07", 0, 1, false, "key-07", "name 07", 1007, true],
+          [8, 8, true, false, 0, 0, "key-08", 0, 1, false, "key-08", "name 08", 1008, true],
+          [9, 9, true, false, 0, 0, "key-09", 0, 1, false, "key-09", "name 09", 1009, true],
         ],
         size: 100,
       });
@@ -673,17 +673,17 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [0,0,true,false,0,0,"key-00",0,1,false,"key-00","name 00",1000,true],
-          [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-          [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-          [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-          [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
-          [5,5,true,false,0,0,"key-05",0,1,false,"key-05","name 05",1005,true],
-          [6,6,true,false,0,0,"key-06",0,1,false,"key-06","name 06",1006,true,],
-          [7,7,true,false,0,0,"key-07",0,1,false,"key-07","name 07",1007,true],
-          [8,8,true,false,0,0,"key-08",0,1,false,"key-08","name 08",1008,true],
-          [9,9,true,false,0,0,"key-09",0,1,false,"key-09","name 09",1009,true],
-          [10,10,true,false,0,0,"key-10",0,1,false,"key-10","name 10",1010,true],
+          [0, 0, true, false, 0, 0, "key-00", 0, 1, false, "key-00", "name 00", 1000, true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+          [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
+          [5, 5, true, false, 0, 0, "key-05", 0, 1, false, "key-05", "name 05", 1005, true],
+          [6, 6, true, false, 0, 0, "key-06", 0, 1, false, "key-06", "name 06", 1006, true,],
+          [7, 7, true, false, 0, 0, "key-07", 0, 1, false, "key-07", "name 07", 1007, true],
+          [8, 8, true, false, 0, 0, "key-08", 0, 1, false, "key-08", "name 08", 1008, true],
+          [9, 9, true, false, 0, 0, "key-09", 0, 1, false, "key-09", "name 09", 1009, true],
+          [10, 10, true, false, 0, 0, "key-10", 0, 1, false, "key-10", "name 10", 1010, true],
         ],
         size: 100,
       });
@@ -704,15 +704,15 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [11,1,true,false,0,0,"key-11",0,1,false,"key-11","name 11",1011,true],
-          [12,2,true,false,0,0,"key-12",0,1,false,"key-12","name 12",1012,true],
-          [13,3,true,false,0,0,"key-13",0,1,false,"key-13","name 13",1013,true],
-          [14,4,true,false,0,0,"key-14",0,1,false,"key-14","name 14",1014,true],
-          [15,5,true,false,0,0,"key-15",0,1,false,"key-15","name 15",1015,true,],
-          [16,6,true,false,0,0,"key-16",0,1,false,"key-16","name 16",1016,true],
-          [17,7,true,false,0,0,"key-17",0,1,false,"key-17","name 17",1017,true],
-          [18,8,true,false,0,0,"key-18",0,1,false,"key-18","name 18",1018,true],
-          [19,9,true,false,0,0,"key-19",0,1,false,"key-19","name 19",1019,true],
+          [11, 1, true, false, 0, 0, "key-11", 0, 1, false, "key-11", "name 11", 1011, true],
+          [12, 2, true, false, 0, 0, "key-12", 0, 1, false, "key-12", "name 12", 1012, true],
+          [13, 3, true, false, 0, 0, "key-13", 0, 1, false, "key-13", "name 13", 1013, true],
+          [14, 4, true, false, 0, 0, "key-14", 0, 1, false, "key-14", "name 14", 1014, true],
+          [15, 5, true, false, 0, 0, "key-15", 0, 1, false, "key-15", "name 15", 1015, true,],
+          [16, 6, true, false, 0, 0, "key-16", 0, 1, false, "key-16", "name 16", 1016, true],
+          [17, 7, true, false, 0, 0, "key-17", 0, 1, false, "key-17", "name 17", 1017, true],
+          [18, 8, true, false, 0, 0, "key-18", 0, 1, false, "key-18", "name 18", 1018, true],
+          [19, 9, true, false, 0, 0, "key-19", 0, 1, false, "key-19", "name 19", 1019, true],
         ],
       });
     });
@@ -735,16 +735,16 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [0,0,true,false,0,0,"key-00",0,1,false,"key-00","name 00",1000,true],
-          [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-          [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-          [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-          [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true,],
-          [5,5,true,false,0,0,"key-05",0,1,false,"key-05","name 05",1005,true],
-          [6,6,true,false,0,0,"key-06",0,1,false,"key-06","name 06",1006,true],
-          [7,7,true,false,0,0,"key-07",0,1,false,"key-07","name 07",1007,true],
-          [8,8,true,false,0,0,"key-08",0,1,false,"key-08","name 08",1008,true],
-          [9,9,true,false,0,0,"key-09",0,1,false,"key-09","name 09",1009,true,],
+          [0, 0, true, false, 0, 0, "key-00", 0, 1, false, "key-00", "name 00", 1000, true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+          [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true,],
+          [5, 5, true, false, 0, 0, "key-05", 0, 1, false, "key-05", "name 05", 1005, true],
+          [6, 6, true, false, 0, 0, "key-06", 0, 1, false, "key-06", "name 06", 1006, true],
+          [7, 7, true, false, 0, 0, "key-07", 0, 1, false, "key-07", "name 07", 1007, true],
+          [8, 8, true, false, 0, 0, "key-08", 0, 1, false, "key-08", "name 08", 1008, true],
+          [9, 9, true, false, 0, 0, "key-09", 0, 1, false, "key-09", "name 09", 1009, true,],
         ],
         size: 100,
       });
@@ -781,17 +781,17 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [0,0,true,false,0,0,"key-00",0,1,false,"key-00","name 00",1000,true],
-          [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-          [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-          [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-          [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
-          [5,5,true,false,0,0,"key-05",0,1,false,"key-05","name 05",1005,true],
-          [6,6,true,false,0,0,"key-06",0,1,false,"key-06","name 06",1006,true],
-          [7,7,true,false,0,0,"key-07",0,1,false,"key-07","name 07",1007,true],
-          [8,8,true,false,0,0,"key-08",0,1,false,"key-08","name 08",1008,true],
+          [0, 0, true, false, 0, 0, "key-00", 0, 1, false, "key-00", "name 00", 1000, true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+          [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
+          [5, 5, true, false, 0, 0, "key-05", 0, 1, false, "key-05", "name 05", 1005, true],
+          [6, 6, true, false, 0, 0, "key-06", 0, 1, false, "key-06", "name 06", 1006, true],
+          [7, 7, true, false, 0, 0, "key-07", 0, 1, false, "key-07", "name 07", 1007, true],
+          [8, 8, true, false, 0, 0, "key-08", 0, 1, false, "key-08", "name 08", 1008, true],
         ],
-    });
+      });
 
       postMessageToClient.mockClear();
 
@@ -807,9 +807,9 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [9,9,true,false,0,0,"key-09",0,2,false,"key-09","name 09",1009,true],
+          [9, 9, true, false, 0, 0, "key-09", 0, 2, false, "key-09", "name 09", 1009, true],
         ],
-    });
+      });
 
       postMessageToClient.mockClear();
 
@@ -864,7 +864,7 @@ describe("ServerProxy", () => {
           viewPortId: "server-vp-1",
           type: "CHANGE_VP_RANGE",
           from: 4875,
-          to: 5000,
+          to: 5100,
         },
         module: "CORE",
         requestId: "1",
@@ -878,7 +878,7 @@ describe("ServerProxy", () => {
           type: "CHANGE_VP_RANGE_SUCCESS",
           viewPortId: "server-vp-1",
           from: 4975,
-          to: 5000,
+          to: 5100,
         },
       });
 
@@ -900,31 +900,31 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [4975,0,true,false,0,0,"key-75",0,1,false,"key-75","name 75",5975,true],
-          [4976,1,true,false,0,0,"key-76",0,1,false,"key-76","name 76",5976,true],
-          [4977,2,true,false,0,0,"key-77",0,1,false,"key-77","name 77",5977,true],
-          [4978,3,true,false,0,0,"key-78",0,1,false,"key-78","name 78",5978,true],
-          [4979,4,true,false,0,0,"key-79",0,1,false,"key-79","name 79",5979,true],
-          [4980,5,true,false,0,0,"key-80",0,1,false,"key-80","name 80",5980,true],
-          [4981,6,true,false,0,0,"key-81",0,1,false,"key-81","name 81",5981,true],
-          [4982,7,true,false,0,0,"key-82",0,1,false,"key-82","name 82",5982,true],
-          [4983,8,true,false,0,0,"key-83",0,1,false,"key-83","name 83",5983,true],
-          [4984,9,true,false,0,0,"key-84",0,1,false,"key-84","name 84",5984,true],
-          [4985,10,true,false,0,0,"key-85",0,1,false,"key-85","name 85",5985,true],
-          [4986,11,true,false,0,0,"key-86",0,1,false,"key-86","name 86",5986,true],
-          [4987,12,true,false,0,0,"key-87",0,1,false,"key-87","name 87",5987,true],
-          [4988,13,true,false,0,0,"key-88",0,1,false,"key-88","name 88",5988,true],
-          [4989,14,true,false,0,0,"key-89",0,1,false,"key-89","name 89",5989,true],
-          [4990,15,true,false,0,0,"key-90",0,1,false,"key-90","name 90",5990,true],
-          [4991,16,true,false,0,0,"key-91",0,1,false,"key-91","name 91",5991,true],
-          [4992,17,true,false,0,0,"key-92",0,1,false,"key-92","name 92",5992,true],
-          [4993,18,true,false,0,0,"key-93",0,1,false,"key-93","name 93",5993,true],
-          [4994,19,true,false,0,0,"key-94",0,1,false,"key-94","name 94",5994,true],
-          [4995,20,true,false,0,0,"key-95",0,1,false,"key-95","name 95",5995,true],
-          [4996,21,true,false,0,0,"key-96",0,1,false,"key-96","name 96",5996,true],
-          [4997,22,true,false,0,0,"key-97",0,1,false,"key-97","name 97",5997,true],
-          [4998,23,true,false,0,0,"key-98",0,1,false,"key-98","name 98",5998,true],
-          [4999,24,true,false,0,0,"key-99",0,1,false,"key-99","name 99",5999,true],
+          [4975, 0, true, false, 0, 0, "key-75", 0, 1, false, "key-75", "name 75", 5975, true],
+          [4976, 1, true, false, 0, 0, "key-76", 0, 1, false, "key-76", "name 76", 5976, true],
+          [4977, 2, true, false, 0, 0, "key-77", 0, 1, false, "key-77", "name 77", 5977, true],
+          [4978, 3, true, false, 0, 0, "key-78", 0, 1, false, "key-78", "name 78", 5978, true],
+          [4979, 4, true, false, 0, 0, "key-79", 0, 1, false, "key-79", "name 79", 5979, true],
+          [4980, 5, true, false, 0, 0, "key-80", 0, 1, false, "key-80", "name 80", 5980, true],
+          [4981, 6, true, false, 0, 0, "key-81", 0, 1, false, "key-81", "name 81", 5981, true],
+          [4982, 7, true, false, 0, 0, "key-82", 0, 1, false, "key-82", "name 82", 5982, true],
+          [4983, 8, true, false, 0, 0, "key-83", 0, 1, false, "key-83", "name 83", 5983, true],
+          [4984, 9, true, false, 0, 0, "key-84", 0, 1, false, "key-84", "name 84", 5984, true],
+          [4985, 10, true, false, 0, 0, "key-85", 0, 1, false, "key-85", "name 85", 5985, true],
+          [4986, 11, true, false, 0, 0, "key-86", 0, 1, false, "key-86", "name 86", 5986, true],
+          [4987, 12, true, false, 0, 0, "key-87", 0, 1, false, "key-87", "name 87", 5987, true],
+          [4988, 13, true, false, 0, 0, "key-88", 0, 1, false, "key-88", "name 88", 5988, true],
+          [4989, 14, true, false, 0, 0, "key-89", 0, 1, false, "key-89", "name 89", 5989, true],
+          [4990, 15, true, false, 0, 0, "key-90", 0, 1, false, "key-90", "name 90", 5990, true],
+          [4991, 16, true, false, 0, 0, "key-91", 0, 1, false, "key-91", "name 91", 5991, true],
+          [4992, 17, true, false, 0, 0, "key-92", 0, 1, false, "key-92", "name 92", 5992, true],
+          [4993, 18, true, false, 0, 0, "key-93", 0, 1, false, "key-93", "name 93", 5993, true],
+          [4994, 19, true, false, 0, 0, "key-94", 0, 1, false, "key-94", "name 94", 5994, true],
+          [4995, 20, true, false, 0, 0, "key-95", 0, 1, false, "key-95", "name 95", 5995, true],
+          [4996, 21, true, false, 0, 0, "key-96", 0, 1, false, "key-96", "name 96", 5996, true],
+          [4997, 22, true, false, 0, 0, "key-97", 0, 1, false, "key-97", "name 97", 5997, true],
+          [4998, 23, true, false, 0, 0, "key-98", 0, 1, false, "key-98", "name 98", 5998, true],
+          [4999, 24, true, false, 0, 0, "key-99", 0, 1, false, "key-99", "name 99", 5999, true],
         ],
       });
     });
@@ -960,12 +960,12 @@ describe("ServerProxy", () => {
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "update",
-        range: {from: 2, to: 12},
+        range: { from: 2, to: 12 },
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [10,0,true,false,0,0,"key-10",0,1,false,"key-10","name 10",1010,true],
-          [11,1,true,false,0,0,"key-11",0,1,false,"key-11","name 11",1011,true],
+          [10, 0, true, false, 0, 0, "key-10", 0, 1, false, "key-10", "name 10", 1010, true],
+          [11, 1, true, false, 0, 0, "key-11", 0, 1, false, "key-11", "name 11", 1011, true],
         ],
       });
 
@@ -988,9 +988,9 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [12,2,true,false,0,0,"key-12",0,1,false,"key-12","name 12",1012,true],
-          [13,3,true,false,0,0,"key-13",0,1,false,"key-13","name 13",1013,true],
-          [14,4,true,false,0,0,"key-14",0,1,false,"key-14","name 14",1014,true],
+          [12, 2, true, false, 0, 0, "key-12", 0, 1, false, "key-12", "name 12", 1012, true],
+          [13, 3, true, false, 0, 0, "key-13", 0, 1, false, "key-13", "name 13", 1013, true],
+          [14, 4, true, false, 0, 0, "key-14", 0, 1, false, "key-14", "name 14", 1014, true],
         ],
       });
 
@@ -1014,9 +1014,9 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [15,5,true,false,0,0,"key-15",0,1,false,"key-15","name 15",1015,true],
-          [16,6,true,false,0,0,"key-16",0,1,false,"key-16","name 16",1016,true],
-          [17,7,true,false,0,0,"key-17",0,1,false,"key-17","name 17",1017,true],
+          [15, 5, true, false, 0, 0, "key-15", 0, 1, false, "key-15", "name 15", 1015, true],
+          [16, 6, true, false, 0, 0, "key-16", 0, 1, false, "key-16", "name 16", 1016, true],
+          [17, 7, true, false, 0, 0, "key-17", 0, 1, false, "key-17", "name 17", 1017, true],
         ],
       });
 
@@ -1070,12 +1070,12 @@ describe("ServerProxy", () => {
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "update",
-        range: {from: 2, to: 12},
+        range: { from: 2, to: 12 },
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [10,0,true,false,0,0,"key-10",0,1,false,"key-10","name 10",1010,true],
-          [11,1,true,false,0,0,"key-11",0,1,false,"key-11","name 11",1011,true],
+          [10, 0, true, false, 0, 0, "key-10", 0, 1, false, "key-10", "name 10", 1010, true],
+          [11, 1, true, false, 0, 0, "key-11", 0, 1, false, "key-11", "name 11", 1011, true],
         ],
       });
 
@@ -1099,9 +1099,9 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [12,2,true,false,0,0,"key-12",0,1,false,"key-12","name 12",1012,true],
-          [13,3,true,false,0,0,"key-13",0,1,false,"key-13","name 13",1013,true],
-          [14,4,true,false,0,0,"key-14",0,1,false,"key-14","name 14",1014,true],
+          [12, 2, true, false, 0, 0, "key-12", 0, 1, false, "key-12", "name 12", 1012, true],
+          [13, 3, true, false, 0, 0, "key-13", 0, 1, false, "key-13", "name 13", 1013, true],
+          [14, 4, true, false, 0, 0, "key-14", 0, 1, false, "key-14", "name 14", 1014, true],
         ],
       });
 
@@ -1126,9 +1126,9 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [15,5,true,false,0,0,"key-15",0,1,false,"key-15","name 15",1015,true],
-          [16,6,true,false,0,0,"key-16",0,1,false,"key-16","name 16",1016,true],
-          [17,7,true,false,0,0,"key-17",0,1,false,"key-17","name 17",1017,true],
+          [15, 5, true, false, 0, 0, "key-15", 0, 1, false, "key-15", "name 15", 1015, true],
+          [16, 6, true, false, 0, 0, "key-16", 0, 1, false, "key-16", "name 16", 1016, true],
+          [17, 7, true, false, 0, 0, "key-17", 0, 1, false, "key-17", "name 17", 1017, true],
         ],
       });
 
@@ -1164,8 +1164,8 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [18,8,true,false,0,0,"key-18",0,1,false,"key-18","name 18",1018,true],
-          [19,9,true,false,0,0,"key-19",0,1,false,"key-19","name 19",1019,true],
+          [18, 8, true, false, 0, 0, "key-18", 0, 1, false, "key-18", "name 18", 1018, true],
+          [19, 9, true, false, 0, 0, "key-19", 0, 1, false, "key-19", "name 19", 1019, true],
         ],
       });
 
@@ -1180,8 +1180,8 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [20,0,true,false,0,0,"key-20",0,1,false,"key-20","name 20",1020,true],
-          [21,1,true,false,0,0,"key-21",0,1,false,"key-21","name 21",1021,true],
+          [20, 0, true, false, 0, 0, "key-20", 0, 1, false, "key-20", "name 20", 1020, true],
+          [21, 1, true, false, 0, 0, "key-21", 0, 1, false, "key-21", "name 21", 1021, true],
         ],
       });
     });
@@ -1207,11 +1207,11 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [0,0,true,false,0,0,"key-00",0,1,false,"key-00","name 00",1000,true],
-          [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-          [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-          [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-          [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
+          [0, 0, true, false, 0, 0, "key-00", 0, 1, false, "key-00", "name 00", 1000, true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+          [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
         ],
       });
 
@@ -1238,11 +1238,11 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [5,5,true,false,0,0,"key-05",0,2,false,"key-05","name 05",1005,true],
-          [6,6,true,false,0,0,"key-06",0,2,false,"key-06","name 06",1006,true],
-          [7,7,true,false,0,0,"key-07",0,2,false,"key-07","name 07",1007,true],
-          [8,8,true,false,0,0,"key-08",0,2,false,"key-08","name 08",1008,true],
-          [9,9,true,false,0,0,"key-09",0,2,false,"key-09","name 09",1009,true],
+          [5, 5, true, false, 0, 0, "key-05", 0, 2, false, "key-05", "name 05", 1005, true],
+          [6, 6, true, false, 0, 0, "key-06", 0, 2, false, "key-06", "name 06", 1006, true],
+          [7, 7, true, false, 0, 0, "key-07", 0, 2, false, "key-07", "name 07", 1007, true],
+          [8, 8, true, false, 0, 0, "key-08", 0, 2, false, "key-08", "name 08", 1008, true],
+          [9, 9, true, false, 0, 0, "key-09", 0, 2, false, "key-09", "name 09", 1009, true],
         ],
       });
 
@@ -1260,8 +1260,8 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [10,0,true,false,0,0,"key-10",0,3,false,"key-10","name 10",1010,true],
-          [11,1,true,false,0,0,"key-11",0,3,false,"key-11","name 11",1011,true],
+          [10, 0, true, false, 0, 0, "key-10", 0, 3, false, "key-10", "name 10", 1010, true],
+          [11, 1, true, false, 0, 0, "key-11", 0, 3, false, "key-11", "name 11", 1011, true],
         ],
       });
     });
@@ -1319,16 +1319,16 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [20,0,true,false,0,0,"key-20",0,2,false,"key-20","name 20",1020,true],
-          [21,1,true,false,0,0,"key-21",0,2,false,"key-21","name 21",1021,true],
-          [22,2,true,false,0,0,"key-22",0,2,false,"key-22","name 22",1022,true],
-          [23,3,true,false,0,0,"key-23",0,2,false,"key-23","name 23",1023,true],
-          [24,4,true,false,0,0,"key-24",0,2,false,"key-24","name 24",1024,true],
-          [25,5,true,false,0,0,"key-25",0,2,false,"key-25","name 25",1025,true],
-          [26,6,true,false,0,0,"key-26",0,2,false,"key-26","name 26",1026,true],
-          [27,7,true,false,0,0,"key-27",0,2,false,"key-27","name 27",1027,true],
-          [28,8,true,false,0,0,"key-28",0,2,false,"key-28","name 28",1028,true],
-          [29,9,true,false,0,0,"key-29",0,2,false,"key-29","name 29",1029,true],
+          [20, 0, true, false, 0, 0, "key-20", 0, 2, false, "key-20", "name 20", 1020, true],
+          [21, 1, true, false, 0, 0, "key-21", 0, 2, false, "key-21", "name 21", 1021, true],
+          [22, 2, true, false, 0, 0, "key-22", 0, 2, false, "key-22", "name 22", 1022, true],
+          [23, 3, true, false, 0, 0, "key-23", 0, 2, false, "key-23", "name 23", 1023, true],
+          [24, 4, true, false, 0, 0, "key-24", 0, 2, false, "key-24", "name 24", 1024, true],
+          [25, 5, true, false, 0, 0, "key-25", 0, 2, false, "key-25", "name 25", 1025, true],
+          [26, 6, true, false, 0, 0, "key-26", 0, 2, false, "key-26", "name 26", 1026, true],
+          [27, 7, true, false, 0, 0, "key-27", 0, 2, false, "key-27", "name 27", 1027, true],
+          [28, 8, true, false, 0, 0, "key-28", 0, 2, false, "key-28", "name 28", 1028, true],
+          [29, 9, true, false, 0, 0, "key-29", 0, 2, false, "key-29", "name 29", 1029, true],
 
         ],
       });
@@ -1352,14 +1352,14 @@ describe("ServerProxy", () => {
         range: { from: 12, to: 22 },
         clientViewportId: "client-vp-1",
         rows: [
-          [12,2,true,false,0,0,"key-12",0,1,false,"key-12","name 12",1012,true],
-          [13,3,true,false,0,0,"key-13",0,1,false,"key-13","name 13",1013,true],
-          [14,4,true,false,0,0,"key-14",0,1,false,"key-14","name 14",1014,true],
-          [15,5,true,false,0,0,"key-15",0,1,false,"key-15","name 15",1015,true],
-          [16,6,true,false,0,0,"key-16",0,1,false,"key-16","name 16",1016,true],
-          [17,7,true,false,0,0,"key-17",0,1,false,"key-17","name 17",1017,true],
-          [18,8,true,false,0,0,"key-18",0,1,false,"key-18","name 18",1018,true],
-          [19,9,true,false,0,0,"key-19",0,1,false,"key-19","name 19",1019,true],
+          [12, 2, true, false, 0, 0, "key-12", 0, 1, false, "key-12", "name 12", 1012, true],
+          [13, 3, true, false, 0, 0, "key-13", 0, 1, false, "key-13", "name 13", 1013, true],
+          [14, 4, true, false, 0, 0, "key-14", 0, 1, false, "key-14", "name 14", 1014, true],
+          [15, 5, true, false, 0, 0, "key-15", 0, 1, false, "key-15", "name 15", 1015, true],
+          [16, 6, true, false, 0, 0, "key-16", 0, 1, false, "key-16", "name 16", 1016, true],
+          [17, 7, true, false, 0, 0, "key-17", 0, 1, false, "key-17", "name 17", 1017, true],
+          [18, 8, true, false, 0, 0, "key-18", 0, 1, false, "key-18", "name 18", 1018, true],
+          [19, 9, true, false, 0, 0, "key-19", 0, 1, false, "key-19", "name 19", 1019, true],
         ],
       });
 
@@ -1446,16 +1446,16 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [20,0,true,false,0,0,"key-20",0,2,false,"key-20","name 20",1020,true],
-          [21,1,true,false,0,0,"key-21",0,2,false,"key-21","name 21",1021,true],
-          [22,2,true,false,0,0,"key-22",0,2,false,"key-22","name 22",1022,true],
-          [23,3,true,false,0,0,"key-23",0,2,false,"key-23","name 23",1023,true],
-          [24,4,true,false,0,0,"key-24",0,2,false,"key-24","name 24",1024,true],
-          [25,5,true,false,0,0,"key-25",0,2,false,"key-25","name 25",1025,true],
-          [26,6,true,false,0,0,"key-26",0,2,false,"key-26","name 26",1026,true],
-          [27,7,true,false,0,0,"key-27",0,2,false,"key-27","name 27",1027,true],
-          [28,8,true,false,0,0,"key-28",0,2,false,"key-28","name 28",1028,true],
-          [29,9,true,false,0,0,"key-29",0,2,false,"key-29","name 29",1029,true],
+          [20, 0, true, false, 0, 0, "key-20", 0, 2, false, "key-20", "name 20", 1020, true],
+          [21, 1, true, false, 0, 0, "key-21", 0, 2, false, "key-21", "name 21", 1021, true],
+          [22, 2, true, false, 0, 0, "key-22", 0, 2, false, "key-22", "name 22", 1022, true],
+          [23, 3, true, false, 0, 0, "key-23", 0, 2, false, "key-23", "name 23", 1023, true],
+          [24, 4, true, false, 0, 0, "key-24", 0, 2, false, "key-24", "name 24", 1024, true],
+          [25, 5, true, false, 0, 0, "key-25", 0, 2, false, "key-25", "name 25", 1025, true],
+          [26, 6, true, false, 0, 0, "key-26", 0, 2, false, "key-26", "name 26", 1026, true],
+          [27, 7, true, false, 0, 0, "key-27", 0, 2, false, "key-27", "name 27", 1027, true],
+          [28, 8, true, false, 0, 0, "key-28", 0, 2, false, "key-28", "name 28", 1028, true],
+          [29, 9, true, false, 0, 0, "key-29", 0, 2, false, "key-29", "name 29", 1029, true],
 
         ],
       });
@@ -1479,11 +1479,11 @@ describe("ServerProxy", () => {
         clientViewportId: "client-vp-1",
         range: { from: 5, to: 15 },
         rows: [
-          [10,5,true,false,0,0,"key-10",0,1,false,"key-10","name 10",1010,true],
-          [11,6,true,false,0,0,"key-11",0,1,false,"key-11","name 11",1011,true],
-          [12,7,true,false,0,0,"key-12",0,1,false,"key-12","name 12",1012,true],
-          [13,8,true,false,0,0,"key-13",0,1,false,"key-13","name 13",1013,true],
-          [14,9,true,false,0,0,"key-14",0,1,false,"key-14","name 14",1014,true],
+          [10, 5, true, false, 0, 0, "key-10", 0, 1, false, "key-10", "name 10", 1010, true],
+          [11, 6, true, false, 0, 0, "key-11", 0, 1, false, "key-11", "name 11", 1011, true],
+          [12, 7, true, false, 0, 0, "key-12", 0, 1, false, "key-12", "name 12", 1012, true],
+          [13, 8, true, false, 0, 0, "key-13", 0, 1, false, "key-13", "name 13", 1013, true],
+          [14, 9, true, false, 0, 0, "key-14", 0, 1, false, "key-14", "name 14", 1014, true],
         ],
       });
 
@@ -1503,8 +1503,8 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [8,3,true,false,0,0,"key-08",0,3,false,"key-08","name 08",1008,true],
-          [9,4,true,false,0,0,"key-09",0,3,false,"key-09","name 09",1009,true],
+          [8, 3, true, false, 0, 0, "key-08", 0, 3, false, "key-08", "name 08", 1008, true],
+          [9, 4, true, false, 0, 0, "key-09", 0, 3, false, "key-09", "name 09", 1009, true],
         ],
       });
 
@@ -1525,9 +1525,9 @@ describe("ServerProxy", () => {
         // range: { from: 5, to: 15 },
         clientViewportId: "client-vp-1",
         rows: [
-          [5,0,true,false,0,0,"key-05",0,4,false,"key-05","name 05",1005,true],
-          [6,1,true,false,0,0,"key-06",0,4,false,"key-06","name 06",1006,true],
-          [7,2,true,false,0,0,"key-07",0,4,false,"key-07","name 07",1007,true],
+          [5, 0, true, false, 0, 0, "key-05", 0, 4, false, "key-05", "name 05", 1005, true],
+          [6, 1, true, false, 0, 0, "key-06", 0, 4, false, "key-06", "name 06", 1006, true],
+          [7, 2, true, false, 0, 0, "key-07", 0, 4, false, "key-07", "name 07", 1007, true],
         ],
       });
     });
@@ -1553,7 +1553,7 @@ describe("ServerProxy", () => {
 
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
-          "internalData"
+        "internalData"
         ],
       ).toHaveLength(110);
       expect(
@@ -1579,21 +1579,21 @@ describe("ServerProxy", () => {
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "update",
-        range: {from:12, to: 23},
+        range: { from: 12, to: 23 },
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [12,0,true,false,0,0,"key-12",0,1,false,"key-12","name 12",1012,true],
-          [13,1,true,false,0,0,"key-13",0,1,false,"key-13","name 13",1013,true],
-          [14,2,true,false,0,0,"key-14",0,1,false,"key-14","name 14",1014,true],
-          [15,3,true,false,0,0,"key-15",0,1,false,"key-15","name 15",1015,true],
-          [16,4,true,false,0,0,"key-16",0,1,false,"key-16","name 16",1016,true],
-          [17,5,true,false,0,0,"key-17",0,1,false,"key-17","name 17",1017,true],
-          [18,6,true,false,0,0,"key-18",0,1,false,"key-18","name 18",1018,true],
-          [19,7,true,false,0,0,"key-19",0,1,false,"key-19","name 19",1019,true],
-          [20,8,true,false,0,0,"key-20",0,1,false,"key-20","name 20",1020,true],
-          [21,9,true,false,0,0,"key-21",0,1,false,"key-21","name 21",1021,true],
-          [22,10,true,false,0,0,"key-22",0,1,false,"key-22","name 22",1022,true],
+          [12, 0, true, false, 0, 0, "key-12", 0, 1, false, "key-12", "name 12", 1012, true],
+          [13, 1, true, false, 0, 0, "key-13", 0, 1, false, "key-13", "name 13", 1013, true],
+          [14, 2, true, false, 0, 0, "key-14", 0, 1, false, "key-14", "name 14", 1014, true],
+          [15, 3, true, false, 0, 0, "key-15", 0, 1, false, "key-15", "name 15", 1015, true],
+          [16, 4, true, false, 0, 0, "key-16", 0, 1, false, "key-16", "name 16", 1016, true],
+          [17, 5, true, false, 0, 0, "key-17", 0, 1, false, "key-17", "name 17", 1017, true],
+          [18, 6, true, false, 0, 0, "key-18", 0, 1, false, "key-18", "name 18", 1018, true],
+          [19, 7, true, false, 0, 0, "key-19", 0, 1, false, "key-19", "name 19", 1019, true],
+          [20, 8, true, false, 0, 0, "key-20", 0, 1, false, "key-20", "name 20", 1020, true],
+          [21, 9, true, false, 0, 0, "key-21", 0, 1, false, "key-21", "name 21", 1021, true],
+          [22, 10, true, false, 0, 0, "key-22", 0, 1, false, "key-22", "name 22", 1022, true],
         ],
       });
 
@@ -1612,20 +1612,20 @@ describe("ServerProxy", () => {
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "update",
-        range: {from:30, to:40},
+        range: { from: 30, to: 40 },
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [30,0,true,false,0,0,"key-30",0,1,false,"key-30","name 30",1030,true],
-          [31,1,true,false,0,0,"key-31",0,1,false,"key-31","name 31",1031,true],
-          [32,2,true,false,0,0,"key-32",0,1,false,"key-32","name 32",1032,true],
-          [33,3,true,false,0,0,"key-33",0,1,false,"key-33","name 33",1033,true],
-          [34,4,true,false,0,0,"key-34",0,1,false,"key-34","name 34",1034,true],
-          [35,5,true,false,0,0,"key-35",0,1,false,"key-35","name 35",1035,true],
-          [36,6,true,false,0,0,"key-36",0,1,false,"key-36","name 36",1036,true],
-          [37,7,true,false,0,0,"key-37",0,1,false,"key-37","name 37",1037,true],
-          [38,8,true,false,0,0,"key-38",0,1,false,"key-38","name 38",1038,true],
-          [39,9,true,false,0,0,"key-39",0,1,false,"key-39","name 39",1039,true],
+          [30, 0, true, false, 0, 0, "key-30", 0, 1, false, "key-30", "name 30", 1030, true],
+          [31, 1, true, false, 0, 0, "key-31", 0, 1, false, "key-31", "name 31", 1031, true],
+          [32, 2, true, false, 0, 0, "key-32", 0, 1, false, "key-32", "name 32", 1032, true],
+          [33, 3, true, false, 0, 0, "key-33", 0, 1, false, "key-33", "name 33", 1033, true],
+          [34, 4, true, false, 0, 0, "key-34", 0, 1, false, "key-34", "name 34", 1034, true],
+          [35, 5, true, false, 0, 0, "key-35", 0, 1, false, "key-35", "name 35", 1035, true],
+          [36, 6, true, false, 0, 0, "key-36", 0, 1, false, "key-36", "name 36", 1036, true],
+          [37, 7, true, false, 0, 0, "key-37", 0, 1, false, "key-37", "name 37", 1037, true],
+          [38, 8, true, false, 0, 0, "key-38", 0, 1, false, "key-38", "name 38", 1038, true],
+          [39, 9, true, false, 0, 0, "key-39", 0, 1, false, "key-39", "name 39", 1039, true],
         ],
       });
     });
@@ -1795,9 +1795,9 @@ describe("ServerProxy", () => {
         clientViewportId: "client-vp-1",
         range: { from: 24, to: 34 },
         rows: [
-          [27,1,true,false,0,0,"key-27",0,1,false,"key-27","name 27",1027,true],
-          [28,2,true,false,0,0,"key-28",0,1,false,"key-28","name 28",1028,true],
-          [29,3,true,false,0,0,"key-29",0,1,false,"key-29","name 29",1029,true],
+          [27, 1, true, false, 0, 0, "key-27", 0, 1, false, "key-27", "name 27", 1027, true],
+          [28, 2, true, false, 0, 0, "key-28", 0, 1, false, "key-28", "name 28", 1028, true],
+          [29, 3, true, false, 0, 0, "key-29", 0, 1, false, "key-29", "name 29", 1029, true],
         ],
 
       });
@@ -1827,16 +1827,16 @@ describe("ServerProxy", () => {
         clientViewportId: "client-vp-1",
         size: 10,
         rows: [
-          [0,0,true,false,0,0,"key-00",0,1,false,"key-00","name 00",1000,true],
-          [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-          [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-          [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-          [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
-          [5,5,true,false,0,0,"key-05",0,1,false,"key-05","name 05",1005,true],
-          [6,6,true,false,0,0,"key-06",0,1,false,"key-06","name 06",1006,true],
-          [7,7,true,false,0,0,"key-07",0,1,false,"key-07","name 07",1007,true],
-          [8,8,true,false,0,0,"key-08",0,1,false,"key-08","name 08",1008,true],
-          [9,9,true,false,0,0,"key-09",0,1,false,"key-09","name 09",1009,true],
+          [0, 0, true, false, 0, 0, "key-00", 0, 1, false, "key-00", "name 00", 1000, true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+          [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
+          [5, 5, true, false, 0, 0, "key-05", 0, 1, false, "key-05", "name 05", 1005, true],
+          [6, 6, true, false, 0, 0, "key-06", 0, 1, false, "key-06", "name 06", 1006, true],
+          [7, 7, true, false, 0, 0, "key-07", 0, 1, false, "key-07", "name 07", 1007, true],
+          [8, 8, true, false, 0, 0, "key-08", 0, 1, false, "key-08", "name 08", 1008, true],
+          [9, 9, true, false, 0, 0, "key-09", 0, 1, false, "key-09", "name 09", 1009, true],
         ],
       });
     });
@@ -1966,7 +1966,7 @@ describe("ServerProxy", () => {
         clientViewportId: "client-vp-1",
         size: 1,
         rows: [
-          [0,0,true,false,0,0,"key-00",0,1,false,"key-00","name 00",1000,true],
+          [0, 0, true, false, 0, 0, "key-00", 0, 1, false, "key-00", "name 00", 1000, true],
         ],
       });
 
@@ -1989,7 +1989,7 @@ describe("ServerProxy", () => {
         clientViewportId: "client-vp-1",
         size: 2,
         rows: [
-          [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
         ],
       });
 
@@ -2012,10 +2012,10 @@ describe("ServerProxy", () => {
         clientViewportId: "client-vp-1",
         size: 6,
         rows: [
-          [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-          [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-          [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
-          [5,5,true,false,0,0,"key-05",0,1,false,"key-05","name 05",1005,true],
+          [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
+          [5, 5, true, false, 0, 0, "key-05", 0, 1, false, "key-05", "name 05", 1005, true],
         ],
       });
     });
@@ -2213,23 +2213,23 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenNthCalledWith<[DataSourceDataMessage]>(1, {
-            type: "viewport-update",
-            mode: "update",
-            clientViewportId: "client-vp-1",
-            rows: [
-              [0,0,true,false,0,0,"key-00",0,2,false,"key-00","name 00",1234, true],
-              [1,1,true,false,0,0,"key-01",0,2,false,"key-01","name 01",1234, true],
-              [2,2,true,false,0,0,"key-02",0,2,false,"key-02","name 02",1234, true],
-              [3,3,true,false,0,0,"key-03",0,2,false,"key-03","name 03",1234, true],
-              [4,4,true,false,0,0,"key-04",0,2,false,"key-04","name 04",1234, true],
-              [5,5,true,false,0,0,"key-05",0,2,false,"key-05","name 05",1234, true],
-              [6,6,true,false,0,0,"key-06",0,2,false,"key-06","name 06",1234, true],
-              [7,7,true,false,0,0,"key-07",0,2,false,"key-07","name 07",1234, true],
-              [8,8,true,false,0,0,"key-08",0,2,false,"key-08","name 08",1234, true],
-              [9,9,true,false,0,0,"key-09",0,2,false,"key-09","name 09",1234, true],
-            ],
-            size: 43
-          });
+        type: "viewport-update",
+        mode: "update",
+        clientViewportId: "client-vp-1",
+        rows: [
+          [0, 0, true, false, 0, 0, "key-00", 0, 2, false, "key-00", "name 00", 1234, true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 2, false, "key-01", "name 01", 1234, true],
+          [2, 2, true, false, 0, 0, "key-02", 0, 2, false, "key-02", "name 02", 1234, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 2, false, "key-03", "name 03", 1234, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 2, false, "key-04", "name 04", 1234, true],
+          [5, 5, true, false, 0, 0, "key-05", 0, 2, false, "key-05", "name 05", 1234, true],
+          [6, 6, true, false, 0, 0, "key-06", 0, 2, false, "key-06", "name 06", 1234, true],
+          [7, 7, true, false, 0, 0, "key-07", 0, 2, false, "key-07", "name 07", 1234, true],
+          [8, 8, true, false, 0, 0, "key-08", 0, 2, false, "key-08", "name 08", 1234, true],
+          [9, 9, true, false, 0, 0, "key-09", 0, 2, false, "key-09", "name 09", 1234, true],
+        ],
+        size: 43
+      });
     });
 
     it("handles TABLE_ROWS that precede filter request together with filtered rows, in same batch", async () => {
@@ -2308,23 +2308,23 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenNthCalledWith<[DataSourceDataMessage]>(1, {
-            type: "viewport-update",
-            mode: "update",
-            clientViewportId: "client-vp-1",
-            rows: [
-              [0,0,true,false,0,0,"key-00",0,2,false,"key-00","name 00",2004, true],
-              [1,1,true,false,0,0,"key-01",0,2,false,"key-01","name 01",2004, true],
-              [2,2,true,false,0,0,"key-02",0,2,false,"key-02","name 02",2004, true],
-              [3,3,true,false,0,0,"key-03",0,2,false,"key-03","name 03",2004, true],
-              [4,4,true,false,0,0,"key-04",0,2,false,"key-04","name 04",2004, true],
-              [5,5,true,false,0,0,"key-05",0,2,false,"key-05","name 05",2004, true],
-              [6,6,true,false,0,0,"key-06",0,2,false,"key-06","name 06",2004, true],
-              [7,7,true,false,0,0,"key-07",0,2,false,"key-07","name 07",2004, true],
-              [8,8,true,false,0,0,"key-08",0,2,false,"key-08","name 08",2004, true],
-              [9,9,true,false,0,0,"key-09",0,2,false,"key-09","name 09",2004, true],
-            ],
-            size: 43
-          });
+        type: "viewport-update",
+        mode: "update",
+        clientViewportId: "client-vp-1",
+        rows: [
+          [0, 0, true, false, 0, 0, "key-00", 0, 2, false, "key-00", "name 00", 2004, true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 2, false, "key-01", "name 01", 2004, true],
+          [2, 2, true, false, 0, 0, "key-02", 0, 2, false, "key-02", "name 02", 2004, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 2, false, "key-03", "name 03", 2004, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 2, false, "key-04", "name 04", 2004, true],
+          [5, 5, true, false, 0, 0, "key-05", 0, 2, false, "key-05", "name 05", 2004, true],
+          [6, 6, true, false, 0, 0, "key-06", 0, 2, false, "key-06", "name 06", 2004, true],
+          [7, 7, true, false, 0, 0, "key-07", 0, 2, false, "key-07", "name 07", 2004, true],
+          [8, 8, true, false, 0, 0, "key-08", 0, 2, false, "key-08", "name 08", 2004, true],
+          [9, 9, true, false, 0, 0, "key-09", 0, 2, false, "key-09", "name 09", 2004, true],
+        ],
+        size: 43
+      });
     });
 
     it(`
@@ -2425,23 +2425,23 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenNthCalledWith<[DataSourceDataMessage]>(1, {
-            type: "viewport-update",
-            mode: "update",
-            clientViewportId: "client-vp-1",
-            rows: [
-              [0,0,true,false,0,0,"key-00",0,3,false,"key-00","name 00",1000, true],
-              [1,1,true,false,0,0,"key-01",0,3,false,"key-01","name 01",1001, true],
-              [2,2,true,false,0,0,"key-02",0,3,false,"key-02","name 02",1002, true],
-              [3,3,true,false,0,0,"key-03",0,3,false,"key-03","name 03",1003, true],
-              [4,4,true,false,0,0,"key-04",0,3,false,"key-04","name 04",1004, true],
-              [5,5,true,false,0,0,"key-05",0,3,false,"key-05","name 05",1005, true],
-              [6,6,true,false,0,0,"key-06",0,3,false,"key-06","name 06",1006, true],
-              [7,7,true,false,0,0,"key-07",0,3,false,"key-07","name 07",1007, true],
-              [8,8,true,false,0,0,"key-08",0,3,false,"key-08","name 08",1008, true],
-              [9,9,true,false,0,0,"key-09",0,3,false,"key-09","name 09",1009, true],
-            ],
-            size: 100
-          });
+        type: "viewport-update",
+        mode: "update",
+        clientViewportId: "client-vp-1",
+        rows: [
+          [0, 0, true, false, 0, 0, "key-00", 0, 3, false, "key-00", "name 00", 1000, true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 3, false, "key-01", "name 01", 1001, true],
+          [2, 2, true, false, 0, 0, "key-02", 0, 3, false, "key-02", "name 02", 1002, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 3, false, "key-03", "name 03", 1003, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 3, false, "key-04", "name 04", 1004, true],
+          [5, 5, true, false, 0, 0, "key-05", 0, 3, false, "key-05", "name 05", 1005, true],
+          [6, 6, true, false, 0, 0, "key-06", 0, 3, false, "key-06", "name 06", 1006, true],
+          [7, 7, true, false, 0, 0, "key-07", 0, 3, false, "key-07", "name 07", 1007, true],
+          [8, 8, true, false, 0, 0, "key-08", 0, 3, false, "key-08", "name 08", 1008, true],
+          [9, 9, true, false, 0, 0, "key-09", 0, 3, false, "key-09", "name 09", 1009, true],
+        ],
+        size: 100
+      });
     });
     it(`
       1) applies filter that sets rowsize to 1, 
@@ -2534,31 +2534,31 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(2);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenNthCalledWith<[DataSourceDataMessage]>(1, {
-            type: "viewport-update",
-            mode: "update",
-            clientViewportId: "client-vp-1",
-            rows: [
-              [0,0,true,false,0,0,"key-00",0,3,false,"key-00","name 00",1000, true],
-              [1,1,true,false,0,0,"key-01",0,3,false,"key-01","name 01",1001, true],
-              [2,2,true,false,0,0,"key-02",0,3,false,"key-02","name 02",1002, true],
-              [3,3,true,false,0,0,"key-03",0,3,false,"key-03","name 03",1003, true],
-              [4,4,true,false,0,0,"key-04",0,3,false,"key-04","name 04",1004, true],
-            ],
-            size: 100
-          });
+        type: "viewport-update",
+        mode: "update",
+        clientViewportId: "client-vp-1",
+        rows: [
+          [0, 0, true, false, 0, 0, "key-00", 0, 3, false, "key-00", "name 00", 1000, true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 3, false, "key-01", "name 01", 1001, true],
+          [2, 2, true, false, 0, 0, "key-02", 0, 3, false, "key-02", "name 02", 1002, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 3, false, "key-03", "name 03", 1003, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 3, false, "key-04", "name 04", 1004, true],
+        ],
+        size: 100
+      });
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenNthCalledWith<[DataSourceDataMessage]>(2, {
-            type: "viewport-update",
-            mode: "update",
-            clientViewportId: "client-vp-1",
-            rows: [
-              [5,5,true,false,0,0,"key-05",0,3,false,"key-05","name 05",1005, true],
-              [6,6,true,false,0,0,"key-06",0,3,false,"key-06","name 06",1006, true],
-              [7,7,true,false,0,0,"key-07",0,3,false,"key-07","name 07",1007, true],
-              [8,8,true,false,0,0,"key-08",0,3,false,"key-08","name 08",1008, true],
-              [9,9,true,false,0,0,"key-09",0,3,false,"key-09","name 09",1009, true],
-            ],
-          });
+        type: "viewport-update",
+        mode: "update",
+        clientViewportId: "client-vp-1",
+        rows: [
+          [5, 5, true, false, 0, 0, "key-05", 0, 3, false, "key-05", "name 05", 1005, true],
+          [6, 6, true, false, 0, 0, "key-06", 0, 3, false, "key-06", "name 06", 1006, true],
+          [7, 7, true, false, 0, 0, "key-07", 0, 3, false, "key-07", "name 07", 1007, true],
+          [8, 8, true, false, 0, 0, "key-08", 0, 3, false, "key-08", "name 08", 1008, true],
+          [9, 9, true, false, 0, 0, "key-09", 0, 3, false, "key-09", "name 09", 1009, true],
+        ],
+      });
     });
   });
 
@@ -2694,7 +2694,7 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
-          "internalData"
+        "internalData"
         ],
       ).toHaveLength(4);
       // prettier-ignore
@@ -2703,10 +2703,10 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [0,0,false,false,1,43714,"$root|USD",0,1,false,"","USD","","","","",""],
-          [1,1,false,false,1,43941,"$root|EUR",0,1,false,"","EUR","","","","",""],
-          [2,2,false,false,1,43997,"$root|GBX",0,1,false,"","GBX","","","","",""],
-          [3,3,false,false,1,44108,"$root|CAD",0,1,false,"","CAD","","","","",""],
+          [0, 0, false, false, 1, 43714, "$root|USD", 0, 1, false, "", "USD", "", "", "", "", ""],
+          [1, 1, false, false, 1, 43941, "$root|EUR", 0, 1, false, "", "EUR", "", "", "", "", ""],
+          [2, 2, false, false, 1, 43997, "$root|GBX", 0, 1, false, "", "GBX", "", "", "", "", ""],
+          [3, 3, false, false, 1, 44108, "$root|CAD", 0, 1, false, "", "CAD", "", "", "", "", ""],
         ],
         size: 4,
       });
@@ -2778,7 +2778,7 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
-          "internalData"
+        "internalData"
         ],
       ).toHaveLength(4);
       // prettier-ignore
@@ -2787,10 +2787,10 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [0,0,false,false,1,43714,"$root|USD",0,1,false,"","USD","","","","",""],
-          [1,1,false,false,1,43941,"$root|EUR",0,1,false,"","EUR","","","","",""],
-          [2,2,false,false,1,43997,"$root|GBX",0,1,false,"","GBX","","","","",""],
-          [3,3,false,false,1,44108,"$root|CAD",0,1,false,"","CAD","","","","",""],
+          [0, 0, false, false, 1, 43714, "$root|USD", 0, 1, false, "", "USD", "", "", "", "", ""],
+          [1, 1, false, false, 1, 43941, "$root|EUR", 0, 1, false, "", "EUR", "", "", "", "", ""],
+          [2, 2, false, false, 1, 43997, "$root|GBX", 0, 1, false, "", "GBX", "", "", "", "", ""],
+          [3, 3, false, false, 1, 44108, "$root|CAD", 0, 1, false, "", "CAD", "", "", "", "", ""],
         ],
         size: 4,
       });
@@ -2887,7 +2887,7 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(2);
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
-          "internalData"
+        "internalData"
         ],
       ).toHaveLength(4);
       // prettier-ignore
@@ -2898,8 +2898,8 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [0,0,false,false,1,43714,"$root|USD",0,1,false,"","USD","","","","",""],
-          [1,1,false,false,1,43941,"$root|EUR",0,1,false,"","EUR","","","","",""],
+          [0, 0, false, false, 1, 43714, "$root|USD", 0, 1, false, "", "USD", "", "", "", "", ""],
+          [1, 1, false, false, 1, 43941, "$root|EUR", 0, 1, false, "", "EUR", "", "", "", "", ""],
         ],
       });
 
@@ -2909,8 +2909,8 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [2,2,false,false,1,43997,"$root|GBX",0,1,false,"","GBX","","","","",""],
-          [3,3,false,false,1,44108,"$root|CAD",0,1,false,"","CAD","","","","",""],
+          [2, 2, false, false, 1, 43997, "$root|GBX", 0, 1, false, "", "GBX", "", "", "", "", ""],
+          [3, 3, false, false, 1, 44108, "$root|CAD", 0, 1, false, "", "CAD", "", "", "", "", ""],
         ],
       });
     });
@@ -3017,7 +3017,7 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
-          "internalData"
+        "internalData"
         ],
       ).toHaveLength(4);
       // prettier-ignore
@@ -3026,10 +3026,10 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [0,0,false,false,1,43714,"$root|USD",0,1,false,"","USD","","","","",""],
-          [1,1,false,false,1,43941,"$root|EUR",0,1,false,"","EUR","","","","",""],
-          [2,2,false,false,1,43997,"$root|GBX",0,1,false,"","GBX","","","","",""],
-          [3,3,false,false,1,44108,"$root|CAD",0,1,false,"","CAD","","","","",""],
+          [0, 0, false, false, 1, 43714, "$root|USD", 0, 1, false, "", "USD", "", "", "", "", ""],
+          [1, 1, false, false, 1, 43941, "$root|EUR", 0, 1, false, "", "EUR", "", "", "", "", ""],
+          [2, 2, false, false, 1, 43997, "$root|GBX", 0, 1, false, "", "GBX", "", "", "", "", ""],
+          [3, 3, false, false, 1, 44108, "$root|CAD", 0, 1, false, "", "CAD", "", "", "", "", ""],
         ],
         size: 4,
       });
@@ -3049,7 +3049,7 @@ describe("ServerProxy", () => {
               rowIndex: 1,
               rowKey: "$root|EUR",
               updateType: "U",
-              data: [1,false,"$root|EUR",false,"EUR",43942,"","EUR","","","","",""],
+              data: [1, false, "$root|EUR", false, "EUR", 43942, "", "EUR", "", "", "", "", ""],
             },
           ],
         },
@@ -3058,7 +3058,7 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       expect(
         serverProxy["viewports"].get("server-vp-1")?.["dataWindow"]?.[
-          "internalData"
+        "internalData"
         ],
       ).toHaveLength(4);
       // prettier-ignore
@@ -3067,7 +3067,7 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [1,1,false,false,1,43942,"$root|EUR",0,1,false,"","EUR","","","","",""],
+          [1, 1, false, false, 1, 43942, "$root|EUR", 0, 1, false, "", "EUR", "", "", "", "", ""],
         ],
       });
     });
@@ -3090,11 +3090,11 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
-              mode: "size-only",
-              type: "viewport-update",
-              clientViewportId: "client-vp-1",
-              size: 1,
-            });
+        mode: "size-only",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        size: 1,
+      });
       postMessageToClient.mockClear();
 
       // prettier-ignore
@@ -3103,9 +3103,9 @@ describe("ServerProxy", () => {
         body: {
           ...COMMON_TABLE_ROW_ATTRS,
           rows: [
-            ...createTableRows("server-vp-1", 0,1),
+            ...createTableRows("server-vp-1", 0, 1),
             sizeRow("server-vp-1", 293),
-            ...createTableRows("server-vp-1", 1,10, 293),
+            ...createTableRows("server-vp-1", 1, 10, 293),
           ],
         },
       });
@@ -3118,16 +3118,16 @@ describe("ServerProxy", () => {
         clientViewportId: "client-vp-1",
         size: 293,
         rows: [
-          [0,0,true,false,0,0,'key-00',0,1,false,'key-00', 'name 00',1000,true],
-          [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-          [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-          [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-          [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
-          [5,5,true,false,0,0,"key-05",0,1,false,"key-05","name 05",1005,true],
-          [6,6,true,false,0,0,"key-06",0,1,false,"key-06","name 06",1006,true],
-          [7,7,true,false,0,0,"key-07",0,1,false,"key-07","name 07",1007,true],
-          [8,8,true,false,0,0,"key-08",0,1,false,"key-08","name 08",1008,true],
-          [9,9,true,false,0,0,"key-09",0,1,false,"key-09","name 09",1009,true]
+          [0, 0, true, false, 0, 0, 'key-00', 0, 1, false, 'key-00', 'name 00', 1000, true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+          [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
+          [5, 5, true, false, 0, 0, "key-05", 0, 1, false, "key-05", "name 05", 1005, true],
+          [6, 6, true, false, 0, 0, "key-06", 0, 1, false, "key-06", "name 06", 1006, true],
+          [7, 7, true, false, 0, 0, "key-07", 0, 1, false, "key-07", "name 07", 1007, true],
+          [8, 8, true, false, 0, 0, "key-08", 0, 1, false, "key-08", "name 08", 1008, true],
+          [9, 9, true, false, 0, 0, "key-09", 0, 1, false, "key-09", "name 09", 1009, true]
         ]
 
       });
@@ -3249,36 +3249,36 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(2);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenNthCalledWith(1,
-          {
-            mode: "update",
-            rows: [
-              [0,0,true,false,0,0,'key-00',1,1,false,'key-00', 'name 00',2000,true],
+        {
+          mode: "update",
+          rows: [
+            [0, 0, true, false, 0, 0, 'key-00', 1, 1, false, 'key-00', 'name 00', 2000, true],
           ],
-            type: 'viewport-update',
-            clientViewportId: 'client-vp-1'
-          },
-        );
+          type: 'viewport-update',
+          clientViewportId: 'client-vp-1'
+        },
+      );
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenNthCalledWith(2,
-          {
-            mode: "update",
-            rows: [
-              [0,0,true,false,0,0,'key-00',0,2,false,'key-00', 'name 00',2000,true],
-              [1,1,true,false,0,0,"key-01",0,2,false,"key-01","name 01",2001,true],
-              [2,2,true,false,0,0,"key-02",0,2,false,"key-02","name 02",2002,true],
-              [3,3,true,false,0,0,"key-03",0,2,false,"key-03","name 03",2003,true],
-              [4,4,true,false,0,0,"key-04",0,2,false,"key-04","name 04",2004,true],
-              [5,5,true,false,0,0,"key-05",0,2,false,"key-05","name 05",2005,true],
-              [6,6,true,false,0,0,"key-06",0,2,false,"key-06","name 06",2006,true],
-              [7,7,true,false,0,0,"key-07",0,2,false,"key-07","name 07",2007,true],
-              [8,8,true,false,0,0,"key-08",0,2,false,"key-08","name 08",2008,true],
-              [9,9,true,false,0,0,"key-09",0,2,false,"key-09","name 09",2009,true]
+        {
+          mode: "update",
+          rows: [
+            [0, 0, true, false, 0, 0, 'key-00', 0, 2, false, 'key-00', 'name 00', 2000, true],
+            [1, 1, true, false, 0, 0, "key-01", 0, 2, false, "key-01", "name 01", 2001, true],
+            [2, 2, true, false, 0, 0, "key-02", 0, 2, false, "key-02", "name 02", 2002, true],
+            [3, 3, true, false, 0, 0, "key-03", 0, 2, false, "key-03", "name 03", 2003, true],
+            [4, 4, true, false, 0, 0, "key-04", 0, 2, false, "key-04", "name 04", 2004, true],
+            [5, 5, true, false, 0, 0, "key-05", 0, 2, false, "key-05", "name 05", 2005, true],
+            [6, 6, true, false, 0, 0, "key-06", 0, 2, false, "key-06", "name 06", 2006, true],
+            [7, 7, true, false, 0, 0, "key-07", 0, 2, false, "key-07", "name 07", 2007, true],
+            [8, 8, true, false, 0, 0, "key-08", 0, 2, false, "key-08", "name 08", 2008, true],
+            [9, 9, true, false, 0, 0, "key-09", 0, 2, false, "key-09", "name 09", 2009, true]
           ],
-            size: 100,
-            type: 'viewport-update',
-            clientViewportId: 'client-vp-2'
-          }
-        );
+          size: 100,
+          type: 'viewport-update',
+          clientViewportId: 'client-vp-2'
+        }
+      );
     });
   });
 
@@ -3462,7 +3462,8 @@ describe("ServerProxy", () => {
           rows: [
             {
               ...COMMON_ROW_ATTRS,
-              data: [], viewPortId: "server-vp-2", vpSize: 100, rowIndex: -1, rowKey: "SIZE", updateType: "SIZE" },
+              data: [], viewPortId: "server-vp-2", vpSize: 100, rowIndex: -1, rowKey: "SIZE", updateType: "SIZE"
+            },
             ...createTableRows("server-vp-1", 0, 10),
           ],
         },
@@ -3635,17 +3636,17 @@ describe("ServerProxy", () => {
         {
           mode: "update",
           rows: [
-            [0,0,true,false,0,0,'key-00',0,1,false,'key-00', 'name 00',1000,true],
-            [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-            [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-            [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-            [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
-            [5,5,true,false,0,0,"key-05",0,1,false,"key-05","name 05",1005,true],
-            [6,6,true,false,0,0,"key-06",0,1,false,"key-06","name 06",1006,true],
-            [7,7,true,false,0,0,"key-07",0,1,false,"key-07","name 07",1007,true],
-            [8,8,true,false,0,0,"key-08",0,1,false,"key-08","name 08",1008,true],
-            [9,9,true,false,0,0,"key-09",0,1,false,"key-09","name 09",1009,true]
-        ],
+            [0, 0, true, false, 0, 0, 'key-00', 0, 1, false, 'key-00', 'name 00', 1000, true],
+            [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+            [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+            [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+            [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
+            [5, 5, true, false, 0, 0, "key-05", 0, 1, false, "key-05", "name 05", 1005, true],
+            [6, 6, true, false, 0, 0, "key-06", 0, 1, false, "key-06", "name 06", 1006, true],
+            [7, 7, true, false, 0, 0, "key-07", 0, 1, false, "key-07", "name 07", 1007, true],
+            [8, 8, true, false, 0, 0, "key-08", 0, 1, false, "key-08", "name 08", 1008, true],
+            [9, 9, true, false, 0, 0, "key-09", 0, 1, false, "key-09", "name 09", 1009, true]
+          ],
           size: 100,
           type: 'viewport-update',
           clientViewportId: 'client-vp-1'
@@ -3656,17 +3657,17 @@ describe("ServerProxy", () => {
         {
           mode: "update",
           rows: [
-            [0,0,true,false,0,0,'key-00',0,1,false,'key-00', 'name 00',1000,true],
-            [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-            [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-            [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-            [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
-            [5,5,true,false,0,0,"key-05",0,1,false,"key-05","name 05",1005,true],
-            [6,6,true,false,0,0,"key-06",0,1,false,"key-06","name 06",1006,true],
-            [7,7,true,false,0,0,"key-07",0,1,false,"key-07","name 07",1007,true],
-            [8,8,true,false,0,0,"key-08",0,1,false,"key-08","name 08",1008,true],
-            [9,9,true,false,0,0,"key-09",0,1,false,"key-09","name 09",1009,true]
-        ],
+            [0, 0, true, false, 0, 0, 'key-00', 0, 1, false, 'key-00', 'name 00', 1000, true],
+            [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+            [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+            [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+            [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
+            [5, 5, true, false, 0, 0, "key-05", 0, 1, false, "key-05", "name 05", 1005, true],
+            [6, 6, true, false, 0, 0, "key-06", 0, 1, false, "key-06", "name 06", 1006, true],
+            [7, 7, true, false, 0, 0, "key-07", 0, 1, false, "key-07", "name 07", 1007, true],
+            [8, 8, true, false, 0, 0, "key-08", 0, 1, false, "key-08", "name 08", 1008, true],
+            [9, 9, true, false, 0, 0, "key-09", 0, 1, false, "key-09", "name 09", 1009, true]
+          ],
           size: 100,
           type: 'viewport-update',
           clientViewportId: 'client-vp-2'
@@ -3703,17 +3704,17 @@ describe("ServerProxy", () => {
         {
           mode: "update",
           rows: [
-            [0,0,true,false,0,0,'key-00',0,1,false,'key-00', 'name 00',1000,true],
-            [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-            [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-            [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-            [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
-            [5,5,true,false,0,0,"key-05",0,1,false,"key-05","name 05",1005,true],
-            [6,6,true,false,0,0,"key-06",0,1,false,"key-06","name 06",1006,true],
-            [7,7,true,false,0,0,"key-07",0,1,false,"key-07","name 07",1007,true],
-            [8,8,true,false,0,0,"key-08",0,1,false,"key-08","name 08",1008,true],
-            [9,9,true,false,0,0,"key-09",0,1,false,"key-09","name 09",1009,true]
-        ],
+            [0, 0, true, false, 0, 0, 'key-00', 0, 1, false, 'key-00', 'name 00', 1000, true],
+            [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+            [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+            [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+            [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
+            [5, 5, true, false, 0, 0, "key-05", 0, 1, false, "key-05", "name 05", 1005, true],
+            [6, 6, true, false, 0, 0, "key-06", 0, 1, false, "key-06", "name 06", 1006, true],
+            [7, 7, true, false, 0, 0, "key-07", 0, 1, false, "key-07", "name 07", 1007, true],
+            [8, 8, true, false, 0, 0, "key-08", 0, 1, false, "key-08", "name 08", 1008, true],
+            [9, 9, true, false, 0, 0, "key-09", 0, 1, false, "key-09", "name 09", 1009, true]
+          ],
           size: 100,
           type: 'viewport-update',
           clientViewportId: 'client-vp-1'
@@ -3724,17 +3725,17 @@ describe("ServerProxy", () => {
         {
           mode: "update",
           rows: [
-            [0,0,true,false,0,0,'key-00',0,1,false,'key-00', 'name 00',1000,true],
-            [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-            [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-            [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-            [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
-            [5,5,true,false,0,0,"key-05",0,1,false,"key-05","name 05",1005,true],
-            [6,6,true,false,0,0,"key-06",0,1,false,"key-06","name 06",1006,true],
-            [7,7,true,false,0,0,"key-07",0,1,false,"key-07","name 07",1007,true],
-            [8,8,true,false,0,0,"key-08",0,1,false,"key-08","name 08",1008,true],
-            [9,9,true,false,0,0,"key-09",0,1,false,"key-09","name 09",1009,true]
-        ],
+            [0, 0, true, false, 0, 0, 'key-00', 0, 1, false, 'key-00', 'name 00', 1000, true],
+            [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+            [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+            [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+            [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
+            [5, 5, true, false, 0, 0, "key-05", 0, 1, false, "key-05", "name 05", 1005, true],
+            [6, 6, true, false, 0, 0, "key-06", 0, 1, false, "key-06", "name 06", 1006, true],
+            [7, 7, true, false, 0, 0, "key-07", 0, 1, false, "key-07", "name 07", 1007, true],
+            [8, 8, true, false, 0, 0, "key-08", 0, 1, false, "key-08", "name 08", 1008, true],
+            [9, 9, true, false, 0, 0, "key-09", 0, 1, false, "key-09", "name 09", 1009, true]
+          ],
           size: 100,
           type: 'viewport-update',
           clientViewportId: 'client-vp-2'
@@ -3794,8 +3795,8 @@ describe("ServerProxy", () => {
         mode: "update",
         clientViewportId: "client-vp-1",
         rows: [
-          [1,1,true,false,0,0,"key-01",0,2,false,"key-01","name 01",2003, true],
-          [3,3,true,false,0,0,"key-03",0,2,false,"key-03","name 03",2003, true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 2, false, "key-01", "name 01", 2003, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 2, false, "key-03", "name 03", 2003, true],
         ],
       });
       // prettier-ignore
@@ -3804,9 +3805,9 @@ describe("ServerProxy", () => {
         mode: "update",
         clientViewportId: "client-vp-2",
         rows: [
-          [3,3,true,false,0,0,"key-03",0,2,false,"key-03","name 03",2003, true],
-          [4,4,true,false,0,0,"key-04",0,2,false,"key-04","name 04",2003, true],
-          [5,5,true,false,0,0,"key-05",0,2,false,"key-05","name 05",2003, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 2, false, "key-03", "name 03", 2003, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 2, false, "key-04", "name 04", 2003, true],
+          [5, 5, true, false, 0, 0, "key-05", 0, 2, false, "key-05", "name 05", 2003, true],
         ],
       });
     });
@@ -3864,8 +3865,8 @@ describe("ServerProxy", () => {
         mode: "update",
         clientViewportId: "client-vp-1",
         rows: [
-          [1,1,true,false,0,0,"key-01",0,2,false,"key-01","name 01",2003, true],
-          [3,3,true,false,0,0,"key-03",0,2,false,"key-03","name 03",2003, true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 2, false, "key-01", "name 01", 2003, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 2, false, "key-03", "name 03", 2003, true],
         ],
         size: 50
       });
@@ -3875,9 +3876,9 @@ describe("ServerProxy", () => {
         mode: "update",
         clientViewportId: "client-vp-2",
         rows: [
-          [3,3,true,false,0,0,"key-03",0,2,false,"key-03","name 03",2003, true],
-          [4,4,true,false,0,0,"key-04",0,2,false,"key-04","name 04",2003, true],
-          [5,5,true,false,0,0,"key-05",0,2,false,"key-05","name 05",2003, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 2, false, "key-03", "name 03", 2003, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 2, false, "key-04", "name 04", 2003, true],
+          [5, 5, true, false, 0, 0, "key-05", 0, 2, false, "key-05", "name 05", 2003, true],
         ],
         size: undefined
       });
@@ -3906,8 +3907,8 @@ describe("ServerProxy", () => {
         mode: "update",
         clientViewportId: "client-vp-1",
         rows: [
-          [1,1,true,false,0,0,"key-01",0,2,false,"key-01","name 01",2004, true],
-          [3,3,true,false,0,0,"key-03",0,2,false,"key-03","name 03",2004, true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 2, false, "key-01", "name 01", 2004, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 2, false, "key-03", "name 03", 2004, true],
         ],
         size: undefined
       });
@@ -3917,9 +3918,9 @@ describe("ServerProxy", () => {
         mode: "update",
         clientViewportId: "client-vp-2",
         rows: [
-          [3,3,true,false,0,0,"key-03",0,2,false,"key-03","name 03",2004, true],
-          [4,4,true,false,0,0,"key-04",0,2,false,"key-04","name 04",2004, true],
-          [5,5,true,false,0,0,"key-05",0,2,false,"key-05","name 05",2004, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 2, false, "key-03", "name 03", 2004, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 2, false, "key-04", "name 04", 2004, true],
+          [5, 5, true, false, 0, 0, "key-05", 0, 2, false, "key-05", "name 05", 2004, true],
         ],
         size: 75
       });
@@ -3967,37 +3968,39 @@ describe("ServerProxy", () => {
       });
       //prettier-ignore
       expect(postMessageToClient).toHaveBeenNthCalledWith(1,
-        { 
-          clientViewportId: "client-vp-1", 
-          mode: "update", 
+        {
+          clientViewportId: "client-vp-1",
+          mode: "update",
           rows: [
-          [0,0,true,false,0,0,"key-00",0,2,false,"key-00","name 00",0,true],
-          [2,2,true,false,0,0,"key-02",0,2,false,"key-02","name 02",2,true],
-          [5,5,true,false,0,0,"key-05",0,2,false,"key-05","name 05",5,true],
-          [6,6,true,false,0,0,"key-06",0,2,false,"key-06","name 06",6,true],
-          [8,8,true,false,0,0,"key-08",0,2,false,"key-08","name 08",8,true],
-        ], 
-        size: 99,
-        type: 'viewport-update'
+            [0, 0, true, false, 0, 0, "key-00", 0, 2, false, "key-00", "name 00", 0, true],
+            [2, 2, true, false, 0, 0, "key-02", 0, 2, false, "key-02", "name 02", 2, true],
+            [5, 5, true, false, 0, 0, "key-05", 0, 2, false, "key-05", "name 05", 5, true],
+            [6, 6, true, false, 0, 0, "key-06", 0, 2, false, "key-06", "name 06", 6, true],
+            [8, 8, true, false, 0, 0, "key-08", 0, 2, false, "key-08", "name 08", 8, true],
+          ],
+          size: 99,
+          type: 'viewport-update'
         });
 
       //prettier-ignore
       expect(postMessageToClient).toHaveBeenNthCalledWith(2,
-        { clientViewportId: "client-vp-1", mode: "update", rows: [
-          [1,1,true,false,0,0,"key-01",0,2,false,"key-01","name 01",1,true],
-          [3,3,true,false,0,0,"key-03",0,2,false,"key-03","name 03",3,true],
-          [7,7,true,false,0,0,"key-07",0,2,false,"key-07","name 07",7,true],
-        ],
-        type: 'viewport-update'
+        {
+          clientViewportId: "client-vp-1", mode: "update", rows: [
+            [1, 1, true, false, 0, 0, "key-01", 0, 2, false, "key-01", "name 01", 1, true],
+            [3, 3, true, false, 0, 0, "key-03", 0, 2, false, "key-03", "name 03", 3, true],
+            [7, 7, true, false, 0, 0, "key-07", 0, 2, false, "key-07", "name 07", 7, true],
+          ],
+          type: 'viewport-update'
         });
 
       //prettier-ignore
       expect(postMessageToClient).toHaveBeenNthCalledWith(3,
-        { clientViewportId: "client-vp-1", mode: "update", rows: [
-          [4,4,true,false,0,0,"key-04",0,2,false,"key-04","name 04",4,true],
-          [9,9,true,false,0,0,"key-09",0,2,false,"key-09","name 09",9,true],
-        ],
-        type: 'viewport-update'
+        {
+          clientViewportId: "client-vp-1", mode: "update", rows: [
+            [4, 4, true, false, 0, 0, "key-04", 0, 2, false, "key-04", "name 04", 4, true],
+            [9, 9, true, false, 0, 0, "key-09", 0, 2, false, "key-09", "name 09", 9, true],
+          ],
+          type: 'viewport-update'
         });
 
       serverProxy.handleMessageFromClient({
@@ -4114,23 +4117,23 @@ describe("ServerProxy", () => {
 
       //prettier-ignore
       expect(postMessageToClient).toHaveBeenNthCalledWith(1,
-        { 
-          clientViewportId: "client-vp-1", 
-          mode: "update", 
+        {
+          clientViewportId: "client-vp-1",
+          mode: "update",
           rows: [
-          [0,0,true,false,0,0,"key-00",0,2,false,"key-00","name 00",0,true],
-          [1,1,true,false,0,0,"key-01",0,2,false,"key-01","name 01",1,true],
-          [2,2,true,false,0,0,"key-02",0,2,false,"key-02","name 02",2,true],
-          [3,3,true,false,0,0,"key-03",0,2,false,"key-03","name 03",3,true],
-          [4,4,true,false,0,0,"key-04",0,2,false,"key-04","name 04",4,true],
-          [5,5,true,false,0,0,"key-05",0,2,false,"key-05","name 05",5,true],
-          [6,6,true,false,0,0,"key-06",0,2,false,"key-06","name 06",6,true],
-          [7,7,true,false,0,0,"key-07",0,2,false,"key-07","name 07",7,true],
-          [8,8,true,false,0,0,"key-08",0,2,false,"key-08","name 08",8,true],
-          [9,9,true,false,0,0,"key-09",0,2,false,"key-09","name 09",9,true],
-        ], 
-        size: 99,
-        type: 'viewport-update'
+            [0, 0, true, false, 0, 0, "key-00", 0, 2, false, "key-00", "name 00", 0, true],
+            [1, 1, true, false, 0, 0, "key-01", 0, 2, false, "key-01", "name 01", 1, true],
+            [2, 2, true, false, 0, 0, "key-02", 0, 2, false, "key-02", "name 02", 2, true],
+            [3, 3, true, false, 0, 0, "key-03", 0, 2, false, "key-03", "name 03", 3, true],
+            [4, 4, true, false, 0, 0, "key-04", 0, 2, false, "key-04", "name 04", 4, true],
+            [5, 5, true, false, 0, 0, "key-05", 0, 2, false, "key-05", "name 05", 5, true],
+            [6, 6, true, false, 0, 0, "key-06", 0, 2, false, "key-06", "name 06", 6, true],
+            [7, 7, true, false, 0, 0, "key-07", 0, 2, false, "key-07", "name 07", 7, true],
+            [8, 8, true, false, 0, 0, "key-08", 0, 2, false, "key-08", "name 08", 8, true],
+            [9, 9, true, false, 0, 0, "key-09", 0, 2, false, "key-09", "name 09", 9, true],
+          ],
+          size: 99,
+          type: 'viewport-update'
 
         });
 
@@ -4179,14 +4182,14 @@ describe("ServerProxy", () => {
 
       //prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith(
-        { 
-          clientViewportId: "client-vp-1", 
-          mode: "update", 
+        {
+          clientViewportId: "client-vp-1",
+          mode: "update",
           rows: [
-          [0,0,true,false,0,0,"key-00",0,2,false,"key-00","name 00",10_000,true],
-        ], 
-        size: 1,
-        type: 'viewport-update'
+            [0, 0, true, false, 0, 0, "key-00", 0, 2, false, "key-00", "name 00", 10_000, true],
+          ],
+          size: 1,
+          type: 'viewport-update'
         });
     });
   });
@@ -4318,20 +4321,20 @@ describe("ServerProxy", () => {
       >(2, {
         mode: "update",
         rows: [
-          [0,0,true,false,0,0,'key-00',0,1,false,'key-00', 'name 00',1000,true],
-          [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-          [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-          [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-          [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
-          [5,5,true,false,0,0,"key-05",0,1,false,"key-05","name 05",1005,true],
-          [6,6,true,false,0,0,"key-06",0,1,false,"key-06","name 06",1006,true],
-          [7,7,true,false,0,0,"key-07",0,1,false,"key-07","name 07",1007,true],
-          [8,8,true,false,0,0,"key-08",0,1,false,"key-08","name 08",1008,true],
-          [9,9,true,false,0,0,"key-09",0,1,false,"key-09","name 09",1009,true]
-      ],
-      size: 100,
-      type: 'viewport-update',
-      clientViewportId: 'client-vp-1'
+          [0, 0, true, false, 0, 0, 'key-00', 0, 1, false, 'key-00', 'name 00', 1000, true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+          [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
+          [5, 5, true, false, 0, 0, "key-05", 0, 1, false, "key-05", "name 05", 1005, true],
+          [6, 6, true, false, 0, 0, "key-06", 0, 1, false, "key-06", "name 06", 1006, true],
+          [7, 7, true, false, 0, 0, "key-07", 0, 1, false, "key-07", "name 07", 1007, true],
+          [8, 8, true, false, 0, 0, "key-08", 0, 1, false, "key-08", "name 08", 1008, true],
+          [9, 9, true, false, 0, 0, "key-09", 0, 1, false, "key-09", "name 09", 1009, true]
+        ],
+        size: 100,
+        type: 'viewport-update',
+        clientViewportId: 'client-vp-1'
       });
     });
 
@@ -4460,7 +4463,7 @@ describe("ServerProxy", () => {
       postMessageToClient.mockClear();
       TEST_setRequestId(1);
       // prettier-ignore
-      serverProxy.handleMessageFromClient({type: "disable", viewport: "client-vp-1" });
+      serverProxy.handleMessageFromClient({ type: "disable", viewport: "client-vp-1" });
       serverProxy.handleMessageFromServer({
         ...COMMON_ATTRS,
         requestId: "1",
@@ -4486,16 +4489,16 @@ describe("ServerProxy", () => {
         mode: "update",
         // prettier-ignore
         rows: [
-          [0,0,true,false,0,0,'key-00',0,1,false,'key-00', 'name 00',1000,true],
-          [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-          [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-          [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-          [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
-          [5,5,true,false,0,0,"key-05",0,1,false,"key-05","name 05",1005,true],
-          [6,6,true,false,0,0,"key-06",0,1,false,"key-06","name 06",1006,true],
-          [7,7,true,false,0,0,"key-07",0,1,false,"key-07","name 07",1007,true],
-          [8,8,true,false,0,0,"key-08",0,1,false,"key-08","name 08",1008,true],
-          [9,9,true,false,0,0,"key-09",0,1,false,"key-09","name 09",1009,true]
+          [0, 0, true, false, 0, 0, 'key-00', 0, 1, false, 'key-00', 'name 00', 1000, true],
+          [1, 1, true, false, 0, 0, "key-01", 0, 1, false, "key-01", "name 01", 1001, true],
+          [2, 2, true, false, 0, 0, "key-02", 0, 1, false, "key-02", "name 02", 1002, true],
+          [3, 3, true, false, 0, 0, "key-03", 0, 1, false, "key-03", "name 03", 1003, true],
+          [4, 4, true, false, 0, 0, "key-04", 0, 1, false, "key-04", "name 04", 1004, true],
+          [5, 5, true, false, 0, 0, "key-05", 0, 1, false, "key-05", "name 05", 1005, true],
+          [6, 6, true, false, 0, 0, "key-06", 0, 1, false, "key-06", "name 06", 1006, true],
+          [7, 7, true, false, 0, 0, "key-07", 0, 1, false, "key-07", "name 07", 1007, true],
+          [8, 8, true, false, 0, 0, "key-08", 0, 1, false, "key-08", "name 08", 1008, true],
+          [9, 9, true, false, 0, 0, "key-09", 0, 1, false, "key-09", "name 09", 1009, true]
         ],
         size: 100,
         type: "viewport-update",

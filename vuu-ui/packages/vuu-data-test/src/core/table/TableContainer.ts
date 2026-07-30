@@ -4,6 +4,11 @@ import { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { ColumnMap } from "@vuu-ui/vuu-utils";
 import { UpdateGenerator } from "../../rowUpdates";
 
+const DEFAULT_RANGE_LIMITS = {
+  maxRangeEnd: 1_000_000,
+  maxRangeWidth: 1_000,
+};
+
 class TableContainer {
   private constructor() {
     //  empty constructor is all we need
@@ -57,6 +62,7 @@ class TableContainer {
     const combinedSchema: TableSchema = {
       key: joinColumn,
       table: joinTable,
+      rangeLimits: DEFAULT_RANGE_LIMITS,
       columns: Array.from(combinedColumns).map<SchemaColumn>((columnName) => ({
         name: columnName,
         serverDataType: getServerDataType(columnName, schema1, schema2),

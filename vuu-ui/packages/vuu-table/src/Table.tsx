@@ -44,6 +44,7 @@ import {
 import { Row as DefaultRow } from "./Row";
 import { TableCellBlock } from "./cell-block/cellblock-utils";
 import { PaginationControl } from "./pagination";
+import { ScrollLimitNotice } from "./scroll-limit-notice";
 import { TableHeader } from "./table-header";
 import { useMeasuredHeight } from "./useMeasuredHeight";
 import { useTable } from "./useTable";
@@ -384,8 +385,8 @@ const TableCore = ({
     headerState: { height: headerHeight, count: headerCount },
     headings,
     highlightedIndex,
+    maxRangeEnd,
     onCheckBoxColumnHeaderClick,
-    // onDataEdited,
     onHeaderHeightMeasured,
     onMoveColumn,
     onMoveGroupColumn,
@@ -395,6 +396,7 @@ const TableCore = ({
     onSortColumn,
     onToggleGroup,
     rowClassNameGenerator,
+    scrollLimitInEffect,
     scrollProps,
     tableAttributes,
     tableBodyRef,
@@ -523,7 +525,18 @@ const TableCore = ({
             />
           ) : null}
           {readyToRenderTableBody ? (
-            <div className={`${classBase}-body`} ref={tableBodyRef}>
+            <div
+              className={cx(`${classBase}-body`, {
+                [`${classBase}-scrollLimitInEffect`]: scrollLimitInEffect,
+              })}
+              ref={tableBodyRef}
+            >
+              {scrollLimitInEffect ? (
+                <ScrollLimitNotice
+                  maxScrollEnd={maxRangeEnd}
+                  rowCount={dataSource.size}
+                />
+              ) : null}
               {dataRows.map((dataRow) => {
                 const ariaRowIndex = dataRow.index + headerCount + 1;
                 return (
@@ -567,7 +580,6 @@ const TableCore = ({
                 ref={focusCellPlaceholderRef}
                 tabIndex={-1}
               />
-
               {cellBlock}
             </div>
           ) : null}
@@ -744,8 +756,8 @@ export const Table = forwardRef(function Table(
     >
       <RowProxy ref={rowRef} height={rowHeightProp} />
       {size &&
-      rowHeight &&
-      (footerHeight || showPaginationControls !== true) ? (
+        rowHeight &&
+        (footerHeight || showPaginationControls !== true) ? (
         <TableCore
           EmptyDisplay={EmptyDisplay}
           HeaderCell={HeaderCell}

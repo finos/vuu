@@ -4,6 +4,7 @@ import type {
   DataSourceSubscribeCallback,
   DataSourceSubscribedMessage,
   DataSourceSuspenseProps,
+  RangeLimits,
   SchemaColumn,
 } from "@vuu-ui/vuu-data-types";
 import { SelectRowRequest, VuuRange } from "@vuu-ui/vuu-protocol-types";
@@ -19,6 +20,10 @@ import { dataRowFactory, DataRowFunc } from "../data-row/DataRow";
 
 const NullDataRow = () => ({}) as DataRow;
 
+const defaultRangeLimits = {
+  maxRangeEnd: Number.MAX_SAFE_INTEGER,
+  maxRangeWidth: Number.MAX_SAFE_INTEGER
+}
 export interface DataSourceHookProps
   extends Pick<
     TableProps,
@@ -31,7 +36,16 @@ export interface DataSourceHookProps
   > {
   suspenseProps?: DataSourceSuspenseProps;
   onSelect: TableRowSelectHandlerInternal;
-  onSizeChange: (size: number) => void;
+  /**
+   * Invoked whenever rowCount changes. For example when rows are added
+   * or removed from source table. RowCount will also change if filter(s) 
+   * or grouping are applied.
+   *  
+   * @param size - the rowCount for current dataSource (reflecting filtering etc).
+   * @param maxRangeEnd - a scroll limit that may be imposed by server. Requesting 
+   * a range beyond this point will error.
+   */
+  onSizeChange: (size: number, maxRangeEnd: number) => void;
   onSubscribed: (subscription: DataSourceSubscribedMessage) => void;
 }
 
@@ -57,6 +71,7 @@ export const useDataSource = ({
     undefined,
   );
   const totalRowCountRef = useRef(0);
+  const rangeLimitsRef = useRef<RangeLimits>(defaultRangeLimits)
   const rowAutoSelected = useRef(false);
 
   const autoSelect =
@@ -135,6 +150,11 @@ export const useDataSource = ({
     [dataSource, onSelect],
   );
 
+  /**
+   * Use the dataRowFactory to build a custom DataRow. It will use
+   * the schema columns to correctly interpret data values from the 
+   * underlying Vuu array row structure. 
+   */
   const createDataRow = useCallback(
     (columns: string[], schemaColumns: readonly SchemaColumn[]) => {
       const [DataRow, setColumns] = dataRowFactory(columns, schemaColumns);
@@ -148,12 +168,15 @@ export const useDataSource = ({
     (message) => {
       if (message.type === "subscribed") {
         createDataRow(message.columns, message.tableSchema.columns);
+        if (message.tableSchema.rangeLimits) {
+          rangeLimitsRef.current = message.tableSchema.rangeLimits;
+        }
         onSubscribed?.(message);
       } else if (message.type === "subscribe-failed") {
         console.warn(`subscribe failed ${message.msg}`);
       } else if (message.type === "viewport-update") {
         if (typeof message.size === "number") {
-          onSizeChange?.(message.size);
+          onSizeChange?.(message.size, rangeLimitsRef.current.maxRangeEnd);
           // const size = dataRowWindow.data.length;
           dataRowWindow.setRowCount(message.size);
           totalRowCountRef.current = message.size;
@@ -183,7 +206,7 @@ export const useDataSource = ({
           hasUpdated.current = true;
         }
       } else if (message.type === "viewport-clear") {
-        onSizeChange?.(0);
+        onSizeChange?.(0, rangeLimitsRef.current.maxRangeEnd);
         dataRowWindow.setRowCount(0);
         setData([]);
         forceUpdate({});

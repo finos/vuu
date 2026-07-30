@@ -4,12 +4,19 @@ import { buildFileList } from "./build-file-list.ts";
 import fs from "fs";
 import path from "path";
 import { treeSourceFromFileSystem } from "./treeSourceFromFileSystem";
+import type { Plugin, PluginBuild, OnLoadArgs } from "esbuild";
 import mdx from "@mdx-js/esbuild";
 import handler from "serve-handler";
 import http from "http";
+import https from "https";
 import open from "open";
 import { fileURLToPath } from "url";
 import { TreeSourceNode } from "@vuu-ui/vuu-utils";
+
+type ProxyRoute = {
+  url: string;
+  remoteUrl: string;
+};
 
 const pathToSrc = "./src/examples";
 
@@ -26,21 +33,25 @@ const showcaseIndex = path.join(currentDir, "../src/root.ts");
 
 const outdir = ".showcase/prod";
 
+const proxyRoutes: ProxyRoute[] = [
+  { url: "/api/authn", remoteUrl: "https://localhost:8443/api/authn" },
+];
+
 const entryPoints = [showcaseIndex]
   .concat(examples)
   .concat(features)
   .concat(mdxFiles)
   .concat(themes);
 
-const cssInlinePlugin = {
+const cssInlinePlugin: Plugin = {
   name: "CssInline",
-  setup(build) {
+  setup(build: PluginBuild) {
     build.onLoad(
       {
         filter:
           /packages\/(vuu|grid)-(chart|context-menu|datatable|filters|layout|popups|shell|table-extras|ui-controls|table)\/.*.css$/,
       },
-      async (args) => {
+      async (args: OnLoadArgs) => {
         const css = await fs.promises.readFile(args.path, "utf8");
         // css = await esbuild.transform(css, { loader: "css", minify: true });
         return { loader: "text", contents: css };
@@ -118,8 +129,12 @@ async function main() {
   console.log({ routingPattern });
 
   const server = http.createServer((request, response) => {
+    if (forwardProxyRequest(request, response, proxyRoutes)) {
+      return;
+    }
+
     // You pass two more arguments for config and middleware
-    // More details here: https://github.com/vercel/serve-handler#options
+    // More details here:
     return handler(request, response, {
       public: outdir,
       rewrites: [
@@ -162,4 +177,70 @@ main();
 
 function joinRootPaths(treeNodes: TreeSourceNode[]) {
   return treeNodes.map(({ id }) => id).join("|");
+}
+
+function forwardProxyRequest(
+  request: http.IncomingMessage,
+  response: http.ServerResponse,
+  routes: ProxyRoute[],
+): boolean {
+  const requestUrl = request.url;
+  if (!requestUrl) {
+    return false;
+  }
+
+  const currentUrl = new URL(requestUrl, "http://localhost");
+  const matchedRoute = routes.find(({ url }) => currentUrl.pathname.startsWith(url));
+  if (!matchedRoute) {
+    return false;
+  }
+
+  const remote = new URL(matchedRoute.remoteUrl);
+  const suffixPath = currentUrl.pathname.slice(matchedRoute.url.length);
+  const targetPath = `${joinUrlPaths(remote.pathname, suffixPath)}${currentUrl.search}`;
+  const requestModule = remote.protocol === "http:" ? http : https;
+
+  const proxyRequest = requestModule.request(
+    {
+      protocol: remote.protocol,
+      hostname: remote.hostname,
+      port: remote.port ? Number(remote.port) : undefined,
+      path: targetPath,
+      method: request.method,
+      headers: {
+        ...request.headers,
+        host: remote.host,
+      },
+      // Local auth services often use self-signed certs.
+      ...(remote.protocol === "https:" ? { rejectUnauthorized: false } : {}),
+    },
+    (proxyResponse) => {
+      response.writeHead(proxyResponse.statusCode ?? 502, proxyResponse.headers);
+      proxyResponse.pipe(response);
+    },
+  );
+
+  proxyRequest.on("error", (error) => {
+    console.error(`Proxy ${matchedRoute.url} failed`, error);
+    if (!response.headersSent) {
+      response.writeHead(502, { "content-type": "text/plain" });
+    }
+    response.end("Bad Gateway");
+  });
+
+  request.pipe(proxyRequest);
+  return true;
+}
+
+function joinUrlPaths(basePath: string, suffixPath: string) {
+  if (!suffixPath) {
+    return basePath;
+  }
+  if (basePath.endsWith("/") && suffixPath.startsWith("/")) {
+    return `${basePath.slice(0, -1)}${suffixPath}`;
+  }
+  if (!basePath.endsWith("/") && !suffixPath.startsWith("/")) {
+    return `${basePath}/${suffixPath}`;
+  }
+  return `${basePath}${suffixPath}`;
 }

@@ -1,6 +1,11 @@
 import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 
+const DEFAULT_RANGE_LIMITS = {
+  maxRangeEnd: 1_000_000,
+  maxRangeWidth: 1_000,
+};
+
 export type BasketsTableName =
   | "algoType"
   | "basket"
@@ -19,6 +24,7 @@ export const schemas: Readonly<
       { name: "id", serverDataType: "int" },
     ],
     key: "id",
+    rangeLimits: DEFAULT_RANGE_LIMITS,
     table: { module: "BASKET", table: "algoType" },
   },
   basket: {
@@ -29,6 +35,7 @@ export const schemas: Readonly<
       { name: "notionalValueUsd", serverDataType: "double" },
     ],
     key: "id",
+    rangeLimits: DEFAULT_RANGE_LIMITS,
     table: { module: "BASKET", table: "basket" },
   },
   basketConstituent: {
@@ -44,6 +51,7 @@ export const schemas: Readonly<
       { name: "weighting", serverDataType: "double" },
     ],
     key: "ricBasketId",
+    rangeLimits: DEFAULT_RANGE_LIMITS,
     table: { module: "BASKET", table: "basketConstituent" },
   },
   basketTrading: {
@@ -60,6 +68,7 @@ export const schemas: Readonly<
       { name: "units", serverDataType: "int" },
     ],
     key: "instanceId",
+    rangeLimits: DEFAULT_RANGE_LIMITS,
     table: { module: "BASKET", table: "basketTrading" },
   },
   basketTradingConstituent: {
@@ -84,6 +93,7 @@ export const schemas: Readonly<
       { name: "weighting", serverDataType: "double" },
     ],
     key: "instanceIdRic",
+    rangeLimits: DEFAULT_RANGE_LIMITS,
     table: { module: "BASKET", table: "basketTradingConstituent" },
   },
 
@@ -118,6 +128,7 @@ export const schemas: Readonly<
       { name: "weighting", serverDataType: "double" },
     ],
     key: "instanceIdRic",
+    rangeLimits: DEFAULT_RANGE_LIMITS,
     table: { module: "BASKET", table: "basketTradingConstituentJoin" },
   },
   priceStrategyType: {
@@ -126,6 +137,7 @@ export const schemas: Readonly<
       { name: "id", serverDataType: "int" },
     ],
     key: "",
+    rangeLimits: DEFAULT_RANGE_LIMITS,
     table: { module: "BASKET", table: "priceStrategyType" },
   },
 };
