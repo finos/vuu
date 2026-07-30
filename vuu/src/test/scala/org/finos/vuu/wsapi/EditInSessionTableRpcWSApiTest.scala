@@ -381,11 +381,11 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
 
 class TestHandler(implicit tableContainer: TableContainer) extends EndEditSessionRpcHandler with StrictLogging {
 
-  override def verifyPermission(params: RpcParams): Boolean = ???
+  override protected def verifyPermission(params: RpcParams): Boolean = ???
 
-  override def validateData(params: RpcParams): Boolean = ???
+  override protected def validateData(params: RpcParams): Boolean = ???
 
-  override def submit(params: RpcParams): Boolean = ???
+  override protected def submit(params: RpcParams): Boolean = ???
 }
 
 private object AllDisabledRpcPermissionChecker extends RpcPermissionChecker {
