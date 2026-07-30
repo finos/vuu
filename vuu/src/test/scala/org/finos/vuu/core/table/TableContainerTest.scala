@@ -5,6 +5,7 @@ import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.{Indices, SessionTableDef, TableDef, VisualLinks}
 import org.finos.vuu.core.module.ViewServerModule
 import org.finos.vuu.core.table.TableMockFactory.{createMockSessionTable, createMockTable}
+import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 import org.finos.vuu.viewport.ViewPortTable
 import org.scalamock.scalatest.MockFactory
@@ -19,7 +20,8 @@ class TableContainerTest extends AnyFeatureSpec with Matchers with BeforeAndAfte
   private var tableContainer: TableContainer = _
 
   private final val sessionTableBlueprint = createMockTable(tableName = "blueprint", tableDefName = "blueprint-def", sessionDef = true)
-  private final val sessionTable = createMockSessionTable(tableName = "session", tableDefName = "session-def")
+  private final val sessionId = ClientSessionId("123", "456")
+  private final val sessionTable = createMockSessionTable(tableName = "session", tableDefName = "session-def", sessionId = sessionId)
   private final val dataTable = createMockTable(tableName = "datatable", tableDefName = "datatable-def", moduleName = Option("z-module"))
   private final val dataTable2 = createMockTable(tableName = "datatable-2", tableDefName = "datatable-2-def", moduleName = Option("a-module"))
 
@@ -77,6 +79,31 @@ class TableContainerTest extends AnyFeatureSpec with Matchers with BeforeAndAfte
     }
   }
 
+  Feature("removeSessionTable") {
+    Scenario("Remove session table") {
+      tableContainer.addTable(dataTable)
+      tableContainer.addTable(sessionTable)
+      tableContainer.addTable(sessionTableBlueprint)
+
+      tableContainer.removeSessionTable(sessionId, sessionTable.name)
+      tableContainer.getDefinedTables shouldEqual Array(
+        ViewPortTable(sessionTableBlueprint.getTableDef.name, "null"),
+        ViewPortTable(dataTable.getTableDef.name, "z-module"),
+      )
+    }
+
+    Scenario("Remove session table does not remove non-session table") {
+      tableContainer.addTable(dataTable)
+      tableContainer.addTable(sessionTableBlueprint)
+
+      tableContainer.removeSessionTable(sessionId, dataTable.name)
+      tableContainer.getDefinedTables shouldEqual Array(
+        ViewPortTable(sessionTableBlueprint.getTableDef.name, "null"),
+        ViewPortTable(dataTable.getTableDef.name, "z-module"),
+      )
+    }
+  }
+
 }
 
 object TableMockFactory extends AnyFlatSpec with MockFactory {
@@ -85,7 +112,7 @@ object TableMockFactory extends AnyFlatSpec with MockFactory {
       new SessionTableDef(name, "id", Array.empty)
     } else {
       new TableDef(name, "id", Array.empty)
-    } 
+    }
 
     if (moduleName.nonEmpty) {
       val module = stub[ViewServerModule]
@@ -96,10 +123,11 @@ object TableMockFactory extends AnyFlatSpec with MockFactory {
     tableDef
   }
 
-  def createMockSessionTable(tableName: String, tableDefName: String): SessionTable = {
+  def createMockSessionTable(tableName: String, tableDefName: String, sessionId: ClientSessionId): SessionTable = {
     val table = stub[SessionTable]
     (() => table.name).when().returns(tableName)
     (() => table.getTableDef).when().returns(createTestTableDef(tableDefName, isSessionDef = true))
+    (() => table.sessionId).when().returns(sessionId)
     table
   }
 
