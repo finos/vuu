@@ -18,7 +18,6 @@ class ClickHouseRowDataProvider(client: ClickHouseClient,
                       offset: Int,
                       limit: Int): IndexedSeq[RowWithData] = {
 
-
     val query = buildQuery(viewPortColumns, whereClause, orderBy, offset, limit)
     val remoteKeyField = tableDef.getRemoteKeyField
     val remoteColumns = tableDef.getRemoteColumns

@@ -21,7 +21,7 @@ class ClickHouseClient(val options: ClickHouseClientOptions)
     client match {
       case Some(c) =>
         val response = try {
-          logger.trace(s"Executing query \"$sql\"")
+          logger.debug(s"Executing query \"$sql\"")
           c.queryRecords(sql).get()
         } catch {
           case e: ExecutionException =>
@@ -44,7 +44,7 @@ class ClickHouseClient(val options: ClickHouseClientOptions)
     client match {
       case Some(c) =>
         val response = try {
-          logger.trace(s"Executing update \"$sql\"")
+          logger.debug(s"Executing update \"$sql\"")
           c.query(sql).get()
         } catch {
           case e: ExecutionException =>
