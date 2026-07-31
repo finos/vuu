@@ -4,11 +4,9 @@ import org.finos.vuu.grammar.FilterBaseVisitor
 import org.finos.vuu.grammar.FilterParser.*
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumn
 
-class ClickHouseFilterVisitor(columns: List[VirtualizedSessionTableColumn]) extends FilterBaseVisitor[Unit] {
+class ClickHouseFilterVisitor(remoteNameMapping: Map[String, String]) extends FilterBaseVisitor[Unit] {
 
   private val sb = new java.lang.StringBuilder(256)
-  private lazy val remoteMapping: Map[String, String] =
-    columns.map(f => f.name -> f.remoteName).toMap
 
   def getBuffer: java.lang.StringBuilder = sb
 
@@ -98,7 +96,7 @@ class ClickHouseFilterVisitor(columns: List[VirtualizedSessionTableColumn]) exte
   // ------------------------------------------------------------
 
   private def getRemoteId(id: String): String = {
-    remoteMapping.getOrElse(id,
+    remoteNameMapping.getOrElse(id,
       throw new IllegalArgumentException(s"Mapping missing for filter column: '$id'"))
   }
 
