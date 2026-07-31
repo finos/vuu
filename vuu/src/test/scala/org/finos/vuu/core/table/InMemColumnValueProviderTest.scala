@@ -29,7 +29,7 @@ class InMemColumnValueProviderTest extends AnyFeatureSpec with Matchers {
 
       val uniqueValues = columnValueProvider.getUniqueValuesVPColumn("ric", viewPort)
 
-      uniqueValues should contain theSameElementsAs Vector("BT.L", "VOD.L")
+      uniqueValues shouldEqual Array("BT.L", "VOD.L")
     }
 
     Scenario("Get all unique value of a given column filtering out null") {
@@ -42,7 +42,7 @@ class InMemColumnValueProviderTest extends AnyFeatureSpec with Matchers {
 
       val uniqueValues = columnValueProvider.getUniqueValuesVPColumn("ric", viewPort)
 
-      uniqueValues should contain theSameElementsAs Vector("VOD.L")
+      uniqueValues shouldEqual Array("VOD.L")
     }
 
     Scenario("Get all unique value of a given column returns empty when all values are null") {
@@ -68,7 +68,7 @@ class InMemColumnValueProviderTest extends AnyFeatureSpec with Matchers {
 
       val uniqueValues = columnValueProvider.getUniqueValuesVPColumn("pies", viewPort)
 
-      uniqueValues.length shouldBe 0
+      uniqueValues shouldBe empty
     }
 
     Scenario("Get all unique values should return empty on non string column types") {
@@ -82,7 +82,7 @@ class InMemColumnValueProviderTest extends AnyFeatureSpec with Matchers {
 
       val uniqueValues = columnValueProvider.getUniqueValuesVPColumn("bid", viewPort)
 
-      uniqueValues.length shouldBe 0
+      uniqueValues shouldBe empty
     }
 
     Scenario("Get all unique value of a given column that starts with specified string") {
@@ -96,7 +96,7 @@ class InMemColumnValueProviderTest extends AnyFeatureSpec with Matchers {
 
       val uniqueValues = columnValueProvider.getUniqueValuesStartingWithVPColumn("ric", "VO", viewPort)
 
-      uniqueValues should contain theSameElementsAs Vector("VOA.L", "VOV.L")
+      uniqueValues shouldEqual Array("VOA.L", "VOV.L")
     }
 
     Scenario("Get all unique value of a given column that starts with specified string case insensitive") {
@@ -110,7 +110,7 @@ class InMemColumnValueProviderTest extends AnyFeatureSpec with Matchers {
 
       val uniqueValues = columnValueProvider.getUniqueValuesStartingWithVPColumn("ric", "vo", viewPort)
 
-      uniqueValues should contain theSameElementsAs Vector("VOA.L", "VOV.L")
+      uniqueValues shouldEqual Array("VOA.L", "VOV.L")
     }
 
     Scenario("Get all unique value of a given column that starts with specified string should return empty for unknown columns") {
@@ -124,7 +124,7 @@ class InMemColumnValueProviderTest extends AnyFeatureSpec with Matchers {
 
       val uniqueValues = columnValueProvider.getUniqueValuesStartingWithVPColumn("cakes", "", viewPort)
 
-      uniqueValues.length shouldBe 0
+      uniqueValues shouldBe empty
     }
 
     Scenario("Get all unique value of a given column that starts with specified string should return empty on non string column types") {
@@ -138,7 +138,7 @@ class InMemColumnValueProviderTest extends AnyFeatureSpec with Matchers {
 
       val uniqueValues = columnValueProvider.getUniqueValuesStartingWithVPColumn("bid", "240", viewPort)
 
-      uniqueValues.length shouldBe 0
+      uniqueValues shouldBe empty
     }
 
   }
