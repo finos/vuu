@@ -6,11 +6,10 @@ import org.finos.toolbox.time.Clock
 import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.example.virtualtable.bigdatacache.FakeBigDataCache
-import org.finos.vuu.feature.ViewPortKeys
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
-import org.finos.vuu.viewport.{ViewPort, ViewPortColumns}
+import org.finos.vuu.viewport.ViewPort
 
 class ReallyBigVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef)(implicit clock: Clock) extends VirtualizedProvider with StrictLogging {
 
@@ -76,11 +75,7 @@ class ReallyBigVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef)(imp
 
   override val lifecycleId: String = "org.finos.vuu.example.virtualtable.provider.ReallyBigVirtualizedDataProvider"
 
-  override def getUniqueValues(columnName: String): Array[String] = ???
+  override def getUniqueValuesVPColumn(columnName: String, viewPort: ViewPort): Array[String] = Array.empty
 
-  override def getUniqueValuesStartingWith(columnName: String, starts: String): Array[String] = ???
-
-  override def getUniqueValuesVPColumn(columnName: String, viewPortColumns: ViewPortColumns, vpKeys: ViewPortKeys): Array[String] = ???
-
-  override def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPortColumns: ViewPortColumns, vpKeys: ViewPortKeys): Array[String] = ???
+  override def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPort: ViewPort): Array[String] = Array.empty
 }

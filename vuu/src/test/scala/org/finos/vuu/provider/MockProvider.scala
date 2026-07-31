@@ -1,8 +1,8 @@
 package org.finos.vuu.provider
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.vuu.core.table.{DataTable, RowWithData}
 
 import java.util.concurrent.ConcurrentHashMap
 
