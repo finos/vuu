@@ -4,65 +4,39 @@ import com.dimafeng.testcontainers.ForAllTestContainer
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.plugin.clickhouse.ClickHouseContainer
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.clickhouse.client.options.ClickHouseClientOptions
+import org.finos.vuu.plugin.virtualized.api.{AliasedVirtualizedSessionTableDef, VirtualizedSessionTableColumnBuilder, VirtualizedSessionTableDef}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-class ClickHouseTableSizeProviderTest extends AnyFeatureSpec with GivenWhenThen with Matchers with ForAllTestContainer {
+class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen with Matchers with ForAllTestContainer {
 
   override val container: ClickHouseContainer = ClickHouseContainer()
 
-  Feature("Test we can get a table size from ClickHouse") {
+  Feature("Test we can get row data from ClickHouse") {
 
-    Scenario("Get size of a table with no where clause") {
-
-      given metrics: MetricsProvider = MetricsProviderImpl()
-      given timeProvider: Clock = DefaultClock()
-      given lifecycle: LifecycleContainer = LifecycleContainer()
-      val client = createClientAndTable()
-      val clickHouseTableSizeProvider = ClickHouseTableSizeProvider(client, "test_table")
-
-      val size = clickHouseTableSizeProvider.getTableSize("")
-      size shouldEqual 2
-
-      stopClient()
-    }
-
-    Scenario("Get size of a table with a where clause") {
+    Scenario("Get data with no where clause or order by") {
 
       given metrics: MetricsProvider = MetricsProviderImpl()
       given timeProvider: Clock = DefaultClock()
       given lifecycle: LifecycleContainer = LifecycleContainer()
-      val client = createClientAndTable()
-      val clickHouseTableSizeProvider = ClickHouseTableSizeProvider(client, "test_table")
+      val (client, tableDef) = createClientTableAndTableDef()
+      val clickHouseRowDataProvider = ClickHouseRowDataProvider(client, tableDef)
+      val vpColumns = ViewPortColumnCreator.create(tableDef)
 
-      val size = clickHouseTableSizeProvider.getTableSize("WHERE val = 'hello'")
-      size shouldEqual 1
-
-      stopClient()
-    }
-
-    Scenario("Get size of a table that doesn't exist") {
-
-      given metrics: MetricsProvider = MetricsProviderImpl()
-      given timeProvider: Clock = DefaultClock()
-      given lifecycle: LifecycleContainer = LifecycleContainer()
-      val client = createClientAndTable()
-      val clickHouseTableSizeProvider = ClickHouseTableSizeProvider(client, "lolcats")
-
-      a[RuntimeException] should be thrownBy {
-        clickHouseTableSizeProvider.getTableSize("")
-      }
+      val data = clickHouseRowDataProvider.queryForRowData(vpColumns, "", "", 100, 0)
+      data.size shouldEqual 2
 
       stopClient()
     }
 
   }
 
-  private def createClientAndTable()(using lifecycle: LifecycleContainer): ClickHouseClient = {
+  private def createClientTableAndTableDef()(using lifecycle: LifecycleContainer): (ClickHouseClient, VirtualizedSessionTableDef) = {
     val client = ClickHouseClient(ClickHouseClientOptions()
       .withEndpoint(container.getEndpoint)
       .withUsername(container.getDefaultUsername)
@@ -86,7 +60,15 @@ class ClickHouseTableSizeProviderTest extends AnyFeatureSpec with GivenWhenThen 
     // Insert data
     client.executeUpdate("INSERT INTO test_table (id, val) VALUES ('1', 'hello'), ('2', 'world')")
 
-    client
+    val tableDef = AliasedVirtualizedSessionTableDef(
+      tableName = "testTable",
+      remoteName = "test_table",
+      remoteKeyField = "id",
+      tableKeyField = "id",
+      remoteColumns = VirtualizedSessionTableColumnBuilder().addString("id").addString("val").build()
+    )
+
+    (client, tableDef)
   }
 
   private def stopClient()(using lifecycle: LifecycleContainer): Unit = {

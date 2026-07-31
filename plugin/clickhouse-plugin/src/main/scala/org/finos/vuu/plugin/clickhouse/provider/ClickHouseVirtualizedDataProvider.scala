@@ -34,7 +34,7 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
 
     val queryStart = clock.now()
     val tableSize = tableSizeProvider.getTableSize(whereClause)
-    val rowsWithData = rowDataProvider.queryForRowData(viewPort, whereClause, orderBy, limit, startIndex)
+    val rowsWithData = rowDataProvider.queryForRowData(viewPort.getColumns, whereClause, orderBy, limit, startIndex)
     val dataQueryMillis = clock.now() - queryStart
 
     logger.trace(s"[ClickHouseVirtualizedDataProvider] Updating session table")

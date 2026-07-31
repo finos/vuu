@@ -3,7 +3,7 @@ package org.finos.vuu.plugin.clickhouse.provider.data
 import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.virtualized.api.{VirtualizedSessionTableColumn, VirtualizedSessionTableDef}
-import org.finos.vuu.viewport.ViewPort
+import org.finos.vuu.viewport.ViewPortColumns
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -12,13 +12,13 @@ class ClickHouseRowDataProvider(client: ClickHouseClient,
 
   private val rowDataMapper = ClickHouseRowDataMapper(tableDef)
   
-  def queryForRowData(viewPort: ViewPort,
+  def queryForRowData(viewPortColumns: ViewPortColumns,
                       whereClause: String,
                       orderBy: String,
                       limit: Int,
                       startIndex: Int): IndexedSeq[RowWithData] = {
 
-    val queryColumns = getQueryColumns(tableDef, viewPort)
+    val queryColumns = getQueryColumns(viewPortColumns)
 
     val query =
       s"""SELECT ${queryColumns.mkString(", ")}
@@ -43,10 +43,9 @@ class ClickHouseRowDataProvider(client: ClickHouseClient,
 
   }
 
-  private def getQueryColumns(tableDef: VirtualizedSessionTableDef,
-                              viewPort: ViewPort): Seq[String] = {
+  private def getQueryColumns(viewPortColumns: ViewPortColumns): Seq[String] = {
 
-    val remoteNames = viewPort.getColumns.getColumns.collect {
+    val remoteNames = viewPortColumns.getColumns.collect {
       case v: VirtualizedSessionTableColumn => v.remoteName
     }
 
