@@ -1,4 +1,4 @@
-import { VuuAuthenticator } from "./VuuAuthenticator";
+import { VuuAuthenticator } from "./auth/VuuAuthenticator";
 
 interface RetryOptions {
   interval: number;
@@ -77,7 +77,7 @@ export class LostConnectionHandler {
   constructor(
     private vuuAuth: VuuAuthenticator,
     private retryIntervals = defaultRetryIntervals,
-  ) {}
+  ) { }
   async reconnect(): Promise<"connected" | "connection-failed"> {
     for await (const result of new RetryGenerator(
       this.vuuAuth,

@@ -1,6 +1,6 @@
-import ConnectionManager from "./ConnectionManager";
-import { ValueOf } from "@vuu-ui/vuu-utils";
-import { User, type AuthProvider } from "./VuuAuthProvider";
+import ConnectionManager from "../ConnectionManager";
+import type { ValueOf } from "@vuu-ui/vuu-utils";
+import type { User, AuthProvider } from "./VuuAuthProvider";
 
 export const VuuAuthTokenIssuePolicy = {
   BearerToken: "bearer-token",
@@ -12,26 +12,32 @@ export type VuuAuthTokenIssuePolicy = ValueOf<typeof VuuAuthTokenIssuePolicy>;
 export interface VuuAuthenticatorConstructorOptions {
   authProvider: AuthProvider;
   authTokenIssuePolicy?: VuuAuthTokenIssuePolicy;
+  connectionId?: string;
   websocketUrl: string;
 }
 
 export class VuuAuthenticator {
   private authProvider: AuthProvider;
   private authTokenIssuePolicy: VuuAuthTokenIssuePolicy;
+  private connectionId: string;
+  private vuuAccessToken: string | null = null;
   private websocketUrl: string;
 
   constructor({
     authProvider,
     authTokenIssuePolicy = VuuAuthTokenIssuePolicy.BearerToken,
+    connectionId = "portal",
     websocketUrl,
   }: VuuAuthenticatorConstructorOptions) {
     this.authProvider = authProvider;
     this.authTokenIssuePolicy = authTokenIssuePolicy;
+    this.connectionId = connectionId;
     this.websocketUrl = websocketUrl;
   }
 
   private openWebsocketConnection = async (vuuToken: string) => {
-    await ConnectionManager.connect(
+    await ConnectionManager.connectTo(
+      this.connectionId,
       {
         url: this.websocketUrl,
         token: vuuToken,
@@ -48,6 +54,7 @@ export class VuuAuthenticator {
       websocket = true,
     } = await this.authProvider.login();
     if (token && user) {
+      this.vuuAccessToken = token;
       if (websocket) {
         await this.openWebsocketConnection(token);
       }
@@ -58,6 +65,9 @@ export class VuuAuthenticator {
   };
 
   logout = () => {
+    this.vuuAccessToken = null;
     this.authProvider.logout();
   };
+
+  getAccessToken = () => this.vuuAccessToken;
 }

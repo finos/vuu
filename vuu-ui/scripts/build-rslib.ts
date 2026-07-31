@@ -4,7 +4,6 @@ import path from "path";
 import fs from "fs";
 import { readPackageJson, writePackageJSON } from "./package-json.ts";
 import { copyLicense } from "./copy-license.ts";
-// import { pluginCssInline } from "../tools/rsbuild-plugin-inline-css/src/index.js";
 const DIST_PATH = "../../dist";
 const LICENCE_PATH = "../../../LICENSE";
 const README = "README.md";
@@ -57,7 +56,7 @@ export default async function main() {
           },
           source: {
             entry: {
-              index: ["src/**/*.ts?(x)", "src/**/*.css", "!src/__tests__/**/*"],
+              index: ["index.ts", "src/**/*.ts?(x)", "src/**/*.css", "!src/__tests__/**/*"],
             },
           },
         },
@@ -65,7 +64,6 @@ export default async function main() {
       output: {
         target: "web",
       },
-      // plugins: [pluginReact(), pluginCssInline()],
       plugins: [pluginReact()],
     },
   });

@@ -1,13 +1,20 @@
 import type { DynamicFeatureDescriptor } from "@vuu-ui/vuu-utils";
 
-export const getRegisteredModules = async (registryUrl: string) =>  {
-    console.log(`getRegisteredModules ${registryUrl}`)
-    const response = await fetch(registryUrl);
-    if (response.ok){
-        return response.json() as Promise<Record<string, DynamicFeatureDescriptor>>;
-    } else {
-        throw Error('bad return from module registry')
-    }
-
+export type RemoteModules = {
+  modules: DynamicFeatureDescriptor[]
 }
 
+export const getRegisteredModules = async (
+  registryUrl: string,
+  bearerToken: string,
+) => {
+  console.log(`getRegisteredModules ${registryUrl}`);
+  const response = await fetch(registryUrl, {
+    headers: { Authorization: `Bearer ${bearerToken}` },
+  });
+  if (!response.ok) {
+    throw Error("bad return from module registry");
+  }
+
+  return await response.json() as RemoteModules;
+};

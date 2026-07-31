@@ -217,28 +217,28 @@ _baseTo = new WeakMap();
 var RangeImpl = _RangeImpl;
 var Range = (from, to, renderBufferSize) => new RangeImpl(from, to, renderBufferSize);
 var NULL_RANGE = Range(0, 0);
-function getFullRange({ from, to }, bufferSize = 0, totalRowCount = Number.MAX_SAFE_INTEGER) {
+function getFullRange({ from, to }, bufferSize = 0, maxRangeEnd = Number.MAX_SAFE_INTEGER) {
   if (from === 0 && to === 0) {
     return { from, to };
   } else if (bufferSize === 0) {
-    if (totalRowCount < from) {
+    if (maxRangeEnd < from) {
       return { from: 0, to: 0 };
     } else {
-      return { from, to: Math.min(to, totalRowCount) };
+      return { from, to: Math.min(to, maxRangeEnd) };
     }
   } else if (from === 0) {
-    return { from, to: Math.min(to + bufferSize, totalRowCount) };
+    return { from, to: Math.min(to + bufferSize, maxRangeEnd) };
   } else {
     const shortfallBefore = from - bufferSize < 0;
-    const shortfallAfter = totalRowCount - (to + bufferSize) < 0;
+    const shortfallAfter = maxRangeEnd - (to + bufferSize) < 0;
     if (shortfallBefore && shortfallAfter) {
-      return { from: 0, to: totalRowCount };
+      return { from: 0, to: maxRangeEnd };
     } else if (shortfallBefore) {
       return { from: 0, to: to + bufferSize };
     } else if (shortfallAfter) {
       return {
         from: Math.max(0, from - bufferSize),
-        to: totalRowCount
+        to: maxRangeEnd
       };
     } else {
       return { from: from - bufferSize, to: to + bufferSize };
@@ -494,6 +494,8 @@ var createSchemaFromTableMetadata = ({
   dataTypes,
   editableColumns = [],
   key,
+  maxRangeEnd,
+  maxRangeWidth,
   table
 }) => {
   return {
@@ -511,7 +513,11 @@ var createSchemaFromTableMetadata = ({
         serverDataType: dataTypes[idx]
       };
     }),
-    key
+    key,
+    rangeLimits: {
+      maxRangeEnd,
+      maxRangeWidth
+    }
   };
 };
 
@@ -775,7 +781,7 @@ var NO_UPDATE_STATUS = {
   size: 0,
   ts: 0
 };
-var _status, _clientRange;
+var _status, _clientRange, _maxRangeEnd;
 var Viewport = class {
   constructor({
     aggregations,
@@ -808,6 +814,7 @@ var Viewport = class {
     __publicField(this, "hasUpdates", false);
     __publicField(this, "pendingUpdates", []);
     __publicField(this, "keys");
+    __privateAdd(this, _maxRangeEnd, Number.MAX_SAFE_INTEGER);
     __publicField(this, "pendingLinkedParent");
     __publicField(this, "pendingOperations", /* @__PURE__ */ new Map());
     __publicField(this, "pendingRangeRequests", []);
@@ -971,6 +978,7 @@ var Viewport = class {
     groupBy,
     table
   }, baseTableSchema) {
+    var _a;
     this.serverViewportId = viewPortId;
     this.status = "subscribed";
     this.aggregations = aggregations;
@@ -985,6 +993,9 @@ var Viewport = class {
         session: table
       }
     };
+    if (tableSchema.rangeLimits) {
+      __privateSet(this, _maxRangeEnd, (_a = tableSchema.rangeLimits) == null ? void 0 : _a.maxRangeEnd);
+    }
     return {
       aggregations,
       type: "subscribed",
@@ -999,6 +1010,29 @@ var Viewport = class {
   }
   awaitOperation(requestId, msg) {
     this.pendingOperations.set(requestId, msg);
+  }
+  rejectOperation(requestId, _msg) {
+    const { pendingOperations } = this;
+    const pendingOperation = pendingOperations.get(requestId);
+    if (!pendingOperation) {
+      error(
+        \`no matching operation found to reject for requestId \${requestId}\`
+      );
+      return;
+    }
+    const { type } = pendingOperation;
+    pendingOperations.delete(requestId);
+    if (type === "CHANGE_VP_RANGE") {
+      for (let i = this.pendingRangeRequests.length - 1; i >= 0; i--) {
+        const pendingRangeRequest = this.pendingRangeRequests[i];
+        if (pendingRangeRequest.requestId === requestId) {
+          pendingRangeRequest.nacked = true;
+          break;
+        } else {
+          warn == null ? void 0 : warn("range requests sent faster than they are being ACKed");
+        }
+      }
+    }
   }
   // Return a message if we need to communicate this to client UI
   completeOperation(requestId, ...params) {
@@ -1128,7 +1162,7 @@ var Viewport = class {
         \`updated: dataWindow clientRange (\${this.dataWindow.clientRange.from}:\${this.dataWindow.clientRange.to}), fullRange (\${this.dataWindow.range.from}:\${this.dataWindow.range.to}) serverDataRequired \${serverDataRequired ? "Y" : "N"} \${clientRows.length} rows returned from local buffer\`
       );
       let debounceRequest;
-      const maxRange = this.dataWindow.rowCount || void 0;
+      const maxRange = __privateGet(this, _maxRangeEnd);
       const serverRequest = serverDataRequired && !this.rangeRequestAlreadyPending(range) ? {
         type,
         viewPortId: this.serverViewportId,
@@ -1444,6 +1478,7 @@ var Viewport = class {
 };
 _status = new WeakMap();
 _clientRange = new WeakMap();
+_maxRangeEnd = new WeakMap();
 var isNew = false;
 var toClientRow = ({ rowIndex, rowKey, sel: isSelected, data, ts }, keys) => {
   return [
@@ -2486,6 +2521,17 @@ var ServerProxy = class {
               \`<=== CHANGE_VP_RANGE_SUCCESS<#\${requestId}> \${from} - \${to}\`
             );
             viewport.completeOperation(requestId, from, to);
+          }
+        }
+        break;
+      case "CHANGE_VP_RANGE_REJECT":
+        {
+          const viewport = this.viewports.get(body.viewPortId);
+          if (viewport) {
+            infoEnabled2 && info3(
+              \`<=== CHANGE_VP_RANGE_REJECT<#\${requestId}>\`
+            );
+            viewport.rejectOperation(requestId, body.msg);
           }
         }
         break;

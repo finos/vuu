@@ -3,18 +3,19 @@ import { pluginReact } from "@rsbuild/plugin-react";
 import { pluginCssInline } from "../../../tools/rsbuild-plugin-inline-css/src/index.js";
 import { ModuleFederationPlugin } from "@module-federation/enhanced/rspack";
 import { RsdoctorRspackPlugin } from "@rsdoctor/rspack-plugin";
-import { getCommandLineArg } from "../../../scripts/utils.ts";
-import { getSharedDependencies } from "../../../scripts/module-federation-utils.ts";
+import { getCommandLineArg } from "../../../scripts/utils.js";
+import { getSharedDependencies } from "../../../scripts/module-federation-utils.js";
 
 const useRsDoctor = getCommandLineArg("--rsdoctor", false) !== undefined;
 
 const buildManifest = () => {
   return {
     ssl: true,
-    authUrl: "http://localhost:5001",
-    moduleRegistryUrl: "/module-registry.json",
-    restUrl: "https://localhost:8443",
-    websocketUrl: "wss://localhost:8090/websocket",
+    authUrl: "https://localhost:8080",
+    // moduleRegistryUrl: "/module-registry.json",
+    moduleRegistryUrl: "https://localhost:9001/module-registry",
+    restUrl: "https://localhost:8443/api/authn",
+    websocketUrl: "wss://localhost:8091/websocket",
   };
 };
 
@@ -27,7 +28,7 @@ async function main() {
 
       output: {
         distPath: {
-          root: "../../deployed_apps/app-vuu-example",
+          root: "../../deployed_apps/vuu-portal",
           css: "./",
           js: "./",
         },
@@ -63,9 +64,9 @@ async function main() {
           },
           plugins: [
             useRsDoctor &&
-              new RsdoctorRspackPlugin({
-                // plugin options
-              }),
+            new RsdoctorRspackPlugin({
+              // plugin options
+            }),
             new ModuleFederationPlugin({
               name: "host",
               remoteType: "module",

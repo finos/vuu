@@ -9,6 +9,7 @@ import {
   loadRemote,
   registerRemotes,
 } from "@module-federation/enhanced/runtime";
+import { RemoteModule } from "./RemoteModule";
 
 const getLazyComponent = (
   name: string,
@@ -69,6 +70,7 @@ function RawFeature<Params extends object | undefined>({
   mfComponent,
   mfScope,
   mfUrl,
+  vuu,
   css,
   ComponentProps: params,
   ...props
@@ -96,6 +98,8 @@ function RawFeature<Params extends object | undefined>({
   console.log(">>>>> create a feature");
 
   const LazyFeature = useCachedFeature(mfUrl, mfScope, mfComponent);
+  const connectionId = vuu?.connectionId ?? mfScope;
+  const websocketUrl = vuu?.websocketUrl;
   // Suspense has been removed here - caused components to render twice
   return (
     <FeatureErrorBoundary
@@ -103,7 +107,9 @@ function RawFeature<Params extends object | undefined>({
       mfScope={mfScope}
       mfUrl={mfUrl}
     >
-      <LazyFeature {...props} {...params} />
+      <RemoteModule connectionId={connectionId} websocketUrl={websocketUrl}>
+        <LazyFeature {...props} {...params} />
+      </RemoteModule>
     </FeatureErrorBoundary>
   );
 }

@@ -3,11 +3,14 @@
   "version": "2.2.1",
   "license": "Apache-2.0",
   "style": "./index.css",
+  "type": "module",
   "files": [
+    "index.css",
+    "NunitoSans.css",
+    "css",
     "fonts"
   ],
   "scripts": {
-    "build:dev": "node ../../scripts/run-build.mjs",
-    "build": "node ../../scripts/run-build.mjs"
+    "build": "node ../../scripts/run-build-rslib.ts"
   }
 }

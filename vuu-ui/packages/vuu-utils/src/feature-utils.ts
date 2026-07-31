@@ -31,6 +31,7 @@ export interface DynamicFeatureProps<P extends object | undefined = object> {
   mfComponent: string;
   mfScope: string;
   mfUrl: string;
+  vuu?: RemoteModuleConnection;
   title?: string;
   width?: number;
 }
@@ -42,10 +43,10 @@ declare global {
 }
 
 export interface DynamicFeatureDescriptor {
-  featureProps?: {
-    vuuTables?: "*" | VuuTable[];
-  };
-  leftNavLocation: "vuu-features" | "vuu-tables";
+  description: string;
+  id: string;
+  location: string;
+  name: string;
   /**
    * Module federation - the name of remote component to be imported
    */
@@ -59,7 +60,14 @@ export interface DynamicFeatureDescriptor {
    */
   mfUrl: string;
   title: string;
+  vuu?: RemoteModuleConnection;
+  version: number;
   viewProps?: ViewConfig;
+}
+
+export interface RemoteModuleConnection {
+  connectionId: string;
+  websocketUrl?: string;
 }
 
 export interface StaticFeatureDescriptor {
@@ -113,7 +121,7 @@ export interface VuuConfig extends AuthConfig {
  * @returns
  */
 export const isCustomFeature = (feature: DynamicFeatureDescriptor) =>
-  feature.leftNavLocation === "vuu-features";
+  (feature.leftNavLocation ?? "vuu-features") === "vuu-features";
 
 export const isWildcardSchema = (
   vuuTables?: "*" | VuuTable[],
