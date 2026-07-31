@@ -27,14 +27,14 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
 
     val whereClause = filterFactory.build(viewPort)
     val orderBy = sortFactory.build(viewPort.sortSpec)
-    val startIndex = viewPort.getRange.from
-    val limit = viewPort.getRange.to - startIndex
+    val offset = viewPort.getRange.from
+    val limit = viewPort.getRange.to - offset
 
     logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading rows from ClickHouse range ${viewPort.getRange.from} to ${viewPort.getRange.to} filter=$whereClause sort=$orderBy")
 
     val queryStart = clock.now()
     val tableSize = tableSizeProvider.getTableSize(whereClause)
-    val rowsWithData = rowDataProvider.queryForRowData(viewPort.getColumns, whereClause, orderBy, limit, startIndex)
+    val rowsWithData = rowDataProvider.queryForRowData(viewPort.getColumns, whereClause, orderBy, offset, limit)
     val dataQueryMillis = clock.now() - queryStart
 
     logger.trace(s"[ClickHouseVirtualizedDataProvider] Updating session table")
@@ -42,8 +42,8 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
     viewPort.table.asTable match {
       case tbl: VirtualizedSessionTable =>
 
-        logger.trace(s"[ClickHouseVirtualizedDataProvider] Setting range to $startIndex -> ${startIndex + rowsWithData.length}")
-        val (millisRange, _) = timeIt { tbl.setRange(startIndex, startIndex + rowsWithData.length) }
+        logger.trace(s"[ClickHouseVirtualizedDataProvider] Setting range to $offset -> ${offset + rowsWithData.length}")
+        val (millisRange, _) = timeIt { tbl.setRange(offset, offset + rowsWithData.length) }
 
         logger.trace(s"[ClickHouseVirtualizedDataProvider] Setting table size to $tableSize")
         val (millisSize, _) = timeIt { tbl.setSize(tableSize) }
@@ -56,7 +56,7 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
           var i = 0
           while (i < n) {
             val rowWithData = rowsWithData(i)
-            val tableIndex = startIndex + i
+            val tableIndex = offset + i
             logger.trace(s"Publishing update for $rowWithData to index $tableIndex")
             tbl.processUpdateForIndex(
               tableIndex,

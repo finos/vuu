@@ -15,19 +15,11 @@ class ClickHouseRowDataProvider(client: ClickHouseClient,
   def queryForRowData(viewPortColumns: ViewPortColumns,
                       whereClause: String,
                       orderBy: String,
-                      limit: Int,
-                      startIndex: Int): IndexedSeq[RowWithData] = {
+                      offset: Int,
+                      limit: Int): IndexedSeq[RowWithData] = {
 
-    val queryColumns = getQueryColumns(viewPortColumns)
 
-    val query =
-      s"""SELECT ${queryColumns.mkString(", ")}
-         |FROM ${tableDef.getRemoteTableName}
-         |$whereClause
-         |$orderBy
-         |LIMIT $limit
-         |OFFSET $startIndex""".stripMargin
-
+    val query = buildQuery(viewPortColumns, whereClause, orderBy, offset, limit)
     val remoteKeyField = tableDef.getRemoteKeyField
     val remoteColumns = tableDef.getRemoteColumns
 
@@ -41,6 +33,48 @@ class ClickHouseRowDataProvider(client: ClickHouseClient,
       buf.toIndexedSeq
     }
 
+  }
+
+  private def buildQuery(viewPortColumns: ViewPortColumns,
+                         whereClause: String,
+                         orderBy: String,
+                         offset: Int,
+                         limit: Int): String = {
+    val queryColumns = getQueryColumns(viewPortColumns)
+
+    val sb = new java.lang.StringBuilder(256)
+
+    //Select
+    sb.append("SELECT ")
+
+    //Columns
+    val colIt = queryColumns.iterator
+    if (colIt.hasNext)
+      sb.append(colIt.next())
+    while (colIt.hasNext) {
+      sb.append(", ").append(colIt.next())
+    }
+
+    //From
+    sb.append(" FROM ").append(tableDef.getRemoteTableName)
+
+    //Where
+    if (whereClause != null && whereClause.nonEmpty) {
+      sb.append(" ").append(whereClause)
+    }
+
+    //Order By
+    if (orderBy != null && orderBy.nonEmpty) {
+      sb.append(" ").append(orderBy)
+    }
+
+    //Limit
+    sb.append(" LIMIT ").append(limit)
+
+    //Offset
+    sb.append(" OFFSET ").append(offset)
+
+    sb.toString
   }
 
   private def getQueryColumns(viewPortColumns: ViewPortColumns): Seq[String] = {
