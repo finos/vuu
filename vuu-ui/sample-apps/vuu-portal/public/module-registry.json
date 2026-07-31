@@ -1,0 +1,20 @@
+{
+  "modules": [
+    {
+      "id": 2,
+      "name": "user-admin",
+      "title": "Manage users",
+      "description": "Add, remove and update users",
+      "version": 1,
+      "enabled": true,
+      "location": "/Users/Manage Users",
+      "mfComponent": "UserAdmin",
+      "mfScope": "UserAdmin",
+      "mfUrl": "http://localhost:5007",
+      "path": "/users/admin",
+      "vuu": {
+        "connectionId": "portal"
+      }
+    }
+  ]
+}

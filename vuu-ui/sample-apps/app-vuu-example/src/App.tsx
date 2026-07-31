@@ -11,13 +11,15 @@ import {
   ShellContextProvider,
   type ShellLayoutProps,
 } from "@vuu-ui/vuu-shell";
+import { useBearerToken } from "@vuu-ui/vuu-shell/src/authentication-provider/AuthenticationProvider";
 import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
 import {
   assertComponentsRegistered,
+  type DynamicFeatureDescriptor,
   registerComponent,
 } from "@vuu-ui/vuu-utils";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { ConfirmSelectionPanel } from "./order-management/cancel-confirm-prompt/ConfirmSelectionPanel";
 
@@ -55,22 +57,42 @@ const defaultWebsocketUrl = (ssl: boolean) =>
 const {
   ssl,
   moduleRegistryUrl,
-  restUrl,
-  websocketUrl: serverUrl = defaultWebsocketUrl(ssl),
+  websocketUrl = defaultWebsocketUrl(ssl),
 } = await vuuConfig;
 
-const features = await getRegisteredModules(moduleRegistryUrl);
-
-const dynamicFeatures = Object.values(features);
-
 export const App = () => {
+  const getBearerToken = useBearerToken();
+
+  const [dynamicFeatures, setDynamicFeatures] = useState<
+    DynamicFeatureDescriptor[]
+  >([]);
+  useEffect(() => {
+    const loadFeatures = async () => {
+      const bearerToken = await getBearerToken();
+      const { modules: features } = await getRegisteredModules(
+        moduleRegistryUrl,
+        bearerToken,
+      );
+      setDynamicFeatures(
+        features.map((feature) => ({
+          ...feature,
+          vuu: {
+            connectionId: feature.vuu?.connectionId ?? feature.mfScope,
+            websocketUrl: feature.vuu?.websocketUrl ?? websocketUrl,
+          },
+        })),
+      );
+    };
+
+    loadFeatures();
+  }, [getBearerToken]);
+
   const dragSource = useMemo(
     () => ({
       "basket-instruments": { dropTargets: "basket-constituents" },
     }),
     [],
   );
-
 
   const localPersistenceManager = useMemo(
     () => new LocalPersistenceManager("steve"),
@@ -97,7 +119,7 @@ export const App = () => {
               <Shell
                 shellLayoutProps={ShellLayoutProps}
                 className="App"
-                serverUrl={serverUrl}
+                serverUrl={websocketUrl}
                 userSettingsSchema={userSettingsSchema}
               />
             </FeatureAndLayoutProvider>

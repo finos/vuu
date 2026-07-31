@@ -2,14 +2,15 @@ export {
   authenticate,
   getVuuAuthToken,
   parseVuuUserFromToken,
-} from "./authenticate";
+} from "./auth/authenticate";
 export * from "./ConnectionManager";
 export { default as ConnectionManager } from "./ConnectionManager";
 export * from "./constants";
 export * from "./data-source";
 export { LostConnectionHandler, RetryOptions } from "./LostConnectionHandler";
 export * from "./message-utils";
-export { VuuAuthenticator, VuuAuthTokenIssuePolicy } from "./VuuAuthenticator";
-export { VuuAuthProvider, type AuthProvider, type User, type AuthProviderClass } from "./VuuAuthProvider";
+export { VuuAuthenticator, VuuAuthTokenIssuePolicy } from "./auth/VuuAuthenticator";
+export { VuuAuthProvider, type AuthProviderClass } from "./auth/VuuAuthProvider";
+export type { AuthProvider, User } from "./auth/AuthProvider";
 export * from "./VuuDataSource";
 export { isConnected, type ConnectionStatus } from "./WebSocketConnection";

@@ -4,15 +4,22 @@
     "mfComponent": "SimpleDiv",
     "mfScope": "simpleDiv",
     "mfUrl": "http://localhost:5004",
-    "leftNavLocation": "vuu-features"
+    "leftNavLocation": "vuu-features",
+    "vuu": {
+      "connectionId": "simple-div"
+    }
   },
   "filter-table": {
     "title": "Vuu Filter table",
     "mfComponent": "VuuFilterTableFeature",
     "mfScope": "filterTable",
     "mfUrl": "http://localhost:5003",
+    "leftNavLocation": "vuu-tables",
     "featureProps": {
       "vuuTables": "*"
+    },
+    "vuu": {
+      "connectionId": "filter-table"
     }
   },
   "user-admin": {
@@ -20,7 +27,10 @@
     "mfComponent": "UserAdmin",
     "mfScope": "userAdmin",
     "mfUrl": "http://localhost:5007",
-    "leftNavLocation": "vuu-features"
+    "leftNavLocation": "vuu-features",
+    "vuu": {
+      "connectionId": "user-admin"
+    }
   },
   "instrument-tiles": {
     "title": "Instrument Price Tiles",
@@ -35,7 +45,10 @@
         }
       ]
     },
-    "leftNavLocation": "vuu-features"
+    "leftNavLocation": "vuu-features",
+    "vuu": {
+      "connectionId": "instrument-tiles"
+    }
   },
   "basket-trading": {
     "title": "Basket Trading",
@@ -65,6 +78,9 @@
         }
       ]
     },
-    "leftNavLocation": "vuu-features"
+    "leftNavLocation": "vuu-features",
+    "vuu": {
+      "connectionId": "basket-trading"
+    }
   }
 }

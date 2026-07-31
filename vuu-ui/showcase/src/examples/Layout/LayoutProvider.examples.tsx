@@ -11,7 +11,7 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useCallback, useState } from "react";
-import VuuFilterTableFeature from "feature-vuu-filter-table";
+import VuuFilterTableFeature from "feature-filter-table";
 
 import { schemas } from "@vuu-ui/vuu-data-test";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
@@ -211,7 +211,8 @@ export const LayoutJsonWithPreloadedFeatures = () => (
               { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basket } },
             ],
           },
-          { type: "View", props: { header: true, resizeable: true, style: { flex: 1 }, title: "Basket Constituents" },
+          {
+            type: "View", props: { header: true, resizeable: true, style: { flex: 1 }, title: "Basket Constituents" },
             children: [
               { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basketConstituent } },
             ]
@@ -227,30 +228,33 @@ export const LayoutJsonWithPreloadedFeaturesVisualLinks = () => (
   <LocalDataSourceProvider>
     <LayoutProviderTemplate
       workspaceJSON={
-        { type: "Flexbox", props: { style: { flexDirection: "column", height: "100%" } },
+        {
+          type: "Flexbox", props: { style: { flexDirection: "column", height: "100%" } },
           children: [
-           { type: "View", id: "view-basket",  props: { header: true, resizeable: true, style: { flex: 1 }, title: "Basket" },
-            children: [
-              { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basket } }
-            ]
-          },
-          { type: "View", id: "view-basket-constituent", props: { header: true, resizeable: true, style: { flex: 1 }, title: "Basket Constituents" },
-            children: [
-              { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basketConstituent } }
-            ],
-            state: {
-              "datasource-config": {
-                visualLink: { 
-                  label: "Basket", 
-                  link: { fromColumn: "basketId", toColumn: "id", toTable: "basket" },
-                  parentClientVpId: "view-basket",
-                  parentVpId: "view-basket",
+            {
+              type: "View", id: "view-basket", props: { header: true, resizeable: true, style: { flex: 1 }, title: "Basket" },
+              children: [
+                { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basket } }
+              ]
+            },
+            {
+              type: "View", id: "view-basket-constituent", props: { header: true, resizeable: true, style: { flex: 1 }, title: "Basket Constituents" },
+              children: [
+                { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basketConstituent } }
+              ],
+              state: {
+                "datasource-config": {
+                  visualLink: {
+                    label: "Basket",
+                    link: { fromColumn: "basketId", toColumn: "id", toTable: "basket" },
+                    parentClientVpId: "view-basket",
+                    parentVpId: "view-basket",
+                  }
                 }
               }
             }
-          }
-        ],
-      }}
+          ],
+        }}
     />
   </LocalDataSourceProvider>
 );
@@ -260,59 +264,66 @@ export const LayoutJsonWithTabbedFeaturesVisualLinks = () => (
   <LocalDataSourceProvider>
     <LayoutProviderTemplate
       workspaceJSON={
-        { type: "Flexbox", props: { style: { flexDirection: "column", height: "100%" } },
+        {
+          type: "Flexbox", props: { style: { flexDirection: "column", height: "100%" } },
           children: [
-             {type: "Stack", props: {active: 1, resizeable: true, style: { flex: 1 }},
+            {
+              type: "Stack", props: { active: 1, resizeable: true, style: { flex: 1 } },
               children: [
-                { type: "View", id: "view-basket-1",  props: { title: "Basket 1" },
-                 children: [
-                   { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basket } }
-                 ]
+                {
+                  type: "View", id: "view-basket-1", props: { title: "Basket 1" },
+                  children: [
+                    { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basket } }
+                  ]
                 },
-                { type: "View", id: "view-basket-2",  props: { title: "Basket 2" },
-                 children: [
-                   { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basket } }
-                 ]
-                } 
-              ]
-             },
-             {type: "Stack", props: {active: 1, resizeable: true, style: { flex: 1 }},
-              children:[
-                { type: "View", id: "view-basket-constituent", props: {title: "Basket Constituents" },
-                children: [
-                  { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basketConstituent } }
-                ],
-                state: {
-                 "datasource-config": {
-                   visualLink: { 
-                     label: "Basket Constituents 1", 
-                     link: { fromColumn: "basketId", toColumn: "id", toTable: "basket" },
-                     parentClientVpId: "view-basket-1",
-                     parentVpId: "view-basket-1",
-                   }
-                 }
-                 }
-                },
-                { type: "View", id: "view-basket-constituent", props: {title: "Basket Constituents" },
-                children: [
-                  { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basketConstituent } }
-                ],
-                state: {
-                 "datasource-config": {
-                   visualLink: { 
-                     label: "Basket Constituents 2", 
-                     link: { fromColumn: "basketId", toColumn: "id", toTable: "basket" },
-                     parentClientVpId: "view-basket-2",
-                     parentVpId: "view-basket-2",
-                   }
-                 }
-                 }
+                {
+                  type: "View", id: "view-basket-2", props: { title: "Basket 2" },
+                  children: [
+                    { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basket } }
+                  ]
                 }
- 
-             ]
+              ]
+            },
+            {
+              type: "Stack", props: { active: 1, resizeable: true, style: { flex: 1 } },
+              children: [
+                {
+                  type: "View", id: "view-basket-constituent", props: { title: "Basket Constituents" },
+                  children: [
+                    { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basketConstituent } }
+                  ],
+                  state: {
+                    "datasource-config": {
+                      visualLink: {
+                        label: "Basket Constituents 1",
+                        link: { fromColumn: "basketId", toColumn: "id", toTable: "basket" },
+                        parentClientVpId: "view-basket-1",
+                        parentVpId: "view-basket-1",
+                      }
+                    }
+                  }
+                },
+                {
+                  type: "View", id: "view-basket-constituent", props: { title: "Basket Constituents" },
+                  children: [
+                    { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basketConstituent } }
+                  ],
+                  state: {
+                    "datasource-config": {
+                      visualLink: {
+                        label: "Basket Constituents 2",
+                        link: { fromColumn: "basketId", toColumn: "id", toTable: "basket" },
+                        parentClientVpId: "view-basket-2",
+                        parentVpId: "view-basket-2",
+                      }
+                    }
+                  }
+                }
+
+              ]
             }
           ],
-      }}
+        }}
     />
   </LocalDataSourceProvider>
 );
