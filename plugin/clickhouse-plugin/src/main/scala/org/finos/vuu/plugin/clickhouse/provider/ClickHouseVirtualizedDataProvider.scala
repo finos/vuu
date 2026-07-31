@@ -97,8 +97,6 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
 
   override val lifecycleId: String = s"ClickHouseVirtualizedDataProvider@$hashCode"
 
-  override def getUniqueValues(columnName: String): Array[String] = Array.empty
-  override def getUniqueValuesStartingWith(columnName: String, starts: String): Array[String] = Array.empty
-  override def getUniqueValuesVPColumn(columnName: String, viewPortColumns: ViewPortColumns, vpKeys: ViewPortKeys): Array[String] = Array.empty
-  override def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPortColumns: ViewPortColumns, vpKeys: ViewPortKeys): Array[String] = Array.empty
+  override def getUniqueValuesVPColumn(columnName: String, viewPort: ViewPort): Array[String] = Array.empty
+  override def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPort: ViewPort): Array[String] = Array.empty
 }
