@@ -8,24 +8,24 @@ const USER_SESSION_LIMIT_MESSAGE = 'User session limnit exceeded';
 
 
 export class UserSessionLimitError extends Error {
-    constructor(){
+    constructor() {
         super(USER_SESSION_LIMIT_MESSAGE);
     }
 }
 
 export class InvalidTokenError extends Error {
-    constructor(){
+    constructor() {
         super(INVALID_TOKEN_MESSAGE);
     }
 }
 
 export class VuuConnectionError extends Error {
-    constructor(connectionStatus: ConnectionStatus){
+    constructor(connectionStatus: ConnectionStatus) {
         super(`Vuu connection error, connectionStstus: ${connectionStatus}`)
     }
 }
 
-const retryIntervalInSeconds = [1,2,3,5,10,30,60,120,300];
+const retryIntervalInSeconds = [1, 2, 3, 5, 10, 30, 60, 120, 300];
 
 
 export const AuthenticatedUserContext = createContext<{
@@ -43,71 +43,71 @@ export interface AuthenticationProviderProps {
     onError?: (e: UserSessionLimitError | VuuConnectionError) => void;
 }
 
-export const AuthenticationProvider = ({authConfig, authProviderClass = VuuAuthProvider, children, onError}: AuthenticationProviderProps) => {
+export const AuthenticationProvider = ({ authConfig, authProviderClass = VuuAuthProvider, children, onError }: AuthenticationProviderProps) => {
     const [user, setUser] = useState<User | null>(null);
     const vuuAuthRef = useRef<VuuAuthenticator | undefined>(undefined);
 
     const logout = useCallback(() => {
         vuuAuthRef.current?.logout();
-    },[])
+    }, [])
 
-    const authProvider = useMemo(() => new authProviderClass(authConfig),[authConfig, authProviderClass])
+    const authProvider = useMemo(() => new authProviderClass(authConfig), [authConfig, authProviderClass])
 
-    useMemo(async() => {
-        
+    useMemo(async () => {
+
         try {
- 
-        const vuuAuth = new VuuAuthenticator({
-            authProvider,
-            websocketUrl: authConfig.websocketUrl
-        });
 
-        vuuAuthRef.current = vuuAuth;
+            const vuuAuth = new VuuAuthenticator({
+                authProvider,
+                websocketUrl: authConfig.websocketUrl
+            });
 
-        const [user, permissions] = await vuuAuth.login();
+            vuuAuthRef.current = vuuAuth;
 
-        const lostConnectionHandler = new LostConnectionHandler(
-            vuuAuth,
-            retryIntervalInSeconds
-        )
+            const [user, permissions] = await vuuAuth.login();
 
-        const onConnectionStatusChange = (connectionStatus: ConnectionStatus) => {
-            if (connectionStatus === 'disconnected'){
-                lostConnectionHandler.reconnect().then((status) => {
-                    if (status === 'connection-failed'){
-                        onError?.(new VuuConnectionError(status))
-                    }
-                })
+            const lostConnectionHandler = new LostConnectionHandler(
+                vuuAuth,
+                retryIntervalInSeconds
+            )
+
+            const onConnectionStatusChange = (connectionStatus: ConnectionStatus) => {
+                if (connectionStatus === 'disconnected') {
+                    lostConnectionHandler.reconnect().then((status) => {
+                        if (status === 'connection-failed') {
+                            onError?.(new VuuConnectionError(status))
+                        }
+                    })
+                }
             }
-        } 
 
-        ConnectionManager.on('connection-status', onConnectionStatusChange);
+            ConnectionManager.on('connection-status', onConnectionStatusChange);
 
-        setUser(user)
-
+            setUser(user)
 
 
-    } catch(e: unknown){
 
-        const message = e instanceof Error ? e.message : typeof e === 'string' ? e : e?.toString();
-        switch(message){
-            case USER_SESSION_LIMIT_MESSAGE:
-                onError?.(new UserSessionLimitError());
-                break;
-            case INVALID_TOKEN_MESSAGE:
-                onError?.(new InvalidTokenError());
-                break;   
-            default:
-                console.warn(`[AuthenticationProvider] unhandler error ${message}`);         
-        }   
+        } catch (e: unknown) {
+
+            const message = e instanceof Error ? e.message : typeof e === 'string' ? e : e?.toString();
+            switch (message) {
+                case USER_SESSION_LIMIT_MESSAGE:
+                    onError?.(new UserSessionLimitError());
+                    break;
+                case INVALID_TOKEN_MESSAGE:
+                    onError?.(new InvalidTokenError());
+                    break;
+                default:
+                    console.warn(`[AuthenticationProvider] unhandler error ${message}`);
+            }
 
 
-    }
+        }
 
-    },[authConfig, authProvider, onError])
+    }, [authConfig, authProvider, onError])
 
     return user === null ? null : (
-        <AuthenticatedUserContext.Provider value={{logout, user}}>
+        <AuthenticatedUserContext.Provider value={{ logout, user }}>
             {children}
         </AuthenticatedUserContext.Provider>
     )
@@ -115,7 +115,7 @@ export const AuthenticationProvider = ({authConfig, authProviderClass = VuuAuthP
 
 export const useLoggedInUser = () => {
     const context = useContext(AuthenticatedUserContext);
-    if (context.user){
+    if (context.user) {
         return context.user;
     } else {
         throw Error('[AuthenticationProvider] user is not logged in');
@@ -124,7 +124,7 @@ export const useLoggedInUser = () => {
 
 export const useLogout = () => {
     const context = useContext(AuthenticatedUserContext);
-    if (context){
+    if (context) {
         return context.logout;
     } else {
         throw Error('[AuthenticationProvider] user is not logged in');

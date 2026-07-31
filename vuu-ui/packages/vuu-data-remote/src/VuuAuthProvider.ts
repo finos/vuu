@@ -32,7 +32,7 @@ export type AuthProviderClass = new (config: AuthConfig) => AuthProvider;
  * credentials and login to vuu.
  */
 export class VuuAuthProvider implements AuthProvider {
-  constructor(private authConfig: AuthConfig) {}
+  constructor(private authConfig: AuthConfig) { }
 
   login = async (username?: string, password?: string) => {
     const date = new Date();
@@ -63,12 +63,12 @@ export class VuuAuthProvider implements AuthProvider {
         //   await this.getVuuTokenWithUsernameAndPassword(userName, password);
         // document.cookie = `vuu-auth-token=${token};expires=${date.toUTCString()};path=/`;
 
-          const {authorizations, name} = parseVuuUserFromToken(token);
-          return {
-            authorizations,
-            token,
-            user: {userName: name}
-          }
+        const { authorizations, name } = parseVuuUserFromToken(token);
+        return {
+          authorizations,
+          token,
+          user: { userName: name }
+        }
 
       } else {
         return this.redirectToLoginPage() as never;
@@ -76,33 +76,33 @@ export class VuuAuthProvider implements AuthProvider {
     }
   };
 
-  private async getVuuTokenWithBearerToken(bearerToken: string){
+  private async getVuuTokenWithBearerToken(bearerToken: string) {
     try {
-    const response = await fetch(this.authConfig.restUrl,{
-      headers: { Authorization: `Bearer: ${bearerToken}`}
-    });
-    if (!response.ok){
-      if (response.status === 503){
-        throw new Error('Application unavailable');
-      } else {
-        throw new Error('Auth token failure'); 
+      const response = await fetch(this.authConfig.restUrl, {
+        headers: { Authorization: `Bearer: ${bearerToken}` }
+      });
+      if (!response.ok) {
+        if (response.status === 503) {
+          throw new Error('Application unavailable');
+        } else {
+          throw new Error('Auth token failure');
+        }
       }
-    } 
 
-    const json = await response.json();
-    if (!json.token){
-      throw new Error('Missing token in response')
-    }
+      const json = await response.json();
+      if (!json.token) {
+        throw new Error('Missing token in response')
+      }
 
-    const {authorizations, name} = parseVuuUserFromToken(json.token);
-    return {
-      authorizations,
-      token: json.token,
-      user: {username: name}
+      const { authorizations, name } = parseVuuUserFromToken(json.token);
+      return {
+        authorizations,
+        token: json.token,
+        user: { username: name }
+      }
+    } catch (_e: unknown) {
+      throw new Error('Application unavailable');
     }
-  } catch(_e: unknown){
-        throw new Error('Application unavailable');
-  }
 
   }
 

@@ -11,9 +11,9 @@ const useRsDoctor = getCommandLineArg("--rsdoctor", false) !== undefined;
 const buildManifest = () => {
   return {
     ssl: true,
-    authUrl: "http://localhost:5001",
+    authUrl: "https://localhost:8080",
     moduleRegistryUrl: "/module-registry.json",
-    restUrl: "https://localhost:8443",
+    restUrl: "https://localhost:8443/api/authn",
     websocketUrl: "wss://localhost:8090/websocket",
   };
 };
@@ -63,9 +63,9 @@ async function main() {
           },
           plugins: [
             useRsDoctor &&
-              new RsdoctorRspackPlugin({
-                // plugin options
-              }),
+            new RsdoctorRspackPlugin({
+              // plugin options
+            }),
             new ModuleFederationPlugin({
               name: "host",
               remoteType: "module",

@@ -6,6 +6,7 @@ import { AuthenticationProvider } from "@vuu-ui/vuu-shell";
 import { PageVisibilityObserver } from "@vuu-ui/vuu-utils";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
+import { KeycloakAuthProvider } from "./keycloak-authentication/KeycloakAuthProvider";
 
 import "@vuu-ui/vuu-icons/index.css";
 import "@vuu-ui/vuu-theme/index.css";
@@ -38,11 +39,11 @@ async function start(): Promise<void> {
   try {
     const root = createRoot(container);
     root.render(
-      <AuthenticationProvider authConfig={config}>
+      <AuthenticationProvider authConfig={config} authProviderClass={KeycloakAuthProvider}>
         <App />
       </AuthenticationProvider>);
   } catch (err: unknown) {
-      console.error(err);
+    console.error(err);
   }
 }
 
