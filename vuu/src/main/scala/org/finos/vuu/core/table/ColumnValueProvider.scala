@@ -5,7 +5,7 @@ import org.finos.vuu.feature.ViewPortKeys
 import org.finos.vuu.viewport.{ViewPort, ViewPortColumns}
 
 import java.util
-import scala.collection.mutable
+import java.util.TreeSet
 
 trait ColumnValueProvider {
 
@@ -56,27 +56,27 @@ class InMemColumnValueProvider(dataTable: DataTable) extends ColumnValueProvider
   }
 
   private case class DistinctValuesGetter(n: Int) {
+
     private type Filter = String => Boolean
 
     def fromVP(viewPortColumns: ViewPortColumns, c: Column, vpKeys: ViewPortKeys, filter: Filter = _ => true): Array[String] = {
-      val seen = mutable.HashSet.empty[String]
-      val result = new Array[String](n)
-      var count = 0
+      val topN = new util.TreeSet[String]()
       val keysIterator = vpKeys.iterator
 
-      while (keysIterator.hasNext && count < n) {
+      while (keysIterator.hasNext) {
         dataTable.pullRow(keysIterator.next(), viewPortColumns).get(c) match {
-          case str: String =>
-            if (filter(str) && seen.add(str)) {
-              result(count) = str
-              count += 1
+          case str: String if filter(str) =>
+            if (topN.size < n) {
+              topN.add(str)
+            } else if (!topN.contains(str) && str.compareTo(topN.last()) < 0) {
+              topN.pollLast()
+              topN.add(str)
             }
-          case _ => //Do nothing
+          case _ =>
         }
       }
 
-      if (count == n) result
-      else util.Arrays.copyOf(result, count)
+      topN.toArray(new Array[String](topN.size()))
     }
   }
 }
