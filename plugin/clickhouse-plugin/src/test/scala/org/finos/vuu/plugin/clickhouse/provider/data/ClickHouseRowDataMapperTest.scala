@@ -2,10 +2,9 @@ package org.finos.vuu.plugin.clickhouse.provider.data
 
 import com.clickhouse.client.api.metadata.TableSchema
 import com.clickhouse.client.api.query.GenericRecord
-import org.finos.vuu.api.TableDef
+import org.finos.vuu.core.table.DataType
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
-import org.finos.vuu.core.table.{Column, DataType, SimpleColumn}
-import org.finos.vuu.plugin.virtualized.api.{SimpleVirtualizedSessionTableDef, VirtualizedSessionTableColumn, VirtualizedSessionTableDef}
+import org.finos.vuu.plugin.virtualized.api.{SimpleVirtualizedSessionTableDef, VirtualizedSessionTableColumn}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.GivenWhenThen
 import org.scalatest.flatspec.AnyFlatSpec
@@ -97,7 +96,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
       tableKeyField = "pk",
       remoteColumns = columns
     )
-    
+
     (v1.hasValue(_:String)).expects("longCol").returning(true)
     (v1.hasValue(_:String)).expects("longSentinelCol").returning(true)
     
@@ -130,7 +129,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
       tableKeyField = "pk",
       remoteColumns = columns
     )
-    
+
     (v1.hasValue(_:String)).expects("doubleCol").returning(true)
     (v1.hasValue(_:String)).expects("doubleNaNCol").returning(true)
     
@@ -160,7 +159,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
       tableKeyField = "pk",
       remoteColumns = columns
     )
-    
+
     (v1.hasValue(_:String)).expects("boolCol").returning(true)
     
 
@@ -187,7 +186,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
       tableKeyField = "pk",
       remoteColumns = columns
     )
-    
+
     (v1.hasValue(_:String)).expects("charCol").returning(true)
     (v1.getString(_:String)).expects("charCol").returning("A")
     (v1.getString(_:String)).expects("pk").returning("key-6")
@@ -225,7 +224,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
       tableKeyField = "pk",
       remoteColumns = columns
     )
-    
+
     (v1.hasValue(_: String)).expects("epochCol").returning(true)
     (v1.getZonedDateTime(_: String)).expects("epochCol").returning(ZonedDateTime.ofInstant(Instant.ofEpochMilli(1), ZoneId.of("UTC")))
     (v1.getString(_: String)).expects("pk").returning("key-6")
@@ -276,7 +275,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
       tableKeyField = "pk",
       remoteColumns = columns
     )
-    
+
     (v1.hasValue(_: String)).expects("epochNanoCol").returning(true)
     (v1.getZonedDateTime(_: String)).expects("epochNanoCol").returning(ZonedDateTime.ofInstant(Instant.ofEpochMilli(1), ZoneId.of("UTC")))
     (v1.getString(_: String)).expects("pk").returning("key-6")
@@ -333,7 +332,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
       tableKeyField = "pk",
       remoteColumns = columns
     )
-    
+
     columns.foreach { c =>
       (v1.hasValue(_:String)).expects(c.name).returning(true)
     }
@@ -373,7 +372,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
       tableKeyField = "pk",
       remoteColumns = columns
     )
-    
+
     (v1.hasValue(_:String)).expects("presentCol").returning(true)
     (v1.hasValue(_:String)).expects("missingCol").returning(false)
     

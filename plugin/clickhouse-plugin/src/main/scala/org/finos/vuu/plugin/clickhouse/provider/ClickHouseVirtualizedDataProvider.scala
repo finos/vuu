@@ -16,7 +16,7 @@ import org.finos.vuu.viewport.ViewPort
 class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, client: ClickHouseClient)(using clock: Clock)
   extends VirtualizedProvider with StrictLogging {
 
-  private val tableSizeProvider = ClickHouseTableSizeProvider(client, tableDef)
+  private val tableSizeProvider = ClickHouseTableSizeProvider(client, tableDef.getRemoteTableName)
   private val rowDataProvider = ClickHouseRowDataProvider(client, tableDef)
   private val filterFactory = ClickHouseFilterFactory(tableDef)
   private val sortFactory = ClickHouseSortFactory(tableDef)

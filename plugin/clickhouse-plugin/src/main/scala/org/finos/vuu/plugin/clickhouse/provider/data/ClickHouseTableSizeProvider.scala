@@ -1,12 +1,11 @@
 package org.finos.vuu.plugin.clickhouse.provider.data
 
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
-import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
 
-class ClickHouseTableSizeProvider(client: ClickHouseClient, tableDef: VirtualizedSessionTableDef) {
+class ClickHouseTableSizeProvider(client: ClickHouseClient, remoteTableName: String) {
 
   def getTableSize(whereClause: String): Int = {
-    client.executeQuery(s"SELECT count() as cnt FROM ${tableDef.getRemoteTableName} $whereClause") {
+    client.executeQuery(s"SELECT count() as cnt FROM $remoteTableName $whereClause") {
       records =>
         val it = records.iterator()
         if (it.hasNext) {
