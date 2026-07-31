@@ -4,6 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.feature.ViewPortKeys
 import org.finos.vuu.viewport.{ViewPort, ViewPortColumns}
 
+import java.util
 import scala.collection.mutable
 
 trait ColumnValueProvider {
@@ -28,21 +29,26 @@ class InMemColumnValueProvider(dataTable: DataTable) extends ColumnValueProvider
 
   private val get10DistinctValues = DistinctValuesGetter(10)
 
-  def getUniqueValuesVPColumn(columnName: String, viewPort: ViewPort): Array[String] = {
-    val viewPortColumns = viewPort.getColumns
-    viewPortColumns.getColumnForName(columnName) match {
-      case Some(column) => get10DistinctValues.fromVP(viewPortColumns, column, viewPort.getKeys)
-      case None =>
-        logger.warn(s"Column $columnName not found in viewport ${viewPort.id}")
-        Array.empty
-    }
-  }
+  def getUniqueValuesVPColumn(columnName: String, viewPort: ViewPort): Array[String] =
+    fetchUniqueStringValues(columnName, viewPort)
 
   def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPort: ViewPort): Array[String] = {
+    val prefix = starts.toLowerCase
+    fetchUniqueStringValues(columnName, viewPort, _.toLowerCase.startsWith(prefix))
+  }
+
+  private def fetchUniqueStringValues(
+                                       columnName: String,
+                                       viewPort: ViewPort,
+                                       filter: String => Boolean = _ => true
+                                     ): Array[String] = {
     val viewPortColumns = viewPort.getColumns
     viewPortColumns.getColumnForName(columnName) match {
-      case Some(column) =>
-        get10DistinctValues.fromVP(viewPortColumns, column, viewPort.getKeys, _.toLowerCase.startsWith(starts.toLowerCase))
+      case Some(column) if column.dataType == DataType.StringDataType =>
+        get10DistinctValues.fromVP(viewPortColumns, column, viewPort.getKeys, filter)
+      case Some(_) =>
+        logger.warn(s"Column $columnName in viewport ${viewPort.id} is not of type String")
+        Array.empty
       case None =>
         logger.warn(s"Column $columnName not found in viewport ${viewPort.id}")
         Array.empty
@@ -53,22 +59,24 @@ class InMemColumnValueProvider(dataTable: DataTable) extends ColumnValueProvider
     private type Filter = String => Boolean
 
     def fromVP(viewPortColumns: ViewPortColumns, c: Column, vpKeys: ViewPortKeys, filter: Filter = _ => true): Array[String] = {
-      val result = mutable.LinkedHashSet.empty[String]
+      val seen = mutable.HashSet.empty[String]
+      val result = new Array[String](n)
+      var count = 0
       val keysIterator = vpKeys.iterator
 
-      while (keysIterator.hasNext && result.size < n) {
-        val rawValue = dataTable.pullRow(keysIterator.next(), viewPortColumns).get(c)
-        if (rawValue != null) {
-          val str = rawValue.toString
-          if (filter(str)) {
-            result += str
-          }
+      while (keysIterator.hasNext && count < n) {
+        dataTable.pullRow(keysIterator.next(), viewPortColumns).get(c) match {
+          case str: String =>
+            if (filter(str) && seen.add(str)) {
+              result(count) = str
+              count += 1
+            }
+          case _ => //Do nothing
         }
       }
 
-      result.toArray
+      if (count == n) result
+      else util.Arrays.copyOf(result, count)
     }
-
   }
-
 }

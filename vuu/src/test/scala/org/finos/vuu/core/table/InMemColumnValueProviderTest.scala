@@ -57,6 +57,34 @@ class InMemColumnValueProviderTest extends AnyFeatureSpec with Matchers {
       uniqueValues shouldBe empty
     }
 
+    Scenario("Get all unique values should return empty for unknown columns") {
+      val (table, provider, viewPortContainer, viewPort) = setup()
+      provider.tick("1", Map("id" -> "1", "ric" -> "VOA.L", "bid" -> 220, "ask" -> 223))
+      provider.tick("2", Map("id" -> "2", "ric" -> "BT.L", "bid" -> 500, "ask" -> 550))
+      provider.tick("3", Map("id" -> "3", "ric" -> "VOV.L", "bid" -> 240, "ask" -> 244))
+      provider.tick("4", Map("id" -> "4", "ric" -> null, "bid" -> 240, "ask" -> 244))
+      viewPortContainer.runOnce()
+      val columnValueProvider = new InMemColumnValueProvider(table)
+
+      val uniqueValues = columnValueProvider.getUniqueValuesVPColumn("pies", viewPort)
+
+      uniqueValues.length shouldBe 0
+    }
+
+    Scenario("Get all unique values should return empty on non string column types") {
+      val (table, provider, viewPortContainer, viewPort) = setup()
+      provider.tick("1", Map("id" -> "1", "ric" -> "VOA.L", "bid" -> 220, "ask" -> 223))
+      provider.tick("2", Map("id" -> "2", "ric" -> "BT.L", "bid" -> 500, "ask" -> 550))
+      provider.tick("3", Map("id" -> "3", "ric" -> "VOV.L", "bid" -> 240, "ask" -> 244))
+      provider.tick("4", Map("id" -> "4", "ric" -> null, "bid" -> 240, "ask" -> 244))
+      viewPortContainer.runOnce()
+      val columnValueProvider = new InMemColumnValueProvider(table)
+
+      val uniqueValues = columnValueProvider.getUniqueValuesVPColumn("bid", viewPort)
+
+      uniqueValues.length shouldBe 0
+    }
+
     Scenario("Get all unique value of a given column that starts with specified string") {
       val (table, provider, viewPortContainer, viewPort) = setup()
       provider.tick("1", Map("id" -> "1", "ric" -> "VOA.L", "bid" -> 220, "ask" -> 223))
@@ -83,6 +111,34 @@ class InMemColumnValueProviderTest extends AnyFeatureSpec with Matchers {
       val uniqueValues = columnValueProvider.getUniqueValuesStartingWithVPColumn("ric", "vo", viewPort)
 
       uniqueValues should contain theSameElementsAs Vector("VOA.L", "VOV.L")
+    }
+
+    Scenario("Get all unique value of a given column that starts with specified string should return empty for unknown columns") {
+      val (table, provider, viewPortContainer, viewPort) = setup()
+      provider.tick("1", Map("id" -> "1", "ric" -> "VOA.L", "bid" -> 220, "ask" -> 223))
+      provider.tick("2", Map("id" -> "2", "ric" -> "BT.L", "bid" -> 500, "ask" -> 550))
+      provider.tick("3", Map("id" -> "3", "ric" -> "VOV.L", "bid" -> 240, "ask" -> 244))
+      provider.tick("4", Map("id" -> "4", "ric" -> null, "bid" -> 240, "ask" -> 244))
+      viewPortContainer.runOnce()
+      val columnValueProvider = new InMemColumnValueProvider(table)
+
+      val uniqueValues = columnValueProvider.getUniqueValuesStartingWithVPColumn("cakes", "", viewPort)
+
+      uniqueValues.length shouldBe 0
+    }
+
+    Scenario("Get all unique value of a given column that starts with specified string should return empty on non string column types") {
+      val (table, provider, viewPortContainer, viewPort) = setup()
+      provider.tick("1", Map("id" -> "1", "ric" -> "VOA.L", "bid" -> 220, "ask" -> 223))
+      provider.tick("2", Map("id" -> "2", "ric" -> "BT.L", "bid" -> 500, "ask" -> 550))
+      provider.tick("3", Map("id" -> "3", "ric" -> "VOV.L", "bid" -> 240, "ask" -> 244))
+      provider.tick("4", Map("id" -> "4", "ric" -> null, "bid" -> 240, "ask" -> 244))
+      viewPortContainer.runOnce()
+      val columnValueProvider = new InMemColumnValueProvider(table)
+
+      val uniqueValues = columnValueProvider.getUniqueValuesStartingWithVPColumn("bid", "240", viewPort)
+
+      uniqueValues.length shouldBe 0
     }
 
   }
