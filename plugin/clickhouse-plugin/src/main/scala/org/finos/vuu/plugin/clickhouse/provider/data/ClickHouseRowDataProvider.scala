@@ -40,7 +40,6 @@ class ClickHouseRowDataProvider(client: ClickHouseClient,
                          orderBy: String,
                          offset: Int,
                          limit: Int): String = {
-    val queryColumns = getQueryColumns(viewPortColumns)
 
     val sb = new java.lang.StringBuilder(256)
 
@@ -48,6 +47,7 @@ class ClickHouseRowDataProvider(client: ClickHouseClient,
     sb.append("SELECT ")
 
     //Columns
+    val queryColumns = getQueryColumns(viewPortColumns)
     val colIt = queryColumns.iterator
     if (colIt.hasNext)
       sb.append(colIt.next())
