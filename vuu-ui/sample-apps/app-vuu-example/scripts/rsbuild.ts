@@ -12,9 +12,10 @@ const buildManifest = () => {
   return {
     ssl: true,
     authUrl: "https://localhost:8080",
-    moduleRegistryUrl: "/module-registry.json",
+    // moduleRegistryUrl: "/module-registry.json",
+    moduleRegistryUrl: "https://localhost:9001/module-registry",
     restUrl: "https://localhost:8443/api/authn",
-    websocketUrl: "wss://localhost:8090/websocket",
+    websocketUrl: "wss://localhost:8091/websocket",
   };
 };
 

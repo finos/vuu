@@ -29,11 +29,13 @@ const retryIntervalInSeconds = [1, 2, 3, 5, 10, 30, 60, 120, 300];
 
 
 export const AuthenticatedUserContext = createContext<{
+    getBearerToken: () => Promise<string>;
     user: User | null;
     logout: () => void;
 }>({
+    getBearerToken: () => { throw Error('No AuthenticationProvider has been installed') },
     user: null,
-    logout: () => console.warn('No AuthenticationProvider has been installed')
+    logout: () => { throw Error('No AuthenticationProvider has been installed') }
 })
 
 export interface AuthenticationProviderProps {
@@ -66,6 +68,8 @@ export const AuthenticationProvider = ({ authConfig, authProviderClass = VuuAuth
 
             const [user, permissions] = await vuuAuth.login();
 
+            console.log(`permissions ${permissions.join(",")}`)
+
             const lostConnectionHandler = new LostConnectionHandler(
                 vuuAuth,
                 retryIntervalInSeconds
@@ -89,7 +93,7 @@ export const AuthenticationProvider = ({ authConfig, authProviderClass = VuuAuth
 
         } catch (e: unknown) {
 
-            const message = e instanceof Error ? e.message : typeof e === 'string' ? e : e?.toString();
+            const message = e instanceof Error ? e.message : typeof e === 'string' ? e : JSON.stringify(e);
             switch (message) {
                 case USER_SESSION_LIMIT_MESSAGE:
                     onError?.(new UserSessionLimitError());
@@ -106,8 +110,12 @@ export const AuthenticationProvider = ({ authConfig, authProviderClass = VuuAuth
 
     }, [authConfig, authProvider, onError])
 
+    const getBearerToken = useCallback(async () => {
+        return authProvider.getToken();
+    }, [authProvider])
+
     return user === null ? null : (
-        <AuthenticatedUserContext.Provider value={{ logout, user }}>
+        <AuthenticatedUserContext.Provider value={{ getBearerToken, logout, user }}>
             {children}
         </AuthenticatedUserContext.Provider>
     )
@@ -126,6 +134,15 @@ export const useLogout = () => {
     const context = useContext(AuthenticatedUserContext);
     if (context) {
         return context.logout;
+    } else {
+        throw Error('[AuthenticationProvider] user is not logged in');
+    }
+}
+
+export const useBearerToken = () => {
+    const context = useContext(AuthenticatedUserContext);
+    if (context) {
+        return context.getBearerToken;
     } else {
         throw Error('[AuthenticationProvider] user is not logged in');
     }

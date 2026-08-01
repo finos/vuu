@@ -1,6 +1,6 @@
-import ConnectionManager from "./ConnectionManager";
-import { ValueOf } from "@vuu-ui/vuu-utils";
-import { User, type AuthProvider } from "./VuuAuthProvider";
+import ConnectionManager from "../ConnectionManager";
+import type { ValueOf } from "@vuu-ui/vuu-utils";
+import type { User, AuthProvider } from "./VuuAuthProvider";
 
 export const VuuAuthTokenIssuePolicy = {
   BearerToken: "bearer-token",

@@ -1,22 +1,6 @@
 import type { AuthConfig } from "@vuu-ui/vuu-utils";
 import { parseVuuUserFromToken } from "./authenticate";
-
-export type User = {
-  userName: string;
-};
-
-export interface AuthProvider {
-  login: (
-    username?: string,
-    password?: string,
-  ) => Promise<{
-    authorizations: string[];
-    token: string;
-    user: User;
-    websocket?: boolean;
-  }>;
-  logout: () => void;
-}
+import type { AuthProvider } from "./AuthProvider";
 
 export type AuthProviderClass = new (config: AuthConfig) => AuthProvider;
 
@@ -76,36 +60,6 @@ export class VuuAuthProvider implements AuthProvider {
     }
   };
 
-  private async getVuuTokenWithBearerToken(bearerToken: string) {
-    try {
-      const response = await fetch(this.authConfig.restUrl, {
-        headers: { Authorization: `Bearer: ${bearerToken}` }
-      });
-      if (!response.ok) {
-        if (response.status === 503) {
-          throw new Error('Application unavailable');
-        } else {
-          throw new Error('Auth token failure');
-        }
-      }
-
-      const json = await response.json();
-      if (!json.token) {
-        throw new Error('Missing token in response')
-      }
-
-      const { authorizations, name } = parseVuuUserFromToken(json.token);
-      return {
-        authorizations,
-        token: json.token,
-        user: { username: name }
-      }
-    } catch (_e: unknown) {
-      throw new Error('Application unavailable');
-    }
-
-  }
-
   private async getVuuTokenWithUsernameAndPassword(
     username: string,
     password: string,
@@ -151,6 +105,10 @@ export class VuuAuthProvider implements AuthProvider {
 
   private redirectToApplication(token: string) {
     window.location.href = `http://localhost:5002/index.html?token=${token}`;
+  }
+
+  async getToken() {
+    return 'any old token';
   }
 
   logout() {

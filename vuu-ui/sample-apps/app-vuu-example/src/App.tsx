@@ -15,13 +15,15 @@ import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
 import {
   assertComponentsRegistered,
+  type DynamicFeatureDescriptor,
   registerComponent,
 } from "@vuu-ui/vuu-utils";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { ConfirmSelectionPanel } from "./order-management/cancel-confirm-prompt/ConfirmSelectionPanel";
 
 import "./App.css";
+import { useBearerToken } from "@vuu-ui/vuu-shell/src/authentication-provider/AuthenticationProvider";
 
 registerComponent("cancel-confirm", ConfirmSelectionPanel, "view");
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
@@ -59,11 +61,22 @@ const {
   websocketUrl: serverUrl = defaultWebsocketUrl(ssl),
 } = await vuuConfig;
 
-const features = await getRegisteredModules(moduleRegistryUrl);
 
-const dynamicFeatures = Object.values(features);
+
 
 export const App = () => {
+
+  const getBearerToken = useBearerToken();
+
+  const [dynamicFeatures, setDYnamicFeatures] = useState<DynamicFeatureDescriptor[]>([]);
+  useMemo(async () => {
+    const bearerToken = await getBearerToken();
+    const features = await getRegisteredModules(moduleRegistryUrl, bearerToken);
+    const dynamicFeatures = Object.values(features);
+    setDYnamicFeatures(dynamicFeatures)
+  }, [getBearerToken])
+
+
   const dragSource = useMemo(
     () => ({
       "basket-instruments": { dropTargets: "basket-constituents" },

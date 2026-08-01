@@ -1,7 +1,7 @@
 import { parseVuuUserFromToken, type AuthProvider } from '@vuu-ui/vuu-data-remote';
 import type { AuthConfig } from '@vuu-ui/vuu-utils';
 import Keycloak from 'keycloak-js';
-import { AutoRefreshKeycloakToken } from './AutoRefreshKeycloakToken';
+// import { AutoRefreshKeycloakToken } from './AutoRefreshKeycloakToken';
 
 
 
@@ -17,7 +17,7 @@ const getKeycloak = async (authConfig: AuthConfig) => {
     }
 
     // periodically refresh to keep session from expiring
-    new AutoRefreshKeycloakToken(keycloak);
+    // new AutoRefreshKeycloakToken(keycloak);
 
     return keycloak;
 }
@@ -54,6 +54,7 @@ export class KeycloakAuthProvider implements AuthProvider {
             const { authorizations, token } = await this.getVuuTokenWithBearerToken(bearerToken);
             return {
                 authorizations,
+                bearerToken,
                 user: {
                     firstName,
                     lastName,
@@ -68,6 +69,12 @@ export class KeycloakAuthProvider implements AuthProvider {
         }
     }
 
+    async getToken() {
+        // need to call keycloak toke exchange service to get minimum permission token
+        await keycloak.updateToken();
+        return keycloak.token;
+    }
+
     logout() {
         keycloak.logout()
     }
@@ -76,7 +83,7 @@ export class KeycloakAuthProvider implements AuthProvider {
     private async getVuuTokenWithBearerToken(bearerToken: string) {
         try {
             const response = await fetch(this.authConfig.restUrl, {
-                headers: { Authorization: `Bearer: ${bearerToken}` }
+                headers: { Authorization: `Bearer: ${bearerToken}` },
             });
             if (!response.ok) {
                 if (response.status === 503) {
