@@ -45,8 +45,7 @@ export const useAutoLoginToVuuServer = ({
         }
 
         const url =
-          websocketUrl ?? `${secure ? "wss" : "ws"}://localhost/8090/websocket`;
-
+          websocketUrl ?? `${secure ? "wss" : "ws"}://localhost:8090/websocket`;
         ConnectionManager.connectTo(connectionId, {
           url,
           token,
