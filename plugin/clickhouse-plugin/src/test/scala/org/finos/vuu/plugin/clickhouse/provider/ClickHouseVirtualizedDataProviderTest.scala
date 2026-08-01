@@ -452,7 +452,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
           ViewPortRange(0, 5),
           columns,
           sort = SortSpec(List(SortDef("price", 'A'))),
-          filterSpec = FilterSpec("")
+          filterSpec = FilterSpec("side = \"Sell\" or side = \"Buy\"")
         )
 
         val virtualizedProvider = viewport.table.asTable.getProvider.asInstanceOf[VirtualizedProvider]
