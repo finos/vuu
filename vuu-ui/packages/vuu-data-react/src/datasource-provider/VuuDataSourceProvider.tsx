@@ -49,14 +49,20 @@ export const VuuDataSourceProvider = ({
   );
 
   useEffect(() => {
-    if (autoConnect && token && websocketUrl) {
-      ConnectionManager.connectTo(connectionId, {
-        token,
-        url: websocketUrl,
-      }).catch((e: unknown) => {
-        console.error(`[VuuDataSourceProvider] connection failed`, e);
-      });
+    if (!(autoConnect && token && websocketUrl)) {
+      return;
     }
+
+    ConnectionManager.connectTo(connectionId, {
+      token,
+      url: websocketUrl,
+    }).catch((e: unknown) => {
+      console.error(`[VuuDataSourceProvider] connection failed`, e);
+    });
+
+    return () => {
+      void ConnectionManager.disconnectFrom(connectionId);
+    };
   }, [autoConnect, connectionId, token, websocketUrl]);
 
   useAutoLoginToVuuServer({
