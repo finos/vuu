@@ -51,6 +51,16 @@ type RegisteredViewport = {
   status: "subscribing";
 };
 
+/**
+ * Owns the worker, request state, and viewport subscriptions for one VUU server
+ * connection. `ConnectionManager` creates one channel per connection ID and
+ * delegates connection-scoped operations to it; consumers do not instantiate or
+ * access channels directly.
+ *
+ * A channel exposes its `ServerAPI` only after the worker connects, routes
+ * worker responses back to the originating request or viewport, and is
+ * terminated when the manager is destroyed.
+ */
 class ConnectionChannel {
   #connectionStatus: ConnectionStatus = "closed";
   #deferredServerAPI = new DeferredPromise<ServerAPI>();
@@ -230,6 +240,18 @@ class ConnectionChannel {
   };
 }
 
+/**
+ * Process-wide registry for VUU server connections.
+ *
+ * Consumers use the exported singleton to connect, obtain a deferred
+ * `ServerAPI`, and control subscriptions. The unscoped methods operate on the
+ * legacy `portal` connection, while the `*To` and `*For` methods select an
+ * independent connection by ID. This allows remote modules to share the manager
+ * without sharing authentication, worker state, or viewport subscriptions.
+ *
+ * Connection status and metrics events are emitted for the default connection
+ * to preserve the existing application-level monitoring API.
+ */
 class ConnectionManager extends EventEmitter<ConnectionEvents> {
   static #instance: ConnectionManager;
   #connections = new Map<string, ConnectionChannel>();
