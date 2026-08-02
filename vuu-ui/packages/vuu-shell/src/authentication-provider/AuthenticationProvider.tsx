@@ -108,7 +108,9 @@ export const AuthenticationProvider = ({
           retryIntervalInSeconds,
         );
 
-        const onConnectionStatusChange = (connectionStatus: ConnectionStatus) => {
+        const onConnectionStatusChange = (
+          connectionStatus: ConnectionStatus,
+        ) => {
           if (connectionStatus === "disconnected") {
             lostConnectionHandler.reconnect().then((status) => {
               if (status === "connection-failed") {
@@ -122,7 +124,11 @@ export const AuthenticationProvider = ({
         setUser(loggedInUser);
       } catch (e: unknown) {
         const message =
-          e instanceof Error ? e.message : typeof e === "string" ? e : String(e);
+          e instanceof Error
+            ? e.message
+            : typeof e === "string"
+              ? e
+              : String(e);
         switch (message) {
           case USER_SESSION_LIMIT_MESSAGE:
             onError?.(new UserSessionLimitError());

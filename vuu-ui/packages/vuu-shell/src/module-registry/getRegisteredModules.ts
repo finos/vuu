@@ -25,7 +25,10 @@ export const getRegisteredModules = async (
     throw Error("bad return from module registry");
   }
 
-  const json = (await response.json()) as Record<string, DynamicFeatureDescriptor>;
+  const json = (await response.json()) as Record<
+    string,
+    DynamicFeatureDescriptor
+  >;
   return Object.entries(json).reduce<Record<string, DynamicFeatureDescriptor>>(
     (map, [featureKey, descriptor]) => {
       map[featureKey] = withDefaults(featureKey, descriptor);

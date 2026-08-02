@@ -61,7 +61,6 @@ const {
 } = await vuuConfig;
 
 export const App = () => {
-
   const getBearerToken = useBearerToken();
 
   const [dynamicFeatures, setDynamicFeatures] = useState<
@@ -70,7 +69,10 @@ export const App = () => {
   useEffect(() => {
     const loadFeatures = async () => {
       const bearerToken = await getBearerToken();
-      const features = await getRegisteredModules(moduleRegistryUrl, bearerToken);
+      const features = await getRegisteredModules(
+        moduleRegistryUrl,
+        bearerToken,
+      );
       setDynamicFeatures(
         Object.values(features).map((feature) => ({
           ...feature,
@@ -85,14 +87,12 @@ export const App = () => {
     loadFeatures();
   }, [getBearerToken]);
 
-
   const dragSource = useMemo(
     () => ({
       "basket-instruments": { dropTargets: "basket-constituents" },
     }),
     [],
   );
-
 
   const localPersistenceManager = useMemo(
     () => new LocalPersistenceManager("steve"),
