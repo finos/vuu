@@ -821,7 +821,7 @@ The `params` object sent with each RPC request (types from `@vuu-ui/vuu-protocol
 
 ## Per-Row Selectability — `isRowSelectable`
 
-When using any selection model, individual rows can be made non-selectable via the `isRowSelectable` prop on `<Table>`. 
+When using any selection model, individual rows can be made non-selectable via the `isRowSelectable` prop on `<Table>`.
 
 ### API
 
@@ -835,9 +835,20 @@ Rows for which `isRowSelectable` returns `false`:
 - Are skipped entirely by all selection paths in `useSelection` (single, extended, checkbox, and block)
 - The checkbox (if shown) is styled via CSS on the `noSelect` class — it requires no `disabled` prop
 
+### Block selection with non-selectable rows
+
+When the user shift-clicks to extend a selection into a range that contains non-selectable rows, a single `SELECT_ROW_RANGE` request would include those rows on the server. Instead, `useSelection` calls `splitSelectableRanges` (from `@vuu-ui/vuu-utils`) which:
+
+1. Walks the locally-cached rows within the index range in order
+2. Groups consecutive selectable rows into separate `SELECT_ROW_RANGE` requests
+
+Example — rows 1–5, row 3 non-selectable, shift-click 1→5:
+- Without: one `SELECT_ROW_RANGE 1→5` → server selects all five rows
+- With: `SELECT_ROW_RANGE 1→2` then `SELECT_ROW_RANGE 4→5` → row 3 never selected
+
 ### Soft-delete example
 
-In `EditableInstrumentsTemplate`, soft-deleted rows remain visually checked (they were selected when deleted) and cannot be re-selected or deselected:
+In `EditableInstrumentsTemplate`, soft-deleted rows cannot be re-selected or deselected. Selecting another row (or a block) will not include them:
 
 ```typescript
 const isRowSelectable = useCallback(
@@ -861,3 +872,4 @@ The `vuuTableRow-noSelect` CSS class can be used to style non-selectable rows:
   pointer-events: none;
 }
 ```
+

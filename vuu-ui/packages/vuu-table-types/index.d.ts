@@ -407,11 +407,6 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   flex?: number;
   heading?: [...string[]];
   isGroup?: boolean;
-  /**
-   * When provided on the checkbox column, rows returning false
-   * are always shown as checked (pending deletion) regardless of isSelected.
-   */
-  isRowSelectable?: (dataRow: DataRow) => boolean;
   isSystemColumn?: boolean;
   label: string;
   marginLeft?: number;

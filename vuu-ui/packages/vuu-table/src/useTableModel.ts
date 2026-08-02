@@ -9,7 +9,6 @@ import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDescriptor,
   ColumnLayout,
-  DataRow,
   ResizePhase,
   RuntimeColumnDescriptor,
   TableDisplayAttributes,
@@ -124,7 +123,6 @@ const getDefaultAlignment = (serverDataType?: VuuColumnDataType) =>
 
 export interface ColumnActionInit {
   availableWidth: number;
-  isRowSelectable?: (dataRow: DataRow) => boolean;
   selectionModel?: TableSelectionModel;
   type: "init";
   tableConfig: TableConfig;
@@ -244,7 +242,6 @@ const tableModelReducer: TableModelReducer = (state, action) => {
 export interface TableModelHookProps {
   config: TableConfig;
   dataSource: DataSource;
-  isRowSelectable?: (dataRow: DataRow) => boolean;
   selectionModel: TableSelectionModel;
   availableWidth: number;
 }
@@ -252,7 +249,6 @@ export interface TableModelHookProps {
 export const useTableModel = ({
   config: tableConfigProp,
   dataSource,
-  isRowSelectable,
   selectionModel,
   availableWidth,
 }: TableModelHookProps) => {
@@ -262,7 +258,6 @@ export const useTableModel = ({
       availableWidth,
       tableConfig: tableConfigProp,
       dataSource,
-      isRowSelectable,
       selectionModel,
     },
     init,
@@ -283,13 +278,12 @@ type InitialConfig = {
   availableWidth: number;
   columnLayout?: ColumnLayout;
   dataSource: DataSource;
-  isRowSelectable?: (dataRow: DataRow) => boolean;
   selectionModel?: TableSelectionModel;
   tableConfig: TableConfig;
 };
 
 function init(
-  { availableWidth, dataSource, isRowSelectable, selectionModel, tableConfig }: InitialConfig,
+  { availableWidth, dataSource, selectionModel, tableConfig }: InitialConfig,
   previousConfig?: InternalTableModel,
 ): InternalTableModel {
   const { checkboxColumnWidth = 25, columns, ...tableAttributes } = tableConfig;
@@ -320,9 +314,6 @@ function init(
         : CheckboxColumnDescriptor(selectionModel, checkboxColumnWidth),
       1,
     );
-    if (isRowSelectable) {
-      checkboxCol.isRowSelectable = isRowSelectable;
-    }
     runtimeColumns.splice(0, 0, checkboxCol);
   }
 

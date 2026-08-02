@@ -733,7 +733,7 @@ test.describe("Session table editing (createSessionTable)", () => {
     await expect(submitButton).toBeEnabled();
   });
 
-  test("soft-deleted row checkbox is checked+disabled and stays that way after selecting another row", async ({
+  test("soft-deleted row retains vuuTableRow-noSelect class after another row is selected", async ({
     mount,
     page,
   }) => {
@@ -748,16 +748,108 @@ test.describe("Session table editing (createSessionTable)", () => {
     await checkboxRow2.click();
     await page.getByRole("button", { name: "Delete" }).click();
 
-    // After soft-delete: row 2 checkbox should be checked AND disabled
+    // After soft-delete: row 2 is checked and has noSelect class
     await expect(checkboxRow2).toBeChecked();
-    await expect(checkboxRow2).toBeDisabled();
+    await expect(table.row(2)).toHaveClass(/vuuTableRow-noSelect/);
 
-    // Click another row's checkbox (row 3)
+    // Select row 3 — this issues a SELECT_ROW which clears existing server selection
+    await table.locateCell(3, 1).getByRole("checkbox").click();
+
+    // Row 2 is no longer server-selected but remains non-selectable (vuuMsg still SOFT_DELETED)
+    await expect(table.row(2)).toHaveClass(/vuuTableRow-noSelect/);
+    await expect(table.row(2).getByRole("button", { name: "Undo" })).toBeVisible();
+  });
+
+  test("clicking a soft-deleted row checkbox does not change row 3's selection state", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<CreateSessionTableInstruments />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+
+    const table = new TableOM(page.getByRole("table"));
+    const checkboxRow2 = table.locateCell(2, 1).getByRole("checkbox");
     const checkboxRow3 = table.locateCell(3, 1).getByRole("checkbox");
-    await checkboxRow3.click();
 
-    // Row 2 checkbox should STILL be checked+disabled (checkboxRowLevelProps persists)
-    await expect(checkboxRow2).toBeChecked();
-    await expect(checkboxRow2).toBeDisabled();
+    // Soft-delete row 2, then select row 3
+    await checkboxRow2.click();
+    await page.getByRole("button", { name: "Delete" }).click();
+    await checkboxRow3.click();
+    await expect(checkboxRow3).toBeChecked();
+
+    // Click the soft-deleted row's checkbox (force bypasses pointer-events:none CSS)
+    await checkboxRow2.click({ force: true });
+    // isRowSelectable blocks the click — row 3 must remain selected, row 2 unaffected
+    await expect(checkboxRow3).toBeChecked();
+    await expect(table.row(2)).toHaveClass(/vuuTableRow-noSelect/);
+  });
+
+  test("delete button stays enabled after soft-delete (pending deleteCount > 0)", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<CreateSessionTableInstruments />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+
+    const table = new TableOM(page.getByRole("table"));
+    const deleteButton = page.getByRole("button", { name: "Delete" });
+
+    await table.locateCell(2, 1).click();
+    await deleteButton.click();
+    // selectionCount is 0 after delete, but deleteCount > 0 keeps it enabled
+    await expect(deleteButton).toBeEnabled();
+  });
+
+  test("delete button is disabled after all soft-deletions are undone", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<CreateSessionTableInstruments />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+
+    const table = new TableOM(page.getByRole("table"));
+    const deleteButton = page.getByRole("button", { name: "Delete" });
+
+    // Soft-delete two rows — use Ctrl+click to select both before deleting
+    await table.locateCell(2, 1).click();
+    await table.locateCell(3, 1).click({ modifiers: ["Control"] });
+    await deleteButton.click();
+    await expect(deleteButton).toBeEnabled();
+
+    // Undo both rows — deleteCount returns to 0
+    await table.row(2).getByRole("button", { name: "Undo" }).click();
+    await expect(deleteButton).toBeEnabled();
+    await table.row(3).getByRole("button", { name: "Undo" }).click();
+    await expect(deleteButton).toBeDisabled();
+  });
+
+  test("block selection spanning a soft-deleted row selects only the selectable rows", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<CreateSessionTableInstruments />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+
+    const table = new TableOM(page.getByRole("table"));
+
+    // Soft-delete row 3
+    await table.locateCell(3, 1).click();
+    await page.getByRole("button", { name: "Delete" }).click();
+
+    // Click row 2 as the anchor, then shift-click row 5 for block range 2→5
+    await table.locateCell(2, 1).click();
+    await table.locateCell(5, 1).click({ modifiers: ["Shift"] });
+
+    // Rows 2, 4, 5 must be selected; row 3 was non-selectable and should be skipped
+    await expect(table.row(2)).toHaveAttribute("aria-selected", "true");
+    await expect(table.row(3)).not.toHaveAttribute("aria-selected", "true");
+    await expect(table.row(4)).toHaveAttribute("aria-selected", "true");
+    await expect(table.row(5)).toHaveAttribute("aria-selected", "true");
+    // Row 3 is still soft-deleted — undo button remains
+    await expect(table.row(3).getByRole("button", { name: "Undo" })).toBeVisible();
   });
 });

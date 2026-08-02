@@ -227,7 +227,7 @@ export const useTable = ({
     headings,
     tableAttributes,
     tableConfig,
-  } = useTableModel({ config, dataSource, isRowSelectable, selectionModel, availableWidth });
+  } = useTableModel({ config, dataSource, selectionModel, availableWidth });
 
   const columnsRef = useStableReference(columns);
 
@@ -238,7 +238,6 @@ export const useTable = ({
   useLayoutEffectSkipFirst(() => {
     dispatchTableModelAction({
       availableWidth,
-      isRowSelectable,
       selectionModel,
       type: "init",
       tableConfig: tableConfigRef.current,
@@ -249,7 +248,6 @@ export const useTable = ({
     config,
     dataSource,
     dispatchTableModelAction,
-    isRowSelectable,
     selectionModel,
   ]);
 
@@ -744,6 +742,7 @@ export const useTable = ({
     allowSelectCheckboxRow,
     containerRef,
     dataSource,
+    dataRowsRef,
     highlightedIndexRef,
     isRowSelectable,
     onSelect: handleSelect,

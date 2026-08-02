@@ -10,6 +10,7 @@ import {
   dispatchMouseEvent,
   queryClosest,
   selectItem,
+  splitSelectableRanges,
 } from "@vuu-ui/vuu-utils";
 import {
   KeyboardEvent,
@@ -51,6 +52,7 @@ export interface SelectionHookProps
   extends Pick<TableProps, "allowSelectCheckboxRow" | "onSelectionChange"> {
   containerRef: RefObject<HTMLElement | null>;
   dataSource: DataSource;
+  dataRowsRef: RefObject<DataRow[]>;
   highlightedIndexRef: RefObject<number | undefined>;
   /**
    * When provided, rows for which this returns false will not be selectable.
@@ -66,6 +68,7 @@ export const useSelection = ({
   allowSelectCheckboxRow,
   containerRef,
   dataSource,
+  dataRowsRef,
   highlightedIndexRef,
   isRowSelectable,
   onSelect,
@@ -127,7 +130,22 @@ export const useSelection = ({
         newRowIdentifier,
         rangeSelect,
       );
-
+      if (rangeSelect && isRowSelectable && activeRowKey && toRowKey) {
+        // Split the range into sub-ranges, skipping non-selectable rows
+        const minIdx = Math.min(rowIdx, activeRowKey.rowIdx);
+        const maxIdx = Math.max(rowIdx, activeRowKey.rowIdx);
+        const rowsInRange = dataRowsRef.current
+          .filter((r) => r.index >= minIdx && r.index <= maxIdx)
+          .sort((a, b) => a.index - b.index);
+        const requests = splitSelectableRanges(
+          rowsInRange,
+          isRowSelectable,
+          keepExistingSelection,
+        );
+        lastActiveRef.current = newRowIdentifier;
+        requests.forEach((req) => onSelectionChange(req));
+        return;
+      }
       const selectRequest = selectOperation(
         selectionModel,
         fromRowKey,
