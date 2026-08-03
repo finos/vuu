@@ -112,6 +112,7 @@ export interface TableHookProps
     | "disableFocus"
     | "highlightedIndex"
     | "id"
+    | "isRowSelectable"
     | "navigationStyle"
     | "onConfigChange"
     | "onDragStart"
