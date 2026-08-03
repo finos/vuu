@@ -130,6 +130,8 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(using table
 
   override def deleteRow(params: RpcParams): RpcFunctionResult = ???
 
+  override def deleteSelectedRows(params: RpcParams): RpcFunctionResult = ???
+
   override def deleteCell(params: RpcParams): RpcFunctionResult = ???
 
   override def addRow(params: RpcParams): RpcFunctionResult = ???
@@ -139,4 +141,6 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(using table
   override def submitForm(params: RpcParams): RpcFunctionResult = ???
 
   override def closeForm(params: RpcParams): RpcFunctionResult = ???
+
+  override def undoRowChange(params: RpcParams): RpcFunctionResult = ???
 }

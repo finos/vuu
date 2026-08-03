@@ -81,26 +81,26 @@ export interface ArrayDataSourceConstructorProps
 
 const toDataSourceRow =
   (indexOfKeyColumn: number, index?: Map<string, number>) =>
-  (
-    data: Array<bigint | VuuRowDataItemType>,
-    idx: number,
-  ): DataSourceRowWithBigint => {
-    const key = `${data[indexOfKeyColumn]}`;
-    index?.set(key, idx);
-    return [
-      idx,
-      idx,
-      true,
-      false,
-      1,
-      0,
-      key,
-      0,
-      0, // ts
-      false, // isNew
-      ...data,
-    ];
-  };
+    (
+      data: Array<bigint | VuuRowDataItemType>,
+      idx: number,
+    ): DataSourceRowWithBigint => {
+      const key = `${data[indexOfKeyColumn]}`;
+      index?.set(key, idx);
+      return [
+        idx,
+        idx,
+        true,
+        false,
+        1,
+        0,
+        key,
+        0,
+        0, // ts
+        false, // isNew
+        ...data,
+      ];
+    };
 
 const buildTableSchema = (
   columns: readonly ColumnDescriptor[],
@@ -121,8 +121,7 @@ const buildTableSchema = (
 
 export class ArrayDataSource
   extends EventEmitter<DataSourceEvents>
-  implements DataSourceBase<DataSourceRowWithBigint>
-{
+  implements DataSourceBase<DataSourceRowWithBigint> {
   protected clientCallback: DataSourceSubscribeCallback | undefined;
   protected columnDescriptors: readonly ColumnDescriptor[];
   /** sorted offsets of data within raw data, reflecting sort order
@@ -151,6 +150,7 @@ export class ArrayDataSource
   #freezeTimestamp: number | undefined = undefined;
   #keys = new KeySet(NULL_RANGE);
   #links: LinkDescriptorWithLabel[] | undefined;
+  #maxRangeEnd = Number.MAX_SAFE_INTEGER;
   #range = Range(0, 0);
   #status: DataSourceStatus = "initialising";
   #title: string | undefined;
@@ -233,6 +233,10 @@ export class ArrayDataSource
     this.#status = "subscribed";
     this.lastRangeServed = { from: 0, to: 0 };
 
+    if (this.tableSchema.rangeLimits) {
+      this.#maxRangeEnd = this.tableSchema.rangeLimits.maxRangeEnd;
+    }
+
     let config = this._config;
 
     const hasConfigProps =
@@ -268,6 +272,7 @@ export class ArrayDataSource
       this.emit(
         "resize",
         this.processedData ? this.processedData.length : this.#data.length,
+        this.#maxRangeEnd,
       );
 
       if (range && !this.#range.equals(range)) {
@@ -493,14 +498,14 @@ export class ArrayDataSource
       if (config) {
         const newConfig: DataSourceConfig =
           config?.filterSpec?.filter &&
-          config?.filterSpec.filterStruct === undefined
+            config?.filterSpec.filterStruct === undefined
             ? {
-                ...config,
-                filterSpec: {
-                  filter: config.filterSpec.filter,
-                  filterStruct: parseFilter(config.filterSpec.filter),
-                },
-              }
+              ...config,
+              filterSpec: {
+                filter: config.filterSpec.filter,
+                filterStruct: parseFilter(config.filterSpec.filter),
+              },
+            }
             : config;
 
         this._config = withConfigDefaults(newConfig);
@@ -645,14 +650,14 @@ export class ArrayDataSource
       if (config) {
         const newConfig: DataSourceConfig =
           config?.filterSpec?.filter &&
-          config?.filterSpec.filterStruct === undefined
+            config?.filterSpec.filterStruct === undefined
             ? {
-                ...config,
-                filterSpec: {
-                  filter: config.filterSpec.filter,
-                  filterStruct: parseFilter(config.filterSpec.filter),
-                },
-              }
+              ...config,
+              filterSpec: {
+                filter: config.filterSpec.filter,
+                filterStruct: parseFilter(config.filterSpec.filter),
+              },
+            }
             : config;
         if (preserveExistingConfigAttributes) {
           this._config = {
@@ -677,6 +682,10 @@ export class ArrayDataSource
 
   get size() {
     return this.processedData?.length ?? this.#data.length;
+  }
+
+  get maxRangeEnd() {
+    return this.#maxRangeEnd;
   }
 
   get range() {
@@ -930,7 +939,7 @@ export class ArrayDataSource
     const { from, to } = this.#range;
     const deletedIndex = doomedIndex ?? dataIndex;
     if (deletedIndex >= from && deletedIndex < to) {
-      this.#keys.reset(this.range.withBuffer);
+      this.#keys.reset(this.rangeWithBufferWithinMaxRangeEnd);
       this.sendRowsToClient(true);
     }
 
@@ -939,6 +948,8 @@ export class ArrayDataSource
   };
 
   private setRange(range: Range, forceFullRefresh = false) {
+    this.constrainRangeToMaxRangeEnd(range);
+
     if (range.from !== this.#range.from || range.to !== this.#range.to) {
       const currentPageCount = Math.ceil(
         this.size / (this.#range.to - this.#range.from),
@@ -946,7 +957,9 @@ export class ArrayDataSource
       const newPageCount = Math.ceil(this.size / (range.to - range.from));
 
       this.#range = range;
-      const keysResequenced = this.#keys.reset(range.withBuffer);
+      const keysResequenced = this.#keys.reset(
+        this.rangeWithBufferWithinMaxRangeEnd,
+      );
       this.sendRowsToClient(forceFullRefresh || keysResequenced);
 
       requestAnimationFrame(() => {
@@ -959,6 +972,31 @@ export class ArrayDataSource
     } else if (forceFullRefresh) {
       this.sendRowsToClient(forceFullRefresh);
     }
+  }
+
+  private constrainRangeToMaxRangeEnd(range: Range) {
+    if (this.#maxRangeEnd === Number.MAX_SAFE_INTEGER) {
+      return;
+    }
+
+    const pageSize = Math.max(0, range.to - range.from);
+
+    if (range.from >= this.#maxRangeEnd) {
+      range.from = Math.max(0, this.#maxRangeEnd - pageSize);
+      range.to = this.#maxRangeEnd;
+    } else if (range.to > this.#maxRangeEnd) {
+      range.to = this.#maxRangeEnd;
+    }
+  }
+
+  private get rangeWithBufferWithinMaxRangeEnd(): VuuRange {
+    const withBuffer = this.#range.withBuffer;
+    return this.#maxRangeEnd === Number.MAX_SAFE_INTEGER
+      ? withBuffer
+      : {
+        from: withBuffer.from,
+        to: Math.min(withBuffer.to, this.#maxRangeEnd),
+      };
   }
 
   sendSizeUpdateToClient() {
@@ -983,8 +1021,11 @@ export class ArrayDataSource
     } else {
       const rowRange =
         this.rangeChangeRowset === "delta" && !forceFullRefresh
-          ? rangeNewItems(this.lastRangeServed, this.#range.withBuffer)
-          : this.#range.withBuffer;
+          ? rangeNewItems(
+            this.lastRangeServed,
+            this.rangeWithBufferWithinMaxRangeEnd,
+          )
+          : this.rangeWithBufferWithinMaxRangeEnd;
       const data = this.processedData ?? this.#data;
 
       const rowsWithinViewport = data

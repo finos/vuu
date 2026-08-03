@@ -64,14 +64,16 @@ export const groupRowsByViewport = (rows: VuuRow[]): ViewportRowMap => {
 export const createSchemaFromTableMetadata = ({
   columns,
   dataTypes,
-  editableColumns=[],
+  editableColumns = [],
   key,
+  maxRangeEnd,
+  maxRangeWidth,
   table,
 }: Omit<VuuTableMetaResponse, "type">): Readonly<TableSchema> => {
   return {
     table,
     columns: columns.map((col, idx) => {
-      if (editableColumns.includes(col)){
+      if (editableColumns.includes(col)) {
         return {
           editable: true,
           name: col,
@@ -82,8 +84,12 @@ export const createSchemaFromTableMetadata = ({
         name: col,
         serverDataType: dataTypes[idx],
       };
-  }),
+    }),
     key,
+    rangeLimits: {
+      maxRangeEnd,
+      maxRangeWidth
+    }
   };
 };
 

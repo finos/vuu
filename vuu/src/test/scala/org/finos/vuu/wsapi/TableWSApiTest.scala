@@ -29,6 +29,8 @@ class TableWSApiTest extends WebSocketApiTestBase {
       responseBody.columns.length shouldEqual 2
       responseBody.columns shouldEqual Array("id", "account")
       responseBody.editableColumns shouldEqual Array("account")
+      responseBody.maxRangeEnd shouldEqual Int.MaxValue
+      responseBody.maxRangeWidth shouldEqual 1000
     }
 
     Scenario("For a table with no view port def defined") {
@@ -112,7 +114,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
     val tableDef = TableDef(
       name = "users",
       keyField = "id",
-      columns =
+      customColumns =
         new ColumnBuilder()
           .addString("id")
           .addString("name")
@@ -152,7 +154,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
     val tableDef2 = TableDef(
       name = "default",
       keyField = "id",
-      columns =
+      customColumns =
         new ColumnBuilder()
           .addString("id")
           .build()

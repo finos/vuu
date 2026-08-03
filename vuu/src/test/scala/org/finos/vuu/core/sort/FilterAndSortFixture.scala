@@ -4,7 +4,7 @@ import org.finos.toolbox.collection.MapDiffResult
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.text.{AsciiUtil, CodeGenUtil}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
-import org.finos.vuu.api.{Index, Indices, TableDef}
+import org.finos.vuu.api.{Index, Indices, TableDef, TableDefOptions}
 import org.finos.vuu.core.filter.FilterClause
 import org.finos.vuu.core.filter.`type`.AntlrBasedFilter
 import org.finos.vuu.core.table.datatype.Scale.{EIGHT, FOUR, Six, Two}
@@ -129,13 +129,17 @@ object FilterAndSortFixture {
       "theta:ScaledDecimal8",
       "nano:EpochTimestampNano"
     )
+
     val tableDef = TableDef(
       name = "orders",
       keyField = "orderId",
-      columns = columns,
-      indices = Indices(indices.map(f => Index(f)) *),
-      joinFields = "ric", "orderId", "ccyCross",
+      customColumns = columns,
+      options = TableDefOptions(
+        indices = Indices(indices.map(f => Index(f)) *),
+        joinFields = List("ric", "orderId", "ccyCross")
+      )
     )
+
     val table: InMemDataTable = new InMemDataTable(tableDef, new TestFriendlyJoinTableProvider)(new MetricsProviderImpl, clock)
     rows.foreach(row => table.processUpdate(row.key, row))
     table

@@ -32,19 +32,19 @@ class ModuleSyntaxTest extends AnyFeatureSpec with Matchers with GivenWhenThen {
           DefaultColumn.MSG.name + ":String"
         )
       )
-      instruments.joinFields should equal(Seq("ric"))
+      instruments.options.joinFields should equal(Seq("ric"))
 
       val prices = module.tableDefs.tail.head
       prices.name should equal("prices")
       prices.getColumns.length should equal(10)
-      prices.joinFields should equal(Seq("ric"))
+      prices.options.joinFields should equal(Seq("ric"))
 
       val instrumentPrices = module.tableDefs.tail.tail.head
       instrumentPrices.name should equal("instrumentPrices")
       instrumentPrices.getColumns.length should equal(prices.customColumns.length + instruments.customColumns.length + instruments.defaultColumnNames.size - 1)
       // exclude default columns in left and right table and exclude join column, and add default columns to the join table itself
 
-      instrumentPrices.joinFields should equal(Seq())
+      instrumentPrices.options.joinFields should equal(Seq())
     }
   }
 }

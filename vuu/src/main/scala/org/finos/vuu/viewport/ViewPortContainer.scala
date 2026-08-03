@@ -415,7 +415,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     val permissionFilter = viewPort.getPermissionFilter
     val frozenTime = viewPort.viewPortFrozenTime
 
-    val aSort = parseSort(sort, columns, viewPort.table.asTable.getTableDef.defaultSort)
+    val aSort = parseSort(sort, columns, viewPort.table.asTable.getTableDef.options.defaultSort)
 
     val aFilter = parseFilter(filterSpec)
 
@@ -548,7 +548,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     logger.trace(s"[VP] Creating viewport on table ${table.name} in session ${clientSession.sessionId}. Filter: $filterSpec. Sort: $sort. GroupBy: $groupBy")
     val id = ViewPortId.oneNew()
 
-    val aSort = parseSort(sort, columns, table.asTable.getTableDef.defaultSort)
+    val aSort = parseSort(sort, columns, table.asTable.getTableDef.options.defaultSort)
 
     val aFilter = parseFilter(filterSpec)
 
@@ -563,7 +563,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     val structural = viewport.ViewPortStructuralFields(aTable, columns, viewPortDef, filtAndSort, filterSpec,
       sort, groupBy, ClosedTreeNodeState, AllowAllPermissionFilter, None)
 
-    val viewPort = new ViewPortImpl(id, user, clientSession, outboundQ, new AtomicReference[ViewPortStructuralFields](structural), new AtomicReference[ViewPortRange](range))
+    val viewPort = new ViewPortImpl(id, user, clientSession, outboundQ, new AtomicReference[ViewPortStructuralFields](structural))
+    viewPort.setRange(range)
 
     val permissionFilter = table.asTable.getTableDef.permissionFilter(viewPort, tableContainer)
 
@@ -890,7 +891,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     logger.trace(s"[VP] Finding visual links for viewport $vpId in session ${clientSession.sessionId}")
     val viewPort = getViewportInSession(vpId, clientSession)
     val viewPorts = listActiveViewPortsForSession(clientSession)
-    val vpLinks = for (link <- viewPort.table.asTable.getTableDef.links.links; viewPort <- viewPorts; if link.toTable == viewPort.table.linkableName) yield (link, viewPort)
+    val vpLinks = for (link <- viewPort.table.asTable.getTableDef.options.links.links; viewPort <- viewPorts; if link.toTable == viewPort.table.linkableName) yield (link, viewPort)
     logger.debug(s"[VP] Found ${vpLinks.length} visual links for viewport $vpId in session ${clientSession.sessionId}")
     vpLinks
   }

@@ -3,7 +3,7 @@ package org.finos.vuu.core.table
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock, TestFriendlyClock}
-import org.finos.vuu.api.TableDef
+import org.finos.vuu.api.{TableDef, TableDefOptions}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.TableTestHelper.*
@@ -23,7 +23,14 @@ class DataTableTest extends AnyFeatureSpec with Matchers {
   private implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
 
   private val joinProvider = JoinTableProviderImpl()
-  private val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+  private val pricesDef = TableDef(
+    "prices",
+    "ric",
+    Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+    options = TableDefOptions(
+      joinFields = List("ric")
+    )
+  )
 
   Feature("Test data table functionality") {
 

@@ -90,6 +90,8 @@ export interface VuuTableMetaResponse {
   columns: VuuColumns;
   dataTypes: VuuColumnDataType[];
   editableColumns: string[];
+  maxRangeEnd: number;
+  maxRangeWidth: number;
   key: string;
   table: VuuTable;
   type: "TABLE_META_RESP";
@@ -204,12 +206,19 @@ export interface VuuViewportRangeRequest {
   viewPortId: string;
 }
 
-export interface VuuViewportRangeResponse {
+export interface VuuViewportRangeSuccess {
   from: number;
   to: number;
   type: "CHANGE_VP_RANGE_SUCCESS";
   viewPortId: string;
 }
+export interface VuuViewportRangeReject {
+  msg: string;
+  type: "CHANGE_VP_RANGE_REJECT";
+  viewPortId: string;
+}
+
+export type VuuViewportRangeResponse = VuuViewportRangeSuccess | VuuViewportRangeReject
 
 export interface VuuViewportDisableRequest {
   type: "DISABLE_VP";
@@ -306,11 +315,11 @@ export declare type SelectRowResponse = SelectRowSuccess | SelectRowReject;
 export declare interface SelectSuccessWithRowCount {
   selectedRowCount: number;
   type:
-    | "SELECT_ROW_SUCCESS"
-    | "DESELECT_ROW_SUCCESS"
-    | "SELECT_ROW_RANGE_SUCCESS"
-    | "SELECT_ALL_SUCCESS"
-    | "DESELECT_ALL_SUCCESS";
+  | "SELECT_ROW_SUCCESS"
+  | "DESELECT_ROW_SUCCESS"
+  | "SELECT_ROW_RANGE_SUCCESS"
+  | "SELECT_ALL_SUCCESS"
+  | "DESELECT_ALL_SUCCESS";
 }
 
 export interface SelectRowSuccess extends SelectSuccessWithRowCount {

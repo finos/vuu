@@ -5,7 +5,7 @@ import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.api.TableDef
+import org.finos.vuu.api.{TableDef, TableDefOptions}
 import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
 import org.finos.vuu.core.table.*
 import org.finos.vuu.core.tree.TreeSessionTable
@@ -28,7 +28,10 @@ object PerfTestBigRoupByMain extends App with StrictLogging {
   //      val highPriorityQueue = new OutboundRowPublishQueue()
   //      val viewPortContainer = new ViewPortContainer(tableContainer)
 
-  val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double", "exchange:String"), "ric")
+  val pricesDef = TableDef("prices", "ric",
+    Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double", "exchange:String"),
+    TableDefOptions(joinFields = List("ric"))
+  )
 
   val table = new InMemDataTable(pricesDef, joinProvider)
 

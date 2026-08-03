@@ -1105,6 +1105,19 @@ export class ServerProxy {
         }
         break;
 
+        case "CHANGE_VP_RANGE_REJECT":
+        {
+          const viewport = this.viewports.get(body.viewPortId);
+          if (viewport) {
+            infoEnabled &&
+              info(
+                `<=== CHANGE_VP_RANGE_REJECT<#${requestId}>`,
+              );
+            viewport.rejectOperation(requestId, body.msg);
+          }
+        }
+        break;
+
       case Message.OPEN_TREE_SUCCESS:
       case Message.CLOSE_TREE_SUCCESS:
         break;

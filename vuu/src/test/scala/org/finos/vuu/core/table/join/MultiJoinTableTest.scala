@@ -30,27 +30,51 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
 
       val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
-      val ordersDef = TableDef("orders", "orderId", Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyPairToUsd: String"), "ric", "orderId", "ccyPairToUsd")
+      val ordersDef = TableDef(
+        "orders",
+        "orderId",
+        Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyPairToUsd: String"),
+        TableDefOptions(
+          joinFields = List("ric", "orderId", "ccyPairToUsd")
+        )
+      )
 
-      val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+      val pricesDef = TableDef(
+        "prices",
+        "ric",
+        Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+        TableDefOptions(
+          joinFields = List("ric")
+        )
+      )
 
-      val instrumentDef = TableDef("instruments", "ric", Columns.fromNames("ric:String", "bbg:String", "isin:String"), "ric")
+      val instrumentDef = TableDef(
+        "instruments",
+        "ric",
+        Columns.fromNames("ric:String", "bbg:String", "isin:String"),
+        TableDefOptions(
+          joinFields = List("ric")
+        )
+      )
 
-      val fxRatesDef = TableDef("fx", "ccyPair", Columns.fromNames("ccyPair:String", "bid:Double", "ask:String"), "ccyPair")
+      val fxRatesDef = TableDef(
+        "fx",
+        "ccyPair",
+        Columns.fromNames("ccyPair:String", "bid:Double", "ask:String"),
+        TableDefOptions(
+          joinFields = List("ccyPair")
+        )
+      )
 
       val joinDef = JoinTableDef(
         name          = "orderPrices",
-        visibility = Public,
+        joinOptions = JoinTableDefOptions(),
         baseTable     = ordersDef,
         joinColumns   = Columns.allFrom(ordersDef) ++
                         Columns.allFromExceptDefaultAnd(pricesDef, "ric") ++
                         Columns.allFromExceptDefaultAnd(instrumentDef, "ric") ++
                         Columns.aliased(fxRatesDef, ("bid","fxBid"), ("ask","fxAsk"), ("ccyPair","ccyPair")),
                         //Columns.calculated("chris1", "bid * fxBid"),
-        links = VisualLinks(),
-        permissionFunction = (_,_) => AllowAllPermissionFilter,
-        defaultSort = SortSpec(List.empty),
-        joinFields = Seq(),
         joins  =
             JoinTo(
               table = pricesDef,
@@ -118,27 +142,51 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
 
       val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
-      val ordersDef = TableDef("orders", "orderId", Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyPairToUsd: String"), "ric", "orderId", "ccyPairToUsd")
+      val ordersDef = TableDef(
+        "orders",
+        "orderId",
+        Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyPairToUsd: String"),
+        TableDefOptions(
+          joinFields = List("ric", "orderId", "ccyPairToUsd")
+        )
+      )
 
-      val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+      val pricesDef = TableDef(
+        "prices",
+        "ric",
+        Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+        TableDefOptions(
+          joinFields = List("ric")
+        )
+      )
 
-      val instrumentDef = TableDef("instruments", "ric", Columns.fromNames("ric:String", "bbg:String", "isin:String"), "ric")
+      val instrumentDef = TableDef(
+        "instruments",
+        "ric",
+        Columns.fromNames("ric:String", "bbg:String", "isin:String"),
+        TableDefOptions(
+          joinFields = List("ric")
+        )
+      )
 
-      val fxRatesDef = TableDef("fx", "ccyPair", Columns.fromNames("ccyPair:String", "bid:Double", "ask:String"), "ccyPair")
+      val fxRatesDef = TableDef(
+        "fx",
+        "ccyPair",
+        Columns.fromNames("ccyPair:String", "bid:Double", "ask:String"),
+        TableDefOptions(
+          joinFields = List("ccyPair")
+        )
+      )
 
       val joinDef = JoinTableDef(
         name          = "orderPrices",
-        visibility = Public,
+        joinOptions = JoinTableDefOptions(),
         baseTable     = ordersDef,
         joinColumns   = Columns.allFrom(ordersDef) ++
           Columns.allFromExceptDefaultAnd(pricesDef, "ric") ++
           Columns.allFromExceptDefaultAnd(instrumentDef, "ric") ++
           Columns.aliased(fxRatesDef, ("bid","fxBid"), ("ask","fxAsk"), ("ccyPair","ccyPair")),
         //Columns.calculated("chris1", "bid * fxBid"),
-        links = VisualLinks(),
-        permissionFunction = (_,_) => AllowAllPermissionFilter,
-        defaultSort = SortSpec(List.empty),
-        joinFields = Seq(),
         joins  =
           JoinTo(
             table = pricesDef,

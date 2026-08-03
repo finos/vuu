@@ -1,7 +1,6 @@
 package org.finos.vuu.util;
 
 import org.finos.vuu.api.ColumnBuilder;
-import org.finos.vuu.api.TableDef;
 import org.finos.vuu.core.table.Columns;
 import org.finos.vuu.core.table.RowWithData;
 import org.finos.vuu.test.FakeInMemoryTable;
@@ -21,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
-import static org.finos.vuu.util.ScalaCollectionConverter.toScalaSeq;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SchemaMapperJavaFunctionalTest {
@@ -43,12 +41,13 @@ public class SchemaMapperJavaFunctionalTest {
                     .withEntity(SchemaJavaTestData.class)
                     .withIndex("ID_INDEX", toScala(List.of("Id")))
                     .build();
-            var tableDef = TableDef.apply(
-                    "MyJavaExampleTable",
-                    "Id",
-                    Columns.fromExternalSchema(externalEntitySchema),
-                    toScalaSeq(List.of())
-            );
+
+            var tableDef = new TableDefBuilder()
+                    .name("MyJavaExampleTable")
+                    .keyField("Id")
+                    .customColumns(Columns.fromExternalSchema(externalEntitySchema))
+                    .build();
+
             var schemaMapper = SchemaMapperBuilder.apply(externalEntitySchema, tableDef.getColumns())
                     .build();
             var table = new FakeInMemoryTable("SchemaMapJavaTest", tableDef);
@@ -74,16 +73,19 @@ public class SchemaMapperJavaFunctionalTest {
                     .withEntity(SchemaJavaTestData.class)
                     .withIndex("ID_INDEX", toScala(List.of("Id")))
                     .build();
-            var tableDef = TableDef.apply(
-                    "MyJavaExampleTable",
-                    "Id",
-                    new ColumnBuilder()
-                            .addDouble("SomeOtherName")
-                            .addString("Id")
-                            .addInt("ClientId")
-                            .build(),
-                    toScalaSeq(List.of())
-            );
+
+            var tableDef = new TableDefBuilder()
+                    .name("MyJavaExampleTable")
+                    .keyField("Id")
+                    .customColumns(
+                            new ColumnBuilder()
+                                    .addDouble("SomeOtherName")
+                                    .addString("Id")
+                                    .addInt("ClientId")
+                                    .build()
+                    )
+                    .build();
+
             var schemaMapper = SchemaMapperBuilder.apply(externalEntitySchema, tableDef.getColumns())
                     .withFieldsMap(
                             toScala(Map.of("Id", "Id",
@@ -117,15 +119,18 @@ public class SchemaMapperJavaFunctionalTest {
                     .withField("decimalValue", BigDecimal.class)
                     .withIndex("ID_INDEX", toScala(List.of("Id")))
                     .build();
-            var tableDef = TableDef.apply(
-                    "MyJavaExampleTable",
-                    "Id",
-                    new ColumnBuilder()
-                            .addString("Id")
-                            .addDouble("doubleValue")
-                            .build(),
-                    toScalaSeq(List.of())
-            );
+
+            var tableDef = new TableDefBuilder()
+                    .name("MyJavaExampleTable")
+                    .keyField("Id")
+                    .customColumns(
+                            new ColumnBuilder()
+                                    .addString("Id")
+                                    .addDouble("doubleValue")
+                                    .build()
+                    )
+                    .build();
+
             var typeConverterContainer = TypeConverterContainerBuilder.apply()
                     .withConverter(TypeConverter.apply(BigDecimal.class, Double.class, BigDecimal::doubleValue))
                     .withConverter(TypeConverter.apply(Double.class, BigDecimal.class, v -> new BigDecimal(v.toString())))

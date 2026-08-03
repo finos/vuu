@@ -3,7 +3,7 @@ package org.finos.vuu.viewport
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
-import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, TableDef, VisualLinks}
+import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTableDefOptions, JoinTo, LeftOuterJoin, TableDef, TableDefOptions, VisualLinks}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.TableTestHelper.combineQs
@@ -21,7 +21,7 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
   implicit val clock: Clock = new TestFriendlyClock(TestTimeStamp.EPOCH_DEFAULT)
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
-  Feature("Create a Viewport with calc on a non-existant column") {
+  Feature("Create a Viewport with calc on a non-existent column") {
 
     Scenario("Scenario 1") {
 
@@ -218,13 +218,24 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
       val ordersDef = TableDef(
         name = "orders",
         keyField = "orderId",
-        columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-        joinFields = "ric", "orderId")
+        customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+        options = TableDefOptions(
+          joinFields = List("ric", "orderId")
+        )
+      )
 
-      val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+      val pricesDef = TableDef(
+        "prices",
+        "ric",
+        Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+        options = TableDefOptions(
+          joinFields = List("ric")
+        )
+      )
 
       val joinDef = JoinTableDef(
         name = "orderPrices",
+        joinOptions = JoinTableDefOptions(),
         baseTable = ordersDef,
         joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
         joins =
@@ -232,8 +243,6 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
             table = pricesDef,
             joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
           ),
-        links = VisualLinks(),
-        joinFields = Seq()
       )
 
       val joinProvider = JoinTableProviderImpl()

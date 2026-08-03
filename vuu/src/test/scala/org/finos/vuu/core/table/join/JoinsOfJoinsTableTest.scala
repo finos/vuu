@@ -52,15 +52,35 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
-      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyCross:String"),
-      joinFields = "ric", "orderId", "ccyCross")
+      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyCross:String"),
+      TableDefOptions(
+        joinFields = List("ric", "orderId", "ccyCross")
+      )
+    )
 
-    val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+    val pricesDef = TableDef(
+      "prices",
+      "ric",
+      Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+      TableDefOptions(
+        joinFields = List("ric")
+      )
+    )
 
-    val fxDef = TableDef("fx", "cross", Columns.fromNames("cross:String", "fxbid:Double", "fxask:Double"), "cross")
+    val fxDef = TableDef(
+      "fx",
+      "cross",
+      Columns.fromNames("cross:String", "fxbid:Double", "fxask:Double"),
+      TableDefOptions(
+        joinFields = List("cross")
+      )
+    )
 
     val joinDef = JoinTableDef(
       name = "orderPrices",
+      joinOptions = JoinTableDefOptions(
+        joinFields = Seq("ccyCross", "orderId")
+      ),
       baseTable = ordersDef,
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins =
@@ -68,19 +88,15 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
           table = pricesDef,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
         ),
-      links = VisualLinks(),
-      joinFields = Seq("ccyCross", "orderId")
     )
 
     val joinDefFx = JoinTableDef(
       name = "orderPricesFx",
-      visibility = Public,
+      joinOptions = JoinTableDefOptions(
+        joinFields = Seq("ccyCross", "orderId")
+      ),
       baseTable = ordersDef,
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric") ++ Columns.allFrom(fxDef),
-      links = VisualLinks(),
-      permissionFunction = (_, _) => AllowAllPermissionFilter,
-      defaultSort = SortSpec(List.empty),
-      joinFields = Seq("ccyCross", "orderId"),
       JoinTo(
         table = pricesDef,
         joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
@@ -151,35 +167,52 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
-      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyCross:String"),
-      joinFields = "ric", "orderId", "ccyCross")
+      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyCross:String"),
+      options = TableDefOptions(
+        joinFields = List("ric", "orderId", "ccyCross")
+      )
+    )
 
-    val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+    val pricesDef = TableDef(
+      "prices",
+      "ric",
+      Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+      options = TableDefOptions(
+        joinFields = List("ric")
+      )
+    )
 
-    val fxDef = TableDef("fx", "cross", Columns.fromNames("cross:String", "fxbid:Double", "fxask:Double"), "cross")
+    val fxDef = TableDef(
+      "fx",
+      "cross",
+      Columns.fromNames("cross:String", "fxbid:Double", "fxask:Double"),
+      options = TableDefOptions(
+        joinFields = List("cross")
+      )
+    )
 
     val joinDef = JoinTableDef(
       name = "orderPrices",
       baseTable = ordersDef,
+      joinOptions = JoinTableDefOptions(
+        joinFields = Seq("ccyCross", "orderId")
+      ),
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins =
         JoinTo(
           table = pricesDef,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
         ),
-      links = VisualLinks(),
-      joinFields = Seq("ccyCross", "orderId")
     )
 
     val joinDefFx = JoinTableDef(
       name = "orderPricesFx",
-      visibility = Public,
       baseTable = ordersDef,
+      joinOptions = JoinTableDefOptions(
+        visibility = Public,
+        joinFields = Seq("ccyCross", "orderId"),
+      ),
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric") ++ Columns.allFrom(fxDef),
-      links = VisualLinks(),
-      permissionFunction = (_, _) => AllowAllPermissionFilter,
-      defaultSort = SortSpec(List.empty),
-      joinFields = Seq("ccyCross", "orderId"),
       JoinTo(
         table = pricesDef,
         joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
@@ -252,45 +285,56 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
-      columns = Columns.fromNames("orderId:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-      joinFields = "orderId", "ric")
+      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyCross:String"),
+      options = TableDefOptions(
+        joinFields = List("ric", "orderId", "ccyCross")
+      )
+    )
 
     val instrumentDef = TableDef(
       name = "instruments",
       keyField = "ric",
-      columns = Columns.fromNames("ric:String", "currency:String"),
-      joinFields = "ric", "currency")
+      customColumns = Columns.fromNames("ric:String", "currency:String"),
+      options = TableDefOptions(
+        joinFields = List("ric", "currency")
+      )
+    )
 
     val currencyDef = TableDef(
       "currencies",
       "currency",
       Columns.fromNames("currency:String", "country:String"),
-      "currency")
+      options = TableDefOptions(
+        joinFields = List("currency")
+      )
+    )
 
     val join1Def = JoinTableDef(
       name = "instrumentToCurrency",
       baseTable = instrumentDef,
+      joinOptions = JoinTableDefOptions(
+        joinFields = Seq("ric")
+      ),
       joinColumns = Columns.allFrom(instrumentDef) ++ Columns.allFromExceptDefaultAnd(currencyDef, "currency"),
       joins =
         JoinTo(
           table = currencyDef,
           joinSpec = JoinSpec(left = "currency", right = "currency", LeftOuterJoin)
-        ),
-      links = VisualLinks(),
-      joinFields = Seq("ric")
+        )
     )
 
     val join2Def = JoinTableDef(
       name = "orderToInstrument",
       baseTable = ordersDef,
+      joinOptions = JoinTableDefOptions(
+        joinFields = Seq("orderId")
+      ),
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(join1Def, "ric"),
       joins =
         JoinTo(
           table = join1Def,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
-        ),
-      links = VisualLinks(),
-      joinFields = Seq("orderId")
+        )
     )
 
     val joinProvider = JoinTableProviderImpl()
@@ -378,45 +422,56 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
-      columns = Columns.fromNames("orderId:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-      joinFields = "orderId", "ric")
+      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyCross:String"),
+      options = TableDefOptions(
+        joinFields = List("ric", "orderId", "ccyCross")
+      )
+    )
 
     val instrumentDef = TableDef(
       name = "instruments",
       keyField = "ric",
-      columns = Columns.fromNames("ric:String", "currency:String"),
-      joinFields = "ric", "currency")
+      customColumns = Columns.fromNames("ric:String", "currency:String"),
+      options = TableDefOptions(
+        joinFields = List("ric", "currency")
+      )
+    )
 
     val currencyDef = TableDef(
       "currencies",
       "currency",
       Columns.fromNames("currency:String", "country:String"),
-      "currency")
+      options = TableDefOptions(
+        joinFields = List("currency")
+      )
+    )
 
     val join1Def = JoinTableDef(
       name = "instrumentToCurrency",
       baseTable = instrumentDef,
+      joinOptions = JoinTableDefOptions(
+        joinFields = Seq("ric")
+      ),
       joinColumns = Columns.allFrom(instrumentDef) ++ Columns.allFromExceptDefaultAnd(currencyDef, "currency"),
       joins =
         JoinTo(
           table = currencyDef,
           joinSpec = JoinSpec(left = "currency", right = "currency", LeftOuterJoin)
-        ),
-      links = VisualLinks(),
-      joinFields = Seq("ric")
+        )
     )
 
     val join2Def = JoinTableDef(
       name = "orderToInstrument",
       baseTable = ordersDef,
+      joinOptions = JoinTableDefOptions(
+        joinFields = Seq("orderId")
+      ),
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(join1Def, "ric"),
       joins =
         JoinTo(
           table = join1Def,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
-        ),
-      links = VisualLinks(),
-      joinFields = Seq("orderId")
+        )
     )
 
     val orders = tableContainer.createTable(ordersDef)
@@ -509,48 +564,59 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
-      indices = Indices(Index("orderId"), Index("quantity")),
-      columns = Columns.fromNames("orderId:String", "ric:String", "tradeTime:Long", "quantity:Int"),
-      joinFields = "orderId", "ric")
+      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyCross:String"),
+      options = TableDefOptions(
+        joinFields = List("ric", "orderId", "ccyCross"),
+        indices = Indices(Index("orderId"), Index("quantity")),
+      )
+    )
 
     val instrumentDef = TableDef(
       name = "instruments",
       keyField = "ric",
-      indices = Indices(Index("ric")),
-      columns = Columns.fromNames("ric:String", "currency:String"),
-      joinFields = "ric", "currency")
+      customColumns = Columns.fromNames("ric:String", "currency:String"),
+      options = TableDefOptions(
+        joinFields = List("ric", "currency"),
+        indices = Indices(Index("ric"))
+      )
+    )
 
     val currencyDef = TableDef(
-      name = "currencies",
-      keyField = "currency",
-      indices = Indices(Index("currency")),
-      columns = Columns.fromNames("currency:String", "country:String"),
-      joinFields = "currency")
+      "currencies",
+      "currency",
+      Columns.fromNames("currency:String", "country:String"),
+      options = TableDefOptions(
+        joinFields = List("currency"),
+        indices = Indices(Index("currency")),
+      )
+    )
 
     val join1Def = JoinTableDef(
       name = "instrumentToCurrency",
       baseTable = instrumentDef,
+      joinOptions = JoinTableDefOptions(
+        joinFields = Seq("ric")
+      ),
       joinColumns = Columns.allFrom(instrumentDef) ++ Columns.allFromExceptDefaultAnd(currencyDef, "currency"),
       joins =
         JoinTo(
           table = currencyDef,
           joinSpec = JoinSpec(left = "currency", right = "currency", LeftOuterJoin)
         ),
-      links = VisualLinks(),
-      joinFields = Seq("ric")
     )
 
     val join2Def = JoinTableDef(
       name = "orderToInstrument",
       baseTable = ordersDef,
+      joinOptions = JoinTableDefOptions(
+        joinFields = Seq("orderId")
+      ),
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(join1Def, "ric"),
       joins =
         JoinTo(
           table = join1Def,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
-        ),
-      links = VisualLinks(),
-      joinFields = Seq("orderId"),
+        )
     )
 
     val joinProvider = JoinTableProviderImpl()
@@ -629,48 +695,59 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
-      indices = Indices(Index("orderId"), Index("quantity")),
-      columns = Columns.fromNames("orderId:String", "ric:String", "tradeTime:Long", "quantity:Int", "counterpartyId:String"),
-      joinFields = "orderId", "ric", "counterpartyId")
+      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "counterpartyId:String"),
+      options = TableDefOptions(
+        joinFields = List("ric", "orderId", "counterpartyId"),
+        indices = Indices(Index("orderId"), Index("quantity")),
+      )
+    )
 
     val instrumentDef = TableDef(
       name = "instruments",
       keyField = "ric",
-      indices = Indices(Index("ric")),
-      columns = Columns.fromNames("ric:String", "currency:String"),
-      joinFields = "ric", "currency")
+      customColumns = Columns.fromNames("ric:String", "currency:String"),
+      options = TableDefOptions(
+        joinFields = List("ric", "currency"),
+        indices = Indices(Index("ric"))
+      )
+    )
 
     val orderCounterpartyDef = TableDef(
       name = "counterparties",
       keyField = "counterpartyId",
-      indices = Indices(Index("counterpartyId"), Index("name")),
-      columns = Columns.fromNames("counterpartyId:String", "name:String"),
-      joinFields = "counterpartyId")
+      customColumns = Columns.fromNames("counterpartyId:String", "name:String"),
+      options = TableDefOptions(
+        joinFields = List("counterpartyId"),
+        indices = Indices(Index("counterpartyId"), Index("name")),
+      )
+    )
 
     val join1Def = JoinTableDef(
       name = "orderToInstrument",
       baseTable = ordersDef,
+      joinOptions = JoinTableDefOptions(
+        joinFields = Seq("orderId", "ric", "counterpartyId"),
+      ),
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(instrumentDef, "ric"),
       joins =
         JoinTo(
           table = instrumentDef,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
-        ),
-      links = VisualLinks(),
-      joinFields = Seq("orderId","ric","counterpartyId"),
+        )
     )
 
     val join2Def = JoinTableDef(
       name = "orderToInstrumentAndCounterparty",
       baseTable = join1Def,
+      joinOptions = JoinTableDefOptions(
+        joinFields = Seq("orderId", "ric", "counterpartyId")
+      ),
       joinColumns = Columns.allFrom(join1Def) ++ Columns.allFromExceptDefaultAnd(orderCounterpartyDef, "counterpartyId"),
       joins =
         JoinTo(
           table = orderCounterpartyDef,
           joinSpec = JoinSpec(left = "counterpartyId", right = "counterpartyId", LeftOuterJoin)
-        ),
-      links = VisualLinks(),
-      joinFields = Seq("orderId","ric","counterpartyId")
+        )
     )
 
     val joinProvider = JoinTableProviderImpl()

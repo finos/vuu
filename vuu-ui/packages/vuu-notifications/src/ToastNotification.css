@@ -128,6 +128,7 @@
     .vuuToastNotification-content {
         grid-area: toast-content;
         justify-self: start;
+        white-space: nowrap;
     }
 
     .vuuToastNotification-closeButton.saltButton {

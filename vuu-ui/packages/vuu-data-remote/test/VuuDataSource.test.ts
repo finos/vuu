@@ -600,6 +600,70 @@ describe("VuuDataSource", () => {
 
       expect(send).toHaveBeenCalledTimes(0);
     });
+
+    it("constrains range using maxRangeEnd from subscribed.tableSchema.rangeLimits", async () => {
+      const { send } = await ConnectionManager.serverAPI;
+      const dataSource = new VuuDataSource({ table, viewport: "vp1" });
+      await dataSource.subscribe({}, callback);
+
+      dataSource.handleMessageFromServer({
+        type: "subscribed",
+        tableSchema: {
+          rangeLimits: {
+            maxRangeEnd: 80,
+            maxRangeWidth: 1000,
+          },
+        },
+      } as any);
+
+      dataSource.handleMessageFromServer({
+        type: "viewport-update",
+        mode: "batch",
+        rows: [],
+        size: 1000,
+      } as any);
+
+      send["mockClear"]();
+      dataSource.range = Range(50, 120);
+
+      expect(send).toHaveBeenCalledWith({
+        type: "setViewRange",
+        viewport: "vp1",
+        range: { from: 50, to: 80 },
+      });
+    });
+
+    it("constrains range using maxRangeWidth from subscribed.tableSchema.rangeLimits", async () => {
+      const { send } = await ConnectionManager.serverAPI;
+      const dataSource = new VuuDataSource({ table, viewport: "vp1" });
+      await dataSource.subscribe({}, callback);
+
+      dataSource.handleMessageFromServer({
+        type: "subscribed",
+        tableSchema: {
+          rangeLimits: {
+            maxRangeEnd: 1000,
+            maxRangeWidth: 25,
+          },
+        },
+      } as any);
+
+      dataSource.handleMessageFromServer({
+        type: "viewport-update",
+        mode: "batch",
+        rows: [],
+        size: 1000,
+      } as any);
+
+      send["mockClear"]();
+      dataSource.range = Range(50, 120);
+
+      expect(send).toHaveBeenCalledWith({
+        type: "setViewRange",
+        viewport: "vp1",
+        range: { from: 50, to: 75 },
+      });
+    });
   });
 
   describe("autoSubscribe Columns", () => {

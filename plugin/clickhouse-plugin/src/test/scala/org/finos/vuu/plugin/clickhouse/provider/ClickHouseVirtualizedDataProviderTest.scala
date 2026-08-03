@@ -11,6 +11,7 @@ import org.finos.vuu.plugin.clickhouse.ClickHouseContainer
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.clickhouse.client.options.ClickHouseClientOptions
 import org.finos.vuu.plugin.clickhouse.module.ClickHouseTableModule
+import org.finos.vuu.plugin.clickhouse.module.ClickHouseTableModule.{NO_SELL_TABLE_NAME, TABLE_NAME}
 import org.finos.vuu.plugin.clickhouse.util.ClickHouseCSVIngester
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 import org.finos.vuu.provider.VirtualizedProvider
@@ -50,7 +51,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
         vuuServer.login("testUser")
 
-        val table = vuuServer.tableContainer.getTable("orderHistory")
+        val table = vuuServer.tableContainer.getTable(TABLE_NAME)
         val columns = org.finos.vuu.core.table.ViewPortColumnCreator.create(table, List("quantity", "price", "side", "trader"))
         val testServer = vuuServer.asInstanceOf[org.finos.vuu.test.impl.TestVuuServerImpl]
         val viewport = testServer.viewPortContainer.create(
@@ -112,7 +113,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
         vuuServer.login("testUser")
 
-        val table = vuuServer.tableContainer.getTable("orderHistory")
+        val table = vuuServer.tableContainer.getTable(TABLE_NAME)
         val columns = org.finos.vuu.core.table.ViewPortColumnCreator.create(table, List("quantity", "price", "side", "trader"))
         val testServer = vuuServer.asInstanceOf[org.finos.vuu.test.impl.TestVuuServerImpl]
         val viewport = testServer.viewPortContainer.create(
@@ -181,6 +182,28 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
           )
         }
 
+        //Jump to beyond end
+        viewport.setRange(ViewPortRange(25_000, 25_005))
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 0
+
+        //Jump to end again
+        viewport.setRange(ViewPortRange(24_995, 25_000))
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 5
+        assertVpEq(updates) {
+          Table(
+            ("quantity", "price", "side", "trader"),
+            (49992, 499920L, "Buy", "trader-49992"),
+            (49994, 499940L, "Buy", "trader-49994"),
+            (49996, 499960L, "Buy", "trader-49996"),
+            (49998, 499980L, "Buy", "trader-49998"),
+            (50000, 500000L, "Buy", "trader-50000")
+          )
+        }
+
         //Jump to beginning
         viewport.setRange(ViewPortRange(0, 5))
         virtualizedProvider.runOnce(viewport)
@@ -196,6 +219,29 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
             (8, 80L, "Buy", "trader-8")
           )
         }
+
+        //Jump twice between reloads
+        viewport.setRange(ViewPortRange(5, 10))
+        viewport.setRange(ViewPortRange(10, 15))
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 5
+        assertVpEq(updates) {
+          Table(
+            ("quantity", "price", "side", "trader"),
+            (22, 220L, "Buy", "trader-22"),
+            (24, 240L, "Buy", "trader-24"),
+            (26, 260L, "Buy", "trader-26"),
+            (28, 280L, "Buy", "trader-28"),
+            (30, 300L, "Buy", "trader-30")
+          )
+        }
+
+        //Invalid range
+        val ex = intercept[Exception] {
+          viewport.setRange(ViewPortRange(0, Int.MaxValue))
+        }
+        ex.getMessage.startsWith("Requested range exceeded settings in view port VP-") shouldEqual true
       }
     }
 
@@ -224,7 +270,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
         vuuServer.login("testUser")
 
-        val table = vuuServer.tableContainer.getTable("orderHistory")
+        val table = vuuServer.tableContainer.getTable(TABLE_NAME)
         val columns = org.finos.vuu.core.table.ViewPortColumnCreator.create(table, List("quantity", "price", "side", "trader"))
         val testServer = vuuServer.asInstanceOf[org.finos.vuu.test.impl.TestVuuServerImpl]
         var viewport = testServer.viewPortContainer.create(
@@ -306,7 +352,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
         vuuServer.login("testUser")
 
-        val table = vuuServer.tableContainer.getTable("orderHistory")
+        val table = vuuServer.tableContainer.getTable(TABLE_NAME)
         val columns = org.finos.vuu.core.table.ViewPortColumnCreator.create(table, List("quantity", "price", "side", "trader"))
         val testServer = vuuServer.asInstanceOf[org.finos.vuu.test.impl.TestVuuServerImpl]
         var viewport = testServer.viewPortContainer.create(
@@ -365,6 +411,86 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
             (50000, 500000L, "Buy", "trader-50000")
           )
         }
+      }
+
+    }
+
+    Scenario("Can create viewport with permission filter") {
+
+      given clock: Clock = new TestFriendlyClock(10001L)
+
+      given lifecycle: LifecycleContainer = new LifecycleContainer()
+
+      given tableDefContainer: TableDefContainer = new TableDefContainer(Map())
+
+      given metricsProvider: MetricsProvider = new MetricsProviderImpl
+
+      val client = ClickHouseClient(ClickHouseClientOptions()
+        .withEndpoint(container.getEndpoint)
+        .withUsername(container.getDefaultUsername)
+        .withPassword(container.getDefaultPassword))
+
+      lifecycle.start()
+
+      createOrderData(client, 50_000)
+
+      withVuuServer(ClickHouseTableModule(client)) { vuuServer =>
+
+        vuuServer.registerPlugin(VirtualizedTablePlugin)
+
+        vuuServer.login("testUser")
+
+        val table = vuuServer.tableContainer.getTable(NO_SELL_TABLE_NAME)
+        val columns = org.finos.vuu.core.table.ViewPortColumnCreator.create(table, List("quantity", "price", "side", "trader"))
+        val testServer = vuuServer.asInstanceOf[org.finos.vuu.test.impl.TestVuuServerImpl]
+        var viewport = testServer.viewPortContainer.create(
+          org.finos.vuu.client.messages.RequestId.oneNew(),
+          testServer.user,
+          testServer.session,
+          testServer.queue,
+          table,
+          ViewPortRange(0, 5),
+          columns,
+          sort = SortSpec(List(SortDef("price", 'A'))),
+          filterSpec = FilterSpec("side = \"Sell\" or side = \"Buy\"")
+        )
+
+        val virtualizedProvider = viewport.table.asTable.getProvider.asInstanceOf[VirtualizedProvider]
+
+        virtualizedProvider.runOnce(viewport)
+
+        var updates = combineQsForVp(viewport)
+        updates.length shouldBe 6
+        assertVpEq(updates) {
+          Table(
+            ("quantity", "price", "side", "trader"),
+            (10, 100L, "Buy", "trader-10"),
+            (2, 20L, "Buy", "trader-2"),
+            (4, 40L, "Buy", "trader-4"),
+            (6, 60L, "Buy", "trader-6"),
+            (8, 80L, "Buy", "trader-8")
+          )
+        }
+
+        //run with no changes
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 0
+
+        //change filter
+        viewport = testServer.viewPortContainer
+          .change(RequestId.oneNew(), testServer.session, viewport.id, DefaultRange, columns,
+            sort = SortSpec(List(SortDef("price", 'A'))),
+            filterSpec = FilterSpec("side = \"Sell\""))
+
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 0
+
+        //should return nothing because we cant see sells.
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 1
+        updates.head.size shouldBe 0
       }
 
     }

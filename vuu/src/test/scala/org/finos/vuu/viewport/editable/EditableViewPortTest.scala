@@ -90,34 +90,37 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
     val constituentDef = TableDef(
       name = "constituent",
       keyField = "id",
-      columns = Columns.fromNames("id".string(), "ric".string(), "quantity".long()),
-      VisualLinks(),
-      joinFields = "id", "ric"
+      customColumns = Columns.fromNames("id".string(), "ric".string(), "quantity".long()),
+      options = TableDefOptions(
+        joinFields = List("id", "ric")
+      )
     )
 
     val instrumentDef = TableDef(
       name = "instrument",
       keyField = "ric",
-      columns = Columns.fromNames("ric:String", "description:String"),
-      joinFields = "ric"
+      customColumns = Columns.fromNames("ric:String", "description:String"),
+      options = TableDefOptions(
+        joinFields = List("ric")
+      )
     )
 
     val pricesDef = TableDef(
       name = "price",
       keyField = "ric",
-      columns = Columns.fromNames("ric:String", "bid:Long", "ask:Long"),
-      joinFields = "ric"
+      customColumns = Columns.fromNames("ric:String", "bid:Long", "ask:Long"),
+      options = TableDefOptions(
+        joinFields = List("ric")
+      )
     )
 
     val joinDef = JoinTableDef(
       name = "consInstrumentPrice",
-      visibility = Public,
       baseTable = constituentDef,
+      joinOptions = JoinTableDefOptions(
+        joinFields = List("ric")
+      ),
       joinColumns = Columns.allFrom(constituentDef) ++ Columns.allFromExceptDefaultAnd(instrumentDef, "ric") ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
-      links = VisualLinks(),
-      permissionFunction = (_,_) => AllowAllPermissionFilter,
-      defaultSort = SortSpec(List.empty),
-      joinFields = List("ric"),
       joins =
         JoinTo(
           table = instrumentDef,

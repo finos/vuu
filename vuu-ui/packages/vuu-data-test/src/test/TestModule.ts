@@ -8,12 +8,18 @@ import tableContainer from "../core/table/TableContainer";
 import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { withNanoMs } from "../data-utils";
 
+const DEFAULT_RANGE_LIMITS = {
+  maxRangeEnd: 1_000_000,
+  maxRangeWidth: 1_000,
+};
+
 export type TestTableName =
   | "TestDates"
   | "TwoHundredColumns"
   | "LinkParent"
   | "LinkChild"
-  | "ChartTable";
+  | "ChartTable"
+  | "MaxScrollEndTable";
 
 const { RowGenerator } = defaultGenerators;
 
@@ -44,6 +50,7 @@ class TestModule extends VuuModule<TestTableName> {
         },
       ],
       key: "id",
+      rangeLimits: DEFAULT_RANGE_LIMITS,
       table: { module: "TEST", table: "TestDates" },
     },
     TwoHundredColumns: {
@@ -52,6 +59,7 @@ class TestModule extends VuuModule<TestTableName> {
         serverDataType: "string",
       })),
       key: "column_1",
+      rangeLimits: DEFAULT_RANGE_LIMITS,
       table: { module: "TEST", table: "TwoHundredColumns" },
     },
     LinkParent: {
@@ -60,6 +68,7 @@ class TestModule extends VuuModule<TestTableName> {
         { name: "data", serverDataType: "string" },
       ],
       key: "id",
+      rangeLimits: DEFAULT_RANGE_LIMITS,
       table: { module: "TEST", table: "LinkParent" },
     },
 
@@ -70,6 +79,7 @@ class TestModule extends VuuModule<TestTableName> {
         { name: "data", serverDataType: "string" },
       ],
       key: "id",
+      rangeLimits: DEFAULT_RANGE_LIMITS,
       table: { module: "TEST", table: "LinkChild" },
     },
     ChartTable: {
@@ -82,7 +92,20 @@ class TestModule extends VuuModule<TestTableName> {
         { name: "volume_excluded", serverDataType: "boolean" },
       ],
       key: "id",
+      rangeLimits: DEFAULT_RANGE_LIMITS,
       table: { module: "TEST", table: "ChartTable" },
+    },
+    MaxScrollEndTable: {
+      columns: DefaultColumnGenerator(6).map((col) => ({
+        ...col,
+        serverDataType: "string",
+      })),
+      key: "column_1",
+      rangeLimits: {
+        maxRangeEnd: 500,
+        maxRangeWidth: 1_000,
+      },
+      table: { module: "TEST", table: "MaxScrollEndTable" },
     },
   };
 
@@ -91,16 +114,16 @@ class TestModule extends VuuModule<TestTableName> {
       this.#schemas.TestDates,
       // prettier-ignore
       [
-        [1000000000000000001n, Date.now(), Date.now(), withNanoMs(Date.now(),1)],
-        [1000000000000000002n, Date.now(), Date.now(), withNanoMs(Date.now(),2)],
-        [1000000000000000003n, Date.now(), Date.now(), withNanoMs(Date.now(),3)],
-        [1000000000000000004n, Date.now(), Date.now(), withNanoMs(Date.now(),4)],
-        [1000000000000000005n, Date.now(), Date.now(), withNanoMs(Date.now(),5)],
-        [1000000000000000006n, Date.now(), Date.now(), withNanoMs(Date.now(),6)],
-        [1000000000000000007n, Date.now(), Date.now(), withNanoMs(Date.now(),7)],
-        [1000000000000000008n, Date.now(), Date.now(), withNanoMs(Date.now(),8)],
-        [1000000000000000009n, Date.now(), Date.now(), withNanoMs(Date.now(),9)],
-        [1000000000000000010n, Date.now(), Date.now(), withNanoMs(Date.now(),10)],
+        [1000000000000000001n, Date.now(), Date.now(), withNanoMs(Date.now(), 1)],
+        [1000000000000000002n, Date.now(), Date.now(), withNanoMs(Date.now(), 2)],
+        [1000000000000000003n, Date.now(), Date.now(), withNanoMs(Date.now(), 3)],
+        [1000000000000000004n, Date.now(), Date.now(), withNanoMs(Date.now(), 4)],
+        [1000000000000000005n, Date.now(), Date.now(), withNanoMs(Date.now(), 5)],
+        [1000000000000000006n, Date.now(), Date.now(), withNanoMs(Date.now(), 6)],
+        [1000000000000000007n, Date.now(), Date.now(), withNanoMs(Date.now(), 7)],
+        [1000000000000000008n, Date.now(), Date.now(), withNanoMs(Date.now(), 8)],
+        [1000000000000000009n, Date.now(), Date.now(), withNanoMs(Date.now(), 9)],
+        [1000000000000000010n, Date.now(), Date.now(), withNanoMs(Date.now(), 10)],
       ],
       buildDataColumnMap(this.#schemas, "TestDates"),
     ),
@@ -164,6 +187,11 @@ class TestModule extends VuuModule<TestTableName> {
         ["025", "2026-04-26", 120, false, 1350, false],
       ],
       buildDataColumnMap(this.#schemas, "ChartTable"),
+    ),
+    MaxScrollEndTable: tableContainer.createTable(
+      this.#schemas.MaxScrollEndTable,
+      generateRows(this.#schemas.MaxScrollEndTable, 1_000),
+      buildDataColumnMap(this.#schemas, "MaxScrollEndTable"),
     ),
   };
   constructor() {

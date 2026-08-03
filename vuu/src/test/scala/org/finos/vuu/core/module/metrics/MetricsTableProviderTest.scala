@@ -5,6 +5,7 @@ import org.finos.toolbox.lifecycle.{LifeCycleComponentContext, LifecycleContaine
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.core.table.TableMockFactory.*
 import org.finos.vuu.core.table.{DataTable, RowData, TableContainer}
+import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -27,8 +28,8 @@ class MetricsTableProviderTest extends AnyFeatureSpec with Matchers with MockFac
   Feature("runOnce") {
     Scenario("can get and update expected list of tables") {
       tableContainer.addTable(createMockTable(tableName = "instruments", tableDefName = "instruments", sessionDef = true)) // session table blueprint
-      tableContainer.addTable(createMockSessionTable(tableName = "instrumentsSessionTable_1", tableDefName = "instruments"))
-      tableContainer.addTable(createMockSessionTable(tableName = "instrumentsSessionTable_2", tableDefName = "instruments"))
+      tableContainer.addTable(createMockSessionTable(tableName = "instrumentsSessionTable_1", tableDefName = "instruments", sessionId = ClientSessionId("123", "456")))
+      tableContainer.addTable(createMockSessionTable(tableName = "instrumentsSessionTable_2", tableDefName = "instruments", sessionId = ClientSessionId("123", "456")))
       tableContainer.addTable(createMockTable(tableName = "fills_table", tableDefName = "fills"))
       tableContainer.addTable(createMockTable(tableName = "other", tableDefName = "other"))
 

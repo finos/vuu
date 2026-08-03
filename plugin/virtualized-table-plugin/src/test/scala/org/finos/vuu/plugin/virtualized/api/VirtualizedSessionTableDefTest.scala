@@ -1,10 +1,13 @@
 package org.finos.vuu.plugin.virtualized.api
 
+import org.finos.vuu.core.table.TableContainer
+import org.finos.vuu.net.FilterSpec
+import org.finos.vuu.plugin.virtualized.VirtualizedTablePluginType
+import org.finos.vuu.viewport.ViewPort
+import org.scalamock.scalatest.MockFactory
+import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.GivenWhenThen
-import org.scalamock.scalatest.MockFactory
-import org.finos.vuu.plugin.virtualized.VirtualizedTablePluginType
 
 class VirtualizedSessionTableDefTest extends AnyFeatureSpec
   with Matchers
@@ -21,7 +24,8 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       val columns = Array(mockColumn)
 
       When("a SimpleVirtualizedSessionTableDef is instantiated")
-      val simpleDef = SimpleVirtualizedSessionTableDef(tableName, keyField, columns)
+      val simpleDef = SimpleVirtualizedSessionTableDef(
+        tableName, keyField, columns)
 
       Then("it should correctly map the remote table name and key field to the local values")
       simpleDef.getRemoteTableName shouldBe tableName
@@ -34,6 +38,13 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       And("the inherited base fields should also match")
       simpleDef.name shouldBe tableName
       simpleDef.keyField shouldBe keyField
+
+      And("it should have default columns by default")
+      simpleDef.options.includeDefaultColumns shouldBe true
+
+      And("it should have no range options by default")
+      simpleDef.options.rangeSettings.maxRangeEnd shouldEqual Int.MaxValue
+      simpleDef.options.rangeSettings.maxRangeWidth shouldEqual 1000
     }
 
     Scenario("Creating an AliasedVirtualizedSessionTableDef") {
@@ -44,14 +55,16 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       val remoteKeyField = "remote_id"
       val mockColumn = mock[VirtualizedSessionTableColumn]
       val columns = Array(mockColumn)
+      val remotePermissionFilterSpecFunction = (v: ViewPort) => FilterSpec("LOL")
 
       When("an AliasedVirtualizedSessionTableDef is instantiated")
       val aliasedDef = AliasedVirtualizedSessionTableDef(
         remoteName = remoteName,
-        name = localName,
+        tableName = localName,
         remoteKeyField = remoteKeyField,
-        keyField = localKeyField,
-        remoteColumns = columns
+        tableKeyField = localKeyField,
+        remoteColumns = columns,
+        remotePermissionFilterSpecFunction = remotePermissionFilterSpecFunction
       )
 
       Then("it should override getRemoteTableName and getRemoteKeyField with the remote values")
@@ -65,6 +78,18 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       And("it should return the correct plugin type and remote columns")
       aliasedDef.pluginType shouldBe VirtualizedTablePluginType
       aliasedDef.getRemoteColumns shouldBe columns
+
+      And("it should return the correct filter spec function")
+      aliasedDef.remotePermissionFilterSpecFunction shouldBe remotePermissionFilterSpecFunction
+
+      And("it should have default columns by default")
+      aliasedDef.options.includeDefaultColumns shouldBe true
+
+      And("it should have no range options by default")
+      aliasedDef.options.rangeSettings.maxRangeEnd shouldEqual Int.MaxValue
+      aliasedDef.options.rangeSettings.maxRangeWidth shouldEqual 1000
     }
+
+
   }
 }

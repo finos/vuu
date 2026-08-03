@@ -100,36 +100,33 @@ const zeroHeaderState = {
 
 export interface TableHookProps
   extends MeasuredProps,
-    Pick<
-      TableProps,
-      | "allowCellBlockSelection"
-      | "allowDragDrop"
-      | "allowSelectCheckboxRow"
-      | "autoSelectFirstRow"
-      | "autoSelectRowKey"
-      | "config"
-      | "dataSource"
-      | "disableFocus"
-      | "highlightedIndex"
-      | "id"
-      | "isRowSelectable"
-      | "navigationStyle"
-      | "onConfigChange"
-      // | "onDataEdited"
-      | "onDragStart"
-      | "onDrop"
-      | "onHighlight"
-      | "onSelect"
-      | "onSelectCellBlock"
-      | "onSelectionChange"
-      | "onRowClick"
-      | "renderBufferSize"
-      | "revealSelected"
-      | "scrollingApiRef"
-      | "showColumnHeaders"
-      | "showPaginationControls"
-    > {
-  // colHeaderRowHeight: number;
+  Pick<
+    TableProps,
+    | "allowCellBlockSelection"
+    | "allowDragDrop"
+    | "allowSelectCheckboxRow"
+    | "autoSelectFirstRow"
+    | "autoSelectRowKey"
+    | "config"
+    | "dataSource"
+    | "disableFocus"
+    | "highlightedIndex"
+    | "id"
+    | "navigationStyle"
+    | "onConfigChange"
+    | "onDragStart"
+    | "onDrop"
+    | "onHighlight"
+    | "onSelect"
+    | "onSelectCellBlock"
+    | "onSelectionChange"
+    | "onRowClick"
+    | "renderBufferSize"
+    | "revealSelected"
+    | "scrollingApiRef"
+    | "showColumnHeaders"
+    | "showPaginationControls"
+  > {
   containerRef: RefObject<HTMLDivElement | null>;
   rowHeight: number;
   selectionModel: TableSelectionModel;
@@ -199,13 +196,13 @@ export const useTable = ({
     showColumnHeaders ? nullHeaderState : zeroHeaderState,
   );
 
-  const [rowCount, setRowCount] = useState<number>(dataSource.size);
+  const [rowCount, setRowCount] = useState<number>(Math.min(dataSource.size, dataSource.maxRangeEnd ?? Number.MAX_SAFE_INTEGER));
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
   }
 
-  const onDataRowcountChange = useCallback((size: number) => {
-    setRowCount(size);
+  const onDataRowcountChange = useCallback((newRowCount: number, maxRangeEnd = Number.MAX_SAFE_INTEGER) => {
+    setRowCount(Math.min(newRowCount, maxRangeEnd));
   }, []);
 
   const { selectionBookendWidth = 4 } = config;
@@ -325,7 +322,6 @@ export const useTable = ({
     dataRowsRef,
     getSelectedRows,
     range,
-    // removeColumnDataFromCache,
     setRange,
   } = useDataSource({
     autoSelectFirstRow,
@@ -862,35 +858,6 @@ export const useTable = ({
     [onDrop],
   );
 
-  // const handleDataEdited = useCallback(
-  //   async (editState: DataCellEditEvent): Promise<RpcResult | undefined> => {
-  //     const {
-  //       editType = "commit",
-  //       isValid = true,
-  //       dataRow,
-  //       columnName,
-  //       previousValue = "",
-  //       value,
-  //     } = editState;
-  //     if (editType === "commit") {
-  //       if (editSession && dataRow && columnName) {
-  //         return editSession.commit(dataRow.key, columnName, value, isValid);
-  //       } else {
-  //         throw Error(
-  //           `[useTable] handleDataEdited, no editSession installed and datasource does not support RPC`,
-  //         );
-  //       }
-  //     } else {
-  //       if (editSession && dataRow && columnName) {
-  //         editSession.edit(dataRow.key, columnName, previousValue, value);
-  //       } else {
-  //         onDataEditedProp?.(editState);
-  //       }
-  //     }
-  //   },
-  //   [editSession, onDataEditedProp],
-  // );
-
   const handleDragStartRow = useCallback<DragStartHandler>(
     (dragDropState) => {
       const { initialDragElement } = dragDropState;
@@ -937,6 +904,9 @@ export const useTable = ({
     [rowDragMouseDown, cellBlockHookMouseDown],
   );
 
+  const { maxRangeEnd = Number.MAX_SAFE_INTEGER, size: totalRowCount } = dataSource;
+  const scrollLimitInEffect = maxRangeEnd !== Number.MAX_SAFE_INTEGER && maxRangeEnd < totalRowCount;
+
   return {
     ...containerProps,
     allRowsSelected,
@@ -953,6 +923,7 @@ export const useTable = ({
     headerState,
     headings,
     highlightedIndex: highlightedIndexRef.current,
+    maxRangeEnd,
     onBlur: editingBlur,
     onCheckBoxColumnHeaderClick,
     onDoubleClick: editingDoubleClick,
@@ -960,7 +931,6 @@ export const useTable = ({
     onKeyDown: handleKeyDown,
     onMouseDown: handleMouseDown,
     onContextMenu,
-    // onDataEdited: handleDataEdited,
     onHeaderHeightMeasured,
     onMoveColumn,
     onMoveGroupColumn,
@@ -970,6 +940,7 @@ export const useTable = ({
     onResizeColumn,
     onToggleGroup,
     rowClassNameGenerator,
+    scrollLimitInEffect,
     scrollProps,
     // TODO don't think we need these ...
     tableAttributes,

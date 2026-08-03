@@ -74,7 +74,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
     TableDef(
       name = "testTable",
       keyField = KEY_FIELD,
-      columns = Columns.fromNames("id".int(), "ric".string(), "isin".string(), "currency".string()),
+      customColumns = Columns.fromNames("id".int(), "ric".string(), "isin".string(), "currency".string()),
     )
   }
 

@@ -3,7 +3,7 @@ package org.finos.vuu.core.module.editable
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{TableDef, ViewPortDef, VisualLinks}
+import org.finos.vuu.api.{TableDef, TableDefOptions, ViewPortDef, VisualLinks}
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, RowWithData, TableContainer}
@@ -11,7 +11,7 @@ import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.{EditTableRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.viewport.ViewPort
 
-class EditTableTestService()(using tableContainer: TableContainer) extends EditTableRpcHandler with StrictLogging {
+class EditTableTestService(val originalData: Map[String, Any])(using tableContainer: TableContainer) extends EditTableRpcHandler with StrictLogging {
 
   override def deleteRow(params: RpcParams): RpcFunctionResult = {
     val key: String = params.namedParams("key").asInstanceOf[String]
@@ -19,6 +19,18 @@ class EditTableTestService()(using tableContainer: TableContainer) extends EditT
     val session: ClientSessionId = params.ctx.session
 
     vp.table.asTable.processDelete(key)
+    RpcFunctionSuccess(None)
+  }
+
+  override def deleteSelectedRows(params: RpcParams): RpcFunctionResult = {
+    val vp: ViewPort = params.viewPort
+    val session: ClientSessionId = params.ctx.session
+    val selection = vp.getSelection
+
+    val iterator = selection.iterator
+    while (iterator.hasNext) {
+      vp.table.asTable.processDelete(iterator.next())
+    }
     RpcFunctionSuccess(None)
   }
 
@@ -75,11 +87,21 @@ class EditTableTestService()(using tableContainer: TableContainer) extends EditT
     val session: ClientSessionId = params.ctx.session
     RpcFunctionSuccess(None)
   }
+
+  override def undoRowChange(params: RpcParams): RpcFunctionResult = {
+    val key: String = params.namedParams("key").asInstanceOf[String]
+    val vp: ViewPort = params.viewPort
+    val session: ClientSessionId = params.ctx.session
+
+    vp.table.asTable.processUpdate(key, RowWithData(key, originalData))
+    RpcFunctionSuccess(None)
+  }
 }
 
 object EditTableTestModule {
 
   final val NAME = "EDIT_TABLE_TEST"
+  final val originalData: Map[Any, Any] = Map("rowId" -> "key1", "A" -> null, "B" -> null, "C" -> null, "D" -> null)
 
   def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
@@ -88,14 +110,15 @@ object EditTableTestModule {
         TableDef(
           name = "editTestTable",
           keyField = "rowId",
-          columns = Columns.fromNames("rowId".string(), "A".string(), "B".double(), "C".int(), "D".boolean()),
-          VisualLinks(),
-          joinFields = "rowId"
+          customColumns = Columns.fromNames("rowId".string(), "A".string(), "B".double(), "C".int(), "D".boolean()),
+          options= TableDefOptions(
+            joinFields = List("rowId")
+          )
         ),
         (table, _) => new NullProvider(),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.getColumns,
-          service = new EditTableTestService()(using tableContainer)
+          service = new EditTableTestService(originalData.asInstanceOf[Map[String, Any]])(using tableContainer)
         )
       ).asModule()
 

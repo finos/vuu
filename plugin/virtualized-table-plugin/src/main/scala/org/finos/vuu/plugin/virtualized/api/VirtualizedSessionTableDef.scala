@@ -1,16 +1,22 @@
 package org.finos.vuu.plugin.virtualized.api
 
-import org.finos.vuu.api.SessionTableDef
+import org.finos.vuu.api.{SessionTableDef, TableDefOptions}
 import org.finos.vuu.core.table.Column
+import org.finos.vuu.net.FilterSpec
 import org.finos.vuu.plugin.PluginType
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePluginType
+import org.finos.vuu.viewport.ViewPort
 
 abstract class VirtualizedSessionTableDef(
-                                           name: String,
-                                           keyField: String,
+                                           override val name: String,
+                                           override val keyField: String,
+                                           override val options: TableDefOptions,
                                            remoteColumns: Array[VirtualizedSessionTableColumn],
-                                           includeDefaultColumns: Boolean = false,
-                                         ) extends SessionTableDef(name, keyField, remoteColumns.map(f => f.asInstanceOf[Column])) {
+                                           remotePermissionFilterSpecFunction: ViewPort => FilterSpec
+                                         )
+  extends SessionTableDef(name, keyField, remoteColumns.map(f => f.asInstanceOf[Column]), options) {
+
+  private val remoteMapping : Map[String, String] = remoteColumns.map(f => f.name -> f.remoteName).toMap
 
   override def pluginType: PluginType = VirtualizedTablePluginType
 
@@ -20,21 +26,29 @@ abstract class VirtualizedSessionTableDef(
 
   def getRemoteColumns: Array[VirtualizedSessionTableColumn] = remoteColumns
 
+  def getRemotePermissionFilterSpecFunction: ViewPort => FilterSpec = remotePermissionFilterSpecFunction
+
+  def getRemoteColumnMapping: Map[String, String] = remoteMapping
+
 }
 
 case class SimpleVirtualizedSessionTableDef(
-                                             override val name: String,
-                                             override val keyField: String,
-                                             remoteColumns: Array[VirtualizedSessionTableColumn]
-                                           ) extends VirtualizedSessionTableDef(name, keyField, remoteColumns)
+                                             tableName: String,
+                                             tableKeyField: String,
+                                             remoteColumns: Array[VirtualizedSessionTableColumn],
+                                             remotePermissionFilterSpecFunction: ViewPort => FilterSpec = _ => FilterSpec(""),
+                                             override val options: TableDefOptions = TableDefOptions(),
+                                           ) extends VirtualizedSessionTableDef(tableName, tableKeyField, options, remoteColumns, remotePermissionFilterSpecFunction)
 
 case class AliasedVirtualizedSessionTableDef(
                                               remoteName: String,
-                                              override val name: String,
+                                              tableName: String,
                                               remoteKeyField: String,
-                                              override val keyField: String,
-                                              remoteColumns: Array[VirtualizedSessionTableColumn]
-                                            ) extends VirtualizedSessionTableDef(name, keyField, remoteColumns) {
+                                              tableKeyField: String,
+                                              remoteColumns: Array[VirtualizedSessionTableColumn],
+                                              remotePermissionFilterSpecFunction: ViewPort => FilterSpec = _ => FilterSpec(""),
+                                              override val options: TableDefOptions = TableDefOptions(),
+                                            ) extends VirtualizedSessionTableDef(tableName, tableKeyField, options, remoteColumns, remotePermissionFilterSpecFunction) {
 
   override def getRemoteTableName: String = remoteName
 

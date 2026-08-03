@@ -12,13 +12,13 @@ import dataSourceStats from "./DatasourceStats.css";
 export type ItemLabel =
   | string
   | {
-      singlular: string;
-      plural: string;
-    };
+    singlular: string;
+    plural: string;
+  };
 
 export interface DataSourceStatsProps
   extends DatasourceStatsHookProps,
-    Omit<HTMLAttributes<HTMLDivElement>, "children"> {
+  Omit<HTMLAttributes<HTMLDivElement>, "children"> {
   /**
    * children will be displayed when selection present. Intended
    * use case is display of action button(s) that will operate on
@@ -48,13 +48,13 @@ export const DataSourceStats = ({
     window: targetWindow,
   });
 
-  const { range, selectedCount, size } = useDatasourceStats({
+  const { maxScroll, range, selectedCount, size } = useDatasourceStats({
     dataSource,
     showRowStats,
   });
 
   const from = numberFormatter.format(range.from + 1);
-  const to = numberFormatter.format(Math.min(range.to, size));
+  const to = numberFormatter.format(Math.min(range.to, size, maxScroll));
   const value = numberFormatter.format(size);
 
   if (size === 0) {

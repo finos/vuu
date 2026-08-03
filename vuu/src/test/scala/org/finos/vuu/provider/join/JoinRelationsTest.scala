@@ -1,6 +1,6 @@
 package org.finos.vuu.provider.join
 
-import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, TableDef, VisualLinks}
+import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTableDefOptions, JoinTo, LeftOuterJoin, TableDef, TableDefOptions, VisualLinks}
 import org.finos.vuu.core.table.Columns
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -15,17 +15,24 @@ class JoinRelationsTest extends AnyFeatureSpec with Matchers with GivenWhenThen 
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
-      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-      joinFields = "ric", "orderId")
+      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+      options = TableDefOptions(
+        joinFields = List("ric", "orderId")
+      )
+    )
 
     val pricesDef = TableDef(
       name = "prices",
       keyField = "ric",
-      columns = Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
-      joinFields = "ric")
+      customColumns = Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+      options = TableDefOptions(
+        joinFields = List("ric")
+      )
+    )
 
     val joinDef = JoinTableDef(
       name = "orderPrices",
+      joinOptions = JoinTableDefOptions(),
       baseTable = ordersDef,
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins =
@@ -33,8 +40,6 @@ class JoinRelationsTest extends AnyFeatureSpec with Matchers with GivenWhenThen 
           table = pricesDef,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
         ),
-      links = VisualLinks(),
-      joinFields = Seq()
     )
 
     Scenario("Adding a new row join with valid data") {

@@ -66,19 +66,26 @@ trait ViewPortSetup {
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
-      indices = Indices(Index("orderId"), Index("trader")),
-      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-      joinFields =  "ric", "orderId")
+      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+      options = TableDefOptions(
+        joinFields = List("ric", "orderId"),
+        indices = Indices(Index("orderId"), Index("trader")),
+      )
+    )
 
     val pricesDef = TableDef(
       name = "prices",
       keyField = "ric",
-      indices = Indices(Index("ric"), Index("open")),
-      columns = Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
-      joinFields = "ric")
+      customColumns = Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+      options = TableDefOptions(
+        joinFields = List("ric"),
+        indices = Indices(Index("ric"), Index("open")),
+      )
+    )
 
     val joinDef = JoinTableDef(
       name          = "orderPrices",
+      joinOptions = JoinTableDefOptions(),
       baseTable     = ordersDef,
       joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins  =
@@ -86,8 +93,6 @@ trait ViewPortSetup {
           table = pricesDef,
           joinSpec = JoinSpec( left = "ric", right = "ric", joinType)
         ),
-      links = VisualLinks(),
-      joinFields = Seq()
     )
 
     val joinProvider   = JoinTableProviderImpl()

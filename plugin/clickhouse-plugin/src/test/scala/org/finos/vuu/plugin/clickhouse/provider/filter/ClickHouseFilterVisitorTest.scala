@@ -1,25 +1,25 @@
 package org.finos.vuu.plugin.clickhouse.provider.filter
 
 import org.finos.vuu.core.filter.FilterSpecParser
-import org.finos.vuu.plugin.clickhouse.provider.sort.ClickHouseSortFactory
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumnBuilder
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
 
-  private val columns = VirtualizedSessionTableColumnBuilder()
-    .addString("orderId")
+  private val remoteNameMapping = VirtualizedSessionTableColumnBuilder()
+    .addString("orderId", "order_id")
     .addString("ric")
     .addString("trader")
     .addInt("quantity")
-    .addBoolean("onMkt")
+    .addBoolean("onMkt", "on_mkt")
     .addDouble("price")
     .build()
-    .toList
+    .map(f => f.name -> f.remoteName)
+    .toMap
 
   private def compile(filterStr: String): String = {
-    val clickHouseFilterVisitor = new ClickHouseFilterVisitor(columns)
+    val clickHouseFilterVisitor = new ClickHouseFilterVisitor(remoteNameMapping)
     FilterSpecParser.parse(filterStr, clickHouseFilterVisitor)
     clickHouseFilterVisitor.getBuffer.toString
   }
@@ -39,8 +39,8 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
     Scenario("Equality comparisons") {
       compile("trader = \"rahúl\"") shouldBe "trader = 'rahúl'"
       compile("quantity = 100") shouldBe "quantity = 100"
-      compile("onMkt = true") shouldBe "onMkt = true"
-      compile("onMkt = false") shouldBe "onMkt = false"
+      compile("onMkt = true") shouldBe "on_mkt = true"
+      compile("onMkt = false") shouldBe "on_mkt = false"
       compile("trader != \"steve\"") shouldBe "trader != 'steve'"
       compile("quantity != 100") shouldBe "quantity != 100"
     }
@@ -73,5 +73,6 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
       compile("ric = \"AAPL.L\" or quantity > 100") shouldBe "(ric = 'AAPL.L' OR quantity > 100)"
       compile("(ric = \"AAPL.L\" or ric = \"BT.L\") and quantity > 100") shouldBe "((ric = 'AAPL.L' OR ric = 'BT.L') AND quantity > 100)"
     }
+
   }
 }

@@ -1,11 +1,11 @@
 package org.finos.vuu.core.module
 
-import org.finos.vuu.api.{TableDef, ViewPortDef}
+import org.finos.vuu.api.{TableDef, TableDefOptions, ViewPortDef}
 import org.finos.vuu.core.table.Columns
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.net.{ClientSessionId, MessageBody, RequestContext}
 import org.finos.vuu.provider.MockProvider
-import org.finos.vuu.viewport._
+import org.finos.vuu.viewport.*
 import org.finos.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import org.finos.toolbox.time.Clock
 
@@ -42,8 +42,10 @@ object TestModule{
           TableDef(
             name = "instruments",
             keyField = "ric",
-            columns = Columns.fromNames("ric:String", "description:String", "currency: String", "exchange:String", "lotSize:Double"),
-            joinFields = "ric"
+            customColumns = Columns.fromNames("ric:String", "description:String", "currency: String", "exchange:String", "lotSize:Double"),
+            options = TableDefOptions(
+              joinFields = List("ric")
+            )
           )
         ,
         (table, vs) => new MockProvider(table),

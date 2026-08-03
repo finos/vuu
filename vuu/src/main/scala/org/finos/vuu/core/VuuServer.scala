@@ -167,13 +167,13 @@ class VuuServer(config: VuuServerConfig)
         tableDef.setModule(module)
         createJoinTable(tableDef)
 
-      case tableDef: TableDef if tableDef.autosubscribe =>
+      case tableDef: TableDef if tableDef.options.autoSubscribe =>
         tableDef.setModule(module)
         val table = createAutoSubscribeTable(tableDef)
         val provider = module.getProviderForTable(table, this)
         registerProvider(table, provider)
 
-      case tableDef: TableDef if !tableDef.autosubscribe =>
+      case tableDef: TableDef if !tableDef.options.autoSubscribe =>
         tableDef.setModule(module)
         val table = createTable(tableDef)
         logger.debug(s"Loading provider for table ${table.name}...")

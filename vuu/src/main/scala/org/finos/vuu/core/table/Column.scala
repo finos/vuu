@@ -128,6 +128,9 @@ object Columns {
       .toArray
   }
 
+  def combine(a: Array[Column], b: Array[Column]): Array[Column] = {
+    a ++ b
+  }
 }
 
 trait Column {
@@ -264,7 +267,8 @@ case class CalculatedColumn(name: String, clause: CalculatedColumnClause, index:
 
   override def getData(data: RowData): Any = clause.calculate(data).fold[Any](
     errMsg => {
-      logger.error(errMsg + " Returning `null`."); null
+      logger.error(errMsg + " Returning `null`.");
+      null
     },
     success => success.orNull
   )

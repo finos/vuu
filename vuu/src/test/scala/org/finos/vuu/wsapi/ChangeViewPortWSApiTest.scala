@@ -70,7 +70,7 @@ class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
     TableDef(
       name = tableName,
       keyField = "id",
-      columns =
+      customColumns =
         new ColumnBuilder()
           .addString("id")
           .addString("name")

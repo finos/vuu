@@ -10,8 +10,8 @@ import org.scalatest.matchers.should.Matchers
 class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with Matchers {
 
   private val tableDef = AliasedVirtualizedSessionTableDef(
-    name = "orderHistory",
-    keyField = "orderId",
+    tableName = "orderHistory",
+    tableKeyField = "orderId",
     remoteName = "order_history",
     remoteKeyField = "order_id",
     remoteColumns = VirtualizedSessionTableColumnBuilder()
@@ -22,16 +22,16 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
       .build()
   )
 
-  private val columns = tableDef.remoteColumns.toList
-
   Feature("ClickHouse ORDER BY clause generation") {
 
     Scenario("Handling null or empty sort specifications") {
+      val clickHouseSortFactory = ClickHouseSortFactory(tableDef)
+
       Given("a null SortSpec object")
       val nullSpec: SortSpec = null
 
       When("building the sort query string")
-      val nullResult = ClickHouseSortFactory.build(tableDef, columns, nullSpec)
+      val nullResult = clickHouseSortFactory.build(nullSpec)
 
       Then("it should return the keyField")
       nullResult shouldBe "ORDER BY order_id ASC"
@@ -40,52 +40,60 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
       val emptySpec = SortSpec(List.empty)
 
       When("building the sort query string")
-      val emptyResult = ClickHouseSortFactory.build(tableDef, columns, emptySpec)
+      val emptyResult = clickHouseSortFactory.build(emptySpec)
 
       Then("it should return the keyField")
       emptyResult shouldBe "ORDER BY order_id ASC"
     }
 
     Scenario("Generating a single column ascending sort") {
+      val clickHouseSortFactory = ClickHouseSortFactory(tableDef)
+
       Given("a SortSpec for a single column with ASCENDING direction")
       val spec = SortSpec(List(
         SortDef("quantity", SortDirection.ASCENDING.external)
       ))
 
       When("building the sort query string")
-      val result = ClickHouseSortFactory.build(tableDef, columns, spec)
+      val result = clickHouseSortFactory.build(spec)
 
       Then("it should format a valid single-column + key field ORDER BY clause")
       result shouldBe "ORDER BY quantity ASC, order_id ASC"
     }
 
     Scenario("Generating a single column sort with an alias") {
+      val clickHouseSortFactory = ClickHouseSortFactory(tableDef)
+
       Given("a SortSpec for a single column with DESCENDING direction")
       val spec = SortSpec(List(
         SortDef("orderId", SortDirection.DESCENDING.external)
       ))
 
       When("building the sort query string")
-      val result = ClickHouseSortFactory.build(tableDef, columns, spec)
+      val result = clickHouseSortFactory.build(spec)
 
       Then("it should format a valid single-column ORDER BY clause using the remote name")
       result shouldBe "ORDER BY order_id DESC"
     }
 
     Scenario("Generating a single column sort with an invalid column") {
+      val clickHouseSortFactory = ClickHouseSortFactory(tableDef)
+
       Given("a SortSpec for a single column with an invalid name")
       val spec = SortSpec(List(
         SortDef("lolcats", SortDirection.ASCENDING.external)
       ))
 
       When("building the sort query string")
-      val result = ClickHouseSortFactory.build(tableDef, columns, spec)
+      val result = clickHouseSortFactory.build(spec)
 
       Then("it should return primary key sort as the mapping is missing")
       result shouldBe "ORDER BY order_id ASC"
     }
 
     Scenario("Generating a multi-column mixed direction sort") {
+      val clickHouseSortFactory = ClickHouseSortFactory(tableDef)
+
       Given("a SortSpec with multiple columns spanning mixed directions")
       val spec = SortSpec(List(
         SortDef("price", SortDirection.DESCENDING.external),
@@ -93,7 +101,7 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
       ))
 
       When("building the sort query string")
-      val result = ClickHouseSortFactory.build(tableDef, columns, spec)
+      val result = clickHouseSortFactory.build(spec)
 
       Then("it should chain the columns separated by commas with matching keywords")
       result shouldBe "ORDER BY price DESC, counterparty ASC, order_id ASC"

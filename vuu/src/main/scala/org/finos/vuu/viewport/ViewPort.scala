@@ -26,36 +26,10 @@ case object ViewPortRowUpdateType extends ViewPortUpdateType
 
 case object ViewPortSizeUpdateType extends ViewPortUpdateType
 
-object DefaultRange extends ViewPortRange(0, 123)
-
 case class ViewPortSelection(selectionKeys: Set[String], viewPort: ViewPort)
 
 case class ViewPortVisualLink(childVp: ViewPort, parentVp: ViewPort, childColumn: Column, parentColumn: Column) {
   override def toString: String = "ViewPortVisualLink(" + childVp.id + "->" + parentVp.id + ", on " + childColumn.name + " = " + parentColumn.name + ")"
-}
-
-case class ViewPortRange(from: Int, to: Int) {
-  def contains(i: Int): Boolean = {
-    i >= from && i < to
-  }
-
-  def subtract(newRange: ViewPortRange): ViewPortRange = {
-    var from = newRange.from
-    var to = newRange.to
-
-    if (newRange.from > this.from && newRange.from < this.to) {
-      from = this.to
-      to = newRange.to
-    }
-
-    if (newRange.from < this.from && newRange.to < this.to && newRange.to > this.from) {
-      from = newRange.from
-      to = this.from
-    }
-
-    ViewPortRange(from, to)
-  }
-
 }
 
 case class ViewPortUpdate(vpRequestId: String, vp: ViewPort, table: RowSource, key: RowKeyUpdate, index: Int, vpUpdate: ViewPortUpdateType, size: Int, ts: Long) {
@@ -192,12 +166,11 @@ class ViewPortImpl(val id: String,
                    val user: VuuUser,
                    val session: ClientSessionId,
                    val outboundQ: PublishQueue[ViewPortUpdate],
-                   val structuralFields: AtomicReference[ViewPortStructuralFields],
-                   val range: AtomicReference[ViewPortRange]
+                   val structuralFields: AtomicReference[ViewPortStructuralFields]
                   )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging {
 
   private val viewPortLock = new Object
-
+  private val range = new AtomicReference[ViewPortRange](EmptyRange)
   @volatile private var enabled = true
   @volatile private var viewPortFrozenTimestamp: Option[EpochTimestamp] = None
   @volatile private var requestId: String = ""
@@ -333,17 +306,25 @@ class ViewPortImpl(val id: String,
   override def getSelection: Set[String] = selection
 
   def setRange(newRange: ViewPortRange): Unit = {
+    val isValidRange = newRange.isValid(table.asTable.getTableDef.options.rangeSettings)
+
     viewPortLock.synchronized {
       val oldRange = range.get()
 
       removeSubscriptionsForRange(oldRange)
 
-      range.set(newRange)
+      val rangeToApply = if (isValidRange) newRange else EmptyRange
 
-      addSubscriptionsForRange(newRange)
+      range.set(rangeToApply)
 
-      val diffRange = oldRange.subtract(newRange)
+      addSubscriptionsForRange(rangeToApply)
+
+      val diffRange = oldRange.subtract(rangeToApply)
       sendUpdatesOnChange(diffRange)
+    }
+
+    if (!isValidRange) {
+      throw new Exception(s"Requested range exceeded settings in view port $id")
     }
   }
 

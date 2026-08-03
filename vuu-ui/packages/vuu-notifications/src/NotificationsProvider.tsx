@@ -22,14 +22,16 @@ interface ToastWithExpiry extends ToastNotificationDescriptor {
   dispatched.
 */
 class NotificationsContextObject implements NotificationsContext {
-  #showNotification: DispatchShowNotification = () =>
+  #showNotification: DispatchShowNotification = () => {
     console.log("have you forgotten to provide a NotificationsCenter?");
+    return undefined;
+  };
   #hideNotification: DispatchHideNotification = () =>
     console.log("have you forgotten to provide a NotificationsCenter?");
   // We want the public notify method to be stable, setNotify call should not trigger re-renders
   showNotification: DispatchShowNotification = (notification) =>
     this.#showNotification(notification);
-  hideNotification: DispatchHideNotification = () => this.#hideNotification();
+  hideNotification: DispatchHideNotification = (id) => this.#hideNotification(id);
   setNotify = (
     showNotificationDispatcher: DispatchShowNotification,
     hideNotificationDispatcher: DispatchHideNotification,

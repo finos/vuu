@@ -2,7 +2,7 @@ package org.finos.vuu.wsapi
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.DefaultClock
-import org.finos.vuu.api.{ColumnBuilder, Link, TableDef, ViewPortDef, VisualLinks}
+import org.finos.vuu.api.{ColumnBuilder, Link, TableDef, TableDefOptions, ViewPortDef, VisualLinks}
 import org.finos.vuu.client.VuuClientOptions
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.auths.VuuUser
@@ -135,8 +135,9 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
       val invalidRequest = ChangeViewPortRange(targetViewPortId, 100, 200)
       val requestId = attackingClient.send(attackingSessionId, invalidRequest)
 
-      val response = attackingClient.awaitForMsgWithBody[ErrorResponse]
+      val response = attackingClient.awaitForMsgWithBody[ChangeViewPortRangeReject]
       response.isEmpty shouldBe false
+      response.get.viewPortId shouldEqual targetViewPortId
       response.get.msg shouldEqual s"Failed to process request $requestId"
     }
 
@@ -320,14 +321,16 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
     val tableDef = TableDef(
       name = tableName,
       keyField = "Id",
-      columns =
+      customColumns =
         new ColumnBuilder()
           .addString("Id")
           .addString("Name")
           .addInt("Account")
           .addInt("HiddenColumn")
           .build(),
-      links = VisualLinks(Link("Name", tableName, "Name"))
+      options = TableDefOptions(
+        links = VisualLinks(Link("Name", tableName, "Name"))
+      )      
     )
 
     val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>

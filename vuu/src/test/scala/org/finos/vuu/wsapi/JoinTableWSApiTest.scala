@@ -1,6 +1,6 @@
 package org.finos.vuu.wsapi
 
-import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, TableDef, VisualLinks}
+import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTableDefOptions, JoinTo, LeftOuterJoin, TableDef, TableDefOptions, VisualLinks}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.sort.SortDirection
@@ -109,8 +109,11 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
     val instrumentDef = TableDef(
       name = "instruments",
       keyField = "ric",
-      columns = Columns.fromNames("ric:String", "currency:String"),
-      joinFields = "ric", "currency")
+      customColumns = Columns.fromNames("ric:String", "currency:String"),
+      options = TableDefOptions(
+        joinFields = List("ric", "currency")
+      )
+    )
 
     val instrumentDataSource = new FakeDataSource(ListMap.empty)
     val instrumentProvider = (table: DataTable, _: AbstractVuuServer) => testProviderFactory.create(table, instrumentDataSource)
@@ -119,7 +122,10 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
       "currencies",
       "currency",
       Columns.fromNames("currency:String", "country:String", "unit:String"),
-      "currency", "country")
+      options = TableDefOptions(
+        joinFields = List("currency", "country")
+      )
+    )
 
     val currencyDataSource = new FakeDataSource(ListMap(
       "GBX" -> Map("currency" -> "GBX", "country" -> "GB", "unit" -> "Pound")
@@ -130,7 +136,11 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
       "countries",
       "country",
       Columns.fromNames("country:String", "capital:String"),
-      "country")
+      options = TableDefOptions(
+        joinFields = List("country")
+      )
+    )
+
     val countryDataSource = new FakeDataSource(ListMap(
       "GB" -> Map("country" -> "GB", "capital" -> "London")
     ))
@@ -139,14 +149,15 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
     val join1TableDef = JoinTableDef(
       name = "currencyToCountry",
       baseTable = currencyDef,
+      joinOptions = JoinTableDefOptions(
+        joinFields = Seq("currency", "country")
+      ),
       joinColumns = Columns.allFrom(currencyDef) ++ Columns.allFromExceptDefaultAnd(countryDef, "country"),
       joins =
         JoinTo(
           table = countryDef,
           joinSpec = JoinSpec(left = "country", right = "country", LeftOuterJoin)
         ),
-      links = VisualLinks(),
-      joinFields = Seq("currency", "country")
     )
 
     val joinTableFunc1: TableDefContainer => JoinTableDef = _ => join1TableDef
@@ -154,14 +165,15 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
     val joinTableFunc2: TableDefContainer => JoinTableDef = _ => JoinTableDef(
       name = "instrumentToCurrency",
       baseTable = instrumentDef,
+      joinOptions = JoinTableDefOptions(
+        joinFields = Seq("ric", "currency")
+      ),
       joinColumns = Columns.allFrom(instrumentDef) ++ Columns.allFromExceptDefaultAnd(join1TableDef, "currency"),
       joins =
         JoinTo(
           table = join1TableDef,
           joinSpec = JoinSpec(left = "currency", right = "currency", LeftOuterJoin)
         ),
-      links = VisualLinks(),
-      joinFields = Seq("ric", "currency")
     )
 
     ModuleFactory.withNamespace(moduleName)

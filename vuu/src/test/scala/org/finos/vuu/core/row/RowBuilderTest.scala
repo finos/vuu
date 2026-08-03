@@ -3,7 +3,7 @@ package org.finos.vuu.core.row
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
-import org.finos.vuu.api.TableDef
+import org.finos.vuu.api.{TableDef, TableDefOptions}
 import org.finos.vuu.core.table.datatype.Scale.{EIGHT, Eight, FOUR, Four, Six, Two}
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal, ScaledDecimal2}
 import org.finos.vuu.core.table.{Columns, InMemDataTable}
@@ -18,7 +18,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       TableDef(
         name = "instruments",
         keyField = "ric",
-        columns = Columns.fromNames(
+        customColumns = Columns.fromNames(
           "ric:String",
           "description:String",
           "currency: String",
@@ -32,7 +32,9 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
           "theta:ScaledDecimal8",
           "nano:EpochTimestampNano",
         ),
-        joinFields = "ric"
+        options = TableDefOptions(
+          joinFields = List("ric")
+        )        
       )
   }
 

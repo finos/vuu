@@ -4,7 +4,7 @@ import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.api.{Index, Indices, JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, TableDef, VisualLinks}
+import org.finos.vuu.api.{Index, Indices, JoinSpec, JoinTableDef, JoinTableDefOptions, JoinTo, LeftOuterJoin, TableDef, TableDefOptions, VisualLinks}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, MockProvider, ProviderContainer}
@@ -394,28 +394,33 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
-      indices = Indices(Index("orderId"), Index("trader")),
-      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-      joinFields = "ric", "orderId")
+      customColumns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+      options = TableDefOptions(
+        joinFields = List("ric", "orderId"),
+        indices = Indices(Index("orderId"), Index("trader")),
+      )
+    )
 
     val pricesDef = TableDef(
       name = "prices",
       keyField = "ric",
-      indices = Indices(Index("ric"), Index("open")),
-      columns = Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
-      joinFields = "ric")
+      customColumns = Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+      options = TableDefOptions(
+        joinFields = List("ric"),
+        indices = Indices(Index("ric"), Index("open")),
+      )
+    )
 
     val joinDef = JoinTableDef(
       name = "orderPrices",
       baseTable = ordersDef,
+      joinOptions = JoinTableDefOptions(),
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins =
         JoinTo(
           table = pricesDef,
           joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
         ),
-      links = VisualLinks(),
-      joinFields = Seq()
     )
 
     val joinProvider = JoinTableProviderImpl()

@@ -3,18 +3,12 @@ package org.finos.vuu.plugin.clickhouse.provider.data
 import com.clickhouse.client.api.query.GenericRecord
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
-import org.finos.vuu.core.table.{Column, DataType, RowWithData}
+import org.finos.vuu.core.table.{DataType, RowWithData}
 import org.finos.vuu.plugin.clickhouse.provider.data.ClickHouseRowDataMapper.{EPOCH_NANO_NAN_SENTINEL, EPOCH_NAN_SENTINEL}
-import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumn
+import org.finos.vuu.plugin.virtualized.api.{VirtualizedSessionTableColumn, VirtualizedSessionTableDef}
 
 import java.time.ZonedDateTime
 import scala.collection.mutable
-
-trait ClickHouseRowDataMapper {
-
-  def mapRowData(genericRecord: GenericRecord, remoteKeyName: String, columns: List[VirtualizedSessionTableColumn]): RowWithData
-
-}
 
 object ClickHouseRowDataMapper {
 
@@ -24,15 +18,15 @@ object ClickHouseRowDataMapper {
   val EPOCH_NAN_SENTINEL: EpochTimestamp = EpochTimestamp(0)
   val EPOCH_NANO_NAN_SENTINEL: EpochTimestampNano = EpochTimestampNano(0)
 
-  def apply(): ClickHouseRowDataMapper = ClickHouseRowDataMapperImpl()
-
 }
 
-private case class ClickHouseRowDataMapperImpl() extends ClickHouseRowDataMapper with StrictLogging {
-
-  override def mapRowData(v1: GenericRecord, remoteKeyName: String,
-                          columns: List[VirtualizedSessionTableColumn]): RowWithData = {
+class ClickHouseRowDataMapper(tableDef: VirtualizedSessionTableDef) extends StrictLogging {
+    
+  def mapRowData(v1: GenericRecord): RowWithData = {
+    val columns = tableDef.getRemoteColumns
+    
     val builder = mutable.Map.empty[String, Any]
+    builder.sizeHint(columns.length)
 
     var i = 0
     val n = columns.length
@@ -127,7 +121,7 @@ private case class ClickHouseRowDataMapperImpl() extends ClickHouseRowDataMapper
       i += 1
     }
 
-    val primaryKey = v1.getString(remoteKeyName)
+    val primaryKey = v1.getString(tableDef.getRemoteKeyField)
     RowWithData(primaryKey, builder.toMap)
   }
 

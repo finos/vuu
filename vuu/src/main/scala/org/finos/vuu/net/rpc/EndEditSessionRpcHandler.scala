@@ -5,22 +5,28 @@ import org.finos.vuu.core.table.TableContainer
 trait EndEditSessionRpcHandler(using val tableContainer: TableContainer) extends DefaultRpcHandler {
   registerRpc(RpcNames.EndEditSessionRpc, this.endEditSession)
 
-
-  // TODO #2169 when closing session table, front end sends close view port request, and then server removes session table
-
   def endEditSession(params: RpcParams): RpcFunctionResult = {
-    if (!verify()) {
-      return new RpcFunctionFailure(s"Unable to submit. Error(s) found in session table ${params.viewPort.table.name}.")
+    if (!verifyPermission(params)) {
+      logger.warn(s"Failed to end edit session in viewport ${params.viewPort.id} in session ${params.ctx.session.sessionId}. No permission.")
+      return new RpcFunctionFailure(s"Unable to end edit session. No permission.")
     }
 
-    if (submit()) {
+    if (!validateData(params)) {
+      logger.warn(s"Failed to end edit session in viewport ${params.viewPort.id} in session ${params.ctx.session.sessionId}. Invalid data found.")
+      return new RpcFunctionFailure(s"Unable to end edit session. Invalid data found.")
+    }
+
+    if (submit(params)) {
       RpcFunctionSuccess(None)
     } else {
-      new RpcFunctionFailure(s"Failed to submit for session table ${params.viewPort.table.name}.")
+      logger.warn(s"Failed to end edit session in viewport ${params.viewPort.id} in session ${params.ctx.session.sessionId}. Failed to submit.")
+      new RpcFunctionFailure(s"Failed to end edit session.")
     }
   }
 
-  def verify(): Boolean
+  protected def verifyPermission(params: RpcParams): Boolean
 
-  def submit(): Boolean
+  protected def validateData(params: RpcParams): Boolean
+
+  protected def submit(params: RpcParams): Boolean
 }

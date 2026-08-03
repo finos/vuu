@@ -211,6 +211,66 @@ describe("Viewport", () => {
     });
   });
 
+  describe("maxRangeEnd", () => {
+    it("caps CHANGE_VP_RANGE to maxRangeEnd from tableSchema", () => {
+      const vp = new Viewport(
+        {
+          ...constructor_options,
+          bufferSize: 10,
+          range: { from: 0, to: 10 },
+        },
+        noop,
+      );
+      const [, serverSubscription] = createSubscription({ bufferSize: 10 });
+
+      vp.handleSubscribed(serverSubscription.body, {
+        ...testSchema,
+        rangeLimits: {
+          ...testSchema.rangeLimits,
+          maxRangeEnd: 60,
+        },
+      });
+
+      const [serverRequest] = vp.rangeRequest("1", { from: 55, to: 65 });
+
+      expect(serverRequest).toEqual({
+        type: "CHANGE_VP_RANGE",
+        viewPortId: "server-vp-1",
+        from: 45,
+        to: 60,
+      });
+    });
+
+    it("applies maxRangeEnd even when rowCount is not yet known", () => {
+      const vp = new Viewport(
+        {
+          ...constructor_options,
+          bufferSize: 10,
+          range: { from: 0, to: 10 },
+        },
+        noop,
+      );
+      const [, serverSubscription] = createSubscription({ bufferSize: 10 });
+
+      vp.handleSubscribed(serverSubscription.body, {
+        ...testSchema,
+        rangeLimits: {
+          ...testSchema.rangeLimits,
+          maxRangeEnd: 80,
+        },
+      });
+
+      const [serverRequest] = vp.rangeRequest("1", { from: 75, to: 85 });
+
+      expect(serverRequest).toEqual({
+        type: "CHANGE_VP_RANGE",
+        viewPortId: "server-vp-1",
+        from: 65,
+        to: 80,
+      });
+    });
+  });
+
   describe("rangeRequestAlreadyPending", () => {
     it("tests range requests against last pending server request", () => {
       const vp = new Viewport(

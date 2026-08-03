@@ -19,7 +19,7 @@ object RestModule {
         TableDef(
           name = "Instruments",
           keyField = "id",
-          columns = Columns.fromNames("id".long(), "ric".string(), "isin".string(), "currency".string())
+          customColumns = Columns.fromNames("id".long(), "ric".string(), "isin".string(), "currency".string())
         ),
         (table, _) => new InstrumentsProvider(
           table,

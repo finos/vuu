@@ -155,10 +155,12 @@ export class Viewport {
   private hasUpdates = false;
   private pendingUpdates: VuuRow[] = [];
   private keys: KeySet;
+  #maxRangeEnd = Number.MAX_SAFE_INTEGER;
   private pendingLinkedParent?: LinkDescriptorWithLabel;
   private pendingOperations = new Map<string, AsyncOperation>();
   private pendingRangeRequests: (VuuViewportRangeRequest & {
     acked?: boolean;
+    nacked?: boolean;
     requestId: string;
   })[] = [];
   private postMessageToClient: (message: DataSourceCallbackMessage) => void;
@@ -321,12 +323,16 @@ export class Viewport {
       table === baseTableSchema.table.table
         ? baseTableSchema
         : {
-            ...baseTableSchema,
-            table: {
-              ...baseTableSchema.table,
-              session: table,
-            },
-          };
+          ...baseTableSchema,
+          table: {
+            ...baseTableSchema.table,
+            session: table,
+          },
+        };
+
+    if (tableSchema.rangeLimits) {
+      this.#maxRangeEnd = tableSchema.rangeLimits?.maxRangeEnd
+    }
 
     return {
       aggregations,
@@ -344,6 +350,31 @@ export class Viewport {
   awaitOperation(requestId: string, msg: AsyncOperation) {
     //TODO set uip a timeout mechanism here
     this.pendingOperations.set(requestId, msg);
+  }
+
+  rejectOperation(requestId: string, _msg: string) {
+    const { pendingOperations } = this;
+    const pendingOperation = pendingOperations.get(requestId);
+    if (!pendingOperation) {
+      error(
+        `no matching operation found to reject for requestId ${requestId}`,
+      );
+      return;
+    }
+    const { type } = pendingOperation;
+    pendingOperations.delete(requestId);
+
+    if (type === "CHANGE_VP_RANGE") {
+      for (let i = this.pendingRangeRequests.length - 1; i >= 0; i--) {
+        const pendingRangeRequest = this.pendingRangeRequests[i];
+        if (pendingRangeRequest.requestId === requestId) {
+          pendingRangeRequest.nacked = true;
+          break;
+        } else {
+          warn?.("range requests sent faster than they are being ACKed");
+        }
+      }
+    }
   }
 
   // Return a message if we need to communicate this to client UI
@@ -493,16 +524,16 @@ export class Viewport {
         );
 
       let debounceRequest: DataSourceDebounceRequest | undefined;
-      // Don't use zero as a range cap, it's is likely a transient count reported immediately
-      // following a groupBy operation.
-      const maxRange = this.dataWindow.rowCount || undefined;
+      // maxRangeEnd is the only cap used for range requests.
+      const maxRange = this.#maxRangeEnd;
+
       const serverRequest =
         serverDataRequired && !this.rangeRequestAlreadyPending(range)
           ? ({
-              type,
-              viewPortId: this.serverViewportId,
-              ...getFullRange(range, this.bufferSize, maxRange),
-            } as VuuViewportRangeRequest)
+            type,
+            viewPortId: this.serverViewportId,
+            ...getFullRange(range, this.bufferSize, maxRange),
+          } as VuuViewportRangeRequest)
           : null;
       if (serverRequest) {
         infoEnabled &&
@@ -712,11 +743,11 @@ export class Viewport {
         filterSpec:
           typeof filter?.filter === "string"
             ? {
-                filter: filter.filter,
-              }
+              filter: filter.filter,
+            }
             : {
-                filter: "",
-              },
+              filter: "",
+            },
       },
       true,
     );

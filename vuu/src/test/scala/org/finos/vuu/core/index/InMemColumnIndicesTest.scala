@@ -1,6 +1,6 @@
 package org.finos.vuu.core.index
 
-import org.finos.vuu.api.{Index, Indices, TableDef}
+import org.finos.vuu.api.{Index, Indices, TableDef, TableDefOptions}
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{Column, DataType, RowData, RowWithData, SimpleColumn}
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -15,8 +15,9 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       name = "test" + columnName,
       keyField = columnName,
       customColumns = Array(column),
-      indices = Indices.apply(Index.apply(columnName)),
-      joinFields = List.empty
+      TableDefOptions(
+        indices = Indices.apply(Index.apply(columnName))
+      )      
     )
 
     (column, InMemColumnIndices(tableDef))
@@ -30,12 +31,10 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
 
     Scenario("Test unindexed field") {
       val column: Column = SimpleColumn("empty", 0, DataType.StringDataType)
-      val tableDef = new TableDef(
+      val tableDef = TableDef(
         name = "test" + column.name,
         keyField = column.name,
-        customColumns = Array(column),
-        indices = Indices.apply(),
-        joinFields = List.empty
+        customColumns = Array(column)
       )
       val indices = InMemColumnIndices.apply(tableDef)
 
@@ -71,8 +70,9 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
         name = "test" + column.name,
         keyField = column.name,
         customColumns = Array(column),
-        indices = Indices.apply(Index.apply("missing")),
-        joinFields = List.empty
+        TableDefOptions(
+          indices = Indices.apply(Index.apply("missing"))
+        )
       )
 
       val exception = intercept[NullPointerException] {
