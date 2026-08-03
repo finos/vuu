@@ -38,26 +38,11 @@ object ClickHouseTableModule extends DefaultModule {
       )
     )
 
-    val tableDefWithNoSellPermission = AliasedVirtualizedSessionTableDef(
+    val tableDefWithNoSellPermission = tableDef.copy(
       tableName = NO_SELL_TABLE_NAME,
-      tableKeyField = "orderId",
-      remoteName = "order_history",
-      remoteKeyField = "order_id",
-      remoteColumns = VirtualizedSessionTableColumnBuilder()
-        .addString("orderId", "order_id")
-        .addInt("quantity")
-        .addLong("price")
-        .addString("side")
-        .addString("trader")
-        .build(),
       remotePermissionFilterSpecFunction = (vp: ViewPort) => {
         FilterSpec("side = \"Buy\"")
-      },
-      options = TableDefOptions(
-        includeDefaultColumns = false,
-        rangeSettings = RangeSettings()
-          .withMaxRangeEnd(1_000_000)
-      )
+      }
     )
 
     ModuleFactory.withNamespace(NAME)
