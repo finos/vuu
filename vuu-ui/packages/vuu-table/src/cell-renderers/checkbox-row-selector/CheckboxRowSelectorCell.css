@@ -11,3 +11,11 @@
     margin-top: calc(var(--row-height) / 2 - 6px);
   }
 }
+
+.vuuTableRow-noSelect {
+  .vuuTableCell .vuuCheckboxRowSelector {
+    cursor: default;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+}

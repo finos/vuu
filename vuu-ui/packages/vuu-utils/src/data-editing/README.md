@@ -147,21 +147,14 @@ Wraps `EditSession` for use in React components. Manages session lifecycle in re
 | `dataSource` | The (possibly newly created) DataSource |
 | `editSession` | The `EditSession` instance |
 | `sessionDataSource` | Set for standalone modes; `undefined` for inline |
-| `hasSelection` | `true` when one or more rows are selected |
+| `hasSelection` | `true` when rows are selected OR there are pending soft-deletions (`deleteCount > 0`) |
 | `onCancel` | Async handler: `await editSession.end()` → `onCancel()` |
 | `onSave` | Async handler: `await editSession.end(true, force)` → `onSave()` |
 | `onDelete` | Calls `editSession.deleteSelectedRows()`; resets selection count |
 | `onAddRows` | Adds rows via `editSession.addRows(addRowsCount)` |
 | `onUndoRowChange` | `(key) =>` `editSession.undoRowChange(key)` |
 
-`hasSelection` is kept in sync by a `useEffect` that subscribes to the datasource's
-`"row-selection"` event — no `onSelectionChange` callback needs to be wired into the Table.
-
----
-
-## EditButtons — UI Component
-
-Renders the action bar for an edit session. Subscribes to `EditSession` directly for button state, and accepts handler callbacks for each action. The handlers are typically provided by `useEditableTable`, but any callbacks that satisfy the props interface can be used — the component has no hard dependency on the hook.
+`hasSelection` is driven by two sources: a `useEffect` subscribing to the datasource's `"row-selection"` event (newly selected rows), and a second `useEffect` subscribing to `editSession`'s `"editState"` event to sync `deleteCount`. This keeps the Delete button enabled after soft-delete and restores it correctly after undo.
 
 ### Props
 
@@ -195,8 +188,8 @@ Renders the action bar for an edit session. Subscribes to `EditSession` directly
 ```
 isEditMode → true
   useEditableTable (useMemo)
-    editSession.begin("inline-all-rows")
-      dataSource.beginEditSession("inline-all-rows")          ← EditApi RPC
+    editSession.begin("all-rows")
+      dataSource.beginEditSession("all-rows")          ← EditApi RPC
         → "beginEditSession" RPC → VuuModule.beginEditSession
           creates SessionTable (Proxy over source Table)
           stores in #sessionTableMap[sessionTableName]
@@ -261,9 +254,10 @@ User selects rows → clicks Delete
             for each selected key:
               sessionTable.update(key, sessionTableMessageColumn, "SOFT_DELETED")
             returns { deletedKeys: [...] }
-      on RpcSuccess: #deletedRows.add(key) for each, deleteCount += n ← emits "editState" → "dirty"
+      on RpcSuccess: #deletedRows.add(key) for each NEW key only (already-deleted keys skipped);
+                    deleteCount += newKeys.length ← emits "editState" → "dirty"
       on RpcError:  local state unchanged
-    setSelectionCount(0)                         ← disables Delete button
+    setSelectionCount(0)  ← hasSelection stays true while deleteCount > 0
 ```
 
 > **Note:** The client does not send row keys to the server. Selection state is owned by the server-side
@@ -290,7 +284,7 @@ User clicks Add Rows
 
 ```
 User clicks Undo button on a row
-  UndoCellRenderer.onClick → onUndoRowChange(key)
+  UndoCellRenderer (reads editSession via useEditSession()) -> editSession.undoRowChange(key)
     editSession.undoRowChange(key)
       checks #rowEdits.has(key) || #deletedRows.has(key)
       deletes key from #rowEdits / #deletedRows BEFORE the RPC       ← undo button hides immediately
@@ -413,7 +407,7 @@ Each method dispatches a named RPC request registered and handled in `VuuModule.
 > ```typescript
 > super("MY_MODULE", { sessionTableMessageColumn: "statusCol" });
 > ```
-> Pass the same name as `sessionTableMessageColumn` in the `UndoCellComponentProps` so the undo
+> Pass the same name as `sessionTableMessageColumn` in the `componentProps` of the undo cell column so the undo button correctly reads the soft-delete state from the row data. Functions must not be placed in `componentProps` (not serializable) - `editSession` is accessed via `useEditSession()` from `DataEditingContext` instead.
 > button correctly reads the soft-delete state from the row data.
 
 ---
@@ -547,15 +541,14 @@ converts long-form values to their aliases before dispatching the RPC (see `toRp
 | `dataSource` | The (possibly newly created) DataSource |
 | `editSession` | The `EditSession` instance |
 | `sessionDataSource` | Set for standalone edit modes; `undefined` for inline |
-| `hasSelection` | `true` when one or more rows are selected |
+| `hasSelection` | `true` when rows are selected OR there are pending soft-deletions (`deleteCount > 0`) |
 | `onCancel` | Async handler: `await editSession.end()` → `onCancel()` |
 | `onSave` | Async handler: `await editSession.end(true, force)` → `onSave()` |
 | `onDelete` | Calls `editSession.deleteSelectedRows()`; resets selection count |
 | `onAddRows` | Adds rows via `editSession.addRows(addRowsCount)` |
 | `onUndoRowChange` | `(key) =>` `editSession.undoRowChange(key)` |
 
-`hasSelection` is kept in sync by a `useEffect` that subscribes to the datasource's
-`"row-selection"` event — no `onSelectionChange` callback needs to be wired into the Table.
+`hasSelection` is driven by two sources: a `useEffect` subscribing to the datasource's `"row-selection"` event (newly selected rows), and a second `useEffect` subscribing to `editSession`'s `"editState"` event to sync `deleteCount`. This keeps the Delete button enabled after soft-delete and restores it correctly after undo.
 
 ---
 
@@ -661,7 +654,7 @@ User clicks Add Rows
 
 ```
 User clicks Undo button on a row
-  UndoCellRenderer.onClick → onUndoRowChange(key)
+  UndoCellRenderer (reads editSession via useEditSession()) -> editSession.undoRowChange(key)
     editSession.undoRowChange(key)
       checks #rowEdits.has(key) || #deletedRows.has(key)
       deletes key from #rowEdits / #deletedRows BEFORE the RPC       ← undo button hides immediately
@@ -789,7 +782,7 @@ Each method dispatches a named RPC request which is registered and handled in `V
 > ```typescript
 > super("MY_MODULE", { sessionTableMessageColumn: "statusCol" });
 > ```
-> Pass the same name as `sessionTableMessageColumn` in the `UndoCellComponentProps` so the undo
+> Pass the same name as `sessionTableMessageColumn` in the `componentProps` of the undo cell column so the undo button correctly reads the soft-delete state from the row data. Functions must not be placed in `componentProps` (not serializable) - `editSession` is accessed via `useEditSession()` from `DataEditingContext` instead.
 > button correctly reads the soft-delete state from the row data.
 
 ---
@@ -821,3 +814,62 @@ The `params` object sent with each RPC request (types from `@vuu-ui/vuu-protocol
 | `undoRowChange` | `"undoRowChange"` | session datasource | if key not in source table: deletes inserted row, returns `UndoRowChangeResult { wasInsertedRow: true }`; otherwise reverts `cellUpdates` to source values |
 | `beginEditSession` | `"beginEditSession"` | source datasource | creates `SessionTable` proxy, stores in `#sessionTableMap` |
 | `endEditSession` | `"endEditSession"` | session datasource | applies (or discards) session updates to source table |
+
+---
+
+---
+
+## Per-Row Selectability — `isRowSelectable`
+
+When using any selection model, individual rows can be made non-selectable via the `isRowSelectable` prop on `<Table>`.
+
+### API
+
+```typescript
+// On TableProps:
+isRowSelectable?: (dataRow: DataRow) => boolean;
+```
+
+Rows for which `isRowSelectable` returns `false`:
+- Receive a `vuuTableRow-noSelect` CSS class
+- Are skipped entirely by all selection paths in `useSelection` (single, extended, checkbox, and block)
+- The checkbox (if shown) is styled via CSS on the `noSelect` class — it requires no `disabled` prop
+
+### Block selection with non-selectable rows
+
+When the user shift-clicks to extend a selection into a range that contains non-selectable rows, a single `SELECT_ROW_RANGE` request would include those rows on the server. Instead, `useSelection` calls `splitSelectableRanges` (from `@vuu-ui/vuu-utils`) which:
+
+1. Walks the locally-cached rows within the index range in order
+2. Groups consecutive selectable rows into separate `SELECT_ROW_RANGE` requests
+
+Example — rows 1–5, row 3 non-selectable, shift-click 1→5:
+- Without: one `SELECT_ROW_RANGE 1→5` → server selects all five rows
+- With: `SELECT_ROW_RANGE 1→2` then `SELECT_ROW_RANGE 4→5` → row 3 never selected
+
+### Soft-delete example
+
+In `EditableInstrumentsTemplate`, soft-deleted rows cannot be re-selected or deselected. Selecting another row (or a block) will not include them:
+
+```typescript
+const isRowSelectable = useCallback(
+  (dataRow: DataRow) => dataRow.vuuMsg !== "SOFT_DELETED",
+  [],
+);
+
+<Table
+  config={config}
+  dataSource={sessionDataSource ?? dataSource}
+  isRowSelectable={editMode === "edit" ? isRowSelectable : undefined}
+  selectionModel={editMode === "edit" ? "checkbox" : "none"}
+/>
+```
+
+The `vuuTableRow-noSelect` CSS class can be used to style non-selectable rows:
+
+```css
+.vuuTableRow-noSelect .vuuCheckboxRowSelector {
+  opacity: 0.4;
+  pointer-events: none;
+}
+```
+

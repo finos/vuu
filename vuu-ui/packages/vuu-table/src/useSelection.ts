@@ -1,4 +1,5 @@
 import {
+  DataRow,
   TableRowClickHandlerInternal,
   TableRowSelectHandlerInternal,
   SelectionChangeHandler,
@@ -9,6 +10,7 @@ import {
   dispatchMouseEvent,
   queryClosest,
   selectItem,
+  splitSelectableRanges,
 } from "@vuu-ui/vuu-utils";
 import {
   KeyboardEvent,
@@ -50,7 +52,12 @@ export interface SelectionHookProps
   extends Pick<TableProps, "allowSelectCheckboxRow" | "onSelectionChange"> {
   containerRef: RefObject<HTMLElement | null>;
   dataSource: DataSource;
+  dataRowsRef: RefObject<DataRow[]>;
   highlightedIndexRef: RefObject<number | undefined>;
+  /**
+   * When provided, rows for which this returns false will not be selectable.
+   */
+  isRowSelectable?: (dataRow: DataRow) => boolean;
   selectionKeys?: string[];
   selectionModel: TableSelectionModel;
   onSelectionChange: SelectionChangeHandler;
@@ -61,7 +68,9 @@ export const useSelection = ({
   allowSelectCheckboxRow,
   containerRef,
   dataSource,
+  dataRowsRef,
   highlightedIndexRef,
+  isRowSelectable,
   onSelect,
   onSelectionChange,
   selectionKeys = defaultSelectionKeys,
@@ -96,6 +105,9 @@ export const useSelection = ({
 
   const handleRowClick = useCallback<TableRowClickHandlerInternal>(
     (e, dataRow, rangeSelect, keepExistingSelection) => {
+      if (isRowSelectable && !isRowSelectable(dataRow)) {
+        return;
+      }
       const { index: rowIdx, key: rowKey } = dataRow;
       const { current: activeRowKey } = lastActiveRef;
       const newRowIdentifier = { rowIdx, rowKey } as RowIdentifier;
@@ -118,7 +130,22 @@ export const useSelection = ({
         newRowIdentifier,
         rangeSelect,
       );
-
+      if (rangeSelect && isRowSelectable && activeRowKey && toRowKey) {
+        // Split the range into sub-ranges, skipping non-selectable rows
+        const minIdx = Math.min(rowIdx, activeRowKey.rowIdx);
+        const maxIdx = Math.max(rowIdx, activeRowKey.rowIdx);
+        const rowsInRange = dataRowsRef.current
+          .filter((r) => r.index >= minIdx && r.index <= maxIdx)
+          .sort((a, b) => a.index - b.index);
+        const requests = splitSelectableRanges(
+          rowsInRange,
+          isRowSelectable,
+          keepExistingSelection,
+        );
+        lastActiveRef.current = newRowIdentifier;
+        requests.forEach((req) => onSelectionChange(req));
+        return;
+      }
       const selectRequest = selectOperation(
         selectionModel,
         fromRowKey,
@@ -141,6 +168,7 @@ export const useSelection = ({
     [
       allRowsSelected,
       allowSelectCheckboxRow,
+      isRowSelectable,
       onSelect,
       onSelectionChange,
       selectionModel,

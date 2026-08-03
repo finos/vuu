@@ -6,6 +6,7 @@ import { TableProvider } from "@vuu-ui/vuu-table-extras";
 import {
   CustomHeader,
   // DataCellEditNotification,
+  DataRow,
   GroupToggleTarget,
   HeaderCellProps,
   RowActionHandler,
@@ -178,6 +179,13 @@ export interface TableProps
   highlightedIndex?: number;
 
   /**
+   * When provided, rows for which this returns false will not be selectable.
+   * Those rows receive a `vuuTableRow-noSelect` CSS class and are skipped by
+   * all selection logic (single, extended, checkbox and block selection).
+   */
+  isRowSelectable?: (dataRow: DataRow) => boolean;
+
+  /**
    * Behaves in most respects like viewportRowLimit except that, when there are fewer
    * rows available than the limit set here, the Table height will reduce. This can be
    * useful where a Table is used in a dropdown control.
@@ -329,6 +337,7 @@ const TableCore = ({
   disableFocus = false,
   groupToggleTarget,
   highlightedIndex: highlightedIndexProp,
+  isRowSelectable,
   id: idProp,
   lowerCaseSearchPattern,
   navigationStyle = "cell",
@@ -409,6 +418,7 @@ const TableCore = ({
     allowSelectCheckboxRow,
     autoSelectFirstRow,
     autoSelectRowKey,
+    isRowSelectable,
     config,
     containerRef,
     dataSource,
@@ -426,7 +436,7 @@ const TableCore = ({
     onSelectCellBlock,
     onSelectionChange,
     renderBufferSize,
-    revealSelected,
+    revealSelected,   
     rowHeight,
     scrollingApiRef,
     selectionModel,
@@ -549,6 +559,7 @@ const TableCore = ({
                     dataRow={dataRow}
                     groupToggleTarget={groupToggleTarget}
                     highlighted={highlightedIndex === ariaRowIndex}
+                    isSelectable={isRowSelectable?.(dataRow)}
                     key={dataRow.renderIndex}
                     onClick={onRowClick}
                     // onDataEdited={onDataEdited}
@@ -620,6 +631,7 @@ export const Table = forwardRef(function Table(
     colHeaderRowHeight: colHeaderRowHeightProp,
     height,
     highlightedIndex,
+    isRowSelectable,
     id,
     maxViewportRowLimit,
     navigationStyle,
@@ -793,6 +805,7 @@ export const Table = forwardRef(function Table(
           }
           revealSelected={revealSelected}
           rowActionHandlers={rowActionHandlers}
+          isRowSelectable={isRowSelectable}
           rowHeight={rowHeight}
           scrollingApiRef={scrollingApiRef}
           lowerCaseSearchPattern={lowerCase(searchPattern)}

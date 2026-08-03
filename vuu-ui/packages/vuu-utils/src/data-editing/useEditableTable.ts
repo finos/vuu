@@ -43,6 +43,7 @@ export const useEditableTable = ({
     DataSource | undefined
   >(undefined);
   const [selectionCount, setSelectionCount] = useState(0);
+  const [deleteCount, setDeleteCount] = useState(0);
   useLayoutEffectSkipFirst(() => {
     console.warn(`[useEditableTable] columns and or table changed`);
   }, [columns, table]);
@@ -116,14 +117,24 @@ export const useEditableTable = ({
     return () => activeDataSource.removeListener("row-selection", setSelectionCount);
   }, [dataSource, sessionDataSource]);
 
+  useEffect(() => {
+    const syncDeleteCount = () => setDeleteCount(editSession.deleteCount);
+    editSession.on("editState", syncDeleteCount);
+    return () => editSession.removeListener("editState", syncDeleteCount);
+  }, [editSession]);
+
   useMemo(async () => {
     if (isEditMode) {
       try {
-        const sessionDataSource = isCopyOption(editSessionMode)
+        const sessionDs = isCopyOption(editSessionMode)
           ? await editSession.begin(editSessionMode)
           : await editSession.begin(editSessionMode);
-        if (sessionDataSource) {
-          setSessionDataSource(sessionDataSource);
+        if (sessionDs) {
+          setSessionDataSource(sessionDs);
+        } else {
+          console.warn(
+            `[useEditableTable] editSession.begin(${editSessionMode}) did not return a session DataSource`,
+          );
         }
       } catch (e) {
         console.error(`[useEditableTable] begin edit session failed`, e);
@@ -139,7 +150,7 @@ export const useEditableTable = ({
   return {
     dataSource,
     editSession,
-    hasSelection: selectionCount > 0,
+    hasSelection: selectionCount > 0 || deleteCount > 0,
     onAddRows: handleAddRows,
     onCancel: handleCancel,
     onDelete: handleDelete,

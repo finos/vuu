@@ -112,6 +112,7 @@ export interface TableHookProps
     | "disableFocus"
     | "highlightedIndex"
     | "id"
+    | "isRowSelectable"
     | "navigationStyle"
     | "onConfigChange"
     | "onDragStart"
@@ -154,6 +155,7 @@ export const useTable = ({
   disableFocus,
   highlightedIndex: highlightedIndexProp,
   id,
+  isRowSelectable,
   navigationStyle = "cell",
   onConfigChange,
   // onDataEdited: onDataEditedProp,
@@ -737,7 +739,9 @@ export const useTable = ({
     allowSelectCheckboxRow,
     containerRef,
     dataSource,
+    dataRowsRef,
     highlightedIndexRef,
+    isRowSelectable,
     onSelect: handleSelect,
     onSelectionChange: handleSelectionChange,
     selectionModel,

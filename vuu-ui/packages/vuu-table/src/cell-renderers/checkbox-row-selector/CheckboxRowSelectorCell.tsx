@@ -40,7 +40,7 @@ export const CheckboxRowSelectorCell: React.FC<TableCellRendererProps> = ({
     />
   );
 };
-CheckboxRowSelectorCell.displayName = "CheckboxCell";
+CheckboxRowSelectorCell.displayName = "CheckboxRowSelectorCell";
 
 registerComponent(
   "checkbox-row-selector-cell",

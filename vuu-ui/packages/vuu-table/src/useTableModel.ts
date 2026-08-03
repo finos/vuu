@@ -308,16 +308,13 @@ function init(
 
   if (selectionModel?.startsWith("checkbox")) {
     const somePinnedLeft = runtimeColumns.some((col) => col.pin === "left");
-    runtimeColumns.splice(
-      0,
-      0,
-      toRuntimeColumnDescriptor(
-        somePinnedLeft
-          ? PinnedCheckboxColumnDescriptor(selectionModel, checkboxColumnWidth)
-          : CheckboxColumnDescriptor(selectionModel, checkboxColumnWidth),
-        1,
-      ),
+    const checkboxCol = toRuntimeColumnDescriptor(
+      somePinnedLeft
+        ? PinnedCheckboxColumnDescriptor(selectionModel, checkboxColumnWidth)
+        : CheckboxColumnDescriptor(selectionModel, checkboxColumnWidth),
+      1,
     );
+    runtimeColumns.splice(0, 0, checkboxCol);
   }
 
   const { columnLayout = "static", selectionBookendWidth = 4 } = tableConfig;
