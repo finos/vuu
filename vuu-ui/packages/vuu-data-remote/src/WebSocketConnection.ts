@@ -25,6 +25,7 @@ export type ConnectionStatus =
   | "websocket-open"
   | "disconnected"
   | "failed"
+  | "connection-failed"
   | "inactive";
 
 export const isInvalidTokenReason = (
