@@ -2,9 +2,9 @@ package org.finos.vuu.plugin.clickhouse.provider.data
 
 import com.clickhouse.client.api.metadata.TableSchema
 import com.clickhouse.client.api.query.GenericRecord
+import org.finos.vuu.core.table.DataType
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
-import org.finos.vuu.core.table.{Column, DataType, SimpleColumn}
-import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumn
+import org.finos.vuu.plugin.virtualized.api.{SimpleVirtualizedSessionTableDef, VirtualizedSessionTableColumn}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.GivenWhenThen
 import org.scalatest.flatspec.AnyFlatSpec
@@ -22,9 +22,15 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     Given("a GenericRecord with a string column and primary key")
     val v1 = mock[GenericRecord]
 
-    val columns = List(
+    val columns = Array(
       col("strCol", DataType.StringDataType),
       col("emptyStrCol", DataType.StringDataType)
+    )
+
+    val tableDef = SimpleVirtualizedSessionTableDef(
+      tableName = "test",
+      tableKeyField = "pk",
+      remoteColumns = columns
     )
 
     (v1.hasValue(_:String)).expects("strCol").returning(true)
@@ -35,8 +41,8 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     (v1.getString(_:String)).expects("pk").returning("key-1")
 
     When("we map the record")
-    val mapper = ClickHouseRowDataMapper()
-    val row = mapper.mapRowData(v1, "pk", columns)
+    val mapper = ClickHouseRowDataMapper(tableDef)
+    val row = mapper.mapRowData(v1)
 
     Then("only the non-empty string should be present")
     row.key shouldBe "key-1"
@@ -48,9 +54,15 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     Given("a GenericRecord with integer columns")
     val v1 = mock[GenericRecord]
 
-    val columns = List(
+    val columns = Array(
       col("intCol", DataType.IntegerDataType),
       col("intSentinelCol", DataType.IntegerDataType)
+    )
+
+    val tableDef = SimpleVirtualizedSessionTableDef(
+      tableName = "test",
+      tableKeyField = "pk",
+      remoteColumns = columns
     )
 
     (v1.hasValue(_:String)).expects("intCol").returning(true)
@@ -61,8 +73,8 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     (v1.getString(_:String)).expects("pk").returning("key-2")
 
     When("we map the record")
-    val mapper = ClickHouseRowDataMapper()
-    val row = mapper.mapRowData(v1, "pk", columns)
+    val mapper = ClickHouseRowDataMapper(tableDef)
+    val row = mapper.mapRowData(v1)
 
     Then("the normal int is present and sentinel int is omitted")
     row.key shouldBe "key-2"
@@ -74,9 +86,15 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     Given("a GenericRecord with long columns")
     val v1 = mock[GenericRecord]
 
-    val columns = List(
+    val columns = Array(
       col("longCol", DataType.LongDataType),
       col("longSentinelCol", DataType.LongDataType)
+    )
+
+    val tableDef = SimpleVirtualizedSessionTableDef(
+      tableName = "test",
+      tableKeyField = "pk",
+      remoteColumns = columns
     )
 
     (v1.hasValue(_:String)).expects("longCol").returning(true)
@@ -88,8 +106,8 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     (v1.getString(_:String)).expects("pk").returning("key-3")
 
     When("we map the record")
-    val mapper = ClickHouseRowDataMapper()
-    val row = mapper.mapRowData(v1, "pk", columns)
+    val mapper = ClickHouseRowDataMapper(tableDef)
+    val row = mapper.mapRowData(v1)
 
     Then("the normal long is present and sentinel long is omitted")
     row.key shouldBe "key-3"
@@ -101,9 +119,15 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     Given("a GenericRecord with double columns")
     val v1 = mock[GenericRecord]
 
-    val columns = List(
+    val columns = Array(
       col("doubleCol", DataType.DoubleDataType),
       col("doubleNaNCol", DataType.DoubleDataType)
+    )
+
+    val tableDef = SimpleVirtualizedSessionTableDef(
+      tableName = "test",
+      tableKeyField = "pk",
+      remoteColumns = columns
     )
 
     (v1.hasValue(_:String)).expects("doubleCol").returning(true)
@@ -115,8 +139,8 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     (v1.getString(_:String)).expects("pk").returning("key-4")
 
     When("we map the record")
-    val mapper = ClickHouseRowDataMapper()
-    val row = mapper.mapRowData(v1, "pk", columns)
+    val mapper = ClickHouseRowDataMapper(tableDef)
+    val row = mapper.mapRowData(v1)
 
     Then("the normal double is present and NaN double is omitted")
     row.key shouldBe "key-4"
@@ -128,7 +152,13 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     Given("a GenericRecord with a boolean column")
     val v1 = mock[GenericRecord]
 
-    val columns = List(col("boolCol", DataType.BooleanDataType))
+    val columns = Array(col("boolCol", DataType.BooleanDataType))
+
+    val tableDef = SimpleVirtualizedSessionTableDef(
+      tableName = "test",
+      tableKeyField = "pk",
+      remoteColumns = columns
+    )
 
     (v1.hasValue(_:String)).expects("boolCol").returning(true)
     
@@ -137,8 +167,8 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     (v1.getString(_:String)).expects("pk").returning("key-5")
 
     When("we map the record")
-    val mapper = ClickHouseRowDataMapper()
-    val row = mapper.mapRowData(v1, "pk", columns)
+    val mapper = ClickHouseRowDataMapper(tableDef)
+    val row = mapper.mapRowData(v1)
 
     Then("the boolean value is present")
     row.key shouldBe "key-5"
@@ -149,15 +179,21 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     Given("a GenericRecord with char column")
     val v1 = mock[GenericRecord]
 
-    val columns = List(col("charCol", DataType.CharDataType))
+    val columns = Array(col("charCol", DataType.CharDataType))
+
+    val tableDef = SimpleVirtualizedSessionTableDef(
+      tableName = "test",
+      tableKeyField = "pk",
+      remoteColumns = columns
+    )
 
     (v1.hasValue(_:String)).expects("charCol").returning(true)
     (v1.getString(_:String)).expects("charCol").returning("A")
     (v1.getString(_:String)).expects("pk").returning("key-6")
 
     When("we map the record with single-character string")
-    val mapper = ClickHouseRowDataMapper()
-    val row = mapper.mapRowData(v1, "pk", columns)
+    val mapper = ClickHouseRowDataMapper(tableDef)
+    val row = mapper.mapRowData(v1)
 
     Then("the char is present")
     row.key shouldBe "key-6"
@@ -170,7 +206,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     (v2.getString(_:String)).expects("pk").returning("key-7")
 
     When("we map the record again")
-    val row2 = mapper.mapRowData(v2, "pk", columns)
+    val row2 = mapper.mapRowData(v2)
 
     Then("the char is omitted")
     row2.key shouldBe "key-7"
@@ -181,15 +217,21 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     Given("a GenericRecord with char column")
     val v1 = mock[GenericRecord]
 
-    val columns = List(col("epochCol", DataType.EpochTimestampType))
+    val columns = Array(col("epochCol", DataType.EpochTimestampType))
+
+    val tableDef = SimpleVirtualizedSessionTableDef(
+      tableName = "test",
+      tableKeyField = "pk",
+      remoteColumns = columns
+    )
 
     (v1.hasValue(_: String)).expects("epochCol").returning(true)
     (v1.getZonedDateTime(_: String)).expects("epochCol").returning(ZonedDateTime.ofInstant(Instant.ofEpochMilli(1), ZoneId.of("UTC")))
     (v1.getString(_: String)).expects("pk").returning("key-6")
 
     When("we map the record with single-character string")
-    val mapper = ClickHouseRowDataMapper()
-    val row = mapper.mapRowData(v1, "pk", columns)
+    val mapper = ClickHouseRowDataMapper(tableDef)
+    val row = mapper.mapRowData(v1)
 
     Then("the char is present")
     row.key shouldBe "key-6"
@@ -202,7 +244,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     (v2.getString(_: String)).expects("pk").returning("key-7")
 
     When("we map the record again")
-    val row2 = mapper.mapRowData(v2, "pk", columns)
+    val row2 = mapper.mapRowData(v2)
 
     Then("the char is omitted")
     row2.key shouldBe "key-7"
@@ -215,7 +257,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     (v3.getString(_: String)).expects("pk").returning("key-8")
 
     When("we map the record again")
-    val row3 = mapper.mapRowData(v3, "pk", columns)
+    val row3 = mapper.mapRowData(v3)
 
     Then("the char is omitted")
     row3.key shouldBe "key-8"
@@ -226,15 +268,21 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     Given("a GenericRecord with epoch column")
     val v1 = mock[GenericRecord]
 
-    val columns = List(col("epochNanoCol", DataType.EpochTimestampNanoType))
+    val columns = Array(col("epochNanoCol", DataType.EpochTimestampNanoType))
+
+    val tableDef = SimpleVirtualizedSessionTableDef(
+      tableName = "test",
+      tableKeyField = "pk",
+      remoteColumns = columns
+    )
 
     (v1.hasValue(_: String)).expects("epochNanoCol").returning(true)
     (v1.getZonedDateTime(_: String)).expects("epochNanoCol").returning(ZonedDateTime.ofInstant(Instant.ofEpochMilli(1), ZoneId.of("UTC")))
     (v1.getString(_: String)).expects("pk").returning("key-6")
 
     When("we map the record with a valid zoned date time")
-    val mapper = ClickHouseRowDataMapper()
-    val row = mapper.mapRowData(v1, "pk", columns)
+    val mapper = ClickHouseRowDataMapper(tableDef)
+    val row = mapper.mapRowData(v1)
 
     Then("the timestamp is present")
     row.key shouldBe "key-6"
@@ -247,7 +295,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     (v2.getString(_: String)).expects("pk").returning("key-7")
 
     When("we map the record again")
-    val row2 = mapper.mapRowData(v2, "pk", columns)
+    val row2 = mapper.mapRowData(v2)
 
     Then("the timestamp is not present")
     row2.key shouldBe "key-7"
@@ -260,7 +308,7 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     (v3.getString(_: String)).expects("pk").returning("key-8")
 
     When("we map the record again")
-    val row3 = mapper.mapRowData(v3, "pk", columns)
+    val row3 = mapper.mapRowData(v3)
 
     Then("the timestamp is omitted")
     row3.key shouldBe "key-8"
@@ -271,12 +319,18 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     Given("a GenericRecord with epoch and scaled decimal columns")
     val v1 = mock[GenericRecord]
 
-    val columns = List(
+    val columns = Array(
       col("dec2Col", DataType.ScaledDecimal2Type),
       col("dec4Col", DataType.ScaledDecimal4Type),
       col("dec6Col", DataType.ScaledDecimal6Type),
       col("dec8Col", DataType.ScaledDecimal8Type),
       col("decSentinelCol", DataType.ScaledDecimal2Type)
+    )
+
+    val tableDef = SimpleVirtualizedSessionTableDef(
+      tableName = "test",
+      tableKeyField = "pk",
+      remoteColumns = columns
     )
 
     columns.foreach { c =>
@@ -292,8 +346,8 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     (v1.getString(_:String)).expects("pk").returning("key-8")
 
     When("we map the record")
-    val mapper = ClickHouseRowDataMapper()
-    val row = mapper.mapRowData(v1, "pk", columns)
+    val mapper = ClickHouseRowDataMapper(tableDef)
+    val row = mapper.mapRowData(v1)
 
     Then("epoch and scaled decimals are converted and sentinel omitted")
     row.key shouldBe "key-8"
@@ -308,9 +362,15 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     Given("a GenericRecord which does not contain a column")
     val v1 = mock[GenericRecord]
 
-    val columns = List(
+    val columns = Array(
       col("presentCol", DataType.StringDataType),
       col("missingCol", DataType.IntegerDataType)
+    )
+
+    val tableDef = SimpleVirtualizedSessionTableDef(
+      tableName = "test",
+      tableKeyField = "pk",
+      remoteColumns = columns
     )
 
     (v1.hasValue(_:String)).expects("presentCol").returning(true)
@@ -321,8 +381,8 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
     (v1.getString(_:String)).expects("pk").returning("key-9")
 
     When("we map the record")
-    val mapper = ClickHouseRowDataMapper()
-    val row = mapper.mapRowData(v1, "pk", columns)
+    val mapper = ClickHouseRowDataMapper(tableDef)
+    val row = mapper.mapRowData(v1)
 
     Then("only the present column is included")
     row.key shouldBe "key-9"

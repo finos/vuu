@@ -1,6 +1,9 @@
 package org.finos.vuu.plugin.virtualized.api
 
+import org.finos.vuu.core.table.TableContainer
+import org.finos.vuu.net.FilterSpec
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePluginType
+import org.finos.vuu.viewport.ViewPort
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -52,6 +55,7 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       val remoteKeyField = "remote_id"
       val mockColumn = mock[VirtualizedSessionTableColumn]
       val columns = Array(mockColumn)
+      val remotePermissionFilterSpecFunction = (v: ViewPort) => FilterSpec("LOL")
 
       When("an AliasedVirtualizedSessionTableDef is instantiated")
       val aliasedDef = AliasedVirtualizedSessionTableDef(
@@ -59,7 +63,8 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
         tableName = localName,
         remoteKeyField = remoteKeyField,
         tableKeyField = localKeyField,
-        remoteColumns = columns
+        remoteColumns = columns,
+        remotePermissionFilterSpecFunction = remotePermissionFilterSpecFunction
       )
 
       Then("it should override getRemoteTableName and getRemoteKeyField with the remote values")
@@ -73,6 +78,9 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       And("it should return the correct plugin type and remote columns")
       aliasedDef.pluginType shouldBe VirtualizedTablePluginType
       aliasedDef.getRemoteColumns shouldBe columns
+
+      And("it should return the correct filter spec function")
+      aliasedDef.remotePermissionFilterSpecFunction shouldBe remotePermissionFilterSpecFunction
 
       And("it should have default columns by default")
       aliasedDef.options.includeDefaultColumns shouldBe true
