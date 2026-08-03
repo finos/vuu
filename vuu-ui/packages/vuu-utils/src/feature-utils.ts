@@ -59,6 +59,7 @@ export interface DynamicFeatureDescriptor {
    * Module federation - the url of remote module manifest
    */
   mfUrl: string;
+  path: string;
   title: string;
   vuu?: RemoteModuleConnection;
   version: number;

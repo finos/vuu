@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@fontsource/open-sans": "^4.5.13",
-    "@salt-ds/core": "1.54.1",
+    "@salt-ds/core": "1.67.0",
     "@vuu-ui/vuu-data-local": "2.2.0",
     "@vuu-ui/vuu-data-remote": "2.2.0",
     "@vuu-ui/vuu-table-types": "2.2.0",
@@ -30,7 +30,8 @@
     "clsx": "^2.0.0",
     "keycloak-js": "26.2.4",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-router-dom": "^6.2.1"
   },
   "engines": {
     "node": ">=20.0.0"

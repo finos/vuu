@@ -1,11 +1,10 @@
 {
-  "name": "feature-user-admin",
+  "name": "feature-module-admin",
   "version": "1.0.0",
-  "description": "Vuu User Admin Module",
+  "description": "Vuu Module Admin Module",
   "scripts": {
     "build": "node ../../scripts/build-remote-module.ts",
-    "dev": "rsbuild dev",
-    "start": "serve -p 5001 ../../deployed_apps/feature-user-admin"
+    "dev": "rsbuild dev"
   },
   "type": "module",
   "private": true,
@@ -22,11 +21,9 @@
   },
   "dependencies": {
     "@vuu-ui/vuu-data-react": "2.2.0",
-    "@vuu-ui/vuu-layout": "2.2.0",
     "@vuu-ui/vuu-shell": "2.2.0",
     "@vuu-ui/vuu-table": "2.2.0",
-    "@vuu-ui/vuu-utils2": "2.2.0",
-    "@salt-ds/core": "1.67.0"
+    "@vuu-ui/vuu-utils2": "2.2.0"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",
@@ -37,13 +34,20 @@
     "node": ">=16.0.0"
   },
   "vuu": {
-    "featureProps": {},
+    "featureProps": {
+      "vuuTables": [
+        {
+          "module": "MODULE_DISCOVERY",
+          "table": "modules"
+        }
+      ]
+    },
     "module-federation": {
       "exposes": {
-        "./UserAdmin": "./src/UserAdmin"
+        "./ModuleAdmin": "./src/ModuleAdmin"
       },
-      "name": "userAdmin",
-      "port": 5007
+      "name": "moduleAdmin",
+      "port": 5008
     }
   }
 }

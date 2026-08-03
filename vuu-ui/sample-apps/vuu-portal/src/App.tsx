@@ -22,6 +22,9 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { ConfirmSelectionPanel } from "./order-management/cancel-confirm-prompt/ConfirmSelectionPanel";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { PortalShell } from "./components/portal-shell/PortalShell";
+import { RemoteModuleDescriptor } from "./module-federation/mf-utils";
 
 import "./App.css";
 
@@ -33,23 +36,6 @@ assertComponentsRegistered([
   { componentName: "Stack", component: StackLayout },
 ]);
 
-const userSettingsSchema: SettingsSchema = {
-  properties: [
-    {
-      name: "themeMode",
-      label: "Mode",
-      values: ["light", "dark"],
-      defaultValue: "light",
-      type: "string",
-    },
-    {
-      name: "showAppStatusBar",
-      label: "Show Application Status Bar",
-      defaultValue: false,
-      type: "boolean",
-    },
-  ],
-};
 
 const defaultWebsocketUrl = (ssl: boolean) =>
   `${ssl ? "wss" : "ws"}://${location.hostname}:8090/websocket`;
@@ -63,9 +49,10 @@ const {
 export const App = () => {
   const getBearerToken = useBearerToken();
 
-  const [dynamicFeatures, setDynamicFeatures] = useState<
-    DynamicFeatureDescriptor[]
+  const [remoteModules, setRemoteModules] = useState<
+    RemoteModuleDescriptor[]
   >([]);
+
   useEffect(() => {
     const loadFeatures = async () => {
       const bearerToken = await getBearerToken();
@@ -73,7 +60,7 @@ export const App = () => {
         moduleRegistryUrl,
         bearerToken,
       );
-      setDynamicFeatures(
+      setRemoteModules(
         features.map((feature) => ({
           ...feature,
           vuu: {
@@ -87,45 +74,28 @@ export const App = () => {
     loadFeatures();
   }, [getBearerToken]);
 
-  const dragSource = useMemo(
-    () => ({
-      "basket-instruments": { dropTargets: "basket-constituents" },
-    }),
-    [],
-  );
-
-  const localPersistenceManager = useMemo(
-    () => new LocalPersistenceManager("steve"),
-    [],
-  );
-
-  const ShellLayoutProps = useMemo<ShellLayoutProps>(
-    () => ({
-      SidePanelProps: {
-        children: <LeftNav />,
-        sizeOpen: 240,
-      },
-      layoutTemplateId: "full-height",
-    }),
-    [],
-  );
 
   return (
-    <PersistenceProvider persistenceManager={localPersistenceManager}>
-      <DragDropProvider dragSources={dragSource}>
-        <ShellContextProvider value={{ getDefaultColumnConfig }}>
-          <VuuDataSourceProvider>
-            <FeatureAndLayoutProvider dynamicFeatures={dynamicFeatures}>
-              <Shell
-                shellLayoutProps={ShellLayoutProps}
-                className="App"
-                serverUrl={websocketUrl}
-                userSettingsSchema={userSettingsSchema}
-              />
-            </FeatureAndLayoutProvider>
-          </VuuDataSourceProvider>
-        </ShellContextProvider>
-      </DragDropProvider>
-    </PersistenceProvider>
+    <BrowserRouter>
+      <VuuDataSourceProvider>
+        <PortalShell remoteModules={remoteModules} />
+      </VuuDataSourceProvider>
+    </BrowserRouter>
+    // <PersistenceProvider persistenceManager={localPersistenceManager}>
+    //   <DragDropProvider dragSources={dragSource}>
+    //     <ShellContextProvider value={{ getDefaultColumnConfig }}>
+    //       <VuuDataSourceProvider>
+    //         <FeatureAndLayoutProvider dynamicFeatures={dynamicFeatures}>
+    //           <Shell
+    //             shellLayoutProps={ShellLayoutProps}
+    //             className="App"
+    //             serverUrl={websocketUrl}
+    //             userSettingsSchema={userSettingsSchema}
+    //           />
+    //         </FeatureAndLayoutProvider>
+    //       </VuuDataSourceProvider>
+    //     </ShellContextProvider>
+    //   </DragDropProvider>
+    // </PersistenceProvider>
   );
 };

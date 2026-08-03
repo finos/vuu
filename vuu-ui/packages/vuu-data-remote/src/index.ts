@@ -10,6 +10,7 @@ export * from "./data-source";
 export { LostConnectionHandler, RetryOptions } from "./LostConnectionHandler";
 export * from "./message-utils";
 export { VuuAuthenticator, VuuAuthTokenIssuePolicy } from "./auth/VuuAuthenticator";
-export { VuuAuthProvider, type AuthProvider, type User, type AuthProviderClass } from "./auth/VuuAuthProvider";
+export { VuuAuthProvider, type AuthProviderClass } from "./auth/VuuAuthProvider";
+export type { AuthProvider, User } from "./auth/AuthProvider";
 export * from "./VuuDataSource";
 export { isConnected, type ConnectionStatus } from "./WebSocketConnection";
