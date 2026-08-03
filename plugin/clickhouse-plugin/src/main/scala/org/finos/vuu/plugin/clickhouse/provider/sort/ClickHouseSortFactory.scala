@@ -9,12 +9,14 @@ import scala.util.{Failure, Success, Try}
 
 class ClickHouseSortFactory(tableDef: VirtualizedSessionTableDef) extends StrictLogging {
 
+  private val DEFAULT_SORT = s"ORDER BY ${tableDef.getRemoteKeyField} ASC"
+
   def build(sortSpec: SortSpec): String = {
     if (sortSpec != null && sortSpec.sortDefs != null && sortSpec.sortDefs.nonEmpty) {
       parseSort(sortSpec)
     } else {
       logger.trace(s"No sort spec was provided. Defaulting to key field ${tableDef.keyField}")
-      s"ORDER BY ${tableDef.getRemoteKeyField} ASC"
+      DEFAULT_SORT
     }
   }
 
