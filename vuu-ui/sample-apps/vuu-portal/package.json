@@ -30,7 +30,8 @@
     "clsx": "^2.0.0",
     "keycloak-js": "26.2.4",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-router-dom": "^6.2.1"
   },
   "engines": {
     "node": ">=20.0.0"
