@@ -12,7 +12,7 @@ import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.clickhouse.client.options.ClickHouseClientOptions
 import org.finos.vuu.plugin.clickhouse.module.ClickHouseTableModule
 import org.finos.vuu.plugin.clickhouse.module.ClickHouseTableModule.{NO_SELL_TABLE_NAME, TABLE_NAME}
-import org.finos.vuu.plugin.clickhouse.util.ClickHouseCSVIngester
+import org.finos.vuu.plugin.clickhouse.util.ClickHouseOrderCreator
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.test.VuuServerTestCase
@@ -24,6 +24,10 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
   override val container: ClickHouseContainer = ClickHouseContainer()
 
+  override def afterStart(): Unit = {
+    ClickHouseOrderCreator.createOrderData(container, 50_000)
+  }
+  
   Feature("ClickHouse Virtualized Table Integration Test") {
 
     Scenario("Can create viewport with no filter or sort") {
@@ -42,8 +46,6 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         .withPassword(container.getDefaultPassword))
 
       lifecycle.start()
-
-      createOrderData(client, 50_000)
 
       withVuuServer(ClickHouseTableModule(client)) { vuuServer =>
 
@@ -104,8 +106,6 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         .withPassword(container.getDefaultPassword))
 
       lifecycle.start()
-
-      createOrderData(client, 50_000)
 
       withVuuServer(ClickHouseTableModule(client)) { vuuServer =>
 
@@ -262,8 +262,6 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
       lifecycle.start()
 
-      createOrderData(client, 50_000)
-
       withVuuServer(ClickHouseTableModule(client)) { vuuServer =>
 
         vuuServer.registerPlugin(VirtualizedTablePlugin)
@@ -343,8 +341,6 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         .withPassword(container.getDefaultPassword))
 
       lifecycle.start()
-
-      createOrderData(client, 50_000)
 
       withVuuServer(ClickHouseTableModule(client)) { vuuServer =>
 
@@ -431,9 +427,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         .withPassword(container.getDefaultPassword))
 
       lifecycle.start()
-
-      createOrderData(client, 50_000)
-
+      
       withVuuServer(ClickHouseTableModule(client)) { vuuServer =>
 
         vuuServer.registerPlugin(VirtualizedTablePlugin)
@@ -493,69 +487,6 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         updates.head.size shouldBe 0
       }
 
-    }
-
-  }
-
-  private def createOrderData(client: ClickHouseClient, totalCount: Int): Unit = {
-
-    client.executeUpdate("DROP TABLE IF EXISTS order_history")
-
-    client.executeUpdate(
-      """
-        |CREATE TABLE IF NOT EXISTS order_history (
-        |  order_id Int64,
-        |  quantity Int32,
-        |  price Int64,
-        |  side String,
-        |  trader String
-        |) ENGINE = MergeTree() ORDER BY order_id
-        |""".stripMargin
-    )
-
-    // Insert sample orders via HTTP CSV API streaming from a temp file
-    
-    val tempDir = java.nio.file.Paths.get("target/temp-csv")
-    java.nio.file.Files.createDirectories(tempDir)
-    val tempFile = java.nio.file.Files.createTempFile(tempDir, "order_history", ".csv")
-
-    val fos = new java.io.FileOutputStream(tempFile.toFile)
-    val bos = new java.io.BufferedOutputStream(fos, 8 * 1024 * 1024) // 8MB buffer
-    val writer = new java.io.BufferedWriter(new java.io.OutputStreamWriter(bos, "UTF-8"))
-    try {
-      var currentId = 1
-      while (currentId <= totalCount) {
-        val now = System.currentTimeMillis().toString
-        val side = if (currentId % 2 == 0) "Buy" else "Sell"
-        val price = currentId * 10L
-        val quantity = currentId
-        writer.write(currentId.toString)
-        writer.write(',')
-        writer.write(quantity.toString)
-        writer.write(',')
-        writer.write(price.toString)
-        writer.write(',')
-        writer.write(side)
-        writer.write(",trader-")
-        writer.write(currentId.toString)
-        writer.write(System.lineSeparator())
-        currentId += 1
-      }
-    } finally {
-      writer.close()
-    }
-
-    try {
-      ClickHouseCSVIngester.ingestCsvFile(
-        container.getEndpoint,
-        container.getDefaultUsername,
-        container.getDefaultPassword,
-        "order_history",
-        Seq("order_id", "quantity", "price", "side", "trader"),
-        tempFile
-      )
-    } finally {
-      java.nio.file.Files.deleteIfExists(tempFile)
     }
 
   }

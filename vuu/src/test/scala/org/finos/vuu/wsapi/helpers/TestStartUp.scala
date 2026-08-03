@@ -6,16 +6,19 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.client.VuuClientOptions
 import org.finos.vuu.core.*
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
+import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ssl.{VuuClientSSLDisabled, VuuSSLDisabled}
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.net.{ViewServerClient, WebSocketViewServerClient}
+import org.finos.vuu.plugin.Plugin
 import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{Seconds, Span}
 
 import java.security.SecureRandom
 
-class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
+class TestStartUp(moduleFactoryFunc: () => ViewServerModule,
+                  pluginFactoryFunc: () => Plugin = () => VuuInMemPlugin())(
                   using val timeProvider: Clock,
                   val lifecycle: LifecycleContainer,
                   val tableDefContainer: TableDefContainer) extends Eventually with Matchers {
@@ -32,6 +35,7 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
     val ws = rand.nextInt(500) + minValue
 
     val module: ViewServerModule = moduleFactoryFunc()
+    val plugin: Plugin = pluginFactoryFunc()
         
     val config = VuuServerConfig(
       VuuWebSocketOptions()
@@ -45,9 +49,10 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
         .withHeartbeatDisabled()
     )
       .withModule(module)
-
+      .withPlugin(plugin)
+    
     val viewServer = new VuuServer(config)
-
+    
     val options = VuuClientOptions()
       .withPath(config.wsOptions.uri)
       .withPort(config.wsOptions.wsPort)

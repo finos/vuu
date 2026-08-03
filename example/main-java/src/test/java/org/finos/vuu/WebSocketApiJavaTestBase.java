@@ -5,6 +5,7 @@ import org.finos.toolbox.time.Clock;
 import org.finos.toolbox.time.DefaultClock;
 import org.finos.vuu.core.module.TableDefContainer;
 import org.finos.vuu.core.module.ViewServerModule;
+import org.finos.vuu.feature.inmem.VuuInMemPlugin;
 import org.finos.vuu.net.TableRowUpdates;
 import org.finos.vuu.net.ViewServerMessage;
 import org.finos.vuu.net.row.RowUpdateType;
@@ -60,6 +61,7 @@ public abstract class WebSocketApiJavaTestBase {
     private TestVuuClient testStartUp() {
         var startUp = new TestStartUp(
                 this::defineModuleWithTestTables,
+                VuuInMemPlugin::new,
                 clock,
                 lifecycle,
                 tableDefContainer);
