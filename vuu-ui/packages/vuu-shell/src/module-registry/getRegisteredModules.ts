@@ -1,17 +1,8 @@
 import type { DynamicFeatureDescriptor } from "@vuu-ui/vuu-utils";
 
-const withDefaults = (
-  featureKey: string,
-  descriptor: DynamicFeatureDescriptor,
-): DynamicFeatureDescriptor => ({
-  ...descriptor,
-  leftNavLocation: descriptor.leftNavLocation ?? "vuu-features",
-  vuu: descriptor.vuu
-    ? descriptor.vuu
-    : {
-        connectionId: featureKey,
-      },
-});
+export type RemoteModules = {
+  modules: DynamicFeatureDescriptor[]
+}
 
 export const getRegisteredModules = async (
   registryUrl: string,
@@ -25,15 +16,5 @@ export const getRegisteredModules = async (
     throw Error("bad return from module registry");
   }
 
-  const json = (await response.json()) as Record<
-    string,
-    DynamicFeatureDescriptor
-  >;
-  return Object.entries(json).reduce<Record<string, DynamicFeatureDescriptor>>(
-    (map, [featureKey, descriptor]) => {
-      map[featureKey] = withDefaults(featureKey, descriptor);
-      return map;
-    },
-    {},
-  );
+  return await response.json() as RemoteModules;
 };

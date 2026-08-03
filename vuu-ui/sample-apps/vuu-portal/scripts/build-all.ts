@@ -1,4 +1,4 @@
-import { getCommandLineArg, runCommandSync } from "../../../scripts/utils.js";
+import { getCommandLineArg, runCommandSync } from "../../../scripts/utils.ts";
 
 const packages = [
 	"simple-login-service",

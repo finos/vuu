@@ -3,8 +3,8 @@ import { pluginReact } from "@rsbuild/plugin-react";
 import { pluginCssInline } from "../../../tools/rsbuild-plugin-inline-css/src/index.js";
 import { ModuleFederationPlugin } from "@module-federation/enhanced/rspack";
 import { RsdoctorRspackPlugin } from "@rsdoctor/rspack-plugin";
-import { getCommandLineArg } from "../../../scripts/utils.js";
-import { getSharedDependencies } from "../../../scripts/module-federation-utils.js";
+import { getCommandLineArg } from "../../../scripts/utils.ts";
+import { getSharedDependencies } from "../../../scripts/module-federation-utils.ts";
 
 const useRsDoctor = getCommandLineArg("--rsdoctor", false) !== undefined;
 
