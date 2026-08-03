@@ -1,166 +1,154 @@
-import { Collapsible, CollapsiblePanel, CollapsibleTrigger, FlexItem, FlexLayout, Link, VerticalNavigation, VerticalNavigationItem, VerticalNavigationItemContent, VerticalNavigationItemExpansionIcon, VerticalNavigationItemLabel, VerticalNavigationItemTrigger, VerticalNavigationSubMenu } from "@salt-ds/core";
-import { forwardRef, useState, type ComponentPropsWithoutRef, type ReactNode } from "react";
+import {
+  Collapsible,
+  CollapsiblePanel,
+  CollapsibleTrigger,
+  FlexItem,
+  FlexLayout,
+  Link,
+  VerticalNavigation,
+  VerticalNavigationItem,
+  VerticalNavigationItemContent,
+  VerticalNavigationItemExpansionIcon,
+  VerticalNavigationItemLabel,
+  VerticalNavigationItemTrigger,
+  VerticalNavigationSubMenu,
+} from "@salt-ds/core";
+import { Icon } from "@vuu-ui/vuu-ui-controls";
+import {
+  forwardRef,
+  useMemo,
+  useState,
+  type ComponentPropsWithoutRef,
+} from "react";
 import type { RemoteModuleDescriptor } from "../../module-federation/mf-utils";
 
-import './PortalNav.css';
-import { Icon } from "@vuu-ui/vuu-ui-controls";
+import "./PortalNav.css";
 
-const classBase = 'vuuPortalNav';
+const classBase = "vuuPortalNav";
 
 type NavItem = {
-    title: string;
-    href: string;
-    icon?: ReactNode;
-    children?: NavItem[];
+  title: string;
+  href: string;
+  children?: NavItem[];
 };
 
 const MockedTrigger = forwardRef<
-    HTMLAnchorElement,
-    ComponentPropsWithoutRef<typeof Link>
+  HTMLAnchorElement,
+  ComponentPropsWithoutRef<typeof Link>
 >(function MockedTrigger(props, ref) {
-    const { to, ...rest } = props;
+  const { href, ...rest } = props;
 
-    return (
-        <VerticalNavigationItemTrigger
-            render={<Link to={to} ref={ref} />}
-            {...rest}
-        />
-    );
+  return (
+    <VerticalNavigationItemTrigger
+      render={<Link href={href} ref={ref} />}
+      {...rest}
+    />
+  );
 });
 
-
 function NestedItem(props: { item: NavItem; icon?: boolean }) {
-    const { item, icon } = props;
+  const { item, icon } = props;
+  const [collapsed, setCollapsed] = useState(false);
 
-    // const location = useLocation();
-    const [collapsed, setCollapsed] = useState(false);
-
-    if (Array.isArray(item.children) && item.children.length > 0) {
-        return (
-            <VerticalNavigationItem
-                active={location.pathname.startsWith(item.href) && collapsed}
-            >
-                <Collapsible onOpenChange={(_, expanded) => setCollapsed(!expanded)}>
-                    <VerticalNavigationItemContent>
-                        <CollapsibleTrigger>
-                            <VerticalNavigationItemTrigger>
-                                {icon ? item.icon : undefined}
-                                <VerticalNavigationItemLabel>
-                                    {item.title}
-                                </VerticalNavigationItemLabel>
-                                <VerticalNavigationItemExpansionIcon />
-                            </VerticalNavigationItemTrigger>
-                        </CollapsibleTrigger>
-                    </VerticalNavigationItemContent>
-                    <CollapsiblePanel>
-                        <VerticalNavigationSubMenu>
-                            {item.children.map((child) => (
-                                <NestedItem key={child.title} item={child} icon={icon} />
-                            ))}
-                        </VerticalNavigationSubMenu>
-                    </CollapsiblePanel>
-                </Collapsible>
-            </VerticalNavigationItem>
-        );
-    }
-
+  if (Array.isArray(item.children) && item.children.length > 0) {
     return (
-        <VerticalNavigationItem active={location.pathname === item.href}>
-            <VerticalNavigationItemContent>
-                <MockedTrigger to={item.href}>
-                    {icon ? item.icon : undefined}
-                    <VerticalNavigationItemLabel>
-                        {item.title}
-                    </VerticalNavigationItemLabel>
-                </MockedTrigger>
-            </VerticalNavigationItemContent>
-        </VerticalNavigationItem>
+      <VerticalNavigationItem
+        active={location.pathname.startsWith(item.href) && collapsed}
+      >
+        <Collapsible onOpenChange={(_, expanded) => setCollapsed(!expanded)}>
+          <VerticalNavigationItemContent>
+            <CollapsibleTrigger>
+              <VerticalNavigationItemTrigger>
+                {icon ? <Icon aria-hidden name="filter" /> : undefined}
+                <VerticalNavigationItemLabel>
+                  {item.title}
+                </VerticalNavigationItemLabel>
+                <VerticalNavigationItemExpansionIcon />
+              </VerticalNavigationItemTrigger>
+            </CollapsibleTrigger>
+          </VerticalNavigationItemContent>
+          <CollapsiblePanel>
+            <VerticalNavigationSubMenu>
+              {item.children.map((child) => (
+                <NestedItem key={child.href} item={child} />
+              ))}
+            </VerticalNavigationSubMenu>
+          </CollapsiblePanel>
+        </Collapsible>
+      </VerticalNavigationItem>
     );
-}
+  }
 
+  return (
+    <VerticalNavigationItem active={location.pathname === item.href}>
+      <VerticalNavigationItemContent>
+        <MockedTrigger href={item.href}>
+          {icon ? <Icon aria-hidden name="filter" /> : undefined}
+          <VerticalNavigationItemLabel>
+            {item.title}
+          </VerticalNavigationItemLabel>
+        </MockedTrigger>
+      </VerticalNavigationItemContent>
+    </VerticalNavigationItem>
+  );
+}
 
 export interface PortalNavProps {
-    remoteModules: RemoteModuleDescriptor[]
+  remoteModules: RemoteModuleDescriptor[];
 }
 
+const buildNavItems = (remoteModules: RemoteModuleDescriptor[]) => {
+  const navItemsByPath = new Map<string, NavItem>();
 
-const navItems: NavItem[] = [
-    {
-        children: [
-            {
-                href: '/products/widgets',
-                title: 'Widgets'
-            },
-            {
-                href: '/products/gadgets',
-                title: 'Gadgets'
-            },
-            {
-                href: '/products/doodads',
-                title: 'Doodads'
-            }
-        ],
-        href: '/products',
-        icon: <Icon aria-hidden name="filter" />,
-        title: 'Products'
+  for (const remoteModule of remoteModules) {
+    const pathSegments = remoteModule.path.split("/").filter(Boolean);
+    const [parentTitle, childTitle] = pathSegments;
 
-    },
-    {
-
-        children: [
-            {
-                href: '/about/story',
-                title: 'Our Story'
-            },
-            {
-                href: '/about/team',
-                title: 'Our Team'
-            },
-            {
-                href: '/about/press',
-                title: 'Press'
-            }
-        ],
-        href: '/about',
-        icon: <Icon aria-hidden name="filter" />,
-        title: 'About Us'
-
-    }, {
-        href: '/support',
-        icon: <Icon aria-hidden name="filter" />,
-        title: 'Support'
-
-    },
-
-    {
-        href: '/contact',
-        icon: <Icon aria-hidden name="filter" />,
-        title: 'Contact'
-
+    if (parentTitle === undefined) {
+      continue;
     }
-]
 
+    const parentPath = `/${parentTitle}`;
+    let parent = navItemsByPath.get(parentPath);
+
+    if (parent === undefined) {
+      parent = {
+        href: parentPath,
+        title: parentTitle,
+      };
+      navItemsByPath.set(parentPath, parent);
+    }
+
+    if (
+      childTitle !== undefined &&
+      !parent.children?.some(({ href }) => href === remoteModule.path)
+    ) {
+      parent.children = [
+        ...(parent.children ?? []),
+        {
+          href: remoteModule.path,
+          title: childTitle,
+        },
+      ];
+    }
+  }
+
+  return [...navItemsByPath.values()];
+};
 
 export const PortalNav = ({ remoteModules }: PortalNavProps) => {
+  const navItems = useMemo(() => buildNavItems(remoteModules), [remoteModules]);
 
-
-    return (
-        <FlexLayout className={classBase}>
-            <FlexItem className={`${classBase}-nav`}>
-                <VerticalNavigation>
-                    {navItems.map((navItem, i) => (
-                        <NestedItem
-                            icon={!!navItem.icon}
-                            item={navItem}
-                            key={i}
-                        />
-
-                    ))}
-                </VerticalNavigation>            </FlexItem>
-            <FlexItem className={`${classBase}-close`} >
-            </FlexItem>
-        </FlexLayout >
-    )
-}
-
-
+  return (
+    <FlexLayout className={classBase}>
+      <FlexItem className={`${classBase}-nav`}>
+        <VerticalNavigation>
+          {navItems.map((navItem) => (
+            <NestedItem icon item={navItem} key={navItem.href} />
+          ))}
+        </VerticalNavigation>
+      </FlexItem>
+      <FlexItem className={`${classBase}-close`} />
+    </FlexLayout>
+  );
+};
