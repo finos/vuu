@@ -4,7 +4,6 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.filter.FilterSpecParser
 import org.finos.vuu.net.FilterSpec
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
-import org.finos.vuu.viewport.ViewPort
 
 import scala.util.{Failure, Success, Try}
 
@@ -17,14 +16,7 @@ object ClickHouseFilterFactory {
 class ClickHouseFilterFactory(tableDef: VirtualizedSessionTableDef) extends StrictLogging {
   import ClickHouseFilterFactory.*
 
-  private val remoteMapping: Map[String, String] = tableDef
-    .getRemoteColumns.map(f => f.name -> f.remoteName)
-    .toMap
-
-  def build(viewPort: ViewPort): String = {
-    val userSpec = viewPort.filterSpec
-    val permissionSpec = tableDef.getRemotePermissionFilterSpecFunction.apply(viewPort)
-
+  def build(userSpec: FilterSpec, permissionSpec: FilterSpec): String = {
     val userFilterStr = safeFilterString(userSpec)
     val permFilterStr = safeFilterString(permissionSpec)
 
@@ -50,14 +42,14 @@ class ClickHouseFilterFactory(tableDef: VirtualizedSessionTableDef) extends Stri
       return NoFilter
     }
 
-    val filterVisitor = new ClickHouseFilterVisitor(remoteMapping)
+    val filterVisitor = new ClickHouseFilterVisitor(tableDef.getRemoteColumnMapping)
 
     Try(FilterSpecParser.parse(filterSpec, filterVisitor)) match {
       case Success(_) =>
         val buffer = filterVisitor.getBuffer
-        if (buffer == null || buffer.length == 0) {
-          logger.trace("Parsed filter was empty")
-          NoFilter
+        if (buffer.length == 0) {
+          logger.warn("Parsed filter was empty")
+          NoResults
         } else {
           val whereClause = s"$WherePrefix${buffer.toString}"
           logger.trace(s"Parsed filter: $whereClause")
@@ -65,7 +57,7 @@ class ClickHouseFilterFactory(tableDef: VirtualizedSessionTableDef) extends Stri
         }
 
       case Failure(err) =>
-        logger.error(s"Could not parse filter: $filterSpec", err)
+        logger.error(s"Could not parse filter: '$filterSpec'", err)
         NoResults
     }
   }

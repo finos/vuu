@@ -16,6 +16,8 @@ abstract class VirtualizedSessionTableDef(
                                          )
   extends SessionTableDef(name, keyField, remoteColumns.map(f => f.asInstanceOf[Column]), options) {
 
+  private val remoteMapping : Map[String, String] = remoteColumns.map(f => f.name -> f.remoteName).toMap
+
   override def pluginType: PluginType = VirtualizedTablePluginType
 
   def getRemoteTableName: String = name
@@ -25,6 +27,8 @@ abstract class VirtualizedSessionTableDef(
   def getRemoteColumns: Array[VirtualizedSessionTableColumn] = remoteColumns
 
   def getRemotePermissionFilterSpecFunction: ViewPort => FilterSpec = remotePermissionFilterSpecFunction
+
+  def getRemoteColumnMapping: Map[String, String] = remoteMapping
 
 }
 

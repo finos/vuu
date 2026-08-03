@@ -9,40 +9,35 @@ import scala.util.{Failure, Success, Try}
 
 class ClickHouseSortFactory(tableDef: VirtualizedSessionTableDef) extends StrictLogging {
 
-  private val keyField = tableDef.keyField
-  private val remoteKeyField = tableDef.getRemoteKeyField
-  private val remoteMapping: Map[String, String] = tableDef
-    .getRemoteColumns.map(f => f.name -> f.remoteName)
-    .toMap
-
   def build(sortSpec: SortSpec): String = {
     if (sortSpec != null && sortSpec.sortDefs != null && sortSpec.sortDefs.nonEmpty) {
       parseSort(sortSpec)
     } else {
-      logger.trace(s"No sort spec was provided. Defaulting to key field $keyField")
-      s"ORDER BY $remoteKeyField ASC"
+      logger.trace(s"No sort spec was provided. Defaulting to key field ${tableDef.keyField}")
+      s"ORDER BY ${tableDef.getRemoteKeyField} ASC"
     }
   }
 
   private def parseSort(sortSpec: SortSpec): String = {
-    val primaryKeyInSort: Boolean = sortSpec.sortDefs.exists(f => f.column == keyField)
+    val primaryKeyInSort: Boolean = sortSpec.sortDefs.exists(f => f.column == tableDef.keyField)
 
     Try(parseSortItems(sortSpec)) match {
       case Success(sortItems) =>
         val orderBy = if (primaryKeyInSort) {
           s"ORDER BY ${sortItems.mkString(", ")}"
         } else {
-          s"ORDER BY ${sortItems.mkString(", ")}, $remoteKeyField ASC"
+          s"ORDER BY ${sortItems.mkString(", ")}, ${tableDef.getRemoteKeyField} ASC"
         }
         logger.trace(s"Parsed sort \"$orderBy\"")
         orderBy
       case Failure(err) =>
         logger.error(s"Could not parse sort $sortSpec", err)
-        s"ORDER BY $remoteKeyField ASC"
+        s"ORDER BY ${tableDef.getRemoteKeyField} ASC"
     }
   }
 
   private def parseSortItems(sortSpec: SortSpec): List[String] = {
+    val remoteMapping = tableDef.getRemoteColumnMapping
     sortSpec.sortDefs.map { sd =>
       val direction = if (sd.sortType == SortDirection.DESCENDING.external) "DESC" else "ASC"
       val remoteColumnName = remoteMapping.getOrElse(sd.column,

@@ -20,12 +20,13 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
   private val rowDataProvider = ClickHouseRowDataProvider(client, tableDef)
   private val filterFactory = ClickHouseFilterFactory(tableDef)
   private val sortFactory = ClickHouseSortFactory(tableDef)
+  private val permissionFunction = tableDef.getRemotePermissionFilterSpecFunction
   private val logAt = new LogAtFrequency(10_000)
 
   override def runOnce(viewPort: ViewPort): Unit = {
     logger.trace("[ClickHouseVirtualizedDataProvider] Starting runOnce")
 
-    val whereClause = filterFactory.build(viewPort)
+    val whereClause = filterFactory.build(viewPort.filterSpec, permissionFunction.apply(viewPort))
     val orderBy = sortFactory.build(viewPort.sortSpec)
     val offset = viewPort.getRange.from
     val limit = viewPort.getRange.to - offset
