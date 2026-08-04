@@ -1,4 +1,5 @@
-import { parseVuuUserFromToken, type AuthProvider } from '@vuu-ui/vuu-data-remote';
+import type { AuthProvider } from "@vuu-ui/vuu-auth";
+import { parseVuuUserFromToken } from "@vuu-ui/vuu-data-remote";
 import type { AuthConfig } from '@vuu-ui/vuu-utils';
 import Keycloak from 'keycloak-js';
 // import { AutoRefreshKeycloakToken } from './AutoRefreshKeycloakToken';
@@ -72,7 +73,10 @@ export class KeycloakAuthProvider implements AuthProvider {
     async getToken() {
         // need to call keycloak toke exchange service to get minimum permission token
         await keycloak.updateToken();
-        return keycloak.token;
+        if (keycloak.token) {
+            return keycloak.token;
+        }
+        throw Error("No bearer token from keycloak");
     }
 
     logout() {

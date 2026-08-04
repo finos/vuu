@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig-emit-types.json",
+  "compilerOptions": {
+    "outDir": "../../dist/vuu-auth/types",
+    "rootDir": "./src"
+  },
+  "include": [
+    "src",
+    "../../global.d.ts"
+  ]
+}

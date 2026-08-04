@@ -1,6 +1,6 @@
+import { useVuuAccessToken } from "@vuu-ui/vuu-auth";
 import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import type { ReactNode } from "react";
-import { useVuuAccessToken } from "../authentication-provider/AuthenticationProvider";
 
 export interface RemoteModuleProps {
   children: ReactNode;

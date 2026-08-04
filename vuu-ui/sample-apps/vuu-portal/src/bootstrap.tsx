@@ -2,7 +2,7 @@ import { init } from "@module-federation/enhanced/runtime";
 import {
   ConnectionManager,
 } from "@vuu-ui/vuu-data-remote";
-import { AuthenticationProvider } from "@vuu-ui/vuu-shell";
+import { AuthenticationProvider } from "@vuu-ui/vuu-auth";
 import { PageVisibilityObserver } from "@vuu-ui/vuu-utils";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";

@@ -2,11 +2,9 @@ import {
   ConnectionManager,
   type ConnectionStatus,
   LostConnectionHandler,
-  type User,
   VuuAuthenticator,
   VuuAuthProvider,
 } from "@vuu-ui/vuu-data-remote";
-import type { AuthProviderClass } from "@vuu-ui/vuu-data-remote";
 import type { AuthConfig } from "@vuu-ui/vuu-utils";
 import {
   createContext,
@@ -18,6 +16,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import type { AuthProviderClass, User } from "./AuthProvider";
 
 const INVALID_TOKEN_MESSAGE = "Invalid token";
 const USER_SESSION_LIMIT_MESSAGE = "User session limnit exceeded";
