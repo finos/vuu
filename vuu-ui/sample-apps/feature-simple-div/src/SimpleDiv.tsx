@@ -1,4 +1,4 @@
-import { useLoggedInUser } from "@vuu-ui/vuu-shell";
+import { useLoggedInUser } from "@vuu-ui/vuu-auth";
 import { useData } from "@vuu-ui/vuu-utils2";
 import { useMemo } from "react";
 

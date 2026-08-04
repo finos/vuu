@@ -19,6 +19,7 @@
     "@vuu-ui/vuu-protocol-types": "2.2.0"
   },
   "dependencies": {
+    "@vuu-ui/vuu-auth": "2.2.0",
     "@vuu-ui/vuu-filter-parser": "2.2.0",
     "@vuu-ui/vuu-utils": "2.2.0"
   }

@@ -11,7 +11,7 @@ import {
   ShellContextProvider,
   type ShellLayoutProps,
 } from "@vuu-ui/vuu-shell";
-import { useBearerToken } from "@vuu-ui/vuu-shell/src/authentication-provider/AuthenticationProvider";
+import { useBearerToken } from "@vuu-ui/vuu-auth";
 import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
 import {

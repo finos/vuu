@@ -9,6 +9,7 @@ import {
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { useLoggedInUser } from "@vuu-ui/vuu-auth";
 import type { LayoutMetadataDto } from "@vuu-ui/vuu-utils";
 import {
   type ChangeEvent,
@@ -21,7 +22,6 @@ import {
 import { takeScreenshot } from "./screenshot-utils";
 
 import saveLayoutPanelCss from "./SaveLayoutPanel.css";
-import { useLoggedInUser } from "../authentication-provider/AuthenticationProvider";
 
 const classBase = "vuuSaveLayoutPanel";
 
