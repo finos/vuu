@@ -3,7 +3,9 @@ package org.finos.vuu.plugin.clickhouse.wsapi
 import com.dimafeng.testcontainers.ForAllTestContainer
 import org.finos.vuu.core.VuuServerConfig
 import org.finos.vuu.core.module.ViewServerModule
-import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, GetTableMetaRequest, GetTableMetaResponse}
+import org.finos.vuu.net.rpc.{RpcNames, RpcSuccessResult, ViewPortContext}
+import org.finos.vuu.net.ui.NoneAction
+import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, GetTableMetaRequest, GetTableMetaResponse, RpcRequest, RpcResponseNew}
 import org.finos.vuu.plugin.clickhouse.ClickHouseContainer
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.clickhouse.client.options.ClickHouseClientOptions
@@ -22,14 +24,17 @@ class ClickHouseWSApiTest extends WebSocketApiTestBase with ForAllTestContainer 
   override def afterStart(): Unit = {
     ClickHouseOrderCreator.createOrderData(container, 50_000)
   }
-  
+
   Feature("[Web Socket API] Test ClickHouse table operations") {
 
     Scenario("Get table metadata") {
 
+      Given(s"an existing table $TABLE_NAME in module $NAME")
+
+      When("a user requests table metadata")
       val requestId = vuuClient.send(sessionId, GetTableMetaRequest(ViewPortTable(TABLE_NAME, NAME)))
 
-      Then("return view port columns in response")
+      Then("return view port columns and other data in the response")
       val response = vuuClient.awaitForResponse(requestId)
 
       val responseBody = assertBodyIsInstanceOf[GetTableMetaResponse](response)
@@ -40,8 +45,56 @@ class ClickHouseWSApiTest extends WebSocketApiTestBase with ForAllTestContainer 
       responseBody.maxRangeWidth shouldEqual 1_000
     }
 
+    Scenario("Open viewport and get unique values") {
 
+      Given(s"an open viewport on table $TABLE_NAME in module $NAME")
+      val viewPortId = createViewPort(TABLE_NAME)
 
+      When("a user requests type ahead on a column")
+      val typeAheadRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.UniqueFieldValuesRpc,
+        params = Map(
+          "column" -> "trader"
+        ))
+      val requestId = vuuClient.send(sessionId, typeAheadRequest)
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual  RpcNames.UniqueFieldValuesRpc
+
+      Then("return a list of the first ten options, alphabetically")
+      val result = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      result.data shouldEqual List()
+
+      And("return NoneAction")
+      responseBody.action shouldEqual NoneAction
+    }
+
+    Scenario("Open viewport and get unique values starting with") {
+
+      Given(s"an open viewport on table $TABLE_NAME in module $NAME")
+      val viewPortId = createViewPort(TABLE_NAME)
+
+      When("a user requests type ahead on a column")
+      val typeAheadRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.UniqueFieldValuesStartWithRpc,
+        params = Map(
+          "column" -> "trader",
+          "starts" -> "trader-10"
+        ))
+      val requestId = vuuClient.send(sessionId, typeAheadRequest)
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual RpcNames.UniqueFieldValuesStartWithRpc
+
+      Then("return a list of the first ten options, alphabetically")
+      val result = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      result.data shouldEqual List()
+
+      And("return NoneAction")
+      responseBody.action shouldEqual NoneAction
+    }
 
   }
 
@@ -66,7 +119,7 @@ class ClickHouseWSApiTest extends WebSocketApiTestBase with ForAllTestContainer 
     vuuClient.send(sessionId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
-    waitForData(10)
+    waitForData(viewPortId, 10)
     viewPortId
   }
 

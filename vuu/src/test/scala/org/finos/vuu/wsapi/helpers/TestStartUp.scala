@@ -7,7 +7,6 @@ import org.finos.vuu.client.VuuClientOptions
 import org.finos.vuu.core.*
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
-import org.finos.vuu.net.ssl.{VuuClientSSLDisabled, VuuSSLDisabled}
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.net.{ViewServerClient, WebSocketViewServerClient}
 import org.finos.vuu.plugin.Plugin
@@ -44,7 +43,9 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule,
         .withWsPort(ws)
         .withSslDisabled(),
       VuuSecurityOptions(),
-      VuuThreadingOptions(),
+      VuuThreadingOptions()
+        .withViewPortThreads(1)
+        .withTreeThreads(1),
       VuuClientConnectionOptions()
         .withHeartbeatDisabled()
     )

@@ -1,6 +1,6 @@
 package org.finos.vuu.wsapi
 
-import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTableDefOptions, JoinTo, LeftOuterJoin, TableDef, TableDefOptions, VisualLinks}
+import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTableDefOptions, JoinTo, LeftOuterJoin, TableDef, TableDefOptions}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.sort.SortDirection
@@ -42,7 +42,7 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
       }.toMap
       testProviderFactory.getProvider("instruments").update(new FakeDataSource(ListMap.from(instrumentMap)))
 
-      waitForData(1)
+      waitForData(viewPortId, 1)
 
       //Update the linked currency, this will trigger 100k right to left updates
       val currencyDataSource = new FakeDataSource(ListMap(
@@ -51,7 +51,7 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
       ))
       testProviderFactory.getProvider("currencies").update(currencyDataSource)
 
-      waitForData(1)
+      waitForData(viewPortId, 1)
 
       //Update the linked country, this will trigger 200k right to left updates
       val countryDataSource = new FakeDataSource(ListMap(
@@ -59,7 +59,7 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
       ))
       testProviderFactory.getProvider("countries").update(countryDataSource)
 
-      waitForData(1)
+      waitForData(viewPortId, 1)
     }
 
     Scenario("Test adding and removing left keys") {
@@ -81,7 +81,7 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
       dataSource = new FakeDataSource(ListMap.from(instrumentMap))
       testProviderFactory.getProvider("instruments").update(dataSource)
 
-      waitForData(1)
+      waitForData(viewPortId, 1)
     }
 
   }
@@ -100,7 +100,7 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
     vuuClient.send(sessionId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
-    waitForData(expectedNumberOfRows)
+    waitForData(viewPortId, expectedNumberOfRows)
     viewPortId
   }
 

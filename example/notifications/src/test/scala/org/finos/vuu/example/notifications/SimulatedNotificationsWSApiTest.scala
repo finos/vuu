@@ -27,7 +27,7 @@ class SimulatedNotificationsWSApiTest extends WebSocketApiTestBase {
       viewPortId should not be empty
       
       And("the table should immediately contain 3 initial simulated notifications")
-      waitForData(3)
+      waitForData(viewPortId, 3)
     }
   }
 }

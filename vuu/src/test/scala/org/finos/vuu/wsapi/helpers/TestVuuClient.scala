@@ -51,9 +51,7 @@ class TestVuuClient(vsClient: ViewServerClient, loginTokenService: LoginTokenSer
       if (isExpectedBodyType(t, msg)) {
         Some(msg)
       } else {
-        logger.whenDebugEnabled(
-          logger.debug(s"Received ${msg.body.getClass} but was expecting ${t.runtimeClass}. Dismissing message and waiting for next one.")
-        )
+        logger.debug(s"Received ${msg.body.getClass} but was expecting ${t.runtimeClass}. Dismissing message and waiting for next one.")
         getNextMessageUntilBodyIsExpectedType()
       }
     }

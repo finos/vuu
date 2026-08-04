@@ -62,19 +62,32 @@ abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAl
     data.asInstanceOf[T]
   }
 
+  def waitForData(viewPortId: String, count: Int): Unit = {
+    waitForData(Map(viewPortId -> count))
+  }
+
   @tailrec
-  protected final def waitForData(expectedRowCount: Int): Unit = {
-    val tableSizeResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
-    tableSizeResponse match {
+  final def waitForData(expectations: Map[String, Int]): Unit = {
+    val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
+    tableRowUpdatesResponse match {
       case None => fail("No table row updates")
       case Some(value) =>
-        val dataCount = value.rows.count(p => p.updateType == Update)
-        if (dataCount < expectedRowCount) {
-          val missing = expectedRowCount - dataCount
-          logger.debug(s"Still waiting for $missing rows")
-          waitForData(expectedRowCount - dataCount)
+        val rows = tableRowUpdatesResponse.get.rows
+
+        val updatedExpectations = expectations.map { case (vpId, expectedSize) =>
+          val updateCount = rows.count(p => p.viewPortId == vpId && p.updateType == Update)
+          logger.debug(s"Viewport $vpId has received $updateCount updates")
+          vpId -> (expectedSize - updateCount)
+        }.filter { case (_, remainingSize) => remainingSize > 0 }
+
+        if (updatedExpectations.nonEmpty) {
+          logger.debug(updatedExpectations.map { case (vpId, remaining) =>
+            s"Viewport $vpId still needs $remaining more updates"
+          }.mkString(", "))
+          waitForData(updatedExpectations)
         }
     }
+
   }
 
 }

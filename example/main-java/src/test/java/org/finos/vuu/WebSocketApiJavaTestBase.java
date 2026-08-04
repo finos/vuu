@@ -68,17 +68,18 @@ public abstract class WebSocketApiJavaTestBase {
         return startUp.startServerAndClient()._1;
     }
 
-    protected void waitForData(long expectedRowCount) {
+    protected void waitForData(String viewPortId, long expectedRowCount) {
         var tableSizeResponse = vuuClient.awaitForMsgWithBody(ClassTag.apply(TableRowUpdates.class));
         if (tableSizeResponse.isEmpty()) {
             fail("No table row updates");
         } else {
             TableRowUpdates tru = (TableRowUpdates)tableSizeResponse.get();
             var dataCount = Arrays.stream(tru.rows())
+                    .filter(p -> p.viewPortId().equals(viewPortId))
                     .filter(p -> p.updateType().equals(RowUpdateType.UPDATE()))
                     .count();
             if (dataCount < expectedRowCount) {
-                waitForData(expectedRowCount - dataCount);
+                waitForData(viewPortId,expectedRowCount - dataCount);
             }
         }
     }

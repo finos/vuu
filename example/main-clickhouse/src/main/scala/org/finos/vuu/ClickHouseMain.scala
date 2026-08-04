@@ -23,19 +23,11 @@ import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 
 object ClickHouseMain extends App with StrictLogging {
 
-  private val container: ClickHouseContainer = ClickHouseContainer()
-
   JmxInfra.enableJmx()
-
-  given metrics: MetricsProvider = new MetricsProviderImpl
-  given clock: Clock = new DefaultClock
-  given lifecycle: LifecycleContainer = new LifecycleContainer
-  given tableDefContainer: TableDefContainer = new TableDefContainer(Map())
-  private val loginTokenService = LoginTokenService()
-  private val defaultConfig = ConfigFactory.load()
 
   logger.info("[ClickHouse] Starting...")
 
+  private val container: ClickHouseContainer = ClickHouseContainer()
   container.start()
   ClickHouseOrderCreator.createOrderData(container, 10_000_000)
 
@@ -43,14 +35,21 @@ object ClickHouseMain extends App with StrictLogging {
 
   logger.info("[VUU] Starting...")
 
+  given metrics: MetricsProvider = new MetricsProviderImpl
+  given clock: Clock = new DefaultClock
+  given lifecycle: LifecycleContainer = new LifecycleContainer
+  given tableDefContainer: TableDefContainer = new TableDefContainer(Map())
   lifecycle.autoShutdownHook()
 
-  val client = ClickHouseClient(ClickHouseClientOptions()
+  private val loginTokenService = LoginTokenService()
+  private val defaultConfig = ConfigFactory.load()
+
+  private val client = ClickHouseClient(ClickHouseClientOptions()
     .withEndpoint(container.getEndpoint)
     .withUsername(container.getDefaultUsername)
     .withPassword(container.getDefaultPassword))
 
-  val config = VuuServerConfig(
+  private val config = VuuServerConfig(
     createWebSocketOptions(defaultConfig),
     VuuSecurityOptions()
       .withLoginTokenService(loginTokenService),
@@ -64,7 +63,7 @@ object ClickHouseMain extends App with StrictLogging {
     .withModule(ClickHouseTableModule(client))
     .withPlugin(VirtualizedTablePlugin)
 
-  val vuuServer = new VuuServer(config)
+  private val vuuServer = new VuuServer(config)
 
   lifecycle.start()
 

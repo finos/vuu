@@ -45,8 +45,6 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
                 new ViewPortContext(viewPortId),
                 RpcNames.UniqueFieldValuesRpc(),
                 toScala(Map.of(
-                        "table", tableName,
-                        "module", moduleName,
                         "column", "name"
                 ))
         );
@@ -158,7 +156,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
         CreateViewPortSuccess responseBody = assertBodyIsInstanceOf(viewPortCreateResponse, "View port create response");
         var viewportId =  responseBody.viewPortId();
 
-        waitForData(1);
+        waitForData(viewportId, 1);
         return viewportId;
     }
 

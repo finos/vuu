@@ -78,7 +78,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
       val rangeRequest = ChangeViewPortRange(viewPortId, 5, 15)
       vuuClient.send(sessionId, rangeRequest)
       vuuClient.awaitForMsgWithBody[ChangeViewPortRangeSuccess]
-      waitForData(5)
+      waitForData(viewPortId, 5)
 
       //select last row by key
       val selectRowRequest = SelectRowRequest(viewPortId, "row15", false)
@@ -94,7 +94,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
       val rangeRequest2 = ChangeViewPortRange(viewPortId, 0, 10)
       vuuClient.send(sessionId, rangeRequest2)
       vuuClient.awaitForMsgWithBody[ChangeViewPortRangeSuccess]
-      waitForData(5)
+      waitForData(viewPortId, 5)
 
       //select last row of range by key
       val selectRowRequest3 = SelectRowRequest(viewPortId, "row10", false)
@@ -171,7 +171,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
     vuuClient.send(sessionId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
-    waitForData(10)
+    waitForData(viewPortId, 10)
     viewPortId
   }
 

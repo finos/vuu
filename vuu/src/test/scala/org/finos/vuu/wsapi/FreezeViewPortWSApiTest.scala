@@ -1,10 +1,10 @@
 package org.finos.vuu.wsapi
 
-import org.finos.vuu.api.{ColumnBuilder, JoinSpec, JoinTableDef, JoinTableDefOptions, JoinTo, LeftOuterJoin, TableDef, TableDefOptions, VisualLinks}
+import org.finos.vuu.api.{ColumnBuilder, JoinSpec, JoinTableDef, JoinTableDefOptions, JoinTo, LeftOuterJoin, TableDef, TableDefOptions}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, DefaultColumn}
-import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, FreezeViewPortReject, FreezeViewPortRequest, FreezeViewPortSuccess, RpcRequest, RpcResponseNew, SortDef, SortSpec, TableRowUpdates, UnfreezeViewPortReject, UnfreezeViewPortRequest, UnfreezeViewPortSuccess}
+import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, FreezeViewPortReject, FreezeViewPortRequest, FreezeViewPortSuccess, TableRowUpdates, UnfreezeViewPortReject, UnfreezeViewPortRequest, UnfreezeViewPortSuccess}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProviderFactory}
@@ -343,7 +343,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     vuuClient.send(sessionId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
-    waitForData(expectedNumberOfRows)
+    waitForData(viewPortId, expectedNumberOfRows)
     viewPortId
   }
 
