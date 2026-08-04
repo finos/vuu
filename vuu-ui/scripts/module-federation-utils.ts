@@ -14,6 +14,11 @@ export const getSharedDependencies = (env: "consumer" | "producer") => {
         requiredVersion: reactVersion,
         strictVersion: true,
       },
+      "@vuu-ui/vuu-auth": {
+        singleton: true,
+        requiredVersion: vuuVersion,
+        strictVersion: true,
+      },
       "@vuu-ui/vuu-shell": {
         singleton: true,
         requiredVersion: vuuVersion,

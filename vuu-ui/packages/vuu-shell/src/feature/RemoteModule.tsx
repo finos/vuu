@@ -1,28 +1,16 @@
-import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
+import {
+  AuthenticationProvider,
+  type RemoteModuleConnection,
+} from "@vuu-ui/vuu-auth";
 import type { ReactNode } from "react";
-import { useVuuAccessToken } from "../authentication-provider/AuthenticationProvider";
 
 export interface RemoteModuleProps {
   children: ReactNode;
-  connectionId: string;
-  websocketUrl?: string;
+  connection: RemoteModuleConnection;
 }
 
-export const RemoteModule = ({
-  children,
-  connectionId,
-  websocketUrl,
-}: RemoteModuleProps) => {
-  const token = useVuuAccessToken();
-
-  return (
-    <VuuDataSourceProvider
-      autoConnect={token !== null && websocketUrl !== undefined}
-      connectionId={connectionId}
-      token={token ?? undefined}
-      websocketUrl={websocketUrl}
-    >
-      {children}
-    </VuuDataSourceProvider>
-  );
-};
+export const RemoteModule = ({ children, connection }: RemoteModuleProps) => (
+  <AuthenticationProvider mode="vuu-connection" connection={connection}>
+    {children}
+  </AuthenticationProvider>
+);

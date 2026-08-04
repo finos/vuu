@@ -18,6 +18,7 @@
   "main": "index.ts",
   "devDependencies": {},
   "peerDependencies": {
+    "@vuu-ui/vuu-auth": "2.2.0",
     "@vuu-ui/vuu-shell": "2.2.0",
     "@vuu-ui/vuu-utils2": "2.2.0",
     "clsx": "^2.0.0",

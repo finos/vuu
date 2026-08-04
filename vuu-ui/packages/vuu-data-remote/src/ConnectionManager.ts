@@ -44,6 +44,7 @@ export type PostMessageToClientCallback = (
 export type ConnectionEvents = WebSocketConnectionEvents & {
   "connection-metrics": (message: ConnectionQualityMetrics) => void;
 };
+export type ConnectionStatusListener = (status: ConnectionStatus) => void;
 
 type RegisteredViewport = {
   postMessageToClientDataSource: PostMessageToClientCallback;
@@ -234,9 +235,11 @@ class ConnectionChannel {
       requestId,
       ...msg,
     });
-    return new Promise((resolve) => {
-      this.#pendingRequests.set(requestId, { resolve });
-    }) as Promise<T>;
+    return new Promise<T>((resolve) => {
+      this.#pendingRequests.set(requestId, {
+        resolve: (value) => resolve(value as T),
+      });
+    });
   };
 }
 
@@ -255,6 +258,10 @@ class ConnectionChannel {
 class ConnectionManager extends EventEmitter<ConnectionEvents> {
   static #instance: ConnectionManager;
   #connections = new Map<string, ConnectionChannel>();
+  #connectionStatusListeners = new Map<
+    string,
+    Set<ConnectionStatusListener>
+  >();
 
   private constructor() {
     super();
@@ -275,6 +282,9 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
 
     const connection = new ConnectionChannel(
       (status) => {
+        this.#connectionStatusListeners
+          .get(connectionId)
+          ?.forEach((listener) => listener(status));
         if (connectionId === DEFAULT_CONNECTION_ID) {
           this.emit("connection-status", status);
         }
@@ -304,6 +314,23 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
 
   connectedFor(connectionId: string) {
     return this.getConnection(connectionId).connected;
+  }
+
+  onConnectionStatus(
+    connectionId: string,
+    listener: ConnectionStatusListener,
+  ) {
+    const listeners =
+      this.#connectionStatusListeners.get(connectionId) ??
+      new Set<ConnectionStatusListener>();
+    listeners.add(listener);
+    this.#connectionStatusListeners.set(connectionId, listeners);
+    return () => {
+      listeners.delete(listener);
+      if (listeners.size === 0) {
+        this.#connectionStatusListeners.delete(connectionId);
+      }
+    };
   }
 
   async connect(options: ConnectOptions, throwOnRejected = false) {
@@ -354,11 +381,22 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
     return this.getConnection(connectionId).disconnect();
   }
 
+  async destroyConnection(connectionId: string) {
+    const connection = this.#connections.get(connectionId);
+    if (connection) {
+      await connection.disconnect();
+      connection.destroy();
+      this.#connections.delete(connectionId);
+    }
+    this.#connectionStatusListeners.delete(connectionId);
+  }
+
   destroy() {
     for (const connection of this.#connections.values()) {
       connection.destroy();
     }
     this.#connections.clear();
+    this.#connectionStatusListeners.clear();
   }
 }
 

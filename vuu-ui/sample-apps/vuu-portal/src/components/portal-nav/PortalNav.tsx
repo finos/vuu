@@ -2,8 +2,6 @@ import {
     Collapsible,
     CollapsiblePanel,
     CollapsibleTrigger,
-    FlexItem,
-    FlexLayout,
     VerticalNavigation,
     VerticalNavigationItem,
     VerticalNavigationItemContent,
@@ -13,14 +11,9 @@ import {
     VerticalNavigationSubMenu,
 } from "@salt-ds/core";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
-import {
-    forwardRef,
-    useMemo,
-    useState,
-    type ComponentPropsWithoutRef,
-} from "react";
+import { useMemo, useState } from "react";
 import type { RemoteModuleDescriptor } from "../../module-federation/mf-utils";
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import "./PortalNav.css";
 
@@ -35,6 +28,7 @@ type NavItem = {
 function NestedItem(props: { item: NavItem; icon?: boolean }) {
     const { item, icon } = props;
     const [collapsed, setCollapsed] = useState(false);
+    const location = useLocation();
 
     if (Array.isArray(item.children) && item.children.length > 0) {
         return (
@@ -69,7 +63,7 @@ function NestedItem(props: { item: NavItem; icon?: boolean }) {
         <VerticalNavigationItem active={location.pathname === item.href}>
             <VerticalNavigationItemContent>
                 <Link to={item.href}>
-                    {icon ? <Icon aria-hidden name="filter" /> : undefined}
+                    {icon ? <Icon aria-hidden className={`${classBase}-item-icon`} name="filter" /> : undefined}
                     <VerticalNavigationItemLabel>
                         {item.title}
                     </VerticalNavigationItemLabel>
@@ -126,15 +120,10 @@ export const PortalNav = ({ remoteModules }: PortalNavProps) => {
     const navItems = useMemo(() => buildNavItems(remoteModules), [remoteModules]);
 
     return (
-        <FlexLayout className={classBase}>
-            <FlexItem className={`${classBase}-nav`}>
-                <VerticalNavigation>
-                    {navItems.map((navItem) => (
-                        <NestedItem icon item={navItem} key={navItem.href} />
-                    ))}
-                </VerticalNavigation>
-            </FlexItem>
-            <FlexItem className={`${classBase}-close`} />
-        </FlexLayout>
+        <VerticalNavigation className={classBase}>
+            {navItems.map((navItem) => (
+                <NestedItem icon item={navItem} key={navItem.href} />
+            ))}
+        </VerticalNavigation>
     );
 };

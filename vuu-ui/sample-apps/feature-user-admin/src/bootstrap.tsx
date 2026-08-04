@@ -4,8 +4,6 @@ import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 
 import UserAdmin from "./UserAdmin";
 
-const websocketUrl = `${location.protocol === "https:" ? "wss" : "ws"}://${location.hostname}:8090/websocket`;
-
 async function start(): Promise<void> {
   const container = document.getElementById("root");
   if (!container) throw new Error("Root element not found");
@@ -13,11 +11,7 @@ async function start(): Promise<void> {
   const root = createRoot(container);
   root.render(
     <SaltProviderNext theme="vuu-theme" density="high">
-      <VuuDataSourceProvider
-        authenticate={false}
-        autoConnect
-        websocketUrl={websocketUrl}
-      >
+      <VuuDataSourceProvider>
         <div style={{ height: "100vh", width: "100vw" }}>
           <UserAdmin />
         </div>

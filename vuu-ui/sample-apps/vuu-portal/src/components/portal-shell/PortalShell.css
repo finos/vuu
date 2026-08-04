@@ -4,12 +4,21 @@
   width: 100vw;
 
   .saltFlexItem.vuuPortalShell-leftPanel {
-    --saltFlexItem-basis: 300px;
+    --saltFlexItem-basis: var(--vuuPortalShell-leftPanel-width, 300px);
     --saltFlexItem-shrink: 0;
 
-    .saltFlexItem.vuuPortalShell-logo {
-      --saltFlexItem-basis: 48px;
+    background-color: var(--vuuPortalShell-leftPanel-background, var(--salt-container-secondary-background));
+    color: var(--vuuPortalShell-leftPanel-color, var(--salt-content-secondary-foreground));
+    padding: var(--vuuPortalShell-leftPanel-padding, var(--salt-spacing-400) var(--salt-spacing-300));
+
+    .saltFlexItem.vuuPortalShell-leftPanelHeader {
+      --saltFlexItem-basis: auto;
       --saltFlexItem-shrink: 0;
+
+      align-items: center;
+      display: flex;
+      flex-direction: column;
+      gap: var(--vuuPortalShell-leftPanelHeader-gap, var(--salt-spacing-400));
     }
   }
 

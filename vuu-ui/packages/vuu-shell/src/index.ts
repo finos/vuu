@@ -1,6 +1,5 @@
 export * from "./app-header";
 export * from "./application-provider";
-export { AuthenticationProvider, useLoggedInUser, useLogout, useVuuAccessToken } from './authentication-provider/AuthenticationProvider';
 export * from "./feature";
 export * from "./feature-and-layout-provider";
 export * from "./feature-list";

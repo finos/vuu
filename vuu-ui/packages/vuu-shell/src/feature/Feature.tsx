@@ -11,6 +11,8 @@ import {
 } from "@module-federation/enhanced/runtime";
 import { RemoteModule } from "./RemoteModule";
 
+const portalConnection = { connectionId: "portal" };
+
 const getLazyComponent = (
   name: string,
   component: string,
@@ -24,11 +26,14 @@ const getLazyComponent = (
     },
   ]);
 
-  return lazy(() => {
-    // return Promise.resolve({ default: Test });
-    return loadRemote(`${name}/${component}`, {
-      from: "runtime",
-    });
+  return lazy(async () => {
+    const remote = await loadRemote<{
+      default: React.ComponentType<Record<string, unknown>>;
+    }>(`${name}/${component}`, { from: "runtime" });
+    if (remote === null) {
+      throw Error(`Unable to load remote component ${name}/${component}`);
+    }
+    return remote;
   });
 };
 
@@ -98,8 +103,7 @@ function RawFeature<Params extends object | undefined>({
   console.log(">>>>> create a feature");
 
   const LazyFeature = useCachedFeature(mfUrl, mfScope, mfComponent);
-  const connectionId = vuu?.connectionId ?? mfScope;
-  const websocketUrl = vuu?.websocketUrl;
+  const connection = vuu ?? portalConnection;
   // Suspense has been removed here - caused components to render twice
   return (
     <FeatureErrorBoundary
@@ -107,7 +111,7 @@ function RawFeature<Params extends object | undefined>({
       mfScope={mfScope}
       mfUrl={mfUrl}
     >
-      <RemoteModule connectionId={connectionId} websocketUrl={websocketUrl}>
+      <RemoteModule connection={connection}>
         <LazyFeature {...props} {...params} />
       </RemoteModule>
     </FeatureErrorBoundary>
