@@ -1,8 +1,6 @@
 import { parseVuuUserFromToken, type AuthProvider } from '@vuu-ui/vuu-data-remote';
 import type { AuthConfig } from '@vuu-ui/vuu-utils';
 import Keycloak from 'keycloak-js';
-// import { AutoRefreshKeycloakToken } from './AutoRefreshKeycloakToken';
-
 
 
 let keycloak: Keycloak;
@@ -15,9 +13,6 @@ const getKeycloak = async (authConfig: AuthConfig) => {
             clientId: 'vuu-portal'
         })
     }
-
-    // periodically refresh to keep session from expiring
-    // new AutoRefreshKeycloakToken(keycloak);
 
     return keycloak;
 }

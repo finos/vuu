@@ -18,6 +18,7 @@ export const RemoteModule = ({
   return (
     <VuuDataSourceProvider
       autoConnect={token !== null && websocketUrl !== undefined}
+      authenticate
       connectionId={connectionId}
       token={token ?? undefined}
       websocketUrl={websocketUrl}

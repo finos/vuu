@@ -42,6 +42,7 @@ export const PortalShell = ({ remoteModules }: PortalShellProps) => {
                                 <Routes>
                                     <Route path="/" element={<div style={{ background: 'black', height: '100%' }} />} />
                                     <Route path="/users/admin" element={<Feature mfComponent="UserAdmin" mfScope="UserAdmin" mfUrl="http://localhost:5007" vuu={{ connectionId: 'portal' }} />} />
+                                    <Route path="/modules/admin" element={<Feature mfComponent="ModuleAdmin" mfScope="moduleAdmin" mfUrl="http://localhost:5008" vuu={{ connectionId: 'module', websocketUrl: 'wss://localhost:8092/websocket' }} />} />
                                 </Routes>
                             </div>
                         </FlexItem>

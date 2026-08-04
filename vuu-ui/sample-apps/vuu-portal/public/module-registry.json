@@ -15,6 +15,23 @@
       "vuu": {
         "connectionId": "portal"
       }
+    },
+    {
+      "id": 2,
+      "name": "moduleAdmin",
+      "title": "Manage Modules",
+      "description": "Add, remove and update remote modules",
+      "version": 1,
+      "enabled": true,
+      "location": "/Admin/Modules",
+      "mfComponent": "ModuleAdmin",
+      "mfScope": "moduleAdmin",
+      "mfUrl": "http://localhost:5008",
+      "path": "/modules/admin",
+      "vuu": {
+        "connectionId": "module",
+        "websocketUrl": "wss://localhost:8092/websocket"
+      }
     }
   ]
 }

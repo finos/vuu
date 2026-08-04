@@ -2,7 +2,6 @@
 export type User = {
     userName: string;
 };
-
 export interface AuthProvider {
     login: (
         username?: string,
