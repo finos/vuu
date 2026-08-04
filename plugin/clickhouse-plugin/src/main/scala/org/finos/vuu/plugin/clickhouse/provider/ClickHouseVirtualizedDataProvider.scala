@@ -28,7 +28,7 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
   override def runOnce(viewPort: ViewPort): Unit = {
     logger.trace("[ClickHouseVirtualizedDataProvider] Starting runOnce")
 
-    val whereClause = filterFactory.build(viewPort.filterSpec, permissionFunction.apply(viewPort))
+    val (whereClause, params) = filterFactory.build(viewPort.filterSpec, permissionFunction.apply(viewPort))
     val orderBy = sortFactory.build(viewPort.sortSpec)
     val offset = viewPort.getRange.from
     val limit = viewPort.getRange.to - offset
@@ -36,8 +36,8 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
     logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading rows from ClickHouse range ${viewPort.getRange.from} to ${viewPort.getRange.to} filter=$whereClause sort=$orderBy")
 
     val queryStart = clock.now()
-    val tableSize = tableSizeProvider.getTableSize(whereClause)
-    val rowsWithData = rowDataProvider.queryForRowData(viewPort.getColumns, whereClause, orderBy, offset, limit)
+    val tableSize = tableSizeProvider.getTableSize(whereClause, params)
+    val rowsWithData = rowDataProvider.queryForRowData(viewPort.getColumns, whereClause, params, orderBy, offset, limit)
     val dataQueryMillis = clock.now() - queryStart
 
     logger.trace(s"[ClickHouseVirtualizedDataProvider] Updating session table")

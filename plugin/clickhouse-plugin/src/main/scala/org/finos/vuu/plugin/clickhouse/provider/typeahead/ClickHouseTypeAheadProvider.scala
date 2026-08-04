@@ -48,9 +48,8 @@ class ClickHouseTypeAheadProvider(client: ClickHouseClient,
   }
 
   private def buildWhereClauseAndParams(remoteColumnName: String, starts: String, viewPort: ViewPort): (String, java.util.Map[String, Object]) = {
-    val permissionClause = filterFactory.build(null, tableDef.getRemotePermissionFilterSpecFunction.apply(viewPort))
-    val params = new JHashMap[String, Object]()
-
+    val (baseFilter, params) = filterFactory.build(null, tableDef.getRemotePermissionFilterSpecFunction.apply(viewPort))
+    
     val filterClause =
       if (starts != null && !starts.isBlank) {
          params.put("p_starts", starts.toLowerCase)
@@ -59,11 +58,11 @@ class ClickHouseTypeAheadProvider(client: ClickHouseClient,
         ""
       }
 
-    val whereClause = (permissionClause, filterClause) match {
+    val whereClause = (baseFilter, filterClause) match {
       case ("", "")  => ""
-      case (pc, "")  => pc
-      case ("", fc)  => s"WHERE $fc"
-      case (pc, fc)  => s"$pc AND ($fc)"
+      case (baseFilter, "")  => baseFilter
+      case ("", filterClause)  => s"WHERE $filterClause"
+      case (baseFilter, filterClause)  => s"$baseFilter AND ($filterClause)"
     }
 
     (whereClause, params)
