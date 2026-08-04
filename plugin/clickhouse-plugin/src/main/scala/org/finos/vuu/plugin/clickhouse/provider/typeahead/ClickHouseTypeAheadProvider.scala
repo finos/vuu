@@ -52,9 +52,9 @@ class ClickHouseTypeAheadProvider(client: ClickHouseClient,
     val params = new JHashMap[String, Object]()
 
     val filterClause =
-      if (starts != null && starts.nonEmpty) {
-         params.put("p_starts", starts.toLowerCase + "%")
-         s"lower($remoteColumnName) LIKE {p_starts: String}"
+      if (starts != null && !starts.isBlank) {
+         params.put("p_starts", starts.toLowerCase)
+         s"startsWith(lowerUTF8($remoteColumnName), {p_starts: String})"
       } else {
         ""
       }
