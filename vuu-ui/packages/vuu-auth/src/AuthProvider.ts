@@ -1,4 +1,4 @@
-import type { AuthConfig } from "@vuu-ui/vuu-utils";
+import type { AuthConfig } from "./AuthConfig";
 
 export type User = {
   userName: string;

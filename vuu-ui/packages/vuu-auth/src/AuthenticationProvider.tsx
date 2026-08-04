@@ -5,7 +5,6 @@ import {
   VuuAuthenticator,
   VuuAuthProvider,
 } from "@vuu-ui/vuu-data-remote";
-import type { AuthConfig } from "@vuu-ui/vuu-utils";
 import {
   createContext,
   useCallback,
@@ -16,6 +15,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import type { AuthConfig } from "./AuthConfig";
 import type { AuthProviderClass, User } from "./AuthProvider";
 
 const INVALID_TOKEN_MESSAGE = "Invalid token";

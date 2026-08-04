@@ -1,5 +1,4 @@
-import type { AuthProvider } from "@vuu-ui/vuu-auth";
-import type { AuthConfig } from "@vuu-ui/vuu-utils";
+import type { AuthConfig, AuthProvider } from "@vuu-ui/vuu-auth";
 import { parseVuuUserFromToken } from "./authenticate";
 
 /**
