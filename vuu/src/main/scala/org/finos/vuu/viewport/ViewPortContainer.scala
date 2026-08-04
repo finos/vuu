@@ -643,8 +643,10 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   def runOnce(): Unit = {
 
     val (millis, _) = timeIt {
-      CollectionHasAsScala(viewPorts.values()).asScala.filter(vp => !vp.hasGroupBy).foreach(vp => {
-        refreshOneViewPort(vp)
+      getViewPorts.filter(vp => vp.isEnabled && !vp.hasGroupBy).map(vp => {
+        pluginRegistry.withPlugin(vp.table.asTable.getTableDef.pluginType) {
+          plugin => plugin.viewPortCallableFactory.createWorkItem(vp, this).doWork()
+        }
       })
     }
 
@@ -652,7 +654,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   /**
-   * Called by dedicated groupby runner thread to build the trees for each groupby and
+   * Called by dedicated group by runner thread to build the trees for each group by and
    * put the relevant tree keys back into the viewport
    */
   def runGroupByOnce(): Unit = {
