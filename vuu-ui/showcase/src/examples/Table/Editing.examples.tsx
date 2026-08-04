@@ -273,11 +273,13 @@ const EditTableTemplate = ({
         {editMode === "view" ? (
           <DataSourceStats dataSource={dataSource} />
         ) : (
-          <EditButtons
-            editSession={editSession}
-            onCancel={onCancel}
-            onSave={onSave}
-          />
+          <div style={{ alignItems: "center", display: "flex", gap: "var(--salt-spacing-100)" }}>
+            <EditButtons
+              editSession={editSession}
+              onCancel={onCancel}
+              onSave={onSave}
+            />
+          </div>
         )}
       </TableFooter>
     </div>
@@ -315,7 +317,7 @@ const EditableInstrumentsTemplate = ({
 
   const exitEditMode = useCallback(() => setEditMode("view"), []);
 
-  const { dataSource, editSession, hasSelection, onAddRows, onDelete, onSave, sessionDataSource } =
+  const { dataSource, editSession, hasSelection, onAddRows, onDelete, onSave, onCancel, sessionDataSource } =
     useEditableTable({
       dataSource: sourceTableDataSource,
       deleteMode: "soft",
@@ -411,14 +413,17 @@ const EditableInstrumentsTemplate = ({
         {editMode === "view" ? (
           <DataSourceStats dataSource={dataSource} />
         ) : (
-          <EditButtons
-            editSession={editSession}
-            hasSelection={hasSelection}
-            onAddRows={onAddRows}
-            onDelete={onDelete}
-            onSave={onSave}
-            saveLabel="Submit"
-          />
+          <div style={{ alignItems: "center", display: "flex", gap: "var(--salt-spacing-100)" }}>
+            <EditButtons
+              editSession={editSession}
+              hasSelection={hasSelection}
+              onAddRows={onAddRows}
+              onDelete={onDelete}
+              onCancel={onCancel}
+              onSave={onSave}
+              saveLabel="Submit"
+            />
+          </div>
         )}
       </TableFooter>
     </div>
