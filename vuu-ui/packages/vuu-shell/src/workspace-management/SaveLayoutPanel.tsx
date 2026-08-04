@@ -9,7 +9,7 @@ import {
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { useLoggedInUser } from "@vuu-ui/vuu-auth";
+import { useAuthenticatedUser } from "@vuu-ui/vuu-auth";
 import type { LayoutMetadataDto } from "@vuu-ui/vuu-utils";
 import {
   type ChangeEvent,
@@ -50,7 +50,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
   const [screenshotErrorMessage, setScreenshotErrorMessage] = useState<
     string | undefined
   >();
-  const { userName } = useLoggedInUser();
+  const { userName } = useAuthenticatedUser();
 
   useEffect(() => {
     if (componentId) {

@@ -1,7 +1,4 @@
-export interface RemoteModuleConnection {
-  connectionId: string;
-  websocketUrl?: string;
-}
+import type { RemoteModuleConnection } from "@vuu-ui/vuu-data-types";
 
 export interface RemoteModuleDescriptor {
   description: string;

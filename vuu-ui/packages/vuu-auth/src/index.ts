@@ -1,22 +1,47 @@
 export type { AuthConfig } from "./AuthConfig";
-export type {
-  AuthProvider,
-  AuthProviderClass,
-  User,
-} from "./AuthProvider";
+export type { RemoteModuleConnection } from "@vuu-ui/vuu-data-types";
 export {
-  AuthenticatedUserContext,
+  AuthenticationErrorBoundary,
+  type AuthenticationErrorBoundaryProps,
+} from "./AuthenticationErrorBoundary";
+export type {
+  AuthenticatedIdentity,
+  AuthHandler,
+  AuthHandlerClass,
+  User,
+} from "./AuthHandler";
+export {
   AuthenticationProvider,
+  AuthenticationConfigurationError,
+  type AuthenticationErrorHandler,
   type AuthenticationProviderProps,
-  InvalidTokenError,
-  UserSessionLimitError,
+  type IdentityAuthenticationProps,
+  normalizeVuuAuthTarget,
   VuuConnectionError,
-  useBearerToken,
-  useLoggedInUser,
+  type VuuConnectionAuthenticationProps,
+  useAuthenticatedUser,
+  useIdentityToken,
   useLogout,
+  useOptionalVuuConnectionId,
   useVuuAccessToken,
+  useVuuConnectionId,
 } from "./AuthenticationProvider";
-export { KeycloakAuthProvider } from "./KeycloakAuthProvider";
+export { KeycloakAuthHandler } from "./KeycloakAuthHandler";
+export {
+  authenticateWithUsernamePassword,
+  VuuLoginHandler,
+} from "./VuuLoginHandler";
+export {
+  exchangeVuuToken,
+  type VuuAuthTarget,
+  type VuuSession,
+  VuuTokenExchangeError,
+} from "./VuuTokenExchange";
+export {
+  VuuConnectionRegistry,
+  type VuuConnectionRegistryOptions,
+  vuuConnectionRegistry,
+} from "./VuuConnectionRegistry";
 export {
   parseVuuUserFromToken,
   type VuuUser,

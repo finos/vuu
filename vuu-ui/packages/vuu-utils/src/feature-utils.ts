@@ -1,4 +1,7 @@
-import type { TableSchema } from "@vuu-ui/vuu-data-types";
+import type {
+  RemoteModuleConnection,
+  TableSchema,
+} from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import type { ListOption } from "@vuu-ui/vuu-table-types";
 import React, { type ReactElement } from "react";
@@ -64,11 +67,6 @@ export interface DynamicFeatureDescriptor {
   vuu?: RemoteModuleConnection;
   version: number;
   viewProps?: ViewConfig;
-}
-
-export interface RemoteModuleConnection {
-  connectionId: string;
-  websocketUrl?: string;
 }
 
 export interface StaticFeatureDescriptor {

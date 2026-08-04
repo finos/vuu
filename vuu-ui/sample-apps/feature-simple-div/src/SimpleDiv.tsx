@@ -1,4 +1,4 @@
-import { useLoggedInUser } from "@vuu-ui/vuu-auth";
+import { useAuthenticatedUser } from "@vuu-ui/vuu-auth";
 import { useData } from "@vuu-ui/vuu-utils2";
 import { useMemo } from "react";
 
@@ -6,7 +6,7 @@ import "./SimpleDiv.css";
 import { Table } from "@vuu-ui/vuu-table";
 
 const SimpleDiv = () => {
-  const user = useLoggedInUser();
+  const user = useAuthenticatedUser();
   const { VuuDataSource } = useData();
 
   const dataSource = useMemo(() => {

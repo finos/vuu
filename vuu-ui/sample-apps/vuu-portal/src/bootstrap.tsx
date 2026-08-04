@@ -1,5 +1,9 @@
 import { init } from "@module-federation/enhanced/runtime";
-import { AuthenticationProvider, KeycloakAuthProvider } from "@vuu-ui/vuu-auth";
+import {
+  AuthenticationErrorBoundary,
+  AuthenticationProvider,
+  KeycloakAuthHandler,
+} from "@vuu-ui/vuu-auth";
 import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
 import { PageVisibilityObserver } from "@vuu-ui/vuu-utils";
 import { createRoot } from "react-dom/client";
@@ -33,12 +37,19 @@ async function start(): Promise<void> {
   try {
     const root = createRoot(container);
     root.render(
-      <AuthenticationProvider
-        authConfig={config}
-        authProviderClass={KeycloakAuthProvider}
+      <AuthenticationErrorBoundary
+        fallback={(error) => (
+          <div role="alert">Unable to authenticate: {error.message}</div>
+        )}
       >
-        <App />
-      </AuthenticationProvider>,
+        <AuthenticationProvider
+          authConfig={config}
+          authHandlerClass={KeycloakAuthHandler}
+          mode="identity"
+        >
+          <App />
+        </AuthenticationProvider>
+      </AuthenticationErrorBoundary>,
     );
   } catch (err: unknown) {
     console.error(err);

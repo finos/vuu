@@ -456,6 +456,12 @@ export interface DataSourceConstructorProps extends WithBaseFilter<DataSourceCon
   viewport?: string;
 }
 
+export interface RemoteModuleConnection {
+  connectionId: string;
+  restUrl?: string;
+  websocketUrl?: string;
+}
+
 export interface DataSourceSubscribeProps extends Partial<
   WithBaseFilter<WithFullConfig>
 > {

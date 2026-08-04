@@ -8,10 +8,13 @@
   "type": "module",
   "scripts": {
     "build": "node ../../scripts/run-build-rslib.ts",
+    "test": "cd ../.. && vitest run packages/vuu-auth/test",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
     "@vuu-ui/vuu-data-remote": "2.2.0",
+    "@vuu-ui/vuu-data-types": "2.2.0",
+    "@vuu-ui/vuu-utils2": "2.2.0",
     "keycloak-js": "26.2.4"
   },
   "peerDependencies": {

@@ -11,7 +11,7 @@ import {
   ShellContextProvider,
   type ShellLayoutProps,
 } from "@vuu-ui/vuu-shell";
-import { useBearerToken } from "@vuu-ui/vuu-auth";
+import { useIdentityToken } from "@vuu-ui/vuu-auth";
 import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
 import {
@@ -36,44 +36,27 @@ assertComponentsRegistered([
   { componentName: "Stack", component: StackLayout },
 ]);
 
-
-const defaultWebsocketUrl = (ssl: boolean) =>
-  `${ssl ? "wss" : "ws"}://${location.hostname}:8090/websocket`;
-
-const {
-  ssl,
-  moduleRegistryUrl,
-  websocketUrl = defaultWebsocketUrl(ssl),
-} = await vuuConfig;
+const { moduleRegistryUrl } = await vuuConfig;
 
 export const App = () => {
-  const getBearerToken = useBearerToken();
+  const getIdentityToken = useIdentityToken();
 
-  const [remoteModules, setRemoteModules] = useState<
-    RemoteModuleDescriptor[]
-  >([]);
+  const [remoteModules, setRemoteModules] = useState<RemoteModuleDescriptor[]>(
+    [],
+  );
 
   useEffect(() => {
     const loadFeatures = async () => {
-      const bearerToken = await getBearerToken();
+      const identityToken = await getIdentityToken();
       const { modules: features } = await getRegisteredModules(
         moduleRegistryUrl,
-        bearerToken,
+        identityToken,
       );
-      setRemoteModules(
-        features.map((feature) => ({
-          ...feature,
-          vuu: {
-            connectionId: feature.vuu?.connectionId ?? feature.mfScope,
-            websocketUrl: feature.vuu?.websocketUrl ?? websocketUrl,
-          },
-        })),
-      );
+      setRemoteModules(features);
     };
 
     loadFeatures();
-  }, [getBearerToken]);
-
+  }, [getIdentityToken]);
 
   return (
     <BrowserRouter>

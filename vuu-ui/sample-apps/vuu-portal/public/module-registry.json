@@ -30,6 +30,7 @@
       "path": "/modules/admin",
       "vuu": {
         "connectionId": "module",
+        "restUrl": "https://localhost:8444/api/authn",
         "websocketUrl": "wss://localhost:8092/websocket"
       }
     }

@@ -1,180 +1,402 @@
-import {
-  ConnectionManager,
-  type ConnectionStatus,
-  LostConnectionHandler,
-  VuuAuthenticator,
-  VuuAuthProvider,
-} from "@vuu-ui/vuu-data-remote";
+import { ConnectionManager, VuuDataSource } from "@vuu-ui/vuu-data-remote";
+import type {
+  DataSourceConstructorProps,
+  RemoteModuleConnection,
+} from "@vuu-ui/vuu-data-types";
+import { DataProvider } from "@vuu-ui/vuu-utils2";
 import {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
 import type { AuthConfig } from "./AuthConfig";
-import type { AuthProviderClass, User } from "./AuthProvider";
+import type {
+  AuthenticatedIdentity,
+  AuthHandler,
+  AuthHandlerClass,
+  User,
+} from "./AuthHandler";
+import {
+  vuuConnectionRegistry,
+  type VuuConnectionRegistry,
+} from "./VuuConnectionRegistry";
+import type { VuuAuthTarget, VuuSession } from "./VuuTokenExchange";
 
-const INVALID_TOKEN_MESSAGE = "Invalid token";
-const USER_SESSION_LIMIT_MESSAGE = "User session limnit exceeded";
-
-export class UserSessionLimitError extends Error {
-  constructor() {
-    super(USER_SESSION_LIMIT_MESSAGE);
-  }
-}
-
-export class InvalidTokenError extends Error {
-  constructor() {
-    super(INVALID_TOKEN_MESSAGE);
+export class AuthenticationConfigurationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AuthenticationConfigurationError";
   }
 }
 
 export class VuuConnectionError extends Error {
-  constructor(connectionStatus: ConnectionStatus) {
-    super(`Vuu connection error, connectionStstus: ${connectionStatus}`);
+  constructor(
+    readonly connectionId: string,
+    cause: unknown,
+  ) {
+    super(`VUU connection authentication failed for ${connectionId}`, {
+      cause,
+    });
+    this.name = "VuuConnectionError";
   }
 }
 
-const retryIntervalInSeconds = [1, 2, 3, 5, 10, 30, 60, 120, 300];
+export type AuthenticationErrorHandler = (error: Error) => void;
 
-export const AuthenticatedUserContext = createContext<{
-  user: User | null;
-  getBearerToken: () => Promise<string>;
-  getVuuAccessToken: () => string | null;
-  logout: () => void;
-}>({
-  user: null,
-  getBearerToken: () =>
-    Promise.reject(new Error("No AuthenticationProvider has been installed")),
-  getVuuAccessToken: () => null,
-  logout: () => console.warn("No AuthenticationProvider has been installed"),
-});
-
-export interface AuthenticationProviderProps {
-  authProviderClass?: AuthProviderClass;
-  children: ReactNode;
+export interface IdentityAuthenticationProps {
   authConfig: AuthConfig;
-  onError?: (e: UserSessionLimitError | VuuConnectionError) => void;
+  authHandlerClass: AuthHandlerClass;
+  children: ReactNode;
+  connectionId?: string;
+  mode: "identity";
+  onError?: AuthenticationErrorHandler;
 }
 
-export const AuthenticationProvider = ({
-  authConfig,
-  authProviderClass = VuuAuthProvider,
+export interface VuuConnectionAuthenticationProps {
+  children: ReactNode;
+  connection: RemoteModuleConnection;
+  mode: "vuu-connection";
+  onError?: AuthenticationErrorHandler;
+}
+
+export type AuthenticationProviderProps =
+  | IdentityAuthenticationProps
+  | VuuConnectionAuthenticationProps;
+
+interface IdentityContextValue {
+  authHandler: AuthHandler;
+  getIdentityToken: () => Promise<string>;
+  logout: () => Promise<void>;
+  portalTarget: VuuAuthTarget;
+  user: User;
+}
+
+interface VuuConnectionContextValue {
+  connectionId: string;
+  session: VuuSession;
+}
+
+const IdentityContext = createContext<IdentityContextValue | null>(null);
+const VuuConnectionContext = createContext<VuuConnectionContextValue | null>(
+  null,
+);
+
+export const normalizeVuuAuthTarget = (
+  connection: RemoteModuleConnection,
+  portalTarget: VuuAuthTarget,
+): VuuAuthTarget => {
+  const isPortalConnection =
+    connection.connectionId === portalTarget.connectionId;
+  const restUrl =
+    connection.restUrl ??
+    (isPortalConnection ? portalTarget.restUrl : undefined);
+  const websocketUrl =
+    connection.websocketUrl ??
+    (isPortalConnection ? portalTarget.websocketUrl : undefined);
+
+  if (!restUrl || !websocketUrl) {
+    throw new AuthenticationConfigurationError(
+      `Connection ${connection.connectionId} must define restUrl and websocketUrl`,
+    );
+  }
+
+  return {
+    connectionId: connection.connectionId,
+    restUrl,
+    websocketUrl,
+  };
+};
+
+const useConnectionSession = (
+  authHandler: AuthHandler,
+  target: VuuAuthTarget,
+  onError: AuthenticationErrorHandler | undefined,
+  registry: VuuConnectionRegistry = vuuConnectionRegistry,
+) => {
+  const [session, setSession] = useState<VuuSession>();
+  const [error, setError] = useState<Error>();
+
+  useEffect(() => {
+    let active = true;
+    let unsubscribe = () => {};
+
+    registry
+      .acquire(authHandler, target)
+      .then((nextSession) => {
+        if (active) {
+          setSession(nextSession);
+          unsubscribe = registry.subscribe(
+            target.connectionId,
+            setSession,
+            (cause) => {
+              const nextError = new VuuConnectionError(
+                target.connectionId,
+                cause,
+              );
+              setError(nextError);
+              onError?.(nextError);
+            },
+          );
+        }
+      })
+      .catch((cause: unknown) => {
+        if (active) {
+          const nextError = new VuuConnectionError(target.connectionId, cause);
+          setError(nextError);
+          onError?.(nextError);
+        }
+      });
+
+    return () => {
+      active = false;
+      unsubscribe();
+      registry.release(target.connectionId);
+    };
+  }, [authHandler, onError, registry, target]);
+
+  if (error) {
+    throw error;
+  }
+  return session;
+};
+
+const ConnectionDataScope = ({
   children,
-  onError,
-}: AuthenticationProviderProps) => {
-  const [user, setUser] = useState<User | null>(null);
-  const vuuAccessTokenRef = useRef<string | null>(null);
-  const vuuAuthRef = useRef<VuuAuthenticator | undefined>(undefined);
-
-  const logout = useCallback(() => {
-    vuuAuthRef.current?.logout();
-  }, []);
-
-  const getVuuAccessToken = useCallback(() => vuuAccessTokenRef.current, []);
-  const authProvider = useMemo(
-    () => new authProviderClass(authConfig),
-    [authConfig, authProviderClass],
+  connectionId,
+}: {
+  children: ReactNode;
+  connectionId: string;
+}) => {
+  const BoundVuuDataSource = useMemo(
+    () =>
+      class ConnectionScopedVuuDataSource extends VuuDataSource {
+        constructor(props: DataSourceConstructorProps) {
+          super({ ...props, connectionId });
+        }
+      },
+    [connectionId],
   );
-  const getBearerToken = useCallback(
-    () => authProvider.getToken(),
-    [authProvider],
+  const getServerAPI = useMemo(
+    () => () => ConnectionManager.serverAPIFor(connectionId),
+    [connectionId],
+  );
+
+  return (
+    <DataProvider
+      VuuDataSource={BoundVuuDataSource}
+      getServerAPI={getServerAPI}
+      isLocalData={false}
+    >
+      {children}
+    </DataProvider>
+  );
+};
+
+const IdentityAuthenticationProvider = ({
+  authConfig,
+  authHandlerClass,
+  children,
+  connectionId = "portal",
+  onError,
+}: IdentityAuthenticationProps) => {
+  const authHandler = useMemo(
+    () => new authHandlerClass(authConfig),
+    [authConfig, authHandlerClass],
+  );
+  const [identity, setIdentity] = useState<AuthenticatedIdentity>();
+  const [identityError, setIdentityError] = useState<Error>();
+  const portalTarget = useMemo<VuuAuthTarget>(
+    () => ({
+      connectionId,
+      restUrl: authConfig.restUrl,
+      websocketUrl: authConfig.websocketUrl,
+    }),
+    [authConfig.restUrl, authConfig.websocketUrl, connectionId],
   );
 
   useEffect(() => {
-    let mounted = true;
-
-    const login = async () => {
-      try {
-        const vuuAuth = new VuuAuthenticator({
-          authProvider,
-          websocketUrl: authConfig.websocketUrl,
-        });
-        vuuAuthRef.current = vuuAuth;
-
-        const [loggedInUser] = await vuuAuth.login();
-        if (!mounted) {
-          return;
+    let active = true;
+    authHandler.authenticate().then(
+      (authenticatedIdentity) => {
+        if (active) {
+          setIdentity(authenticatedIdentity);
         }
-        vuuAccessTokenRef.current = vuuAuth.getAccessToken();
-
-        const lostConnectionHandler = new LostConnectionHandler(
-          vuuAuth,
-          retryIntervalInSeconds,
-        );
-
-        const onConnectionStatusChange = (
-          connectionStatus: ConnectionStatus,
-        ) => {
-          if (connectionStatus === "disconnected") {
-            lostConnectionHandler.reconnect().then((status) => {
-              if (status === "connection-failed") {
-                onError?.(new VuuConnectionError(status));
-              }
-            });
-          }
-        };
-
-        ConnectionManager.on("connection-status", onConnectionStatusChange);
-        setUser(loggedInUser);
-      } catch (e: unknown) {
-        const message =
-          e instanceof Error
-            ? e.message
-            : typeof e === "string"
-              ? e
-              : String(e);
-        switch (message) {
-          case USER_SESSION_LIMIT_MESSAGE:
-            onError?.(new UserSessionLimitError());
-            break;
-          case INVALID_TOKEN_MESSAGE:
-            onError?.(new InvalidTokenError());
-            break;
-          default:
-            console.warn(`[AuthenticationProvider] unhandler error ${message}`);
+      },
+      (cause: unknown) => {
+        if (active) {
+          const error =
+            cause instanceof Error
+              ? cause
+              : new Error("Identity authentication failed", { cause });
+          setIdentityError(error);
+          onError?.(error);
         }
-      }
-    };
-
-    login();
+      },
+    );
     return () => {
-      mounted = false;
+      active = false;
     };
-  }, [authConfig.websocketUrl, authProvider, onError]);
+  }, [authHandler, onError]);
 
-  return user === null ? null : (
-    <AuthenticatedUserContext.Provider
-      value={{ getBearerToken, getVuuAccessToken, logout, user }}
+  if (identityError) {
+    throw identityError;
+  }
+  if (!identity) {
+    return null;
+  }
+
+  return (
+    <AuthenticatedIdentityProvider
+      authHandler={authHandler}
+      identity={identity}
+      portalTarget={portalTarget}
+      onError={onError}
     >
       {children}
-    </AuthenticatedUserContext.Provider>
+    </AuthenticatedIdentityProvider>
   );
 };
 
-export const useLoggedInUser = () => {
-  const context = useContext(AuthenticatedUserContext);
-  if (context.user) {
-    return context.user;
+const AuthenticatedIdentityProvider = ({
+  authHandler,
+  children,
+  identity,
+  onError,
+  portalTarget,
+}: {
+  authHandler: AuthHandler;
+  children: ReactNode;
+  identity: AuthenticatedIdentity;
+  onError?: AuthenticationErrorHandler;
+  portalTarget: VuuAuthTarget;
+}) => {
+  const session = useConnectionSession(authHandler, portalTarget, onError);
+  const getIdentityToken = useCallback(
+    () => authHandler.getIdentityToken(),
+    [authHandler],
+  );
+  const logout = useCallback(async () => {
+    await vuuConnectionRegistry.disconnectAll();
+    await authHandler.logout();
+  }, [authHandler]);
+  const identityContext = useMemo<IdentityContextValue>(
+    () => ({
+      authHandler,
+      getIdentityToken,
+      logout,
+      portalTarget,
+      user: identity.user,
+    }),
+    [authHandler, getIdentityToken, identity.user, logout, portalTarget],
+  );
+
+  if (!session) {
+    return null;
   }
-  throw Error("[AuthenticationProvider] user is not logged in");
+
+  return (
+    <IdentityContext.Provider value={identityContext}>
+      <VuuConnectionContext.Provider
+        value={{ connectionId: portalTarget.connectionId, session }}
+      >
+        {children}
+      </VuuConnectionContext.Provider>
+    </IdentityContext.Provider>
+  );
+};
+
+const VuuConnectionAuthenticationProvider = ({
+  children,
+  connection,
+  onError,
+}: VuuConnectionAuthenticationProps) => {
+  const identity = useContext(IdentityContext);
+  if (!identity) {
+    throw new AuthenticationConfigurationError(
+      'AuthenticationProvider mode="vuu-connection" requires an identity provider',
+    );
+  }
+  const target = useMemo(
+    () => normalizeVuuAuthTarget(connection, identity.portalTarget),
+    [connection, identity.portalTarget],
+  );
+  const session = useConnectionSession(identity.authHandler, target, onError);
+
+  if (!session) {
+    return null;
+  }
+
+  return (
+    <VuuConnectionContext.Provider
+      value={{ connectionId: target.connectionId, session }}
+    >
+      <ConnectionDataScope connectionId={target.connectionId}>
+        {children}
+      </ConnectionDataScope>
+    </VuuConnectionContext.Provider>
+  );
+};
+
+export const AuthenticationProvider = (props: AuthenticationProviderProps) =>
+  props.mode === "identity" ? (
+    <IdentityAuthenticationProvider {...props} />
+  ) : (
+    <VuuConnectionAuthenticationProvider {...props} />
+  );
+
+export const useAuthenticatedUser = () => {
+  const identity = useContext(IdentityContext);
+  if (!identity) {
+    throw new AuthenticationConfigurationError(
+      "No identity AuthenticationProvider has been installed",
+    );
+  }
+  return identity.user;
+};
+
+export const useIdentityToken = () => {
+  const identity = useContext(IdentityContext);
+  if (!identity) {
+    throw new AuthenticationConfigurationError(
+      "No identity AuthenticationProvider has been installed",
+    );
+  }
+  return identity.getIdentityToken;
 };
 
 export const useLogout = () => {
-  const context = useContext(AuthenticatedUserContext);
-  return context.logout;
+  const identity = useContext(IdentityContext);
+  if (!identity) {
+    throw new AuthenticationConfigurationError(
+      "No identity AuthenticationProvider has been installed",
+    );
+  }
+  return identity.logout;
 };
 
 export const useVuuAccessToken = () => {
-  const context = useContext(AuthenticatedUserContext);
-  return context.getVuuAccessToken();
+  const connection = useContext(VuuConnectionContext);
+  if (!connection) {
+    throw new AuthenticationConfigurationError(
+      "No authenticated VUU connection has been installed",
+    );
+  }
+  return connection.session.token;
 };
 
-export const useBearerToken = () => {
-  const context = useContext(AuthenticatedUserContext);
-  return context.getBearerToken;
+export const useVuuConnectionId = () => {
+  const connection = useContext(VuuConnectionContext);
+  if (!connection) {
+    throw new AuthenticationConfigurationError(
+      "No authenticated VUU connection has been installed",
+    );
+  }
+  return connection.connectionId;
 };
+
+export const useOptionalVuuConnectionId = () =>
+  useContext(VuuConnectionContext)?.connectionId;
