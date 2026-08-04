@@ -1,29 +1,6 @@
-import type { VuuUser } from "@vuu-ui/vuu-protocol-types";
+import { parseVuuUserFromToken, type VuuUser } from "@vuu-ui/vuu-auth";
 
 const defaultAuthUrl = "api/authn";
-
-const isValidVuuUser = (response: unknown): response is VuuUser =>
-  typeof response === "object" &&
-  response !== null &&
-  "name" in response &&
-  "authorizations" in response &&
-  typeof response.name === "string" &&
-  Array.isArray(response.authorizations);
-
-/**
- * The auth token returned from authn call encodes (Base64) a VuuUser
- * within the first part of the token.
- */
-export const parseVuuUserFromToken = (token: string) => {
-  const [base64EncodedVuuUser] = token.split(".");
-  const jsonString = atob(base64EncodedVuuUser);
-  const response = JSON.parse(jsonString);
-  if (isValidVuuUser(response)) {
-    return response;
-  } else {
-    throw Error(`auth token does not containe VuuUser`);
-  }
-};
 
 export type AuthenticationResponse = {
   token: string;
@@ -70,11 +47,11 @@ export const authenticate = async (
             token: authToken,
             user: parseVuuUserFromToken(authToken),
           };
-        } catch (e) {
-          throw Error(`Authentication error:  vuu auth token decoding failed.`);
+        } catch {
+          throw Error("Authentication error:  vuu auth token decoding failed.");
         }
       } else {
-        throw Error(`Authentication failed auth token not returned by server`);
+        throw Error("Authentication failed auth token not returned by server");
       }
     } else {
       throw Error(

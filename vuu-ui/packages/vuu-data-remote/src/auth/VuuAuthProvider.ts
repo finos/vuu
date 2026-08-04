@@ -1,5 +1,8 @@
-import type { AuthConfig, AuthProvider } from "@vuu-ui/vuu-auth";
-import { parseVuuUserFromToken } from "./authenticate";
+import {
+  type AuthConfig,
+  type AuthProvider,
+  parseVuuUserFromToken,
+} from "@vuu-ui/vuu-auth";
 
 /**
  * The Vuu AuthProvider is a simple Demoware auth provider that

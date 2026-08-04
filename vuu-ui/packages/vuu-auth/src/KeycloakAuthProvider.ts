@@ -1,7 +1,7 @@
-import { parseVuuUserFromToken } from "@vuu-ui/vuu-data-remote";
 import Keycloak from "keycloak-js";
 import type { AuthConfig } from "./AuthConfig";
 import type { AuthProvider } from "./AuthProvider";
+import { parseVuuUserFromToken } from "./VuuUser";
 
 let keycloak: Keycloak;
 

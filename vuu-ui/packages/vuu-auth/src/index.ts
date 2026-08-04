@@ -17,3 +17,7 @@ export {
   useVuuAccessToken,
 } from "./AuthenticationProvider";
 export { KeycloakAuthProvider } from "./KeycloakAuthProvider";
+export {
+  parseVuuUserFromToken,
+  type VuuUser,
+} from "./VuuUser";
