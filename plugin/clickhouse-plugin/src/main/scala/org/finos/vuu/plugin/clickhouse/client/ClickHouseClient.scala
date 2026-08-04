@@ -6,6 +6,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import org.finos.vuu.plugin.clickhouse.client.options.ClickHouseClientOptions
 
+import java.util
 import java.util.concurrent.ExecutionException
 import scala.util.Using
 
@@ -17,12 +18,12 @@ class ClickHouseClient(val options: ClickHouseClientOptions)
 
   lifecycle(this)
 
-  def executeQuery[T](sql: String)(action: Records => T): T = {
+  def executeQuery[T](sql: String, params: util.Map[String, Object] = util.Map.of())(action: Records => T): T = {
     client match {
       case Some(c) =>
         val response = try {
-          logger.debug(s"Executing query \"$sql\"")
-          c.queryRecords(sql).get()
+          logger.debug(s"Executing query \"$sql\" with params $params")
+          c.queryRecords(sql, params).get()
         } catch {
           case e: ExecutionException =>
             throw new RuntimeException(s"ClickHouse query execution failed for SQL: $sql", e.getCause)
@@ -40,12 +41,12 @@ class ClickHouseClient(val options: ClickHouseClientOptions)
     }
   }
 
-  def executeUpdate(sql: String): Int = {
+  def executeUpdate(sql: String, params: util.Map[String, Object] = util.Map.of()): Int = {
     client match {
       case Some(c) =>
         val response = try {
-          logger.debug(s"Executing update \"$sql\"")
-          c.query(sql).get()
+          logger.debug(s"Executing update \"$sql\" with params $params")
+          c.query(sql, params).get()
         } catch {
           case e: ExecutionException =>
             throw new RuntimeException(s"ClickHouse update/DDL execution failed for SQL: $sql", e.getCause)

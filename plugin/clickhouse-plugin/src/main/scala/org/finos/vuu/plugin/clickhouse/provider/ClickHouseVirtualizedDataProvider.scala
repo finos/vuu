@@ -8,6 +8,7 @@ import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.clickhouse.provider.data.{ClickHouseRowDataProvider, ClickHouseTableSizeProvider}
 import org.finos.vuu.plugin.clickhouse.provider.filter.ClickHouseFilterFactory
 import org.finos.vuu.plugin.clickhouse.provider.sort.ClickHouseSortFactory
+import org.finos.vuu.plugin.clickhouse.provider.typeahead.ClickHouseTypeAheadProvider
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
@@ -19,6 +20,7 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
   private val tableSizeProvider = ClickHouseTableSizeProvider(client, tableDef.getRemoteTableName)
   private val rowDataProvider = ClickHouseRowDataProvider(client, tableDef)
   private val filterFactory = ClickHouseFilterFactory(tableDef)
+  private val typeAheadProvider = ClickHouseTypeAheadProvider(client, tableDef, filterFactory)
   private val sortFactory = ClickHouseSortFactory(tableDef)
   private val permissionFunction = tableDef.getRemotePermissionFilterSpecFunction
   private val logAt = new LogAtFrequency(10_000)
@@ -93,7 +95,11 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
 
   override val lifecycleId: String = s"ClickHouseVirtualizedDataProvider@$hashCode"
 
-  override def getUniqueValuesVPColumn(columnName: String, viewPort: ViewPort): Array[String] = Array.empty
+  override def getUniqueValuesVPColumn(columnName: String, viewPort: ViewPort): Array[String] = {
+    typeAheadProvider.getUniqueValuesVPColumn(columnName, viewPort)
+  }
 
-  override def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPort: ViewPort): Array[String] = Array.empty
+  override def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPort: ViewPort): Array[String] = {
+    typeAheadProvider.getUniqueValuesStartingWithVPColumn(columnName, starts, viewPort)
+  }
 }
