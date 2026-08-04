@@ -22,10 +22,11 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { ConfirmSelectionPanel } from "./order-management/cancel-confirm-prompt/ConfirmSelectionPanel";
-
-import "./App.css";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { PortalShell } from "./components/portal-shell/PortalShell";
 import { RemoteModuleDescriptor } from "./module-federation/mf-utils";
+
+import "./App.css";
 
 registerComponent("cancel-confirm", ConfirmSelectionPanel, "view");
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
@@ -75,7 +76,11 @@ export const App = () => {
 
 
   return (
-    <PortalShell remoteModules={remoteModules} />
+    <BrowserRouter>
+      <VuuDataSourceProvider>
+        <PortalShell remoteModules={remoteModules} />
+      </VuuDataSourceProvider>
+    </BrowserRouter>
     // <PersistenceProvider persistenceManager={localPersistenceManager}>
     //   <DragDropProvider dragSources={dragSource}>
     //     <ShellContextProvider value={{ getDefaultColumnConfig }}>
