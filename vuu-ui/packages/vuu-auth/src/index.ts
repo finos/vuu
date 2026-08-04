@@ -1,3 +1,4 @@
+export type { AuthConfig } from "./AuthConfig";
 export type {
   AuthProvider,
   AuthProviderClass,
@@ -15,3 +16,8 @@ export {
   useLogout,
   useVuuAccessToken,
 } from "./AuthenticationProvider";
+export { KeycloakAuthProvider } from "./KeycloakAuthProvider";
+export {
+  parseVuuUserFromToken,
+  type VuuUser,
+} from "./VuuUser";
