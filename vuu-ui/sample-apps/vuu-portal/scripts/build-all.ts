@@ -5,6 +5,7 @@ const packages = [
 	"vuu-portal",
 	"feature-basket-trading",
 	"feature-filter-table",
+	"feature-module-admin",
 	"feature-simple-div",
 	"feature-user-admin",
 	"feature-instrument-tiles",

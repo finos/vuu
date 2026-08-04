@@ -65,7 +65,8 @@ Provide a simple module-federated administration feature that displays the modul
 - Obtain the server API through `useData().getServerAPI()`.
 - Discover the table schema with the server API before creating the data source.
 - Create the table subscription with `useSessionDataSource()`, using the discovered schema and all of its columns.
-- Use `useViewContext()` to scope stable, view-specific data-source and viewport identifiers and to pass through the host view title where applicable.
+- Use a stable component-local identifier to scope data-source and viewport identifiers.
+- Do not depend on `@vuu-ui/vuu-layout` or require a VUU view context.
 - Reuse the host VUU session and lifecycle; do not instantiate a separate websocket client or data provider inside the federated feature.
 
 ## Table and Layout Behavior
@@ -103,7 +104,7 @@ Provide a simple module-federated administration feature that displays the modul
 ## Acceptance Criteria
 
 1. The package and federation metadata use the identities specified above and declare only the `MODULE_DISCOVERY/modules` VUU table.
-2. The feature obtains its server API, session data source, and view identity from the host using `useData()`, `useSessionDataSource()`, and `useViewContext()`.
+2. The feature obtains its server API and session data source from the host using `useData()` and `useSessionDataSource()` without depending on `@vuu-ui/vuu-layout` or a view context.
 3. The feature discovers the schema from the server and subscribes to exactly `{ module: "MODULE_DISCOVERY", table: "modules" }` with all schema columns.
 4. A single read-only VUU `Table` fills the available view and uses row separators and zebra stripes.
 5. Loading and failure states are explicit, and failures are not presented as an empty successful table.
