@@ -4,8 +4,13 @@ import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 
 class ClickHouseTableSizeProvider(client: ClickHouseClient, remoteTableName: String) {
 
+  private val defaultQuery = s"SELECT count() as cnt FROM $remoteTableName"
+
   def getTableSize(whereClause: String): Int = {
-    client.executeQuery(s"SELECT count() as cnt FROM $remoteTableName $whereClause") {
+    val query = if (whereClause == null || whereClause.isEmpty) defaultQuery
+    else s"$defaultQuery $whereClause"
+
+    client.executeQuery(query) {
       records =>
         val it = records.iterator()
         if (it.hasNext) {

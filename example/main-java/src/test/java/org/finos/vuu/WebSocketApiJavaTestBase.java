@@ -5,6 +5,7 @@ import org.finos.toolbox.time.Clock;
 import org.finos.toolbox.time.DefaultClock;
 import org.finos.vuu.core.module.TableDefContainer;
 import org.finos.vuu.core.module.ViewServerModule;
+import org.finos.vuu.feature.inmem.VuuInMemPlugin;
 import org.finos.vuu.net.TableRowUpdates;
 import org.finos.vuu.net.ViewServerMessage;
 import org.finos.vuu.net.row.RowUpdateType;
@@ -60,23 +61,25 @@ public abstract class WebSocketApiJavaTestBase {
     private TestVuuClient testStartUp() {
         var startUp = new TestStartUp(
                 this::defineModuleWithTestTables,
+                VuuInMemPlugin::new,
                 clock,
                 lifecycle,
                 tableDefContainer);
         return startUp.startServerAndClient()._1;
     }
 
-    protected void waitForData(long expectedRowCount) {
+    protected void waitForData(String viewPortId, long expectedRowCount) {
         var tableSizeResponse = vuuClient.awaitForMsgWithBody(ClassTag.apply(TableRowUpdates.class));
         if (tableSizeResponse.isEmpty()) {
             fail("No table row updates");
         } else {
             TableRowUpdates tru = (TableRowUpdates)tableSizeResponse.get();
             var dataCount = Arrays.stream(tru.rows())
+                    .filter(p -> p.viewPortId().equals(viewPortId))
                     .filter(p -> p.updateType().equals(RowUpdateType.UPDATE()))
                     .count();
             if (dataCount < expectedRowCount) {
-                waitForData(expectedRowCount - dataCount);
+                waitForData(viewPortId,expectedRowCount - dataCount);
             }
         }
     }

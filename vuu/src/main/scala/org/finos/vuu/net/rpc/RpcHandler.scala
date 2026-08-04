@@ -1,7 +1,7 @@
 package org.finos.vuu.net.rpc
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.viewport._
+import org.finos.vuu.viewport.*
 
 trait RpcHandler extends StrictLogging {
 
@@ -23,6 +23,7 @@ trait RpcHandler extends StrictLogging {
           result ++ Map(cell.rpcName -> cell)
         case row: RowViewPortMenuItem =>
           result ++ Map(row.rpcName -> row)
+        case EmptyViewPortMenu => result
       }
     }
 

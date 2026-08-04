@@ -29,7 +29,10 @@ object VuuWebSocketOptions {
 
 object VuuThreadingOptions {
   def apply(): VuuThreadingOptions = {
-    VuuThreadingOptionsImpl(1, 1)
+    VuuThreadingOptionsImpl(
+      viewPortThreads = 1,
+      treeViewPortThreads = 1
+    )
   }
 }
 
@@ -148,7 +151,7 @@ private case class VuuWebSocketOptionsImpl(wsPort: Int,
     this.copy(maxSessionsPerUser = maxSessionsPerUser)
 }
 
-case class VuuThreadingOptionsImpl(viewPortThreads: Int = 1, treeViewPortThreads: Int = 1) extends VuuThreadingOptions {
+case class VuuThreadingOptionsImpl(viewPortThreads: Int, treeViewPortThreads: Int) extends VuuThreadingOptions {
   override def withViewPortThreads(threads: Int): VuuThreadingOptions = this.copy(viewPortThreads = threads)
 
   override def withTreeThreads(threads: Int): VuuThreadingOptions = this.copy(treeViewPortThreads = threads)

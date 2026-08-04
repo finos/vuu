@@ -18,34 +18,38 @@ import org.finos.vuu.plugin.clickhouse.ClickHouseContainer
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.clickhouse.client.options.ClickHouseClientOptions
 import org.finos.vuu.plugin.clickhouse.module.ClickHouseTableModule
-import org.finos.vuu.plugin.clickhouse.util.ClickHouseCSVIngester
+import org.finos.vuu.plugin.clickhouse.util.ClickHouseOrderCreator
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 
 object ClickHouseMain extends App with StrictLogging {
 
   JmxInfra.enableJmx()
 
+  logger.info("[ClickHouse] Starting...")
+
+  private val container: ClickHouseContainer = ClickHouseContainer()
+  container.start()
+  ClickHouseOrderCreator.createOrderData(container, 10_000_000)
+
+  logger.info("[ClickHouse] Ready.")
+
+  logger.info("[VUU] Starting...")
+
   given metrics: MetricsProvider = new MetricsProviderImpl
   given clock: Clock = new DefaultClock
   given lifecycle: LifecycleContainer = new LifecycleContainer
   given tableDefContainer: TableDefContainer = new TableDefContainer(Map())
+  lifecycle.autoShutdownHook()
 
-  private val container: ClickHouseContainer = ClickHouseContainer()
   private val loginTokenService = LoginTokenService()
   private val defaultConfig = ConfigFactory.load()
 
-  container.start()
-
-  logger.info("[VUU] Starting...")
-
-  lifecycle.autoShutdownHook()
-
-  val client = ClickHouseClient(ClickHouseClientOptions()
+  private val client = ClickHouseClient(ClickHouseClientOptions()
     .withEndpoint(container.getEndpoint)
     .withUsername(container.getDefaultUsername)
     .withPassword(container.getDefaultPassword))
 
-  val config = VuuServerConfig(
+  private val config = VuuServerConfig(
     createWebSocketOptions(defaultConfig),
     VuuSecurityOptions()
       .withLoginTokenService(loginTokenService),
@@ -59,11 +63,9 @@ object ClickHouseMain extends App with StrictLogging {
     .withModule(ClickHouseTableModule(client))
     .withPlugin(VirtualizedTablePlugin)
 
-  val vuuServer = new VuuServer(config)
+  private val vuuServer = new VuuServer(config)
 
   lifecycle.start()
-
-  createOrderData(container, client, 10_000_000)
 
   logger.info("[VUU] Ready.")
 
@@ -105,67 +107,4 @@ private def createWebSocketOptions(c: Config): VuuWebSocketOptions = {
   } else {
     options.withSslDisabled()
   }
-}
-
-private def createOrderData(container: ClickHouseContainer, client: ClickHouseClient, totalCount: Int): Unit = {
-
-  client.executeUpdate("DROP TABLE IF EXISTS order_history")
-
-  client.executeUpdate(
-    """
-      |CREATE TABLE IF NOT EXISTS order_history (
-      |  order_id Int64,
-      |  quantity Int32,
-      |  price Int64,
-      |  side String,
-      |  trader String
-      |) ENGINE = MergeTree() ORDER BY order_id
-      |""".stripMargin
-  )
-
-  // Insert sample orders via HTTP CSV API streaming from a temp file
-
-  val tempDir = java.nio.file.Paths.get("target/temp-csv")
-  java.nio.file.Files.createDirectories(tempDir)
-  val tempFile = java.nio.file.Files.createTempFile(tempDir, "order_history", ".csv")
-
-  val fos = new java.io.FileOutputStream(tempFile.toFile)
-  val bos = new java.io.BufferedOutputStream(fos, 8 * 1024 * 1024) // 8MB buffer
-  val writer = new java.io.BufferedWriter(new java.io.OutputStreamWriter(bos, "UTF-8"))
-  try {
-    var currentId = 1
-    while (currentId <= totalCount) {
-      val now = System.currentTimeMillis().toString
-      val side = if (currentId % 2 == 0) "Buy" else "Sell"
-      val price = currentId * 10L
-      val quantity = currentId
-      writer.write(currentId.toString)
-      writer.write(',')
-      writer.write(quantity.toString)
-      writer.write(',')
-      writer.write(price.toString)
-      writer.write(',')
-      writer.write(side)
-      writer.write(",trader-")
-      writer.write(currentId.toString)
-      writer.write(System.lineSeparator())
-      currentId += 1
-    }
-  } finally {
-    writer.close()
-  }
-
-  try {
-    ClickHouseCSVIngester.ingestCsvFile(
-      container.getEndpoint,
-      container.getDefaultUsername,
-      container.getDefaultPassword,
-      "order_history",
-      Seq("order_id", "quantity", "price", "side", "trader"),
-      tempFile
-    )
-  } finally {
-    java.nio.file.Files.deleteIfExists(tempFile)
-  }
-
 }

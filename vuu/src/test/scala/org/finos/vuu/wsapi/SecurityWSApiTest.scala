@@ -8,10 +8,9 @@ import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcErrorResult, RpcNames, RpcSuccessResult, ViewPortContext}
-import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.net.*
-import org.finos.vuu.net.ssl.{VuuClientSSLDisabled, VuuSSLDisabled}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcErrorResult, RpcNames, ViewPortContext}
+import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -247,7 +246,7 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
       vuuClient.send(sessionId, ChangeViewPortRequest(viewPortId = targetViewPortId, columns = Array("*"),
         filterSpec = FilterSpec(""), groupBy = Array("Name")))
       vuuClient.awaitForMsgWithBody[ChangeViewPortSuccess]
-      waitForData(28)
+      waitForData(targetViewPortId, 28)
 
       val invalidRequest = OpenTreeNodeRequest(targetViewPortId, "$root|Polly Phelps")
       val requestId = attackingClient.send(attackingSessionId, invalidRequest)
@@ -260,10 +259,10 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
       vuuClient.send(sessionId, ChangeViewPortRequest(viewPortId = targetViewPortId, columns = Array("*"),
         filterSpec = FilterSpec(""), groupBy = Array("Name")))
       vuuClient.awaitForMsgWithBody[ChangeViewPortSuccess]
-      waitForData(28)
+      waitForData(targetViewPortId, 28)
       vuuClient.send(sessionId, OpenTreeNodeRequest(targetViewPortId, "$root|Polly Phelps"))
       vuuClient.awaitForMsgWithBody[OpenTreeNodeSuccess]
-      waitForData(5)
+      waitForData(targetViewPortId, 5)
 
       val invalidRequest = CloseTreeNodeRequest(targetViewPortId, "$root|Polly Phelps")
       val requestId = attackingClient.send(attackingSessionId, invalidRequest)
@@ -277,8 +276,6 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(targetViewPortId),
         RpcNames.UniqueFieldValuesRpc,
         params = Map(
-          "table" -> tableName,
-          "module" -> moduleName,
           "column" -> "Name"
         ))
 
@@ -296,7 +293,7 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
     vuuClient.send(sessionId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
-    waitForData(15)
+    waitForData(viewPortId, 15)
     viewPortId
   }
 

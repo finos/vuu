@@ -134,8 +134,12 @@ class BinaryPriorityBlockingQueueTest extends AnyFunSuite with Matchers {
   }
 
   test("test high and low puts whilst blocked") {
-    val bq = BinaryPriorityBlockingQueue[String](1)
+    val bq = BinaryPriorityBlockingQueue[String](5)
     bq.put("1")
+    bq.put("2")
+    bq.put("3")
+    bq.put("4")
+    bq.put("5")
 
     val future = CompletableFuture.supplyAsync(() => bq.putHighPriority("98"))
     eventually {
@@ -150,7 +154,7 @@ class BinaryPriorityBlockingQueueTest extends AnyFunSuite with Matchers {
 
     val result = new util.ArrayList[String]()
     bq.drainTo(result)
-    result shouldBe java.util.List.of("1", "98", "100")
+    result shouldBe java.util.List.of("1","2","3","4","5","98","100")
     eventually {
       future2.isDone shouldBe true
     }

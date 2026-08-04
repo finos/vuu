@@ -20,46 +20,68 @@ class VisualLinkedViewPortWSApiTest extends WebSocketApiTestBase {
 
     Scenario("Create a visual link of view ports") {
       Given("Parent and child view ports exist")
-      val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName1, moduleName), ViewPortRange(0, 100), columns = Array("requestRefId", "parentRequestRefId", "orderId"))
+      val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName1, moduleName),
+        ViewPortRange(0, 100), columns = Array("requestRefId", "parentRequestRefId", "orderId"))
       vuuClient.send(sessionId, createViewPortRequest)
       val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
       val childVpId = viewPortCreateResponse.get.viewPortId
-      waitForData(3)
+      waitForData(childVpId, 3)
 
-      val createViewPortRequest2 = CreateViewPortRequest(ViewPortTable(tableName1, moduleName), ViewPortRange(0, 100), columns = Array("requestRefId", "parentRequestRefId", "orderId"))
+      val createViewPortRequest2 = CreateViewPortRequest(ViewPortTable(tableName1, moduleName),
+        ViewPortRange(0, 100), columns = Array("requestRefId", "parentRequestRefId", "orderId"))
       vuuClient.send(sessionId, createViewPortRequest2)
       val viewPortCreateResponse2 = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
       val parentVpId = viewPortCreateResponse2.get.viewPortId
-      waitForData(3)
+      waitForData(parentVpId, 3)
 
       When("Link the view ports on column parentRequestRefId")
       val request = CreateVisualLinkRequest(childVpId, parentVpId, "parentRequestRefId", "parentRequestRefId")
       val requestId = vuuClient.send(sessionId, request)
 
-      Then("view port is linked")
+      And("view port is linked")
       val response = vuuClient.awaitForResponse(requestId)
       val responseBody = assertBodyIsInstanceOf[CreateVisualLinkSuccess](response)
 
-      Then("select a row on parent view port")
+      And("select a row on parent view port")
       val selectRequest = SelectRowRequest(parentVpId, "req1", false)
       val requestId2 = vuuClient.send(sessionId, selectRequest)
       val response2 = vuuClient.awaitForResponse(requestId2)
       val responseBody2 = assertBodyIsInstanceOf[SelectRowSuccess](response2)
 
-      val vpToSize: Map[String, Int] = Map(parentVpId -> 3, childVpId -> 2)
+      Then("View ports should both update")
+      val vpToSize: Map[String, Int] = Map(
+        parentVpId -> 3,
+        childVpId -> 0 //As because we've removed from the end of the table, the UI only needs a SIZE update
+      )
+      waitForData(vpToSize)
 
-      Then("First view port should show filtered rows")
-      val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
-      val viewPortId = tableRowUpdatesResponse.get.rows(0).viewPortId
-      tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual vpToSize(viewPortId)
+      When("select a different row on parent view port")
+      val selectRequest2 = SelectRowRequest(parentVpId, "req3", false)
+      val requestId3 = vuuClient.send(sessionId, selectRequest2)
+      val response3 = vuuClient.awaitForResponse(requestId3)
+      val responseBody3 = assertBodyIsInstanceOf[SelectRowSuccess](response3)
 
-      val remaining = vpToSize.removed(viewPortId)
+      Then("View ports should both update again")
+      val vpToSize2: Map[String, Int] = Map(
+        parentVpId -> 3,
+        childVpId -> 1
+      )
+      waitForData(vpToSize2)
 
-      Then("Second view port should show filtered rows")
-      val tableRowUpdatesResponse2 = vuuClient.awaitForMsgWithBody[TableRowUpdates]
-      val viewPortId2 = tableRowUpdatesResponse2.get.rows(0).viewPortId
-      tableRowUpdatesResponse2.get.rows(0).vpSize shouldEqual remaining(viewPortId2)
+      When("deselect row on parent view port")
+      val deselectRequest = DeselectRowRequest(parentVpId, "req3", false)
+      val requestId4 = vuuClient.send(sessionId, deselectRequest)
+      val response4 = vuuClient.awaitForResponse(requestId4)
+      val responseBody4 = assertBodyIsInstanceOf[DeselectRowSuccess](response4)
+
+      Then("View ports should both update again")
+      val vpToSize3: Map[String, Int] = Map(
+        parentVpId -> 3,
+        childVpId -> 3
+      )
+      waitForData(vpToSize3)
     }
+
   }
 
   protected def defineModuleWithTestTables(): ViewServerModule = {

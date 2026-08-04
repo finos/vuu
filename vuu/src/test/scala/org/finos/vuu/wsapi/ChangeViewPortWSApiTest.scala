@@ -108,7 +108,7 @@ class ChangeViewPortWSApiTest extends WebSocketApiTestBase {
     vuuClient.send(sessionId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
-    waitForData(2)
+    waitForData(viewPortId, 2)
     viewPortId
   }
 

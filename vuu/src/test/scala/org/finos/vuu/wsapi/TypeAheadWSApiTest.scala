@@ -30,7 +30,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       val viewPortId: String = createViewPort
 
       When("request typeahead for Name column")
-      val getTypeAheadRequest = createTypeAheadRequest(viewPortId, tableName, "Name")
+      val getTypeAheadRequest = createTypeAheadRequest(viewPortId, "Name")
       val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return top 10 unique values in that column")
@@ -52,7 +52,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       val viewPortId: String = createViewPort
 
       When("request typeahead for Name column with start string Tom")
-      val getTypeAheadRequest = createTypeAheadStartWithRequest(viewPortId, tableName, "Name", "Tom")
+      val getTypeAheadRequest = createTypeAheadStartWithRequest(viewPortId, "Name", "Tom")
       val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return all Name values that start with Tom")
@@ -70,7 +70,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       val viewPortId: String = createViewPort
 
       When("request typeahead for Name column with start string NoMatching")
-      val getTypeAheadRequest = createTypeAheadStartWithRequest(viewPortId, tableName, "Name", "NoMatch")
+      val getTypeAheadRequest = createTypeAheadStartWithRequest(viewPortId, "Name", "NoMatch")
       val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return success response with empty list")
@@ -88,7 +88,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       val viewPortId: String = createViewPort
 
       When("request typeahead for column that is hidden")
-      val getTypeAheadRequest = createTypeAheadRequest(viewPortId, tableName, "HiddenColumn")
+      val getTypeAheadRequest = createTypeAheadRequest(viewPortId, "HiddenColumn")
       val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return success response with empty list")
@@ -106,7 +106,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       val viewPortId: String = createViewPort
 
       When("request typeahead for column that does not exist")
-      val getTypeAheadRequest = createTypeAheadRequest(viewPortId, tableName, "ColumnThatDoesNotExist")
+      val getTypeAheadRequest = createTypeAheadRequest(viewPortId, "ColumnThatDoesNotExist")
       val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return success response with empty list")
@@ -121,7 +121,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
     Scenario("For a viewport that does not exist") {
 
       When("request typeahead for Account column")
-      val getTypeAheadRequest = createTypeAheadRequest("viewPortThatDoesNotExist", tableName, "Name")
+      val getTypeAheadRequest = createTypeAheadRequest("viewPortThatDoesNotExist", "Name")
       val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return helpful error response")
@@ -143,10 +143,10 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
     Scenario("For an empty table") {
 
       Given("a view port exist")
-      val viewPortId: String = createViewPort
+      val viewPortId: String = createViewPortBase(tableNameEmpty, 0)
 
       When("request typeahead for column when table is empty")
-      val getTypeAheadRequest = createTypeAheadRequest(viewPortId, tableNameEmpty, "Name")
+      val getTypeAheadRequest = createTypeAheadRequest(viewPortId, "Id")
       val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return success response with empty list")
@@ -165,8 +165,8 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       val viewPortId2: String = createViewPort
 
       When("request typeahead for different view ports")
-      val getTypeAheadRequest1 = createTypeAheadStartWithRequest(viewPortId1, tableName, "Name", "S")
-      val getTypeAheadRequest2 = createTypeAheadStartWithRequest(viewPortId2, tableName, "Name", "T")
+      val getTypeAheadRequest1 = createTypeAheadStartWithRequest(viewPortId1, "Name", "S")
+      val getTypeAheadRequest2 = createTypeAheadStartWithRequest(viewPortId2, "Name", "T")
       val requestId1 = vuuClient.send(sessionId, getTypeAheadRequest1)
       val requestId2 = vuuClient.send(sessionId, getTypeAheadRequest2)
 
@@ -189,7 +189,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       val viewPortId: String = createViewPortForJoinTable
 
       When("request typeahead for Account column in join table")
-      val getTypeAheadRequest = createTypeAheadRequest(viewPortId, joinTableName, "Name")
+      val getTypeAheadRequest = createTypeAheadRequest(viewPortId, "Name")
       val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return top 10 unique values in that column")
@@ -211,7 +211,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       val viewPortId: String = createViewPortForJoinTable
 
       When("request typeahead for Name column in join table with start string Tom")
-      val getTypeAheadRequest = createTypeAheadStartWithRequest(viewPortId, tableName, "Name", "Tom")
+      val getTypeAheadRequest = createTypeAheadStartWithRequest(viewPortId, "Name", "Tom")
       val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return all Name values that start with Tom")
@@ -273,6 +273,9 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       customColumns =
         new ColumnBuilder()
           .addString("Id")
+          .addString("Name")
+          .addInt("Account")
+          .addInt("HiddenColumn")
           .build()
     )
 
@@ -360,28 +363,24 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
     vuuClient.send(sessionId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
-    waitForData(expectedRowCount)
+    waitForData(viewPortId, expectedRowCount)
     viewPortId
   }
 
-  private def createTypeAheadRequest(viewPortId: String, tableName: String, columnName: String): RpcRequest = {
+  private def createTypeAheadRequest(viewPortId: String, columnName: String): RpcRequest = {
     RpcRequest(
       ViewPortContext(viewPortId),
       RpcNames.UniqueFieldValuesRpc,
       params = Map(
-        "table" -> tableName,
-        "module" -> moduleName,
         "column" -> columnName
       ))
   }
 
-  private def createTypeAheadStartWithRequest(viewPortId: String, tableName: String, columnName: String, startString: String): RpcRequest = {
+  private def createTypeAheadStartWithRequest(viewPortId: String, columnName: String, startString: String): RpcRequest = {
     RpcRequest(
       ViewPortContext(viewPortId),
       RpcNames.UniqueFieldValuesStartWithRpc,
       params = Map(
-        "table" -> tableName,
-        "module" -> moduleName,
         "column" -> columnName,
         "starts" -> startString
       ))
