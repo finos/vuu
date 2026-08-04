@@ -15,6 +15,42 @@
       "vuu": {
         "connectionId": "portal"
       }
+    },
+    {
+      "id": 2,
+      "name": "moduleAdmin",
+      "title": "Manage Modules",
+      "description": "Add, remove and update remote modules",
+      "version": 1,
+      "enabled": true,
+      "location": "/Admin/Modules",
+      "mfComponent": "ModuleAdmin",
+      "mfScope": "moduleAdmin",
+      "mfUrl": "http://localhost:5008",
+      "path": "/modules/admin",
+      "vuu": {
+        "connectionId": "module",
+        "restUrl": "https://localhost:8444/api/authn",
+        "websocketUrl": "wss://localhost:8092/websocket"
+      }
+    },
+    {
+      "id": 3,
+      "name": "basketTrading",
+      "title": "Manage Modules",
+      "description": "Add, remove and update remote modules",
+      "version": 1,
+      "enabled": true,
+      "location": "/Trading/Basket",
+      "mfComponent": "VuuBasketTradingFeature",
+      "mfScope": "basketTrading",
+      "mfUrl": "http://localhost:5005",
+      "path": "/trading/basket",
+      "vuu": {
+        "connectionId": "basket",
+        "restUrl": "https://localhost:8445/api/authn",
+        "websocketUrl": "wss://localhost:8093/websocket"
+      }
     }
   ]
 }

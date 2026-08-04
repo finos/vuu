@@ -29,6 +29,7 @@
     "@vuu-ui/vuu-ui-controls": "2.3.0",
     "@vuu-ui/vuu-utils": "2.3.0",
     "@module-federation/enhanced": "2.8.0",
+    "@vuu-ui/vuu-auth": "2.3.0",
     "html-to-image": "^1.11.11"
   },
   "peerDependencies": {

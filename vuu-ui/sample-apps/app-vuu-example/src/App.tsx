@@ -11,7 +11,7 @@ import {
   ShellContextProvider,
   type ShellLayoutProps,
 } from "@vuu-ui/vuu-shell";
-import { useBearerToken } from "@vuu-ui/vuu-shell/src/authentication-provider/AuthenticationProvider";
+import { useIdentityToken } from "@vuu-ui/vuu-auth";
 import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
 import {
@@ -61,31 +61,32 @@ const {
 } = await vuuConfig;
 
 export const App = () => {
-  const getBearerToken = useBearerToken();
+  const getIdentityToken = useIdentityToken();
 
   const [dynamicFeatures, setDynamicFeatures] = useState<
     DynamicFeatureDescriptor[]
   >([]);
   useEffect(() => {
     const loadFeatures = async () => {
-      const bearerToken = await getBearerToken();
+      const identityToken = await getIdentityToken();
       const { modules: features } = await getRegisteredModules(
         moduleRegistryUrl,
-        bearerToken,
+        identityToken,
       );
       setDynamicFeatures(
         features.map((feature) => ({
           ...feature,
           vuu: {
-            connectionId: feature.vuu?.connectionId ?? feature.mfScope,
-            websocketUrl: feature.vuu?.websocketUrl ?? websocketUrl,
+            connectionId: feature.vuu?.connectionId ?? "portal",
+            restUrl: feature.vuu?.restUrl,
+            websocketUrl: feature.vuu?.websocketUrl,
           },
         })),
       );
     };
 
     loadFeatures();
-  }, [getBearerToken]);
+  }, [getIdentityToken]);
 
   const dragSource = useMemo(
     () => ({

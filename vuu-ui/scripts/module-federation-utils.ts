@@ -1,5 +1,5 @@
 const reactVersion = "19.2.3";
-const vuuVersion = "2.2.0";
+const vuuVersion = "2.2.1";
 
 export const getSharedDependencies = (env: "consumer" | "producer") => {
   if (env === "consumer") {
@@ -12,6 +12,11 @@ export const getSharedDependencies = (env: "consumer" | "producer") => {
       "react-dom": {
         singleton: true,
         requiredVersion: reactVersion,
+        strictVersion: true,
+      },
+      "@vuu-ui/vuu-auth": {
+        singleton: true,
+        requiredVersion: vuuVersion,
         strictVersion: true,
       },
       "@vuu-ui/vuu-shell": {

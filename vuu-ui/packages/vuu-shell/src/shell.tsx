@@ -1,5 +1,6 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { useAuthenticatedUser } from "@vuu-ui/vuu-auth";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import type { LayoutChangeHandler } from "@vuu-ui/vuu-layout";
 import { LayoutProvider, StackLayout } from "@vuu-ui/vuu-layout";
@@ -30,7 +31,6 @@ import {
 } from "./workspace-management";
 import { loadingJSON } from "./workspace-management/defaultWorkspaceJSON";
 import { useLostConnection } from "@vuu-ui/vuu-data-react";
-import { useLoggedInUser } from "./authentication-provider/AuthenticationProvider";
 
 import shellCss from "./shell.css";
 
@@ -145,7 +145,7 @@ export const Shell = ({
   // If user has provided an implementation of IPersistenceManager
   // by wrapping higher level PersistenceProvider, use it, otw
   // default to LocalPersistenceManager
-  const user = useLoggedInUser();
+  const user = useAuthenticatedUser();
   const persistenceManager = usePersistenceManager();
   const localPersistenceManager = useMemo<
     IPersistenceManager | undefined

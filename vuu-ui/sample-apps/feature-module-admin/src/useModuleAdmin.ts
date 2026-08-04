@@ -1,106 +1,70 @@
 import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
-import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
+import { useEditableTable, type EditMode } from "@vuu-ui/vuu-utils";
+import { type SyntheticEvent, useCallback, useEffect, useId, useMemo, useState } from "react";
+import { editableColumns, moduleColumnDescriptors } from "./columnDescriptors";
+import { toColumnName } from "@vuu-ui/vuu-utils/dist/index.mjs";
 import { useData } from "@vuu-ui/vuu-utils2";
-import { useEffect, useId, useMemo, useState } from "react";
-
-const MODULES_TABLE = {
-  module: "MODULE_DISCOVERY",
-  table: "modules",
-} as const;
-
-type ModuleAdminState =
-  | { status: "loading" }
-  | { error: Error; status: "error" }
-  | {
-      config: TableConfig;
-      dataSource: DataSource;
-      status: "ready";
-    };
 
 const toError = (error: unknown) =>
   error instanceof Error ? error : new Error(String(error));
 
-export const useModuleAdmin = (): ModuleAdminState => {
-  const { getServerAPI } = useData();
-  const { getDataSource } = useSessionDataSource();
+export const useModuleAdmin = () => {
+  // const { getDataSource } = useSessionDataSource();
+  const { VuuDataSource } = useData()
   const instanceId = useId();
-  const [schema, setSchema] = useState<TableSchema>();
-  const [dataSource, setDataSource] = useState<DataSource>();
-  const [error, setError] = useState<Error>();
 
-  useEffect(() => {
-    let active = true;
+  const [editMode, setEditMode] = useState<EditMode>("view");
 
-    const loadSchema = async () => {
-      try {
-        const serverAPI = await getServerAPI();
-        const nextSchema = await serverAPI.getTableSchema(MODULES_TABLE);
-        if (active) {
-          setSchema(nextSchema);
-        }
-      } catch (cause) {
-        if (active) {
-          const nextError = toError(cause);
-          console.error(
-            "ModuleAdmin failed to discover the modules schema",
-            cause,
-          );
-          setError(nextError);
-        }
-      }
-    };
+  const onToggleEditMode = useCallback(
+    async (e: SyntheticEvent<HTMLButtonElement>) => {
+      const toggleButton = e.target as HTMLButtonElement;
+      const editMode = toggleButton.value as EditMode;
+      setEditMode(editMode);
+    },
+    [],
+  );
 
-    void loadSchema();
+  const dataSource = useMemo(() => {
+    return new VuuDataSource({
+      bufferSize: 200,
+      columns: moduleColumnDescriptors.map(toColumnName),
+      table: { module: 'MODULE_DISCOVERY', table: 'modules' },
 
-    return () => {
-      active = false;
-    };
-  }, [getServerAPI]);
-
-  useEffect(() => {
-    if (!schema) return;
-
-    try {
-      const sessionKey = `feature-module-admin-${instanceId}-module-discovery-modules`;
-      setDataSource(
-        getDataSource(sessionKey, {
-          bufferSize: 200,
-          columns: schema.columns.map(({ name }) => name),
-          table: schema.table,
-          viewport: sessionKey,
-        }),
-      );
-    } catch (cause) {
-      const nextError = toError(cause);
-      console.error(
-        "ModuleAdmin failed to create the modules data source",
-        cause,
-      );
-      setError(nextError);
-    }
-  }, [getDataSource, instanceId, schema]);
+    })
+  }, [VuuDataSource])
 
   const config = useMemo<TableConfig | undefined>(
     () =>
-      schema
-        ? {
-            columnLayout: "fit",
-            columns: [...schema.columns],
-            rowSeparators: true,
-            zebraStripes: true,
-          }
-        : undefined,
-    [schema],
+    ({
+      columnLayout: "static",
+      columns: editMode === 'edit'
+        ? moduleColumnDescriptors.map(col => editableColumns.includes(col.name) ? { ...col, editable: true } : col)
+        : moduleColumnDescriptors,
+      rowSeparators: true,
+      zebraStripes: true,
+    }),
+    [editMode],
   );
 
-  if (error) {
-    return { error, status: "error" };
-  }
+  const exitEditMode = useCallback(() => {
+    setEditMode("view");
+  }, []);
 
-  if (!config || !dataSource) {
-    return { status: "loading" };
-  }
+  const { dataSource: ds, editSession, onCancel, onSave } = useEditableTable({
+    dataSource,
+    isEditMode: editMode === "edit",
+    onCancel: exitEditMode,
+    onSave: exitEditMode,
+  });
 
-  return { config, dataSource, status: "ready" };
+  // if (error) {
+  //   return { error, status: "error" };
+  // }
+
+  // if (!config || !dataSource) {
+  //   return { status: "loading" };
+  // }
+
+  return { config, dataSource: ds, editMode, editSession, onCancel, onSave, onToggleEditMode, status: "ready" };
 };

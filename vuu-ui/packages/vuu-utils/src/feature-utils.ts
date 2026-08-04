@@ -1,4 +1,7 @@
-import type { TableSchema } from "@vuu-ui/vuu-data-types";
+import type {
+  RemoteModuleConnection,
+  TableSchema,
+} from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import type { ListOption } from "@vuu-ui/vuu-table-types";
 import React, { type ReactElement } from "react";
@@ -66,11 +69,6 @@ export interface DynamicFeatureDescriptor {
   viewProps?: ViewConfig;
 }
 
-export interface RemoteModuleConnection {
-  connectionId: string;
-  websocketUrl?: string;
-}
-
 export interface StaticFeatureDescriptor {
   group?: string;
   label: string;
@@ -105,15 +103,12 @@ export function featureFromJson({ type }: { type: string }): ReactElement {
   return React.createElement(componentType);
 }
 
-export interface AuthConfig {
+export interface VuuConfig {
   authUrl: string;
-  restUrl: string;
-  websocketUrl: string;
-}
-
-export interface VuuConfig extends AuthConfig {
   moduleRegistryUrl: string;
+  restUrl: string;
   ssl: boolean;
+  websocketUrl: string;
 }
 
 /**

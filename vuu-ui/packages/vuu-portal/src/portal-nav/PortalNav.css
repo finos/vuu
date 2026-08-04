@@ -1,0 +1,36 @@
+.vuuPortalNav {
+  background-color: var(--vuuPortalNav-background);
+
+  .saltVerticalNavigation {
+    width: 100%;
+  }
+
+  .saltVerticalNavigationItemContent {
+    align-items: center;
+    min-height: 50px;
+    padding-left: calc(var(--verticalNavigationItem-depth) * 38px);
+
+    .saltVerticalNavigationItemTrigger {
+      gap: var(--salt-spacing-200);
+    }
+
+    .vuuIcon {
+      --vuu-icon-color: white;
+      --vuu-icon-size: 20px;
+      --vuu-icon-top: -2px;
+    }
+
+    .saltVerticalNavigationItemLabel {
+      color: var(--vuuPortalNav-itemLabel-color);
+      text-transform: uppercase;
+    }
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    &.saltVerticalNavigationItemContent-active {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
