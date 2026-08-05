@@ -113,7 +113,7 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
 
       val data = clickHouseRowDataProvider.queryForRowData(vpColumns,
         whereClause = "WHERE val LIKE {p_1:String}",
-        params = util.Map.of("p_1", "o"),
+        params = util.Map.of("p_1", "%o%"),
         orderBy = "ORDER BY id DESC",
         offset = 0,
         limit = 100)
@@ -141,7 +141,7 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
 
       val data = clickHouseRowDataProvider.queryForRowData(vpColumns,
         whereClause = "WHERE val LIKE {p_1:String}",
-        params = util.Map.of("p_1", "o"),
+        params = util.Map.of("p_1", "%o%"),
         orderBy = "ORDER BY id DESC",
         offset = 1,
         limit = 100)
@@ -169,7 +169,7 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
 
       val data = clickHouseRowDataProvider.queryForRowData(vpColumns,
         whereClause = "WHERE val LIKE {p_1:String}",
-        params = util.Map.of("p_1", "o"),
+        params = util.Map.of("p_1", "%o%"),
         orderBy = "ORDER BY id DESC",
         offset = 0,
         limit = 1)
