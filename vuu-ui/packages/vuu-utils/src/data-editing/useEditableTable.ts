@@ -143,10 +143,12 @@ export const useEditableTable = ({
         onCancel();
       }
     } else {
-      await editSession.end();
-      setSessionDataSource(undefined);
-      setSelectionCount(0);
-      setDeleteCount(0);
+      if (editSession.inEditMode) {
+        await editSession.end();
+        setSessionDataSource(undefined);
+        setSelectionCount(0);
+        setDeleteCount(0);
+      }
     }
   }, [editSession, editSessionMode, isEditMode, onCancel]);
 
