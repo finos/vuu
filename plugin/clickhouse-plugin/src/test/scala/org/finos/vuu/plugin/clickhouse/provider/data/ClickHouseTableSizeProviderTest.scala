@@ -11,6 +11,8 @@ import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.util
+
 class ClickHouseTableSizeProviderTest extends AnyFeatureSpec with GivenWhenThen with Matchers with ForAllTestContainer {
 
   override val container: ClickHouseContainer = ClickHouseContainer()
@@ -25,7 +27,7 @@ class ClickHouseTableSizeProviderTest extends AnyFeatureSpec with GivenWhenThen 
       val client = createClientAndTable()
       val clickHouseTableSizeProvider = ClickHouseTableSizeProvider(client, "test_table")
 
-      val size = clickHouseTableSizeProvider.getTableSize("")
+      val size = clickHouseTableSizeProvider.getTableSize("", util.Map.of())
       size shouldEqual 2
 
       stopClient()
@@ -39,7 +41,10 @@ class ClickHouseTableSizeProviderTest extends AnyFeatureSpec with GivenWhenThen 
       val client = createClientAndTable()
       val clickHouseTableSizeProvider = ClickHouseTableSizeProvider(client, "test_table")
 
-      val size = clickHouseTableSizeProvider.getTableSize("WHERE val = 'hello'")
+      val size = clickHouseTableSizeProvider.getTableSize(
+        whereClause = "WHERE val = {p_1:String}",
+        params = util.Map.of("p_1", "world"),
+      )
       size shouldEqual 1
 
       stopClient()
@@ -54,7 +59,7 @@ class ClickHouseTableSizeProviderTest extends AnyFeatureSpec with GivenWhenThen 
       val clickHouseTableSizeProvider = ClickHouseTableSizeProvider(client, "lolcats")
 
       a[RuntimeException] should be thrownBy {
-        clickHouseTableSizeProvider.getTableSize("")
+        clickHouseTableSizeProvider.getTableSize("", util.Map.of())
       }
 
       stopClient()

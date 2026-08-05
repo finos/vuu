@@ -5,6 +5,7 @@ import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.virtualized.api.{VirtualizedSessionTableColumn, VirtualizedSessionTableDef}
 import org.finos.vuu.viewport.ViewPortColumns
 
+import java.util
 import scala.collection.mutable.ArrayBuffer
 
 class ClickHouseRowDataProvider(client: ClickHouseClient,
@@ -14,13 +15,14 @@ class ClickHouseRowDataProvider(client: ClickHouseClient,
   
   def queryForRowData(viewPortColumns: ViewPortColumns,
                       whereClause: String,
+                      params: util.Map[String, Object],
                       orderBy: String,
                       offset: Int,
                       limit: Int): IndexedSeq[RowWithData] = {
 
     val query = buildQuery(viewPortColumns, whereClause, orderBy, offset, limit)
 
-    client.executeQuery(query) { records =>
+    client.executeQuery(query, params) { records =>
       val buf = new ArrayBuffer[RowWithData](records.getResultRows.toInt)
       val it = records.iterator()
       while (it.hasNext) {

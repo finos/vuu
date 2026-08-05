@@ -14,6 +14,8 @@ import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.util
+
 class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen with Matchers with ForAllTestContainer {
 
   override val container: ClickHouseContainer = ClickHouseContainer()
@@ -31,6 +33,7 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
 
       val data = clickHouseRowDataProvider.queryForRowData(vpColumns,
         whereClause = "",
+        params = util.Map.of(),
         orderBy = "",
         offset = 0,
         limit = 100)
@@ -54,6 +57,7 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
 
       val data = clickHouseRowDataProvider.queryForRowData(vpColumns,
         whereClause = "",
+        params = util.Map.of(),
         orderBy = "ORDER BY id DESC",
         offset = 0,
         limit = 100)
@@ -80,7 +84,8 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
       val vpColumns = ViewPortColumnCreator.create(tableDef)
 
       val data = clickHouseRowDataProvider.queryForRowData(vpColumns,
-        whereClause =  "WHERE val = 'world'",
+        whereClause =  "WHERE val = {p_1:String}",
+        params = util.Map.of("p_1", "world"),
         orderBy = "",
         offset = 0,
         limit = 100)
@@ -107,7 +112,8 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
       val vpColumns = ViewPortColumnCreator.create(tableDef)
 
       val data = clickHouseRowDataProvider.queryForRowData(vpColumns,
-        whereClause = "WHERE val like '%o%'",
+        whereClause = "WHERE val LIKE {p_1:String}",
+        params = util.Map.of("p_1", "%o%"),
         orderBy = "ORDER BY id DESC",
         offset = 0,
         limit = 100)
@@ -134,7 +140,8 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
       val vpColumns = ViewPortColumnCreator.create(tableDef)
 
       val data = clickHouseRowDataProvider.queryForRowData(vpColumns,
-        whereClause = "WHERE val like '%o%'",
+        whereClause = "WHERE val LIKE {p_1:String}",
+        params = util.Map.of("p_1", "%o%"),
         orderBy = "ORDER BY id DESC",
         offset = 1,
         limit = 100)
@@ -161,7 +168,8 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
       val vpColumns = ViewPortColumnCreator.create(tableDef)
 
       val data = clickHouseRowDataProvider.queryForRowData(vpColumns,
-        whereClause = "WHERE val like '%o%'",
+        whereClause = "WHERE val LIKE {p_1:String}",
+        params = util.Map.of("p_1", "%o%"),
         orderBy = "ORDER BY id DESC",
         offset = 0,
         limit = 1)
@@ -194,6 +202,7 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
       val ex = intercept[RuntimeException] {
         clickHouseRowDataProvider.queryForRowData(vpColumns,
           whereClause = "I am not valid SQL",
+          params = util.Map.of(),
           orderBy = "",
           offset = 0,
           limit = 100)
@@ -220,6 +229,7 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
       val ex = intercept[RuntimeException] {
         clickHouseRowDataProvider.queryForRowData(vpColumns,
           whereClause = "",
+          params = util.Map.of(),
           orderBy = "I am not valid SQL",
           offset = 0,
           limit = 100)

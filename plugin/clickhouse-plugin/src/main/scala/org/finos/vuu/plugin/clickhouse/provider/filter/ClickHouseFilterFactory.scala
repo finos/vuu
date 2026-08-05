@@ -1,5 +1,7 @@
 package org.finos.vuu.plugin.clickhouse.provider.filter
 
+import java.util
+import java.util.HashMap as JHashMap
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.filter.FilterSpecParser
 import org.finos.vuu.net.FilterSpec
@@ -16,12 +18,13 @@ object ClickHouseFilterFactory {
 class ClickHouseFilterFactory(tableDef: VirtualizedSessionTableDef) extends StrictLogging {
   import ClickHouseFilterFactory.*
 
-  def build(userSpec: FilterSpec, permissionSpec: FilterSpec): String = {
+  def build(userSpec: FilterSpec, permissionSpec: FilterSpec): (String, util.Map[String, Object]) = {
+    val params = new JHashMap[String, Object]()
     val userFilterStr = safeFilterString(userSpec)
     val permFilterStr = safeFilterString(permissionSpec)
 
     if (userFilterStr.isEmpty && permFilterStr.isEmpty) {
-      NoFilter
+      (NoFilter, params)
     } else {
       val combined =
         if (userFilterStr.nonEmpty && permFilterStr.nonEmpty) {
@@ -32,7 +35,7 @@ class ClickHouseFilterFactory(tableDef: VirtualizedSessionTableDef) extends Stri
           permFilterStr
         }
 
-      parseFilter(combined)
+      (parseFilter(combined), params)
     }
   }
 
