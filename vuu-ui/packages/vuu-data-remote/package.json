@@ -19,6 +19,7 @@
     "@vuu-ui/vuu-protocol-types": "2.3.0"
   },
   "dependencies": {
+    "@vuu-ui/vuu-data-editing": "2.3.0",
     "@vuu-ui/vuu-filter-parser": "2.3.0",
     "@vuu-ui/vuu-utils": "2.3.0"
   }
