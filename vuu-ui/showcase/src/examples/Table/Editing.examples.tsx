@@ -30,7 +30,6 @@ import { ModalProvider, useModal } from "@vuu-ui/vuu-ui-controls";
 import {
   DataEditingProvider,
   DataSourceProvider,
-  isCopyOption,
   registerComponent,
   toColumnName,
   useData,
@@ -393,11 +392,6 @@ const EditableInstrumentsTemplate = ({
         </ToggleButtonGroup>
       </div>
       <div style={{ flex: "1 1 auto" }}>
-        {editMode === "edit" && isCopyOption(editSessionMode) && !sessionDataSource ? (
-          <div role="status" aria-label="Loading session table">
-            Loading session…
-          </div>
-        ) : (
           <DataEditingProvider editSession={editSession}>
             <Table
               config={config}
@@ -407,7 +401,6 @@ const EditableInstrumentsTemplate = ({
               selectionModel={editMode === "edit" ? "checkbox" : "none"}
             />
           </DataEditingProvider>
-        )}
       </div>
       <TableFooter>
         {editMode === "view" ? (
