@@ -25,6 +25,7 @@ export {
   type EditState,
 } from "./data-editing/EditSession";
 export { useEditableTable } from "./data-editing/useEditableTable";
+export type { EditMode } from './data-editing/useEditableTable';
 export * from "./data-utils";
 export * from "./datasource/BaseDataSource";
 export * from "./datasource/datasource-action-utils";

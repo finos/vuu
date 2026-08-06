@@ -1,5 +1,5 @@
 import { Button } from "@salt-ds/core";
-import { EditState, EditSession } from "./EditSession";
+import type { EditState, EditSession } from "./EditSession";
 import { useCallback, useEffect, useState } from "react";
 
 export interface EditButtonProps {
@@ -72,7 +72,7 @@ export const EditButtons = ({
         sentiment="accented"
       >
         {editState === "stale" ? `${saveLabel} (force)` : saveLabel}
-      </Button>      
+      </Button>
       {onCancel && <Button onClick={handleCancel}>Cancel</Button>}
     </>
   );

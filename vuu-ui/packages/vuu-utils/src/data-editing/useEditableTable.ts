@@ -1,7 +1,7 @@
 import { CopyOption, DataSource, DeleteRowMode, EditApi, EditSessionMode } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { useData } from "@vuu-ui/vuu-utils2";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useData } from "../context-definitions/DataProvider";
 import { useLayoutEffectSkipFirst } from "../useLayoutEffectSkipFirst";
 import { EditSession, isCopyOption } from "./EditSession";
 
