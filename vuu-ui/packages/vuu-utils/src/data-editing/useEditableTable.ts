@@ -74,9 +74,10 @@ export const useEditableTable = ({
       await editSession.end();
       setSessionDataSource(undefined);
       setSelectionCount(0);
+      setDeleteCount(0);
       onCancel();
     } catch (e) {
-      //
+      console.error(`[useEditableTable] handleCancel ${(e as Error).message}`);
     }
   }, [editSession, onCancel]);
 
@@ -88,6 +89,7 @@ export const useEditableTable = ({
         if (editSession.inEditMode === false) {
           setSessionDataSource(undefined);
           setSelectionCount(0);
+          setDeleteCount(0);
           onSave();
         }
       } catch (e) {
@@ -140,10 +142,13 @@ export const useEditableTable = ({
         console.error(`[useEditableTable] begin edit session failed`, e);
         onCancel();
       }
-    } else if (editSession.inEditMode) {
-      await editSession.end();
-      setSessionDataSource(undefined);
-      setSelectionCount(0);
+    } else {
+      if (editSession.inEditMode) {
+        await editSession.end();
+        setSessionDataSource(undefined);
+        setSelectionCount(0);
+        setDeleteCount(0);
+      }
     }
   }, [editSession, editSessionMode, isEditMode, onCancel]);
 

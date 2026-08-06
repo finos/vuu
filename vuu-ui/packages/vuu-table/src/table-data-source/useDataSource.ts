@@ -241,7 +241,12 @@ export const useDataSource = ({
 
   const setRange = useCallback(
     (viewportRange: VuuRange) => {
-      if (!rangeRef.current.equals(viewportRange)) {
+      const needsSubscription =
+        dataSource.status !== "subscribed" &&
+        dataSource.status !== "subscribing" &&
+        dataSource.status !== "enabling";
+
+      if (needsSubscription || !rangeRef.current.equals(viewportRange)) {
         const range = Range(
           viewportRange.from,
           viewportRange.to,
@@ -250,11 +255,7 @@ export const useDataSource = ({
 
         dataRowWindow.setRange(range.withBuffer);
 
-        if (
-          dataSource.status !== "subscribed" &&
-          dataSource.status !== "subscribing" &&
-          dataSource.status !== "enabling"
-        ) {
+        if (needsSubscription) {
           dataSource?.subscribe(
             {
               range,

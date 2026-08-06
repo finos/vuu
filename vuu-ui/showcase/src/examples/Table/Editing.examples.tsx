@@ -30,7 +30,6 @@ import { ModalProvider, useModal } from "@vuu-ui/vuu-ui-controls";
 import {
   DataEditingProvider,
   DataSourceProvider,
-  isCopyOption,
   registerComponent,
   toColumnName,
   useData,
@@ -273,11 +272,13 @@ const EditTableTemplate = ({
         {editMode === "view" ? (
           <DataSourceStats dataSource={dataSource} />
         ) : (
-          <EditButtons
-            editSession={editSession}
-            onCancel={onCancel}
-            onSave={onSave}
-          />
+          <div style={{ alignItems: "center", display: "flex", gap: "var(--salt-spacing-100)" }}>
+            <EditButtons
+              editSession={editSession}
+              onCancel={onCancel}
+              onSave={onSave}
+            />
+          </div>
         )}
       </TableFooter>
     </div>
@@ -315,7 +316,7 @@ const EditableInstrumentsTemplate = ({
 
   const exitEditMode = useCallback(() => setEditMode("view"), []);
 
-  const { dataSource, editSession, hasSelection, onAddRows, onDelete, onSave, sessionDataSource } =
+  const { dataSource, editSession, hasSelection, onAddRows, onDelete, onSave, onCancel, sessionDataSource } =
     useEditableTable({
       dataSource: sourceTableDataSource,
       deleteMode: "soft",
@@ -391,11 +392,6 @@ const EditableInstrumentsTemplate = ({
         </ToggleButtonGroup>
       </div>
       <div style={{ flex: "1 1 auto" }}>
-        {editMode === "edit" && isCopyOption(editSessionMode) && !sessionDataSource ? (
-          <div role="status" aria-label="Loading session table">
-            Loading session…
-          </div>
-        ) : (
           <DataEditingProvider editSession={editSession}>
             <Table
               config={config}
@@ -405,20 +401,22 @@ const EditableInstrumentsTemplate = ({
               selectionModel={editMode === "edit" ? "checkbox" : "none"}
             />
           </DataEditingProvider>
-        )}
       </div>
       <TableFooter>
         {editMode === "view" ? (
           <DataSourceStats dataSource={dataSource} />
         ) : (
-          <EditButtons
-            editSession={editSession}
-            hasSelection={hasSelection}
-            onAddRows={onAddRows}
-            onDelete={onDelete}
-            onSave={onSave}
-            saveLabel="Submit"
-          />
+          <div style={{ alignItems: "center", display: "flex", gap: "var(--salt-spacing-100)" }}>
+            <EditButtons
+              editSession={editSession}
+              hasSelection={hasSelection}
+              onAddRows={onAddRows}
+              onDelete={onDelete}
+              onCancel={onCancel}
+              onSave={onSave}
+              saveLabel="Submit"
+            />
+          </div>
         )}
       </TableFooter>
     </div>
