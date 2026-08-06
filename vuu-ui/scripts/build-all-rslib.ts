@@ -25,6 +25,7 @@ export const buildAll = async () => {
   ];
   const wave2 = [
     "grid-layout",
+    "vuu-data-editing",
     "vuu-data-remote",
     "vuu-data-local",
     "vuu-notifications",
