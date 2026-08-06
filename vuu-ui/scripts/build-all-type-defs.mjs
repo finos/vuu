@@ -17,6 +17,7 @@ const packages = [
   "vuu-chart",
   "vuu-auth",
   "vuu-portal",
+  "vuu-data-editing",
   "vuu-data-local",
   "vuu-data-react",
   "vuu-data-remote",
