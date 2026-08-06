@@ -16,14 +16,14 @@
   ],
   "main": "index.ts",
   "devDependencies": {
-    "@vuu-ui/vuu-data-types": "2.2.0",
-    "@vuu-ui/vuu-table-types": "2.2.0"
+    "@vuu-ui/vuu-data-types": "2.2.1",
+    "@vuu-ui/vuu-table-types": "2.2.1"
   },
   "dependencies": {
-    "@vuu-ui/vuu-data-react": "2.2.0",
-    "@vuu-ui/vuu-shell": "2.2.0",
-    "@vuu-ui/vuu-table": "2.2.0",
-    "@vuu-ui/vuu-utils2": "2.2.0"
+    "@vuu-ui/vuu-data-react": "2.2.1",
+    "@vuu-ui/vuu-shell": "2.2.1",
+    "@vuu-ui/vuu-table": "2.2.1",
+    "@vuu-ui/vuu-utils2": "2.2.1"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",

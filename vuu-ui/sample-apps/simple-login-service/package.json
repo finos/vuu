@@ -15,9 +15,9 @@
     "rsbuild-plugin-inline-css": "1.0.0"
   },
   "dependencies": {
-    "@vuu-ui/vuu-auth": "2.2.0",
+    "@vuu-ui/vuu-auth": "2.2.1",
     "@fontsource/open-sans": "^4.5.13",
-    "@vuu-ui/vuu-shell": "2.2.0",
+    "@vuu-ui/vuu-shell": "2.2.1",
     "@salt-ds/core": "1.67.0",
     "clsx": "^2.0.0",
     "react": "^19.2.3",
