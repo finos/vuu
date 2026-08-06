@@ -18,7 +18,7 @@ portal title and the descriptors for its registered remote modules, then:
 - applies the VUU Salt theme and creates the portal-level data source context;
 - renders the portal branding, header, and navigation;
 - builds navigation entries from the registered remote-module descriptors; and
-- creates routes that render each remote module through `Feature`.
+- creates routes that render each remote module through `RemoteModule`.
 
 `PortalShell` is supported by `PortalHeader`, `PortalNav`, their styles, and the
 public `RemoteModuleDescriptor` type. Together these define the visual shell,
@@ -26,9 +26,13 @@ navigation model, and route metadata for a portal.
 
 ## RemoteModule
 
-`RemoteModule` is the runtime boundary around a federated module. It accepts a
-`RemoteModuleConnection` and wraps the remote component with an
-`AuthenticationProvider` in `vuu-connection` mode.
+`RemoteModule` is the runtime loader and connection boundary for a federated
+module. It registers the remote manifest, lazy-loads and caches the exposed
+React component, reports loading errors, and passes configured component props
+to the remote.
+
+The loaded component is wrapped with an `AuthenticationProvider` in
+`vuu-connection` mode.
 
 This gives the remote module its own VUU connection context. Data sources
 created inside the remote therefore use the connection selected for that

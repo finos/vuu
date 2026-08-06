@@ -9,10 +9,10 @@ import { VuuLogo } from "@vuu-ui/vuu-icons";
 import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
 import { PortalHeader } from "../portal-header/PortalHeader";
 import { PortalNav } from "../portal-nav/PortalNav";
+import { RemoteModule } from "../remote-module/RemoteModule";
 
 import "./PortalShell.css";
 import { Route, Routes } from "react-router-dom";
-import { Feature } from "@vuu-ui/vuu-shell";
 import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 
 const classBase = "vuuPortalShell";
@@ -66,7 +66,7 @@ export const PortalShell = ({ id, remoteModules, title }: PortalShellProps) => {
                       <Route
                         key={id}
                         path={path}
-                        element={<Feature {...feature} />}
+                        element={<RemoteModule {...feature} />}
                       />
                     ))}
                   </Routes>
