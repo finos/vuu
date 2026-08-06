@@ -6,7 +6,7 @@ import {
 } from "@salt-ds/core";
 import { VuuLogo } from "@vuu-ui/vuu-icons";
 
-import type { RemoteModuleDescriptor } from "../../module-federation/mf-utils";
+import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
 import { PortalHeader } from "../portal-header/PortalHeader";
 import { PortalNav } from "../portal-nav/PortalNav";
 

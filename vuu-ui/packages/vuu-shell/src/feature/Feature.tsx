@@ -9,7 +9,7 @@ import {
   loadRemote,
   registerRemotes,
 } from "@module-federation/enhanced/runtime";
-import { RemoteModule } from "./RemoteModule";
+import { RemoteModule } from "@vuu-ui/vuu-portal";
 
 const portalConnection = { connectionId: "portal" };
 

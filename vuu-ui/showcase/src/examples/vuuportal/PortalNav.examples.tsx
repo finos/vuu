@@ -1,5 +1,7 @@
-import { PortalNav } from "../../../../sample-apps/vuu-portal/src/components/portal-nav/PortalNav";
-import type { RemoteModuleDescriptor } from "../../../../sample-apps/vuu-portal/src/module-federation/mf-utils";
+import {
+  PortalNav,
+  type RemoteModuleDescriptor,
+} from "@vuu-ui/vuu-portal";
 
 const remoteModule = (path: string): RemoteModuleDescriptor => {
   const name = path.split("/").filter(Boolean).at(-1) ?? path;

@@ -1,2 +1,5 @@
 export * from './Feature';
-export * from './RemoteModule';
+export {
+  RemoteModule,
+  type RemoteModuleProps,
+} from "@vuu-ui/vuu-portal";

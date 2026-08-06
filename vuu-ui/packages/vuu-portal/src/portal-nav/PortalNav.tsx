@@ -12,7 +12,7 @@ import {
 } from "@salt-ds/core";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { useMemo, useState } from "react";
-import type { RemoteModuleDescriptor } from "../../module-federation/mf-utils";
+import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
 import { Link, useLocation } from 'react-router-dom';
 
 import "./PortalNav.css";
