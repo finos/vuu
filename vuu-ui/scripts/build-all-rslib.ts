@@ -32,6 +32,7 @@ export const buildAll = async () => {
   ];
   const wave3 = [
     "vuu-auth",
+    "vuu-portal",
     "vuu-filters",
     "vuu-popups"
   ];

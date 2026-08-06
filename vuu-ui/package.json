@@ -27,7 +27,6 @@
     "build:table": "cd sample-apps/standalone-table && node scripts/build.mjs",
     "build:packages": "npm run build -- --cjs --license && npm run type-defs",
     "build:packages:debug": "npm run build -- --cjs --debug && npm run type-defs -- --debug",
-    "build:themes": "node ./scripts/build-themes.mjs",
     "build:worker": "cd packages/vuu-data-remote && npm run build:worker",
     "launch:app": "node ./scripts/launch-app.mjs",
     "launch:table": "node ./scripts/launch-table.mjs",

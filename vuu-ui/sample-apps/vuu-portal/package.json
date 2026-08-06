@@ -25,6 +25,7 @@
     "@vuu-ui/vuu-table-types": "2.2.1",
     "@vuu-ui/vuu-data-react": "2.2.1",
     "@vuu-ui/vuu-popups": "2.2.1",
+    "@vuu-ui/vuu-portal": "2.2.1",
     "@vuu-ui/vuu-shell": "2.2.1",
     "@vuu-ui/vuu-utils": "2.2.1",
     "clsx": "^2.0.0",

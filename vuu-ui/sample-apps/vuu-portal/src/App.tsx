@@ -6,9 +6,11 @@ import {
 import { useEffect, useState } from "react";
 import { ConfirmSelectionPanel } from "./order-management/cancel-confirm-prompt/ConfirmSelectionPanel";
 import { BrowserRouter, } from "react-router-dom";
-import { PortalShell } from "./components/portal-shell/PortalShell";
+import {
+  PortalShell,
+  type RemoteModuleDescriptor,
+} from "@vuu-ui/vuu-portal";
 import { getRegisteredModules } from "@vuu-ui/vuu-shell";
-import type { RemoteModuleDescriptor } from "./module-federation/mf-utils";
 
 import "./App.css";
 
