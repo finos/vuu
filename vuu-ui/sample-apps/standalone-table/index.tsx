@@ -6,11 +6,7 @@ const container = document.getElementById("root");
 if (container) {
   const root = createRoot(container);
   root.render(
-    <VuuDataSourceProvider
-      autoConnect
-      authenticate={false}
-      websocketUrl="ws://localhost:8090/websocket"
-    >
+    <VuuDataSourceProvider>
       <App />
     </VuuDataSourceProvider>,
   );

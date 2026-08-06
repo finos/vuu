@@ -3,9 +3,11 @@ import { execWait, getCommandLineArg } from "./utils.mjs";
 const debug = getCommandLineArg("--debug");
 
 const packages = [
+  "vuu-auth",
   "vuu-chart",
   "vuu-codemirror",
   "vuu-context-menu",
+  "vuu-data-editing",
   "vuu-data-local",
   "vuu-data-remote",
   "vuu-data-react",
@@ -31,7 +33,7 @@ const packages = [
 
 async function publishPackage(packageName, suffix) {
   await execWait(
-    "npm publish --registry https://registry.npmjs.org --access public",
+    "npm publish --registry https://registry.npmjs.org --access public --tag beta",
     `dist/${packageName}${suffix}`,
   );
 }

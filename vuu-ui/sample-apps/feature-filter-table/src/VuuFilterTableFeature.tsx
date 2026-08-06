@@ -7,11 +7,11 @@ import {
   TableFooter,
   TableFooterTray,
 } from "@vuu-ui/vuu-table-extras";
-import { FilterTableFeatureProps } from "@vuu-ui/vuu-utils";
+import { ContextPanelProvider } from "@vuu-ui/vuu-ui-controls";
+import type { FilterTableFeatureProps } from "@vuu-ui/vuu-utils";
 import { useFilterTableFeature } from "./useFilterTableFeature";
 
 import "./VuuFilterTableFeature.css";
-import { ContextPanelProvider } from "@vuu-ui/vuu-ui-controls";
 
 const classBase = "vuuFilterTableFeature";
 

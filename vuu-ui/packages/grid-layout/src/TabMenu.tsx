@@ -1,6 +1,5 @@
 import { Icon } from "@vuu-ui/vuu-ui-controls";
-import { Menu, MenuItem, MenuPanel, MenuTrigger } from "@salt-ds/core";
-import { TabNextAction } from "@salt-ds/lab";
+import { Button, Menu, MenuItem, MenuPanel, MenuTrigger } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
@@ -35,13 +34,14 @@ export const TabMenu = ({
   return (
     <Menu>
       <MenuTrigger>
-        <TabNextAction
+        {/* This used to be TabNextAction which no longer exists */}
+        <Button
           aria-label="Settings"
           className="TabMenuButton"
           data-embedded
         >
           <Icon aria-hidden name="more-vert" />
-        </TabNextAction>
+        </Button>
       </MenuTrigger>
       <MenuPanel>
         <MenuItem

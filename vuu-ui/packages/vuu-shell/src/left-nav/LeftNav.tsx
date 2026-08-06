@@ -1,26 +1,26 @@
 import { VuuLogo } from "@vuu-ui/vuu-icons";
 import {
-  LayoutResizeAction,
+  type LayoutResizeAction,
   Stack,
   useLayoutProviderDispatch,
 } from "@vuu-ui/vuu-layout";
-import { Tab, Tabstrip } from "@vuu-ui/vuu-ui-controls";
+import { IconButton, Tab, Tabstrip } from "@vuu-ui/vuu-ui-controls";
 import {
-  DynamicFeatureProps,
-  FilterTableFeatureProps,
+  type DynamicFeatureProps,
+  type FilterTableFeatureProps,
   hasFilterTableFeatureProps,
 } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
-  CSSProperties,
-  HTMLAttributes,
+  type CSSProperties,
+  type HTMLAttributes,
   useCallback,
   useMemo,
   useState,
 } from "react";
-import { FeatureList, GroupedFeatureProps } from "../feature-list";
+import { FeatureList, type GroupedFeatureProps } from "../feature-list";
 import { LayoutList } from "../workspace-management";
 
 import leftNavCss from "./LeftNav.css";
@@ -216,21 +216,21 @@ export const LeftNav = (props: LeftNavProps) => {
             onActiveChange={handleTabSelection}
             orientation="vertical"
           >
-            <Tab data-icon="demo" label="DEMO"></Tab>
-            <Tab data-icon="features" label="VUU FEATURES"></Tab>
-            <Tab data-icon="tables" label="VUU TABLES"></Tab>
-            <Tab data-icon="layouts" label="MY LAYOUTS"></Tab>
+            <Tab data-icon="demo" label="DEMO" />
+            <Tab data-icon="features" label="VUU FEATURES" />
+            <Tab data-icon="tables" label="VUU TABLES" />
+            <Tab data-icon="layouts" label="MY LAYOUTS" />
           </Tabstrip>
         </div>
         <div className="vuuLeftNav-buttonBar">
-          <button
+          <IconButton
             className={cx("vuuLeftNav-toggleButton", {
               "vuuLeftNav-toggleButton-open":
                 displayStatus.startsWith("menu-full"),
               "vuuLeftNav-toggleButton-closed":
                 displayStatus.startsWith("menu-icons"),
             })}
-            data-icon={
+            icon={
               displayStatus.startsWith("menu-full")
                 ? "chevron-left"
                 : "chevron-right"

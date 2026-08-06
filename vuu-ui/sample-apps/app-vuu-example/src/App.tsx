@@ -2,22 +2,24 @@ import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import { FlexboxLayout, StackLayout } from "@vuu-ui/vuu-layout";
 import {
   FeatureAndLayoutProvider,
+  getRegisteredModules,
   LeftNav,
   LocalPersistenceManager,
   PersistenceProvider,
-  SettingsSchema,
+  type SettingsSchema,
   Shell,
   ShellContextProvider,
-  ShellLayoutProps,
+  type ShellLayoutProps,
 } from "@vuu-ui/vuu-shell";
+import { useIdentityToken } from "@vuu-ui/vuu-auth";
 import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
-import type { VuuUser } from "@vuu-ui/vuu-utils";
 import {
   assertComponentsRegistered,
+  type DynamicFeatureDescriptor,
   registerComponent,
 } from "@vuu-ui/vuu-utils";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { ConfirmSelectionPanel } from "./order-management/cancel-confirm-prompt/ConfirmSelectionPanel";
 
@@ -54,19 +56,38 @@ const defaultWebsocketUrl = (ssl: boolean) =>
 
 const {
   ssl,
-  websocketUrl: serverUrl = defaultWebsocketUrl(ssl),
-  features,
+  moduleRegistryUrl,
+  websocketUrl = defaultWebsocketUrl(ssl),
 } = await vuuConfig;
 
-const dynamicFeatures = Object.values(features);
+export const App = () => {
+  const getIdentityToken = useIdentityToken();
 
-export const App = ({
-  logout,
-  user,
-}: {
-  logout: () => void;
-  user: VuuUser;
-}) => {
+  const [dynamicFeatures, setDynamicFeatures] = useState<
+    DynamicFeatureDescriptor[]
+  >([]);
+  useEffect(() => {
+    const loadFeatures = async () => {
+      const identityToken = await getIdentityToken();
+      const { modules: features } = await getRegisteredModules(
+        moduleRegistryUrl,
+        identityToken,
+      );
+      setDynamicFeatures(
+        features.map((feature) => ({
+          ...feature,
+          vuu: {
+            connectionId: feature.vuu?.connectionId ?? "portal",
+            restUrl: feature.vuu?.restUrl,
+            websocketUrl: feature.vuu?.websocketUrl,
+          },
+        })),
+      );
+    };
+
+    loadFeatures();
+  }, [getIdentityToken]);
+
   const dragSource = useMemo(
     () => ({
       "basket-instruments": { dropTargets: "basket-constituents" },
@@ -75,8 +96,8 @@ export const App = ({
   );
 
   const localPersistenceManager = useMemo(
-    () => new LocalPersistenceManager(user.username),
-    [user.username],
+    () => new LocalPersistenceManager("steve"),
+    [],
   );
 
   const ShellLayoutProps = useMemo<ShellLayoutProps>(
@@ -99,9 +120,7 @@ export const App = ({
               <Shell
                 shellLayoutProps={ShellLayoutProps}
                 className="App"
-                logout={logout}
-                serverUrl={serverUrl}
-                user={user}
+                serverUrl={websocketUrl}
                 userSettingsSchema={userSettingsSchema}
               />
             </FeatureAndLayoutProvider>

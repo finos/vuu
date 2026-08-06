@@ -3,8 +3,8 @@ import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
   createElement,
-  ReactElement,
-  SyntheticEvent,
+  type ReactElement,
+  type SyntheticEvent,
   useCallback,
   useEffect,
   useState,
@@ -12,16 +12,16 @@ import {
 
 import {
   TabBar,
-  TabListNext,
-  TabNext,
-  TabNextTrigger,
-  TabsNext,
-} from "@salt-ds/lab";
-import { GridLayoutItemProps } from "./GridLayoutItem";
+  TabList as TabListNext,
+  Tab as TabNext,
+  TabTrigger as TabNextTrigger,
+  Tabs as TabsNext,
+} from "@salt-ds/core";
+import type { GridLayoutItemProps } from "./GridLayoutItem";
 import { useGridChildProps } from "./useGridChildProps";
 import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
 import {
-  ComponentTemplate,
+  type ComponentTemplate,
   useGridLayoutDispatch,
   useGridModel,
 } from "./GridLayoutContext";

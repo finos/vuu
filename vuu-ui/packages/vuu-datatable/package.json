@@ -2,15 +2,16 @@
   "name": "@vuu-ui/vuu-datatable",
   "version": "2.2.1",
   "author": "heswell",
+  "type": "module",
   "main": "src/index.ts",
   "license": "Apache-2.0",
   "scripts": {
     "build:dev": "node ../../scripts/run-build.mjs",
-    "build": "node ../../scripts/run-build-rollup.mjs",
+    "build": "node ../../scripts/run-build-rslib.ts",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
-    "@salt-ds/core": "1.54.1",
+    "@salt-ds/core": "1.67.0",
     "@salt-ds/styles": "0.2.1",
     "@salt-ds/window": "0.1.1",
     "@vuu-ui/vuu-data-local": "2.2.1",

@@ -1,0 +1,49 @@
+{
+  "name": "feature-user-admin",
+  "version": "1.0.0",
+  "description": "Vuu User Admin Module",
+  "scripts": {
+    "build": "node ../../scripts/build-remote-module.ts",
+    "dev": "rsbuild dev",
+    "start": "serve -p 5001 ../../deployed_apps/feature-user-admin"
+  },
+  "type": "module",
+  "private": true,
+  "keywords": [],
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "index.ts",
+  "devDependencies": {
+    "@vuu-ui/vuu-data-types": "2.2.1",
+    "@vuu-ui/vuu-table-types": "2.2.1"
+  },
+  "dependencies": {
+    "@vuu-ui/vuu-data-react": "2.2.1",
+    "@vuu-ui/vuu-layout": "2.2.1",
+    "@vuu-ui/vuu-shell": "2.2.1",
+    "@vuu-ui/vuu-table": "2.2.1",
+    "@vuu-ui/vuu-utils2": "2.2.1",
+    "@salt-ds/core": "1.67.0"
+  },
+  "peerDependencies": {
+    "clsx": "^2.0.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "vuu": {
+    "featureProps": {},
+    "module-federation": {
+      "exposes": {
+        "./UserAdmin": "./src/UserAdmin"
+      },
+      "name": "userAdmin",
+      "port": 5007
+    }
+  }
+}

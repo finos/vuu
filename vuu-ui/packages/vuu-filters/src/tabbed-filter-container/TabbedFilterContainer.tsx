@@ -1,19 +1,19 @@
 import {
-  TabListNext,
-  TabNext,
-  TabNextPanel,
-  TabNextTrigger,
-  TabsNext,
-} from "@salt-ds/lab";
+  TabList as TabListNext,
+  Tab as TabNext,
+  TabPanel as TabNextPanel,
+  TabTrigger as TabNextTrigger,
+  Tabs as TabsNext,
+} from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import type { HTMLAttributes, ReactNode } from "react";
-import { FilterContainerProps } from "../filter-container/FilterContainer";
+import type { FilterContainerProps } from "../filter-container/FilterContainer";
 import { FilterPanel } from "../filter-panel/FilterPanel";
 import {
   SavedFilterPanel,
-  SavedFilterPanelProps,
+  type SavedFilterPanelProps,
 } from "../saved-filters/SavedFilterPanel";
 import tabbedFilterContainerCss from "./TabbedFilterContainer.css";
 
@@ -21,10 +21,10 @@ const classBase = "vuuTabbedFilterContainer";
 
 export interface TabbedFilterContainerProps
   extends HTMLAttributes<HTMLDivElement>,
-    Pick<
-      FilterContainerProps,
-      "filter" | "filterProviderKey" | "onFilterApplied" | "onFilterCleared"
-    > {
+  Pick<
+    FilterContainerProps,
+    "filter" | "filterProviderKey" | "onFilterApplied" | "onFilterCleared"
+  > {
   SavedFilterPanelProps?: Pick<
     SavedFilterPanelProps,
     "availableColumns" | "filterPillPermissions"
