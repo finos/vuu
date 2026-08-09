@@ -1,18 +1,13 @@
-import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
-import { useEditableTable, type EditMode } from "@vuu-ui/vuu-utils";
-import { type SyntheticEvent, useCallback, useEffect, useId, useMemo, useState } from "react";
+import { useEditableTable, type EditMode } from "@vuu-ui/vuu-data-editing";
+import { type SyntheticEvent, useCallback, useMemo, useState } from "react";
 import { editableColumns, moduleColumnDescriptors } from "./columnDescriptors";
 import { toColumnName } from "@vuu-ui/vuu-utils/dist/index.mjs";
 import { useData } from "@vuu-ui/vuu-utils2";
 
-const toError = (error: unknown) =>
-  error instanceof Error ? error : new Error(String(error));
 
 export const useModuleAdmin = () => {
-  // const { getDataSource } = useSessionDataSource();
   const { VuuDataSource } = useData()
-  const instanceId = useId();
 
   const [editMode, setEditMode] = useState<EditMode>("view");
 
@@ -57,6 +52,10 @@ export const useModuleAdmin = () => {
     onCancel: exitEditMode,
     onSave: exitEditMode,
   });
+
+  console.log('[useModuleAdmion], editSession', {
+    editSession
+  })
 
   // if (error) {
   //   return { error, status: "error" };

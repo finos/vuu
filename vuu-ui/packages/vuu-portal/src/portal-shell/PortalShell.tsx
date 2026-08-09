@@ -5,15 +5,14 @@ import {
   type Accent,
 } from "@salt-ds/core";
 import { VuuLogo } from "@vuu-ui/vuu-icons";
-
+import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
+import { Route, Routes } from "react-router-dom";
 import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
 import { PortalHeader } from "../portal-header/PortalHeader";
 import { PortalNav } from "../portal-nav/PortalNav";
 import { RemoteModule } from "../remote-module/RemoteModule";
 
 import "./PortalShell.css";
-import { Route, Routes } from "react-router-dom";
-import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 
 const classBase = "vuuPortalShell";
 

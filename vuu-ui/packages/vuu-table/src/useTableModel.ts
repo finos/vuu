@@ -5,7 +5,7 @@ import type {
   WithBaseFilter,
   WithFullConfig,
 } from "@vuu-ui/vuu-data-types";
-import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
+import type { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
 import type {
   ColumnDescriptor,
   ColumnLayout,
@@ -44,7 +44,7 @@ import {
   sortPinnedColumns,
   stripFilterFromColumns,
 } from "@vuu-ui/vuu-utils";
-import { Reducer, useReducer } from "react";
+import { type Reducer, useReducer } from "react";
 
 const { info } = logger("useTableModel");
 

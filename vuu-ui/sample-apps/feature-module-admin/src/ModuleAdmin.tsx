@@ -1,8 +1,8 @@
 import { ToggleButton, ToggleButtonGroup, Toolbar, ToolbarContent, Tooltray } from "@salt-ds/core";
+import { DataEditingProvider, EditButtons } from "@vuu-ui/vuu-data-editing";
 import { Table } from "@vuu-ui/vuu-table";
-import { useModuleAdmin } from "./useModuleAdmin";
 import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
-import { EditButtons } from "@vuu-ui/vuu-utils/dist/index.mjs";
+import { useModuleAdmin } from "./useModuleAdmin";
 
 import "./ModuleAdmin.css";
 
@@ -50,15 +50,17 @@ const ModuleAdmin = () => {
 
       </Toolbar>
       <div className={`${classBase}-tableContainer`}>
-        < Table
-          config={config}
-          dataSource={dataSource}
-          height="100%"
-          navigationStyle="row"
-          renderBufferSize={20}
-          rowHeight={21}
-          width="100%"
-        />
+        <DataEditingProvider editSession={editSession}>
+          < Table
+            config={config}
+            dataSource={dataSource}
+            height="100%"
+            navigationStyle="row"
+            renderBufferSize={20}
+            rowHeight={21}
+            width="100%"
+          />
+        </DataEditingProvider>
       </div >
       <TableFooter>
         {editMode === "view" ? (

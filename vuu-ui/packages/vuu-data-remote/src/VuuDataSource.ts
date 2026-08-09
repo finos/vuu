@@ -1,4 +1,6 @@
+import { isInlineEditingSession, StaleUpdateError } from '@vuu-ui/vuu-data-editing';
 import type {
+  CopyOption,
   DataSource,
   DataSourceBase,
   DataSourceCallbackMessage,
@@ -9,13 +11,13 @@ import type {
   DataSourceVisualLinkCreatedMessage,
   DeleteRowMode,
   EditSessionMode,
-  CopyOption,
   OptimizeStrategy,
   ServerAPI,
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
 } from "@vuu-ui/vuu-data-types";
+import type { MenuRpcResponse } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
   RpcResultError,
@@ -31,14 +33,12 @@ import type {
   VuuRpcServiceRequest,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-import { MenuRpcResponse } from "@vuu-ui/vuu-data-types";
 import {
   BaseDataSource,
   combineFilters,
   constrainRange,
   debounce,
   isConfigChanged,
-  isInlineEditingSession,
   isRpcSuccess,
   isSelectSuccessWithRowCount,
   isViewportMenusAction,
@@ -46,7 +46,6 @@ import {
   itemsOrOrderChanged,
   logger,
   Range,
-  StaleUpdateError,
   throttle,
   uuid,
 } from "@vuu-ui/vuu-utils";
@@ -700,6 +699,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
       return new VuuDataSource({
         ...this.config,
+        connectionId: this.#connectionId,
         table: sessionTable,
         viewport: sessionTable.table,
       });
@@ -729,6 +729,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
         this.#sessionDataSource = new VuuDataSource({
           ...this.config,
           columns,
+          connectionId: this.#connectionId,
           table: sessionTable,
           viewport: sessionTable.table,
         });
@@ -742,6 +743,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       } else {
         return new VuuDataSource({
           ...this.config,
+          connectionId: this.#connectionId,
           table: sessionTable,
           viewport: sessionTable.table,
         });

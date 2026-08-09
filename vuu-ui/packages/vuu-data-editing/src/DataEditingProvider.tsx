@@ -1,5 +1,5 @@
-import { createContext, ReactNode, useContext } from "react";
-import { EditSession } from "./EditSession";
+import { createContext, type ReactNode, useContext } from "react";
+import type { EditSession } from "./EditSession";
 
 const DataEditingContext = createContext<EditSession | undefined>(undefined);
 
@@ -10,6 +10,11 @@ export const DataEditingProvider = ({
   children: ReactNode;
   editSession: EditSession;
 }) => {
+
+  console.log('@vuu-data-editing [DataEditingProvider], editSession', {
+    editSession
+  })
+
   return (
     <DataEditingContext.Provider value={editSession}>
       {children}

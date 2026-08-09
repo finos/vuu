@@ -1,5 +1,5 @@
-import { EditSessionMode, InlineEditSessionMode } from "@vuu-ui/vuu-data-types";
-import { DataRow, RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import type { EditSessionMode, InlineEditSessionMode } from "@vuu-ui/vuu-data-types";
+import type { DataRow, RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { formatDate } from "@vuu-ui/vuu-utils";
 
 export const isInlineEditingSession = (

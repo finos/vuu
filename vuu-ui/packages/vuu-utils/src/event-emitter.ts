@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Listener = (...args: any[]) => void;
+type Listener = (...args: unknown[]) => void;
 export type EmittedEvents = Record<string, Listener>;
 
 function isArrayOfListeners(
@@ -23,8 +22,7 @@ export interface IEventEmitter<Events extends EmittedEvents> {
 }
 
 export class EventEmitter<Events extends EmittedEvents>
-  implements IEventEmitter<Events>
-{
+  implements IEventEmitter<Events> {
   #events: Map<keyof Events, Listener | Listener[]> = new Map();
 
   addListener<E extends keyof Events>(event: E, listener: Events[E]) {
@@ -50,7 +48,7 @@ export class EventEmitter<Events extends EmittedEvents>
     if (listenerOrListeners === listener) {
       this.#events.delete(event);
     } else if (Array.isArray(listenerOrListeners)) {
-      for (let i = listenerOrListeners.length; i-- > 0; ) {
+      for (let i = listenerOrListeners.length; i-- > 0;) {
         if (listenerOrListeners[i] === listener) {
           position = i;
           break;
@@ -111,7 +109,7 @@ export class EventEmitter<Events extends EmittedEvents>
 
   private invokeHandler(handler: Listener | Array<Listener>, args: unknown[]) {
     if (isArrayOfListeners(handler)) {
-      handler.slice().forEach((listener) => this.invokeHandler(listener, args));
+      handler.slice().forEach((listener) => { this.invokeHandler(listener, args); });
     } else {
       switch (args.length) {
         case 0:

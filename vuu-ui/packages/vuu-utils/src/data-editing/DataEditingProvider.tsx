@@ -1,5 +1,5 @@
-import { createContext, ReactNode, useContext } from "react";
-import { EditSession } from "./EditSession";
+import { createContext, type ReactNode, useContext } from "react";
+import type { EditSession } from "./EditSession";
 
 const DataEditingContext = createContext<EditSession | undefined>(undefined);
 
@@ -10,6 +10,7 @@ export const DataEditingProvider = ({
   children: ReactNode;
   editSession: EditSession;
 }) => {
+
   return (
     <DataEditingContext.Provider value={editSession}>
       {children}
