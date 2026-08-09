@@ -46,7 +46,7 @@ export const useModuleAdmin = () => {
     setEditMode("view");
   }, []);
 
-  const { dataSource: ds, editSession, onCancel, onSave } = useEditableTable({
+  const { canSave, dataSource: ds, editSession, lifecycle, onCancel, onSave } = useEditableTable({
     dataSource,
     isEditMode: editMode === "edit",
     onCancel: exitEditMode,
@@ -65,5 +65,5 @@ export const useModuleAdmin = () => {
   //   return { status: "loading" };
   // }
 
-  return { config, dataSource: ds, editMode, editSession, onCancel, onSave, onToggleEditMode, status: "ready" };
+  return { canSave, config, dataSource: ds, editMode, editSession, lifecycle, onCancel, onSave, onToggleEditMode, status: "ready" };
 };

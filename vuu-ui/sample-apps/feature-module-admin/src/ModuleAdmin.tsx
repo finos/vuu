@@ -9,7 +9,7 @@ import "./ModuleAdmin.css";
 const classBase = 'vuuModuleAdmin';
 
 const ModuleAdmin = () => {
-  const { editMode, editSession, onCancel, onSave, onToggleEditMode, config, dataSource, ...moduleAdmin } = useModuleAdmin();
+  const { canSave, editMode, editSession, onCancel, onSave, onToggleEditMode, config, dataSource, ...moduleAdmin } = useModuleAdmin();
 
   // if (moduleAdmin.status === "loading") {
   //   return (
@@ -67,6 +67,7 @@ const ModuleAdmin = () => {
           <DataSourceStats dataSource={dataSource} />
         ) : (
           <EditButtons
+            canSave={canSave}
             editSession={editSession}
             onCancel={onCancel}
             onSave={onSave}
