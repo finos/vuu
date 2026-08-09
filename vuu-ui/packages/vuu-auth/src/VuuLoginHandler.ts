@@ -40,6 +40,6 @@ export class VuuLoginHandler {
       username,
       password,
     );
-    window.location.href = `http://localhost:5002/index.html?token=${token}`;
+    window.location.href = `${this.authConfig.redirectUrl}?token=${token}`;
   };
 }

@@ -10,11 +10,6 @@ export const DataEditingProvider = ({
   children: ReactNode;
   editSession: EditSession;
 }) => {
-
-  console.log('@vuu-data-editing [DataEditingProvider], editSession', {
-    editSession
-  })
-
   return (
     <DataEditingContext.Provider value={editSession}>
       {children}

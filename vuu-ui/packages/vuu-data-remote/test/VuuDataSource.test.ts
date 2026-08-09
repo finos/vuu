@@ -3,12 +3,12 @@
 import "./global-mocks";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 //----------------------------------------------------
-import {
+import type {
   ServerAPI,
   WithBaseFilter,
   WithFullConfig,
 } from "@vuu-ui/vuu-data-types";
-import {
+import type {
   LinkDescriptorWithLabel,
   VuuSortCol,
 } from "@vuu-ui/vuu-protocol-types";
@@ -18,17 +18,19 @@ import { Range } from "@vuu-ui/vuu-utils";
 
 type ConfigType = WithBaseFilter<WithFullConfig>;
 
-vi.mock("../src/ConnectionManager", () => ({
-  default: {
-    serverAPI: new Promise<ServerAPI>((resolve) => {
-      // @ts-ignore
-      resolve({
-        send: vi.fn(),
-        subscribe: vi.fn(),
-      });
-    }),
-  },
-}));
+vi.mock("../src/ConnectionManager", () => {
+  const serverAPI = Promise.resolve({
+    send: vi.fn(),
+    subscribe: vi.fn(),
+  } as ServerAPI);
+
+  return {
+    default: {
+      serverAPI,
+      serverAPIFor: vi.fn(() => serverAPI),
+    },
+  };
+});
 
 const defaultSubscribeOptions = {
   aggregations: [],
@@ -51,6 +53,7 @@ describe("VuuDataSource", () => {
   describe("constructor", () => {
     it("cannot be created without table", () => {
       try {
+        // biome-ignore lint/suspicious/noTsIgnore: <Test Mock>
         // @ts-ignore
         new VuuDataSource();
         throw Error("RemoteDataSource was created without table");
@@ -61,6 +64,7 @@ describe("VuuDataSource", () => {
         );
       }
       try {
+        // biome-ignore lint/suspicious/noTsIgnore: <Test Mock>
         // @ts-ignore
         new VuuDataSource({});
         throw Error("RemoteDataSource was created without table");
@@ -71,6 +75,7 @@ describe("VuuDataSource", () => {
         );
       }
       try {
+        // biome-ignore lint/suspicious/noTsIgnore: <Test Mock>
         // @ts-ignore
         new VuuDataSource({
           bufferSize: 100,
@@ -108,6 +113,27 @@ describe("VuuDataSource", () => {
       expect(dataSource.columns).toEqual(columns);
       expect(dataSource.filter).toEqual(filterSpec);
       expect(dataSource.sort).toEqual(sort);
+    });
+  });
+
+  describe("addRow", () => {
+    it("returns the successful RPC result", async () => {
+      const dataSource = new VuuDataSource({ table });
+      const response = { data: undefined, type: "SUCCESS_RESULT" } as const;
+      vi.spyOn(dataSource, "rpcRequest").mockResolvedValue(response);
+
+      await expect(dataSource.addRow({ id: 7 })).resolves.toEqual(response);
+    });
+
+    it("returns the failed RPC result", async () => {
+      const dataSource = new VuuDataSource({ table });
+      const response = {
+        errorMessage: "Insert rejected",
+        type: "ERROR_RESULT",
+      } as const;
+      vi.spyOn(dataSource, "rpcRequest").mockResolvedValue(response);
+
+      await expect(dataSource.addRow({ id: 7 })).resolves.toEqual(response);
     });
   });
 

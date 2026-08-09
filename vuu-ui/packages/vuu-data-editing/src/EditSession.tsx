@@ -1,4 +1,4 @@
-import {
+import type {
   CopyOption,
   DataSource,
   DeleteRowMode,
@@ -7,7 +7,7 @@ import {
   EditSessionMode,
   UndoRowChangeResult,
 } from "@vuu-ui/vuu-data-types";
-import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter, isRpcError } from "@vuu-ui/vuu-utils";
 
 export const isCopyOption = (
@@ -17,13 +17,24 @@ export const isCopyOption = (
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
 
+export type EditLifecycle =
+  | { status: "idle" }
+  | { status: "starting" }
+  | { status: "active"; sessionDataSource?: DataSource }
+  | { status: "ending"; sessionDataSource?: DataSource }
+  | {
+      status: "error";
+      operation: "begin" | "end";
+      error: Error;
+      sessionDataSource?: DataSource;
+    };
+
 export class EditError extends Error {}
 
 type CellEdit = {
   originalValue: VuuRowDataItemType;
   editedValue: VuuRowDataItemType;
-  isValid?: boolean;
-  isDeleted?: boolean;
+  isValid: boolean;
 };
 
 // TODO can add more when when we know what the server implementation of error columns will look like
@@ -38,6 +49,7 @@ type RowEditDetails = {
 
 type EditSessionEvents = {
   editState: (editState: EditState) => void;
+  lifecycle: (lifecycle: EditLifecycle) => void;
 };
 
 export class EditSession extends EventEmitter<EditSessionEvents> {
@@ -52,9 +64,10 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   #invalidCount = 0;
   #deleteMode: DeleteRowMode;
   #sourceTableDataSource?: EditApi;
-  #sessionDataSource?: EditApi;
-  #inEditMode = false;
-  #endEditModePending = false;
+  #sessionDataSource?: DataSource;
+  #lifecycle: EditLifecycle = { status: "idle" };
+  /** Prevent begin/end RPCs from overlapping and observing stale lifecycle state. */
+  #transitionQueue: Promise<void> = Promise.resolve();
 
   constructor(dataSource: EditApi, deleteMode: DeleteRowMode = "soft") {
     super();
@@ -67,15 +80,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   set editCount(val: number) {
-    if (val !== this.#editCount) {
-      const oldCount = this.#editCount;
-      this.#editCount = val;
-      if (val === 0 && this.#deleteCount === 0 && this.#addCount === 0) {
-        this.emit("editState", "clean");
-      } else if (oldCount === 0) {
-        this.emit("editState", "dirty");
-      }
-    }
+    this.#setEditCounts(val, this.#invalidCount);
   }
 
   get invalidCount() {
@@ -83,15 +88,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   set invalidCount(val: number) {
-    if (val !== this.#invalidCount) {
-      const oldCount = this.#invalidCount;
-      this.#invalidCount = val;
-      if (val === 0) {
-        this.emit("editState", this.#editCount === 0 ? "clean" : "dirty");
-      } else if (oldCount === 0) {
-        this.emit("editState", "invalid");
-      }
-    }
+    this.#setEditCounts(this.#editCount, val);
   }
 
   get deleteCount() {
@@ -100,13 +97,10 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
   set deleteCount(val: number) {
     if (val !== this.#deleteCount) {
+      const oldState = this.editState;
       const oldCount = this.#deleteCount;
       this.#deleteCount = val;
-      if (val === 0 && this.#editCount === 0 && this.#addCount === 0) {
-        this.emit("editState", "clean");
-      } else if (oldCount === 0) {
-        this.emit("editState", "dirty");
-      }
+      this.#emitEditStateChange(oldState, oldCount === 0 || val === 0);
     }
   }
 
@@ -116,14 +110,53 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
   set addCount(val: number) {
     if (val !== this.#addCount) {
+      const oldState = this.editState;
       const oldCount = this.#addCount;
       this.#addCount = val;
-      if (val === 0 && this.#editCount === 0 && this.#deleteCount === 0) {
-        this.emit("editState", "clean");
-      } else if (oldCount === 0) {
-        this.emit("editState", "dirty");
+      this.#emitEditStateChange(oldState, oldCount === 0 || val === 0);
+    }
+  }
+
+  get editState(): EditState {
+    if (this.#invalidCount > 0) {
+      return "invalid";
+    }
+    return this.#editCount === 0 &&
+      this.#deleteCount === 0 &&
+      this.#addCount === 0
+      ? "clean"
+      : "dirty";
+  }
+
+  #emitEditStateChange(oldState: EditState, force = false) {
+    const newState = this.editState;
+    if (force || newState !== oldState) {
+      this.emit("editState", newState);
+    }
+  }
+
+  #setEditCounts(editCount: number, invalidCount: number) {
+    if (editCount !== this.#editCount || invalidCount !== this.#invalidCount) {
+      const oldState = this.editState;
+      this.#editCount = editCount;
+      this.#invalidCount = invalidCount;
+      this.#emitEditStateChange(oldState);
+    }
+  }
+
+  #refreshEditCounts() {
+    let editCount = 0;
+    let invalidCount = 0;
+    for (const { cellEdits } of this.#rowEdits.values()) {
+      for (const cellEdit of cellEdits.values()) {
+        if (cellEdit.isValid) {
+          editCount++;
+        } else {
+          invalidCount++;
+        }
       }
     }
+    this.#setEditCounts(editCount, invalidCount);
   }
 
   async deleteSelectedRows(): Promise<void> {
@@ -147,6 +180,26 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
   }
 
+  async addRow(
+    rowData: Record<string, VuuRowDataItemType> = {},
+  ): Promise<RpcResult> {
+    const addRow = this.#sourceTableDataSource?.addRow;
+    if (addRow === undefined) {
+      throw Error("[EditSession] datasource does not support adding rows");
+    }
+
+    const response = await addRow.call(this.#sourceTableDataSource, rowData);
+    if (response === undefined) {
+      throw Error(
+        "[EditSession] datasource returned no response when adding row",
+      );
+    }
+    if (!isRpcError(response)) {
+      this.addCount = this.#addCount + 1;
+    }
+    return response;
+  }
+
   addRows(count = 15, rowData: Record<string, VuuRowDataItemType> = {}) {
     for (let i = 0; i < count; i++) {
       this.#sourceTableDataSource?.addRow?.(rowData);
@@ -168,7 +221,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   async undoRowChange(key: string): Promise<void> {
-    if (!this.#inEditMode) return;
+    if (!this.inEditMode) return;
 
     const rowEdits = this.#rowEdits.get(key);
     const wasDeleted = this.#deletedRows.has(key);
@@ -188,19 +241,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
 
     // Update counters after confirmed success
-    if (rowEdits) {
-      let validCount = 0;
-      let invalidCount = 0;
-      for (const [, cellEdit] of rowEdits.cellEdits) {
-        if (cellEdit.isValid === false) {
-          invalidCount++;
-        } else {
-          validCount++;
-        }
-      }
-      this.editCount = this.#editCount - validCount;
-      this.invalidCount = this.#invalidCount - invalidCount;
-    }
+    if (rowEdits) this.#refreshEditCounts();
     if (wasDeleted) {
       this.deleteCount = this.#deleteCount - 1;
     }
@@ -214,67 +255,121 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
   }
 
-  clear() {
+  #clearEdits() {
     this.#rowEdits.clear();
     this.#deletedRows.clear();
     this.#editCount = 0;
     this.#deleteCount = 0;
     this.#addCount = 0;
     this.#invalidCount = 0;
-    this.#inEditMode = false;
-    this.#endEditModePending = false;
+  }
+
+  #setLifecycle(lifecycle: EditLifecycle) {
+    this.#lifecycle = lifecycle;
+    this.emit("lifecycle", lifecycle);
+  }
+
+  #enqueue<T>(operation: () => Promise<T>): Promise<T> {
+    const result = this.#transitionQueue.then(operation);
+    // Reassign to a settled continuation: callers keep the real result, while a
+    // rejected transition cannot poison the queue for later begin/end requests.
+    this.#transitionQueue = result.then(
+      () => undefined,
+      () => undefined,
+    );
+    return result;
   }
 
   /** @deprecated Pass a `CopyOption` ("All" | "Empty" | "Selected") to use `createSessionDataSource` instead. Long-form `EditSessionMode` values will be removed in a future release. */
-  async begin(mode: EditSessionMode): Promise<DataSource | undefined>;
-  async begin(mode?: CopyOption): Promise<DataSource | undefined>;
-  async begin(
-    mode?: EditSessionMode | CopyOption,
-  ): Promise<DataSource | undefined> {
-    try {
-      this.#inEditMode = true;
-      const sessionDataSource = isCopyOption(mode)
-        ? await this.#sourceTableDataSource?.createSessionDataSource?.(mode)
-        : await this.#sourceTableDataSource?.beginEditSession?.(mode);
+  begin(mode: EditSessionMode): Promise<DataSource | undefined>;
+  begin(mode?: CopyOption): Promise<DataSource | undefined>;
+  begin(mode?: EditSessionMode | CopyOption): Promise<DataSource | undefined>;
+  begin(mode?: EditSessionMode | CopyOption): Promise<DataSource | undefined> {
+    return this.#enqueue(async () => {
+      if (
+        this.#lifecycle.status === "active" ||
+        (this.#lifecycle.status === "error" &&
+          this.#lifecycle.operation === "end")
+      ) {
+        if (this.#lifecycle.status === "error") {
+          this.#setLifecycle({
+            status: "active",
+            sessionDataSource: this.#sessionDataSource,
+          });
+        }
+        return this.#sessionDataSource;
+      }
 
-      this.#sessionDataSource = sessionDataSource;
-      return sessionDataSource;
-    } catch (e) {
-      this.#inEditMode = false;
-    }
+      this.#setLifecycle({ status: "starting" });
+
+      try {
+        const sessionDataSource = isCopyOption(mode)
+          ? await this.#sourceTableDataSource?.createSessionDataSource?.(mode)
+          : await this.#sourceTableDataSource?.beginEditSession?.(mode);
+
+        this.#sessionDataSource = sessionDataSource;
+        this.#setLifecycle({ status: "active", sessionDataSource });
+        return sessionDataSource;
+      } catch (cause) {
+        const error = cause instanceof Error ? cause : new Error(String(cause));
+        this.#setLifecycle({ status: "error", operation: "begin", error });
+        throw error;
+      }
+    });
   }
 
   get dataSource() {
     return this.#sessionDataSource ?? this.#sourceTableDataSource;
   }
 
-  async end(saveChanges = false, force = false) {
-    try {
-      if (this.#inEditMode) {
-        this.#endEditModePending = true;
+  end(saveChanges = false, force = false): Promise<void> {
+    return this.#enqueue(async () => {
+      if (
+        this.#lifecycle.status === "idle" ||
+        (this.#lifecycle.status === "error" &&
+          this.#lifecycle.operation === "begin")
+      ) {
+        if (this.#lifecycle.status !== "idle") {
+          this.#setLifecycle({ status: "idle" });
+        }
+        return;
+      }
+
+      const sessionDataSource = this.#sessionDataSource;
+      this.#setLifecycle({ status: "ending", sessionDataSource });
+
+      try {
         await this.dataSource?.endEditSession?.(saveChanges, force);
-        this.clear();
+        this.#clearEdits();
+        this.#sessionDataSource = undefined;
+        this.#setLifecycle({ status: "idle" });
+      } catch (cause) {
+        const error = cause instanceof Error ? cause : new Error(String(cause));
+        if (error instanceof StaleUpdateError) {
+          this.emit("editState", "stale");
+        }
+        this.#setLifecycle({
+          status: "error",
+          operation: "end",
+          error,
+          sessionDataSource,
+        });
+        throw error;
       }
-    } catch (e) {
-      this.#endEditModePending = false;
-      if (e instanceof StaleUpdateError) {
-        this.emit("editState", "stale");
-      } else {
-        console.error(`[EditSession] ${(e as Error).message}`);
-      }
-    }
+    });
+  }
+
+  get lifecycle() {
+    return this.#lifecycle;
   }
 
   get inEditMode() {
-    return this.#inEditMode === true && this.#endEditModePending === false;
-  }
-
-  get editState(): EditState {
-    return this.editCount === 0 &&
-      this.#deleteCount === 0 &&
-      this.#addCount === 0
-      ? "clean"
-      : "dirty";
+    return (
+      this.#lifecycle.status === "active" ||
+      this.#lifecycle.status === "ending" ||
+      (this.#lifecycle.status === "error" &&
+        this.#lifecycle.operation === "end")
+    );
   }
 
   getOrCreateRowEdits(key: string): RowEditDetails {
@@ -297,38 +392,20 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     editedValue: VuuRowDataItemType,
     isValid: boolean,
   ) {
-    const cellEdit = cellEdits.get(column);
-    if (cellEdit) {
-      if (cellEdit.originalValue === editedValue) {
-        cellEdits.delete(column);
-        cellEdit.isDeleted = true;
-        if (cellEdit.isValid) {
-          this.editCount -= 1;
-        } else {
-          this.invalidCount -= 1;
-        }
-      } else {
-        if (isValid && cellEdit.isValid === false) {
-          cellEdit.isValid = true;
-          cellEdit.editedValue = editedValue;
-          // do not trigger the event, save it for the editCount
-          this.#invalidCount -= 1;
-          this.editCount += 1;
-        }
-      }
-      return cellEdit;
+    const existingCellEdit = cellEdits.get(column);
+    const cellEdit: CellEdit = {
+      originalValue: existingCellEdit?.originalValue ?? originalValue,
+      editedValue,
+      isValid,
+    };
+
+    if (isValid && cellEdit.originalValue === editedValue) {
+      cellEdits.delete(column);
     } else {
-      const cellEdit: CellEdit = {
-        originalValue,
-        editedValue,
-        isValid,
-      };
       cellEdits.set(column, cellEdit);
-      if (isValid) {
-        this.editCount += 1;
-      }
-      return cellEdit;
     }
+    this.#refreshEditCounts();
+    return cellEdit;
   }
 
   async commit(
@@ -338,7 +415,13 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     typedValue: string | number | boolean,
     isValid: boolean,
   ) {
-    if (!this.#inEditMode) {
+    if (
+      this.#lifecycle.status !== "active" &&
+      !(
+        this.#lifecycle.status === "error" &&
+        this.#lifecycle.operation === "end"
+      )
+    ) {
       throw new Error("No edit session in progress");
     }
     const rowEditDetails = this.getOrCreateRowEdits(key);
@@ -354,12 +437,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         isValid,
       );
 
-      if (cellEdit.isDeleted) {
-        if (rowEditDetails.cellEdits.size === 0) {
-          this.#rowEdits.delete(key);
-        }
-      }
-
       if (this.dataSource?.editCell) {
         const response = await this.dataSource.editCell(
           key,
@@ -367,8 +444,15 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
           typedValue,
         );
         if (isRpcError(response)) {
-          cellEdit.isValid = false;
-          this.invalidCount += 1;
+          this.storeCellEdit(
+            cellEdits,
+            columnName,
+            cellEdit.originalValue,
+            typedValue,
+            false,
+          );
+        } else if (cellEdits.size === 0) {
+          this.#rowEdits.delete(key);
         }
 
         return {
@@ -376,22 +460,18 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
           ...response,
         };
       }
+      if (cellEdits.size === 0) {
+        this.#rowEdits.delete(key);
+      }
     } else {
       const { cellEdits } = rowEditDetails;
-      let cellEdit = cellEdits.get(columnName);
-      if (cellEdit && cellEdit.isValid !== false) {
-        cellEdit.isValid = false;
-        this.invalidCount += 1;
-      } else if (cellEdit === undefined) {
-        cellEdit = this.storeCellEdit(
-          cellEdits,
-          columnName,
-          originalValue,
-          typedValue,
-          isValid,
-        );
-        this.invalidCount += 1;
-      }
+      this.storeCellEdit(
+        cellEdits,
+        columnName,
+        originalValue,
+        typedValue,
+        isValid,
+      );
       return { editedDuringCurrentSession: false };
     }
   }

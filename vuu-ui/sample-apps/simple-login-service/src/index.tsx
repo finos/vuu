@@ -14,6 +14,7 @@ const config = {
   ssl: true,
   authUrl: "http://localhost:5001",
   moduleRegistryUrl: "/module-registry.json",
+  redirectUrl: 'https://localhost:8443/index.html',
   restUrl: "api/authn",
   websocketUrl: "wss://localhost:8090/websocket",
 };

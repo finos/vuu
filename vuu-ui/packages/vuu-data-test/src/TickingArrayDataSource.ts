@@ -27,8 +27,8 @@ import type {
   VuuRpcServiceRequest,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
+import { isInlineEditingSession } from "@vuu-ui/vuu-data-editing";
 import {
-  isInlineEditingSession,
   isRpcSuccess,
   isTypeaheadRequest,
   Range,

@@ -2,12 +2,11 @@ import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import { useEditableTable, type EditMode } from "@vuu-ui/vuu-data-editing";
 import { type SyntheticEvent, useCallback, useMemo, useState } from "react";
 import { editableColumns, moduleColumnDescriptors } from "./columnDescriptors";
-import { toColumnName } from "@vuu-ui/vuu-utils/dist/index.mjs";
+import { toColumnName } from "@vuu-ui/vuu-utils";
 import { useData } from "@vuu-ui/vuu-utils2";
 
-
 export const useModuleAdmin = () => {
-  const { VuuDataSource } = useData()
+  const { VuuDataSource } = useData();
 
   const [editMode, setEditMode] = useState<EditMode>("view");
 
@@ -24,18 +23,21 @@ export const useModuleAdmin = () => {
     return new VuuDataSource({
       bufferSize: 200,
       columns: moduleColumnDescriptors.map(toColumnName),
-      table: { module: 'MODULE_DISCOVERY', table: 'modules' },
+      table: { module: "MODULE_DISCOVERY", table: "modules" },
+    });
+  }, [VuuDataSource]);
 
-    })
-  }, [VuuDataSource])
-
-  const config = useMemo<TableConfig | undefined>(
-    () =>
-    ({
+  const config = useMemo<TableConfig>(
+    () => ({
       columnLayout: "static",
-      columns: editMode === 'edit'
-        ? moduleColumnDescriptors.map(col => editableColumns.includes(col.name) ? { ...col, editable: true } : col)
-        : moduleColumnDescriptors,
+      columns:
+        editMode === "edit"
+          ? moduleColumnDescriptors.map((col) =>
+              editableColumns.includes(col.name)
+                ? { ...col, editable: true }
+                : col,
+            )
+          : moduleColumnDescriptors,
       rowSeparators: true,
       zebraStripes: true,
     }),
@@ -46,16 +48,20 @@ export const useModuleAdmin = () => {
     setEditMode("view");
   }, []);
 
-  const { dataSource: ds, editSession, onCancel, onSave } = useEditableTable({
+  const {
+    canCancel,
+    canSave,
+    dataSource: ds,
+    editSession,
+    lifecycle,
+    onCancel,
+    onSave,
+  } = useEditableTable({
     dataSource,
     isEditMode: editMode === "edit",
     onCancel: exitEditMode,
     onSave: exitEditMode,
   });
-
-  console.log('[useModuleAdmion], editSession', {
-    editSession
-  })
 
   // if (error) {
   //   return { error, status: "error" };
@@ -65,5 +71,17 @@ export const useModuleAdmin = () => {
   //   return { status: "loading" };
   // }
 
-  return { config, dataSource: ds, editMode, editSession, onCancel, onSave, onToggleEditMode, status: "ready" };
+  return {
+    canCancel,
+    canSave,
+    config,
+    dataSource: ds,
+    editMode,
+    editSession,
+    lifecycle,
+    onCancel,
+    onSave,
+    onToggleEditMode,
+    status: "ready",
+  };
 };

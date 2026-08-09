@@ -7,10 +7,11 @@ let initialization: Promise<boolean> | undefined;
 
 const getKeycloak = (authConfig: AuthConfig) => {
   if (!keycloak) {
+    const { authUrl: url, realm = 'vuu', clientId = 'vuu-portal' } = authConfig;
     keycloak = new Keycloak({
-      url: authConfig.authUrl,
-      realm: "vuu",
-      clientId: "vuu-portal",
+      url,
+      realm,
+      clientId,
     });
   }
 
@@ -18,7 +19,7 @@ const getKeycloak = (authConfig: AuthConfig) => {
 };
 
 export class KeycloakAuthHandler implements AuthHandler {
-  constructor(private authConfig: AuthConfig) {}
+  constructor(private authConfig: AuthConfig) { }
 
   authenticate = async () => {
     const keycloak = getKeycloak(this.authConfig);

@@ -36,6 +36,7 @@ describe("exchangeVuuToken", () => {
     });
     expect(fetch).toHaveBeenCalledWith(target.restUrl, {
       headers: { Authorization: "Bearer identity-token" },
+      method: "POST"
     });
   });
 

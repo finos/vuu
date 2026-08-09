@@ -54,6 +54,7 @@ export interface IdentityAuthenticationProps {
   connectionId?: string;
   mode: "identity";
   onError?: AuthenticationErrorHandler;
+  registry?: VuuConnectionRegistry;
 }
 
 export interface VuuConnectionAuthenticationProps {
@@ -72,6 +73,7 @@ interface IdentityContextValue {
   getIdentityToken: () => Promise<string>;
   logout: () => Promise<void>;
   portalTarget: VuuAuthTarget;
+  registry: VuuConnectionRegistry;
   user: User;
 }
 
@@ -122,7 +124,7 @@ const useConnectionSession = (
 
   useEffect(() => {
     let active = true;
-    let unsubscribe = () => { };
+    let unsubscribe = () => {};
 
     registry
       .acquire(authHandler, target)
@@ -202,6 +204,7 @@ const IdentityAuthenticationProvider = ({
   children,
   connectionId = "portal",
   onError,
+  registry = vuuConnectionRegistry,
 }: IdentityAuthenticationProps) => {
   const authHandler = useMemo(
     () => new authHandlerClass(authConfig),
@@ -255,6 +258,7 @@ const IdentityAuthenticationProvider = ({
       identity={identity}
       portalTarget={portalTarget}
       onError={onError}
+      registry={registry}
     >
       {children}
     </AuthenticatedIdentityProvider>
@@ -267,31 +271,46 @@ const AuthenticatedIdentityProvider = ({
   identity,
   onError,
   portalTarget,
+  registry,
 }: {
   authHandler: AuthHandler;
   children: ReactNode;
   identity: AuthenticatedIdentity;
   onError?: AuthenticationErrorHandler;
   portalTarget: VuuAuthTarget;
+  registry: VuuConnectionRegistry;
 }) => {
-  const session = useConnectionSession(authHandler, portalTarget, onError);
+  const session = useConnectionSession(
+    authHandler,
+    portalTarget,
+    onError,
+    registry,
+  );
   const getIdentityToken = useCallback(
     () => authHandler.getIdentityToken(),
     [authHandler],
   );
   const logout = useCallback(async () => {
-    await vuuConnectionRegistry.disconnectAll();
+    await registry.disconnectAll();
     await authHandler.logout();
-  }, [authHandler]);
+  }, [authHandler, registry]);
   const identityContext = useMemo<IdentityContextValue>(
     () => ({
       authHandler,
       getIdentityToken,
       logout,
       portalTarget,
+      registry,
       user: identity.user,
     }),
-    [authHandler, getIdentityToken, identity.user, logout, portalTarget],
+    [
+      authHandler,
+      getIdentityToken,
+      identity.user,
+      logout,
+      portalTarget,
+      registry,
+    ],
   );
 
   if (!session) {
@@ -324,7 +343,12 @@ const VuuConnectionAuthenticationProvider = ({
     () => normalizeVuuAuthTarget(connection, identity.portalTarget),
     [connection, identity.portalTarget],
   );
-  const session = useConnectionSession(identity.authHandler, target, onError);
+  const session = useConnectionSession(
+    identity.authHandler,
+    target,
+    onError,
+    identity.registry,
+  );
 
   if (!session) {
     return null;
