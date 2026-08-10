@@ -17,6 +17,7 @@ export interface EditButtonProps {
 }
 
 export const EditButtons = ({
+  canCancel,
   canSave,
   confirmCancel,
   confirmSave,
@@ -69,14 +70,14 @@ export const EditButtons = ({
           Add Rows
         </Button>
       )}
-      <Button
-        disabled={!canSave}
-        onClick={handleSave}
-        sentiment="accented"
-      >
+      <Button disabled={!canSave} onClick={handleSave} sentiment="accented">
         {editState === "stale" ? `${saveLabel} (force)` : saveLabel}
       </Button>
-      {onCancel && <Button onClick={handleCancel}>Cancel</Button>}
+      {onCancel && (
+        <Button disabled={!canCancel} onClick={handleCancel}>
+          Cancel
+        </Button>
+      )}
     </>
   );
 };

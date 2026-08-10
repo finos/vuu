@@ -1,4 +1,10 @@
-import { ToggleButton, ToggleButtonGroup, Toolbar, ToolbarContent, Tooltray } from "@salt-ds/core";
+import {
+  ToggleButton,
+  ToggleButtonGroup,
+  Toolbar,
+  ToolbarContent,
+  Tooltray,
+} from "@salt-ds/core";
 import { DataEditingProvider, EditButtons } from "@vuu-ui/vuu-data-editing";
 import { Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
@@ -6,10 +12,20 @@ import { useModuleAdmin } from "./useModuleAdmin";
 
 import "./ModuleAdmin.css";
 
-const classBase = 'vuuModuleAdmin';
+const classBase = "vuuModuleAdmin";
 
 const ModuleAdmin = () => {
-  const { canSave, editMode, editSession, onCancel, onSave, onToggleEditMode, config, dataSource, ...moduleAdmin } = useModuleAdmin();
+  const {
+    canCancel,
+    canSave,
+    editMode,
+    editSession,
+    onCancel,
+    onSave,
+    onToggleEditMode,
+    config,
+    dataSource,
+  } = useModuleAdmin();
 
   // if (moduleAdmin.status === "loading") {
   //   return (
@@ -35,23 +51,17 @@ const ModuleAdmin = () => {
             <ToolbarContent position="end">
               <Tooltray align="end">
                 <ToggleButtonGroup onChange={onToggleEditMode} value={editMode}>
-                  <ToggleButton value="view">
-                    View
-                  </ToggleButton>
-                  <ToggleButton value="edit">
-                    Edit
-                  </ToggleButton>
+                  <ToggleButton value="view">View</ToggleButton>
+                  <ToggleButton value="edit">Edit</ToggleButton>
                 </ToggleButtonGroup>
               </Tooltray>
             </ToolbarContent>
-
           </Tooltray>
         </ToolbarContent>
-
       </Toolbar>
       <div className={`${classBase}-tableContainer`}>
         <DataEditingProvider editSession={editSession}>
-          < Table
+          <Table
             config={config}
             dataSource={dataSource}
             height="100%"
@@ -61,12 +71,13 @@ const ModuleAdmin = () => {
             width="100%"
           />
         </DataEditingProvider>
-      </div >
+      </div>
       <TableFooter>
         {editMode === "view" ? (
           <DataSourceStats dataSource={dataSource} />
         ) : (
           <EditButtons
+            canCancel={canCancel}
             canSave={canSave}
             editSession={editSession}
             onCancel={onCancel}
@@ -74,8 +85,7 @@ const ModuleAdmin = () => {
           />
         )}
       </TableFooter>
-
-    </div >
+    </div>
   );
 };
 
