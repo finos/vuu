@@ -2,7 +2,7 @@ import { init } from "@module-federation/enhanced/runtime";
 import {
   AuthenticationErrorBoundary,
   AuthenticationProvider,
-  KeycloakAuthHandler,
+  VuuAuthHandler,
 } from "@vuu-ui/vuu-auth";
 import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
 import { PageVisibilityObserver } from "@vuu-ui/vuu-utils";
@@ -44,7 +44,7 @@ async function start(): Promise<void> {
       >
         <AuthenticationProvider
           authConfig={config}
-          authHandlerClass={KeycloakAuthHandler}
+          authHandlerClass={VuuAuthHandler}
           mode="identity"
         >
           <App />

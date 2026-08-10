@@ -109,7 +109,9 @@ var EventEmitter = class {
   }
   invokeHandler(handler, args) {
     if (isArrayOfListeners(handler)) {
-      handler.slice().forEach((listener) => this.invokeHandler(listener, args));
+      handler.slice().forEach((listener) => {
+        this.invokeHandler(listener, args);
+      });
     } else {
       switch (args.length) {
         case 0:

@@ -1,48 +1,40 @@
-export type { AuthConfig } from "./AuthConfig";
 export type { RemoteModuleConnection } from "@vuu-ui/vuu-data-types";
+export type { AuthConfig } from "./AuthConfig";
 export {
   AuthenticationErrorBoundary,
-  type AuthenticationErrorBoundaryProps,
+  type AuthenticationErrorBoundaryProps
 } from "./AuthenticationErrorBoundary";
-export type {
-  AuthenticatedIdentity,
-  AuthHandler,
-  AuthHandlerClass,
-  User,
-} from "./AuthHandler";
 export {
-  AuthenticationProvider,
-  AuthenticationConfigurationError,
-  type AuthenticationErrorHandler,
-  type AuthenticationProviderProps,
-  type IdentityAuthenticationProps,
-  normalizeVuuAuthTarget,
-  VuuConnectionError,
-  type VuuConnectionAuthenticationProps,
-  useAuthenticatedUser,
+  AuthenticationConfigurationError, AuthenticationProvider, normalizeVuuAuthTarget, useAuthenticatedUser,
   useIdentityToken,
   useLogout,
   useOptionalVuuConnectionId,
   useVuuAccessToken,
-  useVuuConnectionId,
+  useVuuConnectionId, VuuConnectionError, type AuthenticationErrorHandler,
+  type AuthenticationProviderProps,
+  type IdentityAuthenticationProps, type VuuConnectionAuthenticationProps
 } from "./AuthenticationProvider";
+export type {
+  AuthenticatedIdentity,
+  AuthHandler,
+  AuthHandlerClass,
+  User
+} from "./AuthHandler";
 export { KeycloakAuthHandler } from "./KeycloakAuthHandler";
+export { VuuAuthHandler } from './VuuAuthHandler';
 export {
-  authenticateWithUsernamePassword,
-  VuuLoginHandler,
-} from "./VuuLoginHandler";
-export {
-  exchangeVuuToken,
-  type VuuAuthTarget,
-  type VuuSession,
-  VuuTokenExchangeError,
-} from "./VuuTokenExchange";
-export {
-  VuuConnectionRegistry,
-  type VuuConnectionRegistryOptions,
-  vuuConnectionRegistry,
+  VuuConnectionRegistry, vuuConnectionRegistry, type VuuConnectionRegistryOptions
 } from "./VuuConnectionRegistry";
 export {
+  authenticateWithUsernamePassword,
+  VuuLoginHandler
+} from "./VuuLoginHandler";
+export {
+  exchangeVuuToken, VuuTokenExchangeError, type VuuAuthTarget,
+  type VuuSession
+} from "./VuuTokenExchange";
+export {
   parseVuuUserFromToken,
-  type VuuUser,
+  type VuuUser
 } from "./VuuUser";
+
