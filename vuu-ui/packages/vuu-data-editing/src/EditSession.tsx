@@ -67,6 +67,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   #sourceTableDataSource?: EditApi;
   #sessionDataSource?: DataSource;
   #lifecycle: EditLifecycle = { status: "idle" };
+  /** Prevent begin/end RPCs from overlapping and observing stale lifecycle state. */
   #transitionQueue: Promise<void> = Promise.resolve();
 
   constructor(dataSource: EditApi, deleteMode: DeleteRowMode = "soft") {
@@ -243,6 +244,8 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
   #enqueue<T>(operation: () => Promise<T>): Promise<T> {
     const result = this.#transitionQueue.then(operation);
+    // Reassign to a settled continuation: callers keep the real result, while a
+    // rejected transition cannot poison the queue for later begin/end requests.
     this.#transitionQueue = result.then(
       () => undefined,
       () => undefined,

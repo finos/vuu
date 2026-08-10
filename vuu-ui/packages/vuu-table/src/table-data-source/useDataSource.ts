@@ -1,4 +1,5 @@
 import type {
+  DataSource,
   DataSourceConfigChangeHandler,
   DataSourceRow,
   DataSourceSubscribeCallback,
@@ -9,7 +10,7 @@ import type {
 } from "@vuu-ui/vuu-data-types";
 import type { SelectRowRequest, VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { Range } from "@vuu-ui/vuu-utils";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { TableProps } from "../Table";
 import type {
   DataRow,
@@ -22,8 +23,22 @@ const NullDataRow = () => ({}) as DataRow;
 
 const defaultRangeLimits = {
   maxRangeEnd: Number.MAX_SAFE_INTEGER,
-  maxRangeWidth: Number.MAX_SAFE_INTEGER
-}
+  maxRangeWidth: Number.MAX_SAFE_INTEGER,
+};
+
+type DataSourceBinding = {
+  dataRow: DataRowFunc;
+  dataRows: { current: DataRow[] };
+  dataRowWindow: DataRowMovingWindow;
+  dataSource: DataSource;
+  isReplacement: boolean;
+  range: Range;
+  rangeLimits: RangeLimits;
+  rangeRequested: boolean;
+  rowAutoSelected: boolean;
+  setColumns?: (columns: string[]) => void;
+};
+
 export interface DataSourceHookProps
   extends Pick<
     TableProps,
@@ -38,11 +53,11 @@ export interface DataSourceHookProps
   onSelect: TableRowSelectHandlerInternal;
   /**
    * Invoked whenever rowCount changes. For example when rows are added
-   * or removed from source table. RowCount will also change if filter(s) 
+   * or removed from source table. RowCount will also change if filter(s)
    * or grouping are applied.
-   *  
+   *
    * @param size - the rowCount for current dataSource (reflecting filtering etc).
-   * @param maxRangeEnd - a scroll limit that may be imposed by server. Requesting 
+   * @param maxRangeEnd - a scroll limit that may be imposed by server. Requesting
    * a range beyond this point will error.
    */
   onSizeChange: (size: number, maxRangeEnd: number) => void;
@@ -62,17 +77,47 @@ export const useDataSource = ({
   suspenseProps,
 }: DataSourceHookProps) => {
   const [, forceUpdate] = useState<unknown>(null);
-  const dataRows = useRef<DataRow[]>([]);
   const isMounted = useRef(true);
-  const hasUpdated = useRef(false);
-  const rangeRef = useRef<Range>(dataSource.range);
-  const dataRowRef = useRef<DataRowFunc>(NullDataRow);
-  const setColumnsRef = useRef<undefined | ((columns: string[]) => void)>(
-    undefined,
-  );
-  const totalRowCountRef = useRef(0);
-  const rangeLimitsRef = useRef<RangeLimits>(defaultRangeLimits)
-  const rowAutoSelected = useRef(false);
+  const previousBindingRef = useRef<DataSourceBinding | undefined>(undefined);
+  const previousBinding = previousBindingRef.current;
+  const binding: DataSourceBinding =
+    previousBinding?.dataSource === dataSource
+      ? previousBinding
+      : (() => {
+          // Keep the table's visible viewport, but require the new datasource
+          // generation to establish that range independently.
+          const previousRange = previousBinding?.range ?? dataSource.range;
+          const range = Range(
+            previousRange.from,
+            previousRange.to,
+            renderBufferSize,
+          );
+
+          return {
+            dataRow: NullDataRow,
+            dataRows: { current: [] },
+            dataRowWindow: new DataRowMovingWindow(range.withBuffer),
+            dataSource,
+            isReplacement:
+              previousBinding !== undefined &&
+              previousBinding.dataSource !== dataSource,
+            range,
+            rangeLimits: { ...defaultRangeLimits },
+            rangeRequested: false,
+            rowAutoSelected: false,
+          };
+        })();
+  previousBindingRef.current = binding;
+
+  const activeBindingRef = useRef<DataSourceBinding | undefined>(binding);
+  activeBindingRef.current = binding;
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   const autoSelect =
     autoSelectRowKey ??
@@ -80,11 +125,14 @@ export const useDataSource = ({
 
   const handleConfigChange = useCallback<DataSourceConfigChangeHandler>(
     (_config, _range, _confirmed, configChanges) => {
+      if (activeBindingRef.current !== binding) {
+        return;
+      }
       if (configChanges?.filterChanged) {
-        rowAutoSelected.current = false;
+        binding.rowAutoSelected = false;
       }
     },
-    [],
+    [binding],
   );
 
   useEffect(() => {
@@ -98,12 +146,10 @@ export const useDataSource = ({
     };
   }, [autoSelect, dataSource, handleConfigChange]);
 
-  const dataRowWindow = useMemo(
-    () => new DataRowMovingWindow(rangeRef.current.withBuffer),
-    [],
-  );
-
   const handleResume = useCallback(() => {
+    if (activeBindingRef.current !== binding) {
+      return;
+    }
     // When we resume a dataSource (after switching tabs etc)
     // client will receive rows. We may not have received any
     // setRange calls at this point so dataWindow range will
@@ -111,83 +157,81 @@ export const useDataSource = ({
     // this is a no-op.
     const { range } = dataSource;
     if (range.to !== 0) {
-      dataRowWindow.setRange(dataSource.range.withBuffer);
+      binding.dataRowWindow.setRange(dataSource.range.withBuffer);
     }
-  }, [dataRowWindow, dataSource]);
-
-  useEffect(() => {
-    return () => {
-      dataSource.removeListener("resumed", handleResume);
-    };
-  }, [dataSource, handleResume]);
+  }, [binding, dataSource]);
 
   const setData = useCallback(
     (updates: DataSourceRow[]) => {
-      const { current: DataRow } = dataRowRef;
+      if (activeBindingRef.current !== binding) {
+        return;
+      }
       for (const row of updates) {
         // for now, we create a new DataRow each time
-        dataRowWindow.add(DataRow(row));
+        binding.dataRowWindow.add(binding.dataRow(row));
       }
-      dataRows.current = dataRowWindow.data;
+      binding.dataRows.current = binding.dataRowWindow.data;
       if (isMounted.current) {
         // TODO do we ever need to worry about missing updates here ?
         forceUpdate({});
       }
     },
-    [dataRowWindow],
+    [binding],
   );
 
   const selectRow = useCallback(
     (dataRow: DataRow) => {
       const rowKey = dataRow.key;
-      dataSource.select?.({
+      binding.dataSource.select?.({
         preserveExistingSelection: false,
         rowKey,
         type: "SELECT_ROW",
       } as SelectRowRequest);
       onSelect?.(dataRow);
     },
-    [dataSource, onSelect],
+    [binding, onSelect],
   );
 
   /**
    * Use the dataRowFactory to build a custom DataRow. It will use
-   * the schema columns to correctly interpret data values from the 
-   * underlying Vuu array row structure. 
+   * the schema columns to correctly interpret data values from the
+   * underlying Vuu array row structure.
    */
   const createDataRow = useCallback(
     (columns: string[], schemaColumns: readonly SchemaColumn[]) => {
       const [DataRow, setColumns] = dataRowFactory(columns, schemaColumns);
-      dataRowRef.current = DataRow;
-      setColumnsRef.current = setColumns;
+      binding.dataRow = DataRow;
+      binding.setColumns = setColumns;
     },
-    [],
+    [binding],
   );
 
   const datasourceMessageHandler: DataSourceSubscribeCallback = useCallback(
     (message) => {
+      if (activeBindingRef.current !== binding) {
+        return;
+      }
       if (message.type === "subscribed") {
         createDataRow(message.columns, message.tableSchema.columns);
         if (message.tableSchema.rangeLimits) {
-          rangeLimitsRef.current = message.tableSchema.rangeLimits;
+          binding.rangeLimits = message.tableSchema.rangeLimits;
         }
         onSubscribed?.(message);
       } else if (message.type === "subscribe-failed") {
         console.warn(`subscribe failed ${message.msg}`);
       } else if (message.type === "viewport-update") {
         if (typeof message.size === "number") {
-          onSizeChange?.(message.size, rangeLimitsRef.current.maxRangeEnd);
+          onSizeChange?.(message.size, binding.rangeLimits.maxRangeEnd);
           // const size = dataRowWindow.data.length;
-          dataRowWindow.setRowCount(message.size);
-          totalRowCountRef.current = message.size;
+          binding.dataRowWindow.setRowCount(message.size);
         }
         if (message.rows) {
           setData(message.rows);
-          if (autoSelect && rowAutoSelected.current === false) {
+          if (autoSelect && binding.rowAutoSelected === false) {
             // OR if no selected row in message.rows, e.g after a filter
-            rowAutoSelected.current = true;
+            binding.rowAutoSelected = true;
             if (typeof autoSelect === "string") {
-              const dataRow = dataRowWindow.getByKey(autoSelect);
+              const dataRow = binding.dataRowWindow.getByKey(autoSelect);
               if (dataRow) {
                 selectRow(dataRow);
               } else {
@@ -195,29 +239,27 @@ export const useDataSource = ({
                   `[useDataSource] autoSelect row key ${autoSelect} not in viewport`,
                 );
               }
-            } else if (dataRowWindow.hasData) {
-              selectRow(dataRowWindow.firstRow);
+            } else if (binding.dataRowWindow.hasData) {
+              selectRow(binding.dataRowWindow.firstRow);
             }
           }
         } else if (message.size === 0) {
           setData([]);
         } else if (typeof message.size === "number") {
-          dataRows.current = dataRowWindow.data;
-          hasUpdated.current = true;
+          binding.dataRows.current = binding.dataRowWindow.data;
         }
       } else if (message.type === "viewport-clear") {
-        onSizeChange?.(0, rangeLimitsRef.current.maxRangeEnd);
-        dataRowWindow.setRowCount(0);
+        onSizeChange?.(0, binding.rangeLimits.maxRangeEnd);
+        binding.dataRowWindow.setRowCount(0);
         setData([]);
-        forceUpdate({});
       } else {
         console.log(`useDataSource unexpected message ${message.type}`);
       }
     },
     [
       autoSelect,
+      binding,
       createDataRow,
-      dataRowWindow,
       onSizeChange,
       onSubscribed,
       selectRow,
@@ -226,34 +268,32 @@ export const useDataSource = ({
   );
 
   const getSelectedRows = useCallback(() => {
-    return dataRowWindow.getSelectedRows();
-  }, [dataRowWindow]);
+    return binding.dataRowWindow.getSelectedRows();
+  }, [binding]);
 
   useEffect(() => {
-    if (dataSource.status === "disabled") {
-      dataSource.enable?.(datasourceMessageHandler);
-    }
-  }, [dataSource, datasourceMessageHandler]);
-
-  useMemo(() => {
-    setColumnsRef.current?.(dataSource.columns);
-  }, [dataSource.columns]);
+    binding.setColumns?.(dataSource.columns);
+  }, [binding, dataSource.columns]);
 
   const setRange = useCallback(
     (viewportRange: VuuRange) => {
-      if (!rangeRef.current.equals(viewportRange)) {
+      if (
+        binding.rangeRequested === false ||
+        !binding.range.equals(viewportRange)
+      ) {
         const range = Range(
           viewportRange.from,
           viewportRange.to,
           renderBufferSize,
         );
 
-        dataRowWindow.setRange(range.withBuffer);
+        binding.range = range;
+        binding.rangeRequested = true;
+        binding.dataRowWindow.setRange(range.withBuffer);
 
         if (
-          dataSource.status !== "subscribed" &&
-          dataSource.status !== "subscribing" &&
-          dataSource.status !== "enabling"
+          dataSource.status === "initialising" ||
+          dataSource.status === "unsubscribed"
         ) {
           dataSource?.subscribe(
             {
@@ -266,13 +306,13 @@ export const useDataSource = ({
             datasourceMessageHandler,
           );
         } else {
-          dataSource.range = rangeRef.current = range;
+          dataSource.range = range;
         }
       }
     },
     [
       autoSelectRowKey,
-      dataRowWindow,
+      binding,
       dataSource,
       datasourceMessageHandler,
       renderBufferSize,
@@ -281,7 +321,16 @@ export const useDataSource = ({
   );
 
   useEffect(() => {
-    if (dataSource.status !== "initialising") {
+    activeBindingRef.current = binding;
+    const status = dataSource.status;
+    const shouldRestoreRange =
+      binding.isReplacement && binding.rangeRequested === false;
+    if (shouldRestoreRange) {
+      onSizeChange(0, defaultRangeLimits.maxRangeEnd);
+    }
+    dataSource.on("resumed", handleResume);
+
+    if (status !== "initialising" && status !== "unsubscribed") {
       const { columns, tableSchema } = dataSource;
       if (tableSchema) {
         createDataRow(columns, tableSchema.columns);
@@ -290,33 +339,56 @@ export const useDataSource = ({
           "[useDataSource] a resumed dataSource must have a tableSchema",
         );
       }
+    }
+
+    if (shouldRestoreRange) {
+      setRange(binding.range);
+    }
+
+    if (status === "disabled" || status === "disabling") {
+      dataSource.enable?.(datasourceMessageHandler);
+    } else if (
+      status !== "initialising" &&
+      status !== "unsubscribed" &&
+      status !== "subscribing" &&
+      status !== "enabling"
+    ) {
       dataSource.resume?.(datasourceMessageHandler);
 
-      if (dataSource.range.from > 0) {
+      if (!binding.isReplacement && dataSource.range.from > 0) {
         // UI does not currently restore scroll position, so always reset to top of dataset
-        const { from, to } = rangeRef.current.reset;
+        const { from, to } = binding.range.reset;
         setRange({ from, to });
       }
     }
+
     return () => {
+      if (activeBindingRef.current === binding) {
+        activeBindingRef.current = undefined;
+      }
+      dataSource.removeListener("resumed", handleResume);
       dataSource.suspend?.(
         suspenseProps?.escalateToDisable,
         suspenseProps?.escalateDelay,
       );
     };
   }, [
+    binding,
     createDataRow,
     dataSource,
     datasourceMessageHandler,
+    handleResume,
+    onSizeChange,
     setRange,
-    suspenseProps,
+    suspenseProps?.escalateDelay,
+    suspenseProps?.escalateToDisable,
   ]);
 
   return {
-    dataRows: dataRows.current,
-    dataRowsRef: dataRows,
+    dataRows: binding.dataRows.current,
+    dataRowsRef: binding.dataRows,
     getSelectedRows,
-    range: rangeRef.current,
+    range: binding.range,
     setRange,
   };
 };
