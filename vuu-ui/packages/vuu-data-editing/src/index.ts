@@ -11,6 +11,7 @@ export {
   EditSession,
   isCopyOption,
   StaleUpdateError,
+  type EditLifecycle,
   type EditState,
 } from "./EditSession";
 export {

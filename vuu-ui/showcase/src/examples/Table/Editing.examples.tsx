@@ -15,6 +15,14 @@ import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { BulkEditPanel, InputCell, Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
 import {
+  DataEditingProvider,
+  EditButtons,
+  isCopyOption,
+  type EditMode,
+  useEditableTable,
+  useEditSession,
+} from "@vuu-ui/vuu-data-editing";
+import {
   ColumnDescriptor,
   ColumnTypeRendering,
   DataRow,
@@ -28,17 +36,11 @@ import {
 } from "@vuu-ui/vuu-table-types";
 import { ModalProvider, useModal } from "@vuu-ui/vuu-ui-controls";
 import {
-  DataEditingProvider,
   DataSourceProvider,
-  isCopyOption,
   registerComponent,
   toColumnName,
   useData,
-  useEditableTable,
-  useEditSession,
 } from "@vuu-ui/vuu-utils";
-import { EditButtons } from "@vuu-ui/vuu-utils/src/data-editing/EditButtons";
-import { EditMode } from "@vuu-ui/vuu-utils/src/data-editing/useEditableTable";
 import cx from "clsx";
 import {
   HTMLAttributes,
@@ -121,7 +123,14 @@ const EditTableTemplate = ({
     setEditMode("view");
   }, []);
 
-  const { dataSource, editSession, onCancel, onSave } = useEditableTable({
+  const {
+    canCancel,
+    canSave,
+    dataSource,
+    editSession,
+    onCancel,
+    onSave,
+  } = useEditableTable({
     dataSource: sourceTableDataSource,
     isEditMode: editMode === "edit",
     onCancel: exitEditMode,
@@ -274,6 +283,8 @@ const EditTableTemplate = ({
           <DataSourceStats dataSource={dataSource} />
         ) : (
           <EditButtons
+            canCancel={canCancel}
+            canSave={canSave}
             editSession={editSession}
             onCancel={onCancel}
             onSave={onSave}
@@ -315,15 +326,25 @@ const EditableInstrumentsTemplate = ({
 
   const exitEditMode = useCallback(() => setEditMode("view"), []);
 
-  const { dataSource, editSession, hasSelection, onAddRows, onDelete, onSave, sessionDataSource } =
-    useEditableTable({
-      dataSource: sourceTableDataSource,
-      deleteMode: "soft",
-      editSessionMode,
-      isEditMode: editMode === "edit",
-      onCancel: exitEditMode,
-      onSave: exitEditMode,
-    });
+  const {
+    canCancel,
+    canSave,
+    dataSource,
+    editSession,
+    hasSelection,
+    onAddRows,
+    onCancel,
+    onDelete,
+    onSave,
+    sessionDataSource,
+  } = useEditableTable({
+    dataSource: sourceTableDataSource,
+    deleteMode: "soft",
+    editSessionMode,
+    isEditMode: editMode === "edit",
+    onCancel: exitEditMode,
+    onSave: exitEditMode,
+  });
 
   const onToggleEditMode = useCallback(
     (e: SyntheticEvent<HTMLButtonElement>) => {
@@ -412,9 +433,12 @@ const EditableInstrumentsTemplate = ({
           <DataSourceStats dataSource={dataSource} />
         ) : (
           <EditButtons
+            canCancel={canCancel}
+            canSave={canSave}
             editSession={editSession}
             hasSelection={hasSelection}
             onAddRows={onAddRows}
+            onCancel={onCancel}
             onDelete={onDelete}
             onSave={onSave}
             saveLabel="Submit"
