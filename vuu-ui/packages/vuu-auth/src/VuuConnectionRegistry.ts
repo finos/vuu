@@ -8,6 +8,10 @@ import {
   type VuuAuthTarget,
   type VuuSession,
 } from "./VuuTokenExchange";
+import {
+  IdentityTokenSessionResolver,
+  type VuuSessionResolver,
+} from "./VuuSessionResolver";
 
 type EntryState =
   | "idle"
@@ -52,6 +56,7 @@ export interface VuuConnectionRegistryOptions {
   connectionClient?: VuuConnectionClient;
   exchangeToken?: typeof exchangeVuuToken;
   retryIntervals?: number[];
+  sessionResolver?: VuuSessionResolver;
 }
 
 const connectionFailed = (status: ConnectionStatus) =>
@@ -62,17 +67,18 @@ const connectionFailed = (status: ConnectionStatus) =>
 export class VuuConnectionRegistry {
   readonly #connectionClient: VuuConnectionClient;
   readonly #entries = new Map<string, ConnectionRegistryEntry>();
-  readonly #exchangeToken: typeof exchangeVuuToken;
   readonly #retryIntervals: number[];
+  readonly #sessionResolver: VuuSessionResolver;
 
   constructor({
     connectionClient = ConnectionManager,
     exchangeToken = exchangeVuuToken,
     retryIntervals = [1, 2, 3, 5, 10, 30, 60, 120],
+    sessionResolver = new IdentityTokenSessionResolver(exchangeToken),
   }: VuuConnectionRegistryOptions = {}) {
     this.#connectionClient = connectionClient;
-    this.#exchangeToken = exchangeToken;
     this.#retryIntervals = retryIntervals;
+    this.#sessionResolver = sessionResolver;
   }
 
   acquire(authHandler: AuthHandler, target: VuuAuthTarget) {
@@ -193,8 +199,10 @@ export class VuuConnectionRegistry {
 
   async #authenticateAndConnect(entry: ConnectionRegistryEntry) {
     entry.state = "authenticating";
-    const identityToken = await entry.authHandler.getIdentityToken();
-    const session = await this.#exchangeToken(identityToken, entry.target);
+    const session = await this.#sessionResolver.resolve(
+      entry.authHandler,
+      entry.target,
+    );
     entry.state = "connecting";
     const status = await this.#connectionClient.connectTo(
       entry.target.connectionId,
