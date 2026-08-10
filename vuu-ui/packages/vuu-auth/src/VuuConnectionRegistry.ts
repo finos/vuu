@@ -193,8 +193,12 @@ export class VuuConnectionRegistry {
 
   async #authenticateAndConnect(entry: ConnectionRegistryEntry) {
     entry.state = "authenticating";
-    const identityToken = await entry.authHandler.getIdentityToken();
-    const session = await this.#exchangeToken(identityToken, entry.target);
+    const session = entry.authHandler.getVuuSession
+      ? await entry.authHandler.getVuuSession(entry.target)
+      : await this.#exchangeToken(
+          await entry.authHandler.getIdentityToken(),
+          entry.target,
+        );
     entry.state = "connecting";
     const status = await this.#connectionClient.connectTo(
       entry.target.connectionId,

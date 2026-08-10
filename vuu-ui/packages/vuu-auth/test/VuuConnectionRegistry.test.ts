@@ -109,6 +109,24 @@ describe("VuuConnectionRegistry", () => {
     registry.release(target.connectionId);
   });
 
+  it("uses a direct VUU session when the auth handler provides one", async () => {
+    const connectionClient = new TestConnectionClient();
+    const exchangeToken = vi.fn();
+    const getVuuSession = vi.fn().mockResolvedValue(session);
+    const registry = new VuuConnectionRegistry({
+      connectionClient,
+      exchangeToken,
+    });
+
+    await expect(
+      registry.acquire({ ...authHandler, getVuuSession }, target),
+    ).resolves.toBe(session);
+
+    expect(getVuuSession).toHaveBeenCalledWith(target);
+    expect(exchangeToken).not.toHaveBeenCalled();
+    registry.release(target.connectionId);
+  });
+
   it("shares reconnect work with consumers mounted during an outage", async () => {
     const connectionClient = new TestConnectionClient();
     let resolveReconnect: ((session: VuuSession) => void) | undefined;

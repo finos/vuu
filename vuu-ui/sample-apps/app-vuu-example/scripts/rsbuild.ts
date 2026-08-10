@@ -12,7 +12,7 @@ const buildManifest = () => {
   return {
     clientId: 'vuu-sample-app',
     ssl: true,
-    authUrl: "https://localhost:8080",
+    authUrl: "http://localhost:5001",
     moduleRegistryUrl: "/module-registry.json",
     restUrl: "https://localhost:8443/api/authn",
     websocketUrl: "wss://localhost:8090/websocket",
