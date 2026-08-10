@@ -1,48 +1,39 @@
 import type { AuthConfig } from "./AuthConfig";
 import type { AuthHandler } from "./AuthHandler";
+import { VUU_AUTH_TOKEN_STORAGE_KEY } from "./DirectVuuSessionResolver";
 import { parseVuuUserFromToken } from "./VuuUser";
-import type { VuuAuthTarget, VuuSession } from "./VuuTokenExchange";
 
 export class VuuAuthHandler implements AuthHandler {
-  #session: VuuSession | undefined;
-
   constructor(private authConfig: AuthConfig) {}
 
   authenticate = async () => {
-    const session = this.#getSession();
-    return { user: session.user };
+    const token = this.#getToken();
+    return { user: { userName: parseVuuUserFromToken(token).name } };
   };
 
   async getIdentityToken() {
-    return this.#getSession().token;
+    return this.#getToken();
   }
 
-  getVuuSession = async (_target: VuuAuthTarget) => this.#getSession();
-
   async logout() {
-    this.#session = undefined;
+    sessionStorage.removeItem(VUU_AUTH_TOKEN_STORAGE_KEY);
     window.location.assign(this.authConfig.authUrl);
   }
 
-  #getSession(): VuuSession {
-    if (this.#session) {
-      return this.#session;
-    }
-
+  #getToken(): string {
     const token = new URLSearchParams(location.search).get("token");
-    if (!token) {
-      window.location.assign(this.authConfig.authUrl);
-      throw Error("Redirecting to VUU login");
+    if (token) {
+      sessionStorage.setItem(VUU_AUTH_TOKEN_STORAGE_KEY, token);
+      history.replaceState(null, "", location.pathname);
+      return token;
     }
 
-    const user = parseVuuUserFromToken(token);
-    const session = {
-      authorizations: user.authorizations,
-      token,
-      user: { userName: user.name },
-    };
-    this.#session = session;
-    history.replaceState(null, "", location.pathname);
-    return this.#session;
+    const storedToken = sessionStorage.getItem(VUU_AUTH_TOKEN_STORAGE_KEY);
+    if (storedToken) {
+      return storedToken;
+    }
+
+    window.location.assign(this.authConfig.authUrl);
+    throw Error("Redirecting to VUU login");
   }
 }

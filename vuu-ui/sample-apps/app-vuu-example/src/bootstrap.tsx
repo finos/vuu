@@ -2,7 +2,9 @@ import { init } from "@module-federation/enhanced/runtime";
 import {
   AuthenticationErrorBoundary,
   AuthenticationProvider,
+  DirectVuuSessionResolver,
   VuuAuthHandler,
+  VuuConnectionRegistry,
 } from "@vuu-ui/vuu-auth";
 import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
 import { PageVisibilityObserver } from "@vuu-ui/vuu-utils";
@@ -18,6 +20,9 @@ init({
 });
 
 const config = await vuuConfig;
+const registry = new VuuConnectionRegistry({
+  sessionResolver: new DirectVuuSessionResolver(),
+});
 
 // this can go in the shell
 new PageVisibilityObserver({
@@ -46,6 +51,7 @@ async function start(): Promise<void> {
           authConfig={config}
           authHandlerClass={VuuAuthHandler}
           mode="identity"
+          registry={registry}
         >
           <App />
         </AuthenticationProvider>

@@ -109,20 +109,19 @@ describe("VuuConnectionRegistry", () => {
     registry.release(target.connectionId);
   });
 
-  it("uses a direct VUU session when the auth handler provides one", async () => {
+  it("uses the configured direct VUU session resolver", async () => {
     const connectionClient = new TestConnectionClient();
     const exchangeToken = vi.fn();
-    const getVuuSession = vi.fn().mockResolvedValue(session);
+    const sessionResolver = { resolve: vi.fn().mockResolvedValue(session) };
     const registry = new VuuConnectionRegistry({
       connectionClient,
       exchangeToken,
+      sessionResolver,
     });
 
-    await expect(
-      registry.acquire({ ...authHandler, getVuuSession }, target),
-    ).resolves.toBe(session);
+    await expect(registry.acquire(authHandler, target)).resolves.toBe(session);
 
-    expect(getVuuSession).toHaveBeenCalledWith(target);
+    expect(sessionResolver.resolve).toHaveBeenCalledWith(authHandler, target);
     expect(exchangeToken).not.toHaveBeenCalled();
     registry.release(target.connectionId);
   });

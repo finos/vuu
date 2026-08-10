@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { DirectVuuSessionResolver } from "../src/DirectVuuSessionResolver";
 import { VuuAuthHandler } from "../src/VuuAuthHandler";
 
 const config = {
@@ -14,6 +15,7 @@ const token = `${btoa(
 describe("VuuAuthHandler", () => {
   afterEach(() => {
     history.replaceState(null, "", "/");
+    sessionStorage.clear();
   });
 
   it("uses the VUU token returned by the simple login service", async () => {
@@ -23,8 +25,9 @@ describe("VuuAuthHandler", () => {
     await expect(handler.authenticate()).resolves.toEqual({
       user: { userName: "alice" },
     });
+    const resolver = new DirectVuuSessionResolver();
     await expect(
-      handler.getVuuSession({
+      resolver.resolve(handler, {
         connectionId: "portal",
         restUrl: config.restUrl,
         websocketUrl: config.websocketUrl,
