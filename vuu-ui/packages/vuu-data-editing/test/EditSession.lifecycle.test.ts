@@ -1,4 +1,8 @@
 import type { EditApi } from "@vuu-ui/vuu-data-types";
+import type {
+  RpcResultError,
+  RpcResultSuccess,
+} from "@vuu-ui/vuu-protocol-types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EditSession } from "../src";
 
@@ -6,12 +10,20 @@ type Editable = Required<EditApi>;
 type BeginEdit = Editable["beginEditSession"];
 type CreateSession = Editable["createSessionDataSource"];
 type EndEdit = Editable["endEditSession"];
+type EditCell = Editable["editCell"];
+
+const SUCCESS: RpcResultSuccess = { type: "SUCCESS_RESULT", data: undefined };
+const ERROR: RpcResultError = {
+  type: "ERROR_RESULT",
+  errorMessage: "edit rejected",
+};
 
 class MockDataSource implements EditApi {
   constructor(
     private beginEdit: BeginEdit,
     private endEdit: EndEdit,
     private createSession: CreateSession,
+    private edit: EditCell = vi.fn().mockResolvedValue(SUCCESS),
   ) {}
 
   beginEditSession(...args: Parameters<BeginEdit>) {
@@ -24,6 +36,10 @@ class MockDataSource implements EditApi {
 
   createSessionDataSource(...args: Parameters<CreateSession>) {
     return this.createSession(...args);
+  }
+
+  editCell(...args: Parameters<EditCell>) {
+    return this.edit(...args);
   }
 }
 
@@ -41,14 +57,16 @@ describe("EditSession lifecycle", () => {
   let beginEdit: BeginEdit;
   let createSession: CreateSession;
   let editSession: EditSession;
+  let editCell: EditCell;
   let endEdit: EndEdit;
 
   beforeEach(() => {
     beginEdit = vi.fn();
     createSession = vi.fn();
     endEdit = vi.fn();
+    editCell = vi.fn().mockResolvedValue(SUCCESS);
     editSession = new EditSession(
-      new MockDataSource(beginEdit, endEdit, createSession),
+      new MockDataSource(beginEdit, endEdit, createSession, editCell),
     );
   });
 
@@ -148,5 +166,108 @@ describe("EditSession lifecycle", () => {
       error: beginError,
     });
     expect(editSession.inEditMode).toBe(false);
+  });
+
+  it("keeps valid and invalid counts correct through repeated edits", async () => {
+    const states: string[] = [];
+    editSession.on("editState", (state) => states.push(state));
+    await editSession.begin();
+
+    await editSession.commit("row-1", "price", 100, 101, true);
+    expect([
+      editSession.editCount,
+      editSession.invalidCount,
+      editSession.editState,
+    ]).toEqual([1, 0, "dirty"]);
+
+    await editSession.commit("row-1", "price", 100, 102, false);
+    await editSession.commit("row-1", "price", 100, 103, false);
+    expect([
+      editSession.editCount,
+      editSession.invalidCount,
+      editSession.editState,
+    ]).toEqual([0, 1, "invalid"]);
+
+    await editSession.commit("row-1", "price", 100, 104, true);
+    await editSession.commit("row-1", "price", 100, 105, true);
+    expect([
+      editSession.editCount,
+      editSession.invalidCount,
+      editSession.editState,
+    ]).toEqual([1, 0, "dirty"]);
+
+    await editSession.commit("row-1", "price", 100, 100, true);
+    expect([
+      editSession.editCount,
+      editSession.invalidCount,
+      editSession.editState,
+    ]).toEqual([0, 0, "clean"]);
+    expect(states).toEqual(["dirty", "invalid", "dirty", "clean"]);
+  });
+
+  it("moves rejected edits from valid to invalid without inflating counts", async () => {
+    editCell = vi
+      .fn()
+      .mockResolvedValueOnce(ERROR)
+      .mockResolvedValueOnce(SUCCESS)
+      .mockResolvedValueOnce(ERROR)
+      .mockResolvedValueOnce(SUCCESS);
+    editSession = new EditSession(
+      new MockDataSource(beginEdit, endEdit, createSession, editCell),
+    );
+    await editSession.begin();
+
+    await editSession.commit("row-1", "price", 100, 101, true);
+    expect([
+      editSession.editCount,
+      editSession.invalidCount,
+      editSession.editState,
+    ]).toEqual([0, 1, "invalid"]);
+
+    await editSession.commit("row-1", "price", 100, 102, true);
+    expect([editSession.editCount, editSession.invalidCount]).toEqual([1, 0]);
+
+    await editSession.commit("row-1", "price", 100, 103, true);
+    expect([editSession.editCount, editSession.invalidCount]).toEqual([0, 1]);
+
+    await editSession.commit("row-1", "price", 100, 100, true);
+    expect([
+      editSession.editCount,
+      editSession.invalidCount,
+      editSession.editState,
+    ]).toEqual([0, 0, "clean"]);
+  });
+
+  it("preserves insert state while an invalid edit is corrected and reverted", async () => {
+    await editSession.begin();
+    editSession.addRows(1);
+
+    await editSession.commit("row-1", "price", 100, 101, false);
+    expect(editSession.editState).toBe("invalid");
+
+    await editSession.commit("row-1", "price", 100, 102, true);
+    expect(editSession.editState).toBe("dirty");
+
+    await editSession.commit("row-1", "price", 100, 100, true);
+    expect([
+      editSession.editCount,
+      editSession.invalidCount,
+      editSession.addCount,
+    ]).toEqual([0, 0, 1]);
+    expect(editSession.editState).toBe("dirty");
+  });
+
+  it("notifies delete count boundaries while cell edits keep the session dirty", async () => {
+    const states: string[] = [];
+    editSession.on("editState", (state) => states.push(state));
+    await editSession.begin();
+    await editSession.commit("row-1", "price", 100, 101, true);
+    states.length = 0;
+
+    editSession.deleteCount = 1;
+    editSession.deleteCount = 0;
+
+    expect(states).toEqual(["dirty", "dirty"]);
+    expect(editSession.editState).toBe("dirty");
   });
 });

@@ -34,8 +34,7 @@ export class EditError extends Error {}
 type CellEdit = {
   originalValue: VuuRowDataItemType;
   editedValue: VuuRowDataItemType;
-  isValid?: boolean;
-  isDeleted?: boolean;
+  isValid: boolean;
 };
 
 // TODO can add more when when we know what the server implementation of error columns will look like
@@ -81,15 +80,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   set editCount(val: number) {
-    if (val !== this.#editCount) {
-      const oldCount = this.#editCount;
-      this.#editCount = val;
-      if (val === 0 && this.#deleteCount === 0 && this.#addCount === 0) {
-        this.emit("editState", "clean");
-      } else if (oldCount === 0) {
-        this.emit("editState", "dirty");
-      }
-    }
+    this.#setEditCounts(val, this.#invalidCount);
   }
 
   get invalidCount() {
@@ -97,15 +88,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   set invalidCount(val: number) {
-    if (val !== this.#invalidCount) {
-      const oldCount = this.#invalidCount;
-      this.#invalidCount = val;
-      if (val === 0) {
-        this.emit("editState", this.#editCount === 0 ? "clean" : "dirty");
-      } else if (oldCount === 0) {
-        this.emit("editState", "invalid");
-      }
-    }
+    this.#setEditCounts(this.#editCount, val);
   }
 
   get deleteCount() {
@@ -114,13 +97,10 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
   set deleteCount(val: number) {
     if (val !== this.#deleteCount) {
+      const oldState = this.editState;
       const oldCount = this.#deleteCount;
       this.#deleteCount = val;
-      if (val === 0 && this.#editCount === 0 && this.#addCount === 0) {
-        this.emit("editState", "clean");
-      } else if (oldCount === 0) {
-        this.emit("editState", "dirty");
-      }
+      this.#emitEditStateChange(oldState, oldCount === 0 || val === 0);
     }
   }
 
@@ -130,14 +110,53 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
   set addCount(val: number) {
     if (val !== this.#addCount) {
+      const oldState = this.editState;
       const oldCount = this.#addCount;
       this.#addCount = val;
-      if (val === 0 && this.#editCount === 0 && this.#deleteCount === 0) {
-        this.emit("editState", "clean");
-      } else if (oldCount === 0) {
-        this.emit("editState", "dirty");
+      this.#emitEditStateChange(oldState, oldCount === 0 || val === 0);
+    }
+  }
+
+  get editState(): EditState {
+    if (this.#invalidCount > 0) {
+      return "invalid";
+    }
+    return this.#editCount === 0 &&
+      this.#deleteCount === 0 &&
+      this.#addCount === 0
+      ? "clean"
+      : "dirty";
+  }
+
+  #emitEditStateChange(oldState: EditState, force = false) {
+    const newState = this.editState;
+    if (force || newState !== oldState) {
+      this.emit("editState", newState);
+    }
+  }
+
+  #setEditCounts(editCount: number, invalidCount: number) {
+    if (editCount !== this.#editCount || invalidCount !== this.#invalidCount) {
+      const oldState = this.editState;
+      this.#editCount = editCount;
+      this.#invalidCount = invalidCount;
+      this.#emitEditStateChange(oldState);
+    }
+  }
+
+  #refreshEditCounts() {
+    let editCount = 0;
+    let invalidCount = 0;
+    for (const { cellEdits } of this.#rowEdits.values()) {
+      for (const cellEdit of cellEdits.values()) {
+        if (cellEdit.isValid) {
+          editCount++;
+        } else {
+          invalidCount++;
+        }
       }
     }
+    this.#setEditCounts(editCount, invalidCount);
   }
 
   async deleteSelectedRows(): Promise<void> {
@@ -202,19 +221,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
 
     // Update counters after confirmed success
-    if (rowEdits) {
-      let validCount = 0;
-      let invalidCount = 0;
-      for (const [, cellEdit] of rowEdits.cellEdits) {
-        if (cellEdit.isValid === false) {
-          invalidCount++;
-        } else {
-          validCount++;
-        }
-      }
-      this.editCount = this.#editCount - validCount;
-      this.invalidCount = this.#invalidCount - invalidCount;
-    }
+    if (rowEdits) this.#refreshEditCounts();
     if (wasDeleted) {
       this.deleteCount = this.#deleteCount - 1;
     }
@@ -345,14 +352,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     );
   }
 
-  get editState(): EditState {
-    return this.editCount === 0 &&
-      this.#deleteCount === 0 &&
-      this.#addCount === 0
-      ? "clean"
-      : "dirty";
-  }
-
   getOrCreateRowEdits(key: string): RowEditDetails {
     const rowEditDetails = this.#rowEdits.get(key);
     if (rowEditDetails) {
@@ -373,38 +372,20 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     editedValue: VuuRowDataItemType,
     isValid: boolean,
   ) {
-    const cellEdit = cellEdits.get(column);
-    if (cellEdit) {
-      if (cellEdit.originalValue === editedValue) {
-        cellEdits.delete(column);
-        cellEdit.isDeleted = true;
-        if (cellEdit.isValid) {
-          this.editCount -= 1;
-        } else {
-          this.invalidCount -= 1;
-        }
-      } else {
-        if (isValid && cellEdit.isValid === false) {
-          cellEdit.isValid = true;
-          cellEdit.editedValue = editedValue;
-          // do not trigger the event, save it for the editCount
-          this.#invalidCount -= 1;
-          this.editCount += 1;
-        }
-      }
-      return cellEdit;
+    const existingCellEdit = cellEdits.get(column);
+    const cellEdit: CellEdit = {
+      originalValue: existingCellEdit?.originalValue ?? originalValue,
+      editedValue,
+      isValid,
+    };
+
+    if (isValid && cellEdit.originalValue === editedValue) {
+      cellEdits.delete(column);
     } else {
-      const cellEdit: CellEdit = {
-        originalValue,
-        editedValue,
-        isValid,
-      };
       cellEdits.set(column, cellEdit);
-      if (isValid) {
-        this.editCount += 1;
-      }
-      return cellEdit;
     }
+    this.#refreshEditCounts();
+    return cellEdit;
   }
 
   async commit(
@@ -436,12 +417,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         isValid,
       );
 
-      if (cellEdit.isDeleted) {
-        if (rowEditDetails.cellEdits.size === 0) {
-          this.#rowEdits.delete(key);
-        }
-      }
-
       if (this.dataSource?.editCell) {
         const response = await this.dataSource.editCell(
           key,
@@ -449,8 +424,15 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
           typedValue,
         );
         if (isRpcError(response)) {
-          cellEdit.isValid = false;
-          this.invalidCount += 1;
+          this.storeCellEdit(
+            cellEdits,
+            columnName,
+            cellEdit.originalValue,
+            typedValue,
+            false,
+          );
+        } else if (cellEdits.size === 0) {
+          this.#rowEdits.delete(key);
         }
 
         return {
@@ -458,22 +440,18 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
           ...response,
         };
       }
+      if (cellEdits.size === 0) {
+        this.#rowEdits.delete(key);
+      }
     } else {
       const { cellEdits } = rowEditDetails;
-      let cellEdit = cellEdits.get(columnName);
-      if (cellEdit && cellEdit.isValid !== false) {
-        cellEdit.isValid = false;
-        this.invalidCount += 1;
-      } else if (cellEdit === undefined) {
-        cellEdit = this.storeCellEdit(
-          cellEdits,
-          columnName,
-          originalValue,
-          typedValue,
-          isValid,
-        );
-        this.invalidCount += 1;
-      }
+      this.storeCellEdit(
+        cellEdits,
+        columnName,
+        originalValue,
+        typedValue,
+        isValid,
+      );
       return { editedDuringCurrentSession: false };
     }
   }

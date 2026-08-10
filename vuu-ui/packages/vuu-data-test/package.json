@@ -11,6 +11,7 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
+    "@vuu-ui/vuu-data-editing": "2.2.1",
     "@vuu-ui/vuu-data-local": "2.2.1",
     "@vuu-ui/vuu-utils": "2.2.1"
   },
