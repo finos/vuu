@@ -1,5 +1,5 @@
 export { DataEditingProvider, useEditSession } from "./DataEditingProvider";
-export { getVuuEditMessage, isInlineEditingSession } from "./edit-utils";
+export { getVuuEditMessage } from "./edit-utils";
 export { EditButtons, type EditButtonProps } from "./EditButtons";
 export {
   EditModeProvider,
@@ -9,7 +9,6 @@ export {
 export {
   EditError,
   EditSession,
-  isCopyOption,
   StaleUpdateError,
   type EditLifecycle,
   type EditState,

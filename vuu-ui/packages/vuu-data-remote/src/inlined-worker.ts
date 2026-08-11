@@ -132,45 +132,6 @@ var EventEmitter = class {
 };
 _events = new WeakMap();
 
-// ../vuu-utils/src/protocol-message-utils.ts
-var MENU_RPC_TYPES = [
-  "VIEW_PORT_MENUS_SELECT_RPC",
-  "VIEW_PORT_MENU_TABLE_RPC",
-  "VIEW_PORT_MENU_ROW_RPC",
-  "VIEW_PORT_MENU_CELL_RPC"
-];
-var INVALID_SESSION = "Invalid session";
-var SESSION_LIMIT_EXCEEDED = "User session limit exceeded";
-var INVALID_TOKEN = "Invalid token";
-var TOKEN_EXPIRED = "Token has expired";
-var InvalidLoginMessages = [
-  INVALID_SESSION,
-  SESSION_LIMIT_EXCEEDED,
-  INVALID_TOKEN,
-  TOKEN_EXPIRED
-];
-var isErrorMessage = (message) => typeof message == "object" && (message == null ? void 0 : message.type) === "ERROR";
-var isLoginErrorMessage = (message) => typeof message === "string" && InvalidLoginMessages.includes(message);
-var isSelectRequest = (message) => message && typeof message === "object" && "type" in message && (message.type === "SELECT_ROW" || message.type === "DESELECT_ROW" || message.type === "SELECT_ROW_RANGE" || message.type === "SELECT_ALL" || message.type === "DESELECT_ALL");
-var isRpcServiceRequest = (message) => message.type === "RPC_REQUEST";
-var hasViewPortContext = (message) => message.context.type === "VIEWPORT_CONTEXT";
-var isVuuMenuRpcRequest = (message) => MENU_RPC_TYPES.includes(message["type"]);
-var isOpenDialogAction = (action) => action !== void 0 && action.type === "OPEN_DIALOG_ACTION";
-var isCreateVpSuccess = (response) => response.type === "CREATE_VP_SUCCESS";
-var isSessionTable = (table) => {
-  if (table !== null && typeof table === "object" && "table" in table && "module" in table) {
-    return table.table.startsWith("session");
-  }
-  return false;
-};
-function isActionMessage(rpcResponse) {
-  return rpcResponse.type === "VIEW_PORT_MENU_RESP";
-}
-function isSessionTableActionMessage(rpcResponse) {
-  var _a, _b;
-  return isActionMessage(rpcResponse) && isOpenDialogAction(rpcResponse.action) && isSessionTable(rpcResponse.action.table) && (((_a = rpcResponse.action) == null ? void 0 : _a.renderComponent) === "inline-form" || ((_b = rpcResponse.action) == null ? void 0 : _b.renderComponent) === "grid");
-}
-
 // ../vuu-utils/src/datasource/datasource-utils.ts
 var isConnectionQualityMetrics = (msg) => msg.type === "connection-metrics";
 var isVisualLinkMessage = (msg) => msg.type.endsWith("_VISUAL_LINK");
@@ -344,6 +305,45 @@ var RangeMonitor = class {
     }
   }
 };
+
+// ../vuu-utils/src/protocol-message-utils.ts
+var MENU_RPC_TYPES = [
+  "VIEW_PORT_MENUS_SELECT_RPC",
+  "VIEW_PORT_MENU_TABLE_RPC",
+  "VIEW_PORT_MENU_ROW_RPC",
+  "VIEW_PORT_MENU_CELL_RPC"
+];
+var INVALID_SESSION = "Invalid session";
+var SESSION_LIMIT_EXCEEDED = "User session limit exceeded";
+var INVALID_TOKEN = "Invalid token";
+var TOKEN_EXPIRED = "Token has expired";
+var InvalidLoginMessages = [
+  INVALID_SESSION,
+  SESSION_LIMIT_EXCEEDED,
+  INVALID_TOKEN,
+  TOKEN_EXPIRED
+];
+var isErrorMessage = (message) => typeof message == "object" && (message == null ? void 0 : message.type) === "ERROR";
+var isLoginErrorMessage = (message) => typeof message === "string" && InvalidLoginMessages.includes(message);
+var isSelectRequest = (message) => message && typeof message === "object" && "type" in message && (message.type === "SELECT_ROW" || message.type === "DESELECT_ROW" || message.type === "SELECT_ROW_RANGE" || message.type === "SELECT_ALL" || message.type === "DESELECT_ALL");
+var isRpcServiceRequest = (message) => message.type === "RPC_REQUEST";
+var hasViewPortContext = (message) => message.context.type === "VIEWPORT_CONTEXT";
+var isVuuMenuRpcRequest = (message) => MENU_RPC_TYPES.includes(message["type"]);
+var isOpenDialogAction = (action) => action !== void 0 && action.type === "OPEN_DIALOG_ACTION";
+var isCreateVpSuccess = (response) => response.type === "CREATE_VP_SUCCESS";
+var isSessionTable = (table) => {
+  if (table !== null && typeof table === "object" && "table" in table && "module" in table) {
+    return table.table.startsWith("session");
+  }
+  return false;
+};
+function isActionMessage(rpcResponse) {
+  return rpcResponse.type === "VIEW_PORT_MENU_RESP";
+}
+function isSessionTableActionMessage(rpcResponse) {
+  var _a, _b;
+  return isActionMessage(rpcResponse) && isOpenDialogAction(rpcResponse.action) && isSessionTable(rpcResponse.action.table) && (((_a = rpcResponse.action) == null ? void 0 : _a.renderComponent) === "inline-form" || ((_b = rpcResponse.action) == null ? void 0 : _b.renderComponent) === "grid");
+}
 
 // ../vuu-utils/src/keyset.ts
 var EMPTY = [];

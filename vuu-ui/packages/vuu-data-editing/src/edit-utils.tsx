@@ -1,11 +1,5 @@
-import type { EditSessionMode, InlineEditSessionMode } from "@vuu-ui/vuu-data-types";
 import type { DataRow, RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { formatDate } from "@vuu-ui/vuu-utils";
-
-export const isInlineEditingSession = (
-  editSessionMode: EditSessionMode,
-): editSessionMode is InlineEditSessionMode =>
-  editSessionMode.startsWith("inline");
 
 const timeFormatter = formatDate({ time: "hh:mm:ss" });
 

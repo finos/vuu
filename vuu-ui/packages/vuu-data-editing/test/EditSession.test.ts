@@ -1,21 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { EditApi } from "@vuu-ui/vuu-data-types";
+import type { DataSource, EditApi } from "@vuu-ui/vuu-data-types";
 import { EditSession } from "../src";
 
 type Editable = Required<EditApi>;
-type BeginEdit = Editable["beginEditSession"];
+type CreateSession = Editable["createSessionDataSource"];
 type EndEdit = Editable["endEditSession"];
 type EditCell = Editable["editCell"];
 
 export class MockDataSource implements EditApi {
   constructor(
-    private beginEdit: BeginEdit,
+    private createSession: CreateSession,
     private endEdit: EndEdit,
     private edit: EditCell,
   ) {}
 
-  beginEditSession(...args: Parameters<BeginEdit>) {
-    return this.beginEdit(...args);
+  createSessionDataSource(...args: Parameters<CreateSession>) {
+    return this.createSession(...args);
   }
 
   endEditSession(...args: Parameters<EndEdit>) {
@@ -29,15 +29,18 @@ export class MockDataSource implements EditApi {
 
 describe("EditSession", () => {
   let editSession: EditSession;
-  let beginEdit: BeginEdit;
+  let createSession: CreateSession;
   let endEdit: EndEdit;
   let edit: EditCell;
 
   beforeEach(() => {
-    beginEdit = vi.fn();
     endEdit = vi.fn();
     edit = vi.fn();
-    const editApi = new MockDataSource(beginEdit, endEdit, edit);
+    let editApi: MockDataSource;
+    createSession = vi.fn(
+      async () => editApi as unknown as DataSource,
+    ) as CreateSession;
+    editApi = new MockDataSource(createSession, endEdit, edit);
     editSession = new EditSession(editApi);
   });
 
