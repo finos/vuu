@@ -7,7 +7,7 @@ import type {
   EditSessionMode,
   UndoRowChangeResult,
 } from "@vuu-ui/vuu-data-types";
-import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter, isRpcError } from "@vuu-ui/vuu-utils";
 
 export const isCopyOption = (
@@ -178,6 +178,26 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         this.deleteCount = this.#deleteCount + newCount;
       }
     }
+  }
+
+  async addRow(
+    rowData: Record<string, VuuRowDataItemType> = {},
+  ): Promise<RpcResult> {
+    const addRow = this.#sourceTableDataSource?.addRow;
+    if (addRow === undefined) {
+      throw Error("[EditSession] datasource does not support adding rows");
+    }
+
+    const response = await addRow.call(this.#sourceTableDataSource, rowData);
+    if (response === undefined) {
+      throw Error(
+        "[EditSession] datasource returned no response when adding row",
+      );
+    }
+    if (!isRpcError(response)) {
+      this.addCount = this.#addCount + 1;
+    }
+    return response;
   }
 
   addRows(count = 15, rowData: Record<string, VuuRowDataItemType> = {}) {
