@@ -2757,6 +2757,14 @@ export default [
               path: "src/examples/Table/TableEditing.examples.tsx",
             },
           },
+          {
+            id: "Table/TableEditing/InlineAddRow",
+            label: "InlineAddRow",
+            nodeData: {
+              componentName: "InlineAddRow",
+              path: "src/examples/Table/InlineAddRow.examples.tsx",
+            },
+          },
         ],
       },
       {
