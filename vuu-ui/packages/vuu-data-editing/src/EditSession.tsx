@@ -7,7 +7,7 @@ import type {
   UndoRowChangeResult,
 } from "@vuu-ui/vuu-data-types";
 import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
-import { EventEmitter, isRpcError } from "@vuu-ui/vuu-utils";
+import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
 
@@ -30,9 +30,6 @@ type CellEdit = {
   editedValue: VuuRowDataItemType;
   isValid: boolean;
 };
-
-// TODO can add more when when we know what the server implementation of error columns will look like
-export class StaleUpdateError extends Error {}
 
 type RowEditDetails = {
   /**

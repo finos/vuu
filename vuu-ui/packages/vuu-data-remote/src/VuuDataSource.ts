@@ -1,4 +1,3 @@
-import { StaleUpdateError } from "@vuu-ui/vuu-data-editing";
 import type {
   CopyOption,
   DataSourceBase,
@@ -45,6 +44,7 @@ import {
   itemsOrOrderChanged,
   logger,
   Range,
+  StaleUpdateError,
   throttle,
   uuid,
 } from "@vuu-ui/vuu-utils";

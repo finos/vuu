@@ -3,8 +3,9 @@ import type {
   RpcResultError,
   RpcResultSuccess,
 } from "@vuu-ui/vuu-protocol-types";
+import { StaleUpdateError as UtilsStaleUpdateError } from "@vuu-ui/vuu-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { EditSession } from "../src";
+import { EditSession, StaleUpdateError } from "../src";
 
 type Editable = Required<EditApi>;
 type AddRow = Editable["addRow"];
@@ -180,6 +181,24 @@ describe("EditSession lifecycle", () => {
 
     await editSession.end();
     expect(editSession.lifecycle).toEqual({ status: "idle" });
+  });
+
+  it("re-exports and handles stale update errors", async () => {
+    const staleUpdateError = new StaleUpdateError("stale update");
+    const editStateListener = vi.fn();
+    endEdit = vi.fn().mockRejectedValue(staleUpdateError);
+    let dataSource: MockDataSource;
+    createSession = vi.fn(
+      async () => dataSource as unknown as DataSource,
+    ) as CreateSession;
+    dataSource = new MockDataSource(endEdit, createSession);
+    editSession = new EditSession(dataSource);
+    editSession.on("editState", editStateListener);
+
+    expect(StaleUpdateError).toBe(UtilsStaleUpdateError);
+    await editSession.begin();
+    await expect(editSession.end()).rejects.toBe(staleUpdateError);
+    expect(editStateListener).toHaveBeenCalledWith("stale");
   });
 
   it("runs edits and end operations on the created session datasource", async () => {
