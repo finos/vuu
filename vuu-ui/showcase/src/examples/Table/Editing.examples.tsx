@@ -174,49 +174,60 @@ const EditTableTemplate = ({
     [],
   );
   const config = useMemo<TableConfig>(
-    () => ({
-      columns:
-        editMode === "view"
-          ? InstrumentColumns
-          : InstrumentColumns.map((col) =>
+    () => {
+
+      if (editMode === 'view' && dataSource.columns.includes('setToDelete')) {
+        dataSource.columns = dataSource.columns.filter(col => col !== 'setToDelete')
+      } else if (editMode === 'edit' && !dataSource.columns.includes('setToDelete')) {
+        dataSource.columns = dataSource.columns.concat('setToDelete');
+      }
+
+      return {
+        columns:
+          editMode === "view"
+            ? InstrumentColumns
+            : InstrumentColumns.map((col) =>
               col.name === "lotSize"
                 ? {
-                    ...col,
-                    editable: true,
-                    type: editableType,
-                  }
+                  ...col,
+                  editable: true,
+                  type: editableType,
+                }
                 : col.name === "currency"
                   ? {
-                      ...col,
-                      editable: true,
-                      type: {
-                        name: "string",
-                        renderer: {
-                          name: "dropdown-cell",
-                          values: [
-                            "CAD",
-                            "EUR",
-                            "GBP",
-                            "GBX",
-                            "JPY",
-                            "SEK",
-                            "USD",
-                          ],
-                        },
+                    ...col,
+                    editable: true,
+                    type: {
+                      name: "string",
+                      renderer: {
+                        name: "dropdown-cell",
+                        values: [
+                          "CAD",
+                          "EUR",
+                          "GBP",
+                          "GBX",
+                          "JPY",
+                          "SEK",
+                          "USD",
+                        ],
                       },
-                    }
+                    },
+                  }
                   : col.name === "isin" ||
-                      col.name === "vuuCreatedTimestamp" ||
-                      col.name === "vuuUpdatedTimestamp" ||
-                      col.name === "vuuMsg"
+                    col.name === "vuuCreatedTimestamp" ||
+                    col.name === "vuuUpdatedTimestamp" ||
+                    col.name === "vuuMsg"
                     ? col
                     : { ...col, editable: true },
-            ),
-      columnDefaultWidth: 150,
-      rowSeparators: true,
-      zebraStripes: true,
-    }),
-    [editMode, editableType],
+            ).concat({
+              name: 'setToDelete'
+            }),
+        columnDefaultWidth: 150,
+        rowSeparators: true,
+        zebraStripes: true,
+      };
+    },
+    [dataSource, editMode, editableType],
   );
 
   return (
@@ -354,24 +365,37 @@ const EditableInstrumentsTemplate = ({
   );
 
   const isRowSelectable = useCallback(
-    (dataRow: DataRow) => dataRow.vuuMsg !== "SOFT_DELETED",
+    (dataRow: DataRow) => dataRow.setToDelete !== true,
     [],
   );
 
   const config = useMemo<TableConfig>(
-    () => ({
-      columns:
-        editMode === "view"
-          ? InstrumentColumns
-          : [
-              ...InstrumentColumns.map((col) =>
-                col.name === "isin" ||
+    () => {
+
+      const { columns } = dataSource;
+      if (editMode === 'view' && columns.includes('setToDelete')) {
+        dataSource.columns = columns.filter(col => col !== 'setToDelete')
+      } else if (editMode === 'edit' && !columns.includes('setToDelete')) {
+        dataSource.columns = columns.concat('setToDelete');
+      }
+
+      return {
+        columns:
+          editMode === "view"
+            ? InstrumentColumns
+            :
+            InstrumentColumns.map((col) =>
+              col.name === "isin" ||
                 col.name === "vuuCreatedTimestamp" ||
                 col.name === "vuuUpdatedTimestamp" ||
                 col.name === "vuuMsg"
-                  ? col
-                  : { ...col, editable: true },
-              ),
+                ? col
+                : { ...col, editable: true },
+            ).concat(
+              {
+                name: 'setToDelete',
+                hidden: true,
+              },
               {
                 name: "undo",
                 source: "client",
@@ -385,13 +409,14 @@ const EditableInstrumentsTemplate = ({
                     },
                   },
                 } as DataValueTypeDescriptor,
-              },
-            ],
-      columnDefaultWidth: 150,
-      rowSeparators: true,
-      zebraStripes: true,
-    }),
-    [editMode],
+              }),
+
+        columnDefaultWidth: 150,
+        rowSeparators: true,
+        zebraStripes: true,
+      };
+    },
+    [dataSource, editMode],
   );
 
   return (
@@ -546,7 +571,7 @@ const UndoCellRenderer = ({ column, dataRow }: TableCellRendererProps) => {
   // the sessionTableMessageColumn directly from the row data — it is always present
   // when the row re-renders.
   const isRowChanged =
-    editSession?.hasRowChanges(dataRow.key) || dataRow[sessionTableMessageColumn] === "SOFT_DELETED";
+    editSession?.hasRowChanges(dataRow.key) || dataRow.setToDelete === true || dataRow[sessionTableMessageColumn] === "SOFT_DELETED";
 
   if (!isRowChanged) return null;
   return (

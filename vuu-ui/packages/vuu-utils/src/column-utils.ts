@@ -1105,7 +1105,8 @@ export const assertAllColumnsAreIncludedInSubscription = (
 ) => {
   const unsubscribedColumns: string[] = [];
   for (const column of columns) {
-    if (column.source !== "client" && !columnNames?.includes(column.name)) {
+    // temp exclusion for setToDelte, this will be removed later
+    if (column.source !== "client" && column.name !== 'setToDelete' && !columnNames?.includes(column.name)) {
       unsubscribedColumns.push(column.name);
     }
   }
