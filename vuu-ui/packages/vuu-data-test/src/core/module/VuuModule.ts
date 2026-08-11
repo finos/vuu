@@ -36,7 +36,6 @@ import {
   uuid,
 } from "@vuu-ui/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "../../Table";
-import { isProxySessionTable, SessionTable } from "../../SessionTable";
 import { TickingArrayDataSource } from "../../TickingArrayDataSource";
 import { RuntimeVisualLink } from "../../RuntimeVisualLink";
 import moduleContainer from "./ModuleContainer";
@@ -67,7 +66,7 @@ export interface IVuuModule<T extends string = string> {
   ) => DataSourceBase<DataSourceRowWithBigint>;
 }
 
-export type SessionTableMap = Record<string, SessionTable | Table>;
+export type SessionTableMap = Record<string, Table>;
 
 export type ServiceHandler = (
   rpcRequest: VuuRpcServiceRequest,
@@ -402,15 +401,15 @@ export abstract class VuuModule<T extends string = string>
     return this.#sessionTableMap;
   }
 
-  protected getSessionTable(sessionTableName: string): SessionTable;
+  protected getSessionTable(sessionTableName: string): Table;
   protected getSessionTable(
     sessionTableName: string,
     throwIfNotFound: true,
-  ): SessionTable;
+  ): Table;
   protected getSessionTable(
     sessionTableName: string,
     throwIfNotFound: false,
-  ): SessionTable | undefined;
+  ): Table | undefined;
   protected getSessionTable(sessionTableName: string, throwIfNotFound = true) {
     const sessionTable = this.#sessionTableMap[sessionTableName];
     if (sessionTable) {
@@ -434,8 +433,8 @@ export abstract class VuuModule<T extends string = string>
         if (mode === "soft") {
           sessionTable.update(
             key,
-            this.#sessionTableMessageColumn,
-            "SOFT_DELETED",
+            "setToDelete",
+            true,
           );
         } else {
           sessionTable.delete(key);
@@ -468,7 +467,7 @@ export abstract class VuuModule<T extends string = string>
       const { viewPortId } = rpcRequest.context;
       const { mode = "soft" } = rpcRequest.params;
       const sessionTable = this.getSessionTable(viewPortId, false);
-      if (sessionTable && isProxySessionTable(sessionTable)) {
+      if (sessionTable) {
         const { dataSource } = this.getSubscriptionByViewport(viewPortId);
         const selectedRowIds = (
           dataSource as TickingArrayDataSource
@@ -506,8 +505,7 @@ export abstract class VuuModule<T extends string = string>
       const { viewPortId } = rpcRequest.context;
       const { key } = rpcRequest.params;
       const sessionTable = this.getSessionTable(viewPortId, false);
-      if (sessionTable && isProxySessionTable(sessionTable)) {
-        // Get the real source Table instance to avoid Proxy/private-field issues with findByKey
+      if (sessionTable) {
         const { dataSource } = this.getSubscriptionByViewport(viewPortId);
         const sourceTable = this.tables[dataSource.table?.table as T];
         if (!sourceTable) {
@@ -516,29 +514,26 @@ export abstract class VuuModule<T extends string = string>
             errorMessage: `undoRowChange: source table not found for viewport ${viewPortId}`,
           };
         }
-        // Detect newly inserted rows — they are not present in the source table
         const sourceRow = sourceTable.findByKey(key);
         if (!sourceRow) {
-          // Newly added row: remove it from the session entirely
           sessionTable.delete(key);
           return { type: "SUCCESS_RESULT", data: { wasInsertedRow: true } };
         }
-        // Existing source row: revert session updates back to source table values
-        const updates = sessionTable.getSessionUpdates();
-        const rowUpdates = updates.get(key);
-        if (rowUpdates) {
-          for (const column of Object.keys(rowUpdates.cellUpdates)) {
-            const originalValue = sourceRow[sourceTable.map[column]];
-            sessionTable.update(key, column, originalValue);
+        const sessionRow = sessionTable.findByKey(key);
+        if (sessionRow) {
+          const restoredRow = sessionRow.slice();
+          for (const column of sourceTable.schema.columns) {
+            restoredRow[sessionTable.map[column.name]] =
+              sourceRow[sourceTable.map[column.name]];
           }
-          // Remove so endEditSession won't apply stale changes
-          updates.delete(key);
+          sessionTable.updateRow(restoredRow);
+          sessionTable.update(key, "setToDelete", false);
         }
         return { type: "SUCCESS_RESULT", data: undefined };
       }
       return {
         type: "ERROR_RESULT",
-        errorMessage: `undoRowChange: no active proxy session table for viewport ${viewPortId}`,
+        errorMessage: `undoRowChange: no active session table for viewport ${viewPortId}`,
       };
     }
     return {
@@ -563,7 +558,7 @@ export abstract class VuuModule<T extends string = string>
     if (isEditCellRpcRequest(rpcRequest)) {
       const { viewPortId } = rpcRequest.context;
       const { column, data, key } = rpcRequest.params;
-      let targetTable: SessionTable | Table = this.#sessionTableMap[viewPortId];
+      let targetTable: Table = this.#sessionTableMap[viewPortId];
       if (!targetTable) {
         const { dataSource } = this.getSubscriptionByViewport(viewPortId);
         if (dataSource.table) {
@@ -759,6 +754,7 @@ export abstract class VuuModule<T extends string = string>
       const columnMap = sessionTable.map;
       const columnCount = Object.keys(columnMap).length;
       const row: VuuDataRow = new Array(columnCount).fill("");
+      row[columnMap.setToDelete] = false;
       for (const [col, idx] of Object.entries(columnMap)) {
         if (data[col] !== undefined) {
           row[idx] = data[col];
@@ -787,61 +783,62 @@ export abstract class VuuModule<T extends string = string>
 
         if (rpcRequest.params.save === true) {
           let rejectedCount = 0;
-          if (isProxySessionTable(sessionTable)) {
-            const updates = sessionTable.getSessionUpdates();
-            updates.forEach((rowUpdates, key) => {
-              const { cellUpdates, lastUpdateTimestamp } = rowUpdates;
-              const currentRow = sourceTable.findByKey(key);
-              const lastUpdateTimestampOnTable =
-                currentRow[sourceTable.map.vuuUpdatedTimestamp];
-              if (lastUpdateTimestamp !== lastUpdateTimestampOnTable) {
-                // We will reject updates for this row, update sessionn table row with message
-                rejectedCount += 1;
-                const sessionTableRow = sessionTable.findByKey(key);
-                const newRow = sessionTableRow.slice();
-                const messages: string[] = [];
-                Object.entries(cellUpdates).forEach(([column, value]) => {
-                  messages.push(`${column}:${value}`);
-                });
-                newRow[sessionTable.map[this.#sessionTableMessageColumn]] =
-                  messages.join(",");
-                sessionTable.updateRow(newRow);
-              } else {
-                const newRow = currentRow.slice();
-                Object.entries(cellUpdates).forEach(([column, value]) => {
-                  newRow[sourceTable.map[column]] = value;
-                });
-                sourceTable.updateRow(newRow);
+          const vuuMsgIdx = sessionTable.map[this.#sessionTableMessageColumn];
+          const setToDeleteIdx = sessionTable.map.setToDelete;
+          const sessionTimestampIdx = sessionTable.map.vuuUpdatedTimestamp;
+          const sourceTimestampIdx = sourceTable.map.vuuUpdatedTimestamp;
+          const sourceColumns = sourceTable.schema.columns;
+          for (let i = 0; i < sessionTable.data.length; i++) {
+            const sessionRow = sessionTable.data[i];
+            const key = String(sessionRow[sessionTable.map[sourceTable.schema.key]]);
+            const currentRow = sourceTable.findByKey(key);
+            if (sessionRow[setToDeleteIdx]) {
+              if (currentRow) {
+                const sessionTimestamp = sessionRow[sessionTimestampIdx];
+                const sourceTimestamp = currentRow[sourceTimestampIdx];
+                if (
+                  typeof sessionTimestamp === "number" &&
+                  typeof sourceTimestamp === "number" &&
+                  sourceTimestamp > sessionTimestamp
+                ) {
+                  rejectedCount += 1;
+                  sessionTable.update(
+                    key,
+                    this.#sessionTableMessageColumn,
+                    "stale delete",
+                  );
+                } else {
+                  sourceTable.delete(key);
+                }
               }
-            });
-            updates.clear();
-          } else {
-            // empty-session-table / csv-upload: insert only rows with no errors.
-            // vuuMsg is empty string for valid rows and non-empty for error rows.
-            const vuuMsgIdx = sessionTable.map[this.#sessionTableMessageColumn];
-            const sourceColumns = sourceTable.schema.columns;
-            for (let i = 0; i < sessionTable.data.length; i++) {
-              const sessionRow = sessionTable.data[i];
-              if (sessionRow[vuuMsgIdx]) continue;
-              const sourceRow: Array<bigint | VuuRowDataItemType> =
+              continue;
+            }
+            if (sessionRow[vuuMsgIdx]) continue;
+            if (currentRow) {
+              for (const column of sourceColumns) {
+                const value = sessionRow[sessionTable.map[column.name]];
+                if (currentRow[sourceTable.map[column.name]] !== value) {
+                  sourceTable.update(key, column.name, value);
+                }
+              }
+            } else {
+              sourceTable.insert(
                 sourceColumns.map(
-                  (col) => sessionRow[sessionTable.map[col.name]],
-                );
-              sourceTable.insert(sourceRow);
+                  (column) => sessionRow[sessionTable.map[column.name]],
+                ),
+              );
             }
           }
-
           if (rejectedCount > 0) {
             return {
               errorMessage: "stale update",
               type: "ERROR_RESULT",
             };
-          } else {
-            return {
-              type: "SUCCESS_RESULT",
-              data: undefined,
-            };
           }
+          return {
+            type: "SUCCESS_RESULT",
+            data: undefined,
+          };
         } else {
           return {
             type: "SUCCESS_RESULT",
@@ -918,10 +915,15 @@ export abstract class VuuModule<T extends string = string>
   }
 
   protected createSessionTableWithAllRows(
-    sourceTable: Table,
+    { data, schema }: Table,
     sessionTableName: string,
   ) {
-    return SessionTable(sourceTable, sessionTableName);
+    const sessionSchema = sessionTableSchema(schema);
+    return new Table(
+      sessionSchema,
+      data.map((row) => [...row, "", false]),
+      buildDataColumnMapFromSchema(sessionSchema),
+    );
   }
 
   protected createEmptySessionTable(
@@ -952,7 +954,7 @@ export abstract class VuuModule<T extends string = string>
     for (let i = 0; i < selectedRowIds.length; i++) {
       for (let j = 0; j < data.length; j++) {
         if (data[j][keyIndex] === selectedRowIds[i]) {
-          sessionData.push(data[j]);
+          sessionData.push([...data[j], "", false]);
         }
       }
     }

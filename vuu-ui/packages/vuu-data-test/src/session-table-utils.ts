@@ -13,19 +13,23 @@ export const createSessionTableFromSelectedRows = (
   for (let i = 0; i < selectedRowIds.length; i++) {
     for (let j = 0; j < table.data.length; j++) {
       if (table.data[j][KEY] === selectedRowIds[i]) {
-        sessionData.push(table.data[j]);
+        sessionData.push([...table.data[j], "", false]);
       }
     }
   }
 
+  const schema = sessionTableSchema(table.schema);
   return new Table(
-    table.schema,
+    schema,
     sessionData,
-    buildDataColumnMapFromSchema(table.schema),
+    buildDataColumnMapFromSchema(schema),
   );
 };
 
 export const sessionTableSchema = (schema: TableSchema): TableSchema => ({
   ...schema,
-  columns: schema.columns.concat({ name: "vuuMsg", serverDataType: "string" }),
+  columns: schema.columns.concat(
+    { name: "vuuMsg", serverDataType: "string" },
+    { name: "setToDelete", serverDataType: "boolean" },
+  ),
 });
