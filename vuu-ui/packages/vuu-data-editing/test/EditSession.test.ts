@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { EditApi } from "@vuu-ui/vuu-data-types";
-import { EditSession } from "../../src";
+import type { EditApi } from "@vuu-ui/vuu-data-types";
+import { EditSession } from "../src";
 
 type Editable = Required<EditApi>;
 type BeginEdit = Editable["beginEditSession"];
@@ -47,8 +47,8 @@ describe("EditSession", () => {
     expect(editSession.inEditMode).toEqual(false);
   });
 
-  it("edits outside an edit session throw an error", () => {
-    expect(() =>
+  it("edits outside an edit session throw an error", async () => {
+    await expect(() =>
       editSession.commit("key-01", "col-1", 100, 150, true),
     ).rejects.toThrowError(/No edit session in progress/);
   });
@@ -152,10 +152,22 @@ describe("EditSession", () => {
     await editSession.begin();
 
     //prettier-ignore
-    let {editedDuringCurrentSession} = await editSession.commit("key-01", "col-1", 100, 200, true);
+    let { editedDuringCurrentSession } = await editSession.commit(
+      "key-01",
+      "col-1",
+      100,
+      200,
+      true,
+    );
     expect(editedDuringCurrentSession).toEqual(true);
     //prettier-ignore
-    ({editedDuringCurrentSession} = await editSession.commit("key-01", "col-1", 200, 100, true));
+    ({ editedDuringCurrentSession } = await editSession.commit(
+      "key-01",
+      "col-1",
+      200,
+      100,
+      true,
+    ));
     expect(editedDuringCurrentSession).toEqual(false);
 
     await editSession.end();
@@ -168,13 +180,31 @@ describe("EditSession", () => {
     await editSession.begin();
 
     //prettier-ignore
-    let {editedDuringCurrentSession} = await editSession.commit("key-01", "col-1", 100, 'abc', false);
+    let { editedDuringCurrentSession } = await editSession.commit(
+      "key-01",
+      "col-1",
+      100,
+      "abc",
+      false,
+    );
     expect(editedDuringCurrentSession).toEqual(false);
     //prettier-ignore
-    ({editedDuringCurrentSession} = await editSession.commit("key-01", "col-1", 'abc', 200, true));
+    ({ editedDuringCurrentSession } = await editSession.commit(
+      "key-01",
+      "col-1",
+      "abc",
+      200,
+      true,
+    ));
     expect(editedDuringCurrentSession).toEqual(true);
     //prettier-ignore
-    ({editedDuringCurrentSession} = await editSession.commit("key-01", "col-1", 200, 100, true));
+    ({ editedDuringCurrentSession } = await editSession.commit(
+      "key-01",
+      "col-1",
+      200,
+      100,
+      true,
+    ));
     expect(editedDuringCurrentSession).toEqual(false);
 
     await editSession.end();

@@ -1,11 +1,11 @@
 import { Input, Tooltip } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
+import type { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
+import { getVuuEditMessage } from "@vuu-ui/vuu-data-editing";
 import {
   dataDescriptorTypeToVuuRowDataItemType,
-  getVuuEditMessage,
   registerComponent,
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
