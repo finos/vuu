@@ -3,12 +3,12 @@
 import "./global-mocks";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 //----------------------------------------------------
-import {
+import type {
   ServerAPI,
   WithBaseFilter,
   WithFullConfig,
 } from "@vuu-ui/vuu-data-types";
-import {
+import type {
   LinkDescriptorWithLabel,
   VuuSortCol,
 } from "@vuu-ui/vuu-protocol-types";
@@ -21,6 +21,15 @@ type ConfigType = WithBaseFilter<WithFullConfig>;
 vi.mock("../src/ConnectionManager", () => ({
   default: {
     serverAPI: new Promise<ServerAPI>((resolve) => {
+      // biome-ignore lint/suspicious/noTsIgnore: <Test Mock>
+      // @ts-ignore
+      resolve({
+        send: vi.fn(),
+        subscribe: vi.fn(),
+      });
+    }),
+    serverAPIFor: new Promise<ServerAPI>((resolve) => {
+      // biome-ignore lint/suspicious/noTsIgnore: <Test Mock>
       // @ts-ignore
       resolve({
         send: vi.fn(),
@@ -51,6 +60,7 @@ describe("VuuDataSource", () => {
   describe("constructor", () => {
     it("cannot be created without table", () => {
       try {
+        // biome-ignore lint/suspicious/noTsIgnore: <Test Mock>
         // @ts-ignore
         new VuuDataSource();
         throw Error("RemoteDataSource was created without table");
@@ -61,6 +71,7 @@ describe("VuuDataSource", () => {
         );
       }
       try {
+        // biome-ignore lint/suspicious/noTsIgnore: <Test Mock>
         // @ts-ignore
         new VuuDataSource({});
         throw Error("RemoteDataSource was created without table");
@@ -71,6 +82,7 @@ describe("VuuDataSource", () => {
         );
       }
       try {
+        // biome-ignore lint/suspicious/noTsIgnore: <Test Mock>
         // @ts-ignore
         new VuuDataSource({
           bufferSize: 100,
