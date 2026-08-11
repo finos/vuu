@@ -9,7 +9,7 @@ on:
   pull_request:
     paths:
       - "*"
-      - '.github/workflows/test-ui.yml'
+      - ".github/workflows/test-ui.yml"
       - "vuu-ui/**"
 
 jobs:
@@ -121,4 +121,4 @@ jobs:
       - name: Build Vuu Libraries
         run: cd ./vuu-ui && npm run build
       - name: Build Vuu app
-        run: cd ./vuu-ui && npm run build:app
+        run: cd ./vuu-ui && npm run build:mf
