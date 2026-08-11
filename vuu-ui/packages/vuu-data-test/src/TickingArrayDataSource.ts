@@ -205,7 +205,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     if (this.#sessionDataSource) {
       console.warn(
         `[TickingArrayDataSource] sendRowsToClient suppressed during active edit session` +
-          ` (forceFullRefresh=${forceFullRefresh}, ${row ? `rowKey=${row[6]}` : "full batch - likely setRange/scroll"})`,
+        ` (forceFullRefresh=${forceFullRefresh}, ${row ? `rowKey=${row[6]}` : "full batch - likely setRange/scroll"})`,
       );
       return;
     }
@@ -267,11 +267,16 @@ export class TickingArrayDataSource extends ArrayDataSource {
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
 
+      const config = {
+        ...this.config,
+        columns: this.config.columns.concat('setToDelete')
+      }
+
       if (isInlineEditingSession(editSessionMode)) {
         this.#sessionDataSource = this.#vuuModule?.createDataSource(
           sessionTable.table,
           sessionTable.table,
-          this.config,
+          config,
         );
 
         this.#sessionDataSource?.subscribe(
@@ -284,7 +289,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
         return this.#vuuModule?.createDataSource(
           sessionTable.table,
           sessionTable.table,
-          this.config,
+          config,
         );
       }
 
@@ -384,6 +389,18 @@ export class TickingArrayDataSource extends ArrayDataSource {
       response ?? { type: "ERROR_RESULT", errorMessage: "undoRowChange failed" }
     );
   };
+
+  set columns(columns: string[]) {
+    super.columns = columns;
+  }
+
+  get columns() {
+    if (this.#sessionDataSource) {
+      return this.#sessionDataSource.config.columns;
+    } else {
+      return super.columns;
+    }
+  }
 
   async endEditSession(saveChanges = false) {
     const type = "RPC_REQUEST";
