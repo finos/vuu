@@ -4,7 +4,6 @@ export { default as tableContainer } from "./core/table/TableContainer";
 export * from "./local-datasource-provider/LocalDatasourceProvider";
 export * from "./makeSuggestions";
 export * from "./schemas";
-export { SessionTable } from "./SessionTable";
 export * from "./simul";
 export * from "./basket";
 export {
