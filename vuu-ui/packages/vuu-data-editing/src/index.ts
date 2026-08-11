@@ -9,10 +9,10 @@ export {
 export {
   EditError,
   EditSession,
-  StaleUpdateError,
   type EditLifecycle,
   type EditState,
 } from "./EditSession";
+export { StaleUpdateError } from "@vuu-ui/vuu-utils";
 export {
   useEditableTable,
   type EditableTableHookProps,

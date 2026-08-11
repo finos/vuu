@@ -24,8 +24,12 @@ import type {
   VuuRpcServiceRequest,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-import { StaleUpdateError } from "@vuu-ui/vuu-data-editing";
-import { isRpcSuccess, isTypeaheadRequest, uuid } from "@vuu-ui/vuu-utils";
+import {
+  isRpcSuccess,
+  isTypeaheadRequest,
+  StaleUpdateError,
+  uuid,
+} from "@vuu-ui/vuu-utils";
 import type {
   IVuuModule,
   RpcMenuService,

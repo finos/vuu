@@ -20,6 +20,7 @@ export * from "./datasource/datasource-utils";
 export * from "./date";
 export * from "./debug-utils";
 export * from "./event-emitter";
+export * from "./errors";
 export * from "./feature-utils";
 export * from "./filters";
 export * from "./form-utils";
