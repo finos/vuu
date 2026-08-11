@@ -27,8 +27,11 @@ vuu-ui/showcase/scripts/build.ts
 vuu-ui/showcase/scripts/utils.mjs
 vuu-ui/scripts/build-rollup.mjs
 vuu-ui/scripts/utils.mjs
+vuu-ui/scripts/utils.ts
 vuu-ui/scripts/build.mjs
+vuu-ui/scripts/build-rslib.ts
 vuu-ui/scripts/build-typelib.mjs
+vuu-ui/scripts/copy-license.ts
 vuu-ui/tools/vuu-showcase/scripts/build-file-list.ts
 vuu-ui/tools/vuu-showcase/scripts/showcase-build.ts
 vuu-ui/tools/vuu-showcase/scripts/showcase-dev.ts
