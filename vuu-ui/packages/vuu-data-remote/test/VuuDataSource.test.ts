@@ -18,26 +18,19 @@ import { Range } from "@vuu-ui/vuu-utils";
 
 type ConfigType = WithBaseFilter<WithFullConfig>;
 
-vi.mock("../src/ConnectionManager", () => ({
-  default: {
-    serverAPI: new Promise<ServerAPI>((resolve) => {
-      // biome-ignore lint/suspicious/noTsIgnore: <Test Mock>
-      // @ts-ignore
-      resolve({
-        send: vi.fn(),
-        subscribe: vi.fn(),
-      });
-    }),
-    serverAPIFor: new Promise<ServerAPI>((resolve) => {
-      // biome-ignore lint/suspicious/noTsIgnore: <Test Mock>
-      // @ts-ignore
-      resolve({
-        send: vi.fn(),
-        subscribe: vi.fn(),
-      });
-    }),
-  },
-}));
+vi.mock("../src/ConnectionManager", () => {
+  const serverAPI = Promise.resolve({
+    send: vi.fn(),
+    subscribe: vi.fn(),
+  } as ServerAPI);
+
+  return {
+    default: {
+      serverAPI,
+      serverAPIFor: vi.fn(() => serverAPI),
+    },
+  };
+});
 
 const defaultSubscribeOptions = {
   aggregations: [],
@@ -120,6 +113,27 @@ describe("VuuDataSource", () => {
       expect(dataSource.columns).toEqual(columns);
       expect(dataSource.filter).toEqual(filterSpec);
       expect(dataSource.sort).toEqual(sort);
+    });
+  });
+
+  describe("addRow", () => {
+    it("returns the successful RPC result", async () => {
+      const dataSource = new VuuDataSource({ table });
+      const response = { data: undefined, type: "SUCCESS_RESULT" } as const;
+      vi.spyOn(dataSource, "rpcRequest").mockResolvedValue(response);
+
+      await expect(dataSource.addRow({ id: 7 })).resolves.toEqual(response);
+    });
+
+    it("returns the failed RPC result", async () => {
+      const dataSource = new VuuDataSource({ table });
+      const response = {
+        errorMessage: "Insert rejected",
+        type: "ERROR_RESULT",
+      } as const;
+      vi.spyOn(dataSource, "rpcRequest").mockResolvedValue(response);
+
+      await expect(dataSource.addRow({ id: 7 })).resolves.toEqual(response);
     });
   });
 

@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EditSession } from "../src";
 
 type Editable = Required<EditApi>;
+type AddRow = Editable["addRow"];
 type BeginEdit = Editable["beginEditSession"];
 type CreateSession = Editable["createSessionDataSource"];
 type EndEdit = Editable["endEditSession"];
@@ -24,7 +25,12 @@ class MockDataSource implements EditApi {
     private endEdit: EndEdit,
     private createSession: CreateSession,
     private edit: EditCell = vi.fn().mockResolvedValue(SUCCESS),
+    private addRowImpl?: AddRow,
   ) {}
+
+  addRow(...args: Parameters<AddRow>) {
+    return this.addRowImpl?.(...args);
+  }
 
   beginEditSession(...args: Parameters<BeginEdit>) {
     return this.beginEdit(...args);
@@ -80,6 +86,47 @@ describe("EditSession lifecycle", () => {
     expect(lifecycleListener.mock.calls.map(([state]) => state.status)).toEqual(
       ["starting", "active", "ending", "idle"],
     );
+  });
+
+  it("adds a populated row and updates the add count after success", async () => {
+    const addRow = vi.fn<AddRow>().mockResolvedValue({
+      data: undefined,
+      type: "SUCCESS_RESULT",
+    });
+    editSession = new EditSession(
+      new MockDataSource(
+        beginEdit,
+        endEdit,
+        createSession,
+        editCell,
+        addRow,
+      ),
+    );
+
+    await editSession.addRow({ id: 7, name: "Alice" });
+
+    expect(addRow).toHaveBeenCalledWith({ id: 7, name: "Alice" });
+    expect(editSession.addCount).toBe(1);
+  });
+
+  it("does not update the add count when adding a row fails", async () => {
+    const addRow = vi.fn<AddRow>().mockResolvedValue({
+      errorMessage: "Insert rejected",
+      type: "ERROR_RESULT",
+    });
+    editSession = new EditSession(
+      new MockDataSource(
+        beginEdit,
+        endEdit,
+        createSession,
+        editCell,
+        addRow,
+      ),
+    );
+
+    await editSession.addRow({ id: 7 });
+
+    expect(editSession.addCount).toBe(0);
   });
 
   it("serializes end behind a pending begin", async () => {
