@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@vuu-ui/vuu-codemirror": "2.2.1",
+    "@vuu-ui/vuu-data-editing": "2.2.1",
     "@vuu-ui/vuu-data-react": "2.2.1",
     "@vuu-ui/vuu-data-types": "2.2.1",
     "@vuu-ui/vuu-table-types": "2.2.1",

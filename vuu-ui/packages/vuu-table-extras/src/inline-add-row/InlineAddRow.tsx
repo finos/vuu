@@ -1,5 +1,6 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { useEditSession } from "@vuu-ui/vuu-data-editing";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import type { BaseRowProps } from "@vuu-ui/vuu-table-types";
 import { VuuInput } from "@vuu-ui/vuu-ui-controls";
@@ -10,7 +11,6 @@ import {
   type CommitHandler,
 } from "@vuu-ui/vuu-utils";
 import { useCallback, useId, useMemo, useRef, useState } from "react";
-import { useEditSession } from "./DataEditingProvider";
 import {
   getMissingValueErrors,
   type InlineAddRowErrors,
@@ -86,7 +86,6 @@ export const InlineAddRow = ({
           return;
         }
         setErrorMessages({});
-        setValues({});
         setValues({});
       } catch (error) {
         const finalColumn = visibleColumns.at(-1);
