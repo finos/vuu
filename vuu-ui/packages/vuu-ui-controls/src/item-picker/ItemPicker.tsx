@@ -1,4 +1,17 @@
 import {
+<<<<<<< HEAD
+=======
+  ForwardedRef,
+  forwardRef,
+  RefCallback,
+  HTMLAttributes,
+  MouseEventHandler,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
+import {
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
   Button,
   Input,
   ListBox,
@@ -9,6 +22,7 @@ import {
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { applyHighlighting } from "@vuu-ui/vuu-table";
+<<<<<<< HEAD
 import {
   DragDropProvider,
   ItemTypeName,
@@ -35,6 +49,17 @@ import {
   ItemPickerHookProps,
   useItemPicker,
 } from "./useItemPicker";
+=======
+import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
+import { DragDropProvider, useSortable } from "@vuu-ui/vuu-utils";
+import {
+  ItemDescriptor,
+  CreateCustomItemProps,
+  ItemPickerHookProps,
+  useItemPicker,
+} from "./useItemPicker";
+import cx from "clsx";
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
 
 import itemPickerCss from "./ItemPicker.css";
 
@@ -46,11 +71,24 @@ export interface ItemPickerProps
   extends ItemPickerHookProps,
     HTMLAttributes<HTMLDivElement>,
     Pick<ListBoxProps<ItemDescriptor>, "selected" | "onSelectionChange"> {
+<<<<<<< HEAD
   itemTypeName: ItemTypeName;
   createCustomItemProps?: CreateCustomItemProps;
 }
 
 const searchIcon = <Icon name="search" />;
+=======
+  itemTypeSingular: string;
+  createCustomItemProps?: CreateCustomItemProps;
+}
+
+const getItemLabel = (item: ItemDescriptor) => {
+  if (item.label) return item.label;
+  else return item.name;
+};
+
+const searchIcon = <span data-icon="search" />;
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
 const NO_SELECTION: ItemDescriptor[] = [] as const;
 
 const useSorting = (id: string, index: number) => {
@@ -130,7 +168,10 @@ const AvailableListItem = ({
   item,
   onAdd,
   searchPattern = "",
+<<<<<<< HEAD
   disabled,
+=======
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
   ...optionProps
 }: OptionProps & {
   index: number;
@@ -146,7 +187,10 @@ const AvailableListItem = ({
       {...optionProps}
       className={cx(classNameProp, classBaseListItem)}
       data-name={item.name}
+<<<<<<< HEAD
       disabled={disabled}
+=======
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
     >
       <span className={`${classBase}-text`}>{valueWithHighlighting}</span>
       <IconButton
@@ -156,7 +200,10 @@ const AvailableListItem = ({
         icon="plus"
         onClick={onAdd}
         size={16}
+<<<<<<< HEAD
         disabled={disabled}
+=======
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
       />
     </Option>
   );
@@ -169,11 +216,20 @@ const AvailableListItem = ({
 export const ItemPicker = forwardRef(function ItemPicker(
   {
     className,
+<<<<<<< HEAD
     itemTypeName,
     allItems,
     selectedItems,
     maxSelections,
     onSelectedItemsChange,
+=======
+    itemTypeSingular,
+    allItems,
+    selectedItems,
+    searchPattern,
+    onSelectedItemsChange,
+    onSearchPatternChange,
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
     onSelectionChange,
     selected = NO_SELECTION,
     createCustomItemProps,
@@ -195,8 +251,11 @@ export const ItemPicker = forwardRef(function ItemPicker(
   }, []);
 
   const {
+<<<<<<< HEAD
     selectedItemsCount,
     availableItemsCount,
+=======
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
     selectedItemsFiltered,
     availableItemsFiltered,
     searchText,
@@ -207,8 +266,14 @@ export const ItemPicker = forwardRef(function ItemPicker(
   } = useItemPicker({
     allItems,
     selectedItems,
+<<<<<<< HEAD
     onSelectedItemsChange,
     maxSelections,
+=======
+    searchPattern,
+    onSelectedItemsChange,
+    onSearchPatternChange,
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
   });
 
   const listRef = useRef<HTMLDivElement>(null);
@@ -234,10 +299,16 @@ export const ItemPicker = forwardRef(function ItemPicker(
     }, 300);
   }, [availableItemsFiltered, selectedItemsFiltered]);
 
+<<<<<<< HEAD
   const searchPlaceholderText = `Find ${singularForm(itemTypeName)}`;
   const maxSelectionsSubHeading = maxSelections ? `(${maxSelections} max)` : "";
   const selectedItemsHeading = `${selectedItemsCount} ${selectedItemsCount === 1 ? singularForm(itemTypeName) : pluralForm(itemTypeName)} in view ${maxSelectionsSubHeading}`;
   const availableItemsHeading = `${availableItemsCount} available ${availableItemsCount === 1 ? singularForm(itemTypeName) : pluralForm(itemTypeName)}`;
+=======
+  const searchPlaceholderText = `Find ${itemTypeSingular.toLowerCase()}`;
+  const selectedItemsHeading = `${itemTypeSingular.charAt(0).toUpperCase()}${itemTypeSingular.toLowerCase().slice(1)}s in view`;
+  const availableItemsHeading = `Available ${itemTypeSingular.toLowerCase()}s`;
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
 
   return (
     <div
@@ -299,7 +370,10 @@ export const ItemPicker = forwardRef(function ItemPicker(
               onAdd={onAddItemToSelectedList}
               searchPattern={searchText.toLowerCase() as Lowercase<string>}
               value={item}
+<<<<<<< HEAD
               disabled={selectedItemsCount === maxSelections}
+=======
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
             />
           ))}
         </ListBox>

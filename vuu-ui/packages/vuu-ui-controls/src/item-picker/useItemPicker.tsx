@@ -1,11 +1,20 @@
+<<<<<<< HEAD
 import { queryClosest, reorderItems } from "@vuu-ui/vuu-utils";
+=======
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
 import {
   FormEventHandler,
   MouseEventHandler,
   useCallback,
   useMemo,
+<<<<<<< HEAD
   useState,
 } from "react";
+=======
+} from "react";
+import { reorderColumnItems as reorderItems } from "@vuu-ui/vuu-utils";
+import { queryClosest } from "@vuu-ui/vuu-utils";
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
 
 /** This is a public description of an Item that can be displayed in the ItemPicker component, defining all the
  * mandatory and option attributes that can be defined by the client. */
@@ -28,8 +37,14 @@ export interface CreateCustomItemProps {
 export interface ItemPickerHookProps {
   allItems: ItemDescriptor[];
   selectedItems: ItemDescriptor[];
+<<<<<<< HEAD
   maxSelections?: number;
   onSelectedItemsChange: (newSelectedItems: ItemDescriptor[]) => void;
+=======
+  searchPattern: string;
+  onSelectedItemsChange: (newSelectedItems: ItemDescriptor[]) => void;
+  onSearchPatternChange: (newSearchPattern: string) => void;
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
 }
 
 const filterItems = (
@@ -39,19 +54,26 @@ const filterItems = (
   if (pattern) {
     const lowerCasePattern = pattern.toLowerCase();
     return items.filter(
+<<<<<<< HEAD
       (item) =>
         getItemLabel(item).toLowerCase().indexOf(lowerCasePattern) !== -1,
+=======
+      ({ name }) => name.toLowerCase().indexOf(lowerCasePattern) !== -1,
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
     );
   } else {
     return items;
   }
 };
 
+<<<<<<< HEAD
 export const getItemLabel = (item: ItemDescriptor) => {
   if (item.label) return item.label;
   else return item.name;
 };
 
+=======
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
 const itemName = (target: EventTarget): string => {
   const listItem = queryClosest(target, ".saltOption", true);
   const { name } = listItem.dataset;
@@ -72,6 +94,7 @@ const byItemName = (
 export const useItemPicker = ({
   allItems,
   selectedItems,
+<<<<<<< HEAD
   maxSelections,
   onSelectedItemsChange,
 }: ItemPickerHookProps) => {
@@ -86,6 +109,15 @@ export const useItemPicker = ({
   const handleChangeSearchInput = useCallback<FormEventHandler>((evt) => {
     const { value } = evt.target as HTMLInputElement;
     setSearchPattern(value);
+=======
+  searchPattern,
+  onSelectedItemsChange,
+  onSearchPatternChange,
+}: ItemPickerHookProps) => {
+  const handleChangeSearchInput = useCallback<FormEventHandler>((evt) => {
+    const { value } = evt.target as HTMLInputElement;
+    onSearchPatternChange(value);
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
   }, []);
 
   const handleAddItemToSelectedList = useCallback<
@@ -95,7 +127,11 @@ export const useItemPicker = ({
       const name = itemName(e.target);
       const itemToAdd = allItems.find((item) => item.name === name);
       if (itemToAdd) {
+<<<<<<< HEAD
         const newSelectedItems = selectedItems.concat(itemToAdd);
+=======
+        const newSelectedItems = [...selectedItems, itemToAdd];
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
         onSelectedItemsChange(newSelectedItems);
       } else {
         throw Error(
@@ -128,7 +164,11 @@ export const useItemPicker = ({
 
   const handleReorderSelectedItems = useCallback(
     (orderedItemNames: string[]) => {
+<<<<<<< HEAD
       const reorderedSelectedItems: ItemDescriptor[] = reorderItems(
+=======
+      let reorderedSelectedItems: ItemDescriptor[] = reorderItems(
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
         selectedItems,
         orderedItemNames,
       );
@@ -137,11 +177,19 @@ export const useItemPicker = ({
     [selectedItems, onSelectedItemsChange],
   );
 
+<<<<<<< HEAD
   const getSelectedItemsFiltered = useMemo(() => {
     return filterItems(selectedItems, searchPattern);
   }, [selectedItems, searchPattern]);
 
   const getAvailableItemsFiltered = useMemo(() => {
+=======
+  const getSelectedItems = useMemo(() => {
+    return filterItems(selectedItems, searchPattern);
+  }, [selectedItems, searchPattern]);
+
+  const getAvailableItems = useMemo(() => {
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
     return filterItems(allItems, searchPattern)
       .filter(
         ({ name }) =>
@@ -150,6 +198,7 @@ export const useItemPicker = ({
       .toSorted(byItemName);
   }, [allItems, selectedItems, searchPattern]);
 
+<<<<<<< HEAD
   const getAvailableItemsCount = useMemo(() => {
     return allItems.filter(
       ({ name }) =>
@@ -162,6 +211,11 @@ export const useItemPicker = ({
     availableItemsCount: getAvailableItemsCount,
     selectedItemsFiltered: getSelectedItemsFiltered,
     availableItemsFiltered: getAvailableItemsFiltered,
+=======
+  return {
+    selectedItemsFiltered: getSelectedItems,
+    availableItemsFiltered: getAvailableItems,
+>>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
     searchText: searchPattern,
     onChangeSearchInput: handleChangeSearchInput,
     onAddItemToSelectedList: handleAddItemToSelectedList,
