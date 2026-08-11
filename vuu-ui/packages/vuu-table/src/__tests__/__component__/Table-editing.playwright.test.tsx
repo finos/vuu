@@ -6,12 +6,21 @@ import {
   EditableInstrumentsInlineEdit,
   TwoEditableInstruments,
 } from "../../../../../showcase/src/examples/Table/Editing.examples";
+import { InlineAddRow } from "../../../../../showcase/src/examples/Table/InlineAddRow.examples";
 import { expect } from "../../../../../playwright/customAssertions";
 import { TableOM } from "./TableOM";
 
 const IS_EDITABLE = true;
 const NOT_EDITABLE = false;
 const NOT_EDITING = false;
+
+test.describe("Inline add row", () => {
+  test("renders inputs in the table custom header", async ({ mount, page }) => {
+    await mount(<InlineAddRow />);
+
+    await expect(page.getByPlaceholder("Enter value").first()).toBeVisible();
+  });
+});
 
 test.describe("Editable table navigation", () => {
   test("smoke test", async ({ mount, page }) => {
