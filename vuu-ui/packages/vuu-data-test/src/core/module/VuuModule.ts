@@ -478,8 +478,8 @@ export abstract class VuuModule<T extends string = string>
             if ((mode as DeleteRowMode) === "soft") {
               sessionTable.update(
                 key,
-                this.#sessionTableMessageColumn,
-                "SOFT_DELETED",
+                "setToDelete",
+                true,
               );
             } else {
               sessionTable.delete(key);
