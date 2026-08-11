@@ -1,4 +1,4 @@
-import {
+import type {
   DataSourceBase,
   DataSourceConfig,
   DataSourceRowWithBigint,
@@ -9,7 +9,7 @@ import {
   CopyOption,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
-import {
+import type {
   VuuMenu,
   VuuRowDataItemType,
   VuuLink,
@@ -39,7 +39,7 @@ import { Table, buildDataColumnMapFromSchema } from "../../Table";
 import { TickingArrayDataSource } from "../../TickingArrayDataSource";
 import { RuntimeVisualLink } from "../../RuntimeVisualLink";
 import moduleContainer from "./ModuleContainer";
-import { sessionTableSchema } from "../../session-table-utils";
+import { sessionTableRow, sessionTableSchema } from "../../session-table-utils";
 
 const assertUpdateIsValid = (
   schema: TableSchema,
@@ -96,6 +96,7 @@ type Subscription = {
   viewportId: string;
   dataSource: DataSourceBase<DataSourceRowWithBigint>;
   sessionTableName?: string;
+  sourceTableName?: string;
 };
 export abstract class VuuModule<T extends string = string>
   implements IVuuModule<T>
@@ -103,6 +104,7 @@ export abstract class VuuModule<T extends string = string>
   #name: string;
   #sessionTableMessageColumn: string;
   #runtimeVisualLinks = new Map<string, RuntimeVisualLink>();
+  #sessionSourceTableMap: Record<string, T> = {};
   #sessionTableMap: SessionTableMap = {};
   #tableServices: Record<T, RpcService[] | undefined> | undefined;
   #subscriptionMap: Map<string, Subscription[]> = new Map();
@@ -356,7 +358,6 @@ export abstract class VuuModule<T extends string = string>
         menu: this.menus?.[tableName],
         rpcServices: this.getServices(tableName),
         rpcMenuServices: this.getMenuServices(tableName),
-        sessionTables: this.#sessionTableMap,
         viewport,
         visualLinkService: this.visualLinkService,
         vuuModule,
@@ -369,6 +370,8 @@ export abstract class VuuModule<T extends string = string>
     const subscription = {
       viewportId: dataSource.viewport as string,
       dataSource,
+      sessionTableName: sessionTable ? tableName : undefined,
+      sourceTableName: this.#sessionSourceTableMap[tableName],
     };
     if (existingSubscriptions) {
       existingSubscriptions.push(subscription);
@@ -431,11 +434,7 @@ export abstract class VuuModule<T extends string = string>
       const sessionTable = this.getSessionTable(viewPortId, false);
       if (sessionTable) {
         if (mode === "soft") {
-          sessionTable.update(
-            key,
-            "setToDelete",
-            true,
-          );
+          sessionTable.update(key, "setToDelete", true);
         } else {
           sessionTable.delete(key);
         }
@@ -476,11 +475,7 @@ export abstract class VuuModule<T extends string = string>
         if (selectedRowIds.length > 0) {
           for (const key of selectedRowIds) {
             if ((mode as DeleteRowMode) === "soft") {
-              sessionTable.update(
-                key,
-                "setToDelete",
-                true,
-              );
+              sessionTable.update(key, "setToDelete", true);
             } else {
               sessionTable.delete(key);
             }
@@ -506,8 +501,11 @@ export abstract class VuuModule<T extends string = string>
       const { key } = rpcRequest.params;
       const sessionTable = this.getSessionTable(viewPortId, false);
       if (sessionTable) {
-        const { dataSource } = this.getSubscriptionByViewport(viewPortId);
-        const sourceTable = this.tables[dataSource.table?.table as T];
+        const subscription = this.getSubscriptionByViewport(viewPortId);
+        const { dataSource } = subscription;
+        const sourceTableName =
+          subscription.sourceTableName ?? dataSource.table?.table;
+        const sourceTable = this.tables[sourceTableName as T];
         if (!sourceTable) {
           return {
             type: "ERROR_RESULT",
@@ -584,7 +582,7 @@ export abstract class VuuModule<T extends string = string>
         throw Error("[VuuModule] editCell unable to find table for dataSource");
       }
     } else {
-      throw Error(`[VuuModule] editCell invalid rpc type`);
+      throw Error("[VuuModule] editCell invalid rpc type");
     }
   };
 
@@ -658,11 +656,10 @@ export abstract class VuuModule<T extends string = string>
               sourceTable,
               sessionTableName,
               copyOption,
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
               dataSource as TickingArrayDataSource,
             );
             this.#sessionTableMap[sessionTableName] = sessionTable;
+            this.#sessionSourceTableMap[sessionTableName] = vuuTable.table as T;
             subscription.sessionTableName = sessionTableName;
             return {
               data: {
@@ -701,11 +698,10 @@ export abstract class VuuModule<T extends string = string>
               sourceTable,
               sessionTableName,
               editSessionMode as EditSessionMode,
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
               dataSource as TickingArrayDataSource,
             );
             this.#sessionTableMap[sessionTableName] = sessionTable;
+            this.#sessionSourceTableMap[sessionTableName] = vuuTable.table as T;
             subscription.sessionTableName = sessionTableName;
 
             return {
@@ -727,7 +723,7 @@ export abstract class VuuModule<T extends string = string>
         }
       }
     } else {
-      throw Error(`[VuuModule] endEditSession invalid rpc type`);
+      throw Error("[VuuModule] endEditSession invalid rpc type");
     }
 
     return {
@@ -740,9 +736,8 @@ export abstract class VuuModule<T extends string = string>
     if (isAddRowRpcRequest(rpcRequest)) {
       const { viewPortId } = rpcRequest.context;
       const subscription = this.getSubscriptionByViewport(viewPortId);
-      const sessionTable = subscription.sessionTableName
-        ? this.#sessionTableMap[subscription.sessionTableName]
-        : undefined;
+      const sessionTableName = subscription.sessionTableName ?? viewPortId;
+      const sessionTable = this.#sessionTableMap[sessionTableName];
       if (!sessionTable) {
         return {
           type: "ERROR_RESULT",
@@ -779,7 +774,9 @@ export abstract class VuuModule<T extends string = string>
       const { dataSource } = subscription;
 
       if (dataSource.table) {
-        const sourceTable = this.tables[dataSource.table.table as T];
+        const sourceTableName =
+          subscription.sourceTableName ?? dataSource.table.table;
+        const sourceTable = this.tables[sourceTableName as T];
 
         if (rpcRequest.params.save === true) {
           let rejectedCount = 0;
@@ -790,7 +787,9 @@ export abstract class VuuModule<T extends string = string>
           const sourceColumns = sourceTable.schema.columns;
           for (let i = 0; i < sessionTable.data.length; i++) {
             const sessionRow = sessionTable.data[i];
-            const key = String(sessionRow[sessionTable.map[sourceTable.schema.key]]);
+            const key = String(
+              sessionRow[sessionTable.map[sourceTable.schema.key]],
+            );
             const currentRow = sourceTable.findByKey(key);
             if (sessionRow[setToDeleteIdx]) {
               if (currentRow) {
@@ -849,7 +848,7 @@ export abstract class VuuModule<T extends string = string>
         throw Error("[VuuModule], exitEditMode");
       }
     } else {
-      throw Error(`[VuuModule] endEditSession invalid rpc type`);
+      throw Error("[VuuModule] endEditSession invalid rpc type");
     }
 
     // return {
@@ -881,14 +880,14 @@ export abstract class VuuModule<T extends string = string>
         data: undefined,
       };
     } else {
-      throw Error(`[VuuModule] applyBulkEdits invalid rpc type`);
+      throw Error("[VuuModule] applyBulkEdits invalid rpc type");
     }
   };
 
   protected createSessionTable(
     sourceTable: Table,
     sessionTableName: string,
-    editSessionMode: EditSessionMode | CopyOption = "inline-all-rows",
+    editSessionMode: EditSessionMode | CopyOption,
     dataSource: TickingArrayDataSource,
   ) {
     if (editSessionMode === "All" || editSessionMode.endsWith("all-rows")) {
@@ -921,7 +920,7 @@ export abstract class VuuModule<T extends string = string>
     const sessionSchema = sessionTableSchema(schema);
     return new Table(
       sessionSchema,
-      data.map((row) => [...row, "", false]),
+      data.map((row) => sessionTableRow(row, schema)),
       buildDataColumnMapFromSchema(sessionSchema),
     );
   }
@@ -954,7 +953,7 @@ export abstract class VuuModule<T extends string = string>
     for (let i = 0; i < selectedRowIds.length; i++) {
       for (let j = 0; j < data.length; j++) {
         if (data[j][keyIndex] === selectedRowIds[i]) {
-          sessionData.push([...data[j], "", false]);
+          sessionData.push(sessionTableRow(data[j], schema));
         }
       }
     }

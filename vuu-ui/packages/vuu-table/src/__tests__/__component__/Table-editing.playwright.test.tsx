@@ -44,9 +44,9 @@ test.describe("Editable table navigation", () => {
     await editButton.click();
 
     // get the first data cell
-    let cell1 = table.locateCell(2, 1);
-    let cell2 = table.locateCell(3, 1);
-    let cell3 = table.locateCell(3, 2);
+    const cell1 = table.locateCell(2, 1);
+    const cell2 = table.locateCell(3, 1);
+    const cell3 = table.locateCell(3, 2);
     await cell1.click();
     await table.assertCellIsFocused(cell1, "textbox");
     await cell1.press("ArrowDown");
@@ -68,10 +68,10 @@ test.describe("Editable table navigation", () => {
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
-    let cell4 = table.locateCell(2, 4);
-    let cell5 = table.locateCell(2, 5);
-    let cell6 = table.locateCell(2, 6);
-    let cell7 = table.locateCell(2, 7);
+    const cell4 = table.locateCell(2, 4);
+    const cell5 = table.locateCell(2, 5);
+    const cell6 = table.locateCell(2, 6);
+    const cell7 = table.locateCell(2, 7);
 
     // focus is in not editable, followed by 2 editable cells
     await cell5.click();
@@ -108,7 +108,7 @@ test.describe("Editable table navigation", () => {
     await editButton.click();
 
     // get the description  cell
-    let cell = table.locateCell(3, 3);
+    const cell = table.locateCell(3, 3);
     await cell.click();
     await table.assertCellIsFocused(cell, "textbox");
     await cell.press("Enter");
@@ -134,8 +134,8 @@ test.describe("Editable table navigation", () => {
     await editButton.click();
 
     // get the currency cell
-    let cell = table.locateCell(3, 2);
-    let nextCell = table.locateCell(4, 2);
+    const cell = table.locateCell(3, 2);
+    const nextCell = table.locateCell(4, 2);
     const originalValue =
       (await cell.getByRole("combobox").textContent()) ?? "";
     await cell.click();
@@ -163,7 +163,7 @@ test.describe("Editable table navigation", () => {
     await editButton.click();
 
     // get the description  cell
-    let cell = table.locateCell(3, 3);
+    const cell = table.locateCell(3, 3);
     await cell.click();
     await table.assertCellIsFocused(cell, "textbox");
     await cell.press("Enter");
@@ -187,7 +187,7 @@ test.describe("Editable table navigation", () => {
     await editButton.click();
 
     // get the description  cell
-    let cell = table.locateCell(3, 3);
+    const cell = table.locateCell(3, 3);
     await cell.click();
     await table.assertCellIsFocused(cell, "textbox");
     await cell.press("Enter");
@@ -228,7 +228,7 @@ test.describe("Cell editing", () => {
     await editButton.click();
 
     // get the lotsize  cell
-    let cell = table.locateCell(3, 6);
+    const cell = table.locateCell(3, 6);
     const originalValue = await cell.getByRole("textbox").inputValue();
     await cell.dblclick();
     await table.assertCellIsFocused(cell, "textbox");
@@ -412,6 +412,57 @@ test.describe("Edit conflicts", () => {
       await table2.assertRenderedRows({ from: 0, to: 10 }, 10, 10_000, 1);
       await table2.assertCellIsEditable(2, 1, NOT_EDITABLE, "AAOO L");
     });
+
+    test("switches source to session and back while ignoring old-source updates", async ({
+      mount,
+      page,
+    }) => {
+      await mount(
+        <LocalDataSourceProvider>
+          <TwoEditableInstruments />
+        </LocalDataSourceProvider>,
+      );
+
+      const first = page.getByTestId("edit-table-1");
+      const second = page.getByTestId("edit-table-2");
+      const firstTableElement = first.getByTestId("table-1");
+      const firstTable = new TableOM(firstTableElement);
+      const secondTable = new TableOM(second.getByTestId("table-2"));
+
+      const sourceViewport =
+        (await firstTableElement.getAttribute("data-viewport")) ?? "";
+      expect(sourceViewport).not.toBe("");
+      await first.getByTestId("toggle-edit-1").click();
+      await expect(firstTableElement).not.toHaveAttribute(
+        "data-viewport",
+        sourceViewport,
+      );
+      await firstTable.assertRenderedRows({ from: 0, to: 10 }, 10, 10_000, 1);
+
+      const firstValue = await firstTable
+        .locateCell(3, 6)
+        .getByRole("textbox")
+        .inputValue();
+
+      await second.getByTestId("toggle-edit-2").click();
+      const secondCell = secondTable.locateCell(3, 6);
+      await secondCell.dblclick();
+      await secondCell.pressSequentially("321");
+      await secondCell.press("Enter");
+      await second.getByRole("button", { name: "Save" }).click();
+
+      await expect(
+        firstTable.locateCell(3, 6).getByRole("textbox"),
+      ).toHaveValue(firstValue);
+
+      await first.getByRole("button", { name: "Cancel" }).click();
+      await expect(firstTableElement).toHaveAttribute(
+        "data-viewport",
+        sourceViewport,
+      );
+      await firstTable.assertRenderedRows({ from: 0, to: 10 }, 10, 10_000, 1);
+      await expect(firstTable.locateCell(3, 6)).toContainText("321");
+    });
   });
 
   test.describe("Save Cancel buttons", () => {
@@ -508,7 +559,9 @@ test.describe("Inline row editing (session)", () => {
     await mount(<EditableInstrumentsInlineEdit />);
 
     // View mode: no Delete/Add Rows/Submit buttons visible
-    await expect(page.getByRole("button", { name: "Delete" })).not.toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Delete" }),
+    ).not.toBeVisible();
 
     await page.getByRole("radio", { name: "Edit" }).click();
 
@@ -518,7 +571,9 @@ test.describe("Inline row editing (session)", () => {
     await expect(page.getByRole("button", { name: "Submit" })).toBeVisible();
 
     // Undo column header is visible
-    await expect(page.getByRole("columnheader", { name: "undo" })).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "undo" }),
+    ).toBeVisible();
   });
 
   test("Submit is disabled until at least one row is changed", async ({
@@ -630,7 +685,9 @@ test.describe("Inline row editing (session)", () => {
     await page.getByRole("radio", { name: "View" }).click();
 
     // Returns to view mode — action buttons gone
-    await expect(page.getByRole("button", { name: "Submit" })).not.toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Submit" }),
+    ).not.toBeVisible();
     await expect(page.getByRole("radio", { name: "View" })).toBeVisible();
   });
 });
@@ -644,7 +701,9 @@ test.describe("Session table editing (createSessionTable)", () => {
     const table = new TableOM(page.getByRole("table"));
 
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     // Column 2 = bbg (column 1 is the checkbox selector)
     const cell = table.locateCell(2, 2);
@@ -658,7 +717,9 @@ test.describe("Session table editing (createSessionTable)", () => {
   }) => {
     await mount(<CreateSessionTableInstruments />);
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     const table = new TableOM(page.getByRole("table"));
     // Column 2 = bbg
@@ -672,13 +733,12 @@ test.describe("Session table editing (createSessionTable)", () => {
     await expect(page.getByRole("button", { name: "Submit" })).toBeEnabled();
   });
 
-  test("selecting a row enables the Delete button", async ({
-    mount,
-    page,
-  }) => {
+  test("selecting a row enables the Delete button", async ({ mount, page }) => {
     await mount(<CreateSessionTableInstruments />);
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     const table = new TableOM(page.getByRole("table"));
     const deleteButton = page.getByRole("button", { name: "Delete" });
@@ -696,7 +756,9 @@ test.describe("Session table editing (createSessionTable)", () => {
   }) => {
     await mount(<CreateSessionTableInstruments />);
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     const table = new TableOM(page.getByRole("table"));
     const checkboxCell = table.locateCell(2, 1);
@@ -714,13 +776,19 @@ test.describe("Session table editing (createSessionTable)", () => {
   }) => {
     await mount(<CreateSessionTableInstruments />);
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     const submitButton = page.getByRole("button", { name: "Submit" });
     await expect(submitButton).toBeDisabled();
 
     await page.getByRole("button", { name: "Add Rows" }).click();
     await expect(submitButton).toBeEnabled();
+    await expect(page.getByRole("table")).toHaveAttribute(
+      "aria-rowcount",
+      "10015",
+    );
   });
 
   test("soft-deleted row retains vuuTableRow-noSelect class after another row is selected", async ({
@@ -729,7 +797,9 @@ test.describe("Session table editing (createSessionTable)", () => {
   }) => {
     await mount(<CreateSessionTableInstruments />);
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     const table = new TableOM(page.getByRole("table"));
 
@@ -747,7 +817,9 @@ test.describe("Session table editing (createSessionTable)", () => {
 
     // Row 2 is no longer server-selected but remains non-selectable (vuuMsg still SOFT_DELETED)
     await expect(table.row(2)).toHaveClass(/vuuTableRow-noSelect/);
-    await expect(table.row(2).getByRole("button", { name: "Undo" })).toBeVisible();
+    await expect(
+      table.row(2).getByRole("button", { name: "Undo" }),
+    ).toBeVisible();
   });
 
   test("clicking a soft-deleted row checkbox does not change row 3's selection state", async ({
@@ -756,7 +828,9 @@ test.describe("Session table editing (createSessionTable)", () => {
   }) => {
     await mount(<CreateSessionTableInstruments />);
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     const table = new TableOM(page.getByRole("table"));
     const checkboxRow2 = table.locateCell(2, 1).getByRole("checkbox");
@@ -781,7 +855,9 @@ test.describe("Session table editing (createSessionTable)", () => {
   }) => {
     await mount(<CreateSessionTableInstruments />);
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     const table = new TableOM(page.getByRole("table"));
     const deleteButton = page.getByRole("button", { name: "Delete" });
@@ -799,7 +875,9 @@ test.describe("Session table editing (createSessionTable)", () => {
   }) => {
     await mount(<CreateSessionTableInstruments />);
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     const table = new TableOM(page.getByRole("table"));
     const deleteButton = page.getByRole("button", { name: "Delete" });
@@ -823,7 +901,9 @@ test.describe("Session table editing (createSessionTable)", () => {
   }) => {
     await mount(<CreateSessionTableInstruments />);
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     const table = new TableOM(page.getByRole("table"));
 
@@ -841,6 +921,8 @@ test.describe("Session table editing (createSessionTable)", () => {
     await expect(table.row(4)).toHaveAttribute("aria-selected", "true");
     await expect(table.row(5)).toHaveAttribute("aria-selected", "true");
     // Row 3 is still soft-deleted — undo button remains
-    await expect(table.row(3).getByRole("button", { name: "Undo" })).toBeVisible();
+    await expect(
+      table.row(3).getByRole("button", { name: "Undo" }),
+    ).toBeVisible();
   });
 });

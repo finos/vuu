@@ -4,24 +4,18 @@ import type {
   DeleteRowMode,
   DeleteSelectedRowsResult,
   EditApi,
-  EditSessionMode,
   UndoRowChangeResult,
 } from "@vuu-ui/vuu-data-types";
 import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter, isRpcError } from "@vuu-ui/vuu-utils";
-
-export const isCopyOption = (
-  mode?: EditSessionMode | CopyOption,
-): mode is CopyOption =>
-  mode === "All" || mode === "Empty" || mode === "Selected";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
 
 export type EditLifecycle =
   | { status: "idle" }
   | { status: "starting" }
-  | { status: "active"; sessionDataSource?: DataSource }
-  | { status: "ending"; sessionDataSource?: DataSource }
+  | { status: "active"; sessionDataSource: DataSource }
+  | { status: "ending"; sessionDataSource: DataSource }
   | {
       status: "error";
       operation: "begin" | "end";
@@ -183,12 +177,12 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   async addRow(
     rowData: Record<string, VuuRowDataItemType> = {},
   ): Promise<RpcResult> {
-    const addRow = this.#sourceTableDataSource?.addRow;
+    const addRow = this.dataSource?.addRow;
     if (addRow === undefined) {
       throw Error("[EditSession] datasource does not support adding rows");
     }
 
-    const response = await addRow.call(this.#sourceTableDataSource, rowData);
+    const response = await addRow.call(this.dataSource, rowData);
     if (response === undefined) {
       throw Error(
         "[EditSession] datasource returned no response when adding row",
@@ -202,7 +196,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
   addRows(count = 15, rowData: Record<string, VuuRowDataItemType> = {}) {
     for (let i = 0; i < count; i++) {
-      this.#sourceTableDataSource?.addRow?.(rowData);
+      this.dataSource?.addRow?.(rowData);
     }
     this.addCount = this.#addCount + count;
   }
@@ -280,32 +274,45 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     return result;
   }
 
-  /** @deprecated Pass a `CopyOption` ("All" | "Empty" | "Selected") to use `createSessionDataSource` instead. Long-form `EditSessionMode` values will be removed in a future release. */
-  begin(mode: EditSessionMode): Promise<DataSource | undefined>;
-  begin(mode?: CopyOption): Promise<DataSource | undefined>;
-  begin(mode?: EditSessionMode | CopyOption): Promise<DataSource | undefined>;
-  begin(mode?: EditSessionMode | CopyOption): Promise<DataSource | undefined> {
+  begin(copyOption: CopyOption = "All"): Promise<DataSource> {
     return this.#enqueue(async () => {
       if (
         this.#lifecycle.status === "active" ||
         (this.#lifecycle.status === "error" &&
           this.#lifecycle.operation === "end")
       ) {
+        const sessionDataSource = this.#sessionDataSource;
+        if (!sessionDataSource) {
+          throw new Error("[EditSession] active lifecycle has no datasource");
+        }
         if (this.#lifecycle.status === "error") {
           this.#setLifecycle({
             status: "active",
-            sessionDataSource: this.#sessionDataSource,
+            sessionDataSource,
           });
         }
-        return this.#sessionDataSource;
+        return sessionDataSource;
       }
 
       this.#setLifecycle({ status: "starting" });
 
       try {
-        const sessionDataSource = isCopyOption(mode)
-          ? await this.#sourceTableDataSource?.createSessionDataSource?.(mode)
-          : await this.#sourceTableDataSource?.beginEditSession?.(mode);
+        const createSessionDataSource =
+          this.#sourceTableDataSource?.createSessionDataSource;
+        if (!createSessionDataSource) {
+          throw new Error(
+            "[EditSession] datasource does not support createSessionDataSource",
+          );
+        }
+        const sessionDataSource = await createSessionDataSource.call(
+          this.#sourceTableDataSource,
+          copyOption,
+        );
+        if (!sessionDataSource) {
+          throw new Error(
+            "[EditSession] datasource did not create a session datasource",
+          );
+        }
 
         this.#sessionDataSource = sessionDataSource;
         this.#setLifecycle({ status: "active", sessionDataSource });
@@ -336,6 +343,9 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       }
 
       const sessionDataSource = this.#sessionDataSource;
+      if (!sessionDataSource) {
+        throw new Error("[EditSession] ending lifecycle has no datasource");
+      }
       this.#setLifecycle({ status: "ending", sessionDataSource });
 
       try {

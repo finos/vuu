@@ -1,9 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 import { buildDataColumnMapFromSchema, Table } from "../src/Table";
 import { TickingArrayDataSource } from "../src/TickingArrayDataSource";
-import { sessionTableSchema } from "../src/session-table-utils";
+import {
+  sessionTableRow,
+  sessionTableSchema,
+} from "../src/session-table-utils";
 import type { TableSchema } from "@vuu-ui/vuu-data-types";
-import type { RpcResultError, RpcResultSuccess } from "@vuu-ui/vuu-protocol-types";
+import type {
+  RpcResultError,
+  RpcResultSuccess,
+} from "@vuu-ui/vuu-protocol-types";
 
 const schema: TableSchema = {
   columns: [
@@ -16,7 +22,10 @@ const schema: TableSchema = {
 };
 
 const SUCCESS: RpcResultSuccess = { type: "SUCCESS_RESULT", data: undefined };
-const ERROR = (msg: string): RpcResultError => ({ type: "ERROR_RESULT", errorMessage: msg });
+const ERROR = (msg: string): RpcResultError => ({
+  type: "ERROR_RESULT",
+  errorMessage: msg,
+});
 
 function createDataSource() {
   const table = new Table(
@@ -45,6 +54,35 @@ describe("sessionTableSchema", () => {
       { name: "vuuMsg", serverDataType: "string" },
       { name: "setToDelete", serverDataType: "boolean" },
     ]);
+  });
+
+  it("does not duplicate existing session-only columns", () => {
+    const sessionSchema = sessionTableSchema(schema);
+
+    expect(
+      sessionSchema.columns.filter(({ name }) => name === "vuuMsg"),
+    ).toHaveLength(1);
+    expect(
+      sessionSchema.columns.filter(({ name }) => name === "setToDelete"),
+    ).toHaveLength(1);
+  });
+
+  it("only appends values for missing session-only columns", () => {
+    expect(sessionTableRow(["row-001", "Alice", ""], schema)).toEqual([
+      "row-001",
+      "Alice",
+      "",
+      false,
+    ]);
+    expect(
+      sessionTableRow(["row-001", "Alice", "", false], {
+        ...schema,
+        columns: schema.columns.concat({
+          name: "setToDelete",
+          serverDataType: "boolean",
+        }),
+      }),
+    ).toEqual(["row-001", "Alice", "", false]);
   });
 });
 
@@ -172,7 +210,10 @@ describe("deleteSelectedRows", () => {
 
   it("returns the RpcResult unchanged on success", async () => {
     const ds = createDataSource();
-    const success = { type: "SUCCESS_RESULT" as const, data: { deletedKeys: ["row-001", "row-002"] } };
+    const success = {
+      type: "SUCCESS_RESULT" as const,
+      data: { deletedKeys: ["row-001", "row-002"] },
+    };
     vi.mocked(ds.rpcRequest).mockResolvedValue(success);
 
     const result = await ds.deleteSelectedRows();
@@ -276,80 +317,6 @@ describe("undoRowChange", () => {
   });
 });
 
-describe("beginEditSession", () => {
-  const sessionSuccess = {
-    type: "SUCCESS_RESULT" as const,
-    data: { table: { module: "TEST", table: "session-xyz" } },
-  };
-
-  it("keeps 'inline-all-rows' unchanged in the RPC params (client-only concept)", async () => {
-    const ds = createDataSource();
-    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
-
-    await ds.beginEditSession("inline-all-rows");
-
-    expect(ds.rpcRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rpcName: "beginEditSession",
-        params: { editSessionMode: "inline-all-rows" },
-      }),
-    );
-  });
-
-  it("sends 'all-rows' unchanged in the RPC params", async () => {
-    const ds = createDataSource();
-    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
-
-    await ds.beginEditSession("all-rows");
-
-    expect(ds.rpcRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rpcName: "beginEditSession",
-        params: { editSessionMode: "all-rows" },
-      }),
-    );
-  });
-
-  it("sends 'selected-rows' unchanged in the RPC params", async () => {
-    const ds = createDataSource();
-    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
-
-    await ds.beginEditSession("selected-rows");
-
-    expect(ds.rpcRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rpcName: "beginEditSession",
-        params: { editSessionMode: "selected-rows" },
-      }),
-    );
-  });
-
-  it("sends 'empty-session-table' unchanged in the RPC params", async () => {
-    const ds = createDataSource();
-    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
-
-    await ds.beginEditSession("empty-session-table");
-
-    expect(ds.rpcRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rpcName: "beginEditSession",
-        params: { editSessionMode: "empty-session-table" },
-      }),
-    );
-  });
-
-  it("throws with the server error message on failure", async () => {
-    const ds = createDataSource();
-    vi.mocked(ds.rpcRequest).mockResolvedValue(
-      ERROR("edit session already active"),
-    );
-
-    await expect(ds.beginEditSession("inline-all-rows")).rejects.toThrow(
-      "edit session already active",
-    );
-  });
-});
-
 describe("endEditSession", () => {
   it("dispatches endEditSession RPC with { save: true } when saving changes", async () => {
     const ds = createDataSource();
@@ -379,18 +346,20 @@ describe("endEditSession", () => {
     );
   });
 
-  it("throws 'unknown error' for an unrecognised server error", async () => {
+  it("propagates the server error message", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(ERROR("something unexpected"));
 
-    await expect(ds.endEditSession(true)).rejects.toThrow("unknown error");
+    await expect(ds.endEditSession(true)).rejects.toThrow(
+      "something unexpected",
+    );
   });
 
-  it("handles a stale-update error gracefully and does not throw", async () => {
+  it("throws a stale-update error so the session can be retried", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(ERROR("stale update"));
 
-    await expect(ds.endEditSession(true)).resolves.toBeUndefined();
+    await expect(ds.endEditSession(true)).rejects.toThrow("stale update");
   });
 });
 
@@ -441,7 +410,9 @@ describe("createSessionDataSource", () => {
 
   it("throws with the server error message on failure", async () => {
     const ds = createDataSource();
-    vi.mocked(ds.rpcRequest).mockResolvedValue(ERROR("session table creation failed"));
+    vi.mocked(ds.rpcRequest).mockResolvedValue(
+      ERROR("session table creation failed"),
+    );
     await expect(ds.createSessionDataSource?.("All")).rejects.toThrow(
       "session table creation failed",
     );

@@ -125,6 +125,51 @@ describe("VuuDataSource", () => {
       await expect(dataSource.addRow({ id: 7 })).resolves.toEqual(response);
     });
 
+    describe("createSessionDataSource", () => {
+      it("forwards CopyOption and adds required session columns once", async () => {
+        const dataSource = new VuuDataSource({
+          columns: ["id", "vuuMsg"],
+          sessionTableMessageColumn: "vuuMsg",
+          table,
+        });
+        const rpcRequest = vi
+          .spyOn(dataSource, "rpcRequest")
+          .mockResolvedValue({
+            data: {
+              table: { module: "SIMUL", table: "session-instruments" },
+            },
+            type: "SUCCESS_RESULT",
+          });
+
+        const sessionDataSource =
+          await dataSource.createSessionDataSource("Selected");
+
+        expect(rpcRequest).toHaveBeenCalledWith({
+          params: { copyOption: "Selected" },
+          rpcName: "createSessionTable",
+          type: "RPC_REQUEST",
+        });
+        expect(sessionDataSource?.columns).toEqual([
+          "id",
+          "vuuMsg",
+          "setToDelete",
+        ]);
+        expect(sessionDataSource?.viewport).toBe("session-instruments");
+      });
+
+      it("propagates session creation errors", async () => {
+        const dataSource = new VuuDataSource({ table });
+        vi.spyOn(dataSource, "rpcRequest").mockResolvedValue({
+          errorMessage: "session creation failed",
+          type: "ERROR_RESULT",
+        });
+
+        await expect(dataSource.createSessionDataSource("All")).rejects.toThrow(
+          "session creation failed",
+        );
+      });
+    });
+
     it("returns the failed RPC result", async () => {
       const dataSource = new VuuDataSource({ table });
       const response = {
