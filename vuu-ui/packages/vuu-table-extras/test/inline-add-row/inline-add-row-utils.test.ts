@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getMissingValueErrors } from "../src/inline-add-row-utils";
+import { getMissingValueErrors } from "../../src/inline-add-row/inline-add-row-utils";
 
 describe("getMissingValueErrors", () => {
   it("returns an error for every omitted value", () => {
