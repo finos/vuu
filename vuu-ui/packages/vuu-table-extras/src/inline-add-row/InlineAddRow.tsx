@@ -1,6 +1,9 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { useEditSession } from "@vuu-ui/vuu-data-editing";
+import {
+  useEditSession,
+  withDataRowEditErrors,
+} from "@vuu-ui/vuu-data-editing";
 import type { RpcResult } from "@vuu-ui/vuu-protocol-types";
 import { Row } from "@vuu-ui/vuu-table";
 import type {
@@ -28,19 +31,24 @@ const editSucceeded: RpcResult = { data: undefined, type: "SUCCESS_RESULT" };
 const createSyntheticDataRow = (
   values: InlineAddRowValues,
   columns: RuntimeColumnDescriptor[],
+  errors: InlineAddRowErrors,
 ): DataRow =>
-  ({
-    ...values,
-    childCount: 0,
-    depth: 1,
-    hasColumn: (name: string) => columns.some((column) => column.name === name),
-    index: -1,
-    isExpanded: false,
-    isLeaf: true,
-    isSelected: false,
-    key: syntheticRowKey,
-    renderIndex: -1,
-  }) as DataRow;
+  withDataRowEditErrors(
+    {
+      ...values,
+      childCount: 0,
+      depth: 1,
+      hasColumn: (name: string) =>
+        columns.some((column) => column.name === name),
+      index: -1,
+      isExpanded: false,
+      isLeaf: true,
+      isSelected: false,
+      key: syntheticRowKey,
+      renderIndex: -1,
+    } as DataRow,
+    errors,
+  );
 
 const createEditError = (errorMessage: string): RpcResult => ({
   errorMessage,
@@ -75,22 +83,21 @@ export const InlineAddRow = ({
         const editableColumn = {
           ...column,
           editable: true,
-          editError: errorMessages[column.name],
         };
         return {
           ...editableColumn,
           CellRenderer: getCellRenderer(editableColumn),
         };
       }),
-    [columns, errorMessages],
+    [columns],
   );
   const visibleColumns = useMemo(
     () => editableColumns.filter(isNotHidden),
     [editableColumns],
   );
   const dataRow = useMemo(
-    () => createSyntheticDataRow(values, editableColumns),
-    [editableColumns, values],
+    () => createSyntheticDataRow(values, editableColumns, errorMessages),
+    [editableColumns, errorMessages, values],
   );
 
   const focusEditor = useCallback((index: number) => {

@@ -399,8 +399,6 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   canStretch?: boolean;
   className?: string;
   clientSideEditValidationCheck?: DataValueValidationChecker;
-  /** Error shown by an editable cell without persisting it to an edit session. */
-  editError?: string;
   /**
    * Used to mark a column as non-draggable, e.g when pinned
    */

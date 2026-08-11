@@ -38,6 +38,7 @@ test.describe("Inline add row", () => {
       "aria-invalid",
       "true",
     );
+    await expect(finalCell).toHaveValue("new instrument");
   });
 });
 
