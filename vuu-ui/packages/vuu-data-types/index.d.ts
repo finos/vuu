@@ -577,47 +577,22 @@ export declare type DataSourceSuspenseProps = {
   escalateDelay?: number;
 };
 
-/**
- * An inline edit session allows user to apply edits directly to
- * the existing component. e.g. directly edit cells within a table.
- */
-export declare type InlineEditSessionMode = "inline-all-rows";
+/** Controls which source rows are copied into a newly created session table. */
+export declare type CopyOption = "All" | "Empty" | "Selected";
 
 /**
- * A standalone edit session re-renders editable data in an edit component.
- * e.g an edit panel may be displayed in a dialog.
+ * Wire-level values used by the legacy beginEditSession menu/server service.
+ * Client edit lifecycles use CopyOption with createSessionDataSource instead.
  */
-export declare type StandaloneEditSessionMode =
+export declare type EditSessionMode =
+  | "inline-all-rows"
   | "selected-rows"
   | "all-rows"
   | "empty-session-table";
 
-/**
- * Short-form values accepted by the beginEditSession RPC (remote and local).
- * The client-side EditApi maps the long-form StandaloneEditSessionMode values
- * to one of these before dispatching the RPC call:
- * - `"All"`      ← `"all-rows"`
- * - `"Empty"`    ← `"empty-session-table"`
- * - `"Selected"` ← `"selected-rows"`
- * `"inline-all-rows"` is a client-only concept and is NOT mapped — it passes
- * through to the RPC unchanged so the server can create an all-rows session table.
- */
-export declare type CopyOption = "All" | "Empty" | "Selected";
-/**
- * @deprecated Prefer `CopyOption` ("All" | "Empty" | "Selected") for standalone
- * edit sessions supported by vuu server. Long-form values (e.g. `"all-rows"`) are used 
- * by `beginEditSession`; new code should use `CopyOption` with `createSessionDataSource`.
- */
-export declare type EditSessionMode =
-  | InlineEditSessionMode
-  | StandaloneEditSessionMode;
-
 export interface EditApi<
   T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
 > {
-  beginEditSession?: (
-    editSessionMode?: EditSessionMode,
-  ) => Promise<DataSource<T> | undefined>;
   addRow?: (
     rowData?: Record<string, VuuRowDataItemType>,
   ) => Promise<RpcResult> | undefined;

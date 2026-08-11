@@ -12,11 +12,19 @@ migrate to this package.
 
 ## Architecture
 
-`useEditableTable` creates or accepts a data source and owns an `EditSession`.
-The session opens an editable session data source, tracks cell edits and row
-changes, and commits or discards those changes. `DataEditingProvider` makes
-the session available to nested controls, while `EditButtons` reflects session
-state in the available editing actions.
+`useEditableTable` creates or accepts a source data source and owns an
+`EditSession`. The session calls `createSessionDataSource` with a `CopyOption`
+and tracks cell edits and row changes against the returned data source.
+
+The hook exposes `dataSource` as the lifecycle-selected active data source for
+direct use by `Table`, plus `sourceDataSource` for source-only statistics,
+filters, menus, and external workflows. During inline editing, React passes the
+session data source to `Table`; after save or cancel succeeds it passes the
+source data source back. `useDataSource` owns subscription suspend/resume and
+ignores callbacks from obsolete data-source bindings.
+
+`DataEditingProvider` makes the session available to nested controls, while
+`EditButtons` reflects session state in the available editing actions.
 
 ## Files
 
@@ -27,7 +35,7 @@ state in the available editing actions.
 | `src/DataEditingProvider.tsx` | Provides the active `EditSession` through React context.                                                                           |
 | `src/EditModeProvider.tsx`    | Provides shared view/edit mode state for editing controls.                                                                         |
 | `src/EditButtons.tsx`         | Renders save, cancel, delete, and add-row controls based on edit-session state.                                                    |
-| `src/edit-utils.tsx`          | Supplies edit-mode detection and user-facing stale-update messages.                                                                |
+| `src/edit-utils.tsx`          | Supplies user-facing stale-update messages.                                                                                        |
 | `src/index.ts`                | Defines the package's public API.                                                                                                  |
 
 ## Dependencies

@@ -17,7 +17,6 @@ import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
 import {
   DataEditingProvider,
   EditButtons,
-  isCopyOption,
   type EditMode,
   useEditableTable,
   useEditSession,
@@ -51,7 +50,7 @@ import {
   useState,
 } from "react";
 import { SimulTable } from "./SimulTableTemplate";
-import { DataSource, EditSessionMode } from "@vuu-ui/vuu-data-types";
+import type { CopyOption, DataSource } from "@vuu-ui/vuu-data-types";
 import { LayoutProvider, Stack, View } from "@vuu-ui/vuu-layout";
 import { ColumnFilter } from "@vuu-ui/vuu-filters";
 import {
@@ -130,6 +129,7 @@ const EditTableTemplate = ({
     editSession,
     onCancel,
     onSave,
+    sourceDataSource,
   } = useEditableTable({
     dataSource: sourceTableDataSource,
     isEditMode: editMode === "edit",
@@ -140,7 +140,7 @@ const EditTableTemplate = ({
   const handleColumnFilterCommit = useCallback<ColumnFilterCommitHandler>(
     (column, op, value) => {
       if (column.name === "bbg") {
-        dataSource?.setFilter?.({
+        sourceDataSource.setFilter?.({
           column: column.name,
           op: "starts",
           value,
@@ -151,7 +151,7 @@ const EditTableTemplate = ({
         op !== "between-inclusive" &&
         op !== "in"
       ) {
-        dataSource?.setFilter?.({
+        sourceDataSource.setFilter?.({
           column: column.name,
           op,
           value,
@@ -159,7 +159,7 @@ const EditTableTemplate = ({
         setFilterValue(`${value}`);
       }
     },
-    [dataSource],
+    [sourceDataSource],
   );
 
   const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
@@ -175,12 +175,6 @@ const EditTableTemplate = ({
   );
   const config = useMemo<TableConfig>(
     () => {
-
-      if (editMode === 'view' && dataSource.columns.includes('setToDelete')) {
-        dataSource.columns = dataSource.columns.filter(col => col !== 'setToDelete')
-      } else if (editMode === 'edit' && !dataSource.columns.includes('setToDelete')) {
-        dataSource.columns = dataSource.columns.concat('setToDelete');
-      }
 
       return {
         columns:
@@ -211,7 +205,7 @@ const EditTableTemplate = ({
                           "USD",
                         ],
                       },
-                    },
+                    } as DataValueTypeDescriptor,
                   }
                   : col.name === "isin" ||
                     col.name === "vuuCreatedTimestamp" ||
@@ -219,19 +213,18 @@ const EditTableTemplate = ({
                     col.name === "vuuMsg"
                     ? col
                     : { ...col, editable: true },
-            ).concat({
-              name: 'setToDelete'
-            }),
+            ).concat({ name: "setToDelete" } as ColumnDescriptor),
         columnDefaultWidth: 150,
         rowSeparators: true,
         zebraStripes: true,
       };
     },
-    [dataSource, editMode, editableType],
+    [editMode, editableType],
   );
 
   return (
     <div
+      data-testid={`edit-table${testId}`}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -265,7 +258,7 @@ const EditTableTemplate = ({
           value={keyFilterValue}
         />
         {filterColumn ? (
-          <DataSourceProvider dataSource={dataSource}>
+          <DataSourceProvider dataSource={sourceDataSource}>
             <ColumnFilter
               TypeaheadProps={{ minCharacterCountToTriggerSuggestions: 0 }}
               column={{ name: "currency", serverDataType: "string" }}
@@ -282,6 +275,7 @@ const EditTableTemplate = ({
           <Table
             {...htmlAttributes}
             config={config}
+            data-viewport={dataSource.viewport}
             data-testid={`table${testId}`}
             dataSource={dataSource}
             renderBufferSize={10}
@@ -291,7 +285,7 @@ const EditTableTemplate = ({
       </div>
       <TableFooter>
         {editMode === "view" ? (
-          <DataSourceStats dataSource={dataSource} />
+          <DataSourceStats dataSource={sourceDataSource} />
         ) : (
           <EditButtons
             canCancel={canCancel}
@@ -316,9 +310,9 @@ export const EditableInstruments = () => {
 };
 
 const EditableInstrumentsTemplate = ({
-  editSessionMode,
+  copyOption,
 }: {
-  editSessionMode?: Parameters<typeof useEditableTable>[0]["editSessionMode"];
+  copyOption?: CopyOption;
 }) => {
   const [editMode, setEditMode] = useState<EditMode>("view");
   const { VuuDataSource } = useData();
@@ -347,11 +341,11 @@ const EditableInstrumentsTemplate = ({
     onCancel,
     onDelete,
     onSave,
-    sessionDataSource,
+    sourceDataSource,
   } = useEditableTable({
     dataSource: sourceTableDataSource,
+    copyOption,
     deleteMode: "soft",
-    editSessionMode,
     isEditMode: editMode === "edit",
     onCancel: exitEditMode,
     onSave: exitEditMode,
@@ -371,13 +365,6 @@ const EditableInstrumentsTemplate = ({
 
   const config = useMemo<TableConfig>(
     () => {
-
-      const { columns } = dataSource;
-      if (editMode === 'view' && columns.includes('setToDelete')) {
-        dataSource.columns = columns.filter(col => col !== 'setToDelete')
-      } else if (editMode === 'edit' && !columns.includes('setToDelete')) {
-        dataSource.columns = columns.concat('setToDelete');
-      }
 
       return {
         columns:
@@ -416,7 +403,7 @@ const EditableInstrumentsTemplate = ({
         zebraStripes: true,
       };
     },
-    [dataSource, editMode],
+    [editMode],
   );
 
   return (
@@ -437,25 +424,20 @@ const EditableInstrumentsTemplate = ({
         </ToggleButtonGroup>
       </div>
       <div style={{ flex: "1 1 auto" }}>
-        {editMode === "edit" && isCopyOption(editSessionMode) && !sessionDataSource ? (
-          <div role="status" aria-label="Loading session table">
-            Loading session…
-          </div>
-        ) : (
-          <DataEditingProvider editSession={editSession}>
-            <Table
-              config={config}
-              dataSource={sessionDataSource ?? dataSource}
-              renderBufferSize={10}
-              isRowSelectable={editMode === "edit" ? isRowSelectable : undefined}
-              selectionModel={editMode === "edit" ? "checkbox" : "none"}
-            />
-          </DataEditingProvider>
-        )}
+        <DataEditingProvider editSession={editSession}>
+          <Table
+            config={config}
+            data-viewport={dataSource.viewport}
+            dataSource={dataSource}
+            renderBufferSize={10}
+            isRowSelectable={editMode === "edit" ? isRowSelectable : undefined}
+            selectionModel={editMode === "edit" ? "checkbox" : "none"}
+          />
+        </DataEditingProvider>
       </div>
       <TableFooter>
         {editMode === "view" ? (
-          <DataSourceStats dataSource={dataSource} />
+          <DataSourceStats dataSource={sourceDataSource} />
         ) : (
           <EditButtons
             canCancel={canCancel}
@@ -478,7 +460,7 @@ const EditableInstrumentsTemplate = ({
 export const EditableInstrumentsInlineEdit = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
-      <EditableInstrumentsTemplate editSessionMode="all-rows" />
+      <EditableInstrumentsTemplate copyOption="All" />
     </NotificationsProvider>
   </LocalDataSourceProvider>
 );
@@ -487,7 +469,7 @@ export const EditableInstrumentsInlineEdit = () => (
 export const CreateSessionTableInstruments = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
-      <EditableInstrumentsTemplate editSessionMode="All" />
+      <EditableInstrumentsTemplate copyOption="All" />
     </NotificationsProvider>
   </LocalDataSourceProvider>
 );
@@ -694,8 +676,8 @@ const BulkEditTableTemplate = ({
   const [editState, setEditState] = useState<{
     editing: boolean;
     dialog?: ReactElement;
-    editSessionMode: EditSessionMode;
-  }>({ editing: false, editSessionMode: "selected-rows" });
+    copyOption: CopyOption;
+  }>({ editing: false, copyOption: "Selected" });
 
   const sourceTableDataSource = useMemo(
     () =>
@@ -708,15 +690,21 @@ const BulkEditTableTemplate = ({
 
   const clearEditState = useCallback(() => {
     closeDialog();
-    setEditState({ editing: false, editSessionMode: "selected-rows" });
+    setEditState({ editing: false, copyOption: "Selected" });
   }, [closeDialog]);
 
   const exitEditMode = useCallback(() => clearEditState(), [clearEditState]);
 
-  const { dataSource, editSession, onCancel, onSave, sessionDataSource } =
+  const {
+    editSession,
+    onCancel,
+    onSave,
+    sessionDataSource,
+    sourceDataSource,
+  } =
     useEditableTable({
       dataSource: sourceTableDataSource,
-      editSessionMode: editState.editSessionMode,
+      copyOption: editState.copyOption,
       isEditMode: editState.editing,
       onCancel: exitEditMode,
       onSave: exitEditMode,
@@ -727,11 +715,11 @@ const BulkEditTableTemplate = ({
   }, []);
 
   const editSelectedRows = useCallback(async () => {
-    setEditState({ editing: true, editSessionMode: "selected-rows" });
+    setEditState({ editing: true, copyOption: "Selected" });
   }, []);
 
   const insertRows = useCallback(async () => {
-    setEditState({ editing: true, editSessionMode: "empty-session-table" });
+    setEditState({ editing: true, copyOption: "Empty" });
   }, []);
 
   const handleSave = useCallback(() => {
@@ -742,7 +730,10 @@ const BulkEditTableTemplate = ({
     if (sessionDataSource) {
       showDialog(
         <DataEditingProvider editSession={editSession}>
-          <BulkEditPanel parentDs={dataSource} sessionDs={sessionDataSource} />
+          <BulkEditPanel
+            parentDs={sourceDataSource}
+            sessionDs={sessionDataSource}
+          />
         </DataEditingProvider>,
         "Edit rows",
         [
@@ -759,7 +750,6 @@ const BulkEditTableTemplate = ({
     }
   }, [
     closeDialog,
-    dataSource,
     editSession,
     handleSave,
     onCancel,
@@ -776,7 +766,7 @@ const BulkEditTableTemplate = ({
   return (
     <ContextMenuProvider {...contextMenuProps}>
       <SimulTable
-        dataSource={dataSource}
+        dataSource={sourceDataSource}
         tableName={vuuTable.table as SimulTableName}
       />
     </ContextMenuProvider>
@@ -972,7 +962,7 @@ const AddRowTableTemplate = () => {
     sessionDataSource: editSessionDataSource,
   } = useEditableTable({
     dataSource: instrumentsDataSource,
-    editSessionMode: "empty-session-table",
+    copyOption: "Empty",
     isEditMode: true,
     onCancel: keepEditSessionOpen,
     onSave: keepEditSessionOpen,
