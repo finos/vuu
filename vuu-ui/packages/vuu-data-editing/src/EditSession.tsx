@@ -10,6 +10,12 @@ import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
+export type NewRowState = {
+  columns: readonly string[];
+  errors: Readonly<Record<string, string>>;
+  submitting: boolean;
+  values: Readonly<Record<string, VuuRowDataItemType>>;
+};
 
 export type EditLifecycle =
   | { status: "idle" }
@@ -41,9 +47,11 @@ type RowEditDetails = {
 type EditSessionEvents = {
   editState: (editState: EditState) => void;
   lifecycle: (lifecycle: EditLifecycle) => void;
+  newRow: (newRowState: NewRowState) => void;
 };
 
 export class EditSession extends EventEmitter<EditSessionEvents> {
+  static readonly newRowKey = "__vuu_new_row__";
   /**
    *  Row key => row edits
    */
@@ -56,6 +64,12 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   #deleteMode: DeleteRowMode;
   #sourceTableDataSource?: EditApi;
   #sessionDataSource?: DataSource;
+  #newRowState: NewRowState = {
+    columns: [],
+    errors: {},
+    submitting: false,
+    values: {},
+  };
   #lifecycle: EditLifecycle = { status: "idle" };
   /** Prevent begin/end RPCs from overlapping and observing stale lifecycle state. */
   #transitionQueue: Promise<void> = Promise.resolve();
@@ -148,6 +162,120 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       }
     }
     this.#setEditCounts(editCount, invalidCount);
+  }
+
+  get newRowState(): NewRowState {
+    return this.#newRowState;
+  }
+
+  isNewRow(key: string) {
+    return key === EditSession.newRowKey;
+  }
+
+  isNewRowFinalColumn(columnName: string) {
+    return this.#newRowState.columns.at(-1) === columnName;
+  }
+
+  configureNewRow(columns: readonly string[]) {
+    if (
+      columns.length === this.#newRowState.columns.length &&
+      columns.every(
+        (column, index) => column === this.#newRowState.columns[index],
+      )
+    ) {
+      return;
+    }
+
+    const columnSet = new Set(columns);
+    const errors = Object.fromEntries(
+      Object.entries(this.#newRowState.errors).filter(([column]) =>
+        columnSet.has(column),
+      ),
+    );
+    this.#setNewRowState({
+      ...this.#newRowState,
+      columns: [...columns],
+      errors,
+    });
+  }
+
+  setNewRowValue(column: string, value: VuuRowDataItemType) {
+    const errors = { ...this.#newRowState.errors };
+    delete errors[column];
+    this.#setNewRowState({
+      ...this.#newRowState,
+      errors,
+      values: { ...this.#newRowState.values, [column]: value },
+    });
+  }
+
+  async addNewRow(): Promise<RpcResult> {
+    const missingErrors = Object.fromEntries(
+      this.#newRowState.columns
+        .filter((column) => {
+          const value = this.#newRowState.values[column];
+          return (
+            value === undefined ||
+            (typeof value === "string" && value.trim() === "")
+          );
+        })
+        .map((column) => [column, "Value required"]),
+    );
+    const errors = { ...this.#newRowState.errors, ...missingErrors };
+
+    if (Object.keys(errors).length > 0) {
+      this.#setNewRowState({ ...this.#newRowState, errors });
+      return {
+        errorMessage:
+          errors[this.#newRowState.columns.at(-1) ?? ""] ?? "Value required",
+        type: "ERROR_RESULT",
+      };
+    }
+
+    if (this.#newRowState.submitting) {
+      return { data: undefined, type: "SUCCESS_RESULT" };
+    }
+
+    this.#setNewRowState({ ...this.#newRowState, submitting: true });
+    try {
+      const response = await this.addRow({ ...this.#newRowState.values });
+      if (isRpcError(response)) {
+        const finalColumn = this.#newRowState.columns.at(-1);
+        this.#setNewRowState({
+          ...this.#newRowState,
+          errors: finalColumn
+            ? { [finalColumn]: response.errorMessage }
+            : this.#newRowState.errors,
+          submitting: false,
+        });
+        return response;
+      }
+
+      this.#setNewRowState({
+        columns: this.#newRowState.columns,
+        errors: {},
+        submitting: false,
+        values: {},
+      });
+      return response;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unable to add row";
+      const finalColumn = this.#newRowState.columns.at(-1);
+      this.#setNewRowState({
+        ...this.#newRowState,
+        errors: finalColumn
+          ? { [finalColumn]: errorMessage }
+          : this.#newRowState.errors,
+        submitting: false,
+      });
+      return { errorMessage, type: "ERROR_RESULT" };
+    }
+  }
+
+  #setNewRowState(newRowState: NewRowState) {
+    this.#newRowState = newRowState;
+    this.emit("newRow", newRowState);
   }
 
   async deleteSelectedRows(): Promise<void> {
@@ -253,6 +381,12 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     this.#deleteCount = 0;
     this.#addCount = 0;
     this.#invalidCount = 0;
+    this.#setNewRowState({
+      columns: this.#newRowState.columns,
+      errors: {},
+      submitting: false,
+      values: {},
+    });
   }
 
   #setLifecycle(lifecycle: EditLifecycle) {
