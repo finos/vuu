@@ -433,8 +433,8 @@ export abstract class VuuModule<T extends string = string>
         if (mode === "soft") {
           sessionTable.update(
             key,
-            this.#sessionTableMessageColumn,
-            "SOFT_DELETED",
+            "setToDelete",
+            true,
           );
         } else {
           sessionTable.delete(key);
@@ -527,6 +527,7 @@ export abstract class VuuModule<T extends string = string>
               sourceRow[sourceTable.map[column.name]];
           }
           sessionTable.updateRow(restoredRow);
+          sessionTable.update(key, "setToDelete", false);
         }
         return { type: "SUCCESS_RESULT", data: undefined };
       }
@@ -753,6 +754,7 @@ export abstract class VuuModule<T extends string = string>
       const columnMap = sessionTable.map;
       const columnCount = Object.keys(columnMap).length;
       const row: VuuDataRow = new Array(columnCount).fill("");
+      row[columnMap.setToDelete] = false;
       for (const [col, idx] of Object.entries(columnMap)) {
         if (data[col] !== undefined) {
           row[idx] = data[col];
@@ -780,13 +782,38 @@ export abstract class VuuModule<T extends string = string>
         const sourceTable = this.tables[dataSource.table.table as T];
 
         if (rpcRequest.params.save === true) {
+          let rejectedCount = 0;
           const vuuMsgIdx = sessionTable.map[this.#sessionTableMessageColumn];
+          const setToDeleteIdx = sessionTable.map.setToDelete;
+          const sessionTimestampIdx = sessionTable.map.vuuUpdatedTimestamp;
+          const sourceTimestampIdx = sourceTable.map.vuuUpdatedTimestamp;
           const sourceColumns = sourceTable.schema.columns;
           for (let i = 0; i < sessionTable.data.length; i++) {
             const sessionRow = sessionTable.data[i];
-            if (sessionRow[vuuMsgIdx]) continue;
             const key = String(sessionRow[sessionTable.map[sourceTable.schema.key]]);
             const currentRow = sourceTable.findByKey(key);
+            if (sessionRow[setToDeleteIdx]) {
+              if (currentRow) {
+                const sessionTimestamp = sessionRow[sessionTimestampIdx];
+                const sourceTimestamp = currentRow[sourceTimestampIdx];
+                if (
+                  typeof sessionTimestamp === "number" &&
+                  typeof sourceTimestamp === "number" &&
+                  sourceTimestamp > sessionTimestamp
+                ) {
+                  rejectedCount += 1;
+                  sessionTable.update(
+                    key,
+                    this.#sessionTableMessageColumn,
+                    "stale delete",
+                  );
+                } else {
+                  sourceTable.delete(key);
+                }
+              }
+              continue;
+            }
+            if (sessionRow[vuuMsgIdx]) continue;
             if (currentRow) {
               for (const column of sourceColumns) {
                 const value = sessionRow[sessionTable.map[column.name]];
@@ -801,6 +828,12 @@ export abstract class VuuModule<T extends string = string>
                 ),
               );
             }
+          }
+          if (rejectedCount > 0) {
+            return {
+              errorMessage: "stale update",
+              type: "ERROR_RESULT",
+            };
           }
           return {
             type: "SUCCESS_RESULT",
@@ -888,7 +921,7 @@ export abstract class VuuModule<T extends string = string>
     const sessionSchema = sessionTableSchema(schema);
     return new Table(
       sessionSchema,
-      data.map((row) => row.slice()),
+      data.map((row) => [...row, "", false]),
       buildDataColumnMapFromSchema(sessionSchema),
     );
   }
@@ -921,7 +954,7 @@ export abstract class VuuModule<T extends string = string>
     for (let i = 0; i < selectedRowIds.length; i++) {
       for (let j = 0; j < data.length; j++) {
         if (data[j][keyIndex] === selectedRowIds[i]) {
-          sessionData.push(data[j].slice());
+          sessionData.push([...data[j], "", false]);
         }
       }
     }
