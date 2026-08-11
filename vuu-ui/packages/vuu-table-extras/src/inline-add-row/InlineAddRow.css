@@ -1,58 +1,12 @@
 .vuuInlineAddRow {
-  --inline-add-row-borderColor: var(--salt-separable-secondary-borderColor);
-  --inline-add-row-content-height: 22px;
-  --inline-add-row-padding: 1px 1px 1px 0;
+  --row-borderColor: transparent;
 
   display: flex;
-  height: var(--salt-size-base);
+  height: var(--row-height, var(--salt-size-base));
+  padding: 0 var(--table-selection-bookend-width, 4px);
+  position: relative;
 
-  .vuuInlineAddRow-virtualColSpan {
-    display: inline-block;
-    flex: 0 0 auto;
-  }
-
-  .vuuInlineAddRowCell {
-    --saltInput-minHeight: var(--inline-add-row-content-height);
-
-    align-items: center;
-    display: inline-flex;
+  .vuuTableCell {
     height: 100%;
-    padding: var(--inline-add-row-padding);
-
-    .saltInput-primary.vuuInput {
-      border-color: var(--inline-add-row-borderColor);
-      border-radius: 0;
-      border-style: solid;
-      border-width: 1px;
-      height: var(--inline-add-row-content-height);
-      min-height: var(--inline-add-row-content-height);
-    }
   }
-
-  .vuuInlineAddRow-errorText {
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    padding: 0;
-    position: absolute;
-    width: 1px;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  .vuuInlineAddRowCell:has(input:focus) {
-    --inline-add-row-borderColor: transparent;
-    --inline-add-row-content-height: 20px;
-    --inline-add-row-padding: 0 2px;
-    --saltInput-paddingLeft: 2px;
-
-    outline-color: var(--salt-focused-outlineColor);
-    outline-offset: -2px;
-    outline-style: dotted;
-    outline-width: 2px;
-  }
-}
-
-.vuuInlineAddRow:focus-within {
-  --inline-add-row-borderColor: var(--salt-separable-primary-borderColor);
 }

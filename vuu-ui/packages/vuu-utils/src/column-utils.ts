@@ -100,6 +100,18 @@ export const getDefaultAlignment = (
       ? "right"
       : "left";
 
+export type EditOperation = "insert" | "update";
+
+export const isDataValueEditable = (
+  dataDescriptor: Pick<DataValueDescriptor, "editable">,
+  operation: EditOperation,
+  defaultValue = false
+) => {
+  const { editable = defaultValue } = dataDescriptor;
+  return typeof editable === "object" ? editable[operation] : editable === true;
+}
+
+
 export const getRuntimeColumnWidth = (
   col: ColumnDescriptor,
   runtimeColumns: RuntimeColumnDescriptor[],

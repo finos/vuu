@@ -27,13 +27,13 @@ export const InputCell = ({
     css: inputCellCss,
     window: targetWindow,
   });
-
   const dataValue = dataRow[column.name] as number | string;
 
   const { align = "left" } = column;
 
   const {
     editing,
+    inputProps,
     warningMessage,
     previousValue = "",
     ...editProps
@@ -80,6 +80,11 @@ export const InputCell = ({
         vuuEditing: editing,
       })}
       endAdornment={endAdornment}
+      inputProps={{
+        ...inputProps,
+        "aria-invalid": editRejected ? true : undefined,
+        "aria-label": column.label,
+      }}
       startAdornment={startAdornment}
     />
   );

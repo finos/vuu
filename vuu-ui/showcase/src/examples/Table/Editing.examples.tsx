@@ -9,11 +9,17 @@ import {
   getSchema,
   LocalDataSourceProvider,
   SimulTableName,
+  TestTableName,
 } from "@vuu-ui/vuu-data-test";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { BulkEditPanel, InputCell, Table } from "@vuu-ui/vuu-table";
-import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
+import {
+  DataSourceStats,
+  InlineAddRow,
+  TableFooter,
+  TableFooterTray,
+} from "@vuu-ui/vuu-table-extras";
 import {
   DataEditingProvider,
   EditButtons,
@@ -76,9 +82,25 @@ const InstrumentColumns: ColumnDescriptor[] = [
 
 let _viewportId = 1;
 
+const UNDO_DELETE_COLUMN: ColumnDescriptor = {
+  name: "undo",
+  source: "client",
+  width: 80,
+  type: {
+    name: "string",
+    renderer: {
+      name: "example.undo-cell",
+      componentProps: {
+        sessionTableMessageColumn: "vuuMsg",
+      },
+    },
+  }
+};
+
 const EditTableTemplate = ({
   editableType,
   filterColumn,
+  showInlineAddRow = false,
   testId = "",
   vuuTable,
   ...htmlAttributes
@@ -88,6 +110,7 @@ const EditTableTemplate = ({
 > & {
   editableType?: DataValueTypeDescriptor;
   filterColumn?: string;
+  showInlineAddRow?: boolean;
   testId?: string;
   vuuTable: VuuTable;
 }) => {
@@ -207,19 +230,26 @@ const EditTableTemplate = ({
                       },
                     } as DataValueTypeDescriptor,
                   }
-                  : col.name === "isin" ||
-                    col.name === "vuuCreatedTimestamp" ||
-                    col.name === "vuuUpdatedTimestamp" ||
-                    col.name === "vuuMsg"
-                    ? col
-                    : { ...col, editable: true },
-            ).concat({ name: "setToDelete" } as ColumnDescriptor),
+                  : col.name === "isin"
+                    ? {
+                      ...col,
+                      editable: { insert: true, update: false },
+                    }
+                    : col.name === "vuuCreatedTimestamp" ||
+                      col.name === "vuuUpdatedTimestamp" ||
+                      col.name === "vuuMsg"
+                      ? col
+                      : { ...col, editable: true },
+            ).concat({
+              hidden: showInlineAddRow,
+              name: "setToDelete",
+            } as ColumnDescriptor),
         columnDefaultWidth: 150,
         rowSeparators: true,
         zebraStripes: true,
       };
     },
-    [editMode, editableType],
+    [editMode, editableType, showInlineAddRow],
   );
 
   return (
@@ -278,6 +308,9 @@ const EditTableTemplate = ({
             data-viewport={dataSource.viewport}
             data-testid={`table${testId}`}
             dataSource={dataSource}
+            customHeader={
+              editMode === "edit" && showInlineAddRow ? InlineAddRow : undefined
+            }
             renderBufferSize={10}
             selectionModel="none"
           />
@@ -287,13 +320,15 @@ const EditTableTemplate = ({
         {editMode === "view" ? (
           <DataSourceStats dataSource={sourceDataSource} />
         ) : (
-          <EditButtons
-            canCancel={canCancel}
-            canSave={canSave}
-            editSession={editSession}
-            onCancel={onCancel}
-            onSave={onSave}
-          />
+          <TableFooterTray position="center">
+            <EditButtons
+              canCancel={canCancel}
+              canSave={canSave}
+              editSession={editSession}
+              onCancel={onCancel}
+              onSave={onSave}
+            />
+          </TableFooterTray>
         )}
       </TableFooter>
     </div>
@@ -309,10 +344,21 @@ export const EditableInstruments = () => {
   );
 };
 
+/** tags=data-consumer */
+export const EditableInstrumentsWithInlineAddRow = () => (
+  <EditTableTemplate
+    showInlineAddRow
+    testId="-inline-add-row"
+    vuuTable={INSTRUMENTS}
+  />
+);
+
 const EditableInstrumentsTemplate = ({
   copyOption,
+  showInlineAddRow = false,
 }: {
   copyOption?: CopyOption;
+  showInlineAddRow?: boolean;
 }) => {
   const [editMode, setEditMode] = useState<EditMode>("view");
   const { VuuDataSource } = useData();
@@ -337,7 +383,6 @@ const EditableInstrumentsTemplate = ({
     dataSource,
     editSession,
     hasSelection,
-    onAddRows,
     onCancel,
     onDelete,
     onSave,
@@ -383,20 +428,7 @@ const EditableInstrumentsTemplate = ({
                 name: 'setToDelete',
                 hidden: true,
               },
-              {
-                name: "undo",
-                source: "client",
-                width: 80,
-                type: {
-                  name: "string",
-                  renderer: {
-                    name: "example.undo-cell",
-                    componentProps: {
-                      sessionTableMessageColumn: "vuuMsg",
-                    },
-                  },
-                } as DataValueTypeDescriptor,
-              }),
+              UNDO_DELETE_COLUMN),
 
         columnDefaultWidth: 150,
         rowSeparators: true,
@@ -429,6 +461,9 @@ const EditableInstrumentsTemplate = ({
             config={config}
             data-viewport={dataSource.viewport}
             dataSource={dataSource}
+            customHeader={
+              editMode === "edit" && showInlineAddRow ? InlineAddRow : undefined
+            }
             renderBufferSize={10}
             isRowSelectable={editMode === "edit" ? isRowSelectable : undefined}
             selectionModel={editMode === "edit" ? "checkbox" : "none"}
@@ -439,17 +474,18 @@ const EditableInstrumentsTemplate = ({
         {editMode === "view" ? (
           <DataSourceStats dataSource={sourceDataSource} />
         ) : (
-          <EditButtons
-            canCancel={canCancel}
-            canSave={canSave}
-            editSession={editSession}
-            hasSelection={hasSelection}
-            onAddRows={onAddRows}
-            onCancel={onCancel}
-            onDelete={onDelete}
-            onSave={onSave}
-            saveLabel="Submit"
-          />
+          <TableFooterTray position="center">
+            <EditButtons
+              canCancel={canCancel}
+              canSave={canSave}
+              editSession={editSession}
+              hasSelection={hasSelection}
+              onCancel={onCancel}
+              onDelete={onDelete}
+              onSave={onSave}
+              saveLabel="Submit"
+            />
+          </TableFooterTray>
         )}
       </TableFooter>
     </div>
@@ -470,6 +506,157 @@ export const CreateSessionTableInstruments = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
       <EditableInstrumentsTemplate copyOption="All" />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
+/** tags=data-consumer */
+export const InstrumentsAddEditDelete = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <EditableInstrumentsTemplate copyOption="All" showInlineAddRow />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
+const EditableTestTableTemplate = ({
+  tableName,
+}: {
+  tableName: TestTableName;
+}) => {
+  const [editMode, setEditMode] = useState<EditMode>("view");
+  const { VuuDataSource } = useData();
+  const tableSchema = getSchema(tableName);
+  const columns = useMemo(
+    () => tableSchema.columns.map(toColumnName),
+    [tableSchema.columns],
+  );
+
+  const sourceTableDataSource = useMemo(
+    () =>
+      new VuuDataSource({
+        columns,
+        table: tableSchema.table,
+        viewport: `vp-${_viewportId++}`,
+      }),
+    [VuuDataSource, columns, tableSchema.table],
+  );
+
+  const exitEditMode = useCallback(() => setEditMode("view"), []);
+  const {
+    canCancel,
+    canSave,
+    dataSource,
+    editSession,
+    hasSelection,
+    onCancel,
+    onDelete,
+    onSave,
+    sourceDataSource,
+  } = useEditableTable({
+    dataSource: sourceTableDataSource,
+    copyOption: "All",
+    deleteMode: "soft",
+    isEditMode: editMode === "edit",
+    onCancel: exitEditMode,
+    onSave: exitEditMode,
+  });
+
+  const onToggleEditMode = useCallback(
+    (e: SyntheticEvent<HTMLButtonElement>) => {
+      setEditMode((e.target as HTMLButtonElement).value as EditMode);
+    },
+    [],
+  );
+
+  const isRowSelectable = useCallback(
+    (dataRow: DataRow) => dataRow.setToDelete !== true,
+    [],
+  );
+
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns:
+        editMode === "view"
+          ? tableSchema.columns
+          :
+          tableSchema.columns.map<ColumnDescriptor>((column) => ({
+            ...column,
+            editable: true,
+          })).concat({ hidden: true, name: "setToDelete" }, UNDO_DELETE_COLUMN),
+      columnDefaultWidth: 150,
+      rowSeparators: true,
+      zebraStripes: true,
+    }),
+    [editMode, tableSchema.columns],
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: 320 }}>
+      <div
+        style={{
+          alignItems: "center",
+          background: "var(--salt-container-secondary-background)",
+          display: "flex",
+          flex: "0 0 32px",
+          gap: 12,
+          padding: "0 var(--salt-spacing-100)",
+        }}
+      >
+        <ToggleButtonGroup onChange={onToggleEditMode} value={editMode}>
+          <ToggleButton value="view">View</ToggleButton>
+          <ToggleButton value="edit">Edit</ToggleButton>
+        </ToggleButtonGroup>
+      </div>
+      <div style={{ flex: "1 1 auto" }}>
+        <DataEditingProvider editSession={editSession}>
+          <Table
+            config={config}
+            data-viewport={dataSource.viewport}
+            dataSource={dataSource}
+            customHeader={editMode === "edit" ? InlineAddRow : undefined}
+            isRowSelectable={editMode === "edit" ? isRowSelectable : undefined}
+            renderBufferSize={10}
+            selectionModel={editMode === "edit" ? "checkbox" : "none"}
+          />
+        </DataEditingProvider>
+      </div>
+      <TableFooter>
+        {editMode === "view" ? (
+          <DataSourceStats dataSource={sourceDataSource} />
+        ) : (
+          <TableFooterTray position="center">
+            <EditButtons
+              canCancel={canCancel}
+              canSave={canSave}
+              editSession={editSession}
+              hasSelection={hasSelection}
+              onCancel={onCancel}
+              onDelete={onDelete}
+              onSave={onSave}
+              saveLabel="Submit"
+            />
+          </TableFooterTray>
+        )}
+      </TableFooter>
+    </div>
+  );
+};
+
+/** tags=data-consumer */
+export const TestTableEmpty = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <EditableTestTableTemplate tableName="TestEditEmpty" />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
+/** tags=data-consumer */
+export const TestTableFIveRows = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <EditableTestTableTemplate tableName="TestEdit" />
     </NotificationsProvider>
   </LocalDataSourceProvider>
 );

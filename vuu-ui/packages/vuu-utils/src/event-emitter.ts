@@ -1,4 +1,5 @@
-type Listener = (...args: unknown[]) => void;
+// biome-ignore lint/suspicious/noExplicitAny: <require any to allow assignment of event handlers>
+type Listener = (...args: any[]) => void;
 export type EmittedEvents = Record<string, Listener>;
 
 function isArrayOfListeners(

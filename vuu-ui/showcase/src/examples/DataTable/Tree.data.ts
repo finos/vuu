@@ -2758,11 +2758,35 @@ export default [
             },
           },
           {
-            id: "Table/TableEditing/InlineAddRow",
-            label: "InlineAddRow",
+            id: "Table/TableEditing/EditableInstrumentsWithInlineAddRow",
+            label: "EditableInstrumentsWithInlineAddRow",
             nodeData: {
-              componentName: "InlineAddRow",
-              path: "src/examples/Table/InlineAddRow.examples.tsx",
+              componentName: "EditableInstrumentsWithInlineAddRow",
+              path: "src/examples/Table/Editing.examples.tsx",
+            },
+          },
+          {
+            id: "Table/TableEditing/InstrumentsAddEditDelete",
+            label: "InstrumentsAddEditDelete",
+            nodeData: {
+              componentName: "InstrumentsAddEditDelete",
+              path: "src/examples/Table/Editing.examples.tsx",
+            },
+          },
+          {
+            id: "Table/TableEditing/TestTableEmpty",
+            label: "TestTableEmpty",
+            nodeData: {
+              componentName: "TestTableEmpty",
+              path: "src/examples/Table/Editing.examples.tsx",
+            },
+          },
+          {
+            id: "Table/TableEditing/TestTableFIveRows",
+            label: "TestTableFIveRows",
+            nodeData: {
+              componentName: "TestTableFIveRows",
+              path: "src/examples/Table/Editing.examples.tsx",
             },
           },
         ],

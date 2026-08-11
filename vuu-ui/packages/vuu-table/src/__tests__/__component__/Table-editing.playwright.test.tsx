@@ -4,9 +4,9 @@ import {
   CreateSessionTableInstruments,
   EditableInstruments,
   EditableInstrumentsInlineEdit,
+  EditableInstrumentsWithInlineAddRow,
   TwoEditableInstruments,
 } from "../../../../../showcase/src/examples/Table/Editing.examples";
-import { InlineAddRow } from "../../../../../showcase/src/examples/Table/InlineAddRow.examples";
 import { expect } from "../../../../../playwright/customAssertions";
 import { TableOM } from "./TableOM";
 
@@ -15,10 +15,88 @@ const NOT_EDITABLE = false;
 const NOT_EDITING = false;
 
 test.describe("Inline add row", () => {
-  test("renders inputs in the table custom header", async ({ mount, page }) => {
-    await mount(<InlineAddRow />);
+  test("renders insert-editable cells and blanks update-only columns", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstrumentsWithInlineAddRow />
+      </LocalDataSourceProvider>,
+    );
+    await page.getByRole("radio", { name: "Edit" }).click();
 
-    await expect(page.getByPlaceholder("Enter value").first()).toBeVisible();
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    await expect(
+      inlineAddRow.getByRole("textbox", { name: "bbg" }),
+    ).toBeVisible();
+    await expect(
+      inlineAddRow.getByRole("textbox", { name: "isin" }),
+    ).toBeVisible();
+    await expect(
+      inlineAddRow.getByRole("textbox", { name: "vuuMsg" }),
+    ).toHaveCount(0);
+  });
+
+  test("marks omitted cells as invalid when the final cell is committed", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstrumentsWithInlineAddRow />
+      </LocalDataSourceProvider>,
+    );
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const finalCell = inlineAddRow.getByRole("textbox", { name: "ric" });
+    await finalCell.fill("new instrument");
+    await finalCell.press("Enter");
+
+    await expect(
+      inlineAddRow.getByRole("textbox", { name: "bbg" }),
+    ).toHaveAttribute("aria-invalid", "true");
+    await expect(finalCell).toHaveValue("new instrument");
+  });
+
+  test("moves to the next cell after a non-final commit", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstrumentsWithInlineAddRow />
+      </LocalDataSourceProvider>,
+    );
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const bbg = inlineAddRow.getByRole("textbox", { name: "bbg" });
+    const currency = inlineAddRow.getByRole("combobox").first();
+    await bbg.fill("new-bbg");
+    await bbg.press("Enter");
+
+    await expect(currency).toBeFocused();
+  });
+
+  test("returns focus to the first editable cell after the final successful commit", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstrumentsWithInlineAddRow />
+      </LocalDataSourceProvider>,
+    );
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const bbg = inlineAddRow.getByRole("textbox", { name: "bbg" });
+    const ric = inlineAddRow.getByRole("textbox", { name: "ric" });
+    await ric.dispatchEvent("vuu-commit");
+
+    await expect(bbg).toBeFocused();
   });
 });
 
@@ -576,7 +654,6 @@ test.describe("Inline row editing (session)", () => {
 
     // Edit mode: action buttons appear
     await expect(page.getByRole("button", { name: "Delete" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Add Rows" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Submit" })).toBeVisible();
 
     // Undo column header is visible
@@ -657,25 +734,8 @@ test.describe("Inline row editing (session)", () => {
     await expect(page.getByRole("button", { name: "Submit" })).toBeDisabled();
   });
 
-  test("Add Rows appends blank rows to the session table", async ({
-    browserName,
-    mount,
-    page,
-  }) => {
-    await mount(<EditableInstrumentsInlineEdit />);
-    await page.getByRole("radio", { name: "Edit" }).click();
-
-    const submitButton = page.getByRole("button", { name: "Submit" });
-    await expect(submitButton).toBeDisabled();
-
-    await page.getByRole("button", { name: "Add Rows" }).click();
-
-    // Submit enabled after rows added
-    await expect(submitButton).toBeEnabled();
-  });
 
   test("Cancel discards all changes and returns to view mode", async ({
-    browserName,
     mount,
     page,
   }) => {
@@ -777,27 +837,6 @@ test.describe("Session table editing (createSessionTable)", () => {
     const undoButton = table.row(2).getByRole("button", { name: "Undo" });
     await expect(undoButton).toBeVisible();
     await expect(page.getByRole("button", { name: "Submit" })).toBeEnabled();
-  });
-
-  test("Add Rows appends blank rows to the session table", async ({
-    mount,
-    page,
-  }) => {
-    await mount(<CreateSessionTableInstruments />);
-    await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(
-      page.getByRole("status", { name: "Loading session table" }),
-    ).not.toBeVisible();
-
-    const submitButton = page.getByRole("button", { name: "Submit" });
-    await expect(submitButton).toBeDisabled();
-
-    await page.getByRole("button", { name: "Add Rows" }).click();
-    await expect(submitButton).toBeEnabled();
-    await expect(page.getByRole("table")).toHaveAttribute(
-      "aria-rowcount",
-      "10015",
-    );
   });
 
   test("soft-deleted row retains vuuTableRow-noSelect class after another row is selected", async ({

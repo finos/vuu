@@ -1,5 +1,5 @@
 export { DataEditingProvider, useEditSession } from "./DataEditingProvider";
-export { getVuuEditMessage } from "./edit-utils";
+export { getVuuEditMessage, withDataRowEditErrors } from "./edit-utils";
 export { EditButtons, type EditButtonProps } from "./EditButtons";
 export {
   EditModeProvider,
@@ -10,6 +10,7 @@ export {
   EditError,
   EditSession,
   type EditLifecycle,
+  type NewRowState,
   type EditState,
 } from "./EditSession";
 export { StaleUpdateError } from "@vuu-ui/vuu-utils";

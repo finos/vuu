@@ -32,7 +32,7 @@ export const authenticateWithUsernamePassword = async (
 };
 
 export class VuuLoginHandler {
-  constructor(private authConfig: AuthConfig) { }
+  constructor(private authConfig: AuthConfig & { redirectUrl?: string }) { }
 
   login = async (username: string, password: string) => {
     const { token } = await authenticateWithUsernamePassword(

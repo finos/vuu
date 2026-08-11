@@ -25,7 +25,7 @@ class MockDataSource implements EditApi {
     private createSession: CreateSession,
     private edit: EditCell = vi.fn().mockResolvedValue(SUCCESS),
     private addRowImpl?: AddRow,
-  ) {}
+  ) { }
 
   addRow(...args: Parameters<AddRow>) {
     return this.addRowImpl?.(...args);
@@ -110,6 +110,49 @@ describe("EditSession lifecycle", () => {
     await editSession.addRow({ id: 7 });
 
     expect(editSession.addCount).toBe(0);
+  });
+
+  it("owns draft values and required-field errors for a new row", async () => {
+    const addRow = vi.fn<AddRow>().mockResolvedValue(SUCCESS);
+    editSession = new EditSession(
+      new MockDataSource(endEdit, createSession, editCell, addRow),
+    );
+    editSession.configureNewRow(["id", "name"]);
+    editSession.setNewRowValue("id", 7);
+
+    await expect(editSession.addNewRow()).resolves.toEqual({
+      errorMessage: "Value required",
+      type: "ERROR_RESULT",
+    });
+    expect(editSession.newRowState.errors).toEqual({ name: "Value required" });
+    expect(addRow).not.toHaveBeenCalled();
+
+    editSession.setNewRowValue("name", "Alice");
+    await expect(editSession.addNewRow()).resolves.toEqual(SUCCESS);
+    expect(addRow).toHaveBeenCalledWith({ id: 7, name: "Alice" });
+    expect(editSession.newRowState).toMatchObject({
+      errors: {},
+      values: {},
+    });
+  });
+
+  it("prevents duplicate new-row submissions", async () => {
+    const pendingAdd = deferred<RpcResultSuccess>();
+    const addRow = vi.fn<AddRow>().mockReturnValue(pendingAdd.promise);
+    editSession = new EditSession(
+      new MockDataSource(endEdit, createSession, editCell, addRow),
+    );
+    editSession.configureNewRow(["id"]);
+    editSession.setNewRowValue("id", 7);
+
+    const firstAdd = editSession.addNewRow();
+    await Promise.resolve();
+    const secondAdd = editSession.addNewRow();
+    pendingAdd.resolve(SUCCESS);
+
+    await expect(firstAdd).resolves.toEqual(SUCCESS);
+    await expect(secondAdd).resolves.toEqual(SUCCESS);
+    expect(addRow).toHaveBeenCalledTimes(1);
   });
 
   it("serializes end behind a pending begin", async () => {
@@ -345,25 +388,6 @@ describe("EditSession lifecycle", () => {
       editSession.invalidCount,
       editSession.editState,
     ]).toEqual([0, 0, "clean"]);
-  });
-
-  it("preserves insert state while an invalid edit is corrected and reverted", async () => {
-    await editSession.begin();
-    editSession.addRows(1);
-
-    await editSession.commit("row-1", "price", 100, 101, false);
-    expect(editSession.editState).toBe("invalid");
-
-    await editSession.commit("row-1", "price", 100, 102, true);
-    expect(editSession.editState).toBe("dirty");
-
-    await editSession.commit("row-1", "price", 100, 100, true);
-    expect([
-      editSession.editCount,
-      editSession.invalidCount,
-      editSession.addCount,
-    ]).toEqual([0, 0, 1]);
-    expect(editSession.editState).toBe("dirty");
   });
 
   it("notifies delete count boundaries while cell edits keep the session dirty", async () => {

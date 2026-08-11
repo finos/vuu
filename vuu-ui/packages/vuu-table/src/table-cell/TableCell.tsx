@@ -5,6 +5,7 @@ import type {
   TableCellEditHandler,
   TableCellProps,
 } from "@vuu-ui/vuu-table-types";
+import { isDataValueEditable } from "@vuu-ui/vuu-utils";
 import { type MouseEventHandler, useCallback, useState } from "react";
 import { applyHighlighting } from "../applyHighlighting";
 import { useCell } from "../useCell";
@@ -17,6 +18,7 @@ export const TableCell = ({
   column,
   dataRow,
   onClick,
+  onDataEdited,
   searchPattern = "",
 }: TableCellProps) => {
   const targetWindow = useWindow();
@@ -36,8 +38,38 @@ export const TableCell = ({
 
   const handleDataItemEdited = useCallback<TableCellEditHandler>(
     async (editState, editPhase) => {
+      const editOperation = editSession?.isNewRow(dataRow.key)
+        ? "insert"
+        : "update";
+      if (!isDataValueEditable(column, editOperation)) {
+        return;
+      }
+
+      if (onDataEdited) {
+        return onDataEdited(
+          {
+            ...editState,
+            columnName: name,
+            dataRow,
+          },
+          editPhase,
+        );
+      }
+
       const { isValid = true, previousValue = "", value } = editState;
       if (editPhase === "commit" && editSession) {
+        if (editSession.isNewRow(dataRow.key)) {
+          editSession.setNewRowValue(name, value);
+          const isEmptyValue = typeof value === "string" && value.trim() === "";
+          if (!isValid && !isEmptyValue) {
+            return { errorMessage: "Invalid value", type: "ERROR_RESULT" };
+          }
+          if (editSession.isNewRowFinalColumn(name)) {
+            return editSession.addNewRow();
+          }
+          return { data: undefined, type: "SUCCESS_RESULT" };
+        }
+
         const { editedDuringCurrentSession, ...response } =
           await editSession.commit(
             dataRow.key,
@@ -50,7 +82,7 @@ export const TableCell = ({
         return response;
       }
     },
-    [dataRow.key, editSession, name],
+    [column, dataRow, editSession, name, onDataEdited],
   );
 
   const handleClick = useCallback<MouseEventHandler>(
@@ -64,6 +96,7 @@ export const TableCell = ({
     <div
       aria-colindex={ariaColIndex}
       className={className}
+      data-field={name}
       onClick={onClick ? handleClick : undefined}
       role="cell"
       style={style}
