@@ -50,6 +50,18 @@ export const TableCell = ({
 
       const { isValid = true, previousValue = "", value } = editState;
       if (editPhase === "commit" && editSession) {
+        if (editSession.isNewRow(dataRow.key)) {
+          editSession.setNewRowValue(name, value);
+          const isEmptyValue = typeof value === "string" && value.trim() === "";
+          if (!isValid && !isEmptyValue) {
+            return { errorMessage: "Invalid value", type: "ERROR_RESULT" };
+          }
+          if (editSession.isNewRowFinalColumn(name)) {
+            return editSession.addNewRow();
+          }
+          return { data: undefined, type: "SUCCESS_RESULT" };
+        }
+
         const { editedDuringCurrentSession, ...response } =
           await editSession.commit(
             dataRow.key,

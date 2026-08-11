@@ -10,6 +10,7 @@ export {
   EditError,
   EditSession,
   type EditLifecycle,
+  type NewRowState,
   type EditState,
 } from "./EditSession";
 export { StaleUpdateError } from "@vuu-ui/vuu-utils";

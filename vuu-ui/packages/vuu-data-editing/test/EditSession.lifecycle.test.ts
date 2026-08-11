@@ -112,6 +112,49 @@ describe("EditSession lifecycle", () => {
     expect(editSession.addCount).toBe(0);
   });
 
+  it("owns draft values and required-field errors for a new row", async () => {
+    const addRow = vi.fn<AddRow>().mockResolvedValue(SUCCESS);
+    editSession = new EditSession(
+      new MockDataSource(endEdit, createSession, editCell, addRow),
+    );
+    editSession.configureNewRow(["id", "name"]);
+    editSession.setNewRowValue("id", 7);
+
+    await expect(editSession.addNewRow()).resolves.toEqual({
+      errorMessage: "Value required",
+      type: "ERROR_RESULT",
+    });
+    expect(editSession.newRowState.errors).toEqual({ name: "Value required" });
+    expect(addRow).not.toHaveBeenCalled();
+
+    editSession.setNewRowValue("name", "Alice");
+    await expect(editSession.addNewRow()).resolves.toEqual(SUCCESS);
+    expect(addRow).toHaveBeenCalledWith({ id: 7, name: "Alice" });
+    expect(editSession.newRowState).toMatchObject({
+      errors: {},
+      values: {},
+    });
+  });
+
+  it("prevents duplicate new-row submissions", async () => {
+    const pendingAdd = deferred<RpcResultSuccess>();
+    const addRow = vi.fn<AddRow>().mockReturnValue(pendingAdd.promise);
+    editSession = new EditSession(
+      new MockDataSource(endEdit, createSession, editCell, addRow),
+    );
+    editSession.configureNewRow(["id"]);
+    editSession.setNewRowValue("id", 7);
+
+    const firstAdd = editSession.addNewRow();
+    await Promise.resolve();
+    const secondAdd = editSession.addNewRow();
+    pendingAdd.resolve(SUCCESS);
+
+    await expect(firstAdd).resolves.toEqual(SUCCESS);
+    await expect(secondAdd).resolves.toEqual(SUCCESS);
+    expect(addRow).toHaveBeenCalledTimes(1);
+  });
+
   it("serializes end behind a pending begin", async () => {
     const pendingBegin = deferred<DataSource | undefined>();
     createSession = vi.fn(() => pendingBegin.promise);

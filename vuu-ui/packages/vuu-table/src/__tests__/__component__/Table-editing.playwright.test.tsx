@@ -40,6 +40,20 @@ test.describe("Inline add row", () => {
     );
     await expect(finalCell).toHaveValue("new instrument");
   });
+
+  test("moves to the next cell after a non-final commit", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<InlineAddRow />);
+
+    const bbg = page.getByRole("textbox", { name: "bbg" });
+    const currency = page.getByRole("textbox", { name: "currency" });
+    await bbg.fill("new-bbg");
+    await bbg.press("Enter");
+
+    await expect(currency).toBeFocused();
+  });
 });
 
 test.describe("Editable table navigation", () => {

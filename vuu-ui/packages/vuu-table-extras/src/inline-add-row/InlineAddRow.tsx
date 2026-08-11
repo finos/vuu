@@ -1,41 +1,37 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import {
+  EditSession,
   useEditSession,
   withDataRowEditErrors,
+  type NewRowState,
 } from "@vuu-ui/vuu-data-editing";
-import type { RpcResult } from "@vuu-ui/vuu-protocol-types";
 import { Row } from "@vuu-ui/vuu-table";
 import type {
   BaseRowProps,
   DataRow,
-  EditEventState,
   RuntimeColumnDescriptor,
-  TableCellEditHandler,
 } from "@vuu-ui/vuu-table-types";
-import { getCellRenderer, isNotHidden, isRpcError } from "@vuu-ui/vuu-utils";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { getCellRenderer, isNotHidden } from "@vuu-ui/vuu-utils";
 import {
-  getMissingValueErrors,
-  type InlineAddRowErrors,
-  type InlineAddRowValues,
-} from "./inline-add-row-utils";
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 
 import inlineAddRowCss from "./InlineAddRow.css";
 
 const classBase = "vuuInlineAddRow";
-const syntheticRowKey = "inline-add-row";
-
-const editSucceeded: RpcResult = { data: undefined, type: "SUCCESS_RESULT" };
 
 const createSyntheticDataRow = (
-  values: InlineAddRowValues,
+  newRowState: NewRowState,
   columns: RuntimeColumnDescriptor[],
-  errors: InlineAddRowErrors,
 ): DataRow =>
   withDataRowEditErrors(
     {
-      ...values,
+      ...newRowState.values,
       childCount: 0,
       depth: 1,
       hasColumn: (name: string) =>
@@ -44,16 +40,11 @@ const createSyntheticDataRow = (
       isExpanded: false,
       isLeaf: true,
       isSelected: false,
-      key: syntheticRowKey,
+      key: EditSession.newRowKey,
       renderIndex: -1,
     } as DataRow,
-    errors,
+    newRowState.errors,
   );
-
-const createEditError = (errorMessage: string): RpcResult => ({
-  errorMessage,
-  type: "ERROR_RESULT",
-});
 
 export interface InlineAddRowProps extends BaseRowProps {}
 
@@ -73,17 +64,10 @@ export const InlineAddRow = ({
 
   const editSession = useEditSession(true);
   const containerRef = useRef<HTMLDivElement>(null);
-  const submittingRef = useRef(false);
-  const [errorMessages, setErrorMessages] = useState<InlineAddRowErrors>({});
-  const [values, setValues] = useState<InlineAddRowValues>({});
-
   const editableColumns = useMemo(
     () =>
       columns.map((column) => {
-        const editableColumn = {
-          ...column,
-          editable: true,
-        };
+        const editableColumn = { ...column, editable: true };
         return {
           ...editableColumn,
           CellRenderer: getCellRenderer(editableColumn),
@@ -95,9 +79,21 @@ export const InlineAddRow = ({
     () => editableColumns.filter(isNotHidden),
     [editableColumns],
   );
+  const subscribeToNewRow = useCallback(
+    (onStoreChange: () => void) => {
+      editSession.on("newRow", onStoreChange);
+      return () => editSession.removeListener("newRow", onStoreChange);
+    },
+    [editSession],
+  );
+  const newRowState = useSyncExternalStore(
+    subscribeToNewRow,
+    () => editSession.newRowState,
+    () => editSession.newRowState,
+  );
   const dataRow = useMemo(
-    () => createSyntheticDataRow(values, editableColumns, errorMessages),
-    [editableColumns, errorMessages, values],
+    () => createSyntheticDataRow(newRowState, editableColumns),
+    [editableColumns, newRowState],
   );
 
   const focusEditor = useCallback((index: number) => {
@@ -108,106 +104,41 @@ export const InlineAddRow = ({
     cell?.querySelector<HTMLElement>("input, button, [tabindex]")?.focus();
   }, []);
 
-  const commitRow = useCallback(
-    async (
-      nextValues: InlineAddRowValues,
-      fieldErrors: InlineAddRowErrors,
-    ): Promise<RpcResult> => {
-      const missingErrors = getMissingValueErrors(
-        visibleColumns.map(({ name }) => name),
-        nextValues,
-      );
-      const nextErrors = { ...fieldErrors, ...missingErrors };
+  useEffect(() => {
+    editSession.configureNewRow(visibleColumns.map(({ name }) => name));
+  }, [editSession, visibleColumns]);
 
-      if (Object.keys(nextErrors).length > 0) {
-        setErrorMessages(nextErrors);
-        const firstInvalidIndex = visibleColumns.findIndex(
-          ({ name }) => nextErrors[name] !== undefined,
-        );
-        focusEditor(firstInvalidIndex);
-        const errorMessage =
-          nextErrors[visibleColumns.at(-1)?.name ?? ""] ?? "Value required";
-        return createEditError(errorMessage);
-      }
+  useEffect(() => {
+    const firstInvalidIndex = visibleColumns.findIndex(
+      ({ name }) => newRowState.errors[name] !== undefined,
+    );
+    if (firstInvalidIndex !== -1) {
+      focusEditor(firstInvalidIndex);
+    }
+  }, [focusEditor, newRowState.errors, visibleColumns]);
 
-      if (submittingRef.current) {
-        return editSucceeded;
-      }
-      submittingRef.current = true;
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) {
+      return;
+    }
 
-      try {
-        const response = await editSession.addRow(nextValues);
-        if (isRpcError(response)) {
-          const finalColumn = visibleColumns.at(-1);
-          if (finalColumn) {
-            setErrorMessages({
-              [finalColumn.name]: response.errorMessage,
-            });
-          }
-          return response;
-        }
-        setErrorMessages({});
-        setValues({});
-        return response;
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Unable to add row";
-        const finalColumn = visibleColumns.at(-1);
-        if (finalColumn) {
-          setErrorMessages({
-            [finalColumn.name]: errorMessage,
-          });
-        }
-        return createEditError(errorMessage);
-      } finally {
-        submittingRef.current = false;
-      }
-    },
-    [editSession, focusEditor, visibleColumns],
-  );
-
-  const handleDataItemEdited = useCallback<TableCellEditHandler>(
-    async (editState: EditEventState, editPhase) => {
-      const { columnName, isValid, value } = editState;
-      const columnIndex = visibleColumns.findIndex(
-        ({ name }) => name === columnName,
-      );
-
-      if (columnName === undefined || columnIndex === -1) {
-        return editSucceeded;
-      }
-
-      if (editPhase === "change") {
-        setValues((current) => ({ ...current, [columnName]: value }));
-        setErrorMessages((current) => {
-          const nextErrors = { ...current };
-          delete nextErrors[columnName];
-          return nextErrors;
-        });
+    const handleCommit = (event: Event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) {
         return;
       }
-
-      const rawValue = value.toString();
-      const isEmptyValue = rawValue.trim() === "";
-      if (isValid === false && !isEmptyValue) {
-        return createEditError("Invalid value");
+      const cell = target.closest<HTMLElement>("[data-field]");
+      const cells = container.querySelectorAll<HTMLElement>("[data-field]");
+      const currentIndex = Array.from(cells).indexOf(cell ?? container);
+      if (currentIndex !== -1 && currentIndex < visibleColumns.length - 1) {
+        focusEditor(currentIndex + 1);
       }
+    };
 
-      const nextValues = { ...values, [columnName]: value };
-      const nextErrors = { ...errorMessages };
-      delete nextErrors[columnName];
-      setValues(nextValues);
-      setErrorMessages(nextErrors);
-
-      if (columnIndex === visibleColumns.length - 1) {
-        return commitRow(nextValues, nextErrors);
-      }
-
-      focusEditor(columnIndex + 1);
-      return editSucceeded;
-    },
-    [commitRow, errorMessages, focusEditor, values, visibleColumns],
-  );
+    container.addEventListener("vuu-commit", handleCommit);
+    return () => container.removeEventListener("vuu-commit", handleCommit);
+  }, [focusEditor, visibleColumns.length]);
 
   return (
     <div ref={containerRef}>
@@ -217,7 +148,6 @@ export const InlineAddRow = ({
         columns={editableColumns}
         dataRow={dataRow}
         offset={0}
-        onDataEdited={handleDataItemEdited}
         searchPattern=""
         showBookends={false}
         style={style}
