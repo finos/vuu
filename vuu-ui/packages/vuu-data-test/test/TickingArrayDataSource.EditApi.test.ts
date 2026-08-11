@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { buildDataColumnMapFromSchema, Table } from "../src/Table";
 import { TickingArrayDataSource } from "../src/TickingArrayDataSource";
+import { sessionTableSchema } from "../src/session-table-utils";
 import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import type { RpcResultError, RpcResultSuccess } from "@vuu-ui/vuu-protocol-types";
 
@@ -30,6 +31,22 @@ function createDataSource() {
   vi.spyOn(ds, "rpcRequest").mockResolvedValue(SUCCESS);
   return ds;
 }
+
+describe("sessionTableSchema", () => {
+  it("adds setToDelete as a boolean session-only column", () => {
+    const sessionSchema = sessionTableSchema({
+      ...schema,
+      columns: schema.columns.slice(0, 2),
+    });
+
+    expect(sessionSchema.columns).toEqual([
+      { name: "id", serverDataType: "string" },
+      { name: "name", serverDataType: "string" },
+      { name: "vuuMsg", serverDataType: "string" },
+      { name: "setToDelete", serverDataType: "boolean" },
+    ]);
+  });
+});
 
 describe("addRow", () => {
   it("dispatches addRow RPC with a generated key and provided row data", async () => {
