@@ -1,0 +1,95 @@
+.vuuItemPicker {
+  --label-margin-left: 0px;
+
+  --itempicker-background: var(
+    --vuuItemPicker-background,
+    var(--salt-container-primary-background)
+  );
+  background: var(--itempicker-background);
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-300);
+  height: var(--vuuItemPicker-height, 100%);
+  overflow: hidden;
+  padding: var(--salt-spacing-300) 0;
+
+  &.vuuItemPicker-withCalculated {
+    --label-margin-left: 8px;
+  }
+
+  .saltListBox {
+    background-color: inherit;
+  }
+
+  .saltOption {
+    align-items: center;
+    background-color: inherit;
+    border-bottom: var(--vuuItemListItem-border, solid) 1px
+      var(--salt-separable-tertiary-borderColor);
+    gap: var(--salt-spacing-200);
+    height: calc(var(--salt-size-base) + var(--salt-spacing-200));
+    .vuuIcon {
+      --vuu-icon-color: var(--salt-content-secondary-foreground);
+    }
+
+    .vuuCalculatedItemIcon {
+      --vuu-icon-color: var(--salt-content-secondary-foreground);
+      left: 32px;
+      position: absolute;
+      top: 8px;
+    }
+
+    .vuuHighlight {
+      color: var(--vuu-color-blue-40);
+      text-decoration: underline;
+    }
+
+    .vuuItemPicker-text {
+      margin-left: var(--label-margin-left);
+    }
+  }
+
+  .vuuItemPickerListItem-action {
+    margin-left: auto;
+    visibility: hidden;
+  }
+
+  .saltOption:hover {
+    .vuuItemPickerListItem-action {
+      visibility: visible;
+    }
+  }
+
+  .vuuItemPicker-search {
+    --saltInput-paddingLeft: var(--salt-spacing-300);
+    padding: var(--salt-spacing-200) var(--salt-spacing-300) 0
+      var(--salt-spacing-300);
+  }
+
+  .vuuItemPicker-scrollContainer {
+    flex: 1 1 0px;
+    overflow: auto;
+
+    .vuuItemPicker-sectionHeader {
+      align-items: center;
+      background: var(--itempicker-background);
+      display: flex;
+      height: 32px;
+      padding: 0 var(--salt-spacing-300);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .vuuItemPicker-availableHeader {
+      top: 32px;
+    }
+
+    .vuuItemPicker-availableList {
+      .saltOption {
+        padding-left: var(--salt-spacing-300);
+      }
+    }
+  }
+}

@@ -17,6 +17,11 @@ export * from "./expando-input";
 export { HoverOverlay } from "./hover-overlay/HoverOverlay";
 export * from "./icon-button";
 export * from "./instrument-picker";
+export { ItemPicker, type ItemPickerProps } from "./item-picker/ItemPicker";
+export {
+  type ItemDescriptor,
+  type CreateCustomItemProps,
+} from "./item-picker/useItemPicker";
 export * from "./measured-container";
 export { ModalProvider, useModal } from "./modal-provider/ModalProvider";
 export * from "./overflow-container";
