@@ -6,7 +6,6 @@ export {
   useEditMode,
   type EditModeContextProps,
 } from "./EditModeProvider";
-export { InlineAddRow, type InlineAddRowProps } from "./InlineAddRow";
 export {
   EditError,
   EditSession,
