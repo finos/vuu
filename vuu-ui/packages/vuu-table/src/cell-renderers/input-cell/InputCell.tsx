@@ -9,6 +9,7 @@ import {
   registerComponent,
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
+import { useId } from "react";
 
 import inputCellCss from "./InputCell.css";
 import { useInputCell } from "./useInputCell";
@@ -29,11 +30,13 @@ export const InputCell = ({
   });
 
   const dataValue = dataRow[column.name] as number | string;
+  const editErrorId = useId();
 
   const { align = "left" } = column;
 
   const {
     editing,
+    inputProps,
     warningMessage,
     previousValue = "",
     ...editProps
@@ -46,9 +49,14 @@ export const InputCell = ({
 
   // TODO can this move into useEdtableText ?
   const editRejected = getVuuEditMessage(dataRow, column, previousValue);
+  const { editError } = column;
 
   const endAdornment =
-    editRejected && align === "left" ? (
+    editError && align === "left" ? (
+      <Tooltip content={editError} placement="right">
+        <Icon className={`${classBase}-icon`} name="error" />
+      </Tooltip>
+    ) : editRejected && align === "left" ? (
       <Tooltip content={editRejected} placement="right">
         <Icon className={`${classBase}-icon`} name="error" />
       </Tooltip>
@@ -59,7 +67,11 @@ export const InputCell = ({
     ) : undefined;
 
   const startAdornment =
-    editRejected && align === "right" ? (
+    editError && align === "right" ? (
+      <Tooltip content={editError} placement="right">
+        <Icon className={`${classBase}-icon`} name="error" />
+      </Tooltip>
+    ) : editRejected && align === "right" ? (
       <Tooltip content={editRejected} placement="right">
         <Icon className={`${classBase}-icon`} name="error" />
       </Tooltip>
@@ -70,18 +82,33 @@ export const InputCell = ({
     ) : undefined;
 
   return (
-    <Input
-      {...editProps}
-      bordered
-      className={cx(classBase, {
-        [`${classBase}-edited`]: editedDuringCurrentSession === true,
-        [`${classBase}-error`]: warningMessage !== undefined,
-        [`${classBase}-warning`]: editRejected !== undefined,
-        vuuEditing: editing,
-      })}
-      endAdornment={endAdornment}
-      startAdornment={startAdornment}
-    />
+    <>
+      <Input
+        {...editProps}
+        bordered
+        className={cx(classBase, {
+          [`${classBase}-edited`]: editedDuringCurrentSession === true,
+          [`${classBase}-error`]:
+            editError !== undefined || warningMessage !== undefined,
+          [`${classBase}-warning`]: editRejected !== undefined,
+          vuuEditing: editing || editError !== undefined,
+        })}
+        endAdornment={endAdornment}
+        inputProps={{
+          ...inputProps,
+          "aria-describedby": editError ? editErrorId : undefined,
+          "aria-errormessage": editError ? editErrorId : undefined,
+          "aria-invalid": editError ? true : undefined,
+          "aria-label": column.label,
+        }}
+        startAdornment={startAdornment}
+      />
+      {editError ? (
+        <span className={`${classBase}-errorMessage`} id={editErrorId}>
+          {editError}
+        </span>
+      ) : null}
+    </>
   );
 };
 

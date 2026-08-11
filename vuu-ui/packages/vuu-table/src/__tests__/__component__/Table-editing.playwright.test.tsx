@@ -15,10 +15,29 @@ const NOT_EDITABLE = false;
 const NOT_EDITING = false;
 
 test.describe("Inline add row", () => {
-  test("renders inputs in the table custom header", async ({ mount, page }) => {
+  test("renders accessible editable cells in the table custom header", async ({
+    mount,
+    page,
+  }) => {
     await mount(<InlineAddRow />);
 
-    await expect(page.getByPlaceholder("Enter value").first()).toBeVisible();
+    await expect(page.getByRole("textbox", { name: "bbg" })).toBeVisible();
+  });
+
+  test("marks omitted cells as invalid when the final cell is committed", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<InlineAddRow />);
+
+    const finalCell = page.getByRole("textbox", { name: "vuuMsg" });
+    await finalCell.fill("new instrument");
+    await finalCell.press("Enter");
+
+    await expect(page.getByRole("textbox", { name: "bbg" })).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
   });
 });
 

@@ -17,6 +17,7 @@ export const TableCell = ({
   column,
   dataRow,
   onClick,
+  onDataEdited,
   searchPattern = "",
 }: TableCellProps) => {
   const targetWindow = useWindow();
@@ -36,6 +37,17 @@ export const TableCell = ({
 
   const handleDataItemEdited = useCallback<TableCellEditHandler>(
     async (editState, editPhase) => {
+      if (onDataEdited) {
+        return onDataEdited(
+          {
+            ...editState,
+            columnName: name,
+            dataRow,
+          },
+          editPhase,
+        );
+      }
+
       const { isValid = true, previousValue = "", value } = editState;
       if (editPhase === "commit" && editSession) {
         const { editedDuringCurrentSession, ...response } =
@@ -50,7 +62,7 @@ export const TableCell = ({
         return response;
       }
     },
-    [dataRow.key, editSession, name],
+    [dataRow, editSession, name, onDataEdited],
   );
 
   const handleClick = useCallback<MouseEventHandler>(
@@ -64,6 +76,7 @@ export const TableCell = ({
     <div
       aria-colindex={ariaColIndex}
       className={className}
+      data-field={name}
       onClick={onClick ? handleClick : undefined}
       role="cell"
       style={style}
