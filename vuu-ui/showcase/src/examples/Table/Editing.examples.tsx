@@ -13,7 +13,11 @@ import {
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { BulkEditPanel, InputCell, Table } from "@vuu-ui/vuu-table";
-import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
+import {
+  DataSourceStats,
+  InlineAddRow,
+  TableFooter,
+} from "@vuu-ui/vuu-table-extras";
 import {
   DataEditingProvider,
   EditButtons,
@@ -79,6 +83,7 @@ let _viewportId = 1;
 const EditTableTemplate = ({
   editableType,
   filterColumn,
+  showInlineAddRow = false,
   testId = "",
   vuuTable,
   ...htmlAttributes
@@ -88,6 +93,7 @@ const EditTableTemplate = ({
 > & {
   editableType?: DataValueTypeDescriptor;
   filterColumn?: string;
+  showInlineAddRow?: boolean;
   testId?: string;
   vuuTable: VuuTable;
 }) => {
@@ -213,13 +219,16 @@ const EditTableTemplate = ({
                     col.name === "vuuMsg"
                     ? col
                     : { ...col, editable: true },
-            ).concat({ name: "setToDelete" } as ColumnDescriptor),
+            ).concat({
+              hidden: showInlineAddRow,
+              name: "setToDelete",
+            } as ColumnDescriptor),
         columnDefaultWidth: 150,
         rowSeparators: true,
         zebraStripes: true,
       };
     },
-    [editMode, editableType],
+    [editMode, editableType, showInlineAddRow],
   );
 
   return (
@@ -278,6 +287,9 @@ const EditTableTemplate = ({
             data-viewport={dataSource.viewport}
             data-testid={`table${testId}`}
             dataSource={dataSource}
+            customHeader={
+              editMode === "edit" && showInlineAddRow ? InlineAddRow : undefined
+            }
             renderBufferSize={10}
             selectionModel="none"
           />
@@ -309,10 +321,21 @@ export const EditableInstruments = () => {
   );
 };
 
+/** tags=data-consumer */
+export const EditableInstrumentsWithInlineAddRow = () => (
+  <EditTableTemplate
+    showInlineAddRow
+    testId="-inline-add-row"
+    vuuTable={INSTRUMENTS}
+  />
+);
+
 const EditableInstrumentsTemplate = ({
   copyOption,
+  showInlineAddRow = false,
 }: {
   copyOption?: CopyOption;
+  showInlineAddRow?: boolean;
 }) => {
   const [editMode, setEditMode] = useState<EditMode>("view");
   const { VuuDataSource } = useData();
@@ -429,6 +452,9 @@ const EditableInstrumentsTemplate = ({
             config={config}
             data-viewport={dataSource.viewport}
             dataSource={dataSource}
+            customHeader={
+              editMode === "edit" && showInlineAddRow ? InlineAddRow : undefined
+            }
             renderBufferSize={10}
             isRowSelectable={editMode === "edit" ? isRowSelectable : undefined}
             selectionModel={editMode === "edit" ? "checkbox" : "none"}
@@ -470,6 +496,15 @@ export const CreateSessionTableInstruments = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
       <EditableInstrumentsTemplate copyOption="All" />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
+/** tags=data-consumer */
+export const CreateSessionTableInstrumentsWithInlineAddRow = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <EditableInstrumentsTemplate copyOption="All" showInlineAddRow />
     </NotificationsProvider>
   </LocalDataSourceProvider>
 );
