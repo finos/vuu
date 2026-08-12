@@ -4,6 +4,7 @@ import {
   withDataRowEditErrors,
   type NewRowState,
 } from "@vuu-ui/vuu-data-editing";
+import { useHeaderProps } from "@vuu-ui/vuu-table";
 import type { DataRow, RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { getCellRenderer, isNotHidden } from "@vuu-ui/vuu-utils";
 import {
@@ -40,6 +41,7 @@ export interface UseInlineAddRowProps {
 }
 
 export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
+
   const editSession = useEditSession(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const editableColumns = useMemo(
@@ -77,7 +79,7 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
   const focusEditor = useCallback((index: number) => {
     const cell =
       containerRef.current?.querySelectorAll<HTMLElement>("[data-field]")[
-        index
+      index
       ];
     cell?.querySelector<HTMLElement>("input, button, [tabindex]")?.focus();
   }, []);

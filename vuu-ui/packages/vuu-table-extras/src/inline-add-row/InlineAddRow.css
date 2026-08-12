@@ -1,8 +1,9 @@
 .vuuInlineAddRow {
-  --vuu-table-embedded-control-height: 22px;
-
+  --row-borderColor: transparent;
   display: flex;
-  height: var(--salt-size-base);
+  height: var(--row-height, var(--salt-size-base));
+  padding: 0 var(--table-selection-bookend-width, 4px);
+  position: relative;
 
   .vuuTableCell {
     height: 100%;
