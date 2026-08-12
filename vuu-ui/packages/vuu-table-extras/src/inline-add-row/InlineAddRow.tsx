@@ -16,7 +16,6 @@ export const InlineAddRow = ({
   className,
   columns,
   style,
-  virtualColSpan = 0,
 }: InlineAddRowProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -25,7 +24,7 @@ export const InlineAddRow = ({
     window: targetWindow,
   });
 
-  const { containerRef, dataRow, editableColumns } = useInlineAddRow({
+  const { containerRef, dataRow } = useInlineAddRow({
     columns,
   });
 
@@ -33,13 +32,13 @@ export const InlineAddRow = ({
     <div className={cx(classBase, className)} ref={containerRef}>
       <Row
         ariaRowIndex={ariaRowIndex}
-        columns={editableColumns}
+        columns={columns}
         dataRow={dataRow}
         offset={0}
         searchPattern=""
         showBookends={false}
         style={style}
-        virtualColSpan={virtualColSpan}
+        virtualColSpan={0}
       />
     </div>
   );
