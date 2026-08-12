@@ -213,16 +213,37 @@ const EditTableTemplate = ({
                       },
                     } as DataValueTypeDescriptor,
                   }
-                  : col.name === "isin"
+                  : col.name === 'exchange'
                     ? {
                       ...col,
-                      editable: { insert: true, update: false },
+                      editable: true,
+                      type: {
+                        name: "string",
+                        renderer: {
+                          name: "dropdown-cell",
+                          values: [
+                            "XLON/LSE-SETS",
+                            "XNGS/NAS-GSM",
+                            "XNYS/NYS-MAIN",
+                            "XAMS/ENA-MAIN",
+                            "MIL/EUR_IT",
+                            "PAR/EUR_FR",
+                            "AT/EUR_GR",
+                            "FR/EUR_DE",
+                          ],
+                        },
+                      } as DataValueTypeDescriptor,
                     }
-                    : col.name === "vuuCreatedTimestamp" ||
-                    col.name === "vuuUpdatedTimestamp" ||
-                    col.name === "vuuMsg"
-                    ? col
-                    : { ...col, editable: true },
+                    : col.name === "isin"
+                      ? {
+                        ...col,
+                        editable: { insert: true, update: false },
+                      }
+                      : col.name === "vuuCreatedTimestamp" ||
+                        col.name === "vuuUpdatedTimestamp" ||
+                        col.name === "vuuMsg"
+                        ? col
+                        : { ...col, editable: true },
             ).concat({
               hidden: showInlineAddRow,
               name: "setToDelete",
