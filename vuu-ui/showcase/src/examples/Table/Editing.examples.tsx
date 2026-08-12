@@ -213,8 +213,12 @@ const EditTableTemplate = ({
                       },
                     } as DataValueTypeDescriptor,
                   }
-                  : col.name === "isin" ||
-                    col.name === "vuuCreatedTimestamp" ||
+                  : col.name === "isin"
+                    ? {
+                      ...col,
+                      editable: { insert: true, update: false },
+                    }
+                    : col.name === "vuuCreatedTimestamp" ||
                     col.name === "vuuUpdatedTimestamp" ||
                     col.name === "vuuMsg"
                     ? col

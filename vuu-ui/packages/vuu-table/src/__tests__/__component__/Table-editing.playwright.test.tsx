@@ -15,7 +15,7 @@ const NOT_EDITABLE = false;
 const NOT_EDITING = false;
 
 test.describe("Inline add row", () => {
-  test("renders accessible editable cells in the table custom header", async ({
+  test("renders insert-editable cells and blanks update-only columns", async ({
     mount,
     page,
   }) => {
@@ -26,9 +26,16 @@ test.describe("Inline add row", () => {
     );
     await page.getByRole("radio", { name: "Edit" }).click();
 
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
     await expect(
-      page.locator(".vuuInlineAddRow").getByRole("textbox", { name: "bbg" }),
+      inlineAddRow.getByRole("textbox", { name: "bbg" }),
     ).toBeVisible();
+    await expect(
+      inlineAddRow.getByRole("textbox", { name: "isin" }),
+    ).toBeVisible();
+    await expect(
+      inlineAddRow.getByRole("textbox", { name: "vuuMsg" }),
+    ).toHaveCount(0);
   });
 
   test("marks omitted cells as invalid when the final cell is committed", async ({
@@ -43,7 +50,7 @@ test.describe("Inline add row", () => {
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const inlineAddRow = page.locator(".vuuInlineAddRow");
-    const finalCell = inlineAddRow.getByRole("textbox", { name: "vuuMsg" });
+    const finalCell = inlineAddRow.getByRole("textbox", { name: "ric" });
     await finalCell.fill("new instrument");
     await finalCell.press("Enter");
 

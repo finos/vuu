@@ -1,5 +1,5 @@
 import { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { getColumnStyle } from "@vuu-ui/vuu-utils";
+import { getColumnStyle, isDataValueEditable } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { useMemo } from "react";
 
@@ -14,7 +14,7 @@ export const useCell = (
       vuuPinLeft: column.pin === "left",
       vuuPinRight: column.pin === "right",
       vuuEndPin: isHeader && column.pinnedWidth,
-      [`${classBase}-editable`]: column.editable,
+      [`${classBase}-editable`]: isDataValueEditable(column, "update"),
       [`${classBase}-right`]: column.align === "right",
     });
 
