@@ -1,5 +1,4 @@
 .vuuInlineAddRow {
-  --vuu-table-embedded-control-height: 22px;
   --row-borderColor: transparent;
 
   display: flex;
