@@ -2,6 +2,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { Row } from "@vuu-ui/vuu-table";
 import type { BaseRowProps } from "@vuu-ui/vuu-table-types";
+import cx from "clsx";
 import { useInlineAddRow } from "./useInlineAddRow";
 
 import inlineAddRowCss from "./InlineAddRow.css";
@@ -29,10 +30,9 @@ export const InlineAddRow = ({
   });
 
   return (
-    <div ref={containerRef}>
+    <div className={cx(classBase, className)} ref={containerRef}>
       <Row
         ariaRowIndex={ariaRowIndex}
-        className={[classBase, className].filter(Boolean).join(" ")}
         columns={editableColumns}
         dataRow={dataRow}
         offset={0}
