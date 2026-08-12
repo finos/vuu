@@ -9,7 +9,6 @@ export interface EditButtonProps {
   hasSelection?: boolean;
   onCancel?: () => void;
   onDelete?: () => void;
-  onAddRows?: () => void;
   onSave: (force?: boolean) => void;
   saveLabel?: string;
   confirmSave?: () => boolean | Promise<boolean>;
@@ -23,7 +22,6 @@ export const EditButtons = ({
   confirmSave,
   editSession,
   hasSelection = false,
-  onAddRows,
   onCancel,
   onDelete,
   onSave,
@@ -63,11 +61,6 @@ export const EditButtons = ({
           sentiment="negative"
         >
           Delete
-        </Button>
-      )}
-      {onAddRows && (
-        <Button onClick={onAddRows} sentiment="neutral">
-          Add Rows
         </Button>
       )}
       <Button disabled={!canSave} onClick={handleSave} sentiment="accented">

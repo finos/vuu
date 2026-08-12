@@ -14,6 +14,15 @@ describe("isDataValueEditable", () => {
     expect(isDataValueEditable({ editable: true }, "insert")).toBe(true);
     expect(isDataValueEditable({ editable: true }, "update")).toBe(true);
     expect(isDataValueEditable({ editable: false }, "insert")).toBe(false);
+    expect(isDataValueEditable({}, "insert")).toBe(false);
+    expect(isDataValueEditable({}, "update")).toBe(false);
+    expect(isDataValueEditable({ editable: undefined }, "update")).toBe(false);
+  });
+
+  it("allows caller to specify that default should be true if undefined", () => {
+    expect(isDataValueEditable({}, "insert", true)).toBe(true);
+    expect(isDataValueEditable({}, "update", true)).toBe(true);
+    expect(isDataValueEditable({ editable: undefined }, "update", true)).toBe(true);
   });
 
   it("uses operation-specific permissions", () => {

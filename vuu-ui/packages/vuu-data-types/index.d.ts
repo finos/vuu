@@ -138,15 +138,15 @@ export declare type BulkEdit = "bulk" | false | "read-only";
  * Controls whether a data value can be edited for row insertion and/or update.
  * A boolean applies the same permission to both operations.
  */
-export declare type Editability =
+export declare type DataEditable =
   | boolean
   | {
-      insert: boolean;
-      update: boolean;
-    };
+    insert: boolean;
+    update: boolean;
+  };
 
 export interface DataValueDescriptor {
-  editable?: Editability;
+  editable?: DataEditable;
   /**
    There are three values for editableBulk. 
     - false user will not see these values when applying a bulk edit. 

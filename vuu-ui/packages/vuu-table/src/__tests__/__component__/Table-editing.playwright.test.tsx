@@ -654,7 +654,6 @@ test.describe("Inline row editing (session)", () => {
 
     // Edit mode: action buttons appear
     await expect(page.getByRole("button", { name: "Delete" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Add Rows" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Submit" })).toBeVisible();
 
     // Undo column header is visible
@@ -735,25 +734,8 @@ test.describe("Inline row editing (session)", () => {
     await expect(page.getByRole("button", { name: "Submit" })).toBeDisabled();
   });
 
-  test("Add Rows appends blank rows to the session table", async ({
-    browserName,
-    mount,
-    page,
-  }) => {
-    await mount(<EditableInstrumentsInlineEdit />);
-    await page.getByRole("radio", { name: "Edit" }).click();
-
-    const submitButton = page.getByRole("button", { name: "Submit" });
-    await expect(submitButton).toBeDisabled();
-
-    await page.getByRole("button", { name: "Add Rows" }).click();
-
-    // Submit enabled after rows added
-    await expect(submitButton).toBeEnabled();
-  });
 
   test("Cancel discards all changes and returns to view mode", async ({
-    browserName,
     mount,
     page,
   }) => {
@@ -855,27 +837,6 @@ test.describe("Session table editing (createSessionTable)", () => {
     const undoButton = table.row(2).getByRole("button", { name: "Undo" });
     await expect(undoButton).toBeVisible();
     await expect(page.getByRole("button", { name: "Submit" })).toBeEnabled();
-  });
-
-  test("Add Rows appends blank rows to the session table", async ({
-    mount,
-    page,
-  }) => {
-    await mount(<CreateSessionTableInstruments />);
-    await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(
-      page.getByRole("status", { name: "Loading session table" }),
-    ).not.toBeVisible();
-
-    const submitButton = page.getByRole("button", { name: "Submit" });
-    await expect(submitButton).toBeDisabled();
-
-    await page.getByRole("button", { name: "Add Rows" }).click();
-    await expect(submitButton).toBeEnabled();
-    await expect(page.getByRole("table")).toHaveAttribute(
-      "aria-rowcount",
-      "10015",
-    );
   });
 
   test("soft-deleted row retains vuuTableRow-noSelect class after another row is selected", async ({

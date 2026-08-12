@@ -12,13 +12,13 @@ import {
   UnControlledNumericColumnFilter,
   UnControlledTextColumnFilter,
 } from "../../../../../showcase/src/examples/Filters/ColumnFilter.examples";
-import {
+import type {
   ColumnFilterChangeHandler,
   ColumnFilterCommitHandler,
   FilterContainerFilter,
 } from "@vuu-ui/vuu-filter-types";
-import { ColumnFilterProps } from "../../column-filter/ColumnFilter";
-import { FilterAppliedHandler } from "../../filter-container/useFilterContainer";
+import type { ColumnFilterProps } from "../../column-filter/ColumnFilter";
+import type { FilterAppliedHandler } from "../../filter-container/useFilterContainer";
 
 const BBG = { name: "bbg", serverDataType: "string" };
 const PRICE = { name: "price", serverDataType: "double" };
@@ -30,7 +30,7 @@ const VUU_CREATED = {
 
 test.describe("ColumnFilter", () => {
   test.describe("TextColumnFilter", () => {
-    test(`Controlled Text ColumnFilter rendered empty, search pattern entered and value selected from search results, correct callbacks are invoked`, async ({
+    test('Controlled Text ColumnFilter rendered empty, search pattern entered and value selected from search results, correct callbacks are invoked', async ({
       mount,
       page,
     }) => {
@@ -70,7 +70,7 @@ test.describe("ColumnFilter", () => {
       expect(values.at(-1)).toEqual([BBG, "=", "AAOO L"]);
     });
 
-    test(`Uncontrolled Text ColumnFilter rendered empty, search pattern entered and value selected from search results, correct callbacks are invoked`, async ({
+    test('Uncontrolled Text ColumnFilter rendered empty, search pattern entered and value selected from search results, correct callbacks are invoked', async ({
       mount,
       page,
     }) => {
@@ -241,7 +241,7 @@ test.describe("ColumnFilter", () => {
   });
 
   test.describe("Numeric columnfilter", () => {
-    test(`Uncontrolled Numeric ColumnFilter rendered empty, numerics typed, ENTER commits`, async ({
+    test('Uncontrolled Numeric ColumnFilter rendered empty, numerics typed, ENTER commits', async ({
       mount,
       page,
     }) => {

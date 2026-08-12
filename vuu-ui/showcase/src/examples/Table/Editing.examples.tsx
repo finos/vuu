@@ -17,6 +17,7 @@ import {
   DataSourceStats,
   InlineAddRow,
   TableFooter,
+  TableFooterTray,
 } from "@vuu-ui/vuu-table-extras";
 import {
   DataEditingProvider,
@@ -213,37 +214,16 @@ const EditTableTemplate = ({
                       },
                     } as DataValueTypeDescriptor,
                   }
-                  : col.name === "exchange"
+                  : col.name === "isin"
                     ? {
                       ...col,
-                      editable: true,
-                      type: {
-                        name: "string",
-                        renderer: {
-                          name: "dropdown-cell",
-                          values: [
-                            "XLON/LSE-SETS",
-                            "XNGS/NAS-GSM",
-                            "XNYS/NYS-MAIN",
-                            "XAMS/ENA-MAIN",
-                            "MIL/EUR_IT",
-                            "PAR/EUR_FR",
-                            "AT/EUR_GR",
-                            "FR/EUR_DE",
-                          ],
-                        },
-                      } as DataValueTypeDescriptor,
+                      editable: { insert: true, update: false },
                     }
-                    : col.name === "isin"
-                      ? {
-                        ...col,
-                        editable: { insert: true, update: false },
-                      }
-                      : col.name === "vuuCreatedTimestamp" ||
-                        col.name === "vuuUpdatedTimestamp" ||
-                        col.name === "vuuMsg"
-                        ? col
-                        : { ...col, editable: true },
+                    : col.name === "vuuCreatedTimestamp" ||
+                      col.name === "vuuUpdatedTimestamp" ||
+                      col.name === "vuuMsg"
+                      ? col
+                      : { ...col, editable: true },
             ).concat({
               hidden: showInlineAddRow,
               name: "setToDelete",
@@ -324,13 +304,15 @@ const EditTableTemplate = ({
         {editMode === "view" ? (
           <DataSourceStats dataSource={sourceDataSource} />
         ) : (
-          <EditButtons
-            canCancel={canCancel}
-            canSave={canSave}
-            editSession={editSession}
-            onCancel={onCancel}
-            onSave={onSave}
-          />
+          <TableFooterTray position="center">
+            <EditButtons
+              canCancel={canCancel}
+              canSave={canSave}
+              editSession={editSession}
+              onCancel={onCancel}
+              onSave={onSave}
+            />
+          </TableFooterTray>
         )}
       </TableFooter>
     </div>
@@ -385,7 +367,6 @@ const EditableInstrumentsTemplate = ({
     dataSource,
     editSession,
     hasSelection,
-    onAddRows,
     onCancel,
     onDelete,
     onSave,
@@ -490,17 +471,18 @@ const EditableInstrumentsTemplate = ({
         {editMode === "view" ? (
           <DataSourceStats dataSource={sourceDataSource} />
         ) : (
-          <EditButtons
-            canCancel={canCancel}
-            canSave={canSave}
-            editSession={editSession}
-            hasSelection={hasSelection}
-            onAddRows={onAddRows}
-            onCancel={onCancel}
-            onDelete={onDelete}
-            onSave={onSave}
-            saveLabel="Submit"
-          />
+          <TableFooterTray position="center">
+            <EditButtons
+              canCancel={canCancel}
+              canSave={canSave}
+              editSession={editSession}
+              hasSelection={hasSelection}
+              onCancel={onCancel}
+              onDelete={onDelete}
+              onSave={onSave}
+              saveLabel="Submit"
+            />
+          </TableFooterTray>
         )}
       </TableFooter>
     </div>

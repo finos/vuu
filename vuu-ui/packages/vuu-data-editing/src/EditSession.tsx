@@ -23,13 +23,13 @@ export type EditLifecycle =
   | { status: "active"; sessionDataSource: DataSource }
   | { status: "ending"; sessionDataSource: DataSource }
   | {
-      status: "error";
-      operation: "begin" | "end";
-      error: Error;
-      sessionDataSource?: DataSource;
-    };
+    status: "error";
+    operation: "begin" | "end";
+    error: Error;
+    sessionDataSource?: DataSource;
+  };
 
-export class EditError extends Error {}
+export class EditError extends Error { }
 
 type CellEdit = {
   originalValue: VuuRowDataItemType;
@@ -317,13 +317,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       this.addCount = this.#addCount + 1;
     }
     return response;
-  }
-
-  addRows(count = 15, rowData: Record<string, VuuRowDataItemType> = {}) {
-    for (let i = 0; i < count; i++) {
-      this.dataSource?.addRow?.(rowData);
-    }
-    this.addCount = this.#addCount + count;
   }
 
   restoreRows(keys: string[]) {

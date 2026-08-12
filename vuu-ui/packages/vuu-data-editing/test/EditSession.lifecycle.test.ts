@@ -25,7 +25,7 @@ class MockDataSource implements EditApi {
     private createSession: CreateSession,
     private edit: EditCell = vi.fn().mockResolvedValue(SUCCESS),
     private addRowImpl?: AddRow,
-  ) {}
+  ) { }
 
   addRow(...args: Parameters<AddRow>) {
     return this.addRowImpl?.(...args);
@@ -388,25 +388,6 @@ describe("EditSession lifecycle", () => {
       editSession.invalidCount,
       editSession.editState,
     ]).toEqual([0, 0, "clean"]);
-  });
-
-  it("preserves insert state while an invalid edit is corrected and reverted", async () => {
-    await editSession.begin();
-    editSession.addRows(1);
-
-    await editSession.commit("row-1", "price", 100, 101, false);
-    expect(editSession.editState).toBe("invalid");
-
-    await editSession.commit("row-1", "price", 100, 102, true);
-    expect(editSession.editState).toBe("dirty");
-
-    await editSession.commit("row-1", "price", 100, 100, true);
-    expect([
-      editSession.editCount,
-      editSession.invalidCount,
-      editSession.addCount,
-    ]).toEqual([0, 0, 1]);
-    expect(editSession.editState).toBe("dirty");
   });
 
   it("notifies delete count boundaries while cell edits keep the session dirty", async () => {

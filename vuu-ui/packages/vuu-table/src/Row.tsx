@@ -23,7 +23,6 @@ export const Row = memo(
     classNameGenerator,
     columns,
     dataRow,
-    ariaRowIndex,
     groupToggleTarget = "group-column",
     highlighted,
     isSelectable,
@@ -97,10 +96,10 @@ export const Row = memo(
     );
 
     return (
+      // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
       <div
         {...htmlAttributes}
         aria-expanded={ariaExpanded}
-        aria-rowindex={ariaRowIndex}
         aria-selected={isSelected ? "true" : undefined}
         aria-level={ariaLevel}
         role="row"

@@ -7,15 +7,15 @@ import {
   VuuInput,
   VuuTimePicker,
   VuuTypeaheadInput,
-  VuuTypeaheadInputProps,
+  type VuuTypeaheadInputProps,
 } from "@vuu-ui/vuu-ui-controls";
 import {
-  CommitHandler,
+  type CommitHandler,
   isDateTimeDataValue,
   isDataValueEditable,
   isTimeDataValue,
 } from "@vuu-ui/vuu-utils";
-import { InputProps } from "@salt-ds/core";
+import type { InputProps } from "@salt-ds/core";
 import { asTimeString } from "@vuu-ui/vuu-utils";
 import { ToggleFilter } from "@vuu-ui/vuu-filters";
 
@@ -81,7 +81,8 @@ export const getDataItemEditControl = ({
 
   const dataVariant = variant && variant !== "toggle" ? variant : undefined;
 
-  if (!isDataValueEditable(dataDescriptor, editOperation)) {
+  // WOnb't this prevent a filter on an non-editable field ?
+  if (!isDataValueEditable(dataDescriptor, editOperation, true)) {
     return (
       <VuuInput
         variant="secondary"

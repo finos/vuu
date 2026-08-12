@@ -107,10 +107,6 @@ export const useEditableTable = ({
     setSelectionCount(0);
   }, [editSession]);
 
-  const handleAddRows = useCallback(() => {
-    editSession.addRows(addRowsCount);
-  }, [addRowsCount, editSession]);
-
   const handleUndoRowChange = useCallback(
     (key: string) => void editSession.undoRowChange(key),
     [editSession],
@@ -171,7 +167,6 @@ export const useEditableTable = ({
     editSession,
     lifecycle,
     hasSelection: selectionCount > 0 || deleteCount > 0,
-    onAddRows: handleAddRows,
     onCancel: handleCancel,
     onDelete: handleDelete,
     onSave: handleSave,
