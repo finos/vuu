@@ -9,7 +9,7 @@ import inlineAddRowCss from "./InlineAddRow.css";
 
 const classBase = "vuuInlineAddRow";
 
-export interface InlineAddRowProps extends BaseRowProps { }
+export interface InlineAddRowProps extends BaseRowProps {}
 
 export const InlineAddRow = ({
   ariaRowIndex,
@@ -24,7 +24,7 @@ export const InlineAddRow = ({
     window: targetWindow,
   });
 
-  const { containerRef, dataRow } = useInlineAddRow({
+  const { containerRef, dataRow, inlineAddColumns } = useInlineAddRow({
     columns,
   });
 
@@ -32,7 +32,7 @@ export const InlineAddRow = ({
     <div className={cx(classBase, className)} ref={containerRef}>
       <Row
         ariaRowIndex={ariaRowIndex}
-        columns={columns}
+        columns={inlineAddColumns}
         dataRow={dataRow}
         offset={0}
         searchPattern=""

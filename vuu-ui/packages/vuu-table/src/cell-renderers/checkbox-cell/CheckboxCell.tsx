@@ -4,6 +4,7 @@ import { Checkbox } from "@salt-ds/core";
 import {
   dataColumnAndKeyUnchanged,
   dispatchCustomEvent,
+  isDataValueEditable,
   isRpcSuccess,
   registerComponent,
 } from "@vuu-ui/vuu-utils";
@@ -56,7 +57,7 @@ export const CheckboxCell = memo(
 
     const className = `${classBase}-checkbox`;
 
-    return column.editable ? (
+    return isDataValueEditable(column, "update") ? (
       <Checkbox
         checked={isChecked}
         className={className}

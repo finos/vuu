@@ -3,10 +3,28 @@ import { describe, expect, it } from "vitest";
 import {
   addColumnToSubscribedColumns,
   applyWidthToColumns,
+  isDataValueEditable,
   reorderColumnItems,
 } from "../src/column-utils";
 import type { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { getColumnsInViewport } from "../src/column-utils";
+
+describe("isDataValueEditable", () => {
+  it("uses the boolean value for inserts and updates", () => {
+    expect(isDataValueEditable({ editable: true }, "insert")).toBe(true);
+    expect(isDataValueEditable({ editable: true }, "update")).toBe(true);
+    expect(isDataValueEditable({ editable: false }, "insert")).toBe(false);
+  });
+
+  it("uses operation-specific permissions", () => {
+    const dataDescriptor = {
+      editable: { insert: true, update: false },
+    };
+
+    expect(isDataValueEditable(dataDescriptor, "insert")).toBe(true);
+    expect(isDataValueEditable(dataDescriptor, "update")).toBe(false);
+  });
+});
 
 describe("applyWidthToColumns", () => {
   describe("static layouts", () => {

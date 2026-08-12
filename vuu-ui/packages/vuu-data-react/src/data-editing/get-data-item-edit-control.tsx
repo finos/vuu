@@ -12,6 +12,7 @@ import {
 import {
   CommitHandler,
   isDateTimeDataValue,
+  isDataValueEditable,
   isTimeDataValue,
 } from "@vuu-ui/vuu-utils";
 import { InputProps } from "@salt-ds/core";
@@ -40,6 +41,7 @@ export interface DataItemEditControlProps {
    * A table column or form field Descriptor.
    */
   dataDescriptor: DataValueDescriptor;
+  editOperation?: "insert" | "update";
   errorMessage?: string;
   onCommit: CommitHandler<HTMLElement>;
   table?: TableSchemaTable;
@@ -63,6 +65,7 @@ export const getDataItemEditControl = ({
   commitOnBlur,
   commitWhenCleared,
   dataDescriptor,
+  editOperation = "update",
   errorMessage,
   onCommit,
   table,
@@ -78,7 +81,7 @@ export const getDataItemEditControl = ({
 
   const dataVariant = variant && variant !== "toggle" ? variant : undefined;
 
-  if (dataDescriptor.editable === false) {
+  if (!isDataValueEditable(dataDescriptor, editOperation)) {
     return (
       <VuuInput
         variant="secondary"

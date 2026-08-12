@@ -6,6 +6,11 @@ import {
 } from "@vuu-ui/vuu-data-editing";
 import type { DataRow, RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
+  getCellRenderer,
+  isDataValueEditable,
+  isNotHidden,
+} from "@vuu-ui/vuu-utils";
+import {
   useCallback,
   useEffect,
   useMemo,
@@ -41,6 +46,27 @@ export interface UseInlineAddRowProps {
 export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
   const editSession = useEditSession(true);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inlineAddColumns = useMemo(
+    () =>
+      columns.map((column) => {
+        const editable = isDataValueEditable(column, "insert");
+        const inlineAddColumn = { ...column, editable };
+        return {
+          ...inlineAddColumn,
+          CellRenderer: editable ? getCellRenderer(inlineAddColumn) : undefined,
+        };
+      }),
+    [columns],
+  );
+  const visibleColumns = useMemo(
+    () => inlineAddColumns.filter(isNotHidden),
+    [inlineAddColumns],
+  );
+  const visibleInsertColumns = useMemo(
+    () =>
+      visibleColumns.filter((column) => isDataValueEditable(column, "insert")),
+    [visibleColumns],
+  );
   const subscribeToNewRow = useCallback(
     (onStoreChange: () => void) => {
       editSession.on("newRow", onStoreChange);
@@ -54,30 +80,30 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
     () => editSession.newRowState,
   );
   const dataRow = useMemo(
-    () => createSyntheticDataRow(newRowState, columns),
-    [columns, newRowState],
+    () => createSyntheticDataRow(newRowState, inlineAddColumns),
+    [inlineAddColumns, newRowState],
   );
 
   const focusEditor = useCallback((index: number) => {
     const cell =
       containerRef.current?.querySelectorAll<HTMLElement>("[data-field]")[
-      index
+        index
       ];
     cell?.querySelector<HTMLElement>("input, button, [tabindex]")?.focus();
   }, []);
 
   useEffect(() => {
-    editSession.configureNewRow(columns.map(({ name }) => name));
-  }, [editSession, columns]);
+    editSession.configureNewRow(visibleInsertColumns.map(({ name }) => name));
+  }, [editSession, visibleInsertColumns]);
 
   useEffect(() => {
-    const firstInvalidIndex = columns.findIndex(
+    const firstInvalidIndex = visibleColumns.findIndex(
       ({ name }) => newRowState.errors[name] !== undefined,
     );
     if (firstInvalidIndex !== -1) {
       focusEditor(firstInvalidIndex);
     }
-  }, [focusEditor, newRowState.errors, columns]);
+  }, [focusEditor, newRowState.errors, visibleColumns]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -93,17 +119,22 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
       const cell = target.closest<HTMLElement>("[data-field]");
       const cells = container.querySelectorAll<HTMLElement>("[data-field]");
       const currentIndex = Array.from(cells).indexOf(cell ?? container);
-      if (currentIndex !== -1 && currentIndex < columns.length - 1) {
-        focusEditor(currentIndex + 1);
+      const nextEditableIndex = visibleColumns.findIndex(
+        (column, index) =>
+          index > currentIndex && isDataValueEditable(column, "insert"),
+      );
+      if (nextEditableIndex !== -1) {
+        focusEditor(nextEditableIndex);
       }
     };
 
     container.addEventListener("vuu-commit", handleCommit);
     return () => container.removeEventListener("vuu-commit", handleCommit);
-  }, [focusEditor, columns.length]);
+  }, [focusEditor, visibleColumns]);
 
   return {
     containerRef,
     dataRow,
+    inlineAddColumns,
   };
 };
