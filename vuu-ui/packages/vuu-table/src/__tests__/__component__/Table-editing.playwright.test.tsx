@@ -4,9 +4,9 @@ import {
   CreateSessionTableInstruments,
   EditableInstruments,
   EditableInstrumentsInlineEdit,
+  EditableInstrumentsWithInlineAddRow,
   TwoEditableInstruments,
 } from "../../../../../showcase/src/examples/Table/Editing.examples";
-import { InlineAddRow } from "../../../../../showcase/src/examples/Table/InlineAddRow.examples";
 import { expect } from "../../../../../playwright/customAssertions";
 import { TableOM } from "./TableOM";
 
@@ -19,25 +19,37 @@ test.describe("Inline add row", () => {
     mount,
     page,
   }) => {
-    await mount(<InlineAddRow />);
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstrumentsWithInlineAddRow />
+      </LocalDataSourceProvider>,
+    );
+    await page.getByRole("radio", { name: "Edit" }).click();
 
-    await expect(page.getByRole("textbox", { name: "bbg" })).toBeVisible();
+    await expect(
+      page.locator(".vuuInlineAddRow").getByRole("textbox", { name: "bbg" }),
+    ).toBeVisible();
   });
 
   test("marks omitted cells as invalid when the final cell is committed", async ({
     mount,
     page,
   }) => {
-    await mount(<InlineAddRow />);
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstrumentsWithInlineAddRow />
+      </LocalDataSourceProvider>,
+    );
+    await page.getByRole("radio", { name: "Edit" }).click();
 
-    const finalCell = page.getByRole("textbox", { name: "vuuMsg" });
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const finalCell = inlineAddRow.getByRole("textbox", { name: "vuuMsg" });
     await finalCell.fill("new instrument");
     await finalCell.press("Enter");
 
-    await expect(page.getByRole("textbox", { name: "bbg" })).toHaveAttribute(
-      "aria-invalid",
-      "true",
-    );
+    await expect(
+      inlineAddRow.getByRole("textbox", { name: "bbg" }),
+    ).toHaveAttribute("aria-invalid", "true");
     await expect(finalCell).toHaveValue("new instrument");
   });
 
@@ -45,10 +57,16 @@ test.describe("Inline add row", () => {
     mount,
     page,
   }) => {
-    await mount(<InlineAddRow />);
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstrumentsWithInlineAddRow />
+      </LocalDataSourceProvider>,
+    );
+    await page.getByRole("radio", { name: "Edit" }).click();
 
-    const bbg = page.getByRole("textbox", { name: "bbg" });
-    const currency = page.getByRole("textbox", { name: "currency" });
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const bbg = inlineAddRow.getByRole("textbox", { name: "bbg" });
+    const currency = inlineAddRow.getByRole("combobox");
     await bbg.fill("new-bbg");
     await bbg.press("Enter");
 

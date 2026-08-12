@@ -2758,11 +2758,19 @@ export default [
             },
           },
           {
-            id: "Table/TableEditing/InlineAddRow",
-            label: "InlineAddRow",
+            id: "Table/TableEditing/EditableInstrumentsWithInlineAddRow",
+            label: "EditableInstrumentsWithInlineAddRow",
             nodeData: {
-              componentName: "InlineAddRow",
-              path: "src/examples/Table/InlineAddRow.examples.tsx",
+              componentName: "EditableInstrumentsWithInlineAddRow",
+              path: "src/examples/Table/Editing.examples.tsx",
+            },
+          },
+          {
+            id: "Table/TableEditing/CreateSessionTableInstrumentsWithInlineAddRow",
+            label: "CreateSessionTableInstrumentsWithInlineAddRow",
+            nodeData: {
+              componentName: "CreateSessionTableInstrumentsWithInlineAddRow",
+              path: "src/examples/Table/Editing.examples.tsx",
             },
           },
         ],

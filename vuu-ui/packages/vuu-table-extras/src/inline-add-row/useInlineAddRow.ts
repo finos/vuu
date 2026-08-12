@@ -4,9 +4,7 @@ import {
   withDataRowEditErrors,
   type NewRowState,
 } from "@vuu-ui/vuu-data-editing";
-import { useHeaderProps } from "@vuu-ui/vuu-table";
 import type { DataRow, RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { getCellRenderer, isNotHidden } from "@vuu-ui/vuu-utils";
 import {
   useCallback,
   useEffect,
@@ -41,24 +39,8 @@ export interface UseInlineAddRowProps {
 }
 
 export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
-
   const editSession = useEditSession(true);
   const containerRef = useRef<HTMLDivElement>(null);
-  const editableColumns = useMemo(
-    () =>
-      columns.map((column) => {
-        const editableColumn = { ...column, editable: true };
-        return {
-          ...editableColumn,
-          CellRenderer: getCellRenderer(editableColumn),
-        };
-      }),
-    [columns],
-  );
-  const visibleColumns = useMemo(
-    () => editableColumns.filter(isNotHidden),
-    [editableColumns],
-  );
   const subscribeToNewRow = useCallback(
     (onStoreChange: () => void) => {
       editSession.on("newRow", onStoreChange);
@@ -72,8 +54,8 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
     () => editSession.newRowState,
   );
   const dataRow = useMemo(
-    () => createSyntheticDataRow(newRowState, editableColumns),
-    [editableColumns, newRowState],
+    () => createSyntheticDataRow(newRowState, columns),
+    [columns, newRowState],
   );
 
   const focusEditor = useCallback((index: number) => {
@@ -85,17 +67,17 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
   }, []);
 
   useEffect(() => {
-    editSession.configureNewRow(visibleColumns.map(({ name }) => name));
-  }, [editSession, visibleColumns]);
+    editSession.configureNewRow(columns.map(({ name }) => name));
+  }, [editSession, columns]);
 
   useEffect(() => {
-    const firstInvalidIndex = visibleColumns.findIndex(
+    const firstInvalidIndex = columns.findIndex(
       ({ name }) => newRowState.errors[name] !== undefined,
     );
     if (firstInvalidIndex !== -1) {
       focusEditor(firstInvalidIndex);
     }
-  }, [focusEditor, newRowState.errors, visibleColumns]);
+  }, [focusEditor, newRowState.errors, columns]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -111,18 +93,17 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
       const cell = target.closest<HTMLElement>("[data-field]");
       const cells = container.querySelectorAll<HTMLElement>("[data-field]");
       const currentIndex = Array.from(cells).indexOf(cell ?? container);
-      if (currentIndex !== -1 && currentIndex < visibleColumns.length - 1) {
+      if (currentIndex !== -1 && currentIndex < columns.length - 1) {
         focusEditor(currentIndex + 1);
       }
     };
 
     container.addEventListener("vuu-commit", handleCommit);
     return () => container.removeEventListener("vuu-commit", handleCommit);
-  }, [focusEditor, visibleColumns.length]);
+  }, [focusEditor, columns.length]);
 
   return {
     containerRef,
     dataRow,
-    editableColumns,
   };
 };
