@@ -73,11 +73,30 @@ test.describe("Inline add row", () => {
 
     const inlineAddRow = page.locator(".vuuInlineAddRow");
     const bbg = inlineAddRow.getByRole("textbox", { name: "bbg" });
-    const currency = inlineAddRow.getByRole("combobox");
+    const currency = inlineAddRow.getByRole("combobox").first();
     await bbg.fill("new-bbg");
     await bbg.press("Enter");
 
     await expect(currency).toBeFocused();
+  });
+
+  test("returns focus to the first editable cell after the final successful commit", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      <LocalDataSourceProvider>
+        <EditableInstrumentsWithInlineAddRow />
+      </LocalDataSourceProvider>,
+    );
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const bbg = inlineAddRow.getByRole("textbox", { name: "bbg" });
+    const ric = inlineAddRow.getByRole("textbox", { name: "ric" });
+    await ric.dispatchEvent("vuu-commit");
+
+    await expect(bbg).toBeFocused();
   });
 });
 

@@ -213,7 +213,7 @@ const EditTableTemplate = ({
                       },
                     } as DataValueTypeDescriptor,
                   }
-                  : col.name === 'exchange'
+                  : col.name === "exchange"
                     ? {
                       ...col,
                       editable: true,

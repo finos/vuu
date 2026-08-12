@@ -119,12 +119,17 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
       const cell = target.closest<HTMLElement>("[data-field]");
       const cells = container.querySelectorAll<HTMLElement>("[data-field]");
       const currentIndex = Array.from(cells).indexOf(cell ?? container);
+      const firstEditableIndex = visibleColumns.findIndex((column) =>
+        isDataValueEditable(column, "insert"),
+      );
       const nextEditableIndex = visibleColumns.findIndex(
         (column, index) =>
           index > currentIndex && isDataValueEditable(column, "insert"),
       );
       if (nextEditableIndex !== -1) {
         focusEditor(nextEditableIndex);
+      } else if (firstEditableIndex !== -1) {
+        requestAnimationFrame(() => focusEditor(firstEditableIndex));
       }
     };
 
