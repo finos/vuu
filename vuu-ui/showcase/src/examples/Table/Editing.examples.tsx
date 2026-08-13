@@ -1,4 +1,4 @@
-import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+import { Button, ToggleButton, ToggleButtonGroup, Tooltip } from "@salt-ds/core";
 import {
   ContextMenuItemDescriptor,
   ContextMenuProvider,
@@ -737,28 +737,35 @@ registerComponent("example.color-coded-editor", CustomCell, "cell-renderer");
 
 const UndoCellRenderer = ({ column, dataRow }: TableCellRendererProps) => {
   const editSession = useEditSession();
-  const renderer = (column.type as DataValueTypeDescriptor)?.renderer as ColumnTypeRendering;
+  const renderer = (column.type as DataValueTypeDescriptor)
+    ?.renderer as ColumnTypeRendering;
   const sessionTableMessageColumn =
     (renderer?.componentProps?.sessionTableMessageColumn as string) ?? "vuuMsg";
 
-  // For cell edits: #rowEdits is populated synchronously so hasRowChanges works immediately.
-  // For soft-deleted rows: #deletedRows is populated after the RPC await, so we read
-  // the sessionTableMessageColumn directly from the row data — it is always present
-  // when the row re-renders.
+  const action = dataRow.vuu_action;
+  const tooltipContent =
+    action === "deleteRow"
+      ? "Undo delete row"
+      : action === "addRow"
+        ? "Undo insert row"
+        : action === "editCell" || editSession?.hasRowChanges(dataRow.key)
+          ? "Undo row edits"
+          : undefined;
   const isRowChanged =
-    editSession?.hasRowChanges(dataRow.key) ||
-    dataRow.vuu_action === "deleteRow" ||
+    tooltipContent !== undefined ||
     dataRow[sessionTableMessageColumn] === "SOFT_DELETED";
 
   if (!isRowChanged) return null;
   return (
-    <Button
-      appearance="transparent"
-      onClick={() => editSession?.undoRowChange(dataRow.key)}
-      style={{ height: "100%", width: "100%" }}
-    >
-      Undo
-    </Button>
+    <Tooltip content={tooltipContent ?? "Undo delete row"}>
+      <Button
+        appearance="transparent"
+        onClick={() => editSession?.undoRowChange(dataRow.key)}
+        style={{ height: "100%", width: "100%" }}
+      >
+        Undo
+      </Button>
+    </Tooltip>
   );
 };
 registerComponent("example.undo-cell", UndoCellRenderer, "cell-renderer");

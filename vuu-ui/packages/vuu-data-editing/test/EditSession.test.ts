@@ -212,4 +212,31 @@ describe("EditSession", () => {
 
     await editSession.end();
   });
+
+  it("allows a newly inserted row to be undone without local cell edits", async () => {
+    const undoRowChange = vi.fn().mockResolvedValue({
+      data: { wasInsertedRow: true },
+      type: "SUCCESS_RESULT",
+    });
+    let editApi: EditApi;
+    editApi = {
+      addRow: vi.fn().mockResolvedValue({
+        data: undefined,
+        type: "SUCCESS_RESULT",
+      }),
+      createSessionDataSource: vi.fn(
+        async () => editApi as unknown as DataSource,
+      ),
+      endEditSession: vi.fn(),
+      undoRowChange,
+    };
+    const insertedRowSession = new EditSession(editApi);
+    await insertedRowSession.begin();
+    await insertedRowSession.addRow({ id: "row-001" });
+
+    await insertedRowSession.undoRowChange("row-001");
+
+    expect(undoRowChange).toHaveBeenCalledWith("row-001");
+    expect(insertedRowSession.addCount).toBe(0);
+  });
 });

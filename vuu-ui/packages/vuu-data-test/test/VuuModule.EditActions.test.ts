@@ -91,4 +91,29 @@ describe("VuuModule edit actions", () => {
       "Caroline",
     );
   });
+
+  it("uses vuu_action to undo inserts, edits, and deletes", async () => {
+    await sessionDataSource.editCell("row-001", "name", "Alicia");
+    await sessionDataSource.deleteRow("row-002", "soft");
+    await sessionDataSource.addRow({ id: "row-003", name: "Carol" });
+
+    await sessionDataSource.undoRowChange("row-001");
+    await sessionDataSource.undoRowChange("row-002");
+    const insertResult = await sessionDataSource.undoRowChange("row-003");
+
+    expect(sessionTable.findByKey("row-001")?.[sessionTable.map.name]).toBe(
+      "Alice",
+    );
+    expect(
+      sessionTable.findByKey("row-001")?.[sessionTable.map.vuu_action],
+    ).toBe("");
+    expect(
+      sessionTable.findByKey("row-002")?.[sessionTable.map.vuu_action],
+    ).toBe("");
+    expect(sessionTable.findByKey("row-003")).toBeUndefined();
+    expect(insertResult).toEqual({
+      type: "SUCCESS_RESULT",
+      data: { wasInsertedRow: true },
+    });
+  });
 });

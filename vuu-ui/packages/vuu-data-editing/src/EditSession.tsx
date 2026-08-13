@@ -342,8 +342,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     const rowEdits = this.#rowEdits.get(key);
     const wasDeleted = this.#deletedRows.has(key);
 
-    if (!rowEdits?.cellEdits.size && !wasDeleted) return;
-
     this.#rowEdits.delete(key);
     if (wasDeleted) this.#deletedRows.delete(key);
 

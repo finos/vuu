@@ -512,13 +512,26 @@ export abstract class VuuModule<T extends string = string>
             errorMessage: `undoRowChange: source table not found for viewport ${viewPortId}`,
           };
         }
-        const sourceRow = sourceTable.findByKey(key);
-        if (!sourceRow) {
+        const sessionRow = sessionTable.findByKey(key);
+        if (!sessionRow) {
+          return {
+            type: "ERROR_RESULT",
+            errorMessage: `undoRowChange: session row not found for key ${key}`,
+          };
+        }
+        const action = sessionRow[sessionTable.map.vuu_action];
+        if (action === "addRow") {
           sessionTable.delete(key);
           return { type: "SUCCESS_RESULT", data: { wasInsertedRow: true } };
         }
-        const sessionRow = sessionTable.findByKey(key);
-        if (sessionRow) {
+        if (action === "deleteRow" || action === "editCell") {
+          const sourceRow = sourceTable.findByKey(key);
+          if (!sourceRow) {
+            return {
+              type: "ERROR_RESULT",
+              errorMessage: `undoRowChange: source row not found for key ${key}`,
+            };
+          }
           const restoredRow = sessionRow.slice();
           for (const column of sourceTable.schema.columns) {
             restoredRow[sessionTable.map[column.name]] =
