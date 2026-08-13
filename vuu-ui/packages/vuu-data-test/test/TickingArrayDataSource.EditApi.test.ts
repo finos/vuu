@@ -42,7 +42,7 @@ function createDataSource() {
 }
 
 describe("sessionTableSchema", () => {
-  it("adds setToDelete as a boolean session-only column", () => {
+  it("adds vuu_action as a string session-only column", () => {
     const sessionSchema = sessionTableSchema({
       ...schema,
       columns: schema.columns.slice(0, 2),
@@ -52,7 +52,7 @@ describe("sessionTableSchema", () => {
       { name: "id", serverDataType: "string" },
       { name: "name", serverDataType: "string" },
       { name: "vuuMsg", serverDataType: "string" },
-      { name: "setToDelete", serverDataType: "boolean" },
+      { name: "vuu_action", serverDataType: "string" },
     ]);
   });
 
@@ -63,7 +63,7 @@ describe("sessionTableSchema", () => {
       sessionSchema.columns.filter(({ name }) => name === "vuuMsg"),
     ).toHaveLength(1);
     expect(
-      sessionSchema.columns.filter(({ name }) => name === "setToDelete"),
+      sessionSchema.columns.filter(({ name }) => name === "vuu_action"),
     ).toHaveLength(1);
   });
 
@@ -72,17 +72,17 @@ describe("sessionTableSchema", () => {
       "row-001",
       "Alice",
       "",
-      false,
+      "",
     ]);
     expect(
-      sessionTableRow(["row-001", "Alice", "", false], {
+      sessionTableRow(["row-001", "Alice", "", ""], {
         ...schema,
         columns: schema.columns.concat({
-          name: "setToDelete",
-          serverDataType: "boolean",
+          name: "vuu_action",
+          serverDataType: "string",
         }),
       }),
-    ).toEqual(["row-001", "Alice", "", false]);
+    ).toEqual(["row-001", "Alice", "", ""]);
   });
 });
 

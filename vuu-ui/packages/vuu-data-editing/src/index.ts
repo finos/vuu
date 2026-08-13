@@ -15,6 +15,10 @@ export {
 } from "./EditSession";
 export { StaleUpdateError } from "@vuu-ui/vuu-utils";
 export {
+  EDIT_ACTION_ROW_CLASS_NAME_GENERATOR,
+  editActionRowClassNameGenerator,
+} from "./editActionRowClassNameGenerator";
+export {
   useEditableTable,
   type EditableTableHookProps,
   type EditMode,

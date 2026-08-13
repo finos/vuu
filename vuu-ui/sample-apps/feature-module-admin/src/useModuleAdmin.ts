@@ -27,23 +27,6 @@ export const useModuleAdmin = () => {
     });
   }, [VuuDataSource]);
 
-  const config = useMemo<TableConfig>(
-    () => ({
-      columnLayout: "static",
-      columns:
-        editMode === "edit"
-          ? moduleColumnDescriptors.map((col) =>
-              editableColumns.includes(col.name)
-                ? { ...col, editable: true }
-                : col,
-            )
-          : moduleColumnDescriptors,
-      rowSeparators: true,
-      zebraStripes: true,
-    }),
-    [editMode],
-  );
-
   const exitEditMode = useCallback(() => {
     setEditMode("view");
   }, []);
@@ -56,6 +39,7 @@ export const useModuleAdmin = () => {
     lifecycle,
     onCancel,
     onSave,
+    rowClassNameGenerators,
   } = useEditableTable({
     dataSource,
     isEditMode: editMode === "edit",
@@ -63,13 +47,23 @@ export const useModuleAdmin = () => {
     onSave: exitEditMode,
   });
 
-  // if (error) {
-  //   return { error, status: "error" };
-  // }
-
-  // if (!config || !dataSource) {
-  //   return { status: "loading" };
-  // }
+  const config = useMemo<TableConfig>(
+    () => ({
+      columnLayout: "static",
+      columns:
+        editMode === "edit"
+          ? moduleColumnDescriptors.map((col) =>
+              editableColumns.includes(col.name)
+                ? { ...col, editable: true }
+                : col,
+            )
+          : moduleColumnDescriptors,
+      rowClassNameGenerators,
+      rowSeparators: true,
+      zebraStripes: true,
+    }),
+    [editMode, rowClassNameGenerators],
+  );
 
   return {
     canCancel,
