@@ -920,7 +920,6 @@ test.describe("Inline row editing (session)", () => {
     await expect(page.getByRole("button", { name: "Submit" })).toBeDisabled();
   });
 
-
   test("Cancel discards all changes and returns to view mode", async ({
     mount,
     page,
@@ -1106,7 +1105,6 @@ test.describe("Session table editing (createSessionTable)", () => {
     await deleteButton.click();
     await expect(deleteButton).not.toBeEnabled();
   });
-
 
   test("block selection spanning a soft-deleted row selects only the selectable rows", async ({
     mount,

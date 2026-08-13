@@ -29,7 +29,9 @@ import { CsvUpload } from "@vuu-ui/vuu-table-extras";
 
 | Prop | Type | Description |
 |---|---|---|
-| `dataSource` | `DataSource` | **Required.** The Vuu data source for the target table. Must support `createSessionDataSource`, `endEditSession`, and `rpcRequest`. |
+| `dataSource` | `DataSource` | **Required.** The Vuu data source for the target table. Direct imports require `createSessionDataSource`; the returned session datasource must support `addRow` and `endEditSession`. |
+| `embedded` | `boolean` | Renders the upload content and actions without its own `Dialog`, for use inside an existing modal. Defaults to `false`. |
+| `importMode` | `"direct" \| "preview"` | Both modes create and populate an `EditSession`. `"direct"` commits it when Import is pressed; `"preview"` returns the live session through `onPreview` so the caller can edit or delete rows before ending it. Defaults to `"direct"`. |
 | `maxRows` | `number` | Maximum number of data rows permitted in the CSV. Defaults to `25000`. |
 | `open` | `boolean` | Controls dialog open state. When provided the component is fully controlled; when omitted it manages open state internally. |
 | `dialogTitle` | `string` | Dialog header text. Defaults to `"Import CSV"`. |
@@ -38,6 +40,7 @@ import { CsvUpload } from "@vuu-ui/vuu-table-extras";
 | `onImportSessionStarted` | `(dataSource: DataSource) => void` | Fired when the server-side session is open and a session `DataSource` is available for preview. |
 | `onImportSessionEnded` | `(result: CsvUploadSessionEndResult) => void` | Fired when the import session closes, whether by import, cancel, or failure. |
 | `onImported` | `(result: CsvUploadImportedResult) => void` | Fired after a successful import. |
+| `onPreview` | `(result: CsvUploadPreviewResult) => void` | In preview mode, fired when Import is pressed with the populated `EditSession`, session datasource, and normalized table data. |
 | `onError` | `(result: CsvUploadErrorResult \| undefined) => void` | Fired when any error occurs. Called with `undefined` to clear a previous error. |
 | `onCancel` | `() => void` | Fired when the Cancel button is clicked. |
 | `onClose` | `() => void` | Fired after a successful import completes (i.e. the Import button was clicked and the session committed). |
@@ -94,9 +97,9 @@ If the user cancels at any point:
 | Callback | Phase transition | Notes |
 |---|---|---|
 | `onProcessingStarted` | `→ processing` | Fires before parsing begins. No data available yet. |
-| `onImportSessionStarted` | `→ preview-ready` | Provides a session `DataSource`. Extract `dataSource.table` (`CsvUploadSessionTable`) and pass it to `useCsvUploadSessionPreview` to build a preview UI without mutating the shared session datasource. |
+| `onImportSessionStarted` | `→ preview-ready` | Provides the populated session `DataSource`. |
 | `onImportSessionEnded` | `→ imported` or `→ idle` | `reason` is `"saved"` on successful import, `"discarded"` on cancel, `"failed"` on error. `sessionTable` contains the Vuu session table reference. |
-| `onImported` | `→ imported` | Provides `rpcResult` and normalised `tableData`. |
+| `onImported` | `→ imported` | Provides normalized `tableData`. |
 | `onError` | `→ failed` | See [Error Types](#error-types) below. |
 | `onClose` | `→ importing` | Dialog is closing because import was triggered. |
 | `onCancel` | `→ idle` | User cancelled. |
@@ -161,64 +164,6 @@ type CsvErrorMap<TError extends string> = {
 | `EMPTY_NON_STRING_VALUE` | A non-string column cell is empty. Reported as a `rowError`. |
 | `TYPE_MISMATCH` | A cell value cannot be coerced to the column's server data type. Reported as a `rowError`. |
 
-### Session preview
-
-When `onImportSessionStarted` fires, the edit session table is populated with one row per uploaded CSV row. Each row has the source table's columns plus a `vuuMsg` column. For rows with validation errors, `vuuMsg` contains a human-readable summary including the CSV row number:
-
-```
-"Row 3: price: Value 'abc' is not a valid double; ric: Empty value is not allowed for non-string columns."
-```
-
-Rows that passed validation have an empty `vuuMsg`.
-
-The recommended way to build a preview UI is the `useCsvUploadSessionPreview` hook, which fetches the session table schema and creates a dedicated datasource — keeping the shared session datasource untouched:
-
-```tsx
-import {
-  CsvUpload,
-  type CsvUploadSessionTable,
-  useCsvUploadSessionPreview,
-} from "@vuu-ui/vuu-table-extras";
-
-const ErrorsTable = ({ sessionTable }: { sessionTable: CsvUploadSessionTable | undefined }) => {
-  const { isLoadingPreview, previewDataSource, previewError } =
-    useCsvUploadSessionPreview(sessionTable);
-
-  useEffect(() => {
-    if (previewDataSource) {
-      // Show only rows that have errors
-      previewDataSource.filter = { filter: 'vuuMsg > ""' };
-    }
-  }, [previewDataSource]);
-
-  if (!previewDataSource || isLoadingPreview) return null;
-  if (previewError) return <div>{previewError}</div>;
-  return <Table dataSource={previewDataSource} config={errorTableConfig} ... />;
-};
-
-const MyApp = () => {
-  const [sessionTable, setSessionTable] = useState<CsvUploadSessionTable | undefined>();
-
-  return (
-    <CsvUpload
-      dataSource={dataSource}
-      onImportSessionStarted={(sessionDs) => setSessionTable(sessionDs.table as CsvUploadSessionTable)}
-      onImportSessionEnded={() => setSessionTable(undefined)}
-    >
-      <ErrorsTable sessionTable={sessionTable} />
-    </CsvUpload>
-  );
-};
-```
-
-The `useCsvUploadSessionPreview` hook:
-- Calls `getServerAPI().getTableSchema(sessionTable)` to fetch the full schema
-- Builds `ColumnDescriptor[]` from the schema, giving the `vuuMsg` column a wider default width and the label `"Error"`
-- Creates a dedicated `VuuDataSource` for the session table
-- Cleans up when `sessionTable` becomes `undefined`
-
-To show only rows with errors, apply the filter `'vuuMsg > ""'` on the `previewDataSource` (not on the datasource from `onImportSessionStarted`).
-
 ## Parse Options
 
 ```ts
@@ -246,7 +191,6 @@ type CsvUploadSessionEndResult = {
 
 ```ts
 type CsvUploadImportedResult = {
-  rpcResult: unknown;         // raw response from the server
   tableData: CsvUploadTableData;  // { columns: string[], rows: unknown[][] }
 };
 ```

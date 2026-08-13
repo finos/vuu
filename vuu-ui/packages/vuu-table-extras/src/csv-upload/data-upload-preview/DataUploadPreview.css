@@ -1,0 +1,10 @@
+.vuuDataUploadPreview {
+  display: flex;
+  flex-direction: column;
+  height: 420px;
+  width: 900px;
+
+  .vuuDataUploadPreview-content {
+    flex: 1 1 auto;
+  }
+}

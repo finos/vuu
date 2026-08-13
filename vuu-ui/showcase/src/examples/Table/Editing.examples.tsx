@@ -15,6 +15,9 @@ import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { BulkEditPanel, InputCell, Table } from "@vuu-ui/vuu-table";
 import {
+  CsvUpload,
+  type CsvUploadPreviewResult,
+  DataUploadPreview,
   DataSourceStats,
   InlineAddRow,
   TableFooter,
@@ -38,7 +41,11 @@ import {
   TableContextMenuOptions,
   TableMenuLocation,
 } from "@vuu-ui/vuu-table-types";
-import { ModalProvider, useModal } from "@vuu-ui/vuu-ui-controls";
+import {
+  ModalProvider,
+  Toolbar,
+  useModal,
+} from "@vuu-ui/vuu-ui-controls";
 import {
   DataSourceProvider,
   registerComponent,
@@ -91,6 +98,14 @@ const UNDO_DELETE_COLUMN: ColumnDescriptor = {
       name: UNDO_CELL_RENDERER,
     },
   }
+};
+
+const editToolbarStyle = {
+  alignItems: "center",
+  background: "var(--salt-container-secondary-background)",
+  flex: "0 0 32px",
+  gap: 12,
+  padding: "0 var(--salt-spacing-100)",
 };
 
 const EditTableTemplate = ({
@@ -259,16 +274,7 @@ const EditTableTemplate = ({
         height: 285,
       }}
     >
-      <div
-        style={{
-          alignItems: "center",
-          background: "var(--salt-container-secondary-background)",
-          display: "flex",
-          flex: "0 0 32px",
-          gap: 12,
-          padding: "0 var(--salt-spacing-100)",
-        }}
-      >
+      <Toolbar style={editToolbarStyle}>
         <ToggleButtonGroup onChange={onToggleEditMode} value={editMode}>
           <ToggleButton data-testid={`toggle-view${testId}`} value="view">
             View
@@ -297,7 +303,7 @@ const EditTableTemplate = ({
             />
           </DataSourceProvider>
         ) : null}
-      </div>
+      </Toolbar>
       <div style={{ flex: "1 1 auto" }}>
         <DataEditingProvider editSession={editSession}>
           <Table
@@ -440,21 +446,12 @@ const EditableInstrumentsTemplate = ({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: 320 }}>
-      <div
-        style={{
-          alignItems: "center",
-          background: "var(--salt-container-secondary-background)",
-          display: "flex",
-          flex: "0 0 32px",
-          gap: 12,
-          padding: "0 var(--salt-spacing-100)",
-        }}
-      >
+      <Toolbar style={editToolbarStyle}>
         <ToggleButtonGroup onChange={onToggleEditMode} value={editMode}>
           <ToggleButton value="view">View</ToggleButton>
           <ToggleButton value="edit">Edit</ToggleButton>
         </ToggleButtonGroup>
-      </div>
+      </Toolbar>
       <div style={{ flex: "1 1 auto" }}>
         <DataEditingProvider editSession={editSession}>
           <Table
@@ -520,11 +517,14 @@ export const InstrumentsAddEditDelete = () => (
 );
 
 const EditableTestTableTemplate = ({
+  allowUpload = false,
   tableName,
 }: {
+  allowUpload?: boolean;
   tableName: TestTableName;
 }) => {
   const [editMode, setEditMode] = useState<EditMode>("view");
+  const { closePrompt, showPrompt } = useModal();
   const { VuuDataSource } = useData();
   const tableSchema = getSchema(tableName);
   const columns = useMemo(
@@ -593,23 +593,67 @@ const EditableTestTableTemplate = ({
     [editMode, rowClassNameGenerators, tableSchema.columns],
   );
 
+  const showUploadPreview = useCallback(
+    ({ editSession }: CsvUploadPreviewResult) => {
+      showPrompt(
+        <DataUploadPreview
+          editSession={editSession}
+          onClose={closePrompt}
+          tableSchema={tableSchema}
+        />,
+        {
+          disableDismiss: true,
+          showCancelButton: false,
+          showCloseButton: false,
+          showConfirmButton: false,
+          title: "Edit uploaded data",
+        },
+      );
+    },
+    [closePrompt, showPrompt, tableSchema],
+  );
+
+  const showCsvUpload = useCallback(
+    (importMode: "direct" | "preview") => {
+      showPrompt(
+        <CsvUpload
+          dataSource={sourceTableDataSource}
+          embedded
+          importMode={importMode}
+          onCancel={closePrompt}
+          onClose={importMode === "direct" ? closePrompt : undefined}
+          onPreview={showUploadPreview}
+        />,
+        {
+          disableDismiss: true,
+          showCancelButton: false,
+          showCloseButton: false,
+          showConfirmButton: false,
+          title: "Upload Data",
+        },
+      );
+    },
+    [closePrompt, showPrompt, showUploadPreview, sourceTableDataSource],
+  );
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: 320 }}>
-      <div
-        style={{
-          alignItems: "center",
-          background: "var(--salt-container-secondary-background)",
-          display: "flex",
-          flex: "0 0 32px",
-          gap: 12,
-          padding: "0 var(--salt-spacing-100)",
-        }}
-      >
+      <Toolbar style={editToolbarStyle}>
         <ToggleButtonGroup onChange={onToggleEditMode} value={editMode}>
           <ToggleButton value="view">View</ToggleButton>
           <ToggleButton value="edit">Edit</ToggleButton>
         </ToggleButtonGroup>
-      </div>
+        {allowUpload ? (
+          <Button onClick={() => showCsvUpload("direct")}>
+            Upload (direct)
+          </Button>
+        ) : null}
+        {allowUpload ? (
+          <Button onClick={() => showCsvUpload("preview")}>
+            Upload (preview)
+          </Button>
+        ) : null}
+      </Toolbar>
       <div style={{ flex: "1 1 auto" }}>
         <DataEditingProvider editSession={editSession}>
           <Table
@@ -650,6 +694,17 @@ export const TestTableEmpty = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
       <EditableTestTableTemplate tableName="TestEditEmpty" />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
+/** tags=data-consumer */
+export const TestTableEmptyWithUpload = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <ModalProvider>
+        <EditableTestTableTemplate allowUpload tableName="TestEditEmpty" />
+      </ModalProvider>
     </NotificationsProvider>
   </LocalDataSourceProvider>
 );
