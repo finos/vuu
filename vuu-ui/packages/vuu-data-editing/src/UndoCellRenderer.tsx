@@ -4,6 +4,7 @@ import type {
   DataValueTypeDescriptor,
   TableCellRendererProps,
 } from "@vuu-ui/vuu-table-types";
+import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { registerComponent } from "@vuu-ui/vuu-utils";
 import { useEditSession } from "./DataEditingProvider";
 
@@ -61,7 +62,7 @@ export const UndoCellRenderer = ({
         onClick={() => editSession?.undoRowChange(dataRow.key)}
         style={{ height: "100%", width: "100%" }}
       >
-        {icon ? <span aria-hidden data-icon={icon} /> : null}
+        {icon ? <Icon aria-hidden name={icon} /> : null}
         {text}
       </Button>
     </Tooltip>
