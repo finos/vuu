@@ -5,6 +5,8 @@ import {
   EditableInstruments,
   EditableInstrumentsInlineEdit,
   EditableInstrumentsWithInlineAddRow,
+  TestTableEmpty,
+  TestTableFIveRows,
   TwoEditableInstruments,
 } from "../../../../../showcase/src/examples/Table/Editing.examples";
 import { expect } from "../../../../../playwright/customAssertions";
@@ -97,6 +99,85 @@ test.describe("Inline add row", () => {
     await ric.dispatchEvent("vuu-commit");
 
     await expect(bbg).toBeFocused();
+  });
+});
+
+test.describe("Test table editing", () => {
+  test("inserts a valid row without leaving validation warnings in the inline add row", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<TestTableEmpty />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const id = inlineAddRow.getByRole("textbox", { name: "id", exact: true });
+    const description = inlineAddRow.getByRole("textbox", {
+      name: "description",
+    });
+    const quantity = inlineAddRow.getByRole("textbox", { name: "quantity" });
+    const price = inlineAddRow.getByRole("textbox", { name: "price" });
+    const externalId = inlineAddRow.getByRole("textbox", {
+      name: "externalId",
+    });
+
+    await id.fill("TEST-006");
+    await id.press("Enter");
+    await description.fill("Foxtrot");
+    await description.press("Enter");
+    await quantity.fill("72");
+    await quantity.press("Enter");
+    await price.fill("607.5");
+    await price.press("Enter");
+    await inlineAddRow.getByRole("checkbox").check();
+    await externalId.fill("1006");
+    await externalId.press("Enter");
+
+    await expect(id).toBeFocused();
+    await expect(id).toHaveValue("");
+    await expect(inlineAddRow.locator('[aria-invalid="true"]')).toHaveCount(0);
+    await expect(
+      page.getByRole("textbox", { name: "id", exact: true }).nth(1),
+    ).toHaveValue("TEST-006");
+  });
+
+  test("rejects alphabetic input in an existing numeric cell", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<TestTableFIveRows />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const quantity = page.getByRole("textbox", { name: "quantity" }).nth(1);
+    await expect(quantity).toHaveValue("12");
+    await quantity.dblclick();
+    await quantity.pressSequentially("invalid");
+    await quantity.press("Enter");
+
+    await expect(quantity.locator("..")).toContainClass(
+      "vuuTableInputCell-error",
+    );
+  });
+
+  test("updates and deletes existing rows", async ({ mount, page }) => {
+    await mount(<TestTableFIveRows />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const descriptionCell = page
+      .getByRole("textbox", { name: "description" })
+      .nth(1);
+    await expect(descriptionCell).toHaveValue("Alpha");
+    await descriptionCell.dblclick();
+    await descriptionCell.pressSequentially("Updated");
+    await descriptionCell.press("Enter");
+    await expect(page.getByRole("button", { name: "Submit" })).toBeEnabled();
+
+    await page
+      .getByRole("checkbox", { name: "Press space to select row" })
+      .first()
+      .click();
+    await page.getByRole("button", { name: "Delete" }).click();
+    await expect(page.getByRole("button", { name: "Undo" })).toBeVisible();
   });
 });
 
