@@ -149,6 +149,9 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
       const cell = target.closest<HTMLElement>("[data-field]");
       const cells = container.querySelectorAll<HTMLElement>("[data-field]");
       const currentIndex = Array.from(cells).indexOf(cell ?? container);
+      const firstInvalidIndex = visibleColumns.findIndex(
+        ({ name }) => editSession.newRowState.errors[name] !== undefined,
+      );
       const firstEditableIndex = visibleColumns.findIndex((column) =>
         isDataValueEditable(column, "insert"),
       );
@@ -156,7 +159,9 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
         (column, index) =>
           index > currentIndex && isDataValueEditable(column, "insert"),
       );
-      if (nextEditableIndex !== -1) {
+      if (firstInvalidIndex !== -1) {
+        requestAnimationFrame(() => focusEditor(firstInvalidIndex));
+      } else if (nextEditableIndex !== -1) {
         focusEditor(nextEditableIndex);
       } else if (firstEditableIndex !== -1) {
         requestAnimationFrame(() => focusEditor(firstEditableIndex));
@@ -165,7 +170,7 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
 
     container.addEventListener("vuu-commit", handleCommit);
     return () => container.removeEventListener("vuu-commit", handleCommit);
-  }, [focusEditor, visibleColumns]);
+  }, [editSession, focusEditor, visibleColumns]);
 
   return {
     containerRef,

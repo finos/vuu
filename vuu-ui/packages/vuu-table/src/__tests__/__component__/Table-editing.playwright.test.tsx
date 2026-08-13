@@ -213,6 +213,39 @@ test.describe("Test table editing", () => {
     ).toHaveValue("TEST-006");
   });
 
+  test("moves to the next invalid cell when repairing incomplete rows", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<TestTableEmpty />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const id = inlineAddRow.getByRole("textbox", { name: "id", exact: true });
+    const description = inlineAddRow.getByRole("textbox", {
+      name: "description",
+    });
+    const quantity = inlineAddRow.getByRole("textbox", { name: "quantity" });
+    const price = inlineAddRow.getByRole("textbox", { name: "price" });
+    const externalId = inlineAddRow.getByRole("textbox", {
+      name: "externalId",
+    });
+
+    await description.fill("Foxtrot");
+    await description.press("Enter");
+    await price.fill("607.5");
+    await price.press("Enter");
+    await externalId.fill("1006");
+    await externalId.press("Enter");
+    await expect(id).toBeFocused();
+    await expect(quantity).toHaveAttribute("aria-invalid", "true");
+
+    await id.fill("TEST-006");
+    await id.press("Enter");
+
+    await expect(quantity).toBeFocused();
+  });
+
   test("rejects alphabetic input in an existing numeric cell", async ({
     mount,
     page,
