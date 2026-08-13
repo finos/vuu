@@ -83,6 +83,7 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
     () => createSyntheticDataRow(newRowState, inlineAddColumns),
     [inlineAddColumns, newRowState],
   );
+  const previousValuesRef = useRef(newRowState.values);
 
   const focusEditor = useCallback((index: number) => {
     const cell =
@@ -104,6 +105,23 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
       focusEditor(firstInvalidIndex);
     }
   }, [focusEditor, newRowState.errors, visibleColumns]);
+
+  useEffect(() => {
+    const previousValues = previousValuesRef.current;
+    previousValuesRef.current = newRowState.values;
+    if (
+      Object.keys(previousValues).length > 0 &&
+      Object.keys(newRowState.values).length === 0 &&
+      Object.keys(newRowState.errors).length === 0
+    ) {
+      const firstEditableIndex = visibleColumns.findIndex((column) =>
+        isDataValueEditable(column, "insert"),
+      );
+      if (firstEditableIndex !== -1) {
+        requestAnimationFrame(() => focusEditor(firstEditableIndex));
+      }
+    }
+  }, [focusEditor, newRowState.errors, newRowState.values, visibleColumns]);
 
   useEffect(() => {
     const container = containerRef.current;
