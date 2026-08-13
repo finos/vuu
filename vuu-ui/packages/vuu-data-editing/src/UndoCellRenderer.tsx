@@ -1,9 +1,5 @@
 import { Button, Tooltip } from "@salt-ds/core";
-import type {
-  ColumnTypeRendering,
-  DataValueTypeDescriptor,
-  TableCellRendererProps,
-} from "@vuu-ui/vuu-table-types";
+import type { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import { registerComponent } from "@vuu-ui/vuu-utils";
 import { useEditSession } from "./DataEditingProvider";
 
@@ -21,27 +17,17 @@ export const getUndoTooltipContent = (
         ? "Undo row edits"
         : undefined;
 
-export const UndoCellRenderer = ({
-  column,
-  dataRow,
-}: TableCellRendererProps) => {
+export const UndoCellRenderer = ({ dataRow }: TableCellRendererProps) => {
   const editSession = useEditSession();
-  const renderer = (column.type as DataValueTypeDescriptor)
-    ?.renderer as ColumnTypeRendering;
-  const sessionTableMessageColumn =
-    (renderer?.componentProps?.sessionTableMessageColumn as string) ?? "vuuMsg";
   const tooltipContent = getUndoTooltipContent(
     dataRow.vuu_action,
     editSession?.hasRowChanges(dataRow.key),
   );
-  const isRowChanged =
-    tooltipContent !== undefined ||
-    dataRow[sessionTableMessageColumn] === "SOFT_DELETED";
 
-  if (!isRowChanged) return null;
+  if (tooltipContent === undefined) return null;
 
   return (
-    <Tooltip content={tooltipContent ?? "Undo delete row"}>
+    <Tooltip content={tooltipContent}>
       <Button
         appearance="transparent"
         onClick={() => editSession?.undoRowChange(dataRow.key)}

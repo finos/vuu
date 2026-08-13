@@ -89,9 +89,6 @@ const UNDO_DELETE_COLUMN: ColumnDescriptor = {
     name: "string",
     renderer: {
       name: UNDO_CELL_RENDERER,
-      componentProps: {
-        sessionTableMessageColumn: "vuuMsg",
-      },
     },
   }
 };
