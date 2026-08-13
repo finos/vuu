@@ -32,8 +32,8 @@ import type {
 } from "@vuu-ui/vuu-protocol-types";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
-  ColumnMap,
-  DataSourceConfigChanges,
+  type ColumnMap,
+  type DataSourceConfigChanges,
   EventEmitter,
   KeySet,
   NULL_RANGE,
@@ -57,14 +57,15 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { aggregateData } from "./aggregate-utils";
 import { buildDataToClientMap, toClientRow } from "./array-data-utils";
-import { GroupMap, collapseGroup, expandGroup, groupRows } from "./group-utils";
+import { type GroupMap, collapseGroup, expandGroup, groupRows } from "./group-utils";
 import {
   binarySearch,
-  ColIndexSortDef,
+  type ColIndexSortDef,
   sortComparator,
   sortRows,
 } from "./sort-utils";
-import { Filter } from "@vuu-ui/vuu-filter-types";
+import type { Filter } from "@vuu-ui/vuu-filter-types";
+import { toSchemaColumn } from "@vuu-ui/vuu-data-test";
 
 const { debug, info } = logger("ArrayDataSource");
 
@@ -107,11 +108,7 @@ const buildTableSchema = (
   keyColumn?: string,
 ): TableSchema => {
   const schema: TableSchema = {
-    columns: columns.map(({ editable, name, serverDataType = "string" }) => ({
-      editable,
-      name,
-      serverDataType,
-    })),
+    columns: columns.map(toSchemaColumn),
     key: keyColumn ?? columns[0].name,
     table: { module: "", table: "Array" },
   };
@@ -298,7 +295,7 @@ export class ArrayDataSource
   }
 
   suspend() {
-    console.log(`[ArrayDataSource] suspend`);
+    console.log('[ArrayDataSource] suspend');
     if (this.#status !== "unsubscribed") {
       info?.(`suspend #${this.viewport}, current status ${this.#status}`);
       this.#status = "suspended";
@@ -879,7 +876,7 @@ export class ArrayDataSource
             (row) => row[KEY] === keyValue,
           );
           if (dataIndex !== -1) {
-            console.log(`LAMF dataRow no longer in filter set`);
+            console.log('dataRow no longer in filter set');
           }
         }
       } else if (isSorted) {
@@ -1188,7 +1185,7 @@ export class ArrayDataSource
   // All in BaseDataSource
   freeze() {
     if (!this.isFrozen) {
-      this.#freezeTimestamp = new Date().getTime();
+      this.#freezeTimestamp = Date.now();
       this.emit("freeze", true, this.#freezeTimestamp);
       this.preserveScrollPositionAcrossConfigChange = true;
       this.baseFilter = {

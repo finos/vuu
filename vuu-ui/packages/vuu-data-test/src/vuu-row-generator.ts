@@ -1,10 +1,19 @@
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { UpdateGenerator } from "./rowUpdates";
+import type { UpdateGenerator } from "./rowUpdates";
+import type { SchemaColumn } from "@vuu-ui/vuu-data-types";
 
 type GenerateRowFunc = (index: number) => VuuRowDataItemType[];
 
 export type RowGeneratorFactory = (columns: string[]) => GenerateRowFunc;
+
+export const toSchemaColumn = ({ editable, name, serverDataType = 'string' }: ColumnDescriptor): SchemaColumn => {
+  return {
+    editable: editable === true || typeof editable === 'object',
+    name,
+    serverDataType
+  }
+}
 
 export type ColumnGeneratorFn = (
   columns?: number | string[],

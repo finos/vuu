@@ -35,7 +35,6 @@ export const DefaultShell = () => {
       shellLayoutProps={{
         htmlAttributes: htmlAttributes,
       }}
-      user={user}
       style={
         {
           "--vuuShell-height": "100%",
@@ -63,7 +62,6 @@ export const SimpleShellCustomHeader = () => {
           </header>
         ),
       }}
-      user={user}
       style={
         {
           "--vuuShell-height": "100%",
@@ -83,7 +81,6 @@ export const SimpleShellNoWorkspaceTabs = () => {
       shellLayoutProps={{
         htmlAttributes: htmlAttributes,
       }}
-      user={user}
       style={
         {
           "--vuuShell-height": "100%",
@@ -104,7 +101,6 @@ export const FullHeightLeftPanel = () => {
         },
         layoutTemplateId: "full-height",
       }}
-      user={user}
       style={
         {
           "--vuuShell-height": "100%",
@@ -127,7 +123,6 @@ export const FullHeightLeftPanelLeftPanelClosed = () => {
         },
         layoutTemplateId: "full-height",
       }}
-      user={user}
       style={
         {
           "--vuuShell-height": "100%",
@@ -150,7 +145,6 @@ export const InlayLeftPanel = () => {
           },
           layoutTemplateId: "inlay",
         }}
-        user={user}
         style={
           {
             "--vuuShell-height": "100%",
@@ -245,7 +239,6 @@ export const LeftMainTabs = () => {
             defaultWorkspaceJSON,
           ],
         }}
-        user={user}
         style={
           {
             "--vuuShell-height": "100%",
@@ -348,7 +341,6 @@ export const SimpleShellMultiLayouts = () => {
           htmlAttributes: htmlAttributes,
         }}
         workspaceProps={workspaceProps}
-        user={user}
         style={
           {
             "--vuuShell-height": "100%",

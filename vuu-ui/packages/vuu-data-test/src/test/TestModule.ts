@@ -1,11 +1,12 @@
-import { RpcMenuService, VuuModule } from "../core/module/VuuModule";
-import { buildDataColumnMap, Table } from "../Table";
+import { type RpcMenuService, VuuModule } from "../core/module/VuuModule";
+import { buildDataColumnMap, type Table } from "../Table";
 import {
   DefaultColumnGenerator,
   defaultGenerators,
+  toSchemaColumn,
 } from "../vuu-row-generator";
 import tableContainer from "../core/table/TableContainer";
-import { TableSchema } from "@vuu-ui/vuu-data-types";
+import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import { withNanoMs } from "../data-utils";
 
 const DEFAULT_RANGE_LIMITS = {
@@ -54,7 +55,7 @@ class TestModule extends VuuModule<TestTableName> {
       table: { module: "TEST", table: "TestDates" },
     },
     TwoHundredColumns: {
-      columns: DefaultColumnGenerator(200).map((col) => ({
+      columns: DefaultColumnGenerator(200).map((col) => toSchemaColumn({
         ...col,
         serverDataType: "string",
       })),
@@ -96,7 +97,7 @@ class TestModule extends VuuModule<TestTableName> {
       table: { module: "TEST", table: "ChartTable" },
     },
     MaxScrollEndTable: {
-      columns: DefaultColumnGenerator(6).map((col) => ({
+      columns: DefaultColumnGenerator(6).map((col) => toSchemaColumn({
         ...col,
         serverDataType: "string",
       })),

@@ -1,7 +1,7 @@
 import {
   EventEmitter,
-  GridLayoutSplitDirection,
-  OptionalProperty,
+  type GridLayoutSplitDirection,
+  type OptionalProperty,
 } from "@vuu-ui/vuu-utils";
 import {
   gridResizeDirectionFromDropPosition,
@@ -12,13 +12,13 @@ import {
   setTrackStart,
   splitGridChildPosition,
 } from "./grid-layout-utils";
-import {
+import type {
   TrackType,
-  type GridLayoutModelCoordinates,
-  type GridModel,
-  type GridModelChildItem,
-  type GridModelEvents,
-  type ISplitter,
+  GridLayoutModelCoordinates,
+  GridModel,
+  GridModelChildItem,
+  GridModelEvents,
+  ISplitter,
 } from "./GridModel";
 
 export type GridLayoutModelPosition = {
