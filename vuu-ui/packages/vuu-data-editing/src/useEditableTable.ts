@@ -50,7 +50,6 @@ export const useEditableTable = ({
 }: EditableTableHookProps) => {
   const { VuuDataSource } = useData();
   const [selectionCount, setSelectionCount] = useState(0);
-  const [deleteCount, setDeleteCount] = useState(0);
   useLayoutEffectSkipFirst(() => {
     console.warn("[useEditableTable] columns and or table changed");
   }, [columns, table]);
@@ -109,7 +108,6 @@ export const useEditableTable = ({
 
   const handleDelete = useCallback(async () => {
     await editSession.deleteSelectedRows();
-    setSelectionCount(0);
   }, [editSession]);
 
   const handleUndoRowChange = useCallback(
@@ -125,7 +123,6 @@ export const useEditableTable = ({
   useEffect(() => {
     const handleEditState = (nextEditState: EditState) => {
       setEditState(nextEditState);
-      setDeleteCount(editSession.deleteCount);
     };
     const handleLifecycle = (nextLifecycle: EditLifecycle) => {
       setLifecycle(nextLifecycle);
@@ -171,7 +168,7 @@ export const useEditableTable = ({
     dataSource,
     editSession,
     lifecycle,
-    hasSelection: selectionCount > 0 || deleteCount > 0,
+    hasSelection: selectionCount > 0,
     onCancel: handleCancel,
     onDelete: handleDelete,
     onSave: handleSave,
