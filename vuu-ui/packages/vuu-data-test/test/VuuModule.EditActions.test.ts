@@ -137,4 +137,25 @@ describe("VuuModule edit actions", () => {
     });
     expect(sessionDataSource.getSelectedRowIds()).toEqual([]);
   });
+
+  it("rejects edits to deleted session rows", async () => {
+    await sessionDataSource.deleteRow("row-002", "soft");
+
+    const result = await sessionDataSource.editCell(
+      "row-002",
+      "name",
+      "Robert",
+    );
+
+    expect(result).toEqual({
+      type: "ERROR_RESULT",
+      errorMessage: "editCell: cannot edit a deleted row",
+    });
+    expect(sessionTable.findByKey("row-002")?.[sessionTable.map.name]).toBe(
+      "Bob",
+    );
+    expect(sessionTable.findByKey("row-002")?.[sessionTable.map.vuu_action]).toBe(
+      "deleteRow",
+    );
+  });
 });

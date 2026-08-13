@@ -1,5 +1,9 @@
 export { DataEditingProvider, useEditSession } from "./DataEditingProvider";
-export { getVuuEditMessage, withDataRowEditErrors } from "./edit-utils";
+export {
+  getVuuEditMessage,
+  isEditRowReadOnly,
+  withDataRowEditErrors,
+} from "./edit-utils";
 export { EditButtons, type EditButtonProps } from "./EditButtons";
 export {
   EditModeProvider,

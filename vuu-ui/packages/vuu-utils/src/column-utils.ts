@@ -1557,6 +1557,7 @@ export const dataColumnAndKeyUnchanged = (
 ) =>
   p.column === p1.column &&
   p.dataRow.key === p1.dataRow.key &&
+  p.dataRow.vuu_action === p1.dataRow.vuu_action &&
   p.column.valueFormatter(p.dataRow[p.column.name]) ===
   p1.column.valueFormatter(p1.dataRow[p1.column.name]);
 

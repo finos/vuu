@@ -580,6 +580,12 @@ export abstract class VuuModule<T extends string = string>
       }
       if (targetTable) {
         try {
+          const sessionRow = sessionTable?.findByKey(key as string);
+          if (
+            sessionRow?.[sessionTable.map.vuu_action] === "deleteRow"
+          ) {
+            throw Error("editCell: cannot edit a deleted row");
+          }
           assertUpdateIsValid(targetTable.schema, column as string, data);
           targetTable.update(key as string, column as string, data);
           if (
