@@ -65,7 +65,14 @@ export const TableCell = ({
             return { errorMessage: "Invalid value", type: "ERROR_RESULT" };
           }
           if (editSession.isNewRowFinalColumn(name)) {
-            return editSession.addNewRow();
+            const response = await editSession.addNewRow();
+            if (
+              response.type === "ERROR_RESULT" &&
+              editSession.newRowState.errors[name] === undefined
+            ) {
+              return { data: undefined, type: "SUCCESS_RESULT" };
+            }
+            return response;
           }
           return { data: undefined, type: "SUCCESS_RESULT" };
         }

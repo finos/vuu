@@ -141,6 +141,41 @@ test.describe("Test table editing", () => {
     ).toHaveValue("TEST-006");
   });
 
+  test("marks only omitted cells as invalid when the final cell is committed", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<TestTableEmpty />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const id = inlineAddRow.getByRole("textbox", { name: "id", exact: true });
+    const description = inlineAddRow.getByRole("textbox", {
+      name: "description",
+    });
+    const quantity = inlineAddRow.getByRole("textbox", { name: "quantity" });
+    const price = inlineAddRow.getByRole("textbox", { name: "price" });
+    const externalId = inlineAddRow.getByRole("textbox", {
+      name: "externalId",
+    });
+
+    await description.fill("Foxtrot");
+    await description.press("Enter");
+    await quantity.fill("72");
+    await quantity.press("Enter");
+    await price.fill("607.5");
+    await price.press("Enter");
+    await externalId.fill("1006");
+    await externalId.press("Enter");
+
+    await expect(id).toHaveAttribute("aria-invalid", "true");
+    await expect(externalId).not.toHaveAttribute("aria-invalid", "true");
+    await expect(externalId.locator("..")).not.toContainClass(
+      "vuuTableInputCell-error",
+    );
+    await expect(id).toBeFocused();
+  });
+
   test("rejects alphabetic input in an existing numeric cell", async ({
     mount,
     page,
