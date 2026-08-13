@@ -223,6 +223,9 @@ export const useCsvUpload = ({
         "CsvUpload createSessionDataSource returned no session datasource.",
       );
     }
+    if (!sessionDataSource.columns.includes("vuuMsg")) {
+      sessionDataSource.columns = sessionDataSource.columns.concat("vuuMsg");
+    }
     setActiveSessionDataSource(sessionDataSource);
     onImportSessionStarted?.(sessionDataSource);
     return sessionDataSource;

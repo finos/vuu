@@ -17,9 +17,9 @@ export {
   type UseCsvUploadReturn,
 } from "./useCsvUpload";
 export {
-  useCsvUploadSessionPreview,
-  type UseCsvUploadSessionPreviewReturn,
-} from "./useCsvUploadSessionPreview";
+  DataUploadPreview,
+  type DataUploadPreviewProps,
+} from "./data-upload-preview/DataUploadPreview";
 export {
   validateCsvAgainstSchema,
   type CsvValidationOptions,

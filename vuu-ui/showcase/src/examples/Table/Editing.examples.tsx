@@ -17,6 +17,7 @@ import { BulkEditPanel, InputCell, Table } from "@vuu-ui/vuu-table";
 import {
   CsvUpload,
   type CsvUploadPreviewResult,
+  DataUploadPreview,
   DataSourceStats,
   InlineAddRow,
   TableFooter,
@@ -24,12 +25,8 @@ import {
 } from "@vuu-ui/vuu-table-extras";
 import {
   DataEditingProvider,
-  EDIT_ACTION_ROW_CLASS_NAME_GENERATOR,
   EditButtons,
-  type EditLifecycle,
   type EditMode,
-  type EditSession,
-  type EditState,
   UNDO_CELL_RENDERER,
   useEditableTable,
 } from "@vuu-ui/vuu-data-editing";
@@ -61,7 +58,6 @@ import {
   ReactElement,
   SyntheticEvent,
   useCallback,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -111,10 +107,6 @@ const editToolbarStyle = {
   gap: 12,
   padding: "0 var(--salt-spacing-100)",
 };
-
-const editActionRowClassNameGenerators = [
-  EDIT_ACTION_ROW_CLASS_NAME_GENERATOR,
-];
 
 const EditTableTemplate = ({
   editableType,
@@ -603,10 +595,8 @@ const EditableTestTableTemplate = ({
 
   const showUploadPreview = useCallback(
     ({ dataSource, editSession }: CsvUploadPreviewResult) => {
-      const cancelRef: DataUploadPreviewCancelRef = {};
       showPrompt(
         <DataUploadPreview
-          cancelRef={cancelRef}
           dataSource={dataSource}
           editSession={editSession}
           onClose={closePrompt}
@@ -614,11 +604,6 @@ const EditableTestTableTemplate = ({
         />,
         {
           disableDismiss: true,
-          onOpenChange: (open) => {
-            if (!open) {
-              void cancelRef.current?.();
-            }
-          },
           showCancelButton: false,
           showCloseButton: false,
           showConfirmButton: false,
@@ -700,141 +685,6 @@ const EditableTestTableTemplate = ({
             />
           </TableFooterTray>
         )}
-      </TableFooter>
-    </div>
-  );
-};
-
-type DataUploadPreviewProps = {
-  cancelRef: DataUploadPreviewCancelRef;
-  dataSource: DataSource;
-  editSession: EditSession;
-  onClose: () => void;
-  tableSchema: ReturnType<typeof getSchema>;
-};
-
-type DataUploadPreviewCancelRef = {
-  current?: () => Promise<void>;
-};
-
-const DataUploadPreview = ({
-  cancelRef,
-  dataSource,
-  editSession,
-  onClose,
-  tableSchema,
-}: DataUploadPreviewProps) => {
-  const [editState, setEditState] = useState<EditState>(editSession.editState);
-  const [lifecycle, setLifecycle] = useState<EditLifecycle>(
-    editSession.lifecycle,
-  );
-  const [selectionCount, setSelectionCount] = useState(0);
-  const [sessionError, setSessionError] = useState<string>();
-
-  const endSession = useCallback(
-    async (save: boolean, force = false) => {
-      try {
-        await editSession.end(save, force);
-        onClose();
-      } catch (error) {
-        setSessionError(
-          error instanceof Error ? error.message : "Unable to end edit session",
-        );
-      }
-    },
-    [editSession, onClose],
-  );
-  const onCancel = useCallback(() => endSession(false), [endSession]);
-  const onDelete = useCallback(
-    () => editSession.deleteSelectedRows(),
-    [editSession],
-  );
-  const onSave = useCallback(
-    (force = false) => endSession(true, force),
-    [endSession],
-  );
-
-  useEffect(() => {
-    cancelRef.current = onCancel;
-    return () => {
-      if (cancelRef.current === onCancel) {
-        cancelRef.current = undefined;
-      }
-    };
-  }, [cancelRef, onCancel]);
-
-  useEffect(() => {
-    const handleEditState = (nextEditState: EditState) => {
-      setEditState(nextEditState);
-    };
-    const handleLifecycle = (nextLifecycle: EditLifecycle) => {
-      setLifecycle(nextLifecycle);
-    };
-    editSession.on("editState", handleEditState);
-    editSession.on("lifecycle", handleLifecycle);
-    dataSource.on("row-selection", setSelectionCount);
-    return () => {
-      editSession.removeListener("editState", handleEditState);
-      editSession.removeListener("lifecycle", handleLifecycle);
-      dataSource.removeListener("row-selection", setSelectionCount);
-    };
-  }, [dataSource, editSession]);
-
-  const isRowSelectable = useCallback(
-    (dataRow: DataRow) => dataRow.vuu_action !== "deleteRow",
-    [],
-  );
-  const config = useMemo<TableConfig>(
-    () => ({
-      columns: tableSchema.columns
-        .map<ColumnDescriptor>((column) => ({
-          ...column,
-          editable: true,
-        }))
-        .concat({ hidden: true, name: "vuu_action" }, UNDO_DELETE_COLUMN),
-      columnDefaultWidth: 150,
-      rowClassNameGenerators: editActionRowClassNameGenerators,
-      rowSeparators: true,
-      zebraStripes: true,
-    }),
-    [tableSchema.columns],
-  );
-  const canCancel =
-    lifecycle.status === "active" ||
-    (lifecycle.status === "error" && lifecycle.operation === "end");
-  const canSave =
-    canCancel &&
-    (editState === "dirty" || editState === "stale") &&
-    editSession.invalidCount === 0;
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", height: 420, width: 900 }}>
-      {sessionError ? <div role="alert">{sessionError}</div> : null}
-      <div style={{ flex: "1 1 auto" }}>
-        <DataEditingProvider editSession={editSession}>
-          <Table
-            config={config}
-            data-viewport={dataSource.viewport}
-            dataSource={dataSource}
-            isRowSelectable={isRowSelectable}
-            renderBufferSize={10}
-            selectionModel="checkbox"
-          />
-        </DataEditingProvider>
-      </div>
-      <TableFooter>
-        <TableFooterTray position="center">
-          <EditButtons
-            canCancel={canCancel}
-            canSave={canSave}
-            editSession={editSession}
-            hasSelection={selectionCount > 0}
-            onCancel={onCancel}
-            onDelete={onDelete}
-            onSave={onSave}
-            saveLabel="Submit"
-          />
-        </TableFooterTray>
       </TableFooter>
     </div>
   );

@@ -47,6 +47,7 @@ const sessionDataSources = new WeakMap<DataSource, DataSource>();
 const makeDataSource = (overrides: Partial<DataSource> = {}): DataSource => {
   const sessionDataSource = {
     addRow: vi.fn().mockResolvedValue({ type: "SUCCESS_RESULT" }),
+    columns: ["id", "label", "count", "vuu_action"],
     endEditSession: vi.fn().mockResolvedValue({ type: "SUCCESS_RESULT" }),
     table: sessionTable,
   } as unknown as DataSource;
@@ -170,6 +171,7 @@ describe("useCsvUpload", () => {
     expect(latestResult?.canImport).toBe(true);
     expect(latestResult?.validation?.errors).toHaveLength(0);
     expect(dataSource.createSessionDataSource).toHaveBeenCalledWith("Empty");
+    expect(getSessionDataSource(dataSource).columns).toContain("vuuMsg");
     expect(getSessionDataSource(dataSource).addRow).toHaveBeenCalled();
     expect(dataSource.rpcRequest).not.toHaveBeenCalled();
   });
@@ -230,6 +232,7 @@ describe("useCsvUpload", () => {
     const onImportSessionStarted = vi.fn();
     const mockSessionDs = {
       addRow: vi.fn().mockResolvedValue({ type: "SUCCESS_RESULT" }),
+      columns: ["id", "label", "count", "vuu_action"],
       endEditSession: vi.fn().mockResolvedValue({ type: "SUCCESS_RESULT" }),
       table: sessionTable,
     } as unknown as DataSource;
