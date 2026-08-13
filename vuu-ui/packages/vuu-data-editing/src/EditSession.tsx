@@ -48,6 +48,7 @@ type EditSessionEvents = {
   editState: (editState: EditState) => void;
   lifecycle: (lifecycle: EditLifecycle) => void;
   newRow: (newRowState: NewRowState) => void;
+  rowChangeUndone: (key: string) => void;
 };
 
 export class EditSession extends EventEmitter<EditSessionEvents> {
@@ -367,6 +368,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     if (wasInsertedRow) {
       this.addCount = this.#addCount - 1;
     }
+    this.emit("rowChangeUndone", key);
   }
 
   #clearEdits() {

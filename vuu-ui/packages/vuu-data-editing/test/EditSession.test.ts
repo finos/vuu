@@ -239,4 +239,32 @@ describe("EditSession", () => {
     expect(undoRowChange).toHaveBeenCalledWith("row-001");
     expect(insertedRowSession.addCount).toBe(0);
   });
+
+  it("emits the row key after undoing row changes", async () => {
+    const undoRowChange = vi.fn().mockResolvedValue({
+      data: undefined,
+      type: "SUCCESS_RESULT",
+    });
+    let editApi: EditApi;
+    editApi = {
+      createSessionDataSource: vi.fn(
+        async () => editApi as unknown as DataSource,
+      ),
+      editCell: vi.fn().mockResolvedValue({
+        data: undefined,
+        type: "SUCCESS_RESULT",
+      }),
+      endEditSession: vi.fn(),
+      undoRowChange,
+    };
+    const rowEditSession = new EditSession(editApi);
+    const rowChangeUndone = vi.fn();
+    rowEditSession.on("rowChangeUndone", rowChangeUndone);
+    await rowEditSession.begin();
+    await rowEditSession.commit("row-001", "name", "Alice", "Alicia", true);
+
+    await rowEditSession.undoRowChange("row-001");
+
+    expect(rowChangeUndone).toHaveBeenCalledWith("row-001");
+  });
 });
