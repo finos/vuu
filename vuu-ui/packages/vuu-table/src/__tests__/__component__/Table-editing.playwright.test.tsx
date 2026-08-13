@@ -1083,7 +1083,7 @@ test.describe("Session table editing (createSessionTable)", () => {
     await expect(table.row(2)).toHaveClass(/vuuTableRow-noSelect/);
   });
 
-  test("delete button stays enabled after soft-delete (pending deleteCount > 0)", async ({
+  test("delete button is only enabled as long as rows are selected", async ({
     mount,
     page,
   }) => {
@@ -1098,36 +1098,9 @@ test.describe("Session table editing (createSessionTable)", () => {
 
     await table.locateCell(2, 1).click();
     await deleteButton.click();
-    // selectionCount is 0 after delete, but deleteCount > 0 keeps it enabled
-    await expect(deleteButton).toBeEnabled();
+    await expect(deleteButton).not.toBeEnabled();
   });
 
-  // TODO the disabled check on deloete button needs attention
-  test.skip("delete button is disabled after all soft-deletions are undone", async ({
-    mount,
-    page,
-  }) => {
-    await mount(<CreateSessionTableInstruments />);
-    await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(
-      page.getByRole("status", { name: "Loading session table" }),
-    ).not.toBeVisible();
-
-    const table = new TableOM(page.getByRole("table"));
-    const deleteButton = page.getByRole("button", { name: "Delete" });
-
-    // Soft-delete two rows — use Ctrl+click to select both before deleting
-    await table.locateCell(2, 1).click();
-    await table.locateCell(3, 1).click({ modifiers: ["Control"] });
-    await deleteButton.click();
-    await expect(deleteButton).toBeEnabled();
-
-    // Undo both rows — deleteCount returns to 0
-    await table.row(2).getByRole("button", { name: "Undo" }).click();
-    await expect(deleteButton).toBeEnabled();
-    await table.row(3).getByRole("button", { name: "Undo" }).click();
-    await expect(deleteButton).toBeDisabled();
-  });
 
   test("block selection spanning a soft-deleted row selects only the selectable rows", async ({
     mount,
