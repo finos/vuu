@@ -116,4 +116,25 @@ describe("VuuModule edit actions", () => {
       data: { wasInsertedRow: true },
     });
   });
+
+  it("deselects all rows after deleting the selected rows", async () => {
+    sessionDataSource.select({
+      preserveExistingSelection: false,
+      rowKey: "row-001",
+      type: "SELECT_ROW",
+    });
+    sessionDataSource.select({
+      preserveExistingSelection: true,
+      rowKey: "row-002",
+      type: "SELECT_ROW",
+    });
+
+    const result = await sessionDataSource.deleteSelectedRows("soft");
+
+    expect(result).toEqual({
+      type: "SUCCESS_RESULT",
+      data: { deletedKeys: ["row-001", "row-002"] },
+    });
+    expect(sessionDataSource.getSelectedRowIds()).toEqual([]);
+  });
 });

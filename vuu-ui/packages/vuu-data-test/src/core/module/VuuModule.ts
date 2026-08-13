@@ -481,6 +481,7 @@ export abstract class VuuModule<T extends string = string>
             }
             deletedKeys.push(key);
           }
+          dataSource.select({ type: "DESELECT_ALL" });
         }
         return { type: "SUCCESS_RESULT", data: { deletedKeys } };
       }
