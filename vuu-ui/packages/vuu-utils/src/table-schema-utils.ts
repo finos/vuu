@@ -1,5 +1,6 @@
-import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
-import { VuuTable } from "@vuu-ui/vuu-protocol-types";
+import type { SchemaColumn, TableSchemaTable } from "@vuu-ui/vuu-data-types";
+import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 export const getVuuTable = (schemaTable: TableSchemaTable): VuuTable => {
   if (schemaTable.session) {
@@ -9,3 +10,11 @@ export const getVuuTable = (schemaTable: TableSchemaTable): VuuTable => {
     return schemaTable;
   }
 };
+
+export const toSchemaColumn = ({ editable, name, serverDataType = 'string' }: ColumnDescriptor): SchemaColumn => {
+  return {
+    editable: editable === true || typeof editable === 'object',
+    name,
+    serverDataType
+  }
+}

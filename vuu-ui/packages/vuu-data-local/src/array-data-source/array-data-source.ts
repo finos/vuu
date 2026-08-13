@@ -1,4 +1,5 @@
 import type {
+  DataSourceBase,
   DataSourceConfig,
   DataSourceConstructorProps,
   DataSourceEvents,
@@ -6,15 +7,15 @@ import type {
   DataSourceRow,
   DataSourceRowWithBigint,
   DataSourceStatus,
-  DataSourceSubscribedMessage,
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
+  DataSourceSubscribedMessage,
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
-  DataSourceBase,
 } from "@vuu-ui/vuu-data-types";
 import { filterPredicate, parseFilter } from "@vuu-ui/vuu-filter-parser";
+import type { Filter } from "@vuu-ui/vuu-filter-types";
 import type {
   LinkDescriptorWithLabel,
   SelectRequest,
@@ -51,6 +52,7 @@ import {
   logger,
   metadataKeys,
   rangeNewItems,
+  toSchemaColumn,
   uuid,
   vanillaConfig,
   withConfigDefaults,
@@ -59,13 +61,11 @@ import { aggregateData } from "./aggregate-utils";
 import { buildDataToClientMap, toClientRow } from "./array-data-utils";
 import { type GroupMap, collapseGroup, expandGroup, groupRows } from "./group-utils";
 import {
-  binarySearch,
   type ColIndexSortDef,
+  binarySearch,
   sortComparator,
   sortRows,
 } from "./sort-utils";
-import type { Filter } from "@vuu-ui/vuu-filter-types";
-import { toSchemaColumn } from "@vuu-ui/vuu-data-test";
 
 const { debug, info } = logger("ArrayDataSource");
 

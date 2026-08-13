@@ -3,11 +3,11 @@ import { buildDataColumnMap, type Table } from "../Table";
 import {
   DefaultColumnGenerator,
   defaultGenerators,
-  toSchemaColumn,
 } from "../vuu-row-generator";
 import tableContainer from "../core/table/TableContainer";
 import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import { withNanoMs } from "../data-utils";
+import { toSchemaColumn } from "@vuu-ui/vuu-utils";
 
 const DEFAULT_RANGE_LIMITS = {
   maxRangeEnd: 1_000_000,
