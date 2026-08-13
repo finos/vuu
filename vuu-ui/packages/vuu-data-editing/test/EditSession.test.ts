@@ -154,24 +154,10 @@ describe("EditSession", () => {
 
     await editSession.begin();
 
-    //prettier-ignore
-    let { editedDuringCurrentSession } = await editSession.commit(
-      "key-01",
-      "col-1",
-      100,
-      200,
-      true,
-    );
-    expect(editedDuringCurrentSession).toEqual(true);
-    //prettier-ignore
-    ({ editedDuringCurrentSession } = await editSession.commit(
-      "key-01",
-      "col-1",
-      200,
-      100,
-      true,
-    ));
-    expect(editedDuringCurrentSession).toEqual(false);
+    await editSession.commit("key-01", "col-1", 100, 200, true);
+    expect(editSession.isCellEdited("key-01", "col-1")).toEqual(true);
+    await editSession.commit("key-01", "col-1", 200, 100, true);
+    expect(editSession.isCellEdited("key-01", "col-1")).toEqual(false);
 
     await editSession.end();
   });
@@ -182,33 +168,12 @@ describe("EditSession", () => {
 
     await editSession.begin();
 
-    //prettier-ignore
-    let { editedDuringCurrentSession } = await editSession.commit(
-      "key-01",
-      "col-1",
-      100,
-      "abc",
-      false,
-    );
-    expect(editedDuringCurrentSession).toEqual(false);
-    //prettier-ignore
-    ({ editedDuringCurrentSession } = await editSession.commit(
-      "key-01",
-      "col-1",
-      "abc",
-      200,
-      true,
-    ));
-    expect(editedDuringCurrentSession).toEqual(true);
-    //prettier-ignore
-    ({ editedDuringCurrentSession } = await editSession.commit(
-      "key-01",
-      "col-1",
-      200,
-      100,
-      true,
-    ));
-    expect(editedDuringCurrentSession).toEqual(false);
+    await editSession.commit("key-01", "col-1", 100, "abc", false);
+    expect(editSession.isCellEdited("key-01", "col-1")).toEqual(false);
+    await editSession.commit("key-01", "col-1", "abc", 200, true);
+    expect(editSession.isCellEdited("key-01", "col-1")).toEqual(true);
+    await editSession.commit("key-01", "col-1", 200, 100, true);
+    expect(editSession.isCellEdited("key-01", "col-1")).toEqual(false);
 
     await editSession.end();
   });
@@ -240,7 +205,7 @@ describe("EditSession", () => {
     expect(insertedRowSession.addCount).toBe(0);
   });
 
-  it("emits the row key after undoing row changes", async () => {
+  it("clears cell markers after undoing row changes", async () => {
     const undoRowChange = vi.fn().mockResolvedValue({
       data: undefined,
       type: "SUCCESS_RESULT",
@@ -258,13 +223,15 @@ describe("EditSession", () => {
       undoRowChange,
     };
     const rowEditSession = new EditSession(editApi);
-    const rowChangeUndone = vi.fn();
-    rowEditSession.on("rowChangeUndone", rowChangeUndone);
+    const cellEditChanged = vi.fn();
+    rowEditSession.on("cellEditChanged", cellEditChanged);
     await rowEditSession.begin();
     await rowEditSession.commit("row-001", "name", "Alice", "Alicia", true);
+    cellEditChanged.mockClear();
 
     await rowEditSession.undoRowChange("row-001");
 
-    expect(rowChangeUndone).toHaveBeenCalledWith("row-001");
+    expect(rowEditSession.isCellEdited("row-001", "name")).toBe(false);
+    expect(cellEditChanged).toHaveBeenCalledWith("row-001", "name");
   });
 });

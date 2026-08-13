@@ -1,4 +1,5 @@
 export { DataEditingProvider, useEditSession } from "./DataEditingProvider";
+export { useCellEdited } from "./useCellEdited";
 export {
   getVuuEditMessage,
   isEditRowReadOnly,
@@ -13,6 +14,7 @@ export {
 export {
   EditError,
   EditSession,
+  SupersededEditError,
   type EditLifecycle,
   type NewRowState,
   type EditState,
