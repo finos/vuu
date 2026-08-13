@@ -13,8 +13,8 @@ export const sessionTableRow = (
   if (!schema.columns.some(({ name }) => name === "vuuMsg")) {
     sessionRow.push("");
   }
-  if (!schema.columns.some(({ name }) => name === "setToDelete")) {
-    sessionRow.push(false);
+  if (!schema.columns.some(({ name }) => name === "vuu_action")) {
+    sessionRow.push("");
   }
   return sessionRow;
 };
@@ -41,8 +41,8 @@ export const sessionTableSchema = (schema: TableSchema): TableSchema => {
   if (!columns.some(({ name }) => name === "vuuMsg")) {
     columns.push({ name: "vuuMsg", serverDataType: "string" });
   }
-  if (!columns.some(({ name }) => name === "setToDelete")) {
-    columns.push({ name: "setToDelete", serverDataType: "boolean" });
+  if (!columns.some(({ name }) => name === "vuu_action")) {
+    columns.push({ name: "vuu_action", serverDataType: "string" });
   }
   return { ...schema, columns };
 };

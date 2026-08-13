@@ -33,6 +33,7 @@ export const Icon = ({
   return (
     <span
       {...htmlAttributes}
+      aria-hidden
       className={cx(classBase, className)}
       data-icon={name}
       role="img"

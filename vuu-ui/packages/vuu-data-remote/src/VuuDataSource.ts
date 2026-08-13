@@ -672,7 +672,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
       const sessionColumns = combineColumnsWithAutosubscribeColumns(
         this.columns,
-        [this.#sessionTableMessageColumn, "setToDelete"].filter(
+        [this.#sessionTableMessageColumn, "vuu_action"].filter(
           (column): column is string => column !== undefined,
         ),
       );

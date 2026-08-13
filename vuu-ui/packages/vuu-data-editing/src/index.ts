@@ -15,6 +15,17 @@ export {
 } from "./EditSession";
 export { StaleUpdateError } from "@vuu-ui/vuu-utils";
 export {
+  EDIT_ACTION_ROW_CLASS_NAME_GENERATOR,
+  editActionRowClassNameGenerator,
+} from "./editActionRowClassNameGenerator";
+export {
+  getUndoButtonContent,
+  getUndoTooltipContent,
+  UNDO_CELL_RENDERER,
+  UndoCellRenderer,
+  type UndoCellRendererComponentProps,
+} from "./UndoCellRenderer";
+export {
   useEditableTable,
   type EditableTableHookProps,
   type EditMode,

@@ -24,12 +24,11 @@ import {
   DataEditingProvider,
   EditButtons,
   type EditMode,
+  UNDO_CELL_RENDERER,
   useEditableTable,
-  useEditSession,
 } from "@vuu-ui/vuu-data-editing";
 import {
   ColumnDescriptor,
-  ColumnTypeRendering,
   DataRow,
   DataValueTypeDescriptor,
   TableCellEditHandler,
@@ -89,10 +88,7 @@ const UNDO_DELETE_COLUMN: ColumnDescriptor = {
   type: {
     name: "string",
     renderer: {
-      name: "example.undo-cell",
-      componentProps: {
-        sessionTableMessageColumn: "vuuMsg",
-      },
+      name: UNDO_CELL_RENDERER,
     },
   }
 };
@@ -152,6 +148,7 @@ const EditTableTemplate = ({
     editSession,
     onCancel,
     onSave,
+    rowClassNameGenerators,
     sourceDataSource,
   } = useEditableTable({
     dataSource: sourceTableDataSource,
@@ -242,14 +239,15 @@ const EditTableTemplate = ({
                       : { ...col, editable: true },
             ).concat({
               hidden: showInlineAddRow,
-              name: "setToDelete",
+              name: "vuu_action",
             } as ColumnDescriptor),
         columnDefaultWidth: 150,
+        rowClassNameGenerators,
         rowSeparators: true,
         zebraStripes: true,
       };
     },
-    [editMode, editableType, showInlineAddRow],
+    [editMode, editableType, rowClassNameGenerators, showInlineAddRow],
   );
 
   return (
@@ -386,6 +384,7 @@ const EditableInstrumentsTemplate = ({
     onCancel,
     onDelete,
     onSave,
+    rowClassNameGenerators,
     sourceDataSource,
   } = useEditableTable({
     dataSource: sourceTableDataSource,
@@ -404,7 +403,7 @@ const EditableInstrumentsTemplate = ({
   );
 
   const isRowSelectable = useCallback(
-    (dataRow: DataRow) => dataRow.setToDelete !== true,
+    (dataRow: DataRow) => dataRow.vuu_action !== "deleteRow",
     [],
   );
 
@@ -425,17 +424,18 @@ const EditableInstrumentsTemplate = ({
                 : { ...col, editable: true },
             ).concat(
               {
-                name: 'setToDelete',
+                name: "vuu_action",
                 hidden: true,
               },
               UNDO_DELETE_COLUMN),
 
         columnDefaultWidth: 150,
+        rowClassNameGenerators,
         rowSeparators: true,
         zebraStripes: true,
       };
     },
-    [editMode],
+    [editMode, rowClassNameGenerators],
   );
 
   return (
@@ -552,6 +552,7 @@ const EditableTestTableTemplate = ({
     onCancel,
     onDelete,
     onSave,
+    rowClassNameGenerators,
     sourceDataSource,
   } = useEditableTable({
     dataSource: sourceTableDataSource,
@@ -570,7 +571,7 @@ const EditableTestTableTemplate = ({
   );
 
   const isRowSelectable = useCallback(
-    (dataRow: DataRow) => dataRow.setToDelete !== true,
+    (dataRow: DataRow) => dataRow.vuu_action !== "deleteRow",
     [],
   );
 
@@ -583,12 +584,13 @@ const EditableTestTableTemplate = ({
           tableSchema.columns.map<ColumnDescriptor>((column) => ({
             ...column,
             editable: true,
-          })).concat({ hidden: true, name: "setToDelete" }, UNDO_DELETE_COLUMN),
+          })).concat({ hidden: true, name: "vuu_action" }, UNDO_DELETE_COLUMN),
       columnDefaultWidth: 150,
+      rowClassNameGenerators,
       rowSeparators: true,
       zebraStripes: true,
     }),
-    [editMode, tableSchema.columns],
+    [editMode, rowClassNameGenerators, tableSchema.columns],
   );
 
   return (
@@ -729,32 +731,6 @@ const CustomCell = ({
 
 registerComponent("example.color-coded-editor", CustomCell, "cell-renderer");
 
-const UndoCellRenderer = ({ column, dataRow }: TableCellRendererProps) => {
-  const editSession = useEditSession();
-  const renderer = (column.type as DataValueTypeDescriptor)?.renderer as ColumnTypeRendering;
-  const sessionTableMessageColumn =
-    (renderer?.componentProps?.sessionTableMessageColumn as string) ?? "vuuMsg";
-
-  // For cell edits: #rowEdits is populated synchronously so hasRowChanges works immediately.
-  // For soft-deleted rows: #deletedRows is populated after the RPC await, so we read
-  // the sessionTableMessageColumn directly from the row data — it is always present
-  // when the row re-renders.
-  const isRowChanged =
-    editSession?.hasRowChanges(dataRow.key) || dataRow.setToDelete === true || dataRow[sessionTableMessageColumn] === "SOFT_DELETED";
-
-  if (!isRowChanged) return null;
-  return (
-    <Button
-      appearance="transparent"
-      onClick={() => editSession?.undoRowChange(dataRow.key)}
-      style={{ height: "100%", width: "100%" }}
-    >
-      Undo
-    </Button>
-  );
-};
-registerComponent("example.undo-cell", UndoCellRenderer, "cell-renderer");
-
 export const EditableInstrumentsCustomCellRenderer = () => {
   const editableType = useMemo<DataValueTypeDescriptor>(
     () => ({
@@ -886,6 +862,7 @@ const BulkEditTableTemplate = ({
     editSession,
     onCancel,
     onSave,
+    rowClassNameGenerators,
     sessionDataSource,
     sourceDataSource,
   } =
@@ -919,6 +896,7 @@ const BulkEditTableTemplate = ({
         <DataEditingProvider editSession={editSession}>
           <BulkEditPanel
             parentDs={sourceDataSource}
+            rowClassNameGenerators={rowClassNameGenerators}
             sessionDs={sessionDataSource}
           />
         </DataEditingProvider>,
@@ -1056,9 +1034,11 @@ const addRowsSessionTableConfig: TableConfig = {
 const AddRowPanel = ({
   addRowDataSource,
   editSessionDataSource,
+  rowClassNameGenerators,
 }: {
   addRowDataSource: DataSource;
   editSessionDataSource: DataSource;
+  rowClassNameGenerators?: string[];
 }) => {
   const [insertErrorMessage, setInsertErrorMessage] = useState<
     string | undefined
@@ -1098,7 +1078,10 @@ const AddRowPanel = ({
     >
       <div style={{ flex: "0 0 340px", minHeight: 0, overflow: "hidden" }}>
         <Table
-          config={addRowsSessionTableConfig}
+          config={{
+            ...addRowsSessionTableConfig,
+            rowClassNameGenerators,
+          }}
           dataSource={editSessionDataSource}
           renderBufferSize={5}
           style={{ height: "100%", width: "100%" }}
@@ -1146,6 +1129,7 @@ const AddRowTableTemplate = () => {
 
   const {
     dataSource: addRowDataSource,
+    rowClassNameGenerators,
     sessionDataSource: editSessionDataSource,
   } = useEditableTable({
     dataSource: instrumentsDataSource,
@@ -1170,6 +1154,7 @@ const AddRowTableTemplate = () => {
           <AddRowPanel
             addRowDataSource={addRowDataSource}
             editSessionDataSource={editSessionDataSource}
+            rowClassNameGenerators={rowClassNameGenerators}
           />
         ) : (
           <div

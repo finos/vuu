@@ -152,7 +152,7 @@ describe("VuuDataSource", () => {
         expect(sessionDataSource?.columns).toEqual([
           "id",
           "vuuMsg",
-          "setToDelete",
+          "vuu_action",
         ]);
         expect(sessionDataSource?.viewport).toBe("session-instruments");
       });

@@ -9,6 +9,11 @@ import { useLayoutEffectSkipFirst } from "@vuu-ui/vuu-utils";
 import { useData } from "@vuu-ui/vuu-utils2";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EditSession, type EditLifecycle, type EditState } from "./EditSession";
+import { EDIT_ACTION_ROW_CLASS_NAME_GENERATOR } from "./editActionRowClassNameGenerator";
+
+const EDIT_ACTION_ROW_CLASS_NAME_GENERATORS = [
+  EDIT_ACTION_ROW_CLASS_NAME_GENERATOR,
+];
 
 export type EditMode = "edit" | "view";
 
@@ -171,6 +176,9 @@ export const useEditableTable = ({
     onDelete: handleDelete,
     onSave: handleSave,
     onUndoRowChange: handleUndoRowChange,
+    rowClassNameGenerators: isEditMode
+      ? EDIT_ACTION_ROW_CLASS_NAME_GENERATORS
+      : undefined,
     sessionDataSource,
     sourceDataSource,
   };

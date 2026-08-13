@@ -434,7 +434,7 @@ export abstract class VuuModule<T extends string = string>
       const sessionTable = this.getSessionTable(viewPortId, false);
       if (sessionTable) {
         if (mode === "soft") {
-          sessionTable.update(key, "setToDelete", true);
+          sessionTable.update(key, "vuu_action", "deleteRow");
         } else {
           sessionTable.delete(key);
         }
@@ -475,12 +475,13 @@ export abstract class VuuModule<T extends string = string>
         if (selectedRowIds.length > 0) {
           for (const key of selectedRowIds) {
             if ((mode as DeleteRowMode) === "soft") {
-              sessionTable.update(key, "setToDelete", true);
+              sessionTable.update(key, "vuu_action", "deleteRow");
             } else {
               sessionTable.delete(key);
             }
             deletedKeys.push(key);
           }
+          dataSource.select({ type: "DESELECT_ALL" });
         }
         return { type: "SUCCESS_RESULT", data: { deletedKeys } };
       }
@@ -512,20 +513,33 @@ export abstract class VuuModule<T extends string = string>
             errorMessage: `undoRowChange: source table not found for viewport ${viewPortId}`,
           };
         }
-        const sourceRow = sourceTable.findByKey(key);
-        if (!sourceRow) {
+        const sessionRow = sessionTable.findByKey(key);
+        if (!sessionRow) {
+          return {
+            type: "ERROR_RESULT",
+            errorMessage: `undoRowChange: session row not found for key ${key}`,
+          };
+        }
+        const action = sessionRow[sessionTable.map.vuu_action];
+        if (action === "addRow") {
           sessionTable.delete(key);
           return { type: "SUCCESS_RESULT", data: { wasInsertedRow: true } };
         }
-        const sessionRow = sessionTable.findByKey(key);
-        if (sessionRow) {
+        if (action === "deleteRow" || action === "editCell") {
+          const sourceRow = sourceTable.findByKey(key);
+          if (!sourceRow) {
+            return {
+              type: "ERROR_RESULT",
+              errorMessage: `undoRowChange: source row not found for key ${key}`,
+            };
+          }
           const restoredRow = sessionRow.slice();
           for (const column of sourceTable.schema.columns) {
             restoredRow[sessionTable.map[column.name]] =
               sourceRow[sourceTable.map[column.name]];
           }
           sessionTable.updateRow(restoredRow);
-          sessionTable.update(key, "setToDelete", false);
+          sessionTable.update(key, "vuu_action", "");
         }
         return { type: "SUCCESS_RESULT", data: undefined };
       }
@@ -556,7 +570,8 @@ export abstract class VuuModule<T extends string = string>
     if (isEditCellRpcRequest(rpcRequest)) {
       const { viewPortId } = rpcRequest.context;
       const { column, data, key } = rpcRequest.params;
-      let targetTable: Table = this.#sessionTableMap[viewPortId];
+      const sessionTable = this.#sessionTableMap[viewPortId];
+      let targetTable: Table | undefined = sessionTable;
       if (!targetTable) {
         const { dataSource } = this.getSubscriptionByViewport(viewPortId);
         if (dataSource.table) {
@@ -567,6 +582,14 @@ export abstract class VuuModule<T extends string = string>
         try {
           assertUpdateIsValid(targetTable.schema, column as string, data);
           targetTable.update(key as string, column as string, data);
+          if (
+            sessionTable &&
+            sessionTable.findByKey(key as string)?.[
+              sessionTable.map.vuu_action
+            ] !== "addRow"
+          ) {
+            sessionTable.update(key as string, "vuu_action", "editCell");
+          }
           return {
             type: "SUCCESS_RESULT",
             data: undefined,
@@ -749,7 +772,7 @@ export abstract class VuuModule<T extends string = string>
       const columnMap = sessionTable.map;
       const columnCount = Object.keys(columnMap).length;
       const row: VuuDataRow = new Array(columnCount).fill("");
-      row[columnMap.setToDelete] = false;
+      row[columnMap.vuu_action] = "addRow";
       for (const [col, idx] of Object.entries(columnMap)) {
         if (data[col] !== undefined) {
           row[idx] = data[col];
@@ -781,7 +804,7 @@ export abstract class VuuModule<T extends string = string>
         if (rpcRequest.params.save === true) {
           let rejectedCount = 0;
           const vuuMsgIdx = sessionTable.map[this.#sessionTableMessageColumn];
-          const setToDeleteIdx = sessionTable.map.setToDelete;
+          const actionIdx = sessionTable.map.vuu_action;
           const sessionTimestampIdx = sessionTable.map.vuuUpdatedTimestamp;
           const sourceTimestampIdx = sourceTable.map.vuuUpdatedTimestamp;
           const sourceColumns = sourceTable.schema.columns;
@@ -791,7 +814,8 @@ export abstract class VuuModule<T extends string = string>
               sessionRow[sessionTable.map[sourceTable.schema.key]],
             );
             const currentRow = sourceTable.findByKey(key);
-            if (sessionRow[setToDeleteIdx]) {
+            const action = sessionRow[actionIdx];
+            if (action === "deleteRow") {
               if (currentRow) {
                 const sessionTimestamp = sessionRow[sessionTimestampIdx];
                 const sourceTimestamp = currentRow[sourceTimestampIdx];
@@ -813,14 +837,14 @@ export abstract class VuuModule<T extends string = string>
               continue;
             }
             if (sessionRow[vuuMsgIdx]) continue;
-            if (currentRow) {
+            if (action === "editCell" && currentRow) {
               for (const column of sourceColumns) {
                 const value = sessionRow[sessionTable.map[column.name]];
                 if (currentRow[sourceTable.map[column.name]] !== value) {
                   sourceTable.update(key, column.name, value);
                 }
               }
-            } else {
+            } else if (action === "addRow" && !currentRow) {
               sourceTable.insert(
                 sourceColumns.map(
                   (column) => sessionRow[sessionTable.map[column.name]],

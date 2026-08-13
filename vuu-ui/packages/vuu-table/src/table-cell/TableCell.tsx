@@ -6,7 +6,12 @@ import type {
   TableCellProps,
 } from "@vuu-ui/vuu-table-types";
 import { isDataValueEditable } from "@vuu-ui/vuu-utils";
-import { type MouseEventHandler, useCallback, useState } from "react";
+import {
+  type MouseEventHandler,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { applyHighlighting } from "../applyHighlighting";
 import { useCell } from "../useCell";
 
@@ -35,6 +40,18 @@ export const TableCell = ({
   const [editedDuringCurrentSession, setEditingDuringCurrentSession] = useState<
     boolean | undefined
   >(undefined);
+
+  useEffect(() => {
+    const handleRowChangeUndone = (key: string) => {
+      if (key === dataRow.key) {
+        setEditingDuringCurrentSession(false);
+      }
+    };
+    editSession?.on("rowChangeUndone", handleRowChangeUndone);
+    return () => {
+      editSession?.removeListener("rowChangeUndone", handleRowChangeUndone);
+    };
+  }, [dataRow.key, editSession]);
 
   const handleDataItemEdited = useCallback<TableCellEditHandler>(
     async (editState, editPhase) => {

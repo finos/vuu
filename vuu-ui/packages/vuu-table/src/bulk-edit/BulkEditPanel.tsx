@@ -1,9 +1,9 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { DataSource, RpcResponse } from "@vuu-ui/vuu-data-types";
+import type { DataSource, RpcResponse } from "@vuu-ui/vuu-data-types";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
-import { HTMLAttributes, ReactElement, useMemo } from "react";
+import { type HTMLAttributes, type ReactElement, useMemo } from "react";
 import { Table } from "../Table";
 import { ColumnCascadingUpdateEditor } from "./ColumnCascadingUpdateEditor";
 import { InsertNewRowEditor } from "./InsertNewRowEditor";
@@ -24,6 +24,7 @@ export interface BulkEditPanelProps extends HTMLAttributes<HTMLDivElement> {
    */
   sessionDs: DataSource;
   response?: RpcResponse;
+  rowClassNameGenerators?: string[];
   mainTableName?: string;
   /**
    * The parent dataSource. This is where the edits will be applied once confirmed
@@ -39,6 +40,7 @@ export const BulkEditPanel = ({
   showColumnCascadingUpdateEditor = false,
   showInsertNewRowEditor = false,
   parentDs,
+  rowClassNameGenerators,
   style,
   width = 600,
   ...htmlAttributes
@@ -52,6 +54,7 @@ export const BulkEditPanel = ({
 
   const { onBulkChange, onRowChange, tableConfig } = useBulkEditPanel({
     columns,
+    rowClassNameGenerators,
     sessionDs,
   });
 

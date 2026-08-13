@@ -171,9 +171,9 @@ export class TickingArrayDataSource extends ArrayDataSource {
     });
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
-      const columns = this.config.columns.includes("setToDelete")
+      const columns = this.config.columns.includes("vuu_action")
         ? this.config.columns
-        : this.config.columns.concat("setToDelete");
+        : this.config.columns.concat("vuu_action");
       return this.#vuuModule?.createDataSource(
         sessionTable.table,
         sessionTable.table,

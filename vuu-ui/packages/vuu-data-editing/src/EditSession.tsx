@@ -48,6 +48,7 @@ type EditSessionEvents = {
   editState: (editState: EditState) => void;
   lifecycle: (lifecycle: EditLifecycle) => void;
   newRow: (newRowState: NewRowState) => void;
+  rowChangeUndone: (key: string) => void;
 };
 
 export class EditSession extends EventEmitter<EditSessionEvents> {
@@ -342,8 +343,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     const rowEdits = this.#rowEdits.get(key);
     const wasDeleted = this.#deletedRows.has(key);
 
-    if (!rowEdits?.cellEdits.size && !wasDeleted) return;
-
     this.#rowEdits.delete(key);
     if (wasDeleted) this.#deletedRows.delete(key);
 
@@ -369,6 +368,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     if (wasInsertedRow) {
       this.addCount = this.#addCount - 1;
     }
+    this.emit("rowChangeUndone", key);
   }
 
   #clearEdits() {
