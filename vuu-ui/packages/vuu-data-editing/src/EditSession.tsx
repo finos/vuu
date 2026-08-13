@@ -176,6 +176,14 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     return this.#newRowState.columns.at(-1) === columnName;
   }
 
+  isNewRowComplete() {
+    return this.#newRowState.columns.every((column) => {
+      const value = this.#newRowState.values[column];
+      return value !== undefined &&
+        (typeof value !== "string" || value.trim() !== "");
+    });
+  }
+
   configureNewRow(columns: readonly string[]) {
     if (
       columns.length === this.#newRowState.columns.length &&
@@ -225,11 +233,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
     if (Object.keys(errors).length > 0) {
       this.#setNewRowState({ ...this.#newRowState, errors });
-      return {
-        errorMessage:
-          errors[this.#newRowState.columns.at(-1) ?? ""] ?? "Value required",
-        type: "ERROR_RESULT",
-      };
+      return { data: undefined, type: "SUCCESS_RESULT" };
     }
 
     if (this.#newRowState.submitting) {

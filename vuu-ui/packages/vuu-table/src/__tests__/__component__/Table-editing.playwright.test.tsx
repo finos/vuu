@@ -103,7 +103,7 @@ test.describe("Inline add row", () => {
 });
 
 test.describe("Test table editing", () => {
-  test("inserts a valid row without leaving validation warnings in the inline add row", async ({
+  test("inserts a row with an unchecked boolean without validation warnings", async ({
     mount,
     page,
   }) => {
@@ -129,16 +129,121 @@ test.describe("Test table editing", () => {
     await quantity.press("Enter");
     await price.fill("607.5");
     await price.press("Enter");
-    await inlineAddRow.getByRole("checkbox").check();
     await externalId.fill("1006");
     await externalId.press("Enter");
 
     await expect(id).toBeFocused();
     await expect(id).toHaveValue("");
     await expect(inlineAddRow.locator('[aria-invalid="true"]')).toHaveCount(0);
+    await expect(inlineAddRow.getByRole("checkbox")).not.toBeChecked();
     await expect(
       page.getByRole("textbox", { name: "id", exact: true }).nth(1),
     ).toHaveValue("TEST-006");
+  });
+
+  test("marks only omitted cells as invalid when the final cell is committed", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<TestTableEmpty />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const id = inlineAddRow.getByRole("textbox", { name: "id", exact: true });
+    const description = inlineAddRow.getByRole("textbox", {
+      name: "description",
+    });
+    const quantity = inlineAddRow.getByRole("textbox", { name: "quantity" });
+    const price = inlineAddRow.getByRole("textbox", { name: "price" });
+    const externalId = inlineAddRow.getByRole("textbox", {
+      name: "externalId",
+    });
+
+    await description.fill("Foxtrot");
+    await description.press("Enter");
+    await quantity.fill("72");
+    await quantity.press("Enter");
+    await price.fill("607.5");
+    await price.press("Enter");
+    await externalId.fill("1006");
+    await externalId.press("Enter");
+
+    await expect(id).toHaveAttribute("aria-invalid", "true");
+    await expect(externalId).not.toHaveAttribute("aria-invalid", "true");
+    await expect(externalId.locator("..")).not.toContainClass(
+      "vuuTableInputCell-error",
+    );
+    await expect(id).toBeFocused();
+  });
+
+  test("inserts after a previously omitted value is committed", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<TestTableEmpty />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const id = inlineAddRow.getByRole("textbox", { name: "id", exact: true });
+    const description = inlineAddRow.getByRole("textbox", {
+      name: "description",
+    });
+    const quantity = inlineAddRow.getByRole("textbox", { name: "quantity" });
+    const price = inlineAddRow.getByRole("textbox", { name: "price" });
+    const externalId = inlineAddRow.getByRole("textbox", {
+      name: "externalId",
+    });
+
+    await description.fill("Foxtrot");
+    await description.press("Enter");
+    await quantity.fill("72");
+    await quantity.press("Enter");
+    await price.fill("607.5");
+    await price.press("Enter");
+    await externalId.fill("1006");
+    await externalId.press("Enter");
+    await expect(id).toBeFocused();
+
+    await id.fill("TEST-006");
+    await id.press("Enter");
+
+    await expect(id).toHaveValue("");
+    await expect(
+      page.getByRole("textbox", { name: "id", exact: true }).nth(1),
+    ).toHaveValue("TEST-006");
+  });
+
+  test("moves to the next invalid cell when repairing incomplete rows", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<TestTableEmpty />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const id = inlineAddRow.getByRole("textbox", { name: "id", exact: true });
+    const description = inlineAddRow.getByRole("textbox", {
+      name: "description",
+    });
+    const quantity = inlineAddRow.getByRole("textbox", { name: "quantity" });
+    const price = inlineAddRow.getByRole("textbox", { name: "price" });
+    const externalId = inlineAddRow.getByRole("textbox", {
+      name: "externalId",
+    });
+
+    await description.fill("Foxtrot");
+    await description.press("Enter");
+    await price.fill("607.5");
+    await price.press("Enter");
+    await externalId.fill("1006");
+    await externalId.press("Enter");
+    await expect(id).toBeFocused();
+    await expect(quantity).toHaveAttribute("aria-invalid", "true");
+
+    await id.fill("TEST-006");
+    await id.press("Enter");
+
+    await expect(quantity).toBeFocused();
   });
 
   test("rejects alphabetic input in an existing numeric cell", async ({

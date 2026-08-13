@@ -45,11 +45,15 @@ export const InputCell = ({
   });
 
   // TODO can this move into useEdtableText ?
-  const editRejected = getVuuEditMessage(dataRow, column, previousValue);
+  const editRejectedMessage = getVuuEditMessage(
+    dataRow,
+    column,
+    previousValue,
+  );
 
   const endAdornment =
-    editRejected && align === "left" ? (
-      <Tooltip content={editRejected} placement="right">
+    editRejectedMessage && align === "left" ? (
+      <Tooltip content={editRejectedMessage} placement="right">
         <Icon className={`${classBase}-icon`} name="error" />
       </Tooltip>
     ) : warningMessage && align === "left" ? (
@@ -59,8 +63,8 @@ export const InputCell = ({
     ) : undefined;
 
   const startAdornment =
-    editRejected && align === "right" ? (
-      <Tooltip content={editRejected} placement="right">
+    editRejectedMessage && align === "right" ? (
+      <Tooltip content={editRejectedMessage} placement="right">
         <Icon className={`${classBase}-icon`} name="error" />
       </Tooltip>
     ) : warningMessage && align === "right" ? (
@@ -76,13 +80,13 @@ export const InputCell = ({
       className={cx(classBase, {
         [`${classBase}-edited`]: editedDuringCurrentSession === true,
         [`${classBase}-error`]: warningMessage !== undefined,
-        [`${classBase}-warning`]: editRejected !== undefined,
+        [`${classBase}-warning`]: editRejectedMessage !== undefined,
         vuuEditing: editing,
       })}
       endAdornment={endAdornment}
       inputProps={{
         ...inputProps,
-        "aria-invalid": editRejected ? true : undefined,
+        "aria-invalid": editRejectedMessage ? true : undefined,
         "aria-label": column.label,
       }}
       startAdornment={startAdornment}
