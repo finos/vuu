@@ -985,6 +985,9 @@ test.describe("Session table editing (createSessionTable)", () => {
 
     const undoButton = table.row(2).getByRole("button", { name: "Undo" });
     await expect(undoButton).toBeVisible();
+    await expect(table.locateCell(2, 2).getByRole("textbox")).toHaveAttribute(
+      "readonly",
+    );
     await expect(page.getByRole("button", { name: "Submit" })).toBeEnabled();
   });
 
@@ -1094,7 +1097,10 @@ test.describe("Session table editing (createSessionTable)", () => {
     ).not.toBeVisible();
 
     const table = new TableOM(page.getByRole("table"));
-    const deleteButton = page.getByRole("button", { name: "Delete" });
+    const deleteButton = page.getByRole("button", {
+      exact: true,
+      name: "Delete",
+    });
 
     await table.locateCell(2, 1).click();
     await deleteButton.click();
