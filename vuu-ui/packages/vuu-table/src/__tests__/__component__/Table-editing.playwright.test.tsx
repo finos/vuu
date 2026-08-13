@@ -176,6 +176,43 @@ test.describe("Test table editing", () => {
     await expect(id).toBeFocused();
   });
 
+  test("inserts after a previously omitted value is committed", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<TestTableEmpty />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const id = inlineAddRow.getByRole("textbox", { name: "id", exact: true });
+    const description = inlineAddRow.getByRole("textbox", {
+      name: "description",
+    });
+    const quantity = inlineAddRow.getByRole("textbox", { name: "quantity" });
+    const price = inlineAddRow.getByRole("textbox", { name: "price" });
+    const externalId = inlineAddRow.getByRole("textbox", {
+      name: "externalId",
+    });
+
+    await description.fill("Foxtrot");
+    await description.press("Enter");
+    await quantity.fill("72");
+    await quantity.press("Enter");
+    await price.fill("607.5");
+    await price.press("Enter");
+    await externalId.fill("1006");
+    await externalId.press("Enter");
+    await expect(id).toBeFocused();
+
+    await id.fill("TEST-006");
+    await id.press("Enter");
+
+    await expect(id).toHaveValue("");
+    await expect(
+      page.getByRole("textbox", { name: "id", exact: true }).nth(1),
+    ).toHaveValue("TEST-006");
+  });
+
   test("rejects alphabetic input in an existing numeric cell", async ({
     mount,
     page,

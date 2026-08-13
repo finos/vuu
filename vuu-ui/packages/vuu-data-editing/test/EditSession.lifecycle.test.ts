@@ -119,12 +119,14 @@ describe("EditSession lifecycle", () => {
     );
     editSession.configureNewRow(["id", "name"]);
     editSession.setNewRowValue("id", 7);
+    expect(editSession.isNewRowComplete()).toBe(false);
 
     await expect(editSession.addNewRow()).resolves.toEqual(SUCCESS);
     expect(editSession.newRowState.errors).toEqual({ name: "Value required" });
     expect(addRow).not.toHaveBeenCalled();
 
     editSession.setNewRowValue("name", "Alice");
+    expect(editSession.isNewRowComplete()).toBe(true);
     await expect(editSession.addNewRow()).resolves.toEqual(SUCCESS);
     expect(addRow).toHaveBeenCalledWith({ id: 7, name: "Alice" });
     expect(editSession.newRowState).toMatchObject({

@@ -176,6 +176,14 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     return this.#newRowState.columns.at(-1) === columnName;
   }
 
+  isNewRowComplete() {
+    return this.#newRowState.columns.every((column) => {
+      const value = this.#newRowState.values[column];
+      return value !== undefined &&
+        (typeof value !== "string" || value.trim() !== "");
+    });
+  }
+
   configureNewRow(columns: readonly string[]) {
     if (
       columns.length === this.#newRowState.columns.length &&

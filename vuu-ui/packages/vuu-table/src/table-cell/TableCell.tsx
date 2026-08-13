@@ -64,7 +64,10 @@ export const TableCell = ({
           if (!isValid && !isEmptyValue) {
             return { errorMessage: "Invalid value", type: "ERROR_RESULT" };
           }
-          if (editSession.isNewRowFinalColumn(name)) {
+          if (
+            editSession.isNewRowFinalColumn(name) ||
+            editSession.isNewRowComplete()
+          ) {
             return editSession.addNewRow();
           }
           return { data: undefined, type: "SUCCESS_RESULT" };
