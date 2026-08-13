@@ -16,7 +16,7 @@ import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { BulkEditPanel, InputCell, Table } from "@vuu-ui/vuu-table";
 import {
   CsvUpload,
-  type CsvUploadImportedResult,
+  type CsvUploadPreviewResult,
   DataSourceStats,
   InlineAddRow,
   TableFooter,
@@ -24,8 +24,12 @@ import {
 } from "@vuu-ui/vuu-table-extras";
 import {
   DataEditingProvider,
+  EDIT_ACTION_ROW_CLASS_NAME_GENERATOR,
   EditButtons,
+  type EditLifecycle,
   type EditMode,
+  type EditSession,
+  type EditState,
   UNDO_CELL_RENDERER,
   useEditableTable,
 } from "@vuu-ui/vuu-data-editing";
@@ -47,7 +51,6 @@ import {
 } from "@vuu-ui/vuu-ui-controls";
 import {
   DataSourceProvider,
-  isRpcError,
   registerComponent,
   toColumnName,
   useData,
@@ -60,7 +63,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { SimulTable } from "./SimulTableTemplate";
@@ -109,6 +111,10 @@ const editToolbarStyle = {
   gap: 12,
   padding: "0 var(--salt-spacing-100)",
 };
+
+const editActionRowClassNameGenerators = [
+  EDIT_ACTION_ROW_CLASS_NAME_GENERATOR,
+];
 
 const EditTableTemplate = ({
   editableType,
@@ -595,18 +601,19 @@ const EditableTestTableTemplate = ({
     [editMode, rowClassNameGenerators, tableSchema.columns],
   );
 
-  const showImportedRows = useCallback(
-    ({ tableData }: CsvUploadImportedResult) => {
-      const cancelRef: UploadedRowsEditorCancelRef = {};
+  const showUploadPreview = useCallback(
+    ({ dataSource, editSession }: CsvUploadPreviewResult) => {
+      const cancelRef: DataUploadPreviewCancelRef = {};
       showPrompt(
-        <UploadedRowsEditor
+        <DataUploadPreview
           cancelRef={cancelRef}
+          dataSource={dataSource}
+          editSession={editSession}
           onClose={closePrompt}
-          sourceDataSource={sourceTableDataSource}
-          tableData={tableData}
           tableSchema={tableSchema}
         />,
         {
+          disableDismiss: true,
           onOpenChange: (open) => {
             if (!open) {
               void cancelRef.current?.();
@@ -619,26 +626,31 @@ const EditableTestTableTemplate = ({
         },
       );
     },
-    [closePrompt, showPrompt, sourceTableDataSource, tableSchema],
+    [closePrompt, showPrompt, tableSchema],
   );
 
-  const showCsvUpload = useCallback(() => {
-    showPrompt(
-      <CsvUpload
-        dataSource={sourceTableDataSource}
-        embedded
-        onCancel={closePrompt}
-        onImported={showImportedRows}
-        sessionMode="external"
-      />,
-      {
-        showCancelButton: false,
-        showCloseButton: false,
-        showConfirmButton: false,
-        title: "Upload Data",
-      },
-    );
-  }, [closePrompt, showImportedRows, showPrompt, sourceTableDataSource]);
+  const showCsvUpload = useCallback(
+    (importMode: "direct" | "preview") => {
+      showPrompt(
+        <CsvUpload
+          dataSource={sourceTableDataSource}
+          embedded
+          importMode={importMode}
+          onCancel={closePrompt}
+          onClose={importMode === "direct" ? closePrompt : undefined}
+          onPreview={showUploadPreview}
+        />,
+        {
+          disableDismiss: true,
+          showCancelButton: false,
+          showCloseButton: false,
+          showConfirmButton: false,
+          title: "Upload Data",
+        },
+      );
+    },
+    [closePrompt, showPrompt, showUploadPreview, sourceTableDataSource],
+  );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: 320 }}>
@@ -647,7 +659,16 @@ const EditableTestTableTemplate = ({
           <ToggleButton value="view">View</ToggleButton>
           <ToggleButton value="edit">Edit</ToggleButton>
         </ToggleButtonGroup>
-        {allowUpload ? <Button onClick={showCsvUpload}>Upload Data</Button> : null}
+        {allowUpload ? (
+          <Button onClick={() => showCsvUpload("direct")}>
+            Upload (direct)
+          </Button>
+        ) : null}
+        {allowUpload ? (
+          <Button onClick={() => showCsvUpload("preview")}>
+            Upload (preview)
+          </Button>
+        ) : null}
       </Toolbar>
       <div style={{ flex: "1 1 auto" }}>
         <DataEditingProvider editSession={editSession}>
@@ -684,47 +705,54 @@ const EditableTestTableTemplate = ({
   );
 };
 
-type UploadedRowsEditorProps = {
-  cancelRef: UploadedRowsEditorCancelRef;
+type DataUploadPreviewProps = {
+  cancelRef: DataUploadPreviewCancelRef;
+  dataSource: DataSource;
+  editSession: EditSession;
   onClose: () => void;
-  sourceDataSource: DataSource;
-  tableData: CsvUploadImportedResult["tableData"];
   tableSchema: ReturnType<typeof getSchema>;
 };
 
-type UploadedRowsEditorCancelRef = {
+type DataUploadPreviewCancelRef = {
   current?: () => Promise<void>;
 };
 
-const UploadedRowsEditor = ({
+const DataUploadPreview = ({
   cancelRef,
+  dataSource,
+  editSession,
   onClose,
-  sourceDataSource,
-  tableData,
   tableSchema,
-}: UploadedRowsEditorProps) => {
-  const importedRef = useRef(false);
-  const [importError, setImportError] = useState<string>();
-  const [isImportingRows, setIsImportingRows] = useState(true);
-  const {
-    canCancel,
-    canSave,
-    dataSource,
-    editSession,
-    hasSelection,
-    onCancel,
-    onDelete,
-    onSave,
-    rowClassNameGenerators,
-    sessionDataSource,
-  } = useEditableTable({
-    copyOption: "Empty",
-    dataSource: sourceDataSource,
-    deleteMode: "soft",
-    isEditMode: true,
-    onCancel: onClose,
-    onSave: onClose,
-  });
+}: DataUploadPreviewProps) => {
+  const [editState, setEditState] = useState<EditState>(editSession.editState);
+  const [lifecycle, setLifecycle] = useState<EditLifecycle>(
+    editSession.lifecycle,
+  );
+  const [selectionCount, setSelectionCount] = useState(0);
+  const [sessionError, setSessionError] = useState<string>();
+
+  const endSession = useCallback(
+    async (save: boolean, force = false) => {
+      try {
+        await editSession.end(save, force);
+        onClose();
+      } catch (error) {
+        setSessionError(
+          error instanceof Error ? error.message : "Unable to end edit session",
+        );
+      }
+    },
+    [editSession, onClose],
+  );
+  const onCancel = useCallback(() => endSession(false), [endSession]);
+  const onDelete = useCallback(
+    () => editSession.deleteSelectedRows(),
+    [editSession],
+  );
+  const onSave = useCallback(
+    (force = false) => endSession(true, force),
+    [endSession],
+  );
 
   useEffect(() => {
     cancelRef.current = onCancel;
@@ -736,36 +764,21 @@ const UploadedRowsEditor = ({
   }, [cancelRef, onCancel]);
 
   useEffect(() => {
-    if (sessionDataSource === undefined || importedRef.current) {
-      return;
-    }
-    importedRef.current = true;
-
-    const addImportedRows = async () => {
-      try {
-        for (const row of tableData.rows) {
-          const rowData = Object.fromEntries(
-            tableData.columns.map((column, index) => [
-              column,
-              row[index] ?? "",
-            ]),
-          );
-          const result = await editSession.addRow(rowData);
-          if (isRpcError(result)) {
-            throw Error(result.errorMessage);
-          }
-        }
-      } catch (error) {
-        setImportError(
-          error instanceof Error ? error.message : "Unable to add uploaded rows",
-        );
-      } finally {
-        setIsImportingRows(false);
-      }
+    const handleEditState = (nextEditState: EditState) => {
+      setEditState(nextEditState);
     };
-
-    void addImportedRows();
-  }, [editSession, sessionDataSource, tableData]);
+    const handleLifecycle = (nextLifecycle: EditLifecycle) => {
+      setLifecycle(nextLifecycle);
+    };
+    editSession.on("editState", handleEditState);
+    editSession.on("lifecycle", handleLifecycle);
+    dataSource.on("row-selection", setSelectionCount);
+    return () => {
+      editSession.removeListener("editState", handleEditState);
+      editSession.removeListener("lifecycle", handleLifecycle);
+      dataSource.removeListener("row-selection", setSelectionCount);
+    };
+  }, [dataSource, editSession]);
 
   const isRowSelectable = useCallback(
     (dataRow: DataRow) => dataRow.vuu_action !== "deleteRow",
@@ -780,23 +793,29 @@ const UploadedRowsEditor = ({
         }))
         .concat({ hidden: true, name: "vuu_action" }, UNDO_DELETE_COLUMN),
       columnDefaultWidth: 150,
-      rowClassNameGenerators,
+      rowClassNameGenerators: editActionRowClassNameGenerators,
       rowSeparators: true,
       zebraStripes: true,
     }),
-    [rowClassNameGenerators, tableSchema.columns],
+    [tableSchema.columns],
   );
+  const canCancel =
+    lifecycle.status === "active" ||
+    (lifecycle.status === "error" && lifecycle.operation === "end");
+  const canSave =
+    canCancel &&
+    (editState === "dirty" || editState === "stale") &&
+    editSession.invalidCount === 0;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: 420, width: 900 }}>
-      {importError ? <div role="alert">{importError}</div> : null}
+      {sessionError ? <div role="alert">{sessionError}</div> : null}
       <div style={{ flex: "1 1 auto" }}>
         <DataEditingProvider editSession={editSession}>
           <Table
             config={config}
             data-viewport={dataSource.viewport}
             dataSource={dataSource}
-            customHeader={InlineAddRow}
             isRowSelectable={isRowSelectable}
             renderBufferSize={10}
             selectionModel="checkbox"
@@ -806,10 +825,10 @@ const UploadedRowsEditor = ({
       <TableFooter>
         <TableFooterTray position="center">
           <EditButtons
-            canCancel={canCancel && !isImportingRows}
-            canSave={canSave && !isImportingRows && importError === undefined}
+            canCancel={canCancel}
+            canSave={canSave}
             editSession={editSession}
-            hasSelection={hasSelection}
+            hasSelection={selectionCount > 0}
             onCancel={onCancel}
             onDelete={onDelete}
             onSave={onSave}

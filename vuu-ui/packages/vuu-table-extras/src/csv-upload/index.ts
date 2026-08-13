@@ -6,6 +6,7 @@ export {
   type CsvUploadErrors,
   type CsvUploadPhase,
   type CsvUploadImportedResult,
+  type CsvUploadPreviewResult,
   type CsvUploadSessionEndReason,
   type CsvUploadSessionEndResult,
   type CsvUploadSessionTable,
