@@ -23,9 +23,10 @@
         "useAsConstAssertion": "error",
         "useDefaultParameterLast": "error",
         "useEnumInitializers": "error",
+        "useImportType": "warn",
         "useSelfClosingElements": "error",
         "useSingleVarDeclarator": "error",
-        "noUnusedTemplateLiteral": "error",
+        "noUnusedTemplateLiteral": "warn",
         "noInferrableTypes": "error",
         "noUselessElse": "off"
       },
