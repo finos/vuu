@@ -1,17 +1,12 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { useEditSession } from "@vuu-ui/vuu-data-editing";
+import { useCellEdited, useEditSession } from "@vuu-ui/vuu-data-editing";
 import type {
   TableCellEditHandler,
   TableCellProps,
 } from "@vuu-ui/vuu-table-types";
 import { isDataValueEditable } from "@vuu-ui/vuu-utils";
-import {
-  type MouseEventHandler,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { type MouseEventHandler, useCallback } from "react";
 import { applyHighlighting } from "../applyHighlighting";
 import { useCell } from "../useCell";
 
@@ -37,21 +32,11 @@ export const TableCell = ({
 
   const { className, style } = useCell(column, classBase, false);
   const { ariaColIndex, CellRenderer, name, valueFormatter } = column;
-  const [editedDuringCurrentSession, setEditingDuringCurrentSession] = useState<
-    boolean | undefined
-  >(undefined);
-
-  useEffect(() => {
-    const handleRowChangeUndone = (key: string) => {
-      if (key === dataRow.key) {
-        setEditingDuringCurrentSession(false);
-      }
-    };
-    editSession?.on("rowChangeUndone", handleRowChangeUndone);
-    return () => {
-      editSession?.removeListener("rowChangeUndone", handleRowChangeUndone);
-    };
-  }, [dataRow.key, editSession]);
+  const editedDuringCurrentSession = useCellEdited(
+    editSession,
+    dataRow.key,
+    name,
+  );
 
   const handleDataItemEdited = useCallback<TableCellEditHandler>(
     async (editState, editPhase) => {
@@ -90,16 +75,13 @@ export const TableCell = ({
           return { data: undefined, type: "SUCCESS_RESULT" };
         }
 
-        const { editedDuringCurrentSession, ...response } =
-          await editSession.commit(
-            dataRow.key,
-            name,
-            previousValue,
-            value,
-            isValid,
-          );
-        setEditingDuringCurrentSession(editedDuringCurrentSession);
-        return response;
+        return editSession.commit(
+          dataRow.key,
+          name,
+          previousValue,
+          value,
+          isValid,
+        );
       }
     },
     [column, dataRow, editSession, name, onDataEdited],

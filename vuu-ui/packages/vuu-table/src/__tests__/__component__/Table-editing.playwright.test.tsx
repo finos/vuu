@@ -868,6 +868,44 @@ test.describe("Inline row editing (session)", () => {
     await expect(submitButton).toBeEnabled();
   });
 
+  test("edited markers survive virtualization without leaking to recycled rows", async ({
+    mount,
+    page,
+  }) => {
+    test.slow();
+    await mount(<EditableInstrumentsInlineEdit />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const tableLocator = page.getByRole("table");
+    const table = new TableOM(tableLocator);
+    const editedCell = table.locateCell(2, 2);
+    await editedCell.dblclick();
+    await editedCell.pressSequentially("X");
+    await editedCell.press("Enter");
+    await expect(editedCell.locator(".vuuTableInputCell-edited")).toHaveCount(
+      1,
+    );
+
+    const contentContainer = page.locator(".vuuTable-contentContainer");
+    await contentContainer.evaluate((element) => {
+      element.scrollTop = 2_000;
+      element.dispatchEvent(new Event("scroll"));
+    });
+    await expect(table.row(2)).toHaveCount(0);
+    await expect(tableLocator.locator(".vuuTableInputCell-edited")).toHaveCount(
+      0,
+    );
+
+    await contentContainer.evaluate((element) => {
+      element.scrollTop = 0;
+      element.dispatchEvent(new Event("scroll"));
+    });
+    await expect(table.row(2)).toBeVisible();
+    await expect(
+      table.locateCell(2, 2).locator(".vuuTableInputCell-edited"),
+    ).toHaveCount(1);
+  });
+
   test("soft-deleting a selected row marks it and shows the undo button", async ({
     browserName,
     mount,

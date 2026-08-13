@@ -27,7 +27,9 @@ export const EditButtons = ({
   onSave,
   saveLabel = "Save",
 }: EditButtonProps) => {
-  const [editState, setEditState] = useState<EditState>("clean");
+  const [editState, setEditState] = useState<EditState>(
+    () => editSession?.editState ?? "clean",
+  );
 
   const handleSave = useCallback(async () => {
     if (confirmSave) {
@@ -47,6 +49,7 @@ export const EditButtons = ({
 
   useEffect(() => {
     if (editSession) {
+      setEditState(editSession.editState);
       editSession.on("editState", setEditState);
       return () => editSession.removeListener("editState", setEditState);
     }

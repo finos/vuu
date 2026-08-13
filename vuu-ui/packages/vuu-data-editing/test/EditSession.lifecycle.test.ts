@@ -241,6 +241,55 @@ describe("EditSession lifecycle", () => {
     await editSession.begin();
     await expect(editSession.end()).rejects.toBe(staleUpdateError);
     expect(editStateListener).toHaveBeenCalledWith("stale");
+    expect(editSession.editState).toBe("stale");
+  });
+
+  it("keeps stale authoritative until a successful retry ends the session", async () => {
+    const staleUpdateError = new StaleUpdateError("stale update");
+    endEdit = vi
+      .fn()
+      .mockRejectedValueOnce(staleUpdateError)
+      .mockResolvedValueOnce(undefined);
+    let dataSource: MockDataSource;
+    createSession = vi.fn(
+      async () => dataSource as unknown as DataSource,
+    ) as CreateSession;
+    dataSource = new MockDataSource(endEdit, createSession);
+    editSession = new EditSession(dataSource);
+
+    await editSession.begin();
+    await editSession.commit("row-1", "price", 100, 101, true);
+    await expect(editSession.end(true)).rejects.toBe(staleUpdateError);
+    expect(editSession.editState).toBe("stale");
+
+    await editSession.end(true, true);
+    expect(editSession.editState).toBe("clean");
+
+    await editSession.begin();
+    expect(editSession.editState).toBe("clean");
+  });
+
+  it("prioritizes validation over stale and restores stale after correction", async () => {
+    const staleUpdateError = new StaleUpdateError("stale update");
+    endEdit = vi.fn().mockRejectedValue(staleUpdateError);
+    let dataSource: MockDataSource;
+    createSession = vi.fn(
+      async () => dataSource as unknown as DataSource,
+    ) as CreateSession;
+    dataSource = new MockDataSource(endEdit, createSession);
+    editSession = new EditSession(dataSource);
+
+    await editSession.begin();
+    await editSession.commit("row-1", "price", 100, 101, true);
+    await expect(editSession.end(true)).rejects.toBe(staleUpdateError);
+    await editSession.commit("row-1", "price", 100, "invalid", false);
+
+    expect(editSession.editState).toBe("invalid");
+    expect(editSession.invalidCount).toBe(1);
+
+    await editSession.commit("row-1", "price", 100, 102, true);
+    expect(editSession.editState).toBe("stale");
+    expect(editSession.invalidCount).toBe(0);
   });
 
   it("runs edits and end operations on the created session datasource", async () => {
@@ -390,6 +439,125 @@ describe("EditSession lifecycle", () => {
       editSession.invalidCount,
       editSession.editState,
     ]).toEqual([0, 0, "clean"]);
+  });
+
+  it("ignores superseded commit responses and keeps the newest cell state", async () => {
+    const first = deferred<RpcResultError>();
+    const second = deferred<RpcResultSuccess>();
+    editCell = vi
+      .fn<EditCell>()
+      .mockReturnValueOnce(first.promise)
+      .mockReturnValueOnce(second.promise);
+    let dataSource: MockDataSource;
+    createSession = vi.fn(
+      async () => dataSource as unknown as DataSource,
+    ) as CreateSession;
+    dataSource = new MockDataSource(endEdit, createSession, editCell);
+    editSession = new EditSession(dataSource);
+    await editSession.begin();
+
+    const firstCommit = editSession.commit("row-1", "price", 100, 101, true);
+    const secondCommit = editSession.commit("row-1", "price", 101, 102, true);
+
+    second.resolve(SUCCESS);
+    await secondCommit;
+    first.resolve(ERROR);
+    await expect(firstCommit).rejects.toThrow(
+      "Edit response superseded for row-1:price",
+    );
+
+    expect(editSession.isCellEdited("row-1", "price")).toBe(true);
+    expect([
+      editSession.editCount,
+      editSession.invalidCount,
+      editSession.editState,
+    ]).toEqual([1, 0, "dirty"]);
+  });
+
+  it("keeps concurrent cell responses attached to current row state", async () => {
+    const firstRevert = deferred<RpcResultSuccess>();
+    const secondRevert = deferred<RpcResultError>();
+    editCell = vi
+      .fn<EditCell>()
+      .mockResolvedValueOnce(SUCCESS)
+      .mockResolvedValueOnce(SUCCESS)
+      .mockReturnValueOnce(firstRevert.promise)
+      .mockReturnValueOnce(secondRevert.promise);
+    let dataSource: MockDataSource;
+    createSession = vi.fn(
+      async () => dataSource as unknown as DataSource,
+    ) as CreateSession;
+    dataSource = new MockDataSource(endEdit, createSession, editCell);
+    editSession = new EditSession(dataSource);
+    await editSession.begin();
+    await editSession.commit("row-1", "price", 100, 101, true);
+    await editSession.commit("row-1", "size", 10, 11, true);
+
+    const firstCommit = editSession.commit("row-1", "price", 101, 100, true);
+    const secondCommit = editSession.commit("row-1", "size", 11, 10, true);
+    firstRevert.resolve(SUCCESS);
+    await firstCommit;
+    secondRevert.resolve(ERROR);
+    await secondCommit;
+
+    expect([
+      editSession.editCount,
+      editSession.invalidCount,
+      editSession.editState,
+    ]).toEqual([0, 1, "invalid"]);
+  });
+
+  it("undoes only edits that existed when the undo request began", async () => {
+    const pendingUndo = deferred<RpcResultSuccess>();
+    let dataSource: EditApi;
+    dataSource = {
+      createSessionDataSource: vi.fn(
+        async () => dataSource as unknown as DataSource,
+      ),
+      editCell: vi.fn().mockResolvedValue(SUCCESS),
+      endEditSession: vi.fn(),
+      undoRowChange: vi.fn().mockReturnValue(pendingUndo.promise),
+    };
+    editSession = new EditSession(dataSource);
+    await editSession.begin();
+    await editSession.commit("row-1", "price", 100, 101, true);
+
+    const undo = editSession.undoRowChange("row-1");
+    await editSession.commit("row-1", "size", 10, 11, true);
+    pendingUndo.resolve(SUCCESS);
+    await undo;
+
+    expect(editSession.isCellEdited("row-1", "price")).toBe(false);
+    expect(editSession.isCellEdited("row-1", "size")).toBe(true);
+    expect([editSession.editCount, editSession.invalidCount]).toEqual([1, 0]);
+  });
+
+  it("does not let an older undo clear a newer row deletion", async () => {
+    const pendingUndo = deferred<RpcResultSuccess>();
+    const deleteSelectedRows = vi.fn().mockResolvedValue({
+      data: { deletedKeys: ["row-1"] },
+      type: "SUCCESS_RESULT",
+    });
+    let dataSource: EditApi;
+    dataSource = {
+      createSessionDataSource: vi.fn(
+        async () => dataSource as unknown as DataSource,
+      ),
+      deleteSelectedRows,
+      endEditSession: vi.fn(),
+      undoRowChange: vi.fn().mockReturnValue(pendingUndo.promise),
+    };
+    editSession = new EditSession(dataSource);
+    await editSession.begin();
+    await editSession.deleteSelectedRows();
+
+    const undo = editSession.undoRowChange("row-1");
+    await editSession.deleteSelectedRows();
+    pendingUndo.resolve(SUCCESS);
+    await undo;
+
+    expect(editSession.hasRowChanges("row-1")).toBe(true);
+    expect(editSession.deleteCount).toBe(1);
   });
 
   it("notifies delete count boundaries while cell edits keep the session dirty", async () => {
