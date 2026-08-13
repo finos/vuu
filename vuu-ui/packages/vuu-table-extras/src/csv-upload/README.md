@@ -30,6 +30,8 @@ import { CsvUpload } from "@vuu-ui/vuu-table-extras";
 | Prop | Type | Description |
 |---|---|---|
 | `dataSource` | `DataSource` | **Required.** The Vuu data source for the target table. Must support `createSessionDataSource`, `endEditSession`, and `rpcRequest`. |
+| `embedded` | `boolean` | Renders the upload content and actions without its own `Dialog`, for use inside an existing modal. Defaults to `false`. |
+| `sessionMode` | `"managed" \| "external"` | In `"managed"` mode, CSV upload creates and commits its own edit session. In `"external"` mode, it only validates and returns data through `onImported`. Defaults to `"managed"`. |
 | `maxRows` | `number` | Maximum number of data rows permitted in the CSV. Defaults to `25000`. |
 | `open` | `boolean` | Controls dialog open state. When provided the component is fully controlled; when omitted it manages open state internally. |
 | `dialogTitle` | `string` | Dialog header text. Defaults to `"Import CSV"`. |

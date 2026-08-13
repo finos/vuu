@@ -6,6 +6,7 @@ import {
   EditableInstrumentsInlineEdit,
   EditableInstrumentsWithInlineAddRow,
   TestTableEmpty,
+  TestTableEmptyWithUpload,
   TestTableFIveRows,
   TwoEditableInstruments,
 } from "../../../../../showcase/src/examples/Table/Editing.examples";
@@ -103,6 +104,43 @@ test.describe("Inline add row", () => {
 });
 
 test.describe("Test table editing", () => {
+  test("uploads CSV rows into an editable session", async ({ mount, page }) => {
+    await mount(<TestTableEmptyWithUpload />);
+
+    await page.getByRole("button", { name: "Upload Data" }).click();
+    await expect(
+      page.getByRole("heading", { name: "Upload Data" }),
+    ).toBeVisible();
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "test-edit.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(
+        "id,description,quantity,price,enabled,externalId\nCSV-001,Uploaded row,10,12.5,true,1001\n",
+      ),
+    });
+    await page.getByRole("button", { name: "Import", exact: true }).click();
+
+    await expect(
+      page.getByRole("heading", { name: "Edit uploaded data" }),
+    ).toBeVisible();
+    await expect(page.locator('input[value="CSV-001"]')).toBeVisible();
+
+    const submitButton = page.getByRole("button", {
+      name: "Submit",
+      exact: true,
+    });
+    await expect(submitButton).toBeEnabled();
+    await submitButton.click();
+
+    await expect(
+      page.getByRole("heading", { name: "Edit uploaded data" }),
+    ).not.toBeVisible();
+    await expect(page.locator(".vuuDatasourceStats-value").last()).toHaveText(
+      "1",
+    );
+  });
+
   test("inserts a row with an unchecked boolean without validation warnings", async ({
     mount,
     page,
@@ -920,7 +958,6 @@ test.describe("Inline row editing (session)", () => {
     await expect(page.getByRole("button", { name: "Submit" })).toBeDisabled();
   });
 
-
   test("Cancel discards all changes and returns to view mode", async ({
     mount,
     page,
@@ -1106,7 +1143,6 @@ test.describe("Session table editing (createSessionTable)", () => {
     await deleteButton.click();
     await expect(deleteButton).not.toBeEnabled();
   });
-
 
   test("block selection spanning a soft-deleted row selects only the selectable rows", async ({
     mount,

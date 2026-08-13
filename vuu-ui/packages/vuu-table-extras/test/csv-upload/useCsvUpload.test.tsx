@@ -264,6 +264,44 @@ describe("useCsvUpload", () => {
     expect(endedResult.reason).toBe("saved");
   });
 
+  it("returns validated data without creating a session in external session mode", async () => {
+    let latestResult: UseCsvUploadReturn | undefined;
+    const onImported = vi.fn();
+    const dataSource = makeDataSource();
+
+    await act(async () => {
+      root.render(
+        <Probe
+          props={{ dataSource, onImported, sessionMode: "external" }}
+          onResult={(r) => {
+            latestResult = r;
+          }}
+        />,
+      );
+      await tick();
+    });
+
+    await dropFile(latestResult, '"id","label","count"\n"a1","foo","10"');
+
+    expect(latestResult?.canImport).toBe(true);
+    expect(dataSource.createSessionDataSource).not.toHaveBeenCalled();
+    expect(dataSource.rpcRequest).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await latestResult?.importData();
+      await tick();
+    });
+
+    expect(dataSource.endEditSession).not.toHaveBeenCalled();
+    expect(onImported).toHaveBeenCalledWith({
+      rpcResult: undefined,
+      tableData: {
+        columns: ["id", "label", "count"],
+        rows: [["a1", "foo", 10]],
+      },
+    });
+  });
+
   it("discards the session and emits importError when endEditSession rejects", async () => {
     let latestResult: UseCsvUploadReturn | undefined;
     const onError = vi.fn();
@@ -634,4 +672,3 @@ describe("useCsvUpload", () => {
     expect(onError.mock.calls.at(-1)?.[0]?.errors.validationError).toBeDefined();
   });
 });
-

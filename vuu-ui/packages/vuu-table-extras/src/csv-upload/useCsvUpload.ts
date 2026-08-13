@@ -29,6 +29,7 @@ import type {
 
 export interface CsvUploadHookProps {
   dataSource: DataSource;
+  sessionMode?: "managed" | "external";
   maxRows?: number;
   onImportSessionEnded?: (result: CsvUploadSessionEndResult) => void;
   onImportSessionStarted?: (dataSource: DataSource) => void;
@@ -55,6 +56,7 @@ export type UseCsvUploadReturn = {
 
 export const useCsvUpload = ({
   dataSource,
+  sessionMode = "managed",
   onImportSessionEnded,
   onImportSessionStarted,
   onError,
@@ -258,7 +260,7 @@ export const useCsvUpload = ({
 
       setValidation(mergedValidation);
 
-      if (mergedValidation.rows.length > 0) {
+      if (mergedValidation.rows.length > 0 && sessionMode === "managed") {
         await beginEditSession();
 
         try {
@@ -287,6 +289,7 @@ export const useCsvUpload = ({
       table,
       endEditSessionAndNotify,
       schema,
+      sessionMode,
     ],
   );
 
@@ -357,7 +360,10 @@ export const useCsvUpload = ({
     onError?.(undefined);
 
     try {
-      const rpcResult = await endEditSessionAndNotify(true, "saved");
+      const rpcResult =
+        sessionMode === "managed"
+          ? await endEditSessionAndNotify(true, "saved")
+          : undefined;
 
       const fallbackTableData = {
         columns: validation.columns,
@@ -381,7 +387,14 @@ export const useCsvUpload = ({
     } finally {
       setIsImporting(false);
     }
-  }, [canImport, endEditSessionAndNotify, onError, onImported, validation]);
+  }, [
+    canImport,
+    endEditSessionAndNotify,
+    onError,
+    onImported,
+    sessionMode,
+    validation,
+  ]);
 
   return {
     canImport,

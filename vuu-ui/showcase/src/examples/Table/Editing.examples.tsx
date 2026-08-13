@@ -15,6 +15,8 @@ import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { BulkEditPanel, InputCell, Table } from "@vuu-ui/vuu-table";
 import {
+  CsvUpload,
+  type CsvUploadImportedResult,
   DataSourceStats,
   InlineAddRow,
   TableFooter,
@@ -38,9 +40,14 @@ import {
   TableContextMenuOptions,
   TableMenuLocation,
 } from "@vuu-ui/vuu-table-types";
-import { ModalProvider, useModal } from "@vuu-ui/vuu-ui-controls";
+import {
+  ModalProvider,
+  Toolbar,
+  useModal,
+} from "@vuu-ui/vuu-ui-controls";
 import {
   DataSourceProvider,
+  isRpcError,
   registerComponent,
   toColumnName,
   useData,
@@ -51,7 +58,9 @@ import {
   ReactElement,
   SyntheticEvent,
   useCallback,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { SimulTable } from "./SimulTableTemplate";
@@ -91,6 +100,14 @@ const UNDO_DELETE_COLUMN: ColumnDescriptor = {
       name: UNDO_CELL_RENDERER,
     },
   }
+};
+
+const editToolbarStyle = {
+  alignItems: "center",
+  background: "var(--salt-container-secondary-background)",
+  flex: "0 0 32px",
+  gap: 12,
+  padding: "0 var(--salt-spacing-100)",
 };
 
 const EditTableTemplate = ({
@@ -259,16 +276,7 @@ const EditTableTemplate = ({
         height: 285,
       }}
     >
-      <div
-        style={{
-          alignItems: "center",
-          background: "var(--salt-container-secondary-background)",
-          display: "flex",
-          flex: "0 0 32px",
-          gap: 12,
-          padding: "0 var(--salt-spacing-100)",
-        }}
-      >
+      <Toolbar style={editToolbarStyle}>
         <ToggleButtonGroup onChange={onToggleEditMode} value={editMode}>
           <ToggleButton data-testid={`toggle-view${testId}`} value="view">
             View
@@ -297,7 +305,7 @@ const EditTableTemplate = ({
             />
           </DataSourceProvider>
         ) : null}
-      </div>
+      </Toolbar>
       <div style={{ flex: "1 1 auto" }}>
         <DataEditingProvider editSession={editSession}>
           <Table
@@ -440,21 +448,12 @@ const EditableInstrumentsTemplate = ({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: 320 }}>
-      <div
-        style={{
-          alignItems: "center",
-          background: "var(--salt-container-secondary-background)",
-          display: "flex",
-          flex: "0 0 32px",
-          gap: 12,
-          padding: "0 var(--salt-spacing-100)",
-        }}
-      >
+      <Toolbar style={editToolbarStyle}>
         <ToggleButtonGroup onChange={onToggleEditMode} value={editMode}>
           <ToggleButton value="view">View</ToggleButton>
           <ToggleButton value="edit">Edit</ToggleButton>
         </ToggleButtonGroup>
-      </div>
+      </Toolbar>
       <div style={{ flex: "1 1 auto" }}>
         <DataEditingProvider editSession={editSession}>
           <Table
@@ -520,11 +519,14 @@ export const InstrumentsAddEditDelete = () => (
 );
 
 const EditableTestTableTemplate = ({
+  allowUpload = false,
   tableName,
 }: {
+  allowUpload?: boolean;
   tableName: TestTableName;
 }) => {
   const [editMode, setEditMode] = useState<EditMode>("view");
+  const { closePrompt, showPrompt } = useModal();
   const { VuuDataSource } = useData();
   const tableSchema = getSchema(tableName);
   const columns = useMemo(
@@ -593,23 +595,60 @@ const EditableTestTableTemplate = ({
     [editMode, rowClassNameGenerators, tableSchema.columns],
   );
 
+  const showImportedRows = useCallback(
+    ({ tableData }: CsvUploadImportedResult) => {
+      const cancelRef: UploadedRowsEditorCancelRef = {};
+      showPrompt(
+        <UploadedRowsEditor
+          cancelRef={cancelRef}
+          onClose={closePrompt}
+          sourceDataSource={sourceTableDataSource}
+          tableData={tableData}
+          tableSchema={tableSchema}
+        />,
+        {
+          onOpenChange: (open) => {
+            if (!open) {
+              void cancelRef.current?.();
+            }
+          },
+          showCancelButton: false,
+          showCloseButton: false,
+          showConfirmButton: false,
+          title: "Edit uploaded data",
+        },
+      );
+    },
+    [closePrompt, showPrompt, sourceTableDataSource, tableSchema],
+  );
+
+  const showCsvUpload = useCallback(() => {
+    showPrompt(
+      <CsvUpload
+        dataSource={sourceTableDataSource}
+        embedded
+        onCancel={closePrompt}
+        onImported={showImportedRows}
+        sessionMode="external"
+      />,
+      {
+        showCancelButton: false,
+        showCloseButton: false,
+        showConfirmButton: false,
+        title: "Upload Data",
+      },
+    );
+  }, [closePrompt, showImportedRows, showPrompt, sourceTableDataSource]);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: 320 }}>
-      <div
-        style={{
-          alignItems: "center",
-          background: "var(--salt-container-secondary-background)",
-          display: "flex",
-          flex: "0 0 32px",
-          gap: 12,
-          padding: "0 var(--salt-spacing-100)",
-        }}
-      >
+      <Toolbar style={editToolbarStyle}>
         <ToggleButtonGroup onChange={onToggleEditMode} value={editMode}>
           <ToggleButton value="view">View</ToggleButton>
           <ToggleButton value="edit">Edit</ToggleButton>
         </ToggleButtonGroup>
-      </div>
+        {allowUpload ? <Button onClick={showCsvUpload}>Upload Data</Button> : null}
+      </Toolbar>
       <div style={{ flex: "1 1 auto" }}>
         <DataEditingProvider editSession={editSession}>
           <Table
@@ -645,11 +684,159 @@ const EditableTestTableTemplate = ({
   );
 };
 
+type UploadedRowsEditorProps = {
+  cancelRef: UploadedRowsEditorCancelRef;
+  onClose: () => void;
+  sourceDataSource: DataSource;
+  tableData: CsvUploadImportedResult["tableData"];
+  tableSchema: ReturnType<typeof getSchema>;
+};
+
+type UploadedRowsEditorCancelRef = {
+  current?: () => Promise<void>;
+};
+
+const UploadedRowsEditor = ({
+  cancelRef,
+  onClose,
+  sourceDataSource,
+  tableData,
+  tableSchema,
+}: UploadedRowsEditorProps) => {
+  const importedRef = useRef(false);
+  const [importError, setImportError] = useState<string>();
+  const [isImportingRows, setIsImportingRows] = useState(true);
+  const {
+    canCancel,
+    canSave,
+    dataSource,
+    editSession,
+    hasSelection,
+    onCancel,
+    onDelete,
+    onSave,
+    rowClassNameGenerators,
+    sessionDataSource,
+  } = useEditableTable({
+    copyOption: "Empty",
+    dataSource: sourceDataSource,
+    deleteMode: "soft",
+    isEditMode: true,
+    onCancel: onClose,
+    onSave: onClose,
+  });
+
+  useEffect(() => {
+    cancelRef.current = onCancel;
+    return () => {
+      if (cancelRef.current === onCancel) {
+        cancelRef.current = undefined;
+      }
+    };
+  }, [cancelRef, onCancel]);
+
+  useEffect(() => {
+    if (sessionDataSource === undefined || importedRef.current) {
+      return;
+    }
+    importedRef.current = true;
+
+    const addImportedRows = async () => {
+      try {
+        for (const row of tableData.rows) {
+          const rowData = Object.fromEntries(
+            tableData.columns.map((column, index) => [
+              column,
+              row[index] ?? "",
+            ]),
+          );
+          const result = await editSession.addRow(rowData);
+          if (isRpcError(result)) {
+            throw Error(result.errorMessage);
+          }
+        }
+      } catch (error) {
+        setImportError(
+          error instanceof Error ? error.message : "Unable to add uploaded rows",
+        );
+      } finally {
+        setIsImportingRows(false);
+      }
+    };
+
+    void addImportedRows();
+  }, [editSession, sessionDataSource, tableData]);
+
+  const isRowSelectable = useCallback(
+    (dataRow: DataRow) => dataRow.vuu_action !== "deleteRow",
+    [],
+  );
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns: tableSchema.columns
+        .map<ColumnDescriptor>((column) => ({
+          ...column,
+          editable: true,
+        }))
+        .concat({ hidden: true, name: "vuu_action" }, UNDO_DELETE_COLUMN),
+      columnDefaultWidth: 150,
+      rowClassNameGenerators,
+      rowSeparators: true,
+      zebraStripes: true,
+    }),
+    [rowClassNameGenerators, tableSchema.columns],
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: 420, width: 900 }}>
+      {importError ? <div role="alert">{importError}</div> : null}
+      <div style={{ flex: "1 1 auto" }}>
+        <DataEditingProvider editSession={editSession}>
+          <Table
+            config={config}
+            data-viewport={dataSource.viewport}
+            dataSource={dataSource}
+            customHeader={InlineAddRow}
+            isRowSelectable={isRowSelectable}
+            renderBufferSize={10}
+            selectionModel="checkbox"
+          />
+        </DataEditingProvider>
+      </div>
+      <TableFooter>
+        <TableFooterTray position="center">
+          <EditButtons
+            canCancel={canCancel && !isImportingRows}
+            canSave={canSave && !isImportingRows && importError === undefined}
+            editSession={editSession}
+            hasSelection={hasSelection}
+            onCancel={onCancel}
+            onDelete={onDelete}
+            onSave={onSave}
+            saveLabel="Submit"
+          />
+        </TableFooterTray>
+      </TableFooter>
+    </div>
+  );
+};
+
 /** tags=data-consumer */
 export const TestTableEmpty = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
       <EditableTestTableTemplate tableName="TestEditEmpty" />
+    </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
+/** tags=data-consumer */
+export const TestTableEmptyWithUpload = () => (
+  <LocalDataSourceProvider>
+    <NotificationsProvider>
+      <ModalProvider>
+        <EditableTestTableTemplate allowUpload tableName="TestEditEmpty" />
+      </ModalProvider>
     </NotificationsProvider>
   </LocalDataSourceProvider>
 );
