@@ -1,4 +1,4 @@
-import { Button, ToggleButton, ToggleButtonGroup, Tooltip } from "@salt-ds/core";
+import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import {
   ContextMenuItemDescriptor,
   ContextMenuProvider,
@@ -24,12 +24,11 @@ import {
   DataEditingProvider,
   EditButtons,
   type EditMode,
+  UNDO_CELL_RENDERER,
   useEditableTable,
-  useEditSession,
 } from "@vuu-ui/vuu-data-editing";
 import {
   ColumnDescriptor,
-  ColumnTypeRendering,
   DataRow,
   DataValueTypeDescriptor,
   TableCellEditHandler,
@@ -89,7 +88,7 @@ const UNDO_DELETE_COLUMN: ColumnDescriptor = {
   type: {
     name: "string",
     renderer: {
-      name: "example.undo-cell",
+      name: UNDO_CELL_RENDERER,
       componentProps: {
         sessionTableMessageColumn: "vuuMsg",
       },
@@ -734,41 +733,6 @@ const CustomCell = ({
 };
 
 registerComponent("example.color-coded-editor", CustomCell, "cell-renderer");
-
-const UndoCellRenderer = ({ column, dataRow }: TableCellRendererProps) => {
-  const editSession = useEditSession();
-  const renderer = (column.type as DataValueTypeDescriptor)
-    ?.renderer as ColumnTypeRendering;
-  const sessionTableMessageColumn =
-    (renderer?.componentProps?.sessionTableMessageColumn as string) ?? "vuuMsg";
-
-  const action = dataRow.vuu_action;
-  const tooltipContent =
-    action === "deleteRow"
-      ? "Undo delete row"
-      : action === "addRow"
-        ? "Undo insert row"
-        : action === "editCell" || editSession?.hasRowChanges(dataRow.key)
-          ? "Undo row edits"
-          : undefined;
-  const isRowChanged =
-    tooltipContent !== undefined ||
-    dataRow[sessionTableMessageColumn] === "SOFT_DELETED";
-
-  if (!isRowChanged) return null;
-  return (
-    <Tooltip content={tooltipContent ?? "Undo delete row"}>
-      <Button
-        appearance="transparent"
-        onClick={() => editSession?.undoRowChange(dataRow.key)}
-        style={{ height: "100%", width: "100%" }}
-      >
-        Undo
-      </Button>
-    </Tooltip>
-  );
-};
-registerComponent("example.undo-cell", UndoCellRenderer, "cell-renderer");
 
 export const EditableInstrumentsCustomCellRenderer = () => {
   const editableType = useMemo<DataValueTypeDescriptor>(
