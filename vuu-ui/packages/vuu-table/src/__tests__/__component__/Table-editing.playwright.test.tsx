@@ -103,7 +103,7 @@ test.describe("Inline add row", () => {
 });
 
 test.describe("Test table editing", () => {
-  test("inserts a valid row without leaving validation warnings in the inline add row", async ({
+  test("inserts a row with an unchecked boolean without validation warnings", async ({
     mount,
     page,
   }) => {
@@ -129,13 +129,13 @@ test.describe("Test table editing", () => {
     await quantity.press("Enter");
     await price.fill("607.5");
     await price.press("Enter");
-    await inlineAddRow.getByRole("checkbox").check();
     await externalId.fill("1006");
     await externalId.press("Enter");
 
     await expect(id).toBeFocused();
     await expect(id).toHaveValue("");
     await expect(inlineAddRow.locator('[aria-invalid="true"]')).toHaveCount(0);
+    await expect(inlineAddRow.getByRole("checkbox")).not.toBeChecked();
     await expect(
       page.getByRole("textbox", { name: "id", exact: true }).nth(1),
     ).toHaveValue("TEST-006");

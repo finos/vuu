@@ -98,6 +98,18 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
   }, [editSession, visibleInsertColumns]);
 
   useEffect(() => {
+    visibleInsertColumns
+      .filter(
+        (column) =>
+          column.serverDataType === "boolean" &&
+          newRowState.values[column.name] === undefined,
+      )
+      .forEach((column) => {
+        editSession.setNewRowValue(column.name, false);
+      });
+  }, [editSession, newRowState.values, visibleInsertColumns]);
+
+  useEffect(() => {
     const firstInvalidIndex = visibleColumns.findIndex(
       ({ name }) => newRowState.errors[name] !== undefined,
     );
