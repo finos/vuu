@@ -21,10 +21,12 @@
     "@vuu-ui/vuu-table-types": "2.2.1"
   },
   "dependencies": {
+    "@vuu-ui/vuu-data-editing": "2.2.1",
     "@vuu-ui/vuu-data-react": "2.2.1",
     "@vuu-ui/vuu-layout": "2.2.1",
     "@vuu-ui/vuu-shell": "2.2.1",
     "@vuu-ui/vuu-table": "2.2.1",
+    "@vuu-ui/vuu-table-extras": "2.2.1",
     "@vuu-ui/vuu-utils2": "2.2.1",
     "@salt-ds/core": "1.67.0"
   },
