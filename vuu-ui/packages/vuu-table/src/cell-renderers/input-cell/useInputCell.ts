@@ -29,6 +29,7 @@ export interface InputCellHookProps<
   >;
   value?: T;
   onEdit?: TableCellEditHandler;
+  shouldSuppressWarningMessage?: () => boolean;
   type?: "string" | "number" | "boolean";
 }
 
@@ -46,6 +47,7 @@ export const useInputCell = <T extends string | number | boolean = string>({
   column,
   value,
   onEdit,
+  shouldSuppressWarningMessage,
   type = "string",
 }: InputCellHookProps<T>) => {
   const [editState, setEditState] = useState<EditState>({
@@ -105,10 +107,12 @@ export const useInputCell = <T extends string | number | boolean = string>({
             value,
           }));
         } else if (isRpcError(response)) {
-          setEditState((state) => ({
-            ...state,
-            message: response.errorMessage,
-          }));
+          if (!shouldSuppressWarningMessage?.()) {
+            setEditState((state) => ({
+              ...state,
+              message: response.errorMessage,
+            }));
+          }
           return false;
         }
         initialValueRef.current = value;
@@ -142,7 +146,13 @@ export const useInputCell = <T extends string | number | boolean = string>({
       }
     }
     return false;
-  }, [column, editState, onEdit, type]);
+  }, [
+    column,
+    editState,
+    onEdit,
+    shouldSuppressWarningMessage,
+    type,
+  ]);
 
   /**
    * Depending on the current state (editing or not, dirty or not) activation will either be
