@@ -2766,10 +2766,26 @@ export default [
             },
           },
           {
-            id: "Table/TableEditing/CreateSessionTableInstrumentsWithInlineAddRow",
-            label: "CreateSessionTableInstrumentsWithInlineAddRow",
+            id: "Table/TableEditing/InstrumentsAddEditDelete",
+            label: "InstrumentsAddEditDelete",
             nodeData: {
-              componentName: "CreateSessionTableInstrumentsWithInlineAddRow",
+              componentName: "InstrumentsAddEditDelete",
+              path: "src/examples/Table/Editing.examples.tsx",
+            },
+          },
+          {
+            id: "Table/TableEditing/TestTableEmpty",
+            label: "TestTableEmpty",
+            nodeData: {
+              componentName: "TestTableEmpty",
+              path: "src/examples/Table/Editing.examples.tsx",
+            },
+          },
+          {
+            id: "Table/TableEditing/TestTableFIveRows",
+            label: "TestTableFIveRows",
+            nodeData: {
+              componentName: "TestTableFIveRows",
               path: "src/examples/Table/Editing.examples.tsx",
             },
           },

@@ -20,7 +20,9 @@ export type TestTableName =
   | "LinkParent"
   | "LinkChild"
   | "ChartTable"
-  | "MaxScrollEndTable";
+  | "MaxScrollEndTable"
+  | "TestEditEmpty"
+  | "TestEdit";
 
 const { RowGenerator } = defaultGenerators;
 
@@ -28,6 +30,17 @@ const generateRows = (tableSchema: TableSchema, count: number) => {
   const columnGenerator = RowGenerator(tableSchema.columns.map((c) => c.name));
   return new Array(count).fill(1).map((_, i) => columnGenerator(i));
 };
+
+const testEditColumns: TableSchema["columns"] = [
+  { name: "id", serverDataType: "string" },
+  { name: "description", serverDataType: "string" },
+  { name: "quantity", serverDataType: "int" },
+  { name: "price", serverDataType: "double" },
+  { name: "enabled", serverDataType: "boolean" },
+  { name: "tradeDate", serverDataType: "epochtimestamp" },
+  { name: "updatedAt", serverDataType: "epochtimestampnano" },
+  { name: "externalId", serverDataType: "long" },
+];
 
 class TestModule extends VuuModule<TestTableName> {
   #schemas: Record<TestTableName, TableSchema> = {
@@ -107,6 +120,18 @@ class TestModule extends VuuModule<TestTableName> {
         maxRangeWidth: 1_000,
       },
       table: { module: "TEST", table: "MaxScrollEndTable" },
+    },
+    TestEditEmpty: {
+      columns: testEditColumns,
+      key: "id",
+      rangeLimits: DEFAULT_RANGE_LIMITS,
+      table: { module: "TEST", table: "TestEditEmpty" },
+    },
+    TestEdit: {
+      columns: testEditColumns,
+      key: "id",
+      rangeLimits: DEFAULT_RANGE_LIMITS,
+      table: { module: "TEST", table: "TestEdit" },
     },
   };
 
@@ -193,6 +218,23 @@ class TestModule extends VuuModule<TestTableName> {
       this.#schemas.MaxScrollEndTable,
       generateRows(this.#schemas.MaxScrollEndTable, 1_000),
       buildDataColumnMap(this.#schemas, "MaxScrollEndTable"),
+    ),
+    TestEditEmpty: tableContainer.createTable(
+      this.#schemas.TestEditEmpty,
+      [],
+      buildDataColumnMap(this.#schemas, "TestEditEmpty"),
+    ),
+    TestEdit: tableContainer.createTable(
+      this.#schemas.TestEdit,
+      // prettier-ignore
+      [
+        ["TEST-001", "Alpha", 12, 101.25, true, Date.now(), withNanoMs(Date.now(), 1), 1000000000000000001n],
+        ["TEST-002", "Bravo", 24, 202.5, false, Date.now(), withNanoMs(Date.now(), 2), 1000000000000000002n],
+        ["TEST-003", "Charlie", 36, 303.75, true, Date.now(), withNanoMs(Date.now(), 3), 1000000000000000003n],
+        ["TEST-004", "Delta", 48, 405, true, Date.now(), withNanoMs(Date.now(), 4), 1000000000000000004n],
+        ["TEST-005", "Echo", 60, 506.25, false, Date.now(), withNanoMs(Date.now(), 5), 1000000000000000005n],
+      ],
+      buildDataColumnMap(this.#schemas, "TestEdit"),
     ),
   };
   constructor() {
