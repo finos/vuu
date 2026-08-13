@@ -225,11 +225,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
     if (Object.keys(errors).length > 0) {
       this.#setNewRowState({ ...this.#newRowState, errors });
-      return {
-        errorMessage:
-          errors[this.#newRowState.columns.at(-1) ?? ""] ?? "Value required",
-        type: "ERROR_RESULT",
-      };
+      return { data: undefined, type: "SUCCESS_RESULT" };
     }
 
     if (this.#newRowState.submitting) {

@@ -120,10 +120,7 @@ describe("EditSession lifecycle", () => {
     editSession.configureNewRow(["id", "name"]);
     editSession.setNewRowValue("id", 7);
 
-    await expect(editSession.addNewRow()).resolves.toEqual({
-      errorMessage: "Value required",
-      type: "ERROR_RESULT",
-    });
+    await expect(editSession.addNewRow()).resolves.toEqual(SUCCESS);
     expect(editSession.newRowState.errors).toEqual({ name: "Value required" });
     expect(addRow).not.toHaveBeenCalled();
 

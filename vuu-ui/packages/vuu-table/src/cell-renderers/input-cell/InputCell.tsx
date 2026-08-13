@@ -3,16 +3,12 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import type { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
-import {
-  getVuuEditMessage,
-  useEditSession,
-} from "@vuu-ui/vuu-data-editing";
+import { getVuuEditMessage } from "@vuu-ui/vuu-data-editing";
 import {
   dataDescriptorTypeToVuuRowDataItemType,
   registerComponent,
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import { useCallback } from "react";
 
 import inputCellCss from "./InputCell.css";
 import { useInputCell } from "./useInputCell";
@@ -34,15 +30,6 @@ export const InputCell = ({
   const dataValue = dataRow[column.name] as number | string;
 
   const { align = "left" } = column;
-  const editSession = useEditSession();
-  const shouldSuppressWarningMessage = useCallback(() => {
-    const errors = editSession?.newRowState.errors ?? {};
-    return (
-      editSession?.isNewRow(dataRow.key) === true &&
-      errors[column.name] === undefined &&
-      Object.keys(errors).length > 0
-    );
-  }, [column.name, dataRow.key, editSession]);
 
   const {
     editing,
@@ -53,7 +40,6 @@ export const InputCell = ({
   } = useInputCell({
     column,
     onEdit,
-    shouldSuppressWarningMessage,
     type: dataDescriptorTypeToVuuRowDataItemType(column),
     value: dataValue,
   });
