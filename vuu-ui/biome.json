@@ -21,11 +21,11 @@
       "style": {
         "noNonNullAssertion": "warn",
         "useAsConstAssertion": "error",
-        "useDefaultParameterLast": "error",
+        "useDefaultParameterLast": "warn",
         "useEnumInitializers": "error",
         "useImportType": "warn",
-        "useSelfClosingElements": "error",
-        "useSingleVarDeclarator": "error",
+        "useSelfClosingElements": "warn",
+        "useSingleVarDeclarator": "warn",
         "noUnusedTemplateLiteral": "warn",
         "noInferrableTypes": "error",
         "noUselessElse": "off"
@@ -35,6 +35,7 @@
       },
       "a11y": {
         "noAutofocus": "off",
+        "noLabelWithoutControl": "warn",
         "noNoninteractiveElementToInteractiveRole": "off",
         "noStaticElementInteractions": "off",
         "useFocusableInteractive": "off",
@@ -43,9 +44,12 @@
         "useKeyWithClickEvents": "warn",
         "noSvgWithoutTitle": "off",
         "useAriaPropsForRole": "warn",
-        "useSemanticElements": "off"
+        "useSemanticElements": "off",
+        "useAltText": "warn"
       },
       "correctness": {
+        "noConstantCondition": "warn",
+        "noConstructorReturn": "warn",
         "noUnusedImports": "error",
         "useParseIntRadix": "off",
         "useExhaustiveDependencies": {
@@ -66,9 +70,15 @@
         }
       },
       "suspicious": {
+        "noAssignInExpressions": "warn",
         "noArrayIndexKey": "warn",
+        "noDoubleEquals": "warn",
         "noExplicitAny": "warn",
-        "noGlobalIsNan": "off"
+        "noImplicitAnyLet": "warn",
+        "noShadowRestrictedNames": "warn",
+        "noGlobalIsNan": "off",
+        "useIterableCallbackReturn": "warn",
+        "noSparseArray": "warn"
       }
     }
   },

@@ -1,6 +1,5 @@
 import { test } from "@playwright/experimental-ct-react";
 import { TabInAndOutFixture } from "../../../../../showcase/src/examples/Table/Misc.examples";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { expect } from "../../../../../playwright/customAssertions";
 import { TableOM } from "./TableOM";
 

@@ -4,16 +4,15 @@ import {
   EditMultiClauseOrFilter,
   NewFilter,
 } from "../../../../../showcase/src/examples/Filters/FilterEditor.examples";
-import { FilterBarOneSimpleFilter } from "../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
-import { clickFilterPillTrigger, clickMenuItem } from "./filter-test-utils";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { FilterEditorProps } from "../../filter-editor";
 
+// biome-ignore lint/suspicious/noExplicitAny: <ignore>
 const assertComboboxReady = async (page: any) => {
   await expect(page.getByRole("combobox")).toBeFocused();
   await expect(page.getByRole("listbox")).toBeVisible();
 };
 
+// biome-ignore lint/suspicious/noExplicitAny: <ignore>
 const selectMenuOption = async (page: any, name: "AND" | "OR") => {
   const button = page.getByRole("button", { name: "Save" });
   await expect(button).toBeFocused();
@@ -21,18 +20,6 @@ const selectMenuOption = async (page: any, name: "AND" | "OR") => {
   await expect(page.getByRole("menu")).toBeVisible();
   await page.getByRole("menuitem", { name }).press("Enter");
 };
-
-const EditMultiClauseOrFilterFixture = (props: Partial<FilterEditorProps>) => (
-  <LocalDataSourceProvider>
-    <EditMultiClauseOrFilter {...props} />
-  </LocalDataSourceProvider>
-);
-
-const FilterBarOneSimpleFilterFixture = () => (
-  <LocalDataSourceProvider>
-    <FilterBarOneSimpleFilter />
-  </LocalDataSourceProvider>
-);
 
 test.describe("FilterEditor", () => {
   test.describe("WHEN rendered with new FilterClauseModel", () => {

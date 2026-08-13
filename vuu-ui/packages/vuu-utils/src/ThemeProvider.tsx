@@ -1,7 +1,7 @@
-import React, {
+import {
   createContext,
-  HTMLAttributes,
-  ReactNode,
+  type HTMLAttributes,
+  type ReactNode,
   isValidElement,
   cloneElement,
   useContext,

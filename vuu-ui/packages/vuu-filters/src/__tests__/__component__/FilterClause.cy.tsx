@@ -2,7 +2,6 @@ import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
   NewFilterClause,
   PartialFilterClauseColumnAndOperator,
-  PartialFilterClauseColumnAndOperatorWithDataSource,
   FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled,
   FilterColumnWithDropdownOpenOnFocusDisabled,
   NewFilterClauseWithDropdownOpenOnFocusDisabled,
