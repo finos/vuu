@@ -19,9 +19,11 @@ export {
   editActionRowClassNameGenerator,
 } from "./editActionRowClassNameGenerator";
 export {
+  getUndoButtonContent,
   getUndoTooltipContent,
   UNDO_CELL_RENDERER,
   UndoCellRenderer,
+  type UndoCellRendererComponentProps,
 } from "./UndoCellRenderer";
 export {
   useEditableTable,
