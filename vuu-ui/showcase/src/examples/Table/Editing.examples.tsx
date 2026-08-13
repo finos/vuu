@@ -594,10 +594,9 @@ const EditableTestTableTemplate = ({
   );
 
   const showUploadPreview = useCallback(
-    ({ dataSource, editSession }: CsvUploadPreviewResult) => {
+    ({ editSession }: CsvUploadPreviewResult) => {
       showPrompt(
         <DataUploadPreview
-          dataSource={dataSource}
           editSession={editSession}
           onClose={closePrompt}
           tableSchema={tableSchema}

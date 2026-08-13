@@ -1,6 +1,6 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
+import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import {
   DataEditingProvider,
   EDIT_ACTION_ROW_CLASS_NAME_GENERATOR,
@@ -19,7 +19,10 @@ import type { HTMLAttributes } from "react";
 import { useCallback, useMemo } from "react";
 import { TableFooter, TableFooterTray } from "../../table-footer/TableFooter";
 import css from "./DataUploadPreview.css";
-import { useDataUploadPreview } from "./useDataUploadPreview";
+import {
+  getSessionDataSource,
+  useDataUploadPreview,
+} from "./useDataUploadPreview";
 
 const classBase = "vuuDataUploadPreview";
 
@@ -39,7 +42,6 @@ const rowClassNameGenerators = [EDIT_ACTION_ROW_CLASS_NAME_GENERATOR];
 
 export interface DataUploadPreviewProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onSelect"> {
-  dataSource: DataSource;
   editSession: EditSession;
   onClose: () => void;
   saveLabel?: string;
@@ -48,13 +50,16 @@ export interface DataUploadPreviewProps
 
 export const DataUploadPreview = ({
   className,
-  dataSource,
   editSession,
   onClose,
   saveLabel = "Submit",
   tableSchema,
   ...htmlAttributes
 }: DataUploadPreviewProps) => {
+  const dataSource = useMemo(
+    () => getSessionDataSource(editSession),
+    [editSession],
+  );
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-data-upload-preview",

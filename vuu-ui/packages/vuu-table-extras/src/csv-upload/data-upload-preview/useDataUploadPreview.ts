@@ -12,6 +12,14 @@ export interface UseDataUploadPreviewProps {
   onClose: () => void;
 }
 
+export const getSessionDataSource = (editSession: EditSession): DataSource => {
+  const dataSource = editSession.sessionDataSource;
+  if (!dataSource) {
+    throw new Error("[DataUploadPreview] requires an active edit session");
+  }
+  return dataSource;
+};
+
 export const useDataUploadPreview = ({
   dataSource,
   editSession,

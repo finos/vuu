@@ -23,13 +23,13 @@ export type EditLifecycle =
   | { status: "active"; sessionDataSource: DataSource }
   | { status: "ending"; sessionDataSource: DataSource }
   | {
-    status: "error";
-    operation: "begin" | "end";
-    error: Error;
-    sessionDataSource?: DataSource;
-  };
+      status: "error";
+      operation: "begin" | "end";
+      error: Error;
+      sessionDataSource?: DataSource;
+    };
 
-export class EditError extends Error { }
+export class EditError extends Error {}
 
 type CellEdit = {
   originalValue: VuuRowDataItemType;
@@ -180,8 +180,10 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   isNewRowComplete() {
     return this.#newRowState.columns.every((column) => {
       const value = this.#newRowState.values[column];
-      return value !== undefined &&
-        (typeof value !== "string" || value.trim() !== "");
+      return (
+        value !== undefined &&
+        (typeof value !== "string" || value.trim() !== "")
+      );
     });
   }
 
@@ -455,6 +457,10 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
   get dataSource() {
     return this.#sessionDataSource ?? this.#sourceTableDataSource;
+  }
+
+  get sessionDataSource() {
+    return this.#sessionDataSource;
   }
 
   end(saveChanges = false, force = false): Promise<void> {

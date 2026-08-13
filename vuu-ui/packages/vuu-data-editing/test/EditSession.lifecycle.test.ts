@@ -25,7 +25,7 @@ class MockDataSource implements EditApi {
     private createSession: CreateSession,
     private edit: EditCell = vi.fn().mockResolvedValue(SUCCESS),
     private addRowImpl?: AddRow,
-  ) { }
+  ) {}
 
   addRow(...args: Parameters<AddRow>) {
     return this.addRowImpl?.(...args);
@@ -265,6 +265,7 @@ describe("EditSession lifecycle", () => {
     editSession = new EditSession(sourceDataSource);
 
     await editSession.begin();
+    expect(editSession.sessionDataSource).toBe(sessionDataSource);
     await editSession.commit("row-1", "price", 100, 101, true);
     await editSession.end(true);
 
@@ -273,6 +274,7 @@ describe("EditSession lifecycle", () => {
     expect(sourceEdit).not.toHaveBeenCalled();
     expect(sourceEnd).not.toHaveBeenCalled();
     expect(editSession.dataSource).toBe(sourceDataSource);
+    expect(editSession.sessionDataSource).toBeUndefined();
   });
 
   it("keeps the session datasource selected after an end failure", async () => {
@@ -294,6 +296,7 @@ describe("EditSession lifecycle", () => {
     await expect(editSession.end(true)).rejects.toBe(endError);
 
     expect(editSession.dataSource).toBe(sessionDataSource);
+    expect(editSession.sessionDataSource).toBe(sessionDataSource);
     expect(editSession.lifecycle).toMatchObject({
       operation: "end",
       sessionDataSource,
