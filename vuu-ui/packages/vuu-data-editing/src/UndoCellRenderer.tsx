@@ -62,7 +62,7 @@ export const UndoCellRenderer = ({
         onClick={() => editSession?.undoRowChange(dataRow.key)}
         style={{ height: "100%", width: "100%" }}
       >
-        {icon ? <Icon aria-hidden name={icon} /> : null}
+        {icon ? <Icon name={icon} /> : null}
         {text}
       </Button>
     </Tooltip>
