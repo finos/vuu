@@ -171,7 +171,13 @@ describe("useCsvUpload", () => {
     expect(latestResult?.canImport).toBe(true);
     expect(latestResult?.validation?.errors).toHaveLength(0);
     expect(dataSource.createSessionDataSource).toHaveBeenCalledWith("Empty");
-    expect(getSessionDataSource(dataSource).columns).toContain("vuuMsg");
+    expect(getSessionDataSource(dataSource).columns).toEqual([
+      "id",
+      "label",
+      "count",
+      "vuuMsg",
+      "vuu_action",
+    ]);
     expect(getSessionDataSource(dataSource).addRow).toHaveBeenCalled();
     expect(dataSource.rpcRequest).not.toHaveBeenCalled();
   });

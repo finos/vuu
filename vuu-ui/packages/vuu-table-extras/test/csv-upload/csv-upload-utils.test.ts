@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   buildRowErrorMessage,
+  ensureSessionTableColumnsPresent,
   executeBatchRpcCalls,
   mergeValidationWithParseErrors,
   normalizeTableData,
@@ -157,6 +158,39 @@ describe("csv-upload-utils", () => {
     expect(mergeValidationWithParseErrors(validation, undefined)).toBe(
       validation,
     );
+  });
+
+  describe("ensureSessionTableColumnsPresent", () => {
+    it("does nothing when both session columns are already present", () => {
+      const setColumns = vi.fn();
+      const dataSource = {
+        columns: ["id", "vuuMsg", "vuu_action"],
+      };
+      Object.defineProperty(dataSource, "columns", {
+        get: () => ["id", "vuuMsg", "vuu_action"],
+        set: setColumns,
+      });
+
+      ensureSessionTableColumnsPresent(dataSource);
+
+      expect(setColumns).not.toHaveBeenCalled();
+    });
+
+    it("adds the missing message column before the session action column", () => {
+      const dataSource = { columns: ["id", "vuu_action"] };
+
+      ensureSessionTableColumnsPresent(dataSource);
+
+      expect(dataSource.columns).toEqual(["id", "vuuMsg", "vuu_action"]);
+    });
+
+    it("adds both missing session columns in payload order", () => {
+      const dataSource = { columns: ["id"] };
+
+      ensureSessionTableColumnsPresent(dataSource);
+
+      expect(dataSource.columns).toEqual(["id", "vuuMsg", "vuu_action"]);
+    });
   });
 
   describe("buildRowErrorMessage", () => {
