@@ -205,7 +205,54 @@ describe("VuuDataSource", () => {
     });
 
     describe("session editing", () => {
-      it("refreshes a disabled source range after a standalone session is saved and the source is enabled", async () => {
+      it("keeps the source cache live without a range refresh during standalone session editing", async () => {
+        const source = new VuuDataSource({ table, viewport: "source-vp" });
+        await source.subscribe({}, vi.fn());
+        source.handleMessageFromServer({
+          type: "subscribed",
+          tableSchema: {},
+        } as any);
+
+        vi.spyOn(source, "rpcRequest").mockResolvedValue({
+          type: "SUCCESS_RESULT",
+          data: {
+            table: { module: "SIMUL", table: "session-vp" },
+          },
+        } as RpcResultSuccess);
+        const session = await source.createSessionDataSource("Empty");
+        expect(session?.isSessionDataSourceOf(source)).toBe(true);
+        vi.spyOn(session!, "rpcRequest").mockResolvedValue({
+          type: "SUCCESS_RESULT",
+        } as RpcResultSuccess);
+
+        const serverAPI = await ConnectionManager.serverAPI;
+        vi.mocked(serverAPI.send).mockClear();
+        source.suspend(false);
+
+        expect(serverAPI.send).toHaveBeenLastCalledWith({
+          escalateDelay: undefined,
+          escalateToDisable: false,
+          type: "suspend",
+          viewport: "source-vp",
+        });
+
+        vi.mocked(serverAPI.send).mockClear();
+        await session!.endEditSession(true);
+        expect(serverAPI.send).not.toHaveBeenCalledWith(
+          expect.objectContaining({ type: "setViewRange" }),
+        );
+
+        source.resume();
+        expect(serverAPI.send).toHaveBeenCalledWith({
+          type: "resume",
+          viewport: "source-vp",
+        });
+        expect(serverAPI.send).not.toHaveBeenCalledWith(
+          expect.objectContaining({ type: "setViewRange" }),
+        );
+      });
+
+      it("refreshes a source that was genuinely disabled before the session completed", async () => {
         const source = new VuuDataSource({ table, viewport: "source-vp" });
         await source.subscribe({}, vi.fn());
         source.handleMessageFromServer({

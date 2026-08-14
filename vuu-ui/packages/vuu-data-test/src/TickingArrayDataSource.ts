@@ -4,6 +4,7 @@ import {
 } from "@vuu-ui/vuu-data-local";
 import type {
   DataSourceBase,
+  DataSource,
   DataSourceRowWithBigint,
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
@@ -162,6 +163,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return Array.from(this.selectedRows);
   }
 
+  isSessionDataSourceOf(dataSource: DataSource): boolean {
+    return this.#sourceTableDataSource === dataSource;
+  }
+
   async createSessionDataSource(
     copyOption: CopyOption,
   ): Promise<DataSourceBase<DataSourceRowWithBigint> | undefined> {
@@ -291,8 +296,9 @@ export class TickingArrayDataSource extends ArrayDataSource {
       if (sourceTableDataSource) {
         this.#sourceTableDataSource = undefined;
         this.unsubscribe();
+      } else {
+        this.sendRowsToClient(true);
       }
-      (sourceTableDataSource ?? this).sendRowsToClient(true);
     } else {
       if (rpcResponse?.errorMessage === "stale update") {
         throw new StaleUpdateError(rpcResponse.errorMessage);

@@ -419,7 +419,7 @@ describe("createSessionDataSource", () => {
     );
   });
 
-  it("reconciles committed rows into the source datasource when the session ends", async () => {
+  it("replays committed rows from the source datasource when session editing ends", async () => {
     const sourceTable = new Table(
       schema,
       [["row-001", "Alice", ""]],
@@ -449,6 +449,10 @@ describe("createSessionDataSource", () => {
 
     const editDataSource =
       await sourceDataSource.createSessionDataSource("Empty");
+    expect(editDataSource?.isSessionDataSourceOf?.(sourceDataSource)).toBe(
+      true,
+    );
+    sourceDataSource.suspend(false);
     vi.spyOn(sessionDataSource, "rpcRequest").mockImplementation(async () => {
       sourceTable.insert(["row-002", "Bob", ""]);
       updates.mockClear();
@@ -456,12 +460,12 @@ describe("createSessionDataSource", () => {
     });
 
     await editDataSource?.endEditSession?.(true);
+    expect(updates).not.toHaveBeenCalled();
 
+    sourceDataSource.resume(updates);
     const rows = updates.mock.calls.at(-1)?.[0].rows;
     expect(rows).toEqual(
-      expect.arrayContaining([
-        expect.arrayContaining(["row-002", "Bob"]),
-      ]),
+      expect.arrayContaining([expect.arrayContaining(["row-002", "Bob"])]),
     );
 
     updates.mockClear();

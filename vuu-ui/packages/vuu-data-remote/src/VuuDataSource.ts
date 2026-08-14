@@ -1,5 +1,6 @@
 import type {
   CopyOption,
+  DataSource,
   DataSourceBase,
   DataSourceCallbackMessage,
   DataSourceConstructorProps,
@@ -306,16 +307,18 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     });
   }
 
-  private refreshAfterEdit() {
+  private reconcileAfterEdit() {
     if (
       this.#status === "disabled" ||
       this.#status === "disabling" ||
       this.#status === "enabling"
     ) {
       this.#refreshOnEnable = true;
-    } else {
-      this.rawRangeRequest(this._range.withBuffer);
     }
+  }
+
+  isSessionDataSourceOf(dataSource: DataSource): boolean {
+    return this.#sourceTableDataSource === dataSource;
   }
 
   resume(callback?: DataSourceSubscribeCallback) {
@@ -737,7 +740,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       if (sourceTableDataSource) {
         this.#sourceTableDataSource = undefined;
         this.unsubscribe();
-        sourceTableDataSource.refreshAfterEdit();
+        sourceTableDataSource.reconcileAfterEdit();
       } else {
         this.sendResumeMessage();
       }
