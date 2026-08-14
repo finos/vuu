@@ -137,11 +137,11 @@ export const useItemPicker = ({
     [selectedItems, onSelectedItemsChange],
   );
 
-  const getSelectedItems = useMemo(() => {
+  const getSelectedItemsFiltered = useMemo(() => {
     return filterItems(selectedItems, searchPattern);
   }, [selectedItems, searchPattern]);
 
-  const getAvailableItems = useMemo(() => {
+  const getAvailableItemsFiltered = useMemo(() => {
     return filterItems(allItems, searchPattern)
       .filter(
         ({ name }) =>
@@ -150,10 +150,18 @@ export const useItemPicker = ({
       .toSorted(byItemName);
   }, [allItems, selectedItems, searchPattern]);
 
+  const getAvailableItemsCount = useMemo(() => {
+    return allItems.filter(
+      ({ name }) =>
+        selectedItems.findIndex((item) => item.name === name) === -1,
+    ).length;
+  }, [allItems, selectedItems]);
+
   return {
     selectedItemsCount: selectedItems.length,
-    selectedItemsFiltered: getSelectedItems,
-    availableItemsFiltered: getAvailableItems,
+    availableItemsCount: getAvailableItemsCount,
+    selectedItemsFiltered: getSelectedItemsFiltered,
+    availableItemsFiltered: getAvailableItemsFiltered,
     searchText: searchPattern,
     onChangeSearchInput: handleChangeSearchInput,
     onAddItemToSelectedList: handleAddItemToSelectedList,

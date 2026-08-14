@@ -10,7 +10,6 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { applyHighlighting } from "@vuu-ui/vuu-table";
 import {
-  capitalize,
   DragDropProvider,
   ItemTypeName,
   pluralForm,
@@ -197,6 +196,7 @@ export const ItemPicker = forwardRef(function ItemPicker(
 
   const {
     selectedItemsCount,
+    availableItemsCount,
     selectedItemsFiltered,
     availableItemsFiltered,
     searchText,
@@ -235,11 +235,9 @@ export const ItemPicker = forwardRef(function ItemPicker(
   }, [availableItemsFiltered, selectedItemsFiltered]);
 
   const searchPlaceholderText = `Find ${singularForm(itemTypeName)}`;
-  const selectionsSubHeading = maxSelections
-    ? `(${selectedItemsCount} / ${maxSelections} max)`
-    : "";
-  const selectedItemsHeading = `${capitalize(pluralForm(itemTypeName))} in view ${selectionsSubHeading}`;
-  const availableItemsHeading = `Available ${pluralForm(itemTypeName)}`;
+  const maxSelectionsSubHeading = maxSelections ? `(${maxSelections} max)` : "";
+  const selectedItemsHeading = `${selectedItemsCount} ${selectedItemsCount === 1 ? singularForm(itemTypeName) : pluralForm(itemTypeName)} in view ${maxSelectionsSubHeading}`;
+  const availableItemsHeading = `${availableItemsCount} available ${availableItemsCount === 1 ? singularForm(itemTypeName) : pluralForm(itemTypeName)}`;
 
   return (
     <div
