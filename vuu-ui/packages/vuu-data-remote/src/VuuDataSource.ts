@@ -100,8 +100,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   #menu: VuuMenu | undefined;
   #optimize: OptimizeStrategy = "throttle";
   #selectedRowsCount = 0;
-  #sourceTableDataSource: VuuDataSource | undefined;
-  #refreshOnEnable = false;
   #sessionTableMessageColumn: string | undefined = undefined;
   #status: DataSourceStatus = "initialising";
   #tableSchema: TableSchema | undefined;
@@ -210,10 +208,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     } else if (message.type === "enabled") {
       this.#status = "subscribed";
       this.emit("enabled", this.viewport);
-      if (this.#refreshOnEnable) {
-        this.#refreshOnEnable = false;
-        this.rawRangeRequest(this._range.withBuffer);
-      }
     } else if (isDataSourceConfigMessage(message)) {
       // This is an ACK for a CHANGE_VP message. Nothing to do here. We need
       // to wait for data to be returned before we can consider the change
@@ -304,18 +298,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       type: "resume",
       viewport: this.viewport,
     });
-  }
-
-  private refreshAfterEdit() {
-    if (
-      this.#status === "disabled" ||
-      this.#status === "disabling" ||
-      this.#status === "enabling"
-    ) {
-      this.#refreshOnEnable = true;
-    } else {
-      this.rawRangeRequest(this._range.withBuffer);
-    }
   }
 
   resume(callback?: DataSourceSubscribeCallback) {
@@ -694,7 +676,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
           (column): column is string => column !== undefined,
         ),
       );
-      const sessionDataSource = new VuuDataSource({
+      return new VuuDataSource({
         ...this.config,
         columns: sessionColumns,
         connectionId: this.#connectionId,
@@ -702,8 +684,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
         table: sessionTable,
         viewport: sessionTable.table,
       });
-      sessionDataSource.#sourceTableDataSource = this;
-      return sessionDataSource;
     } else {
       throw Error(
         `[VuuDataSource] createSessionDataSource ${rpcResponse?.errorMessage}`,
@@ -733,14 +713,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     );
 
     if (isRpcSuccess(rpcResponse)) {
-      const sourceTableDataSource = this.#sourceTableDataSource;
-      if (sourceTableDataSource) {
-        this.#sourceTableDataSource = undefined;
-        this.unsubscribe();
-        sourceTableDataSource.refreshAfterEdit();
-      } else {
-        this.sendResumeMessage();
-      }
+      this.sendResumeMessage();
     } else {
       if (rpcResponse?.errorMessage === "stale update") {
         throw new StaleUpdateError(rpcResponse.errorMessage);
