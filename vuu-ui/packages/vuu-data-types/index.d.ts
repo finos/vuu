@@ -695,6 +695,11 @@ export interface DataSourceBase<
    */
   suspend?: (escalateToDisable?: boolean, escalateDelay?: number) => void;
   resume?: (callback?: DataSourceSubscribeCallback) => void;
+  /**
+   * Returns true when this datasource is a transient session datasource
+   * created by the supplied source datasource.
+   */
+  isSessionDataSourceOf?: (dataSource: DataSource) => boolean;
 
   deleteRow?: DataSourceDeleteHandler;
   /**
