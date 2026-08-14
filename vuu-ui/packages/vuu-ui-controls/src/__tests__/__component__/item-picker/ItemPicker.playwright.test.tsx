@@ -543,11 +543,14 @@ test.describe("ItemPicker", () => {
           "Calculated column 2",
         );
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
         await addAvailableItem(component, 1, "Calculated column 1");
         await addAvailableItem(component, 1, "Calculated column 2");
 >>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
+=======
+>>>>>>> 95d92ee10 (Removed unnecessary test step)
       });
 
       test("THEN the component renders the calculated columns correctly when in the selected items list", async ({
