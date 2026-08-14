@@ -65,7 +65,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
   #pendingVisualLink?: LinkDescriptorWithLabel;
   #rpcMenuServices: RpcMenuService[] | undefined;
   #rpcServices: RpcService[] | undefined;
-  #editSourceDataSource: TickingArrayDataSource | undefined;
+  #sourceTableDataSource: TickingArrayDataSource | undefined;
   #table?: Table;
   #selectionLinkSubscribers: Map<string, LinkSubscription> | undefined;
   #visualLinkService?: VisualLinkHandler;
@@ -181,7 +181,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
         { ...this.config, columns },
       );
       if (sessionDataSource instanceof TickingArrayDataSource) {
-        sessionDataSource.#editSourceDataSource = this;
+        sessionDataSource.#sourceTableDataSource = this;
       }
       return sessionDataSource;
     } else {
@@ -287,10 +287,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
     );
 
     if (isRpcSuccess(rpcResponse)) {
-      if (this.#editSourceDataSource) {
+      if (this.#sourceTableDataSource) {
         this.unsubscribe();
       }
-      (this.#editSourceDataSource ?? this).sendRowsToClient(true);
+      (this.#sourceTableDataSource ?? this).sendRowsToClient(true);
     } else {
       if (rpcResponse?.errorMessage === "stale update") {
         throw new StaleUpdateError(rpcResponse.errorMessage);

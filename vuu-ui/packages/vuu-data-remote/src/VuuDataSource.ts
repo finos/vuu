@@ -100,7 +100,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   #menu: VuuMenu | undefined;
   #optimize: OptimizeStrategy = "throttle";
   #selectedRowsCount = 0;
-  #editSourceDataSource: VuuDataSource | undefined;
+  #sourceTableDataSource: VuuDataSource | undefined;
   #refreshOnEnable = false;
   #sessionTableMessageColumn: string | undefined = undefined;
   #status: DataSourceStatus = "initialising";
@@ -702,7 +702,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
         table: sessionTable,
         viewport: sessionTable.table,
       });
-      sessionDataSource.#editSourceDataSource = this;
+      sessionDataSource.#sourceTableDataSource = this;
       return sessionDataSource;
     } else {
       throw Error(
@@ -733,7 +733,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     );
 
     if (isRpcSuccess(rpcResponse)) {
-      if (this.#editSourceDataSource) {
+      if (this.#sourceTableDataSource) {
         this.unsubscribe();
       }
     } else {
@@ -743,8 +743,8 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
         throw Error(rpcResponse?.errorMessage ?? "endEditSession failed");
       }
     }
-    if (this.#editSourceDataSource) {
-      this.#editSourceDataSource.refreshAfterEdit();
+    if (this.#sourceTableDataSource) {
+      this.#sourceTableDataSource.refreshAfterEdit();
     } else {
       this.sendResumeMessage();
     }
