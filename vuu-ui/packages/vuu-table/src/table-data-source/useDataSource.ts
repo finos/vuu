@@ -363,12 +363,15 @@ export const useDataSource = ({
     }
 
     return () => {
+      const replacementDataSource = activeBindingRef.current?.dataSource;
+      const isOwnSessionReplacement =
+        replacementDataSource?.isSessionDataSourceOf?.(dataSource) === true;
       if (activeBindingRef.current === binding) {
         activeBindingRef.current = undefined;
       }
       dataSource.removeListener("resumed", handleResume);
       dataSource.suspend?.(
-        suspenseProps?.escalateToDisable,
+        isOwnSessionReplacement ? false : suspenseProps?.escalateToDisable,
         suspenseProps?.escalateDelay,
       );
     };
