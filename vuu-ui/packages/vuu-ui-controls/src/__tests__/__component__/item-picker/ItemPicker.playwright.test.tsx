@@ -463,9 +463,6 @@ test.describe("ItemPicker", () => {
           2,
           "Calculated column 2",
         );
-
-        await addAvailableItem(component, 1, "Calculated column 1");
-        await addAvailableItem(component, 1, "Calculated column 2");
       });
 
       test("THEN the component renders the calculated columns correctly when in the selected items list", async ({
