@@ -10,6 +10,7 @@ import type {
 } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
+  RpcResultSuccess,
   VuuSortCol,
 } from "@vuu-ui/vuu-protocol-types";
 import { VuuDataSource } from "../src/VuuDataSource";
@@ -201,6 +202,63 @@ describe("VuuDataSource", () => {
         },
         expect.any(Function),
       );
+    });
+
+    describe("session editing", () => {
+      it("refreshes a disabled source range after a standalone session is saved and the source is enabled", async () => {
+        const source = new VuuDataSource({ table, viewport: "source-vp" });
+        await source.subscribe({}, vi.fn());
+        source.handleMessageFromServer({
+          type: "subscribed",
+          tableSchema: {},
+        } as any);
+        source.range = Range(0, 20);
+
+        vi.spyOn(source, "rpcRequest").mockResolvedValue({
+          type: "SUCCESS_RESULT",
+          data: {
+            table: { module: "SIMUL", table: "session-vp" },
+          },
+        } as RpcResultSuccess);
+        const session = await source.createSessionDataSource("Empty");
+        expect(session).toBeDefined();
+        vi.spyOn(session!, "rpcRequest").mockResolvedValue({
+          type: "SUCCESS_RESULT",
+        } as RpcResultSuccess);
+
+        source.disable();
+        source.handleMessageFromServer({ type: "disabled" } as any);
+        const serverAPI = await ConnectionManager.serverAPI;
+        vi.mocked(serverAPI.send).mockClear();
+
+        await session!.endEditSession(true);
+
+        expect(serverAPI.send).not.toHaveBeenCalledWith(
+          expect.objectContaining({ type: "setViewRange" }),
+        );
+
+        source.resume();
+        source.handleMessageFromServer({ type: "enabled" } as any);
+
+        expect(serverAPI.send).toHaveBeenNthCalledWith(1, {
+          type: "enable",
+          viewport: "source-vp",
+        });
+        expect(serverAPI.send).toHaveBeenNthCalledWith(2, {
+          type: "setViewRange",
+          range: Range(0, 20),
+          viewport: "source-vp",
+        });
+
+        vi.mocked(serverAPI.send).mockClear();
+        await session!.endEditSession(true);
+        expect(serverAPI.send).not.toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: "setViewRange",
+            viewport: "source-vp",
+          }),
+        );
+      });
     });
 
     it("uses options supplied at creation, if not passed with subscription", async () => {

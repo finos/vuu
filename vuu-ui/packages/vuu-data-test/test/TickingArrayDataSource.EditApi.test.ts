@@ -10,6 +10,7 @@ import type {
   RpcResultError,
   RpcResultSuccess,
 } from "@vuu-ui/vuu-protocol-types";
+import { Range } from "@vuu-ui/vuu-utils";
 
 const schema: TableSchema = {
   columns: [
@@ -416,5 +417,55 @@ describe("createSessionDataSource", () => {
     await expect(ds.createSessionDataSource?.("All")).rejects.toThrow(
       "session table creation failed",
     );
+  });
+
+  it("reconciles committed rows into the source datasource when the session ends", async () => {
+    const sourceTable = new Table(
+      schema,
+      [["row-001", "Alice", ""]],
+      buildDataColumnMapFromSchema(schema),
+    );
+    const sessionTable = new Table(
+      { ...schema, table: { module: "TEST", table: "session-xyz" } },
+      [],
+      buildDataColumnMapFromSchema(schema),
+    );
+    const sessionDataSource = new TickingArrayDataSource({
+      columnDescriptors: schema.columns,
+      table: sessionTable,
+    });
+    const sourceDataSource = new TickingArrayDataSource({
+      columnDescriptors: schema.columns,
+      table: sourceTable,
+      vuuModule: {
+        createDataSource: () => sessionDataSource,
+      },
+    });
+    vi.spyOn(sourceDataSource, "rpcRequest").mockResolvedValue(sessionSuccess);
+
+    const updates = vi.fn();
+    await sourceDataSource.subscribe({ range: Range(0, 10) }, updates);
+    updates.mockClear();
+
+    const editDataSource =
+      await sourceDataSource.createSessionDataSource("Empty");
+    vi.spyOn(sessionDataSource, "rpcRequest").mockImplementation(async () => {
+      sourceTable.insert(["row-002", "Bob", ""]);
+      updates.mockClear();
+      return SUCCESS;
+    });
+
+    await editDataSource?.endEditSession?.(true);
+
+    const rows = updates.mock.calls.at(-1)?.[0].rows;
+    expect(rows).toEqual(
+      expect.arrayContaining([
+        expect.arrayContaining(["row-002", "Bob"]),
+      ]),
+    );
+
+    updates.mockClear();
+    await editDataSource?.endEditSession?.(true);
+    expect(updates).not.toHaveBeenCalled();
   });
 });
