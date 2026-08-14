@@ -1,5 +1,15 @@
+<<<<<<< HEAD
 import { expect, type Locator, test } from "../../../../../../playwright/fixtures";
 
+=======
+import { expect, MountResult, test } from "@playwright/experimental-ct-react";
+import {
+  CalculatedColumnPicker,
+  DefaultItemPicker,
+  EmptyItemPicker,
+  SpecialItemsWithMaxSelection,
+} from "../../../../../../showcase/src/examples/UiControls/ItemPicker.examples.tsx";
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
 interface DisplayedItem {
   dataName: string;
@@ -14,7 +24,11 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
+<<<<<<< HEAD
         const component = await mount("UiControls/ItemPicker/EmptyItemPicker");
+=======
+        const component = await mount(<EmptyItemPicker />);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
         await expectSearchControlWithPlaceholderText(component, "Find pay day");
         await expectListHeadings(
@@ -33,9 +47,13 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
+<<<<<<< HEAD
         const component = await mount(
           "UiControls/ItemPicker/DefaultItemPicker",
         );
+=======
+        const component = await mount(<DefaultItemPicker />);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
         await expectListHeadings(
           component,
@@ -56,14 +74,22 @@ test.describe("ItemPicker", () => {
         ]);
       });
 
+<<<<<<< HEAD
       test.skip("THEN selected items can be reordered via drag and drop", async ({
+=======
+      test("THEN selected items can be reordered via drag and drop", async ({
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
         browserName,
         mount,
         page,
       }) => {
+<<<<<<< HEAD
         const component = await mount(
           "UiControls/ItemPicker/DefaultItemPicker",
         );
+=======
+        const component = await mount(<DefaultItemPicker />);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
         await dragAndDropSelectedItemAboveAnother(
           page,
@@ -102,9 +128,13 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
+<<<<<<< HEAD
         const component = await mount(
           "UiControls/ItemPicker/DefaultItemPicker",
         );
+=======
+        const component = await mount(<DefaultItemPicker />);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
         await typeSearchText(component, "QTY");
         await expectListHeadings(
@@ -147,9 +177,13 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
+<<<<<<< HEAD
         const component = await mount(
           "UiControls/ItemPicker/DefaultItemPicker",
         );
+=======
+        const component = await mount(<DefaultItemPicker />);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
         await typeSearchText(component, "Average p");
         await expectListHeadings(
@@ -170,9 +204,13 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
+<<<<<<< HEAD
         const component = await mount(
           "UiControls/ItemPicker/DefaultItemPicker",
         );
+=======
+        const component = await mount(<DefaultItemPicker />);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
         await expectSearchControlWithPlaceholderText(component, "Find column");
         await expectListHeadings(
@@ -220,9 +258,13 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
+<<<<<<< HEAD
         const component = await mount(
           "UiControls/ItemPicker/DefaultItemPicker",
         );
+=======
+        const component = await mount(<DefaultItemPicker />);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
         await addAvailableItem(component, 1, "price");
         await addAvailableItem(component, 1, "quantity");
@@ -272,9 +314,13 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
+<<<<<<< HEAD
         const component = await mount(
           "UiControls/ItemPicker/DefaultItemPicker",
         );
+=======
+        const component = await mount(<DefaultItemPicker />);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
         await removeSelectedItem(component, 8, "id");
         await removeSelectedItem(component, 8, "idAsInt");
@@ -326,9 +372,13 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
+<<<<<<< HEAD
         const component = await mount(
           "UiControls/ItemPicker/SpecialItemsWithMaxSelection",
         );
+=======
+        const component = await mount(<SpecialItemsWithMaxSelection />);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
         await expectSearchControlWithPlaceholderText(
           component,
@@ -361,9 +411,13 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
+<<<<<<< HEAD
         const component = await mount(
           "UiControls/ItemPicker/SpecialItemsWithMaxSelection",
         );
+=======
+        const component = await mount(<SpecialItemsWithMaxSelection />);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
         await expectListHeadings(
           component,
@@ -399,9 +453,13 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
+<<<<<<< HEAD
         const component = await mount(
           "UiControls/ItemPicker/SpecialItemsWithMaxSelection",
         );
+=======
+        const component = await mount(<SpecialItemsWithMaxSelection />);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
         await expectListHeadings(
           component,
@@ -438,9 +496,13 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
+<<<<<<< HEAD
         const component = await mount(
           "UiControls/ItemPicker/CalculatedColumnPicker",
         );
+=======
+        const component = await mount(<CalculatedColumnPicker />);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
         await expectSearchControlWithPlaceholderText(component, "Find column");
         await expectListHeadings(
@@ -480,6 +542,12 @@ test.describe("ItemPicker", () => {
           2,
           "Calculated column 2",
         );
+<<<<<<< HEAD
+=======
+
+        await addAvailableItem(component, 1, "Calculated column 1");
+        await addAvailableItem(component, 1, "Calculated column 2");
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
       });
 
       test("THEN the component renders the calculated columns correctly when in the selected items list", async ({
@@ -487,9 +555,13 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
+<<<<<<< HEAD
         const component = await mount(
           "UiControls/ItemPicker/CalculatedColumnPicker",
         );
+=======
+        const component = await mount(<CalculatedColumnPicker />);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
         await addAvailableItem(component, 1, "Calculated column 1");
         await addAvailableItem(component, 1, "Calculated column 2");
@@ -535,9 +607,13 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
+<<<<<<< HEAD
         const component = await mount(
           "UiControls/ItemPicker/CalculatedColumnPicker",
         );
+=======
+        const component = await mount(<CalculatedColumnPicker />);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
         await expectCreateCustomItemsButton(
           component,
@@ -549,11 +625,19 @@ test.describe("ItemPicker", () => {
 });
 
 const expectSearchControlWithPlaceholderText = async (
+<<<<<<< HEAD
   component: Locator,
   searchPlaceholderText: string,
 ) => {
   const searchInput = await component.locator(".saltInput-input");
   await expect(searchInput).toBeDefined();
+=======
+  component: MountResult,
+  searchPlaceholderText: string,
+) => {
+  const searchInput = await component.locator(".saltInput-input");
+  expect(searchInput).toBeDefined();
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
   await expect(searchInput).toBeEnabled();
   await expect(searchInput).toHaveAttribute(
     "placeholder",
@@ -562,7 +646,11 @@ const expectSearchControlWithPlaceholderText = async (
 };
 
 const expectListHeadings = async (
+<<<<<<< HEAD
   component: Locator,
+=======
+  component: MountResult,
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
   selectedListHeading: string,
   availableListHeading: string,
 ) => {
@@ -576,7 +664,11 @@ const expectListHeadings = async (
 };
 
 const expectSelectedItems = async (
+<<<<<<< HEAD
   component: Locator,
+=======
+  component: MountResult,
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
   totalSelectedItems: number,
   selectedItems?: DisplayedItem[],
 ) => {
@@ -584,7 +676,11 @@ const expectSelectedItems = async (
   const totalRows = await selectedList
     .locator(".vuuItemPickerListItem")
     .count();
+<<<<<<< HEAD
   await expect(totalRows).toEqual(totalSelectedItems);
+=======
+  expect(totalRows).toEqual(totalSelectedItems);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
   if (totalRows > 0) {
     for (let i = 0; i < selectedItems!.length; i++) {
@@ -602,7 +698,11 @@ const expectSelectedItems = async (
 };
 
 const expectAvailableItems = async (
+<<<<<<< HEAD
   component: Locator,
+=======
+  component: MountResult,
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
   totalAvailableItems: number,
   availableItems?: DisplayedItem[],
   addButtonsEnabled?: boolean,
@@ -611,7 +711,11 @@ const expectAvailableItems = async (
   const totalRows = await availableList
     .locator(".vuuItemPickerListItem")
     .count();
+<<<<<<< HEAD
   await expect(totalRows).toEqual(totalAvailableItems);
+=======
+  expect(totalRows).toEqual(totalAvailableItems);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 
   if (totalRows > 0) {
     for (let i = 0; i < availableItems!.length; i++) {
@@ -640,7 +744,11 @@ const expectAvailableItems = async (
 };
 
 const addAvailableItem = async (
+<<<<<<< HEAD
   component: Locator,
+=======
+  component: MountResult,
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
   positionInList: number,
   displayLabel: string,
 ) => {
@@ -657,7 +765,11 @@ const addAvailableItem = async (
 };
 
 const removeSelectedItem = async (
+<<<<<<< HEAD
   component: Locator,
+=======
+  component: MountResult,
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
   positionInList: number,
   displayLabel: string,
 ) => {
@@ -674,7 +786,11 @@ const removeSelectedItem = async (
 };
 
 const expectIconNotToBeRenderedInAvailableItems = async (
+<<<<<<< HEAD
   component: Locator,
+=======
+  component: MountResult,
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
   positionInList: number,
   displayLabel: string,
 ) => {
@@ -685,12 +801,20 @@ const expectIconNotToBeRenderedInAvailableItems = async (
   await expect(row).toContainText(displayLabel);
   const vuuIcons = row.locator(".vuuIcon");
   const iconCount = await vuuIcons.count();
+<<<<<<< HEAD
   await expect(iconCount).toEqual(1);
+=======
+  expect(iconCount).toEqual(1);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
   await expect(vuuIcons.nth(0)).toHaveAttribute("data-icon", "plus");
 };
 
 const expectIconToBeRenderedInSelectedItems = async (
+<<<<<<< HEAD
   component: Locator,
+=======
+  component: MountResult,
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
   positionInList: number,
   displayLabel: string,
 ) => {
@@ -701,24 +825,41 @@ const expectIconToBeRenderedInSelectedItems = async (
   await expect(row).toContainText(displayLabel);
   const vuuIcons = row.locator(".vuuIcon");
   const iconCount = await vuuIcons.count();
+<<<<<<< HEAD
   await expect(iconCount).toEqual(3);
+=======
+  expect(iconCount).toEqual(3);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
   await expect(vuuIcons.nth(0)).toHaveAttribute("data-icon", "draggable");
   await expect(vuuIcons.nth(1)).toHaveAttribute("data-icon", "check-check");
   await expect(vuuIcons.nth(2)).toHaveAttribute("data-icon", "cross");
 };
 
 const expectCreateCustomItemsButton = async (
+<<<<<<< HEAD
   component: Locator,
   buttonLabel: string,
 ) => {
   const button = component.locator(".vuuItemPicker-item-buttons .saltButton");
   await expect(button).toBeDefined();
   await expect(button).toContainText(buttonLabel);
+=======
+  component: MountResult,
+  buttonLabel: string,
+) => {
+  const button = component.locator(".vuuItemPicker-item-buttons .saltButton");
+  expect(button).toBeDefined();
+  expect(button).toContainText(buttonLabel);
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
 };
 
 const dragAndDropSelectedItemBelowAnother = async (
   page: any,
+<<<<<<< HEAD
   component: Locator,
+=======
+  component: MountResult,
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
   itemToMovePosition: number,
   itemToMoveDisplayLabel: string,
   otherItemPosition: number,
@@ -743,7 +884,11 @@ const dragAndDropSelectedItemBelowAnother = async (
 
 const dragAndDropSelectedItemAboveAnother = async (
   page: any,
+<<<<<<< HEAD
   component: Locator,
+=======
+  component: MountResult,
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
   itemToMovePosition: number,
   itemToMoveDisplayLabel: string,
   otherItemPosition: number,
@@ -767,7 +912,11 @@ const dragAndDropSelectedItemAboveAnother = async (
 };
 
 const getBoundingBoxForSelectedItemDragButton = async (
+<<<<<<< HEAD
   component: Locator,
+=======
+  component: MountResult,
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
   itemPosition: number,
   itemDisplayLabel: string,
 ) => {
@@ -804,7 +953,11 @@ const moveBoundingBoxOnTopOfAnother = async (
   await page.mouse.up();
 };
 
+<<<<<<< HEAD
 const typeSearchText = async (component: Locator, searchText: string) => {
+=======
+const typeSearchText = async (component: MountResult, searchText: string) => {
+>>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
   const searchInput = component.locator(".saltInput-input");
   await expect(searchInput).toBeEnabled();
   await searchInput.fill(searchText);
