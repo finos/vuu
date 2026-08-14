@@ -141,6 +141,54 @@ test.describe("Test table editing", () => {
     ).toHaveValue("TEST-006");
   });
 
+  test("inserts two consecutive rows in the same edit session", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<TestTableEmpty />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const id = inlineAddRow.getByRole("textbox", { name: "id", exact: true });
+    const description = inlineAddRow.getByRole("textbox", {
+      name: "description",
+    });
+    const quantity = inlineAddRow.getByRole("textbox", { name: "quantity" });
+    const price = inlineAddRow.getByRole("textbox", { name: "price" });
+    const externalId = inlineAddRow.getByRole("textbox", {
+      name: "externalId",
+    });
+
+    const addRow = async (
+      values: readonly [string, string, string, string, string],
+    ) => {
+      const editors = [id, description, quantity, price, externalId];
+      for (const [index, editor] of editors.entries()) {
+        await editor.fill(values[index]);
+        await editor.press("Enter");
+      }
+    };
+
+    await addRow(["TEST-006", "Foxtrot", "72", "607.5", "1006"]);
+    await expect(id).toBeFocused();
+    await expect(id).toHaveValue("");
+
+    await addRow(["TEST-007", "Golf", "84", "708.5", "1006"]);
+
+    await expect(id).toBeFocused();
+    await expect(id).toHaveValue("");
+    await expect(description).toHaveValue("");
+    await expect(quantity).toHaveValue("");
+    await expect(price).toHaveValue("");
+    await expect(externalId).toHaveValue("");
+    await expect(
+      page.getByRole("textbox", { name: "id", exact: true }).nth(1),
+    ).toHaveValue("TEST-006");
+    await expect(
+      page.getByRole("textbox", { name: "id", exact: true }).nth(2),
+    ).toHaveValue("TEST-007");
+  });
+
   test("marks only omitted cells as invalid when the final cell is committed", async ({
     mount,
     page,

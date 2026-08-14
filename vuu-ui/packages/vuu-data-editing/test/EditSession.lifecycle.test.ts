@@ -130,6 +130,7 @@ describe("EditSession lifecycle", () => {
     await expect(editSession.addNewRow()).resolves.toEqual(SUCCESS);
     expect(addRow).toHaveBeenCalledWith({ id: 7, name: "Alice" });
     expect(editSession.newRowState).toMatchObject({
+      draftRevision: 1,
       errors: {},
       values: {},
     });

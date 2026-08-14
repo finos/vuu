@@ -24,9 +24,10 @@ export const InlineAddRow = ({
     window: targetWindow,
   });
 
-  const { containerRef, dataRow, inlineAddColumns } = useInlineAddRow({
-    columns,
-  });
+  const { containerRef, dataRow, draftRevision, inlineAddColumns } =
+    useInlineAddRow({
+      columns,
+    });
 
   return (
     <div className={cx(classBase, className)} ref={containerRef}>
@@ -34,6 +35,7 @@ export const InlineAddRow = ({
         ariaRowIndex={ariaRowIndex}
         columns={inlineAddColumns}
         dataRow={dataRow}
+        key={draftRevision}
         offset={0}
         searchPattern=""
         showBookends={false}

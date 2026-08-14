@@ -88,7 +88,7 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
   const focusEditor = useCallback((index: number) => {
     const cell =
       containerRef.current?.querySelectorAll<HTMLElement>("[data-field]")[
-      index
+        index
       ];
     cell?.querySelector<HTMLElement>("input, button, [tabindex]")?.focus();
   }, []);
@@ -175,6 +175,7 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
   return {
     containerRef,
     dataRow,
+    draftRevision: newRowState.draftRevision,
     inlineAddColumns,
   };
 };
