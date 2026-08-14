@@ -249,6 +249,15 @@ describe("VuuDataSource", () => {
           range: Range(0, 20),
           viewport: "source-vp",
         });
+
+        vi.mocked(serverAPI.send).mockClear();
+        await session!.endEditSession(true);
+        expect(serverAPI.send).not.toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: "setViewRange",
+            viewport: "source-vp",
+          }),
+        );
       });
     });
 

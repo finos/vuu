@@ -733,8 +733,13 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     );
 
     if (isRpcSuccess(rpcResponse)) {
-      if (this.#sourceTableDataSource) {
+      const sourceTableDataSource = this.#sourceTableDataSource;
+      if (sourceTableDataSource) {
+        this.#sourceTableDataSource = undefined;
         this.unsubscribe();
+        sourceTableDataSource.refreshAfterEdit();
+      } else {
+        this.sendResumeMessage();
       }
     } else {
       if (rpcResponse?.errorMessage === "stale update") {
@@ -742,11 +747,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       } else {
         throw Error(rpcResponse?.errorMessage ?? "endEditSession failed");
       }
-    }
-    if (this.#sourceTableDataSource) {
-      this.#sourceTableDataSource.refreshAfterEdit();
-    } else {
-      this.sendResumeMessage();
     }
   }
 

@@ -463,5 +463,9 @@ describe("createSessionDataSource", () => {
         expect.arrayContaining(["row-002", "Bob"]),
       ]),
     );
+
+    updates.mockClear();
+    await editDataSource?.endEditSession?.(true);
+    expect(updates).not.toHaveBeenCalled();
   });
 });

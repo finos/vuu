@@ -287,10 +287,12 @@ export class TickingArrayDataSource extends ArrayDataSource {
     );
 
     if (isRpcSuccess(rpcResponse)) {
-      if (this.#sourceTableDataSource) {
+      const sourceTableDataSource = this.#sourceTableDataSource;
+      if (sourceTableDataSource) {
+        this.#sourceTableDataSource = undefined;
         this.unsubscribe();
       }
-      (this.#sourceTableDataSource ?? this).sendRowsToClient(true);
+      (sourceTableDataSource ?? this).sendRowsToClient(true);
     } else {
       if (rpcResponse?.errorMessage === "stale update") {
         throw new StaleUpdateError(rpcResponse.errorMessage);
