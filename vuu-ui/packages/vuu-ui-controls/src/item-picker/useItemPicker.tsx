@@ -1,11 +1,11 @@
+import { queryClosest, reorderItems } from "@vuu-ui/vuu-utils";
 import {
   FormEventHandler,
   MouseEventHandler,
   useCallback,
   useMemo,
+  useState,
 } from "react";
-import { reorderColumnItems as reorderItems } from "@vuu-ui/vuu-utils";
-import { queryClosest } from "@vuu-ui/vuu-utils";
 
 /** This is a public description of an Item that can be displayed in the ItemPicker component, defining all the
  * mandatory and option attributes that can be defined by the client. */
@@ -28,9 +28,8 @@ export interface CreateCustomItemProps {
 export interface ItemPickerHookProps {
   allItems: ItemDescriptor[];
   selectedItems: ItemDescriptor[];
-  searchPattern: string;
+  maxSelections?: number;
   onSelectedItemsChange: (newSelectedItems: ItemDescriptor[]) => void;
-  onSearchPatternChange: (newSearchPattern: string) => void;
 }
 
 const filterItems = (
@@ -40,11 +39,17 @@ const filterItems = (
   if (pattern) {
     const lowerCasePattern = pattern.toLowerCase();
     return items.filter(
-      ({ name }) => name.toLowerCase().indexOf(lowerCasePattern) !== -1,
+      (item) =>
+        getItemLabel(item).toLowerCase().indexOf(lowerCasePattern) !== -1,
     );
   } else {
     return items;
   }
+};
+
+export const getItemLabel = (item: ItemDescriptor) => {
+  if (item.label) return item.label;
+  else return item.name;
 };
 
 const itemName = (target: EventTarget): string => {
@@ -67,13 +72,20 @@ const byItemName = (
 export const useItemPicker = ({
   allItems,
   selectedItems,
-  searchPattern,
+  maxSelections,
   onSelectedItemsChange,
-  onSearchPatternChange,
 }: ItemPickerHookProps) => {
+  if (maxSelections && selectedItems.length > maxSelections) {
+    throw Error(
+      `[useItemPicker] max selections ${maxSelections} exceeded by selected items (that has count ${selectedItems.length})`,
+    );
+  }
+
+  const [searchPattern, setSearchPattern] = useState("");
+
   const handleChangeSearchInput = useCallback<FormEventHandler>((evt) => {
     const { value } = evt.target as HTMLInputElement;
-    onSearchPatternChange(value);
+    setSearchPattern(value);
   }, []);
 
   const handleAddItemToSelectedList = useCallback<
@@ -83,7 +95,7 @@ export const useItemPicker = ({
       const name = itemName(e.target);
       const itemToAdd = allItems.find((item) => item.name === name);
       if (itemToAdd) {
-        const newSelectedItems = [...selectedItems, itemToAdd];
+        const newSelectedItems = selectedItems.concat(itemToAdd);
         onSelectedItemsChange(newSelectedItems);
       } else {
         throw Error(
@@ -116,7 +128,7 @@ export const useItemPicker = ({
 
   const handleReorderSelectedItems = useCallback(
     (orderedItemNames: string[]) => {
-      let reorderedSelectedItems: ItemDescriptor[] = reorderItems(
+      const reorderedSelectedItems: ItemDescriptor[] = reorderItems(
         selectedItems,
         orderedItemNames,
       );
@@ -139,6 +151,7 @@ export const useItemPicker = ({
   }, [allItems, selectedItems, searchPattern]);
 
   return {
+    selectedItemsCount: selectedItems.length,
     selectedItemsFiltered: getSelectedItems,
     availableItemsFiltered: getAvailableItems,
     searchText: searchPattern,

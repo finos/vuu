@@ -1,12 +1,11 @@
 //Testing for issue #639
+import type { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { describe, expect, it } from "vitest";
 import {
   addColumnToSubscribedColumns,
   applyWidthToColumns,
-  reorderColumnItems,
+  getColumnsInViewport,
 } from "../src/column-utils";
-import type { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { getColumnsInViewport } from "../src/column-utils";
 
 describe("applyWidthToColumns", () => {
   describe("static layouts", () => {
@@ -508,24 +507,5 @@ describe("addColumnToSubscribedColumns", () => {
       { name: "price", serverDataType: "double" },
       { name: "vuuCreatedTimestamp", serverDataType: "long" },
     ]);
-  });
-});
-
-describe("reorderColumnItems", () => {
-  it("reorders columns to match sortedNames", () => {
-    expect(
-      reorderColumnItems(
-        [{ name: "test1" }, { name: "test2" }, { name: "test3" }],
-        ["test3", "test1", "test2"],
-      ),
-    ).toEqual([{ name: "test3" }, { name: "test1" }, { name: "test2" }]);
-  });
-  it("ignores duplicates in sortedNames", () => {
-    expect(
-      reorderColumnItems(
-        [{ name: "test1" }, { name: "test2" }, { name: "test3" }],
-        ["test3", "test3", "test1", "test2"],
-      ),
-    ).toEqual([{ name: "test3" }, { name: "test1" }, { name: "test2" }]);
   });
 });

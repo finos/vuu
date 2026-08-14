@@ -1,30 +1,28 @@
-import { MouseEventHandler, useCallback, useMemo, useState } from "react";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import {
   CreateCustomItemProps,
   ItemDescriptor,
   ItemPicker,
 } from "@vuu-ui/vuu-ui-controls";
+import { ItemTypeName } from "@vuu-ui/vuu-utils";
+import { MouseEventHandler, useCallback, useMemo, useState } from "react";
 
 interface StatefulParentProps {
   allItems: ItemDescriptor[];
   initialSelectedItems: ItemDescriptor[];
-  itemTypeSingular: string;
+  itemTypeName: ItemTypeName;
+  createCustomItemProps?: CreateCustomItemProps;
+  maxSelections?: number;
 }
 
 const StatefulParent = ({
   allItems,
   initialSelectedItems,
-  itemTypeSingular,
+  itemTypeName,
+  createCustomItemProps,
+  maxSelections,
 }: StatefulParentProps) => {
   const [selectedItems, setSelectedItems] = useState(initialSelectedItems);
-  const [searchPattern, setSearchPattern] = useState("");
-
-  const handleClickCreateCustomItem = useCallback<
-    MouseEventHandler<HTMLButtonElement>
-  >((e) => {
-    console.log("handleClickCreateCustomItem() called");
-  }, []);
 
   const handleSelectedItemsChange = useCallback(
     (newSelectedItems: ItemDescriptor[]) => {
@@ -44,28 +42,14 @@ const StatefulParent = ({
     [],
   );
 
-  const handleSearchPatternChange = useCallback((newSearchPattern: string) => {
-    console.log(
-      `handleSearchPatternChange() called with new search pattern ${newSearchPattern}`,
-    );
-
-    setSearchPattern(newSearchPattern);
-  }, []);
-
-  const customItemProps: CreateCustomItemProps = {
-    buttonLabel: "Create calculated column",
-    onClickCreateCustomItem: handleClickCreateCustomItem,
-  };
-
   return (
     <ItemPicker
       allItems={allItems}
       selectedItems={selectedItems}
-      searchPattern={searchPattern}
-      itemTypeSingular={itemTypeSingular}
+      itemTypeName={itemTypeName}
       onSelectedItemsChange={handleSelectedItemsChange}
-      onSearchPatternChange={handleSearchPatternChange}
-      createCustomItemProps={customItemProps}
+      createCustomItemProps={createCustomItemProps}
+      maxSelections={maxSelections}
       style={{ width: 300, height: 800 }}
     />
   );
@@ -76,7 +60,7 @@ export const EmptyItemPicker = () => {
     <StatefulParent
       allItems={[]}
       initialSelectedItems={[]}
-      itemTypeSingular="pay day"
+      itemTypeName="pay day"
     />
   );
 };
@@ -112,7 +96,7 @@ export const DefaultItemPicker = () => {
     <StatefulParent
       allItems={allItems}
       initialSelectedItems={selectedItems}
-      itemTypeSingular="column"
+      itemTypeName="column"
     />
   );
 };
@@ -132,7 +116,7 @@ export const ManyItemsItemPicker = () => {
     <StatefulParent
       allItems={allItems}
       initialSelectedItems={selectedItems}
-      itemTypeSingular="column"
+      itemTypeName="column"
     />
   );
 };
@@ -140,23 +124,96 @@ export const ManyItemsItemPicker = () => {
 export const CalculatedColumnPicker = () => {
   const allItems: ItemDescriptor[] = useMemo(
     () => [
-      { name: "item1", label: "Regular column 1" },
-      { name: "item2", label: "Regular column 2" },
-      { name: "item3", label: "Regular column 3" },
-      { name: "item4", label: "Regular column 4" },
-      { name: "item5", label: "Calculated column 1", icon: "check-check" },
-      { name: "item6", label: "Calculated column 2", icon: "check-check" },
+      { name: "regularcolumn1", label: "Regular column 1" },
+      { name: "regularcolumn2", label: "Regular column 2" },
+      { name: "regularcolumn3", label: "Regular column 3" },
+      { name: "regularcolumn4", label: "Regular column 4" },
+      {
+        name: "calculatedcolumn1",
+        label: "Calculated column 1",
+        icon: "check-check",
+      },
+      {
+        name: "calculatedcolumn2",
+        label: "Calculated column 2",
+        icon: "check-check",
+      },
     ],
     [],
   );
 
   const selectedItems = useMemo(() => allItems.slice(0, 3), [allItems]);
 
+  const handleClickCreateCustomItem = useCallback<
+    MouseEventHandler<HTMLButtonElement>
+  >(() => {
+    console.log("handleClickCreateCustomItem() called");
+  }, []);
+
+  const customItemProps: CreateCustomItemProps = {
+    buttonLabel: "Create calculated column",
+    onClickCreateCustomItem: handleClickCreateCustomItem,
+  };
+
   return (
     <StatefulParent
       allItems={allItems}
       initialSelectedItems={selectedItems}
-      itemTypeSingular="column"
+      itemTypeName="column"
+      createCustomItemProps={customItemProps}
+    />
+  );
+};
+
+export const SpecialItemsWithMaxSelection = () => {
+  const allItems: ItemDescriptor[] = useMemo(
+    () => [
+      { name: "caviar", label: "Caviar" },
+      { name: "quailEgg", label: "Quail egg" },
+      { name: "truffle", label: "Truffle" },
+      { name: "foisGras", label: "Fois gras" },
+      { name: "haggis", label: "Haggis" },
+      { name: "kobeBeef", label: "Kobe beef" },
+    ],
+    [],
+  );
+
+  const selectedItems = useMemo(() => allItems.slice(0, 1), [allItems]);
+
+  const itemTypeName: ItemTypeName = {
+    singular: "delicacy",
+    plural: "delicacies",
+  };
+
+  return (
+    <StatefulParent
+      allItems={allItems}
+      initialSelectedItems={selectedItems}
+      itemTypeName={itemTypeName}
+      maxSelections={2}
+    />
+  );
+};
+
+export const MisconfiguredMaxSelection = () => {
+  const allItems: ItemDescriptor[] = useMemo(
+    () => [
+      { name: "regularcolumn1", label: "Regular column 1" },
+      { name: "regularcolumn2", label: "Regular column 2" },
+      { name: "regularcolumn3", label: "Regular column 3" },
+      { name: "regularcolumn4", label: "Regular column 4" },
+    ],
+    [],
+  );
+
+  const selectedItems = useMemo(() => allItems, [allItems]);
+
+  return (
+    <StatefulParent
+      allItems={allItems}
+      initialSelectedItems={selectedItems}
+      itemTypeName={"column"}
+      maxSelections={2}
     />
   );
 };

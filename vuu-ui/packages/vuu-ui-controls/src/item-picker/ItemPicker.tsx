@@ -1,14 +1,4 @@
 import {
-  ForwardedRef,
-  forwardRef,
-  RefCallback,
-  HTMLAttributes,
-  MouseEventHandler,
-  useCallback,
-  useMemo,
-  useRef,
-} from "react";
-import {
   Button,
   Input,
   ListBox,
@@ -19,15 +9,33 @@ import {
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { applyHighlighting } from "@vuu-ui/vuu-table";
-import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
-import { DragDropProvider, useSortable } from "@vuu-ui/vuu-utils";
 import {
-  ItemDescriptor,
+  capitalize,
+  DragDropProvider,
+  ItemTypeName,
+  pluralForm,
+  singularForm,
+  useSortable,
+} from "@vuu-ui/vuu-utils";
+import cx from "clsx";
+import {
+  ForwardedRef,
+  forwardRef,
+  HTMLAttributes,
+  MouseEventHandler,
+  RefCallback,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
+import { Icon, IconButton } from "../icon-button";
+import {
   CreateCustomItemProps,
+  getItemLabel,
+  ItemDescriptor,
   ItemPickerHookProps,
   useItemPicker,
 } from "./useItemPicker";
-import cx from "clsx";
 
 import itemPickerCss from "./ItemPicker.css";
 
@@ -39,16 +47,11 @@ export interface ItemPickerProps
   extends ItemPickerHookProps,
     HTMLAttributes<HTMLDivElement>,
     Pick<ListBoxProps<ItemDescriptor>, "selected" | "onSelectionChange"> {
-  itemTypeSingular: string;
+  itemTypeName: ItemTypeName;
   createCustomItemProps?: CreateCustomItemProps;
 }
 
-const getItemLabel = (item: ItemDescriptor) => {
-  if (item.label) return item.label;
-  else return item.name;
-};
-
-const searchIcon = <span data-icon="search" />;
+const searchIcon = <Icon name="search" />;
 const NO_SELECTION: ItemDescriptor[] = [] as const;
 
 const useSorting = (id: string, index: number) => {
@@ -128,6 +131,7 @@ const AvailableListItem = ({
   item,
   onAdd,
   searchPattern = "",
+  disabled,
   ...optionProps
 }: OptionProps & {
   index: number;
@@ -143,6 +147,7 @@ const AvailableListItem = ({
       {...optionProps}
       className={cx(classNameProp, classBaseListItem)}
       data-name={item.name}
+      disabled={disabled}
     >
       <span className={`${classBase}-text`}>{valueWithHighlighting}</span>
       <IconButton
@@ -152,6 +157,7 @@ const AvailableListItem = ({
         icon="plus"
         onClick={onAdd}
         size={16}
+        disabled={disabled}
       />
     </Option>
   );
@@ -164,12 +170,11 @@ const AvailableListItem = ({
 export const ItemPicker = forwardRef(function ItemPicker(
   {
     className,
-    itemTypeSingular,
+    itemTypeName,
     allItems,
     selectedItems,
-    searchPattern,
+    maxSelections,
     onSelectedItemsChange,
-    onSearchPatternChange,
     onSelectionChange,
     selected = NO_SELECTION,
     createCustomItemProps,
@@ -191,6 +196,7 @@ export const ItemPicker = forwardRef(function ItemPicker(
   }, []);
 
   const {
+    selectedItemsCount,
     selectedItemsFiltered,
     availableItemsFiltered,
     searchText,
@@ -201,9 +207,8 @@ export const ItemPicker = forwardRef(function ItemPicker(
   } = useItemPicker({
     allItems,
     selectedItems,
-    searchPattern,
     onSelectedItemsChange,
-    onSearchPatternChange,
+    maxSelections,
   });
 
   const listRef = useRef<HTMLDivElement>(null);
@@ -229,9 +234,12 @@ export const ItemPicker = forwardRef(function ItemPicker(
     }, 300);
   }, [availableItemsFiltered, selectedItemsFiltered]);
 
-  const searchPlaceholderText = `Find ${itemTypeSingular.toLowerCase()}`;
-  const selectedItemsHeading = `${itemTypeSingular.charAt(0).toUpperCase()}${itemTypeSingular.toLowerCase().slice(1)}s in view`;
-  const availableItemsHeading = `Available ${itemTypeSingular.toLowerCase()}s`;
+  const searchPlaceholderText = `Find ${singularForm(itemTypeName)}`;
+  const selectionsSubHeading = maxSelections
+    ? `(${selectedItemsCount} / ${maxSelections} max)`
+    : "";
+  const selectedItemsHeading = `${capitalize(pluralForm(itemTypeName))} in view ${selectionsSubHeading}`;
+  const availableItemsHeading = `Available ${pluralForm(itemTypeName)}`;
 
   return (
     <div
@@ -293,6 +301,7 @@ export const ItemPicker = forwardRef(function ItemPicker(
               onAdd={onAddItemToSelectedList}
               searchPattern={searchText.toLowerCase() as Lowercase<string>}
               value={item}
+              disabled={selectedItemsCount === maxSelections}
             />
           ))}
         </ListBox>

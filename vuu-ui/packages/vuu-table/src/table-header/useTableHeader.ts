@@ -1,3 +1,4 @@
+import { useForkRef } from "@salt-ds/core";
 import {
   ColumnDescriptor,
   RuntimeColumnDescriptor,
@@ -5,13 +6,12 @@ import {
 } from "@vuu-ui/vuu-table-types";
 import {
   queryClosest,
-  reorderColumnItems,
+  reorderItems,
   visibleColumnAtIndex,
 } from "@vuu-ui/vuu-utils";
 import { RefCallback, useCallback, useRef, useState } from "react";
-import { TableHeaderProps } from "./TableHeader";
 import { useMeasuredHeight } from "../useMeasuredHeight";
-import { useForkRef } from "@salt-ds/core";
+import { TableHeaderProps } from "./TableHeader";
 
 export interface TableHeaderHookProps
   extends Pick<
@@ -122,7 +122,7 @@ export const useTableHeader = ({
         );
         onMoveColumn(
           dragColumn?.column.name,
-          reorderColumnItems(columns, orderedColumnNames),
+          reorderItems(columns, orderedColumnNames),
         );
       }
     }, 300);

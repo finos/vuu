@@ -1,5 +1,5 @@
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { EventEmitter, reorderColumnItems, ValueOf } from "@vuu-ui/vuu-utils";
+import { EventEmitter, reorderItems, ValueOf } from "@vuu-ui/vuu-utils";
 
 export const ColumnChangeSource = {
   ColumnPicker: "column-picker",
@@ -186,7 +186,7 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
     source: ColumnChangeSource,
   ) {
     this.setSelectedColumns(
-      reorderColumnItems(this.#selectedColumns, orderedColumnNames),
+      reorderItems(this.#selectedColumns, orderedColumnNames),
       source,
       { type: SelectedColumnChangeType.ColumnsReordered },
     );

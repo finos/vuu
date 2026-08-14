@@ -1,3 +1,10 @@
+export type SingularPluralForm = {
+  singular: string;
+  plural: string;
+};
+
+export type ItemTypeName = string | SingularPluralForm;
+
 export const lastWord = (text: string): string => {
   const trimmedText = text.trim();
   const pos = trimmedText.lastIndexOf(" ");
@@ -8,8 +15,14 @@ export const lastWord = (text: string): string => {
   }
 };
 
-const capitalize = (text: string) =>
+export const capitalize = (text: string) =>
   text.length === 0 ? "" : text[0].toUpperCase() + text.slice(1);
+
+export const singularForm = (typeName: ItemTypeName) =>
+  typeof typeName === "string" ? typeName : typeName.singular;
+
+export const pluralForm = (typeName: ItemTypeName) =>
+  typeof typeName === "string" ? `${typeName}s` : typeName.plural;
 
 const regexp_worfify = /(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])/;
 export const wordify = (text: string) => {
