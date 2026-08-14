@@ -1,4 +1,3 @@
-import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { isRpcError } from "@vuu-ui/vuu-utils";
 import type { CsvUploadError } from "../CsvUpload";
@@ -31,31 +30,6 @@ export const isCsvParseError = (value: unknown): value is CsvParseError =>
 
 export const hasFileParseErrors = (parseError: CsvParseError) =>
   Object.keys(parseError.errorMap.fileErrors).length > 0;
-
-export const ensureSessionTableColumnsPresent = (
-  dataSource: Pick<DataSource, "columns">,
-) => {
-  const { columns } = dataSource;
-  const hasMessageColumn = columns.includes("vuuMsg");
-  const hasActionColumn = columns.includes("vuu_action");
-
-  if (hasMessageColumn && hasActionColumn) {
-    return;
-  }
-
-  if (hasActionColumn) {
-    const actionColumnIndex = columns.indexOf("vuu_action");
-    dataSource.columns = [
-      ...columns.slice(0, actionColumnIndex),
-      "vuuMsg",
-      ...columns.slice(actionColumnIndex),
-    ];
-  } else {
-    dataSource.columns = hasMessageColumn
-      ? columns.concat("vuu_action")
-      : columns.concat("vuuMsg", "vuu_action");
-  }
-};
 
 export const createUploadError = (
   source: CsvUploadError["source"],

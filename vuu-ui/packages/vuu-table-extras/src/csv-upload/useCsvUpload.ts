@@ -11,7 +11,6 @@ import {
 import {
   buildRowErrorMessage,
   createUploadError,
-  ensureSessionTableColumnsPresent,
   hasFileParseErrors,
   isCsvParseError,
   mergeValidationWithParseErrors,
@@ -224,7 +223,9 @@ export const useCsvUpload = ({
         "CsvUpload createSessionDataSource returned no session datasource.",
       );
     }
-    ensureSessionTableColumnsPresent(sessionDataSource);
+    if (!sessionDataSource.columns.includes("vuuMsg")) {
+      sessionDataSource.columns = sessionDataSource.columns.concat("vuuMsg");
+    }
     setActiveSessionDataSource(sessionDataSource);
     onImportSessionStarted?.(sessionDataSource);
     return sessionDataSource;
