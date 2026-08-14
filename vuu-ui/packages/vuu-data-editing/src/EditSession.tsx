@@ -12,6 +12,7 @@ import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
 export type NewRowState = {
   columns: readonly string[];
+  draftRevision: number;
   errors: Readonly<Record<string, string>>;
   submitting: boolean;
   values: Readonly<Record<string, VuuRowDataItemType>>;
@@ -73,6 +74,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   #sessionDataSource?: DataSource;
   #newRowState: NewRowState = {
     columns: [],
+    draftRevision: 0,
     errors: {},
     submitting: false,
     values: {},
@@ -277,6 +279,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
       this.#setNewRowState({
         columns: this.#newRowState.columns,
+        draftRevision: this.#newRowState.draftRevision + 1,
         errors: {},
         submitting: false,
         values: {},
@@ -440,6 +443,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     this.#isStale = false;
     this.#setNewRowState({
       columns: this.#newRowState.columns,
+      draftRevision: this.#newRowState.draftRevision + 1,
       errors: {},
       submitting: false,
       values: {},
