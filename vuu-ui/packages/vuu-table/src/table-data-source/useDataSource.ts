@@ -36,6 +36,7 @@ type DataSourceBinding = {
   rangeLimits: RangeLimits;
   rangeRequested: boolean;
   rowAutoSelected: boolean;
+  pendingRows: DataSourceRow[];
   setColumns?: (columns: string[]) => void;
 };
 
@@ -92,9 +93,13 @@ export const useDataSource = ({
             previousRange.to,
             renderBufferSize,
           );
+          const tableSchema = dataSource.tableSchema;
+          const [dataRow, setColumns] = tableSchema
+            ? dataRowFactory(dataSource.columns, tableSchema.columns)
+            : [NullDataRow, undefined];
 
           return {
-            dataRow: NullDataRow,
+            dataRow,
             dataRows: { current: [] },
             dataRowWindow: new DataRowMovingWindow(range.withBuffer),
             dataSource,
@@ -105,6 +110,8 @@ export const useDataSource = ({
             rangeLimits: { ...defaultRangeLimits },
             rangeRequested: false,
             rowAutoSelected: false,
+            pendingRows: [],
+            setColumns,
           };
         })();
   previousBindingRef.current = binding;
@@ -213,6 +220,10 @@ export const useDataSource = ({
       }
       if (message.type === "subscribed") {
         createDataRow(message.columns, message.tableSchema.columns);
+        if (binding.pendingRows.length > 0) {
+          setData(binding.pendingRows);
+          binding.pendingRows = [];
+        }
         if (message.tableSchema.rangeLimits) {
           binding.rangeLimits = message.tableSchema.rangeLimits;
         }
@@ -226,7 +237,11 @@ export const useDataSource = ({
           binding.dataRowWindow.setRowCount(message.size);
         }
         if (message.rows) {
-          setData(message.rows);
+          if (binding.setColumns === undefined) {
+            binding.pendingRows.push(...message.rows);
+          } else {
+            setData(message.rows);
+          }
           if (autoSelect && binding.rowAutoSelected === false) {
             // OR if no selected row in message.rows, e.g after a filter
             binding.rowAutoSelected = true;
