@@ -226,6 +226,7 @@ export const useItemPicker = ({
   );
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   const getSelectedItemsFiltered = useMemo(() => {
     return filterItems(selectedItems, searchPattern);
   }, [selectedItems, searchPattern]);
@@ -238,6 +239,13 @@ export const useItemPicker = ({
 
   const getAvailableItems = useMemo(() => {
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
+=======
+  const getSelectedItemsFiltered = useMemo(() => {
+    return filterItems(selectedItems, searchPattern);
+  }, [selectedItems, searchPattern]);
+
+  const getAvailableItemsFiltered = useMemo(() => {
+>>>>>>> 6df1e1e09 (Addition of available items count, this and selected items count always get displayed above lists)
     return filterItems(allItems, searchPattern)
       .filter(
         ({ name }) =>
@@ -247,6 +255,9 @@ export const useItemPicker = ({
   }, [allItems, selectedItems, searchPattern]);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 6df1e1e09 (Addition of available items count, this and selected items count always get displayed above lists)
   const getAvailableItemsCount = useMemo(() => {
     return allItems.filter(
       ({ name }) =>
@@ -254,6 +265,7 @@ export const useItemPicker = ({
     ).length;
   }, [allItems, selectedItems]);
 
+<<<<<<< HEAD
   return {
     selectedItemsCount: selectedItems.length,
     availableItemsCount: getAvailableItemsCount,
@@ -265,6 +277,13 @@ export const useItemPicker = ({
     selectedItemsFiltered: getSelectedItems,
     availableItemsFiltered: getAvailableItems,
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
+=======
+  return {
+    selectedItemsCount: selectedItems.length,
+    availableItemsCount: getAvailableItemsCount,
+    selectedItemsFiltered: getSelectedItemsFiltered,
+    availableItemsFiltered: getAvailableItemsFiltered,
+>>>>>>> 6df1e1e09 (Addition of available items count, this and selected items count always get displayed above lists)
     searchText: searchPattern,
     onChangeSearchInput: handleChangeSearchInput,
     onAddItemToSelectedList: handleAddItemToSelectedList,

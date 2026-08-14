@@ -59,7 +59,6 @@ import { DragDropProvider, useSortable } from "@vuu-ui/vuu-utils";
 =======
 >>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
 import {
-  capitalize,
   DragDropProvider,
   ItemTypeName,
   pluralForm,
@@ -312,11 +311,14 @@ export const ItemPicker = forwardRef(function ItemPicker(
 <<<<<<< HEAD
     selectedItemsCount,
     availableItemsCount,
+<<<<<<< HEAD
 =======
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
 =======
     selectedItemsCount,
 >>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
+=======
+>>>>>>> 6df1e1e09 (Addition of available items count, this and selected items count always get displayed above lists)
     selectedItemsFiltered,
     availableItemsFiltered,
     searchText,
@@ -378,12 +380,18 @@ export const ItemPicker = forwardRef(function ItemPicker(
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
 =======
   const searchPlaceholderText = `Find ${singularForm(itemTypeName)}`;
+<<<<<<< HEAD
   const selectionsSubHeading = maxSelections
     ? `(${selectedItemsCount} / ${maxSelections} max)`
     : "";
   const selectedItemsHeading = `${capitalize(pluralForm(itemTypeName))} in view ${selectionsSubHeading}`;
   const availableItemsHeading = `Available ${pluralForm(itemTypeName)}`;
 >>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
+=======
+  const maxSelectionsSubHeading = maxSelections ? `(${maxSelections} max)` : "";
+  const selectedItemsHeading = `${selectedItemsCount} ${selectedItemsCount === 1 ? singularForm(itemTypeName) : pluralForm(itemTypeName)} in view ${maxSelectionsSubHeading}`;
+  const availableItemsHeading = `${availableItemsCount} available ${availableItemsCount === 1 ? singularForm(itemTypeName) : pluralForm(itemTypeName)}`;
+>>>>>>> 6df1e1e09 (Addition of available items count, this and selected items count always get displayed above lists)
 
   return (
     <div
