@@ -65,6 +65,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
   #pendingVisualLink?: LinkDescriptorWithLabel;
   #rpcMenuServices: RpcMenuService[] | undefined;
   #rpcServices: RpcService[] | undefined;
+  #editSourceDataSource: TickingArrayDataSource | undefined;
   #table?: Table;
   #selectionLinkSubscribers: Map<string, LinkSubscription> | undefined;
   #visualLinkService?: VisualLinkHandler;
@@ -174,11 +175,15 @@ export class TickingArrayDataSource extends ArrayDataSource {
       const columns = this.config.columns.includes("vuu_action")
         ? this.config.columns
         : this.config.columns.concat("vuu_action");
-      return this.#vuuModule?.createDataSource(
+      const sessionDataSource = this.#vuuModule?.createDataSource(
         sessionTable.table,
         sessionTable.table,
         { ...this.config, columns },
       );
+      if (sessionDataSource instanceof TickingArrayDataSource) {
+        sessionDataSource.#editSourceDataSource = this;
+      }
+      return sessionDataSource;
     } else {
       throw Error(
         `[TickingArrayDataSource] createSessionDataSource ${rpcResponse?.errorMessage}`,
@@ -282,7 +287,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
     );
 
     if (isRpcSuccess(rpcResponse)) {
-      this.sendRowsToClient(true);
+      if (this.#editSourceDataSource) {
+        this.unsubscribe();
+      }
+      (this.#editSourceDataSource ?? this).sendRowsToClient(true);
     } else {
       if (rpcResponse?.errorMessage === "stale update") {
         throw new StaleUpdateError(rpcResponse.errorMessage);
