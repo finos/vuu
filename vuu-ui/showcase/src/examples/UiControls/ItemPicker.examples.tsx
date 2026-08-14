@@ -1,7 +1,10 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 import { MouseEventHandler, useCallback, useMemo, useState } from "react";
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
+=======
+>>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import {
   CreateCustomItemProps,
@@ -9,14 +12,20 @@ import {
   ItemPicker,
 } from "@vuu-ui/vuu-ui-controls";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { ItemTypeName } from "@vuu-ui/vuu-utils";
 import { MouseEventHandler, useCallback, useMemo, useState } from "react";
 =======
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
+=======
+import { ItemTypeName } from "@vuu-ui/vuu-utils";
+import { MouseEventHandler, useCallback, useMemo, useState } from "react";
+>>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
 
 interface StatefulParentProps {
   allItems: ItemDescriptor[];
   initialSelectedItems: ItemDescriptor[];
+<<<<<<< HEAD
 <<<<<<< HEAD
   itemTypeName: ItemTypeName;
   createCustomItemProps?: CreateCustomItemProps;
@@ -24,11 +33,17 @@ interface StatefulParentProps {
 =======
   itemTypeSingular: string;
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
+=======
+  itemTypeName: ItemTypeName;
+  createCustomItemProps?: CreateCustomItemProps;
+  maxSelections?: number;
+>>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
 }
 
 const StatefulParent = ({
   allItems,
   initialSelectedItems,
+<<<<<<< HEAD
 <<<<<<< HEAD
   itemTypeName,
   createCustomItemProps,
@@ -47,6 +62,13 @@ const StatefulParent = ({
     console.log("handleClickCreateCustomItem() called");
   }, []);
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
+=======
+  itemTypeName,
+  createCustomItemProps,
+  maxSelections,
+}: StatefulParentProps) => {
+  const [selectedItems, setSelectedItems] = useState(initialSelectedItems);
+>>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
 
   const handleSelectedItemsChange = useCallback(
     (newSelectedItems: ItemDescriptor[]) => {
@@ -67,6 +89,7 @@ const StatefulParent = ({
   );
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   const handleSearchPatternChange = useCallback((newSearchPattern: string) => {
     console.log(
@@ -82,10 +105,13 @@ const StatefulParent = ({
   };
 
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
+=======
+>>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
   return (
     <ItemPicker
       allItems={allItems}
       selectedItems={selectedItems}
+<<<<<<< HEAD
 <<<<<<< HEAD
       itemTypeName={itemTypeName}
       onSelectedItemsChange={handleSelectedItemsChange}
@@ -98,6 +124,12 @@ const StatefulParent = ({
       onSearchPatternChange={handleSearchPatternChange}
       createCustomItemProps={customItemProps}
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
+=======
+      itemTypeName={itemTypeName}
+      onSelectedItemsChange={handleSelectedItemsChange}
+      createCustomItemProps={createCustomItemProps}
+      maxSelections={maxSelections}
+>>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
       style={{ width: 300, height: 800 }}
     />
   );
@@ -109,10 +141,14 @@ export const EmptyItemPicker = () => {
       allItems={[]}
       initialSelectedItems={[]}
 <<<<<<< HEAD
+<<<<<<< HEAD
       itemTypeName="pay day"
 =======
       itemTypeSingular="pay day"
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
+=======
+      itemTypeName="pay day"
+>>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
     />
   );
 };
@@ -149,10 +185,14 @@ export const DefaultItemPicker = () => {
       allItems={allItems}
       initialSelectedItems={selectedItems}
 <<<<<<< HEAD
+<<<<<<< HEAD
       itemTypeName="column"
 =======
       itemTypeSingular="column"
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
+=======
+      itemTypeName="column"
+>>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
     />
   );
 };
@@ -173,10 +213,14 @@ export const ManyItemsItemPicker = () => {
       allItems={allItems}
       initialSelectedItems={selectedItems}
 <<<<<<< HEAD
+<<<<<<< HEAD
       itemTypeName="column"
 =======
       itemTypeSingular="column"
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
+=======
+      itemTypeName="column"
+>>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
     />
   );
 };
@@ -185,6 +229,9 @@ export const CalculatedColumnPicker = () => {
   const allItems: ItemDescriptor[] = useMemo(
     () => [
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
       { name: "regularcolumn1", label: "Regular column 1" },
       { name: "regularcolumn2", label: "Regular column 2" },
       { name: "regularcolumn3", label: "Regular column 3" },
@@ -199,6 +246,7 @@ export const CalculatedColumnPicker = () => {
         label: "Calculated column 2",
         icon: "check-check",
       },
+<<<<<<< HEAD
 =======
       { name: "item1", label: "Regular column 1" },
       { name: "item2", label: "Regular column 2" },
@@ -207,6 +255,8 @@ export const CalculatedColumnPicker = () => {
       { name: "item5", label: "Calculated column 1", icon: "check-check" },
       { name: "item6", label: "Calculated column 2", icon: "check-check" },
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
+=======
+>>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
     ],
     [],
   );
@@ -214,6 +264,9 @@ export const CalculatedColumnPicker = () => {
   const selectedItems = useMemo(() => allItems.slice(0, 3), [allItems]);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
   const handleClickCreateCustomItem = useCallback<
     MouseEventHandler<HTMLButtonElement>
   >(() => {
@@ -225,13 +278,19 @@ export const CalculatedColumnPicker = () => {
     onClickCreateCustomItem: handleClickCreateCustomItem,
   };
 
+<<<<<<< HEAD
 =======
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
+=======
+>>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
   return (
     <StatefulParent
       allItems={allItems}
       initialSelectedItems={selectedItems}
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
       itemTypeName="column"
       createCustomItemProps={customItemProps}
     />
@@ -287,9 +346,12 @@ export const MisconfiguredMaxSelection = () => {
       initialSelectedItems={selectedItems}
       itemTypeName={"column"}
       maxSelections={2}
+<<<<<<< HEAD
 =======
       itemTypeSingular="column"
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
+=======
+>>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
     />
   );
 };
