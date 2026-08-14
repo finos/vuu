@@ -83,8 +83,6 @@ const EditableUsersTable = ({
     const visibleColumns = schema.columns.filter(
       ({ name }) => !INTERNAL_COLUMN_NAMES.has(name),
     );
-    const keyColumns = new Set(schema.key);
-
     return {
       columnLayout: "fit",
       columns:
@@ -93,9 +91,10 @@ const EditableUsersTable = ({
           : visibleColumns
               .map<ColumnDescriptor>((column) => ({
                 ...column,
-                editable: keyColumns.has(column.name)
-                  ? false
-                  : column.editable !== false,
+                editable:
+                  column.name === schema.key
+                    ? false
+                    : column.editable !== false,
               }))
               .concat({ hidden: true, name: "vuu_action" }, UNDO_DELETE_COLUMN),
       rowClassNameGenerators,
