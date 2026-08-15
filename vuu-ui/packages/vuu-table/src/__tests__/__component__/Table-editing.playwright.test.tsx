@@ -8,6 +8,7 @@ import {
   TestTableEmpty,
   TestTableFIveRows,
   TwoEditableInstruments,
+  UseEditableTableSessionReadiness,
 } from "../../../../../showcase/src/examples/Table/Editing.examples";
 import { expect } from "../../../../../playwright/customAssertions";
 import { TableOM } from "./TableOM";
@@ -15,6 +16,36 @@ import { TableOM } from "./TableOM";
 const IS_EDITABLE = true;
 const NOT_EDITABLE = false;
 const NOT_EDITING = false;
+
+test.describe("useEditableTable session readiness", () => {
+  test("becomes ready when the session datasource subscribes", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<UseEditableTableSessionReadiness />);
+
+    const readiness = page.locator("output");
+    await page.getByRole("button", { name: "Start edit session" }).click();
+
+    await expect(readiness).toHaveAttribute("data-session", "true");
+    await expect(readiness).toHaveAttribute("data-ready", "false");
+    await page.getByRole("button", { name: "Release subscription" }).click();
+    await expect(readiness).toHaveAttribute("data-ready", "true");
+  });
+
+  test("recognizes a session datasource that is already subscribed", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<UseEditableTableSessionReadiness delaySubscription={false} />);
+
+    const readiness = page.locator("output");
+    await page.getByRole("button", { name: "Start edit session" }).click();
+
+    await expect(readiness).toHaveAttribute("data-session", "true");
+    await expect(readiness).toHaveAttribute("data-ready", "true");
+  });
+});
 
 test.describe("Inline add row", () => {
   test("renders insert-editable cells and blanks update-only columns", async ({
