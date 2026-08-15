@@ -8,6 +8,7 @@ import {
   TestTableEmpty,
   TestTableFIveRows,
   TwoEditableInstruments,
+  UseEditableTableSessionReadiness,
 } from "../../../../../showcase/src/examples/Table/Editing.examples";
 import { expect } from "../../../../../playwright/customAssertions";
 import { TableOM } from "./TableOM";
@@ -15,6 +16,36 @@ import { TableOM } from "./TableOM";
 const IS_EDITABLE = true;
 const NOT_EDITABLE = false;
 const NOT_EDITING = false;
+
+test.describe("useEditableTable session readiness", () => {
+  test("becomes ready when the session datasource subscribes", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<UseEditableTableSessionReadiness />);
+
+    const readiness = page.locator("output");
+    await page.getByRole("button", { name: "Start edit session" }).click();
+
+    await expect(readiness).toHaveAttribute("data-session", "true");
+    await expect(readiness).toHaveAttribute("data-ready", "false");
+    await page.getByRole("button", { name: "Release subscription" }).click();
+    await expect(readiness).toHaveAttribute("data-ready", "true");
+  });
+
+  test("recognizes a session datasource that is already subscribed", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<UseEditableTableSessionReadiness delaySubscription={false} />);
+
+    const readiness = page.locator("output");
+    await page.getByRole("button", { name: "Start edit session" }).click();
+
+    await expect(readiness).toHaveAttribute("data-session", "true");
+    await expect(readiness).toHaveAttribute("data-ready", "true");
+  });
+});
 
 test.describe("Inline add row", () => {
   test("renders insert-editable cells and blanks update-only columns", async ({
@@ -873,6 +904,50 @@ test.describe("Edit conflicts", () => {
 // ---------------------------------------------------------------------------
 
 test.describe("Inline row editing (session)", () => {
+  test("waits for the session subscription before showing edit columns", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<EditableInstrumentsInlineEdit />);
+
+    const table = page.getByRole("table");
+    const tableRoot = page.locator("[data-viewport]");
+    const sourceViewport = await tableRoot.getAttribute("data-viewport");
+    await page.evaluate(() => {
+      const table = document.querySelector('[role="table"]');
+      const tableRoot = document.querySelector("[data-viewport]");
+      if (!table || !tableRoot) {
+        throw new Error("table not found");
+      }
+
+      table.setAttribute("data-edit-source-violation", "false");
+      new MutationObserver(() => {
+        if (
+          tableRoot.getAttribute("data-viewport") ===
+            table.getAttribute("data-source-viewport") &&
+          table.querySelector('[data-column-name="undo"]') &&
+          table.getAttribute("data-edit-source-violation") !== "true"
+        ) {
+          table.setAttribute("data-edit-source-violation", "true");
+        }
+      }).observe(table, { attributes: true, childList: true, subtree: true });
+      table.setAttribute(
+        "data-source-viewport",
+        tableRoot.getAttribute("data-viewport") ?? "",
+      );
+    });
+
+    await page.getByRole("radio", { name: "Edit" }).click();
+    await expect(
+      page.getByRole("columnheader", { name: "undo" }),
+    ).toBeVisible();
+
+    expect(await tableRoot.getAttribute("data-viewport")).not.toBe(
+      sourceViewport,
+    );
+    await expect(table).toHaveAttribute("data-edit-source-violation", "false");
+  });
+
   test("entering Edit mode shows the undo column and action buttons", async ({
     mount,
     page,

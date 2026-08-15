@@ -59,6 +59,7 @@ import {
   SyntheticEvent,
   useCallback,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { SimulTable } from "./SimulTableTemplate";
@@ -387,6 +388,7 @@ const EditableInstrumentsTemplate = ({
     dataSource,
     editSession,
     hasSelection,
+    isEditSessionReady,
     onCancel,
     onDelete,
     onSave,
@@ -418,10 +420,9 @@ const EditableInstrumentsTemplate = ({
 
       return {
         columns:
-          editMode === "view"
+          !isEditSessionReady
             ? InstrumentColumns
-            :
-            InstrumentColumns.map((col) =>
+            : InstrumentColumns.map((col) =>
               col.name === "isin" ||
                 col.name === "vuuCreatedTimestamp" ||
                 col.name === "vuuUpdatedTimestamp" ||
@@ -436,12 +437,14 @@ const EditableInstrumentsTemplate = ({
               UNDO_DELETE_COLUMN),
 
         columnDefaultWidth: 150,
-        rowClassNameGenerators,
+        rowClassNameGenerators: isEditSessionReady
+          ? rowClassNameGenerators
+          : undefined,
         rowSeparators: true,
         zebraStripes: true,
       };
     },
-    [editMode, rowClassNameGenerators],
+    [isEditSessionReady, rowClassNameGenerators],
   );
 
   return (
@@ -459,10 +462,10 @@ const EditableInstrumentsTemplate = ({
             data-viewport={dataSource.viewport}
             dataSource={dataSource}
             customHeader={
-              editMode === "edit" && showInlineAddRow ? InlineAddRow : undefined
+              isEditSessionReady && showInlineAddRow ? InlineAddRow : undefined
             }
             renderBufferSize={10}
-            isRowSelectable={editMode === "edit" ? isRowSelectable : undefined}
+            isRowSelectable={isEditSessionReady ? isRowSelectable : undefined}
             selectionModel={editMode === "edit" ? "checkbox" : "none"}
           />
         </DataEditingProvider>
@@ -495,6 +498,91 @@ export const EditableInstrumentsInlineEdit = () => (
     <NotificationsProvider>
       <EditableInstrumentsTemplate copyOption="All" />
     </NotificationsProvider>
+  </LocalDataSourceProvider>
+);
+
+const UseEditableTableSessionReadinessTemplate = ({
+  delaySubscription,
+}: {
+  delaySubscription: boolean;
+}) => {
+  const [editMode, setEditMode] = useState<EditMode>("view");
+  const [canReleaseSubscription, setCanReleaseSubscription] = useState(false);
+  const releaseSubscriptionRef = useRef<() => void>(undefined);
+  const { VuuDataSource } = useData();
+  const columns = useMemo(() => schema.columns.map(toColumnName), []);
+
+  const sourceDataSource = useMemo(() => {
+    const dataSource = new VuuDataSource({
+      columns,
+      table: schema.table,
+      viewport: `vp-${_viewportId++}`,
+    });
+    const createSessionDataSource =
+      dataSource.createSessionDataSource?.bind(dataSource);
+
+    if (delaySubscription && createSessionDataSource) {
+      dataSource.createSessionDataSource = async (copyOption) => {
+        const sessionDataSource = await createSessionDataSource(copyOption);
+        if (sessionDataSource) {
+          const subscribe = sessionDataSource.subscribe.bind(sessionDataSource);
+          sessionDataSource.subscribe = (props, callback) =>
+            new Promise<void>((resolve, reject) => {
+              releaseSubscriptionRef.current = () => {
+                releaseSubscriptionRef.current = undefined;
+                setCanReleaseSubscription(false);
+                void subscribe(props, callback).then(resolve, reject);
+              };
+              setCanReleaseSubscription(true);
+            });
+        }
+        return sessionDataSource;
+      };
+    }
+
+    return dataSource;
+  }, [VuuDataSource, columns, delaySubscription]);
+
+  const { dataSource, isEditSessionReady, sessionDataSource } =
+    useEditableTable({
+      dataSource: sourceDataSource,
+      isEditMode: editMode === "edit",
+      onCancel: () => setEditMode("view"),
+      onSave: () => setEditMode("view"),
+    });
+
+  const config = useMemo<TableConfig>(
+    () => ({ columns: InstrumentColumns }),
+    [],
+  );
+
+  return (
+    <div style={{ height: 320 }}>
+      <button onClick={() => setEditMode("edit")}>Start edit session</button>
+      <button
+        disabled={!canReleaseSubscription}
+        onClick={() => releaseSubscriptionRef.current?.()}
+      >
+        Release subscription
+      </button>
+      <output
+        data-ready={isEditSessionReady}
+        data-session={Boolean(sessionDataSource)}
+      />
+      <Table config={config} dataSource={dataSource} />
+    </div>
+  );
+};
+
+export const UseEditableTableSessionReadiness = ({
+  delaySubscription = true,
+}: {
+  delaySubscription?: boolean;
+}) => (
+  <LocalDataSourceProvider>
+    <UseEditableTableSessionReadinessTemplate
+      delaySubscription={delaySubscription}
+    />
   </LocalDataSourceProvider>
 );
 
