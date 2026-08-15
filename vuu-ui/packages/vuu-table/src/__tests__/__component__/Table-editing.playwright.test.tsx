@@ -873,6 +873,50 @@ test.describe("Edit conflicts", () => {
 // ---------------------------------------------------------------------------
 
 test.describe("Inline row editing (session)", () => {
+  test("waits for the session subscription before showing edit columns", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<EditableInstrumentsInlineEdit />);
+
+    const table = page.getByRole("table");
+    const tableRoot = page.locator("[data-viewport]");
+    const sourceViewport = await tableRoot.getAttribute("data-viewport");
+    await page.evaluate(() => {
+      const table = document.querySelector('[role="table"]');
+      const tableRoot = document.querySelector("[data-viewport]");
+      if (!table || !tableRoot) {
+        throw new Error("table not found");
+      }
+
+      table.setAttribute("data-edit-source-violation", "false");
+      new MutationObserver(() => {
+        if (
+          tableRoot.getAttribute("data-viewport") ===
+            table.getAttribute("data-source-viewport") &&
+          table.querySelector('[data-column-name="undo"]') &&
+          table.getAttribute("data-edit-source-violation") !== "true"
+        ) {
+          table.setAttribute("data-edit-source-violation", "true");
+        }
+      }).observe(table, { attributes: true, childList: true, subtree: true });
+      table.setAttribute(
+        "data-source-viewport",
+        tableRoot.getAttribute("data-viewport") ?? "",
+      );
+    });
+
+    await page.getByRole("radio", { name: "Edit" }).click();
+    await expect(
+      page.getByRole("columnheader", { name: "undo" }),
+    ).toBeVisible();
+
+    expect(await tableRoot.getAttribute("data-viewport")).not.toBe(
+      sourceViewport,
+    );
+    await expect(table).toHaveAttribute("data-edit-source-violation", "false");
+  });
+
   test("entering Edit mode shows the undo column and action buttons", async ({
     mount,
     page,

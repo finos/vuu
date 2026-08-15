@@ -58,6 +58,7 @@ import {
   ReactElement,
   SyntheticEvent,
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -391,6 +392,7 @@ const EditableInstrumentsTemplate = ({
     onDelete,
     onSave,
     rowClassNameGenerators,
+    sessionDataSource,
     sourceDataSource,
   } = useEditableTable({
     dataSource: sourceTableDataSource,
@@ -400,6 +402,37 @@ const EditableInstrumentsTemplate = ({
     onCancel: exitEditMode,
     onSave: exitEditMode,
   });
+
+  const [subscribedSessionDataSource, setSubscribedSessionDataSource] =
+    useState<DataSource>();
+
+  useEffect(() => {
+    if (!sessionDataSource) {
+      setSubscribedSessionDataSource(undefined);
+      return;
+    }
+
+    const handleSubscribed = () => {
+      if (
+        sessionDataSource.status === "subscribed" &&
+        sessionDataSource.tableSchema
+      ) {
+        setSubscribedSessionDataSource(sessionDataSource);
+      }
+    };
+
+    setSubscribedSessionDataSource(undefined);
+    sessionDataSource.on("subscribed", handleSubscribed);
+    handleSubscribed();
+
+    return () =>
+      sessionDataSource.removeListener("subscribed", handleSubscribed);
+  }, [sessionDataSource]);
+
+  const isEditSessionReady =
+    editMode === "edit" &&
+    sessionDataSource !== undefined &&
+    subscribedSessionDataSource === sessionDataSource;
 
   const onToggleEditMode = useCallback(
     (e: SyntheticEvent<HTMLButtonElement>) => {
@@ -418,10 +451,9 @@ const EditableInstrumentsTemplate = ({
 
       return {
         columns:
-          editMode === "view"
+          !isEditSessionReady
             ? InstrumentColumns
-            :
-            InstrumentColumns.map((col) =>
+            : InstrumentColumns.map((col) =>
               col.name === "isin" ||
                 col.name === "vuuCreatedTimestamp" ||
                 col.name === "vuuUpdatedTimestamp" ||
@@ -436,12 +468,14 @@ const EditableInstrumentsTemplate = ({
               UNDO_DELETE_COLUMN),
 
         columnDefaultWidth: 150,
-        rowClassNameGenerators,
+        rowClassNameGenerators: isEditSessionReady
+          ? rowClassNameGenerators
+          : undefined,
         rowSeparators: true,
         zebraStripes: true,
       };
     },
-    [editMode, rowClassNameGenerators],
+    [isEditSessionReady, rowClassNameGenerators],
   );
 
   return (
@@ -459,10 +493,10 @@ const EditableInstrumentsTemplate = ({
             data-viewport={dataSource.viewport}
             dataSource={dataSource}
             customHeader={
-              editMode === "edit" && showInlineAddRow ? InlineAddRow : undefined
+              isEditSessionReady && showInlineAddRow ? InlineAddRow : undefined
             }
             renderBufferSize={10}
-            isRowSelectable={editMode === "edit" ? isRowSelectable : undefined}
+            isRowSelectable={isEditSessionReady ? isRowSelectable : undefined}
             selectionModel={editMode === "edit" ? "checkbox" : "none"}
           />
         </DataEditingProvider>
