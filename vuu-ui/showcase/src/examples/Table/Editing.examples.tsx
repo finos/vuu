@@ -58,7 +58,6 @@ import {
   ReactElement,
   SyntheticEvent,
   useCallback,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -388,11 +387,11 @@ const EditableInstrumentsTemplate = ({
     dataSource,
     editSession,
     hasSelection,
+    isEditSessionReady,
     onCancel,
     onDelete,
     onSave,
     rowClassNameGenerators,
-    sessionDataSource,
     sourceDataSource,
   } = useEditableTable({
     dataSource: sourceTableDataSource,
@@ -402,37 +401,6 @@ const EditableInstrumentsTemplate = ({
     onCancel: exitEditMode,
     onSave: exitEditMode,
   });
-
-  const [subscribedSessionDataSource, setSubscribedSessionDataSource] =
-    useState<DataSource>();
-
-  useEffect(() => {
-    if (!sessionDataSource) {
-      setSubscribedSessionDataSource(undefined);
-      return;
-    }
-
-    const handleSubscribed = () => {
-      if (
-        sessionDataSource.status === "subscribed" &&
-        sessionDataSource.tableSchema
-      ) {
-        setSubscribedSessionDataSource(sessionDataSource);
-      }
-    };
-
-    setSubscribedSessionDataSource(undefined);
-    sessionDataSource.on("subscribed", handleSubscribed);
-    handleSubscribed();
-
-    return () =>
-      sessionDataSource.removeListener("subscribed", handleSubscribed);
-  }, [sessionDataSource]);
-
-  const isEditSessionReady =
-    editMode === "edit" &&
-    sessionDataSource !== undefined &&
-    subscribedSessionDataSource === sessionDataSource;
 
   const onToggleEditMode = useCallback(
     (e: SyntheticEvent<HTMLButtonElement>) => {

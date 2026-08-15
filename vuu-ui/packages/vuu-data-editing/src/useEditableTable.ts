@@ -76,6 +76,8 @@ export const useEditableTable = ({
     editSession.lifecycle,
   );
   const [editState, setEditState] = useState<EditState>(editSession.editState);
+  const [subscribedSessionDataSource, setSubscribedSessionDataSource] =
+    useState<DataSource>();
   const onCancelRef = useRef(onCancel);
   onCancelRef.current = onCancel;
 
@@ -121,6 +123,28 @@ export const useEditableTable = ({
   }, [dataSource]);
 
   useEffect(() => {
+    if (!sessionDataSource) {
+      setSubscribedSessionDataSource(undefined);
+      return;
+    }
+
+    const handleSubscribed = () =>
+      setSubscribedSessionDataSource(sessionDataSource);
+
+    setSubscribedSessionDataSource(undefined);
+    sessionDataSource.on("subscribed", handleSubscribed);
+    if (
+      sessionDataSource.status === "subscribed" &&
+      sessionDataSource.tableSchema
+    ) {
+      handleSubscribed();
+    }
+
+    return () =>
+      sessionDataSource.removeListener("subscribed", handleSubscribed);
+  }, [sessionDataSource]);
+
+  useEffect(() => {
     const handleEditState = (nextEditState: EditState) => {
       setEditState(nextEditState);
     };
@@ -161,6 +185,13 @@ export const useEditableTable = ({
     canCancel &&
     (editState === "dirty" || editState === "stale") &&
     editSession.invalidCount === 0;
+  const isEditSessionReady =
+    isEditMode &&
+    sessionDataSource !== undefined &&
+    sessionDataSource === editSession.sessionDataSource &&
+    subscribedSessionDataSource === sessionDataSource &&
+    sessionDataSource.status === "subscribed" &&
+    sessionDataSource.tableSchema !== undefined;
 
   return {
     canCancel,
@@ -169,6 +200,7 @@ export const useEditableTable = ({
     editSession,
     lifecycle,
     hasSelection: selectionCount > 0,
+    isEditSessionReady,
     onCancel: handleCancel,
     onDelete: handleDelete,
     onSave: handleSave,
