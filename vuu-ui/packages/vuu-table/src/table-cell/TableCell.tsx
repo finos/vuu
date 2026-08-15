@@ -14,6 +14,11 @@ import tableCellCss from "./TableCell.css";
 
 const classBase = "vuuTableCell";
 
+export const getCellValue = (
+  column: Pick<TableCellProps["column"], "name" | "source">,
+  dataRow: TableCellProps["dataRow"],
+) => (column.source === "client" ? undefined : dataRow[column.name]);
+
 export const TableCell = ({
   column,
   dataRow,
@@ -112,7 +117,10 @@ export const TableCell = ({
           searchPattern={searchPattern}
         />
       ) : (
-        applyHighlighting(valueFormatter(dataRow[column.name]), searchPattern)
+        applyHighlighting(
+          valueFormatter(getCellValue(column, dataRow)),
+          searchPattern,
+        )
       )}
     </div>
   );

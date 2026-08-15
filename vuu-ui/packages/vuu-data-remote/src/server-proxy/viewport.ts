@@ -44,7 +44,13 @@ import {
   FreezeViewportRequest,
   UnfreezeViewportRequest,
 } from "@vuu-ui/vuu-protocol-types";
-import { getFullRange, KeySet, logger, RangeMonitor } from "@vuu-ui/vuu-utils";
+import {
+  getFullRange,
+  isCalculatedColumn,
+  KeySet,
+  logger,
+  RangeMonitor,
+} from "@vuu-ui/vuu-utils";
 import { getFirstAndLastRows } from "../message-utils";
 import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
 import * as Message from "./messages";
@@ -323,15 +329,26 @@ export class Viewport {
       table === baseTableSchema.table.table
         ? baseTableSchema
         : {
-          ...baseTableSchema,
-          table: {
-            ...baseTableSchema.table,
-            session: table,
-          },
-        };
+            ...baseTableSchema,
+            columns: baseTableSchema.columns.concat(
+              columns
+                .filter(
+                  (name) =>
+                    !isCalculatedColumn(name) &&
+                    !baseTableSchema.columns.some(
+                      (column) => column.name === name,
+                    ),
+                )
+                .map((name) => ({ name, serverDataType: "string" as const })),
+            ),
+            table: {
+              ...baseTableSchema.table,
+              session: table,
+            },
+          };
 
     if (tableSchema.rangeLimits) {
-      this.#maxRangeEnd = tableSchema.rangeLimits?.maxRangeEnd
+      this.#maxRangeEnd = tableSchema.rangeLimits?.maxRangeEnd;
     }
 
     return {

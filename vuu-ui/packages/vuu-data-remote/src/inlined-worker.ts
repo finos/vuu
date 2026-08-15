@@ -18,6 +18,10 @@ function partition(array, test, pass = [], fail = []) {
   return [pass, fail];
 }
 
+// ../vuu-utils/src/column-utils.ts
+var CalculatedColumnPattern = /.*:.*:.*/;
+var isCalculatedColumn = (columnName) => columnName !== void 0 && CalculatedColumnPattern.test(columnName);
+
 // ../vuu-utils/src/cookie-utils.ts
 var getCookieValue = (name) => {
   var _a, _b;
@@ -990,6 +994,13 @@ var Viewport = class {
     this.dataWindow.setRange(range.from, range.to);
     const tableSchema = table === baseTableSchema.table.table ? baseTableSchema : {
       ...baseTableSchema,
+      columns: baseTableSchema.columns.concat(
+        columns.filter(
+          (name) => !isCalculatedColumn(name) && !baseTableSchema.columns.some(
+            (column) => column.name === name
+          )
+        ).map((name) => ({ name, serverDataType: "string" }))
+      ),
       table: {
         ...baseTableSchema.table,
         session: table

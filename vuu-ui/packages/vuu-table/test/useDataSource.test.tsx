@@ -24,7 +24,7 @@ const sessionTableSchema: TableSchema = {
   columns: [
     { name: "id", serverDataType: "string" },
     { name: "vuuMsg", serverDataType: "string" },
-    { name: "vuu_action", serverDataType: "string" },
+    { name: "session_status", serverDataType: "string" },
   ],
   key: "id",
   table: { module: "TEST", table: "session" },
@@ -155,7 +155,7 @@ describe("useDataSource replacement suspension", () => {
     let callback: Parameters<NonNullable<DataSource["subscribe"]>>[1];
     let rows: ReturnType<typeof useDataSource>["dataRows"] = [];
     const earlySessionDataSource = {
-      columns: ["id", "vuuMsg", "vuu_action"],
+      columns: ["id", "vuuMsg", "session_status"],
       on: vi.fn(),
       range: Range(0, 1),
       removeListener: vi.fn(),
@@ -184,7 +184,7 @@ describe("useDataSource replacement suspension", () => {
           type: "viewport-update",
         });
         callback({
-          columns: ["id", "vuuMsg", "vuu_action"],
+          columns: ["id", "vuuMsg", "session_status"],
           tableSchema: sessionTableSchema,
           type: "subscribed",
         });
@@ -205,7 +205,7 @@ describe("useDataSource replacement suspension", () => {
     );
 
     expect(rows).toHaveLength(1);
-    expect(rows[0].vuu_action).toBe("addRow");
+    expect(rows[0].session_status).toBe("addRow");
     expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
   });

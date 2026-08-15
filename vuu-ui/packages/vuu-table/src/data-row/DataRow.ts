@@ -171,8 +171,8 @@ function DataRowImpl(data: VuuDataRow, columnMap: DataRowColumnMap): DataRow {
       const columnMapEntry = columnMap[prop];
 
       if (columnMapEntry === undefined) {
-        if (prop !== "" && prop !== "undo" && prop !== "vuu_action") {
-          // System columns like the selection checkbox column or client/session action columns
+        if (prop !== "") {
+          // System columns like the selection checkbox column
           console.warn(`[DataRow:Proxy] unknown column ${prop}`);
         }
         return undefined;
@@ -234,9 +234,6 @@ function createColumnMap(
           `[DataRow] calculated column with invalid serverDataType ${name}`,
         );
       }
-    } else if (name === "vuu_action") {
-      // column on a session table
-      columnMap[name] = { index: i + 10, type: "string" };
     } else {
       throw Error(`[DataRow] dataRowFactory column not in schema ${name}`);
     }

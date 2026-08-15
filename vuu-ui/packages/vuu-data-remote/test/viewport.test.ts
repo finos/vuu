@@ -177,6 +177,27 @@ describe("Viewport", () => {
         type: "subscribed",
       });
     });
+
+    it("adds subscribed session columns to the session table schema", () => {
+      const vp = new Viewport(constructor_options, noop);
+      const message = vp.handleSubscribed(
+        {
+          ...vuu_config_options,
+          columns: ["col1", "session_status"],
+          range: { from: 0, to: 50 },
+          type: "CREATE_VP_SUCCESS",
+          table: "session-test-table",
+          viewPortId: "server-vp1",
+        },
+        testSchema,
+      );
+
+      expect(message.tableSchema.columns).toEqual([
+        ...testSchema.columns,
+        { name: "col1", serverDataType: "string" },
+        { name: "session_status", serverDataType: "string" },
+      ]);
+    });
   });
 
   describe("pending range requests", () => {

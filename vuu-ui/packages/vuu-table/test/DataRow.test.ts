@@ -26,20 +26,21 @@ describe("DataRow", () => {
     expect(dataRow.bbg).toEqual("AAO L");
   });
 
-  it("maps session column vuu_action", () => {
+  it("maps a session column from the authoritative schema", () => {
     const [DataRow] = dataRowFactory(
-      ["id", "description", "vuu_action"],
+      ["id", "description", "session_status"],
       [
         { name: "id", serverDataType: "string" },
         { name: "description", serverDataType: "string" },
+        { name: "session_status", serverDataType: "string" },
       ],
     );
     // prettier-ignore
     const dataRow = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "1", "Test", "addRow"]);
-    expect(dataRow.vuu_action).toEqual("addRow");
+    expect(dataRow.session_status).toEqual("addRow");
   });
 
-  it("does not warn when accessing client column undo", () => {
+  it("warns when an unknown server column is accessed", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const [DataRow] = dataRowFactory(
       ["id"],
@@ -47,8 +48,11 @@ describe("DataRow", () => {
     );
     // prettier-ignore
     const dataRow = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "1"]);
-    expect(dataRow.undo).toBeUndefined();
-    expect(warn).not.toHaveBeenCalled();
+
+    expect(dataRow.unresolved_server_value).toBeUndefined();
+    expect(warn).toHaveBeenCalledWith(
+      "[DataRow:Proxy] unknown column unresolved_server_value",
+    );
     warn.mockRestore();
   });
 

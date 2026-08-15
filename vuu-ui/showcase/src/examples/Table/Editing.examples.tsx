@@ -391,6 +391,7 @@ const EditableInstrumentsTemplate = ({
     onDelete,
     onSave,
     rowClassNameGenerators,
+    sessionDataSource,
     sourceDataSource,
   } = useEditableTable({
     dataSource: sourceTableDataSource,
@@ -418,7 +419,7 @@ const EditableInstrumentsTemplate = ({
 
       return {
         columns:
-          editMode === "view"
+          editMode === "view" || sessionDataSource === undefined
             ? InstrumentColumns
             :
             InstrumentColumns.map((col) =>
@@ -441,7 +442,7 @@ const EditableInstrumentsTemplate = ({
         zebraStripes: true,
       };
     },
-    [editMode, rowClassNameGenerators],
+    [editMode, rowClassNameGenerators, sessionDataSource],
   );
 
   return (
@@ -462,7 +463,9 @@ const EditableInstrumentsTemplate = ({
               editMode === "edit" && showInlineAddRow ? InlineAddRow : undefined
             }
             renderBufferSize={10}
-            isRowSelectable={editMode === "edit" ? isRowSelectable : undefined}
+            isRowSelectable={
+              sessionDataSource === undefined ? undefined : isRowSelectable
+            }
             selectionModel={editMode === "edit" ? "checkbox" : "none"}
           />
         </DataEditingProvider>
