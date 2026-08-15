@@ -9,7 +9,7 @@ import scala.util.{Failure, Success, Try}
 
 class ClickHouseSortFactory(tableDef: VirtualizedSessionTableDef) extends StrictLogging {
 
-  private val DEFAULT_SORT = s"ORDER BY ${tableDef.getRemoteKeyField} ASC"
+  private val DEFAULT_SORT = s"${tableDef.getRemoteKeyField} ASC"
 
   def build(sortSpec: SortSpec): String = {
     if (sortSpec != null && sortSpec.sortDefs != null && sortSpec.sortDefs.nonEmpty) {
@@ -21,20 +21,19 @@ class ClickHouseSortFactory(tableDef: VirtualizedSessionTableDef) extends Strict
   }
 
   private def parseSort(sortSpec: SortSpec): String = {
-    val primaryKeyInSort: Boolean = sortSpec.sortDefs.exists(f => f.column == tableDef.keyField)
-
     Try(parseSortItems(sortSpec)) match {
       case Success(sortItems) =>
+        val primaryKeyInSort = sortSpec.sortDefs.exists(f => f.column == tableDef.keyField)
         val orderBy = if (primaryKeyInSort) {
-          s"ORDER BY ${sortItems.mkString(", ")}"
+          sortItems.mkString(", ")
         } else {
-          s"ORDER BY ${sortItems.mkString(", ")}, ${tableDef.getRemoteKeyField} ASC"
+          s"${sortItems.mkString(", ")}, $DEFAULT_SORT"
         }
         logger.trace(s"Parsed sort \"$orderBy\"")
         orderBy
       case Failure(err) =>
         logger.error(s"Could not parse sort $sortSpec", err)
-        s"ORDER BY ${tableDef.getRemoteKeyField} ASC"
+        DEFAULT_SORT
     }
   }
 

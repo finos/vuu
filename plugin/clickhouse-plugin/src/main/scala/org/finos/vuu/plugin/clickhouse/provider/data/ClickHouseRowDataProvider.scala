@@ -2,6 +2,7 @@ package org.finos.vuu.plugin.clickhouse.provider.data
 
 import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
+import org.finos.vuu.plugin.clickhouse.provider.filter.ClauseWithParams
 import org.finos.vuu.plugin.virtualized.api.{VirtualizedSessionTableColumn, VirtualizedSessionTableDef}
 import org.finos.vuu.viewport.ViewPortColumns
 
@@ -14,15 +15,14 @@ class ClickHouseRowDataProvider(client: ClickHouseClient,
   private val rowDataMapper = ClickHouseRowDataMapper(tableDef)
   
   def queryForRowData(viewPortColumns: ViewPortColumns,
-                      whereClause: String,
-                      params: util.Map[String, Object],
+                      clauseWithParams: ClauseWithParams,
                       orderBy: String,
                       offset: Int,
                       limit: Int): IndexedSeq[RowWithData] = {
 
-    val query = buildQuery(viewPortColumns, whereClause, orderBy, offset, limit)
+    val query = buildQuery(viewPortColumns, clauseWithParams.clause, orderBy, offset, limit)
 
-    client.executeQuery(query, params) { records =>
+    client.executeQuery(query, clauseWithParams.params) { records =>
       val buf = new ArrayBuffer[RowWithData](records.getResultRows.toInt)
       val it = records.iterator()
       while (it.hasNext) {
@@ -59,12 +59,12 @@ class ClickHouseRowDataProvider(client: ClickHouseClient,
 
     //Where
     if (whereClause != null && whereClause.nonEmpty) {
-      sb.append(" ").append(whereClause)
+      sb.append(" WHERE ").append(whereClause)
     }
 
     //Order By
     if (orderBy != null && orderBy.nonEmpty) {
-      sb.append(" ").append(orderBy)
+      sb.append(" ORDER BY ").append(orderBy)
     }
 
     //Limit

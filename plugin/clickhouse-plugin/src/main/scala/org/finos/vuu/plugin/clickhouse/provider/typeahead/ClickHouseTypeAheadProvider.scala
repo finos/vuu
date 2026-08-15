@@ -4,7 +4,7 @@ import com.clickhouse.client.api.query.Records
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.{ColumnValueProvider, DataType}
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
-import org.finos.vuu.plugin.clickhouse.provider.filter.ClickHouseFilterFactory
+import org.finos.vuu.plugin.clickhouse.provider.filter.{ClauseWithParams, ClickHouseFilterFactory, NoFilter}
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
 import org.finos.vuu.viewport.ViewPort
 
@@ -38,34 +38,28 @@ class ClickHouseTypeAheadProvider(client: ClickHouseClient,
   }
 
   private def fetchUniqueStringValues(remoteColumnName: String, starts: String, viewPort: ViewPort): Array[String] = {
-    val (whereClause, params) = buildWhereClauseAndParams(remoteColumnName, starts, viewPort)
+    val clauseWithParams = buildWhereClauseAndParams(remoteColumnName, starts, viewPort)
     val query =
-      s"SELECT DISTINCT $remoteColumnName FROM ${tableDef.getRemoteTableName} $whereClause ORDER BY $remoteColumnName LIMIT 10"
+      s"SELECT DISTINCT $remoteColumnName FROM ${tableDef.getRemoteTableName} ${clauseWithParams.clause} ORDER BY $remoteColumnName LIMIT 10"
 
-    client.executeQuery(query, params) { records =>
+    client.executeQuery(query, clauseWithParams.params) { records =>
      recordsToArray(records, remoteColumnName)
     }
   }
 
-  private def buildWhereClauseAndParams(remoteColumnName: String, starts: String, viewPort: ViewPort): (String, java.util.Map[String, Object]) = {
-    val (baseFilter, params) = filterFactory.build(null, tableDef.getRemotePermissionFilterSpecFunction.apply(viewPort))
-    
-    val filterClause =
+  private def buildWhereClauseAndParams(remoteColumnName: String, starts: String, viewPort: ViewPort): ClauseWithParams = {
+    val permissionClauseWithParams = filterFactory.build(tableDef.getRemotePermissionFilterSpecFunction.apply(viewPort))
+
+    val typeAheadClauseWithParams =
       if (starts != null && !starts.isBlank) {
-         params.put("p_starts", starts.toLowerCase)
-         s"startsWith(lowerUTF8($remoteColumnName), {p_starts: String})"
+        val filter = s"startsWith(lowerUTF8($remoteColumnName), {p_starts: String})"
+        val params = Map("p_starts" -> starts.toLowerCase)
+        ClauseWithParams(filter, params)
       } else {
-        ""
+        NoFilter
       }
 
-    val whereClause = (baseFilter, filterClause) match {
-      case ("", "")  => ""
-      case (baseFilter, "")  => baseFilter
-      case ("", filterClause)  => s"WHERE $filterClause"
-      case (baseFilter, filterClause)  => s"$baseFilter AND ($filterClause)"
-    }
-
-    (whereClause, params)
+    permissionClauseWithParams.and(typeAheadClauseWithParams)
   }
 
   private def recordsToArray(records: Records, column: String): Array[String] = {

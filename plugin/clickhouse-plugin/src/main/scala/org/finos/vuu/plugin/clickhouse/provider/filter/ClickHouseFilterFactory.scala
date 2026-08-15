@@ -1,30 +1,26 @@
 package org.finos.vuu.plugin.clickhouse.provider.filter
 
-import java.util
-import java.util.HashMap as JHashMap
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.filter.FilterSpecParser
 import org.finos.vuu.net.FilterSpec
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
 
+import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
-object ClickHouseFilterFactory {
-  private val NoFilter = ""
-  private val NoResults = "WHERE 1 = 0"
-  private val WherePrefix = "WHERE "
-}
-
 class ClickHouseFilterFactory(tableDef: VirtualizedSessionTableDef) extends StrictLogging {
-  import ClickHouseFilterFactory.*
 
-  def build(userSpec: FilterSpec, permissionSpec: FilterSpec): (String, util.Map[String, Object]) = {
-    val params = new JHashMap[String, Object]()
+  def build(filterSpec: FilterSpec): ClauseWithParams = {
+    val safeFilter = safeFilterString(filterSpec)
+    parseFilter(safeFilter)
+  }
+
+  def build(userSpec: FilterSpec, permissionSpec: FilterSpec): ClauseWithParams = {
     val userFilterStr = safeFilterString(userSpec)
     val permFilterStr = safeFilterString(permissionSpec)
 
     if (userFilterStr.isEmpty && permFilterStr.isEmpty) {
-      (NoFilter, params)
+      NoFilter
     } else {
       val combined =
         if (userFilterStr.nonEmpty && permFilterStr.nonEmpty) {
@@ -35,28 +31,33 @@ class ClickHouseFilterFactory(tableDef: VirtualizedSessionTableDef) extends Stri
           permFilterStr
         }
 
-      (parseFilter(combined), params)
+      parseFilter(combined)
     }
   }
 
-  private def parseFilter(filterSpec: String): String = {
+  private def parseFilter(filterSpec: String): ClauseWithParams = {
     if (filterSpec.isBlank) {
       logger.trace("Filter spec is blank, returning no filter")
       return NoFilter
     }
 
-    val filterVisitor = new ClickHouseFilterVisitor(tableDef.getRemoteColumnMapping)
+    val stringBuilder = new java.lang.StringBuilder(256)
+    val params = new mutable.HashMap[String, Any]()
+    val filterVisitor = ClickHouseFilterVisitor(
+      remoteNameMapping = tableDef.getRemoteColumnMapping,
+      stringBuilder = stringBuilder,
+      params = params
+    )
 
     Try(FilterSpecParser.parse(filterSpec, filterVisitor)) match {
       case Success(_) =>
-        val buffer = filterVisitor.getBuffer
-        if (buffer.length == 0) {
+        if (stringBuilder.length == 0) {
           logger.warn("Parsed filter was empty")
           NoResults
         } else {
-          val whereClause = s"$WherePrefix${buffer.toString}"
-          logger.trace(s"Parsed filter: $whereClause")
-          whereClause
+          val whereClause = stringBuilder.toString
+          logger.trace(s"Parsed filter: $whereClause with params $params")
+          ClauseWithParams(whereClause, params.toMap)
         }
 
       case Failure(err) =>

@@ -25,117 +25,117 @@ class ClickHouseFilterFactoryTest extends AnyFeatureSpec with Matchers {
 
       val filterFactory = ClickHouseFilterFactory(tableDef)
 
-      val (whereClause, params) = filterFactory.build(
+      val clauseWithParams = filterFactory.build(
         userSpec = FilterSpec(""),
         permissionSpec = FilterSpec("")
       )
 
-      whereClause shouldEqual ""
-      params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual ""
+      clauseWithParams.params.isEmpty shouldBe true
     }
 
     Scenario("Empty user filter, non empty permission filter") {
 
       val filterFactory = ClickHouseFilterFactory(tableDef)
 
-      val (whereClause, params) = filterFactory.build(
+      val clauseWithParams = filterFactory.build(
         userSpec = FilterSpec(""),
         permissionSpec = FilterSpec("side = \"Buy\"")
       )
 
-      whereClause shouldEqual "WHERE side = 'Buy'"
-      params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "WHERE side = 'Buy'"
+      clauseWithParams.params.isEmpty shouldBe true
     }
 
     Scenario("Empty user filter, composite permission filter") {
 
       val filterFactory = ClickHouseFilterFactory(tableDef)
 
-      val (whereClause, params) = filterFactory.build(
+      val clauseWithParams = filterFactory.build(
         userSpec = FilterSpec(""),
         permissionSpec = FilterSpec("side = \"Buy\" and quantity > 0")
       )
 
-      whereClause shouldEqual "WHERE (side = 'Buy' AND quantity > 0)"
-      params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "WHERE (side = 'Buy' AND quantity > 0)"
+      clauseWithParams.params.isEmpty shouldBe true
     }
 
     Scenario("Non empty user filter, empty permission filter") {
 
       val filterFactory = ClickHouseFilterFactory(tableDef)
 
-      val (whereClause, params) = filterFactory.build(
+      val clauseWithParams = filterFactory.build(
         userSpec = FilterSpec("side = \"Sell\""),
         permissionSpec = FilterSpec("")
       )
 
-      whereClause shouldEqual "WHERE side = 'Sell'"
-      params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "WHERE side = 'Sell'"
+      clauseWithParams.params.isEmpty shouldBe true
     }
 
     Scenario("Non empty user filter, non empty permission filter") {
 
       val filterFactory = ClickHouseFilterFactory(tableDef)
 
-      val (whereClause, params) = filterFactory.build(
+      val clauseWithParams = filterFactory.build(
         userSpec = FilterSpec("side = \"Sell\""),
         permissionSpec = FilterSpec("side = \"Buy\"")
       )
 
-      whereClause shouldEqual "WHERE (side = 'Buy' AND side = 'Sell')"
-      params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "WHERE (side = 'Buy' AND side = 'Sell')"
+      clauseWithParams.params.isEmpty shouldBe true
     }
 
     Scenario("Non empty user filter, composite permission filter") {
 
       val filterFactory = ClickHouseFilterFactory(tableDef)
 
-      val (whereClause, params) = filterFactory.build(
+      val clauseWithParams = filterFactory.build(
         userSpec = FilterSpec("side = \"Sell\""),
         permissionSpec = FilterSpec("side = \"Buy\" and quantity > 0")
       )
 
-      whereClause shouldEqual "WHERE ((side = 'Buy' AND quantity > 0) AND side = 'Sell')"
-      params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "WHERE ((side = 'Buy' AND quantity > 0) AND side = 'Sell')"
+      clauseWithParams.params.isEmpty shouldBe true
     }
 
     Scenario("Composite user filter, empty permission filter") {
 
       val filterFactory = ClickHouseFilterFactory(tableDef)
 
-      val (whereClause, params) = filterFactory.build(
+      val clauseWithParams = filterFactory.build(
         userSpec = FilterSpec("side = \"Sell\" and quantity > 100"),
         permissionSpec = FilterSpec("")
       )
 
-      whereClause shouldEqual "WHERE (side = 'Sell' AND quantity > 100)"
-      params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "WHERE (side = 'Sell' AND quantity > 100)"
+      clauseWithParams.params.isEmpty shouldBe true
     }
 
     Scenario("Composite user filter, non empty permission filter") {
 
       val filterFactory = ClickHouseFilterFactory(tableDef)
 
-      val (whereClause, params) = filterFactory.build(
+      val clauseWithParams = filterFactory.build(
         userSpec = FilterSpec("side = \"Sell\" and quantity > 100"),
         permissionSpec = FilterSpec("side = \"Buy\"")
       )
 
-      whereClause shouldEqual "WHERE (side = 'Buy' AND (side = 'Sell' AND quantity > 100))"
-      params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "WHERE (side = 'Buy' AND (side = 'Sell' AND quantity > 100))"
+      clauseWithParams.params.isEmpty shouldBe true
     }
 
     Scenario("Composite user filter, composite permission filter") {
 
       val filterFactory = ClickHouseFilterFactory(tableDef)
 
-      val (whereClause, params) = filterFactory.build(
+      val clauseWithParams = filterFactory.build(
         userSpec = FilterSpec("side = \"Sell\" and quantity > 100"),
         permissionSpec = FilterSpec("side = \"Buy\" and quantity > 0")
       )
 
-      whereClause shouldEqual "WHERE ((side = 'Buy' AND quantity > 0) AND (side = 'Sell' AND quantity > 100))"
-      params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "WHERE ((side = 'Buy' AND quantity > 0) AND (side = 'Sell' AND quantity > 100))"
+      clauseWithParams.params.isEmpty shouldBe true
     }
 
   }
@@ -146,126 +146,126 @@ class ClickHouseFilterFactoryTest extends AnyFeatureSpec with Matchers {
 
       val filterFactory = ClickHouseFilterFactory(tableDef)
 
-      val (whereClause, params) = filterFactory.build(
+      val clauseWithParams = filterFactory.build(
         userSpec = null,
         permissionSpec = null
       )
 
-      whereClause shouldEqual ""
-      params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual ""
+      clauseWithParams.params.isEmpty shouldBe true
 
-      val (whereClause2, params2) = filterFactory.build(
+      val clauseWithParams2 = filterFactory.build(
         userSpec = FilterSpec(null),
         permissionSpec = FilterSpec(null)
       )
 
-      whereClause2 shouldEqual ""
-      params2.isEmpty shouldBe true
+      clauseWithParams2.clause shouldEqual ""
+      clauseWithParams2.params.isEmpty shouldBe true
 
-      val (whereClause3, params3) = filterFactory.build(
+      val clauseWithParams3 = filterFactory.build(
         userSpec = FilterSpec("            "),
         permissionSpec = FilterSpec("            ")
       )
 
-      whereClause3 shouldEqual ""
-      params3.isEmpty shouldBe true
+      clauseWithParams3.clause shouldEqual ""
+      clauseWithParams3.params.isEmpty shouldBe true
     }
 
     Scenario("Both filter specs cannot be parsed") {
 
       val filterFactory = ClickHouseFilterFactory(tableDef)
 
-      val (whereClause, params) = filterFactory.build(
+      val clauseWithParams = filterFactory.build(
         userSpec = FilterSpec("DROP TABLES;"),
         permissionSpec = FilterSpec("DROP COLUMN;")
       )
 
-      whereClause shouldEqual "WHERE 1 = 0"
-      params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "WHERE 1 = 0"
+      clauseWithParams.params.isEmpty shouldBe true
     }
 
     Scenario("User filter spec is null or blank") {
 
       val filterFactory = ClickHouseFilterFactory(tableDef)
 
-      val (whereClause, params) = filterFactory.build(
+      val clauseWithParams = filterFactory.build(
         userSpec = null,
         permissionSpec = FilterSpec("side = \"Buy\"")
       )
 
-      whereClause shouldEqual "WHERE side = 'Buy'"
-      params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "WHERE side = 'Buy'"
+      clauseWithParams.params.isEmpty shouldBe true
 
-      val (whereClause2, params2) = filterFactory.build(
+      val clauseWithParams2 = filterFactory.build(
         userSpec = FilterSpec(null),
         permissionSpec = FilterSpec("side = \"Buy\"")
       )
 
-      whereClause2 shouldEqual "WHERE side = 'Buy'"
-      params2.isEmpty shouldBe true
+      clauseWithParams2.clause shouldEqual "WHERE side = 'Buy'"
+      clauseWithParams2.params.isEmpty shouldBe true
 
-      val (whereClause3, params3) = filterFactory.build(
+      val clauseWithParams3 = filterFactory.build(
         userSpec = FilterSpec("            "),
         permissionSpec = FilterSpec("side = \"Buy\"")
       )
 
-      whereClause3 shouldEqual "WHERE side = 'Buy'"
-      params3.isEmpty shouldBe true
+      clauseWithParams3.clause shouldEqual "WHERE side = 'Buy'"
+      clauseWithParams3.params.isEmpty shouldBe true
     }
 
     Scenario("User filter cannot be parsed") {
 
       val filterFactory = ClickHouseFilterFactory(tableDef)
 
-      val (whereClause, params) = filterFactory.build(
+      val clauseWithParams = filterFactory.build(
         userSpec = FilterSpec("DROP TABLES;"),
         permissionSpec = FilterSpec("")
       )
 
-      whereClause shouldEqual "WHERE 1 = 0"
-      params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "WHERE 1 = 0"
+      clauseWithParams.params.isEmpty shouldBe true
     }
 
     Scenario("Permission filter spec is null or blank") {
 
       val filterFactory = ClickHouseFilterFactory(tableDef)
 
-      val (whereClause, params) = filterFactory.build(
+      val clauseWithParams = filterFactory.build(
         userSpec = FilterSpec("side = \"Sell\""),
         permissionSpec = null
       )
 
-      whereClause shouldEqual "WHERE side = 'Sell'"
-      params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "WHERE side = 'Sell'"
+      clauseWithParams.params.isEmpty shouldBe true
 
-      val (whereClause2, params2) = filterFactory.build(
+      val clauseWithParams2 = filterFactory.build(
         userSpec = FilterSpec("side = \"Sell\""),
         permissionSpec = FilterSpec(null)
       )
 
-      whereClause2 shouldEqual "WHERE side = 'Sell'"
-      params2.isEmpty shouldBe true
+      clauseWithParams2.clause shouldEqual "WHERE side = 'Sell'"
+      clauseWithParams2.params.isEmpty shouldBe true
 
-      val (whereClause3, params3) = filterFactory.build(
+      val clauseWithParams3 = filterFactory.build(
         userSpec = FilterSpec("side = \"Sell\""),
         permissionSpec = FilterSpec("            ")
       )
 
-      whereClause3 shouldEqual "WHERE side = 'Sell'"
-      params3.isEmpty shouldBe true
+      clauseWithParams3.clause shouldEqual "WHERE side = 'Sell'"
+      clauseWithParams3.params.isEmpty shouldBe true
     }
 
     Scenario("Permission filter cannot be parsed") {
 
       val filterFactory = ClickHouseFilterFactory(tableDef)
 
-      val (whereClause, params) = filterFactory.build(
+      val clauseWithParams = filterFactory.build(
         userSpec = FilterSpec(""),
         permissionSpec = FilterSpec("DROP TABLES;")
       )
 
-      whereClause shouldEqual "WHERE 1 = 0"
-      params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "WHERE 1 = 0"
+      clauseWithParams.params.isEmpty shouldBe true
     }
 
   }

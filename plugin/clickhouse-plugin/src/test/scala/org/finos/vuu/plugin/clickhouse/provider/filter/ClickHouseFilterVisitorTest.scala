@@ -5,6 +5,8 @@ import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumnBuilder
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
+import scala.collection.mutable
+
 class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
 
   private val remoteNameMapping = VirtualizedSessionTableColumnBuilder()
@@ -18,10 +20,12 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
     .map(f => f.name -> f.remoteName)
     .toMap
 
-  private def compile(filterStr: String): String = {
-    val clickHouseFilterVisitor = new ClickHouseFilterVisitor(remoteNameMapping)
+  private def compile(filterStr: String): (String, mutable.HashMap[String, Any]) = {
+    val stringBuilder = new java.lang.StringBuilder(256)
+    val params = new mutable.HashMap[String, Any]()
+    val clickHouseFilterVisitor = ClickHouseFilterVisitor(remoteNameMapping, stringBuilder, params)
     FilterSpecParser.parse(filterStr, clickHouseFilterVisitor)
-    clickHouseFilterVisitor.getBuffer.toString
+    (stringBuilder.toString, params)
   }
 
   Feature("ClickHouseFilterVisitor compiles filter expressions to SQL clauses") {
