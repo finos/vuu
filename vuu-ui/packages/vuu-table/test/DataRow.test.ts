@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { dataRowFactory } from "../src/data-row/DataRow";
 
 describe("DataRow", () => {
@@ -24,6 +24,33 @@ describe("DataRow", () => {
     // prettier-ignore
     const dataRow = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "AAO L"]);
     expect(dataRow.bbg).toEqual("AAO L");
+  });
+
+  it("keeps buffered and new rows synchronized with rendered columns", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const schemaColumns = [
+      { name: "bbg", serverDataType: "string" as const },
+      { name: "vuu_action", serverDataType: "string" as const },
+    ];
+    const [DataRow, setColumns] = dataRowFactory(["bbg"], schemaColumns, [
+      { name: "bbg" },
+    ]);
+    // prettier-ignore
+    const bufferedRow = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "AAO L"]);
+
+    setColumns(["bbg", "vuu_action"], [
+      { name: "bbg" },
+      { name: "vuu_action" },
+      { name: "undo", source: "client" },
+    ]);
+    // prettier-ignore
+    const newRow = DataRow([1, 1, false, false, 1, 0, "key-1", 0, 0, false, "AAPL", "deleteRow"]);
+
+    expect(bufferedRow.vuu_action).toBeUndefined();
+    expect(bufferedRow.undo).toBeUndefined();
+    expect(newRow.vuu_action).toEqual("deleteRow");
+    expect(newRow.undo).toBeUndefined();
+    expect(warn).not.toHaveBeenCalled();
   });
 
   it("Factory supports calculated columns", () => {

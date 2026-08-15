@@ -41,6 +41,7 @@ const createDataSource = () => {
 
 const Fixture = ({ dataSource }: { dataSource: DataSource }) => {
   useDataSource({
+    columns: [],
     dataSource,
     onSelect: vi.fn(),
     onSizeChange: vi.fn(),

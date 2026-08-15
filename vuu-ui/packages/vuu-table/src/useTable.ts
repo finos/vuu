@@ -327,6 +327,7 @@ export const useTable = ({
   } = useDataSource({
     autoSelectFirstRow,
     autoSelectRowKey,
+    columns: config.columns,
     dataSource,
     renderBufferSize,
     revealSelected,

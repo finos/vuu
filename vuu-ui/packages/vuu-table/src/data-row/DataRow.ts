@@ -6,6 +6,7 @@ import type {
   VuuRowDataItemType,
 } from "@vuu-ui/vuu-protocol-types";
 import type {
+  ColumnDescriptor,
   DataRow,
   DataRowIntrinsicAttribute,
   DataRowOperation,
@@ -19,9 +20,11 @@ import {
 } from "@vuu-ui/vuu-utils";
 
 type ColumnMapEntry = {
-  index: number;
+  index?: number;
   type: VuuColumnDataType;
 };
+
+type RenderedColumn = Pick<ColumnDescriptor, "name" | "source">;
 
 const dataRowSymbol = Symbol("DataRow");
 
@@ -127,27 +130,29 @@ const formatStringNumeric = (value: string, type: StringNumericType) => {
  * @param columnMap
  * @returns
  */
-function DataRowImpl(data: VuuDataRow, columnMap: DataRowColumnMap): DataRow {
+function DataRowImpl(
+  data: VuuDataRow,
+  columnMapRef: { current: DataRowColumnMap },
+): DataRow {
   const target: Record<string, VuuRowDataItemType> = {};
 
   const getPropertyNames = () => {
-    return Object.keys(columnMap);
+    return Object.keys(columnMapRef.current);
   };
 
   const jsonSerializer = () => {
-    return Object.entries(columnMap).reduce<Record<string, VuuRowDataItemType>>(
-      (json, [name, mapEntry]) => {
-        if (mapEntry) {
-          json[name] = data[mapEntry.index];
-        }
-        return json;
-      },
-      {},
-    );
+    return Object.entries(columnMapRef.current).reduce<
+      Record<string, VuuRowDataItemType>
+    >((json, [name, mapEntry]) => {
+      if (mapEntry?.index !== undefined) {
+        json[name] = data[mapEntry.index];
+      }
+      return json;
+    }, {});
   };
 
   const DataRowOperations: DataRowOperations = {
-    hasColumn: (name: string) => columnMap[name] !== undefined,
+    hasColumn: (name: string) => columnMapRef.current[name] !== undefined,
   };
 
   return new Proxy(target, {
@@ -168,13 +173,17 @@ function DataRowImpl(data: VuuDataRow, columnMap: DataRowColumnMap): DataRow {
       } else if (prop === "getPropertyNames") {
         return getPropertyNames;
       }
-      const columnMapEntry = columnMap[prop];
+      const columnMapEntry = columnMapRef.current[prop];
 
       if (columnMapEntry === undefined) {
         if (prop !== "") {
           // System columns like the selection checkbox column
           console.warn(`[DataRow:Proxy] unknown column ${prop}`);
         }
+        return undefined;
+      }
+
+      if (columnMapEntry.index === undefined) {
         return undefined;
       }
 
@@ -215,6 +224,7 @@ const ColumnMapIntrinsicColumns: DataRowColumnMap = {
 function createColumnMap(
   columns: string[],
   schemaColumns: readonly SchemaColumn[],
+  renderedColumns: readonly RenderedColumn[] = [],
 ) {
   const columnMap: DataRowColumnMap = {
     ...ColumnMapIntrinsicColumns,
@@ -244,13 +254,18 @@ function createColumnMap(
 
   if (columnMap.vuuMsg === undefined) {
     // We will always check for vuuMsg, even if it isn't explicitly included in the subscribed columns
-    return {
-      ...columnMap,
-      vuuMsg: { index: columns.length + 10, type: "string" },
-    } as DataRowColumnMap;
-  } else {
-    return columnMap;
+    columnMap.vuuMsg = { index: columns.length + 10, type: "string" };
   }
+
+  for (const { name } of renderedColumns) {
+    if (columnMap[name] === undefined) {
+      // Client columns and temporarily unsubscribed rendered columns have no
+      // backing value in the row array, but are valid Table columns.
+      columnMap[name] = { type: "string" };
+    }
+  }
+
+  return columnMap;
 }
 
 /**
@@ -261,22 +276,43 @@ function createColumnMap(
  * @returns a tuple containing:
  * - factory function that will create a DataRow instance from a DataSourceRow
  * array.
- * - a function that can be used to reset the columns, which will be used for all
- * subsequently created DataRows. Used by Table when user adds or removes columns
- * at runtime.
+ * - a function that resets the shared column map used by existing and subsequently
+ * created DataRows. Used by Table when user adds or removes columns at runtime.
  */
 export const dataRowFactory = (
   columns: string[],
   schemaColumns: readonly SchemaColumn[],
-): [DataRowFunc, (columns: string[]) => void] => {
-  let columnMap = createColumnMap(columns, schemaColumns);
+  renderedColumns: readonly RenderedColumn[] = [],
+): [
+  DataRowFunc,
+  (columns: string[], renderedColumns?: readonly RenderedColumn[]) => void,
+] => {
+  const columnMapRef = {
+    current: createColumnMap(columns, schemaColumns, renderedColumns),
+  };
+  let currentColumns = columns;
+  let currentRenderedColumns = renderedColumns;
 
-  const setColumns = (columns: string[]) => {
-    // new columnMap will be used for all subsequently created DataRows
-    columnMap = createColumnMap(columns, schemaColumns);
+  const setColumns = (
+    columns: string[],
+    nextRenderedColumns: readonly RenderedColumn[] = [],
+  ) => {
+    if (
+      columns === currentColumns &&
+      nextRenderedColumns === currentRenderedColumns
+    ) {
+      return;
+    }
+    currentColumns = columns;
+    currentRenderedColumns = nextRenderedColumns;
+    columnMapRef.current = createColumnMap(
+      columns,
+      schemaColumns,
+      nextRenderedColumns,
+    );
   };
 
-  const DataRow = (data: DataSourceRow) => DataRowImpl(data, columnMap);
+  const DataRow = (data: DataSourceRow) => DataRowImpl(data, columnMapRef);
 
   return [DataRow, setColumns];
 };

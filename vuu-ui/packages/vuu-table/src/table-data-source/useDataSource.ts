@@ -13,6 +13,7 @@ import { Range } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { TableProps } from "../Table";
 import type {
+  ColumnDescriptor,
   DataRow,
   TableRowSelectHandlerInternal,
 } from "@vuu-ui/vuu-table-types";
@@ -36,7 +37,10 @@ type DataSourceBinding = {
   rangeLimits: RangeLimits;
   rangeRequested: boolean;
   rowAutoSelected: boolean;
-  setColumns?: (columns: string[]) => void;
+  setColumns?: (
+    columns: string[],
+    renderedColumns?: readonly ColumnDescriptor[],
+  ) => void;
 };
 
 export interface DataSourceHookProps
@@ -50,6 +54,7 @@ export interface DataSourceHookProps
     | "selectionModel"
   > {
   suspenseProps?: DataSourceSuspenseProps;
+  columns: readonly ColumnDescriptor[];
   onSelect: TableRowSelectHandlerInternal;
   /**
    * Invoked whenever rowCount changes. For example when rows are added
@@ -67,6 +72,7 @@ export interface DataSourceHookProps
 export const useDataSource = ({
   autoSelectFirstRow,
   autoSelectRowKey,
+  columns,
   dataSource,
   onSizeChange,
   onSubscribed,
@@ -111,6 +117,12 @@ export const useDataSource = ({
 
   const activeBindingRef = useRef<DataSourceBinding | undefined>(binding);
   activeBindingRef.current = binding;
+  const renderedColumnsRef = useRef(columns);
+  renderedColumnsRef.current = columns;
+
+  // Rows already in the moving window retain their DataRow proxies, so update
+  // their shared map before Table can process an incoming column configuration.
+  binding.setColumns?.(dataSource.columns, columns);
 
   useEffect(() => {
     isMounted.current = true;
@@ -199,7 +211,11 @@ export const useDataSource = ({
    */
   const createDataRow = useCallback(
     (columns: string[], schemaColumns: readonly SchemaColumn[]) => {
-      const [DataRow, setColumns] = dataRowFactory(columns, schemaColumns);
+      const [DataRow, setColumns] = dataRowFactory(
+        columns,
+        schemaColumns,
+        renderedColumnsRef.current,
+      );
       binding.dataRow = DataRow;
       binding.setColumns = setColumns;
     },
@@ -270,10 +286,6 @@ export const useDataSource = ({
   const getSelectedRows = useCallback(() => {
     return binding.dataRowWindow.getSelectedRows();
   }, [binding]);
-
-  useEffect(() => {
-    binding.setColumns?.(dataSource.columns);
-  }, [binding, dataSource.columns]);
 
   const setRange = useCallback(
     (viewportRange: VuuRange) => {

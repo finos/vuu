@@ -877,6 +877,15 @@ test.describe("Inline row editing (session)", () => {
     mount,
     page,
   }) => {
+    const dataRowWarnings: string[] = [];
+    page.on("console", (message) => {
+      if (
+        message.type() === "warning" &&
+        message.text().includes("[DataRow:Proxy] unknown column")
+      ) {
+        dataRowWarnings.push(message.text());
+      }
+    });
     await mount(<EditableInstrumentsInlineEdit />);
 
     // View mode: no Delete/Add Rows/Submit buttons visible
@@ -894,6 +903,8 @@ test.describe("Inline row editing (session)", () => {
     await expect(
       page.getByRole("columnheader", { name: "undo" }),
     ).toBeVisible();
+    await expect(page.getByRole("row").nth(1)).toBeVisible();
+    expect(dataRowWarnings).toEqual([]);
   });
 
   test("Submit is disabled until at least one row is changed", async ({
