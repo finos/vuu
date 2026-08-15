@@ -173,9 +173,10 @@ export const useEditableTable = ({
     onDelete: handleDelete,
     onSave: handleSave,
     onUndoRowChange: handleUndoRowChange,
-    rowClassNameGenerators: isEditMode
-      ? EDIT_ACTION_ROW_CLASS_NAME_GENERATORS
-      : undefined,
+    rowClassNameGenerators:
+      isEditMode && sessionDataSource !== undefined
+        ? EDIT_ACTION_ROW_CLASS_NAME_GENERATORS
+        : undefined,
     sessionDataSource,
     sourceDataSource,
   };

@@ -1,6 +1,6 @@
 import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
 import { Range } from "@vuu-ui/vuu-utils";
-import { act } from "react";
+import { act, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import {
   afterAll,
@@ -18,6 +18,16 @@ const tableSchema: TableSchema = {
   columns: [{ name: "id", serverDataType: "string" }],
   key: "id",
   table: { module: "TEST", table: "test" },
+};
+
+const sessionTableSchema: TableSchema = {
+  columns: [
+    { name: "id", serverDataType: "string" },
+    { name: "vuuMsg", serverDataType: "string" },
+    { name: "vuu_action", serverDataType: "string" },
+  ],
+  key: "id",
+  table: { module: "TEST", table: "session" },
 };
 
 const createDataSource = () => {
@@ -41,12 +51,36 @@ const createDataSource = () => {
 
 const Fixture = ({ dataSource }: { dataSource: DataSource }) => {
   useDataSource({
-    columns: [],
     dataSource,
     onSelect: vi.fn(),
     onSizeChange: vi.fn(),
     onSubscribed: vi.fn(),
   });
+  return null;
+};
+
+const SessionRowsFixture = ({
+  dataSource,
+  onRows,
+}: {
+  dataSource: DataSource;
+  onRows: (rows: ReturnType<typeof useDataSource>["dataRows"]) => void;
+}) => {
+  const { dataRows, setRange } = useDataSource({
+    dataSource,
+    onSelect: vi.fn(),
+    onSizeChange: vi.fn(),
+    onSubscribed: vi.fn(),
+  });
+
+  useEffect(() => {
+    setRange({ from: 0, to: 1 });
+  }, [setRange]);
+
+  useEffect(() => {
+    onRows(dataRows);
+  }, [dataRows, onRows]);
+
   return null;
 };
 
@@ -115,5 +149,64 @@ describe("useDataSource replacement suspension", () => {
       undefined,
     );
     expect(source.resolvedSuspensions).toEqual([true]);
+  });
+
+  it("waits for the session schema before creating DataRows from early updates", async () => {
+    let callback: Parameters<NonNullable<DataSource["subscribe"]>>[1];
+    let rows: ReturnType<typeof useDataSource>["dataRows"] = [];
+    const earlySessionDataSource = {
+      columns: ["id", "vuuMsg", "vuu_action"],
+      on: vi.fn(),
+      range: Range(0, 1),
+      removeListener: vi.fn(),
+      status: "initialising",
+      subscribe: vi.fn((_props, nextCallback) => {
+        callback = nextCallback;
+        callback({
+          rows: [
+            [
+              0,
+              0,
+              false,
+              false,
+              0,
+              0,
+              "row-1",
+              false,
+              0,
+              false,
+              "row-1",
+              "",
+              "addRow",
+            ],
+          ],
+          size: 1,
+          type: "viewport-update",
+        });
+        callback({
+          columns: ["id", "vuuMsg", "vuu_action"],
+          tableSchema: sessionTableSchema,
+          type: "subscribed",
+        });
+      }),
+      suspend: vi.fn(),
+    } as unknown as DataSource;
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    await act(async () =>
+      root.render(
+        <SessionRowsFixture
+          dataSource={earlySessionDataSource}
+          onRows={(nextRows) => {
+            rows = nextRows;
+          }}
+        />,
+      ),
+    );
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0].vuu_action).toBe("addRow");
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 });

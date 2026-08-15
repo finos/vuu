@@ -26,31 +26,30 @@ describe("DataRow", () => {
     expect(dataRow.bbg).toEqual("AAO L");
   });
 
-  it("keeps buffered and new rows synchronized with rendered columns", () => {
+  it("maps session column vuu_action", () => {
+    const [DataRow] = dataRowFactory(
+      ["id", "description", "vuu_action"],
+      [
+        { name: "id", serverDataType: "string" },
+        { name: "description", serverDataType: "string" },
+      ],
+    );
+    // prettier-ignore
+    const dataRow = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "1", "Test", "addRow"]);
+    expect(dataRow.vuu_action).toEqual("addRow");
+  });
+
+  it("does not warn when accessing client column undo", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-    const schemaColumns = [
-      { name: "bbg", serverDataType: "string" as const },
-      { name: "vuu_action", serverDataType: "string" as const },
-    ];
-    const [DataRow, setColumns] = dataRowFactory(["bbg"], schemaColumns, [
-      { name: "bbg" },
-    ]);
+    const [DataRow] = dataRowFactory(
+      ["id"],
+      [{ name: "id", serverDataType: "string" }],
+    );
     // prettier-ignore
-    const bufferedRow = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "AAO L"]);
-
-    setColumns(["bbg", "vuu_action"], [
-      { name: "bbg" },
-      { name: "vuu_action" },
-      { name: "undo", source: "client" },
-    ]);
-    // prettier-ignore
-    const newRow = DataRow([1, 1, false, false, 1, 0, "key-1", 0, 0, false, "AAPL", "deleteRow"]);
-
-    expect(bufferedRow.vuu_action).toBeUndefined();
-    expect(bufferedRow.undo).toBeUndefined();
-    expect(newRow.vuu_action).toEqual("deleteRow");
-    expect(newRow.undo).toBeUndefined();
+    const dataRow = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "1"]);
+    expect(dataRow.undo).toBeUndefined();
     expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   it("Factory supports calculated columns", () => {

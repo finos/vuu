@@ -13,7 +13,6 @@ import { Range } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { TableProps } from "../Table";
 import type {
-  ColumnDescriptor,
   DataRow,
   TableRowSelectHandlerInternal,
 } from "@vuu-ui/vuu-table-types";
@@ -33,14 +32,12 @@ type DataSourceBinding = {
   dataRowWindow: DataRowMovingWindow;
   dataSource: DataSource;
   isReplacement: boolean;
+  pendingRows: DataSourceRow[];
   range: Range;
   rangeLimits: RangeLimits;
   rangeRequested: boolean;
   rowAutoSelected: boolean;
-  setColumns?: (
-    columns: string[],
-    renderedColumns?: readonly ColumnDescriptor[],
-  ) => void;
+  setColumns?: (columns: string[]) => void;
 };
 
 export interface DataSourceHookProps
@@ -54,7 +51,6 @@ export interface DataSourceHookProps
     | "selectionModel"
   > {
   suspenseProps?: DataSourceSuspenseProps;
-  columns: readonly ColumnDescriptor[];
   onSelect: TableRowSelectHandlerInternal;
   /**
    * Invoked whenever rowCount changes. For example when rows are added
@@ -72,7 +68,6 @@ export interface DataSourceHookProps
 export const useDataSource = ({
   autoSelectFirstRow,
   autoSelectRowKey,
-  columns,
   dataSource,
   onSizeChange,
   onSubscribed,
@@ -98,31 +93,31 @@ export const useDataSource = ({
             previousRange.to,
             renderBufferSize,
           );
+          const tableSchema = dataSource.tableSchema;
+          const [dataRow, setColumns] = tableSchema
+            ? dataRowFactory(dataSource.columns, tableSchema.columns)
+            : [NullDataRow, undefined];
 
           return {
-            dataRow: NullDataRow,
+            dataRow,
             dataRows: { current: [] },
             dataRowWindow: new DataRowMovingWindow(range.withBuffer),
             dataSource,
             isReplacement:
               previousBinding !== undefined &&
               previousBinding.dataSource !== dataSource,
+            pendingRows: [],
             range,
             rangeLimits: { ...defaultRangeLimits },
             rangeRequested: false,
             rowAutoSelected: false,
+            setColumns,
           };
         })();
   previousBindingRef.current = binding;
 
   const activeBindingRef = useRef<DataSourceBinding | undefined>(binding);
   activeBindingRef.current = binding;
-  const renderedColumnsRef = useRef(columns);
-  renderedColumnsRef.current = columns;
-
-  // Rows already in the moving window retain their DataRow proxies, so update
-  // their shared map before Table can process an incoming column configuration.
-  binding.setColumns?.(dataSource.columns, columns);
 
   useEffect(() => {
     isMounted.current = true;
@@ -211,11 +206,7 @@ export const useDataSource = ({
    */
   const createDataRow = useCallback(
     (columns: string[], schemaColumns: readonly SchemaColumn[]) => {
-      const [DataRow, setColumns] = dataRowFactory(
-        columns,
-        schemaColumns,
-        renderedColumnsRef.current,
-      );
+      const [DataRow, setColumns] = dataRowFactory(columns, schemaColumns);
       binding.dataRow = DataRow;
       binding.setColumns = setColumns;
     },
@@ -229,6 +220,10 @@ export const useDataSource = ({
       }
       if (message.type === "subscribed") {
         createDataRow(message.columns, message.tableSchema.columns);
+        if (binding.pendingRows.length > 0) {
+          setData(binding.pendingRows);
+          binding.pendingRows = [];
+        }
         if (message.tableSchema.rangeLimits) {
           binding.rangeLimits = message.tableSchema.rangeLimits;
         }
@@ -242,7 +237,11 @@ export const useDataSource = ({
           binding.dataRowWindow.setRowCount(message.size);
         }
         if (message.rows) {
-          setData(message.rows);
+          if (binding.setColumns === undefined) {
+            binding.pendingRows.push(...message.rows);
+          } else {
+            setData(message.rows);
+          }
           if (autoSelect && binding.rowAutoSelected === false) {
             // OR if no selected row in message.rows, e.g after a filter
             binding.rowAutoSelected = true;
@@ -286,6 +285,10 @@ export const useDataSource = ({
   const getSelectedRows = useCallback(() => {
     return binding.dataRowWindow.getSelectedRows();
   }, [binding]);
+
+  useEffect(() => {
+    binding.setColumns?.(dataSource.columns);
+  }, [binding, dataSource.columns]);
 
   const setRange = useCallback(
     (viewportRange: VuuRange) => {
