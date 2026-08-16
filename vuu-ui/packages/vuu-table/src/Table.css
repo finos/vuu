@@ -177,7 +177,7 @@
   background-color: var(--vuuTableHeader-background, var(--table-background));
   border-bottom: solid 1px var(--vuuTableHeader-borderColor, var(--salt-separable-tertiary-borderColor));
   color: var(--salt-content-secondary-foreground);
-  font-size: var(--VuuTableHeader-fontSize, vasr(--salt-text-label-fontSize));
+  font-size: var(--VuuTableHeader-fontSize, var(--salt-text-label-fontSize));
   position: sticky;
   top: 0;
   white-space: nowrap;

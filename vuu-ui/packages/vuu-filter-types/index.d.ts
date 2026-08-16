@@ -124,20 +124,20 @@ export declare type FilterChangeHandler = (filter: Filter | undefined) => void;
 // export declare type ColumnFilterValue = string | number | [string, string];
 export declare type ColumnFilterValue<
   T extends string | number | [string, string] =
-    | string
-    | number
-    | [string, string],
+  | string
+  | number
+  | [string, string],
 > = T;
 
 export declare type FilterClauseOpBetween = "between" | "between-inclusive";
 
 export declare type ColumnFilterOp = FilterClauseOp | FilterClauseOpBetween;
 
-export declare type ColumnFilterDescriptor = {
-  column: ColumnDescriptor;
-  op: ColumnFilterOp;
-  filterValue: ColumnFilterValue;
-};
+// export declare type ColumnFilterDescriptor = {
+//   column: ColumnDescriptor;
+//   op: ColumnFilterOp;
+//   filterValue: ColumnFilterValue;
+// };
 
 export declare type ColumnFilterChangeHandler = (
   value: ColumnFilterValue,
@@ -166,10 +166,10 @@ export interface ColumnFilterDescriptor extends DataValueDescriptor {
 export declare type FilterContainerFilter =
   | SingleValueFilterClause
   | MultiClauseFilter<
-      "and",
-      | SingleValueFilterClause
-      | MultiClauseFilter<"and", SingleValueFilterClause>
-    >;
+    "and",
+    | SingleValueFilterClause
+    | MultiClauseFilter<"and", SingleValueFilterClause>
+  >;
 
 /**
  * Defines a filter that is managed by a FilterProvider/FilterContainer

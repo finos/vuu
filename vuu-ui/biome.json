@@ -45,7 +45,8 @@
         "noSvgWithoutTitle": "off",
         "useAriaPropsForRole": "warn",
         "useSemanticElements": "off",
-        "useAltText": "warn"
+        "useAltText": "warn",
+        "useValidAriaProps": "warn"
       },
       "correctness": {
         "noConstantCondition": "warn",

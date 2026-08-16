@@ -1,8 +1,3 @@
-import type {
-  MenuRpcResponse,
-  Selection,
-  TableSchema,
-} from "@vuu-ui/vuu-data-types";
 import type { Filter } from "@vuu-ui/vuu-filter-types";
 import type {
   LinkDescriptorWithLabel,

@@ -2255,45 +2255,6 @@ export default [
         ],
       },
       {
-        id: "Shell/UserSettings",
-        icon: "box",
-        label: "UserSettings",
-        childNodes: [
-          {
-            id: "Shell/UserSettings/DefaultUserSettingsForm",
-            label: "DefaultUserSettingsForm",
-            nodeData: {
-              componentName: "DefaultUserSettingsForm",
-              path: "src/examples/Shell/UserSettings.examples.tsx",
-            },
-          },
-          {
-            id: "Shell/UserSettings/VariedFormControlUserSettingsForm",
-            label: "VariedFormControlUserSettingsForm",
-            nodeData: {
-              componentName: "VariedFormControlUserSettingsForm",
-              path: "src/examples/Shell/UserSettings.examples.tsx",
-            },
-          },
-          {
-            id: "Shell/UserSettings/InputValidationUserSettingsForm",
-            label: "InputValidationUserSettingsForm",
-            nodeData: {
-              componentName: "InputValidationUserSettingsForm",
-              path: "src/examples/Shell/UserSettings.examples.tsx",
-            },
-          },
-          {
-            id: "Shell/UserSettings/ScrollableUserSettingsPanel",
-            label: "ScrollableUserSettingsPanel",
-            nodeData: {
-              componentName: "ScrollableUserSettingsPanel",
-              path: "src/examples/Shell/UserSettings.examples.tsx",
-            },
-          },
-        ],
-      },
-      {
         id: "Shell/Workspace",
         icon: "box",
         label: "Workspace",

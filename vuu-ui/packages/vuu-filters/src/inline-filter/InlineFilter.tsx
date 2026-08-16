@@ -1,4 +1,4 @@
-import type { InputProps } from "@salt-ds/core";
+import type { InputProps as SaltInputProps } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import type { TableSchemaTable } from "@vuu-ui/vuu-data-types";
@@ -28,7 +28,7 @@ export interface InlineFilterProps
   table: TableSchemaTable;
 }
 
-const InputProps: Partial<InputProps> = {
+const InputProps: Partial<SaltInputProps> = {
   inputProps: {
     placeholder: "Filter value",
   },

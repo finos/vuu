@@ -250,7 +250,6 @@ export const useColumnAutoComplete = (
               }
             }
           }
-          break;
 
         case "RelationalOperator":
           // we need the type of the expression on the other side of the operator

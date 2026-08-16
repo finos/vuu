@@ -1,6 +1,6 @@
-import { RefCallback } from "react";
-import { asInteger, isValidNumber, orientationType } from "@vuu-ui/vuu-utils";
-import { DragContext, DropPosition } from "./DragContextNext";
+import type { RefCallback } from "react";
+import { asInteger, isValidNumber, type orientationType } from "@vuu-ui/vuu-utils";
+import type { DragContext, DropPosition } from "./DragContextNext";
 
 export type State = "initial" | "away" | "1spacer" | "2spacer";
 
@@ -64,9 +64,12 @@ export class SpaceMan {
       }
 
       throw Error(
-        `[[SpaceMan] (getter) dropPosition] no dropTarget with data-drop-target attribute found`,
+        '[[SpaceMan] (getter) dropPosition] no dropTarget with data-drop-target attribute found'
       );
     }
+    throw Error(
+      '[[SpaceMan] (getter) no dropTagte spacer found',
+    );
   }
 
   get positionRelativeToTargetTab(): "before" | "after" {
@@ -78,14 +81,14 @@ export class SpaceMan {
   };
 
   enterDragContainer() {
-    console.log(`%cEnterDragContainer`, "color:red;font-weight:bold;");
+    console.log('%cEnterDragContainer', "color:red;font-weight:bold;");
     this.#withinDragContainer = true;
 
     // create spacers
   }
 
   leaveDragContainer() {
-    console.log(`%cLeaveDragContainer`, "color:red;font-weight:bold;");
+    console.log('%cLeaveDragContainer', "color:red;font-weight:bold;");
     // TODO we need to undo this at end of drag operation
     // this.freezeContainer();
     this.#withinDragContainer = false;
@@ -142,7 +145,7 @@ export class SpaceMan {
     const propertyName = this.#sizeProperty;
     if (index === this.#toIndex && direction === this.#toDirection) {
       console.log(
-        `[SpaceMan] dragEnter, return early: no change to toIndex, direction`,
+        '[SpaceMan] dragEnter, return early: no change to toIndex, direction',
       );
       return;
     }
@@ -233,20 +236,6 @@ export class SpaceMan {
       );
     }
   }
-
-  // private freezeContainer() {
-  //   if (this.#dragContainer) {
-  //     console.log("FREEZE container");
-  //     const { width } = this.#dragContainer.getBoundingClientRect();
-  //     this.#dragContainer.style.width = `${width}px`;
-  //   }
-  // }
-  // private unfreezeContainer() {
-  //   if (this.#dragContainer) {
-  //     console.log("UNFREEZE container");
-  //     this.#dragContainer.style.width = "";
-  //   }
-  // }
 
   private clearSpacers() {
     const propertyName = this.#sizeProperty;

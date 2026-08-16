@@ -1,9 +1,9 @@
-import {
+import type {
   MenuRpcResponse,
   OpenDialogActionWithSchema,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
-import { FormConfig, FormFieldDescriptor } from "@vuu-ui/vuu-data-react";
+import type { FormConfig, FormFieldDescriptor } from "@vuu-ui/vuu-data-react";
 
 const static_config: { [key: string]: Partial<FormConfig> } = {
   OPEN_EDIT_RESET_FIX: {
