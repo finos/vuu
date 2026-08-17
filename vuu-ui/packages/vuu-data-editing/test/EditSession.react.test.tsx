@@ -18,6 +18,20 @@ import {
   useCellEdited,
 } from "../src";
 
+vi.hoisted(() => {
+  class MockWorker {
+    onmessage: ((event: MessageEvent) => void) | null = null;
+
+    constructor(_url: string) {}
+
+    postMessage(_message: unknown) {}
+
+    terminate() {}
+  }
+
+  vi.stubGlobal("Worker", MockWorker);
+});
+
 const SUCCESS = { data: undefined, type: "SUCCESS_RESULT" as const };
 
 const createEditSession = () => {
