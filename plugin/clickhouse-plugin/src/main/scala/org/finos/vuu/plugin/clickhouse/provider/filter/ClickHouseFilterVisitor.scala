@@ -2,10 +2,11 @@ package org.finos.vuu.plugin.clickhouse.provider.filter
 
 import org.finos.vuu.grammar.FilterBaseVisitor
 import org.finos.vuu.grammar.FilterParser.*
+import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumn
 
 import scala.collection.mutable
 
-case class ClickHouseFilterVisitor(remoteNameMapping: Map[String, String],
+case class ClickHouseFilterVisitor(remoteNameMapping: Map[String, VirtualizedSessionTableColumn],
                                    stringBuilder: java.lang.StringBuilder,
                                    params: mutable.Map[String, Any]
                                   ) extends FilterBaseVisitor[Unit] {
@@ -97,7 +98,7 @@ case class ClickHouseFilterVisitor(remoteNameMapping: Map[String, String],
 
   private def getRemoteId(id: String): String = {
     remoteNameMapping.getOrElse(id,
-      throw new IllegalArgumentException(s"Mapping missing for filter column: '$id'"))
+      throw new IllegalArgumentException(s"Mapping missing for filter column: '$id'")).remoteName
   }
 
   private def joinChildren(children: java.util.List[_ <: org.antlr.v4.runtime.tree.ParseTree], op: String): Unit = {

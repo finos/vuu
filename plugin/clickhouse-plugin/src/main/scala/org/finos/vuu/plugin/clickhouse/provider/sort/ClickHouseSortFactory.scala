@@ -39,11 +39,11 @@ class ClickHouseSortFactory(tableDef: VirtualizedSessionTableDef) extends Strict
 
   private def parseSortItems(sortSpec: SortSpec): List[String] = {
     val remoteMapping = tableDef.getRemoteColumnMapping
-    sortSpec.sortDefs.map { sd =>
-      val direction = if (sd.sortType == SortDirection.DESCENDING.external) "DESC" else "ASC"
-      val remoteColumnName = remoteMapping.getOrElse(sd.column,
+    sortSpec.sortDefs.map { sd =>      
+      val remoteColumn = remoteMapping.getOrElse(sd.column,
         throw new IllegalArgumentException(s"Mapping missing for sort column: '${sd.column}'"))
-      s"$remoteColumnName $direction"
+      val direction = if (sd.sortType == SortDirection.DESCENDING.external) "DESC" else "ASC"
+      s"${remoteColumn.remoteName} $direction"
     }
   }
 
