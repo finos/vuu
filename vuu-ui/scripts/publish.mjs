@@ -6,6 +6,7 @@ const packages = [
   "vuu-chart",
   "vuu-codemirror",
   "vuu-context-menu",
+  "vuu-data-editing",
   "vuu-data-local",
   "vuu-data-remote",
   "vuu-data-react",
