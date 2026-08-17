@@ -772,7 +772,7 @@ _range = new WeakMap();
 
 // src/server-proxy/viewport.ts
 var { debug: debug2, debugEnabled: debugEnabled2, error, info, infoEnabled, warn } = logger("Viewport");
-var isLeafUpdate = ({ rowKey, updateType }) => updateType === "U" && !rowKey.startsWith("$root");
+var isLeafUpdate = ({ rowKey, updateType }) => updateType === "U" && !rowKey.startsWith("\$root");
 var NO_DATA_UPDATE = [
   void 0,
   void 0
