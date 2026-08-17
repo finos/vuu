@@ -9,7 +9,7 @@ import inlineAddRowCss from "./InlineAddRow.css";
 
 const classBase = "vuuInlineAddRow";
 
-export interface InlineAddRowProps extends BaseRowProps {}
+export type InlineAddRowProps = BaseRowProps;
 
 export const InlineAddRow = ({
   ariaRowIndex,

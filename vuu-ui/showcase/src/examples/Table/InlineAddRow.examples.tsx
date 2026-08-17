@@ -24,7 +24,7 @@ const InlineAddRowTable = () => {
     () => new VuuDataSource({ table: schema.table }),
     [VuuDataSource],
   );
-  const keepEditSessionOpen = useCallback(() => {}, []);
+  const keepEditSessionOpen = useCallback(() => undefined, []);
   const { dataSource, editSession } = useEditableTable({
     copyOption: "Empty",
     dataSource: sourceDataSource,

@@ -945,7 +945,7 @@ export abstract class VuuModule<T extends string = string>
 
   protected createSessionTableWithAllRows(
     { data, schema }: Table,
-    sessionTableName: string,
+    _sessionTableName: string,
   ) {
     const sessionSchema = sessionTableSchema(schema);
     return new Table(
