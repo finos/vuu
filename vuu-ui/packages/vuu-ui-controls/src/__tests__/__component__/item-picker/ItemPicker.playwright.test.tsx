@@ -75,10 +75,14 @@ test.describe("ItemPicker", () => {
       });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
       test.skip("THEN selected items can be reordered via drag and drop", async ({
 =======
       test("THEN selected items can be reordered via drag and drop", async ({
 >>>>>>> 618d990a4 (Addition of ItemPicker Playwright tests)
+=======
+      test.skip("THEN selected items can be reordered via drag and drop", async ({
+>>>>>>> 07641f74d (Skip drag and drop reorder test for selected items)
         browserName,
         mount,
         page,
