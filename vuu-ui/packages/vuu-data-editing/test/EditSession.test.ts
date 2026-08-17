@@ -49,6 +49,26 @@ describe("EditSession", () => {
     expect(editSession.inEditMode).toEqual(false);
   });
 
+  it("supports the legacy beginEditSession API", async () => {
+    const sessionDataSource = {} as DataSource;
+    const beginEditSession = vi
+      .fn()
+      .mockResolvedValue(sessionDataSource);
+    const sourceDataSource = {
+      beginEditSession,
+    } as EditApi;
+    const legacyEditSession = new EditSession(
+      sourceDataSource,
+      "soft",
+      "beginEditSession",
+    );
+
+    await legacyEditSession.begin("Selected");
+
+    expect(beginEditSession).toHaveBeenCalledWith("selected-rows");
+    expect(legacyEditSession.sessionDataSource).toBe(sessionDataSource);
+  });
+
   it("edits outside an edit session throw an error", async () => {
     await expect(() =>
       editSession.commit("key-01", "col-1", 100, 150, true),

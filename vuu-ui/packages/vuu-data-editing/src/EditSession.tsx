@@ -4,12 +4,26 @@ import type {
   DeleteRowMode,
   DeleteSelectedRowsResult,
   EditApi,
+  EditSessionMode,
   UndoRowChangeResult,
 } from "@vuu-ui/vuu-data-types";
 import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
+export type EditSessionApi =
+  | "createSessionDataSource"
+  | "beginEditSession";
+const toEditSessionMode = (copyOption: CopyOption): EditSessionMode => {
+  switch (copyOption) {
+    case "All":
+      return "all-rows";
+    case "Selected":
+      return "selected-rows";
+    case "Empty":
+      return "empty-session-table";
+  }
+};
 export type NewRowState = {
   columns: readonly string[];
   draftRevision: number;
@@ -70,6 +84,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   #commitRevision = 0;
   #cellCommitRevisions = new Map<string, Map<string, number>>();
   #deleteMode: DeleteRowMode;
+  #editSessionApi: EditSessionApi;
   #sourceTableDataSource?: EditApi;
   #sessionDataSource?: DataSource;
   #newRowState: NewRowState = {
@@ -83,10 +98,15 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   /** Prevent begin/end RPCs from overlapping and observing stale lifecycle state. */
   #transitionQueue: Promise<void> = Promise.resolve();
 
-  constructor(dataSource: EditApi, deleteMode: DeleteRowMode = "soft") {
+  constructor(
+    dataSource: EditApi,
+    deleteMode: DeleteRowMode = "soft",
+    editSessionApi: EditSessionApi = "createSessionDataSource",
+  ) {
     super();
     this.#sourceTableDataSource = dataSource;
     this.#deleteMode = deleteMode;
+    this.#editSessionApi = editSessionApi;
   }
 
   get editCount() {
@@ -493,20 +513,16 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       this.#setLifecycle({ status: "starting" });
 
       try {
-        const createSessionDataSource =
-          this.#sourceTableDataSource?.createSessionDataSource;
-        if (!createSessionDataSource) {
-          throw new Error(
-            "[EditSession] datasource does not support createSessionDataSource",
-          );
-        }
-        const sessionDataSource = await createSessionDataSource.call(
-          this.#sourceTableDataSource,
-          copyOption,
-        );
+        const sourceDataSource = this.#sourceTableDataSource;
+        const sessionDataSource =
+          this.#editSessionApi === "beginEditSession"
+            ? await sourceDataSource?.beginEditSession?.(
+                toEditSessionMode(copyOption),
+              )
+            : await sourceDataSource?.createSessionDataSource?.(copyOption);
         if (!sessionDataSource) {
           throw new Error(
-            "[EditSession] datasource did not create a session datasource",
+            `[EditSession] datasource does not support ${this.#editSessionApi}`,
           );
         }
 
@@ -519,6 +535,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         this.#setLifecycle({ status: "error", operation: "begin", error });
         throw error;
       }
+
     });
   }
 

@@ -8,7 +8,12 @@ import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { useLayoutEffectSkipFirst } from "@vuu-ui/vuu-utils";
 import { useData } from "@vuu-ui/vuu-utils2";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { EditSession, type EditLifecycle, type EditState } from "./EditSession";
+import {
+  EditSession,
+  type EditLifecycle,
+  type EditSessionApi,
+  type EditState,
+} from "./EditSession";
 import { EDIT_ACTION_ROW_CLASS_NAME_GENERATOR } from "./editActionRowClassNameGenerator";
 
 const EDIT_ACTION_ROW_CLASS_NAME_GENERATORS = [
@@ -26,6 +31,7 @@ export interface EditableTableHookProps {
   dataSource?: DataSource;
   addRowsCount?: number;
   deleteMode?: DeleteRowMode;
+  editSessionApi?: EditSessionApi;
   copyOption?: CopyOption;
   isEditMode: boolean;
   onCancel: () => void;
@@ -41,6 +47,7 @@ export const useEditableTable = ({
   columns,
   dataSource: dataSourceProp,
   deleteMode = "soft",
+  editSessionApi = "createSessionDataSource",
   copyOption = "All",
   isEditMode,
   onCancel,
@@ -68,8 +75,8 @@ export const useEditableTable = ({
   // The editSession will be made available to all the edit controls in scope
   // by wrapping the edit component with a DataEditingProvider.
   const editSession = useMemo(
-    () => new EditSession(sourceDataSource as EditApi, deleteMode),
-    [deleteMode, sourceDataSource],
+    () => new EditSession(sourceDataSource as EditApi, deleteMode, editSessionApi),
+    [deleteMode, editSessionApi, sourceDataSource],
   );
   const [lifecycle, setLifecycle] = useState<EditLifecycle>(
     editSession.lifecycle,

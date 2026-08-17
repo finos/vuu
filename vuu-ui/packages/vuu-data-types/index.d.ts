@@ -620,6 +620,12 @@ export interface EditApi<
   createSessionDataSource?: (
     copyOption: CopyOption,
   ) => Promise<DataSource<T> | undefined>;
+  /**
+   * Legacy session creation API. Prefer createSessionDataSource for new servers.
+   */
+  beginEditSession?: (
+    editSessionMode?: EditSessionMode,
+  ) => Promise<DataSource<T> | undefined>;
   endEditSession?: (
     saveChanges?: boolean,
     force?: boolean,
