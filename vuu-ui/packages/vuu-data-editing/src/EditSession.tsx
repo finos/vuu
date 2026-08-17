@@ -17,7 +17,19 @@ export const isCopyOption = (
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
 
-export class EditError extends Error { }
+export type EditLifecycle =
+  | { status: "idle" }
+  | { status: "starting" }
+  | { status: "active"; sessionDataSource?: DataSource }
+  | { status: "ending"; sessionDataSource?: DataSource }
+  | {
+      status: "error";
+      operation: "begin" | "end";
+      error: Error;
+      sessionDataSource?: DataSource;
+    };
+
+export class EditError extends Error {}
 
 type CellEdit = {
   originalValue: VuuRowDataItemType;
@@ -27,7 +39,7 @@ type CellEdit = {
 };
 
 // TODO can add more when when we know what the server implementation of error columns will look like
-export class StaleUpdateError extends Error { }
+export class StaleUpdateError extends Error {}
 
 type RowEditDetails = {
   /**
@@ -38,6 +50,7 @@ type RowEditDetails = {
 
 type EditSessionEvents = {
   editState: (editState: EditState) => void;
+  lifecycle: (lifecycle: EditLifecycle) => void;
 };
 
 export class EditSession extends EventEmitter<EditSessionEvents> {
@@ -52,9 +65,9 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   #invalidCount = 0;
   #deleteMode: DeleteRowMode;
   #sourceTableDataSource?: EditApi;
-  #sessionDataSource?: EditApi;
-  #inEditMode = false;
-  #endEditModePending = false;
+  #sessionDataSource?: DataSource;
+  #lifecycle: EditLifecycle = { status: "idle" };
+  #transitionQueue: Promise<void> = Promise.resolve();
 
   constructor(dataSource: EditApi, deleteMode: DeleteRowMode = "soft") {
     super();
@@ -168,7 +181,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   async undoRowChange(key: string): Promise<void> {
-    if (!this.#inEditMode) return;
+    if (!this.inEditMode) return;
 
     const rowEdits = this.#rowEdits.get(key);
     const wasDeleted = this.#deletedRows.has(key);
@@ -214,60 +227,119 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
   }
 
-  clear() {
+  #clearEdits() {
     this.#rowEdits.clear();
     this.#deletedRows.clear();
     this.#editCount = 0;
     this.#deleteCount = 0;
     this.#addCount = 0;
     this.#invalidCount = 0;
-    this.#inEditMode = false;
-    this.#endEditModePending = false;
+  }
+
+  #setLifecycle(lifecycle: EditLifecycle) {
+    this.#lifecycle = lifecycle;
+    this.emit("lifecycle", lifecycle);
+  }
+
+  #enqueue<T>(operation: () => Promise<T>): Promise<T> {
+    const result = this.#transitionQueue.then(operation);
+    this.#transitionQueue = result.then(
+      () => undefined,
+      () => undefined,
+    );
+    return result;
   }
 
   /** @deprecated Pass a `CopyOption` ("All" | "Empty" | "Selected") to use `createSessionDataSource` instead. Long-form `EditSessionMode` values will be removed in a future release. */
-  async begin(mode: EditSessionMode): Promise<DataSource | undefined>;
-  async begin(mode?: CopyOption): Promise<DataSource | undefined>;
-  async begin(
-    mode?: EditSessionMode | CopyOption,
-  ): Promise<DataSource | undefined> {
-    try {
-      this.#inEditMode = true;
-      const sessionDataSource = isCopyOption(mode)
-        ? await this.#sourceTableDataSource?.createSessionDataSource?.(mode)
-        : await this.#sourceTableDataSource?.beginEditSession?.(mode);
+  begin(mode: EditSessionMode): Promise<DataSource | undefined>;
+  begin(mode?: CopyOption): Promise<DataSource | undefined>;
+  begin(mode?: EditSessionMode | CopyOption): Promise<DataSource | undefined>;
+  begin(mode?: EditSessionMode | CopyOption): Promise<DataSource | undefined> {
+    return this.#enqueue(async () => {
+      if (
+        this.#lifecycle.status === "active" ||
+        (this.#lifecycle.status === "error" &&
+          this.#lifecycle.operation === "end")
+      ) {
+        if (this.#lifecycle.status === "error") {
+          this.#setLifecycle({
+            status: "active",
+            sessionDataSource: this.#sessionDataSource,
+          });
+        }
+        return this.#sessionDataSource;
+      }
 
-      this.#sessionDataSource = sessionDataSource;
-      return sessionDataSource;
-    } catch (e) {
-      this.#inEditMode = false;
-      throw e;
-    }
+      this.#setLifecycle({ status: "starting" });
+
+      try {
+        const sessionDataSource = isCopyOption(mode)
+          ? await this.#sourceTableDataSource?.createSessionDataSource?.(mode)
+          : await this.#sourceTableDataSource?.beginEditSession?.(mode);
+
+        this.#sessionDataSource = sessionDataSource;
+        this.#setLifecycle({ status: "active", sessionDataSource });
+        return sessionDataSource;
+      } catch (cause) {
+        const error = cause instanceof Error ? cause : new Error(String(cause));
+        this.#setLifecycle({ status: "error", operation: "begin", error });
+        throw error;
+      }
+    });
   }
 
   get dataSource() {
     return this.#sessionDataSource ?? this.#sourceTableDataSource;
   }
 
-  async end(saveChanges = false, force = false) {
-    if (!this.#inEditMode) {
-      return;
-    }
-    try {
-      this.#endEditModePending = true;
-      await this.dataSource?.endEditSession?.(saveChanges, force);
-      this.clear();
-    } catch (e) {
-      this.#endEditModePending = false;
-      if (e instanceof StaleUpdateError) {
-        this.emit("editState", "stale");
+  end(saveChanges = false, force = false): Promise<void> {
+    return this.#enqueue(async () => {
+      if (
+        this.#lifecycle.status === "idle" ||
+        (this.#lifecycle.status === "error" &&
+          this.#lifecycle.operation === "begin")
+      ) {
+        if (this.#lifecycle.status !== "idle") {
+          this.#setLifecycle({ status: "idle" });
+        }
+        return;
       }
-      throw e;
-    }
+
+      const sessionDataSource = this.#sessionDataSource;
+      this.#setLifecycle({ status: "ending", sessionDataSource });
+
+      try {
+        await this.dataSource?.endEditSession?.(saveChanges, force);
+        this.#clearEdits();
+        this.#sessionDataSource = undefined;
+        this.#setLifecycle({ status: "idle" });
+      } catch (cause) {
+        const error = cause instanceof Error ? cause : new Error(String(cause));
+        if (error instanceof StaleUpdateError) {
+          this.emit("editState", "stale");
+        }
+        this.#setLifecycle({
+          status: "error",
+          operation: "end",
+          error,
+          sessionDataSource,
+        });
+        throw error;
+      }
+    });
+  }
+
+  get lifecycle() {
+    return this.#lifecycle;
   }
 
   get inEditMode() {
-    return this.#inEditMode === true && this.#endEditModePending === false;
+    return (
+      this.#lifecycle.status === "active" ||
+      this.#lifecycle.status === "ending" ||
+      (this.#lifecycle.status === "error" &&
+        this.#lifecycle.operation === "end")
+    );
   }
 
   get editState(): EditState {
@@ -339,7 +411,13 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     typedValue: string | number | boolean,
     isValid: boolean,
   ) {
-    if (!this.#inEditMode) {
+    if (
+      this.#lifecycle.status !== "active" &&
+      !(
+        this.#lifecycle.status === "error" &&
+        this.#lifecycle.operation === "end"
+      )
+    ) {
       throw new Error("No edit session in progress");
     }
     const rowEditDetails = this.getOrCreateRowEdits(key);
