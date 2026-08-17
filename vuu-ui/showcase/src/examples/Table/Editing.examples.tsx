@@ -163,6 +163,7 @@ const EditTableTemplate = ({
     canSave,
     dataSource,
     editSession,
+    isEditSessionReady,
     onCancel,
     onSave,
     rowClassNameGenerators,
@@ -215,7 +216,7 @@ const EditTableTemplate = ({
 
       return {
         columns:
-          editMode === "view"
+          !isEditSessionReady
             ? InstrumentColumns
             : InstrumentColumns.map((col) =>
               col.name === "lotSize"
@@ -264,7 +265,12 @@ const EditTableTemplate = ({
         zebraStripes: true,
       };
     },
-    [editMode, editableType, rowClassNameGenerators, showInlineAddRow],
+    [
+      isEditSessionReady,
+      editableType,
+      rowClassNameGenerators,
+      showInlineAddRow,
+    ],
   );
 
   return (
@@ -323,7 +329,7 @@ const EditTableTemplate = ({
         </DataEditingProvider>
       </div>
       <TableFooter>
-        {editMode === "view" ? (
+        {!isEditSessionReady ? (
           <DataSourceStats dataSource={sourceDataSource} />
         ) : (
           <TableFooterTray position="center">
@@ -472,7 +478,7 @@ const EditableInstrumentsTemplate = ({
         </DataEditingProvider>
       </div>
       <TableFooter>
-        {editMode === "view" ? (
+        {!isEditSessionReady ? (
           <DataSourceStats dataSource={sourceDataSource} />
         ) : (
           <TableFooterTray position="center">
@@ -640,6 +646,7 @@ const EditableTestTableTemplate = ({
     dataSource,
     editSession,
     hasSelection,
+    isEditSessionReady,
     onCancel,
     onDelete,
     onSave,
@@ -669,7 +676,7 @@ const EditableTestTableTemplate = ({
   const config = useMemo<TableConfig>(
     () => ({
       columns:
-        editMode === "view"
+        !isEditSessionReady
           ? tableSchema.columns
           :
           tableSchema.columns.map<ColumnDescriptor>((column) => ({
@@ -681,7 +688,7 @@ const EditableTestTableTemplate = ({
       rowSeparators: true,
       zebraStripes: true,
     }),
-    [editMode, rowClassNameGenerators, tableSchema.columns],
+    [isEditSessionReady, rowClassNameGenerators, tableSchema.columns],
   );
 
   const showUploadPreview = useCallback(
@@ -759,7 +766,7 @@ const EditableTestTableTemplate = ({
         </DataEditingProvider>
       </div>
       <TableFooter>
-        {editMode === "view" ? (
+        {!isEditSessionReady ? (
           <DataSourceStats dataSource={sourceDataSource} />
         ) : (
           <TableFooterTray position="center">
