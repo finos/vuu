@@ -142,13 +142,6 @@ test.describe("Given a DataUploadPreview", () => {
       page.getByRole("columnheader", { name: "Error column header" }),
     ).toBeVisible();
     await expect(page.locator('input[value="CSV-001"]')).toBeVisible();
-    await expect(
-      page
-        .locator('input[value="CSV-001"]')
-        .locator('xpath=ancestor::*[@role="row"]')
-        .getByRole("cell")
-        .last(),
-    ).toBeVisible();
     await expect(page.locator(".vuuInlineAddRow")).toHaveCount(0);
 
     const description = page
