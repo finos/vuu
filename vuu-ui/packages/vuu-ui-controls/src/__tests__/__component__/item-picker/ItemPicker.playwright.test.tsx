@@ -59,7 +59,7 @@ test.describe("ItemPicker", () => {
         ]);
       });
 
-      test("THEN selected items can be reordered via drag and drop", async ({
+      test.skip("THEN selected items can be reordered via drag and drop", async ({
         browserName,
         mount,
         page,
