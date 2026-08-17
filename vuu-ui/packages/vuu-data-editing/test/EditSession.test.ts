@@ -2,6 +2,20 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DataSource, EditApi } from "@vuu-ui/vuu-data-types";
 import { EditSession } from "../src";
 
+vi.hoisted(() => {
+  class MockWorker {
+    onmessage: ((event: MessageEvent) => void) | null = null;
+
+    constructor(_url: string) {}
+
+    postMessage(_message: unknown) {}
+
+    terminate() {}
+  }
+
+  vi.stubGlobal("Worker", MockWorker);
+});
+
 type Editable = Required<EditApi>;
 type CreateSession = Editable["createSessionDataSource"];
 type EndEdit = Editable["endEditSession"];
