@@ -6,11 +6,17 @@ vi.hoisted(() => {
   class MockWorker {
     onmessage: ((event: MessageEvent) => void) | null = null;
 
-    constructor(_url: string) {}
+    constructor(_url: string) {
+      void _url;
+    }
 
-    postMessage(_message: unknown) {}
+    postMessage(_message: unknown) {
+      void _message;
+    }
 
-    terminate() {}
+    terminate() {
+      return undefined;
+    }
   }
 
   vi.stubGlobal("Worker", MockWorker);
