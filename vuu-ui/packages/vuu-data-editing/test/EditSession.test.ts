@@ -36,11 +36,10 @@ describe("EditSession", () => {
   beforeEach(() => {
     endEdit = vi.fn();
     edit = vi.fn();
-    let editApi: MockDataSource;
     createSession = vi.fn(
       async () => editApi as unknown as DataSource,
     ) as CreateSession;
-    editApi = new MockDataSource(createSession, endEdit, edit);
+    const editApi = new MockDataSource(createSession, endEdit, edit);
     editSession = new EditSession(editApi);
   });
 
@@ -183,8 +182,7 @@ describe("EditSession", () => {
       data: { wasInsertedRow: true },
       type: "SUCCESS_RESULT",
     });
-    let editApi: EditApi;
-    editApi = {
+    const editApi: EditApi = {
       addRow: vi.fn().mockResolvedValue({
         data: undefined,
         type: "SUCCESS_RESULT",
@@ -210,8 +208,7 @@ describe("EditSession", () => {
       data: undefined,
       type: "SUCCESS_RESULT",
     });
-    let editApi: EditApi;
-    editApi = {
+    const editApi: EditApi = {
       createSessionDataSource: vi.fn(
         async () => editApi as unknown as DataSource,
       ),

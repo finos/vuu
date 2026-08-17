@@ -38,7 +38,6 @@ export interface EditableTableHookProps {
 }
 
 export const useEditableTable = ({
-  addRowsCount = 15,
   columns,
   dataSource: dataSourceProp,
   deleteMode = "soft",

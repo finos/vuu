@@ -57,6 +57,7 @@ import {
   ReactElement,
   SyntheticEvent,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -1035,7 +1036,7 @@ const BulkEditTableTemplate = ({
     onSave();
   }, [onSave]);
 
-  useMemo(() => {
+  useEffect(() => {
     if (sessionDataSource) {
       showDialog(
         <DataEditingProvider editSession={editSession}>
@@ -1063,8 +1064,10 @@ const BulkEditTableTemplate = ({
     editSession,
     handleSave,
     onCancel,
+    rowClassNameGenerators,
     sessionDataSource,
     showDialog,
+    sourceDataSource,
   ]);
 
   const contextMenuProps = useEditContextMenu({

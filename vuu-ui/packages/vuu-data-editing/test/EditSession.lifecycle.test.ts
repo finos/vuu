@@ -63,11 +63,10 @@ describe("EditSession lifecycle", () => {
   beforeEach(() => {
     endEdit = vi.fn();
     editCell = vi.fn().mockResolvedValue(SUCCESS);
-    let dataSource: MockDataSource;
     createSession = vi.fn(
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
-    dataSource = new MockDataSource(endEdit, createSession, editCell);
+    const dataSource = new MockDataSource(endEdit, createSession, editCell);
     editSession = new EditSession(dataSource);
   });
 
@@ -189,11 +188,10 @@ describe("EditSession lifecycle", () => {
     expect(createSession).toHaveBeenCalledWith("All");
 
     await editSession.end();
-    let selectedDataSource: MockDataSource;
     createSession = vi.fn(
       async () => selectedDataSource as unknown as DataSource,
     ) as CreateSession;
-    selectedDataSource = new MockDataSource(endEdit, createSession);
+    const selectedDataSource = new MockDataSource(endEdit, createSession);
     editSession = new EditSession(selectedDataSource);
     await editSession.begin("Selected");
     expect(createSession).toHaveBeenCalledWith("Selected");
@@ -205,11 +203,10 @@ describe("EditSession lifecycle", () => {
       .fn()
       .mockRejectedValueOnce(endError)
       .mockResolvedValueOnce(undefined);
-    let dataSource: MockDataSource;
     createSession = vi.fn(
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
-    dataSource = new MockDataSource(endEdit, createSession);
+    const dataSource = new MockDataSource(endEdit, createSession);
     editSession = new EditSession(dataSource);
 
     await editSession.begin();
@@ -230,11 +227,10 @@ describe("EditSession lifecycle", () => {
     const staleUpdateError = new StaleUpdateError("stale update");
     const editStateListener = vi.fn();
     endEdit = vi.fn().mockRejectedValue(staleUpdateError);
-    let dataSource: MockDataSource;
     createSession = vi.fn(
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
-    dataSource = new MockDataSource(endEdit, createSession);
+    const dataSource = new MockDataSource(endEdit, createSession);
     editSession = new EditSession(dataSource);
     editSession.on("editState", editStateListener);
 
@@ -251,11 +247,10 @@ describe("EditSession lifecycle", () => {
       .fn()
       .mockRejectedValueOnce(staleUpdateError)
       .mockResolvedValueOnce(undefined);
-    let dataSource: MockDataSource;
     createSession = vi.fn(
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
-    dataSource = new MockDataSource(endEdit, createSession);
+    const dataSource = new MockDataSource(endEdit, createSession);
     editSession = new EditSession(dataSource);
 
     await editSession.begin();
@@ -273,11 +268,10 @@ describe("EditSession lifecycle", () => {
   it("prioritizes validation over stale and restores stale after correction", async () => {
     const staleUpdateError = new StaleUpdateError("stale update");
     endEdit = vi.fn().mockRejectedValue(staleUpdateError);
-    let dataSource: MockDataSource;
     createSession = vi.fn(
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
-    dataSource = new MockDataSource(endEdit, createSession);
+    const dataSource = new MockDataSource(endEdit, createSession);
     editSession = new EditSession(dataSource);
 
     await editSession.begin();
@@ -413,11 +407,10 @@ describe("EditSession lifecycle", () => {
       .mockResolvedValueOnce(SUCCESS)
       .mockResolvedValueOnce(ERROR)
       .mockResolvedValueOnce(SUCCESS);
-    let dataSource: MockDataSource;
     createSession = vi.fn(
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
-    dataSource = new MockDataSource(endEdit, createSession, editCell);
+    const dataSource = new MockDataSource(endEdit, createSession, editCell);
     editSession = new EditSession(dataSource);
     await editSession.begin();
 
@@ -449,11 +442,10 @@ describe("EditSession lifecycle", () => {
       .fn<EditCell>()
       .mockReturnValueOnce(first.promise)
       .mockReturnValueOnce(second.promise);
-    let dataSource: MockDataSource;
     createSession = vi.fn(
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
-    dataSource = new MockDataSource(endEdit, createSession, editCell);
+    const dataSource = new MockDataSource(endEdit, createSession, editCell);
     editSession = new EditSession(dataSource);
     await editSession.begin();
 
@@ -484,11 +476,10 @@ describe("EditSession lifecycle", () => {
       .mockResolvedValueOnce(SUCCESS)
       .mockReturnValueOnce(firstRevert.promise)
       .mockReturnValueOnce(secondRevert.promise);
-    let dataSource: MockDataSource;
     createSession = vi.fn(
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
-    dataSource = new MockDataSource(endEdit, createSession, editCell);
+    const dataSource = new MockDataSource(endEdit, createSession, editCell);
     editSession = new EditSession(dataSource);
     await editSession.begin();
     await editSession.commit("row-1", "price", 100, 101, true);
@@ -510,8 +501,7 @@ describe("EditSession lifecycle", () => {
 
   it("undoes only edits that existed when the undo request began", async () => {
     const pendingUndo = deferred<RpcResultSuccess>();
-    let dataSource: EditApi;
-    dataSource = {
+    const dataSource: EditApi = {
       createSessionDataSource: vi.fn(
         async () => dataSource as unknown as DataSource,
       ),
@@ -539,8 +529,7 @@ describe("EditSession lifecycle", () => {
       data: { deletedKeys: ["row-1"] },
       type: "SUCCESS_RESULT",
     });
-    let dataSource: EditApi;
-    dataSource = {
+    const dataSource: EditApi = {
       createSessionDataSource: vi.fn(
         async () => dataSource as unknown as DataSource,
       ),

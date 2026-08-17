@@ -21,8 +21,7 @@ import {
 const SUCCESS = { data: undefined, type: "SUCCESS_RESULT" as const };
 
 const createEditSession = () => {
-  let dataSource: EditApi;
-  dataSource = {
+  const dataSource: EditApi = {
     createSessionDataSource: vi.fn(
       async () => dataSource as unknown as DataSource,
     ),
@@ -155,8 +154,7 @@ describe("EditSession React consumers", () => {
 
   it("initializes remounted edit buttons from stale state and force saves", async () => {
     const staleError = new StaleUpdateError("stale");
-    let dataSource: EditApi;
-    dataSource = {
+    const dataSource: EditApi = {
       createSessionDataSource: vi.fn(
         async () => dataSource as unknown as DataSource,
       ),
