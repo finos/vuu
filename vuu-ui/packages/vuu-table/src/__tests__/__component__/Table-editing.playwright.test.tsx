@@ -1146,8 +1146,8 @@ test.describe("Session table editing (createSessionTable)", () => {
 
     const undoButton = table.row(2).getByRole("button", { name: "Undo" });
     await expect(undoButton).toBeVisible();
-    await expect(table.locateCell(2, 2).getByRole("textbox")).toHaveAttribute(
-      "readonly",
+    await expect(table.locateCell(2, 2).getByRole("textbox")).toHaveValue(
+      "AAOO EDITED",
     );
     await expect(page.getByRole("button", { name: "Submit" })).toBeEnabled();
   });
