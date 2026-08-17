@@ -32,6 +32,10 @@ export const TableCell = ({
 
   const { className, style } = useCell(column, classBase, false);
   const { ariaColIndex, CellRenderer, name, valueFormatter } = column;
+  const isNewRow = editSession?.isNewRow(dataRow.key) ?? false;
+  const isInsertOnly =
+    isDataValueEditable(column, "insert") &&
+    !isDataValueEditable(column, "update");
   const editedDuringCurrentSession = useCellEdited(
     editSession,
     dataRow.key,
@@ -103,7 +107,7 @@ export const TableCell = ({
       role="cell"
       style={style}
     >
-      {CellRenderer ? (
+      {CellRenderer && (!isInsertOnly || isNewRow) ? (
         <CellRenderer
           column={column}
           dataRow={dataRow}

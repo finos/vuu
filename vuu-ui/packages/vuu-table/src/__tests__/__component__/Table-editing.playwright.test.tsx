@@ -380,6 +380,7 @@ test.describe("Editable table navigation", () => {
 
     await editButton.click();
     await table1.assertCellIsEditable(2, 1, IS_EDITABLE, "AAOO L");
+    await expect(table1.locateCell(2, 5).getByRole("textbox")).toHaveCount(0);
   });
 
   test("clicking a cell, then using arrow keys applies cell navigation ", async ({
