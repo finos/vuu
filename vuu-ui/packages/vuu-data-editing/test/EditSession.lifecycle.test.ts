@@ -25,7 +25,7 @@ class MockDataSource implements EditApi {
     private createSession: CreateSession,
     private edit: EditCell = vi.fn().mockResolvedValue(SUCCESS),
     private addRowImpl?: AddRow,
-  ) {}
+  ) { }
 
   addRow(...args: Parameters<AddRow>) {
     return this.addRowImpl?.(...args);
