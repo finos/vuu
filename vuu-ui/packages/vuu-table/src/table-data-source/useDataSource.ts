@@ -7,16 +7,16 @@ import type {
   RangeLimits,
   SchemaColumn,
 } from "@vuu-ui/vuu-data-types";
-import { SelectRowRequest, VuuRange } from "@vuu-ui/vuu-protocol-types";
+import type { SelectRowRequest, VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { Range } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { TableProps } from "../Table";
-import {
+import type { TableProps } from "../Table";
+import type {
   DataRow,
   TableRowSelectHandlerInternal,
 } from "@vuu-ui/vuu-table-types";
 import { DataRowMovingWindow } from "./DataRowMovingWindow";
-import { dataRowFactory, DataRowFunc } from "../data-row/DataRow";
+import { dataRowFactory, type DataRowFunc } from "../data-row/DataRow";
 
 const NullDataRow = () => ({}) as DataRow;
 
@@ -287,7 +287,7 @@ export const useDataSource = ({
         createDataRow(columns, tableSchema.columns);
       } else {
         throw Error(
-          `[useDataSource] a resumed dataSource must have a tableSchema`,
+          "[useDataSource] a resumed dataSource must have a tableSchema",
         );
       }
       dataSource.resume?.(datasourceMessageHandler);

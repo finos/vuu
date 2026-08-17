@@ -1,4 +1,4 @@
-import {
+import type {
   CopyOption,
   DataSource,
   DeleteRowMode,
@@ -17,7 +17,7 @@ export const isCopyOption = (
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
 
-export class EditError extends Error {}
+export class EditError extends Error { }
 
 type CellEdit = {
   originalValue: VuuRowDataItemType;
@@ -27,7 +27,7 @@ type CellEdit = {
 };
 
 // TODO can add more when when we know what the server implementation of error columns will look like
-export class StaleUpdateError extends Error {}
+export class StaleUpdateError extends Error { }
 
 type RowEditDetails = {
   /**
@@ -241,6 +241,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       return sessionDataSource;
     } catch (e) {
       this.#inEditMode = false;
+      throw e;
     }
   }
 
@@ -249,19 +250,19 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   async end(saveChanges = false, force = false) {
+    if (!this.#inEditMode) {
+      return;
+    }
     try {
-      if (this.#inEditMode) {
-        this.#endEditModePending = true;
-        await this.dataSource?.endEditSession?.(saveChanges, force);
-        this.clear();
-      }
+      this.#endEditModePending = true;
+      await this.dataSource?.endEditSession?.(saveChanges, force);
+      this.clear();
     } catch (e) {
       this.#endEditModePending = false;
       if (e instanceof StaleUpdateError) {
         this.emit("editState", "stale");
-      } else {
-        console.error(`[EditSession] ${(e as Error).message}`);
       }
+      throw e;
     }
   }
 

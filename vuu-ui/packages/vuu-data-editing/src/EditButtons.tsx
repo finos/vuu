@@ -3,6 +3,8 @@ import type { EditState, EditSession } from "./EditSession";
 import { useCallback, useEffect, useState } from "react";
 
 export interface EditButtonProps {
+  canCancel: boolean;
+  canSave: boolean;
   editSession?: EditSession;
   hasSelection?: boolean;
   onCancel?: () => void;
@@ -15,6 +17,7 @@ export interface EditButtonProps {
 }
 
 export const EditButtons = ({
+  canSave,
   confirmCancel,
   confirmSave,
   editSession,
@@ -67,7 +70,7 @@ export const EditButtons = ({
         </Button>
       )}
       <Button
-        disabled={editState === "clean" || editState === "invalid"}
+        disabled={!canSave}
         onClick={handleSave}
         sentiment="accented"
       >
