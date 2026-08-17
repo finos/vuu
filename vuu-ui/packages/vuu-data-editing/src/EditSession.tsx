@@ -66,7 +66,6 @@ type EditSessionEvents = {
   editState: (editState: EditState) => void;
   lifecycle: (lifecycle: EditLifecycle) => void;
   newRow: (newRowState: NewRowState) => void;
-  rowChangeChanged: (key: string) => void;
 };
 
 export class EditSession extends EventEmitter<EditSessionEvents> {
@@ -345,9 +344,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       }
       if (newCount > 0) {
         this.deleteCount = this.#deleteCount + newCount;
-        for (const key of deletedKeys) {
-          this.emit("rowChangeChanged", key);
-        }
       }
     }
   }
@@ -448,7 +444,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     if (wasInsertedRow) {
       this.addCount = this.#addCount - 1;
     }
-    this.emit("rowChangeChanged", key);
   }
 
   #clearEdits() {

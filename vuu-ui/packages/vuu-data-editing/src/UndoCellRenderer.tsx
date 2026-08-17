@@ -6,7 +6,6 @@ import type {
 } from "@vuu-ui/vuu-table-types";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { registerComponent } from "@vuu-ui/vuu-utils";
-import { useCallback, useSyncExternalStore } from "react";
 import { useEditSession } from "./DataEditingProvider";
 
 export const UNDO_CELL_RENDERER = "vuu.undo-cell";
@@ -28,13 +27,12 @@ export const getUndoButtonContent = (
 
 export const getUndoTooltipContent = (
   action: unknown,
-  hasRowChanges = false,
 ) =>
   action === "deleteRow"
     ? "Undo delete row"
     : action === "addRow"
       ? "Undo insert row"
-      : action === "editCell" || hasRowChanges
+      : action === "editCell"
         ? "Undo row edits"
         : undefined;
 
@@ -43,27 +41,6 @@ export const UndoCellRenderer = ({
   dataRow,
 }: TableCellRendererProps) => {
   const editSession = useEditSession();
-  const hasRowChanges = useSyncExternalStore(
-    useCallback(
-      (onStoreChange) => {
-        if (!editSession) {
-          return () => undefined;
-        }
-        const handleRowChange = (key: string) => {
-          if (key === dataRow.key) {
-            onStoreChange();
-          }
-        };
-        editSession.on("rowChangeChanged", handleRowChange);
-        return () => editSession.removeListener("rowChangeChanged", handleRowChange);
-      },
-      [dataRow.key, editSession],
-    ),
-    useCallback(
-      () => editSession?.hasRowChanges(dataRow.key) ?? false,
-      [dataRow.key, editSession],
-    ),
-  );
   const renderer = (column.type as DataValueTypeDescriptor)
     ?.renderer as ColumnTypeRendering;
   const { icon, text } = getUndoButtonContent(
@@ -71,7 +48,6 @@ export const UndoCellRenderer = ({
   );
   const tooltipContent = getUndoTooltipContent(
     dataRow.vuu_action,
-    hasRowChanges,
   );
 
   if (tooltipContent === undefined) return null;
