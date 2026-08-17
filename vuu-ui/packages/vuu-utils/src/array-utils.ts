@@ -4,7 +4,7 @@ export function partition<T>(
   array: T[],
   test: PartitionTest<T>,
   pass: T[] = [],
-  fail: T[] = []
+  fail: T[] = [],
 ): [T[], T[]] {
   for (let i = 0, len = array.length; i < len; i++) {
     (test(array[i], i) ? pass : fail).push(array[i]);
@@ -17,7 +17,7 @@ export function partition<T>(
 export function itemsChanged<T = unknown>(
   currentItems: T[],
   newItems: T[],
-  identityProperty?: string
+  identityProperty?: string,
 ) {
   if (currentItems.length !== newItems.length) {
     return true;
@@ -30,8 +30,8 @@ export function itemsChanged<T = unknown>(
         newItems.findIndex(
           (newItem) =>
             (newItem as { [key: string]: unknown })[identityProperty] ===
-            (currentItem as { [key: string]: unknown })[identityProperty]
-        ) === -1
+            (currentItem as { [key: string]: unknown })[identityProperty],
+        ) === -1,
     );
   }
 }
@@ -39,7 +39,7 @@ export function itemsChanged<T = unknown>(
 export function itemsOrOrderChanged<T = unknown>(
   currentItems: T[],
   newItems: T[],
-  identityProperty?: string
+  identityProperty?: string,
 ) {
   if (currentItems.length !== newItems.length) {
     return true;
@@ -50,7 +50,7 @@ export function itemsOrOrderChanged<T = unknown>(
     return currentItems.some(
       (currentItem, index) =>
         (newItems[index] as { [key: string]: unknown })[identityProperty] !==
-        (currentItem as { [key: string]: unknown })[identityProperty]
+        (currentItem as { [key: string]: unknown })[identityProperty],
     );
   }
 }
@@ -58,7 +58,7 @@ export function itemsOrOrderChanged<T = unknown>(
 export const moveItemDeprecated = <T = unknown>(
   items: T[],
   item: T,
-  moveTo: number
+  moveTo: number,
 ): T[] => {
   const fromIndex = items.indexOf(item);
   if (fromIndex === moveTo) {
@@ -81,7 +81,7 @@ export const moveItemDeprecated = <T = unknown>(
 export const moveItem = <T = unknown>(
   items: T[],
   fromIndex: number,
-  toIndex: number
+  toIndex: number,
 ): T[] => {
   if (fromIndex === toIndex) {
     return items;
@@ -112,6 +112,29 @@ export const getAddedItems = <T>(values: undefined | T[], newValues: T[]) => {
 export const getMissingItems = <T, I>(
   sourceItems: T[],
   items: I[],
-  identity: (s: T) => I
+  identity: (s: T) => I,
 ) =>
   items.filter((i) => sourceItems.findIndex((s) => identity(s) === i) === -1);
+
+/**
+ * Given an ordered list of item names, return items in same order
+ */
+export const reorderItems = <T extends { name: string } = { name: string }>(
+  originalItems: readonly T[],
+  orderedNames: string[],
+): T[] => {
+  const orderedItems: T[] = [];
+  let previousName = "";
+  for (const name of orderedNames) {
+    // Because of the way ordered names are captured, it can happen that a duplicate entry
+    // is captured for the dropped item. Ignore it. Only observed on slow clients.
+    if (previousName !== name) {
+      const item = originalItems.find((c) => c.name === name);
+      if (item) {
+        orderedItems.push(item);
+      }
+      previousName = name;
+    }
+  }
+  return orderedItems;
+};

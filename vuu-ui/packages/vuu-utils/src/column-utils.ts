@@ -16,14 +16,16 @@ import type {
   VuuGroupBy,
   VuuSort,
 } from "@vuu-ui/vuu-protocol-types";
+import { TableModel } from "@vuu-ui/vuu-table";
 import type {
   ColumnAlignment,
   ColumnDescriptor,
   ColumnLayout,
-  DataValueTypeDescriptor,
   ColumnTypeFormatting,
   ColumnTypeRendering,
   ColumnTypeWithValidationRules,
+  DataRow,
+  DataValueTypeDescriptor,
   DefaultColumnConfiguration,
   GroupColumnDescriptor,
   LookupRenderer,
@@ -35,11 +37,9 @@ import type {
   TableHeading,
   TableHeadings,
   ValueListRenderer,
-  DataRow,
 } from "@vuu-ui/vuu-table-types";
 import { type CSSProperties } from "react";
 import { moveItem } from "./array-utils";
-import { TableModel } from "@vuu-ui/vuu-table";
 import { queryClosest } from "./html-utils";
 
 /**
@@ -1538,31 +1538,6 @@ export const dataColumnAndKeyUnchanged = (
 export const toColumnName = (column: ColumnDescriptor) => column.name;
 export const isStringColumn = (column: ColumnDescriptor) =>
   column.serverDataType === "string";
-
-/**
- * Given an ordered list of column names, return column items in same order
- */
-export const reorderColumnItems = <
-  T extends { name: string } = { name: string },
->(
-  columnItems: readonly T[],
-  orderedNames: string[],
-): T[] => {
-  const columns: T[] = [];
-  let previousName = "";
-  for (const name of orderedNames) {
-    // Because of the way ordered names are captured, it can happen that a duplicate entry
-    // is captured for the dropped item. Ignore it. Only observed on slow clients.
-    if (previousName !== name) {
-      const columnItem = columnItems.find((c) => c.name === name);
-      if (columnItem) {
-        columns.push(columnItem);
-      }
-      previousName = name;
-    }
-  }
-  return columns;
-};
 
 export const columnByAriaIndex = (
   columns: RuntimeColumnDescriptor[],
