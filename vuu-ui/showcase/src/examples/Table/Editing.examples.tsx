@@ -43,7 +43,6 @@ import {
 } from "@vuu-ui/vuu-table-types";
 import {
   ModalProvider,
-  Toolbar,
   useModal,
 } from "@vuu-ui/vuu-ui-controls";
 import {
@@ -66,6 +65,7 @@ import { SimulTable } from "./SimulTableTemplate";
 import type { CopyOption, DataSource } from "@vuu-ui/vuu-data-types";
 import { LayoutProvider, Stack, View } from "@vuu-ui/vuu-layout";
 import { ColumnFilter } from "@vuu-ui/vuu-filters";
+import { Toolbar } from "./Toolbar";
 import {
   ColumnFilterChangeHandler,
   ColumnFilterCommitHandler,
