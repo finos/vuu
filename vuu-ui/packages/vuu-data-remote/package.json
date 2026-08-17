@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@vuu-ui/vuu-filter-parser": "2.3.0",
-    "@vuu-ui/vuu-utils": "2.3.0"
+    "@vuu-ui/vuu-utils": "2.3.0",
+    "@vuu-ui/vuu-utils2": "2.3.0"
   }
 }

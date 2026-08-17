@@ -3,7 +3,7 @@ import type {
   RpcResultError,
   RpcResultSuccess,
 } from "@vuu-ui/vuu-protocol-types";
-import { StaleUpdateError as UtilsStaleUpdateError } from "@vuu-ui/vuu-utils";
+import { StaleUpdateError as UtilsStaleUpdateError } from "@vuu-ui/vuu-utils2";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EditSession, StaleUpdateError } from "../src";
 

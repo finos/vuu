@@ -1,4 +1,4 @@
-import { isInlineEditingSession, StaleUpdateError } from '@vuu-ui/vuu-data-editing';
+import { isInlineEditingSession, StaleUpdateError } from "@vuu-ui/vuu-utils2";
 import type {
   CopyOption,
   DataSource,

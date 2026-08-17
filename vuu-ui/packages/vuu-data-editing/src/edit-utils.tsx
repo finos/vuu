@@ -1,10 +1,7 @@
 import type { DataRow, RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import type { EditSessionMode } from "@vuu-ui/vuu-data-types";
 import { formatDate } from "@vuu-ui/vuu-utils";
 
-export const isInlineEditingSession = (
-  mode: EditSessionMode,
-): mode is "inline-all-rows" => mode === "inline-all-rows";
+export { isInlineEditingSession } from "@vuu-ui/vuu-utils2";
 
 const timeFormatter = formatDate({ time: "hh:mm:ss" });
 const dataRowEditErrors = Symbol("vuuDataRowEditErrors");

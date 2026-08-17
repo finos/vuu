@@ -20,7 +20,7 @@ export {
   type NewRowState,
   type EditState,
 } from "./EditSession";
-export { StaleUpdateError } from "@vuu-ui/vuu-utils";
+export { StaleUpdateError } from "@vuu-ui/vuu-utils2";
 export {
   EDIT_ACTION_ROW_CLASS_NAME_GENERATOR,
   editActionRowClassNameGenerator,

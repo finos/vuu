@@ -12,7 +12,6 @@ export * from "./common-types";
 export * from "./component-registry";
 export * from "./cookie-utils";
 export * from "./css-utils";
-export * from "./errors";
 export * from "./data-utils";
 export * from "./datasource/BaseDataSource";
 export * from "./datasource/datasource-action-utils";

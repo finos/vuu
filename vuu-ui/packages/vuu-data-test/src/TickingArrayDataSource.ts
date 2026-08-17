@@ -28,9 +28,9 @@ import type {
 import {
   isRpcSuccess,
   isTypeaheadRequest,
-  StaleUpdateError,
   uuid,
 } from "@vuu-ui/vuu-utils";
+import { StaleUpdateError } from "@vuu-ui/vuu-utils2";
 import type {
   IVuuModule,
   RpcMenuService,
