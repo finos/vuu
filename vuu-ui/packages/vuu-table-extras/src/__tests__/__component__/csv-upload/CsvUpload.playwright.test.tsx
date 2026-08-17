@@ -6,6 +6,7 @@ import {
   CsvUploadCustomTitle,
   CsvUploadWithInstrumentsSchema,
 } from "../../../../../../showcase/src/examples/TableExtras/CsvUpload.examples";
+import { TestTableEmptyWithUpload } from "../../../../../../showcase/src/examples/Table/Editing.examples";
 
 test.describe("Given a CsvUpload component", () => {
   test("THEN it renders the open dialog with correct initial state", async ({
@@ -23,12 +24,8 @@ test.describe("Given a CsvUpload component", () => {
     await expect(
       page.locator("button", { hasText: "BROWSE FILES" }),
     ).toBeVisible();
-    await expect(
-      page.locator("button", { hasText: "Import" }),
-    ).toBeDisabled();
-    await expect(
-      page.locator("button", { hasText: "Cancel" }),
-    ).toBeEnabled();
+    await expect(page.locator("button", { hasText: "Import" })).toBeDisabled();
+    await expect(page.locator("button", { hasText: "Cancel" })).toBeEnabled();
   });
 
   test("WHEN Cancel is clicked THEN the onCancel callback is invoked", async ({
@@ -89,11 +86,95 @@ test.describe("Given a CsvUpload with the instruments schema", () => {
     await expect(page.locator(".vuuCsvUpload-dropZone")).toContainText(
       "Your file contains errors",
     );
+    await expect(page.locator("button", { hasText: "Import" })).toBeDisabled();
+  });
+});
+
+test.describe("Given a DataUploadPreview", () => {
+  test("uploads CSV rows directly from the toolbar", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<TestTableEmptyWithUpload />);
+
     await expect(
-      page.locator("button", { hasText: "Import" }),
-    ).toBeDisabled();
+      page.getByRole("button", { name: "Upload (preview)" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Upload (direct)" }).click();
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "test-edit.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(
+        "id,description,quantity,price,enabled,externalId\nCSV-001,Direct upload,10,12.5,true,1001\n",
+      ),
+    });
+    await page.getByRole("button", { name: "Import", exact: true }).click();
+
+    await expect(
+      page.getByRole("heading", { name: "Upload Data" }),
+    ).not.toBeVisible();
+    await expect(page.locator(".vuuDatasourceStats-value").last()).toHaveText(
+      "1",
+    );
   });
 
+  test("allows uploaded rows to be edited and deleted before submission", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<TestTableEmptyWithUpload />);
+
+    await page.getByRole("button", { name: "Upload (preview)" }).click();
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "test-edit.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(
+        "id,description,quantity,price,enabled,externalId\nCSV-001,Uploaded row,10,12.5,true,1001\nCSV-002,Delete me,20,25,true,1002\n",
+      ),
+    });
+    await page.getByRole("button", { name: "Import", exact: true }).click();
+
+    await expect(
+      page.getByRole("heading", { name: "Edit uploaded data" }),
+    ).toBeVisible();
+    await expect(page.locator(".vuuDataUploadPreview")).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Error column header" }),
+    ).toBeVisible();
+    await expect(page.locator('input[value="CSV-001"]')).toBeVisible();
+    await expect(page.locator(".vuuInlineAddRow")).toHaveCount(0);
+
+    const description = page
+      .getByRole("textbox", {
+        name: "description",
+        exact: true,
+      })
+      .first();
+    await description.fill("Edited upload");
+    await description.press("Enter");
+    await expect(description).toHaveValue("Edited upload");
+
+    const deletedRow = page
+      .locator('input[value="CSV-002"]')
+      .locator('xpath=ancestor::*[@role="row"]');
+    await deletedRow
+      .getByRole("checkbox", { name: "Press space to select row" })
+      .click();
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
+    await expect(deletedRow).toContainClass("vuuTableRow-deleted");
+
+    await page.getByRole("button", { name: "Submit", exact: true }).click();
+
+    await expect(
+      page.getByRole("heading", { name: "Edit uploaded data" }),
+    ).not.toBeVisible();
+    await expect(page.locator(".vuuDatasourceStats-value").last()).toHaveText(
+      "1",
+    );
+  });
+});
+
+test.describe("Given a CsvUpload with a missing key column", () => {
   test("WHEN a CSV missing the key column is selected THEN the drop zone shows error state", async ({
     mount,
     page,
@@ -114,5 +195,4 @@ test.describe("Given a CsvUpload with the instruments schema", () => {
       { timeout: 5000 },
     );
   });
-
 });

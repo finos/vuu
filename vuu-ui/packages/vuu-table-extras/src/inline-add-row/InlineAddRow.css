@@ -1,0 +1,12 @@
+.vuuInlineAddRow {
+  --row-borderColor: transparent;
+
+  display: flex;
+  height: var(--row-height, var(--salt-size-base));
+  padding: 0 var(--table-selection-bookend-width, 4px);
+  position: relative;
+
+  .vuuTableCell {
+    height: 100%;
+  }
+}

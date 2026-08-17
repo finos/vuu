@@ -1,25 +1,26 @@
 {
   "name": "@vuu-ui/vuu-data-editing",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "description": "Shared data editing APIs and React components for VUU UI",
   "main": "src/index.ts",
   "author": "heswell",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
-    "build": "node ../../scripts/run-build-rslib.ts",
+    "build": "node ../../scripts/run-build-rollup.mjs",
     "test": "vitest run",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
-    "@salt-ds/core": "1.67.0",
-    "@vuu-ui/vuu-utils": "2.2.1",
-    "@vuu-ui/vuu-utils2": "2.2.1"
+    "@salt-ds/core": "1.54.1",
+    "@vuu-ui/vuu-ui-controls": "2.3.0",
+    "@vuu-ui/vuu-utils": "2.3.0",
+    "@vuu-ui/vuu-utils2": "2.3.0"
   },
   "devDependencies": {
-    "@vuu-ui/vuu-data-types": "2.2.1",
-    "@vuu-ui/vuu-protocol-types": "2.2.1",
-    "@vuu-ui/vuu-table-types": "2.2.1"
+    "@vuu-ui/vuu-data-types": "2.3.0",
+    "@vuu-ui/vuu-protocol-types": "2.3.0",
+    "@vuu-ui/vuu-table-types": "2.3.0"
   },
   "peerDependencies": {
     "react": "^19.2.3"

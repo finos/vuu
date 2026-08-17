@@ -1,23 +1,21 @@
 import {
   ArrayDataSource,
-  ArrayDataSourceConstructorProps,
+  type ArrayDataSourceConstructorProps,
 } from "@vuu-ui/vuu-data-local";
 import type {
   DataSourceBase,
-  DataSourceCallbackMessage,
+  DataSource,
   DataSourceRowWithBigint,
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   DataSourceVisualLinkCreatedMessage,
   DeleteRowMode,
-  EditSessionMode,
   CopyOption,
 } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
   RpcResultError,
   RpcResultSuccess,
-  SelectRequest,
   VuuCreateVisualLink,
   VuuMenu,
   VuuRemoveVisualLink,
@@ -28,20 +26,18 @@ import type {
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
 import {
-  isInlineEditingSession,
   isRpcSuccess,
   isTypeaheadRequest,
-  Range,
+  StaleUpdateError,
   uuid,
 } from "@vuu-ui/vuu-utils";
-import {
+import type {
   IVuuModule,
   RpcMenuService,
   RpcService,
-  SessionTableMap,
 } from "./core/module/VuuModule";
 import { makeSuggestions } from "./makeSuggestions";
-import { Table } from "./Table";
+import type { Table } from "./Table";
 
 export type VisualLinkHandler = (
   message: VuuCreateVisualLink | VuuRemoveVisualLink,
@@ -54,7 +50,6 @@ export interface TickingArrayDataSourceConstructorProps
   menu?: VuuMenu;
   rpcMenuServices?: RpcMenuService[];
   rpcServices?: RpcService[];
-  sessionTables?: SessionTableMap;
   table?: Table;
   visualLinkService?: VisualLinkHandler;
   vuuModule?: IVuuModule;
@@ -71,10 +66,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
   #pendingVisualLink?: LinkDescriptorWithLabel;
   #rpcMenuServices: RpcMenuService[] | undefined;
   #rpcServices: RpcService[] | undefined;
-  // A reference to session tables hosted within client side module
-  #sessionTables: SessionTableMap | undefined;
-  #sessionDataSource: DataSourceBase<DataSourceRowWithBigint> | undefined =
-    undefined;
+  #sourceTableDataSource: TickingArrayDataSource | undefined;
   #table?: Table;
   #selectionLinkSubscribers: Map<string, LinkSubscription> | undefined;
   #visualLinkService?: VisualLinkHandler;
@@ -88,7 +80,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
     getVisualLinks,
     rpcServices,
     rpcMenuServices,
-    sessionTables,
     table,
     menu,
     visualLink,
@@ -109,7 +100,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
     this.#rpcMenuServices = rpcMenuServices;
     this.#pendingVisualLink = visualLink;
     this.#rpcServices = rpcServices;
-    this.#sessionTables = sessionTables;
     this.#table = table;
     this.#visualLinkService = visualLinkService;
     this.#getVisualLinks = getVisualLinks;
@@ -135,9 +125,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
     } else if (sessionId) {
       // will never happen
       console.warn("THIS IS NEVER EXPECTED TO HAPPEN");
-    } else if (this.#sessionDataSource) {
-      // queue updates for deferred application, issue warnings when edits in progress
-      // this.emit("remote-update-during-local-edit", row);
     } else {
       this.updateRow(row, columnName);
     }
@@ -164,18 +151,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
     this.#table = undefined;
   }
 
-  set range(range: Range) {
-    super.range = range;
-    // Keep session datasource range in sync while editing.
-    if (this.#sessionDataSource) {
-      (this.#sessionDataSource as ArrayDataSource).range = range;
-    }
-    // this.#updateGenerator?.setRange(range);
-  }
-  get range() {
-    return super.range;
-  }
-
   set links(links: LinkDescriptorWithLabel[] | undefined) {
     super.links = links;
   }
@@ -188,50 +163,9 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return Array.from(this.selectedRows);
   }
 
-  /**
-   * Suppress row flushes from the source datasource while a session is active.
-   *
-   * `updateRowWithSessionCheck` already blocks individual row updates arriving
-   * via the table's "update" event.  However, `sendRowsToClient` can also be
-   * reached through other paths that bypass that handler:
-   *   - `setRange` (user scrolls the viewport)
-   *   - config changes (filter / sort / group-by)
-   *   - row inserts into the backing table
-   *
-   * Without this guard those paths would push source-table rows to the
-   * client and overwrite the edited session view.
-   */
-  sendRowsToClient(forceFullRefresh = false, row?: DataSourceRowWithBigint) {
-    if (this.#sessionDataSource) {
-      console.warn(
-        `[TickingArrayDataSource] sendRowsToClient suppressed during active edit session` +
-          ` (forceFullRefresh=${forceFullRefresh}, ${row ? `rowKey=${row[6]}` : "full batch - likely setRange/scroll"})`,
-      );
-      return;
-    }
-    super.sendRowsToClient(forceFullRefresh, row);
+  isSessionDataSourceOf(dataSource: DataSource): boolean {
+    return this.#sourceTableDataSource === dataSource;
   }
-
-  select(selectRequest: Omit<SelectRequest, "vpId">) {
-    // Forwarding the select request to the session
-    // datasource causes it to update its own selectedRows
-    // and re-send its rows
-    super.select(selectRequest);
-    if (this.#sessionDataSource) {
-      (this.#sessionDataSource as ArrayDataSource).select(selectRequest);
-    }
-  }
-
-  handleSessionMessage = (msg: DataSourceCallbackMessage) => {
-    if (msg.type === "subscribed") {
-      // console.log(`[VuuDataSource subscribed to session table]`);
-    } else if (msg.type === "viewport-update") {
-      if (msg.size !== undefined && msg.size !== this.size) {
-        this.emit("resize", msg.size);
-      }
-      this.clientCallback?.(msg);
-    }
-  };
 
   async createSessionDataSource(
     copyOption: CopyOption,
@@ -243,11 +177,18 @@ export class TickingArrayDataSource extends ArrayDataSource {
     });
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
-      return this.#vuuModule?.createDataSource(
+      const columns = this.config.columns.includes("vuu_action")
+        ? this.config.columns
+        : this.config.columns.concat("vuu_action");
+      const sessionDataSource = this.#vuuModule?.createDataSource(
         sessionTable.table,
         sessionTable.table,
-        this.config,
+        { ...this.config, columns },
       );
+      if (sessionDataSource instanceof TickingArrayDataSource) {
+        sessionDataSource.#sourceTableDataSource = this;
+      }
+      return sessionDataSource;
     } else {
       throw Error(
         `[TickingArrayDataSource] createSessionDataSource ${rpcResponse?.errorMessage}`,
@@ -255,58 +196,8 @@ export class TickingArrayDataSource extends ArrayDataSource {
     }
   }
 
-  async beginEditSession(editSessionMode: EditSessionMode = "inline-all-rows") {
-    const rpcResponse = await this?.rpcRequest?.({
-      type: "RPC_REQUEST",
-      rpcName: "beginEditSession",
-      params: {
-        editSessionMode,
-      },
-    });
-
-    if (isRpcSuccess(rpcResponse)) {
-      const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
-
-      if (isInlineEditingSession(editSessionMode)) {
-        this.#sessionDataSource = this.#vuuModule?.createDataSource(
-          sessionTable.table,
-          sessionTable.table,
-          this.config,
-        );
-
-        this.#sessionDataSource?.subscribe(
-          {
-            range: this.range,
-          },
-          this.handleSessionMessage,
-        );
-      } else {
-        return this.#vuuModule?.createDataSource(
-          sessionTable.table,
-          sessionTable.table,
-          this.config,
-        );
-      }
-
-      // we need to route messages from the session datasource to listening
-      // client whilst still monitoring responses on the source table to which
-      // we are currently subscribed.
-    } else {
-      throw Error(
-        `[VuuDataSource] beginEditSession ${rpcResponse.errorMessage}`,
-      );
-      ///
-    }
-  }
-
   async editCell(key: string, column: string, data: VuuRowDataItemType) {
-    console.log(
-      `[VuuDataSource] editCell ${this.#sessionDataSource?.viewport} rowKey ${key}, column ${column}, value ${data}`,
-    );
-
-    const rpcHost = this.#sessionDataSource ?? this;
-
-    return rpcHost.rpcRequest?.({
+    return this.rpcRequest({
       type: "RPC_REQUEST",
       rpcName: "editCell",
       params: {
@@ -342,8 +233,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     key: string,
     mode: DeleteRowMode = "hard",
   ): Promise<true | string> => {
-    const rpcHost = this.#sessionDataSource ?? this;
-    const response = await rpcHost.rpcRequest?.({
+    const response = await this.rpcRequest({
       type: "RPC_REQUEST",
       rpcName: "deleteRow",
       params: { key, mode },
@@ -357,8 +247,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
   deleteSelectedRows = async (
     mode: DeleteRowMode = "soft",
   ): Promise<RpcResultSuccess | RpcResultError> => {
-    const rpcHost = this.#sessionDataSource ?? this;
-    const response = await rpcHost.rpcRequest?.({
+    const response = await this.rpcRequest({
       type: "RPC_REQUEST",
       rpcName: "deleteSelectedRows",
       params: { mode },
@@ -374,8 +263,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
   undoRowChange = async (
     key: string,
   ): Promise<RpcResultSuccess | RpcResultError> => {
-    const rpcHost = this.#sessionDataSource ?? this;
-    const response = await rpcHost.rpcRequest?.({
+    const response = await this.rpcRequest({
       type: "RPC_REQUEST",
       rpcName: "undoRowChange",
       params: { key },
@@ -385,37 +273,37 @@ export class TickingArrayDataSource extends ArrayDataSource {
     );
   };
 
+  set columns(columns: string[]) {
+    super.columns = columns;
+  }
+
+  get columns() {
+    return super.columns;
+  }
+
   async endEditSession(saveChanges = false) {
     const type = "RPC_REQUEST";
     const rpcName = "endEditSession";
 
-    const sessionDataSource = this.#sessionDataSource;
-
-    const rpcHost = sessionDataSource ?? this;
-
-    if (sessionDataSource) {
-      // timing is important here. By breaking this reference before
-      // we send the endEdit RPC call, the application of session edits
-      // to the source table will be handled correctly.
-      this.#sessionDataSource = undefined;
-    }
-
-    const rpcResponse = await rpcHost.rpcRequest?.(
+    const rpcResponse = await this.rpcRequest(
       saveChanges
         ? { type, rpcName, params: { save: true } }
         : { type, rpcName, params: {} },
     );
 
     if (isRpcSuccess(rpcResponse)) {
-      sessionDataSource?.unsubscribe();
-      this.sendRowsToClient(true);
-    } else {
-      // TODO do we reinstate the sessionDataSource ?
-      if (rpcResponse?.errorMessage === "stale update") {
-        sessionDataSource?.unsubscribe();
-        this.sendRowsToClient(true);
+      const sourceTableDataSource = this.#sourceTableDataSource;
+      if (sourceTableDataSource) {
+        this.#sourceTableDataSource = undefined;
+        this.unsubscribe();
       } else {
-        throw Error("unknown error");
+        this.sendRowsToClient(true);
+      }
+    } else {
+      if (rpcResponse?.errorMessage === "stale update") {
+        throw new StaleUpdateError(rpcResponse.errorMessage);
+      } else {
+        throw Error(rpcResponse?.errorMessage ?? "endEditSession failed");
       }
     }
   }

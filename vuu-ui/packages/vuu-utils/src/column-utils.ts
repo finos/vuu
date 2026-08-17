@@ -99,6 +99,17 @@ export const getDefaultAlignment = (
       ? "right"
       : "left";
 
+export type EditOperation = "insert" | "update";
+
+export const isDataValueEditable = (
+  dataDescriptor: Pick<DataValueDescriptor, "editable">,
+  operation: EditOperation,
+  defaultValue = false,
+) => {
+  const { editable = defaultValue } = dataDescriptor;
+  return typeof editable === "object" ? editable[operation] : editable === true;
+};
+
 export const getRuntimeColumnWidth = (
   col: ColumnDescriptor,
   runtimeColumns: RuntimeColumnDescriptor[],
@@ -1092,7 +1103,8 @@ export const assertAllColumnsAreIncludedInSubscription = (
 ) => {
   const unsubscribedColumns: string[] = [];
   for (const column of columns) {
-    if (column.source !== "client" && !columnNames?.includes(column.name)) {
+    // temp exclusion for vuu_action, this will be removed later
+    if (column.source !== "client" && column.name !== 'vuu_action' && !columnNames?.includes(column.name)) {
       unsubscribedColumns.push(column.name);
     }
   }

@@ -1,4 +1,4 @@
-import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import type {
   RuntimeColumnDescriptor,
   TableCellEditHandler,
@@ -11,11 +11,11 @@ import {
   isRpcSuccess,
 } from "@vuu-ui/vuu-utils";
 import {
-  FocusEventHandler,
-  FormEventHandler,
-  KeyboardEvent,
+  type FocusEventHandler,
+  type FormEventHandler,
+  type KeyboardEvent,
   useCallback,
-  useMemo,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -55,13 +55,15 @@ export const useInputCell = <T extends string | number | boolean = string>({
   const initialValueRef = useRef<string>(value?.toString() ?? "");
   const isDirtyRef = useRef(false);
 
-  useMemo(() => {
-    if (initialValueRef.current !== value?.toString()) {
-      initialValueRef.current = stringValueOf(value);
+  useEffect(() => {
+    const nextValue = stringValueOf(value);
+    if (initialValueRef.current !== nextValue) {
+      initialValueRef.current = nextValue;
+      isDirtyRef.current = false;
       setEditState((editState) => ({
         ...editState,
         message: undefined,
-        value: stringValueOf(value),
+        value: nextValue,
       }));
     }
   }, [value]);

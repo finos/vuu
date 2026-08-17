@@ -1,9 +1,3 @@
-import type {
-  DataSourceFilter,
-  MenuRpcResponse,
-  Selection,
-  TableSchema,
-} from "@vuu-ui/vuu-data-types";
 import type { Filter } from "@vuu-ui/vuu-filter-types";
 import type {
   LinkDescriptorWithLabel,
@@ -60,7 +54,7 @@ export declare type DataValueValidationResult =
   | DataValueValidationFailResult;
 
 export declare type DataValueValidationChecker = (
-  value?: VuuRowDataItemType,
+  value: VuuRowDataItemType | undefined,
   phase: EditPhase | "*",
 ) => DataValueValidationResult;
 
@@ -135,8 +129,19 @@ export declare type DateTimeDataValueType =
 
 export declare type BulkEdit = "bulk" | false | "read-only";
 
+/**
+ * Controls whether a data value can be edited for row insertion and/or update.
+ * A boolean applies the same permission to both operations.
+ */
+export declare type DataEditable =
+  | boolean
+  | {
+    insert: boolean;
+    update: boolean;
+  };
+
 export interface DataValueDescriptor {
-  editable?: boolean;
+  editable?: DataEditable;
   /**
    There are three values for editableBulk. 
     - false user will not see these values when applying a bulk edit. 
@@ -222,8 +227,7 @@ export interface MessageWithClientViewportId {
   clientViewportId: string;
 }
 
-export interface DataSourceAggregateMessage
-  extends MessageWithClientViewportId {
+export interface DataSourceAggregateMessage extends MessageWithClientViewportId {
   aggregations: VuuAggregation[];
   type: "aggregate";
 }
@@ -280,8 +284,7 @@ export interface DataSourceGroupByMessage extends MessageWithClientViewportId {
   groupBy: VuuGroupBy | undefined;
 }
 
-export interface DataSourceSetConfigMessage
-  extends MessageWithClientViewportId {
+export interface DataSourceSetConfigMessage extends MessageWithClientViewportId {
   type: "config";
   config: WithFullConfig;
 }
@@ -300,14 +303,12 @@ export interface DataSourceSortMessage extends MessageWithClientViewportId {
   sort: VuuSort;
 }
 
-export interface DataSourceSubscribeFailedMessage
-  extends MessageWithClientViewportId {
+export interface DataSourceSubscribeFailedMessage extends MessageWithClientViewportId {
   type: "subscribe-failed";
   msg: string;
 }
 
-export interface DataSourceSubscribedMessage
-  extends MessageWithClientViewportId {
+export interface DataSourceSubscribedMessage extends MessageWithClientViewportId {
   aggregations: VuuAggregation[];
   columns: VuuColumns;
   filterSpec: DataSourceFilter;
@@ -318,21 +319,18 @@ export interface DataSourceSubscribedMessage
   type: "subscribed";
 }
 
-export interface DataSourceVisualLinkCreatedMessage
-  extends MessageWithClientViewportId {
+export interface DataSourceVisualLinkCreatedMessage extends MessageWithClientViewportId {
   colName: string;
   parentViewportId: string;
   parentColName: string;
   type: "vuu-link-created";
 }
 
-export interface DataSourceVisualLinkRemovedMessage
-  extends MessageWithClientViewportId {
+export interface DataSourceVisualLinkRemovedMessage extends MessageWithClientViewportId {
   type: "vuu-link-removed";
 }
 
-export interface DataSourceVisualLinksMessage
-  extends MessageWithClientViewportId {
+export interface DataSourceVisualLinksMessage extends MessageWithClientViewportId {
   type: "vuu-links";
   links: VuuLinkDescriptor[];
 }
@@ -441,8 +439,7 @@ export interface WithSort extends DataSourceConfig {
   sort: VuuSort;
 }
 
-export interface DataSourceConstructorProps
-  extends WithBaseFilter<DataSourceConfig> {
+export interface DataSourceConstructorProps extends WithBaseFilter<DataSourceConfig> {
   /**
    * If provided, these column names will always be included in subscription, even
    * if not directly requested, via columns property. Useful where columns may not
@@ -451,6 +448,7 @@ export interface DataSourceConstructorProps
    */
   autosubscribeColumns?: string[];
   bufferSize?: number;
+  connectionId?: string;
   /**
    * For datasources that support edit sessions, some services support an additional
    * column on session tables that will be used to return status information for a row
@@ -464,8 +462,15 @@ export interface DataSourceConstructorProps
   viewport?: string;
 }
 
-export interface DataSourceSubscribeProps
-  extends Partial<WithBaseFilter<WithFullConfig>> {
+export interface RemoteModuleConnection {
+  connectionId: string;
+  restUrl?: string;
+  websocketUrl?: string;
+}
+
+export interface DataSourceSubscribeProps extends Partial<
+  WithBaseFilter<WithFullConfig>
+> {
   viewport?: string;
   range?: Range;
   revealSelected?: boolean;
@@ -578,47 +583,22 @@ export declare type DataSourceSuspenseProps = {
   escalateDelay?: number;
 };
 
-/**
- * An inline edit session allows user to apply edits directly to
- * the existing component. e.g. directly edit cells within a table.
- */
-export declare type InlineEditSessionMode = "inline-all-rows";
+/** Controls which source rows are copied into a newly created session table. */
+export declare type CopyOption = "All" | "Empty" | "Selected";
 
 /**
- * A standalone edit session re-renders editable data in an edit component.
- * e.g an edit panel may be displayed in a dialog.
+ * Wire-level values used by the legacy beginEditSession menu/server service.
+ * Client edit lifecycles use CopyOption with createSessionDataSource instead.
  */
-export declare type StandaloneEditSessionMode =
+export declare type EditSessionMode =
+  | "inline-all-rows"
   | "selected-rows"
   | "all-rows"
   | "empty-session-table";
 
-/**
- * Short-form values accepted by the beginEditSession RPC (remote and local).
- * The client-side EditApi maps the long-form StandaloneEditSessionMode values
- * to one of these before dispatching the RPC call:
- * - `"All"`      ← `"all-rows"`
- * - `"Empty"`    ← `"empty-session-table"`
- * - `"Selected"` ← `"selected-rows"`
- * `"inline-all-rows"` is a client-only concept and is NOT mapped — it passes
- * through to the RPC unchanged so the server can create an all-rows session table.
- */
-export declare type CopyOption = "All" | "Empty" | "Selected";
-/**
- * @deprecated Prefer `CopyOption` ("All" | "Empty" | "Selected") for standalone
- * edit sessions supported by vuu server. Long-form values (e.g. `"all-rows"`) are used 
- * by `beginEditSession`; new code should use `CopyOption` with `createSessionDataSource`.
- */
-export declare type EditSessionMode =
-  | InlineEditSessionMode
-  | StandaloneEditSessionMode;
-
 export interface EditApi<
   T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
 > {
-  beginEditSession?: (
-    editSessionMode?: EditSessionMode,
-  ) => Promise<DataSource<T> | undefined>;
   addRow?: (
     rowData?: Record<string, VuuRowDataItemType>,
   ) => Promise<RpcResult> | undefined;
@@ -664,7 +644,9 @@ export declare type UndoRowChangeResult = {
 
 export interface DataSourceBase<
   T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
-> extends EditApi<T>,
+>
+  extends
+  EditApi<T>,
   IEventEmitter<DataSourceEvents>,
   Partial<TypeaheadSuggestionProvider> {
   aggregations: VuuAggregation[];
@@ -708,6 +690,11 @@ export interface DataSourceBase<
    */
   suspend?: (escalateToDisable?: boolean, escalateDelay?: number) => void;
   resume?: (callback?: DataSourceSubscribeCallback) => void;
+  /**
+   * Returns true when this datasource is a transient session datasource
+   * created by the supplied source datasource.
+   */
+  isSessionDataSourceOf?: (dataSource: DataSource) => boolean;
 
   deleteRow?: DataSourceDeleteHandler;
   /**

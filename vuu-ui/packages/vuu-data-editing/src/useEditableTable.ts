@@ -3,13 +3,17 @@ import type {
   DataSource,
   DeleteRowMode,
   EditApi,
-  EditSessionMode,
 } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { useLayoutEffectSkipFirst } from "@vuu-ui/vuu-utils";
 import { useData } from "@vuu-ui/vuu-utils2";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EditSession, type EditLifecycle, type EditState } from "./EditSession";
+import { EDIT_ACTION_ROW_CLASS_NAME_GENERATOR } from "./editActionRowClassNameGenerator";
+
+const EDIT_ACTION_ROW_CLASS_NAME_GENERATORS = [
+  EDIT_ACTION_ROW_CLASS_NAME_GENERATOR,
+];
 
 export type EditMode = "edit" | "view";
 
@@ -22,7 +26,7 @@ export interface EditableTableHookProps {
   dataSource?: DataSource;
   addRowsCount?: number;
   deleteMode?: DeleteRowMode;
-  editSessionMode?: EditSessionMode | CopyOption;
+  copyOption?: CopyOption;
   isEditMode: boolean;
   onCancel: () => void;
   onSave: () => void;
@@ -38,7 +42,7 @@ export const useEditableTable = ({
   columns,
   dataSource: dataSourceProp,
   deleteMode = "soft",
-  editSessionMode = "inline-all-rows" as EditSessionMode | CopyOption,
+  copyOption = "All",
   isEditMode,
   onCancel,
   onSave,
@@ -46,12 +50,11 @@ export const useEditableTable = ({
 }: EditableTableHookProps) => {
   const { VuuDataSource } = useData();
   const [selectionCount, setSelectionCount] = useState(0);
-  const [deleteCount, setDeleteCount] = useState(0);
   useLayoutEffectSkipFirst(() => {
     console.warn("[useEditableTable] columns and or table changed");
   }, [columns, table]);
 
-  const dataSource = useMemo(() => {
+  const sourceDataSource = useMemo(() => {
     if (dataSourceProp) {
       return dataSourceProp;
     } else if (table) {
@@ -66,18 +69,21 @@ export const useEditableTable = ({
   // The editSession will be made available to all the edit controls in scope
   // by wrapping the edit component with a DataEditingProvider.
   const editSession = useMemo(
-    () => new EditSession(dataSource as EditApi, deleteMode),
-    [dataSource, deleteMode],
+    () => new EditSession(sourceDataSource as EditApi, deleteMode),
+    [deleteMode, sourceDataSource],
   );
   const [lifecycle, setLifecycle] = useState<EditLifecycle>(
     editSession.lifecycle,
   );
   const [editState, setEditState] = useState<EditState>(editSession.editState);
+  const [subscribedSessionDataSource, setSubscribedSessionDataSource] =
+    useState<DataSource>();
   const onCancelRef = useRef(onCancel);
   onCancelRef.current = onCancel;
 
   const sessionDataSource =
     "sessionDataSource" in lifecycle ? lifecycle.sessionDataSource : undefined;
+  const dataSource = sessionDataSource ?? sourceDataSource;
 
   const handleCancel = useCallback(async () => {
     try {
@@ -91,7 +97,6 @@ export const useEditableTable = ({
 
   const handleSave = useCallback(
     async (force = false) => {
-      dataSource.resume?.();
       try {
         await editSession.end(true, force);
         setSelectionCount(0);
@@ -100,17 +105,12 @@ export const useEditableTable = ({
         console.error("[useEditableTable] save edit session failed", error);
       }
     },
-    [dataSource, editSession, onSave],
+    [editSession, onSave],
   );
 
   const handleDelete = useCallback(async () => {
     await editSession.deleteSelectedRows();
-    setSelectionCount(0);
   }, [editSession]);
-
-  const handleAddRows = useCallback(() => {
-    editSession.addRows(addRowsCount);
-  }, [addRowsCount, editSession]);
 
   const handleUndoRowChange = useCallback(
     (key: string) => void editSession.undoRowChange(key),
@@ -118,16 +118,35 @@ export const useEditableTable = ({
   );
 
   useEffect(() => {
-    const activeDataSource = sessionDataSource ?? dataSource;
-    activeDataSource.on("row-selection", setSelectionCount);
+    dataSource.on("row-selection", setSelectionCount);
+    return () => dataSource.removeListener("row-selection", setSelectionCount);
+  }, [dataSource]);
+
+  useEffect(() => {
+    if (!sessionDataSource) {
+      setSubscribedSessionDataSource(undefined);
+      return;
+    }
+
+    const handleSubscribed = () =>
+      setSubscribedSessionDataSource(sessionDataSource);
+
+    setSubscribedSessionDataSource(undefined);
+    sessionDataSource.on("subscribed", handleSubscribed);
+    if (
+      sessionDataSource.status === "subscribed" &&
+      sessionDataSource.tableSchema
+    ) {
+      handleSubscribed();
+    }
+
     return () =>
-      activeDataSource.removeListener("row-selection", setSelectionCount);
-  }, [dataSource, sessionDataSource]);
+      sessionDataSource.removeListener("subscribed", handleSubscribed);
+  }, [sessionDataSource]);
 
   useEffect(() => {
     const handleEditState = (nextEditState: EditState) => {
       setEditState(nextEditState);
-      setDeleteCount(editSession.deleteCount);
     };
     const handleLifecycle = (nextLifecycle: EditLifecycle) => {
       setLifecycle(nextLifecycle);
@@ -145,7 +164,7 @@ export const useEditableTable = ({
 
   useEffect(() => {
     const transition = isEditMode
-      ? editSession.begin(editSessionMode)
+      ? editSession.begin(copyOption)
       : editSession.end();
 
     void transition.catch((error) => {
@@ -156,7 +175,7 @@ export const useEditableTable = ({
         console.error("[useEditableTable] end edit session failed", error);
       }
     });
-  }, [editSession, editSessionMode, isEditMode]);
+  }, [copyOption, editSession, isEditMode]);
 
   const canCancel =
     lifecycle.status === "active" ||
@@ -166,6 +185,13 @@ export const useEditableTable = ({
     canCancel &&
     (editState === "dirty" || editState === "stale") &&
     editSession.invalidCount === 0;
+  const isEditSessionReady =
+    isEditMode &&
+    sessionDataSource !== undefined &&
+    sessionDataSource === editSession.sessionDataSource &&
+    subscribedSessionDataSource === sessionDataSource &&
+    sessionDataSource.status === "subscribed" &&
+    sessionDataSource.tableSchema !== undefined;
 
   return {
     canCancel,
@@ -173,12 +199,16 @@ export const useEditableTable = ({
     dataSource,
     editSession,
     lifecycle,
-    hasSelection: selectionCount > 0 || deleteCount > 0,
-    onAddRows: handleAddRows,
+    hasSelection: selectionCount > 0,
+    isEditSessionReady,
     onCancel: handleCancel,
     onDelete: handleDelete,
     onSave: handleSave,
     onUndoRowChange: handleUndoRowChange,
+    rowClassNameGenerators: isEditMode
+      ? EDIT_ACTION_ROW_CLASS_NAME_GENERATORS
+      : undefined,
     sessionDataSource,
+    sourceDataSource,
   };
 };

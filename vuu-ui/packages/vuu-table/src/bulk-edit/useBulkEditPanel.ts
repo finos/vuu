@@ -1,10 +1,13 @@
 import { buildValidationChecker } from "@vuu-ui/vuu-data-react";
-import { VuuRpcServiceRequest } from "@vuu-ui/vuu-protocol-types";
-import { DataValueTypeDescriptor, TableConfig } from "@vuu-ui/vuu-table-types";
+import type { VuuRpcServiceRequest } from "@vuu-ui/vuu-protocol-types";
+import type {
+  DataValueTypeDescriptor,
+  TableConfig,
+} from "@vuu-ui/vuu-table-types";
 import { hasValidationRules, isTypeDescriptor } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 import type { BulkEditPanelProps } from "./BulkEditPanel";
-import { EditValueChangeHandler } from "./useColumnCascadingEditor";
+import type { EditValueChangeHandler } from "./useColumnCascadingEditor";
 
 const addRenderer = (
   colType: DataValueTypeDescriptor,
@@ -20,11 +23,12 @@ const addRenderer = (
 
 export type BulkEditPanelHookProps = Pick<
   BulkEditPanelProps,
-  "columns" | "sessionDs"
+  "columns" | "rowClassNameGenerators" | "sessionDs"
 >;
 
 export const useBulkEditPanel = ({
   columns,
+  rowClassNameGenerators,
   sessionDs: dataSource,
 }: BulkEditPanelHookProps) => {
   const [rowState, setRowState] = useState(true);
@@ -55,8 +59,9 @@ export const useBulkEditPanel = ({
       columnLayout: "fit",
       columnDefaultWidth: 100,
       rowSeparators: true,
+      rowClassNameGenerators,
     };
-  }, [columns, dataSource.columns]);
+  }, [columns, dataSource.columns, rowClassNameGenerators]);
 
   const handleRowChange = useCallback(
     (isValid: boolean) => {
