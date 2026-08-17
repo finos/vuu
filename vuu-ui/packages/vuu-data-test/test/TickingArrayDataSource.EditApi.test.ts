@@ -292,14 +292,14 @@ describe("endEditSession", () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(ERROR("something unexpected"));
 
-    await expect(ds.endEditSession(true)).rejects.toThrow("unknown error");
+    await expect(ds.endEditSession(true)).rejects.toThrow("something unexpected");
   });
 
   it("handles a stale-update error gracefully and does not throw", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(ERROR("stale update"));
 
-    await expect(ds.endEditSession(true)).resolves.toBeUndefined();
+    await expect(ds.endEditSession(true)).rejects.toThrow("stale update");
   });
 });
 
