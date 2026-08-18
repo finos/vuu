@@ -2,6 +2,7 @@ import { execWait, getCommandLineArg, readPackageJson } from "./utils.mjs";
 
 const debug = getCommandLineArg("--debug");
 const publishTag = getCommandLineArg("--tag", true);
+const versionCheck = getCommandLineArg("--version-check");
 const registry = "https://registry.npmjs.org";
 
 if (publishTag && !["alpha", "beta"].includes(publishTag)) {
@@ -55,6 +56,36 @@ async function verifyPublishedPackage(packageName, suffix) {
   );
 }
 
+async function checkPackageVersion(packageName) {
+  const { name, version } = readPackageJson(
+    `packages/${packageName}/package.json`,
+  );
+  const response = await fetch(`${registry}/${encodeURIComponent(name)}`);
+
+  if (response.status === 404) {
+    return {
+      latestVersion: undefined,
+      name,
+      packageName,
+      published: false,
+      version,
+    };
+  }
+  if (!response.ok) {
+    throw Error(`npm registry returned ${response.status} for ${name}`);
+  }
+
+  const metadata = await response.json();
+  const latestVersion = metadata["dist-tags"]?.latest;
+  return {
+    latestVersion,
+    name,
+    packageName,
+    published: Object.hasOwn(metadata.versions ?? {}, version),
+    version,
+  };
+}
+
 const reportResults = (operation, results) => {
   results.forEach((result, index) => {
     const packageName = packages[index];
@@ -70,6 +101,34 @@ const reportResults = (operation, results) => {
   });
 };
 
+if (versionCheck) {
+  const results = await Promise.allSettled(
+    packages.map((packageName) => checkPackageVersion(packageName)),
+  );
+  results.forEach((result, index) => {
+    const packageName = packages[index];
+    if (result.status === "fulfilled") {
+      const { latestVersion, name, published, version } = result.value;
+      console.log(
+        `version-check: ${name} current=${version} published=${
+          published ? "yes" : "no"
+        } latest=${latestVersion ?? "unavailable"} ${
+          published && latestVersion === version ? "up-to-date" : "not-latest"
+        }`,
+      );
+    } else {
+      const reason =
+        result.reason instanceof Error
+          ? result.reason.message
+          : String(result.reason);
+      console.error(`version-check: ${packageName} failed: ${reason}`);
+    }
+  });
+  const failures = results.filter(({ status }) => status === "rejected");
+  if (failures.length > 0) {
+    throw Error(`${failures.length} version check(s) failed`);
+  }
+} else {
 const packageNameSuffix = debug ? "-debug" : "";
 const publishResults = await Promise.allSettled(
   packages.map((packageName) => publishPackage(packageName, packageNameSuffix)),
@@ -88,4 +147,5 @@ const failures = [...publishResults, ...verificationResults].filter(
 );
 if (failures.length > 0) {
   throw Error(`${failures.length} package operation(s) failed`);
+}
 }
