@@ -87,13 +87,6 @@ trait SimulRpcHandler {
 
 }
 
-class TheSimulRpcHander extends DefaultLifecycleEnabled with RpcHandler with SimulRpcHandler {
-  def onSendToMarket(param1: Map[String, Any])(ctx: RequestContext): Boolean = {
-    println("onSendToMarket called:" + param1)
-    false
-  }
-}
-
 trait OrderEntryRpcHandler {
   def addRowsFromInstruments(sourceVpId: String)(ctx: RequestContext): List[String]
 }
@@ -170,7 +163,7 @@ object SimulationModule extends DefaultModule {
             "averagePrice".double(), "status".string(), "lastUpdate".long()),
           options = TableDefOptions(
             joinFields = List("id", "ric"),
-            links =  VisualLinks(
+            links = VisualLinks(
               Link("ric", "prices", "ric")
             ),
             indices = Indices(

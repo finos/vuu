@@ -1,6 +1,5 @@
 package org.finos.vuu.core.module.typeahead
 
-import org.finos.vuu.core.table.TableContainer
 import org.finos.vuu.net.rpc.{RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams}
 import org.finos.vuu.viewport.ViewPort
 

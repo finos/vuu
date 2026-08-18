@@ -49,7 +49,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
   /**
    * This class represents the editing of the fixSequenceReset
    */
-  class FixSequenceNumberResetService()(using tableContainer: TableContainer) extends EditTableRpcHandler {
+  class FixSequenceNumberResetService extends EditTableRpcHandler {
 
     override def editCell(params: RpcParams): RpcFunctionResult = {
       val key: String = params.namedParams("key").asInstanceOf[String]
@@ -168,7 +168,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       Given("We define a viewport callback on process with an rpc service attached...")
       viewPortContainer.addViewPortDefinition(process.getTableDef.name, createViewPortDefFunc(tableContainer, new ProcessRpcService(tableContainer, clock), clock))
 
-      viewPortContainer.addViewPortDefinition(fixSequence.getTableDef.name, createViewPortDefFunc(tableContainer, new FixSequenceNumberResetService()(using tableContainer), clock))
+      viewPortContainer.addViewPortDefinition(fixSequence.getTableDef.name, createViewPortDefFunc(tableContainer, new FixSequenceNumberResetService, clock))
 
       And("we've ticked in some data")
       processProvider.tick("proc-1", Map("id" -> "proc-1", "name" -> "My Process 1", "uptime" -> 5000L, "status" -> "running"))
