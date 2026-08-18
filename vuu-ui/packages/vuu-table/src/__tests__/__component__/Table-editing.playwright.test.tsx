@@ -172,6 +172,71 @@ test.describe("Test table editing", () => {
     ).toHaveValue("TEST-006");
   });
 
+  test("inserts a row when the final cell is committed", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<TestTableEmpty />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const id = inlineAddRow.getByRole("textbox", { name: "id", exact: true });
+    const description = inlineAddRow.getByRole("textbox", {
+      name: "description",
+    });
+    const quantity = inlineAddRow.getByRole("textbox", { name: "quantity" });
+    const price = inlineAddRow.getByRole("textbox", { name: "price" });
+    const externalId = inlineAddRow.getByRole("textbox", {
+      name: "externalId",
+    });
+
+    await id.fill("TEST-006");
+    await description.fill("Foxtrot");
+    await quantity.fill("72");
+    await price.fill("607.5");
+    await externalId.fill("1006");
+    await externalId.press("Enter");
+
+    await expect(id).toBeFocused();
+    await expect(id).toHaveValue("");
+    await expect(
+      page.getByRole("textbox", { name: "id", exact: true }).nth(1),
+    ).toHaveValue("TEST-006");
+  });
+
+  test("inserts a row when the final cell loses focus", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<TestTableEmpty />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const id = inlineAddRow.getByRole("textbox", { name: "id", exact: true });
+    const externalId = inlineAddRow.getByRole("textbox", {
+      name: "externalId",
+    });
+
+    await id.fill("TEST-006");
+    await id.press("Enter");
+    await inlineAddRow
+      .getByRole("textbox", { name: "description" })
+      .fill("Foxtrot");
+    await inlineAddRow
+      .getByRole("textbox", { name: "description" })
+      .press("Enter");
+    await inlineAddRow.getByRole("textbox", { name: "quantity" }).fill("72");
+    await inlineAddRow.getByRole("textbox", { name: "quantity" }).press("Enter");
+    await inlineAddRow.getByRole("textbox", { name: "price" }).fill("607.5");
+    await inlineAddRow.getByRole("textbox", { name: "price" }).press("Enter");
+    await externalId.fill("1006");
+    await externalId.press("Tab");
+
+    await expect(
+      page.getByRole("textbox", { name: "id", exact: true }).nth(1),
+    ).toHaveValue("TEST-006");
+  });
+
   test("inserts two consecutive rows in the same edit session", async ({
     mount,
     page,
