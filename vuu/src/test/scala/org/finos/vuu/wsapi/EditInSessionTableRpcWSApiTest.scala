@@ -298,7 +298,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       customColumns = allColumns,
       options = TableDefOptions(
         isEditable = isEditable
-      )      
+      )
     )
   }
 
@@ -331,7 +331,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
         columns = allColumns,
-        service = new CreateSessionTableRpcHandler(AllowAllRpcPermissionChecker, tableContainer)
+        service = new DummyCreateSessionTableRpcHandler()(using AllowAllRpcPermissionChecker, tableContainer)
       )
     val viewPortDefFactoryForSessionTable = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
@@ -341,7 +341,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     val noEnoughPermissionViewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
         columns = allColumns,
-        service = new CreateSessionTableRpcHandler(AllDisabledRpcPermissionChecker, tableContainer)
+        service = new DummyCreateSessionTableRpcHandler()(using AllDisabledRpcPermissionChecker, tableContainer)
       )
 
     ModuleFactory.withNamespace(moduleName)
@@ -381,7 +381,9 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   }
 }
 
-class DummyEndEditSessionHandler(implicit tableContainer: TableContainer) extends EndEditSessionRpcHandler with StrictLogging {
+class DummyCreateSessionTableRpcHandler()(using rpcPermissionChecker: RpcPermissionChecker, tableContainer: TableContainer) extends CreateSessionTableRpcHandler(rpcPermissionChecker, tableContainer) {}
+
+class DummyEndEditSessionHandler(implicit tableContainer: TableContainer) extends EndEditSessionRpcHandler {
 
   override protected def verifyPermission(params: RpcParams): Boolean = ???
 
