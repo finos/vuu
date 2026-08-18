@@ -1,3 +1,13 @@
+/**
+ * Publish all packages, optionally using a prerelease npm dist-tag:
+ *   npm run pub -- --tag alpha
+ *   npm run pub -- --tag beta
+ *
+ * Check the package versions currently published on npm without publishing:
+ *   npm run pub -- --version-check
+ *
+ * Add --debug to publish from the debug package output.
+ */
 import { execWait, getCommandLineArg, readPackageJson } from "./utils.mjs";
 
 const debug = getCommandLineArg("--debug");
