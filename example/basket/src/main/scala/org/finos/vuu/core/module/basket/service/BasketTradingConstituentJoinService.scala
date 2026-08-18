@@ -7,14 +7,13 @@ import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames as BCColumnName, BasketTradingColumnNames as BTColumnName, BasketTradingConstituentColumnNames as ColumnName}
 import org.finos.vuu.core.module.basket.result.ErrorReason
 import org.finos.vuu.core.table.*
-import org.finos.vuu.net.rpc.{EditTableRpcHandler, RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditTableRpcHandler, RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.viewport.*
 
 import scala.util.control.NonFatal
 
-
-trait BasketTradingConstituentJoinServiceIF extends EditTableRpcHandler {
+trait BasketTradingConstituentJoinServiceIF {
   def setSell(params: RpcParams): RpcFunctionResult
 
   def setBuy(params: RpcParams): RpcFunctionResult
@@ -22,7 +21,7 @@ trait BasketTradingConstituentJoinServiceIF extends EditTableRpcHandler {
   def addConstituent(params: RpcParams): RpcFunctionResult
 }
 
-class BasketTradingConstituentJoinService(val table: DataTable)(using tableContainer: TableContainer) extends BasketTradingConstituentJoinServiceIF with StrictLogging {
+class BasketTradingConstituentJoinService(table: DataTable, tableContainer: TableContainer) extends BasketTradingConstituentJoinServiceIF with EditTableRpcHandler with DefaultRpcHandler with StrictLogging {
   registerRpc("setSell", params => setSell(params))
   registerRpc("setBuy", params => setBuy(params))
   registerRpc("addConstituent", params => addConstituent(params))

@@ -38,7 +38,7 @@ object BasketModule extends DefaultModule {
         (table, _) => new BasketProvider(table),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.getColumns,
-          service = new BasketService(table, omsApi)(clock, tableContainer)
+          service = new BasketService(table, omsApi, tableContainer)
         )
       )
       .addTable(
@@ -46,8 +46,8 @@ object BasketModule extends DefaultModule {
           name = BasketConstituentTable,
           keyField = BC.RicBasketId,
           customColumns = Columns.fromNames(BC.RicBasketId.string(), BC.Ric.string(), BC.BasketId.string(),
-                                      BC.Weighting.double(), BC.LastTrade.string(), BC.Change.string(),
-                                      BC.Volume.string(), BC.Side.string(), BC.Description.string()), // we can join to instruments and other tables to get the rest of the data.....
+            BC.Weighting.double(), BC.LastTrade.string(), BC.Change.string(),
+            BC.Volume.string(), BC.Side.string(), BC.Description.string()), // we can join to instruments and other tables to get the rest of the data.....
           options = TableDefOptions(
             joinFields = List(BC.RicBasketId, BC.Ric)
           )
@@ -59,8 +59,8 @@ object BasketModule extends DefaultModule {
           name = BasketTradingTable,
           keyField = BT.InstanceId,
           customColumns = Columns.fromNames(BT.InstanceId.string(), BT.BasketId.string(), BT.BasketName.string(),
-                                      BT.Status.string(), BT.Units.int(), BT.FilledPct.double(), BT.FxRateToUsd.double(),
-                                      BT.TotalNotional.double(), BT.TotalNotionalUsd.double(), BT.Side.string()
+            BT.Status.string(), BT.Units.int(), BT.FilledPct.double(), BT.FxRateToUsd.double(),
+            BT.TotalNotional.double(), BT.TotalNotionalUsd.double(), BT.Side.string()
           ),
           options = TableDefOptions(
             joinFields = List(BT.BasketId),
@@ -75,7 +75,7 @@ object BasketModule extends DefaultModule {
         (table, vs) => new BasketTradingProvider(table, vs.tableContainer),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.getColumns,
-          service = new BasketTradingService(table, omsApi)(using tableContainer)
+          service = new BasketTradingService(table, omsApi, tableContainer)
         )
       )
       .addTable(
@@ -83,17 +83,17 @@ object BasketModule extends DefaultModule {
           name = BasketTradingConstituentTable,
           keyField = BTC.InstanceIdRic,
           customColumns = Columns.fromNames(BTC.Quantity.long(), BTC.Side.string(),
-                                      BTC.InstanceIdRic.string(), BTC.InstanceId.string(), BTC.Ric.string(),
-                                      BTC.BasketId.string(), BTC.PriceStrategyId.int(),
-                                      BTC.Description.string(),
-                                      BTC.NotionalUsd.double(), BTC.NotionalLocal.double(),
-                                      BTC.Venue.string(),
-                                      BTC.Algo.string(), BTC.AlgoParams.string(),
-                                      BTC.PctFilled.double(), BTC.Weighting.double(),
-                                      BTC.PriceSpread.int(),
-                                      BTC.LimitPrice.double(),
-                                      BTC.FilledQty.long(),
-                                      BTC.OrderStatus.string()
+            BTC.InstanceIdRic.string(), BTC.InstanceId.string(), BTC.Ric.string(),
+            BTC.BasketId.string(), BTC.PriceStrategyId.int(),
+            BTC.Description.string(),
+            BTC.NotionalUsd.double(), BTC.NotionalLocal.double(),
+            BTC.Venue.string(),
+            BTC.Algo.string(), BTC.AlgoParams.string(),
+            BTC.PctFilled.double(), BTC.Weighting.double(),
+            BTC.PriceSpread.int(),
+            BTC.LimitPrice.double(),
+            BTC.FilledQty.long(),
+            BTC.OrderStatus.string()
           ),
           options = TableDefOptions(
             joinFields = List(BTC.InstanceIdRic, BTC.Ric),
@@ -108,7 +108,7 @@ object BasketModule extends DefaultModule {
         (table, vs) => new BasketTradingConstituentProvider(table, omsApi),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.getColumns,
-          service = new BasketTradingConstituentService(table)(using tableContainer)
+          service = new BasketTradingConstituentService
         )
       )
       .addTable(
@@ -153,7 +153,7 @@ object BasketModule extends DefaultModule {
         ),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.getColumns,
-          service = new BasketTradingConstituentJoinService(table)(using tableContainer)
+          service = new BasketTradingConstituentJoinService(table, tableContainer)
         )
       )
       .asModule()
@@ -203,7 +203,7 @@ object BasketModule extends DefaultModule {
 
   object BasketTradingConstituentColumnNames {
     final val InstanceIdRic = "instanceIdRic"
-    final val Side          = "side"
+    final val Side = "side"
     final val InstanceId = "instanceId"
     final val BasketId = "basketId"
     final val Ric = "ric"

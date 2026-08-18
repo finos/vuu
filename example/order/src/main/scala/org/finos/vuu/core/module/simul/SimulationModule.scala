@@ -6,7 +6,6 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.*
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.module.auths.OrderPermissionChecker
-import org.finos.vuu.core.module.auths.PermissionModule.ColumnNames.User
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.simul.provider.*
 import org.finos.vuu.core.module.simul.service.ParentOrdersService
@@ -20,7 +19,7 @@ import org.finos.vuu.viewport.*
 
 import java.util.UUID
 
-class InstrumentsService(val table: DataTable, val providerContainer: ProviderContainer)(implicit tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
+class InstrumentsService(table: DataTable, providerContainer: ProviderContainer) extends DefaultRpcHandler with StrictLogging {
 
   def addRowsFromInstruments(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
     providerContainer.getProviderForTable("orderEntry") match {
@@ -142,7 +141,7 @@ object SimulationModule extends DefaultModule {
         (table, vs) => new SimulatedBigInstrumentsProvider(table),
         (table, _, providerContainer, tableContainer) => ViewPortDef(
           columns = table.getTableDef.getColumns,
-          service = new InstrumentsService(table, providerContainer)(tableContainer)
+          service = new InstrumentsService(table, providerContainer)
         )
       )
       .addTable(
@@ -182,7 +181,7 @@ object SimulationModule extends DefaultModule {
         (table, vs) => new ParentOrdersProvider(table, ordersModel),
         (table, provider, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.getColumns,
-          service = new ParentOrdersService(table, provider)(tableContainer)
+          service = new ParentOrdersService(table, provider)
         )
       )
       .addTable(

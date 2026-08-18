@@ -9,6 +9,7 @@ import org.finos.vuu.core.module.TableDefContainer;
 import org.finos.vuu.core.module.ViewServerModule;
 import org.finos.vuu.core.table.Columns;
 import org.finos.vuu.core.table.DefaultColumn;
+import org.finos.vuu.core.table.InMemDataTable;
 import org.finos.vuu.person.PersonRpcHandler;
 import org.finos.vuu.person.auto.AutoMappedPersonProvider;
 import org.finos.vuu.person.auto.EntitySchema;
@@ -39,7 +40,7 @@ public class JavaExampleModule extends DefaultModule {
                         (table, vs) -> new PersonProvider(table, new PersonStore()),
                         (table, provider, providerContainer, tableContainer) -> new ViewPortDef(
                                 table.getTableDef().getColumns(),
-                                new PersonRpcHandler(table, tableContainer)
+                                new PersonRpcHandler(table)
                         )
                 )
                 .addTable(new TableDefBuilder()

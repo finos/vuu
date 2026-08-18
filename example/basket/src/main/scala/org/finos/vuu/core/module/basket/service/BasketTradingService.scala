@@ -5,17 +5,16 @@ import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituentTable
 import org.finos.vuu.core.table.*
-import org.finos.vuu.net.rpc.{EditTableRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditTableRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.order.oms.{CancelOrder, NewOrder, OmsApi}
-import org.finos.vuu.viewport.*
 
-trait BasketTradingServiceIF extends EditTableRpcHandler {
+trait BasketTradingServiceIF {
   def sendToMarket(params: RpcParams): RpcFunctionResult
 
   def takeOffMarket(params: RpcParams): RpcFunctionResult
 }
 
-class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(using tableContainer: TableContainer) extends BasketTradingServiceIF with StrictLogging {
+class BasketTradingService(table: DataTable, omsApi: OmsApi, tableContainer: TableContainer) extends BasketTradingServiceIF with EditTableRpcHandler with DefaultRpcHandler with StrictLogging {
 
   import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingColumnNames as BT, BasketTradingConstituentColumnNames as BTC}
 

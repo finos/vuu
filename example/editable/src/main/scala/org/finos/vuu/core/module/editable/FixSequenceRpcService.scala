@@ -1,9 +1,9 @@
 package org.finos.vuu.core.module.editable
 
-import org.finos.vuu.core.table.{RowWithData, TableContainer}
+import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.net.rpc.*
 
-class FixSequenceRpcService()(using tableContainer: TableContainer) extends EditTableRpcHandler {
+class FixSequenceRpcService extends EditTableRpcHandler with DefaultRpcHandler {
 
   override def editCell(params: RpcParams): RpcFunctionResult = {
     val key: String = params.namedParams("key").asInstanceOf[String]

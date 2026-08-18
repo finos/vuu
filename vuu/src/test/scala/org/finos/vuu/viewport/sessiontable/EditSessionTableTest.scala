@@ -100,7 +100,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
    * This is the callback to create a session table, triggered by a generic RPC call
    */
 
-  private class StopProcessDialogueService(implicit tableContainer: TableContainer) extends DefaultRpcHandler {
+  private class StopProcessDialogueService(implicit tableContainer: TableContainer) extends RpcHandler {
 
     registerRpc("OPEN_STOP_PROCESS", params => openStopProcessDialogue(tableContainer, params))
 
@@ -119,7 +119,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
 
   }
 
-  private class StopProcessService()(using tableContainer: TableContainer) extends EditTableRpcHandler {
+  private class StopProcessService extends EditTableRpcHandler {
 
     val count = new AtomicInteger(0)
 
@@ -233,7 +233,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       Given("We define a viewport callback on process with an rpc service attached...")
       viewPortContainer.addViewPortDefinition(process.getTableDef.name, createViewPortDefFunc(tableContainer,
         new StopProcessDialogueService()(tableContainer), clock))
-      val stopProcessService = new StopProcessService()(using tableContainer)
+      val stopProcessService = new StopProcessService
       viewPortContainer.addViewPortDefinition(stopProcess.getTableDef.name, createViewPortDefFunc(tableContainer,
         stopProcessService, clock))
 

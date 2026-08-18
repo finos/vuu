@@ -3,15 +3,15 @@ package org.finos.vuu.core.module.editable
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{TableDef, TableDefOptions, ViewPortDef, VisualLinks}
+import org.finos.vuu.api.{TableDef, TableDefOptions, ViewPortDef}
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
-import org.finos.vuu.core.table.{Columns, RowWithData, TableContainer}
+import org.finos.vuu.core.table.{Columns, RowWithData}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.{EditTableRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.viewport.ViewPort
 
-class EditTableTestService(val originalData: Map[String, Any])(using tableContainer: TableContainer) extends EditTableRpcHandler with StrictLogging {
+class EditTableTestService(val originalData: Map[String, Any]) extends EditTableRpcHandler with StrictLogging {
 
   override def deleteRow(params: RpcParams): RpcFunctionResult = {
     val key: String = params.namedParams("key").asInstanceOf[String]
@@ -111,14 +111,14 @@ object EditTableTestModule {
           name = "editTestTable",
           keyField = "rowId",
           customColumns = Columns.fromNames("rowId".string(), "A".string(), "B".double(), "C".int(), "D".boolean()),
-          options= TableDefOptions(
+          options = TableDefOptions(
             joinFields = List("rowId")
           )
         ),
         (table, _) => new NullProvider(),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.getColumns,
-          service = new EditTableTestService(originalData.asInstanceOf[Map[String, Any]])(using tableContainer)
+          service = new EditTableTestService(originalData.asInstanceOf[Map[String, Any]])
         )
       ).asModule()
 
