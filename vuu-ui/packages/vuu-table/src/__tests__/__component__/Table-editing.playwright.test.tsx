@@ -167,9 +167,11 @@ test.describe("Test table editing", () => {
     await expect(id).toHaveValue("");
     await expect(inlineAddRow.locator('[aria-invalid="true"]')).toHaveCount(0);
     await expect(inlineAddRow.getByRole("checkbox")).not.toBeChecked();
-    await expect(
-      page.getByRole("textbox", { name: "id", exact: true }).nth(1),
-    ).toHaveValue("TEST-006");
+    const insertedId = page
+      .getByRole("textbox", { name: "id", exact: true })
+      .nth(1);
+    await expect(insertedId).toBeVisible();
+    await expect(insertedId).toHaveValue("TEST-006");
   });
 
   test("inserts two consecutive rows in the same edit session", async ({
@@ -212,12 +214,16 @@ test.describe("Test table editing", () => {
     await expect(quantity).toHaveValue("");
     await expect(price).toHaveValue("");
     await expect(externalId).toHaveValue("");
-    await expect(
-      page.getByRole("textbox", { name: "id", exact: true }).nth(1),
-    ).toHaveValue("TEST-006");
-    await expect(
-      page.getByRole("textbox", { name: "id", exact: true }).nth(2),
-    ).toHaveValue("TEST-007");
+    const firstInsertedId = page
+      .getByRole("textbox", { name: "id", exact: true })
+      .nth(1);
+    const secondInsertedId = page
+      .getByRole("textbox", { name: "id", exact: true })
+      .nth(2);
+    await expect(firstInsertedId).toBeVisible();
+    await expect(firstInsertedId).toHaveValue("TEST-006");
+    await expect(secondInsertedId).toBeVisible();
+    await expect(secondInsertedId).toHaveValue("TEST-007");
   });
 
   test("marks only omitted cells as invalid when the final cell is committed", async ({
@@ -287,9 +293,11 @@ test.describe("Test table editing", () => {
     await id.press("Enter");
 
     await expect(id).toHaveValue("");
-    await expect(
-      page.getByRole("textbox", { name: "id", exact: true }).nth(1),
-    ).toHaveValue("TEST-006");
+    const insertedId = page
+      .getByRole("textbox", { name: "id", exact: true })
+      .nth(1);
+    await expect(insertedId).toBeVisible();
+    await expect(insertedId).toHaveValue("TEST-006");
   });
 
   test("moves to the next invalid cell when repairing incomplete rows", async ({
