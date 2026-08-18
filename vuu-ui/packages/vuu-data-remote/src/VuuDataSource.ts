@@ -86,7 +86,6 @@ const combineColumnsWithAutosubscribeColumns = (
 export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   private bufferSize: number;
   private server: ServerAPI | null = null;
-  #connectionId: string;
   rangeRequest: RangeRequest;
 
   /**
@@ -109,7 +108,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   public table: VuuTable;
 
   constructor({
-    connectionId = "portal",
     sessionTableMessageColumn,
     ...props
   }: DataSourceConstructorProps) {
@@ -121,7 +119,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       throw Error("RemoteDataSource constructor called without table");
 
     this.bufferSize = bufferSize;
-    this.#connectionId = connectionId;
     this.table = table;
 
     this.#pendingVisualLink = visualLink;
@@ -699,7 +696,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
       return new VuuDataSource({
         ...this.config,
-        connectionId: this.#connectionId,
         table: sessionTable,
         viewport: sessionTable.table,
       });
@@ -729,7 +725,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
         this.#sessionDataSource = new VuuDataSource({
           ...this.config,
           columns,
-          connectionId: this.#connectionId,
           table: sessionTable,
           viewport: sessionTable.table,
         });
@@ -743,7 +738,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       } else {
         return new VuuDataSource({
           ...this.config,
-          connectionId: this.#connectionId,
           table: sessionTable,
           viewport: sessionTable.table,
         });
