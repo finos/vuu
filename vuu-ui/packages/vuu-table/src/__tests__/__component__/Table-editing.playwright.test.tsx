@@ -351,6 +351,24 @@ test.describe("Test table editing", () => {
     );
   });
 
+  test("rejects alphabetic input in an inline numeric cell", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<TestTableEmpty />);
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const quantity = page
+      .locator(".vuuInlineAddRow")
+      .getByRole("textbox", { name: "quantity" });
+    await quantity.pressSequentially("invalid");
+    await quantity.press("Enter");
+
+    await expect(quantity.locator("..")).toContainClass(
+      "vuuTableInputCell-error",
+    );
+  });
+
   test("updates and deletes existing rows", async ({ mount, page }) => {
     await mount(<TestTableFIveRows />);
     await page.getByRole("radio", { name: "Edit" }).click();

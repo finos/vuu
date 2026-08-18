@@ -54,25 +54,18 @@ export const InputCell = ({
     column,
     previousValue,
   );
+  const errorMessage = warningMessage ?? editRejectedMessage;
 
   const endAdornment =
-    editRejectedMessage && align === "left" ? (
-      <Tooltip content={editRejectedMessage} placement="right">
-        <Icon className={`${classBase}-icon`} name="error" />
-      </Tooltip>
-    ) : warningMessage && align === "left" ? (
-      <Tooltip content={warningMessage} placement="right">
+    errorMessage && align === "left" ? (
+      <Tooltip content={errorMessage} placement="right">
         <Icon className={`${classBase}-icon`} name="error" />
       </Tooltip>
     ) : undefined;
 
   const startAdornment =
-    editRejectedMessage && align === "right" ? (
-      <Tooltip content={editRejectedMessage} placement="right">
-        <Icon className={`${classBase}-icon`} name="error" />
-      </Tooltip>
-    ) : warningMessage && align === "right" ? (
-      <Tooltip content={warningMessage} placement="left">
+    errorMessage && align === "right" ? (
+      <Tooltip content={errorMessage} placement="left">
         <Icon className={`${classBase}-icon`} name="error" />
       </Tooltip>
     ) : undefined;
@@ -84,13 +77,14 @@ export const InputCell = ({
       className={cx(classBase, {
         [`${classBase}-edited`]: editedDuringCurrentSession === true,
         [`${classBase}-error`]: warningMessage !== undefined,
-        [`${classBase}-warning`]: editRejectedMessage !== undefined,
+        [`${classBase}-warning`]:
+          warningMessage === undefined && editRejectedMessage !== undefined,
         vuuEditing: editing,
       })}
       endAdornment={endAdornment}
       inputProps={{
         ...inputProps,
-        "aria-invalid": editRejectedMessage ? true : undefined,
+        "aria-invalid": errorMessage ? true : undefined,
         "aria-label": column.label,
       }}
       readOnly={readOnly}

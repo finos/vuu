@@ -787,7 +787,6 @@ const EditableTestTableTemplate = ({
   );
 };
 
-/** tags=data-consumer */
 export const TestTableEmpty = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
@@ -796,7 +795,6 @@ export const TestTableEmpty = () => (
   </LocalDataSourceProvider>
 );
 
-/** tags=data-consumer */
 export const TestTableEmptyWithUpload = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
@@ -807,7 +805,6 @@ export const TestTableEmptyWithUpload = () => (
   </LocalDataSourceProvider>
 );
 
-/** tags=data-consumer */
 export const TestTableFIveRows = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>
