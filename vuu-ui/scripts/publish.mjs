@@ -45,7 +45,6 @@ const packages = [
   "vuu-theme",
   "vuu-ui-controls",
   "vuu-utils",
-  "vuu-utils2",
 ];
 
 async function publishPackage(packageName, suffix) {

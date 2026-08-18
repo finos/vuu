@@ -19,6 +19,8 @@ export * from "./datasource/datasource-filter-utils";
 export * from "./datasource/datasource-utils";
 export * from "./date";
 export * from "./debug-utils";
+export { isInlineEditingSession } from "./edit-utils";
+export { StaleUpdateError } from "./errors";
 export * from "./event-emitter";
 export * from "./feature-utils";
 export * from "./filters";

@@ -14,8 +14,7 @@
   "dependencies": {
     "@salt-ds/core": "1.54.1",
     "@vuu-ui/vuu-ui-controls": "2.3.0",
-    "@vuu-ui/vuu-utils": "2.3.0",
-    "@vuu-ui/vuu-utils2": "2.3.0"
+    "@vuu-ui/vuu-utils": "2.3.0"
   },
   "devDependencies": {
     "@vuu-ui/vuu-data-types": "2.3.0",

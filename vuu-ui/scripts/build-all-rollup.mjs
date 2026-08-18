@@ -18,7 +18,6 @@ export const buildAll = async () => {
     "vuu-filter-types",
     "vuu-protocol-types",
     "vuu-data-test",
-    "vuu-utils2",
     "vuu-filter-parser",
     "vuu-icons",
     "vuu-utils",

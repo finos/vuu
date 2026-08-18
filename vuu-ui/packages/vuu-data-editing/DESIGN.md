@@ -41,6 +41,5 @@ ignores callbacks from obsolete data-source bindings.
 ## Dependencies
 
 Data-source and protocol contracts come from the VUU type packages. Shared
-formatting, event, RPC, and React utilities remain in `@vuu-ui/vuu-utils` and
-`@vuu-ui/vuu-utils2`; this package depends on them rather than duplicating
-unrelated utilities.
+formatting, event, RPC, and React utilities remain in `@vuu-ui/vuu-utils`;
+this package depends on them rather than duplicating unrelated utilities.

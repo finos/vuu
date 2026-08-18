@@ -1,7 +1,7 @@
 import type { DataRow, RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { formatDate } from "@vuu-ui/vuu-utils";
 
-export { isInlineEditingSession } from "@vuu-ui/vuu-utils2";
+export { isInlineEditingSession } from "@vuu-ui/vuu-utils";
 
 const timeFormatter = formatDate({ time: "hh:mm:ss" });
 const dataRowEditErrors = Symbol("vuuDataRowEditErrors");

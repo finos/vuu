@@ -31,7 +31,6 @@ const packages = [
   "vuu-table-extras",
   "vuu-ui-controls",
   "vuu-utils",
-  "vuu-utils2",
 ];
 
 packages.forEach(buildPackage);

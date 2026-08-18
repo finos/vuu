@@ -8,8 +8,7 @@ import type {
   UndoRowChangeResult,
 } from "@vuu-ui/vuu-data-types";
 import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
-import { EventEmitter, isRpcError } from "@vuu-ui/vuu-utils";
-import { StaleUpdateError } from "@vuu-ui/vuu-utils2";
+import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
 export type EditSessionApi =

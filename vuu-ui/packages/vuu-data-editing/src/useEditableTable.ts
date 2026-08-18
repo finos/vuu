@@ -5,8 +5,7 @@ import type {
   EditApi,
 } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { useLayoutEffectSkipFirst } from "@vuu-ui/vuu-utils";
-import { useData } from "@vuu-ui/vuu-utils2";
+import { useData, useLayoutEffectSkipFirst } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   EditSession,
