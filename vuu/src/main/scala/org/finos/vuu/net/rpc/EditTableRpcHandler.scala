@@ -2,7 +2,7 @@ package org.finos.vuu.net.rpc
 
 import org.finos.vuu.core.table.TableContainer
 
-abstract class EditTableRpcHandler(using val tableContainer: TableContainer) extends DefaultRpcHandler {
+trait EditTableRpcHandler(using val tableContainer: TableContainer) extends DefaultRpcHandler {
   registerRpc(RpcNames.DeleteRowRpc, this.deleteRow)
   registerRpc(RpcNames.DeleteSelectedRowsRpc, this.deleteSelectedRows)
   registerRpc(RpcNames.DeleteCellRpc, this.deleteCell)
