@@ -16,7 +16,7 @@ test.describe("VuuTypeaheadInput", () => {
         mount,
         page,
       }) => {
-        // The dispatchEvent used to simukate ArrowDown to highlight first option
+        // The dispatchEvent used to simulate ArrowDown to highlight first option
         // doesn't work in Safari
         test.skip(browserName === "webkit");
 
@@ -37,6 +37,7 @@ test.describe("VuuTypeaheadInput", () => {
 
         const combobox = page.getByRole("combobox");
         await combobox.click();
+        await expect(combobox).toBeFocused();
         await combobox.press("G");
 
         // Wait for listbox to appear
@@ -57,6 +58,8 @@ test.describe("VuuTypeaheadInput", () => {
         // Verify commit was called
         expect(commitCalled).toBe(true);
         expect(commitValue).toBe("GBP");
+
+        await expect(combobox).toBeFocused();
 
         // Verify listbox is hidden
         await expect(listbox).not.toBeVisible();
@@ -150,6 +153,8 @@ test.describe("VuuTypeaheadInput", () => {
         // Verify commit was called
         expect(commitCalled).toBe(true);
         expect(commitValue).toBe("GBX");
+
+        await expect(combobox).toBeFocused();
 
         // Verify listbox is hidden
         await expect(listbox).not.toBeVisible();
