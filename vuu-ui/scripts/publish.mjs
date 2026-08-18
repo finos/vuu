@@ -118,13 +118,11 @@ if (versionCheck) {
   const rows = results.map((result, index) => {
     const packageName = packages[index];
     if (result.status === "fulfilled") {
-      const { latestVersion, name, published, version } = result.value;
+      const { latestVersion, name, version } = result.value;
       return {
-        current: version,
-        latest: latestVersion ?? "unavailable",
         package: name,
-        published: published ? "yes" : "no",
-        status: published && latestVersion === version ? "up-to-date" : "not-latest",
+        latest: latestVersion ?? "unavailable",
+        current: version,
       };
     } else {
       const reason =
@@ -132,11 +130,9 @@ if (versionCheck) {
           ? result.reason.message
           : String(result.reason);
       return {
-        current: "unavailable",
-        latest: "unavailable",
         package: packageName,
-        published: "unknown",
-        status: `failed: ${reason}`,
+        latest: "unavailable",
+        current: `failed: ${reason}`,
       };
     }
   });
