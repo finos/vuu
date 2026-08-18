@@ -1,6 +1,11 @@
 import { execWait, getCommandLineArg } from "./utils.mjs";
 
 const debug = getCommandLineArg("--debug");
+const publishTag = getCommandLineArg("--tag", true);
+
+if (publishTag && !["alpha", "beta"].includes(publishTag)) {
+  throw Error(`Unsupported publish tag "${publishTag}". Use alpha or beta.`);
+}
 
 const packages = [
   "vuu-chart",
@@ -28,11 +33,14 @@ const packages = [
   "vuu-theme",
   "vuu-ui-controls",
   "vuu-utils",
+  "vuu-utils2",
 ];
 
 async function publishPackage(packageName, suffix) {
   await execWait(
-    "npm publish --registry https://registry.npmjs.org --access public",
+    `npm publish --registry https://registry.npmjs.org --access public${
+      publishTag ? ` --tag ${publishTag}` : ""
+    }`,
     `dist/${packageName}${suffix}`,
   );
 }
