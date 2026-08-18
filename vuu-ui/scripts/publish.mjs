@@ -55,12 +55,37 @@ async function verifyPublishedPackage(packageName, suffix) {
   );
 }
 
+const reportResults = (operation, results) => {
+  results.forEach((result, index) => {
+    const packageName = packages[index];
+    if (result.status === "fulfilled") {
+      console.log(`${operation}: ${packageName} succeeded`);
+    } else {
+      const reason =
+        result.reason instanceof Error
+          ? result.reason.message
+          : String(result.reason);
+      console.error(`${operation}: ${packageName} failed: ${reason}`);
+    }
+  });
+};
+
 const packageNameSuffix = debug ? "-debug" : "";
-await Promise.all(
+const publishResults = await Promise.allSettled(
   packages.map((packageName) => publishPackage(packageName, packageNameSuffix)),
 );
-await Promise.all(
+reportResults("publish", publishResults);
+
+const verificationResults = await Promise.allSettled(
   packages.map((packageName) =>
     verifyPublishedPackage(packageName, packageNameSuffix),
   ),
 );
+reportResults("verify", verificationResults);
+
+const failures = [...publishResults, ...verificationResults].filter(
+  ({ status }) => status === "rejected",
+);
+if (failures.length > 0) {
+  throw Error(`${failures.length} package operation(s) failed`);
+}
