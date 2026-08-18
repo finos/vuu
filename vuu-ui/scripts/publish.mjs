@@ -1,7 +1,8 @@
-import { execWait, getCommandLineArg } from "./utils.mjs";
+import { execWait, getCommandLineArg, readPackageJson } from "./utils.mjs";
 
 const debug = getCommandLineArg("--debug");
 const publishTag = getCommandLineArg("--tag", true);
+const registry = "https://registry.npmjs.org";
 
 if (publishTag && !["alpha", "beta"].includes(publishTag)) {
   throw Error(`Unsupported publish tag "${publishTag}". Use alpha or beta.`);
@@ -38,14 +39,28 @@ const packages = [
 
 async function publishPackage(packageName, suffix) {
   await execWait(
-    `npm publish --registry https://registry.npmjs.org --access public${
+    `npm publish --registry ${registry} --access public${
       publishTag ? ` --tag ${publishTag}` : ""
     }`,
     `dist/${packageName}${suffix}`,
   );
 }
 
+async function verifyPublishedPackage(packageName, suffix) {
+  const { name, version } = readPackageJson(
+    `dist/${packageName}${suffix}/package.json`,
+  );
+  await execWait(
+    `npm view ${name}@${version} version --registry ${registry}`,
+  );
+}
+
 const packageNameSuffix = debug ? "-debug" : "";
 await Promise.all(
   packages.map((packageName) => publishPackage(packageName, packageNameSuffix)),
+);
+await Promise.all(
+  packages.map((packageName) =>
+    verifyPublishedPackage(packageName, packageNameSuffix),
+  ),
 );
