@@ -5,7 +5,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.example.virtualtable.provider.ReallyBigVirtualizedDataProvider
-import org.finos.vuu.net.rpc.DefaultRpcHandler
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, DefaultRpcHandlerImpl}
 import org.finos.vuu.plugin.virtualized.api.{SimpleVirtualizedSessionTableDef, VirtualizedSessionTableColumnBuilder}
 
 object VirtualTableModule extends DefaultModule {
@@ -29,10 +29,7 @@ object VirtualTableModule extends DefaultModule {
     ModuleFactory.withNamespace(NAME)
       .addSessionTable(tableDef,
         (table, vs) => new ReallyBigVirtualizedDataProvider(tableDef),
-        (table, _, _, tableContainer) => ViewPortDef(
-          columns = tableDef.getColumns,
-          service = new DefaultRpcHandler()(tableContainer)
-        )
+        (table, _, _, _) => ViewPortDef.default(tableDef.getColumns)
       ).asModule()
   }
 
