@@ -52,7 +52,7 @@ object ClickHouseTableModule extends DefaultModule {
       )
       .addSessionTable(tableDefWithNoSellPermission,
         (table, vs) => new ClickHouseVirtualizedDataProvider(tableDefWithNoSellPermission, client),
-        (table, _, _, _) => ViewPortDef(tableDefWithNoSellPermission.getColumns)
+        (table, _, _, _) => ViewPortDef.default(tableDefWithNoSellPermission.getColumns)
       )
       .asModule()
   }
