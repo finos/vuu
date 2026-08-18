@@ -115,25 +115,32 @@ if (versionCheck) {
   const results = await Promise.allSettled(
     packages.map((packageName) => checkPackageVersion(packageName)),
   );
-  results.forEach((result, index) => {
+  const rows = results.map((result, index) => {
     const packageName = packages[index];
     if (result.status === "fulfilled") {
       const { latestVersion, name, published, version } = result.value;
-      console.log(
-        `version-check: ${name} current=${version} published=${
-          published ? "yes" : "no"
-        } latest=${latestVersion ?? "unavailable"} ${
-          published && latestVersion === version ? "up-to-date" : "not-latest"
-        }`,
-      );
+      return {
+        current: version,
+        latest: latestVersion ?? "unavailable",
+        package: name,
+        published: published ? "yes" : "no",
+        status: published && latestVersion === version ? "up-to-date" : "not-latest",
+      };
     } else {
       const reason =
         result.reason instanceof Error
           ? result.reason.message
           : String(result.reason);
-      console.error(`version-check: ${packageName} failed: ${reason}`);
+      return {
+        current: "unavailable",
+        latest: "unavailable",
+        package: packageName,
+        published: "unknown",
+        status: `failed: ${reason}`,
+      };
     }
   });
+  console.table(rows);
   const failures = results.filter(({ status }) => status === "rejected");
   if (failures.length > 0) {
     throw Error(`${failures.length} version check(s) failed`);
