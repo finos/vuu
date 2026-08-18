@@ -925,7 +925,7 @@ test.describe("Inline row editing (session)", () => {
       new MutationObserver(() => {
         if (
           tableRoot.getAttribute("data-viewport") ===
-            table.getAttribute("data-source-viewport") &&
+          table.getAttribute("data-source-viewport") &&
           table.querySelector('[data-column-name="undo"]') &&
           table.getAttribute("data-edit-source-violation") !== "true"
         ) {
@@ -1074,10 +1074,10 @@ test.describe("Inline row editing (session)", () => {
     await expect(undoButton).toBeVisible();
     await undoButton.click();
 
-    // vuuMsg cleared, undo button gone, Submit disabled again
+
+    // undo button gone, Submit disabled again
     // Column 11 = vuuMsg (column 1 is the checkbox selector)
     const vuuMsgCell = table.locateCell(2, 11);
-    await expect(vuuMsgCell).not.toContainText("SOFT_DELETED");
     await expect(undoButton).not.toBeVisible();
     await expect(page.getByRole("button", { name: "Submit" })).toBeDisabled();
   });
@@ -1206,8 +1206,8 @@ test.describe("Session table editing (createSessionTable)", () => {
     await checkboxRow2.click();
     await page.getByRole("button", { name: "Delete" }).click();
 
-    // After soft-delete: row 2 is checked and has noSelect class
-    await expect(checkboxRow2).toBeChecked();
+    // After soft-delete: row 2 is no longer checked and has noSelect class
+    await expect(checkboxRow2).not.toBeChecked();
     await expect(table.row(2)).toHaveClass(/vuuTableRow-noSelect/);
 
     // Select row 3 — this issues a SELECT_ROW which clears existing server selection

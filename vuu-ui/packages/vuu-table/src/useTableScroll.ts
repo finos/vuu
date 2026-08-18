@@ -212,8 +212,8 @@ export const useTableScroll = ({
       columns,
       contentContainerPosRef.current.scrollLeft,
       contentContainerPosRef.current.scrollLeft +
-        viewportWidth +
-        HORIZONTAL_SCROLL_BUFFER,
+      viewportWidth +
+      HORIZONTAL_SCROLL_BUFFER,
     );
     preSpanRef.current = offset;
     columnsWithinViewportRef.current = visibleColumns;
@@ -315,7 +315,7 @@ export const useTableScroll = ({
         scrollPos.scrollLeft = scrollLeft;
         scrollPos.scrollTop = scrollTop;
 
-        const [maxScrollLeft, maxScrollTop] = getMaxScroll(scrollbarContainer);
+        const [maxScrollLeft, maxScrollTop] = getMaxScroll(contentContainer);
         const contentScrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
         const contentScrollTop = pctScrollTop * maxScrollTop;
 
@@ -564,6 +564,7 @@ export const useTableScroll = ({
             {
               const { direction } = scrollRequest;
               const scrollTo = direction === "end" ? maxScrollTop : 0;
+
               contentContainer.scrollTo({
                 top: scrollTo,
                 left: contentContainer.scrollLeft,
