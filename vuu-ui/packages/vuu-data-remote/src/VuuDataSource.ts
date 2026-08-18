@@ -1,4 +1,4 @@
-import { isInlineEditingSession, StaleUpdateError } from "@vuu-ui/vuu-utils2";
+import { StaleUpdateError } from "@vuu-ui/vuu-utils2";
 import type {
   CopyOption,
   DataSource,
@@ -718,30 +718,22 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
 
-      if (isInlineEditingSession(editSessionMode)) {
-        const columns = this.#sessionTableMessageColumn
-          ? this.columns.concat(this.#sessionTableMessageColumn)
-          : this.columns;
-        this.#sessionDataSource = new VuuDataSource({
-          ...this.config,
-          columns,
-          table: sessionTable,
-          viewport: sessionTable.table,
-        });
+      const columns = this.#sessionTableMessageColumn
+        ? this.columns.concat(this.#sessionTableMessageColumn)
+        : this.columns;
+      this.#sessionDataSource = new VuuDataSource({
+        ...this.config,
+        columns,
+        table: sessionTable,
+        viewport: sessionTable.table,
+      });
 
-        this.#sessionDataSource.subscribe(
-          {
-            range: this.range,
-          },
-          this.handleSessionMessageFromServer,
-        );
-      } else {
-        return new VuuDataSource({
-          ...this.config,
-          table: sessionTable,
-          viewport: sessionTable.table,
-        });
-      }
+      this.#sessionDataSource.subscribe(
+        {
+          range: this.range,
+        },
+        this.handleSessionMessageFromServer,
+      );
 
       // we need to route messages from the session datasource to listening
       // client whilst still monitoring responses on the source table to which
