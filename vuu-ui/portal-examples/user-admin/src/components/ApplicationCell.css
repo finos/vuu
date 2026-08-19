@@ -1,0 +1,22 @@
+.vuuAdminApplicationCell {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--salt-spacing-100);
+  min-width: 0;
+}
+
+.vuuAdminApplicationCell-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vuuAdminApplicationCell-unassigned {
+  color: var(--salt-content-secondary-foreground);
+  font-style: italic;
+}
+
+.vuuAdminApplicationCell-tags {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}

@@ -3,12 +3,12 @@ import {
   type SegmentedButtonGroupProps,
 } from "@salt-ds/core";
 import {
-  DataItemEditControlProps,
+  type DataItemEditControlProps,
   getDataItemEditControl,
 } from "@vuu-ui/vuu-data-react";
 import cx from "clsx";
-import { ForwardedRef, forwardRef } from "react";
-import { ColumnFilterHookProps, useColumnFilter } from "./useColumnFilter";
+import { type ForwardedRef, forwardRef } from "react";
+import { type ColumnFilterHookProps, useColumnFilter } from "./useColumnFilter";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
@@ -19,11 +19,11 @@ const classBase = "vuuColumnFilter";
 
 export interface ColumnFilterProps
   extends ColumnFilterHookProps,
-    Omit<SegmentedButtonGroupProps, "defaultValue">,
-    Pick<
-      DataItemEditControlProps,
-      "TypeaheadProps" | "table" | "values" | "variant"
-    > {}
+  Omit<SegmentedButtonGroupProps, "defaultValue">,
+  Pick<
+    DataItemEditControlProps,
+    "TypeaheadProps" | "table" | "values" | "variant"
+  > { }
 
 export const ColumnFilter = forwardRef(function ColumnFilter(
   {
@@ -85,14 +85,14 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
       })}
       {isBetweenOperator(operator)
         ? getDataItemEditControl({
-            InputProps: InputPropsRange,
-            className: `${classBase}-rangeHigh`,
-            commitWhenCleared: true,
-            variant,
-            dataDescriptor: column,
-            onCommit: onCommitRange,
-            table,
-          })
+          InputProps: InputPropsRange,
+          className: `${classBase}-rangeHigh`,
+          commitWhenCleared: true,
+          variant,
+          dataDescriptor: column,
+          onCommit: onCommitRange,
+          table,
+        })
         : null}
     </SegmentedButtonGroup>
   );

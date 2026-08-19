@@ -187,8 +187,7 @@ Time.toString = (hours: number, minutes: number, seconds: number) => {
 };
 
 Time.isDateInMillis = (dtInMillis: string | number): boolean => {
-  const n =
-    typeof dtInMillis === "number" ? dtInMillis : Number(dtInMillis);
+  const n = typeof dtInMillis === "number" ? dtInMillis : Number(dtInMillis);
   if (!Number.isFinite(n) || !Number.isInteger(n)) return false;
 
   return new Date(n).getTime() === n;

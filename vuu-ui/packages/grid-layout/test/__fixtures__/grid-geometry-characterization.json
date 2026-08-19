@@ -1,0 +1,1803 @@
+[
+  {
+    "name": "single cell split north",
+    "results": [
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "move-item",
+        "ok": true
+      }
+    ],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "horizontal",
+        "column": "1/2",
+        "controls": "target",
+        "id": "target-splitter-v",
+        "orientation": "vertical",
+        "resizedChildItems": {
+          "after": ["target"],
+          "before": ["dropped"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "2/3"
+      }
+    ],
+    "state": {
+      "cols": ["1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "dropped",
+          "resizeable": false,
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "2/1/3/2",
+          "id": "target",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr", "1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "single cell split east",
+    "results": [
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "move-item",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/2/2/3",
+          "id": "dropped",
+          "resizeable": false,
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "target",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "single cell split south",
+    "results": [
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "move-item",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "2/1/3/2",
+          "id": "dropped",
+          "resizeable": false,
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "target",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr", "1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "single cell split west",
+    "results": [
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "move-item",
+        "ok": true
+      }
+    ],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "2/3",
+        "controls": "target",
+        "id": "target-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["target"],
+          "before": ["dropped"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "1/2"
+      }
+    ],
+    "state": {
+      "cols": ["1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "dropped",
+          "resizeable": false,
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/2/2/3",
+          "id": "target",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "bisecting span split north",
+    "results": [
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "move-item",
+        "ok": true
+      }
+    ],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "horizontal",
+        "column": "1/3",
+        "controls": "target",
+        "id": "target-splitter-v",
+        "orientation": "vertical",
+        "resizedChildItems": {
+          "after": ["target"],
+          "before": ["dropped"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "2/3"
+      }
+    ],
+    "state": {
+      "cols": ["1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/3",
+          "id": "dropped",
+          "resizeable": false,
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "2/1/3/3",
+          "id": "target",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr", "1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "bisecting span split east",
+    "results": [
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "move-item",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/2/3/3",
+          "id": "dropped",
+          "resizeable": false,
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/3/2",
+          "id": "target",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr", "1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "bisecting span split south",
+    "results": [
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "move-item",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "2/1/3/3",
+          "id": "dropped",
+          "resizeable": false,
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/3",
+          "id": "target",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr", "1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "bisecting span split west",
+    "results": [
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "move-item",
+        "ok": true
+      }
+    ],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "2/3",
+        "controls": "target",
+        "id": "target-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["target"],
+          "before": ["dropped"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "1/3"
+      }
+    ],
+    "state": {
+      "cols": ["1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/3/2",
+          "id": "dropped",
+          "resizeable": false,
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/2/3/3",
+          "id": "target",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr", "1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "non bisecting fractional span split east",
+    "results": [
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "move-item",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr", "1fr", "1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/3/2/5",
+          "id": "dropped",
+          "resizeable": false,
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/3",
+          "id": "target",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "non bisecting pixel span split west",
+    "results": [
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "move-item",
+        "ok": true
+      }
+    ],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "3/4",
+        "controls": "target",
+        "id": "target-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["target"],
+          "before": ["dropped"]
+        },
+        "resizedGridTracks": [1, 2],
+        "row": "1/2"
+      }
+    ],
+    "state": {
+      "cols": ["100px", "100px", "200px"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/3",
+          "id": "dropped",
+          "resizeable": false,
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/3/2/4",
+          "id": "target",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "non bisecting pixel span split south",
+    "results": [
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "move-item",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "3/1/4/2",
+          "id": "dropped",
+          "resizeable": false,
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/3/2",
+          "id": "target",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["100px", "100px", "200px"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "split within a column of stacked siblings",
+    "results": [
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "move-item",
+        "ok": true
+      }
+    ],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "horizontal",
+        "column": "2/3",
+        "controls": "lowerRight",
+        "id": "lowerRight-splitter-v",
+        "orientation": "vertical",
+        "resizedChildItems": {
+          "after": ["lowerRight"],
+          "before": ["dropped"]
+        },
+        "resizedGridTracks": [1, 2],
+        "row": "3/4"
+      },
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "2/3",
+        "controls": "upperRight",
+        "id": "upperRight-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["upperRight", "lowerRight"],
+          "before": ["left"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "1/4"
+      }
+    ],
+    "state": {
+      "cols": ["1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "2/2/3/3",
+          "id": "dropped",
+          "resizeable": false,
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/4/2",
+          "id": "left",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "3/2/4/3",
+          "id": "lowerRight",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/2/2/3",
+          "id": "upperRight",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr", "1fr", "2fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "centre replacement adopts target geometry",
+    "results": [
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "replace-item",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "dropped",
+          "resizeable": false,
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "removal normalizes multiple unused column lines",
+    "results": [
+      {
+        "command": "remove-item",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "left",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "removal normalizes multiple unused row lines",
+    "results": [
+      {
+        "command": "remove-item",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "top",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "irregular removal fills from column contras",
+    "results": [
+      {
+        "command": "remove-item",
+        "ok": true
+      }
+    ],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "horizontal",
+        "column": "1/2",
+        "controls": "lowerLeft",
+        "id": "lowerLeft-splitter-v",
+        "orientation": "vertical",
+        "resizedChildItems": {
+          "after": ["lowerLeft"],
+          "before": ["upperLeft"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "2/3"
+      }
+    ],
+    "state": {
+      "cols": ["1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "2/1/3/2",
+          "id": "lowerLeft",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "upperLeft",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr", "1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "irregular removal fills a row from two contras",
+    "results": [
+      {
+        "command": "remove-item",
+        "ok": true
+      }
+    ],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "2/3",
+        "controls": "upperRight",
+        "id": "upperRight-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["upperRight"],
+          "before": ["upperLeft"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "1/2"
+      }
+    ],
+    "state": {
+      "cols": ["1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "upperLeft",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/2/2/3",
+          "id": "upperRight",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "removal leaves a placeholder when no contra can fill",
+    "results": [
+      {
+        "command": "remove-item",
+        "ok": true
+      }
+    ],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "horizontal",
+        "column": "1/2",
+        "controls": "lowerRight",
+        "id": "lowerRight-splitter-v",
+        "orientation": "vertical",
+        "resizedChildItems": {
+          "after": ["lowerRight"],
+          "before": ["upperRight"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "2/3"
+      }
+    ],
+    "state": {
+      "cols": ["1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "2/1/3/2",
+          "id": "lowerRight",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "upperRight",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr", "1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "drag removal preserves tracks and regenerates placeholders",
+    "results": [
+      {
+        "command": "remove-item",
+        "ok": true
+      },
+      {
+        "command": "regenerate-placeholders",
+        "ok": true
+      }
+    ],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "2/2",
+        "controls": "right",
+        "id": "right-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["right"],
+          "before": ["left"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "1/2"
+      }
+    ],
+    "state": {
+      "cols": ["1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "left",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/2/2/2",
+          "id": "right",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "placeholder regeneration covers the empty extents",
+    "results": [
+      {
+        "command": "regenerate-placeholders",
+        "ok": true
+      },
+      {
+        "command": "regenerate-placeholders",
+        "ok": true
+      }
+    ],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "2/3",
+        "controls": "placeholder-1",
+        "id": "placeholder-1-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["placeholder-1"],
+          "before": ["only", "placeholder-2"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "1/3"
+      },
+      {
+        "align": "start",
+        "ariaOrientation": "horizontal",
+        "column": "1/2",
+        "controls": "placeholder-2",
+        "id": "placeholder-2-splitter-v",
+        "orientation": "vertical",
+        "resizedChildItems": {
+          "after": ["placeholder-2"],
+          "before": ["only"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "2/3"
+      }
+    ],
+    "state": {
+      "cols": ["1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "only",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/2/3/3",
+          "id": "placeholder-1",
+          "resizeable": "hv",
+          "type": "placeholder"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "2/1/3/2",
+          "id": "placeholder-2",
+          "resizeable": "hv",
+          "type": "placeholder"
+        }
+      ],
+      "rows": ["1fr", "1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "placeholder can be split by a dropped item",
+    "results": [
+      {
+        "command": "regenerate-placeholders",
+        "ok": true
+      },
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "move-item",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/2/2/3",
+          "id": "content",
+          "resizeable": false,
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "placeholder-1",
+          "resizeable": "hv",
+          "type": "placeholder"
+        }
+      ],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "non resizable target rejects every split direction",
+    "results": [
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "move-item",
+        "error": {
+          "code": "NON_RESIZABLE",
+          "message": "Grid item #fixed cannot be split north"
+        },
+        "ok": false
+      },
+      {
+        "command": "move-item",
+        "error": {
+          "code": "NON_RESIZABLE",
+          "message": "Grid item #fixed cannot be split east"
+        },
+        "ok": false
+      },
+      {
+        "command": "move-item",
+        "error": {
+          "code": "NON_RESIZABLE",
+          "message": "Grid item #fixed cannot be split south"
+        },
+        "ok": false
+      },
+      {
+        "command": "move-item",
+        "error": {
+          "code": "NON_RESIZABLE",
+          "message": "Grid item #fixed cannot be split west"
+        },
+        "ok": false
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "dropped",
+          "resizeable": false,
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "fixed",
+          "resizeable": false,
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "horizontally resizable target rejects vertical splits",
+    "results": [
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "move-item",
+        "error": {
+          "code": "NON_RESIZABLE",
+          "message": "Grid item #horizontalOnly cannot be split north"
+        },
+        "ok": false
+      },
+      {
+        "command": "move-item",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/2/2/3",
+          "id": "dropped",
+          "resizeable": false,
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "horizontalOnly",
+          "resizeable": "h",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "direct track resize preserves item geometry",
+    "results": [
+      {
+        "command": "resize-track",
+        "ok": true
+      },
+      {
+        "command": "resize-track",
+        "ok": true
+      },
+      {
+        "command": "resize-track",
+        "error": {
+          "code": "TRACK_NOT_FOUND",
+          "message": "Grid column track #2 not found"
+        },
+        "ok": false
+      }
+    ],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "horizontal",
+        "column": "2/3",
+        "controls": "lower",
+        "id": "lower-splitter-v",
+        "orientation": "vertical",
+        "resizedChildItems": {
+          "after": ["lower"],
+          "before": ["upper"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "2/3"
+      },
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "2/3",
+        "controls": "upper",
+        "id": "upper-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["upper", "lower"],
+          "before": ["fixed"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "1/3"
+      }
+    ],
+    "state": {
+      "cols": ["125px", "200px"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/3/2",
+          "id": "fixed",
+          "resizeable": false,
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "2/2/3/3",
+          "id": "lower",
+          "resizeable": "v",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/2/2/3",
+          "id": "upper",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["50px", "175px"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "fractional adjacent resize requires measurement",
+    "results": [
+      {
+        "command": "resize-tracks",
+        "error": {
+          "code": "MEASUREMENT_REQUIRED",
+          "message": "Fractional column resize requires measuredSizes"
+        },
+        "ok": false
+      },
+      {
+        "command": "resize-tracks",
+        "ok": true
+      },
+      {
+        "command": "resize-tracks",
+        "ok": true
+      },
+      {
+        "command": "resize-tracks",
+        "error": {
+          "code": "INVALID_ITEM",
+          "message": "Adjacent track resize cannot produce a negative track size"
+        },
+        "ok": false
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["75px", "125px"],
+      "items": [],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "proportional resize honours explicit minimums",
+    "results": [
+      {
+        "command": "resize-tracks",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr"],
+      "items": [],
+      "rows": ["220px", "80px", "100px"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "proportional resize redistributes overlapping minimums",
+    "results": [
+      {
+        "command": "resize-tracks",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr"],
+      "items": [],
+      "rows": ["200px", "50px", "100px", "50px"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "proportional resize without constraints distributes by size",
+    "results": [
+      {
+        "command": "resize-tracks",
+        "ok": true
+      },
+      {
+        "command": "resize-tracks",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr"],
+      "items": [],
+      "rows": ["108px", "162px", "90px"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "invalid resize commands are rejected without mutation",
+    "results": [
+      {
+        "command": "resize-tracks",
+        "error": {
+          "code": "INVALID_TARGET",
+          "message": "Adjacent track resize requires two distinct tracks"
+        },
+        "ok": false
+      },
+      {
+        "command": "resize-tracks",
+        "error": {
+          "code": "INVALID_TARGET",
+          "message": "Proportional track resize groups must contain unique, disjoint tracks"
+        },
+        "ok": false
+      },
+      {
+        "command": "resize-tracks",
+        "error": {
+          "code": "INVALID_ITEM",
+          "message": "Grid track resize constraints must reference their own group and have non-negative minimums"
+        },
+        "ok": false
+      },
+      {
+        "command": "resize-tracks",
+        "error": {
+          "code": "INVALID_ITEM",
+          "message": "Grid track resize delta must be finite"
+        },
+        "ok": false
+      },
+      {
+        "command": "resize-track",
+        "error": {
+          "code": "TRACK_NOT_FOUND",
+          "message": "Grid row track #7 not found"
+        },
+        "ok": false
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["100px", "100px"],
+      "items": [],
+      "rows": ["100px"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "splitter intersections across shared track edges",
+    "results": [],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "horizontal",
+        "column": "1/3",
+        "controls": "lowerLeft",
+        "id": "lowerLeft-splitter-v",
+        "orientation": "vertical",
+        "resizedChildItems": {
+          "after": ["lowerLeft", "lowerMiddle"],
+          "before": ["upperLeft"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "2/3"
+      },
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "2/3",
+        "controls": "lowerMiddle",
+        "id": "lowerMiddle-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["lowerMiddle"],
+          "before": ["lowerLeft"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "2/3"
+      },
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "3/4",
+        "controls": "lowerRight",
+        "id": "lowerRight-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["lowerRight"],
+          "before": ["upperLeft", "lowerMiddle"]
+        },
+        "resizedGridTracks": [1, 2],
+        "row": "2/3"
+      },
+      {
+        "align": "start",
+        "ariaOrientation": "horizontal",
+        "column": "3/4",
+        "controls": "lowerRight",
+        "id": "lowerRight-splitter-v",
+        "orientation": "vertical",
+        "resizedChildItems": {
+          "after": ["lowerRight"],
+          "before": ["upperRight"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "2/3"
+      },
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "3/4",
+        "controls": "upperRight",
+        "id": "upperRight-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["upperRight", "lowerRight"],
+          "before": ["lowerMiddle"]
+        },
+        "resizedGridTracks": [1, 2],
+        "row": "1/3"
+      }
+    ],
+    "state": {
+      "cols": ["1fr", "1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "2/1/3/2",
+          "id": "lowerLeft",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "2/2/3/3",
+          "id": "lowerMiddle",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "2/3/3/4",
+          "id": "lowerRight",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/3",
+          "id": "upperLeft",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/3/2/4",
+          "id": "upperRight",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr", "1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "splitters skip fixed height items",
+    "results": [],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "horizontal",
+        "column": "1/3",
+        "controls": "lower",
+        "id": "lower-splitter-v",
+        "orientation": "vertical",
+        "resizedChildItems": {
+          "after": ["lower"],
+          "before": ["fixedRow"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "2/3"
+      }
+    ],
+    "state": {
+      "cols": ["1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/3",
+          "id": "fixedRow",
+          "resizeable": "h",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "2/1/3/3",
+          "id": "lower",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr", "1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "split replace remove and placeholder sequence",
+    "results": [
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "move-item",
+        "ok": true
+      },
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "replace-item",
+        "ok": true
+      },
+      {
+        "command": "remove-item",
+        "ok": true
+      },
+      {
+        "command": "regenerate-placeholders",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "replacement",
+          "resizeable": false,
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "no op and failing commands leave geometry untouched",
+    "results": [
+      {
+        "command": "rename-item",
+        "ok": true
+      },
+      {
+        "command": "remove-item",
+        "error": {
+          "code": "ITEM_NOT_FOUND",
+          "message": "[GridModel] GridItem #missing not found"
+        },
+        "ok": false
+      },
+      {
+        "command": "move-item",
+        "error": {
+          "code": "INVALID_TARGET",
+          "message": "Grid item #left cannot target itself"
+        },
+        "ok": false
+      },
+      {
+        "command": "add-item",
+        "error": {
+          "code": "INVALID_ITEM",
+          "message": "Grid item #outOfBounds has invalid grid coordinates"
+        },
+        "ok": false
+      }
+    ],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "2/3",
+        "controls": "right",
+        "id": "right-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["right"],
+          "before": ["left"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "1/2"
+      }
+    ],
+    "state": {
+      "cols": ["1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "left",
+          "resizeable": "hv",
+          "title": "Left",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/2/2/3",
+          "id": "right",
+          "resizeable": "hv",
+          "title": "Right",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "stack member removal restores single item geometry",
+    "results": [
+      {
+        "command": "create-stack",
+        "ok": true
+      },
+      {
+        "command": "remove-stack-item",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "alpha",
+          "resizeable": "hv",
+          "title": "Alpha",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "pinwheel centre removal leaves a placeholder",
+    "results": [
+      {
+        "command": "remove-item",
+        "ok": true
+      }
+    ],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "3/4",
+        "controls": "east",
+        "id": "east-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["east"],
+          "before": ["north", "placeholder-1"]
+        },
+        "resizedGridTracks": [1, 2],
+        "row": "1/3"
+      },
+      {
+        "align": "start",
+        "ariaOrientation": "horizontal",
+        "column": "2/4",
+        "controls": "south",
+        "id": "south-splitter-v",
+        "orientation": "vertical",
+        "resizedChildItems": {
+          "after": ["south"],
+          "before": ["east"]
+        },
+        "resizedGridTracks": [1, 2],
+        "row": "3/4"
+      },
+      {
+        "align": "start",
+        "ariaOrientation": "horizontal",
+        "column": "1/3",
+        "controls": "west",
+        "id": "west-splitter-v",
+        "orientation": "vertical",
+        "resizedChildItems": {
+          "after": ["west", "placeholder-1"],
+          "before": ["north"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "2/4"
+      },
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "2/3",
+        "controls": "placeholder-1",
+        "id": "placeholder-1-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["placeholder-1", "south"],
+          "before": ["west"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "2/4"
+      }
+    ],
+    "state": {
+      "cols": ["1fr", "1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/3/3/4",
+          "id": "east",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/3",
+          "id": "north",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "2/2/3/3",
+          "id": "placeholder-1",
+          "resizeable": "hv",
+          "type": "placeholder"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "3/2/4/4",
+          "id": "south",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "2/1/4/2",
+          "id": "west",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr", "1fr", "1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "replacing a stack container unstacks its members",
+    "results": [
+      {
+        "command": "create-stack",
+        "ok": true
+      },
+      {
+        "command": "add-item",
+        "ok": true
+      },
+      {
+        "command": "replace-item",
+        "ok": true
+      }
+    ],
+    "splitters": [],
+    "state": {
+      "cols": ["1fr", "1fr"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/3",
+          "id": "alpha",
+          "resizeable": "hv",
+          "title": "Alpha",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/3",
+          "id": "beta",
+          "resizeable": "hv",
+          "title": "Beta",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/3",
+          "id": "gamma",
+          "resizeable": false,
+          "type": "content"
+        }
+      ],
+      "rows": ["1fr"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "runtime track insertion anchors the resized items",
+    "results": [],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "2/4",
+        "controls": "right",
+        "id": "right-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["right"],
+          "before": ["left"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "1/2"
+      }
+    ],
+    "state": {
+      "cols": ["80px", "20px", "100px"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "left",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/2/2/4",
+          "id": "right",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["100px"],
+      "tabs": []
+    }
+  },
+  {
+    "name": "runtime track removal rebinds following items",
+    "results": [],
+    "splitters": [
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "2/2",
+        "controls": "middle",
+        "id": "middle-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["middle"],
+          "before": ["left"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "1/2"
+      },
+      {
+        "align": "start",
+        "ariaOrientation": "vertical",
+        "column": "2/3",
+        "controls": "right",
+        "id": "right-splitter-h",
+        "orientation": "horizontal",
+        "resizedChildItems": {
+          "after": ["right"],
+          "before": ["left"]
+        },
+        "resizedGridTracks": [0, 1],
+        "row": "1/2"
+      }
+    ],
+    "state": {
+      "cols": ["150px", "100px"],
+      "items": [
+        {
+          "contentVisible": true,
+          "gridArea": "1/1/2/2",
+          "id": "left",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/2/2/2",
+          "id": "middle",
+          "resizeable": "hv",
+          "type": "content"
+        },
+        {
+          "contentVisible": true,
+          "gridArea": "1/2/2/3",
+          "id": "right",
+          "resizeable": "hv",
+          "type": "content"
+        }
+      ],
+      "rows": ["100px"],
+      "tabs": []
+    }
+  }
+]

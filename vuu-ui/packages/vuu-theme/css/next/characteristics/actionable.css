@@ -41,7 +41,7 @@
   --salt-actionable-bold-background-hover: var(--vuu-color-coral);
   --salt-actionable-bold-background: var(--salt-palette-neutral);
   --salt-actionable-bold-borderColor-active: var(--vuu-color-gray-50);
-  --salt-actionable-bold-borderColor-hover: var(var(--vuu-color-coral));
+  --salt-actionable-bold-borderColor-hover: var(--vuu-color-coral);
   --salt-actionable-bold-borderColor: var(--salt-palette-neutral);
   --salt-actionable-bold-foreground-active: var(--salt-color-white);
   --salt-actionable-bold-foreground-hover: var(--salt-palette-foreground-primary);

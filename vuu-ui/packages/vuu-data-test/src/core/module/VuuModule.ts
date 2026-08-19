@@ -126,6 +126,17 @@ export abstract class VuuModule<T extends string = string>
     | undefined;
   protected abstract services?: Record<T, RpcService[] | undefined> | undefined;
   protected abstract visualLinks?: Record<T, VuuLink[] | undefined>;
+  protected get includeDefaultServices() {
+    return true;
+  }
+  protected async beforeSessionSave(
+    _sourceTable: Table,
+    _sessionTable: Table,
+  ) {}
+  protected async afterSessionSave(
+    _sourceTable: Table,
+    _sessionTable: Table,
+  ) {}
 
   getTableSchema(tableName: string) {
     return (
@@ -384,10 +395,13 @@ export abstract class VuuModule<T extends string = string>
 
   getServices(tableName: T) {
     const tableServices = this.services?.[tableName];
+    const defaultServices = this.includeDefaultServices
+      ? this.#moduleServices
+      : [];
     if (Array.isArray(tableServices)) {
-      return this.#moduleServices.concat(tableServices);
+      return defaultServices.concat(tableServices);
     } else {
-      return this.#moduleServices;
+      return defaultServices;
     }
   }
 
@@ -481,7 +495,7 @@ export abstract class VuuModule<T extends string = string>
           }
           dataSource.select?.({ type: "DESELECT_ALL" });
         }
-        return { type: "SUCCESS_RESULT", data: undefined };
+        return { type: "SUCCESS_RESULT", data: { deletedKeys: selectedRowIds } };
       }
       return {
         type: "ERROR_RESULT",
@@ -809,6 +823,17 @@ export abstract class VuuModule<T extends string = string>
         const sourceTable = this.tables[sourceTableName as T];
 
         if (rpcRequest.params.save === true) {
+          try {
+            await this.beforeSessionSave(sourceTable, sessionTable);
+          } catch (error) {
+            return {
+              errorMessage:
+                error instanceof Error
+                  ? error.message
+                  : "Unable to prepare session changes",
+              type: "ERROR_RESULT",
+            };
+          }
           let rejectedCount = 0;
           const vuuMsgIdx = sessionTable.map[this.#sessionTableMessageColumn];
           const actionIdx = sessionTable.map.vuuAction;
@@ -862,6 +887,17 @@ export abstract class VuuModule<T extends string = string>
           if (rejectedCount > 0) {
             return {
               errorMessage: "stale update",
+              type: "ERROR_RESULT",
+            };
+          }
+          try {
+            await this.afterSessionSave(sourceTable, sessionTable);
+          } catch (error) {
+            return {
+              errorMessage:
+                error instanceof Error
+                  ? error.message
+                  : "Unable to finalize session changes",
               type: "ERROR_RESULT",
             };
           }

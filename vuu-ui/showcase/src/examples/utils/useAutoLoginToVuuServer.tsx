@@ -1,7 +1,5 @@
-import {
-  authenticate as vuuAuthenticate,
-  ConnectionManager,
-} from "@vuu-ui/vuu-data-remote";
+import { authenticateWithUsernamePassword } from "@vuu-ui/core";
+import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
 import { useEffect, useState } from "react";
 
 export const useAutoLoginToVuuServer = ({
@@ -21,7 +19,11 @@ export const useAutoLoginToVuuServer = ({
       try {
         let token = "no-token";
         if (authenticate) {
-          const response = await vuuAuthenticate("steve", "xyz", "/api/authn");
+          const response = await authenticateWithUsernamePassword(
+            "/api/authn",
+            "steve",
+            "xyz",
+          );
           token = response.token;
         }
         const protocol = secure ? "wss" : "ws";

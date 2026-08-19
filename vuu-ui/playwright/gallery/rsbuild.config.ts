@@ -30,7 +30,10 @@ export default defineConfig({
   ],
   source: {
     entry: {
-      index: "./main.tsx",
+      index:
+        process.env.PLAYWRIGHT_GRID_LAYOUT_ONLY === "1"
+          ? "./main-grid-layout.tsx"
+          : "./main.tsx",
     },
   },
   html: {

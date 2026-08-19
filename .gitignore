@@ -22,7 +22,11 @@ yarn-error.log*
 /vuu-ui/showcase/src/examples/**/*.js
 /vuu-ui/themes/tar-theme
 
+/vuu-ui/playwright/reports/
+/vuu-ui/playwright/test-results/
+
 deployed_apps
+dist_portal
 dist
 
 # Docusaurus generated folders
