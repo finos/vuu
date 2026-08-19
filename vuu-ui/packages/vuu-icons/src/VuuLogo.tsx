@@ -1,8 +1,10 @@
 import { memo } from "react";
+import cx from 'clsx';
 
-export const VuuLogo = memo(() => {
+export const VuuLogo = memo(({ className }: { className?: string }) => {
   return (
     <svg
+      className={cx('vuuLogo', className)}
       width="44"
       height="45"
       viewBox="0 0 44 45"

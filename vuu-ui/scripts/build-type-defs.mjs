@@ -22,6 +22,7 @@ const writeProjectTsConfig = async () => {
       extends: "../../tsconfig-emit-types.json",
       compilerOptions: {
         outDir: `${outdir}/types`,
+        rootDir: "./src",
       },
       include: ["src", "../../global.d.ts"],
     };
@@ -66,7 +67,7 @@ function writePackageJSON() {
         } else {
           resolve();
         }
-      }
+      },
     );
   });
 }

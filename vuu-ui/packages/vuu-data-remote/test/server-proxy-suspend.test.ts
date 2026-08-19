@@ -137,6 +137,64 @@ describe("suspend and resume", () => {
     vi.useRealTimers();
   });
 
+  it("replays an inserted row received while non-escalating suspension suppresses client delivery", async () => {
+    const [serverProxy, postMessageToClient, connection] =
+      await createFixtures();
+    serverProxy.handleMessageFromServer({
+      ...COMMON_ATTRS,
+      body: {
+        ...COMMON_TABLE_ROW_ATTRS,
+        rows: [
+          sizeRow("server-vp-1", 100),
+          ...createTableRows("server-vp-1", 0, 10),
+        ],
+      },
+    });
+    postMessageToClient.mockClear();
+    connection.send.mockClear();
+    vi.useFakeTimers();
+
+    serverProxy.handleMessageFromClient({
+      escalateToDisable: false,
+      type: "suspend",
+      viewport: "client-vp-1",
+    });
+    serverProxy.handleMessageFromServer({
+      ...COMMON_ATTRS,
+      body: {
+        ...COMMON_TABLE_ROW_ATTRS,
+        rows: [
+          sizeRow("server-vp-1", 101),
+          updateTableRow("server-vp-1", 3, 2004, {
+            key: "inserted",
+            vpSize: 101,
+          }),
+        ],
+      },
+    });
+    vi.advanceTimersByTime(3000);
+
+    expect(postMessageToClient).not.toHaveBeenCalled();
+    expect(connection.send).not.toHaveBeenCalled();
+
+    serverProxy.handleMessageFromClient({
+      type: "resume",
+      viewport: "client-vp-1",
+    });
+
+    expect(postMessageToClient).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rows: expect.arrayContaining([
+          expect.arrayContaining(["key-inserted", "name inserted", 2004]),
+        ]),
+        size: 101,
+        type: "viewport-update",
+      }),
+    );
+
+    vi.useRealTimers();
+  });
+
   it("suspend escalation delay can be configured", async () => {
     const [serverProxy, , connection] = await createFixtures();
     connection.send.mockClear();

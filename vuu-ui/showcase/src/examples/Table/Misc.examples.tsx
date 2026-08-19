@@ -36,8 +36,6 @@ import {
   TableRowSelectHandler,
 } from "@vuu-ui/vuu-table-types";
 import {
-  ContextPanelProvider,
-  ShowContextPanel,
   Toolbar,
 } from "@vuu-ui/vuu-ui-controls";
 import {
@@ -553,77 +551,6 @@ export const CheckboxTableInLayoutWithContextPanel = () => {
         <ContextPanel id={VuuShellLocation.ContextPanel} overlay></ContextPanel>
       </FlexboxLayout>
     </LayoutProvider>
-  );
-};
-
-const NullContext = {
-  component: undefined,
-  expanded: false,
-  title: "",
-};
-export const TableInLayoutWithCustomContextPanel = () => {
-  useMemo(() => {
-    registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
-  }, []);
-  const tableConfig = useMemo<TableConfig>(() => {
-    return {
-      columns: getSchema("instruments").columns,
-      rowSeparators: true,
-      zebraStripes: true,
-    };
-  }, []);
-  const { VuuDataSource } = useData();
-  const schema = getSchema("instruments");
-  const dataSource = useMemo(
-    () => new VuuDataSource({ table: schema.table }),
-    [VuuDataSource, schema.table],
-  );
-
-  const [{ component, expanded, title }, setContextState] = useState<{
-    component?: LayoutJSON;
-    expanded: boolean;
-    title: string;
-  }>(NullContext);
-
-  const showContextPanel = useCallback<ShowContextPanel>(
-    (componentType, title, props) => {
-      const component = { type: componentType, props } as LayoutJSON;
-      console.log(component);
-      setContextState({ component, expanded: true, title });
-    },
-    [],
-  );
-
-  const hideContextPanel = useCallback(() => {
-    setContextState(NullContext);
-  }, []);
-
-  const handleClose = useCallback(() => {
-    // setContextState(NullContext);
-  }, []);
-
-  return (
-    <ContextPanelProvider
-      hideContextPanel={hideContextPanel}
-      showContextPanel={showContextPanel}
-    >
-      <FlexboxLayout style={{ height: 645, width: "100%" }}>
-        <Table
-          config={tableConfig}
-          dataSource={dataSource}
-          renderBufferSize={30}
-          width="100%"
-        />
-        <ContextPanel
-          content={component}
-          expanded={expanded}
-          id={VuuShellLocation.ContextPanel}
-          onClose={handleClose}
-          overlay
-          title={title}
-        />
-      </FlexboxLayout>
-    </ContextPanelProvider>
   );
 };
 

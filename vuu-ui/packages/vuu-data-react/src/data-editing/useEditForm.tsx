@@ -1,8 +1,8 @@
 import type { DataSource, DataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
-  CommitHandler,
-  Entity,
+  type CommitHandler,
+  type Entity,
   Range,
   buildColumnMap,
   dataSourceRowToEntity,
@@ -11,8 +11,8 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { Button } from "@salt-ds/core";
 import {
-  FocusEventHandler,
-  SyntheticEvent,
+  type ChangeEventHandler,
+  type FocusEventHandler,
   useCallback,
   useMemo,
   useRef,
@@ -25,7 +25,7 @@ import {
 } from "./edit-rule-validation-checker";
 import {
   CLEAN_FORM,
-  FormEditState,
+  type FormEditState,
   buildFormEditState,
 } from "./form-edit-state";
 import { useModal } from "@vuu-ui/vuu-ui-controls";
@@ -272,8 +272,8 @@ export const useEditForm = ({
     [dataSource, entity, formFieldDescriptors, setValidationState],
   );
 
-  const handleFieldChange = useCallback(
-    (evt: SyntheticEvent<HTMLInputElement>) => {
+  const handleFieldChange = useCallback<ChangeEventHandler<HTMLElement>>(
+    (evt) => {
       const { current: fieldName } = focusedFieldRef;
       if (fieldName) {
         const input = queryClosest<HTMLInputElement>(evt.target, "input", true);

@@ -5,7 +5,7 @@ import {
   VuuTypeaheadInputProps,
 } from "@vuu-ui/vuu-ui-controls";
 import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
-import { FormEventHandler, useCallback, useMemo, useState } from "react";
+import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
 
 const containerStyle = {
   padding: 24,
@@ -14,7 +14,7 @@ const containerStyle = {
 
 export const DefaultVuuInputControlled = () => {
   const [value, setValue] = useState("AAOP.N");
-  const handleChange = useCallback<FormEventHandler<HTMLInputElement>>((e) => {
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>((e) => {
     const input = e.target as HTMLInputElement;
     setValue(input.value);
   }, []);
@@ -32,7 +32,7 @@ export const DefaultVuuInputControlled = () => {
 
 export const DefaultVuuTypeaheadInput = () => {
   const [value, setValue] = useState("AAOP.N");
-  const handleChange = useCallback<FormEventHandler<HTMLInputElement>>((e) => {
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>((e) => {
     const input = e.target as HTMLInputElement;
     setValue(input.value);
   }, []);

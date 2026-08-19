@@ -4,33 +4,35 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node ./scripts/build.mjs",
-    "build:with-ag-grid": "node ./scripts/build.mjs --features feature-vuu-blotter,feature-ag-grid",
+    "build": "node ./scripts/build.ts",
+    "build:with-ag-grid": "node ./scripts/build.ts --features feature-vuu-blotter,feature-ag-grid",
     "start": "serve -p 5002 ../../deployed_apps/app-vuu-example"
   },
   "keywords": [],
   "author": "heswell",
   "license": "Apache-2.0",
+  "type": "module",
   "sideEffects": [
     "**/*.css"
   ],
   "devDependencies": {},
   "dependencies": {
     "@fontsource/open-sans": "^4.5.13",
-    "@salt-ds/core": "1.54.1",
+    "@heswell/grid-layout": "3.3.8",
     "@vuu-ui/vuu-data-local": "3.3.8",
     "@vuu-ui/vuu-data-remote": "3.3.8",
     "@vuu-ui/vuu-table-types": "3.3.8",
     "@vuu-ui/vuu-data-react": "3.3.8",
-    "@vuu-ui/vuu-layout": "3.3.8",
     "@vuu-ui/vuu-popups": "3.3.8",
     "@vuu-ui/vuu-shell": "3.3.8",
     "@vuu-ui/vuu-utils": "3.3.8",
+    "@salt-ds/core": "1.67.0",
+    "@vuu-ui/core": "3.3.8",
     "clsx": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=24.0.0"
   }
 }

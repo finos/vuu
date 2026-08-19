@@ -20,6 +20,7 @@ import type {
 import type { MenuRpcResponse } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
+  RpcResult,
   RpcResultError,
   RpcResultSuccess,
   SelectRequest,
@@ -90,6 +91,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   private bufferSize: number;
   private server: ServerAPI | null = null;
   rangeRequest: RangeRequest;
+  #connectionId: string;
 
   /**
    * this is the combined set of regular columns and autosubscribe columns
@@ -114,6 +116,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
   constructor({
     session,
+    connectionId = "portal",
     sessionTableMessageColumn,
     ...props
   }: DataSourceConstructorProps) {
@@ -126,6 +129,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
     this.bufferSize = bufferSize;
     this.table = table;
+    this.#connectionId = connectionId;
 
     this.#pendingVisualLink = visualLink;
     this.#session = session;
@@ -146,11 +150,12 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     subscribeProps: DataSourceSubscribeProps,
     callback: DataSourceSubscribeCallback,
   ) {
-    // super.subscribe(subscribeProps, this.handleMessageFromServer);
     super.subscribe(subscribeProps, callback);
-    // biome-ignore lint/suspicious/noAssignInExpressions: <ignore>
-    const { viewport = this.viewport || (this.viewport = uuid()) } =
-      subscribeProps;
+    let viewport = subscribeProps.viewport ?? this.viewport;
+    if (!viewport) {
+      viewport = uuid();
+      this.viewport = viewport;
+    }
 
     if (
       this.#status === "disabled" ||
@@ -172,7 +177,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
     this.#status = "subscribing";
 
-    this.server = await ConnectionManager.serverAPI;
+    this.server = await ConnectionManager.serverAPIFor(this.#connectionId);
 
     const { bufferSize } = this;
 
@@ -698,6 +703,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       assertExpectedSessionTable(sessionTable, effectiveOverrides?.table);
       const sessionDataSource = new VuuDataSource({
         ...sessionDataSourceConfig(this.config, effectiveOverrides?.columns),
+        connectionId: this.#connectionId,
         table: sessionTable,
         viewport: sessionTable.table,
       });
@@ -840,16 +846,13 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
   async addRow(
     rowData: Record<string, VuuRowDataItemType> = {},
-  ): Promise<true | string> {
-    const response = await this.rpcRequest?.({
+  ): Promise<RpcResult> {
+    const response = await this.rpcRequest({
       type: "RPC_REQUEST",
       rpcName: "addRow",
       params: { data: rowData },
     });
-    if (isRpcSuccess(response)) {
-      return true;
-    }
-    return response?.errorMessage ?? "addRow failed";
+    return response ?? { type: "ERROR_RESULT", errorMessage: "addRow failed" };
   }
 
   async undoRowChange(key: string): Promise<RpcResultSuccess | RpcResultError> {

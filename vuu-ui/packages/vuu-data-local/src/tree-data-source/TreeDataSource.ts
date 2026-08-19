@@ -28,13 +28,13 @@ import {
   metadataKeys,
   missingAncestor,
   NULL_RANGE,
-  TreeSourceNode,
+  type TreeSourceNode,
   treeToDataSourceRows,
   uuid,
 } from "@vuu-ui/vuu-utils";
 import { IconProvider } from "./IconProvider";
 import { parseFilter } from "@vuu-ui/vuu-filter-parser";
-import { FilterClause } from "@vuu-ui/vuu-filter-types";
+import type { FilterClause } from "@vuu-ui/vuu-filter-types";
 
 const TREE_SCHEMA: TableSchema = {
   columns: [
@@ -97,7 +97,6 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
       this.#iconProvider,
     );
 
-    console.table(this.#data);
 
     if (this.columnDescriptors) {
       const columns = this.columnDescriptors.map((c) => c.name);

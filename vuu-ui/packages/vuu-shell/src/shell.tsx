@@ -1,193 +1,275 @@
+import {
+  GridLayout,
+  GridLayoutItem,
+  GridLayoutProvider,
+} from "@heswell/grid-layout";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { useAuthenticatedUser } from "@vuu-ui/core";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
-import type { LayoutChangeHandler } from "@vuu-ui/vuu-layout";
-import { LayoutProvider, StackLayout } from "@vuu-ui/vuu-layout";
+import { useLostConnection } from "@vuu-ui/vuu-data-react";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
-import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
-import { VuuUser, logger, registerComponent } from "@vuu-ui/vuu-utils";
 import {
-  type HTMLAttributes,
-  type ReactNode,
+  ContextPanelProvider,
+  ModalProvider,
+  type ShowContextPanel,
+} from "@vuu-ui/vuu-ui-controls";
+import { VuuShellLocation } from "@vuu-ui/vuu-utils";
+import cx from "clsx";
+import {
+  createContext,
   useCallback,
+  isValidElement,
+  useContext,
   useMemo,
+  useRef,
+  useState,
+  type HTMLAttributes,
+  type ReactElement,
+  type ReactNode,
 } from "react";
 import { AppHeader } from "./app-header";
 import { ApplicationProvider } from "./application-provider";
+import { LeftNav } from "./left-nav";
 import {
-  IPersistenceManager,
-  LocalPersistenceManager,
-  PersistenceProvider,
-  usePersistenceManager,
-} from "./persistence-manager";
-import { ShellLayoutProps, useShellLayout } from "./shell-layout-templates";
-import { SettingsSchema, UserSettingsPanel } from "./user-settings";
+  ContextPanel,
+  SidePanel,
+  type ShellLayoutProps,
+} from "./shell-layout-templates";
 import {
-  WorkspaceProps,
+  WorkspaceHost,
   WorkspaceProvider,
-  useWorkspace,
+  createWorkspaceComponentRegistries,
+  shellWorkspaceComponentRegistrations,
   useWorkspaceContextMenuItems,
+  useWorkspace,
+  type WorkspaceProps,
 } from "./workspace-management";
-import { loadingJSON } from "./workspace-management/defaultWorkspaceJSON";
-import { useLostConnection } from "@vuu-ui/vuu-data-react";
-
 import shellCss from "./shell.css";
 
-registerComponent("ApplicationSettings", UserSettingsPanel, "view");
-
-if (process.env.NODE_ENV === "production") {
-  // StackLayout is loaded just to force component registration, we know it will be
-  // required when default layout is instantiated. This is only required in prod
-  // to avoif tree shaking the Stack away. Causes a runtime issue in dev.
-  if (typeof StackLayout !== "function") {
-    console.warn(
-      "StackLayout module not loaded, will be unable to deserialize from layout JSON",
-    );
-  }
-}
-
-const { error } = logger("Shell");
-
-export type LayoutTemplateName = "full-height" | "inlay";
-
-export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
-  shellLayoutProps?: ShellLayoutProps;
-  userSettingsSchema?: SettingsSchema;
-  workspaceProps?: WorkspaceProps;
-  children?: ReactNode;
-  logout?: () => void;
-  saveUrl?: string;
-  serverUrl?: string;
-  user: VuuUser;
+export interface ShellProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
+  readonly appHeader?: ReactNode;
+  readonly children?: ReactNode;
+  readonly leftNavWidth?: number;
+  readonly logout?: () => void;
+  readonly saveUrl?: string;
+  readonly serverUrl?: string;
+  /** @deprecated The shell now uses one canonical static GridLayout structure. */
+  readonly shellLayoutProps?: ShellLayoutProps;
+  readonly workspaceProps?: WorkspaceProps;
 }
 
 const defaultAppHeader = <AppHeader />;
+const defaultRegistries = createWorkspaceComponentRegistries(
+  shellWorkspaceComponentRegistrations,
+);
+type ShellContextPanelState = {
+  readonly content: ReactElement;
+  readonly title: string;
+};
+const ShellContextPanelStateContext = createContext<
+  ShellContextPanelState | undefined
+>(undefined);
 
-const getAppHeader = (shellLayoutProps?: ShellLayoutProps) =>
-  shellLayoutProps?.appHeader ?? defaultAppHeader;
-
-const defaultHTMLAttributes: HTMLAttributes<HTMLDivElement> = {
-  className: "vuuShell",
+const StaticContextPanel = () => {
+  const contextPanel = useContext(ShellContextPanelStateContext);
+  return (
+    <ContextPanel
+      content={contextPanel?.content}
+      expanded={contextPanel !== undefined}
+      id={VuuShellLocation.ContextPanel}
+      overlay
+      title={contextPanel?.title}
+    />
+  );
 };
 
-const getHTMLAttributes = (props?: ShellLayoutProps) => {
-  if (props?.htmlAttributes) {
-    return {
-      ...defaultHTMLAttributes,
-      ...props.htmlAttributes,
-    };
-  } else {
-    return defaultHTMLAttributes;
-  }
+export interface StaticShellLayoutProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
+  readonly appHeader?: ReactNode;
+  readonly leftNavWidth?: number;
+  readonly workspaceHost?: ReactNode;
+}
+
+export const StaticShellLayout = ({
+  appHeader = defaultAppHeader,
+  className,
+  leftNavWidth: initialLeftNavWidth = 200,
+  style,
+  workspaceHost = <WorkspaceHost />,
+  ...htmlAttributes
+}: StaticShellLayoutProps) => {
+  const { setApplicationSetting } = useWorkspace();
+  const [leftNavWidth, setLeftNavWidth] = useState(initialLeftNavWidth);
+  const [contextPanel, setContextPanel] = useState<ShellContextPanelState>();
+  const contextPanelTrigger = useRef<HTMLElement | null>(null);
+  const handleLeftNavWidthChange = useCallback((width: number) => {
+    setLeftNavWidth(width);
+  }, []);
+  const showContextPanel = useCallback<ShowContextPanel>((content, title) => {
+    if (!isValidElement(content)) {
+      throw new Error(
+        `Context panel component "${content}" must be provided as a React element`,
+      );
+    }
+    contextPanelTrigger.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    setContextPanel({ content, title });
+  }, []);
+  const hideContextPanel = useCallback(() => {
+    setContextPanel(undefined);
+    void setApplicationSetting("applicationSettings.panelOpen", false).catch(
+      () => undefined,
+    );
+    requestAnimationFrame(() => contextPanelTrigger.current?.focus());
+  }, [setApplicationSetting]);
+
+  return (
+    <ContextPanelProvider
+      hideContextPanel={hideContextPanel}
+      showContextPanel={showContextPanel}
+    >
+      <ShellContextPanelStateContext.Provider value={contextPanel}>
+        <GridLayout
+          {...htmlAttributes}
+          className={cx("vuuShell", "vuuShell-staticGrid", className)}
+          colsAndRows={{
+            cols: [`${initialLeftNavWidth}px`, "1fr", "0px"],
+            rows: ["48px", "1fr"],
+          }}
+          full-page
+          id="vuu-shell-grid"
+          style={{
+            ...style,
+            gridTemplateColumns: `${leftNavWidth}px minmax(0, 1fr) 0px`,
+          }}
+        >
+          <GridLayoutItem
+            id="vuu-shell-left-nav"
+            style={{ gridArea: "1/1/3/2" }}
+          >
+            <SidePanel id="vuu-side-panel" sizeOpen={initialLeftNavWidth}>
+              <LeftNav
+                onWidthChange={handleLeftNavWidthChange}
+                sizeExpanded={initialLeftNavWidth}
+              />
+            </SidePanel>
+          </GridLayoutItem>
+          <GridLayoutItem id="vuu-shell-header" style={{ gridArea: "1/2/2/3" }}>
+            {appHeader}
+          </GridLayoutItem>
+          <GridLayoutItem
+            className="vuuShell-content"
+            id="vuu-shell-workspace-host"
+            style={{ gridArea: "2/2/3/3" }}
+          >
+            {workspaceHost}
+          </GridLayoutItem>
+          <GridLayoutItem
+            id="vuu-shell-context-panel-host"
+            style={{
+              gridArea: "1/3/3/4",
+              overflow: "visible",
+              position: "relative",
+            }}
+          >
+            <StaticContextPanel />
+          </GridLayoutItem>
+        </GridLayout>
+      </ShellContextPanelStateContext.Provider>
+    </ContextPanelProvider>
+  );
 };
 
 const VuuApplication = ({
-  shellLayoutProps: ShellLayoutProps,
+  appHeader,
   children,
-}: Omit<
-  ShellProps,
-  "ContentLayoutProps" | "loginUrl" | "userSettingsSchema" | "workspaceProps"
->) => {
+  htmlAttributes,
+  leftNavWidth,
+}: Pick<ShellProps, "appHeader" | "children" | "leftNavWidth"> & {
+  readonly htmlAttributes: Omit<HTMLAttributes<HTMLDivElement>, "onChange">;
+}) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-shell",
     css: shellCss,
     window: targetWindow,
   });
-
-  const { workspaceJSON, saveApplicationLayout } = useWorkspace();
-
   const { buildMenuOptions, handleMenuAction } = useWorkspaceContextMenuItems();
-
-  const handleLayoutChange = useCallback<LayoutChangeHandler>(
-    (layout) => {
-      try {
-        saveApplicationLayout(layout);
-      } catch {
-        error?.("Failed to save layout");
-      }
-    },
-    [saveApplicationLayout],
-  );
-
-  const isLayoutLoading = workspaceJSON === loadingJSON;
-
-  const initialLayout = useShellLayout({
-    ...ShellLayoutProps,
-    appHeader: getAppHeader(ShellLayoutProps),
-    htmlAttributes: getHTMLAttributes(ShellLayoutProps),
-  });
-
   useLostConnection();
 
-  return isLayoutLoading ? null : (
+  return (
     <ContextMenuProvider
       menuActionHandler={handleMenuAction}
       menuBuilder={buildMenuOptions}
     >
-      <LayoutProvider
-        workspaceJSON={workspaceJSON}
-        onLayoutChange={handleLayoutChange}
-      >
-        {initialLayout}
-      </LayoutProvider>
+      <GridLayoutProvider>
+        <StaticShellLayout
+          {...htmlAttributes}
+          appHeader={appHeader}
+          leftNavWidth={leftNavWidth}
+        />
+      </GridLayoutProvider>
       {children}
     </ContextMenuProvider>
   );
 };
 
 export const Shell = ({
+  appHeader,
+  children,
+  leftNavWidth,
   logout,
-  user,
-  userSettingsSchema,
+  saveUrl: _saveUrl,
+  serverUrl: _serverUrl,
+  shellLayoutProps,
   workspaceProps,
-  ...props
+  ...htmlAttributes
 }: ShellProps) => {
-  // If user has provided an implementation of IPersistenceManager
-  // by wrapping higher level PersistenceProvider, use it, otw
-  // default to LocalPersistenceManager
-  const persistenceManager = usePersistenceManager();
-  const localPersistenceManager = useMemo<
-    IPersistenceManager | undefined
-  >(() => {
-    if (persistenceManager) {
-      return undefined;
-    }
-    console.log(
-      `No Persistence Manager, configuration data will be persisted to Local Storage, key: 'vuu/${user.username}'`,
-    );
-    return new LocalPersistenceManager(`vuu/${user.username}`);
-  }, [persistenceManager, user.username]);
+  const user = useAuthenticatedUser();
+  const resolvedWorkspaceProps = useMemo<WorkspaceProps>(
+    () => ({
+      ...workspaceProps,
+      componentRenderers:
+        workspaceProps?.componentRenderers ?? defaultRegistries.renderers,
+      settingsCodecs:
+        workspaceProps?.settingsCodecs ?? defaultRegistries.settingsCodecs,
+    }),
+    [workspaceProps],
+  );
+  const resolvedHtmlAttributes = {
+    ...htmlAttributes,
+    ...shellLayoutProps?.htmlAttributes,
+    className: cx(
+      htmlAttributes.className,
+      shellLayoutProps?.htmlAttributes?.className,
+    ),
+    style: {
+      ...htmlAttributes.style,
+      ...shellLayoutProps?.htmlAttributes?.style,
+    },
+  };
 
-  // ApplicationProvider must go outside Dialog and Notification providers
-  // ApplicationProvider injects the SaltProvider and this must be the root
-  // SaltProvider.
-
-  const shellProviders = (
-    <ApplicationProvider
-      density="high"
-      logout={logout}
-      theme="vuu-theme"
-      user={user}
-      userSettingsSchema={userSettingsSchema}
-    >
-      <WorkspaceProvider {...workspaceProps}>
-        <ModalProvider>
-          <NotificationsProvider>
-            <VuuApplication {...props} user={user} />
-          </NotificationsProvider>
-        </ModalProvider>
-      </WorkspaceProvider>
+  return (
+    <ApplicationProvider density="high" logout={logout} theme="vuu-theme">
+      <ModalProvider>
+        <NotificationsProvider>
+          <WorkspaceProvider {...resolvedWorkspaceProps} userId={user.userName}>
+            <VuuApplication
+              appHeader={appHeader ?? shellLayoutProps?.appHeader}
+              htmlAttributes={resolvedHtmlAttributes}
+              leftNavWidth={
+                leftNavWidth ?? shellLayoutProps?.SidePanelProps?.sizeOpen
+              }
+            >
+              {children}
+            </VuuApplication>
+          </WorkspaceProvider>
+        </NotificationsProvider>
+      </ModalProvider>
     </ApplicationProvider>
   );
-
-  if (persistenceManager) {
-    return shellProviders;
-  } else {
-    return (
-      <PersistenceProvider persistenceManager={localPersistenceManager}>
-        {shellProviders}
-      </PersistenceProvider>
-    );
-  }
 };

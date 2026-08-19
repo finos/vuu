@@ -1,15 +1,15 @@
 import { useIdMemo } from "@salt-ds/core";
 import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
-import {
+import type {
   DataSource,
   DataSourceConfig,
   DataSourceFilter,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import { useViewContext } from "@vuu-ui/vuu-layout";
-import { VuuRange } from "@vuu-ui/vuu-protocol-types";
-import { buildColumnMap, metadataKeys } from "@vuu-ui/vuu-utils";
-import { useCallback, useEffect, useMemo } from "react";
+import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { buildColumnMap, metadataKeys, useData } from "@vuu-ui/vuu-utils";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { InstrumentTile } from "./InstrumentTile";
 import { InstrumentTileContainer } from "./InstrumentTileContainer";
 import { useDataSource } from "./useDataSource";
@@ -18,15 +18,13 @@ import "./VuuInstrumentTilesFeature.css";
 
 const classBase = "VuuInstrumentTilesFeature";
 
-export interface InstrumentTilesFeatureProps {
-  instrumentPricesSchema: TableSchema;
-}
-
 const { KEY } = metadataKeys;
 
-const VuuInstrumentTilesFeature = ({
+const InstrumentTiles = ({
   instrumentPricesSchema,
-}: InstrumentTilesFeatureProps) => {
+}: {
+  instrumentPricesSchema: TableSchema;
+}) => {
   const { id, save, title } = useViewContext();
 
   const handleDataSourceConfigChange = useCallback(
@@ -46,7 +44,7 @@ const VuuInstrumentTilesFeature = ({
     onConfigChange: handleDataSourceConfigChange,
   });
   const instrumentKeys = useMemo(
-    () => ["AAA.L", "AAV.L", "ABB.MC", "ABK.N", "CDQ.L"],
+    () => ["AAOO.L", "AAPZ.AS", "ABB.MC", "ABK.N", "CDQ.L"],
     [],
   );
 
@@ -102,16 +100,39 @@ const VuuInstrumentTilesFeature = ({
   }, [dataSource]);
 
   return (
+    <InstrumentTileContainer>
+      {instruments.map((instrument) => (
+        <InstrumentTile
+          columnMap={columnMap}
+          instrument={instrument}
+          key={instrument[KEY]}
+        />
+      ))}
+    </InstrumentTileContainer>
+  );
+};
+
+const VuuInstrumentTilesFeature = () => {
+  const { getServerAPI } = useData();
+  const [instrumentPricesSchema, setInstrumentPricesSchema] =
+    useState<TableSchema>();
+
+  useEffect(() => {
+    getServerAPI()
+      .then((serverAPI) =>
+        serverAPI.getTableSchema({
+          module: "SIMUL",
+          table: "instrumentPrices",
+        }),
+      )
+      .then(setInstrumentPricesSchema);
+  }, [getServerAPI]);
+
+  return (
     <div className={classBase}>
-      <InstrumentTileContainer>
-        {instruments.map((instrument) => (
-          <InstrumentTile
-            columnMap={columnMap}
-            instrument={instrument}
-            key={instrument[KEY]}
-          />
-        ))}
-      </InstrumentTileContainer>
+      {instrumentPricesSchema ? (
+        <InstrumentTiles instrumentPricesSchema={instrumentPricesSchema} />
+      ) : null}
     </div>
   );
 };

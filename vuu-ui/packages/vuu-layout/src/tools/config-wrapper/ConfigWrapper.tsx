@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { LayoutConfigurator } from "../devtools-box/layout-configurator";
+import { LayoutTreeViewer } from "../devtools-tree/layout-tree-viewer";
 
-import { LayoutConfigurator, LayoutTreeViewer } from "..";
 import { followPathToComponent } from "../..";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -5,8 +5,9 @@ import type {
   ServerAPI,
 } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { DataProvider } from "@vuu-ui/vuu-utils";
-import { ReactNode } from "react";
+import { DataProvider as CoreDataProvider } from "@vuu-ui/core";
+import { DataProvider as LegacyDataProvider } from "@vuu-ui/vuu-utils";
+import type { ReactNode } from "react";
 import moduleContainer from "../core/module/ModuleContainer";
 import tableContainer from "../core/table/TableContainer";
 
@@ -63,6 +64,7 @@ class VuuDataSource {
     };
 
     const module = moduleContainer.get(table.module);
+    // biome-ignore lint/correctness/noConstructorReturn: <This 'class' is acting as a factory for new local DataSources>
     return module.createDataSource(table.table, viewport, config);
   }
 }
@@ -73,12 +75,18 @@ export const LocalDataSourceProvider = ({
   children: ReactNode;
 }) => {
   return (
-    <DataProvider
+    <LegacyDataProvider
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       VuuDataSource={VuuDataSource as any}
       getServerAPI={getServerAPI}
     >
-      {children}
-    </DataProvider>
+      <CoreDataProvider
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        VuuDataSource={VuuDataSource as any}
+        getServerAPI={getServerAPI}
+      >
+        {children}
+      </CoreDataProvider>
+    </LegacyDataProvider>
   );
 };

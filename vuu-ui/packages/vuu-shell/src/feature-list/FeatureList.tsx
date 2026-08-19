@@ -1,20 +1,63 @@
-import { Palette, PaletteItem } from "@vuu-ui/vuu-layout";
-import { Icon } from "@vuu-ui/vuu-ui-controls";
 import {
-  DynamicFeatureProps,
-  StaticFeatureDescriptor,
-  featureFromJson,
-  isStaticFeatures,
-} from "@vuu-ui/vuu-utils";
+  DragDropProviderNext,
+  GridLayoutProvider,
+  toJsonValue,
+  useDraggable,
+  useOptionalDragContext,
+  type TemplateSource,
+  type TypedComponentTemplate,
+} from "@heswell/grid-layout";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { Icon } from "@vuu-ui/vuu-ui-controls";
+import {
+  type DynamicFeatureProps,
+  type StaticFeatureDescriptor,
+  isStaticFeatures,
+  queryClosest,
+} from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import { HTMLAttributes, Key, ReactElement, useMemo } from "react";
-import { Feature } from "../feature/Feature";
-
+import {
+  useCallback,
+  useId,
+  useMemo,
+  type DragEvent,
+  type HTMLAttributes,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import featureListCss from "./FeatureList.css";
 
 const classBase = "vuuFeatureList";
+const NOOP = () => undefined;
+
+const FeatureListDragRuntime = ({ children }: { children: ReactNode }) => {
+  const dragContext = useOptionalDragContext();
+  const runtimeId = useId();
+
+  if (dragContext) {
+    return children;
+  }
+
+  return (
+    <GridLayoutProvider>
+      <DragDropProviderNext
+        dragSources={{}}
+        onCancelTabDrag={NOOP}
+        onDetachTab={NOOP}
+        onDrop={NOOP}
+      >
+        <div
+          className="vuuGridLayout"
+          id={`vuu-feature-list-${runtimeId}`}
+          style={{ display: "contents" }}
+        >
+          {children}
+        </div>
+      </DragDropProviderNext>
+    </GridLayoutProvider>
+  );
+};
 
 export type GroupedFeatureProps<P extends object | undefined = object> = Record<
   string,
@@ -22,11 +65,91 @@ export type GroupedFeatureProps<P extends object | undefined = object> = Record<
 >;
 
 export interface FeatureListProps extends HTMLAttributes<HTMLDivElement> {
-  features:
+  readonly features:
     | DynamicFeatureProps[]
     | GroupedFeatureProps
     | StaticFeatureDescriptor[];
 }
+
+const templateForDynamicFeature = (
+  feature: DynamicFeatureProps,
+): TypedComponentTemplate => {
+  const settings = toJsonValue(feature);
+  if (!settings.ok) {
+    throw new Error(
+      `Feature "${feature.title ?? feature.mfComponent}" has non-persistable settings at ${settings.error.path}`,
+    );
+  }
+  return {
+    component: {
+      settings: settings.value,
+      type: "vuu-dynamic-feature",
+      version: 1,
+    },
+    label: feature.title ?? feature.mfComponent,
+  };
+};
+
+const templateForStaticFeature = ({
+  label,
+  type,
+}: StaticFeatureDescriptor): TypedComponentTemplate => ({
+  component: {
+    settings: { type },
+    type: "vuu-static-feature",
+    version: 1,
+  },
+  label,
+});
+
+const FeatureTemplate = ({
+  template,
+}: {
+  readonly template: TypedComponentTemplate;
+}) => {
+  const getDragSource = useCallback(
+    (event: DragEvent<Element>): TemplateSource => {
+      const element = event.currentTarget as HTMLElement;
+      return {
+        ...template,
+        element,
+        layoutId:
+          queryClosest(element, ".vuuGridLayout")?.id ?? "vuu-feature-list",
+        type: "template",
+      };
+    },
+    [template],
+  );
+  const draggable = useDraggable({ getDragSource });
+  return (
+    <div
+      {...draggable}
+      className={`${classBase}-item`}
+      data-template-component-type={template.component.type}
+      data-template-version={template.component.version}
+      draggable
+      role="listitem"
+    >
+      <Icon name="draggable" size={18} />
+      <span className={`${classBase}-itemName`}>{template.label}</span>
+    </div>
+  );
+};
+
+const TemplateList = ({
+  templates,
+}: {
+  readonly templates: readonly TypedComponentTemplate[];
+}) => (
+  <div className={`${classBase}-items`} role="list">
+    {templates.map((template, index) => (
+      <FeatureTemplate
+        key={`${template.component.type}-${template.label}-${index}`}
+        template={template}
+      />
+    ))}
+  </div>
+);
 
 export const FeatureList = ({
   features,
@@ -42,94 +165,34 @@ export const FeatureList = ({
 
   const content = useMemo<ReactElement[]>(() => {
     if (isStaticFeatures(features)) {
-      return features.map(({ label, type }, idx) => {
-        return (
-          <PaletteItem
-            ViewProps={{
-              closeable: true,
-              header: true,
-              resize: "defer",
-              resizeable: true,
-            }}
-            component={featureFromJson({ type })}
-            key={idx}
-            value={label}
-          >
-            <Icon name="draggable" size={18} />
-            <span className={`${classBase}-itemName`}>{label}</span>
-          </PaletteItem>
-        );
-      });
+      return [
+        <TemplateList
+          key="static"
+          templates={features.map(templateForStaticFeature)}
+        />,
+      ];
     }
     if (Array.isArray(features)) {
       return [
-        <div className={`${classBase}-standalone`} key={0}>
-          <Palette key="0" orientation="vertical">
-            {features.map(({ ViewProps, ...featureProps }, i) => (
-              <PaletteItem
-                ViewProps={{
-                  closeable: true,
-                  header: true,
-                  resize: "defer",
-                  resizeable: true,
-                  title: featureProps.title,
-                  ...ViewProps,
-                }}
-                component={<Feature {...featureProps} />}
-                key={i}
-                value={featureProps.title}
-              >
-                <Icon name="draggable" size={18} />
-                <span className={`${classBase}-itemName`}>
-                  {featureProps.title}
-                </span>
-              </PaletteItem>
-            ))}
-          </Palette>
+        <div className={`${classBase}-standalone`} key="dynamic">
+          <TemplateList templates={features.map(templateForDynamicFeature)} />
         </div>,
       ];
-    } else {
-      return Object.entries(features).map(([heading, featureList], index) => (
-        <div className={`${classBase}-group`} key={index}>
-          <div className={`${classBase}-groupHeader`}>{heading}</div>
-          <Palette orientation="vertical">
-            {featureList.map(
-              (
-                { ViewProps, ...featureProps }: DynamicFeatureProps<object>,
-                i: Key,
-              ) => {
-                return (
-                  <PaletteItem
-                    ViewProps={{
-                      closeable: true,
-                      header: true,
-                      resize: "defer",
-                      resizeable: true,
-                      title: featureProps.title,
-                      ...ViewProps,
-                    }}
-                    component={<Feature {...featureProps} />}
-                    key={i}
-                    value={featureProps.title}
-                  >
-                    <Icon name="draggable" size={18} />
-                    <span className={`${classBase}-itemName`}>
-                      {featureProps.title}
-                    </span>
-                  </PaletteItem>
-                );
-              },
-            )}
-          </Palette>
-        </div>
-      ));
     }
+    return Object.entries(features).map(([heading, featureList]) => (
+      <div className={`${classBase}-group`} key={heading}>
+        <div className={`${classBase}-groupHeader`}>{heading}</div>
+        <TemplateList templates={featureList.map(templateForDynamicFeature)} />
+      </div>
+    ));
   }, [features]);
 
   return (
-    <div {...htmlAttributes} className={cx(classBase, "vuuScrollable")}>
-      <div className={`${classBase}-header`}>{title}</div>
-      <div className={`${classBase}-content`}>{content}</div>
-    </div>
+    <FeatureListDragRuntime>
+      <div {...htmlAttributes} className={cx(classBase, "vuuScrollable")}>
+        <div className={`${classBase}-header`}>{title}</div>
+        <div className={`${classBase}-content`}>{content}</div>
+      </div>
+    </FeatureListDragRuntime>
   );
 };

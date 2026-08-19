@@ -52,7 +52,8 @@ const completionDone = (onSubmit?: () => void): Completion => ({
   boost: 10,
 });
 
-const getLastChild = (node: SyntaxNode, context: CompletionContext) => {
+// biome-ignore lint/suspicious/noExplicitAny: <codemirror>
+const getLastChild = (node: any, context: CompletionContext) => {
   let { lastChild: childNode } = node;
   const { pos } = context;
   while (childNode) {
@@ -71,7 +72,8 @@ const getLastChild = (node: SyntaxNode, context: CompletionContext) => {
     }
   }
 };
-const getFunctionName = (node: SyntaxNode, state: EditorState) => {
+// biome-ignore lint/suspicious/noExplicitAny: <codemirror>
+const getFunctionName = (node: any, state: EditorState) => {
   if (node.name === "ArgList") {
     const functionNode = node.prevSibling;
     if (functionNode) {
@@ -84,8 +86,8 @@ const getFunctionName = (node: SyntaxNode, state: EditorState) => {
     }
   }
 };
-
-const getRelationalOperator = (node: SyntaxNode, state: EditorState) => {
+// biome-ignore lint/suspicious/noExplicitAny: <codemirror>
+const getRelationalOperator = (node: any, state: EditorState) => {
   if (node.name === "RelationalExpression") {
     const lastNode = lastNamedChild(node);
     if (lastNode?.name === "RelationalOperator") {
@@ -100,7 +102,8 @@ const getRelationalOperator = (node: SyntaxNode, state: EditorState) => {
 };
 
 const getColumnName = (
-  node: SyntaxNode,
+  // biome-ignore lint/suspicious/noExplicitAny: <codemirror>
+  node: any,
   state: EditorState,
 ): string | undefined => {
   if (node.name === "RelationalExpression") {
@@ -132,7 +135,8 @@ const makeSuggestions = async (
 };
 
 const handleConditionalExpression = (
-  node: SyntaxNode,
+  // biome-ignore lint/suspicious/noExplicitAny: <codemirror>
+  node: any,
   context: CompletionContext,
   suggestionProvider: IExpressionSuggestionProvider,
   maybeComplete?: boolean,
