@@ -1,5 +1,5 @@
 import cx from "clsx";
-import { Button, ButtonProps } from "@salt-ds/core";
+import { Button, type ButtonProps } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { Icon } from "./Icon";
@@ -17,7 +17,7 @@ export interface IconButtonProps extends Omit<ButtonProps, "children"> {
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
   function IconButton(
     { "aria-label": ariaLabel, className, icon, size, ...buttonProps },
-    ref
+    ref,
   ) {
     const targetWindow = useWindow();
     useComponentCssInjection({
@@ -27,9 +27,14 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     });
 
     return (
-      <Button {...buttonProps} className={cx(classBase, className)} ref={ref}>
-        <Icon aria-label={ariaLabel} name={icon} size={size} />
+      <Button
+        {...buttonProps}
+        aria-label={ariaLabel}
+        className={cx(classBase, className)}
+        ref={ref}
+      >
+        <Icon name={icon} size={size} />
       </Button>
     );
-  }
+  },
 );

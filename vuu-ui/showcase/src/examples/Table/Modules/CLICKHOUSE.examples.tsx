@@ -57,8 +57,7 @@ const ClickHouseTableTemplate = ({ dataBufferSize, renderBufferSize = 0 }: { dat
 };
 
 export const TenMillionOrders = () => (
-    <VuuDataSourceProvider authenticate autoConnect autoLogin
-        websocketUrl="wss://localhost:8090/websocket">
+    <VuuDataSourceProvider>
         <DemoTableContainer>
             <ClickHouseTableTemplate />
         </DemoTableContainer>
@@ -66,8 +65,7 @@ export const TenMillionOrders = () => (
 );
 
 export const WithNoBufferingAtAll = () => (
-    <VuuDataSourceProvider authenticate autoConnect autoLogin
-        websocketUrl="wss://localhost:8090/websocket">
+    <VuuDataSourceProvider>
         <DemoTableContainer>
             <ClickHouseTableTemplate dataBufferSize={0} renderBufferSize={0} />
         </DemoTableContainer>
@@ -75,8 +73,7 @@ export const WithNoBufferingAtAll = () => (
 );
 
 export const WithRenderBufferingOnly = () => (
-    <VuuDataSourceProvider authenticate autoConnect autoLogin
-        websocketUrl="wss://localhost:8090/websocket">
+    <VuuDataSourceProvider>
         <DemoTableContainer>
             <ClickHouseTableTemplate dataBufferSize={0} renderBufferSize={50} />
         </DemoTableContainer>

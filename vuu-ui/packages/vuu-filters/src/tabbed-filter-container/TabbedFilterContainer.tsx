@@ -10,11 +10,11 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import type { HTMLAttributes, ReactNode } from "react";
-import { FilterContainerProps } from "../filter-container/FilterContainer";
+import type { FilterContainerProps } from "../filter-container/FilterContainer";
 import { FilterPanel } from "../filter-panel/FilterPanel";
 import {
   SavedFilterPanel,
-  SavedFilterPanelProps,
+  type SavedFilterPanelProps,
 } from "../saved-filters/SavedFilterPanel";
 
 import tabbedFilterContainerCss from "./TabbedFilterContainer.css";

@@ -1,0 +1,61 @@
+.vuuAdminOverview-kpis {
+  display: grid;
+  gap: var(--salt-spacing-200);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.vuuAdminOverview-kpi {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-200);
+}
+
+.vuuAdminOverview-kpiValue {
+  font-size: var(--salt-text-h1-fontSize);
+  font-weight: var(--salt-text-h1-fontWeight-strong);
+  line-height: var(--salt-text-h1-lineHeight);
+}
+
+.vuuAdminOverview-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-150);
+}
+
+.vuuAdminOverview-cards {
+  display: grid;
+  gap: var(--salt-spacing-200);
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.vuuAdminOverview-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-200);
+}
+
+.vuuAdminOverview-cardHeader,
+.vuuAdminOverview-cardFooter {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-150);
+}
+
+.vuuAdminOverview-cardHeader > .vuuAdminUi-stack {
+  flex: 1;
+  min-width: 0;
+}
+
+.vuuAdminOverview-cardFooter {
+  gap: var(--salt-spacing-100);
+}
+
+.vuuAdminOverview-cardFooter > .saltLink {
+  margin-left: auto;
+}
+
+.vuuAdminOverview-metrics {
+  display: grid;
+  gap: var(--salt-spacing-100);
+  grid-template-columns: repeat(3, 1fr);
+}

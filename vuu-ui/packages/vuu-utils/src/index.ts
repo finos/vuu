@@ -22,6 +22,7 @@ export * from "./debug-utils";
 export { isInlineEditingSession } from "./edit-utils";
 export { StaleUpdateError } from "./errors";
 export * from "./event-emitter";
+export * from "./errors";
 export * from "./feature-utils";
 export * from "./filters";
 export * from "./form-utils";

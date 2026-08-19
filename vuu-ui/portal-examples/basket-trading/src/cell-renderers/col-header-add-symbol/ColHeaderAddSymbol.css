@@ -1,0 +1,7 @@
+.vuuColHeaderAddSymbol {
+    --saltButton-width: 20px;
+    cursor:pointer;
+    display: flex;
+    flex: 1;
+    justify-content: flex-end;
+}

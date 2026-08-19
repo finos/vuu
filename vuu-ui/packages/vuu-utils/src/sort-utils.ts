@@ -1,5 +1,5 @@
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { VuuSort, VuuSortCol, VuuSortType } from "@vuu-ui/vuu-protocol-types";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import type { VuuSort, VuuSortCol, VuuSortType } from "@vuu-ui/vuu-protocol-types";
 
 const cycleSortType = (sortType: VuuSortType) =>
   sortType === "A" ? "D" : sortType === "D" ? undefined : "A";
@@ -21,9 +21,9 @@ export const toggleOrApplySort = (
         sortDefs: sortDefs.map((sortDef) =>
           sortDef.column === column
             ? {
-                column,
-                sortType: sortDef.sortType === "A" ? "D" : "A",
-              }
+              column,
+              sortType: sortDef.sortType === "A" ? "D" : "A",
+            }
             : sortDef,
         ),
       };
@@ -46,8 +46,8 @@ export const toggleOrApplySort = (
 
   return newSortType
     ? {
-        sortDefs: [{ column, sortType: newSortType }],
-      }
+      sortDefs: [{ column, sortType: newSortType }],
+    }
     : NO_SORT;
 };
 

@@ -3,7 +3,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import React, { useMemo, useRef } from "react";
-import { TabProps, TabstripProps } from "./TabsTypes";
+import type { TabProps, TabstripProps } from "./TabsTypes";
 import { useTabstrip } from "./useTabstrip";
 import { IconButton } from "../icon-button";
 import { OverflowContainer } from "../overflow-container";
@@ -121,7 +121,7 @@ export const Tabstrip = ({
               key="addButton"
               onClick={onClickAddTab}
               variant="secondary"
-              tabIndex={-1}
+              tabIndex={activeTabIndex === -1 ? 0 : -1}
             />
           ) : (
             []

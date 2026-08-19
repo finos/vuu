@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "license": "Apache-2.0",
   "types": "src/index.ts",
+  "type": "module",
   "scripts": {
     "build": "node ../../scripts/run-build-rslib.ts",
     "test": "vitest run",

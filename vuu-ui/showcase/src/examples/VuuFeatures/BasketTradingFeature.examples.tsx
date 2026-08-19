@@ -58,16 +58,19 @@ type Environment = "development" | "production";
 const env = process.env.NODE_ENV as Environment;
 const featurePropsForEnv: Record<Environment, DynamicFeatureProps> = {
   development: {
-    url: "/src/features/BasketTrading.feature",
+    mfUrl: "/src/features/BasketTrading.feature",
+    mfComponent: "VuuBasketTradingFeature",
+    mfScope: "basketTrading",
   },
   production: {
-    url: "/features/TableNext.feature.js",
-    css: "/features/TableNext.feature.css",
+    mfComponent: "VuuFilterTableFeature",
+    mfUrl: "/features/TableNext.feature.js",
+    mfScope: "filterTable",
   },
 };
 
 export const BasketTradingFeatureAsFeature = () => {
-  const { url, css } = featurePropsForEnv[env];
+  const { mfUrl, mfComponent, mfScope, css } = featurePropsForEnv[env];
   return (
     <LocalDataSourceProvider>
       <View
@@ -79,7 +82,7 @@ export const BasketTradingFeatureAsFeature = () => {
         title="Instruments"
         style={{ width: 1260, height: 600 }}
       >
-        <Feature url={url} css={css} />
+        <Feature mfComponent={mfComponent} mfScope={mfScope} mfUrl={mfUrl} css={css} />
       </View>
     </LocalDataSourceProvider>
   );

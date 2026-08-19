@@ -1,0 +1,11 @@
+.vuuUserEditForm {
+  .saltTabPanel:not([hidden]) {
+    display: grid;
+    padding: var(--salt-spacing-200) 0 0;
+    row-gap: var(--salt-spacing-200);
+  }
+
+  .vuuModulePicker {
+    --vuuItemPicker-height: 360px;
+  }
+}

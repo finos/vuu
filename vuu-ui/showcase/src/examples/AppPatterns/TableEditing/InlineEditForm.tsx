@@ -1,10 +1,10 @@
 import { EditForm } from "@vuu-ui/vuu-data-react";
+import { ModalProvider } from "@vuu-ui/core";
 import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { DataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import { DockLayout, Drawer } from "@vuu-ui/vuu-layout";
 import { Table } from "@vuu-ui/vuu-table";
 import { TableConfig } from "@vuu-ui/vuu-table-types";
-import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
 import { RefCallback, useCallback, useMemo } from "react";
 import { useTableEditManager } from "./useTableEditManager";
 

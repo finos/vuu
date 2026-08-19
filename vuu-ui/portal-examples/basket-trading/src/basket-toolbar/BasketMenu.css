@@ -1,0 +1,5 @@
+.vuuBasketMenu {
+    --vuuPopupMenu-border: solid 1px var(--salt-editable-borderColor);
+    --vuuPopupMenu-borderRadius: 6px;
+    margin-left: auto;
+}

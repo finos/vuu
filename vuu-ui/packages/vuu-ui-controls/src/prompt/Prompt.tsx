@@ -67,9 +67,12 @@ const getHeader = (
 };
 
 export interface PromptProps
-  extends Pick<DialogProps, "disableDismiss" | "onOpenChange" | "open" | "status">,
-    Pick<DialogHeaderProps, "disableAccent">,
-    Omit<HTMLAttributes<HTMLDivElement>, "content" | "title"> {
+  extends Pick<
+    DialogProps,
+    "disableDismiss" | "onOpenChange" | "open" | "status"
+  >,
+  Pick<DialogHeaderProps, "disableAccent">,
+  Omit<HTMLAttributes<HTMLDivElement>, "content" | "title"> {
   /**
    * For simple configuration, where just a cancel button label is required.
    */

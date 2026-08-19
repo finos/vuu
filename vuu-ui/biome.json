@@ -12,7 +12,9 @@
       "sample-apps/**/*",
       "benchmarks/**/*",
       "!benchmarks/results",
-      "!benchmarks/dist"
+      "!benchmarks/dist",
+      "showcase/**/*",
+      "portal-examples/**/*"
     ]
   },
   "assist": { "actions": { "source": { "organizeImports": "off" } } },

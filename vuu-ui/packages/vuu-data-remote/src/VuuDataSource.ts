@@ -93,6 +93,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   private bufferSize: number;
   private server: ServerAPI | null = null;
   rangeRequest: RangeRequest;
+  #connectionId: string;
 
   #autosubscribeColumns: string[] = [];
   /**
@@ -127,6 +128,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     autosubscribeColumns,
     columns,
     session,
+    connectionId = "portal",
     sessionTableMessageColumn,
     ...props
   }: DataSourceConstructorProps) {
@@ -150,6 +152,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
     this.bufferSize = bufferSize;
     this.table = table;
+    this.#connectionId = connectionId;
 
     this.#pendingVisualLink = visualLink;
     this.#session = session;
@@ -167,7 +170,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     subscribeProps: DataSourceSubscribeProps,
     callback: DataSourceSubscribeCallback,
   ) {
-    // super.subscribe(subscribeProps, this.handleMessageFromServer);
     if (subscribeProps.columns) {
       this.#requestedColumns = subscribeProps.columns;
     }
@@ -183,9 +185,11 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       },
       callback,
     );
-    // biome-ignore lint/suspicious/noAssignInExpressions: <ignore>
-    const { viewport = this.viewport || (this.viewport = uuid()) } =
-      subscribeProps;
+    let viewport = subscribeProps.viewport ?? this.viewport;
+    if (!viewport) {
+      viewport = uuid();
+      this.viewport = viewport;
+    }
 
     if (
       this.#status === "disabled" ||
@@ -207,7 +211,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
     this.#status = "subscribing";
 
-    this.server = await ConnectionManager.serverAPI;
+    this.server = await ConnectionManager.serverAPIFor(this.#connectionId);
 
     const { bufferSize } = this;
 
@@ -749,6 +753,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       assertExpectedSessionTable(sessionTable, effectiveOverrides?.table);
       const sessionDataSource = new VuuDataSource({
         ...sessionDataSourceConfig(this.config, effectiveOverrides?.columns),
+        connectionId: this.#connectionId,
         table: sessionTable,
         viewport: sessionTable.table,
       });

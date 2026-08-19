@@ -1,5 +1,6 @@
 import {
   createContext,
+  isValidElement,
   type ReactElement,
   type ReactNode,
   useCallback,
@@ -7,23 +8,12 @@ import {
   useState,
 } from "react";
 import {
-  isUnconfiguredProperty,
-  layoutFromJson,
-  useLayoutOperation,
-} from "@vuu-ui/vuu-layout";
-import type { LayoutJSON } from "@vuu-ui/vuu-utils";
-import {
   Dialog,
   DialogCloseButton,
   DialogContent,
   DialogHeader,
 } from "@salt-ds/core";
 
-/**
- * If component is a string, the component will be read from the
- * comoponent registry. In that case, componentProps can be used
- * to pass props to the component.
- */
 export type ShowContextPanel = (
   component: string | ReactElement,
   title: string,
@@ -33,13 +23,17 @@ export type ShowContextPanel = (
 export interface ContextPanelProps {
   hideContextPanel?: () => void;
   /**
-   * True when a context panel can show element content: a showContextPanel
-   * implementation is provided, or the layout has a context panel. Without
-   * one, only registered component types (strings) can be shown, in a Dialog.
+   * True when a showContextPanel implementation is provided, here or by an
+   * enclosing provider. Without one, content is shown in a Dialog.
    */
   isContextPanelAvailable?: boolean;
   showContextPanel: ShowContextPanel;
 }
+
+export type ResolveContextPanelComponent = (
+  component: string,
+  componentProps?: unknown,
+) => ReactElement;
 
 const UndefinedShowContextPanel = () => {
   console.warn(
@@ -54,16 +48,17 @@ export const ContextPanelContext = createContext<ContextPanelProps>({
 export const ContextPanelProvider = ({
   children,
   hideContextPanel: hideContextPanelProp,
+  resolveComponent,
   showContextPanel: showContextPanelProp,
 }: Partial<ContextPanelProps> & {
   children: ReactNode;
+  resolveComponent?: ResolveContextPanelComponent;
 }) => {
   const {
     hideContextPanel: inheritedHideContextPanel,
     isContextPanelAvailable: inheritedIsContextPanelAvailable = false,
     showContextPanel: inheritedShowContextPanel,
   } = useContext(ContextPanelContext);
-  const { showComponentInContextPanel } = useLayoutOperation();
   const [dialog, setDialog] = useState<ReactElement | null>(null);
 
   const handleOpenChange = useCallback((isOpen: boolean) => {
@@ -74,34 +69,24 @@ export const ContextPanelProvider = ({
 
   const hideContextPanel = hideContextPanelProp ?? inheritedHideContextPanel;
   const isContextPanelAvailable =
-    showContextPanelProp !== undefined ||
-    inheritedIsContextPanelAvailable ||
-    !isUnconfiguredProperty(showComponentInContextPanel);
+    showContextPanelProp !== undefined || inheritedIsContextPanelAvailable;
 
   const showContextPanel = useCallback<ShowContextPanel>(
-    (elementOrComponentType, title, props) => {
+    (component, title, componentProps) => {
+      const resolvedComponent =
+        typeof component === "string" && resolveComponent
+          ? resolveComponent(component, componentProps)
+          : component;
       if (showContextPanelProp) {
-        showContextPanelProp(elementOrComponentType, title, props);
+        showContextPanelProp(resolvedComponent, title, componentProps);
       } else if (inheritedShowContextPanel !== UndefinedShowContextPanel) {
-        inheritedShowContextPanel(elementOrComponentType, title, props);
-      } else if (!isUnconfiguredProperty(showComponentInContextPanel)) {
-        const component =
-          typeof elementOrComponentType === "string"
-            ? ({ type: elementOrComponentType, props } as LayoutJSON)
-            : elementOrComponentType;
-        showComponentInContextPanel(component, title);
-      } else if (typeof elementOrComponentType === "string") {
-        const component =
-          typeof elementOrComponentType === "string"
-            ? layoutFromJson(
-                {
-                  type: elementOrComponentType,
-                  props,
-                } as LayoutJSON,
-                "",
-              )
-            : elementOrComponentType;
-
+        inheritedShowContextPanel(resolvedComponent, title, componentProps);
+      } else {
+        if (!isValidElement(resolvedComponent)) {
+          throw new Error(
+            `Context panel component "${component}" requires a configured resolver`,
+          );
+        }
         setDialog(
           <Dialog open={true} onOpenChange={handleOpenChange}>
             <DialogCloseButton
@@ -112,7 +97,7 @@ export const ContextPanelProvider = ({
               sentiment="neutral"
             />
             <DialogHeader header={title} />
-            <DialogContent>{component}</DialogContent>
+            <DialogContent>{resolvedComponent}</DialogContent>
           </Dialog>,
         );
       }
@@ -120,7 +105,7 @@ export const ContextPanelProvider = ({
     [
       handleOpenChange,
       inheritedShowContextPanel,
-      showComponentInContextPanel,
+      resolveComponent,
       showContextPanelProp,
     ],
   );
@@ -146,7 +131,7 @@ export function useHideContextPanel() {
 }
 
 /**
- * True if showContextPanel can show element content in a context panel.
+ * True if showContextPanel can show content in a context panel.
  */
 export function useContextPanelAvailable() {
   const { isContextPanelAvailable = false } = useContext(ContextPanelContext);
