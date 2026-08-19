@@ -144,7 +144,7 @@ case class ClickHouseFilterVisitor(remoteNameMapping: Map[String, VirtualizedSes
         params.put(paramName, paramValue)
         stringBuilder.append("String")
       case DataType.CharDataType =>
-        params.put(paramName, paramValue.charAt(0))
+        params.put(paramName, String.valueOf(paramValue.charAt(0)))
         stringBuilder.append("String")
       case DataType.IntegerDataType =>
         params.put(paramName, paramValue.toInt)

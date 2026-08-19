@@ -74,6 +74,10 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
       val result = compile("intColumn = 100")
 
       result shouldBe expected
+
+      val result2 = compile("intColumn = \"100\"")
+
+      result2 shouldBe expected
     }
 
     Scenario("Long equality comparison") {
@@ -82,6 +86,10 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
       val result = compile("longColumn = 100")
 
       result shouldBe expected
+
+      val result2 = compile("longColumn = \"100\"")
+
+      result2 shouldBe expected
     }
 
     Scenario("Double equality comparison") {
@@ -90,6 +98,10 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
       val result = compile("doubleColumn = 100.1")
 
       result shouldBe expected
+
+      val result2 = compile("doubleColumn = \"100.1\"")
+
+      result2 shouldBe expected
     }
 
     Scenario("Boolean equality comparison") {
@@ -98,22 +110,34 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
       val result = compile("booleanColumn = true")
 
       result shouldBe expected
+
+      val result2 = compile("booleanColumn = \"true\"")
+
+      result2 shouldBe expected
     }
 
     Scenario("EpochTimestamp equality comparison") {
       val expected = ("epoch_c = {p_0:DateTime64}", Map("p_0" -> ofEpochMilli(1L)))
 
-      val result = compile("epochColumn = \"1\"")
+      val result = compile("epochColumn = 1")
 
       result shouldBe expected
+
+      val result2 = compile("epochColumn = \"1\"")
+
+      result2 shouldBe expected
     }
 
     Scenario("EpochTimestampNano equality comparison") {
       val expected = ("epoch_nano_c = {p_0:DateTime64}", Map("p_0" -> ofEpochNanosecond(1L)))
 
-      val result = compile("epochNanoColumn = \"1\"")
+      val result = compile("epochNanoColumn = 1")
 
       result shouldBe expected
+
+      val result2 = compile("epochNanoColumn = \"1\"")
+
+      result2 shouldBe expected
     }
 
     Scenario("ScaledDecimal2 equality comparison") {
@@ -122,6 +146,10 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
       val result = compile("sd2Column = 1.01")
 
       result shouldBe expected
+
+      val result2 = compile("sd2Column = \"1.01\"")
+
+      result2 shouldBe expected
     }
 
     Scenario("ScaledDecimal4 equality comparison") {
@@ -130,6 +158,10 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
       val result = compile("sd4Column = 1.0001")
 
       result shouldBe expected
+
+      val result2 = compile("sd4Column = \"1.0001\"")
+
+      result2 shouldBe expected
     }
 
     Scenario("ScaledDecimal6 equality comparison") {
@@ -138,6 +170,10 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
       val result = compile("sd6Column = 1.000001")
 
       result shouldBe expected
+
+      val result2 = compile("sd6Column = \"1.000001\"")
+
+      result2 shouldBe expected
     }
 
     Scenario("ScaledDecimal8 equality comparison") {
@@ -146,8 +182,153 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
       val result = compile("sd8Column = 1.00000001")
 
       result shouldBe expected
+
+      val result2 = compile("sd8Column = \"1.00000001\"")
+
+      result2 shouldBe expected
     }
 
+  }
+
+  Feature("Inequality test cases") {
+
+    Scenario("String inequality comparison") {
+      val expected = ("string_c != {p_0:String}", Map("p_0" -> "rahúl"))
+
+      val result = compile("stringColumn != \"rahúl\"")
+
+      result shouldBe expected
+    }
+
+    Scenario("Char inequality comparison") {
+      val expected = ("char_c != {p_0:String}", Map("p_0" -> "r"))
+
+      val result = compile("charColumn != \"r\"")
+
+      result shouldBe expected
+    }
+
+    Scenario("Int inequality comparison") {
+      val expected = ("int_c != {p_0:Int32}", Map("p_0" -> 100))
+
+      val result = compile("intColumn != 100")
+
+      result shouldBe expected
+
+      val result2 = compile("intColumn != \"100\"")
+
+      result2 shouldBe expected
+    }
+
+    Scenario("Long inequality comparison") {
+      val expected = ("long_c != {p_0:Int64}", Map("p_0" -> 100L))
+
+      val result = compile("longColumn != 100")
+
+      result shouldBe expected
+
+      val result2 = compile("longColumn != \"100\"")
+
+      result2 shouldBe expected
+    }
+
+    Scenario("Double inequality comparison") {
+      val expected = ("double_c != {p_0:Float64}", Map("p_0" -> 100.1))
+
+      val result = compile("doubleColumn != 100.1")
+
+      result shouldBe expected
+
+      val result2 = compile("doubleColumn != \"100.1\"")
+
+      result2 shouldBe expected
+    }
+
+    Scenario("Boolean inequality comparison") {
+      val expected = ("boolean_c != {p_0:Bool}", Map("p_0" -> true))
+
+      val result = compile("booleanColumn != true")
+
+      result shouldBe expected
+
+      val result2 = compile("booleanColumn != \"true\"")
+
+      result2 shouldBe expected
+    }
+
+    Scenario("EpochTimestamp inequality comparison") {
+      val expected = ("epoch_c != {p_0:DateTime64}", Map("p_0" -> ofEpochMilli(1L)))
+
+      val result = compile("epochColumn != 1")
+
+      result shouldBe expected
+
+      val result2 = compile("epochColumn != \"1\"")
+
+      result2 shouldBe expected
+    }
+
+    Scenario("EpochTimestampNano inequality comparison") {
+      val expected = ("epoch_nano_c != {p_0:DateTime64}", Map("p_0" -> ofEpochNanosecond(1L)))
+
+      val result = compile("epochNanoColumn != 1")
+
+      result shouldBe expected
+
+      val result2 = compile("epochNanoColumn != \"1\"")
+
+      result2 shouldBe expected
+    }
+
+    Scenario("ScaledDecimal2 equality comparison") {
+      val expected = ("sd2_c != {p_0:Int64}", Map("p_0" -> 101L))
+
+      val result = compile("sd2Column != 1.01")
+
+      result shouldBe expected
+
+      val result2 = compile("sd2Column != \"1.01\"")
+
+      result2 shouldBe expected
+    }
+
+    Scenario("ScaledDecimal4 inequality comparison") {
+      val expected = ("sd4_c != {p_0:Int64}", Map("p_0" -> 10001L))
+
+      val result = compile("sd4Column != 1.0001")
+
+      result shouldBe expected
+
+      val result2 = compile("sd4Column != \"1.0001\"")
+
+      result2 shouldBe expected
+    }
+
+    Scenario("ScaledDecimal6 inequality comparison") {
+      val expected = ("sd6_c != {p_0:Int64}", Map("p_0" -> 1000001L))
+
+      val result = compile("sd6Column != 1.000001")
+
+      result shouldBe expected
+
+      val result2 = compile("sd6Column != \"1.000001\"")
+
+      result2 shouldBe expected
+    }
+
+    Scenario("ScaledDecimal8 inequality comparison") {
+      val expected = ("sd8_c != {p_0:Int64}", Map("p_0" -> 100000001L))
+
+      val result = compile("sd8Column != 1.00000001")
+
+      result shouldBe expected
+
+      val result2 = compile("sd8Column != \"1.00000001\"")
+
+      result2 shouldBe expected
+    }
+
+  }
 
     //    Scenario("Magnitude comparisons") {
     //      compile("price > 123.45") shouldBe "price > 123.45"
@@ -175,5 +356,5 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
     //    }
     //
 
-  }
+
 }
