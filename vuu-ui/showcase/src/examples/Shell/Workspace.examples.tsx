@@ -15,7 +15,7 @@ export const DefaultLayoutNoStoredState = () => {
   );
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
-      <Shell user={user}></Shell>
+      <Shell />
     </PersistenceProvider>
   );
 };
@@ -27,7 +27,7 @@ export const DefaultLayoutNoStoredStateLoadDelay = () => {
   );
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
-      <Shell user={user}></Shell>
+      <Shell />
     </PersistenceProvider>
   );
 };
@@ -48,7 +48,7 @@ export const CustomDefaultLayoutNoStoredState = () => {
   );
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
-      <Shell workspaceProps={{ layoutJSON }} user={user}></Shell>
+      <Shell workspaceProps={{ layoutJSON }}></Shell>
     </PersistenceProvider>
   );
 };
@@ -83,7 +83,7 @@ export const DefaultLayoutStoredState = () => {
   );
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
-      <Shell user={user}></Shell>
+      <Shell />
     </PersistenceProvider>
   );
 };
@@ -132,7 +132,7 @@ export const CustomLayoutStoredState = () => {
   );
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
-      <Shell workspaceProps={{ layoutJSON }} user={user}></Shell>
+      <Shell workspaceProps={{ layoutJSON }} />
     </PersistenceProvider>
   );
 };

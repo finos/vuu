@@ -6,3 +6,7 @@ of the element is never exceeded due to padding or border. */
   box-sizing: border-box;
 }
 
+body {
+  margin: 0;
+}
+

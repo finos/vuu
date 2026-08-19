@@ -21,3 +21,6 @@
         }
     }
 }
+.vuuContextMenuDivider {
+    margin: var(--salt-spacing-50) 0;
+}

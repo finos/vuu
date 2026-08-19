@@ -3,3 +3,5 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+.local-packages/
+tools/portal-build-tool/dist/

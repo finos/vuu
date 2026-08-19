@@ -1,0 +1,29 @@
+.vuuPortalShell {
+  column-gap: var(--salt-spacing-50);
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  grid-template-rows: 56px 1fr;
+  grid-template-areas:
+    "nav header"
+    "nav content";
+
+  height: 100vh;
+  padding: var(--vuuPortalShell-padding, var(--salt-spacing-50));
+  width: 100vw;
+
+  .vuuNavContainer {
+    grid-area: nav;
+
+    .vuuPortalAppSwitcher {
+      grid-area: nav;
+    }
+  }
+
+  .vuuPortalHeader {
+    grid-area: header;
+  }
+
+  .vuuPortalShell-content {
+    grid-area: content;
+  }
+}

@@ -8,7 +8,7 @@ const getConfig = (name, env, workerFile = workerTS) => ({
   entryPoints: [workerFile],
   env,
   name,
-  outfile: `src/inlined-worker.js`,
+  outfile: `src/inlined-worker.ts`,
   sourcemap: false,
   write: false,
 });

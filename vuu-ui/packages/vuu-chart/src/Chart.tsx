@@ -4,7 +4,7 @@ import cx from "clsx";
 import { getInstanceByDom, init } from "echarts";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useChartContextMenu } from "./useChartContextMenu";
-import { ChartOptionsProps, useChartOptions } from "./useChartOptions";
+import { type ChartOptionsProps, useChartOptions } from "./useChartOptions";
 import { useChartSelection } from "./useChartSelection";
 import { buildColumnMap } from "@vuu-ui/vuu-utils";
 import {

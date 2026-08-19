@@ -32,6 +32,6 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "css.customData": ["./.vscode/custom-css.json"],
   "[css]": {
-    "editor.defaultFormatter": "stylelint.vscode-stylelint"
+    "editor.defaultFormatter": "biomejs.biome"
   }
 }
