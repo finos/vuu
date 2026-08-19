@@ -169,7 +169,7 @@ export const UserInputCapture = () => {
   };
   const onChangeLastName = (e: ChangeEvent<HTMLInputElement>) => {
     lastName.current = (e.target as HTMLInputElement).value;
-  };
+  }, []);
 
   const onConfirm = () => {
     console.log(`confirmed ${firstName.current} ${lastName.current}`);

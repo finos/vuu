@@ -1,20 +1,20 @@
-import {
+import type {
   ConnectOptions,
   VuuUIMessageIn,
   VuuUIMessageOut,
   WithRequestId,
 } from "@vuu-ui/vuu-data-types";
 import { DeferredPromise, getLoggingConfigForWorker } from "@vuu-ui/vuu-utils";
-
 // Note: inlined-worker is a generated file, it must be built
-import { workerSourceCode } from "./inlined-worker";
-import {
+import type {
   SelectRequest,
+  VuuLoginSuccessResponse,
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
   VuuRpcMenuRequest,
   VuuRpcServiceRequest,
 } from "@vuu-ui/vuu-protocol-types";
+import { workerSourceCode } from "./inlined-worker";
 
 const workerBlob = new Blob([getLoggingConfigForWorker() + workerSourceCode], {
   type: "text/javascript",
@@ -23,7 +23,11 @@ const workerBlobUrl = URL.createObjectURL(workerBlob);
 
 export class DedicatedWorker {
   #deferredConnection?: DeferredPromise<
-    "connected" | "reconnected" | "rejected"
+    | {
+        loginResponse: VuuLoginSuccessResponse & { sessionId: string };
+        status: "connected" | "reconnected";
+      }
+    | { status: "rejected" }
   >;
   #worker: Promise<Worker>;
 
@@ -41,7 +45,10 @@ export class DedicatedWorker {
         deferredWorker.resolve(worker);
       } else if (message.type === "connected") {
         // how do we detect reconnected
-        this.#deferredConnection?.resolve("connected");
+        this.#deferredConnection?.resolve({
+          loginResponse: message.loginResponse,
+          status: "connected",
+        });
       } else if (message.type === "connection-failed") {
         this.#deferredConnection?.reject(message.reason);
       } else {
@@ -52,7 +59,11 @@ export class DedicatedWorker {
 
   async connect(options: ConnectOptions) {
     this.#deferredConnection = new DeferredPromise<
-      "connected" | "reconnected" | "rejected"
+      | {
+          loginResponse: VuuLoginSuccessResponse & { sessionId: string };
+          status: "connected" | "reconnected";
+        }
+      | { status: "rejected" }
     >();
     this.send({
       ...options,

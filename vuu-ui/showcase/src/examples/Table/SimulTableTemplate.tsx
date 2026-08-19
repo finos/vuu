@@ -1,4 +1,5 @@
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
+import { ModalProvider } from "@vuu-ui/core";
 import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 import { getSchema, SimulTableName } from "@vuu-ui/vuu-data-test";
 import { Table, TableProps, useTableConfig } from "@vuu-ui/vuu-table";
@@ -22,7 +23,6 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { ReactNode, useMemo } from "react";
 import { DemoTableContainer } from "./DemoTableContainer";
-import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
 
 export type SimulTableProps = Partial<TableProps> & {
   autosubscribeColumns?: string[];

@@ -1,42 +1,22 @@
 import {
-  ConnectionManager,
-  ConnectionStatus,
-  LostConnectionHandler,
-  VuuAuthenticator,
-  VuuAuthProvider,
-  VuuAuthTokenIssuePolicy,
-} from "@vuu-ui/vuu-data-remote";
-import { isLoginErrorMessage, PageVisibilityObserver } from "@vuu-ui/vuu-utils";
+  AuthenticationErrorBoundary,
+  AuthenticationProvider,
+  DirectVuuSessionResolver,
+  VuuAuthHandler,
+  VuuConnectionRegistry,
+} from "@vuu-ui/core";
+import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
+import { PageVisibilityObserver } from "@vuu-ui/vuu-utils";
 import { createRoot } from "react-dom/client";
 import { App } from "./src/App";
 
 import "@vuu-ui/vuu-icons/index.css";
 import "@vuu-ui/vuu-theme/index.css";
 
-const CONNECTION_FAILED = "connection-failed";
-const isConnectionFailedMessage = (err) =>
-  typeof err === "string" && err.includes(CONNECTION_FAILED);
-
-const { websocketUrl } = await vuuConfig;
-
-const vuuAuth = new VuuAuthenticator({
-  authProvider: new VuuAuthProvider("/api/authn"),
-  authTokenIssuePolicy: VuuAuthTokenIssuePolicy.UsernamePassword,
-  websocketUrl,
+const config = await vuuConfig;
+const registry = new VuuConnectionRegistry({
+  sessionResolver: new DirectVuuSessionResolver(),
 });
-
-const lostConnectionHandler = new LostConnectionHandler(vuuAuth);
-
-const onConnectionStatusChange = (connectionStatus: ConnectionStatus) => {
-  if (connectionStatus === "disconnected") {
-    // do we care about the reason ?
-    lostConnectionHandler.reconnect().then((status) => {
-      if (status === CONNECTION_FAILED) {
-        throw new Error(status);
-      }
-    });
-  }
-};
 
 new PageVisibilityObserver({
   onHidden: () => {
@@ -52,15 +32,23 @@ if (!container) {
   throw Error("No react root defined in page");
 }
 try {
-  const [{ userName }] = await vuuAuth.login();
-  ConnectionManager.on("connection-status", onConnectionStatusChange);
   const root = createRoot(container);
-  root.render(<App logout={vuuAuth.logout} user={{ username: userName }} />);
+  root.render(
+    <AuthenticationErrorBoundary
+      fallback={(error) => (
+        <div role="alert">Unable to authenticate: {error.message}</div>
+      )}
+    >
+      <AuthenticationProvider
+        authConfig={config}
+        authHandlerClass={VuuAuthHandler}
+        mode="identity"
+        registry={registry}
+      >
+        <App />
+      </AuthenticationProvider>
+    </AuthenticationErrorBoundary>,
+  );
 } catch (err: unknown) {
-  if (isLoginErrorMessage(err) || isConnectionFailedMessage(err)) {
-    const root = createRoot(container);
-    root.render(<div>{`${err}`}</div>);
-  } else {
-    vuuAuth.logout();
-  }
+  console.error(err);
 }

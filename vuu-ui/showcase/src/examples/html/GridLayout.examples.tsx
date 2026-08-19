@@ -4,8 +4,8 @@ import {
   GridLayoutProvider,
   TrackSize,
   useGridLayoutDispatch,
-  useGridModel,
-} from "@heswell/grid-layout";
+  useGridSnapshot,
+} from "@vuu-ui/grid-layout";
 import { queryClosest } from "@vuu-ui/vuu-utils";
 import {
   CSSProperties,
@@ -841,16 +841,16 @@ export const FixedAppHeaderCollapsibleSidebars = () => {
       colsAndRows={{ cols, rows }}
     >
       <GridLayoutItem id="gray" style={{ gridArea: "1/1/2/4" }}>
-        <DebugGridItem style={{ alignItems: "center",background: "gray",display: "flex", gap: 9,justifyContent: "center"  }} >
-        <Button onClick={toggleLeftSidebar} >Toggle Left</Button>
-        <Button onClick={toggleRightSidebar}>Toggle Right </Button>
+        <DebugGridItem style={{ alignItems: "center", background: "gray", display: "flex", gap: 9, justifyContent: "center" }} >
+          <Button onClick={toggleLeftSidebar} >Toggle Left</Button>
+          <Button onClick={toggleRightSidebar}>Toggle Right </Button>
 
-          </DebugGridItem>
+        </DebugGridItem>
       </GridLayoutItem>
       <GridLayoutItem id="blue" resizeable="h" title="Blue" style={{ gridArea: "2/1/4/2" }} >
         <DebugGridItem style={{ background: "blue" }}>
           <Button onClick={closeLeftSidebar} style={closeButtonStyleLeft}>Close</Button>
-          </DebugGridItem>
+        </DebugGridItem>
       </GridLayoutItem>
       <GridLayoutItem id="brown" resizeable="h" style={{ gridArea: "2/2/3/3" }} >
         <DebugGridItem style={{ background: "brown" }} />
@@ -884,14 +884,14 @@ const CustomHeader = ({
   ...htmlAttributes
 }: HTMLAttributes<HTMLDivElement>) => {
   const dispatch = useGridLayoutDispatch();
-  const gridModel = useGridModel();
+  const snapshot = useGridSnapshot();
   const toggleLeftSidebar = () => {
-    const currentValue = gridModel.tracks.columns.at(0);
+    const currentValue = snapshot.columns.at(0)?.size;
     const value: TrackSize = currentValue === "0px" ? "200px" : "0px";
     dispatch({ type: "resize-grid-column", trackIndex: 0, value });
   };
   const toggleRightSidebar = () => {
-    const currentValue = gridModel.tracks.columns.at(2);
+    const currentValue = snapshot.columns.at(2)?.size;
     const value: TrackSize = currentValue === "0px" ? "200px" : "0px";
     dispatch({ type: "resize-grid-column", trackIndex: 2, value });
   };
@@ -928,12 +928,12 @@ export const FixedAppHeaderCustomCollapsibleSidebars = () => {
       colsAndRows={{ cols, rows }}
     >
       <GridLayoutItem id="gray" style={{ gridArea: "1/1/2/4" }}>
-        <CustomHeader  />
+        <CustomHeader />
       </GridLayoutItem>
       <GridLayoutItem id="blue" resizeable="h" title="Blue" style={{ gridArea: "2/1/4/2" }} >
         <DebugGridItem style={{ background: "blue" }}>
           <Button onClick={closeLeftSidebar} style={closeButtonStyleLeft}>Close</Button>
-          </DebugGridItem>
+        </DebugGridItem>
       </GridLayoutItem>
       <GridLayoutItem id="brown" resizeable="h" style={{ gridArea: "2/2/3/3" }} >
         <DebugGridItem style={{ background: "brown" }} />
@@ -1134,42 +1134,50 @@ export const EmptyWithPalette = () => {
   const paletteItems = useMemo<GridPaletteItem[]>(
     () => [
       {
-        id: "red",
-        label: "Red",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "red",
+        paletteEntry: { label: "Red" },
+        component: {
+          label: "Red",
+          type: "DebugGridItem",
+          props: {
+            style: {
+              background: "red",
+            },
           },
         },
       },
       {
-        id: "green",
-        label: "Green",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "green",
+        paletteEntry: { label: "Green" },
+        component: {
+          label: "Green",
+          type: "DebugGridItem",
+          props: {
+            style: {
+              background: "green",
+            },
           },
         },
       },
       {
-        id: "yellow",
-        label: "Yellow",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "yellow",
+        paletteEntry: { label: "Yellow" },
+        component: {
+          label: "Yellow",
+          type: "DebugGridItem",
+          props: {
+            style: {
+              background: "yellow",
+            },
           },
         },
       },
       {
-        id: "brown",
-        label: "Brown",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "brown",
+        paletteEntry: { label: "Brown" },
+        component: {
+          label: "Brown",
+          type: "DebugGridItem",
+          props: {
+            style: {
+              background: "brown",
+            },
           },
         },
       },

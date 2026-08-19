@@ -1,10 +1,10 @@
+import { AuthenticationProvider } from "@vuu-ui/core";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
   FeatureAndLayoutProvider,
-  LeftNav,
-  SettingsSchema,
+  LocalWorkspacePersistenceService,
+  PersistenceProvider,
   Shell,
-  SidePanelProps,
 } from "@vuu-ui/vuu-shell";
 import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
@@ -16,7 +16,6 @@ import {
   registerComponent,
 } from "@vuu-ui/vuu-utils";
 import { CSSProperties, useMemo } from "react";
-import { sysLayouts } from "../_test-data/sysLayoutMetadata";
 
 import "./SampleApp.examples.css";
 
@@ -24,23 +23,11 @@ registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
 
 const user = { username: "why-the-lucky-stiff", token: "test-token" };
 
-const getFeaturePath: GetFeaturePaths = ({
-  env,
-  fileName,
-  withCss = env === "production",
-}) => {
-  if (env === "production") {
-    const url = `/features/${fileName}.feature.js`;
-    return {
-      url,
-      css: withCss ? `/features/${fileName}.feature.css` : undefined,
-    };
-  } else {
-    return {
-      url: `/src/features/${fileName}.feature`,
-    };
-  }
-};
+const getFeaturePath: GetFeaturePaths = ({ fileName }) => ({
+  mfComponent: `features/${fileName}`,
+  mfScope: "showcase_examples",
+  mfUrl: "/showcase-examples",
+});
 
 const featurePaths: Record<string, DynamicFeatureProps> = {
   FilterTableFeature: getFeaturePath({ env, fileName: "FilterTable" }),
@@ -52,6 +39,11 @@ const dynamicFeatures: DynamicFeatureDescriptor[] = [
   {
     title: "Vuu Filter Table",
     name: "filter-table",
+    description: "Vuu Filter Table",
+    id: "filter-table",
+    location: "vuu-features",
+    path: "filter-table",
+    version: 1,
     ...featurePaths.FilterTableFeature,
     featureProps: {
       vuuTables: "*",
@@ -61,6 +53,11 @@ const dynamicFeatures: DynamicFeatureDescriptor[] = [
   {
     title: "Instrument Price Tiles",
     name: "instrument-tiles",
+    description: "Instrument Price Tiles",
+    id: "instrument-tiles",
+    location: "vuu-features",
+    path: "instrument-tiles",
+    version: 1,
     ...featurePaths.InstrumentTiles,
     featureProps: {
       vuuTables: [
@@ -75,6 +72,11 @@ const dynamicFeatures: DynamicFeatureDescriptor[] = [
   {
     title: "Basket Trading",
     name: "basket-trading",
+    description: "Basket Trading",
+    id: "basket-trading",
+    location: "vuu-features",
+    path: "basket-trading",
+    version: 1,
     ...featurePaths.BasketTrading,
     viewProps: {
       header: false,
@@ -83,23 +85,6 @@ const dynamicFeatures: DynamicFeatureDescriptor[] = [
   },
 ];
 
-const userSettingsSchema: SettingsSchema = {
-  properties: [
-    {
-      name: "themeMode",
-      label: "Mode",
-      values: ["light", "dark"],
-      defaultValue: "light",
-      type: "string",
-    },
-    {
-      name: "showAppStatusBar",
-      label: "Show Application Status Bar",
-      defaultValue: false,
-      type: "boolean",
-    },
-  ],
-};
 
 const SampleApp = () => {
   const dragSource = useMemo(
@@ -112,44 +97,42 @@ const SampleApp = () => {
     [],
   );
 
-  const SidePanelProps = useMemo<SidePanelProps>(
-    () => ({
-      children: <LeftNav />,
-      sizeOpen: 240,
-    }),
+  const persistenceService = useMemo(
+    () =>
+      new LocalWorkspacePersistenceService({
+        applicationNamespace: "vuu-showcase",
+        applicationId: "sample-app",
+        userId: user.username,
+      }),
     [],
   );
 
   return (
-    <FeatureAndLayoutProvider
-      dynamicFeatures={dynamicFeatures}
-      systemLayouts={sysLayouts}
-    >
-      <DragDropProvider dragSources={dragSource}>
-        <Shell
-          shellLayoutProps={{
-            SidePanelProps,
-            layoutTemplateId: "full-height",
-          }}
-          user={user}
-          style={
-            {
-              "--vuuShell-height": "100vh",
-              "--vuuShell-width": "100vw",
-            } as CSSProperties
-          }
-          userSettingsSchema={userSettingsSchema}
-        ></Shell>
-      </DragDropProvider>
-    </FeatureAndLayoutProvider>
+    <PersistenceProvider workspacePersistenceService={persistenceService}>
+      <FeatureAndLayoutProvider dynamicFeatures={dynamicFeatures}>
+        <DragDropProvider dragSources={dragSource}>
+          <Shell
+            leftNavWidth={240}
+            style={
+              {
+                "--vuuShell-height": "100vh",
+                "--vuuShell-width": "100vw",
+              } as CSSProperties
+            }
+          ></Shell>
+        </DragDropProvider>
+      </FeatureAndLayoutProvider>
+    </PersistenceProvider>
   );
 };
 
 export const SampleAppDefaultFeatures = () => {
   document.cookie = `vuu-username=${user.username}`;
   return (
-    <LocalDataSourceProvider>
-      <SampleApp />
-    </LocalDataSourceProvider>
+    <AuthenticationProvider mode="local" user={{ userName: user.username }}>
+      <LocalDataSourceProvider>
+        <SampleApp />
+      </LocalDataSourceProvider>
+    </AuthenticationProvider>
   );
 };
