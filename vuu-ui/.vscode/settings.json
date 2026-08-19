@@ -25,12 +25,13 @@
     "commandCenter.foreground": "#15202b",
     "statusBar.debuggingBackground": "#8ba555",
     "statusBar.debuggingForeground": "#15202b",
-    "activityBarTop.activeBorder": "#15202b"
+    "activityBarTop.activeBorder": "#15202b",
+    "statusBar.inactiveBackground": "#8ba555"
   },
   "peacock.color": "#8ba555",
   "typescript.tsdk": "node_modules/typescript/lib",
   "css.customData": ["./.vscode/custom-css.json"],
   "[css]": {
-    "editor.defaultFormatter": "stylelint.vscode-stylelint"
+    "editor.defaultFormatter": "biomejs.biome"
   }
 }

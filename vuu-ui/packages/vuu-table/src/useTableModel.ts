@@ -1,12 +1,12 @@
 import { buildValidationChecker } from "@vuu-ui/vuu-data-react";
-import {
+import type {
   DataSource,
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
 } from "@vuu-ui/vuu-data-types";
-import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
-import {
+import type { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
+import type {
   ColumnDescriptor,
   ColumnLayout,
   ResizePhase,
@@ -38,12 +38,13 @@ import {
   isNumericType,
   isPinned,
   logger,
+  NO_HEADINGS,
   removeSort,
   replaceColumn,
   sortPinnedColumns,
   stripFilterFromColumns,
 } from "@vuu-ui/vuu-utils";
-import { Reducer, useReducer } from "react";
+import { type Reducer, useReducer } from "react";
 
 const { info } = logger("useTableModel");
 
@@ -330,7 +331,7 @@ function init(
   let state: InternalTableModel = {
     availableWidth,
     columns: columnsInRenderOrder,
-    headings: getTableHeadings(columnsInRenderOrder),
+    headings: getTableHeadings(columnsInRenderOrder, selectionBookendWidth),
     tableConfig,
     ...tableAttributes,
   };
@@ -359,52 +360,52 @@ const getLabel = (
 
 const columnDescriptorToRuntimeColumDescriptor =
   (tableAttributes: TableDisplayAttributes, tableSchema?: TableSchema) =>
-  (column: ColumnDescriptor, ariaColIndex: number): RuntimeColumnDescriptor => {
-    const { columnDefaultWidth = DEFAULT_COLUMN_WIDTH, columnFormatHeader } =
-      tableAttributes;
-    const serverDataType = getDataType(column, tableSchema);
-    const {
-      align = getDefaultAlignment(serverDataType),
-      name,
-      label = getColumnLabel(column),
-      source = "server",
-      width = columnDefaultWidth,
-      ...rest
-    } = column;
+    (column: ColumnDescriptor, ariaColIndex: number): RuntimeColumnDescriptor => {
+      const { columnDefaultWidth = DEFAULT_COLUMN_WIDTH, columnFormatHeader } =
+        tableAttributes;
+      const serverDataType = getDataType(column, tableSchema);
+      const {
+        align = getDefaultAlignment(serverDataType),
+        name,
+        label = getColumnLabel(column),
+        source = "server",
+        width = columnDefaultWidth,
+        ...rest
+      } = column;
 
-    const columnWithServerDataType: ColumnDescriptor = {
-      ...rest,
-      align,
-      label,
-      name,
-      serverDataType,
-      source,
+      const columnWithServerDataType: ColumnDescriptor = {
+        ...rest,
+        align,
+        label,
+        name,
+        serverDataType,
+        source,
+      };
+
+      const runtimeColumnWithDefaults: RuntimeColumnDescriptor = {
+        ...columnWithServerDataType,
+        ariaColIndex,
+        CellRenderer: getCellRenderer(column),
+        HeaderCellContentRenderer: getColumnHeaderContentRenderer(column),
+        HeaderCellLabelRenderer: getColumnHeaderLabelRenderer(column),
+        clientSideEditValidationCheck: hasValidationRules(column.type)
+          ? buildValidationChecker(column.type.rules)
+          : undefined,
+        label: getLabel(label, columnFormatHeader),
+        originalIdx: ariaColIndex,
+        valueFormatter: getValueFormatter(columnWithServerDataType),
+        width,
+      };
+
+      if (isGroupColumn(runtimeColumnWithDefaults)) {
+        runtimeColumnWithDefaults.columns = runtimeColumnWithDefaults.columns.map(
+          (col) =>
+            columnDescriptorToRuntimeColumDescriptor(tableAttributes)(col, -1),
+        );
+      }
+
+      return runtimeColumnWithDefaults;
     };
-
-    const runtimeColumnWithDefaults: RuntimeColumnDescriptor = {
-      ...columnWithServerDataType,
-      ariaColIndex,
-      CellRenderer: getCellRenderer(column),
-      HeaderCellContentRenderer: getColumnHeaderContentRenderer(column),
-      HeaderCellLabelRenderer: getColumnHeaderLabelRenderer(column),
-      clientSideEditValidationCheck: hasValidationRules(column.type)
-        ? buildValidationChecker(column.type.rules)
-        : undefined,
-      label: getLabel(label, columnFormatHeader),
-      originalIdx: ariaColIndex,
-      valueFormatter: getValueFormatter(columnWithServerDataType),
-      width,
-    };
-
-    if (isGroupColumn(runtimeColumnWithDefaults)) {
-      runtimeColumnWithDefaults.columns = runtimeColumnWithDefaults.columns.map(
-        (col) =>
-          columnDescriptorToRuntimeColumDescriptor(tableAttributes)(col, -1),
-      );
-    }
-
-    return runtimeColumnWithDefaults;
-  };
 
 function moveColumn(
   state: InternalTableModel,
@@ -471,16 +472,16 @@ function resizeColumn(
     case "begin":
       return updateColumnProp(state, { type, column, resizing });
     case "end": {
-      const { tableConfig } = state;
+      const { selectionBookendWidth = 4, tableConfig } = state;
       const isFit = tableConfig.columnLayout === "fit";
       let newState: InternalTableModel = isFit
         ? {
-            ...state,
-            tableConfig: applyRuntimeColumnWidthsToConfig(
-              tableConfig,
-              state.columns,
-            ),
-          }
+          ...state,
+          tableConfig: applyRuntimeColumnWidthsToConfig(
+            tableConfig,
+            state.columns,
+          ),
+        }
         : state;
 
       if (column.pin && !column.pinnedWidth && width) {
@@ -488,10 +489,29 @@ function resizeColumn(
         // All left pinned columns following this one must have pinOffset adjusted
         newState = adjustPinOffsets(newState, column, width);
       }
-      return updateColumnProp(newState, { type, column, resizing, width });
+
+      const newStateWithResize = updateColumnProp(newState, { type, column, resizing, width });
+      if (newStateWithResize.headings === NO_HEADINGS) {
+        return newStateWithResize;
+      } else {
+        return {
+          ...newStateWithResize,
+          headings: getTableHeadings(newStateWithResize.columns, selectionBookendWidth),
+        };
+      }
     }
-    case "resize":
-      return updateColumnProp(state, { type, column, width });
+    case "resize": {
+      // never gets called
+      const newState = updateColumnProp(state, { type, column, width });
+      if (newState.headings === NO_HEADINGS) {
+        return newState;
+      } else {
+        return {
+          ...newState,
+          headings: getTableHeadings(newState.columns),
+        };
+      }
+    }
     default:
       throw Error(`useTableModel.resizeColumn, invalid resizePhase ${phase}`);
   }

@@ -1,5 +1,5 @@
-import { VuuRange } from "@vuu-ui/vuu-protocol-types";
-import { DataRow } from "@vuu-ui/vuu-table-types";
+import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { WindowRange } from "@vuu-ui/vuu-utils";
 
 export class DataRowMovingWindow {
@@ -80,7 +80,7 @@ export class DataRowMovingWindow {
         return this.data[i];
       }
     }
-    throw Error(`[DataRowMovingWinddow] firstRow, no data`);
+    throw Error('[DataRowMovingWinddow] firstRow, no data');
   }
 
   get range() {

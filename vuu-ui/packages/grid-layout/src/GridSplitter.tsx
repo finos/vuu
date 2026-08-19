@@ -9,12 +9,14 @@ import gridSplitterCss from "./GridSplitter.css";
 export interface GridSplitterProps extends HTMLAttributes<HTMLDivElement> {
   "aria-controls": string;
   ariaOrientation: AriaOrientation;
+  offsetStart?: boolean;
   orientation: ResizeOrientation;
 }
 
 export const GridSplitter = ({
   "aria-controls": ariaControls,
   ariaOrientation,
+  offsetStart,
   orientation,
   ...htmlAttributes
 }: GridSplitterProps) => {
@@ -31,7 +33,7 @@ export const GridSplitter = ({
       {...htmlAttributes}
       aria-controls={ariaControls}
       aria-orientation={ariaOrientation}
-      className="vuuGridSplitter"
+      className={`vuuGridSplitter${offsetStart ? " vuuGridSplitter-offset-start" : ""}`}
       draggable
       id={id}
       role="separator"

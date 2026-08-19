@@ -16,7 +16,6 @@ import type {
   VuuGroupBy,
   VuuSort,
 } from "@vuu-ui/vuu-protocol-types";
-import { TableModel } from "@vuu-ui/vuu-table";
 import type {
   ColumnAlignment,
   ColumnDescriptor,
@@ -38,8 +37,9 @@ import type {
   TableHeadings,
   ValueListRenderer,
 } from "@vuu-ui/vuu-table-types";
-import { type CSSProperties } from "react";
+import type { CSSProperties } from "react";
 import { moveItem } from "./array-utils";
+import type { TableModel } from "@vuu-ui/vuu-table";
 import { queryClosest } from "./html-utils";
 
 /**
@@ -54,8 +54,9 @@ export interface ReverseColumnMap {
   [columnIndex: number]: string;
 }
 
+export const NO_HEADINGS: TableHeadings = [];
+
 const SORT_ASC = "asc";
-const NO_HEADINGS: TableHeadings = [];
 const DEFAULT_COL_WIDTH = 100;
 const DEFAULT_MAX_WIDTH = 250;
 const DEFAULT_MIN_WIDTH = 50;
@@ -104,11 +105,12 @@ export type EditOperation = "insert" | "update";
 export const isDataValueEditable = (
   dataDescriptor: Pick<DataValueDescriptor, "editable">,
   operation: EditOperation,
-  defaultValue = false,
+  defaultValue = false
 ) => {
   const { editable = defaultValue } = dataDescriptor;
   return typeof editable === "object" ? editable[operation] : editable === true;
-};
+}
+
 
 export const getRuntimeColumnWidth = (
   col: ColumnDescriptor,
@@ -385,9 +387,9 @@ export function extractGroupColumn({
   groupBy,
   confirmed = true,
 }: ColumnGroupProps): [
-  GroupColumnDescriptor | null,
-  RuntimeColumnDescriptor[],
-] {
+    GroupColumnDescriptor | null,
+    RuntimeColumnDescriptor[],
+  ] {
   if (groupBy && groupBy.length > 0) {
     const flattenedColumns = flattenColumnGroup(columns);
     // Note: groupedColumns will be in column order, not groupBy order
@@ -434,9 +436,9 @@ export function extractGroupColumn({
     const width = groupOnly
       ? availableWidth
       : Math.min(
-          availableWidth,
-          groupCols.map((c) => c.width).reduce((a, b) => a + b) + 100,
-        );
+        availableWidth,
+        groupCols.map((c) => c.width).reduce((a, b) => a + b) + 100,
+      );
 
     const groupCol = {
       ariaColIndex: 1,
@@ -506,7 +508,7 @@ export const sortPinnedColumns = (
   let pinnedWidthLeft = selectionBookendWidth;
   for (const column of columns) {
     // prettier-ignore
-    switch(column.pin){
+    switch (column.pin) {
       case "left": {
         leftPinnedColumns.push({
           ...column,
@@ -515,8 +517,8 @@ export const sortPinnedColumns = (
         });
         pinnedWidthLeft += column.width;
       }
-      break;
-    // store right pinned columns initially in reverse order
+        break;
+      // store right pinned columns initially in reverse order
       case "right": rightPinnedColumns.unshift(column); break;
       default: restColumns.push(column)
     }
@@ -590,6 +592,7 @@ export const measurePinnedColumns = (
 
 export const getTableHeadings = (
   columns: RuntimeColumnDescriptor[],
+  selectionBookendWidth = 0
 ): TableHeadings => {
   if (columns.some(hasHeadings)) {
     const maxHeadingDepth = columns.reduce<number>(
@@ -597,14 +600,16 @@ export const getTableHeadings = (
       0,
     );
 
-    let heading: TableHeading | undefined = undefined;
+    let heading: TableHeading | undefined;
     const tableHeadings: TableHeadings = [];
     let tableHeadingsRow: TableHeading[];
     for (let level = 0; level < maxHeadingDepth; level++) {
       tableHeadingsRow = [];
-      columns.forEach(({ heading: columnHeading = NO_HEADINGS, width }) => {
+      columns.forEach(({ heading: columnHeading = NO_HEADINGS, hidden, width }) => {
         const label = columnHeading[level] ?? "";
-        if (heading && heading.label === label) {
+        if (hidden) {
+          return;
+        } else if (heading && heading.label === label) {
           heading.width += width;
         } else {
           heading = { label, width } as TableHeading;
@@ -612,6 +617,14 @@ export const getTableHeadings = (
         }
       });
       tableHeadings.push(tableHeadingsRow);
+    }
+
+    if (selectionBookendWidth > 0) {
+      tableHeadings.forEach((tableHeading) => {
+        tableHeading[0].width += selectionBookendWidth;
+        tableHeading[tableHeading.length - 1].width += selectionBookendWidth;
+      })
+
     }
 
     return tableHeadings;
@@ -1138,8 +1151,8 @@ export const addColumnToSubscribedColumns = (
 ) => {
   const byColName =
     (n = columnName) =>
-    (column: { name: string }) =>
-      column.name === n;
+      (column: { name: string }) =>
+        column.name === n;
   if (subscribedColumns.findIndex(byColName()) !== -1) {
     throw Error(
       `[column-utils], addColumnToSubscribedColumns column ${columnName} is already subscribed`,
@@ -1212,7 +1225,7 @@ export const getCalculatedColumnDetails = (
         : undefined,
     };
   } else {
-    throw Error(`column.name is nor a calculated column`);
+    throw Error('column.name is not a calculated column');
   }
 };
 
@@ -1362,7 +1375,7 @@ export function applyWidthToColumns(
     defaultMinWidth = DEFAULT_MIN_WIDTH,
     defaultMaxWidth = DEFAULT_MAX_WIDTH,
   }: // defaultFlex = DEFAULT_FLEX,
-  columnOptions,
+    columnOptions,
 ): RuntimeColumnDescriptor[] {
   if (columnLayout === "fit") {
     const { totalMinWidth, totalMaxWidth, totalWidth, flexCount } =
@@ -1528,7 +1541,7 @@ export const dataAndColumnUnchanged = (
 ) =>
   p.column === p1.column &&
   p.column.valueFormatter(p.dataRow[p.column.name]) ===
-    p1.column.valueFormatter(p1.dataRow[p1.column.name]);
+  p1.column.valueFormatter(p1.dataRow[p1.column.name]);
 
 /**
  * A memo compare function for cell renderers. Can be used to suppress
@@ -1544,8 +1557,9 @@ export const dataColumnAndKeyUnchanged = (
 ) =>
   p.column === p1.column &&
   p.dataRow.key === p1.dataRow.key &&
+  p.dataRow.vuu_action === p1.dataRow.vuu_action &&
   p.column.valueFormatter(p.dataRow[p.column.name]) ===
-    p1.column.valueFormatter(p1.dataRow[p1.column.name]);
+  p1.column.valueFormatter(p1.dataRow[p1.column.name]);
 
 export const toColumnName = (column: ColumnDescriptor) => column.name;
 export const isStringColumn = (column: ColumnDescriptor) =>

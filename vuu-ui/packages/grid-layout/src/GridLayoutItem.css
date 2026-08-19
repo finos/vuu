@@ -5,12 +5,6 @@
   flex-direction: column;
   position: relative;
 
-  &.vuuGridLayoutItem-dragging {
-    display: none;
-    grid-column: 0/0 !important;
-    grid-row: 0/0;
-  }
-
   &.has-h-splitter:not(.vuu-stacked) {
     margin-top: 7px;
   }

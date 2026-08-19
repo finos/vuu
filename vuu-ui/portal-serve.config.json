@@ -1,0 +1,42 @@
+{
+  "defaultHost": "portal-host",
+  "hosts": [
+    {
+      "name": "portal-host",
+      "port": 5001,
+      "directory": "dist_portal/portal-host"
+    }
+  ],
+  "remotes": [
+    {
+      "name": "module-admin",
+      "port": 5002,
+      "directory": "dist_portal/module-admin"
+    },
+    {
+      "name": "user-admin",
+      "port": 5003,
+      "directory": "dist_portal/user-admin"
+    },
+    {
+      "name": "vuu-table-browser",
+      "port": 5004,
+      "directory": "dist_portal/vuu-table-browser"
+    },
+    {
+      "name": "vuu-table-viewer",
+      "port": 5005,
+      "directory": "dist_portal/vuu-table-viewer"
+    },
+    {
+      "name": "basket-trading",
+      "port": 5006,
+      "directory": "dist_portal/basket-trading"
+    },
+    {
+      "name": "feature-simple-div",
+      "port": 5007,
+      "directory": "dist_portal/feature-simple-div"
+    }
+  ]
+}

@@ -1,18 +1,6 @@
-import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import type { SchemaColumn, TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
-
-export const toSchemaColumn = ({
-  editable,
-  name,
-  required,
-  serverDataType = "string",
-}: ColumnDescriptor): SchemaColumn => ({
-  editable,
-  name,
-  required,
-  serverDataType,
-});
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 export const getVuuTable = (schemaTable: TableSchemaTable): VuuTable => {
   if (schemaTable.session) {
@@ -22,3 +10,12 @@ export const getVuuTable = (schemaTable: TableSchemaTable): VuuTable => {
     return schemaTable;
   }
 };
+
+// Note may cause issues with csv upload due to discarded changes
+export const toSchemaColumn = ({ editable, name, serverDataType = 'string' }: ColumnDescriptor): SchemaColumn => {
+  return {
+    editable: editable === true || typeof editable === 'object',
+    name,
+    serverDataType
+  }
+}
