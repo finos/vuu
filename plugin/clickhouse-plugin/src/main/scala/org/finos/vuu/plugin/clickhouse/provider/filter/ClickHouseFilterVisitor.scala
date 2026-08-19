@@ -32,33 +32,37 @@ case class ClickHouseFilterVisitor(remoteNameMapping: Map[String, VirtualizedSes
   override def visitOperationEq(ctx: OperationEqContext): Unit = {
     val remoteColumn = getRemoteColumn(ctx.ID().getText)
     stringBuilder.append(remoteColumn.remoteName).append(" = ")
-    appendScalarParam(remoteColumn, ctx.scalar())
+    appendParam(remoteColumn, ctx.scalar().getText)
   }
 
   override def visitOperationNeq(ctx: OperationNeqContext): Unit = {
     val remoteColumn = getRemoteColumn(ctx.ID().getText)
     stringBuilder.append(remoteColumn.remoteName).append(" != ")
-    appendScalarParam(remoteColumn, ctx.scalar())
+    appendParam(remoteColumn, ctx.scalar().getText)
   }
 
   override def visitOperationGt(ctx: OperationGtContext): Unit = {
     val remoteColumn = getRemoteColumn(ctx.ID().getText)
-    stringBuilder.append(remoteColumn.remoteName).append(" > ").append(ctx.NUMBER().getText)
+    stringBuilder.append(remoteColumn.remoteName).append(" > ")
+    appendParam(remoteColumn, ctx.NUMBER().getText)
   }
 
   override def visitOperationGte(ctx: OperationGteContext): Unit = {
     val remoteColumn = getRemoteColumn(ctx.ID().getText)
-    stringBuilder.append(remoteColumn.remoteName).append(" >= ").append(ctx.NUMBER().getText)
+    stringBuilder.append(remoteColumn.remoteName).append(" >= ")
+    appendParam(remoteColumn, ctx.NUMBER().getText)
   }
 
   override def visitOperationLt(ctx: OperationLtContext): Unit = {
     val remoteColumn = getRemoteColumn(ctx.ID().getText)
-    stringBuilder.append(remoteColumn.remoteName).append(" < ").append(ctx.NUMBER().getText)
+    stringBuilder.append(remoteColumn.remoteName).append(" < ")
+    appendParam(remoteColumn, ctx.NUMBER().getText)
   }
 
   override def visitOperationLte(ctx: OperationLteContext): Unit = {
     val remoteColumn = getRemoteColumn(ctx.ID().getText)
-    stringBuilder.append(remoteColumn.remoteName).append(" <= ").append(ctx.NUMBER().getText)
+    stringBuilder.append(remoteColumn.remoteName).append(" <= ")
+    appendParam(remoteColumn, ctx.NUMBER().getText)
   }
 
   override def visitOperationStarts(ctx: OperationStartsContext): Unit = {
@@ -130,10 +134,9 @@ case class ClickHouseFilterVisitor(remoteNameMapping: Map[String, VirtualizedSes
     stringBuilder.append('\'')
   }
 
-  private def appendScalarParam(column: VirtualizedSessionTableColumn,
-                                scalarContext: ScalarContext): Unit = {
+  private def appendParam(column: VirtualizedSessionTableColumn,
+                          paramValue: String): Unit = {
     val paramName = s"p_${params.size}"
-    val paramValue = scalarContext.getText
 
     stringBuilder.append("{")
     stringBuilder.append(paramName)

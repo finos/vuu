@@ -330,12 +330,310 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
 
   }
 
-    //    Scenario("Magnitude comparisons") {
-    //      compile("price > 123.45") shouldBe "price > 123.45"
-    //      compile("price >= 100") shouldBe "price >= 100"
-    //      compile("price < 50.5") shouldBe "price < 50.5"
-    //      compile("price <= 50") shouldBe "price <= 50"
-    //    }
+  Feature("Less than test cases") {
+
+    Scenario("Int less than comparison") {
+      val expected = ("int_c < {p_0:Int32}", Map("p_0" -> 1))
+
+      val result = compile("intColumn < 1")
+
+      result shouldBe expected
+    }
+
+    Scenario("Double less than comparison") {
+      val expected = ("double_c < {p_0:Float64}", Map("p_0" -> 1.01))
+
+      val result = compile("doubleColumn < 1.01")
+
+      result shouldBe expected
+    }
+
+    Scenario("Long less than comparison") {
+      val expected = ("long_c < {p_0:Int64}", Map("p_0" -> 100L))
+
+      val result = compile("longColumn < 100")
+
+      result shouldBe expected
+    }
+
+    Scenario("Epoch less than comparison") {
+      val expected = ("epoch_c < {p_0:DateTime64}", Map("p_0" -> ofEpochMilli(1L)))
+
+      val result = compile("epochColumn < 1")
+
+      result shouldBe expected
+    }
+
+    Scenario("EpochNano less than comparison") {
+      val expected = ("epoch_nano_c < {p_0:DateTime64}", Map("p_0" -> ofEpochNanosecond(1L)))
+
+      val result = compile("epochNanoColumn < 1")
+
+      result shouldBe expected
+    }
+
+    Scenario("ScaledDecimal2 less than comparison") {
+      val expected = ("sd2_c < {p_0:Int64}", Map("p_0" -> 101L))
+
+      val result = compile("sd2Column < 1.01")
+
+      result shouldBe expected
+    }
+
+    Scenario("ScaledDecimal4 less than comparison") {
+      val expected = ("sd4_c < {p_0:Int64}", Map("p_0" -> 10001L))
+
+      val result = compile("sd4Column < 1.0001")
+
+      result shouldBe expected
+    }
+
+    Scenario("ScaledDecimal6 less than comparison") {
+      val expected = ("sd6_c < {p_0:Int64}", Map("p_0" -> 1000001L))
+
+      val result = compile("sd6Column < 1.000001")
+
+      result shouldBe expected
+    }
+
+    Scenario("ScaledDecimal8 less than comparison") {
+      val expected = ("sd8_c < {p_0:Int64}", Map("p_0" -> 100000001L))
+
+      val result = compile("sd8Column < 1.00000001")
+
+      result shouldBe expected
+    }
+
+  }
+
+  Feature("Less than or equal test cases") {
+
+    Scenario("Int less than or equal comparison") {
+      val expected = ("int_c <= {p_0:Int32}", Map("p_0" -> 1))
+
+      val result = compile("intColumn <= 1")
+
+      result shouldBe expected
+    }
+
+    Scenario("Double less than or equal comparison") {
+      val expected = ("double_c <= {p_0:Float64}", Map("p_0" -> 1.01))
+
+      val result = compile("doubleColumn <= 1.01")
+
+      result shouldBe expected
+    }
+
+    Scenario("Long less than or equal comparison") {
+      val expected = ("long_c <= {p_0:Int64}", Map("p_0" -> 100L))
+
+      val result = compile("longColumn <= 100")
+
+      result shouldBe expected
+    }
+
+    Scenario("Epoch less than or equal comparison") {
+      val expected = ("epoch_c <= {p_0:DateTime64}", Map("p_0" -> ofEpochMilli(1L)))
+
+      val result = compile("epochColumn <= 1")
+
+      result shouldBe expected
+    }
+
+    Scenario("EpochNano less than or equal comparison") {
+      val expected = ("epoch_nano_c <= {p_0:DateTime64}", Map("p_0" -> ofEpochNanosecond(1L)))
+
+      val result = compile("epochNanoColumn <= 1")
+
+      result shouldBe expected
+    }
+
+    Scenario("ScaledDecimal2 less than or equal comparison") {
+      val expected = ("sd2_c <= {p_0:Int64}", Map("p_0" -> 101L))
+
+      val result = compile("sd2Column <= 1.01")
+
+      result shouldBe expected
+    }
+
+    Scenario("ScaledDecimal4 less than or equal comparison") {
+      val expected = ("sd4_c <= {p_0:Int64}", Map("p_0" -> 10001L))
+
+      val result = compile("sd4Column <= 1.0001")
+
+      result shouldBe expected
+    }
+
+    Scenario("ScaledDecimal6 less than or equal comparison") {
+      val expected = ("sd6_c <= {p_0:Int64}", Map("p_0" -> 1000001L))
+
+      val result = compile("sd6Column <= 1.000001")
+
+      result shouldBe expected
+    }
+
+    Scenario("ScaledDecimal8 less than or equal comparison") {
+      val expected = ("sd8_c <= {p_0:Int64}", Map("p_0" -> 100000001L))
+
+      val result = compile("sd8Column <= 1.00000001")
+
+      result shouldBe expected
+    }
+
+  }
+
+  Feature("Greater than test cases") {
+
+    Scenario("Int greater than comparison") {
+      val expected = ("int_c > {p_0:Int32}", Map("p_0" -> 1))
+
+      val result = compile("intColumn > 1")
+
+      result shouldBe expected
+    }
+
+    Scenario("Double greater than comparison") {
+      val expected = ("double_c > {p_0:Float64}", Map("p_0" -> 1.01))
+
+      val result = compile("doubleColumn > 1.01")
+
+      result shouldBe expected
+    }
+
+    Scenario("Long greater than comparison") {
+      val expected = ("long_c > {p_0:Int64}", Map("p_0" -> 100L))
+
+      val result = compile("longColumn > 100")
+
+      result shouldBe expected
+    }
+
+    Scenario("Epoch greater than comparison") {
+      val expected = ("epoch_c > {p_0:DateTime64}", Map("p_0" -> ofEpochMilli(1L)))
+
+      val result = compile("epochColumn > 1")
+
+      result shouldBe expected
+    }
+
+    Scenario("EpochNano greater than comparison") {
+      val expected = ("epoch_nano_c > {p_0:DateTime64}", Map("p_0" -> ofEpochNanosecond(1L)))
+
+      val result = compile("epochNanoColumn > 1")
+
+      result shouldBe expected
+    }
+
+    Scenario("ScaledDecimal2 greater than comparison") {
+      val expected = ("sd2_c > {p_0:Int64}", Map("p_0" -> 101L))
+
+      val result = compile("sd2Column > 1.01")
+
+      result shouldBe expected
+    }
+
+    Scenario("ScaledDecimal4 greater than comparison") {
+      val expected = ("sd4_c > {p_0:Int64}", Map("p_0" -> 10001L))
+
+      val result = compile("sd4Column > 1.0001")
+
+      result shouldBe expected
+    }
+
+    Scenario("ScaledDecimal6 greater than comparison") {
+      val expected = ("sd6_c > {p_0:Int64}", Map("p_0" -> 1000001L))
+
+      val result = compile("sd6Column > 1.000001")
+
+      result shouldBe expected
+    }
+
+    Scenario("ScaledDecimal8 greater than comparison") {
+      val expected = ("sd8_c > {p_0:Int64}", Map("p_0" -> 100000001L))
+
+      val result = compile("sd8Column > 1.00000001")
+
+      result shouldBe expected
+    }
+
+  }
+
+  Feature("Greater than or equal test cases") {
+
+    Scenario("Int greater than or equal comparison") {
+      val expected = ("int_c >= {p_0:Int32}", Map("p_0" -> 1))
+
+      val result = compile("intColumn >= 1")
+
+      result shouldBe expected
+    }
+
+    Scenario("Double greater than or equal comparison") {
+      val expected = ("double_c >= {p_0:Float64}", Map("p_0" -> 1.01))
+
+      val result = compile("doubleColumn >= 1.01")
+
+      result shouldBe expected
+    }
+
+    Scenario("Long greater than or equal comparison") {
+      val expected = ("long_c >= {p_0:Int64}", Map("p_0" -> 100L))
+
+      val result = compile("longColumn >= 100")
+
+      result shouldBe expected
+    }
+
+    Scenario("Epoch greater than or equal comparison") {
+      val expected = ("epoch_c >= {p_0:DateTime64}", Map("p_0" -> ofEpochMilli(1L)))
+
+      val result = compile("epochColumn >= 1")
+
+      result shouldBe expected
+    }
+
+    Scenario("EpochNano greater than or equal comparison") {
+      val expected = ("epoch_nano_c >= {p_0:DateTime64}", Map("p_0" -> ofEpochNanosecond(1L)))
+
+      val result = compile("epochNanoColumn >= 1")
+
+      result shouldBe expected
+    }
+
+    Scenario("ScaledDecimal2 greater than or equal comparison") {
+      val expected = ("sd2_c >= {p_0:Int64}", Map("p_0" -> 101L))
+
+      val result = compile("sd2Column >= 1.01")
+
+      result shouldBe expected
+    }
+
+    Scenario("ScaledDecimal4 greater than or equal comparison") {
+      val expected = ("sd4_c >= {p_0:Int64}", Map("p_0" -> 10001L))
+
+      val result = compile("sd4Column >= 1.0001")
+
+      result shouldBe expected
+    }
+
+    Scenario("ScaledDecimal6 greater than or equal comparison") {
+      val expected = ("sd6_c >= {p_0:Int64}", Map("p_0" -> 1000001L))
+
+      val result = compile("sd6Column >= 1.000001")
+
+      result shouldBe expected
+    }
+
+    Scenario("ScaledDecimal8 greater than or equal comparison") {
+      val expected = ("sd8_c >= {p_0:Int64}", Map("p_0" -> 100000001L))
+
+      val result = compile("sd8Column >= 1.00000001")
+
+      result shouldBe expected
+    }
+
+  }
+
     //
     //    Scenario("String match operators") {
     //      compile("ric starts \"AAPL\"") shouldBe "ric LIKE 'AAPL%'"
