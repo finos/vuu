@@ -1,11 +1,12 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { useAuthenticatedUser } from "@vuu-ui/core";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import type { LayoutChangeHandler } from "@vuu-ui/vuu-layout";
 import { LayoutProvider, StackLayout } from "@vuu-ui/vuu-layout";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
-import { VuuUser, logger, registerComponent } from "@vuu-ui/vuu-utils";
+import { logger } from "@vuu-ui/vuu-utils";
 import {
   type HTMLAttributes,
   type ReactNode,
@@ -15,15 +16,17 @@ import {
 import { AppHeader } from "./app-header";
 import { ApplicationProvider } from "./application-provider";
 import {
-  IPersistenceManager,
+  type IPersistenceManager,
   LocalPersistenceManager,
   PersistenceProvider,
   usePersistenceManager,
 } from "./persistence-manager";
-import { ShellLayoutProps, useShellLayout } from "./shell-layout-templates";
-import { SettingsSchema, UserSettingsPanel } from "./user-settings";
 import {
-  WorkspaceProps,
+  type ShellLayoutProps,
+  useShellLayout,
+} from "./shell-layout-templates";
+import {
+  type WorkspaceProps,
   WorkspaceProvider,
   useWorkspace,
   useWorkspaceContextMenuItems,
@@ -32,8 +35,6 @@ import { loadingJSON } from "./workspace-management/defaultWorkspaceJSON";
 import { useLostConnection } from "@vuu-ui/vuu-data-react";
 
 import shellCss from "./shell.css";
-
-registerComponent("ApplicationSettings", UserSettingsPanel, "view");
 
 if (process.env.NODE_ENV === "production") {
   // StackLayout is loaded just to force component registration, we know it will be
@@ -52,13 +53,11 @@ export type LayoutTemplateName = "full-height" | "inlay";
 
 export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   shellLayoutProps?: ShellLayoutProps;
-  userSettingsSchema?: SettingsSchema;
   workspaceProps?: WorkspaceProps;
   children?: ReactNode;
   logout?: () => void;
   saveUrl?: string;
   serverUrl?: string;
-  user: VuuUser;
 }
 
 const defaultAppHeader = <AppHeader />;
@@ -84,10 +83,7 @@ const getHTMLAttributes = (props?: ShellLayoutProps) => {
 const VuuApplication = ({
   shellLayoutProps: ShellLayoutProps,
   children,
-}: Omit<
-  ShellProps,
-  "ContentLayoutProps" | "loginUrl" | "userSettingsSchema" | "workspaceProps"
->) => {
+}: Omit<ShellProps, "ContentLayoutProps" | "loginUrl" | "workspaceProps">) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-shell",
@@ -136,16 +132,11 @@ const VuuApplication = ({
   );
 };
 
-export const Shell = ({
-  logout,
-  user,
-  userSettingsSchema,
-  workspaceProps,
-  ...props
-}: ShellProps) => {
+export const Shell = ({ logout, workspaceProps, ...props }: ShellProps) => {
   // If user has provided an implementation of IPersistenceManager
   // by wrapping higher level PersistenceProvider, use it, otw
   // default to LocalPersistenceManager
+  const user = useAuthenticatedUser();
   const persistenceManager = usePersistenceManager();
   const localPersistenceManager = useMemo<
     IPersistenceManager | undefined
@@ -154,27 +145,21 @@ export const Shell = ({
       return undefined;
     }
     console.log(
-      `No Persistence Manager, configuration data will be persisted to Local Storage, key: 'vuu/${user.username}'`,
+      `No Persistence Manager, configuration data will be persisted to Local Storage, key: 'vuu/${user.userName}'`,
     );
-    return new LocalPersistenceManager(`vuu/${user.username}`);
-  }, [persistenceManager, user.username]);
+    return new LocalPersistenceManager(`vuu/${user.userName}`);
+  }, [persistenceManager, user.userName]);
 
   // ApplicationProvider must go outside Dialog and Notification providers
   // ApplicationProvider injects the SaltProvider and this must be the root
   // SaltProvider.
 
   const shellProviders = (
-    <ApplicationProvider
-      density="high"
-      logout={logout}
-      theme="vuu-theme"
-      user={user}
-      userSettingsSchema={userSettingsSchema}
-    >
+    <ApplicationProvider density="high" logout={logout} theme="vuu-theme">
       <WorkspaceProvider {...workspaceProps}>
         <ModalProvider>
           <NotificationsProvider>
-            <VuuApplication {...props} user={user} />
+            <VuuApplication {...props} />
           </NotificationsProvider>
         </ModalProvider>
       </WorkspaceProvider>

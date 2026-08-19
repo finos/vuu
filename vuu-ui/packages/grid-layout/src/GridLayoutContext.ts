@@ -1,9 +1,16 @@
-import { createContext, Dispatch, DragEvent, useContext } from "react";
-import { GridLayoutDragEndHandler } from "./GridLayoutProvider";
-import { GridModel, TabStateTab, TrackSize } from "./GridModel";
-import { GridLayoutDragStartHandler } from "./useDraggable";
-import { GridLayoutModel } from "./GridLayoutModel";
-import { GridLayoutDropPosition } from "@vuu-ui/vuu-utils";
+import {
+  createContext,
+  type Dispatch,
+  type DragEvent,
+  useContext,
+} from "react";
+import type { GridLayoutDragEndHandler } from "./GridLayoutProvider";
+import type { GridModel, TabStateTab, TrackSize } from "./GridModel";
+import type { GridLayoutDragStartHandler } from "./useDraggable";
+import type { GridLayoutModel } from "./GridLayoutModel";
+import type { GridLayoutDropPosition } from "@vuu-ui/vuu-utils";
+import type { GridController } from "./GridController";
+import type { GridSnapshot } from "./GridSnapshot";
 
 export type GridLayoutActionType = "close";
 
@@ -12,11 +19,17 @@ export type GridLayoutCloseAction = {
   id: string;
 };
 
-export type GridLayoutAddChildAction = {
+export type GridLayoutRenameTabAction = {
+  type: "rename-tab";
+  id: string;
   title: string;
-  type: "add-child";
+};
+
+export type GridLayoutAddTabbedChildAction = {
+  title: string;
+  type: "add-tabbed-child";
   componentTemplate: ComponentTemplate;
-  stackId?: string;
+  stackId: string;
 };
 
 //TODO is it used ?
@@ -33,6 +46,12 @@ export type GridLayoutSwitchTabAction = {
   toId: string;
 };
 
+export type GridLayoutSelectTabAction = {
+  type: "select-tab";
+  itemId: string;
+  stackId: string;
+};
+
 export type GridLayoutTrackAction = {
   type: "resize-grid-column" | "resize-grid-row";
   trackIndex: number;
@@ -42,9 +61,11 @@ export type GridLayoutTrackAction = {
 export type GridLayoutAction =
   | GridLayoutCloseAction
   // | GridLayoutInsertTabAction
-  | GridLayoutAddChildAction
+  | GridLayoutAddTabbedChildAction
   | GridLayoutSwitchTabAction
-  | GridLayoutTrackAction;
+  | GridLayoutSelectTabAction
+  | GridLayoutTrackAction
+  | GridLayoutRenameTabAction;
 
 export type GridLayoutDispatch = Dispatch<GridLayoutAction>;
 const unconfiguredGridLayoutDispatch: GridLayoutDispatch = (action) =>
@@ -79,7 +100,19 @@ export interface ComponentDragSource {
 }
 
 export interface ComponentTemplate {
+  /**
+   * Stringified JSON - the serialized layoutJSON from which
+   * component can be reconstituted
+   */
   componentJson: string;
+  /**
+   * Can the component act as a drop target. Note: false does not
+   * preclude children of the component from acting as drop targets.
+   */
+  dropTarget?: boolean;
+  /**
+   * Primarily intended for display in Palette etc.
+   */
   label: string;
 }
 
@@ -101,43 +134,34 @@ export type DragSource =
 
 export const sourceIsComponent = (
   source: DragSource | undefined,
-): source is ComponentDragSource => {
-  if (source === undefined) {
-    throw Error("sourceIsComponent: source is undefined");
-  }
-  return source.type === "component";
-};
+): source is ComponentDragSource => source?.type === "component";
 
 export const sourceIsTabbedComponent = (
   source: DragSource | undefined,
-): source is TabbedComponentDragSource => {
-  if (source === undefined) {
-    throw Error("sourceIsComponent: source is undefined");
-  }
-  return source.type === "tabbed-component";
-};
+): source is TabbedComponentDragSource => source?.type === "tabbed-component";
 
 export const sourceIsTemplate = (
   source: DragSource | undefined,
-): source is TemplateSource => {
-  if (source === undefined) {
-    throw Error("sourceIsTemplate: source is undefined");
-  }
-  return source.type === "template";
-};
+): source is TemplateSource => source?.type === "template";
 
 export type GridLayoutDropHandler = (
   targetId: string,
   dragSource: DragSource,
   position: GridLayoutDropPosition,
-) => void;
+) => boolean;
+
+export type GridLayoutDragLeaveHandler = () => void;
 
 export interface GridLayoutContextProps {
   dispatchGridLayoutAction: GridLayoutDispatch;
+  gridController?: GridController;
   gridLayoutModel?: GridLayoutModel;
   gridModel?: GridModel;
+  gridSnapshot?: GridSnapshot;
   id: string;
   onDragEnd?: GridLayoutDragEndHandler;
+  onDragLeave: GridLayoutDragLeaveHandler;
+  onDragPreview: GridLayoutDropHandler;
   onDragStart: GridLayoutDragStartHandler;
   onDrop: GridLayoutDropHandler;
 }
@@ -145,8 +169,10 @@ export interface GridLayoutContextProps {
 export const GridLayoutContext = createContext<GridLayoutContextProps>({
   dispatchGridLayoutAction: unconfiguredGridLayoutDispatch,
   id: "",
+  onDragLeave: () => undefined,
+  onDragPreview: () => false,
   onDragStart: () => console.log("no GridLayoutProvider"),
-  onDrop: () => console.log("no GridLayoutProvider"),
+  onDrop: () => false,
 });
 
 export const useGridLayoutDispatch = () => {
@@ -159,6 +185,16 @@ export const useGridLayoutDropHandler = () => {
   return onDrop;
 };
 
+export const useGridLayoutDragPreviewHandler = () => {
+  const { onDragPreview } = useContext(GridLayoutContext);
+  return onDragPreview;
+};
+
+export const useGridLayoutDragLeaveHandler = () => {
+  const { onDragLeave } = useContext(GridLayoutContext);
+  return onDragLeave;
+};
+
 export const useGridLayoutDragEndHandler = () => {
   const { onDragEnd } = useContext(GridLayoutContext);
   return onDragEnd;
@@ -169,6 +205,7 @@ export const useGridLayoutDragStartHandler = () => {
   return onDragStart;
 };
 
+/** @deprecated Mutable GridModel is an internal compatibility engine. */
 export const useGridModel = () => {
   const { gridModel } = useContext(GridLayoutContext);
   if (gridModel) {
@@ -178,6 +215,26 @@ export const useGridModel = () => {
       "[useGridModel] no gridModel, did you forget to use a GridLayout",
     );
   }
+};
+
+export const useGridController = () => {
+  const { gridController } = useContext(GridLayoutContext);
+  if (gridController) {
+    return gridController;
+  }
+  throw Error(
+    "[useGridController] no gridController, did you forget to use a GridLayout",
+  );
+};
+
+export const useGridSnapshot = () => {
+  const { gridSnapshot } = useContext(GridLayoutContext);
+  if (gridSnapshot) {
+    return gridSnapshot;
+  }
+  throw Error(
+    "[useGridSnapshot] no gridSnapshot, did you forget to use a GridLayout",
+  );
 };
 
 export const useGridLayoutId = () => {

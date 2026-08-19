@@ -180,12 +180,7 @@ export const ShowcaseStandalone = ({
             </div>
           </LocalDataSourceProvider>
         ) : (
-          <VuuDataSourceProvider
-            authenticate={true}
-            autoConnect
-            autoLogin
-            websocketUrl="wss://localhost:8090/websocket"
-          >
+          <VuuDataSourceProvider>
             <div
               className={cx("vuuShowcase-StandaloneRoot", {
                 "vuuShowcase-mdx": contentState?.isMDX,

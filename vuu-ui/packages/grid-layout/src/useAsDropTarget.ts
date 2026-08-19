@@ -1,12 +1,18 @@
 import {
+  boxContainsPoint,
   getPositionWithinBox,
   type GridLayoutDropPosition,
   pointPositionWithinRect,
   queryClosest,
   type rect,
 } from "@vuu-ui/vuu-utils";
-import { DragEventHandler, useCallback, useRef } from "react";
-import { useGridLayoutDropHandler, useGridLayoutId } from "./GridLayoutContext";
+import { type DragEventHandler, useCallback, useEffect, useRef } from "react";
+import {
+  useGridLayoutDragLeaveHandler,
+  useGridLayoutDragPreviewHandler,
+  useGridLayoutDropHandler,
+  useGridLayoutId,
+} from "./GridLayoutContext";
 import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
 
 const DROPTARGET_CLASSNAME = "vuuDropTarget";
@@ -63,9 +69,14 @@ type DropTarget = {
 const getDropTarget = (
   target: EventTarget,
   currentDropTarget: DropTarget | undefined,
+  layoutId: string,
 ): DropTarget | undefined => {
   let dropTargetEl = queryClosest(target, DROPTARGET_QUERY);
   if (dropTargetEl) {
+    const owningLayout = queryClosest(dropTargetEl, ".vuuGridLayout", true);
+    if (owningLayout.id !== layoutId) {
+      return;
+    }
     const { id: gridLayoutItemId } = queryClosest(
       dropTargetEl,
       GRIDITEM_QUERY,
@@ -115,6 +126,7 @@ const getDropTarget = (
 };
 
 type DropTargetState = {
+  accepted: boolean;
   mousePos: MousePosition;
   position: GridLayoutDropPosition | undefined;
   rect: rect;
@@ -128,31 +140,56 @@ const NullRect: rect = {
   top: -1,
 };
 
-const NULL_STATE: DropTargetState = {
+const createDropTargetState = (): DropTargetState => ({
+  accepted: false,
   mousePos: { clientX: -1, clientY: -1 },
   position: undefined,
-  rect: NullRect,
+  rect: { ...NullRect },
   dropTarget: undefined,
+});
+
+const createActiveDropTargetState = (
+  dropTarget: DropTarget,
+): DropTargetState => {
+  const { bottom, left, right, top } =
+    dropTarget.target.getBoundingClientRect();
+  return {
+    accepted: false,
+    dropTarget,
+    mousePos: { clientX: -1, clientY: -1 },
+    position: undefined,
+    rect: { bottom, left, right, top },
+  };
 };
 
 export const useAsDropTarget = () => {
-  const dropTargetStateRef = useRef<DropTargetState>(NULL_STATE);
+  const dropTargetStateRef = useRef<DropTargetState>(createDropTargetState());
 
   const drop = useGridLayoutDropHandler();
+  const leave = useGridLayoutDragLeaveHandler();
+  const preview = useGridLayoutDragPreviewHandler();
   const dragContext = useDragContext();
   const layoutId = useGridLayoutId();
-
+  const clearDropTarget = useCallback(() => {
+    const { dropTarget } = dropTargetStateRef.current;
+    if (dropTarget) {
+      removeDropTargetPositionClassName(dropTarget.target);
+    }
+    dropTargetStateRef.current = createDropTargetState();
+  }, []);
+  useEffect(() => {
+    const unregister = dragContext.registerDragStateCleanup(clearDropTarget);
+    return () => {
+      unregister();
+    };
+  }, [clearDropTarget, dragContext]);
   const onDragEnter = useCallback<DragEventHandler>(
     (evt) => {
       if (dragContext.dragSource === undefined) {
         return;
       }
       const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
-      let dropTarget = getDropTarget(evt.target, currentDropTarget);
-      console.log(
-        `[useAsDropTarget#${layoutId}] onDragEnter ${dropTarget?.gridLayoutItemId}, evt already handled ${evt.defaultPrevented}`,
-      );
-
+      let dropTarget = getDropTarget(evt.target, currentDropTarget, layoutId);
       if (evt.defaultPrevented) {
         // We are entering Tabs, this is handled by drag-drop-listeners
         dropTarget = undefined;
@@ -160,30 +197,30 @@ export const useAsDropTarget = () => {
 
       if (dropTarget !== currentDropTarget) {
         if (dropTarget) {
+          if (currentDropTarget) {
+            removeDropTargetPositionClassName(currentDropTarget.target);
+            leave();
+          }
           // console.log(
           //   `%c[useAsDropTarget] onDragEnter set current dropTarget = ${dropTarget.gridLayoutItemId}`,
           //   "color:green;font-weight:bold;",
           // );
 
-          dropTargetStateRef.current.dropTarget = dropTarget;
-          const { rect } = dropTargetStateRef.current;
-          const { bottom, left, right, top } =
-            dropTarget.target.getBoundingClientRect();
-          rect.bottom = bottom;
-          rect.left = left;
-          rect.right = right;
-          rect.top = top;
+          dropTargetStateRef.current = createActiveDropTargetState(dropTarget);
         } else if (currentDropTarget) {
           dropTargetStateRef.current.dropTarget = undefined;
+          dropTargetStateRef.current.accepted = false;
+          dropTargetStateRef.current.position = undefined;
+          removeDropTargetPositionClassName(currentDropTarget.target);
+          leave();
           // console.log(
-          //   `%c[useAsDropTarget] clear droptarget ${currentDropTarget?.gridLayoutItemId}`,
+          //   `%c[useAsDropTarget] onDragEnter clear droptarget ${currentDropTarget?.gridLayoutItemId}`,
           //   "color:brown;font-weight: bold;",
           // );
-          removeDropTargetPositionClassName(currentDropTarget?.target);
         }
       }
     },
-    [dragContext, layoutId],
+    [dragContext, layoutId, leave],
   );
 
   // We could replace this with mouse move to reduce event rate
@@ -192,18 +229,35 @@ export const useAsDropTarget = () => {
       if (dragContext.dragSource === undefined) {
         return;
       }
-      const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
-      const dropTarget = getDropTarget(evt.target, currentDropTarget);
+      let { dropTarget: currentDropTarget } = dropTargetStateRef.current;
+      const dropTarget = getDropTarget(evt.target, currentDropTarget, layoutId);
       if (dropTarget) {
-        // preventDefault on the event to enable drop
-        evt.preventDefault();
+        if (dropTarget !== currentDropTarget) {
+          if (currentDropTarget) {
+            removeDropTargetPositionClassName(currentDropTarget.target);
+            leave();
+          }
+          dropTargetStateRef.current = createActiveDropTargetState(dropTarget);
+          currentDropTarget = dropTarget;
+        }
         // TODO store dropTarget and rect and tabRect in same ref
         if (dropTarget === currentDropTarget) {
           const { position: lastPosition } = dropTargetStateRef.current;
           if (dropTarget.type === "header") {
-            if (lastPosition !== "header") {
-              addDropTargetPositionClassName(dropTarget.target, "header");
+            if (
+              lastPosition !== "header" ||
+              !dropTarget.target.classList.contains("vuuDropTarget-header")
+            ) {
+              const accepted = preview(
+                dropTarget.gridLayoutItemId,
+                dragContext.dragSource,
+                "header",
+              );
+              dropTargetStateRef.current.accepted = accepted;
               dropTargetStateRef.current.position = "header";
+              if (accepted) {
+                addDropTargetPositionClassName(dropTarget.target, "header");
+              }
             }
           } else {
             const { clientX, clientY } = evt;
@@ -227,18 +281,36 @@ export const useAsDropTarget = () => {
               // console.log(
               //   `[useAsDropTarget] onDragOver ${dropTarget.gridLayoutItemId} position ${position}`,
               // );
-              if (position !== lastPosition) {
-                if (dropTargetStateRef.current.dropTarget) {
+              if (
+                position !== lastPosition ||
+                !dropTarget.target.classList.contains(
+                  `${DROPTARGET_CLASSNAME}-${position}`,
+                )
+              ) {
+                const accepted = preview(
+                  dropTarget.gridLayoutItemId,
+                  dragContext.dragSource,
+                  position,
+                );
+                dropTargetStateRef.current.accepted = accepted;
+                if (accepted && dropTargetStateRef.current.dropTarget) {
                   addDropTargetPositionClassName(dropTarget.target, position);
+                } else {
+                  removeDropTargetPositionClassName(dropTarget.target);
                 }
                 dropTargetStateRef.current.position = position;
               }
             }
           }
+          if (dropTargetStateRef.current.accepted) {
+            // A dragover must be cancelled for the browser to dispatch drop.
+            evt.dataTransfer.dropEffect = "move";
+            evt.preventDefault();
+          }
         }
       }
     },
-    [dragContext],
+    [dragContext, layoutId, leave, preview],
   );
 
   const onDragLeave = useCallback<DragEventHandler>(
@@ -246,27 +318,21 @@ export const useAsDropTarget = () => {
       if (dragContext.dragSource === undefined) {
         return;
       }
-      const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
-      const dropTarget = getDropTarget(evt.target, currentDropTarget);
-      // console.log(
-      //   `[useAsDropTarget] onDragleave ${evt.target?.className} to ${evt.relatedTarget?.className}`,
-      //   {
-      //     dropTarget,
-      //   },
-      // );
-      if (dropTarget?.target === evt.target) {
-        if (dropTarget === currentDropTarget) {
-          console.log(
-            `[useAsDropTarget] onDragleave ... leaving the current dropTarget, dropTarget is now undefined`,
-          );
-          dropTargetStateRef.current.dropTarget = undefined;
-          dropTargetStateRef.current.position = undefined;
-        }
+      const { dropTarget: currentDropTarget, rect: currentDropTargetRect } = dropTargetStateRef.current;
 
-        removeDropTargetPositionClassName(dropTarget.target);
+      if (currentDropTarget?.target && !boxContainsPoint(currentDropTargetRect, evt.clientX, evt.clientY)) {
+
+        dropTargetStateRef.current.dropTarget = undefined;
+        dropTargetStateRef.current.accepted = false;
+        dropTargetStateRef.current.position = undefined;
+        leave();
+
+        removeDropTargetPositionClassName(currentDropTarget.target);
       }
+
+
     },
-    [dragContext],
+    [dragContext, leave],
   );
 
   const onDrop = useCallback<DragEventHandler>(
@@ -282,23 +348,35 @@ export const useAsDropTarget = () => {
       if (dragSource && currentDropTarget) {
         // console.log(`[useAsDropTarget#${layoutId}] onDrop`, { dragSource });
 
-        const dropTarget = getDropTarget(evt.target, currentDropTarget);
-        if (dropTarget && dropTargetStateRef.current.position) {
+        const dropTarget = getDropTarget(
+          evt.target,
+          currentDropTarget,
+          layoutId,
+        );
+        if (
+          dropTarget &&
+          dropTargetStateRef.current.accepted &&
+          dropTargetStateRef.current.position
+        ) {
           // this prevents drag-drop-listeners drop firing when tab dragged to another tabstrip
           evt.preventDefault();
           removeDropTargetPositionClassName(dropTarget.target);
-          drop(
+          const dropAccepted = drop(
             dropTarget.gridLayoutItemId,
             dragSource,
             dropTargetStateRef.current.position,
           );
+          if (dropAccepted) {
+            dragContext.completeDrop();
+          }
         }
       }
 
       dropTargetStateRef.current.dropTarget = undefined;
+      dropTargetStateRef.current.accepted = false;
       dropTargetStateRef.current.position = undefined;
     },
-    [dragContext, drop],
+    [dragContext, drop, layoutId],
   );
 
   return {

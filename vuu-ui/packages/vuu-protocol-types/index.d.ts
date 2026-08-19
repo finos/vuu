@@ -1,13 +1,3 @@
-/**
- * VuuUser is not used in any websocket messages. It represents the user structure returned
- * encoded within the auth token used to LOGIN. The auti token is returned by the authn REST
- * service call.
- */
-export interface VuuUser {
-  authorizations: string[];
-  name: string;
-}
-
 export type InvalidSessionReason =
   | "Invalid session"
   | "User session limit exceeded";
@@ -52,8 +42,40 @@ export interface VuuLoginRequest {
   type: "LOGIN";
 }
 
+export interface VuuModuleConnection {
+  connectionId: string;
+  restUrl?: string;
+  websocketUrl?: string;
+}
+
+export interface VuuModuleDescriptor {
+  description: string;
+  enabled?: boolean;
+  id: number | string;
+  location: string;
+  mfComponent: string;
+  mfScope: string;
+  mfUrl: string;
+  name: string;
+  path: string;
+  title: string;
+  version: number;
+  vuu?: VuuModuleConnection;
+}
+
+export interface VuuModuleRecord extends VuuModuleDescriptor {
+  enabled: boolean;
+  id: number;
+  vuu: VuuModuleConnection;
+}
+
+export interface VuuModuleRegistry {
+  modules: VuuModuleRecord[];
+}
+
 // There is no LOGIN_FAIL
 export interface VuuLoginSuccessResponse {
+  moduleRegistry?: VuuModuleRegistry;
   type: "LOGIN_SUCCESS";
   vuuServerId: string;
 }

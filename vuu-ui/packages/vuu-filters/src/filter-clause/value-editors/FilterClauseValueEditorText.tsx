@@ -1,20 +1,20 @@
 import { useTypeaheadSuggestions } from "@vuu-ui/vuu-data-react";
 import type { TypeaheadParams } from "@vuu-ui/vuu-protocol-types";
-import { ExpandoInput, MultiSelectionHandler } from "@vuu-ui/vuu-ui-controls";
+import { ExpandoInput, type MultiSelectionHandler } from "@vuu-ui/vuu-ui-controls";
 import {
-  CommitHandler,
+  type CommitHandler,
   dispatchKeyboardEvent,
   getVuuTable,
   NO_DATA_MATCH,
 } from "@vuu-ui/vuu-utils";
 import { Option, useForkRef } from "@salt-ds/core";
 import {
-  FormEvent,
-  ForwardedRef,
+  type ChangeEventHandler,
+  type ForwardedRef,
   forwardRef,
-  HTMLAttributes,
-  KeyboardEventHandler,
-  SyntheticEvent,
+  type HTMLAttributes,
+  type KeyboardEventHandler,
+  type SyntheticEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -22,11 +22,11 @@ import {
   useState,
 } from "react";
 import { ExpandoCombobox } from "../ExpandoCombobox";
-import { FilterClauseValueEditor } from "../filterClauseTypes";
+import type { FilterClauseValueEditor } from "../filterClauseTypes";
 
 export interface FilterClauseTextValueEditorProps
   extends FilterClauseValueEditor,
-    HTMLAttributes<HTMLDivElement> {
+  HTMLAttributes<HTMLDivElement> {
   "data-field"?: string;
   operator: string;
   value: string | string[];
@@ -124,8 +124,8 @@ export const FilterClauseValueEditorText = forwardRef(
       }
     }, [table, column, valueInputValue, getSuggestions, isMultiValue]);
 
-    const handleInputChange = useCallback(
-      (evt: FormEvent<HTMLInputElement>) => {
+    const handleInputChange = useCallback<ChangeEventHandler<HTMLElement>>(
+      (evt) => {
         const { value } = evt.target as HTMLInputElement;
         setValueInputValue(value);
         // we want to set the filterclause status to valid, but not trigger focus change

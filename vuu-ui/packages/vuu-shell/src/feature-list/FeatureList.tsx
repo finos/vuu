@@ -1,15 +1,20 @@
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { Palette, PaletteItem } from "@vuu-ui/vuu-layout";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import {
-  DynamicFeatureProps,
-  StaticFeatureDescriptor,
+  type DynamicFeatureProps,
+  type StaticFeatureDescriptor,
   featureFromJson,
   isStaticFeatures,
 } from "@vuu-ui/vuu-utils";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes, Key, ReactElement, useMemo } from "react";
+import {
+  type HTMLAttributes,
+  type Key,
+  type ReactElement,
+  useMemo,
+} from "react";
 import { Feature } from "../feature/Feature";
 
 import featureListCss from "./FeatureList.css";

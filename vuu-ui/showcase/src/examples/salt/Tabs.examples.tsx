@@ -21,16 +21,14 @@ import {
   useAriaAnnouncer,
 } from "@salt-ds/core";
 import {
-  TabsNext,
+  Tabs,
   TabBar,
-  TabListNext,
-  TabNext,
-  TabNextTrigger,
-  TabNextPanel,
-  ComponentType,
-  TabNextAction,
-  TabListNextProps,
-} from "@salt-ds/lab";
+  TabList,
+  Tab,
+  TabTrigger,
+  TabPanel,
+  TabListProps,
+} from "@salt-ds/core";
 import {
   AddIcon,
   BankCheckIcon,
@@ -69,22 +67,22 @@ const lotsOfTabs = [
 export const Bordered = () => {
   return (
     <div className="container">
-      <TabsNext defaultValue={tabs[0]}>
+      <Tabs defaultValue={tabs[0]}>
         <TabBar inset divider>
-          <TabListNext appearance="bordered">
+          <TabList appearance="bordered">
             {tabs.map((label) => (
-              <TabNext value={label} key={label}>
-                <TabNextTrigger>{label}</TabNextTrigger>
-              </TabNext>
+              <Tab value={label} key={label}>
+                <TabTrigger>{label}</TabTrigger>
+              </Tab>
             ))}
-          </TabListNext>
+          </TabList>
         </TabBar>
         {tabs.map((label) => (
-          <TabNextPanel value={label} key={label}>
+          <TabPanel value={label} key={label}>
             {label}
-          </TabNextPanel>
+          </TabPanel>
         ))}
-      </TabsNext>
+      </Tabs>
     </div>
   );
 };
@@ -92,21 +90,21 @@ export const Bordered = () => {
 export const Inline = () => {
   return (
     <div className="container">
-      <TabsNext defaultValue={tabs[0]}>
-        <TabListNext appearance="transparent">
+      <Tabs defaultValue={tabs[0]}>
+        <TabList appearance="transparent">
           {tabs.map((label) => (
-            <TabNext value={label} key={label}>
-              <TabNextTrigger>{label}</TabNextTrigger>
-            </TabNext>
+            <Tab value={label} key={label}>
+              <TabTrigger>{label}</TabTrigger>
+            </Tab>
           ))}
-        </TabListNext>
+        </TabList>
 
         {tabs.map((label) => (
-          <TabNextPanel value={label} key={label}>
+          <TabPanel value={label} key={label}>
             {label}
-          </TabNextPanel>
+          </TabPanel>
         ))}
-      </TabsNext>
+      </Tabs>
     </div>
   );
 };
@@ -123,26 +121,26 @@ export const WithIcon = () => {
   return (
     <div className="container">
       <style>{`.saltIcon { display: block !important; }`}</style>
-      <TabsNext defaultValue={tabs[0]}>
+      <Tabs defaultValue={tabs[0]}>
         <TabBar inset divider>
-          <TabListNext>
+          <TabList>
             {tabs.map((label) => {
               const Icon = tabToIcon[label];
               return (
-                <TabNext
+                <Tab
                   value={label}
                   key={label}
                   disabled={label === "Transactions"}
                 >
-                  <TabNextTrigger>
+                  <TabTrigger>
                     <Icon aria-hidden /> {label}
-                  </TabNextTrigger>
-                </TabNext>
+                  </TabTrigger>
+                </Tab>
               );
             })}
-          </TabListNext>
+          </TabList>
         </TabBar>
-      </TabsNext>
+      </Tabs>
     </div>
   );
 };
@@ -150,39 +148,39 @@ export const WithIcon = () => {
 export const WithBadge = () => {
   return (
     <div style={{ minWidth: 0, maxWidth: "100%" }}>
-      <TabsNext defaultValue={tabs[0]}>
+      <Tabs defaultValue={tabs[0]}>
         <TabBar inset divider>
-          <TabListNext>
+          <TabList>
             {tabs.map((label) => (
-              <TabNext value={label} key={label}>
-                <TabNextTrigger>
+              <Tab value={label} key={label}>
+                <TabTrigger>
                   {label}
                   {label === "Transactions" ? (
                     <Badge value={2} aria-label="2 updates" />
                   ) : null}
-                </TabNextTrigger>
-              </TabNext>
+                </TabTrigger>
+              </Tab>
             ))}
-          </TabListNext>
+          </TabList>
         </TabBar>
-      </TabsNext>
+      </Tabs>
     </div>
   );
 };
 
 export const Overflow = () => {
   return (
-    <TabsNext defaultValue={lotsOfTabs[0]}>
+    <Tabs defaultValue={lotsOfTabs[0]}>
       <TabBar inset divider>
-        <TabListNext style={{ margin: "auto", maxWidth: 360 }}>
+        <TabList style={{ margin: "auto", maxWidth: 360 }}>
           {lotsOfTabs.map((label) => (
-            <TabNext value={label} key={label}>
-              <TabNextTrigger>{label}</TabNextTrigger>
-            </TabNext>
+            <Tab value={label} key={label}>
+              <TabTrigger>{label}</TabTrigger>
+            </Tab>
           ))}
-        </TabListNext>
+        </TabList>
       </TabBar>
-    </TabsNext>
+    </Tabs>
   );
 };
 
@@ -200,14 +198,14 @@ export const Closable = () => {
   return (
     <div style={{ minWidth: 0, maxWidth: "100%" }}>
       <style>{`.saltIcon { display: block !important; }`}</style>
-      <TabsNext defaultValue={tabs[0]}>
+      <Tabs defaultValue={tabs[0]}>
         <TabBar inset divider>
-          <TabListNext>
+          <TabList>
             {tabs.map((label) => (
-              <TabNext value={label} key={label}>
-                <TabNextTrigger>{label}</TabNextTrigger>
+              <Tab value={label} key={label}>
+                <TabTrigger>{label}</TabTrigger>
                 {tabs.length > 1 ? (
-                  <TabNextAction
+                  <Button
                     onClick={() => {
                       setTabs((old) => old.filter((tab) => tab !== label));
                       announce(`${label} tab has been closed`, 150);
@@ -215,13 +213,13 @@ export const Closable = () => {
                     aria-label="Close tab"
                   >
                     <CloseIcon aria-hidden />
-                  </TabNextAction>
+                  </Button>
                 ) : null}
-              </TabNext>
+              </Tab>
             ))}
-          </TabListNext>
+          </TabList>
         </TabBar>
-      </TabsNext>
+      </Tabs>
     </div>
   );
 };
@@ -229,22 +227,22 @@ export const Closable = () => {
 export const DisabledTabs = () => {
   return (
     <div className="container">
-      <TabsNext defaultValue={tabs[0]}>
+      <Tabs defaultValue={tabs[0]}>
         <TabBar inset divider>
-          <TabListNext appearance="bordered">
+          <TabList appearance="bordered">
             {tabs.map((label) => (
-              <TabNext disabled={label === "Loans"} value={label} key={label}>
-                <TabNextTrigger>{label}</TabNextTrigger>
-              </TabNext>
+              <Tab disabled={label === "Loans"} value={label} key={label}>
+                <TabTrigger>{label}</TabTrigger>
+              </Tab>
             ))}
-          </TabListNext>
+          </TabList>
         </TabBar>
         {tabs.map((label) => (
-          <TabNextPanel value={label} key={label}>
+          <TabPanel value={label} key={label}>
             {label}
-          </TabNextPanel>
+          </TabPanel>
         ))}
-      </TabsNext>
+      </Tabs>
     </div>
   );
 };
@@ -259,19 +257,19 @@ export const AddTabs = () => {
   return (
     <div style={{ minWidth: 0, maxWidth: "100%" }}>
       <style>{`.saltIcon { display: block !important; }`}</style>
-      <TabsNext
+      <Tabs
         defaultValue={tabs[0]}
         value={value}
         onChange={(_event, newValue) => setValue(newValue)}
       >
         <TabBar inset divider style={{ width: 500 }}>
-          <TabListNext>
+          <TabList>
             {tabs.map((label) => (
-              <TabNext value={label} key={label}>
-                <TabNextTrigger>{label}</TabNextTrigger>
-              </TabNext>
+              <Tab value={label} key={label}>
+                <TabTrigger>{label}</TabTrigger>
+              </Tab>
             ))}
-          </TabListNext>
+          </TabList>
           <Button
             aria-label="Add tab"
             appearance="transparent"
@@ -286,38 +284,38 @@ export const AddTabs = () => {
             <AddIcon aria-hidden />
           </Button>
         </TabBar>
-      </TabsNext>
+      </Tabs>
     </div>
   );
 };
 
 export const Backgrounds = () => {
   const [variant, setVariant] =
-    useState<TabListNextProps["activeColor"]>("primary");
+    useState<TabListProps["activeColor"]>("primary");
 
   const handleVariantChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setVariant(event.target.value as TabListNextProps["activeColor"]);
+    setVariant(event.target.value as TabListProps["activeColor"]);
   };
 
   return (
     <StackLayout gap={6}>
       <div style={{ alignItems: "center", width: "40vw" }}>
-        <TabsNext defaultValue={tabs[0]}>
+        <Tabs defaultValue={tabs[0]}>
           <TabBar divider>
-            <TabListNext activeColor={variant} appearance="bordered">
+            <TabList activeColor={variant} appearance="bordered">
               {tabs.map((label) => (
-                <TabNext value={label} key={label}>
-                  <TabNextTrigger>{label}</TabNextTrigger>
-                </TabNext>
+                <Tab value={label} key={label}>
+                  <TabTrigger>{label}</TabTrigger>
+                </Tab>
               ))}
-            </TabListNext>
+            </TabList>
           </TabBar>
           {tabs.map((label) => (
-            <TabNextPanel value={label} key={label} style={{ height: 200 }}>
+            <TabPanel value={label} key={label} style={{ height: 200 }}>
               <Panel variant={variant}>{label}</Panel>
-            </TabNextPanel>
+            </TabPanel>
           ))}
-        </TabsNext>
+        </Tabs>
       </div>
       <FormField style={{ width: "auto" }}>
         <FormFieldLabel>Select tabstrip color</FormFieldLabel>
@@ -402,15 +400,15 @@ export const AddWithDialog = () => {
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
-      <TabsNext defaultValue="Home">
+      <Tabs defaultValue="Home">
         <TabBar inset divider>
-          <TabListNext>
+          <TabList>
             {tabs.map((label) => (
-              <TabNext value={label} key={label}>
-                <TabNextTrigger>{label}</TabNextTrigger>
-              </TabNext>
+              <Tab value={label} key={label}>
+                <TabTrigger>{label}</TabTrigger>
+              </Tab>
             ))}
-          </TabListNext>
+          </TabList>
           <Button
             appearance="transparent"
             aria-label="Add tab"
@@ -421,7 +419,7 @@ export const AddWithDialog = () => {
             <AddIcon aria-hidden />
           </Button>
         </TabBar>
-      </TabsNext>
+      </Tabs>
     </div>
   );
 };
@@ -486,14 +484,14 @@ export const CloseWithConfirmation = () => {
         onConfirm={handleConfirm}
         onTransitionEnd={clearValue}
       />
-      <TabsNext defaultValue="Home">
+      <Tabs defaultValue="Home">
         <TabBar inset divider>
-          <TabListNext>
+          <TabList>
             {tabs.map((label) => (
-              <TabNext value={label} key={label}>
-                <TabNextTrigger>{label}</TabNextTrigger>
+              <Tab value={label} key={label}>
+                <TabTrigger>{label}</TabTrigger>
                 {tabs.length > 1 ? (
-                  <TabNextAction
+                  <Button
                     onClick={() => {
                       setOpen(true);
                       setValueToRemove(label);
@@ -501,13 +499,13 @@ export const CloseWithConfirmation = () => {
                     aria-label="Close tab"
                   >
                     <CloseIcon aria-hidden />
-                  </TabNextAction>
+                  </Button>
                 ) : null}
-              </TabNext>
+              </Tab>
             ))}
-          </TabListNext>
+          </TabList>
         </TabBar>
-      </TabsNext>
+      </Tabs>
     </div>
   );
 };
@@ -515,19 +513,19 @@ export const CloseWithConfirmation = () => {
 export const WithInteractiveElementInPanel = () => {
   return (
     <div className="container">
-      <TabsNext defaultValue={tabs[0]}>
+      <Tabs defaultValue={tabs[0]}>
         <TabBar>
-          <TabListNext appearance="transparent">
+          <TabList appearance="transparent">
             {tabs.map((label) => (
-              <TabNext value={label} key={label}>
-                <TabNextTrigger>{label}</TabNextTrigger>
-              </TabNext>
+              <Tab value={label} key={label}>
+                <TabTrigger>{label}</TabTrigger>
+              </Tab>
             ))}
-          </TabListNext>
+          </TabList>
         </TabBar>
 
         {tabs.map((label) => (
-          <TabNextPanel value={label} key={label}>
+          <TabPanel value={label} key={label}>
             <Text>
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas
               sed elit in sem gravida aliquet id non justo. In hac habitasse
@@ -540,9 +538,9 @@ export const WithInteractiveElementInPanel = () => {
               mattis lacus tincidunt odio rhoncus tincidunt.
             </Text>
             <Link href="#">Link</Link>
-          </TabNextPanel>
+          </TabPanel>
         ))}
-      </TabsNext>
+      </Tabs>
     </div>
   );
 };
@@ -560,23 +558,23 @@ export const WithMenu = () => {
 
   return (
     <div style={{ minWidth: 0, maxWidth: "100%" }}>
-      <TabsNext defaultValue={tabs[0]}>
+      <Tabs defaultValue={tabs[0]}>
         <TabBar inset divider>
-          <TabListNext>
+          <TabList>
             {tabs.map((label) => (
-              <TabNext value={label} key={label}>
-                <TabNextTrigger>
+              <Tab value={label} key={label}>
+                <TabTrigger>
                   {pinned.includes(label) ? (
                     <FavoriteIcon aria-label="Pinned" />
                   ) : undefined}
                   {label}
-                </TabNextTrigger>
+                </TabTrigger>
                 {tabs.length > 1 ? (
                   <Menu>
                     <MenuTrigger>
-                      <TabNextAction aria-label="Settings">
+                      <Button aria-label="Settings">
                         <MicroMenuIcon aria-hidden />
-                      </TabNextAction>
+                      </Button>
                     </MenuTrigger>
                     <MenuPanel>
                       <MenuItem
@@ -601,11 +599,11 @@ export const WithMenu = () => {
                     </MenuPanel>
                   </Menu>
                 ) : null}
-              </TabNext>
+              </Tab>
             ))}
-          </TabListNext>
+          </TabList>
         </TabBar>
-      </TabsNext>
+      </Tabs>
     </div>
   );
 };
@@ -620,26 +618,26 @@ export const Controlled = () => {
   };
 
   return (
-    <TabsNext value={value} onChange={handleChange}>
+    <Tabs value={value} onChange={handleChange}>
       <TabBar inset divider>
-        <TabListNext style={{ maxWidth: 350, margin: "auto" }}>
+        <TabList style={{ maxWidth: 350, margin: "auto" }}>
           {tabs.map((label) => (
-            <TabNext value={label} key={label}>
-              <TabNextTrigger>{label}</TabNextTrigger>
+            <Tab value={label} key={label}>
+              <TabTrigger>{label}</TabTrigger>
               {tabs.length > 1 ? (
-                <TabNextAction
+                <Button
                   onClick={() => {
                     setTabs((old) => old.filter((tab) => tab !== label));
                   }}
                   aria-label="Close tab"
                 >
                   <CloseIcon aria-hidden />
-                </TabNextAction>
+                </Button>
               ) : null}
-            </TabNext>
+            </Tab>
           ))}
-        </TabListNext>
+        </TabList>
       </TabBar>
-    </TabsNext>
+    </Tabs>
   );
 };

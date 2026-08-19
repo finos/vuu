@@ -12,6 +12,7 @@ import { FunctionComponent as FC, HTMLAttributes } from "react";
 import {
   hasCustomRenderer,
   isColumnTypeRenderer,
+  isDataValueEditable,
   isTypeDescriptor,
 } from "./column-utils";
 
@@ -296,7 +297,10 @@ export function getEditRuleValidator(name: string) {
 function dataCellRenderer(column: ColumnDescriptor) {
   if (column.serverDataType === "boolean" && !hasCustomRenderer(column.type)) {
     return cellRenderersMap.get("checkbox-cell");
-  } else if (column.editable && !hasCustomRenderer(column.type)) {
+  } else if (
+    isDataValueEditable(column, "update") &&
+    !hasCustomRenderer(column.type)
+  ) {
     // we can only offer a text input edit as a generic editor.
     // If a more specialised editor is required, user must configure
     // it in column config.

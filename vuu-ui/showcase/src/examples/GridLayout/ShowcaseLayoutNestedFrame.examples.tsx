@@ -18,39 +18,51 @@ export const ShowCaseLayoutNestedFrame = () => {
   const paletteItems = useMemo<GridPaletteItem[]>(
     () => [
       {
-        label: "Red",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "red",
+        paletteEntry: { label: "Red" },
+        component: {
+          label: "Red",
+          type: "DebugGridItem",
+          props: {
+            style: {
+              background: "red",
+            },
           },
         },
       },
       {
-        label: "Green",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "green",
+        paletteEntry: { label: "Green" },
+        component: {
+          label: "Green",
+          type: "DebugGridItem",
+          props: {
+            style: {
+              background: "green",
+            },
           },
         },
       },
       {
-        label: "Yellow",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "yellow",
+        paletteEntry: { label: "Yellow" },
+        component: {
+          label: "Yellow",
+          type: "DebugGridItem",
+          props: {
+            style: {
+              background: "yellow",
+            },
           },
         },
       },
       {
-        label: "Brown",
-        type: "DebugGridItem",
-        props: {
-          debugLabel: "Brown",
-          style: {
-            background: "brown",
+        paletteEntry: { label: "Brown" },
+        component: {
+          label: "Brown",
+          type: "DebugGridItem",
+          props: {
+            debugLabel: "Brown",
+            style: {
+              background: "brown",
+            },
           },
         },
       },

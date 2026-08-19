@@ -4,7 +4,7 @@ import {
   useGridLayoutDragStartHandler,
 } from "@heswell/grid-layout";
 import cx from "clsx";
-import { DragEvent, HTMLAttributes, useCallback } from "react";
+import { CSSProperties, DragEvent, HTMLAttributes, useCallback } from "react";
 
 import "./GridPalette.css";
 import { TemplateSource } from "@heswell/grid-layout/src/GridLayoutContext";
@@ -16,9 +16,15 @@ export interface GridPaletteProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export type GridPaletteItem = {
-  label: string;
-  props: unknown;
-  type: string;
+  paletteEntry: {
+    label: string;
+    style?: CSSProperties;
+  };
+  component: {
+    label: string;
+    props: unknown;
+    type: string;
+  };
 };
 
 export const GridPalette = ({
@@ -35,7 +41,7 @@ export const GridPalette = ({
         const item = paletteItems[index] as GridPaletteItem;
         return {
           element: draggedItem,
-          componentJson: JSON.stringify(item),
+          componentJson: JSON.stringify(item.component),
           layoutId: gridLayout.id,
           label: "123",
           type: "template",
@@ -54,14 +60,19 @@ export const GridPalette = ({
 
   return (
     <div {...htmlAttributes} className={classBase} {...draggableProps}>
-      {paletteItems.map((paletteItem, index) => (
-        <div className={cx(`${classBase}-item`)} data-index={index} key={index}>
+      {paletteItems.map(({ paletteEntry }, index) => (
+        <div
+          className={cx(`${classBase}-item`)}
+          data-index={index}
+          key={index}
+          style={paletteEntry.style}
+        >
           <div
-            data-item-id={paletteItem.label.toLowerCase()}
+            data-item-id={paletteEntry.label.toLowerCase()}
             draggable
             style={{ padding: "3px 8px" }}
           >
-            {paletteItem.label}
+            {paletteEntry.label}
           </div>
         </div>
       ))}

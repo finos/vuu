@@ -448,6 +448,7 @@ export interface DataSourceConstructorProps extends WithBaseFilter<DataSourceCon
    */
   autosubscribeColumns?: string[];
   bufferSize?: number;
+  connectionId?: string;
   /**
    * For datasources that support edit sessions, some services support an additional
    * column on session tables that will be used to return status information for a row
@@ -852,7 +853,7 @@ export interface ServerProxySubscribeMessage extends WithFullConfig {
 // };
 
 export declare type VuuUIMessageInConnected = {
-  sessionId: string;
+  loginResponse: VuuLoginSuccessResponse & { sessionId: string };
   type: "connected";
 };
 

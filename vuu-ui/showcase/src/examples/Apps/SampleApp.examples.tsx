@@ -131,7 +131,6 @@ const SampleApp = () => {
             SidePanelProps,
             layoutTemplateId: "full-height",
           }}
-          user={user}
           style={
             {
               "--vuuShell-height": "100vh",

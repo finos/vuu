@@ -31,11 +31,10 @@ type Environment = "development" | "production";
 const env = process.env.NODE_ENV as Environment;
 const featurePropsForEnv: Record<Environment, DynamicFeatureProps> = {
   development: {
-    url: "/src/features/InstrumentTiles.feature",
+    mfUrl: "/src/features/InstrumentTiles.feature",
   },
   production: {
-    url: "/features/InstrumentTilesFeature.feature.js",
-    css: "/features/InstrumentTilesFeature.feature.css",
+    mfUrl: "/features/InstrumentTilesFeature.feature.js",
   },
 };
 

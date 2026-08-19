@@ -1,4 +1,7 @@
-import type { DataValueDescriptor, ScaledDecimal } from "@vuu-ui/vuu-data-types";
+import type {
+  DataValueDescriptor,
+  ScaledDecimal,
+} from "@vuu-ui/vuu-data-types";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 export declare type NumericFilterClauseOp =
@@ -38,13 +41,13 @@ export interface SingleValueFilterClause<
   value: T;
 }
 
-export interface SerializableSingleValueFilterClause
-  extends SingleValueFilterClause {
+export interface SerializableSingleValueFilterClause extends SingleValueFilterClause {
   asQuery: () => string;
 }
 
-export interface MultiValueFilterClause<T = string[] | number[] | boolean[]>
-  extends NamedFilter {
+export interface MultiValueFilterClause<
+  T = string[] | number[] | boolean[],
+> extends NamedFilter {
   op: MultipleValueFilterClauseOp;
   column: string;
   values: T;
@@ -178,7 +181,6 @@ export interface FilterContainerFilterDescriptor {
   id: string;
 }
 
-export interface FilterContainerFilterDescriptorWithFilter
-  extends FilterContainerFilterDescriptor {
+export interface FilterContainerFilterDescriptorWithFilter extends FilterContainerFilterDescriptor {
   filter: FilterContainerFilter;
 }
