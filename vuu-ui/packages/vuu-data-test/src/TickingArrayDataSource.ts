@@ -11,6 +11,7 @@ import type {
   DataSourceVisualLinkCreatedMessage,
   DeleteRowMode,
   CopyOption,
+  EditSessionMode,
 } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
@@ -29,7 +30,6 @@ import {
   isRpcSuccess,
   isTypeaheadRequest,
   StaleUpdateError,
-  uuid,
 } from "@vuu-ui/vuu-utils";
 import type {
   IVuuModule,
@@ -196,6 +196,35 @@ export class TickingArrayDataSource extends ArrayDataSource {
     }
   }
 
+  async beginEditSession(
+    editSessionMode: EditSessionMode = "all-rows",
+  ): Promise<DataSourceBase<DataSourceRowWithBigint> | undefined> {
+    const rpcResponse = await this?.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "beginEditSession",
+      params: { editSessionMode },
+    });
+    if (isRpcSuccess(rpcResponse)) {
+      const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
+      const columns = this.config.columns.includes("vuu_action")
+        ? this.config.columns
+        : this.config.columns.concat("vuu_action");
+      const sessionDataSource = this.#vuuModule?.createDataSource(
+        sessionTable.table,
+        sessionTable.table,
+        { ...this.config, columns },
+      );
+      if (sessionDataSource instanceof TickingArrayDataSource) {
+        sessionDataSource.#sourceTableDataSource = this;
+      }
+      return sessionDataSource;
+    } else {
+      throw Error(
+        `[TickingArrayDataSource] beginEditSession ${rpcResponse?.errorMessage}`,
+      );
+    }
+  }
+
   async editCell(key: string, column: string, data: VuuRowDataItemType) {
     return this.rpcRequest({
       type: "RPC_REQUEST",
@@ -211,17 +240,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
   addRow = async (
     rowData: Record<string, VuuRowDataItemType> = {},
   ): Promise<true | string> => {
-    // Ensure each added row has a unique key.
-    const keyColumn = this.tableSchema.key;
-    const rowKey = (rowData[keyColumn] as string | undefined) ?? uuid();
-    const rowDataWithKey: Record<string, VuuRowDataItemType> = {
-      ...rowData,
-      [keyColumn]: rowKey,
-    };
     const response = await this.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "addRow",
-      params: { key: rowKey, data: rowDataWithKey },
+      params: { key: rowData[this.tableSchema.key] as string, data: rowData },
     });
     if (isRpcSuccess(response)) {
       return true;

@@ -774,14 +774,17 @@ export abstract class VuuModule<T extends string = string>
         };
       }
       const { data } = rpcRequest.params;
+      const keyColumn = sessionTable.schema.key;
+      const rowKey = data[keyColumn] ?? uuid();
+      const rowData = { ...data, [keyColumn]: rowKey };
 
       const columnMap = sessionTable.map;
       const columnCount = Object.keys(columnMap).length;
       const row: VuuDataRow = new Array(columnCount).fill("");
       row[columnMap.vuu_action] = "addRow";
       for (const [col, idx] of Object.entries(columnMap)) {
-        if (data[col] !== undefined) {
-          row[idx] = data[col];
+        if (rowData[col] !== undefined) {
+          row[idx] = rowData[col];
         }
       }
       sessionTable.insert(row);
