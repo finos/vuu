@@ -44,11 +44,10 @@ import { sessionTableRow, sessionTableSchema } from "../../session-table-utils";
 const assertUpdateIsValid = (
   schema: TableSchema,
   column: string,
-  data: VuuRowDataItemType,
+  _data: VuuRowDataItemType,
 ) => {
   const col = schema.columns.find((col) => col.name === column);
   if (col) {
-    console.log(`data type ${col.serverDataType} data ${data}`);
     // switch (col.serverDataType){
     // }
   } else {
@@ -99,8 +98,7 @@ type Subscription = {
   sourceTableName?: string;
 };
 export abstract class VuuModule<T extends string = string>
-  implements IVuuModule<T>
-{
+  implements IVuuModule<T> {
   #name: string;
   #sessionTableMessageColumn: string;
   #runtimeVisualLinks = new Map<string, RuntimeVisualLink>();
@@ -591,7 +589,7 @@ export abstract class VuuModule<T extends string = string>
           if (
             sessionTable &&
             sessionTable.findByKey(key as string)?.[
-              sessionTable.map.vuu_action
+            sessionTable.map.vuu_action
             ] !== "addRow"
           ) {
             sessionTable.update(key as string, "vuu_action", "editCell");
@@ -621,7 +619,6 @@ export abstract class VuuModule<T extends string = string>
     vpId,
   }) => {
     if (type === "VIEW_PORT_MENUS_SELECT_RPC") {
-      console.log(`rpcName ${rpcName}`);
 
       const result = await this.beginEditSession({
         context: {
