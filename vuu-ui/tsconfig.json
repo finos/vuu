@@ -2,9 +2,7 @@
   "compilerOptions": {
     "noImplicitAny": true,
     "target": "esnext",
-    "downlevelIteration": true,
     "lib": ["dom", "dom.iterable", "esnext", "WebWorker"],
-    "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -12,22 +10,23 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
     "jsx": "react-jsx",
     "sourceMap": true
   },
   "include": [
-    "experiments",
     "packages",
     "playwright/customAssertions.ts",
-    "sample-apps/*/src",
+    "sample-apps",
+    "portal-examples",
     "showcase/src",
     "sample-apps/*/index.ts",
     "sample-apps/*/src",
+    "portal-examples/*/index.ts",
+    "portal-examples/*/src",
     "global.d.ts",
     "packages/vuu-data-test/src/UpdateGenerator.ts",
     "sample-apps/standalone-table/index.tsx",
+    "portal-examples/standalone-table/index.tsx",
     "packages/vuu-icons/src/index.ts"
   ],
   "exclude": ["**/*.test.*"]

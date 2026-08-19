@@ -3,7 +3,11 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     dangerouslyIgnoreUnhandledErrors: true,
-    include: ["packages/**/test/**/**.test.(js|ts|tsx)"],
+    include: [
+      "packages/**/test/**/**.test.(js|ts|tsx)",
+      "sample-apps/app-vuu-example/test/**/**.test.(js|ts|tsx)",
+      "portal-examples/**/test/**/**.test.(js|ts|tsx)",
+    ],
     environment: "happy-dom",
   },
 });

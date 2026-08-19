@@ -1,0 +1,6 @@
+.vuuInstrumentTileContainer {
+    display: flex;
+    height: 71px;
+    justify-content: space-between;
+    padding: 3px;
+}

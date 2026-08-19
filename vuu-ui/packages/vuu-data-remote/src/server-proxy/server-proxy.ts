@@ -24,6 +24,7 @@ import type {
   VuuServerMessage,
   VuuTableListResponse,
   VuuTableMetaResponse,
+  VuuLoginSuccessResponse,
   VuuLinkDescriptor,
   VuuTable,
   VuuRpcRequest,
@@ -119,7 +120,9 @@ type PendingRequest<T = unknown> = {
 };
 
 interface PendingLogin {
-  resolve: (sessionId: string) => void;
+  resolve: (
+    loginResponse: VuuLoginSuccessResponse & { sessionId: string },
+  ) => void;
   reject: (rejectReason: string) => void;
 }
 
@@ -208,7 +211,9 @@ export class ServerProxy {
     }, 2000);
   };
 
-  public async login(authToken?: string): Promise<string | undefined> {
+  public async login(
+    authToken?: string,
+  ): Promise<(VuuLoginSuccessResponse & { sessionId: string }) | undefined> {
     if (authToken) {
       this.authToken = authToken;
       return new Promise((resolve, reject) => {
@@ -919,12 +924,10 @@ export class ServerProxy {
       case "LOGIN_SUCCESS":
         if (sessionId) {
           this.sessionId = sessionId;
-          this.pendingLogin?.resolve(sessionId);
+          const loginResponse = { ...body, sessionId };
+          this.pendingLogin?.resolve(loginResponse);
           this.pendingLogin = undefined;
-          this.postMessageToClient({
-            ...body,
-            sessionId,
-          });
+          this.postMessageToClient(loginResponse);
         } else {
           throw Error("LOGIN_SUCCESS did not provide sessionId");
         }

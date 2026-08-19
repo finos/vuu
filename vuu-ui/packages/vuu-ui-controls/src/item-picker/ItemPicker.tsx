@@ -1,27 +1,27 @@
 import {
   Input,
   ListBox,
-  ListBoxProps,
+  type ListBoxProps,
   Option,
-  OptionProps,
+  type OptionProps,
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { applyHighlighting } from "@vuu-ui/vuu-table";
 import {
   DragDropProvider,
-  ItemTypeName,
+  type ItemTypeName,
   pluralForm,
   singularForm,
   useSortable,
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
-  ForwardedRef,
+  type ForwardedRef,
   forwardRef,
-  HTMLAttributes,
-  MouseEventHandler,
-  RefCallback,
+  type HTMLAttributes,
+  type MouseEventHandler,
+  type RefCallback,
   useCallback,
   useMemo,
   useRef,
@@ -29,8 +29,8 @@ import {
 import { Icon, IconButton } from "../icon-button";
 import {
   getItemLabel,
-  ItemDescriptor,
-  ItemPickerHookProps,
+  type ItemDescriptor,
+  type ItemPickerHookProps,
   useItemPicker,
 } from "./useItemPicker";
 
@@ -42,10 +42,11 @@ export const classBaseListItem = "vuuItemPickerListItem";
 
 export interface ItemPickerProps
   extends
-    ItemPickerHookProps,
-    HTMLAttributes<HTMLDivElement>,
-    Pick<ListBoxProps<ItemDescriptor>, "selected" | "onSelectionChange"> {
+  ItemPickerHookProps,
+  HTMLAttributes<HTMLDivElement>,
+  Pick<ListBoxProps<ItemDescriptor>, "selected" | "onSelectionChange"> {
   itemTypeName: ItemTypeName;
+  searchForm?: boolean;
 }
 
 const searchIcon = <Icon name="search" />;
@@ -168,6 +169,7 @@ export const ItemPicker = forwardRef(function ItemPicker(
   {
     className,
     itemTypeName,
+    searchForm = true,
     allItems,
     selectedItems,
     maxSelections,
@@ -210,7 +212,7 @@ export const ItemPicker = forwardRef(function ItemPicker(
 
   const listRef = useRef<HTMLDivElement>(null);
 
-  const getOptionName = (option?: HTMLElement) => {
+  const getOptionName = useCallback((option?: HTMLElement) => {
     if (option) {
       const { name } = option.dataset;
       if (name) {
@@ -218,7 +220,7 @@ export const ItemPicker = forwardRef(function ItemPicker(
       }
     }
     throw Error("[ItemPicker] list option has no data-name");
-  };
+  }, []);
 
   const handleDragEnd = useCallback(() => {
     setTimeout(() => {
@@ -229,7 +231,7 @@ export const ItemPicker = forwardRef(function ItemPicker(
         onReorderSelectedItems(orderedItemNames);
       }
     }, 300);
-  }, [availableItemsFiltered, selectedItemsFiltered]);
+  }, [getOptionName, onReorderSelectedItems]);
 
   const searchPlaceholderText = `Find ${singularForm(itemTypeName)}`;
   const maxSelectionsSubHeading = maxSelections ? `(${maxSelections} max)` : "";
@@ -242,15 +244,27 @@ export const ItemPicker = forwardRef(function ItemPicker(
       className={cx(classBase, className)}
       ref={forwardedRef}
     >
-      <form className={`${classBase}-search`} role="search">
-        <Input
-          startAdornment={searchIcon}
-          placeholder={searchPlaceholderText}
-          ref={searchCallbackRef}
-          value={searchText}
-          onChange={onChangeSearchInput}
-        />
-      </form>
+      {searchForm ? (
+        <form className={`${classBase}-search`} role="search">
+          <Input
+            startAdornment={searchIcon}
+            placeholder={searchPlaceholderText}
+            ref={searchCallbackRef}
+            value={searchText}
+            onChange={onChangeSearchInput}
+          />
+        </form>
+      ) : (
+        <div className={`${classBase}-search`} role="search">
+          <Input
+            startAdornment={searchIcon}
+            placeholder={searchPlaceholderText}
+            ref={searchCallbackRef}
+            value={searchText}
+            onChange={onChangeSearchInput}
+          />
+        </div>
+      )}
 
       <div className={`${classBase}-scrollContainer vuuScrollable`}>
         <div className={`${classBase}-sectionHeader`}>

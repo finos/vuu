@@ -1,11 +1,13 @@
 import { queryClosest, reorderItems } from "@vuu-ui/vuu-utils";
 import {
-  FormEventHandler,
-  MouseEventHandler,
+  type ChangeEventHandler,
+  type MouseEventHandler,
   useCallback,
   useMemo,
   useState,
 } from "react";
+
+export type SelectedItemChangeHandler = (newSelectedItems: readonly ItemDescriptor[]) => void;
 
 /** This is a public description of an Item that can be displayed in the ItemPicker component, defining all the
  * mandatory and option attributes that can be defined by the client. */
@@ -24,7 +26,7 @@ export interface ItemPickerHookProps {
   allItems: ItemDescriptor[];
   selectedItems: ItemDescriptor[];
   maxSelections?: number;
-  onSelectedItemsChange: (newSelectedItems: readonly ItemDescriptor[]) => void;
+  onSelectedItemsChange: SelectedItemChangeHandler;
 }
 
 const filterItems = (
@@ -78,7 +80,7 @@ export const useItemPicker = ({
 
   const [searchPattern, setSearchPattern] = useState("");
 
-  const handleChangeSearchInput = useCallback<FormEventHandler>((evt) => {
+  const handleChangeSearchInput = useCallback<ChangeEventHandler>((evt) => {
     const { value } = evt.target as HTMLInputElement;
     setSearchPattern(value);
   }, []);

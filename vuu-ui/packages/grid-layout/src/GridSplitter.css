@@ -46,6 +46,14 @@
 
 }
 
+.vuuGridSplitter-offset-start[aria-orientation="vertical"] {
+    margin-block-start: var(--splitter-size);
+
+    .vuu-grab-zone {
+        top: 0;
+    }
+}
+
 .vuuGridSplitter[aria-orientation="horizontal"] {
     --splitter-borderStyle: solid none;
     cursor: ns-resize;

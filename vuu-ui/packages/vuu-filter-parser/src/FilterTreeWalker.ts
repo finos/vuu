@@ -1,5 +1,5 @@
-import { Tree } from "@lezer/common";
-import {
+import type { Tree } from "@lezer/common";
+import type {
   Filter,
   FilterCombinatorOp,
   MultipleValueFilterClauseOp,

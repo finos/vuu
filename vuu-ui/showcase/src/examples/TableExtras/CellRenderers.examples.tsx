@@ -8,7 +8,7 @@ import {
 } from "@vuu-ui/vuu-table-types";
 import { VuuInput } from "@vuu-ui/vuu-ui-controls";
 import { CommitHandler, getValueFormatter } from "@vuu-ui/vuu-utils";
-import { FormEventHandler, useCallback, useMemo, useState } from "react";
+import { ChangeEventHandler, FormEventHandler, useCallback, useMemo, useState } from "react";
 import { dataRowFactory } from "@vuu-ui/vuu-table/src/data-row/DataRow";
 
 const timestamp = 0;
@@ -52,9 +52,9 @@ const TableCellTemplate = ({
 
   const [value, setValue] = useState<string>("100.00");
   // prettier-ignore
-  const [dataRow, setDataRow] = useState(DataRow([0, 0, true, false, 1, 0, "key", 0,  timestamp, isNew, 100.00]));
+  const [dataRow, setDataRow] = useState(DataRow([0, 0, true, false, 1, 0, "key", 0, timestamp, isNew, 100.00]));
 
-  const handleChange = useCallback<FormEventHandler<HTMLInputElement>>(
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (evt) => setValue((evt.target as HTMLInputElement).value),
     [],
   );
@@ -64,7 +64,7 @@ const TableCellTemplate = ({
         const numericValue = parseFloat(value);
         if (!isNaN(numericValue)) {
           // prettier-ignore
-          setDataRow(DataRow([0, 0, true, false, 1, 0, "key", 0,  timestamp, isNew, numericValue]));
+          setDataRow(DataRow([0, 0, true, false, 1, 0, "key", 0, timestamp, isNew, numericValue]));
         }
       }
     },

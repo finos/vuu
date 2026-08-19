@@ -50,14 +50,14 @@ export type EditLifecycle =
   | { status: "active"; sessionDataSource: DataSource }
   | { status: "ending"; sessionDataSource: DataSource }
   | {
-      status: "error";
-      operation: "begin" | "end";
-      error: Error;
-      sessionDataSource?: DataSource;
-    };
+    status: "error";
+    operation: "begin" | "end";
+    error: Error;
+    sessionDataSource?: DataSource;
+  };
 
-export class EditError extends Error {}
-export class SupersededEditError extends Error {}
+export class EditError extends Error { }
+export class SupersededEditError extends Error { }
 
 type CellEdit = {
   originalValue: VuuRowDataItemType;
@@ -459,7 +459,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     const wasInsertedRow =
       action === "addRow" ||
       (response?.data as UndoRowChangeResult | undefined)?.wasInsertedRow ===
-        true;
+      true;
     if (wasInsertedRow) {
       this.#addCount--;
     }
@@ -542,12 +542,12 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         const sessionDataSource =
           this.#editSessionApi === "beginEditSession"
             ? await sourceDataSource?.beginEditSession?.(
-                toEditSessionMode(copyOption),
-              )
+              toEditSessionMode(copyOption),
+            )
             : await sourceDataSource?.createSessionDataSource?.(
-                copyOption,
-                sessionType,
-              );
+              copyOption,
+              sessionType,
+            );
         if (!sessionDataSource) {
           throw new Error(
             `[EditSession] datasource does not support ${this.#editSessionApi}`,

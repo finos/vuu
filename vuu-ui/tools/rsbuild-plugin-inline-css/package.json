@@ -1,0 +1,7 @@
+{
+  "name": "rsbuild-plugin-inline-css",
+  "version": "1.0.0",
+  "private": true,
+  "module": "src/index.js",
+  "type": "module"
+}

@@ -4,6 +4,7 @@ import { HTMLAttributes } from "react";
 import { useAsDropTarget } from "./useAsDropTarget";
 
 import gridPlaceholderCss from "./GridPlaceholder.css";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 
 const classBase = "vuuGridPlaceholder";
 
@@ -33,3 +34,5 @@ export const GridPlaceholder = ({
     />
   );
 };
+
+registerComponent("GridPlaceholder", GridPlaceholder, "component");

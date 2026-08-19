@@ -79,6 +79,9 @@ export class Table extends EventEmitter<TableEvents> {
 
   insert(row: Array<bigint | VuuRowDataItemType>, emitEvent = true) {
     const index = this.#data.length;
+    const createdTime = Date.now();
+    row[this.#dataMap.vuuUpdatedTimestamp] = createdTime;
+    row[this.#dataMap.vuuCreatedTimestamp] = createdTime;
     this.#data.push(row);
     const key = row[this.#indexOfKey] as string;
     this.#index.set(key, index);

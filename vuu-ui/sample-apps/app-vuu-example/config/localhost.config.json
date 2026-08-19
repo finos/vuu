@@ -1,1 +1,7 @@
-{}
+{
+  "workspacePersistence": {
+    "applicationId": "app-vuu-example",
+    "namespace": "vuu.sample-apps",
+    "type": "local"
+  }
+}
