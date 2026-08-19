@@ -18,7 +18,7 @@ const VUU_CREATED_MILLIS = {
 
 test.describe("ColumnFilter", () => {
   test.describe("TextColumnFilter", () => {
-    test(`Controlled Text ColumnFilter rendered empty, search pattern entered and value selected from search results, correct callbacks are invoked`, async ({
+    test('Controlled Text ColumnFilter rendered empty, search pattern entered and value selected from search results, correct callbacks are invoked', async ({
       mount,
       page,
     }) => {
@@ -49,7 +49,7 @@ test.describe("ColumnFilter", () => {
       );
     });
 
-    test(`Uncontrolled Text ColumnFilter rendered empty, search pattern entered and value selected from search results, correct callbacks are invoked`, async ({
+    test('Uncontrolled Text ColumnFilter rendered empty, search pattern entered and value selected from search results, correct callbacks are invoked', async ({
       mount,
       page,
     }) => {
@@ -184,7 +184,7 @@ test.describe("ColumnFilter", () => {
   });
 
   test.describe("Numeric columnfilter", () => {
-    test(`Uncontrolled Numeric ColumnFilter rendered empty, numerics typed, ENTER commits`, async ({
+    test('Uncontrolled Numeric ColumnFilter rendered empty, numerics typed, ENTER commits', async ({
       mount,
       page,
     }) => {

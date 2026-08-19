@@ -7,27 +7,27 @@ import {
 } from "@floating-ui/react";
 import { useFloatingUI } from "@salt-ds/core";
 import {
-  ChangeEvent,
-  KeyboardEventHandler,
-  RefCallback,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-
+  isNavigationKey,
+  isRowSelectionKey,
+  useControlledTableNavigation,
+} from "@vuu-ui/vuu-table";
 import type {
   DataRow,
   TableConfig,
   TableRowSelectHandler,
 } from "@vuu-ui/vuu-table-types";
-import { isStringColumn, toColumnName, useData } from "@vuu-ui/vuu-utils";
-import type { TablePickerProps } from "./TablePicker";
+import { isStringColumn, toColumnName } from "@vuu-ui/vuu-utils";
+import { useData } from "@vuu-ui/core";
 import {
-  isNavigationKey,
-  isRowSelectionKey,
-  useControlledTableNavigation,
-} from "@vuu-ui/vuu-table";
+  type ChangeEvent,
+  type KeyboardEventHandler,
+  type RefCallback,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import type { TablePickerProps } from "./TablePicker";
 
 export interface TablePickerHookProps
   extends Pick<

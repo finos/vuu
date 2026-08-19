@@ -6,7 +6,7 @@ import {
   useInteractions,
 } from "@floating-ui/react";
 import {
-  FloatingComponentProps,
+  type FloatingComponentProps,
   useFloatingComponent,
   useFloatingUI,
   useForkRef,
@@ -56,7 +56,7 @@ const FloatingColumnSearch = forwardRef<
 
 export interface ColumnPickerProps
   extends Omit<IconButtonProps, "icon">,
-    Pick<ColumnSearchProps, "columns" | "onSelectionChange" | "selected"> {
+  Pick<ColumnSearchProps, "columns" | "onSelectionChange" | "selected"> {
   icon?: string;
   iconSize?: number;
 }

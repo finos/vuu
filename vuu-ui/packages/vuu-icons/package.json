@@ -5,8 +5,10 @@
   "main": "src/index.ts",
   "license": "Apache-2.0",
   "style": "./index.css",
+  "type": "module",
   "files": [
-    "index.css"
+    "index.css",
+    "index.css.d.ts"
   ],
   "scripts": {
     "build:dev": "node ../../scripts/run-build.mjs",

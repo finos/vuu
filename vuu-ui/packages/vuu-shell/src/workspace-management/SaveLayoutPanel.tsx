@@ -1,4 +1,3 @@
-import { LayoutMetadataDto } from "@vuu-ui/vuu-utils";
 import {
   Button,
   ComboBox,
@@ -10,9 +9,11 @@ import {
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { useAuthenticatedUser } from "@vuu-ui/core";
+import type { LayoutMetadataDto } from "@vuu-ui/vuu-utils";
 import {
-  ChangeEvent,
-  SyntheticEvent,
+  type ChangeEvent,
+  type SyntheticEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -21,7 +22,6 @@ import {
 import { takeScreenshot } from "./screenshot-utils";
 
 import saveLayoutPanelCss from "./SaveLayoutPanel.css";
-import { useApplicationUser } from "../application-provider";
 
 const classBase = "vuuSaveLayoutPanel";
 
@@ -50,7 +50,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
   const [screenshotErrorMessage, setScreenshotErrorMessage] = useState<
     string | undefined
   >();
-  const { username } = useApplicationUser();
+  const { userName } = useAuthenticatedUser();
 
   useEffect(() => {
     if (componentId) {
@@ -69,7 +69,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
       name: layoutName,
       group,
       screenshot: screenshot ?? "",
-      user: username,
+      user: userName,
     });
   };
 

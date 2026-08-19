@@ -1,8 +1,8 @@
-import { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
+import type { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
 import { buildDataColumnMapFromSchema, Table } from "../../Table";
-import { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { ColumnMap } from "@vuu-ui/vuu-utils";
-import { UpdateGenerator } from "../../rowUpdates";
+import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import type { ColumnMap } from "@vuu-ui/vuu-utils";
+import type { UpdateGenerator } from "../../rowUpdates";
 
 const DEFAULT_RANGE_LIMITS = {
   maxRangeEnd: 1_000_000,
@@ -26,8 +26,8 @@ class TableContainer {
 
   createTable = (
     schema: TableSchema,
-    data: Array<Array<VuuRowDataItemType | bigint>>,
-    dataMap: ColumnMap,
+    data: Array<Array<VuuRowDataItemType | bigint>> = [],
+    dataMap: ColumnMap = buildDataColumnMapFromSchema(schema),
     updateGenerator?: UpdateGenerator,
   ) => {
     const table = new Table(schema, data, dataMap, updateGenerator);

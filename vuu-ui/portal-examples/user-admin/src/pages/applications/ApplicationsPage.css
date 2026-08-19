@@ -1,0 +1,131 @@
+.vuuAdminApplications-layout {
+  display: grid;
+  flex: 1 0 auto;
+  gap: var(--salt-spacing-300);
+  grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+  align-items: start;
+  min-width: 0;
+}
+
+.vuuAdminApplications-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-100);
+  min-width: 0;
+}
+
+.vuuAdminApplications-list .vuuAdminApplications-listItem {
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  gap: var(--salt-spacing-150);
+  width: 100%;
+}
+
+.vuuAdminApplications-listItem > .vuuAdminUi-stack {
+  flex: 1;
+}
+
+.vuuAdminApplications-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-300);
+  min-width: 0;
+}
+
+.vuuAdminApplications-detailsHeader {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-200);
+}
+
+.vuuAdminApplications-detailsHeader > .vuuAdminUi-stack {
+  flex: 1 1 160px;
+}
+
+.vuuAdminApplications-detailsHeader h3 {
+  margin: 0;
+}
+
+.vuuAdminApplications-facts {
+  display: grid;
+  gap: var(--salt-spacing-150);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.vuuAdminApplications-fact {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--salt-spacing-150);
+  min-width: 0;
+}
+
+.vuuAdminApplications-fact .vuuAdminUi-iconTile {
+  background: var(--salt-container-primary-background);
+}
+
+.vuuAdminApplications-factValue {
+  background: none;
+  padding: 0;
+  overflow-wrap: anywhere;
+}
+
+.vuuAdminApplications-details .saltTabNextTrigger,
+.vuuAdminApplications-details .saltTabTrigger {
+  gap: var(--salt-spacing-75);
+}
+
+.vuuAdminApplications-details .saltTabPanel:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--salt-spacing-200);
+  padding: var(--salt-spacing-200) 0 0;
+}
+
+.vuuAdminApplications-details .saltTabPanel > :not(.saltLink) {
+  align-self: stretch;
+}
+
+.vuuAdminApplications-table {
+  width: 100%;
+}
+
+.vuuAdminApplications-table td {
+  vertical-align: middle;
+}
+
+.vuuAdminApplications-users {
+  flex: none;
+  height: 320px;
+}
+
+.vuuAdminApplications-issues {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-100);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vuuAdminApplications-issues li {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--salt-spacing-100);
+}
+
+.vuuAdminApplications-globalIssues summary {
+  cursor: pointer;
+}
+
+.vuuAdminApplications-globalIssues .vuuAdminApplications-issues {
+  margin-top: var(--salt-spacing-100);
+}
+
+@container identity-admin (max-width: 900px) {
+  .vuuAdminApplications-layout {
+    grid-template-columns: 1fr;
+  }
+}

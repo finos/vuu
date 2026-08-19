@@ -1,18 +1,17 @@
 .vuuTabbedTableConfigPanel {
+  --tabs-height: 25px;
 
-    --tabs-height: 25px;
-
-    inset: 0;
-    position: absolute;
-    .saltTabsNext {
-        height: 100%;
-        .saltTabListNext {
-            border-bottom: solid var(--salt-separable-secondary-borderColor) 1px;
-            height: var(--tabs-height);
-        }
-
-        .saltTabNextPanel {
-            height: calc(100% - var(--tabs-height));
-        }
+  inset: 0;
+  position: absolute;
+  .saltTabs {
+    height: 100%;
+    .saltTabList {
+      border-bottom: solid var(--salt-separable-secondary-borderColor) 1px;
+      height: var(--tabs-height);
     }
+
+    .saltTabPanel {
+      height: calc(100% - var(--tabs-height));
+    }
+  }
 }

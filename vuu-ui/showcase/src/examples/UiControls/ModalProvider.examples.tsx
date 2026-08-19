@@ -1,4 +1,4 @@
-import { ModalProvider, useModal } from "@vuu-ui/vuu-ui-controls";
+import { ModalProvider, useModal } from "@vuu-ui/core";
 import { Button } from "@salt-ds/core";
 import { MouseEventHandler, useCallback, useRef, useState } from "react";
 
