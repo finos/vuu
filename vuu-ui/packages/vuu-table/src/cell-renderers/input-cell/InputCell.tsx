@@ -3,7 +3,10 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import type { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
-import { getVuuEditMessage } from "@vuu-ui/vuu-data-editing";
+import {
+  getVuuEditMessage,
+  isEditRowReadOnly,
+} from "@vuu-ui/vuu-data-editing";
 import {
   dataDescriptorTypeToVuuRowDataItemType,
   registerComponent,
@@ -27,13 +30,14 @@ export const InputCell = ({
     css: inputCellCss,
     window: targetWindow,
   });
-
   const dataValue = dataRow[column.name] as number | string;
+  const readOnly = isEditRowReadOnly(dataRow);
 
   const { align = "left" } = column;
 
   const {
     editing,
+    inputProps,
     warningMessage,
     previousValue = "",
     ...editProps
@@ -45,11 +49,15 @@ export const InputCell = ({
   });
 
   // TODO can this move into useEdtableText ?
-  const editRejected = getVuuEditMessage(dataRow, column, previousValue);
+  const editRejectedMessage = getVuuEditMessage(
+    dataRow,
+    column,
+    previousValue,
+  );
 
   const endAdornment =
-    editRejected && align === "left" ? (
-      <Tooltip content={editRejected} placement="right">
+    editRejectedMessage && align === "left" ? (
+      <Tooltip content={editRejectedMessage} placement="right">
         <Icon className={`${classBase}-icon`} name="error" />
       </Tooltip>
     ) : warningMessage && align === "left" ? (
@@ -59,8 +67,8 @@ export const InputCell = ({
     ) : undefined;
 
   const startAdornment =
-    editRejected && align === "right" ? (
-      <Tooltip content={editRejected} placement="right">
+    editRejectedMessage && align === "right" ? (
+      <Tooltip content={editRejectedMessage} placement="right">
         <Icon className={`${classBase}-icon`} name="error" />
       </Tooltip>
     ) : warningMessage && align === "right" ? (
@@ -76,10 +84,16 @@ export const InputCell = ({
       className={cx(classBase, {
         [`${classBase}-edited`]: editedDuringCurrentSession === true,
         [`${classBase}-error`]: warningMessage !== undefined,
-        [`${classBase}-warning`]: editRejected !== undefined,
+        [`${classBase}-warning`]: editRejectedMessage !== undefined,
         vuuEditing: editing,
       })}
       endAdornment={endAdornment}
+      inputProps={{
+        ...inputProps,
+        "aria-invalid": editRejectedMessage ? true : undefined,
+        "aria-label": column.label,
+      }}
+      readOnly={readOnly}
       startAdornment={startAdornment}
     />
   );

@@ -2255,45 +2255,6 @@ export default [
         ],
       },
       {
-        id: "Shell/UserSettings",
-        icon: "box",
-        label: "UserSettings",
-        childNodes: [
-          {
-            id: "Shell/UserSettings/DefaultUserSettingsForm",
-            label: "DefaultUserSettingsForm",
-            nodeData: {
-              componentName: "DefaultUserSettingsForm",
-              path: "src/examples/Shell/UserSettings.examples.tsx",
-            },
-          },
-          {
-            id: "Shell/UserSettings/VariedFormControlUserSettingsForm",
-            label: "VariedFormControlUserSettingsForm",
-            nodeData: {
-              componentName: "VariedFormControlUserSettingsForm",
-              path: "src/examples/Shell/UserSettings.examples.tsx",
-            },
-          },
-          {
-            id: "Shell/UserSettings/InputValidationUserSettingsForm",
-            label: "InputValidationUserSettingsForm",
-            nodeData: {
-              componentName: "InputValidationUserSettingsForm",
-              path: "src/examples/Shell/UserSettings.examples.tsx",
-            },
-          },
-          {
-            id: "Shell/UserSettings/ScrollableUserSettingsPanel",
-            label: "ScrollableUserSettingsPanel",
-            nodeData: {
-              componentName: "ScrollableUserSettingsPanel",
-              path: "src/examples/Shell/UserSettings.examples.tsx",
-            },
-          },
-        ],
-      },
-      {
         id: "Shell/Workspace",
         icon: "box",
         label: "Workspace",
@@ -2758,11 +2719,35 @@ export default [
             },
           },
           {
-            id: "Table/TableEditing/InlineAddRow",
-            label: "InlineAddRow",
+            id: "Table/TableEditing/EditableInstrumentsWithInlineAddRow",
+            label: "EditableInstrumentsWithInlineAddRow",
             nodeData: {
-              componentName: "InlineAddRow",
-              path: "src/examples/Table/InlineAddRow.examples.tsx",
+              componentName: "EditableInstrumentsWithInlineAddRow",
+              path: "src/examples/Table/Editing.examples.tsx",
+            },
+          },
+          {
+            id: "Table/TableEditing/InstrumentsAddEditDelete",
+            label: "InstrumentsAddEditDelete",
+            nodeData: {
+              componentName: "InstrumentsAddEditDelete",
+              path: "src/examples/Table/Editing.examples.tsx",
+            },
+          },
+          {
+            id: "Table/TableEditing/TestTableEmpty",
+            label: "TestTableEmpty",
+            nodeData: {
+              componentName: "TestTableEmpty",
+              path: "src/examples/Table/Editing.examples.tsx",
+            },
+          },
+          {
+            id: "Table/TableEditing/TestTableFIveRows",
+            label: "TestTableFIveRows",
+            nodeData: {
+              componentName: "TestTableFIveRows",
+              path: "src/examples/Table/Editing.examples.tsx",
             },
           },
         ],

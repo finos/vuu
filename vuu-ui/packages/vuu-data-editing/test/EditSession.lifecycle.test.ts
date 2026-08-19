@@ -3,8 +3,9 @@ import type {
   RpcResultError,
   RpcResultSuccess,
 } from "@vuu-ui/vuu-protocol-types";
+import { StaleUpdateError as UtilsStaleUpdateError } from "@vuu-ui/vuu-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { EditSession } from "../src";
+import { EditSession, StaleUpdateError } from "../src";
 
 type Editable = Required<EditApi>;
 type AddRow = Editable["addRow"];
@@ -111,6 +112,49 @@ describe("EditSession lifecycle", () => {
     expect(editSession.addCount).toBe(0);
   });
 
+  it("owns draft values and required-field errors for a new row", async () => {
+    const addRow = vi.fn<AddRow>().mockResolvedValue(SUCCESS);
+    editSession = new EditSession(
+      new MockDataSource(endEdit, createSession, editCell, addRow),
+    );
+    editSession.configureNewRow(["id", "name"]);
+    editSession.setNewRowValue("id", 7);
+    expect(editSession.isNewRowComplete()).toBe(false);
+
+    await expect(editSession.addNewRow()).resolves.toEqual(SUCCESS);
+    expect(editSession.newRowState.errors).toEqual({ name: "Value required" });
+    expect(addRow).not.toHaveBeenCalled();
+
+    editSession.setNewRowValue("name", "Alice");
+    expect(editSession.isNewRowComplete()).toBe(true);
+    await expect(editSession.addNewRow()).resolves.toEqual(SUCCESS);
+    expect(addRow).toHaveBeenCalledWith({ id: 7, name: "Alice" });
+    expect(editSession.newRowState).toMatchObject({
+      draftRevision: 1,
+      errors: {},
+      values: {},
+    });
+  });
+
+  it("prevents duplicate new-row submissions", async () => {
+    const pendingAdd = deferred<RpcResultSuccess>();
+    const addRow = vi.fn<AddRow>().mockReturnValue(pendingAdd.promise);
+    editSession = new EditSession(
+      new MockDataSource(endEdit, createSession, editCell, addRow),
+    );
+    editSession.configureNewRow(["id"]);
+    editSession.setNewRowValue("id", 7);
+
+    const firstAdd = editSession.addNewRow();
+    await Promise.resolve();
+    const secondAdd = editSession.addNewRow();
+    pendingAdd.resolve(SUCCESS);
+
+    await expect(firstAdd).resolves.toEqual(SUCCESS);
+    await expect(secondAdd).resolves.toEqual(SUCCESS);
+    expect(addRow).toHaveBeenCalledTimes(1);
+  });
+
   it("serializes end behind a pending begin", async () => {
     const pendingBegin = deferred<DataSource | undefined>();
     createSession = vi.fn(() => pendingBegin.promise);
@@ -182,6 +226,73 @@ describe("EditSession lifecycle", () => {
     expect(editSession.lifecycle).toEqual({ status: "idle" });
   });
 
+  it("re-exports and handles stale update errors", async () => {
+    const staleUpdateError = new StaleUpdateError("stale update");
+    const editStateListener = vi.fn();
+    endEdit = vi.fn().mockRejectedValue(staleUpdateError);
+    let dataSource: MockDataSource;
+    createSession = vi.fn(
+      async () => dataSource as unknown as DataSource,
+    ) as CreateSession;
+    dataSource = new MockDataSource(endEdit, createSession);
+    editSession = new EditSession(dataSource);
+    editSession.on("editState", editStateListener);
+
+    expect(StaleUpdateError).toBe(UtilsStaleUpdateError);
+    await editSession.begin();
+    await expect(editSession.end()).rejects.toBe(staleUpdateError);
+    expect(editStateListener).toHaveBeenCalledWith("stale");
+    expect(editSession.editState).toBe("stale");
+  });
+
+  it("keeps stale authoritative until a successful retry ends the session", async () => {
+    const staleUpdateError = new StaleUpdateError("stale update");
+    endEdit = vi
+      .fn()
+      .mockRejectedValueOnce(staleUpdateError)
+      .mockResolvedValueOnce(undefined);
+    let dataSource: MockDataSource;
+    createSession = vi.fn(
+      async () => dataSource as unknown as DataSource,
+    ) as CreateSession;
+    dataSource = new MockDataSource(endEdit, createSession);
+    editSession = new EditSession(dataSource);
+
+    await editSession.begin();
+    await editSession.commit("row-1", "price", 100, 101, true);
+    await expect(editSession.end(true)).rejects.toBe(staleUpdateError);
+    expect(editSession.editState).toBe("stale");
+
+    await editSession.end(true, true);
+    expect(editSession.editState).toBe("clean");
+
+    await editSession.begin();
+    expect(editSession.editState).toBe("clean");
+  });
+
+  it("prioritizes validation over stale and restores stale after correction", async () => {
+    const staleUpdateError = new StaleUpdateError("stale update");
+    endEdit = vi.fn().mockRejectedValue(staleUpdateError);
+    let dataSource: MockDataSource;
+    createSession = vi.fn(
+      async () => dataSource as unknown as DataSource,
+    ) as CreateSession;
+    dataSource = new MockDataSource(endEdit, createSession);
+    editSession = new EditSession(dataSource);
+
+    await editSession.begin();
+    await editSession.commit("row-1", "price", 100, 101, true);
+    await expect(editSession.end(true)).rejects.toBe(staleUpdateError);
+    await editSession.commit("row-1", "price", 100, "invalid", false);
+
+    expect(editSession.editState).toBe("invalid");
+    expect(editSession.invalidCount).toBe(1);
+
+    await editSession.commit("row-1", "price", 100, 102, true);
+    expect(editSession.editState).toBe("stale");
+    expect(editSession.invalidCount).toBe(0);
+  });
+
   it("runs edits and end operations on the created session datasource", async () => {
     const sessionEnd = vi.fn<EndEdit>().mockResolvedValue(undefined);
     const sessionEdit = vi.fn<EditCell>().mockResolvedValue(SUCCESS);
@@ -204,6 +315,7 @@ describe("EditSession lifecycle", () => {
     editSession = new EditSession(sourceDataSource);
 
     await editSession.begin();
+    expect(editSession.sessionDataSource).toBe(sessionDataSource);
     await editSession.commit("row-1", "price", 100, 101, true);
     await editSession.end(true);
 
@@ -212,6 +324,7 @@ describe("EditSession lifecycle", () => {
     expect(sourceEdit).not.toHaveBeenCalled();
     expect(sourceEnd).not.toHaveBeenCalled();
     expect(editSession.dataSource).toBe(sourceDataSource);
+    expect(editSession.sessionDataSource).toBeUndefined();
   });
 
   it("keeps the session datasource selected after an end failure", async () => {
@@ -233,6 +346,7 @@ describe("EditSession lifecycle", () => {
     await expect(editSession.end(true)).rejects.toBe(endError);
 
     expect(editSession.dataSource).toBe(sessionDataSource);
+    expect(editSession.sessionDataSource).toBe(sessionDataSource);
     expect(editSession.lifecycle).toMatchObject({
       operation: "end",
       sessionDataSource,
@@ -328,23 +442,123 @@ describe("EditSession lifecycle", () => {
     ]).toEqual([0, 0, "clean"]);
   });
 
-  it("preserves insert state while an invalid edit is corrected and reverted", async () => {
+  it("ignores superseded commit responses and keeps the newest cell state", async () => {
+    const first = deferred<RpcResultError>();
+    const second = deferred<RpcResultSuccess>();
+    editCell = vi
+      .fn<EditCell>()
+      .mockReturnValueOnce(first.promise)
+      .mockReturnValueOnce(second.promise);
+    let dataSource: MockDataSource;
+    createSession = vi.fn(
+      async () => dataSource as unknown as DataSource,
+    ) as CreateSession;
+    dataSource = new MockDataSource(endEdit, createSession, editCell);
+    editSession = new EditSession(dataSource);
     await editSession.begin();
-    editSession.addRows(1);
 
-    await editSession.commit("row-1", "price", 100, 101, false);
-    expect(editSession.editState).toBe("invalid");
+    const firstCommit = editSession.commit("row-1", "price", 100, 101, true);
+    const secondCommit = editSession.commit("row-1", "price", 101, 102, true);
 
-    await editSession.commit("row-1", "price", 100, 102, true);
-    expect(editSession.editState).toBe("dirty");
+    second.resolve(SUCCESS);
+    await secondCommit;
+    first.resolve(ERROR);
+    await expect(firstCommit).rejects.toThrow(
+      "Edit response superseded for row-1:price",
+    );
 
-    await editSession.commit("row-1", "price", 100, 100, true);
+    expect(editSession.isCellEdited("row-1", "price")).toBe(true);
     expect([
       editSession.editCount,
       editSession.invalidCount,
-      editSession.addCount,
-    ]).toEqual([0, 0, 1]);
-    expect(editSession.editState).toBe("dirty");
+      editSession.editState,
+    ]).toEqual([1, 0, "dirty"]);
+  });
+
+  it("keeps concurrent cell responses attached to current row state", async () => {
+    const firstRevert = deferred<RpcResultSuccess>();
+    const secondRevert = deferred<RpcResultError>();
+    editCell = vi
+      .fn<EditCell>()
+      .mockResolvedValueOnce(SUCCESS)
+      .mockResolvedValueOnce(SUCCESS)
+      .mockReturnValueOnce(firstRevert.promise)
+      .mockReturnValueOnce(secondRevert.promise);
+    let dataSource: MockDataSource;
+    createSession = vi.fn(
+      async () => dataSource as unknown as DataSource,
+    ) as CreateSession;
+    dataSource = new MockDataSource(endEdit, createSession, editCell);
+    editSession = new EditSession(dataSource);
+    await editSession.begin();
+    await editSession.commit("row-1", "price", 100, 101, true);
+    await editSession.commit("row-1", "size", 10, 11, true);
+
+    const firstCommit = editSession.commit("row-1", "price", 101, 100, true);
+    const secondCommit = editSession.commit("row-1", "size", 11, 10, true);
+    firstRevert.resolve(SUCCESS);
+    await firstCommit;
+    secondRevert.resolve(ERROR);
+    await secondCommit;
+
+    expect([
+      editSession.editCount,
+      editSession.invalidCount,
+      editSession.editState,
+    ]).toEqual([0, 1, "invalid"]);
+  });
+
+  it("undoes only edits that existed when the undo request began", async () => {
+    const pendingUndo = deferred<RpcResultSuccess>();
+    let dataSource: EditApi;
+    dataSource = {
+      createSessionDataSource: vi.fn(
+        async () => dataSource as unknown as DataSource,
+      ),
+      editCell: vi.fn().mockResolvedValue(SUCCESS),
+      endEditSession: vi.fn(),
+      undoRowChange: vi.fn().mockReturnValue(pendingUndo.promise),
+    };
+    editSession = new EditSession(dataSource);
+    await editSession.begin();
+    await editSession.commit("row-1", "price", 100, 101, true);
+
+    const undo = editSession.undoRowChange("row-1");
+    await editSession.commit("row-1", "size", 10, 11, true);
+    pendingUndo.resolve(SUCCESS);
+    await undo;
+
+    expect(editSession.isCellEdited("row-1", "price")).toBe(false);
+    expect(editSession.isCellEdited("row-1", "size")).toBe(true);
+    expect([editSession.editCount, editSession.invalidCount]).toEqual([1, 0]);
+  });
+
+  it("does not let an older undo clear a newer row deletion", async () => {
+    const pendingUndo = deferred<RpcResultSuccess>();
+    const deleteSelectedRows = vi.fn().mockResolvedValue({
+      data: { deletedKeys: ["row-1"] },
+      type: "SUCCESS_RESULT",
+    });
+    let dataSource: EditApi;
+    dataSource = {
+      createSessionDataSource: vi.fn(
+        async () => dataSource as unknown as DataSource,
+      ),
+      deleteSelectedRows,
+      endEditSession: vi.fn(),
+      undoRowChange: vi.fn().mockReturnValue(pendingUndo.promise),
+    };
+    editSession = new EditSession(dataSource);
+    await editSession.begin();
+    await editSession.deleteSelectedRows();
+
+    const undo = editSession.undoRowChange("row-1");
+    await editSession.deleteSelectedRows();
+    pendingUndo.resolve(SUCCESS);
+    await undo;
+
+    expect(editSession.hasRowChanges("row-1")).toBe(true);
+    expect(editSession.deleteCount).toBe(1);
   });
 
   it("notifies delete count boundaries while cell edits keep the session dirty", async () => {

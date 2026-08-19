@@ -6,7 +6,7 @@ import type { LayoutChangeHandler } from "@vuu-ui/vuu-layout";
 import { LayoutProvider, StackLayout } from "@vuu-ui/vuu-layout";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
-import { logger, registerComponent } from "@vuu-ui/vuu-utils";
+import { logger } from "@vuu-ui/vuu-utils";
 import {
   type HTMLAttributes,
   type ReactNode,
@@ -22,7 +22,6 @@ import {
   usePersistenceManager,
 } from "./persistence-manager";
 import { type ShellLayoutProps, useShellLayout } from "./shell-layout-templates";
-import { type SettingsSchema, UserSettingsPanel } from "./user-settings";
 import {
   type WorkspaceProps,
   WorkspaceProvider,
@@ -34,7 +33,6 @@ import { useLostConnection } from "@vuu-ui/vuu-data-react";
 
 import shellCss from "./shell.css";
 
-registerComponent("ApplicationSettings", UserSettingsPanel, "view");
 
 if (process.env.NODE_ENV === "production") {
   // StackLayout is loaded just to force component registration, we know it will be
@@ -53,7 +51,6 @@ export type LayoutTemplateName = "full-height" | "inlay";
 
 export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   shellLayoutProps?: ShellLayoutProps;
-  userSettingsSchema?: SettingsSchema;
   workspaceProps?: WorkspaceProps;
   children?: ReactNode;
   logout?: () => void;
@@ -86,7 +83,7 @@ const VuuApplication = ({
   children,
 }: Omit<
   ShellProps,
-  "ContentLayoutProps" | "loginUrl" | "userSettingsSchema" | "workspaceProps"
+  "ContentLayoutProps" | "loginUrl" | "workspaceProps"
 >) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -138,7 +135,6 @@ const VuuApplication = ({
 
 export const Shell = ({
   logout,
-  userSettingsSchema,
   workspaceProps,
   ...props
 }: ShellProps) => {
@@ -168,7 +164,6 @@ export const Shell = ({
       density="high"
       logout={logout}
       theme="vuu-theme"
-      userSettingsSchema={userSettingsSchema}
     >
       <WorkspaceProvider {...workspaceProps}>
         <ModalProvider>

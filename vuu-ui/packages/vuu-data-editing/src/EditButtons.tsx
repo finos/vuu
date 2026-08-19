@@ -9,7 +9,6 @@ export interface EditButtonProps {
   hasSelection?: boolean;
   onCancel?: () => void;
   onDelete?: () => void;
-  onAddRows?: () => void;
   onSave: (force?: boolean) => void;
   saveLabel?: string;
   confirmSave?: () => boolean | Promise<boolean>;
@@ -23,13 +22,14 @@ export const EditButtons = ({
   confirmSave,
   editSession,
   hasSelection = false,
-  onAddRows,
   onCancel,
   onDelete,
   onSave,
   saveLabel = "Save",
 }: EditButtonProps) => {
-  const [editState, setEditState] = useState<EditState>("clean");
+  const [editState, setEditState] = useState<EditState>(
+    () => editSession?.editState ?? "clean",
+  );
 
   const handleSave = useCallback(async () => {
     if (confirmSave) {
@@ -49,6 +49,7 @@ export const EditButtons = ({
 
   useEffect(() => {
     if (editSession) {
+      setEditState(editSession.editState);
       editSession.on("editState", setEditState);
       return () => editSession.removeListener("editState", setEditState);
     }
@@ -63,11 +64,6 @@ export const EditButtons = ({
           sentiment="negative"
         >
           Delete
-        </Button>
-      )}
-      {onAddRows && (
-        <Button onClick={onAddRows} sentiment="neutral">
-          Add Rows
         </Button>
       )}
       <Button disabled={!canSave} onClick={handleSave} sentiment="accented">

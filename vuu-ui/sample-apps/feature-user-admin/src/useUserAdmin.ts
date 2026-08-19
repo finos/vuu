@@ -8,7 +8,7 @@ import { useData } from "@vuu-ui/vuu-utils2";
 
 const KEYCLOAK_ADMIN_MODULE = "KEYCLOAK_ADMIN";
 
-const INTERNAL_COLUMN_NAMES = new Set([
+export const INTERNAL_COLUMN_NAMES = new Set([
   "vuuCreatedTimestamp",
   "vuuUpdatedTimestamp",
   "vuuMsg",
@@ -32,6 +32,7 @@ export type UserAdminHookResult = {
   groupsConfig: TableConfig;
   handleUserSelectionChange: SelectionChangeHandler;
   rolesConfig: TableConfig;
+  schemas: KeycloakAdminSchemas;
   usersConfig: TableConfig;
 };
 
@@ -85,6 +86,7 @@ export const useUserAdmin = (): UserAdminHookResult | undefined => {
       users: getDataSource(`${sessionPrefix}-users`, {
         bufferSize: 200,
         columns: getColumns(schemas.users),
+        sessionTableMessageColumn: "vuuMsg",
         table: schemas.users.table,
         title,
         viewport: `${sessionPrefix}-users`,
@@ -151,9 +153,23 @@ export const useUserAdmin = (): UserAdminHookResult | undefined => {
     [],
   );
 
-  if (!dataSources || !usersConfig || !groupsConfig || !rolesConfig) {
+  if (
+    !schemas ||
+    !dataSources ||
+    !usersConfig ||
+    !groupsConfig ||
+    !rolesConfig
+  ) {
     return undefined;
   }
 
-  return { dataSources, drawerOpen, groupsConfig, handleUserSelectionChange, rolesConfig, usersConfig };
+  return {
+    dataSources,
+    drawerOpen,
+    groupsConfig,
+    handleUserSelectionChange,
+    rolesConfig,
+    schemas,
+    usersConfig,
+  };
 };

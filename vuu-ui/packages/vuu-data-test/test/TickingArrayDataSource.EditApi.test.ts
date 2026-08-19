@@ -10,6 +10,7 @@ import type {
   RpcResultError,
   RpcResultSuccess,
 } from "@vuu-ui/vuu-protocol-types";
+import { Range } from "@vuu-ui/vuu-utils";
 
 const schema: TableSchema = {
   columns: [
@@ -42,7 +43,7 @@ function createDataSource() {
 }
 
 describe("sessionTableSchema", () => {
-  it("adds setToDelete as a boolean session-only column", () => {
+  it("adds vuu_action as a string session-only column", () => {
     const sessionSchema = sessionTableSchema({
       ...schema,
       columns: schema.columns.slice(0, 2),
@@ -52,7 +53,7 @@ describe("sessionTableSchema", () => {
       { name: "id", serverDataType: "string" },
       { name: "name", serverDataType: "string" },
       { name: "vuuMsg", serverDataType: "string" },
-      { name: "setToDelete", serverDataType: "boolean" },
+      { name: "vuu_action", serverDataType: "string" },
     ]);
   });
 
@@ -63,7 +64,7 @@ describe("sessionTableSchema", () => {
       sessionSchema.columns.filter(({ name }) => name === "vuuMsg"),
     ).toHaveLength(1);
     expect(
-      sessionSchema.columns.filter(({ name }) => name === "setToDelete"),
+      sessionSchema.columns.filter(({ name }) => name === "vuu_action"),
     ).toHaveLength(1);
   });
 
@@ -72,17 +73,17 @@ describe("sessionTableSchema", () => {
       "row-001",
       "Alice",
       "",
-      false,
+      "",
     ]);
     expect(
-      sessionTableRow(["row-001", "Alice", "", false], {
+      sessionTableRow(["row-001", "Alice", "", ""], {
         ...schema,
         columns: schema.columns.concat({
-          name: "setToDelete",
-          serverDataType: "boolean",
+          name: "vuu_action",
+          serverDataType: "string",
         }),
       }),
-    ).toEqual(["row-001", "Alice", "", false]);
+    ).toEqual(["row-001", "Alice", "", ""]);
   });
 });
 
@@ -416,5 +417,59 @@ describe("createSessionDataSource", () => {
     await expect(ds.createSessionDataSource?.("All")).rejects.toThrow(
       "session table creation failed",
     );
+  });
+
+  it("replays committed rows from the source datasource when session editing ends", async () => {
+    const sourceTable = new Table(
+      schema,
+      [["row-001", "Alice", ""]],
+      buildDataColumnMapFromSchema(schema),
+    );
+    const sessionTable = new Table(
+      { ...schema, table: { module: "TEST", table: "session-xyz" } },
+      [],
+      buildDataColumnMapFromSchema(schema),
+    );
+    const sessionDataSource = new TickingArrayDataSource({
+      columnDescriptors: schema.columns,
+      table: sessionTable,
+    });
+    const sourceDataSource = new TickingArrayDataSource({
+      columnDescriptors: schema.columns,
+      table: sourceTable,
+      vuuModule: {
+        createDataSource: () => sessionDataSource,
+      },
+    });
+    vi.spyOn(sourceDataSource, "rpcRequest").mockResolvedValue(sessionSuccess);
+
+    const updates = vi.fn();
+    await sourceDataSource.subscribe({ range: Range(0, 10) }, updates);
+    updates.mockClear();
+
+    const editDataSource =
+      await sourceDataSource.createSessionDataSource("Empty");
+    expect(editDataSource?.isSessionDataSourceOf?.(sourceDataSource)).toBe(
+      true,
+    );
+    sourceDataSource.suspend(false);
+    vi.spyOn(sessionDataSource, "rpcRequest").mockImplementation(async () => {
+      sourceTable.insert(["row-002", "Bob", ""]);
+      updates.mockClear();
+      return SUCCESS;
+    });
+
+    await editDataSource?.endEditSession?.(true);
+    expect(updates).not.toHaveBeenCalled();
+
+    sourceDataSource.resume(updates);
+    const rows = updates.mock.calls.at(-1)?.[0].rows;
+    expect(rows).toEqual(
+      expect.arrayContaining([expect.arrayContaining(["row-002", "Bob"])]),
+    );
+
+    updates.mockClear();
+    await editDataSource?.endEditSession?.(true);
+    expect(updates).not.toHaveBeenCalled();
   });
 });

@@ -7,9 +7,16 @@ import type {
   UndoRowChangeResult,
 } from "@vuu-ui/vuu-data-types";
 import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
-import { EventEmitter, isRpcError } from "@vuu-ui/vuu-utils";
+import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
+export type NewRowState = {
+  columns: readonly string[];
+  draftRevision: number;
+  errors: Readonly<Record<string, string>>;
+  submitting: boolean;
+  values: Readonly<Record<string, VuuRowDataItemType>>;
+};
 
 export type EditLifecycle =
   | { status: "idle" }
@@ -24,15 +31,13 @@ export type EditLifecycle =
     };
 
 export class EditError extends Error {}
+export class SupersededEditError extends Error {}
 
 type CellEdit = {
   originalValue: VuuRowDataItemType;
   editedValue: VuuRowDataItemType;
   isValid: boolean;
 };
-
-// TODO can add more when when we know what the server implementation of error columns will look like
-export class StaleUpdateError extends Error {}
 
 type RowEditDetails = {
   /**
@@ -42,23 +47,38 @@ type RowEditDetails = {
 };
 
 type EditSessionEvents = {
+  cellEditChanged: (key: string, columnName: string) => void;
   editState: (editState: EditState) => void;
   lifecycle: (lifecycle: EditLifecycle) => void;
+  newRow: (newRowState: NewRowState) => void;
 };
 
 export class EditSession extends EventEmitter<EditSessionEvents> {
+  static readonly newRowKey = "__vuu_new_row__";
   /**
    *  Row key => row edits
    */
   #rowEdits = new Map<string, RowEditDetails>();
   #deletedRows = new Set<string>();
+  #deleteRevision = 0;
+  #rowDeleteRevisions = new Map<string, number>();
   #editCount = 0;
   #deleteCount = 0;
   #addCount = 0;
   #invalidCount = 0;
+  #isStale = false;
+  #commitRevision = 0;
+  #cellCommitRevisions = new Map<string, Map<string, number>>();
   #deleteMode: DeleteRowMode;
   #sourceTableDataSource?: EditApi;
   #sessionDataSource?: DataSource;
+  #newRowState: NewRowState = {
+    columns: [],
+    draftRevision: 0,
+    errors: {},
+    submitting: false,
+    values: {},
+  };
   #lifecycle: EditLifecycle = { status: "idle" };
   /** Prevent begin/end RPCs from overlapping and observing stale lifecycle state. */
   #transitionQueue: Promise<void> = Promise.resolve();
@@ -115,6 +135,9 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     if (this.#invalidCount > 0) {
       return "invalid";
     }
+    if (this.#isStale) {
+      return "stale";
+    }
     return this.#editCount === 0 &&
       this.#deleteCount === 0 &&
       this.#addCount === 0
@@ -138,6 +161,14 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
   }
 
+  #setStale(isStale: boolean) {
+    if (isStale !== this.#isStale) {
+      const oldState = this.editState;
+      this.#isStale = isStale;
+      this.#emitEditStateChange(oldState);
+    }
+  }
+
   #refreshEditCounts() {
     let editCount = 0;
     let invalidCount = 0;
@@ -153,6 +184,127 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     this.#setEditCounts(editCount, invalidCount);
   }
 
+  get newRowState(): NewRowState {
+    return this.#newRowState;
+  }
+
+  isNewRow(key: string) {
+    return key === EditSession.newRowKey;
+  }
+
+  isNewRowFinalColumn(columnName: string) {
+    return this.#newRowState.columns.at(-1) === columnName;
+  }
+
+  isNewRowComplete() {
+    return this.#newRowState.columns.every((column) => {
+      const value = this.#newRowState.values[column];
+      return (
+        value !== undefined &&
+        (typeof value !== "string" || value.trim() !== "")
+      );
+    });
+  }
+
+  configureNewRow(columns: readonly string[]) {
+    if (
+      columns.length === this.#newRowState.columns.length &&
+      columns.every(
+        (column, index) => column === this.#newRowState.columns[index],
+      )
+    ) {
+      return;
+    }
+
+    const columnSet = new Set(columns);
+    const errors = Object.fromEntries(
+      Object.entries(this.#newRowState.errors).filter(([column]) =>
+        columnSet.has(column),
+      ),
+    );
+    this.#setNewRowState({
+      ...this.#newRowState,
+      columns: [...columns],
+      errors,
+    });
+  }
+
+  setNewRowValue(column: string, value: VuuRowDataItemType) {
+    const errors = { ...this.#newRowState.errors };
+    delete errors[column];
+    this.#setNewRowState({
+      ...this.#newRowState,
+      errors,
+      values: { ...this.#newRowState.values, [column]: value },
+    });
+  }
+
+  async addNewRow(): Promise<RpcResult> {
+    const missingErrors = Object.fromEntries(
+      this.#newRowState.columns
+        .filter((column) => {
+          const value = this.#newRowState.values[column];
+          return (
+            value === undefined ||
+            (typeof value === "string" && value.trim() === "")
+          );
+        })
+        .map((column) => [column, "Value required"]),
+    );
+    const errors = { ...this.#newRowState.errors, ...missingErrors };
+
+    if (Object.keys(errors).length > 0) {
+      this.#setNewRowState({ ...this.#newRowState, errors });
+      return { data: undefined, type: "SUCCESS_RESULT" };
+    }
+
+    if (this.#newRowState.submitting) {
+      return { data: undefined, type: "SUCCESS_RESULT" };
+    }
+
+    this.#setNewRowState({ ...this.#newRowState, submitting: true });
+    try {
+      const response = await this.addRow({ ...this.#newRowState.values });
+      if (isRpcError(response)) {
+        const finalColumn = this.#newRowState.columns.at(-1);
+        this.#setNewRowState({
+          ...this.#newRowState,
+          errors: finalColumn
+            ? { [finalColumn]: response.errorMessage }
+            : this.#newRowState.errors,
+          submitting: false,
+        });
+        return response;
+      }
+
+      this.#setNewRowState({
+        columns: this.#newRowState.columns,
+        draftRevision: this.#newRowState.draftRevision + 1,
+        errors: {},
+        submitting: false,
+        values: {},
+      });
+      return response;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unable to add row";
+      const finalColumn = this.#newRowState.columns.at(-1);
+      this.#setNewRowState({
+        ...this.#newRowState,
+        errors: finalColumn
+          ? { [finalColumn]: errorMessage }
+          : this.#newRowState.errors,
+        submitting: false,
+      });
+      return { errorMessage, type: "ERROR_RESULT" };
+    }
+  }
+
+  #setNewRowState(newRowState: NewRowState) {
+    this.#newRowState = newRowState;
+    this.emit("newRow", newRowState);
+  }
+
   async deleteSelectedRows(): Promise<void> {
     const response = await this.dataSource?.deleteSelectedRows?.(
       this.#deleteMode,
@@ -163,6 +315,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     if (deletedKeys && deletedKeys.length > 0) {
       let newCount = 0;
       for (const key of deletedKeys) {
+        this.#rowDeleteRevisions.set(key, ++this.#deleteRevision);
         if (!this.#deletedRows.has(key)) {
           this.#deletedRows.add(key);
           newCount++;
@@ -194,17 +347,11 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     return response;
   }
 
-  addRows(count = 15, rowData: Record<string, VuuRowDataItemType> = {}) {
-    for (let i = 0; i < count; i++) {
-      this.dataSource?.addRow?.(rowData);
-    }
-    this.addCount = this.#addCount + count;
-  }
-
   restoreRows(keys: string[]) {
     for (const key of keys) {
       if (this.#deletedRows.has(key)) {
         this.#deletedRows.delete(key);
+        this.#rowDeleteRevisions.delete(key);
         this.deleteCount = this.#deleteCount - 1;
       }
     }
@@ -214,29 +361,58 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     return this.#rowEdits.has(key) || this.#deletedRows.has(key);
   }
 
+  isCellEdited(key: string, columnName: string): boolean {
+    const cellEdit = this.#rowEdits.get(key)?.cellEdits.get(columnName);
+    return (
+      cellEdit?.isValid === true &&
+      cellEdit.originalValue !== cellEdit.editedValue
+    );
+  }
+
   async undoRowChange(key: string): Promise<void> {
     if (!this.inEditMode) return;
 
-    const rowEdits = this.#rowEdits.get(key);
+    const undoRevision = this.#commitRevision;
+    const deleteRevisionAtRequest = this.#rowDeleteRevisions.get(key);
+    const rowEditsAtRequest = this.#rowEdits.get(key);
+    const columnsAtRequest = new Set(rowEditsAtRequest?.cellEdits.keys());
     const wasDeleted = this.#deletedRows.has(key);
-
-    if (!rowEdits?.cellEdits.size && !wasDeleted) return;
-
-    this.#rowEdits.delete(key);
-    if (wasDeleted) this.#deletedRows.delete(key);
-
     const response = await this.dataSource?.undoRowChange?.(key);
 
     if (isRpcError(response)) {
-      // Restore on failure
-      if (rowEdits) this.#rowEdits.set(key, rowEdits);
-      if (wasDeleted) this.#deletedRows.add(key);
       return;
     }
 
-    // Update counters after confirmed success
-    if (rowEdits) this.#refreshEditCounts();
-    if (wasDeleted) {
+    const rowEdits = this.#rowEdits.get(key);
+    if (rowEdits) {
+      const changedColumns: string[] = [];
+      for (const columnName of columnsAtRequest) {
+        const latestRevision =
+          this.#cellCommitRevisions.get(key)?.get(columnName) ?? 0;
+        if (latestRevision > undoRevision) {
+          continue;
+        }
+        if (this.isCellEdited(key, columnName)) {
+          changedColumns.push(columnName);
+        }
+        rowEdits.cellEdits.delete(columnName);
+        this.#setCellCommitRevision(key, columnName);
+      }
+      if (rowEdits.cellEdits.size === 0) {
+        this.#rowEdits.delete(key);
+      }
+      this.#refreshEditCounts();
+      for (const columnName of changedColumns) {
+        this.emit("cellEditChanged", key, columnName);
+      }
+    }
+    if (
+      wasDeleted &&
+      this.#deletedRows.has(key) &&
+      this.#rowDeleteRevisions.get(key) === deleteRevisionAtRequest
+    ) {
+      this.#deletedRows.delete(key);
+      this.#rowDeleteRevisions.delete(key);
       this.deleteCount = this.#deleteCount - 1;
     }
 
@@ -250,12 +426,32 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   #clearEdits() {
+    const oldState = this.editState;
+    const editedCells = [...this.#rowEdits].flatMap(([key, { cellEdits }]) =>
+      [...cellEdits.keys()]
+        .filter((columnName) => this.isCellEdited(key, columnName))
+        .map((columnName) => [key, columnName] as const),
+    );
     this.#rowEdits.clear();
     this.#deletedRows.clear();
+    this.#rowDeleteRevisions.clear();
+    this.#cellCommitRevisions.clear();
     this.#editCount = 0;
     this.#deleteCount = 0;
     this.#addCount = 0;
     this.#invalidCount = 0;
+    this.#isStale = false;
+    this.#setNewRowState({
+      columns: this.#newRowState.columns,
+      draftRevision: this.#newRowState.draftRevision + 1,
+      errors: {},
+      submitting: false,
+      values: {},
+    });
+    for (const [key, columnName] of editedCells) {
+      this.emit("cellEditChanged", key, columnName);
+    }
+    this.#emitEditStateChange(oldState);
   }
 
   #setLifecycle(lifecycle: EditLifecycle) {
@@ -315,6 +511,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         }
 
         this.#sessionDataSource = sessionDataSource;
+        this.#setStale(false);
         this.#setLifecycle({ status: "active", sessionDataSource });
         return sessionDataSource;
       } catch (cause) {
@@ -327,6 +524,10 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
   get dataSource() {
     return this.#sessionDataSource ?? this.#sourceTableDataSource;
+  }
+
+  get sessionDataSource() {
+    return this.#sessionDataSource;
   }
 
   end(saveChanges = false, force = false): Promise<void> {
@@ -356,7 +557,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       } catch (cause) {
         const error = cause instanceof Error ? cause : new Error(String(cause));
         if (error instanceof StaleUpdateError) {
-          this.emit("editState", "stale");
+          this.#setStale(true);
         }
         this.#setLifecycle({
           status: "error",
@@ -382,7 +583,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     );
   }
 
-  getOrCreateRowEdits(key: string): RowEditDetails {
+  #getOrCreateRowEdits(key: string): RowEditDetails {
     const rowEditDetails = this.#rowEdits.get(key);
     if (rowEditDetails) {
       return rowEditDetails;
@@ -395,13 +596,15 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
   }
 
-  storeCellEdit(
+  #storeCellEdit(
+    key: string,
     cellEdits: Map<string, CellEdit>,
     column: string,
     originalValue: VuuRowDataItemType,
     editedValue: VuuRowDataItemType,
     isValid: boolean,
   ) {
+    const wasEdited = this.isCellEdited(key, column);
     const existingCellEdit = cellEdits.get(column);
     const cellEdit: CellEdit = {
       originalValue: existingCellEdit?.originalValue ?? originalValue,
@@ -415,7 +618,23 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       cellEdits.set(column, cellEdit);
     }
     this.#refreshEditCounts();
+    if (wasEdited !== this.isCellEdited(key, column)) {
+      this.emit("cellEditChanged", key, column);
+    }
     return cellEdit;
+  }
+
+  #setCellCommitRevision(key: string, columnName: string) {
+    const revision = ++this.#commitRevision;
+    const rowRevisions =
+      this.#cellCommitRevisions.get(key) ?? new Map<string, number>();
+    rowRevisions.set(columnName, revision);
+    this.#cellCommitRevisions.set(key, rowRevisions);
+    return revision;
+  }
+
+  #isLatestCellCommit(key: string, columnName: string, revision: number) {
+    return this.#cellCommitRevisions.get(key)?.get(columnName) === revision;
   }
 
   async commit(
@@ -424,7 +643,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     originalValue: VuuRowDataItemType,
     typedValue: string | number | boolean,
     isValid: boolean,
-  ) {
+  ): Promise<RpcResult> {
     if (
       this.#lifecycle.status !== "active" &&
       !(
@@ -434,12 +653,13 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     ) {
       throw new Error("No edit session in progress");
     }
-    const rowEditDetails = this.getOrCreateRowEdits(key);
+    const revision = this.#setCellCommitRevision(key, columnName);
+    const rowEditDetails = this.#getOrCreateRowEdits(key);
+    const { cellEdits } = rowEditDetails;
 
     if (isValid) {
-      const { cellEdits } = rowEditDetails;
-
-      const cellEdit = this.storeCellEdit(
+      const cellEdit = this.#storeCellEdit(
+        key,
         cellEdits,
         columnName,
         originalValue,
@@ -453,36 +673,41 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
           columnName,
           typedValue,
         );
+        if (!this.#isLatestCellCommit(key, columnName, revision)) {
+          throw new SupersededEditError(
+            `Edit response superseded for ${key}:${columnName}`,
+          );
+        }
+        const currentCellEdits = this.#getOrCreateRowEdits(key).cellEdits;
         if (isRpcError(response)) {
-          this.storeCellEdit(
-            cellEdits,
+          this.#storeCellEdit(
+            key,
+            currentCellEdits,
             columnName,
             cellEdit.originalValue,
             typedValue,
             false,
           );
-        } else if (cellEdits.size === 0) {
+        } else if (currentCellEdits.size === 0) {
           this.#rowEdits.delete(key);
         }
 
-        return {
-          editedDuringCurrentSession: cellEdit.originalValue !== typedValue,
-          ...response,
-        };
+        return response;
       }
       if (cellEdits.size === 0) {
         this.#rowEdits.delete(key);
       }
+      return { data: undefined, type: "SUCCESS_RESULT" };
     } else {
-      const { cellEdits } = rowEditDetails;
-      this.storeCellEdit(
+      this.#storeCellEdit(
+        key,
         cellEdits,
         columnName,
         originalValue,
         typedValue,
         isValid,
       );
-      return { editedDuringCurrentSession: false };
+      return { data: undefined, type: "SUCCESS_RESULT" };
     }
   }
 }

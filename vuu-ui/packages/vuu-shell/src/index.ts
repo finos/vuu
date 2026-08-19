@@ -11,5 +11,4 @@ export * from "./shell";
 export * from "./shell-layout-templates";
 export * from "./ShellContextProvider";
 export * from "./theme-switch";
-export * from "./user-settings";
 export * from "./workspace-management";

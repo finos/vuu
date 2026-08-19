@@ -1,4 +1,3 @@
-import React from "react";
 import { FlexboxLayout as Flexbox, Placeholder } from "@vuu-ui/vuu-layout";
 
 export const twoColumns = (

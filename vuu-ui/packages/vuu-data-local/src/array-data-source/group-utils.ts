@@ -3,7 +3,7 @@ import type {
   VuuGroupBy,
   VuuRowDataItemType,
 } from "@vuu-ui/vuu-protocol-types";
-import { ColumnMap, metadataKeys } from "@vuu-ui/vuu-utils";
+import { type ColumnMap, metadataKeys } from "@vuu-ui/vuu-utils";
 
 export type KeyList = number[];
 export type GroupMap = { [key: string]: GroupMap | KeyList };
@@ -221,8 +221,9 @@ function groupLeafRows(
   for (let i = 0, len = leafRows.length; i < len; i++) {
     const leafRow = leafRows[i];
     let target: GroupMap | KeyList = groups;
-    let targetNode;
-    let key;
+    // biome-ignore lint/suspicious/noExplicitAny: <placeholder for multiple types>
+    let targetNode: any;
+    let key: string;
     for (let level = 0; level < levels; level++) {
       const colIdx = groupby[level];
       key = leafRow[colIdx].toString();
@@ -233,8 +234,6 @@ function groupLeafRows(
       } else if (targetNode) {
         target = targetNode;
       } else if (!targetNode && level < lastLevel) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         target = target[key] = {};
       } else if (!targetNode) {
         (target as GroupMap)[key] = [i];

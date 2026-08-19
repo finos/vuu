@@ -1,8 +1,3 @@
-import type {
-  MenuRpcResponse,
-  Selection,
-  TableSchema,
-} from "@vuu-ui/vuu-data-types";
 import type { Filter } from "@vuu-ui/vuu-filter-types";
 import type {
   LinkDescriptorWithLabel,
@@ -134,8 +129,19 @@ export declare type DateTimeDataValueType =
 
 export declare type BulkEdit = "bulk" | false | "read-only";
 
+/**
+ * Controls whether a data value can be edited for row insertion and/or update.
+ * A boolean applies the same permission to both operations.
+ */
+export declare type DataEditable =
+  | boolean
+  | {
+    insert: boolean;
+    update: boolean;
+  };
+
 export interface DataValueDescriptor {
-  editable?: boolean;
+  editable?: DataEditable;
   /**
    There are three values for editableBulk. 
     - false user will not see these values when applying a bulk edit. 
@@ -684,6 +690,11 @@ export interface DataSourceBase<
    */
   suspend?: (escalateToDisable?: boolean, escalateDelay?: number) => void;
   resume?: (callback?: DataSourceSubscribeCallback) => void;
+  /**
+   * Returns true when this datasource is a transient session datasource
+   * created by the supplied source datasource.
+   */
+  isSessionDataSourceOf?: (dataSource: DataSource) => boolean;
 
   deleteRow?: DataSourceDeleteHandler;
   /**

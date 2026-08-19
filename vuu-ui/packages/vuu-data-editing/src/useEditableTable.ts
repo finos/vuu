@@ -9,6 +9,11 @@ import { useLayoutEffectSkipFirst } from "@vuu-ui/vuu-utils";
 import { useData } from "@vuu-ui/vuu-utils2";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EditSession, type EditLifecycle, type EditState } from "./EditSession";
+import { EDIT_ACTION_ROW_CLASS_NAME_GENERATOR } from "./editActionRowClassNameGenerator";
+
+const EDIT_ACTION_ROW_CLASS_NAME_GENERATORS = [
+  EDIT_ACTION_ROW_CLASS_NAME_GENERATOR,
+];
 
 export type EditMode = "edit" | "view";
 
@@ -45,7 +50,6 @@ export const useEditableTable = ({
 }: EditableTableHookProps) => {
   const { VuuDataSource } = useData();
   const [selectionCount, setSelectionCount] = useState(0);
-  const [deleteCount, setDeleteCount] = useState(0);
   useLayoutEffectSkipFirst(() => {
     console.warn("[useEditableTable] columns and or table changed");
   }, [columns, table]);
@@ -72,6 +76,8 @@ export const useEditableTable = ({
     editSession.lifecycle,
   );
   const [editState, setEditState] = useState<EditState>(editSession.editState);
+  const [subscribedSessionDataSource, setSubscribedSessionDataSource] =
+    useState<DataSource>();
   const onCancelRef = useRef(onCancel);
   onCancelRef.current = onCancel;
 
@@ -104,12 +110,7 @@ export const useEditableTable = ({
 
   const handleDelete = useCallback(async () => {
     await editSession.deleteSelectedRows();
-    setSelectionCount(0);
   }, [editSession]);
-
-  const handleAddRows = useCallback(() => {
-    editSession.addRows(addRowsCount);
-  }, [addRowsCount, editSession]);
 
   const handleUndoRowChange = useCallback(
     (key: string) => void editSession.undoRowChange(key),
@@ -122,9 +123,30 @@ export const useEditableTable = ({
   }, [dataSource]);
 
   useEffect(() => {
+    if (!sessionDataSource) {
+      setSubscribedSessionDataSource(undefined);
+      return;
+    }
+
+    const handleSubscribed = () =>
+      setSubscribedSessionDataSource(sessionDataSource);
+
+    setSubscribedSessionDataSource(undefined);
+    sessionDataSource.on("subscribed", handleSubscribed);
+    if (
+      sessionDataSource.status === "subscribed" &&
+      sessionDataSource.tableSchema
+    ) {
+      handleSubscribed();
+    }
+
+    return () =>
+      sessionDataSource.removeListener("subscribed", handleSubscribed);
+  }, [sessionDataSource]);
+
+  useEffect(() => {
     const handleEditState = (nextEditState: EditState) => {
       setEditState(nextEditState);
-      setDeleteCount(editSession.deleteCount);
     };
     const handleLifecycle = (nextLifecycle: EditLifecycle) => {
       setLifecycle(nextLifecycle);
@@ -163,6 +185,13 @@ export const useEditableTable = ({
     canCancel &&
     (editState === "dirty" || editState === "stale") &&
     editSession.invalidCount === 0;
+  const isEditSessionReady =
+    isEditMode &&
+    sessionDataSource !== undefined &&
+    sessionDataSource === editSession.sessionDataSource &&
+    subscribedSessionDataSource === sessionDataSource &&
+    sessionDataSource.status === "subscribed" &&
+    sessionDataSource.tableSchema !== undefined;
 
   return {
     canCancel,
@@ -170,12 +199,15 @@ export const useEditableTable = ({
     dataSource,
     editSession,
     lifecycle,
-    hasSelection: selectionCount > 0 || deleteCount > 0,
-    onAddRows: handleAddRows,
+    hasSelection: selectionCount > 0,
+    isEditSessionReady,
     onCancel: handleCancel,
     onDelete: handleDelete,
     onSave: handleSave,
     onUndoRowChange: handleUndoRowChange,
+    rowClassNameGenerators: isEditMode
+      ? EDIT_ACTION_ROW_CLASS_NAME_GENERATORS
+      : undefined,
     sessionDataSource,
     sourceDataSource,
   };

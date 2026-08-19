@@ -1,6 +1,6 @@
-import { StaleUpdateError } from "@vuu-ui/vuu-data-editing";
 import type {
   CopyOption,
+  DataSource,
   DataSourceBase,
   DataSourceCallbackMessage,
   DataSourceConstructorProps,
@@ -45,6 +45,7 @@ import {
   itemsOrOrderChanged,
   logger,
   Range,
+  StaleUpdateError,
   throttle,
   uuid,
 } from "@vuu-ui/vuu-utils";
@@ -100,6 +101,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   #menu: VuuMenu | undefined;
   #optimize: OptimizeStrategy = "throttle";
   #selectedRowsCount = 0;
+  #sourceTableDataSource: VuuDataSource | undefined;
   #sessionTableMessageColumn: string | undefined = undefined;
   #status: DataSourceStatus = "initialising";
   #tableSchema: TableSchema | undefined;
@@ -298,6 +300,10 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       type: "resume",
       viewport: this.viewport,
     });
+  }
+
+  isSessionDataSourceOf(dataSource: DataSource): boolean {
+    return this.#sourceTableDataSource === dataSource;
   }
 
   resume(callback?: DataSourceSubscribeCallback) {
@@ -672,11 +678,11 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
       const sessionColumns = combineColumnsWithAutosubscribeColumns(
         this.columns,
-        [this.#sessionTableMessageColumn, "setToDelete"].filter(
+        [this.#sessionTableMessageColumn, "vuu_action"].filter(
           (column): column is string => column !== undefined,
         ),
       );
-      return new VuuDataSource({
+      const sessionDataSource = new VuuDataSource({
         ...this.config,
         columns: sessionColumns,
         connectionId: this.#connectionId,
@@ -684,6 +690,8 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
         table: sessionTable,
         viewport: sessionTable.table,
       });
+      sessionDataSource.#sourceTableDataSource = this;
+      return sessionDataSource;
     } else {
       throw Error(
         `[VuuDataSource] createSessionDataSource ${rpcResponse?.errorMessage}`,
@@ -713,7 +721,13 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     );
 
     if (isRpcSuccess(rpcResponse)) {
-      this.sendResumeMessage();
+      const sourceTableDataSource = this.#sourceTableDataSource;
+      if (sourceTableDataSource) {
+        this.#sourceTableDataSource = undefined;
+        this.unsubscribe();
+      } else {
+        this.sendResumeMessage();
+      }
     } else {
       if (rpcResponse?.errorMessage === "stale update") {
         throw new StaleUpdateError(rpcResponse.errorMessage);

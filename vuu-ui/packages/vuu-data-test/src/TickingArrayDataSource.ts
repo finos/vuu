@@ -4,6 +4,7 @@ import {
 } from "@vuu-ui/vuu-data-local";
 import type {
   DataSourceBase,
+  DataSource,
   DataSourceRowWithBigint,
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
@@ -24,8 +25,12 @@ import type {
   VuuRpcServiceRequest,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-import { StaleUpdateError } from "@vuu-ui/vuu-data-editing";
-import { isRpcSuccess, isTypeaheadRequest, uuid } from "@vuu-ui/vuu-utils";
+import {
+  isRpcSuccess,
+  isTypeaheadRequest,
+  StaleUpdateError,
+  uuid,
+} from "@vuu-ui/vuu-utils";
 import type {
   IVuuModule,
   RpcMenuService,
@@ -61,6 +66,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
   #pendingVisualLink?: LinkDescriptorWithLabel;
   #rpcMenuServices: RpcMenuService[] | undefined;
   #rpcServices: RpcService[] | undefined;
+  #sourceTableDataSource: TickingArrayDataSource | undefined;
   #table?: Table;
   #selectionLinkSubscribers: Map<string, LinkSubscription> | undefined;
   #visualLinkService?: VisualLinkHandler;
@@ -157,6 +163,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return Array.from(this.selectedRows);
   }
 
+  isSessionDataSourceOf(dataSource: DataSource): boolean {
+    return this.#sourceTableDataSource === dataSource;
+  }
+
   async createSessionDataSource(
     copyOption: CopyOption,
   ): Promise<DataSourceBase<DataSourceRowWithBigint> | undefined> {
@@ -167,14 +177,18 @@ export class TickingArrayDataSource extends ArrayDataSource {
     });
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
-      const columns = this.config.columns.includes("setToDelete")
+      const columns = this.config.columns.includes("vuu_action")
         ? this.config.columns
-        : this.config.columns.concat("setToDelete");
-      return this.#vuuModule?.createDataSource(
+        : this.config.columns.concat("vuu_action");
+      const sessionDataSource = this.#vuuModule?.createDataSource(
         sessionTable.table,
         sessionTable.table,
         { ...this.config, columns },
       );
+      if (sessionDataSource instanceof TickingArrayDataSource) {
+        sessionDataSource.#sourceTableDataSource = this;
+      }
+      return sessionDataSource;
     } else {
       throw Error(
         `[TickingArrayDataSource] createSessionDataSource ${rpcResponse?.errorMessage}`,
@@ -278,7 +292,13 @@ export class TickingArrayDataSource extends ArrayDataSource {
     );
 
     if (isRpcSuccess(rpcResponse)) {
-      this.sendRowsToClient(true);
+      const sourceTableDataSource = this.#sourceTableDataSource;
+      if (sourceTableDataSource) {
+        this.#sourceTableDataSource = undefined;
+        this.unsubscribe();
+      } else {
+        this.sendRowsToClient(true);
+      }
     } else {
       if (rpcResponse?.errorMessage === "stale update") {
         throw new StaleUpdateError(rpcResponse.errorMessage);
