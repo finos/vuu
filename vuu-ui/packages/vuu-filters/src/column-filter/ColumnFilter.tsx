@@ -4,7 +4,7 @@ import {
   useForkRef,
 } from "@salt-ds/core";
 import {
-  DataItemEditControlProps,
+  type DataItemEditControlProps,
   getDataItemEditControl,
 } from "@vuu-ui/vuu-data-react";
 import cx from "clsx";

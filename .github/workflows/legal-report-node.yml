@@ -25,7 +25,8 @@ jobs:
           node-version: "24.x"
 
       - name: Build project with NPM
-        run: npm install --omit=dev
+        run: |
+          npm install --omit=dev
         working-directory: vuu-ui
 
       - run: npx node-license-validator . --allow-licenses MIT ISC 0BSD BSD BSD-3-Clause Apache-2.0

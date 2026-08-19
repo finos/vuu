@@ -38,6 +38,8 @@ Create production-ready React UI components that follow this monorepo's existing
 - Follow nearby file naming and folder structure.
 - Do not change existing public APIs unless explicitly requested.
 - Use Salt style packages for loading css (useComponentCssInjection and useWindow);
+- use clsx to manage className, import as cx. Always allow custom className, which will be
+used in combination with component className
 
 ## Accessibility Rules
 - Prefer semantic HTML and existing accessibility patterns in neighboring components.

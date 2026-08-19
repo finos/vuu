@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "target": "remote-module",
+  "paths": {
+    "entry": "./src/index.tsx",
+    "htmlTemplate": "../remote-module-template/index.html",
+    "output": "../../dist_portal/module-admin",
+    "publicPath": "http://localhost:5002/"
+  },
+  "html": {
+    "title": "moduleAdmin (standalone)"
+  },
+  "server": {
+    "corsOrigins": ["http://localhost:5002"]
+  },
+  "moduleFederation": {
+    "name": "moduleAdmin",
+    "dts": false,
+    "exposes": {
+      "./ModuleAdmin": "./src/ModuleAdmin",
+      "./ModuleAdminLocal": "./src/ModuleAdminLocal"
+    },
+    "shared": {
+      "react": {
+        "requiredVersion": "^19.2.3"
+      },
+      "react-dom": {
+        "requiredVersion": "^19.2.3"
+      },
+      "react-router-dom": {
+        "singleton": true,
+        "requiredVersion": "^7.18.3",
+        "strictVersion": true
+      },
+      "@vuu-ui/core": {
+        "singleton": true,
+        "requiredVersion": "package",
+        "strictVersion": true
+      },
+      "@vuu-ui/core/portal": {
+        "singleton": true,
+        "requiredVersion": "package:@vuu-ui/core",
+        "strictVersion": true
+      },
+      "@vuu-ui/vuu-data-editing": {
+        "singleton": true,
+        "requiredVersion": "package:@vuu-ui/core",
+        "strictVersion": true
+      },
+      "@vuu-ui/vuu-data-test": {
+        "singleton": true,
+        "requiredVersion": "package:@vuu-ui/core",
+        "strictVersion": true
+      },
+      "@vuu-ui/vuu-shell": {
+        "requiredVersion": "package:@vuu-ui/core",
+        "strictVersion": true
+      }
+    }
+  }
+}

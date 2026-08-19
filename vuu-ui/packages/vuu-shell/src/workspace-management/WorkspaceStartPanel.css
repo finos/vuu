@@ -1,0 +1,39 @@
+.vuuWorkspaceStartPanel {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  font-weight: 700;
+  gap: 12px;
+  inset: 0;
+  justify-content: center;
+  position: absolute;
+  z-index: 1;
+}
+
+.vuuWorkspaceStartPanel-title {
+  color: var(--vuu-color-gray-80);
+  font-size: 28px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.vuuWorkspaceStartPanel-text {
+  color: var(--vuu-color-gray-50);
+  font-size: 18px;
+  line-height: 1.5;
+  max-width: 460px;
+  text-align: center;
+}
+
+.vuuWorkspaceStartPanel-addIcon {
+  --vuu-icon-size: 20px;
+  align-items: center;
+  background: var(--salt-actionable-cta-background);
+  border-radius: 28px;
+  box-shadow: 0 4px 4px rgb(0 0 0 / 25%);
+  color: var(--salt-actionable-cta-foreground);
+  display: flex;
+  height: 56px;
+  justify-content: center;
+  width: 56px;
+}

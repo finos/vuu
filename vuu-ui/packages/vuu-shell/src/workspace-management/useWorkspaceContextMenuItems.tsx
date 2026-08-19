@@ -1,16 +1,18 @@
-import {
+import type {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
-import { TabContextMenuOptions, useModal } from "@vuu-ui/vuu-ui-controls";
-import { type LayoutMetadataDto } from "@vuu-ui/vuu-utils";
+import { useModal } from "@vuu-ui/core";
+import { type TabContextMenuOptions } from "@vuu-ui/vuu-ui-controls";
+import type { LayoutMetadataDto } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { SaveLayoutPanel } from "./SaveLayoutPanel";
 import { useWorkspace } from "./WorkspaceProvider";
 
 export const useWorkspaceContextMenuItems = () => {
-  const { saveLayout } = useWorkspace();
+  const { activeWorkspace, closeWorkspace, saveActiveWorkspaceAs } =
+    useWorkspace();
 
   const { showDialog, closeDialog } = useModal();
 
@@ -20,10 +22,10 @@ export const useWorkspaceContextMenuItems = () => {
 
   const handleSave = useCallback(
     (layoutMetadata: LayoutMetadataDto) => {
-      saveLayout(layoutMetadata);
+      void saveActiveWorkspaceAs(layoutMetadata.name);
       closeDialog();
     },
-    [saveLayout, closeDialog],
+    [closeDialog, saveActiveWorkspaceAs],
   );
 
   const [buildMenuOptions, handleMenuAction] = useMemo<
@@ -41,8 +43,8 @@ export const useWorkspaceContextMenuItems = () => {
               options,
             },
             {
-              label: "Layout Settings",
-              id: "layout-settings",
+              label: "Close Workspace",
+              id: "close-workspace",
               options,
             },
           );
@@ -68,10 +70,20 @@ export const useWorkspaceContextMenuItems = () => {
           );
           return true;
         }
+        if (menuItemId === "close-workspace" && activeWorkspace) {
+          void closeWorkspace(activeWorkspace.instanceId);
+          return true;
+        }
         return false;
       },
     ];
-  }, [handleCloseDialog, handleSave, showDialog]);
+  }, [
+    activeWorkspace,
+    closeWorkspace,
+    handleCloseDialog,
+    handleSave,
+    showDialog,
+  ]);
 
   return {
     buildMenuOptions,

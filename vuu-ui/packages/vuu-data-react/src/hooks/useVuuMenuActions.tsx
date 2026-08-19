@@ -43,14 +43,13 @@ import {
   isSessionTableActionMessage,
   useData,
 } from "@vuu-ui/vuu-utils";
+import { useModal } from "@vuu-ui/core";
 import { useCallback } from "react";
 import {
   FormConfig,
   FormFieldDescriptor,
   SessionEditingForm,
 } from "../session-editing-form";
-import { useModal } from "@vuu-ui/vuu-ui-controls";
-
 export interface MenuActionConfig {
   vuuMenu?: VuuMenu;
   visualLink?: DataSourceVisualLinkCreatedMessage;

@@ -2,9 +2,9 @@ import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes } from "react";
+import type { HTMLAttributes } from "react";
 import { registerRules } from "./edit-validation-rules";
-import { EditFormHookProps, useEditForm } from "./useEditForm";
+import { type EditFormHookProps, useEditForm } from "./useEditForm";
 
 import editFormCss from "./EditForm.css";
 import { getDataItemEditControl } from "./get-data-item-edit-control";
@@ -15,7 +15,7 @@ registerRules();
 
 export interface EditFormProps
   extends EditFormHookProps,
-    Omit<HTMLAttributes<HTMLDivElement>, "onSubmit"> {}
+  Omit<HTMLAttributes<HTMLDivElement>, "onSubmit"> { }
 
 export const EditForm = ({
   className,

@@ -42,6 +42,13 @@ import { TickingArrayDataSource } from "../../TickingArrayDataSource";
 import { RuntimeVisualLink } from "../../RuntimeVisualLink";
 import moduleContainer from "./ModuleContainer";
 import { sessionTableRow, sessionTableSchema } from "../../session-table-utils";
+import {
+  AllowAllPermissionFilter,
+  type PermissionFunction,
+} from "../filter/PermissionFilter";
+import { PermissionFilteredTable } from "../filter/PermissionFilteredTable";
+import { getCurrentUser, type VuuModuleUser } from "../user/CurrentUser";
+import tableContainer from "../table/TableContainer";
 
 const assertUpdateIsValid = (
   schema: TableSchema,
@@ -98,6 +105,12 @@ type Subscription = {
   dataSource: DataSourceBase<DataSourceRowWithBigint>;
   sessionTableName?: string;
   sourceTableName?: string;
+  /**
+   * The table viewed by this subscription. Where a permission filter applies,
+   * this will be a PermissionFilteredTable
+   */
+  table: Table;
+  user: VuuModuleUser;
 };
 export abstract class VuuModule<T extends string = string>
   implements IVuuModule<T> {
@@ -126,6 +139,28 @@ export abstract class VuuModule<T extends string = string>
     | undefined;
   protected abstract services?: Record<T, RpcService[] | undefined> | undefined;
   protected abstract visualLinks?: Record<T, VuuLink[] | undefined>;
+  protected get includeDefaultServices() {
+    return true;
+  }
+  protected async beforeSessionSave(
+    _sourceTable: Table,
+    _sessionTable: Table,
+  ) {}
+  protected async afterSessionSave(
+    _sourceTable: Table,
+    _sessionTable: Table,
+  ) {}
+  /**
+   * Optional, per table. Restricts the rows visible to each viewport, based on
+   * the viewport (and the user who owns it).
+   */
+  protected permissionFunctions?: Partial<Record<T, PermissionFunction>>;
+
+  /**
+   * Invoked before a dataSource is created. Can be used, for example, to
+   * lazily start a data provider.
+   */
+  protected beforeCreateDataSource?(tableName: T): void;
 
   /**
    * Server-side validation applied to every value submitted by editCell and
@@ -351,9 +386,22 @@ export abstract class VuuModule<T extends string = string>
     viewport?: string,
     config?: DataSourceConfig & { session?: SessionDataSourceOverrides },
   ) => {
+    this.beforeCreateDataSource?.(tableName);
     const columnDescriptors = this.getColumnDescriptors(tableName);
-    const table = this.tables[tableName];
     const sessionTable = this.#sessionTableMap[tableName];
+    const user = getCurrentUser();
+    const permissionFunction = sessionTable
+      ? undefined
+      : this.permissionFunctions?.[tableName];
+    const viewportId = permissionFunction ? (viewport ?? uuid()) : viewport;
+    const permissionFilteredTable = permissionFunction
+      ? this.createPermissionFilteredTable(
+          this.tables[tableName],
+          permissionFunction,
+          { id: viewportId as string, user },
+        )
+      : undefined;
+    const table = permissionFilteredTable ?? this.tables[tableName];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const vuuModule = this as IVuuModule<any>;
@@ -371,13 +419,17 @@ export abstract class VuuModule<T extends string = string>
         menu: this.menus?.[tableName],
         rpcServices: this.getServices(tableName),
         rpcMenuServices: this.getMenuServices(tableName),
-        viewport,
+        viewport: viewportId,
         visualLinkService: this.visualLinkService,
         vuuModule,
       });
 
     dataSource.on("subscribed", this.handlePostSubscribeActivities);
     dataSource.on("unsubscribed", this.unregisterViewport);
+    if (permissionFilteredTable) {
+      dataSource.on("subscribed", () => permissionFilteredTable.attach());
+      dataSource.on("unsubscribed", () => permissionFilteredTable.dispose());
+    }
 
     const existingSubscriptions = this.#subscriptionMap.get(tableName);
     const subscription = {
@@ -385,6 +437,8 @@ export abstract class VuuModule<T extends string = string>
       dataSource,
       sessionTableName: sessionTable ? tableName : undefined,
       sourceTableName: this.#sessionSourceTableMap[tableName],
+      table: table || sessionTable,
+      user,
     };
     if (existingSubscriptions) {
       existingSubscriptions.push(subscription);
@@ -395,12 +449,30 @@ export abstract class VuuModule<T extends string = string>
     return dataSource;
   };
 
+  private createPermissionFilteredTable(
+    table: Table,
+    permissionFunction: PermissionFunction,
+    viewport: { id: string; user: VuuModuleUser },
+  ) {
+    const permissionFilter = permissionFunction(viewport, tableContainer);
+    if (permissionFilter === AllowAllPermissionFilter) {
+      return undefined;
+    }
+    return new PermissionFilteredTable(
+      table,
+      permissionFilter.createPredicate(table.map),
+    );
+  }
+
   getServices(tableName: T) {
     const tableServices = this.services?.[tableName];
+    const defaultServices = this.includeDefaultServices
+      ? this.#moduleServices
+      : [];
     if (Array.isArray(tableServices)) {
-      return this.#moduleServices.concat(tableServices);
+      return defaultServices.concat(tableServices);
     } else {
-      return this.#moduleServices;
+      return defaultServices;
     }
   }
 
@@ -862,6 +934,17 @@ export abstract class VuuModule<T extends string = string>
         const sourceTable = this.tables[sourceTableName as T];
 
         if (rpcRequest.params.save === true) {
+          try {
+            await this.beforeSessionSave(sourceTable, sessionTable);
+          } catch (error) {
+            return {
+              errorMessage:
+                error instanceof Error
+                  ? error.message
+                  : "Unable to prepare session changes",
+              type: "ERROR_RESULT",
+            };
+          }
           let rejectedCount = 0;
           const vuuMsgIdx = sessionTable.map[this.#sessionTableMessageColumn];
           const actionIdx = sessionTable.map.vuuAction;
@@ -915,6 +998,17 @@ export abstract class VuuModule<T extends string = string>
           if (rejectedCount > 0) {
             return {
               errorMessage: "stale update",
+              type: "ERROR_RESULT",
+            };
+          }
+          try {
+            await this.afterSessionSave(sourceTable, sessionTable);
+          } catch (error) {
+            return {
+              errorMessage:
+                error instanceof Error
+                  ? error.message
+                  : "Unable to finalize session changes",
               type: "ERROR_RESULT",
             };
           }
