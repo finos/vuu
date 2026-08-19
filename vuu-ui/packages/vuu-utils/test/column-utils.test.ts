@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 import {
   addColumnToSubscribedColumns,
   applyWidthToColumns,
+  getColumnsInViewport,
   isDataValueEditable,
-  reorderColumnItems,
 } from "../src/column-utils";
 
 describe("isDataValueEditable", () => {

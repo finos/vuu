@@ -16,7 +16,6 @@ import type {
   VuuGroupBy,
   VuuSort,
 } from "@vuu-ui/vuu-protocol-types";
-import { TableModel } from "@vuu-ui/vuu-table";
 import type {
   ColumnAlignment,
   ColumnDescriptor,
@@ -1226,7 +1225,7 @@ export const getCalculatedColumnDetails = (
         : undefined,
     };
   } else {
-    throw Error(`column.name is nor a calculated column`);
+    throw Error('column.name is not a calculated column');
   }
 };
 
