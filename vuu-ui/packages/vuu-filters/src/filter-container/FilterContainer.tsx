@@ -14,13 +14,16 @@ import {
   useFilterContext,
   type ColumnFilterContainerHookProps,
 } from "./useFilterContainer";
-import {
+import type {
   ColumnFilterChangeHandler,
   ColumnFilterCommitHandler,
   ColumnFilterValue,
   ColumnFilterOp,
 } from "@vuu-ui/vuu-filter-types";
-import { ColumnFilter, ColumnFilterProps } from "../column-filter/ColumnFilter";
+import {
+  ColumnFilter,
+  type ColumnFilterProps,
+} from "../column-filter/ColumnFilter";
 import {
   filterDescriptorHasFilter,
   isNullFilter,

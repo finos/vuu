@@ -45,7 +45,7 @@ export const TableCellTemplate = ({
 
   const [value, setValue] = useState<string>(valueProp);
   // prettier-ignore
-  const [dataRow, setDataRow] = useState(DataRow([0, 0, true, false, 1, 0, "key", 0,  0, false, value]));
+  const [dataRow, setDataRow] = useState(DataRow([0, 0, true, false, 1, 0, "key", 0, 0, false, value]));
 
   const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (evt) => setValue((evt.target as HTMLInputElement).value),
