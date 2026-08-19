@@ -1,13 +1,14 @@
 import { Button } from "@salt-ds/core";
-import { EditState, EditSession } from "./EditSession";
+import type { EditState, EditSession } from "./EditSession";
 import { useCallback, useEffect, useState } from "react";
 
 export interface EditButtonProps {
+  canCancel: boolean;
+  canSave: boolean;
   editSession?: EditSession;
   hasSelection?: boolean;
   onCancel?: () => void;
   onDelete?: () => void;
-  onAddRows?: () => void;
   onSave: (force?: boolean) => void;
   saveLabel?: string;
   confirmSave?: () => boolean | Promise<boolean>;
@@ -15,17 +16,20 @@ export interface EditButtonProps {
 }
 
 export const EditButtons = ({
+  canCancel,
+  canSave,
   confirmCancel,
   confirmSave,
   editSession,
   hasSelection = false,
-  onAddRows,
   onCancel,
   onDelete,
   onSave,
   saveLabel = "Save",
 }: EditButtonProps) => {
-  const [editState, setEditState] = useState<EditState>("clean");
+  const [editState, setEditState] = useState<EditState>(
+    () => editSession?.editState ?? "clean",
+  );
 
   const handleSave = useCallback(async () => {
     if (confirmSave) {
@@ -45,6 +49,7 @@ export const EditButtons = ({
 
   useEffect(() => {
     if (editSession) {
+      setEditState(editSession.editState);
       editSession.on("editState", setEditState);
       return () => editSession.removeListener("editState", setEditState);
     }
@@ -61,19 +66,14 @@ export const EditButtons = ({
           Delete
         </Button>
       )}
-      {onAddRows && (
-        <Button onClick={onAddRows} sentiment="neutral">
-          Add Rows
+      <Button disabled={!canSave} onClick={handleSave} sentiment="accented">
+        {editState === "stale" ? `${saveLabel} (force)` : saveLabel}
+      </Button>
+      {onCancel && (
+        <Button disabled={!canCancel} onClick={handleCancel}>
+          Cancel
         </Button>
       )}
-      <Button
-        disabled={editState === "clean" || editState === "invalid"}
-        onClick={handleSave}
-        sentiment="accented"
-      >
-        {editState === "stale" ? `${saveLabel} (force)` : saveLabel}
-      </Button>      
-      {onCancel && <Button onClick={handleCancel}>Cancel</Button>}
     </>
   );
 };

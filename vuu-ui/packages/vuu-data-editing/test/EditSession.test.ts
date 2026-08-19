@@ -1,21 +1,41 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { EditApi } from "@vuu-ui/vuu-data-types";
-import { EditSession } from "../../src";
+import type { DataSource, EditApi } from "@vuu-ui/vuu-data-types";
+import { EditSession } from "../src";
+
+vi.hoisted(() => {
+  class MockWorker {
+    onmessage: ((event: MessageEvent) => void) | null = null;
+
+    constructor(_url: string) {
+      void _url;
+    }
+
+    postMessage(_message: unknown) {
+      void _message;
+    }
+
+    terminate() {
+      return undefined;
+    }
+  }
+
+  vi.stubGlobal("Worker", MockWorker);
+});
 
 type Editable = Required<EditApi>;
-type BeginEdit = Editable["beginEditSession"];
+type CreateSession = Editable["createSessionDataSource"];
 type EndEdit = Editable["endEditSession"];
 type EditCell = Editable["editCell"];
 
 export class MockDataSource implements EditApi {
   constructor(
-    private beginEdit: BeginEdit,
+    private createSession: CreateSession,
     private endEdit: EndEdit,
     private edit: EditCell,
   ) {}
 
-  beginEditSession(...args: Parameters<BeginEdit>) {
-    return this.beginEdit(...args);
+  createSessionDataSource(...args: Parameters<CreateSession>) {
+    return this.createSession(...args);
   }
 
   endEditSession(...args: Parameters<EndEdit>) {
@@ -29,15 +49,17 @@ export class MockDataSource implements EditApi {
 
 describe("EditSession", () => {
   let editSession: EditSession;
-  let beginEdit: BeginEdit;
+  let createSession: CreateSession;
   let endEdit: EndEdit;
   let edit: EditCell;
 
   beforeEach(() => {
-    beginEdit = vi.fn();
     endEdit = vi.fn();
     edit = vi.fn();
-    const editApi = new MockDataSource(beginEdit, endEdit, edit);
+    createSession = vi.fn(
+      async () => editApi as unknown as DataSource,
+    ) as CreateSession;
+    const editApi = new MockDataSource(createSession, endEdit, edit);
     editSession = new EditSession(editApi);
   });
 
@@ -47,8 +69,28 @@ describe("EditSession", () => {
     expect(editSession.inEditMode).toEqual(false);
   });
 
-  it("edits outside an edit session throw an error", () => {
-    expect(() =>
+  it("supports the legacy beginEditSession API", async () => {
+    const sessionDataSource = {} as DataSource;
+    const beginEditSession = vi
+      .fn()
+      .mockResolvedValue(sessionDataSource);
+    const sourceDataSource = {
+      beginEditSession,
+    } as EditApi;
+    const legacyEditSession = new EditSession(
+      sourceDataSource,
+      "soft",
+      "beginEditSession",
+    );
+
+    await legacyEditSession.begin("Selected");
+
+    expect(beginEditSession).toHaveBeenCalledWith("selected-rows");
+    expect(legacyEditSession.sessionDataSource).toBe(sessionDataSource);
+  });
+
+  it("edits outside an edit session throw an error", async () => {
+    await expect(() =>
       editSession.commit("key-01", "col-1", 100, 150, true),
     ).rejects.toThrowError(/No edit session in progress/);
   });
@@ -151,12 +193,10 @@ describe("EditSession", () => {
 
     await editSession.begin();
 
-    //prettier-ignore
-    let {editedDuringCurrentSession} = await editSession.commit("key-01", "col-1", 100, 200, true);
-    expect(editedDuringCurrentSession).toEqual(true);
-    //prettier-ignore
-    ({editedDuringCurrentSession} = await editSession.commit("key-01", "col-1", 200, 100, true));
-    expect(editedDuringCurrentSession).toEqual(false);
+    await editSession.commit("key-01", "col-1", 100, 200, true);
+    expect(editSession.isCellEdited("key-01", "col-1")).toEqual(true);
+    await editSession.commit("key-01", "col-1", 200, 100, true);
+    expect(editSession.isCellEdited("key-01", "col-1")).toEqual(false);
 
     await editSession.end();
   });
@@ -167,16 +207,68 @@ describe("EditSession", () => {
 
     await editSession.begin();
 
-    //prettier-ignore
-    let {editedDuringCurrentSession} = await editSession.commit("key-01", "col-1", 100, 'abc', false);
-    expect(editedDuringCurrentSession).toEqual(false);
-    //prettier-ignore
-    ({editedDuringCurrentSession} = await editSession.commit("key-01", "col-1", 'abc', 200, true));
-    expect(editedDuringCurrentSession).toEqual(true);
-    //prettier-ignore
-    ({editedDuringCurrentSession} = await editSession.commit("key-01", "col-1", 200, 100, true));
-    expect(editedDuringCurrentSession).toEqual(false);
+    await editSession.commit("key-01", "col-1", 100, "abc", false);
+    expect(editSession.isCellEdited("key-01", "col-1")).toEqual(false);
+    await editSession.commit("key-01", "col-1", "abc", 200, true);
+    expect(editSession.isCellEdited("key-01", "col-1")).toEqual(true);
+    await editSession.commit("key-01", "col-1", 200, 100, true);
+    expect(editSession.isCellEdited("key-01", "col-1")).toEqual(false);
 
     await editSession.end();
+  });
+
+  it("allows a newly inserted row to be undone without local cell edits", async () => {
+    const undoRowChange = vi.fn().mockResolvedValue({
+      data: { wasInsertedRow: true },
+      type: "SUCCESS_RESULT",
+    });
+    const editApi: EditApi = {
+      addRow: vi.fn().mockResolvedValue({
+        data: undefined,
+        type: "SUCCESS_RESULT",
+      }),
+      createSessionDataSource: vi.fn(
+        async () => editApi as unknown as DataSource,
+      ),
+      endEditSession: vi.fn(),
+      undoRowChange,
+    };
+    const insertedRowSession = new EditSession(editApi);
+    await insertedRowSession.begin();
+    await insertedRowSession.addRow({ id: "row-001" });
+
+    await insertedRowSession.undoRowChange("row-001");
+
+    expect(undoRowChange).toHaveBeenCalledWith("row-001");
+    expect(insertedRowSession.addCount).toBe(0);
+  });
+
+  it("clears cell markers after undoing row changes", async () => {
+    const undoRowChange = vi.fn().mockResolvedValue({
+      data: undefined,
+      type: "SUCCESS_RESULT",
+    });
+    const editApi: EditApi = {
+      createSessionDataSource: vi.fn(
+        async () => editApi as unknown as DataSource,
+      ),
+      editCell: vi.fn().mockResolvedValue({
+        data: undefined,
+        type: "SUCCESS_RESULT",
+      }),
+      endEditSession: vi.fn(),
+      undoRowChange,
+    };
+    const rowEditSession = new EditSession(editApi);
+    const cellEditChanged = vi.fn();
+    rowEditSession.on("cellEditChanged", cellEditChanged);
+    await rowEditSession.begin();
+    await rowEditSession.commit("row-001", "name", "Alice", "Alicia", true);
+    cellEditChanged.mockClear();
+
+    await rowEditSession.undoRowChange("row-001");
+
+    expect(rowEditSession.isCellEdited("row-001", "name")).toBe(false);
+    expect(cellEditChanged).toHaveBeenCalledWith("row-001", "name");
   });
 });

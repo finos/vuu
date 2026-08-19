@@ -1,11 +1,14 @@
 import { Input, Tooltip } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
+import type { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import {
-  dataDescriptorTypeToVuuRowDataItemType,
   getVuuEditMessage,
+  isEditRowReadOnly,
+} from "@vuu-ui/vuu-data-editing";
+import {
+  dataDescriptorTypeToVuuRowDataItemType,
   registerComponent,
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
@@ -27,13 +30,14 @@ export const InputCell = ({
     css: inputCellCss,
     window: targetWindow,
   });
-
   const dataValue = dataRow[column.name] as number | string;
+  const readOnly = isEditRowReadOnly(dataRow);
 
   const { align = "left" } = column;
 
   const {
     editing,
+    inputProps,
     warningMessage,
     previousValue = "",
     ...editProps
@@ -45,26 +49,23 @@ export const InputCell = ({
   });
 
   // TODO can this move into useEdtableText ?
-  const editRejected = getVuuEditMessage(dataRow, column, previousValue);
+  const editRejectedMessage = getVuuEditMessage(
+    dataRow,
+    column,
+    previousValue,
+  );
+  const errorMessage = warningMessage ?? editRejectedMessage;
 
   const endAdornment =
-    editRejected && align === "left" ? (
-      <Tooltip content={editRejected} placement="right">
-        <Icon className={`${classBase}-icon`} name="error" />
-      </Tooltip>
-    ) : warningMessage && align === "left" ? (
-      <Tooltip content={warningMessage} placement="right">
+    errorMessage && align === "left" ? (
+      <Tooltip content={errorMessage} placement="right">
         <Icon className={`${classBase}-icon`} name="error" />
       </Tooltip>
     ) : undefined;
 
   const startAdornment =
-    editRejected && align === "right" ? (
-      <Tooltip content={editRejected} placement="right">
-        <Icon className={`${classBase}-icon`} name="error" />
-      </Tooltip>
-    ) : warningMessage && align === "right" ? (
-      <Tooltip content={warningMessage} placement="left">
+    errorMessage && align === "right" ? (
+      <Tooltip content={errorMessage} placement="left">
         <Icon className={`${classBase}-icon`} name="error" />
       </Tooltip>
     ) : undefined;
@@ -76,10 +77,17 @@ export const InputCell = ({
       className={cx(classBase, {
         [`${classBase}-edited`]: editedDuringCurrentSession === true,
         [`${classBase}-error`]: warningMessage !== undefined,
-        [`${classBase}-warning`]: editRejected !== undefined,
+        [`${classBase}-warning`]:
+          warningMessage === undefined && editRejectedMessage !== undefined,
         vuuEditing: editing,
       })}
       endAdornment={endAdornment}
+      inputProps={{
+        ...inputProps,
+        "aria-invalid": errorMessage ? true : undefined,
+        "aria-label": column.label,
+      }}
+      readOnly={readOnly}
       startAdornment={startAdornment}
     />
   );

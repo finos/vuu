@@ -19,9 +19,8 @@
   border-radius: 10px;
   cursor: pointer;
 }
-
 .vuuTableInputCell-error.saltInput-bordered.saltInput {
-    border-color: var(--salt-status-error-foreground-informative);
+  border-color: var(--salt-status-error-foreground-informative);
   .saltInput-startAdornmentContainer {
     .vuuTableInputCell-icon {
       --vuu-icon-color: var(--salt-status-error-bold-background);
@@ -34,7 +33,7 @@
   }
 }
 .vuuTableInputCell-warning.saltInput-bordered.saltInput {
-    border-color: var(--salt-status-warning-foreground-informative);
+  border-color: var(--salt-status-warning-foreground-informative);
   .saltInput-startAdornmentContainer {
     .vuuTableInputCell-icon {
       --vuu-icon-color: var(--salt-status-warning-bold-background);
@@ -54,17 +53,17 @@
 }
 
 .vuuTableInputCell-edited {
-  border-left:  solid var(--vuuTableInputCell-edited-color, var(--edit-indicator-color)) 4px !important;
+  border-left: solid var(--vuuTableInputCell-edited-color, var(--edit-indicator-color)) 4px !important;
 }
 
 .vuuTableInputCell-error {
-    --edit-indicator-color: var(--salt-status-error-foreground-informative);
-    outline: var(--vuuTableCell-outline, solid var(--salt-status-error-foreground-informative) 2px);
-    outline-offset: -2px;
+  --edit-indicator-color: var(--salt-status-error-foreground-informative);
+  outline: var(--vuuTableCell-outline, solid var(--salt-status-error-foreground-informative) 2px);
+  outline-offset: -2px;
 }
 
 .vuuTableInputCell-warning {
-    --edit-indicator-color: var(--salt-status-warning-foreground-informative);
-    outline: var(--vuuTableCell-outline, solid var(--salt-status-warning-foreground-informative) 2px);
-    outline-offset: -2px;
+  --edit-indicator-color: var(--salt-status-warning-foreground-informative);
+  outline: var(--vuuTableCell-outline, solid var(--salt-status-warning-foreground-informative) 2px);
+  outline-offset: -2px;
 }

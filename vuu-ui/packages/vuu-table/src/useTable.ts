@@ -1,16 +1,18 @@
+import { useEditSession } from '@vuu-ui/vuu-data-editing';
 import type {
   DataSourceConfigChangeHandler,
   DataSourceSubscribedMessage,
 } from "@vuu-ui/vuu-data-types";
 import type { VuuSortType } from "@vuu-ui/vuu-protocol-types";
 import {
-  ColumnDisplayActionHandler,
+  type ColumnDisplayActionHandler,
   useColumnActions,
 } from "@vuu-ui/vuu-table-extras";
 import type {
-  ColumnPinAction,
   ColumnDescriptor,
   ColumnMoveHandler,
+  ColumnPinAction,
+  DataRow,
   RuntimeColumnDescriptor,
   SelectionChangeHandler,
   TableColumnResizeHandler,
@@ -19,12 +21,11 @@ import type {
   TableRowClickHandlerInternal,
   TableRowSelectHandlerInternal,
   TableSelectionModel,
-  DataRow,
 } from "@vuu-ui/vuu-table-types";
 import {
-  DragStartHandler,
-  MeasuredProps,
-  MeasuredSize,
+  type DragStartHandler,
+  type MeasuredProps,
+  type MeasuredSize,
   useDragDrop,
 } from "@vuu-ui/vuu-ui-controls";
 import {
@@ -36,46 +37,45 @@ import {
   isValidNumber,
   logUnhandledMessage,
   metadataKeys,
-  PinState,
+  type PinState,
   toggleOrApplySort,
   updateColumn,
-  useEditSession,
   useLayoutEffectSkipFirst,
   useStableReference,
 } from "@vuu-ui/vuu-utils";
 import {
-  FocusEvent,
-  KeyboardEvent,
-  MouseEventHandler,
-  RefObject,
+  type FocusEvent,
+  type KeyboardEvent,
+  type MouseEventHandler,
+  type RefObject,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import { TableCellBlock } from "./cell-block/cellblock-utils";
+import type { TableCellBlock } from "./cell-block/cellblock-utils";
 import { useCellBlockSelection } from "./cell-block/useCellBlockSelection";
 import { CellFocusState } from "./CellFocusState";
-import { TableProps } from "./Table";
+import type { TableProps } from "./Table";
 import { updateTableConfig } from "./table-config";
+import { useDataSource } from "./table-data-source/useDataSource";
 import { getHeaderCell } from "./table-dom-utils";
 import { useCellEditing } from "./useCellEditing";
-import { FocusCell, useCellFocus } from "./useCellFocus";
-import { useDataSource } from "./table-data-source/useDataSource";
+import { type FocusCell, useCellFocus } from "./useCellFocus";
 import {
-  GroupToggleHandler,
+  type GroupToggleHandler,
   useKeyboardNavigation,
 } from "./useKeyboardNavigation";
 import { useRowClassNameGenerators } from "./useRowClassNameGenerators";
 import { useSelection } from "./useSelection";
 import { useTableContextMenu } from "./useTableContextMenu";
 import {
-  ColumnActionHide,
-  ColumnActionRemove,
+  type ColumnActionHide,
+  type ColumnActionRemove,
   useTableModel,
 } from "./useTableModel";
-import { ScrollRequestHandler, useTableScroll } from "./useTableScroll";
+import { type ScrollRequestHandler, useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
 
 type HeaderState = {

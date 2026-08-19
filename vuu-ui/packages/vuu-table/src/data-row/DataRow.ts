@@ -1,11 +1,11 @@
-import { DataSourceRow, SchemaColumn } from "@vuu-ui/vuu-data-types";
-import {
+import type { DataSourceRow, SchemaColumn } from "@vuu-ui/vuu-data-types";
+import type {
   StringNumericType,
   VuuColumnDataType,
   VuuDataRow,
   VuuRowDataItemType,
 } from "@vuu-ui/vuu-protocol-types";
-import {
+import type {
   DataRow,
   DataRowIntrinsicAttribute,
   DataRowOperation,
@@ -234,8 +234,8 @@ function createColumnMap(
           `[DataRow] calculated column with invalid serverDataType ${name}`,
         );
       }
-    } else if (name === "vuuMsg" && i === cols.length - 1) {
-      // Mag column on a session table, always in last place
+    } else if (name === "vuu_action" && i === cols.length - 1) {
+      // column on a session table, always in last place
       columnMap[name] = { index: i + 10, type: "string" };
     } else {
       throw Error(`[DataRow] dataRowFactory column not in schema ${name}`);
@@ -276,9 +276,7 @@ export const dataRowFactory = (
     columnMap = createColumnMap(columns, schemaColumns);
   };
 
-  const DataRow = function (data: DataSourceRow) {
-    return DataRowImpl(data, columnMap);
-  };
+  const DataRow = (data: DataSourceRow) => DataRowImpl(data, columnMap);
 
   return [DataRow, setColumns];
 };
@@ -289,7 +287,7 @@ if (process.env.NODE_ENV !== "production") {
   window.devtoolsFormatters = [
     {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      header: function (obj: any) {
+      header: (obj: any) => {
         if (obj[dataRowSymbol]) {
           return [
             "div",
@@ -307,58 +305,54 @@ if (process.env.NODE_ENV !== "production") {
         }
         return null;
       },
-      hasBody: function () {
-        return true;
-      },
+      hasBody: () => true,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      body: function (obj: any) {
-        return [
+      body: (obj: any) => [
+        "div",
+        {},
+        [
           "div",
-          {},
-          [
+          {
+            style: "display: flex; gap: 4px;",
+          },
+          ["span", {}, "index"],
+          ["span", {}, obj.index],
+        ],
+        [
+          "div",
+          {
+            style: "display: flex; gap: 4px;",
+          },
+          ["span", {}, "key"],
+          ["span", {}, obj.key],
+        ],
+        [
+          "div",
+          {
+            style: "display: flex; gap: 4px;",
+          },
+          ["span", {}, "renderIndex"],
+          ["span", {}, obj.renderIndex],
+        ],
+        [
+          "div",
+          {
+            style: "display: flex; gap: 4px;",
+          },
+          ["span", {}, "isSelected"],
+          ["span", {}, obj.isSelected],
+        ],
+        ...obj.getPropertyNames().map((name: string) => {
+          return [
             "div",
             {
               style: "display: flex; gap: 4px;",
             },
-            ["span", {}, "index"],
-            ["span", {}, obj.index],
-          ],
-          [
-            "div",
-            {
-              style: "display: flex; gap: 4px;",
-            },
-            ["span", {}, "key"],
-            ["span", {}, obj.key],
-          ],
-          [
-            "div",
-            {
-              style: "display: flex; gap: 4px;",
-            },
-            ["span", {}, "renderIndex"],
-            ["span", {}, obj.renderIndex],
-          ],
-          [
-            "div",
-            {
-              style: "display: flex; gap: 4px;",
-            },
-            ["span", {}, "isSelected"],
-            ["span", {}, obj.isSelected],
-          ],
-          ...obj.getPropertyNames().map((name: string) => {
-            return [
-              "div",
-              {
-                style: "display: flex; gap: 4px;",
-              },
-              ["span", {}, name],
-              ["span", {}, obj[name]],
-            ];
-          }),
-        ];
-      },
+            ["span", {}, name],
+            ["span", {}, obj[name]],
+          ];
+        }),
+      ],
     },
   ];
 }

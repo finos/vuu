@@ -32,7 +32,7 @@ function createDataSource() {
 }
 
 describe("addRow", () => {
-  it("dispatches addRow RPC with a generated key and provided row data", async () => {
+  it("dispatches addRow RPC with provided row data", async () => {
     const ds = createDataSource();
 
     await ds.addRow({ name: "Bob" });
@@ -43,25 +43,23 @@ describe("addRow", () => {
         type: "RPC_REQUEST",
         rpcName: "addRow",
         params: expect.objectContaining({
-          key: expect.any(String),
+          key: undefined,
           data: expect.objectContaining({ name: "Bob" }),
         }),
       }),
     );
   });
 
-  it("includes the generated key inside the data payload", async () => {
+  it("does not add a key to the data payload", async () => {
     const ds = createDataSource();
 
     await ds.addRow({});
 
     const [call] = vi.mocked(ds.rpcRequest).mock.calls;
-    const { key, data } = call[0].params as {
-      key: string;
+    const { data } = call[0].params as {
       data: Record<string, unknown>;
     };
-    // key must be echoed into data so the server can identify the new row
-    expect(data[schema.key as string]).toBe(key);
+    expect(data[schema.key as string]).toBeUndefined();
   });
 
   it("uses the key supplied in rowData instead of generating one", async () => {
@@ -259,80 +257,6 @@ describe("undoRowChange", () => {
   });
 });
 
-describe("beginEditSession", () => {
-  const sessionSuccess = {
-    type: "SUCCESS_RESULT" as const,
-    data: { table: { module: "TEST", table: "session-xyz" } },
-  };
-
-  it("keeps 'inline-all-rows' unchanged in the RPC params (client-only concept)", async () => {
-    const ds = createDataSource();
-    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
-
-    await ds.beginEditSession("inline-all-rows");
-
-    expect(ds.rpcRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rpcName: "beginEditSession",
-        params: { editSessionMode: "inline-all-rows" },
-      }),
-    );
-  });
-
-  it("sends 'all-rows' unchanged in the RPC params", async () => {
-    const ds = createDataSource();
-    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
-
-    await ds.beginEditSession("all-rows");
-
-    expect(ds.rpcRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rpcName: "beginEditSession",
-        params: { editSessionMode: "all-rows" },
-      }),
-    );
-  });
-
-  it("sends 'selected-rows' unchanged in the RPC params", async () => {
-    const ds = createDataSource();
-    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
-
-    await ds.beginEditSession("selected-rows");
-
-    expect(ds.rpcRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rpcName: "beginEditSession",
-        params: { editSessionMode: "selected-rows" },
-      }),
-    );
-  });
-
-  it("sends 'empty-session-table' unchanged in the RPC params", async () => {
-    const ds = createDataSource();
-    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
-
-    await ds.beginEditSession("empty-session-table");
-
-    expect(ds.rpcRequest).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rpcName: "beginEditSession",
-        params: { editSessionMode: "empty-session-table" },
-      }),
-    );
-  });
-
-  it("throws with the server error message on failure", async () => {
-    const ds = createDataSource();
-    vi.mocked(ds.rpcRequest).mockResolvedValue(
-      ERROR("edit session already active"),
-    );
-
-    await expect(ds.beginEditSession("inline-all-rows")).rejects.toThrow(
-      "edit session already active",
-    );
-  });
-});
-
 describe("endEditSession", () => {
   it("dispatches endEditSession RPC with { save: true } when saving changes", async () => {
     const ds = createDataSource();
@@ -366,14 +290,14 @@ describe("endEditSession", () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(ERROR("something unexpected"));
 
-    await expect(ds.endEditSession(true)).rejects.toThrow("unknown error");
+    await expect(ds.endEditSession(true)).rejects.toThrow("something unexpected");
   });
 
   it("handles a stale-update error gracefully and does not throw", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(ERROR("stale update"));
 
-    await expect(ds.endEditSession(true)).resolves.toBeUndefined();
+    await expect(ds.endEditSession(true)).rejects.toThrow("stale update");
   });
 });
 

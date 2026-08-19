@@ -1,7 +1,8 @@
 import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
+import { EditSession } from "@vuu-ui/vuu-data-editing";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
-import { isRpcSuccess, isSessionTable } from "@vuu-ui/vuu-utils";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { isRpcError, isSessionTable } from "@vuu-ui/vuu-utils";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { parseCsv, type CsvParseOptions } from "./parse/csv-parse";
 import {
   type CsvValidationResult,
@@ -10,10 +11,8 @@ import {
 import {
   buildRowErrorMessage,
   createUploadError,
-  executeBatchRpcCalls,
   hasFileParseErrors,
   isCsvParseError,
-  normalizeTableData,
   mergeValidationWithParseErrors,
   toErrorMessage,
 } from "./parse/csv-upload-utils";
@@ -21,7 +20,7 @@ import { CSV_FIRST_DATA_ROW_NUMBER } from "./parse/csv-constants";
 import type {
   CsvUploadErrorResult,
   CsvUploadImportedResult,
-  CsvUploadErrors,
+  CsvUploadPreviewResult,
   CsvUploadSessionEndReason,
   CsvUploadSessionEndResult,
   CsvUploadSessionTable,
@@ -29,18 +28,21 @@ import type {
 
 export interface CsvUploadHookProps {
   dataSource: DataSource;
+  importMode?: "direct" | "preview";
   maxRows?: number;
   onImportSessionEnded?: (result: CsvUploadSessionEndResult) => void;
   onImportSessionStarted?: (dataSource: DataSource) => void;
   onError?: (result: CsvUploadErrorResult | undefined) => void;
   onImported?: (result: CsvUploadImportedResult) => void;
+  onPreview?: (result: CsvUploadPreviewResult) => void;
   onProcessingStarted?: () => void;
   parseOptions?: CsvParseOptions;
 }
 
 export type UseCsvUploadReturn = {
   canImport: boolean;
-  importData: () => Promise<void>;
+  cancelImport: () => Promise<void>;
+  importData: () => Promise<boolean>;
   isImporting: boolean;
   isProcessingFile: boolean;
   onDrop: (_event: React.DragEvent<HTMLDivElement>, files: File[]) => void;
@@ -55,10 +57,12 @@ export type UseCsvUploadReturn = {
 
 export const useCsvUpload = ({
   dataSource,
+  importMode = "direct",
   onImportSessionEnded,
   onImportSessionStarted,
   onError,
   onImported,
+  onPreview,
   onProcessingStarted,
   maxRows,
   parseOptions,
@@ -71,43 +75,81 @@ export const useCsvUpload = ({
   >();
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
-  const sessionTableRef = useRef<CsvUploadSessionTable | undefined>(undefined);
+  const editSession = useMemo(() => new EditSession(dataSource), [dataSource]);
+  const ownsEditSessionRef = useRef(true);
+  const operationIdRef = useRef(0);
+  const processingPromiseRef = useRef<Promise<void> | undefined>(undefined);
+  const sessionDataSourceRef = useRef<DataSource | undefined>(undefined);
 
-  const setActiveSessionTable = useCallback(
-    (table?: CsvUploadSessionTable) => {
-      sessionTableRef.current = table;
-      setSessionTable(table);
+  useEffect(
+    () => () => {
+      operationIdRef.current++;
+      const processingPromise = processingPromiseRef.current;
+      void (async () => {
+        try {
+          await processingPromise;
+        } finally {
+          if (ownsEditSessionRef.current) {
+            try {
+              await editSession.end(false);
+            } catch (error) {
+              console.error(
+                "[useCsvUpload] failed to discard edit session during cleanup",
+                error,
+              );
+            }
+          }
+        }
+      })();
+    },
+    [editSession],
+  );
+
+  const setActiveSessionDataSource = useCallback(
+    (sessionDataSource?: DataSource) => {
+      sessionDataSourceRef.current = sessionDataSource;
+      const table = sessionDataSource?.table;
+      setSessionTable(
+        table && isSessionTable(table)
+          ? (table as CsvUploadSessionTable)
+          : undefined,
+      );
     },
     [],
   );
 
   const endEditSessionAndNotify = useCallback(
     async (save: boolean, reason: CsvUploadSessionEndReason) => {
-      if (!dataSource.endEditSession) {
-        throw Error("CsvUpload requires datasource endEditSession support.");
+      const sessionDataSource = sessionDataSourceRef.current;
+      if (!sessionDataSource) {
+        throw Error("CsvUpload has no active edit session.");
       }
-      const currentSessionTable = sessionTableRef.current;
-      const result = await dataSource.endEditSession(save);
+      if (!sessionDataSource.endEditSession) {
+        throw Error(
+          "CsvUpload requires the session datasource to support endEditSession.",
+        );
+      }
+      const currentSessionTable = sessionDataSource.table;
+      await editSession.end(save);
 
-      setActiveSessionTable(undefined);
+      setActiveSessionDataSource(undefined);
       onImportSessionEnded?.({
         reason,
-        sessionTable: currentSessionTable,
+        sessionTable:
+          currentSessionTable && isSessionTable(currentSessionTable)
+            ? (currentSessionTable as CsvUploadSessionTable)
+            : undefined,
       });
-      return result;
+      return undefined;
     },
-    [dataSource, onImportSessionEnded, setActiveSessionTable],
+    [editSession, onImportSessionEnded, setActiveSessionDataSource],
   );
 
   const table = dataSource.table;
   const schema = dataSource.tableSchema;
 
   const addAllRows = useCallback(
-    async (mergedValidation: CsvValidationResult) => {
-      if (table === undefined) {
-        throw Error("CsvUpload requires dataSource.table to be defined.");
-      }
-
+    async (mergedValidation: CsvValidationResult, operationId: number) => {
       const vuuMsgByRow = new Map<number, string>();
       for (const { rowNum, column, message } of mergedValidation.errors) {
         if (rowNum < CSV_FIRST_DATA_ROW_NUMBER) continue;
@@ -115,13 +157,17 @@ export const useCsvUpload = ({
         const columnError = `${column}: ${message}`;
         vuuMsgByRow.set(
           rowNum,
-          existing ? `${existing}; ${columnError}` : `Row ${rowNum}: ${columnError}`,
+          existing
+            ? `${existing}; ${columnError}`
+            : `Row ${rowNum}: ${columnError}`,
         );
       }
 
       const parsedRowCount = mergedValidation.rows.length;
       const unparsedErrorRows = [...vuuMsgByRow.keys()]
-        .filter((rowNum) => rowNum - CSV_FIRST_DATA_ROW_NUMBER >= parsedRowCount)
+        .filter(
+          (rowNum) => rowNum - CSV_FIRST_DATA_ROW_NUMBER >= parsedRowCount,
+        )
         .map((rowNum) => ({
           rowNum,
           rowData: {} as Record<string, VuuRowDataItemType>,
@@ -137,60 +183,57 @@ export const useCsvUpload = ({
         ...unparsedErrorRows,
       ];
 
-      const { errors: rpcErrors } = await executeBatchRpcCalls(
-        allRows,
-        async ({ rowNum, rowData, vuuMsg }) => {
+      const rpcErrors: string[] = [];
+      for (const { rowNum, rowData, vuuMsg } of allRows) {
+        if (operationId !== operationIdRef.current) {
+          return false;
+        }
+        try {
           const payload = { ...rowData, rowNum, vuuMsg };
-          const result = await dataSource.rpcRequest?.({
-            type: "RPC_REQUEST",
-            rpcName: "addRow",
-            params: {
-              key: String(rowNum),
-              data: payload,
-            },
-          });
-          if (!isRpcSuccess(result)) {
-            const msg =
-              result && "errorMessage" in result
-                ? String(result.errorMessage)
-                : "addRow RPC failed";
-            throw Error(msg);
+          const result = await editSession.addRow(payload);
+          if (isRpcError(result)) {
+            throw Error(result.errorMessage);
           }
-          return result;
-        },
-        ({ rowNum }, error) => `Row ${rowNum}: ${error}`,
-      );
+          if (typeof result === "string") {
+            throw Error(result);
+          }
+        } catch (error) {
+          rpcErrors.push(`Row ${rowNum}: ${toErrorMessage(error)}`);
+        }
+      }
 
       if (rpcErrors.length > 0) {
-        const errorMessage = buildRowErrorMessage("Import failed", rpcErrors);
-        const errors: CsvUploadErrors = {
-          importError: createUploadError("import", errorMessage),
-        };
-        onError?.({ errors });
+        throw Error(buildRowErrorMessage("Import failed", rpcErrors));
       }
+      return true;
     },
-    [dataSource, onError, table],
+    [editSession],
   );
 
   const beginEditSession = useCallback(async () => {
-    if (!dataSource.createSessionDataSource) {
-      throw Error("CsvUpload requires datasource createSessionDataSource support.");
-    }
-
-    const sessionDataSource = await dataSource.createSessionDataSource("Empty");
+    const sessionDataSource = await editSession.begin("Empty");
 
     const sessionVuuTable = sessionDataSource?.table;
-    if (sessionVuuTable && isSessionTable(sessionVuuTable)) {
-      setActiveSessionTable(sessionVuuTable as CsvUploadSessionTable);
-      if (sessionDataSource) {
-        onImportSessionStarted?.(sessionDataSource);
-      }
+    if (
+      sessionDataSource === undefined ||
+      sessionVuuTable === undefined ||
+      !isSessionTable(sessionVuuTable)
+    ) {
+      throw Error(
+        "CsvUpload createSessionDataSource returned no session datasource.",
+      );
     }
-  }, [dataSource, onImportSessionStarted, setActiveSessionTable]);
+    if (!sessionDataSource.columns.includes("vuuMsg")) {
+      sessionDataSource.columns = sessionDataSource.columns.concat("vuuMsg");
+    }
+    setActiveSessionDataSource(sessionDataSource);
+    onImportSessionStarted?.(sessionDataSource);
+    return sessionDataSource;
+  }, [editSession, onImportSessionStarted, setActiveSessionDataSource]);
 
   const closePendingEditSession = useCallback(
     async (save: boolean) => {
-      if (sessionTableRef.current === undefined) {
+      if (sessionDataSourceRef.current === undefined) {
         return;
       }
       await endEditSessionAndNotify(save, save ? "saved" : "discarded");
@@ -198,12 +241,25 @@ export const useCsvUpload = ({
     [endEditSessionAndNotify],
   );
 
+  const cancelImport = useCallback(async () => {
+    operationIdRef.current++;
+    try {
+      await processingPromiseRef.current;
+    } catch {
+      // File-processing errors are surfaced by handleFiles.
+    }
+    await closePendingEditSession(false);
+  }, [closePendingEditSession]);
+
   const processFile = useCallback(
-    async (file: File) => {
+    async (file: File, operationId: number) => {
       setValidation(undefined);
       onError?.(undefined);
 
       await closePendingEditSession(false);
+      if (operationId !== operationIdRef.current) {
+        return;
+      }
 
       if (schema === undefined) {
         throw Error("Table schema is not yet available.");
@@ -213,7 +269,11 @@ export const useCsvUpload = ({
         throw Error("CsvUpload requires dataSource.table to be defined.");
       }
 
-      const parsedCsv = parseCsv(await file.text(), parseOptions);
+      const fileContents = await file.text();
+      if (operationId !== operationIdRef.current) {
+        return;
+      }
+      const parsedCsv = parseCsv(fileContents, parseOptions);
       if (parsedCsv.error && hasFileParseErrors(parsedCsv.error)) {
         setValidation(undefined);
         onError?.({
@@ -260,9 +320,15 @@ export const useCsvUpload = ({
 
       if (mergedValidation.rows.length > 0) {
         await beginEditSession();
+        if (operationId !== operationIdRef.current) {
+          return;
+        }
 
         try {
-          await addAllRows(mergedValidation);
+          const rowsAdded = await addAllRows(mergedValidation, operationId);
+          if (!rowsAdded) {
+            return;
+          }
         } catch (error) {
           await endEditSessionAndNotify(false, "failed");
           setValidation(undefined);
@@ -298,11 +364,14 @@ export const useCsvUpload = ({
       }
       setIsProcessingFile(true);
       onProcessingStarted?.();
+      const operationId = ++operationIdRef.current;
+      const processingPromise = processFile(file, operationId);
+      processingPromiseRef.current = processingPromise;
       try {
-        await processFile(file);
+        await processingPromise;
       } catch (err) {
         setValidation(undefined);
-        setActiveSessionTable(undefined);
+        setActiveSessionDataSource(undefined);
         const parseError = isCsvParseError(err) ? err : undefined;
         const errorMessage = parseError
           ? `Validation failed: ${parseError.message}`
@@ -318,10 +387,13 @@ export const useCsvUpload = ({
         };
         onError?.(errors);
       } finally {
+        if (processingPromiseRef.current === processingPromise) {
+          processingPromiseRef.current = undefined;
+        }
         setIsProcessingFile(false);
       }
     },
-    [onError, onProcessingStarted, processFile, setActiveSessionTable],
+    [onError, onProcessingStarted, processFile, setActiveSessionDataSource],
   );
 
   const onDrop = useCallback(
@@ -350,15 +422,13 @@ export const useCsvUpload = ({
 
   const importData = useCallback(async () => {
     if (!canImport || validation === undefined) {
-      return;
+      return false;
     }
 
     setIsImporting(true);
     onError?.(undefined);
 
     try {
-      const rpcResult = await endEditSessionAndNotify(true, "saved");
-
       const fallbackTableData = {
         columns: validation.columns,
         rows: validation.rows.map((row) =>
@@ -366,10 +436,26 @@ export const useCsvUpload = ({
         ),
       };
 
-      onImported?.({
-        rpcResult,
-        tableData: normalizeTableData(rpcResult, fallbackTableData),
-      });
+      const tableData = fallbackTableData;
+      if (importMode === "preview") {
+        const sessionDataSource = sessionDataSourceRef.current;
+        if (!sessionDataSource) {
+          throw Error("CsvUpload has no session datasource to preview.");
+        }
+        if (!onPreview) {
+          throw Error("CsvUpload preview mode requires an onPreview callback.");
+        }
+        onPreview({
+          dataSource: sessionDataSource,
+          editSession,
+          tableData,
+        });
+        ownsEditSessionRef.current = false;
+      } else {
+        await endEditSessionAndNotify(true, "saved");
+        onImported?.({ tableData });
+      }
+      return true;
     } catch (err) {
       const errorMessage = `RPC import failed: ${String(err)}`;
       const errors: CsvUploadErrorResult = {
@@ -378,13 +464,24 @@ export const useCsvUpload = ({
         },
       };
       onError?.(errors);
+      return false;
     } finally {
       setIsImporting(false);
     }
-  }, [canImport, endEditSessionAndNotify, onError, onImported, validation]);
+  }, [
+    canImport,
+    editSession,
+    endEditSessionAndNotify,
+    onError,
+    onImported,
+    onPreview,
+    importMode,
+    validation,
+  ]);
 
   return {
     canImport,
+    cancelImport,
     importData,
     isImporting,
     isProcessingFile,

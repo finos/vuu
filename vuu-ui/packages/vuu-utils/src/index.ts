@@ -12,19 +12,6 @@ export * from "./common-types";
 export * from "./component-registry";
 export * from "./cookie-utils";
 export * from "./css-utils";
-export {
-  DataEditingProvider,
-  useEditSession,
-} from "./data-editing/DataEditingProvider";
-export { getVuuEditMessage } from "./data-editing/edit-utils";
-export { EditButtons, type EditButtonProps } from "./data-editing/EditButtons";
-export {
-  EditSession,
-  isCopyOption,
-  StaleUpdateError,
-  type EditState,
-} from "./data-editing/EditSession";
-export { useEditableTable } from "./data-editing/useEditableTable";
 export * from "./data-utils";
 export * from "./datasource/BaseDataSource";
 export * from "./datasource/datasource-action-utils";
@@ -32,6 +19,8 @@ export * from "./datasource/datasource-filter-utils";
 export * from "./datasource/datasource-utils";
 export * from "./date";
 export * from "./debug-utils";
+export { isInlineEditingSession } from "./edit-utils";
+export { StaleUpdateError } from "./errors";
 export * from "./event-emitter";
 export * from "./feature-utils";
 export * from "./filters";
@@ -101,7 +90,6 @@ export {
   useDataSource,
 } from "./context-definitions/DataSourceProvider";
 export * from "./context-definitions/WorkspaceContext";
-export { isInlineEditingSession } from "./data-editing/edit-utils";
 export { PageVisibilityObserver } from "./PageVisibilityObserver";
 export * from "./ShellContext";
 export { ThemeLoadChecker } from "./theme-utils";

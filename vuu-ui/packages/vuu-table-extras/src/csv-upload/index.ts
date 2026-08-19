@@ -6,6 +6,7 @@ export {
   type CsvUploadErrors,
   type CsvUploadPhase,
   type CsvUploadImportedResult,
+  type CsvUploadPreviewResult,
   type CsvUploadSessionEndReason,
   type CsvUploadSessionEndResult,
   type CsvUploadSessionTable,
@@ -16,9 +17,9 @@ export {
   type UseCsvUploadReturn,
 } from "./useCsvUpload";
 export {
-  useCsvUploadSessionPreview,
-  type UseCsvUploadSessionPreviewReturn,
-} from "./useCsvUploadSessionPreview";
+  DataUploadPreview,
+  type DataUploadPreviewProps,
+} from "./data-upload-preview/DataUploadPreview";
 export {
   validateCsvAgainstSchema,
   type CsvValidationOptions,

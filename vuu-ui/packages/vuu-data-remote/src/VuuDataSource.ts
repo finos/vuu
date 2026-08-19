@@ -1,4 +1,5 @@
 import type {
+  CopyOption,
   DataSource,
   DataSourceBase,
   DataSourceCallbackMessage,
@@ -9,13 +10,13 @@ import type {
   DataSourceVisualLinkCreatedMessage,
   DeleteRowMode,
   EditSessionMode,
-  CopyOption,
   OptimizeStrategy,
   ServerAPI,
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
 } from "@vuu-ui/vuu-data-types";
+import type { MenuRpcResponse } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
   RpcResultError,
@@ -31,14 +32,12 @@ import type {
   VuuRpcServiceRequest,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-import { MenuRpcResponse } from "@vuu-ui/vuu-data-types";
 import {
   BaseDataSource,
   combineFilters,
   constrainRange,
   debounce,
   isConfigChanged,
-  isInlineEditingSession,
   isRpcSuccess,
   isSelectSuccessWithRowCount,
   isViewportMenusAction,
@@ -719,30 +718,22 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
 
-      if (isInlineEditingSession(editSessionMode)) {
-        const columns = this.#sessionTableMessageColumn
-          ? this.columns.concat(this.#sessionTableMessageColumn)
-          : this.columns;
-        this.#sessionDataSource = new VuuDataSource({
-          ...this.config,
-          columns,
-          table: sessionTable,
-          viewport: sessionTable.table,
-        });
+      const columns = this.#sessionTableMessageColumn
+        ? this.columns.concat(this.#sessionTableMessageColumn)
+        : this.columns;
+      this.#sessionDataSource = new VuuDataSource({
+        ...this.config,
+        columns,
+        table: sessionTable,
+        viewport: sessionTable.table,
+      });
 
-        this.#sessionDataSource.subscribe(
-          {
-            range: this.range,
-          },
-          this.handleSessionMessageFromServer,
-        );
-      } else {
-        return new VuuDataSource({
-          ...this.config,
-          table: sessionTable,
-          viewport: sessionTable.table,
-        });
-      }
+      this.#sessionDataSource.subscribe(
+        {
+          range: this.range,
+        },
+        this.handleSessionMessageFromServer,
+      );
 
       // we need to route messages from the session datasource to listening
       // client whilst still monitoring responses on the source table to which

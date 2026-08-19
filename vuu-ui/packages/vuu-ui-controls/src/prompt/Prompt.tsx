@@ -67,7 +67,7 @@ const getHeader = (
 };
 
 export interface PromptProps
-  extends Pick<DialogProps, "onOpenChange" | "open" | "status">,
+  extends Pick<DialogProps, "disableDismiss" | "onOpenChange" | "open" | "status">,
     Pick<DialogHeaderProps, "disableAccent">,
     Omit<HTMLAttributes<HTMLDivElement>, "content" | "title"> {
   /**
@@ -122,6 +122,7 @@ export const Prompt = ({
   confirmButtonLabel = "Confirm",
   confirmButtonProps,
   customAction = null,
+  disableDismiss,
   disableAccent,
   headerTag,
   icon,
@@ -202,6 +203,7 @@ export const Prompt = ({
     <Dialog
       {...htmlAttributes}
       className={cx(classBase, className)}
+      disableDismiss={disableDismiss}
       onOpenChange={onOpenChange}
       open={open}
       ref={callbackRef}

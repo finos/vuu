@@ -18,7 +18,10 @@ available for editing (the rows are copied from the source table). Exactly which
 
 ## I am an application author, I use vuu-ui components, how do I implement data editing in my app ?
 
-An EditSession should be instantiated and made available to the Table and its subcomponents through a _DataEditingProvider_.
+An EditSession should be instantiated and made available to the Table and its subcomponents through a _DataEditingProvider_. `useEditableTable`
+creates the session through the source datasource's `createSessionDataSource(copyOption)` API. Pass the hook's active `dataSource` directly to
+`Table`; it is the source datasource in view mode and the session datasource while editing. Use `sourceDataSource` for source-only controls such
+as statistics, filters, and external workflows.
 
 Table cells can be rendered with editable content for one or more table columns. Editing is enabled on a colunm, not on individual cells. Editing is enabled by setting the _editable_
 attribute to true on one or more of the ColumnDescriptors included in TableConfig. The actual edit control used to render the editable content will be an InputCell by default. This is
@@ -30,8 +33,7 @@ depending on the data.
 
 ```DataValueTypeDescriptor
     <DataEditingProvider editSession={editSession}>
-      <Table config={config} dataSource={dataSource}
-      />
+      <Table config={config} dataSource={dataSource} />
     </DataEditingProvider>
 ```
 
@@ -47,7 +49,7 @@ controls must implement the _onEdit_ callback prop, defined on the _TableCellRen
 - the number of edits currently applied
 - the number of invalid edits
 
-The edit lifecycle operations, beginEditSession, editCell and endEditSession are all instigated through the _EditSession_. It also
+The edit lifecycle operations, createSessionDataSource, editCell and endEditSession are all instigated through the _EditSession_. It also
 acts as an _EventEmitter_ emitting a state change event whenever significant status changes occur. UI controls that manage the overall edit session, e.g Save and Cancel buttons, use state maneged by the _EditSession_
 to determine their correct render status.
 

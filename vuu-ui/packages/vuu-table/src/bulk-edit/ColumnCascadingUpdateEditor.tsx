@@ -3,7 +3,7 @@ import { useWindow } from "@salt-ds/window";
 import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
 import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { BaseRowProps, ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { isNotHidden } from "@vuu-ui/vuu-utils";
+import { isDataValueEditable, isNotHidden } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { HTMLAttributes } from "react";
 import { VirtualColSpan } from "../VirtualColSpan";
@@ -76,7 +76,7 @@ export const ColumnCascadingUpdateEditor = ({
             role="cell"
             style={{ width: column.width }}
           >
-            {column.editable
+            {isDataValueEditable(column, "update")
               ? getDataItemEditControl({
                   InputProps,
                   dataDescriptor: column,
