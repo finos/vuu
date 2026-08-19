@@ -1,0 +1,97 @@
+.gridLayoutScenario {
+  background: var(--salt-container-primary-background);
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100vh;
+  width: 100vw;
+}
+
+.gridLayoutScenario-header {
+  border-bottom: 1px solid var(--salt-separable-primary-borderColor);
+  display: grid;
+  gap: 4px;
+  padding: 10px 14px;
+}
+
+.gridLayoutScenario-header > span {
+  color: var(--salt-content-secondary-foreground);
+}
+
+.gridLayoutScenario-header .gridLayoutScenario-limitation {
+  color: var(--salt-status-warning-foreground);
+}
+
+.gridLayoutScenario-content {
+  min-height: 0;
+  padding: 12px;
+}
+
+.gridLayoutScenario-content > .vuuGridLayout,
+.gridLayoutScenario-content > .gridLayoutInspector,
+.gridLayoutScenario-content > [data-grid-layout-provider] {
+  height: 100%;
+}
+
+.gridLayoutScenario-item {
+  align-items: center;
+  background: var(--scenario-color);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  justify-content: center;
+}
+
+.gridLayoutScenario-item code {
+  background: rgb(0 0 0 / 30%);
+  padding: 2px 5px;
+}
+
+.gridLayoutScenario .vuuGridPalette {
+  align-content: start;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.gridLayoutInspector {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+  min-height: 0;
+}
+
+.gridLayoutInspector-panel {
+  border: 1px solid var(--salt-separable-primary-borderColor);
+  display: grid;
+  gap: 10px;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  min-height: 0;
+  padding: 10px;
+}
+
+.gridLayoutInspector-panel dl {
+  display: grid;
+  gap: 4px 10px;
+  grid-template-columns: max-content minmax(0, 1fr);
+  margin: 0;
+}
+
+.gridLayoutInspector-panel dt {
+  font-weight: 600;
+}
+
+.gridLayoutInspector-panel dd {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.gridLayoutInspector-panel pre {
+  background: var(--salt-container-secondary-background);
+  margin: 0;
+  overflow: auto;
+  padding: 10px;
+  white-space: pre;
+}

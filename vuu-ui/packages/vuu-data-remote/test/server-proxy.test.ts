@@ -37,6 +37,55 @@ describe("ServerProxy", () => {
     TEST_setRequestId(1);
   });
 
+  it("returns the complete LOGIN_SUCCESS response to the connection caller", async () => {
+    const [serverProxy, postMessageToClient] = await createFixtures();
+    const login = serverProxy.login("vuu-token");
+    const moduleRegistry = {
+      modules: [
+        {
+          clientIdentifier: "vuu-module-admin",
+          description: "Manage modules",
+          enabled: true,
+          id: 1,
+          location: "/Admin/Modules",
+          accessRole: "module-admin-login",
+          mfComponent: "ModuleAdmin",
+          mfScope: "moduleAdmin",
+          mfUrl: "http://localhost:5008",
+          name: "module-admin",
+          path: "/modules/admin",
+          title: "Manage modules",
+          version: 1,
+          vuu: { connectionId: "portal" },
+        },
+      ],
+    };
+
+    serverProxy.handleMessageFromServer({
+      body: {
+        moduleRegistry,
+        type: "LOGIN_SUCCESS",
+        vuuServerId: "portal",
+      },
+      module: "CORE",
+      requestId: "",
+      sessionId: "session-1",
+    });
+
+    await expect(login).resolves.toEqual({
+      moduleRegistry,
+      sessionId: "session-1",
+      type: "LOGIN_SUCCESS",
+      vuuServerId: "portal",
+    });
+    expect(postMessageToClient).toHaveBeenCalledWith({
+      moduleRegistry,
+      sessionId: "session-1",
+      type: "LOGIN_SUCCESS",
+      vuuServerId: "portal",
+    });
+  });
+
   describe("subscription", () => {
     it("sends server requests for metadata, links and menus along with subscription", async () => {
       const [, , connection] = await createFixtures();
@@ -118,6 +167,24 @@ describe("ServerProxy", () => {
         },
         tableSchema: testSchema,
         type: "subscribed",
+      });
+    });
+
+    it("does not resend a viewport removal during connection teardown", async () => {
+      const [serverProxy, , connection] = await createFixtures();
+      connection.send.mockClear();
+
+      serverProxy.unsubscribe("client-vp-1");
+      serverProxy.disconnect();
+
+      expect(connection.send).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledWith({
+        body: {
+          type: "REMOVE_VP",
+          viewPortId: "server-vp-1",
+        },
+        requestId: "4",
+        ...SERVER_MESSAGE_CONSTANTS,
       });
     });
   });

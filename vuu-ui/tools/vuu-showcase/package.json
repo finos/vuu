@@ -10,6 +10,7 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
+    "@mdx-js/loader": "3.1.1",
     "@types/serve-handler": "6.1.4",
     "@mdx-js/esbuild": "3.1.1",
     "@mdx-js/rollup": "3.1.1",
@@ -23,9 +24,8 @@
     "serve-handler": "6.1.6"
   },
   "dependencies": {
+    "@vuu-ui/core": "3.3.17",
     "@fontsource/open-sans": "^4.5.13",
-    "@salt-ds/core": "1.54.1",
-    "@salt-ds/theme": "1.37.0",
     "@vuu-ui/vuu-datatable": "3.3.17",
     "@vuu-ui/vuu-icons": "3.3.17",
     "@vuu-ui/vuu-layout": "3.3.17",
@@ -33,14 +33,16 @@
     "@vuu-ui/vuu-theme": "3.3.17",
     "@vuu-ui/vuu-ui-controls": "3.3.17",
     "@vuu-ui/vuu-utils": "3.3.17",
-    "symlink-dir": "^6.0.5",
-    "watcher": "2.3.1"
+    "@salt-ds/core": "1.67.0",
+    "@salt-ds/theme": "1.43.0",
+    "open": "10.1.0",
+    "serve-handler": "6.1.6"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "react-router-dom": "^6.2.1"
+    "react-router-dom": "7.18.3"
   },
   "sideEffects": false,
   "type": "module"

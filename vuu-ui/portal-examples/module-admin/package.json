@@ -1,0 +1,59 @@
+{
+  "name": "module-admin",
+  "version": "1.0.0",
+  "description": "Vuu Module Admin Module",
+  "scripts": {
+    "prebuild": "npm run build --workspace @vuu-ui/portal-build",
+    "build": "portal-build --config ./portal-build.json",
+    "dev": "rsbuild dev",
+    "start": "ws --directory ../../dist_portal/module-admin --spa index.html --port 5002"
+  },
+  "type": "module",
+  "private": true,
+  "keywords": [],
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "index.ts",
+  "devDependencies": {
+    "@vuu-ui/portal-build": "0.1.0",
+    "@vuu-ui/vuu-data-types": "3.3.17",
+    "@vuu-ui/vuu-table-types": "3.3.17"
+  },
+  "dependencies": {
+    "@vuu-ui/vuu-data-editing": "3.3.17",
+    "@vuu-ui/vuu-data-react": "3.3.17",
+    "@vuu-ui/vuu-data-test": "3.3.17",
+    "@vuu-ui/vuu-table": "3.3.17",
+    "@vuu-ui/vuu-utils": "3.3.17",
+    "@vuu-ui/core": "3.3.17"
+  },
+  "peerDependencies": {
+    "clsx": "^2.0.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "vuu": {
+    "featureProps": {
+      "vuuTables": [
+        {
+          "module": "MODULE_DISCOVERY",
+          "table": "modules"
+        }
+      ]
+    },
+    "module-federation": {
+      "exposes": {
+        "./ModuleAdmin": "./src/ModuleAdmin",
+        "./ModuleAdminLocal": "./src/ModuleAdminLocal"
+      },
+      "name": "moduleAdmin",
+      "port": 5002
+    }
+  }
+}

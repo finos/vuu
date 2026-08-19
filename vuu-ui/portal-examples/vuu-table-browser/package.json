@@ -1,0 +1,47 @@
+{
+  "name": "vuu-table-browser",
+  "version": "1.0.0",
+  "description": "Browse tables exposed by registered Vuu servers",
+  "scripts": {
+    "prebuild": "npm run build --workspace @vuu-ui/portal-build",
+    "build": "portal-build --config ./portal-build.json",
+    "start": "serve -p 5009 ../../dist_portal/vuu-table-browser"
+  },
+  "type": "module",
+  "private": true,
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "index.ts",
+  "devDependencies": {
+    "@vuu-ui/portal-build": "0.1.0"
+  },
+  "dependencies": {
+    "@salt-ds/core": "1.67.0",
+    "@vuu-ui/core": "3.3.17",
+    "@vuu-ui/vuu-data-types": "3.3.17",
+    "@vuu-ui/vuu-protocol-types": "3.3.17",
+    "@vuu-ui/vuu-shell": "3.3.17",
+    "react-router-dom": "7.18.3"
+  },
+  "peerDependencies": {
+    "clsx": "^2.0.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "vuu": {
+    "featureProps": {},
+    "module-federation": {
+      "exposes": {
+        "./VuuTableBrowser": "src/VuuTableBrowser"
+      },
+      "name": "vuuTableBrowser",
+      "port": 5009
+    }
+  }
+}

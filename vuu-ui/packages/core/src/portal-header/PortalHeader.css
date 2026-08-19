@@ -1,0 +1,3 @@
+.vuuPortalHeader {
+    background: var(--vuuPortalHeader-background, var(--salt-container-primary-background));
+}

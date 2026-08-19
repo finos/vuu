@@ -1,11 +1,17 @@
 import { elementImplementsJSONSerialization } from "@vuu-ui/vuu-utils";
-import React, { CSSProperties, ReactElement } from "react";
+import React, {
+  type CSSProperties,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import { getProps } from "./propUtils";
 import { typeOf } from "./typeOf";
 
+export type LayoutJSONChild = LayoutJSON | number | string;
+
 export interface LayoutJSON<T extends object = object> {
   active?: number;
-  children?: LayoutJSON[];
+  children?: LayoutJSONChild[];
   id?: string;
   props?: T;
   state?: unknown;
@@ -33,6 +39,10 @@ export interface LayoutProps {
   version?: number;
 }
 
+/**
+ * @deprecated GridLayout persistence must use typed component settings and
+ * encodeGridLayoutDocument. This function is retained for legacy UI templates.
+ */
 export function componentToJson(element: ReactElement): LayoutJSON {
   if (elementImplementsJSONSerialization(element)) {
     return element.type.toJSON(element);
@@ -49,11 +59,19 @@ export function componentToJson(element: ReactElement): LayoutJSON {
       type,
       props: serializeProps(props as LayoutProps),
       state,
-      children: React.Children.map(children, componentToJson),
+      children: React.Children.map(children, componentChildToJson) ?? undefined,
     };
   }
 }
 
+function componentChildToJson(child: ReactNode): LayoutJSONChild | null {
+  if (typeof child === "string" || typeof child === "number") {
+    return child;
+  }
+  return React.isValidElement(child) ? componentToJson(child) : null;
+}
+
+/** @deprecated Generic React-prop persistence is a legacy compatibility path. */
 export function serializeProps(props?: LayoutProps) {
   if (props) {
     const { path, ...otherProps } = props;

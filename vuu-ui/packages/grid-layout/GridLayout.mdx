@@ -1,3 +1,9 @@
 ### GridLayout
 
 `GridLayout` is a container component that manages the layout of nested child components. The `GridLayout` component used CSS Grid to manage the positioning of child components.
+
+### Controller snapshots
+
+`GridLayout` renders durable tracks, item placement, placeholders, and stack state from its `GridController` snapshot. React component content is retained separately and resolved by stable item ID.
+
+`useGridControllerSnapshot(controller)` is available for React integrations that need the controller's visible immutable snapshot. It uses React's external-store contract, suppresses revision-only transaction commit renders, and supports server rendering.

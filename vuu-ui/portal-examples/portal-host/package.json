@@ -1,0 +1,45 @@
+{
+  "name": "portal-host",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "prebuild": "npm run build --workspace @vuu-ui/portal-build",
+    "prebuild:local": "npm run build --workspace @vuu-ui/portal-build",
+    "prebuild:doctor": "npm run build --workspace @vuu-ui/portal-build",
+    "build": "portal-build --config ./portal-build.json",
+    "build:local": "portal-build --config ./portal-build.json --local",
+    "build:doctor": "portal-build --config ./portal-build.json --rsdoctor",
+    "start": "ws --directory ../../dist_portal/portal-host --spa index.html --port 5001",
+    "start:local": "ws --directory ../../dist_portal/portal-host --spa index.html --port 5001"
+  },
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "type": "module",
+  "devDependencies": {
+    "@vuu-ui/portal-build": "0.1.0"
+  },
+  "dependencies": {
+    "@fontsource/open-sans": "^4.5.13",
+    "@salt-ds/core": "1.67.0",
+    "@vuu-ui/core": "3.3.17",
+    "@vuu-ui/vuu-data-local": "3.3.17",
+    "@vuu-ui/vuu-data-remote": "3.3.17",
+    "@vuu-ui/vuu-table-types": "3.3.17",
+    "@vuu-ui/vuu-data-react": "3.3.17",
+    "@vuu-ui/vuu-data-test": "3.3.17",
+    "@vuu-ui/vuu-popups": "3.3.17",
+    "@vuu-ui/vuu-shell": "3.3.17",
+    "@vuu-ui/vuu-utils": "3.3.17",
+    "clsx": "^2.0.0",
+    "keycloak-js": "26.2.4",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-router-dom": "7.18.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

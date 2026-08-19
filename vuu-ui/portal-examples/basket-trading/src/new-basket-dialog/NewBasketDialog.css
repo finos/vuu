@@ -1,0 +1,10 @@
+.vuuBasketNewBasketDialog {
+    --vuuPrompt-minHeight: 120px;
+    border: solid 1px var(--salt-container-primary-borderColor);
+    border-radius: 6px;
+    .saltDialogContent {
+        margin:0;
+        padding: var(--salt-spacing-400) calc( 2 * var(--salt-spacing-400));
+    }
+}
+

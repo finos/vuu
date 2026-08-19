@@ -1,0 +1,62 @@
+{
+  "name": "user-admin",
+  "version": "1.0.0",
+  "description": "Vuu User Admin Module",
+  "scripts": {
+    "prebuild": "npm run build --workspace @vuu-ui/portal-build",
+    "build": "portal-build --config ./portal-build.json",
+    "dev": "rsbuild dev",
+    "test": "vitest run --root ../.. portal-examples/user-admin/test",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "biome lint src test",
+    "start": "ws --directory ../../dist_portal/user-admin --spa index.html --port 5003"
+  },
+  "type": "module",
+  "private": true,
+  "keywords": [],
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "index.ts",
+  "devDependencies": {
+    "@vuu-ui/portal-build": "0.1.0",
+    "@vuu-ui/vuu-data-types": "3.3.17",
+    "@vuu-ui/vuu-table-types": "3.3.17"
+  },
+  "dependencies": {
+    "@vuu-ui/vuu-data-editing": "3.3.17",
+    "@vuu-ui/vuu-data-react": "3.3.17",
+    "@vuu-ui/vuu-data-test": "3.3.17",
+    "@vuu-ui/vuu-notifications": "3.3.17",
+    "@vuu-ui/vuu-ui-controls": "3.3.17",
+    "@vuu-ui/vuu-utils": "3.3.17",
+    "@vuu-ui/vuu-filter-types": "3.3.17",
+    "@vuu-ui/vuu-protocol-types": "3.3.17",
+    "@vuu-ui/vuu-table": "3.3.17",
+    "@vuu-ui/vuu-table-extras": "3.3.17",
+    "@vuu-ui/core": "3.3.17",
+    "@salt-ds/core": "1.67.0",
+    "react-router-dom": "7.18.3"
+  },
+  "peerDependencies": {
+    "clsx": "^2.0.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "vuu": {
+    "featureProps": {},
+    "module-federation": {
+      "exposes": {
+        "./UserAdmin": "./src/UserAdmin",
+        "./UserAdminLocal": "./src/UserAdminLocal"
+      },
+      "name": "userAdmin",
+      "port": 5003
+    }
+  }
+}

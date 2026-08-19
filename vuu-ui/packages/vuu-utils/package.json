@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "license": "Apache-2.0",
   "types": "src/index.ts",
+  "type": "module",
   "scripts": {
     "build:dev": "node ../../scripts/run-build.mjs",
     "build": "node ../../scripts/run-build-rslib.ts",
@@ -12,7 +13,7 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
-    "@salt-ds/core": "1.54.1"
+    "@salt-ds/core": "1.67.0"
   },
   "devDependencies": {
     "@dnd-kit/react": "^0.1.21",

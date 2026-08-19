@@ -41,10 +41,7 @@ import {
   TableContextMenuOptions,
   TableMenuLocation,
 } from "@vuu-ui/vuu-table-types";
-import {
-  ModalProvider,
-  useModal,
-} from "@vuu-ui/vuu-ui-controls";
+import { ModalProvider, useModal } from "@vuu-ui/core";
 import {
   DataSourceProvider,
   EventEmitter,
@@ -330,21 +327,23 @@ const EditTableTemplate = ({
         </DataEditingProvider>
       </div>
       <TableFooter>
-        {!isEditSessionReady ? (
-          <DataSourceStats dataSource={sourceDataSource} />
-        ) : (
-          <TableFooterTray position="center">
-            <EditButtons
-              canCancel={canCancel}
-              canSave={canSave}
-              editSession={editSession}
-              onCancel={onCancel}
-              onSave={onSave}
-            />
-          </TableFooterTray>
-        )}
-      </TableFooter>
-    </div>
+        {
+          !isEditSessionReady ? (
+            <DataSourceStats dataSource={sourceDataSource} />
+          ) : (
+            <TableFooterTray position="center">
+              <EditButtons
+                canCancel={canCancel}
+                canSave={canSave}
+                editSession={editSession}
+                onCancel={onCancel}
+                onSave={onSave}
+              />
+            </TableFooterTray>
+          )
+        }
+      </TableFooter >
+    </div >
   );
 };
 
@@ -479,24 +478,26 @@ const EditableInstrumentsTemplate = ({
         </DataEditingProvider>
       </div>
       <TableFooter>
-        {!isEditSessionReady ? (
-          <DataSourceStats dataSource={sourceDataSource} />
-        ) : (
-          <TableFooterTray position="center">
-            <EditButtons
-              canCancel={canCancel}
-              canSave={canSave}
-              editSession={editSession}
-              hasSelection={hasSelection}
-              onCancel={onCancel}
-              onDelete={onDelete}
-              onSave={onSave}
-              saveLabel="Submit"
-            />
-          </TableFooterTray>
-        )}
-      </TableFooter>
-    </div>
+        {
+          !isEditSessionReady ? (
+            <DataSourceStats dataSource={sourceDataSource} />
+          ) : (
+            <TableFooterTray position="center">
+              <EditButtons
+                canCancel={canCancel}
+                canSave={canSave}
+                editSession={editSession}
+                hasSelection={hasSelection}
+                onCancel={onCancel}
+                onDelete={onDelete}
+                onSave={onSave}
+                saveLabel="Submit"
+              />
+            </TableFooterTray>
+          )
+        }
+      </TableFooter >
+    </div >
   );
 };
 
@@ -832,24 +833,26 @@ const EditableTestTableTemplate = ({
         </DataEditingProvider>
       </div>
       <TableFooter>
-        {!isEditSessionReady ? (
-          <DataSourceStats dataSource={sourceDataSource} />
-        ) : (
-          <TableFooterTray position="center">
-            <EditButtons
-              canCancel={canCancel}
-              canSave={canSave}
-              editSession={editSession}
-              hasSelection={hasSelection}
-              onCancel={onCancel}
-              onDelete={onDelete}
-              onSave={onSave}
-              saveLabel="Submit"
-            />
-          </TableFooterTray>
-        )}
-      </TableFooter>
-    </div>
+        {
+          !isEditSessionReady ? (
+            <DataSourceStats dataSource={sourceDataSource} />
+          ) : (
+            <TableFooterTray position="center">
+              <EditButtons
+                canCancel={canCancel}
+                canSave={canSave}
+                editSession={editSession}
+                hasSelection={hasSelection}
+                onCancel={onCancel}
+                onDelete={onDelete}
+                onSave={onSave}
+                saveLabel="Submit"
+              />
+            </TableFooterTray>
+          )
+        }
+      </TableFooter >
+    </div >
   );
 };
 

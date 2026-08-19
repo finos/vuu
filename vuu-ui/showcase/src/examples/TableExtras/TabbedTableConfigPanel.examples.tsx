@@ -1,7 +1,7 @@
 import { getSchema } from "@vuu-ui/vuu-data-test";
+import { ModalProvider } from "@vuu-ui/core";
 import { ColumnModel, TabbedTableConfigPanel } from "@vuu-ui/vuu-table-extras";
 import { ColumnDescriptor, TableConfig } from "@vuu-ui/vuu-table-types";
-import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
 import { useMemo } from "react";
 
 const tableSchema = getSchema("instruments");

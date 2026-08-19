@@ -6,7 +6,7 @@ type PackageExports = {
   ".": {
     import: string;
   };
-  ['./style']?: {
+  [subpath: string]: {
     import: string;
   };
 };
@@ -33,6 +33,7 @@ export async function writePackageJSON(
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const {
+      exports: sourceExports,
       files: filesFromPackageJson = [],
       name: scopedPackageName,
       style,
@@ -50,12 +51,18 @@ export async function writePackageJSON(
       });
     });
 
-    const exports: PackageExports = {
-      ".": { import: "./src/index.js" },
-    };
+    const exports: PackageExports = Object.fromEntries(
+      Object.entries(
+        sourceExports ?? { ".": "./src/index.ts" },
+      ).map(([subpath, target]) => {
+        const importPath = typeof target === "string" ? target : target.import;
+        return [subpath, { import: importPath.replace(/\.tsx?$/, ".js") }];
+      }),
+    );
 
     if (style) {
       exports['./style'] = { import: style };
+      exports[style] = { import: style };
     }
 
     const newPackage: Json = {

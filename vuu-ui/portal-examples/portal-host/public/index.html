@@ -1,0 +1,67 @@
+<!doctype html>
+<html
+  class="salt-density-medium salt-theme salt-theme-next vuu-theme"
+  data-accent="purple"
+  data-corner="rounded"
+  data-mode="light"
+  lang="en"
+>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="vuu-icon.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Vuu generic UI" />
+    <script>
+      window.addEventListener("unhandledrejection", (event) => {
+        const message =
+          event.reason instanceof Error
+            ? event.reason.message
+            : String(event.reason);
+
+        if (!message.startsWith("[ Federation Runtime ]")) {
+          return;
+        }
+
+        event.preventDefault();
+
+        const root = document.getElementById("root");
+        if (!root) {
+          return;
+        }
+
+        root.replaceChildren();
+
+        const alert = document.createElement("div");
+        alert.setAttribute("role", "alert");
+
+        const heading = document.createElement("h1");
+        heading.textContent = "Unable to start the portal";
+
+        const explanation = document.createElement("p");
+        explanation.textContent =
+          "A portal module is incompatible with the VUU version used by this application. Contact your portal administrator to deploy compatible versions.";
+
+        const details = document.createElement("p");
+        details.textContent = message;
+
+        alert.append(heading, explanation, details);
+        root.append(alert);
+      });
+    </script>
+    <script type="module">
+      window.vuuConfig = fetch("/config.json").then((res) => {
+        if (res.ok) {
+          return res.json();
+        } else {
+          throw Error("Failed to load application config");
+        }
+      });
+    </script>
+    <title>VUU App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
