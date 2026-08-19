@@ -1,15 +1,12 @@
 package org.finos.vuu.person;
 
-import com.typesafe.scalalogging.Logger;
 import org.finos.vuu.core.table.DataTable;
-import org.finos.vuu.net.rpc.DefaultRpcHandler;
+import org.finos.vuu.net.rpc.DefaultRpcHandlerImpl;
 import org.finos.vuu.net.rpc.RpcFunctionResult;
 import org.finos.vuu.net.rpc.RpcFunctionSuccess;
 import org.finos.vuu.net.rpc.RpcParams;
-import org.finos.vuu.viewport.ViewPortMenuItem;
-import scala.collection.immutable.Map;
 
-public class PersonRpcHandler implements DefaultRpcHandler {
+public class PersonRpcHandler extends DefaultRpcHandlerImpl {
     private final DataTable table;
 
     public PersonRpcHandler(DataTable table) {
@@ -42,16 +39,6 @@ public class PersonRpcHandler implements DefaultRpcHandler {
         var rowData = this.table.pullRow(rowKey);
         var accountNumber = (int) rowData.get("account");
         return accountNumber;
-    }
-
-    @Override
-    public Map<String, ViewPortMenuItem> menuMap() {
-        return null;
-    }
-
-    @Override
-    public Logger logger() {
-        return null; // TODO add actual logger
     }
 }
 
