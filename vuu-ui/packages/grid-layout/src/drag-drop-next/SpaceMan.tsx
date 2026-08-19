@@ -81,14 +81,14 @@ export class SpaceMan {
   };
 
   enterDragContainer() {
-    console.log(`%cEnterDragContainer`, "color:red;font-weight:bold;");
+    console.log('%cEnterDragContainer', "color:red;font-weight:bold;");
     this.#withinDragContainer = true;
 
     // create spacers
   }
 
   leaveDragContainer() {
-    console.log(`%cLeaveDragContainer`, "color:red;font-weight:bold;");
+    console.log('%cLeaveDragContainer', "color:red;font-weight:bold;");
     // TODO we need to undo this at end of drag operation
     // this.freezeContainer();
     this.#withinDragContainer = false;
@@ -145,7 +145,7 @@ export class SpaceMan {
     const propertyName = this.#sizeProperty;
     if (index === this.#toIndex && direction === this.#toDirection) {
       console.log(
-        `[SpaceMan] dragEnter, return early: no change to toIndex, direction`,
+        '[SpaceMan] dragEnter, return early: no change to toIndex, direction',
       );
       return;
     }
@@ -236,20 +236,6 @@ export class SpaceMan {
       );
     }
   }
-
-  // private freezeContainer() {
-  //   if (this.#dragContainer) {
-  //     console.log("FREEZE container");
-  //     const { width } = this.#dragContainer.getBoundingClientRect();
-  //     this.#dragContainer.style.width = `${width}px`;
-  //   }
-  // }
-  // private unfreezeContainer() {
-  //   if (this.#dragContainer) {
-  //     console.log("UNFREEZE container");
-  //     this.#dragContainer.style.width = "";
-  //   }
-  // }
 
   private clearSpacers() {
     const propertyName = this.#sizeProperty;

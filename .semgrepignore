@@ -27,6 +27,7 @@ vuu-ui/showcase/scripts/build.ts
 vuu-ui/showcase/scripts/utils.mjs
 vuu-ui/scripts/build-rollup.mjs
 vuu-ui/scripts/utils.mjs
+vuu-ui/scripts/utils.ts
 vuu-ui/scripts/build.mjs
 vuu-ui/scripts/build-rslib.ts
 vuu-ui/scripts/build-typelib.mjs

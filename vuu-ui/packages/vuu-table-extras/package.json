@@ -4,12 +4,13 @@
   "author": "heswell",
   "main": "src/index.ts",
   "license": "Apache-2.0",
+  "type": "module",
   "scripts": {
     "prebuild": "npm run lezer-generate:column",
     "build:dev": "node ../../scripts/run-build.mjs",
     "build": "node ../../scripts/run-build-rslib.ts",
     "type-defs": "node ../../scripts/build-type-defs.mjs",
-    "lezer-generate:column": "lezer-generator --output ./src/column-expression-input/column-language-parser/generated/column-parser.js ./src/column-expression-input/column-language-parser/grammar/column.grammar"
+    "lezer-generate:column": "lezer-generator --output ./src/column-expression-input/column-language-parser/generated/column-parser.ts ./src/column-expression-input/column-language-parser/grammar/column.grammar"
   },
   "devDependencies": {
     "@vuu-ui/vuu-filter-types": "3.3.1",
@@ -26,17 +27,16 @@
     "@vuu-ui/vuu-utils": "3.3.1",
     "@vuu-ui/vuu-ui-controls": "3.3.1",
     "@lezer/lr": "1.4.2",
-    "@salt-ds/core": "1.54.1",
-    "@salt-ds/lab": "1.0.0-alpha.83",
+    "@salt-ds/core": "1.67.0",
+    "@salt-ds/lab": "1.0.0-alpha.99",
     "@salt-ds/styles": "0.2.1",
     "@salt-ds/window": "0.1.1",
     "csv-parse": "^7.0.0"
   },
   "peerDependencies": {
-    "@floating-ui/react": "^0.26.28",
+    "@floating-ui/react": "^0.27.19",
     "clsx": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
-  },
-  "type": "module"
+  }
 }

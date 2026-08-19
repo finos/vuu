@@ -1,104 +1,104 @@
 {
-  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true,
-    "defaultBranch": "main"
-  },
-  "files": {
-    "includes": ["packages/**/*", "sample-apps/**/*"]
-  },
-  "assist": { "actions": { "source": { "organizeImports": "off" } } },
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "space"
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true,
-      "style": {
-        "noNonNullAssertion": "warn",
-        "useAsConstAssertion": "error",
-        "useDefaultParameterLast": "warn",
-        "useEnumInitializers": "error",
-        "useImportType": "warn",
-        "useSelfClosingElements": "warn",
-        "useSingleVarDeclarator": "warn",
-        "noUnusedTemplateLiteral": "warn",
-        "noInferrableTypes": "error",
-        "noUselessElse": "off"
-      },
-      "complexity": { "noForEach": "off" },
-      "a11y": {
-        "noAutofocus": "off",
-        "noLabelWithoutControl": "warn",
-        "noNoninteractiveElementToInteractiveRole": "off",
-        "noStaticElementInteractions": "off",
-        "useFocusableInteractive": "off",
-        "noNoninteractiveTabindex": "off",
-        "useAriaPropsSupportedByRole": "warn",
-        "useKeyWithClickEvents": "warn",
-        "noSvgWithoutTitle": "off",
-        "useAriaPropsForRole": "warn",
-        "useSemanticElements": "off",
-        "useAltText": "warn",
-        "useValidAriaProps": "warn"
-      },
-      "correctness": {
-        "noConstantCondition": "warn",
-        "noConstructorReturn": "warn",
-        "noUnusedImports": "error",
-        "useParseIntRadix": "off",
-        "useExhaustiveDependencies": {
-          "level": "warn",
-          "options": {
-            "hooks": [
-              {
-                "name": "useIsomorphicLayoutEffect",
-                "closureIndex": 0,
-                "dependenciesIndex": 1
-              },
-              { "name": "useControlled", "stableResult": [1] }
-            ]
-          }
-        }
-      },
-      "suspicious": {
-        "noAssignInExpressions": "warn",
-        "noArrayIndexKey": "warn",
-        "noDoubleEquals": "warn",
-        "noExplicitAny": "warn",
-        "noImplicitAnyLet": "warn",
-        "noShadowRestrictedNames": "warn",
-        "noGlobalIsNan": "off",
-        "useIterableCallbackReturn": "warn",
-        "noSparseArray": "warn"
-      }
-    }
-  },
-  "css": {
-    "formatter": { "lineWidth": 200 },
-    "parser": { "cssModules": true }
-  },
-  "overrides": [
-    {
-      "includes": ["**/__tests__/**"],
-      "linter": {
-        "rules": {
-          "a11y": { "useButtonType": "off" },
-          "complexity": { "noForEach": "off" },
-          "suspicious": { "noImplicitAnyLet": "off" },
-          "correctness": { "useUniqueElementIds": "warn" }
-        }
-      }
-    },
-    {
-      "includes": ["**/__tests__/**"],
-      "linter": {
-        "rules": { "correctness": { "useUniqueElementIds": "off" } }
-      }
-    }
-  ]
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true,
+		"defaultBranch": "main"
+	},
+	"files": {
+		"includes": ["packages/**/*", "sample-apps/**/*"]
+	},
+	"assist": { "actions": { "source": { "organizeImports": "off" } } },
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "space"
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"style": {
+				"noNonNullAssertion": "warn",
+				"useAsConstAssertion": "error",
+				"useDefaultParameterLast": "warn",
+				"useEnumInitializers": "error",
+				"useImportType": "warn",
+				"useSelfClosingElements": "warn",
+				"useSingleVarDeclarator": "warn",
+				"noUnusedTemplateLiteral": "warn",
+				"noInferrableTypes": "error",
+				"noUselessElse": "off"
+			},
+			"complexity": { "noForEach": "off" },
+			"a11y": {
+				"noAutofocus": "off",
+				"noLabelWithoutControl": "warn",
+				"noNoninteractiveElementToInteractiveRole": "off",
+				"noStaticElementInteractions": "off",
+				"useFocusableInteractive": "off",
+				"noNoninteractiveTabindex": "off",
+				"useAriaPropsSupportedByRole": "warn",
+				"useKeyWithClickEvents": "warn",
+				"noSvgWithoutTitle": "off",
+				"useAriaPropsForRole": "warn",
+				"useSemanticElements": "off",
+				"useAltText": "warn",
+				"useValidAriaProps": "warn"
+			},
+			"correctness": {
+				"noConstantCondition": "warn",
+				"noConstructorReturn": "warn",
+				"noUnusedImports": "error",
+				"useParseIntRadix": "off",
+				"useExhaustiveDependencies": {
+					"level": "warn",
+					"options": {
+						"hooks": [
+							{
+								"name": "useIsomorphicLayoutEffect",
+								"closureIndex": 0,
+								"dependenciesIndex": 1
+							},
+							{ "name": "useControlled", "stableResult": [1] }
+						]
+					}
+				}
+			},
+			"suspicious": {
+				"noAssignInExpressions": "warn",
+				"noArrayIndexKey": "warn",
+				"noDoubleEquals": "warn",
+				"noExplicitAny": "warn",
+				"noImplicitAnyLet": "warn",
+				"noShadowRestrictedNames": "warn",
+				"noGlobalIsNan": "off",
+				"useIterableCallbackReturn": "warn",
+				"noSparseArray": "warn"
+			}
+		}
+	},
+	"css": {
+		"formatter": { "lineWidth": 200 },
+		"parser": { "cssModules": true }
+	},
+	"overrides": [
+		{
+			"includes": ["**/__tests__/**"],
+			"linter": {
+				"rules": {
+					"a11y": { "useButtonType": "off" },
+					"complexity": { "noForEach": "off" },
+					"suspicious": { "noImplicitAnyLet": "off" },
+					"correctness": { "useUniqueElementIds": "warn" }
+				}
+			}
+		},
+		{
+			"includes": ["**/__tests__/**"],
+			"linter": {
+				"rules": { "correctness": { "useUniqueElementIds": "off" } }
+			}
+		}
+	]
 }

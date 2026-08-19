@@ -12,9 +12,9 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
-    "@salt-ds/core": "1.54.1",
-    "@vuu-ui/vuu-ui-controls": "3.3.1",
-    "@vuu-ui/vuu-utils": "3.3.1"
+    "@salt-ds/core": "1.67.0",
+    "@vuu-ui/vuu-ui-controls": "3.2.0",
+    "@vuu-ui/vuu-utils": "3.2.0"
   },
   "devDependencies": {
     "@vuu-ui/vuu-data-types": "3.3.1",

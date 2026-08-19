@@ -24,8 +24,6 @@
   },
   "dependencies": {
     "@fontsource/open-sans": "^4.5.13",
-    "@salt-ds/core": "1.54.1",
-    "@salt-ds/theme": "1.37.0",
     "@vuu-ui/vuu-datatable": "3.3.1",
     "@vuu-ui/vuu-icons": "3.3.1",
     "@vuu-ui/vuu-layout": "3.3.1",
@@ -33,6 +31,8 @@
     "@vuu-ui/vuu-theme": "3.3.1",
     "@vuu-ui/vuu-ui-controls": "3.3.1",
     "@vuu-ui/vuu-utils": "3.3.1",
+    "@salt-ds/core": "1.67.0",
+    "@salt-ds/theme": "1.43.0",
     "symlink-dir": "^6.0.5",
     "watcher": "2.3.1"
   },

@@ -1,13 +1,14 @@
 import { useViewContext } from "@vuu-ui/vuu-layout";
-import {
+import type {
   DataSource,
   DataSourceConfig,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import { useCallback, useMemo, useState } from "react";
 import { useNotifications } from "@vuu-ui/vuu-notifications";
-import { buildColumnMap, ColumnMap, useData } from "@vuu-ui/vuu-utils";
-import { VuuRpcServiceRequest } from "@vuu-ui/vuu-protocol-types";
+import { buildColumnMap, type ColumnMap } from "@vuu-ui/vuu-utils";
+import { useData } from "@vuu-ui/core";
+import type { VuuRpcServiceRequest } from "@vuu-ui/vuu-protocol-types";
 import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
 
 export type basketDataSourceKey =

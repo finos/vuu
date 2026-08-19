@@ -5,8 +5,8 @@
   "main": "src/index.ts",
   "author": "heswell",
   "license": "Apache-2.0",
+  "type": "module",
   "scripts": {
-    "build:dev": "node ../../scripts/run-build.mjs",
     "build": "node ../../scripts/run-build-rslib.ts",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
@@ -16,7 +16,7 @@
     "@vuu-ui/vuu-table-types": "3.3.1"
   },
   "dependencies": {
-    "@salt-ds/core": "1.54.1",
+    "@salt-ds/core": "1.67.0",
     "@salt-ds/styles": "0.2.1",
     "@salt-ds/window": "0.1.1",
     "@vuu-ui/vuu-context-menu": "3.3.1",
@@ -28,6 +28,8 @@
     "@vuu-ui/vuu-table": "3.3.1",
     "@vuu-ui/vuu-ui-controls": "3.3.1",
     "@vuu-ui/vuu-utils": "3.3.1",
+    "@module-federation/enhanced": "2.8.0",
+    "@vuu-ui/core": "3.2.0",
     "html-to-image": "^1.11.11"
   },
   "peerDependencies": {

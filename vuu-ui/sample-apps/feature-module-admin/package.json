@@ -1,0 +1,54 @@
+{
+  "name": "feature-module-admin",
+  "version": "1.0.0",
+  "description": "Vuu Module Admin Module",
+  "scripts": {
+    "build": "node ../../scripts/build-remote-module.ts",
+    "dev": "rsbuild dev"
+  },
+  "type": "module",
+  "private": true,
+  "keywords": [],
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "index.ts",
+  "devDependencies": {
+    "@vuu-ui/vuu-data-types": "3.2.0",
+    "@vuu-ui/vuu-table-types": "3.2.0"
+  },
+  "dependencies": {
+    "@vuu-ui/vuu-data-editing": "3.2.0",
+    "@vuu-ui/vuu-data-react": "3.2.0",
+    "@vuu-ui/vuu-table": "3.2.0",
+    "@vuu-ui/vuu-utils": "3.2.0",
+    "@vuu-ui/core": "3.2.0"
+  },
+  "peerDependencies": {
+    "clsx": "^2.0.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "vuu": {
+    "featureProps": {
+      "vuuTables": [
+        {
+          "module": "MODULE_DISCOVERY",
+          "table": "modules"
+        }
+      ]
+    },
+    "module-federation": {
+      "exposes": {
+        "./ModuleAdmin": "./src/ModuleAdmin"
+      },
+      "name": "moduleAdmin",
+      "port": 5008
+    }
+  }
+}
