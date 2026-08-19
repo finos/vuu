@@ -1,12 +1,9 @@
 {
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-      "declaration": true,
-      "emitDeclarationOnly": true,
-      "noEmit": false
-    },
-    "include": [
-      "packages/*/src",
-    ],
-    "exclude": ["packages/*/src/__tests__/**"],
-  }
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false
+  },
+  "exclude": ["packages/*/src/__tests__/**"]
+}

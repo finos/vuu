@@ -1,17 +1,20 @@
 import { SaltProviderNext } from "@salt-ds/core";
+import { VuuLoginHandler } from "@vuu-ui/core";
 import { LoginPanel } from "@vuu-ui/vuu-shell";
 import { createRoot } from "react-dom/client";
-import { VuuAuthProvider } from "@vuu-ui/vuu-data-remote";
 
 import "@vuu-ui/vuu-icons/index.css";
 import "@vuu-ui/vuu-theme/index.css";
 import "./login.css";
 
-import { Accent } from "@salt-ds/core";
+import type { Accent } from "@salt-ds/core";
 
 const vuuPurple = "purple" as Accent;
 
-const authProvider = new VuuAuthProvider("/api/authn");
+const authHandler = new VuuLoginHandler({
+  ...(await vuuConfig),
+  redirectUrl: "/index.html",
+});
 
 const container = document.getElementById("root");
 if (container) {
@@ -23,7 +26,7 @@ if (container) {
       theme="vuu-theme"
       density="high"
     >
-      <LoginPanel onSubmit={authProvider.login} />
+      <LoginPanel onSubmit={authHandler.login} />
     </SaltProviderNext>,
   );
 }

@@ -9,17 +9,25 @@ import {
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { VuuTable } from "@vuu-ui/vuu-protocol-types";
+import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import type { TableProps } from "@vuu-ui/vuu-table";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
-import { HTMLAttributes, SyntheticEvent, useCallback, useState } from "react";
+import {
+  type HTMLAttributes,
+  type SyntheticEvent,
+  useCallback,
+  useState,
+} from "react";
 import { useEditCalculatedColumn } from "../calculated-column/useEditCalculatedColumn";
-import { ColumnPicker, ColumnPickerProps } from "../column-picker/ColumnPicker";
+import {
+  ColumnPicker,
+  type ColumnPickerProps,
+} from "../column-picker/ColumnPicker";
 import { ColumnSettingsPanel } from "../column-settings-panel/ColumnSettingsPanel";
 import {
   TableSettingsPanel,
-  TableSettingsPanelProps,
+  type TableSettingsPanelProps,
 } from "../table-settings-panel/TableSettingsPanel";
 
 import css from "./TabbedTableConfigPanel.css";
@@ -34,10 +42,10 @@ type TabName = keyof typeof TabLabels;
 const classBase = "vuuTabbedTableConfigPanel";
 export interface TabbedTableConfigPanelProps
   extends
-    ColumnPickerProps,
-    Pick<TableSettingsPanelProps, "onDisplayAttributeChange">,
-    Pick<TableProps, "config">,
-    HTMLAttributes<HTMLDivElement> {
+  ColumnPickerProps,
+  Pick<TableSettingsPanelProps, "onDisplayAttributeChange">,
+  Pick<TableProps, "config">,
+  HTMLAttributes<HTMLDivElement> {
   allowCreateCalculatedColumn?: boolean;
   selectedTab?: TabName;
   vuuTable?: VuuTable;
