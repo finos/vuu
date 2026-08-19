@@ -1,5 +1,5 @@
 {
-  "name": "@heswell/grid-layout",
+  "name": "@vuu-ui/grid-layout",
   "version": "3.5.10",
   "description": "VUU Layout Components",
   "main": "src/index.ts",
@@ -22,5 +22,6 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "type": "module"
 }

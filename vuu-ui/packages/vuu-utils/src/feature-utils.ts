@@ -1,13 +1,16 @@
-import type { TableSchema } from "@vuu-ui/vuu-data-types";
+import type {
+  RemoteModuleConnection,
+  TableSchema,
+} from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import type { ListOption } from "@vuu-ui/vuu-table-types";
-import { partition } from "./array-utils";
-import { wordify } from "./text-utils";
 import React, { type ReactElement } from "react";
+import { partition } from "./array-utils";
 import { getLayoutComponent } from "./component-registry";
+import { wordify } from "./text-utils";
 
 export type PathMap = {
-  [key: string]: Pick<DynamicFeatureDescriptor, "css" | "url">;
+  [key: string]: string;
 };
 export type Environment = "development" | "production";
 export const env = process.env.NODE_ENV as Environment;
@@ -28,12 +31,11 @@ export interface DynamicFeatureProps<P extends object | undefined = object> {
   ViewProps?: ViewConfig;
   css?: string;
   height?: number;
+  mfComponent: string;
+  mfScope: string;
+  mfUrl: string;
+  vuu?: RemoteModuleConnection;
   title?: string;
-  /** 
-   The url of javascript bundle to lazily load. Bundle must provide a default export
-   and that export must be a React component.
-   */
-  url: string;
   width?: number;
 }
 
@@ -60,26 +62,34 @@ export const importFeature = (url: string) => featureImporter(url);
 export { importFeatureByUrl };
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   const vuuConfig: Promise<VuuConfig>;
 }
 
 export interface DynamicFeatureDescriptor {
-  /**
-   * url for css file for feature
-   */
-  css?: string;
+  description: string;
   featureProps?: {
     vuuTables?: "*" | VuuTable[];
   };
-  leftNavLocation: "vuu-features" | "vuu-tables";
+  id: string;
+  leftNavLocation?: "vuu-features" | "vuu-tables";
+  location: string;
   name: string;
-  title: string;
   /**
-   * url for javascript bundle to load feature
+   * Module federation - the name of remote component to be imported
    */
-  url: string;
+  mfComponent: string;
+  /**
+   * Module federation - the identifier of remote module
+   */
+  mfScope: string;
+  /**
+   * Module federation - the url of remote module manifest
+   */
+  mfUrl: string;
+  path: string;
+  title: string;
+  vuu?: RemoteModuleConnection;
+  version: number;
   viewProps?: ViewConfig;
 }
 
@@ -118,10 +128,11 @@ export function featureFromJson({ type }: { type: string }): ReactElement {
 }
 
 export interface VuuConfig {
-  features: DynamicFeatures;
-  authUrl?: string;
-  websocketUrl: string;
+  authUrl: string;
+  moduleRegistryUrl: string;
+  restUrl: string;
   ssl: boolean;
+  websocketUrl: string;
 }
 
 /**
@@ -130,7 +141,7 @@ export interface VuuConfig {
  * @returns
  */
 export const isCustomFeature = (feature: DynamicFeatureDescriptor) =>
-  feature.leftNavLocation === "vuu-features";
+  (feature.leftNavLocation ?? "vuu-features") === "vuu-features";
 
 export const isWildcardSchema = (
   vuuTables?: "*" | VuuTable[],
@@ -151,9 +162,8 @@ export const hasFilterTableFeatureProps = (
   props.ComponentProps !== null &&
   "tableSchema" in props.ComponentProps;
 
-export const isSameTable = (t1: VuuTable, t2: VuuTable) => {
-  t1.module === t2.module && t1.table == t2.table;
-};
+export const isSameTable = (t1: VuuTable, t2: VuuTable) =>
+  t1.module === t2.module && t1.table === t2.table;
 
 // Sort TableScheas by module
 export const byModule = (schema1: TableSchema, schema2: TableSchema) => {
@@ -287,7 +297,7 @@ export const getCustomAndTableFeatures = (
             },
             {},
           ),
-          ViewProps: viewProps,
+          ...(viewProps === undefined ? {} : { ViewProps: viewProps }),
         });
       }
     } else {

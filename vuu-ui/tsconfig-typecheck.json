@@ -20,8 +20,10 @@
   "include": [
     "packages/*/src",
     "sample-apps/*/src",
+    "portal-examples/*/src",
     "showcase/src",
     "sample-apps/*/index.ts",
+    "portal-examples/*/index.ts",
     "global.d.ts"
   ],
   "exclude": ["**/*test-utils.ts", "**/*.cy.*", "**/*.test.*"]

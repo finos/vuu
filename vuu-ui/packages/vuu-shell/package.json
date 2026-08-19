@@ -6,7 +6,6 @@
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
-    "build:dev": "node ../../scripts/run-build.mjs",
     "build": "node ../../scripts/run-build-rslib.ts",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
@@ -28,12 +27,16 @@
     "@vuu-ui/vuu-table": "3.5.10",
     "@vuu-ui/vuu-ui-controls": "3.5.10",
     "@vuu-ui/vuu-utils": "3.5.10",
-    "html-to-image": "^1.11.11"
+    "html-to-image": "^1.11.11",
+    "@vuu-ui/grid-layout": "3.5.0",
+    "@module-federation/enhanced": "2.8.0",
+    "@vuu-ui/core": "3.5.0"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "type": "module"
 }

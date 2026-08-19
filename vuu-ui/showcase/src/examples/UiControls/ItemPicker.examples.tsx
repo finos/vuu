@@ -1,21 +1,19 @@
 import { getSchema } from "@vuu-ui/vuu-data-test";
-import { ItemDescriptor, ItemPicker } from "@vuu-ui/vuu-ui-controls";
+import { ItemDescriptor, ItemPicker, ItemPickerProps } from "@vuu-ui/vuu-ui-controls";
 import { ItemTypeName } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 
 interface StatefulParentProps {
-  allItems: ItemDescriptor[];
   initialSelectedItems: ItemDescriptor[];
-  itemTypeName: ItemTypeName;
-  maxSelections?: number;
 }
 
-const StatefulParent = ({
+const StatefulParentTemplate = ({
   allItems,
   initialSelectedItems,
   itemTypeName,
+  layout,
   maxSelections,
-}: StatefulParentProps) => {
+}: StatefulParentProps & Pick<ItemPickerProps, 'allItems' | 'layout' | 'itemTypeName' | 'maxSelections'>) => {
   const [selectedItems, setSelectedItems] = useState(initialSelectedItems);
 
   const handleSelectedItemsChange = useCallback(
@@ -44,6 +42,7 @@ const StatefulParent = ({
   return (
     <ItemPicker
       allItems={allItems}
+      layout={layout}
       selectedItems={selectedItems}
       itemTypeName={itemTypeName}
       onSelectedItemsChange={handleSelectedItemsChange}
@@ -55,7 +54,7 @@ const StatefulParent = ({
 
 export const EmptyItemPicker = () => {
   return (
-    <StatefulParent
+    <StatefulParentTemplate
       allItems={[]}
       initialSelectedItems={[]}
       itemTypeName="pay day"
@@ -63,7 +62,7 @@ export const EmptyItemPicker = () => {
   );
 };
 
-export const DefaultItemPicker = () => {
+const ItemPickerTemplate = ({ layout }: Partial<ItemPickerProps>) => {
   const allItems: ItemDescriptor[] = useMemo(
     () => [
       { name: "account" },
@@ -91,13 +90,18 @@ export const DefaultItemPicker = () => {
   const selectedItems = useMemo(() => allItems.slice(0, 10), [allItems]);
 
   return (
-    <StatefulParent
+    <StatefulParentTemplate
       allItems={allItems}
       initialSelectedItems={selectedItems}
+      layout={layout}
       itemTypeName="column"
     />
   );
 };
+
+export const DefaultItemPicker = () => <ItemPickerTemplate />
+
+export const AvailableFirstItemPicker = () => <ItemPickerTemplate layout="v-available-selected" />
 
 export const ManyItemsItemPicker = () => {
   const schema = getSchema("TwoHundredColumns");
@@ -111,7 +115,7 @@ export const ManyItemsItemPicker = () => {
   const selectedItems = useMemo(() => allItems.slice(0, 10), [allItems]);
 
   return (
-    <StatefulParent
+    <StatefulParentTemplate
       allItems={allItems}
       initialSelectedItems={selectedItems}
       itemTypeName="column"
@@ -143,7 +147,7 @@ export const CalculatedColumnPicker = () => {
   const selectedItems = useMemo(() => allItems.slice(0, 3), [allItems]);
 
   return (
-    <StatefulParent
+    <StatefulParentTemplate
       allItems={allItems}
       initialSelectedItems={selectedItems}
       itemTypeName="column"
@@ -172,7 +176,7 @@ export const SpecialItemsWithMaxSelection = () => {
   };
 
   return (
-    <StatefulParent
+    <StatefulParentTemplate
       allItems={allItems}
       initialSelectedItems={selectedItems}
       itemTypeName={itemTypeName}
@@ -195,7 +199,7 @@ export const MisconfiguredMaxSelection = () => {
   const selectedItems = useMemo(() => allItems, [allItems]);
 
   return (
-    <StatefulParent
+    <StatefulParentTemplate
       allItems={allItems}
       initialSelectedItems={selectedItems}
       itemTypeName={"column"}

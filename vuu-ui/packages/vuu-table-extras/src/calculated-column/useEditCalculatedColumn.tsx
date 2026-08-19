@@ -1,6 +1,6 @@
+import { useModal } from "@vuu-ui/core";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { useModal } from "@vuu-ui/vuu-ui-controls";
 import { useCallback, useRef } from "react";
 import { ColumnModel } from "../column-picker/ColumnModel";
 import { CalculatedColumnPanel } from "./CalculatedColumnPanel";

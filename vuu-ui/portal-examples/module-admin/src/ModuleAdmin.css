@@ -1,0 +1,1143 @@
+.vuuModuleAdmin {
+  --module-admin-bg: var(--salt-container-secondary-background, #f5f6f8);
+  --module-admin-surface: var(--salt-container-primary-background, #fff);
+  --module-admin-border: var(--salt-separable-primary-borderColor, #d9dce1);
+  --module-admin-border-weak: var(--salt-separable-tertiary-borderColor, #eceef1);
+  --module-admin-fg: var(--salt-content-primary-foreground, #15171b);
+  --module-admin-fg-secondary: var(--salt-content-secondary-foreground, #61656e);
+  --module-admin-accent: var(--salt-accent-background, #6c2bd9);
+  --module-admin-accent-fg: var(--salt-accent-foreground, #6c2bd9);
+  --module-admin-accent-weak: var(--salt-palette-accent-weakest, var(--salt-palette-categorical-9-weakest, #efe8ff));
+  --module-admin-warning-bg: var(--salt-status-warning-background, #fff1e0);
+  --module-admin-warning-border: var(--salt-status-warning-borderColor, #e38a2e);
+  --module-admin-warning-fg: var(--salt-status-warning-foreground-informative, var(--salt-status-warning-foreground, #8a4b00));
+  --module-admin-error-fg: var(--salt-status-error-foreground-informative, var(--salt-status-error-foreground, #c4232f));
+  --module-admin-success-fg: var(--salt-status-success-foreground-informative, var(--salt-status-success-foreground, #1d7c45));
+  --module-admin-mono: var(--salt-typography-fontFamily-code, "PT Mono", ui-monospace, monospace);
+  --module-admin-radius: var(--salt-palette-corner, 6px);
+  --module-admin-panel-width: 600px;
+
+  background: var(--module-admin-bg);
+  color: var(--module-admin-fg);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--salt-text-fontFamily);
+  font-size: var(--salt-text-fontSize);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.vuuModuleAdmin code,
+.vuuModuleAdmin-mono input,
+.vuuModuleForm-mono input,
+.vuuModuleForm-mono .saltDropdown-content {
+  font-family: var(--module-admin-mono);
+}
+
+.vuuModuleAdmin-spacer,
+.vuuModulePanel-spacer,
+.vuuModuleCreate-spacer,
+.vuuModuleDialog-spacer {
+  flex: 1 1 auto;
+}
+
+/* ---------------------------------------------------------------- header */
+
+.vuuModuleAdmin-appHeader {
+  align-items: center;
+  background: var(--module-admin-surface);
+  border-bottom: 1px solid var(--module-admin-border);
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--salt-spacing-200, 12px);
+  min-height: 56px;
+  padding: 0 var(--salt-spacing-400, 24px);
+}
+
+.vuuModuleAdmin-brandIcon {
+  align-items: center;
+  background: var(--module-admin-accent);
+  border-radius: var(--module-admin-radius);
+  color: var(--salt-content-bold-foreground, #fff);
+  display: inline-flex;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+.vuuModuleAdmin-brandIcon .saltIcon {
+  --saltIcon-color: currentColor;
+}
+
+.vuuModuleAdmin-search {
+  max-width: 420px;
+  width: 36%;
+}
+
+/* ------------------------------------------------------------- workspace */
+
+.vuuModuleAdmin-workspace {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.vuuModuleAdmin-main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--salt-spacing-200, 12px);
+  min-width: 0;
+  overflow: auto;
+  padding: var(--salt-spacing-400, 24px);
+}
+
+.vuuModuleAdmin-pageHeader {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--salt-spacing-200, 12px);
+}
+
+.vuuModuleAdmin-title,
+.vuuModuleCreate-title {
+  font-size: 24px;
+  font-weight: var(--salt-text-h1-fontWeight, 600);
+  line-height: 1.25;
+  margin: 0 0 var(--salt-spacing-50, 4px);
+}
+
+.vuuModuleAdmin-loading {
+  display: flex;
+  justify-content: center;
+  padding: 64px;
+}
+
+/* ------------------------------------------------------------------ KPIs */
+
+.vuuModuleAdmin-kpis {
+  display: grid;
+  gap: var(--salt-spacing-200, 12px);
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.vuuModuleAdmin-kpi {
+  align-items: center;
+  background: var(--module-admin-surface);
+  border: 1px solid var(--module-admin-border);
+  border-radius: var(--module-admin-radius);
+  color: inherit;
+  display: flex;
+  font: inherit;
+  gap: var(--salt-spacing-150, 10px);
+  padding: var(--salt-spacing-150, 10px) var(--salt-spacing-200, 12px);
+  text-align: left;
+}
+button.vuuModuleAdmin-kpi {
+  cursor: pointer;
+}
+button.vuuModuleAdmin-kpi:hover {
+  border-color: var(--module-admin-warning-border);
+}
+
+.vuuModuleAdmin-kpiIcon {
+  align-items: center;
+  background: var(--module-admin-bg);
+  border-radius: var(--module-admin-radius);
+  color: var(--module-admin-fg);
+  display: inline-flex;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+.vuuModuleAdmin-kpi-warning .vuuModuleAdmin-kpiIcon {
+  background: var(--module-admin-warning-bg);
+  color: var(--module-admin-warning-fg);
+}
+.vuuModuleAdmin-kpiIcon .saltIcon {
+  --saltIcon-color: currentColor;
+}
+
+.vuuModuleAdmin-kpiText {
+  display: flex;
+  flex-direction: column;
+}
+
+.vuuModuleAdmin-kpiValue {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.vuuModuleAdmin-kpiAside {
+  color: var(--module-admin-fg-secondary);
+  font-size: var(--salt-text-fontSize);
+  font-weight: normal;
+}
+
+/* --------------------------------------------------------------- toolbar */
+
+.vuuModuleAdmin-toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-200, 12px);
+}
+
+.vuuModuleAdmin-toolbarSpacer {
+  flex: 1 1 0;
+}
+
+.vuuModuleAdmin-count {
+  color: inherit;
+  margin-left: 4px;
+  opacity: 0.7;
+}
+
+.vuuModuleAdmin-checkedNote {
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+}
+
+.vuuModuleAdmin-select {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--salt-spacing-100, 8px);
+  white-space: nowrap;
+}
+.vuuModuleAdmin-select .saltDropdown {
+  min-width: 140px;
+}
+
+/* ---------------------------------------------------------- groups/grid */
+
+.vuuModuleAdmin-body {
+  min-height: 0;
+}
+
+.vuuModuleAdmin-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-300, 16px);
+}
+
+.vuuModuleAdmin-groupHeading {
+  align-items: baseline;
+  display: flex;
+  font-size: 15px;
+  font-weight: 600;
+  gap: var(--salt-spacing-100, 8px);
+  margin: 0 0 var(--salt-spacing-150, 10px);
+}
+
+.vuuModuleAdmin-grid {
+  display: grid;
+  gap: var(--salt-spacing-300, 16px);
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+}
+
+/* ------------------------------------------------------------- nav icon */
+
+.vuuModuleAdmin-navIcon {
+  align-items: center;
+  background: var(--module-category-bg);
+  border-radius: var(--module-admin-radius);
+  color: var(--module-category-fg);
+  display: inline-flex;
+  flex: 0 0 auto;
+  justify-content: center;
+}
+.vuuModuleAdmin-navIcon-small {
+  height: 24px;
+  width: 24px;
+}
+.vuuModuleAdmin-navIcon-medium {
+  height: 40px;
+  width: 40px;
+}
+.vuuModuleAdmin-navIcon-large {
+  height: 56px;
+  width: 56px;
+}
+
+.vuuModuleAdmin-navIconGlyph {
+  background-color: currentColor;
+  height: 60%;
+  mask: var(--module-icon) center / contain no-repeat;
+  width: 60%;
+}
+
+.vuuModuleAdmin-navIconLetter {
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------- status, tags */
+
+.vuuModuleAdmin-status {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 6px;
+  white-space: nowrap;
+}
+.vuuModuleAdmin-status-disabled {
+  color: var(--module-admin-fg-secondary);
+}
+
+.vuuModuleAdmin-tag {
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+}
+.vuuModuleAdmin-tag .saltIcon {
+  --saltIcon-size: 12px;
+}
+.vuuModuleAdmin-tag-warning {
+  background: var(--module-admin-warning-bg);
+  border-color: var(--module-admin-warning-border);
+  color: var(--module-admin-warning-fg);
+}
+
+.vuuModuleAdmin-host {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+}
+
+.vuuModuleAdmin-menuLocation {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.vuuModuleAdmin-chevron {
+  color: var(--module-admin-fg-secondary);
+}
+
+.vuuModuleAdmin-issue {
+  align-items: flex-start;
+  background: var(--module-admin-warning-bg);
+  border-left: 3px solid var(--module-admin-warning-border);
+  border-radius: 4px;
+  color: var(--module-admin-warning-fg);
+  display: flex;
+  gap: var(--salt-spacing-100, 8px);
+  padding: var(--salt-spacing-100, 8px) var(--salt-spacing-150, 10px);
+}
+.vuuModuleAdmin-issue .saltIcon {
+  --saltIcon-color: currentColor;
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.vuuModuleAdmin-facts {
+  display: grid;
+  gap: 6px var(--salt-spacing-200, 12px);
+  align-content: start;
+  grid-template-columns: max-content minmax(0, 1fr);
+  margin: 0;
+}
+.vuuModuleAdmin-fact {
+  display: contents;
+}
+.vuuModuleAdmin-facts dt {
+  color: var(--module-admin-fg-secondary);
+}
+.vuuModuleAdmin-facts-card dt {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 20px;
+  text-transform: uppercase;
+}
+.vuuModuleAdmin-facts-panel {
+  grid-template-columns: 180px minmax(0, 1fr);
+}
+.vuuModuleAdmin-facts dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.vuuModuleAdmin-sectionHeading {
+  align-items: center;
+  color: var(--module-admin-fg-secondary);
+  display: flex;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 6px;
+  letter-spacing: 0.06em;
+  margin: 0 0 var(--salt-spacing-150, 10px);
+  text-transform: uppercase;
+}
+
+.vuuModuleAdmin-errorCount {
+  align-items: center;
+  border: 1px solid var(--module-admin-error-fg);
+  border-radius: 4px;
+  color: var(--module-admin-error-fg);
+  display: inline-flex;
+  gap: 4px;
+  padding: 2px 6px;
+}
+.vuuModuleAdmin-errorCount .saltIcon {
+  --saltIcon-color: currentColor;
+}
+
+/* ------------------------------------------------------------------ card */
+
+.vuuModuleCard {
+  background: var(--module-admin-surface);
+  border: 1px solid var(--module-admin-border);
+  border-radius: calc(var(--module-admin-radius) + 2px);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  outline: none;
+  overflow: hidden;
+  transition:
+    border-color 0.1s,
+    box-shadow 0.1s;
+}
+.vuuModuleCard:hover {
+  border-color: var(--salt-selectable-borderColor-hover, #a2a6ae);
+}
+.vuuModuleCard:focus-visible {
+  outline: 2px solid var(--salt-focused-outlineColor, var(--module-admin-accent));
+  outline-offset: 2px;
+}
+.vuuModuleCard-selected,
+.vuuModuleCard-selected:hover {
+  border-color: var(--module-admin-accent);
+  box-shadow: 0 0 0 1px var(--module-admin-accent);
+}
+.vuuModuleCard-disabled .vuuModuleCard-header,
+.vuuModuleCard-disabled .vuuModuleCard-description,
+.vuuModuleCard-disabled .vuuModuleAdmin-facts {
+  opacity: 0.6;
+}
+
+.vuuModuleCard > * {
+  padding: var(--salt-spacing-200, 12px) var(--salt-spacing-250, 16px);
+}
+
+.vuuModuleCard-header {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--salt-spacing-150, 10px);
+  padding-bottom: 0;
+}
+.vuuModuleCard-titles {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+.vuuModuleCard-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0;
+}
+.vuuModuleCard-name {
+  color: var(--module-admin-fg-secondary);
+}
+
+.vuuModuleCard-description {
+  border-bottom: 1px solid var(--module-admin-border-weak);
+  display: block;
+}
+
+.vuuModuleCard-issues {
+  border-bottom: 1px solid var(--module-admin-border-weak);
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-100, 8px);
+}
+
+.vuuModuleCard .vuuModuleAdmin-facts {
+  flex: 1 1 auto;
+}
+
+.vuuModuleCard-footer {
+  align-items: center;
+  border-top: 1px solid var(--module-admin-border-weak);
+  display: flex;
+  gap: var(--salt-spacing-100, 8px);
+  padding-bottom: var(--salt-spacing-100, 8px);
+  padding-top: var(--salt-spacing-100, 8px);
+}
+.vuuModuleCard-tags {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.vuuModuleCard-actions {
+  display: flex;
+}
+
+.vuuModuleCard-children {
+  align-items: center;
+  background: var(--module-admin-bg);
+  border-top: 1px dashed var(--module-admin-border);
+  display: flex;
+  gap: 6px;
+}
+
+.vuuModuleCard-new {
+  align-items: center;
+  background: transparent;
+  border: 1px dashed var(--module-admin-border);
+  border-radius: calc(var(--module-admin-radius) + 2px);
+  color: var(--module-admin-fg);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font: inherit;
+  gap: var(--salt-spacing-100, 8px);
+  justify-content: center;
+  min-height: 200px;
+}
+.vuuModuleCard-new:hover {
+  background: var(--module-admin-surface);
+  border-color: var(--module-admin-accent);
+}
+.vuuModuleCard-newIcon {
+  align-items: center;
+  background: var(--module-admin-accent-weak);
+  border-radius: 50%;
+  display: inline-flex;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+
+/* ------------------------------------------------------------ tree view */
+
+.vuuModuleTree {
+  align-items: flex-start;
+  display: grid;
+  gap: var(--salt-spacing-300, 16px);
+  grid-template-columns: minmax(0, 1fr) 280px;
+}
+
+.vuuModuleTree-main {
+  background: var(--module-admin-surface);
+  border: 1px solid var(--module-admin-border);
+  border-radius: var(--module-admin-radius);
+  padding: var(--salt-spacing-200, 12px);
+}
+
+.vuuModuleTree-note {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  margin-bottom: var(--salt-spacing-150, 10px);
+}
+
+.vuuModuleTree-sections,
+.vuuModuleTree-sections ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vuuModuleTree-sectionName {
+  border-bottom: 1px solid var(--module-admin-border-weak);
+  font-weight: 600;
+  padding: var(--salt-spacing-150, 10px) var(--salt-spacing-100, 8px) 6px;
+}
+
+.vuuModuleTree-row {
+  align-items: center;
+  border-radius: 4px;
+  display: flex;
+  gap: var(--salt-spacing-150, 10px);
+  padding: 2px var(--salt-spacing-100, 8px) 2px var(--salt-spacing-300, 20px);
+}
+.vuuModuleTree-row-child {
+  padding-left: 52px;
+}
+.vuuModuleTree-row:hover {
+  background: var(--salt-selectable-background-hover, var(--module-admin-bg));
+}
+.vuuModuleTree-row-selected {
+  background: var(--module-admin-accent-weak);
+}
+.vuuModuleTree-row-disabled .vuuModuleTree-select {
+  opacity: 0.6;
+}
+
+.vuuModuleTree-select {
+  align-items: center;
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex: 1 1 auto;
+  font: inherit;
+  gap: var(--salt-spacing-100, 8px);
+  min-width: 0;
+  padding: 6px 0;
+  text-align: left;
+}
+.vuuModuleTree-label {
+  flex: 0 1 auto;
+  font-weight: 500;
+}
+.vuuModuleTree-path {
+  color: var(--module-admin-fg-secondary);
+  flex: 1 1 auto;
+}
+
+.vuuModuleTree-preview {
+  background: var(--module-admin-surface);
+  border: 1px solid var(--module-admin-border);
+  border-radius: var(--module-admin-radius);
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-100, 8px);
+  padding: var(--salt-spacing-200, 12px);
+  position: sticky;
+  top: 0;
+}
+.vuuModuleTree-previewSection {
+  font-weight: 600;
+  padding: 6px 0 2px;
+}
+.vuuModuleTree-previewItem {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-100, 8px);
+  padding: 3px 0 3px var(--salt-spacing-150, 10px);
+}
+
+/* ----------------------------------------------------------- table view */
+
+.vuuModuleTable {
+  background: var(--module-admin-surface);
+  border: 1px solid var(--module-admin-border);
+  border-collapse: separate;
+  border-radius: var(--module-admin-radius);
+  border-spacing: 0;
+  width: 100%;
+}
+.vuuModuleTable th,
+.vuuModuleTable td {
+  border-bottom: 1px solid var(--module-admin-border-weak);
+  padding: 6px var(--salt-spacing-150, 10px);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.vuuModuleTable thead th {
+  color: var(--module-admin-fg-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.vuuModuleTable tbody tr {
+  cursor: pointer;
+}
+.vuuModuleTable tbody tr:hover {
+  background: var(--salt-selectable-background-hover, var(--module-admin-bg));
+}
+.vuuModuleTable-group th {
+  background: var(--module-admin-bg);
+  cursor: default;
+}
+.vuuModuleTable-selected {
+  background: var(--module-admin-accent-weak);
+}
+.vuuModuleTable-disabled td {
+  color: var(--module-admin-fg-secondary);
+}
+.vuuModuleTable-module {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-100, 8px);
+}
+.vuuModuleTable-module > span:last-child {
+  display: flex;
+  flex-direction: column;
+}
+.vuuModuleTable-module code {
+  color: var(--module-admin-fg-secondary);
+  font-size: 11px;
+}
+
+/* ------------------------------------------------------------ empty */
+
+.vuuModuleAdmin-empty {
+  align-items: center;
+  background: var(--module-admin-surface);
+  border: 1px dashed var(--module-admin-border);
+  border-radius: var(--module-admin-radius);
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-150, 10px);
+  margin: var(--salt-spacing-400, 24px) auto;
+  max-width: 560px;
+  padding: 48px 32px;
+  text-align: center;
+}
+.vuuModuleAdmin-empty h2 {
+  font-size: 18px;
+  margin: 0;
+}
+.vuuModuleAdmin-emptyIcon {
+  align-items: center;
+  background: var(--module-admin-accent-weak);
+  border-radius: 50%;
+  color: var(--module-admin-accent-fg);
+  display: inline-flex;
+  height: 64px;
+  justify-content: center;
+  width: 64px;
+}
+.vuuModuleAdmin-emptySteps {
+  margin: 0;
+  padding-left: 20px;
+  text-align: left;
+}
+
+/* ---------------------------------------------------------------- panel */
+
+.vuuModulePanel {
+  background: var(--module-admin-surface);
+  border-left: 1px solid var(--module-admin-border);
+  display: flex;
+  flex: 0 0 var(--module-admin-panel-width);
+  flex-direction: column;
+  max-width: 50%;
+  min-height: 0;
+}
+
+.vuuModulePanel-header {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--salt-spacing-200, 12px);
+  padding: var(--salt-spacing-300, 20px) var(--salt-spacing-300, 20px) var(--salt-spacing-150, 10px);
+}
+.vuuModulePanel-titles {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+.vuuModulePanel-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+.vuuModulePanel-subtitle {
+  color: var(--module-admin-fg-secondary);
+}
+
+.vuuModulePanel-status {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-200, 12px);
+  padding: 0 var(--salt-spacing-300, 20px) var(--salt-spacing-150, 10px) 88px;
+}
+.vuuModulePanel-reachable {
+  align-items: center;
+  border: 1px solid var(--module-admin-success-fg);
+  border-radius: 4px;
+  color: var(--module-admin-success-fg);
+  display: inline-flex;
+  gap: 4px;
+  padding: 0 6px;
+}
+.vuuModulePanel-reachable .saltIcon {
+  --saltIcon-color: currentColor;
+}
+
+.vuuModulePanel-actions {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-100, 8px);
+  padding: 0 var(--salt-spacing-300, 20px) var(--salt-spacing-150, 10px);
+}
+
+.vuuModulePanel .saltTabs {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.vuuModulePanel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--salt-spacing-300, 20px);
+}
+
+.vuuModulePanel-sections,
+.vuuModulePanel-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-400, 24px);
+}
+
+.vuuModulePanel-check {
+  border: 1px solid var(--module-admin-border);
+  border-radius: var(--module-admin-radius);
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-100, 8px);
+  margin-top: var(--salt-spacing-200, 12px);
+  padding: var(--salt-spacing-150, 10px) var(--salt-spacing-200, 12px);
+}
+.vuuModulePanel-checkItems {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.vuuModulePanel-checkItems li {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-100, 8px);
+}
+.vuuModulePanel-ok {
+  --saltIcon-color: var(--module-admin-success-fg);
+}
+.vuuModulePanel-fail {
+  --saltIcon-color: var(--module-admin-error-fg);
+}
+.vuuModulePanel-checkFooter {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.vuuModulePanel-children {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.vuuModulePanel-dirty {
+  background: var(--module-admin-accent-weak);
+  border-left: 3px solid var(--module-admin-accent);
+  margin: 0 var(--salt-spacing-300, 20px) var(--salt-spacing-150, 10px);
+  padding: 6px var(--salt-spacing-150, 10px);
+}
+.vuuModulePanel-dirtySummary {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+}
+.vuuModulePanel-dirtySummary > .saltText {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vuuModulePanel-diff {
+  display: grid;
+  gap: 4px var(--salt-spacing-200, 12px);
+  grid-template-columns: max-content minmax(0, 1fr);
+  margin: 6px 0 0;
+}
+.vuuModulePanel-diff > div {
+  display: contents;
+}
+.vuuModulePanel-diff dt {
+  color: var(--module-admin-fg-secondary);
+}
+.vuuModulePanel-diff dd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.vuuModulePanel-diff del {
+  color: var(--module-admin-error-fg);
+}
+.vuuModulePanel-diff ins {
+  color: var(--module-admin-success-fg);
+  text-decoration: none;
+}
+
+.vuuModulePanel-sectionToggle {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.vuuModulePanel-footer,
+.vuuModuleCreate-footer {
+  align-items: center;
+  background: var(--module-admin-surface);
+  border-top: 1px solid var(--module-admin-border);
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--salt-spacing-150, 10px);
+  padding: var(--salt-spacing-150, 10px) var(--salt-spacing-300, 20px);
+}
+
+/* ----------------------------------------------------------------- form */
+
+.vuuModuleForm-grid {
+  display: grid;
+  gap: var(--salt-spacing-200, 12px) var(--salt-spacing-300, 20px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.vuuModuleForm-wide {
+  grid-column: 1 / -1;
+}
+
+.vuuModuleForm-label {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+.vuuModuleForm-modified {
+  color: var(--module-admin-accent-fg);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.vuuModuleForm-field-modified .saltInput,
+.vuuModuleForm-field-modified .saltMultilineInput,
+.vuuModuleForm-field-modified .saltDropdown {
+  box-shadow: inset 3px 0 0 var(--module-admin-accent);
+}
+
+.vuuModuleForm-locked {
+  border-bottom-style: dashed;
+}
+
+.vuuModuleForm-success,
+.vuuModuleForm-remote {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.vuuModuleForm-success,
+.vuuModuleForm-remote-ok {
+  color: var(--module-admin-success-fg);
+}
+.vuuModuleForm-remote-warning {
+  color: var(--module-admin-warning-fg);
+}
+.vuuModuleForm-remote-error {
+  color: var(--module-admin-error-fg);
+}
+.vuuModuleForm-success .saltIcon,
+.vuuModuleForm-remote .saltIcon {
+  --saltIcon-color: currentColor;
+}
+
+.vuuModuleForm-icons {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.vuuModuleForm-iconChoice {
+  align-items: center;
+  background: var(--module-admin-surface);
+  border: 1px solid var(--module-admin-border);
+  border-radius: var(--module-admin-radius);
+  cursor: pointer;
+  display: inline-flex;
+  height: 36px;
+  justify-content: center;
+  padding: 0;
+  width: 36px;
+}
+.vuuModuleForm-iconChoice[aria-checked="true"] {
+  border-color: var(--module-admin-accent);
+  box-shadow: 0 0 0 1px var(--module-admin-accent);
+}
+
+/* ---------------------------------------------------------- create page */
+
+.vuuModuleCreate {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.vuuModuleCreate-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--salt-spacing-300, 20px) var(--salt-spacing-400, 32px) var(--salt-spacing-400, 32px);
+}
+
+.vuuModuleCreate-breadcrumb {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  margin-bottom: var(--salt-spacing-100, 8px);
+}
+
+.vuuModuleCreate-layout {
+  align-items: flex-start;
+  display: grid;
+  gap: var(--salt-spacing-300, 20px);
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
+  margin-top: var(--salt-spacing-300, 20px);
+}
+
+.vuuModuleCreate-main,
+.vuuModuleCreate-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-300, 20px);
+}
+.vuuModuleCreate-side {
+  position: sticky;
+  top: 0;
+}
+
+.vuuModuleCreate-card {
+  background: var(--module-admin-surface);
+  border: 1px solid var(--module-admin-border);
+  border-radius: calc(var(--module-admin-radius) + 2px);
+}
+.vuuModuleCreate-cardHeader {
+  align-items: center;
+  border-bottom: 1px solid var(--module-admin-border-weak);
+  display: flex;
+  gap: var(--salt-spacing-150, 10px);
+  padding: var(--salt-spacing-200, 12px) var(--salt-spacing-300, 20px);
+}
+.vuuModuleCreate-cardHeader h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+.vuuModuleCreate-cardBody {
+  padding: var(--salt-spacing-200, 16px) var(--salt-spacing-300, 20px);
+}
+.vuuModuleCreate-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-200, 12px);
+}
+.vuuModuleCreate-stack .vuuModuleForm-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.vuuModuleCreate-step {
+  align-items: center;
+  background: var(--module-admin-accent);
+  border-radius: 50%;
+  color: var(--salt-content-bold-foreground, #fff);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 600;
+  height: 24px;
+  justify-content: center;
+  width: 24px;
+}
+.vuuModuleCreate-step-complete {
+  background: var(--module-admin-success-fg);
+}
+.vuuModuleCreate-step-error {
+  background: var(--module-admin-error-fg);
+}
+.vuuModuleCreate-step .saltIcon {
+  --saltIcon-color: currentColor;
+}
+
+.vuuModuleCreate-preview {
+  border: 1px solid var(--module-admin-border);
+  border-radius: var(--module-admin-radius);
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-150, 10px);
+  padding: var(--salt-spacing-200, 12px);
+}
+.vuuModuleCreate-previewHeader {
+  align-items: flex-start;
+  display: flex;
+  gap: var(--salt-spacing-150, 10px);
+}
+.vuuModuleCreate-previewHeader > div {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+.vuuModuleCreate-previewHeader code {
+  color: var(--module-admin-fg-secondary);
+}
+
+.vuuModuleCreate-menu {
+  border: 1px solid var(--module-admin-border);
+  border-radius: var(--module-admin-radius);
+  margin-top: var(--salt-spacing-200, 12px);
+  padding: var(--salt-spacing-100, 8px) 0;
+}
+.vuuModuleCreate-menuTitle {
+  display: block;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 0 var(--salt-spacing-150, 10px) 6px;
+  text-transform: uppercase;
+}
+.vuuModuleCreate-menuSection,
+.vuuModuleCreate-menuItem {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-100, 8px);
+  padding: 5px var(--salt-spacing-150, 10px);
+}
+.vuuModuleCreate-menuSection {
+  font-weight: 600;
+}
+.vuuModuleCreate-menuItem {
+  padding-left: 36px;
+}
+.vuuModuleCreate-menuItem .saltTag {
+  margin-left: auto;
+}
+.vuuModuleCreate-menuItem-new {
+  background: var(--module-admin-accent-weak);
+  box-shadow: inset 3px 0 0 var(--module-admin-accent);
+}
+
+/* -------------------------------------------------------------- dialogs */
+
+.vuuModuleDialog-list {
+  margin: var(--salt-spacing-150, 10px) 0;
+  padding-left: 18px;
+}
+.vuuModuleDialog-children {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: var(--salt-spacing-200, 12px);
+}
+.vuuModuleDialog-confirm {
+  margin-top: var(--salt-spacing-150, 10px);
+}
+
+/* ------------------------------------------------------------ responsive */
+
+@media (max-width: 1100px) {
+  .vuuModuleCreate-layout,
+  .vuuModuleTree {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .vuuModuleCreate-side {
+    position: static;
+  }
+}

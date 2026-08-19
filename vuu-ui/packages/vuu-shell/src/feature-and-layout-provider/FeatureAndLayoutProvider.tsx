@@ -44,8 +44,7 @@ const LayoutContext = createContext<LayoutContextProps>({
   systemLayouts: NO_SYSTEMLAYOUTS,
 });
 
-export interface FeatureAndLayoutProviderProps
-  extends Partial<FeatureContextProps> {
+export interface FeatureAndLayoutProviderProps extends Partial<FeatureContextProps> {
   children: ReactNode;
   dynamicFeatures?: DynamicFeatureDescriptor[];
   staticFeatures?: StaticFeatureDescriptor[];

@@ -3,12 +3,12 @@ import {
   type SegmentedButtonGroupProps,
 } from "@salt-ds/core";
 import {
-  DataItemEditControlProps,
+  type DataItemEditControlProps,
   getDataItemEditControl,
 } from "@vuu-ui/vuu-data-react";
 import cx from "clsx";
-import { ForwardedRef, forwardRef, useMemo } from "react";
-import { ColumnFilterHookProps, useColumnFilter } from "./useColumnFilter";
+import { type ForwardedRef, forwardRef, useMemo } from "react";
+import { type ColumnFilterHookProps, useColumnFilter } from "./useColumnFilter";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 

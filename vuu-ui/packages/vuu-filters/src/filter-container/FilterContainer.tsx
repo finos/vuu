@@ -14,12 +14,15 @@ import {
   useFilterContext,
   type ColumnFilterContainerHookProps,
 } from "./useFilterContainer";
-import {
+import type {
   ColumnFilterChangeHandler,
   ColumnFilterCommitHandler,
   ColumnFilterValue,
 } from "@vuu-ui/vuu-filter-types";
-import { ColumnFilter, ColumnFilterProps } from "../column-filter/ColumnFilter";
+import {
+  ColumnFilter,
+  type ColumnFilterProps,
+} from "../column-filter/ColumnFilter";
 import {
   filterDescriptorHasFilter,
   isNullFilter,
@@ -46,15 +49,14 @@ const notEmpty = (value: ColumnFilterValue) =>
   Array.isArray(value) ? value[0] !== "" && value[1] !== "" : value !== "";
 
 export interface FilterContainerProps
-  extends HTMLAttributes<HTMLDivElement>, ColumnFilterContainerHookProps {
+  extends HTMLAttributes<HTMLDivElement>,
+    ColumnFilterContainerHookProps {
   children: ReactNode;
   filterProviderKey?: string;
 }
 
-export interface FilterContainerColumnFilterProps extends Omit<
-  ColumnFilterProps,
-  "defaultValue" | "onCommit" | "value"
-> {
+export interface FilterContainerColumnFilterProps
+  extends Omit<ColumnFilterProps, "defaultValue" | "onCommit" | "value"> {
   defaultValue?: ColumnFilterValue;
   /**
    * See ColumnFilter pattern. Defaults to the pattern configured for the
@@ -156,7 +158,7 @@ export const FilterContainerColumnFilter = ({
     // We only want this to run when the filter id changes, not when
     // filter instance changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [column, currentFilter]);
+  }, [column, currentFilter, operator]);
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
     (column, op, value, extendedFilterOptions) => {

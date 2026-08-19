@@ -1,11 +1,12 @@
-import {
+import type {
   DataSourceCallbackMessage,
   VuuUIMessageIn,
   VuuUIMessageOut,
   WebSocketProtocol,
   WithRequestId,
 } from "@vuu-ui/vuu-data-types";
-import {
+import type {
+  VuuLoginSuccessResponse,
   VuuRpcMenuRequest,
   VuuRpcServiceRequest,
 } from "@vuu-ui/vuu-protocol-types";
@@ -28,7 +29,7 @@ async function connectToServer(
   url: string,
   protocols: WebSocketProtocol,
   token: string,
-): Promise<string | undefined> {
+): Promise<(VuuLoginSuccessResponse & { sessionId: string }) | undefined> {
   if (webSocketConnection === undefined && serverProxy === undefined) {
     webSocketConnection = new WebSocketConnection({
       callback: (msg) => {
@@ -65,12 +66,15 @@ const handleMessageFromClient = async ({
   switch (message.type) {
     case "connect":
       try {
-        const sessionId = await connectToServer(
+        const loginResponse = await connectToServer(
           message.url,
           message.protocol,
           message.token,
         );
-        postMessage({ type: "connected", sessionId });
+        if (!loginResponse) {
+          throw Error("VUU server did not return a LOGIN_SUCCESS response");
+        }
+        postMessage({ type: "connected", loginResponse });
       } catch (err: unknown) {
         postMessage({ type: "connection-failed", reason: String(err) });
       }

@@ -12,9 +12,7 @@ import {
   DialogContent,
   DialogHeader,
 } from "@salt-ds/core";
-import { LocalDataSourceProvider, simulModule } from "@vuu-ui/vuu-data-test";
-import { Table } from "@vuu-ui/vuu-table";
-import type { TableConfig } from "@vuu-ui/vuu-table-types";
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 
 const mockSchema: TableSchema = {
   columns: [
@@ -418,4 +416,3 @@ export const CsvUploadWithExternalErrorDialog = () => {
     </div>
   );
 };
-

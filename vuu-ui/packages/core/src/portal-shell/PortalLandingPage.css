@@ -1,0 +1,9 @@
+.vuuPortalLandingPage {
+  background: var(--vuuPortalLandingPage-background, var(--salt-container-primary-background));
+  color: var(--vuuPortalLandingPage-color, var(--salt-content-primary-foreground));
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--vuuPortalLandingPage-padding, var(--salt-spacing-300));
+  width: 100%;
+}

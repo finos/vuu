@@ -1,5 +1,8 @@
 .vuuTreeNavPanel {
 
+    display: flex;
+    flex-direction: column;;
+
     .vuuTreeNavPanel-search {
         display: flex;
         flex-basis: 40px;

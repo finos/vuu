@@ -7,7 +7,12 @@
     "defaultBranch": "main"
   },
   "files": {
-    "includes": ["packages/**/*", "sample-apps/**/*"]
+    "includes": [
+      "packages/**/*",
+      "sample-apps/**/*",
+      "showcase/**/*",
+      "portal-examples/**/*"
+    ]
   },
   "assist": { "actions": { "source": { "organizeImports": "off" } } },
   "formatter": {

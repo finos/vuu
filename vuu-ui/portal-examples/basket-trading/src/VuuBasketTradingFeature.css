@@ -1,0 +1,7 @@
+.vuuBasketTradingFeature {
+    --basket-toolbar-height: 75px;
+}
+
+.vuuBasketTradingFeature-stack {
+    flex: 1 1 auto;
+}

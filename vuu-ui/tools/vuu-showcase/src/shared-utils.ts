@@ -27,27 +27,40 @@ export const keyFromPath = (path: string) => {
 
 export type ComponentDescriptor = {
   componentName: string;
-  path: string;
+  kind: "component";
+  moduleName: string;
 };
 
 export type DocumentDescriptor = {
-  name: string;
-  path: string;
+  kind: "document";
+  moduleName: string;
 };
 
 export const isComponentDescriptor = (
   val: unknown,
-): val is ComponentDescriptor =>
-  !!val &&
-  typeof val === "object" &&
-  typeof val["componentName"] === "string" &&
-  typeof val["path"] === "string";
+): val is ComponentDescriptor => {
+  if (!val || typeof val !== "object") {
+    return false;
+  }
+  const descriptor = val as Record<string, unknown>;
+  return (
+    typeof descriptor.componentName === "string" &&
+    descriptor.kind === "component" &&
+    typeof descriptor.moduleName === "string"
+  );
+};
 
-export const isDocumentDescriptor = (val: unknown): val is DocumentDescriptor =>
-  !!val &&
-  typeof val === "object" &&
-  typeof val["path"] === "string" &&
-  val["path"].endsWith("mdx");
+export const isDocumentDescriptor = (
+  val: unknown,
+): val is DocumentDescriptor => {
+  if (!val || typeof val !== "object") {
+    return false;
+  }
+  const descriptor = val as Record<string, unknown>;
+  return (
+    descriptor.kind === "document" && typeof descriptor.moduleName === "string"
+  );
+};
 
 export const getTargetTreeNode = <T = unknown>(
   url: URL,
@@ -76,16 +89,24 @@ export const getTargetTreeNode = <T = unknown>(
 };
 
 export const loadTheme = (themeName: string): Promise<void> =>
-  // The theme module imports the theme css. This works in the Vite dev server
-  // and in the bundled (rsbuild) production build, which emits the css as a
-  // separate chunk, loaded with the theme module.
-  import(`./themes/${themeName}.ts`).then(
-    () => undefined,
-    () =>
+  loadBundledTheme(themeName)
+    .then(() => undefined)
+    .catch(() =>
       importCSS(`/themes/${themeName}.css`).then((styleSheet) => {
-        document.adoptedStyleSheets = [
-          ...document.adoptedStyleSheets,
-          styleSheet,
-        ];
+      document.adoptedStyleSheets = [
+        ...document.adoptedStyleSheets,
+        styleSheet,
+      ];
       }),
-  );
+    );
+
+const loadBundledTheme = (themeName: string): Promise<unknown> => {
+  switch (themeName) {
+    case "salt-theme-next":
+      return import("./themes/salt-theme-next");
+    case "vuu-theme":
+      return import("./themes/vuu-theme");
+    default:
+      return Promise.reject(new Error(`Unknown showcase theme: ${themeName}`));
+  }
+};

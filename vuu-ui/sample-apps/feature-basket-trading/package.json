@@ -31,7 +31,9 @@
     "@vuu-ui/vuu-table-extras": "3.5.10",
     "@vuu-ui/vuu-theme": "3.5.10",
     "@vuu-ui/vuu-utils": "3.5.10",
-    "@salt-ds/core": "1.72.0"
+    "@salt-ds/core": "1.72.0",
+    "@vuu-ui/vuu-data-editing": "3.5.0",
+    "@vuu-ui/core": "3.5.0"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",
