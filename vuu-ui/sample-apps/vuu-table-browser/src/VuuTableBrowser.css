@@ -1,0 +1,41 @@
+.vuuTableBrowser {
+  display: grid;
+  grid-template-columns: minmax(220px, 30%) minmax(0, 1fr);
+  height: 100%;
+  min-height: 600px;
+  min-width: 800px;
+  width: 100%;
+}
+
+.vuuTableBrowser-nav {
+  border-right: var(--salt-size-border) var(--salt-container-primary-borderStyle) var(--salt-container-primary-borderColor);
+  min-width: 220px;
+  overflow: auto;
+  padding: var(--salt-spacing-100);
+}
+
+.vuuTableBrowser-content {
+  min-width: 0;
+  position: relative;
+}
+
+.vuuTableBrowser-centered,
+.vuuTableBrowser-source-status {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-100);
+  justify-content: center;
+  padding: var(--salt-spacing-200);
+  text-align: center;
+}
+
+.vuuTableBrowser-centered,
+.vuuTableBrowser-viewer {
+  height: 100%;
+  width: 100%;
+}
+
+.vuuTableBrowser-viewer[hidden] {
+  display: none;
+}

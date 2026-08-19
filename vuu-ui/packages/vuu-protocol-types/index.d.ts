@@ -1,13 +1,3 @@
-/**
- * VuuUser is not used in any websocket messages. It represents the user structure returned
- * encoded within the auth token used to LOGIN. The auti token is returned by the authn REST
- * service call.
- */
-export interface VuuUser {
-  authorizations: string[];
-  name: string;
-}
-
 export type InvalidSessionReason =
   | "Invalid session"
   | "User session limit exceeded";

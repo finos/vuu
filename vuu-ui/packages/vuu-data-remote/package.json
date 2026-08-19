@@ -4,6 +4,7 @@
   "main": "src/index.ts",
   "author": "heswell",
   "license": "Apache-2.0",
+  "type": "module",
   "scripts": {
     "build": "node ../../scripts/run-build-worker.mjs && node ../../scripts/run-build-rslib.ts",
     "build:dev": "node ../../scripts/run-build-worker.mjs &&  node ../../scripts/run-build.mjs -- --dev",
@@ -18,6 +19,7 @@
     "@vuu-ui/vuu-protocol-types": "3.3.2"
   },
   "dependencies": {
+    "@vuu-ui/vuu-data-editing": "3.3.2",
     "@vuu-ui/vuu-filter-parser": "3.3.2",
     "@vuu-ui/vuu-utils": "3.3.2"
   }

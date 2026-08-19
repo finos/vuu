@@ -12,6 +12,7 @@ test.describe("WHEN rendered with open true", () => {
 
 test.describe("WHEN configured to show confirm button only, with custom label", () => {
   test("THEN neither the close button nor cancel button will be rendered", async ({
+    browserName,
     mount,
     page,
   }) => {

@@ -1,0 +1,11 @@
+.vuuModuleAdmin {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-200);
+  height: 100%;
+  width: 100%;
+
+  .vuuModuleAdmin-tableContainer {
+    flex: 1 1 auto;
+  }
+}

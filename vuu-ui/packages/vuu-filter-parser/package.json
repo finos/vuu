@@ -9,8 +9,11 @@
     "prebuild": "npm run lezer-generate:filter",
     "build:dev": "node ../../scripts/run-build.mjs",
     "build": "node ../../scripts/run-build-rslib.ts",
-    "lezer-generate:filter": "lezer-generator --output ./src/generated/filter-parser.js ./src/grammar/filter.grammar",
-    "type-defs": "node ../../scripts/build-type-defs.mjs"
+    "lezer-generate:filter": "lezer-generator --output ./src/generated/filter-parser.ts ./src/grammar/filter.grammar",
+    "type-defs": "node ../../scripts/build-type-defs.mjs",
+    "tsc": "tsc --showConfig -p ./tsconfig-emit-types.json",
+    "tsc:list": "tsc --listFilesOnly -p ./tsconfig-emit-types.json",
+    "tsc:trace": "tsc --traceResolution -p ./tsconfig-emit-types.json"
   },
   "devDependencies": {
     "@vuu-ui/vuu-data-types": "3.3.2",

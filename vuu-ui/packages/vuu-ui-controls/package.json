@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "author": "heswell",
   "license": "Apache-2.0",
+  "type": "module",
   "scripts": {
     "build:dev": "node ../../scripts/run-build.mjs",
     "build": "node ../../scripts/run-build-rslib.ts",
@@ -30,11 +31,10 @@
   },
   "peerDependencies": {
     "@internationalized/date": "^3.0.0",
-    "@floating-ui/react": "^0.26.28",
+    "@floating-ui/react": "^0.27.19",
     "clsx": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },
-  "sideEffects": false,
-  "type": "module"
+  "sideEffects": false
 }

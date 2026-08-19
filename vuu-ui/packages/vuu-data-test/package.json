@@ -2,6 +2,7 @@
   "name": "@vuu-ui/vuu-data-test",
   "version": "3.3.2",
   "main": "src/index.ts",
+  "type": "module",
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
@@ -10,6 +11,7 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
+    "@vuu-ui/vuu-data-editing": "3.3.2",
     "@vuu-ui/vuu-data-local": "3.3.2",
     "@vuu-ui/vuu-utils": "3.3.2"
   },

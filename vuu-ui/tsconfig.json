@@ -2,9 +2,7 @@
   "compilerOptions": {
     "noImplicitAny": true,
     "target": "esnext",
-    "downlevelIteration": true,
     "lib": ["dom", "dom.iterable", "esnext", "WebWorker"],
-    "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -12,16 +10,13 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
     "jsx": "react-jsx",
     "sourceMap": true
   },
   "include": [
-    "experiments",
     "packages",
     "playwright/customAssertions.ts",
-    "sample-apps/*/src",
+    "sample-apps",
     "showcase/src",
     "sample-apps/*/index.ts",
     "sample-apps/*/src",
