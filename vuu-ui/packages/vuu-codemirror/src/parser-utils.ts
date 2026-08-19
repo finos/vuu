@@ -1,4 +1,4 @@
-import { EditorState } from "@codemirror/state";
+import type { EditorState } from "@codemirror/state";
 import type { SyntaxNode } from "@lezer/common";
 
 export const getValue = (node: SyntaxNode, state: EditorState) =>
@@ -28,7 +28,8 @@ export const getPreviousNode = (node: SyntaxNode) => {
   return prevNode;
 };
 
-export const getNamedParentNode = (node: SyntaxNode) => {
+// biome-ignore lint/suspicious/noExplicitAny: <codemirror>
+export const getNamedParentNode = (node: any) => {
   let maybeParent = node.parent;
   while (maybeParent && maybeParent.name === "⚠") {
     maybeParent = maybeParent.parent;

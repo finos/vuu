@@ -33,7 +33,7 @@ export const isCompleteExpression = (src: string) => {
   try {
     strictParser.parse(src);
     return true;
-  } catch (err) {
+  } catch (_err) {
     return false;
   }
 };
@@ -47,7 +47,8 @@ export const lastNamedChild = (node: SyntaxNode): SyntaxNode | null => {
   return lastChild;
 };
 
-export const isCompleteRelationalExpression = (node?: SyntaxNode) => {
+// biome-ignore lint/suspicious/noExplicitAny: <codemirror>
+export const isCompleteRelationalExpression = (node?: any) => {
   if (node?.name === "RelationalExpression") {
     const { firstChild } = node;
     const lastChild = lastNamedChild(node);

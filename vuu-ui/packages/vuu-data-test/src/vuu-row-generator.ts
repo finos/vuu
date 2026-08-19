@@ -1,10 +1,11 @@
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { UpdateGenerator } from "./rowUpdates";
+import type { UpdateGenerator } from "./rowUpdates";
 
 type GenerateRowFunc = (index: number) => VuuRowDataItemType[];
 
 export type RowGeneratorFactory = (columns: string[]) => GenerateRowFunc;
+
 
 export type ColumnGeneratorFn = (
   columns?: number | string[],

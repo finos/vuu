@@ -1,6 +1,6 @@
 import {
   autocompletion,
-  Completion,
+  type Completion,
   defaultKeymap,
   EditorState,
   EditorView,
@@ -11,8 +11,8 @@ import {
 } from "@vuu-ui/vuu-codemirror";
 import { createEl } from "@vuu-ui/vuu-utils";
 import {
-  FocusEventHandler,
-  MutableRefObject,
+  type FocusEventHandler,
+  type RefObject,
   useCallback,
   useEffect,
   useMemo,
@@ -20,14 +20,14 @@ import {
 } from "react";
 import { columnExpressionLanguageSupport } from "./column-language-parser";
 import {
-  ColumnDefinitionExpression,
+  type ColumnDefinitionExpression,
   walkTree,
 } from "./column-language-parser/ColumnExpressionTreeWalker";
-import { ColumnExpressionInputProps } from "./ColumnExpressionInput";
+import type { ColumnExpressionInputProps } from "./ColumnExpressionInput";
 import { vuuHighlighting } from "./highlighting";
 import { vuuTheme } from "./theme";
 import {
-  ApplyCompletion,
+  type ApplyCompletion,
   useColumnAutoComplete,
 } from "./useColumnAutoComplete";
 
@@ -67,7 +67,7 @@ export interface ExpressionSuggestionConsumer {
   suggestionProvider: IExpressionSuggestionProvider;
 }
 
-const getView = (ref: MutableRefObject<EditorView | undefined>): EditorView => {
+const getView = (ref: RefObject<EditorView | undefined>): EditorView => {
   if (ref.current == undefined) {
     throw Error("EditorView not defined");
   }
@@ -109,13 +109,15 @@ export const useColumnExpressionEditor = ({
   const viewRef = useRef<EditorView>(undefined);
   const completionFn = useColumnAutoComplete(suggestionProvider, onSubmitRef);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <codemirror>
   const [createState, clearInput, submit] = useMemo(() => {
     const parseExpression = ():
       | [string, ColumnDefinitionExpression]
       | ["", undefined] => {
       const view = getView(viewRef);
       const source = view.state.doc.toString();
-      const tree = ensureSyntaxTree(view.state, view.state.doc.length, 5000);
+      // biome-ignore lint/suspicious/noExplicitAny: <codemirror>
+      const tree: any = ensureSyntaxTree(view.state, view.state.doc.length, 5000);
       if (tree) {
         const expression = walkTree(tree, source);
         return [source, expression];
@@ -200,7 +202,7 @@ export const useColumnExpressionEditor = ({
     return () => {
       viewRef.current?.destroy();
     };
-  }, [completionFn, createState]);
+  }, [createState]);
 
   const handleBlur = useCallback<FocusEventHandler>(() => {
     submit();

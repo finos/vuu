@@ -7,7 +7,7 @@ import {
 import { dataRowFactory } from "@vuu-ui/vuu-table/src/data-row/DataRow";
 import { VuuInput } from "@vuu-ui/vuu-ui-controls";
 import { CommitHandler, getValueFormatter } from "@vuu-ui/vuu-utils";
-import { FormEventHandler, useCallback, useMemo, useState } from "react";
+import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
 
 const priceColumn: ColumnDescriptor = {
   name: "price",
@@ -45,9 +45,9 @@ export const TableCellTemplate = ({
 
   const [value, setValue] = useState<string>(valueProp);
   // prettier-ignore
-  const [dataRow, setDataRow] = useState(DataRow([0, 0, true, false, 1, 0, "key", 0,  0, false, value]));
+  const [dataRow, setDataRow] = useState(DataRow([0, 0, true, false, 1, 0, "key", 0, 0, false, value]));
 
-  const handleChange = useCallback<FormEventHandler<HTMLInputElement>>(
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (evt) => setValue((evt.target as HTMLInputElement).value),
     [],
   );

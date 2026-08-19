@@ -1,0 +1,28 @@
+.vuuNavContainer {
+  background-color: var(--vuuNavContainer-background, var(--salt-container-secondary-background));
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: var(--vuuNavContainer-columns, 1fr);
+  grid-template-rows: var(--vuuNavContainer-rows, 64px 1fr 64px);
+  /* biome-ignore format: Keep this fallback multiline */
+  grid-template-areas: var(--vuuNavContainer-areas,
+    "logo"
+    "nav"
+    "footer");
+  justify-items: center;
+
+  &.vuuNavContainer-dashboard {
+    grid-template-columns: var(--vuuNavContainer-columns, 1fr 800px 1fr);
+    grid-template-rows: var(--vuuNavContainer-rows, 1fr 50% 1fr);
+    /* biome-ignore format: Keep this fallback multiline */
+    grid-template-areas: var(--vuuNavContainer-areas,
+      " . logo ."
+      ". nav ."
+      ". footer .");
+    height: 100%;
+  }
+
+  .vuuPortalAppSwitcher {
+    grid-area: nav;
+  }
+}

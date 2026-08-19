@@ -1,6 +1,6 @@
-import { EditRuleValidator } from "@vuu-ui/vuu-data-types";
-import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
-import {
+import type { EditRuleValidator } from "@vuu-ui/vuu-data-types";
+import type { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
+import type {
   ColumnDescriptor,
   ColumnDescriptorCustomRenderer,
   ColumnTypeRendering,
@@ -8,11 +8,12 @@ import {
   HeaderCellProps,
   TableCellRendererProps,
 } from "@vuu-ui/vuu-table-types";
-import { FunctionComponent as FC, HTMLAttributes } from "react";
+import type { FunctionComponent as FC, HTMLAttributes } from "react";
 import {
   hasCustomRenderer,
   isColumnTypeRenderer,
   isTemporalColumn,
+  isDataValueEditable,
   isTypeDescriptor,
 } from "./column-utils";
 
@@ -306,7 +307,10 @@ function dataCellRenderer(column: ColumnDescriptor) {
     // temporal values are edited in a canonical, locale independent
     // format, in the column time zone and encoding.
     return cellRenderersMap.get("temporal-input-cell");
-  } else if (column.editable && !hasCustomRenderer(column.type)) {
+  } else if (
+    isDataValueEditable(column, "update") &&
+    !hasCustomRenderer(column.type)
+  ) {
     // we can only offer a text input edit as a generic editor.
     // If a more specialised editor is required, user must configure
     // it in column config.

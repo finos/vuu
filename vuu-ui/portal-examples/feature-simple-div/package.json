@@ -1,0 +1,38 @@
+{
+  "name": "feature-simple-div",
+  "version": "1.0.0",
+  "description": "Vuu Filter Table",
+  "scripts": {
+    "prebuild": "npm run build --workspace @vuu-ui/portal-build",
+    "build": "portal-build --config ./portal-build.json",
+    "dev": "rsbuild dev",
+    "start": "ws --directory ../../dist_portal/feature-simple-div --spa index.html --port 5007"
+  },
+  "type": "module",
+  "private": true,
+  "keywords": [],
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "index.ts",
+  "devDependencies": {
+    "@vuu-ui/portal-build": "0.1.0"
+  },
+  "peerDependencies": {
+    "@vuu-ui/core": "3.4.0",
+    "@vuu-ui/vuu-shell": "3.4.0",
+    "clsx": "^2.0.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "vuu": {
+    "featureProps": {
+      "vuuTables": "*"
+    }
+  }
+}

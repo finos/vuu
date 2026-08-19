@@ -14,10 +14,24 @@ import {
   TreeSourceNode,
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
+  type ComponentType,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  loadRemote,
+  registerRemotes,
+} from "@module-federation/enhanced/runtime";
+import {
+  ComponentDescriptor,
+  DocumentDescriptor,
   getTargetTreeNode,
   isComponentDescriptor,
+  isDocumentDescriptor,
   loadTheme,
   resolveModulePath,
 } from "./shared-utils";
@@ -26,8 +40,6 @@ import { createMdxComponents } from "./mdx-components";
 import { simulModule } from "@vuu-ui/vuu-data-test";
 
 import "./Showcase.css";
-
-console.log(typeof simulModule);
 
 const actionFont = "Nunito sans" as ActionFont;
 const headingFont = "Nunito sans" as HeadingFont;
@@ -66,6 +78,30 @@ type ContentState = {
   isMDX: boolean;
 };
 
+type ExampleModule = Record<string, ComponentType>;
+
+const remoteName = "showcase_examples";
+const remoteManifest = "/showcase-examples/mf-manifest.json";
+let showcaseRemoteRegistered = false;
+
+const loadExampleModule = async (
+  descriptor: ComponentDescriptor | DocumentDescriptor,
+) => {
+  if (!showcaseRemoteRegistered) {
+    registerRemotes([{ entry: remoteManifest, name: remoteName }]);
+    showcaseRemoteRegistered = true;
+  }
+
+  const module = await loadRemote<ExampleModule>(
+    `${remoteName}/${descriptor.moduleName}`,
+    { from: "runtime" },
+  );
+  if (module === null) {
+    throw Error(`Unable to load showcase example ${descriptor.moduleName}`);
+  }
+  return module;
+};
+
 // The theme is passed as a queryString parameter in the url
 // themeMode and density are passed via the url hash, so can be
 // changed without refreshing the page
@@ -81,6 +117,7 @@ export const ShowcaseStandalone = ({
   const dataLocationRef = useRef<DataLocation>("local");
 
   const [contentState, setContentState] = useState<ContentState | null>(null);
+  const [loadError, setLoadError] = useState<Error | null>(null);
 
   // We only need this once as entire page will refresh if theme changes
   const theme = useMemo(() => getUrlParameter("theme", "vuu-theme"), []);
@@ -111,10 +148,11 @@ export const ShowcaseStandalone = ({
     }
   }, [theme]);
 
-  useMemo(async () => {
+  useEffect(() => {
+    let cancelled = false;
     const url = new URL(document.location.href);
     if (url.pathname === "/") {
-      return;
+      return undefined;
     }
     const targetTreeNode = getTargetTreeNode<unknown>(url, treeSource);
     if (targetTreeNode) {
@@ -163,6 +201,38 @@ export const ShowcaseStandalone = ({
         }
       }
     }
+
+    setContentState(null);
+    setLoadError(null);
+    loadExampleModule(nodeData)
+      .then((targetModule) => {
+        const Component = isComponentDescriptor(nodeData)
+          ? targetModule[nodeData.componentName]
+          : targetModule.default;
+        if (!Component) {
+          throw Error(`Example component not found: ${nodeData.moduleName}`);
+        }
+        if (!cancelled) {
+          setContentState({
+            component: <Component />,
+            isMDX: isDocumentDescriptor(nodeData),
+          });
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          console.error("Unable to load showcase example", error);
+          setLoadError(
+            error instanceof Error
+              ? error
+              : new Error("Unable to load showcase example"),
+          );
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [treeSource]);
 
   return (
@@ -183,22 +253,17 @@ export const ShowcaseStandalone = ({
                 "vuuShowcase-mdx": contentState?.isMDX,
               })}
             >
-              {contentState?.component}
+              {loadError ? loadError.message : contentState?.component}
             </div>
           </LocalDataSourceProvider>
         ) : (
-          <VuuDataSourceProvider
-            authenticate={true}
-            autoConnect
-            autoLogin
-            websocketUrl="wss://localhost:8090/websocket"
-          >
+          <VuuDataSourceProvider>
             <div
               className={cx("vuuShowcase-StandaloneRoot", {
                 "vuuShowcase-mdx": contentState?.isMDX,
               })}
             >
-              {contentState?.component}
+              {loadError ? loadError.message : contentState?.component}
             </div>
           </VuuDataSourceProvider>
         )}

@@ -18,7 +18,7 @@ export interface EditButtonProps {
 
 export const EditButtons = ({
   canCancel,
-  canSave,
+  canSave: _canSave,
   confirmCancel,
   confirmSave,
   editSession,
@@ -58,11 +58,18 @@ export const EditButtons = ({
           Delete
         </Button>
       )}
-      <Button disabled={!canSave} onClick={handleSave} sentiment="accented">
+      <Button
+        disabled={!editSession?.canSave}
+        onClick={handleSave}
+        sentiment="accented"
+      >
         {editState === "stale" ? `${saveLabel} (force)` : saveLabel}
       </Button>
       {onCancel && (
-        <Button disabled={!canCancel} onClick={handleCancel}>
+        <Button
+          disabled={!canCancel}
+          onClick={handleCancel}
+        >
           Cancel
         </Button>
       )}
