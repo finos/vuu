@@ -1,22 +1,22 @@
 import {
   booleanJoinSuggestions,
-  Completion,
-  CompletionContext,
-  CompletionSource,
-  EditorState,
+  type Completion,
+  type CompletionContext,
+  type CompletionSource,
+  type EditorState,
   getNamedParentNode,
   getPreviousNode,
   getValue,
-  SyntaxNode,
+  type SyntaxNode,
   syntaxTree,
 } from "@vuu-ui/vuu-codemirror";
-import { MutableRefObject, useCallback } from "react";
+import { type MutableRefObject, useCallback } from "react";
 import {
   ColumnNamedTerms,
   isCompleteExpression,
   isCompleteRelationalExpression,
 } from "./column-language-parser";
-import {
+import type {
   ColumnExpressionOperator,
   ColumnExpressionSuggestionOptions,
   ColumnExpressionSuggestionType,
@@ -31,12 +31,12 @@ export type Operator = "";
 const applyPrefix = (completions: Completion[], prefix?: string) =>
   prefix
     ? completions.map((completion) => ({
-        ...completion,
-        apply:
-          typeof completion.apply === "function"
-            ? completion.apply
-            : `${prefix}${completion.apply ?? completion.label}`,
-      }))
+      ...completion,
+      apply:
+        typeof completion.apply === "function"
+          ? completion.apply
+          : `${prefix}${completion.apply ?? completion.label}`,
+    }))
     : completions;
 
 const isOperator = (node?: SyntaxNode): node is SyntaxNode =>
@@ -250,7 +250,6 @@ export const useColumnAutoComplete = (
               }
             }
           }
-          break;
 
         case "RelationalOperator":
           // we need the type of the expression on the other side of the operator
@@ -304,7 +303,6 @@ export const useColumnAutoComplete = (
             // we restrict to numerics
             return makeSuggestions(context, "expression", { functionName });
           }
-          break;
         case "ArgList": {
           const functionName = getFunctionName(nodeBefore, state);
           const lastArgument = getLastChild(nodeBefore, context);

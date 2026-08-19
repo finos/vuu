@@ -10,7 +10,6 @@ type PackageExports = {
     import: string;
   };
 };
-
 type Json = {
   exports?: PackageExports;
   files?: string[];

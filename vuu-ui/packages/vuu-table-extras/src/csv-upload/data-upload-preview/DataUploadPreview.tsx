@@ -85,16 +85,16 @@ export const DataUploadPreview = ({
     const columns = tableSchema.columns.map<ColumnDescriptor>((column) =>
       column.name === "vuuMsg"
         ? {
-            ...column,
-            editable: false,
-            hidden: false,
-            label: "Error",
-            width: 300,
-          }
+          ...column,
+          editable: false,
+          hidden: false,
+          label: "Error",
+          width: column.width ?? 300,
+        }
         : {
-            ...column,
-            editable: true,
-          },
+          ...column,
+          editable: true,
+        },
     );
     if (!columns.some(({ name }) => name === "vuuMsg")) {
       columns.push({

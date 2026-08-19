@@ -37,16 +37,16 @@ export const execWait = async (
   } catch (error) {
     const stdout =
       typeof error === "object" &&
-      error !== null &&
-      "stdout" in error &&
-      typeof error.stdout === "string"
+        error !== null &&
+        "stdout" in error &&
+        typeof error.stdout === "string"
         ? error.stdout
         : "";
     const stderr =
       typeof error === "object" &&
-      error !== null &&
-      "stderr" in error &&
-      typeof error.stderr === "string"
+        error !== null &&
+        "stderr" in error &&
+        typeof error.stderr === "string"
         ? error.stderr
         : "";
     if (verbose) {

@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "license": "Apache-2.0",
   "style": "./index.css",
+  "type": "module",
   "files": [
     "index.css"
   ],

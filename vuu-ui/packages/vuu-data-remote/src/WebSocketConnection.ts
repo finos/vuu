@@ -1,5 +1,5 @@
-import { WebSocketProtocol } from "@vuu-ui/vuu-data-types";
-import {
+import type { WebSocketProtocol } from "@vuu-ui/vuu-data-types";
+import type {
   InvalidSessionReason,
   InvalidTokenReason,
   LoginErrorMessage,
@@ -25,6 +25,7 @@ export type ConnectionStatus =
   | "websocket-open"
   | "disconnected"
   | "failed"
+  | "connection-failed"
   | "inactive";
 
 export const isInvalidTokenReason = (
@@ -203,7 +204,14 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
       );
     }, connectionTimeout);
 
-    const ws = (this.#ws = new WebSocket(url, protocols));
+    console.log(`create websocket ${url} ${protocols}`);
+    try {
+      this.#ws = new WebSocket(url, protocols);
+    } catch (e) {
+      console.error(e);
+      return;
+    }
+    const ws = this.#ws;
 
     ws.onopen = () => {
       this.connectionStatus = "websocket-open";

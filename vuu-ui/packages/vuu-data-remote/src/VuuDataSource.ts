@@ -9,7 +9,6 @@ import type {
   DataSourceSubscribeProps,
   DataSourceVisualLinkCreatedMessage,
   DeleteRowMode,
-  EditSessionMode,
   OptimizeStrategy,
   ServerAPI,
   TableSchema,
@@ -19,6 +18,7 @@ import type {
 import type { MenuRpcResponse } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
+  RpcResult,
   RpcResultError,
   RpcResultSuccess,
   SelectRequest,
@@ -87,6 +87,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   private bufferSize: number;
   private server: ServerAPI | null = null;
   rangeRequest: RangeRequest;
+  #connectionId: string;
 
   /**
    * this is the combined set of regular columns and autosubscribe columns
@@ -100,7 +101,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   #menu: VuuMenu | undefined;
   #optimize: OptimizeStrategy = "throttle";
   #selectedRowsCount = 0;
-  #sessionDataSource: DataSource | undefined = undefined;
+  #sourceTableDataSource: VuuDataSource | undefined;
   #sessionTableMessageColumn: string | undefined = undefined;
   #status: DataSourceStatus = "initialising";
   #tableSchema: TableSchema | undefined;
@@ -108,6 +109,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   public table: VuuTable;
 
   constructor({
+    connectionId = "portal",
     sessionTableMessageColumn,
     ...props
   }: DataSourceConstructorProps) {
@@ -120,6 +122,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
     this.bufferSize = bufferSize;
     this.table = table;
+    this.#connectionId = connectionId;
 
     this.#pendingVisualLink = visualLink;
     this.#sessionTableMessageColumn = sessionTableMessageColumn;
@@ -141,8 +144,11 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   ) {
     // super.subscribe(subscribeProps, this.handleMessageFromServer);
     super.subscribe(subscribeProps, callback);
-    const { viewport = this.viewport || (this.viewport = uuid()) } =
-      subscribeProps;
+    let viewport = subscribeProps.viewport ?? this.viewport;
+    if (!viewport) {
+      viewport = uuid();
+      this.viewport = viewport;
+    }
 
     if (
       this.#status === "disabled" ||
@@ -164,7 +170,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
     this.#status = "subscribing";
 
-    this.server = await ConnectionManager.serverAPI;
+    this.server = await ConnectionManager.serverAPIFor(this.#connectionId);
 
     const { bufferSize } = this;
 
@@ -217,19 +223,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
           this.size = message.size;
           this.emit("resize", message.size, this.#maxRangeEnd);
         }
-
-        if (
-          Array.isArray(message.rows) &&
-          message.rows.length > 0 &&
-          this.#sessionDataSource
-        ) {
-          this.emit("remote-update-during-local-edit", message.rows);
-          console.log(
-            `updates incoming whilst edit in progress ${this.viewport}`,
-          );
-          console.table(message.rows);
-          return;
-        }
       } else if (message.type === "viewport-clear") {
         this.size = 0;
         this.emit("resize", 0);
@@ -258,18 +251,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       if (this.optimize === "debounce") {
         this.revertDebounce();
       }
-    }
-  };
-
-  handleSessionMessageFromServer = (msg: DataSourceCallbackMessage) => {
-    if (msg.type === "subscribed") {
-      console.log(`[VuuDataSource subscribed to session table]`);
-    } else if (msg.type === "viewport-update") {
-      if (msg.size !== undefined && msg.size !== this.size) {
-        this.size = msg.size;
-        this.emit("resize", msg.size);
-      }
-      this._clientCallback?.(msg);
     }
   };
 
@@ -319,6 +300,10 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       type: "resume",
       viewport: this.viewport,
     });
+  }
+
+  isSessionDataSourceOf(dataSource: DataSource): boolean {
+    return this.#sourceTableDataSource === dataSource;
   }
 
   resume(callback?: DataSourceSubscribeCallback) {
@@ -404,7 +389,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
         this.#selectedRowsCount = response.selectedRowCount;
         this.emit("row-selection", response.selectedRowCount);
       } else {
-        console.warn(`select error`);
+        console.warn("select error");
       }
     }
   }
@@ -613,9 +598,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
   set range(range: Range) {
     super.range = range;
-    if (this.#sessionDataSource) {
-      this.#sessionDataSource.range = range;
-    }
   }
 
   get title() {
@@ -694,11 +676,22 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     });
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
-      return new VuuDataSource({
+      const sessionColumns = combineColumnsWithAutosubscribeColumns(
+        this.columns,
+        [this.#sessionTableMessageColumn, "vuu_action"].filter(
+          (column): column is string => column !== undefined,
+        ),
+      );
+      const sessionDataSource = new VuuDataSource({
         ...this.config,
+        columns: sessionColumns,
+        connectionId: this.#connectionId,
+        sessionTableMessageColumn: this.#sessionTableMessageColumn,
         table: sessionTable,
         viewport: sessionTable.table,
       });
+      sessionDataSource.#sourceTableDataSource = this;
+      return sessionDataSource;
     } else {
       throw Error(
         `[VuuDataSource] createSessionDataSource ${rpcResponse?.errorMessage}`,
@@ -706,12 +699,12 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     }
   }
 
-  async beginEditSession(editSessionMode: EditSessionMode = "all-rows") {
+  async beginEditSession() {
     const rpcResponse = await this?.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "beginEditSession",
       params: {
-        editSessionMode,
+        editSessionMode: 'all-rows',
       },
     });
 
@@ -721,19 +714,15 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       const columns = this.#sessionTableMessageColumn
         ? this.columns.concat(this.#sessionTableMessageColumn)
         : this.columns;
-      this.#sessionDataSource = new VuuDataSource({
+      const sessionDataSource = new VuuDataSource({
         ...this.config,
         columns,
         table: sessionTable,
         viewport: sessionTable.table,
       });
 
-      this.#sessionDataSource.subscribe(
-        {
-          range: this.range,
-        },
-        this.handleSessionMessageFromServer,
-      );
+      sessionDataSource.#sourceTableDataSource = this;
+      return sessionDataSource;
 
       // we need to route messages from the session datasource to listening
       // client whilst still monitoring responses on the source table to which
@@ -747,8 +736,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   }
 
   async editCell(key: string, column: string, data: VuuRowDataItemType) {
-    const rpcHost = this.#sessionDataSource ?? this;
-    return rpcHost.rpcRequest?.({
+    return this.rpcRequest({
       type: "RPC_REQUEST",
       rpcName: "editCell",
       params: {
@@ -762,36 +750,27 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   async endEditSession(saveChanges = false, force = false) {
     const type = "RPC_REQUEST";
     const rpcName = "endEditSession";
-    const sessionDataSource = this.#sessionDataSource;
-    const rpcHost = sessionDataSource ?? this;
-
-    if (sessionDataSource) {
-      // timing is important here. By breaking this reference before
-      // we send the endEdit RPC call, the application of session edits
-      // to the source table will be handled correctly.
-      this.#sessionDataSource = undefined;
-    }
-
-    const rpcResponse = await rpcHost.rpcRequest?.(
+    const rpcResponse = await this.rpcRequest(
       saveChanges
         ? { type, rpcName, params: { save: true, force } }
         : { type, rpcName, params: {} },
     );
 
     if (isRpcSuccess(rpcResponse)) {
-      if (sessionDataSource) {
-        sessionDataSource?.unsubscribe();
+      const sourceTableDataSource = this.#sourceTableDataSource;
+      if (sourceTableDataSource) {
+        this.#sourceTableDataSource = undefined;
+        this.unsubscribe();
+      } else {
+        this.sendResumeMessage();
       }
     } else {
       if (rpcResponse?.errorMessage === "stale update") {
-        this.#sessionDataSource = sessionDataSource;
         throw new StaleUpdateError(rpcResponse.errorMessage);
       } else {
-        throw Error("unknown error");
+        throw Error(rpcResponse?.errorMessage ?? "endEditSession failed");
       }
     }
-
-    this.sendResumeMessage();
   }
 
   async rpcRequest(rpcRequest: Omit<VuuRpcServiceRequest, "context">) {
@@ -801,7 +780,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
         context: { type: "VIEWPORT_CONTEXT", viewPortId: this.viewport },
       } as VuuRpcServiceRequest);
     } else {
-      throw Error(`rpcCall server or viewport are undefined`);
+      throw Error("rpcCall server or viewport are undefined");
     }
   }
 
@@ -828,8 +807,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     key: string,
     mode: DeleteRowMode = "hard",
   ): Promise<true | string> {
-    const rpcHost = this.#sessionDataSource ?? this;
-    const response = await rpcHost.rpcRequest?.({
+    const response = await this.rpcRequest({
       type: "RPC_REQUEST",
       rpcName: "deleteRow",
       params: { key, mode },
@@ -843,8 +821,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   async deleteSelectedRows(
     mode: DeleteRowMode = "soft",
   ): Promise<RpcResultSuccess | RpcResultError> {
-    const rpcHost = this.#sessionDataSource ?? this;
-    const response = await rpcHost.rpcRequest?.({
+    const response = await this.rpcRequest({
       type: "RPC_REQUEST",
       rpcName: "deleteSelectedRows",
       params: { mode },
@@ -859,21 +836,17 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
   async addRow(
     rowData: Record<string, VuuRowDataItemType> = {},
-  ): Promise<true | string> {
-    const response = await this.rpcRequest?.({
+  ): Promise<RpcResult> {
+    const response = await this.rpcRequest({
       type: "RPC_REQUEST",
       rpcName: "addRow",
       params: { data: rowData },
     });
-    if (isRpcSuccess(response)) {
-      return true;
-    }
-    return response?.errorMessage ?? "addRow failed";
+    return response ?? { type: "ERROR_RESULT", errorMessage: "addRow failed" };
   }
 
   async undoRowChange(key: string): Promise<RpcResultSuccess | RpcResultError> {
-    const rpcHost = this.#sessionDataSource ?? this;
-    const response = await rpcHost.rpcRequest?.({
+    const response = await this.rpcRequest({
       type: "RPC_REQUEST",
       rpcName: "undoRowChange",
       params: { key },

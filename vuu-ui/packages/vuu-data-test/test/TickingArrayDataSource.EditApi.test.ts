@@ -1,8 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
 import { buildDataColumnMapFromSchema, Table } from "../src/Table";
 import { TickingArrayDataSource } from "../src/TickingArrayDataSource";
+import {
+  sessionTableRow,
+  sessionTableSchema,
+} from "../src/session-table-utils";
 import type { TableSchema } from "@vuu-ui/vuu-data-types";
-import type { RpcResultError, RpcResultSuccess } from "@vuu-ui/vuu-protocol-types";
+import type {
+  RpcResultError,
+  RpcResultSuccess,
+} from "@vuu-ui/vuu-protocol-types";
+import { Range } from "@vuu-ui/vuu-utils";
 
 const schema: TableSchema = {
   columns: [
@@ -15,7 +23,10 @@ const schema: TableSchema = {
 };
 
 const SUCCESS: RpcResultSuccess = { type: "SUCCESS_RESULT", data: undefined };
-const ERROR = (msg: string): RpcResultError => ({ type: "ERROR_RESULT", errorMessage: msg });
+const ERROR = (msg: string): RpcResultError => ({
+  type: "ERROR_RESULT",
+  errorMessage: msg,
+});
 
 function createDataSource() {
   const table = new Table(
@@ -30,6 +41,51 @@ function createDataSource() {
   vi.spyOn(ds, "rpcRequest").mockResolvedValue(SUCCESS);
   return ds;
 }
+
+describe("sessionTableSchema", () => {
+  it("adds vuu_action as a string session-only column", () => {
+    const sessionSchema = sessionTableSchema({
+      ...schema,
+      columns: schema.columns.slice(0, 2),
+    });
+
+    expect(sessionSchema.columns).toEqual([
+      { name: "id", serverDataType: "string" },
+      { name: "name", serverDataType: "string" },
+      { name: "vuuMsg", serverDataType: "string" },
+      { name: "vuu_action", serverDataType: "string" },
+    ]);
+  });
+
+  it("does not duplicate existing session-only columns", () => {
+    const sessionSchema = sessionTableSchema(schema);
+
+    expect(
+      sessionSchema.columns.filter(({ name }) => name === "vuuMsg"),
+    ).toHaveLength(1);
+    expect(
+      sessionSchema.columns.filter(({ name }) => name === "vuu_action"),
+    ).toHaveLength(1);
+  });
+
+  it("only appends values for missing session-only columns", () => {
+    expect(sessionTableRow(["row-001", "Alice", ""], schema)).toEqual([
+      "row-001",
+      "Alice",
+      "",
+      "",
+    ]);
+    expect(
+      sessionTableRow(["row-001", "Alice", "", ""], {
+        ...schema,
+        columns: schema.columns.concat({
+          name: "vuu_action",
+          serverDataType: "string",
+        }),
+      }),
+    ).toEqual(["row-001", "Alice", "", ""]);
+  });
+});
 
 describe("addRow", () => {
   it("dispatches addRow RPC with provided row data", async () => {
@@ -153,7 +209,10 @@ describe("deleteSelectedRows", () => {
 
   it("returns the RpcResult unchanged on success", async () => {
     const ds = createDataSource();
-    const success = { type: "SUCCESS_RESULT" as const, data: { deletedKeys: ["row-001", "row-002"] } };
+    const success = {
+      type: "SUCCESS_RESULT" as const,
+      data: { deletedKeys: ["row-001", "row-002"] },
+    };
     vi.mocked(ds.rpcRequest).mockResolvedValue(success);
 
     const result = await ds.deleteSelectedRows();
@@ -286,14 +345,16 @@ describe("endEditSession", () => {
     );
   });
 
-  it("throws 'unknown error' for an unrecognised server error", async () => {
+  it("propagates the server error message", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(ERROR("something unexpected"));
 
-    await expect(ds.endEditSession(true)).rejects.toThrow("something unexpected");
+    await expect(ds.endEditSession(true)).rejects.toThrow(
+      "something unexpected",
+    );
   });
 
-  it("handles a stale-update error gracefully and does not throw", async () => {
+  it("throws a stale-update error so the session can be retried", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(ERROR("stale update"));
 
@@ -348,9 +409,65 @@ describe("createSessionDataSource", () => {
 
   it("throws with the server error message on failure", async () => {
     const ds = createDataSource();
-    vi.mocked(ds.rpcRequest).mockResolvedValue(ERROR("session table creation failed"));
+    vi.mocked(ds.rpcRequest).mockResolvedValue(
+      ERROR("session table creation failed"),
+    );
     await expect(ds.createSessionDataSource?.("All")).rejects.toThrow(
       "session table creation failed",
     );
+  });
+
+  it("replays committed rows from the source datasource when session editing ends", async () => {
+    const sourceTable = new Table(
+      schema,
+      [["row-001", "Alice", ""]],
+      buildDataColumnMapFromSchema(schema),
+    );
+    const sessionTable = new Table(
+      { ...schema, table: { module: "TEST", table: "session-xyz" } },
+      [],
+      buildDataColumnMapFromSchema(schema),
+    );
+    const sessionDataSource = new TickingArrayDataSource({
+      columnDescriptors: schema.columns,
+      table: sessionTable,
+    });
+    const sourceDataSource = new TickingArrayDataSource({
+      columnDescriptors: schema.columns,
+      table: sourceTable,
+      vuuModule: {
+        createDataSource: () => sessionDataSource,
+      },
+    });
+    vi.spyOn(sourceDataSource, "rpcRequest").mockResolvedValue(sessionSuccess);
+
+    const updates = vi.fn();
+    await sourceDataSource.subscribe({ range: Range(0, 10) }, updates);
+    updates.mockClear();
+
+    const editDataSource =
+      await sourceDataSource.createSessionDataSource("Empty");
+    expect(editDataSource?.isSessionDataSourceOf?.(sourceDataSource)).toBe(
+      true,
+    );
+    sourceDataSource.suspend(false);
+    vi.spyOn(sessionDataSource, "rpcRequest").mockImplementation(async () => {
+      sourceTable.insert(["row-002", "Bob", ""]);
+      updates.mockClear();
+      return SUCCESS;
+    });
+
+    await editDataSource?.endEditSession?.(true);
+    expect(updates).not.toHaveBeenCalled();
+
+    sourceDataSource.resume(updates);
+    const rows = updates.mock.calls.at(-1)?.[0].rows;
+    expect(rows).toEqual(
+      expect.arrayContaining([expect.arrayContaining(["row-002", "Bob"])]),
+    );
+
+    updates.mockClear();
+    await editDataSource?.endEditSession?.(true);
+    expect(updates).not.toHaveBeenCalled();
   });
 });

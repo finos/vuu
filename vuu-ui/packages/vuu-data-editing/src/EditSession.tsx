@@ -38,14 +38,14 @@ export type EditLifecycle =
   | { status: "active"; sessionDataSource: DataSource }
   | { status: "ending"; sessionDataSource: DataSource }
   | {
-      status: "error";
-      operation: "begin" | "end";
-      error: Error;
-      sessionDataSource?: DataSource;
-    };
+    status: "error";
+    operation: "begin" | "end";
+    error: Error;
+    sessionDataSource?: DataSource;
+  };
 
-export class EditError extends Error {}
-export class SupersededEditError extends Error {}
+export class EditError extends Error { }
+export class SupersededEditError extends Error { }
 
 type CellEdit = {
   originalValue: VuuRowDataItemType;
@@ -517,8 +517,8 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         const sessionDataSource =
           this.#editSessionApi === "beginEditSession"
             ? await sourceDataSource?.beginEditSession?.(
-                toEditSessionMode(copyOption),
-              )
+              toEditSessionMode(copyOption),
+            )
             : await sourceDataSource?.createSessionDataSource?.(copyOption);
         if (!sessionDataSource) {
           throw new Error(
@@ -535,7 +535,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         this.#setLifecycle({ status: "error", operation: "begin", error });
         throw error;
       }
-
     });
   }
 

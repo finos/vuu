@@ -1,4 +1,4 @@
-import { HTMLAttributes } from "react";
+import type { HTMLAttributes } from "react";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -33,6 +33,7 @@ export const Icon = ({
   return (
     <span
       {...htmlAttributes}
+      aria-hidden
       className={cx(classBase, className)}
       data-icon={name}
       role="img"

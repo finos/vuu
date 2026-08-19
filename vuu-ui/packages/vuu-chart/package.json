@@ -3,6 +3,7 @@
   "version": "3.1.0",
   "description": "support for apache echarts using vuu data",
   "main": "src/index.ts",
+  "type": "module",
   "license": "Apache-2.0",
   "scripts": {
     "build:dev": "node ../../scripts/run-build.mjs",

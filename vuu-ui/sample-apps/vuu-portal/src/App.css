@@ -1,0 +1,15 @@
+body {
+  padding: 0;
+  margin: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+#portal-demo {
+  --vuuPortalShell-leftPanel-width: 272px;
+  --vuuPortalShell-leftPanel-background: var(--vuu-color-deep-purple);
+  --vuuPortalShell-leftPanel-color: white;
+
+  --vuuPortalNav-itemLabel-color: white;
+}

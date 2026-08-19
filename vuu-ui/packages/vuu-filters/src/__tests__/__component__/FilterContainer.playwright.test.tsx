@@ -1,4 +1,3 @@
-import React from "react";
 import { test, expect } from "@playwright/experimental-ct-react";
 import { TimeRangeFilter } from "../../../../../showcase/src/examples/Filters/FilterContainer.examples";
 

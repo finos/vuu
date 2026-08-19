@@ -1,42 +1,36 @@
+import { useOptionalVuuConnectionId } from "@vuu-ui/vuu-auth";
 import { ConnectionManager, VuuDataSource } from "@vuu-ui/vuu-data-remote";
-import { DataProvider } from "@vuu-ui/vuu-utils";
-import { ReactNode } from "react";
-import { useAutoLoginToVuuServer } from "./useAutoLoginToVuuServer";
-
-const getServerAPI = () => ConnectionManager.serverAPI;
+import type { DataSourceConstructorProps } from "@vuu-ui/vuu-data-types";
+import { DataProvider } from "@vuu-ui/vuu-utils2";
+import { useMemo, type ReactNode } from "react";
 
 /**
- * DataSource Providers inject a DataSource constructor, made available
- * to clients via the useData hook. This provider offers the standard 
- * VuuDataSource, which will source data from a remote vuu server. 
- * 
- * In production code, it will generally be used without props, authentication
- * and connection to vuu server will be handled elsewhere. The props are
- * useful for rendering standalone components.
+ * Supplies the standard VUU data-source implementation. Authentication and
+ * websocket lifecycle are handled by AuthenticationProvider.
  */
 export const VuuDataSourceProvider = ({
-  authenticate,
-  autoConnect = false,
-  autoLogin = false,
   children,
-  websocketUrl,
 }: {
-  authenticate?: boolean;
-  autoConnect?: boolean;
-  autoLogin?: boolean;
   children: ReactNode;
-  websocketUrl?: string;
 }) => {
-  useAutoLoginToVuuServer({
-    authenticate,
-    autoConnect,
-    autoLogin,
-    websocketUrl,
-  });
+  const connectionId = useOptionalVuuConnectionId() ?? "portal";
+  const BoundVuuDataSource = useMemo(
+    () =>
+      class ConnectionScopedVuuDataSource extends VuuDataSource {
+        constructor(props: DataSourceConstructorProps) {
+          super({ ...props, connectionId });
+        }
+      },
+    [connectionId],
+  );
+  const getServerAPI = useMemo(
+    () => () => ConnectionManager.serverAPIFor(connectionId),
+    [connectionId],
+  );
 
   return (
     <DataProvider
-      VuuDataSource={VuuDataSource}
+      VuuDataSource={BoundVuuDataSource}
       getServerAPI={getServerAPI}
       isLocalData={false}
     >
