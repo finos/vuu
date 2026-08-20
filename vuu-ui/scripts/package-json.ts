@@ -29,6 +29,7 @@ export async function writePackageJSON(
   packageJson: Json,
   outdir: string,
   readmePath: string,
+  additionalFiles: string[] = [],
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const {
@@ -59,7 +60,7 @@ export async function writePackageJSON(
 
     const newPackage: Json = {
       ...packageRest,
-      files: filesToPublish.concat(["src"]),
+      files: filesToPublish.concat(additionalFiles, ["src"]),
       exports,
       module: "index.js",
       name: scopedPackageName,
