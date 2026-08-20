@@ -1,21 +1,42 @@
 package org.finos.vuu.plugin.clickhouse.provider.filter
 
-case class ClauseWithParams(clause: String,
-                            params: Map[String, Any]) {
+sealed trait ClauseWithParams {
+  def clause: String
 
-  def and(other: ClauseWithParams): ClauseWithParams = (this, other) match {
-    case (NoResults, _) | (_, NoResults) => NoResults
-    case (NoFilter, _) => other
-    case (_, NoFilter) => this
-    case (c1, c2) =>
-      ClauseWithParams(s"(${c1.clause}) AND (${c2.clause})", c1.params ++ c2.params)
-  }
+  def params: Map[String, Any]
 
+  def and(other: ClauseWithParams): ClauseWithParams
 }
 
-object NoFilter extends ClauseWithParams("", Map.empty)
+object ClauseWithParams {
+  def apply(clause: String, params: Map[String, Any] = Map.empty): ClauseWithParams =
+    ClauseWithParamsImpl(clause, params)
+}
 
-object NoResults extends ClauseWithParams("1 = 0", Map.empty)
+case object NoFilter extends ClauseWithParams {
+  override val clause: String = ""
+  override val params: Map[String, Any] = Map.empty
 
+  override def and(other: ClauseWithParams): ClauseWithParams = other
+}
 
+case object NoResults extends ClauseWithParams {
+  override val clause: String = "1 = 0"
+  override val params: Map[String, Any] = Map.empty
 
+  override def and(other: ClauseWithParams): ClauseWithParams = NoResults
+}
+
+private case class ClauseWithParamsImpl(clause: String, params: Map[String, Any]) extends ClauseWithParams {
+  override def and(other: ClauseWithParams): ClauseWithParams = other match {
+    case NoFilter => this
+    case NoResults => NoResults
+    case sc: ClauseWithParamsImpl =>
+      val combinedParams =
+        if (params.isEmpty) sc.params
+        else if (sc.params.isEmpty) params
+        else params ++ sc.params
+
+      ClauseWithParamsImpl(s"($clause) AND (${sc.clause})", combinedParams)
+  }
+}
