@@ -126,7 +126,9 @@ const checkPackageVersion = async (packageName: PackageName) => {
 };
 
 const conciseReason = (reason: unknown) =>
-  reason instanceof Error ? reason.message.split("\n")[0] : String(reason);
+  reason instanceof Error
+    ? reason.message.replace(/\s*\r?\n\s*/g, " | ")
+    : String(reason);
 
 const reportResults = (
   operation: "publish" | "verify",
