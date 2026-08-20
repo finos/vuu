@@ -49,9 +49,12 @@ type PackageManifest = {
 type NpmMetadata = {
   versions?: Record<string, unknown>;
   "dist-tags"?: {
+    beta?: string;
     latest?: string;
   };
 };
+
+const PUBLISH_VERIFICATION_DELAY_MS = 10_000;
 
 const getArgument = (name: string, expectsValue = false) => {
   const args = process.argv.slice(2);
@@ -114,6 +117,7 @@ const checkPackageVersion = async (packageName: PackageName) => {
   if (response.status === 404) {
     return {
       latestVersion: undefined,
+      betaVersion: undefined,
       name,
       published: false,
       version,
@@ -125,6 +129,7 @@ const checkPackageVersion = async (packageName: PackageName) => {
 
   const metadata = (await response.json()) as NpmMetadata;
   return {
+    betaVersion: metadata["dist-tags"]?.beta,
     latestVersion: metadata["dist-tags"]?.latest,
     name,
     published: Object.hasOwn(metadata.versions ?? {}, version),
@@ -144,30 +149,13 @@ const reportResults = (
 ) => {
   const rows = results.map((result, index) => ({
     package: packageNames[index],
-    status: result.status === "fulfilled" ? "success" : "fail",
+    status: result.status === "fulfilled" ? "SUCCESS" : "FAIL",
     message:
       result.status === "fulfilled"
         ? `${operation} succeeded`
         : conciseReason(result.reason),
   }));
-  const widths = {
-    package: Math.max("package".length, ...rows.map(({ package: name }) => name.length)),
-    status: Math.max("status".length, "SUCCESS".length, "FAIL".length),
-    message: Math.max("message".length, ...rows.map(({ message }) => message.length)),
-  };
-  const formatRow = (row: (typeof rows)[number]) =>
-    `${row.package.padEnd(widths.package)}  ${row.status.padEnd(widths.status)}  ${row.message}`;
-
-  console.log(`${"package".padEnd(widths.package)}  ${"status".padEnd(widths.status)}  message`);
-  console.log(`${"-".repeat(widths.package)}  ${"-".repeat(widths.status)}  ${"-".repeat(widths.message)}`);
-  rows.forEach((row) => {
-    console.log(
-      formatRow({
-        ...row,
-        status: row.status === "fail" ? "FAIL" : "SUCCESS",
-      }),
-    );
-  });
+  console.table(rows);
 };
 
 if (versionCheck) {
@@ -179,14 +167,16 @@ if (versionCheck) {
     if (result.status === "fulfilled") {
       return {
         package: result.value.name,
-        latest: result.value.latestVersion ?? "unavailable",
-        current: result.value.version,
+        "npm beta": result.value.betaVersion ?? "unavailable",
+        "npm latest": result.value.latestVersion ?? "unavailable",
+        "package.json": result.value.version,
       };
     }
     return {
       package: packageName,
-      latest: "unavailable",
-      current: `failed: ${conciseReason(result.reason)}`,
+      "npm beta": "unavailable",
+      "npm latest": "unavailable",
+      "package.json": `failed: ${conciseReason(result.reason)}`,
     };
   });
   console.table(rows);
@@ -206,6 +196,11 @@ if (versionCheck) {
   const publishedPackages = packages.filter(
     (_, index) => publishResults[index].status === "fulfilled",
   );
+  if (publishedPackages.length > 0) {
+    await new Promise((resolve) =>
+      setTimeout(resolve, PUBLISH_VERIFICATION_DELAY_MS),
+    );
+  }
   const verificationResults = await Promise.allSettled(
     publishedPackages.map((packageName) =>
       verifyPublishedPackage(packageName, packageNameSuffix),
