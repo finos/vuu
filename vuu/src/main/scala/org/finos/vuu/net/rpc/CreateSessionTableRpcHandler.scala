@@ -54,14 +54,14 @@ trait CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker, t
       case All =>
         val vp = params.viewPort
         val vpColumns = ViewPortColumnCreator.create(params.viewPort.table.asTable, columnsToCopy)
-        val iterator = vp.getKeys.iterator.take(tableContainer.rpcOptions.maxCopySize)
+        val iterator = vp.getKeys.iterator.take(tableContainer.rpcOptions.maxSessionTableSize)
         while (iterator.hasNext) {
           sessionTable.processUpdate(vp.table.pullRow(iterator.next(), vpColumns))
         }
       case Selected =>
         val vp = params.viewPort
         val vpColumns = ViewPortColumnCreator.create(params.viewPort.table.asTable, columnsToCopy)
-        val iterator = vp.getSelection.iterator.take(tableContainer.rpcOptions.maxCopySize)
+        val iterator = vp.getSelection.iterator.take(tableContainer.rpcOptions.maxSessionTableSize)
         while (iterator.hasNext) {
           sessionTable.processUpdate(vp.table.pullRow(iterator.next(), vpColumns))
         }
