@@ -23,6 +23,7 @@
     "prettier": "prettier './**/*.{js,mjs,jsx,css,md,json}' --config ./.prettierrc",
     "format": "prettier --write './**/*.{js,mjs,jsx,css,md,json}' --config ./.prettierrc",
     "build": "node ./scripts/build-all-rslib.ts",
+    "bump:versions": "node ./scripts/bump-versions.ts",
     "build:dev": "node ./scripts/build-all.mjs",
     "build:app": "cd sample-apps/app-vuu-example && node scripts/build.mjs",
     "build:app:insecure": "npm run build:app -- --insecure",
