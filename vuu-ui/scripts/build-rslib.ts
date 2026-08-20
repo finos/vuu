@@ -196,6 +196,7 @@ export default async function main() {
               index: [
                 "index.ts",
                 "src/**/*.ts?(x)",
+                "src/**/*.js",
                 "src/**/*.css",
                 "!src/__tests__/**/*",
               ],
