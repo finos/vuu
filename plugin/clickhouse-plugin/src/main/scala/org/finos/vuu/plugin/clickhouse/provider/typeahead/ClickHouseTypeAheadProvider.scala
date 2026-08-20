@@ -8,7 +8,6 @@ import org.finos.vuu.plugin.clickhouse.provider.filter.{ClauseWithParams, ClickH
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
 import org.finos.vuu.viewport.ViewPort
 
-import java.util.HashMap as JHashMap
 import scala.collection.mutable.ArrayBuffer
 
 class ClickHouseTypeAheadProvider(client: ClickHouseClient,
@@ -39,8 +38,12 @@ class ClickHouseTypeAheadProvider(client: ClickHouseClient,
 
   private def fetchUniqueStringValues(remoteColumnName: String, starts: String, viewPort: ViewPort): Array[String] = {
     val clauseWithParams = buildWhereClauseAndParams(remoteColumnName, starts, viewPort)
-    val query =
-      s"SELECT DISTINCT $remoteColumnName FROM ${tableDef.getRemoteTableName} ${clauseWithParams.clause} ORDER BY $remoteColumnName LIMIT 10"
+
+    val query = if (clauseWithParams.clause.isBlank) {
+      s"SELECT DISTINCT $remoteColumnName FROM ${tableDef.getRemoteTableName} ORDER BY $remoteColumnName LIMIT 10"
+    } else {
+      s"SELECT DISTINCT $remoteColumnName FROM ${tableDef.getRemoteTableName} WHERE ${clauseWithParams.clause} ORDER BY $remoteColumnName LIMIT 10"
+    }
 
     client.executeQuery(query, clauseWithParams.params) { records =>
      recordsToArray(records, remoteColumnName)
@@ -48,7 +51,10 @@ class ClickHouseTypeAheadProvider(client: ClickHouseClient,
   }
 
   private def buildWhereClauseAndParams(remoteColumnName: String, starts: String, viewPort: ViewPort): ClauseWithParams = {
-    val permissionClauseWithParams = filterFactory.build(tableDef.getRemotePermissionFilterSpecFunction.apply(viewPort))
+    val initialClauseWithParams = filterFactory.build(
+      viewPort.filterSpec,
+      tableDef.getRemotePermissionFilterSpecFunction.apply(viewPort)
+    )
 
     val typeAheadClauseWithParams =
       if (starts != null && !starts.isBlank) {
@@ -59,7 +65,7 @@ class ClickHouseTypeAheadProvider(client: ClickHouseClient,
         NoFilter
       }
 
-    permissionClauseWithParams.and(typeAheadClauseWithParams)
+    initialClauseWithParams.and(typeAheadClauseWithParams)
   }
 
   private def recordsToArray(records: Records, column: String): Array[String] = {

@@ -43,8 +43,8 @@ class ClickHouseFilterFactoryTest extends AnyFeatureSpec with Matchers {
         permissionSpec = FilterSpec("side = \"Buy\"")
       )
 
-      clauseWithParams.clause shouldEqual "WHERE side = 'Buy'"
-      clauseWithParams.params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "side = {p_0:String}"
+      clauseWithParams.params.size shouldBe 1
     }
 
     Scenario("Empty user filter, composite permission filter") {
@@ -56,8 +56,8 @@ class ClickHouseFilterFactoryTest extends AnyFeatureSpec with Matchers {
         permissionSpec = FilterSpec("side = \"Buy\" and quantity > 0")
       )
 
-      clauseWithParams.clause shouldEqual "WHERE (side = 'Buy' AND quantity > 0)"
-      clauseWithParams.params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "(side = {p_0:String} AND quantity > {p_1:Int32})"
+      clauseWithParams.params.size shouldBe 2
     }
 
     Scenario("Non empty user filter, empty permission filter") {
@@ -69,8 +69,8 @@ class ClickHouseFilterFactoryTest extends AnyFeatureSpec with Matchers {
         permissionSpec = FilterSpec("")
       )
 
-      clauseWithParams.clause shouldEqual "WHERE side = 'Sell'"
-      clauseWithParams.params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "side = {p_0:String}"
+      clauseWithParams.params.size shouldBe 1
     }
 
     Scenario("Non empty user filter, non empty permission filter") {
@@ -82,8 +82,8 @@ class ClickHouseFilterFactoryTest extends AnyFeatureSpec with Matchers {
         permissionSpec = FilterSpec("side = \"Buy\"")
       )
 
-      clauseWithParams.clause shouldEqual "WHERE (side = 'Buy' AND side = 'Sell')"
-      clauseWithParams.params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "(side = {p_0:String} AND side = {p_1:String})"
+      clauseWithParams.params.size shouldBe 2
     }
 
     Scenario("Non empty user filter, composite permission filter") {
@@ -95,8 +95,8 @@ class ClickHouseFilterFactoryTest extends AnyFeatureSpec with Matchers {
         permissionSpec = FilterSpec("side = \"Buy\" and quantity > 0")
       )
 
-      clauseWithParams.clause shouldEqual "WHERE ((side = 'Buy' AND quantity > 0) AND side = 'Sell')"
-      clauseWithParams.params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "((side = {p_0:String} AND quantity > {p_1:Int32}) AND side = {p_2:String})"
+      clauseWithParams.params.size shouldBe 3
     }
 
     Scenario("Composite user filter, empty permission filter") {
@@ -108,8 +108,8 @@ class ClickHouseFilterFactoryTest extends AnyFeatureSpec with Matchers {
         permissionSpec = FilterSpec("")
       )
 
-      clauseWithParams.clause shouldEqual "WHERE (side = 'Sell' AND quantity > 100)"
-      clauseWithParams.params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "(side = {p_0:String} AND quantity > {p_1:Int32})"
+      clauseWithParams.params.size shouldBe 2
     }
 
     Scenario("Composite user filter, non empty permission filter") {
@@ -121,8 +121,8 @@ class ClickHouseFilterFactoryTest extends AnyFeatureSpec with Matchers {
         permissionSpec = FilterSpec("side = \"Buy\"")
       )
 
-      clauseWithParams.clause shouldEqual "WHERE (side = 'Buy' AND (side = 'Sell' AND quantity > 100))"
-      clauseWithParams.params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "(side = {p_0:String} AND (side = {p_1:String} AND quantity > {p_2:Int32}))"
+      clauseWithParams.params.size shouldBe 3
     }
 
     Scenario("Composite user filter, composite permission filter") {
@@ -134,8 +134,8 @@ class ClickHouseFilterFactoryTest extends AnyFeatureSpec with Matchers {
         permissionSpec = FilterSpec("side = \"Buy\" and quantity > 0")
       )
 
-      clauseWithParams.clause shouldEqual "WHERE ((side = 'Buy' AND quantity > 0) AND (side = 'Sell' AND quantity > 100))"
-      clauseWithParams.params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "((side = {p_0:String} AND quantity > {p_1:Int32}) AND (side = {p_2:String} AND quantity > {p_3:Int32}))"
+      clauseWithParams.params.size shouldBe 4
     }
 
   }
@@ -180,7 +180,7 @@ class ClickHouseFilterFactoryTest extends AnyFeatureSpec with Matchers {
         permissionSpec = FilterSpec("DROP COLUMN;")
       )
 
-      clauseWithParams.clause shouldEqual "WHERE 1 = 0"
+      clauseWithParams.clause shouldEqual "1 = 0"
       clauseWithParams.params.isEmpty shouldBe true
     }
 
@@ -193,24 +193,24 @@ class ClickHouseFilterFactoryTest extends AnyFeatureSpec with Matchers {
         permissionSpec = FilterSpec("side = \"Buy\"")
       )
 
-      clauseWithParams.clause shouldEqual "WHERE side = 'Buy'"
-      clauseWithParams.params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "side = {p_0:String}"
+      clauseWithParams.params.size shouldBe 1
 
       val clauseWithParams2 = filterFactory.build(
         userSpec = FilterSpec(null),
         permissionSpec = FilterSpec("side = \"Buy\"")
       )
 
-      clauseWithParams2.clause shouldEqual "WHERE side = 'Buy'"
-      clauseWithParams2.params.isEmpty shouldBe true
+      clauseWithParams2.clause shouldEqual "side = {p_0:String}"
+      clauseWithParams2.params.size shouldBe 1
 
       val clauseWithParams3 = filterFactory.build(
         userSpec = FilterSpec("            "),
         permissionSpec = FilterSpec("side = \"Buy\"")
       )
 
-      clauseWithParams3.clause shouldEqual "WHERE side = 'Buy'"
-      clauseWithParams3.params.isEmpty shouldBe true
+      clauseWithParams3.clause shouldEqual "side = {p_0:String}"
+      clauseWithParams3.params.size shouldBe 1
     }
 
     Scenario("User filter cannot be parsed") {
@@ -222,7 +222,7 @@ class ClickHouseFilterFactoryTest extends AnyFeatureSpec with Matchers {
         permissionSpec = FilterSpec("")
       )
 
-      clauseWithParams.clause shouldEqual "WHERE 1 = 0"
+      clauseWithParams.clause shouldEqual "1 = 0"
       clauseWithParams.params.isEmpty shouldBe true
     }
 
@@ -235,24 +235,24 @@ class ClickHouseFilterFactoryTest extends AnyFeatureSpec with Matchers {
         permissionSpec = null
       )
 
-      clauseWithParams.clause shouldEqual "WHERE side = 'Sell'"
-      clauseWithParams.params.isEmpty shouldBe true
+      clauseWithParams.clause shouldEqual "side = {p_0:String}"
+      clauseWithParams.params.size shouldBe 1
 
       val clauseWithParams2 = filterFactory.build(
         userSpec = FilterSpec("side = \"Sell\""),
         permissionSpec = FilterSpec(null)
       )
 
-      clauseWithParams2.clause shouldEqual "WHERE side = 'Sell'"
-      clauseWithParams2.params.isEmpty shouldBe true
+      clauseWithParams2.clause shouldEqual "side = {p_0:String}"
+      clauseWithParams2.params.size shouldBe 1
 
       val clauseWithParams3 = filterFactory.build(
         userSpec = FilterSpec("side = \"Sell\""),
         permissionSpec = FilterSpec("            ")
       )
 
-      clauseWithParams3.clause shouldEqual "WHERE side = 'Sell'"
-      clauseWithParams3.params.isEmpty shouldBe true
+      clauseWithParams3.clause shouldEqual "side = {p_0:String}"
+      clauseWithParams3.params.size shouldBe 1
     }
 
     Scenario("Permission filter cannot be parsed") {
@@ -264,7 +264,7 @@ class ClickHouseFilterFactoryTest extends AnyFeatureSpec with Matchers {
         permissionSpec = FilterSpec("DROP TABLES;")
       )
 
-      clauseWithParams.clause shouldEqual "WHERE 1 = 0"
+      clauseWithParams.clause shouldEqual "1 = 0"
       clauseWithParams.params.isEmpty shouldBe true
     }
 

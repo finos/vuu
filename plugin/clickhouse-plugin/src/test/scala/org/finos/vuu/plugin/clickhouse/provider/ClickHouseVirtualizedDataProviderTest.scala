@@ -6,6 +6,8 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.module.TableDefContainer
+import org.finos.vuu.core.table.datatype.Scale.Six
+import org.finos.vuu.core.table.datatype.ScaledDecimal
 import org.finos.vuu.net.{FilterSpec, SortDef, SortSpec}
 import org.finos.vuu.plugin.clickhouse.ClickHouseContainer
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
@@ -137,11 +139,11 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         assertVpEq(updates) {
           Table(
             ("quantity", "price", "side", "trader"),
-            (10, 100L, "Buy", "trader-10"),
-            (2, 20L, "Buy", "trader-2"),
-            (4, 40L, "Buy", "trader-4"),
-            (6, 60L, "Buy", "trader-6"),
-            (8, 80L, "Buy", "trader-8")
+            (10, ScaledDecimal("100", Six), "Buy", "trader-10"),
+            (2, ScaledDecimal("20", Six), "Buy", "trader-2"),
+            (4, ScaledDecimal("40", Six), "Buy", "trader-4"),
+            (6, ScaledDecimal("60", Six), "Buy", "trader-6"),
+            (8, ScaledDecimal("80", Six), "Buy", "trader-8")
           )
         }
 
@@ -158,11 +160,11 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         assertVpEq(updates) {
           Table(
             ("quantity", "price", "side", "trader"),
-            (42002, 420020L, "Buy", "trader-42002"),
-            (42004, 420040L, "Buy", "trader-42004"),
-            (42006, 420060L, "Buy", "trader-42006"),
-            (42008, 420080L, "Buy", "trader-42008"),
-            (42010, 420100L, "Buy", "trader-42010")
+            (42002, ScaledDecimal("420020", Six), "Buy", "trader-42002"),
+            (42004, ScaledDecimal("420040", Six), "Buy", "trader-42004"),
+            (42006, ScaledDecimal("420060", Six), "Buy", "trader-42006"),
+            (42008, ScaledDecimal("420080", Six), "Buy", "trader-42008"),
+            (42010, ScaledDecimal("420100", Six), "Buy", "trader-42010")
           )
         }
 
@@ -174,11 +176,11 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         assertVpEq(updates) {
           Table(
             ("quantity", "price", "side", "trader"),
-            (49992, 499920L, "Buy", "trader-49992"),
-            (49994, 499940L, "Buy", "trader-49994"),
-            (49996, 499960L, "Buy", "trader-49996"),
-            (49998, 499980L, "Buy", "trader-49998"),
-            (50000, 500000L, "Buy", "trader-50000")
+            (49992, ScaledDecimal("499920", Six), "Buy", "trader-49992"),
+            (49994, ScaledDecimal("499940", Six), "Buy", "trader-49994"),
+            (49996, ScaledDecimal("499960", Six), "Buy", "trader-49996"),
+            (49998, ScaledDecimal("499980", Six), "Buy", "trader-49998"),
+            (50000, ScaledDecimal("500000", Six), "Buy", "trader-50000")
           )
         }
 
@@ -196,11 +198,11 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         assertVpEq(updates) {
           Table(
             ("quantity", "price", "side", "trader"),
-            (49992, 499920L, "Buy", "trader-49992"),
-            (49994, 499940L, "Buy", "trader-49994"),
-            (49996, 499960L, "Buy", "trader-49996"),
-            (49998, 499980L, "Buy", "trader-49998"),
-            (50000, 500000L, "Buy", "trader-50000")
+            (49992, ScaledDecimal("499920", Six), "Buy", "trader-49992"),
+            (49994, ScaledDecimal("499940", Six), "Buy", "trader-49994"),
+            (49996, ScaledDecimal("499960", Six), "Buy", "trader-49996"),
+            (49998, ScaledDecimal("499980", Six), "Buy", "trader-49998"),
+            (50000, ScaledDecimal("500000", Six), "Buy", "trader-50000")
           )
         }
 
@@ -212,11 +214,11 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         assertVpEq(updates) {
           Table(
             ("quantity", "price", "side", "trader"),
-            (10, 100L, "Buy", "trader-10"),
-            (2, 20L, "Buy", "trader-2"),
-            (4, 40L, "Buy", "trader-4"),
-            (6, 60L, "Buy", "trader-6"),
-            (8, 80L, "Buy", "trader-8")
+            (10, ScaledDecimal("100", Six), "Buy", "trader-10"),
+            (2, ScaledDecimal("20", Six), "Buy", "trader-2"),
+            (4, ScaledDecimal("40", Six), "Buy", "trader-4"),
+            (6, ScaledDecimal("60", Six), "Buy", "trader-6"),
+            (8, ScaledDecimal("80", Six), "Buy", "trader-8")
           )
         }
 
@@ -229,11 +231,11 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         assertVpEq(updates) {
           Table(
             ("quantity", "price", "side", "trader"),
-            (22, 220L, "Buy", "trader-22"),
-            (24, 240L, "Buy", "trader-24"),
-            (26, 260L, "Buy", "trader-26"),
-            (28, 280L, "Buy", "trader-28"),
-            (30, 300L, "Buy", "trader-30")
+            (22, ScaledDecimal("220", Six), "Buy", "trader-22"),
+            (24, ScaledDecimal("240", Six), "Buy", "trader-24"),
+            (26, ScaledDecimal("260", Six), "Buy", "trader-26"),
+            (28, ScaledDecimal("280", Six), "Buy", "trader-28"),
+            (30, ScaledDecimal("300", Six), "Buy", "trader-30")
           )
         }
 
@@ -292,11 +294,11 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         assertVpEq(updates) {
           Table(
             ("quantity", "price", "side", "trader"),
-            (10, 100L, "Buy", "trader-10"),
-            (2, 20L, "Buy", "trader-2"),
-            (4, 40L, "Buy", "trader-4"),
-            (6, 60L, "Buy", "trader-6"),
-            (8, 80L, "Buy", "trader-8")
+            (10, ScaledDecimal("100", Six), "Buy", "trader-10"),
+            (2, ScaledDecimal("20", Six), "Buy", "trader-2"),
+            (4, ScaledDecimal("40", Six), "Buy", "trader-4"),
+            (6, ScaledDecimal("60", Six), "Buy", "trader-6"),
+            (8, ScaledDecimal("80", Six), "Buy", "trader-8")
           )
         }
 
@@ -319,7 +321,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         assertVpEq(updates) {
           Table(
             ("quantity", "price", "side", "trader"),
-            (4, 40L, "Buy", "trader-4")
+            (4, ScaledDecimal("40", Six), "Buy", "trader-4")
           )
         }
       }
@@ -372,11 +374,11 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         assertVpEq(updates) {
           Table(
             ("quantity", "price", "side", "trader"),
-            (10, 100L, "Buy", "trader-10"),
-            (2, 20L, "Buy", "trader-2"),
-            (4, 40L, "Buy", "trader-4"),
-            (6, 60L, "Buy", "trader-6"),
-            (8, 80L, "Buy", "trader-8")
+            (10, ScaledDecimal("100", Six), "Buy", "trader-10"),
+            (2, ScaledDecimal("20", Six), "Buy", "trader-2"),
+            (4, ScaledDecimal("40", Six), "Buy", "trader-4"),
+            (6, ScaledDecimal("60", Six), "Buy", "trader-6"),
+            (8, ScaledDecimal("80", Six), "Buy", "trader-8")
           )
         }
 
@@ -400,11 +402,11 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         assertVpEq(updates) {
           Table(
             ("quantity", "price", "side", "trader"),
-            (49992, 499920L, "Buy", "trader-49992"),
-            (49994, 499940L, "Buy", "trader-49994"),
-            (49996, 499960L, "Buy", "trader-49996"),
-            (49998, 499980L, "Buy", "trader-49998"),
-            (50000, 500000L, "Buy", "trader-50000")
+            (49992, ScaledDecimal("499920", Six), "Buy", "trader-49992"),
+            (49994, ScaledDecimal("499940", Six), "Buy", "trader-49994"),
+            (49996, ScaledDecimal("499960", Six), "Buy", "trader-49996"),
+            (49998, ScaledDecimal("499980", Six), "Buy", "trader-49998"),
+            (50000, ScaledDecimal("500000", Six), "Buy", "trader-50000")
           )
         }
       }
@@ -458,11 +460,11 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         assertVpEq(updates) {
           Table(
             ("quantity", "price", "side", "trader"),
-            (10, 100L, "Buy", "trader-10"),
-            (2, 20L, "Buy", "trader-2"),
-            (4, 40L, "Buy", "trader-4"),
-            (6, 60L, "Buy", "trader-6"),
-            (8, 80L, "Buy", "trader-8")
+            (10, ScaledDecimal("100", Six), "Buy", "trader-10"),
+            (2, ScaledDecimal("20", Six), "Buy", "trader-2"),
+            (4, ScaledDecimal("40", Six), "Buy", "trader-4"),
+            (6, ScaledDecimal("60", Six), "Buy", "trader-6"),
+            (8, ScaledDecimal("80", Six), "Buy", "trader-8")
           )
         }
 

@@ -38,8 +38,8 @@ class ClickHouseWSApiTest extends WebSocketApiTestBase with ForAllTestContainer 
       val response = vuuClient.awaitForResponse(requestId)
 
       val responseBody = assertBodyIsInstanceOf[GetTableMetaResponse](response)
-      responseBody.columns.length shouldEqual 5
-      responseBody.columns shouldEqual Array("orderId", "quantity", "price", "side", "trader")
+      responseBody.columns.length shouldEqual 6
+      responseBody.columns shouldEqual Array("orderId", "quantity", "price", "side", "trader", "time")
       responseBody.editableColumns shouldEqual Array[String]()
       responseBody.maxRangeEnd shouldEqual 1_000_000
       responseBody.maxRangeWidth shouldEqual 1_000

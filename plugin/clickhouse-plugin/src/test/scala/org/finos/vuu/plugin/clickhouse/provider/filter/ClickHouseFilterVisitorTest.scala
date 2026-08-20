@@ -6,6 +6,7 @@ import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableColumnBuilder
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.time.Instant
 import java.time.Instant.ofEpochMilli
 import scala.collection.mutable
 
@@ -634,25 +635,198 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
 
   }
 
-    //
-    //    Scenario("String match operators") {
-    //      compile("ric starts \"AAPL\"") shouldBe "ric LIKE 'AAPL%'"
-    //      compile("ric ends \"L\"") shouldBe "ric LIKE '%L'"
-    //      compile("ric contains \"OD\"") shouldBe "ric LIKE '%OD%'"
-    //    }
-    //
-    //    Scenario("In set operations") {
-    //      compile("ric in [\"AAPL.L\", \"BT.L\"]") shouldBe "ric IN ('AAPL.L', 'BT.L')"
-    //      compile("quantity in [10, 20, 30]") shouldBe "quantity IN (10, 20, 30)"
-    //      compile("ric in []") shouldBe "1 = 0"
-    //    }
-    //
-    //    Scenario("Composite logical operators") {
-    //      compile("ric = \"AAPL.L\" and quantity > 100") shouldBe "(ric = 'AAPL.L' AND quantity > 100)"
-    //      compile("ric = \"AAPL.L\" or quantity > 100") shouldBe "(ric = 'AAPL.L' OR quantity > 100)"
-    //      compile("(ric = \"AAPL.L\" or ric = \"BT.L\") and quantity > 100") shouldBe "((ric = 'AAPL.L' OR ric = 'BT.L') AND quantity > 100)"
-    //    }
-    //
+  Feature("String operators") {
 
+    Scenario("Starts with") {
+      val expected = ("startsWith(string_c, {p_0:String})", Map("p_0" -> "rahúl"))
+
+      val result = compile("stringColumn starts \"rahúl\"")
+
+      result shouldBe expected
+    }
+
+    Scenario("Ends with") {
+      val expected = ("endsWith(string_c, {p_0:String})", Map("p_0" -> "rahúl"))
+
+      val result = compile("stringColumn ends \"rahúl\"")
+
+      result shouldBe expected
+    }
+
+    Scenario("Contains") {
+      val expected = ("string_c LIKE {p_0:String}", Map("p_0" -> "%rahúl%"))
+
+      val result = compile("stringColumn contains \"rahúl\"")
+
+      result shouldBe expected
+    }
+
+  }
+
+  Feature("In test cases") {
+
+    Scenario("String In") {
+      val expected = ("string_c IN {p_0:Array(String)}", Map("p_0" -> java.util.List.of("'rahúl'", "'manuel'")))
+
+      val result = compile("stringColumn in [\"rahúl\", \"manuel\"]")
+
+      result._1 shouldBe expected._1
+      result._2.head._1 shouldEqual expected._2.head._1
+      result._2.head._2 shouldEqual expected._2.head._2
+    }
+
+    Scenario("Int In") {
+      val expected = ("int_c IN {p_0:Array(Int32)}", Map("p_0" -> java.util.List.of[Integer](1, 2)))
+
+      val result = compile("intColumn in [1, 2]")
+
+      result._1 shouldBe expected._1
+      result._2.head._1 shouldEqual expected._2.head._1
+      result._2.head._2 shouldEqual expected._2.head._2
+    }
+
+    Scenario("Double In") {
+      val expected = ("double_c IN {p_0:Array(Float64)}", Map("p_0" -> java.util.List.of[Double](1.01, 2.02)))
+
+      val result = compile("doubleColumn in [1.01, 2.02]")
+
+      result._1 shouldBe expected._1
+      result._2.head._1 shouldEqual expected._2.head._1
+      result._2.head._2 shouldEqual expected._2.head._2
+    }
+
+    Scenario("Long In") {
+      val expected = ("long_c IN {p_0:Array(Int64)}", Map("p_0" -> java.util.List.of[Long](101L, 202L)))
+
+      val result = compile("longColumn in [101, 202]")
+
+      result._1 shouldBe expected._1
+      result._2.head._1 shouldEqual expected._2.head._1
+      result._2.head._2 shouldEqual expected._2.head._2
+    }
+
+    Scenario("Char In") {
+      val expected = ("char_c IN {p_0:Array(String)}", Map("p_0" -> java.util.List.of("'t'", "'f'")))
+
+      val result = compile("charColumn in [\"t\", \"f\"]")
+
+      result._1 shouldBe expected._1
+      result._2.head._1 shouldEqual expected._2.head._1
+      result._2.head._2 shouldEqual expected._2.head._2
+    }
+
+    Scenario("EpochTimestamp In") {
+      val expected = (
+        "epoch_c IN {p_0:Array(DateTime64)}",
+        Map("p_0" -> java.util.List.of[String]("'1970-01-01 00:00:00.001000000'", "'1970-01-01 00:00:00.002000000'"))
+      )
+
+      val result = compile("epochColumn in [1, 2]")
+
+      result._1 shouldBe expected._1
+      result._2.head._1 shouldEqual expected._2.head._1
+      result._2.head._2 shouldEqual expected._2.head._2
+    }
+
+    Scenario("EpochTimestampNano In") {
+      val expected = (
+        "epoch_nano_c IN {p_0:Array(DateTime64)}",
+        Map("p_0" -> java.util.List.of[String]("'1970-01-01 00:00:00.000000001'", "'1970-01-01 00:00:00.000000002'"))
+      )
+
+      val result = compile("epochNanoColumn in [1, 2]")
+
+      result._1 shouldBe expected._1
+      result._2.head._1 shouldEqual expected._2.head._1
+      result._2.head._2 shouldEqual expected._2.head._2
+    }
+
+    Scenario("ScaledDecimal2 In") {
+      val expected = (
+        "sd2_c IN {p_0:Array(Int64)}",
+        Map("p_0" -> java.util.List.of[Long](101L, 202L))
+      )
+
+      val result = compile("sd2Column in [1.01, 2.02]")
+
+      result._1 shouldBe expected._1
+      result._2.head._1 shouldEqual expected._2.head._1
+      result._2.head._2 shouldEqual expected._2.head._2
+    }
+
+    Scenario("ScaledDecimal4 In") {
+      val expected = (
+        "sd4_c IN {p_0:Array(Int64)}",
+        Map("p_0" -> java.util.List.of[Long](10100L, 20200L))
+      )
+
+      val result = compile("sd4Column in [1.01, 2.02]")
+
+      result._1 shouldBe expected._1
+      result._2.head._1 shouldEqual expected._2.head._1
+      result._2.head._2 shouldEqual expected._2.head._2
+    }
+
+    Scenario("ScaledDecimal6 In") {
+      val expected = (
+        "sd6_c IN {p_0:Array(Int64)}",
+        Map("p_0" -> java.util.List.of[Long](1010000L, 2020000L))
+      )
+
+      val result = compile("sd6Column in [1.01, 2.02]")
+
+      result._1 shouldBe expected._1
+      result._2.head._1 shouldEqual expected._2.head._1
+      result._2.head._2 shouldEqual expected._2.head._2
+    }
+
+    Scenario("ScaledDecimal8 In") {
+      val expected = (
+        "sd8_c IN {p_0:Array(Int64)}",
+        Map("p_0" -> java.util.List.of[Long](101000000L, 202000000L))
+      )
+
+      val result = compile("sd8Column in [1.01, 2.02]")
+
+      result._1 shouldBe expected._1
+      result._2.head._1 shouldEqual expected._2.head._1
+      result._2.head._2 shouldEqual expected._2.head._2
+    }
+
+  }
+
+  Feature("Composite operators") {
+
+    Scenario("And") {
+      val expected = ("(string_c = {p_0:String} AND int_c = {p_1:Int32})",
+        Map("p_0" -> "rahúl", "p_1" -> 5)
+      )
+
+      val result = compile("stringColumn = \"rahúl\" and intColumn = 5")
+
+      result shouldBe expected
+    }
+
+    Scenario("Or") {
+      val expected = ("(string_c = {p_0:String} OR int_c = {p_1:Int32})",
+        Map("p_0" -> "rahúl", "p_1" -> 5)
+      )
+
+      val result = compile("stringColumn = \"rahúl\" or intColumn = 5")
+
+      result shouldBe expected
+    }
+
+    Scenario("Nested") {
+      val expected = ("(string_c = {p_0:String} OR (int_c = {p_1:Int32} AND long_c = {p_2:Int64}))",
+        Map("p_0" -> "rahúl", "p_1" -> 5, "p_2" -> 100L)
+      )
+
+      val result = compile("stringColumn = \"rahúl\" or (intColumn = 5 and longColumn = 100)")
+
+      result shouldBe expected
+    }
+
+  }
 
 }

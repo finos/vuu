@@ -10,11 +10,6 @@ import scala.util.{Failure, Success, Try}
 
 class ClickHouseFilterFactory(tableDef: VirtualizedSessionTableDef) extends StrictLogging {
 
-  def build(filterSpec: FilterSpec): ClauseWithParams = {
-    val safeFilter = safeFilterString(filterSpec)
-    parseFilter(safeFilter)
-  }
-
   def build(userSpec: FilterSpec, permissionSpec: FilterSpec): ClauseWithParams = {
     val userFilterStr = safeFilterString(userSpec)
     val permFilterStr = safeFilterString(permissionSpec)
