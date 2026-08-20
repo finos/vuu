@@ -133,16 +133,16 @@ const reportResults = (
   results: PromiseSettledResult<void>[],
   packageNames: readonly string[] = packages,
 ) => {
-  results.forEach((result, index) => {
-    const packageName = packageNames[index];
-    if (result.status === "fulfilled") {
-      console.log(`${operation}: ${packageName} succeeded`);
-    } else {
-      console.error(
-        `${operation}: ${packageName} failed: ${conciseReason(result.reason)}`,
-      );
-    }
-  });
+  console.table(
+    results.map((result, index) => ({
+      package: packageNames[index],
+      status: result.status === "fulfilled" ? "success" : "fail",
+      message:
+        result.status === "fulfilled"
+          ? `${operation} succeeded`
+          : conciseReason(result.reason),
+    })),
+  );
 };
 
 if (versionCheck) {
