@@ -7,6 +7,7 @@ export const execWait = async (
   command: string,
   cwd = ".",
   verbose = false,
+  silent = false,
 ) => {
   if (verbose) {
     await new Promise<void>((resolve, reject) => {
@@ -29,8 +30,10 @@ export const execWait = async (
 
   try {
     const { stdout, stderr } = await exec(command, { cwd });
-    process.stdout.write(stdout);
-    process.stderr.write(stderr);
+    if (!silent) {
+      process.stdout.write(stdout);
+      process.stderr.write(stderr);
+    }
   } catch (error) {
     const stdout =
       typeof error === "object" &&

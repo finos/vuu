@@ -87,25 +87,8 @@ const publishPackage = async (packageName: PackageName, suffix: string) => {
     }`,
     `dist/${packageName}${suffix}`,
     verbose,
+    true,
   );
-};
-
-const verifyPublishedPackage = async (
-  packageName: PackageName,
-  suffix: string,
-) => {
-  const { name, version } = readManifest(
-    `dist/${packageName}${suffix}/package.json`,
-  );
-  try {
-    await execWait(
-      `npm view ${name}@${version} version --registry ${registry}`,
-      ".",
-      verbose,
-    );
-  } catch {
-    throw Error(`npm verification failed for ${name}@${version}`);
-  }
 };
 
 const checkPackageVersion = async (packageName: PackageName) => {
@@ -142,23 +125,7 @@ const conciseReason = (reason: unknown) =>
     ? reason.message.replace(/\s*\r?\n\s*/g, " | ")
     : String(reason);
 
-const reportResults = (
-  operation: "publish" | "verify",
-  results: PromiseSettledResult<void>[],
-  packageNames: readonly string[] = packages,
-) => {
-  const rows = results.map((result, index) => ({
-    package: packageNames[index],
-    status: result.status === "fulfilled" ? "SUCCESS" : "FAIL",
-    message:
-      result.status === "fulfilled"
-        ? `${operation} succeeded`
-        : conciseReason(result.reason),
-  }));
-  console.table(rows);
-};
-
-if (versionCheck) {
+const runVersionCheck = async () => {
   const results = await Promise.allSettled(
     packages.map((packageName) => checkPackageVersion(packageName)),
   );
@@ -180,6 +147,27 @@ if (versionCheck) {
     };
   });
   console.table(rows);
+  return results;
+};
+
+const reportResults = (
+  operation: "publish",
+  results: PromiseSettledResult<void>[],
+  packageNames: readonly string[] = packages,
+) => {
+  const rows = results.map((result, index) => ({
+    package: packageNames[index],
+    status: result.status === "fulfilled" ? "SUCCESS" : "FAIL",
+    message:
+      result.status === "fulfilled"
+        ? `${operation} succeeded`
+        : conciseReason(result.reason),
+  }));
+  console.table(rows);
+};
+
+if (versionCheck) {
+  const results = await runVersionCheck();
   const failures = results.filter(({ status }) => status === "rejected");
   if (failures.length > 0) {
     throw Error(`${failures.length} version check(s) failed`);
@@ -201,14 +189,9 @@ if (versionCheck) {
       setTimeout(resolve, PUBLISH_VERIFICATION_DELAY_MS),
     );
   }
-  const verificationResults = await Promise.allSettled(
-    publishedPackages.map((packageName) =>
-      verifyPublishedPackage(packageName, packageNameSuffix),
-    ),
-  );
-  reportResults("verify", verificationResults, publishedPackages);
+  const versionCheckResults = await runVersionCheck();
 
-  const failures = [...publishResults, ...verificationResults].filter(
+  const failures = [...publishResults, ...versionCheckResults].filter(
     ({ status }) => status === "rejected",
   );
   if (failures.length > 0) {
