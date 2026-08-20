@@ -1,4 +1,4 @@
-import { exec as execCallback } from "node:child_process";
+import { exec as execCallback, spawn } from "node:child_process";
 import { promisify } from "node:util";
 
 const exec = promisify(execCallback);
@@ -8,6 +8,25 @@ export const execWait = async (
   cwd = ".",
   verbose = false,
 ) => {
+  if (verbose) {
+    await new Promise<void>((resolve, reject) => {
+      const child = spawn(command, {
+        cwd,
+        shell: true,
+        stdio: "inherit",
+      });
+      child.once("error", reject);
+      child.once("close", (code) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`Command failed with exit code ${code ?? "unknown"}`));
+        }
+      });
+    });
+    return;
+  }
+
   try {
     const { stdout, stderr } = await exec(command, { cwd });
     process.stdout.write(stdout);
