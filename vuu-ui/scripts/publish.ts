@@ -128,29 +128,36 @@ const checkPackageVersion = async (packageName: PackageName) => {
 const conciseReason = (reason: unknown) =>
   reason instanceof Error ? reason.message.split("\n")[0] : String(reason);
 
-const colorize = (value: string, color: string) =>
-  `${color}${value}\u001b[0m`;
-
 const reportResults = (
   operation: "publish" | "verify",
   results: PromiseSettledResult<void>[],
   packageNames: readonly string[] = packages,
 ) => {
-  console.table(
-    results.map((result, index) => {
-      const failed = result.status === "rejected";
-      const color = failed ? "\u001b[31m" : "\u001b[32m";
-      const message =
-        result.status === "fulfilled"
-          ? `${operation} succeeded`
-          : conciseReason(result.reason);
-      return {
-        package: colorize(packageNames[index], color),
-        status: colorize(failed ? "fail" : "success", color),
-        message: colorize(message, color),
-      };
-    }),
-  );
+  const rows = results.map((result, index) => ({
+    package: packageNames[index],
+    status: result.status === "fulfilled" ? "success" : "fail",
+    message:
+      result.status === "fulfilled"
+        ? `${operation} succeeded`
+        : conciseReason(result.reason),
+  }));
+  const widths = {
+    package: Math.max("package".length, ...rows.map(({ package: name }) => name.length)),
+    status: Math.max("status".length, ...rows.map(({ status }) => status.length)),
+    message: Math.max("message".length, ...rows.map(({ message }) => message.length)),
+  };
+  const formatRow = (row: (typeof rows)[number]) =>
+    `${row.package.padEnd(widths.package)}  ${row.status.padEnd(widths.status)}  ${row.message}`;
+
+  console.log(`${"package".padEnd(widths.package)}  ${"status".padEnd(widths.status)}  message`);
+  console.log(`${"-".repeat(widths.package)}  ${"-".repeat(widths.status)}  ${"-".repeat(widths.message)}`);
+  rows.forEach((row) => {
+    if (row.status === "fail") {
+      console.error(formatRow(row));
+    } else {
+      console.log(formatRow(row));
+    }
+  });
 };
 
 if (versionCheck) {
