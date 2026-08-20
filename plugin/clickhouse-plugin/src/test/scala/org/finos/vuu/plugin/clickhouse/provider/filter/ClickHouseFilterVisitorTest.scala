@@ -718,7 +718,7 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
     Scenario("EpochTimestamp In") {
       val expected = (
         "epoch_c IN {p_0:Array(DateTime64)}",
-        Map("p_0" -> java.util.List.of[String]("'1970-01-01 00:00:00.001000000'", "'1970-01-01 00:00:00.002000000'"))
+        Map("p_0" -> java.util.List.of[String]("'1970-01-01 00:00:00.001'", "'1970-01-01 00:00:00.002'"))
       )
 
       val result = compile("epochColumn in [1, 2]")
