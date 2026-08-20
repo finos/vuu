@@ -1,29 +1,29 @@
 {
   "name": "@vuu-ui/vuu-filters",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "main": "src/index.ts",
   "author": "heswell",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
     "build:dev": "node ../../scripts/run-build.mjs",
-    "build": "node ../../scripts/run-build-rollup.mjs",
+    "build": "node ../../scripts/run-build-rslib.ts",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
-    "@vuu-ui/vuu-data-types": "3.0.0",
-    "@vuu-ui/vuu-protocol-types": "3.0.0",
-    "@vuu-ui/vuu-table-types": "3.0.0",
-    "@vuu-ui/vuu-filter-types": "3.0.0"
+    "@vuu-ui/vuu-data-types": "3.1.0",
+    "@vuu-ui/vuu-protocol-types": "3.1.0",
+    "@vuu-ui/vuu-table-types": "3.1.0",
+    "@vuu-ui/vuu-filter-types": "3.1.0"
   },
   "dependencies": {
-    "@vuu-ui/vuu-context-menu": "3.0.0",
-    "@vuu-ui/vuu-data-react": "3.0.0",
-    "@vuu-ui/vuu-filter-parser": "3.0.0",
-    "@vuu-ui/vuu-popups": "3.0.0",
-    "@vuu-ui/vuu-ui-controls": "3.0.0",
-    "@vuu-ui/vuu-table": "3.0.0",
-    "@vuu-ui/vuu-utils": "3.0.0",
+    "@vuu-ui/vuu-context-menu": "3.1.0",
+    "@vuu-ui/vuu-data-react": "3.1.0",
+    "@vuu-ui/vuu-filter-parser": "3.1.0",
+    "@vuu-ui/vuu-popups": "3.1.0",
+    "@vuu-ui/vuu-ui-controls": "3.1.0",
+    "@vuu-ui/vuu-table": "3.1.0",
+    "@vuu-ui/vuu-utils": "3.1.0",
     "@salt-ds/core": "1.54.1",
     "@salt-ds/lab": "1.0.0-alpha.83",
     "@salt-ds/styles": "0.2.1",

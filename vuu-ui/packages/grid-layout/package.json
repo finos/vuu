@@ -1,18 +1,18 @@
 {
   "name": "@heswell/grid-layout",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "VUU Layout Components",
   "main": "src/index.ts",
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
     "build:dev": "node ../../scripts/run-build.mjs",
-    "build": "node ../../scripts/run-build-rollup.mjs",
+    "build": "node ../../scripts/run-build-rslib.ts",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "types": "src/index.ts",
   "dependencies": {
-    "@vuu-ui/vuu-utils": "3.0.0",
+    "@vuu-ui/vuu-utils": "3.1.0",
     "@salt-ds/core": "1.54.1",
     "@salt-ds/lab": "1.0.0-alpha.83",
     "@salt-ds/styles": "0.2.1",
