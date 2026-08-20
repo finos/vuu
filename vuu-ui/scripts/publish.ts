@@ -128,20 +128,28 @@ const checkPackageVersion = async (packageName: PackageName) => {
 const conciseReason = (reason: unknown) =>
   reason instanceof Error ? reason.message.split("\n")[0] : String(reason);
 
+const colorize = (value: string, color: string) =>
+  `${color}${value}\u001b[0m`;
+
 const reportResults = (
   operation: "publish" | "verify",
   results: PromiseSettledResult<void>[],
   packageNames: readonly string[] = packages,
 ) => {
   console.table(
-    results.map((result, index) => ({
-      package: packageNames[index],
-      status: result.status === "fulfilled" ? "success" : "fail",
-      message:
+    results.map((result, index) => {
+      const failed = result.status === "rejected";
+      const color = failed ? "\u001b[31m" : "\u001b[32m";
+      const message =
         result.status === "fulfilled"
           ? `${operation} succeeded`
-          : conciseReason(result.reason),
-    })),
+          : conciseReason(result.reason);
+      return {
+        package: colorize(packageNames[index], color),
+        status: colorize(failed ? "fail" : "success", color),
+        message: colorize(message, color),
+      };
+    }),
   );
 };
 
