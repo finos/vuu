@@ -34,6 +34,7 @@ export default async function main() {
           dts: false,
           footer: { css: "`;\nexport default css;" },
           format: "esm",
+          autoExtension: false,
           output: {
             cleanDistPath: true,
             distPath: { root: outPathSrc },
