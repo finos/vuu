@@ -8,18 +8,23 @@ import { readPackageJson, writePackageJSON } from "./package-json.ts";
 const DIST_PATH = "../../dist";
 const LICENCE_PATH = "../../../LICENSE";
 const README = "README.md";
-const BUNDLED_DEPENDENCIES = [
+const BUNDLED_DND_DEPENDENCIES = [
   "@dnd-kit/abstract",
   "@dnd-kit/collision",
   "@dnd-kit/dom",
   "@dnd-kit/geometry",
   "@dnd-kit/react",
   "@dnd-kit/state",
-  "tslib",
-];
-const BUNDLED_DND_DEPENDENCIES = BUNDLED_DEPENDENCIES.filter(
-  (dependency) => dependency !== "tslib",
-);
+] as const;
+const VENDORED_PACKAGE_ROOTS = {
+  "@dnd-kit/abstract": "abstract",
+  "@dnd-kit/collision": "collision",
+  "@dnd-kit/dom": "dom",
+  "@dnd-kit/geometry": "geometry",
+  "@dnd-kit/react": "react",
+  "@dnd-kit/state": "state",
+  "@preact/signals-core": "signals-core",
+} as const;
 
 function rewriteCssFiles(cssFiles: string[], outDir: string) {
   return Promise.all(
@@ -32,12 +37,16 @@ function rewriteCssFiles(cssFiles: string[], outDir: string) {
 
 async function copyBundledDependencies(outDir: string) {
   const nodeModulesPath = path.resolve("..", "..", "node_modules");
-  const outNodeModulesPath = path.join(outDir, "node_modules");
+  const vendorPath = path.join(outDir, "src", "vendor");
 
   await Promise.all(
     BUNDLED_DND_DEPENDENCIES.map(async (dependency) => {
       const sourcePath = path.join(nodeModulesPath, dependency);
-      const destinationPath = path.join(outNodeModulesPath, dependency);
+      const destinationPath = path.join(
+        vendorPath,
+        "@dnd-kit",
+        VENDORED_PACKAGE_ROOTS[dependency],
+      );
       await fs.promises.rm(destinationPath, { force: true, recursive: true });
       await fs.promises.mkdir(path.dirname(destinationPath), {
         recursive: true,
@@ -52,26 +61,26 @@ async function copyBundledDependencies(outDir: string) {
     }),
   );
   const tslibPath = path.join(nodeModulesPath, "tslib");
-  const tslibDestinationPath = path.join(outNodeModulesPath, "tslib");
+  const tslibDestinationPath = path.join(vendorPath, "tslib");
   await fs.promises.rm(tslibDestinationPath, { force: true, recursive: true });
   await fs.promises.mkdir(path.dirname(tslibDestinationPath), {
     recursive: true,
   });
   await fs.promises.cp(tslibPath, tslibDestinationPath, { recursive: true });
 
-  const signalsPackage = "@preact/signals-core";
-  const signalsSourcePath = path.join(nodeModulesPath, signalsPackage);
-  const signalsDestinationPath = path.join(outNodeModulesPath, signalsPackage);
-  await fs.promises.rm(signalsDestinationPath, {
-    force: true,
-    recursive: true,
-  });
+  const signalsSourcePath = path.join(nodeModulesPath, "@preact/signals-core");
+  const signalsDestinationPath = path.join(
+    vendorPath,
+    "@preact",
+    "signals-core",
+  );
+  await fs.promises.rm(signalsDestinationPath, { force: true, recursive: true });
   await fs.promises.mkdir(path.join(signalsDestinationPath, "dist"), {
     recursive: true,
   });
-  await fs.promises.copyFile(
-    path.join(signalsSourcePath, "package.json"),
+  await fs.promises.writeFile(
     path.join(signalsDestinationPath, "package.json"),
+    JSON.stringify({ name: "@preact/signals-core", type: "commonjs" }, null, 2),
   );
   await Promise.all(
     ["signals-core.js", "signals-core.js.map"].map((fileName) =>
@@ -81,31 +90,83 @@ async function copyBundledDependencies(outDir: string) {
       ),
     ),
   );
+  await rewriteVendorImports(path.join(outDir, "src"), vendorPath);
+}
 
-  const signalsPackageJsonPath = path.join(
-    signalsDestinationPath,
-    "package.json",
+async function rewriteVendorImports(sourcePath: string, vendorPath: string) {
+  const entries = await fs.promises.readdir(sourcePath, { withFileTypes: true });
+  await Promise.all(
+    entries.map(async (entry) => {
+      const entryPath = path.join(sourcePath, entry.name);
+      if (entry.isDirectory()) {
+        await rewriteVendorImports(entryPath, vendorPath);
+        return;
+      }
+      if (!entry.name.endsWith(".js")) return;
+
+      const source = await fs.promises.readFile(entryPath, "utf8");
+      const rewritten = source.replace(
+        /((?:from\s+|import\s*\(\s*|require\s*\(\s*))(['"])(@dnd-kit\/[^'"]+|@preact\/signals-core|tslib)\2/g,
+        (match, prefix, quote, specifier) => {
+          const relativeImport = getVendorImportPath(
+            entryPath,
+            vendorPath,
+            specifier,
+          );
+          return relativeImport
+            ? `${prefix}${quote}${relativeImport}${quote}`
+            : match;
+        },
+      );
+      if (rewritten !== source) {
+        await fs.promises.writeFile(entryPath, rewritten);
+      }
+    }),
   );
-  const signalsPackageJson = JSON.parse(
-    await fs.promises.readFile(signalsPackageJsonPath, "utf8"),
-  ) as {
-    module?: string;
-    exports?: {
-      ".": {
-        browser?: string;
-        import?: string;
-      };
-    };
-  };
-  signalsPackageJson.module = "./dist/signals-core.js";
-  if (signalsPackageJson.exports?.["."]) {
-    signalsPackageJson.exports["."].browser = "./dist/signals-core.js";
-    signalsPackageJson.exports["."].import = "./dist/signals-core.js";
+}
+
+function getVendorImportPath(
+  importingFile: string,
+  vendorPath: string,
+  specifier: string,
+) {
+  if (specifier === "tslib") {
+    return relativeImport(
+      importingFile,
+      path.join(vendorPath, "tslib", "tslib.es6.mjs"),
+    );
   }
-  await fs.promises.writeFile(
-    signalsPackageJsonPath,
-    `${JSON.stringify(signalsPackageJson, null, 2)}\n`,
+  if (specifier === "@preact/signals-core") {
+    return relativeImport(
+      importingFile,
+      path.join(vendorPath, "@preact", "signals-core", "dist", "signals-core.js"),
+    );
+  }
+
+  const packageName = specifier.match(/^(@dnd-kit\/[^/]+)/)?.[1];
+  if (!packageName || !(packageName in VENDORED_PACKAGE_ROOTS)) return undefined;
+  const subpath = specifier.slice(packageName.length + 1);
+  const packagePath = path.join(
+    vendorPath,
+    "@dnd-kit",
+    VENDORED_PACKAGE_ROOTS[packageName as keyof typeof VENDORED_PACKAGE_ROOTS],
   );
+  const targetPath = subpath
+    ? path.join(packagePath, `${subpath}.js`)
+    : path.join(
+        packagePath,
+        packageName === "@dnd-kit/geometry" ||
+          packageName === "@dnd-kit/collision" ||
+          packageName === "@dnd-kit/state"
+          ? "dist/index.js"
+          : "index.js",
+      );
+  return relativeImport(importingFile, targetPath);
+}
+
+function relativeImport(fromFile: string, targetFile: string) {
+  const relativePath = path.relative(path.dirname(fromFile), targetFile);
+  return relativePath.startsWith(".") ? relativePath : `./${relativePath}`;
 }
 
 export default async function main() {
