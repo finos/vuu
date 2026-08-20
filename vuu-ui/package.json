@@ -49,8 +49,8 @@
     "test:playwright:ct:report": "playwright test --config=playwright-ct.config.ts --reporter=html",
     "test:vite": "npm run build:worker && vitest run",
     "bump": "node ./scripts/version.mjs",
-    "pub": "node ./scripts/publish.mjs",
-    "pub:debug": "node ./scripts/publish.mjs --debug",
+    "pub": "node ./scripts/publish.ts",
+    "pub:debug": "node ./scripts/publish.ts --debug",
     "typecheck": "tsc --noEmit --project tsconfig-typecheck.json",
     "patch-package": "patch-package",
     "postinstall": "npm run patch-package"
