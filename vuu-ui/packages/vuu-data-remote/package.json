@@ -5,7 +5,7 @@
   "author": "heswell",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "node ../../scripts/run-build-worker.mjs && node ../../scripts/run-build-rollup.mjs",
+    "build": "node ../../scripts/run-build-worker.mjs && node ../../scripts/run-build-rslib.ts",
     "build:dev": "node ../../scripts/run-build-worker.mjs &&  node ../../scripts/run-build.mjs -- --dev",
     "build:worker": "node ../../scripts/run-build-worker.mjs",
     "test": "vitest run",
