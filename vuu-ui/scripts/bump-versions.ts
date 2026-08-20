@@ -83,11 +83,12 @@ const getRequestedVersion = () => {
 
 const reportMismatches = (
   packages: PackageInfo[],
+  allPackages: PackageInfo[],
   workspaceVersions: Map<string, string>,
 ) => {
   const versions = new Map<string, string[]>();
   for (const { filePath, json } of packages) {
-    if (!json.name || !json.version) continue;
+    if (!json.name?.startsWith("@vuu-ui/") || !json.version) continue;
     const locations = versions.get(json.version) ?? [];
     locations.push(path.relative(ROOT, filePath));
     versions.set(json.version, locations);
@@ -100,7 +101,7 @@ const reportMismatches = (
     }
   }
 
-  for (const { filePath, json } of packages) {
+  for (const { filePath, json } of allPackages) {
     for (const section of DEPENDENCY_SECTIONS) {
       const dependencies = json[section];
       if (!dependencies || typeof dependencies !== "object") continue;
@@ -123,6 +124,12 @@ const packages = packageFiles.map((filePath) => ({
   filePath,
   json: readJson(filePath),
 }));
+const allPackageFiles = findPackageJsonFiles(ROOT).sort();
+const allPackages = allPackageFiles.map((filePath) => ({
+  filePath,
+  json: readJson(filePath),
+}));
+const packageFileSet = new Set(packageFiles);
 const workspaceVersions = new Map(
   packages
     .filter(({ json }) => json.name?.startsWith("@vuu-ui/") && json.version)
@@ -133,16 +140,19 @@ if (workspaceVersions.size === 0) {
   throw new Error(`No versioned @vuu-ui packages found in ${PACKAGES_ROOT}`);
 }
 
-reportMismatches(packages, workspaceVersions);
+reportMismatches(packages, allPackages, workspaceVersions);
 
 const requestedVersion = getRequestedVersion();
 const currentVersion = packages.find(({ json }) => json.version)?.json.version;
 const version = requestedVersion ?? incrementVersion(currentVersion!);
 parseVersion(version);
 
-for (const { filePath, json } of packages) {
-  if (json.version) {
+for (const { filePath, json } of allPackages) {
+  let changed = false;
+
+  if (packageFileSet.has(filePath) && json.version) {
     json.version = version;
+    changed = true;
   }
 
   for (const section of DEPENDENCY_SECTIONS) {
@@ -151,11 +161,12 @@ for (const { filePath, json } of packages) {
     for (const name of Object.keys(dependencies as Record<string, unknown>)) {
       if (workspaceVersions.has(name)) {
         (dependencies as Record<string, unknown>)[name] = version;
+        changed = true;
       }
     }
   }
 
-  writeJson(filePath, json);
+  if (changed) writeJson(filePath, json);
 }
 
 console.log(`Updated @vuu-ui package versions to ${version}`);
