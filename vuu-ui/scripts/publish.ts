@@ -143,7 +143,7 @@ const reportResults = (
   }));
   const widths = {
     package: Math.max("package".length, ...rows.map(({ package: name }) => name.length)),
-    status: Math.max("status".length, ...rows.map(({ status }) => status.length)),
+    status: Math.max("status".length, "SUCCESS".length, "FAIL".length),
     message: Math.max("message".length, ...rows.map(({ message }) => message.length)),
   };
   const formatRow = (row: (typeof rows)[number]) =>
@@ -152,11 +152,12 @@ const reportResults = (
   console.log(`${"package".padEnd(widths.package)}  ${"status".padEnd(widths.status)}  message`);
   console.log(`${"-".repeat(widths.package)}  ${"-".repeat(widths.status)}  ${"-".repeat(widths.message)}`);
   rows.forEach((row) => {
-    if (row.status === "fail") {
-      console.error(formatRow(row));
-    } else {
-      console.log(formatRow(row));
-    }
+    console.log(
+      formatRow({
+        ...row,
+        status: row.status === "fail" ? "FAIL" : "SUCCESS",
+      }),
+    );
   });
 };
 
