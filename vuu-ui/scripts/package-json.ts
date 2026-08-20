@@ -33,9 +33,7 @@ export async function writePackageJSON(
   return new Promise((resolve, reject) => {
     const {
       files: filesFromPackageJson = [],
-      main: _main,
       name: scopedPackageName,
-      scripts: _scripts,
       style,
       ...packageRest
     } = packageJson;
