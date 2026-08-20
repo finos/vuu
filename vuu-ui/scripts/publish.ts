@@ -131,9 +131,10 @@ const conciseReason = (reason: unknown) =>
 const reportResults = (
   operation: "publish" | "verify",
   results: PromiseSettledResult<void>[],
+  packageNames: readonly string[] = packages,
 ) => {
   results.forEach((result, index) => {
-    const packageName = packages[index];
+    const packageName = packageNames[index];
     if (result.status === "fulfilled") {
       console.log(`${operation}: ${packageName} succeeded`);
     } else {
@@ -177,12 +178,15 @@ if (versionCheck) {
   );
   reportResults("publish", publishResults);
 
+  const publishedPackages = packages.filter(
+    (_, index) => publishResults[index].status === "fulfilled",
+  );
   const verificationResults = await Promise.allSettled(
-    packages.map((packageName) =>
+    publishedPackages.map((packageName) =>
       verifyPublishedPackage(packageName, packageNameSuffix),
     ),
   );
-  reportResults("verify", verificationResults);
+  reportResults("verify", verificationResults, publishedPackages);
 
   const failures = [...publishResults, ...verificationResults].filter(
     ({ status }) => status === "rejected",
