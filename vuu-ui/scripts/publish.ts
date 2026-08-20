@@ -7,6 +7,7 @@
  *   npm run pub -- --version-check
  *
  * Add --debug to publish from the debug package output.
+ * Add --verbose to print complete command output when a command fails.
  */
 import { execWait } from "./utils.ts";
 import { readJson } from "./package-json.ts";
@@ -65,6 +66,7 @@ const getArgument = (name: string, expectsValue = false) => {
 };
 
 const debug = getArgument("--debug") !== undefined;
+const verbose = getArgument("--verbose") !== undefined;
 const publishTag = getArgument("--tag", true);
 const versionCheck = getArgument("--version-check") !== undefined;
 
@@ -81,6 +83,7 @@ const publishPackage = async (packageName: PackageName, suffix: string) => {
       publishTag ? ` --tag ${publishTag}` : ""
     }`,
     `dist/${packageName}${suffix}`,
+    verbose,
   );
 };
 
@@ -92,7 +95,11 @@ const verifyPublishedPackage = async (
     `dist/${packageName}${suffix}/package.json`,
   );
   try {
-    await execWait(`npm view ${name}@${version} version --registry ${registry}`);
+    await execWait(
+      `npm view ${name}@${version} version --registry ${registry}`,
+      ".",
+      verbose,
+    );
   } catch {
     throw Error(`npm verification failed for ${name}@${version}`);
   }

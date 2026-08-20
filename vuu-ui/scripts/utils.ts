@@ -3,12 +3,23 @@ import { promisify } from "node:util";
 
 const exec = promisify(execCallback);
 
-export const execWait = async (command: string, cwd = ".") => {
+export const execWait = async (
+  command: string,
+  cwd = ".",
+  verbose = false,
+) => {
   try {
     const { stdout, stderr } = await exec(command, { cwd });
     process.stdout.write(stdout);
     process.stderr.write(stderr);
   } catch (error) {
+    const stdout =
+      typeof error === "object" &&
+      error !== null &&
+      "stdout" in error &&
+      typeof error.stdout === "string"
+        ? error.stdout
+        : "";
     const stderr =
       typeof error === "object" &&
       error !== null &&
@@ -16,6 +27,10 @@ export const execWait = async (command: string, cwd = ".") => {
       typeof error.stderr === "string"
         ? error.stderr
         : "";
+    if (verbose) {
+      process.stdout.write(stdout);
+      process.stderr.write(stderr);
+    }
     const details = stderr
       .split(/\r?\n/)
       .map((line) => line.trim())
