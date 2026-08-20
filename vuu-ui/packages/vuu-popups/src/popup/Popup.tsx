@@ -1,11 +1,7 @@
 import cx from "clsx";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, RefObject } from "react";
 import { useAnchoredPosition } from "./useAnchoredPosition";
 import { Position } from "./getPositionRelativeToAnchor";
-
-import popupCss from "./Popup.css";
 
 export type PopupPlacement =
   | "absolute"
@@ -37,12 +33,6 @@ export const PopupComponent = ({
   placement,
   position: positionProp,
 }: PopupComponentProps) => {
-  const targetWindow = useWindow();
-  useComponentCssInjection({
-    testId: "vuu-popup",
-    css: popupCss,
-    window: targetWindow,
-  });
 
   const { popupRef, position } = useAnchoredPosition({
     anchorElement,

@@ -11,6 +11,7 @@
  */
 import { execWait } from "./utils.ts";
 import { readJson } from "./package-json.ts";
+import fs from "node:fs";
 
 const registry = "https://registry.npmjs.org";
 const packages = [
@@ -80,6 +81,33 @@ if (publishTag && !["alpha", "beta"].includes(publishTag)) {
 const readManifest = (filePath: string) =>
   readJson(filePath) as PackageManifest;
 
+const readDistVersion = (packageName: PackageName) => {
+  const filePath = `dist/${packageName}/package.json`;
+  return fs.existsSync(filePath)
+    ? readManifest(filePath).version
+    : "unavailable";
+};
+
+const assertDistMatchesSource = () => {
+  const mismatches = packages.flatMap((packageName) => {
+    const sourceVersion = readManifest(
+      `packages/${packageName}/package.json`,
+    ).version;
+    const distVersion = readDistVersion(packageName);
+    return distVersion === sourceVersion
+      ? []
+      : [`${packageName}: source ${sourceVersion}, dist ${distVersion}`];
+  });
+
+  if (mismatches.length > 0) {
+    throw Error(
+      `Build output is missing or stale. Run the build before publishing: ${mismatches.join(
+        " | ",
+      )}`,
+    );
+  }
+};
+
 const publishPackage = async (packageName: PackageName, suffix: string) => {
   await execWait(
     `npm publish --registry ${registry} --access public${
@@ -95,12 +123,14 @@ const checkPackageVersion = async (packageName: PackageName) => {
   const { name, version } = readManifest(
     `packages/${packageName}/package.json`,
   );
+  const distVersion = readDistVersion(packageName);
   const response = await fetch(`${registry}/${encodeURIComponent(name)}`);
 
   if (response.status === 404) {
     return {
       latestVersion: undefined,
       betaVersion: undefined,
+      distVersion,
       name,
       published: false,
       version,
@@ -113,6 +143,7 @@ const checkPackageVersion = async (packageName: PackageName) => {
   const metadata = (await response.json()) as NpmMetadata;
   return {
     betaVersion: metadata["dist-tags"]?.beta,
+    distVersion,
     latestVersion: metadata["dist-tags"]?.latest,
     name,
     published: Object.hasOwn(metadata.versions ?? {}, version),
@@ -137,6 +168,7 @@ const runVersionCheck = async () => {
         "npm beta": result.value.betaVersion ?? "unavailable",
         "npm latest": result.value.latestVersion ?? "unavailable",
         "package.json": result.value.version,
+        "dist/package.json": result.value.distVersion,
       };
     }
     return {
@@ -144,6 +176,7 @@ const runVersionCheck = async () => {
       "npm beta": "unavailable",
       "npm latest": "unavailable",
       "package.json": `failed: ${conciseReason(result.reason)}`,
+      "dist/package.json": "unavailable",
     };
   });
   console.table(rows);
@@ -174,6 +207,7 @@ if (versionCheck) {
   }
 } else {
   const packageNameSuffix = debug ? "-debug" : "";
+  assertDistMatchesSource();
   const publishResults = await Promise.allSettled(
     packages.map((packageName) =>
       publishPackage(packageName, packageNameSuffix),
