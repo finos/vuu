@@ -34,7 +34,7 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
       val nullResult = clickHouseSortFactory.build(nullSpec)
 
       Then("it should return the keyField")
-      nullResult shouldBe "ORDER BY order_id ASC"
+      nullResult shouldBe "order_id ASC"
 
       And("given an empty SortSpec object with no definitions")
       val emptySpec = SortSpec(List.empty)
@@ -43,7 +43,7 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
       val emptyResult = clickHouseSortFactory.build(emptySpec)
 
       Then("it should return the keyField")
-      emptyResult shouldBe "ORDER BY order_id ASC"
+      emptyResult shouldBe "order_id ASC"
     }
 
     Scenario("Generating a single column ascending sort") {
@@ -58,7 +58,7 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
       val result = clickHouseSortFactory.build(spec)
 
       Then("it should format a valid single-column + key field ORDER BY clause")
-      result shouldBe "ORDER BY quantity ASC, order_id ASC"
+      result shouldBe "quantity ASC, order_id ASC"
     }
 
     Scenario("Generating a single column sort with an alias") {
@@ -73,7 +73,7 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
       val result = clickHouseSortFactory.build(spec)
 
       Then("it should format a valid single-column ORDER BY clause using the remote name")
-      result shouldBe "ORDER BY order_id DESC"
+      result shouldBe "order_id DESC"
     }
 
     Scenario("Generating a single column sort with an invalid column") {
@@ -88,7 +88,7 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
       val result = clickHouseSortFactory.build(spec)
 
       Then("it should return primary key sort as the mapping is missing")
-      result shouldBe "ORDER BY order_id ASC"
+      result shouldBe "order_id ASC"
     }
 
     Scenario("Generating a multi-column mixed direction sort") {
@@ -104,7 +104,7 @@ class ClickHouseSortFactoryTest extends AnyFeatureSpec with GivenWhenThen with M
       val result = clickHouseSortFactory.build(spec)
 
       Then("it should chain the columns separated by commas with matching keywords")
-      result shouldBe "ORDER BY price DESC, counterparty ASC, order_id ASC"
+      result shouldBe "price DESC, counterparty ASC, order_id ASC"
     }
 
   }

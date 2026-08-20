@@ -27,9 +27,10 @@ object ClickHouseTableModule extends DefaultModule {
       remoteColumns = VirtualizedSessionTableColumnBuilder()
         .addString("orderId", "order_id")
         .addInt("quantity")
-        .addLong("price")
+        .addScaledDecimal6("price")
         .addString("side")
         .addString("trader")
+        .addEpochTimestampNano("time")
         .build(),
       options = TableDefOptions(
         includeDefaultColumns = false,

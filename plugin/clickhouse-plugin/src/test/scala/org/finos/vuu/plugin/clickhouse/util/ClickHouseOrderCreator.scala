@@ -31,7 +31,8 @@ object ClickHouseOrderCreator extends StrictLogging {
           |  quantity Int32,
           |  price Int64,
           |  side String,
-          |  trader String
+          |  trader String,
+          |  time DateTime64(9, 'UTC')
           |) ENGINE = MergeTree() ORDER BY order_id
           |""".stripMargin
       ),
@@ -48,11 +49,15 @@ object ClickHouseOrderCreator extends StrictLogging {
     val bos = new java.io.BufferedOutputStream(fos, 8 * 1024 * 1024) // 8MB buffer
     val writer = new java.io.BufferedWriter(new java.io.OutputStreamWriter(bos, "UTF-8"))
     try {
+      val now = java.time.Instant.now()
+        .toString
+        .replace("T", " ")
+        .replace("Z", "")
+
       var currentId = 1
       while (currentId <= totalCount) {
-        val now = System.currentTimeMillis().toString
         val side = if (currentId % 2 == 0) "Buy" else "Sell"
-        val price = currentId * 10L
+        val price = currentId * 10_000_000L
         val quantity = currentId
         writer.write(currentId.toString)
         writer.write(',')
@@ -63,6 +68,8 @@ object ClickHouseOrderCreator extends StrictLogging {
         writer.write(side)
         writer.write(",trader-")
         writer.write(currentId.toString)
+        writer.write(',')
+        writer.write(now)
         writer.write(System.lineSeparator())
         currentId += 1
       }
@@ -75,7 +82,7 @@ object ClickHouseOrderCreator extends StrictLogging {
     try {
       ClickHouseHttpUtil.executeUpdate(
         container = container,
-        query = "INSERT INTO order_history (order_id, quantity, price, side, trader) FORMAT CSV",
+        query = "INSERT INTO order_history (order_id, quantity, price, side, trader, time) FORMAT CSV",
         bodyPublisher = BodyPublishers.ofFile(tempFile),
         contentType = "text/csv"
       )
