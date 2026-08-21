@@ -13,7 +13,7 @@ public class RpcMethodHandlerTest {
     public void should_register_java_function_as_rpc_in_default_handler() {
         final TestRpcService rpcService = new TestRpcService();
 
-        final DefaultRpcHandler defaultRpcHandler = new DefaultRpcHandlerImpl();
+        final DefaultRpcHandler defaultRpcHandler = DefaultRpcHandlerImpl$.MODULE$;
         defaultRpcHandler.registerRpc("helloWorld", rpcService::rpcFunction);
 
         RpcFunctionResult response = defaultRpcHandler.processRpcRequest("helloWorld", new RpcParams(ScalaCollectionConverter.toScala(Collections.emptyMap()), null, ViewPortTestUtils.requestContext()));

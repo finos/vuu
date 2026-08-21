@@ -1,6 +1,7 @@
 package org.finos.vuu.util;
 
 import org.finos.vuu.net.rpc.DefaultRpcHandlerImpl;
+import org.finos.vuu.net.rpc.DefaultRpcHandlerImpl$;
 import org.finos.vuu.net.rpc.RpcFunctionResult;
 import org.finos.vuu.net.rpc.RpcHandler;
 import org.finos.vuu.net.rpc.RpcParams;
@@ -18,7 +19,7 @@ public class RpcHandlerBuilder {
     }
 
     public RpcHandler build() {
-        RpcHandler rpcHandler = new DefaultRpcHandlerImpl();
+        RpcHandler rpcHandler = DefaultRpcHandlerImpl$.MODULE$;
         rpcs.forEach(rpcHandler::registerRpc);
         return rpcHandler;
     }

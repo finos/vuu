@@ -5,4 +5,4 @@ import org.finos.vuu.core.module.typeahead.ViewportTypeAheadRpcHandler
 
 trait DefaultRpcHandler() extends RpcHandler with ViewportTypeAheadRpcHandler {}
 
-class DefaultRpcHandlerImpl extends DefaultRpcHandler
+object DefaultRpcHandlerImpl extends DefaultRpcHandler
