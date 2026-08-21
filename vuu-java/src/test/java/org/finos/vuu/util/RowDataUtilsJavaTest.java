@@ -41,7 +41,7 @@ class RowDataUtilsJavaTest {
     void shouldThrowExceptionWhenValueIsNull() {
         assertThrows(
                 RowDataUtils.RowDataException.class,
-                () -> RowDataUtils.getRequiredLong(rowData, "null")
+                () -> RowDataUtils.getRequiredLong(rowData, "dummy")
         );
     }
 }
