@@ -35,8 +35,8 @@ trait CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker, t
         case Some("edit") => s"edit-${sourceTable.name}"
         case Some("import") => s"import-${sourceTable.name}"
         case Some("export") => s"export-${sourceTable.name}"
-        case _ => s"edit-${sourceTable.name}"
-      }
+        case _ => return new RpcFunctionFailure("sessionType undefined")
+      }// TODO 2231 add tests for sessionType
     }
 
     if (!sourceTable.asTable.getTableDef.options.isEditable) {
