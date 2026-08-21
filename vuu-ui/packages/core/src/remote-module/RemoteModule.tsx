@@ -7,6 +7,7 @@ import {
   registerRemotes,
 } from "@module-federation/enhanced/runtime";
 import React, { lazy } from "react";
+import { useInRouterContext, useLocation } from "react-router-dom";
 import { RemoteModuleErrorBoundary } from "./RemoteModuleErrorBoundary";
 
 export interface RemoteModuleProps<
@@ -118,5 +119,19 @@ function RawRemoteModule<ComponentProps extends object | undefined>({
   );
 }
 
-export const RemoteModule = React.memo(RawRemoteModule);
+type RoutedRemoteModuleProps = RemoteModuleProps;
+
+const RoutedRemoteModule = (props: RoutedRemoteModuleProps) => {
+  useLocation();
+  return <RawRemoteModule {...props} />;
+};
+
+export const RemoteModule = React.memo(
+  (props: RoutedRemoteModuleProps) =>
+    useInRouterContext() ? (
+      <RoutedRemoteModule {...props} />
+    ) : (
+      <RawRemoteModule {...props} />
+    ),
+);
 RemoteModule.displayName = "RemoteModule";
