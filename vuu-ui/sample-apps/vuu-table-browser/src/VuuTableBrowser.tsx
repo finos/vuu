@@ -241,7 +241,7 @@ export default function VuuTableBrowser() {
               return [];
             }
 
-            const sourceId = String(module.id ?? module.name);
+            const sourceId = String(module.name ?? module.id);
             if (sourceIds.has(sourceId)) {
               return [];
             }
