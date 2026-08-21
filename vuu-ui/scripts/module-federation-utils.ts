@@ -1,4 +1,5 @@
 const reactVersion = "19.2.3";
+const reactRouterVersion = "^6.2.1";
 const vuuVersion = "3.1.0";
 
 export const getSharedDependencies = (env: "consumer" | "producer") => {
@@ -12,6 +13,11 @@ export const getSharedDependencies = (env: "consumer" | "producer") => {
       "react-dom": {
         singleton: true,
         requiredVersion: reactVersion,
+        strictVersion: true,
+      },
+      "react-router-dom": {
+        singleton: true,
+        requiredVersion: reactRouterVersion,
         strictVersion: true,
       },
       "@vuu-ui/core": {
@@ -38,6 +44,11 @@ export const getSharedDependencies = (env: "consumer" | "producer") => {
       },
       "react-dom": {
         requiredVersion: reactVersion,
+        strictVersion: true,
+      },
+      "react-router-dom": {
+        singleton: true,
+        requiredVersion: reactRouterVersion,
         strictVersion: true,
       },
       "@vuu-ui/core": {

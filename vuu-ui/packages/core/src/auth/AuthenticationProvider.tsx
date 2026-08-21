@@ -392,6 +392,16 @@ export const useIdentityToken = () => {
   return identity.getIdentityToken;
 };
 
+export const usePortalVuuAuthTarget = () => {
+  const identity = useContext(IdentityContext);
+  if (!identity) {
+    throw new AuthenticationConfigurationError(
+      "No identity AuthenticationProvider has been installed",
+    );
+  }
+  return identity.portalTarget;
+};
+
 export const useLogout = () => {
   const identity = useContext(IdentityContext);
   if (!identity) {

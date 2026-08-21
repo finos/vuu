@@ -25,6 +25,7 @@
     "@vuu-ui/vuu-data-remote": "3.1.0",
     "@vuu-ui/vuu-data-types": "3.1.0",
     "@vuu-ui/vuu-icons": "3.1.0",
+    "@vuu-ui/vuu-protocol-types": "3.1.0",
     "@vuu-ui/vuu-ui-controls": "3.1.0",
     "keycloak-js": "26.2.4",
     "react-router-dom": "^6.2.1"

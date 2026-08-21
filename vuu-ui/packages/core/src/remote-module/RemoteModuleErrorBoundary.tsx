@@ -5,6 +5,7 @@ export interface RemoteModuleErrorBoundaryProps {
   mfComponent: string;
   mfScope: string;
   mfUrl: string;
+  onError?: (error: Error) => void;
 }
 
 interface RemoteModuleErrorBoundaryState {
@@ -24,6 +25,7 @@ export class RemoteModuleErrorBoundary extends React.Component<
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error(`Error creating remote module at ${this.props.mfUrl}`);
     console.error(error, errorInfo);
+    this.props.onError?.(error);
   }
 
   render() {

@@ -9,6 +9,8 @@ const packages = [
 	"feature-simple-div",
 	"feature-user-admin",
 	"feature-instrument-tiles",
+	"vuu-table-browser",
+	"vuu-table-viewer",
 ] as const;
 
 type PackageName = (typeof packages)[number];

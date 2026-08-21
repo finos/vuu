@@ -23,12 +23,11 @@ export interface RemoteModuleProps<
   mfComponent: string;
   mfScope: string;
   mfUrl: string;
+  onError?: (error: Error) => void;
   title?: string;
   vuu?: RemoteModuleConnection;
   width?: number;
 }
-
-const portalConnection = { connectionId: "portal" };
 
 const getLazyComponent = (
   scope: string,
@@ -57,13 +56,19 @@ const getLazyComponent = (
 
 const components = new Map<string, ReturnType<typeof lazy>>();
 
+const getRemoteComponentKey = (
+  mfUrl: string,
+  mfScope: string,
+  mfComponent: string,
+) => `${mfUrl}|${mfScope}/${mfComponent}`;
+
 const getRemoteComponent = (
   mfUrl: string,
   mfScope: string,
   mfComponent: string,
 ) => {
-  const componentPath = `${mfScope}/${mfComponent}`;
-  let component = components.get(componentPath);
+  const componentKey = getRemoteComponentKey(mfUrl, mfScope, mfComponent);
+  let component = components.get(componentKey);
 
   if (component === undefined) {
     component = getLazyComponent(
@@ -71,7 +76,7 @@ const getRemoteComponent = (
       mfComponent,
       `${mfUrl}/mf-manifest.json`,
     );
-    components.set(componentPath, component);
+    components.set(componentKey, component);
   }
 
   return component;
@@ -83,23 +88,32 @@ function RawRemoteModule<ComponentProps extends object | undefined>({
   mfComponent,
   mfScope,
   mfUrl,
+  onError,
   vuu,
   ...remoteProps
 }: RemoteModuleProps<ComponentProps>) {
   const RemoteComponent = getRemoteComponent(mfUrl, mfScope, mfComponent);
+  const remoteComponent = (
+    <RemoteComponent {...remoteProps} {...componentProps} />
+  );
 
   return (
     <RemoteModuleErrorBoundary
       mfComponent={mfComponent}
       mfScope={mfScope}
       mfUrl={mfUrl}
+      onError={(error) => {
+        components.delete(getRemoteComponentKey(mfUrl, mfScope, mfComponent));
+        onError?.(error);
+      }}
     >
-      <AuthenticationProvider
-        mode="vuu-connection"
-        connection={vuu ?? portalConnection}
-      >
-        <RemoteComponent {...remoteProps} {...componentProps} />
-      </AuthenticationProvider>
+      {vuu ? (
+        <AuthenticationProvider mode="vuu-connection" connection={vuu}>
+          {remoteComponent}
+        </AuthenticationProvider>
+      ) : (
+        remoteComponent
+      )}
     </RemoteModuleErrorBoundary>
   );
 }
