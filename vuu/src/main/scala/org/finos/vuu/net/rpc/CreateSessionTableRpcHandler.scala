@@ -8,8 +8,6 @@ import org.finos.vuu.net.rpc.SessionTableCopyOption.{All, Empty, Selected}
 trait CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker, tableContainer: TableContainer) extends RpcHandler {
   registerRpc(RpcNames.CreateSessionTableRpc, this.createSessionTable)
 
-  // todo add new boolean isImport  - true - use "import-" + source table name
-  // add vuuAction to default
   def createSessionTable(params: RpcParams): RpcFunctionResult = {
     val vuuUser: VuuUser = params.ctx.user
     if (!rpcPermissionChecker.isRpcAllowed(RpcNames.CreateSessionTableRpc, vuuUser)) {
