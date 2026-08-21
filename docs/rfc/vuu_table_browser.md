@@ -233,6 +233,9 @@ The browser's registry descriptor is expected to be equivalent to:
 ```
 
 The descriptor intentionally has no `vuu` property.
+The host `RemoteModule` MUST therefore render the browser without installing a
+connection-scoped `AuthenticationProvider`; remotes that require Vuu data MUST
+provide explicit `vuu` metadata.
 
 ### 2. Navigation
 

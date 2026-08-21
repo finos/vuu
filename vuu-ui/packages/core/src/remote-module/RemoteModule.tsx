@@ -29,8 +29,6 @@ export interface RemoteModuleProps<
   width?: number;
 }
 
-const portalConnection = { connectionId: "portal" };
-
 const getLazyComponent = (
   scope: string,
   component: string,
@@ -95,6 +93,9 @@ function RawRemoteModule<ComponentProps extends object | undefined>({
   ...remoteProps
 }: RemoteModuleProps<ComponentProps>) {
   const RemoteComponent = getRemoteComponent(mfUrl, mfScope, mfComponent);
+  const remoteComponent = (
+    <RemoteComponent {...remoteProps} {...componentProps} />
+  );
 
   return (
     <RemoteModuleErrorBoundary
@@ -106,12 +107,13 @@ function RawRemoteModule<ComponentProps extends object | undefined>({
         onError?.(error);
       }}
     >
-      <AuthenticationProvider
-        mode="vuu-connection"
-        connection={vuu ?? portalConnection}
-      >
-        <RemoteComponent {...remoteProps} {...componentProps} />
-      </AuthenticationProvider>
+      {vuu ? (
+        <AuthenticationProvider mode="vuu-connection" connection={vuu}>
+          {remoteComponent}
+        </AuthenticationProvider>
+      ) : (
+        remoteComponent
+      )}
     </RemoteModuleErrorBoundary>
   );
 }
