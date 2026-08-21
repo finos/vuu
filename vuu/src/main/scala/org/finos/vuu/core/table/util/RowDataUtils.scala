@@ -1,6 +1,6 @@
 package org.finos.vuu.core.table.util
 
-import org.finos.vuu.core.table.{RowData, RowWithData}
+import org.finos.vuu.core.table.RowData
 
 import scala.runtime.RichLong
 

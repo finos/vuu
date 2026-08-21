@@ -1,11 +1,11 @@
 package org.finos.vuu.core.table.util
 
-import org.finos.vuu.core.table.{RowData, RowWithData}
+import org.finos.vuu.core.table.RowWithData
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 class RowDataUtilsTest extends AnyFeatureSpec with Matchers {
-  private val rowData = RowWithData("key", Map(
+  private val rowData = RowWithData("myKey", Map(
     "key" -> "myKey",
     "id" -> 123L,
     "someId" -> Some(123L),
