@@ -4,7 +4,7 @@ import { registerComponent } from "@vuu-ui/vuu-utils";
 import { useEffect, useState } from "react";
 import { ConfirmSelectionPanel } from "./order-management/cancel-confirm-prompt/ConfirmSelectionPanel";
 import { BrowserRouter } from "react-router-dom";
-import { PortalShell, type RemoteModuleDescriptor } from "@vuu-ui/core";
+import { PortalShell, type RemoteModuleDescriptor } from "@vuu-ui/core/portal";
 import { getRegisteredModules } from "@vuu-ui/vuu-shell";
 
 import "./App.css";

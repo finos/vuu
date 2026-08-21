@@ -1,5 +1,5 @@
 import { Button, Toolbar, ToolbarContent, Tooltray } from "@salt-ds/core";
-import { useLogout } from "../auth";
+import { useLogout } from "@vuu-ui/core";
 import cx from "clsx";
 import type { HTMLAttributes } from "react";
 

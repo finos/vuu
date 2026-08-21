@@ -6,6 +6,10 @@
     "docs"
   ],
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./portal": "./src/portal.ts"
+  },
   "author": "heswell",
   "license": "Apache-2.0",
   "type": "module",

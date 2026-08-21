@@ -1,5 +1,10 @@
-# @vuu-ui/core portal
+# @vuu-ui/core
 
-Reusable VUU portal host and Module Federation integration components.
+Core VUU authentication and data-context APIs are exported from
+`@vuu-ui/core` and can be registered as a shared Module Federation dependency.
 
-See [DESIGN.md](./DESIGN.md) for the package design.
+Portal host and remote-module APIs are exported separately from
+`@vuu-ui/core/portal` so portal dependencies are not included in the shared
+module.
+
+See [the portal design](./docs/portal-design.md) for details.

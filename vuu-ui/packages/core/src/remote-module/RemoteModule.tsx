@@ -1,4 +1,7 @@
-import { AuthenticationProvider, type RemoteModuleConnection } from "../auth";
+import {
+  AuthenticationProvider,
+  type RemoteModuleConnection,
+} from "@vuu-ui/core";
 import {
   loadRemote,
   registerRemotes,
