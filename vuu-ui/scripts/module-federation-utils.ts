@@ -14,7 +14,7 @@ export const getSharedDependencies = (env: "consumer" | "producer") => {
         requiredVersion: reactVersion,
         strictVersion: true,
       },
-      "@vuu-ui/vuu-auth": {
+      "@vuu-ui/core": {
         singleton: true,
         requiredVersion: vuuVersion,
         strictVersion: true,
@@ -25,11 +25,6 @@ export const getSharedDependencies = (env: "consumer" | "producer") => {
         strictVersion: true,
       },
       "@vuu-ui/vuu-shell": {
-        singleton: true,
-        requiredVersion: vuuVersion,
-        strictVersion: true,
-      },
-      "@vuu-ui/vuu-utils2": {
         singleton: true,
         requiredVersion: vuuVersion,
         strictVersion: true,
@@ -45,7 +40,7 @@ export const getSharedDependencies = (env: "consumer" | "producer") => {
         requiredVersion: reactVersion,
         strictVersion: true,
       },
-      "@vuu-ui/vuu-auth": {
+      "@vuu-ui/core": {
         singleton: true,
         requiredVersion: vuuVersion,
         strictVersion: true,
@@ -56,10 +51,6 @@ export const getSharedDependencies = (env: "consumer" | "producer") => {
         strictVersion: true,
       },
       "@vuu-ui/vuu-shell": {
-        requiredVersion: vuuVersion,
-        strictVersion: true,
-      },
-      "@vuu-ui/vuu-utils2": {
         requiredVersion: vuuVersion,
         strictVersion: true,
       },

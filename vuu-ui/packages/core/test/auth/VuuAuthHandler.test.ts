@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { DirectVuuSessionResolver } from "../src/DirectVuuSessionResolver";
-import { VuuAuthHandler } from "../src/VuuAuthHandler";
+import { DirectVuuSessionResolver } from "../../src/auth/DirectVuuSessionResolver";
+import { VuuAuthHandler } from "../../src/auth/VuuAuthHandler";
 
 const config = {
   authUrl: "https://login.example.test",

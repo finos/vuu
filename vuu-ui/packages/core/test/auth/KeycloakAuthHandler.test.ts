@@ -24,7 +24,9 @@ describe("KeycloakAuthHandler", () => {
   });
 
   it("initializes Keycloak once and refreshes the identity token", async () => {
-    const { KeycloakAuthHandler } = await import("../src/KeycloakAuthHandler");
+    const { KeycloakAuthHandler } = await import(
+      "../../src/auth/KeycloakAuthHandler"
+    );
     const handler = new KeycloakAuthHandler({
       authUrl: "https://identity.example.test",
       restUrl: "https://vuu.example.test/api/authn",

@@ -17,7 +17,7 @@ import type {
   TableRowSelectHandler,
 } from "@vuu-ui/vuu-table-types";
 import { isStringColumn, toColumnName } from "@vuu-ui/vuu-utils";
-import { useData } from "@vuu-ui/vuu-utils2";
+import { useData } from "@vuu-ui/core";
 import {
   type ChangeEvent,
   type KeyboardEventHandler,
@@ -29,10 +29,11 @@ import {
 } from "react";
 import type { TablePickerProps } from "./TablePicker";
 
-export interface TablePickerHookProps extends Pick<
-  TablePickerProps,
-  "TableProps" | "onSelect" | "rowToString" | "schema" | "searchColumns"
-> {
+export interface TablePickerHookProps
+  extends Pick<
+    TablePickerProps,
+    "TableProps" | "onSelect" | "rowToString" | "schema" | "searchColumns"
+  > {
   defaultIsOpen?: boolean;
   isOpen?: boolean;
 }

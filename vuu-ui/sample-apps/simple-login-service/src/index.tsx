@@ -1,4 +1,4 @@
-import { VuuLoginHandler } from "@vuu-ui/vuu-auth";
+import { VuuLoginHandler } from "@vuu-ui/core";
 import { SaltProviderNext } from "@salt-ds/core";
 import { LoginPanel } from "@vuu-ui/vuu-shell";
 import { createRoot } from "react-dom/client";
@@ -14,7 +14,7 @@ const config = {
   ssl: true,
   authUrl: "http://localhost:5001",
   moduleRegistryUrl: "/module-registry.json",
-  redirectUrl: 'https://localhost:8443/index.html',
+  redirectUrl: "https://localhost:8443/index.html",
   restUrl: "api/authn",
   websocketUrl: "wss://localhost:8090/websocket",
 };

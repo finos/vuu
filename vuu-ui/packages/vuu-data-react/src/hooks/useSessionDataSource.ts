@@ -4,7 +4,7 @@ import type {
   DataSourceConfigChangeHandler,
   DataSourceConstructorProps,
 } from "@vuu-ui/vuu-data-types";
-import { useData } from "@vuu-ui/vuu-utils2";
+import { useData } from "@vuu-ui/core";
 import { useCallback, useRef } from "react";
 
 const sessionState = new Map<string, DataSource>();

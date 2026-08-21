@@ -7,7 +7,7 @@ import type {
 import { useCallback, useMemo, useState } from "react";
 import { useNotifications } from "@vuu-ui/vuu-notifications";
 import { buildColumnMap, type ColumnMap } from "@vuu-ui/vuu-utils";
-import { useData } from "@vuu-ui/vuu-utils2";
+import { useData } from "@vuu-ui/core";
 import type { VuuRpcServiceRequest } from "@vuu-ui/vuu-protocol-types";
 import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
 

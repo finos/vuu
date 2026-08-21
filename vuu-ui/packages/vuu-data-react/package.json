@@ -30,7 +30,7 @@
     "@vuu-ui/vuu-ui-controls": "3.1.0",
     "@vuu-ui/vuu-utils": "3.1.0",
     "@vuu-ui/vuu-table": "3.1.0",
-    "@vuu-ui/vuu-auth": "3.1.0"
+    "@vuu-ui/core": "3.1.0"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",

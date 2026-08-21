@@ -12,7 +12,7 @@ This document defines authentication and VUU connection handling for:
 - `PortalShell`, the authenticated portal runtime container.
 - `Feature`, which lazy-loads module-federation remotes.
 - `RemoteModule`, which establishes the VUU connection required by a remote.
-- `@vuu-ui/vuu-auth`, which owns identity authentication and VUU token
+- `@vuu-ui/core`, which owns identity authentication and VUU token
   exchange.
 - `@vuu-ui/vuu-data-react`, which supplies VUU data-source implementations
   without performing authentication.
@@ -64,7 +64,7 @@ VUU token.
 
 ## Package Responsibilities
 
-### `@vuu-ui/vuu-auth`
+### `@vuu-ui/core`
 
 The auth package owns:
 

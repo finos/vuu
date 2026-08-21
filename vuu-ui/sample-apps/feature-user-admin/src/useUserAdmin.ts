@@ -2,9 +2,12 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
 import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
 import { useViewContext } from "@vuu-ui/vuu-layout";
-import type { SelectionChangeHandler, TableConfig } from "@vuu-ui/vuu-table-types";
+import type {
+  SelectionChangeHandler,
+  TableConfig,
+} from "@vuu-ui/vuu-table-types";
 import type { SelectRowRequest } from "@vuu-ui/vuu-protocol-types";
-import { useData } from "@vuu-ui/vuu-utils2";
+import { useData } from "@vuu-ui/core";
 
 const KEYCLOAK_ADMIN_MODULE = "KEYCLOAK_ADMIN";
 
@@ -38,7 +41,9 @@ export type UserAdminHookResult = {
 
 const buildTableConfig = (schema: TableSchema): TableConfig => ({
   columnLayout: "fit",
-  columns: schema.columns.filter(({ name }) => !INTERNAL_COLUMN_NAMES.has(name)),
+  columns: schema.columns.filter(
+    ({ name }) => !INTERNAL_COLUMN_NAMES.has(name),
+  ),
   rowSeparators: true,
   zebraStripes: true,
 });
@@ -55,9 +60,18 @@ export const useUserAdmin = (): UserAdminHookResult | undefined => {
   useMemo(async () => {
     const serverAPI = await getServerAPI();
     const [users, userGroupRoles, groupRoles] = await Promise.all([
-      serverAPI.getTableSchema({ module: KEYCLOAK_ADMIN_MODULE, table: "users" }),
-      serverAPI.getTableSchema({ module: KEYCLOAK_ADMIN_MODULE, table: "user_group_roles" }),
-      serverAPI.getTableSchema({ module: KEYCLOAK_ADMIN_MODULE, table: "group_roles" }),
+      serverAPI.getTableSchema({
+        module: KEYCLOAK_ADMIN_MODULE,
+        table: "users",
+      }),
+      serverAPI.getTableSchema({
+        module: KEYCLOAK_ADMIN_MODULE,
+        table: "user_group_roles",
+      }),
+      serverAPI.getTableSchema({
+        module: KEYCLOAK_ADMIN_MODULE,
+        table: "group_roles",
+      }),
     ]);
     setSchemas({ groups: userGroupRoles, roles: groupRoles, users });
   }, [getServerAPI]);
@@ -65,7 +79,8 @@ export const useUserAdmin = (): UserAdminHookResult | undefined => {
   const dataSources = useMemo<KeycloakAdminDataSources | undefined>(() => {
     if (!schemas) return undefined;
     const sessionPrefix = `${id ?? "feature-user-admin"}-keycloak-admin`;
-    const getColumns = (schema: TableSchema) => schema.columns.map(({ name }) => name);
+    const getColumns = (schema: TableSchema) =>
+      schema.columns.map(({ name }) => name);
     const groupsDataSource = getDataSource(`${sessionPrefix}-groups`, {
       bufferSize: 200,
       columns: getColumns(schemas.groups),
@@ -120,14 +135,18 @@ export const useUserAdmin = (): UserAdminHookResult | undefined => {
       schemas
         ? {
             columnLayout: "fit",
-            columns: ["role_name", "group_name"].map((name) => ({
-              name,
-              hidden: false,
-            })).concat(
-              schemas.roles.columns
-                .filter(({ name }) => name !== "role_name" && name !== "group_name")
-                .map(({ name }) => ({ name, hidden: true }))
-            ),
+            columns: ["role_name", "group_name"]
+              .map((name) => ({
+                name,
+                hidden: false,
+              }))
+              .concat(
+                schemas.roles.columns
+                  .filter(
+                    ({ name }) => name !== "role_name" && name !== "group_name",
+                  )
+                  .map(({ name }) => ({ name, hidden: true })),
+              ),
             rowSeparators: true,
             zebraStripes: true,
           }
@@ -140,10 +159,12 @@ export const useUserAdmin = (): UserAdminHookResult | undefined => {
       if (selectionChange.type === "SELECT_ROW") {
         const { rowKey } = selectionChange as SelectRowRequest;
         setDrawerOpen(true);
-        groupsDataSourceRef.current?.setFilter?.({ op: "=", column: "user_id", value: rowKey });
-      } else if (
-        selectionChange.type === "SELECT_ROW_RANGE"
-      ) {
+        groupsDataSourceRef.current?.setFilter?.({
+          op: "=",
+          column: "user_id",
+          value: rowKey,
+        });
+      } else if (selectionChange.type === "SELECT_ROW_RANGE") {
         setDrawerOpen(true);
       } else if (selectionChange.type === "DESELECT_ALL") {
         setDrawerOpen(false);

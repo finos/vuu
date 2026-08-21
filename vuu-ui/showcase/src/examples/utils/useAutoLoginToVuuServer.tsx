@@ -1,4 +1,4 @@
-import { authenticateWithUsernamePassword } from "@vuu-ui/vuu-auth";
+import { authenticateWithUsernamePassword } from "@vuu-ui/core";
 import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
 import { useEffect, useState } from "react";
 

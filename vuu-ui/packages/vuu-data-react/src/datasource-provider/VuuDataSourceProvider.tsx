@@ -1,7 +1,7 @@
-import { useOptionalVuuConnectionId } from "@vuu-ui/vuu-auth";
+import { useOptionalVuuConnectionId } from "@vuu-ui/core";
 import { ConnectionManager, VuuDataSource } from "@vuu-ui/vuu-data-remote";
 import type { DataSourceConstructorProps } from "@vuu-ui/vuu-data-types";
-import { DataProvider } from "@vuu-ui/vuu-utils2";
+import { DataProvider } from "@vuu-ui/core";
 import { useMemo, type ReactNode } from "react";
 
 /**

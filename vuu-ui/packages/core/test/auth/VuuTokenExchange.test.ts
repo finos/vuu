@@ -3,7 +3,7 @@ import {
   exchangeVuuToken,
   VuuTokenExchangeError,
   type VuuAuthTarget,
-} from "../src/VuuTokenExchange";
+} from "../../src/auth/VuuTokenExchange";
 
 const target: VuuAuthTarget = {
   connectionId: "orders",
@@ -36,7 +36,7 @@ describe("exchangeVuuToken", () => {
     });
     expect(fetch).toHaveBeenCalledWith(target.restUrl, {
       headers: { Authorization: "Bearer identity-token" },
-      method: "POST"
+      method: "POST",
     });
   });
 

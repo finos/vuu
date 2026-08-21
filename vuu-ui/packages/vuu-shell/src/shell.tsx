@@ -1,6 +1,6 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { useAuthenticatedUser } from "@vuu-ui/vuu-auth";
+import { useAuthenticatedUser } from "@vuu-ui/core";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import type { LayoutChangeHandler } from "@vuu-ui/vuu-layout";
 import { LayoutProvider, StackLayout } from "@vuu-ui/vuu-layout";
@@ -21,7 +21,10 @@ import {
   PersistenceProvider,
   usePersistenceManager,
 } from "./persistence-manager";
-import { type ShellLayoutProps, useShellLayout } from "./shell-layout-templates";
+import {
+  type ShellLayoutProps,
+  useShellLayout,
+} from "./shell-layout-templates";
 import {
   type WorkspaceProps,
   WorkspaceProvider,
@@ -32,7 +35,6 @@ import { loadingJSON } from "./workspace-management/defaultWorkspaceJSON";
 import { useLostConnection } from "@vuu-ui/vuu-data-react";
 
 import shellCss from "./shell.css";
-
 
 if (process.env.NODE_ENV === "production") {
   // StackLayout is loaded just to force component registration, we know it will be
@@ -81,10 +83,7 @@ const getHTMLAttributes = (props?: ShellLayoutProps) => {
 const VuuApplication = ({
   shellLayoutProps: ShellLayoutProps,
   children,
-}: Omit<
-  ShellProps,
-  "ContentLayoutProps" | "loginUrl" | "workspaceProps"
->) => {
+}: Omit<ShellProps, "ContentLayoutProps" | "loginUrl" | "workspaceProps">) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-shell",
@@ -133,11 +132,7 @@ const VuuApplication = ({
   );
 };
 
-export const Shell = ({
-  logout,
-  workspaceProps,
-  ...props
-}: ShellProps) => {
+export const Shell = ({ logout, workspaceProps, ...props }: ShellProps) => {
   // If user has provided an implementation of IPersistenceManager
   // by wrapping higher level PersistenceProvider, use it, otw
   // default to LocalPersistenceManager
@@ -160,11 +155,7 @@ export const Shell = ({
   // SaltProvider.
 
   const shellProviders = (
-    <ApplicationProvider
-      density="high"
-      logout={logout}
-      theme="vuu-theme"
-    >
+    <ApplicationProvider density="high" logout={logout} theme="vuu-theme">
       <WorkspaceProvider {...workspaceProps}>
         <ModalProvider>
           <NotificationsProvider>

@@ -1,9 +1,9 @@
 {
-  "name": "@vuu-ui/vuu-portal",
+  "name": "@vuu-ui/core",
   "version": "3.1.0",
-  "description": "VUU portal and Module Federation support",
+  "description": "Core VUU authentication, data context, portal, and Module Federation APIs",
   "files": [
-    "DESIGN.md"
+    "docs"
   ],
   "main": "src/index.ts",
   "author": "heswell",
@@ -11,15 +11,18 @@
   "type": "module",
   "scripts": {
     "build": "node ../../scripts/run-build-rslib.ts",
+    "test": "cd ../.. && vitest run packages/core/test",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
     "@module-federation/enhanced": "2.8.0",
     "@salt-ds/core": "1.67.0",
-    "@vuu-ui/vuu-auth": "3.1.0",
     "@vuu-ui/vuu-data-react": "3.1.0",
+    "@vuu-ui/vuu-data-remote": "3.1.0",
+    "@vuu-ui/vuu-data-types": "3.1.0",
     "@vuu-ui/vuu-icons": "3.1.0",
     "@vuu-ui/vuu-ui-controls": "3.1.0",
+    "keycloak-js": "26.2.4",
     "react-router-dom": "^6.2.1"
   },
   "peerDependencies": {

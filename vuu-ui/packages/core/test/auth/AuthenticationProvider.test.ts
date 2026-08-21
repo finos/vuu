@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   AuthenticationConfigurationError,
   normalizeVuuAuthTarget,
-} from "../src/AuthenticationProvider";
+} from "../../src/auth/AuthenticationProvider";
 
 const portalTarget = {
   connectionId: "portal",
