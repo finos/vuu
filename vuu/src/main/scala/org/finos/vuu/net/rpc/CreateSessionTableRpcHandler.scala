@@ -33,8 +33,10 @@ trait CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker, t
     }
     val sessionTableName = params.namedParams.get("sessionTableName") match {
       case Some(value) => value.asInstanceOf[String]
-      case None => params.namedParams.get("isImport") match {
-        case Some(true) => s"import-${sourceTable.name}"
+      case None => params.namedParams.get("sessionType") match {
+        case Some("edit") => s"edit-${sourceTable.name}"
+        case Some("import") => s"import-${sourceTable.name}"
+        case Some("export") => s"export-${sourceTable.name}"
         case _ => s"edit-${sourceTable.name}"
       }
     }
