@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`@vuu-ui/core` provides the reusable components, types, and utilities
+`@vuu-ui/core/portal` provides the reusable components, types, and utilities
 needed to build VUU portals with Module Federation. It is the package boundary
 for portal host behavior and remote-module integration.
 
@@ -45,8 +45,9 @@ core/
 |   |-- portal-shell/
 |   |-- remote-module/
 |   |-- index.ts
+|   |-- portal.ts
 |   `-- RemoteModuleDescriptor.ts
-|-- DESIGN.md
+|-- docs/
 |-- README.md
 |-- package.json
 `-- tsconfig.json

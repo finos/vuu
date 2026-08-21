@@ -2,14 +2,8 @@ import fs from "fs";
 
 export const readPackageJson = (path = "package.json") => readJson(path);
 
-type PackageExports = {
-  ".": {
-    import: string;
-  };
-  style?: {
-    import: string;
-  };
-};
+type PackageExport = string | { import: string };
+type PackageExports = Record<string, PackageExport>;
 type Json = {
   exports?: PackageExports;
   files?: string[];
@@ -32,6 +26,7 @@ export async function writePackageJSON(
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const {
+      exports: sourceExports,
       files: filesFromPackageJson = [],
       name: scopedPackageName,
       style,
@@ -49,9 +44,14 @@ export async function writePackageJSON(
       });
     });
 
-    const exports: PackageExports = {
-      ".": { import: "./src/index.js" },
-    };
+    const exports: PackageExports = Object.fromEntries(
+      Object.entries(
+        sourceExports ?? { ".": "./src/index.ts" },
+      ).map(([subpath, target]) => {
+        const importPath = typeof target === "string" ? target : target.import;
+        return [subpath, { import: importPath.replace(/\.tsx?$/, ".js") }];
+      }),
+    );
 
     if (style) {
       exports.style = { import: style };
