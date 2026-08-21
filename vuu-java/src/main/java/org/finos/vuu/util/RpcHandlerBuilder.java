@@ -18,7 +18,7 @@ public class RpcHandlerBuilder {
     }
 
     public RpcHandler build() {
-        RpcHandler rpcHandler = DefaultRpcHandler$.MODULE$;
+        RpcHandler rpcHandler = DefaultRpcHandler$.MODULE$.apply();
         rpcs.forEach(rpcHandler::registerRpc);
         return rpcHandler;
     }

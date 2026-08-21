@@ -11,7 +11,7 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
   private val ctx = RequestContext("requestId", VuuUser("user"), ClientSessionId("sessionId", "channel"), null)
 
   override def beforeEach(): Unit = {
-    handler = DefaultRpcHandler
+    handler = DefaultRpcHandler.apply()
   }
 
   Feature("Default Rpc Handler for Viewport Rpc") {
