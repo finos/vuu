@@ -21,39 +21,39 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala3-library_3</artifactId>
-            <version>${scala.version}</version>
+            <version>${vuu.scala.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-core</artifactId>
-            <version>${vertx.version}</version>
+            <version>${vuu.vertx.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
-            <version>${vertx.version}</version>
+            <version>${vuu.vertx.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web-client</artifactId>
-            <version>${vertx.version}</version>
+            <version>${vuu.vertx.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
+            <version>${vuu.logback.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_3</artifactId>
-            <version>${scalatest.version}</version>
+            <version>${vuu.scalatest.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -66,7 +66,7 @@
         <dependency>
             <groupId>org.scalamock</groupId>
             <artifactId>scalamock_3</artifactId>
-            <version>${scalamock.version}</version>
+            <version>${vuu.scalamock.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>

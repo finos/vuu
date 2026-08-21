@@ -26,13 +26,13 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala3-library_3</artifactId>
-            <version>${scala.version}</version>
+            <version>${vuu.scala.version}</version>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
+            <version>${vuu.logback.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -48,7 +48,7 @@
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_3</artifactId>
-            <version>${scalatest.version}</version>
+            <version>${vuu.scalatest.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>

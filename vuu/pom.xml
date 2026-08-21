@@ -18,7 +18,7 @@
             <dependency>
                 <groupId>tools.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
-                <version>${jackson.version}</version>
+                <version>${vuu.jackson.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -35,13 +35,13 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala3-library_3</artifactId>
-            <version>${scala.version}</version>
+            <version>${vuu.scala.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
             <artifactId>scala-logging_3</artifactId>
-            <version>${scala.logging.version}</version>
+            <version>${vuu.scala.logging.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
@@ -125,20 +125,20 @@
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr4-runtime</artifactId>
-            <version>${antlr.version}</version>
+            <version>${vuu.antlr.version}</version>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
+            <version>${vuu.logback.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_3</artifactId>
-            <version>${scalatest.version}</version>
+            <version>${vuu.scalatest.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -151,7 +151,7 @@
         <dependency>
             <groupId>org.scalamock</groupId>
             <artifactId>scalamock_3</artifactId>
-            <version>${scalamock.version}</version>
+            <version>${vuu.scalamock.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -276,7 +276,7 @@
             <plugin>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
-                <version>${antlr.version}</version>
+                <version>${vuu.antlr.version}</version>
                 <configuration>
                     <visitor>true</visitor>
                     <listener>false</listener>
