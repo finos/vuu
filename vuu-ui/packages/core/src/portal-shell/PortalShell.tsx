@@ -18,6 +18,9 @@ const classBase = "vuuPortalShell";
 
 const accentPurple = "purple" as Accent;
 
+const getRemoteRoutePath = (path: string) =>
+  path.endsWith("*") ? path : `${path}/*`;
+
 export interface PortalShellProps {
   id?: string;
   remoteModules: RemoteModuleDescriptor[];
@@ -64,7 +67,7 @@ export const PortalShell = ({ id, remoteModules, title }: PortalShellProps) => {
                     {remoteModules.map(({ id, path, ...feature }) => (
                       <Route
                         key={id}
-                        path={path}
+                        path={getRemoteRoutePath(path)}
                         element={<RemoteModule {...feature} />}
                       />
                     ))}
