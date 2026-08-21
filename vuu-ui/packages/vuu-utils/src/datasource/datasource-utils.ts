@@ -1,4 +1,4 @@
-import {
+import type {
   ConnectionQualityMetrics,
   DataSourceCallbackMessage,
   DataSourceConfig,
@@ -16,7 +16,7 @@ import {
   WithGroupBy,
   WithSort,
 } from "@vuu-ui/vuu-data-types";
-import {
+import type {
   LinkDescriptorWithLabel,
   VuuCreateVisualLink,
   VuuFilter,
@@ -24,8 +24,8 @@ import {
   VuuRowDataItemType,
   VuuSort,
 } from "@vuu-ui/vuu-protocol-types";
-import { ColumnMap } from "../column-utils";
-import { ConfigWithVisualLink } from "./BaseDataSource";
+import type { ColumnMap } from "../column-utils";
+import type { ConfigWithVisualLink } from "./BaseDataSource";
 
 export const NoFilter: VuuFilter = { filter: "" };
 export const NoSort: VuuSort = { sortDefs: [] };
@@ -195,7 +195,7 @@ const isVisualLinkChanged: DataConfigPredicate = (
   if (v1 === undefined || v2 === undefined) {
     return true;
   }
-  return v1.label !== v2.label || v2.parentVpId !== v2.parentVpId;
+  return v1.label !== v2.label || v1.parentVpId !== v2.parentVpId;
 };
 
 export const NO_CONFIG_CHANGES: MaybeDataSourceConfigChanges = {

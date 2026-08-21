@@ -1,6 +1,6 @@
-import { type ValidationStatus } from "@salt-ds/core";
-import { ValueOf } from "@vuu-ui/vuu-utils";
-import { ReactNode } from "react";
+import type { ValidationStatus } from "@salt-ds/core";
+import type { ValueOf } from "@vuu-ui/vuu-utils";
+import type { ReactNode } from "react";
 
 export type DispatchShowNotification = (
   notification: Notification,
@@ -65,7 +65,7 @@ export const isWorkspaceNotification = (
 ): n is WorkspaceNotificationDescriptor =>
   n.type === NotificationType.Workspace;
 
-export type NotificationsContext = {
+export type NotificationsContextProps = {
   hideNotification: DispatchHideNotification;
   showNotification: DispatchShowNotification;
   setNotify: (
