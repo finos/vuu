@@ -45,7 +45,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${vuu.logback.version}</version>
+            <version>${logback.version}</version>
         </dependency>
 
         <dependency>
@@ -60,14 +60,14 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>${vuu.junit.jupiter.version}</version>
+            <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_3</artifactId>
-            <version>${vuu.scalatest.version}</version>
+            <version>${scalatest.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>

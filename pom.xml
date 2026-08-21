@@ -42,21 +42,21 @@
         <publish.server.id>ossrh</publish.server.id>
 
         <!-- Dependencies -->
-        <vuu.antlr.version>4.13.2</vuu.antlr.version>
-        <vuu.assertj.version>3.27.7</vuu.assertj.version>
-        <vuu.jackson.version>3.1.5</vuu.jackson.version>
-        <vuu.junit.jupiter.version>6.1.2</vuu.junit.jupiter.version>
-        <vuu.logback.version>1.6.1</vuu.logback.version>
-        <vuu.metrics.version>4.2.39</vuu.metrics.version>
-        <vuu.netty.version>4.2.17.Final</vuu.netty.version>
-        <vuu.roaring.bitmap.version>1.6.14</vuu.roaring.bitmap.version>
-        <vuu.scala.version>3.3.8</vuu.scala.version> <!-- Scala LTS -->
-        <vuu.scala.logging.version>3.9.6</vuu.scala.logging.version>
-        <vuu.scalamock.version>7.5.5</vuu.scalamock.version>
-        <vuu.scalatest.version>3.2.20</vuu.scalatest.version>
-        <vuu.slf4j.version>2.0.18</vuu.slf4j.version>
-        <vuu.testcontainers.version>2.0.5</vuu.testcontainers.version>
-        <vuu.testcontainers.scalatest.version>0.44.1</vuu.testcontainers.scalatest.version>
+        <antlr.version>4.13.2</antlr.version>
+        <assertj.version>3.27.7</assertj.version>
+        <jackson.version>3.1.5</jackson.version>
+        <junit.jupiter.version>6.1.2</junit.jupiter.version>
+        <logback.version>1.6.1</logback.version>
+        <metrics.version>4.2.39</metrics.version>
+        <netty.version>4.2.17.Final</netty.version>
+        <roaring.bitmap.version>1.6.14</roaring.bitmap.version>
+        <scala.version>3.3.8</scala.version> <!-- Scala LTS -->
+        <scala.logging.version>3.9.6</scala.logging.version>
+        <scalamock.version>7.5.5</scalamock.version>
+        <scalatest.version>3.2.20</scalatest.version>
+        <slf4j.version>2.0.18</slf4j.version>
+        <testcontainers.version>2.0.5</testcontainers.version>
+        <testcontainers.scalatest.version>0.44.1</testcontainers.scalatest.version>
     </properties>
 
     <modules>
@@ -111,7 +111,7 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
-                <version>${vuu.netty.version}</version>
+                <version>${netty.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -119,7 +119,7 @@
             <dependency>
                 <groupId>tools.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
-                <version>${vuu.jackson.version}</version>
+                <version>${jackson.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -127,7 +127,7 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-bom</artifactId>
-                <version>${vuu.slf4j.version}</version>
+                <version>${slf4j.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

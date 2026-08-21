@@ -27,13 +27,13 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala3-library_3</artifactId>
-            <version>${vuu.scala.version}</version>
+            <version>${scala.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.clickhouse</groupId>
             <artifactId>client-v2</artifactId>
-            <version>${vuu.clickhouse.client.version}</version>
+            <version>${clickhouse.client.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.roaringbitmap</groupId>
@@ -45,28 +45,28 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>${vuu.testcontainers.version}</version>
+            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>com.dimafeng</groupId>
             <artifactId>testcontainers-scala-scalatest_3</artifactId>
-            <version>${vuu.testcontainers.scalatest.version}</version>
+            <version>${testcontainers.scalatest.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${vuu.logback.version}</version>
+            <version>${logback.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_3</artifactId>
-            <version>${vuu.scalatest.version}</version>
+            <version>${scalatest.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -79,7 +79,7 @@
         <dependency>
             <groupId>org.scalamock</groupId>
             <artifactId>scalamock_3</artifactId>
-            <version>${vuu.scalamock.version}</version>
+            <version>${scalamock.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>

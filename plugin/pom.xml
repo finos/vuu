@@ -14,8 +14,8 @@
     <name>${project.artifactId}</name>
 
     <properties>
-        <vuu.caffeine.version>3.2.4</vuu.caffeine.version>
-        <vuu.clickhouse.client.version>0.9.8</vuu.clickhouse.client.version>
+        <caffeine.version>3.2.4</caffeine.version>
+        <clickhouse.client.version>0.9.8</clickhouse.client.version>
     </properties>
 
     <modules>
