@@ -3,7 +3,7 @@ import { useEditableTable, type EditMode } from "@vuu-ui/vuu-data-editing";
 import { type SyntheticEvent, useCallback, useMemo, useState } from "react";
 import { editableColumns, moduleColumnDescriptors } from "./columnDescriptors";
 import { toColumnName } from "@vuu-ui/vuu-utils";
-import { useData } from "@vuu-ui/vuu-utils2";
+import { useData } from "@vuu-ui/core";
 
 export const useModuleAdmin = () => {
   const { VuuDataSource } = useData();

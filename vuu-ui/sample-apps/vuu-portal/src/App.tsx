@@ -1,22 +1,16 @@
-import { useIdentityToken } from "@vuu-ui/vuu-auth";
+import { useIdentityToken } from "@vuu-ui/core";
 import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
-import {
-  registerComponent,
-} from "@vuu-ui/vuu-utils";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import { useEffect, useState } from "react";
 import { ConfirmSelectionPanel } from "./order-management/cancel-confirm-prompt/ConfirmSelectionPanel";
-import { BrowserRouter, } from "react-router-dom";
-import {
-  PortalShell,
-  type RemoteModuleDescriptor,
-} from "@vuu-ui/vuu-portal";
+import { BrowserRouter } from "react-router-dom";
+import { PortalShell, type RemoteModuleDescriptor } from "@vuu-ui/core";
 import { getRegisteredModules } from "@vuu-ui/vuu-shell";
 
 import "./App.css";
 
 registerComponent("cancel-confirm", ConfirmSelectionPanel, "view");
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
-
 
 const { moduleRegistryUrl } = await vuuConfig;
 
@@ -42,7 +36,11 @@ export const App = () => {
 
   return (
     <BrowserRouter>
-      <PortalShell id="portal-demo" title="Portal Demo" remoteModules={remoteModules} />
+      <PortalShell
+        id="portal-demo"
+        title="Portal Demo"
+        remoteModules={remoteModules}
+      />
     </BrowserRouter>
   );
 };

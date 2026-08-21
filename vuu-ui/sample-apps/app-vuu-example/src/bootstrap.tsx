@@ -5,7 +5,7 @@ import {
   DirectVuuSessionResolver,
   VuuAuthHandler,
   VuuConnectionRegistry,
-} from "@vuu-ui/vuu-auth";
+} from "@vuu-ui/core";
 import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
 import { PageVisibilityObserver } from "@vuu-ui/vuu-utils";
 import { createRoot } from "react-dom/client";

@@ -1,5 +1,4 @@
-import { useAuthenticatedUser } from "@vuu-ui/vuu-auth";
-import { useData } from "@vuu-ui/vuu-utils2";
+import { useAuthenticatedUser, useData } from "@vuu-ui/core";
 import { useMemo } from "react";
 
 import "./SimpleDiv.css";

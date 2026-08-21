@@ -2,7 +2,7 @@ import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import type { TableRowSelectHandler } from "@vuu-ui/vuu-table-types";
 import type { OpenChangeHandler } from "@vuu-ui/vuu-ui-controls";
 import { type CommitHandler, buildColumnMap } from "@vuu-ui/vuu-utils";
-import { useData } from "@vuu-ui/vuu-utils2";
+import { useData } from "@vuu-ui/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type BasketCreatedHandler = (

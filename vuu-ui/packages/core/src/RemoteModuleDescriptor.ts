@@ -1,4 +1,4 @@
-import type { RemoteModuleConnection } from "@vuu-ui/vuu-auth";
+import type { RemoteModuleConnection } from "./auth";
 
 export interface RemoteModuleDescriptor {
   description: string;

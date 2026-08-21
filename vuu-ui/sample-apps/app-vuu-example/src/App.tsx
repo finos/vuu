@@ -10,7 +10,7 @@ import {
   ShellContextProvider,
   type ShellLayoutProps,
 } from "@vuu-ui/vuu-shell";
-import { useIdentityToken } from "@vuu-ui/vuu-auth";
+import { useIdentityToken } from "@vuu-ui/core";
 import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
 import {
@@ -31,7 +31,6 @@ assertComponentsRegistered([
   { componentName: "Flexbox", component: FlexboxLayout },
   { componentName: "Stack", component: StackLayout },
 ]);
-
 
 const defaultWebsocketUrl = (ssl: boolean) =>
   `${ssl ? "wss" : "ws"}://${location.hostname}:8090/websocket`;

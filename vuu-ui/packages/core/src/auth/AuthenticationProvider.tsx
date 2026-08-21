@@ -3,7 +3,7 @@ import type {
   DataSourceConstructorProps,
   RemoteModuleConnection,
 } from "@vuu-ui/vuu-data-types";
-import { DataProvider } from "@vuu-ui/vuu-utils2";
+import { DataProvider } from "../context-definitions/DataProvider";
 import {
   createContext,
   useCallback,

@@ -1,10 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { AuthHandler } from "../src/AuthHandler";
+import type { AuthHandler } from "../../src/auth/AuthHandler";
 import {
   VuuConnectionRegistry,
   type VuuConnectionClient,
-} from "../src/VuuConnectionRegistry";
-import type { VuuAuthTarget, VuuSession } from "../src/VuuTokenExchange";
+} from "../../src/auth/VuuConnectionRegistry";
+import type {
+  VuuAuthTarget,
+  VuuSession,
+} from "../../src/auth/VuuTokenExchange";
 
 const target: VuuAuthTarget = {
   connectionId: "orders",

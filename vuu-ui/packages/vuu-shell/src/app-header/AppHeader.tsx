@@ -1,7 +1,7 @@
 import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { useLogout } from "@vuu-ui/vuu-auth";
+import { useLogout } from "@vuu-ui/core";
 import { useLayoutOperation } from "@vuu-ui/vuu-layout";
 import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
 import { Toolbar } from "@vuu-ui/vuu-ui-controls";

@@ -9,7 +9,7 @@ import {
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { useAuthenticatedUser } from "@vuu-ui/vuu-auth";
+import { useAuthenticatedUser } from "@vuu-ui/core";
 import type { LayoutMetadataDto } from "@vuu-ui/vuu-utils";
 import {
   type ChangeEvent,

@@ -1,4 +1,4 @@
-# @vuu-ui/vuu-portal
+# @vuu-ui/core portal
 
 Reusable VUU portal host and Module Federation integration components.
 
