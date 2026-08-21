@@ -1,13 +1,10 @@
 import { test } from "@playwright/experimental-ct-react";
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { expect } from "../../../../../playwright/customAssertions";
 import {
   EditMultiClauseOrFilter,
   NewFilter,
 } from "../../../../../showcase/src/examples/Filters/FilterEditor.examples";
-import { FilterBarOneSimpleFilter } from "../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
-import { clickFilterPillTrigger, clickMenuItem } from "./filter-test-utils";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { FilterEditorProps } from "../../filter-editor";
 
 const assertComboboxReady = async (page: any) => {
   await expect(page.getByRole("combobox")).toBeFocused();
@@ -22,17 +19,6 @@ const selectMenuOption = async (page: any, name: "AND" | "OR") => {
   await page.getByRole("menuitem", { name }).press("Enter");
 };
 
-const EditMultiClauseOrFilterFixture = (props: Partial<FilterEditorProps>) => (
-  <LocalDataSourceProvider>
-    <EditMultiClauseOrFilter {...props} />
-  </LocalDataSourceProvider>
-);
-
-const FilterBarOneSimpleFilterFixture = () => (
-  <LocalDataSourceProvider>
-    <FilterBarOneSimpleFilter />
-  </LocalDataSourceProvider>
-);
 
 test.describe("FilterEditor", () => {
   test.describe("WHEN rendered with new FilterClauseModel", () => {
@@ -477,7 +463,6 @@ test.describe("FilterEditor", () => {
       test.describe("WHEN left arrow is repeatedly pressed from end of FilterEditor", () => {
         // this test is flaky. Works 100% with manual interaction. Fails at differernt places in different browsers
         test.skip("THEN focus moves from field to field, first selecting then deselecting, then across combinators and clauses", async ({
-          browserName,
           mount,
           page,
         }) => {

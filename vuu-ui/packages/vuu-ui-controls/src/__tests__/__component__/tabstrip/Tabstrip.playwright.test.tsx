@@ -2,7 +2,6 @@ import { test, expect } from "@playwright/experimental-ct-react";
 import {
   DefaultTabstrip,
   TabstripEditableLabels,
-  TabstripRemoveTab,
 } from "../../../../../../showcase/src/examples/UiControls/Tabstrip.examples";
 
 const OVERFLOW_ITEMS = ".vuuOverflowContainer-wrapContainer > *";

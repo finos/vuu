@@ -1,6 +1,6 @@
-import { RefCallback } from "react";
-import { asInteger, isValidNumber, orientationType } from "@vuu-ui/vuu-utils";
-import { DragContext, DropPosition } from "./DragContextNext";
+import type { RefCallback } from "react";
+import { asInteger, isValidNumber, type orientationType } from "@vuu-ui/vuu-utils";
+import type { DragContext, DropPosition } from "./DragContextNext";
 
 export type State = "initial" | "away" | "1spacer" | "2spacer";
 
@@ -64,9 +64,12 @@ export class SpaceMan {
       }
 
       throw Error(
-        `[[SpaceMan] (getter) dropPosition] no dropTarget with data-drop-target attribute found`,
+        '[[SpaceMan] (getter) dropPosition] no dropTarget with data-drop-target attribute found'
       );
     }
+    throw Error(
+      '[[SpaceMan] (getter) no dropTagte spacer found',
+    );
   }
 
   get positionRelativeToTargetTab(): "before" | "after" {

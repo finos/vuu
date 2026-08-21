@@ -1,24 +1,24 @@
-import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { VuuInput } from "@vuu-ui/vuu-ui-controls";
-import { getFieldName, Settings } from "@vuu-ui/vuu-utils";
+import { getFieldName, type Settings } from "@vuu-ui/vuu-utils";
 import {
   Dropdown,
-  DropdownProps,
+  type DropdownProps,
   FormField,
   FormFieldLabel,
   Option,
   Switch,
   ToggleButton,
   ToggleButtonGroup,
-  ToggleButtonGroupProps,
+  type ToggleButtonGroupProps,
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
-  FormEventHandler,
-  HTMLAttributes,
-  SyntheticEvent,
+  type FormEventHandler,
+  type HTMLAttributes,
+  type SyntheticEvent,
   useCallback,
   useState,
 } from "react";
@@ -29,11 +29,11 @@ export interface SettingsSchema {
   properties: SettingsProperty[];
 }
 
-export type Option<T> = { label: string; value: T };
+export type OptionType<T> = { label: string; value: T };
 
 export const isOption = (
-  value: Option<number | string> | number | string,
-): value is Option<number | string> =>
+  value: OptionType<number | string> | number | string,
+): value is OptionType<number | string> =>
   typeof value === "object" && "label" in value && "label" in value;
 
 export interface BaseProperty {
@@ -42,12 +42,12 @@ export interface BaseProperty {
 }
 
 export interface StringProperty extends BaseProperty {
-  values?: string[] | Option<string>[];
+  values?: string[] | OptionType<string>[];
   defaultValue?: string;
   type: "string";
 }
 export interface NumericProperty extends BaseProperty {
-  values?: number[] | Option<number>[];
+  values?: number[] | OptionType<number>[];
   defaultValue?: number;
   type: "number";
 }
@@ -68,7 +68,7 @@ export const isBooleanProperty = (
 export const isStringOrNumber = (value: unknown): value is string | number =>
   typeof value === "string" || typeof value === "number";
 
-const getValueAndLabel = (value: string | number | Option<string | number>) =>
+const getValueAndLabel = (value: string | number | OptionType<string | number>) =>
   isOption(value) ? [value.value, value.label] : [value, value];
 
 const defaultPropertyValue: Record<
@@ -96,6 +96,7 @@ export function FormControl({
   inputHandler: FormEventHandler;
   currentValue: VuuRowDataItemType;
 }) {
+  // biome-ignore lint/correctness/useHookAtTopLevel: <ignore>
   const [value, setValue] = useState(currentValue);
   if (isBooleanProperty(property)) {
     const checked =
@@ -103,7 +104,7 @@ export function FormControl({
         ? currentValue
         : (property.defaultValue ?? false);
 
-    return <Switch checked={checked} onChange={changeHandler}></Switch>;
+    return <Switch checked={checked} onChange={changeHandler} />;
   }
   // Toggle Box for 1 or 2 values
   if (Array.isArray(property.values)) {
@@ -136,7 +137,7 @@ export function FormControl({
                 value={label}
                 key={value}
                 data-field={property.name}
-              ></Option>
+              />
             );
           })}
         </Dropdown>
