@@ -31,7 +31,12 @@ trait CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker, t
     }
     val sessionTableName = params.namedParams.get("sessionTableName") match {
       case Some(value) => value.asInstanceOf[String]
-      case None => s"edit-${sourceTable.name}"
+      case None => params.namedParams.get("sessionType") match {
+        case Some("edit") => s"edit-${sourceTable.name}"
+        case Some("import") => s"import-${sourceTable.name}"
+        case Some("export") => s"export-${sourceTable.name}"
+        case _ => return new RpcFunctionFailure("sessionType undefined")
+      }// TODO 2231 add tests for sessionType
     }
 
     if (!sourceTable.asTable.getTableDef.options.isEditable) {
@@ -54,14 +59,14 @@ trait CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker, t
       case All =>
         val vp = params.viewPort
         val vpColumns = ViewPortColumnCreator.create(params.viewPort.table.asTable, columnsToCopy)
-        val iterator = vp.getKeys.iterator.take(tableContainer.rpcOptions.maxCopySize)
+        val iterator = vp.getKeys.iterator.take(tableContainer.rpcOptions.maxSessionTableSize)
         while (iterator.hasNext) {
           sessionTable.processUpdate(vp.table.pullRow(iterator.next(), vpColumns))
         }
       case Selected =>
         val vp = params.viewPort
         val vpColumns = ViewPortColumnCreator.create(params.viewPort.table.asTable, columnsToCopy)
-        val iterator = vp.getSelection.iterator.take(tableContainer.rpcOptions.maxCopySize)
+        val iterator = vp.getSelection.iterator.take(tableContainer.rpcOptions.maxSessionTableSize)
         while (iterator.hasNext) {
           sessionTable.processUpdate(vp.table.pullRow(iterator.next(), vpColumns))
         }

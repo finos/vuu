@@ -30,7 +30,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   private val largeSessionTableDefName = "edit-" + largeTableName
   private val moduleName = "EditInSessionTableRpcTest"
   private val testProviderFactory = new TestProviderFactory
-  private val maxCopySize = 10 // configured in CoreServerApiTest
+  private val maxSessionTableSize = 10 // configured in CoreServerApiTest
 
   // TODO add more tests:
   // Test when vp is filtered and sorted, the data copied to session table is also filtered and sorted
@@ -168,7 +168,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
-      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, maxCopySize)
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, maxSessionTableSize)
     }
 
     Scenario("create a session table from selected rows of source table") {
@@ -223,7 +223,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
-      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, maxCopySize)
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, maxSessionTableSize)
     }
 
     Scenario("Request to create a session table failed for no enough permission") {
