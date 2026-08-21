@@ -9,6 +9,7 @@ export {
   useIdentityToken,
   useLogout,
   useOptionalVuuConnectionId,
+  usePortalVuuAuthTarget,
   useVuuAccessToken,
   useVuuConnectionId, VuuConnectionError, type AuthenticationErrorHandler,
   type AuthenticationProviderProps,

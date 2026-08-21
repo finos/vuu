@@ -19,6 +19,8 @@ import "./PortalNav.css";
 
 const classBase = "vuuPortalNav";
 
+const toNavigationPath = (path: string) => path.replace(/\/\*$/, "");
+
 type NavItem = {
     title: string;
     href: string;
@@ -106,7 +108,7 @@ const buildNavItems = (remoteModules: RemoteModuleDescriptor[]) => {
             parent.children = [
                 ...(parent.children ?? []),
                 {
-                    href: remoteModule.path,
+                    href: toNavigationPath(remoteModule.path),
                     title: childTitle,
                 },
             ];

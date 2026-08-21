@@ -10,6 +10,7 @@ export const getRegisteredModules = async (
 ) => {
   console.log(`getRegisteredModules ${registryUrl}`);
   const response = await fetch(registryUrl, {
+    cache: "no-store",
     headers: { Authorization: `Bearer ${bearerToken}` },
   });
   if (!response.ok) {

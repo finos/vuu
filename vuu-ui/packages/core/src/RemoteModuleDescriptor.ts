@@ -17,6 +17,7 @@ export interface RemoteModuleDescriptor {
    * Module federation - the url of remote module manifest
    */
   mfUrl: string;
+  moduleRegistryUrl?: string;
   path: string;
   title: string;
   vuu?: RemoteModuleConnection;

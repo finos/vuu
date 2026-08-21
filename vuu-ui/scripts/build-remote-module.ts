@@ -13,6 +13,14 @@ const packageJsonPath = path.resolve(process.cwd(), "./package.json");
 const require = createRequire(import.meta.url);
 const packageJson = require(packageJsonPath);
 
+const normalizeExposes = (exposes: Record<string, string>) =>
+  Object.fromEntries(
+    Object.entries(exposes).map(([name, request]) => [
+      name,
+      request.startsWith("src/") ? `./${request}` : request,
+    ]),
+  );
+
 async function build(
   packageName: string,
   {
@@ -85,7 +93,7 @@ async function build(
             new ModuleFederationPlugin({
               name,
               dts: false,
-              exposes,
+              exposes: normalizeExposes(exposes),
               shared: getSharedDependencies("producer"),
             }),
           ],
