@@ -24,7 +24,12 @@ import type { RemoteModuleConnection } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { getRegisteredModules } from "@vuu-ui/vuu-shell";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+  useParams,
+  useResolvedPath,
+} from "react-router-dom";
 
 import "./VuuTableBrowser.css";
 
@@ -107,6 +112,8 @@ const SourceNavigation = ({
   source?: SourceState;
 }) => {
   const location = useLocation();
+  const browserRoute = useResolvedPath(".");
+  const browserRoutePath = browserRoute.pathname.replace(/\/$/, "");
   const duplicateNames = useMemo(() => {
     const counts = new Map<string, number>();
     for (const table of source?.tables ?? []) {
@@ -163,7 +170,12 @@ const SourceNavigation = ({
               return (
                 <VerticalNavigationItem active={selected} key={path}>
                   <VerticalNavigationItemContent>
-                    <Link to={{ pathname: path, search: location.search }}>
+                    <Link
+                      to={{
+                        pathname: `${browserRoutePath}/${path}`,
+                        search: location.search,
+                      }}
+                    >
                       <VerticalNavigationItemLabel title={label}>
                         {label}
                       </VerticalNavigationItemLabel>
