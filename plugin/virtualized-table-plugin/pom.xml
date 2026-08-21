@@ -20,19 +20,19 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala3-library_3</artifactId>
-            <version>${scala.version}</version>
+            <version>${vuu.scala.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
-            <version>${caffeine.version}</version>
+            <version>${vuu.caffeine.version}</version>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
+            <version>${vuu.logback.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -48,7 +48,7 @@
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_3</artifactId>
-            <version>${scalatest.version}</version>
+            <version>${vuu.scalatest.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>org.scalamock</groupId>
             <artifactId>scalamock_3</artifactId>
-            <version>${scalamock.version}</version>
+            <version>${vuu.scalamock.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>

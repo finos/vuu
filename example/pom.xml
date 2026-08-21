@@ -13,9 +13,9 @@
     <name>${project.artifactId}</name>
 
     <properties>
-        <sttp.client4.version>4.0.26</sttp.client4.version>
-        <typesafe.conf.version>1.4.9</typesafe.conf.version>
-        <vertx.version>5.1.6</vertx.version>
+        <vuu.sttp.client4.version>4.0.26</vuu.sttp.client4.version>
+        <vuu.typesafe.conf.version>1.4.9</vuu.typesafe.conf.version>
+        <vuu.vertx.version>5.1.6</vuu.vertx.version>
     </properties>
 
     <modules>
