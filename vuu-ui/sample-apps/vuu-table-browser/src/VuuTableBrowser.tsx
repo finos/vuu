@@ -191,9 +191,7 @@ const SourceNavigation = ({
   );
 };
 
-export default function VuuTableBrowser({
-  moduleRegistryUrl,
-}: VuuTableBrowserProps) {
+export default function VuuTableBrowser() {
   const getIdentityToken = useIdentityToken();
   const portalTarget = usePortalVuuAuthTarget();
   const routePath = useParams()["*"];
@@ -206,6 +204,8 @@ export default function VuuTableBrowser({
   const [registryError, setRegistryError] = useState<string>();
   const [retryCount, setRetryCount] = useState<Record<string, number>>({});
   const [sources, setSources] = useState<Record<string, SourceState>>({});
+
+  const moduleRegistryUrl = "https://localhost:8444/module-registry";
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: loadAttempt intentionally retriggers discovery.
   useEffect(() => {
@@ -274,9 +274,9 @@ export default function VuuTableBrowser({
         current[route.sourceId]
           ? current
           : {
-              ...current,
-              [route.sourceId]: { status: "loading", tables: [] },
-            },
+            ...current,
+            [route.sourceId]: { status: "loading", tables: [] },
+          },
       );
     }
   }, [modules, route]);
@@ -310,9 +310,9 @@ export default function VuuTableBrowser({
     setSources((current) =>
       current[sourceId]
         ? {
-            ...current,
-            [sourceId]: { ...current[sourceId], tables: [] },
-          }
+          ...current,
+          [sourceId]: { ...current[sourceId], tables: [] },
+        }
         : current,
     );
   }, []);
@@ -339,9 +339,9 @@ export default function VuuTableBrowser({
           current[sourceId]
             ? current
             : {
-                ...current,
-                [sourceId]: { status: "loading", tables: [] },
-              },
+              ...current,
+              [sourceId]: { status: "loading", tables: [] },
+            },
         );
       }
     },
@@ -392,8 +392,8 @@ export default function VuuTableBrowser({
   const selectedTable =
     route && routeModule
       ? sources[route.sourceId]?.tables.find((table) =>
-          sameTable(table, route.table),
-        )
+        sameTable(table, route.table),
+      )
       : undefined;
   const selectedSource = route ? sources[route.sourceId] : undefined;
 
@@ -435,7 +435,7 @@ export default function VuuTableBrowser({
             </div>
           ) : null}
           {routeModule &&
-          (!selectedSource || selectedSource.status === "loading") ? (
+            (!selectedSource || selectedSource.status === "loading") ? (
             <div className="vuuTableBrowser-centered" role="status">
               <Spinner aria-label="Loading requested table" />
               <span>Loading requested table...</span>
@@ -453,8 +453,8 @@ export default function VuuTableBrowser({
             </div>
           ) : null}
           {routeModule &&
-          selectedSource?.status === "ready" &&
-          !selectedTable ? (
+            selectedSource?.status === "ready" &&
+            !selectedTable ? (
             <div className="vuuTableBrowser-centered" role="alert">
               The requested table was not found.
             </div>
