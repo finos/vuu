@@ -2,12 +2,12 @@ package org.finos.vuu.core.module.basket.service
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituentColumnNames.InstanceIdRic
-import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer}
+import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.{EditTableRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
+import org.finos.vuu.net.rpc.*
 import org.finos.vuu.viewport.*
 
-class BasketTradingConstituentService(val table: DataTable)(using tableContainer: TableContainer) extends EditTableRpcHandler with StrictLogging {
+class BasketTradingConstituentService extends EditTableRpcHandler with DefaultRpcHandler with StrictLogging {
   override def editCell(params: RpcParams): RpcFunctionResult = {
     val key: String = params.namedParams("key").asInstanceOf[String]
     val columnName: String = params.namedParams("column").asInstanceOf[String]

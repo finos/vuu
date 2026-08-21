@@ -1,21 +1,16 @@
 package org.finos.vuu.person;
 
 import org.finos.vuu.core.table.DataTable;
-import org.finos.vuu.core.table.TableContainer;
-import org.finos.vuu.net.rpc.DefaultRpcHandler;
 import org.finos.vuu.net.rpc.RpcFunctionResult;
 import org.finos.vuu.net.rpc.RpcFunctionSuccess;
 import org.finos.vuu.net.rpc.RpcParams;
 
-public class PersonRpcHandler extends DefaultRpcHandler {
+// An example of RPC handler class in java
+public class PersonRpcHandler {
     private final DataTable table;
 
-    public PersonRpcHandler(DataTable table, TableContainer tableContainer) {
-        super(tableContainer);
+    public PersonRpcHandler(DataTable table) {
         this.table = table;
-
-        registerRpc("UpdateName", this::processUpdateNameRpcRequest);
-        registerRpc("GetAccountId", this::processGetAccountIdRpcRequest);
     }
 
     public RpcFunctionResult processUpdateNameRpcRequest(RpcParams params) {

@@ -4,14 +4,12 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.*
-import org.finos.vuu.api.TableVisibility.Public
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.auths.VuuUser
-import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{StaticServedResource, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.*
-import org.finos.vuu.net.{ClientSessionId, SortSpec}
+import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.provider.*
@@ -75,7 +73,7 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
       }
 
       override def menuItems(): ViewPortMenu = ViewPortMenu("Test Menu",
-        new SelectionViewPortMenuItem("Create Basket", "", this.createBasket, "CREATE_BASKET")
+        SelectionViewPortMenuItem("Create Basket", "", this.createBasket, "CREATE_BASKET")
       )
     }
   }

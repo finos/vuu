@@ -49,17 +49,11 @@ object ClickHouseTableModule extends DefaultModule {
     ModuleFactory.withNamespace(NAME)
       .addSessionTable(tableDef,
         (table, vs) => new ClickHouseVirtualizedDataProvider(tableDef, client),
-        (table, _, _, tableContainer) => ViewPortDef(
-          columns = tableDef.getColumns,
-          service = new DefaultRpcHandler()(tableContainer)
-        )
+        (table, _, _, _) => ViewPortDef.default(tableDef.getColumns)
       )
       .addSessionTable(tableDefWithNoSellPermission,
         (table, vs) => new ClickHouseVirtualizedDataProvider(tableDefWithNoSellPermission, client),
-        (table, _, _, tableContainer) => ViewPortDef(
-          columns = tableDefWithNoSellPermission.getColumns,
-          service = new DefaultRpcHandler()(tableContainer)
-        )
+        (table, _, _, _) => ViewPortDef.default(tableDefWithNoSellPermission.getColumns)
       )
       .asModule()
   }

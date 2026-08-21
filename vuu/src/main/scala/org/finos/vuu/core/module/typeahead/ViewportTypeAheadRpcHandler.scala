@@ -1,18 +1,15 @@
 package org.finos.vuu.core.module.typeahead
 
-import org.finos.vuu.core.table.TableContainer
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcNames, RpcParams}
+import org.finos.vuu.net.rpc.{RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams}
 import org.finos.vuu.viewport.ViewPort
 
-class ViewportTypeAheadRpcHandler(tableContainer: TableContainer) {
+trait ViewportTypeAheadRpcHandler() extends RpcHandler {
 
-  def register(rpcRegistry: DefaultRpcHandler): Unit = {
-    rpcRegistry.registerRpc(RpcNames.UniqueFieldValuesRpc, params => processGetUniqueFieldValuesRequest(params))
-    rpcRegistry.registerRpc(RpcNames.UniqueFieldValuesStartWithRpc, params => processGetUniqueFieldValuesStartWithRequest(params))
-  }
+  registerRpc(RpcNames.UniqueFieldValuesRpc, params => processGetUniqueFieldValuesRequest(params))
+  registerRpc(RpcNames.UniqueFieldValuesStartWithRpc, params => processGetUniqueFieldValuesStartWithRequest(params))
 
   private def processGetUniqueFieldValuesRequest(params: RpcParams): RpcFunctionResult = {
-    val inputParam =  params.namedParams
+    val inputParam = params.namedParams
     val values = getUniqueFieldValues(
       inputParam("column").toString,
       params.viewPort

@@ -1,7 +1,6 @@
 package org.finos.vuu.net.rpc
 
 import org.finos.vuu.core.auths.VuuUser
-import org.finos.vuu.core.table.TableContainer
 import org.finos.vuu.net.*
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -10,7 +9,7 @@ class RpcTest extends AnyFeatureSpec with Matchers {
 
   class CustomObject(val value: String) {}
 
-  class MyCustomRpcHandler()(implicit val tableContainer: TableContainer) extends DefaultRpcHandler {
+  class MyCustomRpcHandler extends RpcHandler {
     registerRpc("doSomething", params => doSomething(params))
     registerRpc("doSomething2", params => doSomething2(params))
     registerRpc("doSomethingElse", params => doSomethingElse(params))
@@ -31,7 +30,7 @@ class RpcTest extends AnyFeatureSpec with Matchers {
       RpcFunctionSuccess(Some(false))
     }
 
-    def doSomethingElse(params: RpcParams): RpcFunctionResult = {      
+    def doSomethingElse(params: RpcParams): RpcFunctionResult = {
       RpcFunctionSuccess(None)
     }
 
@@ -57,7 +56,7 @@ class RpcTest extends AnyFeatureSpec with Matchers {
 
     Scenario("check we can process an rpc call via api") {
 
-      val myRpcHandler = new MyCustomRpcHandler()(null)
+      val myRpcHandler = new MyCustomRpcHandler
       val customObject = new CustomObject("test")
 
       val ctx = RequestContext("", VuuUser(""), ClientSessionId("", ""), null)

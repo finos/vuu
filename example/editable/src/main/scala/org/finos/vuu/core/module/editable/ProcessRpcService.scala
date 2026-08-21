@@ -5,7 +5,7 @@ import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.viewport._
 
-class ProcessRpcService(implicit val tableContainer: TableContainer) extends DefaultRpcHandler {
+class ProcessRpcService(tableContainer: TableContainer) extends DefaultRpcHandler {
 
   private final val FIX_SEQ_RESET_TABLE = "fixSequenceReset"
 
@@ -25,6 +25,6 @@ class ProcessRpcService(implicit val tableContainer: TableContainer) extends Def
   }
 
   override def menuItems(): ViewPortMenu = ViewPortMenu("Admin",
-    new SelectionViewPortMenuItem("Reset SeqNum", "", this.openEditSeqNum, "OPEN_EDIT_RESET_FIX")
+    SelectionViewPortMenuItem("Reset SeqNum", "", this.openEditSeqNum, "OPEN_EDIT_RESET_FIX")
   )
 }

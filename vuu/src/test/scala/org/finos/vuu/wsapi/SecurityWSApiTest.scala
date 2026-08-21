@@ -8,8 +8,10 @@ import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net.*
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcErrorResult, RpcNames, ViewPortContext}
+import org.finos.vuu.net.{
+  ChangeViewPortRange, ChangeViewPortRangeReject, ChangeViewPortReject, ChangeViewPortRequest, ChangeViewPortSuccess, CloseTreeNodeReject, CloseTreeNodeRequest, CreateViewPortRequest, CreateViewPortSuccess, CreateVisualLinkRequest, CreateVisualLinkSuccess, DeselectAllReject, DeselectAllRequest, DeselectRowReject, DeselectRowRequest, DisableViewPortRequest, DisableViewPortReject, DisableViewPortSuccess, EnableViewPortReject, EnableViewPortRequest, ErrorResponse, FilterSpec, FreezeViewPortReject, FreezeViewPortRequest, FreezeViewPortSuccess, GetViewPortMenusRequest, GetViewPortVisualLinksRequest, OpenTreeNodeReject, OpenTreeNodeRequest, OpenTreeNodeSuccess, RemoveViewPortReject, RemoveViewPortRequest, RemoveViewPortSuccess, RemoveVisualLinkRequest, RemoveVisualLinkSuccess, RpcRequest, RpcResponseNew, SelectAllReject, SelectAllRequest, SelectAllSuccess, SelectRowRangeReject, SelectRowRangeRequest, SelectRowReject, SelectRowRequest, SelectRowSuccess, UnfreezeViewPortReject, UnfreezeViewPortRequest, WebSocketViewServerClient
+}
+import org.finos.vuu.net.rpc.{RpcErrorResult, RpcNames, ViewPortContext}
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
@@ -327,18 +329,16 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
           .build(),
       options = TableDefOptions(
         links = VisualLinks(Link("Name", tableName, "Name"))
-      )      
+      )
     )
 
-    val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
-      ViewPortDef(
-        columns =
-          new ColumnBuilder()
-            .addString("Id")
-            .addString("Name")
-            .addInt("Account")
-            .build(),
-        service = new DefaultRpcHandler()(tableContainer)
+    val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, _: TableContainer) =>
+      ViewPortDef.default(
+        new ColumnBuilder()
+          .addString("Id")
+          .addString("Name")
+          .addInt("Account")
+          .build()
       )
 
     val dataSource = new FakeDataSource(ListMap(
@@ -358,7 +358,7 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
       "row14" -> Map("Id" -> "row14", "Name" -> "Johnny Cash", "Account" -> 54875, "HiddenColumn" -> 10),
       "row15" -> Map("Id" -> "row15", "Name" -> "Tom DeLay", "Account" -> 54876, "HiddenColumn" -> 10),
     ))
-    
+
     val providerFactory = (table: DataTable, _: AbstractVuuServer) => new TestProvider(table, dataSource)
 
     ModuleFactory.withNamespace(moduleName)

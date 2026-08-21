@@ -237,15 +237,13 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
           .build()
     )
 
-    val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
-      ViewPortDef(
-        columns =
-          new ColumnBuilder()
-            .addString("Id")
-            .addString("Name")
-            .addInt("Account")
-            .build(),
-        service = new DefaultRpcHandler()(tableContainer)
+    val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, _: TableContainer) =>
+      ViewPortDef.default(
+        new ColumnBuilder()
+          .addString("Id")
+          .addString("Name")
+          .addInt("Account")
+          .build()
       )
 
     val dataSource = new FakeDataSource(ListMap(

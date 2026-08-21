@@ -3,6 +3,8 @@ package org.finos.vuu.net.rpc
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.viewport.*
 
+import java.util.concurrent.ConcurrentHashMap
+
 trait RpcHandler extends StrictLogging {
 
   def menuItems(): ViewPortMenu = EmptyViewPortMenu
@@ -32,9 +34,33 @@ trait RpcHandler extends StrictLogging {
 
   lazy val menuMap: Map[String, ViewPortMenuItem] = menusAsMap()
 
-  /**
-   * This is new RPC request message and any RpcHandler that wishes to use this message should extend DefaultRpcHandler
-   */
-  def processRpcRequest(rpcName: String, params: RpcParams): RpcFunctionResult = new RpcFunctionFailure("Unsupported request type")
+  private val rpcHandlerMap = new ConcurrentHashMap[Rpc.FunctionName, Rpc.Function]()
 
+  /**
+   * Register a handler for a given rpc function
+   *
+   * @param functionName name of the rpc function
+   * @param handlerFunc  handler function that takes RpcParams and return RpcMethodCallResult
+   */
+  def registerRpc(functionName: Rpc.FunctionName, handlerFunc: Rpc.Function): Unit = {
+    if (rpcHandlerMap.containsKey(functionName)) {
+      throw new IllegalArgumentException(s"Function $functionName already registered")
+    }
+    rpcHandlerMap.put(functionName, handlerFunc)
+  }
+
+  def processRpcRequest(rpcName: String, params: RpcParams): RpcFunctionResult = {
+    if (rpcHandlerMap.containsKey(rpcName)) {
+      try {
+        val handler = rpcHandlerMap.get(rpcName)
+        handler(params)
+      } catch {
+        case e: Exception =>
+          logger.error(s"Error processing rpc method $rpcName", e)
+          RpcFunctionFailure(1, e.toString, e)
+      }
+    } else {
+      new RpcFunctionFailure(s"Could not find rpcMethodHandler $rpcName")
+    }
+  }
 }

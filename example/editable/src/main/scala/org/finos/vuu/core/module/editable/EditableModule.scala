@@ -2,7 +2,7 @@ package org.finos.vuu.core.module.editable
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{SessionTableDef, TableDef, TableDefOptions, ViewPortDef, VisualLinks}
+import org.finos.vuu.api.{SessionTableDef, TableDef, TableDefOptions, ViewPortDef}
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 
@@ -25,7 +25,7 @@ object EditableModule extends DefaultModule {
         (table, vs) => new ProcessProvider(table),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.getColumns,
-          service = new ProcessRpcService()(tableContainer)
+          service = new ProcessRpcService(tableContainer)
         )
       ).addSessionTable(
       SessionTableDef(
@@ -35,7 +35,7 @@ object EditableModule extends DefaultModule {
       ),
       (table, _, _, tableContainer) => ViewPortDef(
         columns = table.getTableDef.getColumns,
-        service = new FixSequenceRpcService()(using tableContainer)
+        service = new FixSequenceRpcService
       )
     ).asModule()
   }

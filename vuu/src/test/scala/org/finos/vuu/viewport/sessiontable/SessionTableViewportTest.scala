@@ -77,7 +77,7 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
       }
 
       override def menuItems(): ViewPortMenu = ViewPortMenu("Test Menu",
-        new SelectionViewPortMenuItem("Create Basket", "", this.createBasket, "CREATE_BASKET")
+        SelectionViewPortMenuItem("Create Basket", "", this.createBasket, "CREATE_BASKET")
       )
     }
   }

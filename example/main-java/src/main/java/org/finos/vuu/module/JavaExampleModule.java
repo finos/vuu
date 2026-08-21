@@ -8,12 +8,17 @@ import org.finos.vuu.core.module.ModuleFactory;
 import org.finos.vuu.core.module.TableDefContainer;
 import org.finos.vuu.core.module.ViewServerModule;
 import org.finos.vuu.core.table.Columns;
+import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.DefaultColumn;
+import org.finos.vuu.net.rpc.RpcHandler;
+import org.finos.vuu.person.DeleteRecordRpcHandler;
+import org.finos.vuu.person.DeleteRecordRpcHandlerIF;
 import org.finos.vuu.person.PersonRpcHandler;
 import org.finos.vuu.person.auto.AutoMappedPersonProvider;
 import org.finos.vuu.person.auto.EntitySchema;
 import org.finos.vuu.person.datasource.PersonStore;
 import org.finos.vuu.person.manual.PersonProvider;
+import org.finos.vuu.util.RpcHandlerBuilder;
 import org.finos.vuu.util.SortSpecBuilder;
 import org.finos.vuu.util.TableDefBuilder;
 
@@ -39,7 +44,7 @@ public class JavaExampleModule extends DefaultModule {
                         (table, vs) -> new PersonProvider(table, new PersonStore()),
                         (table, provider, providerContainer, tableContainer) -> new ViewPortDef(
                                 table.getTableDef().getColumns(),
-                                new PersonRpcHandler(table, tableContainer)
+                                buildRpcHandler(table)
                         )
                 )
                 .addTable(new TableDefBuilder()
@@ -52,4 +57,14 @@ public class JavaExampleModule extends DefaultModule {
                 .asModule();
     }
 
+    private RpcHandler buildRpcHandler(DataTable table) {
+        PersonRpcHandler personRpcHandler = new PersonRpcHandler(table);
+        DeleteRecordRpcHandlerIF deleteRecordRpcHandler = new DeleteRecordRpcHandler();
+
+        return new RpcHandlerBuilder()
+                .addRpc("UpdateName", personRpcHandler::processUpdateNameRpcRequest)
+                .addRpc("GetAccountId", personRpcHandler::processGetAccountIdRpcRequest)
+                .addRpc("DeleteRecprd", deleteRecordRpcHandler::deleteRecord)
+                .build();
+    }
 }

@@ -5,7 +5,7 @@ import org.finos.vuu.core.table.{TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.SessionTableCopyOption.{All, Empty, Selected}
 
-class CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker)(using tableContainer: TableContainer) extends DefaultRpcHandler {
+trait CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker, tableContainer: TableContainer) extends RpcHandler {
   registerRpc(RpcNames.CreateSessionTableRpc, this.createSessionTable)
 
   def createSessionTable(params: RpcParams): RpcFunctionResult = {

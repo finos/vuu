@@ -1,8 +1,7 @@
 package org.finos.vuu.core.module
 
 import org.finos.vuu.api.*
-import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
-import org.finos.vuu.net.rpc.RpcHandler
+import org.finos.vuu.core.table.{Columns, DataTable}
 import org.finos.vuu.provider.Provider
 
 class TestProvider(x: String, dataTable: DataTable) extends Provider{
@@ -12,9 +11,6 @@ class TestProvider(x: String, dataTable: DataTable) extends Provider{
   override def doInitialize(): Unit = ???
   override def doDestroy(): Unit = ???
   override val lifecycleId: String = "foo"
-}
-
-class TestRpcHandler(val tableContainer: TableContainer) extends RpcHandler{
 }
 
 object TestModule2 extends DefaultModule {

@@ -3,17 +3,16 @@ package org.finos.vuu.viewport.editable
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
-import org.finos.vuu.api.JoinTableDef
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.*
 import org.finos.vuu.core.table.TableTestHelper.combineQs
-import org.finos.vuu.net.rpc.{EditTableRpcHandler, RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcNames, RpcParams}
 import org.finos.vuu.net.RequestContext
+import org.finos.vuu.net.rpc.*
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.finos.vuu.viewport.*
 import org.scalatest.prop.Tables.Table
 
-class ConstituentInstrumentPricesRpcService()(using tableContainer: TableContainer) extends EditTableRpcHandler {
+class ConstituentInstrumentPricesRpcService extends EditTableRpcHandler {
   registerRpc("sendToMarket", params => sendToMarket(params))
 
   override def editCell(params: RpcParams): RpcFunctionResult = {
@@ -91,7 +90,10 @@ class EditableViewportWithRpcTest extends EditableViewPortTest {
       val (consInstPrice, _) = tablesAndProviders("consInstrumentPrice")
 
       Given("We define a viewport callback on process with an rpc service attached...")
-      viewPortContainer.addViewPortDefinition(consInstPrice.getTableDef.name, createViewPortDefFunc(tableContainer, new ConstituentInstrumentPricesRpcService()(using tableContainer), clock))
+      viewPortContainer.addViewPortDefinition(
+        consInstPrice.getTableDef.name,
+        createViewPortDefFunc(tableContainer, new ConstituentInstrumentPricesRpcService, clock)
+      )
 
       And("we've ticked in some data")
       consProvider.tick("bskt1.vod.l", Map("id" -> "bskt1.vod.l", "ric" -> "VOD.L", "quantity" -> 1000L))
