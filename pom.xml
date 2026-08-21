@@ -37,7 +37,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.release>17</maven.compiler.release> <!-- Maintain 17 support until Q3 2027 -->
         <gpg.executable>gpg</gpg.executable>
         <publish.server.id>ossrh</publish.server.id>
 

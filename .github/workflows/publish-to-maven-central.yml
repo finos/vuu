@@ -26,7 +26,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520
         with:
-          java-version: 17
+          java-version: 21
           java-package: jdk
           distribution: temurin
           cache: 'maven'
