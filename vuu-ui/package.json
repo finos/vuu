@@ -1,6 +1,6 @@
 {
   "name": "vuu-ui",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "author": "heswell <steve@heswell.com>",
   "license": "Apache-2.0",
   "private": true,
@@ -29,6 +29,7 @@
     "build:packages": "npm run build -- --cjs --license && npm run type-defs",
     "build:packages:debug": "npm run build -- --cjs --debug && npm run type-defs -- --debug",
     "build:worker": "cd packages/vuu-data-remote && npm run build:worker",
+    "bump:versions": "node ./scripts/bump-versions.ts",
     "launch:app": "node ./scripts/launch-app.mjs",
     "launch:table": "node ./scripts/launch-table.mjs",
     "launch:demo:electron": "cd tools/electron && node ./node_modules/.bin/electron .",
@@ -48,7 +49,6 @@
     "test:playwright:ct:ui": "playwright test --config=playwright-ct.config.ts --ui",
     "test:playwright:ct:report": "playwright test --config=playwright-ct.config.ts --reporter=html",
     "test:vite": "npm run build:worker && vitest run",
-    "bump": "node ./scripts/version.mjs",
     "pub": "node ./scripts/publish.ts",
     "pub:debug": "node ./scripts/publish.ts --debug",
     "typecheck": "tsc --noEmit --project tsconfig-typecheck.json",

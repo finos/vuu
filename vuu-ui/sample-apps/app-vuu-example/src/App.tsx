@@ -6,7 +6,6 @@ import {
   LeftNav,
   LocalPersistenceManager,
   PersistenceProvider,
-  type SettingsSchema,
   Shell,
   ShellContextProvider,
   type ShellLayoutProps,
@@ -33,23 +32,6 @@ assertComponentsRegistered([
   { componentName: "Stack", component: StackLayout },
 ]);
 
-const userSettingsSchema: SettingsSchema = {
-  properties: [
-    {
-      name: "themeMode",
-      label: "Mode",
-      values: ["light", "dark"],
-      defaultValue: "light",
-      type: "string",
-    },
-    {
-      name: "showAppStatusBar",
-      label: "Show Application Status Bar",
-      defaultValue: false,
-      type: "boolean",
-    },
-  ],
-};
 
 const defaultWebsocketUrl = (ssl: boolean) =>
   `${ssl ? "wss" : "ws"}://${location.hostname}:8090/websocket`;
@@ -121,7 +103,6 @@ export const App = () => {
                 shellLayoutProps={ShellLayoutProps}
                 className="App"
                 serverUrl={websocketUrl}
-                userSettingsSchema={userSettingsSchema}
               />
             </FeatureAndLayoutProvider>
           </VuuDataSourceProvider>

@@ -55,7 +55,6 @@
       "name": "instrumentTiles",
       "port": 5006
     },
-
     "leftNavLocation": "vuu-features"
   }
 }

@@ -234,7 +234,7 @@ function groupLeafRows(
       } else if (targetNode) {
         target = targetNode;
       } else if (!targetNode && level < lastLevel) {
-        target = target[key] = {};
+        target = (target as GroupMap)[key] = {};
       } else if (!targetNode) {
         (target as GroupMap)[key] = [i];
       }

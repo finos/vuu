@@ -18,9 +18,9 @@
   "main": "index.ts",
   "devDependencies": {},
   "peerDependencies": {
-    "@vuu-ui/vuu-auth": "3.0.0",
-    "@vuu-ui/vuu-shell": "3.0.0",
-    "@vuu-ui/vuu-utils2": "3.0.0",
+    "@vuu-ui/vuu-auth": "3.1.0",
+    "@vuu-ui/vuu-shell": "3.1.0",
+    "@vuu-ui/vuu-utils2": "3.1.0",
     "clsx": "^2.0.0",
     "react": "19.2.3",
     "react-dom": "19.2.3"

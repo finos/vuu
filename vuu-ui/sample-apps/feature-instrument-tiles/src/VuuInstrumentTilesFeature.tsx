@@ -18,15 +18,11 @@ import "./VuuInstrumentTilesFeature.css";
 
 const classBase = "VuuInstrumentTilesFeature";
 
-export interface InstrumentTilesFeatureProps {
-  instrumentPricesSchema: TableSchema;
-}
 
 const { KEY } = metadataKeys;
 
-const VuuInstrumentTilesFeature = ({
-  instrumentPricesSchema,
-}: InstrumentTilesFeatureProps) => {
+const VuuInstrumentTilesFeature = (
+) => {
   const { id, save, title } = useViewContext();
 
   const handleDataSourceConfigChange = useCallback(

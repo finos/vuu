@@ -10,7 +10,7 @@ import { getLayoutComponent } from "./component-registry";
 import { wordify } from "./text-utils";
 
 export type PathMap = {
-  [key: string]: Pick<DynamicFeatureDescriptor, "css" | "url">;
+  [key: string]: string;
 };
 export type Environment = "development" | "production";
 export const env = process.env.NODE_ENV as Environment;
@@ -40,8 +40,6 @@ export interface DynamicFeatureProps<P extends object | undefined = object> {
 }
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   const vuuConfig: Promise<VuuConfig>;
 }
 
@@ -229,7 +227,7 @@ export const getCustomAndTableFeatures = (
   const tableFeatures: DynamicFeatureProps<FilterTableFeatureProps>[] = [];
 
   for (const {
-    featureProps = {},
+    // featureProps = {},
     viewProps,
     ...feature
   } of tableFeaturesConfig) {

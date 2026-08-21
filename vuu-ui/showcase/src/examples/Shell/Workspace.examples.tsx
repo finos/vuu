@@ -48,7 +48,7 @@ export const CustomDefaultLayoutNoStoredState = () => {
   );
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
-      <Shell workspaceProps={{ layoutJSON }} user={user}></Shell>
+      <Shell workspaceProps={{ layoutJSON }}></Shell>
     </PersistenceProvider>
   );
 };

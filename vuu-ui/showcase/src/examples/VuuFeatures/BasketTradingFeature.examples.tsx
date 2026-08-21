@@ -59,10 +59,13 @@ const env = process.env.NODE_ENV as Environment;
 const featurePropsForEnv: Record<Environment, DynamicFeatureProps> = {
   development: {
     mfUrl: "/src/features/BasketTrading.feature",
+    mfComponent: "VuuBasketTradingFeature",
+    mfScope: "basketTrading",
   },
   production: {
+    mfComponent: "VuuFilterTableFeature",
     mfUrl: "/features/TableNext.feature.js",
-    css: "/features/TableNext.feature.css",
+    mfScope: "filterTable",
   },
 };
 

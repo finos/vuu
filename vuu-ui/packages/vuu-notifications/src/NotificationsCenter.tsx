@@ -1,6 +1,6 @@
 import { getUniqueId, saveLocalEntity } from "@vuu-ui/vuu-utils";
 import {
-  ReactNode,
+  type ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -10,18 +10,18 @@ import {
 import {
   isToastNotification,
   isWorkspaceNotification,
-  Notification,
-  NotificationsContext,
-  ToastNotificationDescriptor,
+  type NotificationsContextProps,
+  type Notification,
+  type ToastNotificationDescriptor,
 } from "./NotificationsContext";
-import { ToastHoverHandler, ToastNotification } from "./ToastNotification";
+import { type ToastHoverHandler, ToastNotification } from "./ToastNotification";
 import { WorkspaceNotification } from "./WorkspaceNotification";
-import { MeasuredSize } from "@vuu-ui/vuu-ui-controls";
+import type { MeasuredSize } from "@vuu-ui/vuu-ui-controls";
 
 const ZeroSize: MeasuredSize = { height: 0, width: 0 };
 const toastContainerRightPadding = 20;
 export interface NotificationsCenterProps {
-  notificationsContext: NotificationsContext;
+  notificationsContext: NotificationsContextProps;
   startupToastNotification?: ToastNotificationDescriptor;
 }
 

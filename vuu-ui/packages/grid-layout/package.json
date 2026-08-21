@@ -13,7 +13,7 @@
   },
   "types": "src/index.ts",
   "dependencies": {
-    "@vuu-ui/vuu-utils": "3.0.0",
+    "@vuu-ui/vuu-utils": "3.1.0",
     "@salt-ds/core": "1.67.0",
     "@salt-ds/lab": "1.0.0-alpha.99",
     "@salt-ds/styles": "0.2.1",

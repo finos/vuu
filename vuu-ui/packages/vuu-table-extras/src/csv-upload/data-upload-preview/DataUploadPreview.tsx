@@ -89,7 +89,7 @@ export const DataUploadPreview = ({
           editable: false,
           hidden: false,
           label: "Error",
-          width: column.width ?? 300,
+          width: 200,
         }
         : {
           ...column,

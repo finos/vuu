@@ -1,5 +1,5 @@
 const reactVersion = "19.2.3";
-const vuuVersion = "2.2.1";
+const vuuVersion = "3.1.0";
 
 export const getSharedDependencies = (env: "consumer" | "producer") => {
   if (env === "consumer") {

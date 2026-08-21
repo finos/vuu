@@ -16,15 +16,15 @@
   ],
   "main": "index.ts",
   "devDependencies": {
-    "@vuu-ui/vuu-data-types": "3.0.0",
-    "@vuu-ui/vuu-table-types": "3.0.0"
+    "@vuu-ui/vuu-data-types": "3.1.0",
+    "@vuu-ui/vuu-table-types": "3.1.0"
   },
   "dependencies": {
-    "@vuu-ui/vuu-data-editing": "3.0.0",
-    "@vuu-ui/vuu-data-react": "3.0.0",
-    "@vuu-ui/vuu-table": "3.0.0",
-    "@vuu-ui/vuu-utils": "3.0.0",
-    "@vuu-ui/vuu-utils2": "3.0.0"
+    "@vuu-ui/vuu-data-editing": "3.1.0",
+    "@vuu-ui/vuu-data-react": "3.1.0",
+    "@vuu-ui/vuu-table": "3.1.0",
+    "@vuu-ui/vuu-utils": "3.1.0",
+    "@vuu-ui/vuu-utils2": "3.1.0"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",

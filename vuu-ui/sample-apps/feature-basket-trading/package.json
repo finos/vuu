@@ -1,6 +1,6 @@
 {
   "name": "feature-basket-trading",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Basket Trading",
   "scripts": {
     "build": "node ../../scripts/build-remote-module.ts",
@@ -73,7 +73,6 @@
       "name": "basketTrading",
       "port": 5005
     },
-
     "leftNavLocation": "vuu-features"
   }
 }

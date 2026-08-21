@@ -275,7 +275,6 @@ export const SimpleShellCustomPlaceholder = () => {
           htmlAttributes: htmlAttributes,
         }}
         workspaceProps={workspaceProps}
-        user={user}
         style={
           {
             "--vuuShell-height": "100%",
