@@ -12,7 +12,11 @@ import scala.runtime.RichLong;
 import java.util.Map;
 
 class RowDataUtilsJavaTest {
-    Map<String, Object> data = Map.of("long", 123L, "Long", Long.valueOf(456L), "RichLong", new RichLong(789L));
+    Map<String, Object> data = Map.of(
+            "long", 123L,
+            "Long", Long.valueOf(456L),
+            "RichLong", new RichLong(789L)
+    );
     RowData rowData = new RowWithData("myKey", ScalaCollectionConverter.toScala(data));
 
     @Test
@@ -24,13 +28,13 @@ class RowDataUtilsJavaTest {
     @Test
     void shouldReturnLongWhenValueIsLong() {
         long result = RowDataUtils.getRequiredLong(rowData, "Long");
-        assertEquals(789L, result);
+        assertEquals(456L, result);
     }
 
     @Test
     void shouldReturnLongWhenValueIsRichLong() {
         long result = RowDataUtils.getRequiredLong(rowData, "RichLong");
-        assertEquals(456L, result);
+        assertEquals(789L, result);
     }
 
     @Test
