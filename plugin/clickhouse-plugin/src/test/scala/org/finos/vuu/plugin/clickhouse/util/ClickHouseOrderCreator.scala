@@ -28,8 +28,10 @@ object ClickHouseOrderCreator extends StrictLogging {
         """
           |CREATE TABLE IF NOT EXISTS order_history (
           |  order_id Int64,
+          |  instrument_id Int64,
           |  quantity Int32,
           |  price Int64,
+          |  currency String,
           |  side String,
           |  trader String,
           |  time DateTime64(9, 'UTC')
@@ -57,13 +59,20 @@ object ClickHouseOrderCreator extends StrictLogging {
       var currentId = 1
       while (currentId <= totalCount) {
         val side = if (currentId % 2 == 0) "Buy" else "Sell"
+        val instrument = (currentId % 100) + 1
         val price = currentId * 10_000_000L
+        val currency = if (currentId % 2 == 0) "USD" else "EUR"
         val quantity = currentId
+
         writer.write(currentId.toString)
+        writer.write(',')
+        writer.write(instrument.toString)
         writer.write(',')
         writer.write(quantity.toString)
         writer.write(',')
         writer.write(price.toString)
+        writer.write(',')
+        writer.write(currency)
         writer.write(',')
         writer.write(side)
         writer.write(",trader-")
@@ -82,7 +91,7 @@ object ClickHouseOrderCreator extends StrictLogging {
     try {
       ClickHouseHttpUtil.executeUpdate(
         container = container,
-        query = "INSERT INTO order_history (order_id, quantity, price, side, trader, time) FORMAT CSV",
+        query = "INSERT INTO order_history (order_id, instrument_id, quantity, price, currency, side, trader, time) FORMAT CSV",
         bodyPublisher = BodyPublishers.ofFile(tempFile),
         contentType = "text/csv"
       )

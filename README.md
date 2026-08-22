@@ -23,6 +23,9 @@ To establish a complete client session (e.g., from a UI), you need an external H
 
 ## Installation - Client
 
+#### Prerequisites
+* **Node 24+**
+
 The UI scripts all run from the vuu/vuu-ui directory.
 
 ```sh
@@ -153,7 +156,7 @@ To submit a contribution:
 
 1. Fork it (<https://github.com/finos/vuu/fork>)
 2. Create your feature branch (`git checkout -b feature/fooBar`)
-3. Read our [contribution guidelines](.github/CONTRIBUTING.md) and [Community Code of Conduct](https://www.finos.org/code-of-conduct)
+3. Read our [contribution guidelines](CONTRIBUTING.md) and [Community Code of Conduct](https://www.finos.org/code-of-conduct)
 4. Commit your changes (`git commit -am 'Add some fooBar'`)
 5. Push to the branch (`git push origin feature/fooBar`)
 6. Create a new Pull Request

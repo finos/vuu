@@ -5,13 +5,13 @@ import org.finos.vuu.core.VuuServerConfig
 import org.finos.vuu.core.module.ViewServerModule
 import org.finos.vuu.net.rpc.{RpcNames, RpcSuccessResult, ViewPortContext}
 import org.finos.vuu.net.ui.NoneAction
-import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, GetTableMetaRequest, GetTableMetaResponse, RpcRequest, RpcResponseNew}
+import org.finos.vuu.net.{ChangeViewPortRange, ChangeViewPortRangeSuccess, CreateViewPortRequest, CreateViewPortSuccess, GetTableMetaRequest, GetTableMetaResponse, RpcRequest, RpcResponseNew}
 import org.finos.vuu.plugin.clickhouse.ClickHouseContainer
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.clickhouse.client.options.ClickHouseClientOptions
 import org.finos.vuu.plugin.clickhouse.module.ClickHouseTableModule
-import org.finos.vuu.plugin.clickhouse.module.ClickHouseTableModule.{NAME, NO_SELL_TABLE_NAME, TABLE_NAME}
-import org.finos.vuu.plugin.clickhouse.util.ClickHouseOrderCreator
+import org.finos.vuu.plugin.clickhouse.module.ClickHouseTableModule.{NAME, NO_SELL_TABLE_NAME, ORDER_INSTRUMENTS_JOIN_TABLE_NAME, TABLE_NAME}
+import org.finos.vuu.plugin.clickhouse.util.{ClickHouseOrderCreator, ClickhouseJoinDataCreator}
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.WebSocketApiTestBase
@@ -38,8 +38,8 @@ class ClickHouseWSApiTest extends WebSocketApiTestBase with ForAllTestContainer 
       val response = vuuClient.awaitForResponse(requestId)
 
       val responseBody = assertBodyIsInstanceOf[GetTableMetaResponse](response)
-      responseBody.columns.length shouldEqual 6
-      responseBody.columns shouldEqual Array("orderId", "quantity", "price", "side", "trader", "time")
+      responseBody.columns.length shouldEqual 8
+      responseBody.columns shouldEqual Array("orderId", "instrumentId", "quantity", "price", "side", "trader","currency", "time")
       responseBody.editableColumns shouldEqual Array[String]()
       responseBody.maxRangeEnd shouldEqual 1_000_000
       responseBody.maxRangeWidth shouldEqual 1_000

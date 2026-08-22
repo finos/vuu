@@ -18,7 +18,7 @@ import org.finos.vuu.plugin.clickhouse.ClickHouseContainer
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.clickhouse.client.options.ClickHouseClientOptions
 import org.finos.vuu.plugin.clickhouse.module.ClickHouseTableModule
-import org.finos.vuu.plugin.clickhouse.util.ClickHouseOrderCreator
+import org.finos.vuu.plugin.clickhouse.util.ClickhouseJoinDataCreator
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 
 object ClickHouseMain extends App with StrictLogging {
@@ -29,7 +29,7 @@ object ClickHouseMain extends App with StrictLogging {
 
   private val container: ClickHouseContainer = ClickHouseContainer()
   container.start()
-  ClickHouseOrderCreator.createOrderData(container, 10_000_000)
+  ClickhouseJoinDataCreator.createTables(container, 100, 10_000_000)
 
   logger.info("[ClickHouse] Ready.")
 
