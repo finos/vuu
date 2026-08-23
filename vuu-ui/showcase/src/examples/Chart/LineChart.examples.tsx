@@ -264,9 +264,12 @@ export const EditableChart = () => {
   const onExcludeItem = useCallback(
     async (options: ChartContextMenuOptions) => {
       const key = options.row[6];
-      await editSession.dataSource?.editCell?.(
+      const columnName = `${options.column}_excluded`;
+      await editSession.commit(
         key,
-        `${options.column}_excluded`,
+        columnName,
+        options.row[options.columnMap[columnName]],
+        true,
         true,
       );
     },
@@ -275,10 +278,13 @@ export const EditableChart = () => {
   const onIncludeItem = useCallback(
     async (options: ChartContextMenuOptions) => {
       const key = options.row[6];
-      await editSession.dataSource?.editCell?.(
+      const columnName = `${options.column}_excluded`;
+      await editSession.commit(
         key,
-        `${options.column}_excluded`,
+        columnName,
+        options.row[options.columnMap[columnName]],
         false,
+        true,
       );
     },
     [editSession],
@@ -341,7 +347,7 @@ export const EditableChart = () => {
             </div>
             <TableFooter
               style={{
-                flex: editMode === "edit" ? "0 0 32px" : "0 0 0",
+                flex: isEditSessionReady ? "0 0 32px" : "0 0 0",
                 height: editMode === "edit" ? 32 : 0,
                 overflow: "hidden",
                 transition: "flex-basis 200ms ease",
