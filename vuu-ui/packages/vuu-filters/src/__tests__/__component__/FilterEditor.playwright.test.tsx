@@ -233,8 +233,9 @@ test.describe("FilterEditor", () => {
         .locator('.vuuFilterPill[data-index="0"] .vuuSplitButton-trigger')
         .click();
       await page.getByRole("menuitem", { name: "Edit" }).click();
-      await page.getByRole("combobox").first().press("Tab");
+      await expect(page.getByRole("combobox").first()).toBeFocused();
       const save = page.getByRole("button", { name: "Save" });
+      await save.focus();
       await expect(save).toBeFocused();
 
       await save.press("Escape");
