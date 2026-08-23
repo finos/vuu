@@ -50,8 +50,7 @@ function RawFeature<Params extends object | undefined>({
     //       ];
     //     }
     //   );
-    // Polyfill until cypress build supports import assertions
-    // Note: already fully supported in esbuild and vite
+    // Use a runtime fallback until import assertions can be adopted here.
     importCSS(css).then((styleSheet) => {
       document.adoptedStyleSheets = [
         ...document.adoptedStyleSheets,
