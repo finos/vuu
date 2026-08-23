@@ -35,7 +35,7 @@ type ChartSettings = {
 
 export interface ChartProps
   extends ChartOptionsProps,
-    Omit<MeasuredContainerProps, "children" | "onResize"> {
+  Omit<MeasuredContainerProps, "children" | "onResize"> {
   chartSettings?: Partial<ChartSettings>;
   optionSettings?: OptionSettings;
   /**
@@ -111,24 +111,11 @@ export const Chart = ({
     showTooltip,
   });
 
-  // Debounce resize event so it only fires periodically instead of constantly
-  //   const resizeChart = useMemo(
-  //     () =>
-  //       debounce(() => {
-  //         if (chartRef.current) {
-  //           const chart = getInstanceByDom(chartRef.current);
-  //           chart.resize();
-  //         }
-  //       }, 100),
-  //     [],
-  //   );
-
   useEffect(() => {
     if (!chartElement) {
       return;
     }
 
-    // Initialize chart
     const chart = init(chartElement, null, chartSettings);
 
     chart.on("contextmenu", onContextMenu);
@@ -136,21 +123,9 @@ export const Chart = ({
     chart.on("mouseover", onMouseOver);
     chart.on("mouseout", onMouseOut);
 
-    // Resize event listener
-    // const resizeObserver = new ResizeObserver(() => {
-    //   resizeChart();
-    // });
 
-    // resizeObserver.observe(chartRef.current);
-
-    // Return cleanup function
     return () => {
       chart?.dispose();
-
-      //   if (chartRef.current) {
-      //     resizeObserver.unobserve(chartRef.current);
-      //   }
-      //   resizeObserver.disconnect();
     };
   }, [
     chartElement,
@@ -163,10 +138,7 @@ export const Chart = ({
 
   useEffect(() => {
     if (chartElement) {
-      // Re-render chart when option changes
       const chart = getInstanceByDom(chartElement);
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       chart?.setOption(option, optionSettings);
     }
   }, [chartElement, option, optionSettings]);
