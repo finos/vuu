@@ -1,17 +1,18 @@
-import { test } from "@playwright/experimental-ct-react";
+import { test, type Page } from "@playwright/experimental-ct-react";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { expect } from "../../../../../playwright/customAssertions";
 import {
   EditMultiClauseOrFilter,
   NewFilter,
 } from "../../../../../showcase/src/examples/Filters/FilterEditor.examples";
+import { FilterBarOneSimpleFilter } from "../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
 
-const assertComboboxReady = async (page: any) => {
+const assertComboboxReady = async (page: Page) => {
   await expect(page.getByRole("combobox")).toBeFocused();
   await expect(page.getByRole("listbox")).toBeVisible();
 };
 
-const selectMenuOption = async (page: any, name: "AND" | "OR") => {
+const selectMenuOption = async (page: Page, name: "AND" | "OR") => {
   const button = page.getByRole("button", { name: "Save" });
   await expect(button).toBeFocused();
   await button.press("ArrowDown");
@@ -19,6 +20,11 @@ const selectMenuOption = async (page: any, name: "AND" | "OR") => {
   await page.getByRole("menuitem", { name }).press("Enter");
 };
 
+const selectListItem = async (page: Page, name: string) => {
+  const option = page.getByRole("option", { name, exact: true });
+  await option.hover();
+  await option.click();
+};
 
 test.describe("FilterEditor", () => {
   test.describe("WHEN rendered with new FilterClauseModel", () => {
@@ -77,6 +83,172 @@ test.describe("FilterEditor", () => {
           await expect(page.getByRole("combobox").nth(1)).toBeFocused();
         });
       });
+    });
+  });
+
+  test.describe("Value entry and cancellation", () => {
+    test("starts suggestions are illustrative and Save tracks whether text is present", async ({
+      mount,
+      page,
+    }) => {
+      await mount(
+        <LocalDataSourceProvider>
+          <NewFilter />
+        </LocalDataSourceProvider>,
+      );
+      await assertComboboxReady(page);
+      await selectListItem(page, "description");
+      await selectListItem(page, "starts");
+
+      await expect(
+        page.getByRole("option", { name: "AAOO.L description" }),
+      ).toHaveAttribute("aria-disabled", "true");
+      const save = page.getByRole("button", { name: "Save" });
+      const value = page.getByRole("combobox").nth(2);
+      await expect(save).toBeDisabled();
+      await expect(value).toBeFocused();
+      await value.fill("A");
+      await expect(save).toBeEnabled();
+      await value.press("Backspace");
+      await expect(save).toBeDisabled();
+    });
+
+    for (const key of ["Enter", "Tab"]) {
+      test(`typing a starts value then pressing ${key} focuses Save`, async ({
+        mount,
+        page,
+      }) => {
+        await mount(
+          <LocalDataSourceProvider>
+            <NewFilter />
+          </LocalDataSourceProvider>,
+        );
+        await selectListItem(page, "description");
+        await selectListItem(page, "starts");
+        const value = page.getByRole("combobox").nth(2);
+        await value.fill("A");
+        await value.press(key);
+
+        await expect(page.getByRole("button", { name: "Save" })).toBeFocused();
+      });
+    }
+
+    test("numeric columns offer only numeric operators", async ({
+      mount,
+      page,
+    }) => {
+      await mount(
+        <LocalDataSourceProvider>
+          <NewFilter />
+        </LocalDataSourceProvider>,
+      );
+      await selectListItem(page, "lotSize");
+
+      for (const operator of ["=", "!=", ">", ">=", "<", "<="]) {
+        await expect(
+          page.getByRole("option", { name: operator, exact: true }),
+        ).toBeVisible();
+      }
+      await expect(
+        page.getByRole("option", { name: "starts", exact: true }),
+      ).toHaveCount(0);
+    });
+
+    for (const key of ["Enter", "Tab"]) {
+      test(`typing a numeric value then pressing ${key} enables and focuses Save`, async ({
+        mount,
+        page,
+      }) => {
+        await mount(
+          <LocalDataSourceProvider>
+            <NewFilter />
+          </LocalDataSourceProvider>,
+        );
+        await selectListItem(page, "lotSize");
+        await selectListItem(page, ">");
+        const value = page.getByRole("textbox");
+        await value.fill("1000");
+        await value.press(key);
+
+        const save = page.getByRole("button", { name: "Save" });
+        await expect(save).toBeFocused();
+        await expect(save).toBeEnabled();
+      });
+    }
+
+    test("backspacing past an empty numeric value removes it and returns to operator", async ({
+      mount,
+      page,
+    }) => {
+      await mount(
+        <LocalDataSourceProvider>
+          <NewFilter />
+        </LocalDataSourceProvider>,
+      );
+      await selectListItem(page, "lotSize");
+      await selectListItem(page, ">");
+      const value = page.getByRole("textbox");
+      await value.fill("1000");
+      for (let i = 0; i < 5; i++) {
+        await value.press("Backspace");
+      }
+
+      await expect(page.getByRole("combobox")).toHaveCount(2);
+      await expect(page.getByRole("combobox").nth(1)).toBeFocused();
+      await expect(page.getByRole("listbox")).toBeVisible();
+    });
+
+    test("Escape first closes the edit dropdown without closing the editor", async ({
+      mount,
+      page,
+    }) => {
+      await mount(
+        <LocalDataSourceProvider>
+          <FilterBarOneSimpleFilter />
+        </LocalDataSourceProvider>,
+      );
+      await page
+        .locator('.vuuFilterPill[data-index="0"] .vuuSplitButton-trigger')
+        .click();
+      await page.getByRole("menuitem", { name: "Edit" }).click();
+      await expect(page.locator(".vuuFilterEditor")).toBeVisible();
+      await expect(page.getByRole("listbox")).toBeVisible();
+
+      await page.keyboard.press("Escape");
+
+      await expect(page.locator(".vuuFilterEditor")).toBeVisible();
+      await expect(page.getByRole("listbox")).not.toBeAttached();
+    });
+
+    test("Escape from Save closes the editor and restores pill focus", async ({
+      mount,
+      page,
+    }) => {
+      await mount(
+        <LocalDataSourceProvider>
+          <FilterBarOneSimpleFilter />
+        </LocalDataSourceProvider>,
+      );
+      await page
+        .locator('.vuuFilterPill[data-index="0"] .vuuSplitButton-trigger')
+        .click();
+      await page.getByRole("menuitem", { name: "Edit" }).click();
+      await expect(page.getByRole("combobox").first()).toBeFocused();
+      const save = page.getByRole("button", { name: "Save" });
+      await save.focus();
+      await expect(save).toBeFocused();
+
+      await save.press("Escape");
+
+      await expect(page.locator(".vuuFilterEditor")).not.toBeAttached();
+      await expect(
+        page.getByRole("button", { name: "Filter One" }),
+      ).toBeFocused();
+    });
+  });
+
+  test.describe("WHEN rendered with new FilterClauseModel", () => {
+    test.describe("WHEN rendered with new FilterClauseModel", () => {
       test.describe("WHEN Enter is pressed twice to accept default selections", () => {
         test("THEN filter clause value is focused", async ({ mount, page }) => {
           await mount(

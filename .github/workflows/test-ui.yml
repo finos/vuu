@@ -33,30 +33,6 @@ jobs:
         uses: ./.github/actions/setup-vuu-ui
       - run: cd ./vuu-ui && npm run test:vite
 
-  cypress-component:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
-      - name: Install Node & dependencies
-        uses: ./.github/actions/setup-vuu-ui
-      - name: Build Worker
-        run: cd ./vuu-ui && npm run build:worker
-      - name: Run component tests in Chrome
-        uses: cypress-io/github-action@bd9dda317ed2d4fbffc808ba6cdcd27823b2a13b
-        with:
-          component: true
-          install: false
-          working-directory: ./vuu-ui
-          browser: chrome
-      - name: Run component tests in Edge
-        uses: cypress-io/github-action@bd9dda317ed2d4fbffc808ba6cdcd27823b2a13b
-        with:
-          component: true
-          install: false
-          working-directory: ./vuu-ui
-          browser: edge
-
   playwright-component:
     runs-on: ubuntu-latest
     name: playwright-component (${{ matrix.browser }})

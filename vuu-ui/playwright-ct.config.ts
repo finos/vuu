@@ -10,12 +10,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /**
  * Path Resolution Strategy for Playwright Component Tests
  *
- * We use vite-tsconfig-paths (same as Cypress) to resolve @vuu-ui/* imports.
+ * We use vite-tsconfig-paths to resolve @vuu-ui/* imports.
  * It resolves through npm workspaces to each package's "main" field, which
  * points to source files (src/index.ts) rather than built files.
  *
  * This approach:
- * - Matches the Cypress setup exactly
  * - Keeps path configuration isolated from the main tsconfig.json
  * - Prevents affecting published package type definitions
  * - Is cleaner than maintaining manual Vite aliases for all packages

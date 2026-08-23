@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/experimental-ct-react";
 import {
   DefaultTabstrip,
   TabstripEditableLabels,
+  TabstripRemoveTab,
 } from "../../../../../../showcase/src/examples/UiControls/Tabstrip.examples";
 
 const OVERFLOW_ITEMS = ".vuuOverflowContainer-wrapContainer > *";
@@ -28,8 +29,8 @@ test.describe("WHEN initial size is sufficient to display all contents", () => {
     test("THEN no overflow indicator will be visible", async ({ mount }) => {
       const component = await mount(<DefaultTabstrip width={500} />);
       const overflowInd = component.locator(OVERFLOW_IND);
-      expect(overflowInd).toHaveCount(1);
-      expect(overflowInd).not.toBeVisible();
+      await expect(overflowInd).toHaveCount(1);
+      await expect(overflowInd).not.toBeVisible();
     });
 
     test.describe("WHEN resized such that space is sufficient for only 4 tabs (first tab selected)", () => {
@@ -58,8 +59,8 @@ test.describe("WHEN initial size is sufficient to display all contents", () => {
         await expect(wrappedItems).toHaveCount(1);
 
         const overflowInd = component.locator(OVERFLOW_IND);
-        expect(overflowInd).toHaveCount(1);
-        expect(overflowInd).toBeVisible();
+        await expect(overflowInd).toHaveCount(1);
+        await expect(overflowInd).toBeVisible();
       });
     });
   });
@@ -102,5 +103,74 @@ test.describe("Editable tabs", () => {
       await expect(homeTab).toContainClass("vuuTab-editing");
       await expect(homeTab.getByRole("textbox")).toBeFocused();
     });
+  });
+
+  test.describe("WHEN characters are entered during edit state", () => {
+    test("THEN editable input value is updated", async ({ mount }) => {
+      const component = await mount(<TabstripEditableLabels />);
+      const homeTab = component.getByRole("tab", { name: "Home" });
+      await homeTab.click();
+      await homeTab.press("Enter");
+
+      const textbox = homeTab.getByRole("textbox");
+      await expect(textbox).toBeFocused();
+      await textbox.fill("test");
+      await expect(textbox).toHaveValue("test");
+    });
+  });
+
+  test.describe("WHEN ENTER is pressed after edit", () => {
+    test("THEN edited value is applied to tab label", async ({ mount }) => {
+      const component = await mount(<TabstripEditableLabels />);
+      const homeTab = component.getByRole("tab", { name: "Home" });
+      await homeTab.click();
+      await homeTab.press("Enter");
+
+      const textbox = homeTab.getByRole("textbox");
+      await textbox.fill("test");
+      await textbox.press("Enter");
+
+      const editedTab = component.getByRole("tab", { name: "test" });
+      await expect(editedTab).not.toContainClass("vuuTab-editing");
+      await expect(editedTab).toBeFocused();
+    });
+  });
+
+  test.describe("WHEN ESCAPE is pressed after edit", () => {
+    test("THEN edited value is not applied to tab label", async ({ mount }) => {
+      const component = await mount(<TabstripEditableLabels />);
+      const homeTab = component.getByRole("tab", { name: "Home" });
+      await homeTab.click();
+      await homeTab.press("Enter");
+
+      const textbox = homeTab.getByRole("textbox");
+      await textbox.fill("test");
+      await textbox.press("Escape");
+
+      await expect(homeTab).not.toContainClass("vuuTab-editing");
+      await expect(homeTab).toBeFocused();
+    });
+  });
+});
+
+test.describe("Removing tabs", () => {
+  test("THEN all tabs have a context menu", async ({ mount }) => {
+    const component = await mount(<TabstripRemoveTab />);
+    await expect(component.locator(".vuuTabMenu")).toHaveCount(5);
+  });
+
+  test("WHEN the Close menu item is clicked THEN the tab is closed", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(<TabstripRemoveTab />);
+    const homeTab = component.getByRole("tab", { name: "Home" });
+    await homeTab.getByRole("button", { name: "context menu" }).click();
+    await page.getByRole("menuitem", { name: "Close" }).click();
+
+    await expect(component.getByRole("tab")).toHaveCount(4);
+    await expect(
+      component.getByRole("tab", { name: "Home" }),
+    ).not.toBeAttached();
   });
 });

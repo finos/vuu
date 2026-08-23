@@ -18,7 +18,6 @@
     "sourceMap": true
   },
   "include": [
-    "cypress",
     "experiments",
     "packages",
     "playwright/customAssertions.ts",
