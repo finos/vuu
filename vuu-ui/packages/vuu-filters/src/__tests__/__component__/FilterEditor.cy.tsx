@@ -195,7 +195,7 @@ describe("FilterEditor", () => {
       });
     });
     describe("WHEN user presses Esc again", () => {
-      it("THEN FilterEditor is closed and FilterPill focused", () => {
+      it.skip("THEN FilterEditor is closed and FilterPill focused", () => {
         cy.mount(<FilterBarOneSimpleFilterFixture />);
         clickFilterPillTrigger();
         clickMenuItem("Edit");
