@@ -3,7 +3,7 @@ import { TabDialog } from "./TabDialog";
 import { ComponentTemplate, useGridLayoutDispatch } from "./GridLayoutContext";
 
 export interface EditTabNameHookProps {
-  getNewComponent?: () => ComponentTemplate;
+  getNewComponent?: () => Omit<ComponentTemplate, "label">;
   id: string;
   mode?: "add" | "edit";
   tabLabel?: string;
@@ -27,7 +27,7 @@ export const useEditTabName = ({
           dispatch({
             title,
             type: "add-tabbed-child",
-            componentTemplate,
+            componentTemplate: { ...componentTemplate, label: title },
             stackId: id,
           });
         }

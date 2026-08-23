@@ -319,7 +319,7 @@ export const useGridLayout = ({
   const replaceChildComponent = useCallback(
     (
       targetItemId: string,
-      component: JSX.Element,
+      component: ReactElement,
       { column, header, id, row, title }: GridModelChildItem,
     ) => {
       console.log(`[useGridLayout] replaceChildComponent #${id}`);
@@ -607,7 +607,7 @@ export const useGridLayout = ({
             });
             gridModel.addChildItem(gridModelChildItem);
 
-            const component = layoutFromJson(restJSON as LayoutJSON, "");
+            const component = layoutFromJson(restJSON as LayoutJSON);
             addChildComponent(component, gridModelChildItem);
             gridModel.notifyChange();
           }
