@@ -170,7 +170,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
 
     @Test
     public void table2_custom_rpc_request_createSessionTable() {
-        // test rpc registered in UpdateRecordRpcHandler (DefaultRpcHandler) works
+        // test rpc registered in EditPersonRecordRpcHandler (CreateSessionTableRpcHandlerImpl) works
         var viewPortId = createViewPort("PersonManualMapped2");
 
         var rpcRequest = new RpcRequest(
@@ -189,7 +189,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
 
     @Test
     public void table2_custom_rpc_request_getUniqueFieldValues() {
-        // test rpc registered in UpdateRecordRpcHandler (DefaultRpcHandler) works
+        // test rpc registered in EditPersonRecordRpcHandler (DefaultRpcHandler) works
         var viewPortId = createViewPort("PersonManualMapped2");
 
         var rpcRequest = new RpcRequest(
