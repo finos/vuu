@@ -22,7 +22,7 @@ trait CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker, t
       case Some("import") => createSessionTableForImport(params)
       case Some("export") => createSessionTableForExport(params)
       case _ => new RpcFunctionFailure("Session type undefined")
-    } // TODO 2231 add tests for sessionType, e.g. edit, import, export
+    }
   }
 
   def createSessionTableForEdit(params: RpcParams): RpcFunctionResult = {
