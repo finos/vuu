@@ -23,6 +23,7 @@ import org.finos.vuu.person.auto.EntitySchema;
 import org.finos.vuu.person.datasource.PersonStore;
 import org.finos.vuu.person.manual.PersonProvider;
 import org.finos.vuu.util.RpcHandlerBuilder;
+import org.finos.vuu.util.SessionTableDefBuilder;
 import org.finos.vuu.util.SortSpecBuilder;
 import org.finos.vuu.util.TableDefBuilder;
 
@@ -69,6 +70,20 @@ public class JavaExampleModule extends DefaultModule {
                                 buildRpcHandler3(tableContainer)
                         )
                 )
+                .addSessionTable(new SessionTableDefBuilder()
+                                .name("export-PersonManualMapped2")
+                                .keyField("Id")
+                                .customColumns(new ColumnBuilder()
+                                        .addString("id")
+                                        .addString("name")
+                                        .addInt("account")
+                                        .build())
+                                .build(),
+                        (table, provider, providerContainer, tableContainer) -> ViewPortDef.createDefault(new ColumnBuilder()
+                                .addString("id")
+                                .addString("name")
+                                .addInt("account")
+                                .build()))
                 .addTable(new TableDefBuilder()
                                 .name("PersonAutoMapped")
                                 .keyField("id")

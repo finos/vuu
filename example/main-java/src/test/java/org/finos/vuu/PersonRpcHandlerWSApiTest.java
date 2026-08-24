@@ -176,7 +176,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
         var rpcRequest = new RpcRequest(
                 new ViewPortContext(viewPortId),
                 "createSessionTable",
-                toScala(Map.of("column", "id"))
+                toScala(Map.of("sessionType", "export"))
         );
 
         var requestId = vuuClient.send(sessionId, rpcRequest);
