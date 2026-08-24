@@ -79,7 +79,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   // TODO add more tests:
   // Test when vp is filtered and sorted, the data copied to session table is also filtered and sorted
   // Test when copying from a given list of columns, only data from those columns are copied
-  Feature("[Web Socket API] create a session table and copy data from source table") {
+  Feature("[Web Socket API] create a session table for edit mode") {
     Scenario("create a session table from source table using default session table def") {
       Given("a view port exist")
       val viewPortId = createViewPort(tableName1)
@@ -325,6 +325,14 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
       rpcResult.errorMessage shouldBe "Column(s) not found in source table."
     }
+  }
+
+  Feature("[Web Socket API] create a session table for import mode") {
+
+  }
+
+  Feature("[Web Socket API] create a session table for export mode") {
+
   }
 
   private def createTableDef(tableName: String, isEditable: Boolean): TableDef = {
