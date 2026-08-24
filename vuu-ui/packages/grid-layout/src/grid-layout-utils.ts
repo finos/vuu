@@ -329,8 +329,6 @@ export const splitGridChildPosition = (
     row: { start: rowStart, end: rowEnd },
   };
 
-  console.log(`split at ${splitTrackIndex}`);
-
   switch (splitDirection) {
     case "north":
       return [

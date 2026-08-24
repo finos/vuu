@@ -1,9 +1,9 @@
 import {
   TabBar,
-  TabList as TabListNext,
-  Tab as TabNext,
-  TabTrigger as TabNextTrigger,
-  Tabs as TabsNext,
+  TabList,
+  Tab,
+  TabTrigger,
+  Tabs,
 } from "@salt-ds/core";
 import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -17,11 +17,9 @@ import {
   useEffect,
 } from "react";
 import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
-import {
-  type ComponentTemplate,
-  useGridModel,
-} from "./GridLayoutContext";
+import { type ComponentTemplate, useGridModel } from "./GridLayoutContext";
 import type { GridLayoutItemProps } from "./GridLayoutItem";
+import { resolveMinimumGridItemSize } from "./GridModel";
 import { TabMenu } from "./TabMenu";
 import { useEditTabName } from "./useEditTabName";
 import { useGridChildProps } from "./useGridChildProps";
@@ -43,6 +41,8 @@ export const GridLayoutStackedItem = ({
   header,
   id,
   getNewComponent,
+  minHeight,
+  minWidth,
   resizeable,
   showMenu,
   style: styleProp,
@@ -59,13 +59,23 @@ export const GridLayoutStackedItem = ({
   const { dialog, showTabEditDialog } = useEditTabName({ getNewComponent, id });
 
   const { registerTabsForDragDrop } = useDragContext();
+  const modelMinHeight = resolveMinimumGridItemSize(
+    minHeight,
+    styleProp?.minHeight,
+  );
+  const modelMinWidth = resolveMinimumGridItemSize(
+    minWidth,
+    styleProp?.minWidth,
+  );
 
   useEffect(() => {
-    registerTabsForDragDrop(id);
+    return registerTabsForDragDrop(id);
   }, [id, registerTabsForDragDrop]);
 
   const { gridArea, horizontalSplitter, verticalSplitter } = useGridChildProps({
     id,
+    minHeight: modelMinHeight,
+    minWidth: modelMinWidth,
     resizeable,
     style: styleProp,
     type: "stacked-content",
@@ -89,6 +99,8 @@ export const GridLayoutStackedItem = ({
   const style = {
     ...styleProp,
     gridArea,
+    ...(minHeight === undefined ? {} : { minHeight }),
+    ...(minWidth === undefined ? {} : { minWidth }),
   };
 
   const tabsId = `tabs-${id}`;
@@ -98,10 +110,6 @@ export const GridLayoutStackedItem = ({
   //    ${JSON.stringify(tabState.tabs, null, 2)}
   //   `,
   // );
-
-  console.log(
-    `[GridLayoutStackedItem] render ${tabState.tabs.map((t) => t.label)}`,
-  );
 
   const handleClickAddTab = useCallback(() => {
     showTabEditDialog();
@@ -116,18 +124,18 @@ export const GridLayoutStackedItem = ({
         key={id}
         style={style}
       >
-        <TabsNext
+        <Tabs
           onChange={handleTabSelectionChange}
           value={tabState.tabs[tabState.active]?.label ?? null}
         >
           <TabBar divider>
-            <TabListNext
+            <TabList
               appearance="transparent"
               className="vuuDragContainer"
               id={tabsId}
             >
               {tabState.tabs.map(({ id: gridLayoutItemId, label }, index) => (
-                <TabNext
+                <Tab
                   className="vuuDraggableItem"
                   data-index={index}
                   data-grid-layout-item-id={gridLayoutItemId}
@@ -136,13 +144,13 @@ export const GridLayoutStackedItem = ({
                   value={label}
                   key={label}
                 >
-                  <TabNextTrigger>{label}</TabNextTrigger>
+                  <TabTrigger>{label}</TabTrigger>
                   {showMenu ? (
                     <TabMenu layoutItemId={gridLayoutItemId} tabLabel={label} />
                   ) : null}
-                </TabNext>
+                </Tab>
               ))}
-            </TabListNext>
+            </TabList>
             {allowAddTab ? (
               <IconButton
                 aria-label="Create Tab"
@@ -157,7 +165,7 @@ export const GridLayoutStackedItem = ({
               />
             ) : null}
           </TabBar>
-        </TabsNext>
+        </Tabs>
       </div>
       {dialog}
     </>

@@ -1,6 +1,7 @@
 import {
   GridLayout,
   type GridLayoutChangeHandler,
+  type GridResizeDistribution,
   GridLayoutItem,
   GridLayoutProvider,
   type TrackSize,
@@ -15,6 +16,8 @@ export type ScenarioItem = {
   dropTarget?: boolean;
   header?: boolean;
   id: string;
+  minHeight?: number;
+  minWidth?: number;
   resizeable?: "h" | "hv" | "v" | false;
   stackId?: string;
   title?: string;
@@ -54,6 +57,8 @@ export const createScenarioItem = ({
   dropTarget = true,
   header = true,
   id,
+  minHeight,
+  minWidth,
   resizeable = "hv",
   stackId,
   title = id,
@@ -64,6 +69,8 @@ export const createScenarioItem = ({
     header={header}
     id={id}
     key={id}
+    minHeight={minHeight}
+    minWidth={minWidth}
     resizeable={resizeable}
     stackId={stackId}
     style={{ gridArea: area }}
@@ -84,6 +91,7 @@ type ScenarioGridProps = {
   cols: TrackSize[];
   id: string;
   onChange?: GridLayoutChangeHandler;
+  rowResizeDistribution?: GridResizeDistribution;
   rows: TrackSize[];
 };
 
@@ -92,6 +100,7 @@ export const ScenarioGrid = ({
   cols,
   id,
   onChange,
+  rowResizeDistribution,
   rows,
 }: ScenarioGridProps) => (
   <GridLayoutProvider options={{ newChildItem: { header: true } }}>
@@ -99,6 +108,7 @@ export const ScenarioGrid = ({
       colsAndRows={{ cols, rows }}
       id={id}
       onChange={onChange}
+      rowResizeDistribution={rowResizeDistribution}
       style={{ height: "100%", minHeight: 0, width: "100%" }}
     >
       {children}

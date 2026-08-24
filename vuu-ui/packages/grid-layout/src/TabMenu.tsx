@@ -5,7 +5,7 @@ import { useWindow } from "@salt-ds/window";
 
 import tabMenuCss from "./TabMenu.css";
 import { useGridLayoutDispatch } from "./GridLayoutContext";
-import { ReactElement, useCallback, useMemo } from "react";
+import { type ReactElement, useCallback, useMemo } from "react";
 import { useEditTabName } from "./useEditTabName";
 
 export interface TabMenuProps {
@@ -69,11 +69,7 @@ export const TabMenu = ({
     <>
       <Menu>
         <MenuTrigger>
-          <Button
-            aria-label="Settings"
-            className="TabMenuButton"
-            data-embedded
-          >
+          <Button aria-label="Settings" className="TabMenuButton" data-embedded>
             <Icon aria-hidden name="more-vert" />
           </Button>
         </MenuTrigger>

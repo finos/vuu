@@ -149,7 +149,7 @@ export type GridLayoutDropHandler = (
   targetId: string,
   dragSource: DragSource,
   position: GridLayoutDropPosition,
-) => void;
+) => boolean;
 
 export interface GridLayoutContextProps {
   dispatchGridLayoutAction: GridLayoutDispatch;
@@ -165,7 +165,7 @@ export const GridLayoutContext = createContext<GridLayoutContextProps>({
   dispatchGridLayoutAction: unconfiguredGridLayoutDispatch,
   id: "",
   onDragStart: () => console.log("no GridLayoutProvider"),
-  onDrop: () => console.log("no GridLayoutProvider"),
+  onDrop: () => false,
 });
 
 export const useGridLayoutDispatch = () => {

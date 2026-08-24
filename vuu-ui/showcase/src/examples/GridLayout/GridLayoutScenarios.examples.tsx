@@ -84,12 +84,13 @@ export const VerticalSplit = () => (
 
 export const MixedRowAndColumnSpans = () => (
   <ScenarioFrame
-    instructions="The header spans both columns while the right item spans two rows."
-    title="Mixed spans"
+    instructions="Drag the horizontal splitter below the header. The two equal lower rows contract proportionally and remain equal."
+    title="Mixed spans with proportional row resize"
   >
     <ScenarioGrid
       cols={["1fr", "1fr"]}
       id="mixed-spans"
+      rowResizeDistribution="proportional"
       rows={["1fr", "1fr", "1fr"]}
     >
       {[
@@ -115,6 +116,47 @@ export const MixedRowAndColumnSpans = () => (
           area: "2/2/4/3",
           color: "#c75b12",
           id: "span-right",
+          title: "Two-row span",
+        }),
+      ]}
+    </ScenarioGrid>
+  </ScenarioFrame>
+);
+
+export const ProportionalUnequalRows = () => (
+  <ScenarioFrame
+    instructions="Drag the horizontal splitter below the header. The lower rows preserve their 1:2 height ratio as their combined height changes."
+    title="Proportional resize with unequal rows"
+  >
+    <ScenarioGrid
+      cols={["1fr", "1fr"]}
+      id="proportional-unequal-rows"
+      rowResizeDistribution="proportional"
+      rows={["1fr", "1fr", "2fr"]}
+    >
+      {[
+        createScenarioItem({
+          area: "1/1/2/3",
+          color: "#37474f",
+          id: "proportional-header",
+          title: "Two-column span",
+        }),
+        createScenarioItem({
+          area: "2/1/3/2",
+          color: "#5e35b1",
+          id: "proportional-left-top",
+          title: "One-part row",
+        }),
+        createScenarioItem({
+          area: "3/1/4/2",
+          color: "#00897b",
+          id: "proportional-left-bottom",
+          title: "Two-part row",
+        }),
+        createScenarioItem({
+          area: "2/2/4/3",
+          color: "#ef6c00",
+          id: "proportional-right",
           title: "Two-row span",
         }),
       ]}
@@ -261,11 +303,11 @@ export const RemovalAndReflow = () => (
 
 export const ResizableBoundary = () => (
   <ScenarioFrame
-    instructions="Drag the separator between the fixed-width and flexible items."
+    instructions="Drag the separator in either direction; each item stops at its minimum width."
     title="Resizable boundary"
   >
     <ScenarioGrid
-      cols={["180px", "1fr"]}
+      cols={["1fr", "2fr"]}
       id="resizable-boundary"
       rows={["1fr"]}
     >
@@ -274,15 +316,16 @@ export const ResizableBoundary = () => (
           area: "1/1/2/2",
           color: "#37474f",
           id: "resize-fixed",
-          resizeable: false,
-          title: "Fixed item",
+          minWidth: 150,
+          resizeable: "h",
+          title: "150px minimum",
         }),
         createScenarioItem({
           area: "1/2/2/3",
           color: "#00838f",
           id: "resize-flexible",
           resizeable: "h",
-          title: "Resizable item",
+          title: "80px default minimum",
         }),
       ]}
     </ScenarioGrid>

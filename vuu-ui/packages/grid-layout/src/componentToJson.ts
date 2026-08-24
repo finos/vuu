@@ -1,11 +1,17 @@
 import { elementImplementsJSONSerialization } from "@vuu-ui/vuu-utils";
-import React, { CSSProperties, ReactElement } from "react";
+import React, {
+  type CSSProperties,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import { getProps } from "./propUtils";
 import { typeOf } from "./typeOf";
 
+export type LayoutJSONChild = LayoutJSON | number | string;
+
 export interface LayoutJSON<T extends object = object> {
   active?: number;
-  children?: LayoutJSON[];
+  children?: LayoutJSONChild[];
   id?: string;
   props?: T;
   state?: unknown;
@@ -49,9 +55,16 @@ export function componentToJson(element: ReactElement): LayoutJSON {
       type,
       props: serializeProps(props as LayoutProps),
       state,
-      children: React.Children.map(children, componentToJson),
+      children: React.Children.map(children, componentChildToJson) ?? undefined,
     };
   }
+}
+
+function componentChildToJson(child: ReactNode): LayoutJSONChild | null {
+  if (typeof child === "string" || typeof child === "number") {
+    return child;
+  }
+  return React.isValidElement(child) ? componentToJson(child) : null;
 }
 
 export function serializeProps(props?: LayoutProps) {
