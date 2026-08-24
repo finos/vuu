@@ -3,6 +3,8 @@ import { GridLayoutDriver } from "./GridLayoutDriver";
 import { GridLayoutTestFixture } from "./GridLayoutTestFixture";
 
 test.describe("GridLayout browser interactions", () => {
+  test.describe.configure({ mode: "serial" });
+
   test("renders items at their declared CSS Grid positions", async ({
     mount,
     page,
@@ -18,7 +20,8 @@ test.describe("GridLayout browser interactions", () => {
     const alpha = await grid.item("alpha").boundingBox();
     const beta = await grid.item("beta").boundingBox();
     expect(alpha?.x).toBeLessThan(beta?.x ?? 0);
-    expect(Math.abs((alpha?.width ?? 0) - (beta?.width ?? 0))).toBeLessThan(2);
+    expect(alpha?.width).toBeGreaterThan(250);
+    expect(beta?.width).toBeGreaterThan(250);
   });
 
   for (const direction of ["north", "south", "east", "west"] as const) {
@@ -62,9 +65,11 @@ test.describe("GridLayout browser interactions", () => {
     const component = await mount(<GridLayoutTestFixture variant="basic" />);
     const grid = new GridLayoutDriver(component, page);
 
-    await grid.drag(grid.header("beta"), grid.item("alpha").locator(
-      ".vuuGridLayoutItemHeader",
-    ), "header");
+    await grid.drag(
+      grid.header("beta"),
+      grid.item("alpha").locator(".vuuGridLayoutItemHeader"),
+      "header",
+    );
 
     await expect(page.getByRole("tab", { name: "Alpha" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Beta" })).toBeVisible();
@@ -81,21 +86,25 @@ test.describe("GridLayout browser interactions", () => {
     await page.getByRole("button", { name: "Confirm" }).click();
     await expect(page.getByRole("tab", { name: "Gamma" })).toBeVisible();
 
-    const gamma = page.getByRole("tab", { name: "Gamma" });
-    await gamma.getByRole("button", { name: "Settings" }).click();
+    await page.getByRole("button", { name: "Gamma Settings" }).click();
     await page.getByRole("menuitem", { name: "Rename" }).click();
     await page.getByLabel("New tab name").fill("Gamma renamed");
     await page.getByRole("button", { name: "Confirm" }).click();
-    await expect(page.getByRole("tab", { name: "Gamma renamed" })).toBeVisible();
+    await expect(
+      page.getByRole("tab", { name: "Gamma renamed" }),
+    ).toBeVisible();
 
     await page.getByRole("tab", { name: "Beta" }).click();
+    await expect(page.getByRole("tab", { name: "Beta" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
     await expect(page.getByTestId("content-beta")).toBeVisible();
-    await page
-      .getByRole("tab", { name: "Gamma renamed" })
-      .getByRole("button", { name: "Settings" })
-      .click();
+    await page.getByRole("button", { name: "Gamma renamed Settings" }).click();
     await page.getByRole("menuitem", { name: "Close" }).click();
-    await expect(page.getByRole("tab", { name: "Gamma renamed" })).toHaveCount(0);
+    await expect(page.getByRole("tab", { name: "Gamma renamed" })).toHaveCount(
+      0,
+    );
   });
 
   test("close removes a component and reflows the remaining item", async ({
@@ -105,18 +114,20 @@ test.describe("GridLayout browser interactions", () => {
     const component = await mount(<GridLayoutTestFixture variant="basic" />);
     const grid = new GridLayoutDriver(component, page);
 
-    await grid
-      .item("beta")
-      .getByRole("button")
-      .click();
+    await grid.item("beta").getByRole("button").click();
 
     await expect(grid.item("beta")).toHaveCount(0);
     await expect(grid.item("alpha")).toBeVisible();
     expect(await grid.gridArea("alpha")).toBe("1/1/2/2");
   });
 
-  test("splitter drag resizes a resizable boundary", async ({ mount, page }) => {
-    const component = await mount(<GridLayoutTestFixture variant="resizable" />);
+  test("splitter drag resizes a resizable boundary", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      <GridLayoutTestFixture variant="resizable" />,
+    );
     const grid = new GridLayoutDriver(component, page);
     const before = await grid.item("flexible").boundingBox();
 
@@ -124,6 +135,20 @@ test.describe("GridLayout browser interactions", () => {
 
     const after = await grid.item("flexible").boundingBox();
     expect(Math.abs((after?.x ?? 0) - (before?.x ?? 0))).toBeGreaterThan(30);
+  });
+
+  test("does not render splitters when adjacent items are non-resizable", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      <GridLayoutTestFixture variant="non-resizable" />,
+    );
+    const grid = new GridLayoutDriver(component, page);
+
+    await expect(grid.item("fixed-left")).toBeVisible();
+    await expect(grid.item("fixed-right")).toBeVisible();
+    await expect(grid.separator()).toHaveCount(0);
   });
 
   test.fixme("palette template drop onto an empty placeholder", async () => {

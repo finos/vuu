@@ -14,6 +14,7 @@ import {
 export type GridLayoutFixtureVariant =
   | "basic"
   | "nested"
+  | "non-resizable"
   | "palette"
   | "resizable"
   | "stacked";
@@ -35,7 +36,13 @@ const TemplatePalette = () => {
   const onDragStart = useGridLayoutDragStartHandler();
   const getDragSource = useCallback(
     (event: DragEvent<Element>): TemplateSource => {
-      const element = queryClosest(event.target, "[data-testid='palette-item']");
+      const element = queryClosest(
+        event.target,
+        "[data-testid='palette-item']",
+      );
+      if (!element) {
+        throw Error("TemplatePalette drag source not found");
+      }
       const layout = queryClosest(element, ".vuuGridLayout", true);
       return {
         componentJson: JSON.stringify({
@@ -129,6 +136,30 @@ const ResizableLayout = () => (
       title="Flexible"
     >
       <TestContent label="Flexible" />
+    </GridLayoutItem>
+  </GridLayout>
+);
+
+const NonResizableLayout = () => (
+  <GridLayout
+    colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr"] }}
+    data-testid="grid-layout"
+    id="ct-grid"
+    style={{ height: 320, width: 640 }}
+  >
+    <GridLayoutItem
+      id="fixed-left"
+      resizeable={false}
+      style={{ gridArea: "1/1/2/2" }}
+    >
+      <TestContent label="Fixed left" />
+    </GridLayoutItem>
+    <GridLayoutItem
+      id="fixed-right"
+      resizeable={false}
+      style={{ gridArea: "1/2/2/3" }}
+    >
+      <TestContent label="Fixed right" />
     </GridLayoutItem>
   </GridLayout>
 );
@@ -238,6 +269,7 @@ export const GridLayoutTestFixture = ({
   <GridLayoutProvider options={{ newChildItem: { header: true } }}>
     {variant === "basic" ? <BasicLayout /> : null}
     {variant === "nested" ? <NestedLayout /> : null}
+    {variant === "non-resizable" ? <NonResizableLayout /> : null}
     {variant === "palette" ? <PaletteLayout /> : null}
     {variant === "resizable" ? <ResizableLayout /> : null}
     {variant === "stacked" ? <StackedLayout /> : null}
