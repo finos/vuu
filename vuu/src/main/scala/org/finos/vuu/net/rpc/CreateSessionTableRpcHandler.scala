@@ -21,13 +21,19 @@ trait CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker, t
       case Some("edit") => createSessionTableForEdit(params)
       case Some("import") => createSessionTableForImport(params)
       case Some("export") => createSessionTableForExport(params)
-      case _ => new RpcFunctionFailure("sessionType undefined")
+      case _ => new RpcFunctionFailure("Session type undefined")
     } // TODO 2231 add tests for sessionType, e.g. edit, import, export
   }
 
   def createSessionTableForEdit(params: RpcParams): RpcFunctionResult = {
     val session: ClientSessionId = params.ctx.session
     val sourceTable = params.viewPort.table
+
+    if (!sourceTable.asTable.getTableDef.options.isEditable) {
+      logger.warn(s"Table ${sourceTable.name} is not editable")
+      return new RpcFunctionFailure("Table not editable")
+    }
+
     val copyOption = SessionTableCopyOption.fromString(params.namedParams("copyOption").asInstanceOf[String])
     val sessionTableName = params.namedParams.get("sessionTableName") match {
       case Some(value) => value.asInstanceOf[String]
@@ -42,11 +48,6 @@ trait CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker, t
           return new RpcFunctionFailure("Column(s) not found in source table.")
       }
 
-    if (!sourceTable.asTable.getTableDef.options.isEditable) {
-      logger.warn(s"Table ${sourceTable.name} is not editable")
-      return new RpcFunctionFailure("Table not editable")
-    }
-
     val sessionTableSource = tableContainer.getTable(sessionTableName)
     val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)
     copyDataToSessionTable(copyOption, params.viewPort, sessionTable, columnsToCopy)
@@ -56,6 +57,12 @@ trait CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker, t
   def createSessionTableForImport(params: RpcParams): RpcFunctionResult = {
     val session: ClientSessionId = params.ctx.session
     val sourceTable = params.viewPort.table
+
+    if (!sourceTable.asTable.getTableDef.options.isEditable) {
+      logger.warn(s"Table ${sourceTable.name} is not editable")
+      return new RpcFunctionFailure("Table not editable")
+    }
+
     val sessionTableName = params.namedParams.get("sessionTableName") match {
       case Some(value) => value.asInstanceOf[String]
       case None => s"import-${sourceTable.name}"
@@ -68,11 +75,6 @@ trait CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker, t
         case _: IllegalArgumentException =>
           return new RpcFunctionFailure("Column(s) not found in source table.")
       }
-
-    if (!sourceTable.asTable.getTableDef.options.isEditable) {
-      logger.warn(s"Table ${sourceTable.name} is not editable")
-      return new RpcFunctionFailure("Table not editable")
-    }
 
     val sessionTableSource = tableContainer.getTable(sessionTableName)
     val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)

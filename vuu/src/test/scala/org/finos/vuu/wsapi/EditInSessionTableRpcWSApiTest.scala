@@ -80,6 +80,29 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   // Test when vp is filtered and sorted, the data copied to session table is also filtered and sorted
   // Test when copying from a given list of columns, only data from those columns are copied
   Feature("[Web Socket API] create a session table for edit mode") {
+
+    Scenario("Request to create a session table failed for non-editable table") {
+      Given("a view port exist")
+      val viewPortId = createViewPort(nonEditableTableName)
+
+      When("request createSessionTable for non-editable source table")
+      val createSessionTableRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.CreateSessionTableRpc,
+        params = Map(
+          "copyOption" -> "Empty",
+          "sessionType" -> "edit"
+        ))
+      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
+
+      Then("session table is not created")
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
+      val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
+      rpcResult.errorMessage shouldBe "Table not editable"
+    }
+    
     Scenario("create a session table from source table using default session table def") {
       Given("a view port exist")
       val viewPortId = createViewPort(tableName1)
@@ -281,28 +304,6 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     }
 
 
-    Scenario("Request to create a session table failed for non-editable table") {
-      Given("a view port exist")
-      val viewPortId = createViewPort(nonEditableTableName)
-
-      When("request createSessionTable for non-editable source table")
-      val createSessionTableRequest = RpcRequest(
-        ViewPortContext(viewPortId),
-        RpcNames.CreateSessionTableRpc,
-        params = Map(
-          "copyOption" -> "Empty",
-          "sessionType" -> "edit"
-        ))
-      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
-
-      Then("session table is not created")
-      val response = vuuClient.awaitForResponse(requestId)
-      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
-      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
-      val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
-      rpcResult.errorMessage shouldBe "Table not editable"
-    }
-
     Scenario("Request to create a session table failed for copying from columns not in source table") {
       Given("a view port exist")
       val viewPortId = createViewPortAndVerifyDataSize(tableName1, 3)
@@ -328,11 +329,30 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   }
 
   Feature("[Web Socket API] create a session table for import mode") {
+    Scenario("Request to create a session table failed for non-editable table") {
+      Given("a view port exist")
+      val viewPortId = createViewPort(nonEditableTableName)
 
+      When("request createSessionTable for non-editable source table")
+      val createSessionTableRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.CreateSessionTableRpc,
+        params = Map(
+          "sessionType" -> "import"
+        ))
+      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
+
+      Then("session table is not created")
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
+      val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
+      rpcResult.errorMessage shouldBe "Table not editable"
+    }
   }
 
   Feature("[Web Socket API] create a session table for export mode") {
-
+    // TODO 2231 add tests
   }
 
   private def createTableDef(tableName: String, isEditable: Boolean): TableDef = {
@@ -390,7 +410,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
 
     ModuleFactory.withNamespace(moduleName)
       .addTableForTest(createTableDef(tableName1, true), viewPortDefFactory, providerFactory)
-      .addTableForTest(createTableDef(noEnoughPermissionTableName, false), noEnoughPermissionViewPortDefFactory, providerFactory)
+      .addTableForTest(createTableDef(noEnoughPermissionTableName, true), noEnoughPermissionViewPortDefFactory, providerFactory)
       .addTableForTest(createTableDef(nonEditableTableName, false), viewPortDefFactory, providerFactory)
       .addTableForTest(createTableDef(largeTableName, true), viewPortDefFactory, largeProviderFactory)
       .addSessionTable(SessionTableDef(
