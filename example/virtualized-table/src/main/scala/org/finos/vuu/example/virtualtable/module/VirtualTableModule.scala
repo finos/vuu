@@ -28,7 +28,7 @@ object VirtualTableModule extends DefaultModule {
     ModuleFactory.withNamespace(NAME)
       .addSessionTable(tableDef,
         (table, vs) => new ReallyBigVirtualizedDataProvider(tableDef),
-        (table, _, _, _) => ViewPortDef.default(tableDef.getColumns)
+        (table, _, _, _) => ViewPortDef.createDefault(tableDef.getColumns)
       ).asModule()
   }
 

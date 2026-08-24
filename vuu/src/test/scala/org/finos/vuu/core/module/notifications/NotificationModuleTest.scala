@@ -41,7 +41,7 @@ class NotificationModuleTest extends AnyFeatureSpec with Matchers with GivenWhen
       val module = NotificationModule(
         (table, _) => new MockProvider(table),
         (_, _) => AllowAllPermissionFilter,
-        (table, _, _, _) => ViewPortDef.default(table.getTableDef.getColumns),
+        (table, _, _, _) => ViewPortDef.createDefault(table.getTableDef.getColumns),
         "source:String", "priority:Int"
       )
 

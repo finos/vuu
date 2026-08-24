@@ -96,19 +96,19 @@ object ClickHouseTableModule extends DefaultModule {
     ModuleFactory.withNamespace(NAME)
       .addSessionTable(orderHistoryDef,
         (table, vs) => new ClickHouseVirtualizedDataProvider(orderHistoryDef, client),
-        (table, _, _, _) => ViewPortDef.default(orderHistoryDef.getColumns)
+        (table, _, _, _) => ViewPortDef.createDefault(orderHistoryDef.getColumns)
       )
       .addSessionTable(orderHistoryDefWithNoSellPermission,
         (table, vs) => new ClickHouseVirtualizedDataProvider(orderHistoryDefWithNoSellPermission, client),
-        (table, _, _, _) => ViewPortDef.default(orderHistoryDefWithNoSellPermission.getColumns)
+        (table, _, _, _) => ViewPortDef.createDefault(orderHistoryDefWithNoSellPermission.getColumns)
       )
       .addSessionTable(instrumentsDef,
         (table, vs) => new ClickHouseVirtualizedDataProvider(instrumentsDef, client),
-        (table, _, _, _) => ViewPortDef.default(instrumentsDef.getColumns)
+        (table, _, _, _) => ViewPortDef.createDefault(instrumentsDef.getColumns)
       )
       .addSessionTable(ordersInstrumentsJoinDef,
         (table, vs) => new ClickHouseVirtualizedDataProvider(ordersInstrumentsJoinDef, client),
-        (table, _, _, _) => ViewPortDef.default(ordersInstrumentsJoinDef.getColumns)
+        (table, _, _, _) => ViewPortDef.createDefault(ordersInstrumentsJoinDef.getColumns)
       )
       .asModule()
   }

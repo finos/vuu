@@ -1,6 +1,6 @@
 package org.finos.vuu.api
 
-import org.finos.vuu.core.table.{Column, TableContainer}
+import org.finos.vuu.core.table.Column
 import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcHandler}
 
 object ViewPortDef {
@@ -8,7 +8,7 @@ object ViewPortDef {
     new ViewPortDef(columns, service)
   }
 
-  def default(columns: Array[Column]): ViewPortDef = ViewPortDef(columns, DefaultRpcHandler.apply())
+  def createDefault(columns: Array[Column]): ViewPortDef = ViewPortDef(columns, DefaultRpcHandler.apply())
 }
 
 class ViewPortDef(val columns: Array[Column], val service: RpcHandler) {}

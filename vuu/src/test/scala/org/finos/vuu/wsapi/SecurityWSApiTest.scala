@@ -333,7 +333,7 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
     )
 
     val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, _: TableContainer) =>
-      ViewPortDef.default(
+      ViewPortDef.createDefault(
         new ColumnBuilder()
           .addString("Id")
           .addString("Name")
