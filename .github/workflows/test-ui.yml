@@ -95,7 +95,7 @@ jobs:
         run: |
           mkdir -p ./vuu-ui/playwright/coverage-data
           cp ./all-coverage-data/*.json ./vuu-ui/playwright/coverage-data/
-          cd ./vuu-ui && npm run playwright:coverage
+          cd ./vuu-ui && npm run playwright:coverage 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Upload Playwright coverage report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
