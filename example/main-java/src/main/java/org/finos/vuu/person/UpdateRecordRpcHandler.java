@@ -75,9 +75,4 @@ public class UpdateRecordRpcHandler extends DefaultRpcHandlerImpl implements Edi
     public boolean submit(RpcParams params) {
         return true;
     }
-
-    @Override
-    public TableContainer tableContainer() {
-        return tableContainer;
-    }
 }
