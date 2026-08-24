@@ -23,7 +23,9 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   private val noEnoughPermissionTableName = "noEnoughPermissionTable"
   private val nonEditableTableName = "nonEditableTable"
   private val tableName1 = "testTable1"
-  private val defaultSessionTableDefName = "edit-" + tableName1
+  private val defaultEditTableName = "edit-" + tableName1
+  private val defaultImportTableName = "import-" + tableName1
+  private val defaultExportTableName = "export-" + tableName1
   private val sessionTableDefName = "testSessionTable1"
   private val largeTableName = "largeTable"
   private val largeSessionTableDefName = "edit-" + largeTableName
@@ -102,7 +104,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
       rpcResult.errorMessage shouldBe "Table not editable"
     }
-    
+
     Scenario("create a session table from source table using default session table def") {
       Given("a view port exist")
       val viewPortId = createViewPort(tableName1)
@@ -349,6 +351,28 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
       rpcResult.errorMessage shouldBe "Table not editable"
     }
+
+    Scenario("create a session table from source table using default name") {
+      Given("a view port exist")
+      val viewPortId = createViewPort(tableName1)
+
+      When("request creating a session table using default name")
+      val createSessionTableRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.CreateSessionTableRpc,
+        params = Map(
+          "sessionType" -> "import"
+        ))
+      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
+
+      Then("session table is created using default name")
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
+      val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      sessionTableName.contains("simple-import-testTable1") shouldBe true
+    }
   }
 
   Feature("[Web Socket API] create a session table for export mode") {
@@ -414,7 +438,17 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       .addTableForTest(createTableDef(nonEditableTableName, false), viewPortDefFactory, providerFactory)
       .addTableForTest(createTableDef(largeTableName, true), viewPortDefFactory, largeProviderFactory)
       .addSessionTable(SessionTableDef(
-        name = defaultSessionTableDefName,
+        name = defaultEditTableName,
+        keyField = "Id",
+        customColumns = allColumns
+      ), viewPortDefFactoryForSessionTable)
+      .addSessionTable(SessionTableDef(
+        name = defaultImportTableName,
+        keyField = "Id",
+        customColumns = allColumns
+      ), viewPortDefFactoryForSessionTable)
+      .addSessionTable(SessionTableDef(
+        name = defaultExportTableName,
         keyField = "Id",
         customColumns = allColumns
       ), viewPortDefFactoryForSessionTable)
