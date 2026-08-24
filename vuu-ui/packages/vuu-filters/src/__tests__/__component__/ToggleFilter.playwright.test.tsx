@@ -1,14 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { SaltProvider } from "@salt-ds/core";
-
-import {
-  SimpleBuySellFilter,
-  SimpleBuySellFilterInitialised,
-  SimpleControlledBuySellFilter,
-  SimpleControlledBuySellFilterInitialised,
-  ControlledBuySellFilterWithBuyOnlyDataSource,
-} from "../../../../../showcase/src/examples/Filters/ToggleFilter.examples";
 
 test(`A simple uncontrolled togglefilter with no defaultValue
     shows All by default

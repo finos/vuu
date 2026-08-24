@@ -1,8 +1,4 @@
 import { expect, test } from "@playwright/test";
-import {
-  EditableInstrumentsInlineEdit,
-  TestTableEmptyWithUpload,
-} from "../../../../../showcase/src/examples/Table/Editing.examples";
 
 test.describe("Undo cell renderer", () => {
   test("renders an undo delete action and reverts the deleted row", async ({

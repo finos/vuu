@@ -1,8 +1,4 @@
 import { test, expect, type MountResult } from "@playwright/test";
-import {
-  NotificationsWithContext,
-  ErrorNotificationWithCustomBackground,
-} from "../../../../../../showcase/src/examples/Notifications/Toast.examples";
 
 function convertRGBAtoHex(rgba: string): string {
   const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);

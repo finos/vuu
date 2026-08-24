@@ -1,24 +1,7 @@
 import { test } from "@playwright/test";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { expect } from "../../../../../playwright/customAssertions.cjs";
-
-import {
-  ContainerManagedNumericColumnFilter,
-  ContainerManagedTextColumnFilter,
-  ControlledTextColumnFilter,
-  ControlledTextColumnFilterPopulated,
-  ControlledNumericRangeFilter,
-  ControlledTimeRangeFilter,
-  UnControlledNumericColumnFilter,
-  UnControlledTextColumnFilter,
-} from "../../../../../showcase/src/examples/Filters/ColumnFilter.examples";
-import {
-  ColumnFilterChangeHandler,
-  ColumnFilterCommitHandler,
-  FilterContainerFilter,
-} from "@vuu-ui/vuu-filter-types";
-import { ColumnFilterProps } from "../../column-filter/ColumnFilter";
-import { FilterAppliedHandler } from "../../filter-container/useFilterContainer";
+import type { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
+import type { ColumnFilterProps } from "../../column-filter/ColumnFilter";
 
 const BBG = { name: "bbg", serverDataType: "string" };
 const PRICE = { name: "price", serverDataType: "double" };
@@ -30,7 +13,7 @@ const VUU_CREATED = {
 
 test.describe("ColumnFilter", () => {
   test.describe("TextColumnFilter", () => {
-    test(`Controlled Text ColumnFilter rendered empty, search pattern entered and value selected from search results, correct callbacks are invoked`, async ({
+    test("Controlled Text ColumnFilter rendered empty, search pattern entered and value selected from search results, correct callbacks are invoked", async ({
       mount,
       page,
     }) => {
@@ -61,7 +44,7 @@ test.describe("ColumnFilter", () => {
       );
     });
 
-    test(`Uncontrolled Text ColumnFilter rendered empty, search pattern entered and value selected from search results, correct callbacks are invoked`, async ({
+    test("Uncontrolled Text ColumnFilter rendered empty, search pattern entered and value selected from search results, correct callbacks are invoked", async ({
       mount,
       page,
     }) => {
@@ -92,7 +75,7 @@ test.describe("ColumnFilter", () => {
       );
     });
 
-    test(`Using TypeaheadProps, popup suggestions are displayed on click without having to enter text`, async ({
+    test("Using TypeaheadProps, popup suggestions are displayed on click without having to enter text", async ({
       mount,
       page,
     }) => {
@@ -119,7 +102,7 @@ test.describe("ColumnFilter", () => {
       await expect(page.getByRole("option", { name: "AAOO L" })).toBeVisible();
     });
 
-    test(`Controlled Text ColumnFilter rendered empty, search pattern entered and value selected from search results, commits when cleared`, async ({
+    test("Controlled Text ColumnFilter rendered empty, search pattern entered and value selected from search results, commits when cleared", async ({
       mount,
       page,
     }) => {
@@ -196,7 +179,7 @@ test.describe("ColumnFilter", () => {
   });
 
   test.describe("Numeric columnfilter", () => {
-    test(`Uncontrolled Numeric ColumnFilter rendered empty, numerics typed, ENTER commits`, async ({
+    test("Uncontrolled Numeric ColumnFilter rendered empty, numerics typed, ENTER commits", async ({
       mount,
       page,
     }) => {
@@ -235,7 +218,7 @@ test.describe("ColumnFilter", () => {
       );
     });
 
-    test(`Uncontrolled Numeric ColumnFilter rendered with value, TAB commits if not already committed `, async ({
+    test("Uncontrolled Numeric ColumnFilter rendered with value, TAB commits if not already committed ", async ({
       mount,
       page,
     }) => {

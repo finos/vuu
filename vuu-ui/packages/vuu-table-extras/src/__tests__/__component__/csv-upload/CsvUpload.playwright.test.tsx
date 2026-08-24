@@ -1,12 +1,4 @@
 import { test, expect } from "@playwright/test";
-import {
-  DefaultCsvUpload,
-  CsvUploadWithCancelCallback,
-  ClosedCsvUpload,
-  CsvUploadCustomTitle,
-  CsvUploadWithInstrumentsSchema,
-} from "../../../../../../showcase/src/examples/TableExtras/CsvUpload.examples";
-import { TestTableEmptyWithUpload } from "../../../../../../showcase/src/examples/Table/Editing.examples";
 
 test.describe("Given a CsvUpload component", () => {
   test("THEN it renders the open dialog with correct initial state", async ({

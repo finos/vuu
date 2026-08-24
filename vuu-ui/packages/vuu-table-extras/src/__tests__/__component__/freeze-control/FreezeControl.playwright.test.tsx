@@ -1,9 +1,5 @@
 import { test, expect, type MountResult } from "@playwright/test";
 import type { Locator } from "@playwright/test";
-import {
-  DefaultFreezeControl,
-  FrozenFreezeControl,
-} from "../../../../../../showcase/src/examples/TableExtras/FreezeControl.examples";
 
 // Section below just to improve test readability
 type ComponentFixture = MountResult;

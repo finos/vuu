@@ -1,11 +1,5 @@
 import { test, type Page } from "@playwright/test";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { expect } from "../../../../../playwright/customAssertions.cjs";
-import {
-  EditMultiClauseOrFilter,
-  NewFilter,
-} from "../../../../../showcase/src/examples/Filters/FilterEditor.examples";
-import { FilterBarOneSimpleFilter } from "../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
 
 const assertComboboxReady = async (page: Page) => {
   await expect(page.getByRole("combobox")).toBeFocused();

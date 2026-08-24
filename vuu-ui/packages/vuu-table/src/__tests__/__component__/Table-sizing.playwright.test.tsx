@@ -1,14 +1,5 @@
-import { type Locator } from "@playwright/test";
+import type { Locator } from "@playwright/test";
 import { test, expect } from "@playwright/test";
-import { CheckboxSelection } from "../../../../../showcase/src/examples/Table/TableSelection.examples";
-import { TestTable } from "../../../../../showcase/src/examples/Table/Misc.examples";
-import {
-  ViewportRowLimitDefaultRowHeight,
-  ViewportRowLimitExplicitRowHeight,
-  MaxViewportRowLimitRowsExceedLimit,
-  MaxViewportRowLimitFewRows,
-} from "../../../../../showcase/src/examples/Table/TableLayout.examples";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 
 const getDimensions = async (locator: Locator): Promise<[number, number]> => {
   const box = await locator.boundingBox();
@@ -16,7 +7,7 @@ const getDimensions = async (locator: Locator): Promise<[number, number]> => {
     const { height, width } = box;
     return [Math.round(width), Math.round(height)];
   } else {
-    throw Error(`unable to resolve locator`);
+    throw Error("unable to resolve locator");
   }
 };
 

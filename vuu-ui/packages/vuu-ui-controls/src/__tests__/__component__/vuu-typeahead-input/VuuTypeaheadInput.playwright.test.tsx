@@ -1,10 +1,4 @@
 import { expect, test } from "@playwright/test";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import {
-  CurrencyWithTypeaheadAllowFreeText,
-  CurrencyWithTypeaheadDisallowFreeText,
-  ShowsSuggestionsNoTextRequired,
-} from "../../../../../../showcase/src/examples/UiControls/VuuTypeaheadInput.examples";
 
 test.describe("VuuTypeaheadInput", () => {
   test.describe("Given a TypeaheadInput that shows currency suggestions and allows free text", () => {
@@ -93,7 +87,7 @@ test.describe("VuuTypeaheadInput", () => {
         // doesn't work in Safari
         test.skip(browserName === "webkit");
 
-        const component = await mount(
+        const _component = await mount(
           "UiControls/VuuTypeaheadInput/CurrencyWithTypeaheadAllowFreeText",
         );
 
@@ -135,7 +129,7 @@ test.describe("VuuTypeaheadInput", () => {
         mount,
         page,
       }) => {
-        const component = await mount(
+        const _component = await mount(
           "UiControls/VuuTypeaheadInput/CurrencyWithTypeaheadAllowFreeText",
         );
 

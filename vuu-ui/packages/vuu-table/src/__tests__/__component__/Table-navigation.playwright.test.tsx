@@ -1,5 +1,4 @@
 import { test } from "@playwright/test";
-import { TabInAndOutFixture } from "../../../../../showcase/src/examples/Table/Misc.examples";
 import { expect } from "@playwright/test";
 import { TableOM } from "./TableOM";
 

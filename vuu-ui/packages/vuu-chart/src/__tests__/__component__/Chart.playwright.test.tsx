@@ -1,10 +1,4 @@
 import { expect, test } from "@playwright/test";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import {
-  DataExclusions,
-  EditableChart,
-  SimpleLineChart,
-} from "../../../../../showcase/src/examples/Chart/LineChart.examples";
 
 test.describe("Chart examples", () => {
   test("renders a chart from the simple line chart example", async ({

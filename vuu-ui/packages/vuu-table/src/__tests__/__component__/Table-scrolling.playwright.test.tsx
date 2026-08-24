@@ -1,15 +1,12 @@
 // TODO try and get TS path alias working to avoid relative paths like this
 import { test } from "@playwright/test";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { expect } from "@playwright/test";
 import { TableOM } from "./TableOM";
-import { TestTable } from "../../../../../showcase/src/examples/Table/Misc.examples";
-import { TwoHundredColumns } from "../../../../../showcase/src/examples/Table/TEST.examples";
 
 test.describe("Table scrolling and keyboard navigation", () => {
   const RENDER_BUFFER = 5;
   const ROW_COUNT = 1000;
-  const tableConfig = {
+  const _tableConfig = {
     renderBufferSize: RENDER_BUFFER,
     headerHeight: 25,
     height: 625,
@@ -26,7 +23,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
         await mount("Table/Misc/TestTable");
         const table = new TableOM(page.getByRole("table"));
 
-        let cell = table.locateCell(2, 1);
+        const cell = table.locateCell(2, 1);
         await cell.click();
         await expect(cell).toBeFocused();
         await expect(cell).toHaveAttribute("tabindex", "0");
@@ -80,7 +77,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
 
           const table = new TableOM(page.getByRole("table"));
 
-          let cell = table.locateCell(2, 1);
+          const cell = table.locateCell(2, 1);
           await cell.click();
           await cell.press("Home");
 
@@ -196,7 +193,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
             await mount("Table/Misc/TestTable");
             const table = new TableOM(page.getByRole("table"));
 
-            let cell = table.locateCell(31, 1);
+            const cell = table.locateCell(31, 1);
             await cell.click();
 
             await page.mouse.wheel(0, 10000);
@@ -215,7 +212,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
             // so 2 out-of-viewport colums are rendered
             await mount("Table/TEST/TwoHundredColumns");
             const table = new TableOM(page.getByRole("table"));
-            let cell = table.locateCell(2, 1);
+            const cell = table.locateCell(2, 1);
             await expect(cell).toBeVisible();
             await table.assertRenderedColumns({
               rendered: { from: 1, to: 8 },
@@ -229,7 +226,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
 
             const table = new TableOM(page.getByRole("table"));
 
-            let cell = table.locateCell(2, 1);
+            const cell = table.locateCell(2, 1);
             await cell.click();
             await page.mouse.wheel(100, 0);
 
@@ -247,7 +244,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
             await mount("Table/TEST/TwoHundredColumns");
 
             const table = new TableOM(page.getByRole("table"));
-            let cell = table.locateCell(2, 1);
+            const cell = table.locateCell(2, 1);
             await cell.click();
             await page.mouse.wheel(110, 0);
 
@@ -268,7 +265,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
 
             await mount("Table/TEST/TwoHundredColumns");
             const table = new TableOM(page.getByRole("table"));
-            let cell = table.locateCell(2, 1);
+            const cell = table.locateCell(2, 1);
             await cell.click();
             await page.mouse.wheel(900, 0);
 

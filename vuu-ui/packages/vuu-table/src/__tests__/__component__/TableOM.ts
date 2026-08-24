@@ -1,6 +1,6 @@
 import { expect } from "@playwright/test";
-import { VuuRange } from "@vuu-ui/vuu-protocol-types";
-import { type Locator } from "@playwright/test";
+import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import type { Locator } from "@playwright/test";
 
 type AriaRole = "cell" | "textbox" | "combobox";
 
@@ -80,7 +80,7 @@ export class TableOM {
     arg3?: string | AriaRole,
     arg4?: AriaRole,
   ): [Locator, string, AriaRole | undefined] {
-    if (typeof arg1 == "number" && typeof arg2 === "number") {
+    if (typeof arg1 === "number" && typeof arg2 === "number") {
       return [this.locateCell(arg1, arg2), arg3 as string, arg4];
     }
     return [arg1 as Locator, arg2 as string, arg3 as AriaRole | undefined];
@@ -151,7 +151,7 @@ export class TableOM {
     columnOrRole?: number | AriaRole,
     role?: AriaRole,
   ) {
-    let target: Locator | undefined = undefined;
+    let target: Locator | undefined;
     if (typeof rowOrCell === "number" && typeof columnOrRole === "number") {
       const cell = this.locateCell(rowOrCell, columnOrRole);
       target = role ? cell.getByRole(role) : cell;
@@ -180,7 +180,7 @@ export class TableOM {
     columnOrEditing?: number | boolean,
     isEditing?: boolean,
   ) {
-    let target: Locator | undefined = undefined;
+    let target: Locator | undefined;
     let editing = true;
     if (typeof rowOrCell === "number" && typeof columnOrEditing === "number") {
       target = this.locateCell(rowOrCell, columnOrEditing);
@@ -229,7 +229,7 @@ export class TableOM {
 
     // we use the aria index for locators, which is 1 based and includes headers
     const firstRenderedRow = from - leadingBufferedRows + headerCount + 1;
-    const firstVisibleRow = from + headerCount;
+    const _firstVisibleRow = from + headerCount;
     const lastVisibleRow = to + headerCount;
     const lastRenderedRow = to + headerCount + trailingBufferedRows;
 

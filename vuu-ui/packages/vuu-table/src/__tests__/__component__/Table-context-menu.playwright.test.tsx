@@ -1,9 +1,6 @@
 import { test } from "@playwright/test";
 import { expect } from "@playwright/test";
 import { TableOM } from "./TableOM";
-import { LocalContextMenu } from "../../../../../showcase/src/examples/Table/ContextMenu.examples";
-import { ParentOrders } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 
 test.describe("WHEN context menu is configured on table", () => {
   test.describe("WHEN cell is right clicked", () => {

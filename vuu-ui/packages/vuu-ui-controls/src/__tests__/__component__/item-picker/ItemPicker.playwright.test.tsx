@@ -1,10 +1,4 @@
-import { expect, MountResult, test } from "@playwright/test";
-import {
-  CalculatedColumnPicker,
-  DefaultItemPicker,
-  EmptyItemPicker,
-  SpecialItemsWithMaxSelection,
-} from "../../../../../../showcase/src/examples/UiControls/ItemPicker.examples.tsx";
+import { expect, type MountResult, test } from "@playwright/test";
 
 interface DisplayedItem {
   dataName: string;
@@ -592,8 +586,8 @@ const expectSelectedItems = async (
   expect(totalRows).toEqual(totalSelectedItems);
 
   if (totalRows > 0) {
-    for (let i = 0; i < selectedItems!.length; i++) {
-      const selectedItem = selectedItems![i];
+    for (let i = 0; i < selectedItems?.length; i++) {
+      const selectedItem = selectedItems?.[i];
       const selectedItemRow = await selectedList
         .locator(".vuuItemPickerListItem")
         .nth(i);
@@ -619,8 +613,8 @@ const expectAvailableItems = async (
   expect(totalRows).toEqual(totalAvailableItems);
 
   if (totalRows > 0) {
-    for (let i = 0; i < availableItems!.length; i++) {
-      const selectedItem = availableItems![i];
+    for (let i = 0; i < availableItems?.length; i++) {
+      const selectedItem = availableItems?.[i];
       const selectedItemRow = await availableList
         .locator(".vuuItemPickerListItem")
         .nth(i);
