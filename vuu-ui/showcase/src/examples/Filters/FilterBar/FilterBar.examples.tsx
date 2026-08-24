@@ -131,25 +131,27 @@ const DefaultFilterBarCore = ({
   );
 
   return (
-    <FilterContainer filter={filterStruct}>
-      <FilterBar
-        QuickFilterProps={QuickFilterProps}
-        columnDescriptors={columns}
-        data-testid="filterbar"
-        filterState={filterState}
-        onApplyFilter={handleApplyFilter}
-        onClearFilter={handleClearFilter}
-        onFilterDeleted={handleFilterDeleted}
-        onFilterRenamed={handleFilterRenamed}
-        onFilterStateChanged={handleFilterStateChange}
-        vuuTable={tableSchema.table}
-        variant={variant}
-      />
+    <div>
+      <FilterContainer filter={filterStruct}>
+        <FilterBar
+          QuickFilterProps={QuickFilterProps}
+          columnDescriptors={columns}
+          data-testid="filterbar"
+          filterState={filterState}
+          onApplyFilter={handleApplyFilter}
+          onClearFilter={handleClearFilter}
+          onFilterDeleted={handleFilterDeleted}
+          onFilterRenamed={handleFilterRenamed}
+          onFilterStateChanged={handleFilterStateChange}
+          vuuTable={tableSchema.table}
+          variant={variant}
+        />
+      </FilterContainer>
       <input hidden data-testid="applied-records" readOnly value={JSON.stringify(appliedRecords.at(-1) ?? null)} />
       <input hidden data-testid="state-records" readOnly value={JSON.stringify(stateRecords.at(-1) ?? null)} />
       <input hidden data-testid="deleted-records" readOnly value={JSON.stringify(deletedRecords.at(-1) ?? null)} />
       <input hidden data-testid="renamed-records" readOnly value={JSON.stringify(renamedRecords.at(-1) ?? null)} />
-    </FilterContainer>
+    </div>
   );
 };
 
