@@ -118,7 +118,7 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("EpochTimestamp equality comparison") {
-      val expected = ("epoch_c = {p_0:DateTime64}", Map("p_0" -> ofEpochMilli(1L)))
+      val expected = ("epoch_c = {p_0:DateTime64}", Map("p_0" -> "1970-01-01 00:00:00.001"))
 
       val result = compile("epochColumn = 1")
 
@@ -130,7 +130,7 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("EpochTimestampNano equality comparison") {
-      val expected = ("epoch_nano_c = {p_0:DateTime64}", Map("p_0" -> ofEpochNanosecond(1L)))
+      val expected = ("epoch_nano_c = {p_0:DateTime64}", Map("p_0" -> "1970-01-01 00:00:00.000000001"))
 
       val result = compile("epochNanoColumn = 1")
 
@@ -258,7 +258,7 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("EpochTimestamp inequality comparison") {
-      val expected = ("epoch_c != {p_0:DateTime64}", Map("p_0" -> ofEpochMilli(1L)))
+      val expected = ("epoch_c != {p_0:DateTime64}", Map("p_0" -> "1970-01-01 00:00:00.001"))
 
       val result = compile("epochColumn != 1")
 
@@ -270,7 +270,7 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("EpochTimestampNano inequality comparison") {
-      val expected = ("epoch_nano_c != {p_0:DateTime64}", Map("p_0" -> ofEpochNanosecond(1L)))
+      val expected = ("epoch_nano_c != {p_0:DateTime64}", Map("p_0" -> "1970-01-01 00:00:00.000000001"))
 
       val result = compile("epochNanoColumn != 1")
 
@@ -358,7 +358,7 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("Epoch less than comparison") {
-      val expected = ("epoch_c < {p_0:DateTime64}", Map("p_0" -> ofEpochMilli(1L)))
+      val expected = ("epoch_c < {p_0:DateTime64}", Map("p_0" -> "1970-01-01 00:00:00.001"))
 
       val result = compile("epochColumn < 1")
 
@@ -366,7 +366,7 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("EpochNano less than comparison") {
-      val expected = ("epoch_nano_c < {p_0:DateTime64}", Map("p_0" -> ofEpochNanosecond(1L)))
+      val expected = ("epoch_nano_c < {p_0:DateTime64}", Map("p_0" -> "1970-01-01 00:00:00.000000001"))
 
       val result = compile("epochNanoColumn < 1")
 
@@ -434,7 +434,7 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("Epoch less than or equal comparison") {
-      val expected = ("epoch_c <= {p_0:DateTime64}", Map("p_0" -> ofEpochMilli(1L)))
+      val expected = ("epoch_c <= {p_0:DateTime64}", Map("p_0" -> "1970-01-01 00:00:00.001"))
 
       val result = compile("epochColumn <= 1")
 
@@ -442,7 +442,7 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("EpochNano less than or equal comparison") {
-      val expected = ("epoch_nano_c <= {p_0:DateTime64}", Map("p_0" -> ofEpochNanosecond(1L)))
+      val expected = ("epoch_nano_c <= {p_0:DateTime64}", Map("p_0" -> "1970-01-01 00:00:00.000000001"))
 
       val result = compile("epochNanoColumn <= 1")
 
@@ -510,7 +510,7 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("Epoch greater than comparison") {
-      val expected = ("epoch_c > {p_0:DateTime64}", Map("p_0" -> ofEpochMilli(1L)))
+      val expected = ("epoch_c > {p_0:DateTime64}", Map("p_0" -> "1970-01-01 00:00:00.001"))
 
       val result = compile("epochColumn > 1")
 
@@ -518,7 +518,7 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("EpochNano greater than comparison") {
-      val expected = ("epoch_nano_c > {p_0:DateTime64}", Map("p_0" -> ofEpochNanosecond(1L)))
+      val expected = ("epoch_nano_c > {p_0:DateTime64}", Map("p_0" -> "1970-01-01 00:00:00.000000001"))
 
       val result = compile("epochNanoColumn > 1")
 
@@ -586,7 +586,7 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("Epoch greater than or equal comparison") {
-      val expected = ("epoch_c >= {p_0:DateTime64}", Map("p_0" -> ofEpochMilli(1L)))
+      val expected = ("epoch_c >= {p_0:DateTime64}", Map("p_0" -> "1970-01-01 00:00:00.001"))
 
       val result = compile("epochColumn >= 1")
 
@@ -594,7 +594,7 @@ class ClickHouseFilterVisitorTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("EpochNano greater than or equal comparison") {
-      val expected = ("epoch_nano_c >= {p_0:DateTime64}", Map("p_0" -> ofEpochNanosecond(1L)))
+      val expected = ("epoch_nano_c >= {p_0:DateTime64}", Map("p_0" -> "1970-01-01 00:00:00.000000001"))
 
       val result = compile("epochNanoColumn >= 1")
 
