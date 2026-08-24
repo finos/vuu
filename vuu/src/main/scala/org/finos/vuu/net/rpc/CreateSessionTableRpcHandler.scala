@@ -78,7 +78,7 @@ trait CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker, t
 
     val sessionTableSource = tableContainer.getTable(sessionTableName)
     val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)
-    copyDataToSessionTable(All, params.viewPort, sessionTable, columnsToCopy)
+    copyDataToSessionTable(Empty, params.viewPort, sessionTable, columnsToCopy)
     RpcFunctionSuccess(Some(Map("sessionTable" -> sessionTable.name, "module" -> sessionTable.tableDef.getModule().name)))
   }
 
@@ -100,7 +100,7 @@ trait CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker, t
 
     val sessionTableSource = tableContainer.getTable(sessionTableName)
     val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)
-    copyDataToSessionTable(Empty, params.viewPort, sessionTable, columnsToCopy)
+    copyDataToSessionTable(All, params.viewPort, sessionTable, columnsToCopy)
     RpcFunctionSuccess(Some(Map("sessionTable" -> sessionTable.name, "module" -> sessionTable.tableDef.getModule().name)))
   }
 
