@@ -1,14 +1,4 @@
 import { test, expect } from "@playwright/test";
-import {
-  MultipleTabbedFilterContainers,
-  SingleTabbedFilterContainers,
-} from "../../../../../showcase/src/examples/Filters/TabbedFilterContainer.examples";
-import {
-  SavedFilterPanelOneFilter,
-  SavedFilterPanelFiveFiltersCustomStyles,
-} from "../../../../../showcase/src/examples/Filters/SavedFilters/SavedFilterPanel.examples";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { SaltProviderNext } from "@salt-ds/core";
 
 test.describe("Given two TabbedFilterContainers with different values for filterProvider", () => {
   test(`When a filter value is entered 
@@ -69,7 +59,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
   test(`When two filters are entered and save button pressed 
       Then the save dialog is displayed with focus in input
       Press Cancel, dialog is closed`, async ({ mount, page }) => {
-    const component = await mount(
+    const _component = await mount(
       "Filters/TabbedFilterContainer/MultipleTabbedFilterContainers",
     );
 
@@ -155,7 +145,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
     test(`When a filter is saved
       Then the filter name is allowed a max length of 25 characters
       `, async ({ mount, page }) => {
-      const component = await mount(
+      const _component = await mount(
         "Filters/TabbedFilterContainer/SingleTabbedFilterContainers",
       );
 
@@ -182,7 +172,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
     test(`When a saved filter is renamed
       Then the filter name is allowed a max length of 25 characters
       `, async ({ mount, page }) => {
-      const component = await mount(
+      const _component = await mount(
         "Filters/SavedFilters/SavedFilterPanel/SavedFilterPanelFiveFiltersCustomStyles",
       );
 
@@ -212,7 +202,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
     test(`When a filter is saved
       Then the filter name is allowed a max length of 20 characters
       `, async ({ mount, page }) => {
-      const component = await mount(
+      const _component = await mount(
         "Filters/TabbedFilterContainer/MultipleTabbedFilterContainers",
       );
 
@@ -239,7 +229,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
     test(`When a saved filter is renamed
       Then the filter name is allowed a max length of 20 characters
       `, async ({ mount, page }) => {
-      const component = await mount(
+      const _component = await mount(
         "Filters/SavedFilters/SavedFilterPanel/SavedFilterPanelOneFilter",
       );
 

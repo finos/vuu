@@ -1,6 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { Instruments } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 
 test.describe("default (extended) selection", () => {
   test("default selection includes simple row selection", async ({

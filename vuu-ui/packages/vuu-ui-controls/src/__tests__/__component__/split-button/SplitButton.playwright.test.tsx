@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { DefaultSplitButton } from "../../../../../../showcase/src/examples/UiControls/SplitButton.examples";
 
 test.describe("Given a (non segmented) SplitButton", () => {
   test("should have correct tabindex", async ({ mount }) => {

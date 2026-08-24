@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { TimeRangeFilter } from "../../../../../showcase/src/examples/Filters/FilterContainer.examples";
 
 test.describe("FilterContainer - Time range", () => {
   test("renders time inputs with values", async ({ mount }) => {

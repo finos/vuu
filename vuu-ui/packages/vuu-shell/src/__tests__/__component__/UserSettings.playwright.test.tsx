@@ -1,9 +1,4 @@
 import { expect, test } from "@playwright/test";
-import {
-  DefaultUserSettingsForm,
-  ScrollableUserSettingsPanel,
-  VariedFormControlUserSettingsForm,
-} from "../../../../../showcase/src/examples/Shell/UserSettings.examples";
 
 test.describe("Given a single toggle button form control", () => {
   test("should have two buttons, with one selected", async ({ mount }) => {

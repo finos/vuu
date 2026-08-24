@@ -1,15 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { Instruments } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
-import {
-  SwitchableDataSourceTable,
-  TestTable,
-} from "../../../../../showcase/src/examples/Table/Misc.examples";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { TableOM } from "./TableOM";
 
 const RENDER_BUFFER = 5;
 const ROW_COUNT = 1000;
-const tableConfig = {
+const _tableConfig = {
   renderBufferSize: RENDER_BUFFER,
   headerHeight: 25,
   height: 625,

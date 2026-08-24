@@ -1,8 +1,4 @@
 import { test, expect } from "@playwright/test";
-import {
-  DefaultVuuInput,
-  VuuInputWithValidation,
-} from "../../../../../../showcase/src/examples/UiControls/VuuInput.examples";
 
 test.describe("VuuInput", () => {
   test.describe("Given a default VuuInput", () => {

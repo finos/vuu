@@ -1,13 +1,5 @@
 import { test } from "@playwright/test";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { expect } from "@playwright/test";
-import {
-  FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled,
-  FilterColumnWithDropdownOpenOnFocusDisabled,
-  NewFilterClause,
-  NewFilterClauseWithDropdownOpenOnFocusDisabled,
-  PartialFilterClauseColumnAndOperator,
-} from "../../../../../showcase/src/examples/Filters/FilterClause.examples";
 
 test.describe("FilterClause", () => {
   test("new clause renders the column field focused with suggestions", async ({

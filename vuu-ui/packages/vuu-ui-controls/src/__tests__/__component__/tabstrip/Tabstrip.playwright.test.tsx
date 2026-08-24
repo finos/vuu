@@ -1,9 +1,4 @@
 import { test, expect } from "@playwright/test";
-import {
-  DefaultTabstrip,
-  TabstripEditableLabels,
-  TabstripRemoveTab,
-} from "../../../../../../showcase/src/examples/UiControls/Tabstrip.examples";
 
 const OVERFLOW_ITEMS = ".vuuOverflowContainer-wrapContainer > *";
 const OVERFLOWED_ITEMS = ".vuuOverflowContainer-wrapContainer > .wrapped";

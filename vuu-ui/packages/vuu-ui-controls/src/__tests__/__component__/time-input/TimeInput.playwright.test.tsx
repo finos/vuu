@@ -1,6 +1,5 @@
 import { test } from "@playwright/test";
 import { expect } from "../../../../../../playwright/customAssertions.cjs";
-import { TestTimeInput } from "../../../../../../showcase/src/examples/UiControls/TimeInput.examples";
 
 declare global {
   namespace PlaywrightTest {
@@ -13,7 +12,7 @@ declare global {
 expect.extend({
   async toHaveSelection(locator, start, end) {
     let pass: boolean;
-    let selection: [number, number] | undefined = undefined;
+    let selection: [number, number] | undefined;
     let errorName: string | undefined;
 
     try {
@@ -46,7 +45,7 @@ expect.extend({
           `Locator: ${locator}\n` +
           `Expected: ${this.isNot ? "not" : ""} ${this.utils.printExpected([start, end])}\n` +
           (selection ? `Received: ${this.utils.printReceived(selection)}` : "")
-        : "Failed!\n" + errorName!;
+        : `Failed!\n${errorName!}`;
 
     return {
       message,

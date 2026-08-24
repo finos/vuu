@@ -1,11 +1,4 @@
 import { expect, type Locator, test } from "@playwright/test";
-import {
-  DefaultShell,
-  SimpleShellCustomHeader,
-  SimpleShellCustomPlaceholder,
-  SimpleShellMultiLayouts,
-  SimpleShellNoWorkspaceTabs,
-} from "../../../../showcase/src/examples/Shell/ShellLayout.examples";
 
 const expectToFillViewport = async (shell: Locator) => {
   const dimensions = await shell.evaluate((element) => {
@@ -38,7 +31,9 @@ test.describe("ShellLayout", () => {
 
   test.describe("WHEN rendered with a custom header", () => {
     test("THEN that header is rendered", async ({ mount }) => {
-      const component = await mount("Shell/ShellLayout/SimpleShellCustomHeader");
+      const component = await mount(
+        "Shell/ShellLayout/SimpleShellCustomHeader",
+      );
 
       await expect(
         component.getByRole("banner", { name: "Custom Header" }),
@@ -51,7 +46,9 @@ test.describe("ShellLayout", () => {
 
   test.describe("WHEN rendered with workspace tabs disabled", () => {
     test("THEN no workspace tabs are rendered", async ({ mount }) => {
-      const component = await mount("Shell/ShellLayout/SimpleShellNoWorkspaceTabs");
+      const component = await mount(
+        "Shell/ShellLayout/SimpleShellNoWorkspaceTabs",
+      );
 
       await expectToFillViewport(component.getByTestId("shell"));
       await expect(
@@ -62,7 +59,9 @@ test.describe("ShellLayout", () => {
 
   test.describe("WHEN rendered with a default layout and custom placeholder", () => {
     test("THEN custom layout is rendered", async ({ mount }) => {
-      const component = await mount("Shell/ShellLayout/SimpleShellCustomPlaceholder");
+      const component = await mount(
+        "Shell/ShellLayout/SimpleShellCustomPlaceholder",
+      );
 
       await expectToFillViewport(component.getByTestId("shell"));
       await expect(component.getByTestId("custom-placeholder")).toBeVisible();
@@ -72,7 +71,9 @@ test.describe("ShellLayout", () => {
       test("THEN custom placeholder is used to create new layout", async ({
         mount,
       }) => {
-        const component = await mount("Shell/ShellLayout/SimpleShellCustomPlaceholder");
+        const component = await mount(
+          "Shell/ShellLayout/SimpleShellCustomPlaceholder",
+        );
 
         await component.getByRole("img", { name: "Create Tab" }).click();
 
@@ -86,7 +87,9 @@ test.describe("ShellLayout", () => {
     test("THEN custom layout with active index is rendered", async ({
       mount,
     }) => {
-      const component = await mount("Shell/ShellLayout/SimpleShellMultiLayouts");
+      const component = await mount(
+        "Shell/ShellLayout/SimpleShellMultiLayouts",
+      );
 
       await expectToFillViewport(component.getByTestId("shell"));
       await expect(component.getByRole("tab")).toHaveCount(3);
@@ -97,7 +100,9 @@ test.describe("ShellLayout", () => {
       test("THEN custom placeholder is used to create new layout", async ({
         mount,
       }) => {
-        const component = await mount("Shell/ShellLayout/SimpleShellMultiLayouts");
+        const component = await mount(
+          "Shell/ShellLayout/SimpleShellMultiLayouts",
+        );
 
         await component.getByRole("img", { name: "Create Tab" }).click();
 

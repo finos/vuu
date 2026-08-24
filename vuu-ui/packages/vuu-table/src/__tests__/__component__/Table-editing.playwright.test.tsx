@@ -1,15 +1,4 @@
 import { test } from "@playwright/test";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import {
-  CreateSessionTableInstruments,
-  EditableInstruments,
-  EditableInstrumentsInlineEdit,
-  EditableInstrumentsWithInlineAddRow,
-  TestTableEmpty,
-  TestTableFIveRows,
-  TwoEditableInstruments,
-  UseEditableTableSessionReadiness,
-} from "../../../../../showcase/src/examples/Table/Editing.examples";
 import { expect } from "../../../../../playwright/customAssertions.cjs";
 import { TableOM } from "./TableOM";
 
@@ -1020,7 +1009,7 @@ test.describe("Inline row editing (session)", () => {
 
     // undo button gone, Submit disabled again
     // Column 11 = vuuMsg (column 1 is the checkbox selector)
-    const vuuMsgCell = table.locateCell(2, 11);
+    const _vuuMsgCell = table.locateCell(2, 11);
     await expect(undoButton).not.toBeVisible();
     await expect(page.getByRole("button", { name: "Submit" })).toBeDisabled();
   });

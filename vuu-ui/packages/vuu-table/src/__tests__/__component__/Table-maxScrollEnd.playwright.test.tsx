@@ -1,7 +1,6 @@
 import { test } from "@playwright/test";
 import { expect } from "@playwright/test";
 import { TableOM } from "./TableOM";
-import { MaxScrollEndTable } from "../../../../../showcase/src/examples/Table/Modules/TEST.examples";
 
 test.describe("Table maxScrollEnd", () => {
   test("pressing End stops at row 500 and shows scroll limit notice", async ({

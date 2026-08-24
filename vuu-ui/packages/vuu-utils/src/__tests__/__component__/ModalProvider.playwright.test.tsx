@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test";
-import { DefaultModalProvider } from "../../../../../showcase/src/examples/UiControls/ModalProvider.examples";
 
 test.describe("ModalProvider", () => {
   test.describe("WHEN modal dialog is triggered", () => {

@@ -1,9 +1,5 @@
 import { test } from "@playwright/test";
 import { expect } from "@playwright/test";
-import {
-  FilterPillEditableLabel,
-  FilterPillNotEditable,
-} from "../../../../../showcase/src/examples/Filters/FilterBar/FilterPill.examples";
 
 test.describe("FilterPill", () => {
   test("non-editable pill has no editable label or Rename menu item", async ({

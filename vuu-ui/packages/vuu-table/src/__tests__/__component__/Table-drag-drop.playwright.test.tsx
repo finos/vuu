@@ -1,12 +1,10 @@
 // TODO try and get TS path alias working to avoid relative paths like this
 import { test, expect } from "@playwright/test";
-import { Instruments } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { TableProps } from "../../Table";
+import type { TableProps } from "../../Table";
 
 test.describe("Table drag drop", () => {
   const RENDER_BUFFER = 5;
-  const tableConfig: Partial<TableProps> = {
+  const _tableConfig: Partial<TableProps> = {
     renderBufferSize: RENDER_BUFFER,
     height: 625,
     rowHeight: 20,

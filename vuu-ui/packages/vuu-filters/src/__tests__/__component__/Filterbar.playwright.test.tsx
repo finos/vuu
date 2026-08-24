@@ -1,10 +1,5 @@
 import { test, type Page } from "@playwright/test";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { expect } from "@playwright/test";
-import {
-  DefaultFilterBar,
-  FilterBarMultipleFilters,
-} from "../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
 
 const FILTER_CONTAINER = ".vuuCustomFilters-filters";
 
@@ -64,7 +59,7 @@ test.describe("FilterBar", () => {
   });
 
   test("initial active filter state is applied", async ({ mount, page }) => {
-    const filter = { column: "currency", op: "!=", value: "CAD" } as const;
+    const _filter = { column: "currency", op: "!=", value: "CAD" } as const;
 
     await mount("Filters/FilterBar/FilterBar/DefaultFilterBar", {
       filterState: {

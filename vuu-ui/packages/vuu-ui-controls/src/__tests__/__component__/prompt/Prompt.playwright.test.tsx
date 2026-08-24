@@ -1,9 +1,4 @@
 import { test, expect } from "@playwright/test";
-import {
-  BareBonesPrompt,
-  ConfirmOnly,
-  FocusOnConfirm,
-} from "../../../../../../showcase/src/examples/UiControls/Prompt.examples";
 
 test.describe("WHEN rendered with open true", () => {
   test("THEN Prompt renders in portal", async ({ mount, page }) => {
