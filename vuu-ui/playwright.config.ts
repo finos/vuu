@@ -8,8 +8,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Limit concurrency on CI to avoid overloading the runner. */
-  workers: process.env.CI ? 2 : undefined,
+  /* Run one worker per CI shard to avoid shared gallery contention. */
+  workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI
     ? "blob"

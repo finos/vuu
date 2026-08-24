@@ -54,7 +54,7 @@ jobs:
           PLAYWRIGHT_COVERAGE: ${{ matrix.browser == 'chromium' && '1' || '0' }}
         run: cd ./vuu-ui && npm exec -- playwright test --config=playwright.config.ts --project=components-${{ matrix.browser }} --shard=${{ matrix.shard }}/2
       - name: Upload blob report to GitHub Actions Artifacts
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: blob-report-${{ matrix.browser }}-${{ matrix.shard }}-of-2
@@ -62,7 +62,7 @@ jobs:
           retention-days: 10
       - name: Upload Chromium coverage data
         if: always() && matrix.browser == 'chromium'
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: coverage-data-${{ matrix.shard }}-of-2
           path: vuu-ui/playwright/coverage-data/
@@ -76,13 +76,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
       - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           path: all-blob-reports
           pattern: blob-report-*
           merge-multiple: true
       - name: Download Chromium coverage data
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           path: all-coverage-data
           pattern: coverage-data-*
@@ -97,14 +97,14 @@ jobs:
           cp ./all-coverage-data/*.json ./vuu-ui/playwright/coverage-data/
           cd ./vuu-ui && npm run playwright:coverage
       - name: Upload Playwright coverage report
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: playwright-coverage
           path: vuu-ui/playwright/coverage/
           retention-days: 10
       - name: Upload Merged Playwright Report
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: playwright-report
