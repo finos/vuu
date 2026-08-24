@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.finos.toolbox.lifecycle.LifecycleContainer;
-import org.finos.toolbox.time.Clock;
+import org.finos.toolbox.time.TestFriendlyClock;
 import org.finos.vuu.api.TableDef;
 import org.finos.vuu.api.ViewPortDef;
 import org.finos.vuu.core.AbstractVuuServer;
@@ -25,23 +25,14 @@ import scala.Function4;
 
 class NotificationsModuleBuilderTest {
 
-  private Clock clock;
+  private TestFriendlyClock clock;
   private LifecycleContainer lifecycleContainer;
   private TableDefContainer tableDefContainer;
 
   @BeforeEach
   void setUp() {
-    // Simple dummy objects for our containers
-    clock =
-        new Clock() {
-          @Override
-          public long now() {
-            return 0;
-          }
-
-          @Override
-          public void sleep(long millis) {}
-        };
+    long currentTime = 0L;
+    clock = new TestFriendlyClock(currentTime);
     lifecycleContainer = new LifecycleContainer(clock);
     tableDefContainer = new TableDefContainer();
   }
