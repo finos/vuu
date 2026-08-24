@@ -1,6 +1,6 @@
-import { expect } from "@playwright/experimental-ct-react";
+import { expect } from "@playwright/test";
 import { VuuRange } from "@vuu-ui/vuu-protocol-types";
-import { type Locator } from "@playwright/experimental-ct-core";
+import { type Locator } from "@playwright/test";
 
 type AriaRole = "cell" | "textbox" | "combobox";
 

@@ -1,5 +1,5 @@
 // TODO try and get TS path alias working to avoid relative paths like this
-import { test, expect } from "@playwright/experimental-ct-react";
+import { test, expect } from "@playwright/test";
 import { Instruments } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { TableProps } from "../../Table";
@@ -22,11 +22,7 @@ test.describe("Table drag drop", () => {
         //TODO investigate why test fails on Safari
         test.skip(browserName === "webkit");
 
-        await mount(
-          <LocalDataSourceProvider>
-            <Instruments {...tableConfig} />
-          </LocalDataSourceProvider>,
-        );
+        await mount("Table/Modules/SIMUL/Instruments");
 
         const currencyColumn = page.getByRole("columnheader", {
           name: "currency column header",

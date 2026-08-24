@@ -1,9 +1,5 @@
-import {
-  test,
-  expect,
-  type MountResult,
-} from "@playwright/experimental-ct-react";
-import type { Locator } from "@playwright/experimental-ct-core";
+import { test, expect, type MountResult } from "@playwright/test";
+import type { Locator } from "@playwright/test";
 import {
   DefaultFreezeControl,
   FrozenFreezeControl,
@@ -30,7 +26,9 @@ test.describe("Given a FreezeControl", () => {
   test("THEN it loads with Freeze and Active buttons, with Active selected", async ({
     mount,
   }) => {
-    const component = await mount(<DefaultFreezeControl />);
+    const component = await mount(
+      "TableExtras/FreezeControl/DefaultFreezeControl",
+    );
 
     const activeButton = component.locator('button[value="live"]');
     const freezeButton = component.locator('button[value="frozen"]');
@@ -50,7 +48,9 @@ test.describe("Given a FreezeControl", () => {
   test("WHEN frozen THEN New Orders section appears with counter at 0", async ({
     mount,
   }) => {
-    const component = await mount(<FrozenFreezeControl />);
+    const component = await mount(
+      "TableExtras/FreezeControl/FrozenFreezeControl",
+    );
 
     const newItemsSection = component.locator(".vuuFreezeControl-newItems");
     await expect(newItemsSection).toBeVisible();
@@ -64,7 +64,9 @@ test.describe("Given a FreezeControl", () => {
   test("WHEN badge value is 99 or less THEN it displays the exact number", async ({
     mount,
   }) => {
-    const component = await mount(<FrozenFreezeControl />);
+    const component = await mount(
+      "TableExtras/FreezeControl/FrozenFreezeControl",
+    );
 
     const badge = component.locator(".vuuFreezeControl-customBadge");
     await expect(badge).toBeVisible();
@@ -79,7 +81,8 @@ test.describe("Given a FreezeControl", () => {
   }) => {
     const customLabel = "New Trades";
     const component = await mount(
-      <DefaultFreezeControl frozen newItemsLabel={customLabel} />
+      "TableExtras/FreezeControl/FrozenFreezeControl",
+      { newItemsLabel: customLabel },
     );
 
     const newItemsSection = component.locator(".vuuFreezeControl-newItems");

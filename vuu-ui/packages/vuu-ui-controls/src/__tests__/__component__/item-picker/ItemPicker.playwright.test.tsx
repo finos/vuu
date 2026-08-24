@@ -1,4 +1,4 @@
-import { expect, MountResult, test } from "@playwright/experimental-ct-react";
+import { expect, MountResult, test } from "@playwright/test";
 import {
   CalculatedColumnPicker,
   DefaultItemPicker,
@@ -19,7 +19,7 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<EmptyItemPicker />);
+        const component = await mount("UiControls/ItemPicker/EmptyItemPicker");
 
         await expectSearchControlWithPlaceholderText(component, "Find pay day");
         await expectListHeadings(
@@ -38,7 +38,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<DefaultItemPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/DefaultItemPicker",
+        );
 
         await expectListHeadings(
           component,
@@ -64,7 +66,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<DefaultItemPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/DefaultItemPicker",
+        );
 
         await dragAndDropSelectedItemAboveAnother(
           page,
@@ -103,7 +107,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<DefaultItemPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/DefaultItemPicker",
+        );
 
         await typeSearchText(component, "QTY");
         await expectListHeadings(
@@ -146,7 +152,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<DefaultItemPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/DefaultItemPicker",
+        );
 
         await typeSearchText(component, "Average p");
         await expectListHeadings(
@@ -167,7 +175,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<DefaultItemPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/DefaultItemPicker",
+        );
 
         await expectSearchControlWithPlaceholderText(component, "Find column");
         await expectListHeadings(
@@ -215,7 +225,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<DefaultItemPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/DefaultItemPicker",
+        );
 
         await addAvailableItem(component, 1, "price");
         await addAvailableItem(component, 1, "quantity");
@@ -265,7 +277,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<DefaultItemPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/DefaultItemPicker",
+        );
 
         await removeSelectedItem(component, 8, "id");
         await removeSelectedItem(component, 8, "idAsInt");
@@ -317,7 +331,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<SpecialItemsWithMaxSelection />);
+        const component = await mount(
+          "UiControls/ItemPicker/SpecialItemsWithMaxSelection",
+        );
 
         await expectSearchControlWithPlaceholderText(
           component,
@@ -350,7 +366,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<SpecialItemsWithMaxSelection />);
+        const component = await mount(
+          "UiControls/ItemPicker/SpecialItemsWithMaxSelection",
+        );
 
         await expectListHeadings(
           component,
@@ -386,7 +404,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<SpecialItemsWithMaxSelection />);
+        const component = await mount(
+          "UiControls/ItemPicker/SpecialItemsWithMaxSelection",
+        );
 
         await expectListHeadings(
           component,
@@ -423,7 +443,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<CalculatedColumnPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/CalculatedColumnPicker",
+        );
 
         await expectSearchControlWithPlaceholderText(component, "Find column");
         await expectListHeadings(
@@ -470,7 +492,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<CalculatedColumnPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/CalculatedColumnPicker",
+        );
 
         await addAvailableItem(component, 1, "Calculated column 1");
         await addAvailableItem(component, 1, "Calculated column 2");
@@ -516,7 +540,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<CalculatedColumnPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/CalculatedColumnPicker",
+        );
 
         await expectCreateCustomItemsButton(
           component,

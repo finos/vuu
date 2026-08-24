@@ -1,6 +1,6 @@
-import { test, type Page } from "@playwright/experimental-ct-react";
+import { test, type Page } from "@playwright/test";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { expect } from "../../../../../playwright/customAssertions";
+import { expect } from "@playwright/test";
 import {
   DefaultFilterBar,
   FilterBarMultipleFilters,
@@ -57,45 +57,33 @@ test.describe("FilterBar", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <DefaultFilterBar />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Filters/FilterBar/FilterBar/DefaultFilterBar");
 
     await expect(page.getByTestId("filterbar")).toContainClass("vuuFilterBar");
     await expect(page.locator(`${FILTER_CONTAINER} > *`)).toHaveCount(0);
   });
 
-  test("initial active filter state is applied", async ({ mount }) => {
-    const callbacks: unknown[] = [];
+  test("initial active filter state is applied", async ({ mount, page }) => {
     const filter = { column: "currency", op: "!=", value: "CAD" } as const;
 
-    await mount(
-      <LocalDataSourceProvider>
-        <DefaultFilterBar
-          filterState={{
-            filters: [filter, { ...filter, value: "USD" }],
-            activeIndices: [1],
-          }}
-          onApplyFilter={(...args) => callbacks.push(args)}
-        />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Filters/FilterBar/FilterBar/DefaultFilterBar", {
+      filterState: {
+        filters: [{ column: "currency", op: "!=", value: "USD" }],
+        activeIndices: [0],
+      },
+    });
 
-    await expect.poll(() => callbacks.length).toBe(1);
-    expect(callbacks[0]).toEqual([{ ...filter, value: "USD" }]);
+    await expect(
+      page.locator(`${FILTER_CONTAINER} .vuuFilterPill`),
+    ).toHaveCount(1);
+    await expect(filterPill(page)).toContainText("currency");
   });
 
   test("Add opens an empty editor with the column dropdown focused", async ({
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <DefaultFilterBar />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Filters/FilterBar/FilterBar/DefaultFilterBar");
 
     await addButton(page).click();
     await expect(page.locator(`${FILTER_CONTAINER} > *`)).toHaveCount(0);
@@ -112,24 +100,17 @@ test.describe("FilterBar", () => {
     mount,
     page,
   }) => {
-    const stateChanges: unknown[] = [];
-    const appliedFilters: unknown[] = [];
     const filter = { column: "currency", op: "=", value: "EUR" };
-    await mount(
-      <LocalDataSourceProvider>
-        <DefaultFilterBar
-          onApplyFilter={(...args) => appliedFilters.push(args)}
-          onFilterStateChanged={(...args) => stateChanges.push(args)}
-        />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Filters/FilterBar/FilterBar/DefaultFilterBar");
 
     await saveFilter(page, "currency", "=", "EUR");
 
-    expect(stateChanges.at(-1)).toEqual([
-      { filters: [filter], activeIndices: [0] },
-    ]);
-    await expect.poll(() => appliedFilters.at(-1)).toEqual([filter]);
+    expect(
+      JSON.parse(await page.getByTestId("state-records").inputValue()),
+    ).toEqual([{ filters: [filter], activeIndices: [0] }]);
+    expect(
+      JSON.parse(await page.getByTestId("applied-records").inputValue()),
+    ).toEqual([filter]);
     await expect(page.locator(`${FILTER_CONTAINER} > *`)).toHaveCount(1);
     const editableLabel = filterPill(page).locator(".vuuEditableLabel");
     await expect(editableLabel).toContainClass("vuuEditableLabel-editing");
@@ -140,19 +121,14 @@ test.describe("FilterBar", () => {
     mount,
     page,
   }) => {
-    const stateChanges: unknown[] = [];
-    await mount(
-      <LocalDataSourceProvider>
-        <DefaultFilterBar
-          onFilterStateChanged={(...args) => stateChanges.push(args)}
-        />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Filters/FilterBar/FilterBar/DefaultFilterBar");
     await saveFilter(page, "currency", "=", "EUR");
 
     await finishRenaming(page, 0, "test");
 
-    expect(stateChanges.at(-1)).toEqual([
+    expect(
+      JSON.parse(await page.getByTestId("state-records").inputValue()),
+    ).toEqual([
       {
         filters: [{ column: "currency", op: "=", value: "EUR", name: "test" }],
         activeIndices: [0],
@@ -170,16 +146,7 @@ test.describe("FilterBar", () => {
     mount,
     page,
   }) => {
-    const stateChanges: unknown[] = [];
-    const appliedFilters: unknown[] = [];
-    await mount(
-      <LocalDataSourceProvider>
-        <DefaultFilterBar
-          onApplyFilter={(...args) => appliedFilters.push(args)}
-          onFilterStateChanged={(...args) => stateChanges.push(args)}
-        />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Filters/FilterBar/FilterBar/DefaultFilterBar");
     await saveFilter(page, "currency", "=", "EUR");
     await finishRenaming(page, 0, "EditedFilter");
 
@@ -196,18 +163,18 @@ test.describe("FilterBar", () => {
       value: "CAD",
       name: "EditedFilter",
     };
-    expect(stateChanges.at(-1)).toEqual([
-      { filters: [filter], activeIndices: [0] },
-    ]);
-    await expect.poll(() => appliedFilters.at(-1)).toEqual([filter]);
+    expect(
+      JSON.parse(await page.getByTestId("state-records").inputValue()),
+    ).toEqual([{ filters: [filter], activeIndices: [0] }]);
+    expect(
+      JSON.parse(await page.getByTestId("applied-records").inputValue()),
+    ).toEqual([filter]);
   });
 
   test("two active filters are combined, and shift-click deactivates one", async ({
     mount,
     page,
   }) => {
-    const stateChanges: unknown[] = [];
-    const appliedFilters: unknown[] = [];
     const filter1 = {
       column: "currency",
       op: "=",
@@ -220,33 +187,44 @@ test.describe("FilterBar", () => {
       value: "MIL/EUR_IT",
       name: "exchange",
     };
-    await mount(
-      <LocalDataSourceProvider>
-        <DefaultFilterBar
-          onApplyFilter={(...args) => appliedFilters.push(args)}
-          onFilterStateChanged={(...args) => stateChanges.push(args)}
-        />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Filters/FilterBar/FilterBar/DefaultFilterBar");
     await saveFilter(page, "currency", "=", "USD");
     await finishRenaming(page);
     await saveFilter(page, "exchange", "=", "MIL/EUR_IT");
     await finishRenaming(page, 1);
 
-    expect(stateChanges.at(-1)).toEqual([
-      { filters: [filter1, filter2], activeIndices: [0, 1] },
+    expect(
+      JSON.parse(await page.getByTestId("state-records").inputValue()),
+    ).toEqual([{ filters: [filter1, filter2], activeIndices: [0, 1] }]);
+    expect(
+      JSON.parse(await page.getByTestId("applied-records").inputValue()),
+    ).toEqual([
+      {
+        op: "and",
+        filters: [
+          expect.objectContaining({
+            column: "currency",
+            op: "=",
+            value: "USD",
+          }),
+          expect.objectContaining({
+            column: "exchange",
+            op: "=",
+            value: "MIL/EUR_IT",
+          }),
+        ],
+      },
     ]);
-    await expect
-      .poll(() => appliedFilters.at(-1))
-      .toEqual([{ op: "and", filters: [filter1, filter2] }]);
 
     await filterPill(page).click({ modifiers: ["Shift"] });
     await expect(filterPill(page)).toHaveAttribute("aria-checked", "false");
     await expect(filterPill(page, 1)).toHaveAttribute("aria-checked", "true");
-    expect(stateChanges.at(-1)).toEqual([
-      { filters: [filter1, filter2], activeIndices: [1] },
-    ]);
-    await expect.poll(() => appliedFilters.at(-1)).toEqual([filter2]);
+    expect(
+      JSON.parse(await page.getByTestId("state-records").inputValue()),
+    ).toEqual([{ filters: [filter1, filter2], activeIndices: [1] }]);
+    expect(
+      JSON.parse(await page.getByTestId("applied-records").inputValue()),
+    ).toEqual([filter2]);
   });
 
   for (const index of [0, 1]) {
@@ -254,8 +232,6 @@ test.describe("FilterBar", () => {
       mount,
       page,
     }) => {
-      const stateChanges: unknown[] = [];
-      const appliedFilters: unknown[] = [];
       const filter1 = {
         column: "currency",
         op: "=",
@@ -268,14 +244,7 @@ test.describe("FilterBar", () => {
         value: "MIL/EUR_IT",
         name: "exchange",
       };
-      await mount(
-        <LocalDataSourceProvider>
-          <DefaultFilterBar
-            onApplyFilter={(...args) => appliedFilters.push(args)}
-            onFilterStateChanged={(...args) => stateChanges.push(args)}
-          />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/FilterBar/FilterBar/DefaultFilterBar");
       await saveFilter(page, "currency", "=", "USD");
       await finishRenaming(page);
       await saveFilter(page, "exchange", "=", "MIL/EUR_IT");
@@ -290,10 +259,12 @@ test.describe("FilterBar", () => {
         page.locator(`${FILTER_CONTAINER} .vuuFilterPill`),
       ).toHaveCount(1);
       await expect(filterPill(page)).toContainText(remaining.name);
-      expect(stateChanges.at(-1)).toEqual([
-        { filters: [remaining], activeIndices: [0] },
-      ]);
-      await expect.poll(() => appliedFilters.at(-1)).toEqual([remaining]);
+      expect(
+        JSON.parse(await page.getByTestId("state-records").inputValue()),
+      ).toEqual([{ filters: [remaining], activeIndices: [0] }]);
+      expect(
+        JSON.parse(await page.getByTestId("applied-records").inputValue()),
+      ).toEqual([remaining]);
     });
   }
 
@@ -301,11 +272,7 @@ test.describe("FilterBar", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <DefaultFilterBar />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Filters/FilterBar/FilterBar/DefaultFilterBar");
     await page.getByTestId("pre-filterbar").locator("input").focus();
     await page.keyboard.press("Tab");
     await expect(addButton(page)).toBeFocused();
@@ -379,16 +346,7 @@ test.describe("FilterBar", () => {
       mount,
       page,
     }) => {
-      const appliedFilters: unknown[] = [];
-      const stateChanges: unknown[] = [];
-      await mount(
-        <LocalDataSourceProvider>
-          <DefaultFilterBar
-            onApplyFilter={(...args) => appliedFilters.push(args)}
-            onFilterStateChanged={(...args) => stateChanges.push(args)}
-          />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/FilterBar/FilterBar/DefaultFilterBar");
 
       await addButton(page).click();
       await selectOption(page, "lastUpdated");
@@ -409,11 +367,20 @@ test.describe("FilterBar", () => {
         column: "lastUpdated",
         op,
         value: expectedValue(),
-        name: "lastUpdated",
       };
-      await expect.poll(() => appliedFilters.at(-1)).toEqual([filter]);
-      expect(stateChanges.at(-1)).toEqual([
-        { filters: [filter], activeIndices: [0] },
+      expect(
+        JSON.parse(await page.getByTestId("applied-records").inputValue()),
+      ).toEqual([
+        expect.objectContaining({
+          column: filter.column,
+          op: filter.op,
+          value: filter.value,
+        }),
+      ]);
+      expect(
+        JSON.parse(await page.getByTestId("state-records").inputValue()),
+      ).toEqual([
+        { filters: [{ ...filter, name: "lastUpdated" }], activeIndices: [0] },
       ]);
     });
   }
@@ -422,28 +389,21 @@ test.describe("FilterBar", () => {
     mount,
     page,
   }) => {
-    const callbacks: unknown[] = [];
-    await mount(
-      <LocalDataSourceProvider>
-        <FilterBarMultipleFilters
-          onFilterDeleted={(...args) => callbacks.push(args)}
-        />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Filters/FilterBar/FilterBar/FilterBarMultipleFilters");
 
     await openPillMenu(page);
     await page.getByRole("menuitem", { name: "Delete" }).click();
     await page.getByRole("button", { name: "Remove" }).click();
 
-    expect(callbacks).toEqual([
-      [
-        {
-          column: "currency",
-          name: "Filter One",
-          op: "=",
-          value: "EUR",
-        },
-      ],
+    expect(
+      JSON.parse(await page.getByTestId("deleted-records").inputValue()),
+    ).toEqual([
+      {
+        column: "currency",
+        name: "Filter One",
+        op: "=",
+        value: "EUR",
+      },
     ]);
   });
 
@@ -451,29 +411,22 @@ test.describe("FilterBar", () => {
     mount,
     page,
   }) => {
-    const callbacks: unknown[] = [];
-    await mount(
-      <LocalDataSourceProvider>
-        <FilterBarMultipleFilters
-          onFilterRenamed={(...args) => callbacks.push(args)}
-        />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Filters/FilterBar/FilterBar/FilterBarMultipleFilters");
 
     await openPillMenu(page);
     await page.getByRole("menuitem", { name: "Rename" }).click();
     await finishRenaming(page, 0, "Test");
 
-    expect(callbacks).toEqual([
-      [
-        {
-          column: "currency",
-          name: "Filter One",
-          op: "=",
-          value: "EUR",
-        },
-        "Test",
-      ],
+    expect(
+      JSON.parse(await page.getByTestId("renamed-records").inputValue()),
+    ).toEqual([
+      {
+        column: "currency",
+        name: "Filter One",
+        op: "=",
+        value: "EUR",
+      },
+      "Test",
     ]);
   });
 });

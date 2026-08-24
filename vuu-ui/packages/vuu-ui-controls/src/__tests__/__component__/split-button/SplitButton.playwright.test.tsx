@@ -1,10 +1,10 @@
-import { test, expect } from "@playwright/experimental-ct-react";
+import { test, expect } from "@playwright/test";
 import { DefaultSplitButton } from "../../../../../../showcase/src/examples/UiControls/SplitButton.examples";
 
 test.describe("Given a (non segmented) SplitButton", () => {
   test("should have correct tabindex", async ({ mount }) => {
     const component = await mount(
-      <DefaultSplitButton data-testid="split-button" />,
+      "UiControls/SplitButton/DefaultSplitButtonWithClickRecorder",
     );
 
     const splitButton = component.getByTestId("split-button");
@@ -19,38 +19,32 @@ test.describe("Given a (non segmented) SplitButton", () => {
 
   test.describe("WHEN main button clicked", () => {
     test("THEN main button action is invoked", async ({ mount }) => {
-      let clickHandlerCalled = false;
-      const clickHandler = () => {
-        clickHandlerCalled = true;
-      };
-
       const component = await mount(
-        <DefaultSplitButton onClick={clickHandler} />,
+        "UiControls/SplitButton/DefaultSplitButtonWithClickRecorder",
       );
       const buttons = component.getByRole("button");
       const mainButton = buttons.nth(0);
 
       await mainButton.click();
-      expect(clickHandlerCalled).toBe(true);
+      await expect(component.getByTestId("click-handler-called")).toHaveValue(
+        "true",
+      );
     });
   });
 
   test.describe("WHEN secondary button clicked", () => {
     test("THEN popup is displayed", async ({ mount, page }) => {
-      let clickHandlerCalled = false;
-      const clickHandler = () => {
-        clickHandlerCalled = true;
-      };
-
       const component = await mount(
-        <DefaultSplitButton onClick={clickHandler} />,
+        "UiControls/SplitButton/DefaultSplitButtonWithClickRecorder",
       );
       const buttons = component.getByRole("button");
       const secondaryButton = buttons.nth(1);
 
       // Use dispatchEvent to simulate a click since the button is not visible
       await secondaryButton.dispatchEvent("click");
-      expect(clickHandlerCalled).toBe(false);
+      await expect(component.getByTestId("click-handler-called")).toHaveValue(
+        "false",
+      );
       // The menu might be rendered in a portal, so check the page instead of just the component
       await expect(page.getByRole("menu")).toBeVisible();
     });
@@ -64,7 +58,9 @@ test.describe("Given a (non segmented) SplitButton", () => {
           "Focus seems not to go to button by default in Safari - nested within container with tabIndex='-1'",
         );
 
-        const component = await mount(<DefaultSplitButton />);
+        const component = await mount(
+          "UiControls/SplitButton/DefaultSplitButtonWithClickRecorder",
+        );
         const input = component.getByTestId("input");
 
         await input.click();
@@ -78,13 +74,8 @@ test.describe("Given a (non segmented) SplitButton", () => {
 
     test.describe("AND WHEN ENTER is pressed", () => {
       test("THEN main button is activated", async ({ mount }) => {
-        let clickHandlerCalled = false;
-        const clickHandler = () => {
-          clickHandlerCalled = true;
-        };
-
         const component = await mount(
-          <DefaultSplitButton onClick={clickHandler} />,
+          "UiControls/SplitButton/DefaultSplitButtonWithClickRecorder",
         );
         const input = component.getByTestId("input");
         const buttons = component.getByRole("button");
@@ -96,19 +87,16 @@ test.describe("Given a (non segmented) SplitButton", () => {
         await mainButton.focus();
         await mainButton.press("Enter");
 
-        expect(clickHandlerCalled).toBe(true);
+        await expect(component.getByTestId("click-handler-called")).toHaveValue(
+          "true",
+        );
       });
     });
 
     test.describe("OR WHEN Space is pressed", () => {
       test("THEN main button is activated", async ({ mount }) => {
-        let clickHandlerCalled = false;
-        const clickHandler = () => {
-          clickHandlerCalled = true;
-        };
-
         const component = await mount(
-          <DefaultSplitButton onClick={clickHandler} />,
+          "UiControls/SplitButton/DefaultSplitButtonWithClickRecorder",
         );
         const input = component.getByTestId("input");
         const buttons = component.getByRole("button");
@@ -120,19 +108,16 @@ test.describe("Given a (non segmented) SplitButton", () => {
         await mainButton.focus();
         await mainButton.press(" ");
 
-        expect(clickHandlerCalled).toBe(true);
+        await expect(component.getByTestId("click-handler-called")).toHaveValue(
+          "true",
+        );
       });
     });
 
     test.describe("AND WHEN ArrowDown is pressed", () => {
       test("THEN menu is opened", async ({ mount, page }) => {
-        let clickHandlerCalled = false;
-        const clickHandler = () => {
-          clickHandlerCalled = true;
-        };
-
         const component = await mount(
-          <DefaultSplitButton onClick={clickHandler} />,
+          "UiControls/SplitButton/DefaultSplitButtonWithClickRecorder",
         );
         const input = component.getByTestId("input");
         const buttons = component.getByRole("button");
@@ -148,7 +133,9 @@ test.describe("Given a (non segmented) SplitButton", () => {
         await expect(page.getByRole("menu")).toBeVisible();
         const secondaryButton = buttons.nth(1);
         await expect(secondaryButton).toHaveAttribute("aria-expanded", "true");
-        expect(clickHandlerCalled).toBe(false);
+        await expect(component.getByTestId("click-handler-called")).toHaveValue(
+          "false",
+        );
       });
     });
   });
