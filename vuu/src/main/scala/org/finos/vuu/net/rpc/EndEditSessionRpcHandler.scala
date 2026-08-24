@@ -1,7 +1,12 @@
 package org.finos.vuu.net.rpc
 
 trait EndEditSessionRpcHandler() extends RpcHandler {
-  registerRpc(RpcNames.EndEditSessionRpc, this.endEditSession)
+
+  registerEndEditSessionRpcs()
+
+  protected final def registerEndEditSessionRpcs(): Unit = {
+    registerRpc(RpcNames.EndEditSessionRpc, this.endEditSession)
+  }
 
   def endEditSession(params: RpcParams): RpcFunctionResult = {
     if (!verifyPermission(params)) {

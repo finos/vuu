@@ -4,9 +4,9 @@ import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.net.rpc.CreateSessionTableRpcHandlerImpl;
 import org.finos.vuu.net.rpc.RpcPermissionChecker;
 
-public class EditRecordRpcHandler extends CreateSessionTableRpcHandlerImpl {
+public class EditPersonRecordRpcHandler extends CreateSessionTableRpcHandlerImpl {
 
-    public EditRecordRpcHandler(RpcPermissionChecker rpcPermissionChecker, TableContainer tableContainer) {
+    public EditPersonRecordRpcHandler(RpcPermissionChecker rpcPermissionChecker, TableContainer tableContainer) {
         super(rpcPermissionChecker, tableContainer);
     }
 }

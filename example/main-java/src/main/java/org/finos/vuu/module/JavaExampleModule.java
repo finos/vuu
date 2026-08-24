@@ -15,7 +15,7 @@ import org.finos.vuu.net.rpc.AllowAllRpcPermissionChecker$;
 import org.finos.vuu.net.rpc.RpcHandler;
 import org.finos.vuu.person.DeleteRecordRpcHandler;
 import org.finos.vuu.person.DeleteRecordRpcHandlerIF;
-import org.finos.vuu.person.EditRecordRpcHandler;
+import org.finos.vuu.person.EditPersonRecordRpcHandler;
 import org.finos.vuu.person.PersonRpcHandler;
 import org.finos.vuu.person.UpdateRecordRpcHandler;
 import org.finos.vuu.person.auto.AutoMappedPersonProvider;
@@ -52,6 +52,24 @@ public class JavaExampleModule extends DefaultModule {
                         )
                 )
                 .addTable(new TableDefBuilder()
+                                .name("PersonManualMapped2")
+                                .keyField("id")
+                                .customColumns(new ColumnBuilder()
+                                        .addString("id")
+                                        .addString("name")
+                                        .addInt("account")
+                                        .build())
+                                .defaultSort(new SortSpecBuilder()
+                                        .addAscending(DefaultColumn.CREATED_TIME().name())
+                                        .build())
+                                .build(),
+                        (table, vs) -> new PersonProvider(table, new PersonStore()),
+                        (table, provider, providerContainer, tableContainer) -> new ViewPortDef(
+                                table.getTableDef().getColumns(),
+                                buildRpcHandler3(tableContainer)
+                        )
+                )
+                .addTable(new TableDefBuilder()
                                 .name("PersonAutoMapped")
                                 .keyField("id")
                                 .customColumns(Columns.fromExternalSchema(EntitySchema.person))
@@ -74,7 +92,6 @@ public class JavaExampleModule extends DefaultModule {
 
     // Example of a mixture of RPC handlers in scala and in java
     private RpcHandler buildRpcHandler2(DataTable table, TableContainer tableContainer) {
-        EditRecordRpcHandler editRecordRpcHandler = new EditRecordRpcHandler(AllowAllRpcPermissionChecker$.MODULE$, tableContainer);
         PersonRpcHandler personRpcHandler = new PersonRpcHandler(table);
         DeleteRecordRpcHandlerIF deleteRecordRpcHandler = new DeleteRecordRpcHandler();
         UpdateRecordRpcHandler updateRecordRpcHandler = new UpdateRecordRpcHandler(tableContainer);
@@ -82,5 +99,9 @@ public class JavaExampleModule extends DefaultModule {
         updateRecordRpcHandler.registerRpc("GetAccountId", personRpcHandler::processGetAccountIdRpcRequest);
         updateRecordRpcHandler.registerRpc("DeleteRecprd", deleteRecordRpcHandler::deleteRecord);
         return updateRecordRpcHandler;
+    }
+
+    private RpcHandler buildRpcHandler3(TableContainer tableContainer) {
+        return new EditPersonRecordRpcHandler(AllowAllRpcPermissionChecker$.MODULE$, tableContainer);
     }
 }

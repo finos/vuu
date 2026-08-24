@@ -13,6 +13,9 @@ public class UpdateRecordRpcHandler extends DefaultRpcHandlerImpl implements Edi
     private final TableContainer tableContainer;
 
     public UpdateRecordRpcHandler(TableContainer tableContainer) {
+        super();
+        registerEditTableRpcs();
+        registerEndEditSessionRpcs();
         this.tableContainer = tableContainer;
     }
 
