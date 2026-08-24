@@ -50,7 +50,7 @@ object VuuJoinTableProviderOptions {
 
 object VuuRpcOptions {
   def apply(): VuuRpcOptions = {
-    VuuRpcOptionsImpl.apply(maxCopySize = 10_000)
+    VuuRpcOptionsImpl.apply(maxSessionTableSize = 10_000)
   }
 }
 
@@ -117,9 +117,9 @@ trait VuuJoinTableProviderOptions {
 }
 
 trait VuuRpcOptions {
-  def maxCopySize: Int
+  def maxSessionTableSize: Int
 
-  def withMaxCopySize(maxCopySize: Int): VuuRpcOptions
+  def withMaxSessionTableSize(maxSessionTableSize: Int): VuuRpcOptions
 }
 
 private case class VuuWebSocketOptionsImpl(wsPort: Int,
@@ -176,8 +176,8 @@ case class VuuJoinProviderOptionsImpl(batchSize: Int, maxQueueSize: Int) extends
   override def withMaxQueueDepth(maxQueueSize: Int): VuuJoinTableProviderOptions = this.copy(maxQueueSize = maxQueueSize)
 }
 
-case class VuuRpcOptionsImpl(maxCopySize: Int) extends VuuRpcOptions {
-  override def withMaxCopySize(maxCopySize: Int): VuuRpcOptions = this.copy(maxCopySize = maxCopySize)
+case class VuuRpcOptionsImpl(maxSessionTableSize: Int) extends VuuRpcOptions {
+  override def withMaxSessionTableSize(maxSessionTableSize: Int): VuuRpcOptions = this.copy(maxSessionTableSize = maxSessionTableSize)
 }
 
 case class VuuSecurityOptionsImpl(loginTokenService: LoginTokenService) extends VuuSecurityOptions {
