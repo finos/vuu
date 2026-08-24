@@ -15,6 +15,8 @@ export type ScenarioItem = {
   dropTarget?: boolean;
   header?: boolean;
   id: string;
+  minHeight?: number;
+  minWidth?: number;
   resizeable?: "h" | "hv" | "v" | false;
   stackId?: string;
   title?: string;
@@ -54,6 +56,8 @@ export const createScenarioItem = ({
   dropTarget = true,
   header = true,
   id,
+  minHeight,
+  minWidth,
   resizeable = "hv",
   stackId,
   title = id,
@@ -64,6 +68,8 @@ export const createScenarioItem = ({
     header={header}
     id={id}
     key={id}
+    minHeight={minHeight}
+    minWidth={minWidth}
     resizeable={resizeable}
     stackId={stackId}
     style={{ gridArea: area }}

@@ -22,6 +22,7 @@ import {
   useGridModel,
 } from "./GridLayoutContext";
 import type { GridLayoutItemProps } from "./GridLayoutItem";
+import { resolveMinimumGridItemSize } from "./GridModel";
 import { TabMenu } from "./TabMenu";
 import { useEditTabName } from "./useEditTabName";
 import { useGridChildProps } from "./useGridChildProps";
@@ -43,6 +44,8 @@ export const GridLayoutStackedItem = ({
   header,
   id,
   getNewComponent,
+  minHeight,
+  minWidth,
   resizeable,
   showMenu,
   style: styleProp,
@@ -59,6 +62,14 @@ export const GridLayoutStackedItem = ({
   const { dialog, showTabEditDialog } = useEditTabName({ getNewComponent, id });
 
   const { registerTabsForDragDrop } = useDragContext();
+  const modelMinHeight = resolveMinimumGridItemSize(
+    minHeight,
+    styleProp?.minHeight,
+  );
+  const modelMinWidth = resolveMinimumGridItemSize(
+    minWidth,
+    styleProp?.minWidth,
+  );
 
   useEffect(() => {
     registerTabsForDragDrop(id);
@@ -66,6 +77,8 @@ export const GridLayoutStackedItem = ({
 
   const { gridArea, horizontalSplitter, verticalSplitter } = useGridChildProps({
     id,
+    minHeight: modelMinHeight,
+    minWidth: modelMinWidth,
     resizeable,
     style: styleProp,
     type: "stacked-content",
@@ -89,6 +102,8 @@ export const GridLayoutStackedItem = ({
   const style = {
     ...styleProp,
     gridArea,
+    ...(minHeight === undefined ? {} : { minHeight }),
+    ...(minWidth === undefined ? {} : { minWidth }),
   };
 
   const tabsId = `tabs-${id}`;
@@ -98,10 +113,6 @@ export const GridLayoutStackedItem = ({
   //    ${JSON.stringify(tabState.tabs, null, 2)}
   //   `,
   // );
-
-  console.log(
-    `[GridLayoutStackedItem] render ${tabState.tabs.map((t) => t.label)}`,
-  );
 
   const handleClickAddTab = useCallback(() => {
     showTabEditDialog();

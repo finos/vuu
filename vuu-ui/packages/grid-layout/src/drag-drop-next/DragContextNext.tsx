@@ -35,8 +35,7 @@ export type DropHandler<T extends DragSource = DragSource> = (
   dropProps: DropProps<T>,
 ) => void;
 
-const defaultDropHandler = () =>
-  console.log("no dropHandler has been attached");
+const defaultDropHandler = () => {};
 
 export type DragContextDropEvent = {
   type: "drop";
@@ -61,10 +60,6 @@ export type DragContextEvents = {
   "detach-tab": DragContextDetachTabHandler;
 };
 
-/**
- * This context is a global singleton. Even when DragDropProviders are nested,
- * a single instance of this context object is always used.
- */
 export class DragContext extends EventEmitter<DragContextEvents> {
   #dragElementHeight?: number;
   #dragElementWidth?: number;
@@ -89,7 +84,7 @@ export class DragContext extends EventEmitter<DragContextEvents> {
       } else if (sourceIsTabbedComponent(dragSource)) {
         dataTransfer.setData("text/plain", dragSource.tab.id);
       } else {
-        throw Error("whaat");
+        throw Error("[DragContextNext] unsupported drag source type");
       }
       const { height, width } = dragSource.element.getBoundingClientRect();
       let dragLabelWidth = width;
@@ -97,9 +92,6 @@ export class DragContext extends EventEmitter<DragContextEvents> {
         dragLabelWidth = dragSource.dragElement.getBoundingClientRect()?.width;
       }
 
-      console.log(
-        `[DragContextNext] beginDrag #${dragSource.layoutId} dragLabelWidth ${dragLabelWidth} dragElementWidth ${width}`,
-      );
       this.#dragSource = dragSource;
       this.#dropped = false;
       this.#dragElementHeight = height;
@@ -131,11 +123,6 @@ export class DragContext extends EventEmitter<DragContextEvents> {
     //   `%c[DragContextNext] #${gridId}detachTab #${tabsId} tab (${value})`,
     //   "color:blue;font-weight:bold;",
     // );
-    // change dragSource to component
-    console.log({
-      dragSource: this.#dragSource,
-    });
-
     this.emit("detach-tab", { type: "detach-tab", gridId, tabsId, value });
   }
 
@@ -143,9 +130,6 @@ export class DragContext extends EventEmitter<DragContextEvents> {
     tabsId,
     dropPosition,
   }: Pick<DragContextDropEvent, "tabsId" | "dropPosition">) => {
-    console.log(
-      `[DragContextNext] drop at #${tabsId} ${dropPosition?.position} ${dropPosition?.target}`,
-    );
     this.#dropped = true;
     if (this.#dragSource) {
       this.emit("drop", {
@@ -160,14 +144,13 @@ export class DragContext extends EventEmitter<DragContextEvents> {
   };
 
   registerTabsForDragDrop = (id: string) => {
-    console.log(`[DragContextNext] registerDragSource #${id}`);
     this.#dragSources.set(id, { dropTargets: ["*"] });
     const dragSourceElement = document.getElementById(id);
     if (dragSourceElement) {
       initializeDragContainer(dragSourceElement, this);
     } else {
       throw Error(
-        `[DragDropProviderNext] registerDragSource no element found for #${id}`,
+        `[DragContextNext] registerDragSource no element found for #${id}`,
       );
     }
   };
@@ -178,7 +161,7 @@ export class DragContext extends EventEmitter<DragContextEvents> {
       return element;
     } else {
       throw Error(
-        `dragged element is being accessed, but drag is not in effect, of beginDrag was not called`,
+        "dragged element is unavailable because beginDrag was not called",
       );
     }
   }
@@ -219,13 +202,6 @@ export class DragContext extends EventEmitter<DragContextEvents> {
   // }
 
   set dropHandler(dropHandler: DropHandler) {
-    if (this.#dropHandler === defaultDropHandler) {
-      console.log("[DragContextNext] set dropHandler");
-    } else {
-      console.log(
-        "[DragContextNext] set dropHandler - WARNING overwriting existing value",
-      );
-    }
     this.#dropHandler = dropHandler;
   }
 

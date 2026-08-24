@@ -1,4 +1,6 @@
-import { describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
+import { GridLayoutModel } from "../src/GridLayoutModel";
+import { GridModel } from "../src/GridModel";
 import {
   descriptor,
   expectedItem,
@@ -55,7 +57,7 @@ const scenarios: LayoutScenario[] = [
     (direction): LayoutScenario => ({
       name: `single-cell split ${direction}`,
       initial: descriptor([...oneTrack], [...oneTrack], {
-        target: item("1/1/2/2"),
+        target: item("1/1/2/2", { resizeable: "hv" }),
       }),
       operations: [
         { type: "add", id: "dropped" },
@@ -90,6 +92,7 @@ const scenarios: LayoutScenario[] = [
                 : direction === "north"
                   ? "2/1/3/2"
                   : "1/1/2/2",
+            { resizeable: "hv" },
           ),
         ],
         tabs: [],
@@ -99,7 +102,7 @@ const scenarios: LayoutScenario[] = [
   {
     name: "nested split pattern remains within one model",
     initial: descriptor([...oneTrack], [...oneTrack], {
-      main: item("1/1/2/2"),
+      main: item("1/1/2/2", { resizeable: "hv" }),
     }),
     operations: [
       { type: "add", id: "right" },
@@ -117,7 +120,7 @@ const scenarios: LayoutScenario[] = [
       rows: [...twoTracks],
       items: [
         expectedItem("bottom-left", "2/1/3/2"),
-        expectedItem("main", "1/1/2/2"),
+        expectedItem("main", "1/1/2/2", { resizeable: "hv" }),
         expectedItem("right", "1/2/3/3"),
       ],
       tabs: [],
@@ -168,6 +171,58 @@ const scenarios: LayoutScenario[] = [
       cols: [...oneTrack],
       rows: [...oneTrack],
       items: [expectedItem("left", "1/1/2/2")],
+      tabs: [],
+    },
+  },
+  {
+    name: "removal normalizes multiple unused column lines",
+    initial: descriptor(["1fr", "1fr", "1fr"], [...oneTrack], {
+      left: item("1/1/2/2"),
+      wide: item("1/2/2/4"),
+    }),
+    operations: [{ type: "remove", item: "wide" }],
+    expected: {
+      cols: [...oneTrack],
+      rows: [...oneTrack],
+      items: [expectedItem("left", "1/1/2/2")],
+      tabs: [],
+    },
+  },
+  {
+    name: "removal normalizes multiple unused row lines",
+    initial: descriptor([...oneTrack], ["1fr", "1fr", "1fr"], {
+      top: item("1/1/2/2"),
+      tall: item("2/1/4/2"),
+    }),
+    operations: [{ type: "remove", item: "tall" }],
+    expected: {
+      cols: [...oneTrack],
+      rows: [...oneTrack],
+      items: [expectedItem("top", "1/1/2/2")],
+      tabs: [],
+    },
+  },
+  {
+    name: "multi-track fractional span splits without DOM measurement",
+    initial: descriptor(["1fr", "2fr", "1fr"], [...oneTrack], {
+      target: item("1/1/2/4", { resizeable: "h" }),
+    }),
+    operations: [
+      { type: "add", id: "dropped" },
+      {
+        type: "split",
+        direction: "east",
+        dropped: "dropped",
+        target: "target",
+      },
+    ],
+    expected: {
+      cols: ["1fr", "1fr", "1fr", "1fr"],
+      rows: [...oneTrack],
+      items: [
+        expectedItem("dropped", "1/3/2/5"),
+        expectedItem("target", "1/1/2/3", { resizeable: "h" }),
+      ],
       tabs: [],
     },
   },
@@ -346,9 +401,42 @@ describe("GridModel declarative layout scenarios", () => {
     runScenario(scenario);
   });
 
-  it.todo(
-    "does not split a multi-track fractional span without DOM measurement; that path belongs in integration tests",
-  );
+  it("rejects every axis-incompatible split path without changing geometry", () => {
+    const model = new GridModel(
+      "non-resizable-splits",
+      descriptor([...twoTracks], [...twoTracks], {
+        source: item("1/1/3/2", { resizeable: "hv" }),
+        target: item("1/2/3/3", { resizeable: false }),
+      }),
+    );
+    const layoutModel = new GridLayoutModel(model);
+    const before = model.toGridLayoutDescriptor();
+
+    for (const direction of ["north", "south", "east", "west"] as const) {
+      expect(layoutModel.dropSplitGridItem("source", "target", direction)).toBe(
+        false,
+      );
+      expect(model.toGridLayoutDescriptor()).toEqual(before);
+    }
+  });
+
+  it("inherits split constraints when items become a tab stack", () => {
+    const model = new GridModel(
+      "stack-constraints",
+      descriptor([...oneTrack], [...oneTrack], {
+        alpha: item("1/1/2/2", { resizeable: false }),
+        beta: item("1/1/2/2", { resizeable: "hv" }),
+      }),
+    );
+    model.stackChildItems("alpha", "beta");
+    const stack = model.childItems.find(
+      ({ type }) => type === "stacked-content",
+    );
+    expect(stack?.resizeable).toBe(false);
+    expect(
+      new GridLayoutModel(model).canSplitGridItem(stack?.id ?? "", "east"),
+    ).toBe(false);
+  });
 
   it.todo(
     "treats nested GridLayout component content as opaque because GridModel only owns one grid",

@@ -261,11 +261,11 @@ export const RemovalAndReflow = () => (
 
 export const ResizableBoundary = () => (
   <ScenarioFrame
-    instructions="Drag the separator between the fixed-width and flexible items."
+    instructions="Drag the separator in either direction; each item stops at its minimum width."
     title="Resizable boundary"
   >
     <ScenarioGrid
-      cols={["180px", "1fr"]}
+      cols={["1fr", "2fr"]}
       id="resizable-boundary"
       rows={["1fr"]}
     >
@@ -274,15 +274,16 @@ export const ResizableBoundary = () => (
           area: "1/1/2/2",
           color: "#37474f",
           id: "resize-fixed",
-          resizeable: false,
-          title: "Fixed item",
+          minWidth: 150,
+          resizeable: "h",
+          title: "150px minimum",
         }),
         createScenarioItem({
           area: "1/2/2/3",
           color: "#00838f",
           id: "resize-flexible",
           resizeable: "h",
-          title: "Resizable item",
+          title: "80px default minimum",
         }),
       ]}
     </ScenarioGrid>

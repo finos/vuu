@@ -27,6 +27,25 @@ export type TrackUnit = "px" | "fr";
 export type CSSFraction = `${number}fr`;
 export type CSSPixels = `${number}px`;
 export type TrackSize = CSSFraction | CSSPixels;
+export const DEFAULT_MIN_GRID_ITEM_SIZE = 80;
+
+export const resolveMinimumGridItemSize = (
+  minimum: number | undefined,
+  styleMinimum: CSSProperties["minWidth"],
+) => {
+  if (minimum !== undefined) {
+    return minimum;
+  }
+  if (typeof styleMinimum === "number") {
+    return styleMinimum;
+  }
+  if (
+    typeof styleMinimum === "string" &&
+    /^-?\d+(?:\.\d+)?px$/.test(styleMinimum)
+  ) {
+    return Number.parseFloat(styleMinimum);
+  }
+};
 
 export const isFractionUnit = (
   trackSize: TrackSize,
@@ -44,6 +63,8 @@ export interface GridLayoutChildItemDescriptor {
   dropTarget?: boolean | string;
   gridArea: string;
   header?: boolean;
+  minHeight?: number;
+  minWidth?: number;
   resizeable?: GridModelItemResizeable;
   /**
    * For GridLayoutItems that are 'stacked' (e.g. displayed in tabbed container)
@@ -193,6 +214,8 @@ export interface IGridModelChildItem extends GridModelCoordinates {
   header?: boolean;
   height?: number;
   id: string;
+  minHeight?: number;
+  minWidth?: number;
   stackId?: string;
   resizeable?: GridModelItemResizeable;
   title?: string;
@@ -271,6 +294,8 @@ export class GridModelChildItem implements IGridModelChildItem {
   header?: boolean;
   height?: number;
   horizontalSplitter = false;
+  minHeight?: number;
+  minWidth?: number;
   stackId?: string;
   resizeable: GridModelItemResizeable;
   row: GridModelPosition;
@@ -285,6 +310,8 @@ export class GridModelChildItem implements IGridModelChildItem {
     header,
     height,
     id,
+    minHeight,
+    minWidth,
     row,
     column,
     dropTarget,
@@ -300,6 +327,8 @@ export class GridModelChildItem implements IGridModelChildItem {
     this.header = header;
     this.height = height;
     this.id = id;
+    this.minHeight = minHeight;
+    this.minWidth = minWidth;
     this.row = new ObservableGridPosition(id, row);
     this.column = new ObservableGridPosition(id, column);
     this.stackId = stackId;
@@ -560,10 +589,10 @@ export class GridTrack {
 
   set trackSize(trackSize: TrackSize) {
     if (isPixelUnit(trackSize)) {
-      this.#pixels = parseInt(trackSize);
+      this.#pixels = parseFloat(trackSize);
       this.#fractions = -1;
     } else {
-      this.#fractions = parseInt(trackSize);
+      this.#fractions = parseFloat(trackSize);
       this.#pixels = -1;
     }
 
@@ -572,7 +601,7 @@ export class GridTrack {
 
   addFraction(trackSize: TrackSize) {
     if (this.isFraction && isFractionUnit(trackSize)) {
-      this.#fractions += parseInt(trackSize);
+      this.#fractions += parseFloat(trackSize);
     } else {
       throw Error("Track.addFraction, both trackSize values must be fractions");
     }
@@ -615,7 +644,6 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
 
   // suspected NOT USED
   set columns(columns: TrackSize[]) {
-    alert("unexpected");
     this.#columns = columns.map(GridTrack.fromTrackSize);
     this.emit("grid-track-resize", "column", this.#columns);
   }
@@ -626,7 +654,6 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
 
   // suspected NOT USED
   set rows(rows: TrackSize[]) {
-    alert("unexpected");
     this.#rows = rows.map(GridTrack.fromTrackSize);
     this.emit("grid-track-resize", "row", this.#rows);
   }
@@ -653,17 +680,7 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
       const measuredTracks = getComputedStyle(el)
         .getPropertyValue(`grid-template-${trackType}s`)
         .split(" ")
-        .map((value) => parseInt(value, 10));
-
-      console.log(
-        `[GridModel] measure
-          tracks ${tracks.length}
-          measuredTracks ${measuredTracks.join(",")}
-        `,
-        {
-          tracks,
-        },
-      );
+        .map((value) => parseFloat(value));
 
       measuredTracks.forEach((val, i) => {
         if (tracks[i] === undefined) {
@@ -684,6 +701,21 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
   ) {
     const tracks = this.getTracks(trackType);
     const tracksInRange = tracks.slice(startIndex - 1, endIndex);
+    if (tracksInRange.every((track) => track.isFraction)) {
+      const halfSize =
+        tracksInRange.reduce(
+          (sum, track) => sum + parseFloat(track.trackSize),
+          0,
+        ) / 2;
+      let size = 0;
+      for (let i = startIndex - 1; i < endIndex - 1; i++) {
+        size += parseFloat(tracks[i].trackSize);
+        if (Math.abs(halfSize - size) < Number.EPSILON) {
+          return i + 2;
+        }
+      }
+      return -1;
+    }
     if (!tracksInRange.every((track) => track.hasNumericValue)) {
       this.measure(trackType);
     }
@@ -717,24 +749,15 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
     const tracks = this.getTracks(trackType);
     const targetTrack = tracks[trackIndex];
     if (targetTrack.isFraction) {
-      const otherFractionTracks = tracks.filter(
-        (track, i) => i !== trackIndex && track.isFraction,
-      );
-
-      if (otherFractionTracks.length === 0) {
-        tracks.splice(trackIndex, 0, new GridTrack(targetTrack.trackSize));
-      } else if (otherFractionTracks.length === 1) {
-        const [otherFractionTrack] = otherFractionTracks;
-        if (otherFractionTrack.trackSize === "1fr") {
-          otherFractionTrack.trackSize = "2fr";
-          targetTrack.trackSize = "1fr";
-          tracks.splice(trackIndex, 0, new GridTrack("1fr"));
-        } else {
-          console.log("need to do a bit more here");
+      const splitTrackSize = targetTrack.trackSize;
+      tracks.forEach((track) => {
+        if (track.isFraction) {
+          track.trackSize =
+            `${parseFloat(track.trackSize) * 2}fr` as CSSFraction;
         }
-      } else {
-        console.log("need to do a bit more here");
-      }
+      });
+      targetTrack.trackSize = splitTrackSize;
+      tracks.splice(trackIndex, 0, new GridTrack(splitTrackSize));
     } else {
       const sizeOfNewTrack = Math.floor(targetTrack.numericValue / 2);
 
@@ -756,8 +779,35 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
     toTrackLine: number,
   ) {
     const tracks = this.getTracks(trackType);
+    const rangeStart = fromTrackLine - 1;
+    const rangeEnd = toTrackLine - 1;
+    const tracksInRange = tracks.slice(rangeStart, rangeEnd);
 
-    const tracksInRange = tracks.slice(fromTrackLine - 1, toTrackLine);
+    if (tracksInRange.every((track) => track.isFraction)) {
+      const halfSize =
+        tracksInRange.reduce(
+          (sum, track) => sum + parseFloat(track.trackSize),
+          0,
+        ) / 2;
+      let size = 0;
+      for (let i = rangeStart; i < rangeEnd; i++) {
+        const trackSize = parseFloat(tracks[i].trackSize);
+        if (size + trackSize > halfSize) {
+          const firstSize = halfSize - size;
+          const secondSize = trackSize - firstSize;
+          tracks.splice(
+            i,
+            1,
+            new GridTrack(`${firstSize}fr`),
+            new GridTrack(`${secondSize}fr`),
+          );
+          this.emit("grid-track-resize", trackType, tracks);
+          return i;
+        }
+        size += trackSize;
+      }
+      throw Error("[GridTracks] fractional tracks could not be bisected");
+    }
 
     let newTrackIndex = 0;
     const newTracks: GridTrack[] = [];
@@ -814,8 +864,6 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
     } else {
       this.#rows = newTracks;
     }
-
-    console.log(`[GridTracks] splitTracks, after: ${tracks.join(" ")}`);
 
     this.emit("grid-track-resize", trackType, newTracks);
 
@@ -916,23 +964,11 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
       throw Error("[GridTracks] resize, no track at index position");
     }
 
-    if (!resizeTrack.isFraction) {
-      resizeTrack.increment(value);
-    }
-    if (!contraTrack.isFraction) {
-      contraTrack.increment(-value);
-    } else if (resizeTrack.isFraction) {
-      // both tracks are defined with fractional unit
+    if (resizeTrack.isFraction || contraTrack.isFraction) {
       this.measure(trackType);
-      // by converting to pixels here, if there are no tracks with
-      // fractional units remaining, we lose the ability of layout
-      // to resize. We need to convert all back to fractional units
-      // once resize op is complete.
-      contraTrack.convertUnitsToPixels();
-      resizeTrack.convertUnitsToPixels();
-      contraTrack.increment(-value);
-      resizeTrack.increment(value);
     }
+    resizeTrack.increment(value);
+    contraTrack.increment(-value);
 
     this.emit("grid-track-resize", trackType, tracks);
   }
@@ -990,14 +1026,12 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     active: number,
     tabs: TabStateTab[],
   ) => {
-    console.log(`[GridModel] handleTabsChange #${stackId} [${active}]`);
     const activeTab = tabs[active];
     this.activateStackedChildItem(stackId, activeTab);
     this.emit("tabs-change", stackId, active, tabs);
   };
 
   private handleTabsRemoved = (stackId: string) => {
-    console.log(`[GridModel] handleTabsRemoved #${stackId}`);
     this.removeChildItem(stackId, "unstack");
 
     this.emit("tabs-removed", stackId);
@@ -1008,7 +1042,6 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     activeTab,
     id: stackId,
   }: TabState) => {
-    console.log(`[GridModel] handleTabSelectionChange #${stackId} [${active}]`);
     this.activateStackedChildItem(stackId, activeTab);
     this.emit("tab-selection-change", stackId, active);
   };
@@ -1131,6 +1164,22 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     this.emit("grid-layout-change", this.id, this.toGridLayoutDescriptor());
   }
 
+  restoreLayout({ cols, gridLayoutItems = {}, rows }: GridLayoutDescriptor) {
+    this.clearPlaceholders();
+    this.tracks.columns = cols;
+    this.tracks.rows = rows;
+    for (const [id, { gridArea }] of Object.entries(gridLayoutItems)) {
+      const child = this.getChildItem(id);
+      if (child) {
+        const { column, row } = getGridPosition(gridArea);
+        this.updateChildColumn(id, column);
+        this.updateChildRow(id, row);
+        child.dragging = false;
+      }
+    }
+    this.createPlaceholders();
+  }
+
   toGridLayoutDescriptor(): GridLayoutDescriptor {
     return {
       ...this.tracks.serialize(),
@@ -1143,6 +1192,8 @@ export class GridModel extends EventEmitter<GridModelEvents> {
             contentVisible,
             dropTarget,
             header,
+            minHeight,
+            minWidth,
             resizeable,
             row,
             stackId,
@@ -1157,6 +1208,8 @@ export class GridModel extends EventEmitter<GridModelEvents> {
               dropTarget,
               gridArea: `${row.start}/${column.start}/${row.end}/${column.end}`,
               header,
+              minHeight,
+              minWidth,
               resizeable,
               stackId,
               title,
@@ -1308,6 +1361,8 @@ export class GridModel extends EventEmitter<GridModelEvents> {
         contentVisible,
         dropTarget,
         header,
+        minHeight,
+        minWidth,
         resizeable,
         stackId,
         title,
@@ -1322,6 +1377,8 @@ export class GridModel extends EventEmitter<GridModelEvents> {
           column,
           dropTarget,
           header,
+          minHeight,
+          minWidth,
           resizeable,
           row,
           stackId,
@@ -1454,6 +1511,9 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     const stackChild = new GridModelChildItem({
       column: { start: colStart, end: colEnd },
       id: stackId,
+      minHeight: targetChild.minHeight,
+      minWidth: targetChild.minWidth,
+      resizeable: targetChild.resizeable,
       row: { start: rowStart, end: rowEnd },
       type: "stacked-content",
     });
@@ -1606,7 +1666,12 @@ export class GridModel extends EventEmitter<GridModelEvents> {
       const columnContrasAndSiblings =
         this.findColumnContrasAndSiblings(childItem);
 
-      if (columnContrasAndSiblings) {
+      if (
+        columnContrasAndSiblings &&
+        columnContrasAndSiblings.contras
+          .concat(columnContrasAndSiblings.siblings)
+          .every((item) => !isFixedWidthChildItem(item))
+      ) {
         const resizeTrackIndex = column.start - 1;
         const contraTrackIndex = column.start - 2;
 
@@ -1638,7 +1703,12 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     if (!isFixedHeightChildItem(childItem)) {
       const rowContrasAndSiblings = this.findRowContrasAndSiblings(childItem);
 
-      if (rowContrasAndSiblings) {
+      if (
+        rowContrasAndSiblings &&
+        rowContrasAndSiblings.contras
+          .concat(rowContrasAndSiblings.siblings)
+          .every((item) => !isFixedHeightChildItem(item))
+      ) {
         const contraTrackIndex = row.start - 2;
         let resizeTrackIndex = row.start - 1;
 
@@ -1688,10 +1758,7 @@ export class GridModel extends EventEmitter<GridModelEvents> {
   }
   private findRowContrasAndSiblings(childItem: GridModelChildItem) {
     const contrasAbove = this.getContrasAbove(childItem);
-    if (
-      contrasAbove.length > 0 &&
-      !contrasAbove.every(isFixedHeightChildItem)
-    ) {
+    if (contrasAbove.length > 0) {
       if (isFixedHeightChildItem(childItem)) {
         const contrasBelow = this.getContrasBelow(childItem);
         if (contrasBelow) {
@@ -1710,14 +1777,12 @@ export class GridModel extends EventEmitter<GridModelEvents> {
   }
 
   toDebugString() {
-    console.log(
-      this.#childItems
-        .map(
-          (c) =>
-            `${c.id.padEnd(10)} col ${c.column.start}/${c.column.end}, row ${c.row.start}/${c.row.end}`,
-        )
-        .join("\n"),
-    );
+    return this.#childItems
+      .map(
+        (c) =>
+          `${c.id.padEnd(10)} col ${c.column.start}/${c.column.end}, row ${c.row.start}/${c.row.end}`,
+      )
+      .join("\n");
   }
 
   private getContrasAbove({ column, row }: GridModelChildItem) {

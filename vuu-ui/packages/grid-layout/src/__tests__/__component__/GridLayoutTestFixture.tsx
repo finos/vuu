@@ -13,10 +13,13 @@ import {
 
 export type GridLayoutFixtureVariant =
   | "basic"
+  | "irregular-removal"
   | "nested"
   | "non-resizable"
   | "palette"
   | "resizable"
+  | "resizable-vertical"
+  | "split-constraints"
   | "stacked";
 
 const itemStyle = {
@@ -112,7 +115,7 @@ const PaletteLayout = () => (
 
 const ResizableLayout = () => (
   <GridLayout
-    colsAndRows={{ cols: ["200px", "400px"], rows: ["1fr"] }}
+    colsAndRows={{ cols: ["1fr", "2fr"], rows: ["1fr"] }}
     data-testid="grid-layout"
     id="ct-grid"
     style={{ height: 320, width: 612 }}
@@ -121,7 +124,8 @@ const ResizableLayout = () => (
       data-drop-target
       header
       id="fixed"
-      resizeable={false}
+      minWidth={150}
+      resizeable="h"
       style={{ gridArea: "1/1/2/2" }}
       title="Fixed"
     >
@@ -136,6 +140,57 @@ const ResizableLayout = () => (
       title="Flexible"
     >
       <TestContent label="Flexible" />
+    </GridLayoutItem>
+  </GridLayout>
+);
+
+const VerticalResizableLayout = () => (
+  <GridLayout
+    colsAndRows={{ cols: ["1fr"], rows: ["1fr", "2fr"] }}
+    data-testid="grid-layout"
+    id="ct-grid"
+    style={{ height: 612, width: 640 }}
+  >
+    <GridLayoutItem
+      data-drop-target
+      header
+      id="top"
+      resizeable="v"
+      style={{ gridArea: "1/1/2/2", minHeight: "120px" }}
+      title="Top"
+    >
+      <TestContent label="Top" />
+    </GridLayoutItem>
+    <GridLayoutItem
+      data-drop-target
+      header
+      id="bottom"
+      resizeable="v"
+      style={{ gridArea: "2/1/3/2" }}
+      title="Bottom"
+    >
+      <TestContent label="Bottom" />
+    </GridLayoutItem>
+  </GridLayout>
+);
+
+const IrregularRemovalLayout = () => (
+  <GridLayout
+    colsAndRows={{ cols: ["1fr", "1fr", "1fr"], rows: ["1fr", "1fr", "1fr"] }}
+    data-testid="grid-layout"
+    id="ct-grid"
+    style={{ height: 320, width: 640 }}
+  >
+    <GridLayoutItem id="survivor" style={{ gridArea: "1/1/4/2" }}>
+      <TestContent label="Survivor" />
+    </GridLayoutItem>
+    <GridLayoutItem
+      header
+      id="removed"
+      style={{ gridArea: "1/2/4/4" }}
+      title="Removed"
+    >
+      <TestContent label="Removed" />
     </GridLayoutItem>
   </GridLayout>
 );
@@ -160,6 +215,36 @@ const NonResizableLayout = () => (
       style={{ gridArea: "1/2/2/3" }}
     >
       <TestContent label="Fixed right" />
+    </GridLayoutItem>
+  </GridLayout>
+);
+
+const SplitConstraintsLayout = () => (
+  <GridLayout
+    colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr"] }}
+    data-testid="grid-layout"
+    id="ct-grid"
+    style={{ height: 320, width: 640 }}
+  >
+    <GridLayoutItem
+      data-drop-target
+      header
+      id="movable"
+      resizeable="hv"
+      style={{ gridArea: "1/1/2/2" }}
+      title="Movable"
+    >
+      <TestContent label="Movable" />
+    </GridLayoutItem>
+    <GridLayoutItem
+      data-drop-target
+      header
+      id="locked"
+      resizeable={false}
+      style={{ gridArea: "1/2/2/3" }}
+      title="Locked"
+    >
+      <TestContent label="Locked" />
     </GridLayoutItem>
   </GridLayout>
 );
@@ -233,6 +318,7 @@ const NestedLayout = () => (
           data-drop-target
           header
           id="nested-one"
+          resizeable="hv"
           style={{ gridArea: "1/1/2/2" }}
           title="Nested one"
         >
@@ -242,6 +328,7 @@ const NestedLayout = () => (
           data-drop-target
           header
           id="nested-two"
+          resizeable="hv"
           style={{ gridArea: "2/1/3/2" }}
           title="Nested two"
         >
@@ -253,6 +340,7 @@ const NestedLayout = () => (
       data-drop-target
       header
       id="parent-peer"
+      resizeable="hv"
       style={{ gridArea: "1/2/2/3" }}
       title="Parent peer"
     >
@@ -268,10 +356,13 @@ export const GridLayoutTestFixture = ({
 }) => (
   <GridLayoutProvider options={{ newChildItem: { header: true } }}>
     {variant === "basic" ? <BasicLayout /> : null}
+    {variant === "irregular-removal" ? <IrregularRemovalLayout /> : null}
     {variant === "nested" ? <NestedLayout /> : null}
     {variant === "non-resizable" ? <NonResizableLayout /> : null}
     {variant === "palette" ? <PaletteLayout /> : null}
     {variant === "resizable" ? <ResizableLayout /> : null}
+    {variant === "resizable-vertical" ? <VerticalResizableLayout /> : null}
+    {variant === "split-constraints" ? <SplitConstraintsLayout /> : null}
     {variant === "stacked" ? <StackedLayout /> : null}
   </GridLayoutProvider>
 );

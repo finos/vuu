@@ -9,15 +9,19 @@ import {
   MouseEventHandler,
   ReactElement,
   useCallback,
-  useEffect,
 } from "react";
 import { componentToJson, LayoutJSON } from "./componentToJson";
 import {
   DragSourceProvider,
   useGridLayoutDispatch,
+  useGridLayoutDragEndHandler,
   useGridLayoutDragStartHandler,
 } from "./GridLayoutContext";
-import { GridChildItemStyle, GridModelChildItemProps } from "./GridModel";
+import {
+  type GridChildItemStyle,
+  type GridModelChildItemProps,
+  resolveMinimumGridItemSize,
+} from "./GridModel";
 import { IconButton } from "./IconButton";
 import { useAsDropTarget } from "./useAsDropTarget";
 import { useDraggable } from "./useDraggable";
@@ -81,6 +85,8 @@ export const GridLayoutItem = ({
   header: headerProp,
   height,
   id,
+  minHeight,
+  minWidth,
   stackId,
   resizeable,
   style: styleProp,
@@ -96,6 +102,14 @@ export const GridLayoutItem = ({
   });
 
   const dispatch = useGridLayoutDispatch();
+  const modelMinHeight = resolveMinimumGridItemSize(
+    minHeight,
+    styleProp?.minHeight,
+  );
+  const modelMinWidth = resolveMinimumGridItemSize(
+    minWidth,
+    styleProp?.minWidth,
+  );
   // TODO pass the styleProp in here to initialise the model value
   const {
     contentDetached,
@@ -114,6 +128,8 @@ export const GridLayoutItem = ({
     header: headerProp,
     height,
     id,
+    minHeight: modelMinHeight,
+    minWidth: modelMinWidth,
     resizeable,
     stackId,
     style: styleProp,
@@ -121,14 +137,7 @@ export const GridLayoutItem = ({
     width,
   });
 
-  useEffect(
-    () => () => {
-      console.log(`unmount layout item ${id}`);
-    },
-    [id],
-  );
-
-  // why can't the hook that processes this make this call ?
+  const onDragEnd = useGridLayoutDragEndHandler();
   const onDragStart = useGridLayoutDragStartHandler();
 
   const onClose = useCallback<MouseEventHandler<HTMLButtonElement>>(
@@ -144,6 +153,7 @@ export const GridLayoutItem = ({
   const draggableProps = useDraggable({
     draggableClassName: classBaseItem,
     getDragSource,
+    onDragEnd,
     onDragStart,
   });
 
@@ -158,6 +168,8 @@ export const GridLayoutItem = ({
   const style = {
     ...styleProp,
     gridArea,
+    ...(minHeight === undefined ? {} : { minHeight }),
+    ...(minWidth === undefined ? {} : { minWidth }),
     "--header-height": header ? "25px" : "0px",
   };
 

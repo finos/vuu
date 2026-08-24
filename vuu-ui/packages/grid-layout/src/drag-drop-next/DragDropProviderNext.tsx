@@ -1,4 +1,10 @@
-import { createContext, ReactNode, useContext, useEffect } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+} from "react";
 // import { initializeDragContainer } from "./drag-drop-listeners";
 import {
   DragContext,
@@ -10,7 +16,6 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
 import dragDropProviderCss from "./DragDropProviderNext.css";
-import { useGridLayoutId } from "../GridLayoutContext";
 
 export type DragDropRegistrationFn = (id: string) => void;
 export type DragDropBeginDrag = (
@@ -21,7 +26,7 @@ export type DragDropEndDrag = (id: string) => void;
 
 export type DragSourceRegistrationHandler = (id: string) => void;
 
-const DragDropContext = createContext<DragContext>(new DragContext());
+const DragDropContext = createContext<DragContext | undefined>(undefined);
 
 export interface DragDropNextProviderProps {
   children: ReactNode;
@@ -49,9 +54,7 @@ export const DragDropProviderNext = ({
     window: targetWindow,
   });
 
-  const dragContext = useDragContext();
-
-  const layoutId = useGridLayoutId();
+  const dragContext = useMemo(() => new DragContext(), []);
 
   useEffect(() => {
     dragContext.on("detach-tab", onDetachTab);
@@ -74,8 +77,12 @@ export const DragDropProviderNext = ({
     //     );
     //   }
     // });
-    return () => cleanupCallbacks.forEach((cleanup) => cleanup());
-  }, [dragContext, layoutId, onDetachTab, onDrop]);
+    return () => {
+      dragContext.removeListener("detach-tab", onDetachTab);
+      dragContext.removeListener("drop", onDrop);
+      cleanupCallbacks.forEach((cleanup) => cleanup());
+    };
+  }, [dragContext, onDetachTab, onDrop]);
 
   return (
     <DragDropContext.Provider value={dragContext}>
@@ -85,5 +92,9 @@ export const DragDropProviderNext = ({
 };
 
 export const useDragContext = () => {
-  return useContext(DragDropContext);
+  const dragContext = useContext(DragDropContext);
+  if (!dragContext) {
+    throw Error("[useDragContext] no DragDropProviderNext found");
+  }
+  return dragContext;
 };

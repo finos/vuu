@@ -377,6 +377,8 @@ export const expectedItem = (
   id,
   gridArea,
   resizeable: false,
+  stackId: undefined,
+  title: undefined,
   type: "content",
   ...options,
 });

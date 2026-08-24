@@ -89,6 +89,41 @@ export class GridLayoutDriver {
     await dataTransfer.dispose();
   }
 
+  async attemptRejectedDrag(source: Locator, target: Locator, zone: DropZone) {
+    const dataTransfer = await this.page.evaluateHandle(
+      () => new DataTransfer(),
+    );
+    await source.dispatchEvent("dragstart", { dataTransfer });
+    await this.waitForClass(
+      source.locator(
+        "xpath=ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' vuuGridLayoutItem ')][1]",
+      ),
+      "vuuGridLayoutItem-dragging",
+    );
+
+    const box = await target.boundingBox();
+    if (!box) {
+      throw Error("GridLayoutDriver target has no bounding box");
+    }
+    const position = targetPosition[zone];
+    const eventInit = {
+      clientX: box.x + box.width * position.x,
+      clientY: box.y + box.height * position.y,
+      dataTransfer,
+    };
+    await target.dispatchEvent("dragenter", eventInit);
+    await target.dispatchEvent("dragover", eventInit);
+    const accepted = await target.evaluate((element) =>
+      [...element.classList].some((className) =>
+        className.startsWith("vuuDropTarget-"),
+      ),
+    );
+    await target.dispatchEvent("drop", eventInit);
+    await source.dispatchEvent("dragend", { dataTransfer });
+    await dataTransfer.dispose();
+    return accepted;
+  }
+
   private async waitForClass(locator: Locator, className: string) {
     await locator.evaluate((element, expectedClassName) => {
       if (element.classList.contains(expectedClassName)) {

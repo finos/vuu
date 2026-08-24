@@ -5,7 +5,6 @@ import {
   DragSourceProvider,
   sourceIsComponent,
   sourceIsTemplate,
-  useGridLayoutId,
 } from "./GridLayoutContext";
 import { LayoutJSON } from "./componentToJson";
 
@@ -36,7 +35,6 @@ export const useDraggable = ({
   onDragStart,
 }: DraggableHookProps) => {
   const dragContext = useDragContext();
-  const layoutId = useGridLayoutId();
 
   const handleDragStart = useCallback<DragEventHandler<HTMLElement>>(
     (e) => {
@@ -45,29 +43,28 @@ export const useDraggable = ({
       // Note we're not currently using the dataTransfer object. We use the dragSource
       // We will need to change this if we want to support cross window drag drop
       if (sourceIsTemplate(dragSource)) {
-        console.log(`[useDraggable#${layoutId}] drag template`);
         onDragStart?.(e, {
           payload: JSON.parse(dragSource.componentJson),
           type: "text/json",
         });
       } else if (sourceIsComponent(dragSource)) {
-        console.log(`[useDraggable#${layoutId}] drag component`);
         onDragStart?.(e, { id: dragSource.id, type: "text/plain" });
       } else {
-        throw Error("didnt expect this");
+        throw Error("[useDraggable] unsupported drag source type");
       }
 
       dragContext.beginDrag(e.nativeEvent, dragSource);
     },
-    [dragContext, getDragSource, layoutId, onDragStart],
+    [dragContext, getDragSource, onDragStart],
   );
 
   const handleDragEnd = useCallback<DragEventHandler<HTMLElement>>(
     (e) => {
       (e.target as HTMLElement).classList.remove("dragging");
-      onDragEnd?.(e);
+      onDragEnd?.(e, dragContext.dropped);
+      dragContext.endDrag();
     },
-    [onDragEnd],
+    [dragContext, onDragEnd],
   );
 
   return {

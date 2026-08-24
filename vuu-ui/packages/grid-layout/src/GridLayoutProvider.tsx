@@ -60,7 +60,10 @@ interface GridLayoutProviderContext {
 
 const GridLayoutProviderContext = createContext<GridLayoutProviderContext>({});
 
-export type GridLayoutDragEndHandler = (evt: DragEvent<HTMLElement>) => void;
+export type GridLayoutDragEndHandler = (
+  evt: DragEvent<HTMLElement>,
+  dropped: boolean,
+) => void;
 
 export interface GridLayoutProviderProps {
   children: ReactNode;
@@ -121,15 +124,14 @@ export const GridLayoutProvider = (
     },
     [gridChildItemsMap],
   );
-  const getChildElements = useCallback(
-    (/*id: string, children?: ReactNode*/) => {
-      // console.log(`[GridLayoutProvider] #${id} getChildElements `, {
-      //   children,
-      // });
-      return undefined;
-    },
-    [],
-  );
+  const getChildElements = useCallback((
+    /*id: string, children?: ReactNode*/
+  ) => {
+    // console.log(`[GridLayoutProvider] #${id} getChildElements `, {
+    //   children,
+    // });
+    return undefined;
+  }, []);
 
   const getSavedGrid = useCallback(
     (id: string): DeserializedGridLayout | undefined => {

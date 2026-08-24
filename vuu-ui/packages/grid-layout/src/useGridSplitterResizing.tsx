@@ -11,7 +11,7 @@ import {
   GridLayoutResizeOperation,
   type ResizeState,
 } from "./GridLayoutModel";
-import { GridModel } from "./GridModel";
+import { DEFAULT_MIN_GRID_ITEM_SIZE, GridModel } from "./GridModel";
 import { queryClosest } from "@vuu-ui/vuu-utils";
 
 export type SplitterResizingHookProps = Pick<
@@ -29,6 +29,36 @@ export const useGridSplitterResizing = ({
 }: SplitterResizingHookProps) => {
   const resizingState = useRef<ResizeState | undefined>(undefined);
   const splitterRef = useRef<HTMLElement>(undefined);
+
+  const getResizeAllowance = useCallback(
+    (
+      gridLayout: HTMLElement,
+      ids: string[],
+      orientation: "horizontal" | "vertical",
+    ) => {
+      const dimension = orientation === "horizontal" ? "width" : "height";
+      const minimum = orientation === "horizontal" ? "minWidth" : "minHeight";
+      return Math.min(
+        ...ids.map((id) => {
+          const item = gridModel.getChildItem(id, true);
+          const element = gridLayout.querySelector<HTMLElement>(
+            `#${CSS.escape(id)}`,
+          );
+          if (!element) {
+            throw Error(
+              `[useGridSplitterResizing] GridItem #${id} not found in #${gridModel.id}`,
+            );
+          }
+          const size = element.getBoundingClientRect()[dimension];
+          return Math.max(
+            0,
+            size - (item[minimum] ?? DEFAULT_MIN_GRID_ITEM_SIZE),
+          );
+        }),
+      );
+    },
+    [gridModel],
+  );
 
   const createNewTrackForResize = useCallback(
     (moveBy: number) => {
@@ -151,8 +181,12 @@ export const useGridSplitterResizing = ({
       const { current: state } = resizingState;
       if (state) {
         const { mousePos, resizeTrackIsShared, splitter } = state;
-        const newMousePos =
+        const requestedMousePos =
           splitter.orientation === "vertical" ? clientY : clientX;
+        const newMousePos = Math.min(
+          state.maxMousePos,
+          Math.max(state.minMousePos, requestedMousePos),
+        );
         if (newMousePos !== mousePos) {
           const moveBy = mousePos - newMousePos;
           state.mousePos = newMousePos;
@@ -195,9 +229,22 @@ export const useGridSplitterResizing = ({
       if (gridLayout.id === gridModel.id) {
         e.preventDefault();
         const splitter = layoutModel.getSplitterById(splitterElement.id);
+        const mousePos =
+          splitter.ariaOrientation === "horizontal" ? e.clientY : e.clientX;
+        const beforeAllowance = getResizeAllowance(
+          gridLayout,
+          splitter.resizedChildItems.before,
+          splitter.orientation,
+        );
+        const afterAllowance = getResizeAllowance(
+          gridLayout,
+          splitter.resizedChildItems.after,
+          splitter.orientation,
+        );
         resizingState.current = {
-          mousePos:
-            splitter.ariaOrientation === "horizontal" ? e.clientY : e.clientX,
+          maxMousePos: mousePos + afterAllowance,
+          minMousePos: mousePos - beforeAllowance,
+          mousePos,
           resizeTrackIsShared: layoutModel.isResizeTrackShared(splitter),
           splitter,
         };
@@ -209,7 +256,7 @@ export const useGridSplitterResizing = ({
         splitterRef.current = splitterElement;
       }
     },
-    [gridModel, layoutModel, mouseMove, mouseUp],
+    [getResizeAllowance, gridModel, layoutModel, mouseMove, mouseUp],
   );
 
   const selectedRef = useRef<string>(undefined);

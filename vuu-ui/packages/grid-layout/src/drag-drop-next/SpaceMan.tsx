@@ -1,5 +1,9 @@
 import type { RefCallback } from "react";
-import { asInteger, isValidNumber, type orientationType } from "@vuu-ui/vuu-utils";
+import {
+  asInteger,
+  isValidNumber,
+  type orientationType,
+} from "@vuu-ui/vuu-utils";
 import type { DragContext, DropPosition } from "./DragContextNext";
 
 export type State = "initial" | "away" | "1spacer" | "2spacer";
@@ -67,12 +71,10 @@ export class SpaceMan {
       }
 
       throw Error(
-        '[[SpaceMan] (getter) dropPosition] no dropTarget with data-drop-target attribute found'
+        "[[SpaceMan] (getter) dropPosition] no dropTarget with data-drop-target attribute found",
       );
     }
-    throw Error(
-      '[[SpaceMan] (getter) no dropTagte spacer found',
-    );
+    throw Error("[SpaceMan] no drop-target spacer found");
   }
 
   get positionRelativeToTargetTab(): "before" | "after" {
@@ -84,14 +86,12 @@ export class SpaceMan {
   };
 
   enterDragContainer() {
-    console.log('%cEnterDragContainer', "color:red;font-weight:bold;");
     this.#withinDragContainer = true;
 
     // create spacers
   }
 
   leaveDragContainer() {
-    console.log('%cLeaveDragContainer', "color:red;font-weight:bold;");
     // TODO we need to undo this at end of drag operation
     // this.freezeContainer();
     this.#withinDragContainer = false;
@@ -106,10 +106,6 @@ export class SpaceMan {
   }
 
   dragStart(index: number | string) {
-    console.log(
-      "%c[SpaceMan] dragStart",
-      "background: yellow;font-weight:bold",
-    );
     const item = this.#dragContainer?.querySelector(
       `[data-index="${index}"]`,
     ) as HTMLElement;
@@ -142,14 +138,8 @@ export class SpaceMan {
   }
 
   dragEnter(index: number, direction: Direction) {
-    console.log(
-      `[SpaceMan] dragEnter index ${index} direction ${direction} state ${this.#state}`,
-    );
     const propertyName = this.#sizeProperty;
     if (index === this.#toIndex && direction === this.#toDirection) {
-      console.log(
-        '[SpaceMan] dragEnter, return early: no change to toIndex, direction',
-      );
       return;
     }
     // we need to use ID rather than index, index is only meaningful
@@ -161,7 +151,6 @@ export class SpaceMan {
           ? index - 1
           : index;
       this.enterDragContainer();
-      console.log(`insert first spacer dragOperation ${this.#dragOperation}`);
       this.insertSpacer(index, this.#dragContext.dragLabelWidth);
 
       if (this.#dragOperation === "none") {
@@ -177,11 +166,6 @@ export class SpaceMan {
       if (item) {
         if (this.#dragOperation === "none") {
           this.#dragOperation = "remote";
-          console.log(
-            `
-            Does this ever happen any more ? 
-            second first spacer dragOperation ${this.#dragOperation} direction ${direction}`,
-          );
           this.insertSpacer(index, 100);
         } else {
           if (direction === "fwd") {
@@ -249,7 +233,6 @@ export class SpaceMan {
   }
 
   cleanup() {
-    console.log(`[SpaceMan#${this.id}] cleanup`);
     this.clearSpacers();
 
     if (this.#dragItem) {

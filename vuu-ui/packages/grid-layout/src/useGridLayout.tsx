@@ -107,18 +107,6 @@ export const useGridLayout = ({
 
   const [, forceRender] = useState({});
 
-  useMemo(() => {
-    console.log(`colsAndRows has changed`, {
-      colsAndRows,
-    });
-  }, [colsAndRows]);
-
-  useMemo(() => {
-    console.log(`childrenProp has changed`, {
-      childrenProp,
-    });
-  }, [childrenProp]);
-
   /**
    * Construct the initial set of child elements and the GridLayoutDescriptor
    * which will be used to create the GridModel. We also save in state a copy
@@ -178,12 +166,6 @@ export const useGridLayout = ({
       stackedItems: [],
     });
 
-  useMemo(() => {
-    console.log(
-      `[useGridLayout] savedLayout has changed ${JSON.stringify(layout, null, 2)}`,
-    );
-  }, [layout]);
-
   const [gridModel, gridLayoutModel, containerCallback] = useMemo(
     // TODO handling runtime change of cols, rows etc currently not supported
     () => {
@@ -202,6 +184,9 @@ export const useGridLayout = ({
       return [gridModel, gridLayoutModel, callbackRef];
     },
     [id, layout],
+  );
+  const dragStartLayoutRef = useRef<GridLayoutDescriptor | undefined>(
+    undefined,
   );
 
   const saveGridLayout = useCallback<GridLayoutChangeHandler>(
@@ -255,6 +240,9 @@ export const useGridLayout = ({
     (evt, options) => {
       const { current: grid } = containerRef;
       if (grid) {
+        if (options.type === "text/plain") {
+          dragStartLayoutRef.current = gridModel.toGridLayoutDescriptor();
+        }
         requestAnimationFrame(() => {
           grid.classList.add("vuuDragging");
           //TODO make this check more explicit
@@ -264,15 +252,24 @@ export const useGridLayout = ({
         });
       }
     },
-    [containerRef, removeGridItem],
+    [gridModel, removeGridItem],
   );
 
-  const handleDragEnd = useCallback<GridLayoutDragEndHandler>(() => {
-    const { current: grid } = containerRef;
-    if (grid) {
-      grid.classList.remove("vuuDragging");
-    }
-  }, []);
+  const handleDragEnd = useCallback<GridLayoutDragEndHandler>(
+    (_evt, dropped) => {
+      containerRef.current?.classList.remove("vuuDragging");
+      if (!dropped && dragStartLayoutRef.current) {
+        gridModel.restoreLayout(dragStartLayoutRef.current);
+        setNonContentGridItems((items) => ({
+          ...items,
+          placeholders: gridModel.getPlaceholders(),
+          splitters: gridLayoutModel.createSplitters(),
+        }));
+      }
+      dragStartLayoutRef.current = undefined;
+    },
+    [gridLayoutModel, gridModel],
+  );
 
   const addChildComponent = useCallback(
     (
@@ -322,8 +319,6 @@ export const useGridLayout = ({
       component: ReactElement,
       { column, header, id, row, title }: GridModelChildItem,
     ) => {
-      console.log(`[useGridLayout] replaceChildComponent #${id}`);
-
       // TODO we want to store components internally in a map, as well as providing an
       // array for rendering. The map will be used for persistence, to tie the component
       // to layout props - Q do we need to, can't the layout props be derived from the
@@ -364,10 +359,30 @@ export const useGridLayout = ({
       // });
 
       const targetGridItem = gridModel.getChildItem(targetItemId, true);
+      const splitTargetId = isStackedItem(targetGridItem)
+        ? targetGridItem.stackId
+        : targetItemId;
 
       containerRef.current?.classList.remove("vuuDragging");
 
+      if (
+        isGridLayoutSplitDirection(position) &&
+        !gridLayoutModel.canSplitGridItem(splitTargetId, position)
+      ) {
+        if (sourceIsComponent(dragSource) && dragStartLayoutRef.current) {
+          gridModel.restoreLayout(dragStartLayoutRef.current);
+          dragStartLayoutRef.current = undefined;
+          setNonContentGridItems((items) => ({
+            ...items,
+            placeholders: gridModel.getPlaceholders(),
+            splitters: gridLayoutModel.createSplitters(),
+          }));
+        }
+        return;
+      }
+
       if (sourceIsComponent(dragSource)) {
+        dragStartLayoutRef.current = undefined;
         const droppedItemId = gridModel.validateChildId(dragSource.id);
         const targetId = isStackedItem(targetGridItem)
           ? targetGridItem.stackId
@@ -403,8 +418,6 @@ export const useGridLayout = ({
         } else if (position === "header") {
           gridModel.stackChildItems(targetId, dragSource.id);
           gridModel.notifyChange();
-        } else {
-          console.log(`[useGridLayout] how do we handle ${position}`);
         }
       } else if (sourceIsTabbedComponent(dragSource)) {
         // We are dropping a component dragged from a tabstrip and dropping it into
@@ -485,7 +498,9 @@ export const useGridLayout = ({
           gridModel.notifyChange();
         }
       } else {
-        throw Error("wtf");
+        throw Error(
+          `[useGridLayout#${id}] unsupported drag source type for GridLayout drop`,
+        );
       }
     },
     [
@@ -501,9 +516,6 @@ export const useGridLayout = ({
   const handleDetachTab = useCallback<DragContextDetachTabHandler>(
     ({ gridId, tabsId, value }) => {
       if (gridId === id) {
-        console.log(
-          `[useGridLayout#${id}] handleDetachTab #${gridId}:${tabsId}`,
-        );
         const tabState = gridModel.getTabState(tabsId);
         if (tabState.activeTab.label === value) {
           tabState.detachTab(value);
@@ -515,10 +527,6 @@ export const useGridLayout = ({
 
   const handleDropStackedItem = useCallback<DragContextDropHandler>(
     ({ dragSource, tabsId: targetStackItemId, dropPosition }) => {
-      console.log(
-        `[useGridLayout#${id}] handleDropStackedItem#${dragSource.layoutId}`,
-      );
-
       if (sourceIsTabbedComponent(dragSource)) {
         const { id: sourceStackItemId } = queryClosest(
           document.getElementById(dragSource.tabsId),
@@ -526,18 +534,11 @@ export const useGridLayout = ({
           true,
         );
 
-        console.log(
-          `[useGridLayout#${id}] dragging tab from (#${dragSource.layoutId}) tabstrip ${sourceStackItemId} to tabstrip ${targetStackItemId}`,
-        );
         if (sourceStackItemId === targetStackItemId) {
           // ignore a drag within tabstrip this is not the closest layout, it will
           // be handled by closest layout to tabstrip.
           if (dragSource.layoutId === id) {
             if (dropPosition) {
-              console.log(
-                `[useGridLayout] drag within tabstrip ${sourceStackItemId}`,
-              );
-
               gridModel.moveItemWithinTabs(
                 sourceStackItemId,
                 dragSource.tab,
@@ -551,10 +552,6 @@ export const useGridLayout = ({
             }
           }
         } else if (sourceStackItemId && targetStackItemId && dropPosition) {
-          console.log(
-            `[useGridLayout] dragging from one set of tabs to another`,
-          );
-
           gridModel.moveItemBetweenTabs(
             sourceStackItemId,
             targetStackItemId,
@@ -582,10 +579,6 @@ export const useGridLayout = ({
           // we are handling this in the context of the correct layout
           const gridId = getClosestGridLayout(targetStackItemId);
           if (gridId === id) {
-            console.log(
-              `[useGridLayout#${id}] dropping a templated source item onto a tabstrip in #${gridId}`,
-            );
-
             const { label = "New Item", ...restJSON } = JSON.parse(
               dragSource.componentJson,
             );
@@ -621,15 +614,9 @@ export const useGridLayout = ({
     [addChildComponent, gridModel, id, layoutOptions?.newChildItem.header],
   );
 
-  const handleTabsChange = useCallback<TabsChangeHandler>(
-    (id, active, tabs) => {
-      console.log(
-        `[useGridLayout] handleTabsChange #${id} selected: ${active} ${JSON.stringify(tabs)}`,
-      );
-      forceRender({});
-    },
-    [],
-  );
+  const handleTabsChange = useCallback<TabsChangeHandler>(() => {
+    forceRender({});
+  }, []);
 
   const handleTabsCreated = useCallback((stackItem: GridModelChildItem) => {
     setNonContentGridItems(({ stackedItems, ...rest }) => ({
@@ -645,13 +632,10 @@ export const useGridLayout = ({
     }));
   }, []);
 
-  const handleTabSelectionChange = useCallback<TabSelectionChangeHandler>(
-    (id, active) => {
-      console.log(`[useGridLayout] handleSelectedTabChange #${id} ${active}`);
+  const handleTabSelectionChange =
+    useCallback<TabSelectionChangeHandler>(() => {
       forceRender({});
-    },
-    [],
-  );
+    }, []);
 
   const dispatchGridLayoutAction = useCallback<GridLayoutDispatch>(
     (action) => {

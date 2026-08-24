@@ -112,7 +112,6 @@ export const GridLayout = ({
           className={cx(classBase, className, {
             vuuFullPage: fullPage,
           })}
-          onDragEnd={onDragEnd}
         >
           {stackedItems.map((stackedItem) => (
             <GridLayoutStackedItem

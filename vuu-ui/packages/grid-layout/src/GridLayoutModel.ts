@@ -8,6 +8,8 @@ import {
   doesResizeRequireNewTrack as isResizeTrackShared,
   itemsFillColumn,
   itemsFillRow,
+  isFixedHeightChildItem,
+  isFixedWidthChildItem,
   setTrackEnd,
   setTrackStart,
   splitGridChildPosition,
@@ -27,6 +29,8 @@ export type GridLayoutModelPosition = {
 };
 
 export type ResizeState = {
+  maxMousePos: number;
+  minMousePos: number;
   resizeTrackIsShared: boolean;
   mousePos: number;
   splitter: ISplitter;
@@ -333,80 +337,48 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
       const [colItemUpdates, rowItemUpdates] =
         this.updateContrasToOccupySpace(gridItem);
 
-      if (rowItemUpdates.length || colItemUpdates.length) {
-        colItemUpdates.forEach(([id, { column: colPosition }]) => {
-          if (colPosition) {
-            this.gridModel.updateChildColumn(id, colPosition);
+      colItemUpdates.forEach(([id, { column: colPosition }]) => {
+        if (colPosition) {
+          this.gridModel.updateChildColumn(id, colPosition);
+        }
+      });
+      rowItemUpdates.forEach(([id, { row: rowPosition }]) => {
+        if (rowPosition) {
+          this.gridModel.updateChildRow(id, rowPosition);
+        }
+      });
+
+      const [unusedColLines, unusedRowLines] =
+        this.gridModel.findUnusedGridLines();
+      const mergeUpdates = (
+        target: GridItemUpdate[],
+        additions: GridItemUpdate[],
+      ) => {
+        additions.forEach(([id, update]) => {
+          const existing = target.find(([itemId]) => id === itemId);
+          if (existing) {
+            existing[1] = { ...existing[1], ...update };
+          } else {
+            target.push([id, update]);
           }
         });
-        rowItemUpdates.forEach(([id, { row: rowPosition }]) => {
-          if (rowPosition) {
-            this.gridModel.updateChildRow(id, rowPosition);
-          }
-        });
+      };
 
-        const [unusedColLines, unusedRowLines] =
-          this.gridModel.findUnusedGridLines();
-        // TODO do we ever hit this code any more ?
-        if (unusedColLines.length === 1) {
-          const trackIndex = unusedColLines[0] - 1;
-          const colUpdates = this.removeTrack(trackIndex, "horizontal");
+      for (const line of unusedColLines.toSorted((a, b) => b - a)) {
+        mergeUpdates(colItemUpdates, this.removeTrack(line - 1, "horizontal"));
+        this.gridModel.removeGridTrack("column", line - 1, "bwd", false);
+      }
+      for (const line of unusedRowLines.toSorted((a, b) => b - a)) {
+        mergeUpdates(rowItemUpdates, this.removeTrack(line - 1, "vertical"));
+        this.gridModel.removeGridTrack("row", line - 1, "bwd", false);
+      }
 
-          colUpdates.forEach(([id, u]) => {
-            const existingUpdate = colItemUpdates.find(
-              ([itemId]) => id === itemId,
-            );
-            if (existingUpdate) {
-              existingUpdate[1] = u;
-            } else {
-              colItemUpdates.push([id, u]);
-            }
-          });
-        } else if (unusedColLines.length > 1) {
-          throw Error(
-            `[GridLayoutModel] removeGridItem, unexpected number of unused column lines ${unusedColLines.length}`,
-          );
-        }
-
-        if (unusedRowLines.length === 1) {
-          const trackIndex = unusedRowLines[0] - 1;
-          const rowUpdates = this.removeTrack(trackIndex, "vertical");
-          rowUpdates.forEach(([id, u]) => {
-            const existingUpdate = rowItemUpdates.find(
-              ([itemId]) => id === itemId,
-            );
-            if (existingUpdate) {
-              existingUpdate[1] = u;
-            } else {
-              rowItemUpdates.push([id, u]);
-            }
-          });
-        } else if (unusedRowLines.length > 1) {
-          throw Error(
-            `[GridLayoutModel] removeGridItem, unexpected number of unused row lines ${unusedRowLines.length}`,
-          );
-        }
-
-        if (unusedColLines.length === 1) {
-          const [indexOfRemovedColumnTrack] = unusedColLines;
-          this.gridModel.removeGridTrack(
-            "column",
-            indexOfRemovedColumnTrack - 1,
-            "bwd",
-            false,
-          );
-        }
-
-        if (unusedRowLines.length === 1) {
-          const [indexOfRemovedRowTrack] = unusedRowLines;
-          this.gridModel.removeGridTrack(
-            "row",
-            indexOfRemovedRowTrack - 1,
-            "bwd",
-            false,
-          );
-        }
-
+      if (
+        colItemUpdates.length ||
+        rowItemUpdates.length ||
+        unusedColLines.length ||
+        unusedRowLines.length
+      ) {
         this.emit(
           "child-position-updates",
           colItemUpdates.concat(rowItemUpdates),
@@ -556,6 +528,9 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
     resizeDirection = gridResizeDirectionFromDropPosition(splitDirection),
   ) {
     const targetGridItem = this.gridModel.getChildItem(targetItemId, true);
+    if (!this.canSplitGridItem(targetItemId, splitDirection)) {
+      return false;
+    }
     let updates: GridItemUpdate[] = [];
 
     const trackType = resizeDirection === "vertical" ? "row" : "column";
@@ -628,6 +603,17 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
       { splitters: true },
       // updates.filter(([id]) => id !== droppedItemId),
     );
+    return true;
+  }
+
+  canSplitGridItem(
+    targetItemId: string,
+    splitDirection: GridLayoutSplitDirection,
+  ) {
+    const target = this.gridModel.getChildItem(targetItemId, true);
+    return splitDirection === "east" || splitDirection === "west"
+      ? !isFixedWidthChildItem(target)
+      : !isFixedHeightChildItem(target);
   }
 
   /*
