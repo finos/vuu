@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../../../../../playwright/fixtures";
 
 test.describe("VuuTypeaheadInput", () => {
   test.describe("Given a TypeaheadInput that shows currency suggestions and allows free text", () => {

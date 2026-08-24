@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { test } from "../../../../../../playwright/fixtures";
 import { expect } from "../../../../../../playwright/customAssertions.cjs";
 
 declare global {

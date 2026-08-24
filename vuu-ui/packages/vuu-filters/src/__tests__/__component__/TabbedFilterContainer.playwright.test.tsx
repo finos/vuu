@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../../../../../playwright/fixtures";
 
 test.describe("Given two TabbedFilterContainers with different values for filterProvider", () => {
   test(`When a filter value is entered 

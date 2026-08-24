@@ -1,4 +1,4 @@
-import { test, type Page } from "@playwright/test";
+import { test, type Page } from "../../../../../playwright/fixtures";
 import { expect } from "../../../../../playwright/customAssertions.cjs";
 
 const assertComboboxReady = async (page: Page) => {

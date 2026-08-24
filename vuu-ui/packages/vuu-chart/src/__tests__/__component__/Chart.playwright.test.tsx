@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../../../../playwright/fixtures";
 
 test.describe("Chart examples", () => {
   test("renders a chart from the simple line chart example", async ({

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../../../../../../playwright/fixtures";
 
 test.describe("VuuInput", () => {
   test.describe("Given a default VuuInput", () => {

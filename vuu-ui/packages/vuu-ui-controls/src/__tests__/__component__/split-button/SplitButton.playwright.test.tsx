@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../../../../../../playwright/fixtures";
 
 test.describe("Given a (non segmented) SplitButton", () => {
   test("should have correct tabindex", async ({ mount }) => {

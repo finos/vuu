@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../../../../../../playwright/fixtures";
 
 test.describe("WHEN it initially renders, with enough space for all items", () => {
   test("THEN all child items will be visible, and none will be marked as wrapped", async ({

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../../../../../../playwright/fixtures";
 
 const OVERFLOW_ITEMS = ".vuuOverflowContainer-wrapContainer > *";
 const OVERFLOWED_ITEMS = ".vuuOverflowContainer-wrapContainer > .wrapped";

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../../../../../../playwright/fixtures";
 
 test.describe("WHEN rendered with open true", () => {
   test("THEN Prompt renders in portal", async ({ mount, page }) => {

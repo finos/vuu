@@ -1,5 +1,5 @@
-import { test, expect, type MountResult } from "@playwright/test";
-import type { Locator } from "@playwright/test";
+import { test, expect, type MountResult } from "../../../../../../playwright/fixtures";
+import type { Locator } from "../../../../../../playwright/fixtures";
 
 // Section below just to improve test readability
 type ComponentFixture = MountResult;

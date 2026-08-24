@@ -1,4 +1,4 @@
-import { expect, type Locator, test } from "@playwright/test";
+import { expect, type Locator, test } from "../../../../playwright/fixtures";
 
 const expectToFillViewport = async (shell: Locator) => {
   const dimensions = await shell.evaluate((element) => {
