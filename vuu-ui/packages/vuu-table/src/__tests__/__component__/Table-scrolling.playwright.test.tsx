@@ -1,7 +1,7 @@
 // TODO try and get TS path alias working to avoid relative paths like this
-import { test } from "@playwright/experimental-ct-react";
+import { test } from "@playwright/test";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { expect } from "../../../../../playwright/customAssertions";
+import { expect } from "@playwright/test";
 import { TableOM } from "./TableOM";
 import { TestTable } from "../../../../../showcase/src/examples/Table/Misc.examples";
 import { TwoHundredColumns } from "../../../../../showcase/src/examples/Table/TEST.examples";
@@ -23,11 +23,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
         mount,
         page,
       }) => {
-        await mount(
-          <LocalDataSourceProvider>
-            <TestTable {...tableConfig} />
-          </LocalDataSourceProvider>,
-        );
+        await mount("Table/Misc/TestTable");
         const table = new TableOM(page.getByRole("table"));
 
         let cell = table.locateCell(2, 1);
@@ -56,11 +52,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
           mount,
           page,
         }) => {
-          await mount(
-            <LocalDataSourceProvider>
-              <TestTable {...tableConfig} />
-            </LocalDataSourceProvider>,
-          );
+          await mount("Table/Misc/TestTable");
           const table = new TableOM(page.getByRole("table"));
 
           let cell = table.locateCell(2, 1);
@@ -84,11 +76,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
     test.describe("Home / End Keys", () => {
       test.describe("WHEN topmost rows are in viewport, first cell is focussed and Home key pressed ", () => {
         test("THEN nothing changes", async ({ mount, page }) => {
-          await mount(
-            <LocalDataSourceProvider>
-              <TestTable {...tableConfig} />
-            </LocalDataSourceProvider>,
-          );
+          await mount("Table/Misc/TestTable");
 
           const table = new TableOM(page.getByRole("table"));
 
@@ -106,19 +94,16 @@ test.describe("Table scrolling and keyboard navigation", () => {
           mount,
           page,
         }) => {
-          await mount(
-            <LocalDataSourceProvider>
-              <TestTable {...tableConfig} />
-            </LocalDataSourceProvider>,
-          );
+          await mount("Table/Misc/TestTable");
           const table = new TableOM(page.getByRole("table"));
 
-          let cell = table.locateCell(6, 1);
+          const cell = table.locateCell(6, 1);
           await cell.click();
           await cell.press("Home");
 
-          await expect(cell).toHaveAttribute("tabindex", "0");
-          await expect(cell).toBeFocused();
+          const firstCell = table.locateCell(2, 1);
+          await expect(firstCell).toHaveAttribute("tabindex", "0");
+          await expect(firstCell).toBeFocused();
           await table.assertRenderedRows({ from: 0, to: 30 }, 5, 1000);
         });
       });
@@ -127,11 +112,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
           mount,
           page,
         }) => {
-          await mount(
-            <LocalDataSourceProvider>
-              <TestTable {...tableConfig} />
-            </LocalDataSourceProvider>,
-          );
+          await mount("Table/Misc/TestTable");
           const table = new TableOM(page.getByRole("table"));
 
           let cell = table.locateCell(2, 1);
@@ -149,11 +130,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
           mount,
           page,
         }) => {
-          await mount(
-            <LocalDataSourceProvider>
-              <TestTable {...tableConfig} />
-            </LocalDataSourceProvider>,
-          );
+          await mount("Table/Misc/TestTable");
           const table = new TableOM(page.getByRole("table"));
 
           let cell = table.locateCell(11, 1);
@@ -172,11 +149,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
             mount,
             page,
           }) => {
-            await mount(
-              <LocalDataSourceProvider>
-                <TestTable {...tableConfig} />
-              </LocalDataSourceProvider>,
-            );
+            await mount("Table/Misc/TestTable");
 
             const table = new TableOM(page.getByRole("table"));
 
@@ -197,11 +170,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
           mount,
           page,
         }) => {
-          await mount(
-            <LocalDataSourceProvider>
-              <TestTable {...tableConfig} />
-            </LocalDataSourceProvider>,
-          );
+          await mount("Table/Misc/TestTable");
           const table = new TableOM(page.getByRole("table"));
 
           let cell = table.locateCell(31, 1);
@@ -224,11 +193,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
             // The scroll wheel doesn't seem to work in firefox
             test.skip(browserName === "firefox");
 
-            await mount(
-              <LocalDataSourceProvider>
-                <TestTable {...tableConfig} />
-              </LocalDataSourceProvider>,
-            );
+            await mount("Table/Misc/TestTable");
             const table = new TableOM(page.getByRole("table"));
 
             let cell = table.locateCell(31, 1);
@@ -248,11 +213,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
           }) => {
             // this width allows for exactly 6 visible columns, we allow a buffer of 200px
             // so 2 out-of-viewport colums are rendered
-            await mount(
-              <LocalDataSourceProvider>
-                <TwoHundredColumns width={914} />
-              </LocalDataSourceProvider>,
-            );
+            await mount("Table/TEST/TwoHundredColumns");
             const table = new TableOM(page.getByRole("table"));
             let cell = table.locateCell(2, 1);
             await expect(cell).toBeVisible();
@@ -264,11 +225,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
         });
         test.describe("WHEN table is scrolled horizontally no more than 100px", () => {
           test("THEN rendering is unchanged", async ({ mount, page }) => {
-            await mount(
-              <LocalDataSourceProvider>
-                <TwoHundredColumns width={914} />
-              </LocalDataSourceProvider>,
-            );
+            await mount("Table/TEST/TwoHundredColumns");
 
             const table = new TableOM(page.getByRole("table"));
 
@@ -287,11 +244,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
             mount,
             page,
           }) => {
-            await mount(
-              <LocalDataSourceProvider>
-                <TwoHundredColumns width={915} />
-              </LocalDataSourceProvider>,
-            );
+            await mount("Table/TEST/TwoHundredColumns");
 
             const table = new TableOM(page.getByRole("table"));
             let cell = table.locateCell(2, 1);
@@ -313,11 +266,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
             // The scroll wheel doesn't seem to work in firefox
             test.skip(browserName === "firefox");
 
-            await mount(
-              <LocalDataSourceProvider>
-                <TwoHundredColumns width={915} />
-              </LocalDataSourceProvider>,
-            );
+            await mount("Table/TEST/TwoHundredColumns");
             const table = new TableOM(page.getByRole("table"));
             let cell = table.locateCell(2, 1);
             await cell.click();

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/experimental-ct-react";
+import { test, expect } from "@playwright/test";
 import {
   MultipleTabbedFilterContainers,
   SingleTabbedFilterContainers,
@@ -16,9 +16,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
       Then when clear is pressed
       Value is cleared and buttons are disabled`, async ({ mount, page }) => {
     const component = await mount(
-      <LocalDataSourceProvider>
-        <MultipleTabbedFilterContainers />
-      </LocalDataSourceProvider>,
+      "Filters/TabbedFilterContainer/MultipleTabbedFilterContainers",
     );
 
     const combobox = page.getByTestId("ccy-1").getByRole("combobox");
@@ -53,13 +51,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
   test(`When a filter value is entered 
       And Saved Filters Tab selected 
       Then no Filter pills are present`, async ({ mount, page }) => {
-    await mount(
-      <SaltProviderNext>
-        <LocalDataSourceProvider>
-          <MultipleTabbedFilterContainers />
-        </LocalDataSourceProvider>
-      </SaltProviderNext>,
-    );
+    await mount("Filters/TabbedFilterContainer/MultipleTabbedFilterContainers");
 
     const combobox = page.getByTestId("ccy-1").getByRole("combobox");
     await combobox.click();
@@ -78,9 +70,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
       Then the save dialog is displayed with focus in input
       Press Cancel, dialog is closed`, async ({ mount, page }) => {
     const component = await mount(
-      <LocalDataSourceProvider>
-        <MultipleTabbedFilterContainers />
-      </LocalDataSourceProvider>,
+      "Filters/TabbedFilterContainer/MultipleTabbedFilterContainers",
     );
 
     await page.getByTestId("ccy-1").getByRole("combobox").click();
@@ -112,9 +102,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
     page,
   }) => {
     const component = await mount(
-      <LocalDataSourceProvider>
-        <MultipleTabbedFilterContainers />
-      </LocalDataSourceProvider>,
+      "Filters/TabbedFilterContainer/MultipleTabbedFilterContainers",
     );
 
     const firstTabContainer = component.getByTestId("tc-1");
@@ -168,9 +156,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
       Then the filter name is allowed a max length of 25 characters
       `, async ({ mount, page }) => {
       const component = await mount(
-        <LocalDataSourceProvider>
-          <SingleTabbedFilterContainers />
-        </LocalDataSourceProvider>,
+        "Filters/TabbedFilterContainer/SingleTabbedFilterContainers",
       );
 
       await page.getByTestId("ccy-1").getByRole("combobox").click();
@@ -197,7 +183,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
       Then the filter name is allowed a max length of 25 characters
       `, async ({ mount, page }) => {
       const component = await mount(
-        <SavedFilterPanelFiveFiltersCustomStyles />,
+        "Filters/SavedFilters/SavedFilterPanel/SavedFilterPanelFiveFiltersCustomStyles",
       );
 
       await page
@@ -227,9 +213,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
       Then the filter name is allowed a max length of 20 characters
       `, async ({ mount, page }) => {
       const component = await mount(
-        <LocalDataSourceProvider>
-          <MultipleTabbedFilterContainers />
-        </LocalDataSourceProvider>,
+        "Filters/TabbedFilterContainer/MultipleTabbedFilterContainers",
       );
 
       await page.getByTestId("ccy-1").getByRole("combobox").click();
@@ -255,7 +239,9 @@ test.describe("Given two TabbedFilterContainers with different values for filter
     test(`When a saved filter is renamed
       Then the filter name is allowed a max length of 20 characters
       `, async ({ mount, page }) => {
-      const component = await mount(<SavedFilterPanelOneFilter />);
+      const component = await mount(
+        "Filters/SavedFilters/SavedFilterPanel/SavedFilterPanelOneFilter",
+      );
 
       await page
         .getByRole("button", { name: "TEST FILTER" })

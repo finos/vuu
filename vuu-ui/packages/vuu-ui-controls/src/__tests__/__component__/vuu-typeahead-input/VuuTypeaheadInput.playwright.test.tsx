@@ -1,7 +1,5 @@
-import { expect, test } from "@playwright/experimental-ct-react";
+import { expect, test } from "@playwright/test";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
-import { CommitHandler } from "@vuu-ui/vuu-utils";
 import {
   CurrencyWithTypeaheadAllowFreeText,
   CurrencyWithTypeaheadDisallowFreeText,
@@ -20,19 +18,8 @@ test.describe("VuuTypeaheadInput", () => {
         // doesn't work in Safari
         test.skip(browserName === "webkit");
 
-        let commitCalled = false;
-        let commitValue: VuuRowDataItemType = "";
-        let commitEvent: any = null;
-        const onCommit: CommitHandler = (event, value) => {
-          commitCalled = true;
-          commitValue = value;
-          commitEvent = event;
-        };
-
         await mount(
-          <LocalDataSourceProvider>
-            <CurrencyWithTypeaheadAllowFreeText onCommit={onCommit} />
-          </LocalDataSourceProvider>,
+          "UiControls/VuuTypeaheadInput/CurrencyWithTypeaheadAllowFreeText",
         );
 
         const combobox = page.getByRole("combobox");
@@ -56,8 +43,10 @@ test.describe("VuuTypeaheadInput", () => {
         await combobox.press("Enter");
 
         // Verify commit was called
-        expect(commitCalled).toBe(true);
-        expect(commitValue).toBe("GBP");
+        await expect(page.getByTestId("commit-handler-called")).toHaveValue(
+          "true",
+        );
+        await expect(page.getByTestId("commit-value")).toHaveValue("GBP");
 
         await expect(combobox).toBeFocused();
 
@@ -69,19 +58,8 @@ test.describe("VuuTypeaheadInput", () => {
         mount,
         page,
       }) => {
-        let commitCalled = false;
-        let commitValue: VuuRowDataItemType = "";
-        let commitEvent: any = null;
-        const onCommit: CommitHandler = (event, value) => {
-          commitCalled = true;
-          commitValue = value;
-          commitEvent = event;
-        };
-
         await mount(
-          <LocalDataSourceProvider>
-            <CurrencyWithTypeaheadAllowFreeText onCommit={onCommit} />
-          </LocalDataSourceProvider>,
+          "UiControls/VuuTypeaheadInput/CurrencyWithTypeaheadAllowFreeText",
         );
 
         const combobox = page.getByRole("combobox");
@@ -97,8 +75,10 @@ test.describe("VuuTypeaheadInput", () => {
         await options.nth(1).click();
 
         // Verify commit was called
-        expect(commitCalled).toBe(true);
-        expect(commitValue).toBe("GBX");
+        await expect(page.getByTestId("commit-handler-called")).toHaveValue(
+          "true",
+        );
+        await expect(page.getByTestId("commit-value")).toHaveValue("GBX");
 
         // Verify listbox is hidden
         await expect(listbox).not.toBeVisible();
@@ -113,19 +93,8 @@ test.describe("VuuTypeaheadInput", () => {
         // doesn't work in Safari
         test.skip(browserName === "webkit");
 
-        let commitCalled = false;
-        let commitValue: VuuRowDataItemType = "";
-        let commitEvent: any = null;
-        const onCommit: CommitHandler = (event, value) => {
-          commitCalled = true;
-          commitValue = value;
-          commitEvent = event;
-        };
-
         const component = await mount(
-          <LocalDataSourceProvider>
-            <CurrencyWithTypeaheadAllowFreeText onCommit={onCommit} />
-          </LocalDataSourceProvider>,
+          "UiControls/VuuTypeaheadInput/CurrencyWithTypeaheadAllowFreeText",
         );
 
         const combobox = page.getByRole("combobox");
@@ -151,8 +120,10 @@ test.describe("VuuTypeaheadInput", () => {
         await combobox.press("Enter");
 
         // Verify commit was called
-        expect(commitCalled).toBe(true);
-        expect(commitValue).toBe("GBX");
+        await expect(page.getByTestId("commit-handler-called")).toHaveValue(
+          "true",
+        );
+        await expect(page.getByTestId("commit-value")).toHaveValue("GBX");
 
         await expect(combobox).toBeFocused();
 
@@ -164,19 +135,8 @@ test.describe("VuuTypeaheadInput", () => {
         mount,
         page,
       }) => {
-        let commitCalled = false;
-        let commitValue: VuuRowDataItemType = "";
-        let commitEvent: any = null;
-        const onCommit: CommitHandler = (event, value) => {
-          commitCalled = true;
-          commitValue = value;
-          commitEvent = event;
-        };
-
         const component = await mount(
-          <LocalDataSourceProvider>
-            <CurrencyWithTypeaheadAllowFreeText onCommit={onCommit} />
-          </LocalDataSourceProvider>,
+          "UiControls/VuuTypeaheadInput/CurrencyWithTypeaheadAllowFreeText",
         );
 
         const combobox = page.getByRole("combobox");
@@ -195,8 +155,10 @@ test.describe("VuuTypeaheadInput", () => {
         await combobox.press("Enter");
 
         // Verify commit was called
-        expect(commitCalled).toBe(true);
-        expect(commitValue).toBe("GBP");
+        await expect(page.getByTestId("commit-handler-called")).toHaveValue(
+          "true",
+        );
+        await expect(page.getByTestId("commit-value")).toHaveValue("GBP");
 
         // Verify listbox is hidden
         await expect(listbox).not.toBeVisible();
@@ -209,19 +171,8 @@ test.describe("VuuTypeaheadInput", () => {
         page,
         browserName,
       }) => {
-        let commitCalled = false;
-        let commitValue: VuuRowDataItemType = "";
-        let commitEvent: any = null;
-        const onCommit: CommitHandler = (event, value) => {
-          commitCalled = true;
-          commitValue = value;
-          commitEvent = event;
-        };
-
         await mount(
-          <LocalDataSourceProvider>
-            <CurrencyWithTypeaheadAllowFreeText onCommit={onCommit} />
-          </LocalDataSourceProvider>,
+          "UiControls/VuuTypeaheadInput/CurrencyWithTypeaheadAllowFreeText",
         );
 
         const combobox = page.getByRole("combobox");
@@ -239,8 +190,10 @@ test.describe("VuuTypeaheadInput", () => {
         await page.waitForTimeout(300); // Wait longer than the 200ms timeout
 
         // Verify commit was called
-        expect(commitCalled).toBe(true);
-        expect(commitValue).toBe("abc");
+        await expect(page.getByTestId("commit-handler-called")).toHaveValue(
+          "true",
+        );
+        await expect(page.getByTestId("commit-value")).toHaveValue("abc");
       });
 
       test("then clearing previously committed text will automatically commit", async ({
@@ -248,19 +201,8 @@ test.describe("VuuTypeaheadInput", () => {
         page,
         browserName,
       }) => {
-        let commitCalled = false;
-        let commitValue: VuuRowDataItemType = "";
-        let commitEvent: any = null;
-        const onCommit: CommitHandler = (event, value) => {
-          commitCalled = true;
-          commitValue = value;
-          commitEvent = event;
-        };
-
         await mount(
-          <LocalDataSourceProvider>
-            <CurrencyWithTypeaheadAllowFreeText onCommit={onCommit} />
-          </LocalDataSourceProvider>,
+          "UiControls/VuuTypeaheadInput/CurrencyWithTypeaheadAllowFreeText",
         );
 
         const combobox = page.getByRole("combobox");
@@ -271,19 +213,19 @@ test.describe("VuuTypeaheadInput", () => {
         await page.waitForTimeout(300);
 
         // Verify first commit
-        expect(commitCalled).toBe(true);
-        expect(commitValue).toBe("abc");
+        await expect(page.getByTestId("commit-handler-called")).toHaveValue(
+          "true",
+        );
+        await expect(page.getByTestId("commit-value")).toHaveValue("abc");
 
         // Clear the text
-        commitCalled = false;
-        commitValue = "";
         await combobox.press("Backspace");
         await combobox.press("Backspace");
         await combobox.press("Backspace");
 
         // Verify second commit with empty value (this should happen immediately, not with timeout)
-        expect(commitCalled).toBe(true);
-        expect(commitValue).toBe("");
+        await expect(page.getByTestId("commit-count")).toHaveValue("2");
+        await expect(page.getByTestId("commit-value")).toHaveValue("");
       });
     });
   });
@@ -294,19 +236,8 @@ test.describe("VuuTypeaheadInput", () => {
       page,
       browserName,
     }) => {
-      let commitCalled = false;
-      let commitValue: VuuRowDataItemType = "";
-      let commitEvent: any = null;
-      const onCommit: CommitHandler = (event, value) => {
-        commitCalled = true;
-        commitValue = value;
-        commitEvent = event;
-      };
-
       await mount(
-        <LocalDataSourceProvider>
-          <CurrencyWithTypeaheadDisallowFreeText onCommit={onCommit} />
-        </LocalDataSourceProvider>,
+        "UiControls/VuuTypeaheadInput/CurrencyWithTypeaheadDisallowFreeText",
       );
 
       const combobox = page.getByRole("combobox");
@@ -324,7 +255,9 @@ test.describe("VuuTypeaheadInput", () => {
       await page.waitForTimeout(300);
 
       // Verify commit was NOT called (this is the correct behavior for DISALLOWS free text)
-      expect(commitCalled).toBe(false);
+      await expect(page.getByTestId("commit-handler-called")).toHaveValue(
+        "false",
+      );
 
       // Verify that the warning message is now shown instead
       const updatedOptions = page.getByRole("option");
@@ -340,15 +273,8 @@ test.describe("VuuTypeaheadInput", () => {
       mount,
       page,
     }) => {
-      let commitCalled = false;
-      const onCommit: CommitHandler = () => {
-        commitCalled = true;
-      };
-
       await mount(
-        <LocalDataSourceProvider>
-          <CurrencyWithTypeaheadDisallowFreeText onCommit={onCommit} />
-        </LocalDataSourceProvider>,
+        "UiControls/VuuTypeaheadInput/CurrencyWithTypeaheadDisallowFreeText",
       );
 
       const combobox = page.getByRole("combobox");
@@ -356,22 +282,17 @@ test.describe("VuuTypeaheadInput", () => {
       await combobox.press("Enter");
 
       // Verify commit was not called
-      expect(commitCalled).toBe(false);
+      await expect(page.getByTestId("commit-handler-called")).toHaveValue(
+        "false",
+      );
     });
 
     test("Then warning will be shown if commit attempted on non matching text", async ({
       mount,
       page,
     }) => {
-      let commitCalled = false;
-      const onCommit: CommitHandler = () => {
-        commitCalled = true;
-      };
-
       await mount(
-        <LocalDataSourceProvider>
-          <CurrencyWithTypeaheadDisallowFreeText onCommit={onCommit} />
-        </LocalDataSourceProvider>,
+        "UiControls/VuuTypeaheadInput/CurrencyWithTypeaheadDisallowFreeText",
       );
 
       const combobox = page.getByRole("combobox");
@@ -398,9 +319,7 @@ test.describe("VuuTypeaheadInput", () => {
       page,
     }) => {
       await mount(
-        <LocalDataSourceProvider>
-          <ShowsSuggestionsNoTextRequired />
-        </LocalDataSourceProvider>,
+        "UiControls/VuuTypeaheadInput/ShowsSuggestionsNoTextRequired",
       );
 
       const combobox = page.getByRole("combobox");
@@ -415,9 +334,7 @@ test.describe("VuuTypeaheadInput", () => {
       page,
     }) => {
       await mount(
-        <LocalDataSourceProvider>
-          <ShowsSuggestionsNoTextRequired />
-        </LocalDataSourceProvider>,
+        "UiControls/VuuTypeaheadInput/ShowsSuggestionsNoTextRequired",
       );
 
       const triggerButton = page.getByRole("button", { name: "Show options" });

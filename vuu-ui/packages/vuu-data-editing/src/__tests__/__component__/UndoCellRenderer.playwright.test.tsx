@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/experimental-ct-react";
+import { expect, test } from "@playwright/test";
 import {
   EditableInstrumentsInlineEdit,
   TestTableEmptyWithUpload,
@@ -9,7 +9,7 @@ test.describe("Undo cell renderer", () => {
     mount,
     page,
   }) => {
-    await mount(<EditableInstrumentsInlineEdit />);
+    await mount("Table/Editing/EditableInstrumentsInlineEdit");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const row = page.getByRole("row").nth(2);
@@ -30,7 +30,7 @@ test.describe("Undo cell renderer", () => {
     mount,
     page,
   }) => {
-    await mount(<TestTableEmptyWithUpload />);
+    await mount("Table/Editing/TestTableEmptyWithUpload");
     await page.getByRole("button", { name: "Upload (preview)" }).click();
     await page.locator('input[type="file"]').setInputFiles({
       name: "import.csv",

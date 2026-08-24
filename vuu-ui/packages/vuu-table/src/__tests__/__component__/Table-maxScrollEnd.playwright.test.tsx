@@ -1,5 +1,5 @@
-import { test } from "@playwright/experimental-ct-react";
-import { expect } from "../../../../../playwright/customAssertions";
+import { test } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { TableOM } from "./TableOM";
 import { MaxScrollEndTable } from "../../../../../showcase/src/examples/Table/Modules/TEST.examples";
 
@@ -8,7 +8,7 @@ test.describe("Table maxScrollEnd", () => {
     mount,
     page,
   }) => {
-    await mount(<MaxScrollEndTable />);
+    await mount("Table/Modules/TEST/MaxScrollEndTable");
 
     const table = new TableOM(page.getByRole("table"));
 

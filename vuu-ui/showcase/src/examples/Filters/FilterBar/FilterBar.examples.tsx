@@ -83,6 +83,10 @@ const DefaultFilterBarCore = ({
   variant,
 }: Partial<FilterBarProps>) => {
   const [filterStruct, setFilterStruct] = useState<Filter | null>(null);
+  const [appliedRecords, setAppliedRecords] = useState<unknown[]>([]);
+  const [stateRecords, setStateRecords] = useState<unknown[]>([]);
+  const [deletedRecords, setDeletedRecords] = useState<unknown[]>([]);
+  const [renamedRecords, setRenamedRecords] = useState<unknown[]>([]);
   const tableSchema = useMemo(() => getSchema("instruments"), []);
   const columns = useMemo(
     () => columnDescriptors ?? [...tableSchema.columns, lastUpdatedColumn],
@@ -91,6 +95,7 @@ const DefaultFilterBarCore = ({
 
   const handleApplyFilter = useCallback<FilterHandler>(
     (filter) => {
+      setAppliedRecords((records) => [...records, [filter]]);
       onApplyFilter?.(filter);
       setFilterStruct(filter);
     },
@@ -103,6 +108,7 @@ const DefaultFilterBarCore = ({
 
   const handleFilterStateChange = useCallback(
     (filterState: FilterState) => {
+      setStateRecords((records) => [...records, [filterState]]);
       onFilterStateChanged?.(filterState);
     },
     [onFilterStateChanged],
@@ -110,6 +116,7 @@ const DefaultFilterBarCore = ({
 
   const handleFilterDeleted = useCallback(
     (filter: Filter) => {
+      setDeletedRecords((records) => [...records, [filter]]);
       onFilterDeleted?.(filter);
     },
     [onFilterDeleted],
@@ -117,6 +124,7 @@ const DefaultFilterBarCore = ({
 
   const handleFilterRenamed = useCallback(
     (filter: Filter, name: string) => {
+      setRenamedRecords((records) => [...records, [filter, name]]);
       onFilterRenamed?.(filter, name);
     },
     [onFilterRenamed],
@@ -137,6 +145,10 @@ const DefaultFilterBarCore = ({
         vuuTable={tableSchema.table}
         variant={variant}
       />
+      <input hidden data-testid="applied-records" readOnly value={JSON.stringify(appliedRecords.at(-1) ?? null)} />
+      <input hidden data-testid="state-records" readOnly value={JSON.stringify(stateRecords.at(-1) ?? null)} />
+      <input hidden data-testid="deleted-records" readOnly value={JSON.stringify(deletedRecords.at(-1) ?? null)} />
+      <input hidden data-testid="renamed-records" readOnly value={JSON.stringify(renamedRecords.at(-1) ?? null)} />
     </FilterContainer>
   );
 };

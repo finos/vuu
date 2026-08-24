@@ -1,4 +1,4 @@
-import { expect as baseExpect } from "@playwright/experimental-ct-react";
+import { expect as baseExpect, type Locator } from "@playwright/test";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -10,7 +10,7 @@ declare global {
 }
 
 export const expect = baseExpect.extend({
-  async toHaveSelection(locator, start, end) {
+  async toHaveSelection(locator: Locator, start: number, end: number) {
     let pass: boolean;
     const selection: [number, number] | undefined = undefined;
     let errorName: string | undefined;

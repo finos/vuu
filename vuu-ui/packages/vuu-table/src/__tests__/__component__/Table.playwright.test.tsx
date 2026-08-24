@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/experimental-ct-react";
+import { test, expect } from "@playwright/test";
 import { Instruments } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
 import {
   SwitchableDataSourceTable,
@@ -20,16 +20,7 @@ const tableConfig = {
 
 test.describe("WHEN it initially renders", () => {
   test("THEN expected className is present", async ({ mount, page }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <Instruments
-          data-testid="table"
-          renderBufferSize={5}
-          height={625}
-          width={800}
-        />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Modules/SIMUL/Instruments");
     const vuuTable = page.getByTestId("table");
     await expect(vuuTable).toContainClass("vuuTable");
   });
@@ -38,7 +29,7 @@ test.describe("WHEN it initially renders", () => {
     mount,
     page,
   }) => {
-    await mount(<TestTable {...tableConfig} />);
+    await mount("Table/Misc/TestTable");
     const table = new TableOM(page.getByTestId("test-table"));
     await table.assertRenderedRows(
       { from: 1, to: 30 },
@@ -53,7 +44,7 @@ test.describe("WHEN its datasource changes", () => {
     mount,
     page,
   }) => {
-    await mount(<SwitchableDataSourceTable />);
+    await mount("Table/Misc/SwitchableDataSourceTable");
     const table = page.getByTestId("switchable-data-source-table");
 
     await expect(table).toContainText("source-value");

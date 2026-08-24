@@ -1,9 +1,9 @@
-import { test, expect } from "@playwright/experimental-ct-react";
+import { test, expect } from "@playwright/test";
 import { TimeRangeFilter } from "../../../../../showcase/src/examples/Filters/FilterContainer.examples";
 
 test.describe("FilterContainer - Time range", () => {
   test("renders time inputs with values", async ({ mount }) => {
-    const component = await mount(<TimeRangeFilter />);
+    const component = await mount("Filters/FilterContainer/TimeRangeFilter");
 
     const columnFilter = component.locator(".vuuColumnFilter").first();
     await expect(columnFilter).toBeVisible();
@@ -17,7 +17,7 @@ test.describe("FilterContainer - Time range", () => {
   test("updates values programmatically and dispatches input/change", async ({
     mount,
   }) => {
-    const component = await mount(<TimeRangeFilter />);
+    const component = await mount("Filters/FilterContainer/TimeRangeFilter");
 
     const columnFilter = component.locator(".vuuColumnFilter").first();
     const inputs = columnFilter.locator("input.vuuTimeInput");
@@ -41,7 +41,7 @@ test.describe("FilterContainer - Time range", () => {
   test("editing one range input preserves the other value", async ({
     mount,
   }) => {
-    const component = await mount(<TimeRangeFilter />);
+    const component = await mount("Filters/FilterContainer/TimeRangeFilter");
 
     const columnFilter = component.locator(".vuuColumnFilter").first();
     const inputs = columnFilter.locator("input.vuuTimeInput");
@@ -87,7 +87,7 @@ test.describe("FilterContainer - Time range", () => {
     mount,
     page,
   }) => {
-    const component = await mount(<TimeRangeFilter />);
+    const component = await mount("Filters/FilterContainer/TimeRangeFilter");
 
     const preTimeinput = component.getByTestId("pre-timeinput");
     const preInput = preTimeinput.locator("input");

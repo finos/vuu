@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/experimental-ct-react";
+import { expect, test } from "@playwright/test";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
   DataExclusions,
@@ -11,7 +11,7 @@ test.describe("Chart examples", () => {
     mount,
     page,
   }) => {
-    await mount(<SimpleLineChart />);
+    await mount("Chart/LineChart/SimpleLineChart");
 
     const chartElement = page.locator(".vuuChart");
     await expect(chartElement).toBeVisible();
@@ -22,11 +22,7 @@ test.describe("Chart examples", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <DataExclusions />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Chart/LineChart/DataExclusions");
 
     const chartElement = page.locator(".vuuChart");
     await expect(chartElement).toBeVisible();
@@ -37,11 +33,7 @@ test.describe("Chart examples", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableChart />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Chart/LineChart/EditableChart");
 
     const chartElement = page.locator(".vuuChart");
     await expect(chartElement.locator("svg")).toBeVisible();

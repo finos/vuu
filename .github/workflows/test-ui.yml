@@ -47,9 +47,9 @@ jobs:
       - name: Build Worker
         run: cd ./vuu-ui && npm run build:worker
       - name: Install Playwright Browser
-        run: cd ./vuu-ui && npx playwright install --with-deps ${{ matrix.browser }}
+        run: cd ./vuu-ui && npm exec -- playwright install --with-deps ${{ matrix.browser }}
       - name: Run Playwright component tests
-        run: cd ./vuu-ui && npx playwright test --config=playwright-ct.config.ts --project=${{ matrix.browser }}
+        run: cd ./vuu-ui && npm exec -- playwright test --config=playwright.config.ts --project=components-${{ matrix.browser }}
       - name: Upload blob report to GitHub Actions Artifacts
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         if: always()
@@ -74,7 +74,7 @@ jobs:
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - name: Merge into HTML and JSON Reports
-        run: PLAYWRIGHT_JSON_OUTPUT_FILE=playwright-report/test-results.json npx playwright merge-reports --reporter html,json ./all-blob-reports
+        run: PLAYWRIGHT_JSON_OUTPUT_FILE=playwright-report/test-results.json npm exec -- playwright merge-reports --reporter html,json ./all-blob-reports
       - name: Upload Merged Playwright Report
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         if: always()

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/experimental-ct-react";
+import { test, expect } from "@playwright/test";
 import {
   DefaultTabstrip,
   TabstripEditableLabels,
@@ -13,7 +13,9 @@ const OVERFLOW_IND =
 test.describe("WHEN initial size is sufficient to display all contents", () => {
   test.describe("WHEN it initially renders", () => {
     test("THEN all the content items will be visible", async ({ mount }) => {
-      const component = await mount(<DefaultTabstrip width={500} />);
+      const component = await mount("UiControls/Tabstrip/DefaultTabstrip", {
+        width: 500,
+      });
       const tabstrip = component.getByRole("tablist");
       await expect(tabstrip).toContainClass("vuuTabstrip");
       // The overflow Indicator will be present, but have zero width
@@ -22,12 +24,16 @@ test.describe("WHEN initial size is sufficient to display all contents", () => {
       await expect(overflowItems.filter({ visible: true })).toHaveCount(5);
     });
     test("THEN no items will be overflowed", async ({ mount }) => {
-      const component = await mount(<DefaultTabstrip width={500} />);
+      const component = await mount("UiControls/Tabstrip/DefaultTabstrip", {
+        width: 500,
+      });
       const overflowedItems = component.locator(OVERFLOWED_ITEMS);
       await expect(overflowedItems).toHaveCount(0);
     });
     test("THEN no overflow indicator will be visible", async ({ mount }) => {
-      const component = await mount(<DefaultTabstrip width={500} />);
+      const component = await mount("UiControls/Tabstrip/DefaultTabstrip", {
+        width: 500,
+      });
       const overflowInd = component.locator(OVERFLOW_IND);
       await expect(overflowInd).toHaveCount(1);
       await expect(overflowInd).not.toBeVisible();
@@ -43,7 +49,9 @@ test.describe("WHEN initial size is sufficient to display all contents", () => {
           "failing on COI only",
         );
 
-        const component = await mount(<DefaultTabstrip width={350} />);
+        const component = await mount("UiControls/Tabstrip/DefaultTabstrip", {
+          width: 350,
+        });
         const tablist = await component.getByRole("tablist");
         const box = await tablist.boundingBox();
         expect(box?.width).toEqual(350);
@@ -69,14 +77,18 @@ test.describe("WHEN initial size is sufficient to display all contents", () => {
 test.describe("Editable tabs", () => {
   test.describe("WHEN enableRenameTab is set", () => {
     test("THEN all tabs are editable", async ({ mount }) => {
-      const component = await mount(<TabstripEditableLabels />);
+      const component = await mount(
+        "UiControls/Tabstrip/TabstripEditableLabels",
+      );
       await expect(component.locator(".vuuEditableLabel")).toHaveCount(5);
     });
   });
 
   test.describe("WHEN ENTER is pressed on tab selected via keyboard", () => {
     test("THEN tab enters edit state", async ({ mount }) => {
-      const component = await mount(<TabstripEditableLabels />);
+      const component = await mount(
+        "UiControls/Tabstrip/TabstripEditableLabels",
+      );
       const homeTab = component.getByRole("tab", { name: "Home" });
       await homeTab.click();
       await homeTab.press("ArrowRight");
@@ -96,7 +108,9 @@ test.describe("Editable tabs", () => {
 
   test.describe("WHEN ENTER is pressed on tab selected via click", () => {
     test("THEN tab label enters edit state", async ({ mount }) => {
-      const component = await mount(<TabstripEditableLabels />);
+      const component = await mount(
+        "UiControls/Tabstrip/TabstripEditableLabels",
+      );
       const homeTab = component.getByRole("tab", { name: "Home" });
       await homeTab.click();
       await homeTab.press("Enter");
@@ -107,7 +121,9 @@ test.describe("Editable tabs", () => {
 
   test.describe("WHEN characters are entered during edit state", () => {
     test("THEN editable input value is updated", async ({ mount }) => {
-      const component = await mount(<TabstripEditableLabels />);
+      const component = await mount(
+        "UiControls/Tabstrip/TabstripEditableLabels",
+      );
       const homeTab = component.getByRole("tab", { name: "Home" });
       await homeTab.click();
       await homeTab.press("Enter");
@@ -121,7 +137,9 @@ test.describe("Editable tabs", () => {
 
   test.describe("WHEN ENTER is pressed after edit", () => {
     test("THEN edited value is applied to tab label", async ({ mount }) => {
-      const component = await mount(<TabstripEditableLabels />);
+      const component = await mount(
+        "UiControls/Tabstrip/TabstripEditableLabels",
+      );
       const homeTab = component.getByRole("tab", { name: "Home" });
       await homeTab.click();
       await homeTab.press("Enter");
@@ -138,7 +156,9 @@ test.describe("Editable tabs", () => {
 
   test.describe("WHEN ESCAPE is pressed after edit", () => {
     test("THEN edited value is not applied to tab label", async ({ mount }) => {
-      const component = await mount(<TabstripEditableLabels />);
+      const component = await mount(
+        "UiControls/Tabstrip/TabstripEditableLabels",
+      );
       const homeTab = component.getByRole("tab", { name: "Home" });
       await homeTab.click();
       await homeTab.press("Enter");
@@ -155,7 +175,7 @@ test.describe("Editable tabs", () => {
 
 test.describe("Removing tabs", () => {
   test("THEN all tabs have a context menu", async ({ mount }) => {
-    const component = await mount(<TabstripRemoveTab />);
+    const component = await mount("UiControls/Tabstrip/TabstripRemoveTab");
     await expect(component.locator(".vuuTabMenu")).toHaveCount(5);
   });
 
@@ -163,7 +183,7 @@ test.describe("Removing tabs", () => {
     mount,
     page,
   }) => {
-    const component = await mount(<TabstripRemoveTab />);
+    const component = await mount("UiControls/Tabstrip/TabstripRemoveTab");
     const homeTab = component.getByRole("tab", { name: "Home" });
     await homeTab.getByRole("button", { name: "context menu" }).click();
     await page.getByRole("menuitem", { name: "Close" }).click();

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/experimental-ct-react";
+import { test, expect } from "@playwright/test";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { SaltProvider } from "@salt-ds/core";
 
@@ -14,11 +14,7 @@ test(`A simple uncontrolled togglefilter with no defaultValue
     shows All by default
     selects correct value when clicked
      `, async ({ mount }) => {
-  const component = await mount(
-    <SaltProvider>
-      <SimpleBuySellFilter />
-    </SaltProvider>,
-  );
+  const component = await mount("Filters/ToggleFilter/SimpleBuySellFilter");
 
   expect(component.getByRole("radio")).toHaveCount(3);
   expect(component.getByRole("radio", { name: "ALL" })).toBeChecked();
@@ -30,9 +26,7 @@ test(`A simple uncontrolled togglefilter with a defaultValue
     shows correct value selected
      `, async ({ mount }) => {
   const component = await mount(
-    <SaltProvider>
-      <SimpleBuySellFilterInitialised />
-    </SaltProvider>,
+    "Filters/ToggleFilter/SimpleBuySellFilterInitialised",
   );
 
   expect(component.getByRole("radio")).toHaveCount(3);
@@ -44,9 +38,7 @@ test(`A simple controlled togglefilter with no defaultValue
     selects correct value when clicked
      `, async ({ mount }) => {
   const component = await mount(
-    <SaltProvider>
-      <SimpleControlledBuySellFilter />
-    </SaltProvider>,
+    "Filters/ToggleFilter/SimpleControlledBuySellFilter",
   );
 
   expect(component.getByRole("radio")).toHaveCount(3);
@@ -59,9 +51,7 @@ test(`A simple controlled togglefilter with an initial value
     shows correct value selected
      `, async ({ mount }) => {
   const component = await mount(
-    <SaltProvider>
-      <SimpleControlledBuySellFilterInitialised />
-    </SaltProvider>,
+    "Filters/ToggleFilter/SimpleControlledBuySellFilterInitialised",
   );
 
   expect(component.getByRole("radio")).toHaveCount(3);
@@ -72,11 +62,7 @@ test(`A controlled togglefilter with datasource filtered to eliminate one value
     shows correct value selected
      `, async ({ mount }) => {
   const component = await mount(
-    <SaltProvider>
-      <LocalDataSourceProvider>
-        <ControlledBuySellFilterWithBuyOnlyDataSource />
-      </LocalDataSourceProvider>
-    </SaltProvider>,
+    "Filters/ToggleFilter/ControlledBuySellFilterWithBuyOnlyDataSource",
   );
 
   expect(component.getByRole("radio")).toHaveCount(3);

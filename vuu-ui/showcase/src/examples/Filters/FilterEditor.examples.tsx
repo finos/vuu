@@ -9,7 +9,7 @@ import {
 } from "@vuu-ui/vuu-filters";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 const instrumentsSchema = getSchema("instruments");
 
@@ -26,17 +26,18 @@ const FilterEditorTemplate = ({
       table: schema.table,
     });
   }, [VuuDataSource]);
+  const [saveRecords, setSaveRecords] = useState<Filter[]>([]);
 
   const onCancel = useCallback<FilterEditCancelHandler>(() => {
     console.log(`cancel  filter edit`);
   }, []);
 
-  const onSave = useMemo<FilterEditSaveHandler>(
-    () =>
-      onSaveProp ??
-      ((filter) => {
-        console.log(`save filter ${JSON.stringify(filter)}`);
-      }),
+  const onSave = useCallback<FilterEditSaveHandler>(
+    (filter) => {
+      setSaveRecords((records) => [...records, filter]);
+      onSaveProp?.(filter);
+      console.log(`save filter ${JSON.stringify(filter)}`);
+    },
     [onSaveProp],
   );
 
@@ -57,6 +58,7 @@ const FilterEditorTemplate = ({
         style={style}
         vuuTable={instrumentsSchema.table}
       />
+      <input hidden data-testid="save-records" readOnly value={JSON.stringify(saveRecords)} />
     </DataSourceProvider>
   );
 };
