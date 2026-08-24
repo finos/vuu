@@ -395,6 +395,8 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
       sessionTableName.contains("simple-testSessionTable1") shouldBe true
+
+      createViewPortAndVerifyDataSize(sessionTableName, 0)
     }
   }
 
@@ -421,7 +423,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       sessionTableName.contains("simple-export-testTable1") shouldBe true
     }
 
-    Scenario("create a session table from source table using a specific session table def") {
+    Scenario("create a session table from source table using a given name") {
       Given("a view port exist")
       val viewPortId = createViewPort(tableName1)
 
@@ -430,9 +432,8 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
         params = Map(
-          "sessionTableName" -> sessionTableName1,
-          "copyOption" -> "Empty",
-          "sessionType" -> "edit"
+          "sessionType" -> "export",
+          "sessionTableName" -> sessionTableName1
         ))
       val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 
@@ -443,6 +444,8 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
       sessionTableName.contains("simple-testSessionTable1") shouldBe true
+
+      createViewPortAndVerifyDataSize(sessionTableName, 3)
     }
   }
 
