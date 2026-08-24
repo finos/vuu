@@ -11,9 +11,11 @@ import org.finos.vuu.core.table.Columns;
 import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.DefaultColumn;
 import org.finos.vuu.core.table.TableContainer;
+import org.finos.vuu.net.rpc.AllowAllRpcPermissionChecker$;
 import org.finos.vuu.net.rpc.RpcHandler;
 import org.finos.vuu.person.DeleteRecordRpcHandler;
 import org.finos.vuu.person.DeleteRecordRpcHandlerIF;
+import org.finos.vuu.person.EditRecordRpcHandler;
 import org.finos.vuu.person.PersonRpcHandler;
 import org.finos.vuu.person.UpdateRecordRpcHandler;
 import org.finos.vuu.person.auto.AutoMappedPersonProvider;
@@ -46,7 +48,7 @@ public class JavaExampleModule extends DefaultModule {
                         (table, vs) -> new PersonProvider(table, new PersonStore()),
                         (table, provider, providerContainer, tableContainer) -> new ViewPortDef(
                                 table.getTableDef().getColumns(),
-                                buildRpcHandler(table)
+                                buildRpcHandler2(table, tableContainer)
                         )
                 )
                 .addTable(new TableDefBuilder()
@@ -72,9 +74,9 @@ public class JavaExampleModule extends DefaultModule {
 
     // Example of a mixture of RPC handlers in scala and in java
     private RpcHandler buildRpcHandler2(DataTable table, TableContainer tableContainer) {
+        EditRecordRpcHandler editRecordRpcHandler = new EditRecordRpcHandler(AllowAllRpcPermissionChecker$.MODULE$, tableContainer);
         PersonRpcHandler personRpcHandler = new PersonRpcHandler(table);
         DeleteRecordRpcHandlerIF deleteRecordRpcHandler = new DeleteRecordRpcHandler();
-
         UpdateRecordRpcHandler updateRecordRpcHandler = new UpdateRecordRpcHandler(tableContainer);
         updateRecordRpcHandler.registerRpc("UpdateName", personRpcHandler::processUpdateNameRpcRequest);
         updateRecordRpcHandler.registerRpc("GetAccountId", personRpcHandler::processGetAccountIdRpcRequest);

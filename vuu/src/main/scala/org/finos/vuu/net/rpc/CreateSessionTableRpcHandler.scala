@@ -6,6 +6,9 @@ import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.SessionTableCopyOption.{All, Empty, Selected}
 import org.finos.vuu.viewport.{RowSource, ViewPort}
 
+// Added this class for java
+class CreateSessionTableRpcHandlerImpl(rpcPermissionChecker: RpcPermissionChecker, tableContainer: TableContainer) extends CreateSessionTableRpcHandler(rpcPermissionChecker, tableContainer)
+
 trait CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker, tableContainer: TableContainer) extends RpcHandler {
   registerRpc(RpcNames.CreateSessionTableRpc, this.createSessionTable)
 
