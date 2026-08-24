@@ -181,8 +181,8 @@ case class ClickHouseFilterVisitor(
     case DataType.LongDataType => value.toLong
     case DataType.DoubleDataType => value.toDouble
     case DataType.BooleanDataType => value.toBoolean
-    case DataType.EpochTimestampType => ofEpochMilli(value.toLong)
-    case DataType.EpochTimestampNanoType => ofEpochNanosecond(value.toLong)
+    case DataType.EpochTimestampType => MILLI_DATE_TIME_FORMATTER.format(ofEpochMilli(value.toLong))
+    case DataType.EpochTimestampNanoType => NANO_DATE_TIME_FORMATTER.format(ofEpochNanosecond(value.toLong))
     case DataType.ScaledDecimal2Type => ScaledDecimal(value, Two).scaledValue
     case DataType.ScaledDecimal4Type => ScaledDecimal(value, Four).scaledValue
     case DataType.ScaledDecimal6Type => ScaledDecimal(value, Six).scaledValue
