@@ -14,6 +14,7 @@ import org.finos.vuu.net.rpc.RpcHandler;
 import org.finos.vuu.person.DeleteRecordRpcHandler;
 import org.finos.vuu.person.DeleteRecordRpcHandlerIF;
 import org.finos.vuu.person.PersonRpcHandler;
+import org.finos.vuu.person.UpdateRecordRpcHandler;
 import org.finos.vuu.person.auto.AutoMappedPersonProvider;
 import org.finos.vuu.person.auto.EntitySchema;
 import org.finos.vuu.person.datasource.PersonStore;
@@ -66,5 +67,16 @@ public class JavaExampleModule extends DefaultModule {
                 .addRpc("GetAccountId", personRpcHandler::processGetAccountIdRpcRequest)
                 .addRpc("DeleteRecprd", deleteRecordRpcHandler::deleteRecord)
                 .build();
+    }
+
+    private RpcHandler buildRpcHandler2(DataTable table) {
+        PersonRpcHandler personRpcHandler = new PersonRpcHandler(table);
+        DeleteRecordRpcHandlerIF deleteRecordRpcHandler = new DeleteRecordRpcHandler();
+
+        UpdateRecordRpcHandler updateRecordRpcHandler = new UpdateRecordRpcHandler();
+        updateRecordRpcHandler.registerRpc("UpdateName", personRpcHandler::processUpdateNameRpcRequest);
+        updateRecordRpcHandler.registerRpc("GetAccountId", personRpcHandler::processGetAccountIdRpcRequest);
+        updateRecordRpcHandler.registerRpc("DeleteRecprd", deleteRecordRpcHandler::deleteRecord);
+        return updateRecordRpcHandler;
     }
 }

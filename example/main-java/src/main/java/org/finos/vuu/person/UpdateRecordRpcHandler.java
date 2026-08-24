@@ -1,0 +1,56 @@
+package org.finos.vuu.person;
+
+import org.finos.vuu.net.rpc.DefaultRpcHandlerImpl;
+import org.finos.vuu.net.rpc.EditTableRpcHandler;
+import org.finos.vuu.net.rpc.RpcFunctionResult;
+import org.finos.vuu.net.rpc.RpcFunctionSuccess;
+import org.finos.vuu.net.rpc.RpcParams;
+
+// An example of Java implementation of RpcHandler
+public class UpdateRecordRpcHandler extends DefaultRpcHandlerImpl implements EditTableRpcHandler {
+
+    @Override
+    public RpcFunctionResult deleteRow(RpcParams params) {
+        return new RpcFunctionSuccess();
+    }
+
+    @Override
+    public RpcFunctionResult deleteSelectedRows(RpcParams params) {
+        return new RpcFunctionSuccess();
+    }
+
+    @Override
+    public RpcFunctionResult deleteCell(RpcParams params) {
+        return new RpcFunctionSuccess();
+    }
+
+    @Override
+    public RpcFunctionResult addRow(RpcParams params) {
+        return new RpcFunctionSuccess();
+    }
+
+    @Override
+    public RpcFunctionResult editRow(RpcParams params) {
+        return new RpcFunctionSuccess();
+    }
+
+    @Override
+    public RpcFunctionResult editCell(RpcParams params) {
+        return new RpcFunctionSuccess();
+    }
+
+    @Override
+    public RpcFunctionResult submitForm(RpcParams params) {
+        return new RpcFunctionSuccess();
+    }
+
+    @Override
+    public RpcFunctionResult closeForm(RpcParams params) {
+        return new RpcFunctionSuccess();
+    }
+
+    @Override
+    public RpcFunctionResult undoRowChange(RpcParams params) {
+        return new RpcFunctionSuccess();
+    }
+}
