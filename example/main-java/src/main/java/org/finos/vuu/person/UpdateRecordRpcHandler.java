@@ -1,13 +1,20 @@
 package org.finos.vuu.person;
 
+import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.net.rpc.DefaultRpcHandlerImpl;
 import org.finos.vuu.net.rpc.EditTableRpcHandler;
+import org.finos.vuu.net.rpc.EndEditSessionRpcHandler;
 import org.finos.vuu.net.rpc.RpcFunctionResult;
 import org.finos.vuu.net.rpc.RpcFunctionSuccess;
 import org.finos.vuu.net.rpc.RpcParams;
 
 // An example of Java implementation of RpcHandler
-public class UpdateRecordRpcHandler extends DefaultRpcHandlerImpl implements EditTableRpcHandler {
+public class UpdateRecordRpcHandler extends DefaultRpcHandlerImpl implements EditTableRpcHandler, EndEditSessionRpcHandler {
+    private final TableContainer tableContainer;
+
+    public UpdateRecordRpcHandler(TableContainer tableContainer) {
+        this.tableContainer = tableContainer;
+    }
 
     @Override
     public RpcFunctionResult deleteRow(RpcParams params) {
@@ -52,5 +59,25 @@ public class UpdateRecordRpcHandler extends DefaultRpcHandlerImpl implements Edi
     @Override
     public RpcFunctionResult undoRowChange(RpcParams params) {
         return new RpcFunctionSuccess();
+    }
+
+    @Override
+    public boolean verifyPermission(RpcParams params) {
+        return true;
+    }
+
+    @Override
+    public boolean validateData(RpcParams params) {
+        return true;
+    }
+
+    @Override
+    public boolean submit(RpcParams params) {
+        return true;
+    }
+
+    @Override
+    public TableContainer tableContainer() {
+        return tableContainer;
     }
 }

@@ -10,6 +10,7 @@ import org.finos.vuu.core.module.ViewServerModule;
 import org.finos.vuu.core.table.Columns;
 import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.DefaultColumn;
+import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.net.rpc.RpcHandler;
 import org.finos.vuu.person.DeleteRecordRpcHandler;
 import org.finos.vuu.person.DeleteRecordRpcHandlerIF;
@@ -70,11 +71,11 @@ public class JavaExampleModule extends DefaultModule {
     }
 
     // Example of a mixture of RPC handlers in scala and in java
-    private RpcHandler buildRpcHandler2(DataTable table) {
+    private RpcHandler buildRpcHandler2(DataTable table, TableContainer tableContainer) {
         PersonRpcHandler personRpcHandler = new PersonRpcHandler(table);
         DeleteRecordRpcHandlerIF deleteRecordRpcHandler = new DeleteRecordRpcHandler();
 
-        UpdateRecordRpcHandler updateRecordRpcHandler = new UpdateRecordRpcHandler();
+        UpdateRecordRpcHandler updateRecordRpcHandler = new UpdateRecordRpcHandler(tableContainer);
         updateRecordRpcHandler.registerRpc("UpdateName", personRpcHandler::processUpdateNameRpcRequest);
         updateRecordRpcHandler.registerRpc("GetAccountId", personRpcHandler::processGetAccountIdRpcRequest);
         updateRecordRpcHandler.registerRpc("DeleteRecprd", deleteRecordRpcHandler::deleteRecord);
