@@ -69,6 +69,7 @@ public class JavaExampleModule extends DefaultModule {
                 .build();
     }
 
+    // Example of a mixture of RPC handlers in scala and in java
     private RpcHandler buildRpcHandler2(DataTable table) {
         PersonRpcHandler personRpcHandler = new PersonRpcHandler(table);
         DeleteRecordRpcHandlerIF deleteRecordRpcHandler = new DeleteRecordRpcHandler();
