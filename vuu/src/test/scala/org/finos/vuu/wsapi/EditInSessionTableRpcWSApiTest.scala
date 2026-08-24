@@ -31,7 +31,29 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   private val testProviderFactory = new TestProviderFactory
   private val maxSessionTableSize = 10 // configured in CoreServerApiTest
 
-  Feature("[Web Socket API] create a session table failed for undefined session type") {
+  Feature("[Web Socket API] create a session table failed") {
+    Scenario("Request to create a session table failed for no enough permission") {
+      Given("a view port exist")
+      val viewPortId = createViewPort(noEnoughPermissionTableName)
+
+      When("request createSessionTable")
+      val createSessionTableRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.CreateSessionTableRpc,
+        params = Map(
+          "copyOption" -> "Empty",
+          "sessionType" -> "edit"
+        ))
+      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
+
+      Then("session table is not created")
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
+      val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
+      rpcResult.errorMessage shouldBe "No permission to create session table."
+    }
+
     Scenario("create a session table failed for undefined session type") {
       Given("a view port exist")
       val viewPortId = createViewPort(tableName1)
@@ -258,27 +280,6 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, maxSessionTableSize)
     }
 
-    Scenario("Request to create a session table failed for no enough permission") {
-      Given("a view port exist")
-      val viewPortId = createViewPort(noEnoughPermissionTableName)
-
-      When("request createSessionTable")
-      val createSessionTableRequest = RpcRequest(
-        ViewPortContext(viewPortId),
-        RpcNames.CreateSessionTableRpc,
-        params = Map(
-          "copyOption" -> "Empty",
-          "sessionType" -> "edit"
-        ))
-      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
-
-      Then("session table is not created")
-      val response = vuuClient.awaitForResponse(requestId)
-      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
-      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
-      val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
-      rpcResult.errorMessage shouldBe "No permission to create session table."
-    }
 
     Scenario("Request to create a session table failed for non-editable table") {
       Given("a view port exist")
