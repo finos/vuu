@@ -35,10 +35,11 @@ jobs:
 
   playwright-component:
     runs-on: ubuntu-latest
-    name: playwright-component (${{ matrix.browser }})
+    name: playwright-component (${{ matrix.browser }}, shard ${{ matrix.shard }}/2)
     strategy:
       matrix:
         browser: [chromium, firefox, webkit]
+        shard: [1, 2]
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
@@ -49,12 +50,12 @@ jobs:
       - name: Install Playwright Browser
         run: cd ./vuu-ui && npm exec -- playwright install --with-deps ${{ matrix.browser }}
       - name: Run Playwright component tests
-        run: cd ./vuu-ui && npm exec -- playwright test --config=playwright.config.ts --project=components-${{ matrix.browser }}
+        run: cd ./vuu-ui && npm exec -- playwright test --config=playwright.config.ts --project=components-${{ matrix.browser }} --shard=${{ matrix.shard }}/2
       - name: Upload blob report to GitHub Actions Artifacts
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         if: always()
         with:
-          name: blob-report-${{ matrix.browser }}
+          name: blob-report-${{ matrix.browser }}-${{ matrix.shard }}-of-2
           path: vuu-ui/blob-report/
           retention-days: 10
 
