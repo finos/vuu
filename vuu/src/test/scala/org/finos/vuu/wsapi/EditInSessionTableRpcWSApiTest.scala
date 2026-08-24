@@ -31,6 +31,29 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   private val testProviderFactory = new TestProviderFactory
   private val maxSessionTableSize = 10 // configured in CoreServerApiTest
 
+  Feature("[Web Socket API] create a session table failed for undefined session type") {
+    Scenario("create a session table failed for undefined session type") {
+      Given("a view port exist")
+      val viewPortId = createViewPort(tableName1)
+
+      When("request creating a session table using undefined session type")
+      val createSessionTableRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.CreateSessionTableRpc,
+        params = Map(
+          "sessionType" -> "dummy"
+        ))
+      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
+
+      Then("session table is not created")
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
+      val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
+      rpcResult.errorMessage shouldBe "Session type undefined"
+    }
+  }
+
   // TODO add more tests:
   // Test when vp is filtered and sorted, the data copied to session table is also filtered and sorted
   // Test when copying from a given list of columns, only data from those columns are copied
