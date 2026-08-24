@@ -372,6 +372,8 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
       sessionTableName.contains("simple-import-testTable1") shouldBe true
+
+      createViewPortAndVerifyDataSize(sessionTableName, 0)
     }
 
     Scenario("create a session table from source table using a given name") {
@@ -421,6 +423,8 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
       sessionTableName.contains("simple-export-testTable1") shouldBe true
+
+      createViewPortAndVerifyDataSize(sessionTableName, 3)
     }
 
     Scenario("create a session table from source table using a given name") {
