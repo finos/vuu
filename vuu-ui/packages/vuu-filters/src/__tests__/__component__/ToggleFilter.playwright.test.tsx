@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../../../../../playwright/fixtures";
 
 test(`A simple uncontrolled togglefilter with no defaultValue
     shows All by default

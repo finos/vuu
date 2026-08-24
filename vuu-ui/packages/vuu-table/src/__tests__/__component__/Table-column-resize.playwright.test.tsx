@@ -1,5 +1,5 @@
 // TODO try and get TS path alias working to avoid relative paths like this
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../../../../../playwright/fixtures";
 import type { TableProps } from "../../Table";
 
 test.describe("Table column resize", () => {

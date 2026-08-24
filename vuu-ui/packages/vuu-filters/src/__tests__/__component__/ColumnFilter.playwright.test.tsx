@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { test } from "../../../../../playwright/fixtures";
 import { expect } from "../../../../../playwright/customAssertions.cjs";
 import type { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
 import type { ColumnFilterProps } from "../../column-filter/ColumnFilter";

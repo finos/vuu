@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../../../../../../playwright/fixtures";
 
 test.describe("Given a CsvUpload component", () => {
   test("THEN it renders the open dialog with correct initial state", async ({

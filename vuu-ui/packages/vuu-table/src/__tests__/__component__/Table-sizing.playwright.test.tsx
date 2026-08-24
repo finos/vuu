@@ -1,5 +1,5 @@
-import type { Locator } from "@playwright/test";
-import { test, expect } from "@playwright/test";
+import type { Locator } from "../../../../../playwright/fixtures";
+import { test, expect } from "../../../../../playwright/fixtures";
 
 const getDimensions = async (locator: Locator): Promise<[number, number]> => {
   const box = await locator.boundingBox();

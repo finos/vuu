@@ -1,4 +1,4 @@
-import { expect, type MountResult, test } from "@playwright/test";
+import { expect, type MountResult, test } from "../../../../../../playwright/fixtures";
 
 interface DisplayedItem {
   dataName: string;

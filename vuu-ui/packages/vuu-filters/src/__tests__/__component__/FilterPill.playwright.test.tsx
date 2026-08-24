@@ -1,5 +1,5 @@
-import { test } from "@playwright/test";
-import { expect } from "@playwright/test";
+import { test } from "../../../../../playwright/fixtures";
+import { expect } from "../../../../../playwright/fixtures";
 
 test.describe("FilterPill", () => {
   test("non-editable pill has no editable label or Rename menu item", async ({

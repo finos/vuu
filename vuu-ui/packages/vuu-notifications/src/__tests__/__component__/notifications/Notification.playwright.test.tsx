@@ -1,4 +1,4 @@
-import { test, expect, type MountResult } from "@playwright/test";
+import { test, expect, type MountResult } from "../../../../../../playwright/fixtures";
 
 function convertRGBAtoHex(rgba: string): string {
   const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
