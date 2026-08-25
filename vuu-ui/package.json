@@ -41,6 +41,8 @@
     "showcase": "cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-dev.ts",
     "showcase:prod": "npm run build:worker && cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-build.ts",
     "playwright:gallery": "vite --config playwright/gallery/vite.config.ts",
+    "playwright:gallery:build": "vite build --config playwright/gallery/vite.config.ts",
+    "playwright:gallery:serve": "vite preview --config playwright/gallery/vite.config.ts",
     "playwright:coverage": "node playwright/generate-coverage.cjs",
     "test:playwright:components": "playwright test --config=playwright.config.ts --project=components-chromium",
     "test:vite": "npm run build:worker && vitest run",
