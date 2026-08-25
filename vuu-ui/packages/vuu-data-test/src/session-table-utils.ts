@@ -13,7 +13,7 @@ export const sessionTableRow = (
   if (!schema.columns.some(({ name }) => name === "vuuMsg")) {
     sessionRow.push("");
   }
-  if (!schema.columns.some(({ name }) => name === "vuu_action")) {
+  if (!schema.columns.some(({ name }) => name === "vuuAction")) {
     sessionRow.push("");
   }
   return sessionRow;
@@ -41,8 +41,8 @@ export const sessionTableSchema = (schema: TableSchema): TableSchema => {
   if (!columns.some(({ name }) => name === "vuuMsg")) {
     columns.push({ name: "vuuMsg", serverDataType: "string" });
   }
-  if (!columns.some(({ name }) => name === "vuu_action")) {
-    columns.push({ name: "vuu_action", serverDataType: "string" });
+  if (!columns.some(({ name }) => name === "vuuAction")) {
+    columns.push({ name: "vuuAction", serverDataType: "string" });
   }
   return { ...schema, columns };
 };

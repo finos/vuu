@@ -78,7 +78,7 @@ export const DataUploadPreview = ({
   } = useDataUploadPreview({ dataSource, editSession, onClose });
 
   const isRowSelectable = useCallback(
-    (dataRow: DataRow) => dataRow.vuu_action !== "deleteRow",
+    (dataRow: DataRow) => dataRow.vuuAction !== "deleteRow",
     [],
   );
   const config = useMemo<TableConfig>(() => {
@@ -107,7 +107,7 @@ export const DataUploadPreview = ({
     }
 
     return {
-      columns: columns.concat({ hidden: true, name: "vuu_action" }, undoColumn),
+      columns: columns.concat({ hidden: true, name: "vuuAction" }, undoColumn),
       columnDefaultWidth: 150,
       rowClassNameGenerators,
       rowSeparators: true,

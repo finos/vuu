@@ -1103,8 +1103,8 @@ export const assertAllColumnsAreIncludedInSubscription = (
 ) => {
   const unsubscribedColumns: string[] = [];
   for (const column of columns) {
-    // temp exclusion for vuu_action, this will be removed later
-    if (column.source !== "client" && column.name !== 'vuu_action' && !columnNames?.includes(column.name)) {
+    // temp exclusion for vuuAction, this will be removed later
+    if (column.source !== "client" && column.name !== 'vuuAction' && !columnNames?.includes(column.name)) {
       unsubscribedColumns.push(column.name);
     }
   }

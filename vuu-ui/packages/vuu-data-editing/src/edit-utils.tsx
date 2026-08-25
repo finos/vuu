@@ -7,7 +7,7 @@ const timeFormatter = formatDate({ time: "hh:mm:ss" });
 const dataRowEditErrors = Symbol("vuuDataRowEditErrors");
 
 export const isEditRowReadOnly = (dataRow: DataRow) =>
-  dataRow.vuu_action === "deleteRow";
+  dataRow.vuuAction === "deleteRow";
 
 type DataRowWithEditErrors = DataRow & {
   [dataRowEditErrors]?: Record<string, string>;

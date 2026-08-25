@@ -234,7 +234,7 @@ function createColumnMap(
           `[DataRow] calculated column with invalid serverDataType ${name}`,
         );
       }
-    } else if (name === "vuu_action" && i === cols.length - 1) {
+    } else if (name === "vuuAction" && i === cols.length - 1) {
       // column on a session table, always in last place
       columnMap[name] = { index: i + 10, type: "string" };
     } else {
