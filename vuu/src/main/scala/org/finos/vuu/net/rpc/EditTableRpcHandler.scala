@@ -1,15 +1,20 @@
 package org.finos.vuu.net.rpc
 
 trait EditTableRpcHandler() extends RpcHandler {
-  registerRpc(RpcNames.DeleteRowRpc, this.deleteRow)
-  registerRpc(RpcNames.DeleteSelectedRowsRpc, this.deleteSelectedRows)
-  registerRpc(RpcNames.DeleteCellRpc, this.deleteCell)
-  registerRpc(RpcNames.AddRowRpc, this.addRow)
-  registerRpc(RpcNames.EditRowRpc, this.editRow)
-  registerRpc(RpcNames.EditCellRpc, this.editCell)
-  registerRpc(RpcNames.SubmitFormRpc, this.submitForm)
-  registerRpc(RpcNames.CloseFormRpc, this.closeForm)
-  registerRpc(RpcNames.UndoRowChangeRpc, this.undoRowChange)
+
+  registerEditTableRpcs()
+
+  protected final def registerEditTableRpcs(): Unit = {
+    registerRpc(RpcNames.DeleteRowRpc, this.deleteRow)
+    registerRpc(RpcNames.DeleteSelectedRowsRpc, this.deleteSelectedRows)
+    registerRpc(RpcNames.DeleteCellRpc, this.deleteCell)
+    registerRpc(RpcNames.AddRowRpc, this.addRow)
+    registerRpc(RpcNames.EditRowRpc, this.editRow)
+    registerRpc(RpcNames.EditCellRpc, this.editCell)
+    registerRpc(RpcNames.SubmitFormRpc, this.submitForm)
+    registerRpc(RpcNames.CloseFormRpc, this.closeForm)
+    registerRpc(RpcNames.UndoRowChangeRpc, this.undoRowChange)
+  }
 
   def deleteRow(params: RpcParams): RpcFunctionResult
 

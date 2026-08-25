@@ -11,9 +11,11 @@ import org.finos.vuu.core.table.Columns;
 import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.DefaultColumn;
 import org.finos.vuu.core.table.TableContainer;
+import org.finos.vuu.net.rpc.AllowAllRpcPermissionChecker$;
 import org.finos.vuu.net.rpc.RpcHandler;
 import org.finos.vuu.person.DeleteRecordRpcHandler;
 import org.finos.vuu.person.DeleteRecordRpcHandlerIF;
+import org.finos.vuu.person.EditPersonRecordRpcHandler;
 import org.finos.vuu.person.PersonRpcHandler;
 import org.finos.vuu.person.UpdateRecordRpcHandler;
 import org.finos.vuu.person.auto.AutoMappedPersonProvider;
@@ -21,6 +23,7 @@ import org.finos.vuu.person.auto.EntitySchema;
 import org.finos.vuu.person.datasource.PersonStore;
 import org.finos.vuu.person.manual.PersonProvider;
 import org.finos.vuu.util.RpcHandlerBuilder;
+import org.finos.vuu.util.SessionTableDefBuilder;
 import org.finos.vuu.util.SortSpecBuilder;
 import org.finos.vuu.util.TableDefBuilder;
 
@@ -46,9 +49,41 @@ public class JavaExampleModule extends DefaultModule {
                         (table, vs) -> new PersonProvider(table, new PersonStore()),
                         (table, provider, providerContainer, tableContainer) -> new ViewPortDef(
                                 table.getTableDef().getColumns(),
-                                buildRpcHandler(table)
+                                buildRpcHandler2(table, tableContainer)
                         )
                 )
+                .addTable(new TableDefBuilder()
+                                .name("PersonManualMapped2")
+                                .keyField("id")
+                                .customColumns(new ColumnBuilder()
+                                        .addString("id")
+                                        .addString("name")
+                                        .addInt("account")
+                                        .build())
+                                .defaultSort(new SortSpecBuilder()
+                                        .addAscending(DefaultColumn.CREATED_TIME().name())
+                                        .build())
+                                .build(),
+                        (table, vs) -> new PersonProvider(table, new PersonStore()),
+                        (table, provider, providerContainer, tableContainer) -> new ViewPortDef(
+                                table.getTableDef().getColumns(),
+                                buildRpcHandler3(tableContainer)
+                        )
+                )
+                .addSessionTable(new SessionTableDefBuilder()
+                                .name("export-PersonManualMapped2")
+                                .keyField("Id")
+                                .customColumns(new ColumnBuilder()
+                                        .addString("id")
+                                        .addString("name")
+                                        .addInt("account")
+                                        .build())
+                                .build(),
+                        (table, provider, providerContainer, tableContainer) -> ViewPortDef.createDefault(new ColumnBuilder()
+                                .addString("id")
+                                .addString("name")
+                                .addInt("account")
+                                .build()))
                 .addTable(new TableDefBuilder()
                                 .name("PersonAutoMapped")
                                 .keyField("id")
@@ -74,11 +109,14 @@ public class JavaExampleModule extends DefaultModule {
     private RpcHandler buildRpcHandler2(DataTable table, TableContainer tableContainer) {
         PersonRpcHandler personRpcHandler = new PersonRpcHandler(table);
         DeleteRecordRpcHandlerIF deleteRecordRpcHandler = new DeleteRecordRpcHandler();
-
         UpdateRecordRpcHandler updateRecordRpcHandler = new UpdateRecordRpcHandler(tableContainer);
         updateRecordRpcHandler.registerRpc("UpdateName", personRpcHandler::processUpdateNameRpcRequest);
         updateRecordRpcHandler.registerRpc("GetAccountId", personRpcHandler::processGetAccountIdRpcRequest);
         updateRecordRpcHandler.registerRpc("DeleteRecprd", deleteRecordRpcHandler::deleteRecord);
         return updateRecordRpcHandler;
+    }
+
+    private RpcHandler buildRpcHandler3(TableContainer tableContainer) {
+        return new EditPersonRecordRpcHandler(AllowAllRpcPermissionChecker$.MODULE$, tableContainer);
     }
 }

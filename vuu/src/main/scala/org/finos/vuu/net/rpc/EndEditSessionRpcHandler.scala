@@ -1,9 +1,12 @@
 package org.finos.vuu.net.rpc
 
-import org.finos.vuu.core.table.TableContainer
+trait EndEditSessionRpcHandler() extends RpcHandler {
 
-trait EndEditSessionRpcHandler(using val tableContainer: TableContainer) extends RpcHandler {
-  registerRpc(RpcNames.EndEditSessionRpc, this.endEditSession)
+  registerEndEditSessionRpcs()
+
+  protected final def registerEndEditSessionRpcs(): Unit = {
+    registerRpc(RpcNames.EndEditSessionRpc, this.endEditSession)
+  }
 
   def endEditSession(params: RpcParams): RpcFunctionResult = {
     if (!verifyPermission(params)) {
