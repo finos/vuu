@@ -24,9 +24,17 @@ function inlinePackageCss() {
 }
 
 export default defineConfig({
+  root: "playwright/gallery",
   publicDir: false,
   plugins: [react(), tsconfigPaths(), inlinePackageCss()],
   server: {
     port: 3100,
+  },
+  preview: {
+    port: 3100,
+  },
+  build: {
+    outDir: "dist",
+    emptyOutDir: true,
   },
 });

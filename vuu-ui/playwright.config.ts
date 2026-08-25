@@ -64,7 +64,9 @@ export default defineConfig({
   outputDir: "./playwright/test-results",
   webServer: [
     {
-      command: "npm run playwright:gallery",
+      command: process.env.CI
+        ? "npm run playwright:gallery:serve"
+        : "npm run playwright:gallery",
       url: "http://localhost:3100/playwright/gallery/index.html",
       reuseExistingServer: !process.env.CI,
     },

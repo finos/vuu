@@ -71,6 +71,42 @@ async function generateCoverage() {
   }
 
   await report.generate();
+
+  const reportData = JSON.parse(
+    await fs.readFile(
+      path.resolve(coverageOptions.outputDir, "coverage-report.json"),
+      "utf8",
+    ),
+  );
+  const packages = new Map();
+  for (const file of reportData.files) {
+    const match = file.sourcePath.match(/(?:^|\/)packages\/([^/]+)\//);
+    if (!match) continue;
+    const packageName = match[1];
+    const packageSummary = packages.get(packageName) ?? {
+      statements: { covered: 0, total: 0 },
+      branches: { covered: 0, total: 0 },
+      functions: { covered: 0, total: 0 },
+      lines: { covered: 0, total: 0 },
+    };
+    for (const metric of ["statements", "branches", "functions", "lines"]) {
+      packageSummary[metric].covered += file.summary[metric].covered;
+      packageSummary[metric].total += file.summary[metric].total;
+    }
+    packages.set(packageName, packageSummary);
+  }
+
+  const formatMetric = ({ covered, total }) =>
+    `${total ? ((covered / total) * 100).toFixed(1) : "100.0"}% (${covered}/${total})`;
+  console.log("\n### Coverage by package\n");
+  console.log(
+    "| Package | Statements | Branches | Functions | Lines |\n| --- | ---: | ---: | ---: | ---: |",
+  );
+  for (const [packageName, summary] of [...packages].sort()) {
+    console.log(
+      `| ${packageName} | ${formatMetric(summary.statements)} | ${formatMetric(summary.branches)} | ${formatMetric(summary.functions)} | ${formatMetric(summary.lines)} |`,
+    );
+  }
 }
 
 module.exports = { test, expect, generateCoverage };
