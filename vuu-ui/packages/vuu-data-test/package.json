@@ -18,5 +18,5 @@
     "@vuu-ui/vuu-data-types": "3.2.0",
     "@vuu-ui/vuu-table-types": "3.2.0"
   },
-  "sideEffects": false
+  "sideEffects": true
 }

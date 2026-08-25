@@ -5,6 +5,7 @@ import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 
 import {
+  basketModule,
   LocalDataSourceProvider,
   simulModule,
   testModule,
@@ -16,6 +17,7 @@ import iconsCss from "@vuu-ui/vuu-icons/index.css";
 // side effects are available to showcase stories.
 void simulModule;
 void testModule;
+void basketModule;
 
 for (const css of [themeCss, iconsCss]) {
   const style = document.createElement("style");
