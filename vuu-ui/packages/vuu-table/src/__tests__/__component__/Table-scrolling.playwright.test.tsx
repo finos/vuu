@@ -118,6 +118,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
           await cell.press("End");
 
           cell = table.locateCell(1001, 1);
+          await expect(cell).toBeFocused();
           await expect(cell).toHaveAttribute("tabindex", "0");
           await table.assertRenderedRows({ from: 970, to: 1000 }, 5, 1000);
         });
@@ -136,6 +137,7 @@ test.describe("Table scrolling and keyboard navigation", () => {
           await cell.press("End");
 
           cell = table.locateCell(1001, 1);
+          await expect(cell).toBeFocused();
           await expect(cell).toHaveAttribute("tabindex", "0");
           await table.assertRenderedRows({ from: 970, to: 1000 }, 5, 1000);
         });
