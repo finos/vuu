@@ -38,6 +38,9 @@ test.describe("Chart examples", () => {
     await page.getByRole("radio", { name: "Edit" }).click();
     await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
 
+    await expect
+      .poll(async () => (await chartElement.boundingBox())?.height ?? 0)
+      .toBeLessThan(viewHeight);
     const editHeight = (await chartElement.boundingBox())?.height;
     const editSvgHeight = (await chartElement.locator("svg").boundingBox())
       ?.height;

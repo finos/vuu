@@ -1,5 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const useProductionGallery =
+  process.env.CI || process.env.PLAYWRIGHT_GALLERY === "production";
+const galleryBaseURL = "http://localhost:3100/index.html";
+
 export default defineConfig({
   testDir: "./playwright/tests",
   /* Run tests in files in parallel */
@@ -32,7 +36,7 @@ export default defineConfig({
       testMatch: "**/*.playwright.test.tsx",
       use: {
         ...devices["Desktop Chrome"],
-        baseURL: "http://localhost:3100/playwright/gallery/index.html",
+        baseURL: galleryBaseURL,
         serviceWorkers: "block",
         reuseContext: true,
       },
@@ -43,7 +47,7 @@ export default defineConfig({
       testMatch: "**/*.playwright.test.tsx",
       use: {
         ...devices["Desktop Firefox"],
-        baseURL: "http://localhost:3100/playwright/gallery/index.html",
+        baseURL: galleryBaseURL,
         serviceWorkers: "block",
         reuseContext: true,
       },
@@ -54,7 +58,7 @@ export default defineConfig({
       testMatch: "**/*.playwright.test.tsx",
       use: {
         ...devices["Desktop Safari"],
-        baseURL: "http://localhost:3100/playwright/gallery/index.html",
+        baseURL: galleryBaseURL,
         serviceWorkers: "block",
         reuseContext: true,
       },
@@ -64,10 +68,10 @@ export default defineConfig({
   outputDir: "./playwright/test-results",
   webServer: [
     {
-      command: process.env.CI
+      command: useProductionGallery
         ? "npm run playwright:gallery:serve"
         : "npm run playwright:gallery",
-      url: "http://localhost:3100/playwright/gallery/index.html",
+      url: galleryBaseURL,
       reuseExistingServer: !process.env.CI,
     },
   ],
