@@ -75,7 +75,7 @@ test.describe("ShellLayout", () => {
           "Shell/ShellLayout/SimpleShellCustomPlaceholder",
         );
 
-        await component.getByRole("img", { name: "Create Tab" }).click();
+        await component.getByRole("button", { name: "Create Tab" }).click();
 
         await expect(component.getByRole("tab")).toHaveCount(2);
         await expect(component.getByTestId("custom-placeholder")).toBeVisible();
@@ -104,7 +104,7 @@ test.describe("ShellLayout", () => {
           "Shell/ShellLayout/SimpleShellMultiLayouts",
         );
 
-        await component.getByRole("img", { name: "Create Tab" }).click();
+        await component.getByRole("button", { name: "Create Tab" }).click();
 
         await expect(component.getByRole("tab")).toHaveCount(4);
         await expect(component.getByTestId("custom-placeholder")).toBeVisible();

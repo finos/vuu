@@ -4,9 +4,24 @@ import { createElement, type ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import "@vuu-ui/vuu-theme/index.css";
-import "@vuu-ui/vuu-icons/index.css";
+import {
+  LocalDataSourceProvider,
+  simulModule,
+  testModule,
+} from "@vuu-ui/vuu-data-test";
+import themeCss from "@vuu-ui/vuu-theme/index.css";
+import iconsCss from "@vuu-ui/vuu-icons/index.css";
+
+// Keep the data-test modules in the production bundle so their registration
+// side effects are available to showcase stories.
+void simulModule;
+void testModule;
+
+for (const css of [themeCss, iconsCss]) {
+  const style = document.createElement("style");
+  style.textContent = css;
+  document.head.append(style);
+}
 
 type Story = (props: Record<string, unknown>) => ReactNode;
 type StoryModule = Record<string, Story>;
@@ -21,6 +36,7 @@ declare global {
 
 const stories = import.meta.glob<StoryModule>(
   "../../showcase/src/examples/**/*.examples.{tsx,jsx}",
+  { eager: true },
 );
 const rootElement = document.getElementById("root");
 
@@ -41,7 +57,7 @@ async function resolveStory(storyId: string) {
     (candidate) =>
       storyPath(candidate) === path || storyPath(candidate).endsWith(`/${path}`),
   );
-  const storyModule = file ? await stories[file]() : undefined;
+  const storyModule = file ? stories[file] : undefined;
   return storyModule?.[name];
 }
 
