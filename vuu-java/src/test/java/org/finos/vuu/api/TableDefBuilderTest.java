@@ -1,8 +1,5 @@
-package org.finos.vuu.util;
+package org.finos.vuu.api;
 
-import org.finos.vuu.api.Link;
-import org.finos.vuu.api.TableDef;
-import org.finos.vuu.api.TableVisibility;
 import org.finos.vuu.core.table.Column;
 import org.finos.vuu.core.table.RangeSettings;
 import org.finos.vuu.core.table.SimpleColumn;

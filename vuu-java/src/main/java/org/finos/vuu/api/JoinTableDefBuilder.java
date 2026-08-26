@@ -1,19 +1,11 @@
-package org.finos.vuu.util;
+package org.finos.vuu.api;
 
-import org.finos.vuu.api.Index;
-import org.finos.vuu.api.Indices;
-import org.finos.vuu.api.JoinTableDef;
-import org.finos.vuu.api.JoinTableDefOptions;
-import org.finos.vuu.api.JoinTo;
-import org.finos.vuu.api.Link;
-import org.finos.vuu.api.TableDef;
-import org.finos.vuu.api.TableVisibility;
-import org.finos.vuu.api.VisualLinks;
 import org.finos.vuu.core.filter.type.PermissionFilter;
 import org.finos.vuu.core.table.Column;
 import org.finos.vuu.core.table.RangeSettings;
 import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.net.SortSpec;
+import org.finos.vuu.util.ScalaFunctionConverter;
 import org.finos.vuu.viewport.ViewPort;
 
 import java.util.List;

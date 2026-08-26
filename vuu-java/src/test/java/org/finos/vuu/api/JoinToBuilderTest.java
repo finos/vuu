@@ -1,10 +1,5 @@
-package org.finos.vuu.util;
+package org.finos.vuu.api;
 
-import org.finos.vuu.api.JoinSpec;
-import org.finos.vuu.api.JoinTo;
-import org.finos.vuu.api.JoinType;
-import org.finos.vuu.api.LeftOuterJoin$;
-import org.finos.vuu.api.TableDef;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

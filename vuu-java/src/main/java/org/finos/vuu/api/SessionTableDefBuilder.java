@@ -1,17 +1,11 @@
-package org.finos.vuu.util;
+package org.finos.vuu.api;
 
-import org.finos.vuu.api.Index;
-import org.finos.vuu.api.Indices;
-import org.finos.vuu.api.Link;
-import org.finos.vuu.api.TableDef;
-import org.finos.vuu.api.TableDefOptions;
-import org.finos.vuu.api.TableVisibility;
-import org.finos.vuu.api.VisualLinks;
 import org.finos.vuu.core.filter.type.PermissionFilter;
 import org.finos.vuu.core.table.Column;
 import org.finos.vuu.core.table.RangeSettings;
 import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.net.SortSpec;
+import org.finos.vuu.util.ScalaFunctionConverter;
 import org.finos.vuu.viewport.ViewPort;
 
 import java.util.List;
@@ -22,9 +16,10 @@ import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
 import static org.finos.vuu.util.ScalaCollectionConverter.toScalaSeq;
 
 /**
- * Builder for {@link TableDef}.
+ * Builder for {@link SessionTableDef}.
  */
-public class TableDefBuilder {
+public class SessionTableDefBuilder  {
+
     private String name;
     private String keyField;
     private Column[] customColumns = new Column[0];
@@ -36,12 +31,11 @@ public class TableDefBuilder {
      * @param name table name
      * @return this builder
      */
-    public TableDefBuilder name(String name) {
+    public SessionTableDefBuilder name(String name) {
         Objects.requireNonNull(name);
         this.name = name;
         return this;
     }
-
 
     /**
      * Sets the primary key field for the table.
@@ -49,7 +43,7 @@ public class TableDefBuilder {
      * @param keyField the field that uniquely identifies records
      * @return this builder
      */
-    public TableDefBuilder keyField(String keyField) {
+    public SessionTableDefBuilder keyField(String keyField) {
         Objects.requireNonNull(keyField);
         this.keyField = keyField;
         return this;
@@ -61,7 +55,7 @@ public class TableDefBuilder {
      * @param customColumns columns
      * @return this builder
      */
-    public TableDefBuilder customColumns(Column[] customColumns) {
+    public SessionTableDefBuilder customColumns(Column[] customColumns) {
         Objects.requireNonNull(customColumns);
         this.customColumns = customColumns;
         return this;
@@ -73,7 +67,7 @@ public class TableDefBuilder {
      * @param joinFields column names
      * @return this builder
      */
-    public TableDefBuilder joinFields(List<String> joinFields) {
+    public SessionTableDefBuilder joinFields(List<String> joinFields) {
         Objects.requireNonNull(joinFields);
         this.tableDefOptions = (TableDefOptions) tableDefOptions.withJoinFields(toScalaSeq(joinFields));
         return this;
@@ -85,7 +79,7 @@ public class TableDefBuilder {
      * @param autoSubscribe {@code true} to enable autoSubscribe
      * @return this builder
      */
-    public TableDefBuilder autoSubscribe(boolean autoSubscribe) {
+    public SessionTableDefBuilder autoSubscribe(boolean autoSubscribe) {
         this.tableDefOptions = tableDefOptions.withAutoSubscribe(autoSubscribe);
         return this;
     }
@@ -96,7 +90,7 @@ public class TableDefBuilder {
      * @param links visual link definitions
      * @return this builder
      */
-    public TableDefBuilder links(List<Link> links) {
+    public SessionTableDefBuilder links(List<Link> links) {
         Objects.requireNonNull(links);
         var visualLinks = VisualLinks.apply(toScala(links));
         this.tableDefOptions = (TableDefOptions) tableDefOptions.withLinks(visualLinks);
@@ -109,7 +103,7 @@ public class TableDefBuilder {
      * @param indexFields the index field names
      * @return this builder
      */
-    public TableDefBuilder indexFields(List<String> indexFields) {
+    public SessionTableDefBuilder indexFields(List<String> indexFields) {
         Objects.requireNonNull(indexFields);
         var indices = Indices.apply(toScalaSeq(indexFields.stream().map(Index::apply).toList()));
         this.tableDefOptions = (TableDefOptions) tableDefOptions.withIndices(indices);
@@ -122,7 +116,7 @@ public class TableDefBuilder {
      * @param visibility visibility
      * @return this builder
      */
-    public TableDefBuilder visibility(TableVisibility visibility) {
+    public SessionTableDefBuilder visibility(TableVisibility visibility) {
         Objects.requireNonNull(visibility);
         this.tableDefOptions = (TableDefOptions) tableDefOptions.withVisibility(visibility);
         return this;
@@ -133,7 +127,7 @@ public class TableDefBuilder {
      *
      * @return this builder
      */
-    public TableDefBuilder withPrivateVisibility() {
+    public SessionTableDefBuilder withPrivateVisibility() {
         return visibility(TableVisibility.PRIVATE());
     }
 
@@ -142,7 +136,7 @@ public class TableDefBuilder {
      *
      * @return this builder
      */
-    public TableDefBuilder withPublicVisibility() {
+    public SessionTableDefBuilder withPublicVisibility() {
         return visibility(TableVisibility.PUBLIC());
     }
 
@@ -152,7 +146,7 @@ public class TableDefBuilder {
      * @param includeDefaultColumns {@code true} to include default columns
      * @return this builder
      */
-    public TableDefBuilder includeDefaultColumns(boolean includeDefaultColumns) {
+    public SessionTableDefBuilder includeDefaultColumns(boolean includeDefaultColumns) {
         this.tableDefOptions = tableDefOptions.withIncludeDefaultColumns(includeDefaultColumns);
         return this;
     }
@@ -163,7 +157,7 @@ public class TableDefBuilder {
      * @param isEditable {@code true} to allow edit mode
      * @return this builder
      */
-    public TableDefBuilder isEditable(boolean isEditable) {
+    public SessionTableDefBuilder isEditable(boolean isEditable) {
         this.tableDefOptions = (TableDefOptions) tableDefOptions.withIsEditable(isEditable);
         return this;
     }
@@ -174,7 +168,7 @@ public class TableDefBuilder {
      * @param permissionFunction permission filter
      * @return this builder
      */
-    public TableDefBuilder permissionFunction(BiFunction<ViewPort, TableContainer, PermissionFilter> permissionFunction) {
+    public SessionTableDefBuilder permissionFunction(BiFunction<ViewPort, TableContainer, PermissionFilter> permissionFunction) {
         Objects.requireNonNull(permissionFunction);
         var function2 = ScalaFunctionConverter.toScala(permissionFunction);
         this.tableDefOptions = (TableDefOptions) tableDefOptions.withPermissionFunction(function2);
@@ -187,7 +181,7 @@ public class TableDefBuilder {
      * @param defaultSort the default SortSpec
      * @return this builder
      */
-    public TableDefBuilder defaultSort(SortSpec defaultSort) {
+    public SessionTableDefBuilder defaultSort(SortSpec defaultSort) {
         Objects.requireNonNull(defaultSort);
         this.tableDefOptions = (TableDefOptions) tableDefOptions.withDefaultSort(defaultSort);
         return this;
@@ -199,21 +193,16 @@ public class TableDefBuilder {
      * @param rangeSettings the rangeSettings
      * @return this builder
      */
-    public TableDefBuilder rangeSettings(RangeSettings rangeSettings) {
+    public SessionTableDefBuilder rangeSettings(RangeSettings rangeSettings) {
         Objects.requireNonNull(rangeSettings);
         this.tableDefOptions = (TableDefOptions) tableDefOptions.withRangeSettings(rangeSettings);
         return this;
     }
 
-    /**
-     * Builds {@link TableDef}.
-     *
-     * @return {@link TableDef}
-     */
-    public TableDef build() {
+    public SessionTableDef build() {
         Objects.requireNonNull(name);
         Objects.requireNonNull(keyField);
-        return new TableDef(
+        return new SessionTableDef(
                 name,
                 keyField,
                 customColumns,

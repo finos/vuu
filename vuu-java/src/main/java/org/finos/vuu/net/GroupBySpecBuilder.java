@@ -1,7 +1,4 @@
-package org.finos.vuu.util;
-
-import org.finos.vuu.net.AggregationSpec;
-import org.finos.vuu.net.GroupBySpec;
+package org.finos.vuu.net;
 
 import java.util.List;
 

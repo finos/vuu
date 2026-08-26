@@ -1,4 +1,4 @@
-package org.finos.vuu.util;
+package org.finos.vuu.core.module.notifications;
 
 import org.finos.toolbox.lifecycle.LifecycleContainer;
 import org.finos.toolbox.time.Clock;
@@ -7,7 +7,6 @@ import org.finos.vuu.core.AbstractVuuServer;
 import org.finos.vuu.core.filter.type.PermissionFilter;
 import org.finos.vuu.core.module.TableDefContainer;
 import org.finos.vuu.core.module.ViewServerModule;
-import org.finos.vuu.core.module.notifications.NotificationModule$;
 import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.provider.Provider;

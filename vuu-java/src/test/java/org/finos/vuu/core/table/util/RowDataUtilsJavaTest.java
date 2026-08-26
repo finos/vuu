@@ -1,11 +1,11 @@
-package org.finos.vuu.util;
+package org.finos.vuu.core.table.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.finos.vuu.core.table.RowData;
 import org.finos.vuu.core.table.RowWithData;
-import org.finos.vuu.core.table.util.RowDataUtils;
+import org.finos.vuu.util.ScalaCollectionConverter;
 import org.junit.jupiter.api.Test;
 import scala.runtime.RichLong;
 

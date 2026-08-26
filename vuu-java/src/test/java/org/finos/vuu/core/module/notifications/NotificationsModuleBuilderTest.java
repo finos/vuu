@@ -1,4 +1,4 @@
-package org.finos.vuu.util;
+package org.finos.vuu.core.module.notifications;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

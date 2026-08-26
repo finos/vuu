@@ -1,8 +1,6 @@
-package org.finos.vuu.util;
+package org.finos.vuu.net;
 
 import org.finos.vuu.core.sort.SortDirection;
-import org.finos.vuu.net.SortDef;
-import org.finos.vuu.net.SortSpec;
 
 import java.util.ArrayList;
 import java.util.List;

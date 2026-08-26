@@ -1,10 +1,4 @@
-package org.finos.vuu.util;
-
-import org.finos.vuu.api.JoinSpec;
-import org.finos.vuu.api.JoinTo;
-import org.finos.vuu.api.JoinType;
-import org.finos.vuu.api.LeftOuterJoin$;
-import org.finos.vuu.api.TableDef;
+package org.finos.vuu.api;
 
 import java.util.Objects;
 

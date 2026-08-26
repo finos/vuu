@@ -1,7 +1,5 @@
-package org.finos.vuu.util;
+package org.finos.vuu.net;
 
-import org.finos.vuu.net.AggregationSpec;
-import org.finos.vuu.net.GroupBySpec;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

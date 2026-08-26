@@ -22,10 +22,10 @@ import org.finos.vuu.person.auto.AutoMappedPersonProvider;
 import org.finos.vuu.person.auto.EntitySchema;
 import org.finos.vuu.person.datasource.PersonStore;
 import org.finos.vuu.person.manual.PersonProvider;
-import org.finos.vuu.util.RpcHandlerBuilder;
-import org.finos.vuu.util.SessionTableDefBuilder;
-import org.finos.vuu.util.SortSpecBuilder;
-import org.finos.vuu.util.TableDefBuilder;
+import org.finos.vuu.net.rpc.RpcHandlerBuilder;
+import org.finos.vuu.api.SessionTableDefBuilder;
+import org.finos.vuu.net.SortSpecBuilder;
+import org.finos.vuu.api.TableDefBuilder;
 
 public class JavaExampleModule extends DefaultModule {
 
