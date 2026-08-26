@@ -65,11 +65,6 @@ public class UpdateRecordRpcHandler extends DefaultRpcHandlerImpl implements Edi
     }
 
     @Override
-    public RpcFunctionResult endSession(RpcParams params) {
-        return new RpcFunctionSuccess();
-    }
-
-    @Override
     public boolean verifyPermission(RpcParams params) {
         return true;
     }

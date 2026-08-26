@@ -555,7 +555,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
 
 class DummyCreateSessionTableRpcHandler()(using rpcPermissionChecker: RpcPermissionChecker, tableContainer: TableContainer) extends CreateSessionTableRpcHandler(rpcPermissionChecker, tableContainer) {}
 
-class DummyEndEditSessionHandler(implicit tableContainer: TableContainer) extends EndEditSessionRpcHandler {
+class DummyEndEditSessionHandler(implicit tableContainer: TableContainer) extends EndEditSessionRpcHandler(tableContainer) {
 
   override protected def verifyPermission(params: RpcParams): Boolean = ???
 
