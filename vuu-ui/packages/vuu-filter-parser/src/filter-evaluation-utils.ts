@@ -91,6 +91,8 @@ export function filterPredicate(
         return testDataRowInclude(columnMapOrFilter);
       case "=":
         return testDataRowEQ(columnMapOrFilter);
+      case "!=":
+        return testDataRowNE(columnMapOrFilter);
       case ">":
         return testDataRowGT(columnMapOrFilter);
       case ">=":
@@ -120,6 +122,8 @@ export function filterPredicate(
         return testInclude(columnMapOrFilter, filter);
       case "=":
         return testEQ(columnMapOrFilter, filter);
+      case "!=":
+        return testNE(columnMapOrFilter, filter);
       case ">":
         return testGT(columnMapOrFilter, filter);
       case ">=":
@@ -173,10 +177,27 @@ const testEQ = (
   }
 };
 
+const testNE = (
+  columnMap: ColumnMap,
+  filter: SingleValueFilterClause,
+): FilterPredicate => {
+  if (isScaledDecimalFilterClause(filter)) {
+    return (row) => row[columnMap[filter.column]] !== filter.value.asLong;
+  } else {
+    return (row) => row[columnMap[filter.column]] !== filter.value;
+  }
+};
+
 const testDataRowEQ = (
   filter: SingleValueFilterClause,
 ): DataRowFilterPredicate => {
   return (row) => row[filter.column] === filter.value;
+};
+
+const testDataRowNE = (
+  filter: SingleValueFilterClause,
+): DataRowFilterPredicate => {
+  return (row) => row[filter.column] !== filter.value;
 };
 
 const testGT = (

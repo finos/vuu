@@ -189,7 +189,7 @@ export const useCsvUpload = ({
           return false;
         }
         try {
-          const payload = { ...rowData, rowNum, vuuMsg };
+          const payload = vuuMsg ? { vuuRowNum: rowNum, vuuMsg } : { ...rowData, vuuRowNum: rowNum, vuuMsg };
           const result = await editSession.addRow(payload);
           if (isRpcError(result)) {
             throw Error(result.errorMessage);
@@ -211,7 +211,7 @@ export const useCsvUpload = ({
   );
 
   const beginEditSession = useCallback(async () => {
-    const sessionDataSource = await editSession.begin("Empty");
+    const sessionDataSource = await editSession.begin("Empty", "import");
 
     const sessionVuuTable = sessionDataSource?.table;
     if (
