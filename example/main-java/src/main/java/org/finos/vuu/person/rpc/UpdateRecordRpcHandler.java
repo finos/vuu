@@ -4,16 +4,17 @@ import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.net.rpc.DefaultRpcHandlerImpl;
 import org.finos.vuu.net.rpc.EditSessionRpcHandler;
 import org.finos.vuu.net.rpc.EndEditSessionRpcHandler;
+import org.finos.vuu.net.rpc.EndEditSessionRpcHandlerImpl;
 import org.finos.vuu.net.rpc.RpcFunctionResult;
 import org.finos.vuu.net.rpc.RpcFunctionSuccess;
 import org.finos.vuu.net.rpc.RpcParams;
 
 // An example of Java implementation of RpcHandler
-public class UpdateRecordRpcHandler extends DefaultRpcHandlerImpl implements EditSessionRpcHandler, EndEditSessionRpcHandler {
+public class UpdateRecordRpcHandler extends EndEditSessionRpcHandlerImpl implements EditSessionRpcHandler {
     private final TableContainer tableContainer;
 
     public UpdateRecordRpcHandler(TableContainer tableContainer) {
-        super();
+        super(tableContainer);
         registerEditTableRpcs();
         registerEndEditSessionRpcs();
         this.tableContainer = tableContainer;
