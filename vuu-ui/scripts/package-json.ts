@@ -6,7 +6,7 @@ type PackageExports = {
   ".": {
     import: string;
   };
-  style?: {
+  ['./style']?: {
     import: string;
   };
 };
@@ -55,7 +55,7 @@ export async function writePackageJSON(
     };
 
     if (style) {
-      exports.style = { import: style };
+      exports['./style'] = { import: style };
     }
 
     const newPackage: Json = {
