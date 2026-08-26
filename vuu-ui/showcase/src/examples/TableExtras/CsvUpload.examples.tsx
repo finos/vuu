@@ -1,5 +1,6 @@
 import { CsvUpload } from "@vuu-ui/vuu-table-extras";
 import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
+import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@salt-ds/core";
 
@@ -90,4 +91,56 @@ const createInstrumentsMockDataSource = (): DataSource =>
 export const CsvUploadWithInstrumentsSchema = () => {
   const dataSource = useMemo(() => createInstrumentsMockDataSource(), []);
   return <CsvUpload dataSource={dataSource} />;
+};
+const rowDefaultsSchema: TableSchema = {
+  columns: [
+    { name: "id", serverDataType: "string" },
+    { name: "name", serverDataType: "string" },
+  ],
+  key: "id",
+  table: { module: "TEST", table: "items" },
+};
+
+export const CsvUploadWithRowDefaults = () => {
+  const [capturedRows, setCapturedRows] = useState<
+    Record<string, VuuRowDataItemType>[]
+  >([]);
+
+  const dataSource = useMemo(() => {
+    const sessionDs = {
+      table: { module: "TEST", table: "session-items" },
+      tableSchema: rowDefaultsSchema,
+      columns: ["id"],
+      addRow: async (rowData: Record<string, VuuRowDataItemType>) => {
+        setCapturedRows((prev) => [...prev, rowData]);
+        return { data: undefined, type: "SUCCESS_RESULT" as const };
+      },
+      endEditSession: async () => void 0,
+    };
+    return {
+      table: { module: "TEST", table: "items" },
+      tableSchema: rowDefaultsSchema,
+      createSessionDataSource: async () => sessionDs as unknown as DataSource,
+      subscribe: async () => void 0,
+      unsubscribe: () => void 0,
+    } as unknown as DataSource;
+  }, []);
+
+  return (
+    <div>
+      <CsvUpload
+        dataSource={dataSource}
+        rowDefaults={{ name: "Default Name" }}
+      />
+      {capturedRows.length > 0 && (
+        <ul data-testid="captured-rows">
+          {capturedRows.map((row, i) => (
+            <li key={i} data-testid={`captured-row-${i}`}>
+              {JSON.stringify(row)}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 };

@@ -11,6 +11,7 @@ import {
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { type ReactNode, useCallback, useState } from "react";
+import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type { EditSession } from "@vuu-ui/vuu-data-editing";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
@@ -81,6 +82,7 @@ export interface CsvUploadProps {
   open?: boolean;
   parseOptions?: CsvParseOptions;
   importMode?: "direct" | "preview";
+  rowDefaults?: Record<string, VuuRowDataItemType>;
 }
 
 const classBase = "vuuCsvUpload";
