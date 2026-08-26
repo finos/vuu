@@ -1,6 +1,6 @@
 package org.finos.vuu.net.rpc
 
-trait EndEditSessionRpcHandler() extends RpcHandler {
+trait EndEditSessionRpcHandler extends RpcHandler {
 
   registerEndEditSessionRpcs()
 
