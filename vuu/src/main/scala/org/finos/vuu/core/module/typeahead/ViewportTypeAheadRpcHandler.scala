@@ -3,7 +3,7 @@ package org.finos.vuu.core.module.typeahead
 import org.finos.vuu.net.rpc.{RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams}
 import org.finos.vuu.viewport.ViewPort
 
-trait ViewportTypeAheadRpcHandler() extends RpcHandler {
+trait ViewportTypeAheadRpcHandler extends RpcHandler {
 
   registerRpc(RpcNames.UniqueFieldValuesRpc, params => processGetUniqueFieldValuesRequest(params))
   registerRpc(RpcNames.UniqueFieldValuesStartWithRpc, params => processGetUniqueFieldValuesStartWithRequest(params))
