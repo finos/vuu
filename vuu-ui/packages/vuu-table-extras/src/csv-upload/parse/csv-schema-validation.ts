@@ -13,7 +13,7 @@ import type {
   CsvParseError,
 } from "./csv-errors";
 import type { CsvParseResult } from "./csv-parse";
-import { CSV_FIRST_DATA_ROW_NUMBER } from "./csv-constants";
+import { CSV_FIRST_DATA_ROW_NUMBER, MAX_ROWS_IN_CSV } from "./csv-constants";
 import type { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
 import type { DataValueTypeSimple } from "@vuu-ui/vuu-data-types";
 
@@ -36,8 +36,6 @@ export type CsvValidationResult = {
 export type CsvValidationOptions = {
   maxRows?: number;
 };
-
-const MAX_ROWS_IN_CSV = 25000;
 
 export const validateCsvAgainstSchema = (
   parsed: CsvParseResult,
@@ -65,7 +63,7 @@ export const validateCsvAgainstSchema = (
         errorState,
         column,
         CsvValidationErrorEnum.UNKNOWN_COLUMN,
-        "Column is not present in table schema.",
+        `Column ${column} is not present in table schema.`,
         column,
       );
     }

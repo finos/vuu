@@ -112,7 +112,8 @@ export function filterPredicate(
       case "or":
         return testDataRowOR(columnMapOrFilter as MultiClauseFilter<"or">);
       default:
-        console.log(`unrecognized filter type ${columnMapOrFilter.op}`);
+        const unreachable: never = columnMapOrFilter;
+        console.log('unrecognized filter type', unreachable);
         return () => true;
     }
   } else if (filter) {
@@ -143,7 +144,8 @@ export function filterPredicate(
       case "or":
         return testOR(columnMapOrFilter, filter as MultiClauseFilter<"or">);
       default:
-        console.log(`unrecognized filter type ${filter.op}`);
+        const unreachable: never = filter;
+        console.log('unrecognized filter type', unreachable);
         return () => true;
     }
   } else {
