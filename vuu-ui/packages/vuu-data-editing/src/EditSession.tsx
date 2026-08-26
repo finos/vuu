@@ -86,6 +86,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   #cellCommitRevisions = new Map<string, Map<string, number>>();
   #deleteMode: DeleteRowMode;
   #editSessionApi: EditSessionApi;
+  #rowDefaults: Record<string, VuuRowDataItemType>;
   #sourceTableDataSource?: EditApi;
   #sessionDataSource?: DataSource;
   #newRowState: NewRowState = {
@@ -103,11 +104,13 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     dataSource: EditApi,
     deleteMode: DeleteRowMode = "soft",
     editSessionApi: EditSessionApi = "createSessionDataSource",
+    rowDefaults: Record<string, VuuRowDataItemType> = {},
   ) {
     super();
     this.#sourceTableDataSource = dataSource;
     this.#deleteMode = deleteMode;
     this.#editSessionApi = editSessionApi;
+    this.#rowDefaults = rowDefaults;
   }
 
   get editCount() {
@@ -356,7 +359,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       throw Error("[EditSession] datasource does not support adding rows");
     }
 
-    const response = await addRow.call(this.dataSource, rowData);
+    const response = await addRow.call(this.dataSource, { ...this.#rowDefaults, ...rowData });
     if (response === undefined) {
       throw Error(
         "[EditSession] datasource returned no response when adding row",

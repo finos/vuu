@@ -5,6 +5,7 @@ import {
   ClosedCsvUpload,
   CsvUploadCustomTitle,
   CsvUploadWithInstrumentsSchema,
+  CsvUploadWithRowDefaults,
 } from "../../../../../../showcase/src/examples/TableExtras/CsvUpload.examples";
 import { TestTableEmptyWithUpload } from "../../../../../../showcase/src/examples/Table/Editing.examples";
 
@@ -98,6 +99,57 @@ test.describe("Given a CsvUpload with the instruments schema", () => {
       "Column name is not present in table schema.",
     );
     await expect(page.locator("button", { hasText: "Import" })).toBeDisabled();
+  });
+});
+
+test.describe("Given a CsvUpload with rowDefaults", () => {
+  test("WHEN a CSV is imported THEN rowDefaults are merged into rows for absent columns", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<CsvUploadWithRowDefaults />);
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "id-only.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from("id\nrow-001\n"),
+    });
+
+    await expect(
+      page.locator("button", { hasText: "Import" }),
+    ).toBeEnabled({ timeout: 5000 });
+    await page.locator("button", { hasText: "Import" }).click();
+
+    await expect(page.locator('[data-testid="captured-row-0"]')).toContainText(
+      '"name":"Default Name"',
+      { timeout: 5000 },
+    );
+    await expect(page.locator('[data-testid="captured-row-0"]')).toContainText(
+      '"id":"row-001"',
+    );
+  });
+
+  test("WHEN a CSV column value is present THEN it takes precedence over rowDefaults", async ({
+    mount,
+    page,
+  }) => {
+    await mount(<CsvUploadWithRowDefaults />);
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "both-cols.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from("id,name\nrow-001,Explicit Name\n"),
+    });
+
+    await expect(
+      page.locator("button", { hasText: "Import" }),
+    ).toBeEnabled({ timeout: 5000 });
+    await page.locator("button", { hasText: "Import" }).click();
+
+    await expect(page.locator('[data-testid="captured-row-0"]')).toContainText(
+      '"name":"Explicit Name"',
+      { timeout: 5000 },
+    );
   });
 });
 

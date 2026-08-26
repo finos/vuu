@@ -37,6 +37,7 @@ export interface CsvUploadHookProps {
   onPreview?: (result: CsvUploadPreviewResult) => void;
   onProcessingStarted?: () => void;
   parseOptions?: CsvParseOptions;
+  rowDefaults?: Record<string, VuuRowDataItemType>;
 }
 
 export type UseCsvUploadReturn = {
@@ -66,6 +67,7 @@ export const useCsvUpload = ({
   onProcessingStarted,
   maxRows,
   parseOptions,
+  rowDefaults,
 }: CsvUploadHookProps): UseCsvUploadReturn => {
   const [validation, setValidation] = useState<
     CsvValidationResult | undefined
@@ -75,7 +77,12 @@ export const useCsvUpload = ({
   >();
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
-  const editSession = useMemo(() => new EditSession(dataSource), [dataSource]);
+  const editSession = useMemo(
+    () => new EditSession(dataSource, "soft", "createSessionDataSource", rowDefaults),
+    // rowDefaults is intentionally excluded: defaults are fixed at session creation
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dataSource],
+  );
   const ownsEditSessionRef = useRef(true);
   const operationIdRef = useRef(0);
   const processingPromiseRef = useRef<Promise<void> | undefined>(undefined);
