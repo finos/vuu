@@ -1,6 +1,8 @@
 package org.finos.vuu.net.rpc
 
-trait EndEditSessionRpcHandler extends RpcHandler {
+import org.finos.vuu.core.table.TableContainer
+
+trait EndEditSessionRpcHandler(tableContainer: TableContainer) extends RpcHandler {
 
   registerEndEditSessionRpcs()
 
@@ -9,6 +11,18 @@ trait EndEditSessionRpcHandler extends RpcHandler {
   }
 
   def endEditSession(params: RpcParams): RpcFunctionResult = {
+    params.namedParams.get("save") match {
+      case Some(true) =>
+        val result = saveSessionData(params)
+        endSession(params)
+        result
+      case _ =>
+        endSession(params)
+        RpcFunctionSuccess(None)
+    }
+  }
+
+  protected def saveSessionData(params: RpcParams): RpcFunctionResult = {
     if (!verifyPermission(params)) {
       logger.warn(s"Failed to end edit session in viewport ${params.viewPort.id} in session ${params.ctx.session.sessionId}. No permission.")
       return new RpcFunctionFailure(s"Unable to end edit session. No permission.")
@@ -32,4 +46,9 @@ trait EndEditSessionRpcHandler extends RpcHandler {
   protected def validateData(params: RpcParams): Boolean
 
   protected def submit(params: RpcParams): Boolean
+
+  protected def endSession(params: RpcParams): Unit = {
+    logger.debug(s"Ended session successfully. Removing session table ${params.viewPort.table.name} for viewport ${params.viewPort.id} in session ${params.ctx.session.sessionId}")
+    tableContainer.removeSessionTable(params.ctx.session, params.viewPort.table.name)
+  }
 }
