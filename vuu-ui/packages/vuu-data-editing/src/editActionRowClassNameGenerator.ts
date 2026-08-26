@@ -4,7 +4,7 @@ import { registerComponent } from "@vuu-ui/vuu-utils";
 export const EDIT_ACTION_ROW_CLASS_NAME_GENERATOR = "vuu-edit-actions";
 
 export const editActionRowClassNameGenerator = (dataRow: DataRow) => {
-  switch (dataRow.vuu_action) {
+  switch (dataRow.vuuAction) {
     case "addRow":
       return "vuuTableRow-inserted";
     case "deleteRow":

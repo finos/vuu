@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { editActionRowClassNameGenerator } from "../src/editActionRowClassNameGenerator";
 import { isEditRowReadOnly } from "../src/edit-utils";
 
-const dataRow = (vuu_action: string): DataRow => ({ vuu_action }) as DataRow;
+const dataRow = (vuuAction: string): DataRow => ({ vuuAction }) as DataRow;
 
 describe("editActionRowClassNameGenerator", () => {
   it.each([

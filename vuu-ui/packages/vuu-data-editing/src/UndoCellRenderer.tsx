@@ -47,7 +47,7 @@ export const UndoCellRenderer = ({
     renderer?.componentProps as UndoCellRendererComponentProps | undefined,
   );
   const tooltipContent = getUndoTooltipContent(
-    dataRow.vuu_action,
+    dataRow.vuuAction,
   );
 
   if (tooltipContent === undefined) return null;

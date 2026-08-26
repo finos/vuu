@@ -257,7 +257,7 @@ const EditTableTemplate = ({
                       : { ...col, editable: true },
             ).concat({
               hidden: showInlineAddRow,
-              name: "vuu_action",
+              name: "vuuAction",
             } as ColumnDescriptor),
         columnDefaultWidth: 150,
         rowClassNameGenerators,
@@ -418,7 +418,7 @@ const EditableInstrumentsTemplate = ({
   );
 
   const isRowSelectable = useCallback(
-    (dataRow: DataRow) => dataRow.vuu_action !== "deleteRow",
+    (dataRow: DataRow) => dataRow.vuuAction !== "deleteRow",
     [],
   );
 
@@ -438,7 +438,7 @@ const EditableInstrumentsTemplate = ({
                 : { ...col, editable: true },
             ).concat(
               {
-                name: "vuu_action",
+                name: "vuuAction",
                 hidden: true,
               },
               UNDO_DELETE_COLUMN),
@@ -669,7 +669,7 @@ const EditableTestTableTemplate = ({
   );
 
   const isRowSelectable = useCallback(
-    (dataRow: DataRow) => dataRow.vuu_action !== "deleteRow",
+    (dataRow: DataRow) => dataRow.vuuAction !== "deleteRow",
     [],
   );
 
@@ -682,7 +682,7 @@ const EditableTestTableTemplate = ({
           tableSchema.columns.map<ColumnDescriptor>((column) => ({
             ...column,
             editable: true,
-          })).concat({ hidden: true, name: "vuu_action" }, UNDO_DELETE_COLUMN),
+          })).concat({ hidden: true, name: "vuuAction" }, UNDO_DELETE_COLUMN),
       columnDefaultWidth: 150,
       rowClassNameGenerators,
       rowSeparators: true,
