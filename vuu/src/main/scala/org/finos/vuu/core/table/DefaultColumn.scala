@@ -10,6 +10,7 @@ object DefaultColumn {
 
   val CREATED_TIME: DefaultColumn = DefaultColumn.CreatedTime
   val LAST_UPDATED_TIME: DefaultColumn = DefaultColumn.LastUpdatedTime
+  val VUU_MESSAGE: DefaultColumn = DefaultColumn.MSG
 
   private val allDefaults = DefaultColumn.values
 
