@@ -1,4 +1,4 @@
-package org.finos.vuu.person;
+package org.finos.vuu.person.rpc;
 
 import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.net.rpc.RpcFunctionResult;

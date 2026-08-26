@@ -1,4 +1,4 @@
-package org.finos.vuu.person;
+package org.finos.vuu.person.rpc;
 
 import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.net.rpc.CreateSessionTableRpcHandlerImpl;
