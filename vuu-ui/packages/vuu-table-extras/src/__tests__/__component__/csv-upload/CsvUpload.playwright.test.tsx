@@ -87,6 +87,17 @@ test.describe("Given a CsvUpload with the instruments schema", () => {
     await expect(page.locator(".vuuCsvUpload-dropZone")).toContainText(
       "Your file contains errors",
     );
+    const errorItems = page.locator(".vuuCsvUpload-errorItem");
+    await expect(errorItems).toHaveCount(3);
+    await expect(errorItems.nth(0)).toHaveText(
+      "CSV must include key column 'isin'.",
+    );
+    await expect(errorItems.nth(1)).toHaveText(
+      "Column symbol is not present in table schema.",
+    );
+    await expect(errorItems.nth(2)).toHaveText(
+      "Column name is not present in table schema.",
+    );
     await expect(page.locator("button", { hasText: "Import" })).toBeDisabled();
   });
 });

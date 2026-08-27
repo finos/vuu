@@ -2,6 +2,7 @@ import type {
   CopyOption,
   DataSource,
   DataSourceBase,
+  SessionType,
   DataSourceCallbackMessage,
   DataSourceConstructorProps,
   DataSourceStatus,
@@ -686,11 +687,12 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
   async createSessionDataSource(
     copyOption: CopyOption,
+    sessionType: SessionType = "edit",
   ): Promise<VuuDataSource | undefined> {
     const rpcResponse = await this?.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "createSessionTable",
-      params: { copyOption },
+      params: { copyOption, sessionType },
     });
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };

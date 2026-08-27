@@ -628,6 +628,7 @@ export declare type DeleteSelectedRowsRpcServiceRequest = {
  */
 export declare type CreateSessionTableParams = {
   copyOption: "All" | "Empty" | "Selected";
+  sessionType?: "edit" | "import" | "export";
 };
 export declare type CreateSessionTableRpcServiceRequest = {
   context: ViewportRpcContext;

@@ -628,6 +628,16 @@ export class ArrayDataSource
       filterSpec: { filterStruct },
     } = combineFilters(this._config);
     if (filterStruct) {
+      // When a dataMap exists use actual raw-data positions so the predicate
+      // remains correct after processNewColumns rebuilds #columnMap.
+      if (this.dataMap) {
+        const { count: offset } = metadataKeys;
+        const actualColumnMap: ColumnMap = {};
+        for (const [col, idx] of Object.entries(this.dataMap)) {
+          actualColumnMap[col] = offset + (idx as number);
+        }
+        return filterPredicate(actualColumnMap, filterStruct);
+      }
       return filterPredicate(this.#columnMap, filterStruct);
     } else {
       throw Error("filter must include filterStruct");

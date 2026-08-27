@@ -585,6 +585,9 @@ export declare type DataSourceSuspenseProps = {
 /** Controls which source rows are copied into a newly created session table. */
 export declare type CopyOption = "All" | "Empty" | "Selected";
 
+/** Controls the intended purpose of a created session table. */
+export declare type SessionType = "edit" | "import" | "export";
+
 /**
  * Wire-level values used by the legacy beginEditSession menu/server service.
  * Client edit lifecycles use CopyOption with createSessionDataSource instead.
@@ -618,6 +621,7 @@ export interface EditApi<
    */
   createSessionDataSource?: (
     copyOption: CopyOption,
+    sessionType?: SessionType,
   ) => Promise<DataSource<T> | undefined>;
   /**
    * Legacy session creation API. Prefer createSessionDataSource for new servers.

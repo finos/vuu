@@ -307,7 +307,7 @@ describe("createSessionDataSource", () => {
     data: { table: { module: "TEST", table: "session-xyz" } },
   };
 
-  it("dispatches createSessionTable RPC with copyOption 'All'", async () => {
+  it("dispatches createSessionTable RPC with copyOption 'All' and default sessionType 'edit'", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
     await ds.createSessionDataSource?.("All");
@@ -315,12 +315,12 @@ describe("createSessionDataSource", () => {
       expect.objectContaining({
         type: "RPC_REQUEST",
         rpcName: "createSessionTable",
-        params: { copyOption: "All" },
+        params: { copyOption: "All", sessionType: "edit" },
       }),
     );
   });
 
-  it("dispatches createSessionTable RPC with copyOption 'Selected'", async () => {
+  it("dispatches createSessionTable RPC with copyOption 'Selected' and default sessionType 'edit'", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
     await ds.createSessionDataSource?.("Selected");
@@ -328,12 +328,12 @@ describe("createSessionDataSource", () => {
       expect.objectContaining({
         type: "RPC_REQUEST",
         rpcName: "createSessionTable",
-        params: { copyOption: "Selected" },
+        params: { copyOption: "Selected", sessionType: "edit" },
       }),
     );
   });
 
-  it("dispatches createSessionTable RPC with copyOption 'Empty'", async () => {
+  it("dispatches createSessionTable RPC with copyOption 'Empty' and default sessionType 'edit'", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
     await ds.createSessionDataSource?.("Empty");
@@ -341,7 +341,33 @@ describe("createSessionDataSource", () => {
       expect.objectContaining({
         type: "RPC_REQUEST",
         rpcName: "createSessionTable",
-        params: { copyOption: "Empty" },
+        params: { copyOption: "Empty", sessionType: "edit" },
+      }),
+    );
+  });
+
+  it("passes sessionType 'import' to the RPC request", async () => {
+    const ds = createDataSource();
+    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
+    await ds.createSessionDataSource?.("Empty", "import");
+    expect(ds.rpcRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "RPC_REQUEST",
+        rpcName: "createSessionTable",
+        params: { copyOption: "Empty", sessionType: "import" },
+      }),
+    );
+  });
+
+  it("passes sessionType 'export' to the RPC request", async () => {
+    const ds = createDataSource();
+    vi.mocked(ds.rpcRequest).mockResolvedValue(sessionSuccess);
+    await ds.createSessionDataSource?.("All", "export");
+    expect(ds.rpcRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "RPC_REQUEST",
+        rpcName: "createSessionTable",
+        params: { copyOption: "All", sessionType: "export" },
       }),
     );
   });
