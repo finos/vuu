@@ -29,7 +29,7 @@ import { CsvUpload } from "@vuu-ui/vuu-table-extras";
 
 | Prop | Type | Description |
 |---|---|---|
-| `dataSource` | `DataSource` | **Required.** The Vuu data source for the target table. Direct imports require `createSessionDataSource`; the returned session datasource must support `addRow` and `endEditSession`. |
+| `dataSource` | `DataSource` | **Required.** The Vuu data source for the target table. Must support `createSessionDataSource` (used internally with `sessionType: "import"`), `addRow`, and `endEditSession`. |
 | `embedded` | `boolean` | Renders the upload content and actions without its own `Dialog`, for use inside an existing modal. Defaults to `false`. |
 | `importMode` | `"direct" \| "preview"` | Both modes create and populate an `EditSession`. `"direct"` commits it when Import is pressed; `"preview"` returns the live session through `onPreview` so the caller can edit or delete rows before ending it. Defaults to `"direct"`. |
 | `maxRows` | `number` | Maximum number of data rows permitted in the CSV. Defaults to `25000`. |
@@ -44,7 +44,7 @@ import { CsvUpload } from "@vuu-ui/vuu-table-extras";
 | `onError` | `(result: CsvUploadErrorResult \| undefined) => void` | Fired when any error occurs. Called with `undefined` to clear a previous error. |
 | `onCancel` | `() => void` | Fired when the Cancel button is clicked. |
 | `onClose` | `() => void` | Fired after a successful import completes (i.e. the Import button was clicked and the session committed). |
-| `children` | `ReactNode` | Optional children rendered inside the dialog content area, below the drop zone. Useful for displaying validation error tables or status messages. |
+| `children` | `ReactNode` | Optional children rendered inside the dialog content area, below the drop zone. Typically used to display a read-only error table — see [Displaying validation errors](#displaying-validation-errors). |
 
 ---
 
@@ -173,6 +173,64 @@ type CsvParseOptions = {
   // the row is rejected with UNQUOTED_VALUE.
 };
 ```
+
+---
+
+## Import session table columns
+
+When the component opens a session for CSV import it requests a session table of type `"import"`. The server adds two extra columns to the schema on top of the source table columns:
+
+| Column | Type | Purpose |
+|---|---|---|
+| `vuuMsg` | `string` | Validation error message for this row. Empty string when the row is valid. |
+| `vuuRowNum` | `int` | 1-based row number from the original CSV file (including the header row, so data starts at 2). |
+
+Row payloads sent to `addRow` differ by validity:
+
+- **Valid rows** — full column data plus `vuuRowNum` and `vuuMsg: ""`.
+- **Error rows** — only `{ vuuRowNum, vuuMsg }` (no column data); the session table key is set to the string value of `vuuRowNum`.
+
+On `endEditSession(save: true)` the server skips any row where `vuuMsg` is non-empty, so error rows are never committed to the source table.
+
+---
+
+## Displaying validation errors
+
+Use the `children` prop together with `onImportSessionStarted` to render an inline error table. The session datasource already contains both valid and error rows; apply a `vuuMsg != ""` filter to show only error rows:
+
+```tsx
+const [sessionDataSource, setSessionDataSource] = useState<DataSource | undefined>();
+
+const handleImportSessionStarted = useCallback((sessionDs: DataSource) => {
+  sessionDs.filter = { filter: 'vuuMsg != ""' };
+  setSessionDataSource(sessionDs);
+}, []);
+
+const handleImportSessionEnded = useCallback(() => {
+  setSessionDataSource(undefined);
+}, []);
+
+const errorTableConfig: TableConfig = {
+  columns: [
+    { name: "vuuRowNum", label: "Row",   width: 80,  serverDataType: "int" },
+    { name: "vuuMsg",    label: "Error", width: 400, serverDataType: "string" },
+  ],
+};
+
+<CsvUpload
+  dataSource={dataSource}
+  onImportSessionStarted={handleImportSessionStarted}
+  onImportSessionEnded={handleImportSessionEnded}
+>
+  {sessionDataSource ? (
+    <div style={{ height: 200 }}>
+      <Table config={errorTableConfig} dataSource={sessionDataSource} />
+    </div>
+  ) : null}
+</CsvUpload>
+```
+
+The `Table` is a virtualized component and requires an explicit height on its container to render rows.
 
 ---
 

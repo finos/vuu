@@ -1,7 +1,12 @@
-import { CsvUpload } from "@vuu-ui/vuu-table-extras";
+import {
+  CsvUpload,
+} from "@vuu-ui/vuu-table-extras";
 import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@salt-ds/core";
+import { LocalDataSourceProvider, simulModule } from "@vuu-ui/vuu-data-test";
+import { Table } from "@vuu-ui/vuu-table";
+import type { TableConfig } from "@vuu-ui/vuu-table-types";
 
 const mockSchema: TableSchema = {
   columns: [
@@ -91,3 +96,58 @@ export const CsvUploadWithInstrumentsSchema = () => {
   const dataSource = useMemo(() => createInstrumentsMockDataSource(), []);
   return <CsvUpload dataSource={dataSource} />;
 };
+
+const CsvUploadWithErrorsOnlyPreviewContent = () => {
+  const dataSource = useMemo(
+    () => simulModule.createDataSource("instruments"),
+    [],
+  );
+  const [sessionDataSource, setSessionDataSource] = useState<
+    DataSource | undefined
+  >();
+  const [uploadOpen, setUploadOpen] = useState(true);
+
+  const handleImportSessionStarted = useCallback((sessionDs: DataSource) => {
+    sessionDs.filter = { filter: 'vuuMsg != ""' };
+    setSessionDataSource(sessionDs);
+  }, []);
+
+  const handleImportSessionEnded = useCallback(() => {
+    setSessionDataSource(undefined);
+  }, []);
+
+  const errorTableConfig = useMemo<TableConfig>(
+    () => ({
+      columns: [
+        { name: "vuuRowNum", label: "Row", width: 80, serverDataType: "int" },
+        { name: "vuuMsg", label: "Error", width: 400, serverDataType: "string" },
+      ],
+    }),
+    [],
+  );
+
+  return (
+    <div style={{ padding: 12 }}>
+      <CsvUpload
+        dataSource={dataSource}
+        onCancel={() => setUploadOpen(false)}
+        onClose={() => setUploadOpen(false)}
+        onImportSessionStarted={handleImportSessionStarted}
+        onImportSessionEnded={handleImportSessionEnded}
+        open={uploadOpen}
+      >
+        {sessionDataSource ? (
+          <div style={{ height: 200 }}>
+            <Table config={errorTableConfig} dataSource={sessionDataSource} />
+          </div>
+        ) : null}
+      </CsvUpload>
+    </div>
+  );
+};
+
+export const CsvUploadWithErrorsOnlyPreview = () => (
+  <LocalDataSourceProvider>
+    <CsvUploadWithErrorsOnlyPreviewContent />
+  </LocalDataSourceProvider>
+);

@@ -5,6 +5,7 @@ import type {
   DeleteSelectedRowsResult,
   EditApi,
   EditSessionMode,
+  SessionType,
   UndoRowChangeResult,
 } from "@vuu-ui/vuu-data-types";
 import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
@@ -490,7 +491,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     return result;
   }
 
-  begin(copyOption: CopyOption = "All"): Promise<DataSource> {
+  begin(copyOption: CopyOption = "All", sessionType: SessionType = "edit"): Promise<DataSource> {
     return this.#enqueue(async () => {
       if (
         this.#lifecycle.status === "active" ||
@@ -519,7 +520,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
             ? await sourceDataSource?.beginEditSession?.(
                 toEditSessionMode(copyOption),
               )
-            : await sourceDataSource?.createSessionDataSource?.(copyOption);
+            : await sourceDataSource?.createSessionDataSource?.(copyOption, sessionType);
         if (!sessionDataSource) {
           throw new Error(
             `[EditSession] datasource does not support ${this.#editSessionApi}`,

@@ -12,6 +12,7 @@ import type {
   DeleteRowMode,
   CopyOption,
   EditSessionMode,
+  SessionType,
 } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
@@ -169,17 +170,22 @@ export class TickingArrayDataSource extends ArrayDataSource {
 
   async createSessionDataSource(
     copyOption: CopyOption,
+    sessionType: SessionType = "edit",
   ): Promise<DataSourceBase<DataSourceRowWithBigint> | undefined> {
     const rpcResponse = await this?.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "createSessionTable",
-      params: { copyOption },
+      params: { copyOption, sessionType },
     });
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
-      const columns = this.config.columns.includes("vuuAction")
+      const baseColumns = this.config.columns.includes("vuuAction")
         ? this.config.columns
         : this.config.columns.concat("vuuAction");
+      const columns =
+        sessionType === "import" && !baseColumns.includes("vuuRowNum")
+          ? baseColumns.concat("vuuRowNum")
+          : baseColumns;
       const sessionDataSource = this.#vuuModule?.createDataSource(
         sessionTable.table,
         sessionTable.table,
@@ -237,10 +243,17 @@ export class TickingArrayDataSource extends ArrayDataSource {
   addRow = async (
     rowData: Record<string, VuuRowDataItemType> = {},
   ): Promise<true | string> => {
+    const keyValue = rowData[this.tableSchema.key];
+    const key =
+      keyValue !== undefined
+        ? String(keyValue)
+        : "vuuRowNum" in rowData
+          ? String(rowData.vuuRowNum)
+          : undefined;
     const response = await this.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "addRow",
-      params: { key: rowData[this.tableSchema.key] as string, data: rowData },
+      params: { key, data: rowData },
     });
     if (isRpcSuccess(response)) {
       return true;

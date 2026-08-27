@@ -7,6 +7,7 @@ import type {
   DeleteRowMode,
   EditSessionMode,
   CopyOption,
+  SessionType,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import type {
@@ -669,7 +670,7 @@ export abstract class VuuModule<T extends string = string>
   private createSessionTableService: ServiceHandler = async (rpcRequest) => {
     if (isCreateSessionTableRpcRequest(rpcRequest)) {
       const { viewPortId } = rpcRequest.context;
-      const { copyOption } = rpcRequest.params;
+      const { copyOption, sessionType } = rpcRequest.params;
       const subscription = this.getSubscriptionByViewport(viewPortId);
       const { dataSource } = subscription;
       const { table: vuuTable } = dataSource;
@@ -683,6 +684,7 @@ export abstract class VuuModule<T extends string = string>
               sessionTableName,
               copyOption,
               dataSource as TickingArrayDataSource,
+              sessionType,
             );
             this.#sessionTableMap[sessionTableName] = sessionTable;
             this.#sessionSourceTableMap[sessionTableName] = vuuTable.table as T;
@@ -770,9 +772,9 @@ export abstract class VuuModule<T extends string = string>
           errorMessage: `addRow: no active session table for viewport ${viewPortId}`,
         };
       }
-      const { data } = rpcRequest.params;
+      const { data, key } = rpcRequest.params;
       const keyColumn = sessionTable.schema.key;
-      const rowKey = data[keyColumn] ?? uuid();
+      const rowKey = data[keyColumn] ?? key ?? uuid();
       const rowData = { ...data, [keyColumn]: rowKey };
 
       const columnMap = sessionTable.map;
@@ -919,6 +921,7 @@ export abstract class VuuModule<T extends string = string>
     sessionTableName: string,
     editSessionMode: EditSessionMode | CopyOption,
     dataSource: TickingArrayDataSource,
+    sessionType?: SessionType,
   ) {
     if (editSessionMode === "All" || editSessionMode.endsWith("all-rows")) {
       return this.createSessionTableWithAllRows(sourceTable, sessionTableName);
@@ -935,7 +938,7 @@ export abstract class VuuModule<T extends string = string>
       editSessionMode === "Empty" ||
       editSessionMode === "empty-session-table"
     ) {
-      return this.createEmptySessionTable(sourceTable, sessionTableName);
+      return this.createEmptySessionTable(sourceTable, sessionTableName, sessionType);
     } else {
       throw Error(
         `[VuuModule] createSessionTable, invalid editSessionMode ${editSessionMode}`,
@@ -958,6 +961,7 @@ export abstract class VuuModule<T extends string = string>
   protected createEmptySessionTable(
     { schema }: Table,
     sessionTableName: string,
+    sessionType?: SessionType,
   ) {
     // Override schema.table.table so isSessionTable() returns true for this session.
     // sessionTableSchema adds the vuuMsg column, consistent with all other session tables.
@@ -965,6 +969,11 @@ export abstract class VuuModule<T extends string = string>
       ...schema,
       table: { ...schema.table, table: sessionTableName },
     });
+    if (sessionType === "import") {
+      (sessionSchema.columns as { name: string; serverDataType: string }[]).push(
+        { name: "vuuRowNum", serverDataType: "int" },
+      );
+    }
     return new Table(
       sessionSchema,
       [],

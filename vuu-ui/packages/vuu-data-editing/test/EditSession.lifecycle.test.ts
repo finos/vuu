@@ -203,9 +203,9 @@ describe("EditSession lifecycle", () => {
     expect(editSession.lifecycle.status).toBe("active");
   });
 
-  it("forwards copy options and defaults to All", async () => {
+  it("forwards copy options and defaults to All, defaults sessionType to edit", async () => {
     await editSession.begin();
-    expect(createSession).toHaveBeenCalledWith("All");
+    expect(createSession).toHaveBeenCalledWith("All", "edit");
 
     await editSession.end();
     createSession = vi.fn(
@@ -214,7 +214,12 @@ describe("EditSession lifecycle", () => {
     const selectedDataSource = new MockDataSource(endEdit, createSession);
     editSession = new EditSession(selectedDataSource);
     await editSession.begin("Selected");
-    expect(createSession).toHaveBeenCalledWith("Selected");
+    expect(createSession).toHaveBeenCalledWith("Selected", "edit");
+  });
+
+  it("forwards sessionType to createSessionDataSource", async () => {
+    await editSession.begin("Empty", "import");
+    expect(createSession).toHaveBeenCalledWith("Empty", "import");
   });
 
   it("keeps a failed end session active and allows retry", async () => {

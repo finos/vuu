@@ -146,7 +146,16 @@ export const CsvUpload = (props: CsvUploadProps) => {
         {validation && validation.errors.length > 0 ? (
           <>
             <div>Your file contains errors</div>
-            <div> Please rectify and reupload</div>
+            <ul className={`${classBase}-errorList`}>
+              {validation.errors
+                .filter((e) => e.column in validation.errorMap.fileErrors)
+                .map((error, i) => (
+                  <li className={`${classBase}-errorItem`} key={i}>
+                    {error.message}
+                  </li>
+                ))}
+            </ul>
+            <div>Please rectify and reupload</div>
           </>
         ) : (
           <div>Drop a file here or</div>
