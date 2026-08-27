@@ -18,4 +18,36 @@ trait EditSessionRpcHandler extends EditTableRpcHandler {
     logger.debug(s"${selectedRows.size} rows set to delete")
     RpcFunctionSuccess(None)
   }
+
+  def deleteRow(params: RpcParams): RpcFunctionResult = {
+    new RpcFunctionFailure(rpcNotSupportedMsg)
+  }
+
+  def deleteCell(params: RpcParams): RpcFunctionResult = {
+    new RpcFunctionFailure(rpcNotSupportedMsg)
+  }
+
+  def addRow(params: RpcParams): RpcFunctionResult = {
+    new RpcFunctionFailure(rpcNotSupportedMsg)
+  }
+
+  def editRow(params: RpcParams): RpcFunctionResult = {
+    new RpcFunctionFailure(rpcNotSupportedMsg)
+  }
+
+  def editCell(params: RpcParams): RpcFunctionResult = {
+    new RpcFunctionFailure(rpcNotSupportedMsg)
+  }
+
+  def submitForm(params: RpcParams): RpcFunctionResult = {
+    new RpcFunctionFailure(rpcNotSupportedMsg)
+  }
+
+  def closeForm(params: RpcParams): RpcFunctionResult = {
+    new RpcFunctionFailure(rpcNotSupportedMsg)
+  }
+
+  def undoRowChange(params: RpcParams): RpcFunctionResult = {
+    new RpcFunctionFailure(rpcNotSupportedMsg)
+  }
 }
