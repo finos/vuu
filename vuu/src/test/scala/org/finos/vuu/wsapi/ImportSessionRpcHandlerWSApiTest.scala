@@ -10,7 +10,7 @@ import org.finos.vuu.net.rpc.{RpcErrorResult, RpcFunctionResult, RpcFunctionSucc
 import org.finos.vuu.net.{RpcRequest, RpcResponseNew}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
-import org.finos.vuu.wsapi.helpers.TestProviderFactory
+import org.finos.vuu.wsapi.helpers.{TestProviderFactory, TestTable}
 
 // Test default implementation of RPCs in ImportSessionRpcHandler
 class ImportSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
@@ -94,33 +94,24 @@ class ImportSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
   }
 
   override protected def defineModuleWithTestTables(): ViewServerModule = {
-    val columns = testProviderFactory.columns
-    val providerFactory = testProviderFactory.providerFactory
-    val largeProviderFactory = testProviderFactory.largeProviderFactory
-
     val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
-        columns = columns,
+        columns = TestTable.columns,
         service = new CreateEmptySessionTableRpcHandler(tableContainer)
       )
     val viewPortDefFactoryForSessionTable = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
-        columns = columns,
+        columns = TestTable.columns,
         service = new MyImportSessionTableRpcHandler(tableContainer)
       )
 
     ModuleFactory.withNamespace(moduleName)
-      .addTableForTest(testProviderFactory.createTableDef(sourceTableName), viewPortDefFactory, providerFactory)
+      .addTableForTest(TestTable.createTableDef(sourceTableName), viewPortDefFactory, testProviderFactory.providerFactory)
       .addSessionTable(SessionTableDef(
         name = sessionTableName,
         keyField = VuuRowNum,
-        customColumns = new ColumnBuilder()
-          .addString(VuuRowNum)
-          .addString("Id")
-          .addString("Name")
-          .addInt("Account")
-          .build()
-      ), viewPortDefFactoryForSessionTable)
+        customColumns = TestTable.columns ++ new ColumnBuilder().addString(VuuRowNum).build()),
+        viewPortDefFactoryForSessionTable)
       .asModule()
   }
 

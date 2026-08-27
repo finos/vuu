@@ -9,7 +9,7 @@ import org.finos.vuu.net.rpc.{AllowAllRpcPermissionChecker, RpcErrorResult, RpcN
 import org.finos.vuu.net.{RpcRequest, RpcResponseNew, SelectRowRangeRequest, SelectRowRangeSuccess, SelectRowRequest, SelectRowSuccess}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
-import org.finos.vuu.wsapi.helpers.TestProviderFactory
+import org.finos.vuu.wsapi.helpers.{TestProviderFactory, TestTable}
 
 class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   private val noEnoughPermissionTableName = "noEnoughPermissionTable"
@@ -446,55 +446,51 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   }
 
   protected def defineModuleWithTestTables(): ViewServerModule = {
-    val columns = testProviderFactory.columns
-    val providerFactory = testProviderFactory.providerFactory
-    val largeProviderFactory = testProviderFactory.largeProviderFactory
-
     val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
-        columns = columns,
+        columns = TestTable.columns,
         service = new DummyCreateSessionTableRpcHandler()(using AllowAllRpcPermissionChecker, tableContainer)
       )
     val viewPortDefFactoryForSessionTable = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
-        columns = columns,
+        columns = TestTable.columns,
         service = new DummyEndSessionHandler(using tableContainer)
       )
     val noEnoughPermissionViewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
-        columns = columns,
+        columns = TestTable.columns,
         service = new DummyCreateSessionTableRpcHandler()(using AllDisabledRpcPermissionChecker, tableContainer)
       )
 
     ModuleFactory.withNamespace(moduleName)
-      .addTableForTest(testProviderFactory.createTableDef(tableName1, true), viewPortDefFactory, providerFactory)
-      .addTableForTest(testProviderFactory.createTableDef(noEnoughPermissionTableName, true), noEnoughPermissionViewPortDefFactory, providerFactory)
-      .addTableForTest(testProviderFactory.createTableDef(nonEditableTableName, false), viewPortDefFactory, providerFactory)
-      .addTableForTest(testProviderFactory.createTableDef(largeTableName, true), viewPortDefFactory, largeProviderFactory)
+      .addTableForTest(TestTable.createTableDef(tableName1, true), viewPortDefFactory, testProviderFactory.providerFactory)
+      .addTableForTest(TestTable.createTableDef(noEnoughPermissionTableName, true), noEnoughPermissionViewPortDefFactory, testProviderFactory.providerFactory)
+      .addTableForTest(TestTable.createTableDef(nonEditableTableName, false), viewPortDefFactory, testProviderFactory.providerFactory)
+      .addTableForTest(TestTable.createTableDef(largeTableName, true), viewPortDefFactory, testProviderFactory.largeProviderFactory)
       .addSessionTable(SessionTableDef(
         name = defaultEditTableName,
         keyField = "Id",
-        customColumns = columns
+        customColumns = TestTable.columns
       ), viewPortDefFactoryForSessionTable)
       .addSessionTable(SessionTableDef(
         name = defaultImportTableName,
         keyField = "Id",
-        customColumns = columns
+        customColumns = TestTable.columns
       ), viewPortDefFactoryForSessionTable)
       .addSessionTable(SessionTableDef(
         name = defaultExportTableName,
         keyField = "Id",
-        customColumns = columns
+        customColumns = TestTable.columns
       ), viewPortDefFactoryForSessionTable)
       .addSessionTable(SessionTableDef(
         name = sessionTableName1,
         keyField = "Id",
-        customColumns = columns
+        customColumns = TestTable.columns
       ), viewPortDefFactoryForSessionTable)
       .addSessionTable(SessionTableDef(
         name = largeSessionTableDefName,
         keyField = "Id",
-        customColumns = columns
+        customColumns = TestTable.columns
       ), viewPortDefFactoryForSessionTable)
       .asModule()
   }
