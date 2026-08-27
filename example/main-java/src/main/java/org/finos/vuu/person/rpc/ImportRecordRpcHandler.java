@@ -4,10 +4,10 @@ import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.net.rpc.RpcFunctionResult;
 import org.finos.vuu.net.rpc.RpcFunctionSuccess;
 import org.finos.vuu.net.rpc.RpcParams;
-import org.finos.vuu.net.rpc.sessiontable.CompositeImportRpcHandler;
+import org.finos.vuu.net.rpc.sessiontable.CompositeImportModeRpcHandler;
 
-// An example of Java implementation of ImportSessionRpcHandler
-public class ImportRecordRpcHandler extends CompositeImportRpcHandler {
+// An example of Java implementation of ImportSessionRpcHandler and EndSessionRpcHandler
+public class ImportRecordRpcHandler extends CompositeImportModeRpcHandler {
     private final TableContainer tableContainer;
 
     public ImportRecordRpcHandler(TableContainer tableContainer) {
