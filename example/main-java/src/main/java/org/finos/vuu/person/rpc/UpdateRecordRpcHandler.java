@@ -16,7 +16,6 @@ public class UpdateRecordRpcHandler extends EndEditSessionRpcHandlerImpl impleme
     public UpdateRecordRpcHandler(TableContainer tableContainer) {
         super(tableContainer);
         registerEditTableRpcs();
-        registerEndEditSessionRpcs();
         this.tableContainer = tableContainer;
     }
 
