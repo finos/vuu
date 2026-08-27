@@ -2,13 +2,13 @@ package org.finos.vuu.wsapi
 
 import org.finos.vuu.api.{ColumnBuilder, SessionTableDef, ViewPortDef}
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
+import org.finos.vuu.core.table.DefaultColumn.MSG
 import org.finos.vuu.core.table.column.ColumnNames.VuuRowNum
-import org.finos.vuu.core.table.{DataTable, InMemSessionDataTable, TableContainer}
-import org.finos.vuu.net.rpc.sessiontable.{CreateSessionTableRpcHandler, ImportSessionRpcHandler}
-import org.finos.vuu.net.rpc.{AllowAllRpcPermissionChecker, RpcErrorResult, RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams, RpcPermissionChecker, RpcSuccessResult, ViewPortContext}
-import org.finos.vuu.net.{ClientSessionId, RpcRequest, RpcResponseNew}
+import org.finos.vuu.core.table.{DataTable, TableContainer}
+import org.finos.vuu.net.rpc.sessiontable.ImportSessionRpcHandler
+import org.finos.vuu.net.rpc.{RpcErrorResult, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams, RpcSuccessResult, ViewPortContext}
+import org.finos.vuu.net.{RpcRequest, RpcResponseNew}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
-import org.finos.vuu.viewport.RowSource
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.wsapi.helpers.TestProviderFactory
 
@@ -21,7 +21,37 @@ class ImportSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
   private val maxSessionTableSize = 10 // configured in CoreServerApiTest
 
   Feature("[Web Socket API] RPC supported by ImportSessionRpcHandler") {
+    Scenario("ImportSessionRpcHandler supports addRow for vuuMsg") {
+      Given("a session table is created for import")
+      val viewPortId = createViewPort(sourceTableName)
+      val requestId = vuuClient.send(sessionId, RpcRequest(ViewPortContext(viewPortId), "createTable", Map()))
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
 
+      Given("A view port exists for session table")
+      val viewPortId2 = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 0)
+
+      When("Request addRow")
+      val data = Map(VuuRowNum -> "1", MSG.name -> "some message")
+      val request = RpcRequest(ViewPortContext(viewPortId2), RpcNames.AddRowRpc, Map("data" -> data))
+      val requestId2 = vuuClient.send(sessionId, request)
+
+      Then("New row added successfully")
+      val response2 = vuuClient.awaitForResponse(requestId2)
+      val responseBody2 = assertBodyIsInstanceOf[RpcResponseNew](response2)
+      responseBody2.rpcName shouldEqual RpcNames.AddRowRpc
+      val rpcResult2 = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody2.result)
+    }
+
+    Scenario("ImportSessionRpcHandler supports addRow for row data") {
+
+    }
+
+    Scenario("Cannot add row if table size reaches limit ") {
+
+    }
   }
 
   Feature("[Web Socket API] RPC not supported by ImportSessionRpcHandler") {
@@ -50,13 +80,13 @@ class ImportSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
         Given("A view port exists for session table")
         val viewPortId2 = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 0)
 
-        When(s"request $rpcName")
-        val requestId2 = vuuClient.send(sessionId, RpcRequest(ViewPortContext(viewPortId2), RpcNames.DeleteRowRpc, Map()))
+        When(s"Request $rpcName")
+        val requestId2 = vuuClient.send(sessionId, RpcRequest(ViewPortContext(viewPortId2), rpcName, Map()))
 
         Then(s"$rpcName not supported")
         val response2 = vuuClient.awaitForResponse(requestId2)
         val responseBody2 = assertBodyIsInstanceOf[RpcResponseNew](response2)
-        responseBody2.rpcName shouldEqual RpcNames.DeleteRowRpc
+        responseBody2.rpcName shouldEqual rpcName
         val rpcResult2 = assertAndCastAsInstanceOf[RpcErrorResult](responseBody2.result)
         rpcResult2.errorMessage shouldBe "Not supported"
       }
@@ -109,7 +139,7 @@ class ImportSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
     }
   }
 
-  class MyImportSessionTableRpcHandler(tableContainer: TableContainer) extends ImportSessionRpcHandler {
-    override protected def addRowWithoutVuuMsg(params: RpcParams): RpcFunctionResult = ???
+  class MyImportSessionTableRpcHandler(tableContainer: TableContainer) extends ImportSessionRpcHandler(tableContainer) {
+    override protected def addRowWithoutVuuMsg(params: RpcParams): RpcFunctionResult = new RpcFunctionSuccess()
   }
 }

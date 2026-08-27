@@ -18,12 +18,11 @@ trait ImportSessionRpcHandler(tableContainer: TableContainer) extends EditTableR
           case Some(rowNum: String) =>
             data.asInstanceOf[Map[String, Any]].get(MSG.name) match {
               case Some(vuuMsg: String) => addRowWithVuuMsg(rowNum, vuuMsg, params)
-              case _ => {
+              case _ =>
                 if (params.viewPort.table.asTable.size() >= tableContainer.rpcOptions.maxSessionTableSize) {
                   return new RpcFunctionFailure("Unable to add row. Session table reached max size.")
                 }
                 addRowWithoutVuuMsg(params)
-              }
             }
           case _ => new RpcFunctionFailure("Unable to add row. Row number missing.")
         }
