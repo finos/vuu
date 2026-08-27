@@ -5,8 +5,6 @@ import org.finos.vuu.core.table.{RowWithData, TableContainer}
 import org.finos.vuu.core.table.column.ColumnNames.VuuRowNum
 import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 
-// TODO 2231 add class and test in java example code
-
 // Default implementation of EditTableRpcHandler for import mode
 trait ImportSessionRpcHandler(tableContainer: TableContainer) extends EditTableRpcHandler {
 

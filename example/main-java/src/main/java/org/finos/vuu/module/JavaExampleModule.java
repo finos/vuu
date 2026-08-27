@@ -16,6 +16,7 @@ import org.finos.vuu.net.rpc.RpcHandler;
 import org.finos.vuu.person.rpc.DeleteRecordRpcHandler;
 import org.finos.vuu.person.rpc.DeleteRecordRpcHandlerIF;
 import org.finos.vuu.person.rpc.EditPersonRecordRpcHandler;
+import org.finos.vuu.person.rpc.ImportRecordRpcHandler;
 import org.finos.vuu.person.rpc.PersonRpcHandler;
 import org.finos.vuu.person.rpc.UpdateRecordRpcHandler;
 import org.finos.vuu.person.auto.AutoMappedPersonProvider;
@@ -70,6 +71,17 @@ public class JavaExampleModule extends DefaultModule {
                                 buildRpcHandler3(tableContainer)
                         )
                 )
+                .addTable(new TableDefBuilder()
+                                .name("PersonManualMapped3")
+                                .keyField("id")
+                                .customColumns(new ColumnBuilder().addString("id").build())
+                                .build(),
+                        (table, vs) -> new PersonProvider(table, new PersonStore()),
+                        (table, p, pc, tableContainer) -> new ViewPortDef(
+                                table.getTableDef().getColumns(),
+                                buildImportRpcHandler(tableContainer)
+                        )
+                )
                 .addSessionTable(new SessionTableDefBuilder()
                                 .name("export-PersonManualMapped2")
                                 .keyField("Id")
@@ -118,5 +130,9 @@ public class JavaExampleModule extends DefaultModule {
 
     private RpcHandler buildRpcHandler3(TableContainer tableContainer) {
         return new EditPersonRecordRpcHandler(AllowAllRpcPermissionChecker$.MODULE$, tableContainer);
+    }
+
+    private RpcHandler buildImportRpcHandler(TableContainer tableContainer) {
+        return new ImportRecordRpcHandler(tableContainer);
     }
 }
