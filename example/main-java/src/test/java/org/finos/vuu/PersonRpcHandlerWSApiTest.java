@@ -113,8 +113,8 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
 
     @Test
     public void custom_rpc_request_deleteRow() {
-        // test rpc registered in UpdateRecordRpcHandler (EditTableRpcHandler) works
-        var viewPortId = createViewPort();
+        // test rpc registered in ImportRecordRpcHandler (EditTableRpcHandler) works
+        var viewPortId = createViewPort("PersonManualMapped3");
 
         var rpcRequest = new RpcRequest(
                 new ViewPortContext(viewPortId),
@@ -132,8 +132,8 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
 
     @Test
     public void custom_rpc_request_closeForm() {
-        // test rpc registered in UpdateRecordRpcHandler (EditTableRpcHandler) works
-        var viewPortId = createViewPort();
+        // test rpc registered in ImportRecordRpcHandler (EditTableRpcHandler) works
+        var viewPortId = createViewPort("PersonManualMapped3");
 
         var rpcRequest = new RpcRequest(
                 new ViewPortContext(viewPortId),
@@ -151,8 +151,8 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
 
     @Test
     public void custom_rpc_request_endEditSession() {
-        // test rpc registered in UpdateRecordRpcHandler (EndEditSessionRpcHandler) works
-        var viewPortId = createViewPort();
+        // test rpc registered in ImportRecordRpcHandler (EndEditSessionRpcHandler) works
+        var viewPortId = createViewPort("PersonManualMapped3");
 
         var rpcRequest = new RpcRequest(
                 new ViewPortContext(viewPortId),

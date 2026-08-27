@@ -1,11 +1,7 @@
 package org.finos.vuu.net.rpc.sessiontable
 
 import org.finos.vuu.core.table.TableContainer
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams}
-
-abstract class EndSessionRpcHandlerImpl(tableContainer: TableContainer)
-  extends EndSessionRpcHandler(tableContainer)
-    with DefaultRpcHandler
+import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams}
 
 trait EndSessionRpcHandler(tableContainer: TableContainer) extends RpcHandler {
 
