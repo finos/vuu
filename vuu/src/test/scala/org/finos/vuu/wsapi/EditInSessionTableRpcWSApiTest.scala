@@ -1,26 +1,17 @@
 package org.finos.vuu.wsapi
 
-import org.finos.vuu.api.{ColumnBuilder, SessionTableDef, TableDef, TableDefOptions, ViewPortDef}
-import org.finos.vuu.core.AbstractVuuServer
+import org.finos.vuu.api.{SessionTableDef, ViewPortDef}
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.rpc.sessiontable.{CreateSessionTableRpcHandler, EndSessionRpcHandler}
 import org.finos.vuu.net.rpc.{AllowAllRpcPermissionChecker, RpcErrorResult, RpcNames, RpcParams, RpcPermissionChecker, RpcSuccessResult, ViewPortContext}
-import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, RpcRequest, RpcResponseNew, SelectRowRangeRequest, SelectRowRangeSuccess, SelectRowRequest, SelectRowSuccess}
+import org.finos.vuu.net.{RpcRequest, RpcResponseNew, SelectRowRangeRequest, SelectRowRangeSuccess, SelectRowRequest, SelectRowSuccess}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
-import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
-import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProviderFactory}
-
-import scala.collection.immutable.ListMap
+import org.finos.vuu.wsapi.helpers.TestProviderFactory
 
 class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
-  private val allColumns = new ColumnBuilder()
-    .addString("Id")
-    .addString("Name")
-    .addInt("Account")
-    .build();
   private val noEnoughPermissionTableName = "noEnoughPermissionTable"
   private val nonEditableTableName = "nonEditableTable"
   private val tableName1 = "testTable1"
@@ -454,88 +445,56 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     }
   }
 
-  private def createTableDef(tableName: String, isEditable: Boolean): TableDef = {
-    TableDef(
-      name = tableName,
-      keyField = "Id",
-      customColumns = allColumns,
-      options = TableDefOptions(
-        isEditable = isEditable
-      )
-    )
-  }
-
   protected def defineModuleWithTestTables(): ViewServerModule = {
-    val dataSource = new FakeDataSource(ListMap(
-      "row1" -> Map("Id" -> "row1", "Name" -> "Becky Thatcher", "Account" -> 123),
-      "row2" -> Map("Id" -> "row2", "Name" -> "Tom Sawyer", "Account" -> 456),
-      "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn", "Account" -> 789),
-    ))
-    val providerFactory = (table: DataTable, _: AbstractVuuServer) => testProviderFactory.create(table, dataSource)
-    val largeDataSource = new FakeDataSource(ListMap(
-      "row1" -> Map("Id" -> "row1", "Name" -> "user1", "Account" -> 1),
-      "row2" -> Map("Id" -> "row2", "Name" -> "user2", "Account" -> 2),
-      "row3" -> Map("Id" -> "row3", "Name" -> "user3", "Account" -> 3),
-      "row4" -> Map("Id" -> "row4", "Name" -> "user4", "Account" -> 4),
-      "row5" -> Map("Id" -> "row5", "Name" -> "user5", "Account" -> 5),
-      "row6" -> Map("Id" -> "row6", "Name" -> "user6", "Account" -> 6),
-      "row7" -> Map("Id" -> "row7", "Name" -> "user7", "Account" -> 7),
-      "row8" -> Map("Id" -> "row8", "Name" -> "user8", "Account" -> 8),
-      "row9" -> Map("Id" -> "row9", "Name" -> "user9", "Account" -> 9),
-      "row10" -> Map("Id" -> "row10", "Name" -> "user10", "Account" -> 10),
-      "row11" -> Map("Id" -> "row11", "Name" -> "user11", "Account" -> 11),
-      "row12" -> Map("Id" -> "row12", "Name" -> "user12", "Account" -> 12),
-      "row13" -> Map("Id" -> "row13", "Name" -> "user13", "Account" -> 13),
-      "row14" -> Map("Id" -> "row14", "Name" -> "user14", "Account" -> 14),
-      "row15" -> Map("Id" -> "row15", "Name" -> "user15", "Account" -> 15),
-    ))
-    val largeProviderFactory = (table: DataTable, _: AbstractVuuServer) => testProviderFactory.create(table, largeDataSource)
+    val columns = testProviderFactory.columns
+    val providerFactory = testProviderFactory.providerFactory
+    val largeProviderFactory = testProviderFactory.largeProviderFactory
 
     val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
-        columns = allColumns,
+        columns = columns,
         service = new DummyCreateSessionTableRpcHandler()(using AllowAllRpcPermissionChecker, tableContainer)
       )
     val viewPortDefFactoryForSessionTable = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
-        columns = allColumns,
+        columns = columns,
         service = new DummyEndSessionHandler(using tableContainer)
       )
     val noEnoughPermissionViewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
-        columns = allColumns,
+        columns = columns,
         service = new DummyCreateSessionTableRpcHandler()(using AllDisabledRpcPermissionChecker, tableContainer)
       )
 
     ModuleFactory.withNamespace(moduleName)
-      .addTableForTest(createTableDef(tableName1, true), viewPortDefFactory, providerFactory)
-      .addTableForTest(createTableDef(noEnoughPermissionTableName, true), noEnoughPermissionViewPortDefFactory, providerFactory)
-      .addTableForTest(createTableDef(nonEditableTableName, false), viewPortDefFactory, providerFactory)
-      .addTableForTest(createTableDef(largeTableName, true), viewPortDefFactory, largeProviderFactory)
+      .addTableForTest(testProviderFactory.createTableDef(tableName1, true), viewPortDefFactory, providerFactory)
+      .addTableForTest(testProviderFactory.createTableDef(noEnoughPermissionTableName, true), noEnoughPermissionViewPortDefFactory, providerFactory)
+      .addTableForTest(testProviderFactory.createTableDef(nonEditableTableName, false), viewPortDefFactory, providerFactory)
+      .addTableForTest(testProviderFactory.createTableDef(largeTableName, true), viewPortDefFactory, largeProviderFactory)
       .addSessionTable(SessionTableDef(
         name = defaultEditTableName,
         keyField = "Id",
-        customColumns = allColumns
+        customColumns = columns
       ), viewPortDefFactoryForSessionTable)
       .addSessionTable(SessionTableDef(
         name = defaultImportTableName,
         keyField = "Id",
-        customColumns = allColumns
+        customColumns = columns
       ), viewPortDefFactoryForSessionTable)
       .addSessionTable(SessionTableDef(
         name = defaultExportTableName,
         keyField = "Id",
-        customColumns = allColumns
+        customColumns = columns
       ), viewPortDefFactoryForSessionTable)
       .addSessionTable(SessionTableDef(
         name = sessionTableName1,
         keyField = "Id",
-        customColumns = allColumns
+        customColumns = columns
       ), viewPortDefFactoryForSessionTable)
       .addSessionTable(SessionTableDef(
         name = largeSessionTableDefName,
         keyField = "Id",
-        customColumns = allColumns
+        customColumns = columns
       ), viewPortDefFactoryForSessionTable)
       .asModule()
   }
