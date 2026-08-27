@@ -8,7 +8,7 @@ import org.testcontainers.utility.{DockerImageName, MountableFile}
 
 import java.util.UUID
 
-class ClickHouseContainer(tag: String = "26.4") extends GenericContainer(
+class ClickHouseContainer(tag: String) extends GenericContainer(
   ClickHouseContainer.createContainer(tag)
 ) {
 
@@ -26,6 +26,7 @@ class ClickHouseContainer(tag: String = "26.4") extends GenericContainer(
 }
 
 object ClickHouseContainer {
+  private val defaultVersion = "26.7-distroless"
   private val logger = LoggerFactory.getLogger(ClickHouseContainer.getClass)
   private val imageName = "clickhouse/clickhouse-server"
   private val port = 8123
@@ -52,6 +53,6 @@ object ClickHouseContainer {
     c
   }
 
-  def apply(tag: String = "26.4"): ClickHouseContainer = new ClickHouseContainer(tag)
+  def apply(tag: String = defaultVersion): ClickHouseContainer = new ClickHouseContainer(tag)
 
 }
