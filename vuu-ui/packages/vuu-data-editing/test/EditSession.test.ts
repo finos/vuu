@@ -60,7 +60,7 @@ describe("EditSession", () => {
       async () => editApi as unknown as DataSource,
     ) as CreateSession;
     const editApi = new MockDataSource(createSession, endEdit, edit);
-    editSession = new EditSession(editApi);
+    editSession = new EditSession({ dataSource: editApi });
   });
 
   it("begins with no edit and zero counts", () => {
@@ -77,11 +77,11 @@ describe("EditSession", () => {
     const sourceDataSource = {
       beginEditSession,
     } as EditApi;
-    const legacyEditSession = new EditSession(
-      sourceDataSource,
-      "soft",
-      "beginEditSession",
-    );
+    const legacyEditSession = new EditSession({
+      dataSource: sourceDataSource,
+      deleteMode: "soft",
+      editSessionApi: "beginEditSession",
+    });
 
     await legacyEditSession.begin("Selected");
 
@@ -233,7 +233,7 @@ describe("EditSession", () => {
       endEditSession: vi.fn(),
       undoRowChange,
     };
-    const insertedRowSession = new EditSession(editApi);
+    const insertedRowSession = new EditSession({ dataSource: editApi });
     await insertedRowSession.begin();
     await insertedRowSession.addRow({ id: "row-001" });
 
@@ -259,7 +259,7 @@ describe("EditSession", () => {
       endEditSession: vi.fn(),
       undoRowChange,
     };
-    const rowEditSession = new EditSession(editApi);
+    const rowEditSession = new EditSession({ dataSource: editApi });
     const cellEditChanged = vi.fn();
     rowEditSession.on("cellEditChanged", cellEditChanged);
     await rowEditSession.begin();

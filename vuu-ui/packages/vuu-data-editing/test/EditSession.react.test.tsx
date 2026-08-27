@@ -49,7 +49,7 @@ const createEditSession = () => {
     endEditSession: vi.fn(),
     undoRowChange: vi.fn().mockResolvedValue(SUCCESS),
   };
-  return new EditSession(dataSource);
+  return new EditSession({ dataSource: dataSource });
 };
 
 const CellMarker = ({
@@ -181,7 +181,7 @@ describe("EditSession React consumers", () => {
       editCell: vi.fn().mockResolvedValue(SUCCESS),
       endEditSession: vi.fn().mockRejectedValue(staleError),
     };
-    const editSession = new EditSession(dataSource);
+    const editSession = new EditSession({ dataSource: dataSource });
     const onSave = vi.fn();
     await editSession.begin();
     await editSession.commit("row-1", "price", 100, 101, true);

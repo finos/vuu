@@ -87,7 +87,7 @@ describe("EditSession lifecycle", () => {
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
     const dataSource = new MockDataSource(endEdit, createSession, editCell);
-    editSession = new EditSession(dataSource);
+    editSession = new EditSession({ dataSource: dataSource });
   });
 
   it("publishes lifecycle transitions", async () => {
@@ -178,7 +178,7 @@ describe("EditSession lifecycle", () => {
     const pendingBegin = deferred<DataSource | undefined>();
     createSession = vi.fn(() => pendingBegin.promise);
     const dataSource = new MockDataSource(endEdit, createSession);
-    editSession = new EditSession(dataSource);
+    editSession = new EditSession({ dataSource: dataSource });
 
     const beginPromise = editSession.begin();
     await Promise.resolve();
@@ -212,7 +212,7 @@ describe("EditSession lifecycle", () => {
       async () => selectedDataSource as unknown as DataSource,
     ) as CreateSession;
     const selectedDataSource = new MockDataSource(endEdit, createSession);
-    editSession = new EditSession(selectedDataSource);
+    editSession = new EditSession({ dataSource: selectedDataSource });
     await editSession.begin("Selected");
     expect(createSession).toHaveBeenCalledWith("Selected", "edit");
   });
@@ -232,7 +232,7 @@ describe("EditSession lifecycle", () => {
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
     const dataSource = new MockDataSource(endEdit, createSession);
-    editSession = new EditSession(dataSource);
+    editSession = new EditSession({ dataSource: dataSource });
 
     await editSession.begin();
     await expect(editSession.end()).rejects.toBe(endError);
@@ -256,7 +256,7 @@ describe("EditSession lifecycle", () => {
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
     const dataSource = new MockDataSource(endEdit, createSession);
-    editSession = new EditSession(dataSource);
+    editSession = new EditSession({ dataSource: dataSource });
     editSession.on("editState", editStateListener);
 
     expect(StaleUpdateError).toBe(UtilsStaleUpdateError);
@@ -276,7 +276,7 @@ describe("EditSession lifecycle", () => {
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
     const dataSource = new MockDataSource(endEdit, createSession);
-    editSession = new EditSession(dataSource);
+    editSession = new EditSession({ dataSource: dataSource });
 
     await editSession.begin();
     await editSession.commit("row-1", "price", 100, 101, true);
@@ -297,7 +297,7 @@ describe("EditSession lifecycle", () => {
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
     const dataSource = new MockDataSource(endEdit, createSession);
-    editSession = new EditSession(dataSource);
+    editSession = new EditSession({ dataSource: dataSource });
 
     await editSession.begin();
     await editSession.commit("row-1", "price", 100, 101, true);
@@ -331,7 +331,7 @@ describe("EditSession lifecycle", () => {
       sourceCreate,
       sourceEdit,
     );
-    editSession = new EditSession(sourceDataSource);
+    editSession = new EditSession({ dataSource: sourceDataSource });
 
     await editSession.begin();
     expect(editSession.sessionDataSource).toBe(sessionDataSource);
@@ -359,7 +359,7 @@ describe("EditSession lifecycle", () => {
         .fn<CreateSession>()
         .mockResolvedValue(sessionDataSource as unknown as DataSource),
     );
-    editSession = new EditSession(sourceDataSource);
+    editSession = new EditSession({ dataSource: sourceDataSource });
 
     await editSession.begin();
     await expect(editSession.end(true)).rejects.toBe(endError);
@@ -376,7 +376,7 @@ describe("EditSession lifecycle", () => {
   it("reports begin failures without entering edit mode", async () => {
     const beginError = new Error("begin failed");
     createSession = vi.fn().mockRejectedValueOnce(beginError);
-    editSession = new EditSession(new MockDataSource(endEdit, createSession));
+    editSession = new EditSession({ dataSource: new MockDataSource(endEdit, createSession }));
 
     await expect(editSession.begin()).rejects.toBe(beginError);
 
@@ -436,7 +436,7 @@ describe("EditSession lifecycle", () => {
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
     const dataSource = new MockDataSource(endEdit, createSession, editCell);
-    editSession = new EditSession(dataSource);
+    editSession = new EditSession({ dataSource: dataSource });
     await editSession.begin();
 
     await editSession.commit("row-1", "price", 100, 101, true);
@@ -471,7 +471,7 @@ describe("EditSession lifecycle", () => {
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
     const dataSource = new MockDataSource(endEdit, createSession, editCell);
-    editSession = new EditSession(dataSource);
+    editSession = new EditSession({ dataSource: dataSource });
     await editSession.begin();
 
     const firstCommit = editSession.commit("row-1", "price", 100, 101, true);
@@ -505,7 +505,7 @@ describe("EditSession lifecycle", () => {
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
     const dataSource = new MockDataSource(endEdit, createSession, editCell);
-    editSession = new EditSession(dataSource);
+    editSession = new EditSession({ dataSource: dataSource });
     await editSession.begin();
     await editSession.commit("row-1", "price", 100, 101, true);
     await editSession.commit("row-1", "size", 10, 11, true);
@@ -534,7 +534,7 @@ describe("EditSession lifecycle", () => {
       endEditSession: vi.fn(),
       undoRowChange: vi.fn().mockReturnValue(pendingUndo.promise),
     };
-    editSession = new EditSession(dataSource);
+    editSession = new EditSession({ dataSource: dataSource });
     await editSession.begin();
     await editSession.commit("row-1", "price", 100, 101, true);
 
@@ -562,7 +562,7 @@ describe("EditSession lifecycle", () => {
       endEditSession: vi.fn(),
       undoRowChange: vi.fn().mockReturnValue(pendingUndo.promise),
     };
-    editSession = new EditSession(dataSource);
+    editSession = new EditSession({ dataSource: dataSource });
     await editSession.begin();
     await editSession.deleteSelectedRows();
 

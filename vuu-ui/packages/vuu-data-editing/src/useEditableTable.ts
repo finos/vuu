@@ -4,7 +4,7 @@ import type {
   DeleteRowMode,
   EditApi,
 } from "@vuu-ui/vuu-data-types";
-import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { useData, useLayoutEffectSkipFirst } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -12,6 +12,7 @@ import {
   type EditLifecycle,
   type EditSessionApi,
   type EditState,
+  type RowDefaultDataItemValues,
 } from "./EditSession";
 import { EDIT_ACTION_ROW_CLASS_NAME_GENERATOR } from "./editActionRowClassNameGenerator";
 
@@ -35,7 +36,8 @@ export interface EditableTableHookProps {
   isEditMode: boolean;
   onCancel: () => void;
   onSave: () => void;
-  rowDefaults?: Record<string, VuuRowDataItemType>;
+  /** Default column values applied to every addRow call. Pass a stable reference — a new object triggers EditSession recreation. */
+  rowDefaults?: RowDefaultDataItemValues;
   /**
    * If dataSource not provided, new DataSource
    * will be created using table and columns
@@ -73,14 +75,11 @@ export const useEditableTable = ({
     }
   }, [VuuDataSource, columns, dataSourceProp, table]);
 
-  // Stabilise rowDefaults so an inline object literal doesn't recreate the session every render.
-  const rowDefaultsRef = useRef(rowDefaults);
-
   // The editSession will be made available to all the edit controls in scope
   // by wrapping the edit component with a DataEditingProvider.
   const editSession = useMemo(
-    () => new EditSession(sourceDataSource as EditApi, deleteMode, editSessionApi, rowDefaultsRef.current),
-    [deleteMode, editSessionApi, sourceDataSource],
+    () => new EditSession({ dataSource: sourceDataSource as EditApi, deleteMode, editSessionApi, rowDefaults }),
+    [deleteMode, editSessionApi, rowDefaults, sourceDataSource],
   );
   const [lifecycle, setLifecycle] = useState<EditLifecycle>(
     editSession.lifecycle,

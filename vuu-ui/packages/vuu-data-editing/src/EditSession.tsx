@@ -5,6 +5,7 @@ import type {
   DeleteSelectedRowsResult,
   EditApi,
   EditSessionMode,
+  SchemaColumn,
   SessionType,
   UndoRowChangeResult,
 } from "@vuu-ui/vuu-data-types";
@@ -12,9 +13,21 @@ import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
+/** Column name to default value mapping applied to every addRow call when a column is absent from the row data. */
+export type RowDefaultDataItemValues = Record<string, VuuRowDataItemType>;
 export type EditSessionApi =
   | "createSessionDataSource"
   | "beginEditSession";
+
+export type EditSessionConstructorProps = {
+  dataSource: EditApi;
+  /** @default "soft" */
+  deleteMode?: DeleteRowMode;
+  /** @default "createSessionDataSource" */
+  editSessionApi?: EditSessionApi;
+  /** Default column values merged into every addRow call for absent columns. Pass a stable reference. */
+  rowDefaults?: RowDefaultDataItemValues;
+};
 const toEditSessionMode = (copyOption: CopyOption): EditSessionMode => {
   switch (copyOption) {
     case "All":
@@ -86,7 +99,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   #cellCommitRevisions = new Map<string, Map<string, number>>();
   #deleteMode: DeleteRowMode;
   #editSessionApi: EditSessionApi;
-  #rowDefaults: Record<string, VuuRowDataItemType>;
+  #rowDefaults: RowDefaultDataItemValues;
   #sourceTableDataSource?: EditApi;
   #sessionDataSource?: DataSource;
   #newRowState: NewRowState = {
@@ -100,12 +113,12 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   /** Prevent begin/end RPCs from overlapping and observing stale lifecycle state. */
   #transitionQueue: Promise<void> = Promise.resolve();
 
-  constructor(
-    dataSource: EditApi,
-    deleteMode: DeleteRowMode = "soft",
-    editSessionApi: EditSessionApi = "createSessionDataSource",
-    rowDefaults: Record<string, VuuRowDataItemType> = {},
-  ) {
+  constructor({
+    dataSource,
+    deleteMode = "soft",
+    editSessionApi = "createSessionDataSource",
+    rowDefaults = {},
+  }: EditSessionConstructorProps) {
     super();
     this.#sourceTableDataSource = dataSource;
     this.#deleteMode = deleteMode;
@@ -533,6 +546,25 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         this.#sessionDataSource = sessionDataSource;
         this.#setStale(false);
         this.#setLifecycle({ status: "active", sessionDataSource });
+
+        if (Object.keys(this.#rowDefaults).length > 0) {
+          const schema = sessionDataSource.tableSchema;
+          if (schema) {
+            const columnNames = new Set(schema.columns.map((c: SchemaColumn) => c.name));
+            const unknown = Object.keys(this.#rowDefaults).filter(
+              (key) => !columnNames.has(key),
+            );
+            if (unknown.length > 0) {
+              console.warn(
+                `[EditSession] rowDefaults contains columns not in table schema, removing: ${unknown.join(", ")}`,
+              );
+              for (const key of unknown) {
+                delete this.#rowDefaults[key];
+              }
+            }
+          }
+        }
+
         return sessionDataSource;
       } catch (cause) {
         const error = cause instanceof Error ? cause : new Error(String(cause));

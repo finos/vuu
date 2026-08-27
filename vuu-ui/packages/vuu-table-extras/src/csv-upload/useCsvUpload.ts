@@ -1,5 +1,5 @@
 import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
-import { EditSession } from "@vuu-ui/vuu-data-editing";
+import { EditSession, type RowDefaultDataItemValues } from "@vuu-ui/vuu-data-editing";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { isRpcError, isSessionTable } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -37,7 +37,8 @@ export interface CsvUploadHookProps {
   onPreview?: (result: CsvUploadPreviewResult) => void;
   onProcessingStarted?: () => void;
   parseOptions?: CsvParseOptions;
-  rowDefaults?: Record<string, VuuRowDataItemType>;
+  /** Default column values applied to every addRow call. Pass a stable reference — a new object triggers EditSession recreation. */
+  rowDefaults?: RowDefaultDataItemValues;
 }
 
 export type UseCsvUploadReturn = {
@@ -78,10 +79,8 @@ export const useCsvUpload = ({
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const editSession = useMemo(
-    () => new EditSession(dataSource, "soft", "createSessionDataSource", rowDefaults),
-    // rowDefaults is intentionally excluded: defaults are fixed at session creation
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [dataSource],
+    () => new EditSession({ dataSource, editSessionApi: "createSessionDataSource", rowDefaults }),
+    [dataSource, rowDefaults],
   );
   const ownsEditSessionRef = useRef(true);
   const operationIdRef = useRef(0);
