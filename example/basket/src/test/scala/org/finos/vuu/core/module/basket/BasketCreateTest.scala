@@ -3,7 +3,7 @@ package org.finos.vuu.core.module.basket
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
-import org.finos.vuu.api.ViewPortDef
+import org.finos.vuu.api.{ViewPortDef, ViewPortDefHelper}
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames as B, BasketConstituentColumnNames as BC}
 import org.finos.vuu.core.module.price.PriceModule
@@ -34,7 +34,7 @@ class BasketCreateTest extends VuuServerTestCase {
           vuuServer.login("testUser")
           val basketId = ".FTSE"
 
-          vuuServer.overrideViewPortDef("prices", (table, _, _, _) => ViewPortDef(table.getTableDef.getColumns, null))
+          vuuServer.overrideViewPortDef("prices", ViewPortDefHelper.defaultDefaultViewPortDefFunc)
 
           val pricesProvider = vuuServer.getProvider(PriceModule.NAME, PriceModule.PriceTable)
           val basketProvider = vuuServer.getProvider(BasketModule.NAME, BasketModule.BasketTable)
