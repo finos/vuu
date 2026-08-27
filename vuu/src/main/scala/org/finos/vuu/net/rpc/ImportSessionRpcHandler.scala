@@ -1,6 +1,7 @@
 package org.finos.vuu.net.rpc
 
 import org.finos.vuu.core.table.DefaultColumn.MSG
+import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.core.table.column.ColumnNames.VuuRowNum
 
 // Default implementation of EditTableRpcHandler for import mode
@@ -8,11 +9,11 @@ trait ImportSessionRpcHandler extends EditTableRpcHandler {
 
   def addRow(params: RpcParams): RpcFunctionResult = {
     params.namedParams.get("data") match {
-      case Some(data: Map[String, Any]) =>
-        data.get(VuuRowNum) match {
+      case Some(data: Map[_, _]) =>
+        data.asInstanceOf[Map[String, Any]].get(VuuRowNum) match {
           case Some(rowNum: String) =>
-            data.get(MSG.name) match {
-              case Some(vuuMsg: String) => addRowWithVuuMsg(params)
+            data.asInstanceOf[Map[String, Any]].get(MSG.name) match {
+              case Some(vuuMsg: String) => addRowWithVuuMsg(rowNum, vuuMsg, params)
               case _ => addRowWithoutVuuMsg(params)
             }
           case _ => new RpcFunctionFailure("Unable to add row. Row number missing.")
@@ -21,15 +22,13 @@ trait ImportSessionRpcHandler extends EditTableRpcHandler {
     }
   }
 
-  protected def addRowWithVuuMsg(params: RpcParams): RpcFunctionResult = {
-    // add implementation 
-    new RpcFunctionFailure("")
+  protected def addRowWithVuuMsg(rowNum: String, vuuMsg: String, params: RpcParams): RpcFunctionResult = {
+    val rowData = RowWithData(rowNum, Map(VuuRowNum -> rowNum, MSG.name -> vuuMsg))
+    params.viewPort.table.asTable.processUpdate(rowNum, rowData)
+    new RpcFunctionSuccess()
   }
 
-  protected def addRowWithoutVuuMsg(params: RpcParams): RpcFunctionResult = {
-    // add implementation 
-    new RpcFunctionFailure("")
-  }
+  protected def addRowWithoutVuuMsg(params: RpcParams): RpcFunctionResult
 
   def deleteRow(params: RpcParams): RpcFunctionResult = {
     new RpcFunctionFailure(rpcNotSupportedMsg)
