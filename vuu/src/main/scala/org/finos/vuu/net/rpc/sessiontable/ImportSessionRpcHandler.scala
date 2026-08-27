@@ -1,13 +1,16 @@
 package org.finos.vuu.net.rpc.sessiontable
 
 import org.finos.vuu.core.table.DefaultColumn.MSG
-import org.finos.vuu.core.table.RowWithData
+import org.finos.vuu.core.table.{RowWithData, TableContainer}
 import org.finos.vuu.core.table.column.ColumnNames.VuuRowNum
 import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 
-// Default implementation of EditTableRpcHandler for import mode
-trait ImportSessionRpcHandler extends EditTableRpcHandler {
+// TODO 2231 add class and test in java example code
 
+// Default implementation of EditTableRpcHandler for import mode
+trait ImportSessionRpcHandler(tableContainer: TableContainer) extends EditTableRpcHandler {
+
+  // TODO 2231 add permission check
   def addRow(params: RpcParams): RpcFunctionResult = {
     params.namedParams.get("data") match {
       case Some(data: Map[_, _]) =>
@@ -15,7 +18,12 @@ trait ImportSessionRpcHandler extends EditTableRpcHandler {
           case Some(rowNum: String) =>
             data.asInstanceOf[Map[String, Any]].get(MSG.name) match {
               case Some(vuuMsg: String) => addRowWithVuuMsg(rowNum, vuuMsg, params)
-              case _ => addRowWithoutVuuMsg(params)
+              case _ => {
+                if (params.viewPort.table.asTable.size() >= tableContainer.rpcOptions.maxSessionTableSize) {
+                  return new RpcFunctionFailure("Unable to add row. Session table reached max size.")
+                }
+                addRowWithoutVuuMsg(params)
+              }
             }
           case _ => new RpcFunctionFailure("Unable to add row. Row number missing.")
         }
