@@ -3,8 +3,8 @@ package org.finos.vuu.net.rpc
 import org.finos.vuu.core.table.TableContainer
 
 abstract class EndEditSessionRpcHandlerImpl(tableContainer: TableContainer)
-extends EndEditSessionRpcHandler(tableContainer)
-with DefaultRpcHandler
+  extends EndEditSessionRpcHandler(tableContainer)
+    with DefaultRpcHandler
 
 trait EndEditSessionRpcHandler(tableContainer: TableContainer) extends RpcHandler {
 
@@ -17,12 +17,12 @@ trait EndEditSessionRpcHandler(tableContainer: TableContainer) extends RpcHandle
   def endEditSession(params: RpcParams): RpcFunctionResult = {
     params.namedParams.get("save") match {
       case Some(true) =>
-        val result = saveSessionData(params)
-        endSession(params)
-        result
+        saveSessionData(params) match {
+          case success: RpcFunctionSuccess => endSession(params)
+          case failure: RpcFunctionFailure => failure
+        }
       case _ =>
         endSession(params)
-        RpcFunctionSuccess(None)
     }
   }
 
@@ -51,8 +51,9 @@ trait EndEditSessionRpcHandler(tableContainer: TableContainer) extends RpcHandle
 
   protected def submit(params: RpcParams): Boolean
 
-  protected def endSession(params: RpcParams): Unit = {
+  protected def endSession(params: RpcParams): RpcFunctionResult = {
     logger.debug(s"Ended session successfully. Removing session table ${params.viewPort.table.name} for viewport ${params.viewPort.id} in session ${params.ctx.session.sessionId}")
     tableContainer.removeSessionTable(params.ctx.session, params.viewPort.table.name)
+    RpcFunctionSuccess(None)
   }
 }

@@ -27,7 +27,7 @@ trait ImportSessionRpcHandler extends EditTableRpcHandler {
       rowNum,
       RowWithData(rowNum, Map(VuuRowNum -> rowNum, MSG.name -> vuuMsg))
     )
-    new RpcFunctionSuccess()
+    RpcFunctionSuccess(None)
   }
 
   protected def addRowWithoutVuuMsg(params: RpcParams): RpcFunctionResult
