@@ -12,17 +12,18 @@ trait ImportSessionRpcHandler(tableContainer: TableContainer) extends EditTableR
 
   // TODO 2231 add permission check
   def addRow(params: RpcParams): RpcFunctionResult = {
+
+    if (params.viewPort.table.asTable.size() >= tableContainer.rpcOptions.maxSessionTableSize) {
+      return new RpcFunctionFailure("Unable to add row. Session table reached max size.")
+    }
+
     params.namedParams.get("data") match {
       case Some(data: Map[_, _]) =>
         data.asInstanceOf[Map[String, Any]].get(VuuRowNum) match {
           case Some(rowNum: String) =>
             data.asInstanceOf[Map[String, Any]].get(MSG.name) match {
               case Some(vuuMsg: String) => addRowWithVuuMsg(rowNum, vuuMsg, params)
-              case _ =>
-                if (params.viewPort.table.asTable.size() >= tableContainer.rpcOptions.maxSessionTableSize) {
-                  return new RpcFunctionFailure("Unable to add row. Session table reached max size.")
-                }
-                addRowWithoutVuuMsg(params)
+              case _ => addRowWithoutVuuMsg(params)
             }
           case _ => new RpcFunctionFailure("Unable to add row. Row number missing.")
         }

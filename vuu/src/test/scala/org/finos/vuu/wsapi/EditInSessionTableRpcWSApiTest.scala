@@ -23,7 +23,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   private val largeSessionTableDefName = "edit-" + largeTableName
   private val moduleName = "EditInSessionTableRpcTest"
   private val testProviderFactory = new TestProviderFactory
-  private val maxSessionTableSize = 10 // configured in CoreServerApiTest
+  private val maxSessionTableSize = 10 // configured in TestStartUp
 
   Feature("[Web Socket API] create a session table failed") {
     Scenario("Request to create a session table failed for no enough permission") {

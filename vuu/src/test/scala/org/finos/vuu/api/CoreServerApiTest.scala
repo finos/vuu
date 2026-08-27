@@ -3,10 +3,10 @@ package org.finos.vuu.api
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.TestFriendlyClock
-import org.finos.vuu.core.{CoreServerApiHandler, VuuRpcOptions, VuuRpcOptionsImpl}
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.TableContainer
-import org.finos.vuu.feature.inmem.{VuuInMemPlugin, VuuInMemPluginType}
+import org.finos.vuu.core.{CoreServerApiHandler, VuuRpcOptions, VuuRpcOptionsImpl}
+import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.{ClientSessionId, HeartBeatResponse, RequestContext}
 import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, ProviderContainer}
