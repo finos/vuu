@@ -23,8 +23,10 @@ trait ImportSessionRpcHandler extends EditTableRpcHandler {
   }
 
   protected def addRowWithVuuMsg(rowNum: String, vuuMsg: String, params: RpcParams): RpcFunctionResult = {
-    val rowData = RowWithData(rowNum, Map(VuuRowNum -> rowNum, MSG.name -> vuuMsg))
-    params.viewPort.table.asTable.processUpdate(rowNum, rowData)
+    params.viewPort.table.asTable.processUpdate(
+      rowNum,
+      RowWithData(rowNum, Map(VuuRowNum -> rowNum, MSG.name -> vuuMsg))
+    )
     new RpcFunctionSuccess()
   }
 
