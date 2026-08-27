@@ -1,9 +1,7 @@
 package org.finos.vuu.person.rpc;
 
 import org.finos.vuu.core.table.TableContainer;
-import org.finos.vuu.net.rpc.DefaultRpcHandlerImpl;
 import org.finos.vuu.net.rpc.EditSessionRpcHandler;
-import org.finos.vuu.net.rpc.EndEditSessionRpcHandler;
 import org.finos.vuu.net.rpc.EndEditSessionRpcHandlerImpl;
 import org.finos.vuu.net.rpc.RpcFunctionResult;
 import org.finos.vuu.net.rpc.RpcFunctionSuccess;
@@ -19,48 +17,9 @@ public class UpdateRecordRpcHandler extends EndEditSessionRpcHandlerImpl impleme
         this.tableContainer = tableContainer;
     }
 
-    @Override
-    public RpcFunctionResult deleteRow(RpcParams params) {
-        return new RpcFunctionSuccess();
-    }
-
-    @Override
-    public RpcFunctionResult deleteSelectedRows(RpcParams params) {
-        return new RpcFunctionSuccess();
-    }
-
-    @Override
-    public RpcFunctionResult deleteCell(RpcParams params) {
-        return new RpcFunctionSuccess();
-    }
-
-    @Override
-    public RpcFunctionResult addRow(RpcParams params) {
-        return new RpcFunctionSuccess();
-    }
-
-    @Override
-    public RpcFunctionResult editRow(RpcParams params) {
-        return new RpcFunctionSuccess();
-    }
-
-    @Override
-    public RpcFunctionResult editCell(RpcParams params) {
-        return new RpcFunctionSuccess();
-    }
-
-    @Override
-    public RpcFunctionResult submitForm(RpcParams params) {
-        return new RpcFunctionSuccess();
-    }
-
+    // example of overriding rpc function
     @Override
     public RpcFunctionResult closeForm(RpcParams params) {
-        return new RpcFunctionSuccess();
-    }
-
-    @Override
-    public RpcFunctionResult undoRowChange(RpcParams params) {
         return new RpcFunctionSuccess();
     }
 

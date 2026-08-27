@@ -127,6 +127,25 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
 
         RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Request response");
         assertEquals("deleteRow", responseBody.rpcName());
+        assertInstanceOf(RpcErrorResult.class, responseBody.result()); // default implementation in EditSessionRpcHandler
+    }
+
+    @Test
+    public void custom_rpc_request_closeForm() {
+        // test rpc registered in UpdateRecordRpcHandler (EditTableRpcHandler) works
+        var viewPortId = createViewPort();
+
+        var rpcRequest = new RpcRequest(
+                new ViewPortContext(viewPortId),
+                "closeForm",
+                toScala(Map.of())
+        );
+
+        var requestId = vuuClient.send(sessionId, rpcRequest);
+        var response = vuuClient.awaitForResponse(requestId);
+
+        RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Request response");
+        assertEquals("closeForm", responseBody.rpcName());
         assertInstanceOf(RpcSuccessResult.class, responseBody.result());
     }
 
