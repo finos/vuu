@@ -28,19 +28,19 @@ trait EndSessionRpcHandler(tableContainer: TableContainer) extends RpcHandler {
 
   protected def saveSessionData(params: RpcParams): RpcFunctionResult = {
     if (!verifyPermission(params)) {
-      logger.warn(s"Failed to end edit session in viewport ${params.viewPort.id} in session ${params.ctx.session.sessionId}. No permission.")
+      logger.warn(s"Failed to save data for session table ${params.viewPort.table.name} in viewport ${params.viewPort.id} in session ${params.ctx.session.sessionId}. No permission.")
       return new RpcFunctionFailure(s"Unable to end edit session. No permission.")
     }
 
     if (!validateData(params)) {
-      logger.warn(s"Failed to end edit session in viewport ${params.viewPort.id} in session ${params.ctx.session.sessionId}. Invalid data found.")
+      logger.warn(s"Failed to save data for session table ${params.viewPort.table.name} in viewport ${params.viewPort.id} in session ${params.ctx.session.sessionId}. Invalid data found.")
       return new RpcFunctionFailure(s"Unable to end edit session. Invalid data found.")
     }
 
     if (submit(params)) {
       RpcFunctionSuccess(None)
     } else {
-      logger.warn(s"Failed to end edit session in viewport ${params.viewPort.id} in session ${params.ctx.session.sessionId}. Failed to submit.")
+      logger.warn(s"Failed to save data for session table ${params.viewPort.table.name} in viewport ${params.viewPort.id} in session ${params.ctx.session.sessionId}. Failed to submit.")
       new RpcFunctionFailure(s"Failed to end edit session.")
     }
   }
@@ -52,7 +52,7 @@ trait EndSessionRpcHandler(tableContainer: TableContainer) extends RpcHandler {
   protected def submit(params: RpcParams): Boolean
 
   protected def endSession(params: RpcParams): RpcFunctionResult = {
-    logger.debug(s"Ended session successfully. Removing session table ${params.viewPort.table.name} for viewport ${params.viewPort.id} in session ${params.ctx.session.sessionId}")
+    logger.debug(s"Removing session table ${params.viewPort.table.name} for viewport ${params.viewPort.id} in session ${params.ctx.session.sessionId}")
     tableContainer.removeSessionTable(params.ctx.session, params.viewPort.table.name)
     RpcFunctionSuccess(None)
   }
