@@ -1,17 +1,19 @@
 package org.finos.vuu.person.rpc;
 
 import org.finos.vuu.core.table.TableContainer;
+import org.finos.vuu.net.rpc.AllowAllRpcPermissionChecker;
 import org.finos.vuu.net.rpc.RpcFunctionResult;
 import org.finos.vuu.net.rpc.RpcFunctionSuccess;
 import org.finos.vuu.net.rpc.RpcParams;
+import org.finos.vuu.net.rpc.RpcPermissionChecker;
 import org.finos.vuu.net.rpc.sessiontable.CompositeImportModeRpcHandler;
 
 // An example of Java implementation of ImportSessionRpcHandler and EndSessionRpcHandler
 public class ImportRecordRpcHandler extends CompositeImportModeRpcHandler {
     private final TableContainer tableContainer;
 
-    public ImportRecordRpcHandler(TableContainer tableContainer) {
-        super(tableContainer);
+    public ImportRecordRpcHandler(TableContainer tableContainer, RpcPermissionChecker rpcPermissionChecker) {
+        super(tableContainer, rpcPermissionChecker);
         this.tableContainer = tableContainer;
     }
 
