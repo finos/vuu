@@ -5,7 +5,7 @@ import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.rpc.sessiontable.{CreateSessionTableRpcHandler, EndSessionRpcHandler}
-import org.finos.vuu.net.rpc.{AllowAllRpcPermissionChecker, RpcErrorResult, RpcNames, RpcParams, RpcPermissionChecker, RpcSuccessResult, ViewPortContext}
+import org.finos.vuu.net.rpc.{AllowAllRpcPermissionChecker, DisableAllRpcPermissionChecker, RpcErrorResult, RpcNames, RpcParams, RpcPermissionChecker, RpcSuccessResult, ViewPortContext}
 import org.finos.vuu.net.{RpcRequest, RpcResponseNew, SelectRowRangeRequest, SelectRowRangeSuccess, SelectRowRequest, SelectRowSuccess}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -459,7 +459,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     val noEnoughPermissionViewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
         columns = TestTable.columns,
-        service = new DummyCreateSessionTableRpcHandler()(using AllDisabledRpcPermissionChecker, tableContainer)
+        service = new DummyCreateSessionTableRpcHandler()(using DisableAllRpcPermissionChecker, tableContainer)
       )
 
     ModuleFactory.withNamespace(moduleName)
@@ -509,8 +509,4 @@ class DummyEndSessionHandler(implicit tableContainer: TableContainer) extends En
   override protected def validateData(params: RpcParams): Boolean = ???
 
   override protected def submit(params: RpcParams): Boolean = ???
-}
-
-private object AllDisabledRpcPermissionChecker extends RpcPermissionChecker {
-  override def isRpcAllowed(rpcName: String, vuuUser: VuuUser): Boolean = false
 }
