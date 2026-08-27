@@ -174,7 +174,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
-      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, 0)
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 0)
     }
 
     Scenario("create a session table and copy all rows from all columns from source table") {
@@ -198,7 +198,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
-      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, 3)
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 3)
     }
 
     Scenario("create a session table and copy all rows from some columns from source table") {
@@ -222,7 +222,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
-      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, 3)
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 3)
     }
 
     Scenario("create a session table and copy all rows up to max threshold from source table") {
@@ -246,7 +246,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
-      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, maxSessionTableSize)
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, maxSessionTableSize)
     }
 
     Scenario("create a session table from selected rows of source table") {
@@ -276,7 +276,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
-      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, 2)
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 2)
     }
 
     Scenario("create a session table and copy selected rows up to max threshold from source table") {
@@ -303,13 +303,13 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
-      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, maxSessionTableSize)
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, maxSessionTableSize)
     }
 
 
     Scenario("Request to create a session table failed for copying from columns not in source table") {
       Given("a view port exist")
-      val viewPortId = createViewPortAndVerifyDataSize(tableName1, 3)
+      val viewPortId = createViewPortAndVerifyDataSize(tableName1, moduleName, 3)
 
       When("request createSessionTable and copy from columns not in source table")
       val createSessionTableRequest = RpcRequest(
@@ -374,7 +374,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
       sessionTableName.contains("simple-import-testTable1") shouldBe true
 
-      createViewPortAndVerifyDataSize(sessionTableName, 0)
+      createViewPortAndVerifyDataSize(sessionTableName, moduleName, 0)
     }
 
     Scenario("create a session table from source table using a given name") {
@@ -399,7 +399,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
       sessionTableName.contains("simple-testSessionTable1") shouldBe true
 
-      createViewPortAndVerifyDataSize(sessionTableName, 0)
+      createViewPortAndVerifyDataSize(sessionTableName, moduleName, 0)
     }
   }
 
@@ -425,7 +425,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
       sessionTableName.contains("simple-export-testTable1") shouldBe true
 
-      createViewPortAndVerifyDataSize(sessionTableName, 3)
+      createViewPortAndVerifyDataSize(sessionTableName, moduleName, 3)
     }
 
     Scenario("create a session table from source table using a given name") {
@@ -450,7 +450,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
       sessionTableName.contains("simple-testSessionTable1") shouldBe true
 
-      createViewPortAndVerifyDataSize(sessionTableName, 3)
+      createViewPortAndVerifyDataSize(sessionTableName, moduleName, 3)
     }
   }
 
@@ -541,16 +541,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   }
 
   private def createViewPort(tableName: String) = {
-    createViewPortAndVerifyDataSize(tableName, 3)
-  }
-
-  private def createViewPortAndVerifyDataSize(tableName: String, expectedRowCount: Int) = {
-    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(0, 100), columns = Array("*"))
-    vuuClient.send(sessionId, createViewPortRequest)
-    val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
-    val viewPortId = viewPortCreateResponse.get.viewPortId
-    waitForData(viewPortId, expectedRowCount)
-    viewPortId
+    createViewPortAndVerifyDataSize(tableName, moduleName, 3)
   }
 }
 

@@ -7,6 +7,7 @@ import org.finos.vuu.core.VuuServerConfig
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
 import org.finos.vuu.net.*
 import org.finos.vuu.net.row.RowUpdateType.Update
+import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.{TestStartUp, TestVuuClient}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -27,14 +28,14 @@ abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAl
   var sessionId: String = _
 
   override def beforeAll(): Unit = {
-    timeProvider =  new DefaultClock
+    timeProvider = new DefaultClock
     lifecycle = new LifecycleContainer
     tableDefContainer = new TableDefContainer
 
     val startUp = testStartUp()
     vuuClient = startUp._1
     vuuServerConfig = startUp._2
-    
+
     val sessionOption = vuuClient.login("testUser")
     assert(sessionOption.isDefined)
     sessionId = sessionOption.get
@@ -64,6 +65,26 @@ abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAl
 
   def waitForData(viewPortId: String, count: Int): Unit = {
     waitForData(Map(viewPortId -> count))
+  }
+
+  def createViewPortAndVerifyDataSize(
+                                       tableName: String,
+                                       moduleName: String,
+                                       expectedRowCount: Int): String = {
+    createViewPortAndVerifyDataSize(tableName, moduleName, Array("*"), expectedRowCount)
+  }
+
+  def createViewPortAndVerifyDataSize(
+                                       tableName: String,
+                                       moduleName: String,
+                                       columns: Array[String],
+                                       expectedRowCount: Int): String = {
+    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(0, 100), columns = columns)
+    vuuClient.send(sessionId, createViewPortRequest)
+    val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
+    val viewPortId = viewPortCreateResponse.get.viewPortId
+    waitForData(viewPortId, expectedRowCount)
+    viewPortId
   }
 
   @tailrec
