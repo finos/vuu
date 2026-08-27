@@ -10,13 +10,10 @@ object ViewPortDef {
   }
 
   def createDefault(columns: Array[Column]): ViewPortDef = ViewPortDef(columns, DefaultRpcHandler.apply())
-}
 
-class ViewPortDef(val columns: Array[Column], val service: RpcHandler) {}
-
-object ViewPortDefHelper {
-
-  def defaultDefaultViewPortDefFunc: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {
+  def defaultViewPortDefFunc: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {
     (t, _, _, _) => ViewPortDef.createDefault(t.getTableDef.getColumns)
   }
 }
+
+class ViewPortDef(val columns: Array[Column], val service: RpcHandler) {}
