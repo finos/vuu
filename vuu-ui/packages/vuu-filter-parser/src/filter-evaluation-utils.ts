@@ -79,7 +79,7 @@ export function getFilterPredicate(
  */
 
 // prettier-ignore
-export function filterPredicate(columnMap: ColumnMap,filter: Filter): FilterPredicate;
+export function filterPredicate(columnMap: ColumnMap, filter: Filter): FilterPredicate;
 export function filterPredicate(filter: Filter): DataRowFilterPredicate;
 export function filterPredicate(
   columnMapOrFilter: ColumnMap | Filter,
@@ -111,10 +111,11 @@ export function filterPredicate(
         return testDataRowAND(columnMapOrFilter as MultiClauseFilter<"and">);
       case "or":
         return testDataRowOR(columnMapOrFilter as MultiClauseFilter<"or">);
-      default:
+      default: {
         const unreachable: never = columnMapOrFilter;
         console.log('unrecognized filter type', unreachable);
         return () => true;
+      }
     }
   } else if (filter) {
     //TODO convert filter to include colIdx ratherthan colName, so we don't have to pass cols
@@ -143,10 +144,11 @@ export function filterPredicate(
         return testAND(columnMapOrFilter, filter as MultiClauseFilter<"and">);
       case "or":
         return testOR(columnMapOrFilter, filter as MultiClauseFilter<"or">);
-      default:
+      default: {
         const unreachable: never = filter;
         console.log('unrecognized filter type', unreachable);
         return () => true;
+      }
     }
   } else {
     throw Error(`[filterPredicate] invalid params`);
