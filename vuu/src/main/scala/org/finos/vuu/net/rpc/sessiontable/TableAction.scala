@@ -1,4 +1,4 @@
-package org.finos.vuu.net.rpc
+package org.finos.vuu.net.rpc.sessiontable
 
 enum TableAction(val value: String) {
   case AddRow extends TableAction("addRow")

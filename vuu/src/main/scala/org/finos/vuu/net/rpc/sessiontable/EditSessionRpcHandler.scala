@@ -1,8 +1,9 @@
-package org.finos.vuu.net.rpc
+package org.finos.vuu.net.rpc.sessiontable
 
 import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.core.table.column.ColumnNames.VuuAction
-import org.finos.vuu.net.rpc.TableAction.DeleteRow
+import TableAction.DeleteRow
+import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 
 // Default implementation of EditTableRpcHandler for edit mode
 trait EditSessionRpcHandler extends EditTableRpcHandler {

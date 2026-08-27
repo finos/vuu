@@ -7,8 +7,9 @@ import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames as BCColumnName, BasketTradingColumnNames as BTColumnName, BasketTradingConstituentColumnNames as ColumnName}
 import org.finos.vuu.core.module.basket.result.ErrorReason
 import org.finos.vuu.core.table.*
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditTableRpcHandler, RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.net.ClientSessionId
+import org.finos.vuu.net.rpc.sessiontable.EditTableRpcHandler
 import org.finos.vuu.viewport.*
 
 import scala.util.control.NonFatal

@@ -1,8 +1,9 @@
-package org.finos.vuu.net.rpc
+package org.finos.vuu.net.rpc.sessiontable
 
 import org.finos.vuu.core.table.DefaultColumn.MSG
 import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.core.table.column.ColumnNames.VuuRowNum
+import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 
 // Default implementation of EditTableRpcHandler for import mode
 trait ImportSessionRpcHandler extends EditTableRpcHandler {

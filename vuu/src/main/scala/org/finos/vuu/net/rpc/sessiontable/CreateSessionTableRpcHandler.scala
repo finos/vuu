@@ -1,9 +1,10 @@
-package org.finos.vuu.net.rpc
+package org.finos.vuu.net.rpc.sessiontable
 
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.{InMemSessionDataTable, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.SessionTableCopyOption.{All, Empty, Selected}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams, RpcPermissionChecker}
+import org.finos.vuu.net.rpc.sessiontable.SessionTableCopyOption.{All, Empty, Selected}
 import org.finos.vuu.viewport.{RowSource, ViewPort}
 
 // Added this class for java

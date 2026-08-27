@@ -5,6 +5,7 @@ import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituentCol
 import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.*
+import org.finos.vuu.net.rpc.sessiontable.EditTableRpcHandler
 import org.finos.vuu.viewport.*
 
 class BasketTradingConstituentService extends EditTableRpcHandler with DefaultRpcHandler with StrictLogging {

@@ -1,8 +1,8 @@
 package org.finos.vuu.person.rpc;
 
 import org.finos.vuu.core.table.TableContainer;
-import org.finos.vuu.net.rpc.EditSessionRpcHandler;
-import org.finos.vuu.net.rpc.EndSessionRpcHandlerImpl;
+import org.finos.vuu.net.rpc.sessiontable.EditSessionRpcHandler;
+import org.finos.vuu.net.rpc.sessiontable.EndSessionRpcHandlerImpl;
 import org.finos.vuu.net.rpc.RpcFunctionResult;
 import org.finos.vuu.net.rpc.RpcFunctionSuccess;
 import org.finos.vuu.net.rpc.RpcParams;

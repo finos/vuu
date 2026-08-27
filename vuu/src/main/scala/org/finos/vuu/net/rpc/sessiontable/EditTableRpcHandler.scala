@@ -1,4 +1,6 @@
-package org.finos.vuu.net.rpc
+package org.finos.vuu.net.rpc.sessiontable
+
+import org.finos.vuu.net.rpc.{RpcFunctionResult, RpcHandler, RpcNames, RpcParams}
 
 trait EditTableRpcHandler() extends RpcHandler {
 

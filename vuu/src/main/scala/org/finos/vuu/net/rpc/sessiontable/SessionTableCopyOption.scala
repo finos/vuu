@@ -1,4 +1,4 @@
-package org.finos.vuu.net.rpc
+package org.finos.vuu.net.rpc.sessiontable
 
 enum SessionTableCopyOption(val name: String) {
   case All extends SessionTableCopyOption("All")

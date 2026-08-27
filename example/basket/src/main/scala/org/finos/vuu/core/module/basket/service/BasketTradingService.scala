@@ -5,7 +5,8 @@ import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituentTable
 import org.finos.vuu.core.table.*
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditTableRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
+import org.finos.vuu.net.rpc.sessiontable.EditTableRpcHandler
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.order.oms.{CancelOrder, NewOrder, OmsApi}
 
 trait BasketTradingServiceIF {

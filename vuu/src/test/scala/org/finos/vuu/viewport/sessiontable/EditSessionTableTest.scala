@@ -6,6 +6,7 @@ import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
 import org.finos.vuu.core.table.{RowWithData, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.rpc.*
+import org.finos.vuu.net.rpc.sessiontable.EditTableRpcHandler
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.finos.vuu.viewport.*
