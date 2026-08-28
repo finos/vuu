@@ -79,7 +79,7 @@ export function getFilterPredicate(
  */
 
 // prettier-ignore
-export function filterPredicate(columnMap: ColumnMap,filter: Filter): FilterPredicate;
+export function filterPredicate(columnMap: ColumnMap, filter: Filter): FilterPredicate;
 export function filterPredicate(filter: Filter): DataRowFilterPredicate;
 export function filterPredicate(
   columnMapOrFilter: ColumnMap | Filter,
