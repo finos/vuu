@@ -454,7 +454,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
     val viewPortDefFactoryForSessionTable = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
         columns = TestTable.columns,
-        service = new DummyEndSessionHandler(using tableContainer)
+        service = new DummyEndSessionHandler(tableContainer)
       )
     val noEnoughPermissionViewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
@@ -502,7 +502,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
 
 class DummyCreateSessionTableRpcHandler()(using rpcPermissionChecker: RpcPermissionChecker, tableContainer: TableContainer) extends CreateSessionTableRpcHandler(rpcPermissionChecker, tableContainer) {}
 
-class DummyEndSessionHandler(implicit tableContainer: TableContainer) extends EndSessionRpcHandler(tableContainer) {
+class DummyEndSessionHandler(override val tableContainer: TableContainer) extends EndSessionRpcHandler() {
 
   override protected def verifyPermission(params: RpcParams): Boolean = ???
 

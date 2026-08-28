@@ -134,6 +134,6 @@ public class JavaExampleModule extends DefaultModule {
     }
 
     private RpcHandler buildImportRpcHandler(TableContainer tableContainer) {
-        return new ImportRecordRpcHandler(tableContainer, AllowAllRpcPermissionChecker$.MODULE$);
+        return new ImportRecordRpcHandler(tableContainer);
     }
 }

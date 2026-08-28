@@ -17,36 +17,10 @@ class ImportSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
   private val moduleName = "ImportSessionRpcHandlerTest"
   private val sourceTableName = "sourcetable"
   private val sessionTableName = "sessiontable"
-  private val sessionTableName2 = "sessiontable2"
   private val testProviderFactory = new TestProviderFactory
-  private val maxSessionTableSize = 10 // configured in TestStartUp
+  private val maxSessionTableSize = 10
 
   Feature("[Web Socket API] RPC supported by ImportSessionRpcHandler") {
-
-    Scenario("Cannot add row if no permission") {
-      Given("A session table is created for import")
-      val viewPortId = createViewPort(sourceTableName)
-      val requestId = vuuClient.send(sessionId, RpcRequest(ViewPortContext(viewPortId), "createNoPermissionTable", Map()))
-      val response = vuuClient.awaitForResponse(requestId)
-      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
-      val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
-
-      Given("A view port exists for session table")
-      val viewPortId2 = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 0)
-
-      When("Request addRow")
-      val someData = Map()
-      val request = RpcRequest(ViewPortContext(viewPortId2), RpcNames.AddRowRpc, Map("data" -> someData))
-      val requestId2 = vuuClient.send(sessionId, request)
-
-      Then("New row cannot be added")
-      val response2 = vuuClient.awaitForResponse(requestId2)
-      val responseBody2 = assertBodyIsInstanceOf[RpcResponseNew](response2)
-      responseBody2.rpcName shouldEqual RpcNames.AddRowRpc
-      val rpcResult2 = assertAndCastAsInstanceOf[RpcErrorResult](responseBody2.result)
-      rpcResult2.errorMessage shouldBe "No enough permission"
-    }
 
     Scenario("Cannot add row if table size reaches limit") {
       Given("A large session table is created for import")
@@ -171,13 +145,7 @@ class ImportSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
     val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
         columns = TestTable.columns,
-        service = new TestImportSessionTableRpcHandler(tableContainer)
-      )
-
-    val viewPortDefFactory2 = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
-      ViewPortDef(
-        columns = TestTable.columns,
-        service = new TestImportSessionTableRpcHandler2(tableContainer)
+        service = new TestImportSessionTableRpcHandler(tableContainer.rpcOptions.maxSessionTableSize)
       )
 
     ModuleFactory.withNamespace(moduleName)
@@ -188,11 +156,6 @@ class ImportSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
         keyField = VuuRowNum,
         customColumns = TestTable.columns ++ new ColumnBuilder().addString(VuuRowNum).build()),
         viewPortDefFactory)
-      .addSessionTable(SessionTableDef(
-        name = sessionTableName2,
-        keyField = VuuRowNum,
-        customColumns = TestTable.columns ++ new ColumnBuilder().addString(VuuRowNum).build()),
-        viewPortDefFactory2)
       .asModule()
   }
 
@@ -204,7 +167,6 @@ class ImportSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
 
     registerRpc("createTable", createEmptySessionTable)
     registerRpc("createLargeTable", createLargeSessionTable)
-    registerRpc("createNoPermissionTable", createNoPermissionTable)
 
     def createEmptySessionTable(params: RpcParams): RpcFunctionResult = {
       val sessionTableSource = tableContainer.getTable(sessionTableName)
@@ -227,19 +189,10 @@ class ImportSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
       sessionTable.processUpdate("10", RowWithData("10", Map()))
       RpcFunctionSuccess(Some(Map("sessionTable" -> sessionTable.name)))
     }
-
-    def createNoPermissionTable(params: RpcParams): RpcFunctionResult = {
-      val sessionTableSource = tableContainer.getTable(sessionTableName2)
-      val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, params.ctx.session)
-      RpcFunctionSuccess(Some(Map("sessionTable" -> sessionTable.name)))
-    }
   }
 
-  class TestImportSessionTableRpcHandler(tableContainer: TableContainer) extends ImportSessionRpcHandler(tableContainer, AllowAllRpcPermissionChecker) {
-    override protected def addRowWithoutVuuMsg(params: RpcParams): RpcFunctionResult = new RpcFunctionSuccess()
-  }
+  class TestImportSessionTableRpcHandler(override val maxSessionTableSize: Int) extends ImportSessionRpcHandler() {
 
-  class TestImportSessionTableRpcHandler2(tableContainer: TableContainer) extends ImportSessionRpcHandler(tableContainer, DisableAllRpcPermissionChecker) {
     override protected def addRowWithoutVuuMsg(params: RpcParams): RpcFunctionResult = new RpcFunctionSuccess()
   }
 }

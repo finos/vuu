@@ -47,8 +47,7 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule,
         .withViewPortThreads(1)
         .withTreeThreads(1),
       VuuClientConnectionOptions()
-        .withHeartbeatDisabled(),
-      rpcOptions = VuuRpcOptionsImpl(10)
+        .withHeartbeatDisabled()
     )
       .withModule(module)
       .withPlugin(plugin)

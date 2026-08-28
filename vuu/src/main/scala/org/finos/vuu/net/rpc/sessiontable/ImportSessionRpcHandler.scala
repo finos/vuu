@@ -1,20 +1,18 @@
 package org.finos.vuu.net.rpc.sessiontable
 
 import org.finos.vuu.core.table.DefaultColumn.MSG
-import org.finos.vuu.core.table.{RowWithData, TableContainer}
+import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.core.table.column.ColumnNames.VuuRowNum
-import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcNames, RpcParams, RpcPermissionChecker}
+import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 
 // Default implementation of EditTableRpcHandler for import mode
-trait ImportSessionRpcHandler(tableContainer: TableContainer, rpcPermissionChecker: RpcPermissionChecker) extends EditTableRpcHandler {
+trait ImportSessionRpcHandler() extends EditTableRpcHandler {
+
+  val maxSessionTableSize: Int
 
   def addRow(params: RpcParams): RpcFunctionResult = {
 
-    if (!rpcPermissionChecker.isRpcAllowed(RpcNames.AddRowRpc, params.ctx.user)) {
-      return new RpcFunctionFailure("No enough permission")
-    }
-
-    if (params.viewPort.table.asTable.size() >= tableContainer.rpcOptions.maxSessionTableSize) {
+    if (params.viewPort.table.asTable.size() >= maxSessionTableSize) {
       return new RpcFunctionFailure("Unable to add row. Session table reached max size.")
     }
 
