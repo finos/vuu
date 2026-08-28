@@ -145,7 +145,7 @@ class ImportSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
     val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
         columns = TestTable.columns,
-        service = new TestImportSessionTableRpcHandler(tableContainer.rpcOptions.maxSessionTableSize)
+        service = new TestImportSessionTableRpcHandler(maxSessionTableSize)
       )
 
     ModuleFactory.withNamespace(moduleName)
