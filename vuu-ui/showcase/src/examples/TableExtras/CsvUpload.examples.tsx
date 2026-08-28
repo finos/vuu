@@ -2,6 +2,7 @@ import {
   CsvUpload,
 } from "@vuu-ui/vuu-table-extras";
 import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
+import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@salt-ds/core";
 import { LocalDataSourceProvider, simulModule } from "@vuu-ui/vuu-data-test";
@@ -96,58 +97,55 @@ export const CsvUploadWithInstrumentsSchema = () => {
   const dataSource = useMemo(() => createInstrumentsMockDataSource(), []);
   return <CsvUpload dataSource={dataSource} />;
 };
+const rowDefaultsSchema: TableSchema = {
+  columns: [
+    { name: "id", serverDataType: "string" },
+    { name: "name", serverDataType: "string" },
+  ],
+  key: "id",
+  table: { module: "TEST", table: "items" },
+};
 
-const CsvUploadWithErrorsOnlyPreviewContent = () => {
-  const dataSource = useMemo(
-    () => simulModule.createDataSource("instruments"),
-    [],
-  );
-  const [sessionDataSource, setSessionDataSource] = useState<
-    DataSource | undefined
-  >();
-  const [uploadOpen, setUploadOpen] = useState(true);
+export const CsvUploadWithRowDefaults = () => {
+  const [capturedRows, setCapturedRows] = useState<
+    Record<string, VuuRowDataItemType>[]
+  >([]);
 
-  const handleImportSessionStarted = useCallback((sessionDs: DataSource) => {
-    sessionDs.filter = { filter: 'vuuMsg != ""' };
-    setSessionDataSource(sessionDs);
+  const dataSource = useMemo(() => {
+    const sessionDs = {
+      table: { module: "TEST", table: "session-items" },
+      tableSchema: rowDefaultsSchema,
+      columns: ["id"],
+      addRow: async (rowData: Record<string, VuuRowDataItemType>) => {
+        setCapturedRows((prev) => [...prev, rowData]);
+        return { data: undefined, type: "SUCCESS_RESULT" as const };
+      },
+      endEditSession: async () => void 0,
+    };
+    return {
+      table: { module: "TEST", table: "items" },
+      tableSchema: rowDefaultsSchema,
+      createSessionDataSource: async () => sessionDs as unknown as DataSource,
+      subscribe: async () => void 0,
+      unsubscribe: () => void 0,
+    } as unknown as DataSource;
   }, []);
-
-  const handleImportSessionEnded = useCallback(() => {
-    setSessionDataSource(undefined);
-  }, []);
-
-  const errorTableConfig = useMemo<TableConfig>(
-    () => ({
-      columns: [
-        { name: "vuuRowNum", label: "Row", width: 80, serverDataType: "int" },
-        { name: "vuuMsg", label: "Error", width: 400, serverDataType: "string" },
-      ],
-    }),
-    [],
-  );
 
   return (
-    <div style={{ padding: 12 }}>
+    <div>
       <CsvUpload
         dataSource={dataSource}
-        onCancel={() => setUploadOpen(false)}
-        onClose={() => setUploadOpen(false)}
-        onImportSessionStarted={handleImportSessionStarted}
-        onImportSessionEnded={handleImportSessionEnded}
-        open={uploadOpen}
-      >
-        {sessionDataSource ? (
-          <div style={{ height: 200 }}>
-            <Table config={errorTableConfig} dataSource={sessionDataSource} />
-          </div>
-        ) : null}
-      </CsvUpload>
+        rowDefaults={{ name: "Default Name" }}
+      />
+      {capturedRows.length > 0 && (
+        <ul data-testid="captured-rows">
+          {capturedRows.map((row, i) => (
+            <li key={i} data-testid={`captured-row-${i}`}>
+              {JSON.stringify(row)}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
-
-export const CsvUploadWithErrorsOnlyPreview = () => (
-  <LocalDataSourceProvider>
-    <CsvUploadWithErrorsOnlyPreviewContent />
-  </LocalDataSourceProvider>
-);

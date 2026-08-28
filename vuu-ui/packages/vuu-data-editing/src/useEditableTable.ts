@@ -12,6 +12,7 @@ import {
   type EditLifecycle,
   type EditSessionApi,
   type EditState,
+  type RowDefaultDataItemValues,
 } from "./EditSession";
 import { EDIT_ACTION_ROW_CLASS_NAME_GENERATOR } from "./editActionRowClassNameGenerator";
 
@@ -35,6 +36,8 @@ export interface EditableTableHookProps {
   isEditMode: boolean;
   onCancel: () => void;
   onSave: () => void;
+  /** Default column values applied to every addRow call. Pass a stable reference — a new object triggers EditSession recreation. */
+  rowDefaults?: RowDefaultDataItemValues;
   /**
    * If dataSource not provided, new DataSource
    * will be created using table and columns
@@ -51,6 +54,7 @@ export const useEditableTable = ({
   isEditMode,
   onCancel,
   onSave,
+  rowDefaults,
   table,
 }: EditableTableHookProps) => {
   const { VuuDataSource } = useData();
@@ -74,8 +78,8 @@ export const useEditableTable = ({
   // The editSession will be made available to all the edit controls in scope
   // by wrapping the edit component with a DataEditingProvider.
   const editSession = useMemo(
-    () => new EditSession(sourceDataSource as EditApi, deleteMode, editSessionApi),
-    [deleteMode, editSessionApi, sourceDataSource],
+    () => new EditSession({ dataSource: sourceDataSource as EditApi, deleteMode, editSessionApi, rowDefaults }),
+    [deleteMode, editSessionApi, rowDefaults, sourceDataSource],
   );
   const [lifecycle, setLifecycle] = useState<EditLifecycle>(
     editSession.lifecycle,

@@ -17,8 +17,10 @@ export {
   EditSession,
   SupersededEditError,
   type EditLifecycle,
+  type EditSessionConstructorProps,
   type NewRowState,
   type EditState,
+  type RowDefaultDataItemValues,
 } from "./EditSession";
 export { StaleUpdateError } from "@vuu-ui/vuu-utils";
 export {
