@@ -500,6 +500,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   }
 }
 
+// TODO 2231 add tests for end session
 class DummyCreateSessionTableRpcHandler()(using rpcPermissionChecker: RpcPermissionChecker, tableContainer: TableContainer) extends CreateSessionTableRpcHandler(rpcPermissionChecker, tableContainer) {}
 
 class DummyEndSessionHandler(override val tableContainer: TableContainer) extends EndSessionRpcHandler() {
