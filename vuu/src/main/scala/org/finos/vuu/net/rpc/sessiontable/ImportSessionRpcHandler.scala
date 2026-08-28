@@ -6,7 +6,7 @@ import org.finos.vuu.core.table.column.ColumnNames.VuuRowNum
 import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 
 // Default implementation of EditTableRpcHandler for import mode
-trait ImportSessionRpcHandler() extends EditTableRpcHandler {
+trait ImportSessionRpcHandler extends EditTableRpcHandler {
 
   val maxSessionTableSize: Int
 

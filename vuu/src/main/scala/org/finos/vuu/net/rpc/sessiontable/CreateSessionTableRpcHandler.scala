@@ -7,7 +7,7 @@ import org.finos.vuu.net.rpc.sessiontable.SessionTableCopyOption.{All, Empty, Se
 import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams, RpcPermissionChecker}
 import org.finos.vuu.viewport.{RowSource, ViewPort}
 
-trait CreateSessionTableRpcHandler() extends RpcHandler {
+trait CreateSessionTableRpcHandler extends RpcHandler {
 
   val tableContainer: TableContainer
   val rpcPermissionChecker: RpcPermissionChecker

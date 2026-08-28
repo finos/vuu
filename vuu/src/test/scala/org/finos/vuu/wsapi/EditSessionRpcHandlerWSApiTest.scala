@@ -125,5 +125,5 @@ class EditSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
     }
   }
 
-  class TestEditSessionTableRpcHandler() extends EditSessionRpcHandler() {}
+  class TestEditSessionTableRpcHandler extends EditSessionRpcHandler {}
 }
