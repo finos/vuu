@@ -38,9 +38,6 @@ object TestTable {
     "row15" -> Map("Id" -> "row15", "Name" -> "user15", "Account" -> 15),
   ))
 
- 
-
-
   def createTableDef(tableName: String): TableDef = {
     TableDef(
       name = tableName,
