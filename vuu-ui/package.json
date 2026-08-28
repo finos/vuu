@@ -94,7 +94,6 @@
     "esbuild-visualizer": "0.7.0",
     "happy-dom": "^20.0.10",
     "local-web-server": "5.4.0",
-    "monocart-coverage-reports": "^2.13.0",
     "rollup": "4.24.4",
     "rollup-plugin-esbuild": "6.1.1",
     "rollup-plugin-import-css": "3.5.6",
