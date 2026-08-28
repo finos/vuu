@@ -6,7 +6,7 @@ import org.finos.vuu.core.table.DefaultColumn.MSG
 import org.finos.vuu.core.table.column.ColumnNames.VuuRowNum
 import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer}
 import org.finos.vuu.net.rpc.sessiontable.ImportSessionRpcHandler
-import org.finos.vuu.net.rpc.{AllowAllRpcPermissionChecker, DisableAllRpcPermissionChecker, RpcErrorResult, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams, RpcSuccessResult, ViewPortContext}
+import org.finos.vuu.net.rpc.{RpcErrorResult, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams, RpcSuccessResult, ViewPortContext}
 import org.finos.vuu.net.{RpcRequest, RpcResponseNew}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
