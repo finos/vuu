@@ -2,14 +2,11 @@ package org.finos.vuu.net.rpc.sessiontable
 
 import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.core.table.column.ColumnNames.VuuAction
-import TableAction.DeleteRow
-import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams, RpcPermissionChecker}
-
-// TODO do we need permission check? If not add a java example for this
-// any other common code needs to be moved here?
+import org.finos.vuu.net.rpc.sessiontable.TableAction.DeleteRow
+import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 
 // Default implementation of EditTableRpcHandler for edit mode
-trait EditSessionRpcHandler(rpcPermissionChecker: RpcPermissionChecker) extends EditTableRpcHandler {
+trait EditSessionRpcHandler() extends EditTableRpcHandler {
 
   def deleteSelectedRows(params: RpcParams): RpcFunctionResult = {
     val table = params.viewPort.table.asTable
