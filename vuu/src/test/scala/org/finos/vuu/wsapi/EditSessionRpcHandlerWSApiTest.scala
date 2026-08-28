@@ -42,7 +42,7 @@ class EditSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
       val response2 = vuuClient.awaitForResponse(requestId2)
       val responseBody2 = assertBodyIsInstanceOf[RpcResponseNew](response2)
       responseBody2.rpcName shouldEqual RpcNames.DeleteSelectedRowsRpc
-      val rpcResult2 = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody2.result)#
+      val rpcResult2 = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody2.result)
       // TODO should check VuuAction is set to delete
     }
   }
