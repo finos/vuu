@@ -115,7 +115,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       sessionTableName.contains("simple-edit-testTable1") shouldBe true
     }
 
@@ -139,7 +139,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       sessionTableName.contains("simple-testSessionTable1") shouldBe true
     }
 
@@ -163,7 +163,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 0)
     }
 
@@ -187,7 +187,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 3)
     }
 
@@ -211,7 +211,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 3)
     }
 
@@ -235,7 +235,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, maxSessionTableSize)
     }
 
@@ -265,7 +265,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 2)
     }
 
@@ -292,7 +292,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, maxSessionTableSize)
     }
 
@@ -361,7 +361,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       sessionTableName.contains("simple-import-testTable1") shouldBe true
 
       createViewPortAndVerifyDataSize(sessionTableName, moduleName, 0)
@@ -386,7 +386,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       sessionTableName.contains("simple-testSessionTable1") shouldBe true
 
       createViewPortAndVerifyDataSize(sessionTableName, moduleName, 0)
@@ -412,7 +412,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       sessionTableName.contains("simple-export-testTable1") shouldBe true
 
       createViewPortAndVerifyDataSize(sessionTableName, moduleName, 3)
@@ -437,7 +437,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       sessionTableName.contains("simple-testSessionTable1") shouldBe true
 
       createViewPortAndVerifyDataSize(sessionTableName, moduleName, 3)
