@@ -33,9 +33,29 @@ jobs:
         uses: ./.github/actions/setup-vuu-ui
       - run: cd ./vuu-ui && npm run test:vite
 
+  playwright-gallery-build:
+    runs-on: ubuntu-latest
+    name: playwright-gallery-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+      - name: Install Node & dependencies
+        uses: ./.github/actions/setup-vuu-ui
+      - name: Build Worker
+        run: cd ./vuu-ui && npm run build:worker
+      - name: Build Playwright gallery
+        run: cd ./vuu-ui && npm run playwright:gallery:build
+      - name: Upload Playwright gallery
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: playwright-gallery
+          path: vuu-ui/playwright/gallery/dist/
+          retention-days: 1
+
   playwright-component:
     runs-on: ubuntu-latest
     name: playwright-component (${{ matrix.browser }})
+    needs: playwright-gallery-build
     strategy:
       matrix:
         browser: [chromium, firefox, webkit]
@@ -44,12 +64,17 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
+      - name: Download Playwright gallery
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: playwright-gallery
+          path: vuu-ui/playwright/gallery/dist
       - name: Build Worker
         run: cd ./vuu-ui && npm run build:worker
       - name: Install Playwright Browser
-        run: cd ./vuu-ui && npx playwright install --with-deps ${{ matrix.browser }}
+        run: cd ./vuu-ui && npm exec -- playwright install --with-deps ${{ matrix.browser }}
       - name: Run Playwright component tests
-        run: cd ./vuu-ui && npx playwright test --config=playwright-ct.config.ts --project=${{ matrix.browser }}
+        run: cd ./vuu-ui && npm exec -- playwright test --config=playwright.config.ts --project=components-${{ matrix.browser }}
       - name: Upload blob report to GitHub Actions Artifacts
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         if: always()

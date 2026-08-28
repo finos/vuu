@@ -1,8 +1,7 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "types": ["@playwright/experimental-ct-react"]
+    "types": ["@playwright/test"]
   },
   "include": ["**/*.ts", "**/*.tsx", "../packages/**/src/**/__component__/*.playwright.test.tsx"]
 }
-

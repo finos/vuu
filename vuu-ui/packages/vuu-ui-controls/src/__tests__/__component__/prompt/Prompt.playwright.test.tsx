@@ -1,17 +1,21 @@
 import { expect, test } from "@playwright/test";
-import { gotoGalleryExample } from "../gallery";
 
-test.describe("Prompt gallery examples", () => {
-  test("renders the default prompt in a portal", async ({ page }) => {
-    await gotoGalleryExample(page, "UiControls/Prompt/BareBonesPrompt");
+test.describe("WHEN rendered with open true", () => {
+  test("THEN Prompt renders in portal", async ({ mount, page }) => {
+    await mount("UiControls/Prompt/BareBonesPrompt");
 
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await expect(dialog).toContainClass("vuuPrompt");
   });
+});
 
-  test("supports a confirm-only prompt with a custom label", async ({ page }) => {
-    await gotoGalleryExample(page, "UiControls/Prompt/ConfirmOnly");
+test.describe("WHEN configured to show confirm button only, with custom label", () => {
+  test("THEN neither the close button nor cancel button will be rendered", async ({
+    mount,
+    page,
+  }) => {
+    await mount("UiControls/Prompt/ConfirmOnly");
 
     await expect(page.getByRole("dialog")).toBeVisible();
 
@@ -22,9 +26,11 @@ test.describe("Prompt gallery examples", () => {
     await expect(okButton).toBeVisible();
     await expect(okButton).toBeFocused();
   });
+});
 
-  test("focuses the confirm button when configured", async ({ page }) => {
-    await gotoGalleryExample(page, "UiControls/Prompt/FocusOnConfirm");
+test.describe("WHEN configured to focus on confirm", () => {
+  test("THEN Prompt renders in portal", async ({ mount, page }) => {
+    await mount("UiControls/Prompt/FocusOnConfirm");
 
     await expect(page.getByRole("dialog")).toBeVisible();
 
