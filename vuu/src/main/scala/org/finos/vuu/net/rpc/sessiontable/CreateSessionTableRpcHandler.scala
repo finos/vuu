@@ -5,7 +5,7 @@ import org.finos.vuu.core.table.{InMemSessionDataTable, TableContainer, ViewPort
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.sessiontable.SessionTableCopyOption.{All, Empty, Selected}
 import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams, RpcPermissionChecker}
-import org.finos.vuu.viewport.{RowSource, ViewPort}
+import org.finos.vuu.viewport.{OpenDialogViewPortAction, RowSource, ViewPort, ViewPortTable}
 
 trait CreateSessionTableRpcHandler extends RpcHandler {
 
@@ -60,7 +60,7 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
     val sessionTableSource = tableContainer.getTable(sessionTableName)
     val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)
     copyDataToSessionTable(copyOption, params.viewPort, sessionTable, columnsToCopy)
-    RpcFunctionSuccess(Some(Map("sessionTable" -> sessionTable.name, "module" -> sessionTable.tableDef.getModule().name)))
+    RpcFunctionSuccess(Some(OpenDialogViewPortAction(ViewPortTable(sessionTable.name, sessionTable.tableDef.getModule().name), "")))
   }
 
   def createSessionTableForImport(params: RpcParams): RpcFunctionResult = {
@@ -88,7 +88,7 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
     val sessionTableSource = tableContainer.getTable(sessionTableName)
     val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)
     copyDataToSessionTable(Empty, params.viewPort, sessionTable, columnsToCopy)
-    RpcFunctionSuccess(Some(Map("sessionTable" -> sessionTable.name, "module" -> sessionTable.tableDef.getModule().name)))
+    RpcFunctionSuccess(Some(OpenDialogViewPortAction(ViewPortTable(sessionTable.name, sessionTable.tableDef.getModule().name), "")))
   }
 
   def createSessionTableForExport(params: RpcParams): RpcFunctionResult = {
@@ -110,7 +110,7 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
     val sessionTableSource = tableContainer.getTable(sessionTableName)
     val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)
     copyDataToSessionTable(All, params.viewPort, sessionTable, columnsToCopy)
-    RpcFunctionSuccess(Some(Map("sessionTable" -> sessionTable.name, "module" -> sessionTable.tableDef.getModule().name)))
+    RpcFunctionSuccess(Some(OpenDialogViewPortAction(ViewPortTable(sessionTable.name, sessionTable.tableDef.getModule().name), "")))
   }
 
   def copyDataToSessionTable(copyOption: SessionTableCopyOption, vp: ViewPort, sessionTable: InMemSessionDataTable, columns: List[String]): Unit = {
