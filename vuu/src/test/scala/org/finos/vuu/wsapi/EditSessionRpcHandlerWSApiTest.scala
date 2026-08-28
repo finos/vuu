@@ -34,16 +34,16 @@ class EditSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
       Given("A view port exists for session table")
       val viewPortId2 = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 0)
 
-      When("Request addRow")
-      val data = Map(VuuRowNum -> "1", MSG.name -> "some message")
-      val request = RpcRequest(ViewPortContext(viewPortId2), RpcNames.AddRowRpc, Map("data" -> data))
+      When("Request deleteSelectedRows")
+      val request = RpcRequest(ViewPortContext(viewPortId2), RpcNames.DeleteSelectedRowsRpc, Map("data" -> Map()))
       val requestId2 = vuuClient.send(sessionId, request)
 
-      Then("New row added successfully")
+      Then("Selected rows deleted successfully")
       val response2 = vuuClient.awaitForResponse(requestId2)
       val responseBody2 = assertBodyIsInstanceOf[RpcResponseNew](response2)
-      responseBody2.rpcName shouldEqual RpcNames.AddRowRpc
-      val rpcResult2 = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody2.result)
+      responseBody2.rpcName shouldEqual RpcNames.DeleteSelectedRowsRpc
+      val rpcResult2 = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody2.result)#
+      // TODO should check VuuAction is set to delete
     }
   }
 
