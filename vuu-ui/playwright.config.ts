@@ -14,6 +14,7 @@ export default defineConfig({
   reporter: [["html", { outputFolder: "./playwright/reports" }]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
+    baseURL: "http://localhost:4173",
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
   },
@@ -29,5 +30,6 @@ export default defineConfig({
   outputDir: "./playwright/test-results",
   webServer: {
     command: "npm run showcase:preview",
+    url: "http://localhost:4173",
   },
 });
