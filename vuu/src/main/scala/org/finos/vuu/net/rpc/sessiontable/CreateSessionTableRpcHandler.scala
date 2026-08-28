@@ -3,17 +3,20 @@ package org.finos.vuu.net.rpc.sessiontable
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.{InMemSessionDataTable, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams, RpcPermissionChecker}
 import org.finos.vuu.net.rpc.sessiontable.SessionTableCopyOption.{All, Empty, Selected}
+import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams, RpcPermissionChecker}
 import org.finos.vuu.viewport.{RowSource, ViewPort}
 
-// Added this class for java
-class CreateSessionTableRpcHandlerImpl(rpcPermissionChecker: RpcPermissionChecker, tableContainer: TableContainer)
-  extends CreateSessionTableRpcHandler(rpcPermissionChecker, tableContainer)
-    with DefaultRpcHandler
+trait CreateSessionTableRpcHandler() extends RpcHandler {
 
-trait CreateSessionTableRpcHandler(rpcPermissionChecker: RpcPermissionChecker, tableContainer: TableContainer) extends RpcHandler {
-  registerRpc(RpcNames.CreateSessionTableRpc, this.createSessionTable)
+  val tableContainer: TableContainer
+  val rpcPermissionChecker: RpcPermissionChecker
+
+  registerCreateSessionTableRpcs()
+
+  protected final def registerCreateSessionTableRpcs(): Unit = {
+    registerRpc(RpcNames.CreateSessionTableRpc, this.createSessionTable)
+  }
 
   def createSessionTable(params: RpcParams): RpcFunctionResult = {
     val vuuUser: VuuUser = params.ctx.user
