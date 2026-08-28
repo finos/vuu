@@ -1,7 +1,6 @@
 package org.finos.vuu.wsapi
 
 import org.finos.vuu.api.{SessionTableDef, ViewPortDef}
-import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.rpc.sessiontable.{CreateSessionTableRpcHandler, EndSessionRpcHandler}

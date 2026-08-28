@@ -2,7 +2,6 @@ package org.finos.vuu.wsapi
 
 import org.finos.vuu.api.{ColumnBuilder, SessionTableDef, ViewPortDef}
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
-import org.finos.vuu.core.table.DefaultColumn.MSG
 import org.finos.vuu.core.table.column.ColumnNames.{VuuAction, VuuRowNum}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.rpc.sessiontable.EditSessionRpcHandler
