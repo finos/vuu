@@ -1,5 +1,5 @@
-import { test, expect } from "@playwright/test";
-import { TestTimeInput } from "../../../../../../showcase/src/examples/UiControls/TimeInput.examples";
+import { expect, test } from "@playwright/test";
+
 
 declare global {
   namespace PlaywrightTest {
@@ -63,7 +63,7 @@ test.describe("TimeInput", () => {
       test("renders as expected, placeholder shows, value is empty", async ({
         mount,
       }) => {
-        const component = await mount(<TestTimeInput />);
+        const component = await mount("UiControls/TimeInput/TestTimeInput");
         const timeinput = component.locator(".vuuTimeInput");
         await expect(timeinput).toHaveValue("");
       });
@@ -73,9 +73,9 @@ test.describe("TimeInput", () => {
       test("renders as expected, value is visible, value is as expected", async ({
         mount,
       }) => {
-        const component = await mount(
-          <TestTimeInput defaultValue="00:00:00" />,
-        );
+        const component = await mount("UiControls/TimeInput/TestTimeInput", {
+          defaultValue: "00:00:00",
+        });
         const timeinput = component.locator(".vuuTimeInput");
         await expect(timeinput).toHaveValue("00:00:00");
       });
@@ -87,9 +87,9 @@ test.describe("TimeInput", () => {
       test("THEN control is focused and hours are selected", async ({
         mount,
       }) => {
-        const component = await mount(
-          <TestTimeInput defaultValue="00:00:00" />,
-        );
+        const component = await mount("UiControls/TimeInput/TestTimeInput", {
+          defaultValue: "00:00:00",
+        });
 
         const preTimeinput = component.getByTestId("pre-timeinput");
         const preInput = preTimeinput.locator("input");
@@ -106,9 +106,9 @@ test.describe("TimeInput", () => {
           mount,
           browserName,
         }) => {
-          const component = await mount(
-            <TestTimeInput defaultValue="00:00:00" />,
-          );
+          const component = await mount("UiControls/TimeInput/TestTimeInput", {
+            defaultValue: "00:00:00",
+          });
 
           const preTimeinput = component.getByTestId("pre-timeinput");
           const preInput = preTimeinput.locator("input");
@@ -134,9 +134,9 @@ test.describe("TimeInput", () => {
           mount,
           browserName,
         }) => {
-          const component = await mount(
-            <TestTimeInput defaultValue="00:00:00" />,
-          );
+          const component = await mount("UiControls/TimeInput/TestTimeInput", {
+            defaultValue: "00:00:00",
+          });
 
           const preTimeinput = component.getByTestId("pre-timeinput");
           const preInput = preTimeinput.locator("input");
@@ -174,16 +174,9 @@ test.describe("TimeInput", () => {
       mount,
       page,
     }) => {
-      const callbacks: unknown[][] = [];
-      const handler = (...args: unknown[]) => callbacks.push(args);
-
-      const component = await mount(
-        <TestTimeInput
-          defaultValue="00:00:00"
-          onChange={handler}
-          onCommit={handler}
-        />,
-      );
+      const component = await mount("UiControls/TimeInput/TestTimeInput", {
+        defaultValue: "00:00:00",
+      });
 
       const preTimeinput = component.getByTestId("pre-timeinput");
       const preInput = preTimeinput.locator("input");
@@ -211,15 +204,17 @@ test.describe("TimeInput", () => {
       await expect(timeinput).toHaveValue("12:35:00");
       await expect(timeinput).toHaveSelection(6, 8);
 
-      expect(callbacks).toHaveLength(4);
-
-      callbacks.length = 0;
+      const changeValues = component.getByTestId("time-input-change-values");
+      await expect(changeValues).toHaveValue(
+        JSON.stringify(["10:00:00", "12:00:00", "12:30:00", "12:35:00"]),
+      );
 
       await timeinput.press("Enter");
 
       // commit callback
-      expect(callbacks).toHaveLength(1);
-      expect(callbacks[0][1]).toEqual("12:35:00");
+      await expect(
+        component.getByTestId("time-input-commit-values"),
+      ).toHaveValue(JSON.stringify(["12:35:00"]));
     });
   });
 });

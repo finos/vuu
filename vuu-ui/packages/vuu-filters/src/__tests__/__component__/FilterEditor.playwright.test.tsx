@@ -1,11 +1,6 @@
-import { test, type Page } from "@playwright/test";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { expect } from "../../../../../playwright/customAssertions";
-import {
-  EditMultiClauseOrFilter,
-  NewFilter,
-} from "../../../../../showcase/src/examples/Filters/FilterEditor.examples";
-import { FilterBarOneSimpleFilter } from "../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
+import { expect, test, type Page } from "@playwright/test";
+
+
 
 const assertComboboxReady = async (page: Page) => {
   await expect(page.getByRole("combobox")).toBeFocused();
@@ -32,11 +27,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <NewFilter />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/FilterEditor/NewFilter");
       await expect(page.getByRole("combobox")).toHaveCount(1);
     });
 
@@ -44,11 +35,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <NewFilter />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/FilterEditor/NewFilter");
       await expect(page.getByRole("button", { name: "Save" })).toBeDisabled();
     });
 
@@ -56,11 +43,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <NewFilter />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/FilterEditor/NewFilter");
       await expect(page.getByRole("combobox")).toBeFocused();
       await expect(page.getByRole("listbox")).toBeVisible();
     });
@@ -71,11 +54,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount(
-            <LocalDataSourceProvider>
-              <NewFilter />
-            </LocalDataSourceProvider>,
-          );
+          await mount("Filters/FilterEditor/NewFilter");
           await assertComboboxReady(page);
           await page.getByRole("combobox").press("Enter");
           await expect(page.getByRole("listbox")).toBeVisible();
@@ -91,11 +70,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <NewFilter />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/FilterEditor/NewFilter");
       await assertComboboxReady(page);
       await selectListItem(page, "description");
       await selectListItem(page, "starts");
@@ -118,11 +93,7 @@ test.describe("FilterEditor", () => {
         mount,
         page,
       }) => {
-        await mount(
-          <LocalDataSourceProvider>
-            <NewFilter />
-          </LocalDataSourceProvider>,
-        );
+        await mount("Filters/FilterEditor/NewFilter");
         await selectListItem(page, "description");
         await selectListItem(page, "starts");
         const value = page.getByRole("combobox").nth(2);
@@ -137,11 +108,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <NewFilter />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/FilterEditor/NewFilter");
       await selectListItem(page, "lotSize");
 
       for (const operator of ["=", "!=", ">", ">=", "<", "<="]) {
@@ -159,11 +126,7 @@ test.describe("FilterEditor", () => {
         mount,
         page,
       }) => {
-        await mount(
-          <LocalDataSourceProvider>
-            <NewFilter />
-          </LocalDataSourceProvider>,
-        );
+        await mount("Filters/FilterEditor/NewFilter");
         await selectListItem(page, "lotSize");
         await selectListItem(page, ">");
         const value = page.getByRole("textbox");
@@ -180,11 +143,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <NewFilter />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/FilterEditor/NewFilter");
       await selectListItem(page, "lotSize");
       await selectListItem(page, ">");
       const value = page.getByRole("textbox");
@@ -202,11 +161,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <FilterBarOneSimpleFilter />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/FilterBar/FilterBar/FilterBarOneSimpleFilter");
       await page
         .locator('.vuuFilterPill[data-index="0"] .vuuSplitButton-trigger')
         .click();
@@ -224,11 +179,7 @@ test.describe("FilterEditor", () => {
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <FilterBarOneSimpleFilter />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/FilterBar/FilterBar/FilterBarOneSimpleFilter");
       await page
         .locator('.vuuFilterPill[data-index="0"] .vuuSplitButton-trigger')
         .click();
@@ -251,11 +202,7 @@ test.describe("FilterEditor", () => {
     test.describe("WHEN rendered with new FilterClauseModel", () => {
       test.describe("WHEN Enter is pressed twice to accept default selections", () => {
         test("THEN filter clause value is focused", async ({ mount, page }) => {
-          await mount(
-            <LocalDataSourceProvider>
-              <NewFilter />
-            </LocalDataSourceProvider>,
-          );
+          await mount("Filters/FilterEditor/NewFilter");
           await assertComboboxReady(page);
           await page.getByRole("combobox").press("Enter");
           await expect(page.getByRole("listbox")).toBeVisible();
@@ -270,11 +217,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount(
-            <LocalDataSourceProvider>
-              <NewFilter />
-            </LocalDataSourceProvider>,
-          );
+          await mount("Filters/FilterEditor/NewFilter");
           await assertComboboxReady(page);
 
           await page.getByRole("combobox").press("Enter");
@@ -298,13 +241,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          const callbacks: unknown[] = [];
-          const handler = (...args: unknown[]) => callbacks.push(args);
-          await mount(
-            <LocalDataSourceProvider>
-              <NewFilter onSave={handler} />
-            </LocalDataSourceProvider>,
-          );
+          await mount("Filters/FilterEditor/NewFilter");
           await assertComboboxReady(page);
 
           await page.getByRole("combobox").press("Enter");
@@ -319,14 +256,15 @@ test.describe("FilterEditor", () => {
           await expect(
             page.getByRole("button", { name: "Save" }),
           ).toBeFocused();
-          expect(callbacks).toHaveLength(1);
-          expect(callbacks[0]).toEqual([
-            {
-              column: "bbg",
-              op: "=",
-              value: "AAOO L",
-            },
-          ]);
+          await expect(page.getByTestId("save-records")).toHaveValue(
+            JSON.stringify([
+              {
+                column: "bbg",
+                op: "=",
+                value: "AAOO L",
+              },
+            ]),
+          );
         });
       });
     });
@@ -338,11 +276,7 @@ test.describe("FilterEditor", () => {
         mount,
         page,
       }) => {
-        await mount(
-          <LocalDataSourceProvider>
-            <NewFilter />
-          </LocalDataSourceProvider>,
-        );
+        await mount("Filters/FilterEditor/NewFilter");
         await assertComboboxReady(page);
 
         // accept all the default values
@@ -360,11 +294,7 @@ test.describe("FilterEditor", () => {
         mount,
         page,
       }) => {
-        await mount(
-          <LocalDataSourceProvider>
-            <NewFilter />
-          </LocalDataSourceProvider>,
-        );
+        await mount("Filters/FilterEditor/NewFilter");
         await assertComboboxReady(page);
 
         // accept all the default values
@@ -387,13 +317,7 @@ test.describe("FilterEditor", () => {
 
     test.describe("WHEN second clause is completed and SAVE pressed", () => {
       test("THEN two clause filter is saved", async ({ mount, page }) => {
-        const callbacks: unknown[] = [];
-        const handler = (...args: unknown[]) => callbacks.push(args);
-        await mount(
-          <LocalDataSourceProvider>
-            <NewFilter onSave={handler} />
-          </LocalDataSourceProvider>,
-        );
+        await mount("Filters/FilterEditor/NewFilter");
         await assertComboboxReady(page);
 
         // accept all the default values
@@ -425,16 +349,17 @@ test.describe("FilterEditor", () => {
         await expect(saveButton).toBeFocused();
         await saveButton.press("Enter");
 
-        expect(callbacks).toHaveLength(1);
-        expect(callbacks[0]).toEqual([
-          {
-            op: "and",
-            filters: [
-              { column: "bbg", op: "=", value: "AAOO L" },
-              { column: "currency", op: "=", value: "CAD" },
-            ],
-          },
-        ]);
+        await expect(page.getByTestId("save-records")).toHaveValue(
+          JSON.stringify([
+            {
+              op: "and",
+              filters: [
+                { column: "bbg", op: "=", value: "AAOO L" },
+                { column: "currency", op: "=", value: "CAD" },
+              ],
+            },
+          ]),
+        );
       });
     });
   });
@@ -446,11 +371,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount(
-            <LocalDataSourceProvider>
-              <NewFilter />
-            </LocalDataSourceProvider>,
-          );
+          await mount("Filters/FilterEditor/NewFilter");
           await assertComboboxReady(page);
 
           // accept all the default values
@@ -480,11 +401,7 @@ test.describe("FilterEditor", () => {
             mount,
             page,
           }) => {
-            await mount(
-              <LocalDataSourceProvider>
-                <NewFilter />
-              </LocalDataSourceProvider>,
-            );
+            await mount("Filters/FilterEditor/NewFilter");
             await assertComboboxReady(page);
 
             await page.getByRole("combobox").press("Enter");
@@ -520,11 +437,7 @@ test.describe("FilterEditor", () => {
             mount,
             page,
           }) => {
-            await mount(
-              <LocalDataSourceProvider>
-                <NewFilter />
-              </LocalDataSourceProvider>,
-            );
+            await mount("Filters/FilterEditor/NewFilter");
             await assertComboboxReady(page);
 
             await page.getByRole("combobox").press("Enter");
@@ -570,11 +483,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount(
-            <LocalDataSourceProvider>
-              <EditMultiClauseOrFilter />
-            </LocalDataSourceProvider>,
-          );
+          await mount("Filters/FilterEditor/EditMultiClauseOrFilter");
 
           await expect(page.getByRole("combobox")).toHaveCount(6);
 
@@ -638,11 +547,7 @@ test.describe("FilterEditor", () => {
           mount,
           page,
         }) => {
-          await mount(
-            <LocalDataSourceProvider>
-              <EditMultiClauseOrFilter />
-            </LocalDataSourceProvider>,
-          );
+          await mount("Filters/FilterEditor/EditMultiClauseOrFilter");
 
           await expect(page.getByRole("combobox")).toHaveCount(6);
 

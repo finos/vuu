@@ -1,5 +1,4 @@
-import { test } from "@playwright/test";
-import { expect } from "../../../../../playwright/customAssertions";
+import { expect, test } from "@playwright/test";
 import { TableOM } from "./TableOM";
 
 const IS_EDITABLE = true;

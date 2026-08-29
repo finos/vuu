@@ -1,15 +1,12 @@
 import { expect, test } from "@playwright/test";
-import {
-  EditableInstrumentsInlineEdit,
-  TestTableEmptyWithUpload,
-} from "../../../../../showcase/src/examples/Table/Editing.examples";
+
 
 test.describe("Undo cell renderer", () => {
   test("renders an undo delete action and reverts the deleted row", async ({
     mount,
     page,
   }) => {
-    await mount(<EditableInstrumentsInlineEdit />);
+    await mount("Table/Editing/EditableInstrumentsInlineEdit");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const row = page.getByRole("row").nth(2);
@@ -30,7 +27,7 @@ test.describe("Undo cell renderer", () => {
     mount,
     page,
   }) => {
-    await mount(<TestTableEmptyWithUpload />);
+    await mount("Table/Editing/TestTableEmptyWithUpload");
     await page.getByRole("button", { name: "Upload (preview)" }).click();
     await page.locator('input[type="file"]').setInputFiles({
       name: "import.csv",

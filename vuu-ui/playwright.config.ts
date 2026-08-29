@@ -1,4 +1,46 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices, expect } from "@playwright/test";
+
+declare global {
+  namespace PlaywrightTest {
+    interface Matchers<R> {
+      toHaveSelection(start: number, end: number): R;
+    }
+  }
+}
+
+expect.extend({
+  async toHaveSelection(locator, start, end) {
+    let pass: boolean;
+    let errorName: string | undefined;
+
+    try {
+      await expect
+        .poll(
+          async () =>
+            locator.evaluate((el: HTMLInputElement) => [
+              el.selectionStart,
+              el.selectionEnd,
+            ]),
+          { timeout: 1000 },
+        )
+        .toEqual([start, end]);
+      pass = true;
+    } catch (error) {
+      errorName = (error as Error).message.replace(
+        "toEqual",
+        "toHaveSelection",
+      );
+      pass = false;
+    }
+
+    return {
+      message: () => errorName ?? "Expected selection to match",
+      pass,
+      name: "toHaveSelection",
+      expected: [start, end],
+    };
+  },
+});
 
 const useProductionGallery =
   process.env.CI || process.env.PLAYWRIGHT_GALLERY === "production";
@@ -34,10 +76,7 @@ export default defineConfig({
     {
       name: "components-chromium",
       testDir: "./packages",
-      testMatch: [
-        "**/__component__/prompt/Prompt.playwright.test.tsx",
-        "**/vuu-table/src/__tests__/__component__/*.playwright.test.tsx",
-      ],
+      testMatch: "**/*.playwright.test.tsx",
       use: {
         ...devices["Desktop Chrome"],
         baseURL: galleryBaseURL,
@@ -47,10 +86,7 @@ export default defineConfig({
     {
       name: "components-firefox",
       testDir: "./packages",
-      testMatch: [
-        "**/__component__/prompt/Prompt.playwright.test.tsx",
-        "**/vuu-table/src/__tests__/__component__/*.playwright.test.tsx",
-      ],
+      testMatch: "**/*.playwright.test.tsx",
       use: {
         ...devices["Desktop Firefox"],
         baseURL: galleryBaseURL,
@@ -60,10 +96,7 @@ export default defineConfig({
     {
       name: "components-webkit",
       testDir: "./packages",
-      testMatch: [
-        "**/__component__/prompt/Prompt.playwright.test.tsx",
-        "**/vuu-table/src/__tests__/__component__/*.playwright.test.tsx",
-      ],
+      testMatch: "**/*.playwright.test.tsx",
       use: {
         ...devices["Desktop Safari"],
         baseURL: galleryBaseURL,

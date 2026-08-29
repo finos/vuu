@@ -54,6 +54,24 @@ export const DefaultSplitButton = ({
   );
 };
 
+export const DefaultSplitButtonWithClickRecorder = () => {
+  const [clicked, setClicked] = useState(false);
+  return (
+    <>
+      <DefaultSplitButton
+        data-testid="split-button"
+        onClick={() => setClicked(true)}
+      />
+      <input
+        hidden
+        data-testid="click-handler-called"
+        readOnly
+        value={String(clicked)}
+      />
+    </>
+  );
+};
+
 export const SegmentedSplitButton = ({
   PopupMenuProps,
 }: Partial<SplitButtonProps>) => {

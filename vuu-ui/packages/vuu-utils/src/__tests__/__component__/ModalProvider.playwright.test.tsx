@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { DefaultModalProvider } from "../../../../../showcase/src/examples/UiControls/ModalProvider.examples";
+
 
 test.describe("ModalProvider", () => {
   test.describe("WHEN modal dialog is triggered", () => {
@@ -7,7 +7,7 @@ test.describe("ModalProvider", () => {
       mount,
       page,
     }) => {
-      await mount(<DefaultModalProvider />);
+      await mount("UiControls/ModalProvider/DefaultModalProvider");
       await page.getByTestId("dialog-trigger").click();
       const dialog = page.getByRole("dialog");
       await expect(dialog).toBeVisible();
@@ -24,7 +24,7 @@ test.describe("ModalProvider", () => {
       mount,
       page,
     }) => {
-      await mount(<DefaultModalProvider />);
+      await mount("UiControls/ModalProvider/DefaultModalProvider");
       await page.getByTestId("prompt-trigger").click();
       const dialog = page.getByRole("dialog");
       await expect(dialog).toBeVisible();

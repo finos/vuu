@@ -1,12 +1,13 @@
 import { test, expect } from "@playwright/test";
-import { TestFixtureSimpleOverflowContainer } from "../../../../../../showcase/src/examples/UiControls/OverflowContainer.examples";
+
 
 test.describe("WHEN it initially renders, with enough space for all items", () => {
   test("THEN all child items will be visible, and none will be marked as wrapped", async ({
     mount,
   }) => {
     const component = await mount(
-      <TestFixtureSimpleOverflowContainer width={700} />,
+      "UiControls/OverflowContainer/TestFixtureSimpleOverflowContainer",
+      { width: 700 },
     );
 
     const container = component.getByTestId("overflow-container");
@@ -22,7 +23,8 @@ test.describe("WHEN it initially renders, with space for all but one items", () 
     mount,
   }) => {
     const component = await mount(
-      <TestFixtureSimpleOverflowContainer width={600} />,
+      "UiControls/OverflowContainer/TestFixtureSimpleOverflowContainer",
+      { width: 600 },
     );
 
     const container = component.getByTestId("overflow-container");

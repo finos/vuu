@@ -10,27 +10,27 @@ test.describe("default (extended) selection", () => {
 
     const component = await mount("Table/Modules/SIMUL/Instruments");
     const table = page.getByRole("table");
-    expect(table.locator('[aria-selected="true"]')).toHaveCount(0);
+    await expect(table.locator('[aria-selected="true"]')).toHaveCount(0);
 
     const firstRow = component.getByRole("row").nth(1);
-    expect(firstRow).not.toHaveAttribute("aria-selected", "true");
+    await expect(firstRow).not.toHaveAttribute("aria-selected", "true");
 
     await firstRow.click();
-    expect(firstRow).toHaveAttribute("aria-selected", "true");
+    await expect(firstRow).toHaveAttribute("aria-selected", "true");
 
-    expect(table.locator('[aria-selected="true"]')).toHaveCount(1);
+    await expect(table.locator('[aria-selected="true"]')).toHaveCount(1);
 
     const secondRow = component.getByRole("row").nth(2);
-    expect(secondRow).not.toHaveAttribute("aria-selected", "true");
+    await expect(secondRow).not.toHaveAttribute("aria-selected", "true");
 
     await secondRow.click();
-    expect(firstRow).not.toHaveAttribute("aria-selected", "true");
-    expect(secondRow).toHaveAttribute("aria-selected", "true");
-    expect(table.locator('[aria-selected="true"]')).toHaveCount(1);
+    await expect(firstRow).not.toHaveAttribute("aria-selected", "true");
+    await expect(secondRow).toHaveAttribute("aria-selected", "true");
+    await expect(table.locator('[aria-selected="true"]')).toHaveCount(1);
 
     await secondRow.click();
-    expect(secondRow).not.toHaveAttribute("aria-selected", "true");
-    expect(table.locator('[aria-selected="true"]')).toHaveCount(0);
+    await expect(secondRow).not.toHaveAttribute("aria-selected", "true");
+    await expect(table.locator('[aria-selected="true"]')).toHaveCount(0);
   });
 
   test("default selection includes shift click to add range to select", async ({
@@ -48,10 +48,10 @@ test.describe("default (extended) selection", () => {
     await firstRow.click();
     await thirdRow.click({ modifiers: ["Shift"] });
 
-    expect(firstRow).toHaveAttribute("aria-selected", "true");
-    expect(secondRow).toHaveAttribute("aria-selected", "true");
-    expect(thirdRow).toHaveAttribute("aria-selected", "true");
+    await expect(firstRow).toHaveAttribute("aria-selected", "true");
+    await expect(secondRow).toHaveAttribute("aria-selected", "true");
+    await expect(thirdRow).toHaveAttribute("aria-selected", "true");
 
-    expect(table.locator('[aria-selected="true"]')).toHaveCount(3);
+    await expect(table.locator('[aria-selected="true"]')).toHaveCount(3);
   });
 });

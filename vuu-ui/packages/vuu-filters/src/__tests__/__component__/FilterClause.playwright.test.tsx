@@ -1,20 +1,13 @@
 import { test } from "@playwright/test";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { expect } from "../../../../../playwright/customAssertions";
-import {
-  FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled,
-  FilterColumnWithDropdownOpenOnFocusDisabled,
-  NewFilterClause,
-  NewFilterClauseWithDropdownOpenOnFocusDisabled,
-  PartialFilterClauseColumnAndOperator,
-} from "../../../../../showcase/src/examples/Filters/FilterClause.examples";
+import { expect } from "@playwright/test";
+
 
 test.describe("FilterClause", () => {
   test("new clause renders the column field focused with suggestions", async ({
     mount,
     page,
   }) => {
-    const component = await mount(<NewFilterClause />);
+    const component = await mount("Filters/FilterClause/NewFilterClause");
 
     await expect(page.getByTestId("filterclause")).toContainClass(
       "vuuFilterClause",
@@ -29,9 +22,7 @@ test.describe("FilterClause", () => {
     page,
   }) => {
     const component = await mount(
-      <LocalDataSourceProvider>
-        <PartialFilterClauseColumnAndOperator />
-      </LocalDataSourceProvider>,
+      "Filters/FilterClause/PartialFilterClauseColumnAndOperator",
     );
 
     await expect(component.locator(".vuuFilterClauseField")).toHaveCount(3);
@@ -46,9 +37,7 @@ test.describe("FilterClause", () => {
     page,
   }) => {
     const component = await mount(
-      <LocalDataSourceProvider>
-        <NewFilterClauseWithDropdownOpenOnFocusDisabled />
-      </LocalDataSourceProvider>,
+      "Filters/FilterClause/NewFilterClauseWithDropdownOpenOnFocusDisabled",
     );
 
     await expect(component.locator(".vuuFilterClauseField")).toHaveCount(1);
@@ -63,9 +52,7 @@ test.describe("FilterClause", () => {
     page,
   }) => {
     const component = await mount(
-      <LocalDataSourceProvider>
-        <FilterColumnWithDropdownOpenOnFocusDisabled />
-      </LocalDataSourceProvider>,
+      "Filters/FilterClause/FilterColumnWithDropdownOpenOnFocusDisabled",
     );
 
     await expect(component.locator(".vuuFilterClauseField")).toHaveCount(2);
@@ -80,9 +67,7 @@ test.describe("FilterClause", () => {
     page,
   }) => {
     const component = await mount(
-      <LocalDataSourceProvider>
-        <FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled />
-      </LocalDataSourceProvider>,
+      "Filters/FilterClause/FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled",
     );
 
     await expect(component.locator(".vuuFilterClauseField")).toHaveCount(3);

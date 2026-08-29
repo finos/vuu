@@ -1,21 +1,19 @@
-import { test } from "@playwright/test";
-import { expect } from "../../../../../playwright/customAssertions";
-import { DefaultPopupMenu } from "../../../../../showcase/src/examples/Popups/PopupMenu.examples";
+import { expect, test } from "@playwright/test";
 
 test.describe("Given a PopupMenu", () => {
-  test("should apply correct aria attribues", async ({ mount, page }) => {
-    await mount(<DefaultPopupMenu />);
-    const button = page.getByRole("button", { name: "Popup menu" });
+  test("should apply correct aria attribues", async ({ mount }) => {
+    const component = await mount("Popups/PopupMenu/DefaultPopupMenu");
+    const button = component.getByRole("button", { name: "Popup menu" });
     await expect(button).toHaveAttribute("aria-haspopup", "menu");
     await expect(button).toHaveAttribute("aria-expanded", "false");
-    await expect(page.getByRole("menu")).not.toBeAttached();
+    await expect(component.getByRole("menu")).not.toBeAttached();
   });
   test.describe("WHEN clicked", () => {
     test("THEN popup is displayed and aria attributes updated", async ({
       mount,
       page,
     }) => {
-      await mount(<DefaultPopupMenu />);
+      await mount("Popups/PopupMenu/DefaultPopupMenu");
       const button = page.getByRole("button", { name: "Popup menu" });
       await button.click();
       await expect(button).toHaveAttribute("aria-expanded", "true");
@@ -26,7 +24,7 @@ test.describe("Given a PopupMenu", () => {
   test.describe("WHEN keyboard navigation used", () => {
     test.describe("AND user tabs to PopupMenu", () => {
       test("THEN PopupMenu receives focus", async ({ mount, page }) => {
-        await mount(<DefaultPopupMenu />);
+        await mount("Popups/PopupMenu/DefaultPopupMenu");
         const button = page.getByRole("button", { name: "Popup menu" });
         const input = page.getByTestId("input");
         await input.click();
@@ -36,7 +34,7 @@ test.describe("Given a PopupMenu", () => {
     });
     test.describe("AND WHEN ENTER is pressed", () => {
       test("THEN Menu is displayed", async ({ mount, page }) => {
-        await mount(<DefaultPopupMenu />);
+        await mount("Popups/PopupMenu/DefaultPopupMenu");
         const input = page.getByTestId("input");
         await input.click();
         await input.press("Tab");
@@ -54,7 +52,7 @@ test.describe("Given a PopupMenu", () => {
     });
     test.describe("OR WHEN Space is pressed", () => {
       test("THEN Menu is displayed", async ({ mount, page }) => {
-        await mount(<DefaultPopupMenu />);
+        await mount("Popups/PopupMenu/DefaultPopupMenu");
         const input = page.getByTestId("input");
         await input.click();
         await input.press("Tab");
@@ -68,7 +66,7 @@ test.describe("Given a PopupMenu", () => {
     });
     test.describe("AND if Escape is then pressed", () => {
       test("THEN Menu is hidden", async ({ mount, page }) => {
-        await mount(<DefaultPopupMenu />);
+        await mount("Popups/PopupMenu/DefaultPopupMenu");
         const button = page.getByRole("button", { name: "Popup menu" });
         const input = page.getByTestId("input");
         await input.click();
@@ -88,7 +86,7 @@ test.describe("Given a PopupMenu", () => {
 
     test.describe("OR if user clicks outside the PopupMenu", () => {
       test("THEN Menu is hidden", async ({ mount, page }) => {
-        await mount(<DefaultPopupMenu />);
+        await mount("Popups/PopupMenu/DefaultPopupMenu");
         const button = page.getByRole("button", { name: "Popup menu" });
         await button.click();
         await expect(page.getByRole("menu")).toBeInViewport();
@@ -100,7 +98,7 @@ test.describe("Given a PopupMenu", () => {
 
     test.describe("OR if user tabs away", () => {
       test("THEN Menu is hidden", async ({ mount, page }) => {
-        await mount(<DefaultPopupMenu />);
+        await mount("Popups/PopupMenu/DefaultPopupMenu");
         const input = page.getByTestId("input");
         await input.click();
         await input.press("Tab");
@@ -125,15 +123,18 @@ test.describe("Given a PopupMenu", () => {
       mount,
       page,
     }) => {
-      const callbacks: unknown[] = [];
-      const handler: any = (...args: unknown[]) => callbacks.push(args);
-      await mount(<DefaultPopupMenu menuActionHandler={handler} />);
+      const component = await mount(
+        "Popups/PopupMenu/PopupMenuWithActionRecorder",
+      );
 
-      await page.getByRole("button").click();
+      await component.getByRole("button").click();
 
-      const menu = page.getByRole("menu");
-      const menuItem1 = page.getByRole("menuitem", { name: "Menu Item 1" });
-      const menuItem2 = page.getByRole("menuitem", { name: "Menu Item 2" });
+      const menuItem1 = page.getByRole("menuitem", {
+        name: "Menu Item 1",
+      });
+      const menuItem2 = page.getByRole("menuitem", {
+        name: "Menu Item 2",
+      });
 
       await expect(menuItem1).toBeVisible();
       await expect(menuItem1).toBeFocused();
@@ -143,8 +144,9 @@ test.describe("Given a PopupMenu", () => {
 
       await menuItem2.press("Enter");
 
-      expect(callbacks).toHaveLength(1);
-      expect(callbacks[0]).toEqual(["action-2"]);
+      await expect(component.getByTestId("menu-action")).toHaveValue(
+        "action-2",
+      );
     });
   });
 });

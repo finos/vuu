@@ -1,14 +1,6 @@
 import { test, expect } from "@playwright/test";
-import {
-  MultipleTabbedFilterContainers,
-  SingleTabbedFilterContainers,
-} from "../../../../../showcase/src/examples/Filters/TabbedFilterContainer.examples";
-import {
-  SavedFilterPanelOneFilter,
-  SavedFilterPanelFiveFiltersCustomStyles,
-} from "../../../../../showcase/src/examples/Filters/SavedFilters/SavedFilterPanel.examples";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { SaltProviderNext } from "@salt-ds/core";
+
+
 
 test.describe("Given two TabbedFilterContainers with different values for filterProvider", () => {
   test(`When a filter value is entered 
@@ -16,9 +8,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
       Then when clear is pressed
       Value is cleared and buttons are disabled`, async ({ mount, page }) => {
     const component = await mount(
-      <LocalDataSourceProvider>
-        <MultipleTabbedFilterContainers />
-      </LocalDataSourceProvider>,
+      "Filters/TabbedFilterContainer/MultipleTabbedFilterContainers",
     );
 
     const combobox = page.getByTestId("ccy-1").getByRole("combobox");
@@ -34,38 +24,32 @@ test.describe("Given two TabbedFilterContainers with different values for filter
     const option = page.getByRole("option").first();
     await option.click();
 
-    expect(combobox).toHaveValue("CAD");
-    expect(clearButton1).toBeEnabled();
-    expect(saveButton1).toBeEnabled();
-    expect(clearButton2).toBeDisabled();
-    expect(saveButton2).toBeDisabled();
+    await expect(combobox).toHaveValue("CAD");
+    await expect(clearButton1).toBeEnabled();
+    await expect(saveButton1).toBeEnabled();
+    await expect(clearButton2).toBeDisabled();
+    await expect(saveButton2).toBeDisabled();
 
     await clearButton1.click();
 
-    expect(combobox).toHaveValue("");
+    await expect(combobox).toHaveValue("");
 
-    expect(clearButton1).toBeDisabled();
-    expect(saveButton1).toBeDisabled();
-    expect(clearButton2).toBeDisabled();
-    expect(saveButton2).toBeDisabled();
+    await expect(clearButton1).toBeDisabled();
+    await expect(saveButton1).toBeDisabled();
+    await expect(clearButton2).toBeDisabled();
+    await expect(saveButton2).toBeDisabled();
   });
 
   test(`When a filter value is entered 
       And Saved Filters Tab selected 
       Then no Filter pills are present`, async ({ mount, page }) => {
-    await mount(
-      <SaltProviderNext>
-        <LocalDataSourceProvider>
-          <MultipleTabbedFilterContainers />
-        </LocalDataSourceProvider>
-      </SaltProviderNext>,
-    );
+    await mount("Filters/TabbedFilterContainer/MultipleTabbedFilterContainers");
 
     const combobox = page.getByTestId("ccy-1").getByRole("combobox");
     await combobox.click();
     const option = page.getByRole("option").first();
     await option.click();
-    expect(combobox).toHaveValue("CAD");
+    await expect(combobox).toHaveValue("CAD");
 
     const tab = page.getByTestId("tc-1").getByRole("tab").nth(1);
     await tab.click();
@@ -78,9 +62,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
       Then the save dialog is displayed with focus in input
       Press Cancel, dialog is closed`, async ({ mount, page }) => {
     const component = await mount(
-      <LocalDataSourceProvider>
-        <MultipleTabbedFilterContainers />
-      </LocalDataSourceProvider>,
+      "Filters/TabbedFilterContainer/MultipleTabbedFilterContainers",
     );
 
     await page.getByTestId("ccy-1").getByRole("combobox").click();
@@ -96,7 +78,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
 
     await expect(page.getByRole("dialog")).toBeInViewport();
     const dialog = page.getByRole("dialog");
-    expect(dialog.getByRole("heading", { name: "Save Filter" })).toBeVisible();
+    await expect(dialog.getByRole("heading", { name: "Save Filter" })).toBeVisible();
     await expect(dialog.getByPlaceholder("Please enter")).toBeFocused();
 
     await expect(dialog.getByRole("button", { name: "cancel" })).toBeEnabled();
@@ -112,9 +94,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
     page,
   }) => {
     const component = await mount(
-      <LocalDataSourceProvider>
-        <MultipleTabbedFilterContainers />
-      </LocalDataSourceProvider>,
+      "Filters/TabbedFilterContainer/MultipleTabbedFilterContainers",
     );
 
     const firstTabContainer = component.getByTestId("tc-1");
@@ -160,7 +140,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
     await combobox.click();
     const option = page.getByRole("option").first();
     await option.click();
-    expect(combobox).toHaveValue("CAD");
+    await expect(combobox).toHaveValue("CAD");
   });
 
   test.describe("Filter name validation default behaviour", () => {
@@ -168,9 +148,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
       Then the filter name is allowed a max length of 25 characters
       `, async ({ mount, page }) => {
       const component = await mount(
-        <LocalDataSourceProvider>
-          <SingleTabbedFilterContainers />
-        </LocalDataSourceProvider>,
+        "Filters/TabbedFilterContainer/SingleTabbedFilterContainers",
       );
 
       await page.getByTestId("ccy-1").getByRole("combobox").click();
@@ -183,7 +161,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
 
       await expect(page.getByRole("dialog")).toBeInViewport();
       const dialog = page.getByRole("dialog");
-      expect(
+      await expect(
         dialog.getByRole("heading", { name: "Save Filter" }),
       ).toBeVisible();
       await expect(dialog.getByPlaceholder("Please enter")).toBeFocused();
@@ -197,7 +175,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
       Then the filter name is allowed a max length of 25 characters
       `, async ({ mount, page }) => {
       const component = await mount(
-        <SavedFilterPanelFiveFiltersCustomStyles />,
+        "Filters/SavedFilters/SavedFilterPanel/SavedFilterPanelFiveFiltersCustomStyles",
       );
 
       await page
@@ -208,7 +186,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
 
       await expect(page.getByRole("dialog")).toBeInViewport();
       const dialog = page.getByRole("dialog");
-      expect(
+      await expect(
         dialog.getByRole("heading", { name: "Rename Filter" }),
       ).toBeVisible();
       await expect(dialog.getByPlaceholder("Please enter")).toBeFocused();
@@ -227,9 +205,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
       Then the filter name is allowed a max length of 20 characters
       `, async ({ mount, page }) => {
       const component = await mount(
-        <LocalDataSourceProvider>
-          <MultipleTabbedFilterContainers />
-        </LocalDataSourceProvider>,
+        "Filters/TabbedFilterContainer/MultipleTabbedFilterContainers",
       );
 
       await page.getByTestId("ccy-1").getByRole("combobox").click();
@@ -242,7 +218,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
 
       await expect(page.getByRole("dialog")).toBeInViewport();
       const dialog = page.getByRole("dialog");
-      expect(
+      await expect(
         dialog.getByRole("heading", { name: "Save Filter" }),
       ).toBeVisible();
       await expect(dialog.getByPlaceholder("Please enter")).toBeFocused();
@@ -255,7 +231,9 @@ test.describe("Given two TabbedFilterContainers with different values for filter
     test(`When a saved filter is renamed
       Then the filter name is allowed a max length of 20 characters
       `, async ({ mount, page }) => {
-      const component = await mount(<SavedFilterPanelOneFilter />);
+      const component = await mount(
+        "Filters/SavedFilters/SavedFilterPanel/SavedFilterPanelOneFilter",
+      );
 
       await page
         .getByRole("button", { name: "TEST FILTER" })
@@ -265,7 +243,7 @@ test.describe("Given two TabbedFilterContainers with different values for filter
 
       await expect(page.getByRole("dialog")).toBeInViewport();
       const dialog = page.getByRole("dialog");
-      expect(
+      await expect(
         dialog.getByRole("heading", { name: "Rename Filter" }),
       ).toBeVisible();
       await expect(dialog.getByPlaceholder("Please enter")).toBeFocused();

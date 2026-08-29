@@ -43,17 +43,18 @@ test.describe("Table scrolling and keyboard navigation", () => {
           let cell = table.locateCell(2, 1);
           await cell.click();
           await cell.press("PageDown");
+          await table.assertRenderedRows({ from: 30, to: 60 }, 5, 1000);
 
           cell = table.locateCell(32, 1);
           await expect(cell).toBeFocused();
 
           await cell.press("PageUp");
+          await table.assertRenderedRows({ from: 0, to: 30 }, 5, 1000);
 
           cell = table.locateCell(2, 1);
 
           await expect(cell).toHaveAttribute("tabindex", "0");
           await expect(cell).toBeFocused();
-          await table.assertRenderedRows({ from: 0, to: 30 }, 5, 1000);
         });
       });
     });
