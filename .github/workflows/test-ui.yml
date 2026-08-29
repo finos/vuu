@@ -2,6 +2,12 @@ name: "Test UI"
 
 on:
   workflow_dispatch:
+    inputs:
+      coverage:
+        description: "Run the Chromium component coverage workflow"
+        required: true
+        default: false
+        type: boolean
   push:
     branches:
       - "main"
@@ -45,7 +51,7 @@ jobs:
         run: cd ./vuu-ui && npm run build:worker
       - name: Build Playwright gallery
         env:
-          PLAYWRIGHT_COVERAGE: "1"
+          PLAYWRIGHT_COVERAGE: ${{ inputs.coverage == true && '1' || '0' }}
         run: cd ./vuu-ui && npm run playwright:gallery:build
       - name: Upload Playwright gallery
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -78,7 +84,7 @@ jobs:
         run: cd ./vuu-ui && npm exec -- playwright install --with-deps ${{ matrix.browser }}
       - name: Run Playwright component tests
         env:
-          PLAYWRIGHT_COVERAGE: ${{ matrix.browser == 'chromium' && '1' || '0' }}
+          PLAYWRIGHT_COVERAGE: ${{ inputs.coverage == true && matrix.browser == 'chromium' && '1' || '0' }}
         run: cd ./vuu-ui && npm exec -- playwright test --config=playwright.config.ts --project=components-${{ matrix.browser }} --shard=${{ matrix.shard }}/2
       - name: Upload blob report to GitHub Actions Artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -88,7 +94,7 @@ jobs:
           path: vuu-ui/blob-report/
           retention-days: 10
       - name: Upload Chromium coverage data
-        if: always() && matrix.browser == 'chromium'
+        if: always() && inputs.coverage == true && matrix.browser == 'chromium'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: coverage-data-${{ matrix.browser }}-${{ matrix.shard }}-of-2
@@ -109,6 +115,7 @@ jobs:
           pattern: blob-report-*
           merge-multiple: true
       - name: Download Chromium coverage data
+        if: inputs.coverage == true
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           path: all-coverage-data
@@ -119,13 +126,14 @@ jobs:
       - name: Merge into HTML and JSON Reports
         run: PLAYWRIGHT_JSON_OUTPUT_FILE=playwright-report/test-results.json npx playwright merge-reports --reporter html,json ./all-blob-reports
       - name: Generate Playwright coverage report
+        if: inputs.coverage == true
         run: |
           mkdir -p ./vuu-ui/playwright/coverage-data
           cp ./all-coverage-data/*.json ./vuu-ui/playwright/coverage-data/
           cd ./vuu-ui && npm run playwright:coverage 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Upload Playwright coverage report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        if: always()
+        if: always() && inputs.coverage == true
         with:
           name: playwright-coverage
           path: vuu-ui/playwright/coverage/
