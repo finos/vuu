@@ -1,4 +1,4 @@
-import { test } from "@playwright/experimental-ct-react";
+import { test } from "@playwright/test";
 import { expect } from "../../../../../playwright/customAssertions";
 import { DefaultPopupMenu } from "../../../../../showcase/src/examples/Popups/PopupMenu.examples";
 

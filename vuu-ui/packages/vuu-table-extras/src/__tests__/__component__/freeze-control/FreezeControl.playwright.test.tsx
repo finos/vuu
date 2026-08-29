@@ -1,17 +1,16 @@
 import {
   test,
   expect,
-  type MountResult,
-} from "@playwright/experimental-ct-react";
-import type { Locator } from "@playwright/experimental-ct-core";
+} from "@playwright/test";
+import type { Locator } from "@playwright/test";
 import {
   DefaultFreezeControl,
   FrozenFreezeControl,
 } from "../../../../../../showcase/src/examples/TableExtras/FreezeControl.examples";
 
 // Section below just to improve test readability
-type ComponentFixture = MountResult;
 type LocatorType = Locator;
+type ComponentFixture = Locator;
 
 const verifyBadgeEquals = async (badge: LocatorType, expectedValue: number) => {
   await expect(badge).toHaveText(String(expectedValue));

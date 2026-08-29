@@ -1,8 +1,8 @@
 import {
   test,
   expect,
-  type MountResult,
-} from "@playwright/experimental-ct-react";
+  type Locator,
+} from "@playwright/test";
 import {
   NotificationsWithContext,
   ErrorNotificationWithCustomBackground,
@@ -46,7 +46,7 @@ test.describe("Given a toast notification", () => {
   test("should display notification when trigger is clicked and hide when hide button is clicked", async ({
     mount,
   }) => {
-    const component: MountResult = await mount(<NotificationsWithContext />);
+    const component: Locator = await mount(<NotificationsWithContext />);
 
     // Set custom header
     const headerInput = component.getByLabel("Notification Header");
@@ -77,7 +77,7 @@ test.describe("Given a toast notification", () => {
 
   for (const { target, inputLabel, longText, selector } of noWrapCases) {
     test(`should apply no wrap for long ${target} text`, async ({ mount }) => {
-      const component: MountResult = await mount(<NotificationsWithContext />);
+      const component: Locator = await mount(<NotificationsWithContext />);
 
       const input = component.getByLabel(inputLabel);
       await input.fill(longText);
@@ -102,7 +102,7 @@ test.describe("Given a toast notification", () => {
   test("should display error notification with custom background and borders", async ({
     mount,
   }) => {
-    const component: MountResult = await mount(
+    const component: Locator = await mount(
       <ErrorNotificationWithCustomBackground />
     );
 

@@ -1,4 +1,4 @@
-import { expect, MountResult, test } from "@playwright/experimental-ct-react";
+import { expect, test, type Locator } from "@playwright/test";
 import {
   CalculatedColumnPicker,
   DefaultItemPicker,
@@ -528,7 +528,7 @@ test.describe("ItemPicker", () => {
 });
 
 const expectSearchControlWithPlaceholderText = async (
-  component: MountResult,
+  component: Locator,
   searchPlaceholderText: string,
 ) => {
   const searchInput = await component.locator(".saltInput-input");
@@ -541,7 +541,7 @@ const expectSearchControlWithPlaceholderText = async (
 };
 
 const expectListHeadings = async (
-  component: MountResult,
+  component: Locator,
   selectedListHeading: string,
   availableListHeading: string,
 ) => {
@@ -555,7 +555,7 @@ const expectListHeadings = async (
 };
 
 const expectSelectedItems = async (
-  component: MountResult,
+  component: Locator,
   totalSelectedItems: number,
   selectedItems?: DisplayedItem[],
 ) => {
@@ -581,7 +581,7 @@ const expectSelectedItems = async (
 };
 
 const expectAvailableItems = async (
-  component: MountResult,
+  component: Locator,
   totalAvailableItems: number,
   availableItems?: DisplayedItem[],
   addButtonsEnabled?: boolean,
@@ -619,7 +619,7 @@ const expectAvailableItems = async (
 };
 
 const addAvailableItem = async (
-  component: MountResult,
+  component: Locator,
   positionInList: number,
   displayLabel: string,
 ) => {
@@ -636,7 +636,7 @@ const addAvailableItem = async (
 };
 
 const removeSelectedItem = async (
-  component: MountResult,
+  component: Locator,
   positionInList: number,
   displayLabel: string,
 ) => {
@@ -653,7 +653,7 @@ const removeSelectedItem = async (
 };
 
 const expectIconNotToBeRenderedInAvailableItems = async (
-  component: MountResult,
+  component: Locator,
   positionInList: number,
   displayLabel: string,
 ) => {
@@ -669,7 +669,7 @@ const expectIconNotToBeRenderedInAvailableItems = async (
 };
 
 const expectIconToBeRenderedInSelectedItems = async (
-  component: MountResult,
+  component: Locator,
   positionInList: number,
   displayLabel: string,
 ) => {
@@ -687,7 +687,7 @@ const expectIconToBeRenderedInSelectedItems = async (
 };
 
 const expectCreateCustomItemsButton = async (
-  component: MountResult,
+  component: Locator,
   buttonLabel: string,
 ) => {
   const button = component.locator(".vuuItemPicker-item-buttons .saltButton");
@@ -697,7 +697,7 @@ const expectCreateCustomItemsButton = async (
 
 const dragAndDropSelectedItemBelowAnother = async (
   page: any,
-  component: MountResult,
+  component: Locator,
   itemToMovePosition: number,
   itemToMoveDisplayLabel: string,
   otherItemPosition: number,
@@ -722,7 +722,7 @@ const dragAndDropSelectedItemBelowAnother = async (
 
 const dragAndDropSelectedItemAboveAnother = async (
   page: any,
-  component: MountResult,
+  component: Locator,
   itemToMovePosition: number,
   itemToMoveDisplayLabel: string,
   otherItemPosition: number,
@@ -746,7 +746,7 @@ const dragAndDropSelectedItemAboveAnother = async (
 };
 
 const getBoundingBoxForSelectedItemDragButton = async (
-  component: MountResult,
+  component: Locator,
   itemPosition: number,
   itemDisplayLabel: string,
 ) => {
@@ -783,7 +783,7 @@ const moveBoundingBoxOnTopOfAnother = async (
   await page.mouse.up();
 };
 
-const typeSearchText = async (component: MountResult, searchText: string) => {
+const typeSearchText = async (component: Locator, searchText: string) => {
   const searchInput = component.locator(".saltInput-input");
   await expect(searchInput).toBeEnabled();
   await searchInput.fill(searchText);

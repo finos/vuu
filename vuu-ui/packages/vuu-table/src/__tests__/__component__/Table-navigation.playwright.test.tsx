@@ -1,4 +1,4 @@
-import { test } from "@playwright/experimental-ct-react";
+import { test } from "@playwright/test";
 import { TabInAndOutFixture } from "../../../../../showcase/src/examples/Table/Misc.examples";
 import { expect } from "../../../../../playwright/customAssertions";
 import { TableOM } from "./TableOM";

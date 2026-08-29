@@ -1,4 +1,4 @@
-import { test, type Page } from "@playwright/experimental-ct-react";
+import { test, type Page } from "@playwright/test";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { expect } from "../../../../../playwright/customAssertions";
 import {

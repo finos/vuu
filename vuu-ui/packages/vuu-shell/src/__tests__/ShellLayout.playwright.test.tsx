@@ -1,4 +1,4 @@
-import { expect, type Locator, test } from "@playwright/experimental-ct-react";
+import { expect, type Locator, test } from "@playwright/test";
 import {
   DefaultShell,
   SimpleShellCustomHeader,

@@ -1,5 +1,5 @@
 // TODO try and get TS path alias working to avoid relative paths like this
-import { test } from "@playwright/experimental-ct-react";
+import { test } from "@playwright/test";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { expect } from "../../../../../playwright/customAssertions";
 import { TableOM } from "./TableOM";

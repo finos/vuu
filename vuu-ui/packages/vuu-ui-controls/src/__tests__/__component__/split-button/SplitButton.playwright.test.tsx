@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/experimental-ct-react";
+import { test, expect } from "@playwright/test";
 import { DefaultSplitButton } from "../../../../../../showcase/src/examples/UiControls/SplitButton.examples";
 
 test.describe("Given a (non segmented) SplitButton", () => {

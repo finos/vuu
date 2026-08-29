@@ -1,5 +1,4 @@
-import { type Locator } from "@playwright/experimental-ct-core";
-import { test, expect } from "@playwright/experimental-ct-react";
+import { type Locator, test, expect } from "@playwright/test";
 import { CheckboxSelection } from "../../../../../showcase/src/examples/Table/TableSelection.examples";
 import { TestTable } from "../../../../../showcase/src/examples/Table/Misc.examples";
 import {

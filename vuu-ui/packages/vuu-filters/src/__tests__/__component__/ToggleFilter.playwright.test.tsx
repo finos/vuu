@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/experimental-ct-react";
+import { test, expect } from "@playwright/test";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { SaltProvider } from "@salt-ds/core";
 

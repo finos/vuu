@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/experimental-ct-react";
+import { test, expect } from "@playwright/test";
 import { DefaultModalProvider } from "../../../../../showcase/src/examples/UiControls/ModalProvider.examples";
 
 test.describe("ModalProvider", () => {

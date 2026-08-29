@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/experimental-ct-react";
+import { test, expect } from "@playwright/test";
 import { TestTimeInput } from "../../../../../../showcase/src/examples/UiControls/TimeInput.examples";
 
 declare global {

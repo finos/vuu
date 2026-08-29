@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/experimental-ct-react";
+import { test, expect } from "@playwright/test";
 import { Instruments } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 

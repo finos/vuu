@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/experimental-ct-react";
+import { test, expect } from "@playwright/test";
 import { TimeRangeFilter } from "../../../../../showcase/src/examples/Filters/FilterContainer.examples";
 
 test.describe("FilterContainer - Time range", () => {

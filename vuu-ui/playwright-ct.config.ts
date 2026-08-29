@@ -1,4 +1,4 @@
-import { defineConfig, devices } from "@playwright/experimental-ct-react";
+import { defineConfig, devices } from "@playwright/test";
 import { createFilter } from "vite";
 import MagicString from "magic-string";
 import tsconfigPaths from "vite-tsconfig-paths";

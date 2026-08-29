@@ -1,4 +1,4 @@
-import { expect as baseExpect } from "@playwright/experimental-ct-react";
+import { expect as baseExpect } from "@playwright/test";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace

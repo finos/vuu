@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/experimental-ct-react";
+import { expect, test } from "@playwright/test";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { CommitHandler } from "@vuu-ui/vuu-utils";
