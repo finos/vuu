@@ -80,7 +80,7 @@ jobs:
           PLAYWRIGHT_COVERAGE: ${{ matrix.browser == 'chromium' && '1' || '0' }}
         run: cd ./vuu-ui && npm exec -- playwright test --config=playwright.config.ts --project=components-${{ matrix.browser }}
       - name: Upload blob report to GitHub Actions Artifacts
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: blob-report-${{ matrix.browser }}
@@ -88,7 +88,7 @@ jobs:
           retention-days: 10
       - name: Upload Chromium coverage data
         if: always() && matrix.browser == 'chromium'
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d9
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: coverage-data
           path: vuu-ui/playwright/coverage-data/
@@ -123,14 +123,14 @@ jobs:
           cp ./all-coverage-data/*.json ./vuu-ui/playwright/coverage-data/
           cd ./vuu-ui && npm run playwright:coverage 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Upload Playwright coverage report
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: playwright-coverage
           path: vuu-ui/playwright/coverage/
           retention-days: 10
       - name: Upload Merged Playwright Report
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: playwright-report
