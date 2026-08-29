@@ -8,6 +8,10 @@ const coverageDataDirectory = path.resolve("playwright/coverage-data");
 const coverageOptions = require("./coverage.config.cjs");
 const packagesDirectory = path.resolve("packages");
 
+function isTypeOnlyPackageFile(file) {
+  return file.replaceAll("\\", "/").match(/\/packages\/[^/]+-types\//);
+}
+
 async function readCoverage() {
   const coverageMap = createCoverageMap({});
   let files = [];
@@ -24,7 +28,10 @@ async function readCoverage() {
     const data = JSON.parse(
       await fs.readFile(path.join(coverageDataDirectory, file), "utf8"),
     );
-    coverageMap.merge(data);
+    const runtimeCoverage = Object.fromEntries(
+      Object.entries(data).filter(([filePath]) => !isTypeOnlyPackageFile(filePath)),
+    );
+    coverageMap.merge(runtimeCoverage);
   }
   return coverageMap;
 }
@@ -57,6 +64,7 @@ async function packageNames() {
   const entries = await fs.readdir(packagesDirectory, { withFileTypes: true });
   return entries
     .filter((entry) => entry.isDirectory())
+    .filter((entry) => !entry.name.endsWith("-types"))
     .map((entry) => entry.name)
     .sort();
 }

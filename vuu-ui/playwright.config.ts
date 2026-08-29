@@ -54,8 +54,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Limit concurrency per CI shard while allowing shards to run in parallel. */
-  workers: process.env.CI ? 2 : undefined,
+  /* Run one worker per shard while allowing shards to run in parallel. */
+  workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI
     ? "blob"

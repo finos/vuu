@@ -68,7 +68,7 @@ jobs:
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - name: Download Playwright gallery
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           name: playwright-gallery
           path: vuu-ui/playwright/gallery/dist
@@ -103,13 +103,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
       - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           path: all-blob-reports
           pattern: blob-report-*
           merge-multiple: true
       - name: Download Chromium coverage data
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           path: all-coverage-data
           pattern: coverage-data-*
