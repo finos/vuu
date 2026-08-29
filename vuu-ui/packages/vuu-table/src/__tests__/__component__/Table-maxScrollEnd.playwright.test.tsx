@@ -1,14 +1,12 @@
-import { test } from "@playwright/test";
-import { expect } from "../../../../../playwright/customAssertions";
+import { expect, test } from "@playwright/test";
 import { TableOM } from "./TableOM";
-import { MaxScrollEndTable } from "../../../../../showcase/src/examples/Table/Modules/TEST.examples";
 
 test.describe("Table maxScrollEnd", () => {
   test("pressing End stops at row 500 and shows scroll limit notice", async ({
     mount,
     page,
   }) => {
-    await mount(<MaxScrollEndTable />);
+    await mount("Table/Modules/TEST/MaxScrollEndTable");
 
     const table = new TableOM(page.getByRole("table"));
 

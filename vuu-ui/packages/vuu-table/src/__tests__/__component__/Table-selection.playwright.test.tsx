@@ -1,6 +1,4 @@
-import { test, expect } from "@playwright/test";
-import { Instruments } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { expect, test } from "@playwright/test";
 
 test.describe("default (extended) selection", () => {
   test("default selection includes simple row selection", async ({
@@ -10,11 +8,7 @@ test.describe("default (extended) selection", () => {
   }) => {
     test.skip(browserName === "webkit" || browserName === "firefox");
 
-    const component = await mount(
-      <LocalDataSourceProvider>
-        <Instruments />
-      </LocalDataSourceProvider>,
-    );
+    const component = await mount("Table/Modules/SIMUL/Instruments");
     const table = page.getByRole("table");
     expect(table.locator('[aria-selected="true"]')).toHaveCount(0);
 
@@ -46,11 +40,7 @@ test.describe("default (extended) selection", () => {
   }) => {
     test.skip(browserName === "webkit" || browserName === "firefox");
 
-    await mount(
-      <LocalDataSourceProvider>
-        <Instruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Modules/SIMUL/Instruments");
     const table = page.getByRole("table");
     const firstRow = table.getByRole("row").nth(1);
     const secondRow = table.getByRole("row").nth(2);

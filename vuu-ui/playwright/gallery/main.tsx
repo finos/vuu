@@ -3,6 +3,7 @@ import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 
 import {
+  basketModule,
   LocalDataSourceProvider,
   simulModule,
   testModule,
@@ -11,6 +12,7 @@ import themeCss from "@vuu-ui/vuu-theme/index.css";
 import iconsCss from "@vuu-ui/vuu-icons/index.css";
 
 void simulModule;
+void basketModule;
 void testModule;
 
 for (const css of [themeCss, iconsCss]) {

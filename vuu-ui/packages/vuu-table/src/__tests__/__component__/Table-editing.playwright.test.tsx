@@ -1,15 +1,4 @@
 import { test } from "@playwright/test";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import {
-  CreateSessionTableInstruments,
-  EditableInstruments,
-  EditableInstrumentsInlineEdit,
-  EditableInstrumentsWithInlineAddRow,
-  TestTableEmpty,
-  TestTableFIveRows,
-  TwoEditableInstruments,
-  UseEditableTableSessionReadiness,
-} from "../../../../../showcase/src/examples/Table/Editing.examples";
 import { expect } from "../../../../../playwright/customAssertions";
 import { TableOM } from "./TableOM";
 
@@ -22,7 +11,7 @@ test.describe("useEditableTable session readiness", () => {
     mount,
     page,
   }) => {
-    await mount(<UseEditableTableSessionReadiness />);
+    await mount("Table/Editing/UseEditableTableSessionReadiness");
 
     const readiness = page.locator("output");
     await page.getByRole("button", { name: "Start edit session" }).click();
@@ -37,7 +26,9 @@ test.describe("useEditableTable session readiness", () => {
     mount,
     page,
   }) => {
-    await mount(<UseEditableTableSessionReadiness delaySubscription={false} />);
+    await mount("Table/Editing/UseEditableTableSessionReadiness", {
+      delaySubscription: false,
+    });
 
     const readiness = page.locator("output");
     await page.getByRole("button", { name: "Start edit session" }).click();
@@ -52,11 +43,7 @@ test.describe("Inline add row", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstrumentsWithInlineAddRow />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstrumentsWithInlineAddRow");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const inlineAddRow = page.locator(".vuuInlineAddRow");
@@ -75,11 +62,7 @@ test.describe("Inline add row", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstrumentsWithInlineAddRow />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstrumentsWithInlineAddRow");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const inlineAddRow = page.locator(".vuuInlineAddRow");
@@ -97,11 +80,7 @@ test.describe("Inline add row", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstrumentsWithInlineAddRow />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstrumentsWithInlineAddRow");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const inlineAddRow = page.locator(".vuuInlineAddRow");
@@ -117,11 +96,7 @@ test.describe("Inline add row", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstrumentsWithInlineAddRow />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstrumentsWithInlineAddRow");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const inlineAddRow = page.locator(".vuuInlineAddRow");
@@ -138,7 +113,7 @@ test.describe("Test table editing", () => {
     mount,
     page,
   }) => {
-    await mount(<TestTableEmpty />);
+    await mount("Table/Editing/TestTableEmpty");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const inlineAddRow = page.locator(".vuuInlineAddRow");
@@ -178,7 +153,7 @@ test.describe("Test table editing", () => {
     mount,
     page,
   }) => {
-    await mount(<TestTableEmpty />);
+    await mount("Table/Editing/TestTableEmpty");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const inlineAddRow = page.locator(".vuuInlineAddRow");
@@ -230,7 +205,7 @@ test.describe("Test table editing", () => {
     mount,
     page,
   }) => {
-    await mount(<TestTableEmpty />);
+    await mount("Table/Editing/TestTableEmpty");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const inlineAddRow = page.locator(".vuuInlineAddRow");
@@ -265,7 +240,7 @@ test.describe("Test table editing", () => {
     mount,
     page,
   }) => {
-    await mount(<TestTableEmpty />);
+    await mount("Table/Editing/TestTableEmpty");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const inlineAddRow = page.locator(".vuuInlineAddRow");
@@ -304,7 +279,7 @@ test.describe("Test table editing", () => {
     mount,
     page,
   }) => {
-    await mount(<TestTableEmpty />);
+    await mount("Table/Editing/TestTableEmpty");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const inlineAddRow = page.locator(".vuuInlineAddRow");
@@ -337,7 +312,7 @@ test.describe("Test table editing", () => {
     mount,
     page,
   }) => {
-    await mount(<TestTableFIveRows />);
+    await mount("Table/Editing/TestTableFIveRows");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const quantity = page.getByRole("textbox", { name: "quantity" }).nth(1);
@@ -355,7 +330,7 @@ test.describe("Test table editing", () => {
     mount,
     page,
   }) => {
-    await mount(<TestTableEmpty />);
+    await mount("Table/Editing/TestTableEmpty");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const quantity = page
@@ -370,7 +345,7 @@ test.describe("Test table editing", () => {
   });
 
   test("updates and deletes existing rows", async ({ mount, page }) => {
-    await mount(<TestTableFIveRows />);
+    await mount("Table/Editing/TestTableFIveRows");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const descriptionCell = page
@@ -393,11 +368,7 @@ test.describe("Test table editing", () => {
 
 test.describe("Editable table navigation", () => {
   test("smoke test", async ({ mount, page }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table1 = new TableOM(page.getByTestId("table-1"));
     const editButton = page.getByRole("radio", { name: "Edit" });
 
@@ -413,11 +384,7 @@ test.describe("Editable table navigation", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
@@ -438,11 +405,7 @@ test.describe("Editable table navigation", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
@@ -477,11 +440,7 @@ test.describe("Editable table navigation", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
@@ -503,11 +462,7 @@ test.describe("Editable table navigation", () => {
     // The very last assetion doesn't work in Safari - the transfer of focus on 'vuu-commit'
     test.skip(browserName === "webkit");
 
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
@@ -532,11 +487,7 @@ test.describe("Editable table navigation", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
@@ -556,11 +507,7 @@ test.describe("Editable table navigation", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
@@ -597,11 +544,7 @@ test.describe("Cell editing", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
@@ -627,11 +570,7 @@ test.describe("Cell editing", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
@@ -657,11 +596,7 @@ test.describe("Cell editing", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
@@ -693,11 +628,7 @@ test.describe("Cell editing", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
@@ -731,11 +662,7 @@ test.describe("Cell editing", () => {
 test.describe("Edit conflicts", () => {
   test.describe("View mode", () => {
     test("smoke test", async ({ mount, page }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <TwoEditableInstruments />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Table/Editing/TwoEditableInstruments");
       const table1 = new TableOM(page.getByTestId("table-1"));
       await table1.assertRenderedRows({ from: 0, to: 10 }, 10, 10_000, 1);
       await table1.assertCellIsEditable(2, 1, NOT_EDITABLE, "AAOO L");
@@ -749,11 +676,7 @@ test.describe("Edit conflicts", () => {
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <TwoEditableInstruments />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Table/Editing/TwoEditableInstruments");
       const table = new TableOM(page.getByTestId("table-1"));
       // get the first data cell
 
@@ -773,11 +696,7 @@ test.describe("Edit conflicts", () => {
 
   test.describe("Edit mode", () => {
     test("smoke test", async ({ mount, page }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <TwoEditableInstruments />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Table/Editing/TwoEditableInstruments");
 
       const editButton = page.getByTestId("toggle-edit-1");
       const table1 = new TableOM(page.getByTestId("table-1"));
@@ -796,11 +715,7 @@ test.describe("Edit conflicts", () => {
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <TwoEditableInstruments />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Table/Editing/TwoEditableInstruments");
 
       const first = page.getByTestId("edit-table-1");
       const second = page.getByTestId("edit-table-2");
@@ -849,11 +764,7 @@ test.describe("Edit conflicts", () => {
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <EditableInstruments />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Table/Editing/EditableInstruments");
       const table = new TableOM(page.getByTestId("table-1"));
       const editButton = page.getByRole("radio", { name: "Edit" });
       await editButton.click();
@@ -882,11 +793,7 @@ test.describe("Edit conflicts", () => {
     });
 
     test("Save disabled whilst rejected edits", async ({ mount, page }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <EditableInstruments />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Table/Editing/EditableInstruments");
       const table = new TableOM(page.getByTestId("table-1"));
       const editButton = page.getByRole("radio", { name: "Edit" });
       await editButton.click();
@@ -935,7 +842,7 @@ test.describe("Inline row editing (session)", () => {
     mount,
     page,
   }) => {
-    await mount(<EditableInstrumentsInlineEdit />);
+    await mount("Table/Editing/EditableInstrumentsInlineEdit");
 
     const table = page.getByRole("table");
     const tableRoot = page.locator("[data-viewport]");
@@ -951,7 +858,7 @@ test.describe("Inline row editing (session)", () => {
       new MutationObserver(() => {
         if (
           tableRoot.getAttribute("data-viewport") ===
-          table.getAttribute("data-source-viewport") &&
+            table.getAttribute("data-source-viewport") &&
           table.querySelector('[data-column-name="undo"]') &&
           table.getAttribute("data-edit-source-violation") !== "true"
         ) {
@@ -979,7 +886,7 @@ test.describe("Inline row editing (session)", () => {
     mount,
     page,
   }) => {
-    await mount(<EditableInstrumentsInlineEdit />);
+    await mount("Table/Editing/EditableInstrumentsInlineEdit");
 
     // View mode: no Delete/Add Rows/Submit buttons visible
     await expect(
@@ -1002,7 +909,7 @@ test.describe("Inline row editing (session)", () => {
     mount,
     page,
   }) => {
-    await mount(<EditableInstrumentsInlineEdit />);
+    await mount("Table/Editing/EditableInstrumentsInlineEdit");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const submitButton = page.getByRole("button", { name: "Submit" });
@@ -1023,7 +930,7 @@ test.describe("Inline row editing (session)", () => {
     page,
   }) => {
     test.slow();
-    await mount(<EditableInstrumentsInlineEdit />);
+    await mount("Table/Editing/EditableInstrumentsInlineEdit");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const tableLocator = page.getByRole("table");
@@ -1062,7 +969,7 @@ test.describe("Inline row editing (session)", () => {
     page,
   }) => {
     test.skip(browserName === "webkit" || browserName === "firefox");
-    await mount(<EditableInstrumentsInlineEdit />);
+    await mount("Table/Editing/EditableInstrumentsInlineEdit");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const table = new TableOM(page.getByRole("table"));
@@ -1088,7 +995,7 @@ test.describe("Inline row editing (session)", () => {
     mount,
     page,
   }) => {
-    await mount(<EditableInstrumentsInlineEdit />);
+    await mount("Table/Editing/EditableInstrumentsInlineEdit");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const table = new TableOM(page.getByRole("table"));
@@ -1100,10 +1007,7 @@ test.describe("Inline row editing (session)", () => {
     await expect(undoButton).toBeVisible();
     await undoButton.click();
 
-
     // undo button gone, Submit disabled again
-    // Column 11 = vuuMsg (column 1 is the checkbox selector)
-    const vuuMsgCell = table.locateCell(2, 11);
     await expect(undoButton).not.toBeVisible();
     await expect(page.getByRole("button", { name: "Submit" })).toBeDisabled();
   });
@@ -1112,7 +1016,7 @@ test.describe("Inline row editing (session)", () => {
     mount,
     page,
   }) => {
-    await mount(<EditableInstrumentsInlineEdit />);
+    await mount("Table/Editing/EditableInstrumentsInlineEdit");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const table = new TableOM(page.getByRole("table"));
@@ -1139,7 +1043,7 @@ test.describe("Session table editing (createSessionTable)", () => {
     mount,
     page,
   }) => {
-    await mount(<CreateSessionTableInstruments />);
+    await mount("Table/Editing/CreateSessionTableInstruments");
     const table = new TableOM(page.getByRole("table"));
 
     await page.getByRole("radio", { name: "Edit" }).click();
@@ -1157,7 +1061,7 @@ test.describe("Session table editing (createSessionTable)", () => {
     mount,
     page,
   }) => {
-    await mount(<CreateSessionTableInstruments />);
+    await mount("Table/Editing/CreateSessionTableInstruments");
     await page.getByRole("radio", { name: "Edit" }).click();
     await expect(
       page.getByRole("status", { name: "Loading session table" }),
@@ -1179,7 +1083,7 @@ test.describe("Session table editing (createSessionTable)", () => {
   });
 
   test("selecting a row enables the Delete button", async ({ mount, page }) => {
-    await mount(<CreateSessionTableInstruments />);
+    await mount("Table/Editing/CreateSessionTableInstruments");
     await page.getByRole("radio", { name: "Edit" }).click();
     await expect(
       page.getByRole("status", { name: "Loading session table" }),
@@ -1199,7 +1103,7 @@ test.describe("Session table editing (createSessionTable)", () => {
     mount,
     page,
   }) => {
-    await mount(<CreateSessionTableInstruments />);
+    await mount("Table/Editing/CreateSessionTableInstruments");
     await page.getByRole("radio", { name: "Edit" }).click();
     await expect(
       page.getByRole("status", { name: "Loading session table" }),
@@ -1219,7 +1123,7 @@ test.describe("Session table editing (createSessionTable)", () => {
     mount,
     page,
   }) => {
-    await mount(<CreateSessionTableInstruments />);
+    await mount("Table/Editing/CreateSessionTableInstruments");
     await page.getByRole("radio", { name: "Edit" }).click();
     await expect(
       page.getByRole("status", { name: "Loading session table" }),
@@ -1250,7 +1154,7 @@ test.describe("Session table editing (createSessionTable)", () => {
     mount,
     page,
   }) => {
-    await mount(<CreateSessionTableInstruments />);
+    await mount("Table/Editing/CreateSessionTableInstruments");
     await page.getByRole("radio", { name: "Edit" }).click();
     await expect(
       page.getByRole("status", { name: "Loading session table" }),
@@ -1277,7 +1181,7 @@ test.describe("Session table editing (createSessionTable)", () => {
     mount,
     page,
   }) => {
-    await mount(<CreateSessionTableInstruments />);
+    await mount("Table/Editing/CreateSessionTableInstruments");
     await page.getByRole("radio", { name: "Edit" }).click();
     await expect(
       page.getByRole("status", { name: "Loading session table" }),
@@ -1298,7 +1202,7 @@ test.describe("Session table editing (createSessionTable)", () => {
     mount,
     page,
   }) => {
-    await mount(<CreateSessionTableInstruments />);
+    await mount("Table/Editing/CreateSessionTableInstruments");
     await page.getByRole("radio", { name: "Edit" }).click();
     await expect(
       page.getByRole("status", { name: "Loading session table" }),

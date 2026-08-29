@@ -1,17 +1,6 @@
-// TODO try and get TS path alias working to avoid relative paths like this
-import { test, expect } from "@playwright/test";
-import { Instruments } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { TableProps } from "../../Table";
+import { expect, test } from "@playwright/test";
 
 test.describe("Table column resize", () => {
-  const RENDER_BUFFER = 5;
-  const tableConfig: Partial<TableProps> = {
-    renderBufferSize: RENDER_BUFFER,
-    height: 625,
-    rowHeight: 20,
-    width: 800,
-  };
   test.describe("WHEN ISIN column seperator is dragged 50px", () => {
     test("THEN ISIN column is resized to 150px", async ({
       browserName,
@@ -21,11 +10,7 @@ test.describe("Table column resize", () => {
       //TODO investigate why test fails on Safari
       test.skip(browserName === "webkit");
 
-      await mount(
-        <LocalDataSourceProvider>
-          <Instruments {...tableConfig} />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Table/Modules/SIMUL/Instruments");
 
       const isinColumn = page.getByRole("columnheader", {
         name: "isin column header",
@@ -35,7 +20,10 @@ test.describe("Table column resize", () => {
       const box = await isinColumn.boundingBox();
       expect(box?.width).toEqual(100);
 
-      const resizerBox = (await isinResizerColumn.boundingBox())!;
+      const resizerBox = await isinResizerColumn.boundingBox();
+      if (!resizerBox) {
+        throw new Error("Unable to resolve ISIN column resizer bounds");
+      }
 
       const posX = resizerBox.x + resizerBox.width / 2;
       const posY = resizerBox.y + resizerBox.height / 2;

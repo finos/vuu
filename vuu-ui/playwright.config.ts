@@ -34,34 +34,40 @@ export default defineConfig({
     {
       name: "components-chromium",
       testDir: "./packages",
-      testMatch: "**/__component__/prompt/Prompt.playwright.test.tsx",
+      testMatch: [
+        "**/__component__/prompt/Prompt.playwright.test.tsx",
+        "**/vuu-table/src/__tests__/__component__/*.playwright.test.tsx",
+      ],
       use: {
         ...devices["Desktop Chrome"],
         baseURL: galleryBaseURL,
         serviceWorkers: "block",
-        reuseContext: true,
       },
     },
     {
       name: "components-firefox",
       testDir: "./packages",
-      testMatch: "**/__component__/prompt/Prompt.playwright.test.tsx",
+      testMatch: [
+        "**/__component__/prompt/Prompt.playwright.test.tsx",
+        "**/vuu-table/src/__tests__/__component__/*.playwright.test.tsx",
+      ],
       use: {
         ...devices["Desktop Firefox"],
         baseURL: galleryBaseURL,
         serviceWorkers: "block",
-        reuseContext: true,
       },
     },
     {
       name: "components-webkit",
       testDir: "./packages",
-      testMatch: "**/__component__/prompt/Prompt.playwright.test.tsx",
+      testMatch: [
+        "**/__component__/prompt/Prompt.playwright.test.tsx",
+        "**/vuu-table/src/__tests__/__component__/*.playwright.test.tsx",
+      ],
       use: {
         ...devices["Desktop Safari"],
         baseURL: galleryBaseURL,
         serviceWorkers: "block",
-        reuseContext: true,
       },
     },
   ],
