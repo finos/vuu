@@ -13,7 +13,7 @@ const test = base.extend({
           window.mount({ story: storyId, props: storyProps }),
         { story, props },
       );
-      return page.locator("#root > *").first();
+      return page.locator("#root");
     });
     await page.evaluate(() => window.unmount()).catch(() => {});
   },
