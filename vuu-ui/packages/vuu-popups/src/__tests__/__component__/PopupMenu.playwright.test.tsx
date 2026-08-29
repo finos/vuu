@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../../../../playwright/fixtures";
 
 test.describe("Given a PopupMenu", () => {
   test("should apply correct aria attribues", async ({ mount }) => {

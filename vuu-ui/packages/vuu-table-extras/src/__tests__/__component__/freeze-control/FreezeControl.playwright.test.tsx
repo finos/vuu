@@ -1,4 +1,4 @@
-import { test, expect, type Locator } from "@playwright/test";
+import { test, expect, type Locator } from "../../../../../../playwright/fixtures";
 
 
 // Section below just to improve test readability

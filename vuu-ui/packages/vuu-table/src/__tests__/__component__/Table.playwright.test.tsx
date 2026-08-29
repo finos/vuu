@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../../../../playwright/fixtures";
 import { TableOM } from "./TableOM";
 
 const RENDER_BUFFER = 5;

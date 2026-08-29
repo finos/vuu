@@ -1,5 +1,5 @@
-import { test, type Page } from "@playwright/test";
-import { expect } from "@playwright/test";
+import { test, type Page } from "../../../../../playwright/fixtures";
+import { expect } from "../../../../../playwright/fixtures";
 
 
 const FILTER_CONTAINER = ".vuuCustomFilters-filters";

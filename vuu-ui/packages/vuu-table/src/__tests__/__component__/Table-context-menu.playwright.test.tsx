@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../../../../playwright/fixtures";
 import { TableOM } from "./TableOM";
 
 test.describe("WHEN context menu is configured on table", () => {

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../../../../playwright/fixtures";
 
 test.describe("Table column resize", () => {
   test.describe("WHEN ISIN column seperator is dragged 50px", () => {

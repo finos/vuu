@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../../../../playwright/fixtures";
 
 test.describe("default (extended) selection", () => {
   test("default selection includes simple row selection", async ({

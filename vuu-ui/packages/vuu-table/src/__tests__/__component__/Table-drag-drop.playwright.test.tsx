@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../../../../../playwright/fixtures";
 
 test.describe("Table drag drop", () => {
   test.describe("Drag drop column headers", () => {
