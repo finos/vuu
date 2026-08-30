@@ -2,12 +2,12 @@ import { getCommandLineArg, runCommandSync } from "../../../scripts/utils.ts";
 
 const packages = [
 	"simple-login-service",
-	"vuu-portal",
-	"feature-basket-trading",
+	"portal-host",
+	"basket-trading",
 	"feature-filter-table",
-	"feature-module-admin",
+	"module-admin",
 	"feature-simple-div",
-	"feature-user-admin",
+	"user-admin",
 	"feature-instrument-tiles",
 	"vuu-table-browser",
 	"vuu-table-viewer",

@@ -1,11 +1,11 @@
 {
-  "name": "vuu-portal",
+  "name": "portal-host",
   "version": "1.0.0",
   "description": "",
   "scripts": {
     "build": "node ./scripts/rsbuild.ts",
     "build:doctor": "node ./scripts/rsbuild.ts --rsdoctor",
-    "start": "serve -p 5002 ../../dist_portal/app-vuu-example"
+    "start": "serve -p 5002 ../../dist_portal/portal-host"
   },
   "author": "heswell",
   "license": "Apache-2.0",
