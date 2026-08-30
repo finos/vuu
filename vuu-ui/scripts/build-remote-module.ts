@@ -52,7 +52,7 @@ async function build(
       },
       output: {
         distPath: {
-          root: `../../deployed_apps/${packageName}`,
+          root: `../../dist_portal/${packageName}`,
           css: "./",
           js: "./",
         },

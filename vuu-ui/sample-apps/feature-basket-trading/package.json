@@ -1,10 +1,11 @@
 {
   "name": "feature-basket-trading",
-  "version": "3.3.1",
+  "version": "3.0.0",
   "description": "Basket Trading",
   "scripts": {
-    "build": "node ../../scripts/build-remote-module.ts",
-    "dev": "rsbuild dev"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node ../../scripts/build-feature.mjs",
+    "start": "serve -p 5002 ../../deployed_apps/app-vuu-example"
   },
   "private": true,
   "keywords": [],
@@ -31,8 +32,7 @@
     "@vuu-ui/vuu-table-extras": "3.3.1",
     "@vuu-ui/vuu-theme": "3.3.1",
     "@vuu-ui/vuu-utils": "3.3.1",
-    "@salt-ds/core": "1.67.0",
-    "@vuu-ui/core": "3.3.1"
+    "@salt-ds/core": "1.54.1"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",
@@ -65,13 +65,6 @@
           "table": "basketConstituent"
         }
       ]
-    },
-    "module-federation": {
-      "exposes": {
-        "./VuuBasketTradingFeature": "./src/VuuBasketTradingFeature"
-      },
-      "name": "basketTrading",
-      "port": 5005
     },
     "leftNavLocation": "vuu-features"
   }

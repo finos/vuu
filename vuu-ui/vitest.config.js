@@ -5,7 +5,7 @@ export default defineConfig({
     dangerouslyIgnoreUnhandledErrors: true,
     include: [
       "packages/**/test/**/**.test.(js|ts|tsx)",
-      "sample-apps/**/test/**/**.test.(js|ts|tsx)",
+      "portal-examples/**/test/**/**.test.(js|ts|tsx)",
     ],
     environment: "happy-dom",
   },

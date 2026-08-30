@@ -1,4 +1,4 @@
-import type { DataSource } from "@vuu-ui/vuu-data-types";
+import { DataSource } from "@vuu-ui/vuu-data-types";
 import { TableSearch, PriceTicker } from "@vuu-ui/vuu-ui-controls";
 import { useId } from "@vuu-ui/vuu-utils";
 import {
@@ -7,8 +7,8 @@ import {
   useIdMemo,
   type FloatingComponentProps,
 } from "@salt-ds/core";
-import { type HTMLAttributes, forwardRef } from "react";
-import type { Basket } from "../useBasketTrading";
+import { HTMLAttributes, forwardRef } from "react";
+import { Basket } from "../useBasketTrading";
 import { useBasketSelector } from "./useBasketSelector";
 import cx from "clsx";
 

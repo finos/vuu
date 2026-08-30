@@ -17,12 +17,16 @@
     "packages",
     "playwright/customAssertions.ts",
     "sample-apps",
+    "portal-examples",
     "showcase/src",
     "sample-apps/*/index.ts",
     "sample-apps/*/src",
+    "portal-examples/*/index.ts",
+    "portal-examples/*/src",
     "global.d.ts",
     "packages/vuu-data-test/src/UpdateGenerator.ts",
     "sample-apps/standalone-table/index.tsx",
+    "portal-examples/standalone-table/index.tsx",
     "packages/vuu-icons/src/index.ts"
   ],
   "exclude": ["**/*.test.*"]

@@ -1,13 +1,12 @@
 {
-  "name": "feature-filter-table",
-  "version": "1.0.0",
+  "name": "feature-vuu-filter-table",
+  "version": "3.0.0",
   "description": "Vuu Filter Table",
   "scripts": {
-    "build": "node ../../scripts/build-remote-module.ts",
-    "dev": "rsbuild dev",
-    "start": "serve -p 5001 ../../deployed_apps/feature-filter-table"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node ../../scripts/build-feature.mjs",
+    "start": "serve -p 5002 ../../deployed_apps/app-vuu-example"
   },
-  "type": "module",
   "private": true,
   "keywords": [],
   "author": "heswell",
@@ -18,7 +17,6 @@
   "main": "index.ts",
   "devDependencies": {},
   "dependencies": {
-    "@vuu-ui/core": "3.3.1",
     "@vuu-ui/vuu-data-remote": "3.3.1",
     "@vuu-ui/vuu-data-react": "3.3.1",
     "@vuu-ui/vuu-datatable": "3.3.1",
@@ -33,12 +31,12 @@
     "@vuu-ui/vuu-table-extras": "3.3.1",
     "@vuu-ui/vuu-theme": "3.3.1",
     "@vuu-ui/vuu-utils": "3.3.1",
-    "@salt-ds/core": "1.67.0"
+    "@salt-ds/core": "1.54.1"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
   },
   "engines": {
     "node": ">=16.0.0"
@@ -46,13 +44,6 @@
   "vuu": {
     "featureProps": {
       "vuuTables": "*"
-    },
-    "module-federation": {
-      "exposes": {
-        "./VuuFilterTableFeature": "./src/VuuFilterTableFeature"
-      },
-      "name": "filterTable",
-      "port": 5003
     }
   }
 }
