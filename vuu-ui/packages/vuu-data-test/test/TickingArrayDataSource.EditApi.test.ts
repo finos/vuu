@@ -43,7 +43,7 @@ function createDataSource() {
 }
 
 describe("sessionTableSchema", () => {
-  it("adds vuu_action as a string session-only column", () => {
+  it("adds vuuAction as a string session-only column", () => {
     const sessionSchema = sessionTableSchema({
       ...schema,
       columns: schema.columns.slice(0, 2),
@@ -53,7 +53,7 @@ describe("sessionTableSchema", () => {
       { name: "id", serverDataType: "string" },
       { name: "name", serverDataType: "string" },
       { name: "vuuMsg", serverDataType: "string" },
-      { name: "vuu_action", serverDataType: "string" },
+      { name: "vuuAction", serverDataType: "string" },
     ]);
   });
 
@@ -64,7 +64,7 @@ describe("sessionTableSchema", () => {
       sessionSchema.columns.filter(({ name }) => name === "vuuMsg"),
     ).toHaveLength(1);
     expect(
-      sessionSchema.columns.filter(({ name }) => name === "vuu_action"),
+      sessionSchema.columns.filter(({ name }) => name === "vuuAction"),
     ).toHaveLength(1);
   });
 
@@ -79,7 +79,7 @@ describe("sessionTableSchema", () => {
       sessionTableRow(["row-001", "Alice", "", ""], {
         ...schema,
         columns: schema.columns.concat({
-          name: "vuu_action",
+          name: "vuuAction",
           serverDataType: "string",
         }),
       }),

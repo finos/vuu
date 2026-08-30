@@ -65,13 +65,13 @@ describe("VuuModule edit actions", () => {
     await sessionDataSource.deleteRow("row-002", "soft");
 
     expect(
-      sessionTable.findByKey("row-001")?.[sessionTable.map.vuu_action],
+      sessionTable.findByKey("row-001")?.[sessionTable.map.vuuAction],
     ).toBe("editCell");
     expect(
-      sessionTable.findByKey("row-002")?.[sessionTable.map.vuu_action],
+      sessionTable.findByKey("row-002")?.[sessionTable.map.vuuAction],
     ).toBe("deleteRow");
     expect(
-      sessionTable.findByKey("row-003")?.[sessionTable.map.vuu_action],
+      sessionTable.findByKey("row-003")?.[sessionTable.map.vuuAction],
     ).toBe("addRow");
   });
 
@@ -92,7 +92,7 @@ describe("VuuModule edit actions", () => {
     );
   });
 
-  it("uses vuu_action to undo inserts, edits, and deletes", async () => {
+  it("uses vuuAction to undo inserts, edits, and deletes", async () => {
     await sessionDataSource.editCell("row-001", "name", "Alicia");
     await sessionDataSource.deleteRow("row-002", "soft");
     await sessionDataSource.addRow({ id: "row-003", name: "Carol" });
@@ -105,10 +105,10 @@ describe("VuuModule edit actions", () => {
       "Alice",
     );
     expect(
-      sessionTable.findByKey("row-001")?.[sessionTable.map.vuu_action],
+      sessionTable.findByKey("row-001")?.[sessionTable.map.vuuAction],
     ).toBe("");
     expect(
-      sessionTable.findByKey("row-002")?.[sessionTable.map.vuu_action],
+      sessionTable.findByKey("row-002")?.[sessionTable.map.vuuAction],
     ).toBe("");
     expect(sessionTable.findByKey("row-003")).toBeUndefined();
     expect(insertResult).toEqual({
@@ -154,7 +154,7 @@ describe("VuuModule edit actions", () => {
     expect(sessionTable.findByKey("row-002")?.[sessionTable.map.name]).toBe(
       "Bob",
     );
-    expect(sessionTable.findByKey("row-002")?.[sessionTable.map.vuu_action]).toBe(
+    expect(sessionTable.findByKey("row-002")?.[sessionTable.map.vuuAction]).toBe(
       "deleteRow",
     );
   });
