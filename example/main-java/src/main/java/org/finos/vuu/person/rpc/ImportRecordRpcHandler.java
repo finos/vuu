@@ -7,6 +7,7 @@ import org.finos.vuu.net.rpc.RpcFunctionSuccess;
 import org.finos.vuu.net.rpc.RpcParams;
 import org.finos.vuu.net.rpc.sessiontable.EndSessionRpcHandler;
 import org.finos.vuu.net.rpc.sessiontable.ImportSessionRpcHandler;
+import org.finos.vuu.net.rpc.sessiontable.TableAction;
 
 // An example of Java implementation of ImportSessionRpcHandler and EndSessionRpcHandler
 public class ImportRecordRpcHandler extends DefaultRpcHandlerImpl implements ImportSessionRpcHandler, EndSessionRpcHandler {
@@ -26,6 +27,7 @@ public class ImportRecordRpcHandler extends DefaultRpcHandlerImpl implements Imp
 
     @Override
     public RpcFunctionResult addRowWithoutVuuMsg(RpcParams params) {
+        String vuuAction = TableAction.ADD_ROW().value(); // example of calling TableAction in Java
         return new RpcFunctionSuccess();
     }
 

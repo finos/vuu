@@ -6,7 +6,7 @@ import org.finos.vuu.net.rpc.sessiontable.TableAction.DeleteRow
 import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 
 // Default implementation of EditTableRpcHandler for edit mode
-trait EditSessionRpcHandler() extends EditTableRpcHandler {
+trait EditSessionRpcHandler extends EditTableRpcHandler {
 
   def deleteSelectedRows(params: RpcParams): RpcFunctionResult = {
     val table = params.viewPort.table.asTable
@@ -17,7 +17,7 @@ trait EditSessionRpcHandler() extends EditTableRpcHandler {
         table.processUpdate(selectedRow, rowData)
       }
     }
-    logger.debug(s"${selectedRows.size} rows set to delete")
+    logger.debug(s"Vuu action of ${selectedRows.size} rows set to \"${DeleteRow.value}\"")
     RpcFunctionSuccess(None)
   }
 

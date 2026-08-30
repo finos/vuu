@@ -3,7 +3,7 @@ package org.finos.vuu.net.rpc.sessiontable
 import org.finos.vuu.core.table.TableContainer
 import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams}
 
-trait EndSessionRpcHandler() extends RpcHandler {
+trait EndSessionRpcHandler extends RpcHandler {
 
   val tableContainer: TableContainer
 
