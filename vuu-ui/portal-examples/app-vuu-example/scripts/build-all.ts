@@ -3,7 +3,7 @@ import { getCommandLineArg, runCommandSync } from "../../../scripts/utils.ts";
 const packages = [
 	"simple-login-service",
 	"app-vuu-example",
-	"feature-basket-trading",
+	"basket-trading",
 	"feature-filter-table",
 	"feature-simple-div",
 	"feature-instrument-tiles",

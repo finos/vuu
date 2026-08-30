@@ -6,13 +6,13 @@ Provide a simple module-federated administration feature that displays the modul
 
 ## Scope
 
-- Create the UI package at `vuu-ui/portal-examples/feature-module-admin`.
-- Follow `vuu-ui/portal-examples/feature-user-admin` for package structure, federation setup, VUU data access, table configuration, and view sizing.
+- Create the UI package at `vuu-ui/portal-examples/module-admin`.
+- Follow `vuu-ui/portal-examples/user-admin` for package structure, federation setup, VUU data access, table configuration, and view sizing.
 - Render one table only: `{ module: "MODULE_DISCOVERY", table: "modules" }`.
 
 ## Package and Federation Identity
 
-- Package name: `feature-module-admin`.
+- Package name: `module-admin`.
 - Primary component and default export: `ModuleAdmin`.
 - Module Federation name: `moduleAdmin`.
 - Exposed module: `"./ModuleAdmin": "./src/ModuleAdmin"`.
@@ -77,7 +77,7 @@ Provide a simple module-federated administration feature that displays the modul
 
 - Render a standard `Table` from `@vuu-ui/vuu-table`.
 - Use the discovered schema to construct the table configuration.
-- Enable row separators and zebra stripes, consistent with `feature-user-admin`.
+- Enable row separators and zebra stripes, consistent with `user-admin`.
 - Display the table read-only; row selection, if supplied by the standard table, must not trigger an admin action.
 - The feature root and table container must fill the available height and width and preserve `min-height: 0` and `min-width: 0` where needed for embedding in a VUU view.
 - Do not add tabs, drawers, forms, toolbars, dialogs, or secondary panels in phase 1.

@@ -1,14 +1,14 @@
 # User Admin UI - Vuu-First Requirements
 
 ## Purpose
-Refactor the feature-user-admin sample application into a Vuu-native admin screen.
+Refactor the user-admin sample application into a Vuu-native admin screen.
 
 The previous tabbed UI can be discarded. The replacement UI must consume data
 from the standalone user-admin VUU server, where `KeycloakAdminModule` owns the
 Keycloak integration.
 
 ## Scope
-- Applies to portal-examples/feature-user-admin in vuu-ui.
+- Applies to portal-examples/user-admin in vuu-ui.
 - UI behavior and data flow only.
 - No direct browser calls to Keycloak Admin REST endpoints.
 
@@ -63,7 +63,7 @@ Keycloak integration.
 - Displayed in bottom section of the drawer.
 
 ### Common Table Behavior
-- Use Vuu table components and config patterns consistent with feature-basket-trading.
+- Use Vuu table components and config patterns consistent with basket-trading.
 - Use row separators and zebra stripes unless module style conventions dictate otherwise.
 - Exclude internal transport/meta columns from visible table columns where appropriate (for example vuuMsg).
 
@@ -81,10 +81,10 @@ Keycloak integration.
 - Backend module: `vuu-websocket/packages/vuu-user-admin`
   `KeycloakAdminModule`.
 - Drawer behavior example: showcase/src/examples/Table/TableLayout.examples.tsx RightInlineDrawerPeek.
-- Vuu table usage reference: portal-examples/feature-basket-trading.
+- Vuu table usage reference: portal-examples/basket-trading.
 
 ## Acceptance Criteria
-- feature-user-admin renders a Users Vuu table as the primary view.
+- user-admin renders a Users Vuu table as the primary view.
 - A right inline drawer is present and wired to user selection.
 - Drawer contains Groups table above Roles table in a vertical flex layout.
 - UI performs no direct Keycloak API calls.
