@@ -1,16 +1,15 @@
-import { test } from "@playwright/experimental-ct-react";
-import { expect } from "../../../../../playwright/customAssertions";
-import {
-  FilterPillEditableLabel,
-  FilterPillNotEditable,
-} from "../../../../../showcase/src/examples/Filters/FilterBar/FilterPill.examples";
+import { test } from "../../../../../playwright/fixtures";
+import { expect } from "../../../../../playwright/fixtures";
+
 
 test.describe("FilterPill", () => {
   test("non-editable pill has no editable label or Rename menu item", async ({
     mount,
     page,
   }) => {
-    const component = await mount(<FilterPillNotEditable />);
+    const component = await mount(
+      "Filters/FilterBar/FilterPill/FilterPillNotEditable",
+    );
 
     await expect(component.locator(".vuuEditableLabel")).toHaveCount(0);
     await component.getByRole("button", { name: "currency" }).click();
@@ -23,7 +22,9 @@ test.describe("FilterPill", () => {
     mount,
     page,
   }) => {
-    const component = await mount(<FilterPillEditableLabel />);
+    const component = await mount(
+      "Filters/FilterBar/FilterPill/FilterPillEditableLabel",
+    );
 
     await expect(component.locator(".vuuEditableLabel")).toHaveCount(1);
     await component.getByRole("button", { name: "currency" }).click();

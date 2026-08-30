@@ -34,8 +34,8 @@ if [ -f "$JSON_FILE" ]; then
   for browser in "${BROWSERS[@]}"; do
     # Count overall test status, not individual results
     ALL=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | select(.status?)] | length' "$JSON_FILE")
-    PASSED=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | select(.status == "passed")] | length' "$JSON_FILE")
-    FAILED=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | select(.status == "failed")] | length' "$JSON_FILE")
+    PASSED=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | select(.status == "expected")] | length' "$JSON_FILE")
+    FAILED=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | select(.status == "unexpected")] | length' "$JSON_FILE")
     FLAKY=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | select(.status == "flaky")] | length' "$JSON_FILE")
     SKIPPED=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | select(.status == "skipped")] | length' "$JSON_FILE")
     DURATION=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | .results[]?.duration // 0] | if length > 0 then add / 1000 | round else 0 end' "$JSON_FILE")

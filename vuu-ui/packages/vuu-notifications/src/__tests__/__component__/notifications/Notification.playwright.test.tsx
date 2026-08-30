@@ -1,17 +1,8 @@
-import {
-  test,
-  expect,
-  type MountResult,
-} from "@playwright/experimental-ct-react";
-import {
-  NotificationsWithContext,
-  ErrorNotificationWithCustomBackground,
-} from "../../../../../../showcase/src/examples/Notifications/Toast.examples";
+import { test, expect, type Locator } from "../../../../../../playwright/fixtures";
+
 
 function convertRGBAtoHex(rgba: string): string {
-  const match = rgba.match(
-    /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/,
-  );
+  const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
   if (!match) {
     throw new Error(`Invalid RGBA color: ${rgba}`);
   }
@@ -41,12 +32,13 @@ const noWrapCases = [
   },
 ];
 
-
 test.describe("Given a toast notification", () => {
   test("should display notification when trigger is clicked and hide when hide button is clicked", async ({
     mount,
   }) => {
-    const component: MountResult = await mount(<NotificationsWithContext />);
+    const component: Locator = await mount(
+      "Notifications/Toast/NotificationsWithContext",
+    );
 
     // Set custom header
     const headerInput = component.getByLabel("Notification Header");
@@ -57,18 +49,25 @@ test.describe("Given a toast notification", () => {
       'label:has-text("Dismissal") ~ [role="combobox"]',
     );
     await dismissalDropdown.click();
-    await component.page().locator('[role="option"]:has-text("Manual")').click();
+    await component
+      .page()
+      .locator('[role="option"]:has-text("Manual")')
+      .click();
 
     // Trigger notification
-    const triggerButton = component.locator('button:has-text("trigger notifications")');
+    const triggerButton = component.locator(
+      'button:has-text("trigger notifications")',
+    );
     await triggerButton.click();
 
     // Validate notification appears
-    const notification = component.page().locator('.vuuToastNotification');
+    const notification = component.page().locator(".vuuToastNotification");
     await expect(notification).toBeVisible();
 
     // Hide notification
-    const hideButton = component.locator('button:has-text("hide notifications")');
+    const hideButton = component.locator(
+      'button:has-text("hide notifications")',
+    );
     await hideButton.click();
 
     // Validate notification is hidden
@@ -77,7 +76,9 @@ test.describe("Given a toast notification", () => {
 
   for (const { target, inputLabel, longText, selector } of noWrapCases) {
     test(`should apply no wrap for long ${target} text`, async ({ mount }) => {
-      const component: MountResult = await mount(<NotificationsWithContext />);
+      const component: Locator = await mount(
+        "Notifications/Toast/NotificationsWithContext",
+      );
 
       const input = component.getByLabel(inputLabel);
       await input.fill(longText);
@@ -95,47 +96,47 @@ test.describe("Given a toast notification", () => {
       );
       const height = await notificationText.evaluate((el) => el.clientHeight);
       const isWrapped = height > lineHeight * 1.5; // More than 1.5 lines
-      expect(isWrapped).toBe(false);
+      await expect(isWrapped).toBe(false);
     });
   }
 
   test("should display error notification with custom background and borders", async ({
     mount,
   }) => {
-    const component: MountResult = await mount(
-      <ErrorNotificationWithCustomBackground />
+    const component: Locator = await mount(
+      "Notifications/Toast/ErrorNotificationWithCustomBackground",
     );
 
     // Validate notification appears
-    const notification = component.page().locator('.vuuToastNotification');
+    const notification = component.page().locator(".vuuToastNotification");
     await expect(notification).toBeVisible();
 
     // Check border color
     const borderColor = convertRGBAtoHex(
-      await notification.evaluate(el =>
-        window.getComputedStyle(el).borderColor
-      )
+      await notification.evaluate(
+        (el) => window.getComputedStyle(el).borderColor,
+      ),
     );
 
     // Check border width
-    const borderWidth = await notification.evaluate(el =>
-      window.getComputedStyle(el).borderWidth
+    const borderWidth = await notification.evaluate(
+      (el) => window.getComputedStyle(el).borderWidth,
     );
 
     // Check background color
     const backgroundColor = convertRGBAtoHex(
-      await notification.evaluate(el =>
-        window.getComputedStyle(el).backgroundColor
-      )
+      await notification.evaluate(
+        (el) => window.getComputedStyle(el).backgroundColor,
+      ),
     );
 
     // Verify border color is set
-    expect(borderColor).toBe("#ff4444"); // Not transparent
+    await expect(borderColor).toBe("#ff4444"); // Not transparent
 
     // Verify border width is set
-    expect(borderWidth).toBe("2px");
+    await expect(borderWidth).toBe("2px");
 
     // Verify background color is the custom light red
-    expect(backgroundColor).toBe("#ffe6e6"); // Should have RGB color
+    await expect(backgroundColor).toBe("#ffe6e6"); // Should have RGB color
   });
 });

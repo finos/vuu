@@ -1,14 +1,4 @@
-import { type Locator } from "@playwright/experimental-ct-core";
-import { test, expect } from "@playwright/experimental-ct-react";
-import { CheckboxSelection } from "../../../../../showcase/src/examples/Table/TableSelection.examples";
-import { TestTable } from "../../../../../showcase/src/examples/Table/Misc.examples";
-import {
-  ViewportRowLimitDefaultRowHeight,
-  ViewportRowLimitExplicitRowHeight,
-  MaxViewportRowLimitRowsExceedLimit,
-  MaxViewportRowLimitFewRows,
-} from "../../../../../showcase/src/examples/Table/TableLayout.examples";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { expect, test, type Locator } from "../../../../../playwright/fixtures";
 
 const getDimensions = async (locator: Locator): Promise<[number, number]> => {
   const box = await locator.boundingBox();
@@ -16,7 +6,7 @@ const getDimensions = async (locator: Locator): Promise<[number, number]> => {
     const { height, width } = box;
     return [Math.round(width), Math.round(height)];
   } else {
-    throw Error(`unable to resolve locator`);
+    throw Error("unable to resolve locator");
   }
 };
 
@@ -25,7 +15,11 @@ test.describe("explicit sizing", () => {
     mount,
     page,
   }) => {
-    await mount(<TestTable height={625} rowCount={20} width={1000} />);
+    await mount("Table/Misc/TestTable", {
+      height: 625,
+      rowCount: 20,
+      width: 1000,
+    });
 
     const vuuTable = page.getByTestId("test-table");
     await expect(await getDimensions(vuuTable)).toEqual([1000, 625]);
@@ -46,9 +40,12 @@ test.describe("explicit sizing", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <TestTable columnLayout="fit" height={625} rowCount={20} width={1000} />,
-    );
+    await mount("Table/Misc/TestTable", {
+      columnLayout: "fit",
+      height: 625,
+      rowCount: 20,
+      width: 1000,
+    });
 
     const vuuTable = page.getByTestId("test-table");
     await expect(await getDimensions(vuuTable)).toEqual([1000, 625]);
@@ -69,7 +66,11 @@ test.describe("explicit sizing", () => {
     mount,
     page,
   }) => {
-    await mount(<TestTable height={625} rowCount={100} width={1000} />);
+    await mount("Table/Misc/TestTable", {
+      height: 625,
+      rowCount: 100,
+      width: 1000,
+    });
 
     const vuuTable = page.getByTestId("test-table");
     await expect(await getDimensions(vuuTable)).toEqual([1000, 625]);
@@ -89,9 +90,12 @@ test.describe("explicit sizing", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <TestTable columnLayout="fit" height={625} rowCount={100} width={1000} />,
-    );
+    await mount("Table/Misc/TestTable", {
+      columnLayout: "fit",
+      height: 625,
+      rowCount: 100,
+      width: 1000,
+    });
 
     const vuuTable = page.getByTestId("test-table");
     await expect(await getDimensions(vuuTable)).toEqual([1000, 625]);
@@ -111,11 +115,11 @@ test.describe("explicit sizing", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <CheckboxSelection columnLayout="fit" height={625} width={1000} />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/TableSelection/CheckboxSelection", {
+      columnLayout: "fit",
+      height: 625,
+      width: 1000,
+    });
 
     const scrollbarContainer = page.locator(".vuuTable-scrollbarContainer");
     expect(await getDimensions(scrollbarContainer)).toEqual([1000, 600]);
@@ -133,7 +137,11 @@ test.describe("explicit sizing", () => {
     mount,
     page,
   }) => {
-    await mount(<TestTable height={625} rowCount={100} width={800} />);
+    await mount("Table/Misc/TestTable", {
+      height: 625,
+      rowCount: 100,
+      width: 800,
+    });
 
     const scrollbarContainer = page.locator(".vuuTable-scrollbarContainer");
     expect(await getDimensions(scrollbarContainer)).toEqual([800, 600]);
@@ -155,7 +163,7 @@ test.describe("viewportRowLimit", () => {
       mount,
       page,
     }) => {
-      await mount(<ViewportRowLimitDefaultRowHeight />);
+      await mount("Table/TableLayout/ViewportRowLimitDefaultRowHeight");
 
       const scrollbarContainer = page.locator(".vuuTable-scrollbarContainer");
       expect(await getDimensions(scrollbarContainer)).toEqual([600, 210]);
@@ -170,7 +178,7 @@ test.describe("viewportRowLimit", () => {
   });
   test.describe("WHEN rendered with explicit rowHeight", () => {
     test("THEN expected classname is present", async ({ mount, page }) => {
-      await mount(<ViewportRowLimitExplicitRowHeight />);
+      await mount("Table/TableLayout/ViewportRowLimitExplicitRowHeight");
 
       const scrollbarContainer = page.locator(".vuuTable-scrollbarContainer");
       expect(await getDimensions(scrollbarContainer)).toEqual([600, 310]);
@@ -191,7 +199,7 @@ test.describe("maxViewportRowLimit", () => {
       mount,
       page,
     }) => {
-      await mount(<MaxViewportRowLimitRowsExceedLimit />);
+      await mount("Table/TableLayout/MaxViewportRowLimitRowsExceedLimit");
 
       const scrollbarContainer = page.locator(".vuuTable-scrollbarContainer");
       expect(await getDimensions(scrollbarContainer)).toEqual([600, 210]);
@@ -212,7 +220,9 @@ test.describe("maxViewportRowLimit", () => {
       mount,
       page,
     }) => {
-      await mount(<MaxViewportRowLimitFewRows />);
+      await mount("Table/TableLayout/MaxViewportRowLimitFewRows", {
+        width: 600,
+      });
 
       const scrollbarContainer = page.locator(".vuuTable-scrollbarContainer");
       expect(await getDimensions(scrollbarContainer)).toEqual([600, 80]);
@@ -233,7 +243,9 @@ test.describe("maxViewportRowLimit", () => {
       mount,
       page,
     }) => {
-      await mount(<MaxViewportRowLimitFewRows width={300} />);
+      await mount("Table/TableLayout/MaxViewportRowLimitFewRows", {
+        width: 300,
+      });
       const vuuTable = page.getByTestId("table");
 
       const scrollbarContainer = page.locator(".vuuTable-scrollbarContainer");

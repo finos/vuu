@@ -1,24 +1,10 @@
-import { test } from "@playwright/experimental-ct-react";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { expect } from "../../../../../playwright/customAssertions";
+import { expect, test } from "../../../../../playwright/fixtures";
+
 
 import {
-  ContainerManagedNumericColumnFilter,
-  ContainerManagedTextColumnFilter,
-  ControlledTextColumnFilter,
-  ControlledTextColumnFilterPopulated,
-  ControlledNumericRangeFilter,
-  ControlledTimeRangeFilter,
-  UnControlledNumericColumnFilter,
-  UnControlledTextColumnFilter,
-} from "../../../../../showcase/src/examples/Filters/ColumnFilter.examples";
-import {
-  ColumnFilterChangeHandler,
-  ColumnFilterCommitHandler,
   FilterContainerFilter,
 } from "@vuu-ui/vuu-filter-types";
 import { ColumnFilterProps } from "../../column-filter/ColumnFilter";
-import { FilterAppliedHandler } from "../../filter-container/useFilterContainer";
 
 const BBG = { name: "bbg", serverDataType: "string" };
 const PRICE = { name: "price", serverDataType: "double" };
@@ -34,31 +20,18 @@ test.describe("ColumnFilter", () => {
       mount,
       page,
     }) => {
-      const values: unknown[] = [];
-      const onChange: ColumnFilterChangeHandler = (...args) =>
-        values.push(args);
-      const onCommit: ColumnFilterCommitHandler = (...args) =>
-        values.push(args);
-
-      await mount(
-        <LocalDataSourceProvider>
-          <ControlledTextColumnFilter
-            onColumnFilterChange={onChange}
-            onCommit={onCommit}
-          />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/ColumnFilter/ControlledTextColumnFilter");
+      const records = page.getByTestId("callback-records");
 
       const columnFilter = page.locator(".vuuColumnFilter");
-      expect(columnFilter.getByRole("combobox")).toHaveValue("");
+      await expect(columnFilter.getByRole("combobox")).toHaveValue("");
 
       const input = await page
         .locator(".vuuColumnFilter")
         .getByRole("combobox");
       await input.focus();
       await input.fill("A");
-      await expect(values).toHaveLength(1);
-      expect(values.at(-1)).toEqual(["A", BBG, "="]);
+      await expect(records).toHaveValue(JSON.stringify([["A", BBG, "="]]));
 
       const listbox = page.getByRole("listbox");
       await expect(listbox).toBeVisible();
@@ -66,39 +39,30 @@ test.describe("ColumnFilter", () => {
       await page.getByRole("option", { name: "AAOO L" }).click();
       await expect(input).toHaveValue("AAOO L");
 
-      await expect(values).toHaveLength(2);
-      expect(values.at(-1)).toEqual([BBG, "=", "AAOO L"]);
+      await expect(records).toHaveValue(
+        JSON.stringify([
+          ["A", BBG, "="],
+          [BBG, "=", "AAOO L"],
+        ]),
+      );
     });
 
     test(`Uncontrolled Text ColumnFilter rendered empty, search pattern entered and value selected from search results, correct callbacks are invoked`, async ({
       mount,
       page,
     }) => {
-      const values: unknown[] = [];
-      const onChange: ColumnFilterChangeHandler = (...args) =>
-        values.push(args);
-      const onCommit: ColumnFilterCommitHandler = (...args) =>
-        values.push(args);
-
-      await mount(
-        <LocalDataSourceProvider>
-          <UnControlledTextColumnFilter
-            onColumnFilterChange={onChange}
-            onCommit={onCommit}
-          />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/ColumnFilter/UnControlledTextColumnFilter");
+      const records = page.getByTestId("callback-records");
 
       const columnFilter = page.locator(".vuuColumnFilter");
-      expect(columnFilter.getByRole("combobox")).toHaveValue("");
+      await expect(columnFilter.getByRole("combobox")).toHaveValue("");
 
       const input = await page
         .locator(".vuuColumnFilter")
         .getByRole("combobox");
       await input.focus();
       await input.fill("A");
-      await expect(values).toHaveLength(1);
-      expect(values.at(-1)).toEqual(["A", BBG, "="]);
+      await expect(records).toHaveValue(JSON.stringify([["A", BBG, "="]]));
 
       const listbox = page.getByRole("listbox");
       await expect(listbox).toBeVisible();
@@ -106,8 +70,12 @@ test.describe("ColumnFilter", () => {
       await page.getByRole("option", { name: "AAOO L" }).click();
       await expect(input).toHaveValue("AAOO L");
 
-      await expect(values).toHaveLength(2);
-      expect(values.at(-1)).toEqual([BBG, "=", "AAOO L"]);
+      await expect(records).toHaveValue(
+        JSON.stringify([
+          ["A", BBG, "="],
+          [BBG, "=", "AAOO L"],
+        ]),
+      );
     });
 
     test(`Using TypeaheadProps, popup suggestions are displayed on click without having to enter text`, async ({
@@ -117,14 +85,12 @@ test.describe("ColumnFilter", () => {
       const TypeaheadProps: ColumnFilterProps["TypeaheadProps"] = {
         minCharacterCountToTriggerSuggestions: 0,
       };
-      await mount(
-        <LocalDataSourceProvider>
-          <ControlledTextColumnFilter TypeaheadProps={TypeaheadProps} />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/ColumnFilter/ShowSuggestionsWithNoTextInput", {
+        TypeaheadProps,
+      });
 
       const columnFilter = page.locator(".vuuColumnFilter");
-      expect(columnFilter.getByRole("combobox")).toHaveValue("");
+      await expect(columnFilter.getByRole("combobox")).toHaveValue("");
       const triggerButton = columnFilter.getByRole("button");
       await expect(triggerButton).toBeVisible();
       await expect(triggerButton).toHaveAttribute("aria-label", "Show options");
@@ -143,23 +109,11 @@ test.describe("ColumnFilter", () => {
       mount,
       page,
     }) => {
-      const values: unknown[] = [];
-      const onChange: ColumnFilterChangeHandler = (...args) =>
-        values.push(args);
-      const onCommit: ColumnFilterCommitHandler = (...args) =>
-        values.push(args);
-
-      await mount(
-        <LocalDataSourceProvider>
-          <ControlledTextColumnFilter
-            onColumnFilterChange={onChange}
-            onCommit={onCommit}
-          />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/ColumnFilter/ControlledTextColumnFilter");
+      const records = page.getByTestId("callback-records");
 
       const columnFilter = page.locator(".vuuColumnFilter");
-      expect(columnFilter.getByRole("combobox")).toHaveValue("");
+      await expect(columnFilter.getByRole("combobox")).toHaveValue("");
 
       const input = await page
         .locator(".vuuColumnFilter")
@@ -171,8 +125,6 @@ test.describe("ColumnFilter", () => {
       await expect(listbox).toBeVisible();
       await page.getByRole("option", { name: "AAOO L" }).click();
 
-      values.length = 0;
-
       // This will invoke change callback 6 times and commit one time
       await input.press("Backspace");
       await input.press("Backspace");
@@ -181,33 +133,26 @@ test.describe("ColumnFilter", () => {
       await input.press("Backspace");
       await input.press("Backspace");
 
-      await expect(values).toHaveLength(7);
-      expect(values.at(-1)).toEqual([BBG, "=", ""]);
+      await expect
+        .poll(async () => JSON.parse(await records.inputValue()).at(-1))
+        .toEqual([BBG, "=", ""]);
     });
 
     test("Controlled Text ColumnFilter rendered with an initial value", async ({
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <ControlledTextColumnFilterPopulated />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/ColumnFilter/ControlledTextColumnFilterPopulated");
 
       const columnFilter = page.locator(".vuuColumnFilter");
-      expect(columnFilter.getByRole("combobox")).toHaveValue("AAOP.N");
+      await expect(columnFilter.getByRole("combobox")).toHaveValue("AAOP.N");
     });
 
     test("on entering text, matching suggestions are displayed", async ({
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <ControlledTextColumnFilterPopulated />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/ColumnFilter/ControlledTextColumnFilterPopulated");
 
       const input = await page
         .locator(".vuuColumnFilter")
@@ -223,11 +168,7 @@ test.describe("ColumnFilter", () => {
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <ControlledTextColumnFilterPopulated />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/ColumnFilter/ControlledTextColumnFilterPopulated");
 
       const input = await page
         .locator(".vuuColumnFilter")
@@ -245,81 +186,71 @@ test.describe("ColumnFilter", () => {
       mount,
       page,
     }) => {
-      const values: unknown[] = [];
-      const onChange: ColumnFilterChangeHandler = (...args) =>
-        values.push(args);
-      const onCommit: ColumnFilterCommitHandler = (...args) =>
-        values.push(args);
-
-      await mount(
-        <LocalDataSourceProvider>
-          <UnControlledNumericColumnFilter
-            onColumnFilterChange={onChange}
-            onCommit={onCommit}
-          />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/ColumnFilter/UnControlledNumericColumnFilter");
+      const records = page.getByTestId("callback-records");
 
       const input = await page.locator(".vuuColumnFilter").getByRole("textbox");
-      expect(input).toHaveValue("");
+      await expect(input).toHaveValue("");
 
       await input.focus();
       await input.press("1");
-      expect(values).toHaveLength(1);
-      expect(values.pop()).toEqual(["1", PRICE, "="]);
+      await expect(records).toHaveValue(JSON.stringify([["1", PRICE, "="]]));
 
       await input.press("2");
-      expect(values.pop()).toEqual(["12", PRICE, "="]);
+      await expect(records).toHaveValue(
+        JSON.stringify([
+          ["1", PRICE, "="],
+          ["12", PRICE, "="],
+        ]),
+      );
 
       await input.press("3");
       await input.press("4");
       await input.press("5");
       await input.press("Enter");
 
-      expect(values.pop()).toEqual([PRICE, "=", "12345"]);
+      await expect(records).toHaveValue(
+        JSON.stringify([
+          ["1", PRICE, "="],
+          ["12", PRICE, "="],
+          ["123", PRICE, "="],
+          ["1234", PRICE, "="],
+          ["12345", PRICE, "="],
+          [PRICE, "=", "12345"],
+        ]),
+      );
     });
 
     test(`Uncontrolled Numeric ColumnFilter rendered with value, TAB commits if not already committed `, async ({
       mount,
       page,
     }) => {
-      const values: unknown[] = [];
-      const onChange: ColumnFilterChangeHandler = (...args) =>
-        values.push(args);
-      const onCommit: ColumnFilterCommitHandler = (...args) =>
-        values.push(args);
-
-      await mount(
-        <LocalDataSourceProvider>
-          <UnControlledNumericColumnFilter
-            defaultValue="999"
-            onColumnFilterChange={onChange}
-            onCommit={onCommit}
-          />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/ColumnFilter/UnControlledNumericColumnFilter", {
+        defaultValue: "999",
+      });
+      const records = page.getByTestId("callback-records");
 
       const input = await page.locator(".vuuColumnFilter").getByRole("textbox");
-      expect(input).toHaveValue("999");
+      await expect(input).toHaveValue("999");
 
       await input.focus();
       await input.press("9");
-      expect(values).toHaveLength(1);
-      expect(values.pop()).toEqual(["9999", PRICE, "="]);
+      await expect(records).toHaveValue(JSON.stringify([["9999", PRICE, "="]]));
 
       await input.blur();
-      expect(values.pop()).toEqual([PRICE, "=", "9999"]);
+      await expect(records).toHaveValue(
+        JSON.stringify([
+          ["9999", PRICE, "="],
+          [PRICE, "=", "9999"],
+        ]),
+      );
     });
 
     test("Controlled Numeric range filter, with initial values", async ({
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <ControlledNumericRangeFilter />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/ColumnFilter/ControlledNumericRangeFilter");
 
       const inputs = await page
         .locator(".vuuColumnFilter")
@@ -333,11 +264,7 @@ test.describe("ColumnFilter", () => {
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <ControlledNumericRangeFilter />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/ColumnFilter/ControlledNumericRangeFilter");
 
       const inputs = await page
         .locator(".vuuColumnFilter")
@@ -359,18 +286,8 @@ test.describe("ColumnFilter", () => {
       // the TimeInout selection seems flaky in FF and Safari
       //test.skip(browserName === "webkit" || browserName === "firefox");
 
-      const callbacks: unknown[] = [];
-      const handler = (...args: unknown[]) => callbacks.push(args);
-      await mount(
-        <LocalDataSourceProvider>
-          <ControlledTimeRangeFilter
-            onColumnFilterChange={handler}
-            onColumnRangeFilterChange={handler}
-            onCommit={handler}
-            value={["00:00:00", "23:59:59"]}
-          />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Filters/ColumnFilter/ControlledTimeRangeFilter");
+      const records = page.getByTestId("callback-records");
 
       const inputs = await page
         .locator(".vuuColumnFilter")
@@ -389,23 +306,25 @@ test.describe("ColumnFilter", () => {
       await page.keyboard.down("1");
       await page.keyboard.down("2");
 
-      expect(callbacks).toHaveLength(2);
-      expect(callbacks).toEqual([
-        ["10:00:00", VUU_CREATED, "between"],
-        ["12:00:00", VUU_CREATED, "between"],
-      ]);
-
-      callbacks.length = 0;
+      await expect(records).toHaveValue(
+        JSON.stringify([
+          ["10:00:00", VUU_CREATED, "between"],
+          ["12:00:00", VUU_CREATED, "between"],
+        ]),
+      );
 
       await input1.press("Tab");
       await expect(input2).toBeFocused();
 
       // blur first control of range does not commit
-      expect(callbacks).toHaveLength(0);
+      await expect(records).toHaveValue(
+        JSON.stringify([
+          ["10:00:00", VUU_CREATED, "between"],
+          ["12:00:00", VUU_CREATED, "between"],
+        ]),
+      );
 
       // await expect(async () => {
-      callbacks.length = 0;
-
       await expect(input2).toHaveSelection(0, 2);
 
       await page.keyboard.down("1");
@@ -431,15 +350,19 @@ test.describe("ColumnFilter", () => {
       await input2.press("0");
       await expect(input2).toHaveValue("13:00:00");
 
-      // expect(callbacks).toHaveLength(6);
-      expect(callbacks).toEqual([
-        ["13:59:59", VUU_CREATED, "between"],
-        ["13:59:59", VUU_CREATED, "between"],
-        ["13:09:59", VUU_CREATED, "between"],
-        ["13:00:59", VUU_CREATED, "between"],
-        ["13:00:09", VUU_CREATED, "between"],
-        ["13:00:00", VUU_CREATED, "between"],
-      ]);
+      // await expect(callbacks).toHaveLength(6);
+      await expect(records).toHaveValue(
+        JSON.stringify([
+          ["10:00:00", VUU_CREATED, "between"],
+          ["12:00:00", VUU_CREATED, "between"],
+          ["13:59:59", VUU_CREATED, "between"],
+          ["13:59:59", VUU_CREATED, "between"],
+          ["13:09:59", VUU_CREATED, "between"],
+          ["13:00:59", VUU_CREATED, "between"],
+          ["13:00:09", VUU_CREATED, "between"],
+          ["13:00:00", VUU_CREATED, "between"],
+        ]),
+      );
       // }).toPass({
       //   intervals: [1_000, 2_000, 3_000, 4_000],
       //   timeout: 5_000,
@@ -453,20 +376,8 @@ test.describe("ColumnFilter with FilterContainer", () => {
     mount,
     page,
   }) => {
-    const values: unknown[] = [];
-    const onFilterApplied: FilterAppliedHandler<FilterContainerFilter> = (
-      ...args
-    ) => values.push(args);
-    const onFilterCleared = () => values.push("filter cleared");
-
-    await mount(
-      <LocalDataSourceProvider>
-        <ContainerManagedTextColumnFilter
-          onFilterApplied={onFilterApplied}
-          onFilterCleared={onFilterCleared}
-        />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Filters/ColumnFilter/ContainerManagedTextColumnFilter");
+    const records = page.getByTestId("callback-records");
 
     const input = await page.locator(".vuuColumnFilter").getByRole("combobox");
     await input.focus();
@@ -476,34 +387,25 @@ test.describe("ColumnFilter with FilterContainer", () => {
     await expect(listbox).toBeVisible();
     await page.getByRole("option", { name: "AAOO L" }).click();
 
-    expect(values).toHaveLength(1);
-    expect(values.pop()).toEqual([
-      {
-        column: "bbg",
-        op: "=",
-        value: "AAOO L",
-      },
-    ]);
+    await expect(records).toHaveValue(
+      JSON.stringify([
+        [
+          {
+            column: "bbg",
+            op: "=",
+            value: "AAOO L",
+          },
+        ],
+      ]),
+    );
   });
 
   test("Text filter, clearing selected value clears filter", async ({
     mount,
     page,
   }) => {
-    const values: unknown[] = [];
-    const onFilterApplied: FilterAppliedHandler<FilterContainerFilter> = (
-      ...args
-    ) => values.push(args);
-    const onFilterCleared = () => values.push("filter cleared");
-
-    await mount(
-      <LocalDataSourceProvider>
-        <ContainerManagedTextColumnFilter
-          onFilterApplied={onFilterApplied}
-          onFilterCleared={onFilterCleared}
-        />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Filters/ColumnFilter/ContainerManagedTextColumnFilter");
+    const records = page.getByTestId("callback-records");
 
     const input = await page.locator(".vuuColumnFilter").getByRole("combobox");
     await input.focus();
@@ -521,29 +423,20 @@ test.describe("ColumnFilter with FilterContainer", () => {
     await input.press("Backspace");
     await input.press("Backspace");
 
-    expect(values).toHaveLength(2);
-
-    expect(values.pop()).toEqual("filter cleared");
+    await expect(records).toHaveValue(
+      JSON.stringify([
+        [{ column: "bbg", op: "=", value: "AAOO L" }],
+        ["filter cleared"],
+      ]),
+    );
   });
 
   test("Numeric filter, no default value, filter with appropriate type created", async ({
     mount,
     page,
   }) => {
-    const values: unknown[] = [];
-    const onFilterApplied: FilterAppliedHandler<FilterContainerFilter> = (
-      ...args
-    ) => values.push(args);
-    const onFilterCleared = () => values.push("filter cleared");
-
-    await mount(
-      <LocalDataSourceProvider>
-        <ContainerManagedNumericColumnFilter
-          onFilterApplied={onFilterApplied}
-          onFilterCleared={onFilterCleared}
-        />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Filters/ColumnFilter/ContainerManagedNumericColumnFilter");
+    const records = page.getByTestId("callback-records");
 
     const input = await page.locator(".vuuColumnFilter").getByRole("textbox");
     await expect(input).toHaveValue("");
@@ -553,20 +446,28 @@ test.describe("ColumnFilter with FilterContainer", () => {
     await input.press("3");
     await input.press("Enter");
 
-    expect(values).toHaveLength(1);
-    expect(values.pop()).toEqual([
-      {
-        column: "lotSize",
-        op: "=",
-        value: 123,
-      },
-    ]);
+    await expect(records).toHaveValue(
+      JSON.stringify([
+        [
+          {
+            column: "lotSize",
+            op: "=",
+            value: 123,
+          },
+        ],
+      ]),
+    );
 
     await input.press("Backspace");
     await input.press("Backspace");
     await input.press("Backspace");
 
-    expect(values.pop()).toEqual("filter cleared");
+    await expect(records).toHaveValue(
+      JSON.stringify([
+        [{ column: "lotSize", op: "=", value: 123 }],
+        ["filter cleared"],
+      ]),
+    );
   });
 
   test("Numeric filter, filter provided via container, filter with appropriate type created", async ({
@@ -579,21 +480,10 @@ test.describe("ColumnFilter with FilterContainer", () => {
       value: 100,
     };
 
-    const values: unknown[] = [];
-    const onFilterApplied: FilterAppliedHandler<FilterContainerFilter> = (
-      ...args
-    ) => values.push(args);
-    const onFilterCleared = () => values.push("filter cleared");
-
-    await mount(
-      <LocalDataSourceProvider>
-        <ContainerManagedNumericColumnFilter
-          filter={filter}
-          onFilterApplied={onFilterApplied}
-          onFilterCleared={onFilterCleared}
-        />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Filters/ColumnFilter/ContainerManagedNumericColumnFilter", {
+      filter,
+    });
+    const records = page.getByTestId("callback-records");
 
     const input = await page.locator(".vuuColumnFilter").getByRole("textbox");
     await expect(input).toHaveValue("100");
@@ -601,26 +491,37 @@ test.describe("ColumnFilter with FilterContainer", () => {
 
     // any edit to an existing filter clause clears this filter clause
     await input.press("1");
-    expect(values.pop()).toEqual("filter cleared");
+    await expect(records).toHaveValue(JSON.stringify([["filter cleared"]]));
 
     await input.press("Enter");
 
-    expect(values.pop()).toEqual([
-      {
-        column: "lotSize",
-        op: "=",
-        value: 1001,
-      },
-    ]);
+    await expect(records).toHaveValue(
+      JSON.stringify([
+        ["filter cleared"],
+        [{ column: "lotSize", op: "=", value: 1001 }],
+      ]),
+    );
 
     await input.press("Backspace");
     // filter is cleared as soon as we edit a committed filter
-    expect(values.pop()).toEqual("filter cleared");
+    await expect(records).toHaveValue(
+      JSON.stringify([
+        ["filter cleared"],
+        [{ column: "lotSize", op: "=", value: 1001 }],
+        ["filter cleared"],
+      ]),
+    );
 
     // further edits will have no effect ...
     await input.press("Backspace");
     await input.press("Backspace");
     await input.press("Backspace");
-    expect(values).toHaveLength(0);
+    await expect(records).toHaveValue(
+      JSON.stringify([
+        ["filter cleared"],
+        [{ column: "lotSize", op: "=", value: 1001 }],
+        ["filter cleared"],
+      ]),
+    );
   });
 });

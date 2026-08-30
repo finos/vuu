@@ -1,13 +1,9 @@
-import { expect, test } from "@playwright/experimental-ct-react";
-import {
-  DefaultUserSettingsForm,
-  ScrollableUserSettingsPanel,
-  VariedFormControlUserSettingsForm,
-} from "../../../../../showcase/src/examples/Shell/UserSettings.examples";
+import { expect, test } from "../../../../../playwright/fixtures";
+
 
 test.describe("Given a single toggle button form control", () => {
   test("should have two buttons, with one selected", async ({ mount }) => {
-    const component = await mount(<DefaultUserSettingsForm />);
+    const component = await mount("Shell/UserSettings/DefaultUserSettingsForm");
 
     await expect(
       component.locator("button", { hasText: "light" }),
@@ -19,7 +15,9 @@ test.describe("Given a single toggle button form control", () => {
 
   test.describe("WHEN the toggle buttons are selected", () => {
     test("should become selected", async ({ mount }) => {
-      const component = await mount(<DefaultUserSettingsForm />);
+      const component = await mount(
+        "Shell/UserSettings/DefaultUserSettingsForm",
+      );
       const lightButton = component.locator("button", { hasText: "light" });
       const darkButton = component.locator("button", { hasText: "dark" });
 
@@ -38,7 +36,9 @@ test.describe("Given a form with multiple form controls of different types", () 
   test("the button element should have the correct attributes", async ({
     mount,
   }) => {
-    const component = await mount(<VariedFormControlUserSettingsForm />);
+    const component = await mount(
+      "Shell/UserSettings/VariedFormControlUserSettingsForm",
+    );
     const themeMode = component.locator('[data-field="themeMode"]');
 
     await expect(
@@ -52,7 +52,9 @@ test.describe("Given a form with multiple form controls of different types", () 
   test("the dropdown elements should have the correct attributes", async ({
     mount,
   }) => {
-    const component = await mount(<VariedFormControlUserSettingsForm />);
+    const component = await mount(
+      "Shell/UserSettings/VariedFormControlUserSettingsForm",
+    );
 
     await expect(
       component
@@ -67,7 +69,9 @@ test.describe("Given a form with multiple form controls of different types", () 
   test("the switch element should have the correct attributes", async ({
     mount,
   }) => {
-    const component = await mount(<VariedFormControlUserSettingsForm />);
+    const component = await mount(
+      "Shell/UserSettings/VariedFormControlUserSettingsForm",
+    );
 
     await expect(component.locator(".saltSwitch-input")).toHaveAttribute(
       "type",
@@ -80,7 +84,9 @@ test.describe("Given a form with multiple form controls of different types", () 
       mount,
       page,
     }) => {
-      const component = await mount(<VariedFormControlUserSettingsForm />);
+      const component = await mount(
+        "Shell/UserSettings/VariedFormControlUserSettingsForm",
+      );
       const dateFormat = component
         .locator('[data-field="dateFormatPattern"]')
         .getByRole("combobox");
@@ -108,7 +114,9 @@ test.describe("Given a form with multiple form controls of different types", () 
 
   test.describe("WHEN the switch form control is clicked", () => {
     test("should become checked", async ({ mount }) => {
-      const component = await mount(<VariedFormControlUserSettingsForm />);
+      const component = await mount(
+        "Shell/UserSettings/VariedFormControlUserSettingsForm",
+      );
       const field = component.locator('[data-field="greyscale"]');
       const checkbox = field.locator("input.saltSwitch-input");
 
@@ -124,7 +132,9 @@ test.describe("Given a form with multiple form controls of different types", () 
 
 test.describe("Given a form with a large number of components", () => {
   test("should scroll", async ({ mount }) => {
-    const component = await mount(<ScrollableUserSettingsPanel />);
+    const component = await mount(
+      "Shell/UserSettings/ScrollableUserSettingsPanel",
+    );
     const panel = component.locator(".vuuUserSettingsPanel");
 
     const isVisibleInPanel = (selector: string) =>

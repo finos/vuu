@@ -1,20 +1,13 @@
-import { test, expect } from "@playwright/experimental-ct-react";
-import {
-  DefaultCsvUpload,
-  CsvUploadWithCancelCallback,
-  ClosedCsvUpload,
-  CsvUploadCustomTitle,
-  CsvUploadWithInstrumentsSchema,
-  CsvUploadWithRowDefaults,
-} from "../../../../../../showcase/src/examples/TableExtras/CsvUpload.examples";
-import { TestTableEmptyWithUpload } from "../../../../../../showcase/src/examples/Table/Editing.examples";
+import { test, expect } from "../../../../../../playwright/fixtures";
+
+
 
 test.describe("Given a CsvUpload component", () => {
   test("THEN it renders the open dialog with correct initial state", async ({
     mount,
     page,
   }) => {
-    await mount(<DefaultCsvUpload />);
+    await mount("TableExtras/CsvUpload/DefaultCsvUpload");
 
     await expect(page.locator("[role='dialog']")).toBeVisible();
     await expect(page.locator("[role='dialog']")).toContainText("Import CSV");
@@ -33,7 +26,9 @@ test.describe("Given a CsvUpload component", () => {
     mount,
     page,
   }) => {
-    const component = await mount(<CsvUploadWithCancelCallback />);
+    const component = await mount(
+      "TableExtras/CsvUpload/CsvUploadWithCancelCallback",
+    );
 
     await page.locator("button", { hasText: "Cancel" }).click();
 
@@ -46,7 +41,7 @@ test.describe("Given a CsvUpload component", () => {
     mount,
     page,
   }) => {
-    await mount(<ClosedCsvUpload />);
+    await mount("TableExtras/CsvUpload/ClosedCsvUpload");
 
     await expect(page.locator("[role='dialog']")).not.toBeVisible();
 
@@ -59,7 +54,7 @@ test.describe("Given a CsvUpload component", () => {
     mount,
     page,
   }) => {
-    await mount(<CsvUploadCustomTitle />);
+    await mount("TableExtras/CsvUpload/CsvUploadCustomTitle");
 
     await expect(page.locator("[role='dialog']")).toContainText(
       "Upload Instruments CSV",
@@ -72,7 +67,7 @@ test.describe("Given a CsvUpload with the instruments schema", () => {
     mount,
     page,
   }) => {
-    await mount(<CsvUploadWithInstrumentsSchema />);
+    await mount("TableExtras/CsvUpload/CsvUploadWithInstrumentsSchema");
 
     await page.locator('input[type="file"]').setInputFiles({
       name: "bad-columns.csv",
@@ -107,7 +102,7 @@ test.describe("Given a CsvUpload with rowDefaults", () => {
     mount,
     page,
   }) => {
-    await mount(<CsvUploadWithRowDefaults />);
+    await mount("TableExtras/CsvUpload/CsvUploadWithRowDefaults");
 
     await page.locator('input[type="file"]').setInputFiles({
       name: "id-only.csv",
@@ -133,7 +128,7 @@ test.describe("Given a CsvUpload with rowDefaults", () => {
     mount,
     page,
   }) => {
-    await mount(<CsvUploadWithRowDefaults />);
+    await mount("TableExtras/CsvUpload/CsvUploadWithRowDefaults");
 
     await page.locator('input[type="file"]').setInputFiles({
       name: "both-cols.csv",
@@ -158,7 +153,7 @@ test.describe("Given a DataUploadPreview", () => {
     mount,
     page,
   }) => {
-    await mount(<TestTableEmptyWithUpload />);
+    await mount("Table/Editing/TestTableEmptyWithUpload");
 
     await expect(
       page.getByRole("button", { name: "Upload (preview)" }),
@@ -185,7 +180,7 @@ test.describe("Given a DataUploadPreview", () => {
     mount,
     page,
   }) => {
-    await mount(<TestTableEmptyWithUpload />);
+    await mount("Table/Editing/TestTableEmptyWithUpload");
 
     await page.getByRole("button", { name: "Upload (preview)" }).click();
     await page.locator('input[type="file"]').setInputFiles({
@@ -242,7 +237,7 @@ test.describe("Given a CsvUpload with a missing key column", () => {
     mount,
     page,
   }) => {
-    await mount(<CsvUploadWithInstrumentsSchema />);
+    await mount("TableExtras/CsvUpload/CsvUploadWithInstrumentsSchema");
 
     // omit isin to trigger a MISSING_KEY_COLUMN error
     await page.locator('input[type="file"]').setInputFiles({

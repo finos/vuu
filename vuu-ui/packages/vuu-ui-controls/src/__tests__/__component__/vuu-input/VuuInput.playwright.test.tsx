@@ -1,13 +1,10 @@
-import { test, expect } from "@playwright/experimental-ct-react";
-import {
-  DefaultVuuInput,
-  VuuInputWithValidation,
-} from "../../../../../../showcase/src/examples/UiControls/VuuInput.examples";
+import { test, expect } from "../../../../../../playwright/fixtures";
+
 
 test.describe("VuuInput", () => {
   test.describe("Given a default VuuInput", () => {
     test("Then basic smoke-test passes", async ({ mount }) => {
-      const component = await mount(<DefaultVuuInput />);
+      const component = await mount("UiControls/VuuInput/DefaultVuuInput");
 
       const vuuInput = component.getByTestId("vuu-input");
       await expect(vuuInput).toContainClass("vuuInput");
@@ -23,7 +20,9 @@ test.describe("Given a VuuInput box with input validation", () => {
       mount,
       page,
     }) => {
-      const component = await mount(<VuuInputWithValidation />);
+      const component = await mount(
+        "UiControls/VuuInput/VuuInputWithValidation",
+      );
 
       const vuuInput = component.getByTestId("vuu-input");
       const input = vuuInput.locator("input");
@@ -42,7 +41,9 @@ test.describe("Given a VuuInput box with input validation", () => {
 
   test.describe("WHEN valid input is provided", () => {
     test("Then no error icon will be displayed", async ({ mount }) => {
-      const component = await mount(<VuuInputWithValidation />);
+      const component = await mount(
+        "UiControls/VuuInput/VuuInputWithValidation",
+      );
 
       const vuuInput = component.getByTestId("vuu-input");
       const input = vuuInput.locator("input");
@@ -56,7 +57,9 @@ test.describe("Given a VuuInput box with input validation", () => {
 
   test.describe("WHEN no input is provided", () => {
     test("Then the box will not change", async ({ mount }) => {
-      const component = await mount(<VuuInputWithValidation />);
+      const component = await mount(
+        "UiControls/VuuInput/VuuInputWithValidation",
+      );
 
       const vuuInput = component.getByTestId("vuu-input");
       const input = vuuInput.locator("input");
@@ -68,7 +71,9 @@ test.describe("Given a VuuInput box with input validation", () => {
 
   test.describe("WHEN input provided overflows", () => {
     test("Then box will store the complete value", async ({ mount }) => {
-      const component = await mount(<VuuInputWithValidation />);
+      const component = await mount(
+        "UiControls/VuuInput/VuuInputWithValidation",
+      );
 
       const longValue =
         "01234567890123456789012345678901234567890123456789012345678901234567890";

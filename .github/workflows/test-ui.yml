@@ -2,6 +2,12 @@ name: "Test UI"
 
 on:
   workflow_dispatch:
+    inputs:
+      coverage:
+        description: "Run the Chromium component coverage workflow"
+        required: true
+        default: false
+        type: boolean
   push:
     branches:
       - "main"
@@ -33,12 +39,9 @@ jobs:
         uses: ./.github/actions/setup-vuu-ui
       - run: cd ./vuu-ui && npm run test:vite
 
-  playwright-component:
+  playwright-gallery-build:
     runs-on: ubuntu-latest
-    name: playwright-component (${{ matrix.browser }})
-    strategy:
-      matrix:
-        browser: [chromium, firefox, webkit]
+    name: playwright-gallery-build
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
@@ -46,16 +49,56 @@ jobs:
         uses: ./.github/actions/setup-vuu-ui
       - name: Build Worker
         run: cd ./vuu-ui && npm run build:worker
+      - name: Build Playwright gallery
+        env:
+          PLAYWRIGHT_COVERAGE: ${{ inputs.coverage == true && '1' || '0' }}
+        run: cd ./vuu-ui && npm run playwright:gallery:build
+      - name: Upload Playwright gallery
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: playwright-gallery
+          path: vuu-ui/playwright/gallery/dist/
+          retention-days: 1
+
+  playwright-component:
+    runs-on: ubuntu-latest
+    name: playwright-component (${{ matrix.browser }}, shard ${{ matrix.shard }}/2)
+    needs: playwright-gallery-build
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+        shard: [1, 2]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+      - name: Install Node & dependencies
+        uses: ./.github/actions/setup-vuu-ui
+      - name: Download Playwright gallery
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: playwright-gallery
+          path: vuu-ui/playwright/gallery/dist
+      - name: Build Worker
+        run: cd ./vuu-ui && npm run build:worker
       - name: Install Playwright Browser
-        run: cd ./vuu-ui && npx playwright install --with-deps ${{ matrix.browser }}
+        run: cd ./vuu-ui && npm exec -- playwright install --with-deps ${{ matrix.browser }}
       - name: Run Playwright component tests
-        run: cd ./vuu-ui && npx playwright test --config=playwright-ct.config.ts --project=${{ matrix.browser }}
+        env:
+          PLAYWRIGHT_COVERAGE: ${{ inputs.coverage == true && matrix.browser == 'chromium' && '1' || '0' }}
+        run: cd ./vuu-ui && npm exec -- playwright test --config=playwright.config.ts --project=components-${{ matrix.browser }} --shard=${{ matrix.shard }}/2
       - name: Upload blob report to GitHub Actions Artifacts
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
-          name: blob-report-${{ matrix.browser }}
+          name: blob-report-${{ matrix.browser }}-${{ matrix.shard }}-of-2
           path: vuu-ui/blob-report/
+          retention-days: 10
+      - name: Upload Chromium coverage data
+        if: always() && inputs.coverage == true && matrix.browser == 'chromium'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: coverage-data-${{ matrix.browser }}-${{ matrix.shard }}-of-2
+          path: vuu-ui/playwright/coverage-data/
           retention-days: 10
 
   playwright-merge-reports:
@@ -66,17 +109,37 @@ jobs:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
       - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
         with:
           path: all-blob-reports
           pattern: blob-report-*
+          merge-multiple: true
+      - name: Download Chromium coverage data
+        if: inputs.coverage == true
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          path: all-coverage-data
+          pattern: coverage-data-*
           merge-multiple: true
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - name: Merge into HTML and JSON Reports
         run: PLAYWRIGHT_JSON_OUTPUT_FILE=playwright-report/test-results.json npx playwright merge-reports --reporter html,json ./all-blob-reports
+      - name: Generate Playwright coverage report
+        if: inputs.coverage == true
+        run: |
+          mkdir -p ./vuu-ui/playwright/coverage-data
+          cp ./all-coverage-data/*.json ./vuu-ui/playwright/coverage-data/
+          cd ./vuu-ui && npm run playwright:coverage 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Upload Playwright coverage report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always() && inputs.coverage == true
+        with:
+          name: playwright-coverage
+          path: vuu-ui/playwright/coverage/
+          retention-days: 10
       - name: Upload Merged Playwright Report
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: playwright-report
