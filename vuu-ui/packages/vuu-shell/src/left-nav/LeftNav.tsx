@@ -25,7 +25,6 @@ import { LayoutList } from "../workspace-management";
 
 import leftNavCss from "./LeftNav.css";
 import { useFeatures } from "../feature-and-layout-provider";
-import { Button } from "@salt-ds/core";
 
 const classBase = "vuuLeftNav";
 

@@ -146,7 +146,7 @@ describe("VuuDataSource", () => {
           await dataSource.createSessionDataSource("Selected");
 
         expect(rpcRequest).toHaveBeenCalledWith({
-          params: { copyOption: "Selected" },
+          params: { copyOption: "Selected", sessionType: "edit" },
           rpcName: "createSessionTable",
           type: "RPC_REQUEST",
         });
