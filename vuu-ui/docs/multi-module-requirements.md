@@ -22,7 +22,7 @@ This document is intended to be implementable without additional clarification.
 ### Out of scope (this phase)
 
 - Scala server implementation changes.
-- Replacing static `module-registry.json` with a dynamic registry service.
+- Persistent module-registry storage and administration.
 - Multi-server routing *within* a single remote module (assume one module -> one VUU server).
 
 ---
@@ -35,7 +35,6 @@ This document is intended to be implementable without additional clarification.
 4. Host config (`config.json`) currently includes:
    - `ssl`
    - `authUrl`
-   - `moduleRegistryUrl`
    - `restUrl`
    - `websocketUrl`
 
@@ -75,8 +74,9 @@ This document is intended to be implementable without additional clarification.
 
 ## 4.4 Discovery model
 
-1. Host MUST discover remotes from `moduleRegistryUrl` (currently static JSON).
-2. The registry remains file-based in this phase.
+1. Host MUST discover remotes from the portal websocket
+   `LOGIN_SUCCESS.moduleRegistry` payload.
+2. The registry is produced by the portal server's module-discovery module.
 3. Registry entries MUST include enough data to:
    - locate and load the remote module bundle
    - identify target VUU connection/server details for that module
@@ -118,7 +118,6 @@ Host config MUST continue to support:
 {
   "ssl": true,
   "authUrl": "http://localhost:5001",
-  "moduleRegistryUrl": "/module-registry.json",
   "restUrl": "https://localhost:8443",
   "websocketUrl": "wss://localhost:8090/websocket"
 }
@@ -129,9 +128,8 @@ Semantics:
 - `authUrl`: IdP entry point (Keycloak target, simple-login-app dev).
 - `restUrl`: Portal REST base used for token exchange.
 - `websocketUrl`: Default portal websocket endpoint.
-- `moduleRegistryUrl`: location of remote module descriptor list.
 
-## 6.2 Module registry schema (phase 1 file-based)
+## 6.2 Module registry schema
 
 Each remote descriptor MUST provide:
 
@@ -181,7 +179,7 @@ Notes:
 
 ## 7.3 Host + remote composition
 
-1. Host loads module descriptors from `moduleRegistryUrl`.
+1. Host loads module descriptors from the authenticated portal VUU session.
 2. Host registers available remotes and presents them in navigation similarly to current feature model.
 3. On remote activation/load:
    - resolve module descriptor
@@ -215,7 +213,8 @@ Notes:
 3. At least two remote modules can be loaded where each uses a distinct websocket endpoint.
 4. A connection failure in one remote does not terminate other active module connections.
 5. Existing feature flows still work in legacy single-endpoint config with no remote VUU override.
-6. Module discovery is driven by `moduleRegistryUrl` JSON (no hard-coded module list in app code).
+6. Module discovery is driven by the portal `LOGIN_SUCCESS` registry (no
+   hard-coded module list or browser REST request).
 7. Users can still drag a listed feature onto the workspace and instantiate a remote feature UI through the existing `Feature.tsx`-based layout flow.
 
 ---
@@ -226,10 +225,10 @@ Notes:
 
 - Multi-connection registry + compatibility facade.
 - `RemoteModule` boundary and connection scoping.
-- Static file-based module registry ingestion.
+- Portal-login module registry ingestion.
 - Token exchange + reuse model wired in host runtime.
 
 ## Phase 2 (later session)
 
-- Replace static `module-registry.json` with dynamic registry service.
+- Persist and administer module registry entries as needed.
 - Extend token refresh/re-auth and remote authorization policies as needed.

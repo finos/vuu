@@ -3,7 +3,9 @@
 ## Purpose
 Refactor the feature-user-admin sample application into a Vuu-native admin screen.
 
-The previous tabbed UI can be discarded. The replacement UI must consume data from the Vuu server, with Keycloak integration handled server-side by the vuu-portal KeycloakAdminModule.
+The previous tabbed UI can be discarded. The replacement UI must consume data
+from the standalone user-admin VUU server, where `KeycloakAdminModule` owns the
+Keycloak integration.
 
 ## Scope
 - Applies to sample-apps/feature-user-admin in vuu-ui.
@@ -14,8 +16,10 @@ The previous tabbed UI can be discarded. The replacement UI must consume data fr
 
 ### Data Source of Truth
 - The Vuu server is the only data source used by the UI.
-- The UI subscribes to Vuu tables exposed by the KEYCLOAK_ADMIN module in vuu-portal.
-- KeycloakAdminModule in vuu-portal remains the backend integration boundary for Keycloak operations.
+- The UI subscribes to VUU tables exposed by the `KEYCLOAK_ADMIN` module in the
+  standalone `vuu-user-admin` server.
+- `KeycloakAdminModule` in `vuu-user-admin` remains the backend integration
+  boundary for Keycloak operations.
 
 ### Client Integration Constraints
 - Do not use fetch/axios/XHR from the browser to Keycloak endpoints.
@@ -74,7 +78,8 @@ The previous tabbed UI can be discarded. The replacement UI must consume data fr
 - Preserving previous visual styling.
 
 ## Dependency References
-- Backend module: vuu-websocket/packages/vuu-portal KeycloakAdminModule.
+- Backend module: `vuu-websocket/packages/vuu-user-admin`
+  `KeycloakAdminModule`.
 - Drawer behavior example: showcase/src/examples/Table/TableLayout.examples.tsx RightInlineDrawerPeek.
 - Vuu table usage reference: sample-apps/feature-basket-trading.
 

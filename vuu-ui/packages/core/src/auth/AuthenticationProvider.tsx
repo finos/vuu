@@ -3,6 +3,7 @@ import type {
   DataSourceConstructorProps,
   RemoteModuleConnection,
 } from "@vuu-ui/vuu-data-types";
+import type { VuuModuleRegistry } from "@vuu-ui/vuu-protocol-types";
 import { DataProvider } from "../context-definitions/DataProvider";
 import {
   createContext,
@@ -72,6 +73,7 @@ interface IdentityContextValue {
   authHandler: AuthHandler;
   getIdentityToken: () => Promise<string>;
   logout: () => Promise<void>;
+  moduleRegistry?: VuuModuleRegistry;
   portalTarget: VuuAuthTarget;
   registry: VuuConnectionRegistry;
   user: User;
@@ -299,6 +301,7 @@ const AuthenticatedIdentityProvider = ({
       authHandler,
       getIdentityToken,
       logout,
+      moduleRegistry: session?.moduleRegistry,
       portalTarget,
       registry,
       user: identity.user,
@@ -310,6 +313,7 @@ const AuthenticatedIdentityProvider = ({
       logout,
       portalTarget,
       registry,
+      session?.moduleRegistry,
     ],
   );
 
@@ -390,6 +394,26 @@ export const useIdentityToken = () => {
     );
   }
   return identity.getIdentityToken;
+};
+
+export const useModuleRegistry = () => {
+  const identity = useContext(IdentityContext);
+  if (!identity) {
+    throw new AuthenticationConfigurationError(
+      "No identity AuthenticationProvider has been installed",
+    );
+  }
+  if (!identity.moduleRegistry) {
+    throw new AuthenticationConfigurationError(
+      "Portal LOGIN_SUCCESS did not include a module registry",
+    );
+  }
+  if (!Array.isArray(identity.moduleRegistry.modules)) {
+    throw new AuthenticationConfigurationError(
+      "Portal LOGIN_SUCCESS module registry did not include a modules array",
+    );
+  }
+  return identity.moduleRegistry;
 };
 
 export const usePortalVuuAuthTarget = () => {
