@@ -45,7 +45,7 @@
         "./UserAdmin": "./src/UserAdmin"
       },
       "name": "userAdmin",
-      "port": 5007
+      "port": 5003
     }
   }
 }
