@@ -48,7 +48,7 @@
         "./ModuleAdmin": "./src/ModuleAdmin"
       },
       "name": "moduleAdmin",
-      "port": 5008
+      "port": 5002
     }
   }
 }
