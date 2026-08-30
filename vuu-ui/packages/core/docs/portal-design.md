@@ -40,6 +40,8 @@ module instead of implicitly using the portal host's connection.
 ```text
 core/
 |-- src/
+|   |-- auth/
+|   |-- connection-management/
 |   |-- portal-header/
 |   |-- portal-nav/
 |   |-- portal-shell/

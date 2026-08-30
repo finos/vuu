@@ -24,7 +24,7 @@ import type {
 import {
   vuuConnectionRegistry,
   type VuuConnectionRegistry,
-} from "./VuuConnectionRegistry";
+} from "../connection-management/VuuConnectionRegistry";
 import type { VuuAuthTarget, VuuSession } from "./VuuTokenExchange";
 
 export class AuthenticationConfigurationError extends Error {

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { DirectVuuSessionResolver } from "../../src/auth/DirectVuuSessionResolver";
+import { DirectVuuSessionResolver } from "../../src/connection-management/DirectVuuSessionResolver";
 import { VuuAuthHandler } from "../../src/auth/VuuAuthHandler";
 
 const config = {

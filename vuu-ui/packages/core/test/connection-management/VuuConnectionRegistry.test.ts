@@ -3,7 +3,7 @@ import type { AuthHandler } from "../../src/auth/AuthHandler";
 import {
   VuuConnectionRegistry,
   type VuuConnectionClient,
-} from "../../src/auth/VuuConnectionRegistry";
+} from "../../src/connection-management/VuuConnectionRegistry";
 import type {
   VuuAuthTarget,
   VuuSession,
