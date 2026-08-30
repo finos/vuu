@@ -2368,12 +2368,10 @@ var ServerProxy = class {
       case "LOGIN_SUCCESS":
         if (sessionId) {
           this.sessionId = sessionId;
-          (_a = this.pendingLogin) == null ? void 0 : _a.resolve(sessionId);
+          const loginResponse = { ...body, sessionId };
+          (_a = this.pendingLogin) == null ? void 0 : _a.resolve(loginResponse);
           this.pendingLogin = void 0;
-          this.postMessageToClient({
-            ...body,
-            sessionId
-          });
+          this.postMessageToClient(loginResponse);
         } else {
           throw Error("LOGIN_SUCCESS did not provide sessionId");
         }
@@ -2767,12 +2765,15 @@ var handleMessageFromClient = async ({
   switch (message.type) {
     case "connect":
       try {
-        const sessionId = await connectToServer(
+        const loginResponse = await connectToServer(
           message.url,
           message.protocol,
           message.token
         );
-        postMessage({ type: "connected", sessionId });
+        if (!loginResponse) {
+          throw Error("VUU server did not return a LOGIN_SUCCESS response");
+        }
+        postMessage({ type: "connected", loginResponse });
       } catch (err) {
         postMessage({ type: "connection-failed", reason: String(err) });
       }

@@ -852,7 +852,7 @@ export interface ServerProxySubscribeMessage extends WithFullConfig {
 // };
 
 export declare type VuuUIMessageInConnected = {
-  sessionId: string;
+  loginResponse: VuuLoginSuccessResponse & { sessionId: string };
   type: "connected";
 };
 

@@ -1,6 +1,7 @@
 import {
   ConnectionManager,
   type ConnectionStatus,
+  type VuuConnectionResult,
 } from "@vuu-ui/vuu-data-remote";
 import type { AuthHandler } from "./AuthHandler";
 import {
@@ -39,11 +40,11 @@ type ConnectionRegistryEntry = {
 };
 
 export interface VuuConnectionClient {
-  connectTo(
+  connectWithLoginResponseTo(
     connectionId: string,
     options: { token: string; url: string },
     throwOnRejected?: boolean,
-  ): Promise<ConnectionStatus | "rejected">;
+  ): Promise<VuuConnectionResult>;
   connectedFor(connectionId: string): boolean;
   destroyConnection(connectionId: string): Promise<void>;
   onConnectionStatus(
@@ -204,14 +205,16 @@ export class VuuConnectionRegistry {
       entry.target,
     );
     entry.state = "connecting";
-    const status = await this.#connectionClient.connectTo(
-      entry.target.connectionId,
-      {
-        token: session.token,
-        url: entry.target.websocketUrl,
-      },
-      true,
-    );
+    const connectionResult =
+      await this.#connectionClient.connectWithLoginResponseTo(
+        entry.target.connectionId,
+        {
+          token: session.token,
+          url: entry.target.websocketUrl,
+        },
+        true,
+      );
+    const { status } = connectionResult;
     if (status !== "connected" && status !== "reconnected") {
       entry.state = "failed";
       throw Error(
@@ -219,7 +222,11 @@ export class VuuConnectionRegistry {
       );
     }
 
-    entry.session = session;
+    const connectedSession = {
+      ...session,
+      moduleRegistry: connectionResult.loginResponse.moduleRegistry,
+    };
+    entry.session = connectedSession;
     entry.state = "connected";
     entry.unsubscribeStatus ??= this.#connectionClient.onConnectionStatus(
       entry.target.connectionId,
@@ -234,9 +241,9 @@ export class VuuConnectionRegistry {
       },
     );
     entry.listeners.forEach((listener) => {
-      listener(session);
+      listener(connectedSession);
     });
-    return session;
+    return connectedSession;
   }
 
   #reconnect(entry: ConnectionRegistryEntry) {

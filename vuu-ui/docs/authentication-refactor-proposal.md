@@ -38,6 +38,8 @@ do not authenticate directly and do not contain identity-provider integration.
    authenticate or open websocket connections.
 10. Authentication failure for one remote does not terminate the portal or
     other remotes.
+11. The portal returns the module registry in
+    `LOGIN_SUCCESS.moduleRegistry`; remote servers omit it.
 
 ## Terminology
 
@@ -280,9 +282,10 @@ uses the explicit mode.
 5. Acquires the shared portal connection-registry entry.
 6. Opens the portal websocket with the portal VUU token when it is not already
    connected.
-7. Publishes the handler, authenticated identity, portal VUU session, and
+7. Captures the module registry returned by the portal `LOGIN_SUCCESS`.
+8. Publishes the handler, authenticated identity, portal VUU session, and
    active `connectionId`.
-8. Renders children only after authentication and portal connection succeed.
+9. Renders children only after authentication and portal connection succeed.
 
 The portal is therefore authenticated before `PortalShell` or any remote
 feature is reachable.
@@ -516,20 +519,8 @@ required. Missing values produce a configuration error before token exchange.
 
 ### Registry example
 
-Remote using the portal VUU server:
-
-```json
-{
-  "mfScope": "UserAdmin",
-  "mfComponent": "UserAdmin",
-  "mfUrl": "http://localhost:5007",
-  "vuu": {
-    "connectionId": "portal"
-  }
-}
-```
-
-Remote using a separate VUU server:
+Module admin uses the portal VUU server because module discovery is hosted by
+`vuu-portal`:
 
 ```json
 {
@@ -537,7 +528,20 @@ Remote using a separate VUU server:
   "mfComponent": "ModuleAdmin",
   "mfUrl": "http://localhost:5008",
   "vuu": {
-    "connectionId": "module-admin",
+    "connectionId": "portal"
+  }
+}
+```
+
+User admin uses its standalone VUU server:
+
+```json
+{
+  "mfScope": "userAdmin",
+  "mfComponent": "UserAdmin",
+  "mfUrl": "http://localhost:5007",
+  "vuu": {
+    "connectionId": "user-admin",
     "restUrl": "https://localhost:8444/api/authn",
     "websocketUrl": "wss://localhost:8092/websocket"
   }
@@ -572,7 +576,7 @@ sequenceDiagram
   Registry->>PortalREST: exchange identity token
   PortalREST-->>Registry: portal VUU session
   Registry->>PortalWS: connect(VUU token)
-  PortalWS-->>Registry: connected
+  PortalWS-->>Registry: LOGIN_SUCCESS with moduleRegistry
   Registry-->>Identity: portal VUU session
   Identity-->>Browser: render portal runtime
 ```
@@ -686,6 +690,8 @@ because both identity and VUU tokens may be used as bearer tokens.
 9. Identity failure blocks the portal.
 10. Remote connection failure is isolated to the affected feature.
 11. Logout terminates the identity session and all VUU connections.
+12. Portal module discovery does not make a separate module-registry REST
+    request.
 
 ## Validation
 
@@ -708,3 +714,4 @@ The implementation includes automated coverage for:
 - connection-aware data-source construction
 - remote failure isolation
 - logout of all VUU connections and the Keycloak session
+- module registry propagation from portal `LOGIN_SUCCESS`

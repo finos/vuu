@@ -36,8 +36,10 @@ Provide a simple module-federated administration feature that displays the modul
 
 ## Server and Data Contract
 
-- Backend package: `packages/vuu-module-discovery` in the `heswell/vuu-websocket` repository.
-- Backend entry point: `src/ModuleDiscoveryMain.ts`.
+- Backend package: `packages/vuu-portal` in the `heswell/vuu-websocket`
+  repository.
+- Module discovery is installed in the portal VUU server, so this remote uses
+  the host's `portal` connection.
 - The UI must discover the schema from the connected VUU server and subscribe to the VUU table identified exactly by `{ module: "MODULE_DISCOVERY", table: "modules" }`.
 - The expected server schema, in order, is:
 
@@ -57,8 +59,10 @@ Provide a simple module-federated administration feature that displays the modul
 - Subscribe with all schema columns in server-provided order; do not duplicate the schema as the runtime source of column definitions.
 - The server currently seeds `module-admin` and `user-admin` rows in an in-memory provider. Server-side changes are not persistent.
 - Although `modules` exposes an edit-session service, phase 1 must not invoke it.
-- The checked-in backend development endpoint is `wss://localhost:8092/websocket`. The feature must not hard-code an endpoint or create its own connection; it must use the host-provided VUU connection scope and configuration.
-- Do not call the authenticated `GET /module-registry` endpoint. Its filtering differs from the raw VUU table and it is not the data source for this screen.
+- The feature must not hard-code an endpoint or create its own connection; it
+  must use the host-provided portal VUU connection scope and configuration.
+- Do not fetch a module registry. The raw VUU table remains this screen's data
+  source; portal remote discovery is supplied by `LOGIN_SUCCESS`.
 
 ## Data Access
 
@@ -88,7 +92,8 @@ Provide a simple module-federated administration feature that displays the modul
 ## Integration Constraints
 
 - The feature is intended to run inside a host that supplies compatible VUU connection and view contexts.
-- Standalone use has an external authentication blocker: the current module-discovery server exposes authenticated `GET /module-registry` but does not expose `/api/authn` for obtaining a compatible VUU websocket login token. `LoginTokenService` tokens are process-local and cannot be exchanged between separate server processes.
+- Standalone use requires a host that supplies the authenticated portal VUU
+  connection.
 - The UI must not work around this gap by disabling authentication, manufacturing tokens, calling the registry directly, or implementing its own authentication flow. A compatible host/server authentication arrangement is an external integration dependency.
 
 ## Non-Goals for Phase 1
@@ -97,7 +102,7 @@ Provide a simple module-federated administration feature that displays the modul
 - Calling the `modules` edit-session service.
 - Displaying permissions, users, or any table other than `modules`.
 - Managing or mutating the module registry.
-- Fetching or reproducing the filtered `/module-registry` response.
+- Fetching or reproducing the portal-login module registry.
 - Persisting server data.
 - Providing standalone authentication or websocket connection configuration.
 
@@ -108,5 +113,7 @@ Provide a simple module-federated administration feature that displays the modul
 3. The feature discovers the schema from the server and subscribes to exactly `{ module: "MODULE_DISCOVERY", table: "modules" }` with all schema columns.
 4. A single read-only VUU `Table` fills the available view and uses row separators and zebra stripes.
 5. Loading and failure states are explicit, and failures are not presented as an empty successful table.
-6. The browser makes no request to `/module-registry` and the feature does not hard-code a websocket URL or create an independent VUU connection.
+6. The browser makes no request to `/module-registry`; discovery arrives in the
+   portal `LOGIN_SUCCESS`, and the feature does not create an independent VUU
+   connection.
 7. No create, edit, delete, permissions, users, registry-management, persistence, or authentication workaround behavior is present.

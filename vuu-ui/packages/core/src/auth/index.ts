@@ -7,6 +7,7 @@ export {
 export {
   AuthenticationConfigurationError, AuthenticationProvider, normalizeVuuAuthTarget, useAuthenticatedUser,
   useIdentityToken,
+  useModuleRegistry,
   useLogout,
   useOptionalVuuConnectionId,
   usePortalVuuAuthTarget,

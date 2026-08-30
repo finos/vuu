@@ -16,13 +16,12 @@ import {
   normalizeVuuAuthTarget,
   TableRegistrationContext,
   type TableSourceStatus,
-  useIdentityToken,
+  useModuleRegistry,
   usePortalVuuAuthTarget,
 } from "@vuu-ui/core";
 import { RemoteModule, type RemoteModuleDescriptor } from "@vuu-ui/core/portal";
 import type { RemoteModuleConnection } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { getRegisteredModules } from "@vuu-ui/vuu-shell";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Link,
@@ -33,15 +32,7 @@ import {
 
 import "./VuuTableBrowser.css";
 
-export interface VuuTableBrowserProps {
-  moduleRegistryUrl: string;
-}
-
-interface RegistryModule extends RemoteModuleDescriptor {
-  moduleRegistryUrl?: string;
-}
-
-interface BrowsableModule extends RegistryModule {
+interface BrowsableModule extends RemoteModuleDescriptor {
   sourceId: string;
   vuu: RemoteModuleConnection;
 }
@@ -192,79 +183,39 @@ const SourceNavigation = ({
 };
 
 export default function VuuTableBrowser() {
-  const getIdentityToken = useIdentityToken();
+  const { modules: registeredModules } = useModuleRegistry();
   const portalTarget = usePortalVuuAuthTarget();
   const routePath = useParams()["*"];
   const route = useMemo(() => parseTableRoute(routePath), [routePath]);
   const invalidRoute = Boolean(routePath && !route);
   const [activated, setActivated] = useState<Set<string>>(() => new Set());
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
-  const [loadAttempt, setLoadAttempt] = useState(0);
-  const [modules, setModules] = useState<BrowsableModule[]>();
-  const [registryError, setRegistryError] = useState<string>();
   const [retryCount, setRetryCount] = useState<Record<string, number>>({});
   const [sources, setSources] = useState<Record<string, SourceState>>({});
 
-  const moduleRegistryUrl = "https://localhost:8444/module-registry";
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: loadAttempt intentionally retriggers discovery.
-  useEffect(() => {
-    let active = true;
-    setModules(undefined);
-    setRegistryError(undefined);
-
-    const loadModules = async () => {
-      try {
-        const identityToken = await getIdentityToken();
-        const { modules: registeredModules } = await getRegisteredModules(
-          moduleRegistryUrl,
-          identityToken,
-        );
-
-        if (!active) {
-          return;
-        }
-        if (!Array.isArray(registeredModules)) {
-          throw Error("The module registry response has no modules array");
+  const modules = useMemo(() => {
+    const sourceIds = new Set<string>();
+    return registeredModules
+      .flatMap((module) => {
+        if (!module.vuu) {
+          return [];
         }
 
-        const sourceIds = new Set<string>();
-        const nextModules = registeredModules
-          .flatMap((module: RegistryModule) => {
-            if (!module.vuu) {
-              return [];
-            }
-
-            try {
-              normalizeVuuAuthTarget(module.vuu, portalTarget);
-            } catch {
-              return [];
-            }
-
-            const sourceId = String(module.name ?? module.id);
-            if (sourceIds.has(sourceId)) {
-              return [];
-            }
-            sourceIds.add(sourceId);
-            return [{ ...module, sourceId, vuu: module.vuu }];
-          })
-          .sort((left, right) => left.title.localeCompare(right.title));
-        setModules(nextModules);
-      } catch (cause: unknown) {
-        if (active) {
-          setRegistryError(
-            cause instanceof Error ? cause.message : String(cause),
-          );
+        try {
+          normalizeVuuAuthTarget(module.vuu, portalTarget);
+        } catch {
+          return [];
         }
-      }
-    };
 
-    loadModules();
-
-    return () => {
-      active = false;
-    };
-  }, [getIdentityToken, loadAttempt, moduleRegistryUrl, portalTarget]);
+        const sourceId = String(module.name ?? module.id);
+        if (sourceIds.has(sourceId)) {
+          return [];
+        }
+        sourceIds.add(sourceId);
+        return [{ ...module, sourceId, vuu: module.vuu }];
+      })
+      .sort((left, right) => left.title.localeCompare(right.title));
+  }, [portalTarget, registeredModules]);
 
   useEffect(() => {
     if (route && modules?.some(({ sourceId }) => sourceId === route.sourceId)) {
@@ -365,26 +316,6 @@ export default function VuuTableBrowser() {
     },
     [reportSourceStatus],
   );
-
-  if (registryError) {
-    return (
-      <div className="vuuTableBrowser-centered" role="alert">
-        <span>Unable to load the module registry: {registryError}</span>
-        <Button onClick={() => setLoadAttempt((value) => value + 1)}>
-          Retry
-        </Button>
-      </div>
-    );
-  }
-
-  if (!modules) {
-    return (
-      <div className="vuuTableBrowser-centered" role="status">
-        <Spinner aria-label="Loading Vuu servers" />
-        <span>Loading Vuu servers...</span>
-      </div>
-    );
-  }
 
   const routeModule = route
     ? modules.find(({ sourceId }) => sourceId === route.sourceId)

@@ -21,16 +21,47 @@ const session: VuuSession = {
   user: { userName: "alice" },
 };
 
+const moduleRegistry = {
+  modules: [
+    {
+      description: "Manage users",
+      enabled: true,
+      id: 1,
+      location: "/Admin/Users",
+      mfComponent: "UserAdmin",
+      mfScope: "userAdmin",
+      mfUrl: "http://localhost:5007",
+      name: "user-admin",
+      path: "/users/admin",
+      title: "Manage users",
+      version: 1,
+      vuu: {
+        connectionId: "user-admin",
+        restUrl: "https://localhost:8444/api/authn",
+        websocketUrl: "wss://localhost:8092/websocket",
+      },
+    },
+  ],
+};
+
 class TestConnectionClient implements VuuConnectionClient {
   connectCount = 0;
   destroyCount = 0;
   connected = false;
   listener?: (status: "disconnected") => void;
 
-  async connectTo() {
+  async connectWithLoginResponseTo() {
     this.connectCount += 1;
     this.connected = true;
-    return "connected" as const;
+    return {
+      loginResponse: {
+        moduleRegistry,
+        sessionId: "session-1",
+        type: "LOGIN_SUCCESS" as const,
+        vuuServerId: "portal",
+      },
+      status: "connected" as const,
+    };
   }
 
   connectedFor() {
@@ -77,8 +108,8 @@ describe("VuuConnectionRegistry", () => {
       registry.acquire(authHandler, target),
     ]);
 
-    expect(first).toBe(session);
-    expect(second).toBe(session);
+    expect(first).toEqual({ ...session, moduleRegistry });
+    expect(second).toBe(first);
     expect(exchangeToken).toHaveBeenCalledTimes(1);
     expect(connectionClient.connectCount).toBe(1);
     expect(registry.getRefCount(target.connectionId)).toBe(2);
@@ -122,7 +153,10 @@ describe("VuuConnectionRegistry", () => {
       sessionResolver,
     });
 
-    await expect(registry.acquire(authHandler, target)).resolves.toBe(session);
+    await expect(registry.acquire(authHandler, target)).resolves.toEqual({
+      ...session,
+      moduleRegistry,
+    });
 
     expect(sessionResolver.resolve).toHaveBeenCalledWith(authHandler, target);
     expect(exchangeToken).not.toHaveBeenCalled();
@@ -154,7 +188,10 @@ describe("VuuConnectionRegistry", () => {
 
     const mountedDuringReconnect = registry.acquire(authHandler, target);
     resolveReconnect?.(session);
-    await expect(mountedDuringReconnect).resolves.toBe(session);
+    await expect(mountedDuringReconnect).resolves.toEqual({
+      ...session,
+      moduleRegistry,
+    });
     expect(exchangeToken).toHaveBeenCalledTimes(2);
 
     registry.release(target.connectionId);
