@@ -78,7 +78,7 @@ export const useUserAdmin = (): UserAdminHookResult | undefined => {
 
   const dataSources = useMemo<KeycloakAdminDataSources | undefined>(() => {
     if (!schemas) return undefined;
-    const sessionPrefix = `${id ?? "feature-user-admin"}-keycloak-admin`;
+    const sessionPrefix = `${id ?? "user-admin"}-keycloak-admin`;
     const getColumns = (schema: TableSchema) =>
       schema.columns.map(({ name }) => name);
     const groupsDataSource = getDataSource(`${sessionPrefix}-groups`, {

@@ -5,10 +5,10 @@ flowchart LR
     user([User])
 
     subgraph browser["Browser"]
-        portal["vuu-portal<br/>Module federation host<br/>Keycloak public client"]
-        userAdmin["feature-user-admin<br/>Separate permissions"]
-        moduleAdmin["feature-module-admin<br/>Separate permissions"]
-        basketTrading["feature-basket-trading<br/>Separate permissions"]
+        portal["portal-host<br/>Module federation host<br/>Keycloak public client"]
+        userAdmin["user-admin<br/>Separate permissions"]
+        moduleAdmin["module-admin<br/>Separate permissions"]
+        basketTrading["basket-trading<br/>Separate permissions"]
 
         portal -->|loads and hosts| userAdmin
         portal -->|loads and hosts| moduleAdmin
@@ -60,5 +60,5 @@ flowchart LR
 The host authenticates the browser through its **public** Keycloak client. Each
 VUU server authenticates server-side through its own **confidential** Keycloak
 client. Permissions are assigned independently for the portal and each remote
-module. `feature-module-admin` shares the portal VUU server, while
-`feature-user-admin` uses its standalone VUU server.
+module. `module-admin` shares the portal VUU server, while
+`user-admin` uses its standalone VUU server.

@@ -26,7 +26,7 @@ async function main() {
 
       output: {
         distPath: {
-          root: "../../dist_portal/vuu-portal",
+          root: "../../dist_portal/portal-host",
           css: "./",
           js: "./",
         },

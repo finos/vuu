@@ -140,9 +140,9 @@ Minimum required shape:
 
 ```json
 {
-  "name": "feature-basket-trading",
+  "name": "basket-trading",
   "title": "Basket Trading",
-  "remoteEntry": "/feature-basket-trading/remoteEntry.js",
+  "remoteEntry": "/basket-trading/remoteEntry.js",
   "exposedModule": "./Feature",
   "vuu": {
     "connectionId": "basket",
