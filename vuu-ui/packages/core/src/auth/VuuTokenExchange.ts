@@ -1,4 +1,5 @@
 import type { User } from "./AuthHandler";
+import type { VuuModuleRegistry } from "@vuu-ui/vuu-protocol-types";
 import { parseVuuUserFromToken } from "./VuuUser";
 
 export interface VuuAuthTarget {
@@ -9,6 +10,7 @@ export interface VuuAuthTarget {
 
 export interface VuuSession {
   authorizations: string[];
+  moduleRegistry?: VuuModuleRegistry;
   token: string;
   user: User;
 }

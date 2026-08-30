@@ -16,6 +16,7 @@ import type {
   VuuTableList,
   VuuTableListRequest,
   VuuTableMetaRequest,
+  VuuLoginSuccessResponse,
 } from "@vuu-ui/vuu-protocol-types";
 import {
   DeferredPromise,
@@ -45,6 +46,12 @@ export type ConnectionEvents = WebSocketConnectionEvents & {
   "connection-metrics": (message: ConnectionQualityMetrics) => void;
 };
 export type ConnectionStatusListener = (status: ConnectionStatus) => void;
+export type VuuConnectionResult =
+  | {
+      loginResponse: VuuLoginSuccessResponse & { sessionId: string };
+      status: "connected" | "reconnected";
+    }
+  | { status: "rejected" };
 
 type RegisteredViewport = {
   postMessageToClientDataSource: PostMessageToClientCallback;
@@ -146,7 +153,7 @@ class ConnectionChannel {
   async connect(options: ConnectOptions, throwOnRejected = false) {
     try {
       const result = await this.#worker.connect(options);
-      if (result === "connected") {
+      if (result.status === "connected" || result.status === "reconnected") {
         this.#deferredServerAPI.resolve(this.#serverAPI);
       }
       return result;
@@ -154,7 +161,7 @@ class ConnectionChannel {
       if (throwOnRejected) {
         throw err;
       }
-      return "connection-failed";
+      return { status: "rejected" } as const;
     }
   }
 
@@ -338,6 +345,19 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
   }
 
   async connectTo(
+    connectionId: string,
+    options: ConnectOptions,
+    throwOnRejected = false,
+  ) {
+    const result = await this.connectWithLoginResponseTo(
+      connectionId,
+      options,
+      throwOnRejected,
+    );
+    return result.status === "rejected" ? "connection-failed" : result.status;
+  }
+
+  async connectWithLoginResponseTo(
     connectionId: string,
     options: ConnectOptions,
     throwOnRejected = false,

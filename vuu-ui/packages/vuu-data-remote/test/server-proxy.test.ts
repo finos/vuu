@@ -37,6 +37,53 @@ describe("ServerProxy", () => {
     TEST_setRequestId(1);
   });
 
+  it("returns the complete LOGIN_SUCCESS response to the connection caller", async () => {
+    const [serverProxy, postMessageToClient] = await createFixtures();
+    const login = serverProxy.login("vuu-token");
+    const moduleRegistry = {
+      modules: [
+        {
+          description: "Manage modules",
+          enabled: true,
+          id: 1,
+          location: "/Admin/Modules",
+          mfComponent: "ModuleAdmin",
+          mfScope: "moduleAdmin",
+          mfUrl: "http://localhost:5008",
+          name: "module-admin",
+          path: "/modules/admin",
+          title: "Manage modules",
+          version: 1,
+          vuu: { connectionId: "portal" },
+        },
+      ],
+    };
+
+    serverProxy.handleMessageFromServer({
+      body: {
+        moduleRegistry,
+        type: "LOGIN_SUCCESS",
+        vuuServerId: "portal",
+      },
+      module: "CORE",
+      requestId: "",
+      sessionId: "session-1",
+    });
+
+    await expect(login).resolves.toEqual({
+      moduleRegistry,
+      sessionId: "session-1",
+      type: "LOGIN_SUCCESS",
+      vuuServerId: "portal",
+    });
+    expect(postMessageToClient).toHaveBeenCalledWith({
+      moduleRegistry,
+      sessionId: "session-1",
+      type: "LOGIN_SUCCESS",
+      vuuServerId: "portal",
+    });
+  });
+
   describe("subscription", () => {
     it("sends server requests for metadata, links and menus along with subscription", async () => {
       const [, , connection] = await createFixtures();
