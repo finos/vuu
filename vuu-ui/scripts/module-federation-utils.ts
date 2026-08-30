@@ -1,6 +1,6 @@
 const reactVersion = "19.2.3";
 const reactRouterVersion = "^6.2.1";
-const vuuVersion = "3.1.0";
+const vuuVersion = "3.3.1";
 
 export const getSharedDependencies = (env: "consumer" | "producer") => {
   if (env === "consumer") {
