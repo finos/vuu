@@ -10,6 +10,7 @@ import { Range } from "./range-utils";
 
 const EXPORT_EXCLUDED_COLUMNS = new Set(["vuuMsg", "vuuAction", "vuuRowNum"]);
 const MAX_EXPORT_ROWS = 10_000;
+const CHUNK_SIZE = 1_000;
 
 const csvCell = (value: unknown): string => {
   const s = value == null ? "" : String(value);
@@ -70,6 +71,7 @@ export const exportSessionTableToCsv = (
   excludeColumns: string[] = [],
   onError?: (error: Error) => void,
   onSuccess?: () => void,
+  maxRows = MAX_EXPORT_ROWS,
 ): void => {
   const excluded = new Set([...EXPORT_EXCLUDED_COLUMNS, ...excludeColumns]);
   let exportCols: string[] = [];
@@ -92,13 +94,13 @@ export const exportSessionTableToCsv = (
           sessionDataSource.unsubscribe();
           return;
         }
-        if (totalSize > MAX_EXPORT_ROWS) {
+        if (totalSize > maxRows) {
           sessionDataSource.unsubscribe();
-          onError?.(new Error(`exportToCsv: row count ${totalSize} exceeds the ${MAX_EXPORT_ROWS} row limit`));
+          onError?.(new Error(`exportToCsv: row count ${totalSize} exceeds the ${maxRows} row limit`));
           return;
         }
-        // request all rows in one shot
-        sessionDataSource.range = Range(0, totalSize);
+        // request rows in chunks for predictable behaviour across local and remote DataSources
+        sessionDataSource.range = Range(0, Math.min(CHUNK_SIZE, totalSize));
       } else if (message.mode === "batch" && message.rows) {
         collectedRows.push(...message.rows);
         // update totalSize in case it changed between size-only and batch
@@ -115,6 +117,9 @@ export const exportSessionTableToCsv = (
           }
           triggerCsvDownload(lines.join("\r\n"), filename);
           onSuccess?.();
+        } else {
+          const nextFrom = collectedRows.length;
+          sessionDataSource.range = Range(nextFrom, Math.min(nextFrom + CHUNK_SIZE, totalSize));
         }
       }
     }
@@ -133,11 +138,12 @@ export const exportToCsv = async (
   excludeColumns: string[] = [],
   onError?: (error: Error) => void,
   onSuccess?: () => void,
+  maxRows = MAX_EXPORT_ROWS,
 ): Promise<void> => {
   const sessionDataSource =
     await dataSource.createSessionDataSource?.(copyOption, "export");
   if (!sessionDataSource) {
     throw Error("exportToCsv: dataSource does not support createSessionDataSource");
   }
-  exportSessionTableToCsv(sessionDataSource, filename, excludeColumns, onError, onSuccess);
+  exportSessionTableToCsv(sessionDataSource, filename, excludeColumns, onError, onSuccess, maxRows);
 }

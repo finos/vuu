@@ -117,6 +117,65 @@ export const CsvExportSimple = () => (
   </LocalDataSourceProvider>
 );
 
+const CsvExportWithRowLimitContent = () => {
+  const [status, setStatus] = useState<string | undefined>();
+
+  const dataSource = useMemo(
+    () => simulModule.createDataSource(TABLE_NAME),
+    [],
+  );
+
+  const config = useMemo<TableConfig>(
+    () => ({ columns: getSchema(TABLE_NAME).columns }),
+    [],
+  );
+
+  const handleExport = useCallback(async () => {
+    setStatus(undefined);
+    try {
+      await exportToCsv(
+        dataSource as DataSource,
+        "All",
+        "instruments-limited.csv",
+        [],
+        (err) => setStatus(`Export failed: ${err.message}`),
+        () => setStatus("Download started"),
+        50,
+      );
+    } catch (e) {
+      setStatus(`Export failed: ${(e as Error).message}`);
+    }
+  }, [dataSource]);
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+        height: "100%",
+        padding: 12,
+      }}
+    >
+      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <Button onClick={handleExport}>Export (max 50 rows)</Button>
+        {status ? (
+          <span style={{ fontSize: 12, fontWeight: 600 }}>{status}</span>
+        ) : null}
+      </div>
+      <div style={{ flex: "1 1 0", border: "solid 1px lightgray" }}>
+        <Table config={config} dataSource={dataSource} />
+      </div>
+    </div>
+  );
+};
+
+export const CsvExportWithRowLimit = () => (
+  <LocalDataSourceProvider>
+    <CsvExportWithRowLimitContent />
+  </LocalDataSourceProvider>
+);
+
 const INSTRUMENTS_TEMPLATE_COLUMNS = ["ric", "currency", "description", "exchange", "isin"];
 
 const CsvExportTemplateContent = () => {
