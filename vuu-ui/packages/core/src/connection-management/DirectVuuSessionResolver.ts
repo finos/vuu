@@ -1,6 +1,6 @@
-import type { AuthHandler } from "./AuthHandler";
-import { parseVuuUserFromToken } from "./VuuUser";
-import type { VuuAuthTarget } from "./VuuTokenExchange";
+import type { AuthHandler } from "../auth/AuthHandler";
+import { parseVuuUserFromToken } from "../auth/VuuUser";
+import type { VuuAuthTarget } from "../auth/VuuTokenExchange";
 import type { VuuSessionResolver } from "./VuuSessionResolver";
 
 export const VUU_AUTH_TOKEN_STORAGE_KEY = "vuu-auth-token";

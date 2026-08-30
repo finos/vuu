@@ -25,13 +25,6 @@ export type {
 export { KeycloakAuthHandler } from "./KeycloakAuthHandler";
 export { VuuAuthHandler } from './VuuAuthHandler';
 export {
-  DirectVuuSessionResolver,
-  VUU_AUTH_TOKEN_STORAGE_KEY,
-} from "./DirectVuuSessionResolver";
-export {
-  VuuConnectionRegistry, vuuConnectionRegistry, type VuuConnectionRegistryOptions
-} from "./VuuConnectionRegistry";
-export {
   authenticateWithUsernamePassword,
   VuuLoginHandler
 } from "./VuuLoginHandler";
@@ -39,10 +32,6 @@ export {
   exchangeVuuToken, VuuTokenExchangeError, type VuuAuthTarget,
   type VuuSession
 } from "./VuuTokenExchange";
-export {
-  IdentityTokenSessionResolver,
-  type VuuSessionResolver,
-} from "./VuuSessionResolver";
 export {
   parseVuuUserFromToken,
   type VuuUser

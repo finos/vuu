@@ -1,6 +1,6 @@
 import type { AuthConfig } from "./AuthConfig";
 import type { AuthHandler } from "./AuthHandler";
-import { VUU_AUTH_TOKEN_STORAGE_KEY } from "./DirectVuuSessionResolver";
+import { VUU_AUTH_TOKEN_STORAGE_KEY } from "../connection-management/DirectVuuSessionResolver";
 import { parseVuuUserFromToken } from "./VuuUser";
 
 export class VuuAuthHandler implements AuthHandler {
