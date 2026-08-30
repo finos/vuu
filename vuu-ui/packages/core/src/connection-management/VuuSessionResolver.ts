@@ -1,9 +1,9 @@
-import type { AuthHandler } from "./AuthHandler";
+import type { AuthHandler } from "../auth/AuthHandler";
 import {
   exchangeVuuToken,
   type VuuAuthTarget,
   type VuuSession,
-} from "./VuuTokenExchange";
+} from "../auth/VuuTokenExchange";
 
 export interface VuuSessionResolver {
   resolve(authHandler: AuthHandler, target: VuuAuthTarget): Promise<VuuSession>;

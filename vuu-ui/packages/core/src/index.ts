@@ -1,4 +1,5 @@
 export * from "./auth";
+export * from "./connection-management";
 export { DataContext } from "./context-definitions/DataContext";
 export {
   DataProvider,
