@@ -23,6 +23,7 @@ yarn-error.log*
 /vuu-ui/themes/tar-theme
 
 deployed_apps
+dist_portal
 dist
 
 # Docusaurus generated folders

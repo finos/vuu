@@ -1,12 +1,13 @@
 import { useIdMemo } from "@salt-ds/core";
 import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
-import type {
+import {
   DataSource,
   DataSourceConfig,
   DataSourceFilter,
+  TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import { useViewContext } from "@vuu-ui/vuu-layout";
-import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { buildColumnMap, metadataKeys } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo } from "react";
 import { InstrumentTile } from "./InstrumentTile";
@@ -17,11 +18,15 @@ import "./VuuInstrumentTilesFeature.css";
 
 const classBase = "VuuInstrumentTilesFeature";
 
+export interface InstrumentTilesFeatureProps {
+  instrumentPricesSchema: TableSchema;
+}
 
 const { KEY } = metadataKeys;
 
-const VuuInstrumentTilesFeature = (
-) => {
+const VuuInstrumentTilesFeature = ({
+  instrumentPricesSchema,
+}: InstrumentTilesFeatureProps) => {
   const { id, save, title } = useViewContext();
 
   const handleDataSourceConfigChange = useCallback(

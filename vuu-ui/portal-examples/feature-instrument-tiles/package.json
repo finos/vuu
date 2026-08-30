@@ -1,0 +1,60 @@
+{
+  "name": "feature-instrument-tiles",
+  "version": "1.0.0",
+  "description": "Instrument Price Tiles",
+  "scripts": {
+    "build": "node ../../scripts/build-remote-module.ts",
+    "dev": "rsbuild dev"
+  },
+  "private": true,
+  "keywords": [],
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "index.ts",
+  "devDependencies": {},
+  "dependencies": {
+    "@vuu-ui/vuu-data-remote": "3.3.1",
+    "@vuu-ui/vuu-data-react": "3.3.1",
+    "@vuu-ui/vuu-table-types": "3.3.1",
+    "@vuu-ui/vuu-filters": "3.3.1",
+    "@vuu-ui/vuu-filter-types": "3.3.1",
+    "@vuu-ui/vuu-layout": "3.3.1",
+    "@vuu-ui/vuu-popups": "3.3.1",
+    "@vuu-ui/vuu-protocol-types": "3.3.1",
+    "@vuu-ui/vuu-shell": "3.3.1",
+    "@vuu-ui/vuu-table": "3.3.1",
+    "@vuu-ui/vuu-table-extras": "3.3.1",
+    "@vuu-ui/vuu-theme": "3.3.1",
+    "@vuu-ui/vuu-utils": "3.3.1",
+    "@salt-ds/core": "1.67.0"
+  },
+  "peerDependencies": {
+    "clsx": "^2.0.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "vuu": {
+    "featureProps": {
+      "vuuTables": [
+        {
+          "module": "SIMUL",
+          "table": "instrumentPrices"
+        }
+      ]
+    },
+    "module-federation": {
+      "exposes": {
+        "./VuuInstrumentTilesFeature": "./src/VuuInstrumentTilesFeature"
+      },
+      "name": "instrumentTiles",
+      "port": 5006
+    },
+    "leftNavLocation": "vuu-features"
+  }
+}

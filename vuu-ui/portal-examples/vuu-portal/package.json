@@ -1,0 +1,39 @@
+{
+  "name": "vuu-portal",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "node ./scripts/rsbuild.ts",
+    "build:doctor": "node ./scripts/rsbuild.ts --rsdoctor",
+    "start": "serve -p 5002 ../../dist_portal/app-vuu-example"
+  },
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "type": "module",
+  "devDependencies": {
+    "rsbuild-plugin-inline-css": "1.0.0"
+  },
+  "dependencies": {
+    "@fontsource/open-sans": "^4.5.13",
+    "@salt-ds/core": "1.67.0",
+    "@vuu-ui/core": "3.3.1",
+    "@vuu-ui/vuu-data-local": "3.3.1",
+    "@vuu-ui/vuu-data-remote": "3.3.1",
+    "@vuu-ui/vuu-table-types": "3.3.1",
+    "@vuu-ui/vuu-data-react": "3.3.1",
+    "@vuu-ui/vuu-popups": "3.3.1",
+    "@vuu-ui/vuu-shell": "3.3.1",
+    "@vuu-ui/vuu-utils": "3.3.1",
+    "clsx": "^2.0.0",
+    "keycloak-js": "26.2.4",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-router-dom": "^6.2.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
