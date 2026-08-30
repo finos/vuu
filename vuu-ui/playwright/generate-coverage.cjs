@@ -7,9 +7,15 @@ const reports = require("istanbul-reports");
 const coverageDataDirectory = path.resolve("playwright/coverage-data");
 const coverageOptions = require("./coverage.config.cjs");
 const packagesDirectory = path.resolve("packages");
+const excludedPackages = new Set(["vuu-theme", "vuu-icons"]);
 
-function isTypeOnlyPackageFile(file) {
-  return file.replaceAll("\\", "/").match(/\/packages\/[^/]+-types\//);
+function isExcludedPackage(packageName) {
+  return packageName.endsWith("-types") || excludedPackages.has(packageName);
+}
+
+function isExcludedPackageFile(file) {
+  const match = file.replaceAll("\\", "/").match(/\/packages\/([^/]+)\//);
+  return match ? isExcludedPackage(match[1]) : false;
 }
 
 async function readCoverage() {
@@ -29,7 +35,7 @@ async function readCoverage() {
       await fs.readFile(path.join(coverageDataDirectory, file), "utf8"),
     );
     const runtimeCoverage = Object.fromEntries(
-      Object.entries(data).filter(([filePath]) => !isTypeOnlyPackageFile(filePath)),
+      Object.entries(data).filter(([filePath]) => !isExcludedPackageFile(filePath)),
     );
     coverageMap.merge(runtimeCoverage);
   }
@@ -64,7 +70,7 @@ async function packageNames() {
   const entries = await fs.readdir(packagesDirectory, { withFileTypes: true });
   return entries
     .filter((entry) => entry.isDirectory())
-    .filter((entry) => !entry.name.endsWith("-types"))
+    .filter((entry) => !isExcludedPackage(entry.name))
     .map((entry) => entry.name)
     .sort();
 }
