@@ -1,11 +1,11 @@
 import { useIdMemo } from "@salt-ds/core";
 import {
-  type MenuActionConfig,
+  MenuActionConfig,
   useSessionDataSource,
   useVisualLinks,
   useVuuMenuActions,
 } from "@vuu-ui/vuu-data-react";
-import type {
+import {
   DataSourceConfig,
   DataSourceConfigChangeHandler,
   DataSourceSuspenseProps,
@@ -13,20 +13,17 @@ import type {
   SchemaColumn,
 } from "@vuu-ui/vuu-data-types";
 import { usePersistFilterState } from "@vuu-ui/vuu-datatable";
-import type {
+import {
   FilterBarProps,
   FilterMode,
   QuickFilterProps,
 } from "@vuu-ui/vuu-filters";
 import { useViewContext } from "@vuu-ui/vuu-layout";
-import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { useTableConfig } from "@vuu-ui/vuu-table";
-import type {
-  TableConfig,
-  TableConfigChangeHandler,
-} from "@vuu-ui/vuu-table-types";
+import { TableConfig, TableConfigChangeHandler } from "@vuu-ui/vuu-table-types";
 import {
-  type FilterTableFeatureProps,
+  FilterTableFeatureProps,
   applyDefaultColumnConfig,
   isConfigChanged,
   toColumnName,

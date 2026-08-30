@@ -1,0 +1,46 @@
+{
+  "name": "vuu-table-viewer",
+  "version": "1.0.0",
+  "description": "Display a table from a host-scoped Vuu server connection",
+  "scripts": {
+    "build": "node ../../scripts/build-remote-module.ts",
+    "start": "serve -p 5010 ../../dist_portal/vuu-table-viewer"
+  },
+  "type": "module",
+  "private": true,
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "index.ts",
+  "dependencies": {
+    "@salt-ds/core": "1.67.0",
+    "@vuu-ui/core": "3.3.1",
+    "@vuu-ui/vuu-data-types": "3.3.1",
+    "@vuu-ui/vuu-datatable": "3.3.1",
+    "@vuu-ui/vuu-filter-types": "3.3.1",
+    "@vuu-ui/vuu-filters": "3.3.1",
+    "@vuu-ui/vuu-protocol-types": "3.3.1",
+    "@vuu-ui/vuu-table-types": "3.3.1",
+    "@vuu-ui/vuu-utils": "3.3.1"
+  },
+  "peerDependencies": {
+    "clsx": "^2.0.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "vuu": {
+    "featureProps": {},
+    "module-federation": {
+      "exposes": {
+        "./VuuTableViewer": "src/VuuTableViewer"
+      },
+      "name": "vuuTableViewer",
+      "port": 5010
+    }
+  }
+}

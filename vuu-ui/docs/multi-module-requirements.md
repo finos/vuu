@@ -13,8 +13,8 @@ This document is intended to be implementable without additional clarification.
 ### In scope
 
 - `vuu-ui` only.
-- `sample-apps/app-vuu-example` acts as host/consumer runtime container.
-- `sample-apps/feature-*` are remote module examples.
+- `portal-examples/app-vuu-example` acts as host/consumer runtime container.
+- `portal-examples/feature-*` are remote module examples.
 - Runtime connection architecture in `packages/vuu-data-remote`, including worker-based websocket handling.
 - Host/remote discovery and runtime loading via config + module registry.
 - Authentication/token flow integration for portal + remote VUU servers.
