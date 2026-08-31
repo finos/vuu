@@ -39,7 +39,43 @@ const moduleRegistry = {
       vuu: {
         connectionId: "user-admin",
         restUrl: "https://localhost:8444/api/authn",
-        websocketUrl: "wss://localhost:8092/websocket",
+        websocketUrl: "wss://localhost:8092/websocket-user-admin",
+      },
+    },
+    {
+      description: "Manage modules",
+      enabled: true,
+      id: 2,
+      location: "/Admin/Modules",
+      mfComponent: "ModuleAdmin",
+      mfScope: "moduleAdmin",
+      mfUrl: "http://localhost:5008",
+      name: "module-admin",
+      path: "/modules/admin",
+      title: "Manage modules",
+      version: 1,
+      vuu: {
+        connectionId: "module-admin",
+        restUrl: "https://localhost:8443/api/authn/module-admin",
+        websocketUrl: "wss://localhost:8091/websocket-portal",
+      },
+    },
+    {
+      description: "Trade baskets",
+      enabled: true,
+      id: 3,
+      location: "/Trading/Baskets",
+      mfComponent: "VuuBasketTradingFeature",
+      mfScope: "basketTrading",
+      mfUrl: "http://localhost:5005",
+      name: "basket-trading",
+      path: "/trading/baskets",
+      title: "Basket Trading",
+      version: 1,
+      vuu: {
+        connectionId: "basket-trading",
+        restUrl: "https://localhost:8445/api/authn",
+        websocketUrl: "wss://localhost:8093/websocket-basket-trading",
       },
     },
   ],
@@ -132,12 +168,12 @@ describe("VuuConnectionRegistry", () => {
     expect(connectionClient.destroyCount).toBe(1);
   });
 
-  it("creates a separate module-admin session on the portal server", async () => {
+  it("forwards the shared portal URL to separate portal and module-admin connections", async () => {
     const connectionClient = new TestConnectionClient();
     const portalTarget = {
       connectionId: "portal",
       restUrl: "https://localhost:8443/api/authn",
-      websocketUrl: "wss://localhost:8090/websocket",
+      websocketUrl: "wss://localhost:8091/websocket-portal",
     };
     const moduleAdminTarget = {
       connectionId: "module-admin",
@@ -196,17 +232,22 @@ describe("VuuConnectionRegistry", () => {
       {
         connectionId: "portal",
         restUrl: "https://localhost:8443/api/authn",
-        websocketUrl: "wss://localhost:8090/websocket",
+        websocketUrl: "wss://localhost:8091/websocket-portal",
       },
       {
         connectionId: "module-admin",
         restUrl: "https://localhost:8443/api/authn/module-admin",
-        websocketUrl: "wss://localhost:8090/websocket",
+        websocketUrl: "wss://localhost:8091/websocket-portal",
       },
       {
         connectionId: "basket-trading",
         restUrl: "https://localhost:8445/api/authn",
-        websocketUrl: "wss://localhost:8093/websocket",
+        websocketUrl: "wss://localhost:8093/websocket-basket-trading",
+      },
+      {
+        connectionId: "user-admin",
+        restUrl: "https://localhost:8444/api/authn",
+        websocketUrl: "wss://localhost:8092/websocket-user-admin",
       },
     ];
     const exchangeToken = vi.fn(
@@ -225,7 +266,7 @@ describe("VuuConnectionRegistry", () => {
       exchangeToken,
     });
 
-    const [portalResult, moduleAdminResult, basketResult] =
+    const [portalResult, moduleAdminResult, basketResult, userAdminResult] =
       await Promise.allSettled(
         targets.map((authTarget) => registry.acquire(authHandler, authTarget)),
       );
@@ -245,9 +286,29 @@ describe("VuuConnectionRegistry", () => {
       status: "fulfilled",
       value: { token: "basket-trading-token" },
     });
+    expect(userAdminResult).toMatchObject({
+      status: "fulfilled",
+      value: { token: "user-admin-token" },
+    });
     expect(
-      connectionClient.connections.map(({ connectionId }) => connectionId),
-    ).toEqual(["portal", "basket-trading"]);
+      connectionClient.connections.map(({ connectionId, options }) => ({
+        connectionId,
+        url: options.url,
+      })),
+    ).toEqual([
+      {
+        connectionId: "portal",
+        url: "wss://localhost:8091/websocket-portal",
+      },
+      {
+        connectionId: "basket-trading",
+        url: "wss://localhost:8093/websocket-basket-trading",
+      },
+      {
+        connectionId: "user-admin",
+        url: "wss://localhost:8092/websocket-user-admin",
+      },
+    ]);
 
     targets.forEach(({ connectionId }) => {
       registry.release(connectionId);

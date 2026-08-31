@@ -528,7 +528,9 @@ Module admin uses the portal VUU server because module discovery is hosted by
   "mfComponent": "ModuleAdmin",
   "mfUrl": "http://localhost:5008",
   "vuu": {
-    "connectionId": "portal"
+    "connectionId": "module-admin",
+    "restUrl": "https://localhost:8443/api/authn/module-admin",
+    "websocketUrl": "wss://localhost:8091/websocket-portal"
   }
 }
 ```
@@ -543,7 +545,7 @@ User admin uses its standalone VUU server:
   "vuu": {
     "connectionId": "user-admin",
     "restUrl": "https://localhost:8444/api/authn",
-    "websocketUrl": "wss://localhost:8092/websocket"
+    "websocketUrl": "wss://localhost:8092/websocket-user-admin"
   }
 }
 ```
