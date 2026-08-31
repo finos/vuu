@@ -15,13 +15,48 @@ export interface VuuSession {
   user: User;
 }
 
+export type VuuTokenExchangeFailure =
+  | "authentication-rejected"
+  | "authorization-denied"
+  | "service-unavailable"
+  | "exchange-failed";
+
+const getFailure = (status?: number): VuuTokenExchangeFailure => {
+  switch (status) {
+    case 401:
+      return "authentication-rejected";
+    case 403:
+      return "authorization-denied";
+    case 503:
+      return "service-unavailable";
+    default:
+      return "exchange-failed";
+  }
+};
+
+const getFailureMessage = (target: VuuAuthTarget, status: number) => {
+  switch (status) {
+    case 401:
+      return `VUU token exchange rejected for ${target.connectionId} (401)`;
+    case 403:
+      return `VUU authorization denied for ${target.connectionId} (403)`;
+    case 503:
+      return `VUU token exchange unavailable for ${target.connectionId} (503)`;
+    default:
+      return `VUU token exchange failed for ${target.connectionId} (${status})`;
+  }
+};
+
 export class VuuTokenExchangeError extends Error {
+  readonly failure: VuuTokenExchangeFailure;
+
   constructor(
     message: string,
     readonly status?: number,
   ) {
     super(message);
     this.name = "VuuTokenExchangeError";
+    this.failure = getFailure(status);
   }
 }
 
@@ -31,11 +66,11 @@ export const exchangeVuuToken = async (
 ): Promise<VuuSession> => {
   const response = await fetch(target.restUrl, {
     headers: { Authorization: `Bearer ${identityToken}` },
-    method: 'POST'
+    method: "POST",
   });
   if (!response.ok) {
     throw new VuuTokenExchangeError(
-      `VUU token exchange failed for ${target.connectionId}`,
+      getFailureMessage(target, response.status),
       response.status,
     );
   }

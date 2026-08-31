@@ -25,7 +25,12 @@ import {
   vuuConnectionRegistry,
   type VuuConnectionRegistry,
 } from "../connection-management/VuuConnectionRegistry";
-import type { VuuAuthTarget, VuuSession } from "./VuuTokenExchange";
+import { VuuTokenExchangeError } from "./VuuTokenExchange";
+import type {
+  VuuAuthTarget,
+  VuuSession,
+  VuuTokenExchangeFailure,
+} from "./VuuTokenExchange";
 
 export class AuthenticationConfigurationError extends Error {
   constructor(message: string) {
@@ -35,14 +40,22 @@ export class AuthenticationConfigurationError extends Error {
 }
 
 export class VuuConnectionError extends Error {
+  readonly failure?: VuuTokenExchangeFailure;
+  readonly status?: number;
+
   constructor(
     readonly connectionId: string,
     cause: unknown,
   ) {
-    super(`VUU connection authentication failed for ${connectionId}`, {
+    const detail = cause instanceof Error ? `: ${cause.message}` : "";
+    super(`VUU connection authentication failed for ${connectionId}${detail}`, {
       cause,
     });
     this.name = "VuuConnectionError";
+    if (cause instanceof VuuTokenExchangeError) {
+      this.failure = cause.failure;
+      this.status = cause.status;
+    }
   }
 }
 

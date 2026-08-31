@@ -30,6 +30,7 @@ export {
 } from "./VuuLoginHandler";
 export {
   exchangeVuuToken, VuuTokenExchangeError, type VuuAuthTarget,
+  type VuuTokenExchangeFailure,
   type VuuSession
 } from "./VuuTokenExchange";
 export {
