@@ -6,6 +6,7 @@ import {
 import type { AuthHandler } from "../auth/AuthHandler";
 import {
   exchangeVuuToken,
+  VuuTokenExchangeError,
   type VuuAuthTarget,
   type VuuSession,
 } from "../auth/VuuTokenExchange";
@@ -251,6 +252,7 @@ export class VuuConnectionRegistry {
       return entry.reconnectPromise;
     }
     entry.reconnectPromise = (async () => {
+      let lastError: Error | undefined;
       for (const interval of this.#retryIntervals) {
         await new Promise((resolve) => setTimeout(resolve, interval * 1000));
         if (entry.refCount === 0 || entry.intentionalDisconnect) {
@@ -259,14 +261,28 @@ export class VuuConnectionRegistry {
         try {
           await this.#authenticateAndConnect(entry);
           return;
-        } catch {
-          // Retry with a fresh identity and VUU token.
+        } catch (error) {
+          lastError =
+            error instanceof Error
+              ? error
+              : new Error(
+                  `VUU connection ${entry.target.connectionId} failed to reconnect`,
+                  { cause: error },
+                );
+          if (
+            error instanceof VuuTokenExchangeError &&
+            error.failure === "authorization-denied"
+          ) {
+            break;
+          }
         }
       }
       entry.state = "failed";
-      const error = Error(
-        `VUU connection ${entry.target.connectionId} failed to reconnect`,
-      );
+      const error =
+        lastError ??
+        Error(
+          `VUU connection ${entry.target.connectionId} failed to reconnect`,
+        );
       entry.errorListeners.forEach((listener) => {
         listener(error);
       });

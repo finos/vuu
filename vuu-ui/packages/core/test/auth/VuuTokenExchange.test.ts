@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   exchangeVuuToken,
-  VuuTokenExchangeError,
   type VuuAuthTarget,
 } from "../../src/auth/VuuTokenExchange";
 
@@ -40,14 +39,44 @@ describe("exchangeVuuToken", () => {
     });
   });
 
-  it("surfaces the failed endpoint and response status", async () => {
+  it.each([
+    [401, "authentication-rejected", "token exchange rejected"],
+    [403, "authorization-denied", "authorization denied"],
+    [503, "service-unavailable", "token exchange unavailable"],
+  ] as const)("distinguishes a %i response as %s", async (status, failure, message) => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(new Response(null, { status: 401 })),
+      vi.fn().mockResolvedValue(new Response(null, { status })),
     );
 
-    await expect(exchangeVuuToken("expired", target)).rejects.toEqual(
-      new VuuTokenExchangeError("VUU token exchange failed for orders", 401),
+    const exchange = exchangeVuuToken("identity-token", target);
+    await expect(exchange).rejects.toMatchObject({
+      failure,
+      name: "VuuTokenExchangeError",
+      status,
+    });
+    await expect(exchange).rejects.toThrow(message);
+  });
+
+  it("forwards a profile-specific authentication endpoint", async () => {
+    const moduleAdminTarget = {
+      connectionId: "module-admin",
+      restUrl: "https://localhost:8443/api/authn/module-admin",
+      websocketUrl: "wss://localhost:8090/websocket",
+    };
+    const fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ token }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetch);
+
+    await exchangeVuuToken("identity-token", moduleAdminTarget);
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://localhost:8443/api/authn/module-admin",
+      expect.any(Object),
     );
   });
 });
