@@ -13,7 +13,7 @@ const buildManifest = () => {
     ssl: true,
     authUrl: "https://localhost:8080",
     restUrl: "https://localhost:8443/api/authn",
-    websocketUrl: "wss://localhost:8091/websocket",
+    websocketUrl: "wss://localhost:8091/websocket-portal",
   };
 };
 
@@ -62,9 +62,9 @@ async function main() {
           },
           plugins: [
             useRsDoctor &&
-            new RsdoctorRspackPlugin({
-              // plugin options
-            }),
+              new RsdoctorRspackPlugin({
+                // plugin options
+              }),
             new ModuleFederationPlugin({
               name: "host",
               remoteType: "module",

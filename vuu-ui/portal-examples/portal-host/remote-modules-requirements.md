@@ -118,8 +118,8 @@ Host config MUST continue to support:
 {
   "ssl": true,
   "authUrl": "http://localhost:5001",
-  "restUrl": "https://localhost:8443",
-  "websocketUrl": "wss://localhost:8090/websocket"
+  "restUrl": "https://localhost:8443/api/authn",
+  "websocketUrl": "wss://localhost:8091/websocket-portal"
 }
 ```
 
@@ -145,8 +145,9 @@ Minimum required shape:
   "remoteEntry": "/basket-trading/remoteEntry.js",
   "exposedModule": "./Feature",
   "vuu": {
-    "connectionId": "basket",
-    "websocketUrl": "wss://localhost:8091/websocket"
+    "connectionId": "basket-trading",
+    "restUrl": "https://localhost:8445/api/authn",
+    "websocketUrl": "wss://localhost:8093/websocket-basket-trading"
   }
 }
 ```
