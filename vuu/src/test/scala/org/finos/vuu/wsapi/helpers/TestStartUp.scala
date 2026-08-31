@@ -18,10 +18,10 @@ import java.security.SecureRandom
 
 class TestStartUp(moduleFactoryFunc: () => ViewServerModule,
                   pluginFactoryFunc: () => Plugin = () => VuuInMemPlugin())(
-                  using val timeProvider: Clock,
-                  val lifecycle: LifecycleContainer,
-                  val tableDefContainer: TableDefContainer) extends Eventually with Matchers {
-    
+                   using val timeProvider: Clock,
+                   val lifecycle: LifecycleContainer,
+                   val tableDefContainer: TableDefContainer) extends Eventually with Matchers {
+
   def startServerAndClient(): (TestVuuClient, VuuServerConfig) = {
 
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
@@ -35,7 +35,7 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule,
 
     val module: ViewServerModule = moduleFactoryFunc()
     val plugin: Plugin = pluginFactoryFunc()
-        
+
     val config = VuuServerConfig(
       VuuWebSocketOptions()
         .withBindAddress("0.0.0.0")
@@ -51,9 +51,9 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule,
     )
       .withModule(module)
       .withPlugin(plugin)
-    
+
     val viewServer = new VuuServer(config)
-    
+
     val options = VuuClientOptions()
       .withPath(config.wsOptions.uri)
       .withPort(config.wsOptions.wsPort)

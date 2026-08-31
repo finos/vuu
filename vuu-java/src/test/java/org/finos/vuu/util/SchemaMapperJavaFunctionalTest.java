@@ -1,6 +1,7 @@
 package org.finos.vuu.util;
 
 import org.finos.vuu.api.ColumnBuilder;
+import org.finos.vuu.api.TableDefBuilder;
 import org.finos.vuu.core.table.Columns;
 import org.finos.vuu.core.table.RowWithData;
 import org.finos.vuu.test.FakeInMemoryTable;

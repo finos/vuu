@@ -2,6 +2,7 @@ package org.finos.vuu.core.module.editable
 
 import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.net.rpc.*
+import org.finos.vuu.net.rpc.sessiontable.EditTableRpcHandler
 
 class FixSequenceRpcService extends EditTableRpcHandler with DefaultRpcHandler {
 

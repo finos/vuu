@@ -6,6 +6,7 @@ import org.finos.vuu.viewport.*
 import java.util.concurrent.ConcurrentHashMap
 
 trait RpcHandler extends StrictLogging {
+  val rpcNotSupportedMsg = "Not supported"
 
   def menuItems(): ViewPortMenu = EmptyViewPortMenu
 

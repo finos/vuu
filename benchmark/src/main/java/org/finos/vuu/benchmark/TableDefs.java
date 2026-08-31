@@ -5,9 +5,9 @@ import org.finos.vuu.api.JoinTableDef;
 import org.finos.vuu.api.TableDef;
 import org.finos.vuu.core.table.Column;
 import org.finos.vuu.core.table.Columns;
-import org.finos.vuu.util.JoinTableDefBuilder;
-import org.finos.vuu.util.JoinToBuilder;
-import org.finos.vuu.util.TableDefBuilder;
+import org.finos.vuu.api.JoinTableDefBuilder;
+import org.finos.vuu.api.JoinToBuilder;
+import org.finos.vuu.api.TableDefBuilder;
 
 import java.util.List;
 import java.util.stream.Stream;

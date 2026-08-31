@@ -19,6 +19,7 @@ import org.finos.vuu.net.ui.NotificationType;
 import org.finos.vuu.net.ui.ShowNotificationAction;
 import org.finos.vuu.viewport.ViewPortRange;
 import org.finos.vuu.viewport.ViewPortTable;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -111,42 +112,106 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
         assertEquals(NoneAction$.MODULE$, responseBody.action(), "Response contains no action");
     }
 
-    @Test
-    public void custom_rpc_request_deleteRow() {
-        // test rpc registered in UpdateRecordRpcHandler (EditTableRpcHandler) works
-        var viewPortId = createViewPort();
+    @Nested
+    class EditRecord {
+        // test RPCs registered in EditRecordRpcHandler (EditTableRpcHandler) works
 
-        var rpcRequest = new RpcRequest(
-                new ViewPortContext(viewPortId),
-                "deleteRow",
-                toScala(Map.of())
-        );
+        @Test
+        public void custom_rpc_request_deleteRow() {
+            var viewPortId = createViewPort("edit-PersonManualMapped");
 
-        var requestId = vuuClient.send(sessionId, rpcRequest);
-        var response = vuuClient.awaitForResponse(requestId);
+            var rpcRequest = new RpcRequest(
+                    new ViewPortContext(viewPortId),
+                    "deleteSelectedRows",
+                    toScala(Map.of())
+            );
 
-        RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Request response");
-        assertEquals("deleteRow", responseBody.rpcName());
-        assertInstanceOf(RpcSuccessResult.class, responseBody.result());
+            var requestId = vuuClient.send(sessionId, rpcRequest);
+            var response = vuuClient.awaitForResponse(requestId);
+
+            RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Request response");
+            assertEquals("deleteSelectedRows", responseBody.rpcName());
+            assertInstanceOf(RpcSuccessResult.class, responseBody.result());
+        }
+
+        @Test
+        public void custom_rpc_request_endEditSession() {
+            // test rpc registered in EditRecordRpcHandler (EndEditSessionRpcHandler) works
+            var viewPortId = createViewPort("edit-PersonManualMapped");
+
+            var rpcRequest = new RpcRequest(
+                    new ViewPortContext(viewPortId),
+                    "endEditSession",
+                    toScala(Map.of())
+            );
+
+            var requestId = vuuClient.send(sessionId, rpcRequest);
+            var response = vuuClient.awaitForResponse(requestId);
+
+            RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Request response");
+            assertEquals("endEditSession", responseBody.rpcName());
+            assertInstanceOf(RpcSuccessResult.class, responseBody.result());
+        }
     }
 
-    @Test
-    public void custom_rpc_request_endEditSession() {
-        // test rpc registered in UpdateRecordRpcHandler (EndEditSessionRpcHandler) works
-        var viewPortId = createViewPort();
+    @Nested
+    class ImportRecord {
+        // test RPCs registered in ImportRecordRpcHandler (EditTableRpcHandler) works
 
-        var rpcRequest = new RpcRequest(
-                new ViewPortContext(viewPortId),
-                "endEditSession",
-                toScala(Map.of())
-        );
+        @Test
+        public void custom_rpc_request_deleteRow() {
+            var viewPortId = createViewPort("import-PersonManualMapped");
 
-        var requestId = vuuClient.send(sessionId, rpcRequest);
-        var response = vuuClient.awaitForResponse(requestId);
+            var rpcRequest = new RpcRequest(
+                    new ViewPortContext(viewPortId),
+                    "deleteRow",
+                    toScala(Map.of())
+            );
 
-        RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Request response");
-        assertEquals("endEditSession", responseBody.rpcName());
-        assertInstanceOf(RpcSuccessResult.class, responseBody.result());
+            var requestId = vuuClient.send(sessionId, rpcRequest);
+            var response = vuuClient.awaitForResponse(requestId);
+
+            RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Request response");
+            assertEquals("deleteRow", responseBody.rpcName());
+            assertInstanceOf(RpcErrorResult.class, responseBody.result()); // default implementation in ImportSessionRpcHandler
+        }
+
+        @Test
+        public void custom_rpc_request_closeForm() {
+            var viewPortId = createViewPort("import-PersonManualMapped");
+
+            var rpcRequest = new RpcRequest(
+                    new ViewPortContext(viewPortId),
+                    "closeForm",
+                    toScala(Map.of())
+            );
+
+            var requestId = vuuClient.send(sessionId, rpcRequest);
+            var response = vuuClient.awaitForResponse(requestId);
+
+            RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Request response");
+            assertEquals("closeForm", responseBody.rpcName());
+            assertInstanceOf(RpcSuccessResult.class, responseBody.result());
+        }
+
+        @Test
+        public void custom_rpc_request_endEditSession() {
+            var viewPortId = createViewPort("import-PersonManualMapped");
+
+            var rpcRequest = new RpcRequest(
+                    new ViewPortContext(viewPortId),
+                    "endEditSession",
+                    toScala(Map.of())
+            );
+
+            var requestId = vuuClient.send(sessionId, rpcRequest);
+            var response = vuuClient.awaitForResponse(requestId);
+
+            RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Request response");
+            assertEquals("endEditSession", responseBody.rpcName());
+            assertInstanceOf(RpcSuccessResult.class, responseBody.result());
+        }
+
     }
 
     @Test

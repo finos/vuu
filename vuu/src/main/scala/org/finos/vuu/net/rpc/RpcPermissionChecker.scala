@@ -11,3 +11,7 @@ object AllowAllRpcPermissionChecker extends RpcPermissionChecker {
 
   override def isRpcAllowed(rpcName: String, vuuUser: VuuUser): Boolean = true
 }
+
+object DisableAllRpcPermissionChecker extends RpcPermissionChecker {
+  override def isRpcAllowed(rpcName: String, vuuUser: VuuUser): Boolean = false
+}

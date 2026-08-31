@@ -8,6 +8,7 @@ import org.finos.vuu.core.table.*
 import org.finos.vuu.core.table.TableTestHelper.combineQs
 import org.finos.vuu.net.RequestContext
 import org.finos.vuu.net.rpc.*
+import org.finos.vuu.net.rpc.sessiontable.EditTableRpcHandler
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.finos.vuu.viewport.*
 import org.scalatest.prop.Tables.Table

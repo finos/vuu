@@ -1,10 +1,21 @@
 package org.finos.vuu.wsapi.helpers
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.table.{DataTable, RowWithData}
+import org.finos.vuu.api.{ColumnBuilder, TableDef, TableDefOptions}
+import org.finos.vuu.core.AbstractVuuServer
+import org.finos.vuu.core.table.{Column, DataTable, RowWithData}
 import org.finos.vuu.provider.Provider
 
+import scala.collection.immutable.ListMap
+
 case class TestProviderFactory() {
+
+  val providerFactory: (DataTable, AbstractVuuServer) => TestProvider =
+    (table: DataTable, _: AbstractVuuServer) => create(table, TestTable.dataSource)
+
+  val largeProviderFactory: (DataTable, AbstractVuuServer) => TestProvider =
+    (table: DataTable, _: AbstractVuuServer) => create(table, TestTable.largeDataSource)
+
   private var providers: Map[String, TestProvider] = Map.empty[String, TestProvider]
 
   def create(table: DataTable, dataSource: FakeDataSource): TestProvider = {

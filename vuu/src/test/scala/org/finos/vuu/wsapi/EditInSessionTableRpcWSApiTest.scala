@@ -1,25 +1,16 @@
 package org.finos.vuu.wsapi
 
-import org.finos.vuu.api.{ColumnBuilder, SessionTableDef, TableDef, TableDefOptions, ViewPortDef}
-import org.finos.vuu.core.AbstractVuuServer
-import org.finos.vuu.core.auths.VuuUser
+import org.finos.vuu.api.{SessionTableDef, ViewPortDef}
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net.rpc.{AllowAllRpcPermissionChecker, CreateSessionTableRpcHandler, EndEditSessionRpcHandler, RpcErrorResult, RpcNames, RpcParams, RpcPermissionChecker, RpcSuccessResult, ViewPortContext}
-import org.finos.vuu.net.{CreateViewPortRequest, CreateViewPortSuccess, RpcRequest, RpcResponseNew, SelectRowRangeRequest, SelectRowRangeSuccess, SelectRowRequest, SelectRowSuccess}
+import org.finos.vuu.net.rpc.sessiontable.{CreateSessionTableRpcHandler, EndSessionRpcHandler}
+import org.finos.vuu.net.rpc.{AllowAllRpcPermissionChecker, DisableAllRpcPermissionChecker, RpcErrorResult, RpcNames, RpcParams, RpcPermissionChecker, RpcSuccessResult, ViewPortContext}
+import org.finos.vuu.net.{RpcRequest, RpcResponseNew, SelectRowRangeRequest, SelectRowRangeSuccess, SelectRowRequest, SelectRowSuccess}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
-import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
-import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProviderFactory}
-
-import scala.collection.immutable.ListMap
+import org.finos.vuu.wsapi.helpers.{TestProviderFactory, TestTable}
 
 class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
-  private val allColumns = new ColumnBuilder()
-    .addString("Id")
-    .addString("Name")
-    .addInt("Account")
-    .build();
   private val noEnoughPermissionTableName = "noEnoughPermissionTable"
   private val nonEditableTableName = "nonEditableTable"
   private val tableName1 = "testTable1"
@@ -31,7 +22,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   private val largeSessionTableDefName = "edit-" + largeTableName
   private val moduleName = "EditInSessionTableRpcTest"
   private val testProviderFactory = new TestProviderFactory
-  private val maxSessionTableSize = 10 // configured in CoreServerApiTest
+  private val maxSessionTableSize = 10 // configured in TestStartUp
 
   Feature("[Web Socket API] create a session table failed") {
     Scenario("Request to create a session table failed for no enough permission") {
@@ -124,7 +115,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       sessionTableName.contains("simple-edit-testTable1") shouldBe true
     }
 
@@ -148,7 +139,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       sessionTableName.contains("simple-testSessionTable1") shouldBe true
     }
 
@@ -172,8 +163,8 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
-      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, 0)
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 0)
     }
 
     Scenario("create a session table and copy all rows from all columns from source table") {
@@ -196,8 +187,8 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
-      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, 3)
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 3)
     }
 
     Scenario("create a session table and copy all rows from some columns from source table") {
@@ -220,8 +211,8 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
-      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, 3)
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 3)
     }
 
     Scenario("create a session table and copy all rows up to max threshold from source table") {
@@ -244,8 +235,8 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
-      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, maxSessionTableSize)
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, maxSessionTableSize)
     }
 
     Scenario("create a session table from selected rows of source table") {
@@ -274,8 +265,8 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
-      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, 2)
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 2)
     }
 
     Scenario("create a session table and copy selected rows up to max threshold from source table") {
@@ -301,14 +292,14 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
-      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, maxSessionTableSize)
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
+      val sessionTableViewPortId = createViewPortAndVerifyDataSize(sessionTableName, moduleName, maxSessionTableSize)
     }
 
 
     Scenario("Request to create a session table failed for copying from columns not in source table") {
       Given("a view port exist")
-      val viewPortId = createViewPortAndVerifyDataSize(tableName1, 3)
+      val viewPortId = createViewPortAndVerifyDataSize(tableName1, moduleName, 3)
 
       When("request createSessionTable and copy from columns not in source table")
       val createSessionTableRequest = RpcRequest(
@@ -370,10 +361,10 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       sessionTableName.contains("simple-import-testTable1") shouldBe true
 
-      createViewPortAndVerifyDataSize(sessionTableName, 0)
+      createViewPortAndVerifyDataSize(sessionTableName, moduleName, 0)
     }
 
     Scenario("create a session table from source table using a given name") {
@@ -395,10 +386,10 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       sessionTableName.contains("simple-testSessionTable1") shouldBe true
 
-      createViewPortAndVerifyDataSize(sessionTableName, 0)
+      createViewPortAndVerifyDataSize(sessionTableName, moduleName, 0)
     }
   }
 
@@ -421,10 +412,10 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       sessionTableName.contains("simple-export-testTable1") shouldBe true
 
-      createViewPortAndVerifyDataSize(sessionTableName, 3)
+      createViewPortAndVerifyDataSize(sessionTableName, moduleName, 3)
     }
 
     Scenario("create a session table from source table using a given name") {
@@ -446,124 +437,77 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, String]]("sessionTable")
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
       sessionTableName.contains("simple-testSessionTable1") shouldBe true
 
-      createViewPortAndVerifyDataSize(sessionTableName, 3)
+      createViewPortAndVerifyDataSize(sessionTableName, moduleName, 3)
     }
   }
 
-  private def createTableDef(tableName: String, isEditable: Boolean): TableDef = {
-    TableDef(
-      name = tableName,
-      keyField = "Id",
-      customColumns = allColumns,
-      options = TableDefOptions(
-        isEditable = isEditable
-      )
-    )
-  }
-
   protected def defineModuleWithTestTables(): ViewServerModule = {
-    val dataSource = new FakeDataSource(ListMap(
-      "row1" -> Map("Id" -> "row1", "Name" -> "Becky Thatcher", "Account" -> 123),
-      "row2" -> Map("Id" -> "row2", "Name" -> "Tom Sawyer", "Account" -> 456),
-      "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn", "Account" -> 789),
-    ))
-    val providerFactory = (table: DataTable, _: AbstractVuuServer) => testProviderFactory.create(table, dataSource)
-    val largeDataSource = new FakeDataSource(ListMap(
-      "row1" -> Map("Id" -> "row1", "Name" -> "user1", "Account" -> 1),
-      "row2" -> Map("Id" -> "row2", "Name" -> "user2", "Account" -> 2),
-      "row3" -> Map("Id" -> "row3", "Name" -> "user3", "Account" -> 3),
-      "row4" -> Map("Id" -> "row4", "Name" -> "user4", "Account" -> 4),
-      "row5" -> Map("Id" -> "row5", "Name" -> "user5", "Account" -> 5),
-      "row6" -> Map("Id" -> "row6", "Name" -> "user6", "Account" -> 6),
-      "row7" -> Map("Id" -> "row7", "Name" -> "user7", "Account" -> 7),
-      "row8" -> Map("Id" -> "row8", "Name" -> "user8", "Account" -> 8),
-      "row9" -> Map("Id" -> "row9", "Name" -> "user9", "Account" -> 9),
-      "row10" -> Map("Id" -> "row10", "Name" -> "user10", "Account" -> 10),
-      "row11" -> Map("Id" -> "row11", "Name" -> "user11", "Account" -> 11),
-      "row12" -> Map("Id" -> "row12", "Name" -> "user12", "Account" -> 12),
-      "row13" -> Map("Id" -> "row13", "Name" -> "user13", "Account" -> 13),
-      "row14" -> Map("Id" -> "row14", "Name" -> "user14", "Account" -> 14),
-      "row15" -> Map("Id" -> "row15", "Name" -> "user15", "Account" -> 15),
-    ))
-    val largeProviderFactory = (table: DataTable, _: AbstractVuuServer) => testProviderFactory.create(table, largeDataSource)
-
     val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
-        columns = allColumns,
-        service = new DummyCreateSessionTableRpcHandler()(using AllowAllRpcPermissionChecker, tableContainer)
+        columns = TestTable.columns,
+        service = new DummyCreateSessionTableRpcHandler()(AllowAllRpcPermissionChecker, tableContainer)
       )
     val viewPortDefFactoryForSessionTable = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
-        columns = allColumns,
-        service = new DummyEndEditSessionHandler(using tableContainer)
+        columns = TestTable.columns,
+        service = new DummyEndSessionHandler(tableContainer)
       )
     val noEnoughPermissionViewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
-        columns = allColumns,
-        service = new DummyCreateSessionTableRpcHandler()(using AllDisabledRpcPermissionChecker, tableContainer)
+        columns = TestTable.columns,
+        service = new DummyCreateSessionTableRpcHandler()(DisableAllRpcPermissionChecker, tableContainer)
       )
 
     ModuleFactory.withNamespace(moduleName)
-      .addTableForTest(createTableDef(tableName1, true), viewPortDefFactory, providerFactory)
-      .addTableForTest(createTableDef(noEnoughPermissionTableName, true), noEnoughPermissionViewPortDefFactory, providerFactory)
-      .addTableForTest(createTableDef(nonEditableTableName, false), viewPortDefFactory, providerFactory)
-      .addTableForTest(createTableDef(largeTableName, true), viewPortDefFactory, largeProviderFactory)
+      .addTableForTest(TestTable.createTableDef(tableName1, true), viewPortDefFactory, testProviderFactory.providerFactory)
+      .addTableForTest(TestTable.createTableDef(noEnoughPermissionTableName, true), noEnoughPermissionViewPortDefFactory, testProviderFactory.providerFactory)
+      .addTableForTest(TestTable.createTableDef(nonEditableTableName, false), viewPortDefFactory, testProviderFactory.providerFactory)
+      .addTableForTest(TestTable.createTableDef(largeTableName, true), viewPortDefFactory, testProviderFactory.largeProviderFactory)
       .addSessionTable(SessionTableDef(
         name = defaultEditTableName,
         keyField = "Id",
-        customColumns = allColumns
+        customColumns = TestTable.columns
       ), viewPortDefFactoryForSessionTable)
       .addSessionTable(SessionTableDef(
         name = defaultImportTableName,
         keyField = "Id",
-        customColumns = allColumns
+        customColumns = TestTable.columns
       ), viewPortDefFactoryForSessionTable)
       .addSessionTable(SessionTableDef(
         name = defaultExportTableName,
         keyField = "Id",
-        customColumns = allColumns
+        customColumns = TestTable.columns
       ), viewPortDefFactoryForSessionTable)
       .addSessionTable(SessionTableDef(
         name = sessionTableName1,
         keyField = "Id",
-        customColumns = allColumns
+        customColumns = TestTable.columns
       ), viewPortDefFactoryForSessionTable)
       .addSessionTable(SessionTableDef(
         name = largeSessionTableDefName,
         keyField = "Id",
-        customColumns = allColumns
+        customColumns = TestTable.columns
       ), viewPortDefFactoryForSessionTable)
       .asModule()
   }
 
   private def createViewPort(tableName: String) = {
-    createViewPortAndVerifyDataSize(tableName, 3)
-  }
-
-  private def createViewPortAndVerifyDataSize(tableName: String, expectedRowCount: Int) = {
-    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(0, 100), columns = Array("*"))
-    vuuClient.send(sessionId, createViewPortRequest)
-    val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
-    val viewPortId = viewPortCreateResponse.get.viewPortId
-    waitForData(viewPortId, expectedRowCount)
-    viewPortId
+    createViewPortAndVerifyDataSize(tableName, moduleName, 3)
   }
 }
 
-class DummyCreateSessionTableRpcHandler()(using rpcPermissionChecker: RpcPermissionChecker, tableContainer: TableContainer) extends CreateSessionTableRpcHandler(rpcPermissionChecker, tableContainer) {}
+// TODO 2231 add tests for end session
+class DummyCreateSessionTableRpcHandler()(override val rpcPermissionChecker: RpcPermissionChecker, override val tableContainer: TableContainer)
+  extends CreateSessionTableRpcHandler {}
 
-class DummyEndEditSessionHandler(implicit tableContainer: TableContainer) extends EndEditSessionRpcHandler {
+class DummyEndSessionHandler(override val tableContainer: TableContainer) extends EndSessionRpcHandler {
 
   override protected def verifyPermission(params: RpcParams): Boolean = ???
 
   override protected def validateData(params: RpcParams): Boolean = ???
 
   override protected def submit(params: RpcParams): Boolean = ???
-}
-
-private object AllDisabledRpcPermissionChecker extends RpcPermissionChecker {
-  override def isRpcAllowed(rpcName: String, vuuUser: VuuUser): Boolean = false
 }

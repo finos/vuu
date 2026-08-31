@@ -8,7 +8,8 @@ import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, RowWithData}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.{EditTableRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
+import org.finos.vuu.net.rpc.sessiontable.EditTableRpcHandler
+import org.finos.vuu.net.rpc.{RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.viewport.ViewPort
 
 class EditTableTestService(val originalData: Map[String, Any]) extends EditTableRpcHandler with StrictLogging {
