@@ -62,3 +62,8 @@ VUU server authenticates server-side through its own **confidential** Keycloak
 client. Permissions are assigned independently for the portal and each remote
 module. `module-admin` shares the portal VUU server, while
 `user-admin` uses its standalone VUU server.
+
+The portal and module-admin logical connections both use
+`wss://localhost:8091/websocket-portal`. User-admin uses
+`wss://localhost:8092/websocket-user-admin`, and basket-trading uses
+`wss://localhost:8093/websocket-basket-trading`.

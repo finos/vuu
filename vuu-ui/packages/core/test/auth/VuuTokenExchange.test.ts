@@ -62,7 +62,7 @@ describe("exchangeVuuToken", () => {
     const moduleAdminTarget = {
       connectionId: "module-admin",
       restUrl: "https://localhost:8443/api/authn/module-admin",
-      websocketUrl: "wss://localhost:8090/websocket",
+      websocketUrl: "wss://localhost:8091/websocket-portal",
     };
     const fetch = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ token }), {
