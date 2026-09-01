@@ -1,6 +1,6 @@
 import { getSchema, LocalDataSourceProvider, simulModule } from "@vuu-ui/vuu-data-test";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
-import { exportCsvTemplate, exportToCsv } from "@vuu-ui/vuu-utils";
+import { exportCsvTemplate, exportToCsv, type ExportColumnDescriptor } from "@vuu-ui/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { Table } from "@vuu-ui/vuu-table";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
@@ -212,5 +212,58 @@ const CsvExportTemplateContent = () => {
 export const CsvExportTemplate = () => (
   <LocalDataSourceProvider>
     <CsvExportTemplateContent />
+  </LocalDataSourceProvider>
+);
+
+const INSTRUMENTS_EXPORT_DESCRIPTORS: ExportColumnDescriptor[] = [
+  { name: "ric",      label: "RIC Code" },
+  { name: "bbg",      label: "Bloomberg" },
+  { name: "currency" },
+  { name: "lotSize",  label: "Lot Size", exportFormatter: (v) => `${v} units` },
+  { name: "isin" },
+];
+
+const CsvExportWithFormattersContent = () => {
+  const [status, setStatus] = useState<string | undefined>();
+
+  const dataSource = useMemo(
+    () => simulModule.createDataSource(TABLE_NAME),
+    [],
+  );
+
+  const handleExport = useCallback(async () => {
+    setStatus(undefined);
+    try {
+      await exportToCsv(
+        dataSource as DataSource,
+        "All",
+        "instruments-formatted.csv",
+        [],
+        (err) => setStatus(`Export failed: ${err.message}`),
+        () => setStatus("Download started"),
+        10_000,
+        INSTRUMENTS_EXPORT_DESCRIPTORS,
+      );
+    } catch (e) {
+      setStatus(`Export failed: ${(e as Error).message}`);
+    }
+  }, [dataSource]);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: 12 }}>
+      <Button onClick={handleExport}>Download instruments-formatted.csv</Button>
+      <p style={{ fontSize: 12, margin: 0, color: "#555" }}>
+        lotSize formatted as "X units"; ric/bbg/lotSize/isin use label overrides in header
+      </p>
+      {status ? (
+        <span style={{ fontSize: 12, fontWeight: 600 }}>{status}</span>
+      ) : null}
+    </div>
+  );
+};
+
+export const CsvExportWithFormatters = () => (
+  <LocalDataSourceProvider>
+    <CsvExportWithFormattersContent />
   </LocalDataSourceProvider>
 );
