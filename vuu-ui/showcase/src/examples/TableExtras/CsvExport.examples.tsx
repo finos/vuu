@@ -216,10 +216,10 @@ export const CsvExportTemplate = () => (
 );
 
 const INSTRUMENTS_EXPORT_DESCRIPTORS: ExportColumnDescriptor[] = [
-  { name: "ric",      label: "RIC Code" },
-  { name: "bbg",      label: "Bloomberg" },
+  { name: "ric", label: "RIC Code" },
+  { name: "bbg", label: "Bloomberg" },
   { name: "currency" },
-  { name: "lotSize",  label: "Lot Size", exportFormatter: (v) => `${v} units` },
+  { name: "lotSize", label: "Lot Size", exportFormatter: (v) => `${v} units` },
   { name: "isin" },
 ];
 
