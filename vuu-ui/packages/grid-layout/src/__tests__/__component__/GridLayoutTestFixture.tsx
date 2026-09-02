@@ -16,12 +16,20 @@ export type GridLayoutFixtureVariant =
   | "irregular-removal"
   | "mixed-resizable-boundary"
   | "nested"
+  | "nested-palette"
+  | "nested-palette-tabs"
   | "non-resizable"
   | "palette"
+  | "palette-target"
+  | "proportional"
+  | "proportional-coupled"
+  | "proportional-minimums"
+  | "proportional-unequal"
   | "resizable"
   | "resizable-vertical"
   | "split-constraints"
-  | "stacked";
+  | "stacked"
+  | "stacked-target";
 
 const itemStyle = {
   alignItems: "center",
@@ -42,20 +50,21 @@ const TemplatePalette = () => {
     (event: DragEvent<Element>): TemplateSource => {
       const element = queryClosest(
         event.target,
-        "[data-testid='palette-item']",
+        "[data-testid^='palette-item-']",
       );
       if (!element) {
         throw Error("TemplatePalette drag source not found");
       }
       const layout = queryClosest(element, ".vuuGridLayout", true);
+      const label = element.dataset.label ?? "Template";
       return {
         componentJson: JSON.stringify({
-          label: "Template",
-          props: { "data-testid": "template-content", children: "Template" },
+          label,
+          props: { "data-testid": "template-content", children: label },
           type: "div",
         }),
         element,
-        label: "Template",
+        label,
         layoutId: layout.id,
         type: "template",
       };
@@ -65,9 +74,20 @@ const TemplatePalette = () => {
   const draggable = useDraggable({ getDragSource, onDragStart });
 
   return (
-    <button data-testid="palette-item" draggable type="button" {...draggable}>
-      Template
-    </button>
+    <>
+      {["Template A", "Template B"].map((label, index) => (
+        <button
+          data-label={label}
+          data-testid={`palette-item-${index + 1}`}
+          draggable
+          key={label}
+          type="button"
+          {...draggable}
+        >
+          {label}
+        </button>
+      ))}
+    </>
   );
 };
 
@@ -110,6 +130,29 @@ const PaletteLayout = () => (
   >
     <GridLayoutItem id="palette" style={{ gridArea: "1/1/2/2" }}>
       <TemplatePalette />
+    </GridLayoutItem>
+  </GridLayout>
+);
+
+const PaletteTargetLayout = () => (
+  <GridLayout
+    colsAndRows={{ cols: ["160px", "1fr"], rows: ["1fr"] }}
+    data-testid="grid-layout"
+    id="ct-grid"
+    style={{ height: 320, width: 640 }}
+  >
+    <GridLayoutItem id="palette" style={{ gridArea: "1/1/2/2" }}>
+      <TemplatePalette />
+    </GridLayoutItem>
+    <GridLayoutItem
+      data-drop-target
+      header
+      id="palette-target"
+      resizeable="hv"
+      style={{ gridArea: "1/2/2/3" }}
+      title="Drop target"
+    >
+      <TestContent label="Drop target" />
     </GridLayoutItem>
   </GridLayout>
 );
@@ -192,6 +235,105 @@ const VerticalResizableLayout = () => (
       resizeable="v"
       style={{ gridArea: "2/1/3/2" }}
       title="Bottom"
+    >
+      <TestContent label="Bottom" />
+    </GridLayoutItem>
+  </GridLayout>
+);
+
+const ProportionalLayout = ({
+  constrained = false,
+  unequal = false,
+}: {
+  constrained?: boolean;
+  unequal?: boolean;
+}) => (
+  <GridLayout
+    colsAndRows={{
+      cols: ["1fr", "1fr"],
+      rows: unequal ? ["1fr", "1fr", "2fr"] : ["1fr", "1fr", "1fr"],
+    }}
+    data-testid="grid-layout"
+    id="ct-grid"
+    rowResizeDistribution="proportional"
+    style={{ height: 600, width: 640 }}
+  >
+    <GridLayoutItem
+      id="proportional-header"
+      resizeable="v"
+      style={{ gridArea: "1/1/2/3" }}
+    >
+      <TestContent label="Header" />
+    </GridLayoutItem>
+    <GridLayoutItem
+      id="proportional-middle"
+      minHeight={constrained ? 160 : undefined}
+      resizeable="v"
+      style={{ gridArea: "2/1/3/2" }}
+    >
+      <TestContent label="Middle" />
+    </GridLayoutItem>
+    <GridLayoutItem
+      id="proportional-bottom"
+      resizeable="v"
+      style={{ gridArea: "3/1/4/2" }}
+    >
+      <TestContent label="Bottom" />
+    </GridLayoutItem>
+    <GridLayoutItem
+      id="proportional-span"
+      resizeable="v"
+      style={{ gridArea: "2/2/4/3" }}
+    >
+      <TestContent label="Span" />
+    </GridLayoutItem>
+  </GridLayout>
+);
+
+const CoupledProportionalLayout = () => (
+  <GridLayout
+    colsAndRows={{
+      cols: ["1fr", "1fr"],
+      rows: ["100px", "100px", "100px", "100px"],
+    }}
+    data-testid="grid-layout"
+    id="ct-grid"
+    rowResizeDistribution="proportional"
+    style={{ height: 400, width: 640 }}
+  >
+    <GridLayoutItem
+      id="coupled-before"
+      resizeable="v"
+      style={{ gridArea: "1/1/3/2" }}
+    >
+      <TestContent label="Before" />
+    </GridLayoutItem>
+    <GridLayoutItem
+      id="coupled-after"
+      resizeable="v"
+      style={{ gridArea: "3/1/5/2" }}
+    >
+      <TestContent label="After" />
+    </GridLayoutItem>
+    <GridLayoutItem
+      id="coupled-top"
+      resizeable="v"
+      style={{ gridArea: "1/2/2/3" }}
+    >
+      <TestContent label="Top" />
+    </GridLayoutItem>
+    <GridLayoutItem
+      id="coupled-crossing"
+      minHeight={190}
+      resizeable="v"
+      style={{ gridArea: "2/2/4/3" }}
+    >
+      <TestContent label="Crossing" />
+    </GridLayoutItem>
+    <GridLayoutItem
+      id="coupled-bottom"
+      resizeable="v"
+      style={{ gridArea: "4/2/5/3" }}
     >
       <TestContent label="Bottom" />
     </GridLayoutItem>
@@ -317,6 +459,47 @@ const StackedLayout = () => (
   </GridLayout>
 );
 
+const StackedTargetLayout = () => (
+  <GridLayout
+    colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr"] }}
+    data-testid="grid-layout"
+    id="ct-grid"
+    style={{ height: 320, width: 640 }}
+  >
+    <GridLayoutStackedItem id="main-tabs" style={{ gridArea: "1/1/2/2" }} />
+    <GridLayoutItem
+      contentVisible
+      data-drop-target
+      id="alpha"
+      stackId="main-tabs"
+      style={{ gridArea: "1/1/2/2" }}
+      title="Alpha"
+    >
+      <TestContent label="Alpha" />
+    </GridLayoutItem>
+    <GridLayoutItem
+      contentVisible={false}
+      data-drop-target
+      id="beta"
+      stackId="main-tabs"
+      style={{ gridArea: "1/1/2/2" }}
+      title="Beta"
+    >
+      <TestContent label="Beta" />
+    </GridLayoutItem>
+    <GridLayoutItem
+      data-drop-target
+      header
+      id="target"
+      resizeable="hv"
+      style={{ gridArea: "1/2/2/3" }}
+      title="Target"
+    >
+      <TestContent label="Target" />
+    </GridLayoutItem>
+  </GridLayout>
+);
+
 const NestedLayout = () => (
   <GridLayout
     colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr"] }}
@@ -373,6 +556,120 @@ const NestedLayout = () => (
   </GridLayout>
 );
 
+const NestedPaletteLayout = () => (
+  <GridLayout
+    colsAndRows={{ cols: ["160px", "1fr"], rows: ["1fr"] }}
+    data-testid="grid-layout"
+    id="parent-grid"
+    style={{ height: 320, width: 640 }}
+  >
+    <GridLayoutItem id="palette" style={{ gridArea: "1/1/2/2" }}>
+      <TemplatePalette />
+    </GridLayoutItem>
+    <GridLayoutItem id="nested-owner" style={{ gridArea: "1/2/2/3" }}>
+      <GridLayout
+        colsAndRows={{ cols: ["1fr"], rows: ["1fr", "1fr"] }}
+        data-testid="nested-grid"
+        id="nested-grid"
+        style={{ height: "100%", width: "100%" }}
+      >
+        <GridLayoutItem
+          data-drop-target
+          header
+          id="nested-target"
+          resizeable="hv"
+          style={{ gridArea: "1/1/2/2" }}
+          title="Nested target"
+        >
+          <TestContent label="Nested target" />
+        </GridLayoutItem>
+        <GridLayoutStackedItem
+          id="nested-tabs"
+          style={{ gridArea: "2/1/3/2" }}
+        />
+        <GridLayoutItem
+          contentVisible
+          data-drop-target
+          id="nested-alpha"
+          stackId="nested-tabs"
+          style={{ gridArea: "2/1/3/2" }}
+          title="Nested Alpha"
+        >
+          <TestContent label="Nested Alpha" />
+        </GridLayoutItem>
+        <GridLayoutItem
+          contentVisible={false}
+          data-drop-target
+          id="nested-beta"
+          stackId="nested-tabs"
+          style={{ gridArea: "2/1/3/2" }}
+          title="Nested Beta"
+        >
+          <TestContent label="Nested Beta" />
+        </GridLayoutItem>
+      </GridLayout>
+    </GridLayoutItem>
+  </GridLayout>
+);
+
+const NestedPaletteTabsLayout = () => (
+  <GridLayout
+    colsAndRows={{ cols: ["160px", "1fr"], rows: ["1fr"] }}
+    data-testid="grid-layout"
+    id="parent-grid"
+    style={{ height: 320, width: 640 }}
+  >
+    <GridLayoutItem id="palette" style={{ gridArea: "1/1/2/2" }}>
+      <TemplatePalette />
+    </GridLayoutItem>
+    <GridLayoutStackedItem id="layout-tabs" style={{ gridArea: "1/2/2/3" }} />
+    <GridLayoutItem
+      contentVisible
+      id="brown-layout-owner"
+      stackId="layout-tabs"
+      style={{ gridArea: "1/2/2/3" }}
+      title="Brown Layout"
+    >
+      <GridLayout
+        colsAndRows={{ cols: ["1fr"], rows: ["1fr"] }}
+        id="brown-layout"
+        style={{ height: "100%", width: "100%" }}
+      >
+        <GridLayoutItem
+          data-drop-target
+          id="brown"
+          resizeable="hv"
+          style={{ gridArea: "1/1/2/2" }}
+        >
+          <TestContent label="Brown" />
+        </GridLayoutItem>
+      </GridLayout>
+    </GridLayoutItem>
+    <GridLayoutItem
+      contentVisible={false}
+      id="navy-layout-owner"
+      stackId="layout-tabs"
+      style={{ gridArea: "1/2/2/3" }}
+      title="Navy Layout"
+    >
+      <GridLayout
+        colsAndRows={{ cols: ["1fr"], rows: ["1fr"] }}
+        id="navy-layout"
+        style={{ height: "100%", width: "100%" }}
+      >
+        <GridLayoutItem
+          data-drop-target
+          id="navy"
+          resizeable="hv"
+          style={{ gridArea: "1/1/2/2" }}
+        >
+          <TestContent label="Navy" />
+        </GridLayoutItem>
+      </GridLayout>
+    </GridLayoutItem>
+  </GridLayout>
+);
+
 export const GridLayoutTestFixture = ({
   variant,
 }: {
@@ -385,11 +682,21 @@ export const GridLayoutTestFixture = ({
       <MixedResizableBoundaryLayout />
     ) : null}
     {variant === "nested" ? <NestedLayout /> : null}
+    {variant === "nested-palette" ? <NestedPaletteLayout /> : null}
+    {variant === "nested-palette-tabs" ? <NestedPaletteTabsLayout /> : null}
     {variant === "non-resizable" ? <NonResizableLayout /> : null}
     {variant === "palette" ? <PaletteLayout /> : null}
+    {variant === "palette-target" ? <PaletteTargetLayout /> : null}
+    {variant === "proportional" ? <ProportionalLayout /> : null}
+    {variant === "proportional-coupled" ? <CoupledProportionalLayout /> : null}
+    {variant === "proportional-minimums" ? (
+      <ProportionalLayout constrained />
+    ) : null}
+    {variant === "proportional-unequal" ? <ProportionalLayout unequal /> : null}
     {variant === "resizable" ? <ResizableLayout /> : null}
     {variant === "resizable-vertical" ? <VerticalResizableLayout /> : null}
     {variant === "split-constraints" ? <SplitConstraintsLayout /> : null}
     {variant === "stacked" ? <StackedLayout /> : null}
+    {variant === "stacked-target" ? <StackedTargetLayout /> : null}
   </GridLayoutProvider>
 );

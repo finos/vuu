@@ -178,6 +178,7 @@ export const ShowCaseLayoutNestedGrid = () => {
               <GridLayoutItem
                 data-drop-target
                 id="navy"
+                resizeable="hv"
                 style={{
                   gridArea: "1/1/2/2",
                 }}
@@ -207,6 +208,7 @@ export const ShowCaseLayoutNestedGrid = () => {
               <GridLayoutItem
                 data-drop-target
                 id="gray"
+                resizeable="hv"
                 style={{
                   gridArea: "1/1/2/2",
                 }}
@@ -236,6 +238,7 @@ export const ShowCaseLayoutNestedGrid = () => {
               <GridLayoutItem
                 data-drop-target
                 id="black"
+                resizeable="hv"
                 style={{
                   gridArea: "1/1/2/2",
                 }}

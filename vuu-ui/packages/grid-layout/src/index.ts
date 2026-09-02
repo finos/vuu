@@ -3,7 +3,7 @@ export type {
   DropHandler,
 } from "./drag-drop-next/DragContextNext";
 export { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
-export { GridLayout } from "./GridLayout";
+export { GridLayout, type GridResizeDistribution } from "./GridLayout";
 export {
   useGridLayoutDispatch,
   useGridLayoutDragStartHandler,

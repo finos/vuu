@@ -108,6 +108,140 @@ test.describe("GridLayout browser interactions", () => {
     );
   });
 
+  test("a cancelled tab drag leaves the tabstrip interactive", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "stacked" });
+    await page.clock.install();
+
+    const alphaTab = component.getByRole("tab", { name: "Alpha" });
+    const draggableTab = alphaTab.locator(
+      "xpath=ancestor::*[contains(concat(' ', normalize-space(@class), ' '), ' vuuDraggableItem ')][1]",
+    );
+    const tabList = component.getByRole("tablist");
+    const dataTransfer = await page.evaluateHandle(() => new DataTransfer());
+
+    await draggableTab.dispatchEvent("dragstart", { dataTransfer });
+    await draggableTab.dispatchEvent("dragend", { dataTransfer });
+    await page.clock.fastForward(100);
+
+    await expect(draggableTab).not.toHaveClass(/vuuDraggableItem-hidden/);
+    await expect(tabList).not.toHaveClass(/vuuDragContainer-dragging/);
+    await expect(alphaTab).toHaveAttribute("aria-selected", "true");
+    await expect(component.getByTestId("content-alpha")).toBeVisible();
+
+    const committedDataTransfer = await page.evaluateHandle(
+      () => new DataTransfer(),
+    );
+    await draggableTab.dispatchEvent("dragstart", {
+      dataTransfer: committedDataTransfer,
+    });
+    await page.clock.fastForward(100);
+    await expect(draggableTab).toHaveClass(/vuuDraggableItem-hidden/);
+
+    await draggableTab.dispatchEvent("dragend", {
+      dataTransfer: committedDataTransfer,
+    });
+    await expect(draggableTab).not.toHaveClass(/vuuDraggableItem-hidden/);
+    await expect(tabList).not.toHaveClass(/vuuDragContainer-dragging/);
+    await expect(alphaTab).toHaveAttribute("aria-selected", "true");
+    await expect(component.getByTestId("content-alpha")).toBeVisible();
+
+    await component.getByRole("tab", { name: "Beta" }).click();
+    await expect(component.getByTestId("content-beta")).toBeVisible();
+  });
+
+  test("quick tab selection movements do not start or reorder a drag", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "stacked" });
+    const tabs = component.getByRole("tab");
+    const tabList = component.getByRole("tablist");
+    const labelsBefore = await tabs.allTextContents();
+
+    const betaTab = component.getByRole("tab", { name: "Beta" });
+    const box = await betaTab.boundingBox();
+    if (!box) {
+      throw Error("Expected Beta tab to have a bounding box");
+    }
+
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 10, box.y + box.height / 2, {
+      steps: 10,
+    });
+    await page.mouse.up();
+
+    await expect(betaTab).toHaveAttribute("aria-selected", "true");
+    expect(await tabs.allTextContents()).toEqual(labelsBefore);
+    await expect(tabList).not.toHaveClass(/vuuDragContainer-dragging/);
+    await expect(component.locator(".vuuDraggableItem-hidden")).toHaveCount(0);
+  });
+
+  test("pressing before movement still starts an intentional tab drag", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "stacked" });
+    const alphaTab = component.getByRole("tab", { name: "Alpha" });
+    const tabList = component.getByRole("tablist");
+    const box = await alphaTab.boundingBox();
+    if (!box) {
+      throw Error("Expected Alpha tab to have a bounding box");
+    }
+
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(175);
+    await page.mouse.move(box.x + box.width / 2 + 10, box.y + box.height / 2, {
+      steps: 10,
+    });
+
+    await expect(tabList).toHaveClass(/vuuDragContainer-dragging/);
+    await page.mouse.up();
+    await expect(tabList).not.toHaveClass(/vuuDragContainer-dragging/);
+    await expect(alphaTab).toHaveAttribute("aria-selected", "true");
+  });
+
+  test("a fast tab drop completes before delayed drag styling", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "stacked-target" });
+    const sourceTab = component
+      .getByRole("tab", { name: "Alpha" })
+      .locator(
+        "xpath=ancestor::*[contains(concat(' ', normalize-space(@class), ' '), ' vuuDraggableItem ')][1]",
+      );
+    const target = component.getByTestId("content-target");
+    const dataTransfer = await page.evaluateHandle(() => new DataTransfer());
+    const { clientX, clientY } = await target.evaluate((element) => {
+      const box = element.getBoundingClientRect();
+      return {
+        clientX: box.x + box.width / 2,
+        clientY: box.y + box.height * 0.1,
+      };
+    });
+    const dragEvent = { clientX, clientY, dataTransfer };
+
+    await sourceTab.dispatchEvent("dragstart", { dataTransfer });
+    await target.dispatchEvent("dragenter", dragEvent);
+    await target.dispatchEvent("dragover", dragEvent);
+    await target.dispatchEvent("dragover", dragEvent);
+    await target.dispatchEvent("drop", dragEvent);
+    await component.dispatchEvent("dragend", dragEvent);
+
+    await expect(component.getByTestId("content-alpha")).toBeVisible();
+    await expect(component.getByTestId("content-target")).toBeVisible();
+    await expect(component.getByRole("tab", { name: "Alpha" })).toHaveCount(0);
+    await expect(component.locator(".vuuDraggableItem-hidden")).toHaveCount(0);
+    await expect(component.locator(".vuuDragContainer-dragging")).toHaveCount(
+      0,
+    );
+  });
+
   test("close removes a component and reflows the remaining item", async ({
     mount,
     page,
@@ -170,6 +304,142 @@ test.describe("GridLayout browser interactions", () => {
     const content = await grid.item("content").boundingBox();
     expect((nav?.width ?? 0) - (before?.width ?? 0)).toBeGreaterThan(30);
     expect(toolbar?.x).toBeCloseTo(content?.x ?? 0, 0);
+  });
+
+  test("positions a vertical splitter below an intersecting horizontal splitter", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      "GridLayout/GridLayoutScenarios/MixedRowAndColumnSpans",
+    );
+    const grid = new GridLayoutDriver(component, page);
+    const horizontal = await grid
+      .item("span-left-top-splitter-v")
+      .boundingBox();
+    const verticalSplitter = grid.item("span-right-splitter-h");
+    const vertical = await verticalSplitter.boundingBox();
+    const verticalGrabZone = await verticalSplitter
+      .locator(".vuu-grab-zone")
+      .boundingBox();
+    const horizontalEnd = (horizontal?.y ?? 0) + (horizontal?.height ?? 0);
+
+    expect(vertical?.y).toBeGreaterThanOrEqual(horizontalEnd);
+    expect(verticalGrabZone?.y).toBeGreaterThanOrEqual(horizontalEnd);
+  });
+
+  test("proportional row resize keeps equal lower rows equal", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "proportional" });
+    const grid = new GridLayoutDriver(component, page);
+    const splitter = grid.item("proportional-middle-splitter-v");
+    const headerBefore = await grid.item("proportional-header").boundingBox();
+    const topBefore = await grid.item("proportional-middle").boundingBox();
+    const bottomBefore = await grid.item("proportional-bottom").boundingBox();
+
+    await grid.resize(splitter, 0, 60);
+
+    const headerAfter = await grid.item("proportional-header").boundingBox();
+    const topAfter = await grid.item("proportional-middle").boundingBox();
+    const bottomAfter = await grid.item("proportional-bottom").boundingBox();
+    const topReduction = (topBefore?.height ?? 0) - (topAfter?.height ?? 0);
+    const bottomReduction =
+      (bottomBefore?.height ?? 0) - (bottomAfter?.height ?? 0);
+    expect(
+      (headerAfter?.height ?? 0) - (headerBefore?.height ?? 0),
+    ).toBeCloseTo(60, 0);
+    expect(topReduction).toBeGreaterThan(25);
+    expect(bottomReduction).toBeCloseTo(topReduction, 0);
+  });
+
+  test("proportional row resize preserves unequal lower-row ratios", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, {
+      variant: "proportional-unequal",
+    });
+    const grid = new GridLayoutDriver(component, page);
+    const topBefore = await grid.item("proportional-middle").boundingBox();
+    const bottomBefore = await grid.item("proportional-bottom").boundingBox();
+
+    await grid.resize(grid.item("proportional-middle-splitter-v"), 0, 60);
+
+    const top = await grid.item("proportional-middle").boundingBox();
+    const bottom = await grid.item("proportional-bottom").boundingBox();
+    const ratioBefore = (bottomBefore?.height ?? 0) / (topBefore?.height ?? 1);
+    expect((bottom?.height ?? 0) / (top?.height ?? 1)).toBeCloseTo(
+      ratioBefore,
+      1,
+    );
+  });
+
+  test("proportional row resize redistributes contraction at a track minimum", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, {
+      variant: "proportional-minimums",
+    });
+    const grid = new GridLayoutDriver(component, page);
+    const middleBefore = await grid.item("proportional-middle").boundingBox();
+    const bottomBefore = await grid.item("proportional-bottom").boundingBox();
+
+    await grid.resize(grid.item("proportional-middle-splitter-v"), 0, 100);
+
+    const middle = await grid.item("proportional-middle").boundingBox();
+    const bottom = await grid.item("proportional-bottom").boundingBox();
+    expect(middle?.height).toBeCloseTo(160, 0);
+    const middleReduction = (middleBefore?.height ?? 0) - (middle?.height ?? 0);
+    const bottomReduction = (bottomBefore?.height ?? 0) - (bottom?.height ?? 0);
+    expect(bottomReduction).toBeGreaterThan(middleReduction + 20);
+  });
+
+  test("proportional row resize restores initial ratios when the pointer returns", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, {
+      variant: "proportional-minimums",
+    });
+    const grid = new GridLayoutDriver(component, page);
+    const middleBefore = await grid.item("proportional-middle").boundingBox();
+    const bottomBefore = await grid.item("proportional-bottom").boundingBox();
+
+    await grid.resizeAndReturn(
+      grid.item("proportional-middle-splitter-v"),
+      0,
+      100,
+    );
+
+    const middle = await grid.item("proportional-middle").boundingBox();
+    const bottom = await grid.item("proportional-bottom").boundingBox();
+    expect(middle?.height).toBeCloseTo(middleBefore?.height ?? 0, 0);
+    expect(bottom?.height).toBeCloseTo(bottomBefore?.height ?? 0, 0);
+  });
+
+  test("coupled cross-boundary spans retain safe adjacent resizing", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, {
+      variant: "proportional-coupled",
+    });
+    const grid = new GridLayoutDriver(component, page);
+    const crossingBefore = await grid.item("coupled-crossing").boundingBox();
+    const before = await grid.item("coupled-before").boundingBox();
+
+    await grid.resize(grid.item("coupled-after-splitter-v"), 0, 60);
+
+    const crossing = await grid.item("coupled-crossing").boundingBox();
+    const resizedBefore = await grid.item("coupled-before").boundingBox();
+    expect(crossing?.height).toBeCloseTo(crossingBefore?.height ?? 0, 0);
+    expect((resizedBefore?.height ?? 0) - (before?.height ?? 0)).toBeCloseTo(
+      60,
+      0,
+    );
   });
 
   test("splitter stops at explicit and default minimum widths with fractional tracks", async ({
@@ -262,6 +532,166 @@ test.describe("GridLayout browser interactions", () => {
     const nestedOne = await grid.item("nested-one").boundingBox();
     const nestedTwo = await grid.item("nested-two").boundingBox();
     expect(nestedOne?.y).toBeGreaterThan(nestedTwo?.y ?? 0);
+  });
+
+  test("drops a parent palette template into nested grid content", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "nested-palette" });
+    const grid = new GridLayoutDriver(component, page);
+
+    await grid.dragTemplate(
+      component.getByTestId("palette-item-1"),
+      grid.content("nested-target"),
+      "north",
+    );
+
+    const templateItem = component
+      .locator(".vuuGridLayoutItemHeader-title", {
+        hasText: /^Template A$/,
+      })
+      .locator("xpath=../..");
+    await expect(templateItem).toHaveCount(1);
+    await expect(templateItem).toBeVisible();
+    await expect(
+      templateItem.locator(
+        "xpath=ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' vuuGridLayout ')][1]",
+      ),
+    ).toHaveAttribute("id", "nested-grid");
+    expect(await grid.gridArea("nested-owner")).toBe("1/2/2/3");
+    await expect(component.locator(".vuuGridPlaceholder")).toHaveCount(0);
+  });
+
+  test("drops a parent palette template into a nested tabstrip", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "nested-palette" });
+    const grid = new GridLayoutDriver(component, page);
+
+    await grid.dragTemplateToTabs(
+      component.getByTestId("palette-item-2"),
+      component.getByRole("tablist"),
+    );
+
+    await expect(component.getByRole("tab")).toHaveCount(3);
+    await expect(
+      component.getByRole("tab", { name: "Template B" }),
+    ).toHaveAttribute("aria-selected", "true");
+    await expect(
+      component.locator('[data-testid="template-content"]', {
+        hasText: "Template B",
+      }),
+    ).toBeVisible();
+    await expect(component.locator(".vuuGridPlaceholder")).toHaveCount(0);
+  });
+
+  test("drops a palette template after selecting a hidden nested layout tab", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, {
+      variant: "nested-palette-tabs",
+    });
+    const grid = new GridLayoutDriver(component, page);
+
+    await component.getByRole("tab", { name: "Navy Layout" }).click();
+    await expect(grid.item("navy")).toBeVisible();
+
+    await grid.dragTemplate(
+      component.getByTestId("palette-item-1"),
+      grid.content("navy"),
+      "north",
+    );
+
+    const templateItem = component
+      .locator(".vuuGridLayoutItemHeader-title", {
+        hasText: /^Template A$/,
+      })
+      .locator("xpath=../..");
+    await expect(templateItem).toHaveCount(1);
+    await expect(templateItem).toBeVisible();
+    await expect(
+      templateItem.locator(
+        "xpath=ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' vuuGridLayout ')][1]",
+      ),
+    ).toHaveAttribute("id", "navy-layout");
+    await expect(component.getByRole("tab")).toHaveCount(2);
+    await component.getByRole("tab", { name: "Brown Layout" }).click();
+    await expect(grid.item("brown")).toBeVisible();
+  });
+
+  test("palette item closes and reflows before the next split", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "palette-target" });
+    const grid = new GridLayoutDriver(component, page);
+
+    await grid.dragTemplate(
+      component.getByTestId("palette-item-1"),
+      grid.content("palette-target"),
+      "north",
+    );
+    const firstTemplate = component
+      .locator(".vuuGridLayoutItemHeader-title", { hasText: /^Template A$/ })
+      .locator("xpath=../..");
+    await firstTemplate.locator(".vuuGridLayoutItemHeader-close").click();
+
+    await expect(firstTemplate).toHaveCount(0);
+    expect(await grid.gridArea("palette-target")).toBe("1/2/2/3");
+
+    await grid.dragTemplate(
+      component.getByTestId("palette-item-2"),
+      grid.content("palette-target"),
+      "west",
+    );
+    const secondTemplate = component
+      .locator(".vuuGridLayoutItemHeader-title", { hasText: /^Template B$/ })
+      .locator("xpath=../..");
+    const secondTemplateId = await secondTemplate.getAttribute("id");
+    if (!secondTemplateId) {
+      throw Error("Palette-created item has no id");
+    }
+    expect(await grid.gridArea(secondTemplateId)).toBe("1/2/2/3");
+    expect(await grid.gridArea("palette-target")).toBe("1/3/2/4");
+    await expect(component.locator(".vuuGridPlaceholder")).toHaveCount(0);
+  });
+
+  test("palette header and tab-list drops select the new tabs", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "palette-target" });
+    const grid = new GridLayoutDriver(component, page);
+
+    await grid.dragTemplate(
+      component.getByTestId("palette-item-1"),
+      grid.item("palette-target").locator(".vuuGridLayoutItemHeader"),
+      "header",
+    );
+
+    const tabs = component.getByRole("tab");
+    await expect(tabs).toHaveCount(2);
+    await expect(
+      component.getByRole("tab", { name: "Template A" }),
+    ).toHaveAttribute("aria-selected", "true");
+
+    await grid.dragTemplateToTabs(
+      component.getByTestId("palette-item-2"),
+      component.getByRole("tablist"),
+    );
+
+    await expect(tabs).toHaveCount(3);
+    await expect(
+      component.getByRole("tab", { name: "Template B" }),
+    ).toHaveAttribute("aria-selected", "true");
+    await expect(
+      component.locator('[data-testid="template-content"]', {
+        hasText: "Template B",
+      }),
+    ).toBeVisible();
   });
 
   test.fixme("palette template drop onto an empty placeholder", async () => {

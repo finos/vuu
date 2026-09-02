@@ -3,13 +3,17 @@ import { useIdMemo } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { CSSProperties, HTMLAttributes, ReactElement } from "react";
+import type { CSSProperties, HTMLAttributes, ReactElement } from "react";
 import { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
 import { getGridArea } from "./grid-layout-utils";
 import { GridLayoutContext } from "./GridLayoutContext";
-import { GridLayoutItemProps } from "./GridLayoutItem";
+import type { GridLayoutItemProps } from "./GridLayoutItem";
 import { GridLayoutStackedItem } from "./GridLayoutStackedtem";
-import { GridColumnsAndRows, GridLayoutChangeHandler } from "./GridModel";
+import type {
+  GridColumnsAndRows,
+  GridLayoutChangeHandler,
+  ISplitter,
+} from "./GridModel";
 import { GridPlaceholder } from "./GridPlaceholder";
 import { useGridLayout } from "./useGridLayout";
 import { useGridSplitterResizing } from "./useGridSplitterResizing";
@@ -19,7 +23,21 @@ import gridLayoutCss from "./GridLayout.css";
 
 const classBase = "vuuGridLayout";
 
+const startsAtHorizontalSplitter = (
+  splitter: ISplitter,
+  splitters: ISplitter[],
+) =>
+  splitter.ariaOrientation === "vertical" &&
+  splitters.some(
+    (candidate) =>
+      candidate.ariaOrientation === "horizontal" &&
+      candidate.row.start === splitter.row.start &&
+      candidate.column.start <= splitter.column.start &&
+      candidate.column.end > splitter.column.start,
+  );
+
 export type GridResizeable = "h" | "v" | "hv";
+export type GridResizeDistribution = "adjacent" | "proportional";
 
 export interface GridLayoutProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
@@ -29,6 +47,8 @@ export interface GridLayoutProps
   "full-page"?: boolean;
   colsAndRows?: GridColumnsAndRows;
   onChange?: GridLayoutChangeHandler;
+  /** Coupled boundaries with partial cross-group spans retain adjacent resizing. */
+  rowResizeDistribution?: GridResizeDistribution;
 }
 
 const NO_DRAG_SOURCES = {} as const;
@@ -41,6 +61,7 @@ export const GridLayout = ({
   colsAndRows,
   onClick,
   onChange,
+  rowResizeDistribution = "adjacent",
   style: styleProp,
   ...htmlAttributes
 }: GridLayoutProps) => {
@@ -60,6 +81,7 @@ export const GridLayout = ({
     gridLayoutModel,
     gridModel,
     nonContentGridItems: { placeholders, splitters, stackedItems },
+    onCancelTabDrag,
     onDetachTab,
     onDragEnd,
     onDragStart,
@@ -77,6 +99,7 @@ export const GridLayout = ({
     gridModel,
     id,
     onClick,
+    rowResizeDistribution,
   });
 
   // const splitterProps = useGridSplitter();
@@ -100,6 +123,7 @@ export const GridLayout = ({
     >
       <DragDropProviderNext
         dragSources={NO_DRAG_SOURCES}
+        onCancelTabDrag={onCancelTabDrag}
         onDetachTab={onDetachTab}
         onDrop={onDropStackedItem}
       >
@@ -139,6 +163,7 @@ export const GridLayout = ({
               ariaOrientation={splitter.ariaOrientation}
               id={splitter.id}
               key={splitter.id}
+              offsetStart={startsAtHorizontalSplitter(splitter, splitters)}
               orientation={splitter.orientation}
               style={{
                 gridArea: getGridArea(splitter),

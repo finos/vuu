@@ -1,22 +1,26 @@
-import { MouseEventHandler, useCallback, useRef } from "react";
+import { type MouseEventHandler, useCallback, useRef } from "react";
 import {
   classNameLayoutItem,
   getGridLayoutItem,
   getGridSplitter,
 } from "./grid-dom-utils";
 import { adjustDistance, getTrackType } from "./grid-layout-utils";
-import { GridLayoutProps } from "./GridLayout";
-import {
+import type { GridLayoutProps } from "./GridLayout";
+import type {
   GridLayoutModel,
   GridLayoutResizeOperation,
-  type ResizeState,
+  ResizeState,
 } from "./GridLayoutModel";
-import { DEFAULT_MIN_GRID_ITEM_SIZE, GridModel } from "./GridModel";
+import {
+  DEFAULT_MIN_GRID_ITEM_SIZE,
+  type GridModel,
+  type GridTrackResizeConstraint,
+} from "./GridModel";
 import { queryClosest } from "@vuu-ui/vuu-utils";
 
 export type SplitterResizingHookProps = Pick<
   GridLayoutProps,
-  "id" | "onClick"
+  "id" | "onClick" | "rowResizeDistribution"
 > & {
   gridLayoutModel: GridLayoutModel;
   gridModel: GridModel;
@@ -26,6 +30,7 @@ export const useGridSplitterResizing = ({
   gridLayoutModel: layoutModel,
   gridModel,
   onClick: onClickProp,
+  rowResizeDistribution,
 }: SplitterResizingHookProps) => {
   const resizingState = useRef<ResizeState | undefined>(undefined);
   const splitterRef = useRef<HTMLElement>(undefined);
@@ -56,6 +61,94 @@ export const useGridSplitterResizing = ({
           );
         }),
       );
+    },
+    [gridModel],
+  );
+
+  const getProportionalTrackGroups = useCallback(
+    (splitter: ResizeState["splitter"]) => {
+      const indicesFor = (ids: string[]) => {
+        const items = ids.map((id) => gridModel.getChildItem(id, true));
+        const start = Math.min(...items.map(({ row }) => row.start)) - 1;
+        const end = Math.max(...items.map(({ row }) => row.end)) - 1;
+        return Array.from({ length: end - start }, (_, index) => start + index);
+      };
+      return {
+        after: indicesFor(splitter.resizedChildItems.after),
+        before: indicesFor(splitter.resizedChildItems.before),
+      };
+    },
+    [gridModel],
+  );
+
+  const canResizeGroupsProportionally = useCallback(
+    ({
+      after,
+      before,
+    }: NonNullable<ResizeState["proportionalTrackGroups"]>) => {
+      const allTrackIndices = before.concat(after);
+      return gridModel.childItems.every((item) => {
+        const itemTrackIndices = Array.from(
+          { length: item.row.end - item.row.start },
+          (_, index) => item.row.start - 1 + index,
+        );
+        const crossesBoundary =
+          before.some((index) => itemTrackIndices.includes(index)) &&
+          after.some((index) => itemTrackIndices.includes(index));
+        return (
+          !crossesBoundary ||
+          allTrackIndices.every((index) => itemTrackIndices.includes(index))
+        );
+      });
+    },
+    [gridModel],
+  );
+
+  const getProportionalTrackConstraints = useCallback(
+    (trackIndices: number[], oppositeTrackIndices: number[]) => {
+      gridModel.tracks.measure("row");
+      const tracks = gridModel.tracks.getTracks("row");
+      const groupTrackSet = new Set(trackIndices);
+      const firstTrack = Math.min(...trackIndices);
+      const lastTrack = Math.max(...trackIndices);
+      const constraints: GridTrackResizeConstraint[] = [];
+      for (const item of gridModel.childItems) {
+        if (
+          item.stackId ||
+          item.row.end - 2 < firstTrack ||
+          item.row.start - 1 > lastTrack
+        ) {
+          continue;
+        }
+        const itemTrackIndices = Array.from(
+          { length: item.row.end - item.row.start },
+          (_, index) => item.row.start - 1 + index,
+        );
+        if (
+          trackIndices
+            .concat(oppositeTrackIndices)
+            .every((index) => itemTrackIndices.includes(index))
+        ) {
+          continue;
+        }
+        const overlappingTrackIndices = itemTrackIndices.filter((index) =>
+          groupTrackSet.has(index),
+        );
+        const externalSize = itemTrackIndices
+          .filter((index) => !groupTrackSet.has(index))
+          .reduce((total, index) => total + tracks[index].numericValue, 0);
+        const requiredGroupSize = Math.max(
+          0,
+          (item.minHeight ?? DEFAULT_MIN_GRID_ITEM_SIZE) - externalSize,
+        );
+        if (requiredGroupSize > 0) {
+          constraints.push({
+            minimum: requiredGroupSize,
+            trackIndices: overlappingTrackIndices,
+          });
+        }
+      }
+      return constraints;
     },
     [gridModel],
   );
@@ -137,6 +230,19 @@ export const useGridSplitterResizing = ({
       const directionOfTravel = moveBy < 0 ? "bwd" : "fwd";
 
       if (state) {
+        if (state.proportionalTrackGroups) {
+          state.proportionalMoveBy = (state.proportionalMoveBy ?? 0) + moveBy;
+          gridModel.tracks.resizeGroupsProportionally(
+            "row",
+            state.proportionalTrackGroups.before,
+            state.proportionalTrackGroups.after,
+            state.proportionalMoveBy,
+            state.proportionalTrackConstraints?.before,
+            state.proportionalTrackConstraints?.after,
+            state.proportionalInitialTrackSizes,
+          );
+          return;
+        }
         const { splitter } = state;
         const [contraTrackIndex, resizeTrackIndex] = splitter.resizedGridTracks;
         const trackType =
@@ -229,23 +335,67 @@ export const useGridSplitterResizing = ({
       if (gridLayout.id === gridModel.id) {
         e.preventDefault();
         const splitter = layoutModel.getSplitterById(splitterElement.id);
+        const resizeTrackIsShared = layoutModel.isResizeTrackShared(splitter);
+        const candidateTrackGroups =
+          rowResizeDistribution === "proportional" &&
+          splitter.orientation === "vertical" &&
+          !resizeTrackIsShared
+            ? getProportionalTrackGroups(splitter)
+            : undefined;
+        const proportionalTrackGroups =
+          candidateTrackGroups &&
+          canResizeGroupsProportionally(candidateTrackGroups)
+            ? candidateTrackGroups
+            : undefined;
+        const proportionalTrackConstraints = proportionalTrackGroups
+          ? {
+              after: getProportionalTrackConstraints(
+                proportionalTrackGroups.after,
+                proportionalTrackGroups.before,
+              ),
+              before: getProportionalTrackConstraints(
+                proportionalTrackGroups.before,
+                proportionalTrackGroups.after,
+              ),
+            }
+          : undefined;
         const mousePos =
           splitter.ariaOrientation === "horizontal" ? e.clientY : e.clientX;
-        const beforeAllowance = getResizeAllowance(
-          gridLayout,
-          splitter.resizedChildItems.before,
-          splitter.orientation,
-        );
-        const afterAllowance = getResizeAllowance(
-          gridLayout,
-          splitter.resizedChildItems.after,
-          splitter.orientation,
-        );
+        const beforeAllowance = proportionalTrackGroups
+          ? gridModel.tracks.getProportionalResizeAllowance(
+              "row",
+              proportionalTrackGroups.before,
+              proportionalTrackConstraints?.before ?? [],
+            )
+          : getResizeAllowance(
+              gridLayout,
+              splitter.resizedChildItems.before,
+              splitter.orientation,
+            );
+        const afterAllowance = proportionalTrackGroups
+          ? gridModel.tracks.getProportionalResizeAllowance(
+              "row",
+              proportionalTrackGroups.after,
+              proportionalTrackConstraints?.after ?? [],
+            )
+          : getResizeAllowance(
+              gridLayout,
+              splitter.resizedChildItems.after,
+              splitter.orientation,
+            );
         resizingState.current = {
           maxMousePos: mousePos + afterAllowance,
           minMousePos: mousePos - beforeAllowance,
           mousePos,
-          resizeTrackIsShared: layoutModel.isResizeTrackShared(splitter),
+          proportionalTrackConstraints,
+          proportionalTrackGroups,
+          proportionalInitialTrackSizes: proportionalTrackGroups
+            ? gridModel.tracks
+                .getTracks("row")
+                .map((track) => track.numericValue)
+            : undefined,
+          proportionalMoveBy: proportionalTrackGroups ? 0 : undefined,
+          resizeTrackIsShared,
           splitter,
         };
 
@@ -256,7 +406,17 @@ export const useGridSplitterResizing = ({
         splitterRef.current = splitterElement;
       }
     },
-    [getResizeAllowance, gridModel, layoutModel, mouseMove, mouseUp],
+    [
+      canResizeGroupsProportionally,
+      getProportionalTrackGroups,
+      getProportionalTrackConstraints,
+      getResizeAllowance,
+      gridModel,
+      layoutModel,
+      mouseMove,
+      mouseUp,
+      rowResizeDistribution,
+    ],
   );
 
   const selectedRef = useRef<string>(undefined);

@@ -1,6 +1,7 @@
 import {
   GridLayout,
   type GridLayoutChangeHandler,
+  type GridResizeDistribution,
   GridLayoutItem,
   GridLayoutProvider,
   type TrackSize,
@@ -90,6 +91,7 @@ type ScenarioGridProps = {
   cols: TrackSize[];
   id: string;
   onChange?: GridLayoutChangeHandler;
+  rowResizeDistribution?: GridResizeDistribution;
   rows: TrackSize[];
 };
 
@@ -98,6 +100,7 @@ export const ScenarioGrid = ({
   cols,
   id,
   onChange,
+  rowResizeDistribution,
   rows,
 }: ScenarioGridProps) => (
   <GridLayoutProvider options={{ newChildItem: { header: true } }}>
@@ -105,6 +108,7 @@ export const ScenarioGrid = ({
       colsAndRows={{ cols, rows }}
       id={id}
       onChange={onChange}
+      rowResizeDistribution={rowResizeDistribution}
       style={{ height: "100%", minHeight: 0, width: "100%" }}
     >
       {children}

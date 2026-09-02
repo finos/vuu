@@ -20,6 +20,7 @@ import type {
   GridModel,
   GridModelChildItem,
   GridModelEvents,
+  GridTrackResizeConstraint,
   ISplitter,
 } from "./GridModel";
 
@@ -31,6 +32,16 @@ export type GridLayoutModelPosition = {
 export type ResizeState = {
   maxMousePos: number;
   minMousePos: number;
+  proportionalTrackGroups?: {
+    after: number[];
+    before: number[];
+  };
+  proportionalTrackConstraints?: {
+    after: GridTrackResizeConstraint[];
+    before: GridTrackResizeConstraint[];
+  };
+  proportionalInitialTrackSizes?: number[];
+  proportionalMoveBy?: number;
   resizeTrackIsShared: boolean;
   mousePos: number;
   splitter: ISplitter;
@@ -628,8 +639,8 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
     const track = resizeDirection === "horizontal" ? "column" : "row";
     for (const item of this.gridModel.childItems) {
       const { start, end } = item[track];
-      let startUpdate: Partial<GridLayoutModelPosition> | undefined = undefined;
-      let endUpdate: Partial<GridLayoutModelPosition> | undefined = undefined;
+      let startUpdate: Partial<GridLayoutModelPosition> | undefined;
+      let endUpdate: Partial<GridLayoutModelPosition> | undefined;
 
       if (start > gridPosition) {
         startUpdate = { start: start - 1 };

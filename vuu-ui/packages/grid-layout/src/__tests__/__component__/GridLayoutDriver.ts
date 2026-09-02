@@ -24,7 +24,7 @@ export class GridLayoutDriver {
   ) {}
 
   item(id: string) {
-    return this.root.locator(`#${id}`);
+    return this.root.locator(`[id=${JSON.stringify(id)}]`);
   }
 
   header(id: string) {
@@ -39,8 +39,11 @@ export class GridLayoutDriver {
     return this.root.locator(".vuuGridPlaceholder");
   }
 
-  separator() {
-    return this.root.getByRole("separator");
+  separator(orientation?: "horizontal" | "vertical") {
+    const separators = this.root.getByRole("separator");
+    return orientation
+      ? separators.locator(`[aria-orientation="${orientation}"]`)
+      : separators;
   }
 
   async gridArea(id: string) {
@@ -86,6 +89,76 @@ export class GridLayoutDriver {
     if ((await source.count()) > 0) {
       await source.dispatchEvent("dragend", { dataTransfer });
     }
+    await dataTransfer.dispose();
+  }
+
+  async dragTemplate(source: Locator, target: Locator, zone: DropZone) {
+    const sourceGrid = source.locator(
+      "xpath=ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' vuuGridLayout ')][1]",
+    );
+    const dataTransfer = await this.page.evaluateHandle(
+      () => new DataTransfer(),
+    );
+    await source.dispatchEvent("dragstart", { dataTransfer });
+    await this.waitForClass(sourceGrid, "vuuDragging");
+
+    const position = targetPosition[zone];
+    const { clientX, clientY } = await target.evaluate((element, { x, y }) => {
+      const box = element.getBoundingClientRect();
+      return {
+        clientX: box.x + box.width * x,
+        clientY: box.y + box.height * y,
+      };
+    }, position);
+    const eventInit = { clientX, clientY, dataTransfer };
+    await target.dispatchEvent("dragenter", eventInit);
+    await target.dispatchEvent("dragover", eventInit);
+    await target.dispatchEvent("dragover", eventInit);
+    const dropTargetClass = await target.evaluate((element) =>
+      [...element.classList].find((className) =>
+        className.startsWith("vuuDropTarget-"),
+      ),
+    );
+    if (dropTargetClass !== `vuuDropTarget-${zone}`) {
+      const rect = await target.evaluate((element) => {
+        const { bottom, left, right, top } = element.getBoundingClientRect();
+        return { bottom, left, right, top };
+      });
+      throw Error(
+        `GridLayoutDriver expected vuuDropTarget-${zone}, received ${dropTargetClass}; pointer ${clientX},${clientY}; rect ${JSON.stringify(rect)}`,
+      );
+    }
+    await target.dispatchEvent("drop", eventInit);
+    await source.dispatchEvent("dragend", { dataTransfer });
+    await this.waitForClassRemoval(sourceGrid, "vuuDragging");
+    if ((await target.count()) > 0) {
+      await this.waitForClassPrefixRemoval(target, "vuuDropTarget-");
+    }
+    await dataTransfer.dispose();
+  }
+
+  async dragTemplateToTabs(source: Locator, tabList: Locator) {
+    const sourceGrid = source.locator(
+      "xpath=ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' vuuGridLayout ')][1]",
+    );
+    const dataTransfer = await this.page.evaluateHandle(
+      () => new DataTransfer(),
+    );
+    await source.dispatchEvent("dragstart", { dataTransfer });
+    await this.waitForClass(sourceGrid, "vuuDragging");
+    const { clientX, clientY } = await tabList.evaluate((element) => {
+      const box = element.getBoundingClientRect();
+      return {
+        clientX: box.right - 2,
+        clientY: box.y + box.height / 2,
+      };
+    });
+    const eventInit = { clientX, clientY, dataTransfer };
+    await tabList.dispatchEvent("dragenter", eventInit);
+    await tabList.dispatchEvent("dragover", eventInit);
+    await tabList.dispatchEvent("drop", eventInit);
+    await source.dispatchEvent("dragend", { dataTransfer });
+    await this.waitForClassRemoval(sourceGrid, "vuuDragging");
     await dataTransfer.dispose();
   }
 
@@ -144,6 +217,50 @@ export class GridLayoutDriver {
     }, className);
   }
 
+  private async waitForClassRemoval(locator: Locator, className: string) {
+    await locator.evaluate((element, removedClassName) => {
+      if (!element.classList.contains(removedClassName)) {
+        return;
+      }
+      return new Promise<void>((resolve) => {
+        const observer = new MutationObserver(() => {
+          if (!element.classList.contains(removedClassName)) {
+            observer.disconnect();
+            resolve();
+          }
+        });
+        observer.observe(element, {
+          attributeFilter: ["class"],
+          attributes: true,
+        });
+      });
+    }, className);
+  }
+
+  private async waitForClassPrefixRemoval(locator: Locator, prefix: string) {
+    await locator.evaluate((element, removedPrefix) => {
+      const hasClass = () =>
+        [...element.classList].some((className) =>
+          className.startsWith(removedPrefix),
+        );
+      if (!hasClass()) {
+        return;
+      }
+      return new Promise<void>((resolve) => {
+        const observer = new MutationObserver(() => {
+          if (!hasClass()) {
+            observer.disconnect();
+            resolve();
+          }
+        });
+        observer.observe(element, {
+          attributeFilter: ["class"],
+          attributes: true,
+        });
+      });
+    }, prefix);
+  }
+
   async resize(separator: Locator, deltaX: number, deltaY = 0) {
     const box = await separator.boundingBox();
     if (!box) {
@@ -154,6 +271,20 @@ export class GridLayoutDriver {
     await this.page.mouse.move(x, y);
     await this.page.mouse.down();
     await this.page.mouse.move(x + deltaX, y + deltaY, { steps: 10 });
+    await this.page.mouse.up();
+  }
+
+  async resizeAndReturn(separator: Locator, deltaX: number, deltaY = 0) {
+    const box = await separator.boundingBox();
+    if (!box) {
+      throw Error("GridLayoutDriver separator has no bounding box");
+    }
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    await this.page.mouse.move(x, y);
+    await this.page.mouse.down();
+    await this.page.mouse.move(x + deltaX, y + deltaY, { steps: 10 });
+    await this.page.mouse.move(x, y, { steps: 10 });
     await this.page.mouse.up();
   }
 }

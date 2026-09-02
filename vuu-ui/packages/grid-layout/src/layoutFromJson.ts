@@ -1,6 +1,9 @@
 import { getLayoutComponent, uuid } from "@vuu-ui/vuu-utils";
-import React, { ReactElement } from "react";
-import { LayoutJSON } from "./componentToJson";
+import React, { type ReactElement } from "react";
+import type { LayoutJSON, LayoutJSONChild } from "./componentToJson";
+
+const childFromJson = (child: LayoutJSONChild) =>
+  typeof child === "object" ? layoutFromJson(child) : child;
 
 export function layoutFromJson({
   active,
@@ -8,7 +11,6 @@ export function layoutFromJson({
   type,
   children,
   props,
-  state,
 }: LayoutJSON): ReactElement {
   const componentType = type.match(/^[a-z]/) ? type : getLayoutComponent(type);
 
@@ -18,21 +20,17 @@ export function layoutFromJson({
     );
   }
 
-  if (state) {
-    console.log(`devide how we deal with state`, {
-      state,
-    });
-    //   setPersistentState(id, state);
-  }
-
-  return React.createElement(
-    componentType,
-    {
-      active,
-      id,
-      ...props,
-      key: id,
-    },
-    children ? children.map((child, i) => layoutFromJson(child)) : undefined,
-  );
+  const componentProps = {
+    active,
+    id,
+    ...props,
+    key: id,
+  };
+  return children?.length
+    ? React.createElement(
+        componentType,
+        componentProps,
+        children.map(childFromJson),
+      )
+    : React.createElement(componentType, componentProps);
 }

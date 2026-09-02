@@ -12,6 +12,10 @@ import { GridLayoutItem, GridLayoutItemProps } from "./GridLayoutItem";
 import { layoutToJSON } from "./layoutToJson";
 import { layoutFromJson } from "./layoutFromJson";
 import { LayoutJSON } from "./componentToJson";
+import {
+  TemplateDragSession,
+  TemplateDragSessionContext,
+} from "./drag-drop-next/TemplateDragSession";
 
 export type GridChildElementsChangeHandler = (
   id: string,
@@ -75,6 +79,7 @@ export const GridLayoutProvider = (
   props: GridLayoutProviderProps,
 ): ReactElement => {
   const { children, serializedLayout, options } = props;
+  const templateDragSession = useMemo(() => new TemplateDragSession(), []);
   const [gridLayoutMap, gridChildItemsMap] = useMemo<
     [Map<string, GridLayoutDescriptor>, Map<string, SerializedComponentMap>]
   >(() => {
@@ -165,19 +170,21 @@ export const GridLayoutProvider = (
   );
 
   return (
-    <GridLayoutProviderContext.Provider
-      value={{
-        getChildElements,
-        getSavedGrid,
-        gridChildItemsMap,
-        gridLayoutMap,
-        onChangeChildElements,
-        onChangeLayout,
-        options,
-      }}
-    >
-      {children}
-    </GridLayoutProviderContext.Provider>
+    <TemplateDragSessionContext.Provider value={templateDragSession}>
+      <GridLayoutProviderContext.Provider
+        value={{
+          getChildElements,
+          getSavedGrid,
+          gridChildItemsMap,
+          gridLayoutMap,
+          onChangeChildElements,
+          onChangeLayout,
+          options,
+        }}
+      >
+        {children}
+      </GridLayoutProviderContext.Provider>
+    </TemplateDragSessionContext.Provider>
   );
 };
 

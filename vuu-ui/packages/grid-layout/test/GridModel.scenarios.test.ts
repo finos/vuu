@@ -459,6 +459,120 @@ describe("GridModel declarative layout scenarios", () => {
     expect(model.getSplitters()).toHaveLength(1);
   });
 
+  it("resizes track groups proportionally and redistributes at minimums", () => {
+    const model = new GridModel(
+      "proportional-row-resize",
+      descriptor(["1fr"], ["100px", "100px", "200px"], {
+        header: item("1/1/2/2"),
+        middle: item("2/1/3/2"),
+        bottom: item("3/1/4/2"),
+      }),
+    );
+
+    model.tracks.resizeGroupsProportionally(
+      "row",
+      [0],
+      [1, 2],
+      -120,
+      [{ minimum: 80, trackIndices: [0] }],
+      [
+        { minimum: 80, trackIndices: [1] },
+        { minimum: 80, trackIndices: [2] },
+      ],
+      [100, 100, 200],
+    );
+
+    expect(model.toGridLayoutDescriptor().rows).toEqual([
+      "220px",
+      "80px",
+      "100px",
+    ]);
+
+    model.tracks.resizeGroupsProportionally(
+      "row",
+      [0],
+      [1, 2],
+      0,
+      [{ minimum: 80, trackIndices: [0] }],
+      [
+        { minimum: 80, trackIndices: [1] },
+        { minimum: 80, trackIndices: [2] },
+      ],
+      [100, 100, 200],
+    );
+    expect(model.toGridLayoutDescriptor().rows).toEqual([
+      "100px",
+      "100px",
+      "200px",
+    ]);
+  });
+
+  it("honors aggregate spanning minimums without over-constraining tracks", () => {
+    const model = new GridModel(
+      "proportional-spanning-minimum",
+      descriptor(["1fr"], ["100px", "100px", "100px"]),
+    );
+
+    model.tracks.resizeGroupsProportionally(
+      "row",
+      [0],
+      [1, 2],
+      -40,
+      [],
+      [
+        { minimum: 90, trackIndices: [1] },
+        { minimum: 160, trackIndices: [1, 2] },
+      ],
+    );
+
+    expect(model.toGridLayoutDescriptor().rows).toEqual([
+      "140px",
+      "90px",
+      "70px",
+    ]);
+  });
+
+  it("distributes expansion evenly across a zero-sized track group", () => {
+    const model = new GridModel(
+      "proportional-zero-sized-group",
+      descriptor(["1fr"], ["100px", "0px", "0px"]),
+    );
+
+    model.tracks.resizeGroupsProportionally("row", [0], [1, 2], 20);
+
+    expect(model.toGridLayoutDescriptor().rows).toEqual([
+      "80px",
+      "10px",
+      "10px",
+    ]);
+  });
+
+  it("redistributes through overlapping aggregate minimums", () => {
+    const model = new GridModel(
+      "proportional-overlapping-minimums",
+      descriptor(["1fr"], ["100px", "100px", "100px", "100px"]),
+    );
+
+    model.tracks.resizeGroupsProportionally(
+      "row",
+      [0],
+      [1, 2, 3],
+      -100,
+      [],
+      [
+        { minimum: 150, trackIndices: [1, 2] },
+        { minimum: 150, trackIndices: [2, 3] },
+      ],
+    );
+
+    expect(model.toGridLayoutDescriptor().rows).toEqual([
+      "200px",
+      "50px",
+      "100px",
+      "50px",
+    ]);
+  });
+
   it.todo(
     "treats nested GridLayout component content as opaque because GridModel only owns one grid",
   );

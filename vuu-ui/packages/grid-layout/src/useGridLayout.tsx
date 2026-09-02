@@ -18,6 +18,7 @@ import {
   useState,
 } from "react";
 import {
+  DragContextCancelTabDragHandler,
   DragContextDetachTabHandler,
   DragContextDropHandler,
 } from "./drag-drop-next/DragContextNext";
@@ -129,7 +130,7 @@ export const useGridLayout = ({
       return [reactElements, layoutDescriptor];
     } else {
       throw Error(
-        `[useGridLayout] useMemo no saved grid details available and no layout provided. Either pass layout prop or provide layout using a GridLayoutProvider`,
+        "[useGridLayout] useMemo no saved grid details available and no layout provided. Either pass layout prop or provide layout using a GridLayoutProvider",
       );
     }
   }, [childrenProp, getSavedGrid, id, colsAndRows]);
@@ -378,7 +379,7 @@ export const useGridLayout = ({
             splitters: gridLayoutModel.createSplitters(),
           }));
         }
-        return;
+        return false;
       }
 
       if (sourceIsComponent(dragSource)) {
@@ -417,11 +418,23 @@ export const useGridLayout = ({
           );
         } else if (position === "header") {
           gridModel.stackChildItems(targetId, dragSource.id);
+          const stackId = droppedGridItem.stackId;
+          if (!stackId) {
+            throw Error(
+              `[useGridLayout#${id}] stacked component #${droppedItemId} has no stack id`,
+            );
+          }
+          gridModel
+            .getTabState(stackId)
+            .setActiveTab(droppedGridItem.title ?? dragSource.label);
           gridModel.notifyChange();
         }
       } else if (sourceIsTabbedComponent(dragSource)) {
         // We are dropping a component dragged from a tabstrip and dropping it into
         // a regular grid position (i.e. not into another or same tabstrip)
+        if (!isGridLayoutSplitDirection(position)) {
+          return false;
+        }
 
         const sourceGridItem = gridModel.getChildItem(dragSource.tab.id, true);
 
@@ -433,27 +446,25 @@ export const useGridLayout = ({
         sourceGridItem.contentVisible = true;
         sourceGridItem.contentDetached = undefined;
 
-        if (isGridLayoutSplitDirection(position)) {
-          gridLayoutModel.dropSplitGridItem(
-            dragSource.tab.id,
-            targetId,
-            position,
-          );
+        gridLayoutModel.dropSplitGridItem(
+          dragSource.tab.id,
+          targetId,
+          position,
+        );
 
-          // Important that we defer removing the tab until after the drop
-          // handling. Removing the tab will remove the entire tabstrip if
-          // only one tab remains after removing the dragged tab.
-          const tabState = gridModel.getTabState(dragSource.tabsId);
-          tabState?.removeTab(sourceGridItem.id);
+        // Important that we defer removing the tab until after the drop
+        // handling. Removing the tab will remove the entire tabstrip if
+        // only one tab remains after removing the dragged tab.
+        const tabState = gridModel.getTabState(dragSource.tabsId);
+        tabState?.removeTab(sourceGridItem.id);
 
-          const placeholders = gridModel.getPlaceholders();
-          const splitters = gridLayoutModel.createSplitters();
-          setNonContentGridItems(({ stackedItems }) => ({
-            placeholders,
-            splitters,
-            stackedItems,
-          }));
-        }
+        const placeholders = gridModel.getPlaceholders();
+        const splitters = gridLayoutModel.createSplitters();
+        setNonContentGridItems(({ stackedItems }) => ({
+          placeholders,
+          splitters,
+          stackedItems,
+        }));
       } else if (sourceIsTemplate(dragSource)) {
         // dragging from palette or similar
         const { label = "New Item", ...restJSON } = JSON.parse(
@@ -486,6 +497,13 @@ export const useGridLayout = ({
           gridModel.notifyChange();
         } else if (position === "header") {
           gridModel.stackChildItems(targetItemId, newChildId);
+          const stackId = gridModel.getChildItem(newChildId, true).stackId;
+          if (!stackId) {
+            throw Error(
+              `[useGridLayout#${id}] stacked template #${newChildId} has no stack id`,
+            );
+          }
+          gridModel.getTabState(stackId).setActiveTab(label);
           addChildComponent(component, gridModelChildItem);
           gridModel.notifyChange();
         } else {
@@ -502,6 +520,7 @@ export const useGridLayout = ({
           `[useGridLayout#${id}] unsupported drag source type for GridLayout drop`,
         );
       }
+      return true;
     },
     [
       addChildComponent,
@@ -520,6 +539,15 @@ export const useGridLayout = ({
         if (tabState.activeTab.label === value) {
           tabState.detachTab(value);
         }
+      }
+    },
+    [gridModel, id],
+  );
+
+  const handleCancelTabDrag = useCallback<DragContextCancelTabDragHandler>(
+    ({ gridId, tabsId, value }) => {
+      if (gridId === id) {
+        gridModel.getTabState(tabsId).restoreDetachedTab(value);
       }
     },
     [gridModel, id],
@@ -598,7 +626,7 @@ export const useGridLayout = ({
               stackId: targetStackItemId,
               title: label,
             });
-            gridModel.addChildItem(gridModelChildItem);
+            gridModel.addChildItem(gridModelChildItem, dropPosition);
 
             const component = layoutFromJson(restJSON as LayoutJSON);
             addChildComponent(component, gridModelChildItem);
@@ -777,6 +805,7 @@ export const useGridLayout = ({
     gridLayoutModel,
     gridModel,
     nonContentGridItems,
+    onCancelTabDrag: handleCancelTabDrag,
     onDetachTab: handleDetachTab,
     onDragEnd: handleDragEnd,
     onDragStart: handleDragStart,

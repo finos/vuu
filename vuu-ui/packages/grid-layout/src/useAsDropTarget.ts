@@ -288,11 +288,14 @@ export const useAsDropTarget = () => {
           // this prevents drag-drop-listeners drop firing when tab dragged to another tabstrip
           evt.preventDefault();
           removeDropTargetPositionClassName(dropTarget.target);
-          drop(
+          const dropAccepted = drop(
             dropTarget.gridLayoutItemId,
             dragSource,
             dropTargetStateRef.current.position,
           );
+          if (dropAccepted) {
+            dragContext.completeDrop();
+          }
         }
       }
 
