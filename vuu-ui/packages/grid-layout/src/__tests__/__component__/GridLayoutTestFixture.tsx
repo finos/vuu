@@ -14,6 +14,7 @@ import {
 export type GridLayoutFixtureVariant =
   | "basic"
   | "irregular-removal"
+  | "mixed-resizable-boundary"
   | "nested"
   | "non-resizable"
   | "palette"
@@ -140,6 +141,29 @@ const ResizableLayout = () => (
       title="Flexible"
     >
       <TestContent label="Flexible" />
+    </GridLayoutItem>
+  </GridLayout>
+);
+
+const MixedResizableBoundaryLayout = () => (
+  <GridLayout
+    colsAndRows={{ cols: ["200px", "400px"], rows: ["100px", "200px"] }}
+    data-testid="grid-layout"
+    id="ct-grid"
+    style={{ height: 312, width: 612 }}
+  >
+    <GridLayoutItem id="nav" resizeable="hv" style={{ gridArea: "1/1/3/2" }}>
+      <TestContent label="Nav" />
+    </GridLayoutItem>
+    <GridLayoutItem id="toolbar" resizeable="h" style={{ gridArea: "1/2/2/3" }}>
+      <TestContent label="Toolbar" />
+    </GridLayoutItem>
+    <GridLayoutItem
+      id="content"
+      resizeable={false}
+      style={{ gridArea: "2/2/3/3" }}
+    >
+      <TestContent label="Content" />
     </GridLayoutItem>
   </GridLayout>
 );
@@ -357,6 +381,9 @@ export const GridLayoutTestFixture = ({
   <GridLayoutProvider options={{ newChildItem: { header: true } }}>
     {variant === "basic" ? <BasicLayout /> : null}
     {variant === "irregular-removal" ? <IrregularRemovalLayout /> : null}
+    {variant === "mixed-resizable-boundary" ? (
+      <MixedResizableBoundaryLayout />
+    ) : null}
     {variant === "nested" ? <NestedLayout /> : null}
     {variant === "non-resizable" ? <NonResizableLayout /> : null}
     {variant === "palette" ? <PaletteLayout /> : null}

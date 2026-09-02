@@ -152,6 +152,26 @@ test.describe("GridLayout browser interactions", () => {
     expect(Math.abs((after?.x ?? 0) - (before?.x ?? 0))).toBeGreaterThan(30);
   });
 
+  test("renders a shared splitter when only one track item opts into resizing", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, {
+      variant: "mixed-resizable-boundary",
+    });
+    const grid = new GridLayoutDriver(component, page);
+    const before = await grid.item("nav").boundingBox();
+
+    await expect(grid.separator()).toHaveCount(1);
+    await grid.resize(grid.separator(), 40);
+
+    const nav = await grid.item("nav").boundingBox();
+    const toolbar = await grid.item("toolbar").boundingBox();
+    const content = await grid.item("content").boundingBox();
+    expect((nav?.width ?? 0) - (before?.width ?? 0)).toBeGreaterThan(30);
+    expect(toolbar?.x).toBeCloseTo(content?.x ?? 0, 0);
+  });
+
   test("splitter stops at explicit and default minimum widths with fractional tracks", async ({
     mount,
     page,

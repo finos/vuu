@@ -1666,12 +1666,7 @@ export class GridModel extends EventEmitter<GridModelEvents> {
       const columnContrasAndSiblings =
         this.findColumnContrasAndSiblings(childItem);
 
-      if (
-        columnContrasAndSiblings &&
-        columnContrasAndSiblings.contras
-          .concat(columnContrasAndSiblings.siblings)
-          .every((item) => !isFixedWidthChildItem(item))
-      ) {
+      if (columnContrasAndSiblings) {
         const resizeTrackIndex = column.start - 1;
         const contraTrackIndex = column.start - 2;
 
@@ -1703,12 +1698,7 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     if (!isFixedHeightChildItem(childItem)) {
       const rowContrasAndSiblings = this.findRowContrasAndSiblings(childItem);
 
-      if (
-        rowContrasAndSiblings &&
-        rowContrasAndSiblings.contras
-          .concat(rowContrasAndSiblings.siblings)
-          .every((item) => !isFixedHeightChildItem(item))
-      ) {
+      if (rowContrasAndSiblings) {
         const contraTrackIndex = row.start - 2;
         let resizeTrackIndex = row.start - 1;
 

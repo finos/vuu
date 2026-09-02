@@ -438,6 +438,27 @@ describe("GridModel declarative layout scenarios", () => {
     ).toBe(false);
   });
 
+  it("creates one shared splitter when only one track item opts into resizing", () => {
+    const model = new GridModel(
+      "shared-splitter",
+      descriptor(["200px", "400px"], ["100px", "200px"], {
+        nav: item("1/1/3/2", { resizeable: "hv" }),
+        toolbar: item("1/2/2/3", { resizeable: "h" }),
+        content: item("2/2/3/3", { resizeable: false }),
+      }),
+    );
+
+    const [splitter] = model.getSplitters();
+    expect(splitter).toMatchObject({
+      ariaOrientation: "vertical",
+      resizedChildItems: {
+        before: ["nav"],
+        after: ["toolbar", "content"],
+      },
+    });
+    expect(model.getSplitters()).toHaveLength(1);
+  });
+
   it.todo(
     "treats nested GridLayout component content as opaque because GridModel only owns one grid",
   );
