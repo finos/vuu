@@ -1,6 +1,7 @@
-import { expect, test } from "@playwright/experimental-ct-react";
+import { expect, test } from "../../../../../playwright/fixtures";
 import { GridLayoutDriver } from "./GridLayoutDriver";
-import { GridLayoutTestFixture } from "./GridLayoutTestFixture";
+
+const fixture = "GridLayout/GridLayoutTestFixture/GridLayoutTestFixture";
 
 test.describe("GridLayout browser interactions", () => {
   test.describe.configure({ mode: "serial" });
@@ -9,7 +10,7 @@ test.describe("GridLayout browser interactions", () => {
     mount,
     page,
   }) => {
-    const component = await mount(<GridLayoutTestFixture variant="basic" />);
+    const component = await mount(fixture, { variant: "basic" });
     const grid = new GridLayoutDriver(component, page);
 
     await expect(grid.item("alpha")).toBeVisible();
@@ -29,7 +30,7 @@ test.describe("GridLayout browser interactions", () => {
       mount,
       page,
     }) => {
-      const component = await mount(<GridLayoutTestFixture variant="basic" />);
+      const component = await mount(fixture, { variant: "basic" });
       const grid = new GridLayoutDriver(component, page);
 
       await grid.dragItem("beta", "alpha", direction);
@@ -51,7 +52,7 @@ test.describe("GridLayout browser interactions", () => {
   }
 
   test("centre drop replaces the target component", async ({ mount, page }) => {
-    const component = await mount(<GridLayoutTestFixture variant="basic" />);
+    const component = await mount(fixture, { variant: "basic" });
     const grid = new GridLayoutDriver(component, page);
 
     await grid.dragItem("beta", "alpha", "centre");
@@ -62,7 +63,7 @@ test.describe("GridLayout browser interactions", () => {
   });
 
   test("header drop creates a tabbed stack", async ({ mount, page }) => {
-    const component = await mount(<GridLayoutTestFixture variant="basic" />);
+    const component = await mount(fixture, { variant: "basic" });
     const grid = new GridLayoutDriver(component, page);
 
     await grid.drag(
@@ -79,7 +80,7 @@ test.describe("GridLayout browser interactions", () => {
     mount,
     page,
   }) => {
-    await mount(<GridLayoutTestFixture variant="stacked" />);
+    await mount(fixture, { variant: "stacked" });
 
     await page.getByRole("button", { name: "Create Tab" }).click();
     await page.getByLabel("New tab name").fill("Gamma");
@@ -111,7 +112,7 @@ test.describe("GridLayout browser interactions", () => {
     mount,
     page,
   }) => {
-    const component = await mount(<GridLayoutTestFixture variant="basic" />);
+    const component = await mount(fixture, { variant: "basic" });
     const grid = new GridLayoutDriver(component, page);
 
     await grid.item("beta").getByRole("button").click();
@@ -125,9 +126,7 @@ test.describe("GridLayout browser interactions", () => {
     mount,
     page,
   }) => {
-    const component = await mount(
-      <GridLayoutTestFixture variant="irregular-removal" />,
-    );
+    const component = await mount(fixture, { variant: "irregular-removal" });
     const grid = new GridLayoutDriver(component, page);
 
     await grid.item("removed").getByRole("button").click();
@@ -143,9 +142,7 @@ test.describe("GridLayout browser interactions", () => {
     mount,
     page,
   }) => {
-    const component = await mount(
-      <GridLayoutTestFixture variant="resizable" />,
-    );
+    const component = await mount(fixture, { variant: "resizable" });
     const grid = new GridLayoutDriver(component, page);
     const before = await grid.item("flexible").boundingBox();
 
@@ -159,9 +156,7 @@ test.describe("GridLayout browser interactions", () => {
     mount,
     page,
   }) => {
-    const component = await mount(
-      <GridLayoutTestFixture variant="resizable" />,
-    );
+    const component = await mount(fixture, { variant: "resizable" });
     const grid = new GridLayoutDriver(component, page);
 
     await grid.resize(grid.separator(), 1_000);
@@ -177,9 +172,7 @@ test.describe("GridLayout browser interactions", () => {
     mount,
     page,
   }) => {
-    const component = await mount(
-      <GridLayoutTestFixture variant="resizable-vertical" />,
-    );
+    const component = await mount(fixture, { variant: "resizable-vertical" });
     const grid = new GridLayoutDriver(component, page);
 
     await grid.resize(grid.separator(), 0, 1_000);
@@ -195,9 +188,7 @@ test.describe("GridLayout browser interactions", () => {
     mount,
     page,
   }) => {
-    const component = await mount(
-      <GridLayoutTestFixture variant="non-resizable" />,
-    );
+    const component = await mount(fixture, { variant: "non-resizable" });
     const grid = new GridLayoutDriver(component, page);
 
     await expect(grid.item("fixed-left")).toBeVisible();
@@ -209,9 +200,7 @@ test.describe("GridLayout browser interactions", () => {
     mount,
     page,
   }) => {
-    const component = await mount(
-      <GridLayoutTestFixture variant="split-constraints" />,
-    );
+    const component = await mount(fixture, { variant: "split-constraints" });
     const grid = new GridLayoutDriver(component, page);
 
     await grid.dragItem("movable", "locked", "east");
@@ -226,7 +215,7 @@ test.describe("GridLayout browser interactions", () => {
     mount,
     page,
   }) => {
-    const component = await mount(<GridLayoutTestFixture variant="nested" />);
+    const component = await mount(fixture, { variant: "nested" });
     const grid = new GridLayoutDriver(component, page);
 
     expect(
