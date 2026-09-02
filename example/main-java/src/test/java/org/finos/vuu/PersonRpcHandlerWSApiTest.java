@@ -113,6 +113,50 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
     }
 
     @Nested
+    class CreateSessionTable {
+        // test RPCs registered in EditPersonRecordRpcHandler (CreateSessionTableRpcHandler) works
+
+        @Test
+        public void custom_rpc_request_deleteRow() {
+            var viewPortId = createViewPort("PersonManualMapped2");
+
+            var rpcRequest = new RpcRequest(
+                    new ViewPortContext(viewPortId),
+                    "createSessionTable",
+                    toScala(Map.of("sessionType", "export"))
+            );
+
+            var requestId = vuuClient.send(sessionId, rpcRequest);
+            var response = vuuClient.awaitForResponse(requestId);
+
+            RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Request response");
+            assertEquals("createSessionTable", responseBody.rpcName());
+            assertInstanceOf(RpcSuccessResult.class, responseBody.result());
+        }
+
+        // test RPCs registered in EditPersonRecordRpcHandler (DefaultRpcHandlerImpl) works
+
+        @Test
+        public void custom_rpc_request_endEditSession() {
+            // test rpc registered in EditRecordRpcHandler (EndEditSessionRpcHandler) works
+            var viewPortId = createViewPort("PersonManualMapped2");
+
+            var rpcRequest = new RpcRequest(
+                    new ViewPortContext(viewPortId),
+                    "getUniqueFieldValues",
+                    toScala(Map.of("column", "id"))
+            );
+
+            var requestId = vuuClient.send(sessionId, rpcRequest);
+            var response = vuuClient.awaitForResponse(requestId);
+
+            RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Request response");
+            assertEquals("getUniqueFieldValues", responseBody.rpcName());
+            assertInstanceOf(RpcSuccessResult.class, responseBody.result());
+        }
+    }
+
+    @Nested
     class EditRecord {
         // test RPCs registered in EditRecordRpcHandler (EditTableRpcHandler) works
 
