@@ -6,15 +6,10 @@ import type {
   EditApi,
   EditSessionMode,
   SchemaColumn,
-  SessionDataSourceOverrides,
   SessionType,
   UndoRowChangeResult,
 } from "@vuu-ui/vuu-data-types";
-import type {
-  RpcResult,
-  VuuRowDataItemType,
-  VuuTable,
-} from "@vuu-ui/vuu-protocol-types";
+import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
@@ -30,13 +25,6 @@ export type EditSessionConstructorProps = {
   deleteMode?: DeleteRowMode;
   /** @default "createSessionDataSource" */
   editSessionApi?: EditSessionApi;
-  /**
-   * Columns of the edit (session) table, when it differs from the view table. If omitted,
-   * the session datasource inherits the view datasource columns.
-   */
-  editColumns?: string[];
-  /** Expected edit (session) table, used to validate the table returned by the server. */
-  editTable?: VuuTable;
   /** Default column values merged into every addRow call for absent columns. Pass a stable reference. */
   rowDefaults?: RowDefaultDataItemValues;
 };
@@ -111,8 +99,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   #cellCommitRevisions = new Map<string, Map<string, number>>();
   #deleteMode: DeleteRowMode;
   #editSessionApi: EditSessionApi;
-  #editColumns?: string[];
-  #editTable?: VuuTable;
   #rowDefaults: RowDefaultDataItemValues;
   #sourceTableDataSource?: EditApi;
   #sessionDataSource?: DataSource;
@@ -131,16 +117,12 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     dataSource,
     deleteMode = "soft",
     editSessionApi = "createSessionDataSource",
-    editColumns,
-    editTable,
     rowDefaults = {},
   }: EditSessionConstructorProps) {
     super();
     this.#sourceTableDataSource = dataSource;
     this.#deleteMode = deleteMode;
     this.#editSessionApi = editSessionApi;
-    this.#editColumns = editColumns;
-    this.#editTable = editTable;
     this.#rowDefaults = rowDefaults;
   }
 
@@ -549,20 +531,14 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
       try {
         const sourceDataSource = this.#sourceTableDataSource;
-        const overrides: SessionDataSourceOverrides | undefined =
-          this.#editColumns || this.#editTable
-            ? { columns: this.#editColumns, table: this.#editTable }
-            : undefined;
         const sessionDataSource =
           this.#editSessionApi === "beginEditSession"
             ? await sourceDataSource?.beginEditSession?.(
                 toEditSessionMode(copyOption),
-                overrides,
               )
             : await sourceDataSource?.createSessionDataSource?.(
                 copyOption,
                 sessionType,
-                overrides,
               );
         if (!sessionDataSource) {
           throw new Error(
@@ -608,17 +584,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       );
       for (const key of unknown) {
         delete this.#rowDefaults[key];
-      }
-    }
-
-    if (this.#editColumns) {
-      const missing = this.#editColumns.filter(
-        (column) => !columnNames.has(column),
-      );
-      if (missing.length > 0) {
-        console.warn(
-          `[EditSession] editColumns not present in session table schema: ${missing.join(", ")}`,
-        );
       }
     }
 

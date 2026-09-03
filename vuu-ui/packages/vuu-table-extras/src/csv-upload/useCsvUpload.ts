@@ -1,4 +1,9 @@
-import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
+import type {
+  DataSource,
+  EditApi,
+  SessionDataSourceOverrides,
+  TableSchema,
+} from "@vuu-ui/vuu-data-types";
 import { EditSession, type RowDefaultDataItemValues } from "@vuu-ui/vuu-data-editing";
 import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { isRpcError, isSessionTable, useData } from "@vuu-ui/vuu-utils";
@@ -119,20 +124,41 @@ export const useCsvUpload = ({
   }, [getServerAPI, importSchema, importTable]);
 
   const resolvedImportSchema = importSchema ?? fetchedImportSchema;
-  const editColumns = useMemo(
-    () => resolvedImportSchema?.columns.map(({ name }) => name),
-    [resolvedImportSchema],
-  );
+  const sessionOverrides = useMemo<SessionDataSourceOverrides | undefined>(() => {
+    const columns = resolvedImportSchema?.columns.map(({ name }) => name);
+    return columns || importTable ? { columns, table: importTable } : undefined;
+  }, [resolvedImportSchema, importTable]);
+  // EditSession's constructor takes no session/schema config - the override is applied
+  // here, at the createSessionDataSource call site, since `dataSource` is supplied by the
+  // caller and may be shared with a view that has no knowledge of the import table.
+  const importDataSource = useMemo<EditApi & { tableSchema?: TableSchema }>(() => {
+    if (!sessionOverrides) {
+      return dataSource;
+    }
+    return {
+      tableSchema: dataSource.tableSchema,
+      createSessionDataSource: async (copyOption, sessionType) => {
+        if (!dataSource.createSessionDataSource) {
+          throw Error(
+            "[useCsvUpload] dataSource does not support createSessionDataSource",
+          );
+        }
+        return dataSource.createSessionDataSource(
+          copyOption,
+          sessionType,
+          sessionOverrides,
+        );
+      },
+    };
+  }, [dataSource, sessionOverrides]);
   const editSession = useMemo(
     () =>
       new EditSession({
-        dataSource,
+        dataSource: importDataSource,
         editSessionApi: "createSessionDataSource",
-        editColumns,
-        editTable: importTable,
         rowDefaults,
       }),
-    [dataSource, editColumns, importTable, rowDefaults],
+    [importDataSource, rowDefaults],
   );
   const ownsEditSessionRef = useRef(true);
   const operationIdRef = useRef(0);

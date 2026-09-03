@@ -454,6 +454,12 @@ export interface DataSourceConstructorProps extends WithBaseFilter<DataSourceCon
    * after an edit session is saved. Default is no additional column.
    */
   sessionTableMessageColumn?: string;
+  /**
+   * Describes the session (edit/import/export) table when it differs from `table`.
+   * Applied internally by `createSessionDataSource` / `beginEditSession` whenever
+   * a call does not supply its own `SessionDataSourceOverrides`.
+   */
+  session?: SessionDataSourceOverrides;
   suspenseProps?: DataSourceSuspenseProps;
   table: VuuTable;
   title?: string;

@@ -104,6 +104,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   #menu: VuuMenu | undefined;
   #optimize: OptimizeStrategy = "throttle";
   #selectedRowsCount = 0;
+  #session: SessionDataSourceOverrides | undefined;
   #sessionDataSource: DataSource | undefined = undefined;
   #sessionTableMessageColumn: string | undefined = undefined;
   #status: DataSourceStatus = "initialising";
@@ -112,6 +113,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   public table: VuuTable;
 
   constructor({
+    session,
     sessionTableMessageColumn,
     ...props
   }: DataSourceConstructorProps) {
@@ -126,6 +128,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     this.table = table;
 
     this.#pendingVisualLink = visualLink;
+    this.#session = session;
     this.#sessionTableMessageColumn = sessionTableMessageColumn;
     // this.rangeRequest = this.throttleRangeRequest;
     this.rangeRequest = this.rawRangeRequest;
@@ -700,9 +703,12 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     });
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
-      assertExpectedSessionTable(sessionTable, overrides?.table);
+      // A call-time override always wins; otherwise fall back to the session
+      // config this datasource was constructed with.
+      const effectiveOverrides = overrides ?? this.#session;
+      assertExpectedSessionTable(sessionTable, effectiveOverrides?.table);
       return new VuuDataSource({
-        ...sessionDataSourceConfig(this.config, overrides?.columns),
+        ...sessionDataSourceConfig(this.config, effectiveOverrides?.columns),
         table: sessionTable,
         viewport: sessionTable.table,
       });

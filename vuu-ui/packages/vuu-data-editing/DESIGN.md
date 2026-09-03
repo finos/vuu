@@ -67,38 +67,55 @@ default the session data source is built from the view data source config, which
 would carry view-only columns — and any filter, `groupBy`, `sort`, or
 aggregations that reference them — onto a table that does not have them.
 
-`editColumns` and `editTable` describe the edit table when it differs:
+`EditSession` and `useEditableTable` are deliberately unaware of this: neither
+accepts a schema, an expected table, or any other transport-specific
+configuration. `useEditableTable`'s contract is exactly:
 
 ```ts
 useEditableTable({
   dataSource: viewDataSource, // subscribed; carries the createSessionTable RPC
-  editTable: EDIT_TABLE, // stable VuuTable
-  editColumns: EDIT_COLUMNS, // stable string[]
   isEditMode,
   onCancel,
   onSave,
 });
 ```
 
-Both are forwarded to `createSessionDataSource` / `beginEditSession` as a
-`SessionDataSourceOverrides` argument. Given `columns`, the data source builds
-the session config from `sessionDataSourceConfig` rather than inheriting the
-view config; `table` is checked against the module of the server-assigned
-session table. The session table name itself is always server-generated.
+Divergence is instead configured where the view data source is constructed, via
+an opaque `session` property:
 
-These overrides only affect how the session data source is constructed. Which
-data source subsequent operations target is unchanged — see [RPC
+```ts
+new VuuDataSource({
+  table: VIEW_TABLE,
+  columns: VIEW_COLUMNS,
+  session: {
+    table: EDIT_TABLE, // stable VuuTable
+    columns: EDIT_COLUMNS, // stable string[]
+  },
+});
+```
+
+`createSessionDataSource` / `beginEditSession` apply this internally: given
+`session.columns`, the session config is built from `sessionDataSourceConfig`
+rather than inheriting the view config; `session.table` is checked against the
+module of the server-assigned session table. A call-time
+`SessionDataSourceOverrides` argument (used by `CsvUpload`/`exportToCsv`, whose
+target data source is often shared and not under the caller's construction
+control) always takes precedence over the data source's own `session` config
+when both are present. `EditSession.begin()` never supplies one — it calls
+`createSessionDataSource(copyOption, sessionType)` with no third argument, so
+for editing the effective overrides are always whatever the data source was
+constructed with. The session table name itself is always server-generated.
+
+This only affects how the session data source is constructed. Which data
+source subsequent operations target is unchanged — see [RPC
 routing](#rpc-routing).
 
-Because both are `useMemo` dependencies of the `EditSession`, they must be
-stable references; a new array or object each render recreates the session.
-
 Once the session table schema arrives, `reconcileWithSessionSchema` prunes
-`rowDefaults` entries that the edit table does not have, warns about
-`editColumns` missing from the schema, and discards pending edits if the key
-column differs — row edits, deletes, and undo state are all keyed by row key and
-cannot cross a key-column change. The hook invokes it on `subscribed`, since a
-remote session table has no schema at the point `begin()` resolves.
+`rowDefaults` entries that the edit table does not have, and discards pending
+edits if the key column differs — row edits, deletes, and undo state are all
+keyed by row key and cannot cross a key-column change. The hook invokes it on
+`subscribed`, since a remote session table has no schema at the point `begin()`
+resolves.
 
 The hook returns `editSchema` and `columnsDiverge` for consumers rendering a
 single `Table` across both modes: the returned `dataSource` swaps column sets on

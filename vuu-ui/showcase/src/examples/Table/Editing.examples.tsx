@@ -620,7 +620,6 @@ const DIVERGENT_EDIT_COLUMNS = DIVERGENT_EDIT_SCHEMA.columns.map(toColumnName);
 
 export const UseEditableTableWithEditColumns = () => {
   const [editMode, setEditMode] = useState<EditMode>("view");
-  const [overrideColumns, setOverrideColumns] = useState<string[]>();
 
   const sourceDataSource = useMemo(() => {
     const sessionDataSource = Object.assign(new EventEmitter(), {
@@ -630,26 +629,21 @@ export const UseEditableTableWithEditColumns = () => {
       tableSchema: DIVERGENT_EDIT_SCHEMA,
       endEditSession: async () => undefined,
     });
+    // Simulates a datasource constructed with a session config (e.g.
+    // `new VuuDataSource({ ..., session: { columns: DIVERGENT_EDIT_COLUMNS, table: DIVERGENT_EDIT_TABLE } })`) -
+    // the override is applied internally, not passed in by the caller.
     return Object.assign(new EventEmitter(), {
       columns: DIVERGENT_VIEW_SCHEMA.columns.map(toColumnName),
       status: "subscribed",
       table: DIVERGENT_VIEW_SCHEMA.table,
       tableSchema: DIVERGENT_VIEW_SCHEMA,
-      createSessionDataSource: async (
-        _copyOption: CopyOption,
-        _sessionType?: string,
-        overrides?: { columns?: string[] },
-      ) => {
-        setOverrideColumns(overrides?.columns);
-        return sessionDataSource as unknown as DataSource;
-      },
+      createSessionDataSource: async () =>
+        sessionDataSource as unknown as DataSource,
     }) as unknown as DataSource;
   }, []);
 
   const { columnsDiverge, editSchema, sessionDataSource } = useEditableTable({
     dataSource: sourceDataSource,
-    editColumns: DIVERGENT_EDIT_COLUMNS,
-    editTable: DIVERGENT_EDIT_TABLE,
     isEditMode: editMode === "edit",
     onCancel: () => setEditMode("view"),
     onSave: () => setEditMode("view"),
@@ -661,7 +655,6 @@ export const UseEditableTableWithEditColumns = () => {
       <output
         data-diverge={columnsDiverge}
         data-edit-schema={editSchema?.columns.map(toColumnName).join(",") ?? ""}
-        data-override-columns={overrideColumns?.join(",") ?? ""}
         data-session={Boolean(sessionDataSource)}
       />
     </div>

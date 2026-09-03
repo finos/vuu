@@ -32,14 +32,6 @@ export interface EditableTableHookProps {
   addRowsCount?: number;
   deleteMode?: DeleteRowMode;
   editSessionApi?: EditSessionApi;
-  /**
-   * Columns of the edit (session) table, where it differs from the view table.
-   * If omitted, the session datasource inherits the view datasource columns.
-   * Pass a stable reference - a new array triggers EditSession recreation.
-   */
-  editColumns?: string[];
-  /** Expected edit (session) table, used to validate the table returned by the server. */
-  editTable?: VuuTable;
   copyOption?: CopyOption;
   isEditMode: boolean;
   onCancel: () => void;
@@ -58,8 +50,6 @@ export const useEditableTable = ({
   dataSource: dataSourceProp,
   deleteMode = "soft",
   editSessionApi = "createSessionDataSource",
-  editColumns,
-  editTable,
   copyOption = "All",
   isEditMode,
   onCancel,
@@ -93,18 +83,9 @@ export const useEditableTable = ({
         dataSource: sourceDataSource as EditApi,
         deleteMode,
         editSessionApi,
-        editColumns,
-        editTable,
         rowDefaults,
       }),
-    [
-      deleteMode,
-      editColumns,
-      editSessionApi,
-      editTable,
-      rowDefaults,
-      sourceDataSource,
-    ],
+    [deleteMode, editSessionApi, rowDefaults, sourceDataSource],
   );
   const [lifecycle, setLifecycle] = useState<EditLifecycle>(
     editSession.lifecycle,

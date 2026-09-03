@@ -7,6 +7,7 @@ import type {
   DeleteRowMode,
   EditSessionMode,
   CopyOption,
+  SessionDataSourceOverrides,
   SessionType,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
@@ -62,7 +63,7 @@ export interface IVuuModule<T extends string = string> {
   createDataSource: (
     tableName: T,
     viewport?: string,
-    config?: DataSourceConfig,
+    config?: DataSourceConfig & { session?: SessionDataSourceOverrides },
   ) => DataSourceBase<DataSourceRowWithBigint>;
 }
 
@@ -335,7 +336,7 @@ export abstract class VuuModule<T extends string = string>
   createDataSource = (
     tableName: T,
     viewport?: string,
-    config?: DataSourceConfig,
+    config?: DataSourceConfig & { session?: SessionDataSourceOverrides },
   ) => {
     const columnDescriptors = this.getColumnDescriptors(tableName);
     const table = this.tables[tableName];
