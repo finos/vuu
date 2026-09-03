@@ -2,6 +2,8 @@
 
 The `CsvUpload` component provides a dialog-based workflow for uploading, validating, and importing a CSV file into a Vuu table via RPC. It manages a server-side edit session throughout the process and exposes a lifecycle callback API so consumers can track and react to each phase.
 
+See [CSV Export](../../../vuu-utils/docs/csv-export.md) for the counterpart utilities that export a table to CSV.
+
 ---
 
 ## Usage
