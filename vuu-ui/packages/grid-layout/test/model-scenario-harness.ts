@@ -2,6 +2,11 @@ import type { GridLayoutSplitDirection } from "@vuu-ui/vuu-utils";
 import { expect } from "vitest";
 import { GridLayoutModel } from "../src/GridLayoutModel";
 import {
+  gridLayoutDescriptorToSnapshot,
+  gridSnapshotToGridLayoutDescriptor,
+  normalizeGridSnapshot,
+} from "../src/grid-snapshot-adapters";
+import {
   GridModel,
   GridModelChildItem,
   type GridLayoutChildItemDescriptor,
@@ -288,6 +293,13 @@ const descriptorState = (descriptor: GridLayoutDescriptor) => ({
   rows: descriptor.rows,
 });
 
+export const snapshotState = (model: GridModel) =>
+  normalizeGridSnapshot(
+    gridLayoutDescriptorToSnapshot(model.toGridLayoutDescriptor(), {
+      gridId: model.id,
+    }),
+  );
+
 export const assertModelInvariants = (model: GridModel) => {
   const { colCount, rowCount } = model.tracks;
   for (const { column, id, row } of model.childItems) {
@@ -344,6 +356,10 @@ export const assertModelInvariants = (model: GridModel) => {
   }
 
   const serialized = model.toGridLayoutDescriptor();
+  const snapshot = snapshotState(model);
+  expect(descriptorState(gridSnapshotToGridLayoutDescriptor(snapshot))).toEqual(
+    descriptorState(serialized),
+  );
   const roundTripped = new GridModel(`${model.id}-round-trip`, serialized);
   expect(descriptorState(roundTripped.toGridLayoutDescriptor())).toEqual(
     descriptorState(serialized),
