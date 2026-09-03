@@ -1,4 +1,14 @@
-import type { GridLayoutSplitDirection } from "@vuu-ui/vuu-utils";
+import { uuid, type GridLayoutSplitDirection } from "@vuu-ui/vuu-utils";
+import {
+  regeneratePlaceholders,
+  removeGridItem,
+  replaceGridItem,
+  resizeTrackTo,
+  resizeTracksAdjacent,
+  resizeTracksProportionally,
+  splitGridItem,
+  type GridGeometryError,
+} from "./GridGeometry";
 import { GridLayoutModel, type GridItemRemoveReason } from "./GridLayoutModel";
 import {
   type GridModel,
@@ -169,6 +179,32 @@ const failure = (
   ok: false,
 });
 
+/**
+ * Map a pure geometry error onto a typed command failure. Geometry errors that
+ * describe an impossible layout are thrown, matching the legacy engine.
+ */
+const geometryFailure = (
+  command: GridCommand,
+  { code, message }: GridGeometryError,
+): GridCommandResult => {
+  switch (code) {
+    case "GEOMETRY_ERROR":
+      throw Error(message);
+    case "INVALID_TARGET":
+      return failure(command, "INVALID_TARGET", message);
+    case "ITEM_NOT_FOUND":
+      return failure(command, "ITEM_NOT_FOUND", message);
+    case "MEASUREMENT_REQUIRED":
+      return failure(command, "MEASUREMENT_REQUIRED", message);
+    case "NON_RESIZABLE":
+      return failure(command, "NON_RESIZABLE", message);
+    case "TRACK_NOT_FOUND":
+      return failure(command, "TRACK_NOT_FOUND", message);
+    default:
+      return failure(command, "INVALID_ITEM", message);
+  }
+};
+
 const toPosition = ({ span, start }: GridSpanSnapshot) => ({
   end: start + span,
   start,
@@ -226,23 +262,22 @@ export class LegacyGridCommandExecutor {
         if (stackedMember) {
           return stackedMember;
         }
-        if (
-          !this.gridLayoutModel.canSplitGridItem(
-            command.targetId,
-            command.position,
-          )
-        ) {
-          return failure(
-            command,
-            "NON_RESIZABLE",
-            `Grid item #${command.targetId} cannot be split ${command.position}`,
-          );
-        }
-        this.gridLayoutModel.dropSplitGridItem(
-          command.itemId,
-          command.targetId,
-          command.position,
+        const geometry = this.gridModel.toGeometry();
+        const split = this.gridModel.runGeometry((measurements) =>
+          splitGridItem(
+            geometry,
+            {
+              droppedItemId: command.itemId,
+              splitDirection: command.position,
+              targetItemId: command.targetId,
+            },
+            measurements,
+          ),
         );
+        if (!split.ok) {
+          return geometryFailure(command, split.error);
+        }
+        this.gridLayoutModel.applySplitTransition(split.value);
         return success(command);
       }
       case "replace-item": {
@@ -262,10 +297,14 @@ export class LegacyGridCommandExecutor {
         if (stackedMember) {
           return stackedMember;
         }
-        this.gridLayoutModel.dropReplaceGridItem(
-          command.itemId,
-          command.targetId,
-        );
+        const replaced = replaceGridItem(this.gridModel.toGeometry(), {
+          droppedItemId: command.itemId,
+          targetItemId: command.targetId,
+        });
+        if (!replaced.ok) {
+          return geometryFailure(command, replaced.error);
+        }
+        this.gridLayoutModel.applyReplaceTransition(replaced.value);
         return success(command);
       }
       case "remove-item": {
@@ -273,8 +312,7 @@ export class LegacyGridCommandExecutor {
         if (invalid) {
           return invalid;
         }
-        this.gridLayoutModel.removeGridItem(command.itemId, command.reason);
-        return success(command);
+        return this.removeItem(command, command.itemId, command.reason);
       }
       case "resize-track": {
         const invalid = this.requireTracks(command, command.track, [
@@ -283,10 +321,17 @@ export class LegacyGridCommandExecutor {
         if (invalid) {
           return invalid;
         }
-        this.gridModel.tracks.resizeTo(
+        const resized = this.gridModel.tracks.runTrackGeometry(
           command.track,
-          command.index,
-          command.size,
+          (tracks) =>
+            resizeTrackTo(tracks, command.index, command.size, command.track),
+        );
+        if (!resized.ok) {
+          return geometryFailure(command, resized.error);
+        }
+        this.gridModel.tracks.applyTrackTransition(
+          command.track,
+          resized.value,
         );
         return success(command);
       }
@@ -348,24 +393,39 @@ export class LegacyGridCommandExecutor {
         if (invalid) {
           return invalid;
         }
-        if (command.distribution === "adjacent") {
-          this.gridModel.tracks.resizeBy(
-            command.track,
-            command.resizedTrackIndex,
-            command.contraTrackIndex,
-            command.delta,
-          );
-        } else {
-          this.gridModel.tracks.resizeGroupsProportionally(
-            command.track,
-            [...command.beforeTrackIndices],
-            [...command.afterTrackIndices],
-            command.delta,
-            toConstraints(command.beforeConstraints),
-            toConstraints(command.afterConstraints),
-            command.initialSizes ? [...command.initialSizes] : undefined,
-          );
+        const resizedTracks = this.gridModel.tracks.runTrackGeometry(
+          command.track,
+          (tracks) =>
+            command.distribution === "adjacent"
+              ? resizeTracksAdjacent(
+                  tracks,
+                  {
+                    contraTrackIndex: command.contraTrackIndex,
+                    delta: command.delta,
+                    resizedTrackIndex: command.resizedTrackIndex,
+                  },
+                  command.track,
+                )
+              : resizeTracksProportionally(
+                  tracks,
+                  {
+                    afterConstraints: toConstraints(command.afterConstraints),
+                    afterTrackIndices: command.afterTrackIndices,
+                    beforeConstraints: toConstraints(command.beforeConstraints),
+                    beforeTrackIndices: command.beforeTrackIndices,
+                    delta: command.delta,
+                    initialSizes: command.initialSizes,
+                  },
+                  command.track,
+                ),
+        );
+        if (!resizedTracks.ok) {
+          return geometryFailure(command, resizedTracks.error);
         }
+        this.gridModel.tracks.applyTrackTransition(
+          command.track,
+          resizedTracks.value,
+        );
         return success(command);
       }
       case "create-stack": {
@@ -425,8 +485,7 @@ export class LegacyGridCommandExecutor {
         if (invalid) {
           return invalid;
         }
-        this.gridLayoutModel.removeGridItem(command.itemId, "close");
-        return success(command);
+        return this.removeItem(command, command.itemId, "close");
       }
       case "select-stack-item": {
         const invalid = this.requireTab(
@@ -475,11 +534,33 @@ export class LegacyGridCommandExecutor {
         return success(command);
       }
       case "regenerate-placeholders":
-        this.gridModel.createPlaceholders();
+        this.gridModel.applyPlaceholderTransition(
+          regeneratePlaceholders(this.gridModel.toGeometry(), uuid),
+        );
         return success(command);
       default:
         return assertNever(command);
     }
+  }
+
+  private removeItem(
+    command: GridCommand,
+    itemId: GridItemId,
+    reason: GridItemRemoveReason,
+  ): GridCommandResult {
+    const geometry = this.gridModel.toGeometry();
+    const removed = this.gridModel.runGeometry((measurements) =>
+      removeGridItem(
+        geometry,
+        { itemId, reason },
+        { createPlaceholderId: uuid, measurements },
+      ),
+    );
+    if (!removed.ok) {
+      return geometryFailure(command, removed.error);
+    }
+    this.gridLayoutModel.applyRemoveTransition(removed.value);
+    return success(command);
   }
 
   private applyMeasurements(

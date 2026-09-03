@@ -20,6 +20,7 @@ import {
   type TrackSize,
   type TrackType,
 } from "../src/GridModel";
+import { GridLayoutModel } from "../src/GridLayoutModel";
 
 type ItemRef = string | { index?: number; type: "placeholder" | "stack" };
 
@@ -231,6 +232,64 @@ const aliasesFor = (model: GridModel) => {
 
 const alias = (aliases: Map<string, string>, id: string) =>
   aliases.get(id) ?? id;
+
+export type NormalizedSplitter = {
+  align: string;
+  ariaOrientation: string;
+  column: string;
+  controls: string;
+  id: string;
+  orientation: string;
+  resizedChildItems: { after: string[]; before: string[] };
+  resizedGridTracks: [number, number];
+  row: string;
+};
+
+/**
+ * Splitters are regenerated from the model, so both splitter ids and the ids
+ * they reference must be aliased in the same way as normalizeModel aliases them.
+ */
+export const normalizeSplitters = (model: GridModel): NormalizedSplitter[] => {
+  const aliases = aliasesFor(model);
+  const aliasSplitterId = (id: string) => {
+    const [, controlledId, suffix] = /^(.*)-(splitter-[hv])$/.exec(id) ?? [];
+    return controlledId
+      ? `${alias(aliases, controlledId)}-${suffix}`
+      : alias(aliases, id);
+  };
+  return new GridLayoutModel(model)
+    .createSplitters()
+    .map(
+      ({
+        align,
+        ariaOrientation,
+        column,
+        controls,
+        id,
+        orientation,
+        resizedChildItems,
+        resizedGridTracks,
+        row,
+      }) => ({
+        align,
+        ariaOrientation,
+        column: `${column.start}/${column.end}`,
+        controls: alias(aliases, controls),
+        id: aliasSplitterId(id),
+        orientation,
+        resizedChildItems: {
+          after: resizedChildItems.after.map((itemId) =>
+            alias(aliases, itemId),
+          ),
+          before: resizedChildItems.before.map((itemId) =>
+            alias(aliases, itemId),
+          ),
+        },
+        resizedGridTracks: [...resizedGridTracks] as [number, number],
+        row: `${row.start}/${row.end}`,
+      }),
+    );
+};
 
 export const normalizeModel = (model: GridModel): NormalizedLayoutState => {
   const aliases = aliasesFor(model);
