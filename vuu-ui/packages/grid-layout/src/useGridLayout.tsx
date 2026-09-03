@@ -69,6 +69,12 @@ import {
 } from "./react-element-utils";
 import { GridLayoutDragStartHandler } from "./useDraggable";
 import { LayoutJSON } from "./componentToJson";
+import {
+  GridCommandExecutionError,
+  LegacyGridCommandExecutor,
+  throwForGridCommandFailure,
+} from "./GridCommand";
+import { GridController } from "./GridController";
 
 export type GridLayoutHookProps = {
   children: ReactNode;
@@ -83,6 +89,13 @@ type NonContentGridItems = {
   splitters: ISplitter[];
   placeholders: GridModelChildItem[];
   stackedItems: GridModelChildItem[];
+};
+
+const assertNeverGridLayoutAction = (action: never): never => {
+  throw new GridCommandExecutionError({
+    code: "UNSUPPORTED_ACTION",
+    message: `Unsupported GridLayoutAction: ${JSON.stringify(action)}`,
+  });
 };
 
 /**
@@ -188,6 +201,15 @@ export const useGridLayout = ({
   );
   const dragStartLayoutRef = useRef<GridLayoutDescriptor | undefined>(
     undefined,
+  );
+  const gridController = useMemo(
+    () =>
+      new GridController(
+        gridModel,
+        0,
+        new LegacyGridCommandExecutor(gridModel, gridLayoutModel),
+      ),
+    [gridLayoutModel, gridModel],
   );
 
   const saveGridLayout = useCallback<GridLayoutChangeHandler>(
@@ -668,11 +690,27 @@ export const useGridLayout = ({
   const dispatchGridLayoutAction = useCallback<GridLayoutDispatch>(
     (action) => {
       switch (action.type) {
-        case "close":
-          removeGridItem(action.id, "close");
+        case "close": {
+          throwForGridCommandFailure(
+            gridController.dispatch({
+              itemId: action.id,
+              reason: "close",
+              type: "remove-item",
+            }),
+          );
+          setChildren((children) =>
+            children.filter((child) => child.props.id !== action.id),
+          );
           break;
+        }
         case "rename-tab":
-          gridModel.updateChildTitle(action.id, action.title);
+          throwForGridCommandFailure(
+            gridController.dispatch({
+              itemId: action.id,
+              title: action.title,
+              type: "rename-item",
+            }),
+          );
           break;
         case "add-tabbed-child":
           {
@@ -682,17 +720,25 @@ export const useGridLayout = ({
             const { column, row } = gridModel.getChildItem(stackId, true);
 
             const newChildId = uuid();
-            const gridModelChildItem = new GridModelChildItem({
-              id: newChildId,
-              column,
-              dropTarget: dropTarget || undefined,
-              header: layoutOptions?.newChildItem.header,
-              resizeable: "hv",
-              row,
-              stackId,
-              title: title ?? componentTemplate.label ?? "New Item",
-            });
-            gridModel.addChildItem(gridModelChildItem);
+            throwForGridCommandFailure(
+              gridController.dispatch({
+                item: {
+                  id: newChildId,
+                  column: {
+                    span: column.end - column.start,
+                    start: column.start,
+                  },
+                  dropTarget: dropTarget || undefined,
+                  header: layoutOptions?.newChildItem.header,
+                  resizeable: "hv",
+                  row: { span: row.end - row.start, start: row.start },
+                  title: title ?? componentTemplate.label ?? "New Item",
+                },
+                stackId,
+                type: "add-stack-item",
+              }),
+            );
+            const gridModelChildItem = gridModel.getChildItem(newChildId, true);
 
             const component = layoutFromJson({
               ...componentJSON,
@@ -700,31 +746,61 @@ export const useGridLayout = ({
             } as LayoutJSON);
             addChildComponent(component, gridModelChildItem);
 
-            const tabState = gridModel.getTabState(stackId);
-            tabState.setActiveTab(title ?? gridModelChildItem.title);
+            throwForGridCommandFailure(
+              gridController.dispatch({
+                itemId: newChildId,
+                stackId,
+                type: "select-stack-item",
+              }),
+            );
             gridModel.notifyChange();
           }
           break;
         case "resize-grid-column":
-          {
-            gridModel.tracks.resizeTo(
-              "column",
-              action.trackIndex,
-              action.value,
-            );
-          }
-          break;
-        default:
-          throw Error(
-            `[useGridLayout] dispatchGridLayoutAction unknown action type '${action.type}'`,
+          throwForGridCommandFailure(
+            gridController.dispatch({
+              index: action.trackIndex,
+              size: action.value,
+              track: "column",
+              type: "resize-track",
+            }),
           );
+          break;
+        case "resize-grid-row":
+          throwForGridCommandFailure(
+            gridController.dispatch({
+              index: action.trackIndex,
+              size: action.value,
+              track: "row",
+              type: "resize-track",
+            }),
+          );
+          break;
+        case "select-tab":
+          throwForGridCommandFailure(
+            gridController.dispatch({
+              itemId: action.itemId,
+              stackId: action.stackId,
+              type: "select-stack-item",
+            }),
+          );
+          break;
+        case "switch-tab":
+          throw new GridCommandExecutionError({
+            code: "UNSUPPORTED_ACTION",
+            message:
+              "GridLayoutAction 'switch-tab' has no supported legacy semantics",
+          });
+        default:
+          return assertNeverGridLayoutAction(action);
       }
     },
     [
       addChildComponent,
+      gridController,
       gridModel,
       layoutOptions?.newChildItem.header,
-      removeGridItem,
+      setChildren,
     ],
   );
 

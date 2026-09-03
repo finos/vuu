@@ -39,6 +39,12 @@ export type GridLayoutSwitchTabAction = {
   toId: string;
 };
 
+export type GridLayoutSelectTabAction = {
+  type: "select-tab";
+  itemId: string;
+  stackId: string;
+};
+
 export type GridLayoutTrackAction = {
   type: "resize-grid-column" | "resize-grid-row";
   trackIndex: number;
@@ -50,6 +56,7 @@ export type GridLayoutAction =
   // | GridLayoutInsertTabAction
   | GridLayoutAddTabbedChildAction
   | GridLayoutSwitchTabAction
+  | GridLayoutSelectTabAction
   | GridLayoutTrackAction
   | GridLayoutRenameTabAction;
 

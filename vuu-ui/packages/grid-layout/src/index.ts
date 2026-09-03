@@ -5,6 +5,30 @@ export type {
 export { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
 export { GridLayout, type GridResizeDistribution } from "./GridLayout";
 export {
+  GridController,
+  type GridCommittedTransition,
+  type GridCommittedTransitionListener,
+  type GridControllerError,
+  type GridControllerErrorCode,
+  type GridControllerListener,
+  type GridTransactionCloseResult,
+  type GridTransactionKind,
+  type GridTransactionStartResult,
+  type GridTransaction,
+} from "./GridController";
+export {
+  GridCommandExecutionError,
+  LegacyGridCommandExecutor,
+  throwForGridCommandFailure,
+  type GridCommand,
+  type GridCommandError,
+  type GridCommandErrorCode,
+  type GridCommandItem,
+  type GridCommandResizeConstraint,
+  type GridCommandResult,
+  type GridTrackResize,
+} from "./GridCommand";
+export {
   useGridLayoutDispatch,
   useGridLayoutDragStartHandler,
   useGridModel,
@@ -18,6 +42,30 @@ export {
   type SerializedGridLayout,
 } from "./GridLayoutProvider";
 export { GridLayoutStackedItem } from "./GridLayoutStackedtem";
+export {
+  gridLayoutDescriptorToSnapshot,
+  gridSnapshotToGridLayoutDescriptor,
+  normalizeGridSnapshot,
+  validateGridSnapshot,
+  type GridLayoutDescriptorSnapshotOptions,
+  type GridLayoutDescriptorV1,
+} from "./grid-snapshot-adapters";
+export {
+  GridSnapshotValidationError,
+  type ComponentInstanceId,
+  type GridId,
+  type GridItemId,
+  type GridItemResizeable,
+  type GridItemSnapshot,
+  type GridSnapshot,
+  type GridSnapshotValidationCode,
+  type GridSnapshotValidationIssue,
+  type GridSpanSnapshot,
+  type GridStackSnapshot,
+  type GridTrackSize,
+  type GridTrackSnapshot,
+  type StackId,
+} from "./GridSnapshot";
 export type {
   GridLayoutChangeHandler,
   GridLayoutDescriptor,
