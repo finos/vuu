@@ -113,6 +113,50 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
     }
 
     @Nested
+    class CreateSessionTable {
+        // test RPCs registered in EditPersonRecordRpcHandler
+
+        @Test
+        public void custom_rpc_request_deleteRow() {
+            // test RPCs registered in EditPersonRecordRpcHandler (CreateSessionTableRpcHandler)
+            var viewPortId = createViewPort("PersonExampleTable");
+
+            var rpcRequest = new RpcRequest(
+                    new ViewPortContext(viewPortId),
+                    "createSessionTable",
+                    toScala(Map.of("sessionType", "export"))
+            );
+
+            var requestId = vuuClient.send(sessionId, rpcRequest);
+            var response = vuuClient.awaitForResponse(requestId);
+
+            RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Request response");
+            assertEquals("createSessionTable", responseBody.rpcName());
+            assertInstanceOf(RpcSuccessResult.class, responseBody.result());
+        }
+
+        @Test
+        public void custom_rpc_request_endEditSession() {
+            // test rpc registered in EditPersonRecordRpcHandler (DefaultRpcHandler)
+            var viewPortId = createViewPort("PersonExampleTable");
+
+            var rpcRequest = new RpcRequest(
+                    new ViewPortContext(viewPortId),
+                    "getUniqueFieldValues",
+                    toScala(Map.of("column", "id"))
+            );
+
+            var requestId = vuuClient.send(sessionId, rpcRequest);
+            var response = vuuClient.awaitForResponse(requestId);
+
+            RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Request response");
+            assertEquals("getUniqueFieldValues", responseBody.rpcName());
+            assertInstanceOf(RpcSuccessResult.class, responseBody.result());
+        }
+
+    }
+
+    @Nested
     class EditRecord {
         // test RPCs registered in EditRecordRpcHandler (EditTableRpcHandler) works
 
@@ -218,44 +262,6 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
     public void custom_rpc_request_getUniqueFieldValues() {
         // test rpc registered in UpdateRecordRpcHandler (DefaultRpcHandler) works
         var viewPortId = createViewPort();
-
-        var rpcRequest = new RpcRequest(
-                new ViewPortContext(viewPortId),
-                "getUniqueFieldValues",
-                toScala(Map.of("column", "id"))
-        );
-
-        var requestId = vuuClient.send(sessionId, rpcRequest);
-        var response = vuuClient.awaitForResponse(requestId);
-
-        RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Request response");
-        assertEquals("getUniqueFieldValues", responseBody.rpcName());
-        assertInstanceOf(RpcSuccessResult.class, responseBody.result());
-    }
-
-    @Test
-    public void table2_custom_rpc_request_createSessionTable() {
-        // test rpc registered in EditPersonRecordRpcHandler (CreateSessionTableRpcHandlerImpl) works
-        var viewPortId = createViewPort("PersonManualMapped2");
-
-        var rpcRequest = new RpcRequest(
-                new ViewPortContext(viewPortId),
-                "createSessionTable",
-                toScala(Map.of("sessionType", "export"))
-        );
-
-        var requestId = vuuClient.send(sessionId, rpcRequest);
-        var response = vuuClient.awaitForResponse(requestId);
-
-        RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Request response");
-        assertEquals("createSessionTable", responseBody.rpcName());
-        assertInstanceOf(RpcSuccessResult.class, responseBody.result());
-    }
-
-    @Test
-    public void table2_custom_rpc_request_getUniqueFieldValues() {
-        // test rpc registered in EditPersonRecordRpcHandler (DefaultRpcHandler) works
-        var viewPortId = createViewPort("PersonManualMapped2");
 
         var rpcRequest = new RpcRequest(
                 new ViewPortContext(viewPortId),
