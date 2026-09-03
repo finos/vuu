@@ -19,13 +19,6 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
   }
 
   def createSessionTable(params: RpcParams): RpcFunctionResult = {
-    val vuuUser: VuuUser = params.ctx.user
-    // TODO 2231 handle different permission for edit/import/export
-    if (!rpcPermissionChecker.isRpcAllowed(RpcNames.CreateSessionTableRpc, vuuUser)) {
-      logger.warn(s"User ${vuuUser.name} does not have permission to call ${RpcNames.CreateSessionTableRpc}")
-      return new RpcFunctionFailure("No permission to create session table.")
-    }
-
     params.namedParams.get("sessionType") match {
       case Some("edit") => createSessionTableForEdit(params)
       case Some("import") => createSessionTableForImport(params)
@@ -35,6 +28,11 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
   }
 
   def createSessionTableForEdit(params: RpcParams): RpcFunctionResult = {
+    if (!rpcPermissionChecker.isRpcAllowed(RpcNames.CreateSessionTableRpc, params.ctx.user)) {
+      logger.warn(s"User ${params.ctx.user.name} does not have permission to call ${RpcNames.CreateSessionTableRpc} for edit")
+      return new RpcFunctionFailure("No permission to create session table for edit.")
+    }
+
     val session: ClientSessionId = params.ctx.session
     val sourceTable = params.viewPort.table
 
@@ -64,6 +62,11 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
   }
 
   def createSessionTableForImport(params: RpcParams): RpcFunctionResult = {
+    if (!rpcPermissionChecker.isRpcAllowed(RpcNames.CreateSessionTableRpc, params.ctx.user)) {
+      logger.warn(s"User ${params.ctx.user.name} does not have permission to call ${RpcNames.CreateSessionTableRpc} for import")
+      return new RpcFunctionFailure("No permission to create session table for import.")
+    }
+
     val session: ClientSessionId = params.ctx.session
     val sourceTable = params.viewPort.table
 
@@ -92,6 +95,7 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
   }
 
   def createSessionTableForExport(params: RpcParams): RpcFunctionResult = {
+    // No permission check by default. Allow export for all users.
     val session: ClientSessionId = params.ctx.session
     val sourceTable = params.viewPort.table
     val sessionTableName = params.namedParams.get("sessionTableName") match {
