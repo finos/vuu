@@ -74,6 +74,7 @@ import {
   LegacyGridCommandExecutor,
   throwForGridCommandFailure,
 } from "./GridCommand";
+import { GridController } from "./GridController";
 
 export type GridLayoutHookProps = {
   children: ReactNode;
@@ -201,8 +202,13 @@ export const useGridLayout = ({
   const dragStartLayoutRef = useRef<GridLayoutDescriptor | undefined>(
     undefined,
   );
-  const commandExecutor = useMemo(
-    () => new LegacyGridCommandExecutor(gridModel, gridLayoutModel),
+  const gridController = useMemo(
+    () =>
+      new GridController(
+        gridModel,
+        0,
+        new LegacyGridCommandExecutor(gridModel, gridLayoutModel),
+      ),
     [gridLayoutModel, gridModel],
   );
 
@@ -686,7 +692,7 @@ export const useGridLayout = ({
       switch (action.type) {
         case "close": {
           throwForGridCommandFailure(
-            commandExecutor.execute({
+            gridController.dispatch({
               itemId: action.id,
               reason: "close",
               type: "remove-item",
@@ -699,7 +705,7 @@ export const useGridLayout = ({
         }
         case "rename-tab":
           throwForGridCommandFailure(
-            commandExecutor.execute({
+            gridController.dispatch({
               itemId: action.id,
               title: action.title,
               type: "rename-item",
@@ -715,7 +721,7 @@ export const useGridLayout = ({
 
             const newChildId = uuid();
             throwForGridCommandFailure(
-              commandExecutor.execute({
+              gridController.dispatch({
                 item: {
                   id: newChildId,
                   column: {
@@ -741,7 +747,7 @@ export const useGridLayout = ({
             addChildComponent(component, gridModelChildItem);
 
             throwForGridCommandFailure(
-              commandExecutor.execute({
+              gridController.dispatch({
                 itemId: newChildId,
                 stackId,
                 type: "select-stack-item",
@@ -752,7 +758,7 @@ export const useGridLayout = ({
           break;
         case "resize-grid-column":
           throwForGridCommandFailure(
-            commandExecutor.execute({
+            gridController.dispatch({
               index: action.trackIndex,
               size: action.value,
               track: "column",
@@ -762,7 +768,7 @@ export const useGridLayout = ({
           break;
         case "resize-grid-row":
           throwForGridCommandFailure(
-            commandExecutor.execute({
+            gridController.dispatch({
               index: action.trackIndex,
               size: action.value,
               track: "row",
@@ -772,7 +778,7 @@ export const useGridLayout = ({
           break;
         case "select-tab":
           throwForGridCommandFailure(
-            commandExecutor.execute({
+            gridController.dispatch({
               itemId: action.itemId,
               stackId: action.stackId,
               type: "select-stack-item",
@@ -791,7 +797,7 @@ export const useGridLayout = ({
     },
     [
       addChildComponent,
-      commandExecutor,
+      gridController,
       gridModel,
       layoutOptions?.newChildItem.header,
       setChildren,
