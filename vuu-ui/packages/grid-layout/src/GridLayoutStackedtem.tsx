@@ -17,7 +17,11 @@ import {
   useEffect,
 } from "react";
 import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
-import { type ComponentTemplate, useGridModel } from "./GridLayoutContext";
+import {
+  type ComponentTemplate,
+  useGridLayoutDispatch,
+  useGridModel,
+} from "./GridLayoutContext";
 import type { GridLayoutItemProps } from "./GridLayoutItem";
 import { resolveMinimumGridItemSize } from "./GridModel";
 import { TabMenu } from "./TabMenu";
@@ -82,13 +86,14 @@ export const GridLayoutStackedItem = ({
   });
 
   const { getTabState } = useGridModel();
+  const dispatch = useGridLayoutDispatch();
   const tabState = getTabState(id, "create");
 
   const handleTabSelectionChange = useCallback(
     (_: SyntheticEvent | null, value: string) => {
-      tabState.setActiveTab(value);
+      dispatch({ type: "select-tab", itemId: value, stackId: id });
     },
-    [tabState],
+    [dispatch, id],
   );
 
   const className = cx(classBaseItem, "vuuGridLayoutItem", {
@@ -126,7 +131,7 @@ export const GridLayoutStackedItem = ({
       >
         <Tabs
           onChange={handleTabSelectionChange}
-          value={tabState.tabs[tabState.active]?.label ?? null}
+          value={tabState.tabs[tabState.active]?.id ?? null}
         >
           <TabBar divider>
             <TabList
@@ -141,8 +146,8 @@ export const GridLayoutStackedItem = ({
                   data-grid-layout-item-id={gridLayoutItemId}
                   data-label={label}
                   draggable
-                  value={label}
-                  key={label}
+                  value={gridLayoutItemId}
+                  key={gridLayoutItemId}
                 >
                   <TabTrigger>{label}</TabTrigger>
                   {showMenu ? (

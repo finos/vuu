@@ -1,6 +1,11 @@
 import type { GridLayoutSplitDirection } from "@vuu-ui/vuu-utils";
 import { expect } from "vitest";
-import { GridLayoutModel } from "../src/GridLayoutModel";
+import {
+  LegacyGridCommandExecutor,
+  type GridCommand,
+  type GridCommandItem,
+  type GridCommandResult,
+} from "../src/GridCommand";
 import {
   gridLayoutDescriptorToSnapshot,
   gridSnapshotToGridLayoutDescriptor,
@@ -52,8 +57,7 @@ type ScenarioOperation =
       position: "before" | "after";
       activate?: boolean;
     }
-  | { type: "regenerate-placeholders" }
-  | { type: "round-trip" };
+  | { type: "regenerate-placeholders" };
 
 export type ExpectedScenarioError = {
   message: string | RegExp;
@@ -122,102 +126,94 @@ const resolveItem = (model: GridModel, ref: ItemRef): GridModelChildItem => {
   return result;
 };
 
-const addItem = (model: GridModel, operation: AddOperation) => {
+const resolveItemId = (model: GridModel, ref: ItemRef) =>
+  typeof ref === "string" ? ref : resolveItem(model, ref).id;
+
+const commandItem = (operation: AddOperation): GridCommandItem => {
   const [rowStart, columnStart, rowEnd, columnEnd] = (
     operation.gridArea ?? "1/1/2/2"
   )
     .split("/")
     .map(Number);
-  model.addChildItem(
-    new GridModelChildItem({
-      column: { start: columnStart, end: columnEnd },
-      id: operation.id,
-      resizeable: operation.resizeable,
-      row: { start: rowStart, end: rowEnd },
-      title: operation.title,
-    }),
-  );
+  return {
+    column: { span: columnEnd - columnStart, start: columnStart },
+    id: operation.id,
+    resizeable: operation.resizeable,
+    row: { span: rowEnd - rowStart, start: rowStart },
+    title: operation.title,
+  };
+};
+
+const toCommand = (
+  currentModel: GridModel,
+  operation: ScenarioOperation,
+): GridCommand => {
+  switch (operation.type) {
+    case "add":
+      return { item: commandItem(operation), type: "add-item" };
+    case "split":
+      return {
+        itemId: resolveItemId(currentModel, operation.dropped),
+        position: operation.direction,
+        targetId: resolveItemId(currentModel, operation.target),
+        type: "move-item",
+      };
+    case "replace":
+      return {
+        itemId: resolveItemId(currentModel, operation.dropped),
+        targetId: resolveItemId(currentModel, operation.target),
+        type: "replace-item",
+      };
+    case "remove":
+      return {
+        itemId: resolveItemId(currentModel, operation.item),
+        reason: "close",
+        type: "remove-item",
+      };
+    case "resize-track":
+      return {
+        index: operation.index,
+        size: operation.size,
+        track: operation.trackType,
+        type: "resize-track",
+      };
+    case "stack":
+      return {
+        itemId: resolveItemId(currentModel, operation.item),
+        targetId: resolveItemId(currentModel, operation.target),
+        type: "create-stack",
+      };
+    case "select-tab": {
+      const stack = resolveItem(currentModel, operation.stack);
+      return {
+        itemId: operation.tab,
+        stackId: stack.id,
+        type: "select-stack-item",
+      };
+    }
+    case "move-tab": {
+      const stack = resolveItem(currentModel, operation.stack);
+      return {
+        activate: operation.activate,
+        itemId: operation.tab,
+        position: operation.position,
+        stackId: stack.id,
+        targetItemId: operation.target,
+        type: "reorder-stack-item",
+      };
+    }
+    case "regenerate-placeholders":
+      return { type: "regenerate-placeholders" };
+  }
 };
 
 const executeOperation = (
   currentModel: GridModel,
   operation: ScenarioOperation,
-): GridModel => {
-  const layoutModel = new GridLayoutModel(currentModel);
-  switch (operation.type) {
-    case "add":
-      addItem(currentModel, operation);
-      break;
-    case "split":
-      layoutModel.dropSplitGridItem(
-        resolveItem(currentModel, operation.dropped).id,
-        resolveItem(currentModel, operation.target).id,
-        operation.direction,
-      );
-      break;
-    case "replace":
-      layoutModel.dropReplaceGridItem(
-        resolveItem(currentModel, operation.dropped).id,
-        resolveItem(currentModel, operation.target).id,
-      );
-      break;
-    case "remove":
-      layoutModel.removeGridItem(
-        resolveItem(currentModel, operation.item).id,
-        "close",
-      );
-      break;
-    case "resize-track":
-      currentModel.tracks.resizeTo(
-        operation.trackType,
-        operation.index,
-        operation.size,
-      );
-      break;
-    case "stack":
-      currentModel.stackChildItems(
-        resolveItem(currentModel, operation.target).id,
-        resolveItem(currentModel, operation.item).id,
-      );
-      break;
-    case "select-tab": {
-      const stack = resolveItem(currentModel, operation.stack);
-      const tab = currentModel
-        .getTabState(stack.id)
-        .tabs.find(({ id }) => id === operation.tab);
-      if (!tab) {
-        throw Error(`Scenario tab #${operation.tab} not found`);
-      }
-      currentModel.getTabState(stack.id).setActiveTab(tab.label);
-      break;
-    }
-    case "move-tab": {
-      const stack = resolveItem(currentModel, operation.stack);
-      const tabState = currentModel.getTabState(stack.id);
-      const tab = tabState.tabs.find(({ id }) => id === operation.tab);
-      const target = tabState.tabs.find(({ id }) => id === operation.target);
-      if (!tab || !target) {
-        throw Error("Scenario move-tab source or target not found");
-      }
-      currentModel.moveItemWithinTabs(
-        stack.id,
-        tab,
-        { position: operation.position, target: target.label },
-        operation.activate ?? false,
-      );
-      break;
-    }
-    case "regenerate-placeholders":
-      currentModel.createPlaceholders();
-      break;
-    case "round-trip":
-      return new GridModel(
-        currentModel.id,
-        currentModel.toGridLayoutDescriptor(),
-      );
-  }
-  return currentModel;
-};
+): GridCommandResult =>
+  new LegacyGridCommandExecutor(currentModel).execute(
+    toCommand(currentModel, operation),
+  );
 
 const aliasesFor = (model: GridModel) => {
   const aliases = new Map<string, string>();
@@ -367,14 +363,20 @@ export const assertModelInvariants = (model: GridModel) => {
 };
 
 export const runScenario = (scenario: LayoutScenario) => {
-  let model = new GridModel(`scenario-${scenario.name}`, scenario.initial);
+  const model = new GridModel(`scenario-${scenario.name}`, scenario.initial);
   for (const step of scenario.operations ?? []) {
     if (isExpectedError(step)) {
-      expect(() => executeOperation(model, step.operation)).toThrow(
-        step.message,
-      );
+      const result = executeOperation(model, step.operation);
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        if (typeof step.message === "string") {
+          expect(result.error.message).toBe(step.message);
+        } else {
+          expect(result.error.message).toMatch(step.message);
+        }
+      }
     } else {
-      model = executeOperation(model, step);
+      expect(executeOperation(model, step)).toMatchObject({ ok: true });
     }
   }
   assertModelInvariants(model);
