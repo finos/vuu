@@ -113,7 +113,7 @@ export const useGridLayout = ({
    * which will be used to create the GridModel. We also save in state a copy
    * of the child elements as a map, keyed by id.
    */
-  const [children, layout] = useMemo<
+  const [[children, layout]] = useState<
     [GridLayoutItemElements, GridLayoutDescriptor]
   >(() => {
     const savedGrid = getSavedGrid?.(id);
@@ -130,10 +130,10 @@ export const useGridLayout = ({
       return [reactElements, layoutDescriptor];
     } else {
       throw Error(
-        "[useGridLayout] useMemo no saved grid details available and no layout provided. Either pass layout prop or provide layout using a GridLayoutProvider",
+        "[useGridLayout] no saved grid details available and no layout provided. Either pass layout props or provide a layout using GridLayoutProvider",
       );
     }
-  }, [childrenProp, getSavedGrid, id, colsAndRows]);
+  });
 
   // Note we initialise this ref with the initial children from props. We subsequently
   // only update it in response to manipulation of the GridLayout NOT in case of the

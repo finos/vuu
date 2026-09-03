@@ -286,6 +286,23 @@ test.describe("GridLayout browser interactions", () => {
     expect(Math.abs((after?.x ?? 0) - (before?.x ?? 0))).toBeGreaterThan(30);
   });
 
+  test("splitter resize preserves a moved layout after onChange rerenders", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "change-rerender" });
+    const grid = new GridLayoutDriver(component, page);
+
+    await grid.dragItem("rerender-alpha", "rerender-beta", "north");
+    expect(await grid.gridArea("rerender-alpha")).toBe("1/1/2/2");
+    expect(await grid.gridArea("rerender-beta")).toBe("2/1/3/2");
+
+    await grid.resize(grid.separator("horizontal"), 0, 40);
+
+    expect(await grid.gridArea("rerender-alpha")).toBe("1/1/2/2");
+    expect(await grid.gridArea("rerender-beta")).toBe("2/1/3/2");
+  });
+
   test("renders a shared splitter when only one track item opts into resizing", async ({
     mount,
     page,

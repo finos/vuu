@@ -1,6 +1,6 @@
 import { queryClosest } from "@vuu-ui/vuu-utils";
 import type { DragEvent } from "react";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import {
   GridLayout,
   GridLayoutItem,
@@ -13,6 +13,7 @@ import {
 
 export type GridLayoutFixtureVariant =
   | "basic"
+  | "change-rerender"
   | "irregular-removal"
   | "mixed-resizable-boundary"
   | "nested"
@@ -120,6 +121,41 @@ const BasicLayout = () => (
     </GridLayoutItem>
   </GridLayout>
 );
+
+const ChangeRerenderLayout = () => {
+  const [, setChangeCount] = useState(0);
+
+  return (
+    <GridLayout
+      colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr"] }}
+      data-testid="grid-layout"
+      id="change-rerender-grid"
+      onChange={() => setChangeCount((count) => count + 1)}
+      style={{ height: 320, width: 640 }}
+    >
+      <GridLayoutItem
+        data-drop-target
+        header
+        id="rerender-alpha"
+        resizeable="hv"
+        style={{ gridArea: "1/1/2/2" }}
+        title="Alpha"
+      >
+        <TestContent label="Rerender Alpha" />
+      </GridLayoutItem>
+      <GridLayoutItem
+        data-drop-target
+        header
+        id="rerender-beta"
+        resizeable="hv"
+        style={{ gridArea: "1/2/2/3" }}
+        title="Beta"
+      >
+        <TestContent label="Rerender Beta" />
+      </GridLayoutItem>
+    </GridLayout>
+  );
+};
 
 const PaletteLayout = () => (
   <GridLayout
@@ -677,6 +713,7 @@ export const GridLayoutTestFixture = ({
 }) => (
   <GridLayoutProvider options={{ newChildItem: { header: true } }}>
     {variant === "basic" ? <BasicLayout /> : null}
+    {variant === "change-rerender" ? <ChangeRerenderLayout /> : null}
     {variant === "irregular-removal" ? <IrregularRemovalLayout /> : null}
     {variant === "mixed-resizable-boundary" ? (
       <MixedResizableBoundaryLayout />
