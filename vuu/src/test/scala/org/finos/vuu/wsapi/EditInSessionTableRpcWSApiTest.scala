@@ -25,7 +25,7 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   private val maxSessionTableSize = 10 // configured in TestStartUp
 
   Feature("[Web Socket API] create a session table failed") {
-    Scenario("Request to create a session table failed for no enough permission") {
+    Scenario("Request to create a session table failed for no enough permission for edit") {
       Given("a view port exist")
       val viewPortId = createViewPort(noEnoughPermissionTableName)
 
@@ -44,7 +44,28 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
       val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
-      rpcResult.errorMessage shouldBe "No permission to create session table."
+      rpcResult.errorMessage shouldBe "No permission to create session table for edit."
+    }
+
+    Scenario("Request to create a session table failed for no enough permission for import") {
+      Given("a view port exist")
+      val viewPortId = createViewPort(noEnoughPermissionTableName)
+
+      When("request createSessionTable")
+      val createSessionTableRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.CreateSessionTableRpc,
+        params = Map(
+          "sessionType" -> "import"
+        ))
+      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
+
+      Then("session table is not created")
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
+      val rpcResult = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
+      rpcResult.errorMessage shouldBe "No permission to create session table for import."
     }
 
     Scenario("create a session table failed for undefined session type") {
@@ -394,6 +415,31 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
   }
 
   Feature("[Web Socket API] create a session table for export mode") {
+    Scenario("Request to create a session table for export succeeds without permission check") {
+      Given("a view port exist")
+      val viewPortId = createViewPort(noEnoughPermissionTableName)
+
+      When("request createSessionTable")
+      val createSessionTableRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.CreateSessionTableRpc,
+        params = Map(
+          "sessionType" -> "export",
+          "sessionTableName" -> sessionTableName1
+        ))
+      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
+
+      Then("session table is created")
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
+      val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
+      sessionTableName.contains("simple-testSessionTable1") shouldBe true
+
+      createViewPortAndVerifyDataSize(sessionTableName, moduleName, 3)
+    }
+
     Scenario("create a session table from source table using default name") {
       Given("a view port exist")
       val viewPortId = createViewPort(tableName1)
