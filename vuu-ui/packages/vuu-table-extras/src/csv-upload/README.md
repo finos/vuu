@@ -30,6 +30,8 @@ import { CsvUpload } from "@vuu-ui/vuu-table-extras";
 | Prop | Type | Description |
 |---|---|---|
 | `dataSource` | `DataSource` | **Required.** The Vuu data source for the target table. Must support `createSessionDataSource` (used internally with `sessionType: "import"`), `addRow`, and `endEditSession`. |
+| `importSchema` | `TableSchema` | Schema of the import table, where it differs from the target table. Used to validate the CSV and to determine the session datasource columns. If omitted and `importTable` is provided, the schema is fetched via `getTableSchema`. Pass a stable reference. See [Importing into a separate table](#importing-into-a-separate-table). |
+| `importTable` | `VuuTable` | The import table, where it differs from the target table. Used to resolve `importSchema` when that is not supplied, and to validate the module of the session table returned by the server. |
 | `embedded` | `boolean` | Renders the upload content and actions without its own `Dialog`, for use inside an existing modal. Defaults to `false`. |
 | `importMode` | `"direct" \| "preview"` | Both modes create and populate an `EditSession`. `"direct"` commits it when Import is pressed; `"preview"` returns the live session through `onPreview` so the caller can edit or delete rows before ending it. Defaults to `"direct"`. |
 | `maxRows` | `number` | Maximum number of data rows permitted in the CSV. Defaults to `25000`. |
@@ -191,6 +193,34 @@ Row payloads sent to `addRow` differ by validity:
 - **Error rows** — only `{ vuuRowNum, vuuMsg }` (no column data); the session table key is set to the string value of `vuuRowNum`.
 
 On `endEditSession(save: true)` the server skips any row where `vuuMsg` is non-empty, so error rows are never committed to the source table.
+
+---
+
+## Importing into a separate table
+
+By default the CSV is validated against `dataSource.tableSchema` and the session inherits the target table's columns. When uploads land in a dedicated import/export table with its own schema, declare it:
+
+```tsx
+<CsvUpload
+  dataSource={targetDataSource}   // subscribed; carries the createSessionTable RPC
+  importTable={IMPORT_TABLE}
+  importSchema={IMPORT_SCHEMA}    // optional - fetched from importTable if omitted
+/>
+```
+
+`importSchema` does double duty: its column names become the session datasource columns, and it replaces `dataSource.tableSchema` as the schema the CSV is validated against. That second role is not optional — `processFile` validates the CSV *before* the session begins, and the session datasource is never subscribed (rows are added via `addRow` RPC), so its schema is never populated. The import schema has to be known up front.
+
+| Props | Behaviour |
+|---|---|
+| neither | Validates against `dataSource.tableSchema`; session inherits target columns. |
+| `importTable` only | Schema fetched once via `getTableSchema`; drives validation and session columns. |
+| both | `importSchema` wins; no fetch. |
+
+Notes:
+
+- Once `importTable` is set, the schema never falls back to `dataSource.tableSchema`. Until the fetch resolves `schema` is `undefined`, which disables the drop zone — validating against the target table's columns would be silently wrong.
+- `importSchema` must be a stable reference; it feeds the `EditSession` memo, so a value constructed inline each render recreates the session.
+- The import table's session table must still accept `vuuRowNum` and `vuuMsg`, which are sent on every row.
 
 ---
 

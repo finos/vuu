@@ -85,7 +85,7 @@ describe("EditSession", () => {
 
     await legacyEditSession.begin("Selected");
 
-    expect(beginEditSession).toHaveBeenCalledWith("selected-rows");
+    expect(beginEditSession).toHaveBeenCalledWith("selected-rows", undefined);
     expect(legacyEditSession.sessionDataSource).toBe(sessionDataSource);
   });
 

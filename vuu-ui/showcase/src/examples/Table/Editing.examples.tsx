@@ -47,6 +47,7 @@ import {
 } from "@vuu-ui/vuu-ui-controls";
 import {
   DataSourceProvider,
+  EventEmitter,
   registerComponent,
   toColumnName,
   useData,
@@ -63,7 +64,7 @@ import {
   useState,
 } from "react";
 import { SimulTable } from "./SimulTableTemplate";
-import type { CopyOption, DataSource } from "@vuu-ui/vuu-data-types";
+import type { CopyOption, DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
 import { LayoutProvider, Stack, View } from "@vuu-ui/vuu-layout";
 import { ColumnFilter } from "@vuu-ui/vuu-filters";
 import { Toolbar } from "./Toolbar";
@@ -594,6 +595,78 @@ export const UseEditableTableSessionReadiness = ({
     />
   </LocalDataSourceProvider>
 );
+
+const DIVERGENT_VIEW_SCHEMA: TableSchema = {
+  columns: [
+    { name: "id", serverDataType: "string" },
+    { name: "name", serverDataType: "string" },
+  ],
+  key: "id",
+  table: { module: "TEST", table: "items" },
+};
+
+const DIVERGENT_EDIT_TABLE: VuuTable = { module: "TEST", table: "itemsEdit" };
+
+const DIVERGENT_EDIT_SCHEMA: TableSchema = {
+  columns: [
+    { name: "id", serverDataType: "string" },
+    { name: "quantity", serverDataType: "int" },
+  ],
+  key: "id",
+  table: DIVERGENT_EDIT_TABLE,
+};
+
+const DIVERGENT_EDIT_COLUMNS = DIVERGENT_EDIT_SCHEMA.columns.map(toColumnName);
+
+export const UseEditableTableWithEditColumns = () => {
+  const [editMode, setEditMode] = useState<EditMode>("view");
+  const [overrideColumns, setOverrideColumns] = useState<string[]>();
+
+  const sourceDataSource = useMemo(() => {
+    const sessionDataSource = Object.assign(new EventEmitter(), {
+      columns: DIVERGENT_EDIT_COLUMNS,
+      status: "subscribed",
+      table: { module: "TEST", table: "session-itemsEdit" },
+      tableSchema: DIVERGENT_EDIT_SCHEMA,
+      endEditSession: async () => undefined,
+    });
+    return Object.assign(new EventEmitter(), {
+      columns: DIVERGENT_VIEW_SCHEMA.columns.map(toColumnName),
+      status: "subscribed",
+      table: DIVERGENT_VIEW_SCHEMA.table,
+      tableSchema: DIVERGENT_VIEW_SCHEMA,
+      createSessionDataSource: async (
+        _copyOption: CopyOption,
+        _sessionType?: string,
+        overrides?: { columns?: string[] },
+      ) => {
+        setOverrideColumns(overrides?.columns);
+        return sessionDataSource as unknown as DataSource;
+      },
+    }) as unknown as DataSource;
+  }, []);
+
+  const { columnsDiverge, editSchema, sessionDataSource } = useEditableTable({
+    dataSource: sourceDataSource,
+    editColumns: DIVERGENT_EDIT_COLUMNS,
+    editTable: DIVERGENT_EDIT_TABLE,
+    isEditMode: editMode === "edit",
+    onCancel: () => setEditMode("view"),
+    onSave: () => setEditMode("view"),
+  });
+
+  return (
+    <div>
+      <button onClick={() => setEditMode("edit")}>Start edit session</button>
+      <output
+        data-diverge={columnsDiverge}
+        data-edit-schema={editSchema?.columns.map(toColumnName).join(",") ?? ""}
+        data-override-columns={overrideColumns?.join(",") ?? ""}
+        data-session={Boolean(sessionDataSource)}
+      />
+    </div>
+  );
+};
 
 /** tags=data-consumer */
 export const CreateSessionTableInstruments = () => (

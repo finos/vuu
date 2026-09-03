@@ -6,10 +6,15 @@ import type {
   EditApi,
   EditSessionMode,
   SchemaColumn,
+  SessionDataSourceOverrides,
   SessionType,
   UndoRowChangeResult,
 } from "@vuu-ui/vuu-data-types";
-import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import type {
+  RpcResult,
+  VuuRowDataItemType,
+  VuuTable,
+} from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
@@ -25,6 +30,13 @@ export type EditSessionConstructorProps = {
   deleteMode?: DeleteRowMode;
   /** @default "createSessionDataSource" */
   editSessionApi?: EditSessionApi;
+  /**
+   * Columns of the edit (session) table, when it differs from the view table. If omitted,
+   * the session datasource inherits the view datasource columns.
+   */
+  editColumns?: string[];
+  /** Expected edit (session) table, used to validate the table returned by the server. */
+  editTable?: VuuTable;
   /** Default column values merged into every addRow call for absent columns. Pass a stable reference. */
   rowDefaults?: RowDefaultDataItemValues;
 };
@@ -99,6 +111,8 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   #cellCommitRevisions = new Map<string, Map<string, number>>();
   #deleteMode: DeleteRowMode;
   #editSessionApi: EditSessionApi;
+  #editColumns?: string[];
+  #editTable?: VuuTable;
   #rowDefaults: RowDefaultDataItemValues;
   #sourceTableDataSource?: EditApi;
   #sessionDataSource?: DataSource;
@@ -117,12 +131,16 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     dataSource,
     deleteMode = "soft",
     editSessionApi = "createSessionDataSource",
+    editColumns,
+    editTable,
     rowDefaults = {},
   }: EditSessionConstructorProps) {
     super();
     this.#sourceTableDataSource = dataSource;
     this.#deleteMode = deleteMode;
     this.#editSessionApi = editSessionApi;
+    this.#editColumns = editColumns;
+    this.#editTable = editTable;
     this.#rowDefaults = rowDefaults;
   }
 
@@ -531,12 +549,21 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
       try {
         const sourceDataSource = this.#sourceTableDataSource;
+        const overrides: SessionDataSourceOverrides | undefined =
+          this.#editColumns || this.#editTable
+            ? { columns: this.#editColumns, table: this.#editTable }
+            : undefined;
         const sessionDataSource =
           this.#editSessionApi === "beginEditSession"
             ? await sourceDataSource?.beginEditSession?.(
                 toEditSessionMode(copyOption),
+                overrides,
               )
-            : await sourceDataSource?.createSessionDataSource?.(copyOption, sessionType);
+            : await sourceDataSource?.createSessionDataSource?.(
+                copyOption,
+                sessionType,
+                overrides,
+              );
         if (!sessionDataSource) {
           throw new Error(
             `[EditSession] datasource does not support ${this.#editSessionApi}`,
@@ -547,23 +574,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         this.#setStale(false);
         this.#setLifecycle({ status: "active", sessionDataSource });
 
-        if (Object.keys(this.#rowDefaults).length > 0) {
-          const schema = sessionDataSource.tableSchema;
-          if (schema) {
-            const columnNames = new Set(schema.columns.map((c: SchemaColumn) => c.name));
-            const unknown = Object.keys(this.#rowDefaults).filter(
-              (key) => !columnNames.has(key),
-            );
-            if (unknown.length > 0) {
-              console.warn(
-                `[EditSession] rowDefaults contains columns not in table schema, removing: ${unknown.join(", ")}`,
-              );
-              for (const key of unknown) {
-                delete this.#rowDefaults[key];
-              }
-            }
-          }
-        }
+        this.reconcileWithSessionSchema();
 
         return sessionDataSource;
       } catch (cause) {
@@ -573,6 +584,54 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       }
 
     });
+  }
+
+  /**
+   * Safe to call repeatedly - schema of a remote session table typically arrives
+   * after begin() resolves, so callers re-invoke this once 'subscribed' fires.
+   */
+  reconcileWithSessionSchema() {
+    const sessionSchema = this.#sessionDataSource?.tableSchema;
+    if (sessionSchema === undefined) {
+      return;
+    }
+
+    const columnNames = new Set(
+      sessionSchema.columns.map((c: SchemaColumn) => c.name),
+    );
+    const unknown = Object.keys(this.#rowDefaults).filter(
+      (key) => !columnNames.has(key),
+    );
+    if (unknown.length > 0) {
+      console.warn(
+        `[EditSession] rowDefaults contains columns not in table schema, removing: ${unknown.join(", ")}`,
+      );
+      for (const key of unknown) {
+        delete this.#rowDefaults[key];
+      }
+    }
+
+    if (this.#editColumns) {
+      const missing = this.#editColumns.filter(
+        (column) => !columnNames.has(column),
+      );
+      if (missing.length > 0) {
+        console.warn(
+          `[EditSession] editColumns not present in session table schema: ${missing.join(", ")}`,
+        );
+      }
+    }
+
+    const sourceKey = (this.#sourceTableDataSource as Partial<DataSource>)
+      ?.tableSchema?.key;
+    if (sourceKey !== undefined && sourceKey !== sessionSchema.key) {
+      // Row edits, deletes and undo state are keyed by row key, so they cannot
+      // be carried across tables with different key columns.
+      console.warn(
+        `[EditSession] source table key '${sourceKey}' differs from session table key '${sessionSchema.key}', discarding pending edits`,
+      );
+      this.#clearEdits();
+    }
   }
 
   get dataSource() {

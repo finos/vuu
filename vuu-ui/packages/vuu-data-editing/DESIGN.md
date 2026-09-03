@@ -26,6 +26,87 @@ ignores callbacks from obsolete data-source bindings.
 `DataEditingProvider` makes the session available to nested controls, while
 `EditButtons` reflects session state in the available editing actions.
 
+## RPC routing
+
+`EditSession` resolves the target of every editing RPC through its `dataSource`
+getter:
+
+```ts
+get dataSource() {
+  return this.#sessionDataSource ?? this.#sourceTableDataSource;
+}
+```
+
+`#sessionDataSource` is assigned by `begin()`, so before an edit session starts
+these operations address the source table, and once the lifecycle is `active`
+they all address the session table:
+
+| Method | Target once active |
+| ------ | ------------------ |
+| `deleteSelectedRows` | session data source |
+| `addRow` / `addNewRow` | session data source |
+| `commit` → `editCell` | session data source |
+| `undoRowChange` | session data source |
+| `end` → `endEditSession` | session data source |
+
+`begin()` is the one deliberate exception: it calls
+`createSessionDataSource` / `beginEditSession` on `#sourceTableDataSource`
+directly rather than through the getter, because the session table does not yet
+exist. The `createSessionTable` handler is therefore resolved against the source
+table's viewport, and the source data source must be subscribed before edit mode
+is entered.
+
+For a remote `VuuDataSource`, the session instance issues its RPCs against its
+own viewport, so it must have completed its subscription first — which is what
+`isEditSessionReady` gates on.
+
+## Divergent edit tables
+
+The edit (session) table does not always share the view table's schema. By
+default the session data source is built from the view data source config, which
+would carry view-only columns — and any filter, `groupBy`, `sort`, or
+aggregations that reference them — onto a table that does not have them.
+
+`editColumns` and `editTable` describe the edit table when it differs:
+
+```ts
+useEditableTable({
+  dataSource: viewDataSource, // subscribed; carries the createSessionTable RPC
+  editTable: EDIT_TABLE, // stable VuuTable
+  editColumns: EDIT_COLUMNS, // stable string[]
+  isEditMode,
+  onCancel,
+  onSave,
+});
+```
+
+Both are forwarded to `createSessionDataSource` / `beginEditSession` as a
+`SessionDataSourceOverrides` argument. Given `columns`, the data source builds
+the session config from `sessionDataSourceConfig` rather than inheriting the
+view config; `table` is checked against the module of the server-assigned
+session table. The session table name itself is always server-generated.
+
+These overrides only affect how the session data source is constructed. Which
+data source subsequent operations target is unchanged — see [RPC
+routing](#rpc-routing).
+
+Because both are `useMemo` dependencies of the `EditSession`, they must be
+stable references; a new array or object each render recreates the session.
+
+Once the session table schema arrives, `reconcileWithSessionSchema` prunes
+`rowDefaults` entries that the edit table does not have, warns about
+`editColumns` missing from the schema, and discards pending edits if the key
+column differs — row edits, deletes, and undo state are all keyed by row key and
+cannot cross a key-column change. The hook invokes it on `subscribed`, since a
+remote session table has no schema at the point `begin()` resolves.
+
+The hook returns `editSchema` and `columnsDiverge` for consumers rendering a
+single `Table` across both modes: the returned `dataSource` swaps column sets on
+entering edit mode, so column descriptors must be rebuilt rather than reused.
+This matters for cell editing in particular: `editCell` sends a column name to
+the session table, so it must come from the edit schema. `rowDefaults` naming
+view-only columns are dropped by `reconcileWithSessionSchema` rather than sent.
+
 ## Files
 
 | File                          | Responsibility                                                                                                                     |

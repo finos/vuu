@@ -598,6 +598,18 @@ export declare type EditSessionMode =
   | "all-rows"
   | "empty-session-table";
 
+/**
+ * Describes an edit (session) table whose schema differs from the source (view) table.
+ * When supplied, the session datasource is built from these values instead of inheriting
+ * the source datasource config, which would otherwise reference view-only columns.
+ */
+export declare type SessionDataSourceOverrides = {
+  /** Columns to subscribe to on the session table. */
+  columns?: VuuColumns;
+  /** Expected session table. Used to validate the table returned by the server. */
+  table?: VuuTable;
+};
+
 export interface EditApi<
   T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
 > {
@@ -622,12 +634,14 @@ export interface EditApi<
   createSessionDataSource?: (
     copyOption: CopyOption,
     sessionType?: SessionType,
+    overrides?: SessionDataSourceOverrides,
   ) => Promise<DataSource<T> | undefined>;
   /**
    * Legacy session creation API. Prefer createSessionDataSource for new servers.
    */
   beginEditSession?: (
     editSessionMode?: EditSessionMode,
+    overrides?: SessionDataSourceOverrides,
   ) => Promise<DataSource<T> | undefined>;
   endEditSession?: (
     saveChanges?: boolean,

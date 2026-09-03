@@ -254,3 +254,74 @@ test.describe("Given a CsvUpload with a missing key column", () => {
     );
   });
 });
+
+test.describe("Given a CsvUpload with an import table", () => {
+  test("WHEN importSchema is provided THEN the CSV is validated against it and its columns drive the session", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvUpload/CsvUploadWithImportSchema");
+
+    // 'quantity' is absent from the target table schema, present in the import schema
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "import-cols.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from("id,quantity\nrow-001,10\n"),
+    });
+
+    await expect(page.locator("button", { hasText: "Import" })).toBeEnabled({
+      timeout: 5000,
+    });
+    await expect(page.locator(".vuuCsvUpload-dropZone")).not.toContainText(
+      "Your file contains errors",
+    );
+
+    await page.locator("button", { hasText: "Import" }).click();
+
+    await expect(
+      page.locator('[data-testid="session-columns"]'),
+    ).toHaveAttribute("data-columns", "id,quantity", { timeout: 5000 });
+  });
+
+  test("WHEN a CSV matching the target table but not the import table is selected THEN it is rejected", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvUpload/CsvUploadWithImportSchema");
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "target-cols.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from("id,name\nrow-001,Widget\n"),
+    });
+
+    await expect(page.locator(".saltFileDropZone")).toHaveClass(
+      /saltFileDropZone-error/,
+      { timeout: 5000 },
+    );
+    await expect(page.locator(".vuuCsvUpload-errorItem")).toContainText(
+      "Column name is not present in table schema.",
+    );
+  });
+
+  test("WHEN only importTable is provided THEN the schema is fetched and used for validation", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvUpload/CsvUploadWithImportTableOnly");
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "instruments.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(
+        "bbg,currency,description,exchange,isin,lotSize,ric\nAAPL US,USD,Apple Inc,NASDAQ,US0378331005,120,AAPL.O\n",
+      ),
+    });
+
+    await expect(page.locator(".vuuCsvUpload-dropZone")).not.toContainText(
+      "Your file contains errors",
+      { timeout: 5000 },
+    );
+    await expect(page.locator("button", { hasText: "Import" })).toBeEnabled();
+  });
+});

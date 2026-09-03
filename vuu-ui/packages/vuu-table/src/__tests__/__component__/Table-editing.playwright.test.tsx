@@ -37,6 +37,26 @@ test.describe("useEditableTable session readiness", () => {
   });
 });
 
+test.describe("useEditableTable with a divergent edit table", () => {
+  test("forwards editColumns to createSessionDataSource and reports divergence", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/UseEditableTableWithEditColumns");
+
+    const output = page.locator("output");
+    await page.getByRole("button", { name: "Start edit session" }).click();
+
+    await expect(output).toHaveAttribute("data-session", "true");
+    await expect(output).toHaveAttribute(
+      "data-override-columns",
+      "id,quantity",
+    );
+    await expect(output).toHaveAttribute("data-edit-schema", "id,quantity");
+    await expect(output).toHaveAttribute("data-diverge", "true");
+  });
+});
+
 test.describe("Inline add row", () => {
   test("renders insert-editable cells and blanks update-only columns", async ({
     mount,

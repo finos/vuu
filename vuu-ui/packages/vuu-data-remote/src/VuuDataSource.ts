@@ -13,6 +13,7 @@ import type {
   EditSessionMode,
   OptimizeStrategy,
   ServerAPI,
+  SessionDataSourceOverrides,
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
@@ -34,6 +35,7 @@ import type {
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
 import {
+  assertExpectedSessionTable,
   BaseDataSource,
   combineFilters,
   constrainRange,
@@ -46,6 +48,7 @@ import {
   itemsOrOrderChanged,
   logger,
   Range,
+  sessionDataSourceConfig,
   StaleUpdateError,
   throttle,
   uuid,
@@ -688,6 +691,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   async createSessionDataSource(
     copyOption: CopyOption,
     sessionType: SessionType = "edit",
+    overrides?: SessionDataSourceOverrides,
   ): Promise<VuuDataSource | undefined> {
     const rpcResponse = await this?.rpcRequest?.({
       type: "RPC_REQUEST",
@@ -696,8 +700,9 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     });
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
+      assertExpectedSessionTable(sessionTable, overrides?.table);
       return new VuuDataSource({
-        ...this.config,
+        ...sessionDataSourceConfig(this.config, overrides?.columns),
         table: sessionTable,
         viewport: sessionTable.table,
       });
