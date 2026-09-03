@@ -4,8 +4,10 @@ import type {
   DataSourceCallbackMessage,
   DataSourceRow,
   DataSourceSubscribedMessage,
+  SessionDataSourceOverrides,
 } from "@vuu-ui/vuu-data-types";
 import { metadataKeys } from "./column-utils";
+import { isSessionTable } from "./protocol-message-utils";
 import { Range } from "./range-utils";
 
 export type ExportColumnDescriptor<TName extends string = string> = {
@@ -41,46 +43,127 @@ const triggerCsvDownload = (csv: string, filename: string): void => {
 };
 
 /** Downloads a single-row CSV containing only the column headers, for use as an import template. */
-export const exportCsvTemplate = (
+export const exportCsvTemplate = async (
   dataSource: DataSource,
   filename = "template.csv",
   excludeColumns: string[] = [],
   columns?: string[],
-): void => {
-  const schema = dataSource.tableSchema;
-  if (!schema) {
-    throw Error("exportCsvTemplate: tableSchema not available on dataSource");
-  }
-  const schemaColumnNames = new Set(schema.columns.map((col) => col.name));
-  if (columns !== undefined) {
-    const unknown = columns.filter((name) => !schemaColumnNames.has(name));
-    if (unknown.length > 0) {
-      throw Error(`exportCsvTemplate: unknown column(s): ${unknown.join(", ")}`);
+  overrides?: SessionDataSourceOverrides,
+): Promise<void> => {
+  const sessionOverrides: SessionDataSourceOverrides | undefined =
+    overrides ?? (columns ? { columns } : undefined);
+
+  if (!isSessionTable(dataSource.table) && dataSource.createSessionDataSource) {
+    try {
+      const sessionDataSource = await dataSource.createSessionDataSource(
+        "Empty",
+        "export",
+        sessionOverrides,
+      );
+      if (sessionDataSource) {
+        return new Promise<void>((resolve) => {
+          const excluded = new Set([
+            ...EXPORT_EXCLUDED_COLUMNS,
+            ...excludeColumns,
+          ]);
+          sessionDataSource.subscribe(
+            { range: Range(0, 0), columns: sessionOverrides?.columns },
+            (message: DataSourceCallbackMessage) => {
+              if (message.type === "subscribed") {
+                const { columns: subColumns } =
+                  message as DataSourceSubscribedMessage;
+                const exportCols = subColumns.filter(
+                  (name) => !excluded.has(name),
+                );
+                const header = exportCols.map(csvCell).join(",");
+                triggerCsvDownload(`${header}\r\n`, filename);
+                sessionDataSource.unsubscribe();
+                resolve();
+              }
+            },
+          );
+        });
+      }
+    } catch (error) {
+      console.warn(
+        "[exportCsvTemplate] createSessionDataSource failed, falling back to tableSchema",
+        error,
+      );
     }
   }
+
+  const schema = dataSource.tableSchema;
+  const targetColumns = columns ?? overrides?.columns;
+  if (targetColumns !== undefined) {
+    if (schema) {
+      const schemaColumnNames = new Set(schema.columns.map((col) => col.name));
+      const unknown = targetColumns.filter((name) => !schemaColumnNames.has(name));
+      if (unknown.length > 0) {
+        console.warn(
+          `[exportCsvTemplate] unknown column(s) in view tableSchema: ${unknown.join(", ")}`,
+        );
+      }
+    }
+  } else if (!schema) {
+    throw Error("exportCsvTemplate: tableSchema not available on dataSource");
+  }
+
   const excluded = new Set([...EXPORT_EXCLUDED_COLUMNS, ...excludeColumns]);
-  const exportCols = columns
-    ? columns.filter((name) => !excluded.has(name))
-    : schema.columns.filter((col) => !excluded.has(col.name)).map((col) => col.name);
+  const exportCols = targetColumns
+    ? targetColumns.filter((name) => !excluded.has(name))
+    : schema?.columns
+        .filter((col) => !excluded.has(col.name))
+        .map((col) => col.name) ?? [];
+
+  if (exportCols.length === 0) {
+    throw Error("exportCsvTemplate: no columns available for export");
+  }
+
   const header = exportCols.map(csvCell).join(",");
   triggerCsvDownload(`${header}\r\n`, filename);
 };
 
 /**
- * Subscribes to `sessionDataSource` with a full-range request to drain all rows,
- * serialises them to CSV (excluding internal session columns), then triggers a
- * browser download. The dataSource is unsubscribed automatically once the download
+ * Subscribes to `dataSource` (creating an export session data source if a view data source is passed)
+ * with a full-range request to drain all rows, serialises them to CSV (excluding internal session columns),
+ * then triggers a browser download. The session data source is unsubscribed automatically once the download
  * is initiated.
  */
-export const exportSessionTableToCsv = <TName extends string = string>(
-  sessionDataSource: DataSource,
+export const exportSessionTableToCsv = async <TName extends string = string>(
+  dataSource: DataSource,
   filename = "export.csv",
   excludeColumns: string[] = [],
   onError?: (error: Error) => void,
   onSuccess?: () => void,
   maxRows = MAX_EXPORT_ROWS,
   columnDescriptors?: ExportColumnDescriptor<TName>[],
-): void => {
+  copyOption: CopyOption = "All",
+  overrides?: SessionDataSourceOverrides,
+): Promise<void> => {
+  let sessionDataSource: DataSource | undefined;
+  if (!isSessionTable(dataSource.table) && dataSource.createSessionDataSource) {
+    try {
+      sessionDataSource = await dataSource.createSessionDataSource(
+        copyOption,
+        "export",
+        overrides,
+      );
+    } catch (err) {
+      onError?.(err instanceof Error ? err : new Error(String(err)));
+      return;
+    }
+  } else {
+    sessionDataSource = dataSource;
+  }
+
+  if (!sessionDataSource) {
+    onError?.(
+      new Error("exportSessionTableToCsv: unable to obtain sessionDataSource"),
+    );
+    return;
+  }
+
+  const activeSessionDataSource = sessionDataSource;
   const excluded = new Set([...EXPORT_EXCLUDED_COLUMNS, ...excludeColumns]);
   let exportCols: string[] = [];
   let colNameToRowIdx: Record<string, number> = {};
@@ -88,72 +171,102 @@ export const exportSessionTableToCsv = <TName extends string = string>(
   let totalSize = 0;
   const collectedRows: DataSourceRow[] = [];
 
-  const handleMessage = (message: DataSourceCallbackMessage): void => {
-    if (message.type === "subscribed") {
-      const { columns } = message as DataSourceSubscribedMessage;
-      if (columnDescriptors) {
-        const subscribedSet = new Set(columns);
-        const unknown = columnDescriptors
-          .filter((d) => !excluded.has(d.name) && !subscribedSet.has(d.name))
-          .map((d) => d.name);
-        if (unknown.length > 0) {
-          sessionDataSource.unsubscribe();
-          onError?.(new Error(`exportToCsv: unknown column(s) in columnDescriptors: ${unknown.join(", ")}`));
-          return;
+  return new Promise<void>((resolve) => {
+    const handleMessage = (message: DataSourceCallbackMessage): void => {
+      if (message.type === "subscribed") {
+        const { columns } = message as DataSourceSubscribedMessage;
+        if (columnDescriptors) {
+          const subscribedSet = new Set(columns);
+          const unknown = columnDescriptors
+            .filter((d) => !excluded.has(d.name) && !subscribedSet.has(d.name))
+            .map((d) => d.name);
+          if (unknown.length > 0) {
+            activeSessionDataSource.unsubscribe();
+            onError?.(
+              new Error(
+                `exportToCsv: unknown column(s) in columnDescriptors: ${unknown.join(", ")}`,
+              ),
+            );
+            resolve();
+            return;
+          }
+          descriptorMap = Object.fromEntries(
+            columnDescriptors.map((d) => [d.name, d]),
+          );
         }
-        descriptorMap = Object.fromEntries(columnDescriptors.map((d) => [d.name, d]));
-      }
-      exportCols = columns.filter((name) => !excluded.has(name));
-      // column values start after the fixed metadata block
-      colNameToRowIdx = Object.fromEntries(
-        columns.map((name, i) => [name, metadataKeys.count + i]),
-      );
-    } else if (message.type === "viewport-update") {
-      if (message.mode === "size-only") {
-        totalSize = message.size ?? 0;
-        if (totalSize === 0) {
-          sessionDataSource.unsubscribe();
-          return;
-        }
-        if (totalSize > maxRows) {
-          sessionDataSource.unsubscribe();
-          onError?.(new Error(`exportToCsv: row count ${totalSize} exceeds the ${maxRows} row limit`));
-          return;
-        }
-        // request rows in chunks for predictable behaviour across local and remote DataSources
-        sessionDataSource.range = Range(0, Math.min(CHUNK_SIZE, totalSize));
-      } else if (message.mode === "batch" && message.rows) {
-        collectedRows.push(...message.rows);
-        // update totalSize in case it changed between size-only and batch
-        if (message.size !== undefined) {
-          totalSize = message.size;
-        }
-        if (collectedRows.length >= totalSize) {
-          sessionDataSource.unsubscribe();
-          const lines: string[] = [
-            exportCols.map((name) => csvCell(descriptorMap[name]?.label ?? name)).join(","),
-          ];
-          for (const row of collectedRows) {
-            lines.push(
-              exportCols.map((c) => {
-                const raw = row[colNameToRowIdx[c]];
-                const formatter = descriptorMap[c]?.exportFormatter;
-                return csvCell(formatter ? formatter(raw) : raw);
-              }).join(","),
+        exportCols = columns.filter((name) => !excluded.has(name));
+        // column values start after the fixed metadata block
+        colNameToRowIdx = Object.fromEntries(
+          columns.map((name, i) => [name, metadataKeys.count + i]),
+        );
+      } else if (message.type === "viewport-update") {
+        if (message.mode === "size-only") {
+          totalSize = message.size ?? 0;
+          if (totalSize === 0) {
+            activeSessionDataSource.unsubscribe();
+            onSuccess?.();
+            resolve();
+            return;
+          }
+          if (totalSize > maxRows) {
+            activeSessionDataSource.unsubscribe();
+            onError?.(
+              new Error(
+                `exportToCsv: row count ${totalSize} exceeds the ${maxRows} row limit`,
+              ),
+            );
+            resolve();
+            return;
+          }
+          // request rows in chunks for predictable behaviour across local and remote DataSources
+          activeSessionDataSource.range = Range(
+            0,
+            Math.min(CHUNK_SIZE, totalSize),
+          );
+        } else if (message.mode === "batch" && message.rows) {
+          collectedRows.push(...message.rows);
+          // update totalSize in case it changed between size-only and batch
+          if (message.size !== undefined) {
+            totalSize = message.size;
+          }
+          if (collectedRows.length >= totalSize) {
+            activeSessionDataSource.unsubscribe();
+            const lines: string[] = [
+              exportCols
+                .map((name) => csvCell(descriptorMap[name]?.label ?? name))
+                .join(","),
+            ];
+            for (const row of collectedRows) {
+              lines.push(
+                exportCols
+                  .map((c) => {
+                    const raw = row[colNameToRowIdx[c]];
+                    const formatter = descriptorMap[c]?.exportFormatter;
+                    return csvCell(formatter ? formatter(raw) : raw);
+                  })
+                  .join(","),
+              );
+            }
+            triggerCsvDownload(lines.join("\r\n"), filename);
+            onSuccess?.();
+            resolve();
+          } else {
+            const nextFrom = collectedRows.length;
+            activeSessionDataSource.range = Range(
+              nextFrom,
+              Math.min(nextFrom + CHUNK_SIZE, totalSize),
             );
           }
-          triggerCsvDownload(lines.join("\r\n"), filename);
-          onSuccess?.();
-        } else {
-          const nextFrom = collectedRows.length;
-          sessionDataSource.range = Range(nextFrom, Math.min(nextFrom + CHUNK_SIZE, totalSize));
         }
       }
-    }
-  };
+    };
 
-  sessionDataSource.subscribe({ range: Range(0, 0) }, handleMessage);
-}
+    activeSessionDataSource.subscribe(
+      { range: Range(0, 0), columns: overrides?.columns },
+      handleMessage,
+    );
+  });
+};
 
 /**
  * Creates an export session table from `dataSource` then streams all rows to a CSV download.
@@ -167,11 +280,17 @@ export const exportToCsv = async <TName extends string = string>(
   onSuccess?: () => void,
   maxRows = MAX_EXPORT_ROWS,
   columnDescriptors?: ExportColumnDescriptor<TName>[],
+  overrides?: SessionDataSourceOverrides,
 ): Promise<void> => {
-  const sessionDataSource =
-    await dataSource.createSessionDataSource?.(copyOption, "export");
-  if (!sessionDataSource) {
-    throw Error("exportToCsv: dataSource does not support createSessionDataSource");
-  }
-  exportSessionTableToCsv(sessionDataSource, filename, excludeColumns, onError, onSuccess, maxRows, columnDescriptors);
-}
+  return exportSessionTableToCsv(
+    dataSource,
+    filename,
+    excludeColumns,
+    onError,
+    onSuccess,
+    maxRows,
+    columnDescriptors,
+    copyOption,
+    overrides,
+  );
+};

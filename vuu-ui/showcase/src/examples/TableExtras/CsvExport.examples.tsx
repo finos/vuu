@@ -267,3 +267,61 @@ export const CsvExportWithFormatters = () => (
     <CsvExportWithFormattersContent />
   </LocalDataSourceProvider>
 );
+
+const CsvExportWithOverridesContent = () => {
+  const [status, setStatus] = useState<string | undefined>();
+  const dataSource = useMemo(
+    () => simulModule.createDataSource(TABLE_NAME),
+    [],
+  );
+
+  const handleExportOverrides = useCallback(async () => {
+    setStatus(undefined);
+    try {
+      await exportToCsv(
+        dataSource as DataSource,
+        "All",
+        "instruments-overrides.csv",
+        [],
+        (err) => setStatus(`Export failed: ${err.message}`),
+        () => setStatus("Download started"),
+        10_000,
+        undefined,
+        { columns: ["ric", "currency", "lotSize"] },
+      );
+    } catch (e) {
+      setStatus(`Export failed: ${(e as Error).message}`);
+    }
+  }, [dataSource]);
+
+  const handleTemplateOverrides = useCallback(async () => {
+    await exportCsvTemplate(
+      dataSource as DataSource,
+      "template-overrides.csv",
+      [],
+      undefined,
+      { columns: ["ric", "isin"] },
+    );
+  }, [dataSource]);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: 12 }}>
+      <Button onClick={handleExportOverrides}>
+        Export with column overrides
+      </Button>
+      <Button onClick={handleTemplateOverrides}>
+        Template with column overrides
+      </Button>
+      {status ? (
+        <span style={{ fontSize: 12, fontWeight: 600 }}>{status}</span>
+      ) : null}
+    </div>
+  );
+};
+
+export const CsvExportWithOverrides = () => (
+  <LocalDataSourceProvider>
+    <CsvExportWithOverridesContent />
+  </LocalDataSourceProvider>
+);
+

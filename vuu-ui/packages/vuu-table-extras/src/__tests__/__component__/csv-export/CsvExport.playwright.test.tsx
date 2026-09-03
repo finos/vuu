@@ -195,3 +195,50 @@ test.describe("ExportColumnDescriptor — exportFormatter and label", () => {
     expect(dataRows.every((row) => row.split(",").some((cell) => cell.endsWith(" units")))).toBe(true);
   });
 });
+
+test.describe("exportCsvTemplate and exportToCsv with overrides", () => {
+  test("WHEN overrides with columns are passed to exportCsvTemplate THEN the template header matches overrides", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvExport/CsvExportWithOverrides");
+
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      page
+        .locator("button", { hasText: "Template with column overrides" })
+        .click(),
+    ]);
+
+    expect(download.suggestedFilename()).toBe("template-overrides.csv");
+    const filePath = await download.path();
+    if (!filePath) throw new Error("download path not available");
+    const content = fs.readFileSync(filePath, "utf-8");
+    const [header] = content.split("\r\n");
+
+    expect(header).toBe("ric,isin");
+  });
+
+  test("WHEN overrides with columns are passed to exportToCsv THEN exported CSV columns match overrides", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvExport/CsvExportWithOverrides");
+
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      page
+        .locator("button", { hasText: "Export with column overrides" })
+        .click(),
+    ]);
+
+    expect(download.suggestedFilename()).toBe("instruments-overrides.csv");
+    const filePath = await download.path();
+    if (!filePath) throw new Error("download path not available");
+    const content = fs.readFileSync(filePath, "utf-8");
+    const [header] = content.split("\r\n");
+
+    expect(header).toBe("ric,currency,lotSize");
+  });
+});
+
