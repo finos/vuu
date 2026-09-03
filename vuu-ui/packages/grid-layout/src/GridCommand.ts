@@ -123,6 +123,8 @@ export type GridCommandErrorCode =
   | "STACK_NOT_FOUND"
   | "TAB_NOT_FOUND"
   | "TRACK_NOT_FOUND"
+  | "TRANSACTION_ACTIVE"
+  | "TRANSACTION_CLOSED"
   | "UNSUPPORTED_ACTION";
 
 export interface GridCommandError {

@@ -668,6 +668,17 @@ export class GridTrack {
   toString = () => this.trackSize;
 }
 
+type GridTrackCheckpoint = {
+  readonly track: GridTrack;
+  readonly measuredValue: number;
+  readonly size: TrackSize;
+};
+
+type GridTracksCheckpoint = {
+  readonly columns: readonly GridTrackCheckpoint[];
+  readonly rows: readonly GridTrackCheckpoint[];
+};
+
 export class GridTracks extends EventEmitter<GridTrackEvents> {
   #columns: GridTrack[];
   #rows: GridTrack[];
@@ -711,6 +722,36 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
 
   getTracks(trackType: TrackType) {
     return trackType === "column" ? this.#columns : this.#rows;
+  }
+
+  createCheckpoint(): GridTracksCheckpoint {
+    const checkpointTrack = (track: GridTrack): GridTrackCheckpoint => ({
+      measuredValue: track.measuredValue,
+      size: track.trackSize,
+      track,
+    });
+    return {
+      columns: this.#columns.map(checkpointTrack),
+      rows: this.#rows.map(checkpointTrack),
+    };
+  }
+
+  restoreCheckpoint({ columns, rows }: GridTracksCheckpoint) {
+    const restoreTrack = ({
+      measuredValue,
+      size,
+      track,
+    }: GridTrackCheckpoint) => {
+      track.trackSize = size;
+      if (measuredValue !== -1) {
+        track.measuredValue = measuredValue;
+      }
+      return track;
+    };
+    this.#columns = columns.map(restoreTrack);
+    this.#rows = rows.map(restoreTrack);
+    this.emit("grid-track-resize", "column", this.#columns);
+    this.emit("grid-track-resize", "row", this.#rows);
   }
 
   /**
@@ -1280,12 +1321,163 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
     `;
   }
 }
+
+type GridModelChildItemCheckpoint = {
+  readonly item: GridModelChildItem;
+  readonly state: {
+    readonly column: GridModelPosition;
+    readonly contentDetached: boolean | undefined;
+    readonly contentVisible: boolean | undefined;
+    readonly dragging: boolean;
+    readonly dropTarget: boolean | string | undefined;
+    readonly header: boolean | undefined;
+    readonly height: number | undefined;
+    readonly horizontalSplitter: boolean;
+    readonly minHeight: number | undefined;
+    readonly minWidth: number | undefined;
+    readonly resizeable: GridModelItemResizeable;
+    readonly row: GridModelPosition;
+    readonly stackId: string | undefined;
+    readonly title: string | undefined;
+    readonly type: GridModelItemType;
+    readonly verticalSplitter: boolean;
+    readonly width: number | undefined;
+  };
+};
+
+type TabStateCheckpoint = {
+  readonly active: number;
+  readonly detachedTab: TabStateTab | undefined;
+  readonly tabs: readonly TabStateTab[];
+  readonly tabState: TabState;
+};
+
+export type GridModelCheckpoint = {
+  readonly childItems: readonly GridModelChildItemCheckpoint[];
+  readonly tabStates: readonly TabStateCheckpoint[];
+  readonly tracks: GridTracksCheckpoint;
+};
+
 export class GridModel extends EventEmitter<GridModelEvents> {
   tracks: GridTracks;
 
   #childItems: GridModelChildItem[] = [];
   #index = new Map<string, IGridModelChildItem>();
   #tabState = new Map<string, TabState>();
+
+  createCheckpoint(): GridModelCheckpoint {
+    return {
+      childItems: this.#childItems.map((item) => ({
+        item,
+        state: {
+          column: { end: item.column.end, start: item.column.start },
+          contentDetached: item.contentDetached,
+          contentVisible: item.contentVisible,
+          dragging: item.dragging,
+          dropTarget: item.dropTarget,
+          header: item.header,
+          height: item.height,
+          horizontalSplitter: item.horizontalSplitter,
+          minHeight: item.minHeight,
+          minWidth: item.minWidth,
+          resizeable: item.resizeable,
+          row: { end: item.row.end, start: item.row.start },
+          stackId: item.stackId,
+          title: item.title,
+          type: item.type,
+          verticalSplitter: item.verticalSplitter,
+          width: item.width,
+        },
+      })),
+      tabStates: [...this.#tabState.values()].map((tabState) => ({
+        active: tabState.active,
+        detachedTab: tabState.detachedTab
+          ? { ...tabState.detachedTab }
+          : undefined,
+        tabState,
+        tabs: tabState.tabs.map((tab) => ({ ...tab })),
+      })),
+      tracks: this.tracks.createCheckpoint(),
+    };
+  }
+
+  restoreCheckpoint({ childItems, tabStates, tracks }: GridModelCheckpoint) {
+    const currentStacks = new Map(
+      this.#childItems
+        .filter(({ type }) => type === "stacked-content")
+        .map((item) => [item.id, item]),
+    );
+    const currentTabStates = new Map(
+      [...this.#tabState].map(([id, { active, tabs }]) => [
+        id,
+        { active, tabs: tabs.map((tab) => ({ ...tab })) },
+      ]),
+    );
+    this.tracks.restoreCheckpoint(tracks);
+    this.#childItems = childItems.map(({ item, state }) => {
+      item.column.start = state.column.start;
+      item.column.end = state.column.end;
+      item.contentDetached = state.contentDetached;
+      item.contentVisible = state.contentVisible;
+      item.dragging = state.dragging;
+      item.dropTarget = state.dropTarget;
+      item.header = state.header;
+      item.height = state.height;
+      item.horizontalSplitter = state.horizontalSplitter;
+      item.minHeight = state.minHeight;
+      item.minWidth = state.minWidth;
+      item.resizeable = state.resizeable;
+      item.row.start = state.row.start;
+      item.row.end = state.row.end;
+      item.stackId = state.stackId;
+      item.title = state.title;
+      item.type = state.type;
+      item.verticalSplitter = state.verticalSplitter;
+      item.width = state.width;
+      return item;
+    });
+    this.#index = new Map(this.#childItems.map((item) => [item.id, item]));
+    this.#tabState = new Map(
+      tabStates.map(({ active, detachedTab, tabs, tabState }) => {
+        tabState.active = active;
+        tabState.detachedTab = detachedTab ? { ...detachedTab } : undefined;
+        tabState.tabs = tabs.map((tab) => ({ ...tab }));
+        return [tabState.id, tabState];
+      }),
+    );
+    const restoredStacks = new Map(
+      this.#childItems
+        .filter(({ type }) => type === "stacked-content")
+        .map((item) => [item.id, item]),
+    );
+    for (const stackId of currentStacks.keys()) {
+      if (!restoredStacks.has(stackId)) {
+        this.emit("tabs-removed", stackId);
+      }
+    }
+    for (const [stackId, stackItem] of restoredStacks) {
+      if (!currentStacks.has(stackId)) {
+        this.emit("tabs-created", stackItem);
+      } else {
+        const restored = this.#tabState.get(stackId);
+        const current = currentTabStates.get(stackId);
+        if (
+          restored &&
+          current &&
+          (restored.active !== current.active ||
+            JSON.stringify(restored.tabs) !== JSON.stringify(current.tabs))
+        ) {
+          this.emit(
+            "tabs-change",
+            stackId,
+            restored.active,
+            restored.tabs.map((tab) => ({ ...tab })),
+          );
+          this.emit("tab-selection-change", stackId, restored.active);
+        }
+      }
+    }
+  }
 
   constructor(
     public id: string,
