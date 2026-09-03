@@ -96,11 +96,14 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
   applyRemoveTransition(transition: GridRemoveItemTransition) {
     const [removal] = transition.removals;
     const gridItem = this.gridModel.getChildItem(removal.id, true);
+    const stackId = gridItem.stackId;
     this.gridModel.removeChildItem(removal.id, removal.reason);
 
-    if (transition.stackMember && gridItem.stackId) {
-      const tabState = this.gridModel.getTabState(gridItem.stackId, "throw");
-      tabState.removeTab(gridItem.id);
+    if (transition.stackMember && stackId) {
+      const result = this.gridModel.removeStackItem(stackId, gridItem.id);
+      if (!result.ok) {
+        throw Error(result.error.message);
+      }
       return;
     }
 

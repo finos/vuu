@@ -319,6 +319,177 @@ const scenarios: LayoutScenario[] = [
     },
   },
   {
+    name: "adding a tab keeps the selected item and stack placement",
+    initial: descriptor([...oneTrack], [...oneTrack], {
+      alpha: item("1/1/2/2", { title: "Alpha" }),
+      beta: item("1/1/2/2", { title: "Beta" }),
+    }),
+    operations: [
+      { type: "stack", target: "alpha", item: "beta" },
+      {
+        type: "add-tab",
+        gridArea: "1/1/2/2",
+        id: "gamma",
+        stack: { type: "stack" },
+        title: "Gamma",
+      },
+    ],
+    expected: {
+      cols: [...oneTrack],
+      rows: [...oneTrack],
+      items: [
+        expectedItem("alpha", "1/1/2/2", {
+          stackId: "stack-1",
+          title: "Alpha",
+        }),
+        expectedItem("beta", "1/1/2/2", {
+          contentVisible: false,
+          stackId: "stack-1",
+          title: "Beta",
+        }),
+        expectedItem("gamma", "1/1/2/2", {
+          contentVisible: false,
+          stackId: "stack-1",
+          title: "Gamma",
+        }),
+        expectedItem("stack-1", "1/1/2/2", {
+          contentVisible: true,
+          type: "stacked-content",
+        }),
+      ],
+      tabs: [
+        { active: "alpha", id: "stack-1", tabs: ["alpha", "beta", "gamma"] },
+      ],
+    },
+  },
+  {
+    name: "removing an unselected tab leaves the selection untouched",
+    initial: descriptor([...oneTrack], [...oneTrack], {
+      alpha: item("1/1/2/2", { title: "Alpha" }),
+      beta: item("1/1/2/2", { title: "Beta" }),
+    }),
+    operations: [
+      { type: "stack", target: "alpha", item: "beta" },
+      {
+        type: "add-tab",
+        id: "gamma",
+        stack: { type: "stack" },
+        title: "Gamma",
+      },
+      { type: "remove-tab", stack: { type: "stack" }, tab: "beta" },
+    ],
+    expected: {
+      cols: [...oneTrack],
+      rows: [...oneTrack],
+      items: [
+        expectedItem("alpha", "1/1/2/2", {
+          stackId: "stack-1",
+          title: "Alpha",
+        }),
+        expectedItem("gamma", "1/1/2/2", {
+          contentVisible: false,
+          stackId: "stack-1",
+          title: "Gamma",
+        }),
+        expectedItem("stack-1", "1/1/2/2", {
+          contentVisible: true,
+          type: "stacked-content",
+        }),
+      ],
+      tabs: [{ active: "alpha", id: "stack-1", tabs: ["alpha", "gamma"] }],
+    },
+  },
+  {
+    name: "removing the selected tab falls back to the item that replaces it",
+    initial: descriptor([...oneTrack], [...oneTrack], {
+      alpha: item("1/1/2/2", { title: "Alpha" }),
+      beta: item("1/1/2/2", { title: "Beta" }),
+    }),
+    operations: [
+      { type: "stack", target: "alpha", item: "beta" },
+      {
+        type: "add-tab",
+        id: "gamma",
+        stack: { type: "stack" },
+        title: "Gamma",
+      },
+      { type: "select-tab", stack: { type: "stack" }, tab: "beta" },
+      { type: "remove-tab", stack: { type: "stack" }, tab: "beta" },
+    ],
+    expected: {
+      cols: [...oneTrack],
+      rows: [...oneTrack],
+      items: [
+        expectedItem("alpha", "1/1/2/2", {
+          contentVisible: false,
+          stackId: "stack-1",
+          title: "Alpha",
+        }),
+        expectedItem("gamma", "1/1/2/2", {
+          stackId: "stack-1",
+          title: "Gamma",
+        }),
+        expectedItem("stack-1", "1/1/2/2", {
+          contentVisible: true,
+          type: "stacked-content",
+        }),
+      ],
+      tabs: [{ active: "gamma", id: "stack-1", tabs: ["alpha", "gamma"] }],
+    },
+  },
+  {
+    name: "duplicate tab titles keep stable identity through every operation",
+    initial: descriptor([...oneTrack], [...oneTrack], {
+      alpha: item("1/1/2/2", { title: "Same" }),
+      beta: item("1/1/2/2", { title: "Same" }),
+    }),
+    operations: [
+      { type: "stack", target: "alpha", item: "beta" },
+      {
+        type: "add-tab",
+        id: "gamma",
+        stack: { type: "stack" },
+        title: "Same",
+      },
+      { type: "select-tab", stack: { type: "stack" }, tab: "beta" },
+      {
+        type: "move-tab",
+        stack: { type: "stack" },
+        tab: "gamma",
+        target: "alpha",
+        position: "before",
+      },
+      { type: "rename", item: "alpha", title: "Renamed" },
+    ],
+    expected: {
+      cols: [...oneTrack],
+      rows: [...oneTrack],
+      items: [
+        expectedItem("alpha", "1/1/2/2", {
+          contentVisible: false,
+          stackId: "stack-1",
+          title: "Renamed",
+        }),
+        expectedItem("beta", "1/1/2/2", {
+          stackId: "stack-1",
+          title: "Same",
+        }),
+        expectedItem("gamma", "1/1/2/2", {
+          contentVisible: false,
+          stackId: "stack-1",
+          title: "Same",
+        }),
+        expectedItem("stack-1", "1/1/2/2", {
+          contentVisible: true,
+          type: "stacked-content",
+        }),
+      ],
+      tabs: [
+        { active: "beta", id: "stack-1", tabs: ["gamma", "alpha", "beta"] },
+      ],
+    },
+  },
+  {
     name: "placeholder can be split by a dropped item",
     initial: descriptor([...oneTrack], [...oneTrack]),
     operations: [
