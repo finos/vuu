@@ -2,6 +2,16 @@ import { describe, expect, it } from "vitest";
 import { GridLayoutModel } from "../src/GridLayoutModel";
 import { GridModel } from "../src/GridModel";
 import {
+  gridLayoutDescriptorToSnapshot,
+  gridSnapshotToGridLayoutDescriptor,
+  normalizeGridSnapshot,
+  validateGridSnapshot,
+} from "../src/grid-snapshot-adapters";
+import {
+  GridSnapshotValidationError,
+  type GridSnapshot,
+} from "../src/GridSnapshot";
+import {
   descriptor,
   expectedItem,
   item,
@@ -545,6 +555,243 @@ describe("GridModel declarative layout scenarios", () => {
       "10px",
       "10px",
     ]);
+  });
+
+  describe("canonical snapshots", () => {
+    const expectStableDescriptor = (
+      gridId: string,
+      value: ReturnType<typeof descriptor>,
+    ) => {
+      const snapshot = gridLayoutDescriptorToSnapshot(value, { gridId });
+      expect(gridSnapshotToGridLayoutDescriptor(snapshot)).toEqual(value);
+    };
+
+    it("round-trips simple grids, spans, resize metadata, stacks, and placeholders", () => {
+      expectStableDescriptor(
+        "simple",
+        descriptor(["1fr", "240px"], ["80px", "1fr"], {
+          header: item("1/1/2/3", {
+            dropTarget: "workspace",
+            header: true,
+            minHeight: 48,
+            minWidth: 120,
+            resizeable: "h",
+            title: "Header",
+          }),
+          left: item("2/1/3/2"),
+          right: item("2/2/3/3", { resizeable: "hv" }),
+        }),
+      );
+      expectStableDescriptor(
+        "stack",
+        descriptor(["1fr"], ["1fr"], {
+          alpha: item("1/1/2/2", {
+            contentVisible: false,
+            stackId: "stack-1",
+            title: "Alpha",
+          }),
+          beta: item("1/1/2/2", {
+            contentVisible: true,
+            stackId: "stack-1",
+            title: "Beta",
+          }),
+        }),
+      );
+      expectStableDescriptor(
+        "legacy-placeholder",
+        descriptor(["1fr"], ["1fr"], {
+          "generated-placeholder-id": item("1/1/2/2", {
+            resizeable: "hv",
+          }),
+        }),
+      );
+      const withComponentId = descriptor(["1fr"], ["1fr"], {
+        main: {
+          ...item("1/1/2/2"),
+          componentId: "component-1",
+        },
+      });
+      const componentSnapshot = gridLayoutDescriptorToSnapshot(
+        withComponentId,
+        {
+          gridId: "component-identity",
+        },
+      );
+      expect(componentSnapshot.items[0].componentInstanceId).toBe(
+        "component-1",
+      );
+      expect(gridSnapshotToGridLayoutDescriptor(componentSnapshot)).toEqual(
+        withComponentId,
+      );
+    });
+
+    it.each([
+      {
+        code: "DUPLICATE_ID",
+        mutate: (snapshot: GridSnapshot): GridSnapshot => ({
+          ...snapshot,
+          items: [...snapshot.items, snapshot.items[0]],
+        }),
+      },
+      {
+        code: "INVALID_SPAN",
+        mutate: (snapshot: GridSnapshot): GridSnapshot => ({
+          ...snapshot,
+          items: [
+            {
+              ...snapshot.items[0],
+              column: { span: 0, start: 1 },
+            },
+          ],
+        }),
+      },
+      {
+        code: "INVALID_TRACK_REFERENCE",
+        mutate: (snapshot: GridSnapshot): GridSnapshot => ({
+          ...snapshot,
+          items: [
+            {
+              ...snapshot.items[0],
+              row: { span: 1, start: 2 },
+            },
+          ],
+        }),
+      },
+      {
+        code: "INVALID_STACK_MEMBERSHIP",
+        mutate: (snapshot: GridSnapshot): GridSnapshot => ({
+          ...snapshot,
+          stacks: [
+            {
+              id: "stack",
+              itemIds: ["main", "missing"],
+              selectedItemId: "main",
+            },
+          ],
+        }),
+      },
+      {
+        code: "INVALID_STACK_SELECTION",
+        mutate: (snapshot: GridSnapshot): GridSnapshot => ({
+          ...snapshot,
+          items: [
+            snapshot.items[0],
+            {
+              ...snapshot.items[0],
+              id: "secondary",
+            },
+          ],
+          stacks: [
+            {
+              id: "stack",
+              itemIds: ["main", "secondary"],
+              selectedItemId: "missing",
+            },
+          ],
+        }),
+      },
+      {
+        code: "INVALID_STACK_POSITION",
+        mutate: (snapshot: GridSnapshot): GridSnapshot => ({
+          ...snapshot,
+          items: [
+            snapshot.items[0],
+            {
+              ...snapshot.items[0],
+              column: { span: 1, start: 2 },
+              id: "secondary",
+            },
+          ],
+          columns: [{ size: "1fr" }, { size: "1fr" }],
+          stacks: [
+            {
+              id: "stack",
+              itemIds: ["main", "secondary"],
+              selectedItemId: "main",
+            },
+          ],
+        }),
+      },
+      {
+        code: "MALFORMED_TRACK",
+        mutate: (snapshot: GridSnapshot): GridSnapshot => ({
+          ...snapshot,
+          columns: [{ size: "auto" as "1fr" }],
+        }),
+      },
+    ])("reports typed $code validation failures", ({ code, mutate }) => {
+      const valid = gridLayoutDescriptorToSnapshot(
+        descriptor(["1fr"], ["1fr"], { main: item("1/1/2/2") }),
+        { gridId: "invalid-cases" },
+      );
+      const invalid = mutate(valid);
+      expect(validateGridSnapshot(invalid)).toEqual(
+        expect.arrayContaining([expect.objectContaining({ code })]),
+      );
+      try {
+        normalizeGridSnapshot(invalid);
+        expect.unreachable("expected snapshot validation to fail");
+      } catch (error) {
+        expect(error).toBeInstanceOf(GridSnapshotValidationError);
+        expect((error as GridSnapshotValidationError).issues).toEqual(
+          expect.arrayContaining([expect.objectContaining({ code })]),
+        );
+      }
+    });
+
+    it("reports malformed legacy grid areas as typed validation failures", () => {
+      expect(() =>
+        gridLayoutDescriptorToSnapshot(
+          descriptor(["1fr"], ["1fr"], { main: item("not-a-grid-area") }),
+          { gridId: "malformed-area" },
+        ),
+      ).toThrow(GridSnapshotValidationError);
+    });
+
+    it("returns structured issues for malformed persisted input", () => {
+      expect(validateGridSnapshot({ revision: "latest" })).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ code: "EMPTY_ID" }),
+          expect.objectContaining({ code: "INVALID_REVISION" }),
+          expect.objectContaining({ code: "INVALID_STRUCTURE" }),
+        ]),
+      );
+      const snapshot = gridLayoutDescriptorToSnapshot(
+        descriptor(["1fr"], ["1fr"], { main: item("1/1/2/2") }),
+        { gridId: "unexpected-field" },
+      );
+      expect(
+        validateGridSnapshot({
+          ...snapshot,
+          items: [{ ...snapshot.items[0], minWidht: 100 }],
+        }),
+      ).toEqual([
+        expect.objectContaining({
+          code: "UNEXPECTED_FIELD",
+          path: "items[0].minWidht",
+        }),
+      ]);
+    });
+
+    it("returns snapshots detached from later model and descriptor changes", () => {
+      const initial = descriptor(["1fr"], ["1fr"], {
+        main: item("1/1/2/2", { title: "Initial" }),
+      });
+      const model = new GridModel("detached", initial);
+      const snapshot = gridLayoutDescriptorToSnapshot(
+        model.toGridLayoutDescriptor(),
+        { gridId: model.id, revision: 7 },
+      );
+
+      model.updateChildTitle("main", "Changed");
+      initial.cols[0] = "200px";
+
+      expect(snapshot).toMatchObject({
+        columns: [{ size: "1fr" }],
+        items: [{ title: "Initial" }],
+        revision: 7,
+      });
+    });
   });
 
   it("redistributes through overlapping aggregate minimums", () => {

@@ -18,6 +18,30 @@ export {
   type SerializedGridLayout,
 } from "./GridLayoutProvider";
 export { GridLayoutStackedItem } from "./GridLayoutStackedtem";
+export {
+  gridLayoutDescriptorToSnapshot,
+  gridSnapshotToGridLayoutDescriptor,
+  normalizeGridSnapshot,
+  validateGridSnapshot,
+  type GridLayoutDescriptorSnapshotOptions,
+  type GridLayoutDescriptorV1,
+} from "./grid-snapshot-adapters";
+export {
+  GridSnapshotValidationError,
+  type ComponentInstanceId,
+  type GridId,
+  type GridItemId,
+  type GridItemResizeable,
+  type GridItemSnapshot,
+  type GridSnapshot,
+  type GridSnapshotValidationCode,
+  type GridSnapshotValidationIssue,
+  type GridSpanSnapshot,
+  type GridStackSnapshot,
+  type GridTrackSize,
+  type GridTrackSnapshot,
+  type StackId,
+} from "./GridSnapshot";
 export type {
   GridLayoutChangeHandler,
   GridLayoutDescriptor,
