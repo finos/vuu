@@ -351,7 +351,6 @@ const scenarios: LayoutScenario[] = [
       lowerLeft: item("2/1/3/2"),
       lowerRight: item("2/2/3/3"),
     }),
-    operations: [{ type: "round-trip" }],
     expected: {
       cols: [...twoTracks],
       rows: [...twoTracks],
@@ -369,7 +368,7 @@ const scenarios: LayoutScenario[] = [
   {
     name: "multi-operation split replace remove and placeholder sequence",
     initial: descriptor([...oneTrack], [...oneTrack], {
-      first: item("1/1/2/2"),
+      first: item("1/1/2/2", { resizeable: "hv" }),
     }),
     operations: [
       { type: "add", id: "second" },

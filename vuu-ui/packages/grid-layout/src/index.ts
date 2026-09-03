@@ -5,6 +5,18 @@ export type {
 export { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
 export { GridLayout, type GridResizeDistribution } from "./GridLayout";
 export {
+  GridCommandExecutionError,
+  LegacyGridCommandExecutor,
+  throwForGridCommandFailure,
+  type GridCommand,
+  type GridCommandError,
+  type GridCommandErrorCode,
+  type GridCommandItem,
+  type GridCommandResizeConstraint,
+  type GridCommandResult,
+  type GridTrackResize,
+} from "./GridCommand";
+export {
   useGridLayoutDispatch,
   useGridLayoutDragStartHandler,
   useGridModel,

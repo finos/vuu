@@ -403,6 +403,11 @@ export class TabState extends EventEmitter<TabStateTabEvents> {
     this.emit("active-change", this);
   }
 
+  setActiveTabById(id: string) {
+    this.active = this.tabs.findIndex((tab) => tab.id === id);
+    this.emit("active-change", this);
+  }
+
   /**
    * A Tab is detached when a drag operation commences. It is removed from Tabstrip, but associated component
    * remains in DOM. The 'next' tab is selected and the associated TabPanel made visible. The tab panel associated
@@ -460,6 +465,29 @@ export class TabState extends EventEmitter<TabStateTabEvents> {
     this.emit("tabs-change", this.id, this.active, this.tabs);
   }
 
+  moveTabById(
+    tabId: string,
+    targetId: string,
+    position: "after" | "before",
+    activateTab = false,
+  ) {
+    const activeTabId = this.activeTab.id;
+    const newTabs = this.tabs.slice();
+    const indexOfMovedTab = newTabs.findIndex(({ id }) => id === tabId);
+    const [movedTab] = newTabs.splice(indexOfMovedTab, 1);
+    const indexOfTargetTab = newTabs.findIndex(({ id }) => id === targetId);
+    newTabs.splice(
+      position === "after" ? indexOfTargetTab + 1 : indexOfTargetTab,
+      0,
+      movedTab,
+    );
+    this.tabs = newTabs;
+    this.active = this.tabs.findIndex(
+      ({ id }) => id === (activateTab ? tabId : activeTabId),
+    );
+    this.emit("tabs-change", this.id, this.active, this.tabs);
+  }
+
   addTab(tab: TabStateTab, dropPosition?: DropPosition) {
     if (dropPosition) {
       const { position, target } = dropPosition;
@@ -479,9 +507,13 @@ export class TabState extends EventEmitter<TabStateTabEvents> {
   }
 
   removeTab(id: string) {
-    const { label: activeLabel } = this.activeTab;
+    const activeTabId = this.activeTab.id;
+    const previousActive = this.active;
     this.tabs = this.tabs.filter((tab) => tab.id !== id);
-    this.active = this.indexOfTab(activeLabel);
+    this.active =
+      activeTabId === id
+        ? Math.min(previousActive, this.tabs.length - 1)
+        : this.tabs.findIndex((tab) => tab.id === activeTabId);
     if (this.tabs.length === 1) {
       this.emit("tabs-removed", this.id);
     } else {
