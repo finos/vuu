@@ -289,15 +289,8 @@ export const useGridLayout = ({
       }
     | undefined
   >(undefined);
-  const [dragSourceItemId, setDragSourceItemId] = useState<string>();
-  const dragAppearanceFrameRef = useRef<number | undefined>(undefined);
   const clearDragAppearance = useCallback(() => {
-    if (dragAppearanceFrameRef.current !== undefined) {
-      cancelAnimationFrame(dragAppearanceFrameRef.current);
-      dragAppearanceFrameRef.current = undefined;
-    }
     containerRef.current?.classList.remove("vuuDragging");
-    setDragSourceItemId(undefined);
   }, []);
   useEffect(
     () => () => {
@@ -347,25 +340,15 @@ export const useGridLayout = ({
 
   const handleDragStart = useCallback<GridLayoutDragStartHandler>(
     (_evt, options) => {
-      const { current: grid } = containerRef;
-      if (grid) {
-        if (options.type === "text/plain") {
-          const result = dragCoordinator.begin({
-            itemId: options.id,
-            kind: "existing-item",
-            sourceGridId: id,
-          });
-          if (!result.ok) {
-            throw Error(result.error.message);
-          }
-        }
-        dragAppearanceFrameRef.current = requestAnimationFrame(() => {
-          dragAppearanceFrameRef.current = undefined;
-          grid.classList.add("vuuDragging");
-          if (options.type === "text/plain") {
-            setDragSourceItemId(options.id);
-          }
+      if (options.type === "text/plain") {
+        const result = dragCoordinator.begin({
+          itemId: options.id,
+          kind: "existing-item",
+          sourceGridId: id,
         });
+        if (!result.ok) {
+          throw Error(result.error.message);
+        }
       }
     },
     [dragCoordinator, id],
@@ -950,7 +933,6 @@ export const useGridLayout = ({
     containerCallback,
     containerRef,
     dispatchGridLayoutAction,
-    dragSourceItemId,
     gridController,
     gridLayoutModel,
     gridModel,

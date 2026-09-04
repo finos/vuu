@@ -75,20 +75,19 @@ const TemplatePalette = () => {
   const draggable = useDraggable({ getDragSource, onDragStart });
 
   return (
-    <>
+    <div data-testid="template-palette" {...draggable}>
       {["Template A", "Template B"].map((label, index) => (
-        <button
+        <div
           data-label={label}
           data-testid={`palette-item-${index + 1}`}
-          draggable
           key={label}
-          type="button"
-          {...draggable}
         >
-          {label}
-        </button>
+          <button draggable type="button">
+            {label}
+          </button>
+        </div>
       ))}
-    </>
+    </div>
   );
 };
 
