@@ -161,6 +161,12 @@ export const GridLayout = ({
               // {...splitterProps}
               aria-controls={splitter.controls}
               ariaOrientation={splitter.ariaOrientation}
+              data-resized-child-items-after={splitter.resizedChildItems.after.join(
+                " ",
+              )}
+              data-resized-child-items-before={splitter.resizedChildItems.before.join(
+                " ",
+              )}
               id={splitter.id}
               key={splitter.id}
               offsetStart={startsAtHorizontalSplitter(splitter, splitters)}

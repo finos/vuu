@@ -711,6 +711,67 @@ test.describe("GridLayout browser interactions", () => {
     ).toBeVisible();
   });
 
+  test("resizes a south split after a palette header drop creates a stack", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "palette-target" });
+    const grid = new GridLayoutDriver(component, page);
+
+    await grid.dragTemplate(
+      component.getByTestId("palette-item-1"),
+      grid.content("palette-target"),
+      "south",
+    );
+    const templateHeader = component.locator(".vuuGridLayoutItemHeader-title", {
+      hasText: /^Template A$/,
+    });
+    const templateItem = templateHeader.locator(
+      "xpath=ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' vuuGridLayoutItem ')][1]",
+    );
+
+    await grid.dragTemplate(
+      component.getByTestId("palette-item-2"),
+      templateItem.locator(".vuuGridLayoutItemHeader"),
+      "header",
+    );
+
+    const stack = component
+      .getByRole("tablist")
+      .locator(
+        "xpath=ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' vuuGridLayoutItem ')][1]",
+      );
+    const stackId = await stack.getAttribute("id");
+    if (!stackId) {
+      throw Error("Palette-created stack has no id");
+    }
+    const separator = grid.separator("horizontal");
+    await expect(separator).toHaveAttribute(
+      "data-resized-child-items-before",
+      "palette-target",
+    );
+    await expect(separator).toHaveAttribute(
+      "data-resized-child-items-after",
+      stackId,
+    );
+    await expect(separator).toHaveAttribute("aria-controls", stackId);
+    await expect(component.locator(`[id="${stackId}"]`)).toHaveCount(1);
+    const targetBefore = await grid.item("palette-target").boundingBox();
+    const stackBefore = await stack.boundingBox();
+    await grid.resize(separator, 0, 40);
+    const targetAfter = await grid.item("palette-target").boundingBox();
+    const stackAfter = await stack.boundingBox();
+
+    expect(targetAfter?.height).not.toBeCloseTo(targetBefore?.height ?? 0, 0);
+    expect(stackAfter?.height).not.toBeCloseTo(stackBefore?.height ?? 0, 0);
+    await expect(
+      component.getByRole("tab", { name: "Template A" }),
+    ).toBeVisible();
+    await expect(
+      component.getByRole("tab", { name: "Template B" }),
+    ).toBeVisible();
+  });
+
   test.fixme("palette template drop onto an empty placeholder", async () => {
     // Native template drag currently depends on unstable placeholder drag-enter
     // sequencing in Playwright CT.
