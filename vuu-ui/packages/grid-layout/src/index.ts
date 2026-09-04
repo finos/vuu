@@ -5,6 +5,18 @@ export type {
 export { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
 export { GridLayout, type GridResizeDistribution } from "./GridLayout";
 export {
+  GridDragCoordinator,
+  createGridDropPlan,
+  type GridDragCoordinatorError,
+  type GridDragCoordinatorErrorCode,
+  type GridDragCoordinatorResult,
+  type GridDragCoordinatorState,
+  type GridDragSource,
+  type GridDropIntent,
+  type GridDropPlan,
+  type GridDropTarget,
+} from "./GridDragCoordinator";
+export {
   GridController,
   type GridCommittedTransition,
   type GridCommittedTransitionListener,

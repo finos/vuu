@@ -1,6 +1,6 @@
-import { act, useState } from "react";
+import { act, StrictMode, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   type GridController,
   GridLayout,
@@ -243,6 +243,7 @@ describe("GridLayout canonical snapshot rendering", () => {
         </GridLayout>,
       );
     });
+
     const initialChildController = childController;
     const initialChildSnapshot = childController?.getSnapshot();
 
@@ -257,6 +258,39 @@ describe("GridLayout canonical snapshot rendering", () => {
 
     expect(childController).toBe(initialChildController);
     expect(childController?.getSnapshot()).toBe(initialChildSnapshot);
+  });
+
+  it("cleans drag cancellation listeners across StrictMode remounts", () => {
+    const addListener = vi.spyOn(window, "addEventListener");
+    const removeListener = vi.spyOn(window, "removeEventListener");
+    act(() => {
+      root.render(
+        <StrictMode>
+          <GridLayout
+            colsAndRows={{ cols: ["1fr"], rows: ["1fr"] }}
+            id="strict-drag-grid"
+          >
+            <GridLayoutItem id="strict-item" style={{ gridArea: "1/1/2/2" }}>
+              Strict
+            </GridLayoutItem>
+          </GridLayout>
+        </StrictMode>,
+      );
+    });
+    act(() => root.unmount());
+
+    for (const eventName of ["keydown", "pointercancel"]) {
+      const additions = addListener.mock.calls.filter(
+        ([name]) => name === eventName,
+      );
+      const removals = removeListener.mock.calls.filter(
+        ([name]) => name === eventName,
+      );
+      expect(removals).toHaveLength(additions.length);
+      for (const [, listener] of additions) {
+        expect(removals.some(([, removed]) => removed === listener)).toBe(true);
+      }
+    }
   });
 
   it("persists content without treating stack templates as serializable items", () => {

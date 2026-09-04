@@ -79,6 +79,12 @@ export type GridCommand =
     }
   | {
       readonly itemId: GridItemId;
+      readonly stackId: StackId;
+      readonly targetId: GridItemId;
+      readonly type: "replace-stack-item";
+    }
+  | {
+      readonly itemId: GridItemId;
       readonly reason: GridItemRemoveReason;
       readonly type: "remove-item";
     }
@@ -96,13 +102,30 @@ export type GridCommand =
     }
   | {
       readonly item: GridCommandItem;
+      readonly position?: "after" | "before";
       readonly stackId: StackId;
+      readonly targetItemId?: GridItemId;
       readonly type: "add-stack-item";
     }
   | {
       readonly itemId: GridItemId;
       readonly stackId: StackId;
       readonly type: "remove-stack-item";
+    }
+  | {
+      readonly fromStackId?: StackId;
+      readonly itemId: GridItemId;
+      readonly position?: "after" | "before";
+      readonly stackId: StackId;
+      readonly targetItemId?: GridItemId;
+      readonly type: "move-item-to-stack";
+    }
+  | {
+      readonly itemId: GridItemId;
+      readonly position: GridLayoutSplitDirection;
+      readonly stackId: StackId;
+      readonly targetId: GridItemId;
+      readonly type: "move-stack-item-to-grid";
     }
   | {
       readonly itemId: GridItemId;
@@ -317,6 +340,43 @@ export class LegacyGridCommandExecutor {
         this.gridLayoutModel.applyReplaceTransition(replaced.value);
         return success(command);
       }
+      case "replace-stack-item": {
+        const invalid =
+          this.requireTab(command, command.stackId, command.itemId) ??
+          this.requireItem(command, command.targetId);
+        if (invalid) {
+          return invalid;
+        }
+        const target = this.gridModel.getChildItem(command.targetId, true);
+        if (target.stackId || target.type === "stacked-content") {
+          return failure(
+            command,
+            "INVALID_TARGET",
+            "A stack member can only replace a standalone grid item",
+          );
+        }
+        const removed = this.gridModel.removeStackItem(
+          command.stackId,
+          command.itemId,
+        );
+        if (!removed.ok) {
+          return stackFailure(command, removed.error);
+        }
+        const item = this.gridModel.getChildItem(command.itemId, true);
+        item.stackId = undefined;
+        item.contentDetached = undefined;
+        item.contentVisible = true;
+        item.dragging = false;
+        const replaced = replaceGridItem(this.gridModel.toGeometry(), {
+          droppedItemId: command.itemId,
+          targetItemId: command.targetId,
+        });
+        if (!replaced.ok) {
+          return geometryFailure(command, replaced.error);
+        }
+        this.gridLayoutModel.applyReplaceTransition(replaced.value);
+        return success(command);
+      }
       case "remove-item": {
         const invalid = this.requireItem(command, command.itemId);
         if (invalid) {
@@ -473,6 +533,16 @@ export class LegacyGridCommandExecutor {
         if (invalid) {
           return invalid;
         }
+        if (
+          (command.position === undefined) !==
+          (command.targetItemId === undefined)
+        ) {
+          return failure(
+            command,
+            "INVALID_TARGET",
+            "A stack placement requires both position and targetItemId",
+          );
+        }
         const stack = this.gridModel.getChildItem(command.stackId, true);
         const added = this.gridModel.addStackItem(
           command.stackId,
@@ -490,6 +560,12 @@ export class LegacyGridCommandExecutor {
             },
             command.stackId,
           ),
+          command.position && command.targetItemId
+            ? {
+                position: command.position,
+                target: command.targetItemId,
+              }
+            : undefined,
         );
         if (!added.ok) {
           return stackFailure(command, added.error);
@@ -506,6 +582,120 @@ export class LegacyGridCommandExecutor {
           return invalid;
         }
         return this.removeItem(command, command.itemId, "close");
+      }
+      case "move-item-to-stack": {
+        const invalid =
+          this.requireItem(command, command.itemId) ??
+          this.requireStack(command, command.stackId);
+        if (invalid) {
+          return invalid;
+        }
+        if (
+          (command.position === undefined) !==
+          (command.targetItemId === undefined)
+        ) {
+          return failure(
+            command,
+            "INVALID_TARGET",
+            "A stack placement requires both position and targetItemId",
+          );
+        }
+        if (command.fromStackId) {
+          const tabFailure = this.requireTab(
+            command,
+            command.fromStackId,
+            command.itemId,
+          );
+          if (tabFailure) {
+            return tabFailure;
+          }
+          const removed = this.gridModel.removeStackItem(
+            command.fromStackId,
+            command.itemId,
+          );
+          if (!removed.ok) {
+            return stackFailure(command, removed.error);
+          }
+        } else {
+          const removed = this.removeItem(command, command.itemId, "drag");
+          if (!removed.ok) {
+            return removed;
+          }
+        }
+        const item = this.gridModel.getChildItem(command.itemId, true);
+        item.stackId = undefined;
+        item.contentDetached = undefined;
+        item.dragging = false;
+        const added = this.gridModel.addStackMember(
+          command.stackId,
+          command.itemId,
+          command.position && command.targetItemId
+            ? {
+                position: command.position,
+                target: command.targetItemId,
+              }
+            : undefined,
+        );
+        if (!added.ok) {
+          return stackFailure(command, added.error);
+        }
+        const selected = this.gridModel.selectStackItem(
+          command.stackId,
+          command.itemId,
+        );
+        return selected.ok
+          ? success(command)
+          : stackFailure(command, selected.error);
+      }
+      case "move-stack-item-to-grid": {
+        const invalid =
+          this.requireTab(command, command.stackId, command.itemId) ??
+          this.requireItem(command, command.targetId);
+        if (invalid) {
+          return invalid;
+        }
+        const stackItemIds = gridStackItemIds(
+          this.gridModel.getStackState(command.stackId),
+        );
+        const targetId =
+          command.targetId === command.stackId && stackItemIds.length === 2
+            ? stackItemIds.find((itemId) => itemId !== command.itemId)
+            : command.targetId;
+        if (!targetId) {
+          return failure(
+            command,
+            "INVALID_TARGET",
+            `Grid stack #${command.stackId} has no remaining split target`,
+          );
+        }
+        const removed = this.gridModel.removeStackItem(
+          command.stackId,
+          command.itemId,
+        );
+        if (!removed.ok) {
+          return stackFailure(command, removed.error);
+        }
+        const item = this.gridModel.getChildItem(command.itemId, true);
+        item.stackId = undefined;
+        item.contentDetached = undefined;
+        item.contentVisible = true;
+        item.dragging = false;
+        const split = this.gridModel.runGeometry((measurements) =>
+          splitGridItem(
+            this.gridModel.toGeometry(),
+            {
+              droppedItemId: command.itemId,
+              splitDirection: command.position,
+              targetItemId: targetId,
+            },
+            measurements,
+          ),
+        );
+        if (!split.ok) {
+          return geometryFailure(command, split.error);
+        }
+        this.gridLayoutModel.applySplitTransition(split.value);
+        return success(command);
       }
       case "select-stack-item": {
         const invalid = this.requireTab(
