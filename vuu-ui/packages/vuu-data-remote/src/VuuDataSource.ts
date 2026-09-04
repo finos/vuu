@@ -13,6 +13,7 @@ import type {
   EditSessionMode,
   OptimizeStrategy,
   ServerAPI,
+  SessionDataSourceOverrides,
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
@@ -34,6 +35,7 @@ import type {
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
 import {
+  assertExpectedSessionTable,
   BaseDataSource,
   combineFilters,
   constrainRange,
@@ -46,6 +48,7 @@ import {
   itemsOrOrderChanged,
   logger,
   Range,
+  sessionDataSourceConfig,
   StaleUpdateError,
   throttle,
   uuid,
@@ -101,6 +104,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   #menu: VuuMenu | undefined;
   #optimize: OptimizeStrategy = "throttle";
   #selectedRowsCount = 0;
+  #session: SessionDataSourceOverrides | undefined;
   #sessionDataSource: DataSource | undefined = undefined;
   #sessionTableMessageColumn: string | undefined = undefined;
   #status: DataSourceStatus = "initialising";
@@ -109,6 +113,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   public table: VuuTable;
 
   constructor({
+    session,
     sessionTableMessageColumn,
     ...props
   }: DataSourceConstructorProps) {
@@ -123,6 +128,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     this.table = table;
 
     this.#pendingVisualLink = visualLink;
+    this.#session = session;
     this.#sessionTableMessageColumn = sessionTableMessageColumn;
     // this.rangeRequest = this.throttleRangeRequest;
     this.rangeRequest = this.rawRangeRequest;
@@ -688,6 +694,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   async createSessionDataSource(
     copyOption: CopyOption,
     sessionType: SessionType = "edit",
+    overrides?: SessionDataSourceOverrides,
   ): Promise<VuuDataSource | undefined> {
     const rpcResponse = await this?.rpcRequest?.({
       type: "RPC_REQUEST",
@@ -696,8 +703,12 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     });
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
+      // A call-time override always wins; otherwise fall back to the session
+      // config this datasource was constructed with.
+      const effectiveOverrides = overrides ?? this.#session;
+      assertExpectedSessionTable(sessionTable, effectiveOverrides?.table);
       return new VuuDataSource({
-        ...this.config,
+        ...sessionDataSourceConfig(this.config, effectiveOverrides?.columns),
         table: sessionTable,
         viewport: sessionTable.table,
       });

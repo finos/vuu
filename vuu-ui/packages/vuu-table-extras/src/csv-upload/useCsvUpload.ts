@@ -1,7 +1,12 @@
-import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
+import type {
+  DataSource,
+  EditApi,
+  SessionDataSourceOverrides,
+  TableSchema,
+} from "@vuu-ui/vuu-data-types";
 import { EditSession, type RowDefaultDataItemValues } from "@vuu-ui/vuu-data-editing";
-import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
-import { isRpcError, isSessionTable } from "@vuu-ui/vuu-utils";
+import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { isRpcError, isSessionTable, useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { parseCsv, type CsvParseOptions } from "./parse/csv-parse";
 import {
@@ -29,6 +34,14 @@ import type {
 export interface CsvUploadHookProps {
   dataSource: DataSource;
   importMode?: "direct" | "preview";
+  /**
+   * Schema of the import table, where it differs from the target table. Used to validate
+   * the CSV and to determine the session datasource columns. If omitted and importTable is
+   * provided, the schema is fetched via getTableSchema. Pass a stable reference.
+   */
+  importSchema?: TableSchema;
+  /** Expected import table, used to validate the session table returned by the server. */
+  importTable?: VuuTable;
   maxRows?: number;
   onImportSessionEnded?: (result: CsvUploadSessionEndResult) => void;
   onImportSessionStarted?: (dataSource: DataSource) => void;
@@ -60,6 +73,8 @@ export type UseCsvUploadReturn = {
 export const useCsvUpload = ({
   dataSource,
   importMode = "direct",
+  importSchema,
+  importTable,
   onImportSessionEnded,
   onImportSessionStarted,
   onError,
@@ -70,6 +85,7 @@ export const useCsvUpload = ({
   parseOptions,
   rowDefaults,
 }: CsvUploadHookProps): UseCsvUploadReturn => {
+  const { getServerAPI } = useData();
   const [validation, setValidation] = useState<
     CsvValidationResult | undefined
   >();
@@ -78,9 +94,71 @@ export const useCsvUpload = ({
   >();
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [fetchedImportSchema, setFetchedImportSchema] = useState<
+    TableSchema | undefined
+  >();
+
+  useEffect(() => {
+    if (importSchema || importTable === undefined) {
+      setFetchedImportSchema(undefined);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const server = await getServerAPI();
+        const tableSchema = await server.getTableSchema(importTable);
+        if (!cancelled) {
+          setFetchedImportSchema(tableSchema);
+        }
+      } catch (error) {
+        console.error(
+          "[useCsvUpload] failed to fetch import table schema",
+          error,
+        );
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [getServerAPI, importSchema, importTable]);
+
+  const resolvedImportSchema = importSchema ?? fetchedImportSchema;
+  const sessionOverrides = useMemo<SessionDataSourceOverrides | undefined>(() => {
+    const columns = resolvedImportSchema?.columns.map(({ name }) => name);
+    return columns || importTable ? { columns, table: importTable } : undefined;
+  }, [resolvedImportSchema, importTable]);
+  // EditSession's constructor takes no session/schema config - the override is applied
+  // here, at the createSessionDataSource call site, since `dataSource` is supplied by the
+  // caller and may be shared with a view that has no knowledge of the import table.
+  const importDataSource = useMemo<EditApi & { tableSchema?: TableSchema }>(() => {
+    if (!sessionOverrides) {
+      return dataSource;
+    }
+    return {
+      tableSchema: dataSource.tableSchema,
+      createSessionDataSource: async (copyOption, sessionType) => {
+        if (!dataSource.createSessionDataSource) {
+          throw Error(
+            "[useCsvUpload] dataSource does not support createSessionDataSource",
+          );
+        }
+        return dataSource.createSessionDataSource(
+          copyOption,
+          sessionType,
+          sessionOverrides,
+        );
+      },
+    };
+  }, [dataSource, sessionOverrides]);
   const editSession = useMemo(
-    () => new EditSession({ dataSource, editSessionApi: "createSessionDataSource", rowDefaults }),
-    [dataSource, rowDefaults],
+    () =>
+      new EditSession({
+        dataSource: importDataSource,
+        editSessionApi: "createSessionDataSource",
+        rowDefaults,
+      }),
+    [importDataSource, rowDefaults],
   );
   const ownsEditSessionRef = useRef(true);
   const operationIdRef = useRef(0);
@@ -152,7 +230,12 @@ export const useCsvUpload = ({
   );
 
   const table = dataSource.table;
-  const schema = dataSource.tableSchema;
+  // CSV is validated before the session table exists, so the import schema cannot
+  // come from the session datasource. Never fall back to the target schema once an
+  // import table is declared - that would validate against the wrong columns.
+  const schema = importTable
+    ? resolvedImportSchema
+    : (resolvedImportSchema ?? dataSource.tableSchema);
 
   const addAllRows = useCallback(
     async (mergedValidation: CsvValidationResult, operationId: number) => {

@@ -12,6 +12,7 @@ import type {
   DeleteRowMode,
   CopyOption,
   EditSessionMode,
+  SessionDataSourceOverrides,
   SessionType,
 } from "@vuu-ui/vuu-data-types";
 import type {
@@ -28,8 +29,10 @@ import type {
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
 import {
+  assertExpectedSessionTable,
   isRpcSuccess,
   isTypeaheadRequest,
+  sessionDataSourceConfig,
   StaleUpdateError,
 } from "@vuu-ui/vuu-utils";
 import type {
@@ -67,6 +70,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
   #pendingVisualLink?: LinkDescriptorWithLabel;
   #rpcMenuServices: RpcMenuService[] | undefined;
   #rpcServices: RpcService[] | undefined;
+  #session: SessionDataSourceOverrides | undefined;
   #sourceTableDataSource: TickingArrayDataSource | undefined;
   #table?: Table;
   #selectionLinkSubscribers: Map<string, LinkSubscription> | undefined;
@@ -81,6 +85,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     getVisualLinks,
     rpcServices,
     rpcMenuServices,
+    session,
     table,
     menu,
     visualLink,
@@ -101,6 +106,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     this.#rpcMenuServices = rpcMenuServices;
     this.#pendingVisualLink = visualLink;
     this.#rpcServices = rpcServices;
+    this.#session = session;
     this.#table = table;
     this.#visualLinkService = visualLinkService;
     this.#getVisualLinks = getVisualLinks;
@@ -171,6 +177,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
   async createSessionDataSource(
     copyOption: CopyOption,
     sessionType: SessionType = "edit",
+    overrides?: SessionDataSourceOverrides,
   ): Promise<DataSourceBase<DataSourceRowWithBigint> | undefined> {
     const rpcResponse = await this?.rpcRequest?.({
       type: "RPC_REQUEST",
@@ -179,9 +186,17 @@ export class TickingArrayDataSource extends ArrayDataSource {
     });
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
-      const baseColumns = this.config.columns.includes("vuuAction")
-        ? this.config.columns
-        : this.config.columns.concat("vuuAction");
+      // A call-time override always wins; otherwise fall back to the session
+      // config this datasource was constructed with.
+      const effectiveOverrides = overrides ?? this.#session;
+      assertExpectedSessionTable(sessionTable, effectiveOverrides?.table);
+      const sessionConfig = sessionDataSourceConfig(
+        this.config,
+        effectiveOverrides?.columns,
+      );
+      const baseColumns = sessionConfig.columns.includes("vuuAction")
+        ? sessionConfig.columns
+        : sessionConfig.columns.concat("vuuAction");
       const columns =
         sessionType === "import" && !baseColumns.includes("vuuRowNum")
           ? baseColumns.concat("vuuRowNum")
@@ -189,7 +204,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
       const sessionDataSource = this.#vuuModule?.createDataSource(
         sessionTable.table,
         sessionTable.table,
-        { ...this.config, columns },
+        { ...sessionConfig, columns },
       );
       if (sessionDataSource instanceof TickingArrayDataSource) {
         sessionDataSource.#sourceTableDataSource = this;
@@ -204,6 +219,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
 
   async beginEditSession(
     editSessionMode: EditSessionMode = "all-rows",
+    overrides?: SessionDataSourceOverrides,
   ): Promise<DataSourceBase<DataSourceRowWithBigint> | undefined> {
     const rpcResponse = await this?.rpcRequest?.({
       type: "RPC_REQUEST",
@@ -212,10 +228,12 @@ export class TickingArrayDataSource extends ArrayDataSource {
     });
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
+      const effectiveOverrides = overrides ?? this.#session;
+      assertExpectedSessionTable(sessionTable, effectiveOverrides?.table);
       const sessionDataSource = this.#vuuModule?.createDataSource(
         sessionTable.table,
         sessionTable.table,
-        { ...this.config },
+        { ...sessionDataSourceConfig(this.config, effectiveOverrides?.columns) },
       );
       if (sessionDataSource instanceof TickingArrayDataSource) {
         sessionDataSource.#sourceTableDataSource = this;

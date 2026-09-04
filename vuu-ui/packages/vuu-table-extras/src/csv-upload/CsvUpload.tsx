@@ -14,7 +14,7 @@ import { type ReactNode, useCallback, useState } from "react";
 import type { RowDefaultDataItemValues, EditSession } from "@vuu-ui/vuu-data-editing";
 import type { CsvParseError, CsvParseOptions } from "./parse/csv-parse";
 import type { CsvValidationStructuredError } from "./parse/csv-schema-validation";
-import type { DataSource } from "@vuu-ui/vuu-data-types";
+import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import type { CsvUploadTableData } from "./parse/csv-upload-utils";
 import { useCsvUpload } from "./useCsvUpload";
@@ -68,6 +68,14 @@ export interface CsvUploadProps {
   children?: ReactNode;
   dataSource: DataSource;
   embedded?: boolean;
+  /**
+   * Schema of the import table, where it differs from the target table. Used to validate
+   * the CSV and to determine the session datasource columns. If omitted and importTable is
+   * provided, the schema is fetched via getTableSchema. Pass a stable reference.
+   */
+  importSchema?: TableSchema;
+  /** Expected import table, used to validate the session table returned by the server. */
+  importTable?: VuuTable;
   onImportSessionStarted?: (dataSource: DataSource) => void;
   onImportSessionEnded?: (result: CsvUploadSessionEndResult) => void;
   onError?: (result: CsvUploadErrorResult | undefined) => void;

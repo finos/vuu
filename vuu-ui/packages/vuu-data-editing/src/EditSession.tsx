@@ -536,7 +536,10 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
             ? await sourceDataSource?.beginEditSession?.(
                 toEditSessionMode(copyOption),
               )
-            : await sourceDataSource?.createSessionDataSource?.(copyOption, sessionType);
+            : await sourceDataSource?.createSessionDataSource?.(
+                copyOption,
+                sessionType,
+              );
         if (!sessionDataSource) {
           throw new Error(
             `[EditSession] datasource does not support ${this.#editSessionApi}`,
@@ -547,23 +550,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         this.#setStale(false);
         this.#setLifecycle({ status: "active", sessionDataSource });
 
-        if (Object.keys(this.#rowDefaults).length > 0) {
-          const schema = sessionDataSource.tableSchema;
-          if (schema) {
-            const columnNames = new Set(schema.columns.map((c: SchemaColumn) => c.name));
-            const unknown = Object.keys(this.#rowDefaults).filter(
-              (key) => !columnNames.has(key),
-            );
-            if (unknown.length > 0) {
-              console.warn(
-                `[EditSession] rowDefaults contains columns not in table schema, removing: ${unknown.join(", ")}`,
-              );
-              for (const key of unknown) {
-                delete this.#rowDefaults[key];
-              }
-            }
-          }
-        }
+        this.reconcileWithSessionSchema();
 
         return sessionDataSource;
       } catch (cause) {
@@ -573,6 +560,43 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       }
 
     });
+  }
+
+  /**
+   * Safe to call repeatedly - schema of a remote session table typically arrives
+   * after begin() resolves, so callers re-invoke this once 'subscribed' fires.
+   */
+  reconcileWithSessionSchema() {
+    const sessionSchema = this.#sessionDataSource?.tableSchema;
+    if (sessionSchema === undefined) {
+      return;
+    }
+
+    const columnNames = new Set(
+      sessionSchema.columns.map((c: SchemaColumn) => c.name),
+    );
+    const unknown = Object.keys(this.#rowDefaults).filter(
+      (key) => !columnNames.has(key),
+    );
+    if (unknown.length > 0) {
+      console.warn(
+        `[EditSession] rowDefaults contains columns not in table schema, removing: ${unknown.join(", ")}`,
+      );
+      for (const key of unknown) {
+        delete this.#rowDefaults[key];
+      }
+    }
+
+    const sourceKey = (this.#sourceTableDataSource as Partial<DataSource>)
+      ?.tableSchema?.key;
+    if (sourceKey !== undefined && sourceKey !== sessionSchema.key) {
+      // Row edits, deletes and undo state are keyed by row key, so they cannot
+      // be carried across tables with different key columns.
+      console.warn(
+        `[EditSession] source table key '${sourceKey}' differs from session table key '${sessionSchema.key}', discarding pending edits`,
+      );
+      this.#clearEdits();
+    }
   }
 
   get dataSource() {

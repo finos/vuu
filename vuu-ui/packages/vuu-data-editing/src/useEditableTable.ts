@@ -78,7 +78,13 @@ export const useEditableTable = ({
   // The editSession will be made available to all the edit controls in scope
   // by wrapping the edit component with a DataEditingProvider.
   const editSession = useMemo(
-    () => new EditSession({ dataSource: sourceDataSource as EditApi, deleteMode, editSessionApi, rowDefaults }),
+    () =>
+      new EditSession({
+        dataSource: sourceDataSource as EditApi,
+        deleteMode,
+        editSessionApi,
+        rowDefaults,
+      }),
     [deleteMode, editSessionApi, rowDefaults, sourceDataSource],
   );
   const [lifecycle, setLifecycle] = useState<EditLifecycle>(
@@ -137,8 +143,11 @@ export const useEditableTable = ({
       return;
     }
 
-    const handleSubscribed = () =>
+    const handleSubscribed = () => {
+      // Session table schema is only available once subscribed.
+      editSession.reconcileWithSessionSchema();
       setSubscribedSessionDataSource(sessionDataSource);
+    };
 
     setSubscribedSessionDataSource(undefined);
     sessionDataSource.on("subscribed", handleSubscribed);
@@ -151,7 +160,7 @@ export const useEditableTable = ({
 
     return () =>
       sessionDataSource.removeListener("subscribed", handleSubscribed);
-  }, [sessionDataSource]);
+  }, [editSession, sessionDataSource]);
 
   useEffect(() => {
     const handleEditState = (nextEditState: EditState) => {
@@ -202,10 +211,23 @@ export const useEditableTable = ({
     sessionDataSource.status === "subscribed" &&
     sessionDataSource.tableSchema !== undefined;
 
+  const editSchema = subscribedSessionDataSource?.tableSchema;
+  const viewSchema = sourceDataSource.tableSchema;
+  // Consumers rendering a single Table must rebuild column descriptors when this is true.
+  const columnsDiverge =
+    editSchema !== undefined &&
+    viewSchema !== undefined &&
+    (editSchema.columns.length !== viewSchema.columns.length ||
+      editSchema.columns.some(
+        (column, index) => column.name !== viewSchema.columns[index]?.name,
+      ));
+
   return {
     canCancel,
     canSave,
+    columnsDiverge,
     dataSource,
+    editSchema,
     editSession,
     lifecycle,
     hasSelection: selectionCount > 0,

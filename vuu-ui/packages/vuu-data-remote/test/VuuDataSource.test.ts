@@ -23,6 +23,7 @@ vi.mock("../src/ConnectionManager", () => ({
     serverAPI: new Promise<ServerAPI>((resolve) => {
       // @ts-ignore
       resolve({
+        rpcCall: vi.fn(),
         send: vi.fn(),
         subscribe: vi.fn(),
       });
@@ -738,3 +739,76 @@ describe("VuuDataSource", () => {
     });
   });
 });
+
+describe("VuuDataSource createSessionDataSource session config", () => {
+  const table = { module: "SIMUL", table: "instruments" };
+  const sessionTableResponse = {
+    type: "SUCCESS_RESULT",
+    data: { table: { module: "SIMUL", table: "session-xyz" } },
+  };
+
+  const subscribedDataSource = async (
+    props: ConstructorParameters<typeof VuuDataSource>[0],
+  ) => {
+    const dataSource = new VuuDataSource(props);
+    await dataSource.subscribe({}, () => undefined);
+    return dataSource;
+  };
+
+  it("restricts session columns to session.columns when no call-time override is supplied", async () => {
+    const { rpcCall } = await ConnectionManager.serverAPI;
+    vi.mocked(rpcCall).mockResolvedValueOnce(sessionTableResponse as any);
+    const dataSource = await subscribedDataSource({
+      table,
+      columns: ["bbg", "currency", "description"],
+      session: { columns: ["ric", "isin"] },
+    });
+
+    const session = await dataSource.createSessionDataSource("All", "export");
+
+    expect(session?.columns).toEqual(["ric", "isin"]);
+  });
+
+  it("a call-time override takes precedence over the datasource's own session config", async () => {
+    const { rpcCall } = await ConnectionManager.serverAPI;
+    vi.mocked(rpcCall).mockResolvedValueOnce(sessionTableResponse as any);
+    const dataSource = await subscribedDataSource({
+      table,
+      columns: ["bbg", "currency", "description"],
+      session: { columns: ["ric", "isin"] },
+    });
+
+    const session = await dataSource.createSessionDataSource("All", "export", {
+      columns: ["lotSize"],
+    });
+
+    expect(session?.columns).toEqual(["lotSize"]);
+  });
+
+  it("without session.columns or a call-time override, the session inherits the source columns", async () => {
+    const { rpcCall } = await ConnectionManager.serverAPI;
+    vi.mocked(rpcCall).mockResolvedValueOnce(sessionTableResponse as any);
+    const dataSource = await subscribedDataSource({
+      table,
+      columns: ["bbg", "currency", "description"],
+    });
+
+    const session = await dataSource.createSessionDataSource("All", "export");
+
+    expect(session?.columns).toEqual(["bbg", "currency", "description"]);
+  });
+
+  it("rejects when the returned session table's module does not match session.table", async () => {
+    const { rpcCall } = await ConnectionManager.serverAPI;
+    vi.mocked(rpcCall).mockResolvedValueOnce(sessionTableResponse as any);
+    const dataSource = await subscribedDataSource({
+      table,
+      session: { table: { module: "WRONG_MODULE", table: "whatever" } },
+    });
+
+    await expect(
+      dataSource.createSessionDataSource("All", "export"),
+    ).rejects.toThrow(/does not match expected edit table module/);
+  });
+});
+

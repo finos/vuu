@@ -13,6 +13,7 @@ export * from "./component-registry";
 export * from "./cookie-utils";
 export * from "./css-utils";
 export * from "./data-utils";
+export * from "./export-utils";
 export * from "./datasource/BaseDataSource";
 export * from "./datasource/datasource-action-utils";
 export * from "./datasource/datasource-filter-utils";
