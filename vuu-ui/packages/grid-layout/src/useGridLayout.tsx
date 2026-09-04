@@ -668,22 +668,33 @@ export const useGridLayout = ({
   );
 
   const handleTabsChange = useCallback<TabsChangeHandler>(() => {
-    forceRender({});
-  }, []);
+    const splitters = gridLayoutModel.createSplitters();
+    setNonContentGridItems((items) => ({ ...items, splitters }));
+  }, [gridLayoutModel]);
 
-  const handleTabsCreated = useCallback((stackItem: GridModelChildItem) => {
-    setNonContentGridItems(({ stackedItems, ...rest }) => ({
-      ...rest,
-      stackedItems: stackedItems.concat(stackItem),
-    }));
-  }, []);
+  const handleTabsCreated = useCallback(
+    (stackItem: GridModelChildItem) => {
+      const splitters = gridLayoutModel.createSplitters();
+      setNonContentGridItems(({ stackedItems, ...rest }) => ({
+        ...rest,
+        splitters,
+        stackedItems: stackedItems.concat(stackItem),
+      }));
+    },
+    [gridLayoutModel],
+  );
 
-  const handleTabsRemoved = useCallback((stackId: string) => {
-    setNonContentGridItems(({ stackedItems, ...rest }) => ({
-      ...rest,
-      stackedItems: stackedItems.filter(({ id }) => id !== stackId),
-    }));
-  }, []);
+  const handleTabsRemoved = useCallback(
+    (stackId: string) => {
+      const splitters = gridLayoutModel.createSplitters();
+      setNonContentGridItems(({ stackedItems, ...rest }) => ({
+        ...rest,
+        splitters,
+        stackedItems: stackedItems.filter(({ id }) => id !== stackId),
+      }));
+    },
+    [gridLayoutModel],
+  );
 
   const handleTabSelectionChange =
     useCallback<TabSelectionChangeHandler>(() => {
