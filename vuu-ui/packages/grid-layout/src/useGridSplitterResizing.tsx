@@ -1,4 +1,4 @@
-import { type MouseEventHandler, useCallback, useRef } from "react";
+import { type MouseEventHandler, useCallback, useEffect, useRef } from "react";
 import {
   classNameLayoutItem,
   getGridLayoutItem,
@@ -17,16 +17,20 @@ import {
   type GridTrackResizeConstraint,
 } from "./GridModel";
 import { queryClosest } from "@vuu-ui/vuu-utils";
+import type { GridController, GridTransaction } from "./GridController";
+import { throwForGridCommandFailure } from "./GridCommand";
 
 export type SplitterResizingHookProps = Pick<
   GridLayoutProps,
   "id" | "onClick" | "rowResizeDistribution"
 > & {
+  gridController: GridController;
   gridLayoutModel: GridLayoutModel;
   gridModel: GridModel;
 };
 
 export const useGridSplitterResizing = ({
+  gridController,
   gridLayoutModel: layoutModel,
   gridModel,
   onClick: onClickProp,
@@ -34,6 +38,7 @@ export const useGridSplitterResizing = ({
 }: SplitterResizingHookProps) => {
   const resizingState = useRef<ResizeState | undefined>(undefined);
   const splitterRef = useRef<HTMLElement>(undefined);
+  const transactionRef = useRef<GridTransaction | undefined>(undefined);
 
   const getResizeAllowance = useCallback(
     (
@@ -301,6 +306,12 @@ export const useGridSplitterResizing = ({
               createNewTrackForResize(moveBy);
             }
             moveSplitter(moveBy);
+            const transaction = transactionRef.current;
+            if (transaction) {
+              throwForGridCommandFailure(
+                transaction.dispatch({ type: "regenerate-placeholders" }),
+              );
+            }
           }
         }
       }
@@ -317,9 +328,16 @@ export const useGridSplitterResizing = ({
       splitterRef.current = undefined;
     }
 
-    // TODO make sure a resize has actually taken place
-    gridModel.notifyChange();
-  }, [gridModel, mouseMove]);
+    const transaction = transactionRef.current;
+    if (transaction) {
+      const result = transaction.commit();
+      if (!result.ok) {
+        throw Error(result.error.message);
+      }
+      transactionRef.current = undefined;
+    }
+    resizingState.current = undefined;
+  }, [mouseMove]);
 
   // TODO need to identify the expanding track and the contracting track
   // these may not necessarily be adjacent, when resizeable attribute of
@@ -334,6 +352,11 @@ export const useGridSplitterResizing = ({
       const gridLayout = queryClosest(splitterElement, ".vuuGridLayout", true);
       if (gridLayout.id === gridModel.id) {
         e.preventDefault();
+        const transactionResult = gridController.beginTransaction("resize");
+        if (!transactionResult.ok) {
+          throw Error(transactionResult.error.message);
+        }
+        transactionRef.current = transactionResult.transaction;
         const splitter = layoutModel.getSplitterById(splitterElement.id);
         const resizeTrackIsShared = layoutModel.isResizeTrackShared(splitter);
         const candidateTrackGroups =
@@ -411,12 +434,26 @@ export const useGridSplitterResizing = ({
       getProportionalTrackGroups,
       getProportionalTrackConstraints,
       getResizeAllowance,
+      gridController,
       gridModel,
       layoutModel,
       mouseMove,
       mouseUp,
       rowResizeDistribution,
     ],
+  );
+
+  useEffect(
+    () => () => {
+      document.removeEventListener("mousemove", mouseMove);
+      document.removeEventListener("mouseup", mouseUp);
+      const transaction = transactionRef.current;
+      if (transaction) {
+        transaction.rollback();
+        transactionRef.current = undefined;
+      }
+    },
+    [mouseMove, mouseUp],
   );
 
   const selectedRef = useRef<string>(undefined);

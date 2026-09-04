@@ -1,9 +1,16 @@
-import { createContext, Dispatch, DragEvent, useContext } from "react";
-import { GridLayoutDragEndHandler } from "./GridLayoutProvider";
-import { GridModel, TabStateTab, TrackSize } from "./GridModel";
-import { GridLayoutDragStartHandler } from "./useDraggable";
-import { GridLayoutModel } from "./GridLayoutModel";
-import { GridLayoutDropPosition } from "@vuu-ui/vuu-utils";
+import {
+  createContext,
+  type Dispatch,
+  type DragEvent,
+  useContext,
+} from "react";
+import type { GridLayoutDragEndHandler } from "./GridLayoutProvider";
+import type { GridModel, TabStateTab, TrackSize } from "./GridModel";
+import type { GridLayoutDragStartHandler } from "./useDraggable";
+import type { GridLayoutModel } from "./GridLayoutModel";
+import type { GridLayoutDropPosition } from "@vuu-ui/vuu-utils";
+import type { GridController } from "./GridController";
+import type { GridSnapshot } from "./GridSnapshot";
 
 export type GridLayoutActionType = "close";
 
@@ -158,12 +165,18 @@ export type GridLayoutDropHandler = (
   position: GridLayoutDropPosition,
 ) => boolean;
 
+export type GridLayoutDragLeaveHandler = () => void;
+
 export interface GridLayoutContextProps {
   dispatchGridLayoutAction: GridLayoutDispatch;
+  gridController?: GridController;
   gridLayoutModel?: GridLayoutModel;
   gridModel?: GridModel;
+  gridSnapshot?: GridSnapshot;
   id: string;
   onDragEnd?: GridLayoutDragEndHandler;
+  onDragLeave: GridLayoutDragLeaveHandler;
+  onDragPreview: GridLayoutDropHandler;
   onDragStart: GridLayoutDragStartHandler;
   onDrop: GridLayoutDropHandler;
 }
@@ -171,6 +184,8 @@ export interface GridLayoutContextProps {
 export const GridLayoutContext = createContext<GridLayoutContextProps>({
   dispatchGridLayoutAction: unconfiguredGridLayoutDispatch,
   id: "",
+  onDragLeave: () => undefined,
+  onDragPreview: () => false,
   onDragStart: () => console.log("no GridLayoutProvider"),
   onDrop: () => false,
 });
@@ -183,6 +198,16 @@ export const useGridLayoutDispatch = () => {
 export const useGridLayoutDropHandler = () => {
   const { onDrop } = useContext(GridLayoutContext);
   return onDrop;
+};
+
+export const useGridLayoutDragPreviewHandler = () => {
+  const { onDragPreview } = useContext(GridLayoutContext);
+  return onDragPreview;
+};
+
+export const useGridLayoutDragLeaveHandler = () => {
+  const { onDragLeave } = useContext(GridLayoutContext);
+  return onDragLeave;
 };
 
 export const useGridLayoutDragEndHandler = () => {
@@ -204,6 +229,26 @@ export const useGridModel = () => {
       "[useGridModel] no gridModel, did you forget to use a GridLayout",
     );
   }
+};
+
+export const useGridController = () => {
+  const { gridController } = useContext(GridLayoutContext);
+  if (gridController) {
+    return gridController;
+  }
+  throw Error(
+    "[useGridController] no gridController, did you forget to use a GridLayout",
+  );
+};
+
+export const useGridSnapshot = () => {
+  const { gridSnapshot } = useContext(GridLayoutContext);
+  if (gridSnapshot) {
+    return gridSnapshot;
+  }
+  throw Error(
+    "[useGridSnapshot] no gridSnapshot, did you forget to use a GridLayout",
+  );
 };
 
 export const useGridLayoutId = () => {

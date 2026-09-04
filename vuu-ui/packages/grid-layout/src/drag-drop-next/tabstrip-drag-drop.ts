@@ -1,5 +1,5 @@
-import { orientationType, queryClosest } from "@vuu-ui/vuu-utils";
-import { DragContext, type DropPosition } from "./DragContextNext";
+import { type orientationType, queryClosest } from "@vuu-ui/vuu-utils";
+import type { DragContext, DropPosition } from "./DragContextNext";
 import { SpaceMan } from "./SpaceMan";
 import { sourceIsTabbedComponent } from "../GridLayoutContext";
 import { getClosestGridLayout } from "../grid-dom-utils";
@@ -58,7 +58,10 @@ const getDropPositionAtEnd = (
   );
   const lastTab = tabs.item(tabs.length - 1);
   return lastTab
-    ? { position: "after", target: getDataLabel(lastTab) }
+    ? {
+        position: "after",
+        target: lastTab.dataset.gridLayoutItemId ?? getDataLabel(lastTab),
+      }
     : undefined;
 };
 
@@ -125,7 +128,12 @@ export function initializeDragContainer(
         type: "tabbed-component",
       });
 
-      dragContext.detachTab(gridId, gridLayoutItem.id, label);
+      dragContext.detachTab(
+        gridId,
+        gridLayoutItem.id,
+        gridLayoutItemId ?? "",
+        label,
+      );
       spaceMan.dragStart(tabIndex);
     }
   };

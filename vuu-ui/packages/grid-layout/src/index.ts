@@ -5,6 +5,18 @@ export type {
 export { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
 export { GridLayout, type GridResizeDistribution } from "./GridLayout";
 export {
+  GridDragCoordinator,
+  createGridDropPlan,
+  type GridDragCoordinatorError,
+  type GridDragCoordinatorErrorCode,
+  type GridDragCoordinatorResult,
+  type GridDragCoordinatorState,
+  type GridDragSource,
+  type GridDropIntent,
+  type GridDropPlan,
+  type GridDropTarget,
+} from "./GridDragCoordinator";
+export {
   GridController,
   type GridCommittedTransition,
   type GridCommittedTransitionListener,
@@ -31,11 +43,14 @@ export {
 export {
   useGridLayoutDispatch,
   useGridLayoutDragStartHandler,
+  useGridController,
   useGridModel,
+  useGridSnapshot,
   type ComponentTemplate,
   type DragSource,
   type TemplateSource,
 } from "./GridLayoutContext";
+export { useGridControllerSnapshot } from "./useGridControllerSnapshot";
 export { GridLayoutItem } from "./GridLayoutItem";
 export {
   GridLayoutProvider,

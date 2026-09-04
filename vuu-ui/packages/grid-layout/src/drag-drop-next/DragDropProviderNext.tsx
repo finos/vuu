@@ -1,6 +1,6 @@
 import {
   createContext,
-  ReactNode,
+  type ReactNode,
   useContext,
   useEffect,
   useMemo,
@@ -9,8 +9,8 @@ import {
 import {
   DragContext,
   type DragContextCancelTabDragHandler,
-  DragContextDetachTabHandler,
-  DragContextDropHandler,
+  type DragContextDetachTabHandler,
+  type DragContextDropHandler,
   type DragSources,
 } from "./DragContextNext";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -65,9 +65,24 @@ export const DragDropProviderNext = ({
   );
 
   useEffect(() => {
+    if (!targetWindow) {
+      return;
+    }
+    const cancelActiveDrag = () => {
+      if (dragContext.ownsDrag) {
+        dragContext.cancelDrag();
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        cancelActiveDrag();
+      }
+    };
     dragContext.on("cancel-tab-drag", onCancelTabDrag);
     dragContext.on("detach-tab", onDetachTab);
     dragContext.on("drop", onDrop);
+    targetWindow.addEventListener("keydown", handleKeyDown);
+    targetWindow.addEventListener("pointercancel", cancelActiveDrag);
 
     const cleanupCallbacks: Array<() => void> = [];
     // console.log(
@@ -90,9 +105,14 @@ export const DragDropProviderNext = ({
       dragContext.removeListener("cancel-tab-drag", onCancelTabDrag);
       dragContext.removeListener("detach-tab", onDetachTab);
       dragContext.removeListener("drop", onDrop);
-      cleanupCallbacks.forEach((cleanup) => cleanup());
+      targetWindow.removeEventListener("keydown", handleKeyDown);
+      targetWindow.removeEventListener("pointercancel", cancelActiveDrag);
+      cancelActiveDrag();
+      cleanupCallbacks.forEach((cleanup) => {
+        cleanup();
+      });
     };
-  }, [dragContext, onCancelTabDrag, onDetachTab, onDrop]);
+  }, [dragContext, onCancelTabDrag, onDetachTab, onDrop, targetWindow]);
 
   return (
     <DragDropContext.Provider value={dragContext}>

@@ -5,8 +5,13 @@ import {
   queryClosest,
   type rect,
 } from "@vuu-ui/vuu-utils";
-import { DragEventHandler, useCallback, useRef } from "react";
-import { useGridLayoutDropHandler, useGridLayoutId } from "./GridLayoutContext";
+import { type DragEventHandler, useCallback, useRef } from "react";
+import {
+  useGridLayoutDragLeaveHandler,
+  useGridLayoutDragPreviewHandler,
+  useGridLayoutDropHandler,
+  useGridLayoutId,
+} from "./GridLayoutContext";
 import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
 
 const DROPTARGET_CLASSNAME = "vuuDropTarget";
@@ -144,6 +149,8 @@ export const useAsDropTarget = () => {
   const dropTargetStateRef = useRef<DropTargetState>(NULL_STATE);
 
   const drop = useGridLayoutDropHandler();
+  const leave = useGridLayoutDragLeaveHandler();
+  const preview = useGridLayoutDragPreviewHandler();
   const dragContext = useDragContext();
   const layoutId = useGridLayoutId();
   const onDragEnter = useCallback<DragEventHandler>(
@@ -175,6 +182,8 @@ export const useAsDropTarget = () => {
           rect.top = top;
         } else if (currentDropTarget) {
           dropTargetStateRef.current.dropTarget = undefined;
+          dropTargetStateRef.current.position = undefined;
+          leave();
           // console.log(
           //   `%c[useAsDropTarget] clear droptarget ${currentDropTarget?.gridLayoutItemId}`,
           //   "color:brown;font-weight: bold;",
@@ -183,7 +192,7 @@ export const useAsDropTarget = () => {
         }
       }
     },
-    [dragContext, layoutId],
+    [dragContext, layoutId, leave],
   );
 
   // We could replace this with mouse move to reduce event rate
@@ -232,13 +241,18 @@ export const useAsDropTarget = () => {
                   addDropTargetPositionClassName(dropTarget.target, position);
                 }
                 dropTargetStateRef.current.position = position;
+                preview(
+                  dropTarget.gridLayoutItemId,
+                  dragContext.dragSource,
+                  position,
+                );
               }
             }
           }
         }
       }
     },
-    [dragContext, layoutId],
+    [dragContext, layoutId, preview],
   );
 
   const onDragLeave = useCallback<DragEventHandler>(
@@ -258,12 +272,13 @@ export const useAsDropTarget = () => {
         if (dropTarget === currentDropTarget) {
           dropTargetStateRef.current.dropTarget = undefined;
           dropTargetStateRef.current.position = undefined;
+          leave();
         }
 
         removeDropTargetPositionClassName(dropTarget.target);
       }
     },
-    [dragContext, layoutId],
+    [dragContext, layoutId, leave],
   );
 
   const onDrop = useCallback<DragEventHandler>(

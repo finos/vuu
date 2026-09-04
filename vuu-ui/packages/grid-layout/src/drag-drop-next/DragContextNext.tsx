@@ -1,6 +1,6 @@
 import { EventEmitter, type orientationType } from "@vuu-ui/vuu-utils";
 import {
-  DragSource,
+  type DragSource,
   sourceIsComponent,
   sourceIsTabbedComponent,
   sourceIsTemplate,
@@ -36,8 +36,6 @@ export type DropHandler<T extends DragSource = DragSource> = (
   dropProps: DropProps<T>,
 ) => void;
 
-const defaultDropHandler = () => {};
-
 export type DragContextDropEvent = {
   type: "drop";
   dragSource: DragSource;
@@ -46,6 +44,7 @@ export type DragContextDropEvent = {
 };
 export type DragContextDetachTabEvent = {
   gridId: string;
+  itemId: string;
   type: "detach-tab";
   tabsId: string;
   value: string;
@@ -72,13 +71,11 @@ export type DragContextEvents = {
 };
 
 export class DragContext extends EventEmitter<DragContextEvents> {
-  #dragElementHeight?: number;
   #dragElementWidth?: number;
   #dragLabelWidth?: number;
   #dragStateCleanups = new Set<() => void>();
   #dragSource?: DragSource;
   #dragSources: Map<string, DragSourceDescriptor> = new Map();
-  #dropHandler: DropHandler = defaultDropHandler;
   #dropped = false;
   #dropPending = false;
   #dropZoneCache = new Map<HTMLElement, boolean>();
@@ -112,7 +109,6 @@ export class DragContext extends EventEmitter<DragContextEvents> {
       this.#dragSource = dragSource;
       this.#dropped = false;
       this.#dropPending = false;
-      this.#dragElementHeight = height;
       this.#dragElementWidth = width;
       this.#dragLabelWidth = dragLabelWidth;
       this.#mouseX = x;
@@ -136,7 +132,6 @@ export class DragContext extends EventEmitter<DragContextEvents> {
     this.#dropZoneCache.clear();
     this.#dragSource = undefined;
     this.#element = undefined;
-    this.#dragElementHeight = undefined;
     this.#dragElementWidth = undefined;
   }
 
@@ -150,6 +145,7 @@ export class DragContext extends EventEmitter<DragContextEvents> {
       this.emit("cancel-tab-drag", {
         type: "cancel-tab-drag",
         gridId,
+        itemId: this.#dragSource.tab.id,
         tabsId,
         value,
       });
@@ -180,12 +176,18 @@ export class DragContext extends EventEmitter<DragContextEvents> {
    * TabPanel can be assigned its new location (might still be within tabstrip, might
    * not be) and made visible, without ever having to unmount/remount.
    */
-  detachTab(gridId: string, tabsId: string, value: string) {
+  detachTab(gridId: string, tabsId: string, itemId: string, value: string) {
     // console.log(
     //   `%c[DragContextNext] #${gridId}detachTab #${tabsId} tab (${value})`,
     //   "color:blue;font-weight:bold;",
     // );
-    this.emit("detach-tab", { type: "detach-tab", gridId, tabsId, value });
+    this.emit("detach-tab", {
+      type: "detach-tab",
+      gridId,
+      itemId,
+      tabsId,
+      value,
+    });
   }
 
   drop = ({
@@ -285,10 +287,6 @@ export class DragContext extends EventEmitter<DragContextEvents> {
   //     };
   //   }
   // }
-
-  set dropHandler(dropHandler: DropHandler) {
-    this.#dropHandler = dropHandler;
-  }
 
   get dropped() {
     const dragSource = this.dragSource;

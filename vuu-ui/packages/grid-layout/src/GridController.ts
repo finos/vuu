@@ -35,6 +35,7 @@ export interface GridTransaction {
   readonly kind: GridTransactionKind;
   commit(): GridTransactionCloseResult;
   dispatch(command: GridCommand): GridCommandResult;
+  replace(commands: readonly GridCommand[]): GridCommandResult;
   rollback(): GridTransactionCloseResult;
 }
 
@@ -61,7 +62,7 @@ export class GridController {
   readonly #executor: LegacyGridCommandExecutor;
   readonly #listeners = new Set<GridControllerListener>();
   readonly #commitListeners = new Set<GridCommittedTransitionListener>();
-  #activeTransaction: LegacyGridTransaction | undefined;
+  #activeTransaction: GridControllerTransaction | undefined;
   #snapshot: GridSnapshot;
 
   constructor(
@@ -134,12 +135,13 @@ export class GridController {
         ok: false,
       };
     }
-    let transaction: LegacyGridTransaction;
-    transaction = new LegacyGridTransaction(
+    let transaction: GridControllerTransaction;
+    transaction = new GridControllerTransaction(
       kind,
       this.gridModel.createCheckpoint(),
       this.#snapshot,
       (command) => this.#executePreview(transaction, command),
+      (commands) => this.#replacePreview(transaction, commands),
       (commands) =>
         this.#commitTransaction(
           transaction,
@@ -159,7 +161,7 @@ export class GridController {
   }
 
   #executePreview(
-    transaction: LegacyGridTransaction,
+    transaction: GridControllerTransaction,
     command: GridCommand,
   ): GridCommandResult {
     if (this.#activeTransaction !== transaction) {
@@ -172,6 +174,7 @@ export class GridController {
         ok: false,
       };
     }
+
     const checkpoint = this.gridModel.createCheckpoint();
     const result = this.#executeAtomically(command, checkpoint);
     if (!result.ok) {
@@ -188,8 +191,59 @@ export class GridController {
     return result;
   }
 
+  #replacePreview(
+    transaction: GridControllerTransaction,
+    commands: readonly GridCommand[],
+  ): GridCommandResult {
+    const representative =
+      commands[0] ?? ({ type: "regenerate-placeholders" } as const);
+    if (this.#activeTransaction !== transaction) {
+      return {
+        command: representative.type,
+        error: transactionError(
+          "TRANSACTION_CLOSED",
+          "Cannot replace preview; the grid transaction is closed",
+        ),
+        ok: false,
+      };
+    }
+
+    this.gridModel.restoreCheckpoint(transaction.checkpoint);
+    this.#snapshot = transaction.baseline;
+    try {
+      for (const command of commands) {
+        const checkpoint = this.gridModel.createCheckpoint();
+        const result = this.#executeAtomically(command, checkpoint);
+        if (!result.ok) {
+          this.gridModel.restoreCheckpoint(transaction.checkpoint);
+          this.#snapshot = transaction.baseline;
+          transaction.setCommands([]);
+          this.#notifyState();
+          return result;
+        }
+      }
+    } catch (error) {
+      this.gridModel.restoreCheckpoint(transaction.checkpoint);
+      this.#snapshot = transaction.baseline;
+      transaction.setCommands([]);
+      this.#notifyState();
+      throw error;
+    }
+    transaction.setCommands(commands);
+    const candidate = this.#readSnapshot(transaction.baseline.revision);
+    this.#snapshot =
+      semanticSnapshot(candidate) === semanticSnapshot(transaction.baseline)
+        ? transaction.baseline
+        : candidate;
+    this.#notifyState();
+    return {
+      command: representative.type,
+      ok: true,
+    };
+  }
+
   #commitTransaction(
-    transaction: LegacyGridTransaction,
+    transaction: GridControllerTransaction,
     kind: GridTransactionKind,
     baseline: GridSnapshot,
     commands: readonly GridCommand[],
@@ -216,7 +270,7 @@ export class GridController {
   }
 
   #rollbackTransaction(
-    transaction: LegacyGridTransaction,
+    transaction: GridControllerTransaction,
     checkpoint: GridModelCheckpoint,
     baseline: GridSnapshot,
   ): GridTransactionCloseResult {
@@ -249,7 +303,11 @@ export class GridController {
     checkpoint: GridModelCheckpoint,
   ): GridCommandResult {
     try {
-      return this.#executor.execute(command);
+      const result = this.#executor.execute(command);
+      if (!result.ok) {
+        this.gridModel.restoreCheckpoint(checkpoint);
+      }
+      return result;
     } catch (error) {
       this.gridModel.restoreCheckpoint(checkpoint);
       throw error;
@@ -288,7 +346,7 @@ export class GridController {
   }
 }
 
-class LegacyGridTransaction implements GridTransaction {
+class GridControllerTransaction implements GridTransaction {
   readonly #commands: GridCommand[] = [];
   #closed = false;
 
@@ -298,6 +356,9 @@ class LegacyGridTransaction implements GridTransaction {
     readonly baseline: GridSnapshot,
     private readonly executePreview: (
       command: GridCommand,
+    ) => GridCommandResult,
+    private readonly replacePreview: (
+      commands: readonly GridCommand[],
     ) => GridCommandResult,
     private readonly commitTransaction: (
       commands: readonly GridCommand[],
@@ -316,11 +377,30 @@ class LegacyGridTransaction implements GridTransaction {
         ok: false,
       };
     }
+
     const result = this.executePreview(command);
     if (result.ok) {
       this.#commands.push(command);
     }
     return result;
+  }
+
+  replace(commands: readonly GridCommand[]): GridCommandResult {
+    if (this.#closed) {
+      return {
+        command: commands[0]?.type ?? "regenerate-placeholders",
+        error: transactionError(
+          "TRANSACTION_CLOSED",
+          "Cannot replace preview; the grid transaction is closed",
+        ),
+        ok: false,
+      };
+    }
+    return this.replacePreview(commands);
+  }
+
+  setCommands(commands: readonly GridCommand[]) {
+    this.#commands.splice(0, this.#commands.length, ...commands);
   }
 
   commit(): GridTransactionCloseResult {
