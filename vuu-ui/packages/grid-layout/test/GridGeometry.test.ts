@@ -809,6 +809,46 @@ describe("GridGeometry item transitions", () => {
     expect(splitters.map(({ id }) => id)).toEqual(["lower-splitter-v"]);
   });
 
+  it("references stack containers rather than their compatibility members", () => {
+    const horizontal = computeSplitters(
+      geometry(
+        ["1fr"],
+        ["1fr", "1fr"],
+        [
+          item("upper", "1/1/2/2"),
+          item("stack", "2/1/3/2", { type: "stacked-content" }),
+          item("teal", "2/1/3/2", { stackId: "stack" }),
+          item("coral", "2/1/3/2", { stackId: "stack" }),
+        ],
+      ),
+    ).splitters;
+    const vertical = computeSplitters(
+      geometry(
+        ["1fr", "1fr"],
+        ["1fr"],
+        [
+          item("left", "1/1/2/2"),
+          item("stack", "1/2/2/3", { type: "stacked-content" }),
+          item("teal", "1/2/2/3", { stackId: "stack" }),
+          item("coral", "1/2/2/3", { stackId: "stack" }),
+        ],
+      ),
+    ).splitters;
+
+    expect(horizontal).toMatchObject([
+      {
+        orientation: "vertical",
+        resizedChildItems: { after: ["stack"], before: ["upper"] },
+      },
+    ]);
+    expect(vertical).toMatchObject([
+      {
+        orientation: "horizontal",
+        resizedChildItems: { after: ["stack"], before: ["left"] },
+      },
+    ]);
+  });
+
   it("propagates stacked-content updates to stack members", () => {
     const next = applyGeometryUpdates(
       geometry(

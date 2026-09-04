@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { LegacyGridCommandExecutor } from "../src/GridCommand";
 import { GridLayoutModel } from "../src/GridLayoutModel";
 import { GridModel } from "../src/GridModel";
 import {
@@ -616,6 +617,93 @@ describe("GridModel declarative layout scenarios", () => {
     expect(
       new GridLayoutModel(model).canSplitGridItem(stack?.id ?? "", "east"),
     ).toBe(false);
+  });
+
+  it("resizes a south split after its lower item becomes a palette stack", () => {
+    const model = new GridModel(
+      "palette-replace",
+      descriptor(["600px"], ["400px"], {
+        target: item("1/1/2/2", { resizeable: "hv", title: "Drop target" }),
+      }),
+    );
+    const executor = new LegacyGridCommandExecutor(model);
+
+    expect(
+      executor.execute({
+        item: {
+          column: { span: 1, start: 1 },
+          id: "teal",
+          resizeable: "hv",
+          row: { span: 1, start: 1 },
+          title: "Teal",
+        },
+        type: "add-item",
+      }),
+    ).toMatchObject({ ok: true });
+    expect(
+      executor.execute({
+        itemId: "teal",
+        position: "south",
+        targetId: "target",
+        type: "move-item",
+      }),
+    ).toMatchObject({ ok: true });
+    expect(
+      executor.execute({
+        item: {
+          column: { span: 1, start: 1 },
+          id: "coral",
+          resizeable: "hv",
+          row: { span: 1, start: 1 },
+          title: "Coral",
+        },
+        type: "add-item",
+      }),
+    ).toMatchObject({ ok: true });
+    expect(
+      executor.execute({
+        itemId: "coral",
+        targetId: "teal",
+        type: "create-stack",
+      }),
+    ).toMatchObject({ ok: true });
+
+    const stack = model.childItems.find(
+      ({ type }) => type === "stacked-content",
+    );
+    expect(stack).toBeDefined();
+    const stackId = stack?.id ?? "";
+    expect(model.getStackState(stackId)).toMatchObject({
+      members: [{ id: "teal" }, { id: "coral" }],
+      selectedItemId: "teal",
+    });
+    expect(model.getTabState(stackId).tabs.map(({ id }) => id)).toEqual([
+      "teal",
+      "coral",
+    ]);
+
+    const [splitter] = model.getSplitters();
+    expect(splitter).toMatchObject({
+      ariaOrientation: "horizontal",
+      resizedChildItems: {
+        after: [stackId],
+        before: ["target"],
+      },
+      resizedGridTracks: [0, 1],
+    });
+    expect(
+      executor.execute({
+        contraTrackIndex: splitter.resizedGridTracks[0],
+        delta: 40,
+        distribution: "adjacent",
+        resizedTrackIndex: splitter.resizedGridTracks[1],
+        track: "row",
+        type: "resize-tracks",
+      }),
+    ).toMatchObject({ ok: true });
+    expect(model.tracks.rows).toEqual(["160px", "240px"]);
+    expect(model.getChildItem("teal", true).stackId).toBe(stackId);
+    expect(model.getChildItem("coral", true).stackId).toBe(stackId);
   });
 
   it("creates one shared splitter when only one track item opts into resizing", () => {
