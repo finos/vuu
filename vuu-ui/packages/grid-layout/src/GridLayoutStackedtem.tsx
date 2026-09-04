@@ -1,10 +1,4 @@
-import {
-  TabBar,
-  TabList,
-  Tab,
-  TabTrigger,
-  Tabs,
-} from "@salt-ds/core";
+import { TabBar, TabList, Tab, TabTrigger, Tabs } from "@salt-ds/core";
 import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -20,7 +14,7 @@ import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
 import {
   type ComponentTemplate,
   useGridLayoutDispatch,
-  useGridModel,
+  useGridSnapshot,
 } from "./GridLayoutContext";
 import type { GridLayoutItemProps } from "./GridLayoutItem";
 import { resolveMinimumGridItemSize } from "./GridModel";
@@ -85,9 +79,13 @@ export const GridLayoutStackedItem = ({
     type: "stacked-content",
   });
 
-  const { getTabState } = useGridModel();
   const dispatch = useGridLayoutDispatch();
-  const tabState = getTabState(id, "create");
+  const snapshot = useGridSnapshot();
+  const stack = snapshot.stacks.find((candidate) => candidate.id === id);
+  if (!stack) {
+    throw Error(`[GridLayoutStackedItem] canonical stack #${id} not found`);
+  }
+  const itemById = new Map(snapshot.items.map((item) => [item.id, item]));
 
   const handleTabSelectionChange = useCallback(
     (_: SyntheticEvent | null, value: string) => {
@@ -129,32 +127,36 @@ export const GridLayoutStackedItem = ({
         key={id}
         style={style}
       >
-        <Tabs
-          onChange={handleTabSelectionChange}
-          value={tabState.tabs[tabState.active]?.id ?? null}
-        >
+        <Tabs onChange={handleTabSelectionChange} value={stack.selectedItemId}>
           <TabBar divider>
             <TabList
               appearance="transparent"
               className="vuuDragContainer"
               id={tabsId}
             >
-              {tabState.tabs.map(({ id: gridLayoutItemId, label }, index) => (
-                <Tab
-                  className="vuuDraggableItem"
-                  data-index={index}
-                  data-grid-layout-item-id={gridLayoutItemId}
-                  data-label={label}
-                  draggable
-                  value={gridLayoutItemId}
-                  key={gridLayoutItemId}
-                >
-                  <TabTrigger>{label}</TabTrigger>
-                  {showMenu ? (
-                    <TabMenu layoutItemId={gridLayoutItemId} tabLabel={label} />
-                  ) : null}
-                </Tab>
-              ))}
+              {stack.itemIds.map((gridLayoutItemId, index) => {
+                const label =
+                  itemById.get(gridLayoutItemId)?.title ?? gridLayoutItemId;
+                return (
+                  <Tab
+                    className="vuuDraggableItem"
+                    data-index={index}
+                    data-grid-layout-item-id={gridLayoutItemId}
+                    data-label={label}
+                    draggable
+                    value={gridLayoutItemId}
+                    key={gridLayoutItemId}
+                  >
+                    <TabTrigger>{label}</TabTrigger>
+                    {showMenu ? (
+                      <TabMenu
+                        layoutItemId={gridLayoutItemId}
+                        tabLabel={label}
+                      />
+                    ) : null}
+                  </Tab>
+                );
+              })}
             </TabList>
             {allowAddTab ? (
               <IconButton

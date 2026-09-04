@@ -3,7 +3,12 @@ import { useIdMemo } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import type { CSSProperties, HTMLAttributes, ReactElement } from "react";
+import {
+  cloneElement,
+  type CSSProperties,
+  type HTMLAttributes,
+  type ReactElement,
+} from "react";
 import { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
 import { getGridArea } from "./grid-layout-utils";
 import { GridLayoutContext } from "./GridLayoutContext";
@@ -78,15 +83,18 @@ export const GridLayout = ({
     children,
     containerCallback,
     dispatchGridLayoutAction,
+    gridController,
     gridLayoutModel,
     gridModel,
-    nonContentGridItems: { placeholders, splitters, stackedItems },
+    gridSnapshot,
+    nonContentGridItems: { placeholderIds, splitters, stackIds },
     onCancelTabDrag,
     onDetachTab,
     onDragEnd,
     onDragStart,
     onDrop,
     onDropStackedItem,
+    stackTemplates,
   } = useGridLayout({
     children: childrenProp,
     id,
@@ -97,6 +105,7 @@ export const GridLayout = ({
   const splitterLayoutProps = useGridSplitterResizing({
     gridLayoutModel,
     gridModel,
+    gridController,
     id,
     onClick,
     rowResizeDistribution,
@@ -105,16 +114,22 @@ export const GridLayout = ({
   // const splitterProps = useGridSplitter();
 
   const style = {
-    ...gridModel.tracks.css,
+    gridTemplateColumns: gridSnapshot.columns.map(({ size }) => size).join(" "),
+    gridTemplateRows: gridSnapshot.rows.map(({ size }) => size).join(" "),
     ...styleProp,
   } as CSSProperties;
+  const snapshotItemById = new Map(
+    gridSnapshot.items.map((item) => [item.id, item]),
+  );
 
   return (
     <GridLayoutContext.Provider
       value={{
         dispatchGridLayoutAction,
+        gridController,
         gridLayoutModel,
         gridModel,
+        gridSnapshot,
         id,
         onDragEnd,
         onDragStart,
@@ -137,25 +152,32 @@ export const GridLayout = ({
             vuuFullPage: fullPage,
           })}
         >
-          {stackedItems.map((stackedItem) => (
-            <GridLayoutStackedItem
-              id={stackedItem.id}
-              key={stackedItem.id}
-              style={{
-                gridArea: getGridArea(stackedItem),
-              }}
-            />
-          ))}
+          {stackIds.map((stackId) => {
+            const template = stackTemplates.get(stackId);
+            return template ? (
+              cloneElement(template, { key: stackId })
+            ) : (
+              <GridLayoutStackedItem id={stackId} key={stackId} />
+            );
+          })}
           {children}
-          {placeholders.map((placeholder) => (
-            <GridPlaceholder
-              id={placeholder.id}
-              key={placeholder.id}
-              style={{
-                gridArea: getGridArea(placeholder),
-              }}
-            />
-          ))}
+          {placeholderIds.map((placeholderId) => {
+            const placeholder = snapshotItemById.get(placeholderId);
+            if (!placeholder) {
+              throw Error(
+                `[GridLayout] canonical placeholder #${placeholderId} not found`,
+              );
+            }
+            return (
+              <GridPlaceholder
+                id={placeholderId}
+                key={placeholderId}
+                style={{
+                  gridArea: `${placeholder.row.start}/${placeholder.column.start}/${placeholder.row.start + placeholder.row.span}/${placeholder.column.start + placeholder.column.span}`,
+                }}
+              />
+            );
+          })}
           {splitters.map((splitter) => (
             <GridSplitter
               // {...splitterProps}

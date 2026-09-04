@@ -6,75 +6,72 @@ import {
   uuid,
 } from "@vuu-ui/vuu-utils";
 import {
-  ReactElement,
-  ReactNode,
-  RefCallback,
-  SetStateAction,
+  type ReactElement,
+  type ReactNode,
+  type RefCallback,
+  type SetStateAction,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import {
+import type {
   DragContextCancelTabDragHandler,
   DragContextDetachTabHandler,
   DragContextDropHandler,
 } from "./drag-drop-next/DragContextNext";
 import { layoutFromJson } from "./layoutFromJson";
-import {
-  getClosestGridLayout,
-  setGridColumn,
-  setGridRow,
-} from "./grid-dom-utils";
+import { getClosestGridLayout } from "./grid-dom-utils";
 import {
   getActiveIndex,
   getGridArea,
   getSharedGridPosition,
 } from "./grid-layout-utils";
 import {
-  GridLayoutDispatch,
-  GridLayoutDropHandler,
+  type GridLayoutDispatch,
+  type GridLayoutDropHandler,
   sourceIsComponent,
   sourceIsTabbedComponent,
   sourceIsTemplate,
-  useGridLayoutId,
 } from "./GridLayoutContext";
-import { GridLayoutItem, GridLayoutItemProps } from "./GridLayoutItem";
-import { GridItemRemoveReason, GridLayoutModel } from "./GridLayoutModel";
 import {
-  GridLayoutDragEndHandler,
+  GridLayoutItem,
+  type GridLayoutItemProps,
+  isGridLayoutItem,
+} from "./GridLayoutItem";
+import { type GridItemRemoveReason, GridLayoutModel } from "./GridLayoutModel";
+import {
+  type GridLayoutDragEndHandler,
   useGridChangeHandler,
   useGridLayoutOptions,
   useSavedGrid,
 } from "./GridLayoutProvider";
 import {
-  GridChildPositionChangeHandler,
-  GridColumnsAndRows,
-  GridLayoutChangeHandler,
-  GridLayoutDescriptor,
+  type GridColumnsAndRows,
+  type GridLayoutChangeHandler,
+  type GridLayoutDescriptor,
   GridModel,
   GridModelChildItem,
-  GridTrackResizeHandler,
-  ISplitter,
+  type ISplitter,
   isStackedItem,
-  NonContentResetOptions,
-  TabsChangeHandler,
-  TabSelectionChangeHandler,
 } from "./GridModel";
 import {
   addChildToStackedGridItem,
   getGridItemChild,
 } from "./react-element-utils";
-import { GridLayoutDragStartHandler } from "./useDraggable";
-import { LayoutJSON } from "./componentToJson";
+import type { GridLayoutDragStartHandler } from "./useDraggable";
+import type { LayoutJSON } from "./componentToJson";
 import {
   GridCommandExecutionError,
   LegacyGridCommandExecutor,
   throwForGridCommandFailure,
 } from "./GridCommand";
 import { GridController } from "./GridController";
+import type { GridTransaction } from "./GridController";
+import { gridSnapshotToGridLayoutDescriptor } from "./grid-snapshot-adapters";
+import { isGridLayoutStackedItem } from "./GridLayoutStackedtem";
+import { useGridControllerSnapshot } from "./useGridControllerSnapshot";
 
 export type GridLayoutHookProps = {
   children: ReactNode;
@@ -87,8 +84,57 @@ type GridLayoutItemElements = Array<ReactElement<GridLayoutItemProps>>;
 
 type NonContentGridItems = {
   splitters: ISplitter[];
-  placeholders: GridModelChildItem[];
-  stackedItems: GridModelChildItem[];
+  placeholderIds: string[];
+  stackIds: string[];
+};
+
+const layoutDescriptorFromChildren = (
+  colsAndRows: GridColumnsAndRows,
+  children: GridLayoutItemElements,
+): GridLayoutDescriptor => {
+  const stackTemplates = new Map(
+    children
+      .filter(isGridLayoutStackedItem)
+      .map((element) => [element.props.id, element.props]),
+  );
+  return {
+    ...colsAndRows,
+    gridLayoutItems: Object.fromEntries(
+      children.filter(isGridLayoutItem).map(({ props }) => {
+        const {
+          contentVisible,
+          "data-drop-target": dropTarget,
+          header,
+          id,
+          minHeight,
+          minWidth,
+          resizeable,
+          stackId,
+          style,
+          title,
+        } = props;
+        const stackTemplate = stackId ? stackTemplates.get(stackId) : undefined;
+        const gridArea = style?.gridArea ?? stackTemplate?.style?.gridArea;
+        if (!gridArea) {
+          throw Error(`[useGridLayout] GridLayoutItem #${id} has no gridArea`);
+        }
+        return [
+          id,
+          {
+            contentVisible,
+            dropTarget,
+            gridArea,
+            header,
+            minHeight: minHeight ?? stackTemplate?.minHeight,
+            minWidth: minWidth ?? stackTemplate?.minWidth,
+            resizeable: resizeable ?? stackTemplate?.resizeable,
+            stackId,
+            title,
+          },
+        ];
+      }),
+    ),
+  };
 };
 
 const assertNeverGridLayoutAction = (action: never): never => {
@@ -116,10 +162,7 @@ export const useGridLayout = ({
   const { onChangeChildElements, onChangeLayout } = useGridChangeHandler();
   const layoutOptions = useGridLayoutOptions();
 
-  const layoutId = useGridLayoutId();
   const getSavedGrid = useSavedGrid();
-
-  const [, forceRender] = useState({});
 
   /**
    * Construct the initial set of child elements and the GridLayoutDescriptor
@@ -134,11 +177,13 @@ export const useGridLayout = ({
       const { components: savedChildren, layout: savedLayout } = savedGrid;
       return [Object.values(savedChildren), savedLayout];
     } else if (colsAndRows) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const reactElements = asReactElements(childrenProp) as any;
-      const layoutDescriptor = {
-        ...colsAndRows,
-      };
+      const reactElements = asReactElements(
+        childrenProp,
+      ) as GridLayoutItemElements;
+      const layoutDescriptor = layoutDescriptorFromChildren(
+        colsAndRows,
+        reactElements,
+      );
 
       return [reactElements, layoutDescriptor];
     } else {
@@ -151,7 +196,9 @@ export const useGridLayout = ({
   // Note we initialise this ref with the initial children from props. We subsequently
   // only update it in response to manipulation of the GridLayout NOT in case of the
   // children prop changing.
-  const childrenRef = useRef<GridLayoutItemElements>(children);
+  const [childElements, setChildElements] =
+    useState<GridLayoutItemElements>(children);
+  const childrenRef = useRef<GridLayoutItemElements>(childElements);
 
   const setChildren = useCallback(
     (
@@ -166,19 +213,11 @@ export const useGridLayout = ({
         childrenRef.current = newChildren(prev);
       }
 
-      onChangeChildElements?.(id, childrenRef.current);
-
-      forceRender({});
+      setChildElements(childrenRef.current);
+      onChangeChildElements?.(id, childrenRef.current.filter(isGridLayoutItem));
     },
     [id, onChangeChildElements],
   );
-
-  const [nonContentGridItems, setNonContentGridItems] =
-    useState<NonContentGridItems>({
-      splitters: [],
-      placeholders: [],
-      stackedItems: [],
-    });
 
   const [gridModel, gridLayoutModel, containerCallback] = useMemo(
     // TODO handling runtime change of cols, rows etc currently not supported
@@ -188,6 +227,28 @@ export const useGridLayout = ({
       //   "color: green",
       // );
       const gridModel = new GridModel(id, layout);
+      for (const [stackId, items] of gridModel.getStackedChildItems()) {
+        if (gridModel.getChildItem(stackId) === undefined) {
+          const { column, row } = getSharedGridPosition(items);
+          const stackTemplate = children.find(
+            (element) =>
+              isGridLayoutStackedItem(element) && element.props.id === stackId,
+          );
+          gridModel.setTabState(stackId, items, getActiveIndex(items));
+          gridModel.addChildItem(
+            new GridModelChildItem({
+              column,
+              id: stackId,
+              minHeight: stackTemplate?.props.minHeight,
+              minWidth: stackTemplate?.props.minWidth,
+              resizeable: stackTemplate?.props.resizeable,
+              row,
+              type: "stacked-content",
+            }),
+          );
+        }
+      }
+      gridModel.createPlaceholders();
       const gridLayoutModel = new GridLayoutModel(gridModel);
       const callbackRef: RefCallback<HTMLDivElement> = (el) => {
         if (el) {
@@ -197,11 +258,12 @@ export const useGridLayout = ({
 
       return [gridModel, gridLayoutModel, callbackRef];
     },
-    [id, layout],
+    [children, id, layout],
   );
   const dragStartLayoutRef = useRef<GridLayoutDescriptor | undefined>(
     undefined,
   );
+  const dragTransactionRef = useRef<GridTransaction | undefined>(undefined);
   const gridController = useMemo(
     () =>
       new GridController(
@@ -211,6 +273,81 @@ export const useGridLayout = ({
       ),
     [gridLayoutModel, gridModel],
   );
+  const snapshot = useGridControllerSnapshot(gridController);
+  const beginLegacyDragTransaction = useCallback(() => {
+    if (dragTransactionRef.current) {
+      return dragTransactionRef.current;
+    }
+    const result = gridController.beginTransaction("drag");
+    if (!result.ok) {
+      throw Error(result.error.message);
+    }
+    dragTransactionRef.current = result.transaction;
+    return result.transaction;
+  }, [gridController]);
+  const publishLegacyDragMutation = useCallback(() => {
+    const transaction = dragTransactionRef.current;
+    const result = transaction
+      ? transaction.dispatch({ type: "regenerate-placeholders" })
+      : gridController.dispatch({ type: "regenerate-placeholders" });
+    throwForGridCommandFailure(result);
+  }, [gridController]);
+  const commitLegacyDragTransaction = useCallback(() => {
+    const transaction = dragTransactionRef.current;
+    if (transaction) {
+      const result = transaction.commit();
+      if (!result.ok) {
+        throw Error(result.error.message);
+      }
+      dragTransactionRef.current = undefined;
+    }
+  }, []);
+  const rollbackLegacyDragTransaction = useCallback(() => {
+    const transaction = dragTransactionRef.current;
+    if (transaction) {
+      const result = transaction.rollback();
+      if (!result.ok) {
+        throw Error(result.error.message);
+      }
+      dragTransactionRef.current = undefined;
+    }
+  }, []);
+  const contentIds = useMemo(
+    () =>
+      new Set(
+        childElements.filter(isGridLayoutItem).map(({ props: { id } }) => id),
+      ),
+    [childElements],
+  );
+  const stackTemplates = useMemo(
+    () =>
+      new Map(
+        childElements
+          .filter(isGridLayoutStackedItem)
+          .map((element) => [element.props.id, element]),
+      ),
+    [childElements],
+  );
+  const renderedChildren = useMemo(
+    () =>
+      snapshot.items.flatMap(({ id: itemId }) => {
+        const element = childElements.find(
+          ({ props: { id: elementId } }) => elementId === itemId,
+        );
+        return element ? [element] : [];
+      }),
+    [childElements, snapshot],
+  );
+  const nonContentGridItems = useMemo<NonContentGridItems>(
+    () => ({
+      placeholderIds: snapshot.items
+        .filter(({ id: itemId }) => !contentIds.has(itemId))
+        .map(({ id: itemId }) => itemId),
+      splitters: gridLayoutModel.createSplitters(),
+      stackIds: snapshot.stacks.map(({ id: stackId }) => stackId),
+    }),
+    [contentIds, gridLayoutModel, snapshot],
+  );
 
   const saveGridLayout = useCallback<GridLayoutChangeHandler>(
     (id, gridLayout) => {
@@ -218,29 +355,6 @@ export const useGridLayout = ({
       onChangeLayout?.(id, gridLayout);
     },
     [onChangeLayout, onChange],
-  );
-
-  const updateGridChildItems = useCallback<GridChildPositionChangeHandler>(
-    (updates, { placeholders, splitters } = NonContentResetOptions) => {
-      updates.forEach(([id, { column: columnPosition, row: rowPosition }]) => {
-        if (columnPosition) {
-          setGridColumn(id, columnPosition);
-        }
-        if (rowPosition) {
-          setGridRow(id, rowPosition);
-        }
-      });
-
-      if (splitters) {
-        const splitters = gridLayoutModel.createSplitters();
-        setNonContentGridItems((items) => ({ ...items, splitters }));
-      }
-      if (placeholders) {
-        const placeholders = gridModel.getPlaceholders();
-        setNonContentGridItems((items) => ({ ...items, placeholders }));
-      }
-    },
-    [gridLayoutModel, gridModel],
   );
 
   const removeGridItem = useCallback(
@@ -260,22 +374,29 @@ export const useGridLayout = ({
   );
 
   const handleDragStart = useCallback<GridLayoutDragStartHandler>(
-    (evt, options) => {
+    (_evt, options) => {
       const { current: grid } = containerRef;
       if (grid) {
         if (options.type === "text/plain") {
           dragStartLayoutRef.current = gridModel.toGridLayoutDescriptor();
+          beginLegacyDragTransaction();
         }
         requestAnimationFrame(() => {
           grid.classList.add("vuuDragging");
           //TODO make this check more explicit
           if (options.type === "text/plain") {
             removeGridItem(options.id, "drag");
+            publishLegacyDragMutation();
           }
         });
       }
     },
-    [gridModel, removeGridItem],
+    [
+      beginLegacyDragTransaction,
+      gridModel,
+      publishLegacyDragMutation,
+      removeGridItem,
+    ],
   );
 
   const handleDragEnd = useCallback<GridLayoutDragEndHandler>(
@@ -283,15 +404,13 @@ export const useGridLayout = ({
       containerRef.current?.classList.remove("vuuDragging");
       if (!dropped && dragStartLayoutRef.current) {
         gridModel.restoreLayout(dragStartLayoutRef.current);
-        setNonContentGridItems((items) => ({
-          ...items,
-          placeholders: gridModel.getPlaceholders(),
-          splitters: gridLayoutModel.createSplitters(),
-        }));
+        rollbackLegacyDragTransaction();
+      } else if (dropped) {
+        commitLegacyDragTransaction();
       }
       dragStartLayoutRef.current = undefined;
     },
-    [gridLayoutModel, gridModel],
+    [commitLegacyDragTransaction, gridModel, rollbackLegacyDragTransaction],
   );
 
   const addChildComponent = useCallback(
@@ -309,8 +428,7 @@ export const useGridLayout = ({
         const newChild = addChildToStackedGridItem(
           stackedGridItem,
           component,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ) as any;
+        ) as ReactElement<GridLayoutItemProps>;
         setChildren((c) =>
           c.map((child) => (child.props.id === id ? newChild : child)),
         );
@@ -395,11 +513,7 @@ export const useGridLayout = ({
         if (sourceIsComponent(dragSource) && dragStartLayoutRef.current) {
           gridModel.restoreLayout(dragStartLayoutRef.current);
           dragStartLayoutRef.current = undefined;
-          setNonContentGridItems((items) => ({
-            ...items,
-            placeholders: gridModel.getPlaceholders(),
-            splitters: gridLayoutModel.createSplitters(),
-          }));
+          rollbackLegacyDragTransaction();
         }
         return false;
       }
@@ -419,22 +533,8 @@ export const useGridLayout = ({
 
         if (isGridLayoutSplitDirection(position)) {
           gridLayoutModel.dropSplitGridItem(droppedItemId, targetId, position);
-
-          const placeholders = gridModel.getPlaceholders();
-          const splitters = gridLayoutModel.createSplitters();
-          setNonContentGridItems(({ stackedItems }) => ({
-            placeholders,
-            splitters,
-            stackedItems,
-          }));
         } else if (position === "centre") {
-          const { column, row } = gridLayoutModel.dropReplaceGridItem(
-            droppedItemId,
-            targetItemId,
-          );
-          setGridColumn(droppedItemId, column);
-          setGridRow(droppedItemId, row);
-
+          gridLayoutModel.dropReplaceGridItem(droppedItemId, targetItemId);
           setChildren((c) =>
             c.filter((child) => child.props.id !== targetItemId),
           );
@@ -447,7 +547,6 @@ export const useGridLayout = ({
             );
           }
           gridModel.selectStackItem(stackId, droppedItemId);
-          gridModel.notifyChange();
         }
       } else if (sourceIsTabbedComponent(dragSource)) {
         // We are dropping a component dragged from a tabstrip and dropping it into
@@ -482,14 +581,6 @@ export const useGridLayout = ({
         if (!removed.ok) {
           throw Error(removed.error.message);
         }
-
-        const placeholders = gridModel.getPlaceholders();
-        const splitters = gridLayoutModel.createSplitters();
-        setNonContentGridItems(({ stackedItems }) => ({
-          placeholders,
-          splitters,
-          stackedItems,
-        }));
       } else if (sourceIsTemplate(dragSource)) {
         // dragging from palette or similar
         const { label = "New Item", ...restJSON } = JSON.parse(
@@ -519,7 +610,6 @@ export const useGridLayout = ({
             targetItemId,
           );
           replaceChildComponent(targetItemId, component, newGridItem);
-          gridModel.notifyChange();
         } else if (position === "header") {
           gridModel.stackChildItems(targetItemId, newChildId);
           const stackId = gridModel.getChildItem(newChildId, true).stackId;
@@ -530,7 +620,6 @@ export const useGridLayout = ({
           }
           gridModel.selectStackItem(stackId, newChildId);
           addChildComponent(component, gridModelChildItem);
-          gridModel.notifyChange();
         } else {
           gridLayoutModel.dropSplitGridItem(
             gridModelChildItem.id,
@@ -538,21 +627,26 @@ export const useGridLayout = ({
             position,
           );
           addChildComponent(component, gridModelChildItem);
-          gridModel.notifyChange();
         }
       } else {
         throw Error(
           `[useGridLayout#${id}] unsupported drag source type for GridLayout drop`,
         );
       }
+      publishLegacyDragMutation();
+      commitLegacyDragTransaction();
       return true;
     },
     [
       addChildComponent,
       gridLayoutModel,
       gridModel,
+      id,
       layoutOptions?.newChildItem.header,
+      commitLegacyDragTransaction,
+      publishLegacyDragMutation,
       replaceChildComponent,
+      rollbackLegacyDragTransaction,
       setChildren,
     ],
   );
@@ -560,19 +654,21 @@ export const useGridLayout = ({
   const handleDetachTab = useCallback<DragContextDetachTabHandler>(
     ({ gridId, tabsId, value }) => {
       if (gridId === id) {
+        beginLegacyDragTransaction();
         gridModel.detachTab(tabsId, value);
+        publishLegacyDragMutation();
       }
     },
-    [gridModel, id],
+    [beginLegacyDragTransaction, gridModel, id, publishLegacyDragMutation],
   );
 
   const handleCancelTabDrag = useCallback<DragContextCancelTabDragHandler>(
-    ({ gridId, tabsId, value }) => {
+    ({ gridId }) => {
       if (gridId === id) {
-        gridModel.restoreDetachedTab(tabsId, value);
+        rollbackLegacyDragTransaction();
       }
     },
-    [gridModel, id],
+    [id, rollbackLegacyDragTransaction],
   );
 
   const handleDropStackedItem = useCallback<DragContextDropHandler>(
@@ -655,7 +751,6 @@ export const useGridLayout = ({
 
             const component = layoutFromJson(restJSON as LayoutJSON);
             addChildComponent(component, gridModelChildItem);
-            gridModel.notifyChange();
           }
         }
       } else {
@@ -663,43 +758,18 @@ export const useGridLayout = ({
           "[useGridLayout] handleDropStackedItem no details of the stacked drop target",
         );
       }
+      publishLegacyDragMutation();
+      commitLegacyDragTransaction();
     },
-    [addChildComponent, gridModel, id, layoutOptions?.newChildItem.header],
+    [
+      addChildComponent,
+      commitLegacyDragTransaction,
+      gridModel,
+      id,
+      layoutOptions?.newChildItem.header,
+      publishLegacyDragMutation,
+    ],
   );
-
-  const handleTabsChange = useCallback<TabsChangeHandler>(() => {
-    const splitters = gridLayoutModel.createSplitters();
-    setNonContentGridItems((items) => ({ ...items, splitters }));
-  }, [gridLayoutModel]);
-
-  const handleTabsCreated = useCallback(
-    (stackItem: GridModelChildItem) => {
-      const splitters = gridLayoutModel.createSplitters();
-      setNonContentGridItems(({ stackedItems, ...rest }) => ({
-        ...rest,
-        splitters,
-        stackedItems: stackedItems.concat(stackItem),
-      }));
-    },
-    [gridLayoutModel],
-  );
-
-  const handleTabsRemoved = useCallback(
-    (stackId: string) => {
-      const splitters = gridLayoutModel.createSplitters();
-      setNonContentGridItems(({ stackedItems, ...rest }) => ({
-        ...rest,
-        splitters,
-        stackedItems: stackedItems.filter(({ id }) => id !== stackId),
-      }));
-    },
-    [gridLayoutModel],
-  );
-
-  const handleTabSelectionChange =
-    useCallback<TabSelectionChangeHandler>(() => {
-      forceRender({});
-    }, []);
 
   const dispatchGridLayoutAction = useCallback<GridLayoutDispatch>(
     (action) => {
@@ -767,7 +837,6 @@ export const useGridLayout = ({
                 type: "select-stack-item",
               }),
             );
-            gridModel.notifyChange();
           }
           break;
         case "resize-grid-column":
@@ -818,82 +887,21 @@ export const useGridLayout = ({
     ],
   );
 
-  const handleTrackResize = useCallback<GridTrackResizeHandler>(
-    (trackType, tracks) => {
-      if (containerRef.current) {
-        if (trackType === "column") {
-          containerRef.current.style.gridTemplateColumns = tracks.join(" ");
-        } else {
-          containerRef.current.style.gridTemplateRows = tracks.join(" ");
-        }
-      }
-    },
-    [],
-  );
-
-  useLayoutEffect(() => {
-    /*
-     * Initialise Splitters, Placeholders and UI controls for sets of stacked items.
-     * Initially, stacked items will always use tabs.
-     */
-    const stackedItems: GridModelChildItem[] = [];
-    for (const [stackId, items] of gridModel.getStackedChildItems()) {
-      const tabs = gridModel.getChildItem(stackId);
-      if (tabs === undefined) {
-        const { column, row } = getSharedGridPosition(items);
-        const activeIndex = getActiveIndex(items);
-        gridModel.setTabState(stackId, items, activeIndex);
-        const stackedItem = new GridModelChildItem({
-          column,
-          id: stackId,
-          row,
-          type: "stacked-content",
-        });
-        gridModel?.addChildItem(stackedItem);
-        stackedItems.push(stackedItem);
-      }
-    }
-
-    gridModel.createPlaceholders();
-    const splitters = gridLayoutModel.createSplitters();
-    const placeholders = gridModel.getPlaceholders();
-    setNonContentGridItems({ placeholders, splitters, stackedItems });
-  }, [gridModel, gridLayoutModel]);
-
   useEffect(() => {
-    gridModel.addListener("grid-layout-change", saveGridLayout);
-    gridModel.addListener("child-position-updates", updateGridChildItems);
-    gridModel.addListener("tab-selection-change", handleTabSelectionChange);
-    gridModel.addListener("tabs-change", handleTabsChange);
-    gridModel.addListener("tabs-created", handleTabsCreated);
-    gridModel.addListener("tabs-removed", handleTabsRemoved);
-
-    gridModel.tracks.on("grid-track-resize", handleTrackResize);
-
-    gridLayoutModel.addListener("child-position-updates", updateGridChildItems);
-
-    return () => {
-      gridModel.removeAllListeners();
-    };
-  }, [
-    gridLayoutModel,
-    gridModel,
-    handleTabsChange,
-    handleTabSelectionChange,
-    saveGridLayout,
-    updateGridChildItems,
-    handleTabsCreated,
-    handleTabsRemoved,
-    handleTrackResize,
-  ]);
+    return gridController.subscribeCommitted(({ snapshot }) => {
+      saveGridLayout(id, gridSnapshotToGridLayoutDescriptor(snapshot));
+    });
+  }, [gridController, id, saveGridLayout]);
 
   return {
-    children: childrenRef.current,
+    children: renderedChildren,
     containerCallback,
     containerRef,
     dispatchGridLayoutAction,
+    gridController,
     gridLayoutModel,
     gridModel,
+    gridSnapshot: snapshot,
     nonContentGridItems,
     onCancelTabDrag: handleCancelTabDrag,
     onDetachTab: handleDetachTab,
@@ -901,5 +909,6 @@ export const useGridLayout = ({
     onDragStart: handleDragStart,
     onDrop: handleDrop,
     onDropStackedItem: handleDropStackedItem,
+    stackTemplates,
   };
 };
