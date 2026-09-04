@@ -6,9 +6,7 @@ import type {
   DataSourceSubscribedMessage,
   SessionDataSourceOverrides,
 } from "@vuu-ui/vuu-data-types";
-import { metadataKeys } from "./column-utils";
-import { isSessionTable } from "./protocol-message-utils";
-import { Range } from "./range-utils";
+import { isSessionTable, metadataKeys, Range } from "@vuu-ui/vuu-utils";
 
 export type ExportColumnDescriptor<TName extends string = string> = {
   name: TName;

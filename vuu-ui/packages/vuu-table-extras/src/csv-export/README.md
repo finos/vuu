@@ -1,15 +1,15 @@
 # CSV Export
 
-CSV export is a set of standalone utility functions — `exportToCsv`, `exportCsvTemplate`, and `exportSessionTableToCsv` — implemented in [export-utils.ts](../src/export-utils.ts) and exported from `@vuu-ui/vuu-utils`. There is no React component: call them directly from a button handler or menu action.
+CSV export is a set of standalone utility functions — `exportToCsv`, `exportCsvTemplate`, and `exportSessionTableToCsv` — implemented in [export-utils.ts](./export-utils.ts) and exported from `@vuu-ui/vuu-table-extras`. There is no React component: call them directly from a button handler or menu action.
 
-See [CsvUpload](../../vuu-table-extras/src/csv-upload/README.md) for the counterpart component that imports a CSV into a Vuu table.
+See [CsvUpload](../csv-upload/README.md) for the counterpart component that imports a CSV into a Vuu table.
 
 ---
 
 ## Usage
 
 ```tsx
-import { exportToCsv } from "@vuu-ui/vuu-utils";
+import { exportToCsv } from "@vuu-ui/vuu-table-extras";
 
 const handleExport = useCallback(async () => {
   await exportToCsv(
@@ -23,10 +23,10 @@ const handleExport = useCallback(async () => {
 }, [dataSource]);
 ```
 
-`exportCsvTemplate` downloads a header-only CSV, useful for giving users a starting point for a [CsvUpload](../../vuu-table-extras/src/csv-upload/README.md) import:
+`exportCsvTemplate` downloads a header-only CSV, useful for giving users a starting point for a [CsvUpload](../csv-upload/README.md) import:
 
 ```tsx
-import { exportCsvTemplate } from "@vuu-ui/vuu-utils";
+import { exportCsvTemplate } from "@vuu-ui/vuu-table-extras";
 
 exportCsvTemplate(dataSource, "instruments-template.csv");
 ```
