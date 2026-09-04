@@ -25,7 +25,7 @@
     "@vuu-ui/vuu-table": "3.3.2",
     "@vuu-ui/vuu-utils": "3.3.2",
     "@vuu-ui/vuu-ui-controls": "3.3.2",
-    "@lezer/lr": "1.4.2",
+    "@lezer/lr": "1.4.10",
     "@salt-ds/core": "1.54.1",
     "@salt-ds/lab": "1.0.0-alpha.83",
     "@salt-ds/styles": "0.2.1",
