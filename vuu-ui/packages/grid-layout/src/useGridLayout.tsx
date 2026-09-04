@@ -2,7 +2,6 @@ import {
   asReactElements,
   isGridLayoutSplitDirection,
   isSimpleStateValue,
-  queryClosest,
   uuid,
 } from "@vuu-ui/vuu-utils";
 import {
@@ -22,7 +21,6 @@ import type {
   DragContextDropHandler,
 } from "./drag-drop-next/DragContextNext";
 import { layoutFromJson } from "./layoutFromJson";
-import { getClosestGridLayout } from "./grid-dom-utils";
 import {
   getActiveIndex,
   getGridArea,
@@ -40,7 +38,7 @@ import {
   type GridLayoutItemProps,
   isGridLayoutItem,
 } from "./GridLayoutItem";
-import { type GridItemRemoveReason, GridLayoutModel } from "./GridLayoutModel";
+import { GridLayoutModel } from "./GridLayoutModel";
 import {
   type GridLayoutDragEndHandler,
   useGridChangeHandler,
@@ -68,7 +66,10 @@ import {
   throwForGridCommandFailure,
 } from "./GridCommand";
 import { GridController } from "./GridController";
-import type { GridTransaction } from "./GridController";
+import {
+  GridDragCoordinator,
+  type GridDropIntent,
+} from "./GridDragCoordinator";
 import { gridSnapshotToGridLayoutDescriptor } from "./grid-snapshot-adapters";
 import { isGridLayoutStackedItem } from "./GridLayoutStackedtem";
 import { useGridControllerSnapshot } from "./useGridControllerSnapshot";
@@ -199,6 +200,9 @@ export const useGridLayout = ({
   const [childElements, setChildElements] =
     useState<GridLayoutItemElements>(children);
   const childrenRef = useRef<GridLayoutItemElements>(childElements);
+  const contentRegistryRef = useRef(
+    new Map(children.map((element) => [element.props.id, element])),
+  );
 
   const setChildren = useCallback(
     (
@@ -213,6 +217,9 @@ export const useGridLayout = ({
         childrenRef.current = newChildren(prev);
       }
 
+      contentRegistryRef.current = new Map(
+        childrenRef.current.map((element) => [element.props.id, element]),
+      );
       setChildElements(childrenRef.current);
       onChangeChildElements?.(id, childrenRef.current.filter(isGridLayoutItem));
     },
@@ -260,10 +267,6 @@ export const useGridLayout = ({
     },
     [children, id, layout],
   );
-  const dragStartLayoutRef = useRef<GridLayoutDescriptor | undefined>(
-    undefined,
-  );
-  const dragTransactionRef = useRef<GridTransaction | undefined>(undefined);
   const gridController = useMemo(
     () =>
       new GridController(
@@ -274,44 +277,19 @@ export const useGridLayout = ({
     [gridLayoutModel, gridModel],
   );
   const snapshot = useGridControllerSnapshot(gridController);
-  const beginLegacyDragTransaction = useCallback(() => {
-    if (dragTransactionRef.current) {
-      return dragTransactionRef.current;
-    }
-    const result = gridController.beginTransaction("drag");
-    if (!result.ok) {
-      throw Error(result.error.message);
-    }
-    dragTransactionRef.current = result.transaction;
-    return result.transaction;
-  }, [gridController]);
-  const publishLegacyDragMutation = useCallback(() => {
-    const transaction = dragTransactionRef.current;
-    const result = transaction
-      ? transaction.dispatch({ type: "regenerate-placeholders" })
-      : gridController.dispatch({ type: "regenerate-placeholders" });
-    throwForGridCommandFailure(result);
-  }, [gridController]);
-  const commitLegacyDragTransaction = useCallback(() => {
-    const transaction = dragTransactionRef.current;
-    if (transaction) {
-      const result = transaction.commit();
-      if (!result.ok) {
-        throw Error(result.error.message);
+  const dragCoordinator = useMemo(
+    () => new GridDragCoordinator(id, gridController),
+    [gridController, id],
+  );
+  const provisionalTemplateRef = useRef<
+    | {
+        component: ReactElement;
+        componentJson: string;
+        itemId: string;
       }
-      dragTransactionRef.current = undefined;
-    }
-  }, []);
-  const rollbackLegacyDragTransaction = useCallback(() => {
-    const transaction = dragTransactionRef.current;
-    if (transaction) {
-      const result = transaction.rollback();
-      if (!result.ok) {
-        throw Error(result.error.message);
-      }
-      dragTransactionRef.current = undefined;
-    }
-  }, []);
+    | undefined
+  >();
+  useEffect(() => () => dragCoordinator.dispose(), [dragCoordinator]);
   const contentIds = useMemo(
     () =>
       new Set(
@@ -328,16 +306,10 @@ export const useGridLayout = ({
       ),
     [childElements],
   );
-  const renderedChildren = useMemo(
-    () =>
-      snapshot.items.flatMap(({ id: itemId }) => {
-        const element = childElements.find(
-          ({ props: { id: elementId } }) => elementId === itemId,
-        );
-        return element ? [element] : [];
-      }),
-    [childElements, snapshot],
-  );
+  const renderedChildren = snapshot.items.flatMap(({ id: itemId }) => {
+    const element = contentRegistryRef.current.get(itemId);
+    return element ? [element] : [];
+  });
   const nonContentGridItems = useMemo<NonContentGridItems>(
     () => ({
       placeholderIds: snapshot.items
@@ -357,60 +329,44 @@ export const useGridLayout = ({
     [onChangeLayout, onChange],
   );
 
-  const removeGridItem = useCallback(
-    (id: string, reason: Extract<GridItemRemoveReason, "close" | "drag">) => {
-      if (reason === "close") {
-        setChildren((c) => c.filter((c) => c.props.id !== id));
-      } else {
-        // set a className
-        // this should be set in code that handles dragging, not code that handles close
-        const gridLayoutItem = gridModel.getChildItem(id, true);
-        gridLayoutItem.dragging = true;
-      }
-
-      gridLayoutModel.removeGridItem(id, reason);
-    },
-    [gridLayoutModel, gridModel, setChildren],
-  );
-
   const handleDragStart = useCallback<GridLayoutDragStartHandler>(
     (_evt, options) => {
       const { current: grid } = containerRef;
       if (grid) {
         if (options.type === "text/plain") {
-          dragStartLayoutRef.current = gridModel.toGridLayoutDescriptor();
-          beginLegacyDragTransaction();
+          const result = dragCoordinator.begin({
+            itemId: options.id,
+            kind: "existing-item",
+            sourceGridId: id,
+          });
+          if (!result.ok) {
+            throw Error(result.error.message);
+          }
         }
         requestAnimationFrame(() => {
           grid.classList.add("vuuDragging");
-          //TODO make this check more explicit
-          if (options.type === "text/plain") {
-            removeGridItem(options.id, "drag");
-            publishLegacyDragMutation();
-          }
         });
       }
     },
-    [
-      beginLegacyDragTransaction,
-      gridModel,
-      publishLegacyDragMutation,
-      removeGridItem,
-    ],
+    [dragCoordinator, id],
   );
 
   const handleDragEnd = useCallback<GridLayoutDragEndHandler>(
     (_evt, dropped) => {
       containerRef.current?.classList.remove("vuuDragging");
-      if (!dropped && dragStartLayoutRef.current) {
-        gridModel.restoreLayout(dragStartLayoutRef.current);
-        rollbackLegacyDragTransaction();
-      } else if (dropped) {
-        commitLegacyDragTransaction();
+      if (
+        !dropped &&
+        (dragCoordinator.state.phase === "dragging" ||
+          dragCoordinator.state.phase === "previewing")
+      ) {
+        const result = dragCoordinator.cancel();
+        if (!result.ok) {
+          throw Error(result.error.message);
+        }
       }
-      dragStartLayoutRef.current = undefined;
+      provisionalTemplateRef.current = undefined;
     },
-    [commitLegacyDragTransaction, gridModel, rollbackLegacyDragTransaction],
+    [dragCoordinator],
   );
 
   const addChildComponent = useCallback(
@@ -491,283 +447,342 @@ export const useGridLayout = ({
    * payload is either the id of an existing gridLayoutItem that we are dragging
    * of a json description of a new component
    */
-  const handleDrop = useCallback<GridLayoutDropHandler>(
-    (targetItemId, dragSource, position) => {
-      // console.log(`[useGridLayout#${id}] handleDrop`, {
-      //   targetItemId,
-      //   dragSource,
-      //   position,
-      // });
-
-      const targetGridItem = gridModel.getChildItem(targetItemId, true);
-      const splitTargetId = isStackedItem(targetGridItem)
-        ? targetGridItem.stackId
-        : targetItemId;
-
-      containerRef.current?.classList.remove("vuuDragging");
-
-      if (
-        isGridLayoutSplitDirection(position) &&
-        !gridLayoutModel.canSplitGridItem(splitTargetId, position)
-      ) {
-        if (sourceIsComponent(dragSource) && dragStartLayoutRef.current) {
-          gridModel.restoreLayout(dragStartLayoutRef.current);
-          dragStartLayoutRef.current = undefined;
-          rollbackLegacyDragTransaction();
+  const prepareDragSource = useCallback(
+    (dragSource: Parameters<GridLayoutDropHandler>[1]) => {
+      if (sourceIsTemplate(dragSource)) {
+        let provisional = provisionalTemplateRef.current;
+        if (
+          !provisional ||
+          provisional.componentJson !== dragSource.componentJson
+        ) {
+          const { label = "New Item", ...restJSON } = JSON.parse(
+            dragSource.componentJson,
+          );
+          provisional = {
+            component: layoutFromJson(restJSON as LayoutJSON),
+            componentJson: dragSource.componentJson,
+            itemId: uuid(),
+          };
+          provisionalTemplateRef.current = provisional;
         }
+        if (
+          dragCoordinator.state.phase !== "dragging" &&
+          dragCoordinator.state.phase !== "previewing"
+        ) {
+          const begun = dragCoordinator.begin({
+            item: {
+              column: { span: 1, start: 1 },
+              dropTarget: true,
+              header: layoutOptions?.newChildItem.header,
+              id: provisional.itemId,
+              resizeable: "hv",
+              row: { span: 1, start: 1 },
+              title: JSON.parse(dragSource.componentJson).label ?? "New Item",
+            },
+            kind: "palette-template",
+            templateId: dragSource.componentJson,
+          });
+          if (!begun.ok) {
+            throw Error(begun.error.message);
+          }
+        }
+      } else if (
+        sourceIsComponent(dragSource) &&
+        dragCoordinator.state.phase !== "dragging" &&
+        dragCoordinator.state.phase !== "previewing"
+      ) {
+        const begun = dragCoordinator.begin({
+          itemId: dragSource.id,
+          kind: "existing-item",
+          sourceGridId: dragSource.layoutId,
+        });
+        if (!begun.ok) {
+          throw Error(begun.error.message);
+        }
+      } else if (
+        sourceIsTabbedComponent(dragSource) &&
+        dragCoordinator.state.phase !== "dragging" &&
+        dragCoordinator.state.phase !== "previewing"
+      ) {
+        const begun = dragCoordinator.begin({
+          itemId: dragSource.tab.id,
+          kind: "stack-member",
+          selected: dragSource.isSelectedTab,
+          sourceGridId: dragSource.layoutId,
+          stackId: dragSource.tabsId,
+        });
+        if (!begun.ok) {
+          throw Error(begun.error.message);
+        }
+      }
+    },
+    [dragCoordinator, layoutOptions?.newChildItem.header],
+  );
+
+  const handleDragLeave = useCallback(() => {
+    const templateDrag =
+      dragCoordinator.state.phase !== "idle" &&
+      dragCoordinator.state.source.kind === "palette-template";
+    if (dragCoordinator.state.phase === "previewing") {
+      const result = dragCoordinator.clearPreview();
+      if (!result.ok) {
+        throw Error(result.error.message);
+      }
+    }
+    if (templateDrag && dragCoordinator.state.phase === "dragging") {
+      const result = dragCoordinator.cancel();
+      if (!result.ok) {
+        throw Error(result.error.message);
+      }
+    }
+    provisionalTemplateRef.current = undefined;
+  }, [dragCoordinator]);
+
+  const handleDragPreview = useCallback<GridLayoutDropHandler>(
+    (targetItemId, dragSource, position) => {
+      const targetGridItem = gridModel.getChildItem(targetItemId, true);
+      if (position === "centre" && isStackedItem(targetGridItem)) {
         return false;
       }
-
-      if (sourceIsComponent(dragSource)) {
-        dragStartLayoutRef.current = undefined;
-        const droppedItemId = gridModel.validateChildId(dragSource.id);
-        const targetId = isStackedItem(targetGridItem)
+      prepareDragSource(dragSource);
+      const targetId =
+        isGridLayoutSplitDirection(position) && isStackedItem(targetGridItem)
           ? targetGridItem.stackId
           : targetItemId;
-
-        const droppedGridItem = gridModel.getChildItem(droppedItemId, true);
-        droppedGridItem.dragging = false;
-
-        // const gridItemElement = document.getElementById(droppedItemId);
-        // gridItemElement?.classList.remove("vuuGridLayoutItem-dragging");
-
-        if (isGridLayoutSplitDirection(position)) {
-          gridLayoutModel.dropSplitGridItem(droppedItemId, targetId, position);
-        } else if (position === "centre") {
-          gridLayoutModel.dropReplaceGridItem(droppedItemId, targetItemId);
-          setChildren((c) =>
-            c.filter((child) => child.props.id !== targetItemId),
-          );
-        } else if (position === "header") {
-          gridModel.stackChildItems(targetId, dragSource.id);
-          const stackId = droppedGridItem.stackId;
-          if (!stackId) {
-            throw Error(
-              `[useGridLayout#${id}] stacked component #${droppedItemId} has no stack id`,
-            );
-          }
-          gridModel.selectStackItem(stackId, droppedItemId);
-        }
-      } else if (sourceIsTabbedComponent(dragSource)) {
-        // We are dropping a component dragged from a tabstrip and dropping it into
-        // a regular grid position (i.e. not into another or same tabstrip)
-        if (!isGridLayoutSplitDirection(position)) {
-          return false;
-        }
-
-        const sourceGridItem = gridModel.getChildItem(dragSource.tab.id, true);
-
-        const targetId = isStackedItem(targetGridItem)
-          ? targetGridItem.stackId
-          : targetItemId;
-
-        sourceGridItem.stackId = undefined;
-        sourceGridItem.contentVisible = true;
-        sourceGridItem.contentDetached = undefined;
-
-        gridLayoutModel.dropSplitGridItem(
-          dragSource.tab.id,
-          targetId,
-          position,
-        );
-
-        // Important that we defer removing the tab until after the drop
-        // handling. Removing the tab will remove the entire tabstrip if
-        // only one tab remains after removing the dragged tab.
-        const removed = gridModel.removeStackItem(
-          dragSource.tabsId,
-          sourceGridItem.id,
-        );
-        if (!removed.ok) {
-          throw Error(removed.error.message);
-        }
-      } else if (sourceIsTemplate(dragSource)) {
-        // dragging from palette or similar
-        const { label = "New Item", ...restJSON } = JSON.parse(
-          dragSource.componentJson,
-        );
-
-        const newChildId = uuid();
-        const gridModelChildItem = new GridModelChildItem({
-          id: newChildId,
-          column: { start: 1, end: 1 },
-          dropTarget: true,
-          header: layoutOptions?.newChildItem.header,
-          resizeable: "hv",
-          row: { start: 1, end: 1 },
-          title: label,
-        });
-        gridModel.addChildItem(gridModelChildItem);
-
-        const targetId = isStackedItem(targetGridItem)
-          ? targetGridItem.stackId
-          : targetItemId;
-
-        const component = layoutFromJson(restJSON as LayoutJSON);
-        if (position === "centre") {
-          const newGridItem = gridLayoutModel.dropReplaceGridItem(
-            gridModelChildItem.id,
-            targetItemId,
-          );
-          replaceChildComponent(targetItemId, component, newGridItem);
-        } else if (position === "header") {
-          gridModel.stackChildItems(targetItemId, newChildId);
-          const stackId = gridModel.getChildItem(newChildId, true).stackId;
-          if (!stackId) {
-            throw Error(
-              `[useGridLayout#${id}] stacked template #${newChildId} has no stack id`,
-            );
-          }
-          gridModel.selectStackItem(stackId, newChildId);
-          addChildComponent(component, gridModelChildItem);
-        } else {
-          gridLayoutModel.dropSplitGridItem(
-            gridModelChildItem.id,
-            targetId,
-            position,
-          );
-          addChildComponent(component, gridModelChildItem);
-        }
-      } else {
-        throw Error(
-          `[useGridLayout#${id}] unsupported drag source type for GridLayout drop`,
-        );
+      const intent: GridDropIntent | undefined = isGridLayoutSplitDirection(
+        position,
+      )
+        ? { kind: "split", position }
+        : position === "centre"
+          ? { kind: "replace" }
+          : position === "header"
+            ? { kind: "create-stack" }
+            : undefined;
+      if (!intent) {
+        return false;
       }
-      publishLegacyDragMutation();
-      commitLegacyDragTransaction();
+      if (intent.kind !== "split") {
+        if (dragCoordinator.state.phase === "previewing") {
+          const cleared = dragCoordinator.clearPreview();
+          if (!cleared.ok) {
+            throw Error(cleared.error.message);
+          }
+        }
+        return true;
+      }
+      return dragCoordinator.preview({ gridId: id, intent, targetId }).ok;
+    },
+    [dragCoordinator, gridModel, id, prepareDragSource],
+  );
+
+  const handleDrop = useCallback<GridLayoutDropHandler>(
+    (targetItemId, dragSource, position) => {
+      const targetGridItem = gridModel.getChildItem(targetItemId, true);
+      containerRef.current?.classList.remove("vuuDragging");
+
+      prepareDragSource(dragSource);
+
+      if (
+        !isGridLayoutSplitDirection(position) &&
+        position !== "centre" &&
+        position !== "header"
+      ) {
+        return false;
+      }
+      if (position === "centre" && isStackedItem(targetGridItem)) {
+        return false;
+      }
+      const preview = isGridLayoutSplitDirection(position)
+        ? handleDragPreview(targetItemId, dragSource, position)
+        : dragCoordinator.preview({
+            gridId: id,
+            intent:
+              position === "centre"
+                ? { kind: "replace" }
+                : { kind: "create-stack" },
+            targetId: targetItemId,
+          }).ok;
+      if (!preview) {
+        if (
+          dragCoordinator.state.phase === "dragging" ||
+          dragCoordinator.state.phase === "previewing"
+        ) {
+          dragCoordinator.cancel();
+        }
+        provisionalTemplateRef.current = undefined;
+        return false;
+      }
+      const committed = dragCoordinator.commit();
+      if (!committed.ok) {
+        throw Error(committed.error.message);
+      }
+
+      if (!sourceIsTemplate(dragSource) && position === "centre") {
+        setChildren((current) =>
+          current.filter((child) => child.props.id !== targetItemId),
+        );
+      } else if (sourceIsTemplate(dragSource)) {
+        const provisional = provisionalTemplateRef.current;
+        if (!provisional) {
+          throw Error(`[useGridLayout#${id}] template item id not allocated`);
+        }
+        const newItem = gridModel.getChildItem(provisional.itemId, true);
+        if (position === "centre") {
+          replaceChildComponent(targetItemId, provisional.component, newItem);
+        } else {
+          addChildComponent(provisional.component, newItem);
+        }
+        provisionalTemplateRef.current = undefined;
+      }
       return true;
     },
     [
       addChildComponent,
-      gridLayoutModel,
       gridModel,
       id,
-      layoutOptions?.newChildItem.header,
-      commitLegacyDragTransaction,
-      publishLegacyDragMutation,
+      dragCoordinator,
+      handleDragPreview,
+      prepareDragSource,
       replaceChildComponent,
-      rollbackLegacyDragTransaction,
       setChildren,
     ],
   );
 
   const handleDetachTab = useCallback<DragContextDetachTabHandler>(
-    ({ gridId, tabsId, value }) => {
+    ({ gridId, itemId, tabsId }) => {
       if (gridId === id) {
-        beginLegacyDragTransaction();
-        gridModel.detachTab(tabsId, value);
-        publishLegacyDragMutation();
+        const stack = snapshot.stacks.find(({ id }) => id === tabsId);
+        if (!itemId || !stack?.itemIds.includes(itemId)) {
+          throw Error(
+            `[useGridLayout#${id}] cannot identify dragged tab #${itemId}`,
+          );
+        }
+        const result = dragCoordinator.begin({
+          itemId,
+          kind: "stack-member",
+          selected: stack?.selectedItemId === itemId,
+          sourceGridId: id,
+          stackId: tabsId,
+        });
+        if (!result.ok) {
+          throw Error(result.error.message);
+        }
       }
     },
-    [beginLegacyDragTransaction, gridModel, id, publishLegacyDragMutation],
+    [dragCoordinator, id, snapshot],
   );
 
   const handleCancelTabDrag = useCallback<DragContextCancelTabDragHandler>(
     ({ gridId }) => {
-      if (gridId === id) {
-        rollbackLegacyDragTransaction();
+      if (
+        gridId === id &&
+        (dragCoordinator.state.phase === "dragging" ||
+          dragCoordinator.state.phase === "previewing")
+      ) {
+        const result = dragCoordinator.cancel();
+        if (!result.ok) {
+          throw Error(result.error.message);
+        }
       }
     },
-    [id, rollbackLegacyDragTransaction],
+    [dragCoordinator, id],
   );
 
   const handleDropStackedItem = useCallback<DragContextDropHandler>(
     ({ dragSource, tabsId: targetStackItemId, dropPosition }) => {
-      if (sourceIsTabbedComponent(dragSource)) {
-        const { id: sourceStackItemId } = queryClosest(
-          document.getElementById(dragSource.tabsId),
-          ".vuuGridLayoutItem",
-          true,
-        );
-
-        if (sourceStackItemId === targetStackItemId) {
-          // ignore a drag within tabstrip this is not the closest layout, it will
-          // be handled by closest layout to tabstrip.
-          if (dragSource.layoutId === id) {
-            if (dropPosition) {
-              gridModel.moveItemWithinTabs(
-                sourceStackItemId,
-                dragSource.tab,
-                dropPosition,
-                dragSource.isSelectedTab,
-              );
-            } else {
-              throw Error(
-                "[useGridLayout] handleDropStackedItem no dropPosition for drop onto tabs",
-              );
-            }
-          }
-        } else if (sourceStackItemId && targetStackItemId && dropPosition) {
-          gridModel.moveItemBetweenTabs(
-            sourceStackItemId,
-            targetStackItemId,
-            dragSource.tab,
-            dropPosition,
-          );
-        }
-      } else if (targetStackItemId && dropPosition) {
-        if (sourceIsComponent(dragSource)) {
-          // console.log(
-          //   `[useGridLayout] dropping a standalone component #${dragSource.id} into a stack ${targetStackItemId}`,
-          //   {
-          //     dragSource,
-          //   },
-          // );
-          const added = gridModel.addStackMember(
-            targetStackItemId,
-            dragSource.id,
-            dropPosition,
-          );
-          if (!added.ok) {
-            throw Error(added.error.message);
-          }
-          const gridModelItem = gridModel.getChildItem(dragSource.id, true);
-          gridModelItem.dragging = false;
-        } else if (sourceIsTemplate(dragSource)) {
-          // we're dropping a template item onto a tabstrip. Check that
-          // we are handling this in the context of the correct layout
-          const gridId = getClosestGridLayout(targetStackItemId);
-          if (gridId === id) {
-            const { label = "New Item", ...restJSON } = JSON.parse(
-              dragSource.componentJson,
-            );
-            const { column, row } = gridModel.getChildItem(
-              targetStackItemId,
-              true,
-            );
-
-            const newChildId = uuid();
-            const gridModelChildItem = new GridModelChildItem({
-              id: newChildId,
-              column,
-              dropTarget: true,
-              header: layoutOptions?.newChildItem.header,
-              resizeable: "hv",
-              row,
-              stackId: targetStackItemId,
-              title: label,
-            });
-            gridModel.addChildItem(gridModelChildItem, dropPosition);
-
-            const component = layoutFromJson(restJSON as LayoutJSON);
-            addChildComponent(component, gridModelChildItem);
-          }
-        }
-      } else {
+      if (!targetStackItemId || !dropPosition) {
         throw Error(
           "[useGridLayout] handleDropStackedItem no details of the stacked drop target",
         );
       }
-      publishLegacyDragMutation();
-      commitLegacyDragTransaction();
+      const targetStack = snapshot.stacks.find(
+        ({ id }) => id === targetStackItemId,
+      );
+      if (!targetStack) {
+        return;
+      }
+      const targetItemId =
+        targetStack.itemIds.find(
+          (itemId) =>
+            itemId === dropPosition.target ||
+            snapshot.items.find(({ id }) => id === itemId)?.title ===
+              dropPosition.target,
+        ) ?? targetStack.itemIds.at(-1);
+      if (!targetItemId) {
+        return;
+      }
+
+      let component: ReactElement | undefined;
+      let newChildId: string | undefined;
+      if (sourceIsTemplate(dragSource)) {
+        const { label = "New Item", ...restJSON } = JSON.parse(
+          dragSource.componentJson,
+        );
+        newChildId = uuid();
+        component = layoutFromJson(restJSON as LayoutJSON);
+        const begun = dragCoordinator.begin({
+          item: {
+            column: { span: 1, start: 1 },
+            dropTarget: true,
+            header: layoutOptions?.newChildItem.header,
+            id: newChildId,
+            resizeable: "hv",
+            row: { span: 1, start: 1 },
+            title: label,
+          },
+          kind: "palette-template",
+          templateId: dragSource.componentJson,
+        });
+        if (!begun.ok) {
+          throw Error(begun.error.message);
+        }
+      } else if (
+        sourceIsComponent(dragSource) &&
+        dragCoordinator.state.phase === "idle"
+      ) {
+        const begun = dragCoordinator.begin({
+          itemId: dragSource.id,
+          kind: "existing-item",
+          sourceGridId: dragSource.layoutId,
+        });
+        if (!begun.ok) {
+          throw Error(begun.error.message);
+        }
+      }
+
+      const preview = dragCoordinator.preview({
+        gridId: id,
+        intent: {
+          kind: "stack",
+          position: dropPosition.position,
+          targetItemId,
+        },
+        targetId: targetStackItemId,
+      });
+      if (!preview.ok) {
+        if (
+          dragCoordinator.state.phase === "dragging" ||
+          dragCoordinator.state.phase === "previewing"
+        ) {
+          dragCoordinator.cancel();
+        }
+        return;
+      }
+      const committed = dragCoordinator.commit();
+      if (!committed.ok) {
+        throw Error(committed.error.message);
+      }
+      if (component && newChildId) {
+        addChildComponent(component, gridModel.getChildItem(newChildId, true));
+      }
     },
     [
       addChildComponent,
-      commitLegacyDragTransaction,
+      dragCoordinator,
       gridModel,
       id,
       layoutOptions?.newChildItem.header,
-      publishLegacyDragMutation,
+      snapshot,
     ],
   );
 
@@ -906,6 +921,8 @@ export const useGridLayout = ({
     onCancelTabDrag: handleCancelTabDrag,
     onDetachTab: handleDetachTab,
     onDragEnd: handleDragEnd,
+    onDragLeave: handleDragLeave,
+    onDragPreview: handleDragPreview,
     onDragStart: handleDragStart,
     onDrop: handleDrop,
     onDropStackedItem: handleDropStackedItem,

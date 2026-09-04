@@ -150,6 +150,48 @@ describe("GridController external store", () => {
 });
 
 describe("GridController transactions", () => {
+  it("atomically replaces a preview from the transaction baseline", () => {
+    const controller = new GridController(modelWithTwoItems(), 3);
+    const start = controller.beginTransaction("drag");
+    expect(start.ok).toBe(true);
+    if (!start.ok) {
+      return;
+    }
+
+    expect(start.transaction.replace([resizeColumn(0, "125px")])).toMatchObject(
+      {
+        ok: true,
+      },
+    );
+    expect(controller.getSnapshot().columns[0].size).toBe("125px");
+    expect(start.transaction.replace([resizeColumn(1, "80px")])).toMatchObject({
+      ok: true,
+    });
+    expect(controller.getSnapshot().columns.map(({ size }) => size)).toEqual([
+      "100px",
+      "80px",
+    ]);
+
+    expect(
+      start.transaction.replace([
+        {
+          itemId: "missing",
+          title: "Missing",
+          type: "rename-item",
+        },
+      ]),
+    ).toMatchObject({ error: { code: "ITEM_NOT_FOUND" }, ok: false });
+    expect(controller.getSnapshot().columns.map(({ size }) => size)).toEqual([
+      "100px",
+      "100px",
+    ]);
+    expect(start.transaction.commit()).toEqual({
+      ok: true,
+      snapshot: controller.getSnapshot(),
+    });
+    expect(controller.getSnapshot().revision).toBe(3);
+  });
+
   it("publishes previews at the committed revision and commits once", () => {
     const controller = new GridController(modelWithTwoItems(), 4);
     const stateListener = vi.fn();

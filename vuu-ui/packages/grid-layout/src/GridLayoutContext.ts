@@ -165,6 +165,8 @@ export type GridLayoutDropHandler = (
   position: GridLayoutDropPosition,
 ) => boolean;
 
+export type GridLayoutDragLeaveHandler = () => void;
+
 export interface GridLayoutContextProps {
   dispatchGridLayoutAction: GridLayoutDispatch;
   gridController?: GridController;
@@ -173,6 +175,8 @@ export interface GridLayoutContextProps {
   gridSnapshot?: GridSnapshot;
   id: string;
   onDragEnd?: GridLayoutDragEndHandler;
+  onDragLeave: GridLayoutDragLeaveHandler;
+  onDragPreview: GridLayoutDropHandler;
   onDragStart: GridLayoutDragStartHandler;
   onDrop: GridLayoutDropHandler;
 }
@@ -180,6 +184,8 @@ export interface GridLayoutContextProps {
 export const GridLayoutContext = createContext<GridLayoutContextProps>({
   dispatchGridLayoutAction: unconfiguredGridLayoutDispatch,
   id: "",
+  onDragLeave: () => undefined,
+  onDragPreview: () => false,
   onDragStart: () => console.log("no GridLayoutProvider"),
   onDrop: () => false,
 });
@@ -192,6 +198,16 @@ export const useGridLayoutDispatch = () => {
 export const useGridLayoutDropHandler = () => {
   const { onDrop } = useContext(GridLayoutContext);
   return onDrop;
+};
+
+export const useGridLayoutDragPreviewHandler = () => {
+  const { onDragPreview } = useContext(GridLayoutContext);
+  return onDragPreview;
+};
+
+export const useGridLayoutDragLeaveHandler = () => {
+  const { onDragLeave } = useContext(GridLayoutContext);
+  return onDragLeave;
 };
 
 export const useGridLayoutDragEndHandler = () => {

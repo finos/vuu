@@ -56,7 +56,10 @@ export class SpaceMan {
       if (siblingElement) {
         return {
           position: "before",
-          target: siblingElement.dataset.label ?? siblingElement.id,
+          target:
+            siblingElement.dataset.gridLayoutItemId ??
+            siblingElement.dataset.label ??
+            siblingElement.id,
         };
       }
 
@@ -67,7 +70,10 @@ export class SpaceMan {
       if (siblingElement) {
         return {
           position: "after",
-          target: siblingElement.dataset.label ?? siblingElement.id,
+          target:
+            siblingElement.dataset.gridLayoutItemId ??
+            siblingElement.dataset.label ??
+            siblingElement.id,
         };
       }
 
