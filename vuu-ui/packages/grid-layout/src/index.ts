@@ -31,11 +31,14 @@ export {
 export {
   useGridLayoutDispatch,
   useGridLayoutDragStartHandler,
+  useGridController,
   useGridModel,
+  useGridSnapshot,
   type ComponentTemplate,
   type DragSource,
   type TemplateSource,
 } from "./GridLayoutContext";
+export { useGridControllerSnapshot } from "./useGridControllerSnapshot";
 export { GridLayoutItem } from "./GridLayoutItem";
 export {
   GridLayoutProvider,

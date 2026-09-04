@@ -1,9 +1,16 @@
-import { createContext, Dispatch, DragEvent, useContext } from "react";
-import { GridLayoutDragEndHandler } from "./GridLayoutProvider";
-import { GridModel, TabStateTab, TrackSize } from "./GridModel";
-import { GridLayoutDragStartHandler } from "./useDraggable";
-import { GridLayoutModel } from "./GridLayoutModel";
-import { GridLayoutDropPosition } from "@vuu-ui/vuu-utils";
+import {
+  createContext,
+  type Dispatch,
+  type DragEvent,
+  useContext,
+} from "react";
+import type { GridLayoutDragEndHandler } from "./GridLayoutProvider";
+import type { GridModel, TabStateTab, TrackSize } from "./GridModel";
+import type { GridLayoutDragStartHandler } from "./useDraggable";
+import type { GridLayoutModel } from "./GridLayoutModel";
+import type { GridLayoutDropPosition } from "@vuu-ui/vuu-utils";
+import type { GridController } from "./GridController";
+import type { GridSnapshot } from "./GridSnapshot";
 
 export type GridLayoutActionType = "close";
 
@@ -160,8 +167,10 @@ export type GridLayoutDropHandler = (
 
 export interface GridLayoutContextProps {
   dispatchGridLayoutAction: GridLayoutDispatch;
+  gridController?: GridController;
   gridLayoutModel?: GridLayoutModel;
   gridModel?: GridModel;
+  gridSnapshot?: GridSnapshot;
   id: string;
   onDragEnd?: GridLayoutDragEndHandler;
   onDragStart: GridLayoutDragStartHandler;
@@ -204,6 +213,26 @@ export const useGridModel = () => {
       "[useGridModel] no gridModel, did you forget to use a GridLayout",
     );
   }
+};
+
+export const useGridController = () => {
+  const { gridController } = useContext(GridLayoutContext);
+  if (gridController) {
+    return gridController;
+  }
+  throw Error(
+    "[useGridController] no gridController, did you forget to use a GridLayout",
+  );
+};
+
+export const useGridSnapshot = () => {
+  const { gridSnapshot } = useContext(GridLayoutContext);
+  if (gridSnapshot) {
+    return gridSnapshot;
+  }
+  throw Error(
+    "[useGridSnapshot] no gridSnapshot, did you forget to use a GridLayout",
+  );
 };
 
 export const useGridLayoutId = () => {
