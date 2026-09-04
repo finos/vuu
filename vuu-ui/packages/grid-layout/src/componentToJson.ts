@@ -39,6 +39,10 @@ export interface LayoutProps {
   version?: number;
 }
 
+/**
+ * @deprecated GridLayout persistence must use typed component settings and
+ * encodeGridLayoutDocument. This function is retained for legacy UI templates.
+ */
 export function componentToJson(element: ReactElement): LayoutJSON {
   if (elementImplementsJSONSerialization(element)) {
     return element.type.toJSON(element);
@@ -67,6 +71,7 @@ function componentChildToJson(child: ReactNode): LayoutJSONChild | null {
   return React.isValidElement(child) ? componentToJson(child) : null;
 }
 
+/** @deprecated Generic React-prop persistence is a legacy compatibility path. */
 export function serializeProps(props?: LayoutProps) {
   if (props) {
     const { path, ...otherProps } = props;

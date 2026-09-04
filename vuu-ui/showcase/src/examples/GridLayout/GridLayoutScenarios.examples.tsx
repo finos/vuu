@@ -2,11 +2,10 @@ import { Button } from "@salt-ds/core";
 import {
   type ComponentTemplate,
   GridLayout,
-  type GridLayoutDescriptor,
+  type GridLayoutDocument,
   GridLayoutItem,
   GridLayoutProvider,
   GridLayoutStackedItem,
-  type SerializedGridLayout,
 } from "@heswell/grid-layout";
 import { useCallback, useMemo, useState } from "react";
 import { GridPalette } from "../html/components/GridPalette";
@@ -16,6 +15,12 @@ import {
   ScenarioFrame,
   ScenarioGrid,
 } from "./GridLayoutScenarioFixtures";
+import {
+  panelComponent,
+  showcaseDocument,
+  showcaseGridComponentRenderers,
+  showcaseGridSettingsCodecs,
+} from "./GridLayoutPersistenceFixtures";
 
 import "./GridLayoutScenarios.examples.css";
 
@@ -415,64 +420,60 @@ export const OpaqueNestedGridIsolation = () => (
   </ScenarioFrame>
 );
 
-const restoredLayout: SerializedGridLayout = {
-  components: {
-    "restored-green": {
-      props: {
-        children: "Restored green",
-        style: {
-          alignItems: "center",
-          background: "#2e7d32",
-          color: "white",
-          display: "flex",
-          height: "100%",
-          justifyContent: "center",
-        },
-      },
-      type: "div",
-    },
-    "restored-purple": {
-      props: {
-        children: "Restored purple",
-        style: {
-          alignItems: "center",
-          background: "#6a1b9a",
-          color: "white",
-          display: "flex",
-          height: "100%",
-          justifyContent: "center",
-        },
-      },
-      type: "div",
-    },
-  },
-  id: "restored-layout",
+const restoredDocument = showcaseDocument({
+  components: [
+    panelComponent(
+      "restored-green-component",
+      "Restored green",
+      "#2e7d32",
+    ),
+    panelComponent(
+      "restored-purple-component",
+      "Restored purple",
+      "#6a1b9a",
+    ),
+  ],
+  kind: "grid-layout",
   layout: {
-    cols: ["1fr", "2fr"],
-    gridLayoutItems: {
-      "restored-green": {
-        gridArea: "1/1/2/2",
+    columns: ["1fr", "2fr"],
+    id: "restored-layout",
+    items: [
+      {
+        column: { span: 1, start: 1 },
+        componentInstanceId: "restored-green-component",
         header: true,
+        id: "restored-green",
         resizeable: "h",
+        row: { span: 1, start: 1 },
         title: "Restored green",
       },
-      "restored-purple": {
-        gridArea: "1/2/2/3",
+      {
+        column: { span: 1, start: 2 },
+        componentInstanceId: "restored-purple-component",
         header: true,
+        id: "restored-purple",
         resizeable: "h",
+        row: { span: 1, start: 1 },
         title: "Restored purple",
       },
-    },
+    ],
+    placeholderIds: [],
     rows: ["1fr"],
+    stacks: [],
   },
-};
+  version: 2,
+});
 
 export const SerializationRestore = () => (
   <ScenarioFrame
-    instructions="This layout is reconstructed directly from SerializedGridLayout JSON."
+    instructions="This layout is reconstructed from a schema-v2 document and typed component settings."
     title="Serialization and restore"
   >
-    <GridLayoutProvider serializedLayout={restoredLayout}>
+    <GridLayoutProvider
+      componentRenderers={showcaseGridComponentRenderers}
+      document={restoredDocument}
+      settingsCodecs={showcaseGridSettingsCodecs}
+    >
       <GridLayout
         id="restored-layout"
         style={{ height: "100%", width: "100%" }}
@@ -481,51 +482,62 @@ export const SerializationRestore = () => (
   </ScenarioFrame>
 );
 
-const inspectorInitialLayout: GridLayoutDescriptor = {
-  cols: ["1fr", "1fr"],
-  gridLayoutItems: {
-    "inspect-alpha": {
-      gridArea: "1/1/2/2",
-      header: true,
-      resizeable: "hv",
-      title: "Alpha",
-    },
-    "inspect-beta": {
-      gridArea: "1/2/2/3",
-      header: true,
-      resizeable: "hv",
-      title: "Beta",
-    },
+const inspectorInitialDocument = showcaseDocument({
+  components: [
+    panelComponent("inspect-alpha-content", "Alpha", "#1565c0"),
+    panelComponent("inspect-beta-content", "Beta", "#ef6c00"),
+  ],
+  kind: "grid-layout",
+  layout: {
+    columns: ["1fr", "1fr"],
+    id: "layout-inspector",
+    items: [
+      {
+        column: { span: 1, start: 1 },
+        componentInstanceId: "inspect-alpha-content",
+        header: true,
+        id: "inspect-alpha",
+        resizeable: "hv",
+        row: { span: 1, start: 1 },
+        title: "Alpha",
+      },
+      {
+        column: { span: 1, start: 2 },
+        componentInstanceId: "inspect-beta-content",
+        header: true,
+        id: "inspect-beta",
+        resizeable: "hv",
+        row: { span: 1, start: 1 },
+        title: "Beta",
+      },
+    ],
+    placeholderIds: [],
+    rows: ["1fr"],
+    stacks: [],
   },
-  rows: ["1fr"],
-};
+  version: 2,
+});
 
-const inspectorComponents = {
-  "inspect-alpha": {
-    props: { children: "Alpha", style: { background: "#1565c0" } },
-    type: "div",
-  },
-  "inspect-beta": {
-    props: { children: "Beta", style: { background: "#ef6c00" } },
-    type: "div",
-  },
-};
-
-const getEmptyCells = (layout: GridLayoutDescriptor) => {
+const getEmptyCells = (layout: GridLayoutDocument["layout"]) => {
   const occupied = new Set<string>();
-  for (const item of Object.values(layout.gridLayoutItems ?? {})) {
-    const [rowStart, colStart, rowEnd, colEnd] = item.gridArea
-      .split("/")
-      .map(Number);
-    for (let row = rowStart; row < rowEnd; row += 1) {
-      for (let col = colStart; col < colEnd; col += 1) {
+  for (const item of layout.items) {
+    for (
+      let row = item.row.start;
+      row < item.row.start + item.row.span;
+      row += 1
+    ) {
+      for (
+        let col = item.column.start;
+        col < item.column.start + item.column.span;
+        col += 1
+      ) {
         occupied.add(`${row}/${col}`);
       }
     }
   }
   const empty: string[] = [];
   for (let row = 1; row <= layout.rows.length; row += 1) {
-    for (let col = 1; col <= layout.cols.length; col += 1) {
+    for (let col = 1; col <= layout.columns.length; col += 1) {
       if (!occupied.has(`${row}/${col}`)) {
         empty.push(`${row}/${col}`);
       }
@@ -535,30 +547,9 @@ const getEmptyCells = (layout: GridLayoutDescriptor) => {
 };
 
 export const InteractiveLayoutInspector = () => {
-  const [layout, setLayout] = useState(inspectorInitialLayout);
+  const [document, setDocument] = useState(inspectorInitialDocument);
   const [copyStatus, setCopyStatus] = useState("Copy JSON");
-  const handleChange = useCallback(
-    (_gridId: string, nextLayout: GridLayoutDescriptor) => {
-      setLayout(nextLayout);
-    },
-    [],
-  );
-  const serialized = useMemo<SerializedGridLayout>(
-    () => ({
-      components: Object.fromEntries(
-        Object.entries(inspectorComponents).filter(([id]) =>
-          Object.hasOwn(layout.gridLayoutItems ?? {}, id),
-        ),
-      ),
-      id: "layout-inspector",
-      layout,
-    }),
-    [layout],
-  );
-  const serializedJson = JSON.stringify(serialized, null, 2);
-  const stackState = Object.entries(layout.gridLayoutItems ?? {}).filter(
-    ([, item]) => item.stackId,
-  );
+  const serializedJson = JSON.stringify(document, null, 2);
   const copyJson = useCallback(() => {
     void navigator.clipboard.writeText(serializedJson).then(
       () => setCopyStatus("Copied"),
@@ -572,47 +563,40 @@ export const InteractiveLayoutInspector = () => {
       title="Interactive layout inspector"
     >
       <div className="gridLayoutInspector">
-        <ScenarioGrid
-          cols={inspectorInitialLayout.cols}
-          id="layout-inspector"
-          onChange={handleChange}
-          rows={inspectorInitialLayout.rows}
+        <GridLayoutProvider
+          componentRenderers={showcaseGridComponentRenderers}
+          document={document}
+          onDocumentChange={setDocument}
+          settingsCodecs={showcaseGridSettingsCodecs}
         >
-          {[
-            createScenarioItem({
-              area: "1/1/2/2",
-              color: "#1565c0",
-              id: "inspect-alpha",
-              title: "Alpha",
-            }),
-            createScenarioItem({
-              area: "1/2/2/3",
-              color: "#ef6c00",
-              id: "inspect-beta",
-              title: "Beta",
-            }),
-          ]}
-        </ScenarioGrid>
+          <GridLayout
+            id="layout-inspector"
+            style={{ height: "100%", minHeight: 0, width: "100%" }}
+          />
+        </GridLayoutProvider>
         <aside className="gridLayoutInspector-panel">
           <dl>
             <dt>Columns</dt>
-            <dd>{layout.cols.join(" | ")}</dd>
+            <dd>{document.layout.columns.join(" | ")}</dd>
             <dt>Rows</dt>
-            <dd>{layout.rows.join(" | ")}</dd>
+            <dd>{document.layout.rows.join(" | ")}</dd>
             <dt>Item areas</dt>
             <dd>
-              {Object.entries(layout.gridLayoutItems ?? {})
-                .map(([id, item]) => `${id}: ${item.gridArea}`)
+              {document.layout.items
+                .map(
+                  ({ column, id, row }) =>
+                    `${id}: ${row.start}/${column.start}/${row.start + row.span}/${column.start + column.span}`,
+                )
                 .join("\n") || "none"}
             </dd>
             <dt>Placeholder cells</dt>
-            <dd>{getEmptyCells(layout).join(", ") || "none"}</dd>
+            <dd>{getEmptyCells(document.layout).join(", ") || "none"}</dd>
             <dt>Stack state</dt>
             <dd>
-              {stackState
+              {document.layout.stacks
                 .map(
-                  ([id, item]) =>
-                    `${id} -> ${item.stackId}${item.contentVisible ? " (active)" : ""}`,
+                  ({ id, itemIds, selectedItemId }) =>
+                    `${id} -> ${itemIds.join(", ")} (selected ${selectedItemId})`,
                 )
                 .join("\n") || "none"}
             </dd>

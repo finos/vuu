@@ -4,7 +4,7 @@ import {
   GridLayoutProvider,
   TrackSize,
   useGridLayoutDispatch,
-  useGridModel,
+  useGridSnapshot,
 } from "@heswell/grid-layout";
 import { queryClosest } from "@vuu-ui/vuu-utils";
 import {
@@ -884,14 +884,14 @@ const CustomHeader = ({
   ...htmlAttributes
 }: HTMLAttributes<HTMLDivElement>) => {
   const dispatch = useGridLayoutDispatch();
-  const gridModel = useGridModel();
+  const snapshot = useGridSnapshot();
   const toggleLeftSidebar = () => {
-    const currentValue = gridModel.tracks.columns.at(0);
+    const currentValue = snapshot.columns.at(0)?.size;
     const value: TrackSize = currentValue === "0px" ? "200px" : "0px";
     dispatch({ type: "resize-grid-column", trackIndex: 0, value });
   };
   const toggleRightSidebar = () => {
-    const currentValue = gridModel.tracks.columns.at(2);
+    const currentValue = snapshot.columns.at(2)?.size;
     const value: TrackSize = currentValue === "0px" ? "200px" : "0px";
     dispatch({ type: "resize-grid-column", trackIndex: 2, value });
   };

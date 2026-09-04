@@ -5,6 +5,7 @@ import type { LayoutJSON, LayoutJSONChild } from "./componentToJson";
 const childFromJson = (child: LayoutJSONChild) =>
   typeof child === "object" ? layoutFromJson(child) : child;
 
+/** @deprecated Use GridLayoutProvider document plus renderer registries. */
 export function layoutFromJson({
   active,
   id = uuid(),

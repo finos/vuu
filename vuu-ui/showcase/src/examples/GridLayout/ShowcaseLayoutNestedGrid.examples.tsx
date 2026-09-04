@@ -12,7 +12,6 @@ import {
 import { DebugGridItem } from "../html/components/DebugGridItem";
 
 import "./GridLayout.examples.css";
-import { componentToJson } from "@vuu-ui/vuu-layout";
 import { uuid } from "@vuu-ui/vuu-utils";
 
 const AppHeader = (props: HTMLAttributes<HTMLDivElement>) => {
@@ -65,23 +64,31 @@ export const ShowCaseLayoutNestedGrid = () => {
   }, []);
 
   const getNewComponent = (): Omit<ComponentTemplate, "label"> => {
+    const itemId = uuid();
     return {
-      componentJson: JSON.stringify(
-        componentToJson(
-          <GridLayout colsAndRows={{ cols: ["1fr"], rows: ["1fr"] }}>
-            <GridLayoutItem
-              data-drop-target
-              header
-              id={uuid()}
-              resizeable="hv"
-              style={{ gridArea: "1/1/2/2" }}
-              title="Brown"
-            >
-              <GridPlaceholder style={{ inset: 0, position: "absolute" }} />
-            </GridLayoutItem>
-          </GridLayout>,
-        ),
-      ),
+      componentJson: JSON.stringify({
+        children: [
+          {
+            id: itemId,
+            props: {
+              "data-drop-target": true,
+              header: true,
+              resizeable: "hv",
+              style: { gridArea: "1/1/2/2" },
+              title: "Brown",
+            },
+            type: "GridLayoutItem",
+            children: [
+              {
+                props: { style: { inset: 0, position: "absolute" } },
+                type: "GridPlaceholder",
+              },
+            ],
+          },
+        ],
+        props: { colsAndRows: { cols: ["1fr"], rows: ["1fr"] } },
+        type: "Grid",
+      }),
       dropTarget: false,
     };
   };

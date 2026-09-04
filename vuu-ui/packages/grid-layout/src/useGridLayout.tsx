@@ -103,6 +103,7 @@ const layoutDescriptorFromChildren = (
     gridLayoutItems: Object.fromEntries(
       children.filter(isGridLayoutItem).map(({ props }) => {
         const {
+          componentId,
           contentVisible,
           "data-drop-target": dropTarget,
           header,
@@ -122,6 +123,7 @@ const layoutDescriptorFromChildren = (
         return [
           id,
           {
+            componentId,
             contentVisible,
             dropTarget,
             gridArea,
@@ -160,7 +162,7 @@ export const useGridLayout = ({
   onChange,
 }: GridLayoutHookProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { onChangeChildElements, onChangeLayout } = useGridChangeHandler();
+  const { onCommittedSnapshot } = useGridChangeHandler();
   const layoutOptions = useGridLayoutOptions();
 
   const getSavedGrid = useSavedGrid();
@@ -170,29 +172,38 @@ export const useGridLayout = ({
    * which will be used to create the GridModel. We also save in state a copy
    * of the child elements as a map, keyed by id.
    */
-  const [[children, layout]] = useState<
-    [GridLayoutItemElements, GridLayoutDescriptor]
-  >(() => {
-    const savedGrid = getSavedGrid?.(id);
-    if (savedGrid) {
-      const { components: savedChildren, layout: savedLayout } = savedGrid;
-      return [Object.values(savedChildren), savedLayout];
-    } else if (colsAndRows) {
-      const reactElements = asReactElements(
-        childrenProp,
-      ) as GridLayoutItemElements;
-      const layoutDescriptor = layoutDescriptorFromChildren(
-        colsAndRows,
-        reactElements,
-      );
+  const [[children, layout, persistedPlaceholderIds], setInitialGrid] =
+    useState<
+      [
+        GridLayoutItemElements,
+        GridLayoutDescriptor,
+        readonly string[] | undefined,
+      ]
+    >(() => {
+      const savedGrid = getSavedGrid?.(id);
+      if (savedGrid) {
+        const { components: savedChildren, layout: savedLayout } = savedGrid;
+        return [
+          Object.values(savedChildren),
+          savedLayout,
+          savedGrid.placeholderIds,
+        ];
+      } else if (colsAndRows) {
+        const reactElements = asReactElements(
+          childrenProp,
+        ) as GridLayoutItemElements;
+        const layoutDescriptor = layoutDescriptorFromChildren(
+          colsAndRows,
+          reactElements,
+        );
 
-      return [reactElements, layoutDescriptor];
-    } else {
-      throw Error(
-        "[useGridLayout] no saved grid details available and no layout provided. Either pass layout props or provide a layout using GridLayoutProvider",
-      );
-    }
-  });
+        return [reactElements, layoutDescriptor, undefined];
+      } else {
+        throw Error(
+          "[useGridLayout] no saved grid details available and no layout provided. Either pass layout props or provide a layout using GridLayoutProvider",
+        );
+      }
+    });
 
   // Note we initialise this ref with the initial children from props. We subsequently
   // only update it in response to manipulation of the GridLayout NOT in case of the
@@ -203,6 +214,28 @@ export const useGridLayout = ({
   const contentRegistryRef = useRef(
     new Map(children.map((element) => [element.props.id, element])),
   );
+  const savedGridReaderRef = useRef(getSavedGrid);
+
+  useEffect(() => {
+    if (savedGridReaderRef.current === getSavedGrid) {
+      return;
+    }
+    savedGridReaderRef.current = getSavedGrid;
+    const savedGrid = getSavedGrid?.(id);
+    if (savedGrid) {
+      const nextChildren = Object.values(savedGrid.components);
+      childrenRef.current = nextChildren;
+      contentRegistryRef.current = new Map(
+        nextChildren.map((element) => [element.props.id, element]),
+      );
+      setChildElements(nextChildren);
+      setInitialGrid([
+        nextChildren,
+        savedGrid.layout,
+        savedGrid.placeholderIds,
+      ]);
+    }
+  }, [getSavedGrid, id]);
 
   const setChildren = useCallback(
     (
@@ -221,9 +254,8 @@ export const useGridLayout = ({
         childrenRef.current.map((element) => [element.props.id, element]),
       );
       setChildElements(childrenRef.current);
-      onChangeChildElements?.(id, childrenRef.current.filter(isGridLayoutItem));
     },
-    [id, onChangeChildElements],
+    [],
   );
 
   const [gridModel, gridLayoutModel, containerCallback] = useMemo(
@@ -234,6 +266,9 @@ export const useGridLayout = ({
       //   "color: green",
       // );
       const gridModel = new GridModel(id, layout);
+      for (const placeholderId of persistedPlaceholderIds ?? []) {
+        gridModel.getChildItem(placeholderId, true).type = "placeholder";
+      }
       for (const [stackId, items] of gridModel.getStackedChildItems()) {
         if (gridModel.getChildItem(stackId) === undefined) {
           const { column, row } = getSharedGridPosition(items);
@@ -255,7 +290,9 @@ export const useGridLayout = ({
           );
         }
       }
-      gridModel.createPlaceholders();
+      if (persistedPlaceholderIds === undefined) {
+        gridModel.createPlaceholders();
+      }
       const gridLayoutModel = new GridLayoutModel(gridModel);
       const callbackRef: RefCallback<HTMLDivElement> = (el) => {
         if (el) {
@@ -265,7 +302,7 @@ export const useGridLayout = ({
 
       return [gridModel, gridLayoutModel, callbackRef];
     },
-    [children, id, layout],
+    [children, id, layout, persistedPlaceholderIds],
   );
   const gridController = useMemo(
     () =>
@@ -333,9 +370,8 @@ export const useGridLayout = ({
   const saveGridLayout = useCallback<GridLayoutChangeHandler>(
     (id, gridLayout) => {
       onChange?.(id, gridLayout);
-      onChangeLayout?.(id, gridLayout);
     },
-    [onChangeLayout, onChange],
+    [onChange],
   );
 
   const handleDragStart = useCallback<GridLayoutDragStartHandler>(
@@ -925,8 +961,14 @@ export const useGridLayout = ({
   useEffect(() => {
     return gridController.subscribeCommitted(({ snapshot }) => {
       saveGridLayout(id, gridSnapshotToGridLayoutDescriptor(snapshot));
+      onCommittedSnapshot?.(
+        snapshot,
+        gridModel
+          .getPlaceholders()
+          .map(({ id: placeholderId }) => placeholderId),
+      );
     });
-  }, [gridController, id, saveGridLayout]);
+  }, [gridController, gridModel, id, onCommittedSnapshot, saveGridLayout]);
 
   return {
     children: renderedChildren,

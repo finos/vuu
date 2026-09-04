@@ -51,6 +51,7 @@ export interface GridLayoutProps
     | ReactElement<GridLayoutItemProps>[];
   "full-page"?: boolean;
   colsAndRows?: GridColumnsAndRows;
+  /** @deprecated Use GridLayoutProvider onDocumentChange. */
   onChange?: GridLayoutChangeHandler;
   /** Coupled boundaries with partial cross-group spans retain adjacent resizing. */
   rowResizeDistribution?: GridResizeDistribution;

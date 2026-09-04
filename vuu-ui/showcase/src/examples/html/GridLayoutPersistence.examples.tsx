@@ -1,162 +1,177 @@
-import { useMemo } from "react";
-
-import { type LayoutJSON } from "@vuu-ui/vuu-utils";
 import {
   GridLayout,
+  type GridLayoutDocument,
   GridLayoutProvider,
-  layoutFromJson,
-  type SerializedGridLayout,
 } from "@heswell/grid-layout";
+import {
+  panelComponent,
+  showcaseDocument,
+  showcaseGridComponentRenderers,
+  showcaseGridSettingsCodecs,
+} from "../GridLayout/GridLayoutPersistenceFixtures";
 import "./GridLayout.examples.css";
 
-export const TwoByTwoDoubleRowspanInColumnTwoDeserialized = () => {
-  const serializedLayout = useMemo<SerializedGridLayout>(
-    // prettier-ignore
-    () => ({
-      id: "grid-1",
-      components: {
-        green: {
-          type: "div",  props: { style: { background: "green" } } },
-        blue: {
-          type: "div", props: { style: { background: "blue" } } },
-        red: {
-          type: "div", props: { style: { background: "red" } } },
+const twoByTwoDocument = showcaseDocument({
+  components: [
+    panelComponent("green-component", "Green", "green"),
+    panelComponent("blue-component", "Blue", "blue"),
+    panelComponent("red-component", "Red", "red"),
+  ],
+  kind: "grid-layout",
+  layout: {
+    columns: ["1fr", "1fr"],
+    id: "grid-1",
+    items: [
+      {
+        column: { span: 1, start: 1 },
+        componentInstanceId: "green-component",
+        header: true,
+        id: "green",
+        resizeable: "hv",
+        row: { span: 1, start: 1 },
+        title: "Green",
       },
-      layout: {
-        cols: ["1fr", "1fr"],
-        rows: ["1fr", "1fr"],
-        gridLayoutItems: {
-          green: {
-            gridArea: "1/1/2/2",
-            header: true,
-            resizeable: "hv",
-            title: "Green",
-          },
-          blue: {
-            gridArea: "1/2/3/3",
-            header: true,
-            resizeable: "hv",
-            title: "Blue",
-          },
-          red: {
-            gridArea: "2/1/3/2",
-            header: true,
-            resizeable: "hv",
-            title: "Red",
-          },
-        },
+      {
+        column: { span: 1, start: 2 },
+        componentInstanceId: "blue-component",
+        header: true,
+        id: "blue",
+        resizeable: "hv",
+        row: { span: 2, start: 1 },
+        title: "Blue",
       },
-    }),
-    [],
-  );
-
-  return (
-    <GridLayoutProvider serializedLayout={serializedLayout}>
-      <GridLayout full-page id="grid-1" />
-    </GridLayoutProvider>
-  );
-};
-
-export const SingleStackDeserialized = () => {
-  const serializedLayout = useMemo<SerializedGridLayout>(
-    // prettier-ignore
-    () => ({
-      id: "grid-1",
-      components: {
-        green: {
-          type: "div",  props: { style: { background: "green" } } },
-        blue: {
-          type: "div", props: { style: { background: "blue" } } },
-        red: {
-          type: "div", props: { style: { background: "red" } } },
-        yellow: {
-          type: "div", props: { style: { background: "yellow" } } },
+      {
+        column: { span: 1, start: 1 },
+        componentInstanceId: "red-component",
+        header: true,
+        id: "red",
+        resizeable: "hv",
+        row: { span: 1, start: 2 },
+        title: "Red",
       },
-      layout: {
-        cols: ["1fr"],
-        rows: ["1fr","1fr"],
-        gridLayoutItems: {
-          green: {
-            gridArea: "1/1/2/2",
-            header: true,
-            resizeable: "hv",
-            stackId: "tabs-1",
-            title: "Green",
-          },
-          blue: {
-            gridArea: "1/1/2/2",
-            header: true,
-            resizeable: "hv",
-            stackId: "tabs-1",
-            title: "Blue",
-          },
-          red: {
-            contentVisible: true,
-            gridArea: "1/1/2/2",
-            header: true,
-            resizeable: "hv",
-            stackId: "tabs-1",
-            title: "Red",
-          },
-          yellow: {
-            gridArea: "2/1/3/2",
-            header: true,
-            resizeable: "hv",
-            title: "Yellow",
-          },
-        },
+    ],
+    placeholderIds: [],
+    rows: ["1fr", "1fr"],
+    stacks: [],
+  },
+  version: 2,
+});
+
+const stackedDocument = showcaseDocument({
+  components: [
+    panelComponent("green", "Green", "green"),
+    panelComponent("blue", "Blue", "blue"),
+    panelComponent("red", "Red", "red"),
+    panelComponent("yellow", "Yellow", "yellow", "black"),
+  ],
+  kind: "grid-layout",
+  layout: {
+    columns: ["1fr"],
+    id: "grid-1",
+    items: [
+      {
+        column: { span: 1, start: 1 },
+        header: true,
+        id: "green",
+        resizeable: "hv",
+        row: { span: 1, start: 1 },
+        title: "Green",
       },
-    }),
-    [],
-  );
-
-  return (
-    <GridLayoutProvider serializedLayout={serializedLayout}>
-      <GridLayout full-page id="grid-1" />
-    </GridLayoutProvider>
-  );
-};
-
-export const GridLayoutFromJSON = () => {
-  const layoutJson = useMemo<LayoutJSON>(
-    () => ({
-      type: "Grid",
-      props: {
-        "full-page": true,
-        layout: {
-          cols: ["1fr", "1fr"],
-          rows: ["1fr", "1fr"],
-          gridLayoutItems: {
-            red: {
-              gridArea: "1/1/2/2",
-              header: true,
-              title: "Red",
-            },
-            green: {
-              gridArea: "2/1/3/2",
-              header: true,
-              title: "Green",
-            },
-            blue: {
-              gridArea: "1/2/3/3",
-              header: true,
-              title: "Blue",
-            },
-          },
-        },
+      {
+        column: { span: 1, start: 1 },
+        header: true,
+        id: "blue",
+        resizeable: "hv",
+        row: { span: 1, start: 1 },
+        title: "Blue",
       },
-      children: [
-        { type: "div", id: "red", props: { style: { background: "red" } } },
-        { type: "div", id: "green", props: { style: { background: "green" } } },
-        { type: "div", id: "blue", props: { style: { background: "blue" } } },
-      ],
-    }),
-    [],
-  );
+      {
+        column: { span: 1, start: 1 },
+        header: true,
+        id: "red",
+        resizeable: "hv",
+        row: { span: 1, start: 1 },
+        title: "Red",
+      },
+      {
+        column: { span: 1, start: 1 },
+        header: true,
+        id: "yellow",
+        resizeable: "hv",
+        row: { span: 1, start: 2 },
+        title: "Yellow",
+      },
+    ],
+    placeholderIds: [],
+    rows: ["1fr", "1fr"],
+    stacks: [
+      {
+        id: "tabs-1",
+        itemIds: ["green", "blue", "red"],
+        selectedItemId: "red",
+      },
+    ],
+  },
+  version: 2,
+});
 
-  const gridLayout = useMemo(() => {
-    return layoutFromJson(layoutJson);
-  }, [layoutJson]);
+const layoutFromJsonDocument = showcaseDocument({
+  components: twoByTwoDocument.components,
+  kind: "grid-layout",
+  layout: {
+    columns: ["1fr", "1fr"],
+    id: "grid-layout-from-json",
+    items: [
+      {
+        column: { span: 1, start: 1 },
+        componentInstanceId: "red-component",
+        header: true,
+        id: "red",
+        row: { span: 1, start: 1 },
+        title: "Red",
+      },
+      {
+        column: { span: 1, start: 1 },
+        componentInstanceId: "green-component",
+        header: true,
+        id: "green",
+        row: { span: 1, start: 2 },
+        title: "Green",
+      },
+      {
+        column: { span: 1, start: 2 },
+        componentInstanceId: "blue-component",
+        header: true,
+        id: "blue",
+        row: { span: 2, start: 1 },
+        title: "Blue",
+      },
+    ],
+    placeholderIds: [],
+    rows: ["1fr", "1fr"],
+    stacks: [],
+  },
+  version: 2,
+});
 
-  return gridLayout;
-};
+const PersistedGrid = ({ document }: { document: GridLayoutDocument }) => (
+  <GridLayoutProvider
+    componentRenderers={showcaseGridComponentRenderers}
+    document={document}
+    settingsCodecs={showcaseGridSettingsCodecs}
+  >
+    <GridLayout full-page id={document.layout.id} />
+  </GridLayoutProvider>
+);
+
+export const TwoByTwoDoubleRowspanInColumnTwoDeserialized = () => (
+  <PersistedGrid document={twoByTwoDocument} />
+);
+
+export const SingleStackDeserialized = () => (
+  <PersistedGrid document={stackedDocument} />
+);
+
+export const GridLayoutFromJSON = () => (
+  <PersistedGrid document={layoutFromJsonDocument} />
+);

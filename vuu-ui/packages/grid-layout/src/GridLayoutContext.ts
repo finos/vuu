@@ -220,6 +220,7 @@ export const useGridLayoutDragStartHandler = () => {
   return onDragStart;
 };
 
+/** @deprecated Mutable GridModel is an internal compatibility engine. */
 export const useGridModel = () => {
   const { gridModel } = useContext(GridLayoutContext);
   if (gridModel) {
