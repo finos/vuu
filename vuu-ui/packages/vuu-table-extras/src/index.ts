@@ -1,4 +1,5 @@
 export { CalculatedColumnPanel } from "./calculated-column/CalculatedColumnPanel";
+export * from "./csv-export";
 export * from "./csv-upload";
 export * from "./cell-edit-validators";
 export * from "./cell-renderers";
@@ -25,7 +26,7 @@ export {
   type ColumnPickerProps,
 } from "./column-picker/ColumnPicker";
 export { ColumnPickerAction } from "./column-picker/ColumnPickerAction";
-export { type SelectedColumnsChangeHandler } from "./column-picker/useColumnPicker";
+export type { SelectedColumnsChangeHandler } from "./column-picker/useColumnPicker";
 export { useTableColumnPicker } from "./column-picker/useTableColumnPicker";
 export { ColumnSettingsPanel } from "./column-settings-panel/ColumnSettingsPanel";
 export { useColumnSettings } from "./column-settings-panel/useColumnSettings";

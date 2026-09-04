@@ -1,6 +1,6 @@
 import { getSchema, LocalDataSourceProvider, simulModule } from "@vuu-ui/vuu-data-test";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
-import { exportCsvTemplate, exportToCsv, type ExportColumnDescriptor } from "@vuu-ui/vuu-utils";
+import { exportCsvTemplate, exportToCsv, type ExportColumnDescriptor } from "@vuu-ui/vuu-table-extras";
 import { Button } from "@salt-ds/core";
 import { Table } from "@vuu-ui/vuu-table";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
