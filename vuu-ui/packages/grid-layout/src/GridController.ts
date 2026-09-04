@@ -9,6 +9,7 @@ import {
 } from "./grid-snapshot-adapters";
 import type { GridModel, GridModelCheckpoint } from "./GridModel";
 import type { GridSnapshot } from "./GridSnapshot";
+import { toGridStackSnapshot } from "./GridStack";
 
 export type GridTransactionKind = "drag" | "resize";
 export type GridControllerListener = () => void;
@@ -260,16 +261,13 @@ export class GridController {
       this.gridModel.toGridLayoutDescriptor(),
       { gridId: this.gridModel.id, revision },
     );
+    // Stack membership, order and selection are read from canonical stack
+    // state, not from the compatibility TabState projection.
     return normalizeGridSnapshot({
       ...snapshot,
-      stacks: snapshot.stacks.map(({ id }) => {
-        const tabState = this.gridModel.getTabState(id);
-        return {
-          id,
-          itemIds: tabState.tabs.map(({ id: itemId }) => itemId),
-          selectedItemId: tabState.activeTab.id,
-        };
-      }),
+      stacks: snapshot.stacks.map(({ id }) =>
+        toGridStackSnapshot(this.gridModel.getStackState(id)),
+      ),
     });
   }
 

@@ -17,6 +17,7 @@ import {
   type TrackSize,
   type TrackType,
 } from "./GridModel";
+import { gridStackItemIds, type GridStackError } from "./GridStack";
 import type {
   GridItemId,
   GridItemResizeable,
@@ -204,6 +205,15 @@ const geometryFailure = (
       return failure(command, "INVALID_ITEM", message);
   }
 };
+
+/**
+ * Map a pure stack error onto a typed command failure. Canonical stack
+ * transitions and the legacy command surface share the same error vocabulary.
+ */
+const stackFailure = (
+  command: GridCommand,
+  { code, message }: GridStackError,
+): GridCommandResult => failure(command, code, message);
 
 const toPosition = ({ span, start }: GridSpanSnapshot) => ({
   end: start + span,
@@ -447,7 +457,13 @@ export class LegacyGridCommandExecutor {
             "A new stack requires two unstacked items",
           );
         }
-        this.gridModel.stackChildItems(command.targetId, command.itemId);
+        const created = this.gridModel.createStack(
+          command.targetId,
+          command.itemId,
+        );
+        if (!created.ok) {
+          return stackFailure(command, created.error);
+        }
         return success(command);
       }
       case "add-stack-item": {
@@ -458,7 +474,8 @@ export class LegacyGridCommandExecutor {
           return invalid;
         }
         const stack = this.gridModel.getChildItem(command.stackId, true);
-        this.gridModel.addChildItem(
+        const added = this.gridModel.addStackItem(
+          command.stackId,
           toChildItem(
             {
               ...command.item,
@@ -474,6 +491,9 @@ export class LegacyGridCommandExecutor {
             command.stackId,
           ),
         );
+        if (!added.ok) {
+          return stackFailure(command, added.error);
+        }
         return success(command);
       }
       case "remove-stack-item": {
@@ -496,9 +516,13 @@ export class LegacyGridCommandExecutor {
         if (invalid) {
           return invalid;
         }
-        this.gridModel
-          .getTabState(command.stackId)
-          .setActiveTabById(command.itemId);
+        const selected = this.gridModel.selectStackItem(
+          command.stackId,
+          command.itemId,
+        );
+        if (!selected.ok) {
+          return stackFailure(command, selected.error);
+        }
         return success(command);
       }
       case "reorder-stack-item": {
@@ -508,21 +532,15 @@ export class LegacyGridCommandExecutor {
         if (invalid) {
           return invalid;
         }
-        if (command.itemId === command.targetItemId) {
-          return failure(
-            command,
-            "INVALID_TARGET",
-            "A tab cannot be reordered relative to itself",
-          );
+        const reordered = this.gridModel.reorderStackItem(command.stackId, {
+          activate: command.activate ?? false,
+          itemId: command.itemId,
+          placement: command.position,
+          targetItemId: command.targetItemId,
+        });
+        if (!reordered.ok) {
+          return stackFailure(command, reordered.error);
         }
-        this.gridModel
-          .getTabState(command.stackId)
-          .moveTabById(
-            command.itemId,
-            command.targetItemId,
-            command.position,
-            command.activate ?? false,
-          );
         return success(command);
       }
       case "rename-item": {
@@ -696,10 +714,9 @@ export class LegacyGridCommandExecutor {
     if (invalidStack) {
       return invalidStack;
     }
-    const tab = this.gridModel
-      .getTabState(stackId)
-      .tabs.find(({ id }) => id === itemId);
-    if (!tab) {
+    if (
+      !gridStackItemIds(this.gridModel.getStackState(stackId)).includes(itemId)
+    ) {
       return failure(
         command,
         "TAB_NOT_FOUND",

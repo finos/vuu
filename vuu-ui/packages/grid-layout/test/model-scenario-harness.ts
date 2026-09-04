@@ -21,6 +21,7 @@ import {
   type TrackType,
 } from "../src/GridModel";
 import { GridLayoutModel } from "../src/GridLayoutModel";
+import { gridStackItemIds, validateGridStackState } from "../src/GridStack";
 
 type ItemRef = string | { index?: number; type: "placeholder" | "stack" };
 
@@ -49,6 +50,15 @@ type ScenarioOperation =
       size: TrackSize;
     }
   | { type: "stack"; target: ItemRef; item: ItemRef }
+  | {
+      type: "add-tab";
+      gridArea?: string;
+      id: string;
+      stack: ItemRef;
+      title?: string;
+    }
+  | { type: "remove-tab"; stack: ItemRef; tab: string }
+  | { type: "rename"; item: ItemRef; title: string }
   | { type: "select-tab"; stack: ItemRef; tab: string }
   | {
       type: "move-tab";
@@ -183,6 +193,33 @@ const toCommand = (
         itemId: resolveItemId(currentModel, operation.item),
         targetId: resolveItemId(currentModel, operation.target),
         type: "create-stack",
+      };
+    case "add-tab": {
+      const stack = resolveItem(currentModel, operation.stack);
+      return {
+        item: commandItem({
+          gridArea: operation.gridArea,
+          id: operation.id,
+          title: operation.title,
+          type: "add",
+        }),
+        stackId: stack.id,
+        type: "add-stack-item",
+      };
+    }
+    case "remove-tab": {
+      const stack = resolveItem(currentModel, operation.stack);
+      return {
+        itemId: operation.tab,
+        stackId: stack.id,
+        type: "remove-stack-item",
+      };
+    }
+    case "rename":
+      return {
+        itemId: resolveItemId(currentModel, operation.item),
+        title: operation.title,
+        type: "rename-item",
       };
     case "select-tab": {
       const stack = resolveItem(currentModel, operation.stack);
@@ -393,6 +430,7 @@ export const assertModelInvariants = (model: GridModel) => {
   )) {
     const children = model.getStackedChildItems(stack.id);
     const tabState = model.getTabState(stack.id);
+    const stackState = model.getStackState(stack.id);
     expect(tabState.tabs.map(({ id }) => id).sort()).toEqual(
       children.map(({ id }) => id).sort(),
     );
@@ -403,6 +441,15 @@ export const assertModelInvariants = (model: GridModel) => {
     ).toHaveLength(1);
     expect(tabState.activeTab.id).toBe(
       children.find(({ contentVisible }) => contentVisible)?.id,
+    );
+    // the legacy runtime is a projection of canonical stack state
+    expect(validateGridStackState(stackState)).toEqual([]);
+    expect(gridStackItemIds(stackState)).toEqual(
+      tabState.tabs.map(({ id }) => id),
+    );
+    expect(stackState.selectedItemId).toBe(tabState.activeTab.id);
+    expect(stackState.members.map(({ label }) => label)).toEqual(
+      tabState.tabs.map(({ label }) => label),
     );
     for (const child of children) {
       expect(child.column).toEqual(stack.column);

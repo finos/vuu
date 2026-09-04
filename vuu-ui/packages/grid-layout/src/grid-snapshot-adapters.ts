@@ -12,6 +12,7 @@ import {
   type GridStackSnapshot,
   type GridTrackSnapshot,
 } from "./GridSnapshot";
+import { normalizeGridStackState, type GridStackState } from "./GridStack";
 
 export interface GridLayoutDescriptorSnapshotOptions {
   readonly gridId: string;
@@ -556,4 +557,41 @@ export const gridSnapshotToGridLayoutDescriptor = (
     ),
     rows: normalized.rows.map(({ size }) => size),
   };
+};
+
+/**
+ * Read canonical stack state from a snapshot. Membership, order and selection
+ * come from the snapshot stacks; placement and durable metadata come from the
+ * stack members, which all occupy the same grid area.
+ */
+export const gridSnapshotToGridStackStates = (
+  snapshot: GridSnapshot,
+): readonly GridStackState[] => {
+  const normalized = normalizeGridSnapshot(snapshot);
+  const itemById = new Map(normalized.items.map((item) => [item.id, item]));
+  return normalized.stacks.map((stack) => {
+    const [firstItemId] = stack.itemIds;
+    const firstItem = itemById.get(firstItemId);
+    return normalizeGridStackState({
+      area: {
+        column: firstItem?.column ?? { span: 1, start: 1 },
+        row: firstItem?.row ?? { span: 1, start: 1 },
+      },
+      id: stack.id,
+      members: stack.itemIds.map((itemId) => {
+        const item = itemById.get(itemId);
+        return {
+          id: itemId,
+          label: item?.title ?? itemId,
+          title: item?.title,
+        };
+      }),
+      metadata: {
+        minHeight: firstItem?.minHeight,
+        minWidth: firstItem?.minWidth,
+        resizeable: firstItem?.resizeable,
+      },
+      selectedItemId: stack.selectedItemId,
+    });
+  });
 };

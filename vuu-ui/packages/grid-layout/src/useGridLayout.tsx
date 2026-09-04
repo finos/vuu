@@ -446,9 +446,7 @@ export const useGridLayout = ({
               `[useGridLayout#${id}] stacked component #${droppedItemId} has no stack id`,
             );
           }
-          gridModel
-            .getTabState(stackId)
-            .setActiveTab(droppedGridItem.title ?? dragSource.label);
+          gridModel.selectStackItem(stackId, droppedItemId);
           gridModel.notifyChange();
         }
       } else if (sourceIsTabbedComponent(dragSource)) {
@@ -477,8 +475,13 @@ export const useGridLayout = ({
         // Important that we defer removing the tab until after the drop
         // handling. Removing the tab will remove the entire tabstrip if
         // only one tab remains after removing the dragged tab.
-        const tabState = gridModel.getTabState(dragSource.tabsId);
-        tabState?.removeTab(sourceGridItem.id);
+        const removed = gridModel.removeStackItem(
+          dragSource.tabsId,
+          sourceGridItem.id,
+        );
+        if (!removed.ok) {
+          throw Error(removed.error.message);
+        }
 
         const placeholders = gridModel.getPlaceholders();
         const splitters = gridLayoutModel.createSplitters();
@@ -525,7 +528,7 @@ export const useGridLayout = ({
               `[useGridLayout#${id}] stacked template #${newChildId} has no stack id`,
             );
           }
-          gridModel.getTabState(stackId).setActiveTab(label);
+          gridModel.selectStackItem(stackId, newChildId);
           addChildComponent(component, gridModelChildItem);
           gridModel.notifyChange();
         } else {
@@ -557,10 +560,7 @@ export const useGridLayout = ({
   const handleDetachTab = useCallback<DragContextDetachTabHandler>(
     ({ gridId, tabsId, value }) => {
       if (gridId === id) {
-        const tabState = gridModel.getTabState(tabsId);
-        if (tabState.activeTab.label === value) {
-          tabState.detachTab(value);
-        }
+        gridModel.detachTab(tabsId, value);
       }
     },
     [gridModel, id],
@@ -569,7 +569,7 @@ export const useGridLayout = ({
   const handleCancelTabDrag = useCallback<DragContextCancelTabDragHandler>(
     ({ gridId, tabsId, value }) => {
       if (gridId === id) {
-        gridModel.getTabState(tabsId).restoreDetachedTab(value);
+        gridModel.restoreDetachedTab(tabsId, value);
       }
     },
     [gridModel, id],
@@ -617,11 +617,14 @@ export const useGridLayout = ({
           //     dragSource,
           //   },
           // );
-          const tabState = gridModel.getTabState(targetStackItemId);
-          tabState.addTab(
-            { id: dragSource.id, label: dragSource.label },
+          const added = gridModel.addStackMember(
+            targetStackItemId,
+            dragSource.id,
             dropPosition,
           );
+          if (!added.ok) {
+            throw Error(added.error.message);
+          }
           const gridModelItem = gridModel.getChildItem(dragSource.id, true);
           gridModelItem.dragging = false;
         } else if (sourceIsTemplate(dragSource)) {

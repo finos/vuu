@@ -35,6 +35,23 @@ import type {
   GridLayoutModelPosition,
   GridLayoutResizeDirection,
 } from "./GridLayoutModel";
+import {
+  addGridStackItem,
+  cloneGridStackState,
+  createGridStack,
+  gridStackSelectedIndex,
+  normalizeGridStackState,
+  removeGridStackItem,
+  renameGridStackItem,
+  reorderGridStackItem,
+  selectGridStackItem,
+  type GridStackArea,
+  type GridStackMember,
+  type GridStackResult,
+  type GridStackState,
+  type GridStackTransition,
+} from "./GridStack";
+import type { GridItemId, GridSpanSnapshot, StackId } from "./GridSnapshot";
 
 export type TrackUnit = "px" | "fr";
 export type CSSFraction = `${number}fr`;
@@ -270,6 +287,17 @@ export const isStackedItem = (
 export type GridModelStackedChildItem = GridModelChildItem & {
   type: "stacked-content";
 };
+
+/** Read the canonical grid area of a legacy grid item. */
+const toStackArea = ({ column, row }: GridModelCoordinates): GridStackArea => ({
+  column: { span: column.end - column.start, start: column.start },
+  row: { span: row.end - row.start, start: row.start },
+});
+
+const toGridModelPosition = ({
+  span,
+  start,
+}: GridSpanSnapshot): GridModelPosition => ({ end: start + span, start });
 
 class ObservableGridPosition {
   #id: string;
@@ -1094,6 +1122,7 @@ type TabStateCheckpoint = {
 
 export type GridModelCheckpoint = {
   readonly childItems: readonly GridModelChildItemCheckpoint[];
+  readonly stackStates: readonly (readonly [StackId, GridStackState])[];
   readonly tabStates: readonly TabStateCheckpoint[];
   readonly tracks: GridTracksCheckpoint;
 };
@@ -1104,6 +1133,11 @@ export class GridModel extends EventEmitter<GridModelEvents> {
   #childItems: GridModelChildItem[] = [];
   #index = new Map<string, IGridModelChildItem>();
   #tabState = new Map<string, TabState>();
+  /**
+   * Canonical stack state, keyed by stack id. This is the authority for stack
+   * membership, order, identity and selection; TabState is projected from it.
+   */
+  #stackStates = new Map<StackId, GridStackState>();
 
   createCheckpoint(): GridModelCheckpoint {
     return {
@@ -1137,11 +1171,19 @@ export class GridModel extends EventEmitter<GridModelEvents> {
         tabState,
         tabs: tabState.tabs.map((tab) => ({ ...tab })),
       })),
+      stackStates: [...this.#stackStates].map(
+        ([stackId, state]) => [stackId, cloneGridStackState(state)] as const,
+      ),
       tracks: this.tracks.createCheckpoint(),
     };
   }
 
-  restoreCheckpoint({ childItems, tabStates, tracks }: GridModelCheckpoint) {
+  restoreCheckpoint({
+    childItems,
+    stackStates,
+    tabStates,
+    tracks,
+  }: GridModelCheckpoint) {
     const currentStacks = new Map(
       this.#childItems
         .filter(({ type }) => type === "stacked-content")
@@ -1184,6 +1226,12 @@ export class GridModel extends EventEmitter<GridModelEvents> {
         tabState.tabs = tabs.map((tab) => ({ ...tab }));
         return [tabState.id, tabState];
       }),
+    );
+    this.#stackStates = new Map(
+      stackStates.map(([stackId, state]) => [
+        stackId,
+        cloneGridStackState(state),
+      ]),
     );
     const restoredStacks = new Map(
       this.#childItems
@@ -1310,21 +1358,11 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     childItems: GridModelChildItem[],
     activeItem = 0,
   ) {
-    let tabState = this.#tabState.get(stackId);
-    if (tabState) {
-      throw Error(`[GridModel] setTabState  already created for ${stackId}`);
-    }
     const tabs = childItems.map(({ id, title }, index) => ({
       id,
       label: title ?? `Label-${index + 1}`,
     }));
-    tabState = new TabState(stackId, activeItem, tabs);
-
-    tabState.on("active-change", this.handleTabSelectionChange);
-    tabState.on("tab-added", this.handleTabAdded);
-    tabState.on("tab-detached", this.handleTabDetached);
-    tabState.on("tabs-change", this.handleTabsChange);
-    tabState.on("tabs-removed", this.handleTabsRemoved);
+    const tabState = this.#createTabState(stackId, tabs, activeItem);
 
     if (tabs[activeItem]) {
       // tabState can be set before childItems are identified in the case of an
@@ -1333,8 +1371,343 @@ export class GridModel extends EventEmitter<GridModelEvents> {
       this.activateStackedChildItem(stackId, tabs[activeItem]);
     }
 
+    return tabState;
+  }
+
+  #createTabState(stackId: string, tabs: TabStateTab[], active: number) {
+    if (this.#tabState.get(stackId)) {
+      throw Error(`[GridModel] setTabState  already created for ${stackId}`);
+    }
+    const tabState = new TabState(stackId, active, tabs);
+
+    tabState.on("active-change", this.handleTabSelectionChange);
+    tabState.on("tab-added", this.handleTabAdded);
+    tabState.on("tab-detached", this.handleTabDetached);
+    tabState.on("tabs-change", this.handleTabsChange);
+    tabState.on("tabs-removed", this.handleTabsRemoved);
+
     this.#tabState.set(stackId, tabState);
     return tabState;
+  }
+
+  // -------------------------------------------------------------------------
+  // canonical stack state
+  //
+  // Stack membership, order, identity, selection, placement and lifecycle are
+  // owned by the pure transitions in GridStack.ts. The methods below hydrate
+  // canonical state from this model and project a transition back onto the
+  // legacy runtime (child items, TabState and the events the React layer
+  // listens to). They are the only writers of stack semantics.
+  // -------------------------------------------------------------------------
+
+  /**
+   * Canonical stack state. Membership, order, identity and selection are read
+   * from the canonical store — they are never re-derived from the mutable
+   * runtime projection once a stack exists. Placement and durable layout
+   * metadata are read from the grid item, which the geometry engine owns.
+   */
+  getStackState = (stackId: StackId): GridStackState => {
+    const canonical =
+      this.#stackStates.get(stackId) ?? this.#hydrateStack(stackId);
+    const anchor =
+      this.getChildItem(stackId) ??
+      this.getChildItem(canonical.members[0]?.id ?? "");
+    const state = normalizeGridStackState({
+      ...canonical,
+      area: anchor ? toStackArea(anchor) : canonical.area,
+      metadata: anchor
+        ? {
+            minHeight: anchor.minHeight,
+            minWidth: anchor.minWidth,
+            resizeable: anchor.resizeable,
+          }
+        : canonical.metadata,
+    });
+    this.#stackStates.set(stackId, state);
+    return state;
+  };
+
+  /**
+   * Adopt the legacy runtime as canonical state, once, for a stack that was
+   * created outside a canonical transition (declarative JSX, a restored
+   * layout, or a legacy caller).
+   */
+  #hydrateStack(stackId: StackId): GridStackState {
+    const { active, tabs } = this.getTabState(stackId);
+    return {
+      area: { column: { span: 1, start: 1 }, row: { span: 1, start: 1 } },
+      id: stackId,
+      members: tabs.map(({ id, label }) => ({
+        id,
+        label,
+        title: this.getChildItem(id)?.title,
+      })),
+      metadata: {},
+      selectedItemId: tabs[active]?.id ?? "",
+    };
+  }
+
+  /** Every stack currently present in the layout, in child item order. */
+  getStackStates(): GridStackState[] {
+    return this.#childItems
+      .filter(({ type }) => type === "stacked-content")
+      .map(({ id }) => this.getStackState(id));
+  }
+
+  /**
+   * Project a canonical stack transition onto the compatibility runtime. The
+   * legacy TabState is written from canonical state, never the other way
+   * round; observers are then notified exactly as the legacy engine notified
+   * them, for presentation only.
+   */
+  applyStackTransition(transition: GridStackTransition) {
+    const { operation, state } = transition;
+    if (transition.dissolved) {
+      this.#stackStates.delete(state.id);
+    } else {
+      this.#stackStates.set(state.id, state);
+    }
+    switch (operation) {
+      case "create": {
+        const [reference] = state.members;
+        const referenceItem = this.getChildItem(reference.id, true);
+        const stackItem = new GridModelChildItem({
+          column: toGridModelPosition(state.area.column),
+          id: state.id,
+          minHeight: state.metadata.minHeight,
+          minWidth: state.metadata.minWidth,
+          resizeable: state.metadata.resizeable,
+          row: toGridModelPosition(state.area.row),
+          type: "stacked-content",
+        });
+        stackItem.horizontalSplitter = referenceItem.horizontalSplitter;
+        stackItem.verticalSplitter = referenceItem.verticalSplitter;
+        this.#createTabState(
+          state.id,
+          state.members.map(({ id, label }) => ({ id, label })),
+          gridStackSelectedIndex(state),
+        );
+        this.#registerChildItem(stackItem);
+        for (const { id } of state.members) {
+          const member = this.getChildItem(id, true);
+          member.horizontalSplitter = referenceItem.horizontalSplitter;
+          member.verticalSplitter = referenceItem.verticalSplitter;
+        }
+        this.#applyStackPlacement(state);
+        this.#applyStackSelection(state);
+        this.emit("tabs-created", stackItem);
+        return;
+      }
+      case "add": {
+        this.#applyStackPlacement(state);
+        const tabState = this.#writeTabState(state);
+        this.#applyStackSelection(state);
+        if (transition.positioned) {
+          // The legacy engine broadcast the coordinates of a tab dropped at a
+          // specific position before it announced the new tab order.
+          const [{ id: addedId }] = transition.added;
+          const { column, row } = this.getChildItem(addedId, true);
+          this.emit("child-position-updates", [[addedId, { column, row }]]);
+          this.emit("tabs-change", state.id, tabState.active, tabState.tabs);
+        }
+        return;
+      }
+      case "remove": {
+        const tabState = this.#writeTabState(state);
+        if (transition.dissolved) {
+          this.removeChildItem(state.id, "unstack");
+          this.emit("tabs-removed", state.id);
+        } else {
+          this.#applyStackSelection(state);
+          this.emit("tabs-change", state.id, tabState.active, tabState.tabs);
+        }
+        return;
+      }
+      case "rename":
+      case "reorder": {
+        const tabState = this.#writeTabState(state);
+        this.#applyStackSelection(state);
+        this.emit("tabs-change", state.id, tabState.active, tabState.tabs);
+        return;
+      }
+      case "select": {
+        const tabState = this.#writeTabState(state);
+        this.#applyStackSelection(state);
+        this.emit("tab-selection-change", state.id, tabState.active);
+        return;
+      }
+      default:
+        throw Error(`[GridModel] unhandled stack transition ${operation}`);
+    }
+  }
+
+  /** Create a stack from two existing grid items. */
+  createStack(
+    targetId: GridItemId,
+    itemId: GridItemId,
+    stackId: StackId = uuid(),
+  ): GridStackResult<GridStackTransition> {
+    const targetChild = this.getChildItem(targetId, true);
+    const stackedChild = this.getChildItem(itemId, true);
+    const result = createGridStack({
+      area: toStackArea(targetChild),
+      id: stackId,
+      members: [targetChild, stackedChild].map(
+        ({ id, title }, index): GridStackMember => ({
+          id,
+          label: title ?? `Label-${index + 1}`,
+          title,
+        }),
+      ),
+      metadata: {
+        minHeight: targetChild.minHeight,
+        minWidth: targetChild.minWidth,
+        resizeable: targetChild.resizeable,
+      },
+    });
+    if (result.ok) {
+      this.applyStackTransition(result.value);
+    }
+    return result;
+  }
+
+  /** Register a new grid item and add it to a stack in one transition. */
+  addStackItem(
+    stackId: StackId,
+    childItem: GridModelChildItem,
+    dropPosition?: DropPosition,
+  ): GridStackResult<GridStackTransition> {
+    const result = this.#addStackTransition(stackId, childItem, dropPosition);
+    if (result.ok) {
+      this.#registerChildItem(childItem);
+      this.applyStackTransition(result.value);
+    }
+    return result;
+  }
+
+  /** Add an existing grid item to a stack. */
+  addStackMember(
+    stackId: StackId,
+    itemId: GridItemId,
+    dropPosition?: DropPosition,
+  ): GridStackResult<GridStackTransition> {
+    const result = this.#addStackTransition(
+      stackId,
+      this.getChildItem(itemId, true),
+      dropPosition,
+    );
+    if (result.ok) {
+      this.applyStackTransition(result.value);
+    }
+    return result;
+  }
+
+  #addStackTransition(
+    stackId: StackId,
+    { id, title }: GridModelChildItem,
+    dropPosition?: DropPosition,
+  ) {
+    const state = this.getStackState(stackId);
+    const position = dropPosition
+      ? {
+          placement: dropPosition.position,
+          // legacy drop positions identify their target by label; the first
+          // match is used, exactly as the legacy tabstrip did.
+          targetItemId:
+            state.members.find(({ label }) => label === dropPosition.target)
+              ?.id ?? dropPosition.target,
+        }
+      : undefined;
+    return addGridStackItem(state, {
+      member: { id, label: title ?? id, title },
+      position,
+    });
+  }
+
+  /** Remove a member from a stack, dissolving the stack when it empties. */
+  removeStackItem(
+    stackId: StackId,
+    itemId: GridItemId,
+  ): GridStackResult<GridStackTransition> {
+    const result = removeGridStackItem(this.getStackState(stackId), { itemId });
+    if (result.ok) {
+      this.applyStackTransition(result.value);
+    }
+    return result;
+  }
+
+  /** Select a stack member by its stable id. */
+  selectStackItem(
+    stackId: StackId,
+    itemId: GridItemId,
+  ): GridStackResult<GridStackTransition> {
+    const result = selectGridStackItem(this.getStackState(stackId), { itemId });
+    if (result.ok) {
+      this.applyStackTransition(result.value);
+    }
+    return result;
+  }
+
+  /** Move a stack member relative to another member. */
+  reorderStackItem(
+    stackId: StackId,
+    request: {
+      activate?: boolean;
+      itemId: GridItemId;
+      placement: "after" | "before";
+      targetItemId: GridItemId;
+    },
+  ): GridStackResult<GridStackTransition> {
+    const result = reorderGridStackItem(this.getStackState(stackId), request);
+    if (result.ok) {
+      this.applyStackTransition(result.value);
+    }
+    return result;
+  }
+
+  #renameStackItem(
+    stackId: StackId,
+    itemId: GridItemId,
+    title: string,
+  ): GridStackResult<GridStackTransition> {
+    const result = renameGridStackItem(this.getStackState(stackId), {
+      itemId,
+      title,
+    });
+    if (result.ok) {
+      this.applyStackTransition(result.value);
+    }
+    return result;
+  }
+
+  #writeTabState(state: GridStackState) {
+    const tabState = this.getTabState(state.id);
+    tabState.tabs = state.members.map(({ id, label }) => ({ id, label }));
+    tabState.active = gridStackSelectedIndex(state);
+    return tabState;
+  }
+
+  /** Members always occupy the stack area and reference the stack. */
+  #applyStackPlacement(state: GridStackState) {
+    const column = toGridModelPosition(state.area.column);
+    const row = toGridModelPosition(state.area.row);
+    for (const { id } of state.members) {
+      const member = this.getChildItem(id);
+      if (member) {
+        member.stackId = state.id;
+        this.updateChildColumn(id, column);
+        this.updateChildRow(id, row);
+      }
+    }
+  }
+
+  #applyStackSelection(state: GridStackState) {
+    const selected = state.members.find(
+      ({ id }) => id === state.selectedItemId,
+    );
+    if (selected) {
+      this.activateStackedChildItem(state.id, selected);
+    }
   }
 
   activateStackedChildItem(stackId: string, { id }: TabStateTab) {
@@ -1359,13 +1732,60 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     }
   }
 
+  /**
+   * A tab is detached when a drag operation commences: it is removed from the
+   * TabStrip but its content remains in the DOM. Selection moves to the
+   * neighbouring member, chosen from canonical order.
+   */
+  detachTab(stackId: StackId, label: string) {
+    const tabState = this.getTabState(stackId);
+    const state = this.getStackState(stackId);
+    const selectedIndex = gridStackSelectedIndex(state);
+    if (state.members[selectedIndex]?.label !== label) {
+      return;
+    }
+    const next =
+      state.members[selectedIndex - 1] ?? state.members[selectedIndex + 1];
+    if (!next) {
+      return;
+    }
+    tabState.detachedTab = { ...tabState.tabs[selectedIndex] };
+    this.detachStackedChildItem(stackId, state.members[selectedIndex]);
+    const result = this.selectStackItem(stackId, next.id);
+    if (!result.ok) {
+      throw Error(result.error.message);
+    }
+  }
+
+  restoreDetachedTab(stackId: StackId, label: string) {
+    const tabState = this.getTabState(stackId);
+    const detachedTab = tabState.detachedTab;
+    if (detachedTab?.label === label) {
+      tabState.detachedTab = undefined;
+      const result = this.selectStackItem(stackId, detachedTab.id);
+      if (!result.ok) {
+        throw Error(result.error.message);
+      }
+    }
+  }
+
   moveItemWithinTabs(
     tabsId: string,
     tab: TabStateTab,
-    dropPosition: DropPosition,
+    { position, target }: DropPosition,
     selectMovedTab: boolean,
   ) {
-    this.getTabState(tabsId).moveTab(tab, dropPosition, selectMovedTab);
+    const state = this.getStackState(tabsId);
+    const result = this.reorderStackItem(tabsId, {
+      activate: selectMovedTab,
+      itemId: tab.id,
+      placement: position,
+      targetItemId:
+        state.members.find(({ label }) => label === target)?.id ?? target,
+    });
+    if (!result.ok) {
+      throw Error(result.error.message);
+    }
   }
 
   moveItemBetweenTabs(
@@ -1374,8 +1794,14 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     tab: TabStateTab,
     dropPosition: DropPosition,
   ) {
-    this.getTabState(fromTabsId).removeTab(tab.id);
-    this.getTabState(toTabsId).addTab(tab, dropPosition);
+    const removed = this.removeStackItem(fromTabsId, tab.id);
+    if (!removed.ok) {
+      throw Error(removed.error.message);
+    }
+    const added = this.addStackMember(toTabsId, tab.id, dropPosition);
+    if (!added.ok) {
+      throw Error(added.error.message);
+    }
   }
 
   notifyChange() {
@@ -1650,37 +2076,23 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     // If not, it will be created post initial render, based on stackId
     // references in gridItems. If declared explicitly, it may or may not
     // preceed childItems in source code order.
-    this.#childItems.push(childItem);
-    this.#index.set(childItem.id, childItem);
-
-    if (childItem.stackId) {
-      const stackItem = this.getChildItem(childItem.stackId);
-      if (stackItem) {
-        this.addChildItemToStack(childItem, stackItem, dropPosition);
+    if (childItem.stackId && this.getChildItem(childItem.stackId)) {
+      const result = this.addStackItem(
+        childItem.stackId,
+        childItem,
+        dropPosition,
+      );
+      if (!result.ok) {
+        throw Error(result.error.message);
       }
+      return;
     }
+    this.#registerChildItem(childItem);
   }
 
-  private addChildItemToStack(
-    childItem: GridModelChildItem,
-    stackItem: GridModelChildItem,
-    dropPosition?: DropPosition,
-  ) {
-    if (childItem.stackId) {
-      const tabState = this.getTabState(childItem.stackId);
-      const tab: TabStateTab = {
-        id: childItem.id,
-        label: childItem.title ?? childItem.id,
-      };
-      tabState.addTab(tab, dropPosition);
-      if (tabState.activeTab === tab) {
-        childItem.contentVisible = true;
-      }
-    } else {
-      throw Error(
-        `[[GridModel] addChildItemToStack #${childItem.id} => #${stackItem.id} child has no stackId`,
-      );
-    }
+  #registerChildItem(childItem: GridModelChildItem) {
+    this.#childItems.push(childItem);
+    this.#index.set(childItem.id, childItem);
   }
 
   updateChildTitle(childItemId: string, title: string) {
@@ -1688,7 +2100,16 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     if (title !== childItem.title) {
       childItem.title = title;
       if (childItem.stackId) {
-        this.getTabState(childItem.stackId).renameTab(childItemId, title);
+        const result = this.#renameStackItem(
+          childItem.stackId,
+          childItemId,
+          title,
+        );
+        if (!result.ok) {
+          throw Error(
+            `[TabState] cannot rename tab #${childItemId} => '${title}', tab not found`,
+          );
+        }
       }
     }
   }
@@ -1745,6 +2166,7 @@ export class GridModel extends EventEmitter<GridModelEvents> {
       this.#childItems.splice(indexOfDoomedItem, 1);
       this.#index.delete(childItemId);
       if (childItem.type === "stacked-content") {
+        this.#stackStates.delete(childItemId);
         const stackedChildItems = this.getStackedChildItems(childItemId);
         stackedChildItems.forEach((childItem) => {
           childItem.stackId = undefined;
@@ -1755,43 +2177,10 @@ export class GridModel extends EventEmitter<GridModelEvents> {
   }
 
   stackChildItems(targetId: string, stackedChildId: string) {
-    const targetChild = this.getChildItem(targetId, true);
-    const stackedChild = this.getChildItem(stackedChildId, true);
-
-    const {
-      column: { start: colStart, end: colEnd },
-      row: { start: rowStart, end: rowEnd },
-    } = targetChild;
-    const stackId = uuid();
-
-    const stackChild = new GridModelChildItem({
-      column: { start: colStart, end: colEnd },
-      id: stackId,
-      minHeight: targetChild.minHeight,
-      minWidth: targetChild.minWidth,
-      resizeable: targetChild.resizeable,
-      row: { start: rowStart, end: rowEnd },
-      type: "stacked-content",
-    });
-
-    const { horizontalSplitter: h, verticalSplitter: v } = targetChild;
-    stackChild.horizontalSplitter = stackedChild.horizontalSplitter = h;
-    stackChild.verticalSplitter = stackedChild.verticalSplitter = v;
-
-    this.setTabState(stackId, [targetChild, stackedChild]);
-
-    this.addChildItem(stackChild);
-
-    targetChild.stackId = stackId;
-    stackedChild.stackId = stackId;
-
-    this.updateChildColumn(stackedChild.id, { start: colStart, end: colEnd });
-    this.updateChildRow(stackedChild.id, { start: rowStart, end: rowEnd });
-
-    stackedChild.contentVisible = false;
-    targetChild.contentVisible = true;
-
-    this.emit("tabs-created", stackChild);
+    const result = this.createStack(targetId, stackedChildId);
+    if (!result.ok) {
+      throw Error(result.error.message);
+    }
   }
 
   getChildItem(childItemId: string, throwIfNotFound: true): GridModelChildItem;
