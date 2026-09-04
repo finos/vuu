@@ -298,6 +298,7 @@ export class GridDragCoordinator {
         `Cannot commit a drag while ${this.#state.phase}`,
       );
     }
+
     const source = this.#state.source;
     const result = this.#transaction.commit();
     if (!result.ok) {
@@ -305,6 +306,20 @@ export class GridDragCoordinator {
     }
     this.#transaction = undefined;
     this.#state = { phase: "committed", source };
+    return { ok: true, state: this.#state };
+  }
+
+  clearPreview(): GridDragCoordinatorResult {
+    if (this.#state.phase !== "previewing") {
+      return failure(
+        "INVALID_TRANSITION",
+        `Cannot clear a preview while ${this.#state.phase}`,
+      );
+    }
+    const result = this.#rollbackPreview();
+    if (result && !result.ok) {
+      return { error: result.error, ok: false };
+    }
     return { ok: true, state: this.#state };
   }
 

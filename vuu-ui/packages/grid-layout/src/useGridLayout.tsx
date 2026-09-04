@@ -68,7 +68,6 @@ import {
 import { GridController } from "./GridController";
 import {
   GridDragCoordinator,
-  type GridDragSource,
   type GridDropIntent,
 } from "./GridDragCoordinator";
 import { gridSnapshotToGridLayoutDescriptor } from "./grid-snapshot-adapters";
@@ -282,6 +281,14 @@ export const useGridLayout = ({
     () => new GridDragCoordinator(id, gridController),
     [gridController, id],
   );
+  const provisionalTemplateRef = useRef<
+    | {
+        component: ReactElement;
+        componentJson: string;
+        itemId: string;
+      }
+    | undefined
+  >();
   useEffect(() => () => dragCoordinator.dispose(), [dragCoordinator]);
   const contentIds = useMemo(
     () =>
@@ -357,6 +364,7 @@ export const useGridLayout = ({
           throw Error(result.error.message);
         }
       }
+      provisionalTemplateRef.current = undefined;
     },
     [dragCoordinator],
   );
@@ -439,94 +447,169 @@ export const useGridLayout = ({
    * payload is either the id of an existing gridLayoutItem that we are dragging
    * of a json description of a new component
    */
-  const handleDrop = useCallback<GridLayoutDropHandler>(
-    (targetItemId, dragSource, position) => {
-      const targetGridItem = gridModel.getChildItem(targetItemId, true);
-      const targetId = isStackedItem(targetGridItem)
-        ? targetGridItem.stackId
-        : targetItemId;
-      containerRef.current?.classList.remove("vuuDragging");
-
-      let coordinatorSource: GridDragSource;
-      let templateComponent: ReactElement | undefined;
-      let templateItemId: string | undefined;
+  const prepareDragSource = useCallback(
+    (dragSource: Parameters<GridLayoutDropHandler>[1]) => {
       if (sourceIsTemplate(dragSource)) {
-        const { label = "New Item", ...restJSON } = JSON.parse(
-          dragSource.componentJson,
-        );
-        const newChildId = uuid();
-        templateItemId = newChildId;
-        coordinatorSource = {
-          item: {
-            column: { span: 1, start: 1 },
-            dropTarget: true,
-            header: layoutOptions?.newChildItem.header,
-            id: newChildId,
-            resizeable: "hv",
-            row: { span: 1, start: 1 },
-            title: label,
-          },
-          kind: "palette-template",
-          templateId: dragSource.componentJson,
-        };
-        templateComponent = layoutFromJson(restJSON as LayoutJSON);
-        const begun = dragCoordinator.begin(coordinatorSource);
-        if (!begun.ok) {
-          throw Error(begun.error.message);
+        let provisional = provisionalTemplateRef.current;
+        if (
+          !provisional ||
+          provisional.componentJson !== dragSource.componentJson
+        ) {
+          const { label = "New Item", ...restJSON } = JSON.parse(
+            dragSource.componentJson,
+          );
+          provisional = {
+            component: layoutFromJson(restJSON as LayoutJSON),
+            componentJson: dragSource.componentJson,
+            itemId: uuid(),
+          };
+          provisionalTemplateRef.current = provisional;
         }
-      } else if (sourceIsComponent(dragSource)) {
-        coordinatorSource = {
-          itemId: dragSource.id,
-          kind: "existing-item",
-          sourceGridId: dragSource.layoutId,
-        };
-        if (dragCoordinator.state.phase === "idle") {
-          const begun = dragCoordinator.begin(coordinatorSource);
+        if (
+          dragCoordinator.state.phase !== "dragging" &&
+          dragCoordinator.state.phase !== "previewing"
+        ) {
+          const begun = dragCoordinator.begin({
+            item: {
+              column: { span: 1, start: 1 },
+              dropTarget: true,
+              header: layoutOptions?.newChildItem.header,
+              id: provisional.itemId,
+              resizeable: "hv",
+              row: { span: 1, start: 1 },
+              title: JSON.parse(dragSource.componentJson).label ?? "New Item",
+            },
+            kind: "palette-template",
+            templateId: dragSource.componentJson,
+          });
           if (!begun.ok) {
             throw Error(begun.error.message);
           }
         }
-      } else if (sourceIsTabbedComponent(dragSource)) {
-        coordinatorSource = {
+      } else if (
+        sourceIsComponent(dragSource) &&
+        dragCoordinator.state.phase !== "dragging" &&
+        dragCoordinator.state.phase !== "previewing"
+      ) {
+        const begun = dragCoordinator.begin({
+          itemId: dragSource.id,
+          kind: "existing-item",
+          sourceGridId: dragSource.layoutId,
+        });
+        if (!begun.ok) {
+          throw Error(begun.error.message);
+        }
+      } else if (
+        sourceIsTabbedComponent(dragSource) &&
+        dragCoordinator.state.phase !== "dragging" &&
+        dragCoordinator.state.phase !== "previewing"
+      ) {
+        const begun = dragCoordinator.begin({
           itemId: dragSource.tab.id,
           kind: "stack-member",
           selected: dragSource.isSelectedTab,
           sourceGridId: dragSource.layoutId,
           stackId: dragSource.tabsId,
-        };
-      } else {
-        throw Error(
-          `[useGridLayout#${id}] unsupported drag source type for GridLayout drop`,
-        );
-      }
-
-      let intent: GridDropIntent;
-      if (isGridLayoutSplitDirection(position)) {
-        intent = { kind: "split", position };
-      } else if (position === "centre") {
-        if (isStackedItem(targetGridItem)) {
-          return false;
+        });
+        if (!begun.ok) {
+          throw Error(begun.error.message);
         }
-        intent = { kind: "replace" };
-      } else if (position === "header") {
-        intent = isStackedItem(targetGridItem)
-          ? { kind: "stack" }
-          : { kind: "create-stack" };
-      } else {
+      }
+    },
+    [dragCoordinator, layoutOptions?.newChildItem.header],
+  );
+
+  const handleDragLeave = useCallback(() => {
+    const templateDrag =
+      dragCoordinator.state.phase !== "idle" &&
+      dragCoordinator.state.source.kind === "palette-template";
+    if (dragCoordinator.state.phase === "previewing") {
+      const result = dragCoordinator.clearPreview();
+      if (!result.ok) {
+        throw Error(result.error.message);
+      }
+    }
+    if (templateDrag && dragCoordinator.state.phase === "dragging") {
+      const result = dragCoordinator.cancel();
+      if (!result.ok) {
+        throw Error(result.error.message);
+      }
+    }
+    provisionalTemplateRef.current = undefined;
+  }, [dragCoordinator]);
+
+  const handleDragPreview = useCallback<GridLayoutDropHandler>(
+    (targetItemId, dragSource, position) => {
+      const targetGridItem = gridModel.getChildItem(targetItemId, true);
+      if (position === "centre" && isStackedItem(targetGridItem)) {
         return false;
       }
-      const preview = dragCoordinator.preview({
-        gridId: id,
-        intent,
-        targetId,
-      });
-      if (!preview.ok) {
+      prepareDragSource(dragSource);
+      const targetId =
+        isGridLayoutSplitDirection(position) && isStackedItem(targetGridItem)
+          ? targetGridItem.stackId
+          : targetItemId;
+      const intent: GridDropIntent | undefined = isGridLayoutSplitDirection(
+        position,
+      )
+        ? { kind: "split", position }
+        : position === "centre"
+          ? { kind: "replace" }
+          : position === "header"
+            ? { kind: "create-stack" }
+            : undefined;
+      if (!intent) {
+        return false;
+      }
+      if (intent.kind !== "split") {
+        if (dragCoordinator.state.phase === "previewing") {
+          const cleared = dragCoordinator.clearPreview();
+          if (!cleared.ok) {
+            throw Error(cleared.error.message);
+          }
+        }
+        return true;
+      }
+      return dragCoordinator.preview({ gridId: id, intent, targetId }).ok;
+    },
+    [dragCoordinator, gridModel, id, prepareDragSource],
+  );
+
+  const handleDrop = useCallback<GridLayoutDropHandler>(
+    (targetItemId, dragSource, position) => {
+      const targetGridItem = gridModel.getChildItem(targetItemId, true);
+      containerRef.current?.classList.remove("vuuDragging");
+
+      prepareDragSource(dragSource);
+
+      if (
+        !isGridLayoutSplitDirection(position) &&
+        position !== "centre" &&
+        position !== "header"
+      ) {
+        return false;
+      }
+      if (position === "centre" && isStackedItem(targetGridItem)) {
+        return false;
+      }
+      const preview = isGridLayoutSplitDirection(position)
+        ? handleDragPreview(targetItemId, dragSource, position)
+        : dragCoordinator.preview({
+            gridId: id,
+            intent:
+              position === "centre"
+                ? { kind: "replace" }
+                : { kind: "create-stack" },
+            targetId: targetItemId,
+          }).ok;
+      if (!preview) {
         if (
           dragCoordinator.state.phase === "dragging" ||
           dragCoordinator.state.phase === "previewing"
         ) {
           dragCoordinator.cancel();
         }
+        provisionalTemplateRef.current = undefined;
         return false;
       }
       const committed = dragCoordinator.commit();
@@ -538,16 +621,18 @@ export const useGridLayout = ({
         setChildren((current) =>
           current.filter((child) => child.props.id !== targetItemId),
         );
-      } else if (templateComponent) {
-        if (!templateItemId) {
+      } else if (sourceIsTemplate(dragSource)) {
+        const provisional = provisionalTemplateRef.current;
+        if (!provisional) {
           throw Error(`[useGridLayout#${id}] template item id not allocated`);
         }
-        const newItem = gridModel.getChildItem(templateItemId, true);
+        const newItem = gridModel.getChildItem(provisional.itemId, true);
         if (position === "centre") {
-          replaceChildComponent(targetItemId, templateComponent, newItem);
+          replaceChildComponent(targetItemId, provisional.component, newItem);
         } else {
-          addChildComponent(templateComponent, newItem);
+          addChildComponent(provisional.component, newItem);
         }
+        provisionalTemplateRef.current = undefined;
       }
       return true;
     },
@@ -555,8 +640,9 @@ export const useGridLayout = ({
       addChildComponent,
       gridModel,
       id,
-      layoutOptions?.newChildItem.header,
       dragCoordinator,
+      handleDragPreview,
+      prepareDragSource,
       replaceChildComponent,
       setChildren,
     ],
@@ -835,6 +921,8 @@ export const useGridLayout = ({
     onCancelTabDrag: handleCancelTabDrag,
     onDetachTab: handleDetachTab,
     onDragEnd: handleDragEnd,
+    onDragLeave: handleDragLeave,
+    onDragPreview: handleDragPreview,
     onDragStart: handleDragStart,
     onDrop: handleDrop,
     onDropStackedItem: handleDropStackedItem,

@@ -10,6 +10,10 @@ import {
   useGridController,
   useGridLayoutDispatch,
 } from "../src";
+import {
+  useGridLayoutDragLeaveHandler,
+  useGridLayoutDragPreviewHandler,
+} from "../src/GridLayoutContext";
 
 const ControllerCapture = ({
   capture,
@@ -17,6 +21,18 @@ const ControllerCapture = ({
   capture: (controller: GridController) => void;
 }) => {
   capture(useGridController());
+  return null;
+};
+
+const DragHandlerCapture = ({
+  capture,
+}: {
+  capture: (
+    preview: ReturnType<typeof useGridLayoutDragPreviewHandler>,
+    leave: ReturnType<typeof useGridLayoutDragLeaveHandler>,
+  ) => void;
+}) => {
+  capture(useGridLayoutDragPreviewHandler(), useGridLayoutDragLeaveHandler());
   return null;
 };
 
@@ -277,6 +293,7 @@ describe("GridLayout canonical snapshot rendering", () => {
         </StrictMode>,
       );
     });
+
     act(() => root.unmount());
 
     for (const eventName of ["keydown", "pointercancel"]) {
@@ -291,6 +308,61 @@ describe("GridLayout canonical snapshot rendering", () => {
         expect(removals.some(([, removed]) => removed === listener)).toBe(true);
       }
     }
+  });
+
+  it("publishes cardinal previews and restores the baseline on drag leave", () => {
+    let controller: GridController | undefined;
+    let preview: ReturnType<typeof useGridLayoutDragPreviewHandler> | undefined;
+    let leave: ReturnType<typeof useGridLayoutDragLeaveHandler> | undefined;
+    act(() => {
+      root.render(
+        <GridLayout
+          colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr"] }}
+          id="preview-grid"
+        >
+          <GridLayoutItem
+            id="preview-left"
+            resizeable="hv"
+            style={{ gridArea: "1/1/2/2" }}
+          >
+            <ControllerCapture capture={(value) => (controller = value)} />
+            <DragHandlerCapture
+              capture={(previewHandler, leaveHandler) => {
+                preview = previewHandler;
+                leave = leaveHandler;
+              }}
+            />
+          </GridLayoutItem>
+          <GridLayoutItem
+            id="preview-right"
+            resizeable="hv"
+            style={{ gridArea: "1/2/2/3" }}
+          >
+            Right
+          </GridLayoutItem>
+        </GridLayout>,
+      );
+    });
+    const baseline = controller?.getSnapshot();
+
+    act(() => {
+      preview?.(
+        "preview-right",
+        {
+          element: document.createElement("div"),
+          id: "preview-left",
+          label: "Left",
+          layoutId: "preview-grid",
+          type: "component",
+        },
+        "north",
+      );
+    });
+    expect(controller?.getSnapshot().revision).toBe(0);
+    expect(controller?.getSnapshot().rows).toHaveLength(2);
+
+    act(() => leave?.());
+    expect(controller?.getSnapshot()).toBe(baseline);
   });
 
   it("persists content without treating stack templates as serializable items", () => {

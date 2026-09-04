@@ -91,6 +91,8 @@ export const GridLayout = ({
     onCancelTabDrag,
     onDetachTab,
     onDragEnd,
+    onDragLeave,
+    onDragPreview,
     onDragStart,
     onDrop,
     onDropStackedItem,
@@ -132,6 +134,8 @@ export const GridLayout = ({
         gridSnapshot,
         id,
         onDragEnd,
+        onDragLeave,
+        onDragPreview,
         onDragStart,
         onDrop,
       }}
