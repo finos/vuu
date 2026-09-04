@@ -169,6 +169,7 @@ export type GridLayoutDragLeaveHandler = () => void;
 
 export interface GridLayoutContextProps {
   dispatchGridLayoutAction: GridLayoutDispatch;
+  dragSourceItemId?: string;
   gridController?: GridController;
   gridLayoutModel?: GridLayoutModel;
   gridModel?: GridModel;
@@ -254,4 +255,9 @@ export const useGridSnapshot = () => {
 export const useGridLayoutId = () => {
   const { id } = useContext(GridLayoutContext);
   return id;
+};
+
+export const useGridLayoutDragSourceItemId = () => {
+  const { dragSourceItemId } = useContext(GridLayoutContext);
+  return dragSourceItemId;
 };

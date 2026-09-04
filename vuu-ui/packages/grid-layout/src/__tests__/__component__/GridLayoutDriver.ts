@@ -40,10 +40,11 @@ export class GridLayoutDriver {
   }
 
   separator(orientation?: "horizontal" | "vertical") {
-    const separators = this.root.getByRole("separator");
     return orientation
-      ? separators.locator(`[aria-orientation="${orientation}"]`)
-      : separators;
+      ? this.root.locator(
+          `[role="separator"][aria-orientation="${orientation}"]`,
+        )
+      : this.root.getByRole("separator");
   }
 
   async gridArea(id: string) {
@@ -83,7 +84,9 @@ export class GridLayoutDriver {
     const eventInit = { clientX, clientY, dataTransfer };
 
     await target.dispatchEvent("dragenter", eventInit);
+    await this.observeDragOverDefault(target);
     await target.dispatchEvent("dragover", eventInit);
+    await this.requirePreventedDragOver(target);
     await this.waitForClass(target, `vuuDropTarget-${zone}`);
     await target.dispatchEvent("drop", eventInit);
     if ((await source.count()) > 0) {
@@ -112,7 +115,9 @@ export class GridLayoutDriver {
     }, position);
     const eventInit = { clientX, clientY, dataTransfer };
     await target.dispatchEvent("dragenter", eventInit);
+    await this.observeDragOverDefault(target);
     await target.dispatchEvent("dragover", eventInit);
+    await this.requirePreventedDragOver(target);
     await target.dispatchEvent("dragover", eventInit);
     const dropTargetClass = await target.evaluate((element) =>
       [...element.classList].find((className) =>
@@ -185,7 +190,9 @@ export class GridLayoutDriver {
       dataTransfer,
     };
     await target.dispatchEvent("dragenter", eventInit);
+    await this.observeDragOverDefault(target);
     await target.dispatchEvent("dragover", eventInit);
+    const defaultPrevented = await this.readPreventedDragOver(target);
     const accepted = await target.evaluate((element) =>
       [...element.classList].some((className) =>
         className.startsWith("vuuDropTarget-"),
@@ -194,7 +201,42 @@ export class GridLayoutDriver {
     await target.dispatchEvent("drop", eventInit);
     await source.dispatchEvent("dragend", { dataTransfer });
     await dataTransfer.dispose();
+    if (defaultPrevented) {
+      throw Error("GridLayoutDriver invalid dragover enabled drop");
+    }
     return accepted;
+  }
+
+  private async observeDragOverDefault(target: Locator) {
+    await target.evaluate((element) => {
+      window.addEventListener(
+        "dragover",
+        (event) => {
+          if (event.target === element) {
+            element.setAttribute(
+              "data-dragover-default-prevented",
+              String(event.defaultPrevented),
+            );
+          }
+        },
+        { once: true },
+      );
+    });
+  }
+
+  private async readPreventedDragOver(target: Locator) {
+    return target.evaluate((element) => {
+      const prevented =
+        element.getAttribute("data-dragover-default-prevented") === "true";
+      element.removeAttribute("data-dragover-default-prevented");
+      return prevented;
+    });
+  }
+
+  private async requirePreventedDragOver(target: Locator) {
+    if (!(await this.readPreventedDragOver(target))) {
+      throw Error("GridLayoutDriver valid dragover did not enable drop");
+    }
   }
 
   private async waitForClass(locator: Locator, className: string) {

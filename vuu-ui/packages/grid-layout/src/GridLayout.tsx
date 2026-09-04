@@ -83,11 +83,13 @@ export const GridLayout = ({
     children,
     containerCallback,
     dispatchGridLayoutAction,
+    dragSourceItemId,
     gridController,
     gridLayoutModel,
     gridModel,
     gridSnapshot,
     nonContentGridItems: { placeholderIds, splitters, stackIds },
+    onCancelDrag,
     onCancelTabDrag,
     onDetachTab,
     onDragEnd,
@@ -128,6 +130,7 @@ export const GridLayout = ({
     <GridLayoutContext.Provider
       value={{
         dispatchGridLayoutAction,
+        dragSourceItemId,
         gridController,
         gridLayoutModel,
         gridModel,
@@ -142,6 +145,7 @@ export const GridLayout = ({
     >
       <DragDropProviderNext
         dragSources={NO_DRAG_SOURCES}
+        onCancelDrag={onCancelDrag}
         onCancelTabDrag={onCancelTabDrag}
         onDetachTab={onDetachTab}
         onDrop={onDropStackedItem}

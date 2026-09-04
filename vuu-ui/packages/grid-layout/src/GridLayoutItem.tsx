@@ -15,6 +15,7 @@ import {
   DragSourceProvider,
   useGridLayoutDispatch,
   useGridLayoutDragEndHandler,
+  useGridLayoutDragSourceItemId,
   useGridLayoutDragStartHandler,
 } from "./GridLayoutContext";
 import {
@@ -138,6 +139,7 @@ export const GridLayoutItem = ({
   });
 
   const onDragEnd = useGridLayoutDragEndHandler();
+  const dragSourceItemId = useGridLayoutDragSourceItemId();
   const onDragStart = useGridLayoutDragStartHandler();
 
   const onClose = useCallback<MouseEventHandler<HTMLButtonElement>>(
@@ -158,7 +160,7 @@ export const GridLayoutItem = ({
   });
 
   const className = cx(classBaseItem, {
-    "vuuGridLayoutItem-dragging": dragging,
+    "vuuGridLayoutItem-dragging": dragging || dragSourceItemId === id,
     "vuu-detached": contentDetached,
     "vuu-stacked": stacked && !contentDetached,
     "has-h-splitter": horizontalSplitter,
