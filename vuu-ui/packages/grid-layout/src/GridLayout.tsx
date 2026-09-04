@@ -83,7 +83,6 @@ export const GridLayout = ({
     children,
     containerCallback,
     dispatchGridLayoutAction,
-    dragSourceItemId,
     gridController,
     gridLayoutModel,
     gridModel,
@@ -130,7 +129,6 @@ export const GridLayout = ({
     <GridLayoutContext.Provider
       value={{
         dispatchGridLayoutAction,
-        dragSourceItemId,
         gridController,
         gridLayoutModel,
         gridModel,

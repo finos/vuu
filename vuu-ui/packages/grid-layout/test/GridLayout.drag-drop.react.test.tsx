@@ -276,7 +276,7 @@ describe("GridLayout React drag/drop lifecycle", () => {
       container
         .querySelector("#source")
         ?.classList.contains("vuuGridLayoutItem-dragging"),
-    ).toBe(true);
+    ).toBe(false);
     dispatchDrag(target, "dragenter", dataTransfer, {
       clientX: 90,
       clientY: 50,
@@ -428,10 +428,7 @@ describe("GridLayout React drag/drop lifecycle", () => {
     dispatchDrag(source, "dragend", dataTransfer);
   });
 
-  it.each([
-    "Escape",
-    "pointercancel",
-  ] as const)("rolls back the preview and clears affordances on %s", (cancellation) => {
+  it("rolls back the preview and clears affordances on Escape", () => {
     act(() => root.render(<ExistingItemFixture />));
     const source = container.querySelector(
       "#source .vuuGridLayoutItemHeader-title",
@@ -451,11 +448,7 @@ describe("GridLayout React drag/drop lifecycle", () => {
     expect(target.classList.contains("vuuDropTarget-east")).toBe(true);
 
     act(() => {
-      if (cancellation === "Escape") {
-        window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
-      } else {
-        window.dispatchEvent(new Event("pointercancel"));
-      }
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     });
 
     expect(target.classList.contains("vuuDropTarget-east")).toBe(false);
@@ -467,6 +460,31 @@ describe("GridLayout React drag/drop lifecycle", () => {
     expect(container.querySelector("#source")?.getAttribute("style")).toContain(
       "grid-area: 1/1/2/2",
     );
+  });
+
+  it("keeps an owned HTML drag active through pointercancel", () => {
+    act(() => root.render(<ExistingItemFixture />));
+    const source = container.querySelector(
+      "#source .vuuGridLayoutItemHeader-title",
+    );
+    const target = container.querySelector("#target .vuuGridLayoutItemContent");
+    if (!source || !target) {
+      throw Error("pointercancel drag fixture did not render");
+    }
+    setTargetRect(target);
+    const dataTransfer = new TestDataTransfer();
+    const point = { clientX: 90, clientY: 50 };
+
+    dispatchDrag(source, "dragstart", dataTransfer);
+    dispatchDrag(target, "dragenter", dataTransfer, point);
+    dispatchDrag(target, "dragover", dataTransfer, point);
+    act(() => {
+      window.dispatchEvent(new Event("pointercancel"));
+    });
+
+    expect(target.classList.contains("vuuDropTarget-east")).toBe(true);
+    dispatchDrag(source, "dragend", dataTransfer);
+    expect(target.classList.contains("vuuDropTarget-east")).toBe(false);
   });
 
   it("does not restore drag styling when cancelled before the next frame", () => {

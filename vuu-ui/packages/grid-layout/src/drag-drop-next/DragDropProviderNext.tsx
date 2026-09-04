@@ -98,6 +98,11 @@ export const DragDropProviderNext = ({
         cancelActiveDrag();
       }
     };
+    const handlePointerCancel = () => {
+      if (!dragContext.ownsDrag) {
+        cancelActiveDrag();
+      }
+    };
     const handleCancelTabDrag: DragContextCancelTabDragHandler = (event) =>
       handlersRef.current.onCancelTabDrag(event);
     const handleDetachTab: DragContextDetachTabHandler = (event) =>
@@ -109,7 +114,7 @@ export const DragDropProviderNext = ({
     dragContext.on("drop", handleDrop);
     targetWindow.addEventListener("keydown", handleKeyDown);
     targetWindow.addEventListener("dragend", cancelActiveDrag);
-    targetWindow.addEventListener("pointercancel", cancelActiveDrag);
+    targetWindow.addEventListener("pointercancel", handlePointerCancel);
 
     const cleanupCallbacks: Array<() => void> = [];
     // console.log(
@@ -134,7 +139,7 @@ export const DragDropProviderNext = ({
       dragContext.removeListener("drop", handleDrop);
       targetWindow.removeEventListener("keydown", handleKeyDown);
       targetWindow.removeEventListener("dragend", cancelActiveDrag);
-      targetWindow.removeEventListener("pointercancel", cancelActiveDrag);
+      targetWindow.removeEventListener("pointercancel", handlePointerCancel);
       cancelActiveDrag();
       cleanupCallbacks.forEach((cleanup) => {
         cleanup();

@@ -147,6 +147,20 @@ const createDropTargetState = (): DropTargetState => ({
   dropTarget: undefined,
 });
 
+const createActiveDropTargetState = (
+  dropTarget: DropTarget,
+): DropTargetState => {
+  const { bottom, left, right, top } =
+    dropTarget.target.getBoundingClientRect();
+  return {
+    accepted: false,
+    dropTarget,
+    mousePos: { clientX: -1, clientY: -1 },
+    position: undefined,
+    rect: { bottom, left, right, top },
+  };
+};
+
 export const useAsDropTarget = () => {
   const dropTargetStateRef = useRef<DropTargetState>(createDropTargetState());
 
@@ -182,30 +196,26 @@ export const useAsDropTarget = () => {
 
       if (dropTarget !== currentDropTarget) {
         if (dropTarget) {
+          if (currentDropTarget) {
+            removeDropTargetPositionClassName(currentDropTarget.target);
+            leave();
+          }
           // console.log(
           //   `%c[useAsDropTarget] onDragEnter set current dropTarget = ${dropTarget.gridLayoutItemId}`,
           //   "color:green;font-weight:bold;",
           // );
 
-          dropTargetStateRef.current.dropTarget = dropTarget;
-          dropTargetStateRef.current.accepted = false;
-          const { rect } = dropTargetStateRef.current;
-          const { bottom, left, right, top } =
-            dropTarget.target.getBoundingClientRect();
-          rect.bottom = bottom;
-          rect.left = left;
-          rect.right = right;
-          rect.top = top;
+          dropTargetStateRef.current = createActiveDropTargetState(dropTarget);
         } else if (currentDropTarget) {
           dropTargetStateRef.current.dropTarget = undefined;
           dropTargetStateRef.current.accepted = false;
           dropTargetStateRef.current.position = undefined;
+          removeDropTargetPositionClassName(currentDropTarget.target);
           leave();
           // console.log(
           //   `%c[useAsDropTarget] clear droptarget ${currentDropTarget?.gridLayoutItemId}`,
           //   "color:brown;font-weight: bold;",
           // );
-          removeDropTargetPositionClassName(currentDropTarget?.target);
         }
       }
     },
@@ -218,14 +228,25 @@ export const useAsDropTarget = () => {
       if (dragContext.dragSource === undefined) {
         return;
       }
-      const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
+      let { dropTarget: currentDropTarget } = dropTargetStateRef.current;
       const dropTarget = getDropTarget(evt.target, currentDropTarget, layoutId);
       if (dropTarget) {
+        if (dropTarget !== currentDropTarget) {
+          if (currentDropTarget) {
+            removeDropTargetPositionClassName(currentDropTarget.target);
+            leave();
+          }
+          dropTargetStateRef.current = createActiveDropTargetState(dropTarget);
+          currentDropTarget = dropTarget;
+        }
         // TODO store dropTarget and rect and tabRect in same ref
         if (dropTarget === currentDropTarget) {
           const { position: lastPosition } = dropTargetStateRef.current;
           if (dropTarget.type === "header") {
-            if (lastPosition !== "header") {
+            if (
+              lastPosition !== "header" ||
+              !dropTarget.target.classList.contains("vuuDropTarget-header")
+            ) {
               const accepted = preview(
                 dropTarget.gridLayoutItemId,
                 dragContext.dragSource,
@@ -259,7 +280,12 @@ export const useAsDropTarget = () => {
               // console.log(
               //   `[useAsDropTarget] onDragOver ${dropTarget.gridLayoutItemId} position ${position}`,
               // );
-              if (position !== lastPosition) {
+              if (
+                position !== lastPosition ||
+                !dropTarget.target.classList.contains(
+                  `${DROPTARGET_CLASSNAME}-${position}`,
+                )
+              ) {
                 const accepted = preview(
                   dropTarget.gridLayoutItemId,
                   dragContext.dragSource,
@@ -277,12 +303,13 @@ export const useAsDropTarget = () => {
           }
           if (dropTargetStateRef.current.accepted) {
             // A dragover must be cancelled for the browser to dispatch drop.
+            evt.dataTransfer.dropEffect = "move";
             evt.preventDefault();
           }
         }
       }
     },
-    [dragContext, layoutId, preview],
+    [dragContext, layoutId, leave, preview],
   );
 
   const onDragLeave = useCallback<DragEventHandler>(
