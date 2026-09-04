@@ -2233,20 +2233,18 @@ export const computeSplitters = (
   geometry: GridGeometry,
 ): GridSplitterGeometry => {
   const { items } = geometry;
+  const layoutItems = items.filter(({ stackId }) => stackId === undefined);
   const splitters: GridGeometrySplitter[] = [];
   const horizontalSplitterItemIds: GridItemId[] = [];
   const verticalSplitterItemIds: GridItemId[] = [];
 
-  for (const childItem of items) {
-    if (childItem.stackId) {
-      continue;
-    }
+  for (const childItem of layoutItems) {
     const { column, id, row } = childItem;
 
     // 1) Horizontal (column) resizing - the vertically aligned splitters
     if (!isFixedWidthItem(childItem)) {
       const columnContrasAndSiblings = findColumnContrasAndSiblings(
-        items,
+        layoutItems,
         childItem,
       );
       if (columnContrasAndSiblings) {
@@ -2274,7 +2272,10 @@ export const computeSplitters = (
 
     // 2) Vertical (row) resizing - the horizontally aligned splitters
     if (!isFixedHeightItem(childItem)) {
-      const rowContrasAndSiblings = findRowContrasAndSiblings(items, childItem);
+      const rowContrasAndSiblings = findRowContrasAndSiblings(
+        layoutItems,
+        childItem,
+      );
       if (rowContrasAndSiblings) {
         const contraTrackIndex = row.start - 2;
         let resizeTrackIndex = row.start - 1;
