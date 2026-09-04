@@ -741,9 +741,24 @@ test.describe("GridLayout browser interactions", () => {
       .locator(
         "xpath=ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' vuuGridLayoutItem ')][1]",
       );
+    const stackId = await stack.getAttribute("id");
+    if (!stackId) {
+      throw Error("Palette-created stack has no id");
+    }
+    const separator = grid.separator("horizontal");
+    await expect(separator).toHaveAttribute(
+      "data-resized-child-items-before",
+      "palette-target",
+    );
+    await expect(separator).toHaveAttribute(
+      "data-resized-child-items-after",
+      stackId,
+    );
+    await expect(separator).toHaveAttribute("aria-controls", stackId);
+    await expect(component.locator(`[id="${stackId}"]`)).toHaveCount(1);
     const targetBefore = await grid.item("palette-target").boundingBox();
     const stackBefore = await stack.boundingBox();
-    await grid.resize(grid.separator("horizontal"), 0, 40);
+    await grid.resize(separator, 0, 40);
     const targetAfter = await grid.item("palette-target").boundingBox();
     const stackAfter = await stack.boundingBox();
 
