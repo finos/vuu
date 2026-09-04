@@ -288,8 +288,17 @@ export const useGridLayout = ({
         itemId: string;
       }
     | undefined
-  >();
-  useEffect(() => () => dragCoordinator.dispose(), [dragCoordinator]);
+  >(undefined);
+  const clearDragAppearance = useCallback(() => {
+    containerRef.current?.classList.remove("vuuDragging");
+  }, []);
+  useEffect(
+    () => () => {
+      clearDragAppearance();
+      dragCoordinator.dispose();
+    },
+    [clearDragAppearance, dragCoordinator],
+  );
   const contentIds = useMemo(
     () =>
       new Set(
@@ -331,42 +340,43 @@ export const useGridLayout = ({
 
   const handleDragStart = useCallback<GridLayoutDragStartHandler>(
     (_evt, options) => {
-      const { current: grid } = containerRef;
-      if (grid) {
-        if (options.type === "text/plain") {
-          const result = dragCoordinator.begin({
-            itemId: options.id,
-            kind: "existing-item",
-            sourceGridId: id,
-          });
-          if (!result.ok) {
-            throw Error(result.error.message);
-          }
-        }
-        requestAnimationFrame(() => {
-          grid.classList.add("vuuDragging");
+      if (options.type === "text/plain") {
+        const result = dragCoordinator.begin({
+          itemId: options.id,
+          kind: "existing-item",
+          sourceGridId: id,
         });
+        if (!result.ok) {
+          throw Error(result.error.message);
+        }
       }
     },
     [dragCoordinator, id],
   );
 
+  const handleCancelDrag = useCallback(() => {
+    clearDragAppearance();
+    if (
+      dragCoordinator.state.phase === "dragging" ||
+      dragCoordinator.state.phase === "previewing"
+    ) {
+      const result = dragCoordinator.cancel();
+      if (!result.ok) {
+        throw Error(result.error.message);
+      }
+    }
+    provisionalTemplateRef.current = undefined;
+  }, [clearDragAppearance, dragCoordinator]);
+
   const handleDragEnd = useCallback<GridLayoutDragEndHandler>(
     (_evt, dropped) => {
-      containerRef.current?.classList.remove("vuuDragging");
-      if (
-        !dropped &&
-        (dragCoordinator.state.phase === "dragging" ||
-          dragCoordinator.state.phase === "previewing")
-      ) {
-        const result = dragCoordinator.cancel();
-        if (!result.ok) {
-          throw Error(result.error.message);
-        }
+      clearDragAppearance();
+      if (!dropped) {
+        handleCancelDrag();
       }
       provisionalTemplateRef.current = undefined;
     },
-    [dragCoordinator],
+    [clearDragAppearance, handleCancelDrag],
   );
 
   const addChildComponent = useCallback(
@@ -562,11 +572,17 @@ export const useGridLayout = ({
         return false;
       }
       if (intent.kind !== "split") {
-        if (dragCoordinator.state.phase === "previewing") {
-          const cleared = dragCoordinator.clearPreview();
-          if (!cleared.ok) {
-            throw Error(cleared.error.message);
-          }
+        const previewed = dragCoordinator.preview({
+          gridId: id,
+          intent,
+          targetId,
+        });
+        if (!previewed.ok) {
+          return false;
+        }
+        const cleared = dragCoordinator.clearPreview();
+        if (!cleared.ok) {
+          throw Error(cleared.error.message);
         }
         return true;
       }
@@ -616,6 +632,7 @@ export const useGridLayout = ({
       if (!committed.ok) {
         throw Error(committed.error.message);
       }
+      clearDragAppearance();
 
       if (!sourceIsTemplate(dragSource) && position === "centre") {
         setChildren((current) =>
@@ -638,6 +655,7 @@ export const useGridLayout = ({
     },
     [
       addChildComponent,
+      clearDragAppearance,
       gridModel,
       id,
       dragCoordinator,
@@ -772,12 +790,14 @@ export const useGridLayout = ({
       if (!committed.ok) {
         throw Error(committed.error.message);
       }
+      clearDragAppearance();
       if (component && newChildId) {
         addChildComponent(component, gridModel.getChildItem(newChildId, true));
       }
     },
     [
       addChildComponent,
+      clearDragAppearance,
       dragCoordinator,
       gridModel,
       id,
@@ -918,6 +938,7 @@ export const useGridLayout = ({
     gridModel,
     gridSnapshot: snapshot,
     nonContentGridItems,
+    onCancelDrag: handleCancelDrag,
     onCancelTabDrag: handleCancelTabDrag,
     onDetachTab: handleDetachTab,
     onDragEnd: handleDragEnd,

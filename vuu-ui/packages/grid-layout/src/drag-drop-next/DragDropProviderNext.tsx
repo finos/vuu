@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
 } from "react";
 // import { initializeDragContainer } from "./drag-drop-listeners";
 import {
@@ -33,10 +34,13 @@ const DragDropContext = createContext<DragContext | undefined>(undefined);
 export interface DragDropNextProviderProps {
   children: ReactNode;
   dragSources: DragSources;
+  onCancelDrag?: () => void;
   onCancelTabDrag: DragContextCancelTabDragHandler;
   onDetachTab: DragContextDetachTabHandler;
   onDrop: DragContextDropHandler;
 }
+
+const NOOP = () => undefined;
 
 export type MeasuredTarget = {
   bottom: number;
@@ -47,6 +51,7 @@ export type MeasuredTarget = {
 
 export const DragDropProviderNext = ({
   children,
+  onCancelDrag = NOOP,
   onCancelTabDrag,
   onDetachTab,
   onDrop,
@@ -63,14 +68,29 @@ export const DragDropProviderNext = ({
     () => new DragContext(templateDragSession),
     [templateDragSession],
   );
+  const handlersRef = useRef({
+    onCancelDrag,
+    onCancelTabDrag,
+    onDetachTab,
+    onDrop,
+  });
+  handlersRef.current = {
+    onCancelDrag,
+    onCancelTabDrag,
+    onDetachTab,
+    onDrop,
+  };
 
   useEffect(() => {
     if (!targetWindow) {
       return;
     }
     const cancelActiveDrag = () => {
+      handlersRef.current.onCancelDrag();
       if (dragContext.ownsDrag) {
         dragContext.cancelDrag();
+      } else {
+        dragContext.cleanupDragState();
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -78,11 +98,23 @@ export const DragDropProviderNext = ({
         cancelActiveDrag();
       }
     };
-    dragContext.on("cancel-tab-drag", onCancelTabDrag);
-    dragContext.on("detach-tab", onDetachTab);
-    dragContext.on("drop", onDrop);
+    const handlePointerCancel = () => {
+      if (!dragContext.ownsDrag) {
+        cancelActiveDrag();
+      }
+    };
+    const handleCancelTabDrag: DragContextCancelTabDragHandler = (event) =>
+      handlersRef.current.onCancelTabDrag(event);
+    const handleDetachTab: DragContextDetachTabHandler = (event) =>
+      handlersRef.current.onDetachTab(event);
+    const handleDrop: DragContextDropHandler = (event) =>
+      handlersRef.current.onDrop(event);
+    dragContext.on("cancel-tab-drag", handleCancelTabDrag);
+    dragContext.on("detach-tab", handleDetachTab);
+    dragContext.on("drop", handleDrop);
     targetWindow.addEventListener("keydown", handleKeyDown);
-    targetWindow.addEventListener("pointercancel", cancelActiveDrag);
+    targetWindow.addEventListener("dragend", cancelActiveDrag);
+    targetWindow.addEventListener("pointercancel", handlePointerCancel);
 
     const cleanupCallbacks: Array<() => void> = [];
     // console.log(
@@ -102,17 +134,18 @@ export const DragDropProviderNext = ({
     //   }
     // });
     return () => {
-      dragContext.removeListener("cancel-tab-drag", onCancelTabDrag);
-      dragContext.removeListener("detach-tab", onDetachTab);
-      dragContext.removeListener("drop", onDrop);
+      dragContext.removeListener("cancel-tab-drag", handleCancelTabDrag);
+      dragContext.removeListener("detach-tab", handleDetachTab);
+      dragContext.removeListener("drop", handleDrop);
       targetWindow.removeEventListener("keydown", handleKeyDown);
-      targetWindow.removeEventListener("pointercancel", cancelActiveDrag);
+      targetWindow.removeEventListener("dragend", cancelActiveDrag);
+      targetWindow.removeEventListener("pointercancel", handlePointerCancel);
       cancelActiveDrag();
       cleanupCallbacks.forEach((cleanup) => {
         cleanup();
       });
     };
-  }, [dragContext, onCancelTabDrag, onDetachTab, onDrop, targetWindow]);
+  }, [dragContext, targetWindow]);
 
   return (
     <DragDropContext.Provider value={dragContext}>

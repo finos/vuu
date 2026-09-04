@@ -4,15 +4,15 @@ import { queryClosest, registerComponent } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
   createElement,
-  HTMLAttributes,
+  type HTMLAttributes,
   isValidElement,
-  MouseEventHandler,
-  ReactElement,
+  type MouseEventHandler,
+  type ReactElement,
   useCallback,
 } from "react";
-import { componentToJson, LayoutJSON } from "./componentToJson";
+import { componentToJson, type LayoutJSON } from "./componentToJson";
 import {
-  DragSourceProvider,
+  type DragSourceProvider,
   useGridLayoutDispatch,
   useGridLayoutDragEndHandler,
   useGridLayoutDragStartHandler,
@@ -136,7 +136,6 @@ export const GridLayoutItem = ({
     title: titleProp,
     width,
   });
-
   const onDragEnd = useGridLayoutDragEndHandler();
   const onDragStart = useGridLayoutDragStartHandler();
 
@@ -156,7 +155,6 @@ export const GridLayoutItem = ({
     onDragEnd,
     onDragStart,
   });
-
   const className = cx(classBaseItem, {
     "vuuGridLayoutItem-dragging": dragging,
     "vuu-detached": contentDetached,
@@ -220,7 +218,7 @@ GridLayoutItem.toJSON = (
   let { children } = element.props;
   if (Array.isArray(children)) {
     if (children.length > 1) {
-      throw Error(`[GridLayoutItem] cannot have more than one child element`);
+      throw Error("[GridLayoutItem] cannot have more than one child element");
     }
     // Only happens when reconstitured from JSON
     [children] = children;

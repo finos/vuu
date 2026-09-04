@@ -1,7 +1,52 @@
 import { expect, test } from "../../../../../playwright/fixtures";
+import type { Locator } from "@playwright/test";
 import { GridLayoutDriver } from "./GridLayoutDriver";
 
 const fixture = "GridLayout/GridLayoutTestFixture/GridLayoutTestFixture";
+const observeTrustedNativeDrag = async (
+  component: Locator,
+  target: Locator,
+  affordance: string,
+) => {
+  await target.evaluate((element, affordanceClass) => {
+    element.setAttribute("data-native-drop-observer", affordanceClass);
+  }, affordance);
+  await component.evaluate(
+    (root, { affordanceClass }) => {
+      root.addEventListener(
+        "dragstart",
+        (event) => {
+          root.setAttribute("data-native-dragstart", String(event.isTrusted));
+        },
+        true,
+      );
+      root.addEventListener(
+        "pointercancel",
+        (event) => {
+          root.setAttribute(
+            "data-native-pointercancel",
+            String(event.isTrusted),
+          );
+        },
+        true,
+      );
+      const targetElement = root.querySelector(
+        `[data-native-drop-observer="${affordanceClass}"]`,
+      );
+      if (!targetElement) {
+        throw Error("Native drop observer target not found");
+      }
+      const observer = new MutationObserver(() => {
+        if (targetElement.classList.contains(affordanceClass)) {
+          root.setAttribute("data-native-affordance", affordanceClass);
+          observer.disconnect();
+        }
+      });
+      observer.observe(targetElement, { attributeFilter: ["class"] });
+    },
+    { affordanceClass: affordance },
+  );
+};
 
 test.describe("GridLayout browser interactions", () => {
   test.describe.configure({ mode: "serial" });
@@ -50,6 +95,146 @@ test.describe("GridLayout browser interactions", () => {
       }
     });
   }
+
+  test("native existing-item drag shows an affordance and moves the item", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount("GridLayout/Showcase/MoveExistingItems");
+    await page.waitForTimeout(250);
+    const grid = new GridLayoutDriver(component, page);
+    const target = grid.content("move-target");
+    await observeTrustedNativeDrag(component, target, "vuuDropTarget-south");
+
+    await grid.nativeDrag(grid.header("move-source"), target, "south");
+
+    await expect(component).toHaveAttribute("data-native-dragstart", "true");
+    await expect(component).toHaveAttribute(
+      "data-native-pointercancel",
+      "true",
+    );
+    await expect(component).toHaveAttribute(
+      "data-native-affordance",
+      "vuuDropTarget-south",
+    );
+    const targetBox = await grid.item("move-target").boundingBox();
+    const sourceBox = await grid.item("move-source").boundingBox();
+    expect(sourceBox?.y).toBeGreaterThan(targetBox?.y ?? 0);
+    await expect(component.locator('[class*="vuuDropTarget-"]')).toHaveCount(0);
+    await expect(grid.item("move-source")).not.toHaveClass(
+      /vuuGridLayoutItem-dragging/,
+    );
+  });
+
+  test("native GridPalette swatch drag creates a south split", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount("GridLayout/Showcase/PaletteSplitAndReplace");
+    await page.waitForTimeout(250);
+    const grid = new GridLayoutDriver(component, page);
+    const source = component.locator('[data-item-id="coral"]');
+    const target = grid.content("palette-target");
+    await observeTrustedNativeDrag(component, target, "vuuDropTarget-south");
+
+    await grid.nativeDrag(source, target, "south");
+
+    await expect(component).toHaveAttribute("data-native-dragstart", "true");
+    await expect(component).toHaveAttribute(
+      "data-native-affordance",
+      "vuuDropTarget-south",
+    );
+    const templateItem = component
+      .getByText("Coral template")
+      .locator("xpath=ancestor::*[contains(@class, 'vuuGridLayoutItem')][1]");
+    await expect(templateItem).toBeVisible();
+    const targetBox = await grid.item("palette-target").boundingBox();
+    const templateBox = await templateItem.boundingBox();
+    expect(templateBox?.y).toBeGreaterThan(targetBox?.y ?? 0);
+    await expect(target).not.toHaveClass(/vuuDropTarget-/);
+    await expect(grid.layout("palette-replace")).not.toHaveClass(/vuuDragging/);
+  });
+
+  for (const direction of ["north", "east", "west"] as const) {
+    test(`native GridPalette swatch drag creates a ${direction} split`, async ({
+      mount,
+      page,
+    }) => {
+      const component = await mount(
+        "GridLayout/Showcase/PaletteSplitAndReplace",
+      );
+      await page.waitForTimeout(250);
+      const grid = new GridLayoutDriver(component, page);
+      const source = component.locator('[data-item-id="coral"]');
+      const target = grid.content("palette-target");
+
+      await grid.nativeDrag(source, target, direction);
+
+      const templateItem = component
+        .getByText("Coral template")
+        .locator("xpath=ancestor::*[contains(@class, 'vuuGridLayoutItem')][1]");
+      await expect(templateItem).toBeVisible();
+      const targetBox = await grid.item("palette-target").boundingBox();
+      const templateBox = await templateItem.boundingBox();
+      if (direction === "north") {
+        expect(templateBox?.y).toBeLessThan(targetBox?.y ?? 0);
+      } else if (direction === "east") {
+        expect(templateBox?.x).toBeGreaterThan(targetBox?.x ?? 0);
+      } else {
+        expect(templateBox?.x).toBeLessThan(targetBox?.x ?? 0);
+      }
+      await expect(component.locator('[class*="vuuDropTarget-"]')).toHaveCount(
+        0,
+      );
+    });
+  }
+
+  test("native GridPalette centre drop replaces existing content", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount("GridLayout/Showcase/PaletteSplitAndReplace");
+    await page.waitForTimeout(250);
+    const grid = new GridLayoutDriver(component, page);
+
+    await grid.nativeDrag(
+      component.locator('[data-item-id="coral"]'),
+      grid.content("palette-target"),
+      "centre",
+    );
+
+    await expect(grid.item("palette-target")).toHaveCount(0);
+    await expect(component.getByText("Coral template")).toBeVisible();
+    await expect(component.locator('[class*="vuuDropTarget-"]')).toHaveCount(0);
+  });
+
+  test("native GridPalette swatch drag onto a header creates a stack", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount("GridLayout/Showcase/PaletteSplitAndReplace");
+    await page.waitForTimeout(250);
+    const grid = new GridLayoutDriver(component, page);
+    const source = component.locator('[data-item-id="teal"]');
+    const target = grid
+      .item("palette-target")
+      .locator(".vuuGridLayoutItemHeader");
+    await observeTrustedNativeDrag(component, target, "vuuDropTarget-header");
+
+    await grid.nativeDrag(source, target, "header");
+
+    await expect(component).toHaveAttribute("data-native-dragstart", "true");
+    await expect(component).toHaveAttribute(
+      "data-native-affordance",
+      "vuuDropTarget-header",
+    );
+    await expect(
+      component.getByRole("tab", { name: "Drop target" }),
+    ).toBeVisible();
+    await expect(component.getByRole("tab", { name: "Teal" })).toBeVisible();
+    await expect(component.locator('[class*="vuuDropTarget-"]')).toHaveCount(0);
+    await expect(grid.layout("palette-replace")).not.toHaveClass(/vuuDragging/);
+  });
 
   test("centre drop replaces the target component", async ({ mount, page }) => {
     const component = await mount(fixture, { variant: "basic" });
@@ -137,6 +322,7 @@ test.describe("GridLayout browser interactions", () => {
     await draggableTab.dispatchEvent("dragstart", {
       dataTransfer: committedDataTransfer,
     });
+
     await page.clock.fastForward(100);
     await expect(draggableTab).toHaveClass(/vuuDraggableItem-hidden/);
 
@@ -150,6 +336,106 @@ test.describe("GridLayout browser interactions", () => {
 
     await component.getByRole("tab", { name: "Beta" }).click();
     await expect(component.getByTestId("content-beta")).toBeVisible();
+  });
+
+  test("native target transitions replace the affordance and Escape cancels", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "basic" });
+    const grid = new GridLayoutDriver(component, page);
+    const sourceBox = await grid.header("beta").boundingBox();
+    const targetBox = await grid.content("alpha").boundingBox();
+    if (!sourceBox || !targetBox) {
+      throw Error("Native transition test requires visible source and target");
+    }
+    const sourceX = sourceBox.x + sourceBox.width / 2;
+    const sourceY = sourceBox.y + sourceBox.height / 2;
+
+    await page.mouse.move(sourceX, sourceY);
+    await page.mouse.down();
+    await page.mouse.move(sourceX + 10, sourceY, { steps: 5 });
+    await page.mouse.move(
+      targetBox.x + targetBox.width / 2,
+      targetBox.y + targetBox.height * 0.05,
+      { steps: 20 },
+    );
+    await expect(grid.content("alpha")).toHaveClass(/vuuDropTarget-north/);
+    await page.mouse.move(
+      targetBox.x + targetBox.width * 0.95,
+      targetBox.y + targetBox.height / 2,
+      { steps: 10 },
+    );
+    await expect(grid.content("alpha")).toHaveClass(/vuuDropTarget-east/);
+    await expect(grid.content("alpha")).not.toHaveClass(/vuuDropTarget-north/);
+
+    await page.keyboard.press("Escape");
+    await page.mouse.up();
+
+    expect(await grid.gridArea("alpha")).toBe("1/1/2/2");
+    expect(await grid.gridArea("beta")).toBe("1/2/2/3");
+    await expect(component.locator('[class*="vuuDropTarget-"]')).toHaveCount(0);
+  });
+
+  test("native outside drop ends without changing the layout", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "basic" });
+    const grid = new GridLayoutDriver(component, page);
+    await component.evaluate((root) => {
+      root.addEventListener(
+        "dragend",
+        (event) => {
+          root.setAttribute("data-native-dragend", String(event.isTrusted));
+        },
+        true,
+      );
+      const outsideTarget = document.createElement("div");
+      outsideTarget.dataset.testid = "outside-drop-target";
+      outsideTarget.style.cssText =
+        "position:fixed;right:0;bottom:0;width:24px;height:24px;z-index:10000";
+      document.body.append(outsideTarget);
+    });
+
+    await grid.header("beta").dragTo(page.getByTestId("outside-drop-target"), {
+      targetPosition: { x: 12, y: 12 },
+    });
+
+    await expect(component).toHaveAttribute("data-native-dragend", "true");
+    expect(await grid.gridArea("alpha")).toBe("1/1/2/2");
+    expect(await grid.gridArea("beta")).toBe("1/2/2/3");
+    await expect(component.locator('[class*="vuuDropTarget-"]')).toHaveCount(0);
+    await expect(grid.item("beta")).not.toHaveClass(
+      /vuuGridLayoutItem-dragging/,
+    );
+    await page.getByTestId("outside-drop-target").evaluate((element) => {
+      element.remove();
+    });
+  });
+
+  test.fixme("native stack member drag creates a standalone cardinal split", async ({
+    mount,
+    page,
+  }) => {
+    // Tab detachment requires the delayed spacer gesture; dragTo intentionally
+    // starts immediately and does not keep the tab detached long enough.
+    const component = await mount(fixture, { variant: "stacked-target" });
+    const grid = new GridLayoutDriver(component, page);
+    const source = component
+      .getByRole("tab", { name: "Alpha" })
+      .locator(
+        "xpath=ancestor::*[contains(concat(' ', normalize-space(@class), ' '), ' vuuDraggableItem ')][1]",
+      );
+
+    await grid.nativeDrag(source, grid.content("target"), "north");
+
+    await expect(component.getByRole("tab", { name: "Alpha" })).toHaveCount(0);
+    await expect(component.getByTestId("content-alpha")).toBeVisible();
+    const alpha = await grid.item("alpha").boundingBox();
+    const target = await grid.item("target").boundingBox();
+    expect(alpha?.y).toBeLessThan(target?.y ?? 0);
+    await expect(component.locator('[class*="vuuDropTarget-"]')).toHaveCount(0);
   });
 
   test("quick tab selection movements do not start or reorder a drag", async ({
@@ -293,7 +579,13 @@ test.describe("GridLayout browser interactions", () => {
     const component = await mount(fixture, { variant: "change-rerender" });
     const grid = new GridLayoutDriver(component, page);
 
-    await grid.dragItem("rerender-alpha", "rerender-beta", "north");
+    // This lower-level rerender check deliberately keeps synthetic delivery;
+    // native split/stack/resize coverage is exercised below.
+    await grid.syntheticDrag(
+      grid.header("rerender-alpha"),
+      grid.content("rerender-beta"),
+      "north",
+    );
     expect(await grid.gridArea("rerender-alpha")).toBe("1/1/2/2");
     expect(await grid.gridArea("rerender-beta")).toBe("2/1/3/2");
 
@@ -510,8 +802,13 @@ test.describe("GridLayout browser interactions", () => {
     const component = await mount(fixture, { variant: "split-constraints" });
     const grid = new GridLayoutDriver(component, page);
 
-    await grid.dragItem("movable", "locked", "east");
+    const accepted = await grid.attemptRejectedDrag(
+      grid.header("movable"),
+      grid.content("locked"),
+      "east",
+    );
 
+    expect(accepted).toBe(false);
     await expect(grid.item("movable")).toBeVisible();
     await expect(grid.item("locked")).toBeVisible();
     expect(await grid.gridArea("movable")).toBe("1/1/2/2");
@@ -773,17 +1070,17 @@ test.describe("GridLayout browser interactions", () => {
   });
 
   test.fixme("palette template drop onto an empty placeholder", async () => {
-    // Native template drag currently depends on unstable placeholder drag-enter
-    // sequencing in Playwright CT.
-  });
-
-  test.fixme("palette template centre drop replaces existing content", async () => {
-    // The template path works in the showcase, but native DataTransfer delivery
-    // from the compact palette fixture is not deterministic in CT.
+    // Trusted dragTo reaches the placeholder affordance, but Chromium does not
+    // dispatch a stable drop for an all-placeholder target.
   });
 
   test.fixme("reorders tabs by dragging within a tabstrip", async () => {
     // Tab reordering uses delayed spacer animation that Playwright's dragTo
     // cannot currently drive deterministically.
+  });
+
+  test.fixme("dragging duplicate-title tabs preserves item identity", async () => {
+    // Duplicate labels are supported by item id, but native tab dragging still
+    // depends on the delayed spacer gesture described above.
   });
 });

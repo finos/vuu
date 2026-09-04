@@ -88,6 +88,7 @@ export const GridLayout = ({
     gridModel,
     gridSnapshot,
     nonContentGridItems: { placeholderIds, splitters, stackIds },
+    onCancelDrag,
     onCancelTabDrag,
     onDetachTab,
     onDragEnd,
@@ -142,6 +143,7 @@ export const GridLayout = ({
     >
       <DragDropProviderNext
         dragSources={NO_DRAG_SOURCES}
+        onCancelDrag={onCancelDrag}
         onCancelTabDrag={onCancelTabDrag}
         onDetachTab={onDetachTab}
         onDrop={onDropStackedItem}

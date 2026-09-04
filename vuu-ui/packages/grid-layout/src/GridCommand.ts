@@ -97,6 +97,7 @@ export type GridCommand =
   | ({ readonly type: "resize-tracks" } & GridTrackResize)
   | {
       readonly itemId: GridItemId;
+      readonly selectedItemId?: GridItemId;
       readonly targetId: GridItemId;
       readonly type: "create-stack";
     }
@@ -523,6 +524,15 @@ export class LegacyGridCommandExecutor {
         );
         if (!created.ok) {
           return stackFailure(command, created.error);
+        }
+        if (command.selectedItemId) {
+          const selected = this.gridModel.selectStackItem(
+            created.value.stackId,
+            command.selectedItemId,
+          );
+          if (!selected.ok) {
+            return stackFailure(command, selected.error);
+          }
         }
         return success(command);
       }

@@ -179,6 +179,7 @@ export const createGridDropPlan = (
       }
       commands.push({
         itemId,
+        selectedItemId: itemId,
         targetId: target.targetId,
         type: "create-stack",
       });
