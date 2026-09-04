@@ -126,6 +126,7 @@ export class DragContext extends EventEmitter<DragContextEvents> {
   }
 
   endDrag() {
+    this.cleanupDragState();
     if (this.#dragSource && sourceIsTemplate(this.#dragSource)) {
       this.templateDragSession?.end();
     }
@@ -149,9 +150,6 @@ export class DragContext extends EventEmitter<DragContextEvents> {
         tabsId,
         value,
       });
-    }
-    for (const cleanup of this.#dragStateCleanups) {
-      cleanup();
     }
     this.endDrag();
   }
@@ -233,6 +231,12 @@ export class DragContext extends EventEmitter<DragContextEvents> {
     this.#dragStateCleanups.add(cleanup);
     return () => this.#dragStateCleanups.delete(cleanup);
   };
+
+  cleanupDragState() {
+    for (const cleanup of this.#dragStateCleanups) {
+      cleanup();
+    }
+  }
 
   get draggedElement() {
     const element = this.#element;

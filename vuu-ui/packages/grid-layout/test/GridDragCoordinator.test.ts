@@ -101,6 +101,7 @@ describe("createGridDropPlan", () => {
         { item: { id: "template-instance" }, type: "add-item" },
         {
           itemId: "template-instance",
+          selectedItemId: "template-instance",
           targetId: "left",
           type: "create-stack",
         },
@@ -240,6 +241,7 @@ describe("GridDragCoordinator", () => {
     if (!stackId) {
       return;
     }
+    expect(controller.getSnapshot().stacks[0].selectedItemId).toBe("beta");
 
     const stackedReplacement = new GridDragCoordinator("grid", controller);
     stackedReplacement.begin({

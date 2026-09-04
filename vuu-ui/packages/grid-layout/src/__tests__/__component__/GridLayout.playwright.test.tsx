@@ -510,8 +510,13 @@ test.describe("GridLayout browser interactions", () => {
     const component = await mount(fixture, { variant: "split-constraints" });
     const grid = new GridLayoutDriver(component, page);
 
-    await grid.dragItem("movable", "locked", "east");
+    const accepted = await grid.attemptRejectedDrag(
+      grid.header("movable"),
+      grid.content("locked"),
+      "east",
+    );
 
+    expect(accepted).toBe(false);
     await expect(grid.item("movable")).toBeVisible();
     await expect(grid.item("locked")).toBeVisible();
     expect(await grid.gridArea("movable")).toBe("1/1/2/2");
