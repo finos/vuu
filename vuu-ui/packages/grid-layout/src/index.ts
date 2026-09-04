@@ -54,8 +54,49 @@ export { useGridControllerSnapshot } from "./useGridControllerSnapshot";
 export { GridLayoutItem } from "./GridLayoutItem";
 export {
   GridLayoutProvider,
+  type GridLayoutProviderProps,
   type SerializedGridLayout,
 } from "./GridLayoutProvider";
+export {
+  GridComponentRendererRegistry,
+  GridComponentSettingsRegistry,
+  GridLayoutContentRegistry,
+  type DecodedGridComponentSettings,
+  type EncodedGridComponentSettings,
+  type GridComponentRenderer,
+  type GridComponentSettingsCodec,
+  type GridComponentSettingsError,
+  type GridComponentSettingsErrorCode,
+  type GridComponentSettingsInput,
+  type GridComponentSettingsResult,
+  type GridSettingsCodecIssue,
+  type GridSettingsCodecResult,
+} from "./GridComponentSettings";
+export {
+  GRID_LAYOUT_DOCUMENT_KIND,
+  GRID_LAYOUT_DOCUMENT_VERSION,
+  GridLayoutDocumentCodecError,
+  decodeGridLayoutDocument,
+  decodeLegacySerializedGridLayout,
+  encodeGridLayoutDocument,
+  type DecodedGridLayoutDocument,
+  type EncodeGridLayoutDocumentOptions,
+  type GridLayoutDocument,
+  type GridLayoutDocumentError,
+  type GridLayoutDocumentErrorCode,
+  type GridLayoutDocumentResult,
+  type GridLayoutDocumentV1,
+  type LegacyGridLayoutDocument,
+  type PersistedGridLayout,
+} from "./GridLayoutDocument";
+export {
+  toJsonValue,
+  type JsonPrimitive,
+  type JsonValue,
+  type JsonValueErrorCode,
+  type JsonValueIssue,
+  type JsonValueResult,
+} from "./json-value";
 export { GridLayoutStackedItem } from "./GridLayoutStackedtem";
 export {
   gridLayoutDescriptorToSnapshot,

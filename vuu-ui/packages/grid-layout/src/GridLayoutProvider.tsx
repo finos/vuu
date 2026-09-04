@@ -1,17 +1,34 @@
 import {
   createContext,
-  DragEvent,
-  ReactElement,
-  ReactNode,
+  type DragEvent,
+  type ReactElement,
+  type ReactNode,
   useCallback,
   useContext,
   useMemo,
 } from "react";
-import { GridLayoutChangeHandler, GridLayoutDescriptor } from "./GridModel";
-import { GridLayoutItem, GridLayoutItemProps } from "./GridLayoutItem";
+import type {
+  GridComponentRendererRegistry,
+  GridComponentSettingsInput,
+  GridComponentSettingsRegistry,
+} from "./GridComponentSettings";
+import {
+  decodeGridLayoutDocument,
+  encodeGridLayoutDocument,
+  type GridLayoutDocument,
+  GridLayoutDocumentCodecError,
+  type GridLayoutDocumentError,
+} from "./GridLayoutDocument";
+import type {
+  GridLayoutChangeHandler,
+  GridLayoutDescriptor,
+} from "./GridModel";
+import type { GridSnapshot } from "./GridSnapshot";
+import { gridSnapshotToGridLayoutDescriptor } from "./grid-snapshot-adapters";
+import { GridLayoutItem, type GridLayoutItemProps } from "./GridLayoutItem";
 import { layoutToJSON } from "./layoutToJson";
 import { layoutFromJson } from "./layoutFromJson";
-import { LayoutJSON } from "./componentToJson";
+import type { LayoutJSON } from "./componentToJson";
 import {
   TemplateDragSession,
   TemplateDragSessionContext,
@@ -29,8 +46,7 @@ type GridLayoutOptions = {
 };
 
 export type ReactElementList = ReactElement[];
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ReactElementMap<P = any> = Record<string, ReactElement<P>>;
+export type ReactElementMap<P = unknown> = Record<string, ReactElement<P>>;
 export type SerializedComponentMap = Record<string, LayoutJSON>;
 
 export type SerializedGridLayout = {
@@ -43,6 +59,7 @@ export type DeserializedGridLayout = {
   components: ReactElementMap<GridLayoutItemProps>;
   id: string;
   layout: GridLayoutDescriptor;
+  placeholderIds?: readonly string[];
 };
 
 interface GridLayoutProviderContext {
@@ -60,6 +77,10 @@ interface GridLayoutProviderContext {
   options?: GridLayoutOptions;
   onChangeChildElements?: GridChildElementsChangeHandler;
   onChangeLayout?: GridLayoutChangeHandler;
+  onCommittedSnapshot?: (
+    snapshot: GridSnapshot,
+    placeholderIds: readonly string[],
+  ) => void;
 }
 
 const GridLayoutProviderContext = createContext<GridLayoutProviderContext>({});
@@ -71,15 +92,62 @@ export type GridLayoutDragEndHandler = (
 
 export interface GridLayoutProviderProps {
   children: ReactNode;
+  componentRenderers?: GridComponentRendererRegistry;
+  componentSettings?: readonly GridComponentSettingsInput[];
+  document?: unknown;
+  onDocumentChange?: (document: GridLayoutDocument) => void;
+  onDocumentError?: (error: GridLayoutDocumentError) => void;
   options?: GridLayoutOptions;
+  settingsCodecs?: GridComponentSettingsRegistry;
+  /** @deprecated Use document with settingsCodecs and componentRenderers. */
   serializedLayout?: SerializedGridLayout;
 }
 
 export const GridLayoutProvider = (
   props: GridLayoutProviderProps,
 ): ReactElement => {
-  const { children, serializedLayout, options } = props;
+  const {
+    children,
+    componentRenderers,
+    componentSettings,
+    document,
+    onDocumentChange,
+    onDocumentError,
+    serializedLayout,
+    settingsCodecs,
+    options,
+  } = props;
   const templateDragSession = useMemo(() => new TemplateDragSession(), []);
+  const decodedDocument = useMemo(() => {
+    if (document === undefined) {
+      return undefined;
+    }
+    if (!settingsCodecs || !componentRenderers) {
+      throw new Error(
+        "GridLayoutProvider document requires settingsCodecs and componentRenderers",
+      );
+    }
+    const decoded = decodeGridLayoutDocument(document, settingsCodecs);
+    if (!decoded.ok) {
+      throw new GridLayoutDocumentCodecError(decoded.error);
+    }
+    const componentById = new Map(
+      decoded.value.components.map(
+        (component) =>
+          [component.id, componentRenderers.render(component)] as const,
+      ),
+    );
+    const layout = gridSnapshotToGridLayoutDescriptor(decoded.value.snapshot);
+    return {
+      componentById,
+      decodedSettings: decoded.value.components.map(
+        ({ id, settings, type }) => ({ id, settings, type }),
+      ),
+      layout,
+      placeholderIds: [...decoded.value.document.layout.placeholderIds],
+      snapshot: decoded.value.snapshot,
+    };
+  }, [componentRenderers, document, settingsCodecs]);
   const [gridLayoutMap, gridChildItemsMap] = useMemo<
     [Map<string, GridLayoutDescriptor>, Map<string, SerializedComponentMap>]
   >(() => {
@@ -119,7 +187,7 @@ export const GridLayoutProvider = (
           const { id: gridLayoutItemId } = component.props;
           if (typeof gridLayoutItemId !== "string") {
             throw Error(
-              `[GridLayoutProvider] onChangeChildElements, child GridLayoutItem has no id`,
+              "[GridLayoutProvider] onChangeChildElements, child GridLayoutItem has no id",
             );
           }
           map[gridLayoutItemId] = layoutToJSON(component);
@@ -140,6 +208,46 @@ export const GridLayoutProvider = (
 
   const getSavedGrid = useCallback(
     (id: string): DeserializedGridLayout | undefined => {
+      if (decodedDocument?.snapshot.gridId === id) {
+        return {
+          components: Object.fromEntries(
+            decodedDocument.snapshot.items.flatMap((item) => {
+              const {
+                column,
+                componentInstanceId,
+                dropTarget,
+                id: itemId,
+                row,
+                ...metadata
+              } = item;
+              const component = decodedDocument.componentById.get(
+                componentInstanceId ?? itemId,
+              );
+              return component
+                ? [
+                    [
+                      itemId,
+                      <GridLayoutItem
+                        {...metadata}
+                        data-drop-target={dropTarget}
+                        id={itemId}
+                        key={itemId}
+                        style={{
+                          gridArea: `${row.start}/${column.start}/${row.start + row.span}/${column.start + column.span}`,
+                        }}
+                      >
+                        {component}
+                      </GridLayoutItem>,
+                    ] as const,
+                  ]
+                : [];
+            }),
+          ),
+          id,
+          layout: decodedDocument.layout,
+          placeholderIds: decodedDocument.placeholderIds,
+        };
+      }
       const layoutJSON = gridChildItemsMap.get(id);
       const layout = gridLayoutMap.get(id);
       if (layoutJSON && layout) {
@@ -166,7 +274,55 @@ export const GridLayoutProvider = (
         };
       }
     },
-    [gridChildItemsMap, gridLayoutMap],
+    [decodedDocument, gridChildItemsMap, gridLayoutMap],
+  );
+
+  const onCommittedSnapshot = useCallback(
+    (snapshot: GridSnapshot, placeholderIds: readonly string[]) => {
+      if (!onDocumentChange) {
+        return;
+      }
+      if (!settingsCodecs) {
+        const error: GridLayoutDocumentError = {
+          code: "INVALID_DOCUMENT",
+          message: "onDocumentChange requires a GridComponentSettingsRegistry",
+          path: "$.components",
+        };
+        if (onDocumentError) {
+          onDocumentError(error);
+          return;
+        }
+        throw new GridLayoutDocumentCodecError(error);
+      }
+      const availableSettings =
+        componentSettings ?? decodedDocument?.decodedSettings ?? [];
+      const referencedComponentIds = new Set(
+        snapshot.items.map(
+          ({ componentInstanceId, id }) => componentInstanceId ?? id,
+        ),
+      );
+      const settings = availableSettings.filter(({ id }) =>
+        referencedComponentIds.has(id),
+      );
+      const encoded = encodeGridLayoutDocument(snapshot, settingsCodecs, {
+        componentSettings: settings,
+        placeholderIds,
+      });
+      if (encoded.ok) {
+        onDocumentChange(encoded.value);
+      } else if (onDocumentError) {
+        onDocumentError(encoded.error);
+      } else {
+        throw new GridLayoutDocumentCodecError(encoded.error);
+      }
+    },
+    [
+      componentSettings,
+      decodedDocument,
+      onDocumentChange,
+      onDocumentError,
+      settingsCodecs,
+    ],
   );
 
   return (
@@ -179,6 +335,7 @@ export const GridLayoutProvider = (
           gridLayoutMap,
           onChangeChildElements,
           onChangeLayout,
+          onCommittedSnapshot,
           options,
         }}
       >
@@ -189,10 +346,9 @@ export const GridLayoutProvider = (
 };
 
 export const useGridChangeHandler = () => {
-  const { onChangeChildElements, onChangeLayout } = useContext(
-    GridLayoutProviderContext,
-  );
-  return { onChangeChildElements, onChangeLayout };
+  const { onChangeChildElements, onChangeLayout, onCommittedSnapshot } =
+    useContext(GridLayoutProviderContext);
+  return { onChangeChildElements, onChangeLayout, onCommittedSnapshot };
 };
 
 export const useSavedGrid = () => {

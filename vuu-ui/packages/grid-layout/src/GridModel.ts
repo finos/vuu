@@ -102,6 +102,7 @@ export const toGridItemUpdates = (
 
 //TODO shouldn't id be here ?
 export interface GridLayoutChildItemDescriptor {
+  componentId?: string;
   contentVisible?: boolean;
   dropTarget?: boolean | string;
   gridArea: string;
@@ -251,6 +252,7 @@ export type GridModelItemType =
 export interface IGridModelChildItem extends GridModelCoordinates {
   childId?: string[];
   closeable?: boolean;
+  componentInstanceId?: string;
   contentVisible?: boolean;
   dropTarget?: boolean | string;
   fixed?: boolean;
@@ -342,6 +344,7 @@ class ObservableGridPosition {
 export class GridModelChildItem implements IGridModelChildItem {
   id: string;
   column: GridModelPosition;
+  componentInstanceId?: string;
   contentDetached?: boolean;
   contentVisible?: boolean;
   dropTarget?: boolean | string;
@@ -361,6 +364,7 @@ export class GridModelChildItem implements IGridModelChildItem {
   #dragging = false;
 
   constructor({
+    componentInstanceId,
     header,
     height,
     id,
@@ -376,6 +380,7 @@ export class GridModelChildItem implements IGridModelChildItem {
     width,
     contentVisible = stackId === undefined,
   }: OptionalProperty<IGridModelChildItem, "type">) {
+    this.componentInstanceId = componentInstanceId;
     this.contentVisible = contentVisible;
     this.dropTarget = dropTarget;
     this.header = header;
@@ -1833,6 +1838,7 @@ export class GridModel extends EventEmitter<GridModelEvents> {
           {
             id,
             column,
+            componentInstanceId,
             contentVisible,
             dropTarget,
             header,
@@ -1848,6 +1854,9 @@ export class GridModel extends EventEmitter<GridModelEvents> {
           // The stacked-content gridItems are a runtime construct, no need to serialize
           if (type !== "stacked-content") {
             result[id] = {
+              ...(componentInstanceId === undefined
+                ? {}
+                : { componentId: componentInstanceId }),
               contentVisible,
               dropTarget,
               gridArea: `${row.start}/${column.start}/${row.end}/${column.end}`,
@@ -2039,6 +2048,7 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     for (const [
       id,
       {
+        componentId,
         contentVisible,
         dropTarget,
         header,
@@ -2054,6 +2064,7 @@ export class GridModel extends EventEmitter<GridModelEvents> {
       this.addChildItem(
         new GridModelChildItem({
           contentVisible,
+          componentInstanceId: componentId,
           id,
           column,
           dropTarget,
