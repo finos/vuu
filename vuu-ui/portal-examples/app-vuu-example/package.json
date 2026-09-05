@@ -30,8 +30,8 @@
     "@vuu-ui/core": "3.3.2",
     "clsx": "^2.0.0",
     "keycloak-js": "26.2.4",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
   },
   "engines": {
     "node": ">=20.0.0"
