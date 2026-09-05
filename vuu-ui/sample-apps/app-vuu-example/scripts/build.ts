@@ -74,6 +74,32 @@ type FeaturePackage = {
   vuu?: Record<string, unknown>;
 };
 
+type RsbuildManifest = {
+  entries: Record<
+    string,
+    {
+      initial?: {
+        css?: string[];
+      };
+    }
+  >;
+};
+
+async function addEntryStylesheets(
+  manifest: RsbuildManifest,
+  entryName: string,
+  htmlFileName: string,
+) {
+  const stylesheets = manifest.entries[entryName]?.initial?.css ?? [];
+  const htmlPath = path.join(outputDirectory, htmlFileName);
+  const html = await readFile(htmlPath, "utf8");
+  const links = stylesheets
+    .map((stylesheet) => `<link rel="stylesheet" href="${stylesheet}" />`)
+    .join("\n    ");
+
+  await writeFile(htmlPath, html.replace("</head>", `    ${links}\n  </head>`));
+}
+
 async function writeFeatureEntriesToConfigJson(
   featureEntries: string[],
   configFile: string,
@@ -166,6 +192,9 @@ async function main() {
         },
         filenameHash: false,
         minify: !development,
+        manifest: {
+          filename: "rsbuild-manifest.json",
+        },
         sourceMap: true,
         target: "web",
       },
@@ -197,6 +226,9 @@ async function main() {
       ],
       tools: {
         rspack: {
+          optimization: {
+            runtimeChunk: "single",
+          },
           output: {
             chunkFormat: "module",
             chunkLoading: "import",
@@ -220,6 +252,13 @@ async function main() {
     force: true,
     recursive: true,
   });
+  const manifest = await readJson<RsbuildManifest>(
+    path.join(outputDirectory, "rsbuild-manifest.json"),
+  );
+  await Promise.all([
+    addEntryStylesheets(manifest, "app-vuu-example/index", "index.html"),
+    addEntryStylesheets(manifest, "app-vuu-example/login", "login.html"),
+  ]);
   await writeFeatureEntriesToConfigJson(
     featureEntries,
     configFile,
