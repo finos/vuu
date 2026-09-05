@@ -220,7 +220,6 @@ async function main() {
             "/packages/vuu-table/",
             "/packages/vuu-table-extras/",
             "/packages/vuu-ui-controls/",
-            "/sample-apps/app-vuu-example/src/legacy-feature-navigation/",
           ],
         }),
       ],

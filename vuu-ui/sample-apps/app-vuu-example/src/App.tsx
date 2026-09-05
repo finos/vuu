@@ -1,8 +1,12 @@
 import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
-import { FlexboxLayout, StackLayout } from "@vuu-ui/vuu-layout";
-import { useAuthenticatedUser, useLogout } from "@vuu-ui/core";
 import {
-  LocalPersistenceManager,
+  useAuthenticatedUser,
+  useIdentityToken,
+  useLogout,
+} from "@vuu-ui/core";
+import {
+  FeatureAndLayoutProvider,
+  LeftNav,
   PersistenceProvider,
   Shell,
   ShellContextProvider,
@@ -11,25 +15,23 @@ import {
 import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
 import {
-  assertComponentsRegistered,
   registerComponent,
+  type DynamicFeatureDescriptor,
 } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
+import {
+  createWorkspacePersistenceService,
+  defaultWorkspacePersistence,
+  type AppConfig,
+} from "./app-config";
 import { getDefaultColumnConfig } from "./columnMetaData";
-import { LegacyFeatureAndLayoutProvider } from "./legacy-feature-navigation/LegacyFeatureAndLayoutProvider";
-import { LegacyLeftNav } from "./legacy-feature-navigation/LegacyLeftNav";
-import type { DynamicFeatureDescriptor } from "./legacy-feature-navigation/types";
 import { ConfirmSelectionPanel } from "./order-management/cancel-confirm-prompt/ConfirmSelectionPanel";
+import { sampleWorkspace, sampleWorkspaceRegistries } from "./sample-workspace";
 
 import "./App.css";
 
 registerComponent("cancel-confirm", ConfirmSelectionPanel, "view");
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
-
-assertComponentsRegistered([
-  { componentName: "Flexbox", component: FlexboxLayout },
-  { componentName: "Stack", component: StackLayout },
-]);
 
 const defaultWebsocketUrl = (ssl: boolean) =>
   `${ssl ? "wss" : "ws"}://${location.hostname}:8090/websocket`;
@@ -37,17 +39,30 @@ const defaultWebsocketUrl = (ssl: boolean) =>
 const {
   ssl,
   websocketUrl: serverUrl = defaultWebsocketUrl(ssl),
-  features,
-} = (await vuuConfig) as {
-  features: Record<string, DynamicFeatureDescriptor>;
-  ssl: boolean;
-  websocketUrl?: string;
-};
+  features = {},
+  workspacePersistence = defaultWorkspacePersistence,
+} = (await vuuConfig) as AppConfig;
 
-const dynamicFeatures = Object.values(features);
+const dynamicFeatures: DynamicFeatureDescriptor[] = Object.entries(
+  features,
+).map(([id, feature]) => ({
+  ...feature,
+  description: feature.description ?? feature.title,
+  id: feature.id ?? id,
+  leftNavLocation:
+    feature.leftNavLocation ??
+    (feature.featureProps?.vuuTables ? "vuu-tables" : "vuu-features"),
+  location: feature.location ?? "vuu-features",
+  mfComponent: feature.mfComponent ?? "default",
+  mfScope: feature.mfScope ?? feature.name,
+  mfUrl: feature.mfUrl ?? feature.url ?? "",
+  path: feature.path ?? id,
+  version: feature.version ?? 1,
+}));
 
 export const App = () => {
   const user = useAuthenticatedUser();
+  const getIdentityToken = useIdentityToken();
   const logout = useLogout();
   const dragSource = useMemo(
     () => ({
@@ -56,15 +71,18 @@ export const App = () => {
     [],
   );
 
-  const localPersistenceManager = useMemo(
-    () => new LocalPersistenceManager(user.userName),
-    [user.userName],
+  const workspacePersistenceService = useMemo(
+    () =>
+      createWorkspacePersistenceService(workspacePersistence, user.userName, {
+        getIdentityToken,
+      }),
+    [getIdentityToken, user.userName],
   );
 
   const ShellLayoutProps = useMemo<ShellLayoutProps>(
     () => ({
       SidePanelProps: {
-        children: <LegacyLeftNav />,
+        children: <LeftNav />,
         sizeOpen: 240,
       },
       layoutTemplateId: "full-height",
@@ -73,18 +91,25 @@ export const App = () => {
   );
 
   return (
-    <PersistenceProvider persistenceManager={localPersistenceManager}>
+    <PersistenceProvider
+      workspacePersistenceService={workspacePersistenceService}
+    >
       <DragDropProvider dragSources={dragSource}>
         <ShellContextProvider value={{ getDefaultColumnConfig }}>
           <VuuDataSourceProvider>
-            <LegacyFeatureAndLayoutProvider dynamicFeatures={dynamicFeatures}>
+            <FeatureAndLayoutProvider dynamicFeatures={dynamicFeatures}>
               <Shell
                 shellLayoutProps={ShellLayoutProps}
                 className="App"
                 logout={logout}
                 serverUrl={serverUrl}
+                workspaceProps={{
+                  componentRenderers: sampleWorkspaceRegistries.renderers,
+                  defaultWorkspace: sampleWorkspace,
+                  settingsCodecs: sampleWorkspaceRegistries.settingsCodecs,
+                }}
               />
-            </LegacyFeatureAndLayoutProvider>
+            </FeatureAndLayoutProvider>
           </VuuDataSourceProvider>
         </ShellContextProvider>
       </DragDropProvider>
