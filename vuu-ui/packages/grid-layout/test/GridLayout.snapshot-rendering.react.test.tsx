@@ -310,7 +310,7 @@ describe("GridLayout canonical snapshot rendering", () => {
     }
   });
 
-  it("publishes cardinal previews and keeps source removal on drag leave", () => {
+  it("keeps source removal during cardinal preview and drag leave", () => {
     let controller: GridController | undefined;
     let preview: ReturnType<typeof useGridLayoutDragPreviewHandler> | undefined;
     let leave: ReturnType<typeof useGridLayoutDragLeaveHandler> | undefined;
@@ -359,10 +359,16 @@ describe("GridLayout canonical snapshot rendering", () => {
       );
     });
     expect(controller?.getSnapshot().revision).toBe(0);
-    expect(controller?.getSnapshot().rows).toHaveLength(2);
+    expect(controller?.getSnapshot().items.map(({ id }) => id)).not.toContain(
+      "preview-left",
+    );
+    expect(controller?.getSnapshot().rows).toHaveLength(1);
+    expect(controller?.getSnapshot().columns).toHaveLength(1);
+    const previewSnapshot = controller?.getSnapshot();
 
     act(() => leave?.());
     expect(controller?.getSnapshot()).not.toBe(baseline);
+    expect(controller?.getSnapshot()).toEqual(previewSnapshot);
     expect(controller?.getSnapshot().items.map(({ id }) => id)).not.toContain(
       "preview-left",
     );
