@@ -7,13 +7,15 @@ import {
   sourceIsTemplate,
 } from "./GridLayoutContext";
 import type { LayoutJSON } from "./componentToJson";
+import type { JsonValue } from "./json-value";
+import { isTypedComponentTemplate } from "./GridLayoutContext";
 
 export type DragStartIdOptions = {
   id: string;
   type: "text/plain";
 };
 export type DragStartJsonOptions = {
-  payload: LayoutJSON;
+  payload: JsonValue | LayoutJSON;
   type: "text/json";
 };
 
@@ -44,7 +46,9 @@ export const useDraggable = ({
       // We will need to change this if we want to support cross window drag drop
       if (sourceIsTemplate(dragSource)) {
         onDragStart?.(e, {
-          payload: JSON.parse(dragSource.componentJson),
+          payload: isTypedComponentTemplate(dragSource)
+            ? dragSource.component
+            : JSON.parse(dragSource.componentJson),
           type: "text/json",
         });
       } else if (sourceIsComponent(dragSource)) {

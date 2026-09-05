@@ -5,6 +5,7 @@ import {
   type GridController,
   GridComponentRendererRegistry,
   GridComponentSettingsRegistry,
+  GridLayoutDocumentController,
   GridLayout,
   type GridLayoutDocument,
   GridLayoutItem,
@@ -228,6 +229,54 @@ describe("GridLayout provider persistence", () => {
       committed.transaction.commit();
     });
     expect(onDocumentChange).toHaveBeenCalledTimes(2);
+  });
+
+  it("publishes committed revisions and removed component instance ids", () => {
+    const controllerStore = new GridLayoutDocumentController();
+    const listener = vi.fn();
+    controllerStore.subscribe(listener);
+    const onDocumentChange = vi.fn();
+    let controller: GridController | undefined;
+
+    act(() =>
+      root.render(
+        <GridLayoutProvider
+          componentRenderers={captureRenderers((value) => (controller = value))}
+          document={interactiveDocument}
+          documentController={controllerStore}
+          onDocumentChange={onDocumentChange}
+          settingsCodecs={codecs}
+        >
+          <GridLayout id="interactive-grid" />
+        </GridLayoutProvider>,
+      ),
+    );
+    listener.mockClear();
+    if (!controller) {
+      throw new Error("controller was not captured");
+    }
+
+    act(() => {
+      controller?.dispatch({
+        itemId: "item-alpha",
+        reason: "close",
+        type: "remove-item",
+      });
+    });
+
+    expect(onDocumentChange).toHaveBeenCalledTimes(1);
+    expect(onDocumentChange.mock.calls[0][1]).toMatchObject({
+      kind: "dispatch",
+      removedComponentInstanceIds: ["component-alpha"],
+      revision: 1,
+    });
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(controllerStore.getSnapshot()).toBe(
+      onDocumentChange.mock.calls[0][0],
+    );
+    expect(controllerStore.getChange()?.removedComponentInstanceIds).toEqual([
+      "component-alpha",
+    ]);
   });
 
   it("loads and replaces typed content without an initial write", () => {

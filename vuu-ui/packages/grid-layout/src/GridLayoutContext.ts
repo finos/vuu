@@ -11,6 +11,7 @@ import type { GridLayoutModel } from "./GridLayoutModel";
 import type { GridLayoutDropPosition } from "@vuu-ui/vuu-utils";
 import type { GridController } from "./GridController";
 import type { GridSnapshot } from "./GridSnapshot";
+import type { JsonValue } from "./json-value";
 
 export type GridLayoutActionType = "close";
 
@@ -99,7 +100,23 @@ export interface ComponentDragSource {
   type: "component";
 }
 
-export interface ComponentTemplate {
+export interface TypedComponentTemplate {
+  readonly component: {
+    readonly settings: JsonValue;
+    readonly type: string;
+    readonly version: number;
+  };
+  /**
+   * Can the component act as a drop target. Note: false does not
+   * preclude children of the component from acting as drop targets.
+   */
+  readonly dropTarget?: boolean;
+  /** Primarily intended for display in a palette. */
+  readonly label: string;
+}
+
+/** @deprecated Use TypedComponentTemplate. */
+export interface LegacyComponentTemplate {
   /**
    * Stringified JSON - the serialized layoutJSON from which
    * component can be reconstituted
@@ -116,14 +133,25 @@ export interface ComponentTemplate {
   label: string;
 }
 
+export type ComponentTemplate =
+  | TypedComponentTemplate
+  | LegacyComponentTemplate;
+export type ComponentTemplateWithoutLabel =
+  | Omit<TypedComponentTemplate, "label">
+  | Omit<LegacyComponentTemplate, "label">;
+
+export const isTypedComponentTemplate = (
+  template: ComponentTemplate,
+): template is TypedComponentTemplate => "component" in template;
+
 /**
  * provides details of a template, to be used on drop to instantiate  a new component
  */
-export interface TemplateSource extends ComponentTemplate {
+export type TemplateSource = ComponentTemplate & {
   element: HTMLElement;
   layoutId: string;
   type: "template";
-}
+};
 
 export type DragSourceProvider = (evt: DragEvent<Element>) => DragSource;
 

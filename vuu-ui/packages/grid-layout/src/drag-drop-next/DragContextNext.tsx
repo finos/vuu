@@ -4,6 +4,7 @@ import {
   sourceIsComponent,
   sourceIsTabbedComponent,
   sourceIsTemplate,
+  isTypedComponentTemplate,
 } from "../GridLayoutContext";
 import { initializeDragContainer } from "./tabstrip-drag-drop";
 import type { TemplateDragSession } from "./TemplateDragSession";
@@ -92,7 +93,14 @@ export class DragContext extends EventEmitter<DragContextEvents> {
     if (dataTransfer) {
       dataTransfer.effectAllowed = "move";
       if (sourceIsTemplate(dragSource)) {
-        dataTransfer.setData("text/json", dragSource.componentJson);
+        dataTransfer.setData(
+          "text/json",
+          JSON.stringify(
+            isTypedComponentTemplate(dragSource)
+              ? dragSource.component
+              : JSON.parse(dragSource.componentJson),
+          ),
+        );
       } else if (sourceIsComponent(dragSource)) {
         dataTransfer.setData("text/plain", dragSource.id);
       } else if (sourceIsTabbedComponent(dragSource)) {

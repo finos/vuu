@@ -10,6 +10,7 @@ import {
 import {
   decodeGridLayoutDocument,
   encodeGridLayoutDocument,
+  type GridLayoutDocument,
   type GridLayoutDocumentV1,
 } from "../src/GridLayoutDocument";
 import { decodeLegacySerializedGridLayout } from "../src/GridLayoutLegacyCompatibility";
@@ -21,6 +22,10 @@ import {
   normalizeGridSnapshot,
 } from "../src/grid-snapshot-adapters";
 import { toJsonValue } from "../src/json-value";
+import {
+  createSequentialGridLayoutIdAllocator,
+  remapGridLayoutDocumentIds,
+} from "../src/GridLayoutDocumentIds";
 
 interface LabelSettings {
   readonly label: string;
@@ -143,6 +148,8 @@ describe("GridLayout document codec", () => {
       version: 2,
     });
     expect(JSON.stringify(encoded.value)).not.toContain("revision");
+    expect(Object.isFrozen(encoded.value)).toBe(true);
+    expect(Object.isFrozen(encoded.value.layout.items[0])).toBe(true);
 
     const decoded = decodeGridLayoutDocument(encoded.value, codecs);
     expect(decoded.ok).toBe(true);
@@ -357,6 +364,7 @@ describe("GridLayout document codec", () => {
         typeof value === "object" && value !== null && "document" in value,
       version: 1,
     });
+
     const nested = encodeGridLayoutDocument(
       {
         columns: [{ size: "1fr" }],
@@ -440,6 +448,119 @@ describe("GridLayout document codec", () => {
         },
       });
     }
+  });
+
+  it("remaps stable ids recursively when cloning a nested document", () => {
+    const nested = {
+      components: [
+        {
+          id: "nested-component",
+          settings: { label: "Nested" },
+          type: "label",
+          version: 2,
+        },
+      ],
+      kind: "grid-layout",
+      layout: {
+        columns: ["1fr"],
+        id: "nested-grid",
+        items: [
+          {
+            column: { span: 1, start: 1 },
+            componentInstanceId: "nested-component",
+            id: "nested-item",
+            row: { span: 1, start: 1 },
+          },
+          {
+            column: { span: 1, start: 1 },
+            id: "nested-placeholder",
+            row: { span: 1, start: 1 },
+          },
+        ],
+        placeholderIds: ["nested-placeholder"],
+        rows: ["1fr"],
+        stacks: [],
+      },
+      version: 2,
+    } as const;
+    const outer = {
+      components: [
+        {
+          id: "outer-component",
+          settings: { document: nested },
+          type: "nested-grid",
+          version: 1,
+        },
+        {
+          id: "sibling-component",
+          settings: { label: "Sibling" },
+          type: "label",
+          version: 2,
+        },
+      ],
+      kind: "grid-layout",
+      layout: {
+        columns: ["1fr"],
+        id: "outer-grid",
+        items: [
+          {
+            column: { span: 1, start: 1 },
+            componentInstanceId: "outer-component",
+            id: "outer-item",
+            row: { span: 1, start: 1 },
+          },
+          {
+            column: { span: 1, start: 1 },
+            componentInstanceId: "sibling-component",
+            id: "sibling-item",
+            row: { span: 1, start: 1 },
+          },
+        ],
+        placeholderIds: [],
+        rows: ["1fr"],
+        stacks: [
+          {
+            id: "outer-stack",
+            itemIds: ["outer-item", "sibling-item"],
+            selectedItemId: "sibling-item",
+          },
+        ],
+      },
+      version: 2,
+    } as const;
+
+    const result = remapGridLayoutDocumentIds(
+      outer,
+      createSequentialGridLayoutIdAllocator("copy"),
+    );
+    expect(result.document.layout.id).toBe("copy-grid-1");
+    expect(result.document.layout.items[0]).toMatchObject({
+      componentInstanceId: "copy-component-4",
+      id: "copy-item-2",
+    });
+    expect(result.document.layout.stacks[0]).toEqual({
+      id: "copy-stack-6",
+      itemIds: ["copy-item-2", "copy-item-3"],
+      selectedItemId: "copy-item-3",
+    });
+    const nestedSettings = result.document.components[0].settings as {
+      readonly document: GridLayoutDocument;
+    };
+    expect(nestedSettings.document.components[0].id).toBe("copy-component-10");
+    expect(nestedSettings.document.layout).toMatchObject({
+      id: "copy-grid-7",
+      placeholderIds: ["copy-item-9"],
+    });
+    expect(nestedSettings.document.layout.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          componentInstanceId: "copy-component-10",
+          id: "copy-item-8",
+        }),
+      ]),
+    );
+    expect(result.mappings).toHaveLength(10);
+    expect(outer.layout.id).toBe("outer-grid");
   });
 
   it("adapts legacy SerializedGridLayout without changing its v1 wire shape", () => {

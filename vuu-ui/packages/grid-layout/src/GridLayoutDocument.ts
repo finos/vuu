@@ -32,6 +32,24 @@ export interface GridLayoutDocument {
   readonly version: typeof GRID_LAYOUT_DOCUMENT_VERSION;
 }
 
+const cloneAndFreeze = <T>(value: T): T => {
+  if (typeof value !== "object" || value === null) {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return Object.freeze(value.map(cloneAndFreeze)) as T;
+  }
+  return Object.freeze(
+    Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, cloneAndFreeze(entry)]),
+    ),
+  ) as T;
+};
+
+export const immutableGridLayoutDocument = (
+  document: GridLayoutDocument,
+): GridLayoutDocument => cloneAndFreeze(document);
+
 export interface GridLayoutDocumentV1 {
   readonly components: readonly EncodedGridComponentSettings[];
   readonly kind: typeof GRID_LAYOUT_DOCUMENT_KIND;
@@ -274,7 +292,7 @@ export const encodeGridLayoutDocument = (
   };
   const json = toJsonValue(document);
   return json.ok
-    ? { ok: true, value: document }
+    ? { ok: true, value: immutableGridLayoutDocument(document) }
     : failure("INVALID_DOCUMENT", json.error.message, json.error.path);
 };
 
@@ -572,5 +590,12 @@ export const decodeGridLayoutDocument = (
     },
     version: GRID_LAYOUT_DOCUMENT_VERSION,
   };
-  return { ok: true, value: { components, document, snapshot } };
+  return {
+    ok: true,
+    value: {
+      components,
+      document: immutableGridLayoutDocument(document),
+      snapshot,
+    },
+  };
 };

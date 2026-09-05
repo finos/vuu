@@ -4,6 +4,9 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   GridLayout,
+  GridComponentRendererRegistry,
+  GridComponentSettingsRegistry,
+  type GridLayoutDocument,
   GridLayoutItem,
   GridLayoutProvider,
   type TemplateSource,
@@ -97,6 +100,71 @@ const TemplatePalette = () => {
     </button>
   );
 };
+
+const TypedTemplatePalette = () => {
+  const onDragStart = useGridLayoutDragStartHandler();
+  const getDragSource = useCallback(
+    (event: ReactDragEvent<Element>): TemplateSource => {
+      const element = queryClosest(
+        event.target,
+        "[data-testid='typed-palette-item']",
+      );
+      const layout = queryClosest(element, ".vuuGridLayout", true);
+      return {
+        component: {
+          settings: { label: "Typed template" },
+          type: "label",
+          version: 1,
+        },
+        element,
+        label: "Typed template",
+        layoutId: layout.id,
+        type: "template",
+      };
+    },
+    [],
+  );
+  const draggable = useDraggable({ getDragSource, onDragStart });
+
+  return (
+    <button
+      data-testid="typed-palette-item"
+      draggable
+      type="button"
+      {...draggable}
+    >
+      Typed template
+    </button>
+  );
+};
+
+const isLabelSettings = (value: unknown): value is { readonly label: string } =>
+  typeof value === "object" &&
+  value !== null &&
+  "label" in value &&
+  typeof value.label === "string";
+
+const typedCodecs = new GridComponentSettingsRegistry();
+typedCodecs.register("label", {
+  decode: (value) =>
+    isLabelSettings(value)
+      ? { ok: true, value }
+      : {
+          error: {
+            code: "INVALID_LABEL",
+            message: "label must be a string",
+            path: "$.label",
+          },
+          ok: false,
+        },
+  encode: (value) => ({ ok: true, value }),
+  isSettings: isLabelSettings,
+  version: 1,
+});
+const typedRenderers = new GridComponentRendererRegistry();
+typedRenderers.register("label", isLabelSettings, ({ label }, id) => (
+  <span data-component-id={id}>{label}</span>
+));
 
 const ExistingItemFixture = () => (
   <GridLayoutProvider options={{ newChildItem: { header: true } }}>
@@ -217,6 +285,55 @@ const NestedPaletteFixture = () => (
             <div>Nested target content</div>
           </GridLayoutItem>
         </GridLayout>
+      </GridLayoutItem>
+    </GridLayout>
+  </GridLayoutProvider>
+);
+
+const ScopedNestedPaletteFixture = ({
+  onNestedChange,
+  onShellChange,
+}: {
+  onNestedChange: (document: GridLayoutDocument) => void;
+  onShellChange: (document: GridLayoutDocument) => void;
+}) => (
+  <GridLayoutProvider onDocumentChange={onShellChange}>
+    <GridLayout
+      colsAndRows={{ cols: ["160px", "1fr"], rows: ["1fr"] }}
+      id="static-shell"
+    >
+      <GridLayoutItem id="palette" style={{ gridArea: "1/1/2/2" }}>
+        <TypedTemplatePalette />
+      </GridLayoutItem>
+      <GridLayoutItem id="workspace-owner" style={{ gridArea: "1/2/2/3" }}>
+        <GridLayoutProvider
+          componentRenderers={typedRenderers}
+          componentSettings={[
+            {
+              id: "workspace-target",
+              settings: { label: "Target" },
+              type: "label",
+            },
+          ]}
+          onDocumentChange={onNestedChange}
+          settingsCodecs={typedCodecs}
+        >
+          <GridLayout
+            colsAndRows={{ cols: ["1fr"], rows: ["1fr"] }}
+            id="workspace-grid"
+          >
+            <GridLayoutItem
+              data-drop-target
+              header
+              id="workspace-target"
+              resizeable="hv"
+              style={{ gridArea: "1/1/2/2" }}
+              title="Target"
+            >
+              <span>Target</span>
+            </GridLayoutItem>
+          </GridLayout>
+        </GridLayoutProvider>
       </GridLayoutItem>
     </GridLayout>
   </GridLayoutProvider>
@@ -545,6 +662,55 @@ describe("GridLayout React drag/drop lifecycle", () => {
     expect(template).not.toBeNull();
     expect(
       container.querySelector("#parent-grid > #nested-owner"),
+    ).not.toBeNull();
+  });
+
+  it("shares typed template drag runtime while isolating nested persistence", () => {
+    const onNestedChange = vi.fn();
+    const onShellChange = vi.fn();
+    act(() =>
+      root.render(
+        <ScopedNestedPaletteFixture
+          onNestedChange={onNestedChange}
+          onShellChange={onShellChange}
+        />,
+      ),
+    );
+    const source = container.querySelector(
+      "[data-testid='typed-palette-item']",
+    );
+    const target = container.querySelector(
+      "#workspace-target .vuuGridLayoutItemContent",
+    );
+    if (!source || !target) {
+      throw Error("scoped nested palette fixture did not render");
+    }
+    setTargetRect(source);
+    setTargetRect(target);
+    const dataTransfer = new TestDataTransfer();
+    const point = { clientX: 90, clientY: 50 };
+
+    dispatchDrag(source, "dragstart", dataTransfer);
+    dispatchDrag(target, "dragenter", dataTransfer, point);
+    dispatchDrag(target, "dragover", dataTransfer, point);
+    dispatchDrag(target, "drop", dataTransfer, point);
+    dispatchDrag(source, "dragend", dataTransfer);
+
+    expect(onShellChange).not.toHaveBeenCalled();
+    expect(onNestedChange).toHaveBeenCalledTimes(1);
+    expect(onNestedChange.mock.calls[0][0].components).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          settings: { label: "Typed template" },
+          type: "label",
+          version: 1,
+        }),
+      ]),
+    );
+    expect(
+      container.querySelector(
+        "#workspace-grid [data-component-id]:not(#workspace-target)",
+      ),
     ).not.toBeNull();
   });
 

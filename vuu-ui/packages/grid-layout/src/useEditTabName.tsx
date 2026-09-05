@@ -1,9 +1,12 @@
 import { useCallback, useMemo, useState } from "react";
 import { TabDialog } from "./TabDialog";
-import { ComponentTemplate, useGridLayoutDispatch } from "./GridLayoutContext";
+import {
+  type ComponentTemplateWithoutLabel,
+  useGridLayoutDispatch,
+} from "./GridLayoutContext";
 
 export interface EditTabNameHookProps {
-  getNewComponent?: () => Omit<ComponentTemplate, "label">;
+  getNewComponent?: () => ComponentTemplateWithoutLabel;
   id: string;
   mode?: "add" | "edit";
   tabLabel?: string;
