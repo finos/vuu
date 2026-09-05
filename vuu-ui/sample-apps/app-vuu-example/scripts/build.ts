@@ -171,7 +171,7 @@ async function main() {
       },
       performance: {
         chunkSplit: {
-          strategy: "all-in-one",
+          strategy: "split-by-experience",
         },
       },
       plugins: [
