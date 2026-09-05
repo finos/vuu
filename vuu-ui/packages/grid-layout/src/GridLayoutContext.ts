@@ -134,30 +134,15 @@ export type DragSource =
 
 export const sourceIsComponent = (
   source: DragSource | undefined,
-): source is ComponentDragSource => {
-  if (source === undefined) {
-    throw Error("sourceIsComponent: source is undefined");
-  }
-  return source.type === "component";
-};
+): source is ComponentDragSource => source?.type === "component";
 
 export const sourceIsTabbedComponent = (
   source: DragSource | undefined,
-): source is TabbedComponentDragSource => {
-  if (source === undefined) {
-    throw Error("sourceIsComponent: source is undefined");
-  }
-  return source.type === "tabbed-component";
-};
+): source is TabbedComponentDragSource => source?.type === "tabbed-component";
 
 export const sourceIsTemplate = (
   source: DragSource | undefined,
-): source is TemplateSource => {
-  if (source === undefined) {
-    throw Error("sourceIsTemplate: source is undefined");
-  }
-  return source.type === "template";
-};
+): source is TemplateSource => source?.type === "template";
 
 export type GridLayoutDropHandler = (
   targetId: string,

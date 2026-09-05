@@ -1,6 +1,6 @@
 import { queryClosest } from "@vuu-ui/vuu-utils";
 import type { DragEvent } from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   GridLayout,
   GridLayoutItem,
@@ -25,11 +25,15 @@ export type GridLayoutFixtureVariant =
   | "proportional"
   | "proportional-coupled"
   | "proportional-minimums"
+  | "proportional-removal-drag"
   | "proportional-unequal"
   | "resizable"
   | "resizable-vertical"
   | "split-constraints"
   | "stacked"
+  | "stacked-cross-grid"
+  | "stacked-duplicates"
+  | "stacked-three"
   | "stacked-target";
 
 const itemStyle = {
@@ -325,6 +329,74 @@ const ProportionalLayout = ({
   </GridLayout>
 );
 
+const ProportionalRemovalDragLayout = () => {
+  const commitCountRef = useRef(0);
+  const handleChange = useCallback(() => {
+    commitCountRef.current += 1;
+    document
+      .getElementById("proportional-removal-drag")
+      ?.setAttribute("data-commit-count", String(commitCountRef.current));
+  }, []);
+
+  return (
+    <GridLayout
+      colsAndRows={{
+        cols: ["1fr", "1fr"],
+        rows: ["1fr", "1fr", "2fr"],
+      }}
+      data-commit-count="0"
+      data-testid="grid-layout"
+      id="proportional-removal-drag"
+      onChange={handleChange}
+      rowResizeDistribution="proportional"
+      style={{ height: 600, width: 640 }}
+    >
+      <GridLayoutItem
+        data-drop-target
+        header
+        id="proportional-header"
+        resizeable="hv"
+        style={{ gridArea: "1/1/2/3" }}
+        title="Two-column span"
+      >
+        <TestContent label="Header" />
+      </GridLayoutItem>
+      <GridLayoutItem
+        data-drop-target
+        header
+        id="proportional-left-top"
+        resizeable="hv"
+        style={{ gridArea: "2/1/3/2" }}
+        title="One-part row"
+      >
+        <TestContent label="Left top" />
+      </GridLayoutItem>
+      <GridLayoutItem
+        data-drop-target
+        header
+        id="proportional-left-bottom"
+        resizeable="hv"
+        style={{ gridArea: "3/1/4/2" }}
+        title="Two-part row"
+      >
+        <TestContent label="Left bottom" />
+      </GridLayoutItem>
+      <GridLayoutItem
+        data-drop-target
+        header
+        id="proportional-right"
+        minHeight={60}
+        minWidth={80}
+        resizeable="hv"
+        style={{ gridArea: "2/2/4/3" }}
+        title="Two-row span"
+      >
+        <TestContent label="Right" />
+      </GridLayoutItem>
+    </GridLayout>
+  );
+};
+
 const CoupledProportionalLayout = () => (
   <GridLayout
     colsAndRows={{
@@ -490,6 +562,78 @@ const StackedLayout = () => (
       title="Beta"
     >
       <TestContent label="Beta" />
+    </GridLayoutItem>
+  </GridLayout>
+);
+
+const ThreeTabStack = ({ duplicate = false }: { duplicate?: boolean }) => (
+  <GridLayout
+    colsAndRows={{ cols: ["1fr"], rows: ["1fr"] }}
+    data-testid="grid-layout"
+    id="ct-grid"
+    style={{ height: 320, width: 640 }}
+  >
+    <GridLayoutStackedItem id="main-tabs" style={{ gridArea: "1/1/2/2" }} />
+    {[
+      { id: "alpha", title: duplicate ? "Duplicate" : "Alpha" },
+      { id: "beta", title: duplicate ? "Duplicate" : "Beta" },
+      { id: "gamma", title: duplicate ? "Other" : "Gamma" },
+    ].map(({ id, title }, index) => (
+      <GridLayoutItem
+        contentVisible={index === 0}
+        data-drop-target
+        id={id}
+        key={id}
+        stackId="main-tabs"
+        style={{ gridArea: "1/1/2/2" }}
+        title={title}
+      >
+        <TestContent label={id} />
+      </GridLayoutItem>
+    ))}
+  </GridLayout>
+);
+
+const StackedCrossGridLayout = () => (
+  <GridLayout
+    colsAndRows={{ cols: ["1fr", "1fr"], rows: ["1fr"] }}
+    data-testid="grid-layout"
+    id="parent-grid"
+    style={{ height: 320, width: 640 }}
+  >
+    <GridLayoutItem id="nested-owner" style={{ gridArea: "1/1/2/2" }}>
+      <GridLayout
+        colsAndRows={{ cols: ["1fr"], rows: ["1fr"] }}
+        id="nested-grid"
+        style={{ height: "100%", width: "100%" }}
+      >
+        <GridLayoutStackedItem
+          id="nested-tabs"
+          style={{ gridArea: "1/1/2/2" }}
+        />
+        {["nested-alpha", "nested-beta"].map((id, index) => (
+          <GridLayoutItem
+            contentVisible={index === 0}
+            data-drop-target
+            id={id}
+            key={id}
+            stackId="nested-tabs"
+            style={{ gridArea: "1/1/2/2" }}
+            title={id}
+          >
+            <TestContent label={id} />
+          </GridLayoutItem>
+        ))}
+      </GridLayout>
+    </GridLayoutItem>
+    <GridLayoutItem
+      data-drop-target
+      id="parent-target"
+      resizeable="hv"
+      style={{ gridArea: "1/2/2/3" }}
+      title="Parent target"
+    >
+      <TestContent label="parent-target" />
     </GridLayoutItem>
   </GridLayout>
 );
@@ -728,11 +872,17 @@ export const GridLayoutTestFixture = ({
     {variant === "proportional-minimums" ? (
       <ProportionalLayout constrained />
     ) : null}
+    {variant === "proportional-removal-drag" ? (
+      <ProportionalRemovalDragLayout />
+    ) : null}
     {variant === "proportional-unequal" ? <ProportionalLayout unequal /> : null}
     {variant === "resizable" ? <ResizableLayout /> : null}
     {variant === "resizable-vertical" ? <VerticalResizableLayout /> : null}
     {variant === "split-constraints" ? <SplitConstraintsLayout /> : null}
     {variant === "stacked" ? <StackedLayout /> : null}
+    {variant === "stacked-cross-grid" ? <StackedCrossGridLayout /> : null}
+    {variant === "stacked-duplicates" ? <ThreeTabStack duplicate /> : null}
+    {variant === "stacked-three" ? <ThreeTabStack /> : null}
     {variant === "stacked-target" ? <StackedTargetLayout /> : null}
   </GridLayoutProvider>
 );

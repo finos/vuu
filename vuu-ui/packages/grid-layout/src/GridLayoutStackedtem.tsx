@@ -66,10 +66,6 @@ export const GridLayoutStackedItem = ({
     styleProp?.minWidth,
   );
 
-  useEffect(() => {
-    return registerTabsForDragDrop(id);
-  }, [id, registerTabsForDragDrop]);
-
   const { gridArea, horizontalSplitter, verticalSplitter } = useGridChildProps({
     id,
     minHeight: modelMinHeight,
@@ -86,6 +82,11 @@ export const GridLayoutStackedItem = ({
     throw Error(`[GridLayoutStackedItem] canonical stack #${id} not found`);
   }
   const itemById = new Map(snapshot.items.map((item) => [item.id, item]));
+  const tabOrderKey = stack.itemIds.join("\u0000");
+
+  useEffect(() => {
+    return tabOrderKey ? registerTabsForDragDrop(id) : undefined;
+  }, [id, registerTabsForDragDrop, tabOrderKey]);
 
   const handleTabSelectionChange = useCallback(
     (_: SyntheticEvent | null, value: string) => {
@@ -133,6 +134,7 @@ export const GridLayoutStackedItem = ({
               appearance="transparent"
               className="vuuDragContainer"
               id={tabsId}
+              key={tabOrderKey}
             >
               {stack.itemIds.map((gridLayoutItemId, index) => {
                 const label =

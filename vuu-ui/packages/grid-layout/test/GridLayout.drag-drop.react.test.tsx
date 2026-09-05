@@ -288,6 +288,7 @@ describe("GridLayout React drag/drop lifecycle", () => {
 
     expect(dragOver.defaultPrevented).toBe(true);
     expect(target.classList.contains("vuuDropTarget-east")).toBe(true);
+    expect(container.querySelector("#source")).toBeNull();
 
     dispatchDrag(target, "drop", dataTransfer, { clientX: 90, clientY: 50 });
     const renderedSource = container.querySelector(

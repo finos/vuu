@@ -219,7 +219,9 @@ export const createGridDropPlan = (
       }
       break;
   }
-  commands.push({ type: "regenerate-placeholders" });
+  if (!commands.some(({ type }) => type === "reorder-stack-item")) {
+    commands.push({ type: "regenerate-placeholders" });
+  }
   return { commands, source, target };
 };
 
@@ -228,6 +230,7 @@ const isPlanError = (
 ): value is GridDragCoordinatorError => "code" in value;
 
 export class GridDragCoordinator {
+  #sourceRemovedBaseline = false;
   #state: GridDragCoordinatorState = { phase: "idle" };
   #transaction: GridTransaction | undefined;
 
@@ -250,7 +253,34 @@ export class GridDragCoordinator {
         `Cannot begin a drag while ${this.#state.phase}`,
       );
     }
+    if (
+      source.kind !== "palette-template" &&
+      source.sourceGridId !== this.gridId
+    ) {
+      return failure(
+        "CROSS_GRID_DRAG",
+        `Grid item #${source.itemId} cannot move from #${source.sourceGridId} to #${this.gridId}`,
+      );
+    }
     this.#state = { phase: "dragging", source };
+    if (source.kind === "existing-item") {
+      const started = this.controller.beginTransaction("drag");
+      if (!started.ok) {
+        this.#state = { phase: "idle" };
+        return { error: started.error, ok: false };
+      }
+      this.#transaction = started.transaction;
+      const removed = this.#transaction.establishWorkingBaseline([
+        { itemId: source.itemId, reason: "drag", type: "remove-item" },
+      ]);
+      if (!removed.ok) {
+        this.#transaction.rollback();
+        this.#transaction = undefined;
+        this.#state = { phase: "idle" };
+        return this.#commandFailure(removed);
+      }
+      this.#sourceRemovedBaseline = true;
+    }
     return { ok: true, state: this.#state };
   }
 
@@ -265,6 +295,7 @@ export class GridDragCoordinator {
       );
     }
     if (target.gridId !== this.gridId) {
+      this.#clearTargetPreview();
       return failure(
         "CROSS_GRID_DRAG",
         `Coordinator #${this.gridId} cannot preview target grid #${target.gridId}`,
@@ -273,7 +304,7 @@ export class GridDragCoordinator {
     const source = this.#state.source;
     const plan = createGridDropPlan(source, target);
     if (isPlanError(plan)) {
-      this.#rollbackPreview();
+      this.#clearTargetPreview();
       return { error: plan, ok: false };
     }
     if (!this.#transaction) {
@@ -283,9 +314,12 @@ export class GridDragCoordinator {
       }
       this.#transaction = result.transaction;
     }
-    const result = this.#transaction.replace(plan.commands);
+    const result =
+      source.kind === "existing-item"
+        ? this.#transaction.validateReplacement(plan.commands)
+        : this.#transaction.replace(plan.commands);
     if (!result.ok) {
-      this.#rollbackPreview();
+      this.#clearTargetPreview();
       return this.#commandFailure(result);
     }
     this.#state = { phase: "previewing", plan, source, target };
@@ -300,12 +334,19 @@ export class GridDragCoordinator {
       );
     }
 
-    const source = this.#state.source;
+    const { plan, source } = this.#state;
+    if (source.kind === "existing-item") {
+      const applied = this.#transaction.replace(plan.commands);
+      if (!applied.ok) {
+        return this.#commandFailure(applied);
+      }
+    }
     const result = this.#transaction.commit();
     if (!result.ok) {
       return { error: result.error, ok: false };
     }
     this.#transaction = undefined;
+    this.#sourceRemovedBaseline = false;
     this.#state = { phase: "committed", source };
     return { ok: true, state: this.#state };
   }
@@ -317,9 +358,11 @@ export class GridDragCoordinator {
         `Cannot clear a preview while ${this.#state.phase}`,
       );
     }
-    const result = this.#rollbackPreview();
+    const result = this.#clearTargetPreview();
     if (result && !result.ok) {
-      return { error: result.error, ok: false };
+      return "command" in result
+        ? this.#commandFailure(result)
+        : { error: result.error, ok: false };
     }
     return { ok: true, state: this.#state };
   }
@@ -351,12 +394,25 @@ export class GridDragCoordinator {
         throw Error(result.error.message);
       }
     }
+    this.#sourceRemovedBaseline = false;
     this.#state = { phase: "idle" };
+  }
+
+  #clearTargetPreview() {
+    if (this.#sourceRemovedBaseline && this.#transaction) {
+      const result = this.#transaction.replace([]);
+      if (this.#state.phase === "previewing") {
+        this.#state = { phase: "dragging", source: this.#state.source };
+      }
+      return result;
+    }
+    return this.#rollbackPreview();
   }
 
   #rollbackPreview() {
     const result = this.#transaction?.rollback();
     this.#transaction = undefined;
+    this.#sourceRemovedBaseline = false;
     if (this.#state.phase === "previewing") {
       this.#state = { phase: "dragging", source: this.#state.source };
     }

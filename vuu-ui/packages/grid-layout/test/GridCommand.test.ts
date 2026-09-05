@@ -273,6 +273,44 @@ describe("LegacyGridCommandExecutor", () => {
     ]);
   });
 
+  it("detaches a stack member and deterministically dissolves two-item stacks", () => {
+    const model = new GridModel(
+      "detach-stack-member",
+      descriptor(["1fr", "1fr"], ["1fr"], {
+        alpha: item("1/1/2/2", { title: "Alpha" }),
+        beta: item("1/1/2/2", { title: "Beta" }),
+        target: item("1/2/2/3", { resizeable: "hv", title: "Target" }),
+      }),
+    );
+    const executor = new LegacyGridCommandExecutor(model);
+    executor.execute({
+      itemId: "beta",
+      selectedItemId: "beta",
+      targetId: "alpha",
+      type: "create-stack",
+    });
+    const stackId = model.getStackStates()[0].id;
+
+    expect(
+      executor.execute({
+        itemId: "beta",
+        position: "east",
+        stackId,
+        targetId: "target",
+        type: "move-stack-item-to-grid",
+      }),
+    ).toMatchObject({ ok: true });
+
+    expect(model.getStackStates()).toEqual([]);
+    expect(model.getChildItem(stackId)).toBeUndefined();
+    expect(model.getChildItem("alpha", true).stackId).toBeUndefined();
+    expect(model.getChildItem("beta", true)).toMatchObject({
+      contentVisible: true,
+      stackId: undefined,
+      title: "Beta",
+    });
+  });
+
   it("aligns added stack items to the stack coordinates", () => {
     const model = new GridModel(
       "stack-position",

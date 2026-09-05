@@ -69,7 +69,11 @@ export const TabMenu = ({
     <>
       <Menu>
         <MenuTrigger>
-          <Button aria-label="Settings" className="TabMenuButton" data-embedded>
+          <Button
+            aria-label={`${tabLabel} Settings`}
+            className="TabMenuButton"
+            data-embedded
+          >
             <Icon aria-hidden name="more-vert" />
           </Button>
         </MenuTrigger>

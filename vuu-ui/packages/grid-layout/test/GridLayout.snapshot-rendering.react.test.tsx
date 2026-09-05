@@ -310,7 +310,7 @@ describe("GridLayout canonical snapshot rendering", () => {
     }
   });
 
-  it("publishes cardinal previews and restores the baseline on drag leave", () => {
+  it("publishes cardinal previews and keeps source removal on drag leave", () => {
     let controller: GridController | undefined;
     let preview: ReturnType<typeof useGridLayoutDragPreviewHandler> | undefined;
     let leave: ReturnType<typeof useGridLayoutDragLeaveHandler> | undefined;
@@ -362,7 +362,11 @@ describe("GridLayout canonical snapshot rendering", () => {
     expect(controller?.getSnapshot().rows).toHaveLength(2);
 
     act(() => leave?.());
-    expect(controller?.getSnapshot()).toBe(baseline);
+    expect(controller?.getSnapshot()).not.toBe(baseline);
+    expect(controller?.getSnapshot().items.map(({ id }) => id)).not.toContain(
+      "preview-left",
+    );
+    expect(controller?.getSnapshot().columns).toHaveLength(1);
   });
 
   it("persists content without treating stack templates as serializable items", () => {

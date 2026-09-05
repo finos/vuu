@@ -35,8 +35,10 @@ export interface GridTransaction {
   readonly kind: GridTransactionKind;
   commit(): GridTransactionCloseResult;
   dispatch(command: GridCommand): GridCommandResult;
+  establishWorkingBaseline(commands: readonly GridCommand[]): GridCommandResult;
   replace(commands: readonly GridCommand[]): GridCommandResult;
   rollback(): GridTransactionCloseResult;
+  validateReplacement(commands: readonly GridCommand[]): GridCommandResult;
 }
 
 export interface GridCommittedTransition {
@@ -141,7 +143,9 @@ export class GridController {
       this.gridModel.createCheckpoint(),
       this.#snapshot,
       (command) => this.#executePreview(transaction, command),
+      (commands) => this.#establishWorkingBaseline(transaction, commands),
       (commands) => this.#replacePreview(transaction, commands),
+      (commands) => this.#validateReplacement(transaction, commands),
       (commands) =>
         this.#commitTransaction(
           transaction,
@@ -208,28 +212,28 @@ export class GridController {
       };
     }
 
-    this.gridModel.restoreCheckpoint(transaction.checkpoint);
-    this.#snapshot = transaction.baseline;
+    this.gridModel.restoreCheckpoint(transaction.workingCheckpoint);
+    this.#snapshot = transaction.workingBaseline;
     try {
       for (const command of commands) {
         const checkpoint = this.gridModel.createCheckpoint();
         const result = this.#executeAtomically(command, checkpoint);
         if (!result.ok) {
-          this.gridModel.restoreCheckpoint(transaction.checkpoint);
-          this.#snapshot = transaction.baseline;
-          transaction.setCommands([]);
+          this.gridModel.restoreCheckpoint(transaction.workingCheckpoint);
+          this.#snapshot = transaction.workingBaseline;
+          transaction.setReplacementCommands([]);
           this.#notifyState();
           return result;
         }
       }
     } catch (error) {
-      this.gridModel.restoreCheckpoint(transaction.checkpoint);
-      this.#snapshot = transaction.baseline;
-      transaction.setCommands([]);
+      this.gridModel.restoreCheckpoint(transaction.workingCheckpoint);
+      this.#snapshot = transaction.workingBaseline;
+      transaction.setReplacementCommands([]);
       this.#notifyState();
       throw error;
     }
-    transaction.setCommands(commands);
+    transaction.setReplacementCommands(commands);
     const candidate = this.#readSnapshot(transaction.baseline.revision);
     this.#snapshot =
       semanticSnapshot(candidate) === semanticSnapshot(transaction.baseline)
@@ -240,6 +244,83 @@ export class GridController {
       command: representative.type,
       ok: true,
     };
+  }
+
+  #establishWorkingBaseline(
+    transaction: GridControllerTransaction,
+    commands: readonly GridCommand[],
+  ): GridCommandResult {
+    const representative =
+      commands[0] ?? ({ type: "regenerate-placeholders" } as const);
+    if (this.#activeTransaction !== transaction) {
+      return {
+        command: representative.type,
+        error: transactionError(
+          "TRANSACTION_CLOSED",
+          "Cannot establish a working baseline; the grid transaction is closed",
+        ),
+        ok: false,
+      };
+    }
+
+    this.gridModel.restoreCheckpoint(transaction.checkpoint);
+    this.#snapshot = transaction.baseline;
+    for (const command of commands) {
+      const checkpoint = this.gridModel.createCheckpoint();
+      const result = this.#executeAtomically(command, checkpoint);
+      if (!result.ok) {
+        this.gridModel.restoreCheckpoint(transaction.checkpoint);
+        this.#snapshot = transaction.baseline;
+        transaction.resetWorkingBaseline();
+        return result;
+      }
+    }
+    const candidate = this.#readSnapshot(transaction.baseline.revision);
+    this.#snapshot =
+      semanticSnapshot(candidate) === semanticSnapshot(transaction.baseline)
+        ? transaction.baseline
+        : candidate;
+    transaction.setWorkingBaseline(
+      this.gridModel.createCheckpoint(),
+      this.#snapshot,
+      commands,
+    );
+    this.#notifyState();
+    return { command: representative.type, ok: true };
+  }
+
+  #validateReplacement(
+    transaction: GridControllerTransaction,
+    commands: readonly GridCommand[],
+  ): GridCommandResult {
+    const representative =
+      commands[0] ?? ({ type: "regenerate-placeholders" } as const);
+    if (this.#activeTransaction !== transaction) {
+      return {
+        command: representative.type,
+        error: transactionError(
+          "TRANSACTION_CLOSED",
+          "Cannot validate replacement; the grid transaction is closed",
+        ),
+        ok: false,
+      };
+    }
+
+    this.gridModel.restoreCheckpoint(transaction.workingCheckpoint);
+    this.#snapshot = transaction.workingBaseline;
+    try {
+      for (const command of commands) {
+        const checkpoint = this.gridModel.createCheckpoint();
+        const result = this.#executeAtomically(command, checkpoint);
+        if (!result.ok) {
+          return result;
+        }
+      }
+      return { command: representative.type, ok: true };
+    } finally {
+      this.gridModel.restoreCheckpoint(transaction.workingCheckpoint);
+      this.#snapshot = transaction.workingBaseline;
+    }
   }
 
   #commitTransaction(
@@ -348,7 +429,10 @@ export class GridController {
 
 class GridControllerTransaction implements GridTransaction {
   readonly #commands: GridCommand[] = [];
+  readonly #workingCommands: GridCommand[] = [];
   #closed = false;
+  #workingCheckpoint: GridModelCheckpoint;
+  #workingBaseline: GridSnapshot;
 
   constructor(
     readonly kind: GridTransactionKind,
@@ -357,14 +441,31 @@ class GridControllerTransaction implements GridTransaction {
     private readonly executePreview: (
       command: GridCommand,
     ) => GridCommandResult,
+    private readonly establishBaseline: (
+      commands: readonly GridCommand[],
+    ) => GridCommandResult,
     private readonly replacePreview: (
+      commands: readonly GridCommand[],
+    ) => GridCommandResult,
+    private readonly validatePreviewReplacement: (
       commands: readonly GridCommand[],
     ) => GridCommandResult,
     private readonly commitTransaction: (
       commands: readonly GridCommand[],
     ) => GridTransactionCloseResult,
     private readonly rollbackTransaction: () => GridTransactionCloseResult,
-  ) {}
+  ) {
+    this.#workingCheckpoint = checkpoint;
+    this.#workingBaseline = baseline;
+  }
+
+  get workingCheckpoint() {
+    return this.#workingCheckpoint;
+  }
+
+  get workingBaseline() {
+    return this.#workingBaseline;
+  }
 
   dispatch(command: GridCommand): GridCommandResult {
     if (this.#closed) {
@@ -399,8 +500,61 @@ class GridControllerTransaction implements GridTransaction {
     return this.replacePreview(commands);
   }
 
-  setCommands(commands: readonly GridCommand[]) {
-    this.#commands.splice(0, this.#commands.length, ...commands);
+  establishWorkingBaseline(
+    commands: readonly GridCommand[],
+  ): GridCommandResult {
+    if (this.#closed) {
+      return {
+        command: commands[0]?.type ?? "regenerate-placeholders",
+        error: transactionError(
+          "TRANSACTION_CLOSED",
+          "Cannot establish a working baseline; the grid transaction is closed",
+        ),
+        ok: false,
+      };
+    }
+    return this.establishBaseline(commands);
+  }
+
+  validateReplacement(commands: readonly GridCommand[]): GridCommandResult {
+    if (this.#closed) {
+      return {
+        command: commands[0]?.type ?? "regenerate-placeholders",
+        error: transactionError(
+          "TRANSACTION_CLOSED",
+          "Cannot validate replacement; the grid transaction is closed",
+        ),
+        ok: false,
+      };
+    }
+    return this.validatePreviewReplacement(commands);
+  }
+
+  setWorkingBaseline(
+    checkpoint: GridModelCheckpoint,
+    snapshot: GridSnapshot,
+    commands: readonly GridCommand[],
+  ) {
+    this.#workingCheckpoint = checkpoint;
+    this.#workingBaseline = snapshot;
+    this.#workingCommands.splice(0, this.#workingCommands.length, ...commands);
+    this.setReplacementCommands([]);
+  }
+
+  resetWorkingBaseline() {
+    this.#workingCheckpoint = this.checkpoint;
+    this.#workingBaseline = this.baseline;
+    this.#workingCommands.length = 0;
+    this.#commands.length = 0;
+  }
+
+  setReplacementCommands(commands: readonly GridCommand[]) {
+    this.#commands.splice(
+      0,
+      this.#commands.length,
+      ...this.#workingCommands,
+      ...commands,
+    );
   }
 
   commit(): GridTransactionCloseResult {

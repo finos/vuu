@@ -35,7 +35,24 @@ const getDataIndex = (el: HTMLElement | null) =>
   el ? parseInt(el.dataset.index ?? "-1") : -1;
 
 const getDataLabel = (el: HTMLElement | null) => el?.dataset.label ?? "";
-const TAB_DRAG_ACTIVATION_DELAY = 150;
+const TAB_CLICK_MOVEMENT_TOLERANCE = 12;
+const getDropPosition = (
+  target: HTMLElement | null,
+  clientX: number,
+  clientY: number,
+  orientation: orientationType,
+): DropPosition | undefined => {
+  const itemId = target?.dataset.gridLayoutItemId;
+  if (!target || !itemId) {
+    return undefined;
+  }
+  const rect = target.getBoundingClientRect();
+  const after =
+    orientation === "horizontal"
+      ? clientX >= rect.left + rect.width / 2
+      : clientY >= rect.top + rect.height / 2;
+  return { position: after ? "after" : "before", target: itemId };
+};
 
 const eventTargetsGrid = (event: DragEvent, gridId: string) => {
   const target = event.target;
@@ -65,6 +82,40 @@ const getDropPositionAtEnd = (
     : undefined;
 };
 
+const getDropPositionAtPoint = (
+  containerEl: HTMLElement,
+  clientX: number,
+  clientY: number,
+  orientation: orientationType,
+): DropPosition | undefined => {
+  const tabs = [
+    ...containerEl.querySelectorAll<HTMLElement>(
+      ".vuuDraggableItem[data-grid-layout-item-id]",
+    ),
+  ];
+  const target = tabs.reduce<HTMLElement | undefined>((closest, tab) => {
+    if (!closest) {
+      return tab;
+    }
+    const coordinate = orientation === "horizontal" ? clientX : clientY;
+    const rect = tab.getBoundingClientRect();
+    const closestRect = closest.getBoundingClientRect();
+    const midpoint =
+      orientation === "horizontal"
+        ? rect.left + rect.width / 2
+        : rect.top + rect.height / 2;
+    const closestMidpoint =
+      orientation === "horizontal"
+        ? closestRect.left + closestRect.width / 2
+        : closestRect.top + closestRect.height / 2;
+    return Math.abs(coordinate - midpoint) <
+      Math.abs(coordinate - closestMidpoint)
+      ? tab
+      : closest;
+  }, undefined);
+  return getDropPosition(target ?? null, clientX, clientY, orientation);
+};
+
 export function initializeDragContainer(
   containerEl: HTMLElement,
   dragContext: DragContext,
@@ -74,33 +125,49 @@ export function initializeDragContainer(
   const gridId = getClosestGridLayout(containerEl);
   const spaceMan = new SpaceMan(dragContext, containerEl.id, orientation);
   spaceMan.setDragContainer(containerEl);
-  let mouseDownAt: number | undefined;
-  const unregisterDragStateCleanup = dragContext.registerDragStateCleanup(() =>
-    spaceMan.cleanup(),
+  let mouseDown: { tab: HTMLElement; x: number; y: number } | undefined;
+  let tabDropTarget: HTMLElement | undefined;
+  const clearTabDropTarget = () => {
+    tabDropTarget?.classList.remove(
+      "vuuTabDropTarget-after",
+      "vuuTabDropTarget-before",
+    );
+    tabDropTarget = undefined;
+  };
+  const clearTabDropTargetAfterFrame = () => {
+    const target = tabDropTarget;
+    tabDropTarget = undefined;
+    requestAnimationFrame(() => {
+      target?.classList.remove(
+        "vuuTabDropTarget-after",
+        "vuuTabDropTarget-before",
+      );
+    });
+  };
+  const unregisterDragStateCleanup = dragContext.registerDragStateCleanup(
+    () => {
+      clearTabDropTargetAfterFrame();
+      spaceMan.cleanup();
+    },
   );
 
-  const focusDroppedTab = (tabsId: string, tabLabel: string) => {
+  const focusDroppedTab = (
+    tabsId: string,
+    itemId: string | undefined,
+    tabLabel: string,
+  ) => {
     requestAnimationFrame(() => {
+      const selector = itemId
+        ? `[data-grid-layout-item-id="${CSS.escape(itemId)}"] .saltTabNextTrigger`
+        : `[data-label="${CSS.escape(tabLabel)}"] .saltTabNextTrigger`;
       const droppedTab = document
         .getElementById(tabsId)
-        ?.querySelector(
-          `[data-label="${tabLabel}"] .saltTabNextTrigger`,
-        ) as HTMLButtonElement;
+        ?.querySelector(selector) as HTMLButtonElement;
       droppedTab?.focus();
     });
   };
 
   const onDragStart = (e: DragEvent) => {
-    if (
-      mouseDownAt !== undefined &&
-      performance.now() - mouseDownAt < TAB_DRAG_ACTIVATION_DELAY
-    ) {
-      e.preventDefault();
-      e.stopPropagation();
-      mouseDownAt = undefined;
-      return;
-    }
-    mouseDownAt = undefined;
     const element = getDraggableEl(e.target);
     if (element) {
       const tabsContainer = queryClosest(e.target, ".vuuDragContainer", true);
@@ -153,14 +220,18 @@ export function initializeDragContainer(
           (indexOfDropTarget !== dragSource?.tabIndex ||
             isRemoteContainer(dragSource.element, dropTarget))
         ) {
-          const direction =
-            orientation === "horizontal"
-              ? e.clientX > x
-                ? "fwd"
-                : "bwd"
-              : e.clientY > y
-                ? "fwd"
-                : "bwd";
+          const position = getDropPosition(
+            dropTarget,
+            e.clientX,
+            e.clientY,
+            orientation,
+          );
+          clearTabDropTarget();
+          if (position) {
+            tabDropTarget = dropTarget;
+            dropTarget.classList.add(`vuuTabDropTarget-${position.position}`);
+          }
+          const direction = position?.position === "after" ? "fwd" : "bwd";
 
           spaceMan.dragEnter(indexOfDropTarget, direction);
         }
@@ -195,6 +266,37 @@ export function initializeDragContainer(
   };
 
   const onDragOver = (e: DragEvent) => {
+    const dropTarget = getDraggableEl(e.target);
+    if (dropTarget && sourceIsTabbedComponent(dragContext.dragSource)) {
+      const position = getDropPosition(
+        dropTarget,
+        e.clientX,
+        e.clientY,
+        orientation,
+      );
+      clearTabDropTarget();
+      if (position) {
+        tabDropTarget = dropTarget;
+        dropTarget.classList.add(`vuuTabDropTarget-${position.position}`);
+      }
+    } else if (sourceIsTabbedComponent(dragContext.dragSource)) {
+      const position = getDropPositionAtPoint(
+        containerEl,
+        e.clientX,
+        e.clientY,
+        orientation,
+      );
+      const target = position
+        ? containerEl.querySelector<HTMLElement>(
+            `[data-grid-layout-item-id="${CSS.escape(position.target)}"]`,
+          )
+        : undefined;
+      clearTabDropTarget();
+      if (position && target) {
+        tabDropTarget = target;
+        target.classList.add(`vuuTabDropTarget-${position.position}`);
+      }
+    }
     e.preventDefault();
   };
 
@@ -202,6 +304,7 @@ export function initializeDragContainer(
     // Have we dragged the draggable item right out of the parent drag container
     const container = queryClosest(e.relatedTarget, `#${spaceMan.id}`);
     if (container === null) {
+      clearTabDropTarget();
       spaceMan.leaveDragContainer();
     }
   };
@@ -214,45 +317,60 @@ export function initializeDragContainer(
       spaceMan.cleanup();
       return;
     }
-    if (e.defaultPrevented) {
+    const { clientX, clientY } = e;
+    const dropPosition =
+      getDropPosition(
+        getDraggableEl(e.target),
+        clientX,
+        clientY,
+        orientation,
+      ) ??
+      getDropPositionAtPoint(containerEl, clientX, clientY, orientation) ??
+      spaceMan.dropPosition ??
+      getDropPositionAtEnd(e.target as HTMLElement, containerEl);
+
+    if (!dropPosition) {
       spaceMan.cleanup();
     } else {
-      const { clientX, clientY } = e;
       e.preventDefault();
       e.stopPropagation();
 
-      // important we capture this before calling spaceMan.drop
-      const dropPosition =
-        spaceMan.dropPosition ??
-        getDropPositionAtEnd(e.target as HTMLElement, containerEl);
-
-      if (dropPosition) {
-        const droppedLabel = dragContext.dragSource?.label;
-        if (sourceIsTabbedComponent(dragContext.dragSource)) {
-          dragContext.beginDrop();
-          await spaceMan.drop(clientX, clientY);
-          dragContext.drop({
-            tabsId,
-            dropPosition,
-          });
-        } else {
-          spaceMan.cleanup();
-          dragContext.drop({
-            tabsId,
-            dropPosition,
-          });
-        }
-
-        if (droppedLabel) {
-          focusDroppedTab(tabsId, droppedLabel);
-        }
-        dragContext.endDrag();
+      const source = dragContext.dragSource;
+      const droppedLabel = source?.label;
+      const droppedItemId = sourceIsTabbedComponent(source)
+        ? source.tab.id
+        : undefined;
+      if (sourceIsTabbedComponent(source)) {
+        dragContext.beginDrop();
+        await spaceMan.drop(clientX, clientY);
+        dragContext.drop({
+          tabsId,
+          dropPosition,
+        });
       } else {
         spaceMan.cleanup();
+        dragContext.drop({
+          tabsId,
+          dropPosition,
+        });
       }
+
+      if (droppedLabel) {
+        focusDroppedTab(tabsId, droppedItemId, droppedLabel);
+      }
+      dragContext.endDrag();
     }
   };
-  const onDragEnd = () => {
+  const onDragEnd = ({ clientX, clientY }: DragEvent) => {
+    if (
+      mouseDown &&
+      Math.hypot(clientX - mouseDown.x, clientY - mouseDown.y) <=
+        TAB_CLICK_MOVEMENT_TOLERANCE &&
+      mouseDown.tab.ariaSelected !== "true"
+    ) {
+      mouseDown.tab.click();
+    }
+    mouseDown = undefined;
     if (!dragContext.ownsDrag) {
       return;
     }
@@ -268,7 +386,10 @@ export function initializeDragContainer(
     // TODO we will need to get the actual draggable, before measuring
     const draggable = getDraggableEl(target);
     if (draggable) {
-      mouseDownAt = performance.now();
+      const tab = draggable.querySelector<HTMLElement>('[role="tab"]');
+      if (tab) {
+        mouseDown = { tab, x: clientX, y: clientY };
+      }
       const { left, top } = draggable.getBoundingClientRect();
       spaceMan.mouseOffset = {
         x: clientX - left,
@@ -276,31 +397,38 @@ export function initializeDragContainer(
       };
     }
   };
-  const onMouseUp = () => {
-    mouseDownAt = undefined;
+  const onMouseUp = ({ clientX, clientY }: MouseEvent) => {
+    if (
+      mouseDown &&
+      Math.hypot(clientX - mouseDown.x, clientY - mouseDown.y) <=
+        TAB_CLICK_MOVEMENT_TOLERANCE &&
+      mouseDown.tab.ariaSelected !== "true"
+    ) {
+      mouseDown.tab.click();
+    }
+    mouseDown = undefined;
   };
 
-  containerEl?.addEventListener("mousedown", onMouseDown);
+  containerEl?.addEventListener("mousedown", onMouseDown, true);
   document.body.addEventListener("mouseup", onMouseUp);
-  containerEl?.addEventListener("dragstart", onDragStart);
-  containerEl?.addEventListener("dragenter", onDragEnter);
-  containerEl?.addEventListener("dragleave", onDragLeave);
-  containerEl?.addEventListener("dragover", onDragOver);
-  containerEl?.addEventListener("drop", onDrop);
-  document.body.addEventListener("drop", onDrop);
+  containerEl?.addEventListener("dragstart", onDragStart, true);
+  containerEl?.addEventListener("dragenter", onDragEnter, true);
+  containerEl?.addEventListener("dragleave", onDragLeave, true);
+  containerEl?.addEventListener("dragover", onDragOver, true);
+  containerEl?.addEventListener("drop", onDrop, true);
   document.body.addEventListener("dragend", onDragEnd);
 
   function cleanUp() {
     unregisterDragStateCleanup();
+    clearTabDropTarget();
     spaceMan.cleanup();
-    containerEl?.removeEventListener("mousedown", onMouseDown);
+    containerEl?.removeEventListener("mousedown", onMouseDown, true);
     document.body.removeEventListener("mouseup", onMouseUp);
-    containerEl?.removeEventListener("dragstart", onDragStart);
-    containerEl?.removeEventListener("dragenter", onDragEnter);
-    containerEl?.removeEventListener("dragleave", onDragLeave);
-    containerEl?.removeEventListener("dragover", onDragOver);
-    containerEl?.removeEventListener("drop", onDrop);
-    document.body.removeEventListener("drop", onDrop);
+    containerEl?.removeEventListener("dragstart", onDragStart, true);
+    containerEl?.removeEventListener("dragenter", onDragEnter, true);
+    containerEl?.removeEventListener("dragleave", onDragLeave, true);
+    containerEl?.removeEventListener("dragover", onDragOver, true);
+    containerEl?.removeEventListener("drop", onDrop, true);
     document.body.removeEventListener("dragend", onDragEnd);
   }
 

@@ -88,7 +88,7 @@ export const GridLayout = ({
     gridLayoutModel,
     gridModel,
     gridSnapshot,
-    nonContentGridItems: { placeholderIds, splitters, stackIds },
+    nonContentGridItems: { placeholders, splitters, stackIds },
     onCancelDrag,
     onCancelTabDrag,
     onDetachTab,
@@ -168,8 +168,8 @@ export const GridLayout = ({
             );
           })}
           {children}
-          {placeholderIds.map((placeholderId) => {
-            const placeholder = snapshotItemById.get(placeholderId);
+          {placeholders.map(({ id: placeholderId, snapshotId }) => {
+            const placeholder = snapshotItemById.get(snapshotId);
             if (!placeholder) {
               throw Error(
                 `[GridLayout] canonical placeholder #${placeholderId} not found`,

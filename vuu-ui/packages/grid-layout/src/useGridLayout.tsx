@@ -84,8 +84,8 @@ export type GridLayoutHookProps = {
 type GridLayoutItemElements = Array<ReactElement<GridLayoutItemProps>>;
 
 type NonContentGridItems = {
+  placeholders: Array<{ id: string; snapshotId: string }>;
   splitters: ISplitter[];
-  placeholderIds: string[];
   stackIds: string[];
 };
 
@@ -326,15 +326,26 @@ export const useGridLayout = ({
       }
     | undefined
   >(undefined);
+  const pendingExistingDragRef = useRef<
+    { id: number; ownerWindow: Window } | undefined
+  >(undefined);
+  const clearPendingExistingDrag = useCallback(() => {
+    if (pendingExistingDragRef.current) {
+      const { id, ownerWindow } = pendingExistingDragRef.current;
+      ownerWindow.clearTimeout(id);
+      pendingExistingDragRef.current = undefined;
+    }
+  }, []);
   const clearDragAppearance = useCallback(() => {
     containerRef.current?.classList.remove("vuuDragging");
   }, []);
   useEffect(
     () => () => {
+      clearPendingExistingDrag();
       clearDragAppearance();
       dragCoordinator.dispose();
     },
-    [clearDragAppearance, dragCoordinator],
+    [clearDragAppearance, clearPendingExistingDrag, dragCoordinator],
   );
   const contentIds = useMemo(
     () =>
@@ -356,16 +367,28 @@ export const useGridLayout = ({
     const element = contentRegistryRef.current.get(itemId);
     return element ? [element] : [];
   });
-  const nonContentGridItems = useMemo<NonContentGridItems>(
-    () => ({
-      placeholderIds: snapshot.items
+  const nonContentGridItems = useMemo<NonContentGridItems>(() => {
+    const placeholderPreview =
+      dragCoordinator.state.phase === "previewing" &&
+      dragCoordinator.state.source.kind === "palette-template" &&
+      dragCoordinator.state.target.intent.kind === "replace"
+        ? {
+            id: dragCoordinator.state.target.targetId,
+            snapshotId: dragCoordinator.state.source.item.id,
+          }
+        : undefined;
+    return {
+      placeholders: snapshot.items
         .filter(({ id: itemId }) => !contentIds.has(itemId))
-        .map(({ id: itemId }) => itemId),
+        .map(({ id: snapshotId }) =>
+          placeholderPreview?.snapshotId === snapshotId
+            ? placeholderPreview
+            : { id: snapshotId, snapshotId },
+        ),
       splitters: gridLayoutModel.createSplitters(),
       stackIds: snapshot.stacks.map(({ id: stackId }) => stackId),
-    }),
-    [contentIds, gridLayoutModel, snapshot],
-  );
+    };
+  }, [contentIds, dragCoordinator, gridLayoutModel, snapshot]);
 
   const saveGridLayout = useCallback<GridLayoutChangeHandler>(
     (id, gridLayout) => {
@@ -375,22 +398,31 @@ export const useGridLayout = ({
   );
 
   const handleDragStart = useCallback<GridLayoutDragStartHandler>(
-    (_evt, options) => {
+    (evt, options) => {
       if (options.type === "text/plain") {
-        const result = dragCoordinator.begin({
-          itemId: options.id,
-          kind: "existing-item",
-          sourceGridId: id,
-        });
-        if (!result.ok) {
-          throw Error(result.error.message);
+        clearPendingExistingDrag();
+        const ownerWindow = evt.currentTarget.ownerDocument.defaultView;
+        if (ownerWindow) {
+          const timeoutId = ownerWindow.setTimeout(() => {
+            pendingExistingDragRef.current = undefined;
+            const result = dragCoordinator.begin({
+              itemId: options.id,
+              kind: "existing-item",
+              sourceGridId: id,
+            });
+            if (!result.ok) {
+              throw Error(result.error.message);
+            }
+          });
+          pendingExistingDragRef.current = { id: timeoutId, ownerWindow };
         }
       }
     },
-    [dragCoordinator, id],
+    [clearPendingExistingDrag, dragCoordinator, id],
   );
 
   const handleCancelDrag = useCallback(() => {
+    clearPendingExistingDrag();
     clearDragAppearance();
     if (
       dragCoordinator.state.phase === "dragging" ||
@@ -402,7 +434,7 @@ export const useGridLayout = ({
       }
     }
     provisionalTemplateRef.current = undefined;
-  }, [clearDragAppearance, dragCoordinator]);
+  }, [clearDragAppearance, clearPendingExistingDrag, dragCoordinator]);
 
   const handleDragEnd = useCallback<GridLayoutDragEndHandler>(
     (_evt, dropped) => {
@@ -537,6 +569,7 @@ export const useGridLayout = ({
         dragCoordinator.state.phase !== "dragging" &&
         dragCoordinator.state.phase !== "previewing"
       ) {
+        clearPendingExistingDrag();
         const begun = dragCoordinator.begin({
           itemId: dragSource.id,
           kind: "existing-item",
@@ -562,7 +595,11 @@ export const useGridLayout = ({
         }
       }
     },
-    [dragCoordinator, layoutOptions?.newChildItem.header],
+    [
+      clearPendingExistingDrag,
+      dragCoordinator,
+      layoutOptions?.newChildItem.header,
+    ],
   );
 
   const handleDragLeave = useCallback(() => {
@@ -607,7 +644,14 @@ export const useGridLayout = ({
       if (!intent) {
         return false;
       }
-      if (intent.kind !== "split") {
+      const replacingPlaceholder =
+        intent.kind === "replace" &&
+        sourceIsTemplate(dragSource) &&
+        !contentRegistryRef.current.has(targetItemId);
+      if (
+        (intent.kind !== "split" && !replacingPlaceholder) ||
+        sourceIsTabbedComponent(dragSource)
+      ) {
         const previewed = dragCoordinator.preview({
           gridId: id,
           intent,
@@ -629,10 +673,20 @@ export const useGridLayout = ({
 
   const handleDrop = useCallback<GridLayoutDropHandler>(
     (targetItemId, dragSource, position) => {
-      const targetGridItem = gridModel.getChildItem(targetItemId, true);
       containerRef.current?.classList.remove("vuuDragging");
 
       prepareDragSource(dragSource);
+      const existingPlaceholderPreview =
+        position === "centre" &&
+        dragCoordinator.state.phase === "previewing" &&
+        dragCoordinator.state.source.kind === "palette-template" &&
+        dragCoordinator.state.target.intent.kind === "replace" &&
+        dragCoordinator.state.target.targetId === targetItemId;
+      const replacingPlaceholder =
+        position === "centre" && !contentRegistryRef.current.has(targetItemId);
+      const targetGridItem = existingPlaceholderPreview
+        ? undefined
+        : gridModel.getChildItem(targetItemId, true);
 
       if (
         !isGridLayoutSplitDirection(position) &&
@@ -641,19 +695,34 @@ export const useGridLayout = ({
       ) {
         return false;
       }
-      if (position === "centre" && isStackedItem(targetGridItem)) {
+      if (
+        position === "centre" &&
+        targetGridItem &&
+        isStackedItem(targetGridItem)
+      ) {
         return false;
       }
-      const preview = isGridLayoutSplitDirection(position)
-        ? handleDragPreview(targetItemId, dragSource, position)
-        : dragCoordinator.preview({
-            gridId: id,
-            intent:
-              position === "centre"
-                ? { kind: "replace" }
-                : { kind: "create-stack" },
-            targetId: targetItemId,
-          }).ok;
+      const targetId =
+        isGridLayoutSplitDirection(position) &&
+        targetGridItem &&
+        isStackedItem(targetGridItem)
+          ? targetGridItem.stackId
+          : targetItemId;
+      const intent: GridDropIntent = isGridLayoutSplitDirection(position)
+        ? { kind: "split", position }
+        : position === "centre"
+          ? { kind: "replace" }
+          : { kind: "create-stack" };
+      const preview =
+        existingPlaceholderPreview ||
+        (isGridLayoutSplitDirection(position) &&
+        !sourceIsTabbedComponent(dragSource)
+          ? handleDragPreview(targetItemId, dragSource, position)
+          : dragCoordinator.preview({
+              gridId: id,
+              intent,
+              targetId,
+            }).ok);
       if (!preview) {
         if (
           dragCoordinator.state.phase === "dragging" ||
@@ -680,7 +749,7 @@ export const useGridLayout = ({
           throw Error(`[useGridLayout#${id}] template item id not allocated`);
         }
         const newItem = gridModel.getChildItem(provisional.itemId, true);
-        if (position === "centre") {
+        if (position === "centre" && !replacingPlaceholder) {
           replaceChildComponent(targetItemId, provisional.component, newItem);
         } else {
           addChildComponent(provisional.component, newItem);
@@ -753,17 +822,17 @@ export const useGridLayout = ({
         ({ id }) => id === targetStackItemId,
       );
       if (!targetStack) {
-        return;
+        throw Error(
+          `[useGridLayout#${id}] stack drop target #${targetStackItemId} not found`,
+        );
       }
-      const targetItemId =
-        targetStack.itemIds.find(
-          (itemId) =>
-            itemId === dropPosition.target ||
-            snapshot.items.find(({ id }) => id === itemId)?.title ===
-              dropPosition.target,
-        ) ?? targetStack.itemIds.at(-1);
+      const targetItemId = targetStack.itemIds.find(
+        (itemId) => itemId === dropPosition.target,
+      );
       if (!targetItemId) {
-        return;
+        throw Error(
+          `[useGridLayout#${id}] stack item drop target #${dropPosition.target} not found`,
+        );
       }
 
       let component: ReactElement | undefined;

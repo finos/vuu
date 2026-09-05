@@ -1963,7 +1963,7 @@ export const regeneratePlaceholders = (
     .map(({ id }) => id);
   const items = geometry.items.filter(({ type }) => type !== "placeholder");
   const grid = getGridMatrix(
-    items,
+    items.filter(({ dragging }) => !dragging),
     geometry.rows.length,
     geometry.columns.length,
   );

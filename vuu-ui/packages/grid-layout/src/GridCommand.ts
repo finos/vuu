@@ -312,6 +312,7 @@ export class LegacyGridCommandExecutor {
           return geometryFailure(command, split.error);
         }
         this.gridLayoutModel.applySplitTransition(split.value);
+        this.gridModel.getChildItem(command.itemId, true).dragging = false;
         return success(command);
       }
       case "replace-item": {
@@ -339,6 +340,7 @@ export class LegacyGridCommandExecutor {
           return geometryFailure(command, replaced.error);
         }
         this.gridLayoutModel.applyReplaceTransition(replaced.value);
+        this.gridModel.getChildItem(command.itemId, true).dragging = false;
         return success(command);
       }
       case "replace-stack-item": {
@@ -525,6 +527,7 @@ export class LegacyGridCommandExecutor {
         if (!created.ok) {
           return stackFailure(command, created.error);
         }
+        this.gridModel.getChildItem(command.itemId, true).dragging = false;
         if (command.selectedItemId) {
           const selected = this.gridModel.selectStackItem(
             created.value.stackId,
@@ -626,7 +629,9 @@ export class LegacyGridCommandExecutor {
           if (!removed.ok) {
             return stackFailure(command, removed.error);
           }
-        } else {
+        } else if (
+          !this.gridModel.getChildItem(command.itemId, true).dragging
+        ) {
           const removed = this.removeItem(command, command.itemId, "drag");
           if (!removed.ok) {
             return removed;

@@ -354,16 +354,21 @@ test.describe("GridLayout browser interactions", () => {
 
     await page.mouse.move(sourceX, sourceY);
     await page.mouse.down();
-    await page.mouse.move(sourceX + 10, sourceY, { steps: 5 });
+    await page.mouse.move(sourceX + 10, sourceY);
     await page.mouse.move(
       targetBox.x + targetBox.width / 2,
       targetBox.y + targetBox.height * 0.05,
       { steps: 20 },
     );
+    await expect(grid.item("beta")).toHaveCount(0);
     await expect(grid.content("alpha")).toHaveClass(/vuuDropTarget-north/);
+    const transitionedTargetBox = await grid.content("alpha").boundingBox();
+    if (!transitionedTargetBox) {
+      throw Error("Native transition target disappeared");
+    }
     await page.mouse.move(
-      targetBox.x + targetBox.width * 0.95,
-      targetBox.y + targetBox.height / 2,
+      transitionedTargetBox.x + transitionedTargetBox.width * 0.95,
+      transitionedTargetBox.y + transitionedTargetBox.height / 2,
       { steps: 10 },
     );
     await expect(grid.content("alpha")).toHaveClass(/vuuDropTarget-east/);
@@ -377,20 +382,109 @@ test.describe("GridLayout browser interactions", () => {
     await expect(component.locator('[class*="vuuDropTarget-"]')).toHaveCount(0);
   });
 
+  test("native proportional drag removes immediately, restores exactly, then relocates once", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, {
+      variant: "proportional-removal-drag",
+    });
+    const grid = new GridLayoutDriver(component, page);
+    const layout = grid.layout("proportional-removal-drag");
+    const originalRows = await layout.evaluate(
+      (element) => getComputedStyle(element).gridTemplateRows,
+    );
+    const originalColumns = await layout.evaluate(
+      (element) => getComputedStyle(element).gridTemplateColumns,
+    );
+    const originalAreas = await Promise.all(
+      [
+        "proportional-header",
+        "proportional-left-top",
+        "proportional-left-bottom",
+        "proportional-right",
+      ].map((id) => grid.gridArea(id)),
+    );
+    const readSplitters = () =>
+      grid.separator().evaluateAll((elements) =>
+        elements.map((element) => ({
+          controls: element.getAttribute("aria-controls"),
+          orientation: element.getAttribute("aria-orientation"),
+          resizedAfter: element.getAttribute("data-resized-child-items-after"),
+          resizedBefore: element.getAttribute(
+            "data-resized-child-items-before",
+          ),
+        })),
+      );
+    const originalSplitters = await readSplitters();
+
+    await grid.startNativeDrag(
+      grid.header("proportional-right"),
+      grid.content("proportional-left-top"),
+      "east",
+    );
+
+    await expect(grid.item("proportional-right")).toHaveCount(0);
+    expect(await grid.gridArea("proportional-header")).toBe("1/1/2/2");
+    expect(await grid.gridArea("proportional-left-top")).toBe("2/1/3/2");
+    expect(await grid.gridArea("proportional-left-bottom")).toBe("3/1/4/2");
+    await expect(grid.content("proportional-left-top")).toHaveClass(
+      /vuuDropTarget-east/,
+    );
+    await expect(layout).toHaveCSS("grid-template-rows", originalRows);
+    await expect(layout).not.toHaveCSS(
+      "grid-template-columns",
+      originalColumns,
+    );
+    expect(await readSplitters()).not.toEqual(originalSplitters);
+
+    await page.keyboard.press("Escape");
+    await grid.finishNativeDrag();
+
+    await expect(grid.item("proportional-right")).toBeVisible();
+    expect(
+      await Promise.all(
+        [
+          "proportional-header",
+          "proportional-left-top",
+          "proportional-left-bottom",
+          "proportional-right",
+        ].map((id) => grid.gridArea(id)),
+      ),
+    ).toEqual(originalAreas);
+    await expect(layout).toHaveCSS("grid-template-rows", originalRows);
+    await expect(layout).toHaveCSS("grid-template-columns", originalColumns);
+    expect(await readSplitters()).toEqual(originalSplitters);
+    await expect(layout).toHaveAttribute("data-commit-count", "0");
+
+    await grid.startNativeDrag(
+      grid.header("proportional-right"),
+      grid.content("proportional-left-top"),
+      "east",
+    );
+    await expect(grid.item("proportional-right")).toHaveCount(0);
+    await grid.finishNativeDrag();
+
+    await expect(grid.item("proportional-right")).toBeVisible();
+    await expect(grid.content("proportional-right")).toHaveText("Right");
+    expect(await grid.gridArea("proportional-left-top")).toBe("2/1/3/2");
+    expect(await grid.gridArea("proportional-right")).toBe("2/2/3/3");
+    await expect(layout).toHaveAttribute("data-commit-count", "1");
+
+    const separator = grid.separator("vertical").last();
+    const sourceBefore = await grid.item("proportional-right").boundingBox();
+    await grid.resize(separator, 30, 0);
+    const sourceAfter = await grid.item("proportional-right").boundingBox();
+    expect(sourceAfter?.width).not.toBeCloseTo(sourceBefore?.width ?? 0, 0);
+  });
+
   test("native outside drop ends without changing the layout", async ({
     mount,
     page,
   }) => {
     const component = await mount(fixture, { variant: "basic" });
     const grid = new GridLayoutDriver(component, page);
-    await component.evaluate((root) => {
-      root.addEventListener(
-        "dragend",
-        (event) => {
-          root.setAttribute("data-native-dragend", String(event.isTrusted));
-        },
-        true,
-      );
+    await component.evaluate(() => {
       const outsideTarget = document.createElement("div");
       outsideTarget.dataset.testid = "outside-drop-target";
       outsideTarget.style.cssText =
@@ -402,7 +496,6 @@ test.describe("GridLayout browser interactions", () => {
       targetPosition: { x: 12, y: 12 },
     });
 
-    await expect(component).toHaveAttribute("data-native-dragend", "true");
     expect(await grid.gridArea("alpha")).toBe("1/1/2/2");
     expect(await grid.gridArea("beta")).toBe("1/2/2/3");
     await expect(component.locator('[class*="vuuDropTarget-"]')).toHaveCount(0);
@@ -414,27 +507,81 @@ test.describe("GridLayout browser interactions", () => {
     });
   });
 
-  test.fixme("native stack member drag creates a standalone cardinal split", async ({
+  for (const [direction, sourceId, selected] of [
+    ["north", "alpha", true],
+    ["south", "beta", false],
+    ["east", "alpha", true],
+    ["west", "beta", false],
+  ] as const) {
+    test(`native ${selected ? "selected" : "nonselected"} stack member detaches ${direction}`, async ({
+      mount,
+      page,
+    }) => {
+      const component = await mount(fixture, { variant: "stacked-target" });
+      const grid = new GridLayoutDriver(component, page);
+
+      await grid.nativeTabDragToGrid(
+        grid.tabItem(sourceId),
+        grid.content("target"),
+        direction,
+      );
+
+      await expect(component.getByRole("tablist")).toHaveCount(0);
+      await expect(grid.item(sourceId)).toBeVisible();
+      await expect(
+        grid.item(sourceId === "alpha" ? "beta" : "alpha"),
+      ).toBeVisible();
+      const source = await grid.item(sourceId).boundingBox();
+      const target = await grid.item("target").boundingBox();
+      if (direction === "north") {
+        expect(source?.y).toBeLessThan(target?.y ?? 0);
+      } else if (direction === "south") {
+        expect(source?.y).toBeGreaterThan(target?.y ?? 0);
+      } else if (direction === "east") {
+        expect(source?.x).toBeGreaterThan(target?.x ?? 0);
+      } else {
+        expect(source?.x).toBeLessThan(target?.x ?? 0);
+      }
+      await expect(component.locator('[class*="vuuDropTarget-"]')).toHaveCount(
+        0,
+      );
+
+      if (direction === "east") {
+        const separator = grid.separator().last();
+        await expect(separator).toBeVisible();
+        const targetBeforeResize = await grid.item("target").boundingBox();
+        await grid.resize(separator, 30);
+        const targetAfter = await grid.item("target").boundingBox();
+        expect(targetAfter?.width).not.toBeCloseTo(
+          targetBeforeResize?.width ?? 0,
+          0,
+        );
+      }
+    });
+  }
+
+  test("native stack member detach is rejected across grid scopes", async ({
     mount,
     page,
   }) => {
-    // Tab detachment requires the delayed spacer gesture; dragTo intentionally
-    // starts immediately and does not keep the tab detached long enough.
-    const component = await mount(fixture, { variant: "stacked-target" });
+    const component = await mount(fixture, { variant: "stacked-cross-grid" });
     const grid = new GridLayoutDriver(component, page);
-    const source = component
-      .getByRole("tab", { name: "Alpha" })
-      .locator(
-        "xpath=ancestor::*[contains(concat(' ', normalize-space(@class), ' '), ' vuuDraggableItem ')][1]",
-      );
+    const source = grid.tabItem("nested-alpha");
+    const targetBox = await grid.item("parent-target").boundingBox();
+    if (!targetBox) {
+      throw Error("Cross-grid detach fixture is not visible");
+    }
 
-    await grid.nativeDrag(source, grid.content("target"), "north");
+    await source.dragTo(grid.item("parent-target"), {
+      targetPosition: {
+        x: targetBox.width / 2,
+        y: targetBox.height * 0.1,
+      },
+    });
 
-    await expect(component.getByRole("tab", { name: "Alpha" })).toHaveCount(0);
-    await expect(component.getByTestId("content-alpha")).toBeVisible();
-    const alpha = await grid.item("alpha").boundingBox();
-    const target = await grid.item("target").boundingBox();
-    expect(alpha?.y).toBeLessThan(target?.y ?? 0);
+    await expect(component.getByRole("tablist")).toBeVisible();
+    await expect(grid.tabItem("nested-alpha")).toBeVisible();
+    await expect(grid.item("parent-target")).toBeVisible();
     await expect(component.locator('[class*="vuuDropTarget-"]')).toHaveCount(0);
   });
 
@@ -579,20 +726,21 @@ test.describe("GridLayout browser interactions", () => {
     const component = await mount(fixture, { variant: "change-rerender" });
     const grid = new GridLayoutDriver(component, page);
 
-    // This lower-level rerender check deliberately keeps synthetic delivery;
-    // native split/stack/resize coverage is exercised below.
-    await grid.syntheticDrag(
+    await grid.drag(
       grid.header("rerender-alpha"),
       grid.content("rerender-beta"),
       "north",
     );
-    expect(await grid.gridArea("rerender-alpha")).toBe("1/1/2/2");
-    expect(await grid.gridArea("rerender-beta")).toBe("2/1/3/2");
+    const alphaArea = await grid.gridArea("rerender-alpha");
+    const betaArea = await grid.gridArea("rerender-beta");
+    const alpha = await grid.item("rerender-alpha").boundingBox();
+    const beta = await grid.item("rerender-beta").boundingBox();
+    expect(alpha?.y).toBeLessThan(beta?.y ?? 0);
 
     await grid.resize(grid.separator("horizontal"), 0, 40);
 
-    expect(await grid.gridArea("rerender-alpha")).toBe("1/1/2/2");
-    expect(await grid.gridArea("rerender-beta")).toBe("2/1/3/2");
+    expect(await grid.gridArea("rerender-alpha")).toBe(alphaArea);
+    expect(await grid.gridArea("rerender-beta")).toBe(betaArea);
   });
 
   test("renders a shared splitter when only one track item opts into resizing", async ({
@@ -1069,18 +1217,194 @@ test.describe("GridLayout browser interactions", () => {
     ).toBeVisible();
   });
 
-  test.fixme("palette template drop onto an empty placeholder", async () => {
-    // Trusted dragTo reaches the placeholder affordance, but Chromium does not
-    // dispatch a stable drop for an all-placeholder target.
+  test("palette template drops onto an empty canonical placeholder", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "palette" });
+    const grid = new GridLayoutDriver(component, page);
+    const placeholder = grid.placeholder();
+    const placeholderArea = await placeholder.evaluate(
+      (element) => getComputedStyle(element).gridArea,
+    );
+    await grid.nativeDrag(
+      component.getByTestId("palette-item-1"),
+      placeholder,
+      "centre",
+    );
+
+    await expect(placeholder).toHaveCount(0);
+    const template = component
+      .locator(".vuuGridLayoutItemHeader-title", { hasText: /^Template A$/ })
+      .locator("xpath=../..");
+    await expect(template).toBeVisible();
+    await expect(template).toHaveCSS("grid-area", placeholderArea);
+    await expect(component.getByTestId("template-content")).toHaveText(
+      "Template A",
+    );
   });
 
-  test.fixme("reorders tabs by dragging within a tabstrip", async () => {
-    // Tab reordering uses delayed spacer animation that Playwright's dragTo
-    // cannot currently drive deterministically.
+  test("cancelled palette placeholder preview cleans provisional content", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "palette" });
+    const grid = new GridLayoutDriver(component, page);
+    const source = component.getByTestId("palette-item-1");
+    const placeholder = grid.placeholder();
+    const sourceBox = await source.boundingBox();
+    const targetBox = await placeholder.boundingBox();
+    if (!sourceBox || !targetBox) {
+      throw Error("Placeholder cancellation fixture is not visible");
+    }
+    await page.mouse.move(
+      sourceBox.x + sourceBox.width / 2,
+      sourceBox.y + sourceBox.height / 2,
+    );
+    await page.mouse.down();
+    await page.mouse.move(
+      targetBox.x + targetBox.width / 2,
+      targetBox.y + targetBox.height / 2,
+      { steps: 20 },
+    );
+    await expect(placeholder).toHaveClass(/vuuDropTarget-centre/);
+    await page.keyboard.press("Escape");
+    await page.mouse.up();
+
+    await expect(grid.placeholder()).toHaveCount(1);
+    await expect(component.getByTestId("template-content")).toHaveCount(0);
+    await expect(component.locator('[class*="vuuDropTarget-"]')).toHaveCount(0);
   });
 
-  test.fixme("dragging duplicate-title tabs preserves item identity", async () => {
-    // Duplicate labels are supported by item id, but native tab dragging still
-    // depends on the delayed spacer gesture described above.
+  for (const [name, sourceId, targetId, placement, expected, selectedId] of [
+    [
+      "first to last",
+      "alpha",
+      "gamma",
+      "after",
+      ["beta", "gamma", "alpha"],
+      "alpha",
+    ],
+    [
+      "last to first",
+      "gamma",
+      "alpha",
+      "before",
+      ["gamma", "alpha", "beta"],
+      "alpha",
+    ],
+    [
+      "middle to last",
+      "beta",
+      "gamma",
+      "after",
+      ["alpha", "gamma", "beta"],
+      "alpha",
+    ],
+  ] as const) {
+    test(`native tab reorder moves ${name}`, async ({ mount, page }) => {
+      const component = await mount(fixture, { variant: "stacked-three" });
+      const grid = new GridLayoutDriver(component, page);
+
+      await grid.nativeTabDrag(
+        grid.tabItem(sourceId),
+        grid.tabItem(targetId),
+        placement,
+      );
+
+      await expect
+        .poll(() =>
+          component
+            .locator(".vuuDraggableItem")
+            .evaluateAll((items) =>
+              items
+                .toSorted(
+                  (left, right) =>
+                    left.getBoundingClientRect().left -
+                    right.getBoundingClientRect().left,
+                )
+                .map((item) => item.getAttribute("data-grid-layout-item-id")),
+            ),
+        )
+        .toEqual(expected);
+      await expect(grid.tabItem(selectedId).getByRole("tab")).toHaveAttribute(
+        "aria-selected",
+        "true",
+      );
+    });
+  }
+
+  test("native tab reorder no-op and cancel preserve order and selection", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "stacked-three" });
+    const grid = new GridLayoutDriver(component, page);
+
+    await grid.nativeTabDrag(
+      grid.tabItem("alpha"),
+      grid.tabItem("alpha"),
+      "before",
+    );
+    await grid.cancelNativeTabDrag(
+      grid.tabItem("alpha"),
+      grid.tabItem("gamma"),
+      "after",
+    );
+
+    await expect
+      .poll(() =>
+        component
+          .locator(".vuuDraggableItem")
+          .evaluateAll((items) =>
+            items
+              .toSorted(
+                (left, right) =>
+                  left.getBoundingClientRect().left -
+                  right.getBoundingClientRect().left,
+              )
+              .map((item) => item.getAttribute("data-grid-layout-item-id")),
+          ),
+      )
+      .toEqual(["alpha", "beta", "gamma"]);
+    await expect(grid.tabItem("alpha").getByRole("tab")).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    await expect(component.locator(".SpaceMan")).toHaveCount(0);
+  });
+
+  test("dragging duplicate-title tabs preserves item identity", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(fixture, { variant: "stacked-duplicates" });
+    const grid = new GridLayoutDriver(component, page);
+
+    await grid.nativeTabDrag(
+      grid.tabItem("beta"),
+      grid.tabItem("alpha"),
+      "before",
+    );
+
+    await expect
+      .poll(() =>
+        component
+          .locator(".vuuDraggableItem")
+          .evaluateAll((items) =>
+            items
+              .toSorted(
+                (left, right) =>
+                  left.getBoundingClientRect().left -
+                  right.getBoundingClientRect().left,
+              )
+              .map((item) => item.getAttribute("data-grid-layout-item-id")),
+          ),
+      )
+      .toEqual(["beta", "alpha", "gamma"]);
+    await expect(grid.tabItem("alpha").getByRole("tab")).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
   });
 });

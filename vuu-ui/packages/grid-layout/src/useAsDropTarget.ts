@@ -1,4 +1,5 @@
 import {
+  boxContainsPoint,
   getPositionWithinBox,
   type GridLayoutDropPosition,
   pointPositionWithinRect,
@@ -213,7 +214,7 @@ export const useAsDropTarget = () => {
           removeDropTargetPositionClassName(currentDropTarget.target);
           leave();
           // console.log(
-          //   `%c[useAsDropTarget] clear droptarget ${currentDropTarget?.gridLayoutItemId}`,
+          //   `%c[useAsDropTarget] onDragEnter clear droptarget ${currentDropTarget?.gridLayoutItemId}`,
           //   "color:brown;font-weight: bold;",
           // );
         }
@@ -317,26 +318,21 @@ export const useAsDropTarget = () => {
       if (dragContext.dragSource === undefined) {
         return;
       }
-      const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
-      const dropTarget = getDropTarget(evt.target, currentDropTarget, layoutId);
-      // console.log(
-      //   `[useAsDropTarget] onDragleave ${evt.target?.className} to ${evt.relatedTarget?.className}`,
-      //   {
-      //     dropTarget,
-      //   },
-      // );
-      if (dropTarget?.target === evt.target) {
-        if (dropTarget === currentDropTarget) {
-          dropTargetStateRef.current.dropTarget = undefined;
-          dropTargetStateRef.current.accepted = false;
-          dropTargetStateRef.current.position = undefined;
-          leave();
-        }
+      const { dropTarget: currentDropTarget, rect: currentDropTargetRect } = dropTargetStateRef.current;
 
-        removeDropTargetPositionClassName(dropTarget.target);
+      if (currentDropTarget?.target && !boxContainsPoint(currentDropTargetRect, evt.clientX, evt.clientY)) {
+
+        dropTargetStateRef.current.dropTarget = undefined;
+        dropTargetStateRef.current.accepted = false;
+        dropTargetStateRef.current.position = undefined;
+        leave();
+
+        removeDropTargetPositionClassName(currentDropTarget.target);
       }
+
+
     },
-    [dragContext, layoutId, leave],
+    [dragContext, leave],
   );
 
   const onDrop = useCallback<DragEventHandler>(

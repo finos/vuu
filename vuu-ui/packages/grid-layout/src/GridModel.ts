@@ -1853,10 +1853,12 @@ export class GridModel extends EventEmitter<GridModelEvents> {
             stackId,
             title,
             type,
+            dragging,
           },
         ) => {
-          // The stacked-content gridItems are a runtime construct, no need to serialize
-          if (type !== "stacked-content") {
+          // Runtime stack containers and transactionally detached drag sources
+          // are not part of the canonical layout.
+          if (type !== "stacked-content" && !(dragging && !stackId)) {
             result[id] = {
               ...(componentInstanceId === undefined
                 ? {}

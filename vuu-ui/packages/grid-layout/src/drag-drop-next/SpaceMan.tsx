@@ -116,7 +116,6 @@ export class SpaceMan {
     ) as HTMLElement;
     if (item) {
       this.clearDragStartTimer();
-      this.#dragContainer?.classList.add("vuuDragContainer-dragging");
       const propertyName = this.#sizeProperty;
       const { [propertyName]: size } = item.getBoundingClientRect();
       this.#dragSize = size;
@@ -124,16 +123,13 @@ export class SpaceMan {
       this.#withinDragContainer = true;
       this.#dragStartTimer = setTimeout(() => {
         this.#dragStartTimer = undefined;
+        this.#dragContainer?.classList.add("vuuDragContainer-dragging");
         this.#spacer1.style[propertyName] = `${size}px`;
         this.#spacer1.dataset.dropTarget = "true";
-        item?.after(this.#spacer1);
+        item.after(this.#spacer1);
         this.#dragItem = item;
         item.classList.add("vuuDraggableItem-hidden");
         if (!this.#withinDragContainer) {
-          // Item has been dragged straight out of container
-          // Delay this slightly more than RequestAnimationFrame. Avoids
-          // skipping animation completely where user drags item very quickly
-          // out of container.
           this.setSpacerSizes(0, 0, 30);
         }
       }, 60);
@@ -286,12 +282,18 @@ export class SpaceMan {
       if (this.#dragItem) {
         const dragItem = this.#dragItem;
 
+        let settled = false;
         const settleComplete = () => {
+          if (settled) {
+            return;
+          }
+          settled = true;
           dragItem.removeEventListener("transitionend", settleComplete);
           this.cleanup();
           // this.unfreezeContainer();
           resolve();
         };
+        setTimeout(settleComplete, 250);
 
         dragItem?.classList.replace(
           "vuuDraggableItem-hidden",
@@ -361,7 +363,7 @@ export class SpaceMan {
 
   private setSpacerSizes(size1: number, size2?: number, timeout = 0) {
     const propertyName = this.#sizeProperty;
-    setTimeout(() => {
+    const applySizes = () => {
       if (this.#spacer1.parentNode === null) {
         // do nothing
       } else {
@@ -372,7 +374,12 @@ export class SpaceMan {
           this.#spacer2.dataset.dropTarget = size2 > 0 ? "true" : "false";
         }
       }
-    }, timeout);
+    };
+    if (timeout === 0) {
+      applySizes();
+    } else {
+      setTimeout(applySizes, timeout);
+    }
   }
 
   private createDragSpacer() {

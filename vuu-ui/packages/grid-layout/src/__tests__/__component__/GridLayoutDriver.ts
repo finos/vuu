@@ -43,6 +43,12 @@ export class GridLayoutDriver {
     return this.root.locator(".vuuGridPlaceholder");
   }
 
+  tabItem(id: string) {
+    return this.root.locator(
+      `.vuuDraggableItem[data-grid-layout-item-id=${JSON.stringify(id)}]`,
+    );
+  }
+
   separator(orientation?: "horizontal" | "vertical") {
     return orientation
       ? this.root.locator(
@@ -103,6 +109,202 @@ export class GridLayoutDriver {
         `GridLayoutDriver expected native ${expectedClassName} affordance, received ${observedClassName}`,
       );
     }
+  }
+
+  async startNativeDrag(source: Locator, target: Locator, zone: DropZone) {
+    const sourceBox = await source.boundingBox();
+    if (!sourceBox) {
+      throw Error("GridLayoutDriver native drag requires a visible source");
+    }
+    await this.page.mouse.move(
+      sourceBox.x + sourceBox.width / 2,
+      sourceBox.y + sourceBox.height / 2,
+    );
+    await this.page.mouse.down();
+    await this.page.mouse.move(
+      sourceBox.x + sourceBox.width / 2 + 10,
+      sourceBox.y + sourceBox.height / 2,
+    );
+    const targetBox = await target.boundingBox();
+    if (!targetBox) {
+      throw Error("GridLayoutDriver native drag requires a visible target");
+    }
+    const position = targetPosition[zone];
+    await this.page.mouse.move(
+      targetBox.x + targetBox.width * position.x,
+      targetBox.y + targetBox.height * position.y,
+      { steps: 20 },
+    );
+  }
+
+  async finishNativeDrag() {
+    await this.page.mouse.up();
+  }
+
+  async nativeTabDrag(
+    source: Locator,
+    target: Locator,
+    placement: "after" | "before",
+  ) {
+    const sourceBox = await source.boundingBox();
+    const targetBox = await target.boundingBox();
+    if (!sourceBox || !targetBox) {
+      throw Error("GridLayoutDriver native tab drag requires visible elements");
+    }
+    const targetX =
+      targetBox.x + targetBox.width * (placement === "before" ? 0.2 : 0.8);
+    const targetY = targetBox.y + targetBox.height / 2;
+    await this.observeTabAffordance();
+    const sourceX = sourceBox.x + sourceBox.width / 2;
+    const sourceY = sourceBox.y + sourceBox.height / 2;
+    await this.page.mouse.move(sourceX, sourceY);
+    await this.page.mouse.down();
+    await this.page.mouse.move(sourceX + 16, sourceY, { steps: 4 });
+    await this.page.mouse.move(targetX, targetY, { steps: 20 });
+    await this.page.waitForTimeout(80);
+    if (
+      (await this.page
+        .locator("html")
+        .getAttribute("data-grid-tab-affordance-seen")) !== "true"
+    ) {
+      throw Error("GridLayoutDriver expected a native tab reorder affordance");
+    }
+    await this.page.mouse.up();
+    await this.page.waitForTimeout(300);
+    if (
+      (await this.page.locator("html").getAttribute("data-grid-tab-drop")) !==
+      "true"
+    ) {
+      throw Error("GridLayoutDriver expected a trusted native tab drop");
+    }
+  }
+
+  async nativeTabDragToGrid(
+    source: Locator,
+    target: Locator,
+    zone: Exclude<DropZone, "header">,
+  ) {
+    const targetBox = await target.boundingBox();
+    if (!targetBox) {
+      throw Error(
+        "GridLayoutDriver native tab detach requires visible elements",
+      );
+    }
+    const position = targetPosition[zone];
+    const expectedClassName = `vuuDropTarget-${zone}`;
+    await target.evaluate((element, className) => {
+      document.documentElement.removeAttribute("data-grid-affordance-seen");
+      const observer = new MutationObserver(() => {
+        if (element.classList.contains(className)) {
+          document.documentElement.setAttribute(
+            "data-grid-affordance-seen",
+            className,
+          );
+          observer.disconnect();
+        }
+      });
+      observer.observe(element, { attributeFilter: ["class"] });
+    }, expectedClassName);
+    await source.dragTo(target, {
+      targetPosition: {
+        x: targetBox.width * position.x,
+        y: targetBox.height * position.y,
+      },
+    });
+    if (
+      (await this.page
+        .locator("html")
+        .getAttribute("data-grid-affordance-seen")) !== expectedClassName
+    ) {
+      throw Error(
+        `GridLayoutDriver expected native ${expectedClassName} affordance`,
+      );
+    }
+    await this.page.waitForTimeout(300);
+  }
+
+  async cancelNativeTabDrag(
+    source: Locator,
+    target: Locator,
+    placement: "after" | "before",
+  ) {
+    const targetBox = await target.boundingBox();
+    if (!targetBox) {
+      throw Error(
+        "GridLayoutDriver cancelled tab drag requires visible elements",
+      );
+    }
+    await this.page.evaluate(() => {
+      const outside = document.createElement("div");
+      outside.dataset.testid = "cancel-tab-drop-target";
+      outside.style.cssText =
+        "position:fixed;right:0;bottom:0;width:24px;height:24px;z-index:10000";
+      document.body.append(outside);
+    });
+    await source.dragTo(this.page.getByTestId("cancel-tab-drop-target"), {
+      targetPosition: {
+        x: placement === "before" ? 4 : 20,
+        y: 12,
+      },
+    });
+    await this.page
+      .getByTestId("cancel-tab-drop-target")
+      .evaluate((element) => {
+        element.remove();
+      });
+  }
+
+  private async observeTabAffordance() {
+    await this.root.evaluate((root) => {
+      document.documentElement.removeAttribute("data-grid-tab-affordance-seen");
+      document.documentElement.removeAttribute("data-grid-tab-dragstart");
+      document.documentElement.removeAttribute("data-grid-tab-drop");
+      root.addEventListener(
+        "dragstart",
+        (event) => {
+          document.documentElement.setAttribute(
+            "data-grid-tab-dragstart",
+            String(event.isTrusted),
+          );
+        },
+        { capture: true, once: true },
+      );
+      root.addEventListener(
+        "drop",
+        (event) => {
+          document.documentElement.setAttribute(
+            "data-grid-tab-drop",
+            String(event.isTrusted),
+          );
+        },
+        { capture: true, once: true },
+      );
+      const observer = new MutationObserver((records) => {
+        if (
+          root.querySelector('[class*="vuuTabDropTarget-"]') ||
+          records.some(
+            ({ oldValue, target }) =>
+              (target instanceof HTMLElement &&
+                [...target.classList].some((className) =>
+                  className.startsWith("vuuTabDropTarget-"),
+                )) ||
+              oldValue?.includes("vuuTabDropTarget-"),
+          )
+        ) {
+          document.documentElement.setAttribute(
+            "data-grid-tab-affordance-seen",
+            "true",
+          );
+          observer.disconnect();
+        }
+      });
+      observer.observe(root, {
+        attributeFilter: ["class"],
+        attributeOldValue: true,
+        childList: true,
+        subtree: true,
+      });
+    });
   }
 
   async drag(source: Locator, target: Locator, zone: DropZone) {

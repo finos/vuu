@@ -1,12 +1,12 @@
-import { DragEvent, DragEventHandler, useCallback } from "react";
-import { GridLayoutDragEndHandler } from "./GridLayoutProvider";
+import { type DragEvent, type DragEventHandler, useCallback } from "react";
+import type { GridLayoutDragEndHandler } from "./GridLayoutProvider";
 import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
 import {
-  DragSourceProvider,
+  type DragSourceProvider,
   sourceIsComponent,
   sourceIsTemplate,
 } from "./GridLayoutContext";
-import { LayoutJSON } from "./componentToJson";
+import type { LayoutJSON } from "./componentToJson";
 
 export type DragStartIdOptions = {
   id: string;
@@ -54,6 +54,19 @@ export const useDraggable = ({
       }
 
       dragContext.beginDrag(e.nativeEvent, dragSource);
+      if (sourceIsComponent(dragSource)) {
+        const dragElement = e.currentTarget;
+        const targetWindow = dragElement.ownerDocument.defaultView;
+        dragElement.addEventListener(
+          "dragend",
+          () => {
+            if (!dragElement.isConnected && targetWindow) {
+              targetWindow.dispatchEvent(new targetWindow.Event("dragend"));
+            }
+          },
+          { once: true },
+        );
+      }
     },
     [dragContext, getDragSource, onDragStart],
   );

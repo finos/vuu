@@ -167,6 +167,7 @@ describe("GridController transactions", () => {
     expect(start.transaction.replace([resizeColumn(1, "80px")])).toMatchObject({
       ok: true,
     });
+
     expect(controller.getSnapshot().columns.map(({ size }) => size)).toEqual([
       "100px",
       "80px",
@@ -190,6 +191,73 @@ describe("GridController transactions", () => {
       snapshot: controller.getSnapshot(),
     });
     expect(controller.getSnapshot().revision).toBe(3);
+  });
+
+  it("replaces target previews from an explicit working baseline", () => {
+    const controller = new GridController(modelWithTwoItems(), 3);
+    const baseline = controller.getSnapshot();
+    const committed = vi.fn();
+    controller.subscribeCommitted(committed);
+    const start = controller.beginTransaction("drag");
+    expect(start.ok).toBe(true);
+    if (!start.ok) {
+      return;
+    }
+
+    expect(
+      start.transaction.establishWorkingBaseline([
+        { itemId: "left", reason: "drag", type: "remove-item" },
+      ]),
+    ).toMatchObject({ ok: true });
+    const working = controller.getSnapshot();
+    expect(working.items.map(({ id }) => id)).toEqual(["right"]);
+    expect(working.columns).toHaveLength(1);
+
+    expect(start.transaction.replace([resizeColumn(0, "125px")])).toMatchObject(
+      {
+        ok: true,
+      },
+    );
+    expect(controller.getSnapshot().columns[0].size).toBe("125px");
+    expect(start.transaction.replace([])).toMatchObject({ ok: true });
+    expect(controller.getSnapshot()).toEqual(working);
+    expect(start.transaction.rollback()).toMatchObject({ ok: true });
+    expect(controller.getSnapshot()).toBe(baseline);
+    expect(committed).not.toHaveBeenCalled();
+  });
+
+  it("validates a replacement without publishing it over the working baseline", () => {
+    const controller = new GridController(modelWithTwoItems(), 3);
+    const listener = vi.fn();
+    controller.subscribe(listener);
+    const start = controller.beginTransaction("drag");
+    expect(start.ok).toBe(true);
+    if (!start.ok) {
+      return;
+    }
+
+    expect(
+      start.transaction.establishWorkingBaseline([
+        { itemId: "left", reason: "drag", type: "remove-item" },
+      ]),
+    ).toMatchObject({ ok: true });
+    const workingBaseline = controller.getSnapshot();
+    listener.mockClear();
+
+    expect(
+      start.transaction.validateReplacement([resizeColumn(0, "125px")]),
+    ).toMatchObject({ ok: true });
+    expect(controller.getSnapshot()).toBe(workingBaseline);
+    expect(controller.getSnapshot().columns).toEqual(workingBaseline.columns);
+    expect(listener).not.toHaveBeenCalled();
+
+    expect(start.transaction.replace([resizeColumn(0, "125px")])).toMatchObject(
+      { ok: true },
+    );
+    expect(start.transaction.commit()).toMatchObject({
+      ok: true,
+      snapshot: { revision: 4 },
+    });
   });
 
   it("publishes previews at the committed revision and commits once", () => {
@@ -287,6 +355,39 @@ describe("GridController transactions", () => {
         stacks: [{ itemIds: ["right", "left"] }],
       },
     });
+  });
+
+  it("closes a no-op tab reorder without publishing a revision", () => {
+    const model = modelWithTwoItems();
+    model.stackChildItems("left", "right");
+    const stackId = model.getStackStates()[0].id;
+    const controller = new GridController(model);
+    const baseline = controller.getSnapshot();
+    const committed = vi.fn();
+    controller.subscribeCommitted(committed);
+    const start = controller.beginTransaction("drag");
+    expect(start.ok).toBe(true);
+    if (!start.ok) {
+      return;
+    }
+
+    expect(
+      start.transaction.replace([
+        {
+          itemId: "left",
+          position: "before",
+          stackId,
+          targetItemId: "right",
+          type: "reorder-stack-item",
+        },
+      ]),
+    ).toMatchObject({ ok: true });
+    expect(start.transaction.commit()).toEqual({
+      ok: true,
+      snapshot: baseline,
+    });
+    expect(controller.getSnapshot()).toBe(baseline);
+    expect(committed).not.toHaveBeenCalled();
   });
 
   it("reconciles legacy stack observers when structural previews roll back", () => {

@@ -31,6 +31,25 @@ const createThreeItemController = () =>
     ),
   );
 
+const createUnequalController = () =>
+  new GridController(
+    new GridModel(
+      "grid",
+      descriptor(["1fr", "1fr"], ["1fr", "1fr", "2fr"], {
+        header: item("1/1/2/3", { resizeable: "hv", title: "Header" }),
+        lower: item("3/1/4/2", { resizeable: "hv", title: "Lower" }),
+        source: item("2/2/4/3", {
+          componentId: "stable-component",
+          minHeight: 42,
+          minWidth: 84,
+          resizeable: "hv",
+          title: "Source",
+        }),
+        upper: item("2/1/3/2", { resizeable: "hv", title: "Upper" }),
+      }),
+    ),
+  );
+
 const existing = (itemId: string, sourceGridId = "grid"): GridDragSource => ({
   itemId,
   kind: "existing-item",
@@ -188,6 +207,40 @@ describe("createGridDropPlan", () => {
           targetItemId: "left",
           type: "reorder-stack-item",
         },
+      ],
+    });
+  });
+
+  it.each([
+    "north",
+    "south",
+    "east",
+    "west",
+  ] as const)("translates a stack-member %s detach to one typed command sequence", (position) => {
+    expect(
+      createGridDropPlan(
+        {
+          itemId: "member",
+          kind: "stack-member",
+          selected: false,
+          sourceGridId: "grid",
+          stackId: "stack",
+        },
+        {
+          gridId: "grid",
+          intent: { kind: "split", position },
+          targetId: "target",
+        },
+      ),
+    ).toMatchObject({
+      commands: [
+        {
+          itemId: "member",
+          position,
+          stackId: "stack",
+          targetId: "target",
+          type: "move-stack-item-to-grid",
+        },
         { type: "regenerate-placeholders" },
       ],
     });
@@ -195,6 +248,126 @@ describe("createGridDropPlan", () => {
 });
 
 describe("GridDragCoordinator", () => {
+  it("begins an existing-item drag with a close-equivalent removal preview", () => {
+    const controller = createUnequalController();
+    const closeController = createUnequalController();
+    const baseline = controller.getSnapshot();
+    const committed = vi.fn();
+    controller.subscribeCommitted(committed);
+
+    closeController.dispatch({
+      itemId: "source",
+      reason: "close",
+      type: "remove-item",
+    });
+    const coordinator = new GridDragCoordinator("grid", controller);
+    expect(coordinator.begin(existing("source"))).toMatchObject({ ok: true });
+
+    expect(controller.getSnapshot()).toEqual({
+      ...closeController.getSnapshot(),
+      revision: baseline.revision,
+    });
+    expect(controller.getSnapshot().items.map(({ id }) => id)).not.toContain(
+      "source",
+    );
+    expect(controller.getSnapshot().columns).toEqual([{ size: "1fr" }]);
+    expect(controller.getSnapshot().rows).toEqual([
+      { size: "1fr" },
+      { size: "1fr" },
+      { size: "2fr" },
+    ]);
+    expect(committed).not.toHaveBeenCalled();
+
+    expect(coordinator.cancel()).toMatchObject({ ok: true });
+    expect(controller.getSnapshot()).toBe(baseline);
+    expect(committed).not.toHaveBeenCalled();
+  });
+
+  it("keeps source removal while targets switch or reject, then commits stable identity once", () => {
+    const controller = createUnequalController();
+    const coordinator = new GridDragCoordinator("grid", controller);
+    const committed = vi.fn();
+    controller.subscribeCommitted(committed);
+    coordinator.begin(existing("source"));
+
+    expect(
+      coordinator.preview({
+        gridId: "grid",
+        intent: { kind: "split", position: "south" },
+        targetId: "upper",
+      }),
+    ).toMatchObject({ ok: true });
+    expect(
+      controller.getSnapshot().items.filter(({ id }) => id === "source"),
+    ).toHaveLength(0);
+
+    expect(
+      coordinator.preview({
+        gridId: "grid",
+        intent: { kind: "replace" },
+        targetId: "missing",
+      }),
+    ).toMatchObject({
+      error: { code: "TRANSACTION_FAILURE" },
+      ok: false,
+    });
+    expect(controller.getSnapshot().items.map(({ id }) => id)).not.toContain(
+      "source",
+    );
+
+    expect(
+      coordinator.preview({
+        gridId: "grid",
+        intent: { kind: "split", position: "east" },
+        targetId: "upper",
+      }),
+    ).toMatchObject({ ok: true });
+    expect(controller.getSnapshot().items.map(({ id }) => id)).not.toContain(
+      "source",
+    );
+    expect(coordinator.commit()).toMatchObject({ ok: true });
+
+    expect(
+      controller.getSnapshot().items.find(({ id }) => id === "source"),
+    ).toMatchObject({
+      componentInstanceId: "stable-component",
+      id: "source",
+      minHeight: 42,
+      minWidth: 84,
+      resizeable: "hv",
+      title: "Source",
+    });
+    expect(
+      controller.getSnapshot().items.filter(({ id }) => id === "source"),
+    ).toHaveLength(1);
+    expect(controller.getSnapshot().revision).toBe(1);
+    expect(committed).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not create a removal preview for palette templates", () => {
+    const controller = createController();
+    const baseline = controller.getSnapshot();
+    const coordinator = new GridDragCoordinator("grid", controller);
+
+    expect(coordinator.begin(template)).toMatchObject({ ok: true });
+    expect(controller.getSnapshot()).toBe(baseline);
+    expect(coordinator.cancel()).toMatchObject({ ok: true });
+    expect(controller.getSnapshot()).toBe(baseline);
+  });
+
+  it("rejects an existing item from another grid before opening a transaction", () => {
+    const controller = createController();
+    const baseline = controller.getSnapshot();
+    const coordinator = new GridDragCoordinator("grid", controller);
+
+    expect(coordinator.begin(existing("left", "other"))).toMatchObject({
+      error: { code: "CROSS_GRID_DRAG" },
+      ok: false,
+    });
+    expect(controller.getSnapshot()).toBe(baseline);
+    expect(controller.beginTransaction("drag")).toMatchObject({ ok: true });
+  });
+
   it.each([
     "north",
     "south",
@@ -330,6 +503,7 @@ describe("GridDragCoordinator", () => {
       intent: { kind: "create-stack" },
       targetId: "left",
     });
+
     create.commit();
     const stackId = controller.getSnapshot().stacks[0]?.id;
     expect(stackId).toBeDefined();
@@ -361,13 +535,128 @@ describe("GridDragCoordinator", () => {
     ).toHaveLength(2);
   });
 
-  it("replaces each preview from the exact baseline and commits once", () => {
+  it("previews placeholder replacement and retains the template id only on commit", () => {
+    const controller = new GridController(
+      new GridModel(
+        "grid",
+        descriptor(["1fr", "1fr"], ["1fr"], {
+          palette: item("1/1/2/2"),
+          placeholder: item("1/2/2/3", { type: "placeholder" }),
+        }),
+      ),
+    );
+    const baseline = controller.getSnapshot();
+    const cancelled = new GridDragCoordinator("grid", controller);
+    cancelled.begin(template);
+    expect(
+      cancelled.preview({
+        gridId: "grid",
+        intent: { kind: "replace" },
+        targetId: "placeholder",
+      }),
+    ).toMatchObject({ ok: true });
+    expect(controller.getSnapshot().items.map(({ id }) => id)).toContain(
+      "template-instance",
+    );
+    expect(cancelled.cancel()).toMatchObject({ ok: true });
+    expect(controller.getSnapshot()).toBe(baseline);
+
+    const committed = vi.fn();
+    controller.subscribeCommitted(committed);
+    const accepted = new GridDragCoordinator("grid", controller);
+    accepted.begin(template);
+    accepted.preview({
+      gridId: "grid",
+      intent: { kind: "replace" },
+      targetId: "placeholder",
+    });
+    expect(accepted.commit()).toMatchObject({ ok: true });
+    expect(controller.getSnapshot().revision).toBe(1);
+    expect(controller.getSnapshot().items.map(({ id }) => id)).toEqual([
+      "palette",
+      "template-instance",
+    ]);
+    expect(committed).toHaveBeenCalledTimes(1);
+  });
+
+  it("rolls a selected stack member detach back to exact order and selection", () => {
+    const controller = createThreeItemController();
+    controller.dispatch({
+      itemId: "beta",
+      selectedItemId: "beta",
+      targetId: "alpha",
+      type: "create-stack",
+    });
+    const stackId = controller.getSnapshot().stacks[0].id;
+    const baseline = controller.getSnapshot();
+    const coordinator = new GridDragCoordinator("grid", controller);
+    coordinator.begin({
+      itemId: "beta",
+      kind: "stack-member",
+      selected: true,
+      sourceGridId: "grid",
+      stackId,
+    });
+    expect(
+      coordinator.preview({
+        gridId: "grid",
+        intent: { kind: "split", position: "west" },
+        targetId: "gamma",
+      }),
+    ).toMatchObject({ ok: true });
+    expect(controller.getSnapshot()).not.toBe(baseline);
+    expect(coordinator.cancel()).toMatchObject({ ok: true });
+    expect(controller.getSnapshot()).toBe(baseline);
+    expect(controller.getSnapshot().stacks[0]).toMatchObject({
+      itemIds: ["alpha", "beta"],
+      selectedItemId: "beta",
+    });
+  });
+
+  it("commits a no-op reorder without a revision or durable transition", () => {
+    const controller = createThreeItemController();
+    controller.dispatch({
+      itemId: "beta",
+      selectedItemId: "alpha",
+      targetId: "alpha",
+      type: "create-stack",
+    });
+    const stackId = controller.getSnapshot().stacks[0].id;
+    const baseline = controller.getSnapshot();
+    const committed = vi.fn();
+    controller.subscribeCommitted(committed);
+    const coordinator = new GridDragCoordinator("grid", controller);
+    coordinator.begin({
+      itemId: "alpha",
+      kind: "stack-member",
+      selected: true,
+      sourceGridId: "grid",
+      stackId,
+    });
+    expect(
+      coordinator.preview({
+        gridId: "grid",
+        intent: {
+          kind: "stack",
+          position: "before",
+          targetItemId: "beta",
+        },
+        targetId: stackId,
+      }),
+    ).toMatchObject({ ok: true });
+    expect(coordinator.commit()).toMatchObject({ ok: true });
+    expect(controller.getSnapshot()).toBe(baseline);
+    expect(committed).not.toHaveBeenCalled();
+  });
+
+  it("validates each preview against the source-removed baseline and commits once", () => {
     const controller = createController();
     const coordinator = new GridDragCoordinator("grid", controller);
     const committed = vi.fn();
     controller.subscribeCommitted(committed);
 
     expect(coordinator.begin(existing("left"))).toMatchObject({ ok: true });
+    const workingBaseline = controller.getSnapshot();
     expect(
       coordinator.preview({
         gridId: "grid",
@@ -375,25 +664,30 @@ describe("GridDragCoordinator", () => {
         targetId: "right",
       }),
     ).toMatchObject({ ok: true });
-    expect(controller.getSnapshot().rows).toHaveLength(2);
+    expect(controller.getSnapshot()).toBe(workingBaseline);
+    expect(controller.getSnapshot().items.map(({ id }) => id)).not.toContain(
+      "left",
+    );
 
     expect(
       coordinator.preview({
         gridId: "grid",
-        intent: { kind: "split", position: "west" },
+        intent: { kind: "split", position: "east" },
         targetId: "right",
       }),
     ).toMatchObject({ ok: true });
-    expect(controller.getSnapshot().rows).toHaveLength(1);
-    expect(controller.getSnapshot().columns.length).toBeGreaterThanOrEqual(2);
+    expect(controller.getSnapshot()).toBe(workingBaseline);
 
     expect(coordinator.commit()).toMatchObject({ ok: true });
     expect(controller.getSnapshot().revision).toBe(1);
+    expect(controller.getSnapshot().rows).toHaveLength(1);
+    expect(controller.getSnapshot().columns.length).toBeGreaterThanOrEqual(2);
     expect(committed).toHaveBeenCalledTimes(1);
     expect(committed.mock.calls[0][0].commands).toEqual([
+      { itemId: "left", reason: "drag", type: "remove-item" },
       {
         itemId: "left",
-        position: "west",
+        position: "east",
         targetId: "right",
         type: "move-item",
       },
@@ -432,6 +726,11 @@ describe("GridDragCoordinator", () => {
         targetId: "right",
       }),
     ).toMatchObject({ error: { code: "CROSS_GRID_DRAG" }, ok: false });
+    expect(controller.getSnapshot()).not.toBe(baseline);
+    expect(controller.getSnapshot().items.map(({ id }) => id)).not.toContain(
+      "left",
+    );
+    expect(coordinator.cancel()).toMatchObject({ ok: true });
     expect(controller.getSnapshot()).toBe(baseline);
   });
 

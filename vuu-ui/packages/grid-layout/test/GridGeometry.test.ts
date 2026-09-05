@@ -588,7 +588,7 @@ describe("GridGeometry item transitions", () => {
     expect(transition.placeholders?.added).toHaveLength(1);
   });
 
-  it("keeps a dragged item in the model and skips its grid lines", () => {
+  it("retains a dragged item for relocation but excludes it from empty-space geometry", () => {
     const transition = withPlaceholderIds(() =>
       unwrap(
         removeGridItem(
