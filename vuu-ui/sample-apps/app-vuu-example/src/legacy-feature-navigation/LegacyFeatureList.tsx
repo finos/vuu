@@ -4,7 +4,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { type HTMLAttributes, type ReactElement, useMemo } from "react";
-import { LegacyFeature } from "./LegacyFeature";
+import { Feature } from "./LegacyFeature";
 import type { DynamicFeatureProps } from "./types";
 
 import featureListCss from "../../../../packages/vuu-shell/src/feature-list/FeatureList.css";
@@ -44,7 +44,7 @@ export const LegacyFeatureList = ({
           title: featureProps.title,
           ...ViewProps,
         }}
-        component={<LegacyFeature {...featureProps} />}
+        component={<Feature {...featureProps} />}
         key={featureProps.url}
         value={featureProps.title}
       >

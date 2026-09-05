@@ -27,7 +27,7 @@ const useCachedFeature = (url: string) => {
   return feature;
 };
 
-const RawLegacyFeature = <Params extends object | undefined>({
+const RawFeature = <Params extends object | undefined>({
   url,
   css,
   ComponentProps: params,
@@ -50,6 +50,6 @@ const RawLegacyFeature = <Params extends object | undefined>({
   );
 };
 
-export const LegacyFeature = React.memo(RawLegacyFeature);
-LegacyFeature.displayName = "LegacyFeature";
-registerComponent("Feature", LegacyFeature, "view");
+export const Feature = React.memo(RawFeature);
+Feature.displayName = "Feature";
+registerComponent("Feature", Feature, "view");
