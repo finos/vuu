@@ -315,6 +315,7 @@ export const useCsvUpload = ({
     if (!sessionDataSource.columns.includes("vuuMsg")) {
       sessionDataSource.columns = sessionDataSource.columns.concat("vuuMsg");
     }
+
     setActiveSessionDataSource(sessionDataSource);
     onImportSessionStarted?.(sessionDataSource);
     return sessionDataSource;
@@ -347,6 +348,20 @@ export const useCsvUpload = ({
 
       await closePendingEditSession(false);
       if (operationId !== operationIdRef.current) {
+        return;
+      }
+
+      if (
+        !isSessionTable(dataSource.table) &&
+        (dataSource.status === "initialising" ||
+          dataSource.status === "unsubscribed")
+      ) {
+        const errorMessage = `CsvUpload requires dataSource to be subscribed before uploading (current status: "${dataSource.status}").`;
+        onError?.({
+          errors: {
+            validationError: createUploadError("validation", errorMessage),
+          },
+        });
         return;
       }
 
@@ -439,6 +454,8 @@ export const useCsvUpload = ({
       parseOptions,
       beginEditSession,
       closePendingEditSession,
+      dataSource.status,
+      dataSource.table,
       table,
       endEditSessionAndNotify,
       schema,

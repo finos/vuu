@@ -1,25 +1,53 @@
 # CSV Export
 
-CSV export is a set of standalone utility functions — `exportToCsv`, `exportCsvTemplate`, and `exportSessionTableToCsv` — implemented in [export-utils.ts](./export-utils.ts) and exported from `@vuu-ui/vuu-table-extras`. There is no React component: call them directly from a button handler or menu action.
+CSV export provides standalone utility functions — `exportToCsv`, `exportCsvTemplate`, and `exportSessionTableToCsv` — as well as a React hook `useCsvExport` exported from `@vuu-ui/vuu-table-extras`.
 
 See [CsvUpload](../csv-upload/README.md) for the counterpart component that imports a CSV into a Vuu table.
 
 ---
 
-## Usage
+## Usage with React Hook (`useCsvExport`)
+
+```tsx
+import { useCsvExport } from "@vuu-ui/vuu-table-extras";
+import { Button } from "@salt-ds/core";
+
+const MyTable = () => {
+  const { isExporting, exportCsv, exportTemplate } = useCsvExport(dataSource);
+
+  return (
+    <div>
+      <Button
+        disabled={isExporting}
+        onClick={() => exportCsv({ filename: "instruments.csv" })}
+      >
+        {isExporting ? "Exporting..." : "Export to CSV"}
+      </Button>
+      <Button
+        disabled={isExporting}
+        onClick={() => exportTemplate({ filename: "template.csv" })}
+      >
+        Download Template
+      </Button>
+    </div>
+  );
+};
+```
+
+---
+
+## Usage with Standalone Functions
 
 ```tsx
 import { exportToCsv } from "@vuu-ui/vuu-table-extras";
 
 const handleExport = useCallback(async () => {
-  await exportToCsv(
-    dataSource,
-    "All",
-    "instruments.csv",
-    [],
-    (err) => setStatus(`Export failed: ${err.message}`),
-    () => setStatus("Download started"),
-  );
+  await exportToCsv(dataSource, {
+    filename: "instruments.csv",
+    copyOption: "All",
+    onSuccess: () => setStatus("Download started"),
+    onError: (err) => setStatus(`Export failed: ${err.message}`),
+  });
 }, [dataSource]);
 ```
 
@@ -28,7 +56,10 @@ const handleExport = useCallback(async () => {
 ```tsx
 import { exportCsvTemplate } from "@vuu-ui/vuu-table-extras";
 
-exportCsvTemplate(dataSource, "instruments-template.csv");
+await exportCsvTemplate(dataSource, {
+  filename: "instruments-template.csv",
+  columns: ["ric", "currency", "isin"],
+});
 ```
 
 ---
@@ -38,31 +69,23 @@ exportCsvTemplate(dataSource, "instruments-template.csv");
 ```ts
 exportToCsv<TName extends string = string>(
   dataSource: DataSource,
-  copyOption?: CopyOption,             // default "All"
-  filename?: string,                   // default "export.csv"
-  excludeColumns?: string[],
-  onError?: (error: Error) => void,
-  onSuccess?: () => void,
-  maxRows?: number,                    // default 10_000
-  columnDescriptors?: ExportColumnDescriptor<TName>[],
-  overrides?: SessionDataSourceOverrides,
+  options?: ExportToCsvOptions<TName>,
 ): Promise<void>
 ```
 
-Creates a session table via `dataSource.createSessionDataSource(copyOption, "export", overrides)`, subscribes to it, drains every row, then triggers a browser download. The session data source is unsubscribed automatically once the download completes or the export fails.
+Options (`ExportToCsvOptions`):
 
-| Param | Description |
-|---|---|
-| `dataSource` | The target `DataSource`. Must support `createSessionDataSource`, unless it is already a session table (see [Exporting an existing session table](#exporting-an-existing-session-table)). |
-| `copyOption` | `"All"` exports every row, `"Selected"` only the currently selected rows. |
-| `excludeColumns` | Additional columns to omit, on top of the always-excluded `vuuMsg`, `vuuAction`, `vuuRowNum`. |
-| `onError` | Called once with the failure reason. Never called and rejected simultaneously — the returned promise always resolves. |
-| `onSuccess` | Called once the download has been triggered (or once, with no download, if the table has zero rows). |
-| `maxRows` | Row limit for the whole table. If the server reports more rows than this, the export fails via `onError` before any data is requested. |
-| `columnDescriptors` | See [Column labels and formatters](#column-labels-and-formatters). Every `name` not present in the session table's columns (excluding the always-excluded set) fails the export via `onError`. |
-| `overrides` | See [Exporting a divergent export table](#exporting-a-divergent-export-table). |
-
-Rows are requested from the session data source in chunks of 1,000 rather than one bulk range request, so this behaves predictably across both local and remote data sources.
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `filename` | `string` | `"export.csv"` | Downloaded filename. |
+| `copyOption` | `CopyOption` | `"All"` | `"All"` exports every row, `"Selected"` only the currently selected rows. |
+| `excludeColumns` | `string[]` | `[]` | Additional columns to omit, on top of the always-excluded `vuuMsg`, `vuuAction`, `vuuRowNum`. |
+| `maxRows` | `number` | `10_000` | Row limit for the export. Fails if the server reports more rows than this before requesting data. |
+| `columnDescriptors` | `ExportColumnDescriptor<TName>[]` | `undefined` | Custom labels and cell formatters per column (see [Column labels and formatters](#column-labels-and-formatters)). |
+| `overrides` | `SessionDataSourceOverrides` | `undefined` | Divergent export table or column overrides. |
+| `timeout` | `number` | `30_000` | Milliseconds before the export times out (0 to disable). |
+| `onError` | `(error: Error) => void` | `undefined` | Callback invoked on error. |
+| `onSuccess` | `() => void` | `undefined` | Callback invoked once the download is triggered (including when table has 0 data rows, downloading a header-only file). |
 
 ---
 
@@ -71,16 +94,21 @@ Rows are requested from the session data source in chunks of 1,000 rather than o
 ```ts
 exportCsvTemplate(
   dataSource: DataSource,
-  filename?: string,                   // default "template.csv"
-  excludeColumns?: string[],
-  columns?: string[],
-  overrides?: SessionDataSourceOverrides,
+  options?: ExportCsvTemplateOptions,
 ): Promise<void>
 ```
 
-Downloads a single-row CSV containing only the column headers — no data rows, no server round trip for rows (it creates an `"Empty"` session table purely to discover columns). Pass `columns` to restrict the header to a specific subset and order; omit it to include every schema column except the always-excluded set.
+Options (`ExportCsvTemplateOptions`):
 
-If `dataSource.createSessionDataSource` fails or is unavailable, this falls back to `dataSource.tableSchema` to build the header. In that fallback path, `columns` (or `overrides.columns`) not present in the schema produce a console warning rather than a thrown error.
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `filename` | `string` | `"template.csv"` | Downloaded filename. |
+| `excludeColumns` | `string[]` | `[]` | Columns to omit from the template. |
+| `columns` | `string[]` | `undefined` | Specific subset and order of columns to include. |
+| `overrides` | `SessionDataSourceOverrides` | `undefined` | Divergent table schema overrides. |
+| `timeout` | `number` | `10_000` | Milliseconds before template creation times out (0 to disable). |
+| `onError` | `(error: Error) => void` | `undefined` | Callback invoked on error. |
+| `onSuccess` | `() => void` | `undefined` | Callback invoked once the template download is triggered. |
 
 ---
 
@@ -89,18 +117,11 @@ If `dataSource.createSessionDataSource` fails or is unavailable, this falls back
 ```ts
 exportSessionTableToCsv<TName extends string = string>(
   dataSource: DataSource,
-  filename?: string,
-  excludeColumns?: string[],
-  onError?: (error: Error) => void,
-  onSuccess?: () => void,
-  maxRows?: number,
-  columnDescriptors?: ExportColumnDescriptor<TName>[],
-  copyOption?: CopyOption,
-  overrides?: SessionDataSourceOverrides,
+  options?: ExportToCsvOptions<TName>,
 ): Promise<void>
 ```
 
-The lower-level function `exportToCsv` delegates to. Accepts either a view `DataSource` (in which case it creates the session table itself, exactly like `exportToCsv`) or an already-created session `DataSource` — see below.
+The lower-level function `exportToCsv` delegates to. Accepts either a view `DataSource` (in which case it creates the session table itself) or an already-created session `DataSource`.
 
 ### Exporting an existing session table
 
@@ -125,7 +146,10 @@ const descriptors: ExportColumnDescriptor[] = [
   { name: "lotSize", label: "Lot Size", exportFormatter: (v) => `${v} units` },
 ];
 
-await exportToCsv(dataSource, "All", "instruments.csv", [], onError, onSuccess, 10_000, descriptors);
+await exportToCsv(dataSource, {
+  filename: "instruments.csv",
+  columnDescriptors: descriptors,
+});
 ```
 
 `exportFormatter` is applied per-cell before CSV escaping. `label` overrides only the header row — the underlying column selection and order are unaffected. Omitting `columnDescriptors` exports every subscribed column (excluding the always-excluded set) using its raw column name as both header and value.
