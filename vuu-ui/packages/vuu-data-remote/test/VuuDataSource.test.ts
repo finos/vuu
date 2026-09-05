@@ -21,6 +21,7 @@ type ConfigType = WithBaseFilter<WithFullConfig>;
 
 vi.mock("../src/ConnectionManager", () => {
   const serverAPI = Promise.resolve({
+    rpcCall: vi.fn(),
     send: vi.fn(),
     subscribe: vi.fn(),
   } as ServerAPI);
@@ -124,51 +125,6 @@ describe("VuuDataSource", () => {
       vi.spyOn(dataSource, "rpcRequest").mockResolvedValue(response);
 
       await expect(dataSource.addRow({ id: 7 })).resolves.toEqual(response);
-    });
-
-    describe("createSessionDataSource", () => {
-      it("forwards CopyOption and adds required session columns once", async () => {
-        const dataSource = new VuuDataSource({
-          columns: ["id", "vuuMsg"],
-          sessionTableMessageColumn: "vuuMsg",
-          table,
-        });
-        const rpcRequest = vi
-          .spyOn(dataSource, "rpcRequest")
-          .mockResolvedValue({
-            data: {
-              table: { module: "SIMUL", table: "session-instruments" },
-            },
-            type: "SUCCESS_RESULT",
-          });
-
-        const sessionDataSource =
-          await dataSource.createSessionDataSource("Selected");
-
-        expect(rpcRequest).toHaveBeenCalledWith({
-          params: { copyOption: "Selected", sessionType: "edit" },
-          rpcName: "createSessionTable",
-          type: "RPC_REQUEST",
-        });
-        expect(sessionDataSource?.columns).toEqual([
-          "id",
-          "vuuMsg",
-          "vuu_action",
-        ]);
-        expect(sessionDataSource?.viewport).toBe("session-instruments");
-      });
-
-      it("propagates session creation errors", async () => {
-        const dataSource = new VuuDataSource({ table });
-        vi.spyOn(dataSource, "rpcRequest").mockResolvedValue({
-          errorMessage: "session creation failed",
-          type: "ERROR_RESULT",
-        });
-
-        await expect(dataSource.createSessionDataSource("All")).rejects.toThrow(
-          "session creation failed",
-        );
-      });
     });
 
     it("returns the failed RPC result", async () => {
@@ -932,4 +888,3 @@ describe("VuuDataSource createSessionDataSource session config", () => {
     ).rejects.toThrow(/does not match expected edit table module/);
   });
 });
-
