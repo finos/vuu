@@ -4,13 +4,14 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node ./scripts/build.mjs",
-    "build:with-ag-grid": "node ./scripts/build.mjs --features feature-vuu-blotter,feature-ag-grid",
+    "build": "node ./scripts/build.ts",
+    "build:with-ag-grid": "node ./scripts/build.ts --features feature-vuu-blotter,feature-ag-grid",
     "start": "serve -p 5002 ../../deployed_apps/app-vuu-example"
   },
   "keywords": [],
   "author": "heswell",
   "license": "Apache-2.0",
+  "type": "module",
   "sideEffects": [
     "**/*.css"
   ],
@@ -32,6 +33,6 @@
     "react-dom": "^19.2.3"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=24.0.0"
   }
 }

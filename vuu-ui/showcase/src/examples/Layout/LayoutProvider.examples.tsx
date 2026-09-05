@@ -11,7 +11,7 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useCallback, useState } from "react";
-import VuuFilterTableFeature from "feature-filter-table";
+import VuuFilterTableFeature from "feature-vuu-filter-table";
 
 import { schemas } from "@vuu-ui/vuu-data-test";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
