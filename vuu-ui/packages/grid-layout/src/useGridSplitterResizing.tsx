@@ -1,34 +1,162 @@
-import { MouseEventHandler, useCallback, useRef } from "react";
+import { type MouseEventHandler, useCallback, useEffect, useRef } from "react";
 import {
   classNameLayoutItem,
   getGridLayoutItem,
   getGridSplitter,
 } from "./grid-dom-utils";
 import { adjustDistance, getTrackType } from "./grid-layout-utils";
-import { GridLayoutProps } from "./GridLayout";
-import {
+import type { GridLayoutProps } from "./GridLayout";
+import type {
   GridLayoutModel,
   GridLayoutResizeOperation,
-  type ResizeState,
+  ResizeState,
 } from "./GridLayoutModel";
-import { GridModel } from "./GridModel";
+import {
+  DEFAULT_MIN_GRID_ITEM_SIZE,
+  type GridModel,
+  type GridTrackResizeConstraint,
+} from "./GridModel";
 import { queryClosest } from "@vuu-ui/vuu-utils";
+import type { GridController, GridTransaction } from "./GridController";
+import { throwForGridCommandFailure } from "./GridCommand";
 
 export type SplitterResizingHookProps = Pick<
   GridLayoutProps,
-  "id" | "onClick"
+  "id" | "onClick" | "rowResizeDistribution"
 > & {
+  gridController: GridController;
   gridLayoutModel: GridLayoutModel;
   gridModel: GridModel;
 };
 
 export const useGridSplitterResizing = ({
+  gridController,
   gridLayoutModel: layoutModel,
   gridModel,
   onClick: onClickProp,
+  rowResizeDistribution,
 }: SplitterResizingHookProps) => {
   const resizingState = useRef<ResizeState | undefined>(undefined);
   const splitterRef = useRef<HTMLElement>(undefined);
+  const transactionRef = useRef<GridTransaction | undefined>(undefined);
+
+  const getResizeAllowance = useCallback(
+    (
+      gridLayout: HTMLElement,
+      ids: string[],
+      orientation: "horizontal" | "vertical",
+    ) => {
+      const dimension = orientation === "horizontal" ? "width" : "height";
+      const minimum = orientation === "horizontal" ? "minWidth" : "minHeight";
+      return Math.min(
+        ...ids.map((id) => {
+          const item = gridModel.getChildItem(id, true);
+          const element = gridLayout.querySelector<HTMLElement>(
+            `#${CSS.escape(id)}`,
+          );
+          if (!element) {
+            throw Error(
+              `[useGridSplitterResizing] GridItem #${id} not found in #${gridModel.id}`,
+            );
+          }
+          const size = element.getBoundingClientRect()[dimension];
+          return Math.max(
+            0,
+            size - (item[minimum] ?? DEFAULT_MIN_GRID_ITEM_SIZE),
+          );
+        }),
+      );
+    },
+    [gridModel],
+  );
+
+  const getProportionalTrackGroups = useCallback(
+    (splitter: ResizeState["splitter"]) => {
+      const indicesFor = (ids: string[]) => {
+        const items = ids.map((id) => gridModel.getChildItem(id, true));
+        const start = Math.min(...items.map(({ row }) => row.start)) - 1;
+        const end = Math.max(...items.map(({ row }) => row.end)) - 1;
+        return Array.from({ length: end - start }, (_, index) => start + index);
+      };
+      return {
+        after: indicesFor(splitter.resizedChildItems.after),
+        before: indicesFor(splitter.resizedChildItems.before),
+      };
+    },
+    [gridModel],
+  );
+
+  const canResizeGroupsProportionally = useCallback(
+    ({
+      after,
+      before,
+    }: NonNullable<ResizeState["proportionalTrackGroups"]>) => {
+      const allTrackIndices = before.concat(after);
+      return gridModel.childItems.every((item) => {
+        const itemTrackIndices = Array.from(
+          { length: item.row.end - item.row.start },
+          (_, index) => item.row.start - 1 + index,
+        );
+        const crossesBoundary =
+          before.some((index) => itemTrackIndices.includes(index)) &&
+          after.some((index) => itemTrackIndices.includes(index));
+        return (
+          !crossesBoundary ||
+          allTrackIndices.every((index) => itemTrackIndices.includes(index))
+        );
+      });
+    },
+    [gridModel],
+  );
+
+  const getProportionalTrackConstraints = useCallback(
+    (trackIndices: number[], oppositeTrackIndices: number[]) => {
+      gridModel.tracks.measure("row");
+      const tracks = gridModel.tracks.getTracks("row");
+      const groupTrackSet = new Set(trackIndices);
+      const firstTrack = Math.min(...trackIndices);
+      const lastTrack = Math.max(...trackIndices);
+      const constraints: GridTrackResizeConstraint[] = [];
+      for (const item of gridModel.childItems) {
+        if (
+          item.stackId ||
+          item.row.end - 2 < firstTrack ||
+          item.row.start - 1 > lastTrack
+        ) {
+          continue;
+        }
+        const itemTrackIndices = Array.from(
+          { length: item.row.end - item.row.start },
+          (_, index) => item.row.start - 1 + index,
+        );
+        if (
+          trackIndices
+            .concat(oppositeTrackIndices)
+            .every((index) => itemTrackIndices.includes(index))
+        ) {
+          continue;
+        }
+        const overlappingTrackIndices = itemTrackIndices.filter((index) =>
+          groupTrackSet.has(index),
+        );
+        const externalSize = itemTrackIndices
+          .filter((index) => !groupTrackSet.has(index))
+          .reduce((total, index) => total + tracks[index].numericValue, 0);
+        const requiredGroupSize = Math.max(
+          0,
+          (item.minHeight ?? DEFAULT_MIN_GRID_ITEM_SIZE) - externalSize,
+        );
+        if (requiredGroupSize > 0) {
+          constraints.push({
+            minimum: requiredGroupSize,
+            trackIndices: overlappingTrackIndices,
+          });
+        }
+      }
+      return constraints;
+    },
+    [gridModel],
+  );
 
   const createNewTrackForResize = useCallback(
     (moveBy: number) => {
@@ -107,6 +235,19 @@ export const useGridSplitterResizing = ({
       const directionOfTravel = moveBy < 0 ? "bwd" : "fwd";
 
       if (state) {
+        if (state.proportionalTrackGroups) {
+          state.proportionalMoveBy = (state.proportionalMoveBy ?? 0) + moveBy;
+          gridModel.tracks.resizeGroupsProportionally(
+            "row",
+            state.proportionalTrackGroups.before,
+            state.proportionalTrackGroups.after,
+            state.proportionalMoveBy,
+            state.proportionalTrackConstraints?.before,
+            state.proportionalTrackConstraints?.after,
+            state.proportionalInitialTrackSizes,
+          );
+          return;
+        }
         const { splitter } = state;
         const [contraTrackIndex, resizeTrackIndex] = splitter.resizedGridTracks;
         const trackType =
@@ -151,8 +292,12 @@ export const useGridSplitterResizing = ({
       const { current: state } = resizingState;
       if (state) {
         const { mousePos, resizeTrackIsShared, splitter } = state;
-        const newMousePos =
+        const requestedMousePos =
           splitter.orientation === "vertical" ? clientY : clientX;
+        const newMousePos = Math.min(
+          state.maxMousePos,
+          Math.max(state.minMousePos, requestedMousePos),
+        );
         if (newMousePos !== mousePos) {
           const moveBy = mousePos - newMousePos;
           state.mousePos = newMousePos;
@@ -161,6 +306,12 @@ export const useGridSplitterResizing = ({
               createNewTrackForResize(moveBy);
             }
             moveSplitter(moveBy);
+            const transaction = transactionRef.current;
+            if (transaction) {
+              throwForGridCommandFailure(
+                transaction.dispatch({ type: "regenerate-placeholders" }),
+              );
+            }
           }
         }
       }
@@ -177,9 +328,16 @@ export const useGridSplitterResizing = ({
       splitterRef.current = undefined;
     }
 
-    // TODO make sure a resize has actually taken place
-    gridModel.notifyChange();
-  }, [gridModel, mouseMove]);
+    const transaction = transactionRef.current;
+    if (transaction) {
+      const result = transaction.commit();
+      if (!result.ok) {
+        throw Error(result.error.message);
+      }
+      transactionRef.current = undefined;
+    }
+    resizingState.current = undefined;
+  }, [mouseMove]);
 
   // TODO need to identify the expanding track and the contracting track
   // these may not necessarily be adjacent, when resizeable attribute of
@@ -194,11 +352,73 @@ export const useGridSplitterResizing = ({
       const gridLayout = queryClosest(splitterElement, ".vuuGridLayout", true);
       if (gridLayout.id === gridModel.id) {
         e.preventDefault();
+        const transactionResult = gridController.beginTransaction("resize");
+        if (!transactionResult.ok) {
+          throw Error(transactionResult.error.message);
+        }
+        transactionRef.current = transactionResult.transaction;
         const splitter = layoutModel.getSplitterById(splitterElement.id);
+        const resizeTrackIsShared = layoutModel.isResizeTrackShared(splitter);
+        const candidateTrackGroups =
+          rowResizeDistribution === "proportional" &&
+          splitter.orientation === "vertical" &&
+          !resizeTrackIsShared
+            ? getProportionalTrackGroups(splitter)
+            : undefined;
+        const proportionalTrackGroups =
+          candidateTrackGroups &&
+          canResizeGroupsProportionally(candidateTrackGroups)
+            ? candidateTrackGroups
+            : undefined;
+        const proportionalTrackConstraints = proportionalTrackGroups
+          ? {
+              after: getProportionalTrackConstraints(
+                proportionalTrackGroups.after,
+                proportionalTrackGroups.before,
+              ),
+              before: getProportionalTrackConstraints(
+                proportionalTrackGroups.before,
+                proportionalTrackGroups.after,
+              ),
+            }
+          : undefined;
+        const mousePos =
+          splitter.ariaOrientation === "horizontal" ? e.clientY : e.clientX;
+        const beforeAllowance = proportionalTrackGroups
+          ? gridModel.tracks.getProportionalResizeAllowance(
+              "row",
+              proportionalTrackGroups.before,
+              proportionalTrackConstraints?.before ?? [],
+            )
+          : getResizeAllowance(
+              gridLayout,
+              splitter.resizedChildItems.before,
+              splitter.orientation,
+            );
+        const afterAllowance = proportionalTrackGroups
+          ? gridModel.tracks.getProportionalResizeAllowance(
+              "row",
+              proportionalTrackGroups.after,
+              proportionalTrackConstraints?.after ?? [],
+            )
+          : getResizeAllowance(
+              gridLayout,
+              splitter.resizedChildItems.after,
+              splitter.orientation,
+            );
         resizingState.current = {
-          mousePos:
-            splitter.ariaOrientation === "horizontal" ? e.clientY : e.clientX,
-          resizeTrackIsShared: layoutModel.isResizeTrackShared(splitter),
+          maxMousePos: mousePos + afterAllowance,
+          minMousePos: mousePos - beforeAllowance,
+          mousePos,
+          proportionalTrackConstraints,
+          proportionalTrackGroups,
+          proportionalInitialTrackSizes: proportionalTrackGroups
+            ? gridModel.tracks
+                .getTracks("row")
+                .map((track) => track.numericValue)
+            : undefined,
+          proportionalMoveBy: proportionalTrackGroups ? 0 : undefined,
+          resizeTrackIsShared,
           splitter,
         };
 
@@ -209,7 +429,31 @@ export const useGridSplitterResizing = ({
         splitterRef.current = splitterElement;
       }
     },
-    [gridModel, layoutModel, mouseMove, mouseUp],
+    [
+      canResizeGroupsProportionally,
+      getProportionalTrackGroups,
+      getProportionalTrackConstraints,
+      getResizeAllowance,
+      gridController,
+      gridModel,
+      layoutModel,
+      mouseMove,
+      mouseUp,
+      rowResizeDistribution,
+    ],
+  );
+
+  useEffect(
+    () => () => {
+      document.removeEventListener("mousemove", mouseMove);
+      document.removeEventListener("mouseup", mouseUp);
+      const transaction = transactionRef.current;
+      if (transaction) {
+        transaction.rollback();
+        transactionRef.current = undefined;
+      }
+    },
+    [mouseMove, mouseUp],
   );
 
   const selectedRef = useRef<string>(undefined);

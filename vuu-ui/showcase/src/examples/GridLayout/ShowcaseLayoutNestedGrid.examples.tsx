@@ -1,54 +1,57 @@
-import { useCallback, useMemo } from "react";
+import { HTMLAttributes, useCallback, useMemo } from "react";
 import { GridPalette, GridPaletteItem } from "../html/components/GridPalette";
 import {
+  ComponentTemplate,
   GridLayout,
   GridLayoutChangeHandler,
   GridLayoutItem,
   GridLayoutProvider,
+  GridLayoutStackedItem,
+  GridPlaceholder,
 } from "@heswell/grid-layout";
 import { DebugGridItem } from "../html/components/DebugGridItem";
 
 import "./GridLayout.examples.css";
+import { uuid } from "@vuu-ui/vuu-utils";
+
+const AppHeader = (props: HTMLAttributes<HTMLDivElement>) => {
+  return <div {...props}>AppHeader</div>;
+};
+const Toolbar = (props: HTMLAttributes<HTMLDivElement>) => {
+  return <div {...props}>Toolbar</div>;
+};
 
 export const ShowCaseLayoutNestedGrid = () => {
+  // prettier-ignore
   const paletteItems = useMemo<GridPaletteItem[]>(
     () => [
       {
-        label: "Red",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "red",
-          },
-        },
+        paletteEntry: {label: "Red", style: { background: "red", color: 'white' }}, 
+        component: {label: "Red", type: "DebugGridItem", props: { style: { background: "red" }}}
       },
       {
-        label: "Green",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "green",
-          },
-        },
+        paletteEntry: {label: "Green", style: { background: "green", color: 'white' }}, 
+        component: {label: "Green", type: "DebugGridItem", props: { style: { background: "green" }}},
       },
       {
-        label: "Yellow",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "yellow",
-          },
-        },
+        paletteEntry: {label: "Yellow", style: { background: "yellow", color: 'black' }}, 
+        component: {label: "Yellow", type: "DebugGridItem", props: { style: { background: "yellow" }}},
       },
       {
-        label: "Brown",
-        type: "DebugGridItem",
-        props: {
-          debugLabel: "Brown",
-          style: {
-            background: "brown",
-          },
-        },
+        paletteEntry: {label: "Brown", style: { background: "brown", color: 'white' }}, 
+        component: {label: "Brown", type: "DebugGridItem", props: { style: { background: "brown" }}},
+      },
+      {
+        paletteEntry: {label: "Blue", style: { background: "green", color: 'white' }}, 
+        component: {label: "Blue",type: "DebugGridItem", props: { style: { background: "blue" }}},
+      },
+      {
+        paletteEntry: {label: "Navy", style: { background: "navy", color: 'white' }}, 
+        component: {label: "Navy",type: "DebugGridItem", props: { style: { background: "navy" }}},
+      },
+      {
+        paletteEntry: {label: "Gray", style: { background: "gray", color: 'white' }}, 
+        component: {label: "Gray", type: "DebugGridItem", props: { style: { background: "gray" }}},
       },
     ],
     [],
@@ -60,6 +63,36 @@ export const ShowCaseLayoutNestedGrid = () => {
     // });
   }, []);
 
+  const getNewComponent = (): Omit<ComponentTemplate, "label"> => {
+    const itemId = uuid();
+    return {
+      componentJson: JSON.stringify({
+        children: [
+          {
+            id: itemId,
+            props: {
+              "data-drop-target": true,
+              header: true,
+              resizeable: "hv",
+              style: { gridArea: "1/1/2/2" },
+              title: "Brown",
+            },
+            type: "GridLayoutItem",
+            children: [
+              {
+                props: { style: { inset: 0, position: "absolute" } },
+                type: "GridPlaceholder",
+              },
+            ],
+          },
+        ],
+        props: { colsAndRows: { cols: ["1fr"], rows: ["1fr"] } },
+        type: "Grid",
+      }),
+      dropTarget: false,
+    };
+  };
+
   return (
     <>
       <div id="dragImage" style={{ position: "absolute", left: 0 }}></div>
@@ -68,7 +101,7 @@ export const ShowCaseLayoutNestedGrid = () => {
           full-page
           id="showcase"
           colsAndRows={{
-            cols: ["200px", "1fr", "200px"],
+            cols: ["200px", "1fr", "80px"],
             rows: ["48px", "40px", "1fr"],
           }}
           onChange={handleGridLayoutChanged}
@@ -79,7 +112,7 @@ export const ShowCaseLayoutNestedGrid = () => {
               gridArea: "1/1/2/4",
             }}
           >
-            <div style={{ background: "yellow" }}>AppHeader</div>
+            <AppHeader style={{ background: "yellow" }} />
           </GridLayoutItem>
           <GridLayoutItem
             id="palette"
@@ -98,8 +131,15 @@ export const ShowCaseLayoutNestedGrid = () => {
               gridArea: "2/2/3/3",
             }}
           >
-            <div style={{ background: "brown", color: "white" }}>Toolbar</div>
+            <Toolbar style={{ background: "brown", color: "white" }} />
           </GridLayoutItem>
+          <GridLayoutStackedItem
+            id="main-tabs"
+            style={{ gridArea: "3/2/4/3" }}
+            allowAddTab
+            getNewComponent={getNewComponent}
+            showMenu
+          />
 
           <GridLayoutItem
             id="LayoutBrown"
@@ -145,6 +185,7 @@ export const ShowCaseLayoutNestedGrid = () => {
               <GridLayoutItem
                 data-drop-target
                 id="navy"
+                resizeable="hv"
                 style={{
                   gridArea: "1/1/2/2",
                 }}
@@ -174,6 +215,7 @@ export const ShowCaseLayoutNestedGrid = () => {
               <GridLayoutItem
                 data-drop-target
                 id="gray"
+                resizeable="hv"
                 style={{
                   gridArea: "1/1/2/2",
                 }}
@@ -203,6 +245,7 @@ export const ShowCaseLayoutNestedGrid = () => {
               <GridLayoutItem
                 data-drop-target
                 id="black"
+                resizeable="hv"
                 style={{
                   gridArea: "1/1/2/2",
                 }}

@@ -1,23 +1,31 @@
 import {
   EventEmitter,
+  uuid,
   type GridLayoutSplitDirection,
   type OptionalProperty,
 } from "@vuu-ui/vuu-utils";
 import {
-  gridResizeDirectionFromDropPosition,
-  doesResizeRequireNewTrack as isResizeTrackShared,
-  itemsFillColumn,
-  itemsFillRow,
-  setTrackEnd,
-  setTrackStart,
-  splitGridChildPosition,
-} from "./grid-layout-utils";
+  canSplitGridItem,
+  doesResizeRequireNewTrack,
+  gridResizeDirectionForSplit,
+  insertTrackForResize,
+  removeGridItem,
+  replaceGridItem,
+  shiftItemsForRemovedTrack,
+  splitGridItem,
+  type GridGeometryTransition,
+  type GridInsertTrackTransition,
+  type GridRemoveItemTransition,
+  type GridReplaceItemTransition,
+} from "./GridGeometry";
+import { toGridItemUpdates } from "./GridModel";
 import type {
   TrackType,
   GridLayoutModelCoordinates,
   GridModel,
   GridModelChildItem,
   GridModelEvents,
+  GridTrackResizeConstraint,
   ISplitter,
 } from "./GridModel";
 
@@ -27,6 +35,18 @@ export type GridLayoutModelPosition = {
 };
 
 export type ResizeState = {
+  maxMousePos: number;
+  minMousePos: number;
+  proportionalTrackGroups?: {
+    after: number[];
+    before: number[];
+  };
+  proportionalTrackConstraints?: {
+    after: GridTrackResizeConstraint[];
+    before: GridTrackResizeConstraint[];
+  };
+  proportionalInitialTrackSizes?: number[];
+  proportionalMoveBy?: number;
   resizeTrackIsShared: boolean;
   mousePos: number;
   splitter: ISplitter;
@@ -68,369 +88,82 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
     super();
   }
 
-  private updateContrasToOccupySpace = ({
-    column,
-    id,
-    row,
-  }: GridModelChildItem): ColumnAndRowUpdates => {
-    // Do we have one or more GridItems that can be extended horizontally
-    // to fill the space described by column, row
-    // 1) Identify items that start on the same row and abut our gridCell(s)
-    // of interest, either to the left or to the right.
-    const adjacentItemsWithSameRowStart = this.gridModel
-      .findByRowStart(row.start)
-      ?.filter(
-        ({ column: { start, end }, stackId }) =>
-          stackId === undefined &&
-          (end === column.start || start === column.end),
-      );
-    if (adjacentItemsWithSameRowStart) {
-      // 2) do any of the items that start on the same row as our gridcell
-      // of interest also span exactly the same row(s) as that cell. If we
-      // have at least one of these, then we have a single item that can be
-      // extended to cover our cell(s) of interest.
-      // TODO sort by column, so we get the left item first
-      const itemsInSameRow = adjacentItemsWithSameRowStart.filter(
-        (item) => item.row.end === row.end && item.id !== id,
-      );
-      if (itemsInSameRow.length === 1) {
-        const [itemInSameRow] = itemsInSameRow;
-        const {
-          id: contraId,
-          column: { start, end },
-        } = itemInSameRow;
+  /**
+   * Hydrate a pure remove transition and notify listeners exactly as the
+   * legacy engine did: positions are broadcast before placeholders are
+   * regenerated.
+   */
+  applyRemoveTransition(transition: GridRemoveItemTransition) {
+    const [removal] = transition.removals;
+    const gridItem = this.gridModel.getChildItem(removal.id, true);
+    const stackId = gridItem.stackId;
+    this.gridModel.removeChildItem(removal.id, removal.reason);
 
-        if (end === column.start) {
-          const updates: ColumnAndRowUpdates = [
-            [[contraId, { column: { start, end: column.end } }]],
-            [],
-          ];
-          if (itemInSameRow.type === "stacked-content") {
-            const stackedItems = this.gridModel.getStackedChildItems(
-              itemInSameRow.id,
-            );
-            stackedItems.forEach(({ id }) => {
-              updates[0].push([id, { column: { start, end: column.end } }]);
-            });
-          }
-
-          return updates;
-        } else if (start === column.end) {
-          const updates: ColumnAndRowUpdates = [
-            [[contraId, { column: { start: column.start, end } }]],
-            [],
-          ];
-          if (itemInSameRow.type === "stacked-content") {
-            const stackedItems = this.gridModel.getStackedChildItems(
-              itemInSameRow.id,
-            );
-            stackedItems.forEach(({ id }) => {
-              updates[0].push([id, { column: { start: column.start, end } }]);
-            });
-          }
-
-          return updates;
-        }
-      } else if (itemsInSameRow.length === 2) {
-        // assuming no overlapping gridcells, the most we can have here
-        // is 2 items in same row, one left and one right
-        const adjacentBefore = itemsInSameRow.filter(
-          (item) => item.column.end === column.start,
-        );
-        if (adjacentBefore.length === 1) {
-          const {
-            id: contraId,
-            column: { start },
-          } = adjacentBefore[0];
-          return [[[contraId, { column: { start, end: column.end } }]], []];
-        }
-        const adjacentAfter = itemsInSameRow.filter(
-          (item) => item.column.start === column.end,
-        );
-        if (adjacentAfter.length === 1) {
-          const {
-            id: contraId,
-            column: { end },
-          } = adjacentAfter[0];
-          return [[[contraId, { column: { start: column.start, end } }]], []];
-        }
-      } else {
-        // 3) We do not have a single gridcell that can be extended to cover our
-        // gridcell of interest, but we might have multiple cells that together
-        // can serve the same end. If we have multiple cells that all abut our
-        // target cell (on the same side) and together span the same row(s) as
-        // our target, we have what we need.
-        if (row.end - row.start > 1) {
-          const itemsEndingWhereTargetStarts = this.gridModel
-            .findByColumnEnd(column.start)
-            ?.filter(
-              (item) =>
-                item.stackId === undefined &&
-                item.row.start >= row.start &&
-                item.row.end <= row.end,
-            );
-          if (
-            itemsEndingWhereTargetStarts &&
-            itemsFillRow(itemsEndingWhereTargetStarts, row)
-          ) {
-            const columnUpdates = itemsEndingWhereTargetStarts.map(
-              ({ id: contraId, column: { start } }) =>
-                [
-                  contraId,
-                  { column: { start, end: column.end } },
-                ] as GridItemUpdate,
-            );
-
-            // if any are stacked-content, apply updates to child items
-
-            return [columnUpdates, []];
-          }
-          const itemsStartingWhereTargetEnds = this.gridModel
-            .findByColumnStart(column.end)
-            ?.filter(
-              (item) =>
-                item.stackId === undefined &&
-                item.row.start >= row.start &&
-                item.row.end <= row.end,
-            );
-          if (
-            itemsStartingWhereTargetEnds &&
-            itemsFillRow(itemsStartingWhereTargetEnds, row)
-          ) {
-            const columnUpdates = itemsStartingWhereTargetEnds.map(
-              ({ id: contraId, column: { end } }) =>
-                [
-                  contraId,
-                  { column: { start: column.start, end } },
-                ] as GridItemUpdate,
-            );
-            return [columnUpdates, []];
-          }
-        }
+    if (transition.stackMember && stackId) {
+      const result = this.gridModel.removeStackItem(stackId, gridItem.id);
+      if (!result.ok) {
+        throw Error(result.error.message);
       }
+      return;
     }
-    const adjacentItemsWithSameColumnStart = this.gridModel
-      .findByColumnStart(column.start)
-      ?.filter(
-        ({ row: { start, end }, stackId }) =>
-          stackId === undefined && (end === row.start || start === row.end),
-      );
-    if (adjacentItemsWithSameColumnStart) {
-      const itemsInSameColumn = adjacentItemsWithSameColumnStart.filter(
-        (item) => item.column.end === column.end && item.id !== id,
-      );
 
-      if (itemsInSameColumn.length === 1) {
-        const [itemInSameColumn] = itemsInSameColumn;
-
-        const {
-          id: contraId,
-          row: { start, end },
-        } = itemInSameColumn;
-        if (end === row.start) {
-          const updates: ColumnAndRowUpdates = [
-            [],
-            [[contraId, { row: { start, end: row.end } }]],
-          ];
-          if (itemInSameColumn.type === "stacked-content") {
-            const stackedItems = this.gridModel.getStackedChildItems(
-              itemInSameColumn.id,
-            );
-            stackedItems.forEach(({ id }) => {
-              updates[1].push([id, { row: { start, end: row.end } }]);
-            });
-          }
-          return updates;
-        } else if (start === row.end) {
-          const updates: ColumnAndRowUpdates = [
-            [],
-            [[contraId, { row: { start: row.start, end } }]],
-          ];
-          if (itemInSameColumn.type === "stacked-content") {
-            const stackedItems = this.gridModel.getStackedChildItems(
-              itemInSameColumn.id,
-            );
-            stackedItems.forEach(({ id }) => {
-              updates[1].push([id, { row: { start: row.start, end } }]);
-            });
-          }
-          return updates;
-        }
-      } else if (itemsInSameColumn.length === 2) {
-        const adjacentBefore = itemsInSameColumn.filter(
-          (item) => item.row.end === row.start,
-        );
-        if (adjacentBefore.length === 1) {
-          const {
-            id: contraId,
-            row: { start },
-          } = adjacentBefore[0];
-          return [[[contraId, { row: { start, end: row.end } }]], []];
-        }
-        const adjacentAfter = itemsInSameColumn.filter(
-          (item) => item.row.start === row.end,
-        );
-        if (adjacentAfter.length === 1) {
-          const {
-            id: contraId,
-            row: { end },
-          } = adjacentAfter[0];
-          return [[[contraId, { row: { start: row.start, end } }]], []];
-        }
-      } else {
-        if (column.end - column.start > 1) {
-          const itemsEndingWhereTargetStarts = this.gridModel
-            .findByRowEnd(row.start)
-            ?.filter(
-              (item) =>
-                item.column.start >= column.start &&
-                item.column.end <= column.end,
-            );
-          if (
-            itemsEndingWhereTargetStarts &&
-            itemsFillColumn(itemsEndingWhereTargetStarts, column)
-          ) {
-            const rowUpdates = itemsEndingWhereTargetStarts.map(
-              ({ id: contraId, row: { start } }) =>
-                [contraId, { row: { start, end: row.end } }] as GridItemUpdate,
-            );
-            return [[], rowUpdates];
-          }
-          const itemsStartingWhereTargetEnds = this.gridModel
-            .findByRowStart(row.end)
-            ?.filter(
-              (item) =>
-                item.column.start >= column.start &&
-                item.column.end <= column.end,
-            );
-          if (
-            itemsStartingWhereTargetEnds &&
-            itemsFillColumn(itemsStartingWhereTargetEnds, column)
-          ) {
-            const rowUpdates = itemsStartingWhereTargetEnds.map(
-              ({ id: contraId, row: { end } }) =>
-                [
-                  contraId,
-                  { row: { start: row.start, end } },
-                ] as GridItemUpdate,
-            );
-            return [[], rowUpdates];
-          }
-        }
-      }
+    this.gridModel.applyGeometryPositions(transition.geometry);
+    if (transition.columns) {
+      this.gridModel.tracks.applyTrackTransition("column", transition.columns);
     }
-    return [[], []];
-  };
+    if (transition.rows) {
+      this.gridModel.tracks.applyTrackTransition("row", transition.rows);
+    }
 
-  removeGridItem(gridItemId: string, reason: GridItemRemoveReason) {
-    const gridItem = this.gridModel.getChildItem(gridItemId, true);
-    this.gridModel.removeChildItem(gridItemId, reason);
+    if (transition.notify) {
+      this.emit(
+        "child-position-updates",
+        toGridItemUpdates(transition.updates),
+        {
+          placeholders: true,
+          splitters: true,
+        },
+      );
+    }
 
-    if (gridItem.stackId) {
-      const tabState = this.gridModel.getTabState(gridItem.stackId, "throw");
-      console.log("were removing an item from a stack", {
-        tabState,
-      });
-      tabState.removeTab(gridItem.id);
-    } else {
-      const [colItemUpdates, rowItemUpdates] =
-        this.updateContrasToOccupySpace(gridItem);
-
-      if (rowItemUpdates.length || colItemUpdates.length) {
-        colItemUpdates.forEach(([id, { column: colPosition }]) => {
-          if (colPosition) {
-            this.gridModel.updateChildColumn(id, colPosition);
-          }
-        });
-        rowItemUpdates.forEach(([id, { row: rowPosition }]) => {
-          if (rowPosition) {
-            this.gridModel.updateChildRow(id, rowPosition);
-          }
-        });
-
-        const [unusedColLines, unusedRowLines] =
-          this.gridModel.findUnusedGridLines();
-        // TODO do we ever hit this code any more ?
-        console.log({ unusedColLines, unusedRowLines });
-        if (unusedColLines.length === 1) {
-          const trackIndex = unusedColLines[0] - 1;
-          const colUpdates = this.removeTrack(trackIndex, "horizontal");
-
-          colUpdates.forEach(([id, u]) => {
-            const existingUpdate = colItemUpdates.find(
-              ([itemId]) => id === itemId,
-            );
-            if (existingUpdate) {
-              existingUpdate[1] = u;
-            } else {
-              colItemUpdates.push([id, u]);
-            }
-          });
-        } else if (unusedColLines.length > 1) {
-          throw Error(
-            `[GridLayoutModel] removeGridItem, unexpected number of unused column lines ${unusedColLines.length}`,
-          );
-        }
-
-        if (unusedRowLines.length === 1) {
-          const trackIndex = unusedRowLines[0] - 1;
-          const rowUpdates = this.removeTrack(trackIndex, "vertical");
-          rowUpdates.forEach(([id, u]) => {
-            const existingUpdate = rowItemUpdates.find(
-              ([itemId]) => id === itemId,
-            );
-            if (existingUpdate) {
-              existingUpdate[1] = u;
-            } else {
-              rowItemUpdates.push([id, u]);
-            }
-          });
-        } else if (unusedRowLines.length > 1) {
-          throw Error(
-            `[GridLayoutModel] removeGridItem, unexpected number of unused row lines ${unusedRowLines.length}`,
-          );
-        }
-
-        if (unusedColLines.length === 1) {
-          const [indexOfRemovedColumnTrack] = unusedColLines;
-          this.gridModel.removeGridTrack(
-            "column",
-            indexOfRemovedColumnTrack - 1,
-            "bwd",
-            false,
-          );
-        }
-
-        if (unusedRowLines.length === 1) {
-          const [indexOfRemovedRowTrack] = unusedRowLines;
-          this.gridModel.removeGridTrack(
-            "row",
-            indexOfRemovedRowTrack - 1,
-            "bwd",
-            false,
-          );
-        }
-
-        this.emit(
-          "child-position-updates",
-          colItemUpdates.concat(rowItemUpdates),
-          { placeholders: true, splitters: true },
-        );
-      }
-
-      if (reason !== "placeholder") {
-        this.gridModel.createPlaceholders();
-      }
+    if (transition.placeholders) {
+      this.gridModel.applyPlaceholderTransition(transition.placeholders);
     }
   }
 
+  removeGridItem(gridItemId: string, reason: GridItemRemoveReason) {
+    const geometry = this.gridModel.toGeometry();
+    const result = this.gridModel.runGeometry((measurements) =>
+      removeGridItem(
+        geometry,
+        { itemId: gridItemId, reason },
+        { createPlaceholderId: uuid, measurements },
+      ),
+    );
+    if (!result.ok) {
+      throw Error(result.error.message);
+    }
+    this.applyRemoveTransition(result.value);
+  }
+
+  /** Hydrate a pure centre replacement transition. */
+  applyReplaceTransition(transition: GridReplaceItemTransition) {
+    for (const { id, reason } of transition.removals) {
+      this.gridModel.removeChildItem(id, reason);
+    }
+    this.gridModel.applyGeometryPositions(transition.geometry);
+  }
+
   dropReplaceGridItem(droppedItemId: string, targetItemId: string) {
-    const { gridModel } = this;
-    const droppedGridItem = gridModel.getChildItem(droppedItemId, true);
-    const { column, row } = gridModel.getChildItem(targetItemId, true);
-    gridModel.removeChildItem(targetItemId, "close");
-    gridModel.updateChildColumn(droppedItemId, column);
-    gridModel.updateChildRow(droppedItemId, row);
+    const droppedGridItem = this.gridModel.getChildItem(droppedItemId, true);
+    const result = replaceGridItem(this.gridModel.toGeometry(), {
+      droppedItemId,
+      targetItemId,
+    });
+    if (!result.ok) {
+      throw Error(result.error.message);
+    }
+    this.applyReplaceTransition(result.value);
     return droppedGridItem;
   }
 
@@ -464,6 +197,33 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
     );
   }
 
+  /** Hydrate a pure track insertion transition. */
+  applyInsertTrackTransition(
+    trackType: TrackType,
+    transition: GridInsertTrackTransition,
+  ) {
+    const trackTransition =
+      trackType === "column" ? transition.columns : transition.rows;
+    if (trackTransition) {
+      this.gridModel.tracks.applyTrackTransition(trackType, trackTransition);
+    }
+    this.gridModel.applyUpdates(toGridItemUpdates(transition.insertUpdates));
+    // The legacy engine notified twice, once for the tracks, once for the
+    // grid items anchored to the new track.
+    this.gridModel.emit(
+      "child-position-updates",
+      toGridItemUpdates(transition.insertUpdates),
+      { splitters: true },
+    );
+
+    this.gridModel.applyGeometryPositions(transition.geometry);
+    this.emit(
+      "child-position-updates",
+      toGridItemUpdates(transition.anchorUpdates),
+      { splitters: true },
+    );
+  }
+
   /**
    * We're going to resize a gridItem that shares a grid line with one or
    * more other grid items. We need to insert a new grid line, then anchor
@@ -477,75 +237,43 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
     state: ResizeState,
   ) {
     const { splitter } = state;
-    const { before: contraIds, after: resizeIds } = splitter.resizedChildItems;
-
+    const { before: contraItemIds, after: resizeItemIds } =
+      splitter.resizedChildItems;
     const position = resizeOperation === "expand" ? "before" : "after";
-
-    this.gridModel.insertGridTrack(
-      trackType,
-      { index, position },
-      newTrackSize,
+    const geometry = this.gridModel.toGeometry();
+    const result = this.gridModel.runGeometry((measurements) =>
+      insertTrackForResize(
+        geometry,
+        {
+          contraItemIds,
+          index,
+          position,
+          resizeItemIds,
+          size: newTrackSize,
+          trackType,
+        },
+        measurements,
+      ),
     );
-
-    const updates: GridItemUpdate[] = [];
-
-    const adjustment = position === "before" ? -1 : 1;
-    resizeIds.forEach((id) => {
-      const gridItem = this.gridModel.getChildItem(id, true);
-      updates.push(setTrackStart(trackType, gridItem, adjustment));
-    });
-
-    contraIds.forEach((id) => {
-      const gridItem = this.gridModel.getChildItem(id, true);
-      updates.push(setTrackEnd(trackType, gridItem, adjustment));
-    });
-
-    // can't the event emitting be done by the GridModel ?
-    this.gridModel.applyUpdates(updates);
-
-    this.emit("child-position-updates", updates, { splitters: true });
+    if (!result.ok) {
+      throw Error(result.error.message);
+    }
+    this.applyInsertTrackTransition(trackType, result.value);
   }
 
-  /**
-   * Calculate the new grid positions for a dropped item and the target item,
-   * when the target is being split in two. Generate updates for the respective
-   * grid child items.
-   *
-   * @param droppedItemId
-   * @param targetItemId
-   * @param splitDirection
-   * @param splitIndex
-   * @returns
-   */
-  private dropSplitTarget(
-    droppedItemId: string,
-    targetItemId: string,
-    splitDirection: GridLayoutSplitDirection,
-    splitIndex: number,
-  ) {
-    let updates: GridItemUpdate[] = [];
-    const targetGridItem = this.gridModel.getChildItem(targetItemId, true);
-
-    const [droppedItemPosition, targetItemPosition] = splitGridChildPosition(
-      targetGridItem,
-      splitDirection,
-      splitIndex,
-    );
-
-    updates.push([targetItemId, targetItemPosition]);
-    updates.push([droppedItemId, droppedItemPosition]);
-
-    // Updates applied to a stacked item must also be applied to child items
-    if (targetGridItem.type === "stacked-content") {
-      const childitems = this.gridModel.getStackedChildItems(targetItemId);
-      updates = updates.concat(
-        childitems.map(({ id }) => [id, targetItemPosition]),
-      );
+  /** Hydrate a pure split transition. */
+  applySplitTransition(transition: GridGeometryTransition) {
+    if (transition.columns) {
+      this.gridModel.tracks.applyTrackTransition("column", transition.columns);
     }
+    if (transition.rows) {
+      this.gridModel.tracks.applyTrackTransition("row", transition.rows);
+    }
+    this.gridModel.applyGeometryPositions(transition.geometry);
 
-    this.gridModel.applyUpdates(updates);
-
-    return updates;
+    this.emit("child-position-updates", toGridItemUpdates(transition.updates), {
+      splitters: true,
+    });
   }
 
   /**
@@ -557,80 +285,39 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
     droppedItemId: string,
     targetItemId: string,
     splitDirection: GridLayoutSplitDirection,
-    resizeDirection = gridResizeDirectionFromDropPosition(splitDirection),
+    resizeDirection = gridResizeDirectionForSplit(splitDirection),
   ) {
-    const targetGridItem = this.gridModel.getChildItem(targetItemId, true);
-    let updates: GridItemUpdate[] = [];
-
-    const trackType = resizeDirection === "vertical" ? "row" : "column";
-    const resizeTrack = targetGridItem[trackType];
-
-    if (resizeTrack.end - resizeTrack.start === 1) {
-      // Splitting a single column
-
-      const newTrackIndex = resizeTrack.start - 1;
-      this.gridModel.splitGridTrack(trackType, newTrackIndex);
-
-      updates = updates.concat(
-        this.dropSplitTarget(
+    const geometry = this.gridModel.toGeometry();
+    const result = this.gridModel.runGeometry((measurements) =>
+      splitGridItem(
+        geometry,
+        {
           droppedItemId,
-          targetItemId,
+          resizeDirection,
           splitDirection,
-          trackType === "row"
-            ? targetGridItem.row.end - 1
-            : targetGridItem.column.end - 1,
-        ),
-      );
-    } else {
-      // Is there already a track line in the required position
-      const bisectingGridTrack = this.gridModel.tracks.getBisectingTrack(
-        trackType,
-        resizeTrack.start,
-        resizeTrack.end,
-      );
-      if (bisectingGridTrack !== -1) {
-        const [droppedItemPosition, targetItemPosition] =
-          splitGridChildPosition(
-            { column: targetGridItem.column, row: targetGridItem.row },
-            splitDirection,
-            bisectingGridTrack,
-          );
-
-        updates.push([droppedItemId, droppedItemPosition]);
-        updates.push([targetItemId, targetItemPosition]);
-
-        // Updates applied to a stacked item must also be applied to child items
-        if (targetGridItem.type === "stacked-content") {
-          const childitems = this.gridModel.getStackedChildItems(targetItemId);
-          updates = updates.concat(
-            childitems.map(({ id }) => [id, targetItemPosition]),
-          );
-        }
-
-        this.gridModel.applyUpdates(updates);
-      } else {
-        const newTrackIndex = this.gridModel.splitGridTracks(
-          trackType,
-          resizeTrack.start,
-          resizeTrack.end,
-        );
-
-        updates = updates.concat(
-          this.dropSplitTarget(
-            droppedItemId,
-            targetItemId,
-            splitDirection,
-            newTrackIndex + 2,
-          ),
-        );
+          targetItemId,
+        },
+        measurements,
+      ),
+    );
+    if (!result.ok) {
+      if (result.error.code === "NON_RESIZABLE") {
+        return false;
       }
+      throw Error(result.error.message);
     }
 
-    this.emit(
-      "child-position-updates",
-      updates,
-      { splitters: true },
-      // updates.filter(([id]) => id !== droppedItemId),
+    this.applySplitTransition(result.value);
+    return true;
+  }
+
+  canSplitGridItem(
+    targetItemId: string,
+    splitDirection: GridLayoutSplitDirection,
+  ) {
+    return canSplitGridItem(
+      this.gridModel.getChildItem(targetItemId, true),
+      splitDirection,
     );
   }
 
@@ -640,31 +327,14 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
   adjusted.
  */
   removeTrack(trackIndex: number, resizeDirection: GridLayoutResizeDirection) {
-    const gridPosition = trackIndex + 1;
-    const updates: GridItemUpdate[] = [];
-
-    const track = resizeDirection === "horizontal" ? "column" : "row";
-    for (const item of this.gridModel.childItems) {
-      const { start, end } = item[track];
-      let startUpdate: Partial<GridLayoutModelPosition> | undefined = undefined;
-      let endUpdate: Partial<GridLayoutModelPosition> | undefined = undefined;
-
-      if (start > gridPosition) {
-        startUpdate = { start: start - 1 };
-      }
-      if (end > gridPosition) {
-        endUpdate = { end: end - 1 };
-      }
-
-      if (startUpdate || endUpdate) {
-        updates.push([
-          item.id,
-          {
-            [track]: { start, end, ...startUpdate, ...endUpdate },
-          } as OneOrBothGridLayoutModelCoordinates,
-        ]);
-      }
-    }
+    const trackType = resizeDirection === "horizontal" ? "column" : "row";
+    const updates = toGridItemUpdates(
+      shiftItemsForRemovedTrack(
+        this.gridModel.toGeometry().items,
+        trackType,
+        trackIndex,
+      ),
+    );
 
     this.gridModel.applyUpdates(updates);
 
@@ -673,7 +343,7 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
 
   isResizeTrackShared(splitter: ISplitter) {
     if (this.splitters) {
-      return isResizeTrackShared(this.splitters, splitter);
+      return doesResizeRequireNewTrack(this.splitters, splitter);
     } else {
       throw Error(
         "[GridLayoutModel] isResizeTrackShared, no splitters created",

@@ -1,3 +1,5 @@
+import { TabBar, TabList, Tab, TabTrigger, Tabs } from "@salt-ds/core";
+import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -7,27 +9,18 @@ import {
   type SyntheticEvent,
   useCallback,
   useEffect,
-  useState,
 } from "react";
-
-import {
-  TabBar,
-  TabList as TabListNext,
-  Tab as TabNext,
-  TabTrigger as TabNextTrigger,
-  Tabs as TabsNext,
-} from "@salt-ds/core";
-import type { GridLayoutItemProps } from "./GridLayoutItem";
-import { useGridChildProps } from "./useGridChildProps";
 import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
 import {
   type ComponentTemplate,
   useGridLayoutDispatch,
-  useGridModel,
+  useGridSnapshot,
 } from "./GridLayoutContext";
-import { IconButton } from "@vuu-ui/vuu-ui-controls";
+import type { GridLayoutItemProps } from "./GridLayoutItem";
+import { resolveMinimumGridItemSize } from "./GridModel";
 import { TabMenu } from "./TabMenu";
-import { AddTabDialog } from "./AddTabDialog";
+import { useEditTabName } from "./useEditTabName";
+import { useGridChildProps } from "./useGridChildProps";
 
 import gridLayoutStackedItemCss from "./GridLayoutStackedItem.css";
 
@@ -35,7 +28,7 @@ const classBaseItem = "vuuGridLayoutStackedItem";
 
 export interface GridLayoutStackedItemProps extends GridLayoutItemProps {
   allowAddTab?: boolean;
-  getNewComponent?: () => ComponentTemplate;
+  getNewComponent?: () => Omit<ComponentTemplate, "label">;
   showMenu?: boolean;
 }
 
@@ -46,6 +39,8 @@ export const GridLayoutStackedItem = ({
   header,
   id,
   getNewComponent,
+  minHeight,
+  minWidth,
   resizeable,
   showMenu,
   style: styleProp,
@@ -58,35 +53,46 @@ export const GridLayoutStackedItem = ({
     css: gridLayoutStackedItemCss,
     window: targetWindow,
   });
-  const [confirmationOpen, setConfirmationOpen] = useState(false);
 
-  console.log(`[GridLayoutStackedItem#${id}] render`);
-
-  console.log(`[GridLayoutStackedItem#${id}] render`);
+  const { dialog, showTabEditDialog } = useEditTabName({ getNewComponent, id });
 
   const { registerTabsForDragDrop } = useDragContext();
-
-  useEffect(() => {
-    registerTabsForDragDrop(id);
-  }, [id, registerTabsForDragDrop]);
+  const modelMinHeight = resolveMinimumGridItemSize(
+    minHeight,
+    styleProp?.minHeight,
+  );
+  const modelMinWidth = resolveMinimumGridItemSize(
+    minWidth,
+    styleProp?.minWidth,
+  );
 
   const { gridArea, horizontalSplitter, verticalSplitter } = useGridChildProps({
     id,
+    minHeight: modelMinHeight,
+    minWidth: modelMinWidth,
     resizeable,
     style: styleProp,
     type: "stacked-content",
   });
 
   const dispatch = useGridLayoutDispatch();
+  const snapshot = useGridSnapshot();
+  const stack = snapshot.stacks.find((candidate) => candidate.id === id);
+  if (!stack) {
+    throw Error(`[GridLayoutStackedItem] canonical stack #${id} not found`);
+  }
+  const itemById = new Map(snapshot.items.map((item) => [item.id, item]));
+  const tabOrderKey = stack.itemIds.join("\u0000");
 
-  const { getTabState } = useGridModel();
-  const tabState = getTabState(id, "create");
+  useEffect(() => {
+    return tabOrderKey ? registerTabsForDragDrop(id) : undefined;
+  }, [id, registerTabsForDragDrop, tabOrderKey]);
 
   const handleTabSelectionChange = useCallback(
     (_: SyntheticEvent | null, value: string) => {
-      tabState.setActiveTab(value);
+      dispatch({ type: "select-tab", itemId: value, stackId: id });
     },
-    [tabState],
+    [dispatch, id],
   );
 
   const className = cx(classBaseItem, "vuuGridLayoutItem", {
@@ -97,6 +103,8 @@ export const GridLayoutStackedItem = ({
   const style = {
     ...styleProp,
     gridArea,
+    ...(minHeight === undefined ? {} : { minHeight }),
+    ...(minWidth === undefined ? {} : { minWidth }),
   };
 
   const tabsId = `tabs-${id}`;
@@ -107,41 +115,9 @@ export const GridLayoutStackedItem = ({
   //   `,
   // );
 
-  console.log(
-    `[GridLayoutStackedItem] render ${tabState.tabs.map((t) => t.label)}`,
-  );
-
-  const handleConfirm = (newTab: string) => {
-    const componentTemplate = getNewComponent?.();
-    if (componentTemplate) {
-      dispatch({
-        title: newTab,
-        type: "add-child",
-        componentTemplate,
-        stackId: id,
-      });
-    }
-    setConfirmationOpen(false);
-  };
-
-  const handleCancel = () => {
-    setConfirmationOpen(false);
-  };
-
   const handleClickAddTab = useCallback(() => {
-    setConfirmationOpen(true);
-    // const componentTemplate = getNewComponent?.();
-    // if (componentTemplate) {
-    //   console.log("we have a new component template", {
-    //     componentTemplate,
-    //   });
-    //   dispatch({
-    //     type: "add-child",
-    //     componentTemplate,
-    //     stackId: id,
-    //   });
-    // }
-  }, []);
+    showTabEditDialog();
+  }, [showTabEditDialog]);
 
   return (
     <>
@@ -152,52 +128,55 @@ export const GridLayoutStackedItem = ({
         key={id}
         style={style}
       >
-        <TabsNext
-          onChange={handleTabSelectionChange}
-          value={tabState.tabs[tabState.active]?.label ?? null}
-        >
+        <Tabs onChange={handleTabSelectionChange} value={stack.selectedItemId}>
           <TabBar divider>
-            <TabListNext
+            <TabList
               appearance="transparent"
               className="vuuDragContainer"
               id={tabsId}
+              key={tabOrderKey}
             >
-              {tabState.tabs.map(({ id: gridLayoutItemId, label }, index) => (
-                <TabNext
-                  className="vuuDraggableItem"
-                  data-index={index}
-                  data-grid-layout-item-id={gridLayoutItemId}
-                  data-label={label}
-                  draggable
-                  value={label}
-                  key={label}
-                >
-                  <TabNextTrigger>{label}</TabNextTrigger>
-                  {showMenu ? (
-                    <TabMenu layoutItemId={gridLayoutItemId} />
-                  ) : null}
-                </TabNext>
-              ))}
-            </TabListNext>
-            <IconButton
-              aria-label="Create Tab"
-              className={`${classBaseItem}-addTabButton`}
-              data-embedded
-              icon="add"
-              data-overflow-priority="1"
-              key="addButton"
-              onClick={handleClickAddTab}
-              variant="secondary"
-              tabIndex={-1}
-            />
+              {stack.itemIds.map((gridLayoutItemId, index) => {
+                const label =
+                  itemById.get(gridLayoutItemId)?.title ?? gridLayoutItemId;
+                return (
+                  <Tab
+                    className="vuuDraggableItem"
+                    data-index={index}
+                    data-grid-layout-item-id={gridLayoutItemId}
+                    data-label={label}
+                    draggable
+                    value={gridLayoutItemId}
+                    key={gridLayoutItemId}
+                  >
+                    <TabTrigger>{label}</TabTrigger>
+                    {showMenu ? (
+                      <TabMenu
+                        layoutItemId={gridLayoutItemId}
+                        tabLabel={label}
+                      />
+                    ) : null}
+                  </Tab>
+                );
+              })}
+            </TabList>
+            {allowAddTab ? (
+              <IconButton
+                aria-label="Create Tab"
+                className={`${classBaseItem}-addTabButton`}
+                data-embedded
+                icon="add"
+                data-overflow-priority="1"
+                key="addButton"
+                onClick={handleClickAddTab}
+                variant="secondary"
+                tabIndex={-1}
+              />
+            ) : null}
           </TabBar>
-        </TabsNext>
+        </Tabs>
       </div>
-      <AddTabDialog
-        open={confirmationOpen}
-        onConfirm={handleConfirm}
-        onCancel={handleCancel}
-      />
+      {dialog}
     </>
   );
 };

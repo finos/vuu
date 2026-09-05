@@ -1,30 +1,34 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { queryClosest, registerComponent } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
   createElement,
-  HTMLAttributes,
+  type HTMLAttributes,
   isValidElement,
-  MouseEventHandler,
-  ReactElement,
+  type MouseEventHandler,
+  type ReactElement,
   useCallback,
-  useEffect,
 } from "react";
-import { useAsDropTarget } from "./useAsDropTarget";
-import { useNotDropTarget } from "./useNotDropTarget";
-
-import { queryClosest } from "@vuu-ui/vuu-utils";
-import { componentToJson, LayoutJSON } from "./componentToJson";
-import gridLayoutItemCss from "./GridLayoutItem.css";
+import { componentToJson, type LayoutJSON } from "./componentToJson";
 import {
-  DragSourceProvider,
+  type DragSourceProvider,
   useGridLayoutDispatch,
+  useGridLayoutDragEndHandler,
   useGridLayoutDragStartHandler,
 } from "./GridLayoutContext";
-import { GridChildItemStyle, GridModelChildItemProps } from "./GridModel";
+import {
+  type GridChildItemStyle,
+  type GridModelChildItemProps,
+  resolveMinimumGridItemSize,
+} from "./GridModel";
+import { IconButton } from "./IconButton";
+import { useAsDropTarget } from "./useAsDropTarget";
 import { useDraggable } from "./useDraggable";
 import { useGridChildProps } from "./useGridChildProps";
-import { IconButton } from "./IconButton";
+import { useNotDropTarget } from "./useNotDropTarget";
+
+import gridLayoutItemCss from "./GridLayoutItem.css";
 
 const classBaseItem = "vuuGridLayoutItem";
 
@@ -81,6 +85,8 @@ export const GridLayoutItem = ({
   header: headerProp,
   height,
   id,
+  minHeight,
+  minWidth,
   stackId,
   resizeable,
   style: styleProp,
@@ -95,9 +101,15 @@ export const GridLayoutItem = ({
     window: targetWindow,
   });
 
-  console.log(`[GridLayoutItem#${id}] render`);
-
   const dispatch = useGridLayoutDispatch();
+  const modelMinHeight = resolveMinimumGridItemSize(
+    minHeight,
+    styleProp?.minHeight,
+  );
+  const modelMinWidth = resolveMinimumGridItemSize(
+    minWidth,
+    styleProp?.minWidth,
+  );
   // TODO pass the styleProp in here to initialise the model value
   const {
     contentDetached,
@@ -116,21 +128,15 @@ export const GridLayoutItem = ({
     header: headerProp,
     height,
     id,
+    minHeight: modelMinHeight,
+    minWidth: modelMinWidth,
     resizeable,
     stackId,
     style: styleProp,
     title: titleProp,
     width,
   });
-
-  useEffect(
-    () => () => {
-      console.log(`unmount layout item ${id}`);
-    },
-    [id],
-  );
-
-  // why can't the hook that processes this make this call ?
+  const onDragEnd = useGridLayoutDragEndHandler();
   const onDragStart = useGridLayoutDragStartHandler();
 
   const onClose = useCallback<MouseEventHandler<HTMLButtonElement>>(
@@ -146,9 +152,9 @@ export const GridLayoutItem = ({
   const draggableProps = useDraggable({
     draggableClassName: classBaseItem,
     getDragSource,
+    onDragEnd,
     onDragStart,
   });
-
   const className = cx(classBaseItem, {
     "vuuGridLayoutItem-dragging": dragging,
     "vuu-detached": contentDetached,
@@ -160,6 +166,8 @@ export const GridLayoutItem = ({
   const style = {
     ...styleProp,
     gridArea,
+    ...(minHeight === undefined ? {} : { minHeight }),
+    ...(minWidth === undefined ? {} : { minWidth }),
     "--header-height": header ? "25px" : "0px",
   };
 
@@ -207,7 +215,14 @@ export const isGridLayoutItem = (element: ReactElement) =>
 GridLayoutItem.toJSON = (
   element: ReactElement<GridLayoutItemProps, typeof GridLayoutItemType>,
 ) => {
-  const { children } = element.props;
+  let { children } = element.props;
+  if (Array.isArray(children)) {
+    if (children.length > 1) {
+      throw Error("[GridLayoutItem] cannot have more than one child element");
+    }
+    // Only happens when reconstitured from JSON
+    [children] = children;
+  }
   if (isValidElement(children)) {
     const child = componentToJson(children);
     return {
@@ -217,3 +232,5 @@ GridLayoutItem.toJSON = (
     throw Error("[GridLayoutItem] children is not a react element");
   }
 };
+
+registerComponent("GridLayoutItem", GridLayoutItem, "component");
