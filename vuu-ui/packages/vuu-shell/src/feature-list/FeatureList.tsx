@@ -1,22 +1,27 @@
+import {
+  GridLayout,
+  GridLayoutItem,
+  toJsonValue,
+  useDraggable,
+  type TemplateSource,
+  type TypedComponentTemplate,
+} from "@heswell/grid-layout";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { Palette, PaletteItem } from "@vuu-ui/vuu-layout";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import {
   type DynamicFeatureProps,
   type StaticFeatureDescriptor,
-  featureFromJson,
   isStaticFeatures,
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
-  type HTMLAttributes,
-  type Key,
-  type ReactElement,
+  useCallback,
   useMemo,
+  type DragEvent,
+  type HTMLAttributes,
+  type ReactElement,
 } from "react";
-import { Feature } from "../feature/Feature";
-
 import featureListCss from "./FeatureList.css";
 
 const classBase = "vuuFeatureList";
@@ -27,11 +32,99 @@ export type GroupedFeatureProps<P extends object | undefined = object> = Record<
 >;
 
 export interface FeatureListProps extends HTMLAttributes<HTMLDivElement> {
-  features:
+  readonly features:
     | DynamicFeatureProps[]
     | GroupedFeatureProps
     | StaticFeatureDescriptor[];
 }
+
+const templateForDynamicFeature = (
+  feature: DynamicFeatureProps,
+): TypedComponentTemplate => {
+  const settings = toJsonValue(feature);
+  if (!settings.ok) {
+    throw new Error(
+      `Feature "${feature.title ?? feature.mfComponent}" has non-persistable settings at ${settings.error.path}`,
+    );
+  }
+  return {
+    component: {
+      settings: settings.value,
+      type: "vuu-dynamic-feature",
+      version: 1,
+    },
+    label: feature.title ?? feature.mfComponent,
+  };
+};
+
+const templateForStaticFeature = ({
+  label,
+  type,
+}: StaticFeatureDescriptor): TypedComponentTemplate => ({
+  component: {
+    settings: { type },
+    type: "vuu-static-feature",
+    version: 1,
+  },
+  label,
+});
+
+const FeatureTemplate = ({
+  id,
+  index,
+  template,
+}: {
+  readonly id: string;
+  readonly index: number;
+  readonly template: TypedComponentTemplate;
+}) => {
+  const getDragSource = useCallback(
+    (event: DragEvent<Element>): TemplateSource => ({
+      ...template,
+      element: event.currentTarget as HTMLElement,
+      layoutId: id,
+      type: "template",
+    }),
+    [id, template],
+  );
+  const draggable = useDraggable({ getDragSource });
+  return (
+    <GridLayoutItem
+      id={`${id}-item-${index}`}
+      style={{ gridArea: `${index + 1}/1/${index + 2}/2` }}
+    >
+      <div {...draggable} draggable>
+        <Icon name="draggable" size={18} />
+        <span className={`${classBase}-itemName`}>{template.label}</span>
+      </div>
+    </GridLayoutItem>
+  );
+};
+
+const TemplateGrid = ({
+  id,
+  templates,
+}: {
+  readonly id: string;
+  readonly templates: readonly TypedComponentTemplate[];
+}) => (
+  <GridLayout
+    colsAndRows={{
+      cols: ["1fr"],
+      rows: templates.map(() => "40px"),
+    }}
+    id={id}
+  >
+    {templates.map((template, index) => (
+      <FeatureTemplate
+        id={id}
+        index={index}
+        key={`${template.component.type}-${template.label}-${index}`}
+        template={template}
+      />
+    ))}
+  </GridLayout>
+);
 
 export const FeatureList = ({
   features,
@@ -47,88 +140,33 @@ export const FeatureList = ({
 
   const content = useMemo<ReactElement[]>(() => {
     if (isStaticFeatures(features)) {
-      return features.map(({ label, type }, idx) => {
-        return (
-          <PaletteItem
-            ViewProps={{
-              closeable: true,
-              header: true,
-              resize: "defer",
-              resizeable: true,
-            }}
-            component={featureFromJson({ type })}
-            key={idx}
-            value={label}
-          >
-            <Icon name="draggable" size={18} />
-            <span className={`${classBase}-itemName`}>{label}</span>
-          </PaletteItem>
-        );
-      });
+      return [
+        <TemplateGrid
+          id="vuu-static-feature-templates"
+          key="static"
+          templates={features.map(templateForStaticFeature)}
+        />,
+      ];
     }
     if (Array.isArray(features)) {
       return [
-        <div className={`${classBase}-standalone`} key={0}>
-          <Palette key="0" orientation="vertical">
-            {features.map(({ ViewProps, ...featureProps }, i) => (
-              <PaletteItem
-                ViewProps={{
-                  closeable: true,
-                  header: true,
-                  resize: "defer",
-                  resizeable: true,
-                  title: featureProps.title,
-                  ...ViewProps,
-                }}
-                component={<Feature {...featureProps} />}
-                key={i}
-                value={featureProps.title}
-              >
-                <Icon name="draggable" size={18} />
-                <span className={`${classBase}-itemName`}>
-                  {featureProps.title}
-                </span>
-              </PaletteItem>
-            ))}
-          </Palette>
+        <div className={`${classBase}-standalone`} key="dynamic">
+          <TemplateGrid
+            id="vuu-dynamic-feature-templates"
+            templates={features.map(templateForDynamicFeature)}
+          />
         </div>,
       ];
-    } else {
-      return Object.entries(features).map(([heading, featureList], index) => (
-        <div className={`${classBase}-group`} key={index}>
-          <div className={`${classBase}-groupHeader`}>{heading}</div>
-          <Palette orientation="vertical">
-            {featureList.map(
-              (
-                { ViewProps, ...featureProps }: DynamicFeatureProps<object>,
-                i: Key,
-              ) => {
-                return (
-                  <PaletteItem
-                    ViewProps={{
-                      closeable: true,
-                      header: true,
-                      resize: "defer",
-                      resizeable: true,
-                      title: featureProps.title,
-                      ...ViewProps,
-                    }}
-                    component={<Feature {...featureProps} />}
-                    key={i}
-                    value={featureProps.title}
-                  >
-                    <Icon name="draggable" size={18} />
-                    <span className={`${classBase}-itemName`}>
-                      {featureProps.title}
-                    </span>
-                  </PaletteItem>
-                );
-              },
-            )}
-          </Palette>
-        </div>
-      ));
     }
+    return Object.entries(features).map(([heading, featureList], index) => (
+      <div className={`${classBase}-group`} key={heading}>
+        <div className={`${classBase}-groupHeader`}>{heading}</div>
+        <TemplateGrid
+          id={`vuu-feature-template-group-${index}`}
+          templates={featureList.map(templateForDynamicFeature)}
+        />
+      </div>
+    ));
   }, [features]);
 
   return (

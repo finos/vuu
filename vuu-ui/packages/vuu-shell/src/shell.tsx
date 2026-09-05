@@ -1,178 +1,99 @@
+import { GridLayoutProvider } from "@heswell/grid-layout";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { useAuthenticatedUser } from "@vuu-ui/core";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
-import type { LayoutChangeHandler } from "@vuu-ui/vuu-layout";
-import { LayoutProvider, StackLayout } from "@vuu-ui/vuu-layout";
+import { useLostConnection } from "@vuu-ui/vuu-data-react";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
-import { logger } from "@vuu-ui/vuu-utils";
-import {
-  type HTMLAttributes,
-  type ReactNode,
-  useCallback,
-  useMemo,
-} from "react";
+import { useMemo, type HTMLAttributes, type ReactNode } from "react";
 import { AppHeader } from "./app-header";
 import { ApplicationProvider } from "./application-provider";
-import {
-  type IPersistenceManager,
-  LocalPersistenceManager,
-  PersistenceProvider,
-  usePersistenceManager,
-} from "./persistence-manager";
 import {
   type ShellLayoutProps,
   useShellLayout,
 } from "./shell-layout-templates";
 import {
-  type WorkspaceProps,
+  WorkspaceHost,
   WorkspaceProvider,
-  useWorkspace,
+  createWorkspaceComponentRegistries,
+  shellWorkspaceComponentRegistrations,
   useWorkspaceContextMenuItems,
+  type WorkspaceProps,
 } from "./workspace-management";
-import { loadingJSON } from "./workspace-management/defaultWorkspaceJSON";
-import { useLostConnection } from "@vuu-ui/vuu-data-react";
-
 import shellCss from "./shell.css";
-
-if (process.env.NODE_ENV === "production") {
-  // StackLayout is loaded just to force component registration, we know it will be
-  // required when default layout is instantiated. This is only required in prod
-  // to avoif tree shaking the Stack away. Causes a runtime issue in dev.
-  if (typeof StackLayout !== "function") {
-    console.warn(
-      "StackLayout module not loaded, will be unable to deserialize from layout JSON",
-    );
-  }
-}
-
-const { error } = logger("Shell");
 
 export type LayoutTemplateName = "full-height" | "inlay";
 
 export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
-  shellLayoutProps?: ShellLayoutProps;
-  workspaceProps?: WorkspaceProps;
-  children?: ReactNode;
-  logout?: () => void;
-  saveUrl?: string;
-  serverUrl?: string;
+  readonly children?: ReactNode;
+  readonly logout?: () => void;
+  readonly saveUrl?: string;
+  readonly serverUrl?: string;
+  readonly shellLayoutProps?: ShellLayoutProps;
+  readonly workspaceProps?: WorkspaceProps;
 }
 
 const defaultAppHeader = <AppHeader />;
-
-const getAppHeader = (shellLayoutProps?: ShellLayoutProps) =>
-  shellLayoutProps?.appHeader ?? defaultAppHeader;
-
-const defaultHTMLAttributes: HTMLAttributes<HTMLDivElement> = {
-  className: "vuuShell",
-};
-
-const getHTMLAttributes = (props?: ShellLayoutProps) => {
-  if (props?.htmlAttributes) {
-    return {
-      ...defaultHTMLAttributes,
-      ...props.htmlAttributes,
-    };
-  } else {
-    return defaultHTMLAttributes;
-  }
-};
+const defaultRegistries = createWorkspaceComponentRegistries(
+  shellWorkspaceComponentRegistrations,
+);
 
 const VuuApplication = ({
-  shellLayoutProps: ShellLayoutProps,
   children,
-}: Omit<ShellProps, "ContentLayoutProps" | "loginUrl" | "workspaceProps">) => {
+  shellLayoutProps,
+}: Pick<ShellProps, "children" | "shellLayoutProps">) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-shell",
     css: shellCss,
     window: targetWindow,
   });
-
-  const { workspaceJSON, saveApplicationLayout } = useWorkspace();
-
   const { buildMenuOptions, handleMenuAction } = useWorkspaceContextMenuItems();
-
-  const handleLayoutChange = useCallback<LayoutChangeHandler>(
-    (layout) => {
-      try {
-        saveApplicationLayout(layout);
-      } catch {
-        error?.("Failed to save layout");
-      }
+  const staticShell = useShellLayout({
+    ...shellLayoutProps,
+    appHeader: shellLayoutProps?.appHeader ?? defaultAppHeader,
+    htmlAttributes: {
+      className: "vuuShell",
+      ...shellLayoutProps?.htmlAttributes,
     },
-    [saveApplicationLayout],
-  );
-
-  const isLayoutLoading = workspaceJSON === loadingJSON;
-
-  const initialLayout = useShellLayout({
-    ...ShellLayoutProps,
-    appHeader: getAppHeader(ShellLayoutProps),
-    htmlAttributes: getHTMLAttributes(ShellLayoutProps),
+    workspaceHost: <WorkspaceHost />,
   });
-
   useLostConnection();
 
-  return isLayoutLoading ? null : (
+  return (
     <ContextMenuProvider
       menuActionHandler={handleMenuAction}
       menuBuilder={buildMenuOptions}
     >
-      <LayoutProvider
-        workspaceJSON={workspaceJSON}
-        onLayoutChange={handleLayoutChange}
-      >
-        {initialLayout}
-      </LayoutProvider>
+      <GridLayoutProvider>{staticShell}</GridLayoutProvider>
       {children}
     </ContextMenuProvider>
   );
 };
 
 export const Shell = ({ logout, workspaceProps, ...props }: ShellProps) => {
-  // If user has provided an implementation of IPersistenceManager
-  // by wrapping higher level PersistenceProvider, use it, otw
-  // default to LocalPersistenceManager
   const user = useAuthenticatedUser();
-  const persistenceManager = usePersistenceManager();
-  const localPersistenceManager = useMemo<
-    IPersistenceManager | undefined
-  >(() => {
-    if (persistenceManager) {
-      return undefined;
-    }
-    console.log(
-      `No Persistence Manager, configuration data will be persisted to Local Storage, key: 'vuu/${user.userName}'`,
-    );
-    return new LocalPersistenceManager(`vuu/${user.userName}`);
-  }, [persistenceManager, user.userName]);
-
-  // ApplicationProvider must go outside Dialog and Notification providers
-  // ApplicationProvider injects the SaltProvider and this must be the root
-  // SaltProvider.
-
-  const shellProviders = (
-    <ApplicationProvider density="high" logout={logout} theme="vuu-theme">
-      <WorkspaceProvider {...workspaceProps}>
-        <ModalProvider>
-          <NotificationsProvider>
-            <VuuApplication {...props} />
-          </NotificationsProvider>
-        </ModalProvider>
-      </WorkspaceProvider>
-    </ApplicationProvider>
+  const resolvedWorkspaceProps = useMemo<WorkspaceProps>(
+    () => ({
+      ...workspaceProps,
+      componentRenderers:
+        workspaceProps?.componentRenderers ?? defaultRegistries.renderers,
+      settingsCodecs:
+        workspaceProps?.settingsCodecs ?? defaultRegistries.settingsCodecs,
+    }),
+    [workspaceProps],
   );
 
-  if (persistenceManager) {
-    return shellProviders;
-  } else {
-    return (
-      <PersistenceProvider persistenceManager={localPersistenceManager}>
-        {shellProviders}
-      </PersistenceProvider>
-    );
-  }
+  return (
+    <ApplicationProvider density="high" logout={logout} theme="vuu-theme">
+      <ModalProvider>
+        <NotificationsProvider>
+          <WorkspaceProvider {...resolvedWorkspaceProps} userId={user.userName}>
+            <VuuApplication {...props} />
+          </WorkspaceProvider>
+        </NotificationsProvider>
+      </ModalProvider>
+    </ApplicationProvider>
+  );
 };

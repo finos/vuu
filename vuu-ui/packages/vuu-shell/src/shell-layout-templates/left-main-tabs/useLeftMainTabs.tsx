@@ -1,38 +1,39 @@
-import { Flexbox, StackLayout } from "@vuu-ui/vuu-layout";
-
-import { VuuShellLocation } from "@vuu-ui/vuu-utils";
-import { useMemo } from "react";
-import { ShellLayoutTemplateHook } from "../useShellLayout";
+import { GridLayout, GridLayoutItem } from "@heswell/grid-layout";
+import { ApplicationSettingsContextPanel } from "../context-panel";
+import type { ShellLayoutTemplateHook } from "../useShellLayout";
 
 export const useLeftMainTabs: ShellLayoutTemplateHook = ({
   appHeader,
   htmlAttributes,
   ToolbarProps,
+  workspaceHost,
 }) => {
-  if (ToolbarProps === undefined) {
-    throw Error("LeftMainTabs layout requires ToolbarProps");
-  }
-
-  return useMemo(() => {
-    return (
-      <Flexbox
-        {...htmlAttributes}
-        style={{
-          ...htmlAttributes?.style,
-          flexDirection: "column",
-        }}
-      >
+  const { onChange: _onChange, ...gridAttributes } = htmlAttributes ?? {};
+  return (
+    <GridLayout
+      {...gridAttributes}
+      className={`${htmlAttributes?.className ?? ""} vuuShell-staticGrid`}
+      colsAndRows={{
+        cols: [`${ToolbarProps?.width ?? 48}px`, "1fr", "0px"],
+        rows: ["40px", "1fr"],
+      }}
+      id="vuu-shell-grid"
+    >
+      <GridLayoutItem id="vuu-shell-header" style={{ gridArea: "1/1/2/3" }}>
         {appHeader}
-        <StackLayout
-          TabstripProps={{
-            className: `${VuuShellLocation.MultiWorkspaceContainer}-tabs`,
-          }}
-          active={0}
-          showTabs="left"
-          style={{ flex: 1 }}
-          id={VuuShellLocation.MultiWorkspaceContainer}
-        />
-      </Flexbox>
-    );
-  }, [appHeader, htmlAttributes]);
+      </GridLayoutItem>
+      <GridLayoutItem id="vuu-shell-toolbar" style={{ gridArea: "2/1/3/2" }}>
+        {ToolbarProps?.children}
+      </GridLayoutItem>
+      <GridLayoutItem
+        id="vuu-shell-workspace-host"
+        style={{ gridArea: "2/2/3/3" }}
+      >
+        {workspaceHost}
+      </GridLayoutItem>
+      <GridLayoutItem id="vuu-shell-context" style={{ gridArea: "1/3/3/4" }}>
+        <ApplicationSettingsContextPanel />
+      </GridLayoutItem>
+    </GridLayout>
+  );
 };

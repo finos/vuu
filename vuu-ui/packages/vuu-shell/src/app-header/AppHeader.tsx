@@ -2,13 +2,12 @@ import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { useLogout } from "@vuu-ui/core";
-import { useLayoutOperation } from "@vuu-ui/vuu-layout";
 import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
 import { Toolbar } from "@vuu-ui/vuu-ui-controls";
 import type { ThemeMode } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import { type HTMLAttributes, useCallback, useRef } from "react";
-import { usePersistenceManager } from "../persistence-manager";
+import { type HTMLAttributes, useCallback } from "react";
+import { useWorkspace } from "../workspace-management";
 
 import appHeaderCss from "./AppHeader.css";
 
@@ -29,37 +28,36 @@ export const AppHeader = ({
     window: targetWindow,
   });
 
-  const persistenceManager = usePersistenceManager();
-  const settingsButtonRef = useRef<HTMLButtonElement>(null);
-
   const className = cx(classBase, classNameProp);
   const logout = useLogout();
 
-  const { showComponentInContextPanel } = useLayoutOperation();
+  const { resetApplication, setApplicationSetting } = useWorkspace();
   const { showNotification } = useNotifications();
 
-  const handleReset = useCallback(() => {
-    persistenceManager?.clearUserSettings();
-    showNotification({
-      animationType: "slide-out",
-      renderPostRefresh: true,
-      type: NotificationType.Toast,
-      header: "Success",
-      content: "Settings cleared",
-      status: "success",
-    });
-    location.reload();
-  }, [persistenceManager, showNotification]);
+  const handleReset = useCallback(async () => {
+    try {
+      await resetApplication();
+      showNotification({
+        animationType: "slide-out",
+        renderPostRefresh: true,
+        type: NotificationType.Toast,
+        header: "Success",
+        content: "Settings and workspaces cleared",
+        status: "success",
+      });
+    } catch (cause: unknown) {
+      showNotification({
+        type: NotificationType.Toast,
+        header: "Reset failed",
+        content: cause instanceof Error ? cause.message : "Unable to reset",
+        status: "error",
+      });
+    }
+  }, [resetApplication, showNotification]);
 
   const handleShowSettings = useCallback(() => {
-    showComponentInContextPanel(
-      {
-        type: "ApplicationSettings",
-      },
-      "Settings",
-      () => settingsButtonRef.current?.focus(),
-    );
-  }, [showComponentInContextPanel]);
+    void setApplicationSetting("applicationSettings.panelOpen", true);
+  }, [setApplicationSetting]);
 
   return (
     <Toolbar
@@ -88,7 +86,6 @@ export const AppHeader = ({
         appearance="transparent"
         className={`${classBase}-menuItem`}
         onClick={handleShowSettings}
-        ref={settingsButtonRef}
         sentiment="neutral"
       >
         Settings <span data-icon="settings" />

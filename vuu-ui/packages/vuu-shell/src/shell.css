@@ -1,8 +1,5 @@
 .vuuShell {
-  background-color: var(
-    --vuuShell-background,
-    var(--salt-container-primary-background)
-  );
+  background-color: var(--vuuShell-background, var(--salt-container-primary-background));
   height: var(--vuuShell-height, 100vh);
   width: var(--vuuShell-width, 100vw);
 
@@ -12,10 +9,7 @@
 }
 
 .vuu-workspace-tabs {
-  background: var(
-    --vuuWorkspace-background,
-    var(--salt-container-primary-background)
-  );
+  background: var(--vuuWorkspace-background, var(--salt-container-primary-background));
 }
 
 .vuuShell-palette {
@@ -58,4 +52,56 @@
 
 .vuuShell-content {
   padding: var(--vuuShell-content-padding, 8px);
+}
+
+.vuuShell-staticGrid,
+.vuuWorkspaceHost,
+.vuuWorkspaceHost-content,
+.vuuWorkspaceHost-workspace {
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+}
+
+.vuuWorkspaceHost {
+  display: flex;
+  flex-direction: column;
+}
+
+.vuuWorkspaceHost-tabs {
+  display: flex;
+  flex: 0 0 32px;
+  gap: 2px;
+}
+
+.vuuWorkspaceHost-tab {
+  align-items: center;
+  display: flex;
+}
+
+.vuuWorkspaceHost-tab > button {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  height: 100%;
+}
+
+.vuuWorkspaceHost-tab > button[aria-selected="true"] {
+  border-bottom: 2px solid var(--salt-navigable-indicator-active);
+}
+
+.vuuWorkspaceHost-content {
+  flex: 1 1 auto;
+}
+
+.vuuWorkspaceHost-workspace[hidden] {
+  display: none;
+}
+
+.vuuWorkspaceHost-state {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  justify-content: center;
 }
