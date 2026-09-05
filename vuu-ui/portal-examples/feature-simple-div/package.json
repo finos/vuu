@@ -18,8 +18,8 @@
   "main": "index.ts",
   "devDependencies": {},
   "peerDependencies": {
-    "@vuu-ui/core": "3.3.1",
-    "@vuu-ui/vuu-shell": "3.3.1",
+    "@vuu-ui/core": "3.3.2",
+    "@vuu-ui/vuu-shell": "3.3.2",
     "clsx": "^2.0.0",
     "react": "19.2.3",
     "react-dom": "19.2.3"
