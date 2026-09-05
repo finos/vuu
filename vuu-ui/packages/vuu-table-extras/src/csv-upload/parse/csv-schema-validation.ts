@@ -37,6 +37,8 @@ export type CsvValidationOptions = {
   maxRows?: number;
 };
 
+const INTERNAL_KEY_COLUMNS = new Set(["vuuRowNum"]);
+
 export const validateCsvAgainstSchema = (
   parsed: CsvParseResult,
   tableSchema: TableSchema,
@@ -48,7 +50,11 @@ export const validateCsvAgainstSchema = (
   const maxRows = options?.maxRows ?? MAX_ROWS_IN_CSV;
   const errorState = createCsvErrorState<CsvValidationErrorEnum>();
 
-  if (!parsed.header.includes(tableSchema.key)) {
+  if (
+    tableSchema.key &&
+    !INTERNAL_KEY_COLUMNS.has(tableSchema.key) &&
+    !parsed.header.includes(tableSchema.key)
+  ) {
     addCsvFileError(
       errorState,
       tableSchema.key,

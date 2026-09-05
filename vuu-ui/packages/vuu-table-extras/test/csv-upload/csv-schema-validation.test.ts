@@ -55,6 +55,25 @@ describe("validateCsvAgainstSchema", () => {
     );
   });
 
+  it("does not require vuuRowNum in the CSV header when the schema key is vuuRowNum", () => {
+    const result = validateCsvAgainstSchema(
+      makeParsed(["id", "count", "label"], [["a1", "10", "foo"]]),
+      makeSchema({
+        key: "vuuRowNum",
+        columns: [
+          { name: "vuuRowNum", serverDataType: "int" },
+          { name: "id", serverDataType: "string" },
+          { name: "count", serverDataType: "int" },
+          { name: "label", serverDataType: "string" },
+        ],
+      }),
+    );
+
+    expect(result.errors).toHaveLength(0);
+    expect(result.errorMap.fileErrors["vuuRowNum"]).toBeUndefined();
+    expect(result.rows).toEqual([{ id: "a1", count: 10, label: "foo" }]);
+  });
+
   it("adds a file error for each column that is not in the schema", () => {
     const result = validateCsvAgainstSchema(
       makeParsed(["id", "unknown_col"], [["a1", "val"]]),
