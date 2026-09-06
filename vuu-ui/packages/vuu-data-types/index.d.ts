@@ -703,6 +703,7 @@ export interface DataSourceBase<
   freezeTimestamp?: number | undefined;
   select?: (selectRequest: Omit<SelectRequest, "vpId">) => void;
 
+  isRemote?: boolean;
   status: DataSourceStatus;
   /**
    *

@@ -31,7 +31,7 @@ import { CsvUpload } from "@vuu-ui/vuu-table-extras";
 
 | Prop | Type | Description |
 |---|---|---|
-| `dataSource` | `DataSource` | **Required.** The Vuu data source for the target table. Must support `createSessionDataSource` (used internally with `sessionType: "import"`), `addRow`, and `endEditSession`. |
+| `dataSource` | `DataSource` | **Required.** The Vuu data source for the target table. Must be subscribed (`status: "subscribed"`) and support `createSessionDataSource` (used internally with `sessionType: "import"`), `addRow`, and `endEditSession`. |
 | `importSchema` | `TableSchema` | Schema of the import table, where it differs from the target table. Used to validate the CSV and to determine the session datasource columns. If omitted and `importTable` is provided, the schema is fetched via `getTableSchema`. Pass a stable reference. See [Importing into a separate table](#importing-into-a-separate-table). |
 | `importTable` | `VuuTable` | The import table, where it differs from the target table. Used to resolve `importSchema` when that is not supplied, and to validate the module of the session table returned by the server. |
 | `embedded` | `boolean` | Renders the upload content and actions without its own `Dialog`, for use inside an existing modal. Defaults to `false`. |
@@ -162,7 +162,7 @@ type CsvErrorMap<TError extends string> = {
 
 | Code | Meaning |
 |---|---|
-| `MISSING_KEY_COLUMN` | The CSV does not contain the table's key column. Reported as a `fileError`. |
+| `MISSING_KEY_COLUMN` | The CSV does not contain the table's key column (internal/staging key columns such as `vuuRowNum` are exempt and generated automatically). Reported as a `fileError`. |
 | `UNKNOWN_COLUMN` | A CSV column has no matching column in the table schema. Reported as a `fileError`. |
 | `MAX_ROWS_EXCEEDED` | The CSV contains more rows than the `maxRows` limit. Reported as a `fileError`. |
 | `EMPTY_NON_STRING_VALUE` | A non-string column cell is empty. Reported as a `rowError`. |
@@ -210,7 +210,7 @@ By default the CSV is validated against `dataSource.tableSchema` and the session
 />
 ```
 
-`importSchema` does double duty: its column names become the session datasource columns, and it replaces `dataSource.tableSchema` as the schema the CSV is validated against. That second role is not optional — `processFile` validates the CSV *before* the session begins, and the session datasource is never subscribed (rows are added via `addRow` RPC), so its schema is never populated. The import schema has to be known up front.
+`importSchema` does double duty: its column names become the session datasource columns, and it replaces `dataSource.tableSchema` as the schema the CSV is validated against. That second role is not optional — `processFile` validates the CSV *before* the session begins, and `useCsvUpload` does not subscribe to the session datasource itself (rows are added via `addRow` RPCs directly). When `onImportSessionStarted` fires, subscribing to the session datasource is left to the consumer (e.g. `<Table />` or `DataUploadPreview`) to manage viewport rendering. The import schema has to be known up front.
 
 | Props | Behaviour |
 |---|---|

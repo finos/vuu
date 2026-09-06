@@ -242,3 +242,48 @@ test.describe("exportCsvTemplate and exportToCsv with overrides", () => {
   });
 });
 
+test.describe("useCsvExport hook", () => {
+  test("WHEN export is triggered via useCsvExport THEN file downloads and status updates", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvExport/CsvExportWithHook");
+
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      page.locator("button", { hasText: "Export All (useCsvExport)" }).click(),
+    ]);
+
+    expect(download.suggestedFilename()).toBe("instruments-hook-export.csv");
+    await expect(
+      page.locator("span", { hasText: "Download started" }),
+    ).toBeVisible({ timeout: 5000 });
+
+    const filePath = await download.path();
+    if (!filePath) throw new Error("download path not available");
+    const content = fs.readFileSync(filePath, "utf-8");
+    const lines = content.split("\r\n").filter(Boolean);
+    expect(lines.length).toBeGreaterThan(1);
+  });
+
+  test("WHEN template export is triggered via useCsvExport THEN template downloads", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvExport/CsvExportWithHook");
+
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      page.locator("button", { hasText: "Download Template" }).click(),
+    ]);
+
+    expect(download.suggestedFilename()).toBe("instruments-hook-template.csv");
+    const filePath = await download.path();
+    if (!filePath) throw new Error("download path not available");
+    const content = fs.readFileSync(filePath, "utf-8");
+    const lines = content.split("\r\n").filter(Boolean);
+    expect(lines).toHaveLength(1);
+  });
+});
+
+
