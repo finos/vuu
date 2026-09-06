@@ -95,7 +95,7 @@ test.describe("ShellLayout", () => {
       hasText: "Test Feature",
     });
     const target = component.locator(
-      ".vuuWorkspaceHost-emptyGrid .vuuGridPlaceholder",
+      ".vuuWorkspaceHost-emptyGrid .vuuWorkspaceStartPanel",
     );
     await expect(source).toBeVisible();
     await expect(target).toBeVisible();
@@ -110,7 +110,7 @@ test.describe("ShellLayout", () => {
     await source.dragTo(target);
 
     await expect(
-      component.getByRole("tab", { name: "Untitled" }),
+      component.getByRole("tab", { exact: true, name: "Untitled" }),
     ).toBeVisible();
     await expect(component.getByTestId("dropped-test-feature")).toBeVisible();
     await expect(component.getByText("Start by adding a table")).toHaveCount(0);
@@ -165,15 +165,30 @@ test.describe("ShellLayout", () => {
       })
       .first();
     const target = component.locator(
-      ".vuuWorkspaceHost-emptyGrid .vuuGridPlaceholder",
+      ".vuuWorkspaceHost-emptyGrid .vuuWorkspaceStartPanel",
     );
     await expect(source).toBeVisible();
     await expect(target).toBeVisible();
+    expect(
+      await target.evaluate((element) => {
+        const { left, top, width, height } = element.getBoundingClientRect();
+        const hit = document.elementFromPoint(
+          left + width / 2,
+          top + height / 2,
+        );
+        return {
+          dropTarget: hit?.closest("[data-drop-target]")?.className,
+          hit: hit?.className,
+        };
+      }),
+    ).toMatchObject({
+      dropTarget: expect.stringContaining("vuuGridPlaceholder"),
+    });
 
     await source.dragTo(target);
 
     await expect(
-      component.getByRole("tab", { name: "Untitled" }),
+      component.getByRole("tab", { exact: true, name: "Untitled" }),
     ).toBeVisible();
     await expect(
       component.getByTestId("dropped-table-feature"),
@@ -251,6 +266,38 @@ test.describe("ShellLayout", () => {
     const emptyTab = component.getByRole("tab", { name: "Untitled" });
     await expect(emptyTab).toHaveAttribute("aria-selected", "true");
     await expect(component.getByText("Start by adding a table")).toBeVisible();
+    const persistedStartPanel = component.locator(
+      ".vuuWorkspaceHost-workspace:not([hidden]) .vuuWorkspaceStartPanel",
+    );
+    await source.dragTo(persistedStartPanel);
+    await expect(
+      component
+        .locator(".vuuWorkspaceHost-workspace:not([hidden])")
+        .getByTestId("dropped-table-feature"),
+    ).toHaveAttribute("data-table-name", "SIMUL:instruments");
+    await expect(persistedStartPanel).toHaveCount(0);
+    await expect
+      .poll(async () =>
+        page.evaluate(
+          ({ sessionKey, snapshotKey }) => {
+            const session = JSON.parse(
+              localStorage.getItem(sessionKey) ?? "null",
+            );
+            const snapshot = JSON.parse(
+              localStorage.getItem(
+                `${snapshotKey}:snapshot:${session.activeWorkspaceInstanceId}`,
+              ) ?? "null",
+            );
+            return snapshot?.snapshot.layout.components;
+          },
+          { sessionKey, snapshotKey },
+        ),
+      )
+      .toHaveLength(1);
+    await component.getByRole("button", { name: "Create Tab" }).click();
+    const emptyTab2 = component.getByRole("tab", { name: "Untitled 2" });
+    await expect(emptyTab2).toHaveAttribute("aria-selected", "true");
+    await expect(component.getByText("Start by adding a table")).toBeVisible();
     await expect
       .poll(async () =>
         page.evaluate(
@@ -260,7 +307,11 @@ test.describe("ShellLayout", () => {
       )
       .toMatchObject({
         activeWorkspaceInstanceId: expect.any(String),
-        openWorkspaces: [{ title: "Market Data" }, { title: "Untitled" }],
+        openWorkspaces: [
+          { title: "Market Data" },
+          { title: "Untitled" },
+          { title: "Untitled 2" },
+        ],
       });
 
     await page.evaluate(() => window.unmount());
@@ -273,12 +324,20 @@ test.describe("ShellLayout", () => {
       component.getByRole("tab", { name: "Market Data" }),
     ).toBeVisible();
     await expect(
-      component.getByRole("tab", { name: "Untitled" }),
+      component.getByRole("tab", { exact: true, name: "Untitled" }),
+    ).toBeVisible();
+    await expect(
+      component.getByRole("tab", { name: "Untitled 2" }),
     ).toHaveAttribute("aria-selected", "true");
     await expect(component.getByText("Start by adding a table")).toBeVisible();
 
     await component
-      .getByRole("tab", { name: "Untitled" })
+      .getByRole("tab", { name: "Untitled 2" })
+      .getByRole("button", { name: "context menu" })
+      .click();
+    await page.getByRole("menuitem", { name: "Close" }).click();
+    await component
+      .getByRole("tab", { exact: true, name: "Untitled" })
       .getByRole("button", { name: "context menu" })
       .click();
     await page.getByRole("menuitem", { name: "Close" }).click();

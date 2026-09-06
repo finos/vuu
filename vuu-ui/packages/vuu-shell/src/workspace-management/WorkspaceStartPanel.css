@@ -6,7 +6,6 @@
   gap: 12px;
   inset: 0;
   justify-content: center;
-  pointer-events: none;
   position: absolute;
   z-index: 1;
 }

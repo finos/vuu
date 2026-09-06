@@ -43,8 +43,14 @@ const emptyLayout: GridLayoutDocument = {
   layout: {
     columns: ["1fr"],
     id: "empty-workspace",
-    items: [],
-    placeholderIds: [],
+    items: [
+      {
+        column: { span: 1, start: 1 },
+        id: "empty-workspace-placeholder",
+        row: { span: 1, start: 1 },
+      },
+    ],
+    placeholderIds: ["empty-workspace-placeholder"],
     rows: ["1fr"],
     stacks: [],
   },

@@ -64,9 +64,11 @@ const WorkspaceGrid = ({
           onDocumentError={handleDocumentError}
           settingsCodecs={controller.settingsCodecs}
         >
-          <GridLayout id={controller.snapshot.layout.layout.id} />
+          <GridLayout
+            id={controller.snapshot.layout.layout.id}
+            placeholderContent={isEmpty ? <WorkspaceStartPanel /> : undefined}
+          />
         </GridLayoutProvider>
-        {isEmpty ? <WorkspaceStartPanel /> : null}
       </WorkspacePersistentStateProvider>
     </section>
   );
@@ -142,10 +144,10 @@ const EmptyWorkspaceDropTarget = () => {
             className="vuuWorkspaceHost-emptyGrid"
             colsAndRows={{ cols: ["1fr"], rows: ["1fr"] }}
             id={emptyWorkspaceSnapshot.layout.layout.id}
+            placeholderContent={<WorkspaceStartPanel />}
           />
         </GridLayoutProvider>
       </WorkspacePersistentStateProvider>
-      <WorkspaceStartPanel />
     </div>
   );
 };
