@@ -6,11 +6,9 @@ import {
 } from "@vuu-ui/core";
 import {
   FeatureAndLayoutProvider,
-  LeftNav,
   PersistenceProvider,
   Shell,
   ShellContextProvider,
-  type ShellLayoutProps,
 } from "@vuu-ui/vuu-shell";
 import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
@@ -26,7 +24,7 @@ import {
 } from "./app-config";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { ConfirmSelectionPanel } from "./order-management/cancel-confirm-prompt/ConfirmSelectionPanel";
-import { sampleWorkspace, sampleWorkspaceRegistries } from "./sample-workspace";
+import { sampleWorkspaceRegistries } from "./sample-workspace";
 
 import "./App.css";
 
@@ -79,17 +77,6 @@ export const App = () => {
     [getIdentityToken, user.userName],
   );
 
-  const ShellLayoutProps = useMemo<ShellLayoutProps>(
-    () => ({
-      SidePanelProps: {
-        children: <LeftNav />,
-        sizeOpen: 240,
-      },
-      layoutTemplateId: "full-height",
-    }),
-    [],
-  );
-
   return (
     <PersistenceProvider
       workspacePersistenceService={workspacePersistenceService}
@@ -99,13 +86,12 @@ export const App = () => {
           <VuuDataSourceProvider>
             <FeatureAndLayoutProvider dynamicFeatures={dynamicFeatures}>
               <Shell
-                shellLayoutProps={ShellLayoutProps}
                 className="App"
+                leftNavWidth={240}
                 logout={logout}
                 serverUrl={serverUrl}
                 workspaceProps={{
                   componentRenderers: sampleWorkspaceRegistries.renderers,
-                  defaultWorkspace: sampleWorkspace,
                   settingsCodecs: sampleWorkspaceRegistries.settingsCodecs,
                 }}
               />

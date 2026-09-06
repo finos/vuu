@@ -1,103 +1,70 @@
 import { expect, type Locator, test } from "../../../../playwright/fixtures";
 
-
 const expectToFillViewport = async (shell: Locator) => {
   const dimensions = await shell.evaluate((element) => {
     const { height, width } = element.getBoundingClientRect();
     return {
-      shell: { height, width },
+      shell: {
+        height,
+        width,
+        x: element.getBoundingClientRect().x,
+        y: element.getBoundingClientRect().y,
+      },
       viewport: { height: window.innerHeight, width: window.innerWidth },
     };
   });
 
-  await expect(dimensions.shell).toEqual(dimensions.viewport);
+  await expect(dimensions.shell).toEqual({
+    ...dimensions.viewport,
+    x: 0,
+    y: 0,
+  });
 };
 
 test.describe("ShellLayout", () => {
-  test.describe("WHEN rendered with no configuration", () => {
-    test("THEN simple workspace is rendered", async ({ mount }) => {
-      const component = await mount("Shell/ShellLayout/DefaultShell");
-      const shell = component.getByTestId("shell");
-      const banner = component.getByRole("banner");
+  test("fills the viewport with visible static navigation and no default workspace", async ({
+    mount,
+  }) => {
+    const component = await mount("Shell/GridShellLayout/EmptyGridShell");
+    const shell = component.getByTestId("shell");
+    const leftNav = component.locator(".vuuLeftNav");
+    const workspaceHost = component.locator("#vuu-shell-workspace-host");
 
-      await expect(shell).toContainClass("vuuShell");
-      await expectToFillViewport(shell);
-      await expect(banner).toBeVisible();
-      await expect(banner).toContainClass("vuuAppHeader");
-      await expect(
-        component.getByRole("tablist", { name: "Workspace Tabs" }),
-      ).toBeVisible();
-    });
+    await expect(shell).toContainClass("vuuShell");
+    await expect(shell).toContainClass("vuuFullPage");
+    await expectToFillViewport(shell);
+    await expect(leftNav).toBeVisible();
+    await expect(workspaceHost).toContainClass("vuuShell-content");
+    await expect(
+      component.getByText("Select a workspace from My Layouts"),
+    ).toBeVisible();
+    await expect(
+      component.getByRole("tablist", { name: "Workspace Tabs" }),
+    ).toHaveCount(0);
   });
 
-  test.describe("WHEN rendered with a custom header", () => {
-    test("THEN that header is rendered", async ({ mount }) => {
-      const component = await mount("Shell/ShellLayout/SimpleShellCustomHeader");
+  test("uses the baseline shell tracks without grid padding or item borders", async ({
+    mount,
+  }) => {
+    const component = await mount("Shell/GridShellLayout/EmptyGridShell");
+    const shell = component.getByTestId("shell");
+    const leftNavItem = component.locator("#vuu-shell-left-nav");
+    const headerItem = component.locator("#vuu-shell-header");
+    const workspaceItem = component.locator("#vuu-shell-workspace-host");
+    const contextItem = component.locator("#vuu-shell-context");
 
-      await expect(
-        component.getByRole("banner", { name: "Custom Header" }),
-      ).toBeVisible();
-      await expect(
-        component.getByRole("tablist", { name: "Workspace Tabs" }),
-      ).toBeVisible();
-    });
-  });
+    await expect(shell).toHaveCSS("padding", "0px");
+    await expect(leftNavItem).toHaveCSS("border-top-width", "0px");
+    await expect(leftNavItem).toHaveCSS("width", "240px");
+    await expect(headerItem).toHaveCSS("height", "40px");
+    await expect(workspaceItem).toHaveCSS("padding", "8px");
+    await expect(contextItem).toHaveCSS("width", "0px");
+    expect(await leftNavItem.evaluate((element) => element.clientHeight)).toBe(
+      await shell.evaluate((element) => element.clientHeight),
+    );
 
-  test.describe("WHEN rendered with workspace tabs disabled", () => {
-    test("THEN no workspace tabs are rendered", async ({ mount }) => {
-      const component = await mount("Shell/ShellLayout/SimpleShellNoWorkspaceTabs");
-
-      await expectToFillViewport(component.getByTestId("shell"));
-      await expect(
-        component.getByRole("tablist", { name: "Workspace Tabs" }),
-      ).toHaveCount(0);
-    });
-  });
-
-  test.describe("WHEN rendered with a default layout and custom placeholder", () => {
-    test("THEN custom layout is rendered", async ({ mount }) => {
-      const component = await mount("Shell/ShellLayout/SimpleShellCustomPlaceholder");
-
-      await expectToFillViewport(component.getByTestId("shell"));
-      await expect(component.getByTestId("custom-placeholder")).toBeVisible();
-    });
-
-    test.describe("AND WHEN workspace tab is added", () => {
-      test("THEN custom placeholder is used to create new layout", async ({
-        mount,
-      }) => {
-        const component = await mount("Shell/ShellLayout/SimpleShellCustomPlaceholder");
-
-        await component.getByRole("img", { name: "Create Tab" }).click();
-
-        await expect(component.getByRole("tab")).toHaveCount(2);
-        await expect(component.getByTestId("custom-placeholder")).toBeVisible();
-      });
-    });
-  });
-
-  test.describe("WHEN rendered with two layouts and custom placeholders", () => {
-    test("THEN custom layout with active index is rendered", async ({
-      mount,
-    }) => {
-      const component = await mount("Shell/ShellLayout/SimpleShellMultiLayouts");
-
-      await expectToFillViewport(component.getByTestId("shell"));
-      await expect(component.getByRole("tab")).toHaveCount(3);
-      await expect(component.getByTestId("custom-placeholder2")).toBeVisible();
-    });
-
-    test.describe("AND WHEN workspace tab is added", () => {
-      test("THEN custom placeholder is used to create new layout", async ({
-        mount,
-      }) => {
-        const component = await mount("Shell/ShellLayout/SimpleShellMultiLayouts");
-
-        await component.getByRole("img", { name: "Create Tab" }).click();
-
-        await expect(component.getByRole("tab")).toHaveCount(4);
-        await expect(component.getByTestId("custom-placeholder")).toBeVisible();
-      });
-    });
+    await component.getByRole("tab", { name: "MY LAYOUTS" }).click();
+    await expect(leftNavItem).toHaveCSS("width", "540px");
+    await expect(component.locator(".vuuLeftNav-menu-secondary")).toBeVisible();
   });
 });

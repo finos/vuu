@@ -51,6 +51,7 @@ export interface LeftNavProps extends HTMLAttributes<HTMLDivElement> {
   defaultExpanded?: boolean;
   onActiveChange?: (activeTabIndex: number) => void;
   onTogglePrimaryMenu?: (expanded: boolean) => void;
+  onWidthChange?: (width: number) => void;
   sizeCollapsed?: number;
   sizeContent?: number;
   sizeExpanded?: number;
@@ -94,6 +95,7 @@ export const LeftNav = (props: LeftNavProps) => {
     defaultActiveTabIndex = 0,
     onActiveChange,
     onTogglePrimaryMenu,
+    onWidthChange,
     sizeCollapsed = 80,
     sizeContent = 300,
     sizeExpanded = 240,
@@ -200,6 +202,12 @@ export const LeftNav = (props: LeftNavProps) => {
     },
     [sizeCollapsed, sizeContent, sizeExpanded],
   );
+
+  useEffect(() => {
+    onWidthChange?.(
+      getFullWidth(visibleNavState.activeTabIndex, visibleNavState.expanded),
+    );
+  }, [getFullWidth, onWidthChange, visibleNavState]);
 
   const handleTabSelection = useCallback(
     (activeTabIndex: number) => {
