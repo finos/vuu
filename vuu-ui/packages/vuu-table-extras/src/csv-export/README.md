@@ -161,17 +161,10 @@ await exportToCsv(dataSource, {
 By default the session table is built from the target data source's config, so it carries the target table's columns. When exports should target a separate table with its own schema, pass `overrides`:
 
 ```ts
-await exportToCsv(
-  dataSource,
-  "All",
-  "instruments-overrides.csv",
-  [],
-  onError,
-  onSuccess,
-  10_000,
-  undefined,
-  { columns: ["ric", "currency", "lotSize"], table: EXPORT_TABLE },
-);
+await exportToCsv(dataSource, {
+  filename: "instruments-overrides.csv",
+  overrides: { columns: ["ric", "currency", "lotSize"], table: EXPORT_TABLE },
+});
 ```
 
 ```ts

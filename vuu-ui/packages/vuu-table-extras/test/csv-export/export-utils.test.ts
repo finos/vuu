@@ -29,26 +29,26 @@ describe("export-utils", () => {
     const metadata: DataSourceRow = [
       0,
       1,
-      false,
-      false,
+      false, // IS_LEAF
+      false, // IS_EXPANDED
       0,
       0,
       "key1",
-      false,
+      0, // SELECTED
       0,
-      false,
+      false, // IS_NEW
     ];
     const metadata2: DataSourceRow = [
       1,
       2,
-      false,
-      false,
+      false, // IS_LEAF
+      false, // IS_EXPANDED
       0,
       0,
       "key2",
-      false,
+      0, // SELECTED
       0,
-      false,
+      false, // IS_NEW
     ];
 
     mockSessionDataSource = {
@@ -242,7 +242,7 @@ describe("export-utils", () => {
         0,
         0,
         "key0",
-        false,
+        0,
         0,
         false,
       ];
@@ -254,7 +254,7 @@ describe("export-utils", () => {
         0,
         0,
         "key1",
-        false,
+        0,
         0,
         false,
       ];
@@ -334,6 +334,7 @@ describe("export-utils", () => {
   describe("status checks", () => {
     it("throws or calls onError when dataSource is not subscribed (status = initialising)", async () => {
       const uninitializedDs = {
+        isRemote: true,
         table: { module: "SIMUL", table: "instruments" },
         status: "initialising",
         createSessionDataSource: vi.fn(),
@@ -354,6 +355,7 @@ describe("export-utils", () => {
 
     it("throws when onError is omitted and status is unsubscribed", async () => {
       const uninitializedDs = {
+        isRemote: true,
         table: { module: "SIMUL", table: "instruments" },
         status: "unsubscribed",
         createSessionDataSource: vi.fn(),

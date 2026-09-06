@@ -110,6 +110,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   #status: DataSourceStatus = "initialising";
   #tableSchema: TableSchema | undefined;
 
+  public readonly isRemote = true;
   public table: VuuTable;
 
   constructor({

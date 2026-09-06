@@ -219,7 +219,10 @@ export const exportSessionTableToCsv = async <TName extends string = string>(
     onSuccess,
   } = options;
 
+  const isRemote = !!dataSource.isRemote;
+
   if (
+    isRemote &&
     !isSessionTable(dataSource.table) &&
     (dataSource.status === "initialising" ||
       dataSource.status === "unsubscribed")
@@ -393,8 +396,12 @@ export const exportSessionTableToCsv = async <TName extends string = string>(
             nextRequestedFrom < totalSize
           ) {
             const nextTo = Math.min(nextRequestedFrom + CHUNK_SIZE, totalSize);
-            activeSessionDataSource.range = Range(nextRequestedFrom, nextTo);
+            const requestedFrom = nextRequestedFrom;
             nextRequestedFrom = nextTo;
+            // Defer Range query to prevent synchronous deep stack recursion on local mocks
+            setTimeout(() => {
+              activeSessionDataSource.range = Range(requestedFrom, nextTo);
+            }, 0);
           }
         }
       }
