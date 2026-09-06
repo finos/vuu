@@ -62,8 +62,8 @@ test.describe("ShellLayout", () => {
     await expect(shell).toHaveCSS("padding", "0px");
     await expect(leftNavItem).toHaveCSS("border-top-width", "0px");
     await expect(leftNavItem).toHaveCSS("width", "240px");
-    await expect(headerItem).toHaveCSS("height", "40px");
-    await expect(workspaceItem).toHaveCSS("padding", "8px");
+    await expect(headerItem).toHaveCSS("height", "48px");
+    await expect(workspaceItem).toHaveCSS("padding", "8px 0px 0px");
     await expect(contextItem).toHaveCSS("width", "0px");
     expect(await leftNavItem.evaluate((element) => element.clientHeight)).toBe(
       await shell.evaluate((element) => element.clientHeight),
@@ -372,6 +372,13 @@ test.describe("ShellLayout", () => {
     await expect(
       contextPanel.getByRole("button", { name: "Close context panel" }),
     ).toBeFocused();
+    await contextPanel.getByRole("tab", { name: "Table columns" }).click();
+    await expect(
+      contextPanel.locator(".vuuColumnPickerListItem[data-name='ric']"),
+    ).toBeVisible();
+    await expect(
+      contextPanel.locator(".vuuColumnPickerListItem[data-name='description']"),
+    ).toBeVisible();
 
     await page.keyboard.press("Escape");
     await expect(contextPanel).not.toContainClass("vuuContextPanel-expanded");
