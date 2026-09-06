@@ -4,13 +4,17 @@ import {
   type GridLayoutDocument,
   type GridLayoutDocumentError,
 } from "@heswell/grid-layout";
+import {
+  Tab,
+  Tabstrip,
+  type ExitTabEditModeHandler,
+} from "@vuu-ui/vuu-ui-controls";
 import { useCallback, useRef, useState } from "react";
 import {
   WorkspacePersistentStateProvider,
   WorkspacePersistentStateStore,
 } from "./WorkspacePersistentState";
 import { emptyWorkspaceSnapshot, useWorkspace } from "./WorkspaceProvider";
-import { WorkspaceTab } from "./WorkspaceTab";
 import { WORKSPACE_SNAPSHOT_VERSION } from "./workspace-schemas";
 
 const WorkspaceGrid = ({
@@ -30,9 +34,12 @@ const WorkspaceGrid = ({
   return (
     <section
       aria-hidden={!active}
+      aria-labelledby={`${controller.instanceId}-tab`}
       className="vuuWorkspaceHost-workspace"
       data-workspace-instance-id={controller.instanceId}
       hidden={!active}
+      id={controller.instanceId}
+      role="tabpanel"
     >
       <WorkspacePersistentStateProvider store={controller.persistentState}>
         <GridLayoutProvider
@@ -140,6 +147,39 @@ export const WorkspaceHost = () => {
     selectWorkspace,
     status,
   } = useWorkspace();
+  const [tabRevision, setTabRevision] = useState(0);
+  const activeWorkspaceIndex = controllers.findIndex(
+    ({ instanceId }) => instanceId === activeWorkspaceInstanceId,
+  );
+  const handleActiveChange = useCallback(
+    (tabIndex: number) => {
+      const controller = controllers[tabIndex];
+      if (controller) {
+        void selectWorkspace(controller.instanceId);
+      }
+    },
+    [controllers, selectWorkspace],
+  );
+  const handleCloseTab = useCallback(
+    (tabIndex: number) => {
+      const controller = controllers[tabIndex];
+      if (controller) {
+        void closeWorkspace(controller.instanceId);
+      }
+    },
+    [closeWorkspace, controllers],
+  );
+  const handleExitEditMode = useCallback<ExitTabEditModeHandler>(
+    (originalTitle, title, _allowDeactivation, tabIndex) => {
+      const controller = controllers[tabIndex];
+      if (controller && title !== originalTitle) {
+        void renameWorkspace(controller.instanceId, title).catch(() => {
+          setTabRevision((revision) => revision + 1);
+        });
+      }
+    },
+    [controllers, renameWorkspace],
+  );
 
   if (status === "loading") {
     return (
@@ -161,22 +201,28 @@ export const WorkspaceHost = () => {
 
   return (
     <div className="vuuWorkspaceHost vuu-workspace-tabs">
-      <div
-        aria-label="Open workspaces"
-        className="vuuWorkspaceHost-tabs"
-        role="tablist"
+      <Tabstrip
+        activeTabIndex={activeWorkspaceIndex}
+        allowCloseTab
+        allowRenameTab
+        animateSelectionThumb={false}
+        aria-label="Workspace Tabs"
+        className="vuuTabHeader"
+        onActiveChange={handleActiveChange}
+        onCloseTab={handleCloseTab}
+        onExitEditMode={handleExitEditMode}
+        variant="primary"
       >
         {controllers.map((controller) => (
-          <WorkspaceTab
-            active={controller.instanceId === activeWorkspaceInstanceId}
-            controller={controller}
-            key={controller.instanceId}
-            onClose={closeWorkspace}
-            onRename={renameWorkspace}
-            onSelect={selectWorkspace}
+          <Tab
+            ariaControls={controller.instanceId}
+            id={`${controller.instanceId}-tab`}
+            key={`${controller.instanceId}-${tabRevision}`}
+            label={controller.name}
+            onClose={() => void closeWorkspace(controller.instanceId)}
           />
         ))}
-      </div>
+      </Tabstrip>
       <div className="vuuWorkspaceHost-content">
         {controllers.map((controller) => (
           <WorkspaceGrid

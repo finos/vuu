@@ -6,7 +6,6 @@ export {
   DragDropProviderNext,
   useOptionalDragContext,
 } from "./drag-drop-next/DragDropProviderNext";
-export { TabDialog } from "./TabDialog";
 export { GridLayout, type GridResizeDistribution } from "./GridLayout";
 export {
   GridDragCoordinator,

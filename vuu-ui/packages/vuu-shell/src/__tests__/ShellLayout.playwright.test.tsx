@@ -204,21 +204,22 @@ test.describe("ShellLayout", () => {
     });
 
     const tabstrip = component.getByRole("tablist", {
-      name: "Open workspaces",
+      name: "Workspace Tabs",
     });
-    const tab = component.locator(".vuuWorkspaceHost-tab");
-    await expect(tabstrip).toHaveCSS("flex-basis", "28px");
-    await expect(tab).toContainClass("vuuWorkspaceHost-tab-active");
+    const tab = component.getByRole("tab", { name: "Untitled" });
+    await expect(tabstrip).toContainClass("vuuTabstrip-primary");
+    await expect(tabstrip).toHaveCSS("padding-bottom", "7px");
+    await expect(tab).toContainClass("vuuTab-selected");
+    await expect(tab).toHaveCSS("border-top-left-radius", "6px");
+    await expect(tab).toHaveCSS("border-top-style", "solid");
 
-    await component.getByRole("button", { name: "Untitled actions" }).click();
+    await tab.getByRole("button", { name: "context menu" }).click();
     await expect(page.getByRole("menuitem", { name: "Rename" })).toBeVisible();
     await expect(page.getByRole("menuitem", { name: "Close" })).toBeVisible();
     await page.getByRole("menuitem", { name: "Rename" }).click();
-    const renameDialog = page.getByRole("dialog", {
-      name: "Rename workspace",
-    });
-    await renameDialog.getByRole("textbox").fill("Market Data");
-    await renameDialog.getByRole("button", { name: "Confirm" }).click();
+    const textbox = tab.getByRole("textbox");
+    await textbox.fill("Market Data");
+    await textbox.press("Enter");
     await expect(
       component.getByRole("tab", { name: "Market Data" }),
     ).toBeVisible();
@@ -244,7 +245,8 @@ test.describe("ShellLayout", () => {
     ).toBeVisible();
 
     await component
-      .getByRole("button", { name: "Market Data actions" })
+      .getByRole("tab", { name: "Market Data" })
+      .getByRole("button", { name: "context menu" })
       .click();
     await page.getByRole("menuitem", { name: "Close" }).click();
     await expect(

@@ -96,70 +96,9 @@
   flex-direction: column;
 }
 
-.vuuWorkspaceHost-tabs {
-  background: var(--vuuShell-background, var(--salt-container-primary-background));
-  border-bottom: solid 1px var(--salt-separable-primary-borderColor);
-  box-sizing: border-box;
-  display: flex;
-  flex: 0 0 28px;
-  gap: 0;
-  left: 0;
-  padding: 0 8px;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-.vuuWorkspaceHost-tab {
-  align-items: center;
-  display: flex;
-  height: 28px;
-  position: relative;
-}
-
-.vuuWorkspaceHost-tabLabel {
-  background: transparent;
-  border: 0;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  height: 100%;
-  min-width: 64px;
-  padding: 0 4px 0 12px;
-}
-
-.vuuWorkspaceHost-tabMenuButton {
-  --saltButton-height: 24px;
-  --saltButton-padding: 0 var(--salt-spacing-100);
-}
-
-.vuuWorkspaceHost-tab:hover:not(.vuuWorkspaceHost-tab-active) {
-  background: var(--salt-navigable-primary-background-hover);
-}
-
-.vuuWorkspaceHost-tab-active {
-  background: var(--salt-navigable-primary-background-selected);
-  font-weight: var(--salt-navigable-fontWeight-active);
-}
-
-.vuuWorkspaceHost-tab-active::after {
-  background: var(--salt-navigable-indicator-active);
-  bottom: 0;
-  content: "";
-  height: 2px;
-  left: 0;
-  position: absolute;
-  right: 0;
-}
-
-.vuuWorkspaceHost-tabLabel:focus-visible,
-.vuuWorkspaceHost-tabMenuButton:focus-visible {
-  outline: dashed 1px var(--salt-focused-outlineColor);
-  outline-offset: -1px;
-}
-
 .vuuWorkspaceHost-content {
   flex: 1 1 auto;
+  min-height: 0;
 }
 
 .vuuWorkspaceHost-workspace[hidden] {

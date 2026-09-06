@@ -4,6 +4,7 @@ import {
   type JsonValue,
 } from "@heswell/grid-layout";
 import { DataProvider } from "@vuu-ui/core";
+import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import { VuuDataSource } from "@vuu-ui/vuu-data-remote";
 import { getAllSchemas } from "@vuu-ui/vuu-data-test";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
@@ -157,13 +158,14 @@ html, body, #root {
             settingsCodecs={registries.settingsCodecs}
             userId="playwright"
           >
-            <GridLayoutProvider>
-              <DragDropProviderNext
-                dragSources={{}}
-                onCancelTabDrag={NOOP}
-                onDetachTab={NOOP}
-                onDrop={NOOP}
-              >
+            <ContextMenuProvider>
+              <GridLayoutProvider>
+                <DragDropProviderNext
+                  dragSources={{}}
+                  onCancelTabDrag={NOOP}
+                  onDetachTab={NOOP}
+                  onDrop={NOOP}
+                >
                 {withPalette ? (
                   <div
                     className="vuuGridLayout"
@@ -193,8 +195,9 @@ html, body, #root {
                   leftNavWidth={240}
                   workspaceHost={<WorkspaceHost />}
                 />
-              </DragDropProviderNext>
-            </GridLayoutProvider>
+                </DragDropProviderNext>
+              </GridLayoutProvider>
+            </ContextMenuProvider>
           </WorkspaceProvider>
         </FeatureAndLayoutProvider>
       </NotificationsProvider>
@@ -257,18 +260,20 @@ html, body, #root {
               settingsCodecs={registries.settingsCodecs}
               userId="playwright"
             >
-              <GridLayoutProvider>
-                <StaticShellLayout
-                  appHeader={
-                    <header aria-label="Application Header">
-                      Application Header
-                    </header>
-                  }
-                  data-testid="shell"
-                  leftNavWidth={240}
-                  workspaceHost={<WorkspaceHost />}
-                />
-              </GridLayoutProvider>
+              <ContextMenuProvider>
+                <GridLayoutProvider>
+                  <StaticShellLayout
+                    appHeader={
+                      <header aria-label="Application Header">
+                        Application Header
+                      </header>
+                    }
+                    data-testid="shell"
+                    leftNavWidth={240}
+                    workspaceHost={<WorkspaceHost />}
+                  />
+                </GridLayoutProvider>
+              </ContextMenuProvider>
             </WorkspaceProvider>
           </FeatureAndLayoutProvider>
         </NotificationsProvider>
