@@ -49,4 +49,33 @@ test.describe("FeatureList", () => {
       await expect(row).toHaveAttribute("draggable", "true");
     }
   });
+
+  test("renders app-vuu-example descriptors after provider table enrichment", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      "Shell/FeatureProvider/AppVuuExampleFeatures",
+    );
+    const dynamicFeatures = component.getByTestId("app-vuu-dynamic-features");
+    const tableFeatures = component.getByTestId("app-vuu-table-features");
+    const instrumentTiles = dynamicFeatures.locator("[draggable=true]", {
+      hasText: "Instrument Price Tiles",
+    });
+
+    await expect(instrumentTiles).toBeVisible();
+    await expect(instrumentTiles).toHaveAttribute(
+      "data-template-component-type",
+      "vuu-dynamic-feature",
+    );
+    await instrumentTiles.dispatchEvent("dragstart");
+    await instrumentTiles.dispatchEvent("dragend");
+    await expect(tableFeatures.getByText("SIMUL Tables")).toBeVisible();
+    await expect(
+      tableFeatures
+        .locator("[draggable=true]", {
+          hasText: /^SIMUL Instruments\s*$/,
+        })
+        .first(),
+    ).toBeVisible();
+  });
 });

@@ -50,4 +50,25 @@ describe("getCustomAndTableFeatures", () => {
       ],
     });
   });
+
+  it("omits undefined view props from table-backed custom features", () => {
+    const tableSchema = {
+      columns: [],
+      table: { module: "SIMUL", table: "instruments" },
+    };
+    const feature = {
+      ...tableFeature({
+        vuuTables: [{ module: "SIMUL", table: "instruments" }],
+      }),
+      leftNavLocation: "vuu-features" as const,
+    };
+
+    const { dynamicFeatures } = getCustomAndTableFeatures(
+      [feature],
+      [tableSchema],
+    );
+
+    expect(dynamicFeatures).toHaveLength(1);
+    expect(dynamicFeatures[0]).not.toHaveProperty("ViewProps");
+  });
 });

@@ -275,7 +275,7 @@ export const getCustomAndTableFeatures = (
             },
             {},
           ),
-          ViewProps: viewProps,
+          ...(viewProps === undefined ? {} : { ViewProps: viewProps }),
         });
       }
     } else {
