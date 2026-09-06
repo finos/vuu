@@ -1,6 +1,7 @@
-.vuuShell {
+.vuuShell.vuuGridLayout {
   background-color: var(--vuuShell-background, var(--salt-container-primary-background));
   height: var(--vuuShell-height, 100vh);
+  padding: 0;
   width: var(--vuuShell-width, 100vw);
 
   .left-main-tabs {
@@ -51,7 +52,8 @@
 }
 
 .vuuShell-content {
-  padding: var(--vuuShell-content-padding, 8px);
+  margin: 0 8px 8px 0;
+  padding: var(--vuuShell-content-padding, 8px 0 0 0);
 }
 
 .vuuShell-staticGrid,

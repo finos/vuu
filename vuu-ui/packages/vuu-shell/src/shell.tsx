@@ -138,7 +138,7 @@ export const StaticShellLayout = ({
           className={cx("vuuShell", "vuuShell-staticGrid", className)}
           colsAndRows={{
             cols: [`${initialLeftNavWidth}px`, "1fr", "0px"],
-            rows: ["40px", "1fr"],
+            rows: ["48px", "1fr"],
           }}
           full-page
           id="vuu-shell-grid"

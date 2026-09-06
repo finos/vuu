@@ -17,10 +17,8 @@
 
   --menu-level-2-width: 0px;
 
-  box-shadow: 3px 4px 4px 0 rgba(0, 0, 0, 0.15);
   display: flex;
-  height: calc(100% - 4px);
-  margin-bottom: 4px;
+  height: 100%;
   overflow: hidden;
   position: relative;
   transition: width 0.2s ease-out;
