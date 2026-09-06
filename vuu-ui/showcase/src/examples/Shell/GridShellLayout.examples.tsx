@@ -209,13 +209,11 @@ export const EmptyGridShellWithPalette = () => (
 
 const TablePaletteGridShellFixture = () => {
   const persistenceService = useMemo(() => {
-    const service = new LocalWorkspacePersistenceService({
+    return new LocalWorkspacePersistenceService({
       applicationId: "table-palette-shell",
       applicationNamespace: "vuu-showcase",
       userId: "playwright",
     });
-    void service.deleteApplicationSession();
-    return service;
   }, []);
   const registries = useMemo(
     () =>

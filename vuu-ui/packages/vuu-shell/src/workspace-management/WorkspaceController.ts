@@ -16,7 +16,7 @@ import {
 export interface WorkspaceControllerOptions {
   readonly definitionId?: string;
   readonly instanceId: string;
-  readonly name: string;
+  name: string;
   readonly onError: (error: Error) => void;
   readonly renderers: GridComponentRendererRegistry;
   readonly service: WorkspacePersistenceService;
@@ -29,7 +29,7 @@ export class WorkspaceController {
   readonly definitionId?: string;
   readonly documentController: GridLayoutDocumentController;
   readonly instanceId: string;
-  readonly name: string;
+  name: string;
   readonly persistentState: WorkspacePersistentStateStore;
   readonly renderers: GridComponentRendererRegistry;
   readonly repository: WorkspaceRepository;
@@ -102,6 +102,10 @@ export class WorkspaceController {
     }
     this.#save();
   };
+
+  rename(name: string): void {
+    this.name = name;
+  }
 
   dispose(): Promise<void> {
     if (!this.#disposed) {

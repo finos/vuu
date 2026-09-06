@@ -244,6 +244,38 @@ describe("workspace runtime", () => {
     expect(latest?.activeWorkspace?.name).toBe("SECOND");
   });
 
+  it("persists renamed tabs and selects the adjacent tab when closing", async () => {
+    const service = new MemoryService("alice", [
+      definition("first"),
+      definition("second"),
+      definition("third"),
+    ]);
+    await render(service);
+
+    await act(async () => latest?.openNamedWorkspace("first"));
+    await act(async () => latest?.openNamedWorkspace("second"));
+    await act(async () => latest?.openNamedWorkspace("third"));
+    const secondInstance = latest?.controllers[1].instanceId;
+    const thirdInstance = latest?.controllers[2].instanceId;
+    if (!secondInstance || !thirdInstance) {
+      throw new Error("Expected three open workspace instances");
+    }
+
+    await act(async () => latest?.renameWorkspace(secondInstance, "Renamed"));
+    expect(latest?.controllers[1].name).toBe("Renamed");
+    expect(service.session?.openWorkspaces[1].title).toBe("Renamed");
+
+    act(() => root.unmount());
+    root = createRoot(container);
+    await render(service);
+    expect(latest?.controllers[1].name).toBe("Renamed");
+
+    await act(async () => latest?.selectWorkspace(secondInstance));
+    await act(async () => latest?.closeWorkspace(secondInstance));
+    expect(latest?.activeWorkspaceInstanceId).toBe(thirdInstance);
+    expect(service.definitions.has("second")).toBe(true);
+  });
+
   it("persists and restores ordered named and first-drop Untitled workspaces", async () => {
     const service = new MemoryService("alice", [
       definition("first"),

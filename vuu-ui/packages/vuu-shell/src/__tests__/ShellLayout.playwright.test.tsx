@@ -136,6 +136,17 @@ test.describe("ShellLayout", () => {
     mount,
     page,
   }) => {
+    await page.evaluate(() => {
+      for (const key of Object.keys(localStorage)) {
+        if (
+          key.startsWith(
+            "vuu-workspace:vuu-showcase:table-palette-shell:playwright",
+          )
+        ) {
+          localStorage.removeItem(key);
+        }
+      }
+    });
     const component = await mount(
       "Shell/GridShellLayout/EmptyGridShellWithTablePalette",
     );
@@ -191,5 +202,58 @@ test.describe("ShellLayout", () => {
       },
       type: "vuu-dynamic-feature",
     });
+
+    const tabstrip = component.getByRole("tablist", {
+      name: "Open workspaces",
+    });
+    const tab = component.locator(".vuuWorkspaceHost-tab");
+    await expect(tabstrip).toHaveCSS("flex-basis", "28px");
+    await expect(tab).toContainClass("vuuWorkspaceHost-tab-active");
+
+    await component.getByRole("button", { name: "Untitled actions" }).click();
+    await expect(page.getByRole("menuitem", { name: "Rename" })).toBeVisible();
+    await expect(page.getByRole("menuitem", { name: "Close" })).toBeVisible();
+    await page.getByRole("menuitem", { name: "Rename" }).click();
+    const renameDialog = page.getByRole("dialog", {
+      name: "Rename workspace",
+    });
+    await renameDialog.getByRole("textbox").fill("Market Data");
+    await renameDialog.getByRole("button", { name: "Confirm" }).click();
+    await expect(
+      component.getByRole("tab", { name: "Market Data" }),
+    ).toBeVisible();
+    await expect
+      .poll(async () =>
+        page.evaluate(
+          (key) => JSON.parse(localStorage.getItem(key) ?? "null"),
+          sessionKey,
+        ),
+      )
+      .toMatchObject({
+        openWorkspaces: [{ title: "Market Data" }],
+      });
+
+    await page.evaluate(() => window.unmount());
+    await page.evaluate(() =>
+      window.mount({
+        story: "Shell/GridShellLayout/EmptyGridShellWithTablePalette",
+      }),
+    );
+    await expect(
+      component.getByRole("tab", { name: "Market Data" }),
+    ).toBeVisible();
+
+    await component
+      .getByRole("button", { name: "Market Data actions" })
+      .click();
+    await page.getByRole("menuitem", { name: "Close" }).click();
+    await expect(
+      component.getByText(
+        "Drop a feature here or select a workspace from My Layouts to begin.",
+      ),
+    ).toBeVisible();
+    await expect(
+      component.getByRole("tab", { name: "Market Data" }),
+    ).toHaveCount(0);
   });
 });

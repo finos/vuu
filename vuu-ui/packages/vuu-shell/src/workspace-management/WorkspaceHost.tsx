@@ -4,13 +4,13 @@ import {
   type GridLayoutDocument,
   type GridLayoutDocumentError,
 } from "@heswell/grid-layout";
-import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import { useCallback, useRef, useState } from "react";
 import {
   WorkspacePersistentStateProvider,
   WorkspacePersistentStateStore,
 } from "./WorkspacePersistentState";
 import { emptyWorkspaceSnapshot, useWorkspace } from "./WorkspaceProvider";
+import { WorkspaceTab } from "./WorkspaceTab";
 import { WORKSPACE_SNAPSHOT_VERSION } from "./workspace-schemas";
 
 const WorkspaceGrid = ({
@@ -136,6 +136,7 @@ export const WorkspaceHost = () => {
     closeWorkspace,
     controllers,
     error,
+    renameWorkspace,
     selectWorkspace,
     status,
   } = useWorkspace();
@@ -159,34 +160,22 @@ export const WorkspaceHost = () => {
   }
 
   return (
-    <div className="vuuWorkspaceHost">
+    <div className="vuuWorkspaceHost vuu-workspace-tabs">
       <div
         aria-label="Open workspaces"
         className="vuuWorkspaceHost-tabs"
         role="tablist"
       >
-        {controllers.map((controller) => {
-          const active = controller.instanceId === activeWorkspaceInstanceId;
-          return (
-            <div className="vuuWorkspaceHost-tab" key={controller.instanceId}>
-              <button
-                aria-selected={active}
-                onClick={() => void selectWorkspace(controller.instanceId)}
-                role="tab"
-                type="button"
-              >
-                {controller.name}
-              </button>
-              <IconButton
-                aria-label={`Close ${controller.name}`}
-                appearance="transparent"
-                icon="close"
-                onClick={() => void closeWorkspace(controller.instanceId)}
-                sentiment="neutral"
-              />
-            </div>
-          );
-        })}
+        {controllers.map((controller) => (
+          <WorkspaceTab
+            active={controller.instanceId === activeWorkspaceInstanceId}
+            controller={controller}
+            key={controller.instanceId}
+            onClose={closeWorkspace}
+            onRename={renameWorkspace}
+            onSelect={selectWorkspace}
+          />
+        ))}
       </div>
       <div className="vuuWorkspaceHost-content">
         {controllers.map((controller) => (

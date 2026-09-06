@@ -105,6 +105,10 @@ export interface WorkspaceContextValue {
   readonly openSystemWorkspace: (
     definition: NamedWorkspaceDefinitionV1,
   ) => Promise<void>;
+  readonly renameWorkspace: (
+    instanceId: string,
+    title: string,
+  ) => Promise<void>;
   readonly saveActiveWorkspaceAs: (
     name: string,
     description?: string,
@@ -144,6 +148,7 @@ const WorkspaceContext = createContext<WorkspaceContextValue>({
   namedWorkspaces: [],
   openNamedWorkspace: missing,
   openSystemWorkspace: missing,
+  renameWorkspace: missing,
   saveActiveWorkspaceAs: missing,
   saveApplicationSettings: missing,
   selectWorkspace: missing,
@@ -747,6 +752,54 @@ export const WorkspaceProvider = ({
     [captureScope, enqueueOperation, writeSession],
   );
 
+  const renameWorkspace = useCallback(
+    async (instanceId: string, title: string) => {
+      const trimmedTitle = title.trim();
+      if (!trimmedTitle) {
+        throw new Error("Workspace title must not be empty");
+      }
+      const guard = captureScope();
+      try {
+        await enqueueOperation(guard, async () => {
+          const current = sessionRef.current;
+          const controller = controllersRef.current.find(
+            (candidate) => candidate.instanceId === instanceId,
+          );
+          if (!current || !controller) {
+            throw new Error(`Workspace "${instanceId}" is not open`);
+          }
+          await writeSession(
+            {
+              ...current,
+              openWorkspaces: current.openWorkspaces.map((workspace) =>
+                workspace.instanceId === instanceId
+                  ? { ...workspace, title: trimmedTitle }
+                  : workspace,
+              ),
+            },
+            guard,
+          );
+          assertScope(guard);
+          controller.rename(trimmedTitle);
+          replaceControllers([...controllersRef.current]);
+        });
+      } catch (cause: unknown) {
+        if (!(cause instanceof StaleWorkspaceScopeError)) {
+          notifyError("Failed to Rename Workspace", cause);
+        }
+        throw cause;
+      }
+    },
+    [
+      assertScope,
+      captureScope,
+      enqueueOperation,
+      notifyError,
+      replaceControllers,
+      writeSession,
+    ],
+  );
+
   const closeWorkspace = useCallback(
     async (instanceId: string) => {
       if (!service) {
@@ -764,10 +817,11 @@ export const WorkspaceProvider = ({
         const nextControllers = controllersRef.current.filter(
           (candidate) => candidate !== controller,
         );
+        const closedIndex = current.workspaceOrder.indexOf(instanceId);
         const order = current.workspaceOrder.filter((id) => id !== instanceId);
         const active =
           current.activeWorkspaceInstanceId === instanceId
-            ? (order.at(-1) ?? null)
+            ? (order[Math.min(closedIndex, order.length - 1)] ?? null)
             : current.activeWorkspaceInstanceId;
         await writeSession(
           {
@@ -976,6 +1030,7 @@ export const WorkspaceProvider = ({
       namedWorkspaces,
       openNamedWorkspace,
       openSystemWorkspace,
+      renameWorkspace,
       saveActiveWorkspaceAs,
       saveApplicationSettings,
       selectWorkspace,
@@ -997,6 +1052,7 @@ export const WorkspaceProvider = ({
     namedWorkspaces,
     openNamedWorkspace,
     openSystemWorkspace,
+    renameWorkspace,
     saveActiveWorkspaceAs,
     saveApplicationSettings,
     selectWorkspace,
