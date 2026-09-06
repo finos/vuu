@@ -36,7 +36,12 @@ test.describe("ShellLayout", () => {
     await expect(leftNav).toBeVisible();
     await expect(workspaceHost).toContainClass("vuuShell-content");
     await expect(
-      component.getByText("Select a workspace from My Layouts"),
+      component.getByText(
+        "Drop a feature here or select a workspace from My Layouts to begin.",
+      ),
+    ).toBeVisible();
+    await expect(
+      component.locator(".vuuWorkspaceHost-emptyGrid .vuuGridPlaceholder"),
     ).toBeVisible();
     await expect(
       component.getByRole("tablist", { name: "Workspace Tabs" }),
@@ -66,5 +71,64 @@ test.describe("ShellLayout", () => {
     await component.getByRole("tab", { name: "MY LAYOUTS" }).click();
     await expect(leftNavItem).toHaveCSS("width", "540px");
     await expect(component.locator(".vuuLeftNav-menu-secondary")).toBeVisible();
+  });
+
+  test("creates and persists the first Untitled workspace only after a palette drop", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      "Shell/GridShellLayout/EmptyGridShellWithPalette",
+    );
+    const sessionKey =
+      "vuu-workspace:vuu-showcase:empty-shell:playwright:application-session";
+
+    expect(
+      await page.evaluate((key) => localStorage.getItem(key), sessionKey),
+    ).toBeNull();
+    await expect(component.getByRole("tab", { name: "Untitled" })).toHaveCount(
+      0,
+    );
+
+    const source = component.locator(".vuuFeatureList-item", {
+      hasText: "Test Feature",
+    });
+    const target = component.locator(
+      ".vuuWorkspaceHost-emptyGrid .vuuGridPlaceholder",
+    );
+    await expect(source).toBeVisible();
+    await expect(target).toBeVisible();
+    await target.click();
+    expect(
+      await page.evaluate((key) => localStorage.getItem(key), sessionKey),
+    ).toBeNull();
+    await expect(component.getByRole("tab", { name: "Untitled" })).toHaveCount(
+      0,
+    );
+    await source.dragTo(target);
+
+    await expect(
+      component.getByRole("tab", { name: "Untitled" }),
+    ).toBeVisible();
+    await expect(component.getByTestId("dropped-test-feature")).toBeVisible();
+    const session = await page.evaluate(
+      (key) => JSON.parse(localStorage.getItem(key) ?? "null"),
+      sessionKey,
+    );
+    expect(session.workspaceOrder).toHaveLength(1);
+    expect(session.activeWorkspaceInstanceId).toBe(session.workspaceOrder[0]);
+    expect(session.openWorkspaces).toEqual([
+      {
+        instanceId: session.workspaceOrder[0],
+        snapshotId: session.workspaceOrder[0],
+        title: "Untitled",
+      },
+    ]);
+    expect(
+      await page.evaluate(
+        (key) => localStorage.getItem(`${key}:snapshot-index`),
+        "vuu-workspace:vuu-showcase:empty-shell:playwright",
+      ),
+    ).not.toBeNull();
   });
 });

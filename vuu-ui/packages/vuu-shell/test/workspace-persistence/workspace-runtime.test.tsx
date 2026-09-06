@@ -56,6 +56,37 @@ const snapshot = (id: string): WorkspaceSnapshotV1 => ({
   version: 1,
 });
 
+const droppedSnapshot = (id: string): WorkspaceSnapshotV1 => ({
+  componentState: {},
+  layout: {
+    components: [
+      {
+        id: "dropped-component",
+        settings: { label: "Dropped feature" },
+        type: "test",
+        version: 1,
+      },
+    ],
+    kind: "grid-layout",
+    layout: {
+      columns: ["1fr"],
+      id,
+      items: [
+        {
+          column: { span: 1, start: 1 },
+          id: "dropped-component",
+          row: { span: 1, start: 1 },
+        },
+      ],
+      placeholderIds: [],
+      rows: ["1fr"],
+      stacks: [],
+    },
+    version: 2,
+  },
+  version: 1,
+});
+
 const definition = (id: string): NamedWorkspaceDefinitionV1 => ({
   createdAt: "2026-01-01T00:00:00.000Z",
   id,
@@ -211,6 +242,57 @@ describe("workspace runtime", () => {
     await render(service);
     expect(latest?.controllers.map(({ name }) => name)).toEqual(["SECOND"]);
     expect(latest?.activeWorkspace?.name).toBe("SECOND");
+  });
+
+  it("persists and restores ordered named and first-drop Untitled workspaces", async () => {
+    const service = new MemoryService("alice", [
+      definition("first"),
+      definition("second"),
+    ]);
+    await render(service);
+
+    await act(async () => latest?.openNamedWorkspace("first"));
+    await act(async () => latest?.openNamedWorkspace("second"));
+    let untitledId: string | undefined;
+    await act(async () => {
+      untitledId = await latest?.createWorkspaceFromSnapshot(
+        droppedSnapshot("first-drop"),
+      );
+    });
+
+    expect(untitledId).toBeDefined();
+    expect(latest?.controllers.map(({ name }) => name)).toEqual([
+      "FIRST",
+      "SECOND",
+      "Untitled",
+    ]);
+    expect(service.session?.workspaceOrder).toEqual(
+      latest?.controllers.map(({ instanceId }) => instanceId),
+    );
+    expect(service.session?.activeWorkspaceInstanceId).toBe(untitledId);
+    expect(service.session?.openWorkspaces.map(({ title }) => title)).toEqual([
+      "FIRST",
+      "SECOND",
+      "Untitled",
+    ]);
+    expect(
+      service.snapshots.get(untitledId ?? "")?.snapshot.layout.components,
+    ).toHaveLength(1);
+
+    act(() => root.unmount());
+    root = createRoot(container);
+    await render(service);
+
+    expect(latest?.controllers.map(({ name }) => name)).toEqual([
+      "FIRST",
+      "SECOND",
+      "Untitled",
+    ]);
+    expect(latest?.controllers.map(({ instanceId }) => instanceId)).toEqual(
+      service.session?.workspaceOrder,
+    );
+    expect(latest?.activeWorkspace?.instanceId).toBe(untitledId);
+    expect(latest?.activeWorkspace?.snapshot.layout.components).toHaveLength(1);
   });
 
   it("hydrates state before use, preserves it while inactive, and purges only committed removals", async () => {

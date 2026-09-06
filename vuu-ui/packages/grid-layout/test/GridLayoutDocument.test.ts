@@ -563,6 +563,54 @@ describe("GridLayout document codec", () => {
     expect(outer.layout.id).toBe("outer-grid");
   });
 
+  it("preserves an implicit item/component identity while remapping", () => {
+    const implicitIdentityDocument: GridLayoutDocument = {
+      components: [
+        {
+          id: "feature",
+          settings: { label: "Feature" },
+          type: "label",
+          version: 1,
+        },
+      ],
+      kind: "grid-layout",
+      layout: {
+        columns: ["1fr"],
+        id: "grid",
+        items: [
+          {
+            column: { span: 1, start: 1 },
+            id: "feature",
+            row: { span: 1, start: 1 },
+          },
+        ],
+        placeholderIds: [],
+        rows: ["1fr"],
+        stacks: [],
+      },
+      version: 2,
+    };
+
+    const result = remapGridLayoutDocumentIds(
+      implicitIdentityDocument,
+      createSequentialGridLayoutIdAllocator("copy"),
+    );
+
+    expect(result.document.components[0].id).toBe("copy-item-2");
+    expect(result.document.layout.items[0]).toMatchObject({
+      id: "copy-item-2",
+    });
+    expect(result.mappings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "component",
+          newId: "copy-item-2",
+          oldId: "feature",
+        }),
+      ]),
+    );
+  });
+
   it("adapts legacy SerializedGridLayout without changing its v1 wire shape", () => {
     const decoded = decodeLegacySerializedGridLayout({
       components: {

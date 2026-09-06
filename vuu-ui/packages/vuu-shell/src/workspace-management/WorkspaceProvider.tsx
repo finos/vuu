@@ -88,7 +88,12 @@ export interface WorkspaceContextValue {
   readonly activeWorkspace?: WorkspaceController;
   readonly activeWorkspaceInstanceId: string | null;
   readonly closeWorkspace: (instanceId: string) => Promise<void>;
+  readonly componentRenderers?: GridComponentRendererRegistry;
   readonly controllers: readonly WorkspaceController[];
+  readonly createWorkspaceFromSnapshot: (
+    snapshot: WorkspaceSnapshotV1,
+    title?: string,
+  ) => Promise<string>;
   readonly deleteNamedWorkspace: (definitionId: string) => Promise<void>;
   readonly error?: Error;
   readonly getApplicationSetting: (key: string) => JsonValue | undefined;
@@ -114,6 +119,7 @@ export interface WorkspaceContextValue {
     value: JsonValue,
   ) => Promise<void>;
   readonly settings: Readonly<Record<string, JsonValue>>;
+  readonly settingsCodecs?: GridComponentSettingsRegistry;
   /** Identifies the authenticated persistence scope. Changes synchronously on a scope transition. */
   readonly scopeIdentity: string;
   readonly status: WorkspaceStatus;
@@ -128,6 +134,9 @@ const missing = async () => {
 const WorkspaceContext = createContext<WorkspaceContextValue>({
   activeWorkspaceInstanceId: null,
   closeWorkspace: missing,
+  createWorkspaceFromSnapshot: async () => {
+    throw new Error("WorkspaceProvider is not mounted");
+  },
   controllers: [],
   deleteNamedWorkspace: missing,
   getApplicationSetting: () => undefined,
@@ -402,7 +411,8 @@ export const WorkspaceProvider = ({
               new WorkspaceController({
                 definitionId: descriptor.definitionId,
                 instanceId,
-                name: definitionMetadata?.name ?? instanceId,
+                name:
+                  descriptor.title ?? definitionMetadata?.name ?? instanceId,
                 onError: (error) => {
                   try {
                     assertScope(guard);
@@ -467,7 +477,9 @@ export const WorkspaceProvider = ({
           restored.push(controller);
           resolvedSession = {
             activeWorkspaceInstanceId: instanceId,
-            openWorkspaces: [{ instanceId, snapshotId: instanceId }],
+            openWorkspaces: [
+              { instanceId, snapshotId: instanceId, title: "Workspace" },
+            ],
             settings: {},
             version: APPLICATION_SESSION_VERSION,
             workspaceOrder: [instanceId],
@@ -570,23 +582,25 @@ export const WorkspaceProvider = ({
     [assertScope],
   );
 
-  const addDefinition = useCallback(
+  const addWorkspace = useCallback(
     async (
-      definition: NamedWorkspaceDefinitionV1,
+      sourceSnapshot: WorkspaceSnapshotV1,
+      name: string,
+      definitionId?: string,
       operationGuard?: ScopeGuard,
-    ) => {
+    ): Promise<string> => {
       if (!service || !componentRenderers || !settingsCodecs) {
         throw new Error("Workspace runtime is not configured");
       }
       const guard = operationGuard ?? captureScope();
-      await enqueueOperation(guard, async () => {
+      return enqueueOperation(guard, async () => {
         assertScope(guard);
         const instanceId = createInstanceId();
-        const snapshot = remapSnapshot(definition.snapshot, instanceId);
+        const snapshot = remapSnapshot(sourceSnapshot, instanceId);
         const controller = new WorkspaceController({
-          definitionId: definition.id,
+          definitionId,
           instanceId,
-          name: definition.name,
+          name,
           onError: (error) =>
             void notifyError("Failed to Save Workspace", error),
           renderers: componentRenderers,
@@ -611,9 +625,10 @@ export const WorkspaceProvider = ({
               openWorkspaces: [
                 ...current.openWorkspaces,
                 {
-                  definitionId: definition.id,
+                  ...(definitionId === undefined ? {} : { definitionId }),
                   instanceId,
                   snapshotId: instanceId,
+                  title: name,
                 },
               ],
               workspaceOrder: [...current.workspaceOrder, instanceId],
@@ -629,6 +644,7 @@ export const WorkspaceProvider = ({
           assertScope(guard);
           throw errorFrom(cause, "Failed to save application session");
         }
+        return instanceId;
       });
     },
     [
@@ -642,6 +658,41 @@ export const WorkspaceProvider = ({
       settingsCodecs,
       writeSession,
     ],
+  );
+
+  const addDefinition = useCallback(
+    (definition: NamedWorkspaceDefinitionV1, operationGuard?: ScopeGuard) =>
+      addWorkspace(
+        definition.snapshot,
+        definition.name,
+        definition.id,
+        operationGuard,
+      ),
+    [addWorkspace],
+  );
+
+  const openSystemWorkspace = useCallback(
+    async (definition: NamedWorkspaceDefinitionV1): Promise<void> => {
+      await addDefinition(definition);
+    },
+    [addDefinition],
+  );
+
+  const createWorkspaceFromSnapshot = useCallback(
+    async (
+      snapshot: WorkspaceSnapshotV1,
+      title = "Untitled",
+    ): Promise<string> => {
+      try {
+        return await addWorkspace(snapshot, title);
+      } catch (cause: unknown) {
+        if (!(cause instanceof StaleWorkspaceScopeError)) {
+          notifyError("Failed to Create Workspace", cause);
+        }
+        throw cause;
+      }
+    },
+    [addWorkspace, notifyError],
   );
 
   const openNamedWorkspace = useCallback(
@@ -914,7 +965,9 @@ export const WorkspaceProvider = ({
       activeWorkspace,
       activeWorkspaceInstanceId: session?.activeWorkspaceInstanceId ?? null,
       closeWorkspace,
+      componentRenderers,
       controllers: visibleControllers,
+      createWorkspaceFromSnapshot,
       deleteNamedWorkspace,
       error: loadError,
       getApplicationSetting: (key) => settings[key],
@@ -922,30 +975,34 @@ export const WorkspaceProvider = ({
         key === undefined ? settings : settings[key],
       namedWorkspaces,
       openNamedWorkspace,
-      openSystemWorkspace: addDefinition,
+      openSystemWorkspace,
       saveActiveWorkspaceAs,
       saveApplicationSettings,
       selectWorkspace,
       setApplicationSetting,
       settings,
+      settingsCodecs,
       scopeIdentity: scopeKey,
       status,
       systemWorkspaces,
       resetApplication,
     };
   }, [
-    addDefinition,
     closeWorkspace,
+    componentRenderers,
     controllers,
+    createWorkspaceFromSnapshot,
     deleteNamedWorkspace,
     loadError,
     namedWorkspaces,
     openNamedWorkspace,
+    openSystemWorkspace,
     saveActiveWorkspaceAs,
     saveApplicationSettings,
     selectWorkspace,
     session,
     setApplicationSetting,
+    settingsCodecs,
     scopeKey,
     status,
     systemWorkspaces,

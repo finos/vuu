@@ -1,9 +1,6 @@
 .vuuFeatureList {
   --vuuListItem-padding: var(--salt-spacing-200);
-  background: var(
-    --vuuFeatureList-background,
-    var(--salt-container-primary-background)
-  );
+  background: var(--vuuFeatureList-background, var(--salt-container-primary-background));
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -31,6 +28,31 @@
   margin-top: 24px;
 }
 
+.vuuFeatureList-items {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+}
+
+.vuuFeatureList-item {
+  --vuu-icon-color: var(--salt-content-secondary-foreground);
+
+  align-items: center;
+  cursor: grab;
+  display: flex;
+  flex: 0 0 24px;
+  font-size: 11px;
+  font-weight: 400;
+  gap: var(--salt-spacing-100);
+  line-height: 14px;
+  min-height: 24px;
+  padding: 5px 4px 5px 12px;
+}
+
+.vuuFeatureList-item:hover {
+  background: var(--salt-selectable-background-hover);
+}
+
 .vuuFeatureList-group {
   --vuuMeasuredContainer-flex: 0 0 auto;
 
@@ -40,11 +62,6 @@
   .vuuFeatureList-groupHeader {
     flex: 0 0 32px;
     padding: 8px 0;
-  }
-
-  .vuuPalette {
-    flex: 1 1 auto;
-    height: auto;
   }
 }
 
@@ -58,4 +75,7 @@
 
 .vuuFeatureList-itemName {
   font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

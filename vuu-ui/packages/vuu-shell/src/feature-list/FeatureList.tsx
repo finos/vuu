@@ -1,8 +1,9 @@
 import {
-  GridLayout,
-  GridLayoutItem,
+  DragDropProviderNext,
+  GridLayoutProvider,
   toJsonValue,
   useDraggable,
+  useOptionalDragContext,
   type TemplateSource,
   type TypedComponentTemplate,
 } from "@heswell/grid-layout";
@@ -13,18 +14,50 @@ import {
   type DynamicFeatureProps,
   type StaticFeatureDescriptor,
   isStaticFeatures,
+  queryClosest,
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
   useCallback,
+  useId,
   useMemo,
   type DragEvent,
   type HTMLAttributes,
   type ReactElement,
+  type ReactNode,
 } from "react";
 import featureListCss from "./FeatureList.css";
 
 const classBase = "vuuFeatureList";
+const NOOP = () => undefined;
+
+const FeatureListDragRuntime = ({ children }: { children: ReactNode }) => {
+  const dragContext = useOptionalDragContext();
+  const runtimeId = useId();
+
+  if (dragContext) {
+    return children;
+  }
+
+  return (
+    <GridLayoutProvider>
+      <DragDropProviderNext
+        dragSources={{}}
+        onCancelTabDrag={NOOP}
+        onDetachTab={NOOP}
+        onDrop={NOOP}
+      >
+        <div
+          className="vuuGridLayout"
+          id={`vuu-feature-list-${runtimeId}`}
+          style={{ display: "contents" }}
+        >
+          {children}
+        </div>
+      </DragDropProviderNext>
+    </GridLayoutProvider>
+  );
+};
 
 export type GroupedFeatureProps<P extends object | undefined = object> = Record<
   string,
@@ -70,60 +103,51 @@ const templateForStaticFeature = ({
 });
 
 const FeatureTemplate = ({
-  id,
-  index,
   template,
 }: {
-  readonly id: string;
-  readonly index: number;
   readonly template: TypedComponentTemplate;
 }) => {
   const getDragSource = useCallback(
-    (event: DragEvent<Element>): TemplateSource => ({
-      ...template,
-      element: event.currentTarget as HTMLElement,
-      layoutId: id,
-      type: "template",
-    }),
-    [id, template],
+    (event: DragEvent<Element>): TemplateSource => {
+      const element = event.currentTarget as HTMLElement;
+      return {
+        ...template,
+        element,
+        layoutId:
+          queryClosest(element, ".vuuGridLayout")?.id ?? "vuu-feature-list",
+        type: "template",
+      };
+    },
+    [template],
   );
   const draggable = useDraggable({ getDragSource });
   return (
-    <GridLayoutItem
-      id={`${id}-item-${index}`}
-      style={{ gridArea: `${index + 1}/1/${index + 2}/2` }}
+    <div
+      {...draggable}
+      className={`${classBase}-item`}
+      data-template-component-type={template.component.type}
+      data-template-version={template.component.version}
+      draggable
     >
-      <div {...draggable} draggable>
-        <Icon name="draggable" size={18} />
-        <span className={`${classBase}-itemName`}>{template.label}</span>
-      </div>
-    </GridLayoutItem>
+      <Icon name="draggable" size={18} />
+      <span className={`${classBase}-itemName`}>{template.label}</span>
+    </div>
   );
 };
 
-const TemplateGrid = ({
-  id,
+const TemplateList = ({
   templates,
 }: {
-  readonly id: string;
   readonly templates: readonly TypedComponentTemplate[];
 }) => (
-  <GridLayout
-    colsAndRows={{
-      cols: ["1fr"],
-      rows: templates.map(() => "40px"),
-    }}
-    id={id}
-  >
+  <div className={`${classBase}-items`}>
     {templates.map((template, index) => (
       <FeatureTemplate
-        id={id}
-        index={index}
         key={`${template.component.type}-${template.label}-${index}`}
         template={template}
       />
     ))}
-  </GridLayout>
+  </div>
 );
 
 export const FeatureList = ({
@@ -141,8 +165,7 @@ export const FeatureList = ({
   const content = useMemo<ReactElement[]>(() => {
     if (isStaticFeatures(features)) {
       return [
-        <TemplateGrid
-          id="vuu-static-feature-templates"
+        <TemplateList
           key="static"
           templates={features.map(templateForStaticFeature)}
         />,
@@ -151,28 +174,24 @@ export const FeatureList = ({
     if (Array.isArray(features)) {
       return [
         <div className={`${classBase}-standalone`} key="dynamic">
-          <TemplateGrid
-            id="vuu-dynamic-feature-templates"
-            templates={features.map(templateForDynamicFeature)}
-          />
+          <TemplateList templates={features.map(templateForDynamicFeature)} />
         </div>,
       ];
     }
-    return Object.entries(features).map(([heading, featureList], index) => (
+    return Object.entries(features).map(([heading, featureList]) => (
       <div className={`${classBase}-group`} key={heading}>
         <div className={`${classBase}-groupHeader`}>{heading}</div>
-        <TemplateGrid
-          id={`vuu-feature-template-group-${index}`}
-          templates={featureList.map(templateForDynamicFeature)}
-        />
+        <TemplateList templates={featureList.map(templateForDynamicFeature)} />
       </div>
     ));
   }, [features]);
 
   return (
-    <div {...htmlAttributes} className={cx(classBase, "vuuScrollable")}>
-      <div className={`${classBase}-header`}>{title}</div>
-      <div className={`${classBase}-content`}>{content}</div>
-    </div>
+    <FeatureListDragRuntime>
+      <div {...htmlAttributes} className={cx(classBase, "vuuScrollable")}>
+        <div className={`${classBase}-header`}>{title}</div>
+        <div className={`${classBase}-content`}>{content}</div>
+      </div>
+    </FeatureListDragRuntime>
   );
 };

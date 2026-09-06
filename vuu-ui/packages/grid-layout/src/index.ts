@@ -2,7 +2,10 @@ export type {
   DragSources,
   DropHandler,
 } from "./drag-drop-next/DragContextNext";
-export { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
+export {
+  DragDropProviderNext,
+  useOptionalDragContext,
+} from "./drag-drop-next/DragDropProviderNext";
 export { GridLayout, type GridResizeDistribution } from "./GridLayout";
 export {
   GridDragCoordinator,

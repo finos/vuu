@@ -27,6 +27,7 @@ export interface WorkspaceSnapshotV1 {
 export interface OpenWorkspaceInstanceV1 {
   readonly instanceId: string;
   readonly definitionId?: string;
+  readonly title?: string;
   readonly snapshotId: string;
 }
 
@@ -346,7 +347,12 @@ export const validateApplicationSessionV1 = (
         issue(issues, "INVALID_VALUE", path, "must be an object");
         return;
       }
-      fields(entry, ["instanceId", "definitionId", "snapshotId"], path, issues);
+      fields(
+        entry,
+        ["instanceId", "definitionId", "title", "snapshotId"],
+        path,
+        issues,
+      );
       if (stringField(entry.instanceId, `${path}.instanceId`, issues)) {
         if (ids.has(entry.instanceId)) {
           issue(
@@ -361,6 +367,9 @@ export const validateApplicationSessionV1 = (
       stringField(entry.snapshotId, `${path}.snapshotId`, issues);
       if (entry.definitionId !== undefined) {
         stringField(entry.definitionId, `${path}.definitionId`, issues);
+      }
+      if (entry.title !== undefined) {
+        stringField(entry.title, `${path}.title`, issues);
       }
     });
   }

@@ -75,11 +75,30 @@ export const remapGridLayoutDocumentIds = (
         allocateId("item", id, `${path}.layout.items[${index}].id`),
       ]),
     );
+    const implicitComponentItemIds = new Map(
+      document.layout.items.flatMap((item) =>
+        item.componentInstanceId === undefined
+          ? [[item.id, itemIds.get(item.id) ?? item.id] as const]
+          : [],
+      ),
+    );
     const componentIds = new Map(
-      document.components.map(({ id }, index) => [
-        id,
-        allocateId("component", id, `${path}.components[${index}].id`),
-      ]),
+      document.components.map(({ id }, index) => {
+        const implicitItemId = implicitComponentItemIds.get(id);
+        if (implicitItemId) {
+          mappings.push({
+            kind: "component",
+            newId: implicitItemId,
+            oldId: id,
+            path: `${path}.components[${index}].id`,
+          });
+          return [id, implicitItemId] as const;
+        }
+        return [
+          id,
+          allocateId("component", id, `${path}.components[${index}].id`),
+        ] as const;
+      }),
     );
     const stackIds = new Map(
       document.layout.stacks.map(({ id }, index) => [

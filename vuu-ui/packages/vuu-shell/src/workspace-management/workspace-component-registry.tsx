@@ -17,8 +17,8 @@ export interface WorkspaceComponentRegistries {
   readonly settingsCodecs: GridComponentSettingsRegistry;
 }
 
-export const createWorkspaceComponentRegistries = (
-  registrations: readonly WorkspaceComponentRegistration<unknown>[],
+export const createWorkspaceComponentRegistries = <T,>(
+  registrations: readonly WorkspaceComponentRegistration<T>[],
 ): WorkspaceComponentRegistries => {
   const renderers = new GridComponentRendererRegistry();
   const settingsCodecs = new GridComponentSettingsRegistry();
