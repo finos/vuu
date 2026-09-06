@@ -45,7 +45,11 @@ declare global {
 
 export interface DynamicFeatureDescriptor {
   description: string;
+  featureProps?: {
+    vuuTables?: "*" | VuuTable[];
+  };
   id: string;
+  leftNavLocation?: "vuu-features" | "vuu-tables";
   location: string;
   name: string;
   /**
@@ -124,10 +128,8 @@ export const isVuuTables = (
   vuuTables?: "*" | VuuTable[],
 ): vuuTables is VuuTable[] => Array.isArray(vuuTables);
 
-export interface FeaturePropsWithFilterTableFeature extends Omit<
-  DynamicFeatureProps,
-  "ComponentProps"
-> {
+export interface FeaturePropsWithFilterTableFeature
+  extends Omit<DynamicFeatureProps, "ComponentProps"> {
   ComponentProps: FilterTableFeatureProps;
 }
 
@@ -227,7 +229,7 @@ export const getCustomAndTableFeatures = (
   const tableFeatures: DynamicFeatureProps<FilterTableFeatureProps>[] = [];
 
   for (const {
-    // featureProps = {},
+    featureProps = {},
     viewProps,
     ...feature
   } of tableFeaturesConfig) {
