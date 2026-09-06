@@ -131,4 +131,65 @@ test.describe("ShellLayout", () => {
       ),
     ).not.toBeNull();
   });
+
+  test("drags a VUU table from static navigation into the empty workspace", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      "Shell/GridShellLayout/EmptyGridShellWithTablePalette",
+    );
+    const sessionKey =
+      "vuu-workspace:vuu-showcase:table-palette-shell:playwright:application-session";
+    const snapshotKey =
+      "vuu-workspace:vuu-showcase:table-palette-shell:playwright";
+
+    await component.getByRole("tab", { name: "VUU TABLES" }).click();
+    const source = component
+      .locator(".vuuFeatureList-item", {
+        hasText: /^SIMUL Instruments\s*$/,
+      })
+      .first();
+    const target = component.locator(
+      ".vuuWorkspaceHost-emptyGrid .vuuGridPlaceholder",
+    );
+    await expect(source).toBeVisible();
+    await expect(target).toBeVisible();
+
+    await source.dragTo(target);
+
+    await expect(
+      component.getByRole("tab", { name: "Untitled" }),
+    ).toBeVisible();
+    await expect(
+      component.getByTestId("dropped-table-feature"),
+    ).toHaveAttribute("data-table-name", "SIMUL:instruments");
+    const session = await page.evaluate(
+      (key) => JSON.parse(localStorage.getItem(key) ?? "null"),
+      sessionKey,
+    );
+    expect(session.workspaceOrder).toHaveLength(1);
+    expect(session.openWorkspaces[0].title).toBe("Untitled");
+    const snapshot = await page.evaluate(
+      ({ key, workspaceId }) =>
+        JSON.parse(
+          localStorage.getItem(`${key}:snapshot:${workspaceId}`) ?? "null",
+        ),
+      { key: snapshotKey, workspaceId: session.workspaceOrder[0] },
+    );
+    expect(snapshot.snapshot.layout.components).toHaveLength(1);
+    expect(snapshot.snapshot.layout.components[0]).toMatchObject({
+      settings: {
+        ComponentProps: {
+          tableSchema: {
+            table: {
+              module: "SIMUL",
+              table: "instruments",
+            },
+          },
+        },
+      },
+      type: "vuu-dynamic-feature",
+    });
+  });
 });

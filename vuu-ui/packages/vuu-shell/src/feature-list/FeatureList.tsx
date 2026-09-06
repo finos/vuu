@@ -128,6 +128,7 @@ const FeatureTemplate = ({
       data-template-component-type={template.component.type}
       data-template-version={template.component.version}
       draggable
+      role="listitem"
     >
       <Icon name="draggable" size={18} />
       <span className={`${classBase}-itemName`}>{template.label}</span>
@@ -140,7 +141,7 @@ const TemplateList = ({
 }: {
   readonly templates: readonly TypedComponentTemplate[];
 }) => (
-  <div className={`${classBase}-items`}>
+  <div className={`${classBase}-items`} role="list">
     {templates.map((template, index) => (
       <FeatureTemplate
         key={`${template.component.type}-${template.label}-${index}`}
