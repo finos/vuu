@@ -9,4 +9,5 @@ export * from "./WorkspacePersistentState";
 export * from "./WorkspaceController";
 export * from "./workspace-component-registry";
 export * from "./WorkspaceHost";
+export * from "./WorkspaceStartPanel";
 export * from "./shell-workspace-components";

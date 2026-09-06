@@ -19,7 +19,6 @@
   "dependencies": {
     "@vuu-ui/vuu-context-menu": "3.3.3",
     "@vuu-ui/vuu-data-react": "3.3.3",
-    "@vuu-ui/vuu-layout": "3.3.3",
     "@vuu-ui/vuu-popups": "3.3.3",
     "@vuu-ui/vuu-table": "3.3.3",
     "@vuu-ui/vuu-utils": "3.3.3",

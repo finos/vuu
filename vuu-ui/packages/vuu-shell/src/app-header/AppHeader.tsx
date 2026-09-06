@@ -3,7 +3,11 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { useLogout } from "@vuu-ui/core";
 import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
-import { Toolbar } from "@vuu-ui/vuu-ui-controls";
+import {
+  Toolbar,
+  useContextPanel,
+  useHideContextPanel,
+} from "@vuu-ui/vuu-ui-controls";
 import type { ThemeMode } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { type HTMLAttributes, useCallback } from "react";
@@ -33,10 +37,13 @@ export const AppHeader = ({
 
   const { resetApplication, setApplicationSetting } = useWorkspace();
   const { showNotification } = useNotifications();
+  const showContextPanel = useContextPanel();
+  const hideContextPanel = useHideContextPanel();
 
   const handleReset = useCallback(async () => {
     try {
       await resetApplication();
+      hideContextPanel?.();
       showNotification({
         animationType: "slide-out",
         renderPostRefresh: true,
@@ -53,11 +60,14 @@ export const AppHeader = ({
         status: "error",
       });
     }
-  }, [resetApplication, showNotification]);
+  }, [hideContextPanel, resetApplication, showNotification]);
 
   const handleShowSettings = useCallback(() => {
-    void setApplicationSetting("applicationSettings.panelOpen", true);
-  }, [setApplicationSetting]);
+    void setApplicationSetting("applicationSettings.panelOpen", true).catch(
+      () => undefined,
+    );
+    showContextPanel(<div>Application settings</div>, "Settings");
+  }, [setApplicationSetting, showContextPanel]);
 
   return (
     <Toolbar

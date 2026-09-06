@@ -8,6 +8,8 @@ import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import { VuuDataSource } from "@vuu-ui/vuu-data-remote";
 import { getAllSchemas } from "@vuu-ui/vuu-data-test";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
+import { useTableConfig } from "@vuu-ui/vuu-table";
+import { TabbedTableSettingsAction } from "@vuu-ui/vuu-table-extras";
 import {
   FeatureAndLayoutProvider,
   FeatureList,
@@ -18,7 +20,11 @@ import {
   createWorkspaceComponentRegistries,
   jsonValueWorkspaceComponentCodec,
 } from "@vuu-ui/vuu-shell";
-import type { DynamicFeatureDescriptor } from "@vuu-ui/vuu-utils";
+import {
+  applyDefaultColumnConfig,
+  toColumnName,
+  type DynamicFeatureDescriptor,
+} from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 import shellCss from "../../../../packages/vuu-shell/src/shell.css";
 
@@ -113,6 +119,43 @@ const tableNameFromSettings = (settings: JsonValue) => {
     }
   }
   throw new Error("Table feature settings do not identify a VUU table");
+};
+
+const TableSettingsFixture = () => {
+  const tableSchema = tableSchemas.find(
+    ({ table }) => table.module === "SIMUL" && table.table === "instruments",
+  );
+  if (!tableSchema) {
+    throw new Error("Expected SIMUL instruments schema");
+  }
+  const dataSource = useMemo(
+    () =>
+      new VuuDataSource({
+        columns: tableSchema.columns.map(toColumnName),
+        table: tableSchema.table,
+      }),
+    [tableSchema],
+  );
+  const initialConfig = useMemo(
+    () => ({ columns: applyDefaultColumnConfig(tableSchema) }),
+    [tableSchema],
+  );
+  const { columnModel, onTableDisplayAttributeChange, tableConfig } =
+    useTableConfig({
+      availableColumns: tableSchema.columns,
+      config: initialConfig,
+      dataSource,
+    });
+
+  return (
+    <TabbedTableSettingsAction
+      aria-label="Table settings"
+      columnModel={columnModel}
+      config={tableConfig}
+      onDisplayAttributeChange={onTableDisplayAttributeChange}
+      vuuTable={tableSchema.table}
+    />
+  );
 };
 
 const GridShellFixture = ({ withPalette = false }: { withPalette?: boolean }) => {
@@ -210,7 +253,11 @@ export const EmptyGridShellWithPalette = () => (
   <GridShellFixture withPalette />
 );
 
-const TablePaletteGridShellFixture = () => {
+const TablePaletteGridShellFixture = ({
+  showTableSettingsAction = false,
+}: {
+  showTableSettingsAction?: boolean;
+}) => {
   const persistenceService = useMemo(() => {
     return new LocalWorkspacePersistenceService({
       applicationId: "table-palette-shell",
@@ -266,6 +313,7 @@ html, body, #root {
                     appHeader={
                       <header aria-label="Application Header">
                         Application Header
+                        {showTableSettingsAction ? <TableSettingsFixture /> : null}
                       </header>
                     }
                     data-testid="shell"
@@ -284,4 +332,7 @@ html, body, #root {
 
 export const EmptyGridShellWithTablePalette = () => (
   <TablePaletteGridShellFixture />
+);
+export const GridShellWithTableSettingsAction = () => (
+  <TablePaletteGridShellFixture showTableSettingsAction />
 );

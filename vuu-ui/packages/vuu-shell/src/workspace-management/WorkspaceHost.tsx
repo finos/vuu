@@ -15,6 +15,7 @@ import {
   WorkspacePersistentStateStore,
 } from "./WorkspacePersistentState";
 import { emptyWorkspaceSnapshot, useWorkspace } from "./WorkspaceProvider";
+import { WorkspaceStartPanel } from "./WorkspaceStartPanel";
 import { WORKSPACE_SNAPSHOT_VERSION } from "./workspace-schemas";
 
 const WorkspaceGrid = ({
@@ -26,11 +27,24 @@ const WorkspaceGrid = ({
     ReturnType<typeof useWorkspace>["activeWorkspace"]
   >;
 }) => {
+  const [isEmpty, setIsEmpty] = useState(
+    controller.snapshot.layout.components.length === 0,
+  );
   const handleDocumentError = useCallback((error: GridLayoutDocumentError) => {
     throw new Error(
       `Invalid workspace document at ${error.path}: ${error.message}`,
     );
   }, []);
+  const handleDocumentChange = useCallback(
+    (
+      document: GridLayoutDocument,
+      change: Parameters<typeof controller.handleDocumentChange>[1],
+    ) => {
+      setIsEmpty(document.components.length === 0);
+      controller.handleDocumentChange(document, change);
+    },
+    [controller],
+  );
   return (
     <section
       aria-hidden={!active}
@@ -46,12 +60,13 @@ const WorkspaceGrid = ({
           componentRenderers={controller.renderers}
           document={controller.snapshot.layout}
           documentController={controller.documentController}
-          onDocumentChange={controller.handleDocumentChange}
+          onDocumentChange={handleDocumentChange}
           onDocumentError={handleDocumentError}
           settingsCodecs={controller.settingsCodecs}
         >
           <GridLayout id={controller.snapshot.layout.layout.id} />
         </GridLayoutProvider>
+        {isEmpty ? <WorkspaceStartPanel /> : null}
       </WorkspacePersistentStateProvider>
     </section>
   );
@@ -130,9 +145,7 @@ const EmptyWorkspaceDropTarget = () => {
           />
         </GridLayoutProvider>
       </WorkspacePersistentStateProvider>
-      <div className="vuuWorkspaceHost-emptyLabel">
-        Drop a feature here or select a workspace from My Layouts to begin.
-      </div>
+      <WorkspaceStartPanel />
     </div>
   );
 };
@@ -142,6 +155,7 @@ export const WorkspaceHost = () => {
     activeWorkspaceInstanceId,
     closeWorkspace,
     controllers,
+    createWorkspaceFromSnapshot,
     error,
     renameWorkspace,
     selectWorkspace,
@@ -169,6 +183,18 @@ export const WorkspaceHost = () => {
     },
     [closeWorkspace, controllers],
   );
+  const handleAddTab = useCallback(() => {
+    const titles = new Set(controllers.map(({ name }) => name));
+    let suffix = 1;
+    let title = "Untitled";
+    while (titles.has(title)) {
+      suffix += 1;
+      title = `Untitled ${suffix}`;
+    }
+    void createWorkspaceFromSnapshot(emptyWorkspaceSnapshot, title).catch(
+      () => undefined,
+    );
+  }, [controllers, createWorkspaceFromSnapshot]);
   const handleExitEditMode = useCallback<ExitTabEditModeHandler>(
     (originalTitle, title, _allowDeactivation, tabIndex) => {
       const controller = controllers[tabIndex];
@@ -195,20 +221,18 @@ export const WorkspaceHost = () => {
       </div>
     );
   }
-  if (status === "empty") {
-    return <EmptyWorkspaceDropTarget />;
-  }
-
   return (
     <div className="vuuWorkspaceHost vuu-workspace-tabs">
       <Tabstrip
         activeTabIndex={activeWorkspaceIndex}
+        allowAddTab
         allowCloseTab
         allowRenameTab
         animateSelectionThumb={false}
         aria-label="Workspace Tabs"
         className="vuuTabHeader"
         onActiveChange={handleActiveChange}
+        onAddTab={handleAddTab}
         onCloseTab={handleCloseTab}
         onExitEditMode={handleExitEditMode}
         variant="primary"
@@ -224,13 +248,17 @@ export const WorkspaceHost = () => {
         ))}
       </Tabstrip>
       <div className="vuuWorkspaceHost-content">
-        {controllers.map((controller) => (
-          <WorkspaceGrid
-            active={controller.instanceId === activeWorkspaceInstanceId}
-            controller={controller}
-            key={controller.instanceId}
-          />
-        ))}
+        {status === "empty" ? (
+          <EmptyWorkspaceDropTarget />
+        ) : (
+          controllers.map((controller) => (
+            <WorkspaceGrid
+              active={controller.instanceId === activeWorkspaceInstanceId}
+              controller={controller}
+              key={controller.instanceId}
+            />
+          ))
+        )}
       </div>
     </div>
   );

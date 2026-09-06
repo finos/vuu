@@ -67,17 +67,18 @@ export const ContextPanel = ({
         [`${classBase}-overlay`]: overlay,
       })}
       id={id}
+      onKeyDown={handleKeyDown}
     >
       <div className={`${classBase}-inner`}>
         <div className={`${classBase}-header`}>
           <h2 className={`${classBase}-title`}>{title}</h2>
           <IconButton
             appearance="transparent"
+            aria-label="Close context panel"
             className={`${classBase}-close`}
             data-embedded
             icon="close"
             onClick={handleClose}
-            onKeyDown={handleKeyDown}
             ref={closeButtonRef}
             sentiment="neutral"
             size={16}

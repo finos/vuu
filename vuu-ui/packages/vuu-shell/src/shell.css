@@ -105,6 +105,10 @@
   display: none;
 }
 
+.vuuWorkspaceHost-workspace {
+  position: relative;
+}
+
 .vuuWorkspaceHost-workspace > .vuuGridLayout {
   height: 100%;
   min-height: 0;
@@ -132,13 +136,4 @@
   min-height: 0;
   min-width: 0;
   width: 100%;
-}
-
-.vuuWorkspaceHost-emptyLabel {
-  align-items: center;
-  display: flex;
-  inset: 0;
-  justify-content: center;
-  pointer-events: none;
-  position: absolute;
 }

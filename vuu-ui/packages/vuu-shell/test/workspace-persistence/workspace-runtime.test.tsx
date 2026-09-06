@@ -4,6 +4,7 @@ import {
   type GridLayoutDocument,
 } from "@heswell/grid-layout";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
+import { ContextPanelProvider } from "@vuu-ui/vuu-ui-controls";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -764,9 +765,11 @@ describe("workspace runtime", () => {
             settingsCodecs={codecs}
             userId="alice"
           >
-            <Capture />
-            <AppHeader />
-            <ApplicationSettingsContextPanel />
+            <ContextPanelProvider showContextPanel={() => undefined}>
+              <Capture />
+              <AppHeader />
+              <ApplicationSettingsContextPanel />
+            </ContextPanelProvider>
           </WorkspaceProvider>
         </NotificationsProvider>,
       );

@@ -35,17 +35,18 @@ test.describe("ShellLayout", () => {
     await expectToFillViewport(shell);
     await expect(leftNav).toBeVisible();
     await expect(workspaceHost).toContainClass("vuuShell-content");
-    await expect(
-      component.getByText(
-        "Drop a feature here or select a workspace from My Layouts to begin.",
-      ),
-    ).toBeVisible();
+    await expect(component.getByText("Start by adding a table")).toBeVisible();
     await expect(
       component.locator(".vuuWorkspaceHost-emptyGrid .vuuGridPlaceholder"),
     ).toBeVisible();
+    const workspaceTabs = component.getByRole("tablist", {
+      name: "Workspace Tabs",
+    });
+    await expect(workspaceTabs).toBeVisible();
     await expect(
-      component.getByRole("tablist", { name: "Workspace Tabs" }),
-    ).toHaveCount(0);
+      workspaceTabs.getByRole("button", { name: "Create Tab" }),
+    ).toHaveAttribute("tabindex", "0");
+    await expect(workspaceTabs.getByRole("tab")).toHaveCount(0);
   });
 
   test("uses the baseline shell tracks without grid padding or item borders", async ({
@@ -56,7 +57,7 @@ test.describe("ShellLayout", () => {
     const leftNavItem = component.locator("#vuu-shell-left-nav");
     const headerItem = component.locator("#vuu-shell-header");
     const workspaceItem = component.locator("#vuu-shell-workspace-host");
-    const contextItem = component.locator("#vuu-shell-context");
+    const contextItem = component.locator("#vuu-shell-context-panel-host");
 
     await expect(shell).toHaveCSS("padding", "0px");
     await expect(leftNavItem).toHaveCSS("border-top-width", "0px");
@@ -98,6 +99,7 @@ test.describe("ShellLayout", () => {
     );
     await expect(source).toBeVisible();
     await expect(target).toBeVisible();
+    await expect(component.getByText("Start by adding a table")).toBeVisible();
     await target.click();
     expect(
       await page.evaluate((key) => localStorage.getItem(key), sessionKey),
@@ -111,6 +113,7 @@ test.describe("ShellLayout", () => {
       component.getByRole("tab", { name: "Untitled" }),
     ).toBeVisible();
     await expect(component.getByTestId("dropped-test-feature")).toBeVisible();
+    await expect(component.getByText("Start by adding a table")).toHaveCount(0);
     const session = await page.evaluate(
       (key) => JSON.parse(localStorage.getItem(key) ?? "null"),
       sessionKey,
@@ -244,18 +247,82 @@ test.describe("ShellLayout", () => {
       component.getByRole("tab", { name: "Market Data" }),
     ).toBeVisible();
 
+    await component.getByRole("button", { name: "Create Tab" }).click();
+    const emptyTab = component.getByRole("tab", { name: "Untitled" });
+    await expect(emptyTab).toHaveAttribute("aria-selected", "true");
+    await expect(component.getByText("Start by adding a table")).toBeVisible();
+    await expect
+      .poll(async () =>
+        page.evaluate(
+          (key) => JSON.parse(localStorage.getItem(key) ?? "null"),
+          sessionKey,
+        ),
+      )
+      .toMatchObject({
+        activeWorkspaceInstanceId: expect.any(String),
+        openWorkspaces: [{ title: "Market Data" }, { title: "Untitled" }],
+      });
+
+    await page.evaluate(() => window.unmount());
+    await page.evaluate(() =>
+      window.mount({
+        story: "Shell/GridShellLayout/EmptyGridShellWithTablePalette",
+      }),
+    );
+    await expect(
+      component.getByRole("tab", { name: "Market Data" }),
+    ).toBeVisible();
+    await expect(
+      component.getByRole("tab", { name: "Untitled" }),
+    ).toHaveAttribute("aria-selected", "true");
+    await expect(component.getByText("Start by adding a table")).toBeVisible();
+
+    await component
+      .getByRole("tab", { name: "Untitled" })
+      .getByRole("button", { name: "context menu" })
+      .click();
+    await page.getByRole("menuitem", { name: "Close" }).click();
     await component
       .getByRole("tab", { name: "Market Data" })
       .getByRole("button", { name: "context menu" })
       .click();
     await page.getByRole("menuitem", { name: "Close" }).click();
-    await expect(
-      component.getByText(
-        "Drop a feature here or select a workspace from My Layouts to begin.",
-      ),
-    ).toBeVisible();
+    await expect(component.getByText("Start by adding a table")).toBeVisible();
     await expect(
       component.getByRole("tab", { name: "Market Data" }),
     ).toHaveCount(0);
+  });
+
+  test("opens real table settings in the static context panel and restores focus on close", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      "Shell/GridShellLayout/GridShellWithTableSettingsAction",
+    );
+    const settingsAction = component.getByRole("button", {
+      name: "Table settings",
+    });
+    await settingsAction.click();
+
+    const contextPanel = component.locator("#context-panel");
+    await expect(contextPanel).toContainClass("vuuContextPanel-expanded");
+    await expect(contextPanel.getByRole("heading")).toHaveText(
+      "Table settings",
+    );
+    await expect(
+      contextPanel.getByRole("button", { name: "Close context panel" }),
+    ).toBeFocused();
+
+    await page.keyboard.press("Escape");
+    await expect(contextPanel).not.toContainClass("vuuContextPanel-expanded");
+    await expect(settingsAction).toBeFocused();
+
+    await settingsAction.click();
+    await contextPanel
+      .getByRole("button", { name: "Close context panel" })
+      .click();
+    await expect(contextPanel).not.toContainClass("vuuContextPanel-expanded");
+    await expect(settingsAction).toBeFocused();
   });
 });
