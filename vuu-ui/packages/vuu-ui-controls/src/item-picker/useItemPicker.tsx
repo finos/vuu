@@ -29,7 +29,10 @@ export interface ItemPickerHookProps {
   allItems: ItemDescriptor[];
   selectedItems: ItemDescriptor[];
   maxSelections?: number;
-  onSelectedItemsChange: (newSelectedItems: ItemDescriptor[]) => void;
+  onSelectedItemsChange: (newSelectedItems: readonly ItemDescriptor[]) => void;
+  onSelectedItemsFilteredChange: (
+    newSelectedItemsFiltered: readonly ItemDescriptor[],
+  ) => void;
 }
 
 const filterItems = (
@@ -74,6 +77,7 @@ export const useItemPicker = ({
   selectedItems,
   maxSelections,
   onSelectedItemsChange,
+  onSelectedItemsFilteredChange,
 }: ItemPickerHookProps) => {
   if (maxSelections && selectedItems.length > maxSelections) {
     throw Error(
@@ -83,10 +87,27 @@ export const useItemPicker = ({
 
   const [searchPattern, setSearchPattern] = useState("");
 
-  const handleChangeSearchInput = useCallback<FormEventHandler>((evt) => {
-    const { value } = evt.target as HTMLInputElement;
-    setSearchPattern(value);
-  }, []);
+  const handleChangeSearchInput = useCallback<FormEventHandler>(
+    (evt) => {
+      const previousFilteredSelections = getSelectedItemsFiltered(
+        selectedItems,
+        searchPattern,
+      );
+
+      const { value } = evt.target as HTMLInputElement;
+      setSearchPattern(value);
+
+      // Determine whether the filtered selections have changed
+      const newFilteredSelections = getSelectedItemsFiltered(
+        selectedItems,
+        value,
+      );
+      if (previousFilteredSelections.length !== newFilteredSelections.length) {
+        onSelectedItemsFilteredChange(newFilteredSelections);
+      }
+    },
+    [onSelectedItemsFilteredChange, selectedItems, searchPattern],
+  );
 
   const handleAddItemToSelectedList = useCallback<
     MouseEventHandler<HTMLButtonElement>
@@ -97,13 +118,21 @@ export const useItemPicker = ({
       if (itemToAdd) {
         const newSelectedItems = selectedItems.concat(itemToAdd);
         onSelectedItemsChange(newSelectedItems);
+        onSelectedItemsFilteredChange(
+          getSelectedItemsFiltered(newSelectedItems, searchPattern),
+        );
       } else {
         throw Error(
           `[useItemPicker] handleAddItemToSelectedList, item '${name}' not found`,
         );
       }
     },
-    [allItems, selectedItems, onSelectedItemsChange],
+    [
+      allItems,
+      selectedItems,
+      onSelectedItemsChange,
+      onSelectedItemsFilteredChange,
+    ],
   );
 
   const handleRemoveItemFromSelectedList = useCallback<
@@ -117,13 +146,16 @@ export const useItemPicker = ({
           (item) => item.name !== name,
         );
         onSelectedItemsChange(newSelectedItems);
+        onSelectedItemsFilteredChange(
+          getSelectedItemsFiltered(newSelectedItems, searchPattern),
+        );
       } else {
         throw Error(
           `[useItemPicker] handleRemoveItemFromSelectedList, item '${name}' not found`,
         );
       }
     },
-    [selectedItems, onSelectedItemsChange],
+    [selectedItems, onSelectedItemsChange, onSelectedItemsFilteredChange],
   );
 
   const handleReorderSelectedItems = useCallback(
@@ -137,9 +169,12 @@ export const useItemPicker = ({
     [selectedItems, onSelectedItemsChange],
   );
 
-  const getSelectedItemsFiltered = useMemo(() => {
-    return filterItems(selectedItems, searchPattern);
-  }, [selectedItems, searchPattern]);
+  const getSelectedItemsFiltered = (
+    latestSelectedItems: readonly ItemDescriptor[],
+    latestSearchPattern: string,
+  ) => {
+    return filterItems(latestSelectedItems, latestSearchPattern);
+  };
 
   const getAvailableItemsFiltered = useMemo(() => {
     return filterItems(allItems, searchPattern)
@@ -160,7 +195,10 @@ export const useItemPicker = ({
   return {
     selectedItemsCount: selectedItems.length,
     availableItemsCount: getAvailableItemsCount,
-    selectedItemsFiltered: getSelectedItemsFiltered,
+    selectedItemsFiltered: getSelectedItemsFiltered(
+      selectedItems,
+      searchPattern,
+    ),
     availableItemsFiltered: getAvailableItemsFiltered,
     searchText: searchPattern,
     onChangeSearchInput: handleChangeSearchInput,

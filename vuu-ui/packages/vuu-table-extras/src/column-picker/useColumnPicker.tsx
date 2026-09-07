@@ -1,17 +1,8 @@
 import { ColumnDescriptor, TableSelectionModel } from "@vuu-ui/vuu-table-types";
-import { queryClosest } from "@vuu-ui/vuu-utils";
-import {
-  FormEventHandler,
-  MouseEventHandler,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
-import {
-  ColumnChangeSource,
-  ColumnModel,
-  SelectedColumnChangeType,
-} from "./ColumnModel";
+import { ItemDescriptor } from "@vuu-ui/vuu-ui-controls";
+import { isCalculatedColumn } from "@vuu-ui/vuu-utils";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ColumnChangeSource, ColumnModel } from "./ColumnModel";
 
 export type ColumnSelectionModel = Extract<
   TableSelectionModel,
@@ -19,22 +10,6 @@ export type ColumnSelectionModel = Extract<
 >;
 
 const SOURCE = ColumnChangeSource.ColumnPicker;
-
-const columnName = (target: EventTarget) => {
-  const listItem = queryClosest(target, ".saltOption", true);
-  const { name } = listItem.dataset;
-  if (name) {
-    return name;
-  } else {
-    throw Error(
-      "[useColumnPicker] column name could not be identified, data-name attribute not found",
-    );
-  }
-};
-export type SelectedColumnsChangeHandler = (
-  columns: ColumnDescriptor[],
-  changeType: SelectedColumnChangeType,
-) => void;
 
 export interface ColumnPickerHookProps {
   columnModel: ColumnModel;
@@ -51,34 +26,66 @@ export const useColumnPicker = ({
     };
   }, [model]);
 
-  const handleChangeSearchInput = useCallback<FormEventHandler>(
-    (evt) => {
-      const { value } = evt.target as HTMLInputElement;
-      model.searchPattern = value;
+  const allItems = useMemo(() => {
+    const itemDescriptors: ItemDescriptor[] = model.allColumns.map(
+      (column: ColumnDescriptor) => {
+        return {
+          name: column.name,
+          label: column.label,
+          icon: isCalculatedColumn(column.name)
+            ? "vuuCalculatedColumnIcon"
+            : undefined,
+        };
+      },
+    );
+    return itemDescriptors;
+  }, [model.allColumns]);
+
+  const selectedItems = useMemo(() => {
+    const itemDescriptors: ItemDescriptor[] = model.selectedColumns.map(
+      (column: ColumnDescriptor) => {
+        return allItems.find((item) => item.name === column.name)!;
+      },
+    );
+    return itemDescriptors;
+  }, [model.selectedColumns, allItems]);
+
+  const oneOrMoreColumnsIsCalculated = useMemo(() => {
+    return model.selectedColumnsFiltered.some((column) =>
+      isCalculatedColumn(column.name),
+    );
+  }, [model.selectedColumnsFiltered]);
+
+  const handleSelectedItemsChange = useCallback(
+    (newSelectedItems: readonly ItemDescriptor[]) => {
+      const newSelectedColumns: ColumnDescriptor[] = newSelectedItems.map(
+        (item: ItemDescriptor) => {
+          return model.allColumns.find((column) => column.name === item.name)!;
+        },
+      );
+
+      model.addRemoveOrReorderSelectedColumns(newSelectedColumns, SOURCE);
     },
-    [model],
+    [model.allColumns],
   );
 
-  const handleAddItemToSelectedList = useCallback<
-    MouseEventHandler<HTMLButtonElement>
-  >(
-    (e) => model.addItemToSelectedColumns(columnName(e.target), SOURCE),
-    [model],
-  );
+  const handleSelectedItemsFilteredChange = useCallback(
+    (newSelectedItemsFiltered: readonly ItemDescriptor[]) => {
+      const newSelectedColumnsFiltered: ColumnDescriptor[] =
+        newSelectedItemsFiltered.map((item: ItemDescriptor) => {
+          return model.allColumns.find((column) => column.name === item.name)!;
+        });
 
-  const handleRemoveItemFromSelectedList = useCallback<
-    MouseEventHandler<HTMLButtonElement>
-  >(
-    (e) => model.removeItemFromSelectedColumns(columnName(e.target), SOURCE),
-    [model],
+      model.updateSelectedColumnsFiltered(newSelectedColumnsFiltered);
+    },
+    [model.allColumns],
   );
 
   return {
-    availableColumns: model.availableColumns,
-    onAddItemToSelectedList: handleAddItemToSelectedList,
-    onRemoveItemFromSelectedList: handleRemoveItemFromSelectedList,
-    onChangeSearchInput: handleChangeSearchInput,
-    searchText: model.searchPattern,
-    selectedColumns: model.selectedColumns,
+    allItems,
+    selectedItems,
+    oneOrMoreColumnsIsCalculated,
+    handleSelectedItemsChange,
+    handleSelectedItemsFilteredChange,
   };
 };

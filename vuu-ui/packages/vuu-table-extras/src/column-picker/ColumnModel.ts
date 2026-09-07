@@ -1,5 +1,12 @@
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { EventEmitter, reorderItems, ValueOf } from "@vuu-ui/vuu-utils";
+import {
+  EventEmitter,
+  ValueOf,
+  containsSubsetOfItems,
+  getAddedItems,
+  getRemovedItems,
+  itemsOrOrderChanged,
+} from "@vuu-ui/vuu-utils";
 
 export const ColumnChangeSource = {
   ColumnPicker: "column-picker",
@@ -73,29 +80,11 @@ export type ColumnEvents = {
   render: (o: object) => void;
 };
 
-const byColumnName = (
-  { name: n1, label: l1 = n1 }: ColumnDescriptor,
-  { name: n2, label: l2 = n2 }: ColumnDescriptor,
-) => (l1 > l2 ? 1 : l2 > l1 ? -1 : 0);
-
-const filterColumns = (
-  columns: readonly ColumnDescriptor[],
-  pattern: string,
-) => {
-  if (pattern) {
-    const lowerCasePattern = pattern.toLowerCase();
-    return columns.filter(
-      ({ name, label = name }) =>
-        label.toLowerCase().indexOf(lowerCasePattern) !== -1,
-    );
-  } else {
-    return columns;
-  }
-};
-
 export class ColumnModel extends EventEmitter<ColumnEvents> {
-  #searchPattern = "";
   #selectedColumns: readonly ColumnDescriptor[];
+
+  #selectedColumnsFiltered: readonly ColumnDescriptor[];
+
   constructor(
     /**
      * All available columns, including selected columns.
@@ -108,39 +97,15 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
   ) {
     super();
     this.#selectedColumns = selectedColumns;
-  }
-
-  get availableColumns(): ColumnDescriptor[] {
-    return filterColumns(this.allColumns, this.#searchPattern)
-      .filter(
-        ({ name }) =>
-          this.#selectedColumns.findIndex((c) => c.name === name) === -1,
-      )
-      .toSorted(byColumnName);
-  }
-
-  set searchPattern(pattern: string) {
-    const searchPattern = pattern;
-    if (searchPattern !== this.#searchPattern) {
-      this.#searchPattern = searchPattern;
-      this.emit("render", {});
-    }
-  }
-
-  get searchPattern() {
-    return this.#searchPattern ?? "";
+    this.#selectedColumnsFiltered = [...selectedColumns];
   }
 
   get selectedColumns() {
-    return filterColumns(this.#selectedColumns, this.#searchPattern);
+    return this.#selectedColumns;
   }
-  setSelectedColumns(
-    selectedColumns: ColumnDescriptor[],
-    source: ColumnChangeSource,
-    changeDescriptor?: SelectedColumnChangeDescriptor,
-  ) {
-    this.#selectedColumns = selectedColumns;
-    this.notifyListeners(selectedColumns, source, changeDescriptor);
+
+  get selectedColumnsFiltered(): readonly ColumnDescriptor[] {
+    return this.#selectedColumnsFiltered;
   }
 
   getColumn(name: string) {
@@ -151,20 +116,81 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
     throw Error(`[ColumnModel] columns does not contain column ${name}`);
   }
 
-  addItemToSelectedColumns(name: string, source: ColumnChangeSource) {
-    const column = this.allColumns.find((col) => col.name === name);
-    if (column) {
-      this.#selectedColumns = this.#selectedColumns.concat(column);
-      this.notifyListeners(this.#selectedColumns, source, {
-        type: SelectedColumnChangeType.ColumnAdded,
-        column,
-      });
-    } else {
+  /**
+   * Introduced for use by ColumnPicker
+   */
+  addRemoveOrReorderSelectedColumns(
+    newSelectedColumns: ColumnDescriptor[],
+    source: ColumnChangeSource,
+  ) {
+    if (!itemsOrOrderChanged(this.#selectedColumns, newSelectedColumns)) {
       throw Error(
-        `[ColumnModel] addItemToSelectedColumns, column '${name}' not found`,
+        `[ColumnModel] addRemoveOrReorderSelectedColumns no change detected between current and new selected columns`,
       );
     }
+
+    // Determine whether the change is column addition, removal or reordering
+    const addedColumns: readonly ColumnDescriptor[] = getAddedItems(
+      this.#selectedColumns,
+      newSelectedColumns,
+    );
+
+    if (addedColumns.length > 0) {
+      if (addedColumns.length == 1) {
+        this.#selectedColumns = newSelectedColumns;
+        this.notifyListeners(this.#selectedColumns, source, {
+          type: SelectedColumnChangeType.ColumnAdded,
+          column: addedColumns[0],
+        });
+        return;
+      } else {
+        throw Error(
+          `[ColumnModel] addRemoveOrReorderSelectedColumns attempt to add multiple selected columns in a single call`,
+        );
+      }
+    }
+
+    const removedColumns: readonly ColumnDescriptor[] = getRemovedItems(
+      this.#selectedColumns,
+      newSelectedColumns,
+    );
+
+    if (removedColumns.length > 0) {
+      if (removedColumns.length == 1) {
+        this.#selectedColumns = newSelectedColumns;
+        this.notifyListeners(this.#selectedColumns, source, {
+          type: SelectedColumnChangeType.ColumnRemoved,
+          column: removedColumns[0],
+        });
+        return;
+      } else {
+        throw Error(
+          `[ColumnModel] addRemoveOrReorderSelectedColumns attempt to remove multiple selected columns in a single call`,
+        );
+      }
+    }
+
+    // Change must be reordering
+    this.#selectedColumns = newSelectedColumns;
+    this.notifyListeners(this.#selectedColumns, source, {
+      type: SelectedColumnChangeType.ColumnsReordered,
+    });
   }
+
+  updateSelectedColumnsFiltered(
+    newSelectedColumnsFiltered: ColumnDescriptor[],
+  ) {
+    if (
+      !containsSubsetOfItems(this.#selectedColumns, newSelectedColumnsFiltered)
+    ) {
+      throw Error(
+        `[ColumnModel] updateSelectedColumnsFiltered supplied filtered columns contains unrecognised columns`,
+      );
+    }
+
+    this.#selectedColumnsFiltered = newSelectedColumnsFiltered;
+  }
+
   removeItemFromSelectedColumns(name: string, source: ColumnChangeSource) {
     const column = this.#selectedColumns.find((col) => col.name === name);
     if (column) {
@@ -179,17 +205,6 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
         `[ColumnModel] removeItemFromSelectedColumns, column '${name}' not found`,
       );
     }
-  }
-
-  reorderSelectedColumns(
-    orderedColumnNames: string[],
-    source: ColumnChangeSource,
-  ) {
-    this.setSelectedColumns(
-      reorderItems(this.#selectedColumns, orderedColumnNames),
-      source,
-      { type: SelectedColumnChangeType.ColumnsReordered },
-    );
   }
 
   updateColumn(
@@ -240,7 +255,7 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
   addColumn(column: ColumnDescriptor, addToSelectedColumns = false) {
     console.log(`[ColumnModel] add column ${JSON.stringify(column)}`);
     if (addToSelectedColumns) {
-      console.log(`add it to selected coliumns`);
+      console.log(`add it to selected columns`);
     }
 
     this.allColumns = this.allColumns.concat(column);

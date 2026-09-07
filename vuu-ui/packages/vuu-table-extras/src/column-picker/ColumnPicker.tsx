@@ -1,160 +1,33 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import {
-  DragDropProvider,
-  getColumnLabel,
-  isCalculatedColumn,
-  useSortable,
-} from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
   ForwardedRef,
   forwardRef,
   HTMLAttributes,
   MouseEventHandler,
-  RefCallback,
-  useCallback,
-  useMemo,
-  useRef,
 } from "react";
 
-import {
-  Button,
-  Input,
-  ListBox,
-  ListBoxProps,
-  Option,
-  OptionProps,
-} from "@salt-ds/core";
-import { applyHighlighting } from "@vuu-ui/vuu-table";
-import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
-import { ColumnChangeSource } from "./ColumnModel";
+import { ListBoxProps } from "@salt-ds/core";
 import { ColumnPickerHookProps, useColumnPicker } from "./useColumnPicker";
 
+import { CreateCustomItemProps, ItemPicker } from "@vuu-ui/vuu-ui-controls";
 import columnPickerCss from "./ColumnPicker.css";
 
 const classBase = "vuuColumnPicker";
 export const classBaseListItem = "vuuColumnPickerListItem";
 
 export interface ColumnPickerProps
-  extends ColumnPickerHookProps,
+  extends
+    ColumnPickerHookProps,
     Pick<ListBoxProps<ColumnDescriptor>, "selected" | "onSelectionChange">,
     HTMLAttributes<HTMLDivElement> {
   allowCreateCalculatedColumn?: boolean;
   onClickCreateCalculatedColumn?: MouseEventHandler<HTMLButtonElement>;
 }
 
-const searchIcon = <span data-icon="search" />;
 const NO_SELECTION: ColumnDescriptor[] = [] as const;
-
-const useSorting = (id: string, index: number) => {
-  const { handleRef: sortableHandleRef, ref: sortableRef } = useSortable({
-    id,
-    index,
-  });
-
-  const [handleRef, ref] = useMemo(() => {
-    return [sortableHandleRef, sortableRef];
-  }, [sortableHandleRef, sortableRef]);
-
-  return {
-    handleRef,
-    ref,
-  };
-};
-
-const SelectedColumnListItem = ({
-  className: classNameProp,
-  index,
-  column,
-  onRemove,
-  searchPattern = "",
-  ...optionProps
-}: OptionProps & {
-  index: number;
-  column: ColumnDescriptor;
-  onRemove: MouseEventHandler<HTMLButtonElement>;
-  searchPattern?: Lowercase<string>;
-}) => {
-  const { handleRef, ref } = useSorting(column.name, index);
-  const value = getColumnLabel(column as ColumnDescriptor);
-  const valueWithHighlighting = applyHighlighting(value, searchPattern);
-
-  const handleRemoveButtonClick = useCallback<
-    MouseEventHandler<HTMLButtonElement>
-  >(
-    (e) => {
-      e.stopPropagation();
-      onRemove?.(e);
-    },
-    [onRemove],
-  );
-
-  return (
-    <Option
-      {...optionProps}
-      className={cx(classNameProp, classBaseListItem)}
-      data-name={column.name}
-      ref={ref}
-    >
-      <IconButton
-        data-embedded
-        appearance="transparent"
-        icon="draggable"
-        ref={handleRef}
-        size={16}
-      />
-      {isCalculatedColumn(column.name) ? (
-        <Icon className="vuuCalculatedColumnIcon" name="function" />
-      ) : null}
-      <span className={`${classBase}-text`}>{valueWithHighlighting}</span>
-      <IconButton
-        className={`${classBaseListItem}-action`}
-        data-embedded
-        appearance="transparent"
-        icon="cross"
-        onClick={handleRemoveButtonClick}
-        size={16}
-      />
-    </Option>
-  );
-};
-
-const AvailableColumnListItem = ({
-  className: classNameProp,
-  index,
-  column: item,
-  onAdd,
-  searchPattern = "",
-  ...optionProps
-}: OptionProps & {
-  index: number;
-  column: ColumnDescriptor;
-  onAdd: MouseEventHandler<HTMLButtonElement>;
-  searchPattern?: Lowercase<string>;
-}) => {
-  const value = getColumnLabel(item as ColumnDescriptor);
-  const valueWithHighlighting = applyHighlighting(value, searchPattern);
-
-  return (
-    <Option
-      {...optionProps}
-      className={cx(classNameProp, classBaseListItem)}
-      data-name={item.name}
-    >
-      <span className={`${classBase}-text`}>{valueWithHighlighting}</span>
-      <IconButton
-        className={`${classBaseListItem}-action`}
-        data-embedded
-        appearance="transparent"
-        icon="plus"
-        onClick={onAdd}
-        size={16}
-      />
-    </Option>
-  );
-};
 
 export const ColumnPicker = forwardRef(function ColumnPicker(
   {
@@ -175,122 +48,36 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
     window: targetWindow,
   });
 
-  const searchCallbackRef = useCallback<RefCallback<HTMLElement>>((el) => {
-    setTimeout(() => {
-      el?.querySelector("input")?.focus();
-    }, 100);
-  }, []);
-
   const {
-    availableColumns,
-    onAddItemToSelectedList,
-    onChangeSearchInput,
-    onRemoveItemFromSelectedList,
-    searchText,
-    selectedColumns,
+    allItems,
+    selectedItems,
+    oneOrMoreColumnsIsCalculated,
+    handleSelectedItemsChange,
+    handleSelectedItemsFilteredChange,
   } = useColumnPicker({
     columnModel: columnModel,
   });
-  const listRef = useRef<HTMLDivElement>(null);
 
-  const getOptionName = (option?: HTMLElement) => {
-    if (option) {
-      const { name } = option.dataset;
-      if (name) {
-        return name;
-      }
-    }
-    throw Error("[ColumnPicker] list option has no data-name");
-  };
+  const createCustomItemProps = allowCreateCalculatedColumn
+    ? ({
+        buttonLabel: "Create calculated column",
+        onClickCreateCustomItem: onClickCreateCalculatedColumn,
+      } as CreateCustomItemProps)
+    : undefined;
 
-  const handleDragEnd = useCallback(() => {
-    setTimeout(() => {
-      const listItems =
-        listRef.current?.querySelectorAll<HTMLDivElement>(".saltOption");
-      if (listItems) {
-        const orderedColumnNames = Array.from(listItems).map(getOptionName);
-        columnModel.reorderSelectedColumns(
-          orderedColumnNames,
-          ColumnChangeSource.ColumnPicker,
-        );
-      }
-    }, 300);
-  }, [columnModel]);
-
-  const oneOrMoreColumnsIsCalculated = selectedColumns.some((column) =>
-    isCalculatedColumn(column.name),
-  );
   return (
-    <div
+    <ItemPicker
       {...htmlAttributes}
       className={cx(classBase, className, {
         [`${classBase}-withCalculated`]: oneOrMoreColumnsIsCalculated,
       })}
+      allItems={allItems}
+      selectedItems={selectedItems}
+      itemTypeName="column"
+      onSelectedItemsChange={handleSelectedItemsChange}
+      onSelectedItemsFilteredChange={handleSelectedItemsFilteredChange}
+      createCustomItemProps={createCustomItemProps}
       ref={forwardedRef}
-    >
-      <form className={`${classBase}-search`} role="search">
-        <Input
-          startAdornment={searchIcon}
-          placeholder="Find column"
-          ref={searchCallbackRef}
-          value={searchText}
-          onChange={onChangeSearchInput}
-        />
-      </form>
-
-      <div className={`${classBase}-scrollContainer vuuScrollable`}>
-        <div className={`${classBase}-sectionHeader`}>Columns in view</div>
-        <DragDropProvider onDragEnd={handleDragEnd}>
-          <ListBox
-            className={`${classBase}-selectedList`}
-            onSelectionChange={onSelectionChange}
-            ref={listRef}
-            selected={selected}
-          >
-            {selectedColumns.map((column, index) => (
-              <SelectedColumnListItem
-                column={column}
-                index={index}
-                key={column.name}
-                onRemove={onRemoveItemFromSelectedList}
-                searchPattern={searchText.toLowerCase() as Lowercase<string>}
-                value={column}
-              />
-            ))}
-          </ListBox>
-        </DragDropProvider>
-
-        <div
-          className={cx(
-            `${classBase}-sectionHeader`,
-            `${classBase}-availableHeader`,
-          )}
-        >
-          Available columns
-        </div>
-        <ListBox
-          className={`${classBase}-availableList`}
-          selected={NO_SELECTION}
-        >
-          {availableColumns.map((column, index) => (
-            <AvailableColumnListItem
-              column={column}
-              index={index}
-              key={column.name}
-              onAdd={onAddItemToSelectedList}
-              searchPattern={searchText.toLowerCase() as Lowercase<string>}
-              value={column}
-            />
-          ))}
-        </ListBox>
-      </div>
-      {allowCreateCalculatedColumn ? (
-        <div className={`${classBase}-column-buttons`}>
-          <Button onClick={onClickCreateCalculatedColumn}>
-            Create calculated column
-          </Button>
-        </div>
-      ) : null}
-    </div>
+    />
   );
 });
