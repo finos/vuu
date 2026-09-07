@@ -153,6 +153,8 @@ export interface DataValueDescriptor {
   label?: string;
   /** unique name for this data value */
   name: string;
+    /** Whether the field is required or can be empty/nullable */
+  required?: boolean;
   /** The type defined on server for this data value */
   serverDataType?: VuuColumnDataType;
   /** Type hints for the UI that supplement the serverDataType */
