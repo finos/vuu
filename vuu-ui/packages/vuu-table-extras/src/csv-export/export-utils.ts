@@ -354,7 +354,10 @@ export const exportSessionTableToCsv = async <TName extends string = string>(
           // request rows in chunks for predictable behaviour across local and remote DataSources
           nextRequestedFrom = Math.min(CHUNK_SIZE, totalSize);
           activeSessionDataSource.range = Range(0, nextRequestedFrom);
-        } else if (message.mode === "batch" && message.rows) {
+        } else if (
+          (message.mode === "batch" || message.mode === "update") &&
+          message.rows
+        ) {
           // Note: rows may be received from server in multiple batches and with no guaranteed ordering
           for (const row of message.rows) {
             const rowIndex = row[metadataKeys.IDX] as number;
