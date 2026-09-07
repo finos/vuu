@@ -94,7 +94,12 @@ export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
   }, []);
 
   useEffect(() => {
-    editSession.configureNewRow(visibleInsertColumns.map(({ name }) => name));
+    editSession.configureNewRow(
+      visibleInsertColumns.map(({ name }) => name),
+      visibleInsertColumns
+        .filter((column) => column.required !== false)
+        .map(({ name }) => name),
+    );
   }, [editSession, visibleInsertColumns]);
 
   useEffect(() => {

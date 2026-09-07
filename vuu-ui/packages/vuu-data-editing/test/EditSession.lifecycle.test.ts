@@ -149,6 +149,28 @@ describe("EditSession lifecycle", () => {
     });
   });
 
+  it("allows some columns to be optional for a new row", async () => {
+    const addRow = vi.fn<AddRow>().mockResolvedValue(SUCCESS);
+    editSession = new EditSession({ dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) });
+    editSession.configureNewRow(["id", "name", "description"], ["id", "name"]);
+    editSession.setNewRowValue("id", 7);
+    expect(editSession.isNewRowComplete()).toBe(false);
+
+    await expect(editSession.addNewRow()).resolves.toEqual(SUCCESS);
+    expect(editSession.newRowState.errors).toEqual({ name: "Value required" });
+    expect(addRow).not.toHaveBeenCalled();
+
+    editSession.setNewRowValue("name", "Alice");
+    expect(editSession.isNewRowComplete()).toBe(true);
+    await expect(editSession.addNewRow()).resolves.toEqual(SUCCESS);
+    expect(addRow).toHaveBeenCalledWith({ id: 7, name: "Alice" });
+    expect(editSession.newRowState).toMatchObject({
+      draftRevision: 1,
+      errors: {},
+      values: {},
+    });
+  });
+
   it("prevents duplicate new-row submissions", async () => {
     const pendingAdd = deferred<RpcResultSuccess>();
     const addRow = vi.fn<AddRow>().mockReturnValue(pendingAdd.promise);

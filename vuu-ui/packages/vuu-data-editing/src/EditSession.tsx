@@ -40,6 +40,7 @@ const toEditSessionMode = (copyOption: CopyOption): EditSessionMode => {
 };
 export type NewRowState = {
   columns: readonly string[];
+  requiredColumns?: readonly string[];
   draftRevision: number;
   errors: Readonly<Record<string, string>>;
   submitting: boolean;
@@ -104,6 +105,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   #sessionDataSource?: DataSource;
   #newRowState: NewRowState = {
     columns: [],
+    requiredColumns: [],
     draftRevision: 0,
     errors: {},
     submitting: false,
@@ -234,7 +236,8 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   isNewRowComplete() {
-    return this.#newRowState.columns.every((column) => {
+    const requiredColumns = this.#newRowState.requiredColumns ?? this.#newRowState.columns;
+    return requiredColumns.every((column) => {
       const value = this.#newRowState.values[column];
       return (
         value !== undefined &&
@@ -243,12 +246,19 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     });
   }
 
-  configureNewRow(columns: readonly string[]) {
+  configureNewRow(columns: readonly string[], requiredColumns?: readonly string[]) {
     if (
       columns.length === this.#newRowState.columns.length &&
       columns.every(
         (column, index) => column === this.#newRowState.columns[index],
-      )
+      ) &&
+      (!requiredColumns || (
+        this.#newRowState.requiredColumns !== undefined &&
+        requiredColumns.length === this.#newRowState.requiredColumns.length &&
+        requiredColumns.every(
+          (column, index) => column === this.#newRowState.requiredColumns?.[index],
+        )
+      ))
     ) {
       return;
     }
@@ -262,6 +272,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     this.#setNewRowState({
       ...this.#newRowState,
       columns: [...columns],
+      requiredColumns: requiredColumns ? [...requiredColumns] : undefined,
       errors,
     });
   }
@@ -277,8 +288,9 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   async addNewRow(): Promise<RpcResult> {
+    const requiredColumns = this.#newRowState.requiredColumns ?? this.#newRowState.columns;
     const missingErrors = Object.fromEntries(
-      this.#newRowState.columns
+      requiredColumns
         .filter((column) => {
           const value = this.#newRowState.values[column];
           return (
@@ -316,6 +328,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
       this.#setNewRowState({
         columns: this.#newRowState.columns,
+        requiredColumns: this.#newRowState.requiredColumns,
         draftRevision: this.#newRowState.draftRevision + 1,
         errors: {},
         submitting: false,
