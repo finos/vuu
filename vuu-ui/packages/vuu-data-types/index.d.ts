@@ -153,7 +153,7 @@ export interface DataValueDescriptor {
   label?: string;
   /** unique name for this data value */
   name: string;
-  /** Whether the field is required or can be empty/nullable */
+    /** Whether the field is required or can be empty/nullable */
   required?: boolean;
   /** The type defined on server for this data value */
   serverDataType?: VuuColumnDataType;
@@ -705,6 +705,7 @@ export interface DataSourceBase<
   freezeTimestamp?: number | undefined;
   select?: (selectRequest: Omit<SelectRequest, "vpId">) => void;
 
+  isRemote?: boolean;
   status: DataSourceStatus;
   /**
    *
