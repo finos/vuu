@@ -50,6 +50,7 @@ const StatefulParent = ({
   maxSelections,
 }: StatefulParentProps) => {
   const [selectedItems, setSelectedItems] = useState(initialSelectedItems);
+<<<<<<< HEAD
 =======
   itemTypeSingular,
 }: StatefulParentProps) => {
@@ -69,25 +70,24 @@ const StatefulParent = ({
 }: StatefulParentProps) => {
   const [selectedItems, setSelectedItems] = useState(initialSelectedItems);
 >>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
+=======
+  const [selectedItemsFiltered, setSelectedItemsFiltered] = useState([
+    ...initialSelectedItems,
+  ]);
+>>>>>>> 715d6233d (Update of ColumnPicker and ItemPicker showcase examples)
 
   const handleSelectedItemsChange = useCallback(
-    (newSelectedItems: ItemDescriptor[]) => {
+    (newSelectedItems: readonly ItemDescriptor[]) => {
       console.log(
         "handleSelectedItemsChange() called with new item selections: ",
       );
-
-      for (let i = 0; i < newSelectedItems.length; i++) {
-        const item = newSelectedItems[i];
-        console.log(
-          `${item.label ? item.label : item.name}${i < newSelectedItems.length - 1 ? ", " : ""}`,
-        );
-      }
-
-      setSelectedItems(newSelectedItems);
+      logItemsToConsole(newSelectedItems);
+      setSelectedItems([...newSelectedItems]);
     },
     [],
   );
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -107,6 +107,31 @@ const StatefulParent = ({
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
 =======
 >>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
+=======
+  const handleSelectedItemsFilteredChange = useCallback(
+    (newSelectedItemsFiltered: readonly ItemDescriptor[]) => {
+      console.log(
+        "handleSelectedItemsFilteredChange() called with new filtered item selections: ",
+      );
+      logItemsToConsole(newSelectedItemsFiltered);
+      setSelectedItemsFiltered([...newSelectedItemsFiltered]);
+    },
+    [],
+  );
+
+  function logItemsToConsole(
+    selectedItemsToLog: readonly ItemDescriptor[],
+  ): void {
+    for (let i = 0; i < selectedItemsToLog.length; i++) {
+      const item = selectedItemsToLog[i];
+      console.log(
+        `${item.label ? item.label : item.name}${i < selectedItemsToLog.length - 1 ? ", " : " "}`,
+      );
+    }
+    console.log(`(${selectedItemsToLog.length} items)`);
+  }
+
+>>>>>>> 715d6233d (Update of ColumnPicker and ItemPicker showcase examples)
   return (
     <ItemPicker
       allItems={allItems}
@@ -115,6 +140,7 @@ const StatefulParent = ({
 <<<<<<< HEAD
       itemTypeName={itemTypeName}
       onSelectedItemsChange={handleSelectedItemsChange}
+      onSelectedItemsFilteredChange={handleSelectedItemsFilteredChange}
       createCustomItemProps={createCustomItemProps}
       maxSelections={maxSelections}
 =======
