@@ -97,7 +97,8 @@ const classBase = "vuuItemPicker";
 export const classBaseListItem = "vuuItemPickerListItem";
 
 export interface ItemPickerProps
-  extends ItemPickerHookProps,
+  extends
+    ItemPickerHookProps,
     HTMLAttributes<HTMLDivElement>,
     Pick<ListBoxProps<ItemDescriptor>, "selected" | "onSelectionChange"> {
 <<<<<<< HEAD
@@ -272,6 +273,7 @@ export const ItemPicker = forwardRef(function ItemPicker(
     selectedItems,
     maxSelections,
     onSelectedItemsChange,
+<<<<<<< HEAD
 =======
     itemTypeSingular,
 =======
@@ -286,6 +288,9 @@ export const ItemPicker = forwardRef(function ItemPicker(
 >>>>>>> 0d00a9699 (First version of ItemPicker as a controlled component)
 =======
 >>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
+=======
+    onSelectedItemsFilteredChange,
+>>>>>>> 8a994c732 (Refactor of ColumnPicker to use ItemPicker)
     onSelectionChange,
     selected = NO_SELECTION,
     createCustomItemProps,
@@ -332,6 +337,7 @@ export const ItemPicker = forwardRef(function ItemPicker(
 <<<<<<< HEAD
 <<<<<<< HEAD
     onSelectedItemsChange,
+    onSelectedItemsFilteredChange,
     maxSelections,
 =======
     searchPattern,

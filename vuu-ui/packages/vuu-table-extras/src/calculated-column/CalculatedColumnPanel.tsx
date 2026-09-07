@@ -5,22 +5,21 @@ import {
   Input,
   Option,
 } from "@salt-ds/core";
-import { useCalculatedColumnPanel } from "./useCalculatedColumnPanel";
-import { HTMLAttributes, useCallback, useRef } from "react";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { VuuColumnDataType, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { getCalculatedColumnDetails } from "@vuu-ui/vuu-utils";
+import { HTMLAttributes, useCallback, useRef } from "react";
 import {
   ColumnExpressionInput,
   ColumnExpressionSubmitHandler,
   useColumnExpressionSuggestionProvider,
 } from "../column-expression-input";
 import { ColumnModel } from "../column-picker/ColumnModel";
+import { useCalculatedColumnPanel } from "./useCalculatedColumnPanel";
 
 const classBase = "vuuCalculatedColumnPanel";
 
-export interface CalculatedColumnPanelProps
-  extends HTMLAttributes<HTMLDivElement> {
+export interface CalculatedColumnPanelProps extends HTMLAttributes<HTMLDivElement> {
   column: ColumnDescriptor;
   columnModel: ColumnModel;
   onChangeColumn: (column: ColumnDescriptor) => void;
@@ -50,7 +49,7 @@ export const CalculatedColumnPanel = ({
   );
 
   const suggestionProvider = useColumnExpressionSuggestionProvider({
-    columns: columnModel.selectedColumns,
+    columns: columnModel.selectedColumnsFiltered,
     table: vuuTable,
   });
 

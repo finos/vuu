@@ -49,6 +49,7 @@ export interface ItemPickerHookProps {
 <<<<<<< HEAD
 <<<<<<< HEAD
   maxSelections?: number;
+<<<<<<< HEAD
   onSelectedItemsChange: (newSelectedItems: ItemDescriptor[]) => void;
 =======
   searchPattern: string;
@@ -59,6 +60,12 @@ export interface ItemPickerHookProps {
   maxSelections?: number;
   onSelectedItemsChange: (newSelectedItems: ItemDescriptor[]) => void;
 >>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
+=======
+  onSelectedItemsChange: (newSelectedItems: readonly ItemDescriptor[]) => void;
+  onSelectedItemsFilteredChange: (
+    newSelectedItemsFiltered: readonly ItemDescriptor[],
+  ) => void;
+>>>>>>> 8a994c732 (Refactor of ColumnPicker to use ItemPicker)
 }
 
 const filterItems = (
@@ -123,6 +130,7 @@ export const useItemPicker = ({
 <<<<<<< HEAD
   maxSelections,
   onSelectedItemsChange,
+  onSelectedItemsFilteredChange,
 }: ItemPickerHookProps) => {
   if (maxSelections && selectedItems.length > maxSelections) {
     throw Error(
@@ -132,6 +140,7 @@ export const useItemPicker = ({
 
   const [searchPattern, setSearchPattern] = useState("");
 
+<<<<<<< HEAD
   const handleChangeSearchInput = useCallback<FormEventHandler>((evt) => {
     const { value } = evt.target as HTMLInputElement;
     setSearchPattern(value);
@@ -159,6 +168,29 @@ export const useItemPicker = ({
     setSearchPattern(value);
 >>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
   }, []);
+=======
+  const handleChangeSearchInput = useCallback<FormEventHandler>(
+    (evt) => {
+      const previousFilteredSelections = getSelectedItemsFiltered(
+        selectedItems,
+        searchPattern,
+      );
+
+      const { value } = evt.target as HTMLInputElement;
+      setSearchPattern(value);
+
+      // Determine whether the filtered selections have changed
+      const newFilteredSelections = getSelectedItemsFiltered(
+        selectedItems,
+        value,
+      );
+      if (previousFilteredSelections.length !== newFilteredSelections.length) {
+        onSelectedItemsFilteredChange(newFilteredSelections);
+      }
+    },
+    [onSelectedItemsFilteredChange, selectedItems, searchPattern],
+  );
+>>>>>>> 8a994c732 (Refactor of ColumnPicker to use ItemPicker)
 
   const handleAddItemToSelectedList = useCallback<
     MouseEventHandler<HTMLButtonElement>
@@ -177,13 +209,21 @@ export const useItemPicker = ({
         const newSelectedItems = selectedItems.concat(itemToAdd);
 >>>>>>> 184c859dd (Updates to address review comments on ItemPicker, additional fix for search logic to search label, else name)
         onSelectedItemsChange(newSelectedItems);
+        onSelectedItemsFilteredChange(
+          getSelectedItemsFiltered(newSelectedItems, searchPattern),
+        );
       } else {
         throw Error(
           `[useItemPicker] handleAddItemToSelectedList, item '${name}' not found`,
         );
       }
     },
-    [allItems, selectedItems, onSelectedItemsChange],
+    [
+      allItems,
+      selectedItems,
+      onSelectedItemsChange,
+      onSelectedItemsFilteredChange,
+    ],
   );
 
   const handleRemoveItemFromSelectedList = useCallback<
@@ -197,13 +237,16 @@ export const useItemPicker = ({
           (item) => item.name !== name,
         );
         onSelectedItemsChange(newSelectedItems);
+        onSelectedItemsFilteredChange(
+          getSelectedItemsFiltered(newSelectedItems, searchPattern),
+        );
       } else {
         throw Error(
           `[useItemPicker] handleRemoveItemFromSelectedList, item '${name}' not found`,
         );
       }
     },
-    [selectedItems, onSelectedItemsChange],
+    [selectedItems, onSelectedItemsChange, onSelectedItemsFilteredChange],
   );
 
   const handleReorderSelectedItems = useCallback(
@@ -227,9 +270,18 @@ export const useItemPicker = ({
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   const getSelectedItemsFiltered = useMemo(() => {
     return filterItems(selectedItems, searchPattern);
   }, [selectedItems, searchPattern]);
+=======
+  const getSelectedItemsFiltered = (
+    latestSelectedItems: readonly ItemDescriptor[],
+    latestSearchPattern: string,
+  ) => {
+    return filterItems(latestSelectedItems, latestSearchPattern);
+  };
+>>>>>>> 8a994c732 (Refactor of ColumnPicker to use ItemPicker)
 
   const getAvailableItemsFiltered = useMemo(() => {
 =======
@@ -269,7 +321,10 @@ export const useItemPicker = ({
   return {
     selectedItemsCount: selectedItems.length,
     availableItemsCount: getAvailableItemsCount,
-    selectedItemsFiltered: getSelectedItemsFiltered,
+    selectedItemsFiltered: getSelectedItemsFiltered(
+      selectedItems,
+      searchPattern,
+    ),
     availableItemsFiltered: getAvailableItemsFiltered,
 =======
   return {

@@ -15,8 +15,8 @@ export function partition<T>(
 // Note order of items can be different between arrays
 // If an identityProperty is not defined, item identity is used
 export function itemsChanged<T = unknown>(
-  currentItems: T[],
-  newItems: T[],
+  currentItems: readonly T[],
+  newItems: readonly T[],
   identityProperty?: string,
 ) {
   if (currentItems.length !== newItems.length) {
@@ -37,8 +37,8 @@ export function itemsChanged<T = unknown>(
 }
 
 export function itemsOrOrderChanged<T = unknown>(
-  currentItems: T[],
-  newItems: T[],
+  currentItems: readonly T[],
+  newItems: readonly T[],
   identityProperty?: string,
 ) {
   if (currentItems.length !== newItems.length) {
@@ -98,20 +98,46 @@ export const moveItem = <T = unknown>(
   }
 };
 
-export const getAddedItems = <T>(values: undefined | T[], newValues: T[]) => {
-  const isNew = (v: T) => !values?.includes(v);
-  if (values === undefined) {
-    return newValues;
-  } else if (newValues.some(isNew)) {
-    return newValues.filter(isNew);
+export const getAddedItems = <T>(
+  currentItems: undefined | readonly T[],
+  newItems: readonly T[],
+) => {
+  const isNew = (i: T) => !currentItems?.includes(i);
+  if (currentItems === undefined) {
+    return newItems;
+  } else if (newItems.some(isNew)) {
+    return newItems.filter(isNew);
   } else {
     return [] as T[];
   }
 };
 
+export const getRemovedItems = <T>(
+  currentItems: readonly T[],
+  newItems: undefined | readonly T[],
+) => {
+  const isRemoved = (i: T) => !newItems?.includes(i);
+  if (newItems === undefined) {
+    return currentItems;
+  } else if (currentItems.some(isRemoved)) {
+    return currentItems.filter(isRemoved);
+  } else {
+    return [] as T[];
+  }
+};
+
+export const containsSubsetOfItems = <T>(
+  allItems: readonly T[],
+  comparedItems: readonly T[],
+) => {
+  if (comparedItems.length > allItems.length) return false;
+  const invalidItems = getAddedItems(allItems, comparedItems);
+  return invalidItems.length === 0;
+};
+
 export const getMissingItems = <T, I>(
-  sourceItems: T[],
-  items: I[],
+  sourceItems: readonly T[],
+  items: readonly I[],
   identity: (s: T) => I,
 ) =>
   items.filter((i) => sourceItems.findIndex((s) => identity(s) === i) === -1);
