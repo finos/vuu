@@ -28,15 +28,10 @@ jobs:
       - name: Switch git branch
         run: git switch -c release-${{ env.RELEASE_VERSION }}
 
-      - name: Install Node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
-        with:
-          node-version: "20.x"
-
       - name: Set up JDK
         uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520
         with:
-          java-version: 17
+          java-version: 21
           java-package: jdk
           distribution: temurin
           cache: 'maven'

@@ -7,6 +7,7 @@ import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.plugin.clickhouse.ClickHouseContainer
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.clickhouse.client.options.ClickHouseClientOptions
+import org.finos.vuu.plugin.clickhouse.provider.filter.{ClauseWithParams, NoFilter}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -27,7 +28,7 @@ class ClickHouseTableSizeProviderTest extends AnyFeatureSpec with GivenWhenThen 
       val client = createClientAndTable()
       val clickHouseTableSizeProvider = ClickHouseTableSizeProvider(client, "test_table")
 
-      val size = clickHouseTableSizeProvider.getTableSize("", util.Map.of())
+      val size = clickHouseTableSizeProvider.getTableSize(NoFilter)
       size shouldEqual 2
 
       stopClient()
@@ -42,8 +43,10 @@ class ClickHouseTableSizeProviderTest extends AnyFeatureSpec with GivenWhenThen 
       val clickHouseTableSizeProvider = ClickHouseTableSizeProvider(client, "test_table")
 
       val size = clickHouseTableSizeProvider.getTableSize(
-        whereClause = "WHERE val = {p_1:String}",
-        params = util.Map.of("p_1", "world"),
+        ClauseWithParams(
+          clause = "val = {p_1:String}",
+          params = Map("p_1" -> "world")
+        )
       )
       size shouldEqual 1
 
@@ -59,7 +62,7 @@ class ClickHouseTableSizeProviderTest extends AnyFeatureSpec with GivenWhenThen 
       val clickHouseTableSizeProvider = ClickHouseTableSizeProvider(client, "lolcats")
 
       a[RuntimeException] should be thrownBy {
-        clickHouseTableSizeProvider.getTableSize("", util.Map.of())
+        clickHouseTableSizeProvider.getTableSize(NoFilter)
       }
 
       stopClient()

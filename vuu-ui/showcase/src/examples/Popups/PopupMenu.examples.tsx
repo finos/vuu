@@ -4,7 +4,7 @@ import {
   MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
 import { PopupMenu, PopupMenuProps } from "@vuu-ui/vuu-popups";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 const menuBuilder: MenuBuilder = () => [
   { id: "action-1", label: "Menu Item 1" },
@@ -45,6 +45,23 @@ export const DefaultPopupMenu = ({
         />
       </div>
     </ContextMenuProvider>
+  );
+};
+
+export const PopupMenuWithActionRecorder = () => {
+  const [action, setAction] = useState("");
+  const menuActionHandler = useCallback<MenuActionHandler>((menuId) => {
+    setAction(menuId);
+    return true;
+  }, []);
+
+  return (
+    <>
+      <DefaultPopupMenu menuActionHandler={menuActionHandler} />
+      <form hidden>
+        <input data-testid="menu-action" readOnly value={action} />
+      </form>
+    </>
   );
 };
 

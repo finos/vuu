@@ -1,5 +1,4 @@
-import { Tree } from "@vuu-ui/vuu-codemirror";
-import { RelationalExpression } from "./generated/column-parser.terms";
+import type { Tree } from "@vuu-ui/vuu-codemirror";
 type expressionType =
   | "arithmeticExpression"
   | "booleanCondition"

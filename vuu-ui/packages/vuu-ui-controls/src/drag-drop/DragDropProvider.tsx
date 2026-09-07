@@ -1,14 +1,14 @@
-import React, {
+import {
   createContext,
-  ReactNode,
+  type ReactNode,
   useCallback,
   useContext,
   useMemo,
 } from "react";
-import { DragDropState } from "./DragDropState";
+import type { DragDropState } from "./DragDropState";
 import {
-  GlobalDropHandler,
-  ResumeDragHandler,
+  type GlobalDropHandler,
+  type ResumeDragHandler,
   useGlobalDragDrop,
 } from "./useGlobalDragDrop";
 
@@ -19,7 +19,7 @@ const NO_DRAG_CONTEXT = {
 };
 
 const unconfiguredRegistrationCall = () =>
-  console.log(`have you forgotten to provide a DragDrop Provider ?`);
+  console.log('have you forgotten to provide a DragDrop Provider ?');
 
 export type DragOutHandler = (
   id: string,

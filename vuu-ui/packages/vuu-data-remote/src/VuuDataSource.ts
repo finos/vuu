@@ -1,6 +1,8 @@
 import type {
+  CopyOption,
   DataSource,
   DataSourceBase,
+  SessionType,
   DataSourceCallbackMessage,
   DataSourceConstructorProps,
   DataSourceStatus,
@@ -9,13 +11,14 @@ import type {
   DataSourceVisualLinkCreatedMessage,
   DeleteRowMode,
   EditSessionMode,
-  CopyOption,
   OptimizeStrategy,
   ServerAPI,
+  SessionDataSourceOverrides,
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
 } from "@vuu-ui/vuu-data-types";
+import type { MenuRpcResponse } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
   RpcResultError,
@@ -31,14 +34,13 @@ import type {
   VuuRpcServiceRequest,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-import { MenuRpcResponse } from "@vuu-ui/vuu-data-types";
 import {
+  assertExpectedSessionTable,
   BaseDataSource,
   combineFilters,
   constrainRange,
   debounce,
   isConfigChanged,
-  isInlineEditingSession,
   isRpcSuccess,
   isSelectSuccessWithRowCount,
   isViewportMenusAction,
@@ -46,6 +48,7 @@ import {
   itemsOrOrderChanged,
   logger,
   Range,
+  sessionDataSourceConfig,
   StaleUpdateError,
   throttle,
   uuid,
@@ -101,14 +104,17 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   #menu: VuuMenu | undefined;
   #optimize: OptimizeStrategy = "throttle";
   #selectedRowsCount = 0;
+  #session: SessionDataSourceOverrides | undefined;
   #sessionDataSource: DataSource | undefined = undefined;
   #sessionTableMessageColumn: string | undefined = undefined;
   #status: DataSourceStatus = "initialising";
   #tableSchema: TableSchema | undefined;
 
+  public readonly isRemote = true;
   public table: VuuTable;
 
   constructor({
+    session,
     sessionTableMessageColumn,
     ...props
   }: DataSourceConstructorProps) {
@@ -123,6 +129,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     this.table = table;
 
     this.#pendingVisualLink = visualLink;
+    this.#session = session;
     this.#sessionTableMessageColumn = sessionTableMessageColumn;
     // this.rangeRequest = this.throttleRangeRequest;
     this.rangeRequest = this.rawRangeRequest;
@@ -687,16 +694,22 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
   async createSessionDataSource(
     copyOption: CopyOption,
+    sessionType: SessionType = "edit",
+    overrides?: SessionDataSourceOverrides,
   ): Promise<VuuDataSource | undefined> {
     const rpcResponse = await this?.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "createSessionTable",
-      params: { copyOption },
+      params: { copyOption, sessionType },
     });
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
+      // A call-time override always wins; otherwise fall back to the session
+      // config this datasource was constructed with.
+      const effectiveOverrides = overrides ?? this.#session;
+      assertExpectedSessionTable(sessionTable, effectiveOverrides?.table);
       return new VuuDataSource({
-        ...this.config,
+        ...sessionDataSourceConfig(this.config, effectiveOverrides?.columns),
         table: sessionTable,
         viewport: sessionTable.table,
       });
@@ -719,30 +732,22 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
 
-      if (isInlineEditingSession(editSessionMode)) {
-        const columns = this.#sessionTableMessageColumn
-          ? this.columns.concat(this.#sessionTableMessageColumn)
-          : this.columns;
-        this.#sessionDataSource = new VuuDataSource({
-          ...this.config,
-          columns,
-          table: sessionTable,
-          viewport: sessionTable.table,
-        });
+      const columns = this.#sessionTableMessageColumn
+        ? this.columns.concat(this.#sessionTableMessageColumn)
+        : this.columns;
+      this.#sessionDataSource = new VuuDataSource({
+        ...this.config,
+        columns,
+        table: sessionTable,
+        viewport: sessionTable.table,
+      });
 
-        this.#sessionDataSource.subscribe(
-          {
-            range: this.range,
-          },
-          this.handleSessionMessageFromServer,
-        );
-      } else {
-        return new VuuDataSource({
-          ...this.config,
-          table: sessionTable,
-          viewport: sessionTable.table,
-        });
-      }
+      this.#sessionDataSource.subscribe(
+        {
+          range: this.range,
+        },
+        this.handleSessionMessageFromServer,
+      );
 
       // we need to route messages from the session datasource to listening
       // client whilst still monitoring responses on the source table to which

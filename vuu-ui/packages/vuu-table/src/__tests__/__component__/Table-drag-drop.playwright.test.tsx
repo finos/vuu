@@ -1,17 +1,6 @@
-// TODO try and get TS path alias working to avoid relative paths like this
-import { test, expect } from "@playwright/experimental-ct-react";
-import { Instruments } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { TableProps } from "../../Table";
+import { expect, test } from "../../../../../playwright/fixtures";
 
 test.describe("Table drag drop", () => {
-  const RENDER_BUFFER = 5;
-  const tableConfig: Partial<TableProps> = {
-    renderBufferSize: RENDER_BUFFER,
-    height: 625,
-    rowHeight: 20,
-    width: 800,
-  };
   test.describe("Drag drop column headers", () => {
     test.describe("WHEN exchange columns is dragged and dropped on currency", () => {
       test("THEN columns are reordered and grid rerendered", async ({
@@ -22,11 +11,7 @@ test.describe("Table drag drop", () => {
         //TODO investigate why test fails on Safari
         test.skip(browserName === "webkit");
 
-        await mount(
-          <LocalDataSourceProvider>
-            <Instruments {...tableConfig} />
-          </LocalDataSourceProvider>,
-        );
+        await mount("Table/Modules/SIMUL/Instruments");
 
         const currencyColumn = page.getByRole("columnheader", {
           name: "currency column header",
@@ -42,8 +27,11 @@ test.describe("Table drag drop", () => {
         expect(descriptionColumn).toHaveAttribute("aria-colindex", "3");
         expect(exchangeColumn).toHaveAttribute("aria-colindex", "4");
 
-        const sourceBox = (await exchangeColumn.boundingBox())!;
-        const targetBox = (await currencyColumn.boundingBox())!;
+        const sourceBox = await exchangeColumn.boundingBox();
+        const targetBox = await currencyColumn.boundingBox();
+        if (!sourceBox || !targetBox) {
+          throw new Error("Unable to resolve drag-and-drop column bounds");
+        }
 
         await page.mouse.move(
           sourceBox.x + sourceBox.width / 2,

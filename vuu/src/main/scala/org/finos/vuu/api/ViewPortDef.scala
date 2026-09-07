@@ -1,14 +1,19 @@
 package org.finos.vuu.api
 
-import org.finos.vuu.core.table.{Column, TableContainer}
+import org.finos.vuu.core.table.{Column, DataTable, TableContainer}
 import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcHandler}
+import org.finos.vuu.provider.{Provider, ProviderContainer}
 
 object ViewPortDef {
   def apply(columns: Array[Column], service: RpcHandler): ViewPortDef = {
     new ViewPortDef(columns, service)
   }
 
-  def default(columns: Array[Column], tableContainer: TableContainer): ViewPortDef = ViewPortDef(columns, new DefaultRpcHandler()(tableContainer))
+  def createDefault(columns: Array[Column]): ViewPortDef = ViewPortDef(columns, DefaultRpcHandler.apply())
+
+  def defaultViewPortDefFunc: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {
+    (t, _, _, _) => ViewPortDef.createDefault(t.getTableDef.getColumns)
+  }
 }
 
 class ViewPortDef(val columns: Array[Column], val service: RpcHandler) {}

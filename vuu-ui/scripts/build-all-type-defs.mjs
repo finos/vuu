@@ -15,6 +15,7 @@ const packages = [
   "vuu-context-menu",
   "vuu-codemirror",
   "vuu-chart",
+  "vuu-data-editing",
   "vuu-data-local",
   "vuu-data-react",
   "vuu-data-remote",

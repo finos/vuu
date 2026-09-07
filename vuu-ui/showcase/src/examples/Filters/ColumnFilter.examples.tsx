@@ -23,6 +23,22 @@ import { ReactNode, useCallback, useMemo, useState } from "react";
 const instrumentsSchema = getSchema("instruments");
 const ordersSchema = getSchema("parentOrders");
 
+const useCallbackRecorder = () => {
+  const [records, setRecords] = useState<unknown[]>([]);
+  const record = useCallback((...args: unknown[]) => {
+    setRecords((current) => [...current, args]);
+  }, []);
+  const recorder = (
+    <input
+      hidden
+      data-testid="callback-records"
+      readOnly
+      value={JSON.stringify(records)}
+    />
+  );
+  return { record, recorder };
+};
+
 type ColumnFilterPassthroughProps = Partial<
   Pick<
     ColumnFilterProps,
@@ -67,26 +83,29 @@ export const ControlledTextColumnFilter = ({
 }: ColumnFilterPassthroughProps) => {
   const { VuuDataSource } = useData();
   const [value, setValue] = useState<ColumnFilterValue>("");
+  const { record, recorder } = useCallbackRecorder();
   const dataSource = useMemo(() => {
     return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
     (column, op, value) => {
+      record(column, op, value);
       console.log(`commit ${value} ${column.name} ${op}`);
       setValue(value);
       onCommit?.(column, op, value);
     },
-    [onCommit],
+    [onCommit, record],
   );
 
   const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
     (value, column, op) => {
+      record(value, column, op);
       console.log(`${value} ${column.name} ${op}`);
       setValue(value);
       onColumnFilterChange?.(value, column, op);
     },
-    [onColumnFilterChange],
+    [onColumnFilterChange, record],
   );
 
   return (
@@ -104,6 +123,7 @@ export const ControlledTextColumnFilter = ({
           />
         </FormField>
       </ContainerTemplate>
+      {recorder}
     </DataSourceProvider>
   );
 };
@@ -129,6 +149,7 @@ export const ControlledTextColumnFilterPopulated = () => {
   const dataSource = useMemo(() => {
     return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
+  const { record, recorder } = useCallbackRecorder();
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
     (_column, _operator, value) => {
@@ -165,24 +186,27 @@ export const UnControlledTextColumnFilter = ({
   const dataSource = useMemo(() => {
     return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
+  const { record, recorder } = useCallbackRecorder();
 
   const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
     (value, column, op) => {
+      record(value, column, op);
       console.log(
         `[ColumnFilter.examples] handleColumnFilterChange ${column.name} ${value}`,
       );
       onColumnFilterChange?.(value, column, op);
     },
-    [onColumnFilterChange],
+    [onColumnFilterChange, record],
   );
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
     (column, op, value) => {
+      record(column, op, value);
       console.log(
         `[ColumnFilter.examples] handleCommit ${column.name} ${value}`,
       );
       onCommit?.(column, op, value);
     },
-    [onCommit],
+    [onCommit, record],
   );
 
   return (
@@ -199,6 +223,7 @@ export const UnControlledTextColumnFilter = ({
           />
         </FormField>
       </ContainerTemplate>
+      {recorder}
     </DataSourceProvider>
   );
 };
@@ -212,22 +237,25 @@ export const UnControlledNumericColumnFilter = ({
   const dataSource = useMemo(() => {
     return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
+  const { record, recorder } = useCallbackRecorder();
 
   const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
     (value, column, op) => {
+      record(value, column, op);
       console.log(
         `[ColumnFilter.examples] handleColumnFilterChange ${column.name} ${value}`,
       );
       onColumnFilterChange?.(value, column, op);
     },
-    [onColumnFilterChange],
+    [onColumnFilterChange, record],
   );
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
     (column, op, value) => {
+      record(column, op, value);
       console.log(`[ColumnFilter.examples] commit ${column.name} ${value}`);
       onCommit?.(column, op, value);
     },
-    [onCommit],
+    [onCommit, record],
   );
 
   return (
@@ -243,6 +271,7 @@ export const UnControlledNumericColumnFilter = ({
           />
         </FormField>
       </ContainerTemplate>
+      {recorder}
     </DataSourceProvider>
   );
 };
@@ -358,35 +387,39 @@ export const ControlledTimeRangeFilter = ({
     return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
   const [value, setValue] = useState<[string, string]>(valueProp);
+  const { record, recorder } = useCallbackRecorder();
 
   const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
     (value, column, op) => {
+      record(value, column, op);
       console.log(
         `[ColumnFilter.examples] handleColumnFilterChange ${column.name} ${value}`,
       );
       setValue(([, v2]) => [`${value}`, v2]);
       onColumnFilterChange?.(value, column, op);
     },
-    [onColumnFilterChange],
+    [onColumnFilterChange, record],
   );
   const handleColumnRangeFilterChange = useCallback<ColumnFilterChangeHandler>(
     (value, column, op) => {
+      record(value, column, op);
       console.log(
         `[ColumnFilter.examples]  handleColumnFilterChange ${column.name} ${value}`,
       );
       setValue(([v1]) => [v1, `${value}`]);
       onColumnRangeFilterChange?.(value, column, op);
     },
-    [onColumnRangeFilterChange],
+    [onColumnRangeFilterChange, record],
   );
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
     (column, op, value) => {
+      record(column, op, value);
       if (Array.isArray(value)) {
         console.log(`commit ${column.name} ['${value[0]}':'${value[1]}']`);
         onCommit?.(column, op, value);
       }
     },
-    [onCommit],
+    [onCommit, record],
   );
 
   return (
@@ -408,6 +441,7 @@ export const ControlledTimeRangeFilter = ({
           />
         </FormField>
       </ContainerTemplate>
+      {recorder}
     </DataSourceProvider>
   );
 };
@@ -459,23 +493,26 @@ export const ContainerManagedTextColumnFilter = ({
   const dataSource = useMemo(() => {
     return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
+  const { record, recorder } = useCallbackRecorder();
 
   const handleFilterApplied = useCallback<
     FilterAppliedHandler<FilterContainerFilter>
   >(
     (filter) => {
+      record(filter);
       console.log(
         `[ColumnFilter.examples] filterApplied ${JSON.stringify(filter)}`,
       );
       onFilterApplied?.(filter);
     },
-    [onFilterApplied],
+    [onFilterApplied, record],
   );
 
   const handleFilterCleared = useCallback(() => {
+    record("filter cleared");
     console.log("[ColumnFilter.examples] filterCleared");
     onFilterCleared?.();
-  }, [onFilterCleared]);
+  }, [onFilterCleared, record]);
 
   return (
     <DataSourceProvider dataSource={dataSource}>
@@ -494,6 +531,7 @@ export const ContainerManagedTextColumnFilter = ({
           </FormField>
         </FilterContainer>
       </ContainerTemplate>
+    {recorder}
     </DataSourceProvider>
   );
 };
@@ -566,24 +604,27 @@ export const ContainerManagedNumericColumnFilter = ({
   const [filter, setFilter] = useState<FilterContainerFilter | undefined>(
     filterProp,
   );
+  const { record, recorder } = useCallbackRecorder();
   const handleFilterApplied = useCallback<
     FilterAppliedHandler<FilterContainerFilter>
   >(
     (filter) => {
+      record(filter);
       console.log(
         `[ColumnFilter.examples] filterApplied ${JSON.stringify(filter)}`,
       );
       setFilter(filter);
       onFilterApplied?.(filter);
     },
-    [onFilterApplied],
+    [onFilterApplied, record],
   );
 
   const handleFilterCleared = useCallback(() => {
+    record("filter cleared");
     console.log("[ColumnFilter.examples] filterCleared");
     setFilter(undefined);
     onFilterCleared?.();
-  }, [onFilterCleared]);
+  }, [onFilterCleared, record]);
 
   const dataSource = useMemo(() => {
     return new VuuDataSource({ table: instrumentsSchema.table });
@@ -607,6 +648,7 @@ export const ContainerManagedNumericColumnFilter = ({
         </FilterContainer>
         <FilterDisplay filter={filter} />
       </ContainerTemplate>
+      {recorder}
     </DataSourceProvider>
   );
 };

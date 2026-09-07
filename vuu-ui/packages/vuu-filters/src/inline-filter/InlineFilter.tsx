@@ -1,34 +1,33 @@
-import { type InputProps } from "@salt-ds/core";
+import type { InputProps as SaltInputProps } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
-import { VuuFilter } from "@vuu-ui/vuu-protocol-types";
+import type { TableSchemaTable } from "@vuu-ui/vuu-data-types";
+import type { VuuFilter } from "@vuu-ui/vuu-protocol-types";
 import { VirtualColSpan } from "@vuu-ui/vuu-table";
-import { BaseRowProps } from "@vuu-ui/vuu-table-types";
+import type { BaseRowProps } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
-import { HTMLAttributes } from "react";
+import type { HTMLAttributes } from "react";
+import type { ColumnFilterProps } from "../column-filter/ColumnFilter";
 import {
   FilterContainerColumnFilter as ColumnFilter,
   FilterContainer,
 } from "../filter-container/FilterContainer";
-import { useInlineFilter } from "./useInlineFilter";
-
-import { ColumnFilterProps } from "../column-filter/ColumnFilter";
-import { FilterAppliedHandler } from "../filter-container/useFilterContainer";
+import type { FilterAppliedHandler } from "../filter-container/useFilterContainer";
 import inlineFilteCss from "./InlineFilter.css";
+import { useInlineFilter } from "./useInlineFilter";
 
 const classBase = "vuuInlineFilter";
 
 export type FilterValueChangeHandler = (filter: VuuFilter) => void;
 export interface InlineFilterProps
   extends Partial<BaseRowProps>,
-    Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
+  Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   onFilterApplied?: FilterAppliedHandler;
   onFilterCleared?: () => void;
   table: TableSchemaTable;
 }
 
-const InputProps: Partial<InputProps> = {
+const InputProps: Partial<SaltInputProps> = {
   inputProps: {
     placeholder: "Filter value",
   },

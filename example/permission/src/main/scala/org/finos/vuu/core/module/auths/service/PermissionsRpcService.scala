@@ -1,15 +1,15 @@
 package org.finos.vuu.core.module.auths.service
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.module.auths.PermissionModule.ColumnNames._
+import org.finos.vuu.core.module.auths.PermissionModule.ColumnNames.*
 import org.finos.vuu.core.module.auths.PermissionSet
 import org.finos.vuu.core.module.auths.PermissionSet.{AlgoCoveragePermission, HighTouchPermission, SalesTradingPermission}
-import org.finos.vuu.core.table.{DataTable, EmptyRowData, RowWithData, TableContainer}
+import org.finos.vuu.core.table.{DataTable, EmptyRowData, RowWithData}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.DefaultRpcHandler
-import org.finos.vuu.viewport._
+import org.finos.vuu.viewport.*
 
-class PermissionsRpcService(val table: DataTable)(implicit tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
+class PermissionsRpcService(val table: DataTable) extends DefaultRpcHandler with StrictLogging {
 
   private def addPermission(mask: Int, selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
     selection.selectionKeys.foreach(user => {

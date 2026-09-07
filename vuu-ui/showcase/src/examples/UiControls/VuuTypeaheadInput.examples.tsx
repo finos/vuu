@@ -12,7 +12,7 @@ import {
   toColumnName,
   useData,
 } from "@vuu-ui/vuu-utils";
-import { CSSProperties, ReactNode, useMemo } from "react";
+import { CSSProperties, ReactNode, useMemo, useState } from "react";
 
 const SurroundedByInputs = ({ children }: { children: ReactNode }) => (
   <div
@@ -46,6 +46,8 @@ const TypeaheadInputTemplate = ({
   style?: CSSProperties;
   withoutTypeahead?: boolean;
 }) => {
+  const [commitValue, setCommitValue] = useState("");
+  const [commitCount, setCommitCount] = useState(0);
   const table = { module: "SIMUL", table: tableName };
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
@@ -60,12 +62,13 @@ const TypeaheadInputTemplate = ({
   }, [VuuDataSource, dataSourceProp, tableName]);
 
   const handleCommit: CommitHandler = (evt, value) => {
+    setCommitValue(String(value));
+    setCommitCount((count) => count + 1);
     onCommit?.(evt, value);
     console.log(`commit ${value}`);
   };
 
-  if (withoutTypeahead) {
-    return (
+  const content = withoutTypeahead ? (
       <VuuTypeaheadInput
         allowFreeInput={allowFreeInput}
         column={column}
@@ -75,9 +78,7 @@ const TypeaheadInputTemplate = ({
         onCommit={handleCommit}
         table={table}
       />
-    );
-  } else {
-    return (
+    ) : (
       <DataSourceProvider dataSource={dataSource}>
         <div
           style={{
@@ -101,7 +102,14 @@ const TypeaheadInputTemplate = ({
         </div>
       </DataSourceProvider>
     );
-  }
+  return (
+    <>
+      {content}
+      <input hidden data-testid="commit-handler-called" readOnly value={String(!!commitValue)} />
+      <input hidden data-testid="commit-value" readOnly value={commitValue} />
+      <input hidden data-testid="commit-count" readOnly value={commitCount} />
+    </>
+  );
 };
 
 /** tags=data-consumer */

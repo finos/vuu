@@ -17,6 +17,7 @@ import cx from "clsx";
 
 import { memo, useCallback } from "react";
 import { CycleStateButton } from "@vuu-ui/vuu-ui-controls";
+import { isEditRowReadOnly } from "@vuu-ui/vuu-data-editing";
 
 import toggleCellCss from "./ToggleCell.css";
 
@@ -46,6 +47,7 @@ export const ToggleCell = memo(function ToggleCell({
 
   const values = getValueList(column);
   const value = dataRow[column.name] as string;
+  const readOnly = isEditRowReadOnly(dataRow);
 
   const handleCommit = useCallback<CommitHandler<HTMLButtonElement>>(
     async (evt, newValue) => {
@@ -65,6 +67,7 @@ export const ToggleCell = memo(function ToggleCell({
     <CycleStateButton
       appearance="solid"
       className={cx(classBase, `${classBase}-${column.name}`)}
+      disabled={readOnly}
       onCommit={handleCommit}
       sentiment="accented"
       value={value}

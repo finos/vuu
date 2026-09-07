@@ -1,12 +1,11 @@
 package org.finos.vuu.core.module.basket.service
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.BasketConstituentTable
 import org.finos.vuu.core.module.price.PriceModule
-import org.finos.vuu.core.table._
+import org.finos.vuu.core.table.*
 import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.order.oms.OmsApi
 
@@ -26,9 +25,9 @@ trait BasketServiceIF {
   def createBasket(params: RpcParams): RpcFunctionResult
 }
 
-class BasketService(val table: DataTable, val omsApi: OmsApi)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with BasketServiceIF with StrictLogging {
+class BasketService(table: DataTable, omsApi: OmsApi, tableContainer: TableContainer) extends DefaultRpcHandler with BasketServiceIF with StrictLogging {
 
-  import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BC, BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC}
+  import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames as BC, BasketTradingColumnNames as BT, BasketTradingConstituentColumnNames as BTC}
 
   registerRpc("createBasket", params => createBasket(params))
 

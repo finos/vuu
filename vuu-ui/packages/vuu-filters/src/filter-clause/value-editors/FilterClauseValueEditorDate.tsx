@@ -1,8 +1,8 @@
-import React, { useCallback, useState } from "react";
-import { getLocalTimeZone, DateValue } from "@internationalized/date";
-import { CommitHandler, toCalendarDate } from "@vuu-ui/vuu-utils";
-import { NumericFilterClauseOp } from "@vuu-ui/vuu-filter-types";
-import { FilterClauseValueEditor } from "../filterClauseTypes";
+import { useCallback, useState } from "react";
+import { getLocalTimeZone, type DateValue } from "@internationalized/date";
+import { type CommitHandler, toCalendarDate } from "@vuu-ui/vuu-utils";
+import type { NumericFilterClauseOp } from "@vuu-ui/vuu-filter-types";
+import type { FilterClauseValueEditor } from "../filterClauseTypes";
 import { VuuDatePicker } from "@vuu-ui/vuu-ui-controls";
 
 interface FilterClauseValueEditorDateProps
@@ -58,18 +58,18 @@ function getInitialState(value: FilterClauseValueEditorDateProps["value"]) {
 
 const getEpochMillisConverter =
   (op: NumericFilterClauseOp) =>
-  (date: DateValue, timezone: string = getLocalTimeZone()): number => {
-    const d = date.toDate(timezone);
-    switch (op) {
-      case ">":
-      case "<=":
-        d.setHours(23, 59, 59, 999);
-        return d.getTime();
-      case ">=":
-      case "<":
-      case "=": // converted to "< `start of next day` and >= `start of this day`" when query is created
-      case "!=": // converted to ">= `start of next day` or < `start of this day`" when query is created
-        d.setHours(0, 0, 0, 0);
-        return d.getTime();
-    }
-  };
+    (date: DateValue, timezone: string = getLocalTimeZone()): number => {
+      const d = date.toDate(timezone);
+      switch (op) {
+        case ">":
+        case "<=":
+          d.setHours(23, 59, 59, 999);
+          return d.getTime();
+        case ">=":
+        case "<":
+        case "=": // converted to "< `start of next day` and >= `start of this day`" when query is created
+        case "!=": // converted to ">= `start of next day` or < `start of this day`" when query is created
+          d.setHours(0, 0, 0, 0);
+          return d.getTime();
+      }
+    };

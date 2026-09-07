@@ -1,10 +1,8 @@
-import { expect, MountResult, test } from "@playwright/experimental-ct-react";
 import {
-  CalculatedColumnPicker,
-  DefaultItemPicker,
-  EmptyItemPicker,
-  SpecialItemsWithMaxSelection,
-} from "../../../../../../showcase/src/examples/UiControls/ItemPicker.examples.tsx";
+  expect,
+  type Locator,
+  test,
+} from "../../../../../../playwright/fixtures";
 
 interface DisplayedItem {
   dataName: string;
@@ -19,7 +17,7 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<EmptyItemPicker />);
+        const component = await mount("UiControls/ItemPicker/EmptyItemPicker");
 
         await expectSearchControlWithPlaceholderText(component, "Find pay day");
         await expectListHeadings(
@@ -38,7 +36,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<DefaultItemPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/DefaultItemPicker",
+        );
 
         await expectListHeadings(
           component,
@@ -64,7 +64,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<DefaultItemPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/DefaultItemPicker",
+        );
 
         await dragAndDropSelectedItemAboveAnother(
           page,
@@ -103,7 +105,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<DefaultItemPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/DefaultItemPicker",
+        );
 
         await typeSearchText(component, "QTY");
         await expectListHeadings(
@@ -146,7 +150,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<DefaultItemPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/DefaultItemPicker",
+        );
 
         await typeSearchText(component, "Average p");
         await expectListHeadings(
@@ -167,7 +173,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<DefaultItemPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/DefaultItemPicker",
+        );
 
         await expectSearchControlWithPlaceholderText(component, "Find column");
         await expectListHeadings(
@@ -215,7 +223,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<DefaultItemPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/DefaultItemPicker",
+        );
 
         await addAvailableItem(component, 1, "price");
         await addAvailableItem(component, 1, "quantity");
@@ -265,7 +275,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<DefaultItemPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/DefaultItemPicker",
+        );
 
         await removeSelectedItem(component, 8, "id");
         await removeSelectedItem(component, 8, "idAsInt");
@@ -317,7 +329,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<SpecialItemsWithMaxSelection />);
+        const component = await mount(
+          "UiControls/ItemPicker/SpecialItemsWithMaxSelection",
+        );
 
         await expectSearchControlWithPlaceholderText(
           component,
@@ -350,7 +364,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<SpecialItemsWithMaxSelection />);
+        const component = await mount(
+          "UiControls/ItemPicker/SpecialItemsWithMaxSelection",
+        );
 
         await expectListHeadings(
           component,
@@ -386,7 +402,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<SpecialItemsWithMaxSelection />);
+        const component = await mount(
+          "UiControls/ItemPicker/SpecialItemsWithMaxSelection",
+        );
 
         await expectListHeadings(
           component,
@@ -423,7 +441,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<CalculatedColumnPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/CalculatedColumnPicker",
+        );
 
         await expectSearchControlWithPlaceholderText(component, "Find column");
         await expectListHeadings(
@@ -470,7 +490,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<CalculatedColumnPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/CalculatedColumnPicker",
+        );
 
         await addAvailableItem(component, 1, "Calculated column 1");
         await addAvailableItem(component, 1, "Calculated column 2");
@@ -516,7 +538,9 @@ test.describe("ItemPicker", () => {
         mount,
         page,
       }) => {
-        const component = await mount(<CalculatedColumnPicker />);
+        const component = await mount(
+          "UiControls/ItemPicker/CalculatedColumnPicker",
+        );
 
         await expectCreateCustomItemsButton(
           component,
@@ -528,11 +552,11 @@ test.describe("ItemPicker", () => {
 });
 
 const expectSearchControlWithPlaceholderText = async (
-  component: MountResult,
+  component: Locator,
   searchPlaceholderText: string,
 ) => {
   const searchInput = await component.locator(".saltInput-input");
-  expect(searchInput).toBeDefined();
+  await expect(searchInput).toBeDefined();
   await expect(searchInput).toBeEnabled();
   await expect(searchInput).toHaveAttribute(
     "placeholder",
@@ -541,7 +565,7 @@ const expectSearchControlWithPlaceholderText = async (
 };
 
 const expectListHeadings = async (
-  component: MountResult,
+  component: Locator,
   selectedListHeading: string,
   availableListHeading: string,
 ) => {
@@ -555,7 +579,7 @@ const expectListHeadings = async (
 };
 
 const expectSelectedItems = async (
-  component: MountResult,
+  component: Locator,
   totalSelectedItems: number,
   selectedItems?: DisplayedItem[],
 ) => {
@@ -563,7 +587,7 @@ const expectSelectedItems = async (
   const totalRows = await selectedList
     .locator(".vuuItemPickerListItem")
     .count();
-  expect(totalRows).toEqual(totalSelectedItems);
+  await expect(totalRows).toEqual(totalSelectedItems);
 
   if (totalRows > 0) {
     for (let i = 0; i < selectedItems!.length; i++) {
@@ -581,7 +605,7 @@ const expectSelectedItems = async (
 };
 
 const expectAvailableItems = async (
-  component: MountResult,
+  component: Locator,
   totalAvailableItems: number,
   availableItems?: DisplayedItem[],
   addButtonsEnabled?: boolean,
@@ -590,7 +614,7 @@ const expectAvailableItems = async (
   const totalRows = await availableList
     .locator(".vuuItemPickerListItem")
     .count();
-  expect(totalRows).toEqual(totalAvailableItems);
+  await expect(totalRows).toEqual(totalAvailableItems);
 
   if (totalRows > 0) {
     for (let i = 0; i < availableItems!.length; i++) {
@@ -619,7 +643,7 @@ const expectAvailableItems = async (
 };
 
 const addAvailableItem = async (
-  component: MountResult,
+  component: Locator,
   positionInList: number,
   displayLabel: string,
 ) => {
@@ -636,7 +660,7 @@ const addAvailableItem = async (
 };
 
 const removeSelectedItem = async (
-  component: MountResult,
+  component: Locator,
   positionInList: number,
   displayLabel: string,
 ) => {
@@ -653,7 +677,7 @@ const removeSelectedItem = async (
 };
 
 const expectIconNotToBeRenderedInAvailableItems = async (
-  component: MountResult,
+  component: Locator,
   positionInList: number,
   displayLabel: string,
 ) => {
@@ -664,12 +688,12 @@ const expectIconNotToBeRenderedInAvailableItems = async (
   await expect(row).toContainText(displayLabel);
   const vuuIcons = row.locator(".vuuIcon");
   const iconCount = await vuuIcons.count();
-  expect(iconCount).toEqual(1);
+  await expect(iconCount).toEqual(1);
   await expect(vuuIcons.nth(0)).toHaveAttribute("data-icon", "plus");
 };
 
 const expectIconToBeRenderedInSelectedItems = async (
-  component: MountResult,
+  component: Locator,
   positionInList: number,
   displayLabel: string,
 ) => {
@@ -680,24 +704,24 @@ const expectIconToBeRenderedInSelectedItems = async (
   await expect(row).toContainText(displayLabel);
   const vuuIcons = row.locator(".vuuIcon");
   const iconCount = await vuuIcons.count();
-  expect(iconCount).toEqual(3);
+  await expect(iconCount).toEqual(3);
   await expect(vuuIcons.nth(0)).toHaveAttribute("data-icon", "draggable");
   await expect(vuuIcons.nth(1)).toHaveAttribute("data-icon", "check-check");
   await expect(vuuIcons.nth(2)).toHaveAttribute("data-icon", "cross");
 };
 
 const expectCreateCustomItemsButton = async (
-  component: MountResult,
+  component: Locator,
   buttonLabel: string,
 ) => {
   const button = component.locator(".vuuItemPicker-item-buttons .saltButton");
-  expect(button).toBeDefined();
-  expect(button).toContainText(buttonLabel);
+  await expect(button).toBeDefined();
+  await expect(button).toContainText(buttonLabel);
 };
 
 const dragAndDropSelectedItemBelowAnother = async (
   page: any,
-  component: MountResult,
+  component: Locator,
   itemToMovePosition: number,
   itemToMoveDisplayLabel: string,
   otherItemPosition: number,
@@ -722,7 +746,7 @@ const dragAndDropSelectedItemBelowAnother = async (
 
 const dragAndDropSelectedItemAboveAnother = async (
   page: any,
-  component: MountResult,
+  component: Locator,
   itemToMovePosition: number,
   itemToMoveDisplayLabel: string,
   otherItemPosition: number,
@@ -746,7 +770,7 @@ const dragAndDropSelectedItemAboveAnother = async (
 };
 
 const getBoundingBoxForSelectedItemDragButton = async (
-  component: MountResult,
+  component: Locator,
   itemPosition: number,
   itemDisplayLabel: string,
 ) => {
@@ -783,7 +807,7 @@ const moveBoundingBoxOnTopOfAnother = async (
   await page.mouse.up();
 };
 
-const typeSearchText = async (component: MountResult, searchText: string) => {
+const typeSearchText = async (component: Locator, searchText: string) => {
   const searchInput = component.locator(".saltInput-input");
   await expect(searchInput).toBeEnabled();
   await searchInput.fill(searchText);

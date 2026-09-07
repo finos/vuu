@@ -1,4 +1,5 @@
 import type {
+  DataSourceBase,
   DataSourceConfig,
   DataSourceConstructorProps,
   DataSourceEvents,
@@ -6,15 +7,15 @@ import type {
   DataSourceRow,
   DataSourceRowWithBigint,
   DataSourceStatus,
-  DataSourceSubscribedMessage,
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
+  DataSourceSubscribedMessage,
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
-  DataSourceBase,
 } from "@vuu-ui/vuu-data-types";
 import { filterPredicate, parseFilter } from "@vuu-ui/vuu-filter-parser";
+import type { Filter } from "@vuu-ui/vuu-filter-types";
 import type {
   LinkDescriptorWithLabel,
   SelectRequest,
@@ -32,8 +33,8 @@ import type {
 } from "@vuu-ui/vuu-protocol-types";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
-  ColumnMap,
-  DataSourceConfigChanges,
+  type ColumnMap,
+  type DataSourceConfigChanges,
   EventEmitter,
   KeySet,
   NULL_RANGE,
@@ -51,20 +52,20 @@ import {
   logger,
   metadataKeys,
   rangeNewItems,
+  toSchemaColumn,
   uuid,
   vanillaConfig,
   withConfigDefaults,
 } from "@vuu-ui/vuu-utils";
 import { aggregateData } from "./aggregate-utils";
 import { buildDataToClientMap, toClientRow } from "./array-data-utils";
-import { GroupMap, collapseGroup, expandGroup, groupRows } from "./group-utils";
+import { type GroupMap, collapseGroup, expandGroup, groupRows } from "./group-utils";
 import {
+  type ColIndexSortDef,
   binarySearch,
-  ColIndexSortDef,
   sortComparator,
   sortRows,
 } from "./sort-utils";
-import { Filter } from "@vuu-ui/vuu-filter-types";
 
 const { debug, info } = logger("ArrayDataSource");
 
@@ -107,11 +108,7 @@ const buildTableSchema = (
   keyColumn?: string,
 ): TableSchema => {
   const schema: TableSchema = {
-    columns: columns.map(({ editable, name, serverDataType = "string" }) => ({
-      editable,
-      name,
-      serverDataType,
-    })),
+    columns: columns.map(toSchemaColumn),
     key: keyColumn ?? columns[0].name,
     table: { module: "", table: "Array" },
   };
@@ -298,7 +295,7 @@ export class ArrayDataSource
   }
 
   suspend() {
-    console.log(`[ArrayDataSource] suspend`);
+    console.log('[ArrayDataSource] suspend');
     if (this.#status !== "unsubscribed") {
       info?.(`suspend #${this.viewport}, current status ${this.#status}`);
       this.#status = "suspended";
@@ -631,6 +628,16 @@ export class ArrayDataSource
       filterSpec: { filterStruct },
     } = combineFilters(this._config);
     if (filterStruct) {
+      // When a dataMap exists use actual raw-data positions so the predicate
+      // remains correct after processNewColumns rebuilds #columnMap.
+      if (this.dataMap) {
+        const { count: offset } = metadataKeys;
+        const actualColumnMap: ColumnMap = {};
+        for (const [col, idx] of Object.entries(this.dataMap)) {
+          actualColumnMap[col] = offset + (idx as number);
+        }
+        return filterPredicate(actualColumnMap, filterStruct);
+      }
       return filterPredicate(this.#columnMap, filterStruct);
     } else {
       throw Error("filter must include filterStruct");
@@ -879,7 +886,7 @@ export class ArrayDataSource
             (row) => row[KEY] === keyValue,
           );
           if (dataIndex !== -1) {
-            console.log(`LAMF dataRow no longer in filter set`);
+            console.log('dataRow no longer in filter set');
           }
         }
       } else if (isSorted) {
@@ -1188,7 +1195,7 @@ export class ArrayDataSource
   // All in BaseDataSource
   freeze() {
     if (!this.isFrozen) {
-      this.#freezeTimestamp = new Date().getTime();
+      this.#freezeTimestamp = Date.now();
       this.emit("freeze", true, this.#freezeTimestamp);
       this.preserveScrollPositionAcrossConfigChange = true;
       this.baseFilter = {

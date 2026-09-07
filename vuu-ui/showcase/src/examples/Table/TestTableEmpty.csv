@@ -1,0 +1,11 @@
+id,description,quantity,price,enabled,externalId
+TEST-001,Alpha,12,101.25,true,1001
+TEST-002,Bravo,24,202.50,false,1002
+TEST-003,Charlie,36,303.75,true,1003
+TEST-004,Delta,48,405.00,true,1004
+TEST-005,Echo,60,506.25,false,1005
+TEST-006,Foxtrot,72,607.50,true,1006
+TEST-007,Golf,84,708.75,false,1007
+TEST-008,Hotel,96,810.00,true,1008
+TEST-009,India,108,911.25,false,1009
+TEST-010,Juliet,120,1012.50,true,1010

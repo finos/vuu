@@ -436,7 +436,7 @@ const TableCore = ({
     onSelectCellBlock,
     onSelectionChange,
     renderBufferSize,
-    revealSelected,   
+    revealSelected,
     rowHeight,
     scrollingApiRef,
     selectionModel,
@@ -516,7 +516,6 @@ const TableCore = ({
                 allowSelectAll && selectionModel !== "checkbox-disabled"
               }
               allRowsSelected={allRowsSelected}
-              // columns={scrollProps.columnsWithinViewport}
               columns={columns}
               customHeader={customHeader}
               headings={headings}

@@ -79,7 +79,7 @@ export function getFilterPredicate(
  */
 
 // prettier-ignore
-export function filterPredicate(columnMap: ColumnMap,filter: Filter): FilterPredicate;
+export function filterPredicate(columnMap: ColumnMap, filter: Filter): FilterPredicate;
 export function filterPredicate(filter: Filter): DataRowFilterPredicate;
 export function filterPredicate(
   columnMapOrFilter: ColumnMap | Filter,
@@ -91,6 +91,8 @@ export function filterPredicate(
         return testDataRowInclude(columnMapOrFilter);
       case "=":
         return testDataRowEQ(columnMapOrFilter);
+      case "!=":
+        return testDataRowNE(columnMapOrFilter);
       case ">":
         return testDataRowGT(columnMapOrFilter);
       case ">=":
@@ -109,9 +111,11 @@ export function filterPredicate(
         return testDataRowAND(columnMapOrFilter as MultiClauseFilter<"and">);
       case "or":
         return testDataRowOR(columnMapOrFilter as MultiClauseFilter<"or">);
-      default:
-        console.log(`unrecognized filter type ${columnMapOrFilter.op}`);
+      default: {
+        const unreachable: never = columnMapOrFilter;
+        console.log('unrecognized filter type', unreachable);
         return () => true;
+      }
     }
   } else if (filter) {
     //TODO convert filter to include colIdx ratherthan colName, so we don't have to pass cols
@@ -120,6 +124,8 @@ export function filterPredicate(
         return testInclude(columnMapOrFilter, filter);
       case "=":
         return testEQ(columnMapOrFilter, filter);
+      case "!=":
+        return testNE(columnMapOrFilter, filter);
       case ">":
         return testGT(columnMapOrFilter, filter);
       case ">=":
@@ -138,9 +144,11 @@ export function filterPredicate(
         return testAND(columnMapOrFilter, filter as MultiClauseFilter<"and">);
       case "or":
         return testOR(columnMapOrFilter, filter as MultiClauseFilter<"or">);
-      default:
-        console.log(`unrecognized filter type ${filter.op}`);
+      default: {
+        const unreachable: never = filter;
+        console.log('unrecognized filter type', unreachable);
         return () => true;
+      }
     }
   } else {
     throw Error(`[filterPredicate] invalid params`);
@@ -173,10 +181,27 @@ const testEQ = (
   }
 };
 
+const testNE = (
+  columnMap: ColumnMap,
+  filter: SingleValueFilterClause,
+): FilterPredicate => {
+  if (isScaledDecimalFilterClause(filter)) {
+    return (row) => row[columnMap[filter.column]] !== filter.value.asLong;
+  } else {
+    return (row) => row[columnMap[filter.column]] !== filter.value;
+  }
+};
+
 const testDataRowEQ = (
   filter: SingleValueFilterClause,
 ): DataRowFilterPredicate => {
   return (row) => row[filter.column] === filter.value;
+};
+
+const testDataRowNE = (
+  filter: SingleValueFilterClause,
+): DataRowFilterPredicate => {
+  return (row) => row[filter.column] !== filter.value;
 };
 
 const testGT = (

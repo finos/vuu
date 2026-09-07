@@ -3,7 +3,7 @@ package org.finos.vuu.viewport.menurpc
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
-import org.finos.vuu.api.{TableDef, TableDefOptions, ViewPortDef, VisualLinks}
+import org.finos.vuu.api.{TableDef, TableDefOptions, ViewPortDef}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.ModuleFactory.stringToString
@@ -60,10 +60,10 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
       }
 
       override def menuItems(): ViewPortMenu = ViewPortMenu("Test Menu",
-        new SelectionViewPortMenuItem("Test Selection", "", this.testSelect, "TEST_SELECT"),
-        new CellViewPortMenuItem("Test Cell", "", this.testCell, "TEST_CELL"),
-        new TableViewPortMenuItem("Test Table", "", this.testTable, "TEST_TABLE"),
-        new RowViewPortMenuItem("Test Row", "", this.testRow, "TEST_ROW")
+        SelectionViewPortMenuItem("Test Selection", "", this.testSelect, "TEST_SELECT"),
+        CellViewPortMenuItem("Test Cell", "", this.testCell, "TEST_CELL"),
+        TableViewPortMenuItem("Test Table", "", this.testTable, "TEST_TABLE"),
+        RowViewPortMenuItem("Test Row", "", this.testRow, "TEST_ROW")
       )
     }
   }

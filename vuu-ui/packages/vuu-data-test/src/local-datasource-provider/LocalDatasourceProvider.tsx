@@ -1,6 +1,7 @@
 import type {
   DataSourceConfig,
   DataSourceConstructorProps,
+  SessionDataSourceOverrides,
   ServerAPI,
 } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
@@ -45,16 +46,18 @@ class VuuDataSource {
     columns,
     filterSpec,
     groupBy,
+    session,
     sort,
     table,
     viewport,
     visualLink,
   }: DataSourceConstructorProps) {
-    const config: DataSourceConfig = {
+    const config: DataSourceConfig & { session?: SessionDataSourceOverrides } = {
       aggregations,
       columns,
       filterSpec,
       groupBy,
+      session,
       sort,
       visualLink,
     };

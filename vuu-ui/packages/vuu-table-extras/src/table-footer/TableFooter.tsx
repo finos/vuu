@@ -1,5 +1,5 @@
 import cx from "clsx";
-import { HTMLAttributes, ReactNode } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
@@ -12,8 +12,11 @@ export interface TableFooterProps extends HTMLAttributes<HTMLDivElement> {
 
 const classBase = "vuuTableFooter";
 
-export const TableFooterTray = ({ children }: { children: ReactNode }) => {
-  return <div className={`${classBase}Tray`}>{children}</div>;
+export const TableFooterTray = ({ children, position = 'end' }: { children: ReactNode, position?: 'center' | 'end' }) => {
+  return <div className={cx(`${classBase}Tray`, {
+    [`${classBase}Tray-center`]: position === 'center',
+    [`${classBase}Tray-end`]: position === 'end'
+  })}>{children}</div>;
 };
 
 export const TableFooter = ({

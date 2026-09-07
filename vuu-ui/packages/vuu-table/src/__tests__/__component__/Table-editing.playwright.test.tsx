@@ -1,25 +1,389 @@
-import { test } from "@playwright/experimental-ct-react";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import {
-  CreateSessionTableInstruments,
-  EditableInstruments,
-  EditableInstrumentsInlineEdit,
-  TwoEditableInstruments,
-} from "../../../../../showcase/src/examples/Table/Editing.examples";
-import { expect } from "../../../../../playwright/customAssertions";
+import { expect, test } from "../../../../../playwright/fixtures";
 import { TableOM } from "./TableOM";
 
 const IS_EDITABLE = true;
 const NOT_EDITABLE = false;
 const NOT_EDITING = false;
 
+test.describe("useEditableTable session readiness", () => {
+  test("becomes ready when the session datasource subscribes", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/UseEditableTableSessionReadiness");
+
+    const readiness = page.locator("output");
+    await page.getByRole("button", { name: "Start edit session" }).click();
+
+    await expect(readiness).toHaveAttribute("data-session", "true");
+    await expect(readiness).toHaveAttribute("data-ready", "false");
+    await page.getByRole("button", { name: "Release subscription" }).click();
+    await expect(readiness).toHaveAttribute("data-ready", "true");
+  });
+
+  test("recognizes a session datasource that is already subscribed", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/UseEditableTableSessionReadiness", {
+      delaySubscription: false,
+    });
+
+    const readiness = page.locator("output");
+    await page.getByRole("button", { name: "Start edit session" }).click();
+
+    await expect(readiness).toHaveAttribute("data-session", "true");
+    await expect(readiness).toHaveAttribute("data-ready", "true");
+  });
+});
+
+test.describe("useEditableTable with a divergent edit table", () => {
+  test("applies the datasource's session config and reports divergence", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/UseEditableTableWithEditColumns");
+
+    const output = page.locator("output");
+    await page.getByRole("button", { name: "Start edit session" }).click();
+
+    await expect(output).toHaveAttribute("data-session", "true");
+    await expect(output).toHaveAttribute("data-edit-schema", "id,quantity");
+    await expect(output).toHaveAttribute("data-diverge", "true");
+  });
+});
+
+test.describe("Inline add row", () => {
+  test("renders insert-editable cells and blanks update-only columns", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/EditableInstrumentsWithInlineAddRow");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    await expect(
+      inlineAddRow.getByRole("textbox", { name: "bbg" }),
+    ).toBeVisible();
+    await expect(
+      inlineAddRow.getByRole("textbox", { name: "isin" }),
+    ).toBeVisible();
+    await expect(
+      inlineAddRow.getByRole("textbox", { name: "vuuMsg" }),
+    ).toHaveCount(0);
+  });
+
+  test("marks omitted cells as invalid when the final cell is committed", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/EditableInstrumentsWithInlineAddRow");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const finalCell = inlineAddRow.getByRole("textbox", { name: "ric" });
+    await finalCell.fill("new instrument");
+    await finalCell.press("Enter");
+
+    await expect(
+      inlineAddRow.getByRole("textbox", { name: "bbg" }),
+    ).toHaveAttribute("aria-invalid", "true");
+    await expect(finalCell).toHaveValue("new instrument");
+  });
+
+  test("moves to the next cell after a non-final commit", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/EditableInstrumentsWithInlineAddRow");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const bbg = inlineAddRow.getByRole("textbox", { name: "bbg" });
+    const currency = inlineAddRow.getByRole("combobox").first();
+    await bbg.fill("new-bbg");
+    await bbg.press("Enter");
+
+    await expect(currency).toBeFocused();
+  });
+
+  test("returns focus to the first editable cell after the final successful commit", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/EditableInstrumentsWithInlineAddRow");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const bbg = inlineAddRow.getByRole("textbox", { name: "bbg" });
+    const ric = inlineAddRow.getByRole("textbox", { name: "ric" });
+    await ric.dispatchEvent("vuu-commit");
+
+    await expect(bbg).toBeFocused();
+  });
+});
+
+test.describe("Test table editing", () => {
+  test("inserts a row with an unchecked boolean without validation warnings", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/TestTableEmpty");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const id = inlineAddRow.getByRole("textbox", { name: "id", exact: true });
+    const description = inlineAddRow.getByRole("textbox", {
+      name: "description",
+    });
+    const quantity = inlineAddRow.getByRole("textbox", { name: "quantity" });
+    const price = inlineAddRow.getByRole("textbox", { name: "price" });
+    const externalId = inlineAddRow.getByRole("textbox", {
+      name: "externalId",
+    });
+
+    await id.fill("TEST-006");
+    await id.press("Enter");
+    await description.fill("Foxtrot");
+    await description.press("Enter");
+    await quantity.fill("72");
+    await quantity.press("Enter");
+    await price.fill("607.5");
+    await price.press("Enter");
+    await externalId.fill("1006");
+    await externalId.press("Enter");
+
+    await expect(id).toBeFocused();
+    await expect(id).toHaveValue("");
+    await expect(inlineAddRow.locator('[aria-invalid="true"]')).toHaveCount(0);
+    await expect(inlineAddRow.getByRole("checkbox")).not.toBeChecked();
+    const insertedId = page
+      .getByRole("textbox", { name: "id", exact: true })
+      .nth(1);
+    await expect(insertedId).toBeVisible();
+    await expect(insertedId).toHaveValue("TEST-006");
+  });
+
+  test("inserts two consecutive rows in the same edit session", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/TestTableEmpty");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const id = inlineAddRow.getByRole("textbox", { name: "id", exact: true });
+    const description = inlineAddRow.getByRole("textbox", {
+      name: "description",
+    });
+    const quantity = inlineAddRow.getByRole("textbox", { name: "quantity" });
+    const price = inlineAddRow.getByRole("textbox", { name: "price" });
+    const externalId = inlineAddRow.getByRole("textbox", {
+      name: "externalId",
+    });
+
+    const addRow = async (
+      values: readonly [string, string, string, string, string],
+    ) => {
+      const editors = [id, description, quantity, price, externalId];
+      for (const [index, editor] of editors.entries()) {
+        await editor.fill(values[index]);
+        await editor.press("Enter");
+      }
+    };
+
+    await addRow(["TEST-006", "Foxtrot", "72", "607.5", "1006"]);
+    await expect(id).toBeFocused();
+    await expect(id).toHaveValue("");
+
+    await addRow(["TEST-007", "Golf", "84", "708.5", "1006"]);
+
+    await expect(id).toBeFocused();
+    await expect(id).toHaveValue("");
+    await expect(description).toHaveValue("");
+    await expect(quantity).toHaveValue("");
+    await expect(price).toHaveValue("");
+    await expect(externalId).toHaveValue("");
+    const firstInsertedId = page
+      .getByRole("textbox", { name: "id", exact: true })
+      .nth(1);
+    const secondInsertedId = page
+      .getByRole("textbox", { name: "id", exact: true })
+      .nth(2);
+    await expect(firstInsertedId).toBeVisible();
+    await expect(firstInsertedId).toHaveValue("TEST-006");
+    await expect(secondInsertedId).toBeVisible();
+    await expect(secondInsertedId).toHaveValue("TEST-007");
+  });
+
+  test("marks only omitted cells as invalid when the final cell is committed", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/TestTableEmpty");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const id = inlineAddRow.getByRole("textbox", { name: "id", exact: true });
+    const description = inlineAddRow.getByRole("textbox", {
+      name: "description",
+    });
+    const quantity = inlineAddRow.getByRole("textbox", { name: "quantity" });
+    const price = inlineAddRow.getByRole("textbox", { name: "price" });
+    const externalId = inlineAddRow.getByRole("textbox", {
+      name: "externalId",
+    });
+
+    await description.fill("Foxtrot");
+    await description.press("Enter");
+    await quantity.fill("72");
+    await quantity.press("Enter");
+    await price.fill("607.5");
+    await price.press("Enter");
+    await externalId.fill("1006");
+    await externalId.press("Enter");
+
+    await expect(id).toHaveAttribute("aria-invalid", "true");
+    await expect(externalId).not.toHaveAttribute("aria-invalid", "true");
+    await expect(externalId.locator("..")).not.toContainClass(
+      "vuuTableInputCell-error",
+    );
+    await expect(id).toBeFocused();
+  });
+
+  test("inserts after a previously omitted value is committed", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/TestTableEmpty");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const id = inlineAddRow.getByRole("textbox", { name: "id", exact: true });
+    const description = inlineAddRow.getByRole("textbox", {
+      name: "description",
+    });
+    const quantity = inlineAddRow.getByRole("textbox", { name: "quantity" });
+    const price = inlineAddRow.getByRole("textbox", { name: "price" });
+    const externalId = inlineAddRow.getByRole("textbox", {
+      name: "externalId",
+    });
+
+    await description.fill("Foxtrot");
+    await description.press("Enter");
+    await quantity.fill("72");
+    await quantity.press("Enter");
+    await price.fill("607.5");
+    await price.press("Enter");
+    await externalId.fill("1006");
+    await externalId.press("Enter");
+    await expect(id).toBeFocused();
+
+    await id.fill("TEST-006");
+    await id.press("Enter");
+
+    await expect(id).toHaveValue("");
+    const insertedId = page
+      .getByRole("textbox", { name: "id", exact: true })
+      .nth(1);
+    await expect(insertedId).toBeVisible();
+    await expect(insertedId).toHaveValue("TEST-006");
+  });
+
+  test("moves to the next invalid cell when repairing incomplete rows", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/TestTableEmpty");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const id = inlineAddRow.getByRole("textbox", { name: "id", exact: true });
+    const description = inlineAddRow.getByRole("textbox", {
+      name: "description",
+    });
+    const quantity = inlineAddRow.getByRole("textbox", { name: "quantity" });
+    const price = inlineAddRow.getByRole("textbox", { name: "price" });
+    const externalId = inlineAddRow.getByRole("textbox", {
+      name: "externalId",
+    });
+
+    await description.fill("Foxtrot");
+    await description.press("Enter");
+    await price.fill("607.5");
+    await price.press("Enter");
+    await externalId.fill("1006");
+    await externalId.press("Enter");
+    await expect(id).toBeFocused();
+    await expect(quantity).toHaveAttribute("aria-invalid", "true");
+
+    await id.fill("TEST-006");
+    await id.press("Enter");
+
+    await expect(quantity).toBeFocused();
+  });
+
+  test("rejects alphabetic input in an existing numeric cell", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/TestTableFIveRows");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const quantity = page.getByRole("textbox", { name: "quantity" }).nth(1);
+    await expect(quantity).toHaveValue("12");
+    await quantity.dblclick();
+    await quantity.pressSequentially("invalid");
+    await quantity.press("Enter");
+
+    await expect(quantity.locator("..")).toContainClass(
+      "vuuTableInputCell-error",
+    );
+  });
+
+  test("rejects alphabetic input in an inline numeric cell", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/TestTableEmpty");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const quantity = page
+      .locator(".vuuInlineAddRow")
+      .getByRole("textbox", { name: "quantity" });
+    await quantity.pressSequentially("invalid");
+    await quantity.press("Enter");
+
+    await expect(quantity.locator("..")).toContainClass(
+      "vuuTableInputCell-error",
+    );
+  });
+
+  test("updates and deletes existing rows", async ({ mount, page }) => {
+    await mount("Table/Editing/TestTableFIveRows");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const descriptionCell = page
+      .getByRole("textbox", { name: "description" })
+      .nth(1);
+    await expect(descriptionCell).toHaveValue("Alpha");
+    await descriptionCell.dblclick();
+    await descriptionCell.pressSequentially("Updated");
+    await descriptionCell.press("Enter");
+    await expect(page.getByRole("button", { name: "Submit" })).toBeEnabled();
+
+    await page
+      .getByRole("checkbox", { name: "Press space to select row" })
+      .first()
+      .click();
+    await page.getByRole("button", { name: "Delete" }).click();
+    await expect(page.getByRole("button", { name: "Undo" })).toBeVisible();
+  });
+});
+
 test.describe("Editable table navigation", () => {
   test("smoke test", async ({ mount, page }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table1 = new TableOM(page.getByTestId("table-1"));
     const editButton = page.getByRole("radio", { name: "Edit" });
 
@@ -28,25 +392,22 @@ test.describe("Editable table navigation", () => {
 
     await editButton.click();
     await table1.assertCellIsEditable(2, 1, IS_EDITABLE, "AAOO L");
+    await expect(table1.locateCell(2, 5).getByRole("textbox")).toHaveCount(0);
   });
 
   test("clicking a cell, then using arrow keys applies cell navigation ", async ({
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
     // get the first data cell
-    let cell1 = table.locateCell(2, 1);
-    let cell2 = table.locateCell(3, 1);
-    let cell3 = table.locateCell(3, 2);
+    const cell1 = table.locateCell(2, 1);
+    const cell2 = table.locateCell(3, 1);
+    const cell3 = table.locateCell(3, 2);
     await cell1.click();
     await table.assertCellIsFocused(cell1, "textbox");
     await cell1.press("ArrowDown");
@@ -59,19 +420,15 @@ test.describe("Editable table navigation", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
-    let cell4 = table.locateCell(2, 4);
-    let cell5 = table.locateCell(2, 5);
-    let cell6 = table.locateCell(2, 6);
-    let cell7 = table.locateCell(2, 7);
+    const cell4 = table.locateCell(2, 4);
+    const cell5 = table.locateCell(2, 5);
+    const cell6 = table.locateCell(2, 6);
+    const cell7 = table.locateCell(2, 7);
 
     // focus is in not editable, followed by 2 editable cells
     await cell5.click();
@@ -98,17 +455,13 @@ test.describe("Editable table navigation", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
     // get the description  cell
-    let cell = table.locateCell(3, 3);
+    const cell = table.locateCell(3, 3);
     await cell.click();
     await table.assertCellIsFocused(cell, "textbox");
     await cell.press("Enter");
@@ -124,18 +477,14 @@ test.describe("Editable table navigation", () => {
     // The very last assetion doesn't work in Safari - the transfer of focus on 'vuu-commit'
     test.skip(browserName === "webkit");
 
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
     // get the currency cell
-    let cell = table.locateCell(3, 2);
-    let nextCell = table.locateCell(4, 2);
+    const cell = table.locateCell(3, 2);
+    const nextCell = table.locateCell(4, 2);
     const originalValue =
       (await cell.getByRole("combobox").textContent()) ?? "";
     await cell.click();
@@ -153,17 +502,13 @@ test.describe("Editable table navigation", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
     // get the description  cell
-    let cell = table.locateCell(3, 3);
+    const cell = table.locateCell(3, 3);
     await cell.click();
     await table.assertCellIsFocused(cell, "textbox");
     await cell.press("Enter");
@@ -177,17 +522,13 @@ test.describe("Editable table navigation", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
     // get the description  cell
-    let cell = table.locateCell(3, 3);
+    const cell = table.locateCell(3, 3);
     await cell.click();
     await table.assertCellIsFocused(cell, "textbox");
     await cell.press("Enter");
@@ -218,17 +559,13 @@ test.describe("Cell editing", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
     // get the lotsize  cell
-    let cell = table.locateCell(3, 6);
+    const cell = table.locateCell(3, 6);
     const originalValue = await cell.getByRole("textbox").inputValue();
     await cell.dblclick();
     await table.assertCellIsFocused(cell, "textbox");
@@ -248,11 +585,7 @@ test.describe("Cell editing", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
@@ -278,11 +611,7 @@ test.describe("Cell editing", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
@@ -314,11 +643,7 @@ test.describe("Cell editing", () => {
     mount,
     page,
   }) => {
-    await mount(
-      <LocalDataSourceProvider>
-        <EditableInstruments />
-      </LocalDataSourceProvider>,
-    );
+    await mount("Table/Editing/EditableInstruments");
     const table = new TableOM(page.getByRole("table"));
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
@@ -352,11 +677,7 @@ test.describe("Cell editing", () => {
 test.describe("Edit conflicts", () => {
   test.describe("View mode", () => {
     test("smoke test", async ({ mount, page }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <TwoEditableInstruments />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Table/Editing/TwoEditableInstruments");
       const table1 = new TableOM(page.getByTestId("table-1"));
       await table1.assertRenderedRows({ from: 0, to: 10 }, 10, 10_000, 1);
       await table1.assertCellIsEditable(2, 1, NOT_EDITABLE, "AAOO L");
@@ -370,11 +691,7 @@ test.describe("Edit conflicts", () => {
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <TwoEditableInstruments />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Table/Editing/TwoEditableInstruments");
       const table = new TableOM(page.getByTestId("table-1"));
       // get the first data cell
 
@@ -394,11 +711,7 @@ test.describe("Edit conflicts", () => {
 
   test.describe("Edit mode", () => {
     test("smoke test", async ({ mount, page }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <TwoEditableInstruments />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Table/Editing/TwoEditableInstruments");
 
       const editButton = page.getByTestId("toggle-edit-1");
       const table1 = new TableOM(page.getByTestId("table-1"));
@@ -412,6 +725,53 @@ test.describe("Edit conflicts", () => {
       await table2.assertRenderedRows({ from: 0, to: 10 }, 10, 10_000, 1);
       await table2.assertCellIsEditable(2, 1, NOT_EDITABLE, "AAOO L");
     });
+
+    test("switches source to session and back while ignoring old-source updates", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Table/Editing/TwoEditableInstruments");
+
+      const first = page.getByTestId("edit-table-1");
+      const second = page.getByTestId("edit-table-2");
+      const firstTableElement = first.getByTestId("table-1");
+      const firstTable = new TableOM(firstTableElement);
+      const secondTable = new TableOM(second.getByTestId("table-2"));
+
+      const sourceViewport =
+        (await firstTableElement.getAttribute("data-viewport")) ?? "";
+      expect(sourceViewport).not.toBe("");
+      await first.getByTestId("toggle-edit-1").click();
+      await expect(firstTableElement).not.toHaveAttribute(
+        "data-viewport",
+        sourceViewport,
+      );
+      await firstTable.assertRenderedRows({ from: 0, to: 10 }, 10, 10_000, 1);
+
+      const firstValue = await firstTable
+        .locateCell(3, 6)
+        .getByRole("textbox")
+        .inputValue();
+
+      await second.getByTestId("toggle-edit-2").click();
+      const secondCell = secondTable.locateCell(3, 6);
+      await secondCell.dblclick();
+      await secondCell.pressSequentially("321");
+      await secondCell.press("Enter");
+      await second.getByRole("button", { name: "Save" }).click();
+
+      await expect(
+        firstTable.locateCell(3, 6).getByRole("textbox"),
+      ).toHaveValue(firstValue);
+
+      await first.getByRole("button", { name: "Cancel" }).click();
+      await expect(firstTableElement).toHaveAttribute(
+        "data-viewport",
+        sourceViewport,
+      );
+      await firstTable.assertRenderedRows({ from: 0, to: 10 }, 10, 10_000, 1);
+      await expect(firstTable.locateCell(3, 6)).toContainText("321");
+    });
   });
 
   test.describe("Save Cancel buttons", () => {
@@ -419,11 +779,7 @@ test.describe("Edit conflicts", () => {
       mount,
       page,
     }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <EditableInstruments />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Table/Editing/EditableInstruments");
       const table = new TableOM(page.getByTestId("table-1"));
       const editButton = page.getByRole("radio", { name: "Edit" });
       await editButton.click();
@@ -452,11 +808,7 @@ test.describe("Edit conflicts", () => {
     });
 
     test("Save disabled whilst rejected edits", async ({ mount, page }) => {
-      await mount(
-        <LocalDataSourceProvider>
-          <EditableInstruments />
-        </LocalDataSourceProvider>,
-      );
+      await mount("Table/Editing/EditableInstruments");
       const table = new TableOM(page.getByTestId("table-1"));
       const editButton = page.getByRole("radio", { name: "Edit" });
       await editButton.click();
@@ -501,33 +853,78 @@ test.describe("Edit conflicts", () => {
 // ---------------------------------------------------------------------------
 
 test.describe("Inline row editing (session)", () => {
-  test("entering Edit mode shows the undo column and action buttons", async ({
-    browserName,
+  test("waits for the session subscription before showing edit columns", async ({
     mount,
     page,
   }) => {
-    await mount(<EditableInstrumentsInlineEdit />);
+    await mount("Table/Editing/EditableInstrumentsInlineEdit");
+
+    const table = page.getByRole("table");
+    const tableRoot = page.locator("[data-viewport]");
+    const sourceViewport = await tableRoot.getAttribute("data-viewport");
+    await page.evaluate(() => {
+      const table = document.querySelector('[role="table"]');
+      const tableRoot = document.querySelector("[data-viewport]");
+      if (!table || !tableRoot) {
+        throw new Error("table not found");
+      }
+
+      table.setAttribute("data-edit-source-violation", "false");
+      new MutationObserver(() => {
+        if (
+          tableRoot.getAttribute("data-viewport") ===
+            table.getAttribute("data-source-viewport") &&
+          table.querySelector('[data-column-name="undo"]') &&
+          table.getAttribute("data-edit-source-violation") !== "true"
+        ) {
+          table.setAttribute("data-edit-source-violation", "true");
+        }
+      }).observe(table, { attributes: true, childList: true, subtree: true });
+      table.setAttribute(
+        "data-source-viewport",
+        tableRoot.getAttribute("data-viewport") ?? "",
+      );
+    });
+
+    await page.getByRole("radio", { name: "Edit" }).click();
+    await expect(
+      page.getByRole("columnheader", { name: "undo" }),
+    ).toBeVisible();
+
+    expect(await tableRoot.getAttribute("data-viewport")).not.toBe(
+      sourceViewport,
+    );
+    await expect(table).toHaveAttribute("data-edit-source-violation", "false");
+  });
+
+  test("entering Edit mode shows the undo column and action buttons", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/EditableInstrumentsInlineEdit");
 
     // View mode: no Delete/Add Rows/Submit buttons visible
-    await expect(page.getByRole("button", { name: "Delete" })).not.toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Delete" }),
+    ).not.toBeVisible();
 
     await page.getByRole("radio", { name: "Edit" }).click();
 
     // Edit mode: action buttons appear
     await expect(page.getByRole("button", { name: "Delete" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Add Rows" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Submit" })).toBeVisible();
 
     // Undo column header is visible
-    await expect(page.getByRole("columnheader", { name: "undo" })).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "undo" }),
+    ).toBeVisible();
   });
 
   test("Submit is disabled until at least one row is changed", async ({
-    browserName,
     mount,
     page,
   }) => {
-    await mount(<EditableInstrumentsInlineEdit />);
+    await mount("Table/Editing/EditableInstrumentsInlineEdit");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const submitButton = page.getByRole("button", { name: "Submit" });
@@ -543,13 +940,51 @@ test.describe("Inline row editing (session)", () => {
     await expect(submitButton).toBeEnabled();
   });
 
+  test("edited markers survive virtualization without leaking to recycled rows", async ({
+    mount,
+    page,
+  }) => {
+    test.slow();
+    await mount("Table/Editing/EditableInstrumentsInlineEdit");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const tableLocator = page.getByRole("table");
+    const table = new TableOM(tableLocator);
+    const editedCell = table.locateCell(2, 2);
+    await editedCell.dblclick();
+    await editedCell.pressSequentially("X");
+    await editedCell.press("Enter");
+    await expect(editedCell.locator(".vuuTableInputCell-edited")).toHaveCount(
+      1,
+    );
+
+    const contentContainer = page.locator(".vuuTable-contentContainer");
+    await contentContainer.evaluate((element) => {
+      element.scrollTop = 2_000;
+      element.dispatchEvent(new Event("scroll"));
+    });
+    await expect(table.row(2)).toHaveCount(0);
+    await expect(tableLocator.locator(".vuuTableInputCell-edited")).toHaveCount(
+      0,
+    );
+
+    await contentContainer.evaluate((element) => {
+      element.scrollTop = 0;
+      element.dispatchEvent(new Event("scroll"));
+    });
+    await expect(table.row(2)).toBeVisible();
+    await expect(
+      table.locateCell(2, 2).locator(".vuuTableInputCell-edited"),
+    ).toHaveCount(1);
+  });
+
   test("soft-deleting a selected row marks it and shows the undo button", async ({
     browserName,
     mount,
     page,
   }) => {
     test.skip(browserName === "webkit" || browserName === "firefox");
-    await mount(<EditableInstrumentsInlineEdit />);
+    await mount("Table/Editing/EditableInstrumentsInlineEdit");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const table = new TableOM(page.getByRole("table"));
@@ -562,10 +997,7 @@ test.describe("Inline row editing (session)", () => {
     await expect(deleteButton).toBeEnabled();
     await deleteButton.click();
 
-    // The row should now show vuuMsg = SOFT_DELETED and an Undo button
-    // Column 11 = vuuMsg (column 1 is the checkbox selector)
-    const vuuMsgCell = table.locateCell(2, 11);
-    await expect(vuuMsgCell).toContainText("SOFT_DELETED");
+    // The row should now show an Undo button
 
     const undoButton = table.row(2).getByRole("button", { name: "Undo" });
     await expect(undoButton).toBeVisible();
@@ -575,11 +1007,10 @@ test.describe("Inline row editing (session)", () => {
   });
 
   test("clicking Undo on a soft-deleted row reverts it", async ({
-    browserName,
     mount,
     page,
   }) => {
-    await mount(<EditableInstrumentsInlineEdit />);
+    await mount("Table/Editing/EditableInstrumentsInlineEdit");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const table = new TableOM(page.getByRole("table"));
@@ -591,37 +1022,16 @@ test.describe("Inline row editing (session)", () => {
     await expect(undoButton).toBeVisible();
     await undoButton.click();
 
-    // vuuMsg cleared, undo button gone, Submit disabled again
-    // Column 11 = vuuMsg (column 1 is the checkbox selector)
-    const vuuMsgCell = table.locateCell(2, 11);
-    await expect(vuuMsgCell).not.toContainText("SOFT_DELETED");
+    // undo button gone, Submit disabled again
     await expect(undoButton).not.toBeVisible();
     await expect(page.getByRole("button", { name: "Submit" })).toBeDisabled();
   });
 
-  test("Add Rows appends blank rows to the session table", async ({
-    browserName,
-    mount,
-    page,
-  }) => {
-    await mount(<EditableInstrumentsInlineEdit />);
-    await page.getByRole("radio", { name: "Edit" }).click();
-
-    const submitButton = page.getByRole("button", { name: "Submit" });
-    await expect(submitButton).toBeDisabled();
-
-    await page.getByRole("button", { name: "Add Rows" }).click();
-
-    // Submit enabled after rows added
-    await expect(submitButton).toBeEnabled();
-  });
-
   test("Cancel discards all changes and returns to view mode", async ({
-    browserName,
     mount,
     page,
   }) => {
-    await mount(<EditableInstrumentsInlineEdit />);
+    await mount("Table/Editing/EditableInstrumentsInlineEdit");
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const table = new TableOM(page.getByRole("table"));
@@ -636,7 +1046,9 @@ test.describe("Inline row editing (session)", () => {
     await page.getByRole("radio", { name: "View" }).click();
 
     // Returns to view mode — action buttons gone
-    await expect(page.getByRole("button", { name: "Submit" })).not.toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Submit" }),
+    ).not.toBeVisible();
     await expect(page.getByRole("radio", { name: "View" })).toBeVisible();
   });
 });
@@ -646,11 +1058,13 @@ test.describe("Session table editing (createSessionTable)", () => {
     mount,
     page,
   }) => {
-    await mount(<CreateSessionTableInstruments />);
+    await mount("Table/Editing/CreateSessionTableInstruments");
     const table = new TableOM(page.getByRole("table"));
 
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     // Column 2 = bbg (column 1 is the checkbox selector)
     const cell = table.locateCell(2, 2);
@@ -662,9 +1076,11 @@ test.describe("Session table editing (createSessionTable)", () => {
     mount,
     page,
   }) => {
-    await mount(<CreateSessionTableInstruments />);
+    await mount("Table/Editing/CreateSessionTableInstruments");
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     const table = new TableOM(page.getByRole("table"));
     // Column 2 = bbg
@@ -675,16 +1091,18 @@ test.describe("Session table editing (createSessionTable)", () => {
 
     const undoButton = table.row(2).getByRole("button", { name: "Undo" });
     await expect(undoButton).toBeVisible();
+    await expect(table.locateCell(2, 2).getByRole("textbox")).toHaveValue(
+      "AAOO EDITED",
+    );
     await expect(page.getByRole("button", { name: "Submit" })).toBeEnabled();
   });
 
-  test("selecting a row enables the Delete button", async ({
-    mount,
-    page,
-  }) => {
-    await mount(<CreateSessionTableInstruments />);
+  test("selecting a row enables the Delete button", async ({ mount, page }) => {
+    await mount("Table/Editing/CreateSessionTableInstruments");
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     const table = new TableOM(page.getByRole("table"));
     const deleteButton = page.getByRole("button", { name: "Delete" });
@@ -700,46 +1118,31 @@ test.describe("Session table editing (createSessionTable)", () => {
     mount,
     page,
   }) => {
-    await mount(<CreateSessionTableInstruments />);
+    await mount("Table/Editing/CreateSessionTableInstruments");
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     const table = new TableOM(page.getByRole("table"));
     const checkboxCell = table.locateCell(2, 1);
     await checkboxCell.click();
     await page.getByRole("button", { name: "Delete" }).click();
 
-    // Column 11 = vuuMsg
-    const vuuMsgCell = table.locateCell(2, 11);
-    await expect(vuuMsgCell).toContainText("SOFT_DELETED");
-
     const undoButton = table.row(2).getByRole("button", { name: "Undo" });
     await expect(undoButton).toBeVisible();
     await expect(page.getByRole("button", { name: "Submit" })).toBeEnabled();
-  });
-
-  test("Add Rows appends blank rows to the session table", async ({
-    mount,
-    page,
-  }) => {
-    await mount(<CreateSessionTableInstruments />);
-    await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
-
-    const submitButton = page.getByRole("button", { name: "Submit" });
-    await expect(submitButton).toBeDisabled();
-
-    await page.getByRole("button", { name: "Add Rows" }).click();
-    await expect(submitButton).toBeEnabled();
   });
 
   test("soft-deleted row retains vuuTableRow-noSelect class after another row is selected", async ({
     mount,
     page,
   }) => {
-    await mount(<CreateSessionTableInstruments />);
+    await mount("Table/Editing/CreateSessionTableInstruments");
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     const table = new TableOM(page.getByRole("table"));
 
@@ -748,8 +1151,8 @@ test.describe("Session table editing (createSessionTable)", () => {
     await checkboxRow2.click();
     await page.getByRole("button", { name: "Delete" }).click();
 
-    // After soft-delete: row 2 is checked and has noSelect class
-    await expect(checkboxRow2).toBeChecked();
+    // After soft-delete: row 2 is no longer checked and has noSelect class
+    await expect(checkboxRow2).not.toBeChecked();
     await expect(table.row(2)).toHaveClass(/vuuTableRow-noSelect/);
 
     // Select row 3 — this issues a SELECT_ROW which clears existing server selection
@@ -757,16 +1160,20 @@ test.describe("Session table editing (createSessionTable)", () => {
 
     // Row 2 is no longer server-selected but remains non-selectable (vuuMsg still SOFT_DELETED)
     await expect(table.row(2)).toHaveClass(/vuuTableRow-noSelect/);
-    await expect(table.row(2).getByRole("button", { name: "Undo" })).toBeVisible();
+    await expect(
+      table.row(2).getByRole("button", { name: "Undo" }),
+    ).toBeVisible();
   });
 
   test("clicking a soft-deleted row checkbox does not change row 3's selection state", async ({
     mount,
     page,
   }) => {
-    await mount(<CreateSessionTableInstruments />);
+    await mount("Table/Editing/CreateSessionTableInstruments");
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     const table = new TableOM(page.getByRole("table"));
     const checkboxRow2 = table.locateCell(2, 1).getByRole("checkbox");
@@ -785,54 +1192,36 @@ test.describe("Session table editing (createSessionTable)", () => {
     await expect(table.row(2)).toHaveClass(/vuuTableRow-noSelect/);
   });
 
-  test("delete button stays enabled after soft-delete (pending deleteCount > 0)", async ({
+  test("delete button is only enabled as long as rows are selected", async ({
     mount,
     page,
   }) => {
-    await mount(<CreateSessionTableInstruments />);
+    await mount("Table/Editing/CreateSessionTableInstruments");
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     const table = new TableOM(page.getByRole("table"));
-    const deleteButton = page.getByRole("button", { name: "Delete" });
+    const deleteButton = page.getByRole("button", {
+      exact: true,
+      name: "Delete",
+    });
 
     await table.locateCell(2, 1).click();
     await deleteButton.click();
-    // selectionCount is 0 after delete, but deleteCount > 0 keeps it enabled
-    await expect(deleteButton).toBeEnabled();
-  });
-
-  test("delete button is disabled after all soft-deletions are undone", async ({
-    mount,
-    page,
-  }) => {
-    await mount(<CreateSessionTableInstruments />);
-    await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
-
-    const table = new TableOM(page.getByRole("table"));
-    const deleteButton = page.getByRole("button", { name: "Delete" });
-
-    // Soft-delete two rows — use Ctrl+click to select both before deleting
-    await table.locateCell(2, 1).click();
-    await table.locateCell(3, 1).click({ modifiers: ["Control"] });
-    await deleteButton.click();
-    await expect(deleteButton).toBeEnabled();
-
-    // Undo both rows — deleteCount returns to 0
-    await table.row(2).getByRole("button", { name: "Undo" }).click();
-    await expect(deleteButton).toBeEnabled();
-    await table.row(3).getByRole("button", { name: "Undo" }).click();
-    await expect(deleteButton).toBeDisabled();
+    await expect(deleteButton).not.toBeEnabled();
   });
 
   test("block selection spanning a soft-deleted row selects only the selectable rows", async ({
     mount,
     page,
   }) => {
-    await mount(<CreateSessionTableInstruments />);
+    await mount("Table/Editing/CreateSessionTableInstruments");
     await page.getByRole("radio", { name: "Edit" }).click();
-    await expect(page.getByRole("status", { name: "Loading session table" })).not.toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Loading session table" }),
+    ).not.toBeVisible();
 
     const table = new TableOM(page.getByRole("table"));
 
@@ -850,6 +1239,8 @@ test.describe("Session table editing (createSessionTable)", () => {
     await expect(table.row(4)).toHaveAttribute("aria-selected", "true");
     await expect(table.row(5)).toHaveAttribute("aria-selected", "true");
     // Row 3 is still soft-deleted — undo button remains
-    await expect(table.row(3).getByRole("button", { name: "Undo" })).toBeVisible();
+    await expect(
+      table.row(3).getByRole("button", { name: "Undo" }),
+    ).toBeVisible();
   });
 });

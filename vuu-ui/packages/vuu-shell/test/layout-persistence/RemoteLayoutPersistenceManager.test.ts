@@ -4,7 +4,6 @@ import {
   LayoutMetadata,
   LayoutMetadataDto,
 } from "@vuu-ui/vuu-utils";
-import { v4 as uuidv4 } from "uuid";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CreateLayoutResponseDto,
@@ -49,7 +48,7 @@ const layout: LayoutJSON = {
   type: "View",
 };
 
-const uniqueId = uuidv4();
+const uniqueId = "43f00631-c384-44aa-a006-76967f331b93";
 const dateString = new Date().toISOString();
 const fetchError = new Error("Something went wrong with your request");
 

@@ -11,16 +11,22 @@ import {
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { type ReactNode, useCallback, useState } from "react";
-import type { DataSource } from "@vuu-ui/vuu-data-types";
-import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
+import type { RowDefaultDataItemValues, EditSession } from "@vuu-ui/vuu-data-editing";
 import type { CsvParseError, CsvParseOptions } from "./parse/csv-parse";
 import type { CsvValidationStructuredError } from "./parse/csv-schema-validation";
+import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
+import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import type { CsvUploadTableData } from "./parse/csv-upload-utils";
 import { useCsvUpload } from "./useCsvUpload";
 import css from "./CsvUpload.css";
 
 export type CsvUploadImportedResult = {
-  rpcResult: unknown;
+  tableData: CsvUploadTableData;
+};
+
+export type CsvUploadPreviewResult = {
+  dataSource: DataSource;
+  editSession: EditSession;
   tableData: CsvUploadTableData;
 };
 
@@ -61,10 +67,20 @@ export type CsvUploadPhase =
 export interface CsvUploadProps {
   children?: ReactNode;
   dataSource: DataSource;
+  embedded?: boolean;
+  /**
+   * Schema of the import table, where it differs from the target table. Used to validate
+   * the CSV and to determine the session datasource columns. If omitted and importTable is
+   * provided, the schema is fetched via getTableSchema. Pass a stable reference.
+   */
+  importSchema?: TableSchema;
+  /** Expected import table, used to validate the session table returned by the server. */
+  importTable?: VuuTable;
   onImportSessionStarted?: (dataSource: DataSource) => void;
   onImportSessionEnded?: (result: CsvUploadSessionEndResult) => void;
   onError?: (result: CsvUploadErrorResult | undefined) => void;
   onImported?: (result: CsvUploadImportedResult) => void;
+  onPreview?: (result: CsvUploadPreviewResult) => void;
   onProcessingStarted?: () => void;
   dialogTitle?: string;
   maxRows?: number;
@@ -72,6 +88,8 @@ export interface CsvUploadProps {
   onClose?: () => void;
   open?: boolean;
   parseOptions?: CsvParseOptions;
+  importMode?: "direct" | "preview";
+  rowDefaults?: RowDefaultDataItemValues;
 }
 
 const classBase = "vuuCsvUpload";
@@ -80,19 +98,13 @@ export const CsvUpload = (props: CsvUploadProps) => {
   const {
     children,
     dialogTitle = "Import CSV",
+    embedded = false,
     onCancel,
     onClose,
     open,
   } = props;
   const isControlledOpen = open !== undefined;
   const [internalOpen, setInternalOpen] = useState(open ?? true);
-
-  const handleCancel = useCallback(() => {
-    if (!isControlledOpen) {
-      setInternalOpen(false);
-    }
-    onCancel?.();
-  }, [isControlledOpen, onCancel]);
 
   const dialogOpen = isControlledOpen ? open : internalOpen;
 
@@ -105,6 +117,7 @@ export const CsvUpload = (props: CsvUploadProps) => {
 
   const {
     canImport,
+    cancelImport,
     isProcessingFile,
     isImporting,
     importData,
@@ -114,60 +127,95 @@ export const CsvUpload = (props: CsvUploadProps) => {
     validation,
   } = useCsvUpload(props);
 
+  const handleCancel = useCallback(async () => {
+    await cancelImport();
+    if (!isControlledOpen) {
+      setInternalOpen(false);
+    }
+    onCancel?.();
+  }, [cancelImport, isControlledOpen, onCancel]);
+
   const handleImport = useCallback(async () => {
-    await importData();
-    onClose?.();
+    if (await importData()) {
+      onClose?.();
+    }
   }, [importData, onClose]);
+
+  const content = (
+    <div className={classBase}>
+      <FileDropZone
+        className={`${classBase}-dropZone`}
+        disabled={schema === undefined || isProcessingFile || isImporting}
+        onDrop={onDrop}
+        status={
+          validation && validation.errors.length > 0 ? "error" : undefined
+        }
+      >
+        <FileDropZoneIcon />
+        {validation && validation.errors.length > 0 ? (
+          <>
+            <div>Your file contains errors</div>
+            <ul className={`${classBase}-errorList`}>
+              {validation.errors
+                .filter((e) => e.column in validation.errorMap.fileErrors)
+                .map((error, i) => (
+                  <li className={`${classBase}-errorItem`} key={i}>
+                    {error.message}
+                  </li>
+                ))}
+            </ul>
+            <div>Please rectify and reupload</div>
+          </>
+        ) : (
+          <div>Drop a file here or</div>
+        )}
+        <FileDropZoneTrigger accept=".csv,text/csv" onChange={onTriggerChange}>
+          BROWSE FILES
+        </FileDropZoneTrigger>
+      </FileDropZone>
+      {children}
+    </div>
+  );
+
+  const actions = (
+    <DialogActions>
+      <Button
+        appearance="solid"
+        disabled={isImporting}
+        sentiment="negative"
+        onClick={handleCancel}
+      >
+        Cancel
+      </Button>
+      <Button
+        disabled={!canImport}
+        appearance="solid"
+        sentiment="accented"
+        onClick={handleImport}
+      >
+        {isProcessingFile
+          ? "Validating..."
+          : isImporting
+            ? "Importing..."
+            : "Import"}
+      </Button>
+    </DialogActions>
+  );
+
+  if (embedded) {
+    return (
+      <>
+        {content}
+        {actions}
+      </>
+    );
+  }
 
   return (
     <Dialog open={dialogOpen}>
       <DialogHeader header={dialogTitle} />
-      <DialogContent>
-        <div className={classBase}>
-          <FileDropZone
-            className={`${classBase}-dropZone`}
-            disabled={schema === undefined || isProcessingFile || isImporting}
-            onDrop={onDrop}
-            status={
-              validation && validation.errors.length > 0 ? "error" : undefined
-            }
-          >
-            <FileDropZoneIcon />
-            {validation && validation.errors.length > 0 ? (
-              <>
-                <div>Your file contains errors</div>
-                <div> Please rectify and reupload</div>
-              </>
-            ) : (
-              <div>Drop a file here or</div>
-            )}
-            <FileDropZoneTrigger
-              accept=".csv,text/csv"
-              onChange={onTriggerChange}
-            >
-              BROWSE FILES
-            </FileDropZoneTrigger>
-          </FileDropZone>
-          {children}
-        </div>
-      </DialogContent>
-      <DialogActions>
-        <Button appearance="solid" sentiment="negative" onClick={handleCancel}>
-          Cancel
-        </Button>
-        <Button
-          disabled={!canImport}
-          appearance="solid"
-          sentiment="accented"
-          onClick={handleImport}
-        >
-          {isProcessingFile
-            ? "Validating..."
-            : isImporting
-              ? "Importing..."
-              : "Import"}
-        </Button>
-      </DialogActions>
+      <DialogContent>{content}</DialogContent>
+      {actions}
     </Dialog>
   );
 };

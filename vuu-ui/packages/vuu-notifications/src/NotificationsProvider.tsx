@@ -1,9 +1,9 @@
-import React, { ReactElement, useContext, useMemo } from "react";
+import React, { type ReactElement, useContext, useMemo } from "react";
 import { NotificationsCenter } from "./NotificationsCenter";
-import {
+import type {
   DispatchHideNotification,
   DispatchShowNotification,
-  type NotificationsContext,
+  NotificationsContextProps,
   ToastNotificationDescriptor,
 } from "./NotificationsContext";
 import { getLocalEntity } from "@vuu-ui/vuu-utils";
@@ -21,7 +21,7 @@ interface ToastWithExpiry extends ToastNotificationDescriptor {
   avoiding rerendering our children when notifications are 
   dispatched.
 */
-class NotificationsContextObject implements NotificationsContext {
+class NotificationsContextObject implements NotificationsContextProps {
   #showNotification: DispatchShowNotification = () => {
     console.log("have you forgotten to provide a NotificationsCenter?");
     return undefined;
@@ -41,7 +41,7 @@ class NotificationsContextObject implements NotificationsContext {
   };
 }
 
-const NotificationsContext = React.createContext<NotificationsContext>(
+const NotificationsContext = React.createContext<NotificationsContextProps>(
   new NotificationsContextObject(),
 );
 

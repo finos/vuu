@@ -327,24 +327,15 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
   }
 
   private def createViewPortForJoinTableWithoutDefaultColumn(tableName: String) = {
-    createViewPortBase(tableName, Array("Id", "Name", "Description"), 4)
+    createViewPortAndVerifyDataSize(tableName, moduleName, Array("Id", "Name", "Description"), 4)
   }
 
   private def createViewPortForJoinTableWithDefaultColumn(tableName: String) = {
-    createViewPortBase(tableName, Array("Id", "Name", "Description", DefaultColumn.CreatedTime.name), 4)
+    createViewPortAndVerifyDataSize(tableName, moduleName, Array("Id", "Name", "Description", DefaultColumn.CreatedTime.name), 4)
   }
 
   private def createViewPort(tableName: String) = {
-    createViewPortBase(tableName, Array("Id", "Name", "Account"), 3)
-  }
-
-  private def createViewPortBase(tableName: String, columns: Array[String], expectedNumberOfRows: Int) = {
-    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(0, 100), columns = columns)
-    vuuClient.send(sessionId, createViewPortRequest)
-    val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
-    val viewPortId = viewPortCreateResponse.get.viewPortId
-    waitForData(viewPortId, expectedNumberOfRows)
-    viewPortId
+    createViewPortAndVerifyDataSize(tableName, moduleName, Array("Id", "Name", "Account"), 3)
   }
 
   private def updateTable(tableName: String): Unit = {

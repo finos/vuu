@@ -11,7 +11,7 @@ import org.finos.vuu.example.notifications.provider.SimulatedNotificationsProvid
 import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 
-class DismissNotificationRpcHandler(table: DataTable)(implicit clock: Clock, tableContainer: TableContainer) extends DefaultRpcHandler {
+class DismissNotificationRpcHandler(table: DataTable)(implicit clock: Clock) extends DefaultRpcHandler {
   registerRpc("dismissNotification", this.dismissNotification)
 
   private def dismissNotification(params: RpcParams): RpcFunctionResult = {
@@ -40,10 +40,10 @@ object SimulatedNotificationsModule extends DefaultModule {
       PermissionFilter("audience", Set("all", currentUser, "admin", "trader"))
     }
 
-    val viewPortDefFactory = (table: DataTable, _: Provider, _: ProviderContainer, tc: TableContainer) =>
+    val viewPortDefFactory = (table: DataTable, _: Provider, _: ProviderContainer, _: TableContainer) =>
       ViewPortDef(
         columns = table.getTableDef.getColumns,
-        service = new DismissNotificationRpcHandler(table)(clock, tc)
+        service = new DismissNotificationRpcHandler(table)(clock)
       )
 
     NotificationModule(

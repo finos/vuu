@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.vuu.plugin</groupId>
         <artifactId>plugin</artifactId>
-        <version>8.2.0-SNAPSHOT</version>
+        <version>10.2.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>virtualized-table-plugin</artifactId>
@@ -14,32 +14,32 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>8.2.0-SNAPSHOT</version>
+            <version>10.2.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala3-library_3</artifactId>
-            <version>${scala.version}</version>
+            <version>${vuu.scala.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
-            <version>${caffeine.version}</version>
+            <version>${vuu.caffeine.version}</version>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
+            <version>${vuu.logback.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>8.2.0-SNAPSHOT</version>
+            <version>10.2.0-SNAPSHOT</version>
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
@@ -48,7 +48,7 @@
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_3</artifactId>
-            <version>${scalatest.version}</version>
+            <version>${vuu.scalatest.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>org.scalamock</groupId>
             <artifactId>scalamock_3</artifactId>
-            <version>${scalamock.version}</version>
+            <version>${vuu.scalamock.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -169,6 +169,39 @@
                         <goals>
                             <goal>test</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>check-coverage</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.69</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

@@ -1,7 +1,7 @@
-import React, {
+import {
   createContext,
-  ReactElement,
-  ReactNode,
+  type ReactElement,
+  type ReactNode,
   useCallback,
   useContext,
   useState,
@@ -11,7 +11,7 @@ import {
   layoutFromJson,
   useLayoutOperation,
 } from "@vuu-ui/vuu-layout";
-import { LayoutJSON } from "@vuu-ui/vuu-utils";
+import type { LayoutJSON } from "@vuu-ui/vuu-utils";
 import {
   Dialog,
   DialogCloseButton,
@@ -83,12 +83,12 @@ export const ContextPanelProvider = ({
         const component =
           typeof elementOrComponentType === "string"
             ? layoutFromJson(
-                {
-                  type: elementOrComponentType,
-                  props,
-                } as LayoutJSON,
-                "",
-              )
+              {
+                type: elementOrComponentType,
+                props,
+              } as LayoutJSON,
+              "",
+            )
             : elementOrComponentType;
 
         setDialog(

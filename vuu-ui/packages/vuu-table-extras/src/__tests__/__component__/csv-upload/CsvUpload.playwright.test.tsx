@@ -1,18 +1,13 @@
-import { test, expect } from "@playwright/experimental-ct-react";
-import {
-  DefaultCsvUpload,
-  CsvUploadWithCancelCallback,
-  ClosedCsvUpload,
-  CsvUploadCustomTitle,
-  CsvUploadWithInstrumentsSchema,
-} from "../../../../../../showcase/src/examples/TableExtras/CsvUpload.examples";
+import { test, expect } from "../../../../../../playwright/fixtures";
+
+
 
 test.describe("Given a CsvUpload component", () => {
   test("THEN it renders the open dialog with correct initial state", async ({
     mount,
     page,
   }) => {
-    await mount(<DefaultCsvUpload />);
+    await mount("TableExtras/CsvUpload/DefaultCsvUpload");
 
     await expect(page.locator("[role='dialog']")).toBeVisible();
     await expect(page.locator("[role='dialog']")).toContainText("Import CSV");
@@ -23,19 +18,17 @@ test.describe("Given a CsvUpload component", () => {
     await expect(
       page.locator("button", { hasText: "BROWSE FILES" }),
     ).toBeVisible();
-    await expect(
-      page.locator("button", { hasText: "Import" }),
-    ).toBeDisabled();
-    await expect(
-      page.locator("button", { hasText: "Cancel" }),
-    ).toBeEnabled();
+    await expect(page.locator("button", { hasText: "Import" })).toBeDisabled();
+    await expect(page.locator("button", { hasText: "Cancel" })).toBeEnabled();
   });
 
   test("WHEN Cancel is clicked THEN the onCancel callback is invoked", async ({
     mount,
     page,
   }) => {
-    const component = await mount(<CsvUploadWithCancelCallback />);
+    const component = await mount(
+      "TableExtras/CsvUpload/CsvUploadWithCancelCallback",
+    );
 
     await page.locator("button", { hasText: "Cancel" }).click();
 
@@ -48,7 +41,7 @@ test.describe("Given a CsvUpload component", () => {
     mount,
     page,
   }) => {
-    await mount(<ClosedCsvUpload />);
+    await mount("TableExtras/CsvUpload/ClosedCsvUpload");
 
     await expect(page.locator("[role='dialog']")).not.toBeVisible();
 
@@ -61,7 +54,7 @@ test.describe("Given a CsvUpload component", () => {
     mount,
     page,
   }) => {
-    await mount(<CsvUploadCustomTitle />);
+    await mount("TableExtras/CsvUpload/CsvUploadCustomTitle");
 
     await expect(page.locator("[role='dialog']")).toContainText(
       "Upload Instruments CSV",
@@ -74,7 +67,7 @@ test.describe("Given a CsvUpload with the instruments schema", () => {
     mount,
     page,
   }) => {
-    await mount(<CsvUploadWithInstrumentsSchema />);
+    await mount("TableExtras/CsvUpload/CsvUploadWithInstrumentsSchema");
 
     await page.locator('input[type="file"]').setInputFiles({
       name: "bad-columns.csv",
@@ -89,16 +82,162 @@ test.describe("Given a CsvUpload with the instruments schema", () => {
     await expect(page.locator(".vuuCsvUpload-dropZone")).toContainText(
       "Your file contains errors",
     );
+    const errorItems = page.locator(".vuuCsvUpload-errorItem");
+    await expect(errorItems).toHaveCount(3);
+    await expect(errorItems.nth(0)).toHaveText(
+      "CSV must include key column 'isin'.",
+    );
+    await expect(errorItems.nth(1)).toHaveText(
+      "Column symbol is not present in table schema.",
+    );
+    await expect(errorItems.nth(2)).toHaveText(
+      "Column name is not present in table schema.",
+    );
+    await expect(page.locator("button", { hasText: "Import" })).toBeDisabled();
+  });
+});
+
+test.describe("Given a CsvUpload with rowDefaults", () => {
+  test("WHEN a CSV is imported THEN rowDefaults are merged into rows for absent columns", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvUpload/CsvUploadWithRowDefaults");
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "id-only.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from("id\nrow-001\n"),
+    });
+
     await expect(
       page.locator("button", { hasText: "Import" }),
-    ).toBeDisabled();
+    ).toBeEnabled({ timeout: 5000 });
+    await page.locator("button", { hasText: "Import" }).click();
+
+    await expect(page.locator('[data-testid="captured-row-0"]')).toContainText(
+      '"name":"Default Name"',
+      { timeout: 5000 },
+    );
+    await expect(page.locator('[data-testid="captured-row-0"]')).toContainText(
+      '"id":"row-001"',
+    );
   });
 
+  test("WHEN a CSV column value is present THEN it takes precedence over rowDefaults", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvUpload/CsvUploadWithRowDefaults");
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "both-cols.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from("id,name\nrow-001,Explicit Name\n"),
+    });
+
+    await expect(
+      page.locator("button", { hasText: "Import" }),
+    ).toBeEnabled({ timeout: 5000 });
+    await page.locator("button", { hasText: "Import" }).click();
+
+    await expect(page.locator('[data-testid="captured-row-0"]')).toContainText(
+      '"name":"Explicit Name"',
+      { timeout: 5000 },
+    );
+  });
+});
+
+test.describe("Given a DataUploadPreview", () => {
+  test("uploads CSV rows directly from the toolbar", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/TestTableEmptyWithUpload");
+
+    await expect(
+      page.getByRole("button", { name: "Upload (preview)" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Upload (direct)" }).click();
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "test-edit.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(
+        "id,description,quantity,price,enabled,externalId\nCSV-001,Direct upload,10,12.5,true,1001\n",
+      ),
+    });
+    await page.getByRole("button", { name: "Import", exact: true }).click();
+
+    await expect(
+      page.getByRole("heading", { name: "Upload Data" }),
+    ).not.toBeVisible();
+    await expect(page.locator(".vuuDatasourceStats-value").last()).toHaveText(
+      "1",
+    );
+  });
+
+  test("allows uploaded rows to be edited and deleted before submission", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/TestTableEmptyWithUpload");
+
+    await page.getByRole("button", { name: "Upload (preview)" }).click();
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "test-edit.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(
+        "id,description,quantity,price,enabled,externalId\nCSV-001,Uploaded row,10,12.5,true,1001\nCSV-002,Delete me,20,25,true,1002\n",
+      ),
+    });
+    await page.getByRole("button", { name: "Import", exact: true }).click();
+
+    await expect(
+      page.getByRole("heading", { name: "Edit uploaded data" }),
+    ).toBeVisible();
+    await expect(page.locator(".vuuDataUploadPreview")).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Error column header" }),
+    ).toBeVisible();
+    await expect(page.locator('input[value="CSV-001"]')).toBeVisible();
+    await expect(page.locator(".vuuInlineAddRow")).toHaveCount(0);
+
+    const description = page
+      .getByRole("textbox", {
+        name: "description",
+        exact: true,
+      })
+      .first();
+    await description.fill("Edited upload");
+    await description.press("Enter");
+    await expect(description).toHaveValue("Edited upload");
+
+    const deletedRow = page
+      .locator('input[value="CSV-002"]')
+      .locator('xpath=ancestor::*[@role="row"]');
+    await deletedRow
+      .getByRole("checkbox", { name: "Press space to select row" })
+      .click();
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
+    await expect(deletedRow).toContainClass("vuuTableRow-deleted");
+
+    await page.getByRole("button", { name: "Submit", exact: true }).click();
+
+    await expect(
+      page.getByRole("heading", { name: "Edit uploaded data" }),
+    ).not.toBeVisible();
+    await expect(page.locator(".vuuDatasourceStats-value").last()).toHaveText(
+      "1",
+    );
+  });
+});
+
+test.describe("Given a CsvUpload with a missing key column", () => {
   test("WHEN a CSV missing the key column is selected THEN the drop zone shows error state", async ({
     mount,
     page,
   }) => {
-    await mount(<CsvUploadWithInstrumentsSchema />);
+    await mount("TableExtras/CsvUpload/CsvUploadWithInstrumentsSchema");
 
     // omit isin to trigger a MISSING_KEY_COLUMN error
     await page.locator('input[type="file"]').setInputFiles({
@@ -114,5 +253,75 @@ test.describe("Given a CsvUpload with the instruments schema", () => {
       { timeout: 5000 },
     );
   });
+});
 
+test.describe("Given a CsvUpload with an import table", () => {
+  test("WHEN importSchema is provided THEN the CSV is validated against it and its columns drive the session", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvUpload/CsvUploadWithImportSchema");
+
+    // 'quantity' is absent from the target table schema, present in the import schema
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "import-cols.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from("id,quantity\nrow-001,10\n"),
+    });
+
+    await expect(page.locator("button", { hasText: "Import" })).toBeEnabled({
+      timeout: 5000,
+    });
+    await expect(page.locator(".vuuCsvUpload-dropZone")).not.toContainText(
+      "Your file contains errors",
+    );
+
+    await page.locator("button", { hasText: "Import" }).click();
+
+    await expect(
+      page.locator('[data-testid="session-columns"]'),
+    ).toHaveAttribute("data-columns", "id,quantity", { timeout: 5000 });
+  });
+
+  test("WHEN a CSV matching the target table but not the import table is selected THEN it is rejected", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvUpload/CsvUploadWithImportSchema");
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "target-cols.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from("id,name\nrow-001,Widget\n"),
+    });
+
+    await expect(page.locator(".saltFileDropZone")).toHaveClass(
+      /saltFileDropZone-error/,
+      { timeout: 5000 },
+    );
+    await expect(page.locator(".vuuCsvUpload-errorItem")).toContainText(
+      "Column name is not present in table schema.",
+    );
+  });
+
+  test("WHEN only importTable is provided THEN the schema is fetched and used for validation", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvUpload/CsvUploadWithImportTableOnly");
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "instruments.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from(
+        "bbg,currency,description,exchange,isin,lotSize,ric\nAAPL US,USD,Apple Inc,NASDAQ,US0378331005,120,AAPL.O\n",
+      ),
+    });
+
+    await expect(page.locator(".vuuCsvUpload-dropZone")).not.toContainText(
+      "Your file contains errors",
+      { timeout: 5000 },
+    );
+    await expect(page.locator("button", { hasText: "Import" })).toBeEnabled();
+  });
 });

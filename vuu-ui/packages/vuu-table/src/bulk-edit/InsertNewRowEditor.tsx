@@ -8,7 +8,7 @@ import { HTMLAttributes } from "react";
 import { VirtualColSpan } from "../VirtualColSpan";
 import { useHeaderProps } from "../table-header";
 import { useBulkEditRow } from "./useColumnCascadingEditor";
-import { isNotHidden } from "@vuu-ui/vuu-utils";
+import { isDataValueEditable, isNotHidden } from "@vuu-ui/vuu-utils";
 
 import bulkEditRowCss from "./InsertNewRowEditor.css";
 
@@ -76,10 +76,11 @@ export const InsertNewRowEditor = ({
             role="cell"
             style={{ width: column.width }}
           >
-            {column.editable
+            {isDataValueEditable(column, "insert")
               ? getDataItemEditControl({
                   InputProps,
                   dataDescriptor: column,
+                  editOperation: "insert",
                   errorMessage,
                   onCommit,
                 })

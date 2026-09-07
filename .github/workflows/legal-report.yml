@@ -23,10 +23,10 @@ jobs:
     steps:
     - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
-    - name: Set up JDK 1.17
+    - name: Set up JDK
       uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520
       with:
-        java-version: 17
+        java-version: 21
         java-package: jdk
         distribution: temurin
         cache: 'maven'

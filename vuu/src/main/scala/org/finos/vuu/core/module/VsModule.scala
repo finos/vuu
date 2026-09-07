@@ -1,13 +1,12 @@
 package org.finos.vuu.core.module
 
-import org.finos.vuu.api.{TableDef, ViewPortDef}
-import org.finos.vuu.core.{AbstractVuuServer, VuuServer}
-import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net.rest.RestService
-import org.finos.vuu.net.rpc.RpcHandler
-import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.api.{TableDef, ViewPortDef}
+import org.finos.vuu.core.AbstractVuuServer
+import org.finos.vuu.core.table.{DataTable, TableContainer}
+import org.finos.vuu.net.rest.RestService
+import org.finos.vuu.provider.{Provider, ProviderContainer}
 
 import java.nio.file.Path
 

@@ -1,13 +1,8 @@
-import { test, expect } from "@playwright/experimental-ct-react";
-import {
-  BareBonesPrompt,
-  ConfirmOnly,
-  FocusOnConfirm,
-} from "../../../../../../showcase/src/examples/UiControls/Prompt.examples";
+import { expect, test } from "../../../../../../playwright/fixtures";
 
 test.describe("WHEN rendered with open true", () => {
   test("THEN Prompt renders in portal", async ({ mount, page }) => {
-    await mount(<BareBonesPrompt />);
+    await mount("UiControls/Prompt/BareBonesPrompt");
 
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
@@ -20,7 +15,7 @@ test.describe("WHEN configured to show confirm button only, with custom label", 
     mount,
     page,
   }) => {
-    await mount(<ConfirmOnly />);
+    await mount("UiControls/Prompt/ConfirmOnly");
 
     await expect(page.getByRole("dialog")).toBeVisible();
 
@@ -35,7 +30,7 @@ test.describe("WHEN configured to show confirm button only, with custom label", 
 
 test.describe("WHEN configured to focus on confirm", () => {
   test("THEN Prompt renders in portal", async ({ mount, page }) => {
-    await mount(<FocusOnConfirm />);
+    await mount("UiControls/Prompt/FocusOnConfirm");
 
     await expect(page.getByRole("dialog")).toBeVisible();
 

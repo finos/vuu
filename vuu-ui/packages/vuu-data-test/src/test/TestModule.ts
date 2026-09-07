@@ -1,12 +1,13 @@
-import { RpcMenuService, VuuModule } from "../core/module/VuuModule";
-import { buildDataColumnMap, Table } from "../Table";
+import { type RpcMenuService, VuuModule } from "../core/module/VuuModule";
+import { buildDataColumnMap, type Table } from "../Table";
 import {
   DefaultColumnGenerator,
   defaultGenerators,
 } from "../vuu-row-generator";
 import tableContainer from "../core/table/TableContainer";
-import { TableSchema } from "@vuu-ui/vuu-data-types";
+import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import { withNanoMs } from "../data-utils";
+import { toSchemaColumn } from "@vuu-ui/vuu-utils";
 
 const DEFAULT_RANGE_LIMITS = {
   maxRangeEnd: 1_000_000,
@@ -19,7 +20,9 @@ export type TestTableName =
   | "LinkParent"
   | "LinkChild"
   | "ChartTable"
-  | "MaxScrollEndTable";
+  | "MaxScrollEndTable"
+  | "TestEditEmpty"
+  | "TestEdit";
 
 const { RowGenerator } = defaultGenerators;
 
@@ -27,6 +30,16 @@ const generateRows = (tableSchema: TableSchema, count: number) => {
   const columnGenerator = RowGenerator(tableSchema.columns.map((c) => c.name));
   return new Array(count).fill(1).map((_, i) => columnGenerator(i));
 };
+
+const testEditColumns: TableSchema["columns"] = [
+  { name: "id", serverDataType: "string" },
+  { name: "description", serverDataType: "string" },
+  { name: "quantity", serverDataType: "int" },
+  { name: "price", serverDataType: "double" },
+  { name: "enabled", serverDataType: "boolean" },
+  // { name: "tradeDate", serverDataType: "epochtimestamp" },
+  { name: "externalId", serverDataType: "long" },
+];
 
 class TestModule extends VuuModule<TestTableName> {
   #schemas: Record<TestTableName, TableSchema> = {
@@ -54,7 +67,7 @@ class TestModule extends VuuModule<TestTableName> {
       table: { module: "TEST", table: "TestDates" },
     },
     TwoHundredColumns: {
-      columns: DefaultColumnGenerator(200).map((col) => ({
+      columns: DefaultColumnGenerator(200).map((col) => toSchemaColumn({
         ...col,
         serverDataType: "string",
       })),
@@ -96,7 +109,7 @@ class TestModule extends VuuModule<TestTableName> {
       table: { module: "TEST", table: "ChartTable" },
     },
     MaxScrollEndTable: {
-      columns: DefaultColumnGenerator(6).map((col) => ({
+      columns: DefaultColumnGenerator(6).map((col) => toSchemaColumn({
         ...col,
         serverDataType: "string",
       })),
@@ -107,6 +120,18 @@ class TestModule extends VuuModule<TestTableName> {
       },
       table: { module: "TEST", table: "MaxScrollEndTable" },
     },
+    TestEditEmpty: {
+      columns: testEditColumns,
+      key: "id",
+      rangeLimits: DEFAULT_RANGE_LIMITS,
+      table: { module: "TEST", table: "TestEditEmpty" },
+    },
+    TestEdit: {
+      columns: testEditColumns,
+      key: "id",
+      rangeLimits: DEFAULT_RANGE_LIMITS,
+      table: { module: "TEST", table: "TestEdit" },
+    },
   };
 
   #tables: Record<TestTableName, Table> = {
@@ -114,16 +139,16 @@ class TestModule extends VuuModule<TestTableName> {
       this.#schemas.TestDates,
       // prettier-ignore
       [
-        [1000000000000000001n, Date.now(), Date.now(), withNanoMs(Date.now(), 1)],
-        [1000000000000000002n, Date.now(), Date.now(), withNanoMs(Date.now(), 2)],
-        [1000000000000000003n, Date.now(), Date.now(), withNanoMs(Date.now(), 3)],
-        [1000000000000000004n, Date.now(), Date.now(), withNanoMs(Date.now(), 4)],
-        [1000000000000000005n, Date.now(), Date.now(), withNanoMs(Date.now(), 5)],
-        [1000000000000000006n, Date.now(), Date.now(), withNanoMs(Date.now(), 6)],
-        [1000000000000000007n, Date.now(), Date.now(), withNanoMs(Date.now(), 7)],
-        [1000000000000000008n, Date.now(), Date.now(), withNanoMs(Date.now(), 8)],
-        [1000000000000000009n, Date.now(), Date.now(), withNanoMs(Date.now(), 9)],
-        [1000000000000000010n, Date.now(), Date.now(), withNanoMs(Date.now(), 10)],
+        [1000000000000000001n, Date.now(), Date.now(),],
+        [1000000000000000002n, Date.now(), Date.now(),],
+        [1000000000000000003n, Date.now(), Date.now(),],
+        [1000000000000000004n, Date.now(), Date.now(),],
+        [1000000000000000005n, Date.now(), Date.now(),],
+        [1000000000000000006n, Date.now(), Date.now(),],
+        [1000000000000000007n, Date.now(), Date.now(),],
+        [1000000000000000008n, Date.now(), Date.now(),],
+        [1000000000000000009n, Date.now(), Date.now(),],
+        [1000000000000000010n, Date.now(), Date.now(),],
       ],
       buildDataColumnMap(this.#schemas, "TestDates"),
     ),
@@ -192,6 +217,23 @@ class TestModule extends VuuModule<TestTableName> {
       this.#schemas.MaxScrollEndTable,
       generateRows(this.#schemas.MaxScrollEndTable, 1_000),
       buildDataColumnMap(this.#schemas, "MaxScrollEndTable"),
+    ),
+    TestEditEmpty: tableContainer.createTable(
+      this.#schemas.TestEditEmpty,
+      [],
+      buildDataColumnMap(this.#schemas, "TestEditEmpty"),
+    ),
+    TestEdit: tableContainer.createTable(
+      this.#schemas.TestEdit,
+      // prettier-ignore
+      [
+        ["TEST-001", "Alpha", 12, 101.25, true, Date.now(), withNanoMs(Date.now(), 1), 1000000000000000001n],
+        ["TEST-002", "Bravo", 24, 202.5, false, Date.now(), withNanoMs(Date.now(), 2), 1000000000000000002n],
+        ["TEST-003", "Charlie", 36, 303.75, true, Date.now(), withNanoMs(Date.now(), 3), 1000000000000000003n],
+        ["TEST-004", "Delta", 48, 405, true, Date.now(), withNanoMs(Date.now(), 4), 1000000000000000004n],
+        ["TEST-005", "Echo", 60, 506.25, false, Date.now(), withNanoMs(Date.now(), 5), 1000000000000000005n],
+      ],
+      buildDataColumnMap(this.#schemas, "TestEdit"),
     ),
   };
   constructor() {

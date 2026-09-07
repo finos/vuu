@@ -11,7 +11,7 @@ import {
   isToastNotification,
   isWorkspaceNotification,
   Notification,
-  NotificationsContext,
+  NotificationsContextProps,
   ToastNotificationDescriptor,
 } from "./NotificationsContext";
 import { ToastHoverHandler, ToastNotification } from "./ToastNotification";
@@ -21,7 +21,7 @@ import { MeasuredSize } from "@vuu-ui/vuu-ui-controls";
 const ZeroSize: MeasuredSize = { height: 0, width: 0 };
 const toastContainerRightPadding = 20;
 export interface NotificationsCenterProps {
-  notificationsContext: NotificationsContext;
+  notificationsContext: NotificationsContextProps;
   startupToastNotification?: ToastNotificationDescriptor;
 }
 

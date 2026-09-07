@@ -6,7 +6,15 @@ import {
   LocalDataSourceProvider,
   SimulTableName,
 } from "@vuu-ui/vuu-data-test";
-import { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
+import {
+  DataSource,
+  DataSourceEvents,
+  DataSourceRow,
+  DataSourceSubscribeCallback,
+  DataSourceSubscribeProps,
+  DataSourceStatus,
+  TableSchema,
+} from "@vuu-ui/vuu-data-types";
 import {
   Flexbox,
   FlexboxLayout,
@@ -35,7 +43,9 @@ import {
 import {
   applyDefaultColumnConfig,
   defaultValueFormatter,
+  EventEmitter,
   LayoutJSON,
+  Range,
   registerComponent,
   toColumnName,
   useData,
@@ -99,6 +109,151 @@ export const TestTable = ({
       rowHeight={rowHeight}
       width={width}
     />
+  );
+};
+
+class SwitchableTestDataSource extends EventEmitter<DataSourceEvents> {
+  columns = ["value"];
+  config = {
+    aggregations: [],
+    columns: this.columns,
+    filterSpec: { filter: "" },
+    groupBy: [],
+    sort: { sortDefs: [] },
+  };
+  filter = { filter: "" };
+  range = Range(0, 0);
+  status: DataSourceStatus = "initialising";
+  tableSchema: TableSchema;
+  #callback?: DataSourceSubscribeCallback;
+  #initialCallback?: DataSourceSubscribeCallback;
+  #value: string;
+
+  constructor(
+    private readonly name: string,
+    value: string,
+  ) {
+    super();
+    this.#value = value;
+    this.tableSchema = {
+      columns: [{ name: "value", serverDataType: "string" }],
+      key: "id",
+      table: { module: "TEST", table: name },
+    };
+  }
+
+  async subscribe(
+    { range }: DataSourceSubscribeProps,
+    callback: DataSourceSubscribeCallback,
+  ) {
+    this.#callback = callback;
+    this.#initialCallback ??= callback;
+    this.range = range ?? this.range;
+    this.status = "subscribed";
+    callback({
+      ...this.config,
+      clientViewportId: this.name,
+      range: this.range,
+      tableSchema: this.tableSchema,
+      type: "subscribed",
+    });
+    this.#publish(this.#value, callback);
+  }
+
+  suspend() {
+    this.status = "suspended";
+    this.emit("suspended", this.name);
+  }
+
+  resume(callback?: DataSourceSubscribeCallback) {
+    if (callback) {
+      this.#callback = callback;
+    }
+    this.status = "subscribed";
+    this.emit("resumed", this.name);
+    this.#publish(this.#value);
+  }
+
+  unsubscribe() {
+    this.status = "unsubscribed";
+    this.emit("unsubscribed", this.name);
+  }
+
+  setValue(value: string) {
+    this.#value = value;
+  }
+
+  publishLate(value: string) {
+    this.#publish(value, this.#initialCallback);
+  }
+
+  #publish(value: string, callback = this.#callback) {
+    const row: DataSourceRow = [
+      this.range.from,
+      this.range.from,
+      true,
+      false,
+      0,
+      0,
+      `${this.name}-row`,
+      0,
+      0,
+      false,
+      value,
+    ];
+    callback?.({
+      clientViewportId: this.name,
+      mode: "batch",
+      rows: [row],
+      size: 1,
+      type: "viewport-update",
+    });
+  }
+
+  asDataSource() {
+    return this as unknown as DataSource;
+  }
+}
+
+export const SwitchableDataSourceTable = () => {
+  const source = useMemo(
+    () => new SwitchableTestDataSource("source", "source-value"),
+    [],
+  );
+  const session = useMemo(
+    () => new SwitchableTestDataSource("session", "session-value"),
+    [],
+  );
+  const [dataSource, setDataSource] = useState(source);
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns: [{ name: "value" }],
+    }),
+    [],
+  );
+
+  return (
+    <>
+      <Button onClick={() => setDataSource(session)}>Switch to session</Button>
+      <Button onClick={() => source.publishLate("late-source-value")}>
+        Send late source update
+      </Button>
+      <Button
+        onClick={() => {
+          source.setValue("source-value-after-return");
+          setDataSource(source);
+        }}
+      >
+        Switch to source
+      </Button>
+      <Table
+        config={config}
+        data-testid="switchable-data-source-table"
+        dataSource={dataSource.asDataSource()}
+        height={200}
+        width={400}
+      />
+    </>
   );
 };
 

@@ -299,6 +299,8 @@ export interface ColumnDescriptor extends DataValueDescriptor {
    */
   colHeaderContentRenderer?: string;
   colHeaderLabelRenderer?: string;
+  /** Formats a raw value for CSV export; return value is still CSV-escaped. */
+  exportFormatter?: (value: unknown) => string;
   flex?: number;
   /**
    * Only used when the column is included in a grouby clause.

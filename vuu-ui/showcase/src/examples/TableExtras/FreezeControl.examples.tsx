@@ -39,8 +39,8 @@ export const DefaultFreezeControl = ({
   );
 };
 
-export const FrozenFreezeControl = () => {
-  return <DefaultFreezeControl frozen />;
+export const FrozenFreezeControl = (props: { newItemsLabel?: string }) => {
+  return <DefaultFreezeControl {...props} frozen />;
 };
 
 /** tags=data-consumer */

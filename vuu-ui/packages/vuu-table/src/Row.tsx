@@ -1,4 +1,7 @@
-import { RowProps, RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import type {
+  RowProps,
+  RuntimeColumnDescriptor,
+} from "@vuu-ui/vuu-table-types";
 import {
   isGroupColumn,
   isJsonColumn,
@@ -7,7 +10,7 @@ import {
   queryClosest,
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import { MouseEvent, memo, useCallback } from "react";
+import { type MouseEvent, memo, useCallback } from "react";
 import { TableCell, TableGroupCell } from "./table-cell";
 
 import { VirtualColSpan } from "./VirtualColSpan";
@@ -30,6 +33,7 @@ export const Row = memo(
     onToggleGroup,
     searchPattern,
     showBookends = true,
+    style: styleProp,
     virtualColSpan = 0,
     zebraStripes = false,
     ...htmlAttributes
@@ -68,7 +72,7 @@ export const Row = memo(
     const ariaLevel = isLeaf && depth === 1 ? undefined : depth;
 
     // const style = { transform: `translate3d(0px, ${offset}px, 0px)` };
-    const style = { top: offset };
+    const style = { ...styleProp, top: offset };
 
     const handleGroupCellClick = useCallback(
       (evt: MouseEvent, column: RuntimeColumnDescriptor) => {
@@ -92,6 +96,7 @@ export const Row = memo(
     );
 
     return (
+      // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
       <div
         {...htmlAttributes}
         aria-expanded={ariaExpanded}

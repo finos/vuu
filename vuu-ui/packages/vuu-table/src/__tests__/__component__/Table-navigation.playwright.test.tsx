@@ -1,7 +1,4 @@
-import { test } from "@playwright/experimental-ct-react";
-import { TabInAndOutFixture } from "../../../../../showcase/src/examples/Table/Misc.examples";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { expect } from "../../../../../playwright/customAssertions";
+import { expect, test } from "../../../../../playwright/fixtures";
 import { TableOM } from "./TableOM";
 
 test.describe("Cell navigation with keyboard", () => {
@@ -14,7 +11,7 @@ test.describe("Cell navigation with keyboard", () => {
       // The focus doesn't happen on firefox, need to investigate
       test.skip(browserName === "firefox");
 
-      await mount(<TabInAndOutFixture />);
+      await mount("Table/Misc/TabInAndOutFixture");
       const table = new TableOM(page.getByRole("table"));
       await table.assertVisible();
 
@@ -32,7 +29,7 @@ test.describe("Cell navigation with keyboard", () => {
       mount,
       page,
     }) => {
-      await mount(<TabInAndOutFixture />);
+      await mount("Table/Misc/TabInAndOutFixture");
       const table = new TableOM(page.getByRole("table"));
       await table.assertVisible();
 
@@ -51,7 +48,7 @@ test.describe("Cell navigation with keyboard", () => {
         mount,
         page,
       }) => {
-        await mount(<TabInAndOutFixture />);
+        await mount("Table/Misc/TabInAndOutFixture");
         const table = new TableOM(page.getByRole("table"));
         await table.assertVisible();
 
@@ -72,12 +69,22 @@ test.describe("Cell navigation with keyboard", () => {
 
   test.describe("when column header cell focused", () => {
     test.describe("and UpArrow pressed", () => {
-      test("does nothing", async ({ mount, page }) => {
-        await mount(<TabInAndOutFixture />);
+      test("does nothing", async ({ browserName, mount, page }) => {
+        // The focus doesn't happen on firefox, need to investigate
+        test.skip(browserName === "firefox");
+
+        await mount("Table/Misc/TabInAndOutFixture");
         const table = new TableOM(page.getByRole("table"));
         await table.assertVisible();
 
+        const start = page.getByTestId("input-start");
+        await start.click();
+        await expect(start).toBeFocused();
+        await start.press("Tab");
+
         const header = table.locateColumnHeader(1);
+        await expect(header).toBeFocused();
+
         await header.press("ArrowUp");
         await expect(header).toBeFocused();
       });
@@ -87,7 +94,7 @@ test.describe("Cell navigation with keyboard", () => {
         mount,
         page,
       }) => {
-        await mount(<TabInAndOutFixture />);
+        await mount("Table/Misc/TabInAndOutFixture");
         const table = new TableOM(page.getByRole("table"));
         await table.assertVisible();
 

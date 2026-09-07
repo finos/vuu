@@ -1,7 +1,13 @@
-import { CsvUpload } from "@vuu-ui/vuu-table-extras";
+import {
+  CsvUpload,
+} from "@vuu-ui/vuu-table-extras";
 import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
+import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@salt-ds/core";
+import { LocalDataSourceProvider, simulModule } from "@vuu-ui/vuu-data-test";
+import { Table } from "@vuu-ui/vuu-table";
+import type { TableConfig } from "@vuu-ui/vuu-table-types";
 
 const mockSchema: TableSchema = {
   columns: [
@@ -91,3 +97,147 @@ export const CsvUploadWithInstrumentsSchema = () => {
   const dataSource = useMemo(() => createInstrumentsMockDataSource(), []);
   return <CsvUpload dataSource={dataSource} />;
 };
+const rowDefaultsSchema: TableSchema = {
+  columns: [
+    { name: "id", serverDataType: "string" },
+    { name: "name", serverDataType: "string" },
+  ],
+  key: "id",
+  table: { module: "TEST", table: "items" },
+};
+
+export const CsvUploadWithRowDefaults = () => {
+  const [capturedRows, setCapturedRows] = useState<
+    Record<string, VuuRowDataItemType>[]
+  >([]);
+
+  const dataSource = useMemo(() => {
+    const sessionDs = {
+      table: { module: "TEST", table: "session-items" },
+      tableSchema: rowDefaultsSchema,
+      columns: ["id"],
+      addRow: async (rowData: Record<string, VuuRowDataItemType>) => {
+        setCapturedRows((prev) => [...prev, rowData]);
+        return { data: undefined, type: "SUCCESS_RESULT" as const };
+      },
+      endEditSession: async () => void 0,
+    };
+    return {
+      table: { module: "TEST", table: "items" },
+      tableSchema: rowDefaultsSchema,
+      createSessionDataSource: async () => sessionDs as unknown as DataSource,
+      subscribe: async () => void 0,
+      unsubscribe: () => void 0,
+    } as unknown as DataSource;
+  }, []);
+
+  return (
+    <div>
+      <CsvUpload
+        dataSource={dataSource}
+        rowDefaults={{ name: "Default Name" }}
+      />
+      {capturedRows.length > 0 && (
+        <ul data-testid="captured-rows">
+          {capturedRows.map((row, i) => (
+            <li key={i} data-testid={`captured-row-${i}`}>
+              {JSON.stringify(row)}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+const IMPORT_TABLE: VuuTable = { module: "TEST", table: "items-import" };
+
+const importOnlySchema: TableSchema = {
+  columns: [
+    { name: "id", serverDataType: "string" },
+    { name: "quantity", serverDataType: "int" },
+  ],
+  key: "id",
+  table: IMPORT_TABLE,
+};
+
+/**
+ * Target table schema is `id`/`name`, import table schema is `id`/`quantity`, so a CSV
+ * containing `quantity` only validates if the import schema is used.
+ */
+export const CsvUploadWithImportSchema = () => {
+  const [sessionColumns, setSessionColumns] = useState<string[]>();
+
+  const dataSource = useMemo(() => {
+    const sessionDs = {
+      table: { module: "TEST", table: "session-items-import" },
+      tableSchema: importOnlySchema,
+      columns: ["id"],
+      addRow: async () => ({
+        data: undefined,
+        type: "SUCCESS_RESULT" as const,
+      }),
+      endEditSession: async () => void 0,
+    };
+    return {
+      table: { module: "TEST", table: "items" },
+      tableSchema: rowDefaultsSchema,
+      createSessionDataSource: async (
+        _copyOption: unknown,
+        _sessionType: unknown,
+        overrides?: { columns?: string[] },
+      ) => {
+        setSessionColumns(overrides?.columns);
+        return sessionDs as unknown as DataSource;
+      },
+      subscribe: async () => void 0,
+      unsubscribe: () => void 0,
+    } as unknown as DataSource;
+  }, []);
+
+  return (
+    <div>
+      <CsvUpload
+        dataSource={dataSource}
+        importSchema={importOnlySchema}
+        importTable={IMPORT_TABLE}
+      />
+      <output
+        data-testid="session-columns"
+        data-columns={sessionColumns?.join(",") ?? ""}
+      />
+    </div>
+  );
+};
+
+/** importTable only - the schema is fetched via getTableSchema. */
+export const CsvUploadWithImportTableOnly = () => {
+  const dataSource = useMemo(() => {
+    const sessionDs = {
+      table: { module: "TEST", table: "session-instruments" },
+      columns: ["ric"],
+      addRow: async () => ({
+        data: undefined,
+        type: "SUCCESS_RESULT" as const,
+      }),
+      endEditSession: async () => void 0,
+    };
+    return {
+      table: { module: "TEST", table: "items" },
+      tableSchema: rowDefaultsSchema,
+      createSessionDataSource: async () => sessionDs as unknown as DataSource,
+      subscribe: async () => void 0,
+      unsubscribe: () => void 0,
+    } as unknown as DataSource;
+  }, []);
+
+  return (
+    <LocalDataSourceProvider>
+      <CsvUpload
+        dataSource={dataSource}
+        importTable={{ module: "SIMUL", table: "instruments" }}
+      />
+    </LocalDataSourceProvider>
+  );
+};
+

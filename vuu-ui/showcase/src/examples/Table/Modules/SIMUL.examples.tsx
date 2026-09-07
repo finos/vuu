@@ -62,6 +62,7 @@ const getDefaultColumnConfig = (
 export const Instruments = (props: Omit<SimulTableProps, "tableName">) => (
   <SimulTable
     {...props}
+    data-testid="table"
     tableName="instruments"
     getDefaultColumnConfig={getDefaultColumnConfig}
   />

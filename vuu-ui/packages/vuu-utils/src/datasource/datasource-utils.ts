@@ -1,4 +1,4 @@
-import {
+import type {
   ConnectionQualityMetrics,
   DataSourceCallbackMessage,
   DataSourceConfig,
@@ -16,16 +16,18 @@ import {
   WithGroupBy,
   WithSort,
 } from "@vuu-ui/vuu-data-types";
-import {
+import type {
   LinkDescriptorWithLabel,
+  VuuColumns,
   VuuCreateVisualLink,
   VuuFilter,
   VuuRemoveVisualLink,
   VuuRowDataItemType,
   VuuSort,
+  VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-import { ColumnMap } from "../column-utils";
-import { ConfigWithVisualLink } from "./BaseDataSource";
+import type { ColumnMap } from "../column-utils";
+import type { ConfigWithVisualLink } from "./BaseDataSource";
 
 export const NoFilter: VuuFilter = { filter: "" };
 export const NoSort: VuuSort = { sortDefs: [] };
@@ -36,6 +38,38 @@ export const vanillaConfig: WithFullConfig = {
   filterSpec: NoFilter,
   groupBy: [],
   sort: NoSort,
+};
+
+/**
+ * Derive the config for a session (edit) datasource from the source (view) datasource config.
+ * When the edit table declares its own columns, the view config's filter, groupBy, sort and
+ * aggregations are discarded rather than inherited - they may reference view-only columns.
+ */
+export const sessionDataSourceConfig = (
+  sourceConfig: WithFullConfig,
+  overrideColumns?: VuuColumns,
+): WithFullConfig => {
+  if (overrideColumns === undefined) {
+    return sourceConfig;
+  }
+  return {
+    ...vanillaConfig,
+    columns: overrideColumns,
+  };
+};
+
+/**
+ * The session table name is server generated, so only the module is compared.
+ */
+export const assertExpectedSessionTable = (
+  sessionTable: VuuTable,
+  expectedTable?: VuuTable,
+) => {
+  if (expectedTable && expectedTable.module !== sessionTable.module) {
+    throw Error(
+      `[datasource-utils] session table ${sessionTable.module}/${sessionTable.table} does not match expected edit table module ${expectedTable.module}`,
+    );
+  }
 };
 
 export const stripVisualLink = (
@@ -195,7 +229,7 @@ const isVisualLinkChanged: DataConfigPredicate = (
   if (v1 === undefined || v2 === undefined) {
     return true;
   }
-  return v1.label !== v2.label || v2.parentVpId !== v2.parentVpId;
+  return v1.label !== v2.label || v1.parentVpId !== v2.parentVpId;
 };
 
 export const NO_CONFIG_CHANGES: MaybeDataSourceConfigChanges = {

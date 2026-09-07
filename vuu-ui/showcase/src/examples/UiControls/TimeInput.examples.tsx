@@ -44,6 +44,8 @@ const TimeInputTemplate = ({
   value: valueProp,
 }: Partial<TimeInputProps>) => {
   const [value, setValue] = useState(valueProp);
+  const [changeValues, setChangeValues] = useState<string[]>([]);
+  const [commitValues, setCommitValues] = useState<string[]>([]);
 
   useMemo(() => {
     setValue(valueProp);
@@ -52,6 +54,7 @@ const TimeInputTemplate = ({
   const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (e) => {
       const { value } = e.target;
+      setChangeValues((values) => [...values, value]);
       console.log(`change value ${value}`);
       onChange?.(e);
     },
@@ -61,6 +64,7 @@ const TimeInputTemplate = ({
   const handleCommit = useCallback<CommitHandler<HTMLInputElement, TimeString>>(
     (e, value) => {
       console.log(`commit value ${value}`);
+      setCommitValues((values) => [...values, value]);
       onCommit?.(e, value);
     },
     [onCommit],
@@ -93,6 +97,18 @@ const TimeInputTemplate = ({
         onChange={handleChange}
         onCommit={handleCommit}
         value={value}
+      />
+      <input
+        data-testid="time-input-change-values"
+        type="hidden"
+        value={JSON.stringify(changeValues)}
+        readOnly
+      />
+      <input
+        data-testid="time-input-commit-values"
+        type="hidden"
+        value={JSON.stringify(commitValues)}
+        readOnly
       />
       <Input data-testid="post-timeinput" />
     </div>
