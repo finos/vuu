@@ -176,7 +176,7 @@ export const GridLayoutItem = ({
       {...htmlAttributes}
       {...draggableProps}
       {...droppableProps}
-      className={cx(className)}
+      className={cx(className, classNameProp)}
       id={id}
       key={id}
       style={style}

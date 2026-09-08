@@ -18,6 +18,7 @@ import type {
 import {
   decodeGridLayoutDocument,
   encodeGridLayoutDocument,
+  immutableGridLayoutDocument,
   type GridLayoutDocument,
   GridLayoutDocumentCodecError,
   type GridLayoutDocumentError,
@@ -34,7 +35,11 @@ import { GridLayoutItem } from "./GridLayoutItem";
 import {
   TemplateDragSession,
   TemplateDragSessionContext,
+  useTemplateDragSession,
 } from "./drag-drop-next/TemplateDragSession";
+import type { ComponentTemplate } from "./GridLayoutContext";
+import { isTypedComponentTemplate } from "./GridLayoutContext";
+import type { GridCommittedTransition } from "./GridController";
 
 type GridLayoutOptions = {
   newChildItem: {
@@ -56,9 +61,14 @@ interface GridLayoutProviderContext {
   getSavedGrid?: (id: string) => LegacyDeserializedGridLayout | undefined;
   options?: GridLayoutOptions;
   onCommittedSnapshot?: (
-    snapshot: GridSnapshot,
+    transition: GridCommittedTransition,
     placeholderIds: readonly string[],
   ) => void;
+  releaseTemplateComponent?: (id: string) => void;
+  renderTemplateComponent?: (
+    template: ComponentTemplate,
+    id: string,
+  ) => ReactElement | undefined;
 }
 
 const GridLayoutProviderContext = createContext<GridLayoutProviderContext>({});
@@ -73,7 +83,8 @@ export interface GridLayoutProviderProps {
   componentRenderers?: GridComponentRendererRegistry;
   componentSettings?: readonly GridComponentSettingsInput[];
   document?: unknown;
-  onDocumentChange?: (document: GridLayoutDocument) => void;
+  documentController?: GridLayoutDocumentController;
+  onDocumentChange?: GridLayoutDocumentChangeHandler;
   onDocumentError?: (error: GridLayoutDocumentError) => void;
   options?: GridLayoutOptions;
   settingsCodecs?: GridComponentSettingsRegistry;
@@ -85,9 +96,71 @@ export interface GridLayoutProviderProps {
   serializedLayout?: SerializedGridLayout;
 }
 
+export interface GridLayoutDocumentChange {
+  readonly document: GridLayoutDocument;
+  readonly kind: GridCommittedTransition["kind"];
+  readonly removedComponentInstanceIds: readonly string[];
+  readonly revision: number;
+}
+
+export type GridLayoutDocumentChangeHandler = (
+  document: GridLayoutDocument,
+  change: GridLayoutDocumentChange,
+) => void;
+
+export type GridLayoutDocumentStoreListener = () => void;
+
+export class GridLayoutDocumentController {
+  #change: GridLayoutDocumentChange | undefined;
+  #document: GridLayoutDocument | undefined;
+  readonly #listeners = new Set<GridLayoutDocumentStoreListener>();
+
+  constructor(document?: GridLayoutDocument) {
+    this.#document = document
+      ? immutableGridLayoutDocument(document)
+      : undefined;
+  }
+
+  getSnapshot = () => this.#document;
+
+  getChange = () => this.#change;
+
+  subscribe = (listener: GridLayoutDocumentStoreListener) => {
+    this.#listeners.add(listener);
+    return () => this.#listeners.delete(listener);
+  };
+
+  replace(document: GridLayoutDocument | undefined): void {
+    const immutableDocument = document
+      ? immutableGridLayoutDocument(document)
+      : undefined;
+    if (this.#document === document) {
+      return;
+    }
+    this.#document = immutableDocument;
+    this.#change = undefined;
+    this.#notify();
+  }
+
+  publish(change: GridLayoutDocumentChange): void {
+    this.#document = change.document;
+    this.#change = change;
+    this.#notify();
+  }
+
+  #notify() {
+    for (const listener of [...this.#listeners]) {
+      if (this.#listeners.has(listener)) {
+        listener();
+      }
+    }
+  }
+}
+
 interface ResolvedGridLayoutDocument {
   readonly componentById: ReadonlyMap<string, ReactElement>;
   readonly decodedSettings: readonly GridComponentSettingsInput[];
+  readonly document: GridLayoutDocument;
   readonly layout: ReturnType<typeof gridSnapshotToGridLayoutDescriptor>;
   readonly placeholderIds: readonly string[];
   readonly snapshot: GridSnapshot;
@@ -150,6 +223,7 @@ const resolveDocument = (
         ({ id, settings, type }) => ({ id, settings, type }),
       ),
       layout: gridSnapshotToGridLayoutDescriptor(decoded.value.snapshot),
+      document: decoded.value.document,
       placeholderIds: [...decoded.value.document.layout.placeholderIds],
       snapshot: decoded.value.snapshot,
     },
@@ -164,13 +238,21 @@ export const GridLayoutProvider = (
     componentRenderers,
     componentSettings,
     document,
+    documentController,
     onDocumentChange,
     onDocumentError,
     serializedLayout,
     settingsCodecs,
     options,
   } = props;
-  const templateDragSession = useMemo(() => new TemplateDragSession(), []);
+  const inheritedTemplateDragSession = useTemplateDragSession();
+  const localTemplateDragSession = useMemo(() => new TemplateDragSession(), []);
+  const templateDragSession =
+    inheritedTemplateDragSession ?? localTemplateDragSession;
+  const runtimeComponentSettings = useRef(
+    new Map<string, GridComponentSettingsInput>(),
+  );
+  const templateComponentIds = useRef(new Set<string>());
   const documentResolution = useMemo(
     () => resolveDocument(document, settingsCodecs, componentRenderers),
     [componentRenderers, document, settingsCodecs],
@@ -183,6 +265,28 @@ export const GridLayoutProvider = (
     if (documentResolution.ok) {
       reportedError.current = undefined;
       setDecodedDocument(documentResolution.value);
+      const nextSettings = new Map(
+        (
+          componentSettings ??
+          documentResolution.value?.decodedSettings ??
+          []
+        ).map((component) => [component.id, component]),
+      );
+      for (const componentId of templateComponentIds.current) {
+        const runtimeSettings =
+          runtimeComponentSettings.current.get(componentId);
+        if (runtimeSettings) {
+          nextSettings.set(componentId, runtimeSettings);
+        }
+      }
+      runtimeComponentSettings.current = nextSettings;
+      if (
+        documentController &&
+        documentResolution.value &&
+        documentController.getSnapshot() === undefined
+      ) {
+        documentController.replace(documentResolution.value.document);
+      }
     } else if (
       reportedError.current !== documentResolution &&
       onDocumentError
@@ -192,7 +296,12 @@ export const GridLayoutProvider = (
     } else if (!onDocumentError) {
       throw new GridLayoutDocumentCodecError(documentResolution.error);
     }
-  }, [documentResolution, onDocumentError]);
+  }, [
+    componentSettings,
+    documentController,
+    documentResolution,
+    onDocumentError,
+  ]);
   const legacyReader = useMemo(() => {
     return serializedLayout
       ? createLegacyGridLayoutReader(serializedLayout)
@@ -246,9 +355,47 @@ export const GridLayoutProvider = (
     [decodedDocument, legacyReader],
   );
 
+  const renderTemplateComponent = useCallback(
+    (template: ComponentTemplate, id: string): ReactElement | undefined => {
+      if (!isTypedComponentTemplate(template)) {
+        return undefined;
+      }
+      if (!settingsCodecs || !componentRenderers) {
+        throw new Error(
+          "Typed component templates require settingsCodecs and componentRenderers",
+        );
+      }
+      const decoded = settingsCodecs.decode({ id, ...template.component });
+      if (!decoded.ok) {
+        throw new GridLayoutDocumentCodecError({
+          code: "COMPONENT_SETTINGS_ERROR",
+          componentError: decoded.error,
+          message: decoded.error.message,
+          path: "$.component",
+          version: decoded.error.version,
+        });
+      }
+      runtimeComponentSettings.current.set(id, {
+        id,
+        settings: decoded.value.settings,
+        type: decoded.value.type,
+      });
+      templateComponentIds.current.add(id);
+      return componentRenderers.render(decoded.value);
+    },
+    [componentRenderers, settingsCodecs],
+  );
+  const releaseTemplateComponent = useCallback((id: string) => {
+    runtimeComponentSettings.current.delete(id);
+    templateComponentIds.current.delete(id);
+  }, []);
+
   const onCommittedSnapshot = useCallback(
-    (snapshot: GridSnapshot, placeholderIds: readonly string[]) => {
-      if (!onDocumentChange) {
+    (
+      transition: GridCommittedTransition,
+      placeholderIds: readonly string[],
+    ) => {
+      if (!onDocumentChange && !documentController) {
         return;
       }
       if (!settingsCodecs) {
@@ -263,8 +410,8 @@ export const GridLayoutProvider = (
         }
         throw new GridLayoutDocumentCodecError(error);
       }
-      const availableSettings =
-        componentSettings ?? decodedDocument?.decodedSettings ?? [];
+      const { previous, snapshot } = transition;
+      const availableSettings = [...runtimeComponentSettings.current.values()];
       const referencedComponentIds = new Set(
         snapshot.items.map(
           ({ componentInstanceId, id }) => componentInstanceId ?? id,
@@ -278,20 +425,37 @@ export const GridLayoutProvider = (
         placeholderIds,
       });
       if (encoded.ok) {
-        onDocumentChange(encoded.value);
+        const currentComponentIds = new Set(
+          snapshot.items.map(
+            ({ componentInstanceId, id }) => componentInstanceId ?? id,
+          ),
+        );
+        const removedComponentInstanceIds = previous.items
+          .map(({ componentInstanceId, id }) => componentInstanceId ?? id)
+          .filter(
+            (componentId) =>
+              !currentComponentIds.has(componentId) &&
+              runtimeComponentSettings.current.has(componentId),
+          );
+        const change: GridLayoutDocumentChange = {
+          document: encoded.value,
+          kind: transition.kind,
+          removedComponentInstanceIds,
+          revision: snapshot.revision,
+        };
+        documentController?.publish(change);
+        onDocumentChange?.(encoded.value, change);
+        for (const componentId of removedComponentInstanceIds) {
+          runtimeComponentSettings.current.delete(componentId);
+          templateComponentIds.current.delete(componentId);
+        }
       } else if (onDocumentError) {
         onDocumentError(encoded.error);
       } else {
         throw new GridLayoutDocumentCodecError(encoded.error);
       }
     },
-    [
-      componentSettings,
-      decodedDocument,
-      onDocumentChange,
-      onDocumentError,
-      settingsCodecs,
-    ],
+    [documentController, onDocumentChange, onDocumentError, settingsCodecs],
   );
 
   return (
@@ -301,6 +465,8 @@ export const GridLayoutProvider = (
           getSavedGrid,
           onCommittedSnapshot,
           options,
+          releaseTemplateComponent,
+          renderTemplateComponent,
         }}
       >
         {document !== undefined && decodedDocument === undefined
@@ -312,8 +478,16 @@ export const GridLayoutProvider = (
 };
 
 export const useGridChangeHandler = () => {
-  const { onCommittedSnapshot } = useContext(GridLayoutProviderContext);
-  return { onCommittedSnapshot };
+  const {
+    onCommittedSnapshot,
+    releaseTemplateComponent,
+    renderTemplateComponent,
+  } = useContext(GridLayoutProviderContext);
+  return {
+    onCommittedSnapshot,
+    releaseTemplateComponent,
+    renderTemplateComponent,
+  };
 };
 
 export const useSavedGrid = () => {

@@ -1,5 +1,13 @@
-import { FeatureList, GroupedFeatureProps } from "@vuu-ui/vuu-shell";
-import { DynamicFeatureProps } from "@vuu-ui/vuu-utils";
+import {
+  FeatureList,
+  type FeatureListProps,
+  type GroupedFeatureProps,
+} from "@vuu-ui/vuu-shell";
+import type { DynamicFeatureProps } from "@vuu-ui/vuu-utils";
+
+const FeatureListStory = (props: FeatureListProps) => (
+  <FeatureList {...props} />
+);
 
 export const DefaultFeatureList = () => {
   const features: DynamicFeatureProps[] = [
@@ -9,7 +17,7 @@ export const DefaultFeatureList = () => {
     { title: "Component 4", mfUrl: "test", mfComponent: "Test", mfScope: "test" },
   ];
 
-  return <FeatureList features={features} style={{ width: 300 }} />;
+  return <FeatureListStory features={features} style={{ width: 300 }} />;
 };
 
 export const FeatureListWithTitle = () => {
@@ -21,7 +29,7 @@ export const FeatureListWithTitle = () => {
   ];
 
   return (
-    <FeatureList
+    <FeatureListStory
       features={features}
       style={{ width: 300 }}
       title="Custom Title"
@@ -45,7 +53,7 @@ export const FeatureListWithGroups = () => {
   };
 
   return (
-    <FeatureList
+    <FeatureListStory
       features={features}
       style={{ width: 300 }}
       title="Grouped Components"
@@ -84,7 +92,7 @@ export const FeatureListWithGroupsManyItems = () => {
   };
 
   return (
-    <FeatureList
+    <FeatureListStory
       features={features}
       style={{ width: 300 }}
       title="Grouped Components"

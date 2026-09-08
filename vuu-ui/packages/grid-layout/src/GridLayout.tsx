@@ -8,6 +8,7 @@ import {
   type CSSProperties,
   type HTMLAttributes,
   type ReactElement,
+  type ReactNode,
 } from "react";
 import { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
 import { getGridArea } from "./grid-layout-utils";
@@ -53,6 +54,8 @@ export interface GridLayoutProps
   colsAndRows?: GridColumnsAndRows;
   /** @deprecated Use GridLayoutProvider onDocumentChange. */
   onChange?: GridLayoutChangeHandler;
+  /** Content rendered inside canonical placeholders without obscuring their drop target. */
+  placeholderContent?: ReactNode;
   /** Coupled boundaries with partial cross-group spans retain adjacent resizing. */
   rowResizeDistribution?: GridResizeDistribution;
 }
@@ -67,6 +70,7 @@ export const GridLayout = ({
   colsAndRows,
   onClick,
   onChange,
+  placeholderContent,
   rowResizeDistribution = "adjacent",
   style: styleProp,
   ...htmlAttributes
@@ -182,7 +186,9 @@ export const GridLayout = ({
                 style={{
                   gridArea: `${placeholder.row.start}/${placeholder.column.start}/${placeholder.row.start + placeholder.row.span}/${placeholder.column.start + placeholder.column.span}`,
                 }}
-              />
+              >
+                {placeholderContent}
+              </GridPlaceholder>
             );
           })}
           {splitters.map((splitter) => (

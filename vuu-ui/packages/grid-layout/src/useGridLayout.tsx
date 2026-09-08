@@ -32,6 +32,8 @@ import {
   sourceIsComponent,
   sourceIsTabbedComponent,
   sourceIsTemplate,
+  isTypedComponentTemplate,
+  type ComponentTemplate,
 } from "./GridLayoutContext";
 import {
   GridLayoutItem,
@@ -162,7 +164,11 @@ export const useGridLayout = ({
   onChange,
 }: GridLayoutHookProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { onCommittedSnapshot } = useGridChangeHandler();
+  const {
+    onCommittedSnapshot,
+    releaseTemplateComponent,
+    renderTemplateComponent,
+  } = useGridChangeHandler();
   const layoutOptions = useGridLayoutOptions();
 
   const getSavedGrid = useSavedGrid();
@@ -321,8 +327,8 @@ export const useGridLayout = ({
   const provisionalTemplateRef = useRef<
     | {
         component: ReactElement;
-        componentJson: string;
         itemId: string;
+        template: ComponentTemplate;
       }
     | undefined
   >(undefined);
@@ -433,8 +439,24 @@ export const useGridLayout = ({
         throw Error(result.error.message);
       }
     }
-    provisionalTemplateRef.current = undefined;
-  }, [clearDragAppearance, clearPendingExistingDrag, dragCoordinator]);
+    if (provisionalTemplateRef.current) {
+      releaseTemplateComponent?.(provisionalTemplateRef.current.itemId);
+      provisionalTemplateRef.current = undefined;
+    }
+  }, [
+    clearDragAppearance,
+    clearPendingExistingDrag,
+    dragCoordinator,
+    releaseTemplateComponent,
+  ]);
+
+  const releaseProvisionalTemplate = useCallback(() => {
+    const provisional = provisionalTemplateRef.current;
+    if (provisional) {
+      releaseTemplateComponent?.(provisional.itemId);
+      provisionalTemplateRef.current = undefined;
+    }
+  }, [releaseTemplateComponent]);
 
   const handleDragEnd = useCallback<GridLayoutDragEndHandler>(
     (_evt, dropped) => {
@@ -529,17 +551,28 @@ export const useGridLayout = ({
     (dragSource: Parameters<GridLayoutDropHandler>[1]) => {
       if (sourceIsTemplate(dragSource)) {
         let provisional = provisionalTemplateRef.current;
-        if (
-          !provisional ||
-          provisional.componentJson !== dragSource.componentJson
-        ) {
-          const { label = "New Item", ...restJSON } = JSON.parse(
-            dragSource.componentJson,
-          );
+        if (!provisional || provisional.template !== dragSource) {
+          if (provisional) {
+            releaseTemplateComponent?.(provisional.itemId);
+          }
+          const itemId = uuid();
+          const component = isTypedComponentTemplate(dragSource)
+            ? renderTemplateComponent?.(dragSource, itemId)
+            : (() => {
+                const { label: _label, ...layout } = JSON.parse(
+                  dragSource.componentJson,
+                );
+                return layoutFromJson(layout as LayoutJSON);
+              })();
+          if (!component) {
+            throw Error(
+              `[useGridLayout#${id}] component template could not be rendered`,
+            );
+          }
           provisional = {
-            component: layoutFromJson(restJSON as LayoutJSON),
-            componentJson: dragSource.componentJson,
-            itemId: uuid(),
+            component,
+            itemId,
+            template: dragSource,
           };
           provisionalTemplateRef.current = provisional;
         }
@@ -555,12 +588,15 @@ export const useGridLayout = ({
               id: provisional.itemId,
               resizeable: "hv",
               row: { span: 1, start: 1 },
-              title: JSON.parse(dragSource.componentJson).label ?? "New Item",
+              title: dragSource.label ?? "New Item",
             },
             kind: "palette-template",
-            templateId: dragSource.componentJson,
+            templateId: isTypedComponentTemplate(dragSource)
+              ? `${dragSource.component.type}@${dragSource.component.version}`
+              : dragSource.componentJson,
           });
           if (!begun.ok) {
+            releaseProvisionalTemplate();
             throw Error(begun.error.message);
           }
         }
@@ -598,7 +634,11 @@ export const useGridLayout = ({
     [
       clearPendingExistingDrag,
       dragCoordinator,
+      id,
       layoutOptions?.newChildItem.header,
+      releaseTemplateComponent,
+      releaseProvisionalTemplate,
+      renderTemplateComponent,
     ],
   );
 
@@ -618,8 +658,8 @@ export const useGridLayout = ({
         throw Error(result.error.message);
       }
     }
-    provisionalTemplateRef.current = undefined;
-  }, [dragCoordinator]);
+    releaseProvisionalTemplate();
+  }, [dragCoordinator, releaseProvisionalTemplate]);
 
   const handleDragPreview = useCallback<GridLayoutDropHandler>(
     (targetItemId, dragSource, position) => {
@@ -644,31 +684,22 @@ export const useGridLayout = ({
       if (!intent) {
         return false;
       }
-      const replacingPlaceholder =
-        intent.kind === "replace" &&
-        sourceIsTemplate(dragSource) &&
-        !contentRegistryRef.current.has(targetItemId);
-      if (
-        (intent.kind !== "split" && !replacingPlaceholder) ||
-        sourceIsTabbedComponent(dragSource)
-      ) {
-        const previewed = dragCoordinator.preview({
-          gridId: id,
-          intent,
-          targetId,
-        });
-        if (!previewed.ok) {
-          return false;
-        }
-        const cleared = dragCoordinator.clearPreview();
-        if (!cleared.ok) {
-          throw Error(cleared.error.message);
-        }
-        return true;
+      const previewed = dragCoordinator.preview({
+        gridId: id,
+        intent,
+        targetId,
+      });
+      if (!previewed.ok) {
+        handleCancelDrag();
+        return false;
       }
-      return dragCoordinator.preview({ gridId: id, intent, targetId }).ok;
+      const cleared = dragCoordinator.clearPreview();
+      if (!cleared.ok) {
+        throw Error(cleared.error.message);
+      }
+      return true;
     },
-    [dragCoordinator, gridModel, id, prepareDragSource],
+    [dragCoordinator, gridModel, handleCancelDrag, id, prepareDragSource],
   );
 
   const handleDrop = useCallback<GridLayoutDropHandler>(
@@ -693,6 +724,7 @@ export const useGridLayout = ({
         position !== "centre" &&
         position !== "header"
       ) {
+        handleCancelDrag();
         return false;
       }
       if (
@@ -700,6 +732,7 @@ export const useGridLayout = ({
         targetGridItem &&
         isStackedItem(targetGridItem)
       ) {
+        handleCancelDrag();
         return false;
       }
       const targetId =
@@ -715,22 +748,13 @@ export const useGridLayout = ({
           : { kind: "create-stack" };
       const preview =
         existingPlaceholderPreview ||
-        (isGridLayoutSplitDirection(position) &&
-        !sourceIsTabbedComponent(dragSource)
-          ? handleDragPreview(targetItemId, dragSource, position)
-          : dragCoordinator.preview({
-              gridId: id,
-              intent,
-              targetId,
-            }).ok);
+        dragCoordinator.preview({
+          gridId: id,
+          intent,
+          targetId,
+        }).ok;
       if (!preview) {
-        if (
-          dragCoordinator.state.phase === "dragging" ||
-          dragCoordinator.state.phase === "previewing"
-        ) {
-          dragCoordinator.cancel();
-        }
-        provisionalTemplateRef.current = undefined;
+        handleCancelDrag();
         return false;
       }
       const committed = dragCoordinator.commit();
@@ -762,9 +786,9 @@ export const useGridLayout = ({
       addChildComponent,
       clearDragAppearance,
       gridModel,
+      handleCancelDrag,
       id,
       dragCoordinator,
-      handleDragPreview,
       prepareDragSource,
       replaceChildComponent,
       setChildren,
@@ -838,11 +862,20 @@ export const useGridLayout = ({
       let component: ReactElement | undefined;
       let newChildId: string | undefined;
       if (sourceIsTemplate(dragSource)) {
-        const { label = "New Item", ...restJSON } = JSON.parse(
-          dragSource.componentJson,
-        );
         newChildId = uuid();
-        component = layoutFromJson(restJSON as LayoutJSON);
+        component = isTypedComponentTemplate(dragSource)
+          ? renderTemplateComponent?.(dragSource, newChildId)
+          : (() => {
+              const { label: _label, ...layout } = JSON.parse(
+                dragSource.componentJson,
+              );
+              return layoutFromJson(layout as LayoutJSON);
+            })();
+        if (!component) {
+          throw Error(
+            `[useGridLayout#${id}] component template could not be rendered`,
+          );
+        }
         const begun = dragCoordinator.begin({
           item: {
             column: { span: 1, start: 1 },
@@ -851,10 +884,12 @@ export const useGridLayout = ({
             id: newChildId,
             resizeable: "hv",
             row: { span: 1, start: 1 },
-            title: label,
+            title: dragSource.label ?? "New Item",
           },
           kind: "palette-template",
-          templateId: dragSource.componentJson,
+          templateId: isTypedComponentTemplate(dragSource)
+            ? `${dragSource.component.type}@${dragSource.component.version}`
+            : dragSource.componentJson,
         });
         if (!begun.ok) {
           throw Error(begun.error.message);
@@ -907,6 +942,7 @@ export const useGridLayout = ({
       gridModel,
       id,
       layoutOptions?.newChildItem.header,
+      renderTemplateComponent,
       snapshot,
     ],
   );
@@ -939,11 +975,21 @@ export const useGridLayout = ({
         case "add-tabbed-child":
           {
             const { componentTemplate, title, stackId } = action;
-            const { componentJson, dropTarget = true } = componentTemplate;
-            const componentJSON = JSON.parse(componentJson);
+            const { dropTarget = true } = componentTemplate;
             const { column, row } = gridModel.getChildItem(stackId, true);
 
             const newChildId = uuid();
+            const component = isTypedComponentTemplate(componentTemplate)
+              ? renderTemplateComponent?.(componentTemplate, newChildId)
+              : layoutFromJson({
+                  ...JSON.parse(componentTemplate.componentJson),
+                  title,
+                } as LayoutJSON);
+            if (!component) {
+              throw Error(
+                `[useGridLayout#${id}] component template could not be rendered`,
+              );
+            }
             throwForGridCommandFailure(
               gridController.dispatch({
                 item: {
@@ -964,10 +1010,6 @@ export const useGridLayout = ({
             );
             const gridModelChildItem = gridModel.getChildItem(newChildId, true);
 
-            const component = layoutFromJson({
-              ...componentJSON,
-              title,
-            } as LayoutJSON);
             addChildComponent(component, gridModelChildItem);
 
             throwForGridCommandFailure(
@@ -1022,16 +1064,19 @@ export const useGridLayout = ({
       addChildComponent,
       gridController,
       gridModel,
+      id,
       layoutOptions?.newChildItem.header,
+      renderTemplateComponent,
       setChildren,
     ],
   );
 
   useEffect(() => {
-    return gridController.subscribeCommitted(({ snapshot }) => {
+    return gridController.subscribeCommitted((transition) => {
+      const { snapshot } = transition;
       saveGridLayout(id, gridSnapshotToGridLayoutDescriptor(snapshot));
       onCommittedSnapshot?.(
-        snapshot,
+        transition,
         gridModel
           .getPlaceholders()
           .map(({ id: placeholderId }) => placeholderId),

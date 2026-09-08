@@ -2,7 +2,10 @@ export type {
   DragSources,
   DropHandler,
 } from "./drag-drop-next/DragContextNext";
-export { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
+export {
+  DragDropProviderNext,
+  useOptionalDragContext,
+} from "./drag-drop-next/DragDropProviderNext";
 export { GridLayout, type GridResizeDistribution } from "./GridLayout";
 export {
   GridDragCoordinator,
@@ -46,15 +49,30 @@ export {
   useGridModel,
   useGridSnapshot,
   type ComponentTemplate,
+  type ComponentTemplateWithoutLabel,
+  type LegacyComponentTemplate,
   type DragSource,
   type TemplateSource,
+  type TypedComponentTemplate,
 } from "./GridLayoutContext";
 export { useGridControllerSnapshot } from "./useGridControllerSnapshot";
 export { GridLayoutItem } from "./GridLayoutItem";
 export {
   GridLayoutProvider,
+  GridLayoutDocumentController,
+  type GridLayoutDocumentChange,
+  type GridLayoutDocumentChangeHandler,
+  type GridLayoutDocumentStoreListener,
   type GridLayoutProviderProps,
 } from "./GridLayoutProvider";
+export {
+  createSequentialGridLayoutIdAllocator,
+  remapGridLayoutDocumentIds,
+  type GridLayoutIdAllocator,
+  type GridLayoutIdKind,
+  type GridLayoutIdRemapping,
+  type RemappedGridLayoutDocument,
+} from "./GridLayoutDocumentIds";
 export * as GridLayoutLegacyCompatibility from "./GridLayoutLegacyCompatibility";
 export {
   createLegacyGridLayoutReader,
@@ -87,6 +105,7 @@ export {
   GridLayoutDocumentCodecError,
   decodeGridLayoutDocument,
   encodeGridLayoutDocument,
+  immutableGridLayoutDocument,
   type DecodedGridLayoutDocument,
   type EncodeGridLayoutDocumentOptions,
   type GridLayoutDocument,

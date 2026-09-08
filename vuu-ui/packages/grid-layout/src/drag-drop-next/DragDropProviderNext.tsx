@@ -176,3 +176,5 @@ export const useDragContext = () => {
   }
   return dragContext;
 };
+
+export const useOptionalDragContext = () => useContext(DragDropContext);

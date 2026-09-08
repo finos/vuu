@@ -1,6 +1,7 @@
 import {
   TabList,
   Tab,
+  TabBar,
   TabPanel,
   TabTrigger,
   Tabs,
@@ -11,9 +12,17 @@ import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import type { TableProps } from "@vuu-ui/vuu-table";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
-import { type HTMLAttributes, type SyntheticEvent, useCallback, useState } from "react";
+import {
+  type HTMLAttributes,
+  type SyntheticEvent,
+  useCallback,
+  useState,
+} from "react";
 import { useEditCalculatedColumn } from "../calculated-column/useEditCalculatedColumn";
-import { ColumnPicker, type ColumnPickerProps } from "../column-picker/ColumnPicker";
+import {
+  ColumnPicker,
+  type ColumnPickerProps,
+} from "../column-picker/ColumnPicker";
 import { ColumnSettingsPanel } from "../column-settings-panel/ColumnSettingsPanel";
 import {
   TableSettingsPanel,
@@ -32,9 +41,9 @@ type TabName = keyof typeof TabLabels;
 const classBase = "vuuTabbedTableConfigPanel";
 export interface TabbedTableConfigPanelProps
   extends ColumnPickerProps,
-  Pick<TableSettingsPanelProps, "onDisplayAttributeChange">,
-  Pick<TableProps, "config">,
-  HTMLAttributes<HTMLDivElement> {
+    Pick<TableSettingsPanelProps, "onDisplayAttributeChange">,
+    Pick<TableProps, "config">,
+    HTMLAttributes<HTMLDivElement> {
   allowCreateCalculatedColumn?: boolean;
   selectedTab?: TabName;
   vuuTable?: VuuTable;
@@ -89,17 +98,19 @@ export const TabbedTableConfigPanel = ({
   return (
     <div {...htmlAttributes} className={cx(classBase, className)}>
       <Tabs onChange={handleChange} value={value}>
-        <TabList appearance="transparent">
-          <Tab value="table-settings">
-            <TabTrigger>Table settings</TabTrigger>
-          </Tab>
-          <Tab value="table-columns">
-            <TabTrigger>Table columns</TabTrigger>
-          </Tab>
-          <Tab disabled={columns.length === 0} value="column-settings">
-            <TabTrigger>Column settings</TabTrigger>
-          </Tab>
-        </TabList>
+        <TabBar>
+          <TabList appearance="transparent">
+            <Tab value="table-settings">
+              <TabTrigger>Table settings</TabTrigger>
+            </Tab>
+            <Tab value="table-columns">
+              <TabTrigger>Table columns</TabTrigger>
+            </Tab>
+            <Tab disabled={columns.length === 0} value="column-settings">
+              <TabTrigger>Column settings</TabTrigger>
+            </Tab>
+          </TabList>
+        </TabBar>
         <TabPanel value="table-settings">
           <TableSettingsPanel
             onDisplayAttributeChange={onDisplayAttributeChange}

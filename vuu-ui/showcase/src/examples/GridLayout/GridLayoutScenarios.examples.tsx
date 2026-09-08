@@ -1,6 +1,6 @@
 import { Button } from "@salt-ds/core";
 import {
-  type ComponentTemplate,
+  type ComponentTemplateWithoutLabel,
   GridLayout,
   type GridLayoutDocument,
   GridLayoutItem,
@@ -224,7 +224,7 @@ export const MoveExistingItems = () => (
   </ScenarioFrame>
 );
 
-const getNewTab = (): Omit<ComponentTemplate, "label"> => ({
+const getNewTab = (): ComponentTemplateWithoutLabel => ({
   componentJson: JSON.stringify({
     props: {
       children: "New tab content",

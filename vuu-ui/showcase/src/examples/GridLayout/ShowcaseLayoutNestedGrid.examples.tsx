@@ -1,7 +1,7 @@
 import { HTMLAttributes, useCallback, useMemo } from "react";
 import { GridPalette, GridPaletteItem } from "../html/components/GridPalette";
 import {
-  ComponentTemplate,
+  type ComponentTemplateWithoutLabel,
   GridLayout,
   GridLayoutChangeHandler,
   GridLayoutItem,
@@ -63,7 +63,7 @@ export const ShowCaseLayoutNestedGrid = () => {
     // });
   }, []);
 
-  const getNewComponent = (): Omit<ComponentTemplate, "label"> => {
+  const getNewComponent = (): ComponentTemplateWithoutLabel => {
     const itemId = uuid();
     return {
       componentJson: JSON.stringify({

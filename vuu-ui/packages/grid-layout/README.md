@@ -73,6 +73,30 @@ references, failed migrations, and renderer failures report path-aware
 `GridLayoutDocumentError` values through `onDocumentError` and leave the active
 layout unchanged.
 
+`onDocumentChange(document, change)` receives the immutable document plus its
+commit revision, transition kind, and removed component-instance IDs.
+`GridLayoutDocumentController` exposes the same current document through
+`getSnapshot()` and `subscribe()` for external-store consumers.
+
+New palette entries use a typed `ComponentTemplate`:
+
+```ts
+const template = {
+  component: {
+    settings: { instrument: "VOD.L" },
+    type: "price-tile",
+    version: 1,
+  },
+  label: "Price tile",
+} satisfies ComponentTemplate;
+```
+
+Nested providers inherit the nearest template-drag session, while retaining
+their own document callback and settings scope. Use
+`remapGridLayoutDocumentIds` with an application allocator when cloning a saved
+definition; it remaps grid, item, component, stack, placeholder, and nested
+document references recursively.
+
 Nested grids must cross the same settings boundary: encode the nested
 `GridLayoutDocument` as opaque settings for a registered component type, and
 render it with its own `GridLayoutProvider`, grid ID, and controller. An outer

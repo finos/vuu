@@ -12,7 +12,7 @@ import {
 } from "react";
 import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
 import {
-  type ComponentTemplate,
+  type ComponentTemplateWithoutLabel,
   useGridLayoutDispatch,
   useGridSnapshot,
 } from "./GridLayoutContext";
@@ -28,7 +28,7 @@ const classBaseItem = "vuuGridLayoutStackedItem";
 
 export interface GridLayoutStackedItemProps extends GridLayoutItemProps {
   allowAddTab?: boolean;
-  getNewComponent?: () => Omit<ComponentTemplate, "label">;
+  getNewComponent?: () => ComponentTemplateWithoutLabel;
   showMenu?: boolean;
 }
 

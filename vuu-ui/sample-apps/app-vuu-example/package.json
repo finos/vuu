@@ -18,11 +18,11 @@
   "devDependencies": {},
   "dependencies": {
     "@fontsource/open-sans": "^4.5.13",
+    "@heswell/grid-layout": "3.3.3",
     "@vuu-ui/vuu-data-local": "3.3.3",
     "@vuu-ui/vuu-data-remote": "3.3.3",
     "@vuu-ui/vuu-table-types": "3.3.3",
     "@vuu-ui/vuu-data-react": "3.3.3",
-    "@vuu-ui/vuu-layout": "3.3.3",
     "@vuu-ui/vuu-popups": "3.3.3",
     "@vuu-ui/vuu-shell": "3.3.3",
     "@vuu-ui/vuu-utils": "3.3.3",
