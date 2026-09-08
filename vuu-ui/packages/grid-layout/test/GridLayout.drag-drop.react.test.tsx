@@ -685,6 +685,11 @@ describe("GridLayout React drag/drop lifecycle", () => {
     if (!source || !target) {
       throw Error("scoped nested palette fixture did not render");
     }
+    const workspaceGrid = container.querySelector("#workspace-grid");
+    if (!workspaceGrid) {
+      throw Error("scoped nested palette fixture did not render its grid");
+    }
+    const initialGridColumns = workspaceGrid.getAttribute("style");
     setTargetRect(source);
     setTargetRect(target);
     const dataTransfer = new TestDataTransfer();
@@ -693,6 +698,9 @@ describe("GridLayout React drag/drop lifecycle", () => {
     dispatchDrag(source, "dragstart", dataTransfer);
     dispatchDrag(target, "dragenter", dataTransfer, point);
     dispatchDrag(target, "dragover", dataTransfer, point);
+    expect(onShellChange).not.toHaveBeenCalled();
+    expect(onNestedChange).not.toHaveBeenCalled();
+    expect(workspaceGrid.getAttribute("style")).toBe(initialGridColumns);
     dispatchDrag(target, "drop", dataTransfer, point);
     dispatchDrag(source, "dragend", dataTransfer);
 

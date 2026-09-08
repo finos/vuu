@@ -684,30 +684,20 @@ export const useGridLayout = ({
       if (!intent) {
         return false;
       }
-      const replacingPlaceholder =
-        intent.kind === "replace" &&
-        sourceIsTemplate(dragSource) &&
-        !contentRegistryRef.current.has(targetItemId);
-      if (
-        (intent.kind !== "split" && !replacingPlaceholder) ||
-        sourceIsTabbedComponent(dragSource)
-      ) {
-        const previewed = dragCoordinator.preview({
-          gridId: id,
-          intent,
-          targetId,
-        });
-        if (!previewed.ok) {
-          handleCancelDrag();
-          return false;
-        }
-        const cleared = dragCoordinator.clearPreview();
-        if (!cleared.ok) {
-          throw Error(cleared.error.message);
-        }
-        return true;
+      const previewed = dragCoordinator.preview({
+        gridId: id,
+        intent,
+        targetId,
+      });
+      if (!previewed.ok) {
+        handleCancelDrag();
+        return false;
       }
-      return dragCoordinator.preview({ gridId: id, intent, targetId }).ok;
+      const cleared = dragCoordinator.clearPreview();
+      if (!cleared.ok) {
+        throw Error(cleared.error.message);
+      }
+      return true;
     },
     [dragCoordinator, gridModel, handleCancelDrag, id, prepareDragSource],
   );
@@ -758,14 +748,11 @@ export const useGridLayout = ({
           : { kind: "create-stack" };
       const preview =
         existingPlaceholderPreview ||
-        (isGridLayoutSplitDirection(position) &&
-        !sourceIsTabbedComponent(dragSource)
-          ? handleDragPreview(targetItemId, dragSource, position)
-          : dragCoordinator.preview({
-              gridId: id,
-              intent,
-              targetId,
-            }).ok);
+        dragCoordinator.preview({
+          gridId: id,
+          intent,
+          targetId,
+        }).ok;
       if (!preview) {
         handleCancelDrag();
         return false;
@@ -802,7 +789,6 @@ export const useGridLayout = ({
       handleCancelDrag,
       id,
       dragCoordinator,
-      handleDragPreview,
       prepareDragSource,
       replaceChildComponent,
       setChildren,
