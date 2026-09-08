@@ -45,7 +45,7 @@ class MockDataSource implements EditApi {
     private createSession: CreateSession,
     private edit: EditCell = vi.fn().mockResolvedValue(SUCCESS),
     private addRowImpl?: AddRow,
-  ) { }
+  ) {}
 
   addRow(...args: Parameters<AddRow>) {
     return this.addRowImpl?.(...args);
@@ -107,7 +107,9 @@ describe("EditSession lifecycle", () => {
       data: undefined,
       type: "SUCCESS_RESULT",
     });
-    editSession = new EditSession({ dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) });
+    editSession = new EditSession({
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow),
+    });
 
     await editSession.addRow({ id: 7, name: "Alice" });
 
@@ -120,7 +122,9 @@ describe("EditSession lifecycle", () => {
       errorMessage: "Insert rejected",
       type: "ERROR_RESULT",
     });
-    editSession = new EditSession({ dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) });
+    editSession = new EditSession({
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow),
+    });
 
     await editSession.addRow({ id: 7 });
 
@@ -129,7 +133,9 @@ describe("EditSession lifecycle", () => {
 
   it("owns draft values and required-field errors for a new row", async () => {
     const addRow = vi.fn<AddRow>().mockResolvedValue(SUCCESS);
-    editSession = new EditSession({ dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) });
+    editSession = new EditSession({
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow),
+    });
     editSession.configureNewRow(["id", "name"]);
     editSession.setNewRowValue("id", 7);
     expect(editSession.isNewRowComplete()).toBe(false);
@@ -151,7 +157,9 @@ describe("EditSession lifecycle", () => {
 
   it("allows some columns to be optional for a new row", async () => {
     const addRow = vi.fn<AddRow>().mockResolvedValue(SUCCESS);
-    editSession = new EditSession({ dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) });
+    editSession = new EditSession({
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow),
+    });
     editSession.configureNewRow(["id", "name", "description"], ["id", "name"]);
     editSession.setNewRowValue("id", 7);
     expect(editSession.isNewRowComplete()).toBe(false);
@@ -174,7 +182,9 @@ describe("EditSession lifecycle", () => {
   it("prevents duplicate new-row submissions", async () => {
     const pendingAdd = deferred<RpcResultSuccess>();
     const addRow = vi.fn<AddRow>().mockReturnValue(pendingAdd.promise);
-    editSession = new EditSession({ dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) });
+    editSession = new EditSession({
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow),
+    });
     editSession.configureNewRow(["id"]);
     editSession.setNewRowValue("id", 7);
 
@@ -390,7 +400,9 @@ describe("EditSession lifecycle", () => {
   it("reports begin failures without entering edit mode", async () => {
     const beginError = new Error("begin failed");
     createSession = vi.fn().mockRejectedValueOnce(beginError);
-    editSession = new EditSession({ dataSource: new MockDataSource(endEdit, createSession) });
+    editSession = new EditSession({
+      dataSource: new MockDataSource(endEdit, createSession),
+    });
 
     await expect(editSession.begin()).rejects.toBe(beginError);
 
@@ -603,4 +615,3 @@ describe("EditSession lifecycle", () => {
     expect(editSession.editState).toBe("dirty");
   });
 });
-

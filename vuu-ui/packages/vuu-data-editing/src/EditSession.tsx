@@ -15,9 +15,7 @@ import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
 /** Column name to default value mapping applied to every addRow call when a column is absent from the row data. */
 export type RowDefaultDataItemValues = Record<string, VuuRowDataItemType>;
-export type EditSessionApi =
-  | "createSessionDataSource"
-  | "beginEditSession";
+export type EditSessionApi = "createSessionDataSource" | "beginEditSession";
 
 export type EditSessionConstructorProps = {
   dataSource: EditApi;
@@ -236,7 +234,8 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   isNewRowComplete() {
-    const requiredColumns = this.#newRowState.requiredColumns ?? this.#newRowState.columns;
+    const requiredColumns =
+      this.#newRowState.requiredColumns ?? this.#newRowState.columns;
     return requiredColumns.every((column) => {
       const value = this.#newRowState.values[column];
       return (
@@ -246,19 +245,22 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     });
   }
 
-  configureNewRow(columns: readonly string[], requiredColumns?: readonly string[]) {
+  configureNewRow(
+    columns: readonly string[],
+    requiredColumns?: readonly string[],
+  ) {
     if (
       columns.length === this.#newRowState.columns.length &&
       columns.every(
         (column, index) => column === this.#newRowState.columns[index],
       ) &&
-      (!requiredColumns || (
-        this.#newRowState.requiredColumns !== undefined &&
-        requiredColumns.length === this.#newRowState.requiredColumns.length &&
-        requiredColumns.every(
-          (column, index) => column === this.#newRowState.requiredColumns?.[index],
-        )
-      ))
+      (!requiredColumns ||
+        (this.#newRowState.requiredColumns !== undefined &&
+          requiredColumns.length === this.#newRowState.requiredColumns.length &&
+          requiredColumns.every(
+            (column, index) =>
+              column === this.#newRowState.requiredColumns?.[index],
+          )))
     ) {
       return;
     }
@@ -288,7 +290,8 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   async addNewRow(): Promise<RpcResult> {
-    const requiredColumns = this.#newRowState.requiredColumns ?? this.#newRowState.columns;
+    const requiredColumns =
+      this.#newRowState.requiredColumns ?? this.#newRowState.columns;
     const missingErrors = Object.fromEntries(
       requiredColumns
         .filter((column) => {
@@ -385,7 +388,10 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       throw Error("[EditSession] datasource does not support adding rows");
     }
 
-    const response = await addRow.call(this.dataSource, { ...this.#rowDefaults, ...rowData });
+    const response = await addRow.call(this.dataSource, {
+      ...this.#rowDefaults,
+      ...rowData,
+    });
     if (response === undefined) {
       throw Error(
         "[EditSession] datasource returned no response when adding row",
@@ -520,7 +526,10 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     return result;
   }
 
-  begin(copyOption: CopyOption = "All", sessionType: SessionType = "edit"): Promise<DataSource> {
+  begin(
+    copyOption: CopyOption = "All",
+    sessionType: SessionType = "edit",
+  ): Promise<DataSource> {
     return this.#enqueue(async () => {
       if (
         this.#lifecycle.status === "active" ||
@@ -571,7 +580,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         this.#setLifecycle({ status: "error", operation: "begin", error });
         throw error;
       }
-
     });
   }
 
