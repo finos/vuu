@@ -4,6 +4,7 @@ import {
   SingleValueFilterClause,
 } from "@vuu-ui/vuu-filter-types";
 import { isDateTimeDataValue } from "../column-utils";
+import { stringIsValidLong } from "../data-utils";
 import {
   isMultiClauseFilter,
   isMultiValueFilter,
@@ -13,7 +14,9 @@ import { ScaledDecimal } from "../ScaledDecimal";
 
 const filterValue = (value: string | number | boolean | ScaledDecimal) =>
   typeof value === "string"
-    ? `"${value}"`
+    ? stringIsValidLong(value)
+      ? value
+      : `"${value}"`
     : value instanceof ScaledDecimal || typeof value === "bigint"
       ? value.toString()
       : value;
