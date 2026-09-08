@@ -713,7 +713,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
         table: sessionTable,
         viewport: sessionTable.table,
       });
-      sessionDataSource.server = this.server;
       return sessionDataSource;
     } else {
       throw Error(
