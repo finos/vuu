@@ -6,7 +6,7 @@ import type {
 } from "@vuu-ui/vuu-data-types";
 import { EditSession, type RowDefaultDataItemValues } from "@vuu-ui/vuu-data-editing";
 import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { isRpcError, isSessionTable, useData } from "@vuu-ui/vuu-utils";
+import { isRpcError, isSessionTable, useData, Range } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { parseCsv, type CsvParseOptions } from "./parse/csv-parse";
 import {
@@ -132,9 +132,6 @@ export const useCsvUpload = ({
   // here, at the createSessionDataSource call site, since `dataSource` is supplied by the
   // caller and may be shared with a view that has no knowledge of the import table.
   const importDataSource = useMemo<EditApi & { tableSchema?: TableSchema }>(() => {
-    if (!sessionOverrides) {
-      return dataSource;
-    }
     return {
       tableSchema: dataSource.tableSchema,
       createSessionDataSource: async (copyOption, sessionType) => {
@@ -143,11 +140,36 @@ export const useCsvUpload = ({
             "[useCsvUpload] dataSource does not support createSessionDataSource",
           );
         }
-        return dataSource.createSessionDataSource(
+        const sessionDs = await dataSource.createSessionDataSource(
           copyOption,
           sessionType,
           sessionOverrides,
         );
+        if (!sessionDs) {
+          throw Error("[useCsvUpload] Failed to create session datasource");
+        }
+
+        if (!sessionDs.columns.includes("vuuMsg")) {
+          sessionDs.columns = sessionDs.columns.concat("vuuMsg");
+        }
+
+        if (sessionDs.isRemote) {
+          return new Promise<DataSource>((resolve, reject) => {
+            const handleSubscribed = () => {
+              sessionDs.removeListener("subscribed", handleSubscribed);
+              resolve(sessionDs);
+            };
+            sessionDs.on("subscribed", handleSubscribed);
+            try {
+              sessionDs.subscribe({ range: Range(0, 0) }, () => {});
+            } catch (err) {
+              sessionDs.removeListener("subscribed", handleSubscribed);
+              reject(err);
+            }
+          });
+        }
+
+        return sessionDs;
       },
     };
   }, [dataSource, sessionOverrides]);
@@ -214,9 +236,15 @@ export const useCsvUpload = ({
         );
       }
       const currentSessionTable = sessionDataSource.table;
-      await editSession.end(save);
+      try {
+        await editSession.end(save);
+      } finally {
+        if (sessionDataSource.status !== "unsubscribed") {
+          sessionDataSource.unsubscribe();
+        }
+        setActiveSessionDataSource(undefined);
+      }
 
-      setActiveSessionDataSource(undefined);
       onImportSessionEnded?.({
         reason,
         sessionTable:
@@ -311,9 +339,6 @@ export const useCsvUpload = ({
       throw Error(
         "CsvUpload createSessionDataSource returned no session datasource.",
       );
-    }
-    if (!sessionDataSource.columns.includes("vuuMsg")) {
-      sessionDataSource.columns = sessionDataSource.columns.concat("vuuMsg");
     }
 
     setActiveSessionDataSource(sessionDataSource);
