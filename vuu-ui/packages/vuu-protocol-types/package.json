@@ -1,6 +1,10 @@
 {
   "name": "@vuu-ui/vuu-protocol-types",
+<<<<<<< HEAD
   "version": "3.3.3",
+=======
+  "version": "3.3.5",
+>>>>>>> origin/main
   "main": "",
   "scripts": {
     "build": "node ../../scripts/run-build-typelib.mjs"

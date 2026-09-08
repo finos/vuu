@@ -1,6 +1,10 @@
 {
   "name": "@vuu-ui/vuu-chart",
+<<<<<<< HEAD
   "version": "3.3.3",
+=======
+  "version": "3.3.5",
+>>>>>>> origin/main
   "description": "support for apache echarts using vuu data",
   "main": "src/index.ts",
   "license": "Apache-2.0",
@@ -10,15 +14,26 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
+<<<<<<< HEAD
     "@vuu-ui/vuu-data-types": "3.3.3",
     "@vuu-ui/vuu-protocol-types": "3.3.3",
     "@vuu-ui/vuu-data-local": "3.3.3"
+=======
+    "@vuu-ui/vuu-data-types": "3.3.5",
+    "@vuu-ui/vuu-protocol-types": "3.3.5",
+    "@vuu-ui/vuu-data-local": "3.3.5"
+>>>>>>> origin/main
   },
   "dependencies": {
     "@salt-ds/styles": "0.2.1",
     "@salt-ds/window": "0.1.1",
+<<<<<<< HEAD
     "@vuu-ui/vuu-context-menu": "3.3.3",
     "@vuu-ui/vuu-utils": "3.3.3",
+=======
+    "@vuu-ui/vuu-context-menu": "3.3.5",
+    "@vuu-ui/vuu-utils": "3.3.5",
+>>>>>>> origin/main
     "clsx": "^2.0.0"
   },
   "peerDependencies": {

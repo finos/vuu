@@ -271,7 +271,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
   handleSessionMessageFromServer = (msg: DataSourceCallbackMessage) => {
     if (msg.type === "subscribed") {
-      console.log(`[VuuDataSource subscribed to session table]`);
+      console.log("[VuuDataSource subscribed to session table]");
     } else if (msg.type === "viewport-update") {
       if (msg.size !== undefined && msg.size !== this.size) {
         this.size = msg.size;
@@ -412,7 +412,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
         this.#selectedRowsCount = response.selectedRowCount;
         this.emit("row-selection", response.selectedRowCount);
       } else {
-        console.warn(`select error`);
+        console.warn("select error");
       }
     }
   }
@@ -708,11 +708,12 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       // config this datasource was constructed with.
       const effectiveOverrides = overrides ?? this.#session;
       assertExpectedSessionTable(sessionTable, effectiveOverrides?.table);
-      return new VuuDataSource({
+      const sessionDataSource = new VuuDataSource({
         ...sessionDataSourceConfig(this.config, effectiveOverrides?.columns),
         table: sessionTable,
         viewport: sessionTable.table,
       });
+      return sessionDataSource;
     } else {
       throw Error(
         `[VuuDataSource] createSessionDataSource ${rpcResponse?.errorMessage}`,
@@ -815,7 +816,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
         context: { type: "VIEWPORT_CONTEXT", viewPortId: this.viewport },
       } as VuuRpcServiceRequest);
     } else {
-      throw Error(`rpcCall server or viewport are undefined`);
+      throw Error("rpcCall server or viewport are undefined");
     }
   }
 
