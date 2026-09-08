@@ -8,8 +8,8 @@ import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.feature.ViewPortKeys
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import org.finos.vuu.util.PublishQueue
-import org.finos.vuu.viewport.{GroupBy, RowSource, ViewPort, ViewPortColumns, ViewPortRange, ViewPortStructuralFields, ViewPortUpdate, ViewPortVisualLink}
 import org.finos.vuu.viewport.tree.TreeNodeState
+import org.finos.vuu.viewport.{GroupBy, RowSource, ViewPort, ViewPortColumns, ViewPortRange, ViewPortStructuralFields, ViewPortUpdate, ViewPortVisualLink}
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
@@ -96,9 +96,9 @@ class DummyViewPort(val id: String,
 
   override def getStructure: ViewPortStructuralFields = ???
 
-  override def getStructuralHashCode(): Int = ???
+  override def getStructuralHashCode: Int = ???
 
-  override def getTableUpdateCount(): Long = ???
+  override def getTableUpdateCount: Long = ???
 
   override def ForTest_getSubcribedKeys: util.Set[String] = ???
 
@@ -110,9 +110,9 @@ class DummyViewPort(val id: String,
 
   override def setLastHashAndUpdateCount(lastHash: Int, lastUpdateCount: Long): Unit = ???
 
-  override def getLastHash(): Int = ???
+  override def getLastHash: Int = ???
 
-  override def getLastUpdateCount(): Long = ???
+  override def getLastUpdateCount: Long = ???
 
   override def setPermissionFilter(filter: PermissionFilter): Unit = ???
 

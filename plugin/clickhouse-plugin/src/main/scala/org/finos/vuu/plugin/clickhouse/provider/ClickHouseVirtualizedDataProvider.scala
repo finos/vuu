@@ -25,7 +25,11 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
   private val permissionFunction = tableDef.getRemotePermissionFilterSpecFunction
   private val logAt = new LogAtFrequency(10_000)
 
-  override def runOnce(viewPort: ViewPort): Unit = {
+  override def shouldRun(viewPort: ViewPort): Boolean = {
+    true
+  }
+  
+  override def runOnceInternal(viewPort: ViewPort): Unit = {
     logger.trace("[ClickHouseVirtualizedDataProvider] Starting runOnce")
 
     val clauseWithParams = filterFactory.build(viewPort.filterSpec, permissionFunction.apply(viewPort))

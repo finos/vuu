@@ -122,9 +122,9 @@ trait ViewPort {
 
   def getStructure: ViewPortStructuralFields
 
-  def getStructuralHashCode(): Int
+  def getStructuralHashCode: Int
 
-  def getTableUpdateCount(): Long
+  def getTableUpdateCount: Long
 
   def ForTest_getSubcribedKeys: util.Set[String]
 
@@ -140,9 +140,11 @@ trait ViewPort {
 
   def setLastHashAndUpdateCount(lastHash: Int, lastUpdateCount: Long): Unit
 
-  def getLastHash(): Int
+  def getLastHash: Int
 
-  def getLastUpdateCount(): Long
+  def getLastUpdateCount: Long
+
+  def shouldRecalculateKeys: Boolean
 
   def setPermissionFilter(filter: PermissionFilter): Unit
 
@@ -392,11 +394,11 @@ class ViewPortImpl(val id: String,
   private val subscribedKeys = ConcurrentHashMap.newKeySet[String]()
   private val rowKeyToIndex = new ConcurrentHashMap[String, Int]()
 
-  override def getStructuralHashCode(): Int = {
+  override def getStructuralHashCode: Int = {
     37 * filterAndSort.hashCode() ^ getGroupBy.hashCode() ^ getColumns.hashCode() ^ getPermissionFilter.hashCode() ^ viewPortFrozenTime.hashCode()
   }
 
-  private def getTreeNodeStateHash(): Int = {
+  private def getTreeNodeStateHash: Int = {
     table match {
       case session: TreeSessionTableImpl =>
         session.getTree.nodeState.hashCode()
@@ -405,7 +407,7 @@ class ViewPortImpl(val id: String,
     }
   }
 
-  override def getTableUpdateCount(): Long = {
+  override def getTableUpdateCount: Long = {
     this.table.asTable.updateCounter
   }
 
@@ -643,7 +645,9 @@ class ViewPortImpl(val id: String,
     lastUpdateCounter = lastUpdateCount
   }
 
-  override def getLastHash(): Int = lastCycleHash
+  override def getLastHash: Int = lastCycleHash
 
-  override def getLastUpdateCount(): Long = lastUpdateCounter
+  override def getLastUpdateCount: Long = lastUpdateCounter
+
+  override def shouldRecalculateKeys: Boolean =
 }

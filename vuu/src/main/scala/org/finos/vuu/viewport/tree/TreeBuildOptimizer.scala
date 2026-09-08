@@ -24,7 +24,7 @@ object TreeBuildOptimizer extends StrictLogging {
 
         val (previousTreeBuildUpdateCount, previousHashcode, previousNodeStateHashCode) = oldTree match {
           case Some(tree) =>
-            (tree.updateCounter, viewPort.getLastHash(), tree.nodeState.hashCode())
+            (tree.updateCounter, viewPort.getLastHash, tree.nodeState.hashCode())
           case None =>
             (-1, -3, -4)
         }
@@ -53,8 +53,8 @@ object TreeBuildOptimizer extends StrictLogging {
         shouldRebuild
     }
 
-    val lastStructureHash = viewPort.getLastHash()
-    val lastUpdateCount = viewPort.getLastUpdateCount()
+    val lastStructureHash = viewPort.getLastHash
+    val lastUpdateCount = viewPort.getLastUpdateCount
 
     shouldRebuild || currentStructureHash != lastStructureHash || currentUpdateCount != lastUpdateCount
   }
@@ -70,8 +70,8 @@ object TreeBuildOptimizer extends StrictLogging {
 
       case table: TreeSessionTableImpl =>
 
-        val currentStructureHash = viewPort.getStructuralHashCode()
-        val currentUpdateCount = viewPort.getTableUpdateCount()
+        val currentStructureHash = viewPort.getStructuralHashCode
+        val currentUpdateCount = viewPort.getTableUpdateCount
 
         val rebuildTree = shouldRebuildTree(viewPort, currentStructureHash, currentUpdateCount)
         val recalcKeys  = shouldRecalcKeys(latestNodeState, table.getTree.nodeState)

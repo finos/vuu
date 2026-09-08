@@ -29,8 +29,8 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 20), vpcolumns)
 
-      val hashCode1 = viewPort.getStructuralHashCode()
-      val updateCount1 = viewPort.getTableUpdateCount()
+      val hashCode1 = viewPort.getStructuralHashCode
+      val updateCount1 = viewPort.getTableUpdateCount
 
       viewPortContainer.runOnce()
 
@@ -58,10 +58,10 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
         )
       }
 
-      val hashCode2 = viewPort.getStructuralHashCode()
-      val updateCount2 = viewPort.getTableUpdateCount()
+      val hashCode2 = viewPort.getStructuralHashCode
+      val updateCount2 = viewPort.getTableUpdateCount
 
-      viewPortContainer.shouldCalculateKeys(viewPort, viewPort.getStructuralHashCode(), viewPort.getTableUpdateCount()) should be(false)
+      viewPortContainer.shouldCalculateKeys(viewPort, viewPort.getStructuralHashCode, viewPort.getTableUpdateCount) should be(false)
 
       viewPortContainer.runOnce()
 
@@ -71,8 +71,8 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
         )
       }
 
-      val hashCode3 = viewPort.getStructuralHashCode()
-      val updateCount3 = viewPort.getTableUpdateCount()
+      val hashCode3 = viewPort.getStructuralHashCode
+      val updateCount3 = viewPort.getTableUpdateCount
 
       Then("when we compare the hashcodes they should be all equal (i.e. the structure hasn't changed")
       hashCode3 shouldEqual hashCode2
@@ -81,16 +81,16 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
       And("the updatecount should also be the same")
       updateCount1 shouldEqual updateCount2
       updateCount2 shouldEqual updateCount3
-      viewPortContainer.shouldCalculateKeys(viewPort, viewPort.getStructuralHashCode(), viewPort.getTableUpdateCount()) should be(false)
+      viewPortContainer.shouldCalculateKeys(viewPort, viewPort.getStructuralHashCode, viewPort.getTableUpdateCount) should be(false)
 
       val vpcolumns2 = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "ric"))
 
       When("when we mutate the viewport.....")
       val viewPort2 = viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, ViewPortRange(0, 20), vpcolumns2)
 
-      val hashCode4 = viewPort2.getStructuralHashCode()
-      val updateCount4 = viewPort2.getTableUpdateCount()
-      viewPortContainer.shouldCalculateKeys(viewPort2, viewPort2.getStructuralHashCode(), viewPort2.getTableUpdateCount()) should be(true)
+      val hashCode4 = viewPort2.getStructuralHashCode
+      val updateCount4 = viewPort2.getTableUpdateCount
+      viewPortContainer.shouldCalculateKeys(viewPort2, viewPort2.getStructuralHashCode, viewPort2.getTableUpdateCount) should be(true)
 
       viewPortContainer.runOnce()
 
@@ -115,7 +115,7 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
 
       createNOrderRows(ordersProvider, 12)(clock)
 
-      viewPortContainer.shouldCalculateKeys(viewPort2, viewPort2.getStructuralHashCode(), viewPort2.getTableUpdateCount()) should be(true)
+      viewPortContainer.shouldCalculateKeys(viewPort2, viewPort2.getStructuralHashCode, viewPort2.getTableUpdateCount) should be(true)
 
       viewPortContainer.runOnce()
 

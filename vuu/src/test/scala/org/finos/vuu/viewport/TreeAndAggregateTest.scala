@@ -91,12 +91,12 @@ class TreeAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhenTh
         )
       }
 
-      val preHash = viewport.getStructuralHashCode()
+      val preHash = viewport.getStructuralHashCode
 
       When("we close a node")
       viewPortContainer.closeNode(session, viewport.id, "$root|steve")
 
-      val postHash = viewport.getStructuralHashCode()
+      val postHash = viewport.getStructuralHashCode
 
       runContainersOnce(viewPortContainer, joinProvider)
 

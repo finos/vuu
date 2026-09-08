@@ -15,7 +15,8 @@ class ReallyBigVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef)(imp
 
   final val cache = new FakeBigDataCache
   final val logAt = new LogAtFrequency(10_000)
-  override def runOnce(viewPort: ViewPort): Unit = {
+  
+  override def runOnceInternal(viewPort: ViewPort): Unit = {
 
     logger.trace("[ReallyBigVirtualizedDataProvider] Starting runOnce")
 

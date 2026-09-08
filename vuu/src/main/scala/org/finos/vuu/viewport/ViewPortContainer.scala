@@ -48,7 +48,9 @@ trait ViewPortContainerMBean {
 
 }
 
-class ViewPortContainer(val tableContainer: TableContainer, val providerContainer: ProviderContainer, val pluginRegistry: PluginRegistry)(implicit timeProvider: Clock, metrics: MetricsProvider) extends RunInThread with StrictLogging with JmxAble with ViewPortContainerMBean {
+class ViewPortContainer(val tableContainer: TableContainer, 
+                        val providerContainer: ProviderContainer, 
+                        val pluginRegistry: PluginRegistry)(implicit timeProvider: Clock, metrics: MetricsProvider) extends RunInThread with StrictLogging with JmxAble with ViewPortContainerMBean {
 
   import org.finos.vuu.core.VuuServerMetrics.*
 
@@ -676,7 +678,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
         val (previousTreeBuildUpdateCount, previousHashcode, previousNodeStateHashCode) = oldTree match {
           case Some(tree) =>
-            (tree.updateCounter, viewPort.getLastHash(), tree.nodeState.hashCode())
+            (tree.updateCounter, viewPort.getLastHash, tree.nodeState.hashCode())
           case None =>
             (-1, -3, -4)
         }
@@ -705,8 +707,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         shouldRebuild
     }
 
-    val lastStructureHash = viewPort.getLastHash()
-    val lastUpdateCount = viewPort.getLastUpdateCount()
+    val lastStructureHash = viewPort.getLastHash
+    val lastUpdateCount = viewPort.getLastUpdateCount
 
     shouldRebuild || currentStructureHash != lastStructureHash || currentUpdateCount != lastUpdateCount
   }
@@ -733,7 +735,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     val table = viewPort.table.asTable
     val latestNodeState = treeNodeStatesByVp.getOrDefault(viewPort.id, TreeNodeStateStore(Map()))
     val currentUpdateCount = viewPort.table.asTable.updateCounter
-    val currentStructureHash = viewPort.getStructuralHashCode()
+    val currentStructureHash = viewPort.getStructuralHashCode
 
     TreeBuildOptimizer.optimize(viewPort, latestNodeState) match {
       case action: BuildEntireTree =>
@@ -828,16 +830,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   def shouldCalculateKeys(viewPort: ViewPort, currentStructureHash: Int, currentUpdateCount: Long): Boolean = {
-
-    val lastStructureHash = viewPort.getLastHash()
-    val lastUpdateCount = viewPort.getLastUpdateCount()
-
-    val hasVisualLink = viewPort.getVisualLink match {
-      case Some(link) => true
-      case None => false
-    }
-
-    currentStructureHash != lastStructureHash || currentUpdateCount != lastUpdateCount || hasVisualLink
+    currentUpdateCount != viewPort.getLastUpdateCount ||
+      currentStructureHash != viewPort.getLastHash ||
+      viewPort.getVisualLink.isDefined
   }
 
   def refreshOneViewPort(viewPort: ViewPort): Unit = {
@@ -851,8 +846,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     if (viewPort.isEnabled) {
 
-      val currentStructureHash = viewPort.getStructuralHashCode()
-      val currentUpdateCount = viewPort.getTableUpdateCount()
+      val currentStructureHash = viewPort.getStructuralHashCode
+      val currentUpdateCount = viewPort.getTableUpdateCount
 
       if (shouldCalculateKeys(viewPort, currentStructureHash, currentUpdateCount)) {
 
@@ -870,9 +865,6 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPort.setLastHashAndUpdateCount(currentStructureHash, currentUpdateCount)
       }
 
-    } else {
-      //do not set keys to empty
-      //viewPort.setKeys(ImmutableArray.empty[String])
     }
   }
 

@@ -72,13 +72,13 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
       viewPortContainer.closeNode(session, viewport.id, "$root|steve|BT.L")
 
       /*
-      val currentStructureHash = viewPort.getStructuralHashCode()
-      val currentUpdateCount = viewPort.getTableUpdateCount()
+      val currentStructureHash = viewPort.getStructuralHashCode
+      val currentUpdateCount = viewPort.getTableUpdateCount
        */
 
       TreeBuildOptimizer.optimize(viewport, viewPortContainer.getTreeNodeStateByVp(viewport.id)).getClass should be (classOf[OnlyRecalculateTreeKeys])
 
-      //viewPortContainer.shouldRebuildTree(viewport, viewport.getStructuralHashCode(), viewport.getTableUpdateCount()) should be(false)
+      //viewPortContainer.shouldRebuildTree(viewport, viewport.getStructuralHashCode, viewport.getTableUpdateCount) should be(false)
 
 //      val previousNodeState = viewport.table.asTable.asInstanceOf[TreeSessionTableImpl].getTree.nodeState
 //
