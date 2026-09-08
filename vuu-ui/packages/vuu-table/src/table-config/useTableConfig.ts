@@ -75,13 +75,16 @@ export const useTableConfig = ({
     (config, changeType) => {
       if (changeType.type === "column-moved") {
         setTableConfig(config);
-        columnModel.reorderSelectedColumns(
-          config.columns.map(({ name }) => name),
+        columnModel.addRemoveOrReorderSelectedColumns(
+          config.columns,
           ColumnChangeSource.Table,
         );
       } else if (changeType.type === "column-removed") {
         setTableConfig(config);
-        columnModel.setSelectedColumns(config.columns, ColumnChangeSource.Table);
+        columnModel.addRemoveOrReorderSelectedColumns(
+          config.columns,
+          ColumnChangeSource.Table,
+        );
       }
     },
     [columnModel],

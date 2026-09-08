@@ -120,7 +120,7 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
    * Introduced for use by ColumnPicker
    */
   addRemoveOrReorderSelectedColumns(
-    newSelectedColumns: ColumnDescriptor[],
+    newSelectedColumns: readonly ColumnDescriptor[],
     source: ColumnChangeSource,
   ) {
     if (!itemsOrOrderChanged(this.#selectedColumns, newSelectedColumns)) {
