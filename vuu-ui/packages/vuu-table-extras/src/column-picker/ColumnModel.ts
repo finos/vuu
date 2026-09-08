@@ -103,19 +103,9 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
   get selectedColumns() {
     return this.#selectedColumns;
   }
-<<<<<<< HEAD
-  setSelectedColumns(
-    selectedColumns: readonly ColumnDescriptor[],
-    source: ColumnChangeSource,
-    changeDescriptor?: SelectedColumnChangeDescriptor,
-  ) {
-    this.#selectedColumns = selectedColumns;
-    this.notifyListeners(selectedColumns, source, changeDescriptor);
-=======
 
   get selectedColumnsFiltered(): readonly ColumnDescriptor[] {
     return this.#selectedColumnsFiltered;
->>>>>>> 8a994c732 (Refactor of ColumnPicker to use ItemPicker)
   }
 
   getColumn(name: string) {
