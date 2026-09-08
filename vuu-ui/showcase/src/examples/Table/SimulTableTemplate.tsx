@@ -3,6 +3,7 @@ import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 import { getSchema, SimulTableName } from "@vuu-ui/vuu-data-test";
 import { Table, TableProps, useTableConfig } from "@vuu-ui/vuu-table";
 import {
+  ColumnModel,
   DataSourceStats,
   TableFooter,
   TabbedTableSettingsAction,
@@ -19,7 +20,7 @@ import {
   toColumnName,
   useData,
 } from "@vuu-ui/vuu-utils";
-import { useMemo } from "react";
+import { ReactNode, useMemo } from "react";
 import { DemoTableContainer } from "./DemoTableContainer";
 import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
 
@@ -29,6 +30,7 @@ export type SimulTableProps = Partial<TableProps> & {
   columns?: readonly ColumnDescriptor[];
   getDefaultColumnConfig?: DefaultColumnConfiguration;
   rowClassNameGenerators?: string[];
+  tableFooterAction?: (columnModel: ColumnModel) => ReactNode;
   tableContextMenuHook?: () => TableContextMenuDef;
   tableName?: SimulTableName;
 };
@@ -43,6 +45,7 @@ const SimulTableBase = ({
   height,
   renderBufferSize = 10,
   rowClassNameGenerators,
+  tableFooterAction,
   tableContextMenuHook,
   tableName = "instruments",
   ...props
@@ -117,14 +120,16 @@ const SimulTableBase = ({
         <TableFooter>
           <DataSourceStats dataSource={dataSource} />
           <TableFooterTray>
-            <TabbedTableSettingsAction
-              allowCreateCalculatedColumn
-              columnModel={columnModel}
-              config={tableConfig}
-              data-embedded
-              onDisplayAttributeChange={onTableDisplayAttributeChange}
-              vuuTable={tableSchema.table}
-            />
+            {tableFooterAction?.(columnModel) ?? (
+              <TabbedTableSettingsAction
+                allowCreateCalculatedColumn
+                columnModel={columnModel}
+                config={tableConfig}
+                data-embedded
+                onDisplayAttributeChange={onTableDisplayAttributeChange}
+                vuuTable={tableSchema.table}
+              />
+            )}
           </TableFooterTray>
         </TableFooter>
       </ContextMenuProvider>

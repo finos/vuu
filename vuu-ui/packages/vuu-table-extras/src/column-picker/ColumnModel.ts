@@ -135,7 +135,7 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
     return filterColumns(this.#selectedColumns, this.#searchPattern);
   }
   setSelectedColumns(
-    selectedColumns: ColumnDescriptor[],
+    selectedColumns: readonly ColumnDescriptor[],
     source: ColumnChangeSource,
     changeDescriptor?: SelectedColumnChangeDescriptor,
   ) {

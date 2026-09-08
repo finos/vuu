@@ -1,4 +1,5 @@
 import {
+  ColumnChangeSource,
   ColumnModel,
   ColumnsChangeHandler,
   TableDisplayAttributeChangeHandler,
@@ -65,18 +66,22 @@ export const useTableConfig = ({
   );
 
   const columnModel = useMemo(() => {
-    const model = new ColumnModel(availableColumns, tableConfig.columns);
+    const model = new ColumnModel(availableColumns, initialTableConfig.columns);
     model.on("change", handleColumnModelChange);
     return model;
-  }, [availableColumns, handleColumnModelChange, tableConfig.columns]);
+  }, [availableColumns, handleColumnModelChange, initialTableConfig.columns]);
 
   const handleTableConfigChange = useCallback<TableConfigChangeHandler>(
-    (_config, changeType) => {
-      if (changeType.type === "column-removed") {
-        columnModel.removeItemFromSelectedColumns(
-          changeType.column.name,
-          "table",
+    (config, changeType) => {
+      if (changeType.type === "column-moved") {
+        setTableConfig(config);
+        columnModel.reorderSelectedColumns(
+          config.columns.map(({ name }) => name),
+          ColumnChangeSource.Table,
         );
+      } else if (changeType.type === "column-removed") {
+        setTableConfig(config);
+        columnModel.setSelectedColumns(config.columns, ColumnChangeSource.Table);
       }
     },
     [columnModel],
