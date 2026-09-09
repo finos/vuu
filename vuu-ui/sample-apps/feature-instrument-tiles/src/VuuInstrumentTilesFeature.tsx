@@ -8,8 +8,8 @@ import {
 } from "@vuu-ui/vuu-data-types";
 import { useViewContext } from "@vuu-ui/vuu-layout";
 import { VuuRange } from "@vuu-ui/vuu-protocol-types";
-import { buildColumnMap, metadataKeys } from "@vuu-ui/vuu-utils";
-import { useCallback, useEffect, useMemo } from "react";
+import { buildColumnMap, metadataKeys, useData } from "@vuu-ui/vuu-utils";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { InstrumentTile } from "./InstrumentTile";
 import { InstrumentTileContainer } from "./InstrumentTileContainer";
 import { useDataSource } from "./useDataSource";
@@ -19,15 +19,21 @@ import "./VuuInstrumentTilesFeature.css";
 const classBase = "VuuInstrumentTilesFeature";
 
 export interface InstrumentTilesFeatureProps {
-  instrumentPricesSchema: TableSchema;
 }
 
 const { KEY } = metadataKeys;
 
-const VuuInstrumentTilesFeature = ({
-  instrumentPricesSchema,
-}: InstrumentTilesFeatureProps) => {
+const table = {
+  module: "SIMUL",
+  table: "instrumentPrices",
+} as const;
+
+const VuuInstrumentTilesFeature = ({}: InstrumentTilesFeatureProps) => {
   const { id, save, title } = useViewContext();
+  const { getServerAPI } = useData();
+  const [instrumentPricesSchema, setInstrumentPricesSchema] = useState<
+    TableSchema | undefined
+  >(undefined);
 
   const handleDataSourceConfigChange = useCallback(
     (
@@ -65,24 +71,39 @@ const VuuInstrumentTilesFeature = ({
     [instrumentKeys],
   );
 
-  const dataSource: DataSource = useMemo(() => {
-    return getDataSource(sessionKey, {
-      bufferSize: 200,
-      viewport: id,
-      table: instrumentPricesSchema.table,
-      columns: instrumentPricesSchema.columns.map((col) => col.name),
-      filterSpec: filter,
-      title,
-    });
-  }, [
-    filter,
-    getDataSource,
-    id,
-    instrumentPricesSchema.columns,
-    instrumentPricesSchema.table,
-    sessionKey,
-    title,
-  ]);
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const serverAPI = await getServerAPI();
+        const schema = await serverAPI.getTableSchema(table);
+        if (!cancelled) {
+          setInstrumentPricesSchema(schema);
+        }
+      } catch (error) {
+        console.error(
+          "[VuuInstrumentTilesFeature] failed to fetch instrumentPrices schema",
+          error,
+        );
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [getServerAPI]);
+
+  const dataSource = useMemo<DataSource | undefined>(() => {
+    return instrumentPricesSchema
+      ? getDataSource(sessionKey, {
+          bufferSize: 200,
+          viewport: id,
+          table: instrumentPricesSchema.table,
+          columns: instrumentPricesSchema.columns.map((col) => col.name),
+          filterSpec: filter,
+          title,
+        })
+      : undefined;
+  }, [filter, getDataSource, id, instrumentPricesSchema, sessionKey, title]);
 
   const instruments = useDataSource({
     dataSource,
@@ -90,8 +111,8 @@ const VuuInstrumentTilesFeature = ({
   });
 
   const columnMap = useMemo(
-    () => buildColumnMap(dataSource.columns),
-    [dataSource.columns],
+    () => buildColumnMap(dataSource?.columns),
+    [dataSource?.columns],
   );
 
   useEffect(() => {
@@ -100,6 +121,10 @@ const VuuInstrumentTilesFeature = ({
       dataSource.suspend?.();
     };
   }, [dataSource]);
+
+  if (dataSource === undefined) {
+    return null;
+  }
 
   return (
     <div className={classBase}>

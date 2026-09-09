@@ -1,4 +1,3 @@
-import { getSchema } from "@vuu-ui/vuu-data-test";
 import { LayoutProvider, View } from "@vuu-ui/vuu-layout";
 import { Feature } from "@vuu-ui/vuu-shell";
 import { DynamicFeatureProps, registerComponent } from "@vuu-ui/vuu-utils";
@@ -8,8 +7,6 @@ import { VuuBlotterHeader } from "./VuuBlotterHeader";
 registerComponent("InstrumentTilesFeature", InstrumentTilesFeature, "view");
 
 export const DefaultInstrumentTilesFeature = () => {
-  const schema = getSchema("instrumentPrices");
-
   return (
     <LayoutProvider>
       <View
@@ -21,7 +18,7 @@ export const DefaultInstrumentTilesFeature = () => {
         title="Instruments"
         style={{ width: 700, height: 500 }}
       >
-        <InstrumentTilesFeature instrumentPricesSchema={schema} />
+        <InstrumentTilesFeature />
       </View>
     </LayoutProvider>
   );
@@ -41,7 +38,6 @@ const featurePropsForEnv: Record<Environment, DynamicFeatureProps> = {
 
 export const InstrumentTilesFeatureAsFeature = () => {
   const { url, css } = featurePropsForEnv[env];
-  const instrumentPricesSchema = getSchema("instrumentPrices");
 
   return (
     <View
@@ -53,11 +49,7 @@ export const InstrumentTilesFeatureAsFeature = () => {
       title="Instruments"
       style={{ width: 700, height: 500 }}
     >
-      <Feature
-        ComponentProps={{ instrumentPricesSchema }}
-        url={url}
-        css={css}
-      />
+      <Feature url={url} css={css} />
     </View>
   );
 };

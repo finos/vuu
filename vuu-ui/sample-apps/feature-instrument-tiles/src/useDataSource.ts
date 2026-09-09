@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MovingWindow } from "./moving-window";
 import { Range } from "@vuu-ui/vuu-utils";
 export interface DataSourceHookProps {
-  dataSource: DataSource;
+  dataSource?: DataSource;
   instruments: string[];
 }
 
