@@ -18,8 +18,7 @@ import "./VuuInstrumentTilesFeature.css";
 
 const classBase = "VuuInstrumentTilesFeature";
 
-export interface InstrumentTilesFeatureProps {
-}
+export interface InstrumentTilesFeatureProps {}
 
 const { KEY } = metadataKeys;
 
@@ -28,7 +27,7 @@ const table = {
   table: "instrumentPrices",
 } as const;
 
-const VuuInstrumentTilesFeature = ({}: InstrumentTilesFeatureProps) => {
+const VuuInstrumentTilesFeature = () => {
   const { id, save, title } = useViewContext();
   const { getServerAPI } = useData();
   const [instrumentPricesSchema, setInstrumentPricesSchema] = useState<
