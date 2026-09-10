@@ -11,7 +11,10 @@ import {
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { type ReactNode, useCallback, useState } from "react";
-import type { RowDefaultDataItemValues, EditSession } from "@vuu-ui/vuu-data-editing";
+import type {
+  RowDefaultDataItemValues,
+  EditSession,
+} from "@vuu-ui/vuu-data-editing";
 import type { CsvParseError, CsvParseOptions } from "./parse/csv-parse";
 import type { CsvValidationStructuredError } from "./parse/csv-schema-validation";
 import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
@@ -90,6 +93,10 @@ export interface CsvUploadProps {
   parseOptions?: CsvParseOptions;
   importMode?: "direct" | "preview";
   rowDefaults?: RowDefaultDataItemValues;
+  /**
+   * Custom renderer for the error panel.
+   */
+  renderError?: (error: CsvUploadErrorResult) => ReactNode;
 }
 
 const classBase = "vuuCsvUpload";
@@ -102,6 +109,7 @@ export const CsvUpload = (props: CsvUploadProps) => {
     onCancel,
     onClose,
     open,
+    renderError,
   } = props;
   const isControlledOpen = open !== undefined;
   const [internalOpen, setInternalOpen] = useState(open ?? true);
@@ -125,6 +133,7 @@ export const CsvUpload = (props: CsvUploadProps) => {
     onTriggerChange,
     schema,
     validation,
+    error,
   } = useCsvUpload(props);
 
   const handleCancel = useCallback(async () => {
@@ -148,7 +157,9 @@ export const CsvUpload = (props: CsvUploadProps) => {
         disabled={schema === undefined || isProcessingFile || isImporting}
         onDrop={onDrop}
         status={
-          validation && validation.errors.length > 0 ? "error" : undefined
+          (validation && validation.errors.length > 0) || error
+            ? "error"
+            : undefined
         }
       >
         <FileDropZoneIcon />
@@ -159,7 +170,10 @@ export const CsvUpload = (props: CsvUploadProps) => {
               {validation.errors
                 .filter((e) => e.column in validation.errorMap.fileErrors)
                 .map((error, i) => (
-                  <li className={`${classBase}-errorItem`} key={i}>
+                  <li
+                    className={`${classBase}-errorItem`}
+                    key={`${error.column}-${error.message}-${i}`}
+                  >
                     {error.message}
                   </li>
                 ))}
@@ -173,6 +187,22 @@ export const CsvUpload = (props: CsvUploadProps) => {
           BROWSE FILES
         </FileDropZoneTrigger>
       </FileDropZone>
+      {error &&
+        (renderError ? (
+          renderError(error)
+        ) : (
+          <div className={`${classBase}-errors`}>
+            <div>
+              <strong>Import Error:</strong>
+            </div>
+            <div>
+              {error.errors.importError?.message ||
+                error.errors.schemaError?.message ||
+                error.errors.validationError?.message ||
+                "An unexpected error occurred during import."}
+            </div>
+          </div>
+        ))}
       {children}
     </div>
   );
