@@ -174,7 +174,7 @@ describe("FilterAggregator", () => {
         expect(aggregator.filter).toEqual({
           column: "id",
           op: "=",
-          value: 1000000000000001234n,
+          value: "1000000000000001234",
         });
       });
     });
