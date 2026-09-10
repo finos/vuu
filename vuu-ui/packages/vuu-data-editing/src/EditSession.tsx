@@ -2,7 +2,6 @@ import type {
   CopyOption,
   DataSource,
   DeleteRowMode,
-  DeleteSelectedRowsResult,
   EditApi,
   EditSessionMode,
   SchemaColumn,
@@ -13,11 +12,10 @@ import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
+export type EditActionType = "deleteRow" | "addRow" | "editCell";
 /** Column name to default value mapping applied to every addRow call when a column is absent from the row data. */
 export type RowDefaultDataItemValues = Record<string, VuuRowDataItemType>;
-export type EditSessionApi =
-  | "createSessionDataSource"
-  | "beginEditSession";
+export type EditSessionApi = "createSessionDataSource" | "beginEditSession";
 
 export type EditSessionConstructorProps = {
   dataSource: EditApi;
@@ -88,9 +86,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
    *  Row key => row edits
    */
   #rowEdits = new Map<string, RowEditDetails>();
-  #deletedRows = new Set<string>();
-  #deleteRevision = 0;
-  #rowDeleteRevisions = new Map<string, number>();
   #editCount = 0;
   #deleteCount = 0;
   #addCount = 0;
@@ -125,49 +120,23 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     this.#sourceTableDataSource = dataSource;
     this.#deleteMode = deleteMode;
     this.#editSessionApi = editSessionApi;
-    this.#rowDefaults = rowDefaults;
+    this.#rowDefaults = { ...rowDefaults };
   }
 
   get editCount() {
     return this.#editCount;
   }
 
-  set editCount(val: number) {
-    this.#setEditCounts(val, this.#invalidCount);
-  }
-
   get invalidCount() {
     return this.#invalidCount;
-  }
-
-  set invalidCount(val: number) {
-    this.#setEditCounts(this.#editCount, val);
   }
 
   get deleteCount() {
     return this.#deleteCount;
   }
 
-  set deleteCount(val: number) {
-    if (val !== this.#deleteCount) {
-      const oldState = this.editState;
-      const oldCount = this.#deleteCount;
-      this.#deleteCount = val;
-      this.#emitEditStateChange(oldState, oldCount === 0 || val === 0);
-    }
-  }
-
   get addCount() {
     return this.#addCount;
-  }
-
-  set addCount(val: number) {
-    if (val !== this.#addCount) {
-      const oldState = this.editState;
-      const oldCount = this.#addCount;
-      this.#addCount = val;
-      this.#emitEditStateChange(oldState, oldCount === 0 || val === 0);
-    }
   }
 
   get editState(): EditState {
@@ -200,27 +169,30 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
   }
 
+  #setDeleteCount(val: number) {
+    if (val !== this.#deleteCount) {
+      const oldState = this.editState;
+      const oldCount = this.#deleteCount;
+      this.#deleteCount = val;
+      this.#emitEditStateChange(oldState, oldCount === 0 || val === 0);
+    }
+  }
+
+  #setAddCount(val: number) {
+    if (val !== this.#addCount) {
+      const oldState = this.editState;
+      const oldCount = this.#addCount;
+      this.#addCount = val;
+      this.#emitEditStateChange(oldState, oldCount === 0 || val === 0);
+    }
+  }
+
   #setStale(isStale: boolean) {
     if (isStale !== this.#isStale) {
       const oldState = this.editState;
       this.#isStale = isStale;
       this.#emitEditStateChange(oldState);
     }
-  }
-
-  #refreshEditCounts() {
-    let editCount = 0;
-    let invalidCount = 0;
-    for (const { cellEdits } of this.#rowEdits.values()) {
-      for (const cellEdit of cellEdits.values()) {
-        if (cellEdit.isValid) {
-          editCount++;
-        } else {
-          invalidCount++;
-        }
-      }
-    }
-    this.#setEditCounts(editCount, invalidCount);
   }
 
   get newRowState(): NewRowState {
@@ -236,7 +208,8 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   isNewRowComplete() {
-    const requiredColumns = this.#newRowState.requiredColumns ?? this.#newRowState.columns;
+    const requiredColumns =
+      this.#newRowState.requiredColumns ?? this.#newRowState.columns;
     return requiredColumns.every((column) => {
       const value = this.#newRowState.values[column];
       return (
@@ -246,19 +219,22 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     });
   }
 
-  configureNewRow(columns: readonly string[], requiredColumns?: readonly string[]) {
+  configureNewRow(
+    columns: readonly string[],
+    requiredColumns?: readonly string[],
+  ) {
     if (
       columns.length === this.#newRowState.columns.length &&
       columns.every(
         (column, index) => column === this.#newRowState.columns[index],
       ) &&
-      (!requiredColumns || (
-        this.#newRowState.requiredColumns !== undefined &&
-        requiredColumns.length === this.#newRowState.requiredColumns.length &&
-        requiredColumns.every(
-          (column, index) => column === this.#newRowState.requiredColumns?.[index],
-        )
-      ))
+      (!requiredColumns ||
+        (this.#newRowState.requiredColumns !== undefined &&
+          requiredColumns.length === this.#newRowState.requiredColumns.length &&
+          requiredColumns.every(
+            (column, index) =>
+              column === this.#newRowState.requiredColumns?.[index],
+          )))
     ) {
       return;
     }
@@ -288,7 +264,8 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   async addNewRow(): Promise<RpcResult> {
-    const requiredColumns = this.#newRowState.requiredColumns ?? this.#newRowState.columns;
+    const requiredColumns =
+      this.#newRowState.requiredColumns ?? this.#newRowState.columns;
     const missingErrors = Object.fromEntries(
       requiredColumns
         .filter((column) => {
@@ -355,26 +332,29 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     this.emit("newRow", newRowState);
   }
 
-  async deleteSelectedRows(): Promise<void> {
-    const response = await this.dataSource?.deleteSelectedRows?.(
+  async deleteSelectedRows(selectedRowCount: number): Promise<RpcResult> {
+    const deleteSelectedRows = this.dataSource?.deleteSelectedRows;
+    if (deleteSelectedRows === undefined) {
+      throw Error("[EditSession] datasource does not support deleting rows");
+    }
+
+    const response = await deleteSelectedRows.call(
+      this.dataSource,
       this.#deleteMode,
     );
-    if (isRpcError(response)) return;
-    const deletedKeys = (response?.data as DeleteSelectedRowsResult | undefined)
-      ?.deletedKeys;
-    if (deletedKeys && deletedKeys.length > 0) {
-      let newCount = 0;
-      for (const key of deletedKeys) {
-        this.#rowDeleteRevisions.set(key, ++this.#deleteRevision);
-        if (!this.#deletedRows.has(key)) {
-          this.#deletedRows.add(key);
-          newCount++;
-        }
-      }
-      if (newCount > 0) {
-        this.deleteCount = this.#deleteCount + newCount;
-      }
+    if (response === undefined) {
+      throw Error(
+        "[EditSession] datasource returned no response when deleting rows",
+      );
     }
+    if (isRpcError(response)) return response;
+
+    // We rely purely on the consumer-supplied selectedRowCount for counting deletions
+    // since the service layer does not provide deletedKeys.
+    if (selectedRowCount > 0) {
+      this.#setDeleteCount(this.#deleteCount + selectedRowCount);
+    }
+    return response;
   }
 
   async addRow(
@@ -385,30 +365,23 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       throw Error("[EditSession] datasource does not support adding rows");
     }
 
-    const response = await addRow.call(this.dataSource, { ...this.#rowDefaults, ...rowData });
+    const response = await addRow.call(this.dataSource, {
+      ...this.#rowDefaults,
+      ...rowData,
+    });
     if (response === undefined) {
       throw Error(
         "[EditSession] datasource returned no response when adding row",
       );
     }
     if (!isRpcError(response)) {
-      this.addCount = this.#addCount + 1;
+      this.#setAddCount(this.#addCount + 1);
     }
     return response;
   }
 
-  restoreRows(keys: string[]) {
-    for (const key of keys) {
-      if (this.#deletedRows.has(key)) {
-        this.#deletedRows.delete(key);
-        this.#rowDeleteRevisions.delete(key);
-        this.deleteCount = this.#deleteCount - 1;
-      }
-    }
-  }
-
   hasRowChanges(key: string): boolean {
-    return this.#rowEdits.has(key) || this.#deletedRows.has(key);
+    return this.#rowEdits.has(key);
   }
 
   isCellEdited(key: string, columnName: string): boolean {
@@ -419,28 +392,45 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     );
   }
 
-  async undoRowChange(key: string): Promise<void> {
+  async undoRowChange(
+    key: string,
+    action: EditActionType,
+  ): Promise<RpcResult | undefined> {
     if (!this.inEditMode) return;
 
     const undoRevision = this.#commitRevision;
-    const deleteRevisionAtRequest = this.#rowDeleteRevisions.get(key);
     const rowEditsAtRequest = this.#rowEdits.get(key);
     const columnsAtRequest = new Set(rowEditsAtRequest?.cellEdits.keys());
-    const wasDeleted = this.#deletedRows.has(key);
     const response = await this.dataSource?.undoRowChange?.(key);
 
-    if (isRpcError(response)) {
-      return;
+    if (response === undefined) {
+      return undefined;
     }
+    if (isRpcError(response)) {
+      return response;
+    }
+
+    const oldState = this.editState;
 
     const rowEdits = this.#rowEdits.get(key);
     if (rowEdits) {
       const changedColumns: string[] = [];
+      let removedValidCount = 0;
+      let removedInvalidCount = 0;
+
       for (const columnName of columnsAtRequest) {
         const latestRevision =
           this.#cellCommitRevisions.get(key)?.get(columnName) ?? 0;
         if (latestRevision > undoRevision) {
           continue;
+        }
+        const existing = rowEdits.cellEdits.get(columnName);
+        if (existing) {
+          if (existing.isValid) {
+            removedValidCount++;
+          } else {
+            removedInvalidCount++;
+          }
         }
         if (this.isCellEdited(key, columnName)) {
           changedColumns.push(columnName);
@@ -451,28 +441,31 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       if (rowEdits.cellEdits.size === 0) {
         this.#rowEdits.delete(key);
       }
-      this.#refreshEditCounts();
+
+      this.#editCount -= removedValidCount;
+      this.#invalidCount -= removedInvalidCount;
+
       for (const columnName of changedColumns) {
         this.emit("cellEditChanged", key, columnName);
       }
     }
-    if (
-      wasDeleted &&
-      this.#deletedRows.has(key) &&
-      this.#rowDeleteRevisions.get(key) === deleteRevisionAtRequest
-    ) {
-      this.#deletedRows.delete(key);
-      this.#rowDeleteRevisions.delete(key);
-      this.deleteCount = this.#deleteCount - 1;
+
+    if (action === "deleteRow") {
+      this.#deleteCount--;
     }
 
     // If the server deleted a newly inserted row, decrement addCount
     const wasInsertedRow =
+      action === "addRow" ||
       (response?.data as UndoRowChangeResult | undefined)?.wasInsertedRow ===
-      true;
+        true;
     if (wasInsertedRow) {
-      this.addCount = this.#addCount - 1;
+      this.#addCount--;
     }
+
+    this.#emitEditStateChange(oldState);
+
+    return response;
   }
 
   #clearEdits() {
@@ -483,8 +476,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         .map((columnName) => [key, columnName] as const),
     );
     this.#rowEdits.clear();
-    this.#deletedRows.clear();
-    this.#rowDeleteRevisions.clear();
     this.#cellCommitRevisions.clear();
     this.#editCount = 0;
     this.#deleteCount = 0;
@@ -520,7 +511,10 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     return result;
   }
 
-  begin(copyOption: CopyOption = "All", sessionType: SessionType = "edit"): Promise<DataSource> {
+  begin(
+    copyOption: CopyOption = "All",
+    sessionType: SessionType = "edit",
+  ): Promise<DataSource> {
     return this.#enqueue(async () => {
       if (
         this.#lifecycle.status === "active" ||
@@ -571,7 +565,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         this.#setLifecycle({ status: "error", operation: "begin", error });
         throw error;
       }
-
     });
   }
 
@@ -702,12 +695,47 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       isValid,
     };
 
-    if (isValid && cellEdit.originalValue === editedValue) {
+    // Keep track of counts before change
+    let prevValidCount = 0;
+    let prevInvalidCount = 0;
+    if (existingCellEdit) {
+      if (existingCellEdit.isValid) {
+        prevValidCount = 1;
+      } else {
+        prevInvalidCount = 1;
+      }
+    }
+
+    let nextValidCount = 0;
+    let nextInvalidCount = 0;
+
+    const isRevertedToOriginal =
+      isValid && cellEdit.originalValue === editedValue;
+    if (isRevertedToOriginal) {
       cellEdits.delete(column);
+      if (cellEdits.size === 0) {
+        this.#rowEdits.delete(key);
+      }
     } else {
       cellEdits.set(column, cellEdit);
+      if (isValid) {
+        nextValidCount = 1;
+      } else {
+        nextInvalidCount = 1;
+      }
     }
-    this.#refreshEditCounts();
+
+    // Incremental counter adjustment
+    const editCountDiff = nextValidCount - prevValidCount;
+    const invalidCountDiff = nextInvalidCount - prevInvalidCount;
+
+    if (editCountDiff !== 0 || invalidCountDiff !== 0) {
+      this.#setEditCounts(
+        this.#editCount + editCountDiff,
+        this.#invalidCount + invalidCountDiff,
+      );
+    }
+
     if (wasEdited !== this.isCellEdited(key, column)) {
       this.emit("cellEditChanged", key, column);
     }
@@ -763,6 +791,10 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
           columnName,
           typedValue,
         );
+        if (!this.inEditMode) {
+          // Edit session ended in the meantime; exit gracefully.
+          return { data: undefined, type: "SUCCESS_RESULT" };
+        }
         if (!this.#isLatestCellCommit(key, columnName, revision)) {
           throw new SupersededEditError(
             `Edit response superseded for ${key}:${columnName}`,

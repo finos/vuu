@@ -16,6 +16,7 @@ export {
   EditError,
   EditSession,
   SupersededEditError,
+  type EditActionType,
   type EditLifecycle,
   type EditSessionConstructorProps,
   type NewRowState,
