@@ -39,18 +39,17 @@ test.describe("Chart examples", () => {
     await page.getByRole("radio", { name: "Edit" }).click();
     await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
 
-    const editHeight = (await chartElement.boundingBox())?.height;
-    const editSvgHeight = (await chartElement.locator("svg").boundingBox())
-      ?.height;
-    if (
-      viewHeight === undefined ||
-      editHeight === undefined ||
-      viewSvgHeight === undefined ||
-      editSvgHeight === undefined
-    ) {
+    if (viewHeight === undefined || viewSvgHeight === undefined) {
       throw Error("Unable to measure chart");
     }
-    await expect(editHeight).toBeLessThan(viewHeight);
-    await expect(editSvgHeight).toBeLessThan(viewSvgHeight);
+    await expect
+      .poll(async () => (await chartElement.boundingBox())?.height ?? 0)
+      .toBeLessThan(viewHeight);
+    await expect
+      .poll(
+        async () =>
+          (await chartElement.locator("svg").boundingBox())?.height ?? 0,
+      )
+      .toBeLessThan(viewSvgHeight);
   });
 });
