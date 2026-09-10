@@ -1,10 +1,17 @@
 import {
   CsvUpload,
+  type CsvUploadErrorResult,
 } from "@vuu-ui/vuu-table-extras";
 import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
 import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { useCallback, useMemo, useState } from "react";
-import { Button } from "@salt-ds/core";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogHeader,
+} from "@salt-ds/core";
 import { LocalDataSourceProvider, simulModule } from "@vuu-ui/vuu-data-test";
 import { Table } from "@vuu-ui/vuu-table";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
@@ -238,6 +245,116 @@ export const CsvUploadWithImportTableOnly = () => {
         importTable={{ module: "SIMUL", table: "instruments" }}
       />
     </LocalDataSourceProvider>
+  );
+};
+
+export const CsvUploadWithImportFailure = () => {
+  const [capturedError, setCapturedError] = useState<string | undefined>();
+  const dataSource = useMemo(() => {
+    const sessionDs = {
+      table: { module: "TEST", table: "session-items" },
+      tableSchema: rowDefaultsSchema,
+      columns: ["id", "name"],
+      addRow: async () => {
+        return {
+          type: "ERROR_RESULT" as const,
+          errorMessage: "Database duplicate key constraint violated on row inserter.",
+        };
+      },
+      endEditSession: async () => void 0,
+    };
+    return {
+      table: { module: "TEST", table: "items" },
+      tableSchema: rowDefaultsSchema,
+      createSessionDataSource: async () => sessionDs as unknown as DataSource,
+      subscribe: async () => void 0,
+      unsubscribe: () => void 0,
+    } as unknown as DataSource;
+  }, []);
+
+  return (
+    <div style={{ display: "grid", gap: "10px" }}>
+      <h3>Simulated Failing RPC Upload</h3>
+      <p>
+        In this example, dropping or selecting any valid <code>.csv</code> file will trigger a simulated RPC failure inside <code>addRow</code>.
+        This demonstrates the dynamic propagation of backend insert errors to the UI below the DropZone.
+      </p>
+      <CsvUpload
+        dataSource={dataSource}
+        onError={(errResult) => {
+          setCapturedError(errResult?.errors.importError?.message);
+        }}
+      />
+      {capturedError && (
+        <div style={{ marginTop: 10, color: "var(--salt-status-error-foreground)" }} data-testid="test-error-output">
+          <strong>Captured onError callback:</strong> {capturedError}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const CsvUploadWithExternalErrorDialog = () => {
+  const [errorResult, setErrorResult] = useState<CsvUploadErrorResult | undefined>();
+  const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
+
+  const dataSource = useMemo(() => {
+    const sessionDs = {
+      table: { module: "TEST", table: "session-items" },
+      tableSchema: rowDefaultsSchema,
+      columns: ["id", "name"],
+      addRow: async () => {
+        return {
+          type: "ERROR_RESULT" as const,
+          errorMessage: "Unable to insert records. Staging connection interrupted.",
+        };
+      },
+      endEditSession: async () => void 0,
+    };
+    return {
+      table: { module: "TEST", table: "items" },
+      tableSchema: rowDefaultsSchema,
+      createSessionDataSource: async () => sessionDs as unknown as DataSource,
+      subscribe: async () => void 0,
+      unsubscribe: () => void 0,
+    } as unknown as DataSource;
+  }, []);
+
+  const handleError = useCallback((errResult: CsvUploadErrorResult | undefined) => {
+    if (errResult) {
+      setErrorResult(errResult);
+      setIsErrorDialogOpen(true);
+    } else {
+      setErrorResult(undefined);
+    }
+  }, []);
+
+  return (
+    <div style={{ display: "grid", gap: "10px" }}>
+      <h3>Failing RPC Upload with Custom Dialog Error</h3>
+      <p>
+        In this example, the default inline error panel is suppressed by passing <code>{`renderError={() => null}`}</code>. 
+        Instead, errors are intercepted via <code>onError</code> and rendered in a fully styled Salt <code>Dialog</code> container.
+      </p>
+      <CsvUpload
+        dataSource={dataSource}
+        onError={handleError}
+        renderError={() => null}
+      />
+
+      <Dialog open={isErrorDialogOpen} onOpenChange={setIsErrorDialogOpen}>
+        <DialogHeader header="Custom Dialog: Import Failed" />
+        <DialogContent>
+          <div style={{ padding: 16, color: "var(--salt-status-error-foreground)" }}>
+            <p><strong>System Exception Detected:</strong></p>
+            <p>{errorResult?.errors.importError?.message || "An unexpected error occurred during database injection."}</p>
+          </div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsErrorDialogOpen(false)}>Acknowledge</Button>
+        </DialogActions>
+      </Dialog>
+    </div>
   );
 };
 

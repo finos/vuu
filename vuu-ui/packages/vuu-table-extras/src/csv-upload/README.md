@@ -48,6 +48,7 @@ import { CsvUpload } from "@vuu-ui/vuu-table-extras";
 | `onError` | `(result: CsvUploadErrorResult \| undefined) => void` | Fired when any error occurs. Called with `undefined` to clear a previous error. |
 | `onCancel` | `() => void` | Fired when the Cancel button is clicked. |
 | `onClose` | `() => void` | Fired after a successful import completes (i.e. the Import button was clicked and the session committed). |
+| `renderError` | `(error: CsvUploadErrorResult) => ReactNode` | Optional custom renderer for the error panel. Allows overriding the default inline error panel (e.g. to suppress or display errors in a separate element/dialog). |
 | `children` | `ReactNode` | Optional children rendered inside the dialog content area, below the drop zone. Typically used to display a read-only error table — see [Displaying validation errors](#displaying-validation-errors). |
 
 ---
