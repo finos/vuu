@@ -122,7 +122,20 @@ def main() -> None:
             row_builder.setKey(key)
             for column_name, value in row.items():
                 column = self.table.columnForName(column_name)
-                row_builder.setString(column, value)
+                # column.dataType() is a java.lang.Class - primitive types (int, double, ...)
+                # report their primitive name from getName(); anything else (String, ...) falls
+                # through to setString.
+                type_name = str(column.dataType().getName())
+                if type_name == "int":
+                    row_builder.setInt(column, int(value))
+                elif type_name == "double":
+                    row_builder.setDouble(column, float(value))
+                elif type_name == "long":
+                    row_builder.setLong(column, int(value))
+                elif type_name == "boolean":
+                    row_builder.setBoolean(column, bool(value))
+                else:
+                    row_builder.setString(column, str(value))
             self.table.processUpdate(row_builder.build())
 
     @jpype.JImplements("scala.Function2")
@@ -135,7 +148,15 @@ def main() -> None:
         TableDefBuilder()
         .name("Snakes")
         .keyField("id")
-        .customColumns(ColumnBuilder().addString("type").addString("name").addString("id").build())
+        .customColumns(
+            ColumnBuilder()
+            .addString("type")
+            .addString("name")
+            .addString("id")
+            .addInt("age")
+            .addDouble("weight")
+            .build()
+        )
         .build()
     )
 
@@ -209,9 +230,29 @@ def main() -> None:
     # java.util.Map automatically at the call boundary.
     snakes_provider = server.providerContainer().getProviderForTable("Snakes").get()
     sample_snakes = [
-        {"id": "s1", "name": "Kaa", "type": "Python"},
-        {"id": "s2", "name": "Nagini", "type": "Python"},
-        {"id": "s3", "name": "Sir Hiss", "type": "Grass snake"},
+        {"id": "s1", "name": "Kaa", "type": "Python", "age": 40, "weight": 91.5},
+        {"id": "s2", "name": "Nagini", "type": "Python", "age": 15, "weight": 22.3},
+        {"id": "s3", "name": "Sir Hiss", "type": "Grass snake", "age": 3, "weight": 0.4},
+        {"id": "s4", "name": "Monty", "type": "Reticulated python", "age": 22, "weight": 75.0},
+        {"id": "s5", "name": "Cleo", "type": "Ball python", "age": 8, "weight": 1.8},
+        {"id": "s6", "name": "Jafar", "type": "Cobra", "age": 12, "weight": 6.4},
+        {"id": "s7", "name": "Titan", "type": "Anaconda", "age": 18, "weight": 97.5},
+        {"id": "s8", "name": "Venom", "type": "Black mamba", "age": 9, "weight": 1.6},
+        {"id": "s9", "name": "Rex", "type": "Boa constrictor", "age": 14, "weight": 27.2},
+        {"id": "s10", "name": "Slyther", "type": "Corn snake", "age": 5, "weight": 0.9},
+        {"id": "s11", "name": "Basilisk", "type": "King cobra", "age": 20, "weight": 9.1},
+        {"id": "s12", "name": "Rattles", "type": "Rattlesnake", "age": 7, "weight": 1.5},
+        {"id": "s13", "name": "Copper", "type": "Copperhead", "age": 6, "weight": 0.5},
+        {"id": "s14", "name": "Marsh", "type": "Cottonmouth", "age": 11, "weight": 1.2},
+        {"id": "s15", "name": "Zigzag", "type": "Adder", "age": 4, "weight": 0.2},
+        {"id": "s16", "name": "Dune", "type": "Sidewinder", "age": 3, "weight": 0.3},
+        {"id": "s17", "name": "Speedy", "type": "Black mamba", "age": 16, "weight": 1.7},
+        {"id": "s18", "name": "Milky", "type": "Milk snake", "age": 2, "weight": 0.15},
+        {"id": "s19", "name": "Sunny", "type": "Kingsnake", "age": 6, "weight": 1.1},
+        {"id": "s20", "name": "Rusty", "type": "Rat snake", "age": 9, "weight": 0.8},
+        {"id": "s21", "name": "Piglet", "type": "Hognose snake", "age": 4, "weight": 0.35},
+        {"id": "s22", "name": "Bruiser", "type": "Bull snake", "age": 10, "weight": 2.0},
+        {"id": "s23", "name": "Sting", "type": "Taipan", "age": 8, "weight": 3.3},
     ]
     for snake in sample_snakes:
         snakes_provider.tick(snake["id"], snake)

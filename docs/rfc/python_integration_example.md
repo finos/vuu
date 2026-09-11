@@ -295,7 +295,7 @@ modules.
 **Status: Implemented.** No Java/Scala source anywhere in this module — `pom.xml` is back to bare
 `packaging=pom`. `start_server.py` builds the `Snakes` table and implements its provider directly
 against the JVM's `org.finos.vuu.provider.Provider` interface and `scala.Function2` trait via
-JPype's `@JImplements` proxy support, ticks three sample rows into it after `lifecycle.start()`,
+JPype's `@JImplements` proxy support, ticks 23 sample rows into it after `lifecycle.start()`,
 and reports it in its `[VUU] Ready` line — which `test_start_server.py` asserts on.
 
 **Revision note:** this addendum originally shipped as compiled Java (`SnakesModule extends
@@ -361,7 +361,20 @@ class TickingProvider:
         row_builder.setKey(key)
         for column_name, value in row.items():
             column = self.table.columnForName(column_name)
-            row_builder.setString(column, value)
+            # column.dataType() is a java.lang.Class - primitive types (int, double, ...)
+            # report their primitive name from getName(); anything else (String, ...) falls
+            # through to setString.
+            type_name = str(column.dataType().getName())
+            if type_name == "int":
+                row_builder.setInt(column, int(value))
+            elif type_name == "double":
+                row_builder.setDouble(column, float(value))
+            elif type_name == "long":
+                row_builder.setLong(column, int(value))
+            elif type_name == "boolean":
+                row_builder.setBoolean(column, bool(value))
+            else:
+                row_builder.setString(column, str(value))
         self.table.processUpdate(row_builder.build())
 
 @jpype.JImplements("scala.Function2")
@@ -374,7 +387,15 @@ snakes_table_def = (
     TableDefBuilder()
     .name("Snakes")
     .keyField("id")
-    .customColumns(ColumnBuilder().addString("type").addString("name").addString("id").build())
+    .customColumns(
+        ColumnBuilder()
+        .addString("type")
+        .addString("name")
+        .addString("id")
+        .addInt("age")
+        .addDouble("weight")
+        .build()
+    )
     .build()
 )
 
@@ -409,18 +430,36 @@ things make this possible without any Java at all:
   forwarder, exactly like `VuuServerConfig`'s `.apply()` calls elsewhere in this script) — no
   proxying needed, just direct calls, same as everything else in `start_server.py`.
 
-After `lifecycle.start()`, the sample-data ticking is unchanged from the Java-based version:
+`Snakes` has five columns, not all strings: `type`/`name`/`id` are `String`, `age` is `int`, and
+`weight` is `double` (`ColumnBuilder().addInt("age")` / `.addDouble("weight")`). `tick()` handles
+this generically rather than hardcoding which of `Snakes`' columns are which type: for each
+`(column_name, value)` pair in the row dict, it looks up the column via `columnForName` and reads
+its actual `DataType` back — `column.dataType()` is a `java.lang.Class`, and for primitive column
+types that's the *primitive* `Class` object (`classOf[Int]`/`classOf[Double]` compile to `int`/
+`double`, not the boxed `java.lang.Integer`/`java.lang.Double`), so `.getName()` gives back the
+short primitive name (`"int"`, `"double"`, `"long"`, `"boolean"`) to dispatch on, falling through
+to `setString` for anything else (`"java.lang.String"`, in `Snakes`' case). This means `tick()`
+works for any table shape passed to `TickingProvider`, not just the specific column set `Snakes`
+happens to have today.
+
+After `lifecycle.start()`, the sample-data ticking now exercises all three types:
 
 ```python
 snakes_provider = server.providerContainer().getProviderForTable("Snakes").get()
 sample_snakes = [
-    {"id": "s1", "name": "Kaa", "type": "Python"},
-    {"id": "s2", "name": "Nagini", "type": "Python"},
-    {"id": "s3", "name": "Sir Hiss", "type": "Grass snake"},
+    {"id": "s1", "name": "Kaa", "type": "Python", "age": 40, "weight": 91.5},
+    {"id": "s2", "name": "Nagini", "type": "Python", "age": 15, "weight": 22.3},
+    {"id": "s3", "name": "Sir Hiss", "type": "Grass snake", "age": 3, "weight": 0.4},
+    # ...20 more, s4-s23, covering a spread of species/ages/weights
 ]
 for snake in sample_snakes:
     snakes_provider.tick(snake["id"], snake)
 ```
+
+The `int`/`float` values in the sample dicts pass straight through as Python's native numeric
+types — `tick()`'s `int(value)`/`float(value)` calls are just defensive casts, not doing any real
+conversion work here, since JPype already accepts a Python `int`/`float` directly wherever
+`RowBuilder.setInt`/`.setDouble` expect a primitive `int`/`double` argument.
 
 The important detail here — checked explicitly, not assumed — is that `getProviderForTable(...)`
 hands back the **same Python `TickingProvider` object** the factory created, not a generic
@@ -452,6 +491,13 @@ and then with a full server start using this module, both before committing this
 - Both `wss://…:8090/websocket` (TCP connect) and `https://…:8443` (HTTP 200) came up with the
   module included, and the process shut down cleanly on `SIGTERM` with no leftover process, same as
   the base module and the earlier Java version of this addendum.
+- **`age`/`weight` (int/double columns) added later:** re-checked separately, since "no exception
+  was thrown" isn't proof the typed dispatch in `tick()` actually did the right thing. A standalone
+  run printed `column.dataType().getName()` for each column while ticking (`id`/`name`/`type` →
+  `java.lang.String`, `age` → `int`, `weight` → `double`, confirming the primitive-vs-boxed
+  `Class` distinction the dispatch logic relies on), then read the row back: `table.pullRow("s1")`
+  returned `age` as a `java.lang.Integer` (`40`) and `weight` as a `java.lang.Double` (`91.5`) —
+  the correct boxed types and the correct values, not just non-crashing ones.
 
 ### Files
 
@@ -465,7 +511,7 @@ and then with a full server start using this module, both before committing this
   `lifecycle.start()`. No `target/classes` classpath entry needed (nothing of this module's own
   compiles to a `.class` file any more).
 - `example/python-integration/python/test_start_server.py` — unchanged from the Java version
-  (still asserts the `[VUU] Ready` line reports ticking 3 rows into `Snakes`); passes unmodified
+  (still asserts the `[VUU] Ready` line reports ticking 23 rows into `Snakes`); passes unmodified
   since the observable behaviour is identical.
 - `example/python-integration/README.md` — describes the table/provider as Python-defined.
 
