@@ -52,7 +52,7 @@ def test_server_starts_and_shuts_down_cleanly():
     try:
         ready_line = _wait_for_ready_line(proc)
         assert ready_line is not None, "server did not print its [VUU] Ready line in time"
-        assert "ticked 3 rows into Snakes" in ready_line, (
+        assert "ticked 23 rows into Snakes" in ready_line, (
             "server did not report ticking sample data into the Snakes table"
         )
 
