@@ -5,14 +5,23 @@ import {
   type ColumnPickerProps,
 } from "@vuu-ui/vuu-table-extras";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { useMemo } from "react";
+import { MouseEventHandler, useCallback, useMemo } from "react";
 
 const ColumnPickerTemplate = ({
   columnModel,
-}: Pick<ColumnPickerProps, "columnModel">) => {
+  allowCreateCalculatedColumn,
+  onClickCreateCalculatedColumn,
+}: Pick<
+  ColumnPickerProps,
+  | "columnModel"
+  | "allowCreateCalculatedColumn"
+  | "onClickCreateCalculatedColumn"
+>) => {
   return (
     <ColumnPicker
       columnModel={columnModel}
+      allowCreateCalculatedColumn={allowCreateCalculatedColumn}
+      onClickCreateCalculatedColumn={onClickCreateCalculatedColumn}
       style={{ width: 300, height: 800 }}
     />
   );
@@ -67,4 +76,65 @@ export const ManyColumnColumnPicker = () => {
   }, []);
 
   return <ColumnPickerTemplate columnModel={columnModel} />;
+};
+
+export const CalculatedColumnPicker = () => {
+  const allColumns: ColumnDescriptor[] = useMemo(
+    () => [
+      {
+        name: "regularcolumn1",
+        serverDataType: "string",
+        label: "Regular column 1",
+      },
+      {
+        name: "regularcolumn2",
+        serverDataType: "string",
+        label: "Regular column 2",
+      },
+      {
+        name: "regularcolumn3",
+        serverDataType: "string",
+        label: "Regular column 3",
+      },
+      {
+        name: "regularcolumn4",
+        serverDataType: "string",
+        label: "Regular column 4",
+      },
+      {
+        name: "calculated:col:1",
+        serverDataType: "string",
+        label: "Calculated column 1",
+        icon: "check-check",
+      },
+      {
+        name: "calculated:col:2",
+        serverDataType: "string",
+        label: "Calculated column 2",
+        icon: "check-check",
+      },
+    ],
+    [],
+  );
+
+  const selectedColumns = useMemo(() => allColumns.slice(0, 3), [allColumns]);
+
+  const handleClickCreateCustomItem = useCallback<
+    MouseEventHandler<HTMLButtonElement>
+  >(() => {
+    console.log("handleClickCreateCustomItem() called");
+  }, []);
+
+  const columnModel = useMemo(
+    () => new ColumnModel(allColumns, selectedColumns),
+    [allColumns, selectedColumns],
+  );
+
+  return (
+    <ColumnPickerTemplate
+      columnModel={columnModel}
+      allowCreateCalculatedColumn={true}
+      onClickCreateCalculatedColumn={handleClickCreateCustomItem}
+    />
+  );
 };

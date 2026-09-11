@@ -124,8 +124,8 @@ export declare type DecimalValueTypeSimple = "decimal" | "scaleddecimal";
 export declare type DateTimeDataValueType =
   | DateTimeColumnTypeSimple
   | (Omit<DataValueTypeDescriptor, "name"> & {
-    name: DateTimeColumnTypeSimple;
-  });
+      name: DateTimeColumnTypeSimple;
+    });
 
 export declare type BulkEdit = "bulk" | false | "read-only";
 
@@ -136,9 +136,9 @@ export declare type BulkEdit = "bulk" | false | "read-only";
 export declare type DataEditable =
   | boolean
   | {
-    insert: boolean;
-    update: boolean;
-  };
+      insert: boolean;
+      update: boolean;
+    };
 
 export interface DataValueDescriptor {
   editable?: DataEditable;
@@ -153,7 +153,7 @@ export interface DataValueDescriptor {
   label?: string;
   /** unique name for this data value */
   name: string;
-    /** Whether the field is required or can be empty/nullable */
+  /** Whether the field is required or can be empty/nullable */
   required?: boolean;
   /** The type defined on server for this data value */
   serverDataType?: VuuColumnDataType;
@@ -198,18 +198,18 @@ type IsNew = boolean;
 export declare type DataSourceRow<
   T extends bigint | VuuRowDataItemType = VuuRowDataItemType,
 > = [
-    RowIndex,
-    RenderKey,
-    IsLeaf,
-    IsExpanded,
-    Depth,
-    ChildCount,
-    RowKey,
-    IsSelected,
-    Timestamp,
-    IsNew,
-    ...T[],
-  ];
+  RowIndex,
+  RenderKey,
+  IsLeaf,
+  IsExpanded,
+  Depth,
+  ChildCount,
+  RowKey,
+  IsSelected,
+  Timestamp,
+  IsNew,
+  ...T[],
+];
 
 export declare type DataSourceRowWithBigint = DataSourceRow<
   bigint | VuuRowDataItemType
@@ -406,7 +406,7 @@ export declare type TableSchemaTable = VuuTable & {
 export declare type RangeLimits = {
   maxRangeEnd: number;
   maxRangeWidth: number;
-}
+};
 
 export declare type TableSchema = {
   columns: readonly SchemaColumn[];
@@ -677,9 +677,9 @@ export interface DataSourceBase<
   T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
 >
   extends
-  EditApi<T>,
-  IEventEmitter<DataSourceEvents>,
-  Partial<TypeaheadSuggestionProvider> {
+    EditApi<T>,
+    IEventEmitter<DataSourceEvents>,
+    Partial<TypeaheadSuggestionProvider> {
   aggregations: VuuAggregation[];
   closeTreeNode: (keyOrIndex: string | number, cascade?: boolean) => void;
   columns: string[];

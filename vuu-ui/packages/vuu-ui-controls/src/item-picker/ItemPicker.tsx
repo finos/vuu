@@ -43,7 +43,8 @@ const classBase = "vuuItemPicker";
 export const classBaseListItem = "vuuItemPickerListItem";
 
 export interface ItemPickerProps
-  extends ItemPickerHookProps,
+  extends
+    ItemPickerHookProps,
     HTMLAttributes<HTMLDivElement>,
     Pick<ListBoxProps<ItemDescriptor>, "selected" | "onSelectionChange"> {
   itemTypeName: ItemTypeName;
@@ -174,6 +175,7 @@ export const ItemPicker = forwardRef(function ItemPicker(
     selectedItems,
     maxSelections,
     onSelectedItemsChange,
+    onSelectedItemsFilteredChange,
     onSelectionChange,
     selected = NO_SELECTION,
     createCustomItemProps,
@@ -208,6 +210,7 @@ export const ItemPicker = forwardRef(function ItemPicker(
     allItems,
     selectedItems,
     onSelectedItemsChange,
+    onSelectedItemsFilteredChange,
     maxSelections,
   });
 

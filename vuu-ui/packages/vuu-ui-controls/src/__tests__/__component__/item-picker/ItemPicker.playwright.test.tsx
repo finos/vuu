@@ -1,5 +1,8 @@
-import { expect, type Locator, test } from "../../../../../../playwright/fixtures";
-
+import {
+  expect,
+  type Locator,
+  test,
+} from "../../../../../../playwright/fixtures";
 
 interface DisplayedItem {
   dataName: string;
