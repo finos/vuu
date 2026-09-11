@@ -1,7 +1,8 @@
 import type {
+  CopyOption,
   DataSource,
-  EditApi,
   SessionDataSourceOverrides,
+  SessionType,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import {
@@ -146,11 +147,14 @@ export const useCsvUpload = ({
   // here, at the createSessionDataSource call site, since `dataSource` is supplied by the
   // caller and may be shared with a view that has no knowledge of the import table.
   const importDataSource = useMemo<
-    EditApi & { tableSchema?: TableSchema }
+    DataSource & { tableSchema?: TableSchema }
   >(() => {
     return {
       tableSchema: dataSource.tableSchema,
-      createSessionDataSource: async (copyOption, sessionType) => {
+      createSessionDataSource: async (
+        copyOption: CopyOption,
+        sessionType?: SessionType,
+      ) => {
         if (!dataSource.createSessionDataSource) {
           throw Error(
             "[useCsvUpload] dataSource does not support createSessionDataSource",
@@ -187,7 +191,7 @@ export const useCsvUpload = ({
 
         return sessionDs;
       },
-    };
+    } as unknown as DataSource & { tableSchema?: TableSchema };
   }, [dataSource, sessionOverrides]);
   const editSession = useMemo(
     () =>

@@ -2,7 +2,6 @@ import type {
   CopyOption,
   DataSource,
   DeleteRowMode,
-  EditApi,
 } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { useData, useLayoutEffectSkipFirst } from "@vuu-ui/vuu-utils";
@@ -81,7 +80,7 @@ export const useEditableTable = ({
   const editSession = useMemo(
     () =>
       new EditSession({
-        dataSource: sourceDataSource as EditApi,
+        dataSource: sourceDataSource,
         deleteMode,
         editSessionApi,
         rowDefaults,
@@ -125,8 +124,8 @@ export const useEditableTable = ({
   );
 
   const handleDelete = useCallback(async () => {
-    await editSession.deleteSelectedRows(selectionCount);
-  }, [editSession, selectionCount]);
+    await editSession.deleteSelectedRows();
+  }, [editSession]);
 
   const handleUndoRowChange = useCallback(
     (key: string, action: EditActionType) =>

@@ -1,4 +1,4 @@
-import type { DataSource, EditApi } from "@vuu-ui/vuu-data-types";
+import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type {
   RpcResultError,
   RpcResultSuccess,
@@ -27,7 +27,7 @@ vi.hoisted(() => {
   vi.stubGlobal("Worker", MockWorker);
 });
 
-type Editable = Required<EditApi>;
+type Editable = Required<DataSource>;
 type AddRow = Editable["addRow"];
 type CreateSession = Editable["createSessionDataSource"];
 type EndEdit = Editable["endEditSession"];
@@ -39,7 +39,7 @@ const ERROR: RpcResultError = {
   errorMessage: "edit rejected",
 };
 
-class MockDataSource implements EditApi {
+class MockDataSource {
   constructor(
     private endEdit: EndEdit,
     private createSession: CreateSession,
@@ -86,7 +86,7 @@ describe("EditSession lifecycle", () => {
     createSession = vi.fn(
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
-    const dataSource = new MockDataSource(endEdit, createSession, editCell);
+    const dataSource = new MockDataSource(endEdit, createSession, editCell) as unknown as DataSource;
     editSession = new EditSession({ dataSource: dataSource });
   });
 
@@ -108,7 +108,7 @@ describe("EditSession lifecycle", () => {
       type: "SUCCESS_RESULT",
     });
     editSession = new EditSession({
-      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow),
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) as unknown as DataSource,
     });
 
     await editSession.addRow({ id: 7, name: "Alice" });
@@ -123,7 +123,7 @@ describe("EditSession lifecycle", () => {
       type: "ERROR_RESULT",
     });
     editSession = new EditSession({
-      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow),
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) as unknown as DataSource,
     });
 
     await editSession.addRow({ id: 7 });
@@ -552,14 +552,14 @@ describe("EditSession lifecycle", () => {
 
   it("undoes only edits that existed when the undo request began", async () => {
     const pendingUndo = deferred<RpcResultSuccess>();
-    const dataSource: EditApi = {
+    const dataSource: DataSource = {
       createSessionDataSource: vi.fn(
         async () => dataSource as unknown as DataSource,
       ),
       editCell: vi.fn().mockResolvedValue(SUCCESS),
       endEditSession: vi.fn(),
       undoRowChange: vi.fn().mockReturnValue(pendingUndo.promise),
-    };
+    } as unknown as DataSource;
     editSession = new EditSession({ dataSource: dataSource });
     await editSession.begin();
     await editSession.commit("row-1", "price", 100, 101, true);
@@ -587,8 +587,11 @@ describe("EditSession lifecycle", () => {
     (
       editSession.dataSource as unknown as Record<string, unknown>
     ).deleteSelectedRows = deleteSelectedRows;
+    (
+      editSession.dataSource as unknown as Record<string, unknown>
+    ).selectedRowsCount = 1;
 
-    await editSession.deleteSelectedRows(1);
+    await editSession.deleteSelectedRows();
 
     expect(states).toEqual(["dirty"]);
     expect(editSession.editState).toBe("dirty");

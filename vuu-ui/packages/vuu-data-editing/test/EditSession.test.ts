@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { DataSource, EditApi } from "@vuu-ui/vuu-data-types";
+import type { DataSource } from "@vuu-ui/vuu-data-types";
 import { EditSession } from "../src";
 
 vi.hoisted(() => {
@@ -22,12 +22,12 @@ vi.hoisted(() => {
   vi.stubGlobal("Worker", MockWorker);
 });
 
-type Editable = Required<EditApi>;
+type Editable = Required<DataSource>;
 type CreateSession = Editable["createSessionDataSource"];
 type EndEdit = Editable["endEditSession"];
 type EditCell = Editable["editCell"];
 
-export class MockDataSource implements EditApi {
+export class MockDataSource {
   constructor(
     private createSession: CreateSession,
     private endEdit: EndEdit,
@@ -59,7 +59,7 @@ describe("EditSession", () => {
     createSession = vi.fn(
       async () => editApi as unknown as DataSource,
     ) as CreateSession;
-    const editApi = new MockDataSource(createSession, endEdit, edit);
+    const editApi = new MockDataSource(createSession, endEdit, edit) as unknown as DataSource;
     editSession = new EditSession({ dataSource: editApi });
   });
 
@@ -74,7 +74,7 @@ describe("EditSession", () => {
     const beginEditSession = vi.fn().mockResolvedValue(sessionDataSource);
     const sourceDataSource = {
       beginEditSession,
-    } as EditApi;
+    } as unknown as DataSource;
     const legacyEditSession = new EditSession({
       dataSource: sourceDataSource,
       deleteMode: "soft",
@@ -220,7 +220,7 @@ describe("EditSession", () => {
       data: { wasInsertedRow: true },
       type: "SUCCESS_RESULT",
     });
-    const editApi: EditApi = {
+    const editApi: DataSource = {
       addRow: vi.fn().mockResolvedValue({
         data: undefined,
         type: "SUCCESS_RESULT",
@@ -230,7 +230,7 @@ describe("EditSession", () => {
       ),
       endEditSession: vi.fn(),
       undoRowChange,
-    };
+    } as unknown as DataSource;
     const insertedRowSession = new EditSession({ dataSource: editApi });
     await insertedRowSession.begin();
     await insertedRowSession.addRow({ id: "row-001" });
@@ -246,7 +246,7 @@ describe("EditSession", () => {
       data: undefined,
       type: "SUCCESS_RESULT",
     });
-    const editApi: EditApi = {
+    const editApi: DataSource = {
       createSessionDataSource: vi.fn(
         async () => editApi as unknown as DataSource,
       ),
@@ -256,7 +256,7 @@ describe("EditSession", () => {
       }),
       endEditSession: vi.fn(),
       undoRowChange,
-    };
+    } as unknown as DataSource;
     const rowEditSession = new EditSession({ dataSource: editApi });
     const cellEditChanged = vi.fn();
     rowEditSession.on("cellEditChanged", cellEditChanged);
@@ -280,7 +280,7 @@ describe("EditSession", () => {
     } as unknown as DataSource;
     const mockDataSource = {
       createSessionDataSource: vi.fn(async () => sessionDataSource),
-    } as unknown as EditApi;
+    } as unknown as DataSource;
     const session = new EditSession({
       dataSource: mockDataSource,
       rowDefaults,
@@ -310,7 +310,7 @@ describe("EditSession", () => {
       ),
       editCell: vi.fn(() => editCellPromise),
       endEditSession: vi.fn(),
-    } as unknown as EditApi;
+    } as unknown as DataSource;
     const session = new EditSession({ dataSource: editApi });
     await session.begin();
 
@@ -335,14 +335,15 @@ describe("EditSession", () => {
         type: "SUCCESS_RESULT",
       }),
       endEditSession: vi.fn(),
-    } as unknown as EditApi;
+      selectedRowsCount: 2,
+    } as unknown as DataSource;
     const session = new EditSession({ dataSource: editApi });
     await session.begin();
 
     const editStateListener = vi.fn();
     session.on("editState", editStateListener);
 
-    await session.deleteSelectedRows(2);
+    await session.deleteSelectedRows();
 
     expect(session.deleteCount).toBe(2);
     expect(editStateListener).toHaveBeenCalledTimes(1);
@@ -368,7 +369,7 @@ describe("EditSession", () => {
       }),
       endEditSession: vi.fn(),
       undoRowChange,
-    } as unknown as EditApi;
+    } as unknown as DataSource;
     const session = new EditSession({ dataSource: editApi });
     await session.begin();
 

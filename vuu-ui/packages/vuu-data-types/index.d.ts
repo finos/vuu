@@ -625,15 +625,16 @@ export declare type SessionDataSourceOverrides = {
   table?: VuuTable;
 };
 
-export interface EditApi<
+export declare type UndoRowChangeResult = {
+  wasInsertedRow?: boolean;
+};
+
+export interface DataSourceBase<
   T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
-> {
+> extends IEventEmitter<DataSourceEvents>,
+    Partial<TypeaheadSuggestionProvider> {
   addRow?: (
     rowData?: Record<string, VuuRowDataItemType>,
-  ) => Promise<RpcResult> | undefined;
-  deleteRow?: (
-    key: string,
-    mode?: DeleteRowMode,
   ) => Promise<RpcResult> | undefined;
   deleteSelectedRows?: (mode?: DeleteRowMode) => Promise<RpcResult> | undefined;
   editCell?: (
@@ -662,25 +663,6 @@ export interface EditApi<
     saveChanges?: boolean,
     force?: boolean,
   ) => Promise<RpcResult> | undefined;
-}
-
-/**
- * Data payload returned in RpcResultSuccess.data by the beginEditSession service.
- * Contains the server-assigned session table reference used to create the session datasource.
- */
-export declare type BeginEditSessionResult = {
-  table: VuuTable;
-};
-
-export declare type UndoRowChangeResult = {
-  wasInsertedRow?: boolean;
-};
-
-export interface DataSourceBase<
-  T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
-> extends EditApi<T>,
-    IEventEmitter<DataSourceEvents>,
-    Partial<TypeaheadSuggestionProvider> {
   aggregations: VuuAggregation[];
   closeTreeNode: (keyOrIndex: string | number, cascade?: boolean) => void;
   columns: string[];

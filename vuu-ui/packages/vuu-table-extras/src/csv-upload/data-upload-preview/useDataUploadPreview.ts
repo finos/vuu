@@ -48,8 +48,8 @@ export const useDataUploadPreview = ({
 
   const onCancel = useCallback(() => endSession(false), [endSession]);
   const onDelete = useCallback(
-    () => editSession.deleteSelectedRows(selectionCount),
-    [editSession, selectionCount],
+    () => editSession.deleteSelectedRows(),
+    [editSession],
   );
   const onSave = useCallback(
     (force = false) => endSession(true, force),

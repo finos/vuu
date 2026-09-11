@@ -2,7 +2,6 @@ import type {
   CopyOption,
   DataSource,
   DeleteRowMode,
-  EditApi,
   EditSessionMode,
   SchemaColumn,
   SessionType,
@@ -18,7 +17,7 @@ export type RowDefaultDataItemValues = Record<string, VuuRowDataItemType>;
 export type EditSessionApi = "createSessionDataSource" | "beginEditSession";
 
 export type EditSessionConstructorProps = {
-  dataSource: EditApi;
+  dataSource: DataSource;
   /** @default "soft" */
   deleteMode?: DeleteRowMode;
   /** @default "createSessionDataSource" */
@@ -96,7 +95,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   #deleteMode: DeleteRowMode;
   #editSessionApi: EditSessionApi;
   #rowDefaults: RowDefaultDataItemValues;
-  #sourceTableDataSource?: EditApi;
+  #sourceTableDataSource?: DataSource;
   #sessionDataSource?: DataSource;
   #newRowState: NewRowState = {
     columns: [],
@@ -332,11 +331,16 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     this.emit("newRow", newRowState);
   }
 
-  async deleteSelectedRows(selectedRowCount: number): Promise<RpcResult> {
+  async deleteSelectedRows(): Promise<RpcResult> {
     const deleteSelectedRows = this.dataSource?.deleteSelectedRows;
     if (deleteSelectedRows === undefined) {
       throw Error("[EditSession] datasource does not support deleting rows");
     }
+
+    // We rely purely on the datasource-supplied selectedRowsCount for counting deletions
+    // since the service layer does not provide deletedKeys.
+    // Capture this before the RPC call since execution deselects the deleted rows.
+    const selectedRowsCount = this.dataSource?.selectedRowsCount ?? 0;
 
     const response = await deleteSelectedRows.call(
       this.dataSource,
@@ -349,10 +353,8 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
     if (isRpcError(response)) return response;
 
-    // We rely purely on the consumer-supplied selectedRowCount for counting deletions
-    // since the service layer does not provide deletedKeys.
-    if (selectedRowCount > 0) {
-      this.#setDeleteCount(this.#deleteCount + selectedRowCount);
+    if (selectedRowsCount > 0) {
+      this.#setDeleteCount(this.#deleteCount + selectedRowsCount);
     }
     return response;
   }
