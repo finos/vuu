@@ -903,11 +903,11 @@ test.describe("GridLayout browser interactions", () => {
     const component = await mount(fixture, { variant: "resizable-vertical" });
     const grid = new GridLayoutDriver(component, page);
 
-    await grid.resize(grid.separator(), 0, 1_000);
+    await grid.resize(grid.separator(), 0, 500);
     const defaultMinimum = await grid.item("bottom").boundingBox();
     expect(defaultMinimum?.height).toBeCloseTo(80, 0);
 
-    await grid.resize(grid.separator(), 0, -1_000);
+    await grid.resize(grid.separator(), 0, -500);
     const explicitMinimum = await grid.item("top").boundingBox();
     expect(explicitMinimum?.height).toBeCloseTo(120, 0);
   });
