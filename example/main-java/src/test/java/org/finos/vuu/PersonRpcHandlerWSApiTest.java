@@ -295,13 +295,13 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
 
         assertInstanceOf(RpcErrorResult.class, responseBody.result(), "Response contains error result");
         var result = (RpcErrorResult) responseBody.result();
-        assertEquals("Could not find rpcMethodHandler DoesNotExist", result.errorMessage());
+        assertEquals("Could not find handler for rpc \"DoesNotExist\"", result.errorMessage());
 
         assertInstanceOf(ShowNotificationAction.class, responseBody.action(), "Response contains show notification action");
         var action = (ShowNotificationAction) responseBody.action();
         assertEquals(NotificationType.ERROR(), action.notificationType());
         assertEquals("Failed to process DoesNotExist request", action.title());
-        assertEquals("Could not find rpcMethodHandler DoesNotExist", action.message());
+        assertEquals("Could not find handler for rpc \"DoesNotExist\"", action.message());
 
     }
 
