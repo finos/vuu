@@ -10,7 +10,7 @@ const useRsDoctor = getCommandLineArg("--rsdoctor", false) !== undefined;
 
 const buildManifest = () => {
   return {
-    clientId: 'vuu-sample-app',
+    clientId: "vuu-sample-app",
     ssl: true,
     authUrl: "http://localhost:5001",
     moduleRegistryUrl: "/module-registry.json",
@@ -53,6 +53,10 @@ async function main() {
       },
       plugins: [pluginReact(), pluginCssInline()],
 
+      source: {
+        preEntry: "@vuu-ui/vuu-theme/index.css",
+      },
+
       tools: {
         rspack: {
           output: {
@@ -64,9 +68,9 @@ async function main() {
           },
           plugins: [
             useRsDoctor &&
-            new RsdoctorRspackPlugin({
-              // plugin options
-            }),
+              new RsdoctorRspackPlugin({
+                // plugin options
+              }),
             new ModuleFederationPlugin({
               name: "host",
               remoteType: "module",
