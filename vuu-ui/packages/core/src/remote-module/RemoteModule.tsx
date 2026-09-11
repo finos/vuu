@@ -9,6 +9,7 @@ import {
 import React, { lazy } from "react";
 import { useInRouterContext, useLocation } from "react-router-dom";
 import { RemoteModuleErrorBoundary } from "./RemoteModuleErrorBoundary";
+import { RemoteModuleLoadError } from "./RemoteModuleLoadError";
 
 export interface RemoteModuleProps<
   ComponentProps extends object | undefined = object,
@@ -43,15 +44,25 @@ const getLazyComponent = (
   ]);
 
   return lazy(async () => {
-    const remote = await loadRemote<{
-      default: React.ComponentType<Record<string, unknown>>;
-    }>(`${scope}/${component}`, { from: "runtime" });
+    const moduleId = `${scope}/${component}`;
 
-    if (remote === null) {
-      throw Error(`Unable to load remote component ${scope}/${component}`);
+    try {
+      const remote = await loadRemote<{
+        default: React.ComponentType<Record<string, unknown>>;
+      }>(moduleId, { from: "runtime" });
+
+      if (remote === null) {
+        throw Error(`Unable to load remote component ${moduleId}`);
+      }
+
+      return remote;
+    } catch (error) {
+      return {
+        default: () => (
+          <RemoteModuleLoadError error={error} moduleId={moduleId} />
+        ),
+      };
     }
-
-    return remote;
   });
 };
 
@@ -126,12 +137,11 @@ const RoutedRemoteModule = (props: RoutedRemoteModuleProps) => {
   return <RawRemoteModule {...props} />;
 };
 
-export const RemoteModule = React.memo(
-  (props: RoutedRemoteModuleProps) =>
-    useInRouterContext() ? (
-      <RoutedRemoteModule {...props} />
-    ) : (
-      <RawRemoteModule {...props} />
-    ),
+export const RemoteModule = React.memo((props: RoutedRemoteModuleProps) =>
+  useInRouterContext() ? (
+    <RoutedRemoteModule {...props} />
+  ) : (
+    <RawRemoteModule {...props} />
+  ),
 );
 RemoteModule.displayName = "RemoteModule";
