@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.finos.vuu</groupId>
+        <artifactId>example</artifactId>
+        <version>11.1.0-SNAPSHOT</version>
+    </parent>
+
+    <packaging>pom</packaging>
+    <artifactId>python-integration</artifactId>
+    <name>${project.artifactId}</name>
+    <description>
+        Starts the Vuu view server from Python, with the JVM embedded in the Python process via
+        JPype, mirroring the startup sequence in example/main-java's VuuExampleMain. This module
+        has no Java/Scala sources of its own - it resolves the runtime classpath that the Python
+        driver script (python/start_server.py) needs to call directly into org.finos.vuu.core, and
+        even the custom "Snakes" table's module and provider are defined in Python (via JPype
+        JImplements proxies for org.finos.vuu.provider.Provider and scala.Function2) rather than
+        compiled Java.
+    </description>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.finos.vuu</groupId>
+            <artifactId>vuu</artifactId>
+            <version>11.1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.vuu</groupId>
+            <artifactId>vuu-java</artifactId>
+            <version>11.1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.vuu</groupId>
+            <artifactId>price</artifactId>
+            <version>11.1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.vuu</groupId>
+            <artifactId>order</artifactId>
+            <version>11.1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.vuu</groupId>
+            <artifactId>permission</artifactId>
+            <version>11.1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${vuu.logback.version}</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>write-classpath-for-python</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build-classpath</goal>
+                        </goals>
+                        <configuration>
+                            <outputFile>${project.build.directory}/classpath.txt</outputFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
