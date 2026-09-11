@@ -8,5 +8,4 @@ export {
   RemoteModule,
   type RemoteModuleProps,
 } from "./remote-module/RemoteModule";
-export { createRemoteModuleErrorPlugin } from "./remote-module/ModuleFederationErrorPlugin";
 export type { RemoteModuleDescriptor } from "./RemoteModuleDescriptor";
