@@ -20,16 +20,21 @@ import { Range } from "@vuu-ui/vuu-utils";
 type ConfigType = WithBaseFilter<WithFullConfig>;
 
 vi.mock("../src/ConnectionManager", () => ({
-  default: {
-    serverAPI: new Promise<ServerAPI>((resolve) => {
+  default: (() => {
+    const serverAPI = new Promise<ServerAPI>((resolve) => {
       // @ts-expect-error
       resolve({
         rpcCall: vi.fn(),
         send: vi.fn(),
         subscribe: vi.fn(),
       });
-    }),
-  },
+    });
+
+    return {
+      serverAPI,
+      serverAPIFor: () => serverAPI,
+    };
+  })(),
 }));
 
 const defaultSubscribeOptions = {
