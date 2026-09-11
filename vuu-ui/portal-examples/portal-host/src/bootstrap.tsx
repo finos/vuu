@@ -4,6 +4,7 @@ import {
   AuthenticationProvider,
   KeycloakAuthHandler,
 } from "@vuu-ui/core";
+import { createRemoteModuleErrorPlugin } from "@vuu-ui/core/portal";
 import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
 import { PageVisibilityObserver } from "@vuu-ui/vuu-utils";
 import { createRoot } from "react-dom/client";
@@ -14,6 +15,7 @@ import "@vuu-ui/vuu-theme/index.css";
 
 init({
   name: "host",
+  plugins: [createRemoteModuleErrorPlugin()],
   remotes: [],
 });
 
