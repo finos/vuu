@@ -10,7 +10,6 @@ import { createRoot } from "react-dom/client";
 import { App } from "./App";
 
 import "@vuu-ui/vuu-icons/index.css";
-import "@vuu-ui/vuu-theme/index.css";
 
 init({
   name: "host",

@@ -51,6 +51,10 @@ async function main() {
       },
       plugins: [pluginReact(), pluginCssInline()],
 
+      source: {
+        preEntry: "@vuu-ui/vuu-theme/index.css",
+      },
+
       tools: {
         rspack: {
           output: {
