@@ -193,6 +193,6 @@ class ImportSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
 
   class TestImportSessionTableRpcHandler(override val maxSessionTableSize: Int) extends ImportSessionRpcHandler {
 
-    override protected def addRowWithoutVuuMsg(params: RpcParams): RpcFunctionResult = new RpcFunctionSuccess()
+    override protected def addRowWithoutVuuMsg(rowKey: String, params: RpcParams): RpcFunctionResult = new RpcFunctionSuccess()
   }
 }
