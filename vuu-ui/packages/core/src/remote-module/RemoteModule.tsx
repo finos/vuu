@@ -35,14 +35,14 @@ const getLazyComponent = (
   component: string,
   manifestUrl: string,
 ) => {
-  registerRemotes([
-    {
-      name: scope,
-      entry: manifestUrl,
-    },
-  ]);
-
   return lazy(async () => {
+    registerRemotes([
+      {
+        name: scope,
+        entry: manifestUrl,
+      },
+    ]);
+
     const remote = await loadRemote<{
       default: React.ComponentType<Record<string, unknown>>;
     }>(`${scope}/${component}`, { from: "runtime" });

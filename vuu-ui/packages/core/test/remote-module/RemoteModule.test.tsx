@@ -9,6 +9,7 @@ vi.mock("@module-federation/enhanced/runtime", () => ({
   registerRemotes: vi.fn(),
 }));
 
+import { registerRemotes } from "@module-federation/enhanced/runtime";
 import { RemoteModule } from "../../src/remote-module/RemoteModule";
 
 describe("RemoteModule", () => {
@@ -41,5 +42,28 @@ describe("RemoteModule", () => {
     });
 
     expect(container.textContent).toBe("Connectionless remote loaded");
+  });
+
+  it("renders a boundary message when remote registration fails", async () => {
+    vi.mocked(registerRemotes).mockImplementationOnce(() => {
+      throw Error("remote shared dependency is incompatible");
+    });
+
+    await act(async () => {
+      root.render(
+        <RemoteModule
+          mfComponent="RegistrationFailure"
+          mfScope="registration-failure"
+          mfUrl="http://localhost:5001"
+        />,
+      );
+    });
+
+    expect(container.textContent).toContain(
+      "An error occurred while creating the remote module.",
+    );
+    expect(container.textContent).toContain(
+      "remote shared dependency is incompatible",
+    );
   });
 });
