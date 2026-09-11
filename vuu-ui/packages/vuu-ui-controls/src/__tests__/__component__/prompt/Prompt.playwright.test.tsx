@@ -12,18 +12,20 @@ test.describe("WHEN rendered with open true", () => {
 
 test.describe("WHEN configured to show confirm button only, with custom label", () => {
   test("THEN neither the close button nor cancel button will be rendered", async ({
-    browserName,
     mount,
     page,
   }) => {
     await mount("UiControls/Prompt/ConfirmOnly");
 
-    await expect(page.getByRole("dialog")).toBeVisible();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
 
-    const buttons = page.getByRole("button");
+    const buttons = dialog.getByRole("button");
     await expect(buttons).toHaveCount(1);
+    await expect(dialog.locator(".vuuPromptCloseButton")).toHaveCount(0);
+    await expect(dialog.locator(".vuuPromptCancelButton")).toHaveCount(0);
 
-    const okButton = page.getByRole("button", { name: "OK" });
+    const okButton = dialog.getByRole("button", { name: "OK" });
     await expect(okButton).toBeVisible();
     await expect(okButton).toBeFocused();
   });
@@ -33,12 +35,13 @@ test.describe("WHEN configured to focus on confirm", () => {
   test("THEN Prompt renders in portal", async ({ mount, page }) => {
     await mount("UiControls/Prompt/FocusOnConfirm");
 
-    await expect(page.getByRole("dialog")).toBeVisible();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
 
-    const buttons = page.getByRole("button");
+    const buttons = dialog.getByRole("button");
     await expect(buttons).toHaveCount(3);
 
-    const confirmButton = page.getByRole("button", { name: "Confirm" });
+    const confirmButton = dialog.getByRole("button", { name: "Confirm" });
     await expect(confirmButton).toBeFocused();
   });
 });

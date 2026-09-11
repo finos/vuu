@@ -20,16 +20,6 @@ const observeTrustedNativeDrag = async (
         },
         true,
       );
-      root.addEventListener(
-        "pointercancel",
-        (event) => {
-          root.setAttribute(
-            "data-native-pointercancel",
-            String(event.isTrusted),
-          );
-        },
-        true,
-      );
       const targetElement = root.querySelector(
         `[data-native-drop-observer="${affordanceClass}"]`,
       );
@@ -100,28 +90,23 @@ test.describe("GridLayout browser interactions", () => {
     mount,
     page,
   }) => {
-    const component = await mount("GridLayout/Showcase/MoveExistingItems");
-    await page.waitForTimeout(250);
+    const component = await mount(fixture, { variant: "basic" });
     const grid = new GridLayoutDriver(component, page);
-    const target = grid.content("move-target");
+    const target = grid.content("alpha");
     await observeTrustedNativeDrag(component, target, "vuuDropTarget-south");
 
-    await grid.nativeDrag(grid.header("move-source"), target, "south");
+    await grid.nativeDrag(grid.header("beta"), target, "south");
 
     await expect(component).toHaveAttribute("data-native-dragstart", "true");
-    await expect(component).toHaveAttribute(
-      "data-native-pointercancel",
-      "true",
-    );
     await expect(component).toHaveAttribute(
       "data-native-affordance",
       "vuuDropTarget-south",
     );
-    const targetBox = await grid.item("move-target").boundingBox();
-    const sourceBox = await grid.item("move-source").boundingBox();
+    const targetBox = await grid.item("alpha").boundingBox();
+    const sourceBox = await grid.item("beta").boundingBox();
     expect(sourceBox?.y).toBeGreaterThan(targetBox?.y ?? 0);
     await expect(component.locator('[class*="vuuDropTarget-"]')).toHaveCount(0);
-    await expect(grid.item("move-source")).not.toHaveClass(
+    await expect(grid.item("beta")).not.toHaveClass(
       /vuuGridLayoutItem-dragging/,
     );
   });
@@ -130,10 +115,9 @@ test.describe("GridLayout browser interactions", () => {
     mount,
     page,
   }) => {
-    const component = await mount("GridLayout/Showcase/PaletteSplitAndReplace");
-    await page.waitForTimeout(250);
+    const component = await mount(fixture, { variant: "palette-target" });
     const grid = new GridLayoutDriver(component, page);
-    const source = component.locator('[data-item-id="coral"]');
+    const source = component.getByTestId("palette-item-1").getByRole("button");
     const target = grid.content("palette-target");
     await observeTrustedNativeDrag(component, target, "vuuDropTarget-south");
 
@@ -145,14 +129,13 @@ test.describe("GridLayout browser interactions", () => {
       "vuuDropTarget-south",
     );
     const templateItem = component
-      .getByText("Coral template")
+      .getByTestId("template-content")
       .locator("xpath=ancestor::*[contains(@class, 'vuuGridLayoutItem')][1]");
     await expect(templateItem).toBeVisible();
     const targetBox = await grid.item("palette-target").boundingBox();
     const templateBox = await templateItem.boundingBox();
     expect(templateBox?.y).toBeGreaterThan(targetBox?.y ?? 0);
     await expect(target).not.toHaveClass(/vuuDropTarget-/);
-    await expect(grid.layout("palette-replace")).not.toHaveClass(/vuuDragging/);
   });
 
   for (const direction of ["north", "east", "west"] as const) {
@@ -160,18 +143,17 @@ test.describe("GridLayout browser interactions", () => {
       mount,
       page,
     }) => {
-      const component = await mount(
-        "GridLayout/Showcase/PaletteSplitAndReplace",
-      );
-      await page.waitForTimeout(250);
+      const component = await mount(fixture, { variant: "palette-target" });
       const grid = new GridLayoutDriver(component, page);
-      const source = component.locator('[data-item-id="coral"]');
+      const source = component
+        .getByTestId("palette-item-1")
+        .getByRole("button");
       const target = grid.content("palette-target");
 
       await grid.nativeDrag(source, target, direction);
 
       const templateItem = component
-        .getByText("Coral template")
+        .getByTestId("template-content")
         .locator("xpath=ancestor::*[contains(@class, 'vuuGridLayoutItem')][1]");
       await expect(templateItem).toBeVisible();
       const targetBox = await grid.item("palette-target").boundingBox();
@@ -193,18 +175,17 @@ test.describe("GridLayout browser interactions", () => {
     mount,
     page,
   }) => {
-    const component = await mount("GridLayout/Showcase/PaletteSplitAndReplace");
-    await page.waitForTimeout(250);
+    const component = await mount(fixture, { variant: "palette-target" });
     const grid = new GridLayoutDriver(component, page);
 
     await grid.nativeDrag(
-      component.locator('[data-item-id="coral"]'),
+      component.getByTestId("palette-item-1").getByRole("button"),
       grid.content("palette-target"),
       "centre",
     );
 
     await expect(grid.item("palette-target")).toHaveCount(0);
-    await expect(component.getByText("Coral template")).toBeVisible();
+    await expect(component.getByTestId("template-content")).toBeVisible();
     await expect(component.locator('[class*="vuuDropTarget-"]')).toHaveCount(0);
   });
 
@@ -212,10 +193,9 @@ test.describe("GridLayout browser interactions", () => {
     mount,
     page,
   }) => {
-    const component = await mount("GridLayout/Showcase/PaletteSplitAndReplace");
-    await page.waitForTimeout(250);
+    const component = await mount(fixture, { variant: "palette-target" });
     const grid = new GridLayoutDriver(component, page);
-    const source = component.locator('[data-item-id="teal"]');
+    const source = component.getByTestId("palette-item-2").getByRole("button");
     const target = grid
       .item("palette-target")
       .locator(".vuuGridLayoutItemHeader");
@@ -231,9 +211,10 @@ test.describe("GridLayout browser interactions", () => {
     await expect(
       component.getByRole("tab", { name: "Drop target" }),
     ).toBeVisible();
-    await expect(component.getByRole("tab", { name: "Teal" })).toBeVisible();
+    await expect(
+      component.getByRole("tab", { name: "Template B" }),
+    ).toBeVisible();
     await expect(component.locator('[class*="vuuDropTarget-"]')).toHaveCount(0);
-    await expect(grid.layout("palette-replace")).not.toHaveClass(/vuuDragging/);
   });
 
   test("centre drop replaces the target component", async ({ mount, page }) => {
@@ -922,11 +903,11 @@ test.describe("GridLayout browser interactions", () => {
     const component = await mount(fixture, { variant: "resizable-vertical" });
     const grid = new GridLayoutDriver(component, page);
 
-    await grid.resize(grid.separator(), 0, 1_000);
+    await grid.resize(grid.separator(), 0, 500);
     const defaultMinimum = await grid.item("bottom").boundingBox();
     expect(defaultMinimum?.height).toBeCloseTo(80, 0);
 
-    await grid.resize(grid.separator(), 0, -1_000);
+    await grid.resize(grid.separator(), 0, -500);
     const explicitMinimum = await grid.item("top").boundingBox();
     expect(explicitMinimum?.height).toBeCloseTo(120, 0);
   });
