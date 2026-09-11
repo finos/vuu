@@ -6,7 +6,7 @@ import {
   loadRemote,
   registerRemotes,
 } from "@module-federation/enhanced/runtime";
-import React, { lazy, Suspense } from "react";
+import React, { lazy } from "react";
 import { useInRouterContext, useLocation } from "react-router-dom";
 import { RemoteModuleErrorBoundary } from "./RemoteModuleErrorBoundary";
 
@@ -35,14 +35,14 @@ const getLazyComponent = (
   component: string,
   manifestUrl: string,
 ) => {
-  return lazy(async () => {
-    registerRemotes([
-      {
-        name: scope,
-        entry: manifestUrl,
-      },
-    ]);
+  registerRemotes([
+    {
+      name: scope,
+      entry: manifestUrl,
+    },
+  ]);
 
+  return lazy(async () => {
     const remote = await loadRemote<{
       default: React.ComponentType<Record<string, unknown>>;
     }>(`${scope}/${component}`, { from: "runtime" });
@@ -126,13 +126,11 @@ const RoutedRemoteModule = (props: RoutedRemoteModuleProps) => {
   return <RawRemoteModule {...props} />;
 };
 
-export const RemoteModule = React.memo((props: RoutedRemoteModuleProps) => (
-  <Suspense fallback={<div role="status">Loading remote module...</div>}>
-    {useInRouterContext() ? (
-      <RoutedRemoteModule {...props} />
-    ) : (
-      <RawRemoteModule {...props} />
-    )}
-  </Suspense>
-));
+export const RemoteModule = React.memo((props: RoutedRemoteModuleProps) =>
+  useInRouterContext() ? (
+    <RoutedRemoteModule {...props} />
+  ) : (
+    <RawRemoteModule {...props} />
+  ),
+);
 RemoteModule.displayName = "RemoteModule";

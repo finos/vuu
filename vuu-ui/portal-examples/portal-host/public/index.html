@@ -7,6 +7,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="Vuu generic UI" />
+    <script>
+      window.addEventListener("unhandledrejection", (event) => {
+        const message =
+          event.reason instanceof Error
+            ? event.reason.message
+            : String(event.reason);
+
+        if (!message.startsWith("[ Federation Runtime ]")) {
+          return;
+        }
+
+        event.preventDefault();
+
+        const root = document.getElementById("root");
+        if (!root) {
+          return;
+        }
+
+        root.replaceChildren();
+
+        const alert = document.createElement("div");
+        alert.setAttribute("role", "alert");
+
+        const heading = document.createElement("h1");
+        heading.textContent = "Unable to start the portal";
+
+        const explanation = document.createElement("p");
+        explanation.textContent =
+          "A portal module is incompatible with the VUU version used by this application. Contact your portal administrator to deploy compatible versions.";
+
+        const details = document.createElement("p");
+        details.textContent = message;
+
+        alert.append(heading, explanation, details);
+        root.append(alert);
+      });
+    </script>
     <script type="module">
       window.vuuConfig = fetch("/config.json").then((res) => {
         if (res.ok) {
