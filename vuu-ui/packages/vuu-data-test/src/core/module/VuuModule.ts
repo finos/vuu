@@ -471,7 +471,6 @@ export abstract class VuuModule<T extends string = string>
         const selectedRowIds = (
           dataSource as TickingArrayDataSource
         ).getSelectedRowIds();
-        const deletedKeys: string[] = [];
         if (selectedRowIds.length > 0) {
           for (const key of selectedRowIds) {
             if ((mode as DeleteRowMode) === "soft") {
@@ -479,11 +478,10 @@ export abstract class VuuModule<T extends string = string>
             } else {
               sessionTable.delete(key);
             }
-            deletedKeys.push(key);
           }
           dataSource.select?.({ type: "DESELECT_ALL" });
         }
-        return { type: "SUCCESS_RESULT", data: { deletedKeys } };
+        return { type: "SUCCESS_RESULT", data: undefined };
       }
       return {
         type: "ERROR_RESULT",

@@ -146,9 +146,7 @@ export const useCsvUpload = ({
   // EditSession's constructor takes no session/schema config - the override is applied
   // here, at the createSessionDataSource call site, since `dataSource` is supplied by the
   // caller and may be shared with a view that has no knowledge of the import table.
-  const importDataSource = useMemo<
-    DataSource & { tableSchema?: TableSchema }
-  >(() => {
+  const importDataSource = useMemo<DataSource>(() => {
     return {
       tableSchema: dataSource.tableSchema,
       createSessionDataSource: async (
@@ -191,7 +189,7 @@ export const useCsvUpload = ({
 
         return sessionDs;
       },
-    } as unknown as DataSource & { tableSchema?: TableSchema };
+    } as DataSource;
   }, [dataSource, sessionOverrides]);
   const editSession = useMemo(
     () =>

@@ -153,7 +153,7 @@ describe("deleteSelectedRows", () => {
 
   it("returns the RpcResult unchanged on success", async () => {
     const ds = createDataSource();
-    const success = { type: "SUCCESS_RESULT" as const, data: { deletedKeys: ["row-001", "row-002"] } };
+    const success = { type: "SUCCESS_RESULT" as const, data: undefined };
     vi.mocked(ds.rpcRequest).mockResolvedValue(success);
 
     const result = await ds.deleteSelectedRows();

@@ -338,8 +338,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
 
     // We rely purely on the datasource-supplied selectedRowsCount for counting deletions
-    // since the service layer does not provide deletedKeys.
-    // Capture this before the RPC call since execution deselects the deleted rows.
+    // captured before the RPC call since execution deselects the deleted rows.
     const selectedRowsCount = this.dataSource?.selectedRowsCount ?? 0;
 
     const response = await deleteSelectedRows.call(
