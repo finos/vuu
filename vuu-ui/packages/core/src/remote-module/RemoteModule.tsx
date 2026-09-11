@@ -6,10 +6,9 @@ import {
   loadRemote,
   registerRemotes,
 } from "@module-federation/enhanced/runtime";
-import React, { lazy } from "react";
+import React, { lazy, Suspense } from "react";
 import { useInRouterContext, useLocation } from "react-router-dom";
 import { RemoteModuleErrorBoundary } from "./RemoteModuleErrorBoundary";
-import { RemoteModuleLoadError } from "./RemoteModuleLoadError";
 
 export interface RemoteModuleProps<
   ComponentProps extends object | undefined = object,
@@ -44,25 +43,15 @@ const getLazyComponent = (
   ]);
 
   return lazy(async () => {
-    const moduleId = `${scope}/${component}`;
+    const remote = await loadRemote<{
+      default: React.ComponentType<Record<string, unknown>>;
+    }>(`${scope}/${component}`, { from: "runtime" });
 
-    try {
-      const remote = await loadRemote<{
-        default: React.ComponentType<Record<string, unknown>>;
-      }>(moduleId, { from: "runtime" });
-
-      if (remote === null) {
-        throw Error(`Unable to load remote component ${moduleId}`);
-      }
-
-      return remote;
-    } catch (error) {
-      return {
-        default: () => (
-          <RemoteModuleLoadError error={error} moduleId={moduleId} />
-        ),
-      };
+    if (remote === null) {
+      throw Error(`Unable to load remote component ${scope}/${component}`);
     }
+
+    return remote;
   });
 };
 
@@ -137,11 +126,13 @@ const RoutedRemoteModule = (props: RoutedRemoteModuleProps) => {
   return <RawRemoteModule {...props} />;
 };
 
-export const RemoteModule = React.memo((props: RoutedRemoteModuleProps) =>
-  useInRouterContext() ? (
-    <RoutedRemoteModule {...props} />
-  ) : (
-    <RawRemoteModule {...props} />
-  ),
-);
+export const RemoteModule = React.memo((props: RoutedRemoteModuleProps) => (
+  <Suspense fallback={<div role="status">Loading remote module...</div>}>
+    {useInRouterContext() ? (
+      <RoutedRemoteModule {...props} />
+    ) : (
+      <RawRemoteModule {...props} />
+    )}
+  </Suspense>
+));
 RemoteModule.displayName = "RemoteModule";
