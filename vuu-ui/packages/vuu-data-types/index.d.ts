@@ -124,8 +124,8 @@ export declare type DecimalValueTypeSimple = "decimal" | "scaleddecimal";
 export declare type DateTimeDataValueType =
   | DateTimeColumnTypeSimple
   | (Omit<DataValueTypeDescriptor, "name"> & {
-    name: DateTimeColumnTypeSimple;
-  });
+      name: DateTimeColumnTypeSimple;
+    });
 
 export declare type BulkEdit = "bulk" | false | "read-only";
 
@@ -136,9 +136,9 @@ export declare type BulkEdit = "bulk" | false | "read-only";
 export declare type DataEditable =
   | boolean
   | {
-    insert: boolean;
-    update: boolean;
-  };
+      insert: boolean;
+      update: boolean;
+    };
 
 export interface DataValueDescriptor {
   editable?: DataEditable;
@@ -153,7 +153,7 @@ export interface DataValueDescriptor {
   label?: string;
   /** unique name for this data value */
   name: string;
-    /** Whether the field is required or can be empty/nullable */
+  /** Whether the field is required or can be empty/nullable */
   required?: boolean;
   /** The type defined on server for this data value */
   serverDataType?: VuuColumnDataType;
@@ -198,18 +198,18 @@ type IsNew = boolean;
 export declare type DataSourceRow<
   T extends bigint | VuuRowDataItemType = VuuRowDataItemType,
 > = [
-    RowIndex,
-    RenderKey,
-    IsLeaf,
-    IsExpanded,
-    Depth,
-    ChildCount,
-    RowKey,
-    IsSelected,
-    Timestamp,
-    IsNew,
-    ...T[],
-  ];
+  RowIndex,
+  RenderKey,
+  IsLeaf,
+  IsExpanded,
+  Depth,
+  ChildCount,
+  RowKey,
+  IsSelected,
+  Timestamp,
+  IsNew,
+  ...T[],
+];
 
 export declare type DataSourceRowWithBigint = DataSourceRow<
   bigint | VuuRowDataItemType
@@ -229,7 +229,8 @@ export interface MessageWithClientViewportId {
   clientViewportId: string;
 }
 
-export interface DataSourceAggregateMessage extends MessageWithClientViewportId {
+export interface DataSourceAggregateMessage
+  extends MessageWithClientViewportId {
   aggregations: VuuAggregation[];
   type: "aggregate";
 }
@@ -286,7 +287,8 @@ export interface DataSourceGroupByMessage extends MessageWithClientViewportId {
   groupBy: VuuGroupBy | undefined;
 }
 
-export interface DataSourceSetConfigMessage extends MessageWithClientViewportId {
+export interface DataSourceSetConfigMessage
+  extends MessageWithClientViewportId {
   type: "config";
   config: WithFullConfig;
 }
@@ -305,12 +307,14 @@ export interface DataSourceSortMessage extends MessageWithClientViewportId {
   sort: VuuSort;
 }
 
-export interface DataSourceSubscribeFailedMessage extends MessageWithClientViewportId {
+export interface DataSourceSubscribeFailedMessage
+  extends MessageWithClientViewportId {
   type: "subscribe-failed";
   msg: string;
 }
 
-export interface DataSourceSubscribedMessage extends MessageWithClientViewportId {
+export interface DataSourceSubscribedMessage
+  extends MessageWithClientViewportId {
   aggregations: VuuAggregation[];
   columns: VuuColumns;
   filterSpec: DataSourceFilter;
@@ -321,18 +325,21 @@ export interface DataSourceSubscribedMessage extends MessageWithClientViewportId
   type: "subscribed";
 }
 
-export interface DataSourceVisualLinkCreatedMessage extends MessageWithClientViewportId {
+export interface DataSourceVisualLinkCreatedMessage
+  extends MessageWithClientViewportId {
   colName: string;
   parentViewportId: string;
   parentColName: string;
   type: "vuu-link-created";
 }
 
-export interface DataSourceVisualLinkRemovedMessage extends MessageWithClientViewportId {
+export interface DataSourceVisualLinkRemovedMessage
+  extends MessageWithClientViewportId {
   type: "vuu-link-removed";
 }
 
-export interface DataSourceVisualLinksMessage extends MessageWithClientViewportId {
+export interface DataSourceVisualLinksMessage
+  extends MessageWithClientViewportId {
   type: "vuu-links";
   links: VuuLinkDescriptor[];
 }
@@ -406,7 +413,7 @@ export declare type TableSchemaTable = VuuTable & {
 export declare type RangeLimits = {
   maxRangeEnd: number;
   maxRangeWidth: number;
-}
+};
 
 export declare type TableSchema = {
   columns: readonly SchemaColumn[];
@@ -441,7 +448,8 @@ export interface WithSort extends DataSourceConfig {
   sort: VuuSort;
 }
 
-export interface DataSourceConstructorProps extends WithBaseFilter<DataSourceConfig> {
+export interface DataSourceConstructorProps
+  extends WithBaseFilter<DataSourceConfig> {
   /**
    * If provided, these column names will always be included in subscription, even
    * if not directly requested, via columns property. Useful where columns may not
@@ -475,9 +483,8 @@ export interface RemoteModuleConnection {
   websocketUrl?: string;
 }
 
-export interface DataSourceSubscribeProps extends Partial<
-  WithBaseFilter<WithFullConfig>
-> {
+export interface DataSourceSubscribeProps
+  extends Partial<WithBaseFilter<WithFullConfig>> {
   viewport?: string;
   range?: Range;
   revealSelected?: boolean;
@@ -618,15 +625,16 @@ export declare type SessionDataSourceOverrides = {
   table?: VuuTable;
 };
 
-export interface EditApi<
+export declare type UndoRowChangeResult = {
+  wasInsertedRow?: boolean;
+};
+
+export interface DataSourceBase<
   T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
-> {
+> extends IEventEmitter<DataSourceEvents>,
+    Partial<TypeaheadSuggestionProvider> {
   addRow?: (
     rowData?: Record<string, VuuRowDataItemType>,
-  ) => Promise<RpcResult> | undefined;
-  deleteRow?: (
-    key: string,
-    mode?: DeleteRowMode,
   ) => Promise<RpcResult> | undefined;
   deleteSelectedRows?: (mode?: DeleteRowMode) => Promise<RpcResult> | undefined;
   editCell?: (
@@ -655,31 +663,6 @@ export interface EditApi<
     saveChanges?: boolean,
     force?: boolean,
   ) => Promise<RpcResult> | undefined;
-}
-
-/**
- * Data payload returned in RpcResultSuccess.data by the beginEditSession service.
- * Contains the server-assigned session table reference used to create the session datasource.
- */
-export declare type BeginEditSessionResult = {
-  table: VuuTable;
-};
-
-export declare type DeleteSelectedRowsResult = {
-  deletedKeys: string[];
-};
-
-export declare type UndoRowChangeResult = {
-  wasInsertedRow?: boolean;
-};
-
-export interface DataSourceBase<
-  T extends DataSourceRow | DataSourceRowWithBigint = DataSourceRow,
->
-  extends
-  EditApi<T>,
-  IEventEmitter<DataSourceEvents>,
-  Partial<TypeaheadSuggestionProvider> {
   aggregations: VuuAggregation[];
   closeTreeNode: (keyOrIndex: string | number, cascade?: boolean) => void;
   columns: string[];

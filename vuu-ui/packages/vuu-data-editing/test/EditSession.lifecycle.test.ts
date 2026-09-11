@@ -1,4 +1,4 @@
-import type { DataSource, EditApi } from "@vuu-ui/vuu-data-types";
+import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type {
   RpcResultError,
   RpcResultSuccess,
@@ -27,7 +27,7 @@ vi.hoisted(() => {
   vi.stubGlobal("Worker", MockWorker);
 });
 
-type Editable = Required<EditApi>;
+type Editable = Required<DataSource>;
 type AddRow = Editable["addRow"];
 type CreateSession = Editable["createSessionDataSource"];
 type EndEdit = Editable["endEditSession"];
@@ -39,13 +39,13 @@ const ERROR: RpcResultError = {
   errorMessage: "edit rejected",
 };
 
-class MockDataSource implements EditApi {
+class MockDataSource {
   constructor(
     private endEdit: EndEdit,
     private createSession: CreateSession,
     private edit: EditCell = vi.fn().mockResolvedValue(SUCCESS),
     private addRowImpl?: AddRow,
-  ) { }
+  ) {}
 
   addRow(...args: Parameters<AddRow>) {
     return this.addRowImpl?.(...args);
@@ -86,7 +86,7 @@ describe("EditSession lifecycle", () => {
     createSession = vi.fn(
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
-    const dataSource = new MockDataSource(endEdit, createSession, editCell);
+    const dataSource = new MockDataSource(endEdit, createSession, editCell) as unknown as DataSource;
     editSession = new EditSession({ dataSource: dataSource });
   });
 
@@ -107,7 +107,9 @@ describe("EditSession lifecycle", () => {
       data: undefined,
       type: "SUCCESS_RESULT",
     });
-    editSession = new EditSession({ dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) });
+    editSession = new EditSession({
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) as unknown as DataSource,
+    });
 
     await editSession.addRow({ id: 7, name: "Alice" });
 
@@ -120,7 +122,9 @@ describe("EditSession lifecycle", () => {
       errorMessage: "Insert rejected",
       type: "ERROR_RESULT",
     });
-    editSession = new EditSession({ dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) });
+    editSession = new EditSession({
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) as unknown as DataSource,
+    });
 
     await editSession.addRow({ id: 7 });
 
@@ -129,7 +133,9 @@ describe("EditSession lifecycle", () => {
 
   it("owns draft values and required-field errors for a new row", async () => {
     const addRow = vi.fn<AddRow>().mockResolvedValue(SUCCESS);
-    editSession = new EditSession({ dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) });
+    editSession = new EditSession({
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow),
+    });
     editSession.configureNewRow(["id", "name"]);
     editSession.setNewRowValue("id", 7);
     expect(editSession.isNewRowComplete()).toBe(false);
@@ -151,7 +157,9 @@ describe("EditSession lifecycle", () => {
 
   it("allows some columns to be optional for a new row", async () => {
     const addRow = vi.fn<AddRow>().mockResolvedValue(SUCCESS);
-    editSession = new EditSession({ dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) });
+    editSession = new EditSession({
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow),
+    });
     editSession.configureNewRow(["id", "name", "description"], ["id", "name"]);
     editSession.setNewRowValue("id", 7);
     expect(editSession.isNewRowComplete()).toBe(false);
@@ -174,7 +182,9 @@ describe("EditSession lifecycle", () => {
   it("prevents duplicate new-row submissions", async () => {
     const pendingAdd = deferred<RpcResultSuccess>();
     const addRow = vi.fn<AddRow>().mockReturnValue(pendingAdd.promise);
-    editSession = new EditSession({ dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) });
+    editSession = new EditSession({
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow),
+    });
     editSession.configureNewRow(["id"]);
     editSession.setNewRowValue("id", 7);
 
@@ -390,7 +400,9 @@ describe("EditSession lifecycle", () => {
   it("reports begin failures without entering edit mode", async () => {
     const beginError = new Error("begin failed");
     createSession = vi.fn().mockRejectedValueOnce(beginError);
-    editSession = new EditSession({ dataSource: new MockDataSource(endEdit, createSession) });
+    editSession = new EditSession({
+      dataSource: new MockDataSource(endEdit, createSession),
+    });
 
     await expect(editSession.begin()).rejects.toBe(beginError);
 
@@ -540,19 +552,19 @@ describe("EditSession lifecycle", () => {
 
   it("undoes only edits that existed when the undo request began", async () => {
     const pendingUndo = deferred<RpcResultSuccess>();
-    const dataSource: EditApi = {
+    const dataSource: DataSource = {
       createSessionDataSource: vi.fn(
         async () => dataSource as unknown as DataSource,
       ),
       editCell: vi.fn().mockResolvedValue(SUCCESS),
       endEditSession: vi.fn(),
       undoRowChange: vi.fn().mockReturnValue(pendingUndo.promise),
-    };
+    } as unknown as DataSource;
     editSession = new EditSession({ dataSource: dataSource });
     await editSession.begin();
     await editSession.commit("row-1", "price", 100, 101, true);
 
-    const undo = editSession.undoRowChange("row-1");
+    const undo = editSession.undoRowChange("row-1", "editCell");
     await editSession.commit("row-1", "size", 10, 11, true);
     pendingUndo.resolve(SUCCESS);
     await undo;
@@ -562,33 +574,6 @@ describe("EditSession lifecycle", () => {
     expect([editSession.editCount, editSession.invalidCount]).toEqual([1, 0]);
   });
 
-  it("does not let an older undo clear a newer row deletion", async () => {
-    const pendingUndo = deferred<RpcResultSuccess>();
-    const deleteSelectedRows = vi.fn().mockResolvedValue({
-      data: { deletedKeys: ["row-1"] },
-      type: "SUCCESS_RESULT",
-    });
-    const dataSource: EditApi = {
-      createSessionDataSource: vi.fn(
-        async () => dataSource as unknown as DataSource,
-      ),
-      deleteSelectedRows,
-      endEditSession: vi.fn(),
-      undoRowChange: vi.fn().mockReturnValue(pendingUndo.promise),
-    };
-    editSession = new EditSession({ dataSource: dataSource });
-    await editSession.begin();
-    await editSession.deleteSelectedRows();
-
-    const undo = editSession.undoRowChange("row-1");
-    await editSession.deleteSelectedRows();
-    pendingUndo.resolve(SUCCESS);
-    await undo;
-
-    expect(editSession.hasRowChanges("row-1")).toBe(true);
-    expect(editSession.deleteCount).toBe(1);
-  });
-
   it("notifies delete count boundaries while cell edits keep the session dirty", async () => {
     const states: string[] = [];
     editSession.on("editState", (state) => states.push(state));
@@ -596,11 +581,19 @@ describe("EditSession lifecycle", () => {
     await editSession.commit("row-1", "price", 100, 101, true);
     states.length = 0;
 
-    editSession.deleteCount = 1;
-    editSession.deleteCount = 0;
+    const deleteSelectedRows = vi.fn().mockResolvedValue({
+      type: "SUCCESS_RESULT",
+    });
+    (
+      editSession.dataSource as unknown as Record<string, unknown>
+    ).deleteSelectedRows = deleteSelectedRows;
+    (
+      editSession.dataSource as unknown as Record<string, unknown>
+    ).selectedRowsCount = 1;
 
-    expect(states).toEqual(["dirty", "dirty"]);
+    await editSession.deleteSelectedRows();
+
+    expect(states).toEqual(["dirty"]);
     expect(editSession.editState).toBe("dirty");
   });
 });
-

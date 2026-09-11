@@ -2,13 +2,13 @@ import type {
   CopyOption,
   DataSource,
   DeleteRowMode,
-  EditApi,
 } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { useData, useLayoutEffectSkipFirst } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   EditSession,
+  type EditActionType,
   type EditLifecycle,
   type EditSessionApi,
   type EditState,
@@ -80,7 +80,7 @@ export const useEditableTable = ({
   const editSession = useMemo(
     () =>
       new EditSession({
-        dataSource: sourceDataSource as EditApi,
+        dataSource: sourceDataSource,
         deleteMode,
         editSessionApi,
         rowDefaults,
@@ -128,7 +128,8 @@ export const useEditableTable = ({
   }, [editSession]);
 
   const handleUndoRowChange = useCallback(
-    (key: string) => void editSession.undoRowChange(key),
+    (key: string, action: EditActionType) =>
+      void editSession.undoRowChange(key, action),
     [editSession],
   );
 
