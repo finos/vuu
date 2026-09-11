@@ -1,20 +1,23 @@
+import type { Page } from "@playwright/test";
 import { expect, test } from "../../../../../playwright/fixtures";
 
-
-
-// biome-ignore lint/suspicious/noExplicitAny: <ignore>
-const assertComboboxReady = async (page: any) => {
+const assertComboboxReady = async (page: Page) => {
   await expect(page.getByRole("combobox")).toBeFocused();
   await expect(page.getByRole("listbox")).toBeVisible();
 };
 
-// biome-ignore lint/suspicious/noExplicitAny: <ignore>
-const selectMenuOption = async (page: any, name: "AND" | "OR") => {
+const selectMenuOption = async (page: Page, name: "AND" | "OR") => {
   const button = page.getByRole("button", { name: "Save" });
   await expect(button).toBeFocused();
   await button.press("ArrowDown");
   await expect(page.getByRole("menu")).toBeVisible();
   await page.getByRole("menuitem", { name }).press("Enter");
+};
+
+const selectListItem = async (page: Page, name: string) => {
+  const option = page.getByRole("option", { name, exact: true });
+  await option.hover();
+  await option.click();
 };
 
 test.describe("FilterEditor", () => {

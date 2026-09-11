@@ -69,7 +69,11 @@ export class GridLayoutDriver {
     targetId: string,
     zone: Exclude<DropZone, "header">,
   ) {
-    await this.drag(this.header(id), this.content(targetId), zone);
+    await this.nativeDragWithReflow(
+      this.header(id),
+      this.content(targetId),
+      zone,
+    );
   }
 
   async nativeDrag(source: Locator, target: Locator, zone: DropZone) {
@@ -104,6 +108,60 @@ export class GridLayoutDriver {
     const observedClassName = await this.page
       .locator("html")
       .getAttribute("data-grid-affordance-seen");
+    if (observedClassName !== expectedClassName) {
+      throw Error(
+        `GridLayoutDriver expected native ${expectedClassName} affordance, received ${observedClassName}`,
+      );
+    }
+  }
+
+  private async nativeDragWithReflow(
+    source: Locator,
+    target: Locator,
+    zone: DropZone,
+  ) {
+    const sourceBox = await source.boundingBox();
+    if (!sourceBox) {
+      throw Error("GridLayoutDriver native drag requires visible elements");
+    }
+    const expectedClassName = `vuuDropTarget-${zone}`;
+    await target.evaluate((element, className) => {
+      document.documentElement.removeAttribute("data-grid-affordance-seen");
+      const observer = new MutationObserver(() => {
+        if (element.classList.contains(className)) {
+          document.documentElement.setAttribute(
+            "data-grid-affordance-seen",
+            className,
+          );
+          observer.disconnect();
+        }
+      });
+      observer.observe(element, { attributeFilter: ["class"] });
+    }, expectedClassName);
+    await this.page.mouse.move(
+      sourceBox.x + sourceBox.width / 2,
+      sourceBox.y + sourceBox.height / 2,
+    );
+    await this.page.mouse.down();
+    await this.page.mouse.move(
+      sourceBox.x + sourceBox.width / 2 + 10,
+      sourceBox.y + sourceBox.height / 2,
+      { steps: 4 },
+    );
+    const targetBox = await target.boundingBox();
+    if (!targetBox) {
+      throw Error("GridLayoutDriver native drag target disappeared");
+    }
+    const position = targetPosition[zone];
+    await this.page.mouse.move(
+      targetBox.x + targetBox.width * position.x,
+      targetBox.y + targetBox.height * position.y,
+      { steps: 20 },
+    );
+    const observedClassName = await this.page
+      .locator("html")
+      .getAttribute("data-grid-affordance-seen");
+    await this.page.mouse.up();
     if (observedClassName !== expectedClassName) {
       throw Error(
         `GridLayoutDriver expected native ${expectedClassName} affordance, received ${observedClassName}`,
