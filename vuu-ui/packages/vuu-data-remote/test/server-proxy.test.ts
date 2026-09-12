@@ -43,10 +43,12 @@ describe("ServerProxy", () => {
     const moduleRegistry = {
       modules: [
         {
+          clientIdentifier: "vuu-module-admin",
           description: "Manage modules",
           enabled: true,
           id: 1,
           location: "/Admin/Modules",
+          loginRole: "module-admin-login",
           mfComponent: "ModuleAdmin",
           mfScope: "moduleAdmin",
           mfUrl: "http://localhost:5008",

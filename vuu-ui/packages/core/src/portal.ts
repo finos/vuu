@@ -3,7 +3,12 @@ export {
   type PortalHeaderProps,
 } from "./portal-header/PortalHeader";
 export { PortalNav, type PortalNavProps } from "./portal-nav/PortalNav";
-export { PortalShell, type PortalShellProps } from "./portal-shell/PortalShell";
+export {
+  getPortalRemoteModuleProps,
+  PortalShell,
+  type PortalRemoteModuleProps,
+  type PortalShellProps,
+} from "./portal-shell/PortalShell";
 export {
   RemoteModule,
   type RemoteModuleProps,

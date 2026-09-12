@@ -49,10 +49,12 @@ export interface VuuModuleConnection {
 }
 
 export interface VuuModuleDescriptor {
+  clientIdentifier: string;
   description: string;
   enabled?: boolean;
   id: number | string;
   location: string;
+  loginRole: string;
   mfComponent: string;
   mfScope: string;
   mfUrl: string;

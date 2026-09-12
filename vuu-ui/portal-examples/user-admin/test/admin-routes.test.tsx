@@ -4,12 +4,42 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import UserAdmin from "../src/UserAdmin";
 import { useEditingLock } from "../src/components/EditingContext";
+import { useAdminModules } from "../src/data/AdminDataContext";
+
+const remoteModules = [
+  {
+    clientIdentifier: "vuu-user-admin",
+    description: "Manage users",
+    id: 1,
+    location: "/Admin/Users",
+    loginRole: "user-admin-login",
+    mfComponent: "UserAdmin",
+    mfScope: "userAdmin",
+    mfUrl: "http://localhost:5007",
+    name: "user-admin",
+    path: "/users/admin",
+    title: "Manage users",
+    version: 1,
+  },
+] as const;
 
 vi.mock("@vuu-ui/vuu-notifications", () => ({
   NotificationsProvider: ({ children }: { children: ReactNode }) => children,
 }));
 vi.mock("../src/pages/overview/OverviewPage", () => ({
-  OverviewPage: () => <div>Overview page</div>,
+  OverviewPage: () => {
+    const modules = useAdminModules();
+    return (
+      <div>
+        Overview page
+        {modules.map(({ clientIdentifier, loginRole }) => (
+          <span key={clientIdentifier}>
+            {clientIdentifier}:{loginRole}
+          </span>
+        ))}
+      </div>
+    );
+  },
 }));
 vi.mock("../src/pages/users/UsersPage", () => ({
   UsersPage: () => {
@@ -64,12 +94,16 @@ describe("embedded identity routes", () => {
       root.render(
         <MemoryRouter initialEntries={[mount]}>
           <Routes>
-            <Route path={`${mount}/*`} element={<UserAdmin />} />
+            <Route
+              path={`${mount}/*`}
+              element={<UserAdmin remoteModules={remoteModules} />}
+            />
           </Routes>
         </MemoryRouter>,
       ),
     );
     expect(container.textContent).toContain("Overview page");
+    expect(container.textContent).toContain("vuu-user-admin:user-admin-login");
     const rail = container.querySelector<HTMLElement>(
       'nav[aria-label="Identity administration"]',
     );

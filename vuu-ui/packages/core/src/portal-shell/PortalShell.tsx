@@ -18,6 +18,14 @@ const classBase = "vuuPortalShell";
 
 const accentPurple = "purple" as Accent;
 
+export interface PortalRemoteModuleProps {
+  remoteModules: readonly RemoteModuleDescriptor[];
+}
+
+export const getPortalRemoteModuleProps = (
+  remoteModules: readonly RemoteModuleDescriptor[],
+): PortalRemoteModuleProps => ({ remoteModules });
+
 const getRemoteRoutePath = (path: string) =>
   path.endsWith("*") ? path : `${path}/*`;
 
@@ -28,7 +36,6 @@ export interface PortalShellProps {
 }
 
 export const PortalShell = ({ id, remoteModules, title }: PortalShellProps) => {
-  console.log({ remoteModules })
   return (
     <SaltProviderNext
       accent={accentPurple}
@@ -68,7 +75,14 @@ export const PortalShell = ({ id, remoteModules, title }: PortalShellProps) => {
                       <Route
                         key={id}
                         path={getRemoteRoutePath(path)}
-                        element={<RemoteModule {...feature} />}
+                        element={
+                          <RemoteModule
+                            {...feature}
+                            ComponentProps={getPortalRemoteModuleProps(
+                              remoteModules,
+                            )}
+                          />
+                        }
                       />
                     ))}
                   </Routes>

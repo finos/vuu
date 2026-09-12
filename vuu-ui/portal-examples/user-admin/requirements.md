@@ -4,6 +4,13 @@ The `./UserAdmin` federation export is an embedded remote module. The host owns
 authentication, the router and the Vuu connection context. Only the standalone
 bootstrap creates a `BrowserRouter`.
 
+The host passes the authenticated portal module registry through the typed
+`remoteModules` prop. Each descriptor includes the existing remote loading and
+connection fields plus the stable `clientIdentifier` and module `loginRole`
+metadata. User-admin does not authenticate against Keycloak or fetch a second
+module list; this host-provided contract is reserved for module-oriented access
+work in the next phase.
+
 ## Navigation and layout
 
 Relative nested routes expose `overview`, `users`, `groups` and `roles`; the index

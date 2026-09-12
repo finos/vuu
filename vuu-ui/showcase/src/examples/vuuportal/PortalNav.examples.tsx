@@ -5,13 +5,16 @@ import {
 
 const remoteModule = (path: string): RemoteModuleDescriptor => {
   const name = path.split("/").filter(Boolean).at(-1) ?? path;
+  const moduleName = name.toLowerCase();
 
   return {
+    clientIdentifier: `vuu-${moduleName}`,
     description: `${name} remote module`,
     id: name.toLowerCase(),
     location: "remote",
+    loginRole: `${moduleName}-login`,
     mfComponent: name,
-    mfScope: name.toLowerCase(),
+    mfScope: moduleName,
     mfUrl: `http://localhost:5001/${name}/mf-manifest.json`,
     name,
     path,
