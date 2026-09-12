@@ -6,6 +6,7 @@ import type {
 import { isRpcError } from "@vuu-ui/vuu-utils";
 import {
   columnFor,
+  requireVuuClient,
   type AdminConfig,
   type AdminRecord,
   type Entity,
@@ -81,6 +82,11 @@ export const buildMutation = (
       }
     }
   }
+  if (entity === "roles") {
+    requireVuuClient(
+      (original ?? values)[columnFor(config, entity, "client_identifier")],
+    );
+  }
   return {
     type: "RPC_REQUEST",
     rpcName:
@@ -100,7 +106,7 @@ export const buildMutation = (
 };
 
 export const saveAdminEntity = async (
-  dataSource: DataSource,
+  dataSource: Pick<DataSource, "rpcRequest">,
   entity: Entity,
   values: AdminRecord,
   config: AdminConfig,
@@ -121,10 +127,11 @@ export interface RelationshipChange {
   id: string;
   label: string;
   clientId?: string;
+  clientIdentifier?: string;
 }
 
 export const saveAdminRelationship = async (
-  dataSource: DataSource,
+  dataSource: Pick<DataSource, "rpcRequest">,
   entity: "users" | "groups",
   config: AdminConfig,
   change: RelationshipChange,
@@ -147,6 +154,7 @@ export const saveAdminRelationship = async (
   } else {
     if (!change.clientId)
       throw new Error("Client-role assignments require an owning client ID.");
+    requireVuuClient(change.clientIdentifier);
     params.roleId = change.id;
     params.clientId = change.clientId;
   }

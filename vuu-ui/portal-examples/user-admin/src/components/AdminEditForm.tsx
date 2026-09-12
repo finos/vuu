@@ -230,6 +230,11 @@ export const AdminEditForm = ({
             values[field],
           ]),
         );
+        if (entity === "roles") {
+          // Selection metadata validates the target but is never a mutable RPC field.
+          rpcValues[columnFor(config, entity, "client_identifier")] =
+            values.client_identifier;
+        }
         if (!run.persisted) {
           // Generic session saves only update Vuu's table, not the identity provider.
           // Drafts stay local; only the confirmed domain RPC persists the entity.

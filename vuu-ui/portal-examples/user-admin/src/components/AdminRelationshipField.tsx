@@ -6,7 +6,12 @@ import {
 } from "@salt-ds/core";
 import { useState } from "react";
 import { useAdminConfig } from "../data/AdminDataContext";
-import { columnFor, type AdminRecord } from "../data/admin-contract";
+import {
+  columnFor,
+  errorMessage,
+  requireVuuClient,
+  type AdminRecord,
+} from "../data/admin-contract";
 import type { RelationshipChange } from "../data/admin-mutations";
 import { AdminSearch } from "./AdminSearch";
 import { AdminTable } from "./AdminTable";
@@ -41,6 +46,7 @@ export const AdminRelationshipField = ({
     const table = action === "add" ? target : relation;
     const id = row[columnFor(config, table, idField)];
     const client = row[columnFor(config, table, "client_id")];
+    let clientIdentifier: string | undefined;
     if (
       typeof id !== "string" ||
       !id ||
@@ -51,6 +57,16 @@ export const AdminRelationshipField = ({
       );
       return;
     }
+    if (entity === "groups") {
+      try {
+        clientIdentifier = requireVuuClient(
+          row[columnFor(config, table, "client_identifier")],
+        );
+      } catch (cause) {
+        setError(errorMessage(cause));
+        return;
+      }
+    }
     setError("");
     onChange([
       ...changes.filter((change) => change.id !== id),
@@ -59,6 +75,7 @@ export const AdminRelationshipField = ({
         id,
         label: String(row[columnFor(config, table, labelField)] ?? id),
         clientId: typeof client === "string" ? client : undefined,
+        clientIdentifier,
       },
     ]);
   };

@@ -2,9 +2,11 @@ import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import { describe, expect, it } from "vitest";
 import {
   buildFilter,
+  buildClientScopeFilter,
   columnFor,
   displayColumnsFor,
   hasField,
+  requireVuuClient,
   tableFor,
 } from "../src/data/admin-contract";
 
@@ -22,6 +24,54 @@ const config = {
 };
 
 describe("server-driven identity contract", () => {
+  it.each([
+    "clients",
+    "roles",
+    "group_roles",
+    "user_group_roles",
+  ] as const)("requires a mapped client identifier for the %s scope", (name) => {
+    const scopedSchema: TableSchema = {
+      ...schema,
+      columns: [{ name: "public_client_name", serverDataType: "string" }],
+    };
+    expect(
+      buildClientScopeFilter(
+        scopedSchema,
+        {
+          [name]: { columns: { client_identifier: "public_client_name" } },
+        },
+        name,
+      ),
+    ).toEqual({ op: "starts", column: "public_client_name", value: "vuu-" });
+    expect(() => buildClientScopeFilter(schema, {}, name)).toThrow(
+      'missing required column "client_identifier"',
+    );
+  });
+  it.each([
+    "users",
+    "groups",
+    "user_groups",
+  ] as const)("does not scope %s by client", (name) => {
+    expect(buildClientScopeFilter(schema, {}, name)).toBeUndefined();
+  });
+  it("recognizes the public client prefix rather than arbitrary UUIDs or substrings", () => {
+    expect(requireVuuClient("vuu-portal")).toBe("vuu-portal");
+    expect(requireVuuClient("vuu-")).toBe("vuu-");
+    for (const identifier of [
+      "account",
+      "realm-management",
+      "my-vuu-portal",
+      "VUU-portal",
+      "vuu",
+      "uuid-123",
+      "",
+      undefined,
+    ]) {
+      expect(() => requireVuuClient(identifier)).toThrow(
+        "Only Vuu portal clients",
+      );
+    }
+  });
   it("uses configured table and columns without inventing a schema", () => {
     expect(tableFor(config, "users")).toEqual(schema.table);
     expect(tableFor(config, "roles")).toEqual({
@@ -42,8 +92,9 @@ describe("server-driven identity contract", () => {
       ],
     };
 
-    expect(displayColumnsFor(identitySchema, {}, "users").map(({ name }) => name))
-      .toEqual(["username"]);
+    expect(
+      displayColumnsFor(identitySchema, {}, "users").map(({ name }) => name),
+    ).toEqual(["username"]);
     expect(identitySchema.columns.map(({ name }) => name)).toEqual([
       "user_id",
       "username",

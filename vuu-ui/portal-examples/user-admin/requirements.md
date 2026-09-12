@@ -41,6 +41,24 @@ Keycloak, arbitrary URLs or REST endpoints. The default module is
 | `group_roles` | Group/client-role assignments |
 | `user_group_roles` | Flattened compatibility read model for inherited access |
 
+Client administration is limited to Vuu portal clients: the public Keycloak
+client identifier must start with the case-sensitive prefix `vuu-`. The server
+exposes that identifier as `client_identifier`; `client_id` is still an opaque
+stable ID used in RPCs, not a name to prefix-check.
+
+The shared data hook applies `client_identifier starts "vuu-"` as a mandatory
+Vuu `baseFilter` to `clients`, `roles`, `group_roles` and `user_group_roles`,
+including Overview counts, search results and relationship pickers. Search and
+relationship predicates remain separate so clearing a filter cannot remove the
+client scope. A missing scope column reports an error instead of loading an
+unfiltered source. Column aliases are supported, and all schema columns,
+including hidden IDs, remain subscribed.
+
+Client selection, role create/edit and both addition/removal of group roles
+validate the Vuu-sourced public client identifier before writing. Selection
+metadata is never submitted as a mutable role field. The backend remains the
+authority and independently rejects non-Vuu client-role targets.
+
 `getTableSchema` is authoritative for subscription columns, keys and table
 identifiers. Pass a stable `config` prop to override table identifiers and map
 logical column names to actual server columns, for example:

@@ -66,7 +66,7 @@ export const EntityPage = ({ entity }: { entity: Entity }) => {
           <p>
             Manage{" "}
             {entity === "roles"
-              ? "client roles and their group assignments"
+              ? "Vuu portal client roles and their group assignments"
               : `${entity} and their access`}
             .
           </p>

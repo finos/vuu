@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useAdminConfig } from "./AdminDataContext";
 import {
   buildFilter,
+  buildClientScopeFilter,
   errorMessage,
   tableFor,
   type AdminQuery,
@@ -41,6 +42,7 @@ export const useAdminTable = (
         const api = await getServerAPI();
         const schema = await api.getTableSchema(tableFor(config, name));
         if (!active) return;
+        const clientScope = buildClientScopeFilter(schema, config, name);
         const filter = buildFilter(schema, config, name, {
           search,
           equals:
@@ -55,6 +57,11 @@ export const useAdminTable = (
           bufferSize: 200,
           columns: schema.columns.map(({ name: column }) => column),
           table: schema.table,
+          baseFilterSpec: clientScope
+            ? {
+                filter: filterAsQuery(clientScope, { columnsByName }),
+              }
+            : undefined,
           filterSpec: {
             filter: filter ? filterAsQuery(filter, { columnsByName }) : "",
           },

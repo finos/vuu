@@ -8,7 +8,11 @@ import {
 } from "@salt-ds/core";
 import { useId, useState, type ReactNode } from "react";
 import type { AdminRecord, Entity } from "../data/admin-contract";
-import { columnFor } from "../data/admin-contract";
+import {
+  columnFor,
+  errorMessage,
+  requireVuuClient,
+} from "../data/admin-contract";
 import { useAdminConfig } from "../data/AdminDataContext";
 import { AdminSearch } from "./AdminSearch";
 import { AdminTable } from "./AdminTable";
@@ -33,7 +37,7 @@ export const FORM_FIELDS: Record<Entity, string[]> = {
     "temporary_password",
   ],
   groups: ["group_name", "group_path", "parent_group_id"],
-  roles: ["role_name", "client_id", "description"],
+  roles: ["role_name", "client_id", "client_identifier", "description"],
 };
 export const REQUIRED_FIELDS: Record<Entity, string[]> = {
   users: ["username"],
@@ -137,6 +141,17 @@ export const AdminLookupField = ({
               if (typeof id !== "string" || !id) {
                 setError(`The selected row is missing ${idField}.`);
                 return;
+              }
+              if (table === "clients") {
+                try {
+                  const identifier = requireVuuClient(
+                    record[columnFor(config, table, "client_identifier")],
+                  );
+                  props.onChange("client_identifier", identifier);
+                } catch (cause) {
+                  setError(errorMessage(cause));
+                  return;
+                }
               }
               setError("");
               props.onChange(field, id);

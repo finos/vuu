@@ -23,6 +23,25 @@ export interface AdminTableContract {
 }
 export type AdminConfig = Partial<Record<AdminTableName, AdminTableContract>>;
 export const EMPTY_CONFIG: AdminConfig = {};
+export const VUU_CLIENT_PREFIX = "vuu-";
+const CLIENT_SCOPED_TABLES = new Set<AdminTableName>([
+  "clients",
+  "roles",
+  "group_roles",
+  "user_group_roles",
+]);
+
+export const requireVuuClient = (identifier: unknown): string => {
+  if (
+    typeof identifier !== "string" ||
+    !identifier.startsWith(VUU_CLIENT_PREFIX)
+  ) {
+    throw new Error(
+      'Only Vuu portal clients with a client_identifier starting with "vuu-" are supported.',
+    );
+  }
+  return identifier;
+};
 export const ENTITY_LABELS: Record<Entity, string> = {
   users: "Users",
   groups: "Groups",
@@ -92,6 +111,19 @@ export const requireField = (
   }
   return column;
 };
+
+export const buildClientScopeFilter = (
+  schema: TableSchema,
+  config: AdminConfig,
+  name: AdminTableName,
+): Filter | undefined =>
+  CLIENT_SCOPED_TABLES.has(name)
+    ? {
+        op: "starts",
+        column: requireField(schema, config, name, "client_identifier"),
+        value: VUU_CLIENT_PREFIX,
+      }
+    : undefined;
 
 export const displayColumnsFor = (
   schema: TableSchema,

@@ -57,8 +57,8 @@ export const OverviewPage = () => {
       <div className="vuuIdentityAdmin-stats">
         <StatCard name="users" label="Users" />
         <StatCard name="groups" label="Groups" />
-        <StatCard name="roles" label="Client roles" />
-        <StatCard name="clients" label="Clients" />
+        <StatCard name="roles" label="Vuu client roles" />
+        <StatCard name="clients" label="Vuu portal clients" />
       </div>
       <nav aria-label="Quick actions" className="vuuIdentityAdmin-quickActions">
         <strong>Quick actions</strong>

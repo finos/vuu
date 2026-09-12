@@ -11,6 +11,7 @@ import {
   useAdminTable,
   type AdminTableResource,
 } from "../src/data/useAdminTable";
+import type { AdminTableName } from "../src/data/admin-contract";
 
 const mocks = vi.hoisted(() => ({
   getTableSchema: vi.fn(),
@@ -56,8 +57,14 @@ describe("admin data source lifecycle", () => {
   let root: Root;
   let container: HTMLDivElement;
   let resource: AdminTableResource;
-  const Harness = ({ search = "" }: { search?: string }) => {
-    resource = useAdminTable("users", { search });
+  const Harness = ({
+    search = "",
+    name = "users",
+  }: {
+    search?: string;
+    name?: AdminTableName;
+  }) => {
+    resource = useAdminTable(name, { search });
     return <p>{resource.error ?? (resource.loading ? "Loading" : "Ready")}</p>;
   };
   beforeEach(() => {
@@ -84,6 +91,60 @@ describe("admin data source lifecycle", () => {
     expect(mocks.sources[0].unsubscribe).toHaveBeenCalled();
     expect(mocks.sources[1].props.filterSpec?.filter).toBe(
       'username contains "bob"',
+    );
+  });
+  it.each([
+    "clients",
+    "roles",
+    "group_roles",
+    "user_group_roles",
+  ] as const)("keeps %s scoped via baseFilter without dropping any subscribed columns", async (name) => {
+    const columns = [
+      "client_id",
+      "client_identifier",
+      "role_id",
+      "role_name",
+      "client_name",
+    ];
+    mocks.getTableSchema.mockResolvedValue({
+      ...schema,
+      table: { module: "KEYCLOAK_ADMIN", table: name },
+      columns: columns.map((column) => ({
+        name: column,
+        serverDataType: "string",
+      })),
+    });
+    await act(async () => root.render(<Harness name={name} />));
+    expect(mocks.sources[0].props.columns).toEqual(columns);
+    expect(mocks.sources[0].props.baseFilterSpec).toEqual({
+      filter: 'client_identifier starts "vuu-"',
+    });
+    expect(mocks.sources[0].props.filterSpec?.filter).toBe("");
+    if (name === "clients" || name === "roles") {
+      await act(async () =>
+        root.render(<Harness name={name} search="portal" />),
+      );
+      expect(mocks.sources[1].props.baseFilterSpec).toEqual(
+        mocks.sources[0].props.baseFilterSpec,
+      );
+      expect(mocks.sources[1].props.filterSpec?.filter).toContain(
+        'contains "portal"',
+      );
+      await act(async () => root.render(<Harness name={name} search="" />));
+      expect(mocks.sources[2].props.baseFilterSpec).toEqual(
+        mocks.sources[0].props.baseFilterSpec,
+      );
+      expect(mocks.sources[2].props.filterSpec?.filter).toBe("");
+    }
+  });
+  it("reports missing client scope metadata rather than creating an unfiltered source", async () => {
+    await act(async () => root.render(<Harness name="clients" />));
+    expect(mocks.sources).toHaveLength(0);
+    expect(container.textContent).toContain(
+      'missing required column "client_identifier"',
+    );
+    expect(mocks.showNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "error" }),
     );
   });
   it("ignores a schema request completed after its consumer unmounts", async () => {

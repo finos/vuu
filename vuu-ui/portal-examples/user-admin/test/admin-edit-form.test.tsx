@@ -24,7 +24,7 @@ const mocks = vi.hoisted(() => {
       terminate() {}
     },
   );
-  return { notify: vi.fn(), queries: vi.fn() };
+  return { notify: vi.fn(), queries: vi.fn(), clientIdentifier: "vuu-portal" };
 });
 vi.mock("@vuu-ui/vuu-notifications", () => ({
   useNotifications: () => ({ showNotification: mocks.notify }),
@@ -63,7 +63,12 @@ vi.mock("../src/components/AdminTable", () => ({
         <button
           type="button"
           onClick={() =>
-            onSelect({ role_id: "r1", role_name: "Trading", client_id: "c1" })
+            onSelect({
+              role_id: "r1",
+              role_name: "Trading",
+              client_id: "c1",
+              client_identifier: mocks.clientIdentifier,
+            })
           }
         >
           Choose Trading
@@ -74,7 +79,12 @@ vi.mock("../src/components/AdminTable", () => ({
         <button
           type="button"
           onClick={() =>
-            onSelect({ role_id: "r1", role_name: "Trading", client_id: "c1" })
+            onSelect({
+              role_id: "r1",
+              role_name: "Trading",
+              client_id: "c1",
+              client_identifier: mocks.clientIdentifier,
+            })
           }
         >
           Remove Trading
@@ -88,6 +98,7 @@ vi.mock("../src/components/AdminTable", () => ({
             key: "client-1",
             client_id: "client-1",
             client_name: "Portal",
+            client_identifier: mocks.clientIdentifier,
           })
         }
       >
@@ -136,6 +147,7 @@ describe("AdminEditForm sessions", () => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     mocks.notify.mockClear();
     mocks.queries.mockClear();
+    mocks.clientIdentifier = "vuu-portal";
     container = document.createElement("div");
     document.body.append(container);
     root = createRoot(container);
@@ -523,6 +535,68 @@ describe("AdminEditForm sessions", () => {
     ).toBe(true);
     await submit();
     expect(add).not.toHaveBeenCalled();
+  });
+
+  it("rejects out-of-scope client rows before a role target can be selected", async () => {
+    props.entity = "roles";
+    props.schema = schemaFor(["role_name", "client_id", "description"]);
+    mocks.clientIdentifier = "account";
+    await render();
+    await change("Role name", "admin");
+    await click("Choose Portal");
+    expect(container.textContent).toContain("Only Vuu portal clients");
+    expect(container.textContent).not.toContain("Selected: Portal");
+    await submit();
+    expect(persist).not.toHaveBeenCalled();
+    mocks.clientIdentifier = "vuu-portal";
+    await click("Choose Portal");
+    await submit();
+    expect(persist).toHaveBeenCalledWith(
+      expect.objectContaining({ rpcName: "addClientRole" }),
+    );
+  });
+
+  it("rejects an out-of-scope role edit even if supplied directly instead of from a filtered table", async () => {
+    props.entity = "roles";
+    props.schema = schemaFor([
+      "role_name",
+      "client_id",
+      "client_identifier",
+      "description",
+    ]);
+    props.record = {
+      key: "r1",
+      role_id: "r1",
+      role_name: "Admin",
+      client_id: "c1",
+      client_identifier: "realm-management",
+    };
+    await render();
+    await change("Role name", "updated");
+    await submit();
+    expect(persist).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("Only Vuu portal clients");
+  });
+
+  it.each([
+    "Choose Trading",
+    "Remove Trading",
+  ])("does not stage non-Vuu group roles through %s", async (button) => {
+    props.entity = "groups";
+    props.schema = schemaFor(["group_name"]);
+    props.record = { key: "g1", group_id: "g1", group_name: "Traders" };
+    mocks.clientIdentifier = "account";
+    await render();
+    await click(button);
+    expect(container.textContent).toContain("Only Vuu portal clients");
+    expect(
+      container.querySelector('[aria-label="Pending relationship changes"]'),
+    ).toBeNull();
+    await submit();
+    expect(persist).toHaveBeenCalledTimes(1);
+    expect(persist).toHaveBeenCalledWith(
+      expect.objectContaining({ rpcName: "updateGroup" }),
+    );
   });
 
   it("persists group names but disables unsupported hierarchy writes even when schema columns exist", async () => {
