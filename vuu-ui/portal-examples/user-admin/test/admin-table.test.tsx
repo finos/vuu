@@ -1,0 +1,122 @@
+import type { TableSchema } from "@vuu-ui/vuu-data-types";
+import type { TableConfig } from "@vuu-ui/vuu-table-types";
+import { act, type ReactNode } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { AdminTable } from "../src/components/AdminTable";
+import { AdminDataContext } from "../src/data/AdminDataContext";
+import type { AdminConfig, AdminTableName } from "../src/data/admin-contract";
+
+const mocks = vi.hoisted(() => ({
+  table: vi.fn<(props: { config: TableConfig; dataSource: unknown }) => void>(),
+  source: {
+    columns: ["user_id", "email", "username"],
+    filter: { filter: 'username contains "alice"' },
+  },
+  schema: {
+    key: "user_id",
+    table: { module: "KEYCLOAK_ADMIN", table: "users" },
+    columns: [
+      { name: "user_id", serverDataType: "string" },
+      { name: "email", serverDataType: "string" },
+      { name: "username", serverDataType: "string" },
+    ],
+  } satisfies TableSchema,
+}));
+vi.mock("@vuu-ui/vuu-table", () => ({
+  Table: (props: { config: TableConfig; dataSource: unknown }) => {
+    mocks.table(props);
+    return null;
+  },
+}));
+vi.mock("@vuu-ui/vuu-table-extras", () => ({
+  DataSourceStats: () => null,
+  TableFooter: ({ children }: { children: ReactNode }) => children,
+}));
+vi.mock("../src/data/useAdminTable", () => ({
+  useAdminTable: () => ({
+    schema: mocks.schema,
+    dataSource: mocks.source,
+    loading: false,
+  }),
+}));
+
+describe("shared admin table column widths", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+  beforeEach(() => {
+    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+    mocks.table.mockClear();
+    container = document.createElement("div");
+    root = createRoot(container);
+  });
+  afterEach(() => {
+    act(() => root.unmount());
+    vi.unstubAllGlobals();
+  });
+  const render = async (name: AdminTableName, config: AdminConfig = {}) => {
+    await act(async () =>
+      root.render(
+        <AdminDataContext.Provider value={config}>
+          <AdminTable name={name} />
+        </AdminDataContext.Provider>,
+      ),
+    );
+    const props = mocks.table.mock.lastCall?.[0];
+    if (!props) throw new Error("Admin table was not rendered");
+    expect(props.dataSource).toBe(mocks.source);
+    return props.config;
+  };
+
+  it.each([
+    "users",
+    "groups",
+    "roles",
+    "clients",
+    "user_groups",
+    "group_roles",
+    "user_group_roles",
+  ] as const)("sets the default to 120 and rendered email width to 150 for %s", async (name) => {
+    const before = structuredClone(mocks.schema);
+    const config = await render(name);
+    expect(config.columnDefaultWidth).toBe(120);
+    expect(config.columnLayout).toBe("static");
+    expect(
+      config.columns.find((column) => column.name === "email")?.width,
+    ).toBe(150);
+    expect(
+      config.columns.find((column) => column.name === "username")?.width,
+    ).toBeUndefined();
+    expect(config.columns.every((column) => column.editable === false)).toBe(
+      true,
+    );
+    expect(mocks.schema).toEqual(before);
+    expect(mocks.source.columns).toEqual(["user_id", "email", "username"]);
+    expect(mocks.source.filter.filter).toBe('username contains "alice"');
+  });
+
+  it("applies the email override to logical aliases and literal server names", async () => {
+    const config = await render("users", {
+      users: { columns: { email: "username", display_email: "email" } },
+    });
+    expect(config.columns.map(({ name, width }) => ({ name, width }))).toEqual([
+      { name: "email", width: 150 },
+      { name: "username", width: 150 },
+    ]);
+  });
+
+  it("does not restore hidden identity or email columns when applying widths", async () => {
+    const config = await render("users", {
+      users: {
+        columns: { email: "username" },
+        columnConfig: { hidden: ["email"] },
+      },
+    });
+    expect(config.columns).toEqual([]);
+    expect(mocks.schema.columns.map(({ name }) => name)).toEqual([
+      "user_id",
+      "email",
+      "username",
+    ]);
+  });
+});

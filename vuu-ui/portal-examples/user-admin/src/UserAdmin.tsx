@@ -1,178 +1,99 @@
-import { ToggleButton, ToggleButtonGroup, Toolbar } from "@salt-ds/core";
+import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
+import { useState } from "react";
 import {
-  DataEditingProvider,
-  EditButtons,
-  type EditMode,
-  UNDO_CELL_RENDERER,
-  useEditableTable,
-} from "@vuu-ui/vuu-data-editing";
-import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
-import { Table } from "@vuu-ui/vuu-table";
-import {
-  DataSourceStats,
-  InlineAddRow,
-  TableFooter,
-  TableFooterTray,
-} from "@vuu-ui/vuu-table-extras";
-import type {
-  ColumnDescriptor,
-  DataRow,
-  SelectionChangeHandler,
-  TableConfig,
-} from "@vuu-ui/vuu-table-types";
-import { type SyntheticEvent, useCallback, useMemo, useState } from "react";
-import { INTERNAL_COLUMN_NAMES, useUserAdmin } from "./useUserAdmin";
-
+  Link,
+  Navigate,
+  NavLink,
+  Outlet,
+  Route,
+  Routes,
+  useBeforeUnload,
+} from "react-router-dom";
+import { EditingContext } from "./components/EditingContext";
+import { AdminDataContext } from "./data/AdminDataContext";
+import { EMPTY_CONFIG, type AdminConfig } from "./data/admin-contract";
+import { GroupsPage } from "./pages/groups/GroupsPage";
+import { OverviewPage } from "./pages/overview/OverviewPage";
+import { RolesPage } from "./pages/roles/RolesPage";
+import { UsersPage } from "./pages/users/UsersPage";
 import "./UserAdmin.css";
 
-const UNDO_DELETE_COLUMN: ColumnDescriptor = {
-  name: "undo",
-  source: "client",
-  width: 80,
-  type: {
-    name: "string",
-    renderer: {
-      name: UNDO_CELL_RENDERER,
-    },
-  },
-};
-
-const EditableUsersTable = ({
-  dataSource: sourceTableDataSource,
-  onSelectionChange,
-  schema,
-}: {
-  dataSource: DataSource;
-  onSelectionChange: SelectionChangeHandler;
-  schema: TableSchema;
-}) => {
-  const [editMode, setEditMode] = useState<EditMode>("view");
-  const exitEditMode = useCallback(() => setEditMode("view"), []);
-  const {
-    canCancel,
-    canSave,
-    dataSource,
-    editSession,
-    hasSelection,
-    onCancel,
-    onDelete,
-    onSave,
-    rowClassNameGenerators,
-  } = useEditableTable({
-    dataSource: sourceTableDataSource,
-    copyOption: "All",
-    deleteMode: "soft",
-    isEditMode: editMode === "edit",
-    onCancel: exitEditMode,
-    onSave: exitEditMode,
+const AdminLayout = () => {
+  const [editing, setEditing] = useState(false);
+  useBeforeUnload((event) => {
+    if (editing) {
+      event.preventDefault();
+      event.returnValue = "";
+    }
   });
-
-  const onToggleEditMode = useCallback(
-    (event: SyntheticEvent<HTMLButtonElement>) => {
-      setEditMode((event.target as HTMLButtonElement).value as EditMode);
-    },
-    [],
-  );
-
-  const isRowSelectable = useCallback(
-    (dataRow: DataRow) => dataRow.vuu_action !== "deleteRow",
-    [],
-  );
-
-  const config = useMemo<TableConfig>(() => {
-    const visibleColumns = schema.columns.filter(
-      ({ name }) => !INTERNAL_COLUMN_NAMES.has(name),
-    );
-    return {
-      columnLayout: "fit",
-      columns:
-        editMode === "view"
-          ? visibleColumns.map((column) => ({ ...column, editable: false }))
-          : visibleColumns
-              .map<ColumnDescriptor>((column) => ({
-                ...column,
-                editable:
-                  column.name === schema.key
-                    ? false
-                    : column.editable !== false,
-              }))
-              .concat({ hidden: true, name: "vuu_action" }, UNDO_DELETE_COLUMN),
-      rowClassNameGenerators,
-      rowSeparators: true,
-      zebraStripes: true,
-    };
-  }, [editMode, rowClassNameGenerators, schema]);
-
   return (
-    <>
-      <Toolbar className="vuuUserAdmin-toolbar">
-        <ToggleButtonGroup onChange={onToggleEditMode} value={editMode}>
-          <ToggleButton value="view">View</ToggleButton>
-          <ToggleButton value="edit">Edit</ToggleButton>
-        </ToggleButtonGroup>
-      </Toolbar>
-      <div className="vuuUserAdmin-tableContainer">
-        <DataEditingProvider editSession={editSession}>
-          <Table
-            config={config}
-            customHeader={editMode === "edit" ? InlineAddRow : undefined}
-            dataSource={dataSource}
-            height="100%"
-            isRowSelectable={editMode === "edit" ? isRowSelectable : undefined}
-            navigationStyle="row"
-            onSelectionChange={
-              editMode === "view" ? onSelectionChange : undefined
+    <EditingContext.Provider value={setEditing}>
+      <div className="vuuIdentityAdmin">
+        <header className="vuuIdentityAdmin-header">
+          <h1>Vuu Identity Admin</h1>
+          <p>Users, groups and client roles</p>
+        </header>
+        <div className="vuuIdentityAdmin-workspace">
+          <nav
+            aria-label="Identity administration"
+            className="vuuIdentityAdmin-navigation"
+          >
+            {(["overview", "users", "groups", "roles"] as const).map((page) => (
+              <NavLink
+                key={page}
+                to={page}
+                aria-disabled={editing || undefined}
+                onClick={(event) => {
+                  if (editing) event.preventDefault();
+                }}
+                tabIndex={editing ? -1 : undefined}
+              >
+                {page[0].toUpperCase() + page.slice(1)}
+              </NavLink>
+            ))}
+          </nav>
+          <div className="vuuIdentityAdmin-content">
+            {editing ? (
+              <p role="status" className="vuuIdentityAdmin-editNotice">
+                Save or discard your edits before switching pages or identities.
+              </p>
+            ) : null}
+            <main>
+              <Outlet />
+            </main>
+          </div>
+        </div>
+      </div>
+    </EditingContext.Provider>
+  );
+};
+
+export interface UserAdminProps {
+  config?: AdminConfig;
+}
+
+const UserAdmin = ({ config = EMPTY_CONFIG }: UserAdminProps) => (
+  <NotificationsProvider>
+    <AdminDataContext.Provider value={config}>
+      <Routes>
+        <Route element={<AdminLayout />}>
+          <Route index element={<Navigate to="overview" replace />} />
+          <Route path="overview" element={<OverviewPage />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="groups" element={<GroupsPage />} />
+          <Route path="roles" element={<RolesPage />} />
+          <Route
+            path="*"
+            element={
+              <p>
+                Page not found. <Link to="../overview">Return to Overview</Link>
+              </p>
             }
-            renderBufferSize={20}
-            rowHeight={21}
-            selectionModel={editMode === "edit" ? "checkbox" : "single"}
-            width="100%"
           />
-        </DataEditingProvider>
-      </div>
-      <TableFooter>
-        {editMode === "view" ? (
-          <DataSourceStats dataSource={sourceTableDataSource} />
-        ) : (
-          <TableFooterTray position="center">
-            <EditButtons
-              canCancel={canCancel}
-              canSave={canSave}
-              editSession={editSession}
-              hasSelection={hasSelection}
-              onCancel={onCancel}
-              onDelete={onDelete}
-              onSave={onSave}
-            />
-          </TableFooterTray>
-        )}
-      </TableFooter>
-    </>
-  );
-};
-
-const UserAdmin = () => {
-  const hookResult = useUserAdmin();
-
-  if (!hookResult) {
-    return (
-      <div className="vuuUserAdmin-loading">
-        Loading keycloak admin tables...
-      </div>
-    );
-  }
-
-  const { dataSources, handleUserSelectionChange, schemas } = hookResult;
-
-  return (
-    <div className="vuuUserAdmin">
-      <EditableUsersTable
-        dataSource={dataSources.users}
-        onSelectionChange={handleUserSelectionChange}
-        schema={schemas.users}
-      />
-    </div>
-  );
-};
+        </Route>
+      </Routes>
+    </AdminDataContext.Provider>
+  </NotificationsProvider>
+);
 
 export default UserAdmin;

@@ -1,15 +1,265 @@
-.vuuUserAdmin {
+.vuuIdentityAdmin {
+  --admin-border: var(--salt-container-primary-borderColor);
   display: flex;
   flex-direction: column;
-  height: 100%;
   width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  color: var(--salt-content-primary-foreground);
+  background: var(--salt-container-primary-background);
+  container-type: inline-size;
+  container-name: identity-admin;
+}
 
-  .vuuUserAdmin-toolbar {
-    flex: 0 0 auto;
+.vuuIdentityAdmin h1,
+.vuuIdentityAdmin h2,
+.vuuIdentityAdmin h3,
+.vuuIdentityAdmin p {
+  margin: 0;
+}
+
+.vuuIdentityAdmin-header,
+.vuuIdentityAdmin-pageHeader,
+.vuuIdentityAdmin-quickActions {
+  display: flex;
+  align-items: center;
+  gap: var(--salt-spacing-200);
+}
+
+.vuuIdentityAdmin-header {
+  justify-content: space-between;
+  padding: var(--salt-spacing-200);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.vuuIdentityAdmin h1 {
+  font-size: var(--salt-text-h2-fontSize);
+}
+.vuuIdentityAdmin h2 {
+  font-size: var(--salt-text-h3-fontSize);
+}
+.vuuIdentityAdmin h3 {
+  font-size: var(--salt-text-h4-fontSize);
+}
+
+.vuuIdentityAdmin-workspace {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.vuuIdentityAdmin-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.vuuIdentityAdmin-navigation {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex: 0 0 180px;
+  gap: var(--salt-spacing-100);
+  padding: var(--salt-spacing-150) var(--salt-spacing-100);
+  border-right: 1px solid var(--admin-border);
+  background: var(--salt-container-secondary-background);
+  overflow-y: auto;
+}
+
+.vuuIdentityAdmin a {
+  color: var(--salt-actionable-primary-background);
+  text-underline-offset: 4px;
+}
+
+.vuuIdentityAdmin-navigation a {
+  padding: var(--salt-spacing-150) var(--salt-spacing-100);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+}
+
+.vuuIdentityAdmin-navigation a.active {
+  border-color: var(--salt-actionable-primary-background);
+  background: var(--salt-container-primary-background);
+  font-weight: var(--salt-text-fontWeight-strong);
+}
+
+.vuuIdentityAdmin-navigation a[aria-disabled="true"] {
+  opacity: 0.5;
+}
+
+.vuuIdentityAdmin main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}
+
+.vuuIdentityAdmin-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-150);
+  min-width: 0;
+  min-height: 0;
+  padding: var(--salt-spacing-200);
+}
+
+.vuuIdentityAdmin-pageHeader {
+  justify-content: space-between;
+}
+.vuuIdentityAdmin-pageHeader p {
+  margin-top: var(--salt-spacing-100);
+}
+.vuuIdentityAdmin-search {
+  max-width: 620px;
+}
+.vuuIdentityAdmin-searchFieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+.vuuIdentityAdmin-editNotice {
+  padding: var(--salt-spacing-100) var(--salt-spacing-200);
+}
+
+.vuuIdentityAdmin-split {
+  display: flex;
+  flex: 1;
+  min-height: 250px;
+  min-width: 0;
+  gap: var(--salt-spacing-100);
+}
+
+.vuuIdentityAdmin-table {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--admin-border);
+}
+
+.vuuIdentityAdmin-table h3 {
+  padding: var(--salt-spacing-100);
+}
+.vuuIdentityAdmin-tableViewport {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+.vuuIdentityAdmin .vuuIdentityAdmin-panel {
+  --saltSidePanel-width: min(480px, 45%);
+}
+.vuuIdentityAdmin-panel .saltSidePanelContent {
+  overflow: auto;
+}
+
+.vuuIdentityAdmin-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-100);
+}
+
+.vuuIdentityAdmin-details > div {
+  display: flex;
+  gap: var(--salt-spacing-100);
+}
+.vuuIdentityAdmin-details dt {
+  flex: 0 0 40%;
+  text-transform: capitalize;
+}
+.vuuIdentityAdmin-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.vuuIdentityAdmin-relationships {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-200);
+}
+.vuuIdentityAdmin-relationships > .vuuIdentityAdmin-table {
+  flex: none;
+  height: 260px;
+}
+.vuuIdentityAdmin-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-150);
+}
+
+.vuuIdentityAdmin-stat {
+  flex: 1 1 150px;
+  padding: var(--salt-spacing-200);
+  border: 1px solid var(--admin-border);
+  background: var(--salt-container-secondary-background);
+}
+
+.vuuIdentityAdmin-stat strong {
+  display: block;
+  font-size: var(--salt-text-h1-fontSize);
+  margin-top: var(--salt-spacing-100);
+}
+.vuuIdentityAdmin-stat p {
+  overflow-wrap: anywhere;
+  font-size: var(--salt-text-label-fontSize);
+}
+.vuuIdentityAdmin-searchResults {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-150);
+}
+.vuuIdentityAdmin-searchResults > .vuuIdentityAdmin-table {
+  flex: 1 0 230px;
+}
+.vuuIdentityAdmin-empty {
+  padding: var(--salt-spacing-300);
+}
+.vuuIdentityAdmin [role="alert"] {
+  color: var(--salt-status-error-foreground);
+  padding: var(--salt-spacing-100);
+  overflow-wrap: anywhere;
+}
+.vuuIdentityAdmin form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-150);
+}
+.vuuIdentityAdmin form .vuuIdentityAdmin-table {
+  flex: none;
+  height: 220px;
+}
+
+@container identity-admin (max-width: 760px) {
+  .vuuIdentityAdmin-navigation {
+    flex-basis: 120px;
   }
-
-  .vuuUserAdmin-tableContainer {
-    flex: 1 1 0%;
-    min-height: 0;
+  .vuuIdentityAdmin-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .vuuIdentityAdmin-quickActions {
+    flex-wrap: wrap;
+  }
+  .vuuIdentityAdmin-split {
+    flex-direction: column;
+    overflow: auto;
+  }
+  .vuuIdentityAdmin-split > .vuuIdentityAdmin-table {
+    flex: 1 0 280px;
+  }
+  .vuuIdentityAdmin .vuuIdentityAdmin-panel {
+    --saltSidePanel-width: 100%;
+    min-height: 320px;
   }
 }

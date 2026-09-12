@@ -5,6 +5,9 @@
   "scripts": {
     "build": "node ../../scripts/build-remote-module.ts",
     "dev": "rsbuild dev",
+    "test": "vitest run --root ../.. portal-examples/user-admin/test",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "biome lint src test",
     "start": "serve -p 5001 ../../dist_portal/user-admin"
   },
   "type": "module",
@@ -23,12 +26,16 @@
   "dependencies": {
     "@vuu-ui/vuu-data-editing": "3.3.8",
     "@vuu-ui/vuu-data-react": "3.3.8",
-    "@vuu-ui/vuu-layout": "3.3.8",
-    "@vuu-ui/vuu-shell": "3.3.8",
+    "@vuu-ui/vuu-notifications": "3.3.8",
+    "@vuu-ui/vuu-ui-controls": "3.3.8",
+    "@vuu-ui/vuu-utils": "3.3.8",
+    "@vuu-ui/vuu-filter-types": "3.3.8",
+    "@vuu-ui/vuu-protocol-types": "3.3.8",
     "@vuu-ui/vuu-table": "3.3.8",
     "@vuu-ui/vuu-table-extras": "3.3.8",
     "@vuu-ui/core": "3.3.8",
-    "@salt-ds/core": "1.67.0"
+    "@salt-ds/core": "1.67.0",
+    "react-router-dom": "^6.2.1"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",
