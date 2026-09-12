@@ -840,16 +840,18 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
   async addRow(
     rowData: Record<string, VuuRowDataItemType> = {},
-  ): Promise<true | string> {
+  ): Promise<RpcResultSuccess | RpcResultError> {
     const response = await this.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "addRow",
       params: { data: rowData },
     });
-    if (isRpcSuccess(response)) {
-      return true;
-    }
-    return response?.errorMessage ?? "addRow failed";
+    return (
+      response ?? {
+        type: "ERROR_RESULT",
+        errorMessage: "addRow failed",
+      }
+    );
   }
 
   async undoRowChange(key: string): Promise<RpcResultSuccess | RpcResultError> {
