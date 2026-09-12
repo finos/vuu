@@ -23,7 +23,7 @@
     "format:check": "biome check --skip=lint --skip=assist",
     "format": "biome format --write .",
     "build": "node ./scripts/build-all-rslib.ts",
-    "bump:versions": "node ./scripts/bump-versions.ts",
+    "bump:versions": "tsx ./scripts/bump-versions.ts",
     "build:dev": "node ./scripts/build-all.mjs",
     "build:app": "cd sample-apps/app-vuu-example && node scripts/build.mjs",
     "build:app:insecure": "npm run build:app -- --insecure",
