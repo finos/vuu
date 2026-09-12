@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildFilter,
   columnFor,
+  displayColumnsFor,
   hasField,
   tableFor,
 } from "../src/data/admin-contract";
@@ -29,6 +30,48 @@ describe("server-driven identity contract", () => {
     });
     expect(columnFor(config, "users", "username")).toBe("login");
     expect(hasField(schema, config, "users", "first_name")).toBe(false);
+  });
+
+  it("hides identity columns from rendering while retaining them in the schema", () => {
+    const identitySchema: TableSchema = {
+      ...schema,
+      columns: [
+        { name: "user_id", serverDataType: "string" },
+        { name: "username", serverDataType: "string" },
+        { name: "vuuMsg", serverDataType: "string" },
+      ],
+    };
+
+    expect(displayColumnsFor(identitySchema, {}, "users").map(({ name }) => name))
+      .toEqual(["username"]);
+    expect(identitySchema.columns.map(({ name }) => name)).toEqual([
+      "user_id",
+      "username",
+      "vuuMsg",
+    ]);
+  });
+
+  it("applies configured hidden columns using logical or server names", () => {
+    const configuredSchema: TableSchema = {
+      ...schema,
+      columns: [
+        { name: "stable_id", serverDataType: "string" },
+        { name: "login", serverDataType: "string" },
+        { name: "email", serverDataType: "string" },
+      ],
+    };
+    const configured = {
+      users: {
+        columns: { user_id: "stable_id", username: "login" },
+        columnConfig: { hidden: ["user_id", "email"] },
+      },
+    };
+
+    expect(
+      displayColumnsFor(configuredSchema, configured, "users").map(
+        ({ name }) => name,
+      ),
+    ).toEqual(["login"]);
   });
 
   it("builds cross-column search only from fields present in server schema", () => {

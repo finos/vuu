@@ -2,8 +2,9 @@ import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import { Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
 import { useMemo } from "react";
+import { useAdminConfig } from "../data/AdminDataContext";
 import {
-  INTERNAL_COLUMNS,
+  displayColumnsFor,
   type AdminQuery,
   type AdminRecord,
   type AdminTableName,
@@ -11,6 +12,7 @@ import {
 import { useAdminTable, type AdminTableResource } from "../data/useAdminTable";
 
 export interface AdminTableViewProps {
+  name: AdminTableName;
   resource: AdminTableResource;
   onSelect?: (record: AdminRecord | undefined) => void;
   selectionDisabled?: boolean;
@@ -18,22 +20,26 @@ export interface AdminTableViewProps {
 }
 
 export const AdminTableView = ({
+  name,
   resource: { schema, dataSource, error, loading },
   onSelect,
   selectionDisabled,
   title,
 }: AdminTableViewProps) => {
+  const adminConfig = useAdminConfig();
   const config = useMemo<TableConfig>(
     () => ({
       columns:
-        schema?.columns
-          .filter(({ name }) => !INTERNAL_COLUMNS.has(name))
-          .map((column) => ({ ...column, editable: false })) ?? [],
+        schema
+          ? displayColumnsFor(schema, adminConfig, name).map(
+              (column) => ({ ...column, editable: false }),
+            )
+          : [],
       columnLayout: "static",
       rowSeparators: true,
       zebraStripes: true,
     }),
-    [schema],
+    [adminConfig, name, schema],
   );
 
   return (
@@ -94,5 +100,5 @@ export const AdminTable = ({
   query?: AdminQuery;
 }) => {
   const resource = useAdminTable(name, query);
-  return <AdminTableView {...props} resource={resource} />;
+  return <AdminTableView {...props} name={name} resource={resource} />;
 };

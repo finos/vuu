@@ -10,10 +10,16 @@ export type AdminTableName =
   | "group_roles"
   | "user_group_roles";
 export type AdminRecord = Record<string, VuuRowDataItemType>;
+export interface AdminColumnConfig {
+  /** Column names to omit from the rendered table. */
+  hidden?: readonly string[];
+}
 export interface AdminTableContract {
   table?: VuuTable;
   /** Logical field name to server schema column name. */
   columns?: Record<string, string>;
+  /** Presentation-only column configuration; data subscriptions remain unchanged. */
+  columnConfig?: AdminColumnConfig;
 }
 export type AdminConfig = Partial<Record<AdminTableName, AdminTableContract>>;
 export const EMPTY_CONFIG: AdminConfig = {};
@@ -45,6 +51,13 @@ export const INTERNAL_COLUMNS = new Set([
   "vuuCreatedTimestamp",
   "vuuUpdatedTimestamp",
 ]);
+export const DEFAULT_HIDDEN_COLUMNS: Partial<
+  Record<AdminTableName, readonly string[]>
+> = {
+  users: ["user_id"],
+  groups: ["group_id"],
+  roles: ["role_id", "client_id"],
+};
 
 export const tableFor = (config: AdminConfig, name: AdminTableName): VuuTable =>
   config[name]?.table ?? { module: "KEYCLOAK_ADMIN", table: name };
@@ -78,6 +91,25 @@ export const requireField = (
     );
   }
   return column;
+};
+
+export const displayColumnsFor = (
+  schema: TableSchema,
+  config: AdminConfig,
+  name: AdminTableName,
+) => {
+  const hidden = new Set([
+    ...(DEFAULT_HIDDEN_COLUMNS[name] ?? []),
+    ...(config[name]?.columnConfig?.hidden ?? []),
+  ]);
+  const mappings = Object.entries(config[name]?.columns ?? {});
+  return schema.columns.filter(({ name: column }) => {
+    if (INTERNAL_COLUMNS.has(column) || hidden.has(column)) return false;
+    const logicalName = mappings.find(
+      ([, serverName]) => serverName === column,
+    )?.[0];
+    return logicalName === undefined || !hidden.has(logicalName);
+  });
 };
 
 export interface AdminQuery {

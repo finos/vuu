@@ -98,6 +98,7 @@ export const EntityPage = ({ entity }: { entity: Entity }) => {
       >
         <div className="vuuIdentityAdmin-split">
           <AdminTableView
+            name={entity}
             resource={resource}
             selectionDisabled={editing}
             onSelect={setRecord}
