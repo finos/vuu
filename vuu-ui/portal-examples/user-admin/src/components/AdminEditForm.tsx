@@ -22,6 +22,7 @@ import { RoleForm } from "../pages/roles/RoleForm";
 import { UserForm } from "../pages/users/UserForm";
 import { FORM_FIELDS, REQUIRED_FIELDS } from "./AdminFormField";
 import { AdminRelationshipField } from "./AdminRelationshipField";
+import { ModuleAccessField } from "./ModuleAccessField";
 
 export interface AdminEditFormProps {
   entity: Entity;
@@ -317,7 +318,7 @@ export const AdminEditForm = ({
         editing={!!record}
         disabled={!ready || busy || persisted}
         relationships={
-          entity === "roles" ? undefined : (
+          entity === "groups" ? (
             <AdminRelationshipField
               entity={entity}
               record={record}
@@ -325,12 +326,13 @@ export const AdminEditForm = ({
               changes={relationships}
               onChange={setRelationships}
             />
-          )
+          ) : undefined
         }
         onChange={(field, value) =>
           setValues((previous) => ({ ...previous, [field]: value }))
         }
       />
+      {entity === "users" ? <ModuleAccessField record={record} /> : null}
       <div className="vuuIdentityAdmin-formActions">
         <Button type="submit" disabled={!ready || busy || missingRequired}>
           Save

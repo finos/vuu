@@ -24,10 +24,26 @@ const mocks = vi.hoisted(() => {
       terminate() {}
     },
   );
-  return { notify: vi.fn(), queries: vi.fn(), clientIdentifier: "vuu-portal" };
+  return {
+    notify: vi.fn(),
+    queries: vi.fn(),
+    clientIdentifier: "vuu-portal",
+    remoteModules: [
+      {
+        name: "user-admin",
+        title: "User Admin",
+        loginRole: "user-admin-access",
+      },
+    ],
+  };
 });
 vi.mock("@vuu-ui/vuu-notifications", () => ({
   useNotifications: () => ({ showNotification: mocks.notify }),
+}));
+vi.mock("@vuu-ui/core/portal", () => ({
+  usePortalModuleRegistry: () => ({
+    remoteModules: mocks.remoteModules,
+  }),
 }));
 vi.mock("../src/components/AdminTable", () => ({
   AdminTable: ({
@@ -425,12 +441,11 @@ describe("AdminEditForm sessions", () => {
     expect(session.unsubscribe).toHaveBeenCalledOnce();
   });
 
-  it("defers create relationships without guessing an ID", async () => {
+  it("defers create module access display without guessing an ID", async () => {
     await render();
     expect(control("Temporary password").disabled).toBe(false);
-    expect(container.textContent).toContain(
-      "Save this identity, then reopen it",
-    );
+    expect(container.textContent).toContain("Save this user, then reopen it");
+    expect(container.textContent).not.toContain("Group membership");
     await click("Cancel");
     expect(persist).not.toHaveBeenCalled();
     expect(edit).not.toHaveBeenCalled();
@@ -499,51 +514,22 @@ describe("AdminEditForm sessions", () => {
     ).toBe(false);
   });
 
-  it("stages group membership without writes, then retries only the failed assignment after partial success", async () => {
+  it("shows module access without exposing group or role assignments for users", async () => {
     props.record = {
       key: "u1",
       user_id: "u1",
       username: "alice",
       enabled: true,
+      module_access: "user-admin-access",
     };
-    persist
-      .mockResolvedValueOnce(SUCCESS)
-      .mockResolvedValueOnce({
-        type: "ERROR_RESULT",
-        errorMessage: "Assignment rejected",
-      })
-      .mockResolvedValue(SUCCESS);
     await render();
-    await click("Choose Traders");
-    expect(persist).not.toHaveBeenCalled();
-    expect(container.textContent).toContain("Add Traders");
-    await submit();
-    expect(persist).toHaveBeenNthCalledWith(2, {
-      type: "RPC_REQUEST",
-      rpcName: "assignUserToGroup",
-      params: { userId: "u1", groupId: "g1" },
-    });
-    expect(container.textContent).toContain("Assignment rejected");
-    expect(end).not.toHaveBeenCalled();
-    expect(mocks.notify).not.toHaveBeenCalledWith(
-      expect.objectContaining({ status: "success" }),
-    );
-    await submit();
-    expect(persist).toHaveBeenCalledTimes(3);
-    expect(persist).toHaveBeenNthCalledWith(3, {
-      type: "RPC_REQUEST",
-      rpcName: "assignUserToGroup",
-      params: { userId: "u1", groupId: "g1" },
-    });
-    expect(end).toHaveBeenCalledWith(false, false);
-  });
-
-  it("discards staged membership changes without invoking a domain RPC", async () => {
-    props.record = { key: "u1", user_id: "u1", username: "alice" };
-    await render();
-    await click("Remove Traders");
-    await click("Discard");
-    expect(persist).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("Portal module access");
+    expect(container.textContent).toContain("User Admin");
+    expect(container.textContent).not.toContain("Group membership");
+    expect(container.textContent).not.toContain("Client-role assignments");
+    expect(container.textContent).not.toContain("Choose Traders");
+    expect(container.textContent).not.toContain("Remove Traders");
+    expect(mocks.queries).not.toHaveBeenCalled();
   });
 
   it("persists group client-role assignments with stable role and client IDs", async () => {
