@@ -525,6 +525,10 @@ describe("AdminEditForm sessions", () => {
     await render();
     expect(container.textContent).toContain("Portal module access");
     expect(container.textContent).toContain("User Admin");
+    expect(container.querySelector('[role="listbox"]')).not.toBeNull();
+    expect(container.querySelector('[role="option"]')?.textContent).toBe(
+      "User Admin",
+    );
     expect(container.textContent).not.toContain("Group membership");
     expect(container.textContent).not.toContain("Client-role assignments");
     expect(container.textContent).not.toContain("Choose Traders");

@@ -1,4 +1,3 @@
-import { ListBox, Option } from "@salt-ds/core";
 import { usePortalModuleRegistry } from "@vuu-ui/core/portal";
 import type { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import { registerComponent } from "@vuu-ui/vuu-utils";
@@ -38,15 +37,7 @@ export const ModuleAccessCell = ({
 }: TableCellRendererProps) => {
   const { remoteModules } = usePortalModuleRegistry();
   const values = resolveModuleAccessValues(dataRow[column.name], remoteModules);
-  return (
-    <ListBox aria-label="Module access" bordered={false}>
-      {values.map((value) => (
-        <Option key={value} value={value}>
-          {value}
-        </Option>
-      ))}
-    </ListBox>
-  );
+  return <>{values.join(", ")}</>;
 };
 
 registerComponent(
