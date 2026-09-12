@@ -6,6 +6,7 @@ import {
   getAddedItems,
   getRemovedItems,
   itemsOrOrderChanged,
+  reorderItems,
 } from "@vuu-ui/vuu-utils";
 
 export const ColumnChangeSource = {
@@ -104,6 +105,15 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
     return this.#selectedColumns;
   }
 
+  setSelectedColumns(
+    selectedColumns: readonly ColumnDescriptor[],
+    source: ColumnChangeSource,
+    changeDescriptor?: SelectedColumnChangeDescriptor,
+  ) {
+    this.#selectedColumns = selectedColumns;
+    this.notifyListeners(selectedColumns, source, changeDescriptor);
+  }
+
   get selectedColumnsFiltered(): readonly ColumnDescriptor[] {
     return this.#selectedColumnsFiltered;
   }
@@ -137,11 +147,7 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
 
     if (addedColumns.length > 0) {
       if (addedColumns.length == 1) {
-        this.#selectedColumns = newSelectedColumns;
-        this.notifyListeners(this.#selectedColumns, source, {
-          type: SelectedColumnChangeType.ColumnAdded,
-          column: addedColumns[0],
-        });
+        this.addItemToSelectedColumns(addedColumns[0].name, source);
         return;
       } else {
         throw Error(
@@ -157,11 +163,7 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
 
     if (removedColumns.length > 0) {
       if (removedColumns.length == 1) {
-        this.#selectedColumns = newSelectedColumns;
-        this.notifyListeners(this.#selectedColumns, source, {
-          type: SelectedColumnChangeType.ColumnRemoved,
-          column: removedColumns[0],
-        });
+        this.removeItemFromSelectedColumns(removedColumns[0].name, source);
         return;
       } else {
         throw Error(
@@ -171,10 +173,10 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
     }
 
     // Change must be reordering
-    this.#selectedColumns = newSelectedColumns;
-    this.notifyListeners(this.#selectedColumns, source, {
-      type: SelectedColumnChangeType.ColumnsReordered,
-    });
+    this.reorderSelectedColumns(
+      newSelectedColumns.map(({ name }) => name),
+      source,
+    );
   }
 
   updateSelectedColumnsFiltered(
@@ -191,6 +193,21 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
     this.#selectedColumnsFiltered = newSelectedColumnsFiltered;
   }
 
+  addItemToSelectedColumns(name: string, source: ColumnChangeSource) {
+    const column = this.allColumns.find((col) => col.name === name);
+    if (column) {
+      this.#selectedColumns = this.#selectedColumns.concat(column);
+      this.notifyListeners(this.#selectedColumns, source, {
+        type: SelectedColumnChangeType.ColumnAdded,
+        column,
+      });
+    } else {
+      throw Error(
+        `[ColumnModel] addItemToSelectedColumns, column '${name}' not found`,
+      );
+    }
+  }
+
   removeItemFromSelectedColumns(name: string, source: ColumnChangeSource) {
     const column = this.#selectedColumns.find((col) => col.name === name);
     if (column) {
@@ -205,6 +222,20 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
         `[ColumnModel] removeItemFromSelectedColumns, column '${name}' not found`,
       );
     }
+  }
+
+  reorderSelectedColumns(
+    orderedColumnNames: string[],
+    source: ColumnChangeSource,
+  ) {
+    const reorderedColumns = reorderItems(
+      this.#selectedColumns,
+      orderedColumnNames,
+    );
+    this.#selectedColumns = reorderedColumns;
+    this.notifyListeners(reorderedColumns, source, {
+      type: SelectedColumnChangeType.ColumnsReordered,
+    });
   }
 
   updateColumn(

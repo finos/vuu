@@ -1,17 +1,17 @@
+import { DataSource } from "@vuu-ui/vuu-data-types";
 import {
   ColumnChangeSource,
   ColumnModel,
   ColumnsChangeHandler,
   TableDisplayAttributeChangeHandler,
 } from "@vuu-ui/vuu-table-extras";
-import { TableConfig } from "@vuu-ui/vuu-table-types";
-import { useCallback, useMemo, useState } from "react";
-import { TableProps } from "../Table";
 import type {
   ColumnDescriptor,
   TableConfigChangeHandler,
 } from "@vuu-ui/vuu-table-types";
-import { DataSource } from "@vuu-ui/vuu-data-types";
+import { TableConfig } from "@vuu-ui/vuu-table-types";
+import { useCallback, useMemo, useState } from "react";
+import { TableProps } from "../Table";
 
 export interface TableConfigHookProps extends Pick<TableProps, "config"> {
   availableColumns: readonly ColumnDescriptor[];
@@ -75,13 +75,13 @@ export const useTableConfig = ({
     (config, changeType) => {
       if (changeType.type === "column-moved") {
         setTableConfig(config);
-        columnModel.addRemoveOrReorderSelectedColumns(
-          config.columns,
+        columnModel.reorderSelectedColumns(
+          config.columns.map(({ name }) => name),
           ColumnChangeSource.Table,
         );
       } else if (changeType.type === "column-removed") {
         setTableConfig(config);
-        columnModel.addRemoveOrReorderSelectedColumns(
+        columnModel.setSelectedColumns(
           config.columns,
           ColumnChangeSource.Table,
         );
