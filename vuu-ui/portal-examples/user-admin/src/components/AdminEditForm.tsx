@@ -17,6 +17,13 @@ import {
   saveAdminRelationship,
   type RelationshipChange,
 } from "../data/admin-mutations";
+import {
+  equalModuleAccessAssignments,
+  loadUserModuleAccess,
+  saveUserModuleAccess,
+  type ModuleAccessAssignment,
+  type UserModuleAccess,
+} from "../data/module-access";
 import { GroupForm } from "../pages/groups/GroupForm";
 import { RoleForm } from "../pages/roles/RoleForm";
 import { UserForm } from "../pages/users/UserForm";
@@ -67,6 +74,7 @@ interface EditorRun {
   disposed: boolean;
   busy: boolean;
   persisted: boolean;
+  moduleAccessPersisted: boolean;
   relationshipIndex: number;
   notified?: boolean;
   task: Promise<void>;
@@ -135,6 +143,7 @@ export const AdminEditForm = ({
       disposed: false,
       busy: false,
       persisted: false,
+      moduleAccessPersisted: false,
       relationshipIndex: 0,
       task: Promise.resolve(),
     };
@@ -196,10 +205,67 @@ export const AdminEditForm = ({
     };
   }, [dataSource, record, schema]);
 
+  const [moduleAccess, setModuleAccess] = useState<UserModuleAccess>();
+  const [moduleAssignments, setModuleAssignments] = useState<
+    ModuleAccessAssignment[]
+  >([]);
+  const [moduleAccessLoading, setModuleAccessLoading] = useState(false);
+  const [moduleAccessError, setModuleAccessError] = useState<string>();
+
+  useEffect(() => {
+    let active = true;
+    setModuleAccess(undefined);
+    setModuleAssignments([]);
+    setModuleAccessError(undefined);
+    if (entity !== "users" || !record) {
+      setModuleAccessLoading(false);
+      return () => {
+        active = false;
+      };
+    }
+    const userId = record[columnFor(config, "users", "user_id")];
+    if (typeof userId !== "string" || !userId) {
+      setModuleAccessLoading(false);
+      setModuleAccessError(
+        "Backend contract unavailable: the selected user has no stable user ID.",
+      );
+      return () => {
+        active = false;
+      };
+    }
+    setModuleAccessLoading(true);
+    void loadUserModuleAccess(dataSource, userId)
+      .then((access) => {
+        if (!active) return;
+        setModuleAccess(access);
+        setModuleAssignments(access.assignments);
+      })
+      .catch((cause) => {
+        if (active) setModuleAccessError(errorMessage(cause));
+      })
+      .finally(() => {
+        if (active) setModuleAccessLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [config, dataSource, entity, record]);
+
+  const moduleAccessDirty =
+    !!moduleAccess &&
+    !equalModuleAccessAssignments(moduleAssignments, moduleAccess.assignments);
+
   const save = (event: FormEvent) => {
     event.preventDefault();
     const run = runRef.current;
-    if (!run || run.busy || !ready || missingRequired) return;
+    if (
+      !run ||
+      run.busy ||
+      !ready ||
+      missingRequired ||
+      (entity === "users" && !!record && moduleAccessLoading)
+    )
+      return;
     const missing = REQUIRED_FIELDS[entity].find(
       (field) => !String(values[field] ?? "").trim(),
     );
@@ -257,6 +323,23 @@ export const AdminEditForm = ({
             if (run.disposed) return;
           }
         }
+        if (
+          entity === "users" &&
+          record &&
+          moduleAccess &&
+          moduleAccessDirty &&
+          !run.moduleAccessPersisted
+        ) {
+          const userId = record[columnFor(config, "users", "user_id")];
+          if (typeof userId !== "string" || !userId) {
+            throw new Error(
+              "Backend contract unavailable: the selected user has no stable user ID.",
+            );
+          }
+          await saveUserModuleAccess(dataSource, userId, moduleAssignments);
+          run.moduleAccessPersisted = true;
+        }
+        if (run.disposed) return;
         if (!run.notified) {
           notifyRef.current({
             type: "toast",
@@ -332,9 +415,27 @@ export const AdminEditForm = ({
           setValues((previous) => ({ ...previous, [field]: value }))
         }
       />
-      {entity === "users" ? <ModuleAccessField record={record} /> : null}
+      {entity === "users" ? (
+        <ModuleAccessField
+          access={moduleAccess}
+          assignments={moduleAssignments}
+          disabled={!ready || busy || persisted}
+          error={moduleAccessError}
+          loading={moduleAccessLoading}
+          onChange={setModuleAssignments}
+          record={record}
+        />
+      ) : null}
       <div className="vuuIdentityAdmin-formActions">
-        <Button type="submit" disabled={!ready || busy || missingRequired}>
+        <Button
+          type="submit"
+          disabled={
+            !ready ||
+            busy ||
+            missingRequired ||
+            (entity === "users" && !!record && moduleAccessLoading)
+          }
+        >
           Save
         </Button>
         <Button type="button" disabled={busy} onClick={discard}>
