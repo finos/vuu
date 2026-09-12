@@ -33,7 +33,6 @@ export const FORM_FIELDS: Record<Entity, string[]> = {
     "first_name",
     "last_name",
     "enabled",
-    "password_update_required",
     "temporary_password",
   ],
   groups: ["group_name", "group_path", "parent_group_id"],

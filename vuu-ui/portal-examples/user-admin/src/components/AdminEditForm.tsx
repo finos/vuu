@@ -87,11 +87,7 @@ export const AdminEditForm = ({
         field === "temporary_password"
           ? ""
           : (record?.[columnFor(config, entity, field)] ??
-            (field === "enabled"
-              ? true
-              : field === "password_update_required"
-                ? false
-                : "")),
+            (field === "enabled" ? true : "")),
       ]),
     ),
   );

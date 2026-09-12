@@ -425,11 +425,9 @@ describe("AdminEditForm sessions", () => {
     expect(session.unsubscribe).toHaveBeenCalledOnce();
   });
 
-  it("disables unsupported password policy and defers create relationships without guessing an ID", async () => {
+  it("defers create relationships without guessing an ID", async () => {
     await render();
     expect(control("Temporary password").disabled).toBe(false);
-    expect(control("Password update required").disabled).toBe(true);
-    expect(container.textContent).toContain("Backend contract unavailable");
     expect(container.textContent).toContain(
       "Save this identity, then reopen it",
     );
@@ -437,6 +435,43 @@ describe("AdminEditForm sessions", () => {
     expect(persist).not.toHaveBeenCalled();
     expect(edit).not.toHaveBeenCalled();
     expect(end).toHaveBeenCalledWith(false, false);
+  });
+
+  it.each([
+    false,
+    true,
+  ])("omits the read-only password policy from the editor (existing user: %s)", async (existing) => {
+    if (existing) {
+      props.record = {
+        key: "u1",
+        user_id: "u1",
+        username: "alice",
+        password_update_required: true,
+      };
+    }
+    expect(
+      props.schema.columns.some(
+        ({ name }) => name === "password_update_required",
+      ),
+    ).toBe(true);
+    await render();
+    expect(container.textContent).not.toContain("Password update required");
+    expect(
+      container.querySelector('input[aria-label="Password update required"]'),
+    ).toBeNull();
+    expect(control("Temporary password").disabled).toBe(false);
+    expect(control("Temporary password").type).toBe("password");
+    expect(control("Temporary password").value).toBe("");
+    if (!existing) await change("Username", "alice");
+    await submit();
+    expect(persist).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rpcName: existing ? "updateUser" : "addUser",
+        params: expect.not.objectContaining({
+          password_update_required: expect.anything(),
+        }),
+      }),
+    );
   });
 
   it("sends a write-only temporary password without requiring or exposing a schema column", async () => {

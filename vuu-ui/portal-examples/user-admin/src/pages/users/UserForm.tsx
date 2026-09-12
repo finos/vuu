@@ -17,12 +17,6 @@ export const UserForm = (props: AdminFieldsProps) => (
     />
     <AdminFormField
       {...props}
-      field="password_update_required"
-      label="Password update required"
-      type="checkbox"
-    />
-    <AdminFormField
-      {...props}
       field="temporary_password"
       label="Temporary password"
       type="password"

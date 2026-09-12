@@ -111,11 +111,12 @@ successful domain mutation. The server must support generic session creation,
 subscription and discard as well as these persistent domain RPCs.
 
 Temporary passwords are write-only RPC parameters; they are never added to a
-read subscription or loaded from a record. Standalone
-`password_update_required` changes, group hierarchy changes and changing an
-existing role's client are unavailable because the confirmed backend does not
-support these operations. Client role creation requires a Vuu-sourced client
-selection.
+read subscription or loaded from a record. `password_update_required` is
+read-only and is not a field in the create/edit user form; it may still appear
+in identity details when provided by the server. Group hierarchy changes and
+changing an existing role's client remain unavailable because the confirmed
+backend does not support these operations. Client role creation requires a
+Vuu-sourced client selection.
 
 Existing-user membership edits use `assignUserToGroup`/`removeUserFromGroup`.
 Existing-group client-role edits use `assignGroupRole`/`removeGroupRole`, with
