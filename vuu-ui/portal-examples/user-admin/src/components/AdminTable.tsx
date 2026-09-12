@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { useAdminConfig } from "../data/AdminDataContext";
 import {
   displayColumnsFor,
+  columnFor,
   type AdminQuery,
   type AdminRecord,
   type AdminTableName,
@@ -29,13 +30,18 @@ export const AdminTableView = ({
   const adminConfig = useAdminConfig();
   const config = useMemo<TableConfig>(
     () => ({
-      columns:
-        schema
-          ? displayColumnsFor(schema, adminConfig, name).map(
-              (column) => ({ ...column, editable: false }),
-            )
-          : [],
+      columns: schema
+        ? displayColumnsFor(schema, adminConfig, name).map((column) => ({
+            ...column,
+            ...(column.name === "email" ||
+            column.name === columnFor(adminConfig, name, "email")
+              ? { width: 150 }
+              : {}),
+            editable: false,
+          }))
+        : [],
       columnLayout: "static",
+      columnDefaultWidth: 120,
       rowSeparators: true,
       zebraStripes: true,
     }),

@@ -19,6 +19,10 @@ access map. Selecting a result opens relationship details. Entity pages and
 relationship lists use virtualized Vuu Tables and DataSourceStats footers, not
 paging controls.
 
+Every shared admin table uses `columnDefaultWidth: 120`. Rendered columns named
+`email`, either by logical alias or server name, have an explicit width of 150.
+These presentation settings do not alter hidden columns or data subscriptions.
+
 Search uses VuuInput `onCommit`, `commitOnBlur={false}` and
 `commitWhenCleared={false}`. Typing, blur and clearing do not issue searches:
 press Enter to apply or reset. Vuu's current filter grammar cannot represent
