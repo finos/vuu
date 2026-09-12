@@ -7,7 +7,7 @@ const remoteModules = [
     clientIdentifier: "vuu-orders",
     description: "Orders module",
     id: "orders",
-    loginRole: "orders-login",
+    loginRole: "orders-access",
     location: "orders",
     mfComponent: "Orders",
     mfScope: "orders",

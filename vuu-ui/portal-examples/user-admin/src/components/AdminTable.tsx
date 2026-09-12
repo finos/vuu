@@ -3,6 +3,7 @@ import { Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
 import { useMemo } from "react";
 import { CLIENT_IDENTIFIER_CELL_RENDERER } from "./ClientIdentifierCell";
+import { MODULE_ACCESS_CELL_RENDERER } from "./ModuleAccessCell";
 import { useAdminConfig } from "../data/AdminDataContext";
 import {
   displayColumnsFor,
@@ -18,6 +19,21 @@ const MODULE_CLIENT_IDENTIFIER_TABLES = new Set<AdminTableName>([
   "group_roles",
   "user_group_roles",
 ]);
+
+const withModuleAccessRenderer = (
+  name: AdminTableName,
+  column: ReturnType<typeof displayColumnsFor>[number],
+  moduleAccessColumn: string,
+) =>
+  name === "users" && column.name === moduleAccessColumn
+    ? {
+        ...column,
+        type: {
+          name: "string" as const,
+          renderer: { name: MODULE_ACCESS_CELL_RENDERER },
+        },
+      }
+    : column;
 
 const withClientIdentifierRenderer = (
   name: AdminTableName,
@@ -55,9 +71,14 @@ export const AdminTableView = ({
     () => ({
       columns: schema
         ? displayColumnsFor(schema, adminConfig, name).map((column) => {
-            const renderedColumn = withClientIdentifierRenderer(
+            const moduleAccessColumn = withModuleAccessRenderer(
               name,
               column,
+              columnFor(adminConfig, name, "module_access"),
+            );
+            const renderedColumn = withClientIdentifierRenderer(
+              name,
+              moduleAccessColumn,
               columnFor(adminConfig, name, "client_identifier"),
             );
             return {

@@ -35,7 +35,18 @@ vi.mock("../src/components/AdminTable", () => ({
         data-testid="select"
         disabled={selectionDisabled}
         onClick={() =>
-          onSelect({ key: "u1", user_id: "u1", username: "Alice" })
+          onSelect({
+            key: "u1",
+            user_id: "u1",
+            username: "Alice",
+            first_name: "Alice",
+            last_name: "Example",
+            email: "alice@example.com",
+            email_verified: true,
+            password_update_required: false,
+            group_count: 2,
+            role_count: 3,
+          })
         }
       >
         Select Alice
@@ -100,6 +111,12 @@ describe("entity panel modes", () => {
     expect(mocks.form).not.toHaveBeenCalled();
     await click('[data-testid="select"]');
     expect(container.textContent).toContain("Alice");
+    expect(container.textContent).toContain("Example");
+    expect(container.textContent).toContain("alice@example.com");
+    expect(container.textContent).toContain("email verified");
+    expect(container.textContent).toContain("password update required");
+    expect(container.textContent).toContain("group count");
+    expect(container.textContent).toContain("role count");
     expect(mocks.form).not.toHaveBeenCalled();
     const edit = [...container.querySelectorAll("button")].find(
       (button) => button.textContent === "Edit user",

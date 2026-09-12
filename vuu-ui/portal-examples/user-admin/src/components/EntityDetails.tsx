@@ -17,6 +17,8 @@ const detailFields: Record<Entity, string[]> = {
     "password_update_required",
     "last_login",
     "created_at",
+    "group_count",
+    "role_count",
   ],
   groups: [
     "group_name",

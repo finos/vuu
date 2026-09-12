@@ -22,6 +22,16 @@ const mocks = vi.hoisted(() => ({
       { name: "username", serverDataType: "string" },
     ],
   } satisfies TableSchema,
+  usersModuleAccessSchema: {
+    key: "user_id",
+    table: { module: "KEYCLOAK_ADMIN", table: "users" },
+    columns: [
+      { name: "user_id", serverDataType: "string" },
+      { name: "username", serverDataType: "string" },
+      { name: "access_summary", serverDataType: "string" },
+      { name: "module_access_count", serverDataType: "long" },
+    ],
+  } satisfies TableSchema,
   rolesSchema: {
     key: "role_id",
     table: { module: "KEYCLOAK_ADMIN", table: "roles" },
@@ -93,6 +103,7 @@ describe("shared admin table column widths", () => {
     );
     const props = mocks.table.mock.lastCall?.[0];
     if (!props) throw new Error("Admin table was not rendered");
+    expect(props.dataSource).toBe(mocks.source);
     return props.config;
   };
 
@@ -121,6 +132,34 @@ describe("shared admin table column widths", () => {
     expect(mocks.schema).toEqual(before);
     expect(mocks.source.columns).toEqual(["user_id", "email", "username"]);
     expect(mocks.source.filter.filter).toBe('username contains "alice"');
+  });
+
+  it("renders aliased users module access without adding client identifiers", async () => {
+    const config = await renderWithSchema(
+      "users",
+      mocks.usersModuleAccessSchema,
+      {
+        users: { columns: { module_access: "access_summary" } },
+      },
+    );
+    expect(config.columns).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "access_summary",
+          type: {
+            name: "string",
+            renderer: { name: "vuu-portal-module-access-cell" },
+          },
+        }),
+        expect.objectContaining({
+          name: "module_access_count",
+        }),
+      ]),
+    );
+    expect(
+      config.columns.some(({ name }) => name === "client_identifier"),
+    ).toBe(false);
+    expect(mocks.source.columns).toEqual(["user_id", "email", "username"]);
   });
 
   it("applies the email override to logical aliases and literal server names", async () => {

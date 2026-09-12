@@ -73,7 +73,15 @@ export const INTERNAL_COLUMNS = new Set([
 export const DEFAULT_HIDDEN_COLUMNS: Partial<
   Record<AdminTableName, readonly string[]>
 > = {
-  users: ["user_id"],
+  users: [
+    "user_id",
+    "first_name",
+    "last_name",
+    "email_verified",
+    "password_update_required",
+    "group_count",
+    "role_count",
+  ],
   groups: ["group_id"],
   roles: ["role_id", "client_id"],
 };

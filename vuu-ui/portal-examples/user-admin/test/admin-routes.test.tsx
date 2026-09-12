@@ -15,7 +15,7 @@ const remoteModules = [
     description: "Manage users",
     id: 1,
     location: "/Admin/Users",
-    loginRole: "user-admin-login",
+    loginRole: "user-admin-access",
     mfComponent: "UserAdmin",
     mfScope: "userAdmin",
     mfUrl: "http://localhost:5007",
@@ -110,7 +110,7 @@ describe("embedded identity routes", () => {
       ),
     );
     expect(container.textContent).toContain("Overview page");
-    expect(container.textContent).toContain("vuu-user-admin:user-admin-login");
+    expect(container.textContent).toContain("vuu-user-admin:user-admin-access");
     const rail = container.querySelector<HTMLElement>(
       'nav[aria-label="Identity administration"]',
     );

@@ -5,6 +5,7 @@ import {
   type Entity,
 } from "../data/admin-contract";
 import { AdminTable } from "./AdminTable";
+import { ModuleAccessField } from "./ModuleAccessField";
 
 export const RelationshipSummary = ({
   entity,
@@ -20,6 +21,14 @@ export const RelationshipSummary = ({
       : entity === "groups"
         ? "group_id"
         : "role_id";
+  if (entity === "users") {
+    return (
+      <div className="vuuIdentityAdmin-relationships">
+        <ModuleAccessField record={record} />
+      </div>
+    );
+  }
+
   const id = record[columnFor(config, entity, idField)];
   if (id === undefined || id === null || id === "") {
     return (
@@ -31,20 +40,7 @@ export const RelationshipSummary = ({
   const query = { equals: { field: idField, value: String(id) } };
   return (
     <div className="vuuIdentityAdmin-relationships">
-      {entity === "users" ? (
-        <>
-          <AdminTable
-            name="user_groups"
-            query={query}
-            title="Group memberships"
-          />
-          <AdminTable
-            name="user_group_roles"
-            query={query}
-            title="Client roles through groups"
-          />
-        </>
-      ) : entity === "groups" ? (
+      {entity === "groups" ? (
         <>
           <AdminTable
             name="user_groups"
