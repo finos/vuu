@@ -136,6 +136,14 @@ export const CsvUpload = (props: CsvUploadProps) => {
     error,
   } = useCsvUpload(props);
 
+  const fileErrors =
+    validation?.errors.filter(
+      (e) => e.column in validation.errorMap.fileErrors
+    ) ?? [];
+
+  const hasErrors = !!error || (validation && validation.errors.length > 0);
+  const status = hasErrors ? "error" : validation ? "success" : undefined;
+
   const handleCancel = useCallback(async () => {
     await cancelImport();
     if (!isControlledOpen) {
@@ -156,20 +164,15 @@ export const CsvUpload = (props: CsvUploadProps) => {
         className={`${classBase}-dropZone`}
         disabled={schema === undefined || isProcessingFile || isImporting}
         onDrop={onDrop}
-        status={
-          (validation && validation.errors.length > 0) || error
-            ? "error"
-            : undefined
-        }
+        status={status}
       >
         <FileDropZoneIcon />
         {validation && validation.errors.length > 0 ? (
           <>
             <div>Your file contains errors</div>
-            <ul className={`${classBase}-errorList`}>
-              {validation.errors
-                .filter((e) => e.column in validation.errorMap.fileErrors)
-                .map((error, i) => (
+            {fileErrors.length > 0 && (
+              <ul className={`${classBase}-errorList`}>
+                {fileErrors.map((error, i) => (
                   <li
                     className={`${classBase}-errorItem`}
                     key={`${error.column}-${error.message}-${i}`}
@@ -177,7 +180,8 @@ export const CsvUpload = (props: CsvUploadProps) => {
                     {error.message}
                   </li>
                 ))}
-            </ul>
+              </ul>
+            )}
             <div>Please rectify and reupload</div>
           </>
         ) : (
@@ -186,6 +190,7 @@ export const CsvUpload = (props: CsvUploadProps) => {
         <FileDropZoneTrigger accept=".csv,text/csv" onChange={onTriggerChange}>
           BROWSE FILES
         </FileDropZoneTrigger>
+        {children}
       </FileDropZone>
       {error &&
         (renderError ? (
@@ -203,7 +208,6 @@ export const CsvUpload = (props: CsvUploadProps) => {
             </div>
           </div>
         ))}
-      {children}
     </div>
   );
 

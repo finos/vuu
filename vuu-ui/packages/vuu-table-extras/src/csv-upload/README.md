@@ -229,7 +229,7 @@ Notes:
 
 ## Displaying validation errors
 
-Use the `children` prop together with `onImportSessionStarted` to render an inline error table. The session datasource already contains both valid and error rows; apply a `vuuMsg != ""` filter to show only error rows:
+Use the `children` prop together with `onImportSessionStarted` to render an inline error table inside the `FileDropZone`. The session datasource already contains both valid and error rows; apply a `vuuMsg != ""` filter to show only error rows:
 
 ```tsx
 const [sessionDataSource, setSessionDataSource] = useState<DataSource | undefined>();
@@ -256,14 +256,14 @@ const errorTableConfig: TableConfig = {
   onImportSessionEnded={handleImportSessionEnded}
 >
   {sessionDataSource ? (
-    <div style={{ height: 200 }}>
+    <div style={{ height: 200, width: "100%" }}>
       <Table config={errorTableConfig} dataSource={sessionDataSource} />
     </div>
   ) : null}
 </CsvUpload>
 ```
 
-The `Table` is a virtualized component and requires an explicit height on its container to render rows.
+The `Table` is a virtualized component and requires an explicit height on its container to render rows. Since `{children}` are now rendered inside the `FileDropZone` below the trigger block, this interactive error table fits perfectly inside the upload area.
 
 ---
 
