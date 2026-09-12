@@ -96,7 +96,11 @@ The users table may additionally expose the server-derived `module_access`
 rendered `module_access` column resolves login roles against the host-provided
 module registry for display and preserves unmatched role names; its subscribed
 server value is unchanged. Users do not require or add a `client_identifier`
-column. Column aliases are supported for these logical fields.
+column. Column aliases are supported for these logical fields. The users table
+hides identity/profile and aggregate fields (`user_id`, `first_name`,
+`last_name`, `email_verified`, `password_update_required`, `group_count`, and
+`role_count`) by default while retaining them in the data source and user
+details side panel.
 Only searchable fields present in the actual schema are used. Missing required
 relationship columns fail closed with an explicit error, never an unfiltered
 list. Missing tables and subscription errors are visible and produce

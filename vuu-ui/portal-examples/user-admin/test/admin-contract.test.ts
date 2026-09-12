@@ -87,17 +87,31 @@ describe("server-driven identity contract", () => {
       ...schema,
       columns: [
         { name: "user_id", serverDataType: "string" },
+        { name: "first_name", serverDataType: "string" },
+        { name: "last_name", serverDataType: "string" },
+        { name: "email_verified", serverDataType: "boolean" },
+        { name: "password_update_required", serverDataType: "boolean" },
+        { name: "group_count", serverDataType: "long" },
+        { name: "role_count", serverDataType: "long" },
         { name: "username", serverDataType: "string" },
+        { name: "module_access", serverDataType: "string" },
         { name: "vuuMsg", serverDataType: "string" },
       ],
     };
 
     expect(
       displayColumnsFor(identitySchema, {}, "users").map(({ name }) => name),
-    ).toEqual(["username"]);
+    ).toEqual(["username", "module_access"]);
     expect(identitySchema.columns.map(({ name }) => name)).toEqual([
       "user_id",
+      "first_name",
+      "last_name",
+      "email_verified",
+      "password_update_required",
+      "group_count",
+      "role_count",
       "username",
+      "module_access",
       "vuuMsg",
     ]);
   });
