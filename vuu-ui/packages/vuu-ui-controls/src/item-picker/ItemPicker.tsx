@@ -47,6 +47,8 @@ export interface ItemPickerProps
     HTMLAttributes<HTMLDivElement>,
     Pick<ListBoxProps<ItemDescriptor>, "selected" | "onSelectionChange"> {
   itemTypeName: ItemTypeName;
+  /** Render the search control as a form. Set false when the picker is nested in a form. */
+  searchForm?: boolean;
   createCustomItemProps?: CreateCustomItemProps;
 }
 
@@ -170,6 +172,7 @@ export const ItemPicker = forwardRef(function ItemPicker(
   {
     className,
     itemTypeName,
+    searchForm = true,
     allItems,
     selectedItems,
     maxSelections,
@@ -245,15 +248,27 @@ export const ItemPicker = forwardRef(function ItemPicker(
       className={cx(classBase, className)}
       ref={forwardedRef}
     >
-      <form className={`${classBase}-search`} role="search">
-        <Input
-          startAdornment={searchIcon}
-          placeholder={searchPlaceholderText}
-          ref={searchCallbackRef}
-          value={searchText}
-          onChange={onChangeSearchInput}
-        />
-      </form>
+      {searchForm ? (
+        <form className={`${classBase}-search`} role="search">
+          <Input
+            startAdornment={searchIcon}
+            placeholder={searchPlaceholderText}
+            ref={searchCallbackRef}
+            value={searchText}
+            onChange={onChangeSearchInput}
+          />
+        </form>
+      ) : (
+        <div className={`${classBase}-search`} role="search">
+          <Input
+            startAdornment={searchIcon}
+            placeholder={searchPlaceholderText}
+            ref={searchCallbackRef}
+            value={searchText}
+            onChange={onChangeSearchInput}
+          />
+        </div>
+      )}
 
       <div className={`${classBase}-scrollContainer vuuScrollable`}>
         <div className={`${classBase}-sectionHeader`}>
