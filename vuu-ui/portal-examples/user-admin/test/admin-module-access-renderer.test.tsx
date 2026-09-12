@@ -7,7 +7,7 @@ const remoteModules = [
     clientIdentifier: "vuu-orders",
     description: "Orders module",
     id: "orders",
-    loginRole: "orders-login",
+    loginRole: "orders-access",
     location: "orders",
     mfComponent: "Orders",
     mfScope: "orders",
@@ -21,7 +21,7 @@ const remoteModules = [
     clientIdentifier: "vuu-risk",
     description: "Risk module",
     id: "risk",
-    loginRole: "risk-login",
+    loginRole: "risk-access",
     location: "risk",
     mfComponent: "Risk",
     mfScope: "risk",
@@ -37,10 +37,10 @@ describe("module access cell renderer", () => {
   it("maps login roles to module titles in server order", () => {
     expect(
       resolveModuleAccessSummary(
-        "risk-login,orders-login,unknown-login",
+        "risk-access,orders-access,unknown-access",
         remoteModules,
       ),
-    ).toBe("Risk, Orders, unknown-login");
+    ).toBe("Risk, Orders, unknown-access");
   });
 
   it("renders an explicit empty summary", () => {

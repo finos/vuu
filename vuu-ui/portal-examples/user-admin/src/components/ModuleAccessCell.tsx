@@ -8,22 +8,22 @@ export const resolveModuleAccessSummary = (
   value: unknown,
   remoteModules: ReturnType<typeof usePortalModuleRegistry>["remoteModules"],
 ) => {
-  const loginRoles =
+  const accessRoles =
     typeof value === "string"
       ? value
           .split(",")
-          .map((loginRole) => loginRole.trim())
+          .map((accessRole) => accessRole.trim())
           .filter(Boolean)
       : [];
 
-  if (!loginRoles.length) return "No module access";
+  if (!accessRoles.length) return "No module access";
 
-  return loginRoles
-    .map((loginRole) => {
+  return accessRoles
+    .map((accessRole) => {
       const module = remoteModules.find(
-        ({ loginRole: moduleLoginRole }) => moduleLoginRole === loginRole,
+        ({ loginRole: moduleAccessRole }) => moduleAccessRole === accessRole,
       );
-      return module?.title ?? module?.name ?? loginRole;
+      return module?.title ?? module?.name ?? accessRole;
     })
     .join(", ");
 };
