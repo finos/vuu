@@ -3,12 +3,11 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@module-federation/enhanced/runtime", () => ({
-  loadRemote: vi.fn().mockResolvedValue({
-    default: () => <div>Connectionless remote loaded</div>,
-  }),
+  loadRemote: vi.fn(),
   registerRemotes: vi.fn(),
 }));
 
+import { loadRemote } from "@module-federation/enhanced/runtime";
 import { RemoteModule } from "../../src/remote-module/RemoteModule";
 
 describe("RemoteModule", () => {
@@ -17,6 +16,11 @@ describe("RemoteModule", () => {
 
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    vi.mocked(loadRemote).mockResolvedValue({
+      default: ({ label }: { label?: string }) => (
+        <div>{label ?? "Connectionless remote loaded"}</div>
+      ),
+    });
     container = document.createElement("div");
     document.body.append(container);
     root = createRoot(container);
@@ -43,5 +47,22 @@ describe("RemoteModule", () => {
     });
 
     expect(container.textContent).toBe("Connectionless remote loaded");
+  });
+
+  it("forwards typed host props to the loaded remote", async () => {
+    await act(async () => {
+      root.render(
+        <Suspense fallback="Loading">
+          <RemoteModule
+            mfComponent="UserAdmin"
+            mfScope="userAdmin"
+            mfUrl="http://localhost:5007"
+            ComponentProps={{ label: "typed host prop" }}
+          />
+        </Suspense>,
+      );
+    });
+
+    expect(container.textContent).toBe("typed host prop");
   });
 });

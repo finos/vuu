@@ -2,6 +2,7 @@ import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import { Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
 import { useMemo } from "react";
+import { CLIENT_IDENTIFIER_CELL_RENDERER } from "./ClientIdentifierCell";
 import { useAdminConfig } from "../data/AdminDataContext";
 import {
   displayColumnsFor,
@@ -11,6 +12,28 @@ import {
   type AdminTableName,
 } from "../data/admin-contract";
 import { useAdminTable, type AdminTableResource } from "../data/useAdminTable";
+
+const MODULE_CLIENT_IDENTIFIER_TABLES = new Set<AdminTableName>([
+  "roles",
+  "group_roles",
+  "user_group_roles",
+]);
+
+const withClientIdentifierRenderer = (
+  name: AdminTableName,
+  column: ReturnType<typeof displayColumnsFor>[number],
+  clientIdentifierColumn: string,
+) =>
+  MODULE_CLIENT_IDENTIFIER_TABLES.has(name) &&
+  column.name === clientIdentifierColumn
+    ? {
+        ...column,
+        type: {
+          name: "string" as const,
+          renderer: { name: CLIENT_IDENTIFIER_CELL_RENDERER },
+        },
+      }
+    : column;
 
 export interface AdminTableViewProps {
   name: AdminTableName;
@@ -31,14 +54,21 @@ export const AdminTableView = ({
   const config = useMemo<TableConfig>(
     () => ({
       columns: schema
-        ? displayColumnsFor(schema, adminConfig, name).map((column) => ({
-            ...column,
-            ...(column.name === "email" ||
-            column.name === columnFor(adminConfig, name, "email")
-              ? { width: 150 }
-              : {}),
-            editable: false,
-          }))
+        ? displayColumnsFor(schema, adminConfig, name).map((column) => {
+            const renderedColumn = withClientIdentifierRenderer(
+              name,
+              column,
+              columnFor(adminConfig, name, "client_identifier"),
+            );
+            return {
+              ...renderedColumn,
+              ...(renderedColumn.name === "email" ||
+              renderedColumn.name === columnFor(adminConfig, name, "email")
+                ? { width: 150 }
+                : {}),
+              editable: false,
+            };
+          })
         : [],
       columnLayout: "static",
       columnDefaultWidth: 120,

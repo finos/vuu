@@ -25,10 +25,12 @@ const session: VuuSession = {
 const moduleRegistry = {
   modules: [
     {
+      clientIdentifier: "vuu-user-admin",
       description: "Manage users",
       enabled: true,
       id: 1,
       location: "/Admin/Users",
+      loginRole: "user-admin-login",
       mfComponent: "UserAdmin",
       mfScope: "userAdmin",
       mfUrl: "http://localhost:5007",
@@ -43,10 +45,12 @@ const moduleRegistry = {
       },
     },
     {
+      clientIdentifier: "vuu-module-admin",
       description: "Manage modules",
       enabled: true,
       id: 2,
       location: "/Admin/Modules",
+      loginRole: "module-admin-login",
       mfComponent: "ModuleAdmin",
       mfScope: "moduleAdmin",
       mfUrl: "http://localhost:5008",
@@ -61,10 +65,12 @@ const moduleRegistry = {
       },
     },
     {
+      clientIdentifier: "vuu-basket-trading",
       description: "Trade baskets",
       enabled: true,
       id: 3,
       location: "/Trading/Baskets",
+      loginRole: "basket-trading-login",
       mfComponent: "VuuBasketTradingFeature",
       mfScope: "basketTrading",
       mfUrl: "http://localhost:5005",

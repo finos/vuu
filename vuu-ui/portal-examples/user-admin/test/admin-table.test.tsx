@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
     columns: ["user_id", "email", "username"],
     filter: { filter: 'username contains "alice"' },
   },
-  schema: {
+  userSchema: {
     key: "user_id",
     table: { module: "KEYCLOAK_ADMIN", table: "users" },
     columns: [
@@ -22,6 +22,16 @@ const mocks = vi.hoisted(() => ({
       { name: "username", serverDataType: "string" },
     ],
   } satisfies TableSchema,
+  rolesSchema: {
+    key: "role_id",
+    table: { module: "KEYCLOAK_ADMIN", table: "roles" },
+    columns: [
+      { name: "role_id", serverDataType: "string" },
+      { name: "role_name", serverDataType: "string" },
+      { name: "public_client_name", serverDataType: "string" },
+    ],
+  } satisfies TableSchema,
+  schema: undefined as unknown as TableSchema,
 }));
 vi.mock("@vuu-ui/vuu-table", () => ({
   Table: (props: { config: TableConfig; dataSource: unknown }) => {
@@ -55,6 +65,7 @@ describe("shared admin table column widths", () => {
     vi.unstubAllGlobals();
   });
   const render = async (name: AdminTableName, config: AdminConfig = {}) => {
+    mocks.schema = mocks.userSchema;
     await act(async () =>
       root.render(
         <AdminDataContext.Provider value={config}>
@@ -67,6 +78,23 @@ describe("shared admin table column widths", () => {
     expect(props.dataSource).toBe(mocks.source);
     return props.config;
   };
+  const renderWithSchema = async (
+    name: AdminTableName,
+    schema: TableSchema,
+    config: AdminConfig = {},
+  ) => {
+    mocks.schema = schema;
+    await act(async () =>
+      root.render(
+        <AdminDataContext.Provider value={config}>
+          <AdminTable name={name} />
+        </AdminDataContext.Provider>,
+      ),
+    );
+    const props = mocks.table.mock.lastCall?.[0];
+    if (!props) throw new Error("Admin table was not rendered");
+    return props.config;
+  };
 
   it.each([
     "users",
@@ -77,7 +105,7 @@ describe("shared admin table column widths", () => {
     "group_roles",
     "user_group_roles",
   ] as const)("sets the default to 120 and rendered email width to 150 for %s", async (name) => {
-    const before = structuredClone(mocks.schema);
+    const before = structuredClone(mocks.userSchema);
     const config = await render(name);
     expect(config.columnDefaultWidth).toBe(120);
     expect(config.columnLayout).toBe("static");
@@ -118,5 +146,24 @@ describe("shared admin table column widths", () => {
       "email",
       "username",
     ]);
+  });
+
+  it.each([
+    "roles",
+    "group_roles",
+    "user_group_roles",
+  ] as const)("renders client identifiers through the module renderer for %s", async (name) => {
+    const config = await renderWithSchema(name, mocks.rolesSchema, {
+      [name]: {
+        columns: { client_identifier: "public_client_name" },
+      },
+    });
+    const clientColumn = config.columns.find(
+      ({ name: columnName }) => columnName === "public_client_name",
+    );
+    expect(clientColumn?.type).toEqual({
+      name: "string",
+      renderer: { name: "vuu-portal-client-identifier-cell" },
+    });
   });
 });

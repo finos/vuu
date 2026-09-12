@@ -8,6 +8,7 @@ import { VuuLogo } from "@vuu-ui/vuu-icons";
 import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import { Route, Routes } from "react-router-dom";
 import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
+import { PortalModuleRegistryProvider } from "../portal-module-registry/PortalModuleRegistry";
 import { PortalHeader } from "../portal-header/PortalHeader";
 import { PortalNav } from "../portal-nav/PortalNav";
 import { RemoteModule } from "../remote-module/RemoteModule";
@@ -28,7 +29,6 @@ export interface PortalShellProps {
 }
 
 export const PortalShell = ({ id, remoteModules, title }: PortalShellProps) => {
-  console.log({ remoteModules })
   return (
     <SaltProviderNext
       accent={accentPurple}
@@ -64,13 +64,21 @@ export const PortalShell = ({ id, remoteModules, title }: PortalShellProps) => {
                         <div style={{ background: "black", height: "100%" }} />
                       }
                     />
-                    {remoteModules.map(({ id, path, ...feature }) => (
-                      <Route
-                        key={id}
-                        path={getRemoteRoutePath(path)}
-                        element={<RemoteModule {...feature} />}
-                      />
-                    ))}
+                    {remoteModules.map(({ id, path, ...feature }) => {
+                      return (
+                        <Route
+                          key={id}
+                          path={getRemoteRoutePath(path)}
+                          element={
+                            <PortalModuleRegistryProvider
+                              remoteModules={remoteModules}
+                            >
+                              <RemoteModule {...feature} />
+                            </PortalModuleRegistryProvider>
+                          }
+                        />
+                      );
+                    })}
                   </Routes>
                 </div>
               </FlexItem>

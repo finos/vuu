@@ -140,6 +140,8 @@ Minimum required shape:
 
 ```json
 {
+  "clientIdentifier": "vuu-basket-trading",
+  "loginRole": "basket-trading-login",
   "name": "basket-trading",
   "title": "Basket Trading",
   "remoteEntry": "/basket-trading/remoteEntry.js",

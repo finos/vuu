@@ -155,6 +155,11 @@ export const getSharedDependencies = (env: "consumer" | "producer") => {
         requiredVersion: vuuVersion,
         strictVersion: true,
       },
+      "@vuu-ui/core/portal": {
+        singleton: true,
+        requiredVersion: vuuVersion,
+        strictVersion: true,
+      },
       "@vuu-ui/vuu-data-editing": {
         singleton: true,
         requiredVersion: vuuVersion,
@@ -182,6 +187,11 @@ export const getSharedDependencies = (env: "consumer" | "producer") => {
         strictVersion: true,
       },
       "@vuu-ui/core": {
+        singleton: true,
+        requiredVersion: vuuVersion,
+        strictVersion: true,
+      },
+      "@vuu-ui/core/portal": {
         singleton: true,
         requiredVersion: vuuVersion,
         strictVersion: true,
