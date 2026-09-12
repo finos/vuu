@@ -1,5 +1,4 @@
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
-import type { RemoteModuleDescriptor } from "@vuu-ui/core/portal";
 import { useState } from "react";
 import {
   Link,
@@ -11,10 +10,7 @@ import {
   useBeforeUnload,
 } from "react-router-dom";
 import { EditingContext } from "./components/EditingContext";
-import {
-  AdminDataContext,
-  AdminRemoteModulesContext,
-} from "./data/AdminDataContext";
+import { AdminDataContext } from "./data/AdminDataContext";
 import { EMPTY_CONFIG, type AdminConfig } from "./data/admin-contract";
 import { GroupsPage } from "./pages/groups/GroupsPage";
 import { OverviewPage } from "./pages/overview/OverviewPage";
@@ -74,35 +70,28 @@ const AdminLayout = () => {
 
 export interface UserAdminProps {
   config?: AdminConfig;
-  remoteModules?: readonly RemoteModuleDescriptor[];
 }
 
-const UserAdmin = ({
-  config = EMPTY_CONFIG,
-  remoteModules = [],
-}: UserAdminProps) => (
+const UserAdmin = ({ config = EMPTY_CONFIG }: UserAdminProps) => (
   <NotificationsProvider>
     <AdminDataContext.Provider value={config}>
-      <AdminRemoteModulesContext.Provider value={{ remoteModules }}>
-        <Routes>
-          <Route element={<AdminLayout />}>
-            <Route index element={<Navigate to="overview" replace />} />
-            <Route path="overview" element={<OverviewPage />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="groups" element={<GroupsPage />} />
-            <Route path="roles" element={<RolesPage />} />
-            <Route
-              path="*"
-              element={
-                <p>
-                  Page not found.{" "}
-                  <Link to="../overview">Return to Overview</Link>
-                </p>
-              }
-            />
-          </Route>
-        </Routes>
-      </AdminRemoteModulesContext.Provider>
+      <Routes>
+        <Route element={<AdminLayout />}>
+          <Route index element={<Navigate to="overview" replace />} />
+          <Route path="overview" element={<OverviewPage />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="groups" element={<GroupsPage />} />
+          <Route path="roles" element={<RolesPage />} />
+          <Route
+            path="*"
+            element={
+              <p>
+                Page not found. <Link to="../overview">Return to Overview</Link>
+              </p>
+            }
+          />
+        </Route>
+      </Routes>
     </AdminDataContext.Provider>
   </NotificationsProvider>
 );

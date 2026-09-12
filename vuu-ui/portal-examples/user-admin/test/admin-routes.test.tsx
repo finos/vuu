@@ -2,9 +2,12 @@ import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  PortalModuleRegistryProvider,
+  usePortalModuleRegistry,
+} from "@vuu-ui/core/portal";
 import UserAdmin from "../src/UserAdmin";
 import { useEditingLock } from "../src/components/EditingContext";
-import { useAdminModules } from "../src/data/AdminDataContext";
 
 const remoteModules = [
   {
@@ -28,7 +31,7 @@ vi.mock("@vuu-ui/vuu-notifications", () => ({
 }));
 vi.mock("../src/pages/overview/OverviewPage", () => ({
   OverviewPage: () => {
-    const modules = useAdminModules();
+    const { remoteModules: modules } = usePortalModuleRegistry();
     return (
       <div>
         Overview page
@@ -96,7 +99,11 @@ describe("embedded identity routes", () => {
           <Routes>
             <Route
               path={`${mount}/*`}
-              element={<UserAdmin remoteModules={remoteModules} />}
+              element={
+                <PortalModuleRegistryProvider remoteModules={remoteModules}>
+                  <UserAdmin />
+                </PortalModuleRegistryProvider>
+              }
             />
           </Routes>
         </MemoryRouter>,

@@ -17,15 +17,8 @@ describe("RemoteModule", () => {
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
     vi.mocked(loadRemote).mockResolvedValue({
-      default: ({
-        remoteModules,
-      }: {
-        remoteModules?: Array<{ clientIdentifier: string }>;
-      }) => (
-        <div>
-          {remoteModules?.[0]?.clientIdentifier ??
-            "Connectionless remote loaded"}
-        </div>
+      default: ({ label }: { label?: string }) => (
+        <div>{label ?? "Connectionless remote loaded"}</div>
       ),
     });
     container = document.createElement("div");
@@ -64,18 +57,12 @@ describe("RemoteModule", () => {
             mfComponent="UserAdmin"
             mfScope="userAdmin"
             mfUrl="http://localhost:5007"
-            ComponentProps={{
-              remoteModules: [
-                {
-                  clientIdentifier: "vuu-user-admin",
-                },
-              ],
-            }}
+            ComponentProps={{ label: "typed host prop" }}
           />
         </Suspense>,
       );
     });
 
-    expect(container.textContent).toBe("vuu-user-admin");
+    expect(container.textContent).toBe("typed host prop");
   });
 });
