@@ -33,32 +33,36 @@ const AdminLayout = () => {
           <h1>Vuu Identity Admin</h1>
           <p>Users, groups and client roles</p>
         </header>
-        <nav
-          aria-label="Identity administration"
-          className="vuuIdentityAdmin-navigation"
-        >
-          {(["overview", "users", "groups", "roles"] as const).map((page) => (
-            <NavLink
-              key={page}
-              to={page}
-              aria-disabled={editing || undefined}
-              onClick={(event) => {
-                if (editing) event.preventDefault();
-              }}
-              tabIndex={editing ? -1 : undefined}
-            >
-              {page[0].toUpperCase() + page.slice(1)}
-            </NavLink>
-          ))}
-        </nav>
-        {editing ? (
-          <p role="status" className="vuuIdentityAdmin-editNotice">
-            Save or discard your edits before switching pages or identities.
-          </p>
-        ) : null}
-        <main>
-          <Outlet />
-        </main>
+        <div className="vuuIdentityAdmin-workspace">
+          <nav
+            aria-label="Identity administration"
+            className="vuuIdentityAdmin-navigation"
+          >
+            {(["overview", "users", "groups", "roles"] as const).map((page) => (
+              <NavLink
+                key={page}
+                to={page}
+                aria-disabled={editing || undefined}
+                onClick={(event) => {
+                  if (editing) event.preventDefault();
+                }}
+                tabIndex={editing ? -1 : undefined}
+              >
+                {page[0].toUpperCase() + page.slice(1)}
+              </NavLink>
+            ))}
+          </nav>
+          <div className="vuuIdentityAdmin-content">
+            {editing ? (
+              <p role="status" className="vuuIdentityAdmin-editNotice">
+                Save or discard your edits before switching pages or identities.
+              </p>
+            ) : null}
+            <main>
+              <Outlet />
+            </main>
+          </div>
+        </div>
       </div>
     </EditingContext.Provider>
   );

@@ -7,7 +7,9 @@ bootstrap creates a `BrowserRouter`.
 ## Navigation and layout
 
 Relative nested routes expose `overview`, `users`, `groups` and `roles`; the index
-redirects to Overview. The module has no dependency on `@vuu-ui/vuu-layout` and
+redirects to Overview. A persistent, visible left navigation rail lists those
+pages vertically alongside the routed content, including at narrow widths; it
+does not become a top tab strip. The module has no dependency on `@vuu-ui/vuu-layout` and
 does not use GridLayout. Semantic HTML/CSS provides the layout, with inline Salt
 SidePanels for read-only details and create/edit forms.
 
