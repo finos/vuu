@@ -228,14 +228,11 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
     orderedColumnNames: string[],
     source: ColumnChangeSource,
   ) {
-    const reorderedColumns = reorderItems(
-      this.#selectedColumns,
-      orderedColumnNames,
+    this.setSelectedColumns(
+      reorderItems(this.#selectedColumns, orderedColumnNames),
+      source,
+      { type: SelectedColumnChangeType.ColumnsReordered },
     );
-    this.#selectedColumns = reorderedColumns;
-    this.notifyListeners(reorderedColumns, source, {
-      type: SelectedColumnChangeType.ColumnsReordered,
-    });
   }
 
   updateColumn(
