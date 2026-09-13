@@ -96,6 +96,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
    */
   #allColumns: undefined | string[];
   #autosubscribeColumns: string[] = [];
+  #subscribedColumns: string[] | undefined;
   #pendingVisualLink?: LinkDescriptorWithLabel;
   #links: LinkDescriptorWithLabel[] | undefined;
   #maxRangeEnd = Number.MAX_SAFE_INTEGER;
@@ -146,6 +147,12 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     subscribeProps: DataSourceSubscribeProps,
     callback: DataSourceSubscribeCallback,
   ) {
+    if (
+      subscribeProps.columns &&
+      itemsOrOrderChanged(super.columns, subscribeProps.columns)
+    ) {
+      this.#subscribedColumns = undefined;
+    }
     // super.subscribe(subscribeProps, this.handleMessageFromServer);
     super.subscribe(subscribeProps, callback);
     // biome-ignore lint/suspicious/noAssignInExpressions: <ignore>
@@ -196,6 +203,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   handleMessageFromServer = (message: DataSourceCallbackMessage) => {
     if (message.type === "subscribed") {
       this.#status = "subscribed";
+      this.#subscribedColumns = message.columns?.slice();
       this.tableSchema = message.tableSchema;
       if (message.tableSchema.rangeLimits) {
         this.#maxRangeEnd = message.tableSchema.rangeLimits.maxRangeEnd;
@@ -281,6 +289,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
       this.#status = "unsubscribed";
       this.viewport = "";
       this.range = Range(0, 0);
+      this.#subscribedColumns = undefined;
     }
   }
 
@@ -438,10 +447,13 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   // when there are autoSubscribe columns ?
   // alternative would be an allColumns prop, but every datasource would then have to add it.
   get columns() {
-    return this.#allColumns ?? super.columns;
+    return this.#subscribedColumns ?? this.#allColumns ?? super.columns;
   }
 
   set columns(columns: string[]) {
+    if (itemsOrOrderChanged(super.columns, columns)) {
+      this.#subscribedColumns = undefined;
+    }
     super.columns = columns;
     if (this.#autosubscribeColumns.length) {
       this.#allColumns = combineColumnsWithAutosubscribeColumns(
@@ -543,6 +555,9 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   set config(config: WithBaseFilter<WithFullConfig>) {
     const { noChanges, columnsChanged } = isConfigChanged(this.config, config);
     if (!noChanges) {
+      if (columnsChanged) {
+        this.#subscribedColumns = undefined;
+      }
       super.config = config;
 
       const { columns, ...dataSourceConfig } = combineFilters(this.config);

@@ -26,6 +26,40 @@ describe("DataRow", () => {
     expect(dataRow.bbg).toEqual("AAO L");
   });
 
+  it("maps Roles rows using the subscribed response column order", () => {
+    const columns = [
+      "client_id",
+      "client_identifier",
+      "role_id",
+      "role_name",
+      "client_name",
+    ];
+    const [DataRow] = dataRowFactory(
+      columns,
+      columns.map((name) => ({ name, serverDataType: "string" })),
+    );
+    const dataRow = DataRow([
+      0,
+      0,
+      false,
+      false,
+      0,
+      0,
+      "roleId",
+      false,
+      0,
+      false,
+      "portalInternalId",
+      "vuu-portal",
+      "roleId",
+      "roleName",
+      "Basket Trading",
+    ]);
+
+    expect(dataRow.client_identifier).toEqual("vuu-portal");
+    expect(dataRow.client_name).toEqual("Basket Trading");
+  });
+
   it("Factory supports calculated columns", () => {
     const [DataRow] = dataRowFactory(
       ["bbg", "pctFilled:double:filledQty / quantity"],

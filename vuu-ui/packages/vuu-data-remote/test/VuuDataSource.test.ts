@@ -112,6 +112,7 @@ describe("VuuDataSource", () => {
     });
   });
 
+
   describe("subscribe", () => {
     const callback = () => undefined;
 
@@ -284,6 +285,40 @@ describe("VuuDataSource", () => {
         },
         expect.any(Function),
       );
+    });
+
+    it("retains the subscribed response column order", async () => {
+      const configuredColumns = [
+        "client_id",
+        "client_identifier",
+        "client_name",
+        "role_id",
+        "role_name",
+      ];
+      const subscribedColumns = [
+        "client_id",
+        "client_identifier",
+        "role_id",
+        "role_name",
+        "client_name",
+      ];
+      const dataSource = new VuuDataSource({
+        columns: configuredColumns,
+        table,
+      });
+
+      await dataSource.subscribe({}, callback);
+      dataSource.handleMessageFromServer({
+        columns: subscribedColumns,
+        tableSchema: {},
+        type: "subscribed",
+      } as any);
+
+      expect(dataSource.columns).toEqual(subscribedColumns);
+
+      dataSource.filter = { filter: 'client_identifier = "vuu-portal"' };
+
+      expect(dataSource.columns).toEqual(subscribedColumns);
     });
   });
 
@@ -737,6 +772,23 @@ describe("VuuDataSource", () => {
 
       expect(dataSource.columns).toEqual(["col1", "col2", "col4"]);
     });
+
+    it("uses an intentional column change instead of the subscribed response order", () => {
+      const dataSource = new VuuDataSource({
+        autosubscribeColumns: ["col4"],
+        columns: ["col1", "col2", "col3"],
+        table,
+      });
+      dataSource.handleMessageFromServer({
+        columns: ["col2", "col1", "col3", "col4"],
+        tableSchema: {},
+        type: "subscribed",
+      } as any);
+
+      dataSource.columns = ["col3", "col1"];
+
+      expect(dataSource.columns).toEqual(["col3", "col1", "col4"]);
+    });
   });
 });
 
@@ -828,4 +880,3 @@ describe("VuuDataSource createSessionDataSource session config", () => {
     ).rejects.toThrow(/does not match expected edit table module/);
   });
 });
-
