@@ -20,6 +20,7 @@ import type {
 import type { MenuRpcResponse } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
+  RpcResult,
   RpcResultError,
   RpcResultSuccess,
   SelectRequest,
@@ -840,7 +841,7 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
 
   async addRow(
     rowData: Record<string, VuuRowDataItemType> = {},
-  ): Promise<RpcResultSuccess | RpcResultError> {
+  ): Promise<RpcResult> {
     const response = await this.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "addRow",
