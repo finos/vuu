@@ -153,6 +153,26 @@ new user/group and reopen it before assigning relationships. No unsafe array
 coercions or guessed IDs are used. This module does not currently expose delete
 actions, client administration, or direct user-role assignments.
 
+For an existing user, the module-oriented access editor loads its options through
+the source data service RPC `getUserModuleAccessOptions({ userId })`. The
+response must return each portal module's `clientIdentifier`, `loginRole`, its
+eligible groups, and the currently selected group. Each group must include
+`groupId`, `groupName`, `roleId`, `roleName`, and an explicit `isDefault` flag;
+`groupPath` and privilege metadata are displayed when supplied. The server, not
+the browser, determines the least-privileged default. The module picker stages
+additions, removals and eligible-group changes locally, then sends a
+deterministically ordered JSON assignment list through
+`setUserModuleAccess({ userId, assignments })` after the user entity save.
+Confirmed entity and module-access writes are tracked independently so retries do
+not repeat successful RPCs.
+
+The new module-access RPCs are an explicit backend prerequisite. If the source
+does not expose them or returns malformed data, the editor reports the contract
+gap and does not guess group membership; ordinary user fields remain editable.
+Associating groups with portal modules is not part of this slice and remains a
+Phase 3 boundary. This phase only consumes server-derived module options and
+assigns users to existing eligible groups.
+
 The old DockLayout/drawer and editable-users-grid requirements are superseded
 by this routed Identity Admin design.
 

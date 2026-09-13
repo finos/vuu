@@ -32,6 +32,7 @@ const mocks = vi.hoisted(() => {
       {
         name: "user-admin",
         title: "User Admin",
+        clientIdentifier: "vuu-user-admin",
         loginRole: "user-admin-access",
       },
     ],
@@ -164,6 +165,12 @@ describe("AdminEditForm sessions", () => {
     mocks.notify.mockClear();
     mocks.queries.mockClear();
     mocks.clientIdentifier = "vuu-portal";
+    mocks.remoteModules.splice(0, mocks.remoteModules.length, {
+      name: "user-admin",
+      title: "User Admin",
+      clientIdentifier: "vuu-user-admin",
+      loginRole: "user-admin-access",
+    });
     container = document.createElement("div");
     document.body.append(container);
     root = createRoot(container);
@@ -171,6 +178,45 @@ describe("AdminEditForm sessions", () => {
     add = vi.fn().mockResolvedValue(SUCCESS);
     edit = vi.fn().mockResolvedValue(SUCCESS);
     persist = vi.fn().mockResolvedValue(SUCCESS);
+    const rpcRequest = vi.fn((request) => {
+      if (request.rpcName === "getUserModuleAccessOptions") {
+        return Promise.resolve({
+          type: "SUCCESS_RESULT",
+          data: {
+            modules: mocks.remoteModules.map((module, index) => {
+              const groupId =
+                index === 0 ? "g-default" : `${module.name}-default`;
+              return {
+                clientIdentifier: module.clientIdentifier,
+                loginRole: module.loginRole,
+                selectedGroupId: index === 0 ? groupId : undefined,
+                groups: [
+                  {
+                    groupId,
+                    groupName: `${module.title} viewers`,
+                    groupPath: `/${module.name}/viewers`,
+                    roleId: `${module.name}-viewer-role`,
+                    roleName: `${module.loginRole}-access`,
+                    privilege: "default",
+                    isDefault: true,
+                  },
+                  {
+                    groupId: `${module.name}-elevated`,
+                    groupName: `${module.title} operators`,
+                    groupPath: `/${module.name}/operators`,
+                    roleId: `${module.name}-operator-role`,
+                    roleName: `${module.loginRole}-access`,
+                    privilege: "elevated",
+                    isDefault: false,
+                  },
+                ],
+              };
+            }),
+          },
+        });
+      }
+      return persist(request);
+    });
     session = {
       endEditSession: end,
       addRow: add,
@@ -192,7 +238,7 @@ describe("AdminEditForm sessions", () => {
       dataSource: {
         createSessionDataSource: begin,
         selectedRowsCount: 1,
-        rpcRequest: persist,
+        rpcRequest,
       } as unknown as DataSource,
       onClose: vi.fn(),
     };
@@ -534,6 +580,55 @@ describe("AdminEditForm sessions", () => {
     expect(container.textContent).not.toContain("Choose Traders");
     expect(container.textContent).not.toContain("Remove Traders");
     expect(mocks.queries).not.toHaveBeenCalled();
+  });
+
+  it("stages module additions with default groups and saves selected alternatives", async () => {
+    mocks.remoteModules.push({
+      name: "trading",
+      title: "Trading",
+      clientIdentifier: "vuu-trading",
+      loginRole: "trading-login",
+    });
+    props.record = {
+      key: "u1",
+      user_id: "u1",
+      username: "alice",
+      enabled: true,
+      module_access: "user-admin-access",
+    };
+    await render();
+    expect(container.textContent).not.toContain(
+      "Associate groups with modules",
+    );
+    const addTrading = container.querySelector<HTMLButtonElement>(
+      '.vuuItemPicker-availableList [data-name="trading-login"] button',
+    );
+    expect(addTrading).not.toBeNull();
+    await act(async () => addTrading?.click());
+    expect(container.textContent).toContain("Trading group");
+    const tradingGroups = container.querySelector<HTMLElement>(
+      '[aria-label="trading-login group"]',
+    );
+    expect(tradingGroups).not.toBeNull();
+    const elevated = [
+      ...(tradingGroups?.querySelectorAll('[role="option"]') ?? []),
+    ].find((option) => option.textContent?.includes("elevated"));
+    expect(elevated).not.toBeNull();
+    await act(async () =>
+      elevated?.dispatchEvent(new MouseEvent("click", { bubbles: true })),
+    );
+    await submit();
+    expect(persist).toHaveBeenCalledWith({
+      type: "RPC_REQUEST",
+      rpcName: "setUserModuleAccess",
+      params: {
+        userId: "u1",
+        assignments: JSON.stringify([
+          { loginRole: "trading-login", groupId: "trading-elevated" },
+          { loginRole: "user-admin-access", groupId: "g-default" },
+        ]),
+      },
+    });
   });
 
   it("persists group client-role assignments with stable role and client IDs", async () => {
