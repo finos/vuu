@@ -15,6 +15,7 @@ import type {
 import { VuuDataSource } from "../src/VuuDataSource";
 import ConnectionManager from "../src/ConnectionManager";
 import { Range } from "@vuu-ui/vuu-utils";
+import { dataRowFactory } from "../../vuu-table/src/data-row/DataRow";
 
 type ConfigType = WithBaseFilter<WithFullConfig>;
 
@@ -287,7 +288,14 @@ describe("VuuDataSource", () => {
       );
     });
 
-    it("retains the subscribed response column order", async () => {
+    it("retains subscribed response order for Roles row mapping", async () => {
+      const initialColumns = [
+        "client_id",
+        "client_name",
+        "client_identifier",
+        "role_id",
+        "role_name",
+      ];
       const configuredColumns = [
         "client_id",
         "client_identifier",
@@ -302,15 +310,19 @@ describe("VuuDataSource", () => {
         "role_name",
         "client_name",
       ];
+      const schemaColumns = subscribedColumns.map((name) => ({
+        name,
+        serverDataType: "string" as const,
+      }));
       const dataSource = new VuuDataSource({
-        columns: configuredColumns,
+        columns: initialColumns,
         table,
       });
 
-      await dataSource.subscribe({}, callback);
+      await dataSource.subscribe({ columns: configuredColumns }, callback);
       dataSource.handleMessageFromServer({
         columns: subscribedColumns,
-        tableSchema: {},
+        tableSchema: { columns: schemaColumns },
         type: "subscribed",
       } as any);
 
@@ -319,6 +331,28 @@ describe("VuuDataSource", () => {
       dataSource.filter = { filter: 'client_identifier = "vuu-portal"' };
 
       expect(dataSource.columns).toEqual(subscribedColumns);
+
+      const [DataRow] = dataRowFactory(dataSource.columns, schemaColumns);
+      const dataRow = DataRow([
+        0,
+        0,
+        false,
+        false,
+        0,
+        0,
+        "roleId",
+        false,
+        0,
+        false,
+        "portalInternalId",
+        "vuu-portal",
+        "roleId",
+        "roleName",
+        "Basket Trading",
+      ]);
+
+      expect(dataRow.client_identifier).toEqual("vuu-portal");
+      expect(dataRow.client_name).toEqual("Basket Trading");
     });
   });
 

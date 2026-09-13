@@ -1,6 +1,11 @@
-import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
+import type {
+  DataSource,
+  DataSourceSubscribeCallback,
+  TableSchema,
+} from "@vuu-ui/vuu-data-types";
+import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { Range } from "@vuu-ui/vuu-utils";
-import { act } from "react";
+import { act, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import {
   afterAll,
@@ -19,6 +24,46 @@ const tableSchema: TableSchema = {
   key: "id",
   table: { module: "TEST", table: "test" },
 };
+
+const rolesConfiguredColumns = [
+  "client_id",
+  "client_identifier",
+  "client_name",
+  "role_id",
+  "role_name",
+];
+const rolesSubscribedColumns = [
+  "client_id",
+  "client_identifier",
+  "role_id",
+  "role_name",
+  "client_name",
+];
+const rolesTableSchema: TableSchema = {
+  columns: rolesSubscribedColumns.map((name) => ({
+    name,
+    serverDataType: "string",
+  })),
+  key: "role_id",
+  table: { module: "AUTH", table: "roles" },
+};
+const rolesRow = [
+  0,
+  0,
+  false,
+  false,
+  0,
+  0,
+  "roleId",
+  false,
+  0,
+  false,
+  "portalInternalId",
+  "vuu-portal",
+  "roleId",
+  "roleName",
+  "Basket Trading",
+];
 
 const createDataSource = () => {
   const resolvedSuspensions: boolean[] = [];
@@ -39,6 +84,41 @@ const createDataSource = () => {
   return { dataSource, resolvedSuspensions };
 };
 
+const createRolesDataSource = () => {
+  let columns = rolesConfiguredColumns;
+  const dataSource = {
+    get columns() {
+      return columns;
+    },
+    isSessionDataSourceOf: vi.fn(() => false),
+    on: vi.fn(),
+    range: Range(0, 10),
+    removeListener: vi.fn(),
+    resume: vi.fn(),
+    status: "initialising",
+    subscribe: vi.fn(
+      (_subscribeProps: unknown, callback: DataSourceSubscribeCallback) => {
+        columns = rolesSubscribedColumns;
+        callback({
+          columns,
+          tableSchema: rolesTableSchema,
+          type: "subscribed",
+        } as any);
+        callback({
+          mode: "batch",
+          rows: [rolesRow],
+          size: 1,
+          type: "viewport-update",
+        } as any);
+      },
+    ),
+    suspend: vi.fn(),
+    tableSchema: undefined,
+  } as unknown as DataSource;
+
+  return dataSource;
+};
+
 const Fixture = ({ dataSource }: { dataSource: DataSource }) => {
   useDataSource({
     dataSource,
@@ -46,6 +126,33 @@ const Fixture = ({ dataSource }: { dataSource: DataSource }) => {
     onSizeChange: vi.fn(),
     onSubscribed: vi.fn(),
   });
+  return null;
+};
+
+const RolesFixture = ({
+  dataSource,
+  onRow,
+}: {
+  dataSource: DataSource;
+  onRow: (row: DataRow) => void;
+}) => {
+  const { dataRows, setRange } = useDataSource({
+    dataSource,
+    onSelect: () => undefined,
+    onSizeChange: () => undefined,
+    onSubscribed: () => undefined,
+  });
+
+  useEffect(() => {
+    if (dataRows[0]) {
+      onRow(dataRows[0]);
+    }
+  }, [dataRows, onRow]);
+
+  useEffect(() => {
+    setRange({ from: 0, to: 1 });
+  }, [setRange]);
+
   return null;
 };
 
@@ -114,5 +221,23 @@ describe("useDataSource replacement suspension", () => {
       undefined,
     );
     expect(source.resolvedSuspensions).toEqual([true]);
+  });
+
+  it("maps Roles rows from the subscribed response columns through the hook lifecycle", async () => {
+    const dataSource = createRolesDataSource();
+    const onRow = vi.fn();
+
+    await act(async () =>
+      root.render(
+        <RolesFixture dataSource={dataSource} onRow={onRow} />,
+      ),
+    );
+
+    expect(dataSource.subscribe).toHaveBeenCalled();
+    expect(onRow).toHaveBeenCalled();
+
+    const dataRow = onRow.mock.calls.at(-1)?.[0];
+    expect(dataRow.client_identifier).toEqual("vuu-portal");
+    expect(dataRow.client_name).toEqual("Basket Trading");
   });
 });
