@@ -6,13 +6,14 @@ export const CLIENT_IDENTIFIER_CELL_RENDERER =
   "vuu-portal-client-identifier-cell";
 
 export const resolveClientIdentifierLabel = (
-  identifier: unknown,
+  clientIdentifier: unknown,
+  roleName: unknown,
   remoteModules: ReturnType<typeof usePortalModuleRegistry>["remoteModules"],
 ) => {
   const module = remoteModules.find(
-    ({ clientIdentifier }) => clientIdentifier === identifier,
+    ({ loginRole }) => loginRole === roleName,
   );
-  return module?.title ?? module?.name ?? String(identifier ?? "");
+  return module?.clientIdentifier ?? String(clientIdentifier ?? "");
 };
 
 export const ClientIdentifierCell = ({
@@ -21,7 +22,13 @@ export const ClientIdentifierCell = ({
 }: TableCellRendererProps) => {
   const { remoteModules } = usePortalModuleRegistry();
   return (
-    <>{resolveClientIdentifierLabel(dataRow[column.name], remoteModules)}</>
+    <>
+      {resolveClientIdentifierLabel(
+        dataRow[column.name],
+        dataRow.role_name,
+        remoteModules,
+      )}
+    </>
   );
 };
 
