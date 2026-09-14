@@ -20,6 +20,7 @@ import {
   TableSettingsPanelProps,
 } from "../table-settings-panel/TableSettingsPanel";
 
+import { Button } from "@salt-ds/core";
 import css from "./TabbedTableConfigPanel.css";
 
 const TabLabels = {
@@ -31,7 +32,8 @@ type TabName = keyof typeof TabLabels;
 
 const classBase = "vuuTabbedTableConfigPanel";
 export interface TabbedTableConfigPanelProps
-  extends ColumnPickerProps,
+  extends
+    ColumnPickerProps,
     Pick<TableSettingsPanelProps, "onDisplayAttributeChange">,
     Pick<TableProps, "config">,
     HTMLAttributes<HTMLDivElement> {
@@ -107,13 +109,20 @@ export const TabbedTableConfigPanel = ({
           />
         </TabNextPanel>
         <TabNextPanel value="table-columns">
-          <ColumnPicker
-            allowCreateCalculatedColumn={allowCreateCalculatedColumn}
-            columnModel={columnModel}
-            onClickCreateCalculatedColumn={onCreateCalculatedColumn}
-            onSelectionChange={handleSelectionChange}
-            selected={columns}
-          />
+          <>
+            <ColumnPicker
+              columnModel={columnModel}
+              onSelectionChange={handleSelectionChange}
+              selected={columns}
+            />
+            {allowCreateCalculatedColumn ? (
+              <div className={`${classBase}-column-buttons`}>
+                <Button onClick={onCreateCalculatedColumn}>
+                  Create calculated column
+                </Button>
+              </div>
+            ) : null}
+          </>
         </TabNextPanel>
         <TabNextPanel value="column-settings">
           {columns.length > 0 ? (

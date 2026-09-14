@@ -26,7 +26,6 @@ export {
   type ColumnPickerProps,
 } from "./column-picker/ColumnPicker";
 export { ColumnPickerAction } from "./column-picker/ColumnPickerAction";
-export type { SelectedColumnsChangeHandler } from "./column-picker/useColumnPicker";
 export { useTableColumnPicker } from "./column-picker/useTableColumnPicker";
 export { ColumnSettingsPanel } from "./column-settings-panel/ColumnSettingsPanel";
 export { useColumnSettings } from "./column-settings-panel/useColumnSettings";

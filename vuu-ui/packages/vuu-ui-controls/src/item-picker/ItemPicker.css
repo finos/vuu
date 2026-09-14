@@ -14,10 +14,6 @@
   overflow: hidden;
   padding: var(--salt-spacing-300) 0;
 
-  &.vuuItemPicker-withCalculated {
-    --label-margin-left: 8px;
-  }
-
   .saltListBox {
     background-color: inherit;
   }

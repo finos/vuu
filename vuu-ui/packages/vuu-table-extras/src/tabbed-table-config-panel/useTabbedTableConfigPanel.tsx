@@ -1,22 +1,21 @@
-import { useCallback, useRef } from "react";
-import { useContextPanel } from "@vuu-ui/vuu-ui-controls";
-import { TabbedTableConfigPanel } from "./TabbedTableConfigPanel";
-import { TableSettingsPanelProps } from "../table-settings-panel/TableSettingsPanel";
-import { TableProps } from "@vuu-ui/vuu-table";
-import { ColumnPickerProps } from "../column-picker/ColumnPicker";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { TableProps } from "@vuu-ui/vuu-table";
+import { useContextPanel } from "@vuu-ui/vuu-ui-controls";
+import { useCallback, useRef } from "react";
+import { ColumnPickerProps } from "../column-picker/ColumnPicker";
+import { TableSettingsPanelProps } from "../table-settings-panel/TableSettingsPanel";
+import { TabbedTableConfigPanel } from "./TabbedTableConfigPanel";
 
 export interface TabbedTableConfigPanelHookProps
-  extends Pick<
-      ColumnPickerProps,
-      "allowCreateCalculatedColumn" | "columnModel"
-    >,
+  extends
+    Pick<ColumnPickerProps, "columnModel">,
     Pick<TableSettingsPanelProps, "onDisplayAttributeChange">,
     Pick<TableProps, "config"> {
   /**
    * only required for calculated columns
    */
   vuuTable?: VuuTable;
+  allowCreateCalculatedColumn?: boolean;
 }
 
 export const useTabbedTableConfigPanel = ({

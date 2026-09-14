@@ -20,16 +20,11 @@ export interface ItemDescriptor {
   group?: string;
 }
 
-export interface CreateCustomItemProps {
-  buttonLabel: string;
-  onClickCreateCustomItem: MouseEventHandler<HTMLButtonElement>;
-}
-
 export interface ItemPickerHookProps {
   allItems: ItemDescriptor[];
   selectedItems: ItemDescriptor[];
   maxSelections?: number;
-  onSelectedItemsChange: (newSelectedItems: ItemDescriptor[]) => void;
+  onSelectedItemsChange: (newSelectedItems: readonly ItemDescriptor[]) => void;
 }
 
 const filterItems = (
@@ -137,9 +132,12 @@ export const useItemPicker = ({
     [selectedItems, onSelectedItemsChange],
   );
 
-  const getSelectedItemsFiltered = useMemo(() => {
-    return filterItems(selectedItems, searchPattern);
-  }, [selectedItems, searchPattern]);
+  const getSelectedItemsFiltered = (
+    latestSelectedItems: readonly ItemDescriptor[],
+    latestSearchPattern: string,
+  ) => {
+    return filterItems(latestSelectedItems, latestSearchPattern);
+  };
 
   const getAvailableItemsFiltered = useMemo(() => {
     return filterItems(allItems, searchPattern)
@@ -160,7 +158,10 @@ export const useItemPicker = ({
   return {
     selectedItemsCount: selectedItems.length,
     availableItemsCount: getAvailableItemsCount,
-    selectedItemsFiltered: getSelectedItemsFiltered,
+    selectedItemsFiltered: getSelectedItemsFiltered(
+      selectedItems,
+      searchPattern,
+    ),
     availableItemsFiltered: getAvailableItemsFiltered,
     searchText: searchPattern,
     onChangeSearchInput: handleChangeSearchInput,

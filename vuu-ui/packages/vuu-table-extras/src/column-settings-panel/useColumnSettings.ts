@@ -1,24 +1,25 @@
 import {
   ColumnDescriptor,
-  TableConfig,
   ColumnTypeFormatting,
+  TableConfig,
 } from "@vuu-ui/vuu-table-types";
 
+import { DataValueTypeSimple } from "@vuu-ui/vuu-data-types";
+import { VuuColumnDataType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import {
   CellRendererDescriptor,
   ColumnRenderPropsChangeHandler,
   getFieldName,
   getRegisteredCellRenderers,
+  getServerDataType,
   isValidColumnAlignment,
   isValidPinLocation,
-  setCalculatedColumnName,
-  updateColumnRenderProps,
-  updateColumnFormatting,
-  updateColumnType,
   queryClosest,
-  getServerDataType,
+  setCalculatedColumnName,
+  updateColumnFormatting,
+  updateColumnRenderProps,
+  updateColumnType,
 } from "@vuu-ui/vuu-utils";
-import { VuuColumnDataType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import {
   FormEventHandler,
   useCallback,
@@ -26,7 +27,6 @@ import {
   useMemo,
   useState,
 } from "react";
-import { DataValueTypeSimple } from "@vuu-ui/vuu-data-types";
 import { ColumnModel } from "../column-picker/ColumnModel";
 
 /**

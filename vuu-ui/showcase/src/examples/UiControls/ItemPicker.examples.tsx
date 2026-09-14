@@ -1,17 +1,12 @@
 import { getSchema } from "@vuu-ui/vuu-data-test";
-import {
-  CreateCustomItemProps,
-  ItemDescriptor,
-  ItemPicker,
-} from "@vuu-ui/vuu-ui-controls";
+import { ItemDescriptor, ItemPicker } from "@vuu-ui/vuu-ui-controls";
 import { ItemTypeName } from "@vuu-ui/vuu-utils";
-import { MouseEventHandler, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 interface StatefulParentProps {
   allItems: ItemDescriptor[];
   initialSelectedItems: ItemDescriptor[];
   itemTypeName: ItemTypeName;
-  createCustomItemProps?: CreateCustomItemProps;
   maxSelections?: number;
 }
 
@@ -19,28 +14,32 @@ const StatefulParent = ({
   allItems,
   initialSelectedItems,
   itemTypeName,
-  createCustomItemProps,
   maxSelections,
 }: StatefulParentProps) => {
   const [selectedItems, setSelectedItems] = useState(initialSelectedItems);
 
   const handleSelectedItemsChange = useCallback(
-    (newSelectedItems: ItemDescriptor[]) => {
+    (newSelectedItems: readonly ItemDescriptor[]) => {
       console.log(
         "handleSelectedItemsChange() called with new item selections: ",
       );
-
-      for (let i = 0; i < newSelectedItems.length; i++) {
-        const item = newSelectedItems[i];
-        console.log(
-          `${item.label ? item.label : item.name}${i < newSelectedItems.length - 1 ? ", " : ""}`,
-        );
-      }
-
-      setSelectedItems(newSelectedItems);
+      logItemsToConsole(newSelectedItems);
+      setSelectedItems([...newSelectedItems]);
     },
     [],
   );
+
+  function logItemsToConsole(
+    selectedItemsToLog: readonly ItemDescriptor[],
+  ): void {
+    for (let i = 0; i < selectedItemsToLog.length; i++) {
+      const item = selectedItemsToLog[i];
+      console.log(
+        `${item.label ? item.label : item.name}${i < selectedItemsToLog.length - 1 ? ", " : " "}`,
+      );
+    }
+    console.log(`(${selectedItemsToLog.length} items)`);
+  }
 
   return (
     <ItemPicker
@@ -48,7 +47,6 @@ const StatefulParent = ({
       selectedItems={selectedItems}
       itemTypeName={itemTypeName}
       onSelectedItemsChange={handleSelectedItemsChange}
-      createCustomItemProps={createCustomItemProps}
       maxSelections={maxSelections}
       style={{ width: 300, height: 800 }}
     />
@@ -144,23 +142,11 @@ export const CalculatedColumnPicker = () => {
 
   const selectedItems = useMemo(() => allItems.slice(0, 3), [allItems]);
 
-  const handleClickCreateCustomItem = useCallback<
-    MouseEventHandler<HTMLButtonElement>
-  >(() => {
-    console.log("handleClickCreateCustomItem() called");
-  }, []);
-
-  const customItemProps: CreateCustomItemProps = {
-    buttonLabel: "Create calculated column",
-    onClickCreateCustomItem: handleClickCreateCustomItem,
-  };
-
   return (
     <StatefulParent
       allItems={allItems}
       initialSelectedItems={selectedItems}
       itemTypeName="column"
-      createCustomItemProps={customItemProps}
     />
   );
 };
