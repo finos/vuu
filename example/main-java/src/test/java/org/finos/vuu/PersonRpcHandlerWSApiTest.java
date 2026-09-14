@@ -14,6 +14,7 @@ import org.finos.vuu.net.rpc.RpcErrorResult;
 import org.finos.vuu.net.rpc.RpcNames;
 import org.finos.vuu.net.rpc.RpcSuccessResult;
 import org.finos.vuu.net.rpc.ViewPortContext;
+import org.finos.vuu.net.rpc.sessiontable.SessionTableCopyOption$;
 import org.finos.vuu.net.ui.NoneAction$;
 import org.finos.vuu.net.ui.NotificationType;
 import org.finos.vuu.net.ui.ShowNotificationAction;
@@ -117,14 +118,17 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
         // test RPCs registered in EditPersonRecordRpcHandler
 
         @Test
-        public void custom_rpc_request_deleteRow() {
+        public void custom_rpc_request_exportTable() {
             // test RPCs registered in EditPersonRecordRpcHandler (CreateSessionTableRpcHandler)
             var viewPortId = createViewPort("PersonExampleTable");
 
             var rpcRequest = new RpcRequest(
                     new ViewPortContext(viewPortId),
                     "createSessionTable",
-                    toScala(Map.of("sessionType", "export"))
+                    toScala(Map.of(
+                            "sessionType", "export",
+                            "copyOption", SessionTableCopyOption$.MODULE$.ALL().name()
+                    ))
             );
 
             var requestId = vuuClient.send(sessionId, rpcRequest);
