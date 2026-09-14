@@ -17,9 +17,6 @@ const StatefulParent = ({
   maxSelections,
 }: StatefulParentProps) => {
   const [selectedItems, setSelectedItems] = useState(initialSelectedItems);
-  const [selectedItemsFiltered, setSelectedItemsFiltered] = useState([
-    ...initialSelectedItems,
-  ]);
 
   const handleSelectedItemsChange = useCallback(
     (newSelectedItems: readonly ItemDescriptor[]) => {
@@ -28,17 +25,6 @@ const StatefulParent = ({
       );
       logItemsToConsole(newSelectedItems);
       setSelectedItems([...newSelectedItems]);
-    },
-    [],
-  );
-
-  const handleSelectedItemsFilteredChange = useCallback(
-    (newSelectedItemsFiltered: readonly ItemDescriptor[]) => {
-      console.log(
-        "handleSelectedItemsFilteredChange() called with new filtered item selections: ",
-      );
-      logItemsToConsole(newSelectedItemsFiltered);
-      setSelectedItemsFiltered([...newSelectedItemsFiltered]);
     },
     [],
   );
@@ -61,7 +47,6 @@ const StatefulParent = ({
       selectedItems={selectedItems}
       itemTypeName={itemTypeName}
       onSelectedItemsChange={handleSelectedItemsChange}
-      onSelectedItemsFilteredChange={handleSelectedItemsFilteredChange}
       maxSelections={maxSelections}
       style={{ width: 300, height: 800 }}
     />

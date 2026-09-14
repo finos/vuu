@@ -49,7 +49,7 @@ export const CalculatedColumnPanel = ({
   );
 
   const suggestionProvider = useColumnExpressionSuggestionProvider({
-    columns: columnModel.selectedColumnsFiltered,
+    columns: columnModel.selectedColumns,
     table: vuuTable,
   });
 

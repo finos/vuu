@@ -43,7 +43,6 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
     selectedItems,
     oneOrMoreColumnsIsCalculated,
     handleSelectedItemsChange,
-    handleSelectedItemsFilteredChange,
   } = useColumnPicker({
     columnModel: columnModel,
   });
@@ -58,7 +57,6 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
       selectedItems={selectedItems}
       itemTypeName="column"
       onSelectedItemsChange={handleSelectedItemsChange}
-      onSelectedItemsFilteredChange={handleSelectedItemsFilteredChange}
       ref={forwardedRef}
     />
   );

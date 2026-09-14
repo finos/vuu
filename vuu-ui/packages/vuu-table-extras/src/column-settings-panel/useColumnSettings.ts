@@ -226,9 +226,8 @@ export const useColumnSettings = ({
 
   const navigateColumn = useCallback(
     ({ moveBy }: { moveBy: number }) => {
-      const index =
-        columnModel.selectedColumnsFiltered.indexOf(column) + moveBy;
-      const newColumn = columnModel.selectedColumnsFiltered[index];
+      const index = columnModel.selectedColumns.indexOf(column) + moveBy;
+      const newColumn = columnModel.selectedColumns[index];
       if (newColumn) {
         setColumn(newColumn);
       }

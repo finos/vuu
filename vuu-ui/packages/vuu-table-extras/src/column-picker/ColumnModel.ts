@@ -2,7 +2,6 @@ import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   EventEmitter,
   ValueOf,
-  containsSubsetOfItems,
   getAddedItems,
   getRemovedItems,
   itemsOrOrderChanged,
@@ -84,8 +83,6 @@ export type ColumnEvents = {
 export class ColumnModel extends EventEmitter<ColumnEvents> {
   #selectedColumns: readonly ColumnDescriptor[];
 
-  #selectedColumnsFiltered: readonly ColumnDescriptor[];
-
   constructor(
     /**
      * All available columns, including selected columns.
@@ -98,7 +95,6 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
   ) {
     super();
     this.#selectedColumns = selectedColumns;
-    this.#selectedColumnsFiltered = [...selectedColumns];
   }
 
   get selectedColumns() {
@@ -112,10 +108,6 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
   ) {
     this.#selectedColumns = selectedColumns;
     this.notifyListeners(selectedColumns, source, changeDescriptor);
-  }
-
-  get selectedColumnsFiltered(): readonly ColumnDescriptor[] {
-    return this.#selectedColumnsFiltered;
   }
 
   getColumn(name: string) {
@@ -177,20 +169,6 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
       newSelectedColumns.map(({ name }) => name),
       source,
     );
-  }
-
-  updateSelectedColumnsFiltered(
-    newSelectedColumnsFiltered: ColumnDescriptor[],
-  ) {
-    if (
-      !containsSubsetOfItems(this.#selectedColumns, newSelectedColumnsFiltered)
-    ) {
-      throw Error(
-        `[ColumnModel] updateSelectedColumnsFiltered supplied filtered columns contains unrecognised columns`,
-      );
-    }
-
-    this.#selectedColumnsFiltered = newSelectedColumnsFiltered;
   }
 
   addItemToSelectedColumns(name: string, source: ColumnChangeSource) {

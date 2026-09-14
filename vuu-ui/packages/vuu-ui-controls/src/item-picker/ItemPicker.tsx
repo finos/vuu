@@ -172,7 +172,6 @@ export const ItemPicker = forwardRef(function ItemPicker(
     selectedItems,
     maxSelections,
     onSelectedItemsChange,
-    onSelectedItemsFilteredChange,
     onSelectionChange,
     selected = NO_SELECTION,
     ...htmlAttributes
@@ -206,7 +205,6 @@ export const ItemPicker = forwardRef(function ItemPicker(
     allItems,
     selectedItems,
     onSelectedItemsChange,
-    onSelectedItemsFilteredChange,
     maxSelections,
   });
 

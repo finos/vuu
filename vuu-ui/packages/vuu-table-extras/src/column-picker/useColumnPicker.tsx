@@ -51,10 +51,10 @@ export const useColumnPicker = ({
   }, [model.selectedColumns, allItems]);
 
   const oneOrMoreColumnsIsCalculated = useMemo(() => {
-    return model.selectedColumnsFiltered.some((column) =>
+    return model.selectedColumns.some((column) =>
       isCalculatedColumn(column.name),
     );
-  }, [model.selectedColumnsFiltered]);
+  }, [model.selectedColumns]);
 
   const handleSelectedItemsChange = useCallback(
     (newSelectedItems: readonly ItemDescriptor[]) => {
@@ -69,23 +69,10 @@ export const useColumnPicker = ({
     [model.allColumns],
   );
 
-  const handleSelectedItemsFilteredChange = useCallback(
-    (newSelectedItemsFiltered: readonly ItemDescriptor[]) => {
-      const newSelectedColumnsFiltered: ColumnDescriptor[] =
-        newSelectedItemsFiltered.map((item: ItemDescriptor) => {
-          return model.allColumns.find((column) => column.name === item.name)!;
-        });
-
-      model.updateSelectedColumnsFiltered(newSelectedColumnsFiltered);
-    },
-    [model.allColumns],
-  );
-
   return {
     allItems,
     selectedItems,
     oneOrMoreColumnsIsCalculated,
     handleSelectedItemsChange,
-    handleSelectedItemsFilteredChange,
   };
 };
