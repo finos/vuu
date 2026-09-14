@@ -20,11 +20,6 @@ export interface ItemDescriptor {
   group?: string;
 }
 
-export interface CreateCustomItemProps {
-  buttonLabel: string;
-  onClickCreateCustomItem: MouseEventHandler<HTMLButtonElement>;
-}
-
 export interface ItemPickerHookProps {
   allItems: ItemDescriptor[];
   selectedItems: ItemDescriptor[];

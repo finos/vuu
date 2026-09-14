@@ -532,21 +532,6 @@ test.describe("ItemPicker", () => {
           "Calculated column 2",
         );
       });
-
-      test("THEN the component renders the create custom item button if supplied in props", async ({
-        browserName,
-        mount,
-        page,
-      }) => {
-        const component = await mount(
-          "UiControls/ItemPicker/CalculatedColumnPicker",
-        );
-
-        await expectCreateCustomItemsButton(
-          component,
-          "Create calculated column",
-        );
-      });
     });
   });
 });
@@ -708,15 +693,6 @@ const expectIconToBeRenderedInSelectedItems = async (
   await expect(vuuIcons.nth(0)).toHaveAttribute("data-icon", "draggable");
   await expect(vuuIcons.nth(1)).toHaveAttribute("data-icon", "check-check");
   await expect(vuuIcons.nth(2)).toHaveAttribute("data-icon", "cross");
-};
-
-const expectCreateCustomItemsButton = async (
-  component: Locator,
-  buttonLabel: string,
-) => {
-  const button = component.locator(".vuuItemPicker-item-buttons .saltButton");
-  await expect(button).toBeDefined();
-  await expect(button).toContainText(buttonLabel);
 };
 
 const dragAndDropSelectedItemBelowAnother = async (

@@ -1,5 +1,4 @@
 import {
-  Button,
   Input,
   ListBox,
   ListBoxProps,
@@ -29,7 +28,6 @@ import {
 } from "react";
 import { Icon, IconButton } from "../icon-button";
 import {
-  CreateCustomItemProps,
   getItemLabel,
   ItemDescriptor,
   ItemPickerHookProps,
@@ -48,7 +46,6 @@ export interface ItemPickerProps
     HTMLAttributes<HTMLDivElement>,
     Pick<ListBoxProps<ItemDescriptor>, "selected" | "onSelectionChange"> {
   itemTypeName: ItemTypeName;
-  createCustomItemProps?: CreateCustomItemProps;
 }
 
 const searchIcon = <Icon name="search" />;
@@ -178,7 +175,6 @@ export const ItemPicker = forwardRef(function ItemPicker(
     onSelectedItemsFilteredChange,
     onSelectionChange,
     selected = NO_SELECTION,
-    createCustomItemProps,
     ...htmlAttributes
   }: ItemPickerProps,
   forwardedRef: ForwardedRef<HTMLDivElement>,
@@ -307,13 +303,6 @@ export const ItemPicker = forwardRef(function ItemPicker(
           ))}
         </ListBox>
       </div>
-      {createCustomItemProps ? (
-        <div className={`${classBase}-item-buttons`}>
-          <Button onClick={createCustomItemProps.onClickCreateCustomItem}>
-            {createCustomItemProps.buttonLabel}
-          </Button>
-        </div>
-      ) : null}
     </div>
   );
 });

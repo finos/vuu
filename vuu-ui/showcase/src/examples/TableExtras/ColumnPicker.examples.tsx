@@ -1,3 +1,4 @@
+import { Button } from "@salt-ds/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import {
   ColumnModel,
@@ -9,19 +10,10 @@ import { MouseEventHandler, useCallback, useMemo } from "react";
 
 const ColumnPickerTemplate = ({
   columnModel,
-  allowCreateCalculatedColumn,
-  onClickCreateCalculatedColumn,
-}: Pick<
-  ColumnPickerProps,
-  | "columnModel"
-  | "allowCreateCalculatedColumn"
-  | "onClickCreateCalculatedColumn"
->) => {
+}: Pick<ColumnPickerProps, "columnModel">) => {
   return (
     <ColumnPicker
       columnModel={columnModel}
-      allowCreateCalculatedColumn={allowCreateCalculatedColumn}
-      onClickCreateCalculatedColumn={onClickCreateCalculatedColumn}
       style={{ width: 300, height: 800 }}
     />
   );
@@ -78,7 +70,7 @@ export const ManyColumnColumnPicker = () => {
   return <ColumnPickerTemplate columnModel={columnModel} />;
 };
 
-export const CalculatedColumnPicker = () => {
+export const CalculatedColumnPickerAlongsideAddButton = () => {
   const allColumns: ColumnDescriptor[] = useMemo(
     () => [
       {
@@ -131,10 +123,11 @@ export const CalculatedColumnPicker = () => {
   );
 
   return (
-    <ColumnPickerTemplate
-      columnModel={columnModel}
-      allowCreateCalculatedColumn={true}
-      onClickCreateCalculatedColumn={handleClickCreateCustomItem}
-    />
+    <>
+      <ColumnPickerTemplate columnModel={columnModel} />
+      <Button onClick={handleClickCreateCustomItem}>
+        Create calculated column
+      </Button>
+    </>
   );
 };

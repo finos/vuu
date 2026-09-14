@@ -2,17 +2,12 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
-import {
-  ForwardedRef,
-  forwardRef,
-  HTMLAttributes,
-  MouseEventHandler,
-} from "react";
+import { ForwardedRef, forwardRef, HTMLAttributes } from "react";
 
 import { ListBoxProps } from "@salt-ds/core";
 import { ColumnPickerHookProps, useColumnPicker } from "./useColumnPicker";
 
-import { CreateCustomItemProps, ItemPicker } from "@vuu-ui/vuu-ui-controls";
+import { ItemPicker } from "@vuu-ui/vuu-ui-controls";
 import columnPickerCss from "./ColumnPicker.css";
 
 const classBase = "vuuColumnPicker";
@@ -22,19 +17,14 @@ export interface ColumnPickerProps
   extends
     ColumnPickerHookProps,
     Pick<ListBoxProps<ColumnDescriptor>, "selected" | "onSelectionChange">,
-    HTMLAttributes<HTMLDivElement> {
-  allowCreateCalculatedColumn?: boolean;
-  onClickCreateCalculatedColumn?: MouseEventHandler<HTMLButtonElement>;
-}
+    HTMLAttributes<HTMLDivElement> {}
 
 const NO_SELECTION: ColumnDescriptor[] = [] as const;
 
 export const ColumnPicker = forwardRef(function ColumnPicker(
   {
-    allowCreateCalculatedColumn,
     columnModel,
     className,
-    onClickCreateCalculatedColumn,
     onSelectionChange,
     selected = NO_SELECTION,
     ...htmlAttributes
@@ -58,13 +48,6 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
     columnModel: columnModel,
   });
 
-  const createCustomItemProps = allowCreateCalculatedColumn
-    ? ({
-        buttonLabel: "Create calculated column",
-        onClickCreateCustomItem: onClickCreateCalculatedColumn,
-      } as CreateCustomItemProps)
-    : undefined;
-
   return (
     <ItemPicker
       {...htmlAttributes}
@@ -76,7 +59,6 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
       itemTypeName="column"
       onSelectedItemsChange={handleSelectedItemsChange}
       onSelectedItemsFilteredChange={handleSelectedItemsFilteredChange}
-      createCustomItemProps={createCustomItemProps}
       ref={forwardedRef}
     />
   );
