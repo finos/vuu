@@ -143,7 +143,7 @@ Errors are structured using two-level maps:
 ```ts
 type CsvErrorMap<TError extends string> = {
   fileErrors: Record<string, TError[]>;   // keyed by column name; file-level errors (header row)
-  rowErrors:  Record<number, Record<string, TError[]>>;  // keyed by 1-based row number → column name
+  rowErrors:  Record<number, Record<string, TError[]>>;  // keyed by 0-based row number (where row 1 is the first data row) → column name
 };
 ```
 
@@ -181,6 +181,46 @@ type CsvParseOptions = {
 
 ---
 
+## Custom Column Validators
+
+You can supply individual validation hooks per column under the `validators` prop key.
+
+```ts
+export type CsvColumnValidator = (
+  value: string,
+  columnName: string,
+  row: Record<string, string>
+) => boolean | string;
+```
+
+If a validator function returns a string, that string is reported as a custom validation failure error message to the user. Returning `false` reports a generic validation error message.
+
+### Example
+
+```tsx
+const customValidators = {
+  price: (val: string) => {
+    if (Number(val) < 0) {
+      return "Price cannot be negative.";
+    }
+    return true;
+  },
+  name: (val: string, col: string, row: Record<string, string>) => {
+    if (row.id === "special" && val !== "Special Name") {
+      return "Special ID requires Name to be 'Special Name'.";
+    }
+    return true;
+  }
+};
+
+<CsvUpload
+  dataSource={dataSource}
+  validators={customValidators}
+/>
+```
+
+---
+
 ## Import session table columns
 
 When the component opens a session for CSV import it requests a session table of type `"import"`. The server adds two extra columns to the schema on top of the source table columns:
@@ -188,7 +228,7 @@ When the component opens a session for CSV import it requests a session table of
 | Column | Type | Purpose |
 |---|---|---|
 | `vuuMsg` | `string` | Validation error message for this row. Empty string when the row is valid. |
-| `vuuRowNum` | `int` | 1-based row number from the original CSV file (including the header row, so data starts at 2). |
+| `vuuRowNum` | `int` | 0-based row number from original CSV file array (where row index starts at 1, header is at index 0). |
 
 Row payloads sent to `addRow` differ by validity:
 

@@ -15,6 +15,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { parseCsv, type CsvParseOptions } from "./parse/csv-parse";
 import {
   type CsvValidationResult,
+  type CsvColumnValidator,
   validateCsvAgainstSchema,
 } from "./parse/csv-schema-validation";
 import {
@@ -56,6 +57,7 @@ export interface CsvUploadHookProps {
   parseOptions?: CsvParseOptions;
   /** Default column values applied to every addRow call. Pass a stable reference — a new object triggers EditSession recreation. */
   rowDefaults?: RowDefaultDataItemValues;
+  validators?: Record<string, CsvColumnValidator>;
 }
 
 export type UseCsvUploadReturn = {
@@ -89,6 +91,7 @@ export const useCsvUpload = ({
   maxRows,
   parseOptions,
   rowDefaults,
+  validators,
 }: CsvUploadHookProps): UseCsvUploadReturn => {
   const { getServerAPI } = useData();
   const [validation, setValidation] = useState<
@@ -294,7 +297,7 @@ export const useCsvUpload = ({
           rowNum,
           existing
             ? `${existing}; ${columnError}`
-            : `Row ${rowNum}: ${columnError}`,
+            : `${rowNum === 0 ? "Header" : `Row ${rowNum}`}: ${columnError}`,
         );
       }
 
@@ -335,7 +338,7 @@ export const useCsvUpload = ({
             throw Error(result);
           }
         } catch (error) {
-          rpcErrors.push(`Row ${rowNum}: ${toErrorMessage(error)}`);
+          rpcErrors.push(`${rowNum === 0 ? "Header" : `Row ${rowNum}`}: ${toErrorMessage(error)}`);
         }
       }
 
@@ -438,6 +441,7 @@ export const useCsvUpload = ({
 
       const schemaValidation = validateCsvAgainstSchema(parsedCsv, schema, {
         maxRows,
+        validators,
       });
 
       if (Object.keys(schemaValidation.errorMap.fileErrors).length > 0) {
@@ -512,6 +516,7 @@ export const useCsvUpload = ({
       table,
       endEditSessionAndNotify,
       schema,
+      validators,
     ],
   );
 

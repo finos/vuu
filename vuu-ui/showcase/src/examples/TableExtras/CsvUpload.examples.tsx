@@ -248,6 +248,45 @@ export const CsvUploadWithImportTableOnly = () => {
   );
 };
 
+export const CsvUploadWithValidators = () => {
+  const validators = useMemo(() => ({
+    price: (val: string) => {
+      if (Number(val) < 0) {
+        return "Price cannot be negative.";
+      }
+      return true;
+    },
+    name: (val: string, col: string, row: Record<string, string>) => {
+      if (row.id === "special" && val !== "Special Name") {
+        return "Special ID requires Name to be 'Special Name'.";
+      }
+      return true;
+    }
+  }), []);
+
+  const dataSource = useMemo(() => {
+    const sessionDs = {
+      table: { module: "TEST", table: "session-instruments" },
+      tableSchema: mockSchema,
+      columns: ["id", "name", "price"],
+      addRow: async () => ({
+        data: undefined,
+        type: "SUCCESS_RESULT" as const,
+      }),
+      endEditSession: async () => void 0,
+    };
+    return {
+      table: { module: "TEST", table: "instruments" },
+      tableSchema: mockSchema,
+      createSessionDataSource: async () => sessionDs as unknown as DataSource,
+      subscribe: async () => void 0,
+      unsubscribe: () => void 0,
+    } as unknown as DataSource;
+  }, []);
+
+  return <CsvUpload dataSource={dataSource} validators={validators} />;
+};
+
 export const CsvUploadWithImportFailure = () => {
   const [capturedError, setCapturedError] = useState<string | undefined>();
   const dataSource = useMemo(() => {

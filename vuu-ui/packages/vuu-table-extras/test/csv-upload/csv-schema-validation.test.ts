@@ -110,7 +110,7 @@ describe("validateCsvAgainstSchema", () => {
       makeSchema(),
     );
 
-    expect(result.errorMap.rowErrors[2]?.["count"]).toContain(
+    expect(result.errorMap.rowErrors[1]?.["count"]).toContain(
       CsvValidationErrorEnum.EMPTY_NON_STRING_VALUE,
     );
   });
@@ -131,7 +131,7 @@ describe("validateCsvAgainstSchema", () => {
       makeSchema(),
     );
 
-    expect(result.errorMap.rowErrors[2]?.["count"]).toContain(
+    expect(result.errorMap.rowErrors[1]?.["count"]).toContain(
       CsvValidationErrorEnum.TYPE_MISMATCH,
     );
   });
@@ -158,7 +158,73 @@ describe("validateCsvAgainstSchema", () => {
     );
 
     expect(result.errors).toHaveLength(1);
-    expect(result.errors[0].rowNum).toBe(2);
+    expect(result.errors[0].rowNum).toBe(1);
     expect(result.rows).toHaveLength(2);
+  });
+
+  describe("custom validators", () => {
+    it("fails validation with custom validation error when validator returns false", () => {
+      const result = validateCsvAgainstSchema(
+        makeParsed(["id", "count"], [["a1", "15"]]),
+        makeSchema(),
+        {
+          validators: {
+            count: (val) => Number(val) < 10,
+          },
+        },
+      );
+
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].rowNum).toBe(1);
+      expect(result.errors[0].column).toBe("count");
+      expect(result.errors[0].errorEnum).toBe(CsvValidationErrorEnum.CUSTOM_VALIDATION);
+      expect(result.errors[0].message).toBe("Value '15' failed custom validation.");
+    });
+
+    it("fails validation and outputs the custom error message returned, when it returns a string", () => {
+      const result = validateCsvAgainstSchema(
+        makeParsed(["id", "count"], [["a1", "15"]]),
+        makeSchema(),
+        {
+          validators: {
+            count: (val) => Number(val) < 10 || "Count must be less than 10.",
+          },
+        },
+      );
+
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].rowNum).toBe(1);
+      expect(result.errors[0].column).toBe("count");
+      expect(result.errors[0].errorEnum).toBe(CsvValidationErrorEnum.CUSTOM_VALIDATION);
+      expect(result.errors[0].message).toBe("Count must be less than 10.");
+    });
+
+    it("can access other column values in the same row during custom validation", () => {
+      const result = validateCsvAgainstSchema(
+        makeParsed(
+          ["id", "label"],
+          [
+            ["a1", "valid_label"],
+            ["special", "invalid_label"],
+          ],
+        ),
+        makeSchema(),
+        {
+          validators: {
+            label: (val, col, row) => {
+              if (row.id === "special" && val === "invalid_label") {
+                return "The label cannot be invalid_label when ID is special.";
+              }
+              return true;
+            },
+          },
+        },
+      );
+
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].rowNum).toBe(2);
+      expect(result.errors[0].column).toBe("label");
+      expect(result.errors[0].message).toBe("The label cannot be invalid_label when ID is special.");
+    });
   });
 });
