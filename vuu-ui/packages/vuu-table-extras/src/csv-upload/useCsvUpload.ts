@@ -1,16 +1,21 @@
 import type {
+  CopyOption,
   DataSource,
-  EditApi,
   SessionDataSourceOverrides,
+  SessionType,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
-import { EditSession, type RowDefaultDataItemValues } from "@vuu-ui/vuu-data-editing";
+import {
+  EditSession,
+  type RowDefaultDataItemValues,
+} from "@vuu-ui/vuu-data-editing";
 import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { isRpcError, isSessionTable, useData, Range } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { parseCsv, type CsvParseOptions } from "./parse/csv-parse";
 import {
   type CsvValidationResult,
+  type CsvColumnValidator,
   validateCsvAgainstSchema,
 } from "./parse/csv-schema-validation";
 import {
@@ -52,6 +57,7 @@ export interface CsvUploadHookProps {
   parseOptions?: CsvParseOptions;
   /** Default column values applied to every addRow call. Pass a stable reference — a new object triggers EditSession recreation. */
   rowDefaults?: RowDefaultDataItemValues;
+  validators?: Record<string, CsvColumnValidator>;
 }
 
 export type UseCsvUploadReturn = {
@@ -68,6 +74,7 @@ export type UseCsvUploadReturn = {
   sessionTable: CsvUploadSessionTable | undefined;
   schema: TableSchema | undefined;
   validation: CsvValidationResult | undefined;
+  error: CsvUploadErrorResult | undefined;
 };
 
 export const useCsvUpload = ({
@@ -84,6 +91,7 @@ export const useCsvUpload = ({
   maxRows,
   parseOptions,
   rowDefaults,
+  validators,
 }: CsvUploadHookProps): UseCsvUploadReturn => {
   const { getServerAPI } = useData();
   const [validation, setValidation] = useState<
@@ -97,6 +105,14 @@ export const useCsvUpload = ({
   const [fetchedImportSchema, setFetchedImportSchema] = useState<
     TableSchema | undefined
   >();
+  const [error, setError] = useState<CsvUploadErrorResult | undefined>();
+  const handleError = useCallback(
+    (errResult: CsvUploadErrorResult | undefined) => {
+      setError(errResult);
+      onError?.(errResult);
+    },
+    [onError],
+  );
 
   useEffect(() => {
     if (importSchema || importTable === undefined) {
@@ -124,17 +140,22 @@ export const useCsvUpload = ({
   }, [getServerAPI, importSchema, importTable]);
 
   const resolvedImportSchema = importSchema ?? fetchedImportSchema;
-  const sessionOverrides = useMemo<SessionDataSourceOverrides | undefined>(() => {
+  const sessionOverrides = useMemo<
+    SessionDataSourceOverrides | undefined
+  >(() => {
     const columns = resolvedImportSchema?.columns.map(({ name }) => name);
     return columns || importTable ? { columns, table: importTable } : undefined;
   }, [resolvedImportSchema, importTable]);
   // EditSession's constructor takes no session/schema config - the override is applied
   // here, at the createSessionDataSource call site, since `dataSource` is supplied by the
   // caller and may be shared with a view that has no knowledge of the import table.
-  const importDataSource = useMemo<EditApi & { tableSchema?: TableSchema }>(() => {
+  const importDataSource = useMemo<DataSource>(() => {
     return {
       tableSchema: dataSource.tableSchema,
-      createSessionDataSource: async (copyOption, sessionType) => {
+      createSessionDataSource: async (
+        copyOption: CopyOption,
+        sessionType?: SessionType,
+      ) => {
         if (!dataSource.createSessionDataSource) {
           throw Error(
             "[useCsvUpload] dataSource does not support createSessionDataSource",
@@ -171,7 +192,7 @@ export const useCsvUpload = ({
 
         return sessionDs;
       },
-    };
+    } as DataSource;
   }, [dataSource, sessionOverrides]);
   const editSession = useMemo(
     () =>
@@ -276,7 +297,7 @@ export const useCsvUpload = ({
           rowNum,
           existing
             ? `${existing}; ${columnError}`
-            : `Row ${rowNum}: ${columnError}`,
+            : `${rowNum === 0 ? "Header" : `Row ${rowNum}`}: ${columnError}`,
         );
       }
 
@@ -306,7 +327,9 @@ export const useCsvUpload = ({
           return false;
         }
         try {
-          const payload = vuuMsg ? { vuuRowNum: rowNum, vuuMsg } : { ...rowData, vuuRowNum: rowNum, vuuMsg };
+          const payload = vuuMsg
+            ? { vuuRowNum: rowNum, vuuMsg }
+            : { ...rowData, vuuRowNum: rowNum, vuuMsg };
           const result = await editSession.addRow(payload);
           if (isRpcError(result)) {
             throw Error(result.errorMessage);
@@ -315,7 +338,7 @@ export const useCsvUpload = ({
             throw Error(result);
           }
         } catch (error) {
-          rpcErrors.push(`Row ${rowNum}: ${toErrorMessage(error)}`);
+          rpcErrors.push(`${rowNum === 0 ? "Header" : `Row ${rowNum}`}: ${toErrorMessage(error)}`);
         }
       }
 
@@ -358,18 +381,17 @@ export const useCsvUpload = ({
 
   const cancelImport = useCallback(async () => {
     operationIdRef.current++;
-    try {
-      await processingPromiseRef.current;
-    } catch {
-      // File-processing errors are surfaced by handleFiles.
-    }
+    processingPromiseRef.current = undefined;
+    setIsProcessingFile(false);
+    setIsImporting(false);
+    handleError(undefined);
     await closePendingEditSession(false);
-  }, [closePendingEditSession]);
+  }, [closePendingEditSession, handleError]);
 
   const processFile = useCallback(
     async (file: File, operationId: number) => {
       setValidation(undefined);
-      onError?.(undefined);
+      handleError(undefined);
 
       await closePendingEditSession(false);
       if (operationId !== operationIdRef.current) {
@@ -382,7 +404,7 @@ export const useCsvUpload = ({
           dataSource.status === "unsubscribed")
       ) {
         const errorMessage = `CsvUpload requires dataSource to be subscribed before uploading (current status: "${dataSource.status}").`;
-        onError?.({
+        handleError({
           errors: {
             validationError: createUploadError("validation", errorMessage),
           },
@@ -405,7 +427,7 @@ export const useCsvUpload = ({
       const parsedCsv = parseCsv(fileContents, parseOptions);
       if (parsedCsv.error && hasFileParseErrors(parsedCsv.error)) {
         setValidation(undefined);
-        onError?.({
+        handleError({
           errors: {
             validationError: createUploadError(
               "validation",
@@ -419,11 +441,12 @@ export const useCsvUpload = ({
 
       const schemaValidation = validateCsvAgainstSchema(parsedCsv, schema, {
         maxRows,
+        validators,
       });
 
       if (Object.keys(schemaValidation.errorMap.fileErrors).length > 0) {
         setValidation(schemaValidation);
-        onError?.({
+        handleError({
           errors: {
             schemaError: createUploadError(
               "schema",
@@ -448,20 +471,28 @@ export const useCsvUpload = ({
       setValidation(mergedValidation);
 
       if (mergedValidation.rows.length > 0) {
-        await beginEditSession();
-        if (operationId !== operationIdRef.current) {
-          return;
-        }
-
         try {
+          await beginEditSession();
+          if (operationId !== operationIdRef.current) {
+            return;
+          }
+
           const rowsAdded = await addAllRows(mergedValidation, operationId);
           if (!rowsAdded) {
             return;
           }
         } catch (error) {
-          await endEditSessionAndNotify(false, "failed");
+          if (sessionDataSourceRef.current !== undefined) {
+            await endEditSessionAndNotify(false, "failed");
+          } else {
+            try {
+              await editSession.end(false);
+            } catch (err) {
+              console.error("[useCsvUpload] failed to end clean session", err);
+            }
+          }
           setValidation(undefined);
-          onError?.({
+          handleError({
             errors: {
               importError: createUploadError(
                 "import",
@@ -473,7 +504,8 @@ export const useCsvUpload = ({
       }
     },
     [
-      onError,
+      handleError,
+      editSession,
       addAllRows,
       maxRows,
       parseOptions,
@@ -484,6 +516,7 @@ export const useCsvUpload = ({
       table,
       endEditSessionAndNotify,
       schema,
+      validators,
     ],
   );
 
@@ -516,7 +549,7 @@ export const useCsvUpload = ({
             ),
           },
         };
-        onError?.(errors);
+        handleError(errors);
       } finally {
         if (processingPromiseRef.current === processingPromise) {
           processingPromiseRef.current = undefined;
@@ -524,7 +557,7 @@ export const useCsvUpload = ({
         setIsProcessingFile(false);
       }
     },
-    [onError, onProcessingStarted, processFile, setActiveSessionDataSource],
+    [handleError, onProcessingStarted, processFile, setActiveSessionDataSource],
   );
 
   const onDrop = useCallback(
@@ -557,7 +590,7 @@ export const useCsvUpload = ({
     }
 
     setIsImporting(true);
-    onError?.(undefined);
+    handleError(undefined);
 
     try {
       const fallbackTableData = {
@@ -594,7 +627,7 @@ export const useCsvUpload = ({
           importError: createUploadError("import", errorMessage),
         },
       };
-      onError?.(errors);
+      handleError(errors);
       return false;
     } finally {
       setIsImporting(false);
@@ -603,7 +636,7 @@ export const useCsvUpload = ({
     canImport,
     editSession,
     endEditSessionAndNotify,
-    onError,
+    handleError,
     onImported,
     onPreview,
     importMode,
@@ -621,5 +654,6 @@ export const useCsvUpload = ({
     sessionTable,
     schema,
     validation,
+    error,
   };
 };

@@ -7,6 +7,7 @@ import type {
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { registerComponent } from "@vuu-ui/vuu-utils";
 import { useEditSession } from "./DataEditingProvider";
+import type { EditActionType } from "./EditSession";
 
 export const UNDO_CELL_RENDERER = "vuu.undo-cell";
 
@@ -25,9 +26,7 @@ export const getUndoButtonContent = (
       : componentProps.text || undefined,
 });
 
-export const getUndoTooltipContent = (
-  action: unknown,
-) =>
+export const getUndoTooltipContent = (action: unknown) =>
   action === "deleteRow"
     ? "Undo delete row"
     : action === "addRow"
@@ -46,9 +45,7 @@ export const UndoCellRenderer = ({
   const { icon, text } = getUndoButtonContent(
     renderer?.componentProps as UndoCellRendererComponentProps | undefined,
   );
-  const tooltipContent = getUndoTooltipContent(
-    dataRow.vuuAction,
-  );
+  const tooltipContent = getUndoTooltipContent(dataRow.vuuAction);
 
   if (tooltipContent === undefined) return null;
 
@@ -57,7 +54,12 @@ export const UndoCellRenderer = ({
       <Button
         appearance="transparent"
         aria-label={tooltipContent}
-        onClick={() => editSession?.undoRowChange(dataRow.key)}
+        onClick={() =>
+          editSession?.undoRowChange(
+            dataRow.key,
+            dataRow.vuuAction as EditActionType,
+          )
+        }
         style={{ height: "100%", width: "100%" }}
       >
         {icon ? <Icon name={icon} /> : null}

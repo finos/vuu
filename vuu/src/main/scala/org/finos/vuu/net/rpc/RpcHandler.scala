@@ -57,11 +57,10 @@ trait RpcHandler extends StrictLogging {
         handler(params)
       } catch {
         case e: Exception =>
-          logger.error(s"Error processing rpc method $rpcName", e)
-          RpcFunctionFailure(1, e.toString, e)
+          RpcFunctionFailure(1, s"Error whilst handling rpc \"$rpcName\"", e)
       }
     } else {
-      new RpcFunctionFailure(s"Could not find rpcMethodHandler $rpcName")
+      new RpcFunctionFailure(s"Could not find handler for rpc \"$rpcName\"")
     }
   }
 }

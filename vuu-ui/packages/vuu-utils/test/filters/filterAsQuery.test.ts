@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { filterAsQuery } from "../../src/filters";
-import { Filter, NumericFilterClauseOp } from "@vuu-ui/vuu-filter-types";
+import type { Filter, NumericFilterClauseOp } from "@vuu-ui/vuu-filter-types";
 import { dateFilterAsQuery } from "../../src/filters/filterAsQuery";
 
 describe("filterAsQuery", () => {
@@ -148,17 +148,71 @@ describe("filterAsQuery", () => {
       );
     });
   });
+
+  describe("numeric string values in string columns vs numeric columns", () => {
+    it("preserves quotes for numeric string values when column type is string", () => {
+      const result = filterAsQuery(
+        {
+          column: "ticker",
+          op: "=",
+          value: "1234",
+        },
+        {
+          columnsByName: {
+            ticker: { name: "ticker", serverDataType: "string" },
+          },
+        },
+      );
+      expect(result).toEqual('ticker = "1234"');
+    });
+
+    it("omits quotes for numeric string values when column type is numeric schema", () => {
+      const result = filterAsQuery(
+        {
+          column: "id",
+          op: "=",
+          value: "1000000000000001234",
+        },
+        {
+          columnsByName: {
+            id: { name: "id", serverDataType: "long" },
+          },
+        },
+      );
+      expect(result).toEqual("id = 1000000000000001234");
+    });
+
+    it("falls back safely to regex boundary classification if columnsByName metadata is absent", () => {
+      const result = filterAsQuery({
+        column: "id",
+        op: "=",
+        value: "1000000000000001234",
+      });
+      expect(result).toEqual("id = 1000000000000001234");
+    });
+
+    it("preserves quotes if string value is not numeric and no columnsByName metadata is present", () => {
+      const result = filterAsQuery({
+        column: "ticker",
+        op: "=",
+        value: "AAPL",
+      });
+      expect(result).toEqual('ticker = "AAPL"');
+    });
+  });
 });
 
 describe("dateFilterAsQuery", () => {
-  it.each<NumericFilterClauseOp>(["<", ">", "<=", ">="])(
-    "stringifies date filter with op `%s`",
-    (op) => {
-      const filter = { op, value: 1, column: "lastUpdated" } as const;
-      const expected = [filter.column, filter.op, filter.value].join(" ");
-      expect(dateFilterAsQuery(filter)).toEqual(expected);
-    },
-  );
+  it.each<NumericFilterClauseOp>([
+    "<",
+    ">",
+    "<=",
+    ">=",
+  ])("stringifies date filter with op `%s`", (op) => {
+    const filter = { op, value: 1, column: "lastUpdated" } as const;
+    const expected = [filter.column, filter.op, filter.value].join(" ");
+    expect(dateFilterAsQuery(filter)).toEqual(expected);
+  });
 
   const testDate = new Date("2021-12-15");
   testDate.setHours(0, 0, 0, 0);

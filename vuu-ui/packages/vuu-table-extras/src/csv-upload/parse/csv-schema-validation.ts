@@ -25,6 +25,12 @@ export {
   type CsvValidationStructuredError,
 } from "./csv-errors";
 
+export type CsvColumnValidator = (
+  value: string,
+  columnName: string,
+  row: Record<string, string>,
+) => boolean | string;
+
 export type CsvValidationResult = {
   columns: string[];
   errorMap: CsvValidationErrorMap;
@@ -35,6 +41,7 @@ export type CsvValidationResult = {
 
 export type CsvValidationOptions = {
   maxRows?: number;
+  validators?: Record<string, CsvColumnValidator>;
 };
 
 const INTERNAL_KEY_COLUMNS = new Set(["vuuRowNum"]);
@@ -90,6 +97,10 @@ export const validateCsvAgainstSchema = (
   parsed.rows.forEach((rowValues, rowIndex) => {
     const rowNum = rowIndex + CSV_FIRST_DATA_ROW_NUMBER;
     const typedRow: Record<string, VuuRowDataItemType> = {};
+    const rawRow = parsed.header.reduce<Record<string, string>>((acc, headerCol, idx) => {
+      acc[headerCol] = rowValues[idx];
+      return acc;
+    }, {});
 
     parsed.header.forEach((columnName, columnIndex) => {
       const rawValue = rowValues[columnIndex];
@@ -135,6 +146,25 @@ export const validateCsvAgainstSchema = (
         );
         return;
       }
+
+      const customValidator = options?.validators?.[columnName];
+      if (customValidator) {
+        const validationResult = customValidator(rawValue, columnName, rawRow);
+        if (validationResult !== true) {
+          addCsvRowError(
+            errorState,
+            rowNum,
+            columnName,
+            CsvValidationErrorEnum.CUSTOM_VALIDATION,
+            typeof validationResult === "string"
+              ? validationResult
+              : `Value '${rawValue}' failed custom validation.`,
+            rawValue,
+          );
+          return;
+        }
+      }
+
       typedRow[columnName] = value;
     });
 

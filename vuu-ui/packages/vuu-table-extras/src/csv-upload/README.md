@@ -48,6 +48,7 @@ import { CsvUpload } from "@vuu-ui/vuu-table-extras";
 | `onError` | `(result: CsvUploadErrorResult \| undefined) => void` | Fired when any error occurs. Called with `undefined` to clear a previous error. |
 | `onCancel` | `() => void` | Fired when the Cancel button is clicked. |
 | `onClose` | `() => void` | Fired after a successful import completes (i.e. the Import button was clicked and the session committed). |
+| `renderError` | `(error: CsvUploadErrorResult) => ReactNode` | Optional custom renderer for the error panel. Allows overriding the default inline error panel (e.g. to suppress or display errors in a separate element/dialog). |
 | `children` | `ReactNode` | Optional children rendered inside the dialog content area, below the drop zone. Typically used to display a read-only error table — see [Displaying validation errors](#displaying-validation-errors). |
 
 ---
@@ -142,7 +143,7 @@ Errors are structured using two-level maps:
 ```ts
 type CsvErrorMap<TError extends string> = {
   fileErrors: Record<string, TError[]>;   // keyed by column name; file-level errors (header row)
-  rowErrors:  Record<number, Record<string, TError[]>>;  // keyed by 1-based row number → column name
+  rowErrors:  Record<number, Record<string, TError[]>>;  // keyed by 0-based row number (where row 1 is the first data row) → column name
 };
 ```
 
@@ -180,6 +181,46 @@ type CsvParseOptions = {
 
 ---
 
+## Custom Column Validators
+
+You can supply individual validation hooks per column under the `validators` prop key.
+
+```ts
+export type CsvColumnValidator = (
+  value: string,
+  columnName: string,
+  row: Record<string, string>
+) => boolean | string;
+```
+
+If a validator function returns a string, that string is reported as a custom validation failure error message to the user. Returning `false` reports a generic validation error message.
+
+### Example
+
+```tsx
+const customValidators = {
+  price: (val: string) => {
+    if (Number(val) < 0) {
+      return "Price cannot be negative.";
+    }
+    return true;
+  },
+  name: (val: string, col: string, row: Record<string, string>) => {
+    if (row.id === "special" && val !== "Special Name") {
+      return "Special ID requires Name to be 'Special Name'.";
+    }
+    return true;
+  }
+};
+
+<CsvUpload
+  dataSource={dataSource}
+  validators={customValidators}
+/>
+```
+
+---
+
 ## Import session table columns
 
 When the component opens a session for CSV import it requests a session table of type `"import"`. The server adds two extra columns to the schema on top of the source table columns:
@@ -187,7 +228,7 @@ When the component opens a session for CSV import it requests a session table of
 | Column | Type | Purpose |
 |---|---|---|
 | `vuuMsg` | `string` | Validation error message for this row. Empty string when the row is valid. |
-| `vuuRowNum` | `int` | 1-based row number from the original CSV file (including the header row, so data starts at 2). |
+| `vuuRowNum` | `int` | 0-based row number from original CSV file array (where row index starts at 1, header is at index 0). |
 
 Row payloads sent to `addRow` differ by validity:
 
@@ -228,7 +269,7 @@ Notes:
 
 ## Displaying validation errors
 
-Use the `children` prop together with `onImportSessionStarted` to render an inline error table. The session datasource already contains both valid and error rows; apply a `vuuMsg != ""` filter to show only error rows:
+Use the `children` prop together with `onImportSessionStarted` to render an inline error table inside the `FileDropZone`. The session datasource already contains both valid and error rows; apply a `vuuMsg != ""` filter to show only error rows:
 
 ```tsx
 const [sessionDataSource, setSessionDataSource] = useState<DataSource | undefined>();
@@ -255,14 +296,14 @@ const errorTableConfig: TableConfig = {
   onImportSessionEnded={handleImportSessionEnded}
 >
   {sessionDataSource ? (
-    <div style={{ height: 200 }}>
+    <div style={{ height: 200, width: "100%" }}>
       <Table config={errorTableConfig} dataSource={sessionDataSource} />
     </div>
   ) : null}
 </CsvUpload>
 ```
 
-The `Table` is a virtualized component and requires an explicit height on its container to render rows.
+The `Table` is a virtualized component and requires an explicit height on its container to render rows. Since `{children}` are now rendered inside the `FileDropZone` below the trigger block, this interactive error table fits perfectly inside the upload area.
 
 ---
 

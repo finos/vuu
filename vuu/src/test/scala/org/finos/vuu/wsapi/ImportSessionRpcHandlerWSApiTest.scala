@@ -60,7 +60,7 @@ class ImportSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
       val viewPortId2 = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 0)
 
       When("Request addRow")
-      val data = Map(VuuRowNum -> "1", MSG.name -> "some message")
+      val data = Map(MSG.name -> "some message")
       val request = RpcRequest(ViewPortContext(viewPortId2), RpcNames.AddRowRpc, Map("data" -> data))
       val requestId2 = vuuClient.send(sessionId, request)
 
@@ -84,7 +84,7 @@ class ImportSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
       val viewPortId2 = createViewPortAndVerifyDataSize(sessionTableName, moduleName, 0)
 
       When("Request addRow")
-      val data = Map(VuuRowNum -> "1", MSG.name -> null, "Id" -> 123, "Name" -> "user1", "Account" -> 456)
+      val data = Map(MSG.name -> null, "Id" -> 123, "Name" -> "user1", "Account" -> 456)
       val request = RpcRequest(ViewPortContext(viewPortId2), RpcNames.AddRowRpc, Map("data" -> data))
       val requestId2 = vuuClient.send(sessionId, request)
 
@@ -193,6 +193,6 @@ class ImportSessionRpcHandlerWSApiTest extends WebSocketApiTestBase {
 
   class TestImportSessionTableRpcHandler(override val maxSessionTableSize: Int) extends ImportSessionRpcHandler {
 
-    override protected def addRowWithoutVuuMsg(params: RpcParams): RpcFunctionResult = new RpcFunctionSuccess()
+    override protected def addRowWithoutVuuMsg(rowKey: String, params: RpcParams): RpcFunctionResult = new RpcFunctionSuccess()
   }
 }

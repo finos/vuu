@@ -7,13 +7,20 @@ import {
   FileDropZone,
   FileDropZoneIcon,
   FileDropZoneTrigger,
+  Text,
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { type ReactNode, useCallback, useState } from "react";
-import type { RowDefaultDataItemValues, EditSession } from "@vuu-ui/vuu-data-editing";
+import type {
+  RowDefaultDataItemValues,
+  EditSession,
+} from "@vuu-ui/vuu-data-editing";
 import type { CsvParseError, CsvParseOptions } from "./parse/csv-parse";
-import type { CsvValidationStructuredError } from "./parse/csv-schema-validation";
+import type {
+  CsvValidationStructuredError,
+  CsvColumnValidator,
+} from "./parse/csv-schema-validation";
 import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import type { CsvUploadTableData } from "./parse/csv-upload-utils";
@@ -90,6 +97,11 @@ export interface CsvUploadProps {
   parseOptions?: CsvParseOptions;
   importMode?: "direct" | "preview";
   rowDefaults?: RowDefaultDataItemValues;
+  validators?: Record<string, CsvColumnValidator>;
+  /**
+   * Custom renderer for the error panel.
+   */
+  renderError?: (error: CsvUploadErrorResult) => ReactNode;
 }
 
 const classBase = "vuuCsvUpload";
@@ -102,6 +114,7 @@ export const CsvUpload = (props: CsvUploadProps) => {
     onCancel,
     onClose,
     open,
+    renderError,
   } = props;
   const isControlledOpen = open !== undefined;
   const [internalOpen, setInternalOpen] = useState(open ?? true);
@@ -125,7 +138,17 @@ export const CsvUpload = (props: CsvUploadProps) => {
     onTriggerChange,
     schema,
     validation,
+    error,
   } = useCsvUpload(props);
+
+  const fileErrors =
+    validation?.errors.filter(
+      (e) => e.column in validation.errorMap.fileErrors
+    ) ?? [];
+
+  const hasErrors = !!error || (validation && validation.errors.length > 0);
+  const isUploaded = canImport || isImporting;
+  const status = hasErrors ? "error" : isUploaded ? "success" : undefined;
 
   const handleCancel = useCallback(async () => {
     await cancelImport();
@@ -147,33 +170,60 @@ export const CsvUpload = (props: CsvUploadProps) => {
         className={`${classBase}-dropZone`}
         disabled={schema === undefined || isProcessingFile || isImporting}
         onDrop={onDrop}
-        status={
-          validation && validation.errors.length > 0 ? "error" : undefined
-        }
+        status={status}
       >
-        <FileDropZoneIcon />
-        {validation && validation.errors.length > 0 ? (
+        {isUploaded ? (
           <>
-            <div>Your file contains errors</div>
-            <ul className={`${classBase}-errorList`}>
-              {validation.errors
-                .filter((e) => e.column in validation.errorMap.fileErrors)
-                .map((error, i) => (
-                  <li className={`${classBase}-errorItem`} key={i}>
-                    {error.message}
-                  </li>
-                ))}
-            </ul>
-            <div>Please rectify and reupload</div>
+            <FileDropZoneIcon status="success" />
+            <strong>Upload completed</strong>
           </>
         ) : (
-          <div>Drop a file here or</div>
+          <>
+            <FileDropZoneIcon status={hasErrors ? "error" : undefined} />
+            {validation && validation.errors.length > 0 ? (
+              <>
+                <div>Your file contains errors</div>
+                {fileErrors.length > 0 && (
+                  <ul className={`${classBase}-errorList`}>
+                    {fileErrors.map((error, i) => (
+                      <li
+                        className={`${classBase}-errorItem`}
+                        key={`${error.column}-${error.message}-${i}`}
+                      >
+                        {error.message}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div>Please rectify and reupload</div>
+              </>
+            ) : (
+              <div>Drop a file here or</div>
+            )}
+            <FileDropZoneTrigger accept=".csv,text/csv" onChange={onTriggerChange}>
+              BROWSE FILES
+            </FileDropZoneTrigger>
+            <Text>Only .csv files</Text>
+            {children}
+          </>
         )}
-        <FileDropZoneTrigger accept=".csv,text/csv" onChange={onTriggerChange}>
-          BROWSE FILES
-        </FileDropZoneTrigger>
       </FileDropZone>
-      {children}
+      {error &&
+        (renderError ? (
+          renderError(error)
+        ) : (
+          <div className={`${classBase}-errors`}>
+            <div>
+              <strong>Import Error:</strong>
+            </div>
+            <div>
+              {error.errors.importError?.message ||
+                error.errors.schemaError?.message ||
+                error.errors.validationError?.message ||
+                "An unexpected error occurred during import."}
+            </div>
+          </div>
+        ))}
     </div>
   );
 

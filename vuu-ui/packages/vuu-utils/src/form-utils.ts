@@ -138,7 +138,7 @@ export function getTypedValue(
 
     case "long": {
       if (stringIsValidLong(value)) {
-        return BigInt(value);
+        return value;
       } else if (throwIfInvalid) {
         throw Error(`value ${value} is not a valid ${type}`);
       } else {

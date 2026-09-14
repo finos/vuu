@@ -12,33 +12,30 @@ trait ImportSessionRpcHandler extends EditTableRpcHandler {
 
   def addRow(params: RpcParams): RpcFunctionResult = {
 
-    if (params.viewPort.table.asTable.size() >= maxSessionTableSize) {
+    val sessionTableSize = params.viewPort.table.asTable.size()
+    if (sessionTableSize >= maxSessionTableSize) {
       return new RpcFunctionFailure("Unable to add row. Session table reached max size.")
     }
 
     params.namedParams.get("data") match {
       case Some(data: Map[_, _]) =>
-        data.asInstanceOf[Map[String, Any]].get(VuuRowNum) match {
-          case Some(rowNum: String) =>
-            data.asInstanceOf[Map[String, Any]].get(MSG.name) match {
-              case Some(vuuMsg: String) => addRowWithVuuMsg(rowNum, vuuMsg, params)
-              case _ => addRowWithoutVuuMsg(params)
-            }
-          case _ => new RpcFunctionFailure("Unable to add row. Row number missing.")
+        val rowKey = (sessionTableSize + 1).toString
+        data.asInstanceOf[Map[String, Any]].get(MSG.name) match {
+          case Some(vuuMsg: String) => addRowWithVuuMsg(rowKey, vuuMsg, params)
+          case _ => addRowWithoutVuuMsg(rowKey, params)
         }
       case _ => new RpcFunctionFailure("Unable to add row. Data missing.")
     }
   }
 
-  protected def addRowWithVuuMsg(rowNum: String, vuuMsg: String, params: RpcParams): RpcFunctionResult = {
+  protected def addRowWithVuuMsg(rowKey: String, vuuMsg: String, params: RpcParams): RpcFunctionResult = {
     params.viewPort.table.asTable.processUpdate(
-      rowNum,
-      RowWithData(rowNum, Map(VuuRowNum -> rowNum, MSG.name -> vuuMsg))
+      RowWithData(rowKey, Map(VuuRowNum -> rowKey, MSG.name -> vuuMsg))
     )
     RpcFunctionSuccess(None)
   }
 
-  protected def addRowWithoutVuuMsg(params: RpcParams): RpcFunctionResult
+  protected def addRowWithoutVuuMsg(rowKey: String, params: RpcParams): RpcFunctionResult
 
   def deleteRow(params: RpcParams): RpcFunctionResult = {
     new RpcFunctionFailure(rpcNotSupportedMsg)

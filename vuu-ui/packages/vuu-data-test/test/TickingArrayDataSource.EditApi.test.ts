@@ -75,13 +75,13 @@ describe("addRow", () => {
     );
   });
 
-  it("returns the server error message string on failure", async () => {
+  it("returns the server error on failure", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(ERROR("row already exists"));
 
     const result = await ds.addRow({ name: "Alice" });
 
-    expect(result).toBe("row already exists");
+    expect(result).toEqual(ERROR("row already exists"));
   });
 });
 
@@ -153,7 +153,7 @@ describe("deleteSelectedRows", () => {
 
   it("returns the RpcResult unchanged on success", async () => {
     const ds = createDataSource();
-    const success = { type: "SUCCESS_RESULT" as const, data: { deletedKeys: ["row-001", "row-002"] } };
+    const success = { type: "SUCCESS_RESULT" as const, data: undefined };
     vi.mocked(ds.rpcRequest).mockResolvedValue(success);
 
     const result = await ds.deleteSelectedRows();

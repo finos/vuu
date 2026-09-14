@@ -30,6 +30,7 @@ export {
 
 export {
   validateCsvAgainstSchema,
+  type CsvColumnValidator,
   type CsvValidationOptions,
   type CsvValidationResult,
 } from "./csv-schema-validation";

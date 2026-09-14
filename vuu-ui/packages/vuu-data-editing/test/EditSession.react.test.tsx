@@ -1,4 +1,4 @@
-import type { DataSource, EditApi } from "@vuu-ui/vuu-data-types";
+import type { DataSource } from "@vuu-ui/vuu-data-types";
 import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import {
@@ -41,14 +41,14 @@ vi.hoisted(() => {
 const SUCCESS = { data: undefined, type: "SUCCESS_RESULT" as const };
 
 const createEditSession = () => {
-  const dataSource: EditApi = {
+  const dataSource: DataSource = {
     createSessionDataSource: vi.fn(
       async () => dataSource as unknown as DataSource,
     ),
     editCell: vi.fn().mockResolvedValue(SUCCESS),
     endEditSession: vi.fn(),
     undoRowChange: vi.fn().mockResolvedValue(SUCCESS),
-  };
+  } as unknown as DataSource;
   return new EditSession({ dataSource: dataSource });
 };
 
@@ -174,13 +174,13 @@ describe("EditSession React consumers", () => {
 
   it("initializes remounted edit buttons from stale state and force saves", async () => {
     const staleError = new StaleUpdateError("stale");
-    const dataSource: EditApi = {
+    const dataSource: DataSource = {
       createSessionDataSource: vi.fn(
         async () => dataSource as unknown as DataSource,
       ),
       editCell: vi.fn().mockResolvedValue(SUCCESS),
       endEditSession: vi.fn().mockRejectedValue(staleError),
-    };
+    } as unknown as DataSource;
     const editSession = new EditSession({ dataSource: dataSource });
     const onSave = vi.fn();
     await editSession.begin();

@@ -3,12 +3,12 @@
 import "./global-mocks";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 //----------------------------------------------------
-import {
+import type {
   ServerAPI,
   WithBaseFilter,
   WithFullConfig,
 } from "@vuu-ui/vuu-data-types";
-import {
+import type {
   LinkDescriptorWithLabel,
   VuuSortCol,
 } from "@vuu-ui/vuu-protocol-types";
@@ -21,7 +21,7 @@ type ConfigType = WithBaseFilter<WithFullConfig>;
 vi.mock("../src/ConnectionManager", () => ({
   default: {
     serverAPI: new Promise<ServerAPI>((resolve) => {
-      // @ts-ignore
+      // @ts-expect-error
       resolve({
         rpcCall: vi.fn(),
         send: vi.fn(),
@@ -796,6 +796,23 @@ describe("VuuDataSource createSessionDataSource session config", () => {
     const session = await dataSource.createSessionDataSource("All", "export");
 
     expect(session?.columns).toEqual(["bbg", "currency", "description"]);
+  });
+
+  it("stores the source datasource on created session datasources", async () => {
+    const { rpcCall } = await ConnectionManager.serverAPI;
+    vi.mocked(rpcCall).mockResolvedValueOnce(sessionTableResponse as any);
+    const dataSource = await subscribedDataSource({ table });
+    const otherDataSource = new VuuDataSource({
+      table: { module: "SIMUL", table: "orders" },
+    });
+
+    const session = await dataSource.createSessionDataSource("All", "export");
+
+    expect(session?.isSessionDataSourceOf(dataSource)).toBe(true);
+    expect(session?.isSessionDataSourceOf(otherDataSource)).toBe(false);
+    expect(dataSource.isSessionDataSourceOf(session as VuuDataSource)).toBe(
+      false,
+    );
   });
 
   it("rejects when the returned session table's module does not match session.table", async () => {

@@ -16,6 +16,7 @@ export enum CsvValidationErrorEnum {
   MAX_ROWS_EXCEEDED = "MAX_ROWS_EXCEEDED",
   EMPTY_NON_STRING_VALUE = "EMPTY_NON_STRING_VALUE",
   TYPE_MISMATCH = "TYPE_MISMATCH",
+  CUSTOM_VALIDATION = "CUSTOM_VALIDATION",
 }
 
 export type CsvErrorMap<TError extends string> = {

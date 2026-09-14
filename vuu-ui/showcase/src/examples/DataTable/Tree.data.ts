@@ -2765,6 +2765,14 @@ export default [
               path: "src/examples/Table/InlineAddRow.examples.tsx",
             },
           },
+          {
+            id: "Table/TableEditing/InlineAddRowWithServerRejection",
+            label: "InlineAddRowWithServerRejection",
+            nodeData: {
+              componentName: "InlineAddRowWithServerRejection",
+              path: "src/examples/Table/InlineAddRow.examples.tsx",
+            },
+          },
         ],
       },
       {
