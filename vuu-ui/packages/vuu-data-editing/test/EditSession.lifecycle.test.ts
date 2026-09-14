@@ -86,11 +86,7 @@ describe("EditSession lifecycle", () => {
     createSession = vi.fn(
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
-    const dataSource = new MockDataSource(
-      endEdit,
-      createSession,
-      editCell,
-    ) as unknown as DataSource;
+    const dataSource = new MockDataSource(endEdit, createSession, editCell) as unknown as DataSource;
     editSession = new EditSession({ dataSource: dataSource });
   });
 
@@ -112,12 +108,7 @@ describe("EditSession lifecycle", () => {
       type: "SUCCESS_RESULT",
     });
     editSession = new EditSession({
-      dataSource: new MockDataSource(
-        endEdit,
-        createSession,
-        editCell,
-        addRow,
-      ) as unknown as DataSource,
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) as unknown as DataSource,
     });
 
     await editSession.addRow({ id: 7, name: "Alice" });
@@ -132,12 +123,7 @@ describe("EditSession lifecycle", () => {
       type: "ERROR_RESULT",
     });
     editSession = new EditSession({
-      dataSource: new MockDataSource(
-        endEdit,
-        createSession,
-        editCell,
-        addRow,
-      ) as unknown as DataSource,
+      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) as unknown as DataSource,
     });
 
     await editSession.addRow({ id: 7 });
