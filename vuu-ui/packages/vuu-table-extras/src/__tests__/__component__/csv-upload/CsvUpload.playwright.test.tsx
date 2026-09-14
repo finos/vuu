@@ -325,3 +325,30 @@ test.describe("Given a CsvUpload with an import table", () => {
     await expect(page.locator("button", { hasText: "Import" })).toBeEnabled();
   });
 });
+
+test.describe("Given a CsvUpload with custom validators", () => {
+  test("WHEN data violates custom validation THEN the drop zone displays error state and disables import", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvUpload/CsvUploadWithValidators");
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "custom-validators.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from("id,name,price\nspecial,Normal Name,-5.0\n"),
+    });
+
+    await expect(page.locator(".saltFileDropZone")).toHaveClass(
+      /saltFileDropZone-error/,
+      { timeout: 5000 },
+    );
+    await expect(page.locator(".vuuCsvUpload-dropZone")).toContainText(
+      "Your file contains errors",
+    );
+    await expect(page.locator(".vuuCsvUpload-dropZone")).toContainText(
+      "Please rectify and reupload",
+    );
+    await expect(page.locator("button", { hasText: "Import" })).toBeDisabled();
+  });
+});

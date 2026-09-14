@@ -22,6 +22,7 @@ export {
 } from "./data-upload-preview/DataUploadPreview";
 export {
   validateCsvAgainstSchema,
+  type CsvColumnValidator,
   type CsvValidationOptions,
   type CsvValidationResult,
 } from "./parse/csv-schema-validation";

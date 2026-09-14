@@ -48,7 +48,7 @@ describe("parseCsv", () => {
 
     expect(result.error?.errorMap.fileErrors).toEqual({});
     expect(result.error?.errorMap.rowErrors).toEqual({
-      2: {
+      1: {
         "*": [CsvParseErrorEnum.UNQUOTED_VALUE],
       },
     });
@@ -68,7 +68,7 @@ describe("parseCsv", () => {
     const result = parseCsv(csv);
 
     expect(result.error?.errorMap.rowErrors).toEqual({
-      2: {
+      1: {
         "*": [CsvParseErrorEnum.ROW_COLUMN_COUNT_MISMATCH],
       },
     });
