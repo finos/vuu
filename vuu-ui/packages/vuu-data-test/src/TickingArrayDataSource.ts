@@ -17,6 +17,7 @@ import type {
 } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
+  RpcResult,
   RpcResultError,
   RpcResultSuccess,
   VuuCreateVisualLink,
@@ -260,7 +261,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
 
   addRow = async (
     rowData: Record<string, VuuRowDataItemType> = {},
-  ): Promise<true | string> => {
+  ): Promise<RpcResult> => {
     const keyValue = rowData[this.tableSchema.key];
     const key =
       keyValue !== undefined
@@ -273,10 +274,12 @@ export class TickingArrayDataSource extends ArrayDataSource {
       rpcName: "addRow",
       params: { key, data: rowData },
     });
-    if (isRpcSuccess(response)) {
-      return true;
-    }
-    return response?.errorMessage ?? "addRow failed";
+    return (
+      response ?? {
+        type: "ERROR_RESULT",
+        errorMessage: "addRow failed",
+      }
+    );
   };
 
   deleteRow = async (

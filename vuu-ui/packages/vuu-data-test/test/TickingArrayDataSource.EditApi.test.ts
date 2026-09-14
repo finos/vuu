@@ -75,13 +75,13 @@ describe("addRow", () => {
     );
   });
 
-  it("returns the server error message string on failure", async () => {
+  it("returns the server error on failure", async () => {
     const ds = createDataSource();
     vi.mocked(ds.rpcRequest).mockResolvedValue(ERROR("row already exists"));
 
     const result = await ds.addRow({ name: "Alice" });
 
-    expect(result).toBe("row already exists");
+    expect(result).toEqual(ERROR("row already exists"));
   });
 });
 
