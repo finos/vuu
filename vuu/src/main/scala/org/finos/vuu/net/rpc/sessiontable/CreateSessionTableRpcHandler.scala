@@ -1,6 +1,5 @@
 package org.finos.vuu.net.rpc.sessiontable
 
-import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.{InMemSessionDataTable, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.sessiontable.SessionTableCopyOption.{All, Empty, Selected}
@@ -41,10 +40,14 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
       return new RpcFunctionFailure("Table not editable")
     }
 
-    val copyOption = SessionTableCopyOption.fromString(params.namedParams("copyOption").asInstanceOf[String])
     val sessionTableName = params.namedParams.get("sessionTableName") match {
-      case Some(value) => value.asInstanceOf[String]
-      case None => s"edit-${sourceTable.name}"
+      case Some(value: String) => value
+      case _ => s"edit-${sourceTable.name}"
+    }
+
+    val copyOption = params.namedParams.get("copyOption") match {
+      case Some(value: String) => SessionTableCopyOption.fromString(value)
+      case _ => return new RpcFunctionFailure("Missing or invalid copy option.")
     }
 
     val columnsToCopy =
@@ -76,8 +79,8 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
     }
 
     val sessionTableName = params.namedParams.get("sessionTableName") match {
-      case Some(value) => value.asInstanceOf[String]
-      case None => s"import-${sourceTable.name}"
+      case Some(value: String) => value
+      case _ => s"import-${sourceTable.name}"
     }
 
     val columnsToCopy =
@@ -94,13 +97,18 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
     RpcFunctionSuccess(Some(OpenDialogViewPortAction(ViewPortTable(sessionTable.name, sessionTable.tableDef.getModule().name), "")))
   }
 
-  def createSessionTableForExport(params: RpcParams): RpcFunctionResult = {
-    // No permission check by default. Allow export for all users.
+  private def createSessionTableForExport(params: RpcParams): RpcFunctionResult = {
     val session: ClientSessionId = params.ctx.session
     val sourceTable = params.viewPort.table
+
     val sessionTableName = params.namedParams.get("sessionTableName") match {
-      case Some(value) => value.asInstanceOf[String]
-      case None => s"export-${sourceTable.name}"
+      case Some(value: String) => value
+      case _ => s"export-${sourceTable.name}"
+    }
+
+    val copyOption = params.namedParams.get("copyOption") match {
+      case Some(value: String) => SessionTableCopyOption.fromString(value)
+      case _ => return new RpcFunctionFailure("Missing or invalid copy option.")
     }
 
     val columnsToCopy =
@@ -113,11 +121,12 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
 
     val sessionTableSource = tableContainer.getTable(sessionTableName)
     val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)
-    copyDataToSessionTable(All, params.viewPort, sessionTable, columnsToCopy)
+    copyDataToSessionTable(copyOption, params.viewPort, sessionTable, columnsToCopy)
+
     RpcFunctionSuccess(Some(OpenDialogViewPortAction(ViewPortTable(sessionTable.name, sessionTable.tableDef.getModule().name), "")))
   }
 
-  def copyDataToSessionTable(copyOption: SessionTableCopyOption, vp: ViewPort, sessionTable: InMemSessionDataTable, columns: List[String]): Unit = {
+  private def copyDataToSessionTable(copyOption: SessionTableCopyOption, vp: ViewPort, sessionTable: InMemSessionDataTable, columns: List[String]): Unit = {
     copyOption match {
       case All =>
         val vpColumns = ViewPortColumnCreator.create(vp.table.asTable, columns)
@@ -137,14 +146,13 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
 
   private def getColumnsToCopy(params: RpcParams, sourceTable: RowSource): List[String] = {
     val columnsToCopy = params.namedParams.get("columnsToCopy") match {
-      case Some(value) =>
-        val columnsToCopyStr = value.asInstanceOf[String]
-        if (columnsToCopyStr == null || columnsToCopyStr.isBlank || columnsToCopyStr.equals("*")) {
+      case Some(value: String) =>
+        if (value == null || value.isBlank || value.equals("*")) {
           sourceTable.asTable.getTableDef.customColumns.map(_.name).toList // exclude default columns
         } else {
-          columnsToCopyStr.split(",").toList
+          value.split(",").toList
         }
-      case None =>
+      case _ =>
         sourceTable.asTable.getTableDef.customColumns.map(_.name).toList // exclude default columns
     }
 
