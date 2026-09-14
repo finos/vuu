@@ -7,7 +7,13 @@ enum SessionTableCopyOption(val name: String) {
 }
 
 object SessionTableCopyOption {
+
   def fromString(s: String): SessionTableCopyOption = {
     SessionTableCopyOption.values.find(_.name == s).getOrElse(Empty)
   }
+
+  val ALL: SessionTableCopyOption = SessionTableCopyOption.All
+  val SELECTED: SessionTableCopyOption = SessionTableCopyOption.Selected
+  val EMPTY: SessionTableCopyOption = SessionTableCopyOption.Empty
+
 }

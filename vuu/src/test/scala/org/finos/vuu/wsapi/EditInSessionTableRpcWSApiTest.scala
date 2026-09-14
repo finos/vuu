@@ -3,7 +3,7 @@ package org.finos.vuu.wsapi
 import org.finos.vuu.api.{SessionTableDef, ViewPortDef}
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net.rpc.sessiontable.{CreateSessionTableRpcHandler, EndSessionRpcHandler}
+import org.finos.vuu.net.rpc.sessiontable.{CreateSessionTableRpcHandler, EndSessionRpcHandler, SessionTableCopyOption}
 import org.finos.vuu.net.rpc.{AllowAllRpcPermissionChecker, DisableAllRpcPermissionChecker, RpcErrorResult, RpcNames, RpcParams, RpcPermissionChecker, RpcSuccessResult, ViewPortContext}
 import org.finos.vuu.net.{RpcRequest, RpcResponseNew, SelectRowRangeRequest, SelectRowRangeSuccess, SelectRowRequest, SelectRowSuccess}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
@@ -425,7 +425,8 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         RpcNames.CreateSessionTableRpc,
         params = Map(
           "sessionType" -> "export",
-          "sessionTableName" -> sessionTableName1
+          "sessionTableName" -> sessionTableName1,
+          "copyOption" -> SessionTableCopyOption.All.name
         ))
       val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 
@@ -449,7 +450,8 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         ViewPortContext(viewPortId),
         RpcNames.CreateSessionTableRpc,
         params = Map(
-          "sessionType" -> "export"
+          "sessionType" -> "export",
+          "copyOption" -> SessionTableCopyOption.All.name
         ))
       val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 
@@ -474,7 +476,8 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
         RpcNames.CreateSessionTableRpc,
         params = Map(
           "sessionType" -> "export",
-          "sessionTableName" -> sessionTableName1
+          "sessionTableName" -> sessionTableName1,
+          "copyOption" -> SessionTableCopyOption.All.name
         ))
       val requestId = vuuClient.send(sessionId, createSessionTableRequest)
 
@@ -487,6 +490,37 @@ class EditInSessionTableRpcWSApiTest extends WebSocketApiTestBase {
       sessionTableName.contains("simple-testSessionTable1") shouldBe true
 
       createViewPortAndVerifyDataSize(sessionTableName, moduleName, 3)
+    }
+
+    Scenario("create a session table from source table with a selection") {
+      Given("a view port exists")
+      val viewPortId = createViewPort(tableName1)
+
+      And("I select two rows")
+      val selectRowRequest = SelectRowRangeRequest(viewPortId, "row1", "row2", false)
+      vuuClient.send(sessionId, selectRowRequest)
+      vuuClient.awaitForMsgWithBody[SelectRowRangeSuccess]
+
+      When("request creating a session table for selected rows")
+      val createSessionTableRequest = RpcRequest(
+        ViewPortContext(viewPortId),
+        RpcNames.CreateSessionTableRpc,
+        params = Map(
+          "sessionType" -> "export",
+          "copyOption" -> SessionTableCopyOption.Selected.name
+        ))
+      val requestId = vuuClient.send(sessionId, createSessionTableRequest)
+
+      Then("session table is created using default name")
+      val response = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual RpcNames.CreateSessionTableRpc
+      val rpcResult = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      val sessionTableName = rpcResult.data.asInstanceOf[Map[String, Any]]("table").asInstanceOf[Map[String, String]]("table")
+      sessionTableName.contains("simple-export-testTable1") shouldBe true
+
+      And("Only two rows have been exported")
+      createViewPortAndVerifyDataSize(sessionTableName, moduleName, 2)
     }
   }
 
