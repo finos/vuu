@@ -15,7 +15,7 @@
     <properties>
         <vuu.sttp.client4.version>4.0.26</vuu.sttp.client4.version>
         <vuu.typesafe.conf.version>1.4.9</vuu.typesafe.conf.version>
-        <vuu.vertx.version>5.1.6</vuu.vertx.version>
+        <vuu.vertx.version>5.1.8</vuu.vertx.version>
     </properties>
 
     <modules>
