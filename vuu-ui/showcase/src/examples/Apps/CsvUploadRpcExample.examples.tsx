@@ -128,7 +128,7 @@ const CsvUploadRpcLifecycleExampleContent = () => {
     addTransition(phaseLabelById["processing"]);
   }, [addTransition]);
 
-  const handleImportSessionStarted = useCallback(
+  const handleImportSessionReady = useCallback(
     (dataSource: DataSource) => {
       setSessionTable(dataSource.table as CsvUploadSessionTable);
       setPhase("preview-ready");
@@ -232,7 +232,7 @@ const CsvUploadRpcLifecycleExampleContent = () => {
         onCancel={handleCancel}
         onClose={handleClose}
         onProcessingStarted={handleProcessingStarted}
-        onImportSessionStarted={handleImportSessionStarted}
+        onImportSessionReady={handleImportSessionReady}
         onImportSessionEnded={handleImportSessionEnded}
         onError={handleError}
         open={dialogOpen}

@@ -1,5 +1,6 @@
 export { DataEditingProvider, useEditSession } from "./DataEditingProvider";
 export { useCellEdited } from "./useCellEdited";
+export { useEditState } from "./useEditState";
 export {
   getVuuEditMessage,
   isInlineEditingSession,

@@ -18,7 +18,7 @@ import { CsvUpload } from "@vuu-ui/vuu-table-extras";
   onCancel={handleCancel}
   onClose={handleClose}
   onProcessingStarted={handleProcessingStarted}
-  onImportSessionStarted={handleImportSessionStarted}
+  onImportSessionReady={handleImportSessionReady}
   onImportSessionEnded={handleImportSessionEnded}
   onImported={handleImported}
   onError={handleError}
@@ -41,7 +41,7 @@ import { CsvUpload } from "@vuu-ui/vuu-table-extras";
 | `dialogTitle` | `string` | Dialog header text. Defaults to `"Import CSV"`. |
 | `parseOptions` | `CsvParseOptions` | Options passed to the CSV parser (see [Parse Options](#parse-options)). |
 | `onProcessingStarted` | `() => void` | Fired when a file starts being parsed and validated. |
-| `onImportSessionStarted` | `(dataSource: DataSource) => void` | Fired when the server-side session is open and a session `DataSource` is available for preview. |
+| `onImportSessionReady` | `(dataSource: DataSource) => void` | Fired when the server-side session is fully hydrated and a session `DataSource` is available for preview. |
 | `onImportSessionEnded` | `(result: CsvUploadSessionEndResult) => void` | Fired when the import session closes, whether by import, cancel, or failure. |
 | `onImported` | `(result: CsvUploadImportedResult) => void` | Fired after a successful import. |
 | `onPreview` | `(result: CsvUploadPreviewResult) => void` | In preview mode, fired when Import is pressed with the populated `EditSession`, session datasource, and normalized table data. |
@@ -79,7 +79,7 @@ processing          ← onProcessingStarted()
  ├─ parse / schema / validation errors ──► failed   ← onError({ errors })
  │
  ▼
-preview-ready       ← onImportSessionStarted(sessionDataSource)
+preview-ready       ← onImportSessionReady(sessionDataSource)
  │
  │  user clicks Import
  ▼
@@ -102,7 +102,7 @@ If the user cancels at any point:
 | Callback | Phase transition | Notes |
 |---|---|---|
 | `onProcessingStarted` | `→ processing` | Fires before parsing begins. No data available yet. |
-| `onImportSessionStarted` | `→ preview-ready` | Provides the populated session `DataSource`. |
+| `onImportSessionReady` | `→ preview-ready` | Provides the populated session `DataSource`. |
 | `onImportSessionEnded` | `→ imported` or `→ idle` | `reason` is `"saved"` on successful import, `"discarded"` on cancel, `"failed"` on error. `sessionTable` contains the Vuu session table reference. |
 | `onImported` | `→ imported` | Provides normalized `tableData`. |
 | `onError` | `→ failed` | See [Error Types](#error-types) below. |
@@ -251,7 +251,7 @@ By default the CSV is validated against `dataSource.tableSchema` and the session
 />
 ```
 
-`importSchema` does double duty: its column names become the session datasource columns, and it replaces `dataSource.tableSchema` as the schema the CSV is validated against. That second role is not optional — `processFile` validates the CSV *before* the session begins, and `useCsvUpload` does not subscribe to the session datasource itself (rows are added via `addRow` RPCs directly). When `onImportSessionStarted` fires, subscribing to the session datasource is left to the consumer (e.g. `<Table />` or `DataUploadPreview`) to manage viewport rendering. The import schema has to be known up front.
+`importSchema` does double duty: its column names become the session datasource columns, and it replaces `dataSource.tableSchema` as the schema the CSV is validated against. That second role is not optional — `processFile` validates the CSV *before* the session begins, and `useCsvUpload` does not subscribe to the session datasource itself (rows are added via `addRow` RPCs directly). When `onImportSessionReady` fires, subscribing to the session datasource is left to the consumer (e.g. `<Table />` or `DataUploadPreview`) to manage viewport rendering. The import schema has to be known up front.
 
 | Props | Behaviour |
 |---|---|
@@ -269,12 +269,12 @@ Notes:
 
 ## Displaying validation errors
 
-Use the `children` prop together with `onImportSessionStarted` to render an inline error table inside the `FileDropZone`. The session datasource already contains both valid and error rows; apply a `vuuMsg != ""` filter to show only error rows:
+Use the `children` prop together with `onImportSessionReady` to render an inline error table. The session datasource already contains both valid and error rows; apply a `vuuMsg != ""` filter to show only error rows:
 
 ```tsx
 const [sessionDataSource, setSessionDataSource] = useState<DataSource | undefined>();
 
-const handleImportSessionStarted = useCallback((sessionDs: DataSource) => {
+const handleImportSessionReady = useCallback((sessionDs: DataSource) => {
   sessionDs.filter = { filter: 'vuuMsg != ""' };
   setSessionDataSource(sessionDs);
 }, []);
@@ -292,7 +292,7 @@ const errorTableConfig: TableConfig = {
 
 <CsvUpload
   dataSource={dataSource}
-  onImportSessionStarted={handleImportSessionStarted}
+  onImportSessionReady={handleImportSessionReady}
   onImportSessionEnded={handleImportSessionEnded}
 >
   {sessionDataSource ? (

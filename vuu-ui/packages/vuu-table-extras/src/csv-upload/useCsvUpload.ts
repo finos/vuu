@@ -49,7 +49,7 @@ export interface CsvUploadHookProps {
   importTable?: VuuTable;
   maxRows?: number;
   onImportSessionEnded?: (result: CsvUploadSessionEndResult) => void;
-  onImportSessionStarted?: (dataSource: DataSource) => void;
+  onImportSessionReady?: (dataSource: DataSource) => void;
   onError?: (result: CsvUploadErrorResult | undefined) => void;
   onImported?: (result: CsvUploadImportedResult) => void;
   onPreview?: (result: CsvUploadPreviewResult) => void;
@@ -83,7 +83,7 @@ export const useCsvUpload = ({
   importSchema,
   importTable,
   onImportSessionEnded,
-  onImportSessionStarted,
+  onImportSessionReady,
   onError,
   onImported,
   onPreview,
@@ -338,7 +338,9 @@ export const useCsvUpload = ({
             throw Error(result);
           }
         } catch (error) {
-          rpcErrors.push(`${rowNum === 0 ? "Header" : `Row ${rowNum}`}: ${toErrorMessage(error)}`);
+          rpcErrors.push(
+            `${rowNum === 0 ? "Header" : `Row ${rowNum}`}: ${toErrorMessage(error)}`,
+          );
         }
       }
 
@@ -365,9 +367,8 @@ export const useCsvUpload = ({
     }
 
     setActiveSessionDataSource(sessionDataSource);
-    onImportSessionStarted?.(sessionDataSource);
     return sessionDataSource;
-  }, [editSession, onImportSessionStarted, setActiveSessionDataSource]);
+  }, [editSession, setActiveSessionDataSource]);
 
   const closePendingEditSession = useCallback(
     async (save: boolean) => {
@@ -472,7 +473,7 @@ export const useCsvUpload = ({
 
       if (mergedValidation.rows.length > 0) {
         try {
-          await beginEditSession();
+          const sessionDataSource = await beginEditSession();
           if (operationId !== operationIdRef.current) {
             return;
           }
@@ -481,6 +482,8 @@ export const useCsvUpload = ({
           if (!rowsAdded) {
             return;
           }
+
+          onImportSessionReady?.(sessionDataSource);
         } catch (error) {
           if (sessionDataSourceRef.current !== undefined) {
             await endEditSessionAndNotify(false, "failed");
@@ -517,6 +520,7 @@ export const useCsvUpload = ({
       endEditSessionAndNotify,
       schema,
       validators,
+      onImportSessionReady,
     ],
   );
 

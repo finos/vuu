@@ -152,6 +152,10 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       : "dirty";
   }
 
+  get isDirty(): boolean {
+    return this.editState !== "clean";
+  }
+
   #emitEditStateChange(oldState: EditState, force = false) {
     const newState = this.editState;
     if (force || newState !== oldState) {

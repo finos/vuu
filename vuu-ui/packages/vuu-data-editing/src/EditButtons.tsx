@@ -1,6 +1,7 @@
 import { Button } from "@salt-ds/core";
-import type { EditState, EditSession } from "./EditSession";
-import { useCallback, useEffect, useState } from "react";
+import type { EditSession } from "./EditSession";
+import { useCallback } from "react";
+import { useEditState } from "./useEditState";
 
 export interface EditButtonProps {
   canCancel: boolean;
@@ -27,9 +28,8 @@ export const EditButtons = ({
   onSave,
   saveLabel = "Save",
 }: EditButtonProps) => {
-  const [editState, setEditState] = useState<EditState>(
-    () => editSession?.editState ?? "clean",
-  );
+  const editState = useEditState(editSession);
+  const isDirty = editSession?.isDirty ?? false;
 
   const handleSave = useCallback(async () => {
     if (confirmSave) {
@@ -40,20 +40,12 @@ export const EditButtons = ({
   }, [confirmSave, editState, onSave]);
 
   const handleCancel = useCallback(async () => {
-    if (confirmCancel) {
+    if (confirmCancel && isDirty) {
       const confirmed = await confirmCancel();
       if (!confirmed) return;
     }
     onCancel?.();
-  }, [confirmCancel, onCancel]);
-
-  useEffect(() => {
-    if (editSession) {
-      setEditState(editSession.editState);
-      editSession.on("editState", setEditState);
-      return () => editSession.removeListener("editState", setEditState);
-    }
-  }, [editSession]);
+  }, [confirmCancel, isDirty, onCancel]);
 
   return (
     <>
