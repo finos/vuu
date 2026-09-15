@@ -44,11 +44,11 @@
         <!-- Dependencies -->
         <vuu.antlr.version>4.13.2</vuu.antlr.version>
         <vuu.assertj.version>3.27.7</vuu.assertj.version>
-        <vuu.jackson.version>3.1.5</vuu.jackson.version>
-        <vuu.junit.jupiter.version>6.1.2</vuu.junit.jupiter.version>
-        <vuu.logback.version>1.6.1</vuu.logback.version>
-        <vuu.metrics.version>4.2.39</vuu.metrics.version>
-        <vuu.netty.version>4.2.17.Final</vuu.netty.version>
+        <vuu.jackson.version>3.1.6</vuu.jackson.version>
+        <vuu.junit.jupiter.version>6.1.3</vuu.junit.jupiter.version>
+        <vuu.logback.version>1.6.3</vuu.logback.version>
+        <vuu.metrics.version>4.2.40</vuu.metrics.version>
+        <vuu.netty.version>4.2.18.Final</vuu.netty.version>
         <vuu.roaring.bitmap.version>1.6.14</vuu.roaring.bitmap.version>
         <vuu.scala.version>3.3.8</vuu.scala.version> <!-- Scala LTS -->
         <vuu.scala.logging.version>3.9.6</vuu.scala.logging.version>
