@@ -29,7 +29,7 @@ export const EditButtons = ({
   saveLabel = "Save",
 }: EditButtonProps) => {
   const editState = useEditState(editSession);
-  const isDirty = editState !== "clean";
+  const isDirty = editSession?.isDirty ?? false;
 
   const handleSave = useCallback(async () => {
     if (confirmSave) {

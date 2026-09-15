@@ -45,6 +45,10 @@ export class MockDataSource {
   editCell(...args: Parameters<EditCell>) {
     return this.edit(...args);
   }
+
+  addRow(_rowData?: any) {
+    return Promise.resolve({ data: undefined, type: "SUCCESS_RESULT" as const });
+  }
 }
 
 describe("EditSession", () => {
@@ -117,7 +121,7 @@ describe("EditSession", () => {
     expect(editSession.isDirty).toEqual(true);
 
     // Addition
-    editSession.addCount = 1;
+    await editSession.addRow({ id: "new-row-id" });
     expect(editSession.isDirty).toEqual(true);
 
     await editSession.end();
