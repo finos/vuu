@@ -83,7 +83,7 @@ export interface CsvUploadProps {
   importSchema?: TableSchema;
   /** Expected import table, used to validate the session table returned by the server. */
   importTable?: VuuTable;
-  onImportSessionStarted?: (dataSource: DataSource) => void;
+  onImportSessionReady?: (dataSource: DataSource) => void;
   onImportSessionEnded?: (result: CsvUploadSessionEndResult) => void;
   onError?: (result: CsvUploadErrorResult | undefined) => void;
   onImported?: (result: CsvUploadImportedResult) => void;

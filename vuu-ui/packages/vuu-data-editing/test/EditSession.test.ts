@@ -96,8 +96,31 @@ describe("EditSession", () => {
   it("returns correct state when edit session in progress", async () => {
     await editSession.begin();
     expect(editSession.inEditMode).toEqual(true);
+    expect(editSession.isDirty).toEqual(false);
     await editSession.end();
     expect(editSession.inEditMode).toEqual(false);
+  });
+
+  it("sets isDirty to true on valid cell edits, invalid edits, additions, and soft deletes", async () => {
+    await editSession.begin();
+    expect(editSession.isDirty).toEqual(false);
+
+    await editSession.commit("key-01", "col-1", 100, 150, true);
+    expect(editSession.isDirty).toEqual(true);
+
+    // Revert edit
+    await editSession.commit("key-01", "col-1", 150, 100, true);
+    expect(editSession.isDirty).toEqual(false);
+
+    // Invalid edit
+    await editSession.commit("key-01", "col-1", 100, "abc", false);
+    expect(editSession.isDirty).toEqual(true);
+
+    // Addition
+    editSession.addCount = 1;
+    expect(editSession.isDirty).toEqual(true);
+
+    await editSession.end();
   });
 
   it("increments edit count on first edit, emits edit event", async () => {
