@@ -67,3 +67,38 @@ The portal and module-admin logical connections both use
 `wss://localhost:8091/websocket-portal`. User-admin uses
 `wss://localhost:8092/websocket-user-admin`, and basket-trading uses
 `wss://localhost:8093/websocket-basket-trading`.
+
+## Local portal
+
+The local host keeps the same asynchronous Module Federation entry boundary and
+the same `App`/`PortalShell` UI as the authenticated host. Its bootstrap calls
+the federation runtime `init({ name: "host", remotes: [] })`, installs
+`AuthenticationProvider` in local mode, and injects `LocalDataSourceProvider`
+into `PortalShell`. It does not initialize Keycloak, exchange tokens, or open
+VUU websocket connections.
+
+The checked-in local registry loads the `basket-trading` and
+`feature-filter-table` manifests from ports 5005 and 5003. Their production
+exposures are unchanged; additional local adapter exposures explicitly ensure
+`basketModule` or `simulModule` is registered and then export the production
+feature. `@vuu-ui/vuu-data-test` is a strict Module Federation singleton so the
+host provider and both adapters resolve the same module container.
+
+Build the local proof and all producer artifacts from `vuu-ui`:
+
+```sh
+npm run build:mf:local
+```
+
+Serve the three generated artifacts in separate terminals:
+
+```sh
+npm --prefix portal-examples/feature-filter-table run start
+npm --prefix portal-examples/basket-trading run start
+npm --prefix portal-examples/portal-host run start:local
+```
+
+Open `http://localhost:5002`. To rebuild only the local host, run
+`npm run build:mf -- --portal-host --local`. The existing `npm run build:mf`
+and `portal-host` `build`/`start` commands continue to produce and serve the
+authenticated remote host.
