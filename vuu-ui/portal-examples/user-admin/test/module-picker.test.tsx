@@ -73,4 +73,26 @@ describe("ModulePicker", () => {
       selectedItem?.querySelector('[data-icon="cross"]'),
     ).not.toBeNull();
   });
+
+  it("accepts explicit item names", async () => {
+    await act(async () => {
+      root.render(
+        <ModulePicker
+          allItems={[
+            { name: "User Admin" },
+            { name: "Module Admin" },
+            { name: "Basket Trading" },
+          ]}
+        />,
+      );
+    });
+
+    expect(
+      Array.from(
+        container.querySelectorAll(
+          ".vuuItemPicker-availableList [data-name]",
+        ),
+      ).map((item) => item.getAttribute("data-name")),
+    ).toEqual(["Basket Trading", "Module Admin", "User Admin"]);
+  });
 });

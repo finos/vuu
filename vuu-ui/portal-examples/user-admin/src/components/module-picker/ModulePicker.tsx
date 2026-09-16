@@ -103,10 +103,14 @@ const ModulePickerAvailableListItem = ({
   );
 };
 
-export const ModulePicker = () => {
+export interface ModulePickerProps {
+  allItems?: ItemDescriptor[];
+}
+
+export const ModulePicker = ({ allItems: allItemsProp }: ModulePickerProps) => {
   const { remoteModules } = usePortalModuleRegistry();
   const [selectedItems, setSelectedItems] = useState<ItemDescriptor[]>([]);
-  const allItems = useMemo(
+  const moduleItems = useMemo(
     () =>
       remoteModules.map(({ loginRole, name, title }) => ({
         label: title ?? name,
@@ -114,6 +118,7 @@ export const ModulePicker = () => {
       })),
     [remoteModules],
   );
+  const allItems = allItemsProp ?? moduleItems;
 
   const handleSelectedItemsChange = useCallback(
     (items: readonly ItemDescriptor[]) => {
