@@ -14,7 +14,6 @@ import {
   type ItemPickerProps,
 } from "@vuu-ui/vuu-ui-controls";
 import { applyHighlighting } from "@vuu-ui/vuu-table";
-import { useSortable } from "@vuu-ui/vuu-utils";
 import { Option } from "@salt-ds/core";
 import cx from "clsx";
 
@@ -36,10 +35,6 @@ const ModulePickerSelectedListItem = ({
   searchPattern = "",
   ...optionProps
 }: SelectedListItemProps) => {
-  const { handleRef, ref } = useSortable({
-    id: item.name,
-    index,
-  });
   const valueWithHighlighting = applyHighlighting(
     getItemLabel(item),
     searchPattern,
@@ -59,15 +54,7 @@ const ModulePickerSelectedListItem = ({
       {...optionProps}
       className={cx(classNameProp, "vuuItemPickerListItem")}
       data-name={item.name}
-      ref={ref}
     >
-      <IconButton
-        data-embedded
-        appearance="transparent"
-        icon="draggable"
-        ref={handleRef}
-        size={16}
-      />
       {item.icon ? <Icon name={item.icon} /> : null}
       <span className="vuuItemPicker-text">{valueWithHighlighting}</span>
       <IconButton
