@@ -68,6 +68,8 @@ describe("ModulePicker", () => {
       ".vuuItemPickerListItem-action",
     );
     if (!addButton) throw new Error("Missing module add button");
+    expect(addButton.textContent).toContain("Add");
+    expect(addButton.querySelector('[data-icon="plus"]')).not.toBeNull();
 
     await act(async () => addButton.click());
 

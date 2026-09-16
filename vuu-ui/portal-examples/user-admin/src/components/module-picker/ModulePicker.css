@@ -25,4 +25,9 @@
     margin-left: 0;
     visibility: visible;
   }
+
+  .vuuModulePicker-addButton {
+    gap: var(--salt-spacing-100);
+    white-space: nowrap;
+  }
 }

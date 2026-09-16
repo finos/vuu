@@ -14,7 +14,7 @@ import {
   type ItemPickerProps,
 } from "@vuu-ui/vuu-ui-controls";
 import { applyHighlighting } from "@vuu-ui/vuu-table";
-import { Dropdown, Option } from "@salt-ds/core";
+import { Button, Dropdown, Option } from "@salt-ds/core";
 import cx from "clsx";
 
 import "./ModulePicker.css";
@@ -122,15 +122,15 @@ const ModulePickerAvailableListItem = ({
         {valueWithHighlighting}
       </span>
       <PermissionGroupPicker item={item} />
-      <IconButton
-        className="vuuItemPickerListItem-action"
-        data-embedded
-        appearance="transparent"
-        icon="plus"
+      <Button
+        className="vuuItemPickerListItem-action vuuModulePicker-addButton"
         onClick={onAdd}
-        size={16}
         disabled={disabled}
-      />
+        variant="secondary"
+      >
+        Add
+        <Icon name="plus" />
+      </Button>
     </Option>
   );
 };
