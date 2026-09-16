@@ -2,6 +2,7 @@ import { usePortalModuleRegistry } from "@vuu-ui/core/portal";
 import {
   type ComponentProps,
   type MouseEventHandler,
+  type SyntheticEvent,
   useCallback,
   useMemo,
   useState,
@@ -30,19 +31,31 @@ type AvailableListItemProps = ComponentProps<
 const getItemLabel = (item: ItemDescriptor) => item.label ?? item.name;
 const permissionGroups = ["read", "edit"] as const;
 
+const stopOptionEvent = (event: SyntheticEvent) => {
+  event.stopPropagation();
+};
+
 const PermissionGroupPicker = ({ item }: { item: ItemDescriptor }) => (
-  <Dropdown
-    aria-label={`${getItemLabel(item)} permission group`}
-    className="vuuModulePicker-permission"
-    defaultSelected={[item.group ?? permissionGroups[0]]}
-    variant="secondary"
+  <span
+    className="vuuModulePicker-permissionControl"
+    onClick={stopOptionEvent}
+    onKeyDown={stopOptionEvent}
+    onMouseDown={stopOptionEvent}
+    onPointerDown={stopOptionEvent}
   >
-    {permissionGroups.map((group) => (
-      <Option key={group} value={group}>
-        {group}
-      </Option>
-    ))}
-  </Dropdown>
+    <Dropdown
+      aria-label={`${getItemLabel(item)} permission group`}
+      className="vuuModulePicker-permission"
+      defaultSelected={[item.group ?? permissionGroups[0]]}
+      variant="secondary"
+    >
+      {permissionGroups.map((group) => (
+        <Option key={group} value={group}>
+          {group}
+        </Option>
+      ))}
+    </Dropdown>
+  </span>
 );
 
 const ModulePickerSelectedListItem = ({

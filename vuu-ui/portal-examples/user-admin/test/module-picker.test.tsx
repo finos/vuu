@@ -64,6 +64,12 @@ describe("ModulePicker", () => {
         '[aria-label="Orders permission group"]',
       ),
     ).not.toBeNull();
+    const permissionDropdown = availableItem?.querySelector(
+      '[aria-label="Orders permission group"]',
+    ) as HTMLButtonElement | null;
+    if (!permissionDropdown) throw new Error("Missing permission dropdown");
+    await act(async () => permissionDropdown.click());
+    expect(permissionDropdown.getAttribute("aria-expanded")).toBe("true");
     const addButton = availableItem?.querySelector(
       ".vuuItemPickerListItem-action",
     );

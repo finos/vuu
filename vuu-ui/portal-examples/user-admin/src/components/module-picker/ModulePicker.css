@@ -17,6 +17,10 @@
     white-space: normal;
   }
 
+  .vuuModulePicker-permissionControl {
+    display: contents;
+  }
+
   .vuuModulePicker-permission {
     min-width: 96px;
   }
