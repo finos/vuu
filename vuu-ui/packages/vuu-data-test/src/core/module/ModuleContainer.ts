@@ -1,4 +1,7 @@
-import { VuuModule } from "./VuuModule";
+import type { VuuModule } from "./VuuModule";
+
+// biome-ignore lint/suspicious/noExplicitAny: Modules use different table-name unions.
+type RegisteredVuuModule = VuuModule<any>;
 
 class ModuleContainer {
   private constructor() {
@@ -13,11 +16,14 @@ class ModuleContainer {
     return ModuleContainer.#instance;
   }
 
-  #modules = new Map<string, VuuModule>();
+  #modules = new Map<string, RegisteredVuuModule>();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  register(module: VuuModule<any>) {
+  register(module: RegisteredVuuModule) {
     this.#modules.set(module.name, module);
+  }
+
+  has(name: string) {
+    return this.#modules.has(name);
   }
 
   get(name: string) {
@@ -34,3 +40,10 @@ class ModuleContainer {
 }
 
 export default ModuleContainer.instance;
+
+export const ensureVuuModule = <T extends RegisteredVuuModule>(module: T) => {
+  if (!ModuleContainer.instance.has(module.name)) {
+    ModuleContainer.instance.register(module);
+  }
+  return module;
+};

@@ -6,6 +6,7 @@ import {
 } from "@salt-ds/core";
 import { VuuLogo } from "@vuu-ui/vuu-icons";
 import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
+import type { ComponentType, ReactNode } from "react";
 import { Route, Routes } from "react-router-dom";
 import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
 import { PortalModuleRegistryProvider } from "../portal-module-registry/PortalModuleRegistry";
@@ -23,12 +24,18 @@ const getRemoteRoutePath = (path: string) =>
   path.endsWith("*") ? path : `${path}/*`;
 
 export interface PortalShellProps {
+  DataSourceProvider?: ComponentType<{ children: ReactNode }>;
   id?: string;
   remoteModules: RemoteModuleDescriptor[];
   title: string;
 }
 
-export const PortalShell = ({ id, remoteModules, title }: PortalShellProps) => {
+export const PortalShell = ({
+  DataSourceProvider = VuuDataSourceProvider,
+  id,
+  remoteModules,
+  title,
+}: PortalShellProps) => {
   return (
     <SaltProviderNext
       accent={accentPurple}
@@ -37,7 +44,7 @@ export const PortalShell = ({ id, remoteModules, title }: PortalShellProps) => {
       mode="light"
       theme="vuu-theme"
     >
-      <VuuDataSourceProvider>
+      <DataSourceProvider>
         <FlexLayout className={classBase} id={id}>
           <FlexItem className={`${classBase}-leftPanel`}>
             <FlexLayout className={`${classBase}-leftPanel`} direction="column">
@@ -85,7 +92,7 @@ export const PortalShell = ({ id, remoteModules, title }: PortalShellProps) => {
             </FlexLayout>
           </FlexItem>
         </FlexLayout>
-      </VuuDataSourceProvider>
+      </DataSourceProvider>
     </SaltProviderNext>
   );
 };

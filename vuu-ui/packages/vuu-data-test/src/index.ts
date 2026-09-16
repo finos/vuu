@@ -1,5 +1,6 @@
 export * from "./ArrayProxy";
 export * from "./core/module/VuuModule";
+export { ensureVuuModule } from "./core/module/ModuleContainer";
 export { default as tableContainer } from "./core/table/TableContainer";
 export * from "./local-datasource-provider/LocalDatasourceProvider";
 export * from "./makeSuggestions";

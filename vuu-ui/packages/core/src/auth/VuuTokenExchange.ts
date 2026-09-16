@@ -1,5 +1,5 @@
 import type { User } from "./AuthHandler";
-import type { VuuModuleRegistry } from "@vuu-ui/vuu-protocol-types";
+import type { PortalModuleRegistry } from "../RemoteModuleDescriptor";
 import { parseVuuUserFromToken } from "./VuuUser";
 
 export interface VuuAuthTarget {
@@ -10,7 +10,7 @@ export interface VuuAuthTarget {
 
 export interface VuuSession {
   authorizations: string[];
-  moduleRegistry?: VuuModuleRegistry;
+  moduleRegistry?: PortalModuleRegistry;
   token: string;
   user: User;
 }

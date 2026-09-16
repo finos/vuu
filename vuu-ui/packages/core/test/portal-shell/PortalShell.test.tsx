@@ -13,7 +13,7 @@ vi.mock("@salt-ds/core", () => ({
 }));
 vi.mock("@vuu-ui/vuu-data-react", () => ({
   VuuDataSourceProvider: ({ children }: { children: ReactNode }) => (
-    <div>{children}</div>
+    <div data-provider="remote">{children}</div>
   ),
 }));
 vi.mock("@vuu-ui/vuu-icons", () => ({
@@ -75,6 +75,7 @@ describe("PortalShell module registry scope", () => {
   let root: Root;
 
   beforeEach(() => {
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
     container = document.createElement("div");
     document.body.append(container);
     root = createRoot(container);
@@ -108,5 +109,26 @@ describe("PortalShell module registry scope", () => {
       ["UserAdmin", "2"],
       ["Orders", "2"],
     ]);
+  });
+
+  it("uses an injected data source provider instead of the remote default", async () => {
+    const LocalDataSourceProvider = ({ children }: { children: ReactNode }) => (
+      <div data-provider="local">{children}</div>
+    );
+
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <PortalShell
+            DataSourceProvider={LocalDataSourceProvider}
+            remoteModules={[]}
+            title="Local Portal"
+          />
+        </MemoryRouter>,
+      );
+    });
+
+    expect(container.querySelector('[data-provider="local"]')).not.toBeNull();
+    expect(container.querySelector('[data-provider="remote"]')).toBeNull();
   });
 });

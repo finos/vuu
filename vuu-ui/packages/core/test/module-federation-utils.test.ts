@@ -97,9 +97,19 @@ describe("module-federation-utils", () => {
     expect(sharedDependencies["@vuu-ui/core/portal"].requiredVersion).toBe(
       versions.vuuVersion,
     );
+    expect(sharedDependencies["@vuu-ui/vuu-data-test"]).toEqual({
+      singleton: true,
+      requiredVersion: versions.vuuVersion,
+      strictVersion: true,
+    });
     const producerSharedDependencies = getSharedDependencies("producer");
     expect(
       producerSharedDependencies["@vuu-ui/core/portal"].requiredVersion,
     ).toBe(versions.vuuVersion);
+    expect(producerSharedDependencies["@vuu-ui/vuu-data-test"]).toEqual({
+      singleton: true,
+      requiredVersion: versions.vuuVersion,
+      strictVersion: true,
+    });
   });
 });
