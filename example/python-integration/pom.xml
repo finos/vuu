@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>example</artifactId>
-        <version>11.2.0</version>
+        <version>11.3.0-SNAPSHOT</version>
     </parent>
 
     <packaging>pom</packaging>
@@ -25,31 +25,31 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>11.2.0</version>
+            <version>11.3.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu-java</artifactId>
-            <version>11.2.0</version>
+            <version>11.3.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>price</artifactId>
-            <version>11.2.0</version>
+            <version>11.3.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>order</artifactId>
-            <version>11.2.0</version>
+            <version>11.3.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>permission</artifactId>
-            <version>11.2.0</version>
+            <version>11.3.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
