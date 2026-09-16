@@ -1,6 +1,6 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   AuthenticationProvider,
   useModuleRegistry,
@@ -43,9 +43,14 @@ describe("AuthenticationProvider local mode", () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
-  it("publishes the local registry and synthetic VUU session", async () => {
+  it("publishes the local registry and synthetic VUU session without network authentication", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    const webSocketConstructor = vi.fn();
+    vi.stubGlobal("WebSocket", webSocketConstructor);
     const Probe = () => {
       const moduleRegistry = useModuleRegistry();
       const connectionId = useVuuConnectionId();
@@ -81,6 +86,8 @@ describe("AuthenticationProvider local mode", () => {
       moduleCount: 1,
       token: "",
     });
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(webSocketConstructor).not.toHaveBeenCalled();
   });
 
   it("defaults to an empty registry", async () => {

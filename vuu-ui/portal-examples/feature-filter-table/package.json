@@ -5,7 +5,7 @@
   "scripts": {
     "build": "node ../../scripts/build-remote-module.ts",
     "dev": "rsbuild dev",
-    "start": "serve --cors -p 5003 ../../dist_portal/feature-filter-table"
+    "start": "ws --directory ../../dist_portal/feature-filter-table --spa index.html --port 5003"
   },
   "type": "module",
   "private": true,

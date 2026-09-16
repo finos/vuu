@@ -109,6 +109,9 @@ describe("PortalShell module registry scope", () => {
       ["UserAdmin", "2"],
       ["Orders", "2"],
     ]);
+    expect(container.querySelectorAll('[data-provider="remote"]')).toHaveLength(
+      2,
+    );
   });
 
   it("uses an injected data source provider instead of the remote default", async () => {

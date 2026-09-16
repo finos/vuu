@@ -5,7 +5,7 @@
   "scripts": {
     "build": "node ../../scripts/build-remote-module.ts",
     "dev": "rsbuild dev",
-    "start": "serve --cors -p 5005 ../../dist_portal/basket-trading"
+    "start": "ws --directory ../../dist_portal/basket-trading --spa index.html --port 5005"
   },
   "private": true,
   "keywords": [],
