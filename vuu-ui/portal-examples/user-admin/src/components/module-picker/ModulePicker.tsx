@@ -193,7 +193,6 @@ export const ModulePicker = ({ allItems: allItemsProp }: ModulePickerProps) => {
       AvailableListItem={ModulePickerAvailableListItem}
       className="vuuModulePicker"
       itemTypeName="module"
-      layout="v-available-selected"
       onSelectedItemsChange={handleSelectedItemsChange}
       SelectedListItem={ModulePickerSelectedListItem}
       selectedItems={selectedItems}

@@ -53,8 +53,8 @@ describe("ModulePicker", () => {
     const headers = container.querySelectorAll(
       ".vuuItemPicker-sectionHeader",
     );
-    expect(headers[0]?.textContent).toContain("available module");
-    expect(headers[1]?.textContent).toContain("modules in view");
+    expect(headers[0]?.textContent).toContain("modules in view");
+    expect(headers[1]?.textContent).toContain("available module");
 
     const availableItem = container.querySelector(
       '[data-name="orders-access"]',
