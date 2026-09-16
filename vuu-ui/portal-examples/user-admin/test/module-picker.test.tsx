@@ -70,6 +70,9 @@ describe("ModulePicker", () => {
     if (!permissionDropdown) throw new Error("Missing permission dropdown");
     await act(async () => permissionDropdown.click());
     expect(permissionDropdown.getAttribute("aria-expanded")).toBe("true");
+    expect(
+      document.querySelector('[role="listbox"][aria-multiselectable="true"]'),
+    ).not.toBeNull();
     const addButton = availableItem?.querySelector(
       ".vuuItemPickerListItem-action",
     );

@@ -47,6 +47,7 @@ const PermissionGroupPicker = ({ item }: { item: ItemDescriptor }) => (
       aria-label={`${getItemLabel(item)} permission group`}
       className="vuuModulePicker-permission"
       defaultSelected={[item.group ?? permissionGroups[0]]}
+      multiselect
       variant="secondary"
     >
       {permissionGroups.map((group) => (
