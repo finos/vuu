@@ -4,7 +4,8 @@
   "description": "Basket Trading",
   "scripts": {
     "build": "node ../../scripts/build-remote-module.ts",
-    "dev": "rsbuild dev"
+    "dev": "rsbuild dev",
+    "start": "serve --cors -p 5005 ../../dist_portal/basket-trading"
   },
   "private": true,
   "keywords": [],
@@ -23,6 +24,7 @@
   "dependencies": {
     "@vuu-ui/vuu-data-remote": "3.3.12",
     "@vuu-ui/vuu-data-react": "3.3.12",
+    "@vuu-ui/vuu-data-test": "3.3.12",
     "@vuu-ui/vuu-filters": "3.3.12",
     "@vuu-ui/vuu-layout": "3.3.12",
     "@vuu-ui/vuu-notifications": "3.3.12",
@@ -68,7 +70,8 @@
     },
     "module-federation": {
       "exposes": {
-        "./VuuBasketTradingFeature": "./src/VuuBasketTradingFeature"
+        "./VuuBasketTradingFeature": "./src/VuuBasketTradingFeature",
+        "./VuuBasketTradingFeatureLocal": "./src/VuuBasketTradingFeatureLocal"
       },
       "name": "basketTrading",
       "port": 5005

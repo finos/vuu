@@ -5,7 +5,7 @@
   "scripts": {
     "build": "node ../../scripts/build-remote-module.ts",
     "dev": "rsbuild dev",
-    "start": "serve -p 5001 ../../dist_portal/feature-filter-table"
+    "start": "serve --cors -p 5003 ../../dist_portal/feature-filter-table"
   },
   "type": "module",
   "private": true,
@@ -21,6 +21,7 @@
     "@vuu-ui/core": "3.3.12",
     "@vuu-ui/vuu-data-remote": "3.3.12",
     "@vuu-ui/vuu-data-react": "3.3.12",
+    "@vuu-ui/vuu-data-test": "3.3.12",
     "@vuu-ui/vuu-datatable": "3.3.12",
     "@vuu-ui/vuu-table-types": "3.3.12",
     "@vuu-ui/vuu-filters": "3.3.12",
@@ -49,7 +50,8 @@
     },
     "module-federation": {
       "exposes": {
-        "./VuuFilterTableFeature": "./src/VuuFilterTableFeature"
+        "./VuuFilterTableFeature": "./src/VuuFilterTableFeature",
+        "./VuuFilterTableFeatureLocal": "./src/VuuFilterTableFeatureLocal"
       },
       "name": "filterTable",
       "port": 5003
