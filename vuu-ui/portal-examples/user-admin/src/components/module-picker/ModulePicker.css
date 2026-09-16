@@ -1,0 +1,41 @@
+.vuuModulePicker {
+  .vuuModulePicker-listItem {
+    align-items: center;
+    display: grid;
+    gap: var(--salt-spacing-300);
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    height: auto;
+    min-height: calc(var(--salt-size-base) + var(--salt-spacing-200));
+    padding-left: var(--salt-spacing-300);
+    padding-right: var(--salt-spacing-300);
+    padding-block: var(--salt-spacing-200);
+  }
+
+  .vuuModulePicker-availableListItem {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .vuuModulePicker-moduleName {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .vuuModulePicker-permissionControl {
+    display: contents;
+  }
+
+  .vuuModulePicker-permission {
+    min-width: 180px;
+  }
+
+  .vuuItemPickerListItem-action {
+    margin-left: 0;
+    visibility: visible;
+  }
+
+  .vuuModulePicker-addButton {
+    gap: var(--salt-spacing-100);
+    white-space: nowrap;
+  }
+}
