@@ -1,6 +1,7 @@
 import { usePortalModuleRegistry } from "@vuu-ui/core/portal";
 import {
   type ComponentProps,
+  type ChangeEvent,
   type MouseEventHandler,
   type SyntheticEvent,
   useCallback,
@@ -15,7 +16,7 @@ import {
   type ItemPickerProps,
 } from "@vuu-ui/vuu-ui-controls";
 import { applyHighlighting } from "@vuu-ui/vuu-table";
-import { Button, Dropdown, Option } from "@salt-ds/core";
+import { Button, ComboBox, Option } from "@salt-ds/core";
 import cx from "clsx";
 
 import "./ModulePicker.css";
@@ -35,29 +36,42 @@ const stopOptionEvent = (event: SyntheticEvent) => {
   event.stopPropagation();
 };
 
-const PermissionGroupPicker = ({ item }: { item: ItemDescriptor }) => (
-  <span
-    className="vuuModulePicker-permissionControl"
-    onClick={stopOptionEvent}
-    onKeyDown={stopOptionEvent}
-    onMouseDown={stopOptionEvent}
-    onPointerDown={stopOptionEvent}
-  >
-    <Dropdown
-      aria-label={`${getItemLabel(item)} permission group`}
-      className="vuuModulePicker-permission"
-      defaultSelected={[item.group ?? permissionGroups[0]]}
-      multiselect
-      variant="secondary"
+const PermissionGroupPicker = ({ item }: { item: ItemDescriptor }) => {
+  const [value, setValue] = useState("");
+  const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setValue(event.target.value);
+  }, []);
+  const handleSelectionChange = useCallback(() => {
+    setValue("");
+  }, []);
+
+  return (
+    <span
+      className="vuuModulePicker-permissionControl"
+      onClick={stopOptionEvent}
+      onKeyDown={stopOptionEvent}
+      onMouseDown={stopOptionEvent}
+      onPointerDown={stopOptionEvent}
     >
-      {permissionGroups.map((group) => (
-        <Option key={group} value={group}>
-          {group}
-        </Option>
-      ))}
-    </Dropdown>
-  </span>
-);
+      <ComboBox
+        aria-label={`${getItemLabel(item)} permission group`}
+        className="vuuModulePicker-permission"
+        defaultSelected={[item.group ?? permissionGroups[0]]}
+        multiselect={true}
+        onChange={handleChange}
+        onSelectionChange={handleSelectionChange}
+        selectOnTab
+        value={value}
+      >
+        {permissionGroups.map((group) => (
+          <Option key={group} value={group}>
+            {group}
+          </Option>
+        ))}
+      </ComboBox>
+    </span>
+  );
+};
 
 const ModulePickerSelectedListItem = ({
   className: classNameProp,

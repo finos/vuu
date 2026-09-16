@@ -86,12 +86,14 @@ describe("ModulePicker", () => {
         '[aria-label="Orders permission group"]',
       ),
     ).not.toBeNull();
-    const permissionDropdown = selectedItem?.querySelector(
+    const permissionComboBox = selectedItem?.querySelector(
       '[aria-label="Orders permission group"]',
-    ) as HTMLButtonElement | null;
-    if (!permissionDropdown) throw new Error("Missing permission dropdown");
-    await act(async () => permissionDropdown.click());
-    expect(permissionDropdown.getAttribute("aria-expanded")).toBe("true");
+    ) as HTMLElement | null;
+    if (!permissionComboBox) throw new Error("Missing permission ComboBox");
+    const permissionInput = permissionComboBox.querySelector("input");
+    if (!permissionInput) throw new Error("Missing permission ComboBox input");
+    await act(async () => permissionInput.click());
+    expect(permissionInput.getAttribute("aria-expanded")).toBe("true");
     expect(
       document.querySelector('[role="listbox"][aria-multiselectable="true"]'),
     ).not.toBeNull();
