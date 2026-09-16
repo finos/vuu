@@ -1,0 +1,22 @@
+.vuuModulePicker {
+  .vuuModulePicker-listItem {
+    gap: var(--salt-spacing-300);
+    padding-left: var(--salt-spacing-300);
+    padding-right: var(--salt-spacing-300);
+  }
+
+  .vuuModulePicker-moduleName {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .vuuModulePicker-permission {
+    min-width: 96px;
+  }
+
+  .vuuItemPickerListItem-action {
+    visibility: visible;
+  }
+}

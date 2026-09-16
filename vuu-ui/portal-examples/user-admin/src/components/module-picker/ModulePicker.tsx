@@ -14,8 +14,10 @@ import {
   type ItemPickerProps,
 } from "@vuu-ui/vuu-ui-controls";
 import { applyHighlighting } from "@vuu-ui/vuu-table";
-import { Option } from "@salt-ds/core";
+import { Dropdown, Option } from "@salt-ds/core";
 import cx from "clsx";
+
+import "./ModulePicker.css";
 
 type SelectedListItemProps = ComponentProps<
   NonNullable<ItemPickerProps["SelectedListItem"]>
@@ -26,6 +28,22 @@ type AvailableListItemProps = ComponentProps<
 >;
 
 const getItemLabel = (item: ItemDescriptor) => item.label ?? item.name;
+const permissionGroups = ["read", "edit"] as const;
+
+const PermissionGroupPicker = ({ item }: { item: ItemDescriptor }) => (
+  <Dropdown
+    aria-label={`${getItemLabel(item)} permission group`}
+    className="vuuModulePicker-permission"
+    defaultSelected={[item.group ?? permissionGroups[0]]}
+    variant="secondary"
+  >
+    {permissionGroups.map((group) => (
+      <Option key={group} value={group}>
+        {group}
+      </Option>
+    ))}
+  </Dropdown>
+);
 
 const ModulePickerSelectedListItem = ({
   className: classNameProp,
@@ -52,11 +70,18 @@ const ModulePickerSelectedListItem = ({
   return (
     <Option
       {...optionProps}
-      className={cx(classNameProp, "vuuItemPickerListItem")}
+      className={cx(
+        classNameProp,
+        "vuuItemPickerListItem",
+        "vuuModulePicker-listItem",
+      )}
       data-name={item.name}
     >
       {item.icon ? <Icon name={item.icon} /> : null}
-      <span className="vuuItemPicker-text">{valueWithHighlighting}</span>
+      <span className="vuuItemPicker-text vuuModulePicker-moduleName">
+        {valueWithHighlighting}
+      </span>
+      <PermissionGroupPicker item={item} />
       <IconButton
         className="vuuItemPickerListItem-action"
         data-embedded
@@ -85,11 +110,18 @@ const ModulePickerAvailableListItem = ({
   return (
     <Option
       {...optionProps}
-      className={cx(classNameProp, "vuuItemPickerListItem")}
+      className={cx(
+        classNameProp,
+        "vuuItemPickerListItem",
+        "vuuModulePicker-listItem",
+      )}
       data-name={item.name}
       disabled={disabled}
     >
-      <span className="vuuItemPicker-text">{valueWithHighlighting}</span>
+      <span className="vuuItemPicker-text vuuModulePicker-moduleName">
+        {valueWithHighlighting}
+      </span>
+      <PermissionGroupPicker item={item} />
       <IconButton
         className="vuuItemPickerListItem-action"
         data-embedded
@@ -131,6 +163,7 @@ export const ModulePicker = ({ allItems: allItemsProp }: ModulePickerProps) => {
     <ItemPicker
       allItems={allItems}
       AvailableListItem={ModulePickerAvailableListItem}
+      className="vuuModulePicker"
       itemTypeName="module"
       layout="v-available-selected"
       onSelectedItemsChange={handleSelectedItemsChange}

@@ -59,7 +59,14 @@ describe("ModulePicker", () => {
     const availableItem = container.querySelector(
       '[data-name="orders-access"]',
     );
-    const addButton = availableItem?.querySelector("button");
+    expect(
+      availableItem?.querySelector(
+        '[aria-label="Orders permission group"]',
+      ),
+    ).not.toBeNull();
+    const addButton = availableItem?.querySelector(
+      ".vuuItemPickerListItem-action",
+    );
     if (!addButton) throw new Error("Missing module add button");
 
     await act(async () => addButton.click());
@@ -71,6 +78,11 @@ describe("ModulePicker", () => {
     expect(selectedItem?.querySelector('[data-icon="draggable"]')).toBeNull();
     expect(
       selectedItem?.querySelector('[data-icon="cross"]'),
+    ).not.toBeNull();
+    expect(
+      selectedItem?.querySelector(
+        '[aria-label="Orders permission group"]',
+      ),
     ).not.toBeNull();
   });
 
