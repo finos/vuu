@@ -63,16 +63,7 @@ describe("ModulePicker", () => {
       availableItem?.querySelector(
         '[aria-label="Orders permission group"]',
       ),
-    ).not.toBeNull();
-    const permissionDropdown = availableItem?.querySelector(
-      '[aria-label="Orders permission group"]',
-    ) as HTMLButtonElement | null;
-    if (!permissionDropdown) throw new Error("Missing permission dropdown");
-    await act(async () => permissionDropdown.click());
-    expect(permissionDropdown.getAttribute("aria-expanded")).toBe("true");
-    expect(
-      document.querySelector('[role="listbox"][aria-multiselectable="true"]'),
-    ).not.toBeNull();
+    ).toBeNull();
     const addButton = availableItem?.querySelector(
       ".vuuItemPickerListItem-action",
     );
@@ -94,6 +85,15 @@ describe("ModulePicker", () => {
       selectedItem?.querySelector(
         '[aria-label="Orders permission group"]',
       ),
+    ).not.toBeNull();
+    const permissionDropdown = selectedItem?.querySelector(
+      '[aria-label="Orders permission group"]',
+    ) as HTMLButtonElement | null;
+    if (!permissionDropdown) throw new Error("Missing permission dropdown");
+    await act(async () => permissionDropdown.click());
+    expect(permissionDropdown.getAttribute("aria-expanded")).toBe("true");
+    expect(
+      document.querySelector('[role="listbox"][aria-multiselectable="true"]'),
     ).not.toBeNull();
   });
 

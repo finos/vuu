@@ -11,6 +11,10 @@
     padding-block: var(--salt-spacing-200);
   }
 
+  .vuuModulePicker-availableListItem {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
   .vuuModulePicker-moduleName {
     min-width: 0;
     overflow-wrap: anywhere;

@@ -128,6 +128,7 @@ const ModulePickerAvailableListItem = ({
         classNameProp,
         "vuuItemPickerListItem",
         "vuuModulePicker-listItem",
+        "vuuModulePicker-availableListItem",
       )}
       data-name={item.name}
       disabled={disabled}
@@ -135,7 +136,6 @@ const ModulePickerAvailableListItem = ({
       <span className="vuuItemPicker-text vuuModulePicker-moduleName">
         {valueWithHighlighting}
       </span>
-      <PermissionGroupPicker item={item} />
       <Button
         className="vuuItemPickerListItem-action vuuModulePicker-addButton"
         onClick={onAdd}
