@@ -224,6 +224,18 @@
         fill: #FFE4E5;
       }
 
+      .url-box.is-visible {
+        pointer-events: auto;
+        cursor: text;
+      }
+
+      .url-box:hover rect,
+      .url-box:focus rect,
+      .url-box.is-active rect {
+        stroke: #BCECF1;
+        stroke-opacity: .8;
+      }
+
       .pulse.is-visible {
         animation: pulse 1.8s ease-in-out infinite;
         opacity: 1;
@@ -314,9 +326,9 @@
               <circle cx="40" cy="169" r="3" fill="#FF9A9F"/>
               <circle cx="51" cy="169" r="3" fill="#F6D47A"/>
               <circle cx="62" cy="169" r="3" fill="#75E6BF"/>
-              <g class="callout reveal-2">
+              <g class="callout url-box reveal-1" id="url-box" role="button" tabindex="0" aria-label="Portal address">
                 <rect x="82" y="157" width="220" height="24" rx="6" fill="#11263E" stroke="#6DC4ED" stroke-opacity=".34"/>
-                <text x="96" y="173" fill="#B9D7E5" font-size="11" font-weight="650">/nexus</text>
+                <text x="96" y="173" fill="#B9D7E5" font-size="11" font-weight="650" id="portal-url-text"></text>
               </g>
               <g class="callout reveal-3">
                 <rect x="42" y="207" width="256" height="150" rx="7" fill="#0C2238" fill-opacity=".28" stroke="#5BD6E2" stroke-opacity=".16" stroke-dasharray="5 8"/>
@@ -536,16 +548,16 @@
     <script>
       const stages = [
         {
-          title: "Open the portal",
-          copy: "You open a familiar web address. The first thing that arrives is the portal's welcoming shell.",
-          detail: "The browser asks the front door for the portal — just like opening any other website.",
-          status: "Starting point",
+          title: "Enter the portal address",
+          copy: "Click the browser address box to begin. The portal address will be typed here.",
+          detail: "The browser is ready for the first request, but nothing has been sent yet.",
+          status: "Click the address box",
         },
         {
-          title: "Enter the address",
-          copy: "You enter the portal address in the empty browser. The request now has somewhere to go.",
-          detail: "nginx appears as the edge entry point and returns the starting page.",
-          status: "URL entered",
+          title: "Request the portal shell",
+          copy: "The browser types /nexus and sends the request to nginx.",
+          detail: "nginx appears as the edge entry point for the portal shell.",
+          status: "Request sent",
         },
         {
           title: "Receive the page",
@@ -632,6 +644,8 @@
       const back = document.getElementById("back");
       const next = document.getElementById("next");
       const portalServerNode = document.getElementById("portal-server-node");
+      const urlBox = document.getElementById("url-box");
+      const urlText = document.getElementById("portal-url-text");
       const ordersMenuItem = document.getElementById("orders-menu-item");
       const revealItems = [...presentation.querySelectorAll("[class*=\"reveal-\"]")];
       let currentStep = 1;
@@ -639,15 +653,20 @@
       let authResponseVisible = false;
       let entitlementsReceived = false;
       let ordersSelected = false;
+      let urlTypingStarted = false;
+      let urlTypingTimer = null;
 
       function setStep(step) {
         currentStep = Math.max(1, Math.min(stages.length, step));
         presentation.dataset.step = currentStep;
         back.disabled = currentStep === 1;
-        next.disabled = currentStep === stages.length || (currentStep === 10 && !ordersSelected);
+        next.disabled = currentStep === stages.length
+          || (currentStep === 1 && !urlTypingStarted)
+          || (currentStep === 10 && !ordersSelected);
         next.innerHTML = currentStep === stages.length
           ? "Story complete <span aria-hidden=\"true\">✓</span>"
           : "Reveal next <span aria-hidden=\"true\">→</span>";
+        urlBox.classList.toggle("is-active", urlTypingStarted);
         ordersMenuItem.classList.toggle("is-selected", ordersSelected);
 
         revealItems.forEach((item) => {
@@ -675,11 +694,40 @@
       }
 
       start.addEventListener("click", () => {
+        if (urlTypingTimer) {
+          window.clearInterval(urlTypingTimer);
+          urlTypingTimer = null;
+        }
         portalHandshakeStarted = false;
         authResponseVisible = false;
         entitlementsReceived = false;
         ordersSelected = false;
+        urlTypingStarted = false;
+        urlText.textContent = "";
         setStep(1);
+      });
+      function startUrlTyping() {
+        if (currentStep !== 1 || urlTypingStarted) return;
+        urlTypingStarted = true;
+        setStep(2);
+        const url = "/nexus";
+        let characterIndex = 0;
+        urlText.textContent = "";
+        urlTypingTimer = window.setInterval(() => {
+          characterIndex += 1;
+          urlText.textContent = url.slice(0, characterIndex);
+          if (characterIndex === url.length) {
+            window.clearInterval(urlTypingTimer);
+            urlTypingTimer = null;
+          }
+        }, 90);
+      }
+      urlBox.addEventListener("click", startUrlTyping);
+      urlBox.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          startUrlTyping();
+        }
       });
       portalServerNode.addEventListener("click", startPortalHandshake);
       portalServerNode.addEventListener("keydown", (event) => {
@@ -711,14 +759,14 @@
         }
       });
       next.addEventListener("click", () => {
-        if (currentStep === 10 && !ordersSelected) return;
+        if ((currentStep === 1 && !urlTypingStarted) || (currentStep === 10 && !ordersSelected)) return;
         setStep(currentStep + 1);
       });
       back.addEventListener("click", () => setStep(currentStep - 1));
       document.addEventListener("keydown", (event) => {
         if (event.key === "ArrowRight" || event.key === " ") {
           event.preventDefault();
-          if (currentStep === 10 && !ordersSelected) return;
+          if ((currentStep === 1 && !urlTypingStarted) || (currentStep === 10 && !ordersSelected)) return;
           setStep(currentStep + 1);
         }
         if (event.key === "ArrowLeft") {
