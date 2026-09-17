@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>How a Vuu portal comes alive</title>
+    <style>
+      :root {
+        --ink: #f5f9ff;
+        --muted: #9fb3c8;
+        --muted-strong: #c5d5e4;
+        --panel: rgba(18, 41, 67, 0.84);
+        --panel-soft: rgba(25, 55, 86, 0.62);
+        --line: rgba(173, 204, 229, 0.2);
+        --cyan: #5bd6e2;
+        --blue: #52aaf4;
+        --violet: #b59bff;
+        --coral: #ff9a9f;
+        --green: #75e6bf;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 10% 10%, rgba(48, 121, 174, 0.28), transparent 31rem),
+          radial-gradient(circle at 88% 90%, rgba(83, 63, 161, 0.25), transparent 34rem),
+          #071525;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .presentation {
+        width: min(1500px, calc(100% - 48px));
+        min-height: calc(100vh - 48px);
+        margin: 24px auto;
+        padding: 28px 34px 30px;
+        overflow: hidden;
+        border: 1px solid rgba(186, 216, 239, 0.19);
+        border-radius: 28px;
+        background: linear-gradient(145deg, rgba(11, 31, 53, 0.96), rgba(8, 22, 39, 0.94));
+        box-shadow: 0 30px 90px rgba(0, 0, 0, 0.32);
+      }
+
+      .content,
+      .footer {
+        position: relative;
+        z-index: 1;
+      }
+
+      .content {
+        display: block;
+      }
+
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .controls-below {
+        justify-content: center;
+        margin-top: 18px;
+      }
+
+      .control {
+        padding: 12px 17px;
+        color: var(--muted-strong);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.035);
+        cursor: pointer;
+        transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
+      }
+
+      .control:hover:not(:disabled) {
+        color: white;
+        border-color: rgba(91, 214, 226, 0.7);
+        background: rgba(91, 214, 226, 0.1);
+        transform: translateY(-1px);
+      }
+
+      .control:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      .control-primary {
+        color: #072034;
+        border-color: transparent;
+        background: linear-gradient(100deg, var(--cyan), #87e7d2);
+        font-weight: 800;
+        box-shadow: 0 8px 22px rgba(91, 214, 226, 0.18);
+      }
+
+      .control-primary:hover:not(:disabled) {
+        color: #072034;
+        border-color: transparent;
+        background: linear-gradient(100deg, #8ae9ef, #b2f5df);
+      }
+
+      .keyboard-hint {
+        margin: 15px 0 0;
+        color: #7189a0;
+        font-size: 12px;
+      }
+
+      .visual {
+        min-width: 0;
+        padding: 22px 22px 18px;
+        border: 1px solid rgba(186, 216, 239, 0.18);
+        border-radius: 22px;
+        background:
+          linear-gradient(rgba(102, 145, 182, 0.075) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(102, 145, 182, 0.075) 1px, transparent 1px),
+          linear-gradient(145deg, rgba(21, 51, 82, 0.9), rgba(9, 26, 46, 0.94));
+        background-size: 34px 34px, 34px 34px, auto;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 24px 70px rgba(0, 0, 0, 0.2);
+      }
+
+      svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .visual svg text {
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      }
+
+      .node,
+      .route,
+      .callout,
+      .pulse {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 360ms ease, transform 360ms ease;
+      }
+
+      .node {
+        transform: translateY(10px);
+      }
+
+      .node-clickable.is-visible {
+        pointer-events: auto;
+        cursor: pointer;
+      }
+
+      .node-clickable.is-visible:hover rect,
+      .node-clickable.is-visible:focus rect {
+        stroke: #BCECF1;
+        stroke-width: 2;
+      }
+
+      .route,
+      .callout {
+        transform: translateY(5px);
+      }
+
+      .is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .route.is-past {
+        opacity: 0.16;
+      }
+
+      .message {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 360ms ease;
+      }
+
+      .message.is-visible {
+        opacity: 1;
+      }
+
+      .message.is-past {
+        opacity: 0.12;
+      }
+
+      .menu-preview.is-replaced {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .pulse.is-visible {
+        animation: pulse 1.8s ease-in-out infinite;
+        opacity: 1;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 1; }
+      }
+
+      @media (max-width: 1050px) {
+        .presentation {
+          width: min(900px, calc(100% - 24px));
+          margin: 12px auto;
+          padding: 24px;
+        }
+
+        .content {
+          grid-template-columns: 1fr;
+          gap: 34px;
+        }
+
+        .story {
+          max-width: 720px;
+        }
+
+        .visual {
+          order: -1;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .presentation {
+          padding: 20px 16px 22px;
+          border-radius: 20px;
+        }
+
+        .visual {
+          padding: 12px;
+          border-radius: 16px;
+        }
+
+      }
+    </style>
+  </head>
+  <body>
+    <main class="presentation" id="presentation" data-step="1">
+      <div class="content">
+        <section class="visual" aria-label="Portal journey illustration">
+          <svg viewBox="0 0 760 500" role="img" aria-labelledby="visual-title visual-description">
+            <title id="visual-title">The Vuu portal journey in two dimensions</title>
+            <desc id="visual-description">A two-dimensional map showing a browser containing the Vuu Portal shell, nginx edge, Keycloak, a Vuu server and a remote module exchanging authentication and live data.</desc>
+
+            <defs>
+              <linearGradient id="browser-fill" x1="0" y1="0" x2="1" y2="1">
+                <stop stop-color="#163c61"/>
+                <stop offset="1" stop-color="#0d2946"/>
+              </linearGradient>
+              <linearGradient id="portal-fill" x1="0" y1="0" x2="1" y2="1">
+                <stop stop-color="#1d5475"/>
+                <stop offset="1" stop-color="#153b5d"/>
+              </linearGradient>
+              <linearGradient id="secure-fill" x1="0" y1="0" x2="1" y2="1">
+                <stop stop-color="#443b76"/>
+                <stop offset="1" stop-color="#272d5a"/>
+              </linearGradient>
+              <linearGradient id="server-fill" x1="0" y1="0" x2="1" y2="1">
+                <stop stop-color="#185b65"/>
+                <stop offset="1" stop-color="#153f5b"/>
+              </linearGradient>
+              <filter id="node-shadow" x="-20%" y="-20%" width="140%" height="160%">
+                <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity=".22"/>
+              </filter>
+              <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="#5BD6E2"/>
+              </marker>
+              <marker id="arrow-violet" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="#B59BFF"/>
+              </marker>
+              <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+                <path d="M0 0L10 5L0 10Z" fill="#75E6BF"/>
+              </marker>
+            </defs>
+
+            <g class="node reveal-1" filter="url(#node-shadow)">
+              <rect x="20" y="145" width="300" height="236" rx="12" fill="#091B31" stroke="#284966" stroke-opacity=".9"/>
+              <path d="M20 191H320" stroke="#284966"/>
+              <circle cx="40" cy="169" r="3" fill="#FF9A9F"/>
+              <circle cx="51" cy="169" r="3" fill="#F6D47A"/>
+              <circle cx="62" cy="169" r="3" fill="#75E6BF"/>
+              <g class="callout reveal-2">
+                <rect x="82" y="157" width="220" height="24" rx="6" fill="#11263E" stroke="#6DC4ED" stroke-opacity=".34"/>
+                <text x="96" y="173" fill="#B9D7E5" font-size="11" font-weight="650">/nexus</text>
+              </g>
+              <g class="callout reveal-3">
+                <rect x="42" y="207" width="256" height="150" rx="7" fill="#0C2238" fill-opacity=".28" stroke="#5BD6E2" stroke-opacity=".16" stroke-dasharray="5 8"/>
+              </g>
+              <g class="callout reveal-5">
+                <rect x="64" y="216" width="212" height="92" rx="9" fill="#2A315D" stroke="#B59BFF" stroke-opacity=".8"/>
+                <text x="84" y="241" fill="#D6CBFF" font-size="10" font-weight="800">SECURE SIGN-IN</text>
+                <path d="M84 255H256M84 270H239" stroke="#D6CBFF" stroke-opacity=".42" stroke-linecap="round"/>
+                <rect x="84" y="280" width="62" height="12" rx="6" fill="#B59BFF" fill-opacity=".42"/>
+                <text x="115" y="289" text-anchor="middle" fill="#F5F9FF" font-size="8" font-weight="750">SIGN IN</text>
+              </g>
+              <g class="callout reveal-6">
+                <rect x="20" y="192" width="300" height="189" fill="#123B5B" stroke="#5BD6E2" stroke-opacity=".8"/>
+                <path d="M20 223H320" stroke="#BCECF1" stroke-opacity=".62" stroke-width="2"/>
+                <rect x="20" y="223" width="64" height="158" fill="#0E2E4A" fill-opacity=".72"/>
+                <path d="M84 223V381" stroke="#8CC9DA" stroke-opacity=".42"/>
+                <circle cx="202" cy="286" r="17" fill="none" stroke="#5BD6E2" stroke-opacity=".25" stroke-width="4"/>
+                <path d="M202 269A17 17 0 0 1 218 286" fill="none" stroke="#5BD6E2" stroke-width="4" stroke-linecap="round"/>
+                <text x="202" y="324" text-anchor="middle" fill="#BCECF1" font-size="13" font-weight="700">Loading</text>
+                <text x="298" y="357" text-anchor="end" fill="#BCECF1" font-size="12" font-weight="750">Portal Shell</text>
+              </g>
+              <g class="callout menu-preview reveal-10">
+                <rect x="27" y="238" width="50" height="24" rx="5" fill="#174466" stroke="#5BD6E2" stroke-opacity=".55"/>
+                <text x="52" y="253" text-anchor="middle" fill="#BCECF1" font-size="8" font-weight="750">Orders</text>
+                <rect x="27" y="268" width="50" height="24" rx="5" fill="#123450" stroke="#5BD6E2" stroke-opacity=".3"/>
+                <text x="52" y="283" text-anchor="middle" fill="#9FB3C8" font-size="8" font-weight="750">Prices</text>
+                <rect x="27" y="298" width="50" height="24" rx="5" fill="#123450" stroke="#5BD6E2" stroke-opacity=".3"/>
+                <text x="52" y="313" text-anchor="middle" fill="#9FB3C8" font-size="8" font-weight="750">Risk</text>
+                <rect x="96" y="239" width="208" height="110" rx="8" fill="#0E2E4A" stroke="#5BD6E2" stroke-opacity=".38"/>
+                <text x="108" y="257" fill="#BCECF1" font-size="9" font-weight="800">Available modules</text>
+                <rect x="108" y="267" width="184" height="20" rx="5" fill="#174466"/>
+                <text x="119" y="280" fill="#F5F9FF" font-size="9" font-weight="700">Orders</text>
+                <rect x="108" y="292" width="184" height="20" rx="5" fill="#123450"/>
+                <text x="119" y="305" fill="#B9D7E5" font-size="9" font-weight="700">Prices</text>
+                <rect x="108" y="317" width="184" height="20" rx="5" fill="#123450"/>
+                <text x="119" y="330" fill="#B9D7E5" font-size="9" font-weight="700">Risk</text>
+              </g>
+              <g class="callout reveal-11">
+                <rect x="55" y="270" width="112" height="22" rx="6" fill="#6A354C" stroke="#FF9A9F" stroke-opacity=".72"/>
+                <text x="111" y="284" text-anchor="middle" fill="#FFE4E5" font-size="10" font-weight="800">Orders selected</text>
+              </g>
+            </g>
+
+            <g class="node reveal-2" filter="url(#node-shadow)">
+              <rect x="360" y="44" width="150" height="76" rx="17" fill="#173651" stroke="#5BA9D8" stroke-opacity=".58"/>
+              <path d="M390 70H480M390 85H463M390 100H440" stroke="#6DC4ED" stroke-opacity=".62" stroke-linecap="round"/>
+              <text x="435" y="151" text-anchor="middle" fill="#F5F9FF" font-size="15" font-weight="750">nginx edge</text>
+            </g>
+
+            <g class="route reveal-2" fill="none">
+              <path d="M280 170L360 104" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
+              <text x="318" y="126" text-anchor="middle" fill="#9FB3C8" font-size="11" font-weight="700">enters URL</text>
+            </g>
+
+            <g class="route reveal-3" fill="none">
+              <path d="M360 104L280 170" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
+              <text x="322" y="148" text-anchor="middle" fill="#9FB3C8" font-size="11" font-weight="700">loads the page</text>
+            </g>
+
+            <g class="node reveal-4" filter="url(#node-shadow)">
+              <rect x="550" y="38" width="174" height="104" rx="18" fill="url(#secure-fill)" stroke="#B59BFF" stroke-opacity=".72"/>
+              <path d="M612 79V70C612 60 620 52 630 52C640 52 648 60 648 70V79" stroke="#D6CBFF" stroke-width="3" stroke-linecap="round"/>
+              <rect x="605" y="77" width="50" height="34" rx="8" fill="#B59BFF" fill-opacity=".28" stroke="#D6CBFF" stroke-opacity=".75"/>
+              <circle cx="630" cy="94" r="4" fill="#D6CBFF"/>
+              <text x="637" y="165" text-anchor="middle" fill="#F5F9FF" font-size="15" font-weight="750">Keycloak</text>
+              <text x="637" y="183" text-anchor="middle" fill="#9FB3C8" font-size="11">trusted sign-in</text>
+            </g>
+
+            <g class="route reveal-4" fill="none">
+              <path d="M300 213L550 118" stroke="#B59BFF" stroke-width="3" marker-end="url(#arrow-violet)"/>
+              <text x="423" y="158" text-anchor="middle" fill="#BFAEFF" font-size="11" font-weight="700">opens secure sign-in</text>
+            </g>
+
+            <g class="route reveal-5" fill="none">
+              <path d="M550 137L300 250" stroke="#FF9A9F" stroke-width="3" marker-end="url(#arrow-violet)"/>
+              <text x="426" y="228" text-anchor="middle" fill="#FFB8BC" font-size="11" font-weight="700">login panel appears</text>
+            </g>
+
+            <g class="route reveal-6" fill="none">
+              <path d="M300 273L550 143" stroke="#B59BFF" stroke-width="3" marker-end="url(#arrow-violet)"/>
+              <path d="M550 162L300 301" stroke="#75E6BF" stroke-width="3" marker-end="url(#arrow-green)"/>
+              <text x="423" y="259" text-anchor="middle" fill="#BFAEFF" font-size="11" font-weight="700">credentials → token</text>
+            </g>
+
+            <g class="node node-clickable reveal-7" id="portal-server-node" role="button" tabindex="0" aria-label="Portal vuu server">
+              <rect x="440" y="365" width="140" height="64" rx="14" fill="url(#portal-fill)" stroke="#5BD6E2" stroke-opacity=".72"/>
+              <text x="510" y="393" text-anchor="middle" fill="#F5F9FF" font-size="13" font-weight="750">Portal</text>
+              <text x="510" y="410" text-anchor="middle" fill="#9FB3C8" font-size="10">vuu server</text>
+            </g>
+
+            <g class="node reveal-13" filter="url(#node-shadow)">
+              <rect x="500" y="211" width="224" height="74" rx="16" fill="url(#server-fill)" stroke="#75E6BF" stroke-opacity=".75"/>
+              <circle cx="524" cy="248" r="11" fill="#75E6BF" fill-opacity=".18" stroke="#75E6BF" stroke-opacity=".72"/>
+              <path d="M519 248H529M524 243V253" stroke="#75E6BF" stroke-width="2" stroke-linecap="round"/>
+              <text x="548" y="244" fill="#F5F9FF" font-size="15" font-weight="750">Vuu Server A</text>
+              <text x="548" y="263" fill="#9FB3C8" font-size="11">the selected app's server</text>
+            </g>
+
+            <g class="route reveal-7" fill="none">
+              <path d="M300 330C350 339 395 360 440 383" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-violet)"/>
+              <text x="340" y="338" text-anchor="middle" fill="#BFAEFF" font-size="10" font-weight="700">HTTPS → auth</text>
+              <text x="340" y="353" text-anchor="middle" fill="#9FB3C8" font-size="9">Bearer token</text>
+            </g>
+
+            <g class="route reveal-7 portal-handshake auth-request" fill="none">
+              <path d="M510 365C535 300 575 215 615 143" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-violet)"/>
+              <text x="650" y="205" text-anchor="middle" fill="#BFAEFF" font-size="10" font-weight="700">validates bearer token</text>
+            </g>
+
+            <g class="route reveal-7 portal-handshake auth-response" fill="none">
+              <path d="M600 143C565 215 530 300 500 365" stroke="#75E6BF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-green)"/>
+              <text x="650" y="205" text-anchor="middle" fill="#C8F8E4" font-size="10" font-weight="700">token accepted</text>
+            </g>
+
+            <g class="message reveal-7 portal-handshake auth-request">
+              <rect x="-43" y="-11" width="86" height="22" rx="7" fill="#2A315D" stroke="#B59BFF" stroke-opacity=".9"/>
+              <text x="0" y="4" text-anchor="middle" fill="#D6CBFF" font-size="9" font-weight="800">AUTH CHECK</text>
+              <animateMotion id="auth-check-motion" begin="indefinite" dur="2.2s" repeatCount="1" path="M520 355C545 290 580 215 610 150"/>
+            </g>
+
+            <g class="message reveal-7 portal-handshake auth-response">
+              <rect x="-34" y="-11" width="68" height="22" rx="7" fill="#3A326E" stroke="#B59BFF" stroke-opacity=".9"/>
+              <text x="0" y="4" text-anchor="middle" fill="#E0D8FF" font-size="9" font-weight="800">AUTH OK</text>
+              <animateMotion id="auth-response-motion" begin="indefinite" dur="2.2s" repeatCount="1" path="M605 150C570 220 535 290 500 355"/>
+            </g>
+
+            <g class="route reveal-8" fill="none">
+              <path d="M440 383C395 360 350 339 300 330" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-violet)"/>
+              <text x="340" y="369" text-anchor="middle" fill="#BFAEFF" font-size="10" font-weight="700">← Vuu token</text>
+            </g>
+
+            <g class="route reveal-9" fill="none">
+              <path d="M300 350C350 359 395 386 440 410" stroke="#5BD6E2" stroke-width="3"/>
+              <text x="345" y="382" text-anchor="middle" fill="#BCECF1" font-size="10" font-weight="700">WebSocket → LOGIN</text>
+            </g>
+
+            <g class="message reveal-9">
+              <rect x="-31" y="-11" width="62" height="22" rx="7" fill="#153F5B" stroke="#5BD6E2" stroke-opacity=".85"/>
+              <text x="0" y="4" text-anchor="middle" fill="#BCECF1" font-size="9" font-weight="800">LOGIN</text>
+              <animateMotion begin="indefinite" dur="2.1s" repeatCount="1" path="M320 354C365 363 410 388 440 407"/>
+            </g>
+
+            <g class="route reveal-10" fill="none">
+              <path d="M440 410C395 386 350 359 300 350" stroke="#75E6BF" stroke-width="3"/>
+              <text x="345" y="414" text-anchor="middle" fill="#75E6BF" font-size="10" font-weight="700">← LOGIN SUCCESS</text>
+              <text x="345" y="429" text-anchor="middle" fill="#9FB3C8" font-size="9">module entitlements</text>
+            </g>
+
+            <g class="message reveal-10">
+              <rect x="-52" y="-11" width="104" height="22" rx="7" fill="#185B65" stroke="#75E6BF" stroke-opacity=".9"/>
+              <text x="0" y="4" text-anchor="middle" fill="#C8F8E4" font-size="9" font-weight="800">LOGIN SUCCESS</text>
+              <animateMotion id="login-success-motion" begin="indefinite" dur="2.4s" repeatCount="1" path="M435 407C390 384 345 359 310 352"/>
+            </g>
+
+            <g class="route reveal-13" fill="none" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6">
+              <path d="M600 211L615 143" marker-end="url(#arrow-violet)"/>
+              <path d="M615 142L565 211" marker-end="url(#arrow-violet)"/>
+              <text x="681" y="215" fill="#BFAEFF" font-size="11" font-weight="700" stroke="none">token exchange</text>
+            </g>
+
+            <g class="route reveal-13" fill="none">
+              <path d="M300 319L500 248" stroke="#75E6BF" stroke-width="3" marker-end="url(#arrow-green)"/>
+              <text x="396" y="319" fill="#9FB3C8" font-size="10" font-weight="700">opens WebSocket</text>
+            </g>
+
+            <g class="callout reveal-12">
+              <rect x="28" y="68" width="182" height="74" rx="17" fill="#132C49" stroke="#5BD6E2" stroke-opacity=".7"/>
+              <path d="M61 95H177M61 111H153" stroke="#5BD6E2" stroke-opacity=".5" stroke-linecap="round"/>
+              <text x="119" y="166" text-anchor="middle" fill="#F5F9FF" font-size="15" font-weight="750">remote feature</text>
+              <text x="119" y="184" text-anchor="middle" fill="#9FB3C8" font-size="11">arrives on demand</text>
+            </g>
+
+            <g class="route reveal-12" fill="none">
+              <path d="M210 105L180 145" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
+              <text x="221" y="129" fill="#9FB3C8" font-size="10" font-weight="700">loads into browser</text>
+            </g>
+
+            <g class="route reveal-13" fill="none">
+              <path d="M210 125L500 248" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
+              <text x="358" y="198" fill="#9FB3C8" font-size="10" font-weight="700">asks for a view</text>
+            </g>
+
+            <g class="route reveal-14" fill="none">
+              <path d="M500 272C420 300 350 320 300 286" stroke="#75E6BF" stroke-width="3" stroke-dasharray="9 7" marker-end="url(#arrow-green)"/>
+              <text x="404" y="340" text-anchor="middle" fill="#75E6BF" font-size="11" font-weight="750">live updates keep flowing</text>
+            </g>
+
+            <g class="pulse reveal-14">
+              <circle cx="610" cy="248" r="46" fill="none" stroke="#75E6BF" stroke-width="2" stroke-opacity=".42"/>
+              <circle cx="610" cy="248" r="61" fill="none" stroke="#75E6BF" stroke-width="1" stroke-opacity=".18"/>
+            </g>
+          </svg>
+        </section>
+        <div class="controls controls-below">
+          <button class="control" id="start" type="button">Start</button>
+          <button class="control" id="back" type="button" disabled>Back</button>
+          <button class="control control-primary" id="next" type="button">Reveal next <span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+
+    </main>
+
+    <script>
+      const stages = [
+        {
+          title: "Open the portal",
+          copy: "You open a familiar web address. The first thing that arrives is the portal's welcoming shell.",
+          detail: "The browser asks the front door for the portal — just like opening any other website.",
+          status: "Starting point",
+        },
+        {
+          title: "Enter the address",
+          copy: "You enter the portal address in the empty browser. The request now has somewhere to go.",
+          detail: "nginx appears as the edge entry point and returns the starting page.",
+          status: "URL entered",
+        },
+        {
+          title: "Receive the page",
+          copy: "nginx sends the starting page back to the browser. The app is present, but there is no visible portal content yet.",
+          detail: "A faint outline marks the space where the portal will appear after authentication.",
+          status: "Page received",
+        },
+        {
+          title: "Open secure sign-in",
+          copy: "The page asks Keycloak to begin sign-in. The browser is sent to the trusted identity service.",
+          detail: "This first conversation with Keycloak starts the sign-in experience.",
+          status: "Opening sign-in",
+        },
+        {
+          title: "Show the login panel",
+          copy: "Keycloak responds with the panel where you can enter your details. It appears inside the browser.",
+          detail: "The portal is still waiting. No Vuu session or feature has been opened yet.",
+          status: "Login panel shown",
+        },
+        {
+          title: "Receive the token and app shell",
+          copy: "After you submit the login panel, Keycloak returns a token. The browser can now show the full Vuu Portal shell.",
+          detail: "The login panel is replaced by the authenticated app shell — menus, layout and space for features.",
+          status: "Portal is ready",
+        },
+        {
+          title: "Call the auth endpoint",
+          copy: "The browser makes an HTTPS call to the Portal Vuu Server's auth endpoint, carrying the bearer token from Keycloak.",
+          detail: "Click the Portal vuu server to start its Keycloak check before it responds.",
+          status: "Click Portal vuu server",
+        },
+        {
+          title: "Receive the Vuu token",
+          copy: "The auth endpoint responds with the Vuu token that the portal session will use.",
+          detail: "This response proves that the Portal Vuu Server has accepted the browser's identity.",
+          status: "Vuu token received",
+        },
+        {
+          title: "Open WebSocket and LOGIN",
+          copy: "The browser opens a WebSocket to the Portal Vuu Server and sends a LOGIN message.",
+          detail: "This persistent connection is ready to carry the portal session and its messages.",
+          status: "WebSocket login sent",
+        },
+        {
+          title: "LOGIN SUCCESS and entitlements",
+          copy: "The Portal Vuu Server sends LOGIN SUCCESS together with the module entitlements.",
+          detail: "The permitted applications can now be used to build the portal navigation.",
+          status: "Portal session established",
+        },
+        {
+          title: "Choose what you need",
+          copy: "You click a menu item. The portal does not need to load every possible feature up front — it can bring in just this one.",
+          detail: "Your choice tells the portal which part of the product should become visible next.",
+          status: "Your choice",
+        },
+        {
+          title: "Bring in the feature",
+          copy: "The selected feature arrives and takes its place inside the workspace, without replacing the whole portal.",
+          detail: "A remote module is loaded on demand. To you, it simply feels like the next part of the same application.",
+          status: "Feature is arriving",
+        },
+        {
+          title: "Connect the selected server",
+          copy: "The selected module connects to the Vuu server that owns its data.",
+          detail: "Only now does another Vuu server appear: it belongs to the feature you chose and opens its live WebSocket.",
+          status: "Feature server connected",
+        },
+        {
+          title: "Keep it live",
+          copy: "The new view asks for its data, receives its first picture, then keeps receiving changes as the world moves.",
+          detail: "One click has taken us from a web address to a live, authenticated workspace with continuously updating data.",
+          status: "Everything is live",
+        },
+      ];
+
+      const presentation = document.getElementById("presentation");
+      const start = document.getElementById("start");
+      const back = document.getElementById("back");
+      const next = document.getElementById("next");
+      const portalServerNode = document.getElementById("portal-server-node");
+      const revealItems = [...presentation.querySelectorAll("[class*=\"reveal-\"]")];
+      let currentStep = 1;
+      let portalHandshakeStarted = false;
+      let authResponseVisible = false;
+      let entitlementsReceived = false;
+
+      function setStep(step) {
+        currentStep = Math.max(1, Math.min(stages.length, step));
+        presentation.dataset.step = currentStep;
+        back.disabled = currentStep === 1;
+        next.disabled = currentStep === stages.length;
+        next.innerHTML = currentStep === stages.length
+          ? "Story complete <span aria-hidden=\"true\">✓</span>"
+          : "Reveal next <span aria-hidden=\"true\">→</span>";
+
+        revealItems.forEach((item) => {
+          const revealStep = Number(item.className.baseVal?.match(/reveal-(\d+)/)?.[1] ?? item.className.match(/reveal-(\d+)/)?.[1]);
+          const wasVisible = item.classList.contains("is-visible");
+          const handshakeVisible = portalHandshakeStarted
+            && (!item.classList.contains("auth-request") || !authResponseVisible)
+            && (!item.classList.contains("auth-response") || authResponseVisible);
+          const isVisible = revealStep <= currentStep
+            && (!item.classList.contains("portal-handshake") || handshakeVisible)
+            && (!item.classList.contains("menu-preview") || entitlementsReceived);
+          item.classList.toggle("is-visible", isVisible);
+          item.classList.toggle("is-past", (item.classList.contains("route") || item.classList.contains("message")) && revealStep < currentStep);
+          item.classList.toggle("is-replaced", item.classList.contains("menu-preview") && currentStep >= 12);
+          const animation = item.querySelector("animateMotion");
+          if (!wasVisible && isVisible && animation?.getAttribute("begin") === "indefinite") animation.beginElement();
+        });
+
+      }
+
+      function startPortalHandshake() {
+        if (currentStep < 7 || portalHandshakeStarted) return;
+        portalHandshakeStarted = true;
+        setStep(currentStep);
+      }
+
+      start.addEventListener("click", () => {
+        portalHandshakeStarted = false;
+        authResponseVisible = false;
+        entitlementsReceived = false;
+        setStep(1);
+      });
+      portalServerNode.addEventListener("click", startPortalHandshake);
+      portalServerNode.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          startPortalHandshake();
+        }
+      });
+      document.getElementById("auth-check-motion").addEventListener("endEvent", () => {
+        if (!portalHandshakeStarted) return;
+        authResponseVisible = true;
+        setStep(currentStep);
+      });
+      document.getElementById("login-success-motion").addEventListener("endEvent", () => {
+        if (currentStep < 10 || !portalHandshakeStarted) return;
+        entitlementsReceived = true;
+        setStep(currentStep);
+      });
+      next.addEventListener("click", () => setStep(currentStep + 1));
+      back.addEventListener("click", () => setStep(currentStep - 1));
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowRight" || event.key === " ") {
+          event.preventDefault();
+          setStep(currentStep + 1);
+        }
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          setStep(currentStep - 1);
+        }
+      });
+
+      setStep(1);
+    </script>
+  </body>
+</html>
