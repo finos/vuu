@@ -31,3 +31,5 @@ jobs:
 
       - run: npx node-license-validator . --allow-licenses MIT ISC 0BSD BSD BSD-3-Clause Apache-2.0
         working-directory: vuu-ui
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
