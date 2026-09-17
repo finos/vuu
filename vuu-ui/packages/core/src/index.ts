@@ -1,5 +1,9 @@
 export * from "./auth";
 export * from "./connection-management";
+export type {
+  PortalModuleRegistry,
+  RemoteModuleDescriptor,
+} from "./RemoteModuleDescriptor";
 export { DataContext } from "./context-definitions/DataContext";
 export {
   DataProvider,

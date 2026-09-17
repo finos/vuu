@@ -8,7 +8,7 @@
     "test": "vitest run --root ../.. portal-examples/user-admin/test",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "biome lint src test",
-    "start": "serve -p 5001 ../../dist_portal/user-admin"
+    "start": "ws --directory ../../dist_portal/user-admin --spa index.html --port 5003"
   },
   "type": "module",
   "private": true,
@@ -26,6 +26,7 @@
   "dependencies": {
     "@vuu-ui/vuu-data-editing": "3.3.12",
     "@vuu-ui/vuu-data-react": "3.3.12",
+    "@vuu-ui/vuu-data-test": "3.3.12",
     "@vuu-ui/vuu-notifications": "3.3.12",
     "@vuu-ui/vuu-ui-controls": "3.3.12",
     "@vuu-ui/vuu-utils": "3.3.12",
@@ -49,7 +50,8 @@
     "featureProps": {},
     "module-federation": {
       "exposes": {
-        "./UserAdmin": "./src/UserAdmin"
+        "./UserAdmin": "./src/UserAdmin",
+        "./UserAdminLocal": "./src/UserAdminLocal"
       },
       "name": "userAdmin",
       "port": 5003

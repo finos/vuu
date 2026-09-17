@@ -17,4 +17,7 @@ export {
   RemoteModule,
   type RemoteModuleProps,
 } from "./remote-module/RemoteModule";
-export type { RemoteModuleDescriptor } from "./RemoteModuleDescriptor";
+export type {
+  PortalModuleRegistry,
+  RemoteModuleDescriptor,
+} from "./RemoteModuleDescriptor";

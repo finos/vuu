@@ -7,6 +7,7 @@ import { getCommandLineArg } from "../../../scripts/utils.ts";
 import { getSharedDependencies } from "../../../scripts/module-federation-utils.ts";
 
 const useRsDoctor = getCommandLineArg("--rsdoctor", false) !== undefined;
+const isLocal = getCommandLineArg("--local", false) !== undefined;
 
 const buildManifest = () => {
   return {
@@ -52,6 +53,9 @@ async function main() {
       plugins: [pluginReact(), pluginCssInline()],
 
       source: {
+        entry: {
+          index: isLocal ? "./src/local-index.tsx" : "./src/index.tsx",
+        },
         preEntry: "@vuu-ui/vuu-theme/index.css",
       },
 

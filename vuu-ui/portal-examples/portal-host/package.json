@@ -4,8 +4,10 @@
   "description": "",
   "scripts": {
     "build": "node ./scripts/rsbuild.ts",
+    "build:local": "node ./scripts/rsbuild.ts --local",
     "build:doctor": "node ./scripts/rsbuild.ts --rsdoctor",
-    "start": "serve -p 5001 ../../dist_portal/portal-host"
+    "start": "ws --directory ../../dist_portal/portal-host --spa index.html --port 5001",
+    "start:local": "ws --directory ../../dist_portal/portal-host --spa index.html --port 5001"
   },
   "author": "heswell",
   "license": "Apache-2.0",
@@ -24,6 +26,7 @@
     "@vuu-ui/vuu-data-remote": "3.3.12",
     "@vuu-ui/vuu-table-types": "3.3.12",
     "@vuu-ui/vuu-data-react": "3.3.12",
+    "@vuu-ui/vuu-data-test": "3.3.12",
     "@vuu-ui/vuu-popups": "3.3.12",
     "@vuu-ui/vuu-shell": "3.3.12",
     "@vuu-ui/vuu-utils": "3.3.12",

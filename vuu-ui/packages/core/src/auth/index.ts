@@ -11,6 +11,7 @@ export {
   useLogout,
   useOptionalVuuConnectionId,
   usePortalVuuAuthTarget,
+  useVuuAuthorizations,
   useVuuAccessToken,
   useVuuConnectionId, VuuConnectionError, type AuthenticationErrorHandler,
   type AuthenticationProviderProps,

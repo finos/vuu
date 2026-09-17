@@ -31,6 +31,7 @@ if (requestedFlags.length > 1) {
 
 const selectedPackage = requestedFlags[0] as PackageName | undefined;
 const packagesToBuild = selectedPackage ? [selectedPackage] : [...packages];
+const buildLocalPortal = getCommandLineArg("--local") === "local";
 const { reactVersion, reactRouterVersion, vuuVersion } =
   getPortalDependencyVersions();
 
@@ -45,7 +46,9 @@ console.log(
 
 for (const pkg of packagesToBuild) {
   console.log(`\nBuilding ${pkg}...`);
-  runCommandSync("npm", ["--prefix", `portal-examples/${pkg}`, "run", "build"]);
+  const script =
+    pkg === "portal-host" && buildLocalPortal ? "build:local" : "build";
+  runCommandSync("npm", ["--prefix", `portal-examples/${pkg}`, "run", script]);
 }
 
 console.log("\nModule federation builds completed successfully.");

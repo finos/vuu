@@ -3,8 +3,8 @@ import type {
   DataSourceConstructorProps,
   RemoteModuleConnection,
 } from "@vuu-ui/vuu-data-types";
-import type { VuuModuleRegistry } from "@vuu-ui/vuu-protocol-types";
 import { DataProvider } from "../context-definitions/DataProvider";
+import type { PortalModuleRegistry } from "../RemoteModuleDescriptor";
 import {
   createContext,
   useCallback,
@@ -79,8 +79,10 @@ export interface VuuConnectionAuthenticationProps {
 }
 
 export interface LocalAuthenticationProps {
+  authorizations?: string[];
   children: ReactNode;
   mode: "local";
+  registry?: PortalModuleRegistry;
   user?: User;
 }
 
@@ -93,7 +95,7 @@ interface IdentityContextValue {
   authHandler: AuthHandler;
   getIdentityToken: () => Promise<string>;
   logout: () => Promise<void>;
-  moduleRegistry?: VuuModuleRegistry;
+  moduleRegistry?: PortalModuleRegistry;
   portalTarget: VuuAuthTarget;
   registry: VuuConnectionRegistry;
   user: User;
@@ -108,6 +110,8 @@ const IdentityContext = createContext<IdentityContextValue | null>(null);
 const VuuConnectionContext = createContext<VuuConnectionContextValue | null>(
   null,
 );
+const EMPTY_AUTHORIZATIONS: string[] = [];
+const EMPTY_MODULE_REGISTRY: PortalModuleRegistry = { modules: [] };
 
 export const normalizeVuuAuthTarget = (
   connection: RemoteModuleConnection,
@@ -390,9 +394,20 @@ const VuuConnectionAuthenticationProvider = ({
 };
 
 const LocalAuthenticationProvider = ({
+  authorizations = EMPTY_AUTHORIZATIONS,
   children,
+  registry = EMPTY_MODULE_REGISTRY,
   user = { userName: "local-user" },
 }: LocalAuthenticationProps) => {
+  const session = useMemo<VuuSession>(
+    () => ({
+      authorizations,
+      moduleRegistry: registry,
+      token: "",
+      user,
+    }),
+    [authorizations, registry, user],
+  );
   const identityContext = useMemo<IdentityContextValue>(
     () => ({
       authHandler: {
@@ -402,7 +417,7 @@ const LocalAuthenticationProvider = ({
       },
       getIdentityToken: async () => "",
       logout: async () => undefined,
-      moduleRegistry: { modules: [] },
+      moduleRegistry: registry,
       portalTarget: {
         connectionId: "local",
         restUrl: "local://",
@@ -411,12 +426,14 @@ const LocalAuthenticationProvider = ({
       registry: vuuConnectionRegistry,
       user,
     }),
-    [user],
+    [registry, user],
   );
 
   return (
     <IdentityContext.Provider value={identityContext}>
-      {children}
+      <VuuConnectionContext.Provider value={{ connectionId: "local", session }}>
+        {children}
+      </VuuConnectionContext.Provider>
     </IdentityContext.Provider>
   );
 };
@@ -498,6 +515,16 @@ export const useVuuAccessToken = () => {
     );
   }
   return connection.session.token;
+};
+
+export const useVuuAuthorizations = () => {
+  const connection = useContext(VuuConnectionContext);
+  if (!connection) {
+    throw new AuthenticationConfigurationError(
+      "No authenticated VUU connection has been installed",
+    );
+  }
+  return connection.session.authorizations;
 };
 
 export const useVuuConnectionId = () => {
