@@ -66,6 +66,16 @@ type IdentityTokenDiagnostics = {
   issuedAt?: number;
 };
 
+type IdentityTokenClaims = {
+  exp?: unknown;
+  iat?: unknown;
+};
+
+const isIdentityTokenClaims = (
+  value: unknown,
+): value is IdentityTokenClaims =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
 const createTokenFingerprint = (token: string) => {
   let hash = 0x811c9dc5;
   for (let index = 0; index < token.length; index += 1) {
@@ -87,7 +97,7 @@ const getIdentityTokenDiagnostics = (
   const padding = "=".repeat((4 - (base64Payload.length % 4)) % 4);
   try {
     const claims: unknown = JSON.parse(atob(`${base64Payload}${padding}`));
-    if (claims === null || typeof claims !== "object") {
+    if (!isIdentityTokenClaims(claims)) {
       return { fingerprint: createTokenFingerprint(token) };
     }
     const { exp, iat } = claims;
