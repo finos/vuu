@@ -5,7 +5,7 @@
   "scripts": {
     "build": "node ../../scripts/build-remote-module.ts",
     "dev": "rsbuild dev",
-    "start": "ws --directory ../../dist_portal/feature-filter-table --spa index.html --port 5003"
+    "start": "ws --directory ../../dist_portal/feature-filter-table --spa index.html --port 5006"
   },
   "type": "module",
   "private": true,
@@ -54,7 +54,7 @@
         "./VuuFilterTableFeatureLocal": "./src/VuuFilterTableFeatureLocal"
       },
       "name": "filterTable",
-      "port": 5003
+      "port": 5006
     }
   }
 }

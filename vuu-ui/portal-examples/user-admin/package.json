@@ -8,7 +8,7 @@
     "test": "vitest run --root ../.. portal-examples/user-admin/test",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "biome lint src test",
-    "start": "ws --directory ../../dist_portal/user-admin --spa index.html --port 5007"
+    "start": "ws --directory ../../dist_portal/user-admin --spa index.html --port 5003"
   },
   "type": "module",
   "private": true,
@@ -54,7 +54,7 @@
         "./UserAdminLocal": "./src/UserAdminLocal"
       },
       "name": "userAdmin",
-      "port": 5007
+      "port": 5003
     }
   }
 }

@@ -16,7 +16,7 @@ describe("local portal module registry", () => {
       {
         mfComponent: "UserAdminLocal",
         mfScope: "userAdmin",
-        mfUrl: "http://localhost:5007",
+        mfUrl: "http://localhost:5003",
       },
       {
         mfComponent: "VuuBasketTradingFeatureLocal",
@@ -26,7 +26,7 @@ describe("local portal module registry", () => {
       {
         mfComponent: "VuuFilterTableFeatureLocal",
         mfScope: "filterTable",
-        mfUrl: "http://localhost:5003",
+        mfUrl: "http://localhost:5006",
       },
     ]);
     expect(

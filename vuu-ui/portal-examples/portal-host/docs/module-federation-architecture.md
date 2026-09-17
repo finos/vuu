@@ -78,7 +78,7 @@ into `PortalShell`. It does not initialize Keycloak, exchange tokens, or open
 VUU websocket connections.
 
 The checked-in local registry loads the `user-admin`, `basket-trading`, and
-`feature-filter-table` manifests from ports 5007, 5005, and 5003. Their
+`feature-filter-table` manifests from ports 5003, 5005, and 5006. Their
 production exposures are unchanged; additional local adapter exposures
 explicitly ensure `userAdminModule`, `basketModule`, or `simulModule` is
 registered and then export the production feature. The local user-admin
@@ -107,6 +107,7 @@ without configuration changes. To rebuild only the local host, run
 `npm run build:mf -- --portal-host --local`. The existing `npm run build:mf`
 or `portal-host` `build` command restores the authenticated remote host.
 
-When serving through nginx, map ports 5003, 5005, and 5007 to
-`feature-filter-table`, `basket-trading`, and `user-admin` respectively, and
+When serving through nginx, map ports 5003, 5005, and 5006 to `user-admin`,
+`basket-trading`, and `feature-filter-table` respectively, and
 allow the host origin in each remote manifest response.
+`vuu-table-viewer` retains port 5004 and is not part of this local proof.
