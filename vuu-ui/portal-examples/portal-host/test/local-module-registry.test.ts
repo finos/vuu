@@ -3,7 +3,7 @@ import { localPortalModuleRegistry } from "../src/local-module-registry";
 
 describe("local portal module registry", () => {
   it("uses local adapter exposures without remote VUU connections", () => {
-    expect(localPortalModuleRegistry.modules).toHaveLength(3);
+    expect(localPortalModuleRegistry.modules).toHaveLength(4);
     expect(
       localPortalModuleRegistry.modules.map(
         ({ mfComponent, mfScope, mfUrl }) => ({
@@ -28,6 +28,11 @@ describe("local portal module registry", () => {
         mfScope: "filterTable",
         mfUrl: "http://localhost:5006",
       },
+      {
+        mfComponent: "ModuleAdminLocal",
+        mfScope: "moduleAdmin",
+        mfUrl: "http://localhost:5002",
+      },
     ]);
     expect(
       localPortalModuleRegistry.modules.every(
@@ -51,5 +56,19 @@ describe("local portal module registry", () => {
         users: { table: { module: "USER_ADMIN", table: "users" } },
       },
     });
+  });
+
+  it("maps module-admin to its local adapter manifest and permitted metadata", () => {
+    expect(localPortalModuleRegistry.modules[3]).toMatchObject({
+      clientIdentifier: "local-module-admin",
+      id: "local-module-admin",
+      loginRole: "local",
+      mfComponent: "ModuleAdminLocal",
+      mfScope: "moduleAdmin",
+      mfUrl: "http://localhost:5002",
+      name: "module-admin",
+      path: "/administration/modules",
+    });
+    expect(localPortalModuleRegistry.modules[3]).not.toHaveProperty("vuu");
   });
 });

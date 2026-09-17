@@ -4,7 +4,8 @@
   "description": "Vuu Module Admin Module",
   "scripts": {
     "build": "node ../../scripts/build-remote-module.ts",
-    "dev": "rsbuild dev"
+    "dev": "rsbuild dev",
+    "start": "ws --directory ../../dist_portal/module-admin --spa index.html --port 5002"
   },
   "type": "module",
   "private": true,
@@ -22,6 +23,7 @@
   "dependencies": {
     "@vuu-ui/vuu-data-editing": "3.3.12",
     "@vuu-ui/vuu-data-react": "3.3.12",
+    "@vuu-ui/vuu-data-test": "3.3.12",
     "@vuu-ui/vuu-table": "3.3.12",
     "@vuu-ui/vuu-utils": "3.3.12",
     "@vuu-ui/core": "3.3.12"
@@ -45,7 +47,8 @@
     },
     "module-federation": {
       "exposes": {
-        "./ModuleAdmin": "./src/ModuleAdmin"
+        "./ModuleAdmin": "./src/ModuleAdmin",
+        "./ModuleAdminLocal": "./src/ModuleAdminLocal"
       },
       "name": "moduleAdmin",
       "port": 5002
