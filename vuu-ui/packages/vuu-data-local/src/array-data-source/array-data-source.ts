@@ -838,7 +838,7 @@ export class ArrayDataSource
 
   protected update = (row: VuuRowDataItemType[], columnName: string) => {
     // TODO take sorting, filtering. grouping into account
-    const keyValue = row[this.key] as string;
+    const keyValue = String(row[this.key]);
     const dataColIndex = this.dataMap?.[columnName] as number;
     return this.updateDataItem(keyValue, columnName, row[dataColIndex]);
   };
@@ -848,7 +848,7 @@ export class ArrayDataSource
     _columnName?: string,
   ) => {
     // TODO take grouping into account
-    const keyValue = row[this.key];
+    const keyValue = String(row[this.key]);
     const dataIndex = this.#data.findIndex((row) => row[KEY] === keyValue);
     if (dataIndex !== -1) {
       const dataSourceRow = toDataSourceRow(this.key)(row, dataIndex);

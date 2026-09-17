@@ -7,6 +7,7 @@ export * from "./makeSuggestions";
 export * from "./schemas";
 export * from "./simul";
 export * from "./basket";
+export * from "./module-admin";
 export * from "./user-admin";
 export {
   buildDataColumnMap,

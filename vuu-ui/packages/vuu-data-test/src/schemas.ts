@@ -12,17 +12,23 @@ import {
   USER_ADMIN_TABLE_SCHEMAS,
   type UserAdminTableName,
 } from "@heswell/user-admin/contracts";
+import {
+  MODULE_ADMIN_TABLE_SCHEMAS,
+  type ModuleAdminTableName,
+} from "./module-admin";
 
 export type VuuTableName =
   | BasketsTableName
   | SimulTableName
   | TestTableName
-  | UserAdminTableName;
+  | UserAdminTableName
+  | ModuleAdminTableName;
 export const schemas: Record<VuuTableName, TableSchema> = {
   ...basketSchemas,
   ...simulSchemas,
   ...testModule.schemas,
   ...USER_ADMIN_TABLE_SCHEMAS,
+  ...MODULE_ADMIN_TABLE_SCHEMAS,
 };
 
 const allSchemas: Readonly<Record<VuuTableName, Readonly<TableSchema>>> = {
@@ -30,6 +36,7 @@ const allSchemas: Readonly<Record<VuuTableName, Readonly<TableSchema>>> = {
   ...simulSchemas,
   ...testModule.schemas,
   ...USER_ADMIN_TABLE_SCHEMAS,
+  ...MODULE_ADMIN_TABLE_SCHEMAS,
 };
 
 export const getAllSchemas = () => schemas;

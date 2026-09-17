@@ -38,7 +38,7 @@ export class Table extends EventEmitter<TableEvents> {
 
   private buildIndex() {
     for (let i = 0; i < this.#data.length; i++) {
-      const key = this.#data[i][this.#indexOfKey] as string;
+      const key = String(this.#data[i][this.#indexOfKey]);
       this.#index.set(key, i);
     }
   }
@@ -66,7 +66,7 @@ export class Table extends EventEmitter<TableEvents> {
       this.#data.splice(index, 1);
 
       for (let i = index; i < this.#data.length; i++) {
-        this.#index.set(this.#data[i][this.#indexOfKey] as string, i);
+        this.#index.set(String(this.#data[i][this.#indexOfKey]), i);
       }
 
       if (emitEvent) {
@@ -83,7 +83,7 @@ export class Table extends EventEmitter<TableEvents> {
     row[this.#dataMap.vuuUpdatedTimestamp] = createdTime;
     row[this.#dataMap.vuuCreatedTimestamp] = createdTime;
     this.#data.push(row);
-    const key = row[this.#indexOfKey] as string;
+    const key = String(row[this.#indexOfKey]);
     this.#index.set(key, index);
     if (emitEvent) {
       this.emit("insert", row);
@@ -97,7 +97,7 @@ export class Table extends EventEmitter<TableEvents> {
 
   update(key: string, columnName: string, value: bigint | VuuRowDataItemType) {
     const rowIndex = this.#data.findIndex(
-      (row) => row[this.#indexOfKey] === key,
+      (row) => String(row[this.#indexOfKey]) === key,
     );
     const colIndex = this.#dataMap[columnName];
     if (rowIndex !== -1) {
@@ -118,7 +118,7 @@ export class Table extends EventEmitter<TableEvents> {
   updateRow(row: Array<bigint | VuuRowDataItemType>) {
     const key = row[this.#indexOfKey];
     const rowIndex = this.#data.findIndex(
-      (row) => row[this.#indexOfKey] === key,
+      (row) => String(row[this.#indexOfKey]) === String(key),
     );
     if (rowIndex !== -1) {
       const tsIndex = this.#dataMap.vuuUpdatedTimestamp;
