@@ -392,7 +392,6 @@
 
             <g class="route shell-response reveal-2" fill="none">
               <path d="M360 104L280 170" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
-              <text x="322" y="148" text-anchor="middle" fill="#9FB3C8" font-size="11" font-weight="700">loads the page</text>
             </g>
 
             <g class="route module-request reveal-11" fill="none">
@@ -658,6 +657,7 @@
       let nginxFlowTimer = null;
       let shellFlowStarted = false;
       let shellResponseVisible = false;
+      let shellAppLoaded = false;
       let shellFlowTimer = null;
 
       function setStep(step) {
@@ -666,7 +666,7 @@
         back.disabled = currentStep === 1;
         next.disabled = currentStep === stages.length
           || (currentStep === 1 && !urlTypingComplete)
-          || (currentStep === 2 && !shellResponseVisible)
+          || (currentStep === 2 && !shellAppLoaded)
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && !nginxResponseVisible);
         next.innerHTML = currentStep === stages.length
@@ -724,6 +724,7 @@
         }
         shellFlowStarted = false;
         shellResponseVisible = false;
+        shellAppLoaded = false;
         if (shellFlowTimer) {
           window.clearTimeout(shellFlowTimer);
           shellFlowTimer = null;
@@ -780,7 +781,13 @@
           if (currentStep !== 2) return;
           shellResponseVisible = true;
           setStep(currentStep);
-        }, 450);
+          shellFlowTimer = window.setTimeout(() => {
+            shellFlowTimer = null;
+            if (currentStep !== 2) return;
+            shellAppLoaded = true;
+            setStep(3);
+          }, 1000);
+        }, 1000);
       }
       function startNginxFlow() {
         if (currentStep !== 11 || nginxFlowStarted) return;
@@ -812,7 +819,7 @@
       next.addEventListener("click", () => {
         if (
           (currentStep === 1 && !urlTypingComplete)
-          || (currentStep === 2 && !shellResponseVisible)
+          || (currentStep === 2 && !shellAppLoaded)
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && !nginxResponseVisible)
         ) return;
@@ -824,6 +831,7 @@
           shellFlowTimer = null;
           shellFlowStarted = false;
           shellResponseVisible = false;
+          shellAppLoaded = false;
         }
         if (currentStep === 11 && currentStep - 1 < 11) {
           window.clearTimeout(nginxFlowTimer);
@@ -838,7 +846,7 @@
           event.preventDefault();
           if (
             (currentStep === 1 && !urlTypingComplete)
-            || (currentStep === 2 && !shellResponseVisible)
+            || (currentStep === 2 && !shellAppLoaded)
             || (currentStep === 10 && !ordersSelected)
             || (currentStep === 11 && !nginxResponseVisible)
           ) return;
@@ -851,6 +859,7 @@
             shellFlowTimer = null;
             shellFlowStarted = false;
             shellResponseVisible = false;
+            shellAppLoaded = false;
           }
           if (currentStep === 11 && currentStep - 1 < 11) {
             window.clearTimeout(nginxFlowTimer);
