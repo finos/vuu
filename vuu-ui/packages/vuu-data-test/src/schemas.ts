@@ -8,18 +8,28 @@ import {
   schemas as simulSchemas,
 } from "./simul/simul-schemas";
 import { TestTableName, testModule } from "./test/TestModule";
+import {
+  USER_ADMIN_TABLE_SCHEMAS,
+  type UserAdminTableName,
+} from "@heswell/user-admin/contracts";
 
-export type VuuTableName = BasketsTableName | SimulTableName | TestTableName;
+export type VuuTableName =
+  | BasketsTableName
+  | SimulTableName
+  | TestTableName
+  | UserAdminTableName;
 export const schemas: Record<VuuTableName, TableSchema> = {
   ...basketSchemas,
   ...simulSchemas,
   ...testModule.schemas,
+  ...USER_ADMIN_TABLE_SCHEMAS,
 };
 
 const allSchemas: Readonly<Record<VuuTableName, Readonly<TableSchema>>> = {
   ...basketSchemas,
   ...simulSchemas,
   ...testModule.schemas,
+  ...USER_ADMIN_TABLE_SCHEMAS,
 };
 
 export const getAllSchemas = () => schemas;

@@ -34,6 +34,7 @@
     "bump:versions": "node ./scripts/bump-versions.ts",
     "launch:app": "node ./scripts/launch-app.mjs",
     "launch:table": "node ./scripts/launch-table.mjs",
+    "link:user-admin": "node ./scripts/link-user-admin-package.mjs",
     "launch:demo:electron": "cd tools/electron && node ./node_modules/.bin/electron .",
     "lint": "biome lint",
     "lint:error": "biome lint --diagnostic-level=error",
@@ -73,6 +74,8 @@
     "semver": "^7.5.2"
   },
   "devDependencies": {
+    "@heswell/data": "file:.local-packages/data",
+    "@heswell/vuu-server": "file:.local-packages/vuu-server",
     "@biomejs/biome": "2.4.3",
     "@lezer/generator": "^1.2.2",
     "@playwright/test": "1.62.1",
