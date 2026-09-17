@@ -77,12 +77,14 @@ the federation runtime `init({ name: "host", remotes: [] })`, installs
 into `PortalShell`. It does not initialize Keycloak, exchange tokens, or open
 VUU websocket connections.
 
-The checked-in local registry loads the `user-admin`, `basket-trading`, and
-`feature-filter-table` manifests from ports 5003, 5005, and 5006. Their
-production exposures are unchanged; additional local adapter exposures
-explicitly ensure `userAdminModule`, `basketModule`, or `simulModule` is
-registered and then export the production feature. The local user-admin
-descriptor maps its tables to the browser-only `USER_ADMIN` module.
+The checked-in local registry loads the `module-admin`, `user-admin`,
+`basket-trading`, and `feature-filter-table` manifests from ports 5002, 5003,
+5005, and 5006. Their production exposures are unchanged; additional local
+adapter exposures explicitly ensure `userAdminModule`, `basketModule`,
+`simulModule`, or `moduleAdminModule` is registered and then export the
+production feature. The local user-admin descriptor maps its tables to the
+browser-only `USER_ADMIN` module; module-admin uses the browser-only
+`MODULE_DISCOVERY` module.
 `@vuu-ui/vuu-data-test` is a strict Module Federation singleton so the host
 provider and all adapters resolve the same module container.
 
@@ -92,16 +94,17 @@ Build the local proof and all producer artifacts from `vuu-ui`:
 npm run build:mf:local
 ```
 
-Serve the three generated artifacts in separate terminals:
+Serve the four generated artifacts in separate terminals:
 
 ```sh
 npm --prefix portal-examples/feature-filter-table run start
 npm --prefix portal-examples/basket-trading run start
 npm --prefix portal-examples/user-admin run start
+npm --prefix portal-examples/module-admin run start
 npm --prefix portal-examples/portal-host run start:local
 ```
 
-Open `http://localhost:5002`. The local build deliberately replaces the
+Open `http://localhost:5001`. The local build deliberately replaces the
 `dist_portal/portal-host` artifact so an existing nginx mapping can serve it
 without configuration changes. To rebuild only the local host, run
 `npm run build:mf -- --portal-host --local`. The existing `npm run build:mf`
