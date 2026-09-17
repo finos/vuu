@@ -126,6 +126,9 @@ export abstract class VuuModule<T extends string = string>
     | undefined;
   protected abstract services?: Record<T, RpcService[] | undefined> | undefined;
   protected abstract visualLinks?: Record<T, VuuLink[] | undefined>;
+  protected get includeDefaultServices() {
+    return true;
+  }
 
   getTableSchema(tableName: string) {
     return (
@@ -384,10 +387,13 @@ export abstract class VuuModule<T extends string = string>
 
   getServices(tableName: T) {
     const tableServices = this.services?.[tableName];
+    const defaultServices = this.includeDefaultServices
+      ? this.#moduleServices
+      : [];
     if (Array.isArray(tableServices)) {
-      return this.#moduleServices.concat(tableServices);
+      return defaultServices.concat(tableServices);
     } else {
-      return this.#moduleServices;
+      return defaultServices;
     }
   }
 
