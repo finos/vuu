@@ -434,95 +434,92 @@
             </g>
 
             <g class="node node-clickable reveal-7" id="portal-server-node" role="button" tabindex="0" aria-label="Portal vuu server">
-              <rect x="550" y="300" width="140" height="64" rx="14" fill="url(#portal-fill)" stroke="#5BD6E2" stroke-opacity=".72"/>
-              <text x="620" y="328" text-anchor="middle" fill="#F5F9FF" font-size="13" font-weight="750">Portal</text>
-              <text x="620" y="345" text-anchor="middle" fill="#9FB3C8" font-size="10">vuu server</text>
+              <rect x="500" y="220" width="140" height="64" rx="14" fill="url(#portal-fill)" stroke="#5BD6E2" stroke-opacity=".72"/>
+              <text x="570" y="248" text-anchor="middle" fill="#F5F9FF" font-size="13" font-weight="750">Portal</text>
+              <text x="570" y="265" text-anchor="middle" fill="#9FB3C8" font-size="10">vuu server</text>
             </g>
 
             <g class="node reveal-12" filter="url(#node-shadow)">
-              <rect x="500" y="211" width="224" height="74" rx="16" fill="url(#server-fill)" stroke="#75E6BF" stroke-opacity=".75"/>
-              <circle cx="524" cy="248" r="11" fill="#75E6BF" fill-opacity=".18" stroke="#75E6BF" stroke-opacity=".72"/>
-              <path d="M519 248H529M524 243V253" stroke="#75E6BF" stroke-width="2" stroke-linecap="round"/>
-              <text x="548" y="244" fill="#F5F9FF" font-size="15" font-weight="750">Vuu Server A</text>
-              <text x="548" y="263" fill="#9FB3C8" font-size="11">the selected app's server</text>
+              <rect x="500" y="320" width="140" height="64" rx="14" fill="url(#server-fill)" stroke="#75E6BF" stroke-opacity=".75"/>
+              <text x="570" y="348" text-anchor="middle" fill="#F5F9FF" font-size="13" font-weight="750">Orders</text>
+              <text x="570" y="365" text-anchor="middle" fill="#9FB3C8" font-size="10">vuu server</text>
             </g>
 
             <g class="route reveal-7" fill="none">
-              <path d="M300 320H550" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-violet)"/>
-              <text x="425" y="313" text-anchor="middle" fill="#BFAEFF" font-size="10" font-weight="700">HTTPS → auth</text>
-              <text x="340" y="353" text-anchor="middle" fill="#9FB3C8" font-size="9">Bearer token</text>
+              <path d="M320 285H500" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-violet)"/>
+              <text x="410" y="277" text-anchor="middle" fill="#BFAEFF" font-size="10" font-weight="700">HTTPS → auth</text>
             </g>
 
             <g class="route reveal-7 portal-handshake auth-request" fill="none">
-              <path d="M620 300V143" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-violet)"/>
-              <text x="650" y="205" text-anchor="middle" fill="#BFAEFF" font-size="10" font-weight="700">validates bearer token</text>
+              <path d="M570 220V143" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-violet)"/>
+              <text x="600" y="183" text-anchor="middle" fill="#BFAEFF" font-size="10" font-weight="700">validates bearer token</text>
             </g>
 
             <g class="route reveal-7 portal-handshake auth-response" fill="none">
-              <path d="M620 143V300" stroke="#75E6BF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-green)"/>
-              <text x="650" y="205" text-anchor="middle" fill="#C8F8E4" font-size="10" font-weight="700">token accepted</text>
+              <path d="M570 143V220" stroke="#75E6BF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-green)"/>
+              <text x="600" y="183" text-anchor="middle" fill="#C8F8E4" font-size="10" font-weight="700">token accepted</text>
             </g>
 
             <g class="message reveal-7 portal-handshake auth-request">
               <rect x="-43" y="-11" width="86" height="22" rx="7" fill="#2A315D" stroke="#B59BFF" stroke-opacity=".9"/>
               <text x="0" y="4" text-anchor="middle" fill="#D6CBFF" font-size="9" font-weight="800">AUTH CHECK</text>
-              <animateMotion id="auth-check-motion" begin="indefinite" dur="1.2s" repeatCount="1" path="M620 300V150"/>
+              <animateMotion id="auth-check-motion" begin="indefinite" dur="1.2s" repeatCount="1" path="M570 220V150"/>
             </g>
 
             <g class="message reveal-7 portal-handshake auth-response">
               <rect x="-34" y="-11" width="68" height="22" rx="7" fill="#3A326E" stroke="#B59BFF" stroke-opacity=".9"/>
               <text x="0" y="4" text-anchor="middle" fill="#E0D8FF" font-size="9" font-weight="800">AUTH OK</text>
-              <animateMotion id="auth-response-motion" begin="indefinite" dur="1.2s" repeatCount="1" path="M620 150V300"/>
+              <animateMotion id="auth-response-motion" begin="indefinite" dur="1.2s" repeatCount="1" path="M570 150V220"/>
             </g>
 
             <g class="route reveal-8" fill="none">
-              <path d="M550 335H300" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-violet)"/>
-              <text x="425" y="349" text-anchor="middle" fill="#BFAEFF" font-size="10" font-weight="700">← Vuu token</text>
+              <path d="M500 278H320" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-violet)"/>
+              <text x="410" y="294" text-anchor="middle" fill="#BFAEFF" font-size="10" font-weight="700">← Vuu token</text>
             </g>
 
             <g class="route reveal-9" fill="none">
-              <path d="M320 340H550" stroke="#5BD6E2" stroke-width="2" stroke-dasharray="7 6"/>
-              <path d="M320 360H550" stroke="#5BD6E2" stroke-width="2" stroke-dasharray="7 6"/>
-              <text x="425" y="375" text-anchor="middle" fill="#BCECF1" font-size="10" font-weight="700">WebSocket → LOGIN</text>
+              <path d="M320 240H500" stroke="#5BD6E2" stroke-width="2" stroke-dasharray="7 6"/>
+              <path d="M320 260H500" stroke="#5BD6E2" stroke-width="2" stroke-dasharray="7 6"/>
+              <text x="410" y="298" text-anchor="middle" fill="#BCECF1" font-size="10" font-weight="700">WebSocket → LOGIN</text>
             </g>
 
             <g class="message reveal-9">
               <rect x="-28" y="-9" width="56" height="18" rx="6" fill="#153F5B" stroke="#5BD6E2" stroke-width="1.5" stroke-opacity=".95"/>
               <text x="0" y="3" text-anchor="middle" fill="#BCECF1" font-size="8" font-weight="800">LOGIN</text>
-              <animateMotion begin="indefinite" dur="2.1s" repeatCount="1" path="M320 350H540"/>
+              <animateMotion begin="indefinite" dur="2.1s" repeatCount="1" path="M330 250H490"/>
             </g>
 
             <g class="route reveal-10" fill="none">
-              <path d="M550 340H320" stroke="#5BD6E2" stroke-width="2" stroke-dasharray="7 6"/>
-              <path d="M550 360H320" stroke="#5BD6E2" stroke-width="2" stroke-dasharray="7 6"/>
-              <text x="425" y="388" text-anchor="middle" fill="#9FB3C8" font-size="9">module entitlements</text>
+              <path d="M500 240H320" stroke="#5BD6E2" stroke-width="2" stroke-dasharray="7 6"/>
+              <path d="M500 260H320" stroke="#5BD6E2" stroke-width="2" stroke-dasharray="7 6"/>
+              <text x="410" y="298" text-anchor="middle" fill="#9FB3C8" font-size="9">module entitlements</text>
             </g>
 
             <g class="message reveal-10">
               <rect x="-46" y="-9" width="92" height="18" rx="6" fill="#185B65" stroke="#75E6BF" stroke-width="1.5" stroke-opacity=".95"/>
               <text x="0" y="3" text-anchor="middle" fill="#C8F8E4" font-size="8" font-weight="800">LOGIN SUCCESS</text>
-              <animateMotion id="login-success-motion" begin="indefinite" dur="2.4s" repeatCount="1" path="M540 350H310"/>
+              <animateMotion id="login-success-motion" begin="indefinite" dur="2.4s" repeatCount="1" path="M490 250H330"/>
             </g>
 
             <g class="route reveal-12" fill="none" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6">
-              <path d="M600 211L615 143" marker-end="url(#arrow-violet)"/>
-              <path d="M615 142L565 211" marker-end="url(#arrow-violet)"/>
-              <text x="681" y="215" fill="#BFAEFF" font-size="11" font-weight="700" stroke="none">token exchange</text>
+              <path d="M570 320V284" marker-end="url(#arrow-violet)"/>
+              <path d="M570 284V320" marker-end="url(#arrow-violet)"/>
+              <text x="620" y="307" fill="#BFAEFF" font-size="11" font-weight="700" stroke="none">token exchange</text>
             </g>
 
-            <g class="route reveal-12" fill="none">
-              <path d="M300 319L500 248" stroke="#75E6BF" stroke-width="3" marker-end="url(#arrow-green)"/>
-              <text x="396" y="319" fill="#9FB3C8" font-size="10" font-weight="700">opens WebSocket</text>
+            <g class="route reveal-12 orders-websocket" fill="none">
+              <path d="M320 340H500" stroke="#5BD6E2" stroke-width="2" stroke-dasharray="7 6"/>
+              <path d="M320 360H500" stroke="#5BD6E2" stroke-width="2" stroke-dasharray="7 6"/>
             </g>
 
             <g class="route reveal-13" fill="none">
-              <path d="M500 272C420 300 350 320 300 286" stroke="#75E6BF" stroke-width="3" stroke-dasharray="9 7" marker-end="url(#arrow-green)"/>
-              <text x="404" y="340" text-anchor="middle" fill="#75E6BF" font-size="11" font-weight="750">live updates keep flowing</text>
+              <path d="M500 372H320" stroke="#75E6BF" stroke-width="3" stroke-dasharray="9 7" marker-end="url(#arrow-green)"/>
+              <text x="410" y="392" text-anchor="middle" fill="#75E6BF" font-size="11" font-weight="750">live updates keep flowing</text>
             </g>
 
             <g class="pulse reveal-13">
-              <circle cx="610" cy="248" r="46" fill="none" stroke="#75E6BF" stroke-width="2" stroke-opacity=".42"/>
-              <circle cx="610" cy="248" r="61" fill="none" stroke="#75E6BF" stroke-width="1" stroke-opacity=".18"/>
+              <circle cx="570" cy="352" r="46" fill="none" stroke="#75E6BF" stroke-width="2" stroke-opacity=".42"/>
+              <circle cx="570" cy="352" r="61" fill="none" stroke="#75E6BF" stroke-width="1" stroke-opacity=".18"/>
             </g>
           </svg>
         </section>
