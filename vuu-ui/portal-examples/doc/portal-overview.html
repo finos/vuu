@@ -175,6 +175,10 @@
         opacity: 0;
       }
 
+      .route.is-superseded {
+        opacity: 0;
+      }
+
       .message {
         opacity: 0;
         pointer-events: none;
@@ -287,7 +291,7 @@
         <section class="visual" aria-label="Portal journey illustration">
           <svg viewBox="0 0 760 500" role="img" aria-labelledby="visual-title visual-description">
             <title id="visual-title">The Vuu portal journey in two dimensions</title>
-            <desc id="visual-description">A two-dimensional map showing a browser containing the Vuu Portal shell, nginx edge, Keycloak, a Vuu server and a remote module exchanging authentication and live data.</desc>
+            <desc id="visual-description">A two-dimensional map showing a browser containing the Vuu Portal shell, nginx, Keycloak, a Vuu server and a remote module exchanging authentication and live data.</desc>
 
             <defs>
               <linearGradient id="browser-fill" x1="0" y1="0" x2="1" y2="1">
@@ -373,13 +377,13 @@
             <g class="node reveal-2" filter="url(#node-shadow)">
               <rect x="360" y="44" width="150" height="76" rx="17" fill="#173651" stroke="#5BA9D8" stroke-opacity=".58"/>
               <path d="M390 70H480M390 85H463M390 100H440" stroke="#6DC4ED" stroke-opacity=".62" stroke-linecap="round"/>
-              <text x="435" y="62" text-anchor="middle" fill="#F5F9FF" font-size="14" font-weight="750">nginx edge</text>
+              <text x="435" y="62" text-anchor="middle" fill="#F5F9FF" font-size="14" font-weight="750">nginx</text>
             </g>
 
             <g class="node reveal-11" filter="url(#node-shadow)">
               <rect x="374" y="58" width="150" height="76" rx="17" fill="#173651" stroke="#5BD6E2" stroke-opacity=".82"/>
               <path d="M404 84H494M404 99H487M404 114H454" stroke="#6DC4ED" stroke-opacity=".72" stroke-linecap="round"/>
-              <text x="449" y="76" text-anchor="middle" fill="#F5F9FF" font-size="14" font-weight="750">nginx edge</text>
+              <text x="449" y="76" text-anchor="middle" fill="#F5F9FF" font-size="14" font-weight="750">nginx</text>
             </g>
 
             <g class="route reveal-2" fill="none">
@@ -392,12 +396,12 @@
               <text x="322" y="148" text-anchor="middle" fill="#9FB3C8" font-size="11" font-weight="700">loads the page</text>
             </g>
 
-            <g class="route reveal-11" fill="none">
+            <g class="route nginx-request reveal-11" fill="none">
               <path d="M320 238L374 105" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
               <text x="342" y="180" text-anchor="middle" fill="#BCECF1" font-size="10" font-weight="700">requests Orders module</text>
             </g>
 
-            <g class="route reveal-12" fill="none">
+            <g class="route nginx-response reveal-11" fill="none">
               <path d="M374 119L320 252" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
               <text x="342" y="222" text-anchor="middle" fill="#BCECF1" font-size="10" font-weight="700">module response</text>
             </g>
@@ -432,7 +436,7 @@
               <text x="620" y="345" text-anchor="middle" fill="#9FB3C8" font-size="10">vuu server</text>
             </g>
 
-            <g class="node reveal-14" filter="url(#node-shadow)">
+            <g class="node reveal-13" filter="url(#node-shadow)">
               <rect x="500" y="211" width="224" height="74" rx="16" fill="url(#server-fill)" stroke="#75E6BF" stroke-opacity=".75"/>
               <circle cx="524" cy="248" r="11" fill="#75E6BF" fill-opacity=".18" stroke="#75E6BF" stroke-opacity=".72"/>
               <path d="M519 248H529M524 243V253" stroke="#75E6BF" stroke-width="2" stroke-linecap="round"/>
@@ -497,25 +501,25 @@
               <animateMotion id="login-success-motion" begin="indefinite" dur="2.4s" repeatCount="1" path="M540 350H310"/>
             </g>
 
-            <g class="route reveal-14" fill="none" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6">
+            <g class="route reveal-13" fill="none" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6">
               <path d="M600 211L615 143" marker-end="url(#arrow-violet)"/>
               <path d="M615 142L565 211" marker-end="url(#arrow-violet)"/>
               <text x="681" y="215" fill="#BFAEFF" font-size="11" font-weight="700" stroke="none">token exchange</text>
             </g>
 
-            <g class="route reveal-14" fill="none">
+            <g class="route reveal-13" fill="none">
               <path d="M300 319L500 248" stroke="#75E6BF" stroke-width="3" marker-end="url(#arrow-green)"/>
               <text x="396" y="319" fill="#9FB3C8" font-size="10" font-weight="700">opens WebSocket</text>
             </g>
 
-            <g class="callout reveal-13">
+            <g class="callout reveal-12">
               <rect x="28" y="68" width="182" height="74" rx="17" fill="#132C49" stroke="#5BD6E2" stroke-opacity=".7"/>
               <path d="M61 95H177M61 111H153" stroke="#5BD6E2" stroke-opacity=".5" stroke-linecap="round"/>
               <text x="119" y="166" text-anchor="middle" fill="#F5F9FF" font-size="15" font-weight="750">remote feature</text>
               <text x="119" y="184" text-anchor="middle" fill="#9FB3C8" font-size="11">arrives on demand</text>
             </g>
 
-            <g class="route reveal-13" fill="none">
+            <g class="route reveal-12" fill="none">
               <path d="M210 105L180 145" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
               <text x="221" y="129" fill="#9FB3C8" font-size="10" font-weight="700">loads into browser</text>
             </g>
@@ -525,12 +529,12 @@
               <text x="358" y="198" fill="#9FB3C8" font-size="10" font-weight="700">asks for a view</text>
             </g>
 
-            <g class="route reveal-15" fill="none">
+            <g class="route reveal-14" fill="none">
               <path d="M500 272C420 300 350 320 300 286" stroke="#75E6BF" stroke-width="3" stroke-dasharray="9 7" marker-end="url(#arrow-green)"/>
               <text x="404" y="340" text-anchor="middle" fill="#75E6BF" font-size="11" font-weight="750">live updates keep flowing</text>
             </g>
 
-            <g class="pulse reveal-15">
+            <g class="pulse reveal-14">
               <circle cx="610" cy="248" r="46" fill="none" stroke="#75E6BF" stroke-width="2" stroke-opacity=".42"/>
               <circle cx="610" cy="248" r="61" fill="none" stroke="#75E6BF" stroke-width="1" stroke-opacity=".18"/>
             </g>
@@ -556,7 +560,7 @@
         {
           title: "Request the portal shell",
           copy: "The browser types /nexus and sends the request to nginx.",
-          detail: "nginx appears as the edge entry point for the portal shell.",
+          detail: "nginx appears as the entry point for the portal shell.",
           status: "Request sent",
         },
         {
@@ -608,16 +612,10 @@
           status: "Portal session established",
         },
         {
-          title: "Request the Orders module",
-          copy: "Clicking Orders tells the portal which feature you want to open.",
-          detail: "The portal asks nginx for the remote Orders module instead of loading every feature up front.",
-          status: "Orders requested",
-        },
-        {
-          title: "Receive the Orders module",
-          copy: "nginx returns the requested module to the browser.",
-          detail: "The response brings the feature code back to the portal shell, ready to be placed into the workspace.",
-          status: "Orders module received",
+          title: "Load the Orders module",
+          copy: "Clicking Orders asks nginx for the remote module.",
+          detail: "The request is replaced by nginx's response, then the feature appears inside the portal shell.",
+          status: "Orders module loading",
         },
         {
           title: "Bring in the feature",
@@ -656,6 +654,9 @@
       let urlTypingStarted = false;
       let urlTypingComplete = false;
       let urlTypingTimer = null;
+      let nginxFlowStarted = false;
+      let nginxResponseVisible = false;
+      let nginxFlowTimer = null;
 
       function setStep(step) {
         currentStep = Math.max(1, Math.min(stages.length, step));
@@ -663,7 +664,8 @@
         back.disabled = currentStep === 1;
         next.disabled = currentStep === stages.length
           || (currentStep === 1 && !urlTypingComplete)
-          || (currentStep === 10 && !ordersSelected);
+          || (currentStep === 10 && !ordersSelected)
+          || (currentStep === 11 && !nginxResponseVisible);
         next.innerHTML = currentStep === stages.length
           ? "Story complete <span aria-hidden=\"true\">✓</span>"
           : "Reveal next <span aria-hidden=\"true\">→</span>";
@@ -681,7 +683,10 @@
             && (!item.classList.contains("menu-preview") || entitlementsReceived);
           item.classList.toggle("is-visible", isVisible);
           item.classList.toggle("is-past", (item.classList.contains("route") || item.classList.contains("message")) && revealStep < currentStep);
-          item.classList.toggle("is-replaced", item.classList.contains("menu-preview") && currentStep >= 13);
+          item.classList.toggle("is-replaced", item.classList.contains("menu-preview") && currentStep >= 12);
+          item.classList.toggle("is-superseded",
+            (item.classList.contains("nginx-request") && nginxResponseVisible)
+            || (item.classList.contains("nginx-response") && !nginxResponseVisible));
           const animation = item.querySelector("animateMotion");
           if (!wasVisible && isVisible && animation?.getAttribute("begin") === "indefinite") animation.beginElement();
         });
@@ -706,6 +711,12 @@
         urlTypingStarted = false;
         urlTypingComplete = false;
         urlText.textContent = "";
+        nginxFlowStarted = false;
+        nginxResponseVisible = false;
+        if (nginxFlowTimer) {
+          window.clearTimeout(nginxFlowTimer);
+          nginxFlowTimer = null;
+        }
         setStep(1);
       });
       function startUrlTyping() {
@@ -749,10 +760,25 @@
         entitlementsReceived = true;
         setStep(currentStep);
       });
+      function startNginxFlow() {
+        if (currentStep !== 11 || nginxFlowStarted) return;
+        nginxFlowStarted = true;
+        nginxFlowTimer = window.setTimeout(() => {
+          nginxFlowTimer = null;
+          if (currentStep !== 11) return;
+          nginxResponseVisible = true;
+          setStep(currentStep);
+          nginxFlowTimer = window.setTimeout(() => {
+            nginxFlowTimer = null;
+            if (currentStep === 11) setStep(12);
+          }, 700);
+        }, 850);
+      }
       function selectOrders() {
         if (currentStep < 10 || !entitlementsReceived) return;
         ordersSelected = true;
         setStep(Math.max(currentStep, 11));
+        startNginxFlow();
       }
       ordersMenuItem.addEventListener("click", selectOrders);
       ordersMenuItem.addEventListener("keydown", (event) => {
@@ -762,18 +788,40 @@
         }
       });
       next.addEventListener("click", () => {
-        if ((currentStep === 1 && !urlTypingComplete) || (currentStep === 10 && !ordersSelected)) return;
+        if (
+          (currentStep === 1 && !urlTypingComplete)
+          || (currentStep === 10 && !ordersSelected)
+          || (currentStep === 11 && !nginxResponseVisible)
+        ) return;
         setStep(currentStep + 1);
       });
-      back.addEventListener("click", () => setStep(currentStep - 1));
+      back.addEventListener("click", () => {
+        if (currentStep === 11 && currentStep - 1 < 11) {
+          window.clearTimeout(nginxFlowTimer);
+          nginxFlowTimer = null;
+          nginxFlowStarted = false;
+          nginxResponseVisible = false;
+        }
+        setStep(currentStep - 1);
+      });
       document.addEventListener("keydown", (event) => {
         if (event.key === "ArrowRight" || event.key === " ") {
           event.preventDefault();
-          if ((currentStep === 1 && !urlTypingComplete) || (currentStep === 10 && !ordersSelected)) return;
+          if (
+            (currentStep === 1 && !urlTypingComplete)
+            || (currentStep === 10 && !ordersSelected)
+            || (currentStep === 11 && !nginxResponseVisible)
+          ) return;
           setStep(currentStep + 1);
         }
         if (event.key === "ArrowLeft") {
           event.preventDefault();
+          if (currentStep === 11 && currentStep - 1 < 11) {
+            window.clearTimeout(nginxFlowTimer);
+            nginxFlowTimer = null;
+            nginxFlowStarted = false;
+            nginxResponseVisible = false;
+          }
           setStep(currentStep - 1);
         }
       });
