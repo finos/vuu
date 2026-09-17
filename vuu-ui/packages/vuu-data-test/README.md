@@ -14,7 +14,5 @@ npm install
 
 Alternatively, set `VUU_WEBSOCKET_ROOT` and run `npm run link:user-admin`.
 This is local-development-only: CI and published packages do not provide
-`vuu-ui/.local-packages`. The bridge also links the upstream package's
-server-only dependencies so npm can resolve the unchanged package root
-contract. Browser code must continue to import only the `contracts` and
-`in-memory` subpaths.
+`vuu-ui/.local-packages/user-admin`. Browser code must continue to import only
+the `contracts` and `in-memory` subpaths.

@@ -20,60 +20,46 @@ if (!source) {
   );
 }
 
-const packages = [
-  { bridgeName: "user-admin", sourceName: "user-admin" },
-  { bridgeName: "data", sourceName: "data" },
-  { bridgeName: "vuu-server", sourceName: "vuu-server" },
-];
-const bridgeDirectory = resolve(uiDirectory, ".local-packages");
-
-const packageDirectory = async (sourceName) => {
-  const directory = resolve(source, "packages", sourceName);
-  try {
-    if ((await stat(resolve(directory, "package.json"))).isFile()) {
-      return directory;
-    }
-  } catch {
-    // The message below identifies the complete missing package path.
+const packageDirectory = resolve(source, "packages/user-admin");
+try {
+  if (!(await stat(resolve(packageDirectory, "package.json"))).isFile()) {
+    throw new Error("package.json is not a file");
   }
+} catch {
   throw new Error(
-    `No ${sourceName} package found at ${directory}. Expected packages/${sourceName}/package.json.`,
+    `No user-admin package found at ${packageDirectory}. Expected packages/user-admin/package.json.`,
   );
-};
-
-const refreshLink = async (name, target) => {
-  const bridge = resolve(bridgeDirectory, name);
-  try {
-    const status = await lstat(bridge);
-    if (!status.isSymbolicLink()) {
-      throw new Error(
-        `Refusing to replace ${bridge}: it exists and is not a symbolic link.`,
-      );
-    }
-    const existingTarget = await realpath(
-      resolve(bridgeDirectory, await readlink(bridge)),
-    );
-    if (existingTarget === (await realpath(target))) {
-      console.log(`${name} bridge already points to ${target}`);
-      return;
-    }
-    await unlink(bridge);
-  } catch (error) {
-    if (
-      !error ||
-      typeof error !== "object" ||
-      !("code" in error) ||
-      error.code !== "ENOENT"
-    ) {
-      throw error;
-    }
-  }
-
-  await symlink(target, bridge, "dir");
-  console.log(`Linked ${bridge} -> ${target}`);
-};
-
-await mkdir(bridgeDirectory, { recursive: true });
-for (const { bridgeName, sourceName } of packages) {
-  await refreshLink(bridgeName, await packageDirectory(sourceName));
 }
+
+const bridgeDirectory = resolve(uiDirectory, ".local-packages");
+const bridge = resolve(bridgeDirectory, "user-admin");
+await mkdir(bridgeDirectory, { recursive: true });
+
+try {
+  const status = await lstat(bridge);
+  if (!status.isSymbolicLink()) {
+    throw new Error(
+      `Refusing to replace ${bridge}: it exists and is not a symbolic link.`,
+    );
+  }
+  const target = await realpath(
+    resolve(bridgeDirectory, await readlink(bridge)),
+  );
+  if (target === (await realpath(packageDirectory))) {
+    console.log(`User-admin bridge already points to ${packageDirectory}`);
+    process.exit(0);
+  }
+  await unlink(bridge);
+} catch (error) {
+  if (
+    !error ||
+    typeof error !== "object" ||
+    !("code" in error) ||
+    error.code !== "ENOENT"
+  ) {
+    throw error;
+  }
+}
+
+await symlink(packageDirectory, bridge, "dir");
+console.log(`Linked ${bridge} -> ${packageDirectory}`);
