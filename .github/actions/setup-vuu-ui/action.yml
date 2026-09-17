@@ -16,16 +16,8 @@ runs:
         key: npm-${{ hashFiles('package-lock.json') }}
         restore-keys: npm-
 
-    - name: Checkout UserAdmin package source
-      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
-      with:
-        repository: heswell/vuu-websocket
-        ref: 60792d0a40a9c0b01d738a98247dc9c04987ff9a
-        path: .vuu-websocket
-
     - name: Install dependencies
       shell: bash
       run: |
         cd ./vuu-ui
-        npm run link:user-admin -- ../.vuu-websocket
         npm install
