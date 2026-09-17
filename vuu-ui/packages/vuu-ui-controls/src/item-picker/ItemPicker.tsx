@@ -50,7 +50,7 @@ export interface ItemPickerProps
   Pick<ListBoxProps<ItemDescriptor>, "selected" | "onSelectionChange"> {
   AvailableListItem?: ComponentType<AvailableListItemProps>;
   SelectedListItem?: ComponentType<SelectedListItemProps>;
-  itemTypeName: ItemTypeName;
+  itemTypeName?: ItemTypeName;
   /**
    * Display order of SelectedItems List / AvailableItems List
    */
@@ -193,7 +193,7 @@ export const ItemPicker = forwardRef(function ItemPicker(
     AvailableListItem = DefaultAvailableListItem,
     SelectedListItem = DefaultSelectedListItem,
     className,
-    itemTypeName,
+    itemTypeName = 'Item',
     searchForm = true,
     allItems,
     layout = 'v-selected-available',

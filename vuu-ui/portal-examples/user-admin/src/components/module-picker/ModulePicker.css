@@ -1,18 +1,50 @@
 .vuuModulePicker {
-  .vuuModulePicker-listItem {
-    align-items: center;
-    display: grid;
-    gap: var(--salt-spacing-300);
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    height: auto;
-    min-height: calc(var(--salt-size-base) + var(--salt-spacing-200));
-    padding-left: var(--salt-spacing-300);
-    padding-right: var(--salt-spacing-300);
-    padding-block: var(--salt-spacing-200);
+
+  .saltListBox {
+    gap: var(--salt-spacing-150);
   }
 
-  .vuuModulePicker-availableListItem {
-    grid-template-columns: minmax(0, 1fr) auto;
+  .vuuModulePickerListItem {
+    align-items: center;
+    border: solid 1px var(--salt-container-tertiary-borderColor);
+    border-radius: var(--salt-curve-100);
+    display: grid;
+    gap: var(--salt-spacing-300);
+    height: auto;
+    min-height: calc(var(--salt-size-base) + var(--salt-spacing-200));
+    padding: var(--salt-spacing-100) var(--salt-spacing-200);
+  }
+
+  .vuuModulePickerListItem-available {
+    column-gap: 0;
+    grid-template-columns: 1fr auto;
+  }
+
+  .vuuModulePickerListItem-selected {
+    column-gap: 0;
+    container-type: inline-size;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: 1fr 1fr;
+
+    .vuuModulePicker-moduleName {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .vuuItemPickerListItem-action {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .vuuModulePicker-permissionControl {
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    @container (width >= 400px) {
+      grid-template-columns: 1fr auto auto;
+      grid-template-rows: 1fr;
+    }
   }
 
   .vuuModulePicker-moduleName {
@@ -35,7 +67,9 @@
   }
 
   .vuuModulePicker-addButton {
+    --saltButton-padding: var(--salt-spacing-200);
     gap: var(--salt-spacing-100);
+    justify-self: end;
     white-space: nowrap;
   }
 }

@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 
-export type SelectedItemChangeHandler = (newSelectedItems: readonly ItemDescriptor[]) => void;
+export type SelectedItemsChangeHandler = (newSelectedItems: readonly ItemDescriptor[]) => void;
 
 /** This is a public description of an Item that can be displayed in the ItemPicker component, defining all the
  * mandatory and option attributes that can be defined by the client. */
@@ -26,7 +26,7 @@ export interface ItemPickerHookProps {
   allItems: ItemDescriptor[];
   selectedItems: ItemDescriptor[];
   maxSelections?: number;
-  onSelectedItemsChange: SelectedItemChangeHandler;
+  onSelectedItemsChange: SelectedItemsChangeHandler;
 }
 
 const filterItems = (

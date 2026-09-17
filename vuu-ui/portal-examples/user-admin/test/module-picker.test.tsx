@@ -1,28 +1,27 @@
-import { act } from "react";
+import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import {
-  PortalModuleRegistryProvider,
-  type RemoteModuleDescriptor,
-} from "@vuu-ui/core/portal";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ModulePicker } from "../src/components/module-picker/ModulePicker";
+import {
+  ModulePicker,
+  type ModulePickerModuleDescriptor,
+} from "../src/components/module-picker/ModulePicker";
 
-const remoteModules = [
-  {
-    clientIdentifier: "vuu-orders",
-    description: "Orders module",
-    id: "orders",
-    location: "orders",
-    loginRole: "orders-access",
-    mfComponent: "Orders",
-    mfScope: "orders",
-    mfUrl: "http://localhost:5001",
-    name: "orders",
-    path: "/orders",
-    title: "Orders",
-    version: 1,
-  },
-] satisfies readonly RemoteModuleDescriptor[];
+const ModulePickerHarness = ({
+  allModules,
+}: {
+  allModules: ModulePickerModuleDescriptor[];
+}) => {
+  const [selectedModules, setSelectedModules] = useState<
+    ModulePickerModuleDescriptor[]
+  >([]);
+  return (
+    <ModulePicker
+      allModules={allModules}
+      onSelectedModulesChange={setSelectedModules}
+      selectedModules={selectedModules}
+    />
+  );
+};
 
 describe("ModulePicker", () => {
   let container: HTMLDivElement;
@@ -44,9 +43,16 @@ describe("ModulePicker", () => {
   it("renders available modules first and selected modules without a drag handle", async () => {
     await act(async () => {
       root.render(
-        <PortalModuleRegistryProvider remoteModules={remoteModules}>
-          <ModulePicker />
-        </PortalModuleRegistryProvider>,
+        <ModulePickerHarness
+          allModules={[
+            {
+              label: "Orders",
+              name: "orders-access",
+              permissions: ["read", "edit"],
+              selectedPermissions: [],
+            },
+          ]}
+        />,
       );
     });
 
@@ -71,7 +77,7 @@ describe("ModulePicker", () => {
     expect(addButton.textContent).toContain("Add");
     expect(addButton.querySelector('[data-icon="plus"]')).not.toBeNull();
 
-    await act(async () => addButton.click());
+    await act(async () => (addButton as HTMLElement).click());
 
     const selectedItem = container.querySelector(
       '.vuuItemPicker-selectedList [data-name="orders-access"]',
@@ -106,11 +112,15 @@ describe("ModulePicker", () => {
   it("accepts explicit item names", async () => {
     await act(async () => {
       root.render(
-        <ModulePicker
-          allItems={[
-            { name: "User Admin" },
-            { name: "Module Admin" },
-            { name: "Basket Trading" },
+        <ModulePickerHarness
+          allModules={[
+            { name: "User Admin", permissions: [], selectedPermissions: [] },
+            { name: "Module Admin", permissions: [], selectedPermissions: [] },
+            {
+              name: "Basket Trading",
+              permissions: [],
+              selectedPermissions: [],
+            },
           ]}
         />,
       );
@@ -125,3 +135,4 @@ describe("ModulePicker", () => {
     ).toEqual(["Basket Trading", "Module Admin", "User Admin"]);
   });
 });
+
