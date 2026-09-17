@@ -1929,6 +1929,8 @@ var ServerProxy = class {
   unsubscribe(clientViewportId) {
     const serverViewportId = this.mapClientToServerViewport.get(clientViewportId);
     if (serverViewportId) {
+      this.mapClientToServerViewport.delete(clientViewportId);
+      this.viewports.delete(serverViewportId);
       info3 == null ? void 0 : info3(
         \`Unsubscribe Message (Client to Server):
         \${serverViewportId}\`

@@ -169,6 +169,24 @@ describe("ServerProxy", () => {
         type: "subscribed",
       });
     });
+
+    it("does not resend a viewport removal during connection teardown", async () => {
+      const [serverProxy, , connection] = await createFixtures();
+      connection.send.mockClear();
+
+      serverProxy.unsubscribe("client-vp-1");
+      serverProxy.disconnect();
+
+      expect(connection.send).toHaveBeenCalledTimes(1);
+      expect(connection.send).toHaveBeenCalledWith({
+        body: {
+          type: "REMOVE_VP",
+          viewPortId: "server-vp-1",
+        },
+        requestId: "4",
+        ...SERVER_MESSAGE_CONSTANTS,
+      });
+    });
   });
 
   describe("Data Handling", () => {

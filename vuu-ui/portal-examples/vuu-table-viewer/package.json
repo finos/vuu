@@ -40,7 +40,7 @@
         "./VuuTableViewer": "src/VuuTableViewer"
       },
       "name": "vuuTableViewer",
-      "port": 5010
+      "port": 5004
     }
   }
 }

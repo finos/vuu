@@ -17,6 +17,7 @@ const token = `${btoa(
 describe("exchangeVuuToken", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it("exchanges an identity token for a parsed VUU session", async () => {
@@ -78,5 +79,43 @@ describe("exchangeVuuToken", () => {
       "https://localhost:8443/api/authn/module-admin",
       expect.any(Object),
     );
+  });
+
+  it("logs connection-scoped, non-sensitive identity token diagnostics", async () => {
+    const encodeBase64Url = (value: object) =>
+      btoa(JSON.stringify(value))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+    const identityToken = [
+      encodeBase64Url({ alg: "none", typ: "JWT" }),
+      encodeBase64Url({ exp: 1_800_000_000, iat: 1_700_000_000 }),
+      "signature",
+    ].join(".");
+    const fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ token }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    vi.stubGlobal("fetch", fetch);
+
+    await exchangeVuuToken(identityToken, target);
+
+    expect(info).toHaveBeenCalledWith("[VuuTokenExchange] requesting token", {
+      connectionId: target.connectionId,
+      identityToken: {
+        expiresAt: 1_800_000_000,
+        fingerprint: expect.stringMatching(/^fnv1a-[a-f0-9]{8}$/),
+        issuedAt: 1_700_000_000,
+      },
+      restUrl: target.restUrl,
+    });
+    expect(info).toHaveBeenCalledWith("[VuuTokenExchange] token response", {
+      connectionId: target.connectionId,
+      status: 200,
+    });
+    expect(JSON.stringify(info.mock.calls)).not.toContain(identityToken);
   });
 });

@@ -4,6 +4,7 @@ import type { AuthHandler } from "./AuthHandler";
 
 let keycloak: Keycloak;
 let initialization: Promise<boolean> | undefined;
+let identityTokenRefresh: Promise<string> | undefined;
 
 const getKeycloak = (authConfig: AuthConfig) => {
   if (!keycloak) {
@@ -40,11 +41,21 @@ export class KeycloakAuthHandler implements AuthHandler {
   };
 
   async getIdentityToken() {
-    await getKeycloak(this.authConfig).updateToken(30);
-    if (keycloak.token) {
-      return keycloak.token;
+    if (!identityTokenRefresh) {
+      const keycloak = getKeycloak(this.authConfig);
+      identityTokenRefresh = keycloak
+        .updateToken(-1)
+        .then(() => {
+          if (keycloak.token) {
+            return keycloak.token;
+          }
+          throw Error("No identity token from Keycloak");
+        })
+        .finally(() => {
+          identityTokenRefresh = undefined;
+        });
     }
-    throw Error("No identity token from Keycloak");
+    return identityTokenRefresh;
   }
 
   async logout() {
