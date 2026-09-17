@@ -179,6 +179,11 @@
         opacity: 0;
       }
 
+      .node.is-retired {
+        opacity: 0;
+        pointer-events: none;
+      }
+
       .message {
         opacity: 0;
         pointer-events: none;
@@ -380,7 +385,7 @@
               <text x="435" y="62" text-anchor="middle" fill="#F5F9FF" font-size="14" font-weight="750">nginx</text>
             </g>
 
-            <g class="node reveal-11" filter="url(#node-shadow)">
+            <g class="node module-nginx reveal-11" filter="url(#node-shadow)">
               <rect x="374" y="58" width="150" height="76" rx="17" fill="#173651" stroke="#5BD6E2" stroke-opacity=".82"/>
               <path d="M404 84H494M404 99H487M404 114H454" stroke="#6DC4ED" stroke-opacity=".72" stroke-linecap="round"/>
               <text x="449" y="76" text-anchor="middle" fill="#F5F9FF" font-size="14" font-weight="750">nginx</text>
@@ -434,7 +439,7 @@
               <text x="620" y="345" text-anchor="middle" fill="#9FB3C8" font-size="10">vuu server</text>
             </g>
 
-            <g class="node reveal-13" filter="url(#node-shadow)">
+            <g class="node reveal-12" filter="url(#node-shadow)">
               <rect x="500" y="211" width="224" height="74" rx="16" fill="url(#server-fill)" stroke="#75E6BF" stroke-opacity=".75"/>
               <circle cx="524" cy="248" r="11" fill="#75E6BF" fill-opacity=".18" stroke="#75E6BF" stroke-opacity=".72"/>
               <path d="M519 248H529M524 243V253" stroke="#75E6BF" stroke-width="2" stroke-linecap="round"/>
@@ -499,40 +504,23 @@
               <animateMotion id="login-success-motion" begin="indefinite" dur="2.4s" repeatCount="1" path="M540 350H310"/>
             </g>
 
-            <g class="route reveal-13" fill="none" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6">
+            <g class="route reveal-12" fill="none" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6">
               <path d="M600 211L615 143" marker-end="url(#arrow-violet)"/>
               <path d="M615 142L565 211" marker-end="url(#arrow-violet)"/>
               <text x="681" y="215" fill="#BFAEFF" font-size="11" font-weight="700" stroke="none">token exchange</text>
             </g>
 
-            <g class="route reveal-13" fill="none">
+            <g class="route reveal-12" fill="none">
               <path d="M300 319L500 248" stroke="#75E6BF" stroke-width="3" marker-end="url(#arrow-green)"/>
               <text x="396" y="319" fill="#9FB3C8" font-size="10" font-weight="700">opens WebSocket</text>
             </g>
 
-            <g class="callout reveal-12">
-              <rect x="28" y="68" width="182" height="74" rx="17" fill="#132C49" stroke="#5BD6E2" stroke-opacity=".7"/>
-              <path d="M61 95H177M61 111H153" stroke="#5BD6E2" stroke-opacity=".5" stroke-linecap="round"/>
-              <text x="119" y="166" text-anchor="middle" fill="#F5F9FF" font-size="15" font-weight="750">remote feature</text>
-              <text x="119" y="184" text-anchor="middle" fill="#9FB3C8" font-size="11">arrives on demand</text>
-            </g>
-
-            <g class="route reveal-12" fill="none">
-              <path d="M210 105L180 145" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
-              <text x="221" y="129" fill="#9FB3C8" font-size="10" font-weight="700">loads into browser</text>
-            </g>
-
-            <g class="route reveal-14" fill="none">
-              <path d="M210 125L500 248" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
-              <text x="358" y="198" fill="#9FB3C8" font-size="10" font-weight="700">asks for a view</text>
-            </g>
-
-            <g class="route reveal-14" fill="none">
+            <g class="route reveal-13" fill="none">
               <path d="M500 272C420 300 350 320 300 286" stroke="#75E6BF" stroke-width="3" stroke-dasharray="9 7" marker-end="url(#arrow-green)"/>
               <text x="404" y="340" text-anchor="middle" fill="#75E6BF" font-size="11" font-weight="750">live updates keep flowing</text>
             </g>
 
-            <g class="pulse reveal-14">
+            <g class="pulse reveal-13">
               <circle cx="610" cy="248" r="46" fill="none" stroke="#75E6BF" stroke-width="2" stroke-opacity=".42"/>
               <circle cx="610" cy="248" r="61" fill="none" stroke="#75E6BF" stroke-width="1" stroke-opacity=".18"/>
             </g>
@@ -616,12 +604,6 @@
           status: "Orders module loading",
         },
         {
-          title: "Bring in the feature",
-          copy: "The selected feature arrives and takes its place inside the workspace, without replacing the whole portal.",
-          detail: "A remote module is loaded on demand. To you, it simply feels like the next part of the same application.",
-          status: "Feature is arriving",
-        },
-        {
           title: "Connect the selected server",
           copy: "The selected module connects to the Vuu server that owns its data.",
           detail: "Only now does another Vuu server appear: it belongs to the feature you chose and opens its live WebSocket.",
@@ -687,6 +669,7 @@
           item.classList.toggle("is-visible", isVisible);
           item.classList.toggle("is-past", (item.classList.contains("route") || item.classList.contains("message")) && revealStep < currentStep);
           item.classList.toggle("is-replaced", item.classList.contains("menu-preview") && currentStep >= 12);
+          item.classList.toggle("is-retired", item.classList.contains("module-nginx") && currentStep >= 12);
           item.classList.toggle("is-superseded",
             (item.classList.contains("module-request") && nginxResponseVisible)
             || (item.classList.contains("module-response") && !nginxResponseVisible)
