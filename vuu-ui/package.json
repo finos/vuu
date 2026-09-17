@@ -34,7 +34,6 @@
     "bump:versions": "node ./scripts/bump-versions.ts",
     "launch:app": "node ./scripts/launch-app.mjs",
     "launch:table": "node ./scripts/launch-table.mjs",
-    "link:user-admin": "node ./scripts/link-user-admin-package.mjs",
     "launch:demo:electron": "cd tools/electron && node ./node_modules/.bin/electron .",
     "lint": "biome lint",
     "lint:error": "biome lint --diagnostic-level=error",
