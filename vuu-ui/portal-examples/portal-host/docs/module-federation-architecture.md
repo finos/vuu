@@ -98,7 +98,8 @@ npm --prefix portal-examples/basket-trading run start
 npm --prefix portal-examples/portal-host run start:local
 ```
 
-Open `http://localhost:5002`. To rebuild only the local host, run
+Open `http://localhost:5002`. The local build deliberately replaces the
+`dist_portal/portal-host` artifact so an existing nginx mapping can serve it
+without configuration changes. To rebuild only the local host, run
 `npm run build:mf -- --portal-host --local`. The existing `npm run build:mf`
-and `portal-host` `build`/`start` commands continue to produce and serve the
-authenticated remote host.
+or `portal-host` `build` command restores the authenticated remote host.

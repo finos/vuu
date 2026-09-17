@@ -27,7 +27,7 @@ async function main() {
 
       output: {
         distPath: {
-          root: `../../dist_portal/${isLocal ? "portal-host-local" : "portal-host"}`,
+          root: "../../dist_portal/portal-host",
           css: "./",
           js: "./",
         },
