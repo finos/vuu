@@ -391,6 +391,8 @@ export class ServerProxy {
     const serverViewportId =
       this.mapClientToServerViewport.get(clientViewportId);
     if (serverViewportId) {
+      this.mapClientToServerViewport.delete(clientViewportId);
+      this.viewports.delete(serverViewportId);
       info?.(
         `Unsubscribe Message (Client to Server):
         ${serverViewportId}`,

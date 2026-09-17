@@ -42,6 +42,36 @@ describe("KeycloakAuthHandler", () => {
     expect(keycloak.init).toHaveBeenCalledTimes(1);
 
     await expect(handler.getIdentityToken()).resolves.toBe("identity-token");
-    expect(keycloak.updateToken).toHaveBeenCalledWith(30);
+    expect(keycloak.updateToken).toHaveBeenCalledWith(-1);
+  });
+
+  it("coalesces concurrent forced token refreshes", async () => {
+    let completeRefresh: (() => void) | undefined;
+    keycloak.updateToken.mockImplementationOnce(
+      () =>
+        new Promise<boolean>((resolve) => {
+          completeRefresh = () => resolve(true);
+        }),
+    );
+    const { KeycloakAuthHandler } = await import(
+      "../../src/auth/KeycloakAuthHandler"
+    );
+    const handler = new KeycloakAuthHandler({
+      authUrl: "https://identity.example.test",
+      restUrl: "https://vuu.example.test/api/authn",
+      websocketUrl: "wss://vuu.example.test/websocket",
+    });
+
+    const firstToken = handler.getIdentityToken();
+    const secondToken = handler.getIdentityToken();
+
+    expect(keycloak.updateToken).toHaveBeenCalledTimes(1);
+    expect(keycloak.updateToken).toHaveBeenCalledWith(-1);
+
+    completeRefresh?.();
+    await expect(Promise.all([firstToken, secondToken])).resolves.toEqual([
+      "identity-token",
+      "identity-token",
+    ]);
   });
 });

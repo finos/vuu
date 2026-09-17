@@ -60,13 +60,64 @@ export class VuuTokenExchangeError extends Error {
   }
 }
 
+type IdentityTokenDiagnostics = {
+  expiresAt?: number;
+  fingerprint: string;
+  issuedAt?: number;
+};
+
+const createTokenFingerprint = (token: string) => {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < token.length; index += 1) {
+    hash ^= token.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return `fnv1a-${(hash >>> 0).toString(16).padStart(8, "0")}`;
+};
+
+const getIdentityTokenDiagnostics = (
+  token: string,
+): IdentityTokenDiagnostics => {
+  const [, payload] = token.split(".");
+  if (!payload || !/^[A-Za-z0-9_-]+$/.test(payload)) {
+    return { fingerprint: createTokenFingerprint(token) };
+  }
+
+  const base64Payload = payload.replace(/-/g, "+").replace(/_/g, "/");
+  const padding = "=".repeat((4 - (base64Payload.length % 4)) % 4);
+  try {
+    const claims: unknown = JSON.parse(atob(`${base64Payload}${padding}`));
+    if (claims === null || typeof claims !== "object") {
+      return { fingerprint: createTokenFingerprint(token) };
+    }
+    const { exp, iat } = claims;
+    return {
+      expiresAt: typeof exp === "number" ? exp : undefined,
+      fingerprint: createTokenFingerprint(token),
+      issuedAt: typeof iat === "number" ? iat : undefined,
+    };
+  } catch {
+    return { fingerprint: createTokenFingerprint(token) };
+  }
+};
+
 export const exchangeVuuToken = async (
   identityToken: string,
   target: VuuAuthTarget,
 ): Promise<VuuSession> => {
+  const identityTokenDiagnostics = getIdentityTokenDiagnostics(identityToken);
+  console.info("[VuuTokenExchange] requesting token", {
+    connectionId: target.connectionId,
+    identityToken: identityTokenDiagnostics,
+    restUrl: target.restUrl,
+  });
   const response = await fetch(target.restUrl, {
     headers: { Authorization: `Bearer ${identityToken}` },
     method: "POST",
+  });
+  console.info("[VuuTokenExchange] token response", {
+    connectionId: target.connectionId,
+    status: response.status,
   });
   if (!response.ok) {
     throw new VuuTokenExchangeError(
