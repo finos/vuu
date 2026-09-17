@@ -3,7 +3,7 @@ import { localPortalModuleRegistry } from "../src/local-module-registry";
 
 describe("local portal module registry", () => {
   it("uses local adapter exposures without remote VUU connections", () => {
-    expect(localPortalModuleRegistry.modules).toHaveLength(2);
+    expect(localPortalModuleRegistry.modules).toHaveLength(3);
     expect(
       localPortalModuleRegistry.modules.map(
         ({ mfComponent, mfScope, mfUrl }) => ({
@@ -13,6 +13,11 @@ describe("local portal module registry", () => {
         }),
       ),
     ).toEqual([
+      {
+        mfComponent: "UserAdminLocal",
+        mfScope: "userAdmin",
+        mfUrl: "http://localhost:5007",
+      },
       {
         mfComponent: "VuuBasketTradingFeatureLocal",
         mfScope: "basketTrading",
@@ -29,5 +34,22 @@ describe("local portal module registry", () => {
         (descriptor) => !("vuu" in descriptor),
       ),
     ).toBe(true);
+    expect(localPortalModuleRegistry.modules[0].ComponentProps).toEqual({
+      config: {
+        clients: { table: { module: "USER_ADMIN", table: "clients" } },
+        group_roles: {
+          table: { module: "USER_ADMIN", table: "group_roles" },
+        },
+        groups: { table: { module: "USER_ADMIN", table: "groups" } },
+        roles: { table: { module: "USER_ADMIN", table: "roles" } },
+        user_group_roles: {
+          table: { module: "USER_ADMIN", table: "user_group_roles" },
+        },
+        user_groups: {
+          table: { module: "USER_ADMIN", table: "user_groups" },
+        },
+        users: { table: { module: "USER_ADMIN", table: "users" } },
+      },
+    });
   });
 });

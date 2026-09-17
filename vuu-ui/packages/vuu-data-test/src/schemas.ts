@@ -1,4 +1,4 @@
-import { TableSchema } from "@vuu-ui/vuu-data-types";
+import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import {
   type BasketsTableName,
   schemas as basketSchemas,
@@ -7,7 +7,7 @@ import {
   type SimulTableName,
   schemas as simulSchemas,
 } from "./simul/simul-schemas";
-import { TestTableName, testModule } from "./test/TestModule";
+import { type TestTableName, testModule } from "./test/TestModule";
 import {
   USER_ADMIN_TABLE_SCHEMAS,
   type UserAdminTableName,
