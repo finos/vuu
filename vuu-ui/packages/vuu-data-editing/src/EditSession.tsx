@@ -634,7 +634,13 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       this.#setLifecycle({ status: "ending", sessionDataSource });
 
       try {
-        await this.dataSource?.endEditSession?.(saveChanges, force);
+        const response = await this.dataSource?.endEditSession?.(
+          saveChanges,
+          force,
+        );
+        if (isRpcError(response)) {
+          throw new Error(response.errorMessage);
+        }
         this.#clearEdits();
         this.#sessionDataSource = undefined;
         this.#setLifecycle({ status: "idle" });

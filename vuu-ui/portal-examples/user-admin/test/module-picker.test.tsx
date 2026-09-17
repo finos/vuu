@@ -92,7 +92,11 @@ describe("ModulePicker", () => {
     if (!permissionComboBox) throw new Error("Missing permission ComboBox");
     const permissionInput = permissionComboBox.querySelector("input");
     if (!permissionInput) throw new Error("Missing permission ComboBox input");
-    await act(async () => permissionInput.click());
+    await act(async () =>
+      permissionInput.dispatchEvent(
+        new KeyboardEvent("keydown", { bubbles: true, key: "ArrowDown" }),
+      ),
+    );
     expect(permissionInput.getAttribute("aria-expanded")).toBe("true");
     expect(
       document.querySelector('[role="listbox"][aria-multiselectable="true"]'),

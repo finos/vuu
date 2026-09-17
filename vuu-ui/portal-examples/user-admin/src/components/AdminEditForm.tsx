@@ -50,6 +50,27 @@ interface EditorRun {
   task: Promise<void>;
 }
 
+const assertSessionEndSucceeded = (result: unknown) => {
+  if (
+    typeof result === "object" &&
+    result !== null &&
+    "type" in result &&
+    result.type === "ERROR_RESULT"
+  ) {
+    const error = "errorMessage" in result ? result.errorMessage : undefined;
+    throw new Error(
+      typeof error === "string" ? error : "Ending the edit session failed.",
+    );
+  }
+};
+
+const endSession = async (run: EditorRun) => {
+  const sessionSource = run.session.sessionDataSource;
+  const result: unknown = await run.session.end(false);
+  assertSessionEndSucceeded(result);
+  sessionSource?.unsubscribe();
+};
+
 export const AdminEditForm = ({
   entity,
   dataSource,
@@ -164,12 +185,7 @@ export const AdminEditForm = ({
       // Wait for begin and all pending writes before discarding, including StrictMode replay.
       cleanupBarrier.current = run.task
         .then(async () => {
-          const sessionSource = run.session.sessionDataSource;
-          try {
-            await run.session.end(false);
-          } finally {
-            if (run.session.sessionDataSource) sessionSource?.unsubscribe();
-          }
+          await endSession(run);
         })
         .catch((cause) => reportRef.current(cause, run));
     };
@@ -319,7 +335,7 @@ export const AdminEditForm = ({
           });
           run.notified = true;
         }
-        await run.session.end(false);
+        await endSession(run);
         if (!run.disposed) onClose();
       })
       .catch((cause) => reportRef.current(cause, run))
@@ -337,7 +353,7 @@ export const AdminEditForm = ({
     setError(undefined);
     run.task = run.task
       .then(async () => {
-        await run.session.end(false);
+        await endSession(run);
         if (!run.disposed) onClose();
       })
       .catch((cause) => reportRef.current(cause, run))
