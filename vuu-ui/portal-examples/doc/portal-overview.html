@@ -654,6 +654,7 @@
       let entitlementsReceived = false;
       let ordersSelected = false;
       let urlTypingStarted = false;
+      let urlTypingComplete = false;
       let urlTypingTimer = null;
 
       function setStep(step) {
@@ -661,7 +662,7 @@
         presentation.dataset.step = currentStep;
         back.disabled = currentStep === 1;
         next.disabled = currentStep === stages.length
-          || (currentStep === 1 && !urlTypingStarted)
+          || (currentStep === 1 && !urlTypingComplete)
           || (currentStep === 10 && !ordersSelected);
         next.innerHTML = currentStep === stages.length
           ? "Story complete <span aria-hidden=\"true\">✓</span>"
@@ -703,13 +704,13 @@
         entitlementsReceived = false;
         ordersSelected = false;
         urlTypingStarted = false;
+        urlTypingComplete = false;
         urlText.textContent = "";
         setStep(1);
       });
       function startUrlTyping() {
         if (currentStep !== 1 || urlTypingStarted) return;
         urlTypingStarted = true;
-        setStep(2);
         const url = "/nexus";
         let characterIndex = 0;
         urlText.textContent = "";
@@ -719,6 +720,8 @@
           if (characterIndex === url.length) {
             window.clearInterval(urlTypingTimer);
             urlTypingTimer = null;
+            urlTypingComplete = true;
+            setStep(2);
           }
         }, 90);
       }
@@ -759,14 +762,14 @@
         }
       });
       next.addEventListener("click", () => {
-        if ((currentStep === 1 && !urlTypingStarted) || (currentStep === 10 && !ordersSelected)) return;
+        if ((currentStep === 1 && !urlTypingComplete) || (currentStep === 10 && !ordersSelected)) return;
         setStep(currentStep + 1);
       });
       back.addEventListener("click", () => setStep(currentStep - 1));
       document.addEventListener("keydown", (event) => {
         if (event.key === "ArrowRight" || event.key === " ") {
           event.preventDefault();
-          if ((currentStep === 1 && !urlTypingStarted) || (currentStep === 10 && !ordersSelected)) return;
+          if ((currentStep === 1 && !urlTypingComplete) || (currentStep === 10 && !ordersSelected)) return;
           setStep(currentStep + 1);
         }
         if (event.key === "ArrowLeft") {
