@@ -386,22 +386,21 @@
               <text x="449" y="76" text-anchor="middle" fill="#F5F9FF" font-size="14" font-weight="750">nginx</text>
             </g>
 
-            <g class="route reveal-2" fill="none">
+            <g class="route shell-request reveal-2" fill="none">
               <path d="M280 170L360 104" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
-              <text x="318" y="126" text-anchor="middle" fill="#9FB3C8" font-size="11" font-weight="700">enters URL</text>
             </g>
 
-            <g class="route reveal-3" fill="none">
+            <g class="route shell-response reveal-2" fill="none">
               <path d="M360 104L280 170" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
               <text x="322" y="148" text-anchor="middle" fill="#9FB3C8" font-size="11" font-weight="700">loads the page</text>
             </g>
 
-            <g class="route nginx-request reveal-11" fill="none">
+            <g class="route module-request reveal-11" fill="none">
               <path d="M320 238L374 105" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
               <text x="342" y="180" text-anchor="middle" fill="#BCECF1" font-size="10" font-weight="700">requests Orders module</text>
             </g>
 
-            <g class="route nginx-response reveal-11" fill="none">
+            <g class="route module-response reveal-11" fill="none">
               <path d="M374 119L320 252" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
               <text x="342" y="222" text-anchor="middle" fill="#BCECF1" font-size="10" font-weight="700">module response</text>
             </g>
@@ -657,6 +656,9 @@
       let nginxFlowStarted = false;
       let nginxResponseVisible = false;
       let nginxFlowTimer = null;
+      let shellFlowStarted = false;
+      let shellResponseVisible = false;
+      let shellFlowTimer = null;
 
       function setStep(step) {
         currentStep = Math.max(1, Math.min(stages.length, step));
@@ -664,6 +666,7 @@
         back.disabled = currentStep === 1;
         next.disabled = currentStep === stages.length
           || (currentStep === 1 && !urlTypingComplete)
+          || (currentStep === 2 && !shellResponseVisible)
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && !nginxResponseVisible);
         next.innerHTML = currentStep === stages.length
@@ -685,8 +688,10 @@
           item.classList.toggle("is-past", (item.classList.contains("route") || item.classList.contains("message")) && revealStep < currentStep);
           item.classList.toggle("is-replaced", item.classList.contains("menu-preview") && currentStep >= 12);
           item.classList.toggle("is-superseded",
-            (item.classList.contains("nginx-request") && nginxResponseVisible)
-            || (item.classList.contains("nginx-response") && !nginxResponseVisible));
+            (item.classList.contains("module-request") && nginxResponseVisible)
+            || (item.classList.contains("module-response") && !nginxResponseVisible)
+            || (item.classList.contains("shell-request") && shellResponseVisible)
+            || (item.classList.contains("shell-response") && !shellResponseVisible));
           const animation = item.querySelector("animateMotion");
           if (!wasVisible && isVisible && animation?.getAttribute("begin") === "indefinite") animation.beginElement();
         });
@@ -717,6 +722,12 @@
           window.clearTimeout(nginxFlowTimer);
           nginxFlowTimer = null;
         }
+        shellFlowStarted = false;
+        shellResponseVisible = false;
+        if (shellFlowTimer) {
+          window.clearTimeout(shellFlowTimer);
+          shellFlowTimer = null;
+        }
         setStep(1);
       });
       function startUrlTyping() {
@@ -733,6 +744,7 @@
             urlTypingTimer = null;
             urlTypingComplete = true;
             setStep(2);
+            startShellFlow();
           }
         }, 90);
       }
@@ -760,6 +772,16 @@
         entitlementsReceived = true;
         setStep(currentStep);
       });
+      function startShellFlow() {
+        if (currentStep !== 2 || shellFlowStarted) return;
+        shellFlowStarted = true;
+        shellFlowTimer = window.setTimeout(() => {
+          shellFlowTimer = null;
+          if (currentStep !== 2) return;
+          shellResponseVisible = true;
+          setStep(currentStep);
+        }, 450);
+      }
       function startNginxFlow() {
         if (currentStep !== 11 || nginxFlowStarted) return;
         nginxFlowStarted = true;
@@ -790,12 +812,19 @@
       next.addEventListener("click", () => {
         if (
           (currentStep === 1 && !urlTypingComplete)
+          || (currentStep === 2 && !shellResponseVisible)
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && !nginxResponseVisible)
         ) return;
         setStep(currentStep + 1);
       });
       back.addEventListener("click", () => {
+        if (currentStep === 2 && currentStep - 1 < 2) {
+          window.clearTimeout(shellFlowTimer);
+          shellFlowTimer = null;
+          shellFlowStarted = false;
+          shellResponseVisible = false;
+        }
         if (currentStep === 11 && currentStep - 1 < 11) {
           window.clearTimeout(nginxFlowTimer);
           nginxFlowTimer = null;
@@ -809,6 +838,7 @@
           event.preventDefault();
           if (
             (currentStep === 1 && !urlTypingComplete)
+            || (currentStep === 2 && !shellResponseVisible)
             || (currentStep === 10 && !ordersSelected)
             || (currentStep === 11 && !nginxResponseVisible)
           ) return;
@@ -816,6 +846,12 @@
         }
         if (event.key === "ArrowLeft") {
           event.preventDefault();
+          if (currentStep === 2 && currentStep - 1 < 2) {
+            window.clearTimeout(shellFlowTimer);
+            shellFlowTimer = null;
+            shellFlowStarted = false;
+            shellResponseVisible = false;
+          }
           if (currentStep === 11 && currentStep - 1 < 11) {
             window.clearTimeout(nginxFlowTimer);
             nginxFlowTimer = null;
