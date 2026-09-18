@@ -83,13 +83,12 @@ const getRemoteComponent = (
   return component;
 };
 
-function RawRemoteModule<ComponentProps extends object | undefined>({
+function RemoteModuleContent<ComponentProps extends object | undefined>({
   ComponentProps: componentProps,
   css: _css,
   mfComponent,
   mfScope,
   mfUrl,
-  onError,
   vuu,
   ...remoteProps
 }: RemoteModuleProps<ComponentProps>) {
@@ -97,6 +96,24 @@ function RawRemoteModule<ComponentProps extends object | undefined>({
   const remoteComponent = (
     <RemoteComponent {...remoteProps} {...componentProps} />
   );
+
+  return (
+    <>
+      {vuu ? (
+        <AuthenticationProvider mode="vuu-connection" connection={vuu}>
+          {remoteComponent}
+        </AuthenticationProvider>
+      ) : (
+        remoteComponent
+      )}
+    </>
+  );
+}
+
+function RawRemoteModule<ComponentProps extends object | undefined>(
+  props: RemoteModuleProps<ComponentProps>,
+) {
+  const { mfComponent, mfScope, mfUrl, onError } = props;
 
   return (
     <RemoteModuleErrorBoundary
@@ -108,13 +125,7 @@ function RawRemoteModule<ComponentProps extends object | undefined>({
         onError?.(error);
       }}
     >
-      {vuu ? (
-        <AuthenticationProvider mode="vuu-connection" connection={vuu}>
-          {remoteComponent}
-        </AuthenticationProvider>
-      ) : (
-        remoteComponent
-      )}
+      <RemoteModuleContent {...props} />
     </RemoteModuleErrorBoundary>
   );
 }
