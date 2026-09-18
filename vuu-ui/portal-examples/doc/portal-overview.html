@@ -161,6 +161,17 @@
         stroke-width: 2;
       }
 
+      .login-panel.is-visible {
+        pointer-events: auto;
+        cursor: pointer;
+      }
+
+      .login-panel.is-visible:hover > rect,
+      .login-panel.is-visible:focus > rect {
+        stroke: #BCECF1;
+        stroke-width: 2;
+      }
+
       .route,
       .callout {
         transform: translateY(5px);
@@ -184,6 +195,11 @@
       }
 
       .node.is-retired {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .login-panel.is-retired {
         opacity: 0;
         pointer-events: none;
       }
@@ -346,14 +362,17 @@
               <g class="callout reveal-3">
                 <rect x="42" y="207" width="256" height="150" rx="7" fill="#0C2238" fill-opacity=".28" stroke="#5BD6E2" stroke-opacity=".16" stroke-dasharray="5 8"/>
               </g>
-              <g class="callout reveal-5">
-                <rect x="64" y="216" width="212" height="92" rx="9" fill="#2A315D" stroke="#B59BFF" stroke-opacity=".8"/>
-                <text x="84" y="241" fill="#D6CBFF" font-size="10" font-weight="800">SECURE SIGN-IN</text>
-                <path d="M84 255H256M84 270H239" stroke="#D6CBFF" stroke-opacity=".42" stroke-linecap="round"/>
-                <rect x="84" y="280" width="62" height="12" rx="6" fill="#B59BFF" fill-opacity=".42"/>
-                <text x="115" y="289" text-anchor="middle" fill="#F5F9FF" font-size="8" font-weight="750">SIGN IN</text>
+              <g class="callout node-clickable login-panel reveal-5" id="login-panel" role="button" tabindex="0" aria-label="Open secure sign-in form">
+                <rect x="64" y="204" width="212" height="126" rx="9" fill="#2A315D" stroke="#B59BFF" stroke-opacity=".8"/>
+                <text x="84" y="229" fill="#D6CBFF" font-size="10" font-weight="800">SECURE SIGN-IN</text>
+                <text class="credential-field reveal-6" x="84" y="252" fill="#D6CBFF" font-size="9">username</text>
+                <path d="M84 258H256" stroke="#D6CBFF" stroke-opacity=".42" stroke-linecap="round"/>
+                <text class="credential-field reveal-6" x="84" y="278" fill="#D6CBFF" font-size="9">password</text>
+                <path d="M84 284H256" stroke="#D6CBFF" stroke-opacity=".42" stroke-linecap="round"/>
+                <rect x="84" y="300" width="62" height="12" rx="6" fill="#B59BFF" fill-opacity=".42"/>
+                <text x="115" y="309" text-anchor="middle" fill="#F5F9FF" font-size="8" font-weight="750">SIGN IN</text>
               </g>
-              <g class="callout reveal-6">
+              <g class="callout reveal-7">
                 <rect x="20" y="192" width="300" height="189" fill="#123B5B" stroke="#5BD6E2" stroke-opacity=".8"/>
                 <path d="M20 223H320" stroke="#BCECF1" stroke-opacity=".62" stroke-width="2"/>
                 <rect x="20" y="223" width="64" height="158" fill="#0E2E4A" fill-opacity=".72"/>
@@ -425,7 +444,6 @@
 
             <g class="route reveal-5" fill="none">
               <path d="M550 104H360L300 213" stroke="#FF9A9F" stroke-width="3" marker-end="url(#arrow-violet)"/>
-              <text x="426" y="228" text-anchor="middle" fill="#FFB8BC" font-size="11" font-weight="700">login panel appears</text>
             </g>
 
             <g class="route reveal-6" fill="none">
@@ -593,15 +611,15 @@
         },
         {
           title: "Show the login panel",
-          copy: "Keycloak responds with the panel where you can enter your details. It appears inside the browser.",
-          detail: "The portal is still waiting. No Vuu session or feature has been opened yet.",
-          status: "Login panel shown",
+          copy: "Keycloak responds with the panel where you can enter your details.",
+          detail: "Click the login panel to reveal the form fields and continue.",
+          status: "Click login panel",
         },
         {
-          title: "Receive the token and app shell",
-          copy: "After you submit the login panel, Keycloak returns a token. The browser can now show the full Vuu Portal shell.",
-          detail: "The login panel is replaced by the authenticated app shell — menus, layout and space for features.",
-          status: "Portal is ready",
+          title: "Enter credentials",
+          copy: "The username and password fields appear, and the browser sends the credentials through nginx to Keycloak.",
+          detail: "Keycloak validates the sign-in before the authenticated portal shell appears.",
+          status: "Credentials sent",
         },
         {
           title: "Call the auth endpoint",
@@ -677,6 +695,7 @@
       const next = document.getElementById("next");
       const portalServerNode = document.getElementById("portal-server-node");
       const ordersServerNode = document.getElementById("orders-server-node");
+      const loginPanel = document.getElementById("login-panel");
       const urlBox = document.getElementById("url-box");
       const urlText = document.getElementById("portal-url-text");
       const ordersMenuItem = document.getElementById("orders-menu-item");
@@ -685,6 +704,7 @@
       let portalHandshakeStarted = false;
       let authResponseVisible = false;
       let entitlementsReceived = false;
+      let loginPanelOpened = false;
       let ordersSelected = false;
       let ordersHandshakeStarted = false;
       let ordersAuthResponseVisible = false;
@@ -708,6 +728,7 @@
         next.disabled = currentStep === stages.length
           || (currentStep === 1 && !urlTypingComplete)
           || (currentStep === 2 && !shellAppLoaded)
+          || (currentStep === 5 && !loginPanelOpened)
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && !nginxResponseVisible)
           || (currentStep === 12 && !ordersHandshakeStarted)
@@ -735,7 +756,9 @@
             && (!item.classList.contains("menu-preview") || entitlementsReceived);
           item.classList.toggle("is-visible", isVisible);
           item.classList.toggle("is-past", (item.classList.contains("route") || item.classList.contains("message")) && revealStep < currentStep);
-          item.classList.toggle("is-retired", item.classList.contains("module-nginx") && currentStep >= 12);
+          item.classList.toggle("is-retired",
+            (item.classList.contains("module-nginx") && currentStep >= 12)
+            || (item.classList.contains("login-panel") && currentStep >= 7));
           item.classList.toggle("is-superseded",
             (item.classList.contains("module-request") && nginxResponseVisible)
             || (item.classList.contains("module-response") && !nginxResponseVisible)
@@ -761,6 +784,7 @@
         portalHandshakeStarted = false;
         authResponseVisible = false;
         entitlementsReceived = false;
+        loginPanelOpened = false;
         ordersSelected = false;
         ordersHandshakeStarted = false;
         ordersAuthResponseVisible = false;
@@ -807,6 +831,18 @@
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           startUrlTyping();
+        }
+      });
+      function openLoginPanel() {
+        if (currentStep !== 5 || loginPanelOpened) return;
+        loginPanelOpened = true;
+        setStep(6);
+      }
+      loginPanel.addEventListener("click", openLoginPanel);
+      loginPanel.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openLoginPanel();
         }
       });
       portalServerNode.addEventListener("click", startPortalHandshake);
@@ -901,6 +937,7 @@
         if (
           (currentStep === 1 && !urlTypingComplete)
           || (currentStep === 2 && !shellAppLoaded)
+          || (currentStep === 5 && !loginPanelOpened)
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && !nginxResponseVisible)
           || (currentStep === 12 && !ordersHandshakeStarted)
@@ -917,6 +954,9 @@
           shellFlowStarted = false;
           shellResponseVisible = false;
           shellAppLoaded = false;
+        }
+        if (currentStep === 6 && currentStep - 1 < 6) {
+          loginPanelOpened = false;
         }
         if (currentStep === 11 && currentStep - 1 < 11) {
           window.clearTimeout(nginxFlowTimer);
@@ -941,6 +981,7 @@
           if (
             (currentStep === 1 && !urlTypingComplete)
             || (currentStep === 2 && !shellAppLoaded)
+            || (currentStep === 5 && !loginPanelOpened)
             || (currentStep === 10 && !ordersSelected)
             || (currentStep === 11 && !nginxResponseVisible)
             || (currentStep === 12 && !ordersHandshakeStarted)
@@ -958,6 +999,9 @@
             shellFlowStarted = false;
             shellResponseVisible = false;
             shellAppLoaded = false;
+          }
+          if (currentStep === 6 && currentStep - 1 < 6) {
+            loginPanelOpened = false;
           }
           if (currentStep === 11 && currentStep - 1 < 11) {
             window.clearTimeout(nginxFlowTimer);
