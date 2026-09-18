@@ -381,7 +381,7 @@
                 <path d="M202 269A17 17 0 0 1 218 286" fill="none" stroke="#5BD6E2" stroke-width="4" stroke-linecap="round"/>
                 <text x="202" y="324" text-anchor="middle" fill="#BCECF1" font-size="13" font-weight="700">Loading</text>
               </g>
-              <g class="callout menu-preview reveal-10">
+              <g class="callout menu-preview reveal-9">
                 <g class="menu-item-orders" id="orders-menu-item" role="button" tabindex="0" aria-label="Load Orders">
                   <rect x="27" y="238" width="50" height="24" rx="5" fill="#174466" stroke="#5BD6E2" stroke-opacity=".55"/>
                   <text x="52" y="253" text-anchor="middle" fill="#BCECF1" font-size="8" font-weight="750">Orders</text>
@@ -513,7 +513,7 @@
             <g class="message reveal-9 portal-login-response">
               <rect x="-54" y="-9" width="108" height="18" rx="6" fill="#185B65" stroke="#75E6BF" stroke-width="1.5" stroke-opacity=".95"/>
               <text x="0" y="3" text-anchor="middle" fill="#C8F8E4" font-size="8" font-weight="800">LOGIN_RESPONSE</text>
-              <animateMotion id="login-response-motion" begin="indefinite" dur="1s" repeatCount="1" path="M490 252H330"/>
+              <animateMotion id="login-response-motion" begin="indefinite" dur="2.4s" repeatCount="1" path="M490 252H330"/>
             </g>
 
             <g class="route reveal-10" fill="none">
@@ -751,7 +751,7 @@
           || (currentStep === 6 && !portalFlowStarted)
           || (currentStep === 7 && !portalFlowComplete)
           || (currentStep === 8 && !portalWebSocketStarted)
-          || (currentStep === 9 && !portalLoginResponseVisible)
+          || (currentStep === 9 && !entitlementsReceived)
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && !nginxResponseVisible)
           || (currentStep === 12 && !ordersHandshakeStarted)
@@ -943,7 +943,6 @@
           portalAuthTimer = null;
           if (currentStep !== 9) return;
           portalLoginResponseVisible = true;
-          entitlementsReceived = true;
           setStep(9);
         }, 1000);
       }
@@ -1026,6 +1025,11 @@
           setStep(8);
         }, 1000);
       });
+      document.getElementById("login-response-motion").addEventListener("endEvent", () => {
+        if (currentStep !== 9 || !portalLoginResponseVisible) return;
+        entitlementsReceived = true;
+        setStep(9);
+      });
       document.getElementById("orders-auth-check-motion").addEventListener("endEvent", () => {
         if (!ordersHandshakeStarted) return;
         ordersAuthResponseVisible = true;
@@ -1095,7 +1099,7 @@
           || (currentStep === 6 && !portalFlowStarted)
           || (currentStep === 7 && !portalFlowComplete)
           || (currentStep === 8 && !portalWebSocketStarted)
-          || (currentStep === 9 && !portalLoginResponseVisible)
+          || (currentStep === 9 && !entitlementsReceived)
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && !nginxResponseVisible)
           || (currentStep === 12 && !ordersHandshakeStarted)
@@ -1189,7 +1193,7 @@
             || (currentStep === 6 && !portalFlowStarted)
             || (currentStep === 7 && !portalFlowComplete)
             || (currentStep === 8 && !portalWebSocketStarted)
-            || (currentStep === 9 && !portalLoginResponseVisible)
+            || (currentStep === 9 && !entitlementsReceived)
             || (currentStep === 10 && !ordersSelected)
             || (currentStep === 11 && !nginxResponseVisible)
             || (currentStep === 12 && !ordersHandshakeStarted)
