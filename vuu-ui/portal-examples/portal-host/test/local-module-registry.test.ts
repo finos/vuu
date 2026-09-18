@@ -21,12 +21,12 @@ describe("local portal module registry", () => {
       {
         mfComponent: "VuuBasketTradingFeatureLocal",
         mfScope: "basketTrading",
-        mfUrl: "http://localhost:5005",
+        mfUrl: "http://localhost:5006",
       },
       {
         mfComponent: "VuuFilterTableFeatureLocal",
         mfScope: "filterTable",
-        mfUrl: "http://localhost:5006",
+        mfUrl: "http://localhost:5005",
       },
       {
         mfComponent: "ModuleAdminLocal",
@@ -55,6 +55,17 @@ describe("local portal module registry", () => {
         },
         users: { table: { module: "USER_ADMIN", table: "users" } },
       },
+    });
+  });
+
+  it("loads basket trading from its nginx endpoint", () => {
+    expect(
+      localPortalModuleRegistry.modules.find(
+        ({ name }) => name === "basket-trading",
+      ),
+    ).toMatchObject({
+      mfScope: "basketTrading",
+      mfUrl: "http://localhost:5006",
     });
   });
 

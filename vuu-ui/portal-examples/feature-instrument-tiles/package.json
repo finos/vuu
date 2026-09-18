@@ -54,7 +54,7 @@
         "./VuuInstrumentTilesFeature": "./src/VuuInstrumentTilesFeature"
       },
       "name": "instrumentTiles",
-      "port": 5006
+      "port": 5007
     },
     "leftNavLocation": "vuu-features"
   }
