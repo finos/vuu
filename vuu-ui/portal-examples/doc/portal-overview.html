@@ -415,8 +415,13 @@
             </g>
 
             <g class="node module-nginx reveal-11" filter="url(#node-shadow)">
-              <rect x="374" y="58" width="150" height="76" rx="17" fill="#173651" stroke="#5BD6E2" stroke-opacity=".82"/>
-              <text x="449" y="76" text-anchor="middle" fill="#F5F9FF" font-size="14" font-weight="750">nginx</text>
+              <rect x="370" y="54" width="150" height="76" rx="17" fill="#173651" stroke="#5BD6E2" stroke-opacity=".82"/>
+              <text x="445" y="72" text-anchor="middle" fill="#F5F9FF" font-size="14" font-weight="750">nginx</text>
+            </g>
+
+            <g class="node module-nginx reveal-11" filter="url(#node-shadow)">
+              <rect x="380" y="64" width="150" height="76" rx="17" fill="#173651" stroke="#75E6BF" stroke-opacity=".82"/>
+              <text x="455" y="82" text-anchor="middle" fill="#F5F9FF" font-size="14" font-weight="750">nginx</text>
             </g>
 
             <g class="route shell-request reveal-2" fill="none">
@@ -428,12 +433,12 @@
             </g>
 
             <g class="route module-request reveal-11" fill="none">
-              <path d="M320 238L374 105" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
+              <path d="M320 238L380 111" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
               <text x="342" y="180" text-anchor="middle" fill="#BCECF1" font-size="10" font-weight="700">requests Orders module</text>
             </g>
 
             <g class="route module-response reveal-11" fill="none">
-              <path d="M374 119L320 252" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
+              <path d="M380 125L320 252" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
               <text x="342" y="222" text-anchor="middle" fill="#BCECF1" font-size="10" font-weight="700">module response</text>
             </g>
 
@@ -520,7 +525,7 @@
 
             <g class="message reveal-9 portal-login-response">
               <rect x="-54" y="-9" width="108" height="18" rx="6" fill="#185B65" stroke="#75E6BF" stroke-width="1.5" stroke-opacity=".95"/>
-              <text x="0" y="3" text-anchor="middle" fill="#C8F8E4" font-size="8" font-weight="800">LOGIN_RESPONSE</text>
+              <text x="0" y="3" text-anchor="middle" fill="#C8F8E4" font-size="8" font-weight="800">LOGIN_SUCCESS</text>
               <animateMotion id="login-response-motion" begin="indefinite" dur="2.4s" repeatCount="1" path="M490 252H330"/>
             </g>
 
@@ -647,7 +652,7 @@
           status: "WebSocket login sent",
         },
         {
-          title: "Receive LOGIN_RESPONSE",
+          title: "Receive LOGIN_SUCCESS",
           copy: "The Portal Vuu Server confirms the WebSocket login and sends the module entitlements.",
           detail: "The permitted applications can now be used to build the portal navigation.",
           status: "Portal session established",
@@ -1039,7 +1044,7 @@
           if (currentStep !== 9 || portalLoginResponseVisible) return;
           portalLoginResponseVisible = true;
           setStep(9);
-        }, 1000);
+        }, 500);
       });
       document.getElementById("orders-auth-check-motion").addEventListener("endEvent", () => {
         if (!ordersHandshakeStarted) return;
