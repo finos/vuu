@@ -406,6 +406,20 @@
                 <rect x="90" y="230" width="224" height="143" rx="8" fill="#0E2E4A" stroke="#5BD6E2" stroke-opacity=".38"/>
                 <circle cx="202" cy="301" r="17" fill="none" stroke="#5BD6E2" stroke-opacity=".25" stroke-width="4"/>
                 <path d="M202 284A17 17 0 0 1 218 301" fill="none" stroke="#5BD6E2" stroke-width="4" stroke-linecap="round"/>
+                <g class="callout orders-data reveal-17">
+                  <rect x="90" y="230" width="224" height="143" rx="8" fill="#0E2E4A" stroke="#75E6BF" stroke-opacity=".5"/>
+                  <text x="102" y="250" fill="#BCECF1" font-size="10" font-weight="800">Orders</text>
+                  <rect x="102" y="260" width="200" height="20" rx="4" fill="#174466"/>
+                  <text x="110" y="273" fill="#9FB3C8" font-size="7" font-weight="800">INSTRUMENT</text>
+                  <text x="235" y="273" fill="#9FB3C8" font-size="7" font-weight="800">PRICE</text>
+                  <rect x="102" y="285" width="200" height="19" rx="4" fill="#123450"/>
+                  <text x="110" y="298" fill="#F5F9FF" font-size="8" font-weight="700">VUU</text>
+                  <text x="235" y="298" fill="#75E6BF" font-size="8" font-weight="700">124.80</text>
+                  <rect x="102" y="309" width="200" height="19" rx="4" fill="#123450"/>
+                  <text x="110" y="322" fill="#F5F9FF" font-size="8" font-weight="700">NEXUS</text>
+                  <text x="235" y="322" fill="#75E6BF" font-size="8" font-weight="700">98.42</text>
+                  <text x="102" y="348" fill="#9FB3C8" font-size="7">Live data connected</text>
+                </g>
               </g>
             </g>
 
@@ -739,8 +753,10 @@
       let ordersHandshakeStarted = false;
       let ordersAuthResponseVisible = false;
       let ordersTokenResponseVisible = false;
+      let ordersWebSocketStarted = false;
       let ordersLoginSent = false;
       let ordersLoginSuccessVisible = false;
+      let ordersDataVisible = false;
       let urlTypingStarted = false;
       let urlTypingComplete = false;
       let urlTypingTimer = null;
@@ -772,8 +788,9 @@
           || (currentStep === 11 && (!nginxResponseVisible || !ordersAppClicked))
           || (currentStep === 12 && !ordersHandshakeStarted)
           || (currentStep === 13 && !ordersTokenResponseVisible)
+          || (currentStep === 14 && !ordersWebSocketStarted)
           || (currentStep === 15 && !ordersLoginSent)
-          || (currentStep === 16 && !ordersLoginSuccessVisible);
+          || (currentStep === 16 && !ordersDataVisible);
         next.innerHTML = currentStep === stages.length
           ? "Story complete <span aria-hidden=\"true\">✓</span>"
           : "Reveal next <span aria-hidden=\"true\">→</span>";
@@ -807,7 +824,8 @@
             && (!item.classList.contains("portal-login-request") || !portalLoginResponseVisible)
             && (!item.classList.contains("portal-login-response") || portalLoginResponseVisible)
             && (!item.classList.contains("menu-preview") || entitlementsReceived)
-            && (!item.classList.contains("orders-app") || nginxResponseVisible);
+            && (!item.classList.contains("orders-app") || nginxResponseVisible)
+            && (!item.classList.contains("orders-data") || ordersDataVisible);
           item.classList.toggle("is-visible", isVisible);
           item.classList.toggle("is-past",
             (item.classList.contains("route") || item.classList.contains("message"))
@@ -850,8 +868,10 @@
         ordersHandshakeStarted = false;
         ordersAuthResponseVisible = false;
         ordersTokenResponseVisible = false;
+        ordersWebSocketStarted = false;
         ordersLoginSent = false;
         ordersLoginSuccessVisible = false;
+        ordersDataVisible = false;
         urlTypingStarted = false;
         urlTypingComplete = false;
         urlText.textContent = "";
@@ -1052,17 +1072,29 @@
           if (currentStep !== 13 || !ordersAuthResponseVisible) return;
           ordersTokenResponseVisible = true;
           setStep(14);
+          ordersFlowTimer = window.setTimeout(() => {
+            ordersFlowTimer = null;
+            if (currentStep !== 14 || ordersWebSocketStarted) return;
+            ordersWebSocketStarted = true;
+            setStep(15);
+          }, 1000);
         }, 1000);
       });
       document.getElementById("orders-login-motion").addEventListener("endEvent", () => {
         if (currentStep < 15 || !ordersHandshakeStarted) return;
         ordersLoginSent = true;
-        setStep(currentStep);
+        setStep(16);
       });
       document.getElementById("orders-login-success-motion").addEventListener("endEvent", () => {
         if (currentStep < 16 || !ordersHandshakeStarted) return;
         ordersLoginSuccessVisible = true;
         setStep(currentStep);
+        ordersFlowTimer = window.setTimeout(() => {
+          ordersFlowTimer = null;
+          if (currentStep !== 16 || !ordersLoginSuccessVisible) return;
+          ordersDataVisible = true;
+          setStep(17);
+        }, 1000);
       });
       function startShellFlow() {
         if (currentStep !== 2 || shellFlowStarted) return;
@@ -1137,8 +1169,9 @@
           || (currentStep === 11 && (!nginxResponseVisible || !ordersAppClicked))
           || (currentStep === 12 && !ordersHandshakeStarted)
           || (currentStep === 13 && !ordersTokenResponseVisible)
+          || (currentStep === 14 && !ordersWebSocketStarted)
           || (currentStep === 15 && !ordersLoginSent)
-          || (currentStep === 16 && !ordersLoginSuccessVisible)
+          || (currentStep === 16 && !ordersDataVisible)
         ) return;
         setStep(currentStep + 1);
       });
@@ -1242,8 +1275,9 @@
             || (currentStep === 11 && (!nginxResponseVisible || !ordersAppClicked))
             || (currentStep === 12 && !ordersHandshakeStarted)
             || (currentStep === 13 && !ordersTokenResponseVisible)
+            || (currentStep === 14 && !ordersWebSocketStarted)
             || (currentStep === 15 && !ordersLoginSent)
-            || (currentStep === 16 && !ordersLoginSuccessVisible)
+            || (currentStep === 16 && !ordersDataVisible)
           ) return;
           setStep(currentStep + 1);
         }
