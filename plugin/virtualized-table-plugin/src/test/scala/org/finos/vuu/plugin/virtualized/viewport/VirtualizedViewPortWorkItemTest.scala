@@ -1,10 +1,10 @@
 package org.finos.vuu.plugin.virtualized.viewport
 
-import org.scalamock.scalatest.MockFactory
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 
-class VirtualizedViewPortWorkItemTest extends AnyFeatureSpec with Matchers with MockFactory {
+class VirtualizedViewPortWorkItemTest extends AnyFeatureSpec with Matchers with MockitoSugar {
   //
   //  Feature("VirtualizedViewPortWorkItem Execution") {
   //

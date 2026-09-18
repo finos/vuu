@@ -1,7 +1,6 @@
 package org.finos.vuu.plugin.virtualized.api
 
-import org.finos.vuu.core.table.{RowData, RowWithData}
-import org.scalamock.scalatest.MockFactory
+import org.finos.vuu.core.table.RowWithData
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers

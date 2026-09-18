@@ -2,14 +2,15 @@ package org.finos.vuu.plugin.virtualized.viewport
 
 import org.finos.vuu.core.table.DataTable
 import org.finos.vuu.provider.{Provider, VirtualizedProvider}
-import org.finos.vuu.viewport.{RowSource, ViewPort}
-import org.scalamock.scalatest.MockFactory
+import org.finos.vuu.viewport.ViewPort
+import org.mockito.Mockito.{verify, when}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 
 import java.util.concurrent.{ExecutionException, FutureTask}
 
-class VirtualizedViewPortCallableTest extends AnyFeatureSpec with Matchers with MockFactory {
+class VirtualizedViewPortCallableTest extends AnyFeatureSpec with Matchers with MockitoSugar {
 
   Feature("VirtualizedViewPortCallable Execution") {
 
@@ -17,39 +18,28 @@ class VirtualizedViewPortCallableTest extends AnyFeatureSpec with Matchers with 
       val mockViewPort = mock[ViewPort]
       val mockTable = mock[DataTable]
       val mockVirtualizedProvider = mock[VirtualizedProvider]
-
-      (() => mockViewPort.toString()).stubs().returning("mockViewPort")
-      //(() => mockTable.toString()).stubs().returning("mockTable")
-      (() => mockVirtualizedProvider.toString()).stubs().returning("mockVirtualizedProvider")
-      
-      (() => mockViewPort.table).expects().returning(mockTable)
-      (() => mockTable.asTable).expects().returning(mockTable)
-      (() => mockTable.getProvider).expects().returning(mockVirtualizedProvider)
-
-      (mockVirtualizedProvider.runOnceInternal _).expects(mockViewPort).once()
-
+      when(mockViewPort.table).thenReturn(mockTable)
+      when(mockTable.asTable).thenReturn(mockTable)
+      when(mockTable.getProvider).thenReturn(mockVirtualizedProvider)
       val futureTask = new FutureTask[ViewPort](() => mockViewPort)
       futureTask.run()
-
       val callable = VirtualizedViewPortCallable(futureTask, null)
 
       val result = callable.call()
 
       result should equal(mockViewPort)
+      verify(mockVirtualizedProvider).runOnce(mockViewPort)
     }
 
     Scenario("WHEN the provider is NOT a VirtualizedProvider THEN it should skip execution and return the viewport safely") {
       val mockViewPort = mock[ViewPort]
       val mockTable = mock[DataTable]
       val mockStandardProvider = mock[Provider]
-
-      (() => mockViewPort.table).expects().returning(mockTable)
-      (() => mockTable.asTable).expects().returning(mockTable)
-      (() => mockTable.getProvider).expects().returning(mockStandardProvider)
-
+      when(mockViewPort.table).thenReturn(mockTable)
+      when(mockTable.asTable).thenReturn(mockTable)
+      when(mockTable.getProvider).thenReturn(mockStandardProvider)
       val futureTask = new FutureTask[ViewPort](() => mockViewPort)
       futureTask.run()
-
       val callable = VirtualizedViewPortCallable(futureTask, null)
 
       val result = callable.call()

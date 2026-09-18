@@ -3,14 +3,13 @@ package org.finos.vuu.example.rest.client
 import org.scalatest.prop.TableDrivenPropertyChecks.*
 import org.finos.vuu.example.rest.model.{Instrument, RandomInstrument}
 import org.finos.vuu.net.json.JsonSerializer
-import org.scalamock.scalatest.MockFactory
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import sttp.client4.testing.{ResponseStub, SyncBackendStub}
 import sttp.model.StatusCode
 
-class InstrumentServiceClientTest extends AnyFeatureSpec with Matchers with MockFactory {
+class InstrumentServiceClientTest extends AnyFeatureSpec with Matchers {
   private final val BASE_URL = "base-url.com"
   val serializer = JsonSerializer[List[Instrument]]()
 
