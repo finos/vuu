@@ -692,8 +692,8 @@
         {
           title: "Receive the Orders token",
           copy: "The Orders auth endpoint responds with a token for the selected module.",
-          detail: "The browser can now open the Orders server's persistent connection.",
-          status: "Orders token received",
+          detail: "Click the Orders loading screen to open the server's persistent connection.",
+          status: "Click Orders loading screen",
         },
         {
           title: "Open the Orders WebSocket and LOGIN",
@@ -1072,12 +1072,6 @@
           if (currentStep !== 13 || !ordersAuthResponseVisible) return;
           ordersTokenResponseVisible = true;
           setStep(14);
-          ordersFlowTimer = window.setTimeout(() => {
-            ordersFlowTimer = null;
-            if (currentStep !== 14 || ordersWebSocketStarted) return;
-            ordersWebSocketStarted = true;
-            setStep(15);
-          }, 1000);
         }, 1000);
       });
       document.getElementById("orders-login-motion").addEventListener("endEvent", () => {
@@ -1137,15 +1131,19 @@
         }
       });
       function openOrdersApp() {
-        if (currentStep !== 11 || !nginxResponseVisible || ordersAppClicked) return;
-        ordersAppClicked = true;
-        setStep(12);
-        ordersFlowTimer = window.setTimeout(() => {
-          ordersFlowTimer = null;
-          if (currentStep !== 12 || ordersHandshakeStarted) return;
-          ordersHandshakeStarted = true;
-          setStep(13);
-        }, 1000);
+        if (currentStep === 11 && nginxResponseVisible && !ordersAppClicked) {
+          ordersAppClicked = true;
+          setStep(12);
+          ordersFlowTimer = window.setTimeout(() => {
+            ordersFlowTimer = null;
+            if (currentStep !== 12 || ordersHandshakeStarted) return;
+            ordersHandshakeStarted = true;
+            setStep(13);
+          }, 1000);
+        } else if (currentStep === 14 && !ordersWebSocketStarted) {
+          ordersWebSocketStarted = true;
+          setStep(15);
+        }
       }
       ordersApp.addEventListener("click", openOrdersApp);
       ordersApp.addEventListener("keydown", (event) => {
@@ -1251,6 +1249,7 @@
           ordersTokenResponseVisible = false;
         }
         if (currentStep === 15 && currentStep - 1 < 15) {
+          ordersWebSocketStarted = false;
           ordersLoginSent = false;
         }
         if (currentStep === 16 && currentStep - 1 < 16) {
@@ -1358,6 +1357,7 @@
             ordersTokenResponseVisible = false;
           }
           if (currentStep === 15 && currentStep - 1 < 15) {
+            ordersWebSocketStarted = false;
             ordersLoginSent = false;
           }
           if (currentStep === 16 && currentStep - 1 < 16) {
