@@ -7,6 +7,8 @@ const BrokenRemote = (): ReactNode => {
   throw Error("remote failed");
 };
 
+const WorkingRemote = () => <>remote loaded</>;
+
 describe("RemoteModuleErrorBoundary", () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -47,5 +49,33 @@ describe("RemoteModuleErrorBoundary", () => {
     expect(container.textContent).toContain(
       "An error occurred while creating the remote module.",
     );
+  });
+
+  it("recovers when navigating to a different remote module", async () => {
+    await act(async () => {
+      root.render(
+        <RemoteModuleErrorBoundary
+          mfComponent="BrokenComponent"
+          mfScope="broken"
+          mfUrl="http://localhost:5000"
+        >
+          <BrokenRemote />
+        </RemoteModuleErrorBoundary>,
+      );
+    });
+
+    await act(async () => {
+      root.render(
+        <RemoteModuleErrorBoundary
+          mfComponent="WorkingComponent"
+          mfScope="working"
+          mfUrl="http://localhost:5001"
+        >
+          <WorkingRemote />
+        </RemoteModuleErrorBoundary>,
+      );
+    });
+
+    expect(container.textContent).toBe("remote loaded");
   });
 });
