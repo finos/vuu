@@ -359,7 +359,7 @@
                 <rect x="82" y="157" width="220" height="24" rx="6" fill="#11263E" stroke="#6DC4ED" stroke-opacity=".34"/>
                 <text x="96" y="173" fill="#B9D7E5" font-size="11" font-weight="650" id="portal-url-text"></text>
               </g>
-              <g class="callout reveal-3">
+              <g class="callout node-clickable reveal-3" id="app-loaded-box" role="button" tabindex="0" aria-label="Continue from loaded app">
                 <rect x="42" y="207" width="256" height="150" rx="7" fill="#0C2238" fill-opacity=".28" stroke="#5BD6E2" stroke-opacity=".16" stroke-dasharray="5 8"/>
               </g>
               <g class="callout node-clickable login-panel reveal-5" id="login-panel" role="button" tabindex="0" aria-label="Open secure sign-in form">
@@ -437,12 +437,11 @@
               <text x="637" y="62" text-anchor="middle" fill="#F5F9FF" font-size="14" font-weight="750">Keycloak</text>
             </g>
 
-            <g class="route reveal-4" fill="none">
+            <g class="route reveal-4 secure-request" fill="none">
               <path d="M300 213L360 104H550" stroke="#B59BFF" stroke-width="3" marker-end="url(#arrow-violet)"/>
-              <text x="423" y="158" text-anchor="middle" fill="#BFAEFF" font-size="11" font-weight="700">opens secure sign-in</text>
             </g>
 
-            <g class="route reveal-5" fill="none">
+            <g class="route reveal-4 secure-response" fill="none">
               <path d="M550 104H360L300 213" stroke="#FF9A9F" stroke-width="3" marker-end="url(#arrow-violet)"/>
             </g>
 
@@ -598,15 +597,15 @@
           status: "Request sent",
         },
         {
-          title: "Receive the page",
-          copy: "nginx sends the starting page back to the browser. The app is present, but there is no visible portal content yet.",
-          detail: "A faint outline marks the space where the portal will appear after authentication.",
-          status: "Page received",
+          title: "App shell loaded",
+          copy: "nginx has delivered the app shell. Click the dashed browser area to begin sign-in.",
+          detail: "The shell is present, but the portal has not rendered its authenticated content yet.",
+          status: "Click loaded app area",
         },
         {
           title: "Open secure sign-in",
-          copy: "The page asks Keycloak to begin sign-in. The browser is sent to the trusted identity service.",
-          detail: "This first conversation with Keycloak starts the sign-in experience.",
+          copy: "The browser sends the secure sign-in request through nginx to Keycloak.",
+          detail: "The request arrow is replaced by Keycloak's response before the login panel appears.",
           status: "Opening sign-in",
         },
         {
@@ -696,6 +695,7 @@
       const portalServerNode = document.getElementById("portal-server-node");
       const ordersServerNode = document.getElementById("orders-server-node");
       const loginPanel = document.getElementById("login-panel");
+      const appLoadedBox = document.getElementById("app-loaded-box");
       const urlBox = document.getElementById("url-box");
       const urlText = document.getElementById("portal-url-text");
       const ordersMenuItem = document.getElementById("orders-menu-item");
@@ -705,6 +705,11 @@
       let authResponseVisible = false;
       let entitlementsReceived = false;
       let loginPanelOpened = false;
+      let appLoadedBoxClicked = false;
+      let secureSignInFlowStarted = false;
+      let secureSignInResponseVisible = false;
+      let secureSignInFlowComplete = false;
+      let secureSignInFlowTimer = null;
       let ordersSelected = false;
       let ordersHandshakeStarted = false;
       let ordersAuthResponseVisible = false;
@@ -728,6 +733,8 @@
         next.disabled = currentStep === stages.length
           || (currentStep === 1 && !urlTypingComplete)
           || (currentStep === 2 && !shellAppLoaded)
+          || (currentStep === 3 && !appLoadedBoxClicked)
+          || (currentStep === 4 && !secureSignInFlowComplete)
           || (currentStep === 5 && !loginPanelOpened)
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && !nginxResponseVisible)
@@ -760,9 +767,14 @@
           const isVisible = revealStep <= currentStep
             && (!item.classList.contains("portal-handshake") || handshakeVisible)
             && (!item.classList.contains("orders-handshake") || ordersHandshakeVisible)
+            && (!item.classList.contains("secure-request") || !secureSignInResponseVisible)
+            && (!item.classList.contains("secure-response") || secureSignInResponseVisible)
             && (!item.classList.contains("menu-preview") || entitlementsReceived);
           item.classList.toggle("is-visible", isVisible);
-          item.classList.toggle("is-past", (item.classList.contains("route") || item.classList.contains("message")) && revealStep < currentStep);
+          item.classList.toggle("is-past",
+            (item.classList.contains("route") || item.classList.contains("message"))
+            && revealStep < currentStep
+            && !(item.classList.contains("secure-response") && currentStep === 5));
           item.classList.toggle("is-retired",
             (item.classList.contains("module-nginx") && currentStep >= 12)
             || (item.classList.contains("login-panel") && currentStep >= 7));
@@ -792,6 +804,10 @@
         authResponseVisible = false;
         entitlementsReceived = false;
         loginPanelOpened = false;
+        appLoadedBoxClicked = false;
+        secureSignInFlowStarted = false;
+        secureSignInResponseVisible = false;
+        secureSignInFlowComplete = false;
         ordersSelected = false;
         ordersHandshakeStarted = false;
         ordersAuthResponseVisible = false;
@@ -838,6 +854,35 @@
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           startUrlTyping();
+        }
+      });
+      function startSecureSignInFlow() {
+        if (currentStep !== 4 || secureSignInFlowStarted) return;
+        secureSignInFlowStarted = true;
+        secureSignInFlowTimer = window.setTimeout(() => {
+          secureSignInFlowTimer = null;
+          if (currentStep !== 4) return;
+          secureSignInResponseVisible = true;
+          setStep(currentStep);
+          secureSignInFlowTimer = window.setTimeout(() => {
+            secureSignInFlowTimer = null;
+            if (currentStep !== 4) return;
+            secureSignInFlowComplete = true;
+            setStep(5);
+          }, 1000);
+        }, 1000);
+      }
+      function continueFromLoadedApp() {
+        if (currentStep !== 3 || appLoadedBoxClicked) return;
+        appLoadedBoxClicked = true;
+        setStep(4);
+        startSecureSignInFlow();
+      }
+      appLoadedBox.addEventListener("click", continueFromLoadedApp);
+      appLoadedBox.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          continueFromLoadedApp();
         }
       });
       function openLoginPanel() {
@@ -944,6 +989,8 @@
         if (
           (currentStep === 1 && !urlTypingComplete)
           || (currentStep === 2 && !shellAppLoaded)
+          || (currentStep === 3 && !appLoadedBoxClicked)
+          || (currentStep === 4 && !secureSignInFlowComplete)
           || (currentStep === 5 && !loginPanelOpened)
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && !nginxResponseVisible)
@@ -961,6 +1008,14 @@
           shellFlowStarted = false;
           shellResponseVisible = false;
           shellAppLoaded = false;
+        }
+        if (currentStep === 4 && currentStep - 1 < 4) {
+          window.clearTimeout(secureSignInFlowTimer);
+          secureSignInFlowTimer = null;
+          secureSignInFlowStarted = false;
+          secureSignInResponseVisible = false;
+          secureSignInFlowComplete = false;
+          appLoadedBoxClicked = false;
         }
         if (currentStep === 6 && currentStep - 1 < 6) {
           loginPanelOpened = false;
@@ -988,6 +1043,8 @@
           if (
             (currentStep === 1 && !urlTypingComplete)
             || (currentStep === 2 && !shellAppLoaded)
+            || (currentStep === 3 && !appLoadedBoxClicked)
+            || (currentStep === 4 && !secureSignInFlowComplete)
             || (currentStep === 5 && !loginPanelOpened)
             || (currentStep === 10 && !ordersSelected)
             || (currentStep === 11 && !nginxResponseVisible)
@@ -1006,6 +1063,14 @@
             shellFlowStarted = false;
             shellResponseVisible = false;
             shellAppLoaded = false;
+          }
+          if (currentStep === 4 && currentStep - 1 < 4) {
+            window.clearTimeout(secureSignInFlowTimer);
+            secureSignInFlowTimer = null;
+            secureSignInFlowStarted = false;
+            secureSignInResponseVisible = false;
+            secureSignInFlowComplete = false;
+            appLoadedBoxClicked = false;
           }
           if (currentStep === 6 && currentStep - 1 < 6) {
             loginPanelOpened = false;
