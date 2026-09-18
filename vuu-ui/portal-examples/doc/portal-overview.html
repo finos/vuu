@@ -472,7 +472,7 @@
               <text x="570" y="265" text-anchor="middle" fill="#9FB3C8" font-size="10">vuu server</text>
             </g>
 
-            <g class="node node-clickable reveal-12" id="orders-server-node" role="button" tabindex="0" aria-label="Orders vuu server">
+            <g class="node reveal-12" id="orders-server-node">
               <rect x="567" y="320" width="140" height="64" rx="14" fill="url(#server-fill)" stroke="#75E6BF" stroke-opacity=".75"/>
               <text x="637" y="348" text-anchor="middle" fill="#F5F9FF" font-size="13" font-weight="750">Orders</text>
               <text x="637" y="365" text-anchor="middle" fill="#9FB3C8" font-size="10">vuu server</text>
@@ -550,13 +550,13 @@
             <g class="message reveal-13 orders-handshake orders-auth-request">
               <rect x="-43" y="-11" width="86" height="22" rx="7" fill="#2A315D" stroke="#B59BFF" stroke-opacity=".9"/>
               <text x="0" y="4" text-anchor="middle" fill="#D6CBFF" font-size="9" font-weight="800">AUTH CHECK</text>
-              <animateMotion id="orders-auth-check-motion" begin="indefinite" dur="1.2s" repeatCount="1" path="M690 320V150"/>
+              <animateMotion id="orders-auth-check-motion" begin="indefinite" dur="1s" repeatCount="1" path="M690 320V150"/>
             </g>
 
             <g class="message reveal-13 orders-handshake orders-auth-response">
               <rect x="-34" y="-11" width="68" height="22" rx="7" fill="#3A326E" stroke="#B59BFF" stroke-opacity=".9"/>
               <text x="0" y="4" text-anchor="middle" fill="#E0D8FF" font-size="9" font-weight="800">AUTH OK</text>
-              <animateMotion id="orders-auth-response-motion" begin="indefinite" dur="1.2s" repeatCount="1" path="M690 150V320"/>
+              <animateMotion id="orders-auth-response-motion" begin="indefinite" dur="1s" repeatCount="1" path="M690 150V320"/>
             </g>
 
             <g class="route reveal-14 orders-http-response" fill="none">
@@ -660,14 +660,14 @@
         {
           title: "Load the Orders module",
           copy: "Clicking Orders asks nginx for the remote module.",
-          detail: "The request is replaced by nginx's response, then the feature appears inside the portal shell.",
-          status: "Orders module loading",
+          detail: "When the empty Orders app appears, click it to start the Orders server session.",
+          status: "Click Orders app",
         },
         {
           title: "Call the Orders auth endpoint",
           copy: "The Orders module makes an HTTPS call to its Vuu server.",
-          detail: "Click the Orders app to start its HTTPS call to the Orders Vuu Server.",
-          status: "Click Orders app",
+          detail: "The Orders auth request is now in flight; the Keycloak validation follows automatically.",
+          status: "Orders auth request sent",
         },
         {
           title: "Validate the Orders token",
@@ -706,7 +706,6 @@
       const back = document.getElementById("back");
       const next = document.getElementById("next");
       const portalLoadingShell = document.getElementById("portal-loading-shell");
-      const ordersServerNode = document.getElementById("orders-server-node");
       const loginPanel = document.getElementById("login-panel");
       const appLoadedBox = document.getElementById("app-loaded-box");
       const usernameField = document.getElementById("username-field");
@@ -739,6 +738,7 @@
       let ordersSelected = false;
       let ordersHandshakeStarted = false;
       let ordersAuthResponseVisible = false;
+      let ordersTokenResponseVisible = false;
       let ordersLoginSent = false;
       let ordersLoginSuccessVisible = false;
       let urlTypingStarted = false;
@@ -748,6 +748,7 @@
       let nginxResponseVisible = false;
       let ordersAppClicked = false;
       let nginxFlowTimer = null;
+      let ordersFlowTimer = null;
       let shellFlowStarted = false;
       let shellResponseVisible = false;
       let shellAppLoaded = false;
@@ -770,7 +771,7 @@
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && (!nginxResponseVisible || !ordersAppClicked))
           || (currentStep === 12 && !ordersHandshakeStarted)
-          || (currentStep === 13 && !ordersAuthResponseVisible)
+          || (currentStep === 13 && !ordersTokenResponseVisible)
           || (currentStep === 15 && !ordersLoginSent)
           || (currentStep === 16 && !ordersLoginSuccessVisible);
         next.innerHTML = currentStep === stages.length
@@ -848,6 +849,7 @@
         ordersAppClicked = false;
         ordersHandshakeStarted = false;
         ordersAuthResponseVisible = false;
+        ordersTokenResponseVisible = false;
         ordersLoginSent = false;
         ordersLoginSuccessVisible = false;
         urlTypingStarted = false;
@@ -881,6 +883,10 @@
         if (portalAuthTimer) {
           window.clearTimeout(portalAuthTimer);
           portalAuthTimer = null;
+        }
+        if (ordersFlowTimer) {
+          window.clearTimeout(ordersFlowTimer);
+          ordersFlowTimer = null;
         }
         usernameField.textContent = "";
         passwordField.textContent = "";
@@ -1012,18 +1018,6 @@
           startLoginFlow();
         }
       });
-      function startOrdersHandshake() {
-        if (currentStep < 12 || ordersHandshakeStarted) return;
-        ordersHandshakeStarted = true;
-        setStep(currentStep);
-      }
-      ordersServerNode.addEventListener("click", startOrdersHandshake);
-      ordersServerNode.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          startOrdersHandshake();
-        }
-      });
       document.getElementById("auth-check-motion").addEventListener("endEvent", () => {
         if (!portalHandshakeStarted) return;
         authResponseVisible = true;
@@ -1053,6 +1047,12 @@
         if (!ordersHandshakeStarted) return;
         ordersAuthResponseVisible = true;
         setStep(currentStep);
+        ordersFlowTimer = window.setTimeout(() => {
+          ordersFlowTimer = null;
+          if (currentStep !== 13 || !ordersAuthResponseVisible) return;
+          ordersTokenResponseVisible = true;
+          setStep(14);
+        }, 1000);
       });
       document.getElementById("orders-login-motion").addEventListener("endEvent", () => {
         if (currentStep < 15 || !ordersHandshakeStarted) return;
@@ -1108,6 +1108,12 @@
         if (currentStep !== 11 || !nginxResponseVisible || ordersAppClicked) return;
         ordersAppClicked = true;
         setStep(12);
+        ordersFlowTimer = window.setTimeout(() => {
+          ordersFlowTimer = null;
+          if (currentStep !== 12 || ordersHandshakeStarted) return;
+          ordersHandshakeStarted = true;
+          setStep(13);
+        }, 1000);
       }
       ordersApp.addEventListener("click", openOrdersApp);
       ordersApp.addEventListener("keydown", (event) => {
@@ -1130,7 +1136,7 @@
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && (!nginxResponseVisible || !ordersAppClicked))
           || (currentStep === 12 && !ordersHandshakeStarted)
-          || (currentStep === 13 && !ordersAuthResponseVisible)
+          || (currentStep === 13 && !ordersTokenResponseVisible)
           || (currentStep === 15 && !ordersLoginSent)
           || (currentStep === 16 && !ordersLoginSuccessVisible)
         ) return;
@@ -1198,10 +1204,18 @@
           nginxResponseVisible = false;
         }
         if (currentStep === 12 && currentStep - 1 < 12) {
+          window.clearTimeout(ordersFlowTimer);
+          ordersFlowTimer = null;
           ordersAppClicked = false;
+          ordersHandshakeStarted = false;
+          ordersAuthResponseVisible = false;
+          ordersTokenResponseVisible = false;
         }
         if (currentStep === 13 && currentStep - 1 < 13) {
+          window.clearTimeout(ordersFlowTimer);
+          ordersFlowTimer = null;
           ordersAuthResponseVisible = false;
+          ordersTokenResponseVisible = false;
         }
         if (currentStep === 15 && currentStep - 1 < 15) {
           ordersLoginSent = false;
@@ -1227,7 +1241,7 @@
             || (currentStep === 10 && !ordersSelected)
             || (currentStep === 11 && (!nginxResponseVisible || !ordersAppClicked))
             || (currentStep === 12 && !ordersHandshakeStarted)
-            || (currentStep === 13 && !ordersAuthResponseVisible)
+            || (currentStep === 13 && !ordersTokenResponseVisible)
             || (currentStep === 15 && !ordersLoginSent)
             || (currentStep === 16 && !ordersLoginSuccessVisible)
           ) return;
@@ -1296,10 +1310,18 @@
             nginxResponseVisible = false;
           }
           if (currentStep === 12 && currentStep - 1 < 12) {
+            window.clearTimeout(ordersFlowTimer);
+            ordersFlowTimer = null;
             ordersAppClicked = false;
+            ordersHandshakeStarted = false;
+            ordersAuthResponseVisible = false;
+            ordersTokenResponseVisible = false;
           }
           if (currentStep === 13 && currentStep - 1 < 13) {
+            window.clearTimeout(ordersFlowTimer);
+            ordersFlowTimer = null;
             ordersAuthResponseVisible = false;
+            ordersTokenResponseVisible = false;
           }
           if (currentStep === 15 && currentStep - 1 < 15) {
             ordersLoginSent = false;
