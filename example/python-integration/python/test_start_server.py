@@ -55,6 +55,9 @@ def test_server_starts_and_shuts_down_cleanly():
         assert "ticked 23 rows into Snakes" in ready_line, (
             "server did not report ticking sample data into the Snakes table"
         )
+        assert "23 rows into Location" in ready_line, (
+            "server did not report populating the Location table"
+        )
 
         with socket.create_connection(("127.0.0.1", WS_PORT), timeout=5):
             pass  # websocket port is accepting connections
