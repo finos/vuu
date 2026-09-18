@@ -326,6 +326,10 @@
                   <rect x="270" y="199" width="42" height="13" fill="#B84952"/>
                   <text x="291" y="208.5" text-anchor="middle" fill="#FFF4F4" font-size="7" font-weight="800">KC token</text>
                 </g>
+                <g class="message portal-vuu-token reveal-8" aria-label="Vuu token">
+                  <rect x="223" y="199" width="42" height="13" fill="#2A9D78"/>
+                  <text x="244" y="208.5" text-anchor="middle" fill="#F0FFF9" font-size="7" font-weight="800">VUU token</text>
+                </g>
                 <rect x="20" y="223" width="64" height="158" fill="#0E2E4A" fill-opacity=".72"/>
                 <path d="M84 223V381" stroke="#8CC9DA" stroke-opacity=".42"/>
                 <circle cx="202" cy="286" r="17" fill="none" stroke="#5BD6E2" stroke-opacity=".25" stroke-width="4"/>
@@ -693,6 +697,7 @@
       let portalFlowComplete = false;
       let portalWebSocketStarted = false;
       let portalLoginResponseVisible = false;
+      let vuuTokenVisible = false;
       let entitlementsReceived = false;
       let loginPanelOpened = false;
       let loginFieldsComplete = false;
@@ -759,6 +764,7 @@
             && (!item.classList.contains("credential-response") || credentialResponseVisible)
             && (!item.classList.contains("portal-login-request") || !portalLoginResponseVisible)
             && (!item.classList.contains("portal-login-response") || portalLoginResponseVisible)
+            && (!item.classList.contains("portal-vuu-token") || vuuTokenVisible)
             && (!item.classList.contains("menu-preview") || entitlementsReceived)
             && (!item.classList.contains("orders-app") || nginxResponseVisible)
             && (!item.classList.contains("orders-data") || ordersDataVisible);
@@ -847,6 +853,7 @@
       function startPortalWebSocketFlow() {
         if (currentStep !== 8 || portalWebSocketStarted) return;
         portalWebSocketStarted = true;
+        vuuTokenVisible = false;
         setStep(9);
       }
       function continueFromPortalLoadingShell() {
@@ -929,6 +936,11 @@
           portalLoginResponseVisible = true;
           setStep(9);
         }, 1000);
+      });
+      document.getElementById("portal-token-response-motion").addEventListener("endEvent", () => {
+        if (currentStep !== 8 || vuuTokenVisible) return;
+        vuuTokenVisible = true;
+        setStep(8);
       });
       document.getElementById("orders-auth-check-motion").addEventListener("endEvent", () => {
         if (!ordersHandshakeStarted) return;
@@ -1084,6 +1096,7 @@
             portalAuthTimer = null;
             portalWebSocketStarted = false;
             portalLoginResponseVisible = false;
+            vuuTokenVisible = false;
             entitlementsReceived = false;
           }
           if (currentStep === 5 && currentStep - 1 < 5) {
