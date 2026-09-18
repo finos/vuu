@@ -10,16 +10,36 @@ export interface RemoteModuleErrorBoundaryProps {
 
 interface RemoteModuleErrorBoundaryState {
   errorMessage: string | null;
+  remoteModuleKey: string;
 }
+
+const getRemoteModuleKey = ({
+  mfComponent,
+  mfScope,
+  mfUrl,
+}: RemoteModuleErrorBoundaryProps) => `${mfUrl}|${mfScope}/${mfComponent}`;
 
 export class RemoteModuleErrorBoundary extends React.Component<
   RemoteModuleErrorBoundaryProps,
   RemoteModuleErrorBoundaryState
 > {
-  state: RemoteModuleErrorBoundaryState = { errorMessage: null };
+  state: RemoteModuleErrorBoundaryState = {
+    errorMessage: null,
+    remoteModuleKey: getRemoteModuleKey(this.props),
+  };
 
   static getDerivedStateFromError(error: Error) {
     return { errorMessage: error.message };
+  }
+
+  static getDerivedStateFromProps(
+    props: RemoteModuleErrorBoundaryProps,
+    state: RemoteModuleErrorBoundaryState,
+  ): Partial<RemoteModuleErrorBoundaryState> | null {
+    const remoteModuleKey = getRemoteModuleKey(props);
+    return remoteModuleKey === state.remoteModuleKey
+      ? null
+      : { errorMessage: null, remoteModuleKey };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
