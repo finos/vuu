@@ -372,7 +372,7 @@
                 <rect x="84" y="315" width="62" height="12" rx="6" fill="#B59BFF" fill-opacity=".42"/>
                 <text x="115" y="324" text-anchor="middle" fill="#F5F9FF" font-size="8" font-weight="750">SIGN IN</text>
               </g>
-              <g class="callout reveal-6">
+              <g class="callout node-clickable reveal-6" id="portal-loading-shell" role="button" tabindex="0" aria-label="Continue from loading portal">
                 <rect x="20" y="192" width="300" height="189" fill="#123B5B" stroke="#5BD6E2" stroke-opacity=".8"/>
                 <path d="M20 223H320" stroke="#BCECF1" stroke-opacity=".62" stroke-width="2"/>
                 <rect x="20" y="223" width="64" height="158" fill="#0E2E4A" fill-opacity=".72"/>
@@ -453,7 +453,7 @@
               <path d="M550 85H360L300 273" stroke="#75E6BF" stroke-width="3" marker-end="url(#arrow-green)"/>
             </g>
 
-            <g class="node node-clickable reveal-7" id="portal-server-node" role="button" tabindex="0" aria-label="Portal vuu server">
+            <g class="node reveal-7" id="portal-server-node">
               <rect x="500" y="220" width="140" height="64" rx="14" fill="url(#portal-fill)" stroke="#5BD6E2" stroke-opacity=".72"/>
               <text x="570" y="248" text-anchor="middle" fill="#F5F9FF" font-size="13" font-weight="750">Portal</text>
               <text x="570" y="265" text-anchor="middle" fill="#9FB3C8" font-size="10">vuu server</text>
@@ -482,13 +482,13 @@
             <g class="message reveal-7 portal-handshake auth-request">
               <rect x="-43" y="-11" width="86" height="22" rx="7" fill="#2A315D" stroke="#B59BFF" stroke-opacity=".9"/>
               <text x="0" y="4" text-anchor="middle" fill="#D6CBFF" font-size="9" font-weight="800">AUTH CHECK</text>
-              <animateMotion id="auth-check-motion" begin="indefinite" dur="1.2s" repeatCount="1" path="M570 220V150"/>
+              <animateMotion id="auth-check-motion" begin="indefinite" dur="1s" repeatCount="1" path="M570 220V150"/>
             </g>
 
             <g class="message reveal-7 portal-handshake auth-response">
               <rect x="-34" y="-11" width="68" height="22" rx="7" fill="#3A326E" stroke="#B59BFF" stroke-opacity=".9"/>
               <text x="0" y="4" text-anchor="middle" fill="#E0D8FF" font-size="9" font-weight="800">AUTH OK</text>
-              <animateMotion id="auth-response-motion" begin="indefinite" dur="1.2s" repeatCount="1" path="M570 150V220"/>
+              <animateMotion id="auth-response-motion" begin="indefinite" dur="1s" repeatCount="1" path="M570 150V220"/>
             </g>
 
             <g class="route reveal-8" fill="none">
@@ -694,7 +694,7 @@
       const start = document.getElementById("start");
       const back = document.getElementById("back");
       const next = document.getElementById("next");
-      const portalServerNode = document.getElementById("portal-server-node");
+      const portalLoadingShell = document.getElementById("portal-loading-shell");
       const ordersServerNode = document.getElementById("orders-server-node");
       const loginPanel = document.getElementById("login-panel");
       const appLoadedBox = document.getElementById("app-loaded-box");
@@ -707,6 +707,8 @@
       let currentStep = 1;
       let portalHandshakeStarted = false;
       let authResponseVisible = false;
+      let portalFlowStarted = false;
+      let portalFlowComplete = false;
       let entitlementsReceived = false;
       let loginPanelOpened = false;
       let loginFieldsComplete = false;
@@ -719,6 +721,7 @@
       let secureSignInFlowTimer = null;
       let loginTypingTimer = null;
       let credentialFlowTimer = null;
+      let portalAuthTimer = null;
       let ordersSelected = false;
       let ordersHandshakeStarted = false;
       let ordersAuthResponseVisible = false;
@@ -745,6 +748,8 @@
           || (currentStep === 3 && !appLoadedBoxClicked)
           || (currentStep === 4 && !secureSignInFlowComplete)
           || (currentStep === 5 && !loginFlowComplete)
+          || (currentStep === 6 && !portalFlowStarted)
+          || (currentStep === 7 && !portalFlowComplete)
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && !nginxResponseVisible)
           || (currentStep === 12 && !ordersHandshakeStarted)
@@ -800,12 +805,6 @@
 
       }
 
-      function startPortalHandshake() {
-        if (currentStep < 7 || portalHandshakeStarted) return;
-        portalHandshakeStarted = true;
-        setStep(currentStep);
-      }
-
       start.addEventListener("click", () => {
         if (urlTypingTimer) {
           window.clearInterval(urlTypingTimer);
@@ -813,6 +812,8 @@
         }
         portalHandshakeStarted = false;
         authResponseVisible = false;
+        portalFlowStarted = false;
+        portalFlowComplete = false;
         entitlementsReceived = false;
         loginPanelOpened = false;
         loginFieldsComplete = false;
@@ -854,6 +855,10 @@
         if (credentialFlowTimer) {
           window.clearTimeout(credentialFlowTimer);
           credentialFlowTimer = null;
+        }
+        if (portalAuthTimer) {
+          window.clearTimeout(portalAuthTimer);
+          portalAuthTimer = null;
         }
         usernameField.textContent = "";
         passwordField.textContent = "";
@@ -913,6 +918,24 @@
           continueFromLoadedApp();
         }
       });
+      function startPortalAuthFlow() {
+        if (currentStep !== 6 || portalFlowStarted) return;
+        portalFlowStarted = true;
+        setStep(7);
+        portalAuthTimer = window.setTimeout(() => {
+          portalAuthTimer = null;
+          if (currentStep !== 7) return;
+          portalHandshakeStarted = true;
+          setStep(7);
+        }, 1000);
+      }
+      portalLoadingShell.addEventListener("click", startPortalAuthFlow);
+      portalLoadingShell.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          startPortalAuthFlow();
+        }
+      });
       function startLoginFlow() {
         if (currentStep !== 5 || loginPanelOpened) return;
         loginPanelOpened = true;
@@ -955,13 +978,6 @@
           startLoginFlow();
         }
       });
-      portalServerNode.addEventListener("click", startPortalHandshake);
-      portalServerNode.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          startPortalHandshake();
-        }
-      });
       function startOrdersHandshake() {
         if (currentStep < 12 || ordersHandshakeStarted) return;
         ordersHandshakeStarted = true;
@@ -977,7 +993,13 @@
       document.getElementById("auth-check-motion").addEventListener("endEvent", () => {
         if (!portalHandshakeStarted) return;
         authResponseVisible = true;
-        setStep(currentStep);
+        setStep(7);
+        portalAuthTimer = window.setTimeout(() => {
+          portalAuthTimer = null;
+          if (currentStep !== 7) return;
+          portalFlowComplete = true;
+          setStep(8);
+        }, 1000);
       });
       document.getElementById("login-success-motion").addEventListener("endEvent", () => {
         if (currentStep < 10 || !portalHandshakeStarted) return;
@@ -1050,6 +1072,8 @@
           || (currentStep === 3 && !appLoadedBoxClicked)
           || (currentStep === 4 && !secureSignInFlowComplete)
           || (currentStep === 5 && !loginFlowComplete)
+          || (currentStep === 6 && !portalFlowStarted)
+          || (currentStep === 7 && !portalFlowComplete)
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && !nginxResponseVisible)
           || (currentStep === 12 && !ordersHandshakeStarted)
@@ -1086,6 +1110,14 @@
           credentialFlowTimer = null;
           usernameField.textContent = "";
           passwordField.textContent = "";
+        }
+        if (currentStep === 7 && currentStep - 1 < 7) {
+          window.clearTimeout(portalAuthTimer);
+          portalAuthTimer = null;
+          portalFlowStarted = false;
+          portalHandshakeStarted = false;
+          authResponseVisible = false;
+          portalFlowComplete = false;
         }
         if (currentStep === 5 && currentStep - 1 < 5) {
           loginPanelOpened = false;
@@ -1125,6 +1157,8 @@
             || (currentStep === 3 && !appLoadedBoxClicked)
             || (currentStep === 4 && !secureSignInFlowComplete)
             || (currentStep === 5 && !loginFlowComplete)
+            || (currentStep === 6 && !portalFlowStarted)
+            || (currentStep === 7 && !portalFlowComplete)
             || (currentStep === 10 && !ordersSelected)
             || (currentStep === 11 && !nginxResponseVisible)
             || (currentStep === 12 && !ordersHandshakeStarted)
@@ -1162,6 +1196,14 @@
             credentialFlowTimer = null;
             usernameField.textContent = "";
             passwordField.textContent = "";
+          }
+          if (currentStep === 7 && currentStep - 1 < 7) {
+            window.clearTimeout(portalAuthTimer);
+            portalAuthTimer = null;
+            portalFlowStarted = false;
+            portalHandshakeStarted = false;
+            authResponseVisible = false;
+            portalFlowComplete = false;
           }
           if (currentStep === 5 && currentStep - 1 < 5) {
             loginPanelOpened = false;
