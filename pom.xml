@@ -52,7 +52,6 @@
         <vuu.roaring.bitmap.version>1.6.14</vuu.roaring.bitmap.version>
         <vuu.scala.version>3.3.8</vuu.scala.version> <!-- Scala LTS -->
         <vuu.scala.logging.version>3.9.6</vuu.scala.logging.version>
-        <vuu.scalamock.version>7.5.5</vuu.scalamock.version>
         <vuu.scalatest.version>3.2.20</vuu.scalatest.version>
         <vuu.slf4j.version>2.0.18</vuu.slf4j.version>
         <vuu.testcontainers.version>2.0.5</vuu.testcontainers.version>

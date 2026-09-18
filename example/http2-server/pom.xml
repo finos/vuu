@@ -64,9 +64,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.scalamock</groupId>
-            <artifactId>scalamock_3</artifactId>
-            <version>${vuu.scalamock.version}</version>
+            <groupId>org.scalatestplus</groupId>
+            <artifactId>mockito-5-23_3</artifactId>
+            <version>${vuu.scalatest.version}.0</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>

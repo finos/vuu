@@ -5,7 +5,7 @@ import org.finos.vuu.viewport.ViewPort
 
 trait VirtualizedProvider extends Provider with ColumnValueProvider {
 
-  final def runOnce(viewPort: ViewPort): Unit = {
+  def runOnce(viewPort: ViewPort): Unit = {
     if (shouldRun(viewPort)) {
       runOnceInternal(viewPort)
     }

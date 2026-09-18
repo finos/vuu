@@ -7,7 +7,7 @@ import org.finos.vuu.api.SessionTableDef
 import org.finos.vuu.core.table.{ColumnValueProvider, InMemSessionDataTable, RowWithData, TableData}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.JoinTableProvider
-import org.finos.vuu.viewport.{ViewPort, ViewPortRange}
+import org.finos.vuu.viewport.{EmptyRange, ViewPort, ViewPortRange}
 
 class VirtualizedSessionTable(clientSessionId: ClientSessionId,
                               sessionTableDef: SessionTableDef,
@@ -15,9 +15,9 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
                               val cacheSize: Int = 10_000)
                              (implicit metrics: MetricsProvider, clock: Clock) extends InMemSessionDataTable(clientSessionId, sessionTableDef, joinTableProvider) with StrictLogging {
 
-  @volatile private var lastUpdateTime: Long = 0
-  @volatile private var lastHash: Int = 0
-  @volatile private var lastRange: ViewPortRange = EmptyRange
+  @volatile private var nextRefreshTime: Long = 0
+  @volatile private var lastViewPortHash: Int = 0
+  @volatile private var lastViewPortRange: ViewPortRange = EmptyRange
     
   override def toString: String = s"VirtualizedSessionTable(tableDef=${sessionTableDef.name}, name=$name)"
 
@@ -25,12 +25,16 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
     new VirtualizedSessionTableData(cacheSize)
   }
 
+  def finishRefresh(viewPortHash: Int, viewPortRange: ViewPortRange, nextRefresh: Long): Unit = {
+    lastViewPortHash = viewPortHash
+    lastViewPortRange = viewPortRange
+    nextRefreshTime = nextRefresh
+  }
+
   def needsRefresh(viewPort: ViewPort): Boolean = {
-    viewPort.getStructuralHashCode() != lastHash ||
-      viewPort.getRange != lastRange ||
-      las
-    
-    true
+    viewPort.getStructuralHashCode() != lastViewPortHash ||
+      viewPort.getRange != lastViewPortRange ||
+      nextRefreshTime < clock.now()
   }
   
   def processUpdateForIndex(index: Int, rowKey: String, rowData: RowWithData, timeStamp: Long): Unit = {
@@ -78,8 +82,5 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
     }
   }
 
-  def finishUpdate(lastHash: Int, lastRange: ViewPortRange, lastUpdateTime: Long) = {
-    
-  }
   
 }

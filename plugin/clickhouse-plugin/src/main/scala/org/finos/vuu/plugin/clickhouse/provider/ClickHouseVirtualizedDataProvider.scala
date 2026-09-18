@@ -23,24 +23,27 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
   private val typeAheadProvider = ClickHouseTypeAheadProvider(client, tableDef, filterFactory)
   private val sortFactory = ClickHouseSortFactory(tableDef)
   private val permissionFunction = tableDef.getRemotePermissionFilterSpecFunction
+  private val refreshRate = tableDef.getRefreshRate.toMillis
   private val logAt = new LogAtFrequency(10_000)
 
   override def shouldRun(viewPort: ViewPort): Boolean = {
-    val sessionData = viewPort.table.asTable match {
-      case tbl: VirtualizedSessionTable =>
-        var lastRefreshTime = tbl.lastRefreshTime
-        
-        
-    true    
+    viewPort.table.asTable match {
+      case tbl: VirtualizedSessionTable => tbl.needsRefresh(viewPort)
+      case _ =>
+        logger.warn("[ClickHouseVirtualizedDataProvider] Table is not a VirtualizedSessionTable")
+        false
+    }
   }
   
   override def runOnceInternal(viewPort: ViewPort): Unit = {
     logger.trace("[ClickHouseVirtualizedDataProvider] Starting runOnce")
 
+    val structuralHash = viewPort.getStructuralHashCode()
+    val viewPortRange = viewPort.getRange
     val clauseWithParams = filterFactory.build(viewPort.filterSpec, permissionFunction.apply(viewPort))
     val orderBy = sortFactory.build(viewPort.sortSpec)
-    val offset = viewPort.getRange.from
-    val limit = viewPort.getRange.to - offset
+    val offset = viewPortRange.from
+    val limit = viewPortRange.to - offset
 
     logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading rows from ClickHouse range ${viewPort.getRange.from} to ${viewPort.getRange.to} filter=$clauseWithParams sort=$orderBy")
 
@@ -86,9 +89,14 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
         logger.trace("[ClickHouseVirtualizedDataProvider] Setting Primary Keys")
         val (millisSetKeys, _) = timeIt { viewPort.setKeys(new VirtualizedViewPortKeys(tableKeys)) }
 
+        logger.trace("[ClickHouseVirtualizedDataProvider] Finish refresh")
+        val (millisHashRange, _) = timeIt {
+          tbl.finishRefresh(structuralHash, viewPortRange, clock.now() + refreshRate)
+        }
+
         if (logAt.shouldLog()) {
           logger.debug(
-            s"[ClickHouseVirtualizedDataProvider] Complete runOnce dataQuery=$dataQueryMillis millisRange=$millisRange millisSize=$millisSize millisRows=$millisRows millisGetKeys=$millisGetKeys millisSetKeys=$millisSetKeys"
+            s"[ClickHouseVirtualizedDataProvider] Complete runOnce dataQuery=$dataQueryMillis millisRange=$millisRange millisSize=$millisSize millisRows=$millisRows millisGetKeys=$millisGetKeys millisSetKeys=$millisSetKeys millisHashRange=$millisHashRange"
           )
         }
       case _ =>

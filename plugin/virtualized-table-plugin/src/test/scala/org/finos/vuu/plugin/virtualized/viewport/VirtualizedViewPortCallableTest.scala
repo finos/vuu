@@ -18,11 +18,15 @@ class VirtualizedViewPortCallableTest extends AnyFeatureSpec with Matchers with 
       val mockTable = mock[DataTable]
       val mockVirtualizedProvider = mock[VirtualizedProvider]
 
+      (() => mockViewPort.toString()).stubs().returning("mockViewPort")
+      //(() => mockTable.toString()).stubs().returning("mockTable")
+      (() => mockVirtualizedProvider.toString()).stubs().returning("mockVirtualizedProvider")
+      
       (() => mockViewPort.table).expects().returning(mockTable)
       (() => mockTable.asTable).expects().returning(mockTable)
       (() => mockTable.getProvider).expects().returning(mockVirtualizedProvider)
 
-      (mockVirtualizedProvider.runOnce _).expects(mockViewPort).once()
+      (mockVirtualizedProvider.runOnceInternal _).expects(mockViewPort).once()
 
       val futureTask = new FutureTask[ViewPort](() => mockViewPort)
       futureTask.run()
