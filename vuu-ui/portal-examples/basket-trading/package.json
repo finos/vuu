@@ -5,7 +5,7 @@
   "scripts": {
     "build": "node ../../scripts/build-remote-module.ts",
     "dev": "rsbuild dev",
-    "start": "ws --directory ../../dist_portal/basket-trading --spa index.html --port 5005"
+    "start": "ws --directory ../../dist_portal/basket-trading --spa index.html --port 5006"
   },
   "private": true,
   "keywords": [],
@@ -74,7 +74,7 @@
         "./VuuBasketTradingFeatureLocal": "./src/VuuBasketTradingFeatureLocal"
       },
       "name": "basketTrading",
-      "port": 5005
+      "port": 5006
     },
     "leftNavLocation": "vuu-features"
   }
