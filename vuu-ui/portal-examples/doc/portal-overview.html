@@ -425,20 +425,20 @@
             </g>
 
             <g class="route shell-request reveal-2" fill="none">
-              <path d="M280 170L360 104" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
+              <path d="M280 170L360 104" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-violet)"/>
             </g>
 
             <g class="route shell-response reveal-2" fill="none">
-              <path d="M360 104L280 170" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
+              <path d="M360 104L280 170" stroke="#75E6BF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-green)"/>
             </g>
 
             <g class="route module-request reveal-11" fill="none">
-              <path d="M320 238L380 111" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
+              <path d="M320 238L380 111" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-violet)"/>
               <text x="342" y="180" text-anchor="middle" fill="#BCECF1" font-size="10" font-weight="700">requests Orders module</text>
             </g>
 
             <g class="route module-response reveal-11" fill="none">
-              <path d="M380 125L320 252" stroke="#5BD6E2" stroke-width="3" marker-end="url(#arrow-blue)"/>
+              <path d="M380 111L320 238" stroke="#75E6BF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-green)"/>
               <text x="342" y="222" text-anchor="middle" fill="#BCECF1" font-size="10" font-weight="700">module response</text>
             </g>
 
@@ -451,19 +451,19 @@
             </g>
 
             <g class="route reveal-4 secure-request" fill="none">
-              <path d="M300 213L360 104H550" stroke="#B59BFF" stroke-width="3" marker-end="url(#arrow-violet)"/>
+              <path d="M300 213L360 104H550" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-violet)"/>
             </g>
 
             <g class="route reveal-4 secure-response" fill="none">
-              <path d="M550 104H360L300 213" stroke="#FF9A9F" stroke-width="3" marker-end="url(#arrow-violet)"/>
+              <path d="M550 104H360L300 213" stroke="#75E6BF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-green)"/>
             </g>
 
             <g class="route reveal-5 credential-request" fill="none">
-              <path d="M300 273L360 85H550" stroke="#B59BFF" stroke-width="3" marker-end="url(#arrow-violet)"/>
+              <path d="M300 273L360 85H550" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-violet)"/>
             </g>
 
             <g class="route reveal-5 credential-response" fill="none">
-              <path d="M550 85H360L300 273" stroke="#75E6BF" stroke-width="3" marker-end="url(#arrow-green)"/>
+              <path d="M550 85H360L300 273" stroke="#75E6BF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-green)"/>
             </g>
 
             <g class="node reveal-7" id="portal-server-node">
@@ -495,17 +495,17 @@
             <g class="message reveal-7 portal-handshake auth-request">
               <rect x="-43" y="-11" width="86" height="22" rx="7" fill="#2A315D" stroke="#B59BFF" stroke-opacity=".9"/>
               <text x="0" y="4" text-anchor="middle" fill="#D6CBFF" font-size="9" font-weight="800">AUTH CHECK</text>
-              <animateMotion id="auth-check-motion" begin="indefinite" dur="1s" repeatCount="1" path="M570 220V150"/>
+              <animateMotion id="auth-check-motion" begin="indefinite" dur="1s" repeatCount="1" path="M570 220V143"/>
             </g>
 
             <g class="message reveal-7 portal-handshake auth-response">
-              <rect x="-34" y="-11" width="68" height="22" rx="7" fill="#3A326E" stroke="#B59BFF" stroke-opacity=".9"/>
-              <text x="0" y="4" text-anchor="middle" fill="#E0D8FF" font-size="9" font-weight="800">AUTH OK</text>
-              <animateMotion id="auth-response-motion" begin="indefinite" dur="1s" repeatCount="1" path="M570 150V220"/>
+              <rect x="-34" y="-11" width="68" height="22" rx="7" fill="#185B65" stroke="#75E6BF" stroke-opacity=".95"/>
+              <text x="0" y="4" text-anchor="middle" fill="#C8F8E4" font-size="9" font-weight="800">AUTH OK</text>
+              <animateMotion id="auth-response-motion" begin="indefinite" dur="1s" repeatCount="1" path="M570 143V220"/>
             </g>
 
             <g class="route reveal-8" fill="none">
-              <path d="M500 252H320" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-violet)"/>
+              <path d="M500 252H320" stroke="#75E6BF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-green)"/>
             </g>
 
             <g class="route reveal-9 persistent-websocket" fill="none">
@@ -518,8 +518,8 @@
             </g>
 
             <g class="message reveal-9 portal-login-request">
-              <rect x="-28" y="-9" width="56" height="18" rx="6" fill="#153F5B" stroke="#5BD6E2" stroke-width="1.5" stroke-opacity=".95"/>
-              <text x="0" y="3" text-anchor="middle" fill="#BCECF1" font-size="8" font-weight="800">LOGIN</text>
+              <rect x="-28" y="-9" width="56" height="18" rx="6" fill="#2A315D" stroke="#B59BFF" stroke-width="1.5" stroke-opacity=".95"/>
+              <text x="0" y="3" text-anchor="middle" fill="#D6CBFF" font-size="8" font-weight="800">LOGIN</text>
               <animateMotion id="portal-login-motion" begin="indefinite" dur="2.1s" repeatCount="1" path="M330 252H490"/>
             </g>
 
@@ -550,13 +550,13 @@
             <g class="message reveal-13 orders-handshake orders-auth-request">
               <rect x="-43" y="-11" width="86" height="22" rx="7" fill="#2A315D" stroke="#B59BFF" stroke-opacity=".9"/>
               <text x="0" y="4" text-anchor="middle" fill="#D6CBFF" font-size="9" font-weight="800">AUTH CHECK</text>
-              <animateMotion id="orders-auth-check-motion" begin="indefinite" dur="1s" repeatCount="1" path="M690 320V150"/>
+              <animateMotion id="orders-auth-check-motion" begin="indefinite" dur="1s" repeatCount="1" path="M690 320V143"/>
             </g>
 
             <g class="message reveal-13 orders-handshake orders-auth-response">
-              <rect x="-34" y="-11" width="68" height="22" rx="7" fill="#3A326E" stroke="#B59BFF" stroke-opacity=".9"/>
-              <text x="0" y="4" text-anchor="middle" fill="#E0D8FF" font-size="9" font-weight="800">AUTH OK</text>
-              <animateMotion id="orders-auth-response-motion" begin="indefinite" dur="1s" repeatCount="1" path="M690 150V320"/>
+              <rect x="-34" y="-11" width="68" height="22" rx="7" fill="#185B65" stroke="#75E6BF" stroke-opacity=".95"/>
+              <text x="0" y="4" text-anchor="middle" fill="#C8F8E4" font-size="9" font-weight="800">AUTH OK</text>
+              <animateMotion id="orders-auth-response-motion" begin="indefinite" dur="1s" repeatCount="1" path="M690 143V320"/>
             </g>
 
             <g class="route reveal-14 orders-http-response" fill="none">
@@ -573,8 +573,8 @@
             </g>
 
             <g class="message reveal-15 orders-websocket">
-              <rect x="-28" y="-9" width="56" height="18" rx="6" fill="#153F5B" stroke="#5BD6E2" stroke-width="1.5" stroke-opacity=".95"/>
-              <text x="0" y="3" text-anchor="middle" fill="#BCECF1" font-size="8" font-weight="800">LOGIN</text>
+              <rect x="-28" y="-9" width="56" height="18" rx="6" fill="#2A315D" stroke="#B59BFF" stroke-width="1.5" stroke-opacity=".95"/>
+              <text x="0" y="3" text-anchor="middle" fill="#D6CBFF" font-size="8" font-weight="800">LOGIN</text>
               <animateMotion id="orders-login-motion" begin="indefinite" dur="2.1s" repeatCount="1" path="M330 352H557"/>
             </g>
 
@@ -1041,7 +1041,7 @@
           if (currentStep !== 9 || portalLoginResponseVisible) return;
           portalLoginResponseVisible = true;
           setStep(9);
-        }, 500);
+        }, 1000);
       });
       document.getElementById("orders-auth-check-motion").addEventListener("endEvent", () => {
         if (!ordersHandshakeStarted) return;
@@ -1088,7 +1088,7 @@
           if (currentStep !== 11) return;
           nginxResponseVisible = true;
           setStep(currentStep);
-        }, 850);
+        }, 1000);
       }
       function selectOrders() {
         if (currentStep < 9 || !entitlementsReceived) return;
