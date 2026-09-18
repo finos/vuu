@@ -450,7 +450,7 @@
             </g>
 
             <g class="route reveal-5 credential-response" fill="none">
-              <path d="M550 162L510 100H360L300 301" stroke="#75E6BF" stroke-width="3" marker-end="url(#arrow-green)"/>
+              <path d="M550 85H360L300 273" stroke="#75E6BF" stroke-width="3" marker-end="url(#arrow-green)"/>
             </g>
 
             <g class="node node-clickable reveal-7" id="portal-server-node" role="button" tabindex="0" aria-label="Portal vuu server">
@@ -785,8 +785,7 @@
           item.classList.toggle("is-visible", isVisible);
           item.classList.toggle("is-past",
             (item.classList.contains("route") || item.classList.contains("message"))
-            && revealStep < currentStep
-            && !(item.classList.contains("secure-response") && currentStep === 5));
+            && revealStep < currentStep);
           item.classList.toggle("is-retired",
             (item.classList.contains("module-nginx") && currentStep >= 12)
             || (item.classList.contains("login-panel") && currentStep >= 6));
