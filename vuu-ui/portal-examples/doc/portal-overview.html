@@ -359,17 +359,17 @@
                 <path d="M84 223H320" stroke="#BCECF1" stroke-opacity=".62" stroke-width="2"/>
                 <text x="98" y="213" fill="#F5F9FF" font-size="10" font-weight="800">APP / Orders</text>
                 <g class="callout reveal-11" aria-label="Keycloak token">
-                  <rect x="223" y="199" width="42" height="13" fill="#B84952"/>
-                  <text x="244" y="208.5" text-anchor="middle" fill="#FFF4F4" font-size="7" font-weight="800">KC token</text>
+                  <rect x="270" y="199" width="42" height="13" fill="#B84952"/>
+                  <text x="291" y="208.5" text-anchor="middle" fill="#FFF4F4" font-size="7" font-weight="800">KC token</text>
                 </g>
                 <g class="message orders-vuu-token reveal-14" aria-label="Orders Vuu token">
-                  <rect x="270" y="199" width="42" height="13" fill="#2A9D78"/>
-                  <text x="291" y="208.5" text-anchor="middle" fill="#F0FFF9" font-size="7" font-weight="800">VUU token</text>
+                  <rect x="223" y="199" width="42" height="13" fill="#2A9D78"/>
+                  <text x="244" y="208.5" text-anchor="middle" fill="#F0FFF9" font-size="7" font-weight="800">VUU token</text>
                 </g>
                 <rect x="90" y="230" width="224" height="143" rx="8" fill="#0E2E4A" stroke="#5BD6E2" stroke-opacity=".38"/>
                 <circle cx="202" cy="301" r="17" fill="none" stroke="#5BD6E2" stroke-opacity=".25" stroke-width="4"/>
                 <path d="M202 284A17 17 0 0 1 218 301" fill="none" stroke="#5BD6E2" stroke-width="4" stroke-linecap="round"/>
-                <g class="callout orders-data reveal-17">
+                <g class="callout orders-data reveal-19">
                   <rect x="90" y="230" width="224" height="143" rx="8" fill="#0E2E4A" stroke="#75E6BF" stroke-opacity=".5"/>
                   <text x="102" y="250" fill="#BCECF1" font-size="10" font-weight="800">Orders</text>
                   <rect x="102" y="260" width="200" height="20" rx="4" fill="#174466"/>
@@ -576,7 +576,7 @@
             </g>
 
             <g class="route reveal-15 orders-websocket" fill="none">
-              <text x="443" y="378" text-anchor="middle" fill="#BCECF1" font-size="10" font-weight="700">WebSocket → LOGIN</text>
+              <text x="443" y="378" text-anchor="middle" fill="#BCECF1" font-size="10" font-weight="700">WebSocket → LOGIN / SUBSCRIBE</text>
             </g>
 
             <g class="message reveal-15 orders-websocket">
@@ -591,6 +591,18 @@
               <rect x="-46" y="-9" width="92" height="18" rx="6" fill="#185B65" stroke="#75E6BF" stroke-width="1.5" stroke-opacity=".95"/>
               <text x="0" y="3" text-anchor="middle" fill="#C8F8E4" font-size="8" font-weight="800">LOGIN SUCCESS</text>
               <animateMotion id="orders-login-success-motion" begin="indefinite" dur="2.1s" repeatCount="1" path="M557 352H330"/>
+            </g>
+
+            <g class="message reveal-17 orders-subscribe">
+              <rect x="-48" y="-9" width="96" height="18" rx="6" fill="#2A315D" stroke="#B59BFF" stroke-width="1.5" stroke-opacity=".95"/>
+              <text x="0" y="3" text-anchor="middle" fill="#D6CBFF" font-size="8" font-weight="800">SUBSCRIBE</text>
+              <animateMotion id="orders-subscribe-motion" begin="indefinite" dur="2.1s" repeatCount="1" path="M330 352H557"/>
+            </g>
+
+            <g class="message reveal-18 orders-data-message">
+              <rect x="-30" y="-9" width="60" height="18" rx="6" fill="#185B65" stroke="#75E6BF" stroke-width="1.5" stroke-opacity=".95"/>
+              <text x="0" y="3" text-anchor="middle" fill="#C8F8E4" font-size="8" font-weight="800">DATA</text>
+              <animateMotion id="orders-data-motion" begin="indefinite" dur="2.1s" repeatCount="1" path="M557 352H330"/>
             </g>
 
           </svg>
@@ -694,8 +706,20 @@
         {
           title: "LOGIN SUCCESS",
           copy: "The Orders Vuu Server confirms the login on the WebSocket.",
-          detail: "The selected feature is now authenticated and ready to receive data.",
+          detail: "The selected feature is authenticated; the UI will now request its initial data.",
           status: "Orders session established",
+        },
+        {
+          title: "Subscribe to Orders data",
+          copy: "The UI sends a SUBSCRIBE message to the Orders Vuu Server.",
+          detail: "The subscription asks Orders for the initial view data.",
+          status: "Subscription sent",
+        },
+        {
+          title: "Receive Orders data",
+          copy: "The Orders Vuu Server responds with a DATA message.",
+          detail: "The initial data snapshot is ready to render in the Orders app.",
+          status: "Data received",
         },
         {
           title: "Keep it live",
@@ -745,6 +769,8 @@
       let ordersWebSocketStarted = false;
       let ordersLoginSent = false;
       let ordersLoginSuccessVisible = false;
+      let ordersSubscribeSent = false;
+      let ordersDataMessageVisible = false;
       let ordersDataVisible = false;
       let urlTypingStarted = false;
       let urlTypingComplete = false;
@@ -998,9 +1024,23 @@
         ordersFlowTimer = window.setTimeout(() => {
           ordersFlowTimer = null;
           if (currentStep !== 16 || !ordersLoginSuccessVisible) return;
-          ordersDataVisible = true;
+          ordersSubscribeSent = true;
           setStep(17);
         }, 1000);
+      });
+      document.getElementById("orders-subscribe-motion").addEventListener("endEvent", () => {
+        if (currentStep !== 17 || !ordersSubscribeSent) return;
+        ordersFlowTimer = window.setTimeout(() => {
+          ordersFlowTimer = null;
+          if (currentStep !== 17 || !ordersSubscribeSent) return;
+          ordersDataMessageVisible = true;
+          setStep(18);
+        }, 1000);
+      });
+      document.getElementById("orders-data-motion").addEventListener("endEvent", () => {
+        if (currentStep !== 18 || !ordersDataMessageVisible) return;
+        ordersDataVisible = true;
+        setStep(19);
       });
       function startShellFlow() {
         if (currentStep !== 2 || shellFlowStarted) return;
@@ -1084,7 +1124,9 @@
             || (currentStep === 13 && !ordersTokenResponseVisible)
             || (currentStep === 14 && !ordersWebSocketStarted)
             || (currentStep === 15 && !ordersLoginSent)
-            || (currentStep === 16 && !ordersDataVisible)
+            || (currentStep === 16 && !ordersSubscribeSent)
+            || (currentStep === 17 && !ordersDataMessageVisible)
+            || (currentStep === 18 && !ordersDataVisible)
           ) return;
           setStep(currentStep + 1);
         }
@@ -1175,7 +1217,28 @@
             ordersLoginSent = false;
           }
           if (currentStep === 16 && currentStep - 1 < 16) {
+            window.clearTimeout(ordersFlowTimer);
+            ordersFlowTimer = null;
             ordersLoginSuccessVisible = false;
+            ordersSubscribeSent = false;
+            ordersDataMessageVisible = false;
+            ordersDataVisible = false;
+          }
+          if (currentStep === 17 && currentStep - 1 < 17) {
+            window.clearTimeout(ordersFlowTimer);
+            ordersFlowTimer = null;
+            ordersSubscribeSent = false;
+            ordersDataMessageVisible = false;
+            ordersDataVisible = false;
+          }
+          if (currentStep === 18 && currentStep - 1 < 18) {
+            window.clearTimeout(ordersFlowTimer);
+            ordersFlowTimer = null;
+            ordersDataMessageVisible = false;
+            ordersDataVisible = false;
+          }
+          if (currentStep === 19 && currentStep - 1 < 19) {
+            ordersDataVisible = false;
           }
           setStep(currentStep - 1);
         }
