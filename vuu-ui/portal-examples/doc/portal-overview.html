@@ -363,14 +363,14 @@
                 <rect x="42" y="207" width="256" height="150" rx="7" fill="#0C2238" fill-opacity=".28" stroke="#5BD6E2" stroke-opacity=".16" stroke-dasharray="5 8"/>
               </g>
               <g class="callout node-clickable login-panel reveal-5" id="login-panel" role="button" tabindex="0" aria-label="Open secure sign-in form">
-                <rect x="64" y="204" width="212" height="126" rx="9" fill="#2A315D" stroke="#B59BFF" stroke-opacity=".8"/>
-                <text x="84" y="229" fill="#D6CBFF" font-size="10" font-weight="800">SECURE SIGN-IN</text>
-                <text class="credential-field reveal-6" x="84" y="252" fill="#D6CBFF" font-size="9">username</text>
-                <path d="M84 258H256" stroke="#D6CBFF" stroke-opacity=".42" stroke-linecap="round"/>
-                <text class="credential-field reveal-6" x="84" y="278" fill="#D6CBFF" font-size="9">password</text>
-                <path d="M84 284H256" stroke="#D6CBFF" stroke-opacity=".42" stroke-linecap="round"/>
-                <rect x="84" y="300" width="62" height="12" rx="6" fill="#B59BFF" fill-opacity=".42"/>
-                <text x="115" y="309" text-anchor="middle" fill="#F5F9FF" font-size="8" font-weight="750">SIGN IN</text>
+                <rect x="64" y="219" width="212" height="126" rx="9" fill="#2A315D" stroke="#B59BFF" stroke-opacity=".8"/>
+                <text x="84" y="244" fill="#D6CBFF" font-size="10" font-weight="800">SECURE SIGN-IN</text>
+                <text class="credential-field reveal-6" x="84" y="267" fill="#D6CBFF" font-size="9">username</text>
+                <path d="M84 273H256" stroke="#D6CBFF" stroke-opacity=".42" stroke-linecap="round"/>
+                <text class="credential-field reveal-6" x="84" y="293" fill="#D6CBFF" font-size="9">password</text>
+                <path d="M84 299H256" stroke="#D6CBFF" stroke-opacity=".42" stroke-linecap="round"/>
+                <rect x="84" y="315" width="62" height="12" rx="6" fill="#B59BFF" fill-opacity=".42"/>
+                <text x="115" y="324" text-anchor="middle" fill="#F5F9FF" font-size="8" font-weight="750">SIGN IN</text>
               </g>
               <g class="callout reveal-7">
                 <rect x="20" y="192" width="300" height="189" fill="#123B5B" stroke="#5BD6E2" stroke-opacity=".8"/>
@@ -738,6 +738,13 @@
         next.innerHTML = currentStep === stages.length
           ? "Story complete <span aria-hidden=\"true\">✓</span>"
           : "Reveal next <span aria-hidden=\"true\">→</span>";
+        if (urlTypingComplete) {
+          if (currentStep === 5 || currentStep === 6) {
+            urlText.textContent = "/keycloak";
+          } else if (currentStep < 7 || (currentStep >= 7 && currentStep < 11 && !ordersSelected)) {
+            urlText.textContent = "/nexus";
+          }
+        }
         urlBox.classList.toggle("is-active", urlTypingStarted);
         ordersMenuItem.classList.toggle("is-selected", ordersSelected);
 
