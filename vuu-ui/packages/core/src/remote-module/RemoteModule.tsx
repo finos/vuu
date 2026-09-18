@@ -133,8 +133,8 @@ function RawRemoteModule<ComponentProps extends object | undefined>(
 type RoutedRemoteModuleProps = RemoteModuleProps;
 
 const RoutedRemoteModule = (props: RoutedRemoteModuleProps) => {
-  useLocation();
-  return <RawRemoteModule {...props} />;
+  const location = useLocation();
+  return <RawRemoteModule key={location.key} {...props} />;
 };
 
 export const RemoteModule = React.memo((props: RoutedRemoteModuleProps) =>
