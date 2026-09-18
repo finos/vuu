@@ -493,7 +493,6 @@
 
             <g class="route reveal-8" fill="none">
               <path d="M500 252H320" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-violet)"/>
-              <text x="410" y="294" text-anchor="middle" fill="#BFAEFF" font-size="10" font-weight="700">← Vuu token</text>
             </g>
 
             <g class="route reveal-9 persistent-websocket" fill="none">
@@ -505,20 +504,20 @@
               <text x="410" y="298" text-anchor="middle" fill="#BCECF1" font-size="10" font-weight="700">WebSocket → LOGIN</text>
             </g>
 
-            <g class="message reveal-9">
+            <g class="message reveal-9 portal-login-request">
               <rect x="-28" y="-9" width="56" height="18" rx="6" fill="#153F5B" stroke="#5BD6E2" stroke-width="1.5" stroke-opacity=".95"/>
               <text x="0" y="3" text-anchor="middle" fill="#BCECF1" font-size="8" font-weight="800">LOGIN</text>
               <animateMotion begin="indefinite" dur="2.1s" repeatCount="1" path="M330 252H490"/>
             </g>
 
-            <g class="route reveal-10" fill="none">
-              <text x="410" y="298" text-anchor="middle" fill="#9FB3C8" font-size="9">module entitlements</text>
+            <g class="message reveal-9 portal-login-response">
+              <rect x="-54" y="-9" width="108" height="18" rx="6" fill="#185B65" stroke="#75E6BF" stroke-width="1.5" stroke-opacity=".95"/>
+              <text x="0" y="3" text-anchor="middle" fill="#C8F8E4" font-size="8" font-weight="800">LOGIN_RESPONSE</text>
+              <animateMotion id="login-response-motion" begin="indefinite" dur="1s" repeatCount="1" path="M490 252H330"/>
             </g>
 
-            <g class="message reveal-10">
-              <rect x="-46" y="-9" width="92" height="18" rx="6" fill="#185B65" stroke="#75E6BF" stroke-width="1.5" stroke-opacity=".95"/>
-              <text x="0" y="3" text-anchor="middle" fill="#C8F8E4" font-size="8" font-weight="800">LOGIN SUCCESS</text>
-              <animateMotion id="login-success-motion" begin="indefinite" dur="2.4s" repeatCount="1" path="M490 252H330"/>
+            <g class="route reveal-10" fill="none">
+              <text x="410" y="298" text-anchor="middle" fill="#9FB3C8" font-size="9">module entitlements</text>
             </g>
 
             <g class="route reveal-12 orders-http-request" fill="none">
@@ -549,7 +548,6 @@
 
             <g class="route reveal-14 orders-http-response" fill="none">
               <path d="M567 352H320" stroke="#75E6BF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-green)"/>
-              <text x="443" y="366" text-anchor="middle" fill="#C8F8E4" font-size="10" font-weight="700">← Vuu token</text>
             </g>
 
             <g class="route reveal-15 orders-websocket persistent-websocket" fill="none">
@@ -629,10 +627,10 @@
           status: "Click Portal vuu server",
         },
         {
-          title: "Receive the Vuu token",
-          copy: "The auth endpoint responds with the Vuu token that the portal session will use.",
+          title: "Receive the token",
+          copy: "The auth endpoint responds with the token that the portal session will use.",
           detail: "This response proves that the Portal Vuu Server has accepted the browser's identity.",
-          status: "Vuu token received",
+          status: "Token received",
         },
         {
           title: "Open WebSocket and LOGIN",
@@ -641,8 +639,8 @@
           status: "WebSocket login sent",
         },
         {
-          title: "LOGIN SUCCESS and entitlements",
-          copy: "The Portal Vuu Server sends LOGIN SUCCESS together with the module entitlements.",
+          title: "Receive LOGIN_RESPONSE",
+          copy: "The Portal Vuu Server confirms the WebSocket login and sends the module entitlements.",
           detail: "The permitted applications can now be used to build the portal navigation.",
           status: "Portal session established",
         },
@@ -661,12 +659,12 @@
         {
           title: "Validate the Orders token",
           copy: "The Orders Vuu Server sends the bearer token to Keycloak for validation.",
-          detail: "Keycloak accepts the identity before the Orders server returns a Vuu token to the browser.",
+          detail: "Keycloak accepts the identity before the Orders server returns a token to the browser.",
           status: "Validating Orders session",
         },
         {
-          title: "Receive the Orders Vuu token",
-          copy: "The Orders auth endpoint responds with a Vuu token for the selected module.",
+          title: "Receive the Orders token",
+          copy: "The Orders auth endpoint responds with a token for the selected module.",
           detail: "The browser can now open the Orders server's persistent connection.",
           status: "Orders token received",
         },
@@ -709,6 +707,8 @@
       let authResponseVisible = false;
       let portalFlowStarted = false;
       let portalFlowComplete = false;
+      let portalWebSocketStarted = false;
+      let portalLoginResponseVisible = false;
       let entitlementsReceived = false;
       let loginPanelOpened = false;
       let loginFieldsComplete = false;
@@ -750,6 +750,8 @@
           || (currentStep === 5 && !loginFlowComplete)
           || (currentStep === 6 && !portalFlowStarted)
           || (currentStep === 7 && !portalFlowComplete)
+          || (currentStep === 8 && !portalWebSocketStarted)
+          || (currentStep === 9 && !portalLoginResponseVisible)
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && !nginxResponseVisible)
           || (currentStep === 12 && !ordersHandshakeStarted)
@@ -786,6 +788,8 @@
             && (!item.classList.contains("credential-field") || loginPanelOpened)
             && (!item.classList.contains("credential-request") || loginFieldsComplete && !credentialResponseVisible)
             && (!item.classList.contains("credential-response") || credentialResponseVisible)
+            && (!item.classList.contains("portal-login-request") || !portalLoginResponseVisible)
+            && (!item.classList.contains("portal-login-response") || portalLoginResponseVisible)
             && (!item.classList.contains("menu-preview") || entitlementsReceived);
           item.classList.toggle("is-visible", isVisible);
           item.classList.toggle("is-past",
@@ -814,6 +818,8 @@
         authResponseVisible = false;
         portalFlowStarted = false;
         portalFlowComplete = false;
+        portalWebSocketStarted = false;
+        portalLoginResponseVisible = false;
         entitlementsReceived = false;
         loginPanelOpened = false;
         loginFieldsComplete = false;
@@ -929,11 +935,30 @@
           setStep(7);
         }, 1000);
       }
-      portalLoadingShell.addEventListener("click", startPortalAuthFlow);
+      function startPortalWebSocketFlow() {
+        if (currentStep !== 8 || portalWebSocketStarted) return;
+        portalWebSocketStarted = true;
+        setStep(9);
+        portalAuthTimer = window.setTimeout(() => {
+          portalAuthTimer = null;
+          if (currentStep !== 9) return;
+          portalLoginResponseVisible = true;
+          entitlementsReceived = true;
+          setStep(9);
+        }, 1000);
+      }
+      function continueFromPortalLoadingShell() {
+        if (currentStep === 6) {
+          startPortalAuthFlow();
+        } else if (currentStep === 8) {
+          startPortalWebSocketFlow();
+        }
+      }
+      portalLoadingShell.addEventListener("click", continueFromPortalLoadingShell);
       portalLoadingShell.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          startPortalAuthFlow();
+          continueFromPortalLoadingShell();
         }
       });
       function startLoginFlow() {
@@ -1000,11 +1025,6 @@
           portalFlowComplete = true;
           setStep(8);
         }, 1000);
-      });
-      document.getElementById("login-success-motion").addEventListener("endEvent", () => {
-        if (currentStep < 10 || !portalHandshakeStarted) return;
-        entitlementsReceived = true;
-        setStep(currentStep);
       });
       document.getElementById("orders-auth-check-motion").addEventListener("endEvent", () => {
         if (!ordersHandshakeStarted) return;
@@ -1074,6 +1094,8 @@
           || (currentStep === 5 && !loginFlowComplete)
           || (currentStep === 6 && !portalFlowStarted)
           || (currentStep === 7 && !portalFlowComplete)
+          || (currentStep === 8 && !portalWebSocketStarted)
+          || (currentStep === 9 && !portalLoginResponseVisible)
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && !nginxResponseVisible)
           || (currentStep === 12 && !ordersHandshakeStarted)
@@ -1119,6 +1141,13 @@
           authResponseVisible = false;
           portalFlowComplete = false;
         }
+        if ((currentStep === 8 || currentStep === 9) && currentStep - 1 < 9) {
+          window.clearTimeout(portalAuthTimer);
+          portalAuthTimer = null;
+          portalWebSocketStarted = false;
+          portalLoginResponseVisible = false;
+          entitlementsReceived = false;
+        }
         if (currentStep === 5 && currentStep - 1 < 5) {
           loginPanelOpened = false;
           loginFieldsComplete = false;
@@ -1159,6 +1188,8 @@
             || (currentStep === 5 && !loginFlowComplete)
             || (currentStep === 6 && !portalFlowStarted)
             || (currentStep === 7 && !portalFlowComplete)
+            || (currentStep === 8 && !portalWebSocketStarted)
+            || (currentStep === 9 && !portalLoginResponseVisible)
             || (currentStep === 10 && !ordersSelected)
             || (currentStep === 11 && !nginxResponseVisible)
             || (currentStep === 12 && !ordersHandshakeStarted)
@@ -1204,6 +1235,13 @@
             portalHandshakeStarted = false;
             authResponseVisible = false;
             portalFlowComplete = false;
+          }
+          if ((currentStep === 8 || currentStep === 9) && currentStep - 1 < 9) {
+            window.clearTimeout(portalAuthTimer);
+            portalAuthTimer = null;
+            portalWebSocketStarted = false;
+            portalLoginResponseVisible = false;
+            entitlementsReceived = false;
           }
           if (currentStep === 5 && currentStep - 1 < 5) {
             loginPanelOpened = false;
