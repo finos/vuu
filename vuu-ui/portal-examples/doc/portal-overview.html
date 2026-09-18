@@ -399,13 +399,13 @@
                 <rect x="108" y="317" width="184" height="20" rx="5" fill="#123450"/>
                 <text x="119" y="330" fill="#B9D7E5" font-size="9" font-weight="700">Risk</text>
               </g>
-              <g class="callout orders-app reveal-11">
+              <g class="callout orders-app node-clickable reveal-11" id="orders-app" role="button" tabindex="0" aria-label="Open Orders application">
                 <rect x="84" y="192" width="236" height="189" fill="#123B5B" stroke="#75E6BF" stroke-opacity=".72"/>
                 <path d="M84 223H320" stroke="#BCECF1" stroke-opacity=".62" stroke-width="2"/>
                 <text x="98" y="213" fill="#F5F9FF" font-size="10" font-weight="800">APP / Orders</text>
-                <rect x="96" y="239" width="208" height="110" rx="8" fill="#0E2E4A" stroke="#5BD6E2" stroke-opacity=".38"/>
-                <circle cx="200" cy="286" r="17" fill="none" stroke="#5BD6E2" stroke-opacity=".25" stroke-width="4"/>
-                <path d="M200 269A17 17 0 0 1 216 286" fill="none" stroke="#5BD6E2" stroke-width="4" stroke-linecap="round"/>
+                <rect x="90" y="230" width="224" height="143" rx="8" fill="#0E2E4A" stroke="#5BD6E2" stroke-opacity=".38"/>
+                <circle cx="202" cy="301" r="17" fill="none" stroke="#5BD6E2" stroke-opacity=".25" stroke-width="4"/>
+                <path d="M202 284A17 17 0 0 1 218 301" fill="none" stroke="#5BD6E2" stroke-width="4" stroke-linecap="round"/>
               </g>
             </g>
 
@@ -666,8 +666,8 @@
         {
           title: "Call the Orders auth endpoint",
           copy: "The Orders module makes an HTTPS call to its Vuu server.",
-          detail: "Click the Orders vuu server to start the same token validation flow used by the Portal.",
-          status: "Click Orders vuu server",
+          detail: "Click the Orders app to start its HTTPS call to the Orders Vuu Server.",
+          status: "Click Orders app",
         },
         {
           title: "Validate the Orders token",
@@ -714,6 +714,7 @@
       const urlBox = document.getElementById("url-box");
       const urlText = document.getElementById("portal-url-text");
       const ordersMenuItem = document.getElementById("orders-menu-item");
+      const ordersApp = document.getElementById("orders-app");
       const revealItems = [...presentation.querySelectorAll("[class*=\"reveal-\"]")];
       let currentStep = 1;
       let portalHandshakeStarted = false;
@@ -745,6 +746,7 @@
       let urlTypingTimer = null;
       let nginxFlowStarted = false;
       let nginxResponseVisible = false;
+      let ordersAppClicked = false;
       let nginxFlowTimer = null;
       let shellFlowStarted = false;
       let shellResponseVisible = false;
@@ -766,7 +768,7 @@
           || (currentStep === 8 && !portalWebSocketStarted)
           || (currentStep === 9 && !entitlementsReceived)
           || (currentStep === 10 && !ordersSelected)
-          || (currentStep === 11 && !nginxResponseVisible)
+          || (currentStep === 11 && (!nginxResponseVisible || !ordersAppClicked))
           || (currentStep === 12 && !ordersHandshakeStarted)
           || (currentStep === 13 && !ordersAuthResponseVisible)
           || (currentStep === 15 && !ordersLoginSent)
@@ -843,6 +845,7 @@
         secureSignInResponseVisible = false;
         secureSignInFlowComplete = false;
         ordersSelected = false;
+        ordersAppClicked = false;
         ordersHandshakeStarted = false;
         ordersAuthResponseVisible = false;
         ordersLoginSent = false;
@@ -1085,10 +1088,6 @@
           if (currentStep !== 11) return;
           nginxResponseVisible = true;
           setStep(currentStep);
-          nginxFlowTimer = window.setTimeout(() => {
-            nginxFlowTimer = null;
-            if (currentStep === 11) setStep(12);
-          }, 700);
         }, 850);
       }
       function selectOrders() {
@@ -1105,6 +1104,18 @@
           selectOrders();
         }
       });
+      function openOrdersApp() {
+        if (currentStep !== 11 || !nginxResponseVisible || ordersAppClicked) return;
+        ordersAppClicked = true;
+        setStep(12);
+      }
+      ordersApp.addEventListener("click", openOrdersApp);
+      ordersApp.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openOrdersApp();
+        }
+      });
       next.addEventListener("click", () => {
         if (
           (currentStep === 1 && !urlTypingComplete)
@@ -1117,7 +1128,7 @@
           || (currentStep === 8 && !portalWebSocketStarted)
           || (currentStep === 9 && !entitlementsReceived)
           || (currentStep === 10 && !ordersSelected)
-          || (currentStep === 11 && !nginxResponseVisible)
+          || (currentStep === 11 && (!nginxResponseVisible || !ordersAppClicked))
           || (currentStep === 12 && !ordersHandshakeStarted)
           || (currentStep === 13 && !ordersAuthResponseVisible)
           || (currentStep === 15 && !ordersLoginSent)
@@ -1186,6 +1197,9 @@
           nginxFlowStarted = false;
           nginxResponseVisible = false;
         }
+        if (currentStep === 12 && currentStep - 1 < 12) {
+          ordersAppClicked = false;
+        }
         if (currentStep === 13 && currentStep - 1 < 13) {
           ordersAuthResponseVisible = false;
         }
@@ -1211,7 +1225,7 @@
             || (currentStep === 8 && !portalWebSocketStarted)
             || (currentStep === 9 && !entitlementsReceived)
             || (currentStep === 10 && !ordersSelected)
-            || (currentStep === 11 && !nginxResponseVisible)
+            || (currentStep === 11 && (!nginxResponseVisible || !ordersAppClicked))
             || (currentStep === 12 && !ordersHandshakeStarted)
             || (currentStep === 13 && !ordersAuthResponseVisible)
             || (currentStep === 15 && !ordersLoginSent)
@@ -1280,6 +1294,9 @@
             nginxFlowTimer = null;
             nginxFlowStarted = false;
             nginxResponseVisible = false;
+          }
+          if (currentStep === 12 && currentStep - 1 < 12) {
+            ordersAppClicked = false;
           }
           if (currentStep === 13 && currentStep - 1 < 13) {
             ordersAuthResponseVisible = false;
