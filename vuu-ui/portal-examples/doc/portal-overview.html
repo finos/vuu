@@ -1076,7 +1076,7 @@
         }, 850);
       }
       function selectOrders() {
-        if (currentStep < 10 || !entitlementsReceived) return;
+        if (currentStep < 9 || !entitlementsReceived) return;
         ordersSelected = true;
         urlText.textContent = "/nexus/orders";
         setStep(Math.max(currentStep, 11));
