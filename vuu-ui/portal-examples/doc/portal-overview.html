@@ -448,7 +448,12 @@
 
             <g class="route reveal-7" fill="none">
               <path d="M320 252H500" stroke="#B59BFF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-violet)"/>
-              <text x="410" y="244" text-anchor="middle" fill="#BFAEFF" font-size="10" font-weight="700">/auth</text>
+            </g>
+
+            <g class="message reveal-7 portal-http-request">
+              <rect x="-21" y="-6.5" width="42" height="13" fill="#B84952"/>
+              <text x="0" y="2.5" text-anchor="middle" fill="#FFF4F4" font-size="7" font-weight="800">KC token</text>
+              <animateMotion id="portal-token-request-motion" begin="indefinite" dur="1s" repeatCount="1" path="M320 252H500"/>
             </g>
 
             <g class="route reveal-7 portal-handshake auth-request" fill="none">
@@ -474,6 +479,12 @@
 
             <g class="route reveal-8" fill="none">
               <path d="M500 252H320" stroke="#75E6BF" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#arrow-green)"/>
+            </g>
+
+            <g class="message reveal-8 portal-http-response">
+              <rect x="-21" y="-6.5" width="42" height="13" fill="#2A9D78"/>
+              <text x="0" y="2.5" text-anchor="middle" fill="#F0FFF9" font-size="7" font-weight="800">VUU token</text>
+              <animateMotion id="portal-token-response-motion" begin="indefinite" dur="1s" repeatCount="1" path="M500 252H320"/>
             </g>
 
             <g class="route reveal-9 persistent-websocket" fill="none">
