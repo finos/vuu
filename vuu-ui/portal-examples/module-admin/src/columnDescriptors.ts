@@ -1,7 +1,7 @@
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 export const moduleColumnDescriptors: ColumnDescriptor[] = [
-    { name: 'name', label: 'ID', width: 150, heading: ['Remote Module Details'], hidden: true },
+    { name: 'id', label: 'ID', width: 150, heading: ['Remote Module Details'], hidden: true },
     { name: 'name', label: 'Component Name', width: 150, heading: ['Remote Module Details'] },
     { name: 'title', label: 'Title', width: 200, heading: ['Remote Module Details'] },
     { name: 'description', label: 'Description', width: 200, heading: ['Remote Module Details'] },
