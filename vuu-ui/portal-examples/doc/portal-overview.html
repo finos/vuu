@@ -399,6 +399,14 @@
                 <rect x="108" y="317" width="184" height="20" rx="5" fill="#123450"/>
                 <text x="119" y="330" fill="#B9D7E5" font-size="9" font-weight="700">Risk</text>
               </g>
+              <g class="callout orders-app reveal-11">
+                <rect x="84" y="192" width="236" height="189" fill="#123B5B" stroke="#75E6BF" stroke-opacity=".72"/>
+                <path d="M84 223H320" stroke="#BCECF1" stroke-opacity=".62" stroke-width="2"/>
+                <text x="98" y="213" fill="#F5F9FF" font-size="10" font-weight="800">APP / Orders</text>
+                <rect x="96" y="239" width="208" height="110" rx="8" fill="#0E2E4A" stroke="#5BD6E2" stroke-opacity=".38"/>
+                <circle cx="200" cy="286" r="17" fill="none" stroke="#5BD6E2" stroke-opacity=".25" stroke-width="4"/>
+                <path d="M200 269A17 17 0 0 1 216 286" fill="none" stroke="#5BD6E2" stroke-width="4" stroke-linecap="round"/>
+              </g>
             </g>
 
             <g class="node reveal-2" filter="url(#node-shadow)">
@@ -507,7 +515,7 @@
             <g class="message reveal-9 portal-login-request">
               <rect x="-28" y="-9" width="56" height="18" rx="6" fill="#153F5B" stroke="#5BD6E2" stroke-width="1.5" stroke-opacity=".95"/>
               <text x="0" y="3" text-anchor="middle" fill="#BCECF1" font-size="8" font-weight="800">LOGIN</text>
-              <animateMotion begin="indefinite" dur="2.1s" repeatCount="1" path="M330 252H490"/>
+              <animateMotion id="portal-login-motion" begin="indefinite" dur="2.1s" repeatCount="1" path="M330 252H490"/>
             </g>
 
             <g class="message reveal-9 portal-login-response">
@@ -790,14 +798,14 @@
             && (!item.classList.contains("credential-response") || credentialResponseVisible)
             && (!item.classList.contains("portal-login-request") || !portalLoginResponseVisible)
             && (!item.classList.contains("portal-login-response") || portalLoginResponseVisible)
-            && (!item.classList.contains("menu-preview") || entitlementsReceived);
+            && (!item.classList.contains("menu-preview") || entitlementsReceived)
+            && (!item.classList.contains("orders-app") || nginxResponseVisible);
           item.classList.toggle("is-visible", isVisible);
           item.classList.toggle("is-past",
             (item.classList.contains("route") || item.classList.contains("message"))
             && revealStep < currentStep);
           item.classList.toggle("is-retired",
-            (item.classList.contains("module-nginx") && currentStep >= 12)
-            || (item.classList.contains("login-panel") && currentStep >= 6));
+            item.classList.contains("login-panel") && currentStep >= 6);
           item.classList.toggle("is-superseded",
             (item.classList.contains("module-request") && nginxResponseVisible)
             || (item.classList.contains("module-response") && !nginxResponseVisible)
@@ -939,12 +947,6 @@
         if (currentStep !== 8 || portalWebSocketStarted) return;
         portalWebSocketStarted = true;
         setStep(9);
-        portalAuthTimer = window.setTimeout(() => {
-          portalAuthTimer = null;
-          if (currentStep !== 9) return;
-          portalLoginResponseVisible = true;
-          setStep(9);
-        }, 1000);
       }
       function continueFromPortalLoadingShell() {
         if (currentStep === 6) {
@@ -1029,6 +1031,15 @@
         if (currentStep !== 9 || !portalLoginResponseVisible) return;
         entitlementsReceived = true;
         setStep(9);
+      });
+      document.getElementById("portal-login-motion").addEventListener("endEvent", () => {
+        if (currentStep !== 9 || !portalWebSocketStarted || portalLoginResponseVisible) return;
+        portalAuthTimer = window.setTimeout(() => {
+          portalAuthTimer = null;
+          if (currentStep !== 9 || portalLoginResponseVisible) return;
+          portalLoginResponseVisible = true;
+          setStep(9);
+        }, 1000);
       });
       document.getElementById("orders-auth-check-motion").addEventListener("endEvent", () => {
         if (!ordersHandshakeStarted) return;
