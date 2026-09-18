@@ -365,14 +365,14 @@
               <g class="callout node-clickable login-panel reveal-5" id="login-panel" role="button" tabindex="0" aria-label="Open secure sign-in form">
                 <rect x="64" y="219" width="212" height="126" rx="9" fill="#2A315D" stroke="#B59BFF" stroke-opacity=".8"/>
                 <text x="84" y="244" fill="#D6CBFF" font-size="10" font-weight="800">SECURE SIGN-IN</text>
-                <text class="credential-field reveal-6" x="84" y="267" fill="#D6CBFF" font-size="9">username</text>
+                <text class="credential-field reveal-5" id="username-field" x="84" y="267" fill="#D6CBFF" font-size="9"></text>
                 <path d="M84 273H256" stroke="#D6CBFF" stroke-opacity=".42" stroke-linecap="round"/>
-                <text class="credential-field reveal-6" x="84" y="293" fill="#D6CBFF" font-size="9">password</text>
+                <text class="credential-field reveal-5" id="password-field" x="84" y="293" fill="#D6CBFF" font-size="9"></text>
                 <path d="M84 299H256" stroke="#D6CBFF" stroke-opacity=".42" stroke-linecap="round"/>
                 <rect x="84" y="315" width="62" height="12" rx="6" fill="#B59BFF" fill-opacity=".42"/>
                 <text x="115" y="324" text-anchor="middle" fill="#F5F9FF" font-size="8" font-weight="750">SIGN IN</text>
               </g>
-              <g class="callout reveal-7">
+              <g class="callout reveal-6">
                 <rect x="20" y="192" width="300" height="189" fill="#123B5B" stroke="#5BD6E2" stroke-opacity=".8"/>
                 <path d="M20 223H320" stroke="#BCECF1" stroke-opacity=".62" stroke-width="2"/>
                 <rect x="20" y="223" width="64" height="158" fill="#0E2E4A" fill-opacity=".72"/>
@@ -445,10 +445,12 @@
               <path d="M550 104H360L300 213" stroke="#FF9A9F" stroke-width="3" marker-end="url(#arrow-violet)"/>
             </g>
 
-            <g class="route reveal-6" fill="none">
+            <g class="route reveal-5 credential-request" fill="none">
               <path d="M300 273L360 85H550" stroke="#B59BFF" stroke-width="3" marker-end="url(#arrow-violet)"/>
+            </g>
+
+            <g class="route reveal-5 credential-response" fill="none">
               <path d="M550 162L510 100H360L300 301" stroke="#75E6BF" stroke-width="3" marker-end="url(#arrow-green)"/>
-              <text x="423" y="259" text-anchor="middle" fill="#BFAEFF" font-size="11" font-weight="700">credentials → token</text>
             </g>
 
             <g class="node node-clickable reveal-7" id="portal-server-node" role="button" tabindex="0" aria-label="Portal vuu server">
@@ -615,10 +617,10 @@
           status: "Click login panel",
         },
         {
-          title: "Enter credentials",
-          copy: "The username and password fields appear, and the browser sends the credentials through nginx to Keycloak.",
-          detail: "Keycloak validates the sign-in before the authenticated portal shell appears.",
-          status: "Credentials sent",
+          title: "Receive the token and app shell",
+          copy: "Keycloak returns the sign-in response. The browser can now show the authenticated Vuu Portal shell.",
+          detail: "The login panel is replaced by the authenticated app shell — menus, layout and space for features.",
+          status: "Portal is ready",
         },
         {
           title: "Call the auth endpoint",
@@ -696,6 +698,8 @@
       const ordersServerNode = document.getElementById("orders-server-node");
       const loginPanel = document.getElementById("login-panel");
       const appLoadedBox = document.getElementById("app-loaded-box");
+      const usernameField = document.getElementById("username-field");
+      const passwordField = document.getElementById("password-field");
       const urlBox = document.getElementById("url-box");
       const urlText = document.getElementById("portal-url-text");
       const ordersMenuItem = document.getElementById("orders-menu-item");
@@ -705,11 +709,16 @@
       let authResponseVisible = false;
       let entitlementsReceived = false;
       let loginPanelOpened = false;
+      let loginFieldsComplete = false;
+      let credentialResponseVisible = false;
+      let loginFlowComplete = false;
       let appLoadedBoxClicked = false;
       let secureSignInFlowStarted = false;
       let secureSignInResponseVisible = false;
       let secureSignInFlowComplete = false;
       let secureSignInFlowTimer = null;
+      let loginTypingTimer = null;
+      let credentialFlowTimer = null;
       let ordersSelected = false;
       let ordersHandshakeStarted = false;
       let ordersAuthResponseVisible = false;
@@ -735,7 +744,7 @@
           || (currentStep === 2 && !shellAppLoaded)
           || (currentStep === 3 && !appLoadedBoxClicked)
           || (currentStep === 4 && !secureSignInFlowComplete)
-          || (currentStep === 5 && !loginPanelOpened)
+          || (currentStep === 5 && !loginFlowComplete)
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && !nginxResponseVisible)
           || (currentStep === 12 && !ordersHandshakeStarted)
@@ -746,9 +755,9 @@
           ? "Story complete <span aria-hidden=\"true\">✓</span>"
           : "Reveal next <span aria-hidden=\"true\">→</span>";
         if (urlTypingComplete) {
-          if (currentStep === 5 || currentStep === 6) {
+          if (currentStep === 5) {
             urlText.textContent = "/keycloak";
-          } else if (currentStep < 7 || (currentStep >= 7 && currentStep < 11 && !ordersSelected)) {
+          } else if (currentStep < 5 || (currentStep >= 6 && currentStep < 11 && !ordersSelected)) {
             urlText.textContent = "/nexus";
           }
         }
@@ -769,6 +778,9 @@
             && (!item.classList.contains("orders-handshake") || ordersHandshakeVisible)
             && (!item.classList.contains("secure-request") || !secureSignInResponseVisible)
             && (!item.classList.contains("secure-response") || secureSignInResponseVisible)
+            && (!item.classList.contains("credential-field") || loginPanelOpened)
+            && (!item.classList.contains("credential-request") || loginFieldsComplete && !credentialResponseVisible)
+            && (!item.classList.contains("credential-response") || credentialResponseVisible)
             && (!item.classList.contains("menu-preview") || entitlementsReceived);
           item.classList.toggle("is-visible", isVisible);
           item.classList.toggle("is-past",
@@ -777,7 +789,7 @@
             && !(item.classList.contains("secure-response") && currentStep === 5));
           item.classList.toggle("is-retired",
             (item.classList.contains("module-nginx") && currentStep >= 12)
-            || (item.classList.contains("login-panel") && currentStep >= 7));
+            || (item.classList.contains("login-panel") && currentStep >= 6));
           item.classList.toggle("is-superseded",
             (item.classList.contains("module-request") && nginxResponseVisible)
             || (item.classList.contains("module-response") && !nginxResponseVisible)
@@ -804,6 +816,9 @@
         authResponseVisible = false;
         entitlementsReceived = false;
         loginPanelOpened = false;
+        loginFieldsComplete = false;
+        credentialResponseVisible = false;
+        loginFlowComplete = false;
         appLoadedBoxClicked = false;
         secureSignInFlowStarted = false;
         secureSignInResponseVisible = false;
@@ -829,6 +844,20 @@
           window.clearTimeout(shellFlowTimer);
           shellFlowTimer = null;
         }
+        if (secureSignInFlowTimer) {
+          window.clearTimeout(secureSignInFlowTimer);
+          secureSignInFlowTimer = null;
+        }
+        if (loginTypingTimer) {
+          window.clearInterval(loginTypingTimer);
+          loginTypingTimer = null;
+        }
+        if (credentialFlowTimer) {
+          window.clearTimeout(credentialFlowTimer);
+          credentialFlowTimer = null;
+        }
+        usernameField.textContent = "";
+        passwordField.textContent = "";
         setStep(1);
       });
       function startUrlTyping() {
@@ -885,16 +914,40 @@
           continueFromLoadedApp();
         }
       });
-      function openLoginPanel() {
+      function startLoginFlow() {
         if (currentStep !== 5 || loginPanelOpened) return;
         loginPanelOpened = true;
-        setStep(6);
+        setStep(5);
+        const username = "username";
+        const password = "password";
+        let characterIndex = 0;
+        loginTypingTimer = window.setInterval(() => {
+          if (characterIndex < username.length) {
+            characterIndex += 1;
+            usernameField.textContent = username.slice(0, characterIndex);
+          } else if (characterIndex < username.length + password.length) {
+            characterIndex += 1;
+            passwordField.textContent = password.slice(0, characterIndex - username.length);
+          } else {
+            window.clearInterval(loginTypingTimer);
+            loginTypingTimer = null;
+            loginFieldsComplete = true;
+            setStep(5);
+            credentialFlowTimer = window.setTimeout(() => {
+              credentialFlowTimer = null;
+              if (currentStep !== 5) return;
+              credentialResponseVisible = true;
+              loginFlowComplete = true;
+              setStep(5);
+            }, 1000);
+          }
+        }, 90);
       }
-      loginPanel.addEventListener("click", openLoginPanel);
+      loginPanel.addEventListener("click", startLoginFlow);
       loginPanel.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          openLoginPanel();
+          startLoginFlow();
         }
       });
       portalServerNode.addEventListener("click", startPortalHandshake);
@@ -991,7 +1044,7 @@
           || (currentStep === 2 && !shellAppLoaded)
           || (currentStep === 3 && !appLoadedBoxClicked)
           || (currentStep === 4 && !secureSignInFlowComplete)
-          || (currentStep === 5 && !loginPanelOpened)
+          || (currentStep === 5 && !loginFlowComplete)
           || (currentStep === 10 && !ordersSelected)
           || (currentStep === 11 && !nginxResponseVisible)
           || (currentStep === 12 && !ordersHandshakeStarted)
@@ -1019,6 +1072,27 @@
         }
         if (currentStep === 6 && currentStep - 1 < 6) {
           loginPanelOpened = false;
+          loginFieldsComplete = false;
+          credentialResponseVisible = false;
+          loginFlowComplete = false;
+          window.clearInterval(loginTypingTimer);
+          loginTypingTimer = null;
+          window.clearTimeout(credentialFlowTimer);
+          credentialFlowTimer = null;
+          usernameField.textContent = "";
+          passwordField.textContent = "";
+        }
+        if (currentStep === 5 && currentStep - 1 < 5) {
+          loginPanelOpened = false;
+          loginFieldsComplete = false;
+          credentialResponseVisible = false;
+          loginFlowComplete = false;
+          window.clearInterval(loginTypingTimer);
+          loginTypingTimer = null;
+          window.clearTimeout(credentialFlowTimer);
+          credentialFlowTimer = null;
+          usernameField.textContent = "";
+          passwordField.textContent = "";
         }
         if (currentStep === 11 && currentStep - 1 < 11) {
           window.clearTimeout(nginxFlowTimer);
@@ -1045,7 +1119,7 @@
             || (currentStep === 2 && !shellAppLoaded)
             || (currentStep === 3 && !appLoadedBoxClicked)
             || (currentStep === 4 && !secureSignInFlowComplete)
-            || (currentStep === 5 && !loginPanelOpened)
+            || (currentStep === 5 && !loginFlowComplete)
             || (currentStep === 10 && !ordersSelected)
             || (currentStep === 11 && !nginxResponseVisible)
             || (currentStep === 12 && !ordersHandshakeStarted)
@@ -1074,6 +1148,27 @@
           }
           if (currentStep === 6 && currentStep - 1 < 6) {
             loginPanelOpened = false;
+            loginFieldsComplete = false;
+            credentialResponseVisible = false;
+            loginFlowComplete = false;
+            window.clearInterval(loginTypingTimer);
+            loginTypingTimer = null;
+            window.clearTimeout(credentialFlowTimer);
+            credentialFlowTimer = null;
+            usernameField.textContent = "";
+            passwordField.textContent = "";
+          }
+          if (currentStep === 5 && currentStep - 1 < 5) {
+            loginPanelOpened = false;
+            loginFieldsComplete = false;
+            credentialResponseVisible = false;
+            loginFlowComplete = false;
+            window.clearInterval(loginTypingTimer);
+            loginTypingTimer = null;
+            window.clearTimeout(credentialFlowTimer);
+            credentialFlowTimer = null;
+            usernameField.textContent = "";
+            passwordField.textContent = "";
           }
           if (currentStep === 11 && currentStep - 1 < 11) {
             window.clearTimeout(nginxFlowTimer);
