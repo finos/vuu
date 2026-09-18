@@ -61,59 +61,6 @@
         display: block;
       }
 
-      .controls {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .controls-below {
-        justify-content: center;
-        margin-top: 18px;
-      }
-
-      .control {
-        padding: 12px 17px;
-        color: var(--muted-strong);
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.035);
-        cursor: pointer;
-        transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
-      }
-
-      .control:hover:not(:disabled) {
-        color: white;
-        border-color: rgba(91, 214, 226, 0.7);
-        background: rgba(91, 214, 226, 0.1);
-        transform: translateY(-1px);
-      }
-
-      .control:disabled {
-        opacity: 0.35;
-        cursor: default;
-      }
-
-      .control-primary {
-        color: #072034;
-        border-color: transparent;
-        background: linear-gradient(100deg, var(--cyan), #87e7d2);
-        font-weight: 800;
-        box-shadow: 0 8px 22px rgba(91, 214, 226, 0.18);
-      }
-
-      .control-primary:hover:not(:disabled) {
-        color: #072034;
-        border-color: transparent;
-        background: linear-gradient(100deg, #8ae9ef, #b2f5df);
-      }
-
-      .keyboard-hint {
-        margin: 15px 0 0;
-        color: #7189a0;
-        font-size: 12px;
-      }
-
       .visual {
         min-width: 0;
         padding: 22px 22px 18px;
@@ -603,11 +550,6 @@
 
           </svg>
         </section>
-        <div class="controls controls-below">
-          <button class="control" id="start" type="button">Start</button>
-          <button class="control" id="back" type="button" disabled>Back</button>
-          <button class="control control-primary" id="next" type="button">Reveal next <span aria-hidden="true">→</span></button>
-        </div>
       </div>
 
     </main>
@@ -719,9 +661,6 @@
       ];
 
       const presentation = document.getElementById("presentation");
-      const start = document.getElementById("start");
-      const back = document.getElementById("back");
-      const next = document.getElementById("next");
       const portalLoadingShell = document.getElementById("portal-loading-shell");
       const loginPanel = document.getElementById("login-panel");
       const appLoadedBox = document.getElementById("app-loaded-box");
@@ -776,27 +715,6 @@
       function setStep(step) {
         currentStep = Math.max(1, Math.min(stages.length, step));
         presentation.dataset.step = currentStep;
-        back.disabled = currentStep === 1;
-        next.disabled = currentStep === stages.length
-          || (currentStep === 1 && !urlTypingComplete)
-          || (currentStep === 2 && !shellAppLoaded)
-          || (currentStep === 3 && !appLoadedBoxClicked)
-          || (currentStep === 4 && !secureSignInFlowComplete)
-          || (currentStep === 5 && !loginFlowComplete)
-          || (currentStep === 6 && !portalFlowStarted)
-          || (currentStep === 7 && !portalFlowComplete)
-          || (currentStep === 8 && !portalWebSocketStarted)
-          || (currentStep === 9 && !entitlementsReceived)
-          || (currentStep === 10 && !ordersSelected)
-          || (currentStep === 11 && (!nginxResponseVisible || !ordersAppClicked))
-          || (currentStep === 12 && !ordersHandshakeStarted)
-          || (currentStep === 13 && !ordersTokenResponseVisible)
-          || (currentStep === 14 && !ordersWebSocketStarted)
-          || (currentStep === 15 && !ordersLoginSent)
-          || (currentStep === 16 && !ordersDataVisible);
-        next.innerHTML = currentStep === stages.length
-          ? "Story complete <span aria-hidden=\"true\">✓</span>"
-          : "Reveal next <span aria-hidden=\"true\">→</span>";
         if (urlTypingComplete) {
           if (currentStep === 5) {
             urlText.textContent = "/keycloak";
@@ -846,75 +764,6 @@
 
       }
 
-      start.addEventListener("click", () => {
-        if (urlTypingTimer) {
-          window.clearInterval(urlTypingTimer);
-          urlTypingTimer = null;
-        }
-        portalHandshakeStarted = false;
-        authResponseVisible = false;
-        portalFlowStarted = false;
-        portalFlowComplete = false;
-        portalWebSocketStarted = false;
-        portalLoginResponseVisible = false;
-        entitlementsReceived = false;
-        loginPanelOpened = false;
-        loginFieldsComplete = false;
-        credentialResponseVisible = false;
-        loginFlowComplete = false;
-        appLoadedBoxClicked = false;
-        secureSignInFlowStarted = false;
-        secureSignInResponseVisible = false;
-        secureSignInFlowComplete = false;
-        ordersSelected = false;
-        ordersAppClicked = false;
-        ordersHandshakeStarted = false;
-        ordersAuthResponseVisible = false;
-        ordersTokenResponseVisible = false;
-        ordersWebSocketStarted = false;
-        ordersLoginSent = false;
-        ordersLoginSuccessVisible = false;
-        ordersDataVisible = false;
-        urlTypingStarted = false;
-        urlTypingComplete = false;
-        urlText.textContent = "";
-        nginxFlowStarted = false;
-        nginxResponseVisible = false;
-        if (nginxFlowTimer) {
-          window.clearTimeout(nginxFlowTimer);
-          nginxFlowTimer = null;
-        }
-        shellFlowStarted = false;
-        shellResponseVisible = false;
-        shellAppLoaded = false;
-        if (shellFlowTimer) {
-          window.clearTimeout(shellFlowTimer);
-          shellFlowTimer = null;
-        }
-        if (secureSignInFlowTimer) {
-          window.clearTimeout(secureSignInFlowTimer);
-          secureSignInFlowTimer = null;
-        }
-        if (loginTypingTimer) {
-          window.clearInterval(loginTypingTimer);
-          loginTypingTimer = null;
-        }
-        if (credentialFlowTimer) {
-          window.clearTimeout(credentialFlowTimer);
-          credentialFlowTimer = null;
-        }
-        if (portalAuthTimer) {
-          window.clearTimeout(portalAuthTimer);
-          portalAuthTimer = null;
-        }
-        if (ordersFlowTimer) {
-          window.clearTimeout(ordersFlowTimer);
-          ordersFlowTimer = null;
-        }
-        usernameField.textContent = "";
-        passwordField.textContent = "";
-        setStep(1);
-      });
       function startUrlTyping() {
         if (currentStep !== 1 || urlTypingStarted) return;
         urlTypingStarted = true;
@@ -1154,111 +1003,6 @@
           event.preventDefault();
           openOrdersApp();
         }
-      });
-      next.addEventListener("click", () => {
-        if (
-          (currentStep === 1 && !urlTypingComplete)
-          || (currentStep === 2 && !shellAppLoaded)
-          || (currentStep === 3 && !appLoadedBoxClicked)
-          || (currentStep === 4 && !secureSignInFlowComplete)
-          || (currentStep === 5 && !loginFlowComplete)
-          || (currentStep === 6 && !portalFlowStarted)
-          || (currentStep === 7 && !portalFlowComplete)
-          || (currentStep === 8 && !portalWebSocketStarted)
-          || (currentStep === 9 && !entitlementsReceived)
-          || (currentStep === 10 && !ordersSelected)
-          || (currentStep === 11 && (!nginxResponseVisible || !ordersAppClicked))
-          || (currentStep === 12 && !ordersHandshakeStarted)
-          || (currentStep === 13 && !ordersTokenResponseVisible)
-          || (currentStep === 14 && !ordersWebSocketStarted)
-          || (currentStep === 15 && !ordersLoginSent)
-          || (currentStep === 16 && !ordersDataVisible)
-        ) return;
-        setStep(currentStep + 1);
-      });
-      back.addEventListener("click", () => {
-        if (currentStep === 2 && currentStep - 1 < 2) {
-          window.clearTimeout(shellFlowTimer);
-          shellFlowTimer = null;
-          shellFlowStarted = false;
-          shellResponseVisible = false;
-          shellAppLoaded = false;
-        }
-        if (currentStep === 4 && currentStep - 1 < 4) {
-          window.clearTimeout(secureSignInFlowTimer);
-          secureSignInFlowTimer = null;
-          secureSignInFlowStarted = false;
-          secureSignInResponseVisible = false;
-          secureSignInFlowComplete = false;
-          appLoadedBoxClicked = false;
-        }
-        if (currentStep === 6 && currentStep - 1 < 6) {
-          loginPanelOpened = false;
-          loginFieldsComplete = false;
-          credentialResponseVisible = false;
-          loginFlowComplete = false;
-          window.clearInterval(loginTypingTimer);
-          loginTypingTimer = null;
-          window.clearTimeout(credentialFlowTimer);
-          credentialFlowTimer = null;
-          usernameField.textContent = "";
-          passwordField.textContent = "";
-        }
-        if (currentStep === 7 && currentStep - 1 < 7) {
-          window.clearTimeout(portalAuthTimer);
-          portalAuthTimer = null;
-          portalFlowStarted = false;
-          portalHandshakeStarted = false;
-          authResponseVisible = false;
-          portalFlowComplete = false;
-        }
-        if ((currentStep === 8 || currentStep === 9) && currentStep - 1 < 9) {
-          window.clearTimeout(portalAuthTimer);
-          portalAuthTimer = null;
-          portalWebSocketStarted = false;
-          portalLoginResponseVisible = false;
-          entitlementsReceived = false;
-        }
-        if (currentStep === 5 && currentStep - 1 < 5) {
-          loginPanelOpened = false;
-          loginFieldsComplete = false;
-          credentialResponseVisible = false;
-          loginFlowComplete = false;
-          window.clearInterval(loginTypingTimer);
-          loginTypingTimer = null;
-          window.clearTimeout(credentialFlowTimer);
-          credentialFlowTimer = null;
-          usernameField.textContent = "";
-          passwordField.textContent = "";
-        }
-        if (currentStep === 11 && currentStep - 1 < 11) {
-          window.clearTimeout(nginxFlowTimer);
-          nginxFlowTimer = null;
-          nginxFlowStarted = false;
-          nginxResponseVisible = false;
-        }
-        if (currentStep === 12 && currentStep - 1 < 12) {
-          window.clearTimeout(ordersFlowTimer);
-          ordersFlowTimer = null;
-          ordersAppClicked = false;
-          ordersHandshakeStarted = false;
-          ordersAuthResponseVisible = false;
-          ordersTokenResponseVisible = false;
-        }
-        if (currentStep === 13 && currentStep - 1 < 13) {
-          window.clearTimeout(ordersFlowTimer);
-          ordersFlowTimer = null;
-          ordersAuthResponseVisible = false;
-          ordersTokenResponseVisible = false;
-        }
-        if (currentStep === 15 && currentStep - 1 < 15) {
-          ordersWebSocketStarted = false;
-          ordersLoginSent = false;
-        }
-        if (currentStep === 16 && currentStep - 1 < 16) {
-          ordersLoginSuccessVisible = false;
-        }
-        setStep(currentStep - 1);
       });
       document.addEventListener("keydown", (event) => {
         if (event.key === "ArrowRight" || event.key === " ") {
