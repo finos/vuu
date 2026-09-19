@@ -1,26 +1,28 @@
 package org.finos.vuu.core.module.metrics
 
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
-import org.finos.toolbox.lifecycle.{LifeCycleComponentContext, LifecycleContainer, LifecycleEnabled}
+import org.finos.toolbox.lifecycle.{LifeCycleComponentContext, LifecycleContainer}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.core.table.TableMockFactory.*
 import org.finos.vuu.core.table.{DataTable, RowData, TableContainer}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
-import org.scalamock.scalatest.MockFactory
+import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar.mock
 
-class MetricsTableProviderTest extends AnyFeatureSpec with Matchers with MockFactory {
+class MetricsTableProviderTest extends AnyFeatureSpec with Matchers {
   private implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl()
   private implicit val clock: Clock = new TestFriendlyClock(10001)
-  private implicit val lifecycleContainer: LifecycleContainer = stub[LifecycleContainer]
-  private val lifeCycleComponentContext = stub[LifeCycleComponentContext]
-  (lifecycleContainer.apply _).when(*).returns(lifeCycleComponentContext)
-  (lifeCycleComponentContext.dependsOn: LifecycleEnabled => Unit).when(*).returns((): Unit)
-
+  private implicit val lifecycleContainer: LifecycleContainer = mock[LifecycleContainer]
+  private val lifeCycleComponentContext = mock[LifeCycleComponentContext]
+  when(lifecycleContainer.apply(any())).thenReturn(lifeCycleComponentContext)
+  
   private val joinProvider = new TestFriendlyJoinTableProvider()
-  private val mockTable = stub[DataTable]
+  private val mockTable = mock[DataTable]
   private val tableContainer = new TableContainer(joinProvider)
 
   private val metricsTableProvider = new MetricsTableProvider(mockTable, tableContainer)
@@ -35,10 +37,10 @@ class MetricsTableProviderTest extends AnyFeatureSpec with Matchers with MockFac
 
       metricsTableProvider.runOnce()
 
-      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify("instrumentsSessionTable_1", *).once()
-      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify("instrumentsSessionTable_2", *).once()
-      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify("fills_table", *).once()
-      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify("other", *).once()
+      verify(mockTable, times(1)).processUpdate(ArgumentMatchers.eq("instrumentsSessionTable_1"), any[RowData]())
+      verify(mockTable, times(1)).processUpdate(ArgumentMatchers.eq("instrumentsSessionTable_2"), any[RowData]())
+      verify(mockTable, times(1)).processUpdate(ArgumentMatchers.eq("fills_table"), any[RowData]())
+      verify(mockTable, times(1)).processUpdate(ArgumentMatchers.eq("other"), any[RowData]())
     }
   }
 }

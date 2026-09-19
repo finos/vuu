@@ -5,14 +5,15 @@ import com.clickhouse.client.api.query.GenericRecord
 import org.finos.vuu.core.table.DataType
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, EpochTimestampNano, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.plugin.virtualized.api.{SimpleVirtualizedSessionTableDef, VirtualizedSessionTableColumn}
-import org.scalamock.scalatest.MockFactory
+import org.mockito.Mockito.{verify, when}
 import org.scalatest.GivenWhenThen
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 
 import java.time.{Instant, ZoneId, ZonedDateTime}
 
-class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFactory with GivenWhenThen {
+class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockitoSugar with GivenWhenThen {
   behavior of "ClickHouseRowDataMapper (per-type tests)"
 
   private def col(name: String, dataType: Class[_]): VirtualizedSessionTableColumn =
@@ -33,12 +34,11 @@ class ClickHouseRowDataMapperTest extends AnyFlatSpec with Matchers with MockFac
       remoteColumns = columns
     )
 
-    (v1.hasValue(_:String)).expects("strCol").returning(true)
-    (v1.hasValue(_:String)).expects("emptyStrCol").returning(true)
-
-    (v1.getString(_:String)).expects("strCol").returning("hello")
-    (v1.getString(_:String)).expects("emptyStrCol").returning("")
-    (v1.getString(_:String)).expects("pk").returning("key-1")
+    when(v1.hasValue("strCol")).thenReturn(true)
+    when(v1.hasValue("emptyStrCol")).thenReturn(true)
+    when(v1.getString("strCol")).thenReturn("hello")
+    when(v1.getString("emptyStrCol")).thenReturn("")
+    when(v1.getString("pk")).thenReturn("key-1")
 
     When("we map the record")
     val mapper = ClickHouseRowDataMapper(tableDef)

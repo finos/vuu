@@ -1,18 +1,17 @@
 package org.finos.vuu.plugin.virtualized.api
 
-import org.finos.vuu.core.table.TableContainer
 import org.finos.vuu.net.FilterSpec
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePluginType
 import org.finos.vuu.viewport.ViewPort
-import org.scalamock.scalatest.MockFactory
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 
 class VirtualizedSessionTableDefTest extends AnyFeatureSpec
   with Matchers
   with GivenWhenThen
-  with MockFactory {
+  with MockitoSugar {
 
   Feature("Virtualized Session Table Definitions") {
 
