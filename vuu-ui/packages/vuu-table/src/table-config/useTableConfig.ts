@@ -1,17 +1,19 @@
-import { DataSource } from "@vuu-ui/vuu-data-types";
+import type { DataSource } from "@vuu-ui/vuu-data-types";
 import {
   ColumnChangeSource,
   ColumnModel,
+} from "@vuu-ui/vuu-table-extras";
+import type {
   ColumnsChangeHandler,
   TableDisplayAttributeChangeHandler,
 } from "@vuu-ui/vuu-table-extras";
 import type {
   ColumnDescriptor,
+  TableConfig,
   TableConfigChangeHandler,
 } from "@vuu-ui/vuu-table-types";
-import { TableConfig } from "@vuu-ui/vuu-table-types";
 import { useCallback, useMemo, useState } from "react";
-import { TableProps } from "../Table";
+import type { TableProps } from "../Table";
 
 export interface TableConfigHookProps extends Pick<TableProps, "config"> {
   availableColumns: readonly ColumnDescriptor[];
@@ -34,17 +36,23 @@ export const useTableConfig = ({
         changeSource === "column-picker" ||
         changeSource === "column-settings"
       ) {
-        if (
-          changeDescriptor?.type === "calculated-column-added" ||
-          changeDescriptor?.type === "column-added"
-        ) {
-          dataSource.columns = dataSource.columns.concat(
-            changeDescriptor.column.name,
-          );
-        } else if (changeDescriptor?.type === "column-removed") {
-          dataSource.columns = dataSource.columns.filter(
-            (name) => name !== changeDescriptor.column.name,
-          );
+        if (changeDescriptor && "column" in changeDescriptor) {
+          const isServerColumn = changeDescriptor.column.source !== "client";
+
+          if (isServerColumn) {
+            if (
+              changeDescriptor.type === "calculated-column-added" ||
+              changeDescriptor.type === "column-added"
+            ) {
+              dataSource.columns = dataSource.columns.concat(
+                changeDescriptor.column.name,
+              );
+            } else if (changeDescriptor.type === "column-removed") {
+              dataSource.columns = dataSource.columns.filter(
+                (name) => name !== changeDescriptor.column.name,
+              );
+            }
+          }
         }
 
         let newConfig: TableConfig | undefined = undefined;

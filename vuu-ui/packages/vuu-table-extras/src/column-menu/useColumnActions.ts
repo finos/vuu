@@ -1,8 +1,8 @@
 /* eslint-disable no-sequences */
-import { MenuActionHandler } from "@vuu-ui/vuu-context-menu";
-import { Filter } from "@vuu-ui/vuu-filter-types";
-import { VuuFilter } from "@vuu-ui/vuu-protocol-types";
-import {
+import type { MenuActionHandler } from "@vuu-ui/vuu-context-menu";
+import type { Filter } from "@vuu-ui/vuu-filter-types";
+import type { VuuFilter } from "@vuu-ui/vuu-protocol-types";
+import type {
   ColumnDescriptor,
   ColumnDisplayAction,
   RuntimeColumnDescriptor,
@@ -16,8 +16,8 @@ import {
   setAggregations,
   setSortColumn,
 } from "@vuu-ui/vuu-utils";
-import { ColumnMenuActionType } from "./column-menu-utils";
-import { DataSource } from "@vuu-ui/vuu-data-types";
+import type { ColumnMenuActionType } from "./column-menu-utils";
+import type { DataSource } from "@vuu-ui/vuu-data-types";
 
 export interface ContextMenuOptions {
   column?: RuntimeColumnDescriptor;
@@ -42,35 +42,140 @@ export const useColumnActions = ({
   > = (columnMenuActionType, column): boolean => {
     if (column && dataSource) {
       // prettier-ignore
-      switch(columnMenuActionType){
+      switch (columnMenuActionType) {
         // 1) DataSource operations ...
-        case "sort-asc": return (dataSource.sort = setSortColumn(dataSource.sort, column, "A")), true;
-        case "sort-dsc": return (dataSource.sort = setSortColumn(dataSource.sort, column, "D")), true;
-        case "remove-sort": return (dataSource.sort = {sortDefs:[]}), true;
-        case "sort-add-asc": return (dataSource.sort = addSortColumn(dataSource.sort, column, "A")), true;
-        case "sort-add-dsc": return (dataSource.sort = addSortColumn(dataSource.sort, column, "D")), true;
-        case "group-column": return (dataSource.groupBy = [column.name]), true;
-        case "add-to-group": return (dataSource.groupBy = addGroupColumn(dataSource.groupBy ?? [], column)), true;
-        case "remove-group": return (dataSource.groupBy = []), true;
-        case "remove-from-group": return (dataSource.groupBy = removeGroupColumn(dataSource.groupBy ?? [], column)), true;
+        case "sort-asc":
+          return (
+            (dataSource.sort = setSortColumn(dataSource.sort, column, "A")),
+            true
+          );
+        case "sort-dsc":
+          return (
+            (dataSource.sort = setSortColumn(dataSource.sort, column, "D")),
+            true
+          );
+        case "remove-sort":
+          return (dataSource.sort = { sortDefs: [] }), true;
+        case "sort-add-asc":
+          return (
+            (dataSource.sort = addSortColumn(dataSource.sort, column, "A")),
+            true
+          );
+        case "sort-add-dsc":
+          return (
+            (dataSource.sort = addSortColumn(dataSource.sort, column, "D")),
+            true
+          );
+        case "group-column":
+          return (dataSource.groupBy = [column.name]), true;
+        case "add-to-group":
+          return (
+            (dataSource.groupBy = addGroupColumn(
+              dataSource.groupBy ?? [],
+              column,
+            )),
+            true
+          );
+        case "remove-group":
+          return (dataSource.groupBy = []), true;
+        case "remove-from-group":
+          return (
+            (dataSource.groupBy = removeGroupColumn(
+              dataSource.groupBy ?? [],
+              column,
+            )),
+            true
+          );
         case "remove-column": {
-          dataSource.columns = dataSource.columns.filter(name => name !== column.name);
-          onColumnDisplayAction?.({type: "removeColumn", column});
+          if (column.source !== "client") {
+            dataSource.columns = dataSource.columns.filter(
+              (name) => name !== column.name,
+            );
+          }
+          onColumnDisplayAction?.({ type: "removeColumn", column });
           return true;
         }
-        case "agg-avg": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Average)), true;
-        case "agg-high": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, High)), true;
-        case "agg-low": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Low)), true;
-        case "agg-count": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Count)), true;
-        case "agg-distinct": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Distinct)), true;
-        case "agg-sum": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Sum)), true;
+        case "agg-avg":
+          return (
+            (dataSource.aggregations = setAggregations(
+              dataSource.aggregations,
+              column,
+              Average,
+            )),
+            true
+          );
+        case "agg-high":
+          return (
+            (dataSource.aggregations = setAggregations(
+              dataSource.aggregations,
+              column,
+              High,
+            )),
+            true
+          );
+        case "agg-low":
+          return (
+            (dataSource.aggregations = setAggregations(
+              dataSource.aggregations,
+              column,
+              Low,
+            )),
+            true
+          );
+        case "agg-count":
+          return (
+            (dataSource.aggregations = setAggregations(
+              dataSource.aggregations,
+              column,
+              Count,
+            )),
+            true
+          );
+        case "agg-distinct":
+          return (
+            (dataSource.aggregations = setAggregations(
+              dataSource.aggregations,
+              column,
+              Distinct,
+            )),
+            true
+          );
+        case "agg-sum":
+          return (
+            (dataSource.aggregations = setAggregations(
+              dataSource.aggregations,
+              column,
+              Sum,
+            )),
+            true
+          );
         // 2) Column display options ...
-        case "hide-column": return onColumnDisplayAction?.({type: "hideColumn", column}), true;
-        case "pin-column-left": return onColumnDisplayAction?.({type: "pinColumn", column, pin: "left"}), true;
-        case "pin-column-right": return onColumnDisplayAction?.({type: "pinColumn", column, pin: "right"}), true;
-        case "unpin-column": return onColumnDisplayAction?.({type: "pinColumn", column, pin: false}), true
+        case "hide-column":
+          return onColumnDisplayAction?.({ type: "hideColumn", column }), true;
+        case "pin-column-left":
+          return (
+            onColumnDisplayAction?.({ type: "pinColumn", column, pin: "left" }),
+            true
+          );
+        case "pin-column-right":
+          return (
+            onColumnDisplayAction?.({
+              type: "pinColumn",
+              column,
+              pin: "right",
+            }),
+            true
+          );
+        case "unpin-column":
+          return (
+            onColumnDisplayAction?.({ type: "pinColumn", column, pin: false }),
+            true
+          );
         default:
-          logUnhandledMessage(columnMenuActionType, `[vuu-table-extras] useColumnActions handleContextMenuAction, unhandled columnMenuActionType`)
+          logUnhandledMessage(
+            columnMenuActionType,
+            "[vuu-table-extras] useColumnActions handleContextMenuAction, unhandled columnMenuActionType",
+          );
       }
     }
     return false;
