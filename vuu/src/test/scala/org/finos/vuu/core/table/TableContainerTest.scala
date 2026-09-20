@@ -15,7 +15,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 
-class TableContainerTest extends AnyFeatureSpec with Matchers with BeforeAndAfterEach with MockitoSugar {
+class TableContainerTest extends AnyFeatureSpec with Matchers with BeforeAndAfterEach {
   implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl()
   implicit val clock: Clock = new TestFriendlyClock(10001)
   private var tableContainer: TableContainer = _
@@ -107,7 +107,7 @@ class TableContainerTest extends AnyFeatureSpec with Matchers with BeforeAndAfte
 
 }
 
-object TableMockFactory extends AnyFlatSpec {
+object TableMockFactory extends AnyFlatSpec with MockitoSugar {
   private def createTestTableDef(name: String, moduleName: Option[String] = None, isSessionDef: Boolean = false): TableDef = {
     val tableDef = if (isSessionDef) {
       new SessionTableDef(name, "id", Array.empty)
