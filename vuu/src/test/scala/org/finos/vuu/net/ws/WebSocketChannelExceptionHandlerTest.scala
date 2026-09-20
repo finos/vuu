@@ -6,9 +6,9 @@ import org.mockito.Mockito.verify
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatestplus.mockito.MockitoSugar.mock
+import org.scalatestplus.mockito.MockitoSugar
 
-class WebSocketChannelExceptionHandlerTest extends AnyFeatureSpec with GivenWhenThen with Matchers {
+class WebSocketChannelExceptionHandlerTest extends AnyFeatureSpec with GivenWhenThen with Matchers with MockitoSugar {
 
   Feature("WebSocket Channel Exception Handling") {
 

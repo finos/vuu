@@ -13,9 +13,9 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatestplus.mockito.MockitoSugar.mock
+import org.scalatestplus.mockito.MockitoSugar
 
-class TableContainerTest extends AnyFeatureSpec with Matchers with BeforeAndAfterEach {
+class TableContainerTest extends AnyFeatureSpec with Matchers with BeforeAndAfterEach with MockitoSugar {
   implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl()
   implicit val clock: Clock = new TestFriendlyClock(10001)
   private var tableContainer: TableContainer = _

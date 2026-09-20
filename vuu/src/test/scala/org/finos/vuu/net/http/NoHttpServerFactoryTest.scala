@@ -4,9 +4,9 @@ import org.finos.vuu.net.rest.RestService
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatestplus.mockito.MockitoSugar.mock
+import org.scalatestplus.mockito.MockitoSugar
 
-class NoHttpServerFactoryTest extends AnyFeatureSpec with Matchers with GivenWhenThen {
+class NoHttpServerFactoryTest extends AnyFeatureSpec with Matchers with GivenWhenThen with MockitoSugar {
 
   Feature("NoHttpServerFactory server creation") {
 
