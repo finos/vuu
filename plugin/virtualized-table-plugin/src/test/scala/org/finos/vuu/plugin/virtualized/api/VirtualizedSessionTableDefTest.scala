@@ -8,6 +8,8 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 
+import java.time.Duration
+
 class VirtualizedSessionTableDefTest extends AnyFeatureSpec
   with Matchers
   with GivenWhenThen
@@ -44,6 +46,9 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       And("it should have no range options by default")
       simpleDef.options.rangeSettings.maxRangeEnd shouldEqual Int.MaxValue
       simpleDef.options.rangeSettings.maxRangeWidth shouldEqual 1000
+
+      And("default refresh rate should be 250 ms")
+      simpleDef.getRefreshRate shouldEqual Duration.ofMillis(250)
     }
 
     Scenario("Creating an AliasedVirtualizedSessionTableDef") {
@@ -87,8 +92,10 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       And("it should have no range options by default")
       aliasedDef.options.rangeSettings.maxRangeEnd shouldEqual Int.MaxValue
       aliasedDef.options.rangeSettings.maxRangeWidth shouldEqual 1000
-    }
 
+      And("default refresh rate should be 250 ms")
+      aliasedDef.getRefreshRate shouldEqual Duration.ofMillis(250)
+    }
 
   }
 }
