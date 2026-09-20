@@ -34,7 +34,7 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
   def needsRefresh(viewPort: ViewPort): Boolean = {
     viewPort.getStructuralHashCode() != lastViewPortHash ||
       viewPort.getRange != lastViewPortRange ||
-      nextRefreshTime < clock.now()
+      nextRefreshTime <= clock.now()
   }
   
   def processUpdateForIndex(index: Int, rowKey: String, rowData: RowWithData, timeStamp: Long): Unit = {

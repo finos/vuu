@@ -1,20 +1,23 @@
 package org.finos.vuu.plugin.virtualized.table
 
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
-import org.finos.toolbox.time.{Clock, TestFriendlyClock}
+import org.finos.toolbox.time.TestFriendlyClock
 import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.plugin.virtualized.api.{SimpleVirtualizedSessionTableDef, VirtualizedSessionTableColumnBuilder}
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
+import org.finos.vuu.viewport.{EmptyRange, ViewPort, ViewPortRange}
+import org.mockito.Mockito.when
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 
 
-class VirtualizedSessionTableTest extends AnyFeatureSpec with Matchers with GivenWhenThen {
+class VirtualizedSessionTableTest extends AnyFeatureSpec with Matchers with GivenWhenThen with MockitoSugar {
 
   private implicit val metrics: MetricsProvider = new MetricsProviderImpl
-  private implicit val clock: Clock = new TestFriendlyClock(1311544800L)
+  private implicit val clock: TestFriendlyClock = new TestFriendlyClock(0L)
 
   private val sessionId = ClientSessionId("AAAA", "channel")
   private val joinProvider = new TestFriendlyJoinTableProvider
@@ -157,6 +160,109 @@ class VirtualizedSessionTableTest extends AnyFeatureSpec with Matchers with Give
 
     Scenario("WHEN row as well as the row index are the same THEN should return false") {
       table.hasRowChangedAtIndex(0, row1.copy()) should equal(false)
+    }
+
+  }
+
+  Feature("Refresh behaviour") {
+
+    Scenario("Newly initialized table needs refresh by default") {
+      Given("a VirtualizedSessionTable instance and a mock viewport")
+      val table = new VirtualizedSessionTable(sessionId, ordersTableDef, joinProvider)
+
+      val mockViewport = mock[ViewPort]
+      when(mockViewport.getStructuralHashCode()).thenReturn(1)
+      when(mockViewport.getRange).thenReturn(EmptyRange)
+
+      Then("needsRefresh should evaluate to true before any refresh finish")
+      table.needsRefresh(mockViewport) shouldBe true
+    }
+
+    Scenario("needsRefresh evaluates to false when viewport state and timing is before next refresh") {
+      Given("a VirtualizedSessionTable with implicit dependencies")
+      val table = new VirtualizedSessionTable(sessionId, ordersTableDef, joinProvider)
+
+      And("a ViewPort matching recorded refresh state")
+      val viewPortRange = ViewPortRange.apply(0, 100)
+      val mockViewport = mock[ViewPort]
+      val viewPortHash = 42
+      val nextRefreshTime = 1000L
+
+      when(mockViewport.getStructuralHashCode()).thenReturn(viewPortHash)
+      when(mockViewport.getRange).thenReturn(viewPortRange)
+
+      When("finishRefresh is called and clock is before nextRefreshTime")
+      table.finishRefresh(viewPortHash, viewPortRange, nextRefreshTime)
+
+      Then("needsRefresh should return false")
+      table.needsRefresh(mockViewport) shouldBe false
+    }
+
+    Scenario("needsRefresh evaluates to true when viewport state and timing is after next refresh") {
+      Given("a VirtualizedSessionTable with implicit dependencies")
+      val table = new VirtualizedSessionTable(sessionId, ordersTableDef, joinProvider)
+
+      And("a ViewPort matching recorded refresh state")
+      val viewPortRange = ViewPortRange.apply(0, 100)
+      val mockViewport = mock[ViewPort]
+      val viewPortHash = 42
+      val nextRefreshTime = 1000L
+
+      when(mockViewport.getStructuralHashCode()).thenReturn(viewPortHash)
+      when(mockViewport.getRange).thenReturn(viewPortRange)
+
+      When("finishRefresh is called and clock advances by refresh time")
+      table.finishRefresh(viewPortHash, viewPortRange, nextRefreshTime)
+      clock.advanceBy(nextRefreshTime)
+
+      Then("needsRefresh should return true")
+      table.needsRefresh(mockViewport) shouldBe true
+    }
+
+    Scenario("needsRefresh evaluates to true when viewport hash changes") {
+      Given("a VirtualizedSessionTable with implicit dependencies")
+      val table = new VirtualizedSessionTable(sessionId, ordersTableDef, joinProvider)
+
+      And("a ViewPort matching recorded refresh state")
+      val viewPortRange = ViewPortRange.apply(0, 100)
+      val mockViewport = mock[ViewPort]
+      val viewPortHash = 42
+      val nextRefreshTime = 1000L
+
+      when(mockViewport.getStructuralHashCode()).thenReturn(viewPortHash)
+      when(mockViewport.getRange).thenReturn(viewPortRange)
+
+      When("finishRefresh is called")
+      table.finishRefresh(viewPortHash, viewPortRange, nextRefreshTime)
+
+      And("structural hashcode changes")
+      when(mockViewport.getStructuralHashCode()).thenReturn(viewPortHash + 1)
+
+      Then("needsRefresh should return true")
+      table.needsRefresh(mockViewport) shouldBe true
+    }
+
+    Scenario("needsRefresh evaluates to true when viewport range changes") {
+      Given("a VirtualizedSessionTable with implicit dependencies")
+      val table = new VirtualizedSessionTable(sessionId, ordersTableDef, joinProvider)
+
+      And("a ViewPort matching recorded refresh state")
+      val viewPortRange = ViewPortRange.apply(0, 100)
+      val mockViewport = mock[ViewPort]
+      val viewPortHash = 42
+      val nextRefreshTime = 1000L
+
+      when(mockViewport.getStructuralHashCode()).thenReturn(viewPortHash)
+      when(mockViewport.getRange).thenReturn(viewPortRange)
+
+      When("finishRefresh is called")
+      table.finishRefresh(viewPortHash, viewPortRange, nextRefreshTime)
+
+      And("range changes")
+      when(mockViewport.getRange).thenReturn(ViewPortRange.apply(10, 110))
+
+      Then("needsRefresh should return true")
+      table.needsRefresh(mockViewport) shouldBe true
     }
 
   }
