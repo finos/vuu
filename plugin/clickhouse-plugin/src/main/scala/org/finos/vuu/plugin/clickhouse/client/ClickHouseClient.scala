@@ -22,7 +22,7 @@ class ClickHouseClient(val options: ClickHouseClientOptions)
     client match {
       case Some(c) =>
         val response = try {
-          logger.debug(s"Executing query \"$sql\" with params $params")
+          logger.trace(s"Executing query \"$sql\" with params $params")
           c.queryRecords(sql, params.asJava).get()
         } catch {
           case e: ExecutionException =>
@@ -45,7 +45,7 @@ class ClickHouseClient(val options: ClickHouseClientOptions)
     client match {
       case Some(c) =>
         val response = try {
-          logger.debug(s"Executing update \"$sql\" with params $params")
+          logger.trace(s"Executing update \"$sql\" with params $params")
           c.query(sql, params.asJava).get()
         } catch {
           case e: ExecutionException =>

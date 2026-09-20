@@ -1,7 +1,8 @@
 package org.finos.vuu.plugin.virtualized.viewport
 
 import org.finos.vuu.core.table.DataTable
-import org.finos.vuu.provider.{Provider, VirtualizedProvider}
+import org.finos.vuu.plugin.virtualized.provider.VirtualizedProvider
+import org.finos.vuu.provider.Provider
 import org.finos.vuu.viewport.ViewPort
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.featurespec.AnyFeatureSpec

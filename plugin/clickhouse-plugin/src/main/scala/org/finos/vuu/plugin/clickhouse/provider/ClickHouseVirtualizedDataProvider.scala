@@ -10,8 +10,8 @@ import org.finos.vuu.plugin.clickhouse.provider.filter.ClickHouseFilterFactory
 import org.finos.vuu.plugin.clickhouse.provider.sort.ClickHouseSortFactory
 import org.finos.vuu.plugin.clickhouse.provider.typeahead.ClickHouseTypeAheadProvider
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
+import org.finos.vuu.plugin.virtualized.provider.VirtualizedProvider
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedSessionTable, VirtualizedViewPortKeys}
-import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.viewport.ViewPort
 
 class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, client: ClickHouseClient)(using clock: Clock)
@@ -24,16 +24,6 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
   private val sortFactory = ClickHouseSortFactory(tableDef)
   private val permissionFunction = tableDef.getRemotePermissionFilterSpecFunction
   private val refreshRate = tableDef.getRefreshRate.toMillis
-  private val logAt = new LogAtFrequency(10_000)
-
-  override def shouldRun(viewPort: ViewPort): Boolean = {
-    viewPort.table.asTable match {
-      case tbl: VirtualizedSessionTable => tbl.needsRefresh(viewPort)
-      case _ =>
-        logger.warn("[ClickHouseVirtualizedDataProvider] Table is not a VirtualizedSessionTable")
-        false
-    }
-  }
   
   override def runOnceInternal(viewPort: ViewPort): Unit = {
     logger.trace("[ClickHouseVirtualizedDataProvider] Starting runOnce")
@@ -90,15 +80,21 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
         val (millisSetKeys, _) = timeIt { viewPort.setKeys(new VirtualizedViewPortKeys(tableKeys)) }
 
         logger.trace("[ClickHouseVirtualizedDataProvider] Finish refresh")
-        val (millisHashRange, _) = timeIt {
+        val (millisFinishRefresh, _) = timeIt {
           tbl.finishRefresh(structuralHash, viewPortRange, clock.now() + refreshRate)
         }
 
-        if (logAt.shouldLog()) {
-          logger.debug(
-            s"[ClickHouseVirtualizedDataProvider] Complete runOnce dataQuery=$dataQueryMillis millisRange=$millisRange millisSize=$millisSize millisRows=$millisRows millisGetKeys=$millisGetKeys millisSetKeys=$millisSetKeys millisHashRange=$millisHashRange"
-          )
-        }
+        logger.debug(
+          "[ClickHouseVirtualizedDataProvider] Complete runOnce on {}. dataQuery={} millisRange={} millisSize={} millisRows={} millisGetKeys={} millisSetKeys={} millisFinishRefresh={}",
+          viewPort.id,
+          dataQueryMillis,
+          millisRange,
+          millisSize,
+          millisRows,
+          millisGetKeys,
+          millisSetKeys,
+          millisFinishRefresh
+        )       
       case _ =>
         logger.warn("[ClickHouseVirtualizedDataProvider] Table is not a VirtualizedSessionTable")
     }

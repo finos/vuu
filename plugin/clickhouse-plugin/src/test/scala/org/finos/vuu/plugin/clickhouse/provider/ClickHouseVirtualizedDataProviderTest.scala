@@ -16,7 +16,7 @@ import org.finos.vuu.plugin.clickhouse.module.ClickHouseTableModule
 import org.finos.vuu.plugin.clickhouse.module.ClickHouseTableModule.{NO_SELL_TABLE_NAME, TABLE_NAME}
 import org.finos.vuu.plugin.clickhouse.util.ClickHouseOrderCreator
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
-import org.finos.vuu.provider.VirtualizedProvider
+import org.finos.vuu.plugin.virtualized.provider.VirtualizedProvider
 import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.finos.vuu.viewport.{DefaultRange, ViewPortRange}

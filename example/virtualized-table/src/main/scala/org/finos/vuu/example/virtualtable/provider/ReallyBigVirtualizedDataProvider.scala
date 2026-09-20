@@ -7,8 +7,8 @@ import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.example.virtualtable.bigdatacache.FakeBigDataCache
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
+import org.finos.vuu.plugin.virtualized.provider.VirtualizedProvider
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedSessionTable, VirtualizedViewPortKeys}
-import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.viewport.ViewPort
 
 class ReallyBigVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef)(implicit clock: Clock) extends VirtualizedProvider with StrictLogging {

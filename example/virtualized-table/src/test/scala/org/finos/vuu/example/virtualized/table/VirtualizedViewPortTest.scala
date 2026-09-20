@@ -6,7 +6,7 @@ import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.example.virtualtable.module.VirtualTableModule
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
-import org.finos.vuu.provider.VirtualizedProvider
+import org.finos.vuu.plugin.virtualized.provider.VirtualizedProvider
 import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.finos.vuu.viewport.ViewPortRange
