@@ -571,10 +571,12 @@ describe("AdminEditForm sessions", () => {
     await render();
     expect(container.textContent).toContain("Portal module access");
     expect(container.textContent).toContain("User Admin");
-    expect(container.querySelector('[role="listbox"]')).not.toBeNull();
-    expect(container.querySelector('[role="option"]')?.textContent).toBe(
-      "User Admin",
-    );
+    expect(container.querySelector(".vuuModulePicker")).not.toBeNull();
+    expect(
+      container.querySelector(
+        '.vuuItemPicker-selectedList [data-name="user-admin-access"]',
+      ),
+    ).not.toBeNull();
     expect(container.textContent).not.toContain("Group membership");
     expect(container.textContent).not.toContain("Client-role assignments");
     expect(container.textContent).not.toContain("Choose Traders");
@@ -605,13 +607,19 @@ describe("AdminEditForm sessions", () => {
     );
     expect(addTrading).not.toBeNull();
     await act(async () => addTrading?.click());
-    expect(container.textContent).toContain("Trading group");
-    const tradingGroups = container.querySelector<HTMLElement>(
-      '[aria-label="trading-login group"]',
+    const tradingGroupPicker = container.querySelector<HTMLElement>(
+      '[aria-label="Trading permission group"]',
     );
-    expect(tradingGroups).not.toBeNull();
+    expect(tradingGroupPicker).not.toBeNull();
+    const tradingGroupInput = tradingGroupPicker?.querySelector("input");
+    if (!tradingGroupInput) throw new Error("Missing trading group picker");
+    await act(async () =>
+      tradingGroupInput.dispatchEvent(
+        new KeyboardEvent("keydown", { bubbles: true, key: "ArrowDown" }),
+      ),
+    );
     const elevated = [
-      ...(tradingGroups?.querySelectorAll('[role="option"]') ?? []),
+      ...document.querySelectorAll('[role="option"]'),
     ].find((option) => option.textContent?.includes("elevated"));
     expect(elevated).not.toBeNull();
     await act(async () =>

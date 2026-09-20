@@ -60,11 +60,11 @@ export const AdminFormField = ({
   const supported = props.supports(field);
   const disabled = props.disabled || !supported;
   return (
-    <FormField disabled={disabled}>
-      <FormFieldLabel htmlFor={id}>
-        {label}
-        {required ? " (required)" : ""}
-      </FormFieldLabel>
+    <FormField
+      disabled={disabled}
+      necessity={required ? "asterisk" : undefined}
+    >
+      <FormFieldLabel htmlFor={id}>{label}</FormFieldLabel>
       {type === "checkbox" ? (
         <Checkbox
           inputProps={{ id, "aria-label": label }}
@@ -74,6 +74,7 @@ export const AdminFormField = ({
         />
       ) : (
         <Input
+          bordered
           value={String(props.values[field] ?? "")}
           disabled={disabled}
           inputProps={{
@@ -85,15 +86,13 @@ export const AdminFormField = ({
           }}
         />
       )}
-      <FormFieldHelperText>
-        {!supported
-          ? "Backend contract unavailable: this field needs a supported identity RPC and, unless write-only, a writable Vuu schema column."
-          : type === "password"
-            ? "Leave blank to keep the current password. Never displayed after saving."
-            : required
-              ? "A value is required."
-              : "Optional."}
-      </FormFieldHelperText>
+      {!supported || type === "password" ? (
+        <FormFieldHelperText>
+          {!supported
+            ? "Backend contract unavailable: this field needs a supported identity RPC and, unless write-only, a writable Vuu schema column."
+            : "Leave blank to keep the current password. Never displayed after saving."}
+        </FormFieldHelperText>
+      ) : null}
     </FormField>
   );
 };
@@ -122,11 +121,11 @@ export const AdminLookupField = ({
   const disabled = props.disabled || !supported;
   const selected = String(props.values[field] ?? "");
   return (
-    <FormField disabled={disabled}>
-      <FormFieldLabel>
-        {label}
-        {required ? " (required)" : ""}
-      </FormFieldLabel>
+    <FormField
+      disabled={disabled}
+      necessity={required ? "asterisk" : undefined}
+    >
+      <FormFieldLabel>{label}</FormFieldLabel>
       <fieldset disabled={disabled} className="vuuIdentityAdmin-searchFieldset">
         <AdminSearch label={`Search ${table}`} onSearch={setSearch} />
         {!disabled ? (
