@@ -9,8 +9,11 @@ import { UserAdminModule } from "../src/user-admin/UserAdminModule";
 import { USER_ADMIN_INITIAL_SNAPSHOT } from "../src/user-admin/initialSnapshot";
 import type { TickingArrayDataSource } from "../src/TickingArrayDataSource";
 
-const createModule = () =>
-  new UserAdminModule(structuredClone(USER_ADMIN_INITIAL_SNAPSHOT));
+const createModule = (
+  snapshot: typeof USER_ADMIN_INITIAL_SNAPSHOT = structuredClone(
+    USER_ADMIN_INITIAL_SNAPSHOT,
+  ),
+) => new UserAdminModule(snapshot);
 
 const dataSource = (module: UserAdminModule) =>
   module.createDataSource("users", "user-admin-test", {
@@ -280,6 +283,45 @@ describe("UserAdminModule", () => {
     expect(
       module.tables.user_groups.findByKey("user-alice:group-admins"),
     ).toBeDefined();
+  });
+
+  it("returns configured display names in module access options", async () => {
+    const snapshot = structuredClone(USER_ADMIN_INITIAL_SNAPSHOT);
+    const group = snapshot.groups.find(
+      ({ id }) => id === "group-basket-trading-read",
+    );
+    const role = snapshot.clientRoles.find(
+      ({ role }) => role.id === "role-basket-trading-access",
+    )?.role;
+    if (!group || !role) {
+      throw new Error("Expected basket trading access fixture");
+    }
+    group.groupDisplayName = "Read-only traders";
+    role.roleDisplayName = "Trading permission";
+
+    const source = dataSource(createModule(snapshot));
+    const result = await rpc(source, "getUserModuleAccessOptions", {
+      userId: "user-alice",
+    });
+
+    expect(result).toMatchObject({
+      data: {
+        modules: expect.arrayContaining([
+          expect.objectContaining({
+            accessRole: "basket-trading-access",
+            groups: expect.arrayContaining([
+              expect.objectContaining({
+                groupId: "group-basket-trading-read",
+                groupDisplayName: "Read-only traders",
+                roleId: "role-basket-trading-access",
+                roleDisplayName: "Trading permission",
+              }),
+            ]),
+          }),
+        ]),
+      },
+      type: "SUCCESS_RESULT",
+    });
   });
 
   it("reports every selected group for a module access option", async () => {

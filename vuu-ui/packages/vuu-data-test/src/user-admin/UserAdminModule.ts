@@ -17,7 +17,10 @@ import {
 import tableContainer from "../core/table/TableContainer";
 import { buildDataColumnMapFromSchema, Table } from "../Table";
 import { USER_ADMIN_INITIAL_SNAPSHOT } from "./initialSnapshot";
-import { reconcileUserAdminTables } from "./snapshot-projection";
+import {
+  reconcileUserAdminTables,
+  resolveDisplayName,
+} from "./snapshot-projection";
 
 type NamedParams = Record<string, unknown>;
 type UserAdminTables = Record<UserAdminTableName, Table>;
@@ -521,10 +524,37 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
   private getUserModuleAccessOptions: ServiceHandler = async (request) => {
     try {
       const params = readParams(request, "getUserModuleAccessOptions");
+      const [options, snapshot] = await Promise.all([
+        this.store.getUserModuleAccessOptions(requiredString(params, "userId")),
+        this.store.snapshot(),
+      ]);
+      const groupDisplayNames = new Map(
+        snapshot.groups.map(({ groupDisplayName, id, name }) => [
+          id,
+          resolveDisplayName(name, groupDisplayName),
+        ]),
+      );
+      const roleDisplayNames = new Map(
+        snapshot.clientRoles.map(({ role }) => [
+          role.id,
+          resolveDisplayName(role.name, role.roleDisplayName),
+        ]),
+      );
       return {
-        data: await this.store.getUserModuleAccessOptions(
-          requiredString(params, "userId"),
-        ),
+        data: {
+          modules: options.modules.map(({ groups, ...module }) => ({
+            ...module,
+            groups: groups.map((group) => ({
+              ...group,
+              groupDisplayName:
+                groupDisplayNames.get(group.groupId) ??
+                resolveDisplayName(group.groupName),
+              roleDisplayName:
+                roleDisplayNames.get(group.roleId) ??
+                resolveDisplayName(group.roleName),
+            })),
+          })),
+        },
         type: "SUCCESS_RESULT",
       };
     } catch (error) {
