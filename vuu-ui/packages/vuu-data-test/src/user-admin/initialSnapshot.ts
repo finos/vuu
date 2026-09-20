@@ -34,6 +34,20 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
             role: {
                 clientRole: true,
                 containerId: "client-portal",
+                id: "role-feature-filter-table-access",
+                name: "feature-filter-table-access",
+                roleDisplayName: "access",
+            },
+        },
+        {
+            client: {
+                clientId: "vuu-portal",
+                id: "client-portal",
+                name: "VUU Portal",
+            },
+            role: {
+                clientRole: true,
+                containerId: "client-portal",
                 id: "role-module-admin-access",
                 name: "module-admin-access",
                 roleDisplayName: "access",
@@ -125,6 +139,25 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
             role: {
                 id: "role-user-admin-access",
                 name: "user-admin-access",
+                roleDisplayName: "access",
+            },
+        },
+        {
+            client: {
+                clientId: "vuu-portal",
+                id: "client-portal",
+                name: "VUU Portal",
+            },
+            group: {
+                id: "group-feature-filter-table-read",
+                name: "feature-filter-table-read",
+                groupDisplayName: "read",
+                moduleAccessDefaultRoles: ["feature-filter-table-access"],
+                path: "/vuu/feature-filter-table-read",
+            },
+            role: {
+                id: "role-feature-filter-table-access",
+                name: "feature-filter-table-access",
                 roleDisplayName: "access",
             },
         },
@@ -309,6 +342,13 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
             groupDisplayName: "read",
             moduleAccessDefaultRoles: ["basket-trading-access"],
             path: "/vuu/basket-trading-read",
+        },
+        {
+            id: "group-feature-filter-table-read",
+            name: "feature-filter-table-read",
+            groupDisplayName: "read",
+            moduleAccessDefaultRoles: ["feature-filter-table-access"],
+            path: "/vuu/feature-filter-table-read",
         },
         {
             id: "group-user-admin-admin",

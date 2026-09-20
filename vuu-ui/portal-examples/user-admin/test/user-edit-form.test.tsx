@@ -62,6 +62,15 @@ describe("useUserEditForm", () => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     mocks.loadUserModuleAccess.mockReset();
     mocks.notify.mockReset();
+    mocks.remoteModules.splice(
+      0,
+      mocks.remoteModules.length,
+      {
+        accessRole: "trading-access",
+        clientIdentifier: "vuu-trading",
+        title: "Trading",
+      },
+    );
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     container = document.createElement("div");
     document.body.append(container);
@@ -116,6 +125,81 @@ describe("useUserEditForm", () => {
       {
         name: "trading-access",
         selectedPermissions: ["read", "trade"],
+      },
+    ]);
+  });
+
+  it("maps local User Admin and basket assignments to their matching modules", async () => {
+    mocks.remoteModules.splice(
+      0,
+      mocks.remoteModules.length,
+      {
+        accessRole: "user-admin-access",
+        clientIdentifier: "local-user-admin",
+        title: "User administration",
+      },
+      {
+        accessRole: "basket-trading-access",
+        clientIdentifier: "local-basket-trading",
+        title: "Basket Trading",
+      },
+    );
+    mocks.loadUserModuleAccess.mockResolvedValue({
+      assignments: [
+        {
+          accessRole: "user-admin-access",
+          groupId: "group-user-admin-read",
+        },
+        {
+          accessRole: "basket-trading-access",
+          groupId: "group-basket-trading-read",
+        },
+      ],
+      modules: [
+        {
+          accessRole: "user-admin-access",
+          clientIdentifier: "local-user-admin",
+          selectedGroupIds: ["group-user-admin-read"],
+          groups: [
+            {
+              groupId: "group-user-admin-read",
+              groupDisplayName: "Read",
+              isDefault: true,
+            },
+          ],
+        },
+        {
+          accessRole: "basket-trading-access",
+          clientIdentifier: "local-basket-trading",
+          selectedGroupIds: ["group-basket-trading-read"],
+          groups: [
+            {
+              groupId: "group-basket-trading-read",
+              groupDisplayName: "Read",
+              isDefault: true,
+            },
+          ],
+        },
+      ],
+    });
+
+    await act(async () => {
+      root.render(<UserEditFormHarness />);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(
+      JSON.parse(container.querySelector("output")?.textContent ?? "[]"),
+    ).toMatchObject([
+      {
+        name: "user-admin-access",
+        selectedPermissions: ["group-user-admin-read"],
+      },
+      {
+        name: "basket-trading-access",
+        selectedPermissions: ["group-basket-trading-read"],
       },
     ]);
   });

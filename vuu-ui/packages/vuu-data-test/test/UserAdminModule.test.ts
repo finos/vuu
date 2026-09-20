@@ -89,6 +89,33 @@ describe("UserAdminModule", () => {
     }
   });
 
+  it("offers filter-table access as an editable local module permission", async () => {
+    const source = dataSource(createModule());
+    const result = await rpc(source, "getUserModuleAccessOptions", {
+      userId: "user-alice",
+    });
+
+    expect(result).toMatchObject({
+      data: {
+        modules: expect.arrayContaining([
+          {
+            accessRole: "feature-filter-table-access",
+            clientIdentifier: "vuu-portal",
+            groups: [
+              expect.objectContaining({
+                groupId: "group-feature-filter-table-read",
+                isDefault: true,
+                roleId: "role-feature-filter-table-access",
+              }),
+            ],
+            selectedGroupIds: [],
+          },
+        ]),
+      },
+      type: "SUCCESS_RESULT",
+    });
+  });
+
   it("creates, updates, and deletes users through the in-memory store", async () => {
     const module = createModule();
     const source = dataSource(module);
