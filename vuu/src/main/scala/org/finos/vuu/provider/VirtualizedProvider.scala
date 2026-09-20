@@ -11,7 +11,7 @@ trait VirtualizedProvider extends Provider with ColumnValueProvider {
     }
   }
 
-  def shouldRun(viewPort: ViewPort): Boolean = true
+  def shouldRun(viewPort: ViewPort): Boolean = viewPort.isEnabled
 
   def runOnceInternal(viewPort: ViewPort) : Unit
 

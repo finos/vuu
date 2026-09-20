@@ -2,14 +2,13 @@ package org.finos.vuu.core.table
 
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
-import org.finos.vuu.api.{Indices, SessionTableDef, TableDef, VisualLinks}
+import org.finos.vuu.api.{SessionTableDef, TableDef}
 import org.finos.vuu.core.module.ViewServerModule
 import org.finos.vuu.core.table.TableMockFactory.{createMockSessionTable, createMockTable}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 import org.finos.vuu.viewport.ViewPortTable
-import org.mockito.Mockito
-import org.mockito.Mockito.{lenient, when}
+import org.mockito.Mockito.lenient
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.flatspec.AnyFlatSpec
@@ -118,7 +117,7 @@ object TableMockFactory extends AnyFlatSpec {
 
     if (moduleName.nonEmpty) {
       val module = mock[ViewServerModule]
-      lenient().when(module.name).thenReturn(moduleName)
+      lenient().when(module.name).thenReturn(moduleName.get)
       tableDef.setModule(module)
     }
 
@@ -128,7 +127,8 @@ object TableMockFactory extends AnyFlatSpec {
   def createMockSessionTable(tableName: String, tableDefName: String, sessionId: ClientSessionId): SessionTable = {
     val table = mock[SessionTable]
     lenient().when(table.name).thenReturn(tableName)
-    lenient().when(table.getTableDef).thenReturn(createTestTableDef(tableDefName, isSessionDef = true))
+    val tableDef = createTestTableDef(tableDefName, isSessionDef = true)
+    lenient().when(table.getTableDef).thenReturn(tableDef)
     lenient().when(table.sessionId).thenReturn(sessionId)
     table
   }
@@ -136,7 +136,8 @@ object TableMockFactory extends AnyFlatSpec {
   def createMockTable(tableName: String, tableDefName: String, moduleName: Option[String] = None, sessionDef: Boolean = false): DataTable = {
     val table = mock[DataTable]
     lenient().when(table.name).thenReturn(tableName)
-    lenient().when(table.getTableDef).thenReturn(createTestTableDef(tableDefName, moduleName, isSessionDef = sessionDef))
+    val tableDef = createTestTableDef(tableDefName, moduleName, isSessionDef = sessionDef)
+    lenient().when(table.getTableDef).thenReturn(tableDef)
     table
   }
 }
