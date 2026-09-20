@@ -18,20 +18,22 @@ const membershipId = (userId: string, groupId: string) =>
 const assignmentId = (groupId: string, roleId: string) =>
   `${groupId}:${roleId}`;
 
-const displayName = (name: string, configuredDisplayName?: string) =>
-  configuredDisplayName ?? name.split("-").at(-1) ?? name;
+export const resolveDisplayName = (
+  name: string,
+  configuredDisplayName?: string,
+) => configuredDisplayName ?? name.split("-").at(-1) ?? name;
 
 const groupDisplayName = ({
   groupDisplayName: configuredDisplayName,
   name,
 }: UserAdminSnapshot["groups"][number]) =>
-  displayName(name, configuredDisplayName);
+  resolveDisplayName(name, configuredDisplayName);
 
 const roleDisplayName = ({
   roleDisplayName: configuredDisplayName,
   name,
 }: UserAdminSnapshot["clientRoles"][number]["role"]) =>
-  displayName(name, configuredDisplayName);
+  resolveDisplayName(name, configuredDisplayName);
 
 const systemValues = (timestamp: number) => ({
   vuuCreatedTimestamp: timestamp,
