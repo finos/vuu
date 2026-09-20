@@ -75,7 +75,7 @@ export const EditButtons = ({
       </Button>
       {onCancel && (
         <Button
-          disabled={!canCancel || editState === "clean"}
+          disabled={!canCancel}
           onClick={handleCancel}
         >
           Cancel
