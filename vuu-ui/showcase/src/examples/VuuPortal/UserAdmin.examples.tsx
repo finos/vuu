@@ -128,8 +128,6 @@ export const DefaultUserEditForm = () => {
     [VuuDataSource],
   );
 
-  console.log(dataRow?.toJSON(),null,2)
-
   useEffect(() => {
     let active = true;
     let DataRow: DataRowFunc | undefined;
