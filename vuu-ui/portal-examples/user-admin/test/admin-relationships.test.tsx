@@ -24,7 +24,7 @@ vi.mock("@vuu-ui/core/portal", () => ({
       {
         name: "user-admin",
         title: "User Admin",
-        loginRole: "user-admin-access",
+        accessRole: "user-admin-access",
       },
     ],
   }),

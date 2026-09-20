@@ -33,7 +33,7 @@ const mocks = vi.hoisted(() => {
         name: "user-admin",
         title: "User Admin",
         clientIdentifier: "vuu-user-admin",
-        loginRole: "user-admin-access",
+        accessRole: "user-admin-access",
       },
     ],
   };
@@ -169,7 +169,7 @@ describe("AdminEditForm sessions", () => {
       name: "user-admin",
       title: "User Admin",
       clientIdentifier: "vuu-user-admin",
-      loginRole: "user-admin-access",
+      accessRole: "user-admin-access",
     });
     container = document.createElement("div");
     document.body.append(container);
@@ -188,24 +188,28 @@ describe("AdminEditForm sessions", () => {
                 index === 0 ? "g-default" : `${module.name}-default`;
               return {
                 clientIdentifier: module.clientIdentifier,
-                loginRole: module.loginRole,
+                accessRole: module.accessRole,
                 selectedGroupId: index === 0 ? groupId : undefined,
                 groups: [
                   {
                     groupId,
                     groupName: `${module.title} viewers`,
+                    groupDisplayName: "Viewers",
                     groupPath: `/${module.name}/viewers`,
                     roleId: `${module.name}-viewer-role`,
-                    roleName: `${module.loginRole}-access`,
+                    roleName: `${module.accessRole}-access`,
+                    roleDisplayName: "Access",
                     privilege: "default",
                     isDefault: true,
                   },
                   {
                     groupId: `${module.name}-elevated`,
                     groupName: `${module.title} operators`,
+                    groupDisplayName: "Operators",
                     groupPath: `/${module.name}/operators`,
                     roleId: `${module.name}-operator-role`,
-                    roleName: `${module.loginRole}-access`,
+                    roleName: `${module.accessRole}-access`,
+                    roleDisplayName: "Access",
                     privilege: "elevated",
                     isDefault: false,
                   },
@@ -589,7 +593,7 @@ describe("AdminEditForm sessions", () => {
       name: "trading",
       title: "Trading",
       clientIdentifier: "vuu-trading",
-      loginRole: "trading-login",
+      accessRole: "trading-login",
     });
     props.record = {
       key: "u1",
@@ -618,9 +622,9 @@ describe("AdminEditForm sessions", () => {
         new KeyboardEvent("keydown", { bubbles: true, key: "ArrowDown" }),
       ),
     );
-    const elevated = [
-      ...document.querySelectorAll('[role="option"]'),
-    ].find((option) => option.textContent?.includes("elevated"));
+    const elevated = [...document.querySelectorAll('[role="option"]')].find(
+      (option) => option.textContent?.includes("Operators"),
+    );
     expect(elevated).not.toBeNull();
     await act(async () =>
       elevated?.dispatchEvent(new MouseEvent("click", { bubbles: true })),
@@ -632,8 +636,8 @@ describe("AdminEditForm sessions", () => {
       params: {
         userId: "u1",
         assignments: JSON.stringify([
-          { loginRole: "trading-login", groupId: "trading-elevated" },
-          { loginRole: "user-admin-access", groupId: "g-default" },
+          { accessRole: "trading-login", groupId: "trading-elevated" },
+          { accessRole: "user-admin-access", groupId: "g-default" },
         ]),
       },
     });

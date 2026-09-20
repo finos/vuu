@@ -106,6 +106,22 @@ describe("UserAdminModule", () => {
       module.tables.user_groups.findByKey("user-1:group-user-admin-read"),
     ).toBeDefined();
 
+    await expect(
+      rpc(source, "addUser", { username: "CAROL" }),
+    ).resolves.toEqual({
+      errorMessage: "username must be unique",
+      type: "ERROR_RESULT",
+    });
+    await expect(
+      rpc(source, "updateUser", {
+        userId: "user-bob",
+        username: "carol",
+      }),
+    ).resolves.toEqual({
+      errorMessage: "username must be unique",
+      type: "ERROR_RESULT",
+    });
+
     await rpc(source, "updateUser", {
       firstName: "Caroline",
       group_ids: ["group-module-admin-read"],
@@ -118,9 +134,7 @@ describe("UserAdminModule", () => {
     ).toBe("Caroline");
     expect(
       module.tables.user_groups.findByKey("user-1:group-user-admin-read"),
-    ).toBe(
-      undefined,
-    );
+    ).toBe(undefined);
     expect(
       module.tables.user_groups.findByKey("user-1:group-module-admin-read"),
     ).toBeDefined();
@@ -145,6 +159,11 @@ describe("UserAdminModule", () => {
     expect(
       (await module.store.snapshot()).groups.find(({ id }) => id === "group-1"),
     ).toMatchObject({ name: "demo-operators" });
+    expect(
+      module.tables.groups.findByKey("group-1")?.[
+        module.tables.groups.map.group_display_name
+      ],
+    ).toBe("operators");
 
     await rpc(source, "addClient", {
       clientId: "vuu-demo",
@@ -169,6 +188,11 @@ describe("UserAdminModule", () => {
       name: "demo-operator",
       roleName: "demo-access",
     });
+    expect(
+      module.tables.roles.findByKey("role-3")?.[
+        module.tables.roles.map.role_display_name
+      ],
+    ).toBe("operator");
     await rpc(source, "assignGroupRole", {
       clientId: "vuu-demo",
       groupId: "group-1",
@@ -219,8 +243,14 @@ describe("UserAdminModule", () => {
       data: {
         modules: expect.arrayContaining([
           expect.objectContaining({
-            loginRole: "basket-trading-access",
+            accessRole: "basket-trading-access",
             selectedGroupId: "group-basket-trading-read",
+            groups: expect.arrayContaining([
+              expect.objectContaining({
+                groupDisplayName: "read",
+                roleDisplayName: "access",
+              }),
+            ]),
           }),
         ]),
       },
@@ -231,7 +261,7 @@ describe("UserAdminModule", () => {
       assignments: JSON.stringify([
         {
           groupId: "group-module-admin-read",
-          loginRole: "module-admin-access",
+          accessRole: "module-admin-access",
         },
       ]),
       userId: "user-alice",
@@ -250,6 +280,138 @@ describe("UserAdminModule", () => {
     expect(
       module.tables.user_groups.findByKey("user-alice:group-admins"),
     ).toBeDefined();
+  });
+
+  it("reports every selected group for a module access option", async () => {
+    const module = createModule();
+    const source = dataSource(module);
+
+    await rpc(source, "setUserModuleAccess", {
+      assignments: JSON.stringify([
+        {
+          groupId: "group-user-admin-read",
+          accessRole: "user-admin-access",
+        },
+        {
+          groupId: "group-user-admin-admin",
+          accessRole: "user-admin-access",
+        },
+      ]),
+      userId: "user-alice",
+    });
+
+    const result = await rpc(source, "getUserModuleAccessOptions", {
+      userId: "user-alice",
+    });
+    expect(result.type).toBe("SUCCESS_RESULT");
+    if (result.type !== "SUCCESS_RESULT") {
+      throw new Error(result.errorMessage);
+    }
+    expect(
+      (
+        result.data as {
+          modules: { accessRole: string; selectedGroupIds: string[] }[];
+        }
+      ).modules.find(({ accessRole }) => accessRole === "user-admin-access"),
+    ).toMatchObject({
+      selectedGroupIds: ["group-user-admin-admin", "group-user-admin-read"],
+    });
+  });
+
+  it("rejects legacy loginRole assignment payloads", async () => {
+    const module = createModule();
+    const source = dataSource(module);
+
+    await expect(
+      rpc(source, "setUserModuleAccess", {
+        assignments: JSON.stringify([
+          {
+            groupId: "group-user-admin-read",
+            loginRole: "user-admin-access",
+          },
+        ]),
+        userId: "user-alice",
+      }),
+    ).resolves.toEqual({
+      errorMessage:
+        "assignments must be a JSON array of accessRole and groupId strings",
+      type: "ERROR_RESULT",
+    });
+  });
+
+  it("saves session permissions and reconciles user module access columns", async () => {
+    const module = createModule();
+    const source = dataSource(module);
+    const session = await source.createSessionDataSource("All");
+
+    await session.editCell(
+      "user-alice",
+      "permissions",
+      JSON.stringify([
+        {
+          clientIdentifier: "vuu-portal",
+          groupIds: ["group-user-admin-read", "group-user-admin-admin"],
+          accessRole: "user-admin-access",
+        },
+        {
+          clientIdentifier: "vuu-portal",
+          groupIds: ["group-basket-trading-trade"],
+          accessRole: "basket-trading-access",
+        },
+      ]),
+    );
+    await session.endEditSession(true);
+
+    expect(
+      module.tables.user_groups.findByKey("user-alice:group-user-admin-admin"),
+    ).toBeDefined();
+    expect(
+      module.tables.user_groups.findByKey(
+        "user-alice:group-basket-trading-read",
+      ),
+    ).toBeUndefined();
+    expect(
+      module.tables.user_groups.findByKey(
+        "user-alice:group-basket-trading-trade",
+      ),
+    ).toBeDefined();
+    expect(
+      module.tables.users.findByKey("user-alice")?.[
+        module.tables.users.map.module_access
+      ],
+    ).toBe("basket-trading-access,user-admin-access");
+    expect(
+      module.tables.groups.findByKey("group-user-admin-read")?.[
+        module.tables.groups.map.group_display_name
+      ],
+    ).toBe("read");
+    expect(
+      module.tables.roles.findByKey("role-user-admin-access")?.[
+        module.tables.roles.map.role_display_name
+      ],
+    ).toBe("access");
+    expect(
+      module.tables.users.findByKey("user-alice")?.[
+        module.tables.users.map.module_access_count
+      ],
+    ).toBe(2);
+  });
+
+  it("rejects username changes through a user edit session", async () => {
+    const module = createModule();
+    const source = dataSource(module);
+    const session = await source.createSessionDataSource("All");
+
+    await session.editCell("user-alice", "username", "alice-renamed");
+
+    await expect(session.endEditSession(true)).rejects.toThrow(
+      "username is read-only",
+    );
+    expect(
+      module.tables.users.findByKey("user-alice")?.[
+        module.tables.users.map.username
+      ],
+    ).toBe("alice");
   });
 
   it("rejects malformed RPC parameters without changing local tables", async () => {

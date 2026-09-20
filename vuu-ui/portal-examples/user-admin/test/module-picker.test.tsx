@@ -8,16 +8,21 @@ import {
 
 const ModulePickerHarness = ({
   allModules,
+  readOnly = false,
+  selectedModules: initialSelectedModules = [],
 }: {
   allModules: ModulePickerModuleDescriptor[];
+  readOnly?: boolean;
+  selectedModules?: ModulePickerModuleDescriptor[];
 }) => {
   const [selectedModules, setSelectedModules] = useState<
     ModulePickerModuleDescriptor[]
-  >([]);
+  >(initialSelectedModules);
   return (
     <ModulePicker
       allModules={allModules}
       onSelectedModulesChange={setSelectedModules}
+      readOnly={readOnly}
       selectedModules={selectedModules}
     />
   );
@@ -48,7 +53,16 @@ describe("ModulePicker", () => {
             {
               label: "Orders",
               name: "orders-access",
-              permissions: ["read", "edit"],
+              permissions: [
+                {
+                  label: "read",
+                  name: "group-vuu-orders-read",
+                },
+                {
+                  label: "edit",
+                  name: "group-vuu-orders-edit",
+                },
+              ],
               selectedPermissions: [],
             },
           ]}
@@ -56,9 +70,7 @@ describe("ModulePicker", () => {
       );
     });
 
-    const headers = container.querySelectorAll(
-      ".vuuItemPicker-sectionHeader",
-    );
+    const headers = container.querySelectorAll(".vuuItemPicker-sectionHeader");
     expect(headers[0]?.textContent).toContain("modules in view");
     expect(headers[1]?.textContent).toContain("available module");
 
@@ -66,9 +78,7 @@ describe("ModulePicker", () => {
       '[data-name="orders-access"]',
     );
     expect(
-      availableItem?.querySelector(
-        '[aria-label="Orders permission group"]',
-      ),
+      availableItem?.querySelector('[aria-label="Orders permission group"]'),
     ).toBeNull();
     const addButton = availableItem?.querySelector(
       ".vuuItemPickerListItem-action",
@@ -84,18 +94,18 @@ describe("ModulePicker", () => {
     );
     expect(selectedItem).not.toBeNull();
     expect(selectedItem?.querySelector('[data-icon="draggable"]')).toBeNull();
+    expect(selectedItem?.querySelector('[data-icon="cross"]')).not.toBeNull();
     expect(
-      selectedItem?.querySelector('[data-icon="cross"]'),
-    ).not.toBeNull();
-    expect(
-      selectedItem?.querySelector(
-        '[aria-label="Orders permission group"]',
-      ),
+      selectedItem?.querySelector('[aria-label="Orders permission group"]'),
     ).not.toBeNull();
     const permissionComboBox = selectedItem?.querySelector(
       '[aria-label="Orders permission group"]',
     ) as HTMLElement | null;
     if (!permissionComboBox) throw new Error("Missing permission ComboBox");
+    expect(permissionComboBox.textContent).toContain("read");
+    expect(permissionComboBox.textContent).not.toContain(
+      "group-vuu-orders-read",
+    );
     const permissionInput = permissionComboBox.querySelector("input");
     if (!permissionInput) throw new Error("Missing permission ComboBox input");
     await act(async () =>
@@ -107,6 +117,9 @@ describe("ModulePicker", () => {
     expect(
       document.querySelector('[role="listbox"][aria-multiselectable="true"]'),
     ).not.toBeNull();
+    expect(document.querySelector('[role="listbox"]')?.textContent).toContain(
+      "read",
+    );
   });
 
   it("accepts explicit item names", async () => {
@@ -128,11 +141,60 @@ describe("ModulePicker", () => {
 
     expect(
       Array.from(
-        container.querySelectorAll(
-          ".vuuItemPicker-availableList [data-name]",
-        ),
+        container.querySelectorAll(".vuuItemPicker-availableList [data-name]"),
       ).map((item) => item.getAttribute("data-name")),
     ).toEqual(["Basket Trading", "Module Admin", "User Admin"]);
   });
-});
 
+  it("renders selected permissions as read-only pills without add or remove controls", async () => {
+    const ordersModule = {
+      label: "Orders",
+      name: "orders-access",
+      permissions: [
+        { label: "read", name: "group-vuu-orders-read" },
+        { label: "edit", name: "group-vuu-orders-edit" },
+      ],
+      selectedPermissions: ["group-vuu-orders-read"],
+    };
+
+    await act(async () => {
+      root.render(
+        <ModulePickerHarness
+          allModules={[
+            ordersModule,
+            {
+              label: "Risk",
+              name: "risk-access",
+              permissions: [],
+              selectedPermissions: [],
+            },
+          ]}
+          readOnly
+          selectedModules={[ordersModule]}
+        />,
+      );
+    });
+
+    expect(
+      container.querySelector(
+        '.vuuItemPicker-selectedList [data-icon="cross"]',
+      ),
+    ).toBeNull();
+    expect(
+      container.querySelector(
+        ".vuuItemPicker-selectedList .vuuModulePickerListItem-readOnly",
+      ),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(".vuuItemPicker-availableList button"),
+    ).toBeNull();
+    const permissionInput = container.querySelector<HTMLInputElement>(
+      '[aria-label="Orders permission group"] input',
+    );
+    expect(permissionInput?.readOnly).toBe(true);
+    expect(
+      container.querySelector('[aria-label="Orders permission group"]')
+        ?.textContent,
+    ).toContain("read");
+  });
+});

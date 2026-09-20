@@ -8,23 +8,26 @@ export const MODULE_ACCESS_RECONCILE_RPC = "setUserModuleAccess";
 export interface ModuleAccessGroup {
   groupId: string;
   groupName: string;
+  groupDisplayName: string;
   groupPath?: string;
   roleId: string;
   roleName: string;
+  roleDisplayName: string;
   privilege?: string;
   isDefault: boolean;
 }
 
 export interface ModuleAccessModule {
   clientIdentifier: string;
-  loginRole: string;
+  accessRole: string;
   groups: ModuleAccessGroup[];
   selectedGroupId?: string;
+  selectedGroupIds: string[];
 }
 
 export interface ModuleAccessAssignment {
   groupId: string;
-  loginRole: string;
+  accessRole: string;
 }
 
 export interface UserModuleAccess {
@@ -36,7 +39,7 @@ export const sortModuleAccessAssignments = (
   assignments: readonly ModuleAccessAssignment[],
 ) =>
   [...assignments].sort((left, right) =>
-    left.loginRole.localeCompare(right.loginRole),
+    left.accessRole.localeCompare(right.accessRole),
   );
 
 export const equalModuleAccessAssignments = (
@@ -80,9 +83,19 @@ const parseGroup = (value: unknown, index: number): ModuleAccessGroup => {
   return {
     groupId: requiredString(value.groupId, "groupId", context),
     groupName: requiredString(value.groupName, "groupName", context),
+    groupDisplayName: requiredString(
+      value.groupDisplayName,
+      "groupDisplayName",
+      context,
+    ),
     groupPath: optionalString(value.groupPath),
     roleId: requiredString(value.roleId, "roleId", context),
     roleName: requiredString(value.roleName, "roleName", context),
+    roleDisplayName: requiredString(
+      value.roleDisplayName,
+      "roleDisplayName",
+      context,
+    ),
     privilege: optionalString(value.privilege),
     isDefault: value.isDefault,
   };
@@ -102,12 +115,21 @@ const parseModule = (value: unknown, index: number): ModuleAccessModule => {
   }
   const groups = value.groups.map(parseGroup);
   const selectedGroupId = optionalString(value.selectedGroupId);
+  const selectedGroupIds =
+    Array.isArray(value.selectedGroupIds) &&
+    value.selectedGroupIds.every((groupId) => typeof groupId === "string")
+      ? value.selectedGroupIds
+      : selectedGroupId
+        ? [selectedGroupId]
+        : [];
   if (
-    selectedGroupId &&
-    !groups.some(({ groupId }) => groupId === selectedGroupId)
+    selectedGroupIds.some(
+      (selectedGroupId) =>
+        !groups.some(({ groupId }) => groupId === selectedGroupId),
+    )
   ) {
     throw new Error(
-      `Backend contract unavailable: ${context} selectedGroupId is not eligible.`,
+      `Backend contract unavailable: ${context} selected groups are not eligible.`,
     );
   }
   return {
@@ -116,9 +138,10 @@ const parseModule = (value: unknown, index: number): ModuleAccessModule => {
       "clientIdentifier",
       context,
     ),
-    loginRole: requiredString(value.loginRole, "loginRole", context),
+    accessRole: requiredString(value.accessRole, "accessRole", context),
     groups,
     selectedGroupId,
+    selectedGroupIds,
   };
 };
 
@@ -129,8 +152,8 @@ export const parseUserModuleAccess = (value: unknown): UserModuleAccess => {
     );
   }
   const modules = value.modules.map(parseModule);
-  const assignments = modules.flatMap(({ loginRole, selectedGroupId }) =>
-    selectedGroupId ? [{ loginRole, groupId: selectedGroupId }] : [],
+  const assignments = modules.flatMap(({ accessRole, selectedGroupIds }) =>
+    selectedGroupIds.map((groupId) => ({ accessRole, groupId })),
   );
   return { modules, assignments };
 };

@@ -3,7 +3,7 @@ export const MODULE_PERMISSIONS_COLUMN = "permissions";
 export interface ModulePermission {
   clientIdentifier: string;
   groupIds: readonly string[];
-  loginRole: string;
+  accessRole: string;
 }
 
 export interface ModulePermissionSelection {
@@ -27,27 +27,27 @@ const normalizePermissions = (
   Object.freeze(
     Array.from(
       [...permissions].reduce(
-        (byLoginRole, { clientIdentifier, groupIds, loginRole }) => {
-          const existing = byLoginRole.get(loginRole);
-          byLoginRole.set(loginRole, {
+        (byAccessRole, { clientIdentifier, groupIds, accessRole }) => {
+          const existing = byAccessRole.get(accessRole);
+          byAccessRole.set(accessRole, {
             clientIdentifier:
               clientIdentifier || existing?.clientIdentifier || "",
             groupIds: [...(existing?.groupIds ?? []), ...groupIds],
-            loginRole,
+            accessRole,
           });
-          return byLoginRole;
+          return byAccessRole;
         },
         new Map<string, ModulePermission>(),
       ).values(),
     )
-      .map(({ clientIdentifier, groupIds, loginRole }) =>
+      .map(({ clientIdentifier, groupIds, accessRole }) =>
         Object.freeze({
           clientIdentifier,
           groupIds: normalizeGroupIds(groupIds),
-          loginRole,
+          accessRole,
         }),
       )
-      .sort((left, right) => left.loginRole.localeCompare(right.loginRole)),
+      .sort((left, right) => left.accessRole.localeCompare(right.accessRole)),
   );
 
 export class ModulePermissions {
@@ -65,7 +65,7 @@ export class ModulePermissions {
         (application, index) =>
           application.clientIdentifier ===
             other.applications[index].clientIdentifier &&
-          application.loginRole === other.applications[index].loginRole &&
+          application.accessRole === other.applications[index].accessRole &&
           sameValues(
             application.groupIds,
             other.applications[index].groupIds,
@@ -74,37 +74,37 @@ export class ModulePermissions {
     );
   }
 
-  groupIdsFor(loginRole: string) {
+  groupIdsFor(accessRole: string) {
     return (
       this.applications.find(
-        (application) => application.loginRole === loginRole,
+        (application) => application.accessRole === accessRole,
       )?.groupIds ?? []
     );
   }
 
-  hasApplication(loginRole: string) {
+  hasApplication(accessRole: string) {
     return this.applications.some(
-      (application) => application.loginRole === loginRole,
+      (application) => application.accessRole === accessRole,
     );
   }
 
   toJSON() {
     return this.applications.map(
-      ({ clientIdentifier, groupIds, loginRole }) => ({
+      ({ clientIdentifier, groupIds, accessRole }) => ({
         clientIdentifier,
         groupIds: [...groupIds],
-        loginRole,
+        accessRole,
       }),
     );
   }
 
   withSelectedModules(
     selectedModules: readonly ModulePermissionSelection[],
-    managedLoginRoles: readonly string[],
+    managedAccessRoles: readonly string[],
   ) {
-    const managedLoginRoleSet = new Set(managedLoginRoles);
+    const managedAccessRoleSet = new Set(managedAccessRoles);
     const unmanagedApplications = this.applications.filter(
-      ({ loginRole }) => !managedLoginRoleSet.has(loginRole),
+      ({ accessRole }) => !managedAccessRoleSet.has(accessRole),
     );
     return new ModulePermissions(
       unmanagedApplications.concat(
@@ -112,11 +112,11 @@ export class ModulePermissions {
           ({
             clientIdentifier,
             defaultPermission,
-            name: loginRole,
+            name: accessRole,
             selectedPermissions,
           }) => {
             const existing = this.applications.find(
-              (application) => application.loginRole === loginRole,
+              (application) => application.accessRole === accessRole,
             );
             return {
               clientIdentifier:
@@ -124,9 +124,12 @@ export class ModulePermissions {
               groupIds:
                 selectedPermissions.length > 0
                   ? selectedPermissions
-                  : existing?.groupIds ??
-                    (defaultPermission ? [defaultPermission] : []),
-              loginRole,
+                  : existing
+                    ? []
+                    : defaultPermission
+                      ? [defaultPermission]
+                      : [],
+              accessRole,
             };
           },
         ),

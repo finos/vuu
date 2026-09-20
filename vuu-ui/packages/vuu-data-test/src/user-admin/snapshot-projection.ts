@@ -18,6 +18,21 @@ const membershipId = (userId: string, groupId: string) =>
 const assignmentId = (groupId: string, roleId: string) =>
   `${groupId}:${roleId}`;
 
+const displayName = (name: string, configuredDisplayName?: string) =>
+  configuredDisplayName ?? name.split("-").at(-1) ?? name;
+
+const groupDisplayName = ({
+  groupDisplayName: configuredDisplayName,
+  name,
+}: UserAdminSnapshot["groups"][number]) =>
+  displayName(name, configuredDisplayName);
+
+const roleDisplayName = ({
+  roleDisplayName: configuredDisplayName,
+  name,
+}: UserAdminSnapshot["clientRoles"][number]["role"]) =>
+  displayName(name, configuredDisplayName);
+
 const systemValues = (timestamp: number) => ({
   vuuCreatedTimestamp: timestamp,
   vuuMsg: "",
@@ -43,16 +58,19 @@ const userRoleIds = (snapshot: UserAdminSnapshot, userId: string) => {
 };
 
 const moduleAccessRoles = (snapshot: UserAdminSnapshot, userId: string) =>
-  snapshot.groupRoles
-    .filter(
-      ({ group, role }) =>
-        snapshot.userGroups.some(
-          ({ user, group: userGroup }) =>
-            user.id === userId && userGroup.id === group.id,
-        ) && role.name.endsWith("-access"),
-    )
-    .map(({ role }) => role.name)
-    .sort();
+  Array.from(
+    new Set(
+      snapshot.groupRoles
+        .filter(
+          ({ group, role }) =>
+            snapshot.userGroups.some(
+              ({ user, group: userGroup }) =>
+                user.id === userId && userGroup.id === group.id,
+            ) && role.name.endsWith("-access"),
+        )
+        .map(({ role }) => role.name),
+    ),
+  ).sort();
 
 export const projectUserAdminSnapshot = (
   snapshot: UserAdminSnapshot,
@@ -97,6 +115,7 @@ export const projectUserAdminSnapshot = (
     groups: snapshot.groups.map((group) =>
       toRow(tables.groups, {
         ...system,
+        group_display_name: groupDisplayName(group),
         group_id: group.id,
         group_path: group.path ?? `/${group.name}`,
         parent_group_id: group.parentId ?? "",
@@ -129,6 +148,7 @@ export const projectUserAdminSnapshot = (
           ({ role: groupRole }) => groupRole.id === role.id,
         ).length,
         role_id: role.id,
+        role_display_name: roleDisplayName(role),
         role_name: role.name,
         user_count: new Set(
           snapshot.userGroups
@@ -145,6 +165,7 @@ export const projectUserAdminSnapshot = (
     user_groups: membershipRows.map(({ group, membership_id, user }) =>
       toRow(tables.user_groups, {
         ...system,
+        group_display_name: groupDisplayName(group),
         group_id: group.id,
         group_name: group.name,
         group_path: group.path ?? `/${group.name}`,
@@ -161,8 +182,10 @@ export const projectUserAdminSnapshot = (
         client_identifier: client?.clientId ?? "",
         client_name: client?.name ?? "",
         group_id: group.id,
+        group_display_name: groupDisplayName(group),
         group_name: group.name,
         role_id: role.id,
+        role_display_name: roleDisplayName(role),
         role_name: role.name,
       }),
     ),
@@ -181,6 +204,7 @@ export const projectUserAdminSnapshot = (
             enabled: user.enabled ?? true,
             first_name: user.firstName ?? "",
             group_id: group.id,
+            group_display_name: groupDisplayName(group),
             group_name: group.name,
             group_path: group.path ?? `/${group.name}`,
             id: `${membership_id}:${assignment_id}`,
@@ -190,6 +214,7 @@ export const projectUserAdminSnapshot = (
             password_update_required:
               user.requiredActions?.includes("UPDATE_PASSWORD") ?? false,
             role_id: role.id,
+            role_display_name: roleDisplayName(role),
             role_name: role.name,
             user_id: user.id,
             username: user.username,

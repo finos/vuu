@@ -7,7 +7,7 @@ bootstrap creates a `BrowserRouter`.
 The host scopes the authenticated portal module registry through the typed
 `PortalModuleRegistryProvider` context around the user-admin remote. The
 descriptor includes the existing remote loading and connection fields plus the
-stable `clientIdentifier` and module access-role metadata in `loginRole`.
+stable `clientIdentifier` and module access-role metadata in `accessRole`.
 User-admin does not
 authenticate against Keycloak, receive the registry as component props, or
 fetch a second module list; this host-provided contract is reserved for
@@ -93,8 +93,8 @@ Logical names follow the agreed contract: `user_id`, `group_id`, `role_id`,
 `password_update_required`, `group_name`, `group_path`, `role_name`,
 `client_identifier`, `client_name`, `description` and relationship/count fields.
 The users table may additionally expose the server-derived `module_access`
-(comma-separated module login roles) and `module_access_count` fields. The
-rendered `module_access` column resolves login roles against the host-provided
+(comma-separated module access roles) and `module_access_count` fields. The
+rendered `module_access` column resolves access roles against the host-provided
 module registry for display and preserves unmatched role names; its subscribed
 server value is unchanged. Users do not require or add a `client_identifier`
 column. Column aliases are supported for these logical fields. The users table
@@ -155,16 +155,24 @@ actions, client administration, or direct user-role assignments.
 
 For an existing user, the module-oriented access editor loads its options through
 the source data service RPC `getUserModuleAccessOptions({ userId })`. The
-response must return each portal module's `clientIdentifier`, `loginRole`, its
-eligible groups, and the currently selected group. Each group must include
-`groupId`, `groupName`, `roleId`, `roleName`, and an explicit `isDefault` flag;
-`groupPath` and privilege metadata are displayed when supplied. The server, not
-the browser, determines the least-privileged default. The module picker stages
-additions, removals and eligible-group changes locally, then sends a
-deterministically ordered JSON assignment list through
-`setUserModuleAccess({ userId, assignments })` after the user entity save.
-Confirmed entity and module-access writes are tracked independently so retries do
-not repeat successful RPCs.
+response must return each portal module's `clientIdentifier`, `accessRole`, its
+eligible groups, and all selected group IDs. Each group must include `groupId`,
+`groupName`, `groupDisplayName`, `roleId`, `roleName`, `roleDisplayName`, and
+an explicit `isDefault` flag; `groupPath` and privilege metadata are displayed
+when supplied. The server, not the browser, determines the least-privileged
+default. The module picker stages additions, removals, and eligible-group
+changes locally in a serialized
+`[{ clientIdentifier, accessRole, groupIds }]` permissions field. Confirmed
+entity and module-access writes are tracked independently so retries do not
+repeat successful RPCs.
+
+User Admin read models expose both canonical group/role names and concise
+`group_display_name`/`role_display_name` values. The local module uses an
+explicit configured display name when available; otherwise it derives the final
+hyphen-separated segment of the canonical name (for example,
+`vuu-user-admin-read` becomes `read`). User-facing pickers and relationship
+summaries use the display values while mutations continue to use stable IDs and
+canonical names.
 
 The new module-access RPCs are an explicit backend prerequisite. If the source
 does not expose them or returns malformed data, the editor reports the contract

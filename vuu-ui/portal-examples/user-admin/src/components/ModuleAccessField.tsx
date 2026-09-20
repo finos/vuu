@@ -33,13 +33,11 @@ export interface ModuleAccessFieldProps {
 
 const assignmentFor = (
   assignments: readonly ModuleAccessAssignment[],
-  loginRole: string,
-) => assignments.find((assignment) => assignment.loginRole === loginRole);
+  accessRole: string,
+) => assignments.find((assignment) => assignment.accessRole === accessRole);
 
 const groupLabel = (group: ModuleAccessModule["groups"][number]) =>
-  [group.groupName, group.groupPath, group.roleName, group.privilege]
-    .filter(Boolean)
-    .join(" · ");
+  group.groupDisplayName;
 
 export const ModuleAccessField = ({
   access,
@@ -55,45 +53,42 @@ export const ModuleAccessField = ({
   const { remoteModules } = usePortalModuleRegistry();
   const [selectionError, setSelectionError] = useState<string>();
   const currentAssignments = assignments ?? [];
-  const pickerModules = useMemo<ModulePickerModuleDescriptor[]>(
-    () => {
-      const sourceModules: ModulePickerModuleDescriptor[] =
-        allModules ??
-        (access?.modules ?? []).map(({ loginRole }) => ({
-          name: loginRole,
-          permissions: [],
-          selectedPermissions: [],
-        }));
-      return sourceModules.map((moduleDescriptor) => {
-        const module = access?.modules.find(
-          ({ loginRole }) => loginRole === moduleDescriptor.name,
-        );
-        if (!module) return moduleDescriptor;
-        const assignment = assignmentFor(currentAssignments, module.loginRole);
-        const remoteModule = remoteModules.find(
-          ({ loginRole }) => loginRole === module.loginRole,
-        );
-        return {
-          ...moduleDescriptor,
-          label:
-            moduleDescriptor.label ??
-            remoteModule?.title ??
-            remoteModule?.name ??
-            module.loginRole,
-          permissions: module.groups.map((group) => ({
-            label: groupLabel(group),
-            name: group.groupId,
-          })),
-          selectedPermissions: assignment ? [assignment.groupId] : [],
-        };
-      });
-    },
-    [access?.modules, allModules, currentAssignments, remoteModules],
-  );
+  const pickerModules = useMemo<ModulePickerModuleDescriptor[]>(() => {
+    const sourceModules: ModulePickerModuleDescriptor[] =
+      allModules ??
+      (access?.modules ?? []).map(({ accessRole }) => ({
+        name: accessRole,
+        permissions: [],
+        selectedPermissions: [],
+      }));
+    return sourceModules.map((moduleDescriptor) => {
+      const module = access?.modules.find(
+        ({ accessRole }) => accessRole === moduleDescriptor.name,
+      );
+      if (!module) return moduleDescriptor;
+      const assignment = assignmentFor(currentAssignments, module.accessRole);
+      const remoteModule = remoteModules.find(
+        ({ accessRole }) => accessRole === module.accessRole,
+      );
+      return {
+        ...moduleDescriptor,
+        label:
+          moduleDescriptor.label ??
+          remoteModule?.title ??
+          remoteModule?.name ??
+          module.accessRole,
+        permissions: module.groups.map((group) => ({
+          label: groupLabel(group),
+          name: group.groupId,
+        })),
+        selectedPermissions: assignment ? [assignment.groupId] : [],
+      };
+    });
+  }, [access?.modules, allModules, currentAssignments, remoteModules]);
   const selectedModules = useMemo(
     () =>
       pickerModules.filter(({ name }) =>
-        currentAssignments.some(({ loginRole }) => loginRole === name),
+        currentAssignments.some(({ accessRole }) => accessRole === name),
       ),
     [pickerModules, currentAssignments],
   );
@@ -104,7 +99,7 @@ export const ModuleAccessField = ({
       const next: ModuleAccessAssignment[] = [];
       for (const selectedModule of modules) {
         const module = access?.modules.find(
-          ({ loginRole }) => loginRole === selectedModule.name,
+          ({ accessRole }) => accessRole === selectedModule.name,
         );
         const groupId = selectedModule.selectedPermissions[0];
         const defaultGroup =
@@ -118,7 +113,7 @@ export const ModuleAccessField = ({
           return;
         }
         next.push({
-          loginRole: selectedModule.name,
+          accessRole: selectedModule.name,
           groupId: selectedGroupId,
         });
       }

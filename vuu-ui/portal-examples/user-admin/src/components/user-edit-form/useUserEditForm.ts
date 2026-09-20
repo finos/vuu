@@ -19,11 +19,9 @@ import {
 
 const permissionDescriptor = ({
   groupId,
-  groupName,
-  groupPath,
-  privilege,
+  groupDisplayName,
 }: ModuleAccessGroup) => ({
-  label: [groupName, groupPath, privilege].filter(Boolean).join(" · "),
+  label: groupDisplayName,
   name: groupId,
 });
 
@@ -53,12 +51,12 @@ export const useUserEditForm = (
       .then((access) => {
         if (active) {
           const original = new ModulePermissions(
-            access.assignments.map(({ groupId, loginRole }) => ({
+            access.assignments.map(({ groupId, accessRole }) => ({
               clientIdentifier:
-                remoteModules.find((module) => module.loginRole === loginRole)
+                remoteModules.find((module) => module.accessRole === accessRole)
                   ?.clientIdentifier ?? "",
               groupIds: [groupId],
-              loginRole,
+              accessRole,
             })),
           );
           setModuleAccess(access);
@@ -79,22 +77,21 @@ export const useUserEditForm = (
 
   const allModules = useMemo<ModulePickerModuleDescriptor[]>(
     () =>
-      remoteModules.map(({ loginRole, title }) => {
+      remoteModules.map(({ accessRole, title }) => {
         const module = moduleAccess?.modules.find(
-          (candidate) => candidate.loginRole === loginRole,
+          (candidate) => candidate.accessRole === accessRole,
         );
         const selectedGroupId = moduleAccess?.assignments.find(
-          (assignment) => assignment.loginRole === loginRole,
+          (assignment) => assignment.accessRole === accessRole,
         )?.groupId;
         return {
           clientIdentifier: remoteModules.find(
-            (remoteModule) => remoteModule.loginRole === loginRole,
+            (remoteModule) => remoteModule.accessRole === accessRole,
           )?.clientIdentifier,
-          defaultPermission: module?.groups.find(
-            ({ isDefault }) => isDefault,
-          )?.groupId,
+          defaultPermission: module?.groups.find(({ isDefault }) => isDefault)
+            ?.groupId,
           label: title,
-          name: loginRole,
+          name: accessRole,
           permissions: module?.groups.map(permissionDescriptor) ?? [],
           selectedPermissions: selectedGroupId ? [selectedGroupId] : [],
         };
@@ -131,7 +128,10 @@ export const useUserEditForm = (
           setModulePermissions(nextPermissions);
         })
         .catch((cause: unknown) => {
-          console.error("User editor failed to update module permissions:", cause);
+          console.error(
+            "User editor failed to update module permissions:",
+            cause,
+          );
         });
     },
     [allModules, dataRow, editSession, modulePermissions],

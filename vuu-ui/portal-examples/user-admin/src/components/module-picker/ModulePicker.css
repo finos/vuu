@@ -1,5 +1,4 @@
 .vuuModulePicker {
-
   .saltListBox {
     gap: var(--salt-spacing-150);
   }
@@ -18,13 +17,17 @@
   .vuuModulePickerListItem-available {
     column-gap: 0;
     grid-template-columns: 1fr auto;
+
+    &.vuuModulePickerListItem-readOnly {
+      grid-template-columns: 1fr;
+    }
   }
 
   .vuuModulePickerListItem-selected {
     column-gap: 0;
     container-type: inline-size;
-    grid-template-columns: 1fr auto;
-    grid-template-rows: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
 
     .vuuModulePicker-moduleName {
       grid-column: 1;
@@ -37,13 +40,14 @@
     }
 
     .vuuModulePicker-permissionControl {
-      grid-column: 1;
+      display: block;
+      grid-column: 1 / -1;
       grid-row: 2;
+      min-width: 0;
     }
 
-    @container (width >= 400px) {
-      grid-template-columns: 1fr auto auto;
-      grid-template-rows: 1fr;
+    .vuuModulePicker-permission {
+      width: 100%;
     }
   }
 

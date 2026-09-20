@@ -5,6 +5,7 @@ import {
   type UserAdminSnapshot,
   type UserAdminTableName,
   type UserModuleAccessAssignment,
+  type UserModuleAccessPermission,
 } from "@heswell/user-admin/contracts";
 import { InMemoryUserAdminStore } from "@heswell/user-admin/in-memory";
 import type { TableSchema } from "@vuu-ui/vuu-data-types";
@@ -15,7 +16,7 @@ import {
 } from "../core/module/VuuModule";
 import tableContainer from "../core/table/TableContainer";
 import { buildDataColumnMapFromSchema, Table } from "../Table";
-import { USER_ADMIN_INITIAL_SNAPSHOT } from './initialSnapshot';
+import { USER_ADMIN_INITIAL_SNAPSHOT } from "./initialSnapshot";
 import { reconcileUserAdminTables } from "./snapshot-projection";
 
 type NamedParams = Record<string, unknown>;
@@ -116,23 +117,25 @@ const parseAssignments = (value: string): UserModuleAccessAssignment[] => {
     parsed.some(
       (assignment) =>
         !isRecord(assignment) ||
-        typeof assignment.loginRole !== "string" ||
-        assignment.loginRole.length === 0 ||
+        typeof assignment.accessRole !== "string" ||
+        assignment.accessRole.length === 0 ||
         typeof assignment.groupId !== "string" ||
         assignment.groupId.length === 0 ||
         Object.keys(assignment).some(
-          (name) => name !== "loginRole" && name !== "groupId",
+          (name) => name !== "accessRole" && name !== "groupId",
         ),
     )
   ) {
     throw new Error(
-      "assignments must be a JSON array of loginRole and groupId strings",
+      "assignments must be a JSON array of accessRole and groupId strings",
     );
   }
   return parsed;
 };
 
-const parseSessionPermissions = (value: unknown): UserModuleAccessAssignment[] => {
+const parseSessionPermissions = (
+  value: unknown,
+): UserModuleAccessAssignment[] => {
   if (typeof value !== "string") {
     throw new Error("permissions must be a serialized array");
   }
@@ -142,20 +145,54 @@ const parseSessionPermissions = (value: unknown): UserModuleAccessAssignment[] =
   } catch {
     throw new Error("permissions must be valid JSON");
   }
-  if (
-    !Array.isArray(parsed) ||
-    parsed.some(
-      (application) =>
-        !isRecord(application) ||
-        typeof application.loginRole !== "string" ||
-        !Array.isArray(application.groupIds) ||
-        application.groupIds.some((groupId) => typeof groupId !== "string"),
-    )
-  ) {
+  if (!Array.isArray(parsed)) {
     throw new Error("permissions must contain application group assignments");
   }
-  return parsed.flatMap(({ groupIds, loginRole }) =>
-    (groupIds as string[]).map((groupId) => ({ groupId, loginRole })),
+  const accessRoles = new Set<string>();
+  const permissions: UserModuleAccessPermission[] = parsed.map(
+    (application, index) => {
+      if (
+        !isRecord(application) ||
+        Object.keys(application).some(
+          (field) =>
+            field !== "clientIdentifier" &&
+            field !== "accessRole" &&
+            field !== "groupIds",
+        ) ||
+        typeof application.clientIdentifier !== "string" ||
+        application.clientIdentifier.length === 0 ||
+        typeof application.accessRole !== "string" ||
+        application.accessRole.length === 0 ||
+        !Array.isArray(application.groupIds) ||
+        application.groupIds.some(
+          (groupId) => typeof groupId !== "string" || groupId.length === 0,
+        )
+      ) {
+        throw new Error(
+          `permissions[${index}] must contain clientIdentifier, accessRole, and groupIds`,
+        );
+      }
+      if (accessRoles.has(application.accessRole)) {
+        throw new Error(
+          `permissions contains duplicate accessRole: ${application.accessRole}`,
+        );
+      }
+      const groupIds = application.groupIds as string[];
+      if (new Set(groupIds).size !== groupIds.length) {
+        throw new Error(
+          `permissions contains duplicate group IDs for: ${application.accessRole}`,
+        );
+      }
+      accessRoles.add(application.accessRole);
+      return {
+        clientIdentifier: application.clientIdentifier,
+        accessRole: application.accessRole,
+        groupIds,
+      };
+    },
+  );
+  return permissions.flatMap(({ groupIds, accessRole }) =>
+    groupIds.map((groupId) => ({ accessRole, groupId })),
   );
 };
 
@@ -239,7 +276,9 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
   protected override createSessionTable(
     sourceTable: Table,
     sessionTableName: string,
-    editSessionMode: import("@vuu-ui/vuu-data-types").EditSessionMode | import("@vuu-ui/vuu-data-types").CopyOption,
+    editSessionMode:
+      | import("@vuu-ui/vuu-data-types").EditSessionMode
+      | import("@vuu-ui/vuu-data-types").CopyOption,
     dataSource: import("../TickingArrayDataSource").TickingArrayDataSource,
     sessionType?: import("@vuu-ui/vuu-data-types").SessionType,
   ) {
@@ -274,23 +313,35 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
     const permissionsIndex = sessionTable.map.permissions;
     const actionIndex = sessionTable.map.vuuAction;
     const userIdIndex = sessionTable.map.user_id;
-    let changed = false;
-
+    const usernameIndex = sessionTable.map.username;
     for (const row of sessionTable.data) {
+      if (row[actionIndex] !== "editCell") continue;
+
+      const userId = String(row[userIdIndex]);
+      const sourceRow = sourceTable.findByKey(userId);
       if (
-        row[actionIndex] !== "editCell" ||
+        !sourceRow ||
+        sourceRow[sourceTable.map.username] !== row[usernameIndex]
+      ) {
+        throw new Error("username is read-only");
+      }
+
+      if (
         typeof row[permissionsIndex] !== "string" ||
         row[permissionsIndex] === ""
       ) {
         continue;
       }
+
       await this.store.setUserModuleAccess(
-        String(row[userIdIndex]),
+        userId,
         parseSessionPermissions(row[permissionsIndex]),
       );
-      changed = true;
     }
-    if (changed) await this.reconcile();
+  }
+
+  protected override async afterSessionSave(sourceTable: Table) {
+    if (sourceTable.name === "users") await this.reconcile();
   }
 
   private mutation = (
@@ -310,6 +361,8 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
 
   private addUser = this.mutation("addUser", async (params) => {
     const groupIds = optionalStringArray(params, "group_ids");
+    const username = requiredString(params, "username");
+    await this.assertUsernameIsUnique(username);
     await this.store.addUser({
       email: optionalString(params, "email"),
       emailVerified: optionalBoolean(params, "emailVerified"),
@@ -317,7 +370,7 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
       firstName: optionalString(params, "firstName"),
       lastName: optionalString(params, "lastName"),
       temporary_password: optionalString(params, "temporary_password"),
-      username: requiredString(params, "username"),
+      username,
     });
     if (groupIds) {
       const user = await this.store.findUserByUsername(
@@ -333,6 +386,8 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
   private updateUser = this.mutation("updateUser", async (params) => {
     const groupIds = optionalStringArray(params, "group_ids");
     const userId = requiredString(params, "userId");
+    const username = optionalString(params, "username");
+    if (username) await this.assertUsernameIsUnique(username, userId);
     await this.store.updateUser({
       email: optionalString(params, "email"),
       emailVerified: optionalBoolean(params, "emailVerified"),
@@ -341,7 +396,7 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
       lastName: optionalString(params, "lastName"),
       temporary_password: optionalString(params, "temporary_password"),
       userId,
-      username: optionalString(params, "username"),
+      username,
     });
     if (groupIds) {
       await this.store.syncUserGroups(userId, groupIds);
@@ -466,20 +521,10 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
   private getUserModuleAccessOptions: ServiceHandler = async (request) => {
     try {
       const params = readParams(request, "getUserModuleAccessOptions");
-      const access = await this.store.getUserModuleAccessOptions(
-        requiredString(params, "userId"),
-      );
       return {
-        data: {
-          ...access,
-          modules: access.modules.map((module) => ({
-            ...module,
-            groups: module.groups.map((group) => ({
-              ...group,
-              isDefault: /\bread\b/i.test(group.groupName),
-            })),
-          })),
-        },
+        data: await this.store.getUserModuleAccessOptions(
+          requiredString(params, "userId"),
+        ),
         type: "SUCCESS_RESULT",
       };
     } catch (error) {
@@ -493,6 +538,16 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
       parseAssignments(requiredString(params, "assignments")),
     ),
   );
+
+  private async assertUsernameIsUnique(username: string, userId?: string) {
+    const normalizedUsername = username.toLocaleLowerCase();
+    const existingUser = (await this.store.snapshot()).users.find(
+      (user) =>
+        user.id !== userId &&
+        user.username.toLocaleLowerCase() === normalizedUsername,
+    );
+    if (existingUser) throw new Error("username must be unique");
+  }
 }
 
 export const userAdminModule = new UserAdminModule();

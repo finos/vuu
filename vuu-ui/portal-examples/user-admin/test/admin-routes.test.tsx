@@ -15,7 +15,7 @@ const remoteModules = [
     description: "Manage users",
     id: 1,
     location: "/Admin/Users",
-    loginRole: "user-admin-access",
+    accessRole: "user-admin-access",
     mfComponent: "UserAdmin",
     mfScope: "userAdmin",
     mfUrl: "http://localhost:5007",
@@ -35,9 +35,9 @@ vi.mock("../src/pages/overview/OverviewPage", () => ({
     return (
       <div>
         Overview page
-        {modules.map(({ clientIdentifier, loginRole }) => (
+        {modules.map(({ clientIdentifier, accessRole }) => (
           <span key={clientIdentifier}>
-            {clientIdentifier}:{loginRole}
+            {clientIdentifier}:{accessRole}
           </span>
         ))}
       </div>

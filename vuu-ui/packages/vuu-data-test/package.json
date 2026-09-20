@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@heswell/module-admin": "1.0.0",
-    "@heswell/user-admin": "1.0.0",
+    "@heswell/user-admin": "1.0.1",
     "@vuu-ui/vuu-data-editing": "3.3.12",
     "@vuu-ui/vuu-data-local": "3.3.12",
     "@vuu-ui/vuu-utils": "3.3.12"
