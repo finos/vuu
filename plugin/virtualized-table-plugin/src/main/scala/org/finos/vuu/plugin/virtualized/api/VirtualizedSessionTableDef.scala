@@ -15,7 +15,7 @@ abstract class VirtualizedSessionTableDef(
                                            override val options: TableDefOptions,
                                            remoteColumns: Array[VirtualizedSessionTableColumn],
                                            remotePermissionFilterSpecFunction: ViewPort => FilterSpec,
-                                           refreshRate: Duration
+                                           refreshRateMillis: Long
                                          )
   extends SessionTableDef(name, keyField, remoteColumns.map(f => f.asInstanceOf[Column]), options) {
 
@@ -33,7 +33,7 @@ abstract class VirtualizedSessionTableDef(
 
   def getRemoteColumnMapping: Map[String, VirtualizedSessionTableColumn] = remoteMapping
 
-  def getRefreshRate: Duration = refreshRate
+  def getRefreshRateMillis: Long = refreshRateMillis
 
 }
 
@@ -44,7 +44,7 @@ case class SimpleVirtualizedSessionTableDef(
                                              remotePermissionFilterSpecFunction: ViewPort => FilterSpec = _ => FilterSpec(""),
                                              refreshRate: Duration = Duration.ofMillis(250),
                                              override val options: TableDefOptions = TableDefOptions(),
-                                           ) extends VirtualizedSessionTableDef(tableName, tableKeyField, options, remoteColumns, remotePermissionFilterSpecFunction, refreshRate)
+                                           ) extends VirtualizedSessionTableDef(tableName, tableKeyField, options, remoteColumns, remotePermissionFilterSpecFunction, refreshRate.toMillis)
 
 case class AliasedVirtualizedSessionTableDef(
                                               remoteName: String,
@@ -55,7 +55,7 @@ case class AliasedVirtualizedSessionTableDef(
                                               remotePermissionFilterSpecFunction: ViewPort => FilterSpec = _ => FilterSpec(""),
                                               refreshRate: Duration = Duration.ofMillis(250),
                                               override val options: TableDefOptions = TableDefOptions(),
-                                            ) extends VirtualizedSessionTableDef(tableName, tableKeyField, options, remoteColumns, remotePermissionFilterSpecFunction, refreshRate) {
+                                            ) extends VirtualizedSessionTableDef(tableName, tableKeyField, options, remoteColumns, remotePermissionFilterSpecFunction, refreshRate.toMillis) {
 
   override def getRemoteTableName: String = remoteName
 

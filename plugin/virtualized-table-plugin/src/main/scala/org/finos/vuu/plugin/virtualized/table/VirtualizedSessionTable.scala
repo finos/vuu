@@ -3,27 +3,29 @@ package org.finos.vuu.plugin.virtualized.table
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.SessionTableDef
 import org.finos.vuu.core.table.{ColumnValueProvider, InMemSessionDataTable, RowWithData, TableData}
 import org.finos.vuu.net.ClientSessionId
+import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
 import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{EmptyRange, ViewPort, ViewPortRange}
 
 class VirtualizedSessionTable(clientSessionId: ClientSessionId,
-                              sessionTableDef: SessionTableDef,
+                              virtualizedSessionTableDef: VirtualizedSessionTableDef,
                               joinTableProvider: JoinTableProvider,
                               val cacheSize: Int = 10_000)
-                             (implicit metrics: MetricsProvider, clock: Clock) extends InMemSessionDataTable(clientSessionId, sessionTableDef, joinTableProvider) with StrictLogging {
+                             (implicit metrics: MetricsProvider, clock: Clock) extends InMemSessionDataTable(clientSessionId, virtualizedSessionTableDef, joinTableProvider) with StrictLogging {
 
   @volatile private var nextRefreshTime: Long = 0
   @volatile private var lastViewPortHash: Int = 0
   @volatile private var lastViewPortRange: ViewPortRange = EmptyRange
     
-  override def toString: String = s"VirtualizedSessionTable(tableDef=${sessionTableDef.name}, name=$name)"
+  override def toString: String = s"VirtualizedSessionTable(tableDef=${virtualizedSessionTableDef.name}, name=$name)"
 
   override protected def createDataTableData(): TableData = {
     new VirtualizedSessionTableData(cacheSize)
   }
+
+  override def getTableDef: VirtualizedSessionTableDef = virtualizedSessionTableDef
 
   def finishRefresh(viewPortHash: Int, viewPortRange: ViewPortRange, nextRefresh: Long): Unit = {
     lastViewPortHash = viewPortHash

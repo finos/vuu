@@ -48,7 +48,7 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       simpleDef.options.rangeSettings.maxRangeWidth shouldEqual 1000
 
       And("default refresh rate should be 250 ms")
-      simpleDef.getRefreshRate shouldEqual Duration.ofMillis(250)
+      simpleDef.getRefreshRateMillis shouldEqual 250L
     }
 
     Scenario("Creating an AliasedVirtualizedSessionTableDef") {
@@ -94,7 +94,7 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       aliasedDef.options.rangeSettings.maxRangeWidth shouldEqual 1000
 
       And("default refresh rate should be 250 ms")
-      aliasedDef.getRefreshRate shouldEqual Duration.ofMillis(250)
+      aliasedDef.getRefreshRateMillis shouldEqual 250L
     }
 
   }

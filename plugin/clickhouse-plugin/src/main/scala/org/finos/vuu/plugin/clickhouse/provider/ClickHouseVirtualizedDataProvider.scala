@@ -1,7 +1,6 @@
 package org.finos.vuu.plugin.clickhouse.provider
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.logging.LogAtFrequency
 import org.finos.toolbox.time.Clock
 import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
@@ -23,19 +22,17 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
   private val typeAheadProvider = ClickHouseTypeAheadProvider(client, tableDef, filterFactory)
   private val sortFactory = ClickHouseSortFactory(tableDef)
   private val permissionFunction = tableDef.getRemotePermissionFilterSpecFunction
-  private val refreshRate = tableDef.getRefreshRate.toMillis
-  
-  override def runOnceInternal(viewPort: ViewPort): Unit = {
+
+  override def refreshSessionTable(viewPort: ViewPort, table: VirtualizedSessionTable): Unit = {
     logger.trace("[ClickHouseVirtualizedDataProvider] Starting runOnce")
 
-    val structuralHash = viewPort.getStructuralHashCode()
-    val viewPortRange = viewPort.getRange
     val clauseWithParams = filterFactory.build(viewPort.filterSpec, permissionFunction.apply(viewPort))
     val orderBy = sortFactory.build(viewPort.sortSpec)
+    val viewPortRange = viewPort.getRange
     val offset = viewPortRange.from
     val limit = viewPortRange.to - offset
 
-    logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading rows from ClickHouse range ${viewPort.getRange.from} to ${viewPort.getRange.to} filter=$clauseWithParams sort=$orderBy")
+    logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading rows from ClickHouse range ${viewPortRange.from} to ${viewPortRange.to} filter=$clauseWithParams sort=$orderBy")
 
     val queryStart = clock.now()
     val tableSize = tableSizeProvider.getTableSize(clauseWithParams)
@@ -44,60 +41,57 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
 
     logger.trace(s"[ClickHouseVirtualizedDataProvider] Updating session table")
 
-    viewPort.table.asTable match {
-      case tbl: VirtualizedSessionTable =>
-
-        logger.trace(s"[ClickHouseVirtualizedDataProvider] Setting range to $offset -> ${offset + rowsWithData.length}")
-        val (millisRange, _) = timeIt { tbl.setRange(offset, offset + rowsWithData.length) }
-
-        logger.trace(s"[ClickHouseVirtualizedDataProvider] Setting table size to $tableSize")
-        val (millisSize, _) = timeIt { tbl.setSize(tableSize) }
-
-        logger.trace(s"[ClickHouseVirtualizedDataProvider] Adding ${rowsWithData.length} rows")
-        val (millisRows, _) = timeIt {
-          val n = rowsWithData.length
-          val now = clock.now()
-
-          var i = 0
-          while (i < n) {
-            val rowWithData = rowsWithData(i)
-            val tableIndex = offset + i
-            logger.trace(s"Publishing update for $rowWithData to index $tableIndex")
-            tbl.processUpdateForIndex(
-              tableIndex,
-              rowWithData.key,
-              rowWithData,
-              now
-            )
-            i += 1
-          }
-        }
-
-        logger.trace("[ClickHouseVirtualizedDataProvider] Getting Primary Keys")
-        val (millisGetKeys, tableKeys) = timeIt { tbl.primaryKeys }
-
-        logger.trace("[ClickHouseVirtualizedDataProvider] Setting Primary Keys")
-        val (millisSetKeys, _) = timeIt { viewPort.setKeys(new VirtualizedViewPortKeys(tableKeys)) }
-
-        logger.trace("[ClickHouseVirtualizedDataProvider] Finish refresh")
-        val (millisFinishRefresh, _) = timeIt {
-          tbl.finishRefresh(structuralHash, viewPortRange, clock.now() + refreshRate)
-        }
-
-        logger.debug(
-          "[ClickHouseVirtualizedDataProvider] Complete runOnce on {}. dataQuery={} millisRange={} millisSize={} millisRows={} millisGetKeys={} millisSetKeys={} millisFinishRefresh={}",
-          viewPort.id,
-          dataQueryMillis,
-          millisRange,
-          millisSize,
-          millisRows,
-          millisGetKeys,
-          millisSetKeys,
-          millisFinishRefresh
-        )       
-      case _ =>
-        logger.warn("[ClickHouseVirtualizedDataProvider] Table is not a VirtualizedSessionTable")
+    logger.trace(s"[ClickHouseVirtualizedDataProvider] Setting range to $offset -> ${offset + rowsWithData.length}")
+    val (millisRange, _) = timeIt {
+      table.setRange(offset, offset + rowsWithData.length)
     }
+
+    logger.trace(s"[ClickHouseVirtualizedDataProvider] Setting table size to $tableSize")
+    val (millisSize, _) = timeIt {
+      table.setSize(tableSize)
+    }
+
+    logger.trace(s"[ClickHouseVirtualizedDataProvider] Adding ${rowsWithData.length} rows")
+    val (millisRows, _) = timeIt {
+      val n = rowsWithData.length
+      val now = clock.now()
+
+      var i = 0
+      while (i < n) {
+        val rowWithData = rowsWithData(i)
+        val tableIndex = offset + i
+        logger.trace(s"Publishing update for $rowWithData to index $tableIndex")
+        table.processUpdateForIndex(
+          tableIndex,
+          rowWithData.key,
+          rowWithData,
+          now
+        )
+        i += 1
+      }
+    }
+
+    logger.trace("[ClickHouseVirtualizedDataProvider] Getting Primary Keys")
+    val (millisGetKeys, tableKeys) = timeIt {
+      table.primaryKeys
+    }
+
+    logger.trace("[ClickHouseVirtualizedDataProvider] Setting Primary Keys")
+    val (millisSetKeys, _) = timeIt {
+      viewPort.setKeys(new VirtualizedViewPortKeys(tableKeys))
+    }
+
+    logger.debug(
+      "[ClickHouseVirtualizedDataProvider] Complete runOnce on {}. dataQuery={} millisRange={} millisSize={} millisRows={} millisGetKeys={} millisSetKeys={}",
+      viewPort.id,
+      dataQueryMillis,
+      millisRange,
+      millisSize,
+      millisRows,
+      millisGetKeys,
+      millisSetKeys
+    )
+
   }
 
   override def subscribe(key: String): Unit = {}
