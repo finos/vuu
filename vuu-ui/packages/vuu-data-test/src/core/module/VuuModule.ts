@@ -129,6 +129,10 @@ export abstract class VuuModule<T extends string = string>
   protected get includeDefaultServices() {
     return true;
   }
+  protected async beforeSessionSave(
+    _sourceTable: Table,
+    _sessionTable: Table,
+  ) {}
 
   getTableSchema(tableName: string) {
     return (
@@ -815,6 +819,17 @@ export abstract class VuuModule<T extends string = string>
         const sourceTable = this.tables[sourceTableName as T];
 
         if (rpcRequest.params.save === true) {
+          try {
+            await this.beforeSessionSave(sourceTable, sessionTable);
+          } catch (error) {
+            return {
+              errorMessage:
+                error instanceof Error
+                  ? error.message
+                  : "Unable to prepare session changes",
+              type: "ERROR_RESULT",
+            };
+          }
           let rejectedCount = 0;
           const vuuMsgIdx = sessionTable.map[this.#sessionTableMessageColumn];
           const actionIdx = sessionTable.map.vuuAction;

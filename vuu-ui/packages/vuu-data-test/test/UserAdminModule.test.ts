@@ -5,10 +5,8 @@ import {
 import { describe, expect, it, vi } from "vitest";
 import { Range } from "@vuu-ui/vuu-utils";
 import moduleContainer from "../src/core/module/ModuleContainer";
-import {
-  USER_ADMIN_INITIAL_SNAPSHOT,
-  UserAdminModule,
-} from "../src/user-admin/UserAdminModule";
+import { UserAdminModule } from "../src/user-admin/UserAdminModule";
+import { USER_ADMIN_INITIAL_SNAPSHOT } from "../src/user-admin/initialSnapshot";
 import type { TickingArrayDataSource } from "../src/TickingArrayDataSource";
 
 const createModule = () =>
@@ -59,8 +57,9 @@ describe("UserAdminModule", () => {
         (row) => row[tables.user_groups.map.membership_id],
       ),
     ).toEqual([
-      "user-alice:group-orders",
-      "user-bob:group-risk",
+      "user-alice:group-user-admin-read",
+      "user-bob:group-module-admin-read",
+      "user-alice:group-basket-trading-read",
       "user-alice:group-admins",
     ]);
     expect(
@@ -68,13 +67,14 @@ describe("UserAdminModule", () => {
         (row) => row[tables.user_group_roles.map.id],
       ),
     ).toEqual([
-      "user-alice:group-orders:group-orders:role-orders-access",
-      "user-bob:group-risk:group-risk:role-risk-access",
+      "user-alice:group-user-admin-read:group-user-admin-read:role-user-admin-access",
+      "user-bob:group-module-admin-read:group-module-admin-read:role-module-admin-access",
+      "user-alice:group-basket-trading-read:group-basket-trading-read:role-basket-trading-access",
       "user-alice:group-admins:group-admins:role-admin",
     ]);
     expect(
       tables.users.findByKey("user-alice")?.[tables.users.map.module_access],
-    ).toBe("orders-access");
+    ).toBe("basket-trading-access,user-admin-access");
   });
 
   it("registers every shared RPC on each table", () => {
@@ -93,7 +93,7 @@ describe("UserAdminModule", () => {
     await expect(
       rpc(source, "addUser", {
         email: "carol@example.com",
-        group_ids: ["group-orders"],
+        group_ids: ["group-user-admin-read"],
         username: "carol",
       }),
     ).resolves.toMatchObject({ type: "SUCCESS_RESULT" });
@@ -103,12 +103,12 @@ describe("UserAdminModule", () => {
       ],
     ).toBe("carol");
     expect(
-      module.tables.user_groups.findByKey("user-1:group-orders"),
+      module.tables.user_groups.findByKey("user-1:group-user-admin-read"),
     ).toBeDefined();
 
     await rpc(source, "updateUser", {
       firstName: "Caroline",
-      group_ids: ["group-risk"],
+      group_ids: ["group-module-admin-read"],
       userId: "user-1",
     });
     expect(
@@ -116,17 +116,19 @@ describe("UserAdminModule", () => {
         module.tables.users.map.first_name
       ],
     ).toBe("Caroline");
-    expect(module.tables.user_groups.findByKey("user-1:group-orders")).toBe(
+    expect(
+      module.tables.user_groups.findByKey("user-1:group-user-admin-read"),
+    ).toBe(
       undefined,
     );
     expect(
-      module.tables.user_groups.findByKey("user-1:group-risk"),
+      module.tables.user_groups.findByKey("user-1:group-module-admin-read"),
     ).toBeDefined();
 
     await rpc(source, "deleteUser", { userId: "user-1" });
     expect(module.tables.users.findByKey("user-1")).toBeUndefined();
     expect(
-      module.tables.user_groups.findByKey("user-1:group-risk"),
+      module.tables.user_groups.findByKey("user-1:group-module-admin-read"),
     ).toBeUndefined();
   });
 
@@ -191,22 +193,22 @@ describe("UserAdminModule", () => {
     const source = dataSource(module);
 
     await rpc(source, "assignUserToGroup", {
-      groupId: "group-risk",
+      groupId: "group-module-admin-read",
       userId: "user-alice",
     });
     expect(
       module.tables.user_group_roles.findByKey(
-        "user-alice:group-risk:group-risk:role-risk-access",
+        "user-alice:group-module-admin-read:group-module-admin-read:role-module-admin-access",
       ),
     ).toBeDefined();
 
     await rpc(source, "removeUserFromGroup", {
-      groupId: "group-risk",
+      groupId: "group-module-admin-read",
       userId: "user-alice",
     });
     expect(
       module.tables.user_group_roles.findByKey(
-        "user-alice:group-risk:group-risk:role-risk-access",
+        "user-alice:group-module-admin-read:group-module-admin-read:role-module-admin-access",
       ),
     ).toBeUndefined();
 
@@ -217,8 +219,8 @@ describe("UserAdminModule", () => {
       data: {
         modules: expect.arrayContaining([
           expect.objectContaining({
-            loginRole: "orders-access",
-            selectedGroupId: "group-orders",
+            loginRole: "basket-trading-access",
+            selectedGroupId: "group-basket-trading-read",
           }),
         ]),
       },
@@ -227,15 +229,23 @@ describe("UserAdminModule", () => {
 
     await rpc(source, "setUserModuleAccess", {
       assignments: JSON.stringify([
-        { groupId: "group-risk", loginRole: "risk-access" },
+        {
+          groupId: "group-module-admin-read",
+          loginRole: "module-admin-access",
+        },
       ]),
       userId: "user-alice",
     });
     expect(
-      module.tables.user_groups.findByKey("user-alice:group-orders"),
+      module.tables.user_groups.findByKey("user-alice:group-user-admin-read"),
     ).toBeUndefined();
     expect(
-      module.tables.user_groups.findByKey("user-alice:group-risk"),
+      module.tables.user_groups.findByKey(
+        "user-alice:group-basket-trading-read",
+      ),
+    ).toBeUndefined();
+    expect(
+      module.tables.user_groups.findByKey("user-alice:group-module-admin-read"),
     ).toBeDefined();
     expect(
       module.tables.user_groups.findByKey("user-alice:group-admins"),

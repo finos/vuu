@@ -17,6 +17,7 @@ import {
   useContext,
   useMemo,
 } from "react";
+import type { ModulePermissions } from "../user-edit-form/ModulePermissions";
 import { PermissionGroupPicker } from "./PermissionGroupPicker";
 
 import "./ModulePicker.css";
@@ -33,8 +34,17 @@ const getItemLabel = (item: ItemDescriptor) => item.label ?? item.name;
 
 /** Extends ItemDescriptor with the permission options and current selection used to populate
  * the ComboBox embedded within the custom SelectedItem. */
+export interface ModulePickerPermissionDescriptor {
+  label?: string;
+  name: string;
+}
+
+export type ModulePickerPermission = string | ModulePickerPermissionDescriptor;
+
 export interface ModulePickerModuleDescriptor extends ItemDescriptor {
-  permissions: string[];
+  clientIdentifier?: string;
+  defaultPermission?: string;
+  permissions: ModulePickerPermission[];
   selectedPermissions: string[];
 }
 const toItemDescriptor = ({
@@ -52,6 +62,7 @@ const toItemDescriptor = ({
 interface ModuleDescriptorContextValue {
   moduleDescriptors: Map<string, ModulePickerModuleDescriptor>;
   onPermissionsChange: (name: string, selectedPermissions: string[]) => void;
+  permissionMultiselect: boolean;
 }
 
 const ModuleDescriptorContext =
@@ -83,7 +94,9 @@ const useModuleDescriptor = (name: string): ModulePickerModuleDescriptor => {
   const { moduleDescriptors } = useModuleDescriptorContext();
   const moduleDescriptor = moduleDescriptors.get(name);
   if (!moduleDescriptor) {
-    throw Error(`[useModuleDescriptor] no ModuleDescriptor found for '${name}'`);
+    throw Error(
+      `[useModuleDescriptor] no ModuleDescriptor found for '${name}'`,
+    );
   }
   return moduleDescriptor;
 };
@@ -97,7 +110,8 @@ const ModulePickerSelectedListItem = ({
   ...optionProps
 }: SelectedListItemProps) => {
   const moduleDescriptor = useModuleDescriptor(item.name);
-  const { onPermissionsChange } = useModuleDescriptorContext();
+  const { onPermissionsChange, permissionMultiselect } =
+    useModuleDescriptorContext();
   const handleSelectedPermissionsChange = useCallback(
     (selectedPermissions: string[]) => {
       onPermissionsChange(item.name, selectedPermissions);
@@ -135,6 +149,7 @@ const ModulePickerSelectedListItem = ({
       </span>
       <PermissionGroupPicker
         item={moduleDescriptor}
+        multiselect={permissionMultiselect}
         onSelectedPermissionsChange={handleSelectedPermissionsChange}
       />
       <IconButton
@@ -190,22 +205,27 @@ const ModulePickerAvailableListItem = ({
   );
 };
 
+export type SelectedModulesChangeHandler = (
+  selectedModules: ModulePickerModuleDescriptor[],
+) => void;
 export interface ModulePickerProps
   extends Omit<
     ItemPickerProps,
     "allItems" | "selectedItems" | "onSelectedItemsChange"
   > {
   allModules: ModulePickerModuleDescriptor[];
-  selectedModules: ModulePickerModuleDescriptor[];
-  onSelectedModulesChange: (
-    selectedModules: ModulePickerModuleDescriptor[],
-  ) => void;
+  modulePermissions?: ModulePermissions;
+  onSelectedModulesChange: SelectedModulesChangeHandler;
+  permissionMultiselect?: boolean;
+  selectedModules?: ModulePickerModuleDescriptor[];
 }
 
 export const ModulePicker = ({
   allModules,
-  selectedModules,
+  modulePermissions,
   onSelectedModulesChange,
+  permissionMultiselect = true,
+  selectedModules: selectedModulesProp,
   ...itemPickerProps
 }: ModulePickerProps) => {
   const moduleDescriptors = useMemo(
@@ -215,6 +235,18 @@ export const ModulePicker = ({
   const allItems = useMemo(
     () => allModules.map(toItemDescriptor),
     [allModules],
+  );
+  const selectedModules = useMemo(
+    () => {
+      if (!modulePermissions) return selectedModulesProp ?? [];
+      return allModules
+        .filter(({ name }) => modulePermissions.hasApplication(name))
+        .map((module) => ({
+          ...module,
+          selectedPermissions: [...modulePermissions.groupIdsFor(module.name)],
+        }));
+    },
+    [allModules, modulePermissions, selectedModulesProp],
   );
   const selectedItems = useMemo(
     () => selectedModules.map(toItemDescriptor),
@@ -226,9 +258,7 @@ export const ModulePicker = ({
       const newSelectedModules = items.map(({ name }) => {
         const moduleDescriptor = moduleDescriptors.get(name);
         if (!moduleDescriptor) {
-          throw Error(
-            `[ModulePicker] no ModuleDescriptor found for '${name}'`,
-          );
+          throw Error(`[ModulePicker] no ModuleDescriptor found for '${name}'`);
         }
         return moduleDescriptor;
       });
@@ -248,8 +278,12 @@ export const ModulePicker = ({
   );
 
   const moduleDescriptorContextValue = useMemo(
-    () => ({ moduleDescriptors, onPermissionsChange: handlePermissionsChange }),
-    [moduleDescriptors, handlePermissionsChange],
+    () => ({
+      moduleDescriptors,
+      onPermissionsChange: handlePermissionsChange,
+      permissionMultiselect,
+    }),
+    [moduleDescriptors, handlePermissionsChange, permissionMultiselect],
   );
 
   return (

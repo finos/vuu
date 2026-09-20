@@ -7,7 +7,15 @@ import {
 } from "react";
 import type { ModulePickerModuleDescriptor } from "./ModulePicker";
 
-const getItemLabel = (item: ModulePickerModuleDescriptor) => item.label ?? item.name;
+const getItemLabel = (item: ModulePickerModuleDescriptor) =>
+  item.label ?? item.name;
+
+const permissionDescriptor = (
+  permission: ModulePickerModuleDescriptor["permissions"][number],
+) =>
+  typeof permission === "string"
+    ? { label: permission, name: permission }
+    : { label: permission.label ?? permission.name, name: permission.name };
 
 const stopOptionEvent = (event: SyntheticEvent) => {
     event.stopPropagation();
@@ -15,12 +23,20 @@ const stopOptionEvent = (event: SyntheticEvent) => {
 
 export const PermissionGroupPicker = ({
     item,
+    multiselect = true,
     onSelectedPermissionsChange,
 }: {
     item: ModulePickerModuleDescriptor;
+    multiselect?: boolean;
     onSelectedPermissionsChange: (selectedPermissions: string[]) => void;
 }) => {
     const [value, setValue] = useState("");
+    const selectedPermissions =
+        item.selectedPermissions.length > 0
+            ? item.selectedPermissions
+            : item.permissions.length > 0
+                ? [permissionDescriptor(item.permissions[0]).name]
+                : [];
     const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         setValue(event.target.value);
     }, []);
@@ -42,19 +58,23 @@ export const PermissionGroupPicker = ({
         >
             <ComboBox
                 aria-label={`${getItemLabel(item)} permission group`}
+                bordered
                 className="vuuModulePicker-permission"
-                defaultSelected={item.selectedPermissions ?? [item.permissions[0]]}
-                multiselect={true}
+                multiselect={multiselect}
                 onChange={handleChange}
                 onSelectionChange={handleSelectionChange}
+                selected={selectedPermissions}
                 selectOnTab
                 value={value}
             >
-                {item.permissions.map((permission) => (
-                    <Option key={permission} value={permission}>
-                        {permission}
-                    </Option>
-                ))}
+                {item.permissions.map((permission) => {
+                    const { label, name } = permissionDescriptor(permission);
+                    return (
+                        <Option key={name} value={name}>
+                            {label}
+                        </Option>
+                    );
+                })}
             </ComboBox>
         </span>
     );

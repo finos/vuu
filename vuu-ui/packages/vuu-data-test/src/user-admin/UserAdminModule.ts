@@ -1,6 +1,6 @@
 import {
   USER_ADMIN_RPC_CONTRACT,
-  USER_ADMIN_TABLE_SCHEMAS,
+  USER_ADMIN_TABLE_SCHEMAS as schema,
   type SupportedUserAdminRpc,
   type UserAdminSnapshot,
   type UserAdminTableName,
@@ -9,214 +9,27 @@ import {
 import { InMemoryUserAdminStore } from "@heswell/user-admin/in-memory";
 import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import {
+  VuuModule,
   type RpcService,
   type ServiceHandler,
-  VuuModule,
 } from "../core/module/VuuModule";
-import { buildDataColumnMapFromSchema, type Table } from "../Table";
 import tableContainer from "../core/table/TableContainer";
+import { buildDataColumnMapFromSchema, Table } from "../Table";
+import { USER_ADMIN_INITIAL_SNAPSHOT } from './initialSnapshot';
 import { reconcileUserAdminTables } from "./snapshot-projection";
 
 type NamedParams = Record<string, unknown>;
 type UserAdminTables = Record<UserAdminTableName, Table>;
 
-const createTable = (tableName: UserAdminTableName) => {
-  const schema = USER_ADMIN_TABLE_SCHEMAS[tableName] satisfies TableSchema;
-  return tableContainer.createTable(
-    schema,
-    [],
-    buildDataColumnMapFromSchema(schema),
-  );
-};
-
 const createTables = (): UserAdminTables => ({
-  clients: createTable("clients"),
-  group_roles: createTable("group_roles"),
-  groups: createTable("groups"),
-  roles: createTable("roles"),
-  user_group_roles: createTable("user_group_roles"),
-  user_groups: createTable("user_groups"),
-  users: createTable("users"),
+  clients: tableContainer.createTable(schema.clients),
+  group_roles: tableContainer.createTable(schema.group_roles),
+  groups: tableContainer.createTable(schema.groups),
+  roles: tableContainer.createTable(schema.roles),
+  user_group_roles: tableContainer.createTable(schema.user_group_roles),
+  user_groups: tableContainer.createTable(schema.user_groups),
+  users: tableContainer.createTable(schema.users),
 });
-
-export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
-  clients: [
-    {
-      clientId: "vuu-portal",
-      description: "VUU portal",
-      enabled: true,
-      id: "client-portal",
-      name: "VUU Portal",
-    },
-    {
-      clientId: "vuu-orders",
-      description: "Order management",
-      enabled: true,
-      id: "client-orders",
-      name: "VUU Orders",
-    },
-  ],
-  clientRoles: [
-    {
-      client: {
-        clientId: "vuu-portal",
-        id: "client-portal",
-        name: "VUU Portal",
-      },
-      role: {
-        clientRole: true,
-        containerId: "client-portal",
-        id: "role-orders-access",
-        name: "orders-access",
-      },
-    },
-    {
-      client: {
-        clientId: "vuu-portal",
-        id: "client-portal",
-        name: "VUU Portal",
-      },
-      role: {
-        clientRole: true,
-        containerId: "client-portal",
-        id: "role-risk-access",
-        name: "risk-access",
-      },
-    },
-    {
-      client: {
-        clientId: "realm",
-        id: "realm",
-        name: "Realm",
-      },
-      role: {
-        id: "role-admin",
-        name: "admin",
-      },
-    },
-  ],
-  groupRoles: [
-    {
-      client: {
-        clientId: "vuu-portal",
-        id: "client-portal",
-        name: "VUU Portal",
-      },
-      group: {
-        id: "group-orders",
-        name: "orders-users",
-        path: "/vuu/orders-users",
-      },
-      role: {
-        id: "role-orders-access",
-        name: "orders-access",
-      },
-    },
-    {
-      client: {
-        clientId: "vuu-portal",
-        id: "client-portal",
-        name: "VUU Portal",
-      },
-      group: {
-        id: "group-risk",
-        name: "risk-users",
-        path: "/vuu/risk-users",
-      },
-      role: {
-        id: "role-risk-access",
-        name: "risk-access",
-      },
-    },
-    {
-      group: {
-        id: "group-admins",
-        name: "administrators",
-        path: "/vuu/administrators",
-      },
-      role: {
-        id: "role-admin",
-        name: "admin",
-      },
-    },
-  ],
-  groups: [
-    {
-      id: "group-orders",
-      name: "orders-users",
-      path: "/vuu/orders-users",
-    },
-    {
-      id: "group-risk",
-      name: "risk-users",
-      path: "/vuu/risk-users",
-    },
-    {
-      id: "group-admins",
-      name: "administrators",
-      path: "/vuu/administrators",
-    },
-  ],
-  timestamp: 1_710_000_000_000,
-  userGroups: [
-    {
-      group: {
-        id: "group-orders",
-        name: "orders-users",
-        path: "/vuu/orders-users",
-      },
-      user: {
-        email: "alice@example.com",
-        id: "user-alice",
-        username: "alice",
-      },
-    },
-    {
-      group: {
-        id: "group-risk",
-        name: "risk-users",
-        path: "/vuu/risk-users",
-      },
-      user: {
-        email: "bob@example.com",
-        id: "user-bob",
-        username: "bob",
-      },
-    },
-    {
-      group: {
-        id: "group-admins",
-        name: "administrators",
-        path: "/vuu/administrators",
-      },
-      user: {
-        email: "alice@example.com",
-        id: "user-alice",
-        username: "alice",
-      },
-    },
-  ],
-  users: [
-    {
-      email: "alice@example.com",
-      emailVerified: true,
-      enabled: true,
-      firstName: "Alice",
-      id: "user-alice",
-      lastName: "Admin",
-      username: "alice",
-    },
-    {
-      email: "bob@example.com",
-      emailVerified: true,
-      enabled: true,
-      firstName: "Bob",
-      id: "user-bob",
-      lastName: "Builder",
-      username: "bob",
-    },
-  ],
-};
 
 const errorResult = (error: unknown) => ({
   errorMessage:
@@ -319,6 +132,33 @@ const parseAssignments = (value: string): UserModuleAccessAssignment[] => {
   return parsed;
 };
 
+const parseSessionPermissions = (value: unknown): UserModuleAccessAssignment[] => {
+  if (typeof value !== "string") {
+    throw new Error("permissions must be a serialized array");
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    throw new Error("permissions must be valid JSON");
+  }
+  if (
+    !Array.isArray(parsed) ||
+    parsed.some(
+      (application) =>
+        !isRecord(application) ||
+        typeof application.loginRole !== "string" ||
+        !Array.isArray(application.groupIds) ||
+        application.groupIds.some((groupId) => typeof groupId !== "string"),
+    )
+  ) {
+    throw new Error("permissions must contain application group assignments");
+  }
+  return parsed.flatMap(({ groupIds, loginRole }) =>
+    (groupIds as string[]).map((groupId) => ({ groupId, loginRole })),
+  );
+};
+
 export class UserAdminModule extends VuuModule<UserAdminTableName> {
   #tables: UserAdminTables;
   readonly store: InMemoryUserAdminStore;
@@ -331,7 +171,7 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
   }
 
   get schemas(): Record<UserAdminTableName, Readonly<TableSchema>> {
-    return USER_ADMIN_TABLE_SCHEMAS;
+    return schema;
   }
 
   get tables() {
@@ -394,6 +234,63 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
 
   async reconcile() {
     reconcileUserAdminTables(await this.store.snapshot(), this.#tables);
+  }
+
+  protected override createSessionTable(
+    sourceTable: Table,
+    sessionTableName: string,
+    editSessionMode: import("@vuu-ui/vuu-data-types").EditSessionMode | import("@vuu-ui/vuu-data-types").CopyOption,
+    dataSource: import("../TickingArrayDataSource").TickingArrayDataSource,
+    sessionType?: import("@vuu-ui/vuu-data-types").SessionType,
+  ) {
+    const sessionTable = super.createSessionTable(
+      sourceTable,
+      sessionTableName,
+      editSessionMode,
+      dataSource,
+      sessionType,
+    );
+    if (sourceTable.name !== "users") return sessionTable;
+
+    const sessionSchema = {
+      ...sessionTable.schema,
+      columns: sessionTable.schema.columns.concat({
+        name: "permissions",
+        serverDataType: "string" as const,
+      }),
+    };
+    return new Table(
+      sessionSchema,
+      sessionTable.data.map((row) => row.concat("")),
+      buildDataColumnMapFromSchema(sessionSchema),
+    );
+  }
+
+  protected override async beforeSessionSave(
+    sourceTable: Table,
+    sessionTable: Table,
+  ) {
+    if (sourceTable.name !== "users") return;
+    const permissionsIndex = sessionTable.map.permissions;
+    const actionIndex = sessionTable.map.vuuAction;
+    const userIdIndex = sessionTable.map.user_id;
+    let changed = false;
+
+    for (const row of sessionTable.data) {
+      if (
+        row[actionIndex] !== "editCell" ||
+        typeof row[permissionsIndex] !== "string" ||
+        row[permissionsIndex] === ""
+      ) {
+        continue;
+      }
+      await this.store.setUserModuleAccess(
+        String(row[userIdIndex]),
+        parseSessionPermissions(row[permissionsIndex]),
+      );
+      changed = true;
+    }
+    if (changed) await this.reconcile();
   }
 
   private mutation = (
@@ -569,10 +466,20 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
   private getUserModuleAccessOptions: ServiceHandler = async (request) => {
     try {
       const params = readParams(request, "getUserModuleAccessOptions");
+      const access = await this.store.getUserModuleAccessOptions(
+        requiredString(params, "userId"),
+      );
       return {
-        data: await this.store.getUserModuleAccessOptions(
-          requiredString(params, "userId"),
-        ),
+        data: {
+          ...access,
+          modules: access.modules.map((module) => ({
+            ...module,
+            groups: module.groups.map((group) => ({
+              ...group,
+              isDefault: /\bread\b/i.test(group.groupName),
+            })),
+          })),
+        },
         type: "SUCCESS_RESULT",
       };
     } catch (error) {

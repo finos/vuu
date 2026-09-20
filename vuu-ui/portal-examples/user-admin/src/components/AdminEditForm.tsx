@@ -364,8 +364,9 @@ export const AdminEditForm = ({
   };
   const Fields =
     entity === "users" ? UserForm : entity === "groups" ? GroupForm : RoleForm;
-  return (
-    <form className="vuuIdentityAdmin-form" onSubmit={save}>
+  const disabled = !ready || busy || persisted;
+  const notices = (
+    <>
       {!ready && !error ? <p role="status">Starting edit session...</p> : null}
       {error ? <p role="alert">{error}</p> : null}
       {missingRequired ? (
@@ -381,17 +382,28 @@ export const AdminEditForm = ({
           remaining operations; saved changes cannot be discarded.
         </p>
       ) : null}
+    </>
+  );
+  const saveDisabled =
+    !ready ||
+    busy ||
+    missingRequired ||
+    (entity === "users" && !!record && moduleAccessLoading);
+
+  return (
+    <form className="vuuIdentityAdmin-form" onSubmit={save}>
+      {notices}
       <Fields
         values={values}
         supports={supports}
         editing={!!record}
-        disabled={!ready || busy || persisted}
+        disabled={disabled}
         relationships={
           entity === "groups" ? (
             <AdminRelationshipField
               entity={entity}
               record={record}
-              disabled={!ready || busy || persisted}
+              disabled={disabled}
               changes={relationships}
               onChange={setRelationships}
             />
@@ -405,7 +417,7 @@ export const AdminEditForm = ({
         <ModuleAccessField
           access={moduleAccess}
           assignments={moduleAssignments}
-          disabled={!ready || busy || persisted}
+          disabled={disabled}
           error={moduleAccessError}
           loading={moduleAccessLoading}
           onChange={setModuleAssignments}
@@ -413,15 +425,7 @@ export const AdminEditForm = ({
         />
       ) : null}
       <div className="vuuIdentityAdmin-formActions">
-        <Button
-          type="submit"
-          disabled={
-            !ready ||
-            busy ||
-            missingRequired ||
-            (entity === "users" && !!record && moduleAccessLoading)
-          }
-        >
+        <Button type="submit" disabled={saveDisabled}>
           Save
         </Button>
         <Button type="button" disabled={busy} onClick={discard}>
