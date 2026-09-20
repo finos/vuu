@@ -56,6 +56,20 @@ describe("local portal module registry", () => {
         users: { table: { module: "USER_ADMIN", table: "users" } },
       },
     });
+    expect(
+      localPortalModuleRegistry.modules.map(({ accessRole, name }) => ({
+        accessRole,
+        name,
+      })),
+    ).toEqual([
+      { accessRole: "user-admin-access", name: "user-admin" },
+      { accessRole: "basket-trading-access", name: "basket-trading" },
+      {
+        accessRole: "feature-filter-table-access",
+        name: "feature-filter-table",
+      },
+      { accessRole: "module-admin-access", name: "module-admin" },
+    ]);
   });
 
   it("loads basket trading from its nginx endpoint", () => {
@@ -73,7 +87,7 @@ describe("local portal module registry", () => {
     expect(localPortalModuleRegistry.modules[3]).toMatchObject({
       clientIdentifier: "local-module-admin",
       id: "local-module-admin",
-      accessRole: "local",
+      accessRole: "module-admin-access",
       mfComponent: "ModuleAdminLocal",
       mfScope: "moduleAdmin",
       mfUrl: "http://localhost:5002",
