@@ -20,7 +20,7 @@ export const resolveModuleAccessValues = (
 
   return accessRoles.map((accessRole) => {
     const module = remoteModules.find(
-      ({ loginRole: moduleAccessRole }) => moduleAccessRole === accessRole,
+      ({ accessRole: moduleAccessRole }) => moduleAccessRole === accessRole,
     );
     return module?.title ?? module?.name ?? accessRole;
   });

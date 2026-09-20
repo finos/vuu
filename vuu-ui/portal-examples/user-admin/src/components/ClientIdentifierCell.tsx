@@ -11,7 +11,7 @@ export const resolveClientIdentifierLabel = (
   remoteModules: ReturnType<typeof usePortalModuleRegistry>["remoteModules"],
 ) => {
   const module = remoteModules.find(
-    ({ loginRole }) => loginRole === roleName,
+    ({ accessRole }) => accessRole === roleName,
   );
   return module?.clientIdentifier ?? String(clientIdentifier ?? "");
 };

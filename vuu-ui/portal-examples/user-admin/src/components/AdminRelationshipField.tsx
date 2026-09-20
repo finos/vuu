@@ -37,7 +37,9 @@ export const AdminRelationshipField = ({
   const ownerField = entity === "users" ? "user_id" : "group_id";
   const ownerId = record?.[columnFor(config, entity, ownerField)];
   const idField = entity === "users" ? "group_id" : "role_id";
-  const labelField = entity === "users" ? "group_name" : "role_name";
+  const labelField =
+    entity === "users" ? "group_display_name" : "role_display_name";
+  const fallbackLabelField = entity === "users" ? "group_name" : "role_name";
   const stage = (
     row: AdminRecord | undefined,
     action: RelationshipChange["action"],
@@ -73,7 +75,11 @@ export const AdminRelationshipField = ({
       {
         action,
         id,
-        label: String(row[columnFor(config, table, labelField)] ?? id),
+        label: String(
+          row[columnFor(config, table, labelField)] ??
+            row[columnFor(config, table, fallbackLabelField)] ??
+            id,
+        ),
         clientId: typeof client === "string" ? client : undefined,
         clientIdentifier,
       },

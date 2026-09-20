@@ -28,7 +28,7 @@ const remoteModules: RemoteModuleDescriptor[] = [
     description: "User administration",
     id: "user-admin",
     location: "/Administration",
-    loginRole: "user-admin-access",
+    accessRole: "user-admin-access",
     mfComponent: "UserAdmin",
     mfScope: "userAdmin",
     mfUrl: "http://localhost:5001/user-admin/mf-manifest.json",
@@ -42,7 +42,7 @@ const remoteModules: RemoteModuleDescriptor[] = [
     description: "Module administration",
     id: "module-admin",
     location: "/Administration",
-    loginRole: "module-admin-access",
+    accessRole: "module-admin-access",
     mfComponent: "ModuleAdmin",
     mfScope: "moduleAdmin",
     mfUrl: "http://localhost:5001/module-admin/mf-manifest.json",
@@ -56,7 +56,7 @@ const remoteModules: RemoteModuleDescriptor[] = [
     description: "Basket trading",
     id: "basket-trading",
     location: "/Trading",
-    loginRole: "basket-trading-access",
+    accessRole: "basket-trading-access",
     mfComponent: "BasketTrading",
     mfScope: "basketTrading",
     mfUrl: "http://localhost:5001/basket-trading/mf-manifest.json",
@@ -68,9 +68,9 @@ const remoteModules: RemoteModuleDescriptor[] = [
 ];
 
 const modulePickerModules: ModulePickerModuleDescriptor[] = remoteModules.map(
-  ({ loginRole, title }) => ({
+  ({ accessRole, title }) => ({
     label: title,
-    name: loginRole,
+    name: accessRole,
     permissions: [],
     selectedPermissions: [],
   }),

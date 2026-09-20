@@ -33,7 +33,11 @@ export interface UserEditFormProps {
 export const UserEditForm = ({ dataRow, dataSource }: UserEditFormProps) => {
   const { isEditMode, setEditMode } = useEditMode();
   const exitEditMode = useCallback(() => setEditMode(false), [setEditMode]);
-  const { editSession, onCancel: cancelEdit, onSave } = useEditable({
+  const {
+    editSession,
+    onCancel: cancelEdit,
+    onSave,
+  } = useEditable({
     dataSource,
     onCancel: exitEditMode,
     onSave: exitEditMode,
@@ -80,6 +84,7 @@ export const UserEditForm = ({ dataRow, dataSource }: UserEditFormProps) => {
               dataRow={dataRow}
               label="UserName"
               name="username"
+              readOnly
               required
             />
             <EditField
@@ -111,7 +116,8 @@ export const UserEditForm = ({ dataRow, dataSource }: UserEditFormProps) => {
               itemTypeName="remote module"
               modulePermissions={modulePermissions}
               onSelectedModulesChange={onSelectedModulesChange}
-              permissionMultiselect={false}
+              permissionMultiselect
+              readOnly={!isEditMode}
               searchForm={false}
             />
           </TabPanel>

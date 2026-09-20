@@ -15,6 +15,7 @@ export interface EditFieldProps {
   dataRow: DataRow;
   label: string;
   name: string;
+  readOnly?: boolean;
   required?: boolean;
   type?: EditFieldType;
 }
@@ -23,6 +24,7 @@ export const EditField = ({
   dataRow,
   label,
   name,
+  readOnly = false,
   required,
   type,
 }: EditFieldProps) => {
@@ -93,11 +95,15 @@ export const EditField = ({
     <FormField data-field={name} necessity={necessity}>
       <FormFieldLabel>{label}</FormFieldLabel>
       {isEditMode === false ? (
-        <Input readOnly bordered value={String(dataValue)} />
+        <Input
+          bordered
+          inputProps={{ readOnly: true }}
+          value={String(dataValue)}
+        />
       ) : type === "checkbox" ? (
         <Checkbox checked={Boolean(dataValue)} onChange={onCommit} />
       ) : (
-        <Input {...editProps} bordered />
+        <Input {...editProps} bordered readOnly={readOnly} />
       )}
     </FormField>
   );

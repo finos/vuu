@@ -54,7 +54,7 @@ export interface VuuModuleDescriptor {
   enabled?: boolean;
   id: number | string;
   location: string;
-  loginRole: string;
+  accessRole: string;
   mfComponent: string;
   mfScope: string;
   mfUrl: string;

@@ -21,6 +21,7 @@ const detailFields: Record<Entity, string[]> = {
     "role_count",
   ],
   groups: [
+    "group_display_name",
     "group_name",
     "group_path",
     "parent_group_id",
@@ -28,6 +29,7 @@ const detailFields: Record<Entity, string[]> = {
     "role_count",
   ],
   roles: [
+    "role_display_name",
     "role_name",
     "client_identifier",
     "client_name",

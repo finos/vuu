@@ -133,6 +133,10 @@ export abstract class VuuModule<T extends string = string>
     _sourceTable: Table,
     _sessionTable: Table,
   ) {}
+  protected async afterSessionSave(
+    _sourceTable: Table,
+    _sessionTable: Table,
+  ) {}
 
   getTableSchema(tableName: string) {
     return (
@@ -883,6 +887,17 @@ export abstract class VuuModule<T extends string = string>
           if (rejectedCount > 0) {
             return {
               errorMessage: "stale update",
+              type: "ERROR_RESULT",
+            };
+          }
+          try {
+            await this.afterSessionSave(sourceTable, sessionTable);
+          } catch (error) {
+            return {
+              errorMessage:
+                error instanceof Error
+                  ? error.message
+                  : "Unable to finalize session changes",
               type: "ERROR_RESULT",
             };
           }

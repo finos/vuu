@@ -2,7 +2,9 @@ import { usePortalModuleRegistry } from "@vuu-ui/core/portal";
 import type { EditSession } from "@vuu-ui/vuu-data-editing";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
+import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { errorMessage } from "../../data/admin-contract";
 import {
   loadUserModuleAccess,
   type ModuleAccessGroup,
@@ -19,25 +21,35 @@ import {
 
 const permissionDescriptor = ({
   groupId,
-  groupName,
-  groupPath,
-  privilege,
+  groupDisplayName,
 }: ModuleAccessGroup) => ({
-  label: [groupName, groupPath, privilege].filter(Boolean).join(" · "),
+  label: groupDisplayName,
   name: groupId,
 });
 
 export const useUserEditForm = (
   dataRow: DataRow,
   dataSource: DataSource,
-  editSession: EditSession,
+  editSession: Pick<EditSession, "commit">,
 ) => {
   const { remoteModules } = usePortalModuleRegistry();
+  const { showNotification } = useNotifications();
   const [moduleAccess, setModuleAccess] = useState<UserModuleAccess>();
   const [modulePermissions, setModulePermissions] =
     useState<ModulePermissions>();
   const originalModulePermissionsRef = useRef<ModulePermissions | undefined>(
     undefined,
+  );
+  const notifyFailure = useCallback(
+    (header: string, cause: unknown) => {
+      showNotification({
+        type: NotificationType.Toast,
+        status: "error",
+        header,
+        content: errorMessage(cause),
+      });
+    },
+    [showNotification],
   );
 
   useEffect(() => {
@@ -53,12 +65,12 @@ export const useUserEditForm = (
       .then((access) => {
         if (active) {
           const original = new ModulePermissions(
-            access.assignments.map(({ groupId, loginRole }) => ({
+            access.assignments.map(({ groupId, accessRole }) => ({
               clientIdentifier:
-                remoteModules.find((module) => module.loginRole === loginRole)
+                remoteModules.find((module) => module.accessRole === accessRole)
                   ?.clientIdentifier ?? "",
               groupIds: [groupId],
-              loginRole,
+              accessRole,
             })),
           );
           setModuleAccess(access);
@@ -69,34 +81,31 @@ export const useUserEditForm = (
       .catch((cause: unknown) => {
         if (active) {
           console.error("User editor failed to load module access:", cause);
+          notifyFailure("Unable to load user permissions", cause);
         }
       });
 
     return () => {
       active = false;
     };
-  }, [dataRow, dataRow?.user_id, dataSource, remoteModules]);
+  }, [dataRow, dataRow?.user_id, dataSource, notifyFailure, remoteModules]);
 
   const allModules = useMemo<ModulePickerModuleDescriptor[]>(
     () =>
-      remoteModules.map(({ loginRole, title }) => {
+      remoteModules.map(({ accessRole, title }) => {
         const module = moduleAccess?.modules.find(
-          (candidate) => candidate.loginRole === loginRole,
+          (candidate) => candidate.accessRole === accessRole,
         );
-        const selectedGroupId = moduleAccess?.assignments.find(
-          (assignment) => assignment.loginRole === loginRole,
-        )?.groupId;
         return {
           clientIdentifier: remoteModules.find(
-            (remoteModule) => remoteModule.loginRole === loginRole,
+            (remoteModule) => remoteModule.accessRole === accessRole,
           )?.clientIdentifier,
-          defaultPermission: module?.groups.find(
-            ({ isDefault }) => isDefault,
-          )?.groupId,
+          defaultPermission: module?.groups.find(({ isDefault }) => isDefault)
+            ?.groupId,
           label: title,
-          name: loginRole,
+          name: accessRole,
           permissions: module?.groups.map(permissionDescriptor) ?? [],
-          selectedPermissions: selectedGroupId ? [selectedGroupId] : [],
+          selectedPermissions: module?.selectedGroupIds ?? [],
         };
       }),
     [moduleAccess, remoteModules],
@@ -131,10 +140,14 @@ export const useUserEditForm = (
           setModulePermissions(nextPermissions);
         })
         .catch((cause: unknown) => {
-          console.error("User editor failed to update module permissions:", cause);
+          console.error(
+            "User editor failed to update module permissions:",
+            cause,
+          );
+          notifyFailure("Unable to update user permissions", cause);
         });
     },
-    [allModules, dataRow, editSession, modulePermissions],
+    [allModules, dataRow, editSession, modulePermissions, notifyFailure],
   );
 
   const resetModulePermissions = useCallback(() => {

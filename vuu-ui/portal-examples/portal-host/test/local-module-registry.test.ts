@@ -73,7 +73,7 @@ describe("local portal module registry", () => {
     expect(localPortalModuleRegistry.modules[3]).toMatchObject({
       clientIdentifier: "local-module-admin",
       id: "local-module-admin",
-      loginRole: "local",
+      accessRole: "local",
       mfComponent: "ModuleAdminLocal",
       mfScope: "moduleAdmin",
       mfUrl: "http://localhost:5002",

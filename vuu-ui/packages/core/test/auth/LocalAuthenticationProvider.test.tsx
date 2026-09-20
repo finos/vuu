@@ -17,7 +17,7 @@ const registry = {
       description: "Local orders",
       id: "local-orders",
       location: "/Trading/Orders",
-      loginRole: "local",
+      accessRole: "local",
       mfComponent: "OrdersLocal",
       mfScope: "orders",
       mfUrl: "http://localhost:5008",

@@ -63,6 +63,7 @@ interface ModuleDescriptorContextValue {
   moduleDescriptors: Map<string, ModulePickerModuleDescriptor>;
   onPermissionsChange: (name: string, selectedPermissions: string[]) => void;
   permissionMultiselect: boolean;
+  readOnly: boolean;
 }
 
 const ModuleDescriptorContext =
@@ -110,7 +111,7 @@ const ModulePickerSelectedListItem = ({
   ...optionProps
 }: SelectedListItemProps) => {
   const moduleDescriptor = useModuleDescriptor(item.name);
-  const { onPermissionsChange, permissionMultiselect } =
+  const { onPermissionsChange, permissionMultiselect, readOnly } =
     useModuleDescriptorContext();
   const handleSelectedPermissionsChange = useCallback(
     (selectedPermissions: string[]) => {
@@ -140,6 +141,7 @@ const ModulePickerSelectedListItem = ({
         "vuuItemPickerListItem",
         "vuuModulePickerListItem",
         "vuuModulePickerListItem-selected",
+        { "vuuModulePickerListItem-readOnly": readOnly },
       )}
       data-name={item.name}
     >
@@ -151,15 +153,18 @@ const ModulePickerSelectedListItem = ({
         item={moduleDescriptor}
         multiselect={permissionMultiselect}
         onSelectedPermissionsChange={handleSelectedPermissionsChange}
+        readOnly={readOnly}
       />
-      <IconButton
-        className="vuuItemPickerListItem-action"
-        data-embedded
-        appearance="transparent"
-        icon="cross"
-        onClick={handleRemoveButtonClick}
-        size={16}
-      />
+      {!readOnly ? (
+        <IconButton
+          className="vuuItemPickerListItem-action"
+          data-embedded
+          appearance="transparent"
+          icon="cross"
+          onClick={handleRemoveButtonClick}
+          size={16}
+        />
+      ) : null}
     </Option>
   );
 };
@@ -172,6 +177,7 @@ const ModulePickerAvailableListItem = ({
   disabled,
   ...optionProps
 }: AvailableListItemProps) => {
+  const { readOnly } = useModuleDescriptorContext();
   const valueWithHighlighting = applyHighlighting(
     getItemLabel(item),
     searchPattern,
@@ -185,6 +191,7 @@ const ModulePickerAvailableListItem = ({
         "vuuItemPickerListItem",
         "vuuModulePickerListItem",
         "vuuModulePickerListItem-available",
+        { "vuuModulePickerListItem-readOnly": readOnly },
       )}
       data-name={item.name}
       disabled={disabled}
@@ -192,15 +199,17 @@ const ModulePickerAvailableListItem = ({
       <span className="vuuItemPicker-text vuuModulePicker-moduleName">
         {valueWithHighlighting}
       </span>
-      <Button
-        appearance="solid"
-        className="vuuItemPickerListItem-action vuuModulePicker-addButton"
-        onClick={onAdd}
-        disabled={disabled}
-      >
-        Add
-        <Icon name="plus" />
-      </Button>
+      {!readOnly ? (
+        <Button
+          appearance="solid"
+          className="vuuItemPickerListItem-action vuuModulePicker-addButton"
+          onClick={onAdd}
+          disabled={disabled}
+        >
+          Add
+          <Icon name="plus" />
+        </Button>
+      ) : null}
     </Option>
   );
 };
@@ -217,6 +226,7 @@ export interface ModulePickerProps
   modulePermissions?: ModulePermissions;
   onSelectedModulesChange: SelectedModulesChangeHandler;
   permissionMultiselect?: boolean;
+  readOnly?: boolean;
   selectedModules?: ModulePickerModuleDescriptor[];
 }
 
@@ -225,28 +235,29 @@ export const ModulePicker = ({
   modulePermissions,
   onSelectedModulesChange,
   permissionMultiselect = true,
+  readOnly = false,
   selectedModules: selectedModulesProp,
   ...itemPickerProps
 }: ModulePickerProps) => {
-  const moduleDescriptors = useMemo(
-    () => new Map(allModules.map((item) => [item.name, item])),
-    [allModules],
-  );
   const allItems = useMemo(
     () => allModules.map(toItemDescriptor),
     [allModules],
   );
-  const selectedModules = useMemo(
-    () => {
-      if (!modulePermissions) return selectedModulesProp ?? [];
-      return allModules
-        .filter(({ name }) => modulePermissions.hasApplication(name))
-        .map((module) => ({
-          ...module,
-          selectedPermissions: [...modulePermissions.groupIdsFor(module.name)],
-        }));
-    },
-    [allModules, modulePermissions, selectedModulesProp],
+  const selectedModules = useMemo(() => {
+    if (!modulePermissions) return selectedModulesProp ?? [];
+    return allModules
+      .filter(({ name }) => modulePermissions.hasApplication(name))
+      .map((module) => ({
+        ...module,
+        selectedPermissions: [...modulePermissions.groupIdsFor(module.name)],
+      }));
+  }, [allModules, modulePermissions, selectedModulesProp]);
+  const moduleDescriptors = useMemo(
+    () =>
+      new Map(
+        [...allModules, ...selectedModules].map((item) => [item.name, item]),
+      ),
+    [allModules, selectedModules],
   );
   const selectedItems = useMemo(
     () => selectedModules.map(toItemDescriptor),
@@ -255,8 +266,11 @@ export const ModulePicker = ({
 
   const handleSelectedItemsChange = useCallback(
     (items: readonly ItemDescriptor[]) => {
+      if (readOnly) return;
       const newSelectedModules = items.map(({ name }) => {
-        const moduleDescriptor = moduleDescriptors.get(name);
+        const moduleDescriptor =
+          selectedModules.find((module) => module.name === name) ??
+          moduleDescriptors.get(name);
         if (!moduleDescriptor) {
           throw Error(`[ModulePicker] no ModuleDescriptor found for '${name}'`);
         }
@@ -264,17 +278,18 @@ export const ModulePicker = ({
       });
       onSelectedModulesChange(newSelectedModules);
     },
-    [moduleDescriptors, onSelectedModulesChange],
+    [moduleDescriptors, onSelectedModulesChange, readOnly, selectedModules],
   );
 
   const handlePermissionsChange = useCallback(
     (name: string, selectedPermissions: string[]) => {
+      if (readOnly) return;
       const newSelectedModules = selectedModules.map((module) =>
         module.name === name ? { ...module, selectedPermissions } : module,
       );
       onSelectedModulesChange(newSelectedModules);
     },
-    [selectedModules, onSelectedModulesChange],
+    [readOnly, selectedModules, onSelectedModulesChange],
   );
 
   const moduleDescriptorContextValue = useMemo(
@@ -282,8 +297,14 @@ export const ModulePicker = ({
       moduleDescriptors,
       onPermissionsChange: handlePermissionsChange,
       permissionMultiselect,
+      readOnly,
     }),
-    [moduleDescriptors, handlePermissionsChange, permissionMultiselect],
+    [
+      moduleDescriptors,
+      handlePermissionsChange,
+      permissionMultiselect,
+      readOnly,
+    ],
   );
 
   return (
