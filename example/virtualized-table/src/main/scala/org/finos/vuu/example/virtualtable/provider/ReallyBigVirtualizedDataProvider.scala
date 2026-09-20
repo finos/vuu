@@ -1,7 +1,6 @@
 package org.finos.vuu.example.virtualtable.provider
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.logging.LogAtFrequency
 import org.finos.toolbox.time.Clock
 import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.vuu.core.table.RowWithData
@@ -13,21 +12,24 @@ import org.finos.vuu.viewport.ViewPort
 
 class ReallyBigVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef)(implicit clock: Clock) extends VirtualizedProvider with StrictLogging {
 
-  final val cache = new FakeBigDataCache
-  final val logAt = new LogAtFrequency(10_000)
+  private final val cache = new FakeBigDataCache
+  private val refreshRate = tableDef.getRefreshRate.toMillis
 
   override def runOnceInternal(viewPort: ViewPort): Unit = {
 
     logger.trace("[ReallyBigVirtualizedDataProvider] Starting runOnce")
+
+    val structuralHash = viewPort.getStructuralHashCode()
 
     //if this were a real virtualized provider
     //I would delegate these sorts and filters down into
     //the provider itself, in this example, I'm going to cheat and ignore them :-)
     val sort = viewPort.getSort
     val filter = viewPort.filterSpec
-    
-    val startIndex = viewPort.getRange.from
-    val endIndex = viewPort.getRange.to
+
+    val viewPortRange = viewPort.getRange
+    val startIndex = viewPortRange.from
+    val endIndex = viewPortRange.to
 
     logger.trace(s"[ReallyBigVirtualizedDataProvider] Loading orders from Big Data Cache $startIndex to $endIndex")
 
@@ -58,9 +60,21 @@ class ReallyBigVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef)(imp
         logger.trace("[ReallyBigVirtualizedDataProvider] Setting Primary Keys")
         val (millisSetKeys, _ ) = timeIt { viewPort.setKeys(new VirtualizedViewPortKeys(tableKeys)) }
 
-        if(logAt.shouldLog()){
-          logger.debug(s"[ReallyBigVirtualizedDataProvider] Complete runOnce millisRange = ${millisRange} millisSize=$millisSize millisRows=$millisRows millisGetKeys=$millisGetKeys millisSetKeys=$millisSetKeys")
+        logger.trace("[ReallyBigVirtualizedDataProvider] Finish refresh")
+        val (millisFinishRefresh, _) = timeIt {
+          tbl.finishRefresh(structuralHash, viewPortRange, clock.now() + refreshRate)
         }
+
+        logger.debug(
+          "[ReallyBigVirtualizedDataProvider] Complete runOnce on {}. millisRange={} millisSize={} millisRows={} millisGetKeys={} millisSetKeys={} millisFinishRefresh={}",
+          viewPort.id,
+          millisRange,
+          millisSize,
+          millisRows,
+          millisGetKeys,
+          millisSetKeys,
+          millisFinishRefresh
+        )
     }
   }
 
