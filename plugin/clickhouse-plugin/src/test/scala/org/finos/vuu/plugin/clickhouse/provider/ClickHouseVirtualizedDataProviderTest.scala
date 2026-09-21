@@ -16,7 +16,8 @@ import org.finos.vuu.plugin.clickhouse.module.ClickHouseTableModule
 import org.finos.vuu.plugin.clickhouse.module.ClickHouseTableModule.{NO_SELL_TABLE_NAME, TABLE_NAME}
 import org.finos.vuu.plugin.clickhouse.util.ClickHouseOrderCreator
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
-import org.finos.vuu.provider.VirtualizedProvider
+import org.finos.vuu.plugin.virtualized.provider.VirtualizedProvider
+import org.finos.vuu.plugin.virtualized.table.VirtualizedSessionTable
 import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.finos.vuu.viewport.{DefaultRange, ViewPortRange}
@@ -34,7 +35,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
     Scenario("Can create viewport with no filter or sort") {
 
-      given clock: Clock = new TestFriendlyClock(10001L)
+      given clock: TestFriendlyClock = new TestFriendlyClock(10001L)
 
       given lifecycle: LifecycleContainer = new LifecycleContainer()
 
@@ -68,24 +69,21 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
           columns
         )
 
-        val virtualizedProvider = viewport.table.asTable.getProvider.asInstanceOf[VirtualizedProvider]
+        val virtualizedSessionTable = viewport.table.asInstanceOf[VirtualizedSessionTable]
+        val virtualizedProvider = virtualizedSessionTable.getProvider.asInstanceOf[VirtualizedProvider]
 
+        virtualizedSessionTable.needsRefresh(viewport) shouldBe true
         virtualizedProvider.runOnce(viewport)
-
         var updates = combineQsForVp(viewport)
         updates.length shouldBe 6
-//        assertVpEq(updates) {
-//          Table(
-//            ("quantity", "price", "side", "trader"),
-//            (10, 100L, "Buy", "trader-10"),
-//            (2, 20L, "Buy", "trader-2"),
-//            (4, 40L, "Buy", "trader-4"),
-//            (6, 60L, "Buy", "trader-6"),
-//            (8, 80L, "Buy", "trader-8")
-//          )
-//        }
 
-        //run with no changes
+        virtualizedSessionTable.needsRefresh(viewport) shouldBe false
+        virtualizedProvider.runOnce(viewport)
+        updates = combineQsForVp(viewport)
+        updates.length shouldBe 0
+
+        clock.advanceBy(250)
+        virtualizedSessionTable.needsRefresh(viewport) shouldBe true
         virtualizedProvider.runOnce(viewport)
         updates = combineQsForVp(viewport)
         updates.length shouldBe 0

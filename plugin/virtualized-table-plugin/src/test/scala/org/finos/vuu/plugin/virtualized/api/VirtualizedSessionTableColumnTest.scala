@@ -1,15 +1,13 @@
 package org.finos.vuu.plugin.virtualized.api
 
+import org.finos.vuu.core.table.RowWithData
+import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.GivenWhenThen
-import org.scalamock.scalatest.MockFactory
-import org.finos.vuu.core.table.RowData
 
 class VirtualizedSessionTableColumnTest extends AnyFeatureSpec
   with Matchers
-  with GivenWhenThen
-  with MockFactory {
+  with GivenWhenThen {
 
   Feature("Virtualized Session Table Column") {
 
@@ -48,11 +46,8 @@ class VirtualizedSessionTableColumnTest extends AnyFeatureSpec
     Scenario("Retrieving row data from a column instance") {
       Given("a column instance and a mock RowData object")
       val column = VirtualizedSessionTableColumn("price", 0, classOf[java.lang.Double], "remote_price")
-      val mockRowData = mock[RowData]
       val expectedValue = 99.99
-
-      And("the row data is stubbed to return a value for the column name")
-      (mockRowData.get(_: String)).expects("price").returning(expectedValue).twice()
+      val mockRowData = RowWithData("1", Map("price" -> expectedValue))
 
       When("getData and getDataFullyQualified are invoked")
       val dataResult = column.getData(mockRowData)

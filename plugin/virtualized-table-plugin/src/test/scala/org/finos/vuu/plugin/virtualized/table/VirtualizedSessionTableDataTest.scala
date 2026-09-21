@@ -2,15 +2,15 @@ package org.finos.vuu.plugin.virtualized.table
 
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.*
-import org.scalamock.scalatest.MockFactory
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 
 class VirtualizedSessionTableDataTest extends AnyFeatureSpec
   with Matchers
   with GivenWhenThen
-  with MockFactory {
+  with MockitoSugar {
 
   // Mock the implicit Clock required by the TableData constructor
   implicit val mockClock: Clock = mock[Clock]

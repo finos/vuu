@@ -1,12 +1,13 @@
 package org.finos.vuu.net.rest
 
 import org.finos.vuu.net.rest.*
-import org.scalamock.scalatest.MockFactory
+import org.mockito.Mockito.{times, verify}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 
-class RestServiceTest extends AnyFeatureSpec with Matchers with GivenWhenThen with MockFactory {
+class RestServiceTest extends AnyFeatureSpec with Matchers with GivenWhenThen with MockitoSugar {
 
   Feature("RestService default behavior") {
 
@@ -24,9 +25,6 @@ class RestServiceTest extends AnyFeatureSpec with Matchers with GivenWhenThen wi
       val service = new TestRestService()
       val mockContext = mock[RestContext]
 
-      And("we expect the context to receive a 404 response call")
-      mockContext.respond.expects(404).repeated(5)
-
       When("calling all default handler methods")
       service.onGetAll(mockContext)
       service.onGet(mockContext)
@@ -35,6 +33,7 @@ class RestServiceTest extends AnyFeatureSpec with Matchers with GivenWhenThen wi
       service.onDelete(mockContext)
 
       Then("the mock verifies that respond(404) was called for each")
+      verify(mockContext, times(5)).respond(404)
     }
   }
 
@@ -49,13 +48,11 @@ class RestServiceTest extends AnyFeatureSpec with Matchers with GivenWhenThen wi
       }
       val mockContext = mock[RestContext]
 
-      And("we expect a 200 OK response instead of 404")
-      (mockContext.respond[String] _).expects(200, "Found It", StringEncoder, *, *).once()
-
       When("onGet is called")
       customService.onGet(mockContext)
 
       Then("the custom response logic is executed")
+      verify(mockContext).respond(200, "Found it", StringEncoder)
     }
   }
 }

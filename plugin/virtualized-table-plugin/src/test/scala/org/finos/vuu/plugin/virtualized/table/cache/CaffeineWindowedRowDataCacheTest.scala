@@ -2,15 +2,15 @@ package org.finos.vuu.plugin.virtualized.table.cache
 
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.RowData
-import org.scalamock.scalatest.MockFactory
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 
 class CaffeineWindowedRowDataCacheTest extends AnyFeatureSpec
   with Matchers
   with GivenWhenThen
-  with MockFactory {
+  with MockitoSugar {
 
   // Mock the implicit Clock required by the constructor
   implicit val mockClock: Clock = mock[Clock]

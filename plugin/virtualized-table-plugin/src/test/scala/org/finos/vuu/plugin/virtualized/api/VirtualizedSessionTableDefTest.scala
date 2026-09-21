@@ -1,18 +1,19 @@
 package org.finos.vuu.plugin.virtualized.api
 
-import org.finos.vuu.core.table.TableContainer
 import org.finos.vuu.net.FilterSpec
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePluginType
 import org.finos.vuu.viewport.ViewPort
-import org.scalamock.scalatest.MockFactory
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
+
+import java.time.Duration
 
 class VirtualizedSessionTableDefTest extends AnyFeatureSpec
   with Matchers
   with GivenWhenThen
-  with MockFactory {
+  with MockitoSugar {
 
   Feature("Virtualized Session Table Definitions") {
 
@@ -45,6 +46,9 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       And("it should have no range options by default")
       simpleDef.options.rangeSettings.maxRangeEnd shouldEqual Int.MaxValue
       simpleDef.options.rangeSettings.maxRangeWidth shouldEqual 1000
+
+      And("default refresh rate should be 250 ms")
+      simpleDef.getRefreshRateMillis shouldEqual 250L
     }
 
     Scenario("Creating an AliasedVirtualizedSessionTableDef") {
@@ -88,8 +92,10 @@ class VirtualizedSessionTableDefTest extends AnyFeatureSpec
       And("it should have no range options by default")
       aliasedDef.options.rangeSettings.maxRangeEnd shouldEqual Int.MaxValue
       aliasedDef.options.rangeSettings.maxRangeWidth shouldEqual 1000
-    }
 
+      And("default refresh rate should be 250 ms")
+      aliasedDef.getRefreshRateMillis shouldEqual 250L
+    }
 
   }
 }

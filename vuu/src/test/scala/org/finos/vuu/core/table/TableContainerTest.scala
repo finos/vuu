@@ -2,17 +2,18 @@ package org.finos.vuu.core.table
 
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
-import org.finos.vuu.api.{Indices, SessionTableDef, TableDef, VisualLinks}
+import org.finos.vuu.api.{SessionTableDef, TableDef}
 import org.finos.vuu.core.module.ViewServerModule
 import org.finos.vuu.core.table.TableMockFactory.{createMockSessionTable, createMockTable}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 import org.finos.vuu.viewport.ViewPortTable
-import org.scalamock.scalatest.MockFactory
+import org.mockito.Mockito.lenient
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 
 class TableContainerTest extends AnyFeatureSpec with Matchers with BeforeAndAfterEach {
   implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl()
@@ -106,7 +107,7 @@ class TableContainerTest extends AnyFeatureSpec with Matchers with BeforeAndAfte
 
 }
 
-object TableMockFactory extends AnyFlatSpec with MockFactory {
+object TableMockFactory extends AnyFlatSpec with MockitoSugar {
   private def createTestTableDef(name: String, moduleName: Option[String] = None, isSessionDef: Boolean = false): TableDef = {
     val tableDef = if (isSessionDef) {
       new SessionTableDef(name, "id", Array.empty)
@@ -115,8 +116,8 @@ object TableMockFactory extends AnyFlatSpec with MockFactory {
     }
 
     if (moduleName.nonEmpty) {
-      val module = stub[ViewServerModule]
-      (() => module.name).when().returns(moduleName.get)
+      val module = mock[ViewServerModule]
+      lenient().when(module.name).thenReturn(moduleName.get)
       tableDef.setModule(module)
     }
 
@@ -124,17 +125,19 @@ object TableMockFactory extends AnyFlatSpec with MockFactory {
   }
 
   def createMockSessionTable(tableName: String, tableDefName: String, sessionId: ClientSessionId): SessionTable = {
-    val table = stub[SessionTable]
-    (() => table.name).when().returns(tableName)
-    (() => table.getTableDef).when().returns(createTestTableDef(tableDefName, isSessionDef = true))
-    (() => table.sessionId).when().returns(sessionId)
+    val table = mock[SessionTable]
+    lenient().when(table.name).thenReturn(tableName)
+    val tableDef = createTestTableDef(tableDefName, isSessionDef = true)
+    lenient().when(table.getTableDef).thenReturn(tableDef)
+    lenient().when(table.sessionId).thenReturn(sessionId)
     table
   }
 
   def createMockTable(tableName: String, tableDefName: String, moduleName: Option[String] = None, sessionDef: Boolean = false): DataTable = {
-    val table = stub[DataTable]
-    (() => table.name).when().returns(tableName)
-    (() => table.getTableDef).when().returns(createTestTableDef(tableDefName, moduleName, isSessionDef = sessionDef))
+    val table = mock[DataTable]
+    lenient().when(table.name).thenReturn(tableName)
+    val tableDef = createTestTableDef(tableDefName, moduleName, isSessionDef = sessionDef)
+    lenient().when(table.getTableDef).thenReturn(tableDef)
     table
   }
 }

@@ -1,14 +1,12 @@
 package org.finos.vuu.plugin.virtualized.api
 
+import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.GivenWhenThen
-import org.scalamock.scalatest.MockFactory
 
 class VirtualizedSessionTableColumnBuilderTest extends AnyFeatureSpec
   with Matchers
-  with GivenWhenThen
-  with MockFactory {
+  with GivenWhenThen {
 
   Feature("Virtualized Session Table Column Builder") {
 
