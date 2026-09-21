@@ -1,0 +1,1 @@
+export { TableOM } from "./Table";

@@ -164,15 +164,12 @@ export const NotificationsCenter = ({
       );
 
       if (scheduledUpdate) {
-        const updateNotifications = notificationsRef.current.map((n) => {
-          if (n.id === scheduledUpdate?.id) {
-            return scheduledUpdate;
-          } else {
-            return n;
-          }
-        });
         requestAnimationFrame(() => {
-          setNotifications(updateNotifications);
+          setNotifications(
+            notificationsRef.current.map((n) =>
+              n.id === scheduledUpdate?.id ? scheduledUpdate : n,
+            ),
+          );
         });
       }
     },

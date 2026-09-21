@@ -1,5 +1,5 @@
 import { expect, test } from "../../../../../playwright/fixtures";
-import { TableOM } from "./TableOM";
+import { TableOM } from "@vuu-ui/vuu-playwright-helpers";
 
 const IS_EDITABLE = true;
 const NOT_EDITABLE = false;
@@ -555,6 +555,27 @@ test.describe("Editable table navigation", () => {
 });
 
 test.describe("Cell editing", () => {
+  test("cancelling an edit restores the original value when locating by column name", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/EditableInstruments");
+    const table = new TableOM(page.getByRole("table"));
+    const cell = await table.locateCell(2, "lotSize");
+    const originalValue = await cell.textContent();
+    const editButton = page.getByRole("radio", { name: "Edit" });
+
+    await editButton.click();
+    await cell.dblclick();
+    const textbox = cell.getByRole("textbox");
+    await textbox.fill("9999");
+    await expect(textbox).toHaveValue("9999");
+    await textbox.press("Escape");
+
+    const revertedValue = await textbox.inputValue();
+    expect(revertedValue).toBe(originalValue);
+  });
+
   test("double clicking a cell applies focus and selection, edit to overwrite, Escape reverts", async ({
     mount,
     page,

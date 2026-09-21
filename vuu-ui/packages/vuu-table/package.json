@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@vuu-ui/vuu-data-types": "3.3.13",
+    "@vuu-ui/vuu-playwright-helpers": "3.3.13",
     "@vuu-ui/vuu-table-types": "3.3.13",
     "@vuu-ui/vuu-protocol-types": "3.3.13"
   },

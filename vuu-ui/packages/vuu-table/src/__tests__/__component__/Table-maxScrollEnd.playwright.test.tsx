@@ -1,5 +1,5 @@
 import { expect, test } from "../../../../../playwright/fixtures";
-import { TableOM } from "./TableOM";
+import { TableOM } from "@vuu-ui/vuu-playwright-helpers";
 
 test.describe("Table maxScrollEnd", () => {
   test("pressing End stops at row 500 and shows scroll limit notice", async ({
