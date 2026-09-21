@@ -20,6 +20,7 @@ export const buildAll = async () => {
   // TODO determine the dependency graph/build order programatically
   const wave1 = [
     "grid-layout",
+    "vuu-playwright-helpers",
     "vuu-data-test",
     "vuu-filter-parser",
     "vuu-icons",

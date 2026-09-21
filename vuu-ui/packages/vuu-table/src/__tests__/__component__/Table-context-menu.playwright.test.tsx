@@ -1,5 +1,5 @@
 import { expect, test } from "../../../../../playwright/fixtures";
-import { TableOM } from "./TableOM";
+import { TableOM } from "@vuu-ui/vuu-playwright-helpers";
 
 test.describe("WHEN context menu is configured on table", () => {
   test.describe("WHEN cell is right clicked", () => {

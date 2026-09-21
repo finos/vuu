@@ -1,5 +1,5 @@
 import { expect, test } from "../../../../../playwright/fixtures";
-import { TableOM } from "./TableOM";
+import { TableOM } from "@vuu-ui/vuu-playwright-helpers";
 
 test.describe("Cell navigation with keyboard", () => {
   test.describe("navigation from outside with Tab", () => {

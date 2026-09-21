@@ -1,5 +1,5 @@
 import { expect, test } from "../../../../../playwright/fixtures";
-import { TableOM } from "./TableOM";
+import { TableOM } from "@vuu-ui/vuu-playwright-helpers";
 
 const RENDER_BUFFER = 5;
 const ROW_COUNT = 1000;

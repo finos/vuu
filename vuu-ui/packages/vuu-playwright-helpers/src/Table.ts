@@ -1,6 +1,5 @@
-import { expect } from "@playwright/test";
+import { expect, type Locator } from "@playwright/test";
 import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
-import type { Locator } from "@playwright/test";
 
 type AriaRole = "cell" | "textbox" | "combobox";
 

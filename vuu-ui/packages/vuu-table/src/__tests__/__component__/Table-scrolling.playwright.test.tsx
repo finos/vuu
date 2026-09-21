@@ -1,5 +1,5 @@
 import { expect, test } from "../../../../../playwright/fixtures";
-import { TableOM } from "./TableOM";
+import { TableOM } from "@vuu-ui/vuu-playwright-helpers";
 
 test.describe("Table scrolling and keyboard navigation", () => {
   test.describe("Page Keys", () => {

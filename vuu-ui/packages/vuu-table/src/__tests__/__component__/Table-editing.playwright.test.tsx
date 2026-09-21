@@ -1,5 +1,5 @@
 import { expect, test } from "../../../../../playwright/fixtures";
-import { TableOM } from "./TableOM";
+import { TableOM } from "@vuu-ui/vuu-playwright-helpers";
 
 const IS_EDITABLE = true;
 const NOT_EDITABLE = false;
