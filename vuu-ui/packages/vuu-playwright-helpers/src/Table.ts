@@ -6,6 +6,16 @@ type AriaRole = "cell" | "textbox" | "combobox";
 const byAriaRowIndex = (ariaRowIndex: number) =>
   `[aria-rowindex="${ariaRowIndex}"]:scope`;
 
+const xpathStringLiteral = (value: string) => {
+  if (!value.includes("'")) {
+    return `'${value}'`;
+  }
+  if (!value.includes('"')) {
+    return `"${value}"`;
+  }
+  return `concat('${value.split("'").join(`', "'", '`)}')`;
+};
+
 export class TableOM {
   #locator: Locator;
   constructor(locator: Locator) {
@@ -37,11 +47,29 @@ export class TableOM {
    * @param text
    */
   locateCell(row: number, column: number): Locator;
-  locateCell(rowOrText: number | string, column?: number) {
+  /**
+   * Locate cell by aria row index and column name
+   */
+  locateCell(row: number, columnName: string): Promise<Locator>;
+  locateCell(rowOrText: number | string, column?: number | string) {
     if (typeof rowOrText === "number" && typeof column === "number") {
       return this.#locator.locator(
         `[aria-rowindex="${rowOrText}"] > [aria-colindex="${column}"]`,
       );
+    } else if (typeof rowOrText === "number" && typeof column === "string") {
+      const columnHeader = this.#locator
+        .locator(`xpath=.//*[@data-column-name=${xpathStringLiteral(column)}]`)
+        .first();
+      return columnHeader.getAttribute("aria-colindex").then((ariaColIndex) => {
+        if (ariaColIndex === null) {
+          throw Error(
+            `TableOM, locateCell, column "${column}" does not have an aria-colindex`,
+          );
+        }
+        return this.#locator.locator(
+          `[aria-rowindex="${rowOrText}"] > [aria-colindex="${ariaColIndex}"]`,
+        );
+      });
     } else if (typeof rowOrText === "string") {
       return this.#locator.getByRole("cell", { name: rowOrText });
     }
