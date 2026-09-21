@@ -11,12 +11,18 @@ It also defines its own "Snakes" table module entirely in Python: TickingProvide
 implements org.finos.vuu.provider.Provider and the module-factory function
 implements scala.Function2, both via JPype's @JImplements proxy support - no
 compiled Java/Scala source is needed for this module at all. After the server
-starts, sample rows are ticked into Snakes directly from Python.
+starts, SNAKE_COUNT (10,000 by default) procedurally-generated rows are ticked
+into Snakes directly from Python, one `.tick()` JPype call per row - about 2s of
+startup work at the default count, measured end-to-end (process start to the
+"[VUU] Ready" line) against a real JVM.
 
 A "Location" table (keyed by the same snake id, holding x_coordinate/y_coordinate)
 and a "SnakeLocations" join table combining Snakes and Location on id are defined
-the same way - Location is populated at startup and re-ticked once a second on a
-background thread to simulate movement.
+the same way - Location is populated at startup (one row per Snakes row) and
+re-ticked once a second on a background thread to simulate movement. Each of
+those per-second ticks is itself SNAKE_COUNT individual JPype calls - at the
+default of 10,000 that's ~0.4-0.5s measured, so the loop's actual cadence is
+closer to ~1.5s than a clean 1Hz; see the loop's own comment below.
 
 Snakes also has an RPC-driven right-click context menu - "Delete Selected Snake(s)"
 (a SelectionViewPortMenuItem) that deletes the selected row(s), and a nested
@@ -48,6 +54,36 @@ CLASSPATH_FILE = MODULE_DIR / "target" / "classpath.txt"
 
 WS_PORT = 8090
 HTTPS_PORT = 8443
+SNAKE_COUNT = 10_000
+
+SNAKE_TYPES = [
+    "Python", "Grass snake", "Reticulated python", "Ball python", "Cobra",
+    "Anaconda", "Black mamba", "Boa constrictor", "Corn snake", "King cobra",
+    "Rattlesnake", "Copperhead", "Cottonmouth", "Adder", "Sidewinder",
+    "Milk snake", "Kingsnake", "Rat snake", "Hognose snake", "Bull snake",
+    "Taipan",
+]
+
+SNAKE_NAMES = [
+    "Kaa", "Nagini", "Sir Hiss", "Monty", "Cleo", "Jafar", "Titan", "Venom",
+    "Rex", "Slyther", "Basilisk", "Rattles", "Copper", "Marsh", "Zigzag",
+    "Dune", "Speedy", "Milky", "Sunny", "Rusty", "Piglet", "Bruiser", "Sting",
+]
+
+
+def _generate_snakes(count: int) -> list[dict]:
+    """Procedurally generates `count` Snakes rows (id/name/type/age/weight) - writing 10,000
+    rows out by hand isn't practical, unlike the 23-row list this replaced."""
+    return [
+        {
+            "id": f"s{i}",
+            "name": f"{random.choice(SNAKE_NAMES)} {i}",
+            "type": random.choice(SNAKE_TYPES),
+            "age": random.randint(1, 40),
+            "weight": round(random.uniform(0.1, 100.0), 2),
+        }
+        for i in range(1, count + 1)
+    ]
 
 
 def _read_classpath() -> list[str]:
@@ -408,31 +444,7 @@ def main() -> None:
     # sample rows in. A plain Python dict is passed straight through — JPype converts it to a
     # java.util.Map automatically at the call boundary.
     snakes_provider = server.providerContainer().getProviderForTable("Snakes").get()
-    sample_snakes = [
-        {"id": "s1", "name": "Kaa", "type": "Python", "age": 40, "weight": 91.5},
-        {"id": "s2", "name": "Nagini", "type": "Python", "age": 15, "weight": 22.3},
-        {"id": "s3", "name": "Sir Hiss", "type": "Grass snake", "age": 3, "weight": 0.4},
-        {"id": "s4", "name": "Monty", "type": "Reticulated python", "age": 22, "weight": 75.0},
-        {"id": "s5", "name": "Cleo", "type": "Ball python", "age": 8, "weight": 1.8},
-        {"id": "s6", "name": "Jafar", "type": "Cobra", "age": 12, "weight": 6.4},
-        {"id": "s7", "name": "Titan", "type": "Anaconda", "age": 18, "weight": 97.5},
-        {"id": "s8", "name": "Venom", "type": "Black mamba", "age": 9, "weight": 1.6},
-        {"id": "s9", "name": "Rex", "type": "Boa constrictor", "age": 14, "weight": 27.2},
-        {"id": "s10", "name": "Slyther", "type": "Corn snake", "age": 5, "weight": 0.9},
-        {"id": "s11", "name": "Basilisk", "type": "King cobra", "age": 20, "weight": 9.1},
-        {"id": "s12", "name": "Rattles", "type": "Rattlesnake", "age": 7, "weight": 1.5},
-        {"id": "s13", "name": "Copper", "type": "Copperhead", "age": 6, "weight": 0.5},
-        {"id": "s14", "name": "Marsh", "type": "Cottonmouth", "age": 11, "weight": 1.2},
-        {"id": "s15", "name": "Zigzag", "type": "Adder", "age": 4, "weight": 0.2},
-        {"id": "s16", "name": "Dune", "type": "Sidewinder", "age": 3, "weight": 0.3},
-        {"id": "s17", "name": "Speedy", "type": "Black mamba", "age": 16, "weight": 1.7},
-        {"id": "s18", "name": "Milky", "type": "Milk snake", "age": 2, "weight": 0.15},
-        {"id": "s19", "name": "Sunny", "type": "Kingsnake", "age": 6, "weight": 1.1},
-        {"id": "s20", "name": "Rusty", "type": "Kingsnake", "age": 9, "weight": 0.8},
-        {"id": "s21", "name": "Piglet", "type": "Hognose snake", "age": 4, "weight": 0.35},
-        {"id": "s22", "name": "Bruiser", "type": "Kingsnake", "age": 10, "weight": 2.0},
-        {"id": "s23", "name": "Sting", "type": "Taipan", "age": 8, "weight": 3.3},
-    ]
+    sample_snakes = _generate_snakes(SNAKE_COUNT)
     for snake in sample_snakes:
         snakes_provider.tick(snake["id"], snake)
 
@@ -463,6 +475,10 @@ def main() -> None:
     tick_locations()  # populate Location with starting positions before reporting ready
 
     def location_loop() -> None:
+        # A fixed 1s sleep between calls, not "every 1s" - tick_locations() itself is
+        # SNAKE_COUNT individual JPype .tick() calls, so each cycle (sleep + tick) takes 1s
+        # plus however long those calls take, rather than a clean 1Hz. Measured at ~0.4-0.5s
+        # for the default 10,000 rows, so the actual cadence is closer to ~1.5s than 1s.
         while True:
             time.sleep(1)
             tick_locations()
