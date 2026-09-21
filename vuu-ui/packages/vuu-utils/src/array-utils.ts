@@ -1,4 +1,6 @@
 export type PartitionTest<T> = (value: T, index: number) => boolean;
+export type ItemComparator<T> = (firstItem: T, secondItem: T) => boolean;
+const simpleIdentity = (a: unknown, b: unknown) => a === b;
 
 export function partition<T>(
   array: T[],
@@ -101,11 +103,18 @@ export const moveItem = <T = unknown>(
 export const getAddedItems = <T>(
   currentItems: undefined | readonly T[],
   newItems: readonly T[],
+  compareItems: ItemComparator<T> = simpleIdentity,
 ) => {
-  const isNew = (i: T) => !currentItems?.includes(i);
   if (currentItems === undefined) {
     return newItems;
-  } else if (newItems.some(isNew)) {
+  }
+
+  const isNew = (item: T) =>
+    currentItems.every(
+      (currentItem) => compareItems(item, currentItem) === false,
+    );
+
+  if (newItems.some(isNew)) {
     return newItems.filter(isNew);
   } else {
     return [] as T[];
@@ -115,11 +124,16 @@ export const getAddedItems = <T>(
 export const getRemovedItems = <T>(
   currentItems: readonly T[],
   newItems: undefined | readonly T[],
+  compareItems: ItemComparator<T> = simpleIdentity,
 ) => {
-  const isRemoved = (i: T) => !newItems?.includes(i);
   if (newItems === undefined) {
     return currentItems;
-  } else if (currentItems.some(isRemoved)) {
+  }
+
+  const isRemoved = (item: T) =>
+    newItems.every((newItem) => compareItems(item, newItem) === false);
+
+  if (currentItems.some(isRemoved)) {
     return currentItems.filter(isRemoved);
   } else {
     return [] as T[];
