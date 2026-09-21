@@ -236,7 +236,7 @@ export const parseCsv = (
         rowIndex + CSV_FIRST_DATA_ROW_NUMBER,
         "*",
         CsvParseErrorEnum.ROW_COLUMN_COUNT_MISMATCH,
-        "CSV rows must have the same number of columns as the header.",
+        "This row has too many or too few columns compared to the header line. Check for extra or missing commas.",
         row.join(","),
       );
     }

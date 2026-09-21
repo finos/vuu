@@ -372,13 +372,11 @@ export const CsvUploadWithExternalErrorDialog = () => {
     <div style={{ display: "grid", gap: "10px" }}>
       <h3>Failing RPC Upload with Custom Dialog Error</h3>
       <p>
-        In this example, the default inline error panel is suppressed by passing <code>{`renderError={() => null}`}</code>. 
-        Instead, errors are intercepted via <code>onError</code> and rendered in a fully styled Salt <code>Dialog</code> container.
+        In this example, errors are intercepted via <code>onError</code> and rendered in a fully styled Salt <code>Dialog</code> container.
       </p>
       <CsvUpload
         dataSource={dataSource}
         onError={handleError}
-        renderError={() => null}
       />
 
       <Dialog open={isErrorDialogOpen} onOpenChange={setIsErrorDialogOpen}>
