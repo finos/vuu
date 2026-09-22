@@ -94,7 +94,7 @@ export const validateCsvAgainstSchema = (
   options?: CsvValidationOptions,
 ): CsvValidationResult => {
   const schemaColumns = new Map(
-    tableSchema.columns.map((col) => [col.name, col.serverDataType] as const),
+    tableSchema.columns.map((col) => [col.name, col] as const),
   );
   const maxRows = options?.maxRows ?? MAX_ROWS_IN_CSV;
   const errorState = createCsvErrorState<CsvValidationErrorEnum>();
@@ -149,17 +149,21 @@ export const validateCsvAgainstSchema = (
 
     parsed.header.forEach((columnName, columnIndex) => {
       const rawValue = rowValues[columnIndex] ?? "";
-      const schemaType = schemaColumns.get(columnName);
+      const schemaColumn = schemaColumns.get(columnName);
+      const schemaType = schemaColumn?.serverDataType;
+      const isRequired = schemaColumn?.required !== false;
 
-      if (rawValue.length === 0 && schemaType !== "string") {
-        addCsvRowError(
-          errorState,
-          rowNum,
-          columnName,
-          CsvValidationErrorEnum.EMPTY_NON_STRING_VALUE,
-          "This field is required and cannot be left blank",
-          rawValue,
-        );
+      if (rawValue.length === 0) {
+        if (isRequired) {
+          addCsvRowError(
+            errorState,
+            rowNum,
+            columnName,
+            CsvValidationErrorEnum.REQUIRED_FIELD_MISSING,
+            "This field is required and cannot be left blank",
+            rawValue,
+          );
+        }
         return;
       }
 

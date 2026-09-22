@@ -111,21 +111,58 @@ describe("validateCsvAgainstSchema", () => {
     );
 
     expect(result.errorMap.rowErrors[1]?.["count"]).toContain(
-      CsvValidationErrorEnum.EMPTY_NON_STRING_VALUE,
+      CsvValidationErrorEnum.REQUIRED_FIELD_MISSING,
     );
     expect(result.errors[0].message).toBe(
       "This field is required and cannot be left blank",
     );
   });
 
-  it("allows an empty string value for string columns", () => {
+  it("adds a row error for an empty string value in a required column", () => {
     const result = validateCsvAgainstSchema(
       makeParsed(["id", "label"], [["a1", ""]]),
       makeSchema(),
     );
 
+    expect(result.errorMap.rowErrors[1]?.["label"]).toContain(
+      CsvValidationErrorEnum.REQUIRED_FIELD_MISSING,
+    );
+    expect(result.errors[0].message).toBe(
+      "This field is required and cannot be left blank",
+    );
+  });
+
+  it("allows an empty string value for string columns when required is false", () => {
+    const result = validateCsvAgainstSchema(
+      makeParsed(["id", "label"], [["a1", ""]]),
+      makeSchema({
+        columns: [
+          { name: "id", serverDataType: "string" },
+          { name: "count", serverDataType: "int" },
+          { name: "price", serverDataType: "double" },
+          { name: "label", serverDataType: "string", required: false },
+        ] as any,
+      }),
+    );
+
     expect(result.errors).toHaveLength(0);
-    expect(result.rows[0]?.["label"]).toBe("");
+    expect(result.rows[0]?.["label"]).toBeUndefined();
+  });
+
+  it("allows an empty value for non-string columns when required is false", () => {
+    const result = validateCsvAgainstSchema(
+      makeParsed(["id", "count"], [["a1", ""]]),
+      makeSchema({
+        columns: [
+          { name: "id", serverDataType: "string" },
+          { name: "count", serverDataType: "int", required: false },
+        ] as any,
+      }),
+    );
+
+    expect(result.errors).toHaveLength(0);
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]?.["count"]).toBeUndefined();
   });
 
   it("adds a row error when a value cannot be coerced to the column type", () => {

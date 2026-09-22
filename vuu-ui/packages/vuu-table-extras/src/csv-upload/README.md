@@ -165,7 +165,7 @@ type CsvErrorMap<TError extends string> = {
 | `MISSING_KEY_COLUMN` | The CSV does not contain the table's key column (internal/staging key columns such as `vuuRowNum` are exempt and generated automatically). Reported as a `fileError`. |
 | `UNKNOWN_COLUMN` | A CSV column has no matching column in the table schema. Reported as a `fileError`. |
 | `MAX_ROWS_EXCEEDED` | The CSV contains more rows than the `maxRows` limit. Reported as a `fileError`. |
-| `EMPTY_NON_STRING_VALUE` | A non-string column cell is empty. Reported as a `rowError`. |
+| `REQUIRED_FIELD_MISSING` | A required column cell is empty. Reported as a `rowError`. |
 | `TYPE_MISMATCH` | A cell value cannot be coerced to the column's server data type. Reported as a `rowError`. |
 
 ## Parse Options

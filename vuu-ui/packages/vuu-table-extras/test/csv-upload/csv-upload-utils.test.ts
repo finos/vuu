@@ -83,7 +83,7 @@ describe("csv-upload-utils", () => {
           column: "name",
           value: "",
           message: "Empty value is not allowed.",
-          errorEnum: CsvValidationErrorEnum.EMPTY_NON_STRING_VALUE,
+          errorEnum: CsvValidationErrorEnum.REQUIRED_FIELD_MISSING,
         },
       ],
     });
