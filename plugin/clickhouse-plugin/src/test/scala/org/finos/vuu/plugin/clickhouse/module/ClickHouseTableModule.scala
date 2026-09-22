@@ -6,10 +6,9 @@ import org.finos.vuu.api.{TableDefOptions, ViewPortDef}
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.RangeSettings
 import org.finos.vuu.net.FilterSpec
-import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
 import org.finos.vuu.plugin.clickhouse.provider.ClickHouseVirtualizedDataProvider
-import org.finos.vuu.plugin.virtualized.api.{AliasedVirtualizedSessionTableDef, VirtualizedSessionTableColumnBuilder}
+import org.finos.vuu.plugin.virtualized.api.{VirtualizedSessionTableColumnBuilder, VirtualizedSessionTableDefBuilder}
 import org.finos.vuu.viewport.ViewPort
 
 object ClickHouseTableModule extends DefaultModule {
@@ -21,12 +20,14 @@ object ClickHouseTableModule extends DefaultModule {
   final val ORDER_INSTRUMENTS_JOIN_TABLE_NAME = "ordersWithInstruments"
 
   def apply(client: ClickHouseClient)(using clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
-    val orderHistoryDef = AliasedVirtualizedSessionTableDef(
-      tableName = TABLE_NAME,
-      tableKeyField = "orderId",
-      remoteName = "order_history",
-      remoteKeyField = "order_id",
-      remoteColumns = VirtualizedSessionTableColumnBuilder()
+
+    val orderHistoryDef = VirtualizedSessionTableDefBuilder()
+      .withTableName(TABLE_NAME)
+      .withTableKeyField("orderId")
+      .withRemoteName("order_history")
+      .withRemoteKeyField("order_id")
+      .withColumns(
+        VirtualizedSessionTableColumnBuilder()
         .addLong("orderId", "order_id")
         .addLong("instrumentId", "instrument_id")
         .addInt("quantity")
@@ -35,13 +36,14 @@ object ClickHouseTableModule extends DefaultModule {
         .addString("trader")
         .addString("currency")
         .addEpochTimestampNano("time")
-        .build(),
-      options = TableDefOptions(
-        includeDefaultColumns = false,
-        rangeSettings = RangeSettings()
-          .withMaxRangeEnd(1_000_000)
-      )
-    )
+        .build())
+      .withOptions(
+        TableDefOptions(
+          includeDefaultColumns = false,
+          rangeSettings = RangeSettings()
+            .withMaxRangeEnd(1_000_000)
+        )
+      ).buildAliased()
 
     val orderHistoryDefWithNoSellPermission = orderHistoryDef.copy(
       tableName = NO_SELL_TABLE_NAME,
@@ -50,48 +52,52 @@ object ClickHouseTableModule extends DefaultModule {
       }
     )
 
-    val instrumentsDef = AliasedVirtualizedSessionTableDef(
-      tableName = INSTRUMENT_TABLE_NAME,
-      tableKeyField = "instrumentId",
-      remoteName = "instruments",
-      remoteKeyField = "instrument_id",
-      remoteColumns = VirtualizedSessionTableColumnBuilder()
-        .addLong("instrumentId", "instrument_id")
-        .addString("ric")
-        .addString("exchange")
-        .addString("currency")
-        .build(),
-      options = TableDefOptions(
-        includeDefaultColumns = false,
-        rangeSettings = RangeSettings()
-          .withMaxRangeEnd(1_000_000)
-      )
-    )
+    val instrumentsDef = VirtualizedSessionTableDefBuilder()
+      .withTableName(INSTRUMENT_TABLE_NAME)
+      .withTableKeyField("instrumentId")
+      .withRemoteName("instruments")
+      .withRemoteKeyField("instrument_id")
+      .withColumns(
+        VirtualizedSessionTableColumnBuilder()
+          .addLong("instrumentId", "instrument_id")
+          .addString("ric")
+          .addString("exchange")
+          .addString("currency")
+          .build())
+      .withOptions(
+        TableDefOptions(
+          includeDefaultColumns = false,
+          rangeSettings = RangeSettings()
+            .withMaxRangeEnd(1_000_000)
+        )
+      ).build()
 
-    val ordersInstrumentsJoinDef = AliasedVirtualizedSessionTableDef(
-      tableName = ORDER_INSTRUMENTS_JOIN_TABLE_NAME,
-      tableKeyField = "orderId",
-      remoteName = "enriched_orders",
-      remoteKeyField = "order_id",
-      remoteColumns = VirtualizedSessionTableColumnBuilder()
-        .addLong("orderId", "order_id")
-        .addLong("instrumentId", "instrument_id")
-        .addInt("quantity")
-        .addScaledDecimal6("price")
-        .addString("side")
-        .addString("trader")
-        .addString("currency")
-        .addEpochTimestampNano("time")
-        .addString("ric")
-        .addString("exchange")
-        .addString("instrumentCurrency","instrument_currency")
-        .build(),
-      options = TableDefOptions(
-        includeDefaultColumns = false,
-        rangeSettings = RangeSettings()
-          .withMaxRangeEnd(1_000_000)
-      )
-    )
+    val ordersInstrumentsJoinDef = VirtualizedSessionTableDefBuilder()
+      .withTableName(ORDER_INSTRUMENTS_JOIN_TABLE_NAME)
+      .withTableKeyField("orderId")
+      .withRemoteName("enriched_orders")
+      .withRemoteKeyField("order_id")
+      .withColumns(
+        VirtualizedSessionTableColumnBuilder()
+          .addLong("orderId", "order_id")
+          .addLong("instrumentId", "instrument_id")
+          .addInt("quantity")
+          .addScaledDecimal6("price")
+          .addString("side")
+          .addString("trader")
+          .addString("currency")
+          .addEpochTimestampNano("time")
+          .addString("ric")
+          .addString("exchange")
+          .addString("instrumentCurrency","instrument_currency")
+          .build())
+      .withOptions(
+        TableDefOptions(
+          includeDefaultColumns = false,
+          rangeSettings = RangeSettings()
+            .withMaxRangeEnd(1_000_000)
+        )
+      ).build()
 
     ModuleFactory.withNamespace(NAME)
       .addSessionTable(orderHistoryDef,
