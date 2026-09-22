@@ -107,7 +107,12 @@ describe("validateCsvAgainstSchema", () => {
   it("adds a row error for an empty non-string value", () => {
     const result = validateCsvAgainstSchema(
       makeParsed(["id", "count"], [["a1", ""]]),
-      makeSchema(),
+      makeSchema({
+        columns: [
+          { name: "id", serverDataType: "string" },
+          { name: "count", serverDataType: "int", required: true },
+        ] as any,
+      }),
     );
 
     expect(result.errorMap.rowErrors[1]?.["count"]).toContain(
@@ -121,7 +126,12 @@ describe("validateCsvAgainstSchema", () => {
   it("adds a row error for an empty string value in a required column", () => {
     const result = validateCsvAgainstSchema(
       makeParsed(["id", "label"], [["a1", ""]]),
-      makeSchema(),
+      makeSchema({
+        columns: [
+          { name: "id", serverDataType: "string" },
+          { name: "label", serverDataType: "string", required: true },
+        ] as any,
+      }),
     );
 
     expect(result.errorMap.rowErrors[1]?.["label"]).toContain(

@@ -1,4 +1,4 @@
-import type { TableSchema } from "@vuu-ui/vuu-data-types";
+import type { TableSchema, SchemaColumn } from "@vuu-ui/vuu-data-types";
 import { getTypedValue } from "@vuu-ui/vuu-utils";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
@@ -24,6 +24,14 @@ export {
   type CsvValidationErrorType,
   type CsvValidationStructuredError,
 } from "./csv-errors";
+
+export interface ImportSchemaColumn extends SchemaColumn {
+  required?: boolean;
+}
+
+export interface ImportTableSchema extends Omit<TableSchema, "columns"> {
+  readonly columns: readonly ImportSchemaColumn[];
+}
 
 export type CsvColumnValidator = (
   value: string,
@@ -90,7 +98,7 @@ const getFriendlyErrorMessage = (
 
 export const validateCsvAgainstSchema = (
   parsed: CsvParseResult,
-  tableSchema: TableSchema,
+  tableSchema: TableSchema | ImportTableSchema,
   options?: CsvValidationOptions,
 ): CsvValidationResult => {
   const schemaColumns = new Map(
@@ -151,7 +159,7 @@ export const validateCsvAgainstSchema = (
       const rawValue = rowValues[columnIndex] ?? "";
       const schemaColumn = schemaColumns.get(columnName);
       const schemaType = schemaColumn?.serverDataType;
-      const isRequired = schemaColumn?.required !== false;
+      const isRequired = schemaColumn?.required === true;
 
       if (rawValue.length === 0) {
         if (isRequired) {
