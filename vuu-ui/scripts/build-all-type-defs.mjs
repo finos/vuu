@@ -25,6 +25,7 @@ const packages = [
   "vuu-filters",
   "vuu-layout",
   "vuu-notifications",
+  "vuu-playwright-helpers",
   "vuu-popups",
   "vuu-shell",
   "vuu-table",
