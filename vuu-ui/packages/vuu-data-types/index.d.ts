@@ -394,8 +394,9 @@ export declare type ConfigChangeMessage =
 export declare type ConfigChangeHandler = (msg: ConfigChangeMessage) => void;
 
 export declare type SchemaColumn = {
-  editable?: boolean;
+  editable?: DataEditable;
   name: string;
+  required?: boolean;
   serverDataType: VuuColumnDataType;
 };
 

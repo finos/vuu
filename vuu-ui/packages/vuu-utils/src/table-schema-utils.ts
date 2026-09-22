@@ -5,10 +5,12 @@ import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 export const toSchemaColumn = ({
   editable,
   name,
+  required,
   serverDataType = "string",
 }: ColumnDescriptor): SchemaColumn => ({
-  editable: typeof editable === "boolean" ? editable : undefined,
+  editable,
   name,
+  required,
   serverDataType,
 });
 
