@@ -46,6 +46,48 @@ export type CsvValidationOptions = {
 
 const INTERNAL_KEY_COLUMNS = new Set(["vuuRowNum"]);
 
+const getFriendlyTypeName = (type: string): string => {
+  switch (type) {
+    case "int":
+    case "long":
+      return "whole number";
+    case "double":
+    case "number":
+    case "decimal":
+    case "scaleddecimal":
+    case "scaleddecimal2":
+    case "scaleddecimal4":
+    case "scaleddecimal6":
+    case "scaleddecimal8":
+      return "decimal or number";
+    case "time":
+      return "time in 'HH:MM:SS' format";
+    case "epochtimestamp":
+    case "epochtimestampnano":
+    case "date/time":
+      return "date/time";
+    case "char":
+      return "single character";
+    case "boolean":
+      return "boolean (true/false)";
+    case "json":
+      return "JSON value";
+    default:
+      return type;
+  }
+};
+
+const getFriendlyErrorMessage = (
+  errMessage: string,
+  rawValue: string,
+  toType: string,
+): string => {
+  if (errMessage.includes("is not a valid")) {
+    return `'${rawValue}' is not a valid ${getFriendlyTypeName(toType)}`;
+  }
+  return errMessage;
+};
+
 export const validateCsvAgainstSchema = (
   parsed: CsvParseResult,
   tableSchema: TableSchema,
@@ -97,13 +139,16 @@ export const validateCsvAgainstSchema = (
   parsed.rows.forEach((rowValues, rowIndex) => {
     const rowNum = rowIndex + CSV_FIRST_DATA_ROW_NUMBER;
     const typedRow: Record<string, VuuRowDataItemType> = {};
-    const rawRow = parsed.header.reduce<Record<string, string>>((acc, headerCol, idx) => {
-      acc[headerCol] = rowValues[idx];
-      return acc;
-    }, {});
+    const rawRow = parsed.header.reduce<Record<string, string>>(
+      (acc, headerCol, idx) => {
+        acc[headerCol] = rowValues[idx] ?? "";
+        return acc;
+      },
+      {},
+    );
 
     parsed.header.forEach((columnName, columnIndex) => {
-      const rawValue = rowValues[columnIndex];
+      const rawValue = rowValues[columnIndex] ?? "";
       const schemaType = schemaColumns.get(columnName);
 
       if (rawValue.length === 0 && schemaType !== "string") {
@@ -112,7 +157,7 @@ export const validateCsvAgainstSchema = (
           rowNum,
           columnName,
           CsvValidationErrorEnum.EMPTY_NON_STRING_VALUE,
-          "Empty value is not allowed for non-string columns.",
+          "This field is required and cannot be left blank",
           rawValue,
         );
         return;
@@ -130,7 +175,11 @@ export const validateCsvAgainstSchema = (
           rowNum,
           columnName,
           CsvValidationErrorEnum.TYPE_MISMATCH,
-          err instanceof Error ? err.message : String(err),
+          getFriendlyErrorMessage(
+            err instanceof Error ? err.message : String(err),
+            rawValue,
+            toType,
+          ),
           rawValue,
         );
         return;
@@ -141,7 +190,7 @@ export const validateCsvAgainstSchema = (
           rowNum,
           columnName,
           CsvValidationErrorEnum.TYPE_MISMATCH,
-          `Value '${rawValue}' is not a valid ${toType}`,
+          `'${rawValue}' is not a valid ${getFriendlyTypeName(toType)}`,
           rawValue,
         );
         return;

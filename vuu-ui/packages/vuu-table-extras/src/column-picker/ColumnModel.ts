@@ -80,6 +80,11 @@ export type ColumnEvents = {
   render: (o: object) => void;
 };
 
+const columnDescriptorComparator = (
+  col1: ColumnDescriptor,
+  col2: ColumnDescriptor,
+) => col1.name === col2.name;
+
 export class ColumnModel extends EventEmitter<ColumnEvents> {
   #selectedColumns: readonly ColumnDescriptor[];
 
@@ -135,6 +140,7 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
     const addedColumns: readonly ColumnDescriptor[] = getAddedItems(
       this.#selectedColumns,
       newSelectedColumns,
+      columnDescriptorComparator,
     );
 
     if (addedColumns.length > 0) {
@@ -151,6 +157,7 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
     const removedColumns: readonly ColumnDescriptor[] = getRemovedItems(
       this.#selectedColumns,
       newSelectedColumns,
+      columnDescriptorComparator,
     );
 
     if (removedColumns.length > 0) {

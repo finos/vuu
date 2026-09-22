@@ -13,6 +13,40 @@
   text-align: center;
 }
 
+.vuuCsvUpload-errorContainer {
+  margin-top: var(--salt-spacing-100);
+  max-height: 120px;
+  overflow-y: auto;
+  width: 100%;
+  max-width: 480px;
+  padding: var(--salt-spacing-100) var(--salt-spacing-200);
+  background-color: rgba(var(--salt-palette-interact-error-background), 0.05);
+  border-radius: var(--salt-size-borderRadius);
+  text-align: left;
+}
+
+.vuuCsvUpload-errorList {
+  margin: 0;
+  padding-left: var(--salt-spacing-200);
+  list-style-type: disc;
+}
+
+.vuuCsvUpload-errorItem {
+  font-size: var(--salt-text-fontSize-small);
+  color: var(--salt-status-error-foreground);
+  line-height: var(--salt-text-lineHeight-small);
+  word-break: break-word;
+  margin-bottom: var(--salt-spacing-50);
+}
+
+.vuuCsvUpload-importErrorItem {
+  text-align: center;
+}
+
+.vuuCsvUpload-rectifyPrompt {
+  margin-top: var(--salt-spacing-100);
+}
+
 .vuuCsvUpload-errors {
   border: solid 1px var(--salt-status-error-borderColor);
   border-radius: var(--salt-size-borderRadius);

@@ -113,6 +113,9 @@ describe("validateCsvAgainstSchema", () => {
     expect(result.errorMap.rowErrors[1]?.["count"]).toContain(
       CsvValidationErrorEnum.EMPTY_NON_STRING_VALUE,
     );
+    expect(result.errors[0].message).toBe(
+      "This field is required and cannot be left blank",
+    );
   });
 
   it("allows an empty string value for string columns", () => {
@@ -133,6 +136,9 @@ describe("validateCsvAgainstSchema", () => {
 
     expect(result.errorMap.rowErrors[1]?.["count"]).toContain(
       CsvValidationErrorEnum.TYPE_MISMATCH,
+    );
+    expect(result.errors[0].message).toBe(
+      "'not-a-number' is not a valid whole number",
     );
   });
 
@@ -177,8 +183,12 @@ describe("validateCsvAgainstSchema", () => {
       expect(result.errors).toHaveLength(1);
       expect(result.errors[0].rowNum).toBe(1);
       expect(result.errors[0].column).toBe("count");
-      expect(result.errors[0].errorEnum).toBe(CsvValidationErrorEnum.CUSTOM_VALIDATION);
-      expect(result.errors[0].message).toBe("Value '15' failed custom validation.");
+      expect(result.errors[0].errorEnum).toBe(
+        CsvValidationErrorEnum.CUSTOM_VALIDATION,
+      );
+      expect(result.errors[0].message).toBe(
+        "Value '15' failed custom validation.",
+      );
     });
 
     it("fails validation and outputs the custom error message returned, when it returns a string", () => {
@@ -195,7 +205,9 @@ describe("validateCsvAgainstSchema", () => {
       expect(result.errors).toHaveLength(1);
       expect(result.errors[0].rowNum).toBe(1);
       expect(result.errors[0].column).toBe("count");
-      expect(result.errors[0].errorEnum).toBe(CsvValidationErrorEnum.CUSTOM_VALIDATION);
+      expect(result.errors[0].errorEnum).toBe(
+        CsvValidationErrorEnum.CUSTOM_VALIDATION,
+      );
       expect(result.errors[0].message).toBe("Count must be less than 10.");
     });
 
@@ -224,7 +236,9 @@ describe("validateCsvAgainstSchema", () => {
       expect(result.errors).toHaveLength(1);
       expect(result.errors[0].rowNum).toBe(2);
       expect(result.errors[0].column).toBe("label");
-      expect(result.errors[0].message).toBe("The label cannot be invalid_label when ID is special.");
+      expect(result.errors[0].message).toBe(
+        "The label cannot be invalid_label when ID is special.",
+      );
     });
   });
 });

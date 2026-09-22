@@ -16,6 +16,7 @@ import { parseCsv, type CsvParseOptions } from "./parse/csv-parse";
 import {
   type CsvValidationResult,
   type CsvColumnValidator,
+  type CsvValidationStructuredError,
   validateCsvAgainstSchema,
 } from "./parse/csv-schema-validation";
 import {
@@ -260,7 +261,10 @@ export const useCsvUpload = ({
       try {
         await editSession.end(save);
       } finally {
-        if (sessionDataSource.status !== "unsubscribed") {
+        if (
+          sessionDataSource.status !== "unsubscribed" &&
+          typeof sessionDataSource.unsubscribe === "function"
+        ) {
           sessionDataSource.unsubscribe();
         }
         setActiveSessionDataSource(undefined);
@@ -295,9 +299,7 @@ export const useCsvUpload = ({
         const columnError = `${column}: ${message}`;
         vuuMsgByRow.set(
           rowNum,
-          existing
-            ? `${existing}; ${columnError}`
-            : `${rowNum === 0 ? "Header" : `Row ${rowNum}`}: ${columnError}`,
+          existing ? `${existing}; ${columnError}` : columnError,
         );
       }
 
@@ -447,17 +449,18 @@ export const useCsvUpload = ({
 
       if (Object.keys(schemaValidation.errorMap.fileErrors).length > 0) {
         setValidation(schemaValidation);
+        const detailedMessage = `CSV validation failed: ${schemaValidation.errors
+          .map((e) =>
+            e.column === "*" ? e.message : `${e.column}: ${e.message}`,
+          )
+          .join("; ")}`;
         handleError({
           errors: {
             schemaError: createUploadError(
               "schema",
-              "CSV validation failed.",
+              detailedMessage,
               parsedCsv.error,
-              {
-                errorMap: schemaValidation.errorMap,
-                errors: schemaValidation.errors,
-                message: "CSV validation failed.",
-              },
+              schemaValidation as unknown as CsvValidationStructuredError,
             ),
           },
         });
@@ -584,8 +587,9 @@ export const useCsvUpload = ({
       validation.errors.length === 0 &&
       validation.rows.length > 0 &&
       !isProcessingFile &&
-      !isImporting,
-    [isImporting, isProcessingFile, validation],
+      !isImporting &&
+      error === undefined,
+    [isImporting, isProcessingFile, validation, error],
   );
 
   const importData = useCallback(async () => {
