@@ -52,6 +52,7 @@ function writePackageJSON() {
         ...packageJson.exports,
         ".": {
           ...packageJson.exports["."],
+          default: packageJson.exports["."].default ?? packageJson.exports["."].import,
           types: "./types/index.d.ts",
         },
       },
