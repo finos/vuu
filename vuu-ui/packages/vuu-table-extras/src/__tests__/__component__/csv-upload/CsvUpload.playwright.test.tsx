@@ -1,7 +1,5 @@
 import { test, expect } from "../../../../../../playwright/fixtures";
 
-
-
 test.describe("Given a CsvUpload component", () => {
   test("THEN it renders the open dialog with correct initial state", async ({
     mount,
@@ -80,18 +78,18 @@ test.describe("Given a CsvUpload with the instruments schema", () => {
       { timeout: 5000 },
     );
     await expect(page.locator(".vuuCsvUpload-dropZone")).toContainText(
-      "Your file contains errors",
+      "Validation failed",
     );
     const errorItems = page.locator(".vuuCsvUpload-errorItem");
     await expect(errorItems).toHaveCount(3);
     await expect(errorItems.nth(0)).toHaveText(
-      "CSV must include key column 'isin'.",
+      "isin: CSV must include key column 'isin'.",
     );
     await expect(errorItems.nth(1)).toHaveText(
-      "Column symbol is not present in table schema.",
+      "symbol: Column symbol is not present in table schema.",
     );
     await expect(errorItems.nth(2)).toHaveText(
-      "Column name is not present in table schema.",
+      "name: Column name is not present in table schema.",
     );
     await expect(page.locator("button", { hasText: "Import" })).toBeDisabled();
   });
@@ -110,9 +108,9 @@ test.describe("Given a CsvUpload with rowDefaults", () => {
       buffer: Buffer.from("id\nrow-001\n"),
     });
 
-    await expect(
-      page.locator("button", { hasText: "Import" }),
-    ).toBeEnabled({ timeout: 5000 });
+    await expect(page.locator("button", { hasText: "Import" })).toBeEnabled({
+      timeout: 5000,
+    });
     await page.locator("button", { hasText: "Import" }).click();
 
     await expect(page.locator('[data-testid="captured-row-0"]')).toContainText(
@@ -136,9 +134,9 @@ test.describe("Given a CsvUpload with rowDefaults", () => {
       buffer: Buffer.from("id,name\nrow-001,Explicit Name\n"),
     });
 
-    await expect(
-      page.locator("button", { hasText: "Import" }),
-    ).toBeEnabled({ timeout: 5000 });
+    await expect(page.locator("button", { hasText: "Import" })).toBeEnabled({
+      timeout: 5000,
+    });
     await page.locator("button", { hasText: "Import" }).click();
 
     await expect(page.locator('[data-testid="captured-row-0"]')).toContainText(
@@ -300,7 +298,7 @@ test.describe("Given a CsvUpload with an import table", () => {
       { timeout: 5000 },
     );
     await expect(page.locator(".vuuCsvUpload-errorItem")).toContainText(
-      "Column name is not present in table schema.",
+      "name: Column name is not present in table schema",
     );
   });
 
