@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "target": "remote-module",
+  "paths": {
+    "entry": "./src/index.tsx",
+    "htmlTemplate": "../remote-module-template/index.html",
+    "output": "../../dist_portal/vuu-table-browser",
+    "publicPath": "http://localhost:5009/"
+  },
+  "html": {
+    "title": "vuuTableBrowser (standalone)"
+  },
+  "server": {
+    "corsOrigins": ["http://localhost:5002"]
+  },
+  "moduleFederation": {
+    "name": "vuuTableBrowser",
+    "dts": false,
+    "exposes": {
+      "./VuuTableBrowser": "./src/VuuTableBrowser"
+    },
+    "shared": {
+      "react": {
+        "requiredVersion": "^19.2.3",
+        "strictVersion": true
+      },
+      "react-dom": {
+        "requiredVersion": "^19.2.3",
+        "strictVersion": true
+      },
+      "react-router-dom": {
+        "singleton": true,
+        "requiredVersion": "^6.2.1",
+        "strictVersion": true
+      },
+      "@vuu-ui/core": {
+        "singleton": true,
+        "requiredVersion": "3.3.12",
+        "strictVersion": true
+      },
+      "@vuu-ui/core/portal": {
+        "singleton": true,
+        "requiredVersion": "3.3.12",
+        "strictVersion": true
+      },
+      "@vuu-ui/vuu-data-editing": {
+        "singleton": true,
+        "requiredVersion": "3.3.12",
+        "strictVersion": true
+      },
+      "@vuu-ui/vuu-data-test": {
+        "singleton": true,
+        "requiredVersion": "3.3.12",
+        "strictVersion": true
+      },
+      "@vuu-ui/vuu-shell": {
+        "requiredVersion": "3.3.12",
+        "strictVersion": true
+      }
+    }
+  }
+}

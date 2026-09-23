@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Vuu User Admin Module",
   "scripts": {
-    "build": "node ../../scripts/build-remote-module.ts",
+    "prebuild": "npm run build --workspace @vuu-ui/portal-build",
+    "build": "portal-build --config ./portal-build.json",
     "dev": "rsbuild dev",
     "test": "vitest run --root ../.. portal-examples/user-admin/test",
     "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -20,6 +21,7 @@
   ],
   "main": "index.ts",
   "devDependencies": {
+    "@vuu-ui/portal-build": "0.1.0",
     "@vuu-ui/vuu-data-types": "3.3.12",
     "@vuu-ui/vuu-table-types": "3.3.12"
   },

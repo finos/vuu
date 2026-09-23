@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "target": "remote-module",
+  "paths": {
+    "entry": "./src/index.tsx",
+    "htmlTemplate": "../remote-module-template/index.html",
+    "output": "../../dist_portal/user-admin",
+    "publicPath": "http://localhost:5003/"
+  },
+  "html": {
+    "title": "userAdmin (standalone)"
+  },
+  "server": {
+    "corsOrigins": ["http://localhost:5002"]
+  },
+  "moduleFederation": {
+    "name": "userAdmin",
+    "dts": false,
+    "exposes": {
+      "./UserAdmin": "./src/UserAdmin",
+      "./UserAdminLocal": "./src/UserAdminLocal"
+    },
+    "shared": {
+      "react": {
+        "requiredVersion": "^19.2.3",
+        "strictVersion": true
+      },
+      "react-dom": {
+        "requiredVersion": "^19.2.3",
+        "strictVersion": true
+      },
+      "react-router-dom": {
+        "singleton": true,
+        "requiredVersion": "^6.2.1",
+        "strictVersion": true
+      },
+      "@vuu-ui/core": {
+        "singleton": true,
+        "requiredVersion": "3.3.12",
+        "strictVersion": true
+      },
+      "@vuu-ui/core/portal": {
+        "singleton": true,
+        "requiredVersion": "3.3.12",
+        "strictVersion": true
+      },
+      "@vuu-ui/vuu-data-editing": {
+        "singleton": true,
+        "requiredVersion": "3.3.12",
+        "strictVersion": true
+      },
+      "@vuu-ui/vuu-data-test": {
+        "singleton": true,
+        "requiredVersion": "3.3.12",
+        "strictVersion": true
+      },
+      "@vuu-ui/vuu-shell": {
+        "requiredVersion": "3.3.12",
+        "strictVersion": true
+      }
+    }
+  }
+}

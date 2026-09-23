@@ -159,9 +159,13 @@ export const parsePortalBuildAllConfig = (
       target.target,
       `${property}.target`,
     ) as PortalBuildTarget;
-    if (targetType !== "host" && targetType !== "remote-module") {
+    if (
+      targetType !== "host" &&
+      targetType !== "remote-module" &&
+      targetType !== "application"
+    ) {
       throw new Error(
-        `Invalid portal build-all config: ${property}.target must be "host" or "remote-module"`,
+        `Invalid portal build-all config: ${property}.target must be "host", "remote-module", or "application"`,
       );
     }
     return {
@@ -314,7 +318,9 @@ export const buildPortalAll = async ({
   const plan = createPortalBuildAllPlan(loadedConfig, mode, targetName);
 
   for (const target of plan.targets) {
-    console.log(`\nBuilding ${target.name} (${target.mode})...`);
+    const buildKind =
+      target.plan.target === "application" ? "application" : target.mode;
+    console.log(`\nBuilding ${target.name} (${buildKind})...`);
     try {
       await buildPortal({
         configPath: target.configPath,

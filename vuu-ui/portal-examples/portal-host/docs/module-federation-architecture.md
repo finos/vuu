@@ -96,13 +96,18 @@ npm run build:mf:local
 
 The workspace `build:mf` script invokes the reusable `portal-build` CLI with
 the project-level `portal-build-all.json`. That manifest declares the
-`portal-host` package first and `module-admin` second, so the host and remote
-are built in deterministic order. `npm run build:mf:local` passes `--local`;
-the host uses its local entry and manifest while the remote still uses its
+`portal-host` package followed by basket-trading, feature-filter-table,
+module-admin, feature-simple-div, user-admin, feature-instrument-tiles,
+vuu-table-browser, and vuu-table-viewer. All configured artifacts are
+built in that deterministic order. `npm run build:mf:local` passes `--local`;
+the host uses its local entry and manifest while every remote still uses its
 remote-module build. Use `npm run build:mf -- --target module-admin` to build
-only the configured remote. The workspace prebuilds the tool distribution
+only one configured remote. The workspace prebuilds the tool distribution
 before invoking the CLI, so the top-level entry point has no
-portal-host-specific orchestration or Rsbuild implementation.
+portal-host-specific orchestration or Rsbuild implementation. The legacy
+`simple-login-service` entry is also retained as the first aggregate
+`application` target; it is built by the same package but is not a federated
+remote.
 
 Remote modules use the same package with `"target": "remote-module"`. For
 example, `module-admin/portal-build.json` declares its standalone entry,

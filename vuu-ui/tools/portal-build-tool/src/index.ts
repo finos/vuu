@@ -27,5 +27,6 @@ export {
   type PortalBuildConfig,
   type PortalBuildMode,
   type PortalBuildPlan,
+  type PortalBuildTarget,
   type SharedDependencyConfig,
 } from "./config.js";

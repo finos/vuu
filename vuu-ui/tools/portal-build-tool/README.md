@@ -128,6 +128,10 @@ Remote shared dependency versions may be explicit or use
 `requiredVersion: "package"` when the dependency is declared by the consuming
 application.
 
+Set `"target": "application"` for a standalone portal application that is not
+a Module Federation container. It uses the same entry, HTML, output, React, and
+CSS-inline build settings without emitting a federation container or manifest.
+
 ## Configuration
 
 ```json

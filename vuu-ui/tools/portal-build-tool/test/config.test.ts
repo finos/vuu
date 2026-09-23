@@ -182,6 +182,25 @@ describe("portal build configuration", () => {
     ).toThrow("moduleFederation.exposes");
   });
 
+  it("accepts standalone application targets without federation output", () => {
+    const config = parsePortalBuildConfig({
+      version: 1,
+      target: "application",
+      paths: {
+        entry: "./src/index.tsx",
+        htmlTemplate: "./public/index.html",
+        output: "./dist",
+      },
+      moduleFederation: {
+        name: "simpleLoginService",
+        shared: {},
+      },
+    });
+
+    expect(config.target).toBe("application");
+    expect(config.paths.entry).toBe("./src/index.tsx");
+  });
+
   it("validates project-level target names and declarations", () => {
     expect(() =>
       parsePortalBuildAllConfig({

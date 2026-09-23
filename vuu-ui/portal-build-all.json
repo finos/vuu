@@ -14,14 +14,62 @@
   },
   "targets": [
     {
+      "name": "simple-login-service",
+      "packageDir": "./portal-examples/simple-login-service",
+      "config": "./portal-build.json",
+      "target": "application"
+    },
+    {
       "name": "portal-host",
       "packageDir": "./portal-examples/portal-host",
       "config": "./portal-build.json",
       "target": "host"
     },
     {
+      "name": "basket-trading",
+      "packageDir": "./portal-examples/basket-trading",
+      "config": "./portal-build.json",
+      "target": "remote-module"
+    },
+    {
+      "name": "feature-filter-table",
+      "packageDir": "./portal-examples/feature-filter-table",
+      "config": "./portal-build.json",
+      "target": "remote-module"
+    },
+    {
       "name": "module-admin",
       "packageDir": "./portal-examples/module-admin",
+      "config": "./portal-build.json",
+      "target": "remote-module"
+    },
+    {
+      "name": "feature-simple-div",
+      "packageDir": "./portal-examples/feature-simple-div",
+      "config": "./portal-build.json",
+      "target": "remote-module"
+    },
+    {
+      "name": "user-admin",
+      "packageDir": "./portal-examples/user-admin",
+      "config": "./portal-build.json",
+      "target": "remote-module"
+    },
+    {
+      "name": "feature-instrument-tiles",
+      "packageDir": "./portal-examples/feature-instrument-tiles",
+      "config": "./portal-build.json",
+      "target": "remote-module"
+    },
+    {
+      "name": "vuu-table-browser",
+      "packageDir": "./portal-examples/vuu-table-browser",
+      "config": "./portal-build.json",
+      "target": "remote-module"
+    },
+    {
+      "name": "vuu-table-viewer",
+      "packageDir": "./portal-examples/vuu-table-viewer",
       "config": "./portal-build.json",
       "target": "remote-module"
     }

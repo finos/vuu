@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 export type PortalBuildMode = "local" | "remote";
-export type PortalBuildTarget = "host" | "remote-module";
+export type PortalBuildTarget = "host" | "remote-module" | "application";
 
 export type JsonValue =
   | boolean
@@ -278,8 +278,15 @@ export const parsePortalBuildConfig = (
   }
   const paths = configValue.paths as Record<string, unknown>;
   const target = (configValue.target ?? "host") as PortalBuildTarget;
-  if (target !== "host" && target !== "remote-module") {
-    invalidConfig("target", 'must be "host" or "remote-module"');
+  if (
+    target !== "host" &&
+    target !== "remote-module" &&
+    target !== "application"
+  ) {
+    invalidConfig(
+      "target",
+      'must be "host", "remote-module", or "application"',
+    );
   }
   const entries = isObject(paths.entries)
     ? (paths.entries as Record<string, unknown>)
@@ -299,8 +306,11 @@ export const parsePortalBuildConfig = (
   if (target === "host" && (!entries || !remoteEntry)) {
     invalidConfig("paths.entries", "must define a remote entry for host builds");
   }
-  if (target === "remote-module" && !entry) {
-    invalidConfig("paths.entry", "must define an entry for remote-module builds");
+  if ((target === "remote-module" || target === "application") && !entry) {
+    invalidConfig(
+      "paths.entry",
+      `must define an entry for ${target} builds`,
+    );
   }
 
   const manifest =
@@ -574,6 +584,29 @@ export const createPortalBuildPlan = (
       publicPath: config.paths.publicPath,
       exposes: config.moduleFederation.exposes,
       dts: config.moduleFederation.dts ?? false,
+      htmlTitle: config.html?.title,
+      corsOrigins: config.server?.corsOrigins,
+      preEntry: config.paths.preEntry,
+      root,
+    };
+  }
+  if (target === "application") {
+    return {
+      configPath,
+      entry: path.resolve(root, config.paths.entry as string),
+      htmlTemplate: path.resolve(root, config.paths.htmlTemplate),
+      manifest: { filename: "", value: {} },
+      mode,
+      target,
+      moduleFederation: mergeModuleFederation(
+        config.moduleFederation,
+        undefined,
+        path.join(root, "package.json"),
+      ),
+      outputRoot: path.resolve(root, config.paths.output),
+      publicPath: undefined,
+      exposes: undefined,
+      dts: undefined,
       htmlTitle: config.html?.title,
       corsOrigins: config.server?.corsOrigins,
       preEntry: config.paths.preEntry,

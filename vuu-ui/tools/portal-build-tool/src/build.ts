@@ -133,6 +133,65 @@ export const buildPortal = async ({
               },
             },
           }
+        : plan.target === "application"
+          ? {
+              html: {
+                template: plan.htmlTemplate,
+                ...(plan.htmlTitle ? { title: plan.htmlTitle } : {}),
+              },
+              output: {
+                distPath: {
+                  root: plan.outputRoot,
+                  css: "./",
+                  js: "./",
+                },
+                filenameHash: false,
+                minify: false,
+                module: true,
+                sourceMap: {
+                  js: "cheap-module-source-map",
+                  css: true,
+                },
+                target: "web",
+              },
+              performance: {
+                chunkSplit: {
+                  strategy: "all-in-one",
+                },
+              },
+              plugins: [
+                ...(config.cssInline === false
+                  ? []
+                  : [
+                      pluginCssInline(
+                        typeof config.cssInline === "object"
+                          ? config.cssInline
+                          : {},
+                      ),
+                    ]),
+                pluginReact(),
+              ],
+              source: {
+                entry: {
+                  index: plan.entry,
+                },
+                ...(plan.preEntry ? { preEntry: plan.preEntry } : {}),
+              },
+              tools: {
+                rspack: {
+                  output: {
+                    chunkFormat: "module",
+                    chunkLoading: "import",
+                    library: {
+                      type: "module",
+                    },
+                  },
+                  plugins: rsdoctor
+                    ? [new RsdoctorRspackPlugin({})]
+                    : undefined,
+                },
+              },
+            }
         : {
       html: {
         template: plan.htmlTemplate,
