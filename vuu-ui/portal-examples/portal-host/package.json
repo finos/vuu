@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "prebuild": "npm run build --workspace @vuu-ui/portal-build",
+    "prebuild:local": "npm run build --workspace @vuu-ui/portal-build",
+    "prebuild:doctor": "npm run build --workspace @vuu-ui/portal-build",
     "build": "portal-build --config ./portal-build.json",
     "build:local": "portal-build --config ./portal-build.json --local",
     "build:doctor": "portal-build --config ./portal-build.json --rsdoctor",

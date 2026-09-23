@@ -93,5 +93,6 @@ npm install @vuu-ui/portal-build
 }
 ```
 
-The package requires Node 22.6 or newer because its CLI and API are distributed
-as TypeScript source, matching the Node-based TypeScript scripts used by VUU.
+The package supports Node 20 and newer. The published package contains compiled
+JavaScript and TypeScript declarations; the workspace source remains TypeScript
+so it can be typechecked alongside the VUU sources.

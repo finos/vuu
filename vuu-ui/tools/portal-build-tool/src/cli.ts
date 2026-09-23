@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { buildPortal } from "./build.ts";
-import type { PortalBuildMode } from "./config.ts";
+import { buildPortal } from "./build.js";
+import type { PortalBuildMode } from "./config.js";
 
 const getOption = (args: string[], name: string): string | undefined => {
   const index = args.indexOf(name);

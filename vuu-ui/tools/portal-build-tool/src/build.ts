@@ -2,8 +2,8 @@ import { createRsbuild } from "@rsbuild/core";
 import { pluginReact } from "@rsbuild/plugin-react";
 import { RsdoctorRspackPlugin } from "@rsdoctor/rspack-plugin";
 import { ModuleFederationPlugin } from "@module-federation/enhanced/rspack";
-import type { PortalBuildMode, PortalBuildPlan } from "./config.ts";
-import { loadPortalBuildConfig, createPortalBuildPlan } from "./config.ts";
+import type { PortalBuildMode, PortalBuildPlan } from "./config.js";
+import { loadPortalBuildConfig, createPortalBuildPlan } from "./config.js";
 import { pluginCssInline } from "./css-inline-plugin.js";
 
 export interface BuildPortalOptions {

@@ -6,7 +6,7 @@ import {
   createPortalBuildPlan,
   loadPortalBuildConfig,
   parsePortalBuildConfig,
-} from "../src/index.ts";
+} from "../src/index.js";
 
 const temporaryDirectories: string[] = [];
 

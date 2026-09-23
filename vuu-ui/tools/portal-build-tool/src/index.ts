@@ -1,7 +1,7 @@
 export {
   buildPortal,
   type BuildPortalOptions,
-} from "./build.ts";
+} from "./build.js";
 export {
   createPortalBuildPlan,
   loadPortalBuildConfig,
@@ -16,4 +16,4 @@ export {
   type PortalBuildMode,
   type PortalBuildPlan,
   type SharedDependencyConfig,
-} from "./config.ts";
+} from "./config.js";
