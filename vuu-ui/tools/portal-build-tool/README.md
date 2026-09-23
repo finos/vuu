@@ -12,11 +12,74 @@ The package exposes `buildPortal` for JavaScript/TypeScript build scripts and a
 portal-build --config ./portal-build.json
 portal-build --config ./portal-build.json --local
 portal-build --config ./portal-build.json --rsdoctor
+portal-build --all-config ./portal-build-all.json
+portal-build --all-config ./portal-build-all.json --local
+portal-build --all-config ./portal-build-all.json --target module-admin
 ```
 
 The config path is resolved from the current working directory. All paths in
 the config are resolved relative to the directory containing that config, so
 the package does not depend on a repository layout.
+
+## Building a complete portal
+
+Use a project-level `portal-build-all.json` when one command should build a
+host and its configured remote modules. Targets run in declaration order, and
+the order is stable for both the CLI and API. `--local` selects the host's
+local entry and manifest; remote-module targets always use their remote build.
+Use `--target <name>` to build one configured target.
+
+```json
+{
+  "version": 1,
+  "shared": {
+    "react": {
+      "requiredVersion": "package",
+      "singleton": true,
+      "strictVersion": true
+    },
+    "react-dom": {
+      "requiredVersion": "package",
+      "singleton": true,
+      "strictVersion": true
+    }
+  },
+  "targets": [
+    {
+      "name": "portal-host",
+      "packageDir": "./portal-examples/portal-host",
+      "config": "./portal-build.json",
+      "target": "host"
+    },
+    {
+      "name": "module-admin",
+      "packageDir": "./portal-examples/module-admin",
+      "config": "./portal-build.json",
+      "target": "remote-module",
+      "shared": {
+        "@vuu-ui/core": {
+          "singleton": true,
+          "strictVersion": true
+        }
+      }
+    }
+  ]
+}
+```
+
+`packageDir` is resolved relative to the project-level config and `config` is
+resolved relative to that package directory. The declared target kind must
+match the individual JSON config, so a miswired project fails before any
+build starts. Project-level `shared` declarations are inherited by every
+target. They are deep-merged per dependency in this order:
+project defaults, the standalone target config's `moduleFederation.shared`,
+then the target's optional `shared` exceptions. Later declarations override
+only the fields they specify, so a target can change `strictVersion` without
+repeating its required version or singleton setting. Standalone
+`portal-build.json` files remain complete and behave the same when invoked
+directly. The API equivalent is `buildPortalAll({ configPath, mode,
+targetName })`; `createPortalBuildAllPlan` exposes the validated deterministic
+plan without running Rsbuild.
 
 Set `"target": "remote-module"` to build a federated remote instead of a host.
 The remote target emits the same standalone HTML bundle and Module Federation
@@ -134,8 +197,18 @@ npm install @vuu-ui/portal-build
 ```json
 {
   "scripts": {
-    "build": "portal-build --config ./portal-build.json",
+    "build": "portal-build --all-config ./portal-build-all.json",
     "build:local": "portal-build --config ./portal-build.json --local"
+  }
+}
+```
+
+Individual remote modules can still use their own package script:
+
+```json
+{
+  "scripts": {
+    "build:module-admin": "portal-build --config ./portal-build.json"
   }
 }
 ```

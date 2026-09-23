@@ -1,23 +1,42 @@
+import path from "node:path";
 import { createRsbuild } from "@rsbuild/core";
 import { pluginReact } from "@rsbuild/plugin-react";
 import { RsdoctorRspackPlugin } from "@rsdoctor/rspack-plugin";
 import { ModuleFederationPlugin } from "@module-federation/enhanced/rspack";
-import type { PortalBuildMode, PortalBuildPlan } from "./config.js";
+import type {
+  LoadedPortalBuildConfig,
+  PortalBuildMode,
+  PortalBuildPlan,
+} from "./config.js";
 import { loadPortalBuildConfig, createPortalBuildPlan } from "./config.js";
 import { pluginCssInline } from "./css-inline-plugin.js";
 
 export interface BuildPortalOptions {
   configPath?: string;
+  loadedConfig?: LoadedPortalBuildConfig;
   mode?: PortalBuildMode;
   rsdoctor?: boolean;
 }
 
+const resolveExposeRequest = (request: string, root: string): string => {
+  if (
+    request.startsWith("./") ||
+    request.startsWith("../") ||
+    request.startsWith("src/")
+  ) {
+    return path.resolve(root, request);
+  }
+  return request;
+};
+
 export const buildPortal = async ({
   configPath = "portal-build.json",
+  loadedConfig: providedConfig,
   mode = "remote",
   rsdoctor = false,
 }: BuildPortalOptions = {}) => {
-  const loadedConfig = loadPortalBuildConfig(configPath);
+  const loadedConfig =
+    providedConfig ?? loadPortalBuildConfig(configPath);
   const plan = createPortalBuildPlan(loadedConfig, mode);
   const config = loadedConfig.config;
   const shared = plan.moduleFederation.shared;
@@ -29,7 +48,7 @@ export const buildPortal = async ({
           exposes: Object.fromEntries(
             Object.entries(plan.exposes ?? {}).map(([name, request]) => [
               name,
-              request.startsWith("src/") ? `./${request}` : request,
+              resolveExposeRequest(request, plan.root),
             ]),
           ),
           shared,

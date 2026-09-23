@@ -1,10 +1,13 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  createPortalBuildAllPlan,
   createPortalBuildPlan,
+  loadPortalBuildAllConfig,
   loadPortalBuildConfig,
+  parsePortalBuildAllConfig,
   parsePortalBuildConfig,
 } from "../src/index.js";
 
@@ -177,5 +180,174 @@ describe("portal build configuration", () => {
         },
       }),
     ).toThrow("moduleFederation.exposes");
+  });
+
+  it("validates project-level target names and declarations", () => {
+    expect(() =>
+      parsePortalBuildAllConfig({
+        version: 1,
+        shared: {
+          react: {
+            singleton: true,
+            strictVersion: true,
+          },
+          "react-dom": {
+            requiredVersion: "package",
+            singleton: true,
+          },
+        },
+        targets: [
+          {
+            name: "portal-host",
+            packageDir: "./portal-host",
+            config: "./portal-build.json",
+            target: "host",
+            shared: {
+              react: {
+                strictVersion: false,
+              },
+            },
+          },
+          {
+            name: "portal-host",
+            packageDir: "./other-host",
+            config: "./portal-build.json",
+            target: "host",
+          },
+        ],
+      }),
+    ).toThrow('duplicate target name "portal-host"');
+  });
+
+  it("plans configured host and remote targets in declaration order", () => {
+    const root = mkdtempSync(path.join(os.tmpdir(), "portal-build-all-"));
+    temporaryDirectories.push(root);
+    const hostRoot = path.join(root, "portal-host");
+    const remoteRoot = path.join(root, "module-admin");
+    mkdirSync(hostRoot);
+    mkdirSync(remoteRoot);
+
+    writeFileSync(
+      path.join(hostRoot, "package.json"),
+      JSON.stringify({ dependencies: { "react-dom": "^19.2.3" } }),
+    );
+    writeFileSync(
+      path.join(hostRoot, "portal-build.json"),
+      JSON.stringify({
+        version: 1,
+        paths: {
+          htmlTemplate: "./index.html",
+          output: "./dist",
+          entries: {
+            remote: "./src/index.tsx",
+            local: "./src/local-index.tsx",
+          },
+        },
+        manifest: {
+          filename: "./config.json",
+          remote: { mode: "remote" },
+          local: { mode: "local" },
+        },
+        moduleFederation: { name: "host", shared: {} },
+      }),
+    );
+    writeFileSync(
+      path.join(remoteRoot, "package.json"),
+      JSON.stringify({ dependencies: { "react-dom": "^19.2.3" } }),
+    );
+    writeFileSync(
+      path.join(remoteRoot, "portal-build.json"),
+      JSON.stringify({
+        version: 1,
+        target: "remote-module",
+        paths: {
+          entry: "./src/index.tsx",
+          htmlTemplate: "./index.html",
+          output: "./dist",
+          publicPath: "http://localhost:5002/",
+        },
+        moduleFederation: {
+          name: "moduleAdmin",
+          exposes: { "./ModuleAdmin": "./src/ModuleAdmin" },
+          shared: {},
+        },
+      }),
+    );
+    writeFileSync(
+      path.join(root, "portal-build-all.json"),
+      JSON.stringify({
+        version: 1,
+        shared: {
+          react: {
+            requiredVersion: "^19.2.3",
+            singleton: true,
+            strictVersion: true,
+          },
+          "react-dom": {
+            requiredVersion: "package",
+            singleton: true,
+          },
+        },
+        targets: [
+          {
+            name: "portal-host",
+            packageDir: "./portal-host",
+            config: "./portal-build.json",
+            target: "host",
+            shared: {
+              react: {
+                strictVersion: false,
+              },
+            },
+          },
+          {
+            name: "module-admin",
+            packageDir: "./module-admin",
+            config: "./portal-build.json",
+            target: "remote-module",
+          },
+        ],
+      }),
+    );
+
+    const loaded = loadPortalBuildAllConfig(
+      path.join(root, "portal-build-all.json"),
+    );
+    const localPlan = createPortalBuildAllPlan(loaded, "local");
+    expect(localPlan.targets.map(({ name }) => name)).toEqual([
+      "portal-host",
+      "module-admin",
+    ]);
+    expect(localPlan.targets.map(({ mode }) => mode)).toEqual([
+      "local",
+      "remote",
+    ]);
+    expect(localPlan.targets[0]?.plan.entry).toBe(
+      path.join(hostRoot, "src/local-index.tsx"),
+    );
+    expect(localPlan.targets[0]?.plan.moduleFederation.shared.react).toEqual({
+      requiredVersion: "^19.2.3",
+      singleton: true,
+      strictVersion: false,
+    });
+    expect(
+      localPlan.targets[0]?.plan.moduleFederation.shared["react-dom"],
+    ).toEqual({
+      requiredVersion: "^19.2.3",
+      singleton: true,
+    });
+    expect(localPlan.targets[1]?.plan.moduleFederation.shared.react).toEqual({
+      requiredVersion: "^19.2.3",
+      singleton: true,
+      strictVersion: true,
+    });
+
+    const selectedPlan = createPortalBuildAllPlan(
+      loaded,
+      "remote",
+      "module-admin",
+    );
+    expect(selectedPlan.targets).toHaveLength(1);
+    expect(selectedPlan.targets[0]?.plan.target).toBe("remote-module");
   });
 });

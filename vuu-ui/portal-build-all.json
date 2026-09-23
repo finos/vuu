@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "shared": {
+    "react": {
+      "requiredVersion": "package",
+      "singleton": true,
+      "strictVersion": true
+    },
+    "react-dom": {
+      "requiredVersion": "package",
+      "singleton": true,
+      "strictVersion": true
+    }
+  },
+  "targets": [
+    {
+      "name": "portal-host",
+      "packageDir": "./portal-examples/portal-host",
+      "config": "./portal-build.json",
+      "target": "host"
+    },
+    {
+      "name": "module-admin",
+      "packageDir": "./portal-examples/module-admin",
+      "config": "./portal-build.json",
+      "target": "remote-module"
+    }
+  ]
+}
