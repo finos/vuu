@@ -46,16 +46,23 @@ async function createTypeDefs() {
 function writePackageJSON() {
   return new Promise((resolve, reject) => {
     const packageJson = readPackageJson(`${outdir}/package.json`);
+    const exports = {
+      ...packageJson.exports,
+      ".": {
+        ...packageJson.exports["."],
+        types: "./types/index.d.ts",
+      },
+    };
+    if (packageJson.exports["./portal"]) {
+      exports["./portal"] = {
+        ...packageJson.exports["./portal"],
+        types: "./types/portal.d.ts",
+      };
+    }
     const newPackage = {
       ...packageJson,
       files: (packageJson.files || []).concat("/types"),
-      exports: {
-        ...packageJson.exports,
-        ".": {
-          ...packageJson.exports["."],
-          types: "./types/index.d.ts",
-        },
-      },
+      exports,
       types: "types/index.d.ts",
     };
     fs.writeFile(
