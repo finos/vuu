@@ -248,7 +248,12 @@ describe("portal build configuration", () => {
 
     writeFileSync(
       path.join(hostRoot, "package.json"),
-      JSON.stringify({ dependencies: { "react-dom": "^19.2.3" } }),
+      JSON.stringify({
+        dependencies: {
+          "@vuu-ui/core": "3.3.12",
+          "react-dom": "^19.2.3",
+        },
+      }),
     );
     writeFileSync(
       path.join(hostRoot, "portal-build.json"),
@@ -272,7 +277,12 @@ describe("portal build configuration", () => {
     );
     writeFileSync(
       path.join(remoteRoot, "package.json"),
-      JSON.stringify({ dependencies: { "react-dom": "^19.2.3" } }),
+      JSON.stringify({
+        dependencies: {
+          "@vuu-ui/core": "3.3.12",
+          "react-dom": "^19.2.3",
+        },
+      }),
     );
     writeFileSync(
       path.join(remoteRoot, "portal-build.json"),
@@ -304,6 +314,14 @@ describe("portal build configuration", () => {
           },
           "react-dom": {
             requiredVersion: "package",
+            singleton: true,
+          },
+          "@vuu-ui/core": {
+            requiredVersion: "3.3.12",
+            singleton: true,
+          },
+          "@vuu-ui/core/portal": {
+            requiredVersion: "package:@vuu-ui/core",
             singleton: true,
           },
         },
@@ -353,6 +371,20 @@ describe("portal build configuration", () => {
       localPlan.targets[0]?.plan.moduleFederation.shared["react-dom"],
     ).toEqual({
       requiredVersion: "^19.2.3",
+      singleton: true,
+    });
+    expect(
+      localPlan.targets[0]?.plan.moduleFederation.shared["@vuu-ui/core"],
+    ).toEqual({
+      requiredVersion: "3.3.12",
+      singleton: true,
+    });
+    expect(
+      localPlan.targets[0]?.plan.moduleFederation.shared[
+        "@vuu-ui/core/portal"
+      ],
+    ).toEqual({
+      requiredVersion: "3.3.12",
       singleton: true,
     });
     expect(localPlan.targets[1]?.plan.moduleFederation.shared.react).toEqual({

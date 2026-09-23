@@ -42,6 +42,21 @@ Use `--target <name>` to build one configured target.
       "requiredVersion": "package",
       "singleton": true,
       "strictVersion": true
+    },
+    "react-router-dom": {
+      "requiredVersion": "^6.2.1",
+      "singleton": true,
+      "strictVersion": true
+    },
+    "@vuu-ui/core": {
+      "requiredVersion": "3.3.12",
+      "singleton": true,
+      "strictVersion": true
+    },
+    "@vuu-ui/core/portal": {
+      "requiredVersion": "3.3.12",
+      "singleton": true,
+      "strictVersion": true
     }
   },
   "targets": [
