@@ -1,9 +1,11 @@
 import { Button, Toolbar, ToolbarContent, Tooltray } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { useLogout } from "@vuu-ui/core";
 import cx from "clsx";
 import type { HTMLAttributes } from "react";
 
-import "./PortalHeader.css";
+import portalHeaderCss from "./PortalHeader.css";
 
 const classBase = "vuuPortalHeader";
 
@@ -13,6 +15,13 @@ export const PortalHeader = ({
   className: classNameProp,
   ...htmlAttributes
 }: PortalHeaderProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-portal-header",
+    css: portalHeaderCss,
+    window: targetWindow,
+  });
+
   const className = cx(classBase, classNameProp);
   const logout = useLogout();
 

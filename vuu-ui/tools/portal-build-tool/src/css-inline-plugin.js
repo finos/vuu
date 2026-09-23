@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 
 const DEFAULT_INCLUDE = [
+  "/packages/core/",
   "/packages/grid-layout/",
   "/packages/vuu-datatable/",
   "/packages/vuu-context-menu/",
