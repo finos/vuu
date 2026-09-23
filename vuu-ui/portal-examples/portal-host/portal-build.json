@@ -73,6 +73,7 @@
   },
   "cssInline": {
     "include": [
+      "/packages/core/",
       "/packages/grid-layout/",
       "/packages/vuu-datatable/",
       "/packages/vuu-context-menu/",
