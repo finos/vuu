@@ -507,23 +507,21 @@ provide explicit `vuu` metadata.
    Federation loading itself.
 17. Both remotes MUST use the same centralized Module Federation shared-dependency
    configuration as every existing remote module on the `ui-portal` baseline,
-   currently `getSharedDependencies("producer")` from
-   `vuu-ui/scripts/module-federation-utils.ts`.
+   configured through `@vuu-ui/portal-build` and the project portal build
+   manifests.
 18. Neither remote may define a module-specific shared-dependency list. Any
    additional shared dependency required by either remote MUST be added to the
    centralized configuration and applied consistently to all remote modules
    and the host.
 19. Neither remote may bundle a second incompatible instance of shared React
    context providers.
-20. Both remotes SHOULD use the existing
-   `vuu-ui/scripts/build-remote-module.ts` build script and declare their
-   Module Federation settings through the existing `package.json`
-   `vuu.module-federation` contract.
-21. If either remote cannot use the existing script unchanged, the build
-   capability MUST be added as a shared enhancement to that script. A
-   remote-specific fork or parallel build script MUST NOT be introduced.
-   The shared script MUST normalize approved `src/...` expose values to
-   Rspack-compatible relative requests.
+20. Both remotes SHOULD use the reusable `@vuu-ui/portal-build` CLI and
+   declare their Module Federation settings through their
+   `portal-build.json` configuration.
+21. If either remote needs additional build capability, it MUST be added to
+   `@vuu-ui/portal-build` rather than introduced as a remote-specific fork or
+   parallel build script. The shared tool MUST normalize approved `src/...`
+   expose values to Rspack-compatible relative requests.
 22. For both remotes, the canonical Module Federation entry point MUST be
    `${mfUrl}/mf-manifest.json`.
 23. The host `RemoteModule` loader MUST register and load both remotes from that
@@ -692,8 +690,8 @@ Automated tests MUST cover:
 - execution in representative Baseline Widely Available browsers;
 - use of the same centralized shared-dependency configuration as existing
   remote modules;
-- use of `vuu-ui/scripts/build-remote-module.ts` by both remotes, or a justified
-  shared enhancement without a remote-specific build fork;
+- use of `@vuu-ui/portal-build` by both remotes, or a justified shared
+  enhancement without a remote-specific build fork;
 - keyboard navigation and accessible state;
 - registry and Module Federation metadata using `mfScope: "vuuTableBrowser"`
   and `mfComponent: "VuuTableBrowser"`;
@@ -767,8 +765,8 @@ The initial release is acceptable when:
 24. The split-panel interface remains usable in an 800 by 600 CSS-pixel host.
 25. Both remotes use the same centralized Module Federation shared dependencies
    as the other existing remote modules.
-26. Both remotes use `vuu-ui/scripts/build-remote-module.ts`, with any required
-   new capability implemented as a shared enhancement rather than a fork.
+26. Both remotes use `@vuu-ui/portal-build`, with any required new capability
+   implemented as a shared enhancement rather than a fork.
 27. Both remotes use the same production public-path, asset-path, CORS, and
    Content Security Policy configuration as existing remote modules.
 
