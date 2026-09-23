@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "paths": {
+    "htmlTemplate": "./public/index.html",
+    "output": "../../dist_portal/portal-host",
+    "entries": {
+      "remote": "./src/index.tsx",
+      "local": "./src/local-index.tsx"
+    },
+    "preEntry": "@vuu-ui/vuu-theme/index.css"
+  },
+  "manifest": {
+    "filename": "./config.json",
+    "remote": {
+      "ssl": true,
+      "authUrl": "https://localhost:8080",
+      "restUrl": "https://localhost:8443/api/authn",
+      "websocketUrl": "wss://localhost:8091/websocket-portal"
+    },
+    "local": {
+      "ssl": true,
+      "authUrl": "https://localhost:8080",
+      "restUrl": "https://localhost:8443/api/authn",
+      "websocketUrl": "wss://localhost:8091/websocket-portal"
+    }
+  },
+  "moduleFederation": {
+    "name": "host",
+    "remoteType": "module",
+    "remotes": {},
+    "shared": {
+      "react": {
+        "requiredVersion": "package",
+        "singleton": true,
+        "strictVersion": true
+      },
+      "react-dom": {
+        "requiredVersion": "package",
+        "singleton": true,
+        "strictVersion": true
+      },
+      "react-router-dom": {
+        "requiredVersion": "package",
+        "singleton": true,
+        "strictVersion": true
+      },
+      "@vuu-ui/core": {
+        "requiredVersion": "package",
+        "singleton": true,
+        "strictVersion": true
+      },
+      "@vuu-ui/core/portal": {
+        "requiredVersion": "package:@vuu-ui/core",
+        "singleton": true,
+        "strictVersion": true
+      },
+      "@vuu-ui/vuu-data-editing": {
+        "requiredVersion": "package:@vuu-ui/core",
+        "singleton": true,
+        "strictVersion": true
+      },
+      "@vuu-ui/vuu-data-test": {
+        "requiredVersion": "package:@vuu-ui/core",
+        "singleton": true,
+        "strictVersion": true
+      },
+      "@vuu-ui/vuu-shell": {
+        "requiredVersion": "package:@vuu-ui/core",
+        "singleton": true,
+        "strictVersion": true
+      }
+    }
+  },
+  "cssInline": {
+    "include": [
+      "/packages/grid-layout/",
+      "/packages/vuu-datatable/",
+      "/packages/vuu-context-menu/",
+      "/packages/vuu-data-react/",
+      "/packages/vuu-filters/",
+      "/packages/vuu-layout/",
+      "/packages/vuu-notifications/",
+      "/packages/vuu-popups/",
+      "/packages/vuu-shell/",
+      "/packages/vuu-chart/",
+      "/packages/vuu-table/",
+      "/packages/vuu-table-extras/",
+      "/packages/vuu-ui-controls/"
+    ],
+    "exclude": [".stories.tsx"]
+  }
+}

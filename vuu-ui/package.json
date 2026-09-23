@@ -19,12 +19,14 @@
     "tools/vite-plugin-inline-css",
     "tools/esbuild-plugin-inline-css",
     "tools/rsbuild-plugin-inline-css",
+    "tools/portal-build-tool",
     "tools/vuu-showcase"
   ],
   "scripts": {
     "build": "node ./scripts/build-all-rslib.ts",
     "build:dev": "node ./scripts/build-all.mjs",
-    "build:mf": "node ./portal-examples/portal-host/scripts/build-all.ts",
+    "prebuild:mf": "npm run build --workspace @vuu-ui/portal-build",
+    "build:mf": "portal-build --all-config ./portal-build-all.json",
     "build:mf:local": "npm run build:mf -- --local",
     "build:app": "node ./sample-apps/app-vuu-example/scripts/build.ts",
     "build:app:insecure": "npm run build:app -- --insecure",

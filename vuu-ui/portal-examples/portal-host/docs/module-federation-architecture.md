@@ -94,6 +94,28 @@ Build the local proof and all producer artifacts from `vuu-ui`:
 npm run build:mf:local
 ```
 
+The workspace `build:mf` script invokes the reusable `portal-build` CLI with
+the project-level `portal-build-all.json`. That manifest declares the
+`portal-host` package followed by basket-trading, feature-filter-table,
+module-admin, feature-simple-div, user-admin, feature-instrument-tiles,
+vuu-table-browser, and vuu-table-viewer. All configured artifacts are
+built in that deterministic order. `npm run build:mf:local` passes `--local`;
+the host uses its local entry and manifest while every remote still uses its
+remote-module build. Use `npm run build:mf -- --target module-admin` to build
+only one configured remote. The workspace prebuilds the tool distribution
+before invoking the CLI, so the top-level entry point has no
+portal-host-specific orchestration or Rsbuild implementation. The legacy
+`simple-login-service` entry is also retained as the first aggregate
+`application` target; it is built by the same package but is not a federated
+remote.
+
+Remote modules use the same package with `"target": "remote-module"`. For
+example, `module-admin/portal-build.json` declares its standalone entry,
+output/public URL, exposed modules, shared dependencies, HTML title, and CORS
+origins; its `build` script invokes the same `portal-build` CLI. Independent
+portal applications can publish and consume this package without importing any
+VUU repository-relative build script.
+
 Serve the four generated artifacts in separate terminals:
 
 ```sh
@@ -107,8 +129,9 @@ npm --prefix portal-examples/portal-host run start:local
 Open `http://localhost:5001`. The local build deliberately replaces the
 `dist_portal/portal-host` artifact so an existing nginx mapping can serve it
 without configuration changes. To rebuild only the local host, run
-`npm run build:mf -- --portal-host --local`. The existing `npm run build:mf`
-or `portal-host` `build` command restores the authenticated remote host.
+`npm run build:mf -- --target portal-host --local`. The existing
+`npm run build:mf` or `portal-host` `build` command restores the authenticated
+remote host.
 
 When serving through nginx, map ports 5003, 5005, and 5006 to `user-admin`,
 `feature-filter-table`, and `basket-trading` respectively, and

@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Vuu Filter Table",
   "scripts": {
-    "build": "node ../../scripts/build-remote-module.ts",
+    "prebuild": "npm run build --workspace @vuu-ui/portal-build",
+    "build": "portal-build --config ./portal-build.json",
     "dev": "rsbuild dev",
     "start": "serve -p 5001 ../../dist_portal/feature-filter-table"
   },
@@ -16,7 +17,9 @@
     "**/*.css"
   ],
   "main": "index.ts",
-  "devDependencies": {},
+  "devDependencies": {
+    "@vuu-ui/portal-build": "0.1.0"
+  },
   "peerDependencies": {
     "@vuu-ui/core": "3.3.12",
     "@vuu-ui/vuu-shell": "3.3.12",

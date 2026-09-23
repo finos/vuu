@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Browse tables exposed by registered Vuu servers",
   "scripts": {
-    "build": "node ../../scripts/build-remote-module.ts",
+    "prebuild": "npm run build --workspace @vuu-ui/portal-build",
+    "build": "portal-build --config ./portal-build.json",
     "start": "serve -p 5009 ../../dist_portal/vuu-table-browser"
   },
   "type": "module",
@@ -14,6 +15,9 @@
     "**/*.css"
   ],
   "main": "index.ts",
+  "devDependencies": {
+    "@vuu-ui/portal-build": "0.1.0"
+  },
   "dependencies": {
     "@salt-ds/core": "1.67.0",
     "@vuu-ui/core": "3.3.12",

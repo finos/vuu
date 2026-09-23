@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "target": "application",
+  "paths": {
+    "entry": "./src/index.tsx",
+    "htmlTemplate": "./public/index.html",
+    "output": "../../dist_portal/simple-login-service"
+  },
+  "moduleFederation": {
+    "name": "simpleLoginService",
+    "shared": {}
+  },
+  "cssInline": {}
+}
