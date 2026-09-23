@@ -94,6 +94,14 @@ Build the local proof and all producer artifacts from `vuu-ui`:
 npm run build:mf:local
 ```
 
+The workspace `build:mf` script selects `portal-host` through
+`portal-examples/portal-host/scripts/build-all.ts`. For that package, the
+remote path runs `npm run build`, and the local path runs `npm run build:local`;
+both scripts invoke the reusable `portal-build` CLI with
+`portal-build.json`. The package prebuilds the workspace tool distribution
+before invoking the CLI, so these entry points no longer depend on a
+portal-host-specific Rsbuild script.
+
 Serve the four generated artifacts in separate terminals:
 
 ```sh
