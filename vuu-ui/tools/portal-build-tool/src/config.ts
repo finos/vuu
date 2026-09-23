@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 export type PortalBuildMode = "local" | "remote";
+export type PortalBuildTarget = "host" | "remote-module";
 
 export type JsonValue =
   | boolean
@@ -21,6 +22,8 @@ export interface SharedDependencyConfig {
 
 export interface ModuleFederationConfig {
   name: string;
+  dts?: boolean;
+  exposes?: Record<string, string>;
   remoteType?: string;
   remotes?: Record<string, string | Record<string, JsonValue>>;
   shared?: Record<string, SharedDependencyConfig>;
@@ -35,16 +38,19 @@ export interface BuildVariantConfig {
 
 export interface PortalBuildConfig {
   version: 1;
+  target?: PortalBuildTarget;
   paths: {
-    entries: {
+    entries?: {
       local?: string;
       remote: string;
     };
+    entry?: string;
     htmlTemplate: string;
     output: string;
+    publicPath?: string;
     preEntry?: string;
   };
-  manifest: {
+  manifest?: {
     filename: string;
     local?: JsonObject;
     remote: JsonObject;
@@ -52,6 +58,8 @@ export interface PortalBuildConfig {
   moduleFederation: ModuleFederationConfig;
   builds?: Partial<Record<PortalBuildMode, BuildVariantConfig>>;
   cssInline?: false | { exclude?: string[]; include?: string[] };
+  html?: { title?: string };
+  server?: { corsOrigins?: string[] };
 }
 
 export interface LoadedPortalBuildConfig {
@@ -69,10 +77,16 @@ export interface PortalBuildPlan {
     value: JsonObject;
   };
   mode: PortalBuildMode;
+  target: PortalBuildTarget;
   moduleFederation: ModuleFederationConfig & {
     shared: Record<string, SharedDependencyConfig>;
   };
   outputRoot: string;
+  publicPath?: string;
+  exposes?: Record<string, string>;
+  dts?: boolean;
+  htmlTitle?: string;
+  corsOrigins?: string[];
   preEntry?: string;
   root: string;
 }
@@ -145,6 +159,21 @@ const validateShared = (
   return value as Record<string, SharedDependencyConfig>;
 };
 
+const validateExposes = (
+  value: unknown,
+  property: string,
+): Record<string, string> => {
+  if (!isObject(value)) {
+    invalidConfig(property, "must be an object");
+  }
+  const exposeValues = value as Record<string, unknown>;
+  const exposes: Record<string, string> = {};
+  for (const [name, request] of Object.entries(exposeValues)) {
+    exposes[name] = requireString(request, `${property}.${name}`);
+  }
+  return exposes;
+};
+
 const validateModuleFederation = (
   value: unknown,
   property: string,
@@ -165,12 +194,29 @@ const validateModuleFederation = (
   if (moduleFederation.remoteType !== undefined) {
     requireString(moduleFederation.remoteType, `${property}.remoteType`);
   }
+  if (
+    moduleFederation.dts !== undefined &&
+    typeof moduleFederation.dts !== "boolean"
+  ) {
+    invalidConfig(`${property}.dts`, "must be boolean");
+  }
   if (moduleFederation.remotes !== undefined && !isObject(moduleFederation.remotes)) {
     invalidConfig(`${property}.remotes`, "must be an object");
   }
 
   return {
     ...(name ? { name } : {}),
+    ...(moduleFederation.dts === undefined
+      ? {}
+      : { dts: moduleFederation.dts as boolean }),
+    ...(moduleFederation.exposes === undefined
+      ? {}
+      : {
+          exposes: validateExposes(
+            moduleFederation.exposes,
+            `${property}.exposes`,
+          ),
+        }),
     ...(moduleFederation.remoteType
       ? { remoteType: moduleFederation.remoteType as string }
       : {}),
@@ -231,31 +277,58 @@ export const parsePortalBuildConfig = (
     invalidConfig("paths", "must be an object");
   }
   const paths = configValue.paths as Record<string, unknown>;
-  if (!isObject(paths.entries)) {
-    invalidConfig("paths.entries", "must be an object");
+  const target = (configValue.target ?? "host") as PortalBuildTarget;
+  if (target !== "host" && target !== "remote-module") {
+    invalidConfig("target", 'must be "host" or "remote-module"');
   }
-  const entries = paths.entries as Record<string, unknown>;
-  const remoteEntry = requireString(
-    entries.remote,
-    "paths.entries.remote",
-  );
+  const entries = isObject(paths.entries)
+    ? (paths.entries as Record<string, unknown>)
+    : undefined;
+  const remoteEntry =
+    entries === undefined
+      ? undefined
+      : requireString(entries.remote, "paths.entries.remote");
   const localEntry =
-    entries.local === undefined
+    entries?.local === undefined
       ? undefined
       : requireString(entries.local, "paths.entries.local");
+  const entry =
+    paths.entry === undefined
+      ? undefined
+      : requireString(paths.entry, "paths.entry");
+  if (target === "host" && (!entries || !remoteEntry)) {
+    invalidConfig("paths.entries", "must define a remote entry for host builds");
+  }
+  if (target === "remote-module" && !entry) {
+    invalidConfig("paths.entry", "must define an entry for remote-module builds");
+  }
 
-  if (!isObject(configValue.manifest)) {
+  const manifest =
+    configValue.manifest === undefined
+      ? undefined
+      : (() => {
+          if (!isObject(configValue.manifest)) {
+            invalidConfig("manifest", "must be an object");
+          }
+          return configValue.manifest as Record<string, unknown>;
+        })();
+  if (target === "host" && !manifest) {
     invalidConfig("manifest", "must be an object");
   }
-  const manifest = configValue.manifest as Record<string, unknown>;
 
   const config: PortalBuildConfig = {
     version: 1,
+    target,
     paths: {
-      entries: {
-        remote: remoteEntry,
-        ...(localEntry ? { local: localEntry } : {}),
-      },
+      ...(entries && remoteEntry
+        ? {
+            entries: {
+              remote: remoteEntry,
+              ...(localEntry ? { local: localEntry } : {}),
+            },
+          }
+        : {}),
+      ...(entry ? { entry } : {}),
       htmlTemplate: requireString(
         paths.htmlTemplate,
         "paths.htmlTemplate",
@@ -265,19 +338,67 @@ export const parsePortalBuildConfig = (
         ? {}
         : { preEntry: requireString(paths.preEntry, "paths.preEntry") }),
     },
-    manifest: {
-      filename: requireString(manifest.filename, "manifest.filename"),
-      local:
-        manifest.local === undefined
-          ? undefined
-          : validateManifest(manifest.local, "manifest.local"),
-      remote: validateManifest(manifest.remote, "manifest.remote"),
-    },
+    ...(manifest
+      ? {
+          manifest: {
+            filename: requireString(manifest.filename, "manifest.filename"),
+            local:
+              manifest.local === undefined
+                ? undefined
+                : validateManifest(manifest.local, "manifest.local"),
+            remote: validateManifest(manifest.remote, "manifest.remote"),
+          },
+        }
+      : {}),
     moduleFederation: validateModuleFederation(
       configValue.moduleFederation,
       "moduleFederation",
     ),
   };
+
+  if (target === "remote-module") {
+    if (!config.moduleFederation.exposes) {
+      invalidConfig(
+        "moduleFederation.exposes",
+        "must define exposed modules for remote-module builds",
+      );
+    }
+    config.paths.publicPath = requireString(
+      paths.publicPath,
+      "paths.publicPath",
+    );
+  }
+
+  if (configValue.html !== undefined) {
+    if (!isObject(configValue.html)) {
+      invalidConfig("html", "must be an object");
+    }
+    const html = configValue.html as Record<string, unknown>;
+    config.html = {
+      ...(html.title === undefined
+        ? {}
+        : { title: requireString(html.title, "html.title") }),
+    };
+  }
+
+  if (configValue.server !== undefined) {
+    if (!isObject(configValue.server)) {
+      invalidConfig("server", "must be an object");
+    }
+    const server = configValue.server as Record<string, unknown>;
+    if (
+      server.corsOrigins !== undefined &&
+      (!Array.isArray(server.corsOrigins) ||
+        server.corsOrigins.some((origin) => typeof origin !== "string"))
+    ) {
+      invalidConfig("server.corsOrigins", "must be an array of strings");
+    }
+    config.server = {
+      ...(server.corsOrigins
+        ? { corsOrigins: server.corsOrigins as string[] }
+        : {}),
+    };
+  }
 
   if (configValue.builds !== undefined) {
     if (!isObject(configValue.builds)) {
@@ -435,8 +556,32 @@ export const createPortalBuildPlan = (
   mode: PortalBuildMode = "remote",
 ): PortalBuildPlan => {
   const { config, configPath, root } = loadedConfig;
+  const target = config.target ?? "host";
+  if (target === "remote-module") {
+    return {
+      configPath,
+      entry: path.resolve(root, config.paths.entry as string),
+      htmlTemplate: path.resolve(root, config.paths.htmlTemplate),
+      manifest: { filename: "", value: {} },
+      mode,
+      target,
+      moduleFederation: mergeModuleFederation(
+        config.moduleFederation,
+        undefined,
+        path.join(root, "package.json"),
+      ),
+      outputRoot: path.resolve(root, config.paths.output),
+      publicPath: config.paths.publicPath,
+      exposes: config.moduleFederation.exposes,
+      dts: config.moduleFederation.dts ?? false,
+      htmlTitle: config.html?.title,
+      corsOrigins: config.server?.corsOrigins,
+      preEntry: config.paths.preEntry,
+      root,
+    };
+  }
   const variant = config.builds?.[mode];
-  const entry = variant?.entry ?? config.paths.entries[mode];
+  const entry = variant?.entry ?? config.paths.entries?.[mode];
   if (!entry) {
     throw new Error(`No ${mode} entry is configured in ${configPath}`);
   }
@@ -446,16 +591,26 @@ export const createPortalBuildPlan = (
     entry: path.resolve(root, entry),
     htmlTemplate: path.resolve(root, config.paths.htmlTemplate),
     manifest: {
-      filename: config.manifest.filename,
-      value: variant?.manifest ?? config.manifest[mode] ?? config.manifest.remote,
+      filename: config.manifest?.filename ?? "",
+      value:
+        variant?.manifest ??
+        config.manifest?.[mode] ??
+        config.manifest?.remote ??
+        {},
     },
     mode,
+    target,
     moduleFederation: mergeModuleFederation(
       config.moduleFederation,
       variant?.moduleFederation,
       path.join(root, "package.json"),
     ),
     outputRoot: path.resolve(root, variant?.output ?? config.paths.output),
+    publicPath: undefined,
+    exposes: undefined,
+    dts: undefined,
+    htmlTitle: config.html?.title,
+    corsOrigins: config.server?.corsOrigins,
     preEntry: config.paths.preEntry,
     root,
   };

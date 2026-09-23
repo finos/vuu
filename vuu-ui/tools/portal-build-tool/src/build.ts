@@ -21,14 +21,27 @@ export const buildPortal = async ({
   const plan = createPortalBuildPlan(loadedConfig, mode);
   const config = loadedConfig.config;
   const shared = plan.moduleFederation.shared;
-  const federationConfig: Record<string, unknown> = {
-    name: plan.moduleFederation.name,
-    remoteType: plan.moduleFederation.remoteType ?? "module",
-    shared,
-  };
-  if (plan.moduleFederation.remotes) {
-    federationConfig.remotes = plan.moduleFederation.remotes;
-  }
+  const federationConfig: Record<string, unknown> =
+    plan.target === "remote-module"
+      ? {
+          name: plan.moduleFederation.name,
+          dts: plan.dts,
+          exposes: Object.fromEntries(
+            Object.entries(plan.exposes ?? {}).map(([name, request]) => [
+              name,
+              request.startsWith("src/") ? `./${request}` : request,
+            ]),
+          ),
+          shared,
+        }
+      : {
+          name: plan.moduleFederation.name,
+          remoteType: plan.moduleFederation.remoteType ?? "module",
+          shared,
+          ...(plan.moduleFederation.remotes
+            ? { remotes: plan.moduleFederation.remotes }
+            : {}),
+        };
 
   const rspackPlugins = [
     rsdoctor ? new RsdoctorRspackPlugin({}) : undefined,
@@ -36,7 +49,72 @@ export const buildPortal = async ({
   ].filter(Boolean);
 
   const rsbuild = await createRsbuild({
-    config: {
+    config:
+      plan.target === "remote-module"
+        ? {
+            source: {
+              define: {
+                "process.env": JSON.stringify({
+                  NODE_ENV: process.env.NODE_ENV || "development",
+                }),
+              },
+              entry: {
+                index: plan.entry,
+              },
+            },
+            html: {
+              template: plan.htmlTemplate,
+              ...(plan.htmlTitle ? { title: plan.htmlTitle } : {}),
+            },
+            output: {
+              distPath: {
+                root: plan.outputRoot,
+                css: "./",
+                js: "./",
+              },
+              filenameHash: false,
+              minify: false,
+              sourceMap: {
+                js: "cheap-module-source-map",
+                css: true,
+              },
+              target: "web",
+            },
+            performance: {
+              chunkSplit: {
+                strategy: "all-in-one",
+              },
+            },
+            plugins: [
+              ...(config.cssInline === false
+                ? []
+                : [
+                    pluginCssInline(
+                      typeof config.cssInline === "object"
+                        ? config.cssInline
+                        : {},
+                    ),
+                  ]),
+              pluginReact(),
+            ],
+            ...(plan.corsOrigins
+              ? { server: { cors: { origin: plan.corsOrigins } } }
+              : {}),
+            tools: {
+              rspack: {
+                output: {
+                  chunkFormat: "array-push",
+                  chunkLoading: "jsonp",
+                  publicPath: plan.publicPath,
+                },
+                plugins: [
+                  rsdoctor ? new RsdoctorRspackPlugin({}) : undefined,
+                  new ModuleFederationPlugin(federationConfig),
+                ].filter(Boolean),
+              },
+            },
+          }
+        : {
       html: {
         template: plan.htmlTemplate,
       },

@@ -1,9 +1,9 @@
 # `@vuu-ui/portal-build`
 
 `@vuu-ui/portal-build` is a reusable, JSON-configured build tool for portal
-applications. It owns the Rsbuild, React, CSS-inline, and Module Federation
-configuration while each application owns its paths, entries, remotes, shared
-dependencies, and generated manifest values.
+applications and Module Federation remote modules. It owns the Rsbuild, React,
+CSS-inline, and Module Federation configuration while each application owns its
+paths, entries, remotes, shared dependencies, and generated manifest values.
 
 The package exposes `buildPortal` for JavaScript/TypeScript build scripts and a
 `portal-build` CLI:
@@ -17,6 +17,53 @@ portal-build --config ./portal-build.json --rsdoctor
 The config path is resolved from the current working directory. All paths in
 the config are resolved relative to the directory containing that config, so
 the package does not depend on a repository layout.
+
+Set `"target": "remote-module"` to build a federated remote instead of a host.
+The remote target emits the same standalone HTML bundle and Module Federation
+runtime as the legacy remote-module builder:
+
+```json
+{
+  "version": 1,
+  "target": "remote-module",
+  "paths": {
+    "entry": "./src/index.tsx",
+    "htmlTemplate": "../remote-module-template/index.html",
+    "output": "../../dist_portal/example",
+    "publicPath": "http://localhost:5002/"
+  },
+  "html": {
+    "title": "example (standalone)"
+  },
+  "server": {
+    "corsOrigins": ["http://localhost:5002"]
+  },
+  "moduleFederation": {
+    "name": "example",
+    "dts": false,
+    "exposes": {
+      "./Feature": "./src/Feature"
+    },
+    "shared": {
+      "react": {
+        "requiredVersion": "^19.2.3"
+      },
+      "@vuu-ui/core": {
+        "singleton": true,
+        "requiredVersion": "3.3.12",
+        "strictVersion": true
+      }
+    }
+  }
+}
+```
+
+Remote `moduleFederation.exposes` requests beginning with `src/` are normalized
+to `./src/` for Rspack. `publicPath` controls the runtime URL used to load
+remote chunks, while `server.corsOrigins` controls development-server CORS.
+Remote shared dependency versions may be explicit or use
+`requiredVersion: "package"` when the dependency is declared by the consuming
+application.
 
 ## Configuration
 

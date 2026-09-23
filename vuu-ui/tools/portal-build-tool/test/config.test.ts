@@ -115,4 +115,67 @@ describe("portal build configuration", () => {
       mode: "local",
     });
   });
+
+  it("plans a remote module from its standalone build contract", () => {
+    const root = createFixture();
+    const remoteModuleConfig = {
+      version: 1,
+      target: "remote-module",
+      paths: {
+        entry: "./src/index.tsx",
+        htmlTemplate: "../remote-module-template/index.html",
+        output: "./dist/example",
+        publicPath: "http://localhost:5002/",
+      },
+      moduleFederation: {
+        name: "example",
+        dts: false,
+        exposes: {
+          "./Feature": "./src/Feature",
+        },
+        shared: {
+          react: {
+            requiredVersion: "^19.2.3",
+          },
+        },
+      },
+    };
+    writeFileSync(
+      path.join(root, "portal-build.json"),
+      JSON.stringify(remoteModuleConfig),
+    );
+
+    const loaded = loadPortalBuildConfig(
+      path.join(root, "portal-build.json"),
+    );
+    const plan = createPortalBuildPlan(loaded);
+
+    expect(plan.target).toBe("remote-module");
+    expect(plan.entry).toBe(path.join(root, "src/index.tsx"));
+    expect(plan.htmlTemplate).toBe(
+      path.resolve(root, "../remote-module-template/index.html"),
+    );
+    expect(plan.publicPath).toBe("http://localhost:5002/");
+    expect(plan.exposes).toEqual({ "./Feature": "./src/Feature" });
+    expect(plan.moduleFederation.name).toBe("example");
+  });
+
+  it("rejects remote modules without an exposed module", () => {
+    expect(() =>
+      parsePortalBuildConfig({
+        version: 1,
+        target: "remote-module",
+        paths: {
+          entry: "./src/index.tsx",
+          htmlTemplate: "./index.html",
+          output: "./dist",
+          publicPath: "http://localhost:5002/",
+        },
+        moduleFederation: {
+          name: "example",
+          shared: {},
+        },
+      }),
+    ).toThrow("moduleFederation.exposes");
+  });
 });

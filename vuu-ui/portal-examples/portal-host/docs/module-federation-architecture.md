@@ -102,6 +102,13 @@ both scripts invoke the reusable `portal-build` CLI with
 before invoking the CLI, so these entry points no longer depend on a
 portal-host-specific Rsbuild script.
 
+Remote modules use the same package with `"target": "remote-module"`. For
+example, `module-admin/portal-build.json` declares its standalone entry,
+output/public URL, exposed modules, shared dependencies, HTML title, and CORS
+origins; its `build` script invokes the same `portal-build` CLI. Independent
+portal applications can publish and consume this package without importing any
+VUU repository-relative build script.
+
 Serve the four generated artifacts in separate terminals:
 
 ```sh
