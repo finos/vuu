@@ -198,6 +198,13 @@ the package dependency have different names, for example
 `builds.remote`. If no local manifest is provided, the remote manifest is
 used.
 
+For VUU packages that share the release version of `@vuu-ui/core`, use
+`requiredVersion: "package:@vuu-ui/core"` rather than hardcoding a VUU release
+number. This works for both packages that are not direct dependencies of every
+target and subpath requests such as `@vuu-ui/core/portal`; the target still
+must declare `@vuu-ui/core` so the version can be resolved from its
+`package.json`.
+
 ## Publishing and consuming
 
 From the package directory, publish the package with the normal npm workflow:

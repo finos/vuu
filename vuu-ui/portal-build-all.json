@@ -17,27 +17,27 @@
       "strictVersion": true
     },
     "@vuu-ui/core": {
-      "requiredVersion": "3.3.12",
+      "requiredVersion": "package",
       "singleton": true,
       "strictVersion": true
     },
     "@vuu-ui/core/portal": {
-      "requiredVersion": "3.3.12",
+      "requiredVersion": "package:@vuu-ui/core",
       "singleton": true,
       "strictVersion": true
     },
     "@vuu-ui/vuu-data-editing": {
-      "requiredVersion": "3.3.12",
+      "requiredVersion": "package:@vuu-ui/core",
       "singleton": true,
       "strictVersion": true
     },
     "@vuu-ui/vuu-data-test": {
-      "requiredVersion": "3.3.12",
+      "requiredVersion": "package:@vuu-ui/core",
       "singleton": true,
       "strictVersion": true
     },
     "@vuu-ui/vuu-shell": {
-      "requiredVersion": "3.3.12",
+      "requiredVersion": "package:@vuu-ui/core",
       "singleton": true,
       "strictVersion": true
     }
