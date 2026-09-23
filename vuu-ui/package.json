@@ -19,6 +19,7 @@
     "tools/vite-plugin-inline-css",
     "tools/esbuild-plugin-inline-css",
     "tools/rsbuild-plugin-inline-css",
+    "tools/portal-build-tool",
     "tools/vuu-showcase"
   ],
   "scripts": {

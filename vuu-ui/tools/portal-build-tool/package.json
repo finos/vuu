@@ -1,0 +1,41 @@
+{
+  "name": "@vuu-ui/portal-build",
+  "version": "0.1.0",
+  "description": "Reusable Rsbuild and Module Federation build tool for portal applications",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "bin": {
+    "portal-build": "./src/cli.ts"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "package.json"
+  ],
+  "scripts": {
+    "test": "vitest run --root ../.. tools/portal-build-tool/test",
+    "typecheck": "tsc --noEmit --project tsconfig.json"
+  },
+  "dependencies": {
+    "@module-federation/enhanced": "2.8.0",
+    "@rsbuild/core": "^2.1.3",
+    "@rsbuild/plugin-react": "^2.0.0",
+    "@rsdoctor/rspack-plugin": "^1.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^7.0.0",
+    "vitest": "3.1.1"
+  },
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "license": "Apache-2.0"
+}
