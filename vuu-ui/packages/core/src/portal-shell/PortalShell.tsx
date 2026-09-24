@@ -4,6 +4,8 @@ import {
   SaltProviderNext,
   type Accent,
 } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { VuuLogo } from "@vuu-ui/vuu-icons";
 import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import type { ComponentType, ReactNode } from "react";
@@ -14,7 +16,7 @@ import { PortalHeader } from "../portal-header/PortalHeader";
 import { PortalNav } from "../portal-nav/PortalNav";
 import { RemoteModule } from "../remote-module/RemoteModule";
 
-import "./PortalShell.css";
+import portalShellCss from "./PortalShell.css";
 
 const classBase = "vuuPortalShell";
 
@@ -36,6 +38,13 @@ export const PortalShell = ({
   remoteModules,
   title,
 }: PortalShellProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-portal-shell",
+    css: portalShellCss,
+    window: targetWindow,
+  });
+
   return (
     <SaltProviderNext
       accent={accentPurple}
