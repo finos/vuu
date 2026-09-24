@@ -3,7 +3,7 @@ import type { DataRow, TableCellEditHandler } from "@vuu-ui/vuu-table-types";
 import { useCallback } from "react";
 import { useEditField } from "./useEditField";
 import { useEditSession } from "../DataEditingProvider";
-import { dataDescriptorTypeToVuuRowDataItemType } from "@vuu-ui/vuu-utils/src/data-utils";
+import { dataDescriptorTypeToVuuRowDataItemType } from "@vuu-ui/vuu-utils";
 import type { DataValueValidationChecker } from "@vuu-ui/vuu-data-types";
 import type { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
 import { useEditMode } from "../EditModeProvider";
