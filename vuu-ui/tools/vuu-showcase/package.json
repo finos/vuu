@@ -41,7 +41,7 @@
     "clsx": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "react-router-dom": "^6.2.1"
+    "react-router-dom": "7.18.3"
   },
   "sideEffects": false,
   "type": "module"

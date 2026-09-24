@@ -24,7 +24,7 @@
     "@vuu-ui/vuu-data-types": "3.3.12",
     "@vuu-ui/vuu-protocol-types": "3.3.12",
     "@vuu-ui/vuu-shell": "3.3.12",
-    "react-router-dom": "^6.2.1"
+    "react-router-dom": "7.18.3"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",

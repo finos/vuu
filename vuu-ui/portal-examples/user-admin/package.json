@@ -38,7 +38,7 @@
     "@vuu-ui/vuu-table-extras": "3.3.12",
     "@vuu-ui/core": "3.3.12",
     "@salt-ds/core": "1.67.0",
-    "react-router-dom": "^6.2.1"
+    "react-router-dom": "7.18.3"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",
