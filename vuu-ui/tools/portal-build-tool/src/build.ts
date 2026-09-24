@@ -86,6 +86,7 @@ export const buildPortal = async ({
               ...(plan.htmlTitle ? { title: plan.htmlTitle } : {}),
             },
             output: {
+              assetPrefix: plan.assetPrefix,
               distPath: {
                 root: plan.outputRoot,
                 css: "./",
@@ -140,6 +141,7 @@ export const buildPortal = async ({
                 ...(plan.htmlTitle ? { title: plan.htmlTitle } : {}),
               },
               output: {
+                assetPrefix: plan.assetPrefix,
                 distPath: {
                   root: plan.outputRoot,
                   css: "./",
@@ -197,6 +199,7 @@ export const buildPortal = async ({
         template: plan.htmlTemplate,
       },
       output: {
+        assetPrefix: plan.assetPrefix,
         distPath: {
           root: plan.outputRoot,
           css: "./",

@@ -86,6 +86,7 @@ describe("portal build configuration", () => {
     const remotePlan = createPortalBuildPlan(loaded, "remote");
     expect(remotePlan.entry).toBe(path.join(root, "src/index.tsx"));
     expect(remotePlan.outputRoot).toBe(path.join(root, "dist"));
+    expect(remotePlan.assetPrefix).toBe("./");
     expect(remotePlan.manifest.value).toEqual({ ssl: true });
     expect(remotePlan.moduleFederation.shared.react?.requiredVersion).toBe(
       "^19.2.3",
@@ -94,6 +95,27 @@ describe("portal build configuration", () => {
       remotePlan.moduleFederation.shared["@vuu-ui/core/portal"]
         ?.requiredVersion,
     ).toBe("3.3.12");
+  });
+
+  it("allows the asset prefix to be overridden", () => {
+    const root = createFixture({
+      paths: {
+        htmlTemplate: "./public/index.html",
+        output: "./dist",
+        assetPrefix: "/portal/",
+        entries: {
+          remote: "./src/index.tsx",
+          local: "./src/local-index.tsx",
+        },
+      },
+    });
+    const loaded = loadPortalBuildConfig(
+      path.join(root, "portal-build.json"),
+    );
+
+    expect(createPortalBuildPlan(loaded, "remote").assetPrefix).toBe(
+      "/portal/",
+    );
   });
 
   it("plans local builds with independent entries and manifests", () => {
