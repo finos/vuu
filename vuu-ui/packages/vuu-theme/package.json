@@ -6,6 +6,7 @@
   "type": "module",
   "files": [
     "index.css",
+    "reset.css",
     "NunitoSans.css",
     "css",
     "fonts"
