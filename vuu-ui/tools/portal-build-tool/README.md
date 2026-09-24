@@ -155,6 +155,7 @@ CSS-inline build settings without emitting a federation container or manifest.
   "paths": {
     "htmlTemplate": "./public/index.html",
     "output": "./dist",
+    "assetPrefix": "./",
     "entries": {
       "remote": "./src/index.tsx",
       "local": "./src/local-index.tsx"
@@ -189,6 +190,11 @@ CSS-inline build settings without emitting a federation container or manifest.
   }
 }
 ```
+
+`paths.assetPrefix` controls the URL prefix Rsbuild writes for JavaScript,
+CSS, and other static assets in the generated HTML. It defaults to `"./"` so
+the application can be hosted from a sub-folder; set it in the JSON
+configuration when assets need an absolute path or a CDN URL.
 
 `requiredVersion: "package"` reads the version from the application
 `package.json`. Use `package:<dependency-name>` when a federated request and

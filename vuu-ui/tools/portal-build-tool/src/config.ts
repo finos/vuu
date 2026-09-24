@@ -47,6 +47,7 @@ export interface PortalBuildConfig {
     entry?: string;
     htmlTemplate: string;
     output: string;
+    assetPrefix?: string;
     publicPath?: string;
     preEntry?: string;
   };
@@ -82,6 +83,7 @@ export interface PortalBuildPlan {
     shared: Record<string, SharedDependencyConfig>;
   };
   outputRoot: string;
+  assetPrefix: string;
   publicPath?: string;
   exposes?: Record<string, string>;
   dts?: boolean;
@@ -344,6 +346,10 @@ export const parsePortalBuildConfig = (
         "paths.htmlTemplate",
       ),
       output: requireString(paths.output, "paths.output"),
+      assetPrefix:
+        paths.assetPrefix === undefined
+          ? "./"
+          : requireString(paths.assetPrefix, "paths.assetPrefix"),
       ...(paths.preEntry === undefined
         ? {}
         : { preEntry: requireString(paths.preEntry, "paths.preEntry") }),
@@ -581,6 +587,7 @@ export const createPortalBuildPlan = (
         path.join(root, "package.json"),
       ),
       outputRoot: path.resolve(root, config.paths.output),
+      assetPrefix: config.paths.assetPrefix ?? "./",
       publicPath: config.paths.publicPath,
       exposes: config.moduleFederation.exposes,
       dts: config.moduleFederation.dts ?? false,
@@ -604,6 +611,7 @@ export const createPortalBuildPlan = (
         path.join(root, "package.json"),
       ),
       outputRoot: path.resolve(root, config.paths.output),
+      assetPrefix: config.paths.assetPrefix ?? "./",
       publicPath: undefined,
       exposes: undefined,
       dts: undefined,
@@ -639,6 +647,7 @@ export const createPortalBuildPlan = (
       path.join(root, "package.json"),
     ),
     outputRoot: path.resolve(root, variant?.output ?? config.paths.output),
+    assetPrefix: config.paths.assetPrefix ?? "./",
     publicPath: undefined,
     exposes: undefined,
     dts: undefined,
