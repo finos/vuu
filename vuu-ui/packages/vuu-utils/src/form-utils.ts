@@ -130,7 +130,11 @@ export function getTypedValue(
       if (stringIsValidInt(value)) {
         return parseInt(value, 10);
       } else if (throwIfInvalid) {
-        throw Error(`value ${value} is not a valid ${type}`);
+        throw new DataValidationError(
+          `value ${value} is not a valid ${type}`,
+          "whole number",
+          getActualType(value),
+        );
       } else {
         return undefined;
       }
@@ -140,7 +144,25 @@ export function getTypedValue(
       if (stringIsValidLong(value)) {
         return value;
       } else if (throwIfInvalid) {
-        throw Error(`value ${value} is not a valid ${type}`);
+        throw new DataValidationError(
+          `value ${value} is not a valid ${type}`,
+          "whole number",
+          getActualType(value),
+        );
+      } else {
+        return undefined;
+      }
+    }
+
+    case "char": {
+      if (value.length === 1) {
+        return value;
+      } else if (throwIfInvalid) {
+        throw new DataValidationError(
+          `value ${value} is not a valid ${type}`,
+          "single character",
+          getActualType(value),
+        );
       } else {
         return undefined;
       }

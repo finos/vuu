@@ -44,7 +44,7 @@ export const InputCell = ({
   } = useInputCell({
     column,
     onEdit,
-    type: dataDescriptorTypeToVuuRowDataItemType(column),
+    type: column.serverDataType ?? dataDescriptorTypeToVuuRowDataItemType(column),
     value: dataValue,
   });
 
