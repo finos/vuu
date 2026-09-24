@@ -10,12 +10,14 @@ import {
     VerticalNavigationItemTrigger,
     VerticalNavigationSubMenu,
 } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { useMemo, useState } from "react";
 import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
 import { Link, useLocation } from 'react-router-dom';
 
-import "./PortalNav.css";
+import portalNavCss from "./PortalNav.css";
 
 const classBase = "vuuPortalNav";
 
@@ -119,6 +121,13 @@ const buildNavItems = (remoteModules: RemoteModuleDescriptor[]) => {
 };
 
 export const PortalNav = ({ remoteModules }: PortalNavProps) => {
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+        testId: "vuu-portal-nav",
+        css: portalNavCss,
+        window: targetWindow,
+    });
+
     const navItems = useMemo(() => buildNavItems(remoteModules), [remoteModules]);
 
     return (
