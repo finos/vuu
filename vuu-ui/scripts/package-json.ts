@@ -6,7 +6,7 @@ type PackageExports = {
   ".": {
     import: string;
   };
-  ['./style']?: {
+  [subpath: string]: {
     import: string;
   };
 };
@@ -62,6 +62,7 @@ export async function writePackageJSON(
 
     if (style) {
       exports['./style'] = { import: style };
+      exports[style] = { import: style };
     }
 
     const newPackage: Json = {
