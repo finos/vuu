@@ -21,7 +21,7 @@ trait ImportSessionRpcHandler extends EditTableRpcHandler {
       case Some(data: Map[_, _]) =>
         val rowKey = (sessionTableSize + 1).toString
         data.asInstanceOf[Map[String, Any]].get(MSG.name) match {
-          case Some(vuuMsg: String) if vuuMsg.trim.nonEmpty => addRowWithVuuMsg(rowKey, vuuMsg, params)
+          case Some(vuuMsg: String) if !vuuMsg.isBlank => addRowWithVuuMsg(rowKey, vuuMsg, params)
           case _ => addRowWithoutVuuMsg(rowKey, params)
         }
       case _ => new RpcFunctionFailure("Unable to add row. Data missing.")
