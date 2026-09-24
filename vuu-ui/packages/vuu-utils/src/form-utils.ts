@@ -146,6 +146,16 @@ export function getTypedValue(
       }
     }
 
+    case "char": {
+      if (value.length === 1) {
+        return value;
+      } else if (throwIfInvalid) {
+        throw Error(`value ${value} is not a valid ${type}`);
+      } else {
+        return undefined;
+      }
+    }
+
     case "scaleddecimal2":
       return ScaledDecimal2(value);
     case "scaleddecimal4":
