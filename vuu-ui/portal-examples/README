@@ -1,3 +1,7 @@
+For the current Module Federation portal architecture, including authenticated
+and browser-local modes and guidance for migrating standalone React/VUU SPAs,
+see [`docs/getting-started.md`](docs/getting-started.md).
+
 The Sample App comprises a login page, an index page (the VUU Shell) + one or more features
 
 By default, the Filtered Grid feature is loaded. This can be overridden by useing the --features flag with the build
