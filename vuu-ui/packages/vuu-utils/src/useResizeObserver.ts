@@ -55,36 +55,38 @@ const getTargetSize = (
   }
 };
 
-// TODO should we make this create-on-demand
-const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
-  for (const entry of entries) {
-    const { target, borderBoxSize, contentBoxSize } = entry;
-    const observedTarget = observedMap.get(target as HTMLElement);
-    if (observedTarget) {
-      const [{ blockSize: height, inlineSize: width }] = borderBoxSize;
-      const [{ blockSize: contentHeight, inlineSize: contentWidth }] =
-        contentBoxSize;
-      const { onResize, measurements } = observedTarget;
-      let sizeChanged = false;
-      for (const [dimension, size] of Object.entries(measurements)) {
-        const newSize = getTargetSize(
-          target as HTMLElement,
-          { height, width, contentHeight, contentWidth },
-          dimension as measuredDimension,
-        );
+const resizeObserver =
+  typeof ResizeObserver === "undefined"
+    ? undefined
+    : new ResizeObserver((entries: ResizeObserverEntry[]) => {
+        for (const entry of entries) {
+          const { target, borderBoxSize, contentBoxSize } = entry;
+          const observedTarget = observedMap.get(target as HTMLElement);
+          if (observedTarget) {
+            const [{ blockSize: height, inlineSize: width }] = borderBoxSize;
+            const [{ blockSize: contentHeight, inlineSize: contentWidth }] =
+              contentBoxSize;
+            const { onResize, measurements } = observedTarget;
+            let sizeChanged = false;
+            for (const [dimension, size] of Object.entries(measurements)) {
+              const newSize = getTargetSize(
+                target as HTMLElement,
+                { height, width, contentHeight, contentWidth },
+                dimension as measuredDimension,
+              );
 
-        if (newSize !== size) {
-          sizeChanged = true;
-          measurements[dimension as measuredDimension] = newSize;
+              if (newSize !== size) {
+                sizeChanged = true;
+                measurements[dimension as measuredDimension] = newSize;
+              }
+            }
+            if (sizeChanged) {
+              // TODO only return measured sizes
+              onResize && onResize(measurements);
+            }
+          }
         }
-      }
-      if (sizeChanged) {
-        // TODO only return measured sizes
-        onResize && onResize(measurements);
-      }
-    }
-  }
-});
+      });
 
 // TODO use an optional lag (default to false) to ask to fire onResize
 // with initial size
@@ -139,7 +141,7 @@ export function useResizeObserver(
       if (observedTarget) {
         const measurements = measure(target);
         observedTarget.measurements = measurements;
-        resizeObserver.observe(target);
+        resizeObserver?.observe(target);
         if (reportInitialSize) {
           onResize(measurements);
         }
@@ -169,7 +171,7 @@ export function useResizeObserver(
     }
     return () => {
       if (target && observedMap.has(target)) {
-        resizeObserver.unobserve(target);
+        resizeObserver?.unobserve(target);
         observedMap.delete(target);
       }
     };
