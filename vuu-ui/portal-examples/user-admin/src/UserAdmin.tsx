@@ -1,5 +1,6 @@
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
-import { useState } from "react";
+import { useModal } from "@vuu-ui/core";
+import { useCallback, useEffect, useState } from "react";
 import {
   Link,
   Navigate,
@@ -7,6 +8,7 @@ import {
   Outlet,
   Route,
   Routes,
+  useBlocker,
   useBeforeUnload,
 } from "react-router-dom";
 import { EditingContext } from "./components/EditingContext";
@@ -20,6 +22,40 @@ import "./UserAdmin.css";
 
 const AdminLayout = () => {
   const [editing, setEditing] = useState(false);
+  const blocker = useBlocker(
+    useCallback(
+      ({ currentLocation, nextLocation }) =>
+        editing && currentLocation.pathname !== nextLocation.pathname,
+      [editing],
+    ),
+  );
+  const { closePrompt, showPrompt } = useModal();
+  const { proceed, reset, state } = blocker;
+
+  useEffect(() => {
+    if (state !== "blocked") return;
+
+    showPrompt(
+      <p>
+        Save or discard your edits before leaving this page. Choose Cancel to
+        keep editing.
+      </p>,
+      {
+        cancelButtonLabel: "Cancel",
+        confirmButtonLabel: "Discard changes",
+        onCancel: reset,
+        onClose: reset,
+        onConfirm: () => {
+          setEditing(false);
+          proceed();
+        },
+        title: "Unsaved changes",
+      },
+    );
+
+    return closePrompt;
+  }, [closePrompt, proceed, reset, showPrompt, state]);
+
   useBeforeUnload((event) => {
     if (editing) {
       event.preventDefault();
@@ -39,16 +75,7 @@ const AdminLayout = () => {
             className="vuuIdentityAdmin-navigation"
           >
             {(["overview", "users", "groups", "roles"] as const).map((page) => (
-              <NavLink
-                key={page}
-                to={`../${page}`}
-                relative="path"
-                aria-disabled={editing || undefined}
-                onClick={(event) => {
-                  if (editing) event.preventDefault();
-                }}
-                tabIndex={editing ? -1 : undefined}
-              >
+              <NavLink key={page} to={`../${page}`} relative="path">
                 {page[0].toUpperCase() + page.slice(1)}
               </NavLink>
             ))}
