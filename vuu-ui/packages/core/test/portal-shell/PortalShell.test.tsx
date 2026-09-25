@@ -7,8 +7,35 @@ import type { RemoteModuleDescriptor } from "../../src/RemoteModuleDescriptor";
 vi.mock("@salt-ds/core", () => ({
   FlexItem: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   FlexLayout: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  SaltProviderNext: ({ children }: { children: ReactNode }) => (
-    <div>{children}</div>
+  SaltProviderNext: ({
+    accent,
+    children,
+    corner,
+    density,
+    mode,
+    theme,
+  }: {
+    accent: string;
+    children: ReactNode;
+    corner: string;
+    density: string;
+    mode: string;
+    theme: string;
+  }) => (
+    <div
+      data-accent={accent}
+      data-corner={corner}
+      data-density={density}
+      data-mode={mode}
+      data-theme={theme}
+    >
+      {children}
+    </div>
+  ),
+}));
+vi.mock("../../src/modal-provider/ModalProvider", () => ({
+  ModalProvider: ({ children }: { children: ReactNode }) => (
+    <div data-provider="modal">{children}</div>
   ),
 }));
 vi.mock("@vuu-ui/vuu-data-react", () => ({
@@ -112,6 +139,21 @@ describe("PortalShell module registry scope", () => {
     expect(container.querySelectorAll('[data-provider="remote"]')).toHaveLength(
       2,
     );
+    expect(container.querySelectorAll('[data-provider="modal"]')).toHaveLength(
+      2,
+    );
+    expect(
+      container.querySelector('[data-accent] [data-provider="modal"]'),
+    ).not.toBeNull();
+    expect(container.querySelector("[data-accent]")).toMatchObject({
+      dataset: {
+        accent: "purple",
+        corner: "rounded",
+        density: "medium",
+        mode: "light",
+        theme: "vuu-theme",
+      },
+    });
   });
 
   it("uses an injected data source provider instead of the remote default", async () => {
@@ -133,5 +175,33 @@ describe("PortalShell module registry scope", () => {
 
     expect(container.querySelector('[data-provider="local"]')).not.toBeNull();
     expect(container.querySelector('[data-provider="remote"]')).toBeNull();
+  });
+
+  it("configures the Salt theme characteristics", async () => {
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <PortalShell
+            accent="teal"
+            corner="sharp"
+            density="low"
+            mode="dark"
+            remoteModules={[]}
+            theme="salt-theme"
+            title="Themed Portal"
+          />
+        </MemoryRouter>,
+      );
+    });
+
+    expect(container.querySelector("[data-accent]")).toMatchObject({
+      dataset: {
+        accent: "teal",
+        corner: "sharp",
+        density: "low",
+        mode: "dark",
+        theme: "salt-theme",
+      },
+    });
   });
 });
