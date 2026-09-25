@@ -41,7 +41,8 @@ const AdminLayout = () => {
             {(["overview", "users", "groups", "roles"] as const).map((page) => (
               <NavLink
                 key={page}
-                to={page}
+                to={`../${page}`}
+                relative="path"
                 aria-disabled={editing || undefined}
                 onClick={(event) => {
                   if (editing) event.preventDefault();
@@ -86,7 +87,10 @@ const UserAdmin = ({ config = EMPTY_CONFIG }: UserAdminProps) => (
             path="*"
             element={
               <p>
-                Page not found. <Link to="../overview">Return to Overview</Link>
+                Page not found.{" "}
+                <Link relative="path" to="../overview">
+                  Return to Overview
+                </Link>
               </p>
             }
           />
