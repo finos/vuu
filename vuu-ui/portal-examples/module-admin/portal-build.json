@@ -29,7 +29,7 @@
       },
       "react-router-dom": {
         "singleton": true,
-        "requiredVersion": "^6.2.1",
+        "requiredVersion": "^7.18.3",
         "strictVersion": true
       },
       "@vuu-ui/core": {

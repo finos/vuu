@@ -1,5 +1,6 @@
 import type { DataSource, DataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import { useModal } from "@vuu-ui/core";
 import {
   type CommitHandler,
   type Entity,
@@ -28,8 +29,6 @@ import {
   type FormEditState,
   buildFormEditState,
 } from "./form-edit-state";
-import { useModal } from "@vuu-ui/vuu-ui-controls";
-
 export interface EditFormHookProps {
   dataSource?: DataSource;
   formFieldDescriptors: DataValueDescriptor[];

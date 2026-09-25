@@ -3,7 +3,8 @@ import type {
   MenuActionHandler,
   MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
-import { type TabContextMenuOptions, useModal } from "@vuu-ui/vuu-ui-controls";
+import { useModal } from "@vuu-ui/core";
+import { type TabContextMenuOptions } from "@vuu-ui/vuu-ui-controls";
 import type { LayoutMetadataDto } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { SaveLayoutPanel } from "./SaveLayoutPanel";

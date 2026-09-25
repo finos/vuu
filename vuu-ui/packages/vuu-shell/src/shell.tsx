@@ -5,13 +5,12 @@ import {
 } from "@vuu-ui/grid-layout";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { useAuthenticatedUser } from "@vuu-ui/core";
+import { ModalProvider, useAuthenticatedUser } from "@vuu-ui/core";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import { useLostConnection } from "@vuu-ui/vuu-data-react";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import {
   ContextPanelProvider,
-  ModalProvider,
   type ShowContextPanel,
 } from "@vuu-ui/vuu-ui-controls";
 import { VuuShellLocation } from "@vuu-ui/vuu-utils";

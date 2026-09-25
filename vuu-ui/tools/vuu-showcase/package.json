@@ -24,6 +24,7 @@
     "serve-handler": "6.1.6"
   },
   "dependencies": {
+    "@vuu-ui/core": "3.3.12",
     "@fontsource/open-sans": "^4.5.13",
     "@vuu-ui/vuu-datatable": "3.3.12",
     "@vuu-ui/vuu-icons": "3.3.12",

@@ -1,6 +1,6 @@
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   PortalModuleRegistryProvider,
@@ -8,6 +8,11 @@ import {
 } from "@vuu-ui/core/portal";
 import UserAdmin from "../src/UserAdmin";
 import { useEditingLock } from "../src/components/EditingContext";
+
+const modal = vi.hoisted(() => ({
+  closePrompt: vi.fn(),
+  showPrompt: vi.fn(),
+}));
 
 const remoteModules = [
   {
@@ -28,6 +33,9 @@ const remoteModules = [
 
 vi.mock("@vuu-ui/vuu-notifications", () => ({
   NotificationsProvider: ({ children }: { children: ReactNode }) => children,
+}));
+vi.mock("@vuu-ui/core", () => ({
+  useModal: () => modal,
 }));
 vi.mock("../src/pages/overview/OverviewPage", () => ({
   OverviewPage: () => {
@@ -73,6 +81,8 @@ describe("embedded identity routes", () => {
   let style: HTMLStyleElement;
   beforeEach(() => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+    modal.closePrompt.mockClear();
+    modal.showPrompt.mockClear();
     container = document.createElement("div");
     document.body.append(container);
     root = createRoot(container);
@@ -93,22 +103,21 @@ describe("embedded identity routes", () => {
     "/workspace/identity",
     "/custom/mount",
   ])("renders Overview by default at arbitrary mount %s", async (mount) => {
-    await act(async () =>
-      root.render(
-        <MemoryRouter initialEntries={[mount]}>
-          <Routes>
-            <Route
-              path={`${mount}/*`}
-              element={
-                <PortalModuleRegistryProvider remoteModules={remoteModules}>
-                  <UserAdmin />
-                </PortalModuleRegistryProvider>
-              }
-            />
-          </Routes>
-        </MemoryRouter>,
-      ),
+    const router = createMemoryRouter(
+      [
+        {
+          path: `${mount}/*`,
+          element: (
+            <PortalModuleRegistryProvider remoteModules={remoteModules}>
+              <UserAdmin />
+            </PortalModuleRegistryProvider>
+          ),
+        },
+      ],
+      { initialEntries: [mount] },
     );
+
+    await act(async () => root.render(<RouterProvider router={router} />));
     expect(container.textContent).toContain("Overview page");
     expect(container.textContent).toContain("vuu-user-admin:user-admin-access");
     const rail = container.querySelector<HTMLElement>(
@@ -147,18 +156,29 @@ describe("embedded identity routes", () => {
     );
     const groupsLink =
       rail.querySelector<HTMLAnchorElement>('a[href$="/groups"]');
-    expect(groupsLink?.getAttribute("aria-disabled")).toBe("true");
     await act(async () => groupsLink?.click());
     expect(container.textContent).toContain("Users page");
+    expect(modal.showPrompt).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        cancelButtonLabel: "Cancel",
+        confirmButtonLabel: "Discard changes",
+        title: "Unsaved changes",
+      }),
+    );
     expect(content.querySelector('[role="status"]')?.textContent).toContain(
       "Save or discard",
     );
-    await act(async () =>
-      container.querySelectorAll<HTMLButtonElement>("button")[1]?.click(),
-    );
+    const promptProps =
+      modal.showPrompt.mock.calls[modal.showPrompt.mock.calls.length - 1]?.[1];
+    await act(async () => promptProps?.onCancel?.());
+    expect(container.textContent).toContain("Users page");
     await act(async () =>
       container.querySelector<HTMLAnchorElement>('a[href$="/groups"]')?.click(),
     );
+    const confirmPromptProps =
+      modal.showPrompt.mock.calls[modal.showPrompt.mock.calls.length - 1]?.[1];
+    await act(async () => confirmPromptProps?.onConfirm?.());
     expect(container.textContent).toContain("Groups page");
     await act(async () =>
       container.querySelector<HTMLAnchorElement>('a[href$="/roles"]')?.click(),

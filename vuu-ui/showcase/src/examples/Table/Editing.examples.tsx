@@ -41,10 +41,7 @@ import {
   TableContextMenuOptions,
   TableMenuLocation,
 } from "@vuu-ui/vuu-table-types";
-import {
-  ModalProvider,
-  useModal,
-} from "@vuu-ui/vuu-ui-controls";
+import { ModalProvider, useModal } from "@vuu-ui/core";
 import {
   DataSourceProvider,
   EventEmitter,

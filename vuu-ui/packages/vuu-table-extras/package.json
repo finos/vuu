@@ -17,6 +17,7 @@
     "@vuu-ui/vuu-protocol-types": "3.3.12"
   },
   "dependencies": {
+    "@vuu-ui/core": "3.3.12",
     "@vuu-ui/vuu-codemirror": "3.3.12",
     "@vuu-ui/vuu-data-editing": "3.3.12",
     "@vuu-ui/vuu-data-react": "3.3.12",

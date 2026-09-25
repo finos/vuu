@@ -14,7 +14,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { Prompt, PromptProps } from "../prompt/Prompt";
+import { Prompt, type PromptProps } from "@vuu-ui/vuu-ui-controls";
 
 export type ShowDialog = (
   dialogContent: ReactElement,
