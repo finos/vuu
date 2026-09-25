@@ -1,4 +1,5 @@
 import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
+import { ModalProvider, useModal } from "@vuu-ui/core";
 import { DataSource } from "@vuu-ui/vuu-data-types";
 import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
@@ -11,7 +12,6 @@ import {
   MenuBuilder,
   useContextMenu,
 } from "@vuu-ui/vuu-context-menu";
-import { ModalProvider, useModal } from "@vuu-ui/vuu-ui-controls";
 
 const openFile: ActionWithParams = {
   id: "openFile",

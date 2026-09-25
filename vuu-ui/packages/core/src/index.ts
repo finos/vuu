@@ -1,5 +1,6 @@
 export * from "./auth";
 export * from "./connection-management";
+export { ModalProvider, useModal } from "./modal-provider/ModalProvider";
 export type {
   PortalModuleRegistry,
   RemoteModuleDescriptor,
