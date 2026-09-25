@@ -57,6 +57,13 @@ state/token sharing. The web server must serve the host's SPA entry point for
 deep-link requests, and the identity provider must allow those host URLs as
 redirect targets.
 
+The example host sets `paths.assetPrefix` to `"/"` and uses root-relative
+manifest and favicon URLs so a page at `/window/:moduleId` loads assets from
+the host root, not `/window/`. Deploy the complete build output, including
+`manifest.json`, `config.json`, scripts, styles, and icons. Missing assets
+should return 404 rather than the SPA HTML; otherwise browsers report module
+MIME-type or manifest JSON parsing errors.
+
 ## WindowShell
 
 `WindowShell` is the presentation shell for a single-module window. It owns

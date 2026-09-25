@@ -196,6 +196,18 @@ CSS, and other static assets in the generated HTML. It defaults to `"./"` so
 the application can be hosted from a sub-folder; set it in the JSON
 configuration when assets need an absolute path or a CDN URL.
 
+For history-based routing, use a prefix independent of the current route:
+`"/"` for an application at the origin root, or `"/portal/"` for assets hosted
+under that deployment prefix. `"./"` resolves relative to the current page
+and can request scripts under `/window/` when loading a deep link.
+
+Each build uses the directory containing its configuration as the Rsbuild
+project root. Its `public/` assets (such as `manifest.json` and favicons) are
+copied into the output even when the CLI is invoked from another directory
+or through `build:mf`. Public asset URLs in the HTML template must also use
+the deployment prefix; a SPA fallback must not substitute HTML for missing
+JavaScript, CSS, or JSON files.
+
 `requiredVersion: "package"` reads the version from the application
 `package.json`. Use `package:<dependency-name>` when a federated request and
 the package dependency have different names, for example

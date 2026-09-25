@@ -1,6 +1,7 @@
 {
   "version": 1,
   "paths": {
+    "assetPrefix": "/",
     "htmlTemplate": "./public/index.html",
     "output": "../../dist_portal/portal-host",
     "entries": {

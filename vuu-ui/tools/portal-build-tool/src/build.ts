@@ -68,6 +68,7 @@ export const buildPortal = async ({
   ].filter(Boolean);
 
   const rsbuild = await createRsbuild({
+    cwd: plan.root,
     config:
       plan.target === "remote-module"
         ? {

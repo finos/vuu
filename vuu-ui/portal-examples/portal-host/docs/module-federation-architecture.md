@@ -137,3 +137,17 @@ When serving through nginx, map ports 5003, 5005, and 5006 to `user-admin`,
 `feature-filter-table`, and `basket-trading` respectively, and
 allow the host origin in each remote manifest response.
 `vuu-table-viewer` retains port 5004 and is not part of this local proof.
+
+Build and deploy each remote before opening the host. For user-admin:
+
+```sh
+npm run build --workspace user-admin
+```
+
+Serve `dist_portal/user-admin` on port 5003 and verify
+`curl -i http://localhost:5003/mf-manifest.json` returns `200` with
+`Content-Type: application/json`. A `404` means the remote output is not
+deployed or port 5003 is not mapped to it. HTML or an SPA fallback response
+means the server is applying its history fallback to `mf-manifest.json`;
+static federation manifests and assets must be served before the fallback
+location, with only unknown application routes returning the remote HTML.
