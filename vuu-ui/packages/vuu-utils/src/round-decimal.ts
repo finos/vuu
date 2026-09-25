@@ -100,6 +100,19 @@ function pad(n: string, dp: number, Pad: PadMap): string {
   return n;
 }
 
+const toPlainString = (value: number) => {
+  const [coefficient, exponent] = value.toString().split("e");
+  if (exponent === undefined) {
+    return coefficient;
+  }
+  const sign = value < 0 ? "-" : "";
+  const digits = coefficient.replace(/[-.]/g, "");
+  const point = Number(exponent) + 1;
+  return point > 0
+    ? `${sign}${digits.padEnd(point, "0")}`
+    : `${sign}0.${"0".repeat(-point)}${digits}`;
+};
+
 export function roundDecimal(
   value?: number,
   align = Align.Right,
@@ -116,7 +129,7 @@ export function roundDecimal(
   let fraction: string;
   let Pad: PadMap | null;
 
-  const [whole, part2 = ""] = value.toString().split(".");
+  const [whole, part2 = ""] = toPlainString(value).split(".");
   const part1 = carriesIntoIntegral(part2, decimals, roundingRule)
     ? incrementIntegral(whole)
     : whole;
@@ -127,7 +140,7 @@ export function roundDecimal(
       ? "-0"
       : useLocaleString
         ? parseFloat(part1).toLocaleString()
-        : parseFloat(part1).toString();
+        : part1;
 
   if (align === Align.Left && alignOnDecimals) {
     integral = padLeft(integral);
