@@ -1,12 +1,18 @@
-import { act, type ReactNode } from "react";
+import { act, type HTMLAttributes, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { MemoryRouter } from "react-router-dom";
+import { Link, MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { RemoteModuleDescriptor } from "../../src/RemoteModuleDescriptor";
 
 vi.mock("@salt-ds/core", () => ({
-  FlexItem: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  FlexLayout: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  FlexItem: ({ children, className }: HTMLAttributes<HTMLDivElement>) => (
+    <div className={className}>{children}</div>
+  ),
+  FlexLayout: ({ children, className, id }: HTMLAttributes<HTMLDivElement>) => (
+    <div className={className} id={id}>
+      {children}
+    </div>
+  ),
   SaltProviderNext: ({
     accent,
     children,
@@ -47,24 +53,47 @@ vi.mock("@vuu-ui/vuu-icons", () => ({
   VuuLogo: () => <div />,
 }));
 vi.mock("../../src/portal-header/PortalHeader", () => ({
-  PortalHeader: () => <div />,
+  PortalHeader: () => <div data-portal-header />,
 }));
 vi.mock("../../src/portal-nav/PortalNav", () => ({
-  PortalNav: () => <div />,
+  PortalNav: () => <div data-portal-nav />,
 }));
 vi.mock("../../src/remote-module/RemoteModule", async () => {
   const { usePortalModuleRegistry } = await import(
     "../../src/portal-module-registry/PortalModuleRegistry"
   );
   return {
-    RemoteModule: ({ mfComponent }: { mfComponent: string }) => {
+    RemoteModule: ({
+      mfComponent,
+      mfUrl,
+    }: {
+      mfComponent: string;
+      mfUrl: string;
+    }) => {
       const { remoteModules } = usePortalModuleRegistry();
-      return <output data-module={mfComponent}>{remoteModules.length}</output>;
+      return (
+        <>
+          <output data-module={mfComponent} data-url={mfUrl}>
+            {remoteModules.length}
+          </output>
+          <Routes>
+            <Route index element={<Link to="details">Details</Link>} />
+            <Route path="details" element={<p>Module details</p>} />
+          </Routes>
+        </>
+      );
     },
   };
 });
 
 import { PortalShell } from "../../src/portal-shell/PortalShell";
+import { AuthenticationProvider } from "../../src/auth/AuthenticationProvider";
+import { WindowHost } from "../../src/window-host/WindowHost";
+import { WindowShell } from "../../src/window-shell/WindowShell";
+import {
+  WINDOW_HOST_ROUTE,
+  getWindowHostPath,
+} from "../../src/window-host/window-host-routing";
 
 const modules = [
   {
@@ -97,7 +126,7 @@ const modules = [
   },
 ] satisfies RemoteModuleDescriptor[];
 
-describe("PortalShell module registry scope", () => {
+describe("Portal and window shells", () => {
   let container: HTMLDivElement;
   let root: Root;
 
@@ -136,6 +165,9 @@ describe("PortalShell module registry scope", () => {
       ["UserAdmin", "2"],
       ["Orders", "2"],
     ]);
+    expect(container.querySelectorAll("[data-portal-nav]")).toHaveLength(2);
+    expect(container.querySelectorAll(".vuuPortalShell")).toHaveLength(2);
+    expect(container.querySelector(".vuuWindowShell")).toBeNull();
     expect(container.querySelectorAll('[data-provider="remote"]')).toHaveLength(
       2,
     );
@@ -203,5 +235,169 @@ describe("PortalShell module registry scope", () => {
         theme: "salt-theme",
       },
     });
+  });
+
+  it("renders a standalone WindowShell with its own layout and shared provider defaults", async () => {
+    await act(async () => {
+      root.render(
+        <WindowShell id="module-window">
+          <p>Hosted content</p>
+        </WindowShell>,
+      );
+    });
+
+    expect(container.querySelector(".vuuWindowShell")?.id).toBe(
+      "module-window",
+    );
+    expect(
+      container.querySelector(".vuuWindowShell-header [data-portal-header]"),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(".vuuWindowShell-content")?.textContent,
+    ).toBe("Hosted content");
+    expect(container.querySelector(".vuuPortalShell")).toBeNull();
+    expect(container.querySelector("[data-portal-nav]")).toBeNull();
+    expect(
+      container.querySelector(
+        '[data-accent] > [data-provider="modal"] > [data-provider="remote"] > .vuuWindowShell',
+      ),
+    ).not.toBeNull();
+    expect(container.querySelector("[data-accent]")).toMatchObject({
+      dataset: {
+        accent: "purple",
+        corner: "rounded",
+        density: "medium",
+        mode: "light",
+        theme: "vuu-theme",
+      },
+    });
+  });
+
+  it("supports independent WindowShell theme and data-source configuration", async () => {
+    const LocalDataSourceProvider = ({ children }: { children: ReactNode }) => (
+      <div data-provider="local">{children}</div>
+    );
+    await act(async () => {
+      root.render(
+        <WindowShell
+          accent="teal"
+          corner="sharp"
+          DataSourceProvider={LocalDataSourceProvider}
+          density="low"
+          mode="dark"
+          theme="salt-theme"
+        >
+          <p>Local content</p>
+        </WindowShell>,
+      );
+    });
+
+    expect(
+      container.querySelector('[data-provider="local"]')?.textContent,
+    ).toBe("Local content");
+    expect(container.querySelector('[data-provider="remote"]')).toBeNull();
+    expect(container.querySelector("[data-accent]")).toMatchObject({
+      dataset: {
+        accent: "teal",
+        corner: "sharp",
+        density: "low",
+        mode: "dark",
+        theme: "salt-theme",
+      },
+    });
+  });
+
+  const renderWindow = async (
+    path: string,
+    remoteModules: RemoteModuleDescriptor[] = modules,
+  ) => {
+    await act(async () => {
+      root.render(
+        <AuthenticationProvider
+          mode="local"
+          registry={{ modules: remoteModules }}
+        >
+          <MemoryRouter initialEntries={[path]}>
+            <Routes>
+              <Route path={WINDOW_HOST_ROUTE} element={<WindowHost />} />
+            </Routes>
+          </MemoryRouter>
+        </AuthenticationProvider>,
+      );
+    });
+  };
+
+  it("resolves a window module from the current registry, ignoring URL descriptors", async () => {
+    await renderWindow(
+      "/window/1?mfUrl=https://untrusted.example&token=ignored",
+    );
+    expect(container.querySelector("output")?.dataset).toMatchObject({
+      module: "UserAdmin",
+      url: "http://localhost:5007",
+    });
+    expect(container.querySelector("output")?.textContent).toBe("2");
+    expect(container.querySelector(".vuuWindowShell")).not.toBeNull();
+    expect(container.querySelector(".vuuPortalShell")).toBeNull();
+    expect(container.querySelector("[data-portal-nav]")).toBeNull();
+    expect(container.querySelector('[data-provider="modal"]')).not.toBeNull();
+    expect(container.querySelector('[data-provider="remote"]')).not.toBeNull();
+
+    await renderWindow("/window/1", [
+      { ...modules[0], mfUrl: "https://updated.example" },
+      modules[1],
+    ]);
+    expect(container.querySelector("output")?.dataset.url).toBe(
+      "https://updated.example",
+    );
+    await renderWindow("/window/1", [modules[1]]);
+    expect(container.querySelector("output")).toBeNull();
+    expect(
+      container.querySelector(".vuuWindowShell [role='alert']"),
+    ).not.toBeNull();
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      "unavailable",
+    );
+  });
+
+  it.each([
+    "missing",
+    "01",
+    "https%3A%2F%2Funtrusted.example",
+  ])("does not load a remote for an unregistered module ID %s", async (id) => {
+    await renderWindow(`/window/${id}`);
+    expect(container.querySelector("output")).toBeNull();
+    expect(container.querySelector('[role="alert"]')).not.toBeNull();
+  });
+
+  it("preserves module-relative links in a window", async () => {
+    await renderWindow("/window/1");
+    const link = container.querySelector<HTMLAnchorElement>("a");
+    expect(link?.getAttribute("href")).toBe("/window/1/details");
+    await act(async () => link?.click());
+    expect(container.textContent).toContain("Module details");
+  });
+
+  it("renders a module-relative route on a fresh deep-link load", async () => {
+    await renderWindow("/window/1/details");
+    expect(container.textContent).toContain("Module details");
+  });
+
+  it("encodes string module identifiers as a single path segment", () => {
+    expect(getWindowHostPath("local orders/a?b#c")).toBe(
+      "/window/local%20orders%2Fa%3Fb%23c",
+    );
+    expect(getWindowHostPath(42)).toBe("/window/42");
+  });
+
+  it("resolves encoded string identifiers from a local registry", async () => {
+    const id = "local orders/a?b#c";
+    await renderWindow(getWindowHostPath(id), [{ ...modules[0], id }]);
+    expect(container.querySelector("output")?.dataset.module).toBe("UserAdmin");
+  });
+
+  it("does not load a disabled module", async () => {
+    await renderWindow("/window/1", [{ ...modules[0], enabled: false }]);
+    expect(container.querySelector("output")).toBeNull();
+    expect(container.querySelector('[role="alert"]')).not.toBeNull();
   });
 });

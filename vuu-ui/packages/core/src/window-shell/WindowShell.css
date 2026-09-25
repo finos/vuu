@@ -1,0 +1,24 @@
+.vuuWindowShell {
+  box-sizing: border-box;
+  height: 100vh;
+  padding: var(--salt-spacing-200);
+  width: 100vw;
+
+  .saltFlexItem.vuuWindowShell-header {
+    --saltFlexItem-basis: 40px;
+    --saltFlexItem-shrink: 0;
+
+    .vuuPortalHeader {
+      height: 100%;
+    }
+  }
+
+  .saltFlexItem.vuuWindowShell-content {
+    --saltFlexItem-basis: auto;
+    --saltFlexItem-grow: 1;
+
+    .vuuWindowShell-content {
+      height: 100%;
+    }
+  }
+}
