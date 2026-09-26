@@ -11,7 +11,27 @@ It also defines its own "Snakes" table module entirely in Python: TickingProvide
 implements org.finos.vuu.provider.Provider and the module-factory function
 implements scala.Function2, both via JPype's @JImplements proxy support - no
 compiled Java/Scala source is needed for this module at all. After the server
-starts, sample rows are ticked into Snakes directly from Python.
+starts, SNAKE_COUNT (10,000 by default) procedurally-generated rows are ticked
+into Snakes directly from Python, one `.tick()` JPype call per row - about 2s of
+startup work at the default count, measured end-to-end (process start to the
+"[VUU] Ready" line) against a real JVM.
+
+A "Location" table (keyed by the same snake id, holding x_coordinate/y_coordinate)
+and a "SnakeLocations" join table combining Snakes and Location on id are defined
+the same way - Location is populated at startup (one row per Snakes row) and
+re-ticked once a second on a background thread to simulate movement. Each of
+those per-second ticks is itself SNAKE_COUNT individual JPype calls - at the
+default of 10,000 that's ~0.4-0.5s measured, so the loop's actual cadence is
+closer to ~1.5s than a clean 1Hz; see the loop's own comment below.
+
+Snakes also has an RPC-driven right-click context menu - "Delete Selected Snake(s)"
+(a SelectionViewPortMenuItem) that deletes the selected row(s), and a nested
+"Convert To..." submenu (a ViewPortMenuFolder) of three more SelectionViewPortMenuItems
+that each set the selected row(s)' "type" column to a fixed species (Adder/Black
+Mamba/Grass Snake) via a partial RowBuilder update - all defined in Python via
+scala.Function2 JPype proxies, attached through a small vuu-java addition
+(RpcHandlerBuilder.menu(...)/RpcHandlerWithMenu) since RpcHandler itself has no
+abstract methods for JPype's @JImplements to proxy directly.
 
 Usage:
     mvn -pl example/python-integration -am package   # from the repo root, once
@@ -19,7 +39,10 @@ Usage:
     python start_server.py
 """
 import os
+import random
 import socket
+import threading
+import time
 from pathlib import Path
 
 import jpype
@@ -31,6 +54,36 @@ CLASSPATH_FILE = MODULE_DIR / "target" / "classpath.txt"
 
 WS_PORT = 8090
 HTTPS_PORT = 8443
+SNAKE_COUNT = 10_000
+
+SNAKE_TYPES = [
+    "Python", "Grass snake", "Reticulated python", "Ball python", "Cobra",
+    "Anaconda", "Black mamba", "Boa constrictor", "Corn snake", "King cobra",
+    "Rattlesnake", "Copperhead", "Cottonmouth", "Adder", "Sidewinder",
+    "Milk snake", "Kingsnake", "Rat snake", "Hognose snake", "Bull snake",
+    "Taipan",
+]
+
+SNAKE_NAMES = [
+    "Kaa", "Nagini", "Sir Hiss", "Monty", "Cleo", "Jafar", "Titan", "Venom",
+    "Rex", "Slyther", "Basilisk", "Rattles", "Copper", "Marsh", "Zigzag",
+    "Dune", "Speedy", "Milky", "Sunny", "Rusty", "Piglet", "Bruiser", "Sting",
+]
+
+
+def _generate_snakes(count: int) -> list[dict]:
+    """Procedurally generates `count` Snakes rows (id/name/type/age/weight) - writing 10,000
+    rows out by hand isn't practical, unlike the 23-row list this replaced."""
+    return [
+        {
+            "id": f"s{i}",
+            "name": f"{random.choice(SNAKE_NAMES)} {i}",
+            "type": random.choice(SNAKE_TYPES),
+            "age": random.randint(1, 40),
+            "weight": round(random.uniform(0.1, 100.0), 2),
+        }
+        for i in range(1, count + 1)
+    ]
 
 
 def _read_classpath() -> list[str]:
@@ -59,7 +112,18 @@ def main() -> None:
     from org.finos.toolbox.jmx import MetricsProviderImpl
     from org.finos.toolbox.lifecycle import LifecycleContainer
     from org.finos.toolbox.time import DefaultClock
-    from org.finos.vuu.api import ColumnBuilder, TableDefBuilder
+    from java.util import List as JList
+    from org.finos.vuu.api import ColumnBuilder, TableDefBuilder, JoinTableDefBuilder, JoinToBuilder, ViewPortDef
+    from org.finos.vuu.core.table import Columns
+    from org.finos.vuu.net.rpc import RpcHandlerBuilder
+    from org.finos.vuu.viewport import SelectionViewPortMenuItem, ViewPortMenuFolder
+
+    # NoAction (org.finos.vuu.viewport.NoAction) is a plain Scala `object`, not a case class -
+    # its singleton instance lives on the MODULE$ static field of its compiler-generated
+    # `NoAction$` class. "$" isn't a legal character in a Python identifier, so it can't be
+    # named directly in a `from ... import` statement or referenced as `x.MODULE$`; JClass +
+    # getattr sidesteps both restrictions.
+    NO_ACTION = getattr(jpype.JClass("org.finos.vuu.viewport.NoAction$"), "MODULE$")
     from org.finos.vuu.core import (
         VuuServerConfig,
         VuuServer,
@@ -144,10 +208,144 @@ def main() -> None:
         def apply(self, table, view_server):
             return TickingProvider(table)
 
+    # The Snakes table's right-click "Delete Selected Snake(s)" menu item. A
+    # SelectionViewPortMenuItem's callback is a plain scala.Function2 - the same SAM shape
+    # already proxied above for the provider factories - taking a ViewPortSelection (the
+    # selected row keys plus the ViewPort they were selected in) and the calling
+    # ClientSessionId, returning a ViewPortAction that's sent back to the client.
+    @jpype.JImplements("scala.Function2")
+    class DeleteSelectedSnakesAction:
+        def __init__(self, table):
+            self.table = table
+
+        @jpype.JOverride
+        def apply(self, selection, session):
+            # selection.selectionKeys() is a scala.collection.immutable.Set[String] - iterated
+            # the same way Vuu's own Scala code does when acting on a selection (see
+            # EditableTestModule.deleteSelectedRows), via .iterator()/.hasNext()/.next(),
+            # rather than relying on Python's iteration protocol working on a Scala collection.
+            keys = selection.selectionKeys().iterator()
+            while keys.hasNext():
+                self.table.processDelete(str(keys.next()))
+            return NO_ACTION
+
+    # The nested "Convert To..." submenu's items. Each one's callback sets Snakes' "type"
+    # column to a fixed species on every selected row - a *partial* update (only "type" is set
+    # on the RowBuilder before processUpdate), which InMemRowDataMerger.mergeWithDefaults merges
+    # into each row's existing data rather than replacing it, so id/name/age/weight are left
+    # untouched. Same scala.Function2 SAM shape as DeleteSelectedSnakesAction above.
+    @jpype.JImplements("scala.Function2")
+    class ConvertSnakeTypeAction:
+        def __init__(self, table, new_type):
+            self.table = table
+            self.new_type = new_type
+
+        @jpype.JOverride
+        def apply(self, selection, session):
+            type_column = self.table.columnForName("type")
+            keys = selection.selectionKeys().iterator()
+            while keys.hasNext():
+                row_builder = self.table.rowBuilder()
+                row_builder.setKey(str(keys.next()))
+                row_builder.setString(type_column, self.new_type)
+                self.table.processUpdate(row_builder.build())
+            return NO_ACTION
+
+    # ModuleFactory.addTable's optional third argument - (DataTable, Provider,
+    # ProviderContainer, TableContainer) => ViewPortDef, a scala.Function4 - is what the 2-arg
+    # overload defaults to ViewPortDef.createDefault(...) for (a plain RpcHandler with no
+    # context menu). Providing this instead attaches an RpcHandler with the delete-selected-rows
+    # menu item (and the "Convert To..." submenu below) to Snakes specifically, leaving
+    # Location/SnakeLocations on the default.
+    @jpype.JImplements("scala.Function4")
+    class SnakesViewPortDefFactory:
+        @jpype.JOverride
+        def apply(self, table, provider, provider_container, table_container):
+            delete_menu_item = SelectionViewPortMenuItem(
+                "Delete Selected Snake(s)",
+                "",
+                DeleteSelectedSnakesAction(table),
+                "DELETE_SELECTED_SNAKES",
+            )
+
+            # ViewPortMenuFolder(name, menus: Seq[ViewPortMenu]) - a nested submenu, built
+            # directly (rather than via ViewPortMenu.apply(name, menus: ViewPortMenu*)) since
+            # Scala varargs are a scala.collection.immutable.Seq at the JVM boundary, not a
+            # Python-list-friendly Java array - the same ListBuffer().toList() workaround
+            # already used above for Columns.allFromExceptDefaultAnd's varargs.
+            convert_to_items = ListBuffer()
+            for label, new_type, rpc_suffix in (
+                ("Adder", "Adder", "ADDER"),
+                ("Black Mamba", "Black mamba", "BLACK_MAMBA"),
+                ("Grass Snake", "Grass snake", "GRASS_SNAKE"),
+            ):
+                convert_to_items.append(
+                    SelectionViewPortMenuItem(
+                        label, "", ConvertSnakeTypeAction(table, new_type), f"CONVERT_TO_{rpc_suffix}"
+                    )
+                )
+            convert_to_menu = ViewPortMenuFolder("Convert To...", convert_to_items.toList())
+
+            top_level_items = ListBuffer()
+            top_level_items.append(delete_menu_item)
+            top_level_items.append(convert_to_menu)
+            menu = ViewPortMenuFolder("ROOT", top_level_items.toList())
+
+            # RpcHandlerBuilder.menu(...) is a vuu-java addition (RpcHandlerWithMenu) alongside
+            # its existing .addRpc(...): RpcHandler itself has no abstract methods (menuItems()
+            # already has a default EmptyViewPortMenu body, plus private mutable state), so it
+            # isn't a SAM interface JPype's @JImplements can proxy - attaching a menu needs a
+            # real subclass, which is what RpcHandlerWithMenu (built by this call) provides.
+            rpc_handler = RpcHandlerBuilder().menu(menu).build()
+            return ViewPortDef(table.getTableDef().getColumns(), rpc_handler)
+
+    # LocationProviderFactory reuses TickingProvider as-is - it's generic over any table's
+    # columns (it dispatches on each column's actual DataType in tick()), so no new provider
+    # class is needed for Location's two double columns.
+    @jpype.JImplements("scala.Function2")
+    class LocationProviderFactory:
+        @jpype.JOverride
+        def apply(self, table, view_server):
+            return TickingProvider(table)
+
+    # ModuleFactory.addJoinTable takes a TableDefContainer => JoinTableDef function (a
+    # scala.Function1 proxy, the same shape as the Provider-factory Function2 proxies above)
+    # rather than a realized JoinTableDef, because Location isn't registered in the container
+    # yet at the point this chain is being built. ModuleFactory.asModule() registers every
+    # .addTable(...) call's TableDef into the container before it realizes any
+    # .addJoinTable(...) function, so by the time this runs, both "Snakes" and "Location" are
+    # resolvable via table_def_container.get("SNAKES", ...).
+    @jpype.JImplements("scala.Function1")
+    class SnakeLocationsJoinFactory:
+        @jpype.JOverride
+        def apply(self, table_def_container):
+            snakes_td = table_def_container.get("SNAKES", "Snakes")
+            location_td = table_def_container.get("SNAKES", "Location")
+            # allFromExceptDefaultAnd's excludeColumns is a Scala varargs (String*), which is
+            # a scala.collection.immutable.Seq at the JVM boundary - a plain Python str isn't
+            # accepted, so it's built via the same ListBuffer().toList() pattern already used
+            # below for VuuServerConfig's Scala List arguments.
+            exclude_columns = ListBuffer()
+            exclude_columns.append("id")
+            join_columns = list(Columns.allFrom(snakes_td)) + list(
+                Columns.allFromExceptDefaultAnd(location_td, exclude_columns.toList())
+            )
+            return (
+                JoinTableDefBuilder()
+                .name("SnakeLocations")
+                .baseTable(snakes_td)
+                .joinColumns(join_columns)
+                .joinTos(JList.of(
+                    JoinToBuilder().table(location_td).leftKey("id").rightKey("id").build()
+                ))
+                .build()
+            )
+
     snakes_table_def = (
         TableDefBuilder()
         .name("Snakes")
         .keyField("id")
+        .joinFields(JList.of("id"))
         .customColumns(
             ColumnBuilder()
             .addString("type")
@@ -155,6 +353,21 @@ def main() -> None:
             .addString("id")
             .addInt("age")
             .addDouble("weight")
+            .build()
+        )
+        .build()
+    )
+
+    location_table_def = (
+        TableDefBuilder()
+        .name("Location")
+        .keyField("id")
+        .joinFields(JList.of("id"))
+        .customColumns(
+            ColumnBuilder()
+            .addString("id")
+            .addDouble("x_coordinate")
+            .addDouble("y_coordinate")
             .build()
         )
         .build()
@@ -171,7 +384,9 @@ def main() -> None:
 
     snakes_module = (
         ModuleFactory.withNamespace("SNAKES", table_def_container)
-        .addTable(snakes_table_def, SnakesProviderFactory())
+        .addTable(snakes_table_def, SnakesProviderFactory(), SnakesViewPortDefFactory())
+        .addTable(location_table_def, LocationProviderFactory())
+        .addJoinTable(SnakeLocationsJoinFactory())
         .asModule()
     )
 
@@ -229,38 +444,51 @@ def main() -> None:
     # sample rows in. A plain Python dict is passed straight through — JPype converts it to a
     # java.util.Map automatically at the call boundary.
     snakes_provider = server.providerContainer().getProviderForTable("Snakes").get()
-    sample_snakes = [
-        {"id": "s1", "name": "Kaa", "type": "Python", "age": 40, "weight": 91.5},
-        {"id": "s2", "name": "Nagini", "type": "Python", "age": 15, "weight": 22.3},
-        {"id": "s3", "name": "Sir Hiss", "type": "Grass snake", "age": 3, "weight": 0.4},
-        {"id": "s4", "name": "Monty", "type": "Reticulated python", "age": 22, "weight": 75.0},
-        {"id": "s5", "name": "Cleo", "type": "Ball python", "age": 8, "weight": 1.8},
-        {"id": "s6", "name": "Jafar", "type": "Cobra", "age": 12, "weight": 6.4},
-        {"id": "s7", "name": "Titan", "type": "Anaconda", "age": 18, "weight": 97.5},
-        {"id": "s8", "name": "Venom", "type": "Black mamba", "age": 9, "weight": 1.6},
-        {"id": "s9", "name": "Rex", "type": "Boa constrictor", "age": 14, "weight": 27.2},
-        {"id": "s10", "name": "Slyther", "type": "Corn snake", "age": 5, "weight": 0.9},
-        {"id": "s11", "name": "Basilisk", "type": "King cobra", "age": 20, "weight": 9.1},
-        {"id": "s12", "name": "Rattles", "type": "Rattlesnake", "age": 7, "weight": 1.5},
-        {"id": "s13", "name": "Copper", "type": "Copperhead", "age": 6, "weight": 0.5},
-        {"id": "s14", "name": "Marsh", "type": "Cottonmouth", "age": 11, "weight": 1.2},
-        {"id": "s15", "name": "Zigzag", "type": "Adder", "age": 4, "weight": 0.2},
-        {"id": "s16", "name": "Dune", "type": "Sidewinder", "age": 3, "weight": 0.3},
-        {"id": "s17", "name": "Speedy", "type": "Black mamba", "age": 16, "weight": 1.7},
-        {"id": "s18", "name": "Milky", "type": "Milk snake", "age": 2, "weight": 0.15},
-        {"id": "s19", "name": "Sunny", "type": "Kingsnake", "age": 6, "weight": 1.1},
-        {"id": "s20", "name": "Rusty", "type": "Rat snake", "age": 9, "weight": 0.8},
-        {"id": "s21", "name": "Piglet", "type": "Hognose snake", "age": 4, "weight": 0.35},
-        {"id": "s22", "name": "Bruiser", "type": "Bull snake", "age": 10, "weight": 2.0},
-        {"id": "s23", "name": "Sting", "type": "Taipan", "age": 8, "weight": 3.3},
-    ]
+    sample_snakes = _generate_snakes(SNAKE_COUNT)
     for snake in sample_snakes:
         snakes_provider.tick(snake["id"], snake)
+
+    # Location: one row per sample snake, ticked in now for the starting positions and then
+    # re-ticked once a second for as long as the process runs, simulating movement. A plain
+    # Python daemon thread is enough here - it just calls .tick(...) on a Python object on a
+    # timer, which needs no JPype proxying (unlike TickingProvider/the factories above, which
+    # proxy actual JVM interfaces) and dies with the process on Ctrl-C/SIGTERM like any other
+    # daemon thread.
+    location_provider = server.providerContainer().getProviderForTable("Location").get()
+
+    BOUNDS = 100.0  # coordinate space is a 100x100 square
+    STEP = 2.0  # max distance a snake moves per tick, in either axis
+
+    positions = {
+        snake["id"]: {"x": random.uniform(0, BOUNDS), "y": random.uniform(0, BOUNDS)}
+        for snake in sample_snakes
+    }
+
+    def tick_locations() -> None:
+        for snake_id, pos in positions.items():
+            pos["x"] = min(max(pos["x"] + random.uniform(-STEP, STEP), 0.0), BOUNDS)
+            pos["y"] = min(max(pos["y"] + random.uniform(-STEP, STEP), 0.0), BOUNDS)
+            location_provider.tick(
+                snake_id, {"id": snake_id, "x_coordinate": pos["x"], "y_coordinate": pos["y"]}
+            )
+
+    tick_locations()  # populate Location with starting positions before reporting ready
+
+    def location_loop() -> None:
+        # A fixed 1s sleep between calls, not "every 1s" - tick_locations() itself is
+        # SNAKE_COUNT individual JPype .tick() calls, so each cycle (sleep + tick) takes 1s
+        # plus however long those calls take, rather than a clean 1Hz. Measured at ~0.4-0.5s
+        # for the default 10,000 rows, so the actual cadence is closer to ~1.5s than 1s.
+        while True:
+            time.sleep(1)
+            tick_locations()
+
+    threading.Thread(target=location_loop, name="location-ticker", daemon=True).start()
 
     host = _local_hostname()
     print(
         f"[VUU] Ready — wss://{host}:{WS_PORT}/websocket  https://{host}:{HTTPS_PORT}"
-        f"  (ticked {len(sample_snakes)} rows into Snakes)",
+        f"  (ticked {len(sample_snakes)} rows into Snakes, {len(positions)} rows into Location)",
         flush=True,
     )
 

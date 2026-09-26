@@ -15,6 +15,8 @@ from pathlib import Path
 
 import pytest
 
+from start_server import SNAKE_COUNT
+
 SCRIPT = Path(__file__).resolve().parent / "start_server.py"
 WS_PORT = 8090
 
@@ -52,8 +54,11 @@ def test_server_starts_and_shuts_down_cleanly():
     try:
         ready_line = _wait_for_ready_line(proc)
         assert ready_line is not None, "server did not print its [VUU] Ready line in time"
-        assert "ticked 23 rows into Snakes" in ready_line, (
+        assert f"ticked {SNAKE_COUNT} rows into Snakes" in ready_line, (
             "server did not report ticking sample data into the Snakes table"
+        )
+        assert f"{SNAKE_COUNT} rows into Location" in ready_line, (
+            "server did not report populating the Location table"
         )
 
         with socket.create_connection(("127.0.0.1", WS_PORT), timeout=5):
