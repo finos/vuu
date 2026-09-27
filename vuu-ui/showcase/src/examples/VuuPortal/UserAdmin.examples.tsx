@@ -10,12 +10,19 @@ import type {
 import { dataRowFactory, type DataRowFunc } from "@vuu-ui/vuu-table";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { Range } from "@vuu-ui/vuu-utils";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { ModulePicker } from "user-admin";
+import { RolesEditForm } from "user-admin/src/components/roles-edit-form/RolesEditForm";
 import { UserEditForm } from "user-admin/src/components/user-edit-form/UserEditForm";
+import { ModulePickerModuleDescriptor } from "user-admin/src/components/module-picker/ModulePicker";
+import { RolesPage } from "user-admin/src/pages/roles/RolesPage";
 import { UsersPage } from "user-admin/src/pages/users/UsersPage";
 import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
-import type { ModulePickerModuleDescriptor } from "user-admin/src/components/module-picker/ModulePicker";
 
 const remoteModules: RemoteModuleDescriptor[] = [
   {
@@ -78,9 +85,7 @@ export const DefaultModulePicker = () => {
 
   const onSelectedModulesChange = useCallback(
     (newSelectedModules: ModulePickerModuleDescriptor[]) => {
-      console.log(
-        `onSelectedModulesChange ${JSON.stringify(newSelectedModules, null, 2)}`,
-      );
+      console.log(`onSelectedModulesChange ${JSON.stringify(newSelectedModules, null, 2)}`)
       setSelectedModules(newSelectedModules);
     },
     [],
@@ -136,9 +141,7 @@ export const DefaultUserEditForm = () => {
           message.tableSchema.columns as readonly SchemaColumn[],
         );
       } else if (message.type === "subscribe-failed") {
-        console.error(
-          `User editor data source subscription failed: ${message.msg}`,
-        );
+        console.error(`User editor data source subscription failed: ${message.msg}`);
       } else if (message.type === "viewport-update" && message.rows?.[0]) {
         if (!DataRow) {
           console.error(
@@ -164,6 +167,7 @@ export const DefaultUserEditForm = () => {
     };
   }, [dataSource]);
 
+
   return (
     <div style={{ width: 480, height: 800 }}>
       {dataRow ? (
@@ -187,3 +191,84 @@ export const DefaultUsersPage = () => {
     </PortalModuleRegistryProvider>
   );
 };
+
+const ROLE_COLUMNS = [
+  "role_id",
+  "role_name",
+  "client_id",
+  "client_identifier",
+  "client_name",
+  "description",
+];
+
+/** tags=data-consumer */
+export const DefaultRolesEditPage = () => {
+  const { VuuDataSource } = useData();
+  const [dataRow, setDataRow] = useState<DataRow>();
+  const dataSource = useMemo(
+    () =>
+      new VuuDataSource({
+        columns: ROLE_COLUMNS,
+        table: { module: "USER_ADMIN", table: "roles" },
+      }),
+    [VuuDataSource],
+  );
+
+  useEffect(() => {
+    let active = true;
+    let DataRow: DataRowFunc | undefined;
+    const subscribe: DataSourceSubscribeCallback = (message) => {
+      if (!active) return;
+      if (message.type === "subscribed") {
+        [DataRow] = dataRowFactory(
+          message.columns,
+          message.tableSchema.columns as readonly SchemaColumn[],
+        );
+      } else if (message.type === "subscribe-failed") {
+        console.error(
+          `Role editor data source subscription failed: ${message.msg}`,
+        );
+      } else if (message.type === "viewport-update" && message.rows?.[0]) {
+        if (!DataRow) {
+          console.error(
+            "The role table sent rows before supplying its column metadata.",
+          );
+          return;
+        }
+        setDataRow(DataRow(message.rows[0]));
+      }
+    };
+
+    void dataSource
+      .subscribe({ range: Range(0, 1) }, subscribe)
+      .catch((cause: unknown) => {
+        if (active) {
+          console.error("Role editor data source subscription failed:", cause);
+        }
+      });
+
+    return () => {
+      active = false;
+      dataSource.unsubscribe();
+    };
+  }, [dataSource]);
+
+  return (
+    <div style={{ width: 480, height: 500 }}>
+      {dataRow ? (
+        <EditModeProvider>
+          <RolesEditForm dataRow={dataRow} dataSource={dataSource} />
+        </EditModeProvider>
+      ) : (
+        <p role="status">Loading role...</p>
+      )}
+    </div>
+  );
+};
+
+/** tags=data-consumer */
+export const DefaultRolesPage = () => (
+  <PortalModuleRegistryProvider remoteModules={remoteModules}>
+    <RolesPage />
+  </PortalModuleRegistryProvider>
+);

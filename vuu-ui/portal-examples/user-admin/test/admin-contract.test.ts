@@ -25,8 +25,6 @@ const config = {
 
 describe("server-driven identity contract", () => {
   it.each([
-    "clients",
-    "roles",
     "group_roles",
     "user_group_roles",
   ] as const)("requires a mapped client identifier for the %s scope", (name) => {
@@ -51,6 +49,8 @@ describe("server-driven identity contract", () => {
     "users",
     "groups",
     "user_groups",
+    "clients",
+    "roles",
   ] as const)("does not scope %s by client", (name) => {
     expect(buildClientScopeFilter(schema, {}, name)).toBeUndefined();
   });

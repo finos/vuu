@@ -94,8 +94,6 @@ describe("admin data source lifecycle", () => {
     );
   });
   it.each([
-    "clients",
-    "roles",
     "group_roles",
     "user_group_roles",
   ] as const)("keeps %s scoped via baseFilter without dropping any subscribed columns", async (name) => {
@@ -120,25 +118,16 @@ describe("admin data source lifecycle", () => {
       filter: 'client_identifier starts "vuu-"',
     });
     expect(mocks.sources[0].props.filterSpec?.filter).toBe("");
-    if (name === "clients" || name === "roles") {
-      await act(async () =>
-        root.render(<Harness name={name} search="portal" />),
-      );
-      expect(mocks.sources[1].props.baseFilterSpec).toEqual(
-        mocks.sources[0].props.baseFilterSpec,
-      );
-      expect(mocks.sources[1].props.filterSpec?.filter).toContain(
-        'contains "portal"',
-      );
-      await act(async () => root.render(<Harness name={name} search="" />));
-      expect(mocks.sources[2].props.baseFilterSpec).toEqual(
-        mocks.sources[0].props.baseFilterSpec,
-      );
-      expect(mocks.sources[2].props.filterSpec?.filter).toBe("");
-    }
   });
-  it("reports missing client scope metadata rather than creating an unfiltered source", async () => {
-    await act(async () => root.render(<Harness name="clients" />));
+  it.each([
+    "clients",
+    "roles",
+  ] as const)("makes every %s available without client-prefix filtering", async (name) => {
+    await act(async () => root.render(<Harness name={name} />));
+    expect(mocks.sources[0].props.baseFilterSpec).toBeUndefined();
+  });
+  it("reports missing client scope metadata rather than creating an unfiltered relationship source", async () => {
+    await act(async () => root.render(<Harness name="group_roles" />));
     expect(mocks.sources).toHaveLength(0);
     expect(container.textContent).toContain(
       'missing required column "client_identifier"',

@@ -65,7 +65,7 @@ describe("persistent identity RPC mapping", () => {
       ),
     ).toMatchObject({
       rpcName: "addClientRole",
-      params: { name: "Trader", clientId: "c1" },
+      params: { name: "Trader", clientId: "vuu-portal" },
     });
     expect(() => buildMutation("roles", { role_name: "Trader" }, {})).toThrow(
       "clientId is required",
@@ -86,7 +86,7 @@ describe("persistent identity RPC mapping", () => {
       ),
     ).toMatchObject({
       rpcName: "updateRole",
-      params: { roleId: "r1", clientId: "c1", name: "Trading" },
+      params: { roleId: "r1", clientId: "vuu-portal", name: "Trading" },
     });
   });
   it.each([
@@ -94,27 +94,35 @@ describe("persistent identity RPC mapping", () => {
     "realm-management",
     "VUU-portal",
     "app-vuu-portal",
-    "",
-  ])("rejects role create/edit for %j before sending an RPC", async (identifier) => {
-    const source = { rpcRequest: vi.fn() };
+  ])("allows role create/edit for client identifier %j", async (identifier) => {
+    const source = {
+      rpcRequest: vi.fn().mockResolvedValue({ type: "SUCCESS_RESULT" }),
+    };
     const values = {
       role_name: "Trader",
       client_id: "c1",
       client_identifier: identifier,
     };
-    await expect(saveAdminEntity(source, "roles", values, {})).rejects.toThrow(
-      "Only Vuu portal clients",
+    await saveAdminEntity(source, "roles", values, {});
+    expect(source.rpcRequest).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        rpcName: "addClientRole",
+        params: expect.objectContaining({ clientId: identifier }),
+      }),
     );
-    await expect(
-      saveAdminEntity(
-        source,
-        "roles",
-        values,
-        {},
-        { ...values, role_id: "r1" },
-      ),
-    ).rejects.toThrow("Only Vuu portal clients");
-    expect(source.rpcRequest).not.toHaveBeenCalled();
+    await saveAdminEntity(
+      source,
+      "roles",
+      values,
+      {},
+      { ...values, role_id: "r1" },
+    );
+    expect(source.rpcRequest).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        rpcName: "updateRole",
+        params: expect.objectContaining({ clientId: identifier }),
+      }),
+    );
   });
   it("honors mapped scope metadata without sending it as a mutable role field", () => {
     expect(
@@ -134,7 +142,7 @@ describe("persistent identity RPC mapping", () => {
     ).toEqual({
       type: "RPC_REQUEST",
       rpcName: "addClientRole",
-      params: { name: "Trader", clientId: "opaque-uuid" },
+      params: { name: "Trader", clientId: "vuu-portal" },
     });
   });
   it.each([

@@ -20,6 +20,11 @@ const dataSource = (module: UserAdminModule) =>
     columns: USER_ADMIN_TABLE_SCHEMAS.users.columns.map(({ name }) => name),
   }) as TickingArrayDataSource;
 
+const rolesDataSource = (module: UserAdminModule) =>
+  module.createDataSource("roles", "user-admin-roles-test", {
+    columns: USER_ADMIN_TABLE_SCHEMAS.roles.columns.map(({ name }) => name),
+  }) as TickingArrayDataSource;
+
 const rpc = (
   source: TickingArrayDataSource,
   rpcName: string,
@@ -73,11 +78,40 @@ describe("UserAdminModule", () => {
       "user-alice:group-user-admin-read:group-user-admin-read:role-user-admin-access",
       "user-bob:group-module-admin-read:group-module-admin-read:role-module-admin-access",
       "user-alice:group-basket-trading-read:group-basket-trading-read:role-basket-trading-access",
-      "user-alice:group-admins:group-admins:role-admin",
     ]);
     expect(
       tables.users.findByKey("user-alice")?.[tables.users.map.module_access],
     ).toBe("basket-trading-access,user-admin-access");
+  });
+
+  it("projects roles against their owning clients", () => {
+    const { roles } = createModule().tables;
+    const clientIdentifierFor = (roleName: string) => {
+      const row = roles.data.find(
+        (candidate) => candidate[roles.map.role_name] === roleName,
+      );
+      return row?.[roles.map.client_identifier];
+    };
+
+    expect({
+      "basket-trading-access": clientIdentifierFor("basket-trading-access"),
+      "basket-trading-trade": clientIdentifierFor("basket-trading-trade"),
+      "feature-filter-table-access": clientIdentifierFor(
+        "feature-filter-table-access",
+      ),
+      "module-admin-access": clientIdentifierFor("module-admin-access"),
+      "module-admin-admin": clientIdentifierFor("module-admin-admin"),
+      "user-admin-access": clientIdentifierFor("user-admin-access"),
+      "user-admin-admin": clientIdentifierFor("user-admin-admin"),
+    }).toEqual({
+      "basket-trading-access": "vuu-portal",
+      "basket-trading-trade": "basket-trading",
+      "feature-filter-table-access": "vuu-portal",
+      "module-admin-access": "vuu-portal",
+      "module-admin-admin": "module-admin",
+      "user-admin-access": "vuu-portal",
+      "user-admin-admin": "user-admin",
+    });
   });
 
   it("registers every shared RPC on each table", () => {
@@ -240,6 +274,129 @@ describe("UserAdminModule", () => {
 
     await rpc(source, "deleteGroup", { groupId: "group-1" });
     expect(module.tables.groups.findByKey("group-1")).toBeUndefined();
+  });
+
+  it("creates client roles through the standard add-row edit session", async () => {
+    const module = createModule();
+    const source = rolesDataSource(module);
+    const session = await source.createSessionDataSource("Empty");
+
+    await session.addRow({
+      client_id: "client-portal",
+      client_identifier: "vuu-portal",
+      client_name: "VUU Portal",
+      description: "Role created through an edit session",
+      role_name: "session-created-role",
+    });
+    await session.endEditSession(true);
+
+    const createdRole = module.tables.roles.data.find(
+      (row) =>
+        row[module.tables.roles.map.role_name] === "session-created-role",
+    );
+    expect(createdRole).toBeDefined();
+    expect(createdRole?.[module.tables.roles.map.client_id]).toBe(
+      "client-portal",
+    );
+    expect(createdRole?.[module.tables.roles.map.client_identifier]).toBe(
+      "vuu-portal",
+    );
+    expect(createdRole?.[module.tables.roles.map.description]).toBe(
+      "Role created through an edit session",
+    );
+    expect(
+      (await module.store.snapshot()).clientRoles.some(
+        ({ role }) =>
+          role.name === "session-created-role" &&
+          role.description === "Role created through an edit session",
+      ),
+    ).toBe(true);
+  });
+
+  it("discards a staged client role when an edit session is cancelled", async () => {
+    const module = createModule();
+    const initialRoleCount = module.tables.roles.data.length;
+    const source = rolesDataSource(module);
+    const session = await source.createSessionDataSource("Empty");
+
+    await session.addRow({
+      client_id: "client-portal",
+      client_identifier: "vuu-portal",
+      client_name: "VUU Portal",
+      description: "Must not persist",
+      role_name: "cancelled-role",
+    });
+    await session.endEditSession(false);
+
+    expect(module.tables.roles.data).toHaveLength(initialRoleCount);
+    expect(
+      (await module.store.snapshot()).clientRoles.some(
+        ({ role }) => role.name === "cancelled-role",
+      ),
+    ).toBe(false);
+  });
+
+  it("creates session roles for non-Vuu clients when the client ID and identifier match", async () => {
+    const module = createModule();
+    const source = rolesDataSource(module);
+    const session = await source.createSessionDataSource("Empty");
+
+    await session.addRow({
+      client_id: "client-user-admin",
+      client_identifier: "user-admin",
+      client_name: "User Admin",
+      description: "",
+      role_name: "user-admin-session-role",
+    });
+
+    await expect(session.endEditSession(true)).resolves.toBeUndefined();
+    expect(
+      (await module.store.snapshot()).clientRoles.some(
+        ({ client, role }) =>
+          client.clientId === "user-admin" &&
+          role.name === "user-admin-session-role",
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects role rows whose client ID and identifier refer to different clients", async () => {
+    const module = createModule();
+    const source = rolesDataSource(module);
+    const session = await source.createSessionDataSource("Empty");
+
+    await session.addRow({
+      client_id: "client-user-admin",
+      client_identifier: "basket-trading",
+      client_name: "User Admin",
+      description: "",
+      role_name: "inconsistent-client-role",
+    });
+
+    await expect(session.endEditSession(true)).rejects.toThrow(
+      "client_id and client_identifier must identify the same client",
+    );
+    expect(
+      (await module.store.snapshot()).clientRoles.some(
+        ({ role }) => role.name === "inconsistent-client-role",
+      ),
+    ).toBe(false);
+  });
+
+  it("preserves existing role edits when saving a role edit session", async () => {
+    const module = createModule();
+    const role = module.tables.roles.data[0];
+    const roleId = String(role[module.tables.roles.map.role_id]);
+    const source = rolesDataSource(module);
+    const session = await source.createSessionDataSource("All");
+
+    await session.editCell(roleId, "description", "Updated description");
+    await session.endEditSession(true);
+
+    expect(
+      module.tables.roles.findByKey(roleId)?.[
+        module.tables.roles.map.description
+      ],
+    ).toBe("Updated description");
   });
 
   it("reconciles relationship changes and module access assignments", async () => {

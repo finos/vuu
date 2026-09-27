@@ -312,6 +312,10 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
     sourceTable: Table,
     sessionTable: Table,
   ) {
+    if (sourceTable.name === "roles") {
+      await this.saveClientRolesFromSession(sessionTable);
+      return;
+    }
     if (sourceTable.name !== "users") return;
     const permissionsIndex = sessionTable.map.permissions;
     const actionIndex = sessionTable.map.vuuAction;
@@ -343,8 +347,71 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
     }
   }
 
-  protected override async afterSessionSave(sourceTable: Table) {
-    if (sourceTable.name === "users") await this.reconcile();
+  protected override async afterSessionSave(
+    sourceTable: Table,
+    sessionTable: Table,
+  ) {
+    const roleCreationSaved =
+      sourceTable.name === "roles" &&
+      sessionTable.data.some(
+        (row) =>
+          row[sessionTable.map.vuuAction] === "addRow" &&
+          row[sessionTable.map.vuuMsg] === "client role created",
+      );
+    if (sourceTable.name === "users" || roleCreationSaved) {
+      await this.reconcile();
+    }
+  }
+
+  private async saveClientRolesFromSession(sessionTable: Table) {
+    const actionIndex = sessionTable.map.vuuAction;
+    const messageIndex = sessionTable.map.vuuMsg;
+    const keyIndex = sessionTable.map[sessionTable.schema.key];
+    const snapshot = await this.store.snapshot();
+    const clientsById = new Map(
+      snapshot.clients.map((client) => [client.id, client]),
+    );
+
+    const pendingRoles = [...sessionTable.data].flatMap((row) => {
+      if (row[actionIndex] !== "addRow" || row[messageIndex]) return [];
+      const params = Object.fromEntries(
+        sessionTable.schema.columns.map(({ name }) => [
+          name,
+          row[sessionTable.map[name]],
+        ]),
+      );
+      const roleName = requiredString(params, "role_name").trim();
+      if (!roleName) throw new Error("role_name must be a non-empty string");
+      const clientId = requiredString(params, "client_id");
+      const clientIdentifier = requiredString(params, "client_identifier");
+      const client = clientsById.get(clientId);
+      if (!client || client.clientId !== clientIdentifier) {
+        throw new Error(
+          "client_id and client_identifier must identify the same client",
+        );
+      }
+
+      return [
+        {
+          client,
+          description: optionalString(params, "description") ?? "",
+          roleName,
+          row,
+        },
+      ];
+    });
+
+    for (const { client, description, roleName, row } of pendingRoles) {
+      await this.store.addClientRole(
+        { clientKey: client.clientId },
+        { description, name: roleName },
+      );
+      sessionTable.update(
+        String(row[keyIndex]),
+        "vuuMsg",
+        "client role created",
+      );
+    }
   }
 
   private mutation = (

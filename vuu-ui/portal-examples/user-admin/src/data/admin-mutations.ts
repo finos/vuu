@@ -83,9 +83,13 @@ export const buildMutation = (
     }
   }
   if (entity === "roles") {
-    requireVuuClient(
-      (original ?? values)[columnFor(config, entity, "client_identifier")],
-    );
+    const clientIdentifier = (original ?? values)[
+      columnFor(config, entity, "client_identifier")
+    ];
+    if (typeof clientIdentifier !== "string" || !clientIdentifier.trim()) {
+      throw new Error("client_identifier is required.");
+    }
+    params.clientId = clientIdentifier;
   }
   return {
     type: "RPC_REQUEST",

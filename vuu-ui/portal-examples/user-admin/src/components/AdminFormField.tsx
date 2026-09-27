@@ -8,11 +8,7 @@ import {
 } from "@salt-ds/core";
 import { useId, useState, type ReactNode } from "react";
 import type { AdminRecord, Entity } from "../data/admin-contract";
-import {
-  columnFor,
-  errorMessage,
-  requireVuuClient,
-} from "../data/admin-contract";
+import { columnFor } from "../data/admin-contract";
 import { useAdminConfig } from "../data/AdminDataContext";
 import { AdminSearch } from "./AdminSearch";
 import { AdminTable } from "./AdminTable";
@@ -141,15 +137,15 @@ export const AdminLookupField = ({
                 return;
               }
               if (table === "clients") {
-                try {
-                  const identifier = requireVuuClient(
-                    record[columnFor(config, table, "client_identifier")],
+                const identifier =
+                  record[columnFor(config, table, "client_identifier")];
+                if (typeof identifier !== "string" || !identifier.trim()) {
+                  setError(
+                    "The selected client is missing its client identifier.",
                   );
-                  props.onChange("client_identifier", identifier);
-                } catch (cause) {
-                  setError(errorMessage(cause));
                   return;
                 }
+                props.onChange("client_identifier", identifier);
               }
               setError("");
               props.onChange(field, id);

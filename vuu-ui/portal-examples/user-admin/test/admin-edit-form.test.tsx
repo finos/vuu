@@ -669,26 +669,24 @@ describe("AdminEditForm sessions", () => {
     expect(add).not.toHaveBeenCalled();
   });
 
-  it("rejects out-of-scope client rows before a role target can be selected", async () => {
+  it("allows any client row to be selected as a role target", async () => {
     props.entity = "roles";
     props.schema = schemaFor(["role_name", "client_id", "description"]);
     mocks.clientIdentifier = "account";
     await render();
     await change("Role name", "admin");
     await click("Choose Portal");
-    expect(container.textContent).toContain("Only Vuu portal clients");
-    expect(container.textContent).not.toContain("Selected: Portal");
-    await submit();
-    expect(persist).not.toHaveBeenCalled();
-    mocks.clientIdentifier = "vuu-portal";
-    await click("Choose Portal");
+    expect(container.textContent).toContain("Selected: Portal");
     await submit();
     expect(persist).toHaveBeenCalledWith(
-      expect.objectContaining({ rpcName: "addClientRole" }),
+      expect.objectContaining({
+        rpcName: "addClientRole",
+        params: expect.objectContaining({ clientId: "account" }),
+      }),
     );
   });
 
-  it("rejects an out-of-scope role edit even if supplied directly instead of from a filtered table", async () => {
+  it("allows editing a role owned by a non-Vuu client", async () => {
     props.entity = "roles";
     props.schema = schemaFor([
       "role_name",
@@ -706,8 +704,12 @@ describe("AdminEditForm sessions", () => {
     await render();
     await change("Role name", "updated");
     await submit();
-    expect(persist).not.toHaveBeenCalled();
-    expect(container.textContent).toContain("Only Vuu portal clients");
+    expect(persist).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rpcName: "updateRole",
+        params: expect.objectContaining({ clientId: "realm-management" }),
+      }),
+    );
   });
 
   it.each([
@@ -746,7 +748,7 @@ describe("AdminEditForm sessions", () => {
     expect(end).toHaveBeenCalledWith(false, false);
   });
 
-  it("requires a Vuu client selection, supports Enter search and exposes selected client", async () => {
+  it("requires a client selection, supports Enter search and exposes selected client", async () => {
     props.entity = "roles";
     props.schema = schemaFor(["role_name", "client_id", "description"]);
     await render();
@@ -776,7 +778,7 @@ describe("AdminEditForm sessions", () => {
     expect(persist).toHaveBeenCalledWith({
       type: "RPC_REQUEST",
       rpcName: "addClientRole",
-      params: { name: "admin", clientId: "client-1", description: "" },
+      params: { name: "admin", clientId: "vuu-portal", description: "" },
     });
   });
 });

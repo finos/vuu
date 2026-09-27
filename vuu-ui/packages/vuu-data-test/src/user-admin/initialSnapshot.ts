@@ -9,6 +9,27 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
             id: "client-portal",
             name: "VUU Portal",
         },
+        {
+            clientId: "user-admin",
+            description: "User administration",
+            enabled: true,
+            id: "client-user-admin",
+            name: "User Admin",
+        },
+        {
+            clientId: "basket-trading",
+            description: "Basket trading",
+            enabled: true,
+            id: "client-basket-trading",
+            name: "Basket Trading",
+        },
+        {
+            clientId: "module-admin",
+            description: "Module administration",
+            enabled: true,
+            id: "client-module-admin",
+            name: "Module Admin",
+        },
     ],
     clientRoles: [
         {
@@ -69,13 +90,13 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
         },
         {
             client: {
-                clientId: "vuu-portal",
-                id: "client-portal",
-                name: "VUU Portal",
+                clientId: "user-admin",
+                id: "client-user-admin",
+                name: "User Admin",
             },
             role: {
                 clientRole: true,
-                containerId: "client-portal",
+                containerId: "client-user-admin",
                 id: "role-user-admin-admin",
                 name: "user-admin-admin",
                 roleDisplayName: "admin",
@@ -83,13 +104,13 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
         },
         {
             client: {
-                clientId: "vuu-portal",
-                id: "client-portal",
-                name: "VUU Portal",
+                clientId: "module-admin",
+                id: "client-module-admin",
+                name: "Module Admin",
             },
             role: {
                 clientRole: true,
-                containerId: "client-portal",
+                containerId: "client-module-admin",
                 id: "role-module-admin-admin",
                 name: "module-admin-admin",
                 roleDisplayName: "admin",
@@ -97,28 +118,16 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
         },
         {
             client: {
-                clientId: "vuu-portal",
-                id: "client-portal",
-                name: "VUU Portal",
+                clientId: "basket-trading",
+                id: "client-basket-trading",
+                name: "Basket Trading",
             },
             role: {
                 clientRole: true,
-                containerId: "client-portal",
+                containerId: "client-basket-trading",
                 id: "role-basket-trading-trade",
                 name: "basket-trading-trade",
                 roleDisplayName: "trade",
-            },
-        },
-        {
-            client: {
-                clientId: "realm",
-                id: "realm",
-                name: "Realm",
-            },
-            role: {
-                id: "role-admin",
-                name: "admin",
-                roleDisplayName: "admin",
             },
         },
     ],
@@ -219,9 +228,9 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
         },
         {
             client: {
-                clientId: "vuu-portal",
-                id: "client-portal",
-                name: "VUU Portal",
+                clientId: "user-admin",
+                id: "client-user-admin",
+                name: "User Admin",
             },
             group: {
                 id: "group-user-admin-admin",
@@ -255,9 +264,9 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
         },
         {
             client: {
-                clientId: "vuu-portal",
-                id: "client-portal",
-                name: "VUU Portal",
+                clientId: "module-admin",
+                id: "client-module-admin",
+                name: "Module Admin",
             },
             group: {
                 id: "group-module-admin-admin",
@@ -291,9 +300,9 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
         },
         {
             client: {
-                clientId: "vuu-portal",
-                id: "client-portal",
-                name: "VUU Portal",
+                clientId: "basket-trading",
+                id: "client-basket-trading",
+                name: "Basket Trading",
             },
             group: {
                 id: "group-basket-trading-trade",
@@ -305,19 +314,6 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
                 id: "role-basket-trading-trade",
                 name: "basket-trading-trade",
                 roleDisplayName: "trade",
-            },
-        },
-        {
-            group: {
-                id: "group-admins",
-                name: "administrators",
-                groupDisplayName: "administrators",
-                path: "/vuu/administrators",
-            },
-            role: {
-                id: "role-admin",
-                name: "admin",
-                roleDisplayName: "admin",
             },
         },
     ],

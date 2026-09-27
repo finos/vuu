@@ -25,8 +25,6 @@ export type AdminConfig = Partial<Record<AdminTableName, AdminTableContract>>;
 export const EMPTY_CONFIG: AdminConfig = {};
 export const VUU_CLIENT_PREFIX = "vuu-";
 const CLIENT_SCOPED_TABLES = new Set<AdminTableName>([
-  "clients",
-  "roles",
   "group_roles",
   "user_group_roles",
 ]);
