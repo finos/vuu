@@ -7,7 +7,6 @@ import {
   GridLayoutItem,
   GridLayoutProvider,
   GridLayoutStackedItem,
-  GridPlaceholder,
 } from "@vuu-ui/grid-layout";
 import { DebugGridItem } from "../html/components/DebugGridItem";
 

@@ -42,7 +42,6 @@ import {
   applyDefaultColumnConfig,
   defaultValueFormatter,
   EventEmitter,
-  LayoutJSON,
   Range,
   registerComponent,
   toColumnName,

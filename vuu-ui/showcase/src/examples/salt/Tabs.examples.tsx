@@ -41,7 +41,6 @@ import {
   ReceiptIcon,
 } from "@salt-ds/icons";
 import { ChangeEvent, SyntheticEvent, useRef, useState } from "react";
-import { ReactComponent } from "@vuu-ui/vuu-utils";
 
 const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
 const lotsOfTabs = [

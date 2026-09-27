@@ -1,13 +1,11 @@
-import { Button, FlexLayout, SidePanel, SidePanelCloseButton, SidePanelContent, SidePanelHeader, SidePanelProvider, SidePanelTitle, SidePanelTrigger, Toolbar } from "@salt-ds/core";
+import { Button, FlexLayout, SidePanel, SidePanelCloseButton, SidePanelContent, SidePanelHeader, SidePanelProvider, SidePanelTitle, Toolbar } from "@salt-ds/core";
 import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { Table } from "@vuu-ui/vuu-table";
 import { TableConfig, TableRowSelectHandler } from "@vuu-ui/vuu-table-types";
-import { SelectionChangeHandler } from "@vuu-ui/vuu-table-types";
 import { useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 import { useAutoLoginToVuuServer } from "../utils";
 import { toColumnName } from "@vuu-ui/vuu-utils";
-import { View } from "@vuu-ui/vuu-layout";
 
 /** tags=data-consumer */
 export const SimpleSidePanel = () => {

@@ -7,7 +7,7 @@ import {
   GridLayoutProvider,
   GridLayoutStackedItem,
 } from "@vuu-ui/grid-layout";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { GridPalette } from "../html/components/GridPalette";
 import {
   createScenarioItem,
