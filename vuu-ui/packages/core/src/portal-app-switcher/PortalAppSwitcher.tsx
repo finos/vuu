@@ -1,11 +1,7 @@
 import { VerticalNavigation } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import {
-  ContextMenuProvider,
-  MenuBuilder,
-  useContextMenu,
-} from "@vuu-ui/vuu-context-menu";
+import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import cx from "clsx";
 import { useEffect, useMemo } from "react";
 import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
@@ -15,7 +11,6 @@ import { buildNavItems } from "./nav-item-utils";
 
 import portalNavCss from "./PortalAppSwitcher.css";
 import { useLocation } from "react-router-dom";
-import { useNavContextMenu } from "./useNavContextMenu";
 
 const classBase = "vuuPortalAppSwitcher";
 const circleQuestionMarkIcon =
