@@ -1,18 +1,19 @@
-import { ChangeEvent, useRef, useState } from "react";
+import { type ChangeEvent, useRef, useState } from "react";
 import {
   NotificationsProvider,
   useNotifications,
   ToastNotification,
-  NotificationAnimationType,
+  type NotificationAnimationType,
 } from "@vuu-ui/vuu-notifications";
 import {
+  Button,
   Dropdown,
   FormField,
   FormFieldLabel,
   Input,
   Option,
   Switch,
-  ValidationStatus,
+  type ValidationStatus,
 } from "@salt-ds/core";
 import { DismissalStyle } from "@vuu-ui/vuu-notifications/src/NotificationsContext";
 
@@ -165,8 +166,8 @@ const Notifications = () => {
           checked={renderPostRefresh}
         />
       </FormField>
-      <button onClick={handleShowNotification}>trigger notifications</button>
-      <button onClick={handleHideNotification}>hide notifications</button>
+      <Button onClick={handleShowNotification}>trigger notifications</Button>
+      <Button onClick={handleHideNotification}>hide notifications</Button>
     </div>
   );
 };
@@ -320,7 +321,11 @@ export const NotificationToastWithLinkInContent = () => (
   <ToastNotification
     top={20}
     notification={{
-      content: <span><a href="https://example.com">This is Info Body with Link</a></span>,
+      content: (
+        <span>
+          <a href="https://example.com">This is Info Body with Link</a>
+        </span>
+      ),
       header: "This is Info Title",
       status: "info",
       type: "toast",

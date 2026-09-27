@@ -3,12 +3,12 @@ import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import { registerComponent } from "@vuu-ui/vuu-utils";
 import { ConfirmSelectionPanel } from "./order-management/cancel-confirm-prompt/ConfirmSelectionPanel";
 import {
+  NavContainer,
+  PortalAppSwitcher,
+  PortalHeader,
   PortalShell,
-  WindowHost,
-  WINDOW_HOST_ROUTE,
 } from "@vuu-ui/core/portal";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { useMemo, type ComponentType, type ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 
 import "./App.css";
 
@@ -19,7 +19,7 @@ export interface AppProps {
   DataSourceProvider?: ComponentType<{ children: ReactNode }>;
 }
 
-const PortalRoute = ({ DataSourceProvider }: AppProps) => {
+export const App = ({ DataSourceProvider }: AppProps) => {
   const { modules: remoteModules } = useModuleRegistry();
 
   return (
@@ -28,25 +28,14 @@ const PortalRoute = ({ DataSourceProvider }: AppProps) => {
       title="Portal Demo"
       remoteModules={remoteModules}
       DataSourceProvider={DataSourceProvider}
-    />
+    >
+      <NavContainer>
+        <PortalAppSwitcher
+          displayStyle="icon-only"
+          remoteModules={remoteModules}
+        />
+      </NavContainer>
+      <PortalHeader />
+    </PortalShell>
   );
-};
-
-export const App = ({ DataSourceProvider }: AppProps) => {
-  const router = useMemo(
-    () =>
-      createBrowserRouter([
-        {
-          path: WINDOW_HOST_ROUTE,
-          element: <WindowHost DataSourceProvider={DataSourceProvider} />,
-        },
-        {
-          path: "*",
-          element: <PortalRoute DataSourceProvider={DataSourceProvider} />,
-        },
-      ]),
-    [DataSourceProvider],
-  );
-
-  return <RouterProvider router={router} />;
 };

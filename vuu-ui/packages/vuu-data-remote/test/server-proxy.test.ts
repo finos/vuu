@@ -47,7 +47,7 @@ describe("ServerProxy", () => {
           description: "Manage modules",
           enabled: true,
           id: 1,
-          location: "/Admin/Modules",
+          navLocation: "/Admin/Modules",
           accessRole: "module-admin-login",
           mfComponent: "ModuleAdmin",
           mfScope: "moduleAdmin",

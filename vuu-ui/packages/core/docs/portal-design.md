@@ -13,9 +13,25 @@ for portal host behavior and remote-module integration.
 portal title and the descriptors for its registered remote modules, then:
 
 - applies the VUU Salt theme and creates the portal-level data source context;
-- renders the portal branding, header, and navigation;
-- builds navigation entries from the registered remote-module descriptors; and
-- creates routes that render each remote module through `RemoteModule`.
+- renders caller-supplied `children` for branding, headers, and navigation; and
+- creates the browser router, including routes that render each remote module
+  through `RemoteModule` and the standalone `WindowHost` route.
+
+Compose `NavContainer`, `PortalAppSwitcher` or `PortalNav`, and `PortalHeader`
+as children as needed; the shell does not add them automatically. Children render
+inside the shared providers and router, before the routed module content, and
+are omitted on standalone window routes. The optional `id` is applied to the
+portal root element. The `title` prop does not create a heading; supply branding
+through children.
+
+Render `PortalShell` directly beneath the host's `AuthenticationProvider`, without
+an external router. The router persists across shell prop and registry updates,
+preserving the active route and mounted module state.
+Wrapping the shell in another router fails at runtime with React Router's
+nested-router error; remove the outer router rather than adding a second one.
+The shell requires a browser DOM and history and does not support server-side
+rendering or an injected memory router. Tests should render it directly in a DOM
+environment and set the initial URL through browser history.
 
 `PortalShell` is supported by `PortalHeader`, `PortalNav`, their styles, and the
 public `RemoteModuleDescriptor` type. Together these define the visual shell,
@@ -28,11 +44,13 @@ via right-click, the context-menu key, or Shift+F10. Navigation groups retain
 their normal expand/collapse behavior. Opening a module leaves the current
 portal route unchanged.
 
-Hosts using these actions must mount `WindowHost` at `WINDOW_HOST_ROUTE`
-(`/window/:moduleId/*`) inside their existing router and
-`AuthenticationProvider`. The portal-host example registers this route for
-both authenticated and local bootstraps. `getWindowHostPath(id)` generates the
-launch path; navigation honors a router basename.
+`PortalShell` mounts `WindowHost` at `WINDOW_HOST_ROUTE`
+(`/window/:moduleId/*`) for both authenticated and local bootstraps. It forwards
+the injected data-source provider to the window host, which retains its own
+layout and default theme. Hosts that do not use `PortalShell` can register
+`WindowHost` in their own router beneath `AuthenticationProvider`.
+`getWindowHostPath(id)` generates the launch path; navigation honors a router
+basename.
 
 The URL contains only the encoded registry module ID, with an optional
 module-relative route for deep links (for example `/window/42/users`). No
@@ -72,7 +90,7 @@ has no portal navigation rail or module-routing logic. `WindowHost` forwards
 the optional shell ID, theme settings, and data-source provider to it.
 
 `PortalShell` retains its portal-specific branding, navigation, and routes.
-Both shells use the internal `ShellProviders` component for the same Salt
+Both shells use the internal `CommonShell` component for the same Salt
 theme defaults, modal provider, and default or injected data-source provider.
 Authentication remains outside the shells. Sharing providers rather than
 layout flags allows the two shells to evolve independently.
@@ -97,12 +115,12 @@ module instead of implicitly using the portal host's connection.
 core/
 |-- src/
 |   |-- auth/
+|   |-- common-shell/
 |   |-- connection-management/
 |   |-- portal-header/
 |   |-- portal-nav/
 |   |-- portal-shell/
 |   |-- remote-module/
-|   |-- shell-providers/
 |   |-- window-host/
 |   |-- window-shell/
 |   |-- index.ts

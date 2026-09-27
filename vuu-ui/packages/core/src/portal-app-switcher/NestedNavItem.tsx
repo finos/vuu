@@ -2,7 +2,6 @@ import {
   Collapsible,
   CollapsiblePanel,
   CollapsibleTrigger,
-  VerticalNavigation,
   VerticalNavigationItem,
   VerticalNavigationItemContent,
   VerticalNavigationItemExpansionIcon,
@@ -10,31 +9,15 @@ import {
   VerticalNavigationItemTrigger,
   VerticalNavigationSubMenu,
 } from "@salt-ds/core";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
-import {
-  ContextMenuProvider,
-  useContextMenu,
-  type MenuBuilder,
-} from "@vuu-ui/vuu-context-menu";
-import { useMemo, useState } from "react";
-import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
+import { useContextMenu, type MenuBuilder } from "@vuu-ui/vuu-context-menu";
+import { useState } from "react";
 import { Link, useHref, useLocation } from "react-router-dom";
+import { useWindow } from "@salt-ds/window";
 import { getWindowHostPath } from "../window-host/window-host-routing";
+import type { NavItem } from "./PortalAppSwitcher";
 
-import portalNavCss from "./PortalNav.css";
-
-const classBase = "vuuPortalNav";
-
-const toNavigationPath = (path: string) => path.replace(/\/\*$/, "");
-
-type NavItem = {
-  title: string;
-  href: string;
-  moduleId?: RemoteModuleDescriptor["id"];
-  children?: NavItem[];
-};
+const classBase = "vuuPortalAppSwitcher";
 
 const moduleMenuBuilder: MenuBuilder = (location) =>
   location === "portal-module"
@@ -44,7 +27,7 @@ const moduleMenuBuilder: MenuBuilder = (location) =>
       ]
     : [];
 
-function NestedItem(props: { item: NavItem; icon?: boolean }) {
+export function NestedNavItem(props: { item: NavItem; icon?: boolean }) {
   const { item, icon } = props;
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
@@ -89,7 +72,7 @@ function NestedItem(props: { item: NavItem; icon?: boolean }) {
           <CollapsiblePanel>
             <VerticalNavigationSubMenu>
               {item.children.map((child) => (
-                <NestedItem key={child.href} item={child} />
+                <NestedNavItem key={child.href} item={child} />
               ))}
             </VerticalNavigationSubMenu>
           </CollapsiblePanel>
@@ -146,74 +129,3 @@ function NestedItem(props: { item: NavItem; icon?: boolean }) {
     </VerticalNavigationItem>
   );
 }
-
-export interface PortalNavProps {
-  remoteModules: RemoteModuleDescriptor[];
-}
-
-const buildNavItems = (remoteModules: RemoteModuleDescriptor[]) => {
-  const navItemsByPath = new Map<string, NavItem>();
-
-  for (const remoteModule of remoteModules) {
-    const pathSegments = remoteModule.navLocation.split("/").filter(Boolean);
-    const [parentTitle, childTitle] = pathSegments;
-
-    if (parentTitle === undefined) {
-      continue;
-    }
-
-    const parentPath = `/${parentTitle}`;
-    let parent = navItemsByPath.get(parentPath);
-
-    if (parent === undefined) {
-      parent = {
-        href:
-          childTitle === undefined
-            ? toNavigationPath(remoteModule.path)
-            : parentPath,
-        moduleId: childTitle === undefined ? remoteModule.id : undefined,
-        title: parentTitle,
-      };
-      navItemsByPath.set(parentPath, parent);
-    }
-
-    if (
-      childTitle !== undefined &&
-      !parent.children?.some(
-        ({ href }) => href === toNavigationPath(remoteModule.path),
-      )
-    ) {
-      parent.children = [
-        ...(parent.children ?? []),
-        {
-          href: toNavigationPath(remoteModule.path),
-          moduleId: remoteModule.id,
-          title: childTitle,
-        },
-      ];
-    }
-  }
-
-  return [...navItemsByPath.values()];
-};
-
-export const PortalNav = ({ remoteModules }: PortalNavProps) => {
-  const targetWindow = useWindow();
-  useComponentCssInjection({
-    testId: "vuu-portal-nav",
-    css: portalNavCss,
-    window: targetWindow,
-  });
-
-  const navItems = useMemo(() => buildNavItems(remoteModules), [remoteModules]);
-
-  return (
-    <ContextMenuProvider>
-      <VerticalNavigation className={classBase}>
-        {navItems.map((navItem) => (
-          <NestedItem icon item={navItem} key={navItem.href} />
-        ))}
-      </VerticalNavigation>
-    </ContextMenuProvider>
-  );
-};

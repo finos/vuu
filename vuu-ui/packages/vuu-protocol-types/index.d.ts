@@ -53,7 +53,15 @@ export interface VuuModuleDescriptor {
   description: string;
   enabled?: boolean;
   id: number | string;
-  location: string;
+  /**
+   * Identifier for an icon that must be provided through CSS.
+   */
+  navIconName?: string;
+  /**
+   * Full icon encapsulated in a data URL, represented as SVG or base64-encoded SVG.
+   */
+  navIconUrl?: string;
+  navLocation: string;
   accessRole: string;
   mfComponent: string;
   mfScope: string;

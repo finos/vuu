@@ -4,15 +4,15 @@ import { useWindow } from "@salt-ds/window";
 import type { ReactNode } from "react";
 import { PortalHeader } from "../portal-header/PortalHeader";
 import {
-  ShellProviders,
-  type ShellProviderProps,
-} from "../shell-providers/ShellProviders";
+  CommonShell,
+  type CommonShellProps,
+} from "../common-shell/CommonShell";
 
 import windowShellCss from "./WindowShell.css";
 
 const classBase = "vuuWindowShell";
 
-export interface WindowShellProps extends ShellProviderProps {
+export interface WindowShellProps extends CommonShellProps {
   children: ReactNode;
   id?: string;
 }
@@ -30,7 +30,7 @@ export const WindowShell = ({
   });
 
   return (
-    <ShellProviders {...providerProps}>
+    <CommonShell {...providerProps}>
       <FlexLayout className={classBase} direction="column" id={id}>
         <FlexItem className={`${classBase}-header`}>
           <PortalHeader />
@@ -39,6 +39,6 @@ export const WindowShell = ({
           <div className={`${classBase}-content`}>{children}</div>
         </FlexItem>
       </FlexLayout>
-    </ShellProviders>
+    </CommonShell>
   );
 };

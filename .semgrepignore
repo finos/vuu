@@ -41,3 +41,4 @@ vuu-ui/tools/vuu-showcase/scripts/showcase-dev.ts
 vuu-ui/tools/vuu-showcase/scripts/utils.ts
 vuu-ui/tools/vuu-showcase/scripts/treeSourceFromFileSystem.ts
 vuu-ui/tools/vuu-showcase/src/showcase-utils.ts
+vuu-ui/tools/portal-build-tool/test/build.test.ts

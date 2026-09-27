@@ -10,7 +10,7 @@ import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import type { ComponentType, ReactNode } from "react";
 import { ModalProvider } from "../modal-provider/ModalProvider";
 
-export interface ShellProviderProps {
+export interface CommonShellProps {
   accent?: Accent;
   corner?: Corner;
   DataSourceProvider?: ComponentType<{ children: ReactNode }>;
@@ -21,7 +21,7 @@ export interface ShellProviderProps {
 
 const accentPurple = "purple" as Accent;
 
-export const ShellProviders = ({
+export const CommonShell = ({
   accent = accentPurple,
   children,
   corner = "rounded",
@@ -29,7 +29,7 @@ export const ShellProviders = ({
   density = "medium",
   mode = "light",
   theme = "vuu-theme",
-}: ShellProviderProps & { children: ReactNode }) => (
+}: CommonShellProps & { children: ReactNode }) => (
   <SaltProviderNext
     accent={accent}
     corner={corner}

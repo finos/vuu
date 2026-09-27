@@ -1,0 +1,103 @@
+.vuuPortalAppSwitcher {
+  &.saltVerticalNavigation {
+    width: 100%;
+
+    ol {
+      gap: 20px;
+    }
+  }
+
+  &.vuuPortalAppSwitcher-icon-only {
+    width: 36px;
+
+    .vuuIconNavItem {
+      display: flex;
+      width: fit-content;
+      z-index: 100;
+
+      .vuuIconNavItem-flyout {
+        align-items: center;
+        background-color: var(--salt-actionable-bold-background);
+        border-radius: 18px;
+        display: flex;
+        column-gap: 0;
+        transition: background-color 0.25s linear;
+        width: fit-content;
+
+        .vuuIcon {
+          height: 36px;
+          width: 36px;
+          --vuu-icon-left: 6px;
+          --vuu-icon-top: 6px;
+        }
+
+        .vuuIconNavItem-label {
+          display: inline-block;
+          font-size: 16px;
+          font-weight: bold;
+          overflow: hidden;
+          text-align: right;
+          text-decoration: none;
+          transition: width 0.125s ease-out;
+          transition-delay: 0s;
+          width: 0;
+        }
+      }
+
+      &.vuuIconNavItem-active {
+        .vuuIconNavItem-flyout {
+          background-color: var(--salt-selectable-foreground-selected);
+          color: white;
+
+          .vuuIcon {
+            --vuu-icon-color: white;
+          }
+        }
+      }
+
+      &:hover {
+        .vuuIconNavItem-flyout {
+          background-color: var(--salt-selectable-foreground-selected);
+          color: white;
+
+          .vuuIcon {
+            --vuu-icon-color: white;
+          }
+          .vuuIconNavItem-label {
+            transition-delay: 0.6s;
+            width: 120px;
+          }
+        }
+      }
+    }
+  }
+
+  .saltVerticalNavigationItemContent {
+    align-items: center;
+    min-height: 50px;
+    padding-left: calc(var(--verticalNavigationItem-depth) * 38px);
+
+    .saltVerticalNavigationItemTrigger {
+      gap: var(--salt-spacing-200);
+    }
+
+    .vuuIcon {
+      --vuu-icon-color: white;
+      --vuu-icon-size: 20px;
+      --vuu-icon-top: -2px;
+    }
+
+    .saltVerticalNavigationItemLabel {
+      color: var(--vuuPortalNav-itemLabel-color);
+      text-transform: uppercase;
+    }
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    &.saltVerticalNavigationItemContent-active {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
