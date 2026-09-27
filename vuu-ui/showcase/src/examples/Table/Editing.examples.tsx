@@ -1,15 +1,15 @@
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import {
-  ContextMenuItemDescriptor,
+  type ContextMenuItemDescriptor,
   ContextMenuProvider,
-  MenuActionHandler,
-  MenuBuilder,
+  type MenuActionHandler,
+  type MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
 import {
   getSchema,
   LocalDataSourceProvider,
-  SimulTableName,
-  TestTableName,
+  type SimulTableName,
+  type TestTableName,
 } from "@vuu-ui/vuu-data-test";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
@@ -30,7 +30,7 @@ import {
   UNDO_CELL_RENDERER,
   useEditableTable,
 } from "@vuu-ui/vuu-data-editing";
-import {
+import type {
   ColumnDescriptor,
   DataRow,
   DataValueTypeDescriptor,
@@ -51,9 +51,9 @@ import {
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
-  HTMLAttributes,
-  ReactElement,
-  SyntheticEvent,
+  type HTMLAttributes,
+  type ReactElement,
+  type SyntheticEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -61,11 +61,15 @@ import {
   useState,
 } from "react";
 import { SimulTable } from "./SimulTableTemplate";
-import type { CopyOption, DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
+import type {
+  CopyOption,
+  DataSource,
+  TableSchema,
+} from "@vuu-ui/vuu-data-types";
 import { LayoutProvider, Stack, View } from "@vuu-ui/vuu-layout";
 import { ColumnFilter } from "@vuu-ui/vuu-filters";
 import { Toolbar } from "./Toolbar";
-import {
+import type {
   ColumnFilterChangeHandler,
   ColumnFilterCommitHandler,
 } from "@vuu-ui/vuu-filter-types";
@@ -97,7 +101,7 @@ const UNDO_DELETE_COLUMN: ColumnDescriptor = {
     renderer: {
       name: UNDO_CELL_RENDERER,
     },
-  }
+  },
 };
 
 const editToolbarStyle = {
@@ -209,22 +213,19 @@ const EditTableTemplate = ({
     },
     [],
   );
-  const config = useMemo<TableConfig>(
-    () => {
-
-      return {
-        columns:
-          !isEditSessionReady
-            ? InstrumentColumns
-            : InstrumentColumns.map((col) =>
-              col.name === "lotSize"
-                ? {
+  const config = useMemo<TableConfig>(() => {
+    return {
+      columns: !isEditSessionReady
+        ? InstrumentColumns
+        : InstrumentColumns.map((col) =>
+            col.name === "lotSize"
+              ? {
                   ...col,
                   editable: true,
                   type: editableType,
                 }
-                : col.name === "currency"
-                  ? {
+              : col.name === "currency"
+                ? {
                     ...col,
                     editable: true,
                     type: {
@@ -243,33 +244,31 @@ const EditTableTemplate = ({
                       },
                     } as DataValueTypeDescriptor,
                   }
-                  : col.name === "isin"
-                    ? {
+                : col.name === "isin"
+                  ? {
                       ...col,
                       editable: { insert: true, update: false },
                     }
-                    : col.name === "vuuCreatedTimestamp" ||
+                  : col.name === "vuuCreatedTimestamp" ||
                       col.name === "vuuUpdatedTimestamp" ||
                       col.name === "vuuMsg"
-                      ? col
-                      : { ...col, editable: true },
-            ).concat({
-              hidden: showInlineAddRow,
-              name: "vuuAction",
-            } as ColumnDescriptor),
-        columnDefaultWidth: 150,
-        rowClassNameGenerators,
-        rowSeparators: true,
-        zebraStripes: true,
-      };
-    },
-    [
-      isEditSessionReady,
-      editableType,
+                    ? col
+                    : { ...col, editable: true },
+          ).concat({
+            hidden: showInlineAddRow,
+            name: "vuuAction",
+          } as ColumnDescriptor),
+      columnDefaultWidth: 150,
       rowClassNameGenerators,
-      showInlineAddRow,
-    ],
-  );
+      rowSeparators: true,
+      zebraStripes: true,
+    };
+  }, [
+    isEditSessionReady,
+    editableType,
+    rowClassNameGenerators,
+    showInlineAddRow,
+  ]);
 
   return (
     <div
@@ -327,23 +326,21 @@ const EditTableTemplate = ({
         </DataEditingProvider>
       </div>
       <TableFooter>
-        {
-          !isEditSessionReady ? (
-            <DataSourceStats dataSource={sourceDataSource} />
-          ) : (
-            <TableFooterTray position="center">
-              <EditButtons
-                canCancel={canCancel}
-                canSave={canSave}
-                editSession={editSession}
-                onCancel={onCancel}
-                onSave={onSave}
-              />
-            </TableFooterTray>
-          )
-        }
-      </TableFooter >
-    </div >
+        {!isEditSessionReady ? (
+          <DataSourceStats dataSource={sourceDataSource} />
+        ) : (
+          <TableFooterTray position="center">
+            <EditButtons
+              canCancel={canCancel}
+              canSave={canSave}
+              editSession={editSession}
+              onCancel={onCancel}
+              onSave={onSave}
+            />
+          </TableFooterTray>
+        )}
+      </TableFooter>
+    </div>
   );
 };
 
@@ -422,37 +419,33 @@ const EditableInstrumentsTemplate = ({
     [],
   );
 
-  const config = useMemo<TableConfig>(
-    () => {
+  const config = useMemo<TableConfig>(() => {
+    return {
+      columns: !isEditSessionReady
+        ? InstrumentColumns
+        : InstrumentColumns.map((col) =>
+            col.name === "isin" ||
+            col.name === "vuuCreatedTimestamp" ||
+            col.name === "vuuUpdatedTimestamp" ||
+            col.name === "vuuMsg"
+              ? col
+              : { ...col, editable: true },
+          ).concat(
+            {
+              name: "vuuAction",
+              hidden: true,
+            },
+            UNDO_DELETE_COLUMN,
+          ),
 
-      return {
-        columns:
-          !isEditSessionReady
-            ? InstrumentColumns
-            : InstrumentColumns.map((col) =>
-              col.name === "isin" ||
-                col.name === "vuuCreatedTimestamp" ||
-                col.name === "vuuUpdatedTimestamp" ||
-                col.name === "vuuMsg"
-                ? col
-                : { ...col, editable: true },
-            ).concat(
-              {
-                name: "vuuAction",
-                hidden: true,
-              },
-              UNDO_DELETE_COLUMN),
-
-        columnDefaultWidth: 150,
-        rowClassNameGenerators: isEditSessionReady
-          ? rowClassNameGenerators
-          : undefined,
-        rowSeparators: true,
-        zebraStripes: true,
-      };
-    },
-    [isEditSessionReady, rowClassNameGenerators],
-  );
+      columnDefaultWidth: 150,
+      rowClassNameGenerators: isEditSessionReady
+        ? rowClassNameGenerators
+        : undefined,
+      rowSeparators: true,
+      zebraStripes: true,
+    };
+  }, [isEditSessionReady, rowClassNameGenerators]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: 320 }}>
@@ -478,26 +471,24 @@ const EditableInstrumentsTemplate = ({
         </DataEditingProvider>
       </div>
       <TableFooter>
-        {
-          !isEditSessionReady ? (
-            <DataSourceStats dataSource={sourceDataSource} />
-          ) : (
-            <TableFooterTray position="center">
-              <EditButtons
-                canCancel={canCancel}
-                canSave={canSave}
-                editSession={editSession}
-                hasSelection={hasSelection}
-                onCancel={onCancel}
-                onDelete={onDelete}
-                onSave={onSave}
-                saveLabel="Submit"
-              />
-            </TableFooterTray>
-          )
-        }
-      </TableFooter >
-    </div >
+        {!isEditSessionReady ? (
+          <DataSourceStats dataSource={sourceDataSource} />
+        ) : (
+          <TableFooterTray position="center">
+            <EditButtons
+              canCancel={canCancel}
+              canSave={canSave}
+              editSession={editSession}
+              hasSelection={hasSelection}
+              onCancel={onCancel}
+              onDelete={onDelete}
+              onSave={onSave}
+              saveLabel="Submit"
+            />
+          </TableFooterTray>
+        )}
+      </TableFooter>
+    </div>
   );
 };
 
@@ -569,13 +560,13 @@ const UseEditableTableSessionReadinessTemplate = ({
 
   return (
     <div style={{ height: 320 }}>
-      <button onClick={() => setEditMode("edit")}>Start edit session</button>
-      <button
+      <Button onClick={() => setEditMode("edit")}>Start edit session</Button>
+      <Button
         disabled={!canReleaseSubscription}
         onClick={() => releaseSubscriptionRef.current?.()}
       >
         Release subscription
-      </button>
+      </Button>
       <output
         data-ready={isEditSessionReady}
         data-session={Boolean(sessionDataSource)}
@@ -652,7 +643,7 @@ export const UseEditableTableWithEditColumns = () => {
 
   return (
     <div>
-      <button onClick={() => setEditMode("edit")}>Start edit session</button>
+      <Button onClick={() => setEditMode("edit")}>Start edit session</Button>
       <output
         data-diverge={columnsDiverge}
         data-edit-schema={editSchema?.columns.map(toColumnName).join(",") ?? ""}
@@ -742,14 +733,14 @@ const EditableTestTableTemplate = ({
 
   const config = useMemo<TableConfig>(
     () => ({
-      columns:
-        !isEditSessionReady
-          ? tableSchema.columns
-          :
-          tableSchema.columns.map<ColumnDescriptor>((column) => ({
-            ...column,
-            editable: true,
-          })).concat({ hidden: true, name: "vuuAction" }, UNDO_DELETE_COLUMN),
+      columns: !isEditSessionReady
+        ? tableSchema.columns
+        : tableSchema.columns
+            .map<ColumnDescriptor>((column) => ({
+              ...column,
+              editable: true,
+            }))
+            .concat({ hidden: true, name: "vuuAction" }, UNDO_DELETE_COLUMN),
       columnDefaultWidth: 150,
       rowClassNameGenerators,
       rowSeparators: true,
@@ -833,26 +824,24 @@ const EditableTestTableTemplate = ({
         </DataEditingProvider>
       </div>
       <TableFooter>
-        {
-          !isEditSessionReady ? (
-            <DataSourceStats dataSource={sourceDataSource} />
-          ) : (
-            <TableFooterTray position="center">
-              <EditButtons
-                canCancel={canCancel}
-                canSave={canSave}
-                editSession={editSession}
-                hasSelection={hasSelection}
-                onCancel={onCancel}
-                onDelete={onDelete}
-                onSave={onSave}
-                saveLabel="Submit"
-              />
-            </TableFooterTray>
-          )
-        }
-      </TableFooter >
-    </div >
+        {!isEditSessionReady ? (
+          <DataSourceStats dataSource={sourceDataSource} />
+        ) : (
+          <TableFooterTray position="center">
+            <EditButtons
+              canCancel={canCancel}
+              canSave={canSave}
+              editSession={editSession}
+              hasSelection={hasSelection}
+              onCancel={onCancel}
+              onDelete={onDelete}
+              onSave={onSave}
+              saveLabel="Submit"
+            />
+          </TableFooterTray>
+        )}
+      </TableFooter>
+    </div>
   );
 };
 
@@ -1084,14 +1073,13 @@ const BulkEditTableTemplate = ({
     rowClassNameGenerators,
     sessionDataSource,
     sourceDataSource,
-  } =
-    useEditableTable({
-      dataSource: sourceTableDataSource,
-      copyOption: editState.copyOption,
-      isEditMode: editState.editing,
-      onCancel: exitEditMode,
-      onSave: exitEditMode,
-    });
+  } = useEditableTable({
+    dataSource: sourceTableDataSource,
+    copyOption: editState.copyOption,
+    isEditMode: editState.editing,
+    onCancel: exitEditMode,
+    onSave: exitEditMode,
+  });
 
   const editSelectedRow = useCallback(() => {
     console.log("edit selected row");
