@@ -1,5 +1,6 @@
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import { Link, MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { RemoteModuleDescriptor } from "../../src/RemoteModuleDescriptor";
 import type { NavItem } from "../../src/portal-app-switcher/PortalAppSwitcher";
@@ -13,13 +14,17 @@ vi.mock("@vuu-ui/vuu-context-menu", () => ({
   ContextMenuProvider: ({ children }: { children: ReactNode }) => children,
 }));
 vi.mock("../../src/portal-app-switcher/NestedNavItem", () => ({
-  NestedNavItem: ({ item }: { item: NavItem }) => (
-    <span data-item="nested">{item.title}</span>
+  NestedNavItem: ({ active, item }: { active: boolean; item: NavItem }) => (
+    <Link data-item="nested" data-active={active} to={item.href}>
+      {item.title}
+    </Link>
   ),
 }));
 vi.mock("../../src/portal-app-switcher/IconNavItem", () => ({
-  IconNavItem: ({ item }: { item: NavItem }) => (
-    <span data-item="icon">{item.title}</span>
+  IconNavItem: ({ active, item }: { active: boolean; item: NavItem }) => (
+    <Link data-item="icon" data-active={active} to={item.href}>
+      {item.title}
+    </Link>
   ),
 }));
 
@@ -71,7 +76,9 @@ describe("PortalAppSwitcher menu style", () => {
     ] as const) {
       await act(async () => {
         root.render(
-          <PortalAppSwitcher menuStyle={menuStyle} remoteModules={modules} />,
+          <MemoryRouter>
+            <PortalAppSwitcher menuStyle={menuStyle} remoteModules={modules} />
+          </MemoryRouter>,
         );
       });
       expect(titles()).toEqual(
@@ -86,11 +93,13 @@ describe("PortalAppSwitcher menu style", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     await act(async () => {
       root.render(
-        <PortalAppSwitcher
-          displayStyle="icon-only"
-          menuStyle="two-level"
-          remoteModules={modules}
-        />,
+        <MemoryRouter>
+          <PortalAppSwitcher
+            displayStyle="icon-only"
+            menuStyle="two-level"
+            remoteModules={modules}
+          />
+        </MemoryRouter>,
       );
     });
     expect(titles()).toEqual(["Trading: Orders", "Trading: Baskets"]);
@@ -98,5 +107,28 @@ describe("PortalAppSwitcher menu style", () => {
     expect(warn).toHaveBeenCalledWith(
       'PortalAppSwitcher: menuStyle "two-level" is not supported with displayStyle "icon-only"; using "single-level".',
     );
+  });
+
+  it.each([
+    "icon-only",
+    "text-only",
+  ] as const)("updates the active %s item after navigation", async (displayStyle) => {
+    await act(async () => {
+      root.render(
+        <MemoryRouter initialEntries={["/orders/details"]}>
+          <PortalAppSwitcher
+            displayStyle={displayStyle}
+            menuStyle="single-level"
+            remoteModules={modules}
+          />
+        </MemoryRouter>,
+      );
+    });
+    const links = container.querySelectorAll<HTMLAnchorElement>("a");
+    expect(links[0].dataset.active).toBe("true");
+    expect(links[1].dataset.active).toBe("false");
+    await act(async () => links[1].click());
+    expect(links[0].dataset.active).toBe("false");
+    expect(links[1].dataset.active).toBe("true");
   });
 });

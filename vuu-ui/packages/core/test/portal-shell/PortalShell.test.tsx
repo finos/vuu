@@ -55,14 +55,8 @@ vi.mock("@vuu-ui/vuu-data-react", () => ({
     <div data-provider="remote">{children}</div>
   ),
 }));
-vi.mock("@vuu-ui/vuu-icons", () => ({
-  VuuLogo: () => <div />,
-}));
 vi.mock("../../src/portal-header/PortalHeader", () => ({
   PortalHeader: () => <div data-portal-header />,
-}));
-vi.mock("../../src/portal-nav/PortalNav", () => ({
-  PortalNav: () => <div data-portal-nav />,
 }));
 vi.mock("../../src/remote-module/RemoteModule", async () => {
   const { usePortalModuleRegistry } = await import(
@@ -179,7 +173,9 @@ describe("Portal and window shells", () => {
         element.textContent,
       ]),
     ).toEqual([[module, "2"]]);
-    expect(container.querySelectorAll("[data-portal-nav]")).toHaveLength(1);
+    expect(container.querySelector("[data-portal-nav]")).toBeNull();
+    expect(container.querySelector("[data-portal-header]")).toBeNull();
+    expect(container.querySelector("h3")).toBeNull();
     expect(container.querySelectorAll(".vuuPortalShell")).toHaveLength(1);
     expect(container.querySelector(".vuuWindowShell")).toBeNull();
     expect(container.querySelectorAll('[data-provider="remote"]')).toHaveLength(
@@ -328,7 +324,9 @@ describe("Portal and window shells", () => {
           mode="local"
           registry={{ modules: remoteModules }}
         >
-          <PortalShell remoteModules={remoteModules} title="Portal" />
+          <PortalShell remoteModules={remoteModules} title="Portal">
+            <nav data-portal-nav>Portal navigation</nav>
+          </PortalShell>
         </AuthenticationProvider>,
       );
     });
@@ -337,10 +335,21 @@ describe("Portal and window shells", () => {
   it("preserves portal-relative navigation and mounted content across prop updates", async () => {
     window.history.replaceState(null, "", "/users/admin");
     await act(async () => {
-      root.render(<PortalShell remoteModules={modules} title="Portal" />);
+      root.render(
+        <PortalShell remoteModules={modules} title="Portal">
+          <header>
+            <h3>Portal</h3>
+          </header>
+          <nav data-portal-nav>
+            <Link to="/orders">Orders</Link>
+          </nav>
+        </PortalShell>,
+      );
     });
     const output = container.querySelector("output");
-    const link = container.querySelector<HTMLAnchorElement>("a");
+    const link = container.querySelector<HTMLAnchorElement>(
+      ".vuuPortalShell-content a",
+    );
     expect(link?.getAttribute("href")).toBe("/users/admin/details");
     await act(async () => link?.click());
     expect(window.location.pathname).toBe("/users/admin/details");
@@ -353,7 +362,14 @@ describe("Portal and window shells", () => {
           mode="dark"
           remoteModules={[modules[0]]}
           title="Updated Portal"
-        />,
+        >
+          <header>
+            <h3>Updated Portal</h3>
+          </header>
+          <nav data-portal-nav>
+            <Link to="/users/admin">Users</Link>
+          </nav>
+        </PortalShell>,
       );
     });
     expect(window.location.pathname).toBe("/users/admin/details");
@@ -361,6 +377,11 @@ describe("Portal and window shells", () => {
     expect(output?.textContent).toBe("1");
     expect(container.textContent).toContain("Module details");
     expect(container.querySelector("h3")?.textContent).toBe("Updated Portal");
+    expect(
+      container
+        .querySelector('[data-provider="remote"] .vuuPortalShell > nav a')
+        ?.getAttribute("href"),
+    ).toBe("/users/admin");
     expect(container.querySelector(".vuuPortalShell")?.id).toBe(
       "updated-portal",
     );

@@ -83,7 +83,7 @@ const PortalLayout = () => {
 
   return (
     <CommonShell {...providerProps}>
-      <div className={classBase}>
+      <div className={classBase} id={id}>
         {children}
         <div className={`${classBase}-content`}>
           <Routes>

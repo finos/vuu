@@ -13,10 +13,16 @@ for portal host behavior and remote-module integration.
 portal title and the descriptors for its registered remote modules, then:
 
 - applies the VUU Salt theme and creates the portal-level data source context;
-- renders the portal branding, header, and navigation;
-- builds navigation entries from the registered remote-module descriptors; and
+- renders caller-supplied `children` for branding, headers, and navigation; and
 - creates the browser router, including routes that render each remote module
   through `RemoteModule` and the standalone `WindowHost` route.
+
+Compose `NavContainer`, `PortalAppSwitcher` or `PortalNav`, and `PortalHeader`
+as children as needed; the shell does not add them automatically. Children render
+inside the shared providers and router, before the routed module content, and
+are omitted on standalone window routes. The optional `id` is applied to the
+portal root element. The `title` prop does not create a heading; supply branding
+through children.
 
 Render `PortalShell` directly beneath the host's `AuthenticationProvider`, without
 an external router. The router persists across shell prop and registry updates,
