@@ -11,7 +11,7 @@ const remoteModule = (path: string): RemoteModuleDescriptor => {
     clientIdentifier: `vuu-${moduleName}`,
     description: `${name} remote module`,
     id: name.toLowerCase(),
-    location: "remote",
+    navLocation: "remote",
     accessRole: `${moduleName}-login`,
     mfComponent: name,
     mfScope: moduleName,

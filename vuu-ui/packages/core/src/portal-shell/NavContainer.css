@@ -1,0 +1,12 @@
+.vuuNavContainer {
+  background-color: var(--vuuNavContainer-background, var(--salt-container-secondary-background));
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 64px 1fr 64px;
+  grid-template-areas:
+    "logo"
+    "nav"
+    "footer";
+  justify-items: center;
+}

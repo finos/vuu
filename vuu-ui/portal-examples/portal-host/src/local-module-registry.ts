@@ -2,6 +2,15 @@ import type { PortalModuleRegistry } from "@vuu-ui/core";
 import { simulModule } from "@vuu-ui/vuu-data-test";
 import type { AdminConfig } from "../../user-admin/src/data/admin-contract";
 
+
+export const dashBoardIcon =
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWxheW91dC1kYXNoYm9hcmQgcHJldmlldy1pY29uIj48cmVjdCB3aWR0aD0iNyIgaGVpZ2h0PSI5IiB4PSIzIiB5PSIzIiByeD0iMSIvPjxyZWN0IHdpZHRoPSI3IiBoZWlnaHQ9IjUiIHg9IjE0IiB5PSIzIiByeD0iMSIvPjxyZWN0IHdpZHRoPSI3IiBoZWlnaHQ9IjkiIHg9IjE0IiB5PSIxMiIgcng9IjEiLz48cmVjdCB3aWR0aD0iNyIgaGVpZ2h0PSI1IiB4PSIzIiB5PSIxNiIgcng9IjEiLz48L3N2Zz4=";
+export const ordersIcon =
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWxvZ3MgcHJldmlldy1pY29uIj48cGF0aCBkPSJNMyA1aDEiLz48cGF0aCBkPSJNMyAxMmgxIi8+PHBhdGggZD0iTTMgMTloMSIvPjxwYXRoIGQ9Ik04IDVoMSIvPjxwYXRoIGQ9Ik04IDEyaDEiLz48cGF0aCBkPSJNOCAxOWgxIi8+PHBhdGggZD0iTTEzIDVoOCIvPjxwYXRoIGQ9Ik0xMyAxMmg4Ii8+PHBhdGggZD0iTTEzIDE5aDgiLz48L3N2Zz4=";
+export const positionsIcon =
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXdhbGxldC1jYXJkcyBwcmV2aWV3LWljb24iPjxwYXRoIGQ9Ik0zIDExaDMuNzVhMiAyIDAgMCAxIDEuNi44bC40NS42YTQgNCAwIDAgMCA2LjQgMGwuNDUtLjZhMiAyIDAgMCAxIDEuNi0uOEgyMSIvPjxwYXRoIGQ9Ik0zIDdoMTgiLz48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIi8+PC9zdmc+";
+
+
 const localUserAdminConfig = {
   clients: { table: { module: "USER_ADMIN", table: "clients" } },
   group_roles: { table: { module: "USER_ADMIN", table: "group_roles" } },
@@ -22,7 +31,8 @@ export const localPortalModuleRegistry = {
       description: "Manage local users, groups and roles",
       enabled: true,
       id: "local-user-admin",
-      location: "/Administration/Users",
+      navIconUrl: dashBoardIcon,
+      navLocation: "/Administration/Users",
       accessRole: "user-admin-access",
       mfComponent: "UserAdminLocal",
       mfScope: "userAdmin",
@@ -37,7 +47,8 @@ export const localPortalModuleRegistry = {
       description: "Trade baskets with local test data",
       enabled: true,
       id: "local-basket-trading",
-      location: "/Trading/Baskets",
+      navIconUrl: ordersIcon,
+      navLocation: "/Trading/Baskets",
       accessRole: "basket-trading-access",
       mfComponent: "VuuBasketTradingFeatureLocal",
       mfScope: "basketTrading",
@@ -55,7 +66,7 @@ export const localPortalModuleRegistry = {
       description: "Browse instruments with local test data",
       enabled: true,
       id: "local-feature-filter-table",
-      location: "/Tables/Instruments",
+      navLocation: "/Tables/Instruments",
       accessRole: "feature-filter-table-access",
       mfComponent: "VuuFilterTableFeatureLocal",
       mfScope: "filterTable",
@@ -70,7 +81,7 @@ export const localPortalModuleRegistry = {
       description: "Manage local module discovery entries",
       enabled: true,
       id: "local-module-admin",
-      location: "/Administration/Modules",
+      navLocation: "/Administration/Modules",
       accessRole: "module-admin-access",
       mfComponent: "ModuleAdminLocal",
       mfScope: "moduleAdmin",

@@ -10,24 +10,19 @@ import type {
 import { dataRowFactory, type DataRowFunc } from "@vuu-ui/vuu-table";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { Range } from "@vuu-ui/vuu-utils";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ModulePicker } from "user-admin";
 import { UserEditForm } from "user-admin/src/components/user-edit-form/UserEditForm";
-import { ModulePickerModuleDescriptor } from "user-admin/src/components/module-picker/ModulePicker";
 import { UsersPage } from "user-admin/src/pages/users/UsersPage";
 import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
+import type { ModulePickerModuleDescriptor } from "user-admin/src/components/module-picker/ModulePicker";
 
 const remoteModules: RemoteModuleDescriptor[] = [
   {
     clientIdentifier: "vuu-user-admin",
     description: "User administration",
     id: "user-admin",
-    location: "/Administration",
+    navLocation: "/Administration",
     accessRole: "user-admin-access",
     mfComponent: "UserAdmin",
     mfScope: "userAdmin",
@@ -41,7 +36,7 @@ const remoteModules: RemoteModuleDescriptor[] = [
     clientIdentifier: "vuu-module-admin",
     description: "Module administration",
     id: "module-admin",
-    location: "/Administration",
+    navLocation: "/Administration",
     accessRole: "module-admin-access",
     mfComponent: "ModuleAdmin",
     mfScope: "moduleAdmin",
@@ -55,7 +50,7 @@ const remoteModules: RemoteModuleDescriptor[] = [
     clientIdentifier: "vuu-basket-trading",
     description: "Basket trading",
     id: "basket-trading",
-    location: "/Trading",
+    navLocation: "/Trading",
     accessRole: "basket-trading-access",
     mfComponent: "BasketTrading",
     mfScope: "basketTrading",
@@ -83,7 +78,9 @@ export const DefaultModulePicker = () => {
 
   const onSelectedModulesChange = useCallback(
     (newSelectedModules: ModulePickerModuleDescriptor[]) => {
-      console.log(`onSelectedModulesChange ${JSON.stringify(newSelectedModules, null, 2)}`)
+      console.log(
+        `onSelectedModulesChange ${JSON.stringify(newSelectedModules, null, 2)}`,
+      );
       setSelectedModules(newSelectedModules);
     },
     [],
@@ -139,7 +136,9 @@ export const DefaultUserEditForm = () => {
           message.tableSchema.columns as readonly SchemaColumn[],
         );
       } else if (message.type === "subscribe-failed") {
-        console.error(`User editor data source subscription failed: ${message.msg}`);
+        console.error(
+          `User editor data source subscription failed: ${message.msg}`,
+        );
       } else if (message.type === "viewport-update" && message.rows?.[0]) {
         if (!DataRow) {
           console.error(
@@ -164,7 +163,6 @@ export const DefaultUserEditForm = () => {
       dataSource.unsubscribe();
     };
   }, [dataSource]);
-
 
   return (
     <div style={{ width: 480, height: 800 }}>

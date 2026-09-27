@@ -4,6 +4,12 @@ export {
 } from "./portal-header/PortalHeader";
 export { PortalNav, type PortalNavProps } from "./portal-nav/PortalNav";
 export {
+  PortalAppSwitcher,
+  type AppSwitcherDisplayStyle,
+  type AppSwitcherMenuStyle,
+  type PortalAppSwitcherProps,
+} from "./portal-app-switcher/PortalAppSwitcher";
+export {
   WindowHost,
   type WindowHostProps,
 } from "./window-host/WindowHost";
@@ -19,6 +25,7 @@ export {
   PortalShell,
   type PortalShellProps,
 } from "./portal-shell/PortalShell";
+export { NavContainer } from './portal-shell/NavContainer';
 export {
   PortalModuleRegistryProvider,
   usePortalModuleRegistry,

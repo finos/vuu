@@ -1,53 +1,29 @@
 .vuuPortalShell {
-  gap: 0;
+  column-gap: var(--salt-spacing-50);
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  grid-template-rows: 56px 1fr;
+  grid-template-areas:
+    "nav header"
+    "nav content";
+
   height: 100vh;
+  padding: var(--salt-spacing-50);
   width: 100vw;
 
-  .saltFlexItem.vuuPortalShell-leftPanel {
-    --saltFlexItem-basis: var(--vuuPortalShell-leftPanel-width, 300px);
-    --saltFlexItem-shrink: 0;
+  .vuuNavContainer {
+    grid-area: nav;
 
-    background-color: var(--vuuPortalShell-leftPanel-background, var(--salt-container-secondary-background));
-    color: var(--vuuPortalShell-leftPanel-color, var(--salt-content-secondary-foreground));
-    padding: var(--vuuPortalShell-leftPanel-padding, var(--salt-spacing-400) var(--salt-spacing-300));
-
-    .saltFlexItem.vuuPortalShell-leftPanelHeader {
-      --saltFlexItem-basis: auto;
-      --saltFlexItem-shrink: 0;
-
-      align-items: center;
-      display: flex;
-      flex-direction: column;
-      gap: var(--vuuPortalShell-leftPanelHeader-gap, var(--salt-spacing-400));
+    .vuuPortalAppSwitcher {
+      grid-area: nav;
     }
   }
 
-  .saltFlexItem.vuuPortalShell-main {
-    --saltFlexItem-basis: auto;
-    --saltFlexItem-grow: 1;
+  .vuuPortalHeader {
+    grid-area: header;
+  }
 
-    padding: var(--salt-spacing-200);
-
-    .saltFlexLayout.vuuPortalShell-main {
-      height: 100%;
-
-      .saltFlexItem.vuuPortalShell-header {
-        --saltFlexItem-basis: 40px;
-        --saltFlexItem-shrink: 0;
-
-        .vuuPortalHeader {
-          height: 100%;
-        }
-      }
-
-      .saltFlexItem.vuuPortalShell-content {
-        --saltFlexItem-basis: auto;
-        --saltFlexItem-grow: 1;
-
-        .vuuPortalShell-content {
-          height: 100%;
-        }
-      }
-    }
+  .vuuPortal-content {
+    grid-area: content;
   }
 }

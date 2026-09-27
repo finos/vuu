@@ -19,7 +19,7 @@ const remoteModules = [
     clientIdentifier: "vuu-user-admin",
     description: "Manage users",
     id: 1,
-    location: "/Admin/Users",
+    navLocation: "/Admin/Users",
     accessRole: "user-admin-access",
     mfComponent: "UserAdmin",
     mfScope: "userAdmin",

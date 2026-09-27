@@ -16,7 +16,7 @@ const registry = {
       clientIdentifier: "local-orders",
       description: "Local orders",
       id: "local-orders",
-      location: "/Trading/Orders",
+      navLocation: "/Trading/Orders",
       accessRole: "local",
       mfComponent: "OrdersLocal",
       mfScope: "orders",
