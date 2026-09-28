@@ -3,7 +3,7 @@ import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { AdminTable } from "../src/components/AdminTable";
+import { OverviewTable } from "../src/components/OverviewTable";
 import { AdminDataContext } from "../src/data/AdminDataContext";
 import type { AdminConfig, AdminTableName } from "../src/data/admin-contract";
 
@@ -61,7 +61,7 @@ vi.mock("../src/data/useAdminTable", () => ({
   }),
 }));
 
-describe("shared admin table column widths", () => {
+describe("overview table column widths", () => {
   let container: HTMLDivElement;
   let root: Root;
   beforeEach(() => {
@@ -79,12 +79,12 @@ describe("shared admin table column widths", () => {
     await act(async () =>
       root.render(
         <AdminDataContext.Provider value={config}>
-          <AdminTable name={name} />
+          <OverviewTable name={name} />
         </AdminDataContext.Provider>,
       ),
     );
     const props = mocks.table.mock.lastCall?.[0];
-    if (!props) throw new Error("Admin table was not rendered");
+    if (!props) throw new Error("Overview table was not rendered");
     expect(props.dataSource).toBe(mocks.source);
     return props.config;
   };
@@ -97,12 +97,12 @@ describe("shared admin table column widths", () => {
     await act(async () =>
       root.render(
         <AdminDataContext.Provider value={config}>
-          <AdminTable name={name} />
+          <OverviewTable name={name} />
         </AdminDataContext.Provider>,
       ),
     );
     const props = mocks.table.mock.lastCall?.[0];
-    if (!props) throw new Error("Admin table was not rendered");
+    if (!props) throw new Error("Overview table was not rendered");
     expect(props.dataSource).toBe(mocks.source);
     return props.config;
   };

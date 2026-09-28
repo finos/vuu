@@ -25,6 +25,11 @@ const rolesDataSource = (module: UserAdminModule) =>
     columns: USER_ADMIN_TABLE_SCHEMAS.roles.columns.map(({ name }) => name),
   }) as TickingArrayDataSource;
 
+const groupsDataSource = (module: UserAdminModule) =>
+  module.createDataSource("groups", "user-admin-groups-test", {
+    columns: USER_ADMIN_TABLE_SCHEMAS.groups.columns.map(({ name }) => name),
+  }) as TickingArrayDataSource;
+
 const rpc = (
   source: TickingArrayDataSource,
   rpcName: string,
@@ -288,6 +293,7 @@ describe("UserAdminModule", () => {
       description: "Role created through an edit session",
       role_name: "session-created-role",
     });
+
     await session.endEditSession(true);
 
     const createdRole = module.tables.roles.data.find(
@@ -311,6 +317,78 @@ describe("UserAdminModule", () => {
           role.description === "Role created through an edit session",
       ),
     ).toBe(true);
+  });
+
+  it("creates groups and their role assignments through the standard add-row session", async () => {
+    const module = createModule();
+    const source = groupsDataSource(module);
+    const session = await source.createSessionDataSource("Empty");
+
+    await session.addRow({
+      group_name: "session-created-group",
+      role_assignments: JSON.stringify([
+        "role-basket-trading-trade",
+        "role-user-admin-admin",
+      ]),
+    });
+    await session.endEditSession(true);
+
+    const snapshot = await module.store.snapshot();
+    const group = snapshot.groups.find(
+      ({ name }) => name === "session-created-group",
+    );
+    expect(group).toBeDefined();
+    expect(
+      snapshot.groupRoles
+        .filter(({ group: assignedGroup }) => assignedGroup.id === group?.id)
+        .map(({ client, role }) => [client?.clientId, role.id])
+        .sort(),
+    ).toEqual([
+      ["basket-trading", "role-basket-trading-trade"],
+      ["user-admin", "role-user-admin-admin"],
+    ]);
+    expect(
+      module.tables.groups.findByKey(group?.id ?? "")?.[
+        module.tables.groups.map.group_id
+      ],
+    ).toBe(group?.id);
+  });
+
+  it("reconciles group role assignments from all clients through an edit session", async () => {
+    const module = createModule();
+    const source = groupsDataSource(module);
+    const session = await source.createSessionDataSource("All");
+
+    await session.editCell(
+      "group-user-admin-read",
+      "role_assignments",
+      JSON.stringify([
+        "role-basket-trading-trade",
+        "role-user-admin-admin",
+      ]),
+    );
+    await session.endEditSession(true);
+
+    const snapshot = await module.store.snapshot();
+    expect(
+      snapshot.groupRoles
+        .filter(({ group }) => group.id === "group-user-admin-read")
+        .map(({ client, role }) => [client?.clientId, role.id])
+        .sort(),
+    ).toEqual([
+      ["basket-trading", "role-basket-trading-trade"],
+      ["user-admin", "role-user-admin-admin"],
+    ]);
+    expect(
+      module.tables.group_roles.data
+        .filter(
+          (row) =>
+            row[module.tables.group_roles.map.group_id] ===
+            "group-user-admin-read",
+        )
+        .map((row) => row[module.tables.group_roles.map.role_id])
+        .sort(),
+    ).toEqual(["role-basket-trading-trade", "role-user-admin-admin"]);
   });
 
   it("discards a staged client role when an edit session is cancelled", async () => {

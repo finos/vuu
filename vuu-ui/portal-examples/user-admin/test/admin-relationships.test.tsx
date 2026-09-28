@@ -9,8 +9,8 @@ import type {
   Entity,
 } from "../src/data/admin-contract";
 
-vi.mock("../src/components/AdminTable", () => ({
-  AdminTable: ({
+vi.mock("../src/components/OverviewTable", () => ({
+  OverviewTable: ({
     name,
     query,
   }: {

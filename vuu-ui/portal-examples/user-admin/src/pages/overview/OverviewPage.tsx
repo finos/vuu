@@ -9,7 +9,7 @@ import {
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { AdminSearch } from "../../components/AdminSearch";
-import { AdminTable } from "../../components/AdminTable";
+import { OverviewTable } from "../../components/OverviewTable";
 import { EntityDetails } from "../../components/EntityDetails";
 import { useAdminConfig } from "../../data/AdminDataContext";
 import {
@@ -57,8 +57,8 @@ export const OverviewPage = () => {
       <div className="vuuIdentityAdmin-stats">
         <StatCard name="users" label="Users" />
         <StatCard name="groups" label="Groups" />
-        <StatCard name="roles" label="Vuu client roles" />
-        <StatCard name="clients" label="Vuu portal clients" />
+        <StatCard name="roles" label="Roles" />
+        <StatCard name="clients" label="Clients" />
       </div>
       <nav aria-label="Quick actions" className="vuuIdentityAdmin-quickActions">
         <strong>Quick actions</strong>
@@ -83,7 +83,7 @@ export const OverviewPage = () => {
           <div className="vuuIdentityAdmin-searchResults">
             {search ? (
               (["users", "groups", "roles"] as const).map((entity) => (
-                <AdminTable
+                <OverviewTable
                   key={`${entity}:${search}`}
                   name={entity}
                   query={{ search }}

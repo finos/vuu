@@ -136,6 +136,25 @@ const parseAssignments = (value: string): UserModuleAccessAssignment[] => {
   return parsed;
 };
 
+const parseSessionRoleAssignments = (value: unknown): string[] => {
+  if (typeof value !== "string") {
+    throw new Error("role_assignments must be a serialized array");
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    throw new Error("role_assignments must be a valid JSON array");
+  }
+  if (
+    !Array.isArray(parsed) ||
+    parsed.some((roleId) => typeof roleId !== "string" || !roleId)
+  ) {
+    throw new Error("role_assignments must be an array of role ID strings");
+  }
+  return [...new Set(parsed)];
+};
+
 const parseSessionPermissions = (
   value: unknown,
 ): UserModuleAccessAssignment[] => {
@@ -292,18 +311,30 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
       dataSource,
       sessionType,
     );
-    if (sourceTable.name !== "users") return sessionTable;
+    const extraColumns =
+      sourceTable.name === "users"
+        ? [{ name: "permissions", serverDataType: "string" as const }]
+        : sourceTable.name === "groups"
+          ? [
+              { name: "group_name", serverDataType: "string" as const },
+              { name: "role_assignments", serverDataType: "string" as const },
+            ]
+          : [];
+    const columnsToAdd = extraColumns.filter(
+      ({ name }) =>
+        !sessionTable.schema.columns.some((column) => column.name === name),
+    );
+    if (columnsToAdd.length === 0) return sessionTable;
 
     const sessionSchema = {
       ...sessionTable.schema,
-      columns: sessionTable.schema.columns.concat({
-        name: "permissions",
-        serverDataType: "string" as const,
-      }),
+      columns: sessionTable.schema.columns.concat(columnsToAdd),
     };
     return new Table(
       sessionSchema,
-      sessionTable.data.map((row) => row.concat("")),
+      sessionTable.data.map((row) =>
+        row.concat(columnsToAdd.map(() => "")),
+      ),
       buildDataColumnMapFromSchema(sessionSchema),
     );
   }
@@ -314,6 +345,10 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
   ) {
     if (sourceTable.name === "roles") {
       await this.saveClientRolesFromSession(sessionTable);
+      return;
+    }
+    if (sourceTable.name === "groups") {
+      await this.saveGroupsFromSession(sessionTable);
       return;
     }
     if (sourceTable.name !== "users") return;
@@ -358,9 +393,161 @@ export class UserAdminModule extends VuuModule<UserAdminTableName> {
           row[sessionTable.map.vuuAction] === "addRow" &&
           row[sessionTable.map.vuuMsg] === "client role created",
       );
-    if (sourceTable.name === "users" || roleCreationSaved) {
+    const groupChangesSaved =
+      sourceTable.name === "groups" &&
+      sessionTable.data.some(
+        (row) =>
+          row[sessionTable.map.vuuMsg] === "group created" ||
+          row[sessionTable.map.vuuMsg] === "group roles updated",
+      );
+    if (
+      sourceTable.name === "users" ||
+      roleCreationSaved ||
+      groupChangesSaved
+    ) {
       await this.reconcile();
     }
+  }
+
+  private async saveGroupsFromSession(sessionTable: Table) {
+    const actionIndex = sessionTable.map.vuuAction;
+    const messageIndex = sessionTable.map.vuuMsg;
+    const keyIndex = sessionTable.map[sessionTable.schema.key];
+    const groupIdIndex = sessionTable.map.group_id;
+    const groupNameIndex = sessionTable.map.group_name;
+    const roleAssignmentsIndex = sessionTable.map.role_assignments;
+
+    for (const row of sessionTable.data) {
+      if (row[actionIndex] === "addRow" && !row[messageIndex]) {
+        const name = requiredString(
+          { group_name: row[groupNameIndex] },
+          "group_name",
+        ).trim();
+        if (!name) throw new Error("group_name must be a non-empty string");
+        const roleIds = parseSessionRoleAssignments(row[roleAssignmentsIndex]);
+        const before = await this.store.snapshot();
+        this.resolveGroupRoleAssignments(roleIds, before);
+        const existingGroupIds = new Set(before.groups.map(({ id }) => id));
+        await this.store.addGroup({ name });
+        const snapshot = await this.store.snapshot();
+        const group = snapshot.groups.find(
+          ({ id, name: groupName }) =>
+            !existingGroupIds.has(id) && groupName === name,
+        );
+        if (!group) throw new Error("Created group could not be found");
+        await this.saveGroupRoleAssignments(group.id, roleIds, snapshot);
+        sessionTable.update(
+          String(row[keyIndex]),
+          "vuuMsg",
+          "group created",
+        );
+      } else if (
+        row[actionIndex] === "editCell" &&
+        typeof row[roleAssignmentsIndex] === "string" &&
+        row[roleAssignmentsIndex] !== ""
+      ) {
+        const groupId = requiredString(
+          { group_id: row[groupIdIndex] },
+          "group_id",
+        );
+        const roleIds = parseSessionRoleAssignments(
+          row[roleAssignmentsIndex],
+        );
+        await this.saveGroupRoleAssignments(
+          groupId,
+          roleIds,
+          await this.store.snapshot(),
+        );
+        sessionTable.update(
+          String(row[keyIndex]),
+          "vuuMsg",
+          "group roles updated",
+        );
+      }
+    }
+  }
+
+  private async saveGroupRoleAssignments(
+    groupId: string,
+    desiredRoleIds: readonly string[],
+    snapshot: UserAdminSnapshot,
+  ) {
+    if (!snapshot.groups.some(({ id }) => id === groupId)) {
+      throw new Error(`User admin group not found: ${groupId}`);
+    }
+
+    const groupRoles = snapshot.groupRoles.filter(
+      ({ group }) => group.id === groupId,
+    );
+    const roleAssignmentsById = new Map(
+      snapshot.clientRoles.map((assignment) => [
+        assignment.role.id,
+        assignment,
+      ]),
+    );
+    const desiredRoleSet = new Set(desiredRoleIds);
+    const currentAssignments = groupRoles.map(({ role }) => {
+      const assignment = roleAssignmentsById.get(role.id);
+      if (!assignment) {
+        throw new Error(`Assigned user admin role no longer exists: ${role.id}`);
+      }
+      return assignment;
+    });
+    const currentRoleSet = new Set(groupRoles.map(({ role }) => role.id));
+    const desiredAssignments = this.resolveGroupRoleAssignments(
+      desiredRoleIds,
+      snapshot,
+    );
+
+    for (const assignment of currentAssignments) {
+      if (!desiredRoleSet.has(assignment.role.id)) {
+        const clientRef =
+          assignment.role.clientRole && assignment.client?.clientId
+            ? { clientKey: assignment.client.clientId }
+            : undefined;
+        await this.store.removeRoleFromGroup(
+          { groupId },
+          { roleId: assignment.role.id },
+          clientRef,
+        );
+      }
+    }
+
+    for (const assignment of desiredAssignments) {
+      if (!currentRoleSet.has(assignment.role.id)) {
+        const clientRef =
+          assignment.role.clientRole && assignment.client?.clientId
+            ? { clientKey: assignment.client.clientId }
+            : undefined;
+        await this.store.addRoleToGroup(
+          { groupId },
+          { roleId: assignment.role.id },
+          clientRef,
+        );
+      }
+    }
+  }
+
+  private resolveGroupRoleAssignments(
+    roleIds: readonly string[],
+    snapshot: UserAdminSnapshot,
+  ) {
+    const roleAssignmentsById = new Map(
+      snapshot.clientRoles.map((assignment) => [
+        assignment.role.id,
+        assignment,
+      ]),
+    );
+    return roleIds.map((roleId) => {
+      const assignment = roleAssignmentsById.get(roleId);
+      if (!assignment) {
+        throw new Error(`User admin role not found: ${roleId}`);
+      }
+      if (assignment.role.clientRole && !assignment.client?.clientId) {
+        throw new Error(`User admin client role has no owning client: ${roleId}`);
+      }
+      return assignment;
+    });
   }
 
   private async saveClientRolesFromSession(sessionTable: Table) {

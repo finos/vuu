@@ -1,0 +1,15 @@
+.vuuGroupsEditForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-150);
+
+  .saltTabPanel:not([hidden]) {
+    display: grid;
+    padding: var(--salt-spacing-200);
+    row-gap: var(--salt-spacing-200);
+  }
+
+  .vuuItemPicker {
+    --vuuItemPicker-height: 320px;
+  }
+}

@@ -10,6 +10,7 @@ import type {
 import { dataRowFactory, type DataRowFunc } from "@vuu-ui/vuu-table";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { Range } from "@vuu-ui/vuu-utils";
+import { MemoryRouter } from "react-router-dom";
 import {
   useCallback,
   useEffect,
@@ -17,9 +18,11 @@ import {
   useState,
 } from "react";
 import { ModulePicker } from "user-admin";
+import { GroupsEditForm } from "user-admin/src/components/groups-edit-form/GroupsEditForm";
 import { RolesEditForm } from "user-admin/src/components/roles-edit-form/RolesEditForm";
 import { UserEditForm } from "user-admin/src/components/user-edit-form/UserEditForm";
 import { ModulePickerModuleDescriptor } from "user-admin/src/components/module-picker/ModulePicker";
+import { GroupsPage } from "user-admin/src/pages/groups/GroupsPage";
 import { RolesPage } from "user-admin/src/pages/roles/RolesPage";
 import { UsersPage } from "user-admin/src/pages/users/UsersPage";
 import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
@@ -200,6 +203,14 @@ const ROLE_COLUMNS = [
   "client_name",
   "description",
 ];
+const GROUP_COLUMNS = [
+  "group_id",
+  "group_display_name",
+  "group_path",
+  "parent_group_id",
+  "user_count",
+  "role_count",
+];
 
 /** tags=data-consumer */
 export const DefaultRolesEditPage = () => {
@@ -271,4 +282,78 @@ export const DefaultRolesPage = () => (
   <PortalModuleRegistryProvider remoteModules={remoteModules}>
     <RolesPage />
   </PortalModuleRegistryProvider>
+);
+
+/** tags=data-consumer */
+export const DefaultGroupsEditPage = () => {
+  const { VuuDataSource } = useData();
+  const [dataRow, setDataRow] = useState<DataRow>();
+  const dataSource = useMemo(
+    () =>
+      new VuuDataSource({
+        columns: GROUP_COLUMNS,
+        table: { module: "USER_ADMIN", table: "groups" },
+      }),
+    [VuuDataSource],
+  );
+
+  useEffect(() => {
+    let active = true;
+    let DataRow: DataRowFunc | undefined;
+    const subscribe: DataSourceSubscribeCallback = (message) => {
+      if (!active) return;
+      if (message.type === "subscribed") {
+        [DataRow] = dataRowFactory(
+          message.columns,
+          message.tableSchema.columns as readonly SchemaColumn[],
+        );
+      } else if (message.type === "subscribe-failed") {
+        console.error(
+          `Group editor data source subscription failed: ${message.msg}`,
+        );
+      } else if (message.type === "viewport-update" && message.rows?.[0]) {
+        if (!DataRow) {
+          console.error(
+            "The group table sent rows before supplying its column metadata.",
+          );
+          return;
+        }
+        setDataRow(DataRow(message.rows[0]));
+      }
+    };
+
+    void dataSource
+      .subscribe({ range: Range(0, 1) }, subscribe)
+      .catch((cause: unknown) => {
+        if (active) {
+          console.error("Group editor data source subscription failed:", cause);
+        }
+      });
+
+    return () => {
+      active = false;
+      dataSource.unsubscribe();
+    };
+  }, [dataSource]);
+
+  return (
+    <div style={{ width: 480, height: 600 }}>
+      {dataRow ? (
+        <EditModeProvider>
+          <GroupsEditForm dataRow={dataRow} dataSource={dataSource} />
+        </EditModeProvider>
+      ) : (
+        <p role="status">Loading group...</p>
+      )}
+    </div>
+  );
+};
+
+/** tags=data-consumer */
+export const DefaultGroupsPage = () => (
+  <MemoryRouter>
+    <PortalModuleRegistryProvider remoteModules={remoteModules}>
+      <GroupsPage />
+    </PortalModuleRegistryProvider>
+  </MemoryRouter>
 );

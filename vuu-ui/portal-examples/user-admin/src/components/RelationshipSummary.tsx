@@ -4,7 +4,7 @@ import {
   type AdminRecord,
   type Entity,
 } from "../data/admin-contract";
-import { AdminTable } from "./AdminTable";
+import { OverviewTable } from "./OverviewTable";
 import { ModuleAccessField } from "./ModuleAccessField";
 
 export const RelationshipSummary = ({
@@ -42,12 +42,12 @@ export const RelationshipSummary = ({
     <div className="vuuIdentityAdmin-relationships">
       {entity === "groups" ? (
         <>
-          <AdminTable
+          <OverviewTable
             name="user_groups"
             query={query}
             title="Users in this group"
           />
-          <AdminTable
+          <OverviewTable
             name="group_roles"
             query={query}
             title="Assigned client roles"
@@ -55,12 +55,12 @@ export const RelationshipSummary = ({
         </>
       ) : (
         <>
-          <AdminTable
+          <OverviewTable
             name="group_roles"
             query={query}
             title="Groups assigned this role"
           />
-          <AdminTable
+          <OverviewTable
             name="user_group_roles"
             query={query}
             title="Users reached through groups"

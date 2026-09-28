@@ -6,7 +6,6 @@ import {
   columnFor,
   displayColumnsFor,
   hasField,
-  requireVuuClient,
   tableFor,
 } from "../src/data/admin-contract";
 
@@ -24,10 +23,8 @@ const config = {
 };
 
 describe("server-driven identity contract", () => {
-  it.each([
-    "group_roles",
-    "user_group_roles",
-  ] as const)("requires a mapped client identifier for the %s scope", (name) => {
+  it("requires a mapped client identifier for the user_group_roles scope", () => {
+    const name = "user_group_roles" as const;
     const scopedSchema: TableSchema = {
       ...schema,
       columns: [{ name: "public_client_name", serverDataType: "string" }],
@@ -53,24 +50,6 @@ describe("server-driven identity contract", () => {
     "roles",
   ] as const)("does not scope %s by client", (name) => {
     expect(buildClientScopeFilter(schema, {}, name)).toBeUndefined();
-  });
-  it("recognizes the public client prefix rather than arbitrary UUIDs or substrings", () => {
-    expect(requireVuuClient("vuu-portal")).toBe("vuu-portal");
-    expect(requireVuuClient("vuu-")).toBe("vuu-");
-    for (const identifier of [
-      "account",
-      "realm-management",
-      "my-vuu-portal",
-      "VUU-portal",
-      "vuu",
-      "uuid-123",
-      "",
-      undefined,
-    ]) {
-      expect(() => requireVuuClient(identifier)).toThrow(
-        "Only Vuu portal clients",
-      );
-    }
   });
   it("uses configured table and columns without inventing a schema", () => {
     expect(tableFor(config, "users")).toEqual(schema.table);

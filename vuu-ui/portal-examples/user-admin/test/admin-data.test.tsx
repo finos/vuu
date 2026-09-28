@@ -93,10 +93,8 @@ describe("admin data source lifecycle", () => {
       'username contains "bob"',
     );
   });
-  it.each([
-    "group_roles",
-    "user_group_roles",
-  ] as const)("keeps %s scoped via baseFilter without dropping any subscribed columns", async (name) => {
+  it("keeps user_group_roles scoped via baseFilter without dropping any subscribed columns", async () => {
+    const name = "user_group_roles" as const;
     const columns = [
       "client_id",
       "client_identifier",
@@ -119,6 +117,10 @@ describe("admin data source lifecycle", () => {
     });
     expect(mocks.sources[0].props.filterSpec?.filter).toBe("");
   });
+  it("does not restrict group roles by client prefix", async () => {
+    await act(async () => root.render(<Harness name="group_roles" />));
+    expect(mocks.sources[0].props.baseFilterSpec).toBeUndefined();
+  });
   it.each([
     "clients",
     "roles",
@@ -127,7 +129,7 @@ describe("admin data source lifecycle", () => {
     expect(mocks.sources[0].props.baseFilterSpec).toBeUndefined();
   });
   it("reports missing client scope metadata rather than creating an unfiltered relationship source", async () => {
-    await act(async () => root.render(<Harness name="group_roles" />));
+    await act(async () => root.render(<Harness name="user_group_roles" />));
     expect(mocks.sources).toHaveLength(0);
     expect(container.textContent).toContain(
       'missing required column "client_identifier"',
