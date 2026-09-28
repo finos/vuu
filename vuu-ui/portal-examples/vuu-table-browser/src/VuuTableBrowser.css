@@ -39,3 +39,16 @@
 .vuuTableBrowser-viewer[hidden] {
   display: none;
 }
+
+.vuuTableBrowser-add-server {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-100);
+  padding: var(--salt-spacing-100);
+}
+
+.vuuTableBrowser-add-server-actions {
+  display: flex;
+  gap: var(--salt-spacing-100);
+  justify-content: flex-end;
+}

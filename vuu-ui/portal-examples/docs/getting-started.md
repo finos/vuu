@@ -408,6 +408,17 @@ the selected table through `TableRegistrationContext`, so neither module needs
 `ComponentProps`. The viewer is registered as a nested module, with an empty
 `navLocation`, so it has no navigation entry of its own.
 
+To browse a Vuu server that no module uses, choose **Add server** in the
+table browser and enter a name, the server's WebSocket URL, and its
+authentication (REST) URL. The name must differ from the servers already
+listed. The browser saves these servers with `usePersistentState`, under the
+key `manualServers`, so they are restored next time, and each one can be
+removed from its navigation entry. They are known only to the browser: nothing
+is added to the module registry or the Vuu protocol. The portal authenticates
+to them with the same token exchange as any other server, so the server must
+accept it. In local mode, a manually added server fails to connect unless its
+name matches a local server.
+
 ## 6. Build and run
 
 From `vuu-ui`, build the portal example's local host and all producers:

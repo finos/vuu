@@ -19,19 +19,25 @@ import {
   useVuuServers,
   type VuuServerDescriptor,
 } from "@vuu-ui/core";
-import { RemoteModule } from "@vuu-ui/core/portal";
+import { RemoteModule, usePersistentState } from "@vuu-ui/core/portal";
 import type { RemoteModuleConnection } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { AddServerForm, type ManualServer } from "./AddServerForm";
 
 import "./VuuTableBrowser.css";
 
 /** The registry module that provides the table viewer remote. */
 const VIEWER_CLIENT_IDENTIFIER = "vuu-table-viewer";
 
+const MANUAL_SERVERS_KEY = "manualServers";
+const NO_MANUAL_SERVERS: ManualServer[] = [];
+
 interface BrowsableServer {
   description: string;
+  /** Entered by the user, rather than referenced by a registered module. */
+  manual: boolean;
   sourceId: string;
   title: string;
   vuu: RemoteModuleConnection;
@@ -55,6 +61,7 @@ const toBrowsableServer = ({
   websocketUrl,
 }: VuuServerDescriptor): BrowsableServer => ({
   description: `Used by ${moduleTitles.join(", ")}`,
+  manual: false,
   sourceId: connectionId,
   title: connectionId,
   vuu: {
@@ -62,6 +69,18 @@ const toBrowsableServer = ({
     ...(restUrl === undefined ? {} : { restUrl }),
     ...(websocketUrl === undefined ? {} : { websocketUrl }),
   },
+});
+
+const manualToBrowsableServer = ({
+  connectionId,
+  restUrl,
+  websocketUrl,
+}: ManualServer): BrowsableServer => ({
+  description: `Added manually: ${websocketUrl}`,
+  manual: true,
+  sourceId: connectionId,
+  title: connectionId,
+  vuu: { connectionId, restUrl, websocketUrl },
 });
 
 const compareTables = (left: VuuTable, right: VuuTable) =>
@@ -113,6 +132,7 @@ const SourceNavigation = ({
   expanded,
   module,
   onExpandedChange,
+  onRemove,
   onRetry,
   route,
   source,
@@ -121,6 +141,7 @@ const SourceNavigation = ({
   expanded: boolean;
   module: BrowsableServer;
   onExpandedChange: (sourceId: string, expanded: boolean) => void;
+  onRemove: (sourceId: string) => void;
   onRetry: (sourceId: string) => void;
   route?: TableRoute;
   source?: SourceState;
@@ -196,6 +217,16 @@ const SourceNavigation = ({
                 </VerticalNavigationItem>
               );
             })}
+            {module.manual ? (
+              <div className="vuuTableBrowser-source-status">
+                <Button
+                  appearance="transparent"
+                  onClick={() => onRemove(module.sourceId)}
+                >
+                  Remove server
+                </Button>
+              </div>
+            ) : null}
           </VerticalNavigationSubMenu>
         </CollapsiblePanel>
       </Collapsible>
@@ -207,21 +238,40 @@ export default function VuuTableBrowser() {
   const { modules: registeredModules } = useModuleRegistry();
   const vuuServers = useVuuServers();
   const routePath = useParams()["*"];
-  const { pathname } = useLocation();
-  const basePath = browserBasePath(pathname, routePath);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const basePath = browserBasePath(location.pathname, routePath);
   const route = useMemo(() => parseTableRoute(routePath), [routePath]);
   const invalidRoute = Boolean(routePath && !route);
   const [activated, setActivated] = useState<Set<string>>(() => new Set());
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const [retryCount, setRetryCount] = useState<Record<string, number>>({});
   const [sources, setSources] = useState<Record<string, SourceState>>({});
+  const [addingServer, setAddingServer] = useState(false);
+  const [manualServers, setManualServers] = usePersistentState<ManualServer[]>(
+    MANUAL_SERVERS_KEY,
+    NO_MANUAL_SERVERS,
+    {
+      group: "Servers",
+      label: "Manually added Vuu servers",
+    },
+  );
 
-  const modules = useMemo(
-    () =>
-      vuuServers
-        .map(toBrowsableServer)
-        .sort((left, right) => left.title.localeCompare(right.title)),
-    [vuuServers],
+  const modules = useMemo(() => {
+    const registered = vuuServers
+      .map(toBrowsableServer)
+      .sort((left, right) => left.title.localeCompare(right.title));
+    const registeredIds = new Set(registered.map(({ sourceId }) => sourceId));
+    // A registered server takes precedence over a manual one of the same name.
+    const manual = manualServers
+      .filter(({ connectionId }) => !registeredIds.has(connectionId))
+      .map(manualToBrowsableServer);
+    return registered.concat(manual);
+  }, [manualServers, vuuServers]);
+
+  const serverIds = useMemo(
+    () => new Set(modules.map(({ sourceId }) => sourceId)),
+    [modules],
   );
 
   const viewer = useMemo(() => {
@@ -334,6 +384,35 @@ export default function VuuTableBrowser() {
     [reportSourceStatus],
   );
 
+  const handleAddServer = useCallback(
+    (server: ManualServer) => {
+      setManualServers((current) => current.concat(server));
+      setAddingServer(false);
+    },
+    [setManualServers],
+  );
+
+  const handleRemoveServer = useCallback(
+    (sourceId: string) => {
+      setManualServers((current) =>
+        current.filter(({ connectionId }) => connectionId !== sourceId),
+      );
+      const withoutSource = (current: Set<string>) => {
+        const next = new Set(current);
+        next.delete(sourceId);
+        return next;
+      };
+      setActivated(withoutSource);
+      setExpanded(withoutSource);
+      setSources(({ [sourceId]: _, ...rest }) => rest);
+      setRetryCount(({ [sourceId]: _, ...rest }) => rest);
+      if (route?.sourceId === sourceId) {
+        navigate({ pathname: basePath, search: location.search });
+      }
+    },
+    [basePath, location.search, navigate, route?.sourceId, setManualServers],
+  );
+
   const routeModule = route
     ? modules.find(({ sourceId }) => sourceId === route.sourceId)
     : undefined;
@@ -395,12 +474,24 @@ export default function VuuTableBrowser() {
                   key={module.sourceId}
                   module={module}
                   onExpandedChange={handleExpandedChange}
+                  onRemove={handleRemoveServer}
                   onRetry={handleRetrySource}
                   route={route}
                   source={sources[module.sourceId]}
                 />
               ))}
             </VerticalNavigation>
+          )}
+          {addingServer ? (
+            <AddServerForm
+              existingIds={serverIds}
+              onAdd={handleAddServer}
+              onCancel={() => setAddingServer(false)}
+            />
+          ) : (
+            <div className="vuuTableBrowser-source-status">
+              <Button onClick={() => setAddingServer(true)}>Add server</Button>
+            </div>
           )}
         </aside>
         <main className="vuuTableBrowser-content">
