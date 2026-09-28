@@ -204,7 +204,9 @@ class MigratableStateImpl implements MigratableState {
       };
     } catch (error) {
       console.error(
-        `[state migration] updating "${key}" for version ${this.toVersion} failed`,
+        '[state migration] updating "%s" for version %s failed',
+        key,
+        this.toVersion,
         error,
       );
       this.#reject(key, FAILED_REASON);

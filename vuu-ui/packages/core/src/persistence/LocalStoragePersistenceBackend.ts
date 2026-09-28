@@ -133,7 +133,8 @@ export class LocalStoragePersistenceBackend implements PersistenceBackend {
   #retainCorrupt(ref: DocumentRef, raw: string, reason: unknown) {
     const key = this.storageKey(ref);
     console.warn(
-      `[LocalStoragePersistenceBackend] saved state at "${key}" is unreadable and has been set aside`,
+      '[LocalStoragePersistenceBackend] saved state at "%s" is unreadable and has been set aside',
+      key,
       reason,
     );
     for (const corruptKey of this.#corruptKeys(ref)) {

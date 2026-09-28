@@ -255,7 +255,9 @@ export class ApplicationStateStoreImpl implements ApplicationStateStore {
       this.#status = "error";
       this.#error = toPersistenceError(error, this.ref, "load");
       console.error(
-        `${logPrefix} unable to load saved state for ${this.applicationKey} v${this.applicationVersion}; using defaults`,
+        "[ApplicationStateStore] unable to load saved state for %s v%s; using defaults",
+        this.applicationKey,
+        this.applicationVersion,
         error,
       );
     } finally {
@@ -319,7 +321,10 @@ export class ApplicationStateStoreImpl implements ApplicationStateStore {
       ));
     } catch (error) {
       console.error(
-        `${logPrefix} saved state for ${this.applicationKey} couldn't be carried forward from version ${fromVersion} to ${this.applicationVersion}`,
+        "[ApplicationStateStore] saved state for %s couldn't be carried forward from version %s to %s",
+        this.applicationKey,
+        fromVersion,
+        this.applicationVersion,
         error instanceof StateMigrationError && error.cause
           ? error.cause
           : error,
@@ -348,7 +353,8 @@ export class ApplicationStateStoreImpl implements ApplicationStateStore {
       // Keep the carried-forward state in memory and retry on the next save.
       this.#error = toPersistenceError(error, this.ref, "save");
       console.error(
-        `${logPrefix} unable to save carried-forward state for ${this.applicationKey}`,
+        "[ApplicationStateStore] unable to save carried-forward state for %s",
+        this.applicationKey,
         error,
       );
       for (const key of Object.keys(migrated.entries)) {
@@ -408,13 +414,16 @@ export class ApplicationStateStoreImpl implements ApplicationStateStore {
   #canWrite(operation: string) {
     if (this.#disposed || this.#host.isDisposed()) {
       console.warn(
-        `${logPrefix} ${operation}(): the persistence service has been disposed`,
+        "[ApplicationStateStore] %s(): the persistence service has been disposed",
+        operation,
       );
       return false;
     }
     if (this.#status === "loading") {
       console.error(
-        `${logPrefix} ${operation}() was called before saved state for ${this.applicationKey} was ready; await store.ready first`,
+        "[ApplicationStateStore] %s() was called before saved state for %s was ready; await store.ready first",
+        operation,
+        this.applicationKey,
       );
       return false;
     }
@@ -425,7 +434,7 @@ export class ApplicationStateStoreImpl implements ApplicationStateStore {
     if (isDevelopment()) {
       throw new ErrorType(`${logPrefix} ${message}`);
     }
-    console.error(`${logPrefix} ${message}`);
+    console.error("[ApplicationStateStore] %s", message);
   }
 
   set<T extends JsonValue>(key: string, value: T, options?: EntryOptions) {
@@ -443,7 +452,10 @@ export class ApplicationStateStoreImpl implements ApplicationStateStore {
     const entrySize = storageSize(serialised);
     if (entrySize > maxEntrySize) {
       console.error(
-        `${logPrefix} "${key}" was not saved: ${entrySize} bytes exceeds the ${maxEntrySize} byte limit for one item`,
+        '[ApplicationStateStore] "%s" was not saved: %s bytes exceeds the %s byte limit for one item',
+        key,
+        entrySize,
+        maxEntrySize,
       );
       return;
     }
@@ -480,7 +492,10 @@ export class ApplicationStateStoreImpl implements ApplicationStateStore {
       storageSize(JSON.stringify(entry));
     if (documentSize > maxDocumentSize) {
       console.error(
-        `${logPrefix} "${key}" was not saved: saved state for ${this.applicationKey} would exceed the ${maxDocumentSize} byte limit`,
+        '[ApplicationStateStore] "%s" was not saved: saved state for %s would exceed the %s byte limit',
+        key,
+        this.applicationKey,
+        maxDocumentSize,
       );
       return;
     }
@@ -604,11 +619,12 @@ export class ApplicationStateStoreImpl implements ApplicationStateStore {
       this.#status = "error";
       this.#error = toPersistenceError(error, this.ref, "save");
       console.error(
-        `${logPrefix} unable to save state for ${this.applicationKey} v${this.applicationVersion}${
-          error instanceof PersistenceQuotaError
-            ? ": browser storage is full"
-            : ""
-        }`,
+        "[ApplicationStateStore] unable to save state for %s v%s%s",
+        this.applicationKey,
+        this.applicationVersion,
+        error instanceof PersistenceQuotaError
+          ? ": browser storage is full"
+          : "",
         error,
       );
       throw this.#error;
@@ -712,7 +728,10 @@ export class ApplicationStateStoreImpl implements ApplicationStateStore {
         }
       } catch (error) {
         if (!(error instanceof PersistenceValidationError)) {
-          console.error(`${logPrefix} unable to reload saved state`, error);
+          console.error(
+            "[ApplicationStateStore] unable to reload saved state",
+            error,
+          );
         }
       }
     });
@@ -832,7 +851,10 @@ export class ApplicationStateStoreImpl implements ApplicationStateStore {
       try {
         listener(event);
       } catch (error) {
-        console.error(`${logPrefix} a state change listener failed`, error);
+        console.error(
+          "[ApplicationStateStore] a state change listener failed",
+          error,
+        );
       }
     }
     if (notifyHost) {
