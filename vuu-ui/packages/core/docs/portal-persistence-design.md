@@ -191,15 +191,18 @@ Rules:
       "value": "ccy = \"EUR\" and exchange = \"XLON\"",
       "updatedAt": "2026-09-27T16:04:10.117Z",
       "label": "Active filter",
-      "group": "Filters",
-      "issue": {
-        "status": "rejected",
-        "code": "column-not-found",
-        "message": "Column 'ccy' is not in the table schema",
-        "at": "2026-09-28T08:40:02.310Z"
-      }
+      "group": "Filters"
     }
-  }
+  },
+  "migrationsApplied": [2],
+  "notCarriedForward": [
+    {
+      "key": "grouping",
+      "label": "Grouping",
+      "fromVersion": 1,
+      "reason": "Column 'lotSize' was removed in version 2"
+    }
+  ]
 }
 ```
 
@@ -214,8 +217,9 @@ Rules:
 | `carriedForwardFrom` | Set when the document was created by copying an earlier version's document (§5.4.3).                                 |
 | `entries`            | Map of key → entry. `value` is any JSON value (`null` allowed; `undefined` is not stored).                           |
 | entry `label`/`group`| Optional, human-readable metadata supplied by the application so the UI can describe entries without loading the app. |
-| entry `formatVersion`| Version of the value's format, owned by whoever writes the value (§5.4.4). Defaults to `1`.                           |
-| entry `issue`        | Present when the value couldn't be restored in the running application (§5.4.6). Removed when the entry is next written or passes validation. |
+| entry `formatVersion`| Optional version of the value's format, owned by the component that writes it (§5.4.6). Defaults to `1`.             |
+| `migrationsApplied`  | Versions whose release migrations ran when the document was carried forward (§5.4.4). |
+| `notCarriedForward`  | Entries a migration rejected, with the reason (§5.4.5). Shown in the Saved state UI; removed when the user clears the application. |
 
 Key rules:
 
@@ -249,8 +253,8 @@ key.
 
 - The version dimension is `descriptor.version` (Q3).
 - A new application version starts with a **copy** of the most recent earlier
-  version's document, which is then checked entry by entry as the application
-  reads it (§5.4). *(Proposed, Q8. Previously a new version started empty.)*
+  version's document, updated by the release's migrations before the
+  application renders (§5.4). *(Proposed, Q8. Previously a new version started empty.)*
 - Earlier-version documents are never modified, and are kept until the user
   clears them (Q4; a "keep last N versions" policy may follow). Rolling an
   application back therefore restores exactly the state it had before.
@@ -260,217 +264,229 @@ key.
 
 #### 5.4.1 The problem
 
-Saved state can stop matching the application that reads it. There are two
-causes, and they need different handling:
+Server and UI are always released together, so saved state can only become
+incompatible at an **application version boundary**. A release may:
 
-1. **The application changed.** A release changes the shape of a value (a new
-   table config format), renames a key, or drops a feature. This happens at a
-   version boundary.
-2. **What the values refer to changed.** A saved filter or column layout
-   names columns of a Vuu table. The server schema can rename or remove a
-   column **without any application release**, and columns can differ by user
-   (entitlements). This can happen at any time, within one application
-   version.
+- rename or remove columns, leaving saved filters, sorts, groupings and
+  layouts that refer to the old names;
+- change the format of a saved value (e.g. a new table config shape);
+- rename or remove a saved key.
 
-Migrating at version boundaries alone would miss the second case. So the
-design combines a migration step, which runs once per format change, with a
-validation step, which runs every time state is restored.
+State carried into the new version has to be migrated once, when the new
+version first starts for that user. After that it is ordinary saved state
+again.
 
 #### 5.4.2 Principles
 
-- **Contain the damage.** Incompatibility is handled per entry, and within an
-  entry per element (one named filter, one column). One bad value never costs
+- **The release that makes a change migrates the state.** A renamed column
+  looks exactly like a removed one plus a new one, so renames can't be
+  inferred. The release that renames a column ships a migration for it,
+  alongside the server change.
+- **Migrate once, before first use.** Migrations run when the new version's
+  document is created, before the application renders. Application code only
+  ever sees state in the current version's shape.
+- **Contain the damage.** Migrations work per entry, and within an entry per
+  element (one named filter, one column). One incompatible value never costs
   the user everything else.
-- **Never silently change meaning.** A restored value must either mean what it
-  meant when saved, or not be used. Dropping a column from a layout is safe.
-  Dropping one clause from `ccy = "EUR" and exchange = "XLON"` is not: the user
-  would see rows they believe are filtered out. Filters are therefore restored
-  whole or not at all.
-- **Don't destroy what you can't use.** A value that fails validation is kept
-  in storage until the application writes a replacement or the user clears it.
-  A column that is missing because of a temporary schema or entitlement change
-  comes back when the column does. Earlier-version documents are never
-  modified.
-- **The owner of a format owns its migration.** Whoever writes a value knows
-  how to upgrade and validate it. Shared components (`vuu-table`, filters)
-  ship codecs for their value types; applications supply the context (table
-  schema, declared renames).
-- **Tell the user only when it matters.** Silent for cosmetic repairs (a
-  missing column dropped from a layout). Visible when something the user chose
-  deliberately wasn't restored (a filter, a named filter).
+- **Never silently change meaning.** A migrated value must mean what it meant
+  before, or not be used. Dropping a removed column from a layout is safe.
+  Dropping one clause from `ccy = "EUR" and exchange = "XLON"` is not: the
+  user would see rows they believe are filtered out. Filters are migrated
+  whole or rejected.
+- **Forwards only, never in place.** Migrations run on a copy. The previous
+  version's document is never modified, so a failed migration can't lose the
+  original, and rolling back restores exactly the state the old version had.
+- **Tell the user only when it matters.** Silent when a change is fully
+  handled (a renamed column), visible when something the user chose
+  deliberately couldn't be kept (a filter on a removed column).
 
-#### 5.4.3 Layer 1 — carry forward (service, automatic)
+#### 5.4.3 Carry forward (service, automatic)
 
 When a store is requested for version *N* and no document exists for *N*:
 
-- the service copies the entries from the **highest earlier version** that has
-  a document, and sets `carriedForwardFrom`;
-- the copy is raw: values are not interpreted, so it can't fail;
-- the new document is saved straight away, so the Saved state UI shows it
-  under version *N* with *"Carried forward from version M"*.
+1. The service copies the document of the **highest earlier version** *M*.
+2. It runs the application's migrations for every version *M + 1 … N*, in
+   ascending order, against the copy (§5.4.4). A release with no migration
+   changes nothing.
+3. It saves the result as version *N*'s document, with `carriedForwardFrom: M`
+   and `migrationsApplied`. The save is create-if-absent: if another tab
+   migrated first, the service discards its own result and loads theirs.
+4. The application renders.
+
+Because version *N*'s document now exists, migrations never run twice.
 
 If only **later** versions exist (the application was rolled back and never
 ran at this version), the store starts empty; there are no down-migrations.
-An application that knows a release is incompatible can call `store.clear()`
-when `store.carriedForwardFrom` is set.
 
-This also resolves the Q3 caveat: version bumps for non-breaking releases no
-longer lose state.
+This also resolves the Q3 caveat: version bumps for releases that change
+nothing keep state automatically.
 
-#### 5.4.4 Layer 2 — format migration (codec, once per format change)
+#### 5.4.4 Release migrations
 
-Each entry records a `formatVersion`. A **codec** declares the current format
-version and how to upgrade older ones, one step at a time:
-
-- `formatVersion` is independent of the application version. `vuu-table` is
-  used by many applications, each with its own version, so the table config
-  format must be versioned by the table, not by the application.
-- `migrate(value, fromVersion)` is called for each step up to the current
-  version. It returns the upgraded value, or `undefined` to discard it
-  (no migration path), which is treated as *rejected*.
-- A key renamed by the application is handled with `previousKeys`: if the key
-  is missing, the first previous key present is read and moved to the new key.
-
-#### 5.4.5 Layer 3 — validation (codec, on every restore)
-
-`validate(value, context)` checks a value against the running application and
-returns one of:
-
-| Result | Meaning | What the application gets | Storage |
-| ------ | ------- | ------------------------- | ------- |
-| `valid` | Usable as saved. | The value. | Unchanged. |
-| `repaired` | Usable after removing or adjusting parts, without changing its meaning. | The repaired value. | Unchanged until the application next writes the key. |
-| `rejected` | Not usable without changing its meaning. | The default value. | Original kept; entry marked with `issue` (§5.4.6). |
-
-`context` is whatever the codec needs: typically the current `TableSchema` and
-a map of declared renames. **Renames can't be inferred**: a renamed column
-looks exactly like a removed one. The application (or, later, the server
-schema) declares them, e.g. `columnRenames: { ccy: "currency" }`, and codecs
-apply them before validating. Undeclared renames degrade to removals.
-
-Validation runs again when the context changes (e.g. the schema arrives, or a
-schema update is received), so a value can move from *rejected* back to
-*valid* without the user doing anything.
-
-Guidance for codec authors:
-
-| Value | Change | Recommended result |
-| ----- | ------ | ------------------ |
-| Column layout | Column removed | `repaired`, silent: column dropped (or kept as hidden, so it returns if the column does). |
-| Column layout | Column renamed, rename declared | `repaired`, silent: renamed. |
-| Sort | Sort column removed | `repaired`, silent: that sort column dropped. |
-| Group by | Group column removed | `repaired`, notify: grouping changes what the user sees. |
-| Active filter | Any clause refers to a missing column, or an operator the column no longer supports | `rejected`, notify: filter not applied. |
-| Named filters | Some filters invalid | `repaired`, notify: valid filters usable; invalid ones kept but marked unavailable, so the user can see, fix or delete them in the app's filter UI. |
-| Any | Older `formatVersion` with no migration path | `rejected`, notify. |
-
-#### 5.4.6 Incompatible entries
-
-When a value is rejected, the service writes an `issue` to the entry (§5.1)
-without touching its value. The issue is removed when:
-
-- the application writes the key (the new value replaces the old one);
-- a later validation passes; or
-- the user clears the item in the Saved state dialog.
-
-The Saved state dialog marks these items **Couldn't be restored** (§9.15), so
-users can find and clear them.
-
-#### 5.4.7 API
-
-Additions to §6.3:
+A migration is a runtime script shipped with a release. It knows how to update
+that application's saved state from the previous version:
 
 ```ts
-export interface RestoreIssue {
-  /** Machine-readable, e.g. "column-not-found". */
-  code: string;
-  /** Developer-facing explanation; shown in a tooltip in the Saved state UI. */
-  message: string;
-  /** Location within the value, e.g. "columns[3]" or "[2].filter". */
-  path?: string;
-}
+// instruments/src/stateMigrations.ts
+import { renameColumns, removeColumns } from "@vuu-ui/vuu-table/migrations";
+import { renameFilterColumns, filterUsesColumns } from "@vuu-ui/vuu-filters/migrations";
 
-export type ValidationResult<T> =
-  | { status: "valid"; value: T }
-  | { status: "repaired"; value: T; issues: readonly RestoreIssue[]; notify?: boolean }
-  | { status: "rejected"; issues: readonly RestoreIssue[]; notify?: boolean };
-
-export interface StateCodec<T extends JsonValue, C = undefined> {
-  /** Current format version. Written to the entry on every set. */
-  formatVersion: number;
-  /** Upgrades one step from `fromVersion`. Return undefined to discard. */
-  migrate?: (value: JsonValue, fromVersion: number) => JsonValue | undefined;
-  /** Checks the value against the running application. */
-  validate?: (value: T, context: C) => ValidationResult<T>;
-  /** Keys this entry was stored under in earlier releases, newest first. */
-  previousKeys?: readonly string[];
-}
-
-export type RestoreStatus = "missing" | "pending" | "valid" | "repaired" | "rejected";
-
-export interface RestoreResult<T> {
-  status: RestoreStatus;
-  /** Undefined when missing, pending or rejected. */
-  value: T | undefined;
-  issues: readonly RestoreIssue[];
-}
-
-export interface ApplicationStateStore {
-  // …existing members…
-  /** Set when this document was carried forward from an earlier version. */
-  readonly carriedForwardFrom?: number;
-  /** Migrates and validates a saved value. Synchronous. */
-  restore<T extends JsonValue, C>(
-    key: string,
-    codec: StateCodec<T, C>,
-    context: C,
-  ): RestoreResult<T>;
-}
-```
-
-`usePersistentState` accepts a codec and context:
-
-```ts
-const [config, setConfig, restoreStatus] = usePersistentState(
-  "instruments/table",
-  defaultTableConfig,
+export const stateMigrations: StateMigration[] = [
   {
-    label: "Table layout",
-    group: "Table",
-    codec: tableConfigCodec, // shipped by vuu-table
-    context: tableSchema ? { schema: tableSchema, columnRenames } : undefined,
+    version: 2,
+    description: "ccy renamed to currency; lotSize removed",
+    migrate(state) {
+      state.update("instruments/table", (config) =>
+        removeColumns(renameColumns(config, { ccy: "currency" }), ["lotSize"]),
+      );
+      state.update("filters/active", (filter, entry) =>
+        filterUsesColumns(filter, ["lotSize"])
+          ? entry.reject("Uses the Lot size column, which has been removed")
+          : renameFilterColumns(filter, { ccy: "currency" }),
+      );
+      state.update("filters/named", (named, entry) =>
+        named.map((f) =>
+          filterUsesColumns(f.filter, ["lotSize"])
+            ? (entry.notify(`"${f.name}" uses a removed column`), { ...f, unavailable: true })
+            : { ...f, filter: renameFilterColumns(f.filter, { ccy: "currency" }) },
+        ),
+      );
+    },
   },
-);
+  {
+    version: 3,
+    migrate(state) {
+      state.rename("table-config", "instruments/table");
+      state.remove("legacy/view");
+    },
+  },
+];
 ```
 
-- `set` writes the codec's `formatVersion` with the value.
-- If the codec validates and `context` is `undefined`, the hook returns the
-  default with `restoreStatus` `"pending"`, and validates once context is
-  available. Nothing unvalidated is ever returned. (Components that need a
-  schema usually wait for it before rendering anyway.)
-- `restore` never throws. A codec that throws is treated as *rejected*, and
-  the error is logged.
-- `importFrom` and `previousVersions` (§6.3) remain available for
-  application-specific upgrades that codecs don't cover.
+- **Where they live.** The remote's exposed component module exports
+  `stateMigrations`, next to the component. `RemoteModule` already has both the
+  code and the document before rendering (§6.2), so migrations run at that
+  point. A large migration can `import()` its helpers so they only load when
+  needed.
+- **Per-entry isolation.** `update(key, fn)` catches errors thrown by `fn` and
+  rejects just that entry. A migration that throws outside `update` aborts the
+  carry-forward: version *N* starts empty, the user is told, and the error is
+  logged. The previous document is untouched either way.
+- **Pure and synchronous by default.** Migrations work on JSON only; they
+  don't have access to the server or the running application. `migrate` may
+  return a promise (for lazy imports), but not wait on anything else.
+- **Composition is sequential.** A user jumping from version 1 to 3 simply
+  runs the migrations for 2 and then 3. `ccy → currency` then
+  `currency → ccyCode` needs no special handling.
+- **Helpers belong to value owners.** Shared components publish helpers for
+  their value formats (`renameColumns`, `removeColumns`, `renameFilterColumns`,
+  `filterUsesColumns`, …), so each application's migrations are a few lines
+  and don't depend on internal formats.
 
-#### 5.4.8 Letting the user know
+Guidance for migration authors:
 
-- The store collects issues with `notify: true`. `RemoteModule` shows at most
-  one `Toast` per application per session, a short time after the application
-  mounts: **Some saved state wasn't restored** — *"Instruments has changed
-  since you last used it. 2 items couldn't be restored."* The **Review** action
-  opens the Saved state dialog scoped to that application.
-- Silent repairs are logged at debug level only.
+| Value | Change in the release | Migration |
+| ----- | --------------------- | --------- |
+| Column layout | Column renamed or removed | Rename or drop the column. Silent. |
+| Sort | Sort column renamed or removed | Rename, or drop that sort column. Silent. |
+| Group by | Group column removed | Drop it, and `notify`: grouping changes what the user sees. |
+| Active filter | Column renamed | Rewrite the filter. Silent. |
+| Active filter | Any clause refers to a removed column | `reject`: the filter isn't applied. |
+| Named filters | Some filters refer to removed columns | Keep the rest; mark the affected ones unavailable and `notify`, so the user can see and delete them in the app's filter UI. |
+| Any | Feature removed | `remove` the key. Silent. |
 
-#### 5.4.9 Testing
+#### 5.4.5 API
 
-- Codec unit tests use saved-state fixtures captured from each released
-  format version, so every migration path stays covered.
-- The service tests cover carry-forward (from the latest earlier version, never
-  from a later one), `previousKeys`, rejected-value retention, and issue
-  clearing.
+Additions to `@vuu-ui/core/portal`:
 
+```ts
+export interface StateMigration {
+  /** The application version this migration upgrades to. */
+  version: number;
+  description?: string;
+  migrate(state: MigratableState): void | Promise<void>;
+}
 
+export interface MigratableState {
+  readonly fromVersion: number;
+  readonly toVersion: number;
+  keys(): readonly string[];
+  has(key: string): boolean;
+  get<T extends JsonValue = JsonValue>(key: string): T | undefined;
+  set<T extends JsonValue>(key: string, value: T, metadata?: EntryMetadata): void;
+  /** Transforms one entry. A missing key is skipped; an error rejects only this entry. */
+  update<T extends JsonValue>(
+    key: string,
+    fn: (value: T, entry: MigrationEntry) => T | Rejected,
+  ): void;
+  rename(from: string, to: string): void;
+  remove(key: string): void;
+}
+
+export interface MigrationEntry {
+  /** Removes the entry and records it in notCarriedForward. */
+  reject(reason: string): Rejected;
+  /** Keeps the entry, and tells the user something changed. */
+  notify(message: string): void;
+}
+
+/** Test helper: runs migrations against a fixture document. */
+export function runStateMigrations(
+  document: StateDocument,
+  migrations: readonly StateMigration[],
+  toVersion: number,
+): Promise<{ document: StateDocument; notifications: readonly string[] }>;
+```
+
+- Migration `version`s must be unique and no higher than the application's
+  current version. Duplicates are a startup error in development.
+- `reject` reasons and `notify` messages are user-facing, so write them in
+  plain language.
+- `importFrom` and `previousVersions` (§6.3) remain available for unusual
+  cases, such as an application that wants to offer the user a choice.
+
+#### 5.4.6 Component format versions
+
+A shared component can change the shape of its own saved value in a release
+that doesn't rename anything, e.g. `vuu-table` restructures its config. Each
+application's migrations shouldn't have to know about that. Instead:
+
+- the component writes an optional `formatVersion` with its values (via `set`
+  options, §6.3);
+- it reads older formats of its **own** values ("tolerant reader") and writes
+  the current format on the next save.
+
+Release migrations handle application changes (columns, keys, features).
+Format versions handle component internals. Neither needs to know about the
+other.
+
+#### 5.4.7 Letting the user know
+
+- `reject` and `notify` results are collected during carry-forward.
+  `RemoteModule` shows one `Toast` when the application first renders:
+  **Some saved state wasn't carried forward**, *"Instruments has been updated.
+  2 items couldn't be kept: Active filter, Grouping."* The **Review** action
+  opens the Saved state dialog scoped to that application (§9.15).
+- Rejected entries are recorded in `notCarriedForward`. Their original values
+  remain in the previous version's document.
+- If the carry-forward was aborted, the toast says *"Instruments has been
+  updated. Your saved state couldn't be carried forward, so it has opened with
+  its default view."*
+
+#### 5.4.8 Testing
+
+- Each application tests its migrations with `runStateMigrations` against
+  saved-state fixtures captured from each released version. The tests cover
+  every path to the current version: 1 → current, 2 → current, and so on.
+- Shared components test their migration helpers, and their tolerant readers
+  for each older format version.
+- Service tests cover:
+  - carry-forward from the latest earlier version, never a later one;
+  - migrations run in order, and only once;
+  - the create-if-absent race between tabs;
+  - per-entry isolation in `update`;
+  - an aborted carry-forward;
+  - `notCarriedForward` recording.
 
 ## 6. Application-facing API
 
@@ -570,7 +586,7 @@ export interface ApplicationStateStore {
 
   /**
    * Updates the in-memory value immediately; persistence is debounced.
-   * `formatVersion` is normally supplied by a codec (§5.4.4).
+   * `formatVersion` is set by components that version their own values (§5.4.6).
    */
   set<T extends JsonValue>(
     key: string,
@@ -707,8 +723,8 @@ should:
   or without a portal;
 - supply `label` / `group` metadata so their entries are identifiable in the
   Saved state UI;
-- ship a `StateCodec` for each value type they persist (§5.4), and accept
-  rename maps from the application.
+- publish migration helpers for their value formats (§5.4.4), and read older
+  formats of their own values (§5.4.6).
 
 ## 7. Storage backends
 
@@ -826,10 +842,10 @@ the default and documents how to switch to the remote backend via
 | FR-15 | Logout flushes pending writes, then disposes the service. A different user logging in on the same browser never sees the previous user's data. |
 | FR-16 | The portal shell's own state (e.g. nav expanded, app switcher mode) uses the reserved `vuu.portal` application key and appears in the Saved state UI as "Portal". |
 | FR-17 | Hooks work outside a portal (`useOptionalApplicationState`, and `usePersistentState` falls back to plain state) so remotes remain usable standalone and in tests. |
-| FR-18 | Entries record a `formatVersion`; `restore` migrates older formats step by step, and reads from `previousKeys` when the key is missing (§5.4.4). |
-| FR-19 | `restore` validates against caller-supplied context and returns `valid`, `repaired` or `rejected`; it never returns an unvalidated value, and never throws (§5.4.5). |
-| FR-20 | Rejected values are kept in storage and marked with an `issue` until the key is rewritten, a later validation passes, or the user clears it (§5.4.6). |
-| FR-21 | Issues marked `notify` produce at most one toast per application per session, with a **Review** action opening the Saved state dialog scoped to that application (§5.4.8). |
+| FR-18 | On first load of a new version, the service copies the latest earlier document and runs the application's `stateMigrations` for each intervening version, in order, once, before the application renders (§5.4.3). |
+| FR-19 | An error inside `update` rejects only that entry. Any other migration error aborts the carry-forward, so the version starts empty; the previous document is never modified (§5.4.4). |
+| FR-20 | Rejected entries are removed from the new version's document and recorded in `notCarriedForward`; the previous version's document is unchanged (§5.4.5). |
+| FR-21 | `reject` and `notify` results produce one toast when the application first renders after carry-forward, with a **Review** action opening the Saved state dialog scoped to that application (§5.4.7). |
 
 ### 8.2 Non-functional
 
@@ -1099,24 +1115,23 @@ fully-selected parents as well as their leaves.
 - `useSavedStateDialog()`: `{ open(applicationKey?) }`, to open the dialog
   from anywhere in the shell.
 
-### 9.15 Items that couldn't be restored *(proposed, §5.4)*
+### 9.15 Carried-forward state *(proposed, §5.4)*
 
-- Items with an `issue` show a warning **Couldn't be restored** `Tag` after
-  the label. A `Tooltip` gives the issue message, e.g. *"Column 'ccy' is not
-  in the table schema."*
-- The application node shows *"N couldn't be restored"* in its metadata, and
-  *"Carried forward from version M"* when the document was carried forward.
-- The filter bar's **Show** dropdown gains an option **Couldn't be restored**,
-  listing only those items, so they can be selected and cleared together.
+- An application whose document was carried forward shows *"Carried forward
+  from version M"* in its metadata.
+- Entries in `notCarriedForward` appear under the application in a
+  **Not carried forward** group. Each item has a neutral **Not carried
+  forward** `Tag`, and a `Tooltip` with the reason, e.g. *"Column 'lotSize' was
+  removed in version 2."* Selecting and clearing them removes the records. The
+  originals remain under **Previous versions** until those are cleared.
 
 Additional copy:
 
 | Context | Text |
 | ------- | ---- |
-| Item tag | Couldn't be restored |
-| Application metadata | N couldn't be restored · Carried forward from version M |
-| Show option | Couldn't be restored |
-| Toast title / body | Some saved state wasn't restored / {Application} has changed since you last used it. N items couldn't be restored. |
+| Application metadata | Carried forward from version M |
+| Group / item tag | Not carried forward |
+| Toast title / body | Some saved state wasn't carried forward / {Application} has been updated. N items couldn't be kept: {labels}. |
 | Toast action | Review |
 
 ## 10. Package structure
@@ -1131,7 +1146,7 @@ core/src/
 |   |-- RemotePersistenceBackend.ts
 |   |-- PortalPersistenceService.ts
 |   |-- ApplicationStateStore.ts
-|   |-- StateCodec.ts                     // codec types, migration runner, restore
+|   |-- StateMigrations.ts                // carry-forward, migration runner, runStateMigrations
 |   |-- PersistenceContext.tsx            // providers + hooks
 |   `-- index.ts
 |-- saved-state/
@@ -1151,17 +1166,19 @@ core/test/persistence/, core/test/saved-state/
 
 1. **Core service** — types, document validation, in-memory and localStorage
    backends, `PortalPersistenceService`, `ApplicationStateStore`, hooks,
-   carry-forward, codecs and `restore` (§5.4), unit tests.
+   carry-forward, the migration runner and `runStateMigrations` (§5.4), unit
+   tests.
 2. **Shell integration** — `PortalShell` / `WindowHost` `persistence` prop,
-   `persistenceKey` on `RemoteModuleDescriptor`, `RemoteModule` store provisioning and ready gating, logout flush, portal
+   `persistenceKey` on `RemoteModuleDescriptor`, `RemoteModule` store provisioning, ready gating and running `stateMigrations`, logout flush, portal
    shell's own state under `vuu.portal`.
 3. **Saved state UI** — dialog, tree, confirmation, toasts, header user menu,
-   nav context-menu entry, *Couldn't be restored* indicators and toast (§9.15);
+   nav context-menu entry, carried-forward indicators and toast (§9.15);
    component tests.
 4. **Documentation** — usage guide for remote authors; update
-   `remote-module-template` and `portal-design.md`; a guide to writing codecs.
+   `remote-module-template` and `portal-design.md`; a guide to writing release
+   migrations.
    Migrating existing components (e.g. `vuu-table`) and remotes, including
-   their codecs, is follow-up work.
+   their migration helpers, is follow-up work.
 5. **Remote backend** — `RemotePersistenceBackend` against the §7.4 contract,
    conflict handling, retry; portal-host configuration example.
 
@@ -1176,6 +1193,6 @@ core/test/persistence/, core/test/saved-state/
 | Q5 | Should the user be able to view saved values (read-only JSON) in the UI? | Not in v1; candidate for a later "Details" disclosure. |
 | Q6 | Import/export of saved state. | Out of scope for v1; the document format supports it. |
 | Q7 | Should `local` authentication mode default to `localStorage` or in-memory? | `localStorage`, consistent with the example host. |
-| Q8 | Should a new application version start empty, or with the previous version's state? | **Proposed:** carry forward automatically, then migrate and validate per entry (§5.4.3). |
-| Q9 | Can a filter be partially restored (dropping clauses that reference missing columns)? | **Proposed:** no. Filters are restored whole or rejected, because partial restoration changes their meaning (§5.4.2). |
-| Q10 | What happens to values that fail validation? | **Proposed:** keep them, marked with an `issue`, until rewritten, revalidated or cleared by the user (§5.4.6). |
+| Q8 | Should a new application version start empty, or with the previous version's state? | **Proposed:** carry forward automatically, running release migrations shipped with each version (§5.4). |
+| Q9 | Can a filter be partially migrated (dropping clauses that reference removed columns)? | **Proposed:** no. Filters are migrated whole or rejected, because partial migration changes their meaning (§5.4.2). |
+| Q10 | What happens to values a migration can't keep? | **Proposed:** remove them from the new version, record them in `notCarriedForward`, and tell the user; the original stays in the previous version's document (§5.4.5). |
