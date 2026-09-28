@@ -27,7 +27,19 @@ const viewerModule: PortalModuleRegistry["modules"][number] = {
 const localServer = (connectionId: string): LocalVuuServer => ({
   connectionId,
   DataSourceProvider: ({ children }: { children: ReactNode }) => children,
-  title: connectionId,
+});
+
+const featureModule = (
+  name: string,
+  title: string,
+  connectionId?: string,
+): PortalModuleRegistry["modules"][number] => ({
+  ...viewerModule,
+  clientIdentifier: name,
+  id: name,
+  name,
+  title,
+  ...(connectionId ? { vuu: { connectionId } } : {}),
 });
 
 describe("VuuTableBrowser", () => {
@@ -64,13 +76,14 @@ describe("VuuTableBrowser", () => {
     });
   };
 
-  it("lists the registry servers that have a local implementation, by title", async () => {
+  it("lists the distinct servers of registered modules that have a local implementation", async () => {
     await renderBrowser({
-      modules: [viewerModule],
-      servers: [
-        { connectionId: "simul", title: "Simulation" },
-        { connectionId: "orders", title: "Orders" },
-        { connectionId: "basket", title: "Basket trading" },
+      modules: [
+        viewerModule,
+        featureModule("simple-div", "Saved state demo", "simul"),
+        featureModule("orders", "Orders", "orders"),
+        featureModule("baskets", "Basket Trading", "basket"),
+        featureModule("tiles", "Instrument tiles", "simul"),
       ],
     });
 
@@ -78,9 +91,12 @@ describe("VuuTableBrowser", () => {
       container.querySelectorAll(
         '[aria-label="Vuu servers"] .saltVerticalNavigationItemLabel',
       ),
-      (label) => label.textContent,
+      (label) => [label.textContent, label.getAttribute("title")],
     );
-    expect(labels).toEqual(["Basket trading", "Simulation"]);
+    expect(labels).toEqual([
+      ["basket", "Used by Basket Trading"],
+      ["simul", "Used by Saved state demo, Instrument tiles"],
+    ]);
     expect(container.textContent).toContain(
       "Select a server and table to begin.",
     );
@@ -88,8 +104,7 @@ describe("VuuTableBrowser", () => {
 
   it("explains when no table viewer is registered", async () => {
     await renderBrowser({
-      modules: [],
-      servers: [{ connectionId: "simul", title: "Simulation" }],
+      modules: [featureModule("simple-div", "Saved state demo", "simul")],
     });
 
     expect(container.querySelector('[role="alert"]')?.textContent).toContain(

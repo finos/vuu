@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { localPortalModuleRegistry } from "../src/local-module-registry";
 
 describe("local portal module registry", () => {
-  it("uses local adapter exposures without remote VUU connections", () => {
+  it("uses local adapter exposures", () => {
     expect(
       localPortalModuleRegistry.modules.map(
         ({ mfComponent, mfScope, mfUrl }) => ({
@@ -44,10 +44,15 @@ describe("local portal module registry", () => {
       },
     ]);
     expect(
-      localPortalModuleRegistry.modules.every(
-        (descriptor) => !("vuu" in descriptor),
-      ),
-    ).toBe(true);
+      localPortalModuleRegistry.modules.map(({ name, vuu }) => ({ name, vuu })),
+    ).toEqual([
+      { name: "module-admin", vuu: { connectionId: "module-admin" } },
+      { name: "user-admin", vuu: { connectionId: "user-admin" } },
+      { name: "vuu-table-browser", vuu: undefined },
+      { name: "vuu-table-viewer", vuu: undefined },
+      { name: "basket-trading", vuu: { connectionId: "basket" } },
+      { name: "feature-simple-div", vuu: { connectionId: "simul" } },
+    ]);
     expect(
       localPortalModuleRegistry.modules.find(
         ({ name }) => name === "user-admin",
@@ -96,12 +101,6 @@ describe("local portal module registry", () => {
       name: "module-admin",
       path: "/administration/modules",
     });
-    expect(moduleAdmin).not.toHaveProperty("vuu");
-  });
-
-  it("lists the Vuu servers offered by the table browser", () => {
-    expect(
-      localPortalModuleRegistry.servers.map(({ connectionId }) => connectionId),
-    ).toEqual(["simul", "basket", "admin"]);
+    expect(moduleAdmin?.vuu).toEqual({ connectionId: "module-admin" });
   });
 });

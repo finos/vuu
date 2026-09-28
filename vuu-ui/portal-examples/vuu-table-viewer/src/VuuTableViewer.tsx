@@ -1,5 +1,9 @@
 import { Button, Spinner } from "@salt-ds/core";
-import { TableRegistrationContext, useData } from "@vuu-ui/core";
+import {
+  TableRegistrationContext,
+  useData,
+  useOptionalVuuConnectionId,
+} from "@vuu-ui/core";
 import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { FilterTable } from "@vuu-ui/vuu-datatable";
@@ -10,15 +14,6 @@ import { toColumnName } from "@vuu-ui/vuu-utils";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import "./VuuTableViewer.css";
-
-export interface VuuTableViewerProps {
-  selectedTable?: VuuTable;
-  /**
-   * Identifies this viewer's server to the table browser. Required when the
-   * viewer is hosted by the browser, which provides TableRegistrationContext.
-   */
-  sourceId?: string;
-}
 
 const getErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : String(error);
@@ -127,12 +122,20 @@ const SelectedTable = ({ table }: { table: VuuTable }) => {
   );
 };
 
-export default function VuuTableViewer({
-  selectedTable,
-  sourceId,
-}: VuuTableViewerProps) {
+/**
+ * Publishes the tables of its Vuu connection to the table browser and shows
+ * the browser's selected table when it belongs to that connection. The
+ * browser renders one viewer per server, each with its own `vuu` connection.
+ */
+export default function VuuTableViewer() {
   const { getServerAPI } = useData();
   const registration = useContext(TableRegistrationContext);
+  const sourceId = useOptionalVuuConnectionId();
+  const selectedTable =
+    registration?.selectedTable &&
+    registration.selectedTable.sourceId === sourceId
+      ? registration.selectedTable.table
+      : undefined;
 
   useEffect(() => {
     if (!registration || sourceId === undefined) {

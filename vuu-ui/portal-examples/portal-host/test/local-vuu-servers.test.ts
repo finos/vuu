@@ -3,22 +3,14 @@ import { localPortalModuleRegistry } from "../src/local-module-registry";
 import { localVuuServers } from "../src/local-vuu-servers";
 
 describe("local Vuu servers", () => {
-  it("implements every server listed in the local registry", () => {
-    expect(
-      localVuuServers.map(({ connectionId, title }) => ({
-        connectionId,
-        title,
-      })),
-    ).toEqual(
-      localPortalModuleRegistry.servers.map(({ connectionId, title }) => ({
-        connectionId,
-        title,
-      })),
+  it("implements every connection referenced by the local registry", () => {
+    const connectionIds = new Set(
+      localPortalModuleRegistry.modules.flatMap(({ vuu }) =>
+        vuu ? [vuu.connectionId] : [],
+      ),
     );
     expect(
-      localVuuServers.every(
-        ({ DataSourceProvider }) => typeof DataSourceProvider === "function",
-      ),
-    ).toBe(true);
+      new Set(localVuuServers.map(({ connectionId }) => connectionId)),
+    ).toEqual(connectionIds);
   });
 });

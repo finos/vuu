@@ -6,26 +6,22 @@ import {
   simulModule,
   userAdminModule,
 } from "@vuu-ui/vuu-data-test";
-import { localPortalModuleRegistry } from "./local-module-registry";
-
-const localServerModules: Record<
-  string,
-  Parameters<typeof createLocalVuuServer>[0]["modules"]
-> = {
-  admin: [userAdminModule, moduleAdminModule],
-  basket: [basketModule],
-  simul: [simulModule],
-};
 
 /**
- * In-browser implementations of the servers listed in the local registry.
- * A remote module rendered with `vuu={{ connectionId }}` gets the data
- * context of the matching server.
+ * In-browser implementations of the Vuu servers referenced by the `vuu`
+ * connections in the local registry. A module rendered with
+ * `vuu={{ connectionId }}` gets the data context of the matching server, and
+ * the table browser lists these servers.
  */
-export const localVuuServers: LocalVuuServer[] =
-  localPortalModuleRegistry.servers.map((server) =>
-    createLocalVuuServer({
-      ...server,
-      modules: localServerModules[server.connectionId] ?? [],
-    }),
-  );
+export const localVuuServers: LocalVuuServer[] = [
+  createLocalVuuServer({
+    connectionId: "module-admin",
+    modules: [moduleAdminModule],
+  }),
+  createLocalVuuServer({
+    connectionId: "user-admin",
+    modules: [userAdminModule],
+  }),
+  createLocalVuuServer({ connectionId: "basket", modules: [basketModule] }),
+  createLocalVuuServer({ connectionId: "simul", modules: [simulModule] }),
+];

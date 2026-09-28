@@ -82,13 +82,15 @@ The checked-in local registry loads the `module-admin`, `user-admin`,
 `feature-simple-div` manifests from ports 5002 to 5007. Their production
 exposures are unchanged; additional local adapter exposures explicitly ensure
 `userAdminModule`, `basketModule`, `simulModule`, or `moduleAdminModule` is
-registered and then export the production feature. The table browser and
-viewer need no local adapter: the registry's `servers` lists three Vuu
-servers, and `local-vuu-servers.ts` implements each one in the browser with
-`createLocalVuuServer` (`simul`: SIMUL; `basket`: BASKET; `admin`:
-USER_ADMIN and MODULE_DISCOVERY). The host passes them to
-`AuthenticationProvider` as `localServers`, so a viewer rendered with
-`vuu={{ connectionId: "simul" }}` sees only the SIMUL tables. The local user-admin descriptor maps its tables to the
+registered and then export the production feature. As in the authenticated
+registry, modules declare `vuu` connections (`module-admin`, `user-admin`,
+`basket`, and `simul`). `local-vuu-servers.ts` implements each one in the
+browser with `createLocalVuuServer`, serving MODULE_DISCOVERY, USER_ADMIN,
+BASKET, and SIMUL respectively, and the host passes them to
+`AuthenticationProvider` as `localServers`. The table browser and viewer need
+no local adapter: the browser lists the servers derived from those
+connections, and a viewer rendered with `vuu={{ connectionId: "simul" }}` sees
+only the SIMUL tables. The local user-admin descriptor maps its tables to the
 browser-only `USER_ADMIN` module; module-admin uses the browser-only
 `MODULE_DISCOVERY` module.
 `@vuu-ui/vuu-data-test` is a strict Module Federation singleton so the host
@@ -144,8 +146,7 @@ remote host.
 When serving through nginx, map ports 5002 to 5007 to `module-admin`,
 `user-admin`, `vuu-table-browser`, `vuu-table-viewer`, `basket-trading`, and
 `feature-simple-div` respectively, and allow the host origin in each remote
-manifest response. `feature-filter-table` and `feature-instrument-tiles` are
-not in the local registry.
+manifest response.
 
 Build and deploy each remote before opening the host. For user-admin:
 
