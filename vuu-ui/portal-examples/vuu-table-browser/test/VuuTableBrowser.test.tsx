@@ -18,9 +18,9 @@ const viewerModule: PortalModuleRegistry["modules"][number] = {
   mfScope: "vuuTableViewer",
   mfUrl: "http://localhost:5005",
   name: "vuu-table-viewer",
-  navLocation: "/Table",
+  navLocation: "",
   path: "/tables/view",
-  title: "Vuu Table",
+  title: "Vuu Table Viewer",
   version: 1,
 };
 

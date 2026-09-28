@@ -75,6 +75,22 @@ export const localPortalModuleRegistry = {
       version: 1,
     },
     {
+      clientIdentifier: "vuu-table-viewer",
+      description: "View a table selected in the Vuu Table Browser",
+      enabled: true,
+      id: "vuu-table-viewer",
+      // Nested module: rendered by vuu-table-browser, not shown in the nav.
+      navLocation: "",
+      accessRole: "vuu-table-viewer-access",
+      mfComponent: "VuuTableViewer",
+      mfScope: "vuuTableViewer",
+      mfUrl: "http://localhost:5005",
+      name: "vuu-table-viewer",
+      path: "/tables/view",
+      title: "Vuu Table Viewer",
+      version: 1,
+    },
+    {
       clientIdentifier: "vuu-basket-trading",
       description: "Trade baskets with local test data",
       enabled: true,

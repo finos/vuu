@@ -1,3 +1,4 @@
+import { isNestedModule } from "@vuu-ui/core/portal";
 import { describe, expect, it } from "vitest";
 import { localPortalModuleRegistry } from "../src/local-module-registry";
 
@@ -28,6 +29,11 @@ describe("local portal module registry", () => {
         mfUrl: "http://localhost:5004",
       },
       {
+        mfComponent: "VuuTableViewer",
+        mfScope: "vuuTableViewer",
+        mfUrl: "http://localhost:5005",
+      },
+      {
         mfComponent: "VuuBasketTradingFeatureLocal",
         mfScope: "basketTrading",
         mfUrl: "http://localhost:5006",
@@ -44,6 +50,7 @@ describe("local portal module registry", () => {
       { name: "module-admin", vuu: { connectionId: "module-admin" } },
       { name: "user-admin", vuu: { connectionId: "user-admin" } },
       { name: "vuu-table-browser", vuu: undefined },
+      { name: "vuu-table-viewer", vuu: undefined },
       { name: "basket-trading", vuu: { connectionId: "basket" } },
       { name: "feature-simple-div", vuu: { connectionId: "simul" } },
     ]);
@@ -68,6 +75,14 @@ describe("local portal module registry", () => {
         users: { table: { module: "USER_ADMIN", table: "users" } },
       },
     });
+  });
+
+  it("nests the table viewer inside the table browser", () => {
+    expect(
+      localPortalModuleRegistry.modules
+        .filter(isNestedModule)
+        .map(({ clientIdentifier }) => clientIdentifier),
+    ).toEqual(["vuu-table-viewer"]);
   });
 
   it("loads basket trading from its nginx endpoint", () => {

@@ -405,7 +405,8 @@ portal's own server. The developer modules `vuu-table-browser` and
 `vuu-table-viewer` use it to browse every server's tables. The browser renders
 one viewer remote per server with that server's `vuu` connection, and shares
 the selected table through `TableRegistrationContext`, so neither module needs
-`ComponentProps`.
+`ComponentProps`. The viewer is registered as a nested module, with an empty
+`navLocation`, so it has no navigation entry of its own.
 
 ## 6. Build and run
 
