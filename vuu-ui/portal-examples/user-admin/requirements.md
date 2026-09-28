@@ -49,6 +49,7 @@ there is no persisted application entity: applications are derived at runtime
 from the host-provided module descriptors (`PortalModuleRegistryProvider`)
 combined with the Keycloak read models. Realm roles and Keycloak administrator
 roles are never loaded. For now the admin user sees all applications.
+The naming rules are summarised in [keycloak-naming.md](./keycloak-naming.md).
 
 Each remote module (an application from the user's perspective) has:
 
