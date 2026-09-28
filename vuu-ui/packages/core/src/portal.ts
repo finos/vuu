@@ -40,3 +40,4 @@ export type {
   PortalModuleRegistry,
   RemoteModuleDescriptor,
 } from "./RemoteModuleDescriptor";
+export * from "./persistence";
