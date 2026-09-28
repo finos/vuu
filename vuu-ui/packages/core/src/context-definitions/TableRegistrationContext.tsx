@@ -3,6 +3,11 @@ import { createContext, useContext } from "react";
 
 export type TableSourceStatus = "error" | "loading" | "ready";
 
+export interface SelectedSourceTable {
+  sourceId: string;
+  table: VuuTable;
+}
+
 export interface TableRegistrationContextValue {
   registerTables: (sourceId: string, tables: VuuTable[]) => void;
   reportSourceStatus: (
@@ -10,6 +15,8 @@ export interface TableRegistrationContextValue {
     status: TableSourceStatus,
     message?: string,
   ) => void;
+  /** The table the user has selected, and the source that publishes it. */
+  selectedTable?: SelectedSourceTable;
   unregisterTables: (sourceId: string) => void;
 }
 

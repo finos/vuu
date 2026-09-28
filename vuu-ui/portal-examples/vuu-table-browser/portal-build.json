@@ -5,13 +5,13 @@
     "entry": "./src/index.tsx",
     "htmlTemplate": "../remote-module-template/index.html",
     "output": "../../dist_portal/vuu-table-browser",
-    "publicPath": "http://localhost:5009/"
+    "publicPath": "http://localhost:5004/"
   },
   "html": {
     "title": "vuuTableBrowser (standalone)"
   },
   "server": {
-    "corsOrigins": ["http://localhost:5002"]
+    "corsOrigins": ["http://localhost:5001"]
   },
   "moduleFederation": {
     "name": "vuuTableBrowser",

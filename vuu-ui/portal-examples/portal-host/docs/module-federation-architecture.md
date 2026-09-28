@@ -78,11 +78,19 @@ into `PortalShell`. It does not initialize Keycloak, exchange tokens, or open
 VUU websocket connections.
 
 The checked-in local registry loads the `module-admin`, `user-admin`,
-`feature-filter-table`, and `basket-trading` manifests from ports 5002, 5003,
-5005, and 5006. Their production exposures are unchanged; additional local
-adapter exposures explicitly ensure `userAdminModule`, `basketModule`,
-`simulModule`, or `moduleAdminModule` is registered and then export the
-production feature. The local user-admin descriptor maps its tables to the
+`vuu-table-browser`, `vuu-table-viewer`, `basket-trading`, and
+`feature-simple-div` manifests from ports 5002 to 5007. Their production
+exposures are unchanged; additional local adapter exposures explicitly ensure
+`userAdminModule`, `basketModule`, `simulModule`, or `moduleAdminModule` is
+registered and then export the production feature. As in the authenticated
+registry, modules declare `vuu` connections (`module-admin`, `user-admin`,
+`basket`, and `simul`). `local-vuu-servers.ts` implements each one in the
+browser with `createLocalVuuServer`, serving MODULE_DISCOVERY, USER_ADMIN,
+BASKET, and SIMUL respectively, and the host passes them to
+`AuthenticationProvider` as `localServers`. The table browser and viewer need
+no local adapter: the browser lists the servers derived from those
+connections, and a viewer rendered with `vuu={{ connectionId: "simul" }}` sees
+only the SIMUL tables. The local user-admin descriptor maps its tables to the
 browser-only `USER_ADMIN` module; module-admin uses the browser-only
 `MODULE_DISCOVERY` module.
 `@vuu-ui/vuu-data-test` is a strict Module Federation singleton so the host
@@ -96,10 +104,10 @@ npm run build:mf:local
 
 The workspace `build:mf` script invokes the reusable `portal-build` CLI with
 the project-level `portal-build-all.json`. That manifest declares the
-`portal-host` package followed by basket-trading, feature-filter-table,
-module-admin, feature-simple-div, user-admin, feature-instrument-tiles,
-vuu-table-browser, and vuu-table-viewer. All configured artifacts are
-built in that deterministic order. `npm run build:mf:local` passes `--local`;
+`portal-host` package followed by basket-trading, module-admin,
+feature-simple-div, user-admin, feature-instrument-tiles, vuu-table-browser,
+and vuu-table-viewer. All configured artifacts are built in that
+deterministic order. `npm run build:mf:local` passes `--local`;
 the host uses its local entry and manifest while every remote still uses its
 remote-module build. Use `npm run build:mf -- --target module-admin` to build
 only one configured remote. The workspace prebuilds the tool distribution
@@ -116,13 +124,15 @@ origins; its `build` script invokes the same `portal-build` CLI. Independent
 portal applications can publish and consume this package without importing any
 VUU repository-relative build script.
 
-Serve the four generated artifacts in separate terminals:
+Serve the generated artifacts in separate terminals:
 
 ```sh
-npm --prefix portal-examples/feature-filter-table run start
-npm --prefix portal-examples/basket-trading run start
-npm --prefix portal-examples/user-admin run start
 npm --prefix portal-examples/module-admin run start
+npm --prefix portal-examples/user-admin run start
+npm --prefix portal-examples/vuu-table-browser run start
+npm --prefix portal-examples/vuu-table-viewer run start
+npm --prefix portal-examples/basket-trading run start
+npm --prefix portal-examples/feature-simple-div run start
 npm --prefix portal-examples/portal-host run start:local
 ```
 
@@ -133,10 +143,10 @@ without configuration changes. To rebuild only the local host, run
 `npm run build:mf` or `portal-host` `build` command restores the authenticated
 remote host.
 
-When serving through nginx, map ports 5003, 5005, and 5006 to `user-admin`,
-`feature-filter-table`, and `basket-trading` respectively, and
-allow the host origin in each remote manifest response.
-`vuu-table-viewer` retains port 5004 and is not part of this local proof.
+When serving through nginx, map ports 5002 to 5007 to `module-admin`,
+`user-admin`, `vuu-table-browser`, `vuu-table-viewer`, `basket-trading`, and
+`feature-simple-div` respectively, and allow the host origin in each remote
+manifest response.
 
 Build and deploy each remote before opening the host. For user-admin:
 

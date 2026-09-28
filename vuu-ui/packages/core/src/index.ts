@@ -1,16 +1,22 @@
 export * from "./auth";
 export * from "./connection-management";
 export { ModalProvider, useModal } from "./modal-provider/ModalProvider";
-export type {
-  PortalModuleRegistry,
-  RemoteModuleDescriptor,
+export {
+  isNestedModule,
+  type PortalModuleRegistry,
+  type RemoteModuleDescriptor,
 } from "./RemoteModuleDescriptor";
+export type {
+  LocalVuuServer,
+  VuuServerDescriptor,
+} from "./VuuServerDescriptor";
 export { DataContext } from "./context-definitions/DataContext";
 export {
   DataProvider,
   useData,
 } from "./context-definitions/DataProvider";
 export {
+  type SelectedSourceTable,
   TableRegistrationContext,
   type TableRegistrationContextValue,
   type TableSourceStatus,

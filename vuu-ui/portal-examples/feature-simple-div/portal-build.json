@@ -5,19 +5,20 @@
     "entry": "./src/index.tsx",
     "htmlTemplate": "../remote-module-template/index.html",
     "output": "../../dist_portal/feature-simple-div",
-    "publicPath": "http://localhost:5004/"
+    "publicPath": "http://localhost:5007/"
   },
   "html": {
     "title": "simpleDiv (standalone)"
   },
   "server": {
-    "corsOrigins": ["http://localhost:5002"]
+    "corsOrigins": ["http://localhost:5001"]
   },
   "moduleFederation": {
     "name": "simpleDiv",
     "dts": false,
     "exposes": {
-      "./SimpleDiv": "./src/SimpleDiv"
+      "./SimpleDiv": "./src/SimpleDiv",
+      "./SimpleDivLocal": "./src/SimpleDivLocal"
     },
     "shared": {
       "react": {

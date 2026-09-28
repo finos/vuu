@@ -800,6 +800,9 @@ Also verify:
 
 ## Recommended first implementation
 
+> `feature-filter-table` has since been removed from `portal-examples`;
+> `vuu-table-viewer` replaces it.
+
 Implement the local portal with `basket-trading` and
 `feature-filter-table` first. Both already demonstrate
 `LocalDataSourceProvider` and existing `basketModule`/`simulModule` fixtures in

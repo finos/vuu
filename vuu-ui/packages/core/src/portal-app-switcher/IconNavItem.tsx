@@ -15,7 +15,10 @@ export function IconNavItem({
   item: NavItem;
 }) {
   const { href, navIconName = "custom", navIconUrl, title } = item;
-  const onContextMenu = useNavContextMenu({ item, targetWindow: window });
+  const { onContextMenu, onKeyDown } = useNavContextMenu({
+    item,
+    targetWindow: window,
+  });
 
   const style = navIconUrl
     ? ({
@@ -29,6 +32,7 @@ export function IconNavItem({
         [`${classBase}-active`]: active,
       })}
       onContextMenu={onContextMenu}
+      onKeyDown={onKeyDown}
       to={href}
     >
       <div className={`${classBase}-flyout`}>

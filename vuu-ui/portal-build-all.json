@@ -62,12 +62,6 @@
       "target": "remote-module"
     },
     {
-      "name": "feature-filter-table",
-      "packageDir": "./portal-examples/feature-filter-table",
-      "config": "./portal-build.json",
-      "target": "remote-module"
-    },
-    {
       "name": "module-admin",
       "packageDir": "./portal-examples/module-admin",
       "config": "./portal-build.json",

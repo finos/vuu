@@ -13,27 +13,27 @@ import {
   VerticalNavigationSubMenu,
 } from "@salt-ds/core";
 import {
-  normalizeVuuAuthTarget,
   TableRegistrationContext,
   type TableSourceStatus,
   useModuleRegistry,
-  usePortalVuuAuthTarget,
+  useVuuServers,
+  type VuuServerDescriptor,
 } from "@vuu-ui/core";
-import { RemoteModule, type RemoteModuleDescriptor } from "@vuu-ui/core/portal";
+import { RemoteModule } from "@vuu-ui/core/portal";
 import type { RemoteModuleConnection } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Link,
-  useLocation,
-  useParams,
-  useResolvedPath,
-} from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 
 import "./VuuTableBrowser.css";
 
-interface BrowsableModule extends RemoteModuleDescriptor {
+/** The registry module that provides the table viewer remote. */
+const VIEWER_CLIENT_IDENTIFIER = "vuu-table-viewer";
+
+interface BrowsableServer {
+  description: string;
   sourceId: string;
+  title: string;
   vuu: RemoteModuleConnection;
 }
 
@@ -48,11 +48,21 @@ interface TableRoute {
   table: VuuTable;
 }
 
-const viewerRemote = {
-  mfComponent: "VuuTableViewer",
-  mfScope: "vuuTableViewer",
-  mfUrl: "http://localhost:5010",
-};
+const toBrowsableServer = ({
+  connectionId,
+  moduleTitles,
+  restUrl,
+  websocketUrl,
+}: VuuServerDescriptor): BrowsableServer => ({
+  description: `Used by ${moduleTitles.join(", ")}`,
+  sourceId: connectionId,
+  title: connectionId,
+  vuu: {
+    connectionId,
+    ...(restUrl === undefined ? {} : { restUrl }),
+    ...(websocketUrl === undefined ? {} : { websocketUrl }),
+  },
+});
 
 const compareTables = (left: VuuTable, right: VuuTable) =>
   left.module.localeCompare(right.module) ||
@@ -84,10 +94,22 @@ const parseTableRoute = (route: string | undefined): TableRoute | undefined => {
   }
 };
 
+/**
+ * The browser's own path, without the table route. Relative paths such as
+ * "." resolve against the full splat, so strip its segments instead.
+ */
+export const browserBasePath = (pathname: string, routePath = "") => {
+  const segments = pathname.replace(/\/$/, "").split("/");
+  const route = routePath.replace(/\/$/, "");
+  const routeSegments = route ? route.split("/").length : 0;
+  return segments.slice(0, segments.length - routeSegments).join("/");
+};
+
 const sameTable = (left: VuuTable, right: VuuTable) =>
   left.module === right.module && left.table === right.table;
 
 const SourceNavigation = ({
+  basePath,
   expanded,
   module,
   onExpandedChange,
@@ -95,16 +117,15 @@ const SourceNavigation = ({
   route,
   source,
 }: {
+  basePath: string;
   expanded: boolean;
-  module: BrowsableModule;
+  module: BrowsableServer;
   onExpandedChange: (sourceId: string, expanded: boolean) => void;
   onRetry: (sourceId: string) => void;
   route?: TableRoute;
   source?: SourceState;
 }) => {
   const location = useLocation();
-  const browserRoute = useResolvedPath(".");
-  const browserRoutePath = browserRoute.pathname.replace(/\/$/, "");
   const duplicateNames = useMemo(() => {
     const counts = new Map<string, number>();
     for (const table of source?.tables ?? []) {
@@ -122,7 +143,7 @@ const SourceNavigation = ({
         <VerticalNavigationItemContent>
           <CollapsibleTrigger>
             <VerticalNavigationItemTrigger>
-              <VerticalNavigationItemLabel title={module.title}>
+              <VerticalNavigationItemLabel title={module.description}>
                 {module.title}
               </VerticalNavigationItemLabel>
               <VerticalNavigationItemExpansionIcon />
@@ -163,7 +184,7 @@ const SourceNavigation = ({
                   <VerticalNavigationItemContent>
                     <Link
                       to={{
-                        pathname: `${browserRoutePath}/${path}`,
+                        pathname: `${basePath}/${path}`,
                         search: location.search,
                       }}
                     >
@@ -184,8 +205,10 @@ const SourceNavigation = ({
 
 export default function VuuTableBrowser() {
   const { modules: registeredModules } = useModuleRegistry();
-  const portalTarget = usePortalVuuAuthTarget();
+  const vuuServers = useVuuServers();
   const routePath = useParams()["*"];
+  const { pathname } = useLocation();
+  const basePath = browserBasePath(pathname, routePath);
   const route = useMemo(() => parseTableRoute(routePath), [routePath]);
   const invalidRoute = Boolean(routePath && !route);
   const [activated, setActivated] = useState<Set<string>>(() => new Set());
@@ -193,29 +216,28 @@ export default function VuuTableBrowser() {
   const [retryCount, setRetryCount] = useState<Record<string, number>>({});
   const [sources, setSources] = useState<Record<string, SourceState>>({});
 
-  const modules = useMemo(() => {
-    const sourceIds = new Set<string>();
-    return registeredModules
-      .flatMap((module) => {
-        if (!module.vuu) {
-          return [];
-        }
+  const modules = useMemo(
+    () =>
+      vuuServers
+        .map(toBrowsableServer)
+        .sort((left, right) => left.title.localeCompare(right.title)),
+    [vuuServers],
+  );
 
-        try {
-          normalizeVuuAuthTarget(module.vuu, portalTarget);
-        } catch {
-          return [];
+  const viewer = useMemo(() => {
+    const descriptor = registeredModules.find(
+      ({ clientIdentifier }) => clientIdentifier === VIEWER_CLIENT_IDENTIFIER,
+    );
+    return descriptor
+      ? {
+          clientIdentifier: descriptor.clientIdentifier,
+          mfComponent: descriptor.mfComponent,
+          mfScope: descriptor.mfScope,
+          mfUrl: descriptor.mfUrl,
+          version: descriptor.version,
         }
-
-        const sourceId = String(module.name ?? module.id);
-        if (sourceIds.has(sourceId)) {
-          return [];
-        }
-        sourceIds.add(sourceId);
-        return [{ ...module, sourceId, vuu: module.vuu }];
-      })
-      .sort((left, right) => left.title.localeCompare(right.title));
-  }, [portalTarget, registeredModules]);
+      : undefined;
+  }, [registeredModules]);
 
   useEffect(() => {
     if (route && modules?.some(({ sourceId }) => sourceId === route.sourceId)) {
@@ -225,9 +247,9 @@ export default function VuuTableBrowser() {
         current[route.sourceId]
           ? current
           : {
-            ...current,
-            [route.sourceId]: { status: "loading", tables: [] },
-          },
+              ...current,
+              [route.sourceId]: { status: "loading", tables: [] },
+            },
       );
     }
   }, [modules, route]);
@@ -261,17 +283,12 @@ export default function VuuTableBrowser() {
     setSources((current) =>
       current[sourceId]
         ? {
-          ...current,
-          [sourceId]: { ...current[sourceId], tables: [] },
-        }
+            ...current,
+            [sourceId]: { ...current[sourceId], tables: [] },
+          }
         : current,
     );
   }, []);
-
-  const registrationContext = useMemo(
-    () => ({ registerTables, reportSourceStatus, unregisterTables }),
-    [registerTables, reportSourceStatus, unregisterTables],
-  );
 
   const handleExpandedChange = useCallback(
     (sourceId: string, isExpanded: boolean) => {
@@ -290,9 +307,9 @@ export default function VuuTableBrowser() {
           current[sourceId]
             ? current
             : {
-              ...current,
-              [sourceId]: { status: "loading", tables: [] },
-            },
+                ...current,
+                [sourceId]: { status: "loading", tables: [] },
+              },
         );
       }
     },
@@ -323,10 +340,43 @@ export default function VuuTableBrowser() {
   const selectedTable =
     route && routeModule
       ? sources[route.sourceId]?.tables.find((table) =>
-        sameTable(table, route.table),
-      )
+          sameTable(table, route.table),
+        )
       : undefined;
   const selectedSource = route ? sources[route.sourceId] : undefined;
+  const selectedSourceId = route?.sourceId;
+
+  const registrationContext = useMemo(
+    () => ({
+      registerTables,
+      reportSourceStatus,
+      selectedTable:
+        selectedSourceId && selectedTable
+          ? { sourceId: selectedSourceId, table: selectedTable }
+          : undefined,
+      unregisterTables,
+    }),
+    [
+      registerTables,
+      reportSourceStatus,
+      selectedSourceId,
+      selectedTable,
+      unregisterTables,
+    ],
+  );
+
+  if (!viewer) {
+    return (
+      <div className="vuuTableBrowser">
+        <main className="vuuTableBrowser-content">
+          <div className="vuuTableBrowser-centered" role="alert">
+            The Vuu table viewer is not available. Register a module with
+            clientIdentifier "{VIEWER_CLIENT_IDENTIFIER}".
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <TableRegistrationContext.Provider value={registrationContext}>
@@ -340,6 +390,7 @@ export default function VuuTableBrowser() {
             <VerticalNavigation>
               {modules.map((module) => (
                 <SourceNavigation
+                  basePath={basePath}
                   expanded={expanded.has(module.sourceId)}
                   key={module.sourceId}
                   module={module}
@@ -366,7 +417,7 @@ export default function VuuTableBrowser() {
             </div>
           ) : null}
           {routeModule &&
-            (!selectedSource || selectedSource.status === "loading") ? (
+          (!selectedSource || selectedSource.status === "loading") ? (
             <div className="vuuTableBrowser-centered" role="status">
               <Spinner aria-label="Loading requested table" />
               <span>Loading requested table...</span>
@@ -384,8 +435,8 @@ export default function VuuTableBrowser() {
             </div>
           ) : null}
           {routeModule &&
-            selectedSource?.status === "ready" &&
-            !selectedTable ? (
+          selectedSource?.status === "ready" &&
+          !selectedTable ? (
             <div className="vuuTableBrowser-centered" role="alert">
               The requested table was not found.
             </div>
@@ -408,11 +459,7 @@ export default function VuuTableBrowser() {
                     }
                   >
                     <RemoteModule
-                      ComponentProps={{
-                        selectedTable: isSelected ? selectedTable : undefined,
-                        sourceId: module.sourceId,
-                      }}
-                      {...viewerRemote}
+                      {...viewer}
                       onError={(error) =>
                         handleViewerError(module.sourceId, error)
                       }

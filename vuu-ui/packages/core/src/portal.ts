@@ -25,7 +25,7 @@ export {
   PortalShell,
   type PortalShellProps,
 } from "./portal-shell/PortalShell";
-export { NavContainer } from './portal-shell/NavContainer';
+export { NavContainer } from "./portal-shell/NavContainer";
 export {
   PortalModuleRegistryProvider,
   usePortalModuleRegistry,
@@ -36,7 +36,36 @@ export {
   RemoteModule,
   type RemoteModuleProps,
 } from "./remote-module/RemoteModule";
-export type {
-  PortalModuleRegistry,
-  RemoteModuleDescriptor,
+export {
+  isNestedModule,
+  type PortalModuleRegistry,
+  type RemoteModuleDescriptor,
 } from "./RemoteModuleDescriptor";
+export * from "./persistence";
+export {
+  ANONYMOUS_USER,
+  PortalPersistenceRoot,
+  type PortalPersistenceProps,
+} from "./common-shell/PortalPersistenceRoot";
+export { usePortalLogout } from "./portal-header/usePortalLogout";
+export {
+  NAV_EXPANDED_KEY,
+  useNavGroupExpansion,
+} from "./portal-app-switcher/useNavGroupExpansion";
+export {
+  PortalUserMenu,
+  type PortalUserMenuProps,
+} from "./portal-header/PortalUserMenu";
+export {
+  ClearSavedStateConfirmation,
+  type ClearSavedStateConfirmationProps,
+  getApplicationKey,
+  SavedStateDialog,
+  type SavedStateDialogProps,
+  SavedStateProvider,
+  type SavedStateProviderProps,
+  type SavedStateToastProps,
+  SavedStateTree,
+  type SavedStateTreeProps,
+  useSavedStateDialog,
+} from "./saved-state";

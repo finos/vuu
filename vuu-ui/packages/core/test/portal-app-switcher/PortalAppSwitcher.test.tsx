@@ -109,6 +109,33 @@ describe("PortalAppSwitcher menu style", () => {
     );
   });
 
+  it("omits nested modules without requiring an icon for them", async () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const nested: RemoteModuleDescriptor = {
+      ...modules[0],
+      clientIdentifier: "Viewer",
+      id: "Viewer",
+      name: "Viewer",
+      navIconName: undefined,
+      navLocation: "",
+      path: "/viewer",
+      title: "Viewer",
+    };
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <PortalAppSwitcher
+            displayStyle="icon-only"
+            menuStyle="single-level"
+            remoteModules={[...modules, nested]}
+          />
+        </MemoryRouter>,
+      );
+    });
+    expect(titles()).toEqual(["Trading: Orders", "Trading: Baskets"]);
+    expect(log).not.toHaveBeenCalled();
+  });
+
   it.each([
     "icon-only",
     "text-only",

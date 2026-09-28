@@ -44,6 +44,7 @@ vi.mock("@salt-ds/core", () => ({
       {children}
     </div>
   ),
+  useAriaAnnouncer: () => ({ announce: () => undefined }),
 }));
 vi.mock("../../src/modal-provider/ModalProvider", () => ({
   ModalProvider: ({ children }: { children: ReactNode }) => (

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { RemoteModuleDescriptor } from "../../src/RemoteModuleDescriptor";
+import {
+  isNestedModule,
+  type RemoteModuleDescriptor,
+} from "../../src/RemoteModuleDescriptor";
 import { buildNavItems } from "../../src/portal-app-switcher/nav-item-utils";
 
 const remoteModule = (
@@ -21,7 +24,38 @@ const remoteModule = (
   version: 1,
 });
 
+describe("isNestedModule", () => {
+  it("is true only for modules without a navigation location", () => {
+    expect(
+      ["", "/", "///"].map((navLocation) => isNestedModule({ navLocation })),
+    ).toEqual([true, true, true]);
+    expect(
+      ["/Tables", "/Tables/Browse", "Tables"].map((navLocation) =>
+        isNestedModule({ navLocation }),
+      ),
+    ).toEqual([false, false, false]);
+  });
+});
+
 describe("buildNavItems", () => {
+  it.each([
+    "single-level",
+    "two-level",
+  ] as const)("excludes nested modules from %s navigation", (menuStyle) => {
+    expect(
+      buildNavItems(
+        [
+          remoteModule("/Tables/Browse", "/tables/browse/*", "browser"),
+          remoteModule("", "/tables/view", "viewer"),
+          remoteModule("/", "/tables/other", "other"),
+        ],
+        menuStyle,
+      ).map(({ moduleId, children }) =>
+        children ? children.map((child) => child.moduleId) : moduleId,
+      ),
+    ).toEqual(menuStyle === "two-level" ? [["browser"]] : ["browser"]);
+  });
+
   describe("single-level", () => {
     it("flattens mixed navigation locations without grouping shared parents", () => {
       const items = buildNavItems(

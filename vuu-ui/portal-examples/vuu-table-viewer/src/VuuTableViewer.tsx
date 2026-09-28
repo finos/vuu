@@ -1,5 +1,9 @@
 import { Button, Spinner } from "@salt-ds/core";
-import { useData, useTableRegistration } from "@vuu-ui/core";
+import {
+  TableRegistrationContext,
+  useData,
+  useOptionalVuuConnectionId,
+} from "@vuu-ui/core";
 import type { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { FilterTable } from "@vuu-ui/vuu-datatable";
@@ -7,14 +11,9 @@ import type { FilterHandler, FilterState } from "@vuu-ui/vuu-filter-types";
 import type { FilterBarProps } from "@vuu-ui/vuu-filters";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import { toColumnName } from "@vuu-ui/vuu-utils";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import "./VuuTableViewer.css";
-
-export interface VuuTableViewerProps {
-  selectedTable?: VuuTable;
-  sourceId: string;
-}
 
 const getErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : String(error);
@@ -123,15 +122,27 @@ const SelectedTable = ({ table }: { table: VuuTable }) => {
   );
 };
 
-export default function VuuTableViewer({
-  selectedTable,
-  sourceId,
-}: VuuTableViewerProps) {
+/**
+ * Publishes the tables of its Vuu connection to the table browser and shows
+ * the browser's selected table when it belongs to that connection. The
+ * browser renders one viewer per server, each with its own `vuu` connection.
+ */
+export default function VuuTableViewer() {
   const { getServerAPI } = useData();
-  const { registerTables, reportSourceStatus, unregisterTables } =
-    useTableRegistration();
+  const registration = useContext(TableRegistrationContext);
+  const sourceId = useOptionalVuuConnectionId();
+  const selectedTable =
+    registration?.selectedTable &&
+    registration.selectedTable.sourceId === sourceId
+      ? registration.selectedTable.table
+      : undefined;
 
   useEffect(() => {
+    if (!registration || sourceId === undefined) {
+      return;
+    }
+    const { registerTables, reportSourceStatus, unregisterTables } =
+      registration;
     let active = true;
     reportSourceStatus(sourceId, "loading");
 
@@ -155,18 +166,20 @@ export default function VuuTableViewer({
       active = false;
       unregisterTables(sourceId);
     };
-  }, [
-    getServerAPI,
-    registerTables,
-    reportSourceStatus,
-    sourceId,
-    unregisterTables,
-  ]);
+  }, [getServerAPI, registration, sourceId]);
 
-  return selectedTable ? (
-    <SelectedTable
-      key={`${selectedTable.module}:${selectedTable.table}`}
-      table={selectedTable}
-    />
-  ) : null;
+  if (selectedTable) {
+    return (
+      <SelectedTable
+        key={`${selectedTable.module}:${selectedTable.table}`}
+        table={selectedTable}
+      />
+    );
+  }
+
+  return registration ? null : (
+    <div className="vuuTableViewer-status" role="status">
+      Select a table in the Vuu Table Browser.
+    </div>
+  );
 }

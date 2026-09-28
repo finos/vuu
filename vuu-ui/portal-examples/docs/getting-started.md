@@ -326,7 +326,7 @@ authorized to access.
 ### Configure local mode
 
 The local bootstrap supplies a deterministic identity, a checked-in registry,
-and `LocalDataSourceProvider`:
+the in-browser Vuu servers, and `LocalDataSourceProvider`:
 
 ```tsx
 import { init } from "@module-federation/enhanced/runtime";
@@ -335,6 +335,7 @@ import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { localPortalModuleRegistry } from "./local-module-registry";
+import { localVuuServers } from "./local-vuu-servers";
 
 init({ name: "host", remotes: [] });
 
@@ -344,6 +345,7 @@ if (!root) throw new Error("No React root defined in page");
 createRoot(root).render(
   <AuthenticationProvider
     authorizations={["local-developer"]}
+    localServers={localVuuServers}
     mode="local"
     registry={localPortalModuleRegistry}
     user={{ userName: "local-user" }}
@@ -358,292 +360,53 @@ Local authentication publishes a synthetic VUU session, so
 `useVuuAccessToken()` remain structurally available. It does not contact
 Keycloak, exchange tokens, or open a websocket.
 
-## 4. Define remote descriptors
+### Simulate Vuu servers in local mode
 
-A descriptor controls navigation, routing, federation loading, and optional
-VUU connection scoping.
-
-### Remote descriptor
-
-The production portal server returns descriptors in
-`LOGIN_SUCCESS.moduleRegistry`:
+In the authenticated portal, a module's `vuu` connection names the Vuu server
+it talks to. Local mode keeps the same descriptors: give each local module a
+`vuu` connection, and implement each `connectionId` in the browser with
+`createLocalVuuServer` from `@vuu-ui/vuu-data-test`:
 
 ```ts
+// local-module-registry.ts
 {
-  clientIdentifier: "vuu-orders",
-  description: "Order management",
-  enabled: true,
-  id: 101,
-  location: "/Trading/Orders",
-  accessRole: "orders-access",
-  mfComponent: "Orders",
-  mfScope: "orders",
-  mfUrl: "https://portal.example.com/remotes/orders",
-  name: "orders",
-  path: "/trading/orders",
-  title: "Orders",
-  version: 1,
-  vuu: {
-    connectionId: "orders",
-    restUrl: "https://orders.example.com/api/authn",
-    websocketUrl: "wss://orders.example.com/websocket-orders",
-  },
-}
-```
-
-The fields must agree with the producer:
-
-```text
-mfScope     = ModuleFederationPlugin.name
-mfComponent = exposure key without the leading "./"
-mfUrl        = base URL serving mf-manifest.json
-```
-
-`RemoteModule` appends `/mf-manifest.json`, registers the remote, and calls:
-
-```ts
-loadRemote(`${mfScope}/${mfComponent}`, { from: "runtime" });
-```
-
-When `vuu` is present, the feature is wrapped in a connection-specific
-`AuthenticationProvider`. Each SPA can therefore retain its own VUU server
-after migration.
-
-### Local descriptor
-
-The local descriptor points to the same producer manifest but selects its local
-adapter:
-
-```ts
-import type { PortalModuleRegistry } from "@vuu-ui/core";
-
-export const localPortalModuleRegistry = {
-  modules: [
-    {
-      clientIdentifier: "local-orders",
-      description: "Order management with local data",
-      enabled: true,
-      id: "local-orders",
-      location: "/Trading/Orders",
-      accessRole: "local",
-      mfComponent: "OrdersLocal",
-      mfScope: "orders",
-      mfUrl: "http://localhost:5010",
-      name: "orders",
-      path: "/trading/orders",
-      title: "Orders",
-      version: 1,
-    },
-  ],
-} satisfies PortalModuleRegistry;
-```
-
-**Do not add `vuu` to a local descriptor.** Its presence instructs
-`RemoteModule` to perform token exchange and open the configured websocket.
-Local mode is selected by the exposure and host provider, not by using fake
-`local://` connection URLs.
-
-Use `ComponentProps` when a remote requires environment-specific inputs:
-
-```ts
-{
-  // descriptor fields
-  ComponentProps: {
-    tableSchema: localOrdersModule.schemas.orders,
-  },
-}
-```
-
-## 5. Build a remote application
-
-### Keep the feature provider-neutral
-
-The exposed feature should consume VUU services from context:
-
-```tsx
-import { useData } from "@vuu-ui/core";
-import { useMemo } from "react";
-
-export const Orders = () => {
-  const { VuuDataSource } = useData();
-  const dataSource = useMemo(
-    () =>
-      new VuuDataSource({
-        table: { module: "ORDERS", table: "orders" },
-      }),
-    [VuuDataSource],
-  );
-
-  return <OrdersView dataSource={dataSource} />;
-};
-
-export default Orders;
-```
-
-Do not put any of the following inside the shared feature:
-
-- `AuthenticationProvider`;
-- `VuuDataSourceProvider`;
-- `LocalDataSourceProvider`;
-- Keycloak initialization;
-- token exchange; or
-- direct websocket startup.
-
-Those belong in the host or a standalone bootstrap.
-
-### Add producer metadata
-
-The VUU portal examples use `vuu.module-federation` package metadata:
-
-```json
-{
-  "name": "orders",
-  "scripts": {
-    "build": "node ../../scripts/build-remote-module.ts",
-    "start": "ws --directory ../../dist_portal/orders --spa index.html --port 5010"
-  },
-  "dependencies": {
-    "@vuu-ui/core": "3.3.12",
-    "@vuu-ui/vuu-data-test": "3.3.12"
-  },
-  "peerDependencies": {
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3"
-  },
-  "vuu": {
-    "module-federation": {
-      "name": "orders",
-      "port": 5010,
-      "exposes": {
-        "./Orders": "./src/Orders",
-        "./OrdersLocal": "./src/OrdersLocal"
-      }
-    }
-  }
-}
-```
-
-`scripts/build-remote-module.ts` configures `ModuleFederationPlugin`, strict
-producer shares, the producer public path, and manifest generation. If your
-project does not use this script, create an equivalent Rsbuild configuration:
-
-```ts
-new ModuleFederationPlugin({
-  name: "orders",
-  dts: false,
-  exposes: {
-    "./Orders": "./src/Orders",
-    "./OrdersLocal": "./src/OrdersLocal",
-  },
-  shared: getSharedDependencies("producer"),
-});
-```
-
-The producer name and exposure keys are API contracts. Changing them requires
-updating every registry descriptor.
-
-### Add the local VUU module
-
-Implement the local tables, schemas, menus, and RPCs used by the feature:
-
-```ts
-import { VuuModule } from "@vuu-ui/vuu-data-test";
-
-class OrdersModule extends VuuModule<"orders"> {
-  constructor() {
-    super("ORDERS");
-  }
-
-  // Define schemas, tables, menus, services and visual links.
+  clientIdentifier: "vuu-basket-trading",
+  /* ... */
+  vuu: { connectionId: "basket" },
 }
 
-export const ordersModule = new OrdersModule();
-```
-
-The module name and table names must match the identifiers used by the feature.
-Port observable VUU behavior rather than attempting to emulate websocket
-transport. The class above is abbreviated: a concrete `VuuModule` must
-implement its required schemas, tables, menus, services, and visual links.
-
-Inventory these dependencies before declaring local support:
-
-- every `{ module, table }` passed to `VuuDataSource`;
-- table schemas and key columns;
-- menu and direct datasource RPCs;
-- edit-session behavior;
-- visual links;
-- ticking or generated updates; and
-- calls through `getServerAPI()`.
-
-`LocalDataSourceProvider.serverAPI.rpcCall()` is not a general replacement for
-all server RPCs. Prefer module/data-source services or extend the local runtime
-deliberately when an application depends on server-level RPC calls.
-
-### Add the local adapter exposure
-
-The local adapter explicitly installs the module and exports the production
-feature:
-
-```ts
+// local-vuu-servers.ts
 import {
-  ensureVuuModule,
-  ordersModule,
+  basketModule,
+  createLocalVuuServer,
+  simulModule,
 } from "@vuu-ui/vuu-data-test";
-import Orders from "./Orders";
 
-ensureVuuModule(ordersModule);
-
-export default Orders;
+export const localVuuServers = [
+  createLocalVuuServer({ connectionId: "basket", modules: [basketModule] }),
+  createLocalVuuServer({ connectionId: "simul", modules: [simulModule] }),
+];
 ```
 
-`ensureVuuModule()` makes registration idempotent. Use an explicit call;
-do not depend on an otherwise-unused side-effect import, which a bundler may
-remove.
+Pass them to the local `AuthenticationProvider` as `localServers`. A module
+whose `vuu.connectionId` matches a local server gets that server's data
+context instead of a websocket: its `getTableList`, `getTableSchema`, and
+`VuuDataSource` cover only the server's own modules. A connection with no
+matching local server fails with an `AuthenticationConfigurationError`.
+Modules without `vuu` keep using the host's `DataSourceProvider`. Test
+packages other than `vuu-data-test` can implement `LocalVuuServer` directly:
+a `connectionId` plus a `DataSourceProvider` component.
 
-The adapter must not add authentication or data providers. The local portal
-host already supplies both.
-
-### Keep standalone modes
-
-If the application must continue to run independently, preserve its two thin
-entry points:
-
-```ts
-// index.tsx
-import("./bootstrap");
-```
-
-```tsx
-// bootstrap.tsx
-<AuthenticationProvider
-  authConfig={config}
-  authHandlerClass={KeycloakAuthHandler}
-  mode="identity"
->
-  <VuuDataSourceProvider>
-    <Orders />
-  </VuuDataSourceProvider>
-</AuthenticationProvider>
-```
-
-```ts
-// index-local.tsx
-import("./local-bootstrap");
-```
-
-```tsx
-// local-bootstrap.tsx
-ensureVuuModule(ordersModule);
-
-<AuthenticationProvider mode="local">
-  <LocalDataSourceProvider>
-    <Orders />
-  </LocalDataSourceProvider>
-</AuthenticationProvider>
-```
-
-The standalone entries and Module Federation exposures all converge on the
-same `Orders` component.
+`useVuuServers()` returns the distinct servers referenced by registered
+modules' `vuu` connections, with the titles of the modules that use each one.
+It omits servers it can't connect to: in local mode, those with no local
+server; otherwise, those without `restUrl` and `websocketUrl` that aren't the
+portal's own server. The developer modules `vuu-table-browser` and
+`vuu-table-viewer` use it to browse every server's tables. The browser renders
+one viewer remote per server with that server's `vuu` connection, and shares
+the selected table through `TableRegistrationContext`, so neither module needs
+`ComponentProps`. The viewer is registered as a nested module, with an empty
+`navLocation`, so it has no navigation entry of its own.
 
 ## 6. Build and run
 
@@ -672,22 +435,27 @@ The current local example uses:
 
 | Port | Artifact |
 | --- | --- |
-| 5002 | portal host when run with its package `start:local` script |
+| 5001 | portal host, with its package `start:local` script |
+| 5002 | module-admin |
 | 5003 | user-admin |
-| 5004 | vuu-table-viewer, not part of the initial local proof |
-| 5005 | basket-trading |
-| 5006 | feature-filter-table |
+| 5004 | vuu-table-browser |
+| 5005 | vuu-table-viewer |
+| 5006 | basket-trading |
+| 5007 | feature-simple-div |
 
 Start the local example in separate terminals:
 
 ```sh
+npm --prefix portal-examples/module-admin run start
 npm --prefix portal-examples/user-admin run start
+npm --prefix portal-examples/vuu-table-browser run start
+npm --prefix portal-examples/vuu-table-viewer run start
 npm --prefix portal-examples/basket-trading run start
-npm --prefix portal-examples/feature-filter-table run start
+npm --prefix portal-examples/feature-simple-div run start
 npm --prefix portal-examples/portal-host run start:local
 ```
 
-Then open `http://localhost:5002`.
+Then open `http://localhost:5001`.
 
 When using nginx, map its host listener to `dist_portal/portal-host` and map
 each remote origin to its corresponding `dist_portal/<package>` directory. The
@@ -851,6 +619,9 @@ After portal deployment is stable:
 - The local descriptor omits `vuu`.
 - The local adapter calls `ensureVuuModule()` and exports the same feature.
 - Every table and RPC used by the feature has a tested local implementation.
+- Values to keep use `usePersistentState` or `useApplicationState`, with
+  labels. A release that changes saved values bumps `version` and exports
+  `stateMigrations`, from both exposures.
 
 ### Federation and deployment
 
@@ -871,8 +642,13 @@ The following portal examples demonstrate the complete pattern:
 - `portal-examples/portal-host/src/local-module-registry.ts`: checked-in local
   descriptors;
 - `portal-examples/basket-trading`: production and local basket exposures;
-- `portal-examples/feature-filter-table`: production and local SIMUL
-  exposures;
-- `portal-examples/user-admin`: production and local user-admin exposures; and
+- `portal-examples/user-admin`: production and local user-admin exposures;
+- `portal-examples/feature-simple-div`: saved state with `usePersistentState`
+  and an exported `stateMigrations`;
+- `portal-examples/vuu-table-browser` and `vuu-table-viewer`: developer
+  modules that browse the tables of every server from `useVuuServers()`, with
+  one viewer remote per server, bound to it through `vuu`;
+- `portal-examples/portal-host/src/local-vuu-servers.ts`: local servers built
+  with `createLocalVuuServer`; and
 - `packages/vuu-data-test/src/user-admin`: a browser-local multi-table VUU
   module with domain RPC behavior.

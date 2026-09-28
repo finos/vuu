@@ -37,10 +37,24 @@ environment and set the initial URL through browser history.
 public `RemoteModuleDescriptor` type. Together these define the visual shell,
 navigation model, and route metadata for a portal.
 
+A descriptor's `navLocation` places the module in the navigation, e.g.
+`/Trading/Baskets`. A module with an empty `navLocation` (`""` or `"/"`) is a
+nested module: the shell still registers and routes it, but the navigation
+omits it, and another module renders it with `RemoteModule`. The table viewer
+nested in the table browser is an example. `isNestedModule(descriptor)` tests
+for this.
+
+`PortalHeader` renders `PortalUserMenu`, which offers **Saved state…** and
+**Log out**. Additional items go in its `userMenuItems` prop. Log out saves
+pending saved state before signing the user out.
+
 ## WindowHost and module launch menus
 
-`PortalNav` module links provide **Open in new Tab** and **Open in new Window**
-via right-click, the context-menu key, or Shift+F10. Navigation groups retain
+`PortalNav` and `PortalAppSwitcher` module links provide **Open in new Tab**
+and **Open in new Window** via right-click, the context-menu key, or Shift+F10.
+Inside a shell, links to modules with an application key (see
+[Saved state](#saved-state)) also offer **Saved state…**, which opens the
+Saved state dialog scoped to that module. Navigation groups retain
 their normal expand/collapse behavior. Opening a module leaves the current
 portal route unchanged.
 
@@ -109,6 +123,39 @@ This gives the remote module its own VUU connection context. Data sources
 created inside the remote therefore use the connection selected for that
 module instead of implicitly using the portal host's connection.
 
+`RemoteModule` also provides the remote with its `ApplicationStateStore`, keyed
+by `persistenceKey ?? clientIdentifier` and `version`. It loads the saved state
+in parallel with the remote code, runs the remote's exported
+`stateMigrations` when a new version opens for the first time, and renders the
+remote only once both are ready. It suspends inside its own `Suspense`
+boundary, so the rest of the shell stays visible while a module loads.
+
+## Saved state
+
+The portal saves each application's runtime state (filters, sort order,
+layouts and similar) for the user and restores it the next time the
+application opens. `CommonShell` creates one `PortalPersistenceService` for the
+authenticated user, so `PortalShell`, `WindowShell` and `WindowHost` all
+support it:
+
+- `persistence` selects the storage backend. The default is
+  `LocalStoragePersistenceBackend`; `false` keeps saved state in memory only.
+- `portalId` separates portals on one origin in storage. `PortalShell` uses
+  its `id` by default.
+- The portal's own state, such as expanded navigation groups, is stored under
+  the reserved application key `vuu.portal`.
+- The **Saved state** dialog lets users clear saved state for one, several or
+  all applications, or for individual items.
+
+Remotes use `usePersistentState`, `useApplicationState` or
+`useOptionalApplicationState`, and export `stateMigrations` when a release
+changes saved values. See:
+
+- [saved-state-guide.md](./saved-state-guide.md), a guide for remote authors;
+  and
+- [portal-persistence-design.md](./portal-persistence-design.md), the design
+  and its implementation notes.
+
 ## Package Structure
 
 ```text
@@ -117,10 +164,16 @@ core/
 |   |-- auth/
 |   |-- common-shell/
 |   |-- connection-management/
+|   |-- context-definitions/
+|   |-- modal-provider/
+|   |-- persistence/
+|   |-- portal-app-switcher/
 |   |-- portal-header/
+|   |-- portal-module-registry/
 |   |-- portal-nav/
 |   |-- portal-shell/
 |   |-- remote-module/
+|   |-- saved-state/
 |   |-- window-host/
 |   |-- window-shell/
 |   |-- index.ts

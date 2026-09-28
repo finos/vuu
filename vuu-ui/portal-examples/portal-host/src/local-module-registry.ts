@@ -1,7 +1,5 @@
 import type { PortalModuleRegistry } from "@vuu-ui/core";
-import { simulModule } from "@vuu-ui/vuu-data-test";
 import type { AdminConfig } from "../../user-admin/src/data/admin-contract";
-
 
 export const dashBoardIcon =
   "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWxheW91dC1kYXNoYm9hcmQgcHJldmlldy1pY29uIj48cmVjdCB3aWR0aD0iNyIgaGVpZ2h0PSI5IiB4PSIzIiB5PSIzIiByeD0iMSIvPjxyZWN0IHdpZHRoPSI3IiBoZWlnaHQ9IjUiIHg9IjE0IiB5PSIzIiByeD0iMSIvPjxyZWN0IHdpZHRoPSI3IiBoZWlnaHQ9IjkiIHg9IjE0IiB5PSIxMiIgcng9IjEiLz48cmVjdCB3aWR0aD0iNyIgaGVpZ2h0PSI1IiB4PSIzIiB5PSIxNiIgcng9IjEiLz48L3N2Zz4=";
@@ -9,7 +7,6 @@ export const ordersIcon =
   "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWxvZ3MgcHJldmlldy1pY29uIj48cGF0aCBkPSJNMyA1aDEiLz48cGF0aCBkPSJNMyAxMmgxIi8+PHBhdGggZD0iTTMgMTloMSIvPjxwYXRoIGQ9Ik04IDVoMSIvPjxwYXRoIGQ9Ik04IDEyaDEiLz48cGF0aCBkPSJNOCAxOWgxIi8+PHBhdGggZD0iTTEzIDVoOCIvPjxwYXRoIGQ9Ik0xMyAxMmg4Ii8+PHBhdGggZD0iTTEzIDE5aDgiLz48L3N2Zz4=";
 export const positionsIcon =
   "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXdhbGxldC1jYXJkcyBwcmV2aWV3LWljb24iPjxwYXRoIGQ9Ik0zIDExaDMuNzVhMiAyIDAgMCAxIDEuNi44bC40NS42YTQgNCAwIDAgMCA2LjQgMGwuNDUtLjZhMiAyIDAgMCAxIDEuNi0uOEgyMSIvPjxwYXRoIGQ9Ik0zIDdoMTgiLz48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIi8+PC9zdmc+";
-
 
 const localUserAdminConfig = {
   clients: { table: { module: "USER_ADMIN", table: "clients" } },
@@ -26,6 +23,24 @@ const localUserAdminConfig = {
 export const localPortalModuleRegistry = {
   modules: [
     {
+      clientIdentifier: "vuu-module-admin",
+      description: "Manage local module discovery entries",
+      enabled: true,
+      id: "local-module-admin",
+      navIconUrl: positionsIcon,
+      navLocation: "/Administration/Modules",
+      accessRole: "module-admin-access",
+      mfComponent: "ModuleAdminLocal",
+      mfScope: "moduleAdmin",
+      mfUrl: "http://localhost:5002",
+      name: "module-admin",
+      path: "/administration/modules",
+      title: "Module administration",
+      version: 1,
+      vuu: { connectionId: "module-admin" },
+    },
+
+    {
       clientIdentifier: "vuu-user-admin",
       ComponentProps: { config: localUserAdminConfig },
       description: "Manage local users, groups and roles",
@@ -40,6 +55,39 @@ export const localPortalModuleRegistry = {
       name: "user-admin",
       path: "/administration/users",
       title: "User administration",
+      version: 1,
+      vuu: { connectionId: "user-admin" },
+    },
+    {
+      clientIdentifier: "vuu-table-browser",
+      description: "Browse vuu tables",
+      enabled: true,
+      id: "vuu-table-browser",
+      navIconUrl: positionsIcon,
+      navLocation: "/Tables/Browse",
+      accessRole: "vuu-table-browser-access",
+      mfComponent: "VuuTableBrowser",
+      mfScope: "vuuTableBrowser",
+      mfUrl: "http://localhost:5004",
+      name: "vuu-table-browser",
+      path: "/tables/browse",
+      title: "Vuu Table Browser",
+      version: 1,
+    },
+    {
+      clientIdentifier: "vuu-table-viewer",
+      description: "View a table selected in the Vuu Table Browser",
+      enabled: true,
+      id: "vuu-table-viewer",
+      // Nested module: rendered by vuu-table-browser, not shown in the nav.
+      navLocation: "",
+      accessRole: "vuu-table-viewer-access",
+      mfComponent: "VuuTableViewer",
+      mfScope: "vuuTableViewer",
+      mfUrl: "http://localhost:5005",
+      name: "vuu-table-viewer",
+      path: "/tables/view",
+      title: "Vuu Table Viewer",
       version: 1,
     },
     {
@@ -57,39 +105,24 @@ export const localPortalModuleRegistry = {
       path: "/trading/baskets",
       title: "Basket Trading",
       version: 1,
+      vuu: { connectionId: "basket" },
     },
     {
-      clientIdentifier: "vuu-feature-filter-table",
-      ComponentProps: {
-        tableSchema: simulModule.schemas.instruments,
-      },
-      description: "Browse instruments with local test data",
+      clientIdentifier: "vuu-feature-simple-div",
+      description: "Try out saved state with usePersistentState",
       enabled: true,
-      id: "local-feature-filter-table",
-      navLocation: "/Tables/Instruments",
-      accessRole: "feature-filter-table-access",
-      mfComponent: "VuuFilterTableFeatureLocal",
-      mfScope: "filterTable",
-      mfUrl: "http://localhost:5005",
-      name: "feature-filter-table",
-      path: "/tables/instruments",
-      title: "Instruments",
+      id: "local-feature-simple-div",
+      navIconUrl: positionsIcon,
+      navLocation: "/Examples/Saved state demo",
+      accessRole: "feature-simple-div-access",
+      mfComponent: "SimpleDivLocal",
+      mfScope: "simpleDiv",
+      mfUrl: "http://localhost:5007",
+      name: "feature-simple-div",
+      path: "/examples/saved-state-demo",
+      title: "Saved state demo",
       version: 1,
-    },
-    {
-      clientIdentifier: "vuu-module-admin",
-      description: "Manage local module discovery entries",
-      enabled: true,
-      id: "local-module-admin",
-      navLocation: "/Administration/Modules",
-      accessRole: "module-admin-access",
-      mfComponent: "ModuleAdminLocal",
-      mfScope: "moduleAdmin",
-      mfUrl: "http://localhost:5002",
-      name: "module-admin",
-      path: "/administration/modules",
-      title: "Module administration",
-      version: 1,
+      vuu: { connectionId: "simul" },
     },
   ],
 } satisfies PortalModuleRegistry;
