@@ -59,6 +59,21 @@ vi.mock("@vuu-ui/vuu-data-react", () => ({
 vi.mock("../../src/portal-header/PortalHeader", () => ({
   PortalHeader: () => <div data-portal-header />,
 }));
+vi.mock("../../src/portal-nav-panel/PortalNavPanel", () => ({
+  PortalNavPanel: ({
+    remoteModules,
+  }: {
+    remoteModules: RemoteModuleDescriptor[];
+  }) => (
+    <nav className="vuuPortalNavPanel">
+      {remoteModules.map(({ id, path }) => (
+        <Link className="vuuPortalNavPanel-link" key={id} to={path}>
+          {path}
+        </Link>
+      ))}
+    </nav>
+  ),
+}));
 vi.mock("../../src/remote-module/RemoteModule", async () => {
   const { usePortalModuleRegistry } = await import(
     "../../src/portal-module-registry/PortalModuleRegistry"
@@ -197,6 +212,28 @@ describe("Portal and window shells", () => {
         theme: "vuu-theme",
       },
     });
+  });
+
+  it("renders the PortalNavPanel at the root path and navigates to a module", async () => {
+    await act(async () => {
+      root.render(<PortalShell remoteModules={modules} title="Portal" />);
+    });
+
+    const links = [
+      ...container.querySelectorAll<HTMLAnchorElement>(
+        ".vuuPortalShell-content .vuuPortalNavPanel-link",
+      ),
+    ];
+    expect(links.map((link) => link.getAttribute("href"))).toEqual([
+      "/users/admin",
+      "/orders",
+    ]);
+    expect(container.querySelector("output")).toBeNull();
+
+    await act(async () => links[1].click());
+    expect(window.location.pathname).toBe("/orders");
+    expect(container.querySelector(".vuuPortalNavPanel")).toBeNull();
+    expect(container.querySelector("output")?.dataset.module).toBe("Orders");
   });
 
   it("uses an injected data source provider instead of the remote default", async () => {

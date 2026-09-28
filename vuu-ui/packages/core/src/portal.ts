@@ -4,6 +4,10 @@ export {
 } from "./portal-header/PortalHeader";
 export { PortalNav, type PortalNavProps } from "./portal-nav/PortalNav";
 export {
+  PortalNavPanel,
+  type PortalNavPanelProps,
+} from "./portal-nav-panel/PortalNavPanel";
+export {
   PortalAppSwitcher,
   type AppSwitcherDisplayStyle,
   type AppSwitcherMenuStyle,
