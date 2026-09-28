@@ -11,7 +11,7 @@
     "title": "userAdmin (standalone)"
   },
   "server": {
-    "corsOrigins": ["http://localhost:5002"]
+    "corsOrigins": ["http://localhost:5001"]
   },
   "moduleFederation": {
     "name": "userAdmin",

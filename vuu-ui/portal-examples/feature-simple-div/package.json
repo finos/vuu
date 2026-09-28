@@ -33,13 +33,6 @@
   "vuu": {
     "featureProps": {
       "vuuTables": "*"
-    },
-    "module-federation": {
-      "exposes": {
-        "./SimpleDiv": "./src/SimpleDiv"
-      },
-      "name": "simpleDiv",
-      "port": 5004
     }
   }
 }

@@ -41,7 +41,7 @@
         "./VuuTableBrowser": "src/VuuTableBrowser"
       },
       "name": "vuuTableBrowser",
-      "port": 5009
+      "port": 5004
     }
   }
 }
