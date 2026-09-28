@@ -326,7 +326,7 @@ authorized to access.
 ### Configure local mode
 
 The local bootstrap supplies a deterministic identity, a checked-in registry,
-and `LocalDataSourceProvider`:
+the in-browser Vuu servers, and `LocalDataSourceProvider`:
 
 ```tsx
 import { init } from "@module-federation/enhanced/runtime";
@@ -335,6 +335,7 @@ import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { localPortalModuleRegistry } from "./local-module-registry";
+import { localVuuServers } from "./local-vuu-servers";
 
 init({ name: "host", remotes: [] });
 
@@ -344,6 +345,7 @@ if (!root) throw new Error("No React root defined in page");
 createRoot(root).render(
   <AuthenticationProvider
     authorizations={["local-developer"]}
+    localServers={localVuuServers}
     mode="local"
     registry={localPortalModuleRegistry}
     user={{ userName: "local-user" }}
@@ -357,6 +359,72 @@ Local authentication publishes a synthetic VUU session, so
 `useAuthenticatedUser()`, `useModuleRegistry()`, `useVuuConnectionId()`, and
 `useVuuAccessToken()` remain structurally available. It does not contact
 Keycloak, exchange tokens, or open a websocket.
+
+### Publish the available Vuu servers
+
+Some modules, such as `vuu-table-browser`, work with whichever Vuu servers the
+user can reach rather than with one fixed server. The registry lists those
+servers in `servers`, alongside `modules`:
+
+```ts
+export const localPortalModuleRegistry = {
+  modules: [
+    /* ... */
+  ],
+  servers: [
+    { connectionId: "simul", title: "Simulation" },
+    { connectionId: "basket", title: "Basket trading" },
+    { connectionId: "admin", title: "Administration" },
+  ],
+} satisfies PortalModuleRegistry;
+```
+
+A `VuuServerDescriptor` is `{ connectionId, title, description?, restUrl?,
+websocketUrl? }`, the same connection shape as a module's `vuu` field, so it
+is serializable and a portal server can return it in `LOGIN_SUCCESS`. Omit
+`restUrl` and `websocketUrl` only for the portal's own Vuu server.
+
+Modules read the list with `useVuuServers()`. It returns, in order of
+precedence, an explicit list passed to the hook, the registry's `servers`, the
+local servers given to a local-mode `AuthenticationProvider`, or the distinct
+`vuu` connections of registered modules. It de-duplicates by `connectionId`
+and omits servers it can't connect to. To show data from a server, render a
+remote with `vuu={{ connectionId, restUrl, websocketUrl }}`, or wrap content in
+`<AuthenticationProvider mode="vuu-connection" connection={...}>`.
+
+In local mode there is no websocket, so each server is simulated in the
+browser. `createLocalVuuServer` from `@vuu-ui/vuu-data-test` builds one from a
+set of `VuuModule`s:
+
+```ts
+import {
+  basketModule,
+  createLocalVuuServer,
+  simulModule,
+} from "@vuu-ui/vuu-data-test";
+
+export const localVuuServers = [
+  createLocalVuuServer({
+    connectionId: "simul",
+    modules: [simulModule],
+    title: "Simulation",
+  }),
+  createLocalVuuServer({
+    connectionId: "basket",
+    modules: [basketModule],
+    title: "Basket trading",
+  }),
+];
+```
+
+Pass them to the local `AuthenticationProvider` as `localServers`. A
+`vuu-connection` whose `connectionId` matches a local server gets that
+server's data context, whose `getTableList`, `getTableSchema`, and
+`VuuDataSource` cover only its own modules. A connection with no matching
+local server fails with an `AuthenticationConfigurationError`. Test packages
+other than `vuu-data-test` can provide a local server by implementing
+`LocalVuuServer` directly: a descriptor plus a `DataSourceProvider`
+component.
 
 ## 4. Define remote descriptors
 
@@ -696,22 +764,31 @@ The current local example uses:
 
 | Port | Artifact |
 | --- | --- |
-| 5002 | portal host when run with its package `start:local` script |
+| 5001 | portal host, with its package `start:local` script |
+| 5002 | module-admin |
 | 5003 | user-admin |
-| 5004 | vuu-table-viewer, not part of the initial local proof |
-| 5005 | basket-trading |
-| 5006 | feature-filter-table |
+| 5004 | vuu-table-browser |
+| 5005 | vuu-table-viewer |
+| 5006 | basket-trading |
+| 5007 | feature-simple-div |
+
+`feature-filter-table` and `feature-instrument-tiles` are not in the local
+registry. Their start scripts reuse ports 5005 and 5007, so don't run them
+alongside the local example.
 
 Start the local example in separate terminals:
 
 ```sh
+npm --prefix portal-examples/module-admin run start
 npm --prefix portal-examples/user-admin run start
+npm --prefix portal-examples/vuu-table-browser run start
+npm --prefix portal-examples/vuu-table-viewer run start
 npm --prefix portal-examples/basket-trading run start
-npm --prefix portal-examples/feature-filter-table run start
+npm --prefix portal-examples/feature-simple-div run start
 npm --prefix portal-examples/portal-host run start:local
 ```
 
-Then open `http://localhost:5002`.
+Then open `http://localhost:5001`.
 
 When using nginx, map its host listener to `dist_portal/portal-host` and map
 each remote origin to its corresponding `dist_portal/<package>` directory. The
@@ -902,6 +979,11 @@ The following portal examples demonstrate the complete pattern:
   exposures;
 - `portal-examples/user-admin`: production and local user-admin exposures;
 - `portal-examples/feature-simple-div`: saved state with `usePersistentState`
-  and an exported `stateMigrations`; and
+  and an exported `stateMigrations`;
+- `portal-examples/vuu-table-browser` and `vuu-table-viewer`: browsing the
+  tables of every server from `useVuuServers()`, with one viewer remote per
+  server, bound to it through `vuu`;
+- `portal-examples/portal-host/src/local-vuu-servers.ts`: local servers built
+  with `createLocalVuuServer`; and
 - `packages/vuu-data-test/src/user-admin`: a browser-local multi-table VUU
   module with domain RPC behavior.

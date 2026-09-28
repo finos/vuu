@@ -3,7 +3,6 @@ import { localPortalModuleRegistry } from "../src/local-module-registry";
 
 describe("local portal module registry", () => {
   it("uses local adapter exposures without remote VUU connections", () => {
-    expect(localPortalModuleRegistry.modules).toHaveLength(4);
     expect(
       localPortalModuleRegistry.modules.map(
         ({ mfComponent, mfScope, mfUrl }) => ({
@@ -14,9 +13,24 @@ describe("local portal module registry", () => {
       ),
     ).toEqual([
       {
+        mfComponent: "ModuleAdminLocal",
+        mfScope: "moduleAdmin",
+        mfUrl: "http://localhost:5002",
+      },
+      {
         mfComponent: "UserAdminLocal",
         mfScope: "userAdmin",
         mfUrl: "http://localhost:5003",
+      },
+      {
+        mfComponent: "VuuTableBrowser",
+        mfScope: "vuuTableBrowser",
+        mfUrl: "http://localhost:5004",
+      },
+      {
+        mfComponent: "VuuTableViewer",
+        mfScope: "vuuTableViewer",
+        mfUrl: "http://localhost:5005",
       },
       {
         mfComponent: "VuuBasketTradingFeatureLocal",
@@ -24,14 +38,9 @@ describe("local portal module registry", () => {
         mfUrl: "http://localhost:5006",
       },
       {
-        mfComponent: "VuuFilterTableFeatureLocal",
-        mfScope: "filterTable",
-        mfUrl: "http://localhost:5005",
-      },
-      {
-        mfComponent: "ModuleAdminLocal",
-        mfScope: "moduleAdmin",
-        mfUrl: "http://localhost:5002",
+        mfComponent: "SimpleDivLocal",
+        mfScope: "simpleDiv",
+        mfUrl: "http://localhost:5007",
       },
     ]);
     expect(
@@ -39,7 +48,11 @@ describe("local portal module registry", () => {
         (descriptor) => !("vuu" in descriptor),
       ),
     ).toBe(true);
-    expect(localPortalModuleRegistry.modules[0].ComponentProps).toEqual({
+    expect(
+      localPortalModuleRegistry.modules.find(
+        ({ name }) => name === "user-admin",
+      )?.ComponentProps,
+    ).toEqual({
       config: {
         clients: { table: { module: "USER_ADMIN", table: "clients" } },
         group_roles: {
@@ -56,20 +69,6 @@ describe("local portal module registry", () => {
         users: { table: { module: "USER_ADMIN", table: "users" } },
       },
     });
-    expect(
-      localPortalModuleRegistry.modules.map(({ accessRole, name }) => ({
-        accessRole,
-        name,
-      })),
-    ).toEqual([
-      { accessRole: "user-admin-access", name: "user-admin" },
-      { accessRole: "basket-trading-access", name: "basket-trading" },
-      {
-        accessRole: "feature-filter-table-access",
-        name: "feature-filter-table",
-      },
-      { accessRole: "module-admin-access", name: "module-admin" },
-    ]);
   });
 
   it("loads basket trading from its nginx endpoint", () => {
@@ -84,7 +83,10 @@ describe("local portal module registry", () => {
   });
 
   it("maps module-admin to its local adapter manifest and permitted metadata", () => {
-    expect(localPortalModuleRegistry.modules[3]).toMatchObject({
+    const moduleAdmin = localPortalModuleRegistry.modules.find(
+      ({ name }) => name === "module-admin",
+    );
+    expect(moduleAdmin).toMatchObject({
       clientIdentifier: "vuu-module-admin",
       id: "local-module-admin",
       accessRole: "module-admin-access",
@@ -94,6 +96,12 @@ describe("local portal module registry", () => {
       name: "module-admin",
       path: "/administration/modules",
     });
-    expect(localPortalModuleRegistry.modules[3]).not.toHaveProperty("vuu");
+    expect(moduleAdmin).not.toHaveProperty("vuu");
+  });
+
+  it("lists the Vuu servers offered by the table browser", () => {
+    expect(
+      localPortalModuleRegistry.servers.map(({ connectionId }) => connectionId),
+    ).toEqual(["simul", "basket", "admin"]);
   });
 });

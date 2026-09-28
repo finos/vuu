@@ -76,4 +76,31 @@ describe("VuuTableViewer", () => {
     expect(registration.unregisterTables).toHaveBeenCalledWith("test-source");
     root = createRoot(container);
   });
+
+  it("explains how to use it when opened outside the table browser", async () => {
+    const getTableList = vi.fn(async () => ({ tables }));
+    await act(async () => {
+      root.render(
+        <DataProvider
+          VuuDataSource={VuuDataSource}
+          getServerAPI={async () => ({
+            getTableList,
+            getTableSchema: async () => {
+              throw Error("not used");
+            },
+            rpcCall: async () => {
+              throw Error("not used");
+            },
+          })}
+        >
+          <VuuTableViewer />
+        </DataProvider>,
+      );
+    });
+
+    expect(container.querySelector('[role="status"]')?.textContent).toBe(
+      "Select a table in the Vuu Table Browser.",
+    );
+    expect(getTableList).not.toHaveBeenCalled();
+  });
 });

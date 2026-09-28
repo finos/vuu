@@ -1,5 +1,4 @@
 import type { PortalModuleRegistry } from "@vuu-ui/core";
-import { simulModule } from "@vuu-ui/vuu-data-test";
 import type { AdminConfig } from "../../user-admin/src/data/admin-contract";
 
 
@@ -68,7 +67,7 @@ export const localPortalModuleRegistry = {
       navLocation: "/Tables/Browse",
       accessRole: "vuu-table-browser-access",
       mfComponent: "VuuTableBrowser",
-      mfScope: "VuuTableBrowser",
+      mfScope: "vuuTableBrowser",
       mfUrl: "http://localhost:5004",
       name: "vuu-table-browser",
       path: "/tables/browse",
@@ -84,7 +83,7 @@ export const localPortalModuleRegistry = {
       navLocation: "/Table",
       accessRole: "vuu-table-viewer-access",
       mfComponent: "VuuTableViewer",
-      mfScope: "VuuTableViewer",
+      mfScope: "vuuTableViewer",
       mfUrl: "http://localhost:5005",
       name: "vuu-table-viewer",
       path: "/tables/view",
@@ -122,6 +121,27 @@ export const localPortalModuleRegistry = {
       path: "/examples/saved-state-demo",
       title: "Saved state demo",
       version: 1,
+    },
+  ],
+  /**
+   * The Vuu servers offered by the table browser. In local mode each one is
+   * simulated in the browser; see local-vuu-servers.ts.
+   */
+  servers: [
+    {
+      connectionId: "simul",
+      description: "Instruments, prices, orders and fills",
+      title: "Simulation",
+    },
+    {
+      connectionId: "basket",
+      description: "Baskets and basket trading",
+      title: "Basket trading",
+    },
+    {
+      connectionId: "admin",
+      description: "Users, groups, roles and module discovery",
+      title: "Administration",
     },
   ],
 } satisfies PortalModuleRegistry;
