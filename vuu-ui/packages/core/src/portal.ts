@@ -3,6 +3,11 @@ export {
   type PortalHeaderProps,
 } from "./portal-header/PortalHeader";
 export { PortalNav, type PortalNavProps } from "./portal-nav/PortalNav";
+export { PortalLogo, type PortalLogoProps } from "./portal-logo/PortalLogo";
+export {
+  PortalNavPanel,
+  type PortalNavPanelProps,
+} from "./portal-nav-panel/PortalNavPanel";
 export {
   PortalAppSwitcher,
   type AppSwitcherDisplayStyle,

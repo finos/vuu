@@ -6,8 +6,10 @@ import {
   NavContainer,
   PortalAppSwitcher,
   PortalHeader,
+  PortalLogo,
   PortalShell,
 } from "@vuu-ui/core/portal";
+import { VuuLogo } from "@vuu-ui/vuu-icons";
 import type { ComponentType, ReactNode } from "react";
 
 import "./App.css";
@@ -30,6 +32,9 @@ export const App = ({ DataSourceProvider }: AppProps) => {
       DataSourceProvider={DataSourceProvider}
     >
       <NavContainer>
+        <PortalLogo alt="Portal home">
+          <VuuLogo />
+        </PortalLogo>
         <PortalAppSwitcher
           displayStyle="icon-only"
           remoteModules={remoteModules}

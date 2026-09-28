@@ -8,6 +8,7 @@ import {
   Routes,
 } from "react-router-dom";
 import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
+import { PortalNavPanel } from "../portal-nav-panel/PortalNavPanel";
 import { PortalModuleRegistryProvider } from "../portal-module-registry/PortalModuleRegistry";
 import { RemoteModule } from "../remote-module/RemoteModule";
 import {
@@ -110,7 +111,7 @@ const PortalLayout = () => {
           <Routes>
             <Route
               path="/"
-              element={<div style={{ background: "black", height: "100%" }} />}
+              element={<PortalNavPanel remoteModules={remoteModules} />}
             />
             {remoteModules.map(({ id, path, ...feature }) => {
               return (
