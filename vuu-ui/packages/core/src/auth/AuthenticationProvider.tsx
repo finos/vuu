@@ -474,8 +474,7 @@ const LocalAuthenticationProvider = ({
   user = { userName: "local-user" },
 }: LocalAuthenticationProps) => {
   const localServerMap = useMemo(
-    () =>
-      new Map(localServers.map((server) => [server.connectionId, server])),
+    () => new Map(localServers.map((server) => [server.connectionId, server])),
     [localServers],
   );
   const session = useMemo<VuuSession>(
@@ -581,29 +580,15 @@ export const usePortalVuuAuthTarget = () => {
   return identity.portalTarget;
 };
 
-const toServerDescriptor = ({
-  connectionId,
-  description,
-  restUrl,
-  title,
-  websocketUrl,
-}: VuuServerDescriptor): VuuServerDescriptor => ({
-  connectionId,
-  title,
-  ...(description === undefined ? {} : { description }),
-  ...(restUrl === undefined ? {} : { restUrl }),
-  ...(websocketUrl === undefined ? {} : { websocketUrl }),
-});
-
 const isUsableServer = (
-  server: VuuServerDescriptor,
+  connection: RemoteModuleConnection,
   identity: IdentityContextValue,
 ) => {
   if (identity.localServers) {
-    return identity.localServers.has(server.connectionId);
+    return identity.localServers.has(connection.connectionId);
   }
   try {
-    normalizeVuuAuthTarget(server, identity.portalTarget);
+    normalizeVuuAuthTarget(connection, identity.portalTarget);
     return true;
   } catch {
     return false;
@@ -611,49 +596,39 @@ const isUsableServer = (
 };
 
 /**
- * The Vuu servers available to the user, de-duplicated by `connectionId`.
- *
- * Servers come from, in order of precedence: the `servers` argument, the
- * portal registry's `servers`, the local servers passed to a local-mode
- * `AuthenticationProvider`, or the `vuu` connections of registered modules.
- * Servers that can't be connected to are omitted: in local mode, those with
- * no local implementation; otherwise, those missing `restUrl` or
- * `websocketUrl` that aren't the portal's own server.
+ * The distinct Vuu servers referenced by the `vuu` connections of registered
+ * modules, in registry order. Servers that can't be connected to are
+ * omitted: in local mode, those with no local implementation; otherwise,
+ * those missing `restUrl` or `websocketUrl` that aren't the portal's own
+ * server.
  */
-export const useVuuServers = (
-  servers?: VuuServerDescriptor[],
-): VuuServerDescriptor[] => {
+export const useVuuServers = (): VuuServerDescriptor[] => {
   const identity = useContext(IdentityContext);
   return useMemo(() => {
+    const servers = new Map<string, VuuServerDescriptor>();
     if (!identity) {
-      return servers ? dedupeServers(servers.map(toServerDescriptor)) : [];
+      return [];
     }
-    const moduleRegistry = identity.moduleRegistry;
-    const candidates =
-      servers ??
-      moduleRegistry?.servers ??
-      (identity.localServers && identity.localServers.size > 0
-        ? Array.from(identity.localServers.values())
-        : (moduleRegistry?.modules ?? []).flatMap(({ vuu }) =>
-            vuu ? [{ ...vuu, title: vuu.connectionId }] : [],
-          ));
-    return dedupeServers(
-      candidates
-        .filter((server) => isUsableServer(server, identity))
-        .map(toServerDescriptor),
-    );
-  }, [identity, servers]);
-};
-
-const dedupeServers = (servers: VuuServerDescriptor[]) => {
-  const seen = new Set<string>();
-  return servers.filter(({ connectionId }) => {
-    if (seen.has(connectionId)) {
-      return false;
+    for (const { title, vuu } of identity.moduleRegistry?.modules ?? []) {
+      if (!vuu || !isUsableServer(vuu, identity)) {
+        continue;
+      }
+      const server = servers.get(vuu.connectionId);
+      if (server) {
+        server.moduleTitles.push(title);
+      } else {
+        servers.set(vuu.connectionId, {
+          connectionId: vuu.connectionId,
+          moduleTitles: [title],
+          ...(vuu.restUrl === undefined ? {} : { restUrl: vuu.restUrl }),
+          ...(vuu.websocketUrl === undefined
+            ? {}
+            : { websocketUrl: vuu.websocketUrl }),
+        });
+      }
     }
-    seen.add(connectionId);
-    return true;
-  });
+    return Array.from(servers.values());
+  }, [identity]);
 };
 
 export const useLogout = () => {

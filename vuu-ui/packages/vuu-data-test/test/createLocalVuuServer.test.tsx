@@ -49,32 +49,24 @@ describe("createLocalVuuServer", () => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = false;
   });
 
-  it("registers its modules and describes the server", () => {
+  it("registers its modules", () => {
     const server = createLocalVuuServer({
       connectionId: "simul",
-      description: "Simulated market data",
       modules: [simulModule],
-      title: "Simulation",
     });
 
     expect(moduleContainer.has("SIMUL")).toBe(true);
-    expect(server).toMatchObject({
-      connectionId: "simul",
-      description: "Simulated market data",
-      title: "Simulation",
-    });
+    expect(server.connectionId).toBe("simul");
   });
 
   it("publishes only the tables of its own modules", async () => {
     const simul = createLocalVuuServer({
       connectionId: "simul",
       modules: [simulModule],
-      title: "Simulation",
     });
     createLocalVuuServer({
       connectionId: "basket",
       modules: [basketModule],
-      title: "Baskets",
     });
 
     const serverAPI = await captureServerAPI(simul.DataSourceProvider);
@@ -96,7 +88,6 @@ describe("createLocalVuuServer", () => {
     createLocalVuuServer({
       connectionId: "all",
       modules: [simulModule, basketModule],
-      title: "All",
     });
     const serverAPI = await captureServerAPI(LocalDataSourceProvider);
     const { tables } = await serverAPI.getTableList();

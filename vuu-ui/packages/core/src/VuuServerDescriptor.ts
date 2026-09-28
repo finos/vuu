@@ -2,14 +2,13 @@ import type { RemoteModuleConnection } from "@vuu-ui/vuu-data-types";
 import type { ComponentType, ReactNode } from "react";
 
 /**
- * A Vuu server the portal can connect to. The portal registry may publish a
- * list of these so that modules such as the table browser can offer the user
- * a choice of server. `restUrl` and `websocketUrl` may be omitted when the
- * server is the portal's own Vuu server.
+ * A Vuu server referenced by the `vuu` connection of one or more registered
+ * modules. `restUrl` and `websocketUrl` are absent when the server is the
+ * portal's own Vuu server.
  */
 export interface VuuServerDescriptor extends RemoteModuleConnection {
-  description?: string;
-  title: string;
+  /** Titles of the registered modules that use this server. */
+  moduleTitles: string[];
 }
 
 /**
@@ -17,6 +16,7 @@ export interface VuuServerDescriptor extends RemoteModuleConnection {
  * mode. `DataSourceProvider` supplies the data context (serverAPI and
  * VuuDataSource) for the tables this server publishes.
  */
-export interface LocalVuuServer extends VuuServerDescriptor {
+export interface LocalVuuServer {
+  connectionId: string;
   DataSourceProvider: ComponentType<{ children: ReactNode }>;
 }

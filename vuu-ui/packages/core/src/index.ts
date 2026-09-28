@@ -15,6 +15,7 @@ export {
   useData,
 } from "./context-definitions/DataProvider";
 export {
+  type SelectedSourceTable,
   TableRegistrationContext,
   type TableRegistrationContextValue,
   type TableSourceStatus,

@@ -39,7 +39,6 @@ const localServer = (
   marker = connectionId,
 ): LocalVuuServer => ({
   connectionId,
-  title: `${connectionId} title`,
   DataSourceProvider: ({ children }) => (
     <div data-local-server={marker}>{children}</div>
   ),
@@ -69,8 +68,8 @@ describe("Vuu servers", () => {
   let root: Root;
   let servers: VuuServerDescriptor[] | undefined;
 
-  const ServersProbe = ({ explicit }: { explicit?: VuuServerDescriptor[] }) => {
-    servers = useVuuServers(explicit);
+  const ServersProbe = () => {
+    servers = useVuuServers();
     return null;
   };
 
@@ -146,19 +145,19 @@ describe("Vuu servers", () => {
       );
     });
 
-    it("lists registry servers that have a local implementation", async () => {
+    it("lists module servers that have a local implementation", async () => {
       await act(async () => {
         root.render(
           <AuthenticationProvider
             localServers={[localServer("simul"), localServer("basket")]}
             mode="local"
             registry={{
-              modules: [],
-              servers: [
-                { connectionId: "basket", title: "Baskets" },
-                { connectionId: "orders", title: "Orders" },
-                { connectionId: "basket", title: "Duplicate" },
-                { connectionId: "simul", title: "Simulation" },
+              modules: [
+                moduleDescriptor("baskets", { connectionId: "basket" }),
+                moduleDescriptor("no-vuu"),
+                moduleDescriptor("orders", { connectionId: "orders" }),
+                moduleDescriptor("tiles", { connectionId: "simul" }),
+                moduleDescriptor("basket-admin", { connectionId: "basket" }),
               ],
             }}
           >
@@ -168,46 +167,25 @@ describe("Vuu servers", () => {
       });
 
       expect(servers).toEqual([
-        { connectionId: "basket", title: "Baskets" },
-        { connectionId: "simul", title: "Simulation" },
+        { connectionId: "basket", moduleTitles: ["baskets", "basket-admin"] },
+        { connectionId: "simul", moduleTitles: ["tiles"] },
       ]);
     });
 
-    it("falls back to the local servers when the registry lists none", async () => {
+    it("lists no servers when no module has a vuu connection", async () => {
       await act(async () => {
         root.render(
           <AuthenticationProvider
-            localServers={[localServer("simul"), localServer("basket")]}
+            localServers={[localServer("simul")]}
             mode="local"
+            registry={{ modules: [moduleDescriptor("no-vuu")] }}
           >
             <ServersProbe />
           </AuthenticationProvider>,
         );
       });
 
-      expect(servers).toEqual([
-        { connectionId: "simul", title: "simul title" },
-        { connectionId: "basket", title: "basket title" },
-      ]);
-    });
-
-    it("prefers an explicit server list", async () => {
-      await act(async () => {
-        root.render(
-          <AuthenticationProvider
-            localServers={[localServer("simul"), localServer("basket")]}
-            mode="local"
-          >
-            <ServersProbe
-              explicit={[{ connectionId: "basket", title: "Only baskets" }]}
-            />
-          </AuthenticationProvider>,
-        );
-      });
-
-      expect(servers).toEqual([
-        { connectionId: "basket", title: "Only baskets" },
-      ]);
+      expect(servers).toEqual([]);
     });
   });
 
@@ -272,45 +250,16 @@ describe("Vuu servers", () => {
       });
 
       expect(servers).toEqual([
-        { ...ordersConnection, title: "orders" },
-        { connectionId: "portal", title: "portal" },
-      ]);
-    });
-
-    it("uses the registry server list when present", async () => {
-      await renderWithRegistry({
-        modules: [
-          moduleDescriptor("blotter", {
-            connectionId: "orders",
-            restUrl: "https://orders.example.test/api/authn",
-            websocketUrl: "wss://orders.example.test/websocket",
-          }),
-        ],
-        servers: [
-          {
-            connectionId: "portal",
-            description: "Portal Vuu server",
-            title: "Portal",
-          },
-        ],
-      });
-
-      expect(servers).toEqual([
-        {
-          connectionId: "portal",
-          description: "Portal Vuu server",
-          title: "Portal",
-        },
+        { ...ordersConnection, moduleTitles: ["blotter", "tickets"] },
+        { connectionId: "portal", moduleTitles: ["portal-tables"] },
       ]);
     });
   });
 
-  it("returns only the explicit servers without an identity provider", async () => {
+  it("lists no servers without an identity provider", async () => {
     await act(async () => {
-      root.render(
-        <ServersProbe explicit={[{ connectionId: "simul", title: "Simul" }]} />,
-      );
+      root.render(<ServersProbe />);
     });
-    expect(servers).toEqual([{ connectionId: "simul", title: "Simul" }]);
+    expect(servers).toEqual([]);
   });
 });

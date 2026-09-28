@@ -112,11 +112,10 @@ const createLocalDataSourceProvider = (moduleNames?: ReadonlySet<string>) => {
 export const LocalDataSourceProvider = createLocalDataSourceProvider();
 
 export interface LocalVuuServerOptions {
+  /** Matches the `vuu.connectionId` of the modules this server serves. */
   connectionId: string;
-  description?: string;
   // biome-ignore lint/suspicious/noExplicitAny: Modules use different table-name unions.
   modules: VuuModule<any>[];
-  title: string;
 }
 
 /**
@@ -126,17 +125,13 @@ export interface LocalVuuServerOptions {
  */
 export const createLocalVuuServer = ({
   connectionId,
-  description,
   modules,
-  title,
 }: LocalVuuServerOptions): LocalVuuServer => {
   modules.forEach(ensureVuuModule);
   return {
     connectionId,
-    ...(description === undefined ? {} : { description }),
     DataSourceProvider: createLocalDataSourceProvider(
       new Set(modules.map(({ name }) => name)),
     ),
-    title,
   };
 };
