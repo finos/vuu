@@ -1,0 +1,8 @@
+.vuuEditField {
+    .saltDropdown {
+        --vuu-icon-height: 15px;
+        --vuu-icon-left: calc(100% - var(--salt-spacing-300));
+        --vuu-icon-size: 8px;
+        --vuu-icon-top: -3px;
+    }
+}

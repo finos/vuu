@@ -3,6 +3,13 @@ export { DataEditingProvider, useEditSession } from "./DataEditingProvider";
 export { EditField } from './edit-field/EditField';
 export { useEditField } from './edit-field/useEditField';
 export {
+  lookupOptionsFromRows,
+  useLookupValues,
+  type LookupOption,
+  type LookupValuedHookProps,
+  type OptionMap,
+} from "./lookup-values/useLookupValues";
+export {
   getVuuEditMessage, isEditRowReadOnly, isInlineEditingSession, withDataRowEditErrors
 } from "./edit-utils";
 export {
@@ -38,4 +45,3 @@ export {
   type EditMode
 } from "./useEditableTable";
 export { useEditState } from "./useEditState";
-

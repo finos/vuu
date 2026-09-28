@@ -117,6 +117,26 @@ describe("EditSession lifecycle", () => {
     expect(editSession.addCount).toBe(1);
   });
 
+  it("adds a new row through the datasource addRow method", async () => {
+    const datasourceAddRow = vi.fn<AddRow>().mockResolvedValue(SUCCESS);
+    const source = new MockDataSource(
+      endEdit,
+      createSession,
+      editCell,
+      datasourceAddRow,
+    ) as unknown as DataSource;
+    editSession = new EditSession({ dataSource: source });
+    editSession.configureNewRow(["role_name"], ["role_name"]);
+    editSession.setNewRowValue("role_name", "Administrator");
+
+    await expect(editSession.addNewRow()).resolves.toEqual(SUCCESS);
+
+    expect(datasourceAddRow).toHaveBeenCalledWith({
+      role_name: "Administrator",
+    });
+    expect(editSession.addCount).toBe(1);
+  });
+
   it("does not update the add count when adding a row fails", async () => {
     const addRow = vi.fn<AddRow>().mockResolvedValue({
       errorMessage: "Insert rejected",

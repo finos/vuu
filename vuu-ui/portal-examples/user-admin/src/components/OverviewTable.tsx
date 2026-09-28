@@ -1,24 +1,18 @@
-import type { TableConfig } from "@vuu-ui/vuu-table-types";
-import { Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
+import { Table } from "@vuu-ui/vuu-table";
+import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import { useMemo } from "react";
 import { CLIENT_IDENTIFIER_CELL_RENDERER } from "./ClientIdentifierCell";
 import { MODULE_ACCESS_CELL_RENDERER } from "./ModuleAccessCell";
 import { useAdminConfig } from "../data/AdminDataContext";
 import {
-  displayColumnsFor,
   columnFor,
+  displayColumnsFor,
   type AdminQuery,
   type AdminRecord,
   type AdminTableName,
 } from "../data/admin-contract";
 import { useAdminTable, type AdminTableResource } from "../data/useAdminTable";
-
-const MODULE_CLIENT_IDENTIFIER_TABLES = new Set<AdminTableName>([
-  "roles",
-  "group_roles",
-  "user_group_roles",
-]);
 
 const withModuleAccessRenderer = (
   name: AdminTableName,
@@ -40,7 +34,7 @@ const withClientIdentifierRenderer = (
   column: ReturnType<typeof displayColumnsFor>[number],
   clientIdentifierColumn: string,
 ) =>
-  MODULE_CLIENT_IDENTIFIER_TABLES.has(name) &&
+  ["roles", "group_roles", "user_group_roles"].includes(name) &&
   column.name === clientIdentifierColumn
     ? {
         ...column,
@@ -51,7 +45,7 @@ const withClientIdentifierRenderer = (
       }
     : column;
 
-export interface AdminTableViewProps {
+export interface OverviewTableViewProps {
   name: AdminTableName;
   resource: AdminTableResource;
   onSelect?: (record: AdminRecord | undefined) => void;
@@ -59,13 +53,13 @@ export interface AdminTableViewProps {
   title?: string;
 }
 
-export const AdminTableView = ({
+const OverviewTableView = ({
   name,
   resource: { schema, dataSource, error, loading },
   onSelect,
   selectionDisabled,
   title,
-}: AdminTableViewProps) => {
+}: OverviewTableViewProps) => {
   const adminConfig = useAdminConfig();
   const config = useMemo<TableConfig>(
     () => ({
@@ -148,14 +142,14 @@ export const AdminTableView = ({
   );
 };
 
-export const AdminTable = ({
+export const OverviewTable = ({
   name,
   query,
   ...props
-}: Omit<AdminTableViewProps, "resource"> & {
+}: Omit<OverviewTableViewProps, "resource"> & {
   name: AdminTableName;
   query?: AdminQuery;
 }) => {
   const resource = useAdminTable(name, query);
-  return <AdminTableView {...props} name={name} resource={resource} />;
+  return <OverviewTableView {...props} name={name} resource={resource} />;
 };

@@ -1,18 +1,35 @@
-import { Checkbox, FormField, FormFieldLabel, Input } from "@salt-ds/core";
+import {
+  Checkbox,
+  Dropdown,
+  FormField,
+  FormFieldLabel,
+  Input,
+  Option,
+} from "@salt-ds/core";
 import type { DataRow, TableCellEditHandler } from "@vuu-ui/vuu-table-types";
 import { useCallback } from "react";
 import { useEditField } from "./useEditField";
 import { useEditSession } from "../DataEditingProvider";
-import { dataDescriptorTypeToVuuRowDataItemType } from "@vuu-ui/vuu-utils";
+import { dataDescriptorTypeToVuuRowDataItemType } from "@vuu-ui/vuu-utils/src/data-utils";
 import type { DataValueValidationChecker } from "@vuu-ui/vuu-data-types";
-import type { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
+import type { VuuColumnDataType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { useEditMode } from "../EditModeProvider";
+import {
+  useLookupValues,
+  type LookupOption,
+  type OptionMap,
+} from "../lookup-values/useLookupValues";
+
+import "./EditField.css";
 
 export type TextFieldType = "email" | "password";
-export type EditFieldType = "checkbox" | TextFieldType;
+export type EditFieldType = "checkbox" | "dropdown" | TextFieldType;
+
+const classBase = "vuuEditField";
 
 export interface EditFieldProps {
   dataRow: DataRow;
+  deferNewRow?: boolean;
   label: string;
   name: string;
   readOnly?: boolean;
@@ -20,17 +37,30 @@ export interface EditFieldProps {
   type?: EditFieldType;
 }
 
+export interface DropdownEditFieldProps extends EditFieldProps {
+  type: "dropdown";
+  optionMap: OptionMap;
+  table: VuuTable;
+}
+
 export const EditField = ({
   dataRow,
+  deferNewRow = false,
   label,
   name,
   readOnly = false,
   required,
   type,
-}: EditFieldProps) => {
+  ...options
+}: EditFieldProps | DropdownEditFieldProps) => {
   const editSession = useEditSession();
 
   const { isEditMode } = useEditMode();
+
+  const lookupValues = useLookupValues({
+    enabled: type === "dropdown",
+    ...options,
+  });
 
   const onEdit = useCallback<TableCellEditHandler>(
     async (editState, editPhase) => {
@@ -43,8 +73,9 @@ export const EditField = ({
           }
           editSession.setNewRowValue(name, value);
           if (
-            editSession.isNewRowFinalColumn(name) ||
-            editSession.isNewRowComplete()
+            !deferNewRow &&
+            (editSession.isNewRowFinalColumn(name) ||
+              editSession.isNewRowComplete())
           ) {
             return editSession.addNewRow();
           }
@@ -59,8 +90,16 @@ export const EditField = ({
           isValid,
         );
       }
+      if (
+        editPhase === "change" &&
+        deferNewRow &&
+        editSession?.isNewRow(dataRow.key)
+      ) {
+        editSession.setNewRowValue(name, value);
+        return { data: undefined, type: "SUCCESS_RESULT" };
+      }
     },
-    [dataRow, editSession, name],
+    [dataRow, deferNewRow, editSession, name],
   );
 
   const onCommit = useCallback(() => {
@@ -80,19 +119,22 @@ export const EditField = ({
   const {
     editing,
     inputProps,
-    warningMessage,
+    onDropdownSelectionChange,
+    onKeyDown,
     previousValue = "",
+    value,
+    warningMessage,
     ...editProps
   } = useEditField({
     column,
-    textType: type !== "checkbox" ? type : undefined,
+    textType: type !== "checkbox" && type !== "dropdown" ? type : undefined,
     onEdit,
     type: dataDescriptorTypeToVuuRowDataItemType(column),
     value: dataValue,
   });
 
   return (
-    <FormField data-field={name} necessity={necessity}>
+    <FormField className={classBase} data-field={name} necessity={necessity}>
       <FormFieldLabel>{label}</FormFieldLabel>
       {isEditMode === false ? (
         <Input
@@ -102,8 +144,27 @@ export const EditField = ({
         />
       ) : type === "checkbox" ? (
         <Checkbox checked={Boolean(dataValue)} onChange={onCommit} />
+      ) : type === "dropdown" ? (
+        <Dropdown<LookupOption>
+          data-icon="triangle-down"
+          onSelectionChange={onDropdownSelectionChange}
+          placeholder="Please select value"
+          value={value}
+        >
+          {lookupValues.map((listOption) => (
+            <Option key={listOption.value} value={listOption}>
+              {listOption.label}
+            </Option>
+          ))}
+        </Dropdown>
       ) : (
-        <Input {...editProps} bordered readOnly={readOnly} />
+        <Input
+          {...editProps}
+          bordered
+          onKeyDown={onKeyDown}
+          readOnly={readOnly}
+          value={value}
+        />
       )}
     </FormField>
   );
