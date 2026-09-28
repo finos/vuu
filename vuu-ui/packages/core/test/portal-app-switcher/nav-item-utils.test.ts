@@ -11,7 +11,7 @@ const remoteModule = (
   description: "Test module",
   id,
   navLocation,
-  accessRole: "test-login",
+  accessRole: "test-access",
   mfComponent: "TestModule",
   mfScope: "test",
   mfUrl: "https://modules.example/mf-manifest.json",

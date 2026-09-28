@@ -6,6 +6,12 @@ import type {
 } from "@vuu-ui/vuu-table-types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { GROUP_APPLICATION_CELL_RENDERER } from "../../components/ApplicationCell";
+import { USER_ADMIN_TABLES } from "../../data/user-admin-tables";
+import {
+  groupScopeFilter,
+  useApplicationScope,
+} from "../../data/useApplicationScope";
 
 export const useGroupsPage = () => {
   const { VuuDataSource } = useData();
@@ -24,20 +30,32 @@ export const useGroupsPage = () => {
           "user_count",
           "role_count",
         ],
-        table: { module: "USER_ADMIN", table: "groups" },
+        table: USER_ADMIN_TABLES.groups,
       }),
     [VuuDataSource],
+  );
+  const { application, setApplication } = useApplicationScope(
+    dataSource,
+    groupScopeFilter,
   );
 
   const config = useMemo<TableConfig>(
     () => ({
       columns: [
+        {
+          name: "group_id",
+          label: "Application",
+          type: {
+            name: "string",
+            renderer: { name: GROUP_APPLICATION_CELL_RENDERER },
+          },
+          width: 180,
+        },
         { name: "group_display_name", label: "Group" },
         { name: "group_path", label: "Path", width: 240 },
         { name: "user_count", label: "Users" },
         { name: "role_count", label: "Roles" },
         { name: "parent_group_id", label: "", hidden: true },
-        { name: "group_id", label: "", hidden: true },
       ],
       columnSeparators: true,
       zebraStripes: true,
@@ -82,6 +100,7 @@ export const useGroupsPage = () => {
   }, [handleCreateGroup, params, setParams]);
 
   return {
+    application,
     config,
     dataRow,
     dataSource,
@@ -89,6 +108,7 @@ export const useGroupsPage = () => {
     close: handleClose,
     onSelect: handleSelect,
     open,
+    setApplication,
     setOpen,
   };
 };

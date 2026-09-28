@@ -6,9 +6,13 @@ import {
   useEditMode,
   type EditLifecycle,
 } from "@vuu-ui/vuu-data-editing";
-import { useData } from "@vuu-ui/core";
 import {
   Button,
+  Dropdown,
+  FormField,
+  FormFieldHelperText,
+  FormFieldLabel,
+  Input,
   ListBox,
   Option,
   Tab,
@@ -21,31 +25,32 @@ import {
   ToggleButtonGroup,
   Toolbar,
 } from "@salt-ds/core";
-import type {
-  DataSourceSubscribeCallback,
-  SchemaColumn,
-} from "@vuu-ui/vuu-data-types";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
-import {
-  type DataRowFunc,
-  dataRowFactory,
-} from "@vuu-ui/vuu-table";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
-import {
-  type ItemDescriptor,
-  ItemPicker,
-} from "@vuu-ui/vuu-ui-controls";
-import { filterAsQuery, isRpcError, Range } from "@vuu-ui/vuu-utils";
+import { type ItemDescriptor, ItemPicker } from "@vuu-ui/vuu-ui-controls";
+import { filterAsQuery, isRpcError } from "@vuu-ui/vuu-utils";
 import { useNotifications } from "@vuu-ui/vuu-notifications";
 import {
+  type ChangeEvent,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
   type FormEvent,
+  type SyntheticEvent,
 } from "react";
 import { errorMessage } from "../../data/admin-contract";
+import {
+  type ApplicationDetails,
+  type ApplicationModel,
+  type ApplicationRole,
+  applicationForGroupName,
+  groupNameFromPath,
+} from "../../data/applications";
+import { useApplicationModel } from "../../data/useApplicationModel";
+import { USER_ADMIN_TABLES } from "../../data/user-admin-tables";
+import { useLookupRows } from "../../data/useLookupRows";
 
 import "./GroupsEditForm.css";
 
@@ -53,152 +58,111 @@ const classBase = "vuuGroupsEditForm";
 const newGroupRow = { key: "__vuu_new_row__" } as DataRow;
 const GROUP_NAME_COLUMN = "group_name";
 const ROLE_ASSIGNMENTS_COLUMN = "role_assignments";
-const rolesTable = { module: "USER_ADMIN", table: "roles" };
-const groupRolesTable = { module: "USER_ADMIN", table: "group_roles" };
-const roleColumns = [
-  "role_id",
-  "role_name",
-  "role_display_name",
-  "client_id",
-  "client_identifier",
-  "client_name",
-];
-const groupRoleColumns = [
-  "group_id",
-  "role_id",
-  "role_name",
-  "role_display_name",
-  "client_identifier",
-];
-
-interface LookupRows {
-  error?: string;
-  loading: boolean;
-  rows: DataRow[];
-}
-
-const useLookupRows = (
-  table: typeof rolesTable | typeof groupRolesTable,
-  columns: string[],
-  enabled: boolean,
-  filter?: string,
-): LookupRows => {
-  const { VuuDataSource } = useData();
-  const [resource, setResource] = useState<LookupRows>({
-    loading: enabled,
-    rows: [],
-  });
-  const dataSource = useMemo(
-    () =>
-      enabled
-        ? new VuuDataSource({
-            bufferSize: 1000,
-            columns,
-            filterSpec: filter ? { filter } : undefined,
-            table,
-          })
-        : undefined,
-    [VuuDataSource, columns, enabled, filter, table],
-  );
-
-  useEffect(() => {
-    setResource({ loading: !!dataSource, rows: [] });
-    if (!dataSource) return;
-
-    let active = true;
-    let makeDataRow: DataRowFunc | undefined;
-    const subscribe: DataSourceSubscribeCallback = (message) => {
-      if (!active) return;
-      if (message.type === "subscribed") {
-        const missing = columns.filter(
-          (column) =>
-            !message.columns.includes(column) ||
-            !message.tableSchema.columns.some(
-              (schemaColumn) => schemaColumn.name === column,
-            ),
-        );
-        if (missing.length > 0) {
-          setResource({
-            error: `Backend contract unavailable: ${table.table} is missing ${missing.join(", ")}.`,
-            loading: false,
-            rows: [],
-          });
-          return;
-        }
-        [makeDataRow] = dataRowFactory(
-          message.columns,
-          message.tableSchema.columns as readonly SchemaColumn[],
-        );
-      } else if (message.type === "viewport-update") {
-        if (!makeDataRow) {
-          setResource({
-            error: `The ${table.table} table sent rows before its column metadata.`,
-            loading: false,
-            rows: [],
-          });
-          return;
-        }
-        const rowFactory = makeDataRow;
-        setResource({
-          loading: false,
-          rows: (message.rows ?? []).map((row) => rowFactory(row)),
-        });
-      } else if (message.type === "subscribe-failed") {
-        setResource({
-          error: message.msg,
-          loading: false,
-          rows: [],
-        });
-      }
-    };
-
-    void dataSource
-      .subscribe({ range: Range(0, 1000) }, subscribe)
-      .catch((cause: unknown) => {
-        if (active) {
-          setResource({
-            error: errorMessage(cause),
-            loading: false,
-            rows: [],
-          });
-        }
-      });
-
-    return () => {
-      active = false;
-      dataSource.unsubscribe();
-    };
-  }, [columns, dataSource, table.table]);
-
-  return resource;
-};
+const groupRoleColumns = ["assignment_id", "group_id", "role_id"];
+// Keycloak group names are path segments.
+const INVALID_GROUP_SUFFIX = /[\s/]/;
 
 type GroupRoleItem = ItemDescriptor;
 
 const roleItemFor = (
-  row: Record<string, unknown>,
-): GroupRoleItem | undefined => {
-  const roleId = row.role_id;
-  const roleName = row.role_name;
-  if (typeof roleId !== "string" || typeof roleName !== "string") {
-    return undefined;
-  }
-  const clientName =
-    typeof row.client_name === "string" ? row.client_name : undefined;
+  model: ApplicationModel,
+  role: ApplicationRole,
+): GroupRoleItem => {
+  const application = model.byName.get(
+    model.roleApplication.get(role.roleId) ?? "",
+  )?.application;
   return {
-    label: clientName ? `${roleName} (${clientName})` : roleName,
-    name: roleId,
+    label: application
+      ? `${role.roleName} (${application.title})`
+      : role.clientIdentifier
+        ? `${role.roleName} (${role.clientIdentifier})`
+        : role.roleName,
+    name: role.roleId,
   };
 };
 
-const roleItemsFromRows = (rows: DataRow[]) =>
-  rows.flatMap((row) => {
-    const item = roleItemFor(row);
-    return item ? [item] : [];
-  });
+/**
+ * Roles an administrator may choose for a group. For an application group
+ * these are the application's own roles; the access role is always included
+ * separately. Roles already assigned from elsewhere stay listed so they can be
+ * removed. Groups matching no application may use any role.
+ */
+const assignableRoleItems = (
+  model: ApplicationModel,
+  entry: ApplicationDetails | undefined,
+  assignedRoleIds: readonly string[] = [],
+) => {
+  const accessRoleId = entry?.accessRole?.roleId;
+  const roles = entry
+    ? [
+        ...entry.roles,
+        ...assignedRoleIds.flatMap((roleId) => {
+          const role = model.rolesById.get(roleId);
+          return role && roleId !== accessRoleId && !entry.roles.includes(role)
+            ? [role]
+            : [];
+        }),
+      ]
+    : [...model.rolesById.values()];
+  return roles.map((role) => roleItemFor(model, role));
+};
 
-const SelectedRoles = ({ items }: { items: GroupRoleItem[] }) => (
-  <ListBox aria-label="Assigned roles" bordered readOnly selected={[]}>
+const roleAssignmentsValue = (
+  entry: ApplicationDetails | undefined,
+  items: readonly GroupRoleItem[],
+) =>
+  JSON.stringify([
+    ...(entry?.accessRole ? [entry.accessRole.roleId] : []),
+    ...items.map(({ name }) => name),
+  ]);
+
+const AccessRoleNote = ({
+  entry,
+  included,
+}: {
+  entry: ApplicationDetails;
+  included: boolean;
+}) => {
+  const { accessRole, application } = entry;
+  if (!accessRole) {
+    return (
+      <p role="alert">
+        Access role "{application.accessRole}" was not found on the vuu-portal
+        client. Members of this group cannot open {application.title}.
+      </p>
+    );
+  }
+  return included ? (
+    <p role="note" className={`${classBase}-accessRole`}>
+      Includes access role <strong>{accessRole.roleName}</strong>, which lets
+      members open {application.title}.
+    </p>
+  ) : (
+    <p role="alert">
+      This group does not include access role {accessRole.roleName}, so its
+      members cannot open {application.title}.
+    </p>
+  );
+};
+
+const accessRoleItemFor = (
+  entry: ApplicationDetails | undefined,
+): GroupRoleItem | undefined =>
+  entry?.accessRole
+    ? {
+        label: `${entry.accessRole.roleName} (${entry.application.title} access, always included)`,
+        name: entry.accessRole.roleId,
+      }
+    : undefined;
+
+const SelectedRoles = ({
+  "aria-label": ariaLabel = "Assigned roles",
+  items,
+}: {
+  "aria-label"?: string;
+  items: GroupRoleItem[];
+}) => (
+  <ListBox aria-label={ariaLabel} bordered readOnly selected={[]}>
     {items.map((item) => (
       <Option key={item.name} value={item}>
         {item.label ?? item.name}
@@ -207,13 +171,28 @@ const SelectedRoles = ({ items }: { items: GroupRoleItem[] }) => (
   </ListBox>
 );
 
+const withAccessRole = (
+  accessRole: GroupRoleItem | undefined,
+  items: GroupRoleItem[],
+) => (accessRole ? [accessRole, ...items] : items);
+
+/** The access role can't be removed, so it is listed outside the picker. */
+const FixedAccessRole = ({ item }: { item?: GroupRoleItem }) =>
+  item ? <SelectedRoles aria-label="Access role" items={[item]} /> : null;
+
 export interface GroupsEditFormProps {
+  /** Application to preselect when creating a group. */
+  application?: string;
   dataRow: DataRow;
   dataSource: DataSource;
   onClose?: () => void;
 }
 
-const CreateGroupForm = ({ dataSource, onClose }: GroupsEditFormProps) => {
+const CreateGroupForm = ({
+  application: defaultApplication,
+  dataSource,
+  onClose,
+}: GroupsEditFormProps) => {
   const { setEditMode } = useEditMode();
   const { showNotification } = useNotifications();
   const noOp = useCallback(() => undefined, []);
@@ -223,7 +202,12 @@ const CreateGroupForm = ({ dataSource, onClose }: GroupsEditFormProps) => {
     onCancel: noOp,
     onSave: noOp,
   });
-  const roles = useLookupRows(rolesTable, roleColumns, true);
+  const { error: modelError, loading, model } = useApplicationModel();
+  const [applicationName, setApplicationName] = useState(
+    defaultApplication ?? "",
+  );
+  const entry = model.byName.get(applicationName);
+  const [suffix, setSuffix] = useState("");
   const [selectedItems, setSelectedItems] = useState<GroupRoleItem[]>([]);
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
@@ -232,6 +216,10 @@ const CreateGroupForm = ({ dataSource, onClose }: GroupsEditFormProps) => {
   );
   const [rowStaged, setRowStaged] = useState(false);
   const savingRef = useRef(false);
+  const allRoleItems = useMemo(
+    () => (entry ? assignableRoleItems(model, entry) : []),
+    [entry, model],
+  );
 
   useEffect(() => {
     editSession.configureNewRow(
@@ -260,21 +248,32 @@ const CreateGroupForm = ({ dataSource, onClose }: GroupsEditFormProps) => {
     onClose?.();
   }, [onClose, setEditMode]);
 
+  const onApplicationSelectionChange = useCallback(
+    (_event: SyntheticEvent, [selected]: ApplicationDetails[]) => {
+      if (!selected) return;
+      setApplicationName(selected.application.name);
+      setSelectedItems([]);
+      setError(undefined);
+    },
+    [],
+  );
+
+  const onSuffixChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setSuffix(event.target.value);
+    setError(undefined);
+  }, []);
+
   const onSelectedItemsChange = useCallback(
     (items: readonly ItemDescriptor[]) => {
-      const nextItems = items.flatMap((item) => {
-        const role = roles.rows
-          .map(roleItemFor)
-          .find((candidate) => candidate?.name === item.name);
-        return role ? [role] : [];
-      });
-      setSelectedItems(nextItems);
-      editSession.setNewRowValue(
-        ROLE_ASSIGNMENTS_COLUMN,
-        JSON.stringify(nextItems.map(({ name }) => name)),
+      const byName = new Map(allRoleItems.map((item) => [item.name, item]));
+      setSelectedItems(
+        items.flatMap((item) => {
+          const role = byName.get(item.name);
+          return role ? [role] : [];
+        }),
       );
     },
-    [editSession, roles.rows],
+    [allRoleItems],
   );
 
   const closeSession = useCallback(async () => {
@@ -301,13 +300,32 @@ const CreateGroupForm = ({ dataSource, onClose }: GroupsEditFormProps) => {
         setError("The group edit session is not ready yet.");
         return;
       }
-      const draft = editSession.newRowState.values;
-      const groupName =
-        typeof draft[GROUP_NAME_COLUMN] === "string"
-          ? draft[GROUP_NAME_COLUMN].trim()
-          : "";
-      if (!groupName) {
+      if (!entry) {
+        setError("Application is required.");
+        return;
+      }
+      if (!entry.accessRole) {
+        setError(
+          `Access role "${entry.application.accessRole}" was not found, so a ${entry.application.title} group would not grant access.`,
+        );
+        return;
+      }
+      const trimmedSuffix = suffix.trim();
+      if (!trimmedSuffix) {
         setError("Group name is required.");
+        return;
+      }
+      if (INVALID_GROUP_SUFFIX.test(trimmedSuffix)) {
+        setError("Group names cannot contain spaces or slashes.");
+        return;
+      }
+      const groupName = `${entry.application.groupPrefix}${trimmedSuffix}`;
+      if (
+        [...model.groupsById.values()].some(
+          (group) => group.groupName === groupName,
+        )
+      ) {
+        setError(`A group named "${groupName}" already exists.`);
         return;
       }
 
@@ -319,7 +337,7 @@ const CreateGroupForm = ({ dataSource, onClose }: GroupsEditFormProps) => {
         editSession.setNewRowValue(GROUP_NAME_COLUMN, groupName);
         editSession.setNewRowValue(
           ROLE_ASSIGNMENTS_COLUMN,
-          JSON.stringify(selectedItems.map(({ name }) => name)),
+          roleAssignmentsValue(entry, selectedItems),
         );
         const result = await editSession.addNewRow();
         if (isRpcError(result)) throw new Error(result.errorMessage);
@@ -332,7 +350,7 @@ const CreateGroupForm = ({ dataSource, onClose }: GroupsEditFormProps) => {
           type: "toast",
           status: "success",
           header: "Group created",
-          content: "The group was created successfully.",
+          content: `${groupName} was created. Add users to it to give them access to ${entry.application.title}.`,
         });
         shouldClose = true;
       } catch (cause) {
@@ -354,17 +372,23 @@ const CreateGroupForm = ({ dataSource, onClose }: GroupsEditFormProps) => {
     [
       close,
       editSession,
+      entry,
+      model,
       rowStaged,
       selectedItems,
       sessionActive,
       showNotification,
+      suffix,
     ],
   );
+
+  const locked = !sessionActive || saving || rowStaged;
 
   return (
     <DataEditingProvider editSession={editSession}>
       <form className={classBase} onSubmit={onSubmit}>
         {error ? <p role="alert">{error}</p> : null}
+        {modelError ? <p role="alert">{modelError}</p> : null}
         {!sessionActive && !error ? (
           <p role="status">Starting edit session...</p>
         ) : null}
@@ -381,36 +405,90 @@ const CreateGroupForm = ({ dataSource, onClose }: GroupsEditFormProps) => {
             </TabList>
           </TabBar>
           <TabPanel value="GroupDetails">
-            <fieldset disabled={!sessionActive || saving || rowStaged}>
-              <EditField
-                dataRow={newGroupRow}
-                deferNewRow
-                label="Group name"
-                name={GROUP_NAME_COLUMN}
-                required
-              />
+            <fieldset disabled={locked}>
+              <FormField necessity="asterisk">
+                <FormFieldLabel>Application</FormFieldLabel>
+                <Dropdown<ApplicationDetails>
+                  aria-label="Application"
+                  data-icon="triangle-down"
+                  onSelectionChange={onApplicationSelectionChange}
+                  placeholder="Please select value"
+                  value={entry?.application.title ?? ""}
+                >
+                  {model.applications.map((candidate) => (
+                    <Option key={candidate.application.name} value={candidate}>
+                      {candidate.application.title}
+                    </Option>
+                  ))}
+                </Dropdown>
+                <FormFieldHelperText>
+                  {loading
+                    ? "Loading applications..."
+                    : "Members of the group will be able to open this application."}
+                </FormFieldHelperText>
+              </FormField>
+              <FormField necessity="asterisk">
+                <FormFieldLabel>Group name</FormFieldLabel>
+                <Input
+                  disabled={!entry}
+                  inputProps={{ "aria-label": "Group name" }}
+                  onChange={onSuffixChange}
+                  startAdornment={
+                    entry ? (
+                      <span className={`${classBase}-prefix`}>
+                        {entry.application.groupPrefix}
+                      </span>
+                    ) : undefined
+                  }
+                  value={suffix}
+                />
+                <FormFieldHelperText>
+                  {entry
+                    ? `The ${entry.application.groupPrefix} prefix links the group to ${entry.application.title}.`
+                    : "Choose an application first."}
+                </FormFieldHelperText>
+              </FormField>
             </fieldset>
           </TabPanel>
           <TabPanel value="Roles">
-            {roles.error ? <p role="alert">{roles.error}</p> : null}
-            {roles.loading ? (
-              <p role="status">Loading available roles...</p>
-            ) : !sessionActive || saving || rowStaged ? (
-              <SelectedRoles items={selectedItems} />
+            {!entry ? (
+              <p role="status">Choose an application to see its roles.</p>
             ) : (
-              <ItemPicker
-                allItems={roleItemsFromRows(roles.rows)}
-                aria-label="Group roles"
-                itemTypeName="role"
-                onSelectedItemsChange={onSelectedItemsChange}
-                selectedItems={selectedItems}
-                style={{ height: 360 }}
-              />
+              <>
+                <AccessRoleNote entry={entry} included />
+                {locked ? (
+                  <SelectedRoles
+                    items={withAccessRole(
+                      accessRoleItemFor(entry),
+                      selectedItems,
+                    )}
+                  />
+                ) : allRoleItems.length === 0 ? (
+                  <>
+                    <FixedAccessRole item={accessRoleItemFor(entry)} />
+                    <p role="status">
+                      {entry.application.title} has no roles of its own yet.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <FixedAccessRole item={accessRoleItemFor(entry)} />
+                    <ItemPicker
+                      allItems={allRoleItems}
+                      aria-label="Group roles"
+                      itemTypeName="role"
+                      onSelectedItemsChange={onSelectedItemsChange}
+                      selectedItems={selectedItems}
+                      style={{ height: 360 }}
+                    />
+                  </>
+                )}
+              </>
             )}
           </TabPanel>
         </Tabs>
         <div className="vuuIdentityAdmin-formActions">
-          <Button type="submit" disabled={!sessionActive || saving || rowStaged}>
+          <Button type="submit" disabled={locked}>
             Save
           </Button>
           <Button
@@ -426,12 +504,19 @@ const CreateGroupForm = ({ dataSource, onClose }: GroupsEditFormProps) => {
   );
 };
 
-const EditGroupForm = ({
-  dataRow,
-  dataSource,
-}: GroupsEditFormProps) => {
+const EditGroupForm = ({ dataRow, dataSource }: GroupsEditFormProps) => {
   const { isEditMode, setEditMode } = useEditMode();
+  const { error: modelError, loading, model } = useApplicationModel();
   const groupId = typeof dataRow.group_id === "string" ? dataRow.group_id : "";
+  const groupName = groupNameFromPath(dataRow.group_path) ?? "";
+  const entry = useMemo(() => {
+    const application = applicationForGroupName(
+      model.applications.map(({ application }) => application),
+      groupName,
+    );
+    return application ? model.byName.get(application.name) : undefined;
+  }, [groupName, model]);
+  const accessRoleId = entry?.accessRole?.roleId;
   const roleFilter = useMemo(
     () =>
       groupId && !/["\\\t\r\n]/.test(groupId)
@@ -439,24 +524,39 @@ const EditGroupForm = ({
         : undefined,
     [groupId],
   );
-  const roles = useLookupRows(rolesTable, roleColumns, true);
   const assignedRoles = useLookupRows(
-    groupRolesTable,
+    USER_ADMIN_TABLES.groupRoles,
     groupRoleColumns,
     !!groupId && !!roleFilter,
     roleFilter,
   );
+  const assignedRoleIds = useMemo(
+    () =>
+      assignedRoles.rows.flatMap((row) =>
+        row.group_id === groupId && typeof row.role_id === "string"
+          ? [row.role_id]
+          : [],
+      ),
+    [assignedRoles.rows, groupId],
+  );
   const [selectedItems, setSelectedItems] = useState<GroupRoleItem[]>([]);
   const [staging, setStaging] = useState(false);
+  const [accessRoleStaged, setAccessRoleStaged] = useState(false);
   const [error, setError] = useState<string>();
   const originalRoleIds = useRef<string[] | undefined>(undefined);
   const originalRoleItems = useRef<GroupRoleItem[]>([]);
   const handleSaveSuccess = useCallback(() => {
-    originalRoleIds.current = selectedItems.map(({ name }) => name);
+    originalRoleIds.current = JSON.parse(
+      roleAssignmentsValue(entry, selectedItems),
+    );
     originalRoleItems.current = selectedItems;
     setEditMode(false);
-  }, [selectedItems, setEditMode]);
-  const { editSession, onCancel: cancelEdit, onSave } = useEditable({
+  }, [entry, selectedItems, setEditMode]);
+  const {
+    editSession,
+    onCancel: cancelEdit,
+    onSave,
+  } = useEditable({
     dataSource,
     onCancel: () => setEditMode(false),
     onSave: handleSaveSuccess,
@@ -465,31 +565,35 @@ const EditGroupForm = ({
   const [sessionActive, setSessionActive] = useState(
     editSession.lifecycle.status === "active",
   );
-  const allRoleItems = useMemo(() => roleItemsFromRows(roles.rows), [roles.rows]);
+  const allRoleItems = useMemo(
+    () => assignableRoleItems(model, entry, assignedRoleIds),
+    [assignedRoleIds, entry, model],
+  );
 
   useEffect(() => {
-    if (roles.loading || assignedRoles.loading || !groupId) return;
+    if (loading || assignedRoles.loading || !groupId) return;
+    // Live updates must not discard roles staged in the current edit.
+    if (isEditMode && originalRoleIds.current) return;
     const roleItemsById = new Map(
       allRoleItems.map((item) => [item.name, item]),
     );
-    const assignedItems = assignedRoles.rows.flatMap((row) => {
-      if (row.group_id !== groupId) return [];
-      const roleId = typeof row.role_id === "string" ? row.role_id : "";
-      if (!roleId) return [];
-      const item =
-        roleItemsById.get(roleId) ??
-        roleItemFor(row);
-      return item ? [item] : [];
+    const assignedItems = assignedRoleIds.flatMap((roleId) => {
+      if (roleId === accessRoleId) return [];
+      const item = roleItemsById.get(roleId);
+      return [item ?? { name: roleId }];
     });
-    originalRoleIds.current = assignedItems.map(({ name }) => name);
+    originalRoleIds.current = assignedRoleIds;
     originalRoleItems.current = assignedItems;
     setSelectedItems(assignedItems);
+    setAccessRoleStaged(false);
   }, [
+    accessRoleId,
     allRoleItems,
+    assignedRoleIds,
     assignedRoles.loading,
-    assignedRoles.rows,
     groupId,
-    roles.loading,
+    isEditMode,
+    loading,
   ]);
 
   useEffect(() => {
@@ -509,17 +613,12 @@ const EditGroupForm = ({
     setEditMode(!isEditMode);
   }, [isEditMode, setEditMode]);
 
-  const onSelectedItemsChange = useCallback(
-    (items: readonly ItemDescriptor[]) => {
-      if (!isEditMode) return;
-      const byName = new Map(allRoleItems.map((item) => [item.name, item]));
-      const nextItems = items.flatMap((item) => {
-        const role = byName.get(item.name);
-        return role ? [role] : [];
-      });
+  const stageRoles = useCallback(
+    (nextItems: GroupRoleItem[]) => {
       const original = originalRoleIds.current;
       if (!original) return;
-      const value = JSON.stringify(nextItems.map(({ name }) => name));
+      // Application groups always keep their access role.
+      const value = roleAssignmentsValue(entry, nextItems);
       setStaging(true);
       void editSession
         .commit(
@@ -532,6 +631,7 @@ const EditGroupForm = ({
         )
         .then(() => {
           setSelectedItems(nextItems);
+          setAccessRoleStaged(!!entry?.accessRole);
           setError(undefined);
         })
         .catch((cause: unknown) => {
@@ -545,23 +645,42 @@ const EditGroupForm = ({
         })
         .finally(() => setStaging(false));
     },
-    [allRoleItems, dataRow.key, editSession, isEditMode, showNotification],
+    [dataRow.key, editSession, entry, showNotification],
+  );
+
+  const onSelectedItemsChange = useCallback(
+    (items: readonly ItemDescriptor[]) => {
+      if (!isEditMode) return;
+      const byName = new Map(allRoleItems.map((item) => [item.name, item]));
+      stageRoles(
+        items.flatMap((item) => {
+          const role = byName.get(item.name);
+          return role ? [role] : [];
+        }),
+      );
+    },
+    [allRoleItems, isEditMode, stageRoles],
   );
 
   const onCancel = useCallback(() => {
     setSelectedItems(originalRoleItems.current);
+    setAccessRoleStaged(false);
     setError(undefined);
     cancelEdit();
   }, [cancelEdit]);
 
   const lookupError =
-    roles.error ??
+    modelError ??
     assignedRoles.error ??
     (!groupId
       ? "Backend contract unavailable: this group is missing its group ID."
       : !roleFilter
-      ? "This group has an ID that cannot be safely used in an assignment query."
-      : undefined);
+        ? "This group has an ID that cannot be safely used in an assignment query."
+        : undefined);
+  const canStage = isEditMode && sessionActive && !staging && !lookupError;
+  const hasAccessRole =
+    accessRoleStaged ||
+    (!!accessRoleId && assignedRoleIds.includes(accessRoleId));
 
   return (
     <DataEditingProvider editSession={editSession}>
@@ -588,6 +707,18 @@ const EditGroupForm = ({
             </TabList>
           </TabBar>
           <TabPanel value="GroupDetails">
+            <dl className="vuuIdentityAdmin-details">
+              <div>
+                <dt>Application</dt>
+                <dd>{entry ? entry.application.title : "Unassigned"}</dd>
+              </div>
+            </dl>
+            {!entry && !loading ? (
+              <p role="note">
+                This group's name does not start with any application's group
+                prefix, so it does not grant access to an application.
+              </p>
+            ) : null}
             <EditField
               dataRow={dataRow}
               label="Display name"
@@ -615,19 +746,48 @@ const EditGroupForm = ({
           </TabPanel>
           <TabPanel value="Roles">
             {lookupError ? <p role="alert">{lookupError}</p> : null}
-            {roles.loading || assignedRoles.loading ? (
+            {loading || assignedRoles.loading ? (
               <p role="status">Loading group roles...</p>
-            ) : !isEditMode || !sessionActive || staging || lookupError ? (
-              <SelectedRoles items={selectedItems} />
             ) : (
-              <ItemPicker
-                allItems={allRoleItems}
-                aria-label="Group roles"
-                itemTypeName="role"
-                onSelectedItemsChange={onSelectedItemsChange}
-                selectedItems={selectedItems}
-                style={{ height: 360 }}
-              />
+              <>
+                {entry ? (
+                  <>
+                    <AccessRoleNote entry={entry} included={hasAccessRole} />
+                    {entry.accessRole && !hasAccessRole && canStage ? (
+                      <Button
+                        type="button"
+                        onClick={() => stageRoles(selectedItems)}
+                      >
+                        Add access role
+                      </Button>
+                    ) : null}
+                  </>
+                ) : null}
+                {!canStage ? (
+                  <SelectedRoles
+                    items={withAccessRole(
+                      hasAccessRole ? accessRoleItemFor(entry) : undefined,
+                      selectedItems,
+                    )}
+                  />
+                ) : (
+                  <>
+                    <FixedAccessRole
+                      item={
+                        hasAccessRole ? accessRoleItemFor(entry) : undefined
+                      }
+                    />
+                    <ItemPicker
+                      allItems={allRoleItems}
+                      aria-label="Group roles"
+                      itemTypeName="role"
+                      onSelectedItemsChange={onSelectedItemsChange}
+                      selectedItems={selectedItems}
+                      style={{ height: 360 }}
+                    />
+                  </>
+                )}
+              </>
             )}
           </TabPanel>
         </Tabs>

@@ -36,7 +36,7 @@ const modules: RemoteModuleDescriptor[] = ["Orders", "Baskets"].map((name) => ({
   id: name,
   navLocation: `/Trading/${name}`,
   navIconName: "filter",
-  accessRole: "test-login",
+  accessRole: "test-access",
   mfComponent: name,
   mfScope: name,
   mfUrl: "https://modules.example/mf-manifest.json",

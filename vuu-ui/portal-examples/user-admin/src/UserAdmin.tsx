@@ -14,6 +14,8 @@ import {
 import { EditingContext } from "./components/EditingContext";
 import { AdminDataContext } from "./data/AdminDataContext";
 import { EMPTY_CONFIG, type AdminConfig } from "./data/admin-contract";
+import { ApplicationModelProvider } from "./data/ApplicationModelProvider";
+import { ApplicationsPage } from "./pages/applications/ApplicationsPage";
 import { GroupsPage } from "./pages/groups/GroupsPage";
 import { OverviewPage } from "./pages/overview/OverviewPage";
 import { RolesPage } from "./pages/roles/RolesPage";
@@ -67,14 +69,16 @@ const AdminLayout = () => {
       <div className="vuuIdentityAdmin">
         <header className="vuuIdentityAdmin-header">
           <h1>Vuu Identity Admin</h1>
-          <p>Users, groups and client roles</p>
+          <p>Application access, users, groups and roles</p>
         </header>
         <div className="vuuIdentityAdmin-workspace">
           <nav
             aria-label="Identity administration"
             className="vuuIdentityAdmin-navigation"
           >
-            {(["overview", "users", "groups", "roles"] as const).map((page) => (
+            {(
+              ["overview", "applications", "users", "groups", "roles"] as const
+            ).map((page) => (
               <NavLink key={page} to={`../${page}`} relative="path">
                 {page[0].toUpperCase() + page.slice(1)}
               </NavLink>
@@ -103,26 +107,29 @@ export interface UserAdminProps {
 const UserAdmin = ({ config = EMPTY_CONFIG }: UserAdminProps) => (
   <NotificationsProvider>
     <AdminDataContext.Provider value={config}>
-      <Routes>
-        <Route element={<AdminLayout />}>
-          <Route index element={<Navigate to="overview" replace />} />
-          <Route path="overview" element={<OverviewPage />} />
-          <Route path="users" element={<UsersPage />} />
-          <Route path="groups" element={<GroupsPage />} />
-          <Route path="roles" element={<RolesPage />} />
-          <Route
-            path="*"
-            element={
-              <p>
-                Page not found.{" "}
-                <Link relative="path" to="../overview">
-                  Return to Overview
-                </Link>
-              </p>
-            }
-          />
-        </Route>
-      </Routes>
+      <ApplicationModelProvider>
+        <Routes>
+          <Route element={<AdminLayout />}>
+            <Route index element={<Navigate to="overview" replace />} />
+            <Route path="overview" element={<OverviewPage />} />
+            <Route path="applications" element={<ApplicationsPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="groups" element={<GroupsPage />} />
+            <Route path="roles" element={<RolesPage />} />
+            <Route
+              path="*"
+              element={
+                <p>
+                  Page not found.{" "}
+                  <Link relative="path" to="../overview">
+                    Return to Overview
+                  </Link>
+                </p>
+              }
+            />
+          </Route>
+        </Routes>
+      </ApplicationModelProvider>
     </AdminDataContext.Provider>
   </NotificationsProvider>
 );

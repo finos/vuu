@@ -172,7 +172,7 @@ are:
 | `vuu` | Optional `{ connectionId, restUrl?, websocketUrl? }` describing the VUU data connection to install around this remote. |
 
 The remaining protocol metadata is `clientIdentifier`, `description`,
-`enabled`, `id`, `loginRole`, `name`, `title`, and `version`. The current
+`enabled`, `id`, `accessRole`, `name`, `title`, and `version`. The current
 `PortalShell` receives the server's `modules` array as-is; it does not itself
 filter descriptors by `enabled`.
 

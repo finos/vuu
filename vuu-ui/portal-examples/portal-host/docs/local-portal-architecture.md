@@ -452,7 +452,7 @@ export const localModuleRegistry: PortalModuleRegistry = {
       enabled: true,
       id: "local-user-admin",
       location: "/Admin/Users",
-      loginRole: "user-admin-login",
+      accessRole: "user-admin-access",
       mfComponent: "UserAdminLocal",
       mfScope: "userAdmin",
       mfUrl: "http://localhost:5003",

@@ -17,25 +17,68 @@ import {
   ENTITY_LABELS,
   NAME_FIELDS,
   type AdminRecord,
-  type AdminTableName,
   type Entity,
 } from "../../data/admin-contract";
-import { useAdminCount } from "../../data/useAdminTable";
+import type { ApplicationDetails } from "../../data/applications";
+import { useApplicationModel } from "../../data/useApplicationModel";
+import {
+  formatCount,
+  IssueBadge,
+  plural,
+  useUserCount,
+} from "../applications/ApplicationsPage";
 
-const StatCard = ({ name, label }: { name: AdminTableName; label: string }) => {
-  const { count, error } = useAdminCount(name);
+const applicationLink = (name: string) =>
+  `../applications?${new URLSearchParams({ application: name })}`;
+
+const ApplicationCard = ({ entry }: { entry: ApplicationDetails }) => {
+  const { application } = entry;
+  const users = useUserCount(application.accessRole);
   return (
-    <section className="vuuIdentityAdmin-stat" aria-label={label}>
-      <h3>{label}</h3>
-      <strong>
-        {error
-          ? "Unavailable"
-          : count === undefined
-            ? "Loading..."
-            : count.toLocaleString()}
-      </strong>
-      {error ? <p role="alert">{error}</p> : null}
+    <section className="vuuIdentityAdmin-stat" aria-label={application.title}>
+      <h3>
+        <Link relative="path" to={applicationLink(application.name)}>
+          {application.title}
+        </Link>
+      </h3>
+      <strong>{formatCount(users)}</strong>
+      <p>users with access</p>
+      <p>
+        {plural(entry.groups.length, "group")} ·{" "}
+        {plural(entry.roles.length, "role")} ·{" "}
+        <IssueBadge issues={entry.issues} />
+      </p>
+      {users.error ? <p role="alert">{users.error}</p> : null}
     </section>
+  );
+};
+
+const ApplicationCards = () => {
+  const { error, loading, model } = useApplicationModel();
+  const issueCount = model.issues.length;
+  return (
+    <>
+      {error ? <p role="alert">{error}</p> : null}
+      <section className="vuuIdentityAdmin-stats" aria-label="Applications">
+        {model.applications.map((entry) => (
+          <ApplicationCard entry={entry} key={entry.application.name} />
+        ))}
+        {model.applications.length === 0 && !loading ? (
+          <p className="vuuIdentityAdmin-empty">
+            No applications are registered with the portal.
+          </p>
+        ) : null}
+      </section>
+      {!loading && issueCount > 0 ? (
+        <p role="status">
+          {issueCount} configuration {issueCount === 1 ? "issue" : "issues"}{" "}
+          found.{" "}
+          <Link relative="path" to="../applications">
+            Review applications
+          </Link>
+        </p>
+      ) : null}
+    </>
   );
 };
 
@@ -51,20 +94,18 @@ export const OverviewPage = () => {
       <header className="vuuIdentityAdmin-pageHeader">
         <div>
           <h2>Overview</h2>
-          <p>Explore identities, memberships and client-role access.</p>
+          <p>
+            Who can open each portal application. Access is granted by adding
+            users to an application's groups.
+          </p>
         </div>
       </header>
-      <div className="vuuIdentityAdmin-stats">
-        <StatCard name="users" label="Users" />
-        <StatCard name="groups" label="Groups" />
-        <StatCard name="roles" label="Roles" />
-        <StatCard name="clients" label="Clients" />
-      </div>
+      <ApplicationCards />
       <nav aria-label="Quick actions" className="vuuIdentityAdmin-quickActions">
         <strong>Quick actions</strong>
-        <Link to="../users?create=true">Create user</Link>
-        <Link to="../groups?create=true">Create group</Link>
-        <Link to="../roles?create=true">Create client role</Link>
+        <Link to="../users">Grant application access</Link>
+        <Link to="../groups?create=true">Create application group</Link>
+        <Link to="../roles?create=true">Create application role</Link>
       </nav>
       <AdminSearch
         label="Search users, groups and client roles"

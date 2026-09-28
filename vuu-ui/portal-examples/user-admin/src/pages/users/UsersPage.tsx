@@ -6,6 +6,8 @@ import {
   SidePanelHeader,
   SidePanelProvider,
   SidePanelTitle,
+  Toolbar,
+  Tooltray,
 } from "@salt-ds/core";
 import { useCallback, useState } from "react";
 import { Table } from "@vuu-ui/vuu-table";
@@ -13,11 +15,12 @@ import { useUsersPage } from "./useUsersPage";
 import { UserEditForm } from "../../components/user-edit-form/UserEditForm";
 import type { DataRow, TableRowSelectHandler } from "@vuu-ui/vuu-table-types";
 import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
+import { ApplicationFilter } from "../../components/ApplicationFilter";
 
 export const UsersPage = () => {
   const [open, setOpen] = useState(false);
   const [dataRow, setDataRow] = useState<DataRow | undefined>();
-  const { config, dataSource } = useUsersPage();
+  const { application, config, dataSource, setApplication } = useUsersPage();
 
   const handleSelect = useCallback<TableRowSelectHandler>((dataRow) => {
     if (dataRow) {
@@ -42,13 +45,30 @@ export const UsersPage = () => {
           }}
           gap={0}
         >
-          <div style={{ flex: "1 1 auto", height: "100%", overflow: "hidden" }}>
-            <Table
-              config={config}
-              dataSource={dataSource}
-              onSelect={handleSelect}
-            />
-          </div>
+          <FlexLayout
+            direction="column"
+            style={{ flex: "1 1 auto", overflow: "hidden", padding: 8 }}
+            gap={8}
+          >
+            <Toolbar style={{ flex: "0 0 32px" }}>
+              <Tooltray>
+                <ApplicationFilter
+                  noAccessLabel="No application access"
+                  onChange={setApplication}
+                  value={application}
+                />
+              </Tooltray>
+            </Toolbar>
+            <div
+              style={{ flex: "1 1 auto", height: "100%", overflow: "hidden" }}
+            >
+              <Table
+                config={config}
+                dataSource={dataSource}
+                onSelect={handleSelect}
+              />
+            </div>
+          </FlexLayout>
           <SidePanel position="right" className="vuuIdentityAdmin-panel">
             <SidePanelHeader>
               <SidePanelTitle>User Details</SidePanelTitle>

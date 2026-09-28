@@ -22,7 +22,7 @@ const remoteModule = (
     description: `${name} remote module`,
     id: path,
     navLocation,
-    accessRole: `${moduleName}-login`,
+    accessRole: `${moduleName}-access`,
     mfComponent: name,
     mfScope: moduleName,
     mfUrl: `http://localhost:5001/${moduleName}/mf-manifest.json`,

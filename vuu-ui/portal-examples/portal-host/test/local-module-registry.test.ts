@@ -85,7 +85,7 @@ describe("local portal module registry", () => {
 
   it("maps module-admin to its local adapter manifest and permitted metadata", () => {
     expect(localPortalModuleRegistry.modules[3]).toMatchObject({
-      clientIdentifier: "local-module-admin",
+      clientIdentifier: "vuu-module-admin",
       id: "local-module-admin",
       accessRole: "module-admin-access",
       mfComponent: "ModuleAdminLocal",

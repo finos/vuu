@@ -11,7 +11,7 @@ const moduleResponse = {
   modules: [
     {
       clientIdentifier: "vuu-trading",
-      accessRole: "trading-login",
+      accessRole: "trading-access",
       selectedGroupId: "trader",
       groups: [
         {
@@ -50,7 +50,7 @@ describe("module access RPC contract", () => {
   it("normalizes selected module groups into assignments", () => {
     expect(parseUserModuleAccess(moduleResponse)).toEqual({
       modules: [parsedModule],
-      assignments: [{ accessRole: "trading-login", groupId: "trader" }],
+      assignments: [{ accessRole: "trading-access", groupId: "trader" }],
     });
   });
 
@@ -67,8 +67,8 @@ describe("module access RPC contract", () => {
     expect(parseUserModuleAccess(response)).toEqual({
       modules: response.modules,
       assignments: [
-        { accessRole: "trading-login", groupId: "viewer" },
-        { accessRole: "trading-login", groupId: "trader" },
+        { accessRole: "trading-access", groupId: "viewer" },
+        { accessRole: "trading-access", groupId: "trader" },
       ],
     });
   });
@@ -102,7 +102,7 @@ describe("module access RPC contract", () => {
     });
     await expect(loadUserModuleAccess({ rpcRequest }, "u1")).resolves.toEqual({
       modules: [parsedModule],
-      assignments: [{ accessRole: "trading-login", groupId: "trader" }],
+      assignments: [{ accessRole: "trading-access", groupId: "trader" }],
     });
     expect(rpcRequest).toHaveBeenCalledWith({
       type: "RPC_REQUEST",
@@ -117,8 +117,8 @@ describe("module access RPC contract", () => {
       data: undefined,
     });
     await saveUserModuleAccess({ rpcRequest }, "u1", [
-      { accessRole: "z-login", groupId: "z-group" },
-      { accessRole: "a-login", groupId: "a-group" },
+      { accessRole: "z-access", groupId: "z-group" },
+      { accessRole: "a-access", groupId: "a-group" },
     ]);
     expect(rpcRequest).toHaveBeenCalledWith({
       type: "RPC_REQUEST",
@@ -126,8 +126,8 @@ describe("module access RPC contract", () => {
       params: {
         userId: "u1",
         assignments: JSON.stringify([
-          { accessRole: "a-login", groupId: "a-group" },
-          { accessRole: "z-login", groupId: "z-group" },
+          { accessRole: "a-access", groupId: "a-group" },
+          { accessRole: "z-access", groupId: "z-group" },
         ]),
       },
     });

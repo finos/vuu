@@ -4,9 +4,7 @@ import {
   EditField,
   useEditable,
   useEditMode,
-  useLookupValues,
   type EditLifecycle,
-  type LookupOption,
 } from "@vuu-ui/vuu-data-editing";
 import {
   Button,
@@ -24,9 +22,15 @@ import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { useNotifications } from "@vuu-ui/vuu-notifications";
 import { isRpcError } from "@vuu-ui/vuu-utils";
 import { errorMessage } from "../../data/admin-contract";
+import { type ApplicationDetails, classifyRole } from "../../data/applications";
+import {
+  useApplicationModel,
+  useApplications,
+} from "../../data/useApplicationModel";
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type FormEvent,
@@ -37,12 +41,6 @@ import "./RolesEditForm.css";
 
 const classBase = "vuuRolesEditForm";
 
-const clientTable = { module: "USER_ADMIN", table: "clients" };
-const clientOptionMap = {
-  additionalFields: ["client_identifier"],
-  label: "client_name",
-  value: "client_id",
-};
 const newRoleColumns = [
   "client_id",
   "client_name",
@@ -53,12 +51,15 @@ const newRoleColumns = [
 const requiredRoleColumns = ["client_id", "client_identifier", "role_name"];
 
 export interface RolesEditFormProps {
+  /** Application to preselect when creating a role. */
+  application?: string;
   dataRow: DataRow;
   dataSource: DataSource;
   onClose?: () => void;
 }
 
 const CreateRoleForm = ({
+  application: defaultApplication,
   dataRow,
   dataSource,
   onClose,
@@ -72,12 +73,8 @@ const CreateRoleForm = ({
     onCancel: noOp,
     onSave: noOp,
   });
-  const clients = useLookupValues({
-    enabled: true,
-    optionMap: clientOptionMap,
-    table: clientTable,
-  });
-  const [client, setClient] = useState<LookupOption>();
+  const { model } = useApplicationModel();
+  const [application, setApplication] = useState<ApplicationDetails>();
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
   const [created, setCreated] = useState(false);
@@ -113,20 +110,37 @@ const CreateRoleForm = ({
     onClose?.();
   }, [onClose, setEditMode]);
 
-  const onClientSelectionChange = useCallback(
-    (_event: SyntheticEvent, [selectedClient]: LookupOption[]) => {
-      if (!selectedClient) return;
-      setClient(selectedClient);
-      editSession.setNewRowValue("client_id", String(selectedClient.value));
-      editSession.setNewRowValue("client_name", selectedClient.label);
+  const selectApplication = useCallback(
+    (entry: ApplicationDetails | undefined) => {
+      setApplication(entry);
+      const { client } = entry ?? {};
+      editSession.setNewRowValue("client_id", client?.clientId ?? "");
+      editSession.setNewRowValue("client_name", client?.clientName ?? "");
       editSession.setNewRowValue(
         "client_identifier",
-        selectedClient.metadata?.client_identifier ?? "",
+        client?.clientIdentifier ?? "",
       );
       setError(undefined);
     },
     [editSession],
   );
+
+  const onApplicationSelectionChange = useCallback(
+    (_event: SyntheticEvent, [entry]: ApplicationDetails[]) => {
+      if (entry) selectApplication(entry);
+    },
+    [selectApplication],
+  );
+
+  const preselected = useRef(false);
+  useEffect(() => {
+    if (preselected.current || !sessionActive || !defaultApplication) return;
+    const entry = model.byName.get(defaultApplication);
+    if (entry?.client) {
+      preselected.current = true;
+      selectApplication(entry);
+    }
+  }, [defaultApplication, model, selectApplication, sessionActive]);
 
   const closeSession = useCallback(async () => {
     if (savingRef.current) return;
@@ -175,7 +189,7 @@ const CreateRoleForm = ({
         }
         const clientId = draft.client_id;
         if (typeof clientId !== "string" || !clientId.trim()) {
-          setError("Client is required.");
+          setError("Application is required.");
           return;
         }
 
@@ -262,21 +276,28 @@ const CreateRoleForm = ({
             className="vuuRolesEditForm-clientField"
             necessity="asterisk"
           >
-            <FormFieldLabel>Client</FormFieldLabel>
-            <Dropdown<LookupOption>
+            <FormFieldLabel>Application</FormFieldLabel>
+            <Dropdown<ApplicationDetails>
+              aria-label="Application"
               data-icon="triangle-down"
-              onSelectionChange={onClientSelectionChange}
+              onSelectionChange={onApplicationSelectionChange}
               placeholder="Please select value"
-              value={client?.label ?? ""}
+              value={application?.application.title ?? ""}
             >
-              {clients.map((option) => (
-                <Option key={option.value} value={option}>
-                  {option.label}
+              {model.applications.map((entry) => (
+                <Option
+                  disabled={!entry.client}
+                  key={entry.application.name}
+                  value={entry}
+                >
+                  {entry.application.title}
                 </Option>
               ))}
             </Dropdown>
             <FormFieldHelperText>
-              Choose the client that owns this role.
+              {application?.client
+                ? `The role is created on the ${application.client.clientName || application.client.clientIdentifier} client. Add it to one of the application's groups to grant it to users.`
+                : "Choose the application this role belongs to."}
             </FormFieldHelperText>
           </FormField>
           <EditField
@@ -310,7 +331,81 @@ const CreateRoleForm = ({
   );
 };
 
-const EditRoleForm = ({ dataRow, dataSource }: RolesEditFormProps) => {
+const RoleApplicationSummary = ({ dataRow }: { dataRow: DataRow }) => {
+  const { applications } = useApplications();
+  const match = useMemo(
+    () =>
+      classifyRole(applications, dataRow.role_name, dataRow.client_identifier),
+    [applications, dataRow.client_identifier, dataRow.role_name],
+  );
+  return (
+    <dl className="vuuIdentityAdmin-details">
+      <div>
+        <dt>Application</dt>
+        <dd>{match ? match.application.title : "Unassigned"}</dd>
+      </div>
+      <div>
+        <dt>Role type</dt>
+        <dd>
+          {match?.kind === "access"
+            ? "Portal access role"
+            : match
+              ? "Application role"
+              : "Not linked to an application"}
+        </dd>
+      </div>
+    </dl>
+  );
+};
+
+const AccessRoleDetails = ({ dataRow }: { dataRow: DataRow }) => {
+  const { applications } = useApplications();
+  const title =
+    classifyRole(applications, dataRow.role_name, dataRow.client_identifier)
+      ?.application.title ?? "";
+  return (
+    <form className={classBase}>
+      <RoleApplicationSummary dataRow={dataRow} />
+      <p role="note">
+        This role controls who can open {title}. It is defined by the
+        application's module descriptor and cannot be edited here. Every {title}{" "}
+        group includes it.
+      </p>
+      <EditField
+        dataRow={dataRow}
+        label="Role name"
+        name="role_name"
+        readOnly
+      />
+      <EditField
+        dataRow={dataRow}
+        label="Description"
+        name="description"
+        readOnly
+      />
+    </form>
+  );
+};
+
+const EditRoleForm = (props: RolesEditFormProps) => {
+  const { applications } = useApplications();
+  const isAccessRole =
+    classifyRole(
+      applications,
+      props.dataRow.role_name,
+      props.dataRow.client_identifier,
+    )?.kind === "access";
+  return isAccessRole ? (
+    <AccessRoleDetails dataRow={props.dataRow} />
+  ) : (
+    <EditApplicationRoleForm {...props} />
+  );
+};
+
+const EditApplicationRoleForm = ({
+  dataRow,
+  dataSource,
+}: RolesEditFormProps) => {
   const { isEditMode, setEditMode } = useEditMode();
   const { editSession, onCancel, onSave } = useEditable({
     dataSource,
@@ -335,6 +430,7 @@ const EditRoleForm = ({ dataRow, dataSource }: RolesEditFormProps) => {
       </Toolbar>
 
       <form className={classBase}>
+        <RoleApplicationSummary dataRow={dataRow} />
         <EditField
           dataRow={dataRow}
           label="Client name"

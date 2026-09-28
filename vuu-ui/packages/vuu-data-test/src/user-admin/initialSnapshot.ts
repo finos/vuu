@@ -10,25 +10,32 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
             name: "VUU Portal",
         },
         {
-            clientId: "user-admin",
+            clientId: "vuu-user-admin",
             description: "User administration",
             enabled: true,
             id: "client-user-admin",
             name: "User Admin",
         },
         {
-            clientId: "basket-trading",
+            clientId: "vuu-basket-trading",
             description: "Basket trading",
             enabled: true,
             id: "client-basket-trading",
             name: "Basket Trading",
         },
         {
-            clientId: "module-admin",
+            clientId: "vuu-module-admin",
             description: "Module administration",
             enabled: true,
             id: "client-module-admin",
             name: "Module Admin",
+        },
+        {
+            clientId: "vuu-feature-filter-table",
+            description: "Instrument tables",
+            enabled: true,
+            id: "client-feature-filter-table",
+            name: "Instruments",
         },
     ],
     clientRoles: [
@@ -90,7 +97,7 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
         },
         {
             client: {
-                clientId: "user-admin",
+                clientId: "vuu-user-admin",
                 id: "client-user-admin",
                 name: "User Admin",
             },
@@ -104,7 +111,7 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
         },
         {
             client: {
-                clientId: "module-admin",
+                clientId: "vuu-module-admin",
                 id: "client-module-admin",
                 name: "Module Admin",
             },
@@ -118,7 +125,7 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
         },
         {
             client: {
-                clientId: "basket-trading",
+                clientId: "vuu-basket-trading",
                 id: "client-basket-trading",
                 name: "Basket Trading",
             },
@@ -228,7 +235,7 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
         },
         {
             client: {
-                clientId: "user-admin",
+                clientId: "vuu-user-admin",
                 id: "client-user-admin",
                 name: "User Admin",
             },
@@ -264,7 +271,7 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
         },
         {
             client: {
-                clientId: "module-admin",
+                clientId: "vuu-module-admin",
                 id: "client-module-admin",
                 name: "Module Admin",
             },
@@ -300,7 +307,7 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
         },
         {
             client: {
-                clientId: "basket-trading",
+                clientId: "vuu-basket-trading",
                 id: "client-basket-trading",
                 name: "Basket Trading",
             },
@@ -364,12 +371,6 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
             groupDisplayName: "trade",
             path: "/vuu/basket-trading-trade",
         },
-        {
-            id: "group-admins",
-            name: "administrators",
-            groupDisplayName: "administrators",
-            path: "/vuu/administrators",
-        },
     ],
     timestamp: 1_710_000_000_000,
     userGroups: [
@@ -408,19 +409,6 @@ export const USER_ADMIN_INITIAL_SNAPSHOT: UserAdminSnapshot = {
                 groupDisplayName: "read",
                 moduleAccessDefaultRoles: ["basket-trading-access"],
                 path: "/vuu/basket-trading-read",
-            },
-            user: {
-                email: "alice@example.com",
-                id: "user-alice",
-                username: "alice",
-            },
-        },
-        {
-            group: {
-                id: "group-admins",
-                name: "administrators",
-                groupDisplayName: "administrators",
-                path: "/vuu/administrators",
             },
             user: {
                 email: "alice@example.com",
