@@ -12,7 +12,7 @@ const remoteModule = (path: string): RemoteModuleDescriptor => {
     description: `${name} remote module`,
     id: name.toLowerCase(),
     navLocation: "remote",
-    accessRole: `${moduleName}-login`,
+    accessRole: `${moduleName}-access`,
     mfComponent: name,
     mfScope: moduleName,
     mfUrl: `http://localhost:5001/${name}/mf-manifest.json`,
