@@ -645,6 +645,30 @@ ensureVuuModule(ordersModule);
 The standalone entries and Module Federation exposures all converge on the
 same `Orders` component.
 
+### Save application state
+
+The portal saves each application's runtime state for the user, such as
+filters, sort order and layouts, and restores it the next time the
+application opens. Use `usePersistentState` from `@vuu-ui/core/portal`
+instead of `useState` for values that should be kept:
+
+```tsx
+const [sort, setSort] = usePersistentState<SortDef>("table/sort", NO_SORT, {
+  label: "Sort order",
+  group: "Table",
+});
+```
+
+Saved state is kept per user, per descriptor `persistenceKey ??
+clientIdentifier`, and per descriptor `version`. When a release renames or
+removes columns or keys, bump `version` and export `stateMigrations` from the
+exposed module, next to the default export. In the standalone modes above,
+`usePersistentState` behaves like `useState`. The local adapter should
+re-export `stateMigrations` as well as the component.
+
+See `packages/core/docs/saved-state-guide.md`, and the **Saved state demo** in
+`portal-examples/feature-simple-div`.
+
 ## 6. Build and run
 
 From `vuu-ui`, build the portal example's local host and all producers:
@@ -851,6 +875,9 @@ After portal deployment is stable:
 - The local descriptor omits `vuu`.
 - The local adapter calls `ensureVuuModule()` and exports the same feature.
 - Every table and RPC used by the feature has a tested local implementation.
+- Values to keep use `usePersistentState` or `useApplicationState`, with
+  labels. A release that changes saved values bumps `version` and exports
+  `stateMigrations`, from both exposures.
 
 ### Federation and deployment
 
@@ -873,6 +900,8 @@ The following portal examples demonstrate the complete pattern:
 - `portal-examples/basket-trading`: production and local basket exposures;
 - `portal-examples/feature-filter-table`: production and local SIMUL
   exposures;
-- `portal-examples/user-admin`: production and local user-admin exposures; and
+- `portal-examples/user-admin`: production and local user-admin exposures;
+- `portal-examples/feature-simple-div`: saved state with `usePersistentState`
+  and an exported `stateMigrations`; and
 - `packages/vuu-data-test/src/user-admin`: a browser-local multi-table VUU
   module with domain RPC behavior.

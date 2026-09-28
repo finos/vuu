@@ -1,6 +1,8 @@
 # Portal Application State Persistence and Saved State UI — Design
 
-Status: **Reviewed — ready for implementation** (decisions recorded in §12)
+Status: **Implemented** (phases 1–4 of §11; decisions in §12; implementation
+notes and deviations in §13). Remote authors should start with
+[saved-state-guide.md](./saved-state-guide.md).
 Package: `@vuu-ui/core/portal`
 Reference host: `portal-examples/portal-host`
 
@@ -32,9 +34,12 @@ This document specifies:
 
 ### 2.1 Current portal state
 
-- `PortalShell` (`src/portal-shell/PortalShell.tsx`) composes `CommonShell`
-  (Salt theme, `ModalProvider`, data-source provider), the router, and one
-  route per `RemoteModuleDescriptor`.
+- `PortalShell` (`src/portal-shell/PortalShell.tsx`) creates a browser router
+  (`createBrowserRouter`) with two routes: `WINDOW_HOST_ROUTE`, which renders
+  `WindowHost` (in its own `WindowShell`), and a catch-all portal layout. The
+  layout composes `CommonShell` (Salt theme, `ModalProvider`, data-source
+  provider), the caller's children (header and navigation), and one route per
+  `RemoteModuleDescriptor`.
 - `RemoteModule` (`src/remote-module/RemoteModule.tsx`) lazy-loads the
   federated component and wraps it in a per-remote `AuthenticationProvider`
   (`mode="vuu-connection"`). There is currently **no persistence service**, and
@@ -47,8 +52,10 @@ This document specifies:
   (`User = { userName: string }`). In `local` mode it defaults to
   `local-user`.
 - `PortalHeader` renders only a **Log out** button. The nav components
-  (`PortalNav`, `PortalAppSwitcher`) have a per-module context menu with
-  **Open in new Tab** / **Open in new Window**.
+  (`PortalNav`, and `PortalAppSwitcher` through `NestedNavItem` and
+  `IconNavItem`) share a per-module context menu, `useNavContextMenu`
+  (`src/portal-app-switcher/`), with **Open in new Tab** / **Open in new
+  Window**.
 
 ### 2.2 Existing application persistence
 
@@ -538,8 +545,9 @@ sequenceDiagram
 ```
 
 - The state document is loaded **in parallel** with the remote code and the
-  remote is rendered only once both are ready (the existing `Suspense`
-  boundary is reused; the store exposes a `ready` promise). This guarantees
+  remote is rendered only once both are ready (the store exposes a `ready`
+  promise, which `RemoteModule` suspends on; see §13.2 for the `Suspense`
+  boundary). This guarantees
   synchronous reads on first render, so components can initialise state from
   saved values without an extra render or loading state.
 - If loading fails, the store becomes `ready` with an empty document and
@@ -640,9 +648,9 @@ export function useOptionalApplicationState(): ApplicationStateStore | undefined
  * useState-like hook backed by the store. Returns defaultValue when there is
  * no saved value, and reverts to defaultValue when the key is cleared.
  */
-export function usePersistentState<T extends JsonValue>(
+export function usePersistentState<T>(
   key: string,
-  defaultValue: T,
+  defaultValue: T & JsonValue,
   metadata?: EntryMetadata,
 ): [T, (value: T | ((previous: T) => T)) => void];
 ```
@@ -1100,6 +1108,12 @@ Building the mockups showed two `vuu-theme` issues the dialog must handle:
   `Dropdown` looks like a text input. The **Show** control needs the chevron
   back. Re-enable it for this dialog, or revisit the theme rule.
 
+Implementation found a third:
+
+- `vuu-theme` doesn't define the `--salt-category-*` tokens that Salt's `Tag`
+  uses, so tags have no border or background. The dialog sets the tag
+  variables with fallbacks (§13.5).
+
 Tree construction note: Salt's `Tree` builds its model from `TreeNode`
 elements. Nodes must be direct `TreeNode` children, or arrays of them, not
 wrapped in custom components. A controlled `selected` array must include
@@ -1197,3 +1211,188 @@ core/test/persistence/, core/test/saved-state/
 | Q8 | Should a new application version start empty, or with the previous version's state? | Carry forward automatically, running the release migrations shipped with each version (§5.4). |
 | Q9 | Can a filter be partially migrated (dropping clauses that reference removed columns)? | No. If any part of a filter is rejected, the entire filter is rejected, because partial migration changes its meaning. This applies to each named filter individually (§5.4.2, §5.4.4). |
 | Q10 | What happens to values a migration can't keep? | Remove them from the new version, record them in `notCarriedForward`, and tell the user; the original stays in the previous version's document (§5.4.5). |
+
+## 13. Implementation notes
+
+Phases 1–4 are implemented. This section records where the implementation
+differs from, or makes precise, the sections above. Where the two disagree,
+this section describes the code.
+
+### 13.1 Service and store (§5, §6, §7)
+
+- **`getStore` options.** `getStore(applicationKey, version, options?)` takes
+  `{ title?, migrations? }` rather than a positional `title`. `migrations` may
+  be a promise, so the document loads in parallel with the remote code that
+  exports them. A rejected promise means the code didn't load, so nothing is
+  carried forward.
+- **Extra service members.** `PortalPersistenceService` also has `markOpen` /
+  `isOpen` (which applications are mounted, for §9.7), `problems()` (stores
+  whose last load or save failed, for the storage warning),
+  `consumeCarryForwardReport` (the one-time report behind the §5.4.7 toast)
+  and `isDisposed()`. The `useOptionalPortalPersistence()` hook returns the
+  service or `undefined`.
+- **Summaries and selections.** `DocumentSummary` also carries
+  `carriedForwardFrom`, `notCarriedForward` and `unreadable`. A
+  `ClearSelection` item can name `notCarriedForward` records, or the
+  `unreadable` copy of a document. `ClearResult` adds `requiresReload`: open
+  applications that were cleared but don't subscribe to changes (§9.7).
+- **Backend.** `save` returns the revision the backend assigns;
+  `expectedRevision: 0` means create-if-absent. `delete` takes
+  `{ unreadable: true }` to remove only the retained corrupt copy. `subscribe`
+  can report `undefined`, meaning "anything may have changed" (for example,
+  `localStorage.clear()` in another tab). Backends may implement `dispose`.
+- **Empty documents (FR-14).** An emptied document is deleted, except while
+  an earlier version still has saved state. Then it's kept, empty, so that the
+  cleared state isn't carried forward again on the next start. When the user
+  clears several versions together, the service clears them in ascending
+  version order, then deletes any documents that are left empty for an
+  application with nothing else saved.
+- **Aborted carry-forward.** Nothing is saved for the new version, so the next
+  start tries again (for example, after a fix to the migration). The user is
+  told each time it's aborted.
+- **Writes before `ready`.** `set`, `remove` and `clear` on a store that's
+  still loading are ignored and logged, rather than queued. `RemoteModule`
+  doesn't render the remote until the store is ready, so remotes can't hit
+  this.
+- **Migrations.** Migrations whose `version` is higher than the application's
+  current version, or duplicated, or not an integer, abort the carry-forward
+  (in every build, not only development). `update`'s callback receives the
+  entry helper as its second argument; `reject` is on that helper, not on
+  `MigratableState`.
+- **`usePersistentState` signature (§6.4).** It's
+  `usePersistentState<T>(key, defaultValue: T & JsonValue, metadata?)`. With
+  `T extends JsonValue`, TypeScript inferred literal types
+  (`usePersistentState("count", 0)` was typed `0`). The intersection widens
+  literals like `useState` does, and still rejects non-JSON values.
+- **Sizes** are UTF-16 bytes (string length × 2), matching localStorage's
+  quota, for every backend.
+
+### 13.2 Shell integration (§2.1, §6.2, §7.5)
+
+- **Code references.** Since #2481, `PortalShell` creates its own browser
+  router, with a `WINDOW_HOST_ROUTE` route (`PortalWindowRoute` → `WindowHost`)
+  and a catch-all portal layout. The navigation context menu is
+  `useNavContextMenu`, shared by `PortalNav` and `PortalAppSwitcher` (through
+  `NestedNavItem` and `IconNavItem`). §2.1 has been updated.
+- **Where the service lives.** `CommonShell` renders `PortalPersistenceRoot`,
+  which creates the service. `PortalShell`, `WindowShell` and `WindowHost` all
+  accept `persistence` and `portalId`. `PortalShell` passes both to its window
+  route, so a module in its own window uses the same documents.
+- **`portalId`.** It's a separate prop, defaulting to the shell's `id`, then
+  to `"vuu-portal"`. Hosts can then change the element `id` without losing
+  saved state.
+- **User.** The service uses `useAuthenticatedUser().userName`. Without an
+  authenticated user (for example, in tests), it uses `"anonymous"`.
+- **`persistence={false}`** uses an `InMemoryPersistenceBackend`, so
+  applications and the Saved state dialog behave normally for the session. If
+  `localStorage` isn't available, the default falls back to in-memory with a
+  warning.
+- **Disposal.** The service is disposed after the shell unmounts or the user
+  changes. Disposal is deferred by a tick, so that React StrictMode's
+  unmount/remount doesn't dispose a service that's still in use.
+- **Logout.** `PortalUserMenu`'s **Log out** uses `usePortalLogout`, which
+  flushes and disposes the service before logging out (FR-15).
+- **Portal state.** The portal's own store (`vuu.portal`, version 1) isn't
+  ready-gated: nothing waits for it. Navigation group expansion is saved there
+  under `nav/expanded`, and applied when it has loaded.
+- **Store provisioning.** `RemoteModule` creates a store only when it has an
+  application key (`persistenceKey ?? clientIdentifier`) and an integer
+  `version`. Otherwise it provides no store, so the portal's own store is
+  never visible to a remote (FR-3), and `usePersistentState` behaves like
+  `useState`. The remote's exposed module is loaded once, for both its default
+  export and its `stateMigrations` export.
+- **`Suspense` boundary.** §6.2 assumed an existing `Suspense` boundary. There
+  wasn't one below the router, so a suspending module suspended the whole
+  shell. The persistence service, created in the shell, was then recreated on
+  every retry, and each new service's `ready` promise suspended again.
+  `RemoteModule` now has its own `<Suspense fallback={null}>` inside its error
+  boundary. While a module's code and saved state load, the header and
+  navigation stay visible and only the module area is blank.
+- **Descriptor.** `persistenceKey` is on `RemoteModuleDescriptor`. The client
+  doesn't check it for uniqueness; the registry must (§5.2).
+
+### 13.3 Saved state UI (§9)
+
+- **Application order.** Applications appear in navigation order, grouped by
+  the top level of their `navLocation` as `PortalAppSwitcher` groups them,
+  with **Portal** first. The confirmation lists applications in the same
+  order; the §9.6 mockup shows Portal last.
+- **Whole-document selection.** Selecting every entry and not-carried-forward
+  record of a document clears the whole document, not just those keys.
+- **Unavailable applications (§9.9).** An application that's no longer in the
+  registry appears once, under **Unavailable applications**, with a **No
+  longer available** tag and its newest version's details. Selecting it
+  clears every version. Data that couldn't be read appears as its own item,
+  per document, so that it can be cleared.
+- **Search (§9.5).** Matches application titles and keys, entry labels, keys
+  and groups, and not-carried-forward records. Previous-version documents
+  aren't matched individually; they appear when their application matches.
+- **Scoped open (§9.4).** Opening the dialog for an application with no saved
+  state shows the empty status for that application, rather than falling back
+  to all applications.
+- **Copy additions (§9.11).** When clearing fails: *"Saved state for
+  {Application} couldn't be cleared. It is still selected, so you can try
+  again."* When carry-forward produced only `notify` messages: an information
+  toast, **Saved state carried forward**, with *"{Application} has been
+  updated. {messages}"*. When open applications don't subscribe to changes,
+  the outcome toast adds *"Reload to return {Application} to its default
+  view."* with a **Reload** action.
+- **Toasts.** One toast host for the shell, rendered only while there are
+  toasts (an always-mounted host interfered with Salt's floating-ui dismissal
+  of the dialog). The action and close buttons are in a column to the right of
+  the text.
+- **Dialog dismissal.** The main dialog doesn't dismiss (Escape, outside
+  click) while the confirmation is open, so Escape closes only the
+  confirmation.
+- **Context menu.** `vuu-context-menu` gains `dividerBefore` on item
+  descriptors, for the divider above **Saved state…**. It indents every item
+  when any item has an icon, so **Open in new Tab** and **Open in new Window**
+  are indented too; the §9.2 mockup indents only **Saved state…**.
+
+### 13.4 API additions
+
+- `useSavedStateDialog()` returns `{ available, open(applicationKey?) }`.
+  `available` is `false` outside a shell, where `open` does nothing.
+- `PortalHeader` takes `userMenuItems`, rendered above **Saved state…** in
+  `PortalUserMenu` (for the future **Settings…** item).
+- `CommonShell` takes `remoteModules`, so that the dialog can name and order
+  applications. `PortalShell` passes its own.
+- `SavedStateProvider` provides the dialog, its toasts and
+  `useSavedStateDialog`. `SavedStateDialog` also takes `applications`,
+  `portalTitle` and `onNotify`.
+- **Package structure (§10).** There's no `RemotePersistenceBackend.ts`
+  (§13.6). `saved-state/` also contains `SavedStateProvider`,
+  `SavedStateContext` (with `useSavedStateDialog`), `SavedStateToasts`, and the
+  pure `saved-state-model` and `saved-state-format` modules that build the tree
+  and its copy. `PortalPersistenceRoot` is in `common-shell/`, and
+  `usePortalLogout` is in `portal-header/`. Tests are in `core/test/persistence/`,
+  `core/test/saved-state/`, and alongside the existing shell, nav and
+  remote-module tests.
+
+### 13.5 Theme (§9.13)
+
+- **Checkbox borders.** Fixed in `vuu-theme`
+  (`css/components/checkbox.css`): unchecked checkboxes in a `Tree` use
+  `--vuu-color-gray-30`.
+- **Dropdown chevron.** Re-enabled for the dialog only
+  (`SavedStateDialog.css`). The global rule is unchanged.
+- **Tag tokens.** `vuu-theme` doesn't define `--salt-category-*`. The dialog
+  sets the `Tag` variables with fallbacks: accent colours for **Open**, and a
+  neutral border with secondary text for **Not carried forward** and **No
+  longer available**.
+- **Scrolling.** `DialogContent`'s inner element is made a flex column, so the
+  tree scrolls and the search and summary stay in place.
+
+### 13.6 Not implemented
+
+- **Phase 5, `RemotePersistenceBackend` (§7.4).** Not implemented. The
+  `PersistenceBackend` interface supports it; `portal-host` doesn't yet show
+  how to select it through `window.vuuConfig`.
+- **Migrating components** such as `vuu-table`, and existing remotes, to the
+  service (§6.6) is follow-up work, as planned.
+- **Documentation.** The remote author guide, including writing release
+  migrations, is [saved-state-guide.md](./saved-state-guide.md).
+  `remote-module-template` contains only an HTML page, so it has no example to
+  update. `portal-examples/feature-simple-div` is the example instead: it uses
+  `usePersistentState`, exports `stateMigrations`, and is registered in
+  `portal-host` as **Saved state demo**.
