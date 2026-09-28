@@ -13,3 +13,16 @@
     --vuuItemPicker-height: 320px;
   }
 }
+
+.vuuGroupsEditForm-prefix {
+  color: var(--salt-content-secondary-foreground);
+  white-space: nowrap;
+}
+
+.vuuGroupsEditForm fieldset {
+  display: grid;
+  row-gap: var(--salt-spacing-200);
+  border: 0;
+  margin: 0;
+  padding: 0;
+}

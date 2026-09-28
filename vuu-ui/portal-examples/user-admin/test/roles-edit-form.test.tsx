@@ -4,27 +4,16 @@ import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EditModeProvider, EditSession } from "@vuu-ui/vuu-data-editing";
+import { PortalModuleRegistryProvider } from "@vuu-ui/core/portal";
 import { RolesEditForm } from "../src/components/roles-edit-form/RolesEditForm";
+import {
+  buildApplicationModel,
+  deriveApplications,
+} from "../src/data/applications";
+import { ApplicationModelContext } from "../src/data/useApplicationModel";
 
 const mocks = vi.hoisted(() => ({
-  clients: [
-    {
-      label: "Vuu Portal",
-      value: "client-1",
-      metadata: { client_identifier: "vuu-portal" },
-    },
-    {
-      label: "Account Console",
-      value: "client-2",
-      metadata: { client_identifier: "account" },
-    },
-  ],
   notify: vi.fn(),
-}));
-
-vi.mock("@vuu-ui/vuu-data-editing", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@vuu-ui/vuu-data-editing")>()),
-  useLookupValues: () => mocks.clients,
 }));
 
 vi.mock("@vuu-ui/vuu-notifications", () => ({
@@ -37,21 +26,24 @@ vi.mock("@salt-ds/core", async (importOriginal) => {
   return {
     ...actual,
     Dropdown: ({
+      "aria-label": ariaLabel,
       children,
       onSelectionChange,
       value,
     }: {
+      "aria-label"?: string;
       children: React.ReactNode;
       onSelectionChange: (
         event: React.SyntheticEvent,
-        options: typeof mocks.clients,
+        options: unknown[],
       ) => void;
       value: string;
     }) => {
       const options = React.Children.toArray(children).flatMap((child) =>
         React.isValidElement<{
           children: React.ReactNode;
-          value: (typeof mocks.clients)[number];
+          disabled?: boolean;
+          value: unknown;
         }>(child)
           ? [child.props]
           : [],
@@ -59,26 +51,97 @@ vi.mock("@salt-ds/core", async (importOriginal) => {
       return React.createElement(
         "select",
         {
-          "aria-label": "Client",
+          "aria-label": ariaLabel,
           value,
           onChange: (event: React.ChangeEvent<HTMLSelectElement>) => {
             const selected = options.find(
-              ({ value: option }) => option.label === event.currentTarget.value,
-            )?.value;
-            if (selected) onSelectionChange(event, [selected]);
+              (option) => option.children === event.currentTarget.value,
+            );
+            if (selected && !selected.disabled)
+              onSelectionChange(event, [selected.value]);
           },
         },
-        ...options.map(({ value: option }) =>
+        React.createElement("option", { key: "", value: "" }),
+        ...options.map((option) =>
           React.createElement(
             "option",
-            { key: option.value, value: option.label },
-            option.label,
+            {
+              disabled: option.disabled,
+              key: String(option.children),
+              value: String(option.children),
+            },
+            option.children,
           ),
         ),
       );
     },
   };
 });
+
+const { applications } = deriveApplications([
+  {
+    accessRole: "basket-trading-access",
+    clientIdentifier: "vuu-basket-trading",
+    name: "basket-trading",
+    title: "Basket Trading",
+  },
+  {
+    accessRole: "user-admin-access",
+    clientIdentifier: "vuu-user-admin",
+    name: "user-admin",
+    title: "User Admin",
+  },
+  {
+    accessRole: "reports-access",
+    clientIdentifier: "vuu-reports",
+    name: "reports",
+    title: "Reports",
+  },
+]);
+const model = buildApplicationModel({
+  applications,
+  clients: [
+    {
+      client_id: "client-1",
+      client_identifier: "vuu-portal",
+      client_name: "Vuu Portal",
+    },
+    {
+      client_id: "client-2",
+      client_identifier: "vuu-basket-trading",
+      client_name: "Basket Trading",
+    },
+    {
+      client_id: "client-3",
+      client_identifier: "vuu-user-admin",
+      client_name: "User Admin",
+    },
+  ],
+  groupRoles: [],
+  groups: [],
+  roles: [
+    {
+      client_identifier: "vuu-portal",
+      role_id: "role-access",
+      role_name: "basket-trading-access",
+    },
+  ],
+});
+
+const remoteModules = applications.map((application, id) => ({
+  accessRole: application.accessRole,
+  clientIdentifier: application.clientIdentifier,
+  description: "",
+  id,
+  mfComponent: "Module",
+  mfScope: application.name,
+  mfUrl: "http://localhost",
+  name: application.name,
+  navLocation: `/Apps/${application.title}`,
+  path: `/${application.name}`,
+  title: application.title,
+  version: 1,
+}));
 
 const SUCCESS = { type: "SUCCESS_RESULT", data: undefined };
 const newRoleRow = {
@@ -120,26 +183,31 @@ describe("RolesEditForm create flow", () => {
     vi.unstubAllGlobals();
   });
 
-  const render = async () => {
+  const render = async (application?: string) => {
     await act(async () => {
       root.render(
-        <EditModeProvider isEditMode>
-          <RolesEditForm
-            dataRow={newRoleRow}
-            dataSource={dataSource}
-            onClose={close}
-          />
-        </EditModeProvider>,
+        <PortalModuleRegistryProvider remoteModules={remoteModules}>
+          <ApplicationModelContext.Provider value={{ loading: false, model }}>
+            <EditModeProvider isEditMode>
+              <RolesEditForm
+                application={application}
+                dataRow={newRoleRow}
+                dataSource={dataSource}
+                onClose={close}
+              />
+            </EditModeProvider>
+          </ApplicationModelContext.Provider>
+        </PortalModuleRegistryProvider>,
       );
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
   };
 
-  const chooseClient = async (label: string) => {
+  const chooseApplication = async (label: string) => {
     const select = container.querySelector<HTMLSelectElement>(
-      'select[aria-label="Client"]',
+      'select[aria-label="Application"]',
     );
-    if (!select) throw new Error("Missing client dropdown");
+    if (!select) throw new Error("Missing application dropdown");
     await act(async () => {
       Object.getOwnPropertyDescriptor(
         HTMLSelectElement.prototype,
@@ -184,7 +252,7 @@ describe("RolesEditForm create flow", () => {
 
   it("keeps the draft in EditSession until Save and stages all role values once", async () => {
     await render();
-    await chooseClient("Vuu Portal");
+    await chooseApplication("Basket Trading");
     await changeField("role_name", "Administrator");
     await changeField("description", "Administrative access");
 
@@ -197,9 +265,9 @@ describe("RolesEditForm create flow", () => {
     expect(rpcRequest).not.toHaveBeenCalled();
     expect(datasourceAddRow).toHaveBeenCalledTimes(1);
     expect(datasourceAddRow).toHaveBeenCalledWith({
-      client_id: "client-1",
-      client_identifier: "vuu-portal",
-      client_name: "Vuu Portal",
+      client_id: "client-2",
+      client_identifier: "vuu-basket-trading",
+      client_name: "Basket Trading",
       description: "Administrative access",
       role_name: "Administrator",
     });
@@ -209,7 +277,7 @@ describe("RolesEditForm create flow", () => {
 
   it("includes an empty optional description in the staged role row", async () => {
     await render();
-    await chooseClient("Vuu Portal");
+    await chooseApplication("Basket Trading");
     await changeField("role_name", "Administrator");
     await submit();
 
@@ -224,7 +292,7 @@ describe("RolesEditForm create flow", () => {
 
   it("does not create a role when the draft is cancelled", async () => {
     await render();
-    await chooseClient("Vuu Portal");
+    await chooseApplication("Basket Trading");
     await changeField("role_name", "Administrator");
     await click("Cancel");
 
@@ -234,7 +302,7 @@ describe("RolesEditForm create flow", () => {
     expect(close).toHaveBeenCalledOnce();
   });
 
-  it("requires both a role name and a client before insertion", async () => {
+  it("requires both a role name and an application before insertion", async () => {
     await render();
     await submit();
 
@@ -246,33 +314,85 @@ describe("RolesEditForm create flow", () => {
     expect(container.textContent).not.toContain("Role name is required.");
     await submit();
 
-    expect(container.textContent).toContain("Client is required.");
+    expect(container.textContent).toContain("Application is required.");
     expect(rpcRequest).not.toHaveBeenCalled();
     expect(datasourceAddRow).not.toHaveBeenCalled();
   });
 
-  it("allows roles to be created for any selected client", async () => {
+  it("offers applications, not clients, and disables applications without a client", async () => {
     await render();
-    const clientSelect = container.querySelector<HTMLSelectElement>(
-      'select[aria-label="Client"]',
+    const select = container.querySelector<HTMLSelectElement>(
+      'select[aria-label="Application"]',
     );
+    expect(container.querySelector('select[aria-label="Client"]')).toBeNull();
     expect(
-      [...(clientSelect?.options ?? [])].map(({ textContent }) => textContent),
-    ).toEqual(["Vuu Portal", "Account Console"]);
+      [...(select?.options ?? [])]
+        .filter(({ value }) => value)
+        .map(({ disabled, textContent }) => [textContent, disabled]),
+    ).toEqual([
+      ["Basket Trading", false],
+      ["Reports", true],
+      ["User Admin", false],
+    ]);
 
-    await chooseClient("Account Console");
-    await changeField("role_name", "Administrator");
+    await chooseApplication("User Admin");
+    await changeField("role_name", "auditor");
     await submit();
 
-    expect(rpcRequest).not.toHaveBeenCalled();
     expect(datasourceAddRow).toHaveBeenCalledWith({
-      client_id: "client-2",
-      client_identifier: "account",
-      client_name: "Account Console",
+      client_id: "client-3",
+      client_identifier: "vuu-user-admin",
+      client_name: "User Admin",
       description: "",
-      role_name: "Administrator",
+      role_name: "auditor",
     });
-    expect(endEditSession).toHaveBeenCalledWith(true, false);
+  });
+
+  it("preselects the application passed from the page", async () => {
+    await render("basket-trading");
+    await changeField("role_name", "trader");
+    await submit();
+
+    expect(datasourceAddRow).toHaveBeenCalledWith(
+      expect.objectContaining({
+        client_identifier: "vuu-basket-trading",
+        role_name: "trader",
+      }),
+    );
+  });
+
+  it("shows portal access roles as read-only", async () => {
+    await act(async () => {
+      root.render(
+        <PortalModuleRegistryProvider remoteModules={remoteModules}>
+          <EditModeProvider isEditMode>
+            <RolesEditForm
+              dataRow={
+                {
+                  client_identifier: "vuu-portal",
+                  description: "",
+                  key: "role-access",
+                  role_id: "role-access",
+                  role_name: "basket-trading-access",
+                } as unknown as DataRow
+              }
+              dataSource={dataSource}
+            />
+          </EditModeProvider>
+        </PortalModuleRegistryProvider>,
+      );
+    });
+
+    expect(container.textContent).toContain("Portal access role");
+    expect(container.textContent).toContain(
+      "controls who can open Basket Trading",
+    );
+    expect(container.textContent).not.toContain("Edit");
+    expect(
+      [...container.querySelectorAll("input")].every(
+        (input) => input.readOnly || input.disabled,
+      ),
+    ).toBe(true);
   });
 
   it("keeps the staged row after a session-save failure and retries without adding twice", async () => {
@@ -280,7 +400,7 @@ describe("RolesEditForm create flow", () => {
       .mockRejectedValueOnce(new Error("temporary service failure"))
       .mockResolvedValueOnce(SUCCESS);
     await render();
-    await chooseClient("Vuu Portal");
+    await chooseApplication("Basket Trading");
     await changeField("role_name", "Administrator");
     await submit();
 

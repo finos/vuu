@@ -12,6 +12,7 @@ import {
 } from "@salt-ds/core";
 import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
 import { Table } from "@vuu-ui/vuu-table";
+import { ApplicationFilter } from "../../components/ApplicationFilter";
 import { RolesEditForm } from "../../components/roles-edit-form/RolesEditForm";
 import { useRolesPage } from "./useRolesPage";
 
@@ -21,6 +22,7 @@ const classBase = "vuuRolesPage";
 
 export const RolesPage = () => {
   const {
+    application,
     close,
     config,
     createRole,
@@ -28,6 +30,7 @@ export const RolesPage = () => {
     dataSource,
     onSelect,
     open,
+    setApplication,
     setOpen,
   } = useRolesPage();
 
@@ -52,6 +55,12 @@ export const RolesPage = () => {
             gap={8}
           >
             <Toolbar style={{ flex: "0 0 32px" }}>
+              <Tooltray>
+                <ApplicationFilter
+                  onChange={setApplication}
+                  value={application}
+                />
+              </Tooltray>
               <Tooltray align="end">
                 <Button className={`${classBase}-add`} onClick={createRole}>
                   Create Role
@@ -77,6 +86,7 @@ export const RolesPage = () => {
             <SidePanelContent>
               {dataRow ? (
                 <RolesEditForm
+                  application={application}
                   dataRow={dataRow}
                   dataSource={dataSource}
                   onClose={close}

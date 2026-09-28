@@ -12,6 +12,7 @@ import {
 } from "@salt-ds/core";
 import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
 import { Table } from "@vuu-ui/vuu-table";
+import { ApplicationFilter } from "../../components/ApplicationFilter";
 import { GroupsEditForm } from "../../components/groups-edit-form/GroupsEditForm";
 import { useGroupsPage } from "./useGroupsPage";
 
@@ -21,6 +22,7 @@ const classBase = "vuuGroupsPage";
 
 export const GroupsPage = () => {
   const {
+    application,
     close,
     config,
     createGroup,
@@ -28,6 +30,7 @@ export const GroupsPage = () => {
     dataSource,
     onSelect,
     open,
+    setApplication,
     setOpen,
   } = useGroupsPage();
 
@@ -60,6 +63,12 @@ export const GroupsPage = () => {
             gap={8}
           >
             <Toolbar style={{ flex: "0 0 32px" }}>
+              <Tooltray>
+                <ApplicationFilter
+                  onChange={setApplication}
+                  value={application}
+                />
+              </Tooltray>
               <Tooltray align="end">
                 <Button className={`${classBase}-add`} onClick={createGroup}>
                   Create Group
@@ -67,7 +76,9 @@ export const GroupsPage = () => {
               </Tooltray>
             </Toolbar>
 
-            <div style={{ flex: "1 1 auto", height: "100%", overflow: "hidden" }}>
+            <div
+              style={{ flex: "1 1 auto", height: "100%", overflow: "hidden" }}
+            >
               <Table
                 config={config}
                 dataSource={dataSource}
@@ -83,6 +94,7 @@ export const GroupsPage = () => {
             <SidePanelContent>
               {dataRow ? (
                 <GroupsEditForm
+                  application={application}
                   dataRow={dataRow}
                   dataSource={dataSource}
                   onClose={close}
