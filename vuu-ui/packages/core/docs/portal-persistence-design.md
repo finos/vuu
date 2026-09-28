@@ -1,4 +1,4 @@
-# Portal Persistence Service and Saved Settings UI — Design
+# Portal Application State Persistence and Saved State UI — Design
 
 Status: **Reviewed — ready for implementation** (decisions recorded in §12)
 Package: `@vuu-ui/core/portal`
@@ -9,7 +9,9 @@ Reference host: `portal-examples/portal-host`
 Applications hosted in the portal (federated remote modules, and the portal
 shell itself) need to persist runtime state for the user — applied filters,
 named filters, sort criteria, column layouts, panel sizes and similar — and
-restore it when the application next starts.
+restore it when the application next starts. This is **saved state**. It is
+distinct from user **Settings** (theme, number formatting and so on), which a
+later feature will manage through a portal Settings dialog (§4.1).
 
 This document specifies:
 
@@ -20,11 +22,11 @@ This document specifies:
 2. A **pluggable storage backend**, defaulting to `localStorage` and
    substitutable with a remote (server-side) store without changes to
    applications.
-3. A **Saved settings** UI, offered by the portal, that lets users selectively
-   clear saved values for one, several or all applications, and for one, several
-   or all keys within an application. The UI is built with the Salt design
-   system, following the Preferences dialog, Button bar and Content status
-   patterns.
+3. A **Saved state** dialog, offered by the portal, that lets users
+   selectively clear saved state for one, several or all applications, and
+   for one, several or all items within an application. It is built with Salt
+   components, following the App header, Menu button, Button bar, List
+   filtering and Content status patterns. High-fidelity mockups are in §9.
 
 ## 2. Background
 
@@ -105,27 +107,59 @@ this design does not change them.
   to the new service. Both are follow-up work.
 - Layout / workspace persistence (`vuu-shell` workspace services). A future
   workspace feature may use this service as its backend.
-- Sharing settings between users, or admin-managed defaults.
+- Sharing saved state between users, or admin-managed defaults.
+- User **Settings** and the Settings dialog (§4.1). These are a separate, later
+  feature and are not stored or cleared by anything in this design.
 - Encryption at rest in `localStorage`.
-- Import/export of settings (possible later; see §12, Q6).
+- Import/export of saved state (possible later; see §12, Q6).
 - Viewing saved values in the UI (possible later; see §12, Q5).
 
 ## 4. Terminology
 
-| Term                     | Meaning                                                                                                                          |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| Application              | A remote module registered with the portal, or the portal shell itself.                                                         |
-| Application key          | Stable, unique string identifying an application for persistence (§5.2).                                                         |
-| Application version      | `RemoteModuleDescriptor.version` (number).                                                                                       |
-| Settings document        | The single JSON document holding all saved values for one *user / application key / application version*.                       |
-| Entry / key              | A named value within a settings document, e.g. `table-config`.                                                                   |
-| Storage backend          | Implementation that loads, saves, deletes and lists settings documents (`localStorage`, remote, in-memory).                      |
-| Persistence service      | Shell-level object that owns the backend, caches documents, and hands out application-scoped stores.                             |
-| Application settings store | The object an application uses — scoped to its own key and version.                                                          |
+### 4.1 Saved state vs Settings
+
+The portal will have two different kinds of persisted user data. They must
+never be confused in code, documentation or the UI.
+
+| | **Saved state** (this design) | **Settings** (future) |
+| - | - | - |
+| What it is | How the user left an application, captured **automatically** as they work: filters, named filters, sort order, column layout, grouping, selected tab, panel sizes. | Choices the user makes **deliberately** in a portal-managed Settings dialog: theme (light/dark), density, number and date formatting, and application-specific settings. |
+| Who writes it | The application, via `ApplicationStateStore` / `usePersistentState`. | The user, via the Settings dialog. |
+| Scope | Per user, application and application version. | Portal-wide, or per application. |
+| When it's lost | When the user clears it, or when the application version changes. | Only when the user changes it. |
+| User-facing UI | **Saved state** dialog: review and clear only. | **Settings** dialog: view and edit, using the Salt Preferences dialog pattern. |
+| Code vocabulary | `state`, `StateDocument`, `ApplicationStateStore`, `useApplicationState`, `SavedStateDialog` | `settings`, `Settings*` (reserved) |
+
+Rules:
+
+- In code and docs for this feature, never use *settings*, *preferences* or
+  *config* for saved state. The words `settings` and `Settings*` are reserved
+  for the future feature.
+- In the UI, the user-facing term is **saved state**. The Saved state dialog
+  always states that clearing saved state doesn't change Settings (§9.11).
+- Storage is namespaced by kind: `…:state:…` keys and `/state/` REST paths
+  (§7). The future Settings feature can then share the backend interface
+  without sharing documents.
+- Clearing saved state never touches Settings, and resetting Settings never
+  touches saved state.
+
+### 4.2 Glossary
+
+| Term | Meaning |
+| ---- | ------- |
+| Application | A remote module registered with the portal, or the portal shell itself. |
+| Application key | Stable, unique string identifying an application for persistence (§5.2). |
+| Application version | `RemoteModuleDescriptor.version` (number). |
+| Saved state | The collective term for everything persisted automatically for a user and application (§4.1). |
+| State document | The single JSON document holding all saved state for one *user / application key / application version*. |
+| Item (entry) | One named value within a state document, e.g. `table/sort`. The UI says "item", the code says "entry". |
+| Storage backend | Implementation that loads, saves, deletes and lists state documents (`localStorage`, remote, in-memory). |
+| Persistence service | Shell-level object (`PortalPersistenceService`) that owns the backend, caches documents, and hands out application-scoped stores. |
+| Application state store | The object an application uses (`ApplicationStateStore`), scoped to its own key and version. |
 
 ## 5. Data model
 
-### 5.1 Settings document
+### 5.1 State document
 
 ```json
 {
@@ -160,7 +194,7 @@ this design does not change them.
 | `user`               | `User.userName` of the authenticated identity. Required.                                                            |
 | `applicationKey`     | See §5.2. Required.                                                                                                 |
 | `applicationVersion` | Integer from the descriptor. Required.                                                                              |
-| `applicationTitle`   | Last-known display title; lets the Saved settings UI name applications that are no longer in the registry.          |
+| `applicationTitle`   | Last-known display title; lets the Saved state UI name applications that are no longer in the registry.          |
 | `revision`           | Monotonic integer incremented by every successful save; used for optimistic concurrency.                             |
 | `entries`            | Map of key → entry. `value` is any JSON value (`null` allowed; `undefined` is not stored).                           |
 | entry `label`/`group`| Optional, human-readable metadata supplied by the application so the UI can describe entries without loading the app. |
@@ -183,13 +217,13 @@ key.
 - `clientIdentifier` is the default (unique, stable, admin-managed; e.g.
   `local-feature-filter-table`).
 - `persistenceKey` is a new optional field on `RemoteModuleDescriptor`.
-  Admins set it to keep a user's saved settings when a module is
+  Admins set it to keep a user's saved state when a module is
   re-registered under a new `clientIdentifier`. It must be unique across the
   registry; the registry rejects duplicates.
 - The same federated component registered twice (e.g. the filter table with
   two different `tableSchema` props) gets two descriptors and therefore two
-  independent settings documents.
-- The portal shell's own settings use the reserved key `vuu.portal` at
+  independent state documents.
+- The portal shell's own state uses the reserved key `vuu.portal` at
   version `1`. (Portals on the same origin are separated by the storage key
   prefix, §7.2.)
 
@@ -199,7 +233,7 @@ key.
   earlier versions are kept indefinitely until the user clears them
   (Q4; a "keep last N versions" policy may follow).
 - The version dimension is `descriptor.version` (Q3).
-- Applications that want to carry settings forward do so explicitly on
+- Applications that want to carry saved state forward do so explicitly on
   startup (§6.3, `previousVersions()` / `importFrom()`), because only the
   application knows how to migrate its own data.
 - `schemaVersion` migrations of the envelope are handled inside the service.
@@ -211,23 +245,23 @@ key.
 ```mermaid
 flowchart LR
   subgraph Remote module
-    H[usePersistentState / useApplicationSettings]
+    H[usePersistentState / useApplicationState]
   end
   subgraph "@vuu-ui/core/portal"
-    C[ApplicationSettingsContext]
-    S[ApplicationSettingsStore<br/>key + version scoped]
+    C[ApplicationStateContext]
+    S[ApplicationStateStore<br/>key + version scoped]
     P[PortalPersistenceService<br/>cache, debounce, events]
   end
   B[(PersistenceBackend<br/>localStorage / remote / memory)]
-  UI[Saved settings dialog]
+  UI[Saved state dialog]
 
   H --> C --> S --> P --> B
   UI --> P
 ```
 
 `RemoteModule` resolves the store for its descriptor and provides it through
-`ApplicationSettingsContext`. Because `@vuu-ui/core/portal` is a federation
-singleton, the remote's `useApplicationSettings()` reads the host's context.
+`ApplicationStateContext`. Because `@vuu-ui/core/portal` is a federation
+singleton, the remote's `useApplicationState()` reads the host's context.
 
 ### 6.2 Startup sequence
 
@@ -240,19 +274,19 @@ sequenceDiagram
   participant App as Remote component
 
   Shell->>Svc: getStore(appKey, version)
-  par load settings
+  par load saved state
     Svc->>BE: load(user, appKey, version)
     BE-->>Svc: document | undefined
   and load remote code
     Shell->>MF: loadRemote(scope/component)
     MF-->>Shell: component
   end
-  Shell->>App: render inside ApplicationSettingsContext (store ready)
+  Shell->>App: render inside ApplicationStateContext (store ready)
   App->>App: store.get("table-config") — synchronous
   App->>Svc: store.set("table-config", value) — debounced save
 ```
 
-- The settings document is loaded **in parallel** with the remote code and the
+- The state document is loaded **in parallel** with the remote code and the
   remote is rendered only once both are ready (the existing `Suspense`
   boundary is reused; the store exposes a `ready` promise). This guarantees
   synchronous reads on first render, so components can initialise state from
@@ -260,7 +294,7 @@ sequenceDiagram
 - If loading fails, the store becomes `ready` with an empty document and
   `status = "error"`; the application renders with defaults and writes are
   held in memory (not persisted) until the next successful load. The failure is
-  logged and surfaced in the Saved settings UI. Persistence failures must never
+  logged and surfaced in the Saved state UI. Persistence failures must never
   prevent an application from rendering.
 
 ### 6.3 Types
@@ -275,20 +309,20 @@ export type JsonValue =
   | { [key: string]: JsonValue };
 
 export interface EntryMetadata {
-  /** Human-readable name shown in the Saved settings UI. */
+  /** Human-readable name shown in the Saved state UI. */
   label?: string;
-  /** Optional grouping shown in the Saved settings UI. */
+  /** Optional grouping shown in the Saved state UI. */
   group?: string;
 }
 
-export type SettingsChangeReason = "set" | "remove" | "clear" | "external";
+export type StateChangeReason = "set" | "remove" | "clear" | "external";
 
-export interface SettingsChangeEvent {
+export interface StateChangeEvent {
   keys: readonly string[];
-  reason: SettingsChangeReason;
+  reason: StateChangeReason;
 }
 
-export interface ApplicationSettingsStore {
+export interface ApplicationStateStore {
   readonly applicationKey: string;
   readonly applicationVersion: number;
   readonly status: "loading" | "ready" | "error";
@@ -310,7 +344,7 @@ export interface ApplicationSettingsStore {
 
   /** Writes any pending changes now. */
   flush(): Promise<void>;
-  subscribe(listener: (event: SettingsChangeEvent) => void): () => void;
+  subscribe(listener: (event: StateChangeEvent) => void): () => void;
 
   /** Versions of this application that have saved documents, newest first. */
   previousVersions(): Promise<readonly number[]>;
@@ -339,10 +373,10 @@ Notes:
 
 ```ts
 /** The store for the enclosing application. Throws outside a portal application. */
-export function useApplicationSettings(): ApplicationSettingsStore;
+export function useApplicationState(): ApplicationStateStore;
 
 /** Same, but returns undefined when not hosted by a portal (standalone apps, tests). */
-export function useOptionalApplicationSettings(): ApplicationSettingsStore | undefined;
+export function useOptionalApplicationState(): ApplicationStateStore | undefined;
 
 /**
  * useState-like hook backed by the store. Returns defaultValue when there is
@@ -366,7 +400,7 @@ const [sort, setSort] = usePersistentState<SortDef>("table/sort", NO_SORT, {
 
 ### 6.5 Shell-level service API
 
-Used by `PortalShell`, `RemoteModule`, and the Saved settings UI. Not intended
+Used by `PortalShell`, `RemoteModule`, and the Saved state UI. Not intended
 for remote modules.
 
 ```ts
@@ -405,12 +439,12 @@ export interface ClearResult {
 
 export interface PortalPersistenceService {
   readonly user: string;
-  getStore(applicationKey: string, applicationVersion: number, title?: string): ApplicationSettingsStore;
+  getStore(applicationKey: string, applicationVersion: number, title?: string): ApplicationStateStore;
   list(): Promise<readonly DocumentSummary[]>;
   clear(selection: ClearSelection): Promise<ClearResult>;
   clearAll(): Promise<ClearResult>;
   flushAll(): Promise<void>;
-  subscribe(listener: (ref: DocumentRef, event: SettingsChangeEvent) => void): () => void;
+  subscribe(listener: (ref: DocumentRef, event: StateChangeEvent) => void): () => void;
   dispose(): void;
 }
 ```
@@ -428,10 +462,10 @@ should:
 
 - take an optional key (or key prefix) prop from the owning application, e.g.
   `persistenceKey="instruments/table"`;
-- read and write through `useOptionalApplicationSettings()` so they work with
+- read and write through `useOptionalApplicationState()` so they work with
   or without a portal;
 - supply `label` / `group` metadata so their entries are identifiable in the
-  Saved settings UI.
+  Saved state UI.
 
 ## 7. Storage backends
 
@@ -443,13 +477,13 @@ CRUD on whole documents.
 
 ```ts
 export interface PersistenceBackend {
-  load(ref: DocumentRef): Promise<SettingsDocument | undefined>;
+  load(ref: DocumentRef): Promise<StateDocument | undefined>;
   /**
    * Saves the document. If expectedRevision is supplied and does not match the
    * stored revision, rejects with PersistenceConflictError carrying the
    * current document.
    */
-  save(doc: SettingsDocument, expectedRevision?: number): Promise<{ revision: number }>;
+  save(doc: StateDocument, expectedRevision?: number): Promise<{ revision: number }>;
   delete(ref: DocumentRef): Promise<void>;
   /** Metadata only — values are not required. */
   list(user: string): Promise<readonly DocumentSummary[]>;
@@ -464,7 +498,7 @@ Errors: `PersistenceError` (base, with `operation`, `ref`, optional `status`),
 
 ### 7.2 `LocalStoragePersistenceBackend` (default)
 
-- Storage key: `vuu-portal:{portalId}:{user}:{applicationKey}:v{version}`, each
+- Storage key: `vuu-portal:{portalId}:state:{user}:{applicationKey}:v{version}`, each
   segment `encodeURIComponent`-encoded. `portalId` is the `PortalShell` `id`
   (default `"vuu-portal"`) so multiple portals on one origin do not collide.
 - `list(user)` enumerates `localStorage` keys with the user prefix — no
@@ -472,7 +506,7 @@ Errors: `PersistenceError` (base, with `operation`, `ref`, optional `status`),
 - `subscribe` uses the `window` `storage` event to detect writes from other
   tabs / `WindowHost` windows on the same origin.
 - `QuotaExceededError` is mapped to `PersistenceQuotaError`; the service keeps
-  the change in memory, marks the store `error`, and the Saved settings UI shows
+  the change in memory, marks the store `error`, and the Saved state UI shows
   a warning with a prompt to clear space.
 - Invalid JSON or a document that fails validation is moved to
   `{key}:corrupt:{timestamp}` (one retained copy), logged, and treated as
@@ -493,8 +527,8 @@ Proposed REST contract (server implementation out of scope):
 
 | Operation | Request                                                               | Response                                                        |
 | --------- | --------------------------------------------------------------------- | --------------------------------------------------------------- |
-| list      | `GET {base}/users/{user}/settings`                                    | `200` `DocumentSummary[]`                                       |
-| load      | `GET {base}/users/{user}/settings/{applicationKey}/versions/{version}` | `200` document + `ETag: "{revision}"`, or `404`                 |
+| list      | `GET {base}/users/{user}/state`                                       | `200` `DocumentSummary[]`                                       |
+| load      | `GET {base}/users/{user}/state/{applicationKey}/versions/{version}`    | `200` document + `ETag: "{revision}"`, or `404`                 |
 | save      | `PUT` same path, body = document, `If-Match: "{revision}"` (omit on create; `If-None-Match: *`) | `200`/`201` + `ETag`; `412` on conflict (body = current document) |
 | delete    | `DELETE` same path                                                    | `204` (also for already absent)                                 |
 
@@ -513,7 +547,7 @@ Proposed REST contract (server implementation out of scope):
 export interface PortalShellProps extends CommonShellProps {
   // existing props…
   /**
-   * Storage backend for application settings.
+   * Storage backend for saved application state.
    * Default: LocalStoragePersistenceBackend.
    * Pass `false` to disable persistence (applications receive an in-memory store).
    */
@@ -533,9 +567,9 @@ the default and documents how to switch to the remote backend via
 | ID    | Requirement |
 | ----- | ----------- |
 | FR-1  | `PortalShell` creates one `PortalPersistenceService` for the authenticated user and makes it available to shell components. |
-| FR-2  | `RemoteModule` provides each remote with an `ApplicationSettingsStore` scoped to the descriptor's application key and version. |
+| FR-2  | `RemoteModule` provides each remote with an `ApplicationStateStore` scoped to the descriptor's application key and version. |
 | FR-3  | A remote cannot address another application's document through the application-facing API. |
-| FR-4  | The remote renders only after its settings document is loaded or has failed to load; first-render reads are synchronous. |
+| FR-4  | The remote renders only after its state document is loaded or has failed to load; first-render reads are synchronous. |
 | FR-5  | `set` updates memory immediately and persists within a debounce window (default 500 ms, configurable), coalescing multiple keys into one document save. |
 | FR-6  | Pending writes are flushed on `visibilitychange` → hidden, `pagehide`, logout, and service disposal. |
 | FR-7  | Stored data is one JSON document per user / application key / application version, in the format in §5.1. |
@@ -547,200 +581,276 @@ the default and documents how to switch to the remote backend via
 | FR-13 | Clearing cancels pending writes for the cleared keys and notifies running applications with reason `clear`; `usePersistentState` reverts to its default. |
 | FR-14 | Clearing every key in a document deletes the document rather than saving an empty one. |
 | FR-15 | Logout flushes pending writes, then disposes the service. A different user logging in on the same browser never sees the previous user's data. |
-| FR-16 | The portal shell's own state (e.g. nav expanded, app switcher mode) uses the reserved `vuu.portal` application key and appears in the Saved settings UI as "Portal". |
-| FR-17 | Hooks work outside a portal (`useOptionalApplicationSettings`, and `usePersistentState` falls back to plain state) so remotes remain usable standalone and in tests. |
+| FR-16 | The portal shell's own state (e.g. nav expanded, app switcher mode) uses the reserved `vuu.portal` application key and appears in the Saved state UI as "Portal". |
+| FR-17 | Hooks work outside a portal (`useOptionalApplicationState`, and `usePersistentState` falls back to plain state) so remotes remain usable standalone and in tests. |
 
 ### 8.2 Non-functional
 
 | ID    | Requirement |
 | ----- | ----------- |
-| NFR-1 | Persistence failures (quota, network, corrupt data) never throw into application render; they are logged and surfaced in the Saved settings UI. |
+| NFR-1 | Persistence failures (quota, network, corrupt data) never throw into application render; they are logged and surfaced in the Saved state UI. |
 | NFR-2 | Document load adds no serial latency to remote startup (parallel with code load, §6.2). |
 | NFR-3 | Default size warnings: 256 KB per entry, 1 MB per document (configurable). Oversized writes are rejected with a logged error. |
 | NFR-4 | `localStorage` is not a security boundary. Applications must not store secrets or tokens; this is documented and entries containing obvious tokens are not specially handled. |
 | NFR-5 | All public types and hooks are exported from `@vuu-ui/core/portal` and documented. |
-| NFR-6 | Unit tests (vitest) cover the service, each backend, conflict handling, debounce/flush, cross-tab events and clear semantics; component tests cover the Saved settings dialog including keyboard use. |
+| NFR-6 | Unit tests (vitest) cover the service, each backend, conflict handling, debounce/flush, cross-tab events and clear semantics; component tests cover the Saved state dialog including keyboard use. |
 
-## 9. Saved settings UI
+## 9. Saved state UI
+
+The mockups below are rendered from real Salt components
+(`@salt-ds/core` 1.67.0) using `vuu-theme` (purple accent, rounded corners,
+medium density), at 2× resolution. Data is illustrative. Click an image to
+view it at full size.
 
 ### 9.1 Principles
 
-- Follow the Salt **Preferences dialog** pattern: a single, centralised dialog
-  using `Dialog`, `ParentChildLayout`, `VerticalNavigation` /
-  `NavigationItem`, and a **Button bar** of actions.
-- When opened from a specific application, open directly on that
-  application's panel (Preferences dialog guidance: "immediately display the
-  relevant settings").
-- Selection is explicit and reviewable; destructive actions require
-  confirmation and report their outcome.
-- The UI reads only metadata (`list()`), never loads remote code, and works for
-  applications that are not currently loaded, disabled, or no longer in the
-  user's registry.
+- **Never call it Settings or Preferences.** The dialog title, menu items,
+  buttons and messages all say *saved state* (§4.1). Every view of the dialog
+  says what saved state is and that clearing it doesn't change the user's
+  Settings.
+- **Visually distinct from the future Settings dialog.** The Settings dialog
+  will use the Salt Preferences dialog pattern, with vertical navigation
+  between panels. The Saved state dialog is a **single-pane** dialog. The
+  application → group → item hierarchy is shown in one `Tree`, so there's no
+  left navigation that could be mistaken for Settings. Later, the Settings
+  dialog may link to Saved state, but the two are never combined.
+- **Explicit, reviewable selection.** Users choose exactly what to clear,
+  confirm before anything is removed, and are told what happened.
+- **Metadata only.** The dialog reads `list()` summaries and never loads
+  remote code. It works for applications that aren't loaded, are disabled, or
+  are no longer in the user's registry.
 
 ### 9.2 Entry points
 
-1. **Header user menu** (Salt `Menu` / `MenuTrigger` / `MenuPanel` / `MenuItem`,
-   per the App header and Menu button patterns). `PortalHeader` replaces the
-   standalone **Log out** button with a user menu button showing the user name
-   (`Avatar` + name, `appearance="transparent"`):
-   - **Saved settings…** → opens the dialog on *All applications*.
-   - Divider
-   - **Log out**
-2. **Navigation context menu** in `PortalNav` and `PortalAppSwitcher`, after the
-   existing *Open in new Tab / Window* items:
-   - **Saved settings…** → opens the dialog on that application's panel.
-3. **Programmatic**: `usePortalPersistence().openSavedSettings(applicationKey?)`
-   for applications that want their own "Reset settings" affordance.
+**Header user menu.** `PortalHeader` replaces the standalone **Log out**
+button with a user menu (`Menu`, `MenuTrigger`, `MenuPanel`, `MenuItem`,
+following the Salt *App header* and *Menu button* patterns). The trigger is a
+transparent `Button` with an `Avatar` and the user name.
 
-### 9.3 Dialog structure
+- **Saved state…** opens the dialog showing all applications.
+- A divider, then **Log out**.
+- When the Settings dialog is delivered, **Settings…** is added as a separate
+  item above **Saved state…**.
 
-```text
-┌─ Saved settings ─────────────────────────────────────────────────── [×] ┐
-│ Settings saved by applications are restored when they next open.        │
-├─────────────────────────┬───────────────────────────────────────────────┤
-│ ▸ All applications   18 │  All applications                             │
-│ ─────────────────────── │  [Filter keys…                 ] (search)     │
-│   Portal              2 │                                               │
-│   Instruments         9 │  ☐ ▾ Portal                    2 · 3 KB · 1d  │
-│   Basket trading      5 │      ☐ Navigation expanded                    │
-│   User admin          2 │      ☐ App switcher style                     │
-│ ─────────────────────── │  ◩ ▾ Instruments   v1          9 · 42 KB · 2h │
-│   Unavailable         1 │      ▾ Filters                                │
-│                         │        ☑ Saved filters          2h            │
-│                         │        ☑ Active filter          2h            │
-│                         │      ▸ Table (4)                              │
-│                         │  ☐ ▸ Basket trading            5 · 8 KB · 5d  │
-│                         │  ☐ ▸ User admin                2 · 1 KB · 9d  │
-├─────────────────────────┴───────────────────────────────────────────────┤
-│ Clear all saved settings…            2 selected   [Cancel] [Clear…]     │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+[![Header user menu with Saved state… and Log out](assets/saved-state/01-entry-user-menu.png)](assets/saved-state/01-entry-user-menu.png)
 
-**Header** — `DialogHeader` with title *Saved settings* and a short
-description (`Text`, secondary). `DialogCloseButton` in the top-right.
+**Navigation context menu.** In `PortalNav` and `PortalAppSwitcher`, a
+divider and **Saved state…** follow the existing *Open in new Tab / Window*
+items. This opens the dialog scoped to that application (§9.4).
 
-**Parent (navigation)** — `VerticalNavigation` with `NavigationItem`s:
+[![Navigation context menu with Saved state…](assets/saved-state/02-entry-nav-context-menu.png)](assets/saved-state/02-entry-nav-context-menu.png)
 
-- *All applications* (default) with a `Badge` showing the total number of
-  saved entries.
-- One item per application with saved data, ordered as in the portal
-  navigation, labelled with the descriptor `title` (falling back to
-  `applicationTitle`, then the key) and a `Badge` count.
-- An *Unavailable* item grouping documents whose application is no longer in
-  the registry, and any corrupt documents (§7.2).
-- Applications with no saved data are omitted.
+**Programmatic.** `useSavedStateDialog().open(applicationKey?)` lets an
+application offer its own "Reset view" action that opens the dialog scoped to
+itself.
 
-**Child (content)** — both the *All applications* and the per-application
-panels use a Salt `Tree` with `multiselect` (checkbox nodes with
-tri-state/indeterminate parents):
+### 9.3 Dialog: all applications
 
-- *All applications*: level 1 = application (plus version tag when more than
-  one version exists), level 2 = `group` (if any), leaf = entry.
-- Per-application panel: a summary block (title, current version, total
-  entries, size, last saved — `Text` / `Label` in a `FlowLayout`) followed by
-  the same tree rooted at that application's groups. Earlier versions appear as
-  a collapsed group *Previous versions* with one node per version (selecting it
-  selects the whole document).
-- Leaf labels show `label` (fallback: key), with the raw key, relative last
-  saved time and size as secondary text; `Tooltip` shows the absolute
-  timestamp.
-- A search `Input` above the tree filters by label, key, or group (List
-  filtering pattern); filtered-out nodes keep their selection.
-- A "Select all / none" is implicit in the tree's parent checkboxes; in the
-  per-application panel the root node acts as select-all.
+[![Saved state dialog showing all applications with a partial selection](assets/saved-state/03-saved-state-all.png)](assets/saved-state/03-saved-state-all.png)
 
-Selection is **one shared set** across all panels (identified by
-`applicationKey / version / key`), so moving between panels does not lose
-selections and the button bar count is always global.
+Anatomy, top to bottom:
 
-**Button bar** — `DialogActions` following the Button bar pattern:
+1. **Header.** `DialogHeader` with the title **Saved state** and the
+   description *"Applications remember how you left them, such as filters,
+   sort order and column layout, and restore it when you next open them."*
+   `DialogCloseButton` sits at the top right.
+2. **Distinction note.** An info icon with secondary `Text`: *"Clearing saved
+   state returns an application to its default view. It doesn't change your
+   Settings."*
+3. **Filter bar** (`FlexLayout`):
+   - a bordered search `Input` with a search icon, placeholder *"Find saved
+     state"* (§9.5);
+   - a **Show** `Dropdown` offering *All applications* or one application
+     (§9.4);
+   - **Expand all** / **Collapse all** transparent icon buttons, right-aligned.
+4. **Tree.** A Salt `Tree` with `multiselect`, in a bordered, scrollable
+   container:
+   - **Level 1: application.** Bold title, an **Open** tag if it's currently
+     mounted, and right-aligned metadata: *Version · N items · size · last
+     saved*. Ordered as in the portal navigation, with **Portal** first.
+     Applications with no saved state are omitted.
+   - **Level 2: group** (from entry `group` metadata), with an item count.
+     Entries without a group sit directly under the application.
+   - **Leaf: item.** The entry `label`, with the raw key in secondary
+     monospace text, and right-aligned *size · last saved*. A `Tooltip` shows
+     the absolute timestamp.
+   - **Previous versions.** A collapsed group under the application, with one
+     node per earlier version. Selecting a version node selects its whole
+     document.
+   - **Unavailable applications.** A final top-level node (§9.9).
+   - Parent checkboxes are tri-state: selecting a parent selects all its
+     descendants, and a partial selection shows as indeterminate.
+5. **Button bar** (`DialogActions`, Salt *Button bar* pattern):
+   - start: **Clear all saved state…** (`appearance="transparent"`,
+     `sentiment="negative"`), disabled when there's no saved state;
+   - end: a selection summary (*"6 items selected in 2 applications"* or
+     *"Nothing selected"*), **Close** (`bordered`, `neutral`), and **Clear
+     selected…** (`solid`, `negative`), disabled when nothing is selected.
 
-- Start (secondary): **Clear all saved settings…** (`sentiment="negative"`,
-  `appearance="transparent"`), always available when any data exists.
-- End: selection summary `Text` ("3 selected in 2 applications"),
-  **Cancel** (`appearance="bordered"`, `sentiment="neutral"`), and
-  **Clear…** (`sentiment="negative"`, `appearance="solid"`), disabled when
-  nothing is selected.
+The selection is a single set keyed by `applicationKey / version / key`. It
+is kept when the search text or **Show** scope changes, so the summary always
+reflects everything that will be cleared.
 
-**Responsiveness** — `ParentChildLayout` collapses below the `md` breakpoint:
-the navigation becomes the first view and the content view shows a back
-button, per the Preferences dialog guidance; the button bar stacks at `xs`.
+Size: `Dialog size="large"`, 880 × 680 px, capped at the viewport height minus
+80 px. The tree scrolls; the header, filter bar and button bar stay fixed.
 
-### 9.4 States (Content status pattern)
+### 9.4 Dialog: scoped to one application
 
-| State                         | Presentation |
-| ----------------------------- | ------------ |
-| Loading summaries             | `Spinner` with "Loading saved settings" centred in the content area. |
-| No saved settings             | Info status: "No saved settings", "Settings are saved as you use applications." Clear actions disabled. |
-| List failed (remote backend)  | Error status with **Retry** button. |
-| Store in error / quota exceeded | Warning `Banner` above the tree: "Some settings could not be saved. Clearing unused settings may help." |
-| Corrupt document              | Shown under *Unavailable* as "Unreadable data" with a warning `StatusIndicator`; can only be cleared as a whole. |
+Opening from the navigation context menu (or `open(applicationKey)`) sets
+**Show** to that application and expands its groups. The user can switch
+**Show** back to *All applications* without losing their selection.
 
-### 9.5 Confirmation
+[![Saved state dialog scoped to Instruments](assets/saved-state/04-saved-state-application.png)](assets/saved-state/04-saved-state-application.png)
 
-Selecting **Clear…** or **Clear all saved settings…** opens a nested
-`Dialog` with `status="warning"` (Salt alert-style dialog):
+### 9.5 Finding items
 
-```text
-┌─ ⚠ Clear saved settings? ──────────────────────────────┐
-│ The following will be permanently removed:             │
-│   • Instruments — Saved filters, Active filter         │
-│   • Portal — all settings                              │
-│                                                        │
-│ Open applications will revert to their defaults.       │
-│ This can't be undone.                                  │
-├────────────────────────────────────────────────────────┤
-│                              [Cancel] [Clear settings] │
-└────────────────────────────────────────────────────────┘
-```
+Typing in the search box filters the tree by item label, key or group name
+(Salt *List filtering* pattern). Matching items are shown with their ancestors,
+which are expanded. Applications and groups with no matches are hidden.
+Selections on hidden items are kept, and still counted in the summary.
 
-- The summary lists at most 5 applications, then "and N more".
-- Initial focus is on **Cancel**.
-- *Clear all* uses the same dialog with the text "all saved settings for all
-  applications".
+[![Saved state dialog filtered by "sort"](assets/saved-state/05-saved-state-find.png)](assets/saved-state/05-saved-state-find.png)
 
-### 9.6 Outcome
+### 9.6 Confirmation
 
-- Success: the confirmation closes, the tree refreshes, selection is reset,
-  and a Salt `Toast` (`status="success"`) reports "Cleared 3 settings from 2
-  applications". The main dialog stays open.
-- Partial failure: `Toast` `status="error"` names the failed applications; the
-  remaining selection contains only the failed items so the user can retry.
-- If any cleared application is currently open, the toast offers a
-  **Reload** action (reloads the page) for applications that do not react to
-  clear events.
-- All outcomes are also announced via `useAriaAnnouncer`.
+**Clear selected…** or **Clear all saved state…** opens a nested `Dialog`
+with `status="warning"` and `size="small"`.
 
-### 9.7 Accessibility
+[![Clear saved state confirmation dialog](assets/saved-state/06-confirm-clear.png)](assets/saved-state/06-confirm-clear.png)
 
-- Dialog has `aria-labelledby` / `aria-describedby`; focus is trapped and
-  returned to the invoking control on close.
-- `Tree` provides roving focus, arrow-key navigation, `Space` to toggle a
-  checkbox, and `aria-checked="mixed"` for partial parents.
-- Destructive buttons carry explicit text, not icon-only.
-- Counts in `Badge`s have accessible labels ("9 saved settings").
+- Title: **Clear saved state?**
+- Body: *"The following will be permanently removed:"*, then a list of one
+  line per application: *"Instruments — Saved filters, Active filter, Sort
+  order"*. A whole application or version is shown as *"— all saved state"* or
+  *"— Version 1 (all items)"*. At most five lines are shown, then *"and N
+  more"*.
+- If any affected application is open: *"Instruments is open and will return
+  to its default view."* Always ends with *"You can't undo this."*
+- **Clear all** uses the same dialog, with the body *"All saved state for all
+  applications will be permanently removed."*
+- Actions: **Cancel** (`bordered`, `neutral`, receives initial focus) and
+  **Clear saved state** (`solid`, `negative`).
 
-### 9.8 Components
+### 9.7 Outcome
 
-| Concern                | Salt (`@salt-ds/core` 1.67.0) |
-| ---------------------- | ----------------------------- |
-| Dialog shell           | `Dialog`, `DialogHeader`, `DialogContent`, `DialogActions`, `DialogCloseButton` |
-| Layout                 | `ParentChildLayout`, `StackLayout`, `FlowLayout`, `SplitLayout` (button bar) |
-| Navigation             | `VerticalNavigation`, `NavigationItem`, `Badge` |
-| Selection              | `Tree` (`multiselect`), `Input` (filter) |
-| Metadata               | `Text`, `Label`, `Tag` (version), `Tooltip`, `StatusIndicator` |
-| Actions / menus        | `Button`, `Menu`, `MenuTrigger`, `MenuPanel`, `MenuItem`, `Avatar`, `Divider` |
-| Feedback               | `Banner`, `Spinner`, `Toast`, `useAriaAnnouncer` |
+On success the confirmation closes and the main dialog stays open. The tree
+refreshes and the selection resets. A `Toast` with `status="success"` says
+*"Saved state cleared — 6 items cleared from 2 applications."*
 
-`@salt-ds/lab` is not required.
+[![Dialog after clearing, with a success toast](assets/saved-state/07-clear-result.png)](assets/saved-state/07-clear-result.png)
 
-### 9.9 Proposed components (in `@vuu-ui/core/portal`)
+- **Partial failure:** a `Toast` with `status="error"` names the applications
+  that failed. The selection then contains only the failed items, so the user
+  can retry.
+- **Open applications** that were cleared are notified (FR-13) and reset. If
+  an application can't react to clear events, the toast offers **Reload**.
+- Every outcome is also announced with `useAriaAnnouncer`.
 
-- `SavedSettingsDialog` — `{ open, onOpenChange, initialApplicationKey? }`.
-- `SavedSettingsTree` — the selection tree (reusable in both panels).
-- `PortalUserMenu` — header user menu; `PortalHeader` renders it by default and
-  accepts additional menu items via props.
-- `useSavedSettingsDialog()` — opens the dialog from anywhere in the shell.
+### 9.8 Other states
+
+Following the Salt *Content status* pattern:
+
+| State | Presentation |
+| ----- | ------------ |
+| Loading | `Spinner` with *"Loading saved state"*, centred in the tree area. |
+| No saved state | Info status: **No saved state**, *"Applications save state, such as filters and sort order, as you use them. It will appear here."* Filter bar hidden; clear actions disabled. |
+| List failed (remote backend) | Error status: **Saved state couldn't be loaded**, with a **Retry** button. |
+| Store error or storage full | Warning `Banner` above the filter bar: **Some state couldn't be saved.** *"Browser storage is full. Clearing saved state you no longer need will free up space."* |
+
+[![Empty state](assets/saved-state/08-empty.png)](assets/saved-state/08-empty.png)
+
+[![Storage full warning](assets/saved-state/09-storage-warning.png)](assets/saved-state/09-storage-warning.png)
+
+### 9.9 Unavailable applications
+
+Documents whose application key is no longer in the user's registry, and
+documents that couldn't be read (§7.2), are grouped under **Unavailable
+applications**, with the summary *"N applications · can only be cleared"*.
+Each shows its last known title and version:
+
+- a neutral **No longer available** tag, for applications removed from the
+  registry;
+- a warning `StatusIndicator` and **Unreadable data**, for corrupt documents.
+
+These nodes have no children, so they can only be cleared as a whole. See the
+bottom of the §9.7 mockup.
+
+### 9.10 Accessibility
+
+- The dialog has `aria-labelledby` / `aria-describedby`. Focus is trapped, and
+  returns to the invoking control on close.
+- The `Tree` provides roving focus and arrow-key navigation. `Space` toggles a
+  checkbox, and partial parents report `aria-checked="mixed"`.
+- Tree node accessible names include the metadata, e.g. *"Sort order, 5 hours
+  ago, less than 1 KB"*.
+- Destructive buttons use explicit text, never icons alone. The icon-only
+  Expand all / Collapse all buttons have `aria-label` and a `Tooltip`.
+- The selection summary is an `aria-live="polite"` region.
+
+### 9.11 User-facing copy
+
+To keep the terminology consistent (§4.1), use only these strings:
+
+| Context | Text |
+| ------- | ---- |
+| Menu item | Saved state… |
+| Dialog title | Saved state |
+| Dialog description | Applications remember how you left them, such as filters, sort order and column layout, and restore it when you next open them. |
+| Distinction note | Clearing saved state returns an application to its default view. It doesn't change your Settings. |
+| Search placeholder | Find saved state |
+| Scope label / default | Show / All applications |
+| Selection summary | N item(s) selected in M application(s) · Nothing selected |
+| Buttons | Clear all saved state… · Close · Clear selected… |
+| Confirm title / action | Clear saved state? / Clear saved state |
+| Success toast | Saved state cleared · N items cleared from M applications. |
+| Empty | No saved state |
+| Group of removed apps | Unavailable applications |
+
+Avoid *settings*, *preferences*, *configuration*, *reset settings* and
+*delete* in this UI.
+
+### 9.12 Salt components and patterns
+
+| Concern | Salt (`@salt-ds/core` 1.67.0) |
+| ------- | ----------------------------- |
+| Dialogs | `Dialog` (`size="large"`, and `status="warning"` for confirmation), `DialogHeader`, `DialogContent`, `DialogActions`, `DialogCloseButton` |
+| Layout | `StackLayout`, `FlexLayout` |
+| Selection | `Tree` / `TreeNode` (`multiselect`) |
+| Filtering | `Input` (bordered, search adornment), `Dropdown` / `Option` |
+| Metadata | `Text`, `Tag`, `Tooltip`, `StatusIndicator` |
+| Menus | `Menu`, `MenuTrigger`, `MenuPanel`, `MenuItem`, `Divider`, `Avatar`, `Button` |
+| Feedback | `Banner`, `Spinner`, `Toast`, `useAriaAnnouncer` |
+| Icons (`@salt-ds/icons`) | `HistoryIcon`, `SearchIcon`, `InfoIcon`, `ExpandAllIcon`, `CollapseAllIcon`, `ChevronDownIcon` |
+
+Salt patterns followed: *App header*, *Menu button*, *Button bar*, *List
+filtering* and *Content status*. `@salt-ds/lab` is not required.
+
+### 9.13 Theme notes for implementation
+
+Building the mockups showed two `vuu-theme` issues the dialog must handle:
+
+- `--salt-palette-neutral` resolves to white, so **unchecked `Tree`
+  checkboxes have an invisible border** on a white background. Fix this in
+  `vuu-theme` (preferred), or scope a border-colour override to the dialog.
+- `vuu-theme/css/components/dropdown.css` hides `.saltDropdown-toggle`, so a
+  `Dropdown` looks like a text input. The **Show** control needs the chevron
+  back. Re-enable it for this dialog, or revisit the theme rule.
+
+Tree construction note: Salt's `Tree` builds its model from `TreeNode`
+elements. Nodes must be direct `TreeNode` children, or arrays of them, not
+wrapped in custom components. A controlled `selected` array must include
+fully-selected parents as well as their leaves.
+
+### 9.14 Proposed components (in `@vuu-ui/core/portal`)
+
+- `SavedStateDialog`: `{ open, onOpenChange, initialApplicationKey? }`.
+- `SavedStateTree`: the selection tree.
+- `ClearSavedStateConfirmation`: the confirmation dialog.
+- `PortalUserMenu`: the header user menu. `PortalHeader` renders it by
+  default, and it accepts additional menu items (for the future
+  **Settings…**).
+- `useSavedStateDialog()`: `{ open(applicationKey?) }`, to open the dialog
+  from anywhere in the shell.
 
 ## 10. Package structure
 
@@ -748,36 +858,36 @@ Selecting **Clear…** or **Clear all saved settings…** opens a nested
 core/src/
 |-- persistence/
 |   |-- PersistenceBackend.ts             // interfaces, errors, DocumentRef
-|   |-- SettingsDocument.ts               // schema, validation, envelope migration
+|   |-- StateDocument.ts                  // schema, validation, envelope migration
 |   |-- LocalStoragePersistenceBackend.ts
 |   |-- InMemoryPersistenceBackend.ts
 |   |-- RemotePersistenceBackend.ts
 |   |-- PortalPersistenceService.ts
-|   |-- ApplicationSettingsStore.ts
+|   |-- ApplicationStateStore.ts
 |   |-- PersistenceContext.tsx            // providers + hooks
 |   `-- index.ts
-|-- saved-settings/
-|   |-- SavedSettingsDialog.tsx / .css
-|   |-- SavedSettingsTree.tsx
-|   |-- ClearSettingsConfirmation.tsx
+|-- saved-state/
+|   |-- SavedStateDialog.tsx / .css
+|   |-- SavedStateTree.tsx
+|   |-- ClearSavedStateConfirmation.tsx
 |   `-- index.ts
 |-- portal-header/
 |   `-- PortalUserMenu.tsx
-core/test/persistence/, core/test/saved-settings/
+core/test/persistence/, core/test/saved-state/
 ```
 
-`portal.ts` re-exports `persistence` and `saved-settings`.
+`portal.ts` re-exports `persistence` and `saved-state`.
 `portal-design.md` is updated to reference this document when implemented.
 
 ## 11. Implementation phases
 
 1. **Core service** — types, document validation, in-memory and localStorage
-   backends, `PortalPersistenceService`, `ApplicationSettingsStore`, hooks,
+   backends, `PortalPersistenceService`, `ApplicationStateStore`, hooks,
    unit tests.
 2. **Shell integration** — `PortalShell` / `WindowHost` `persistence` prop,
    `persistenceKey` on `RemoteModuleDescriptor`, `RemoteModule` store provisioning and ready gating, logout flush, portal
-   shell's own settings under `vuu.portal`.
-3. **Saved settings UI** — dialog, tree, confirmation, toasts, header user menu,
+   shell's own state under `vuu.portal`.
+3. **Saved state UI** — dialog, tree, confirmation, toasts, header user menu,
    nav context-menu entry; component tests.
 4. **Documentation** — usage guide for remote authors; update
    `remote-module-template` and `portal-design.md`. Migrating existing
@@ -791,8 +901,8 @@ core/test/persistence/, core/test/saved-settings/
 | -- | -------- | -------- |
 | Q1 | Application key: `clientIdentifier`, `name`, or a new `persistenceKey` descriptor field? | `clientIdentifier` by default, with an optional `persistenceKey` descriptor override for admins who need to preserve data across re-registration (§5.2). |
 | Q2 | How do existing `useViewContext` `load` / `save` consumers persist? | No adapter. `@vuu-ui/vuu-layout` will be removed; components that save properties (e.g. `vuu-table`) will be migrated to the portal service later (§2.2, §6.6). |
-| Q3 | Is `descriptor.version` the right version dimension, or should remotes declare a settings schema version independent of deployment version? | Use `descriptor.version`; revisit if admins bump versions for non-breaking releases. |
+| Q3 | Is `descriptor.version` the right version dimension, or should remotes declare a state schema version independent of deployment version? | Use `descriptor.version`; revisit if admins bump versions for non-breaking releases. |
 | Q4 | Retention of previous-version documents. | Keep indefinitely in v1; users clear via UI. Consider "keep last N versions" later. |
 | Q5 | Should the user be able to view saved values (read-only JSON) in the UI? | Not in v1; candidate for a later "Details" disclosure. |
-| Q6 | Import/export of settings (Preferences dialog secondary actions). | Out of scope for v1; the document format supports it. |
+| Q6 | Import/export of saved state. | Out of scope for v1; the document format supports it. |
 | Q7 | Should `local` authentication mode default to `localStorage` or in-memory? | `localStorage`, consistent with the example host. |
