@@ -1,6 +1,6 @@
 # Portal Persistence Service and Saved Settings UI — Design
 
-Status: **Draft — for review before implementation**
+Status: **Reviewed — ready for implementation** (decisions recorded in §12)
 Package: `@vuu-ui/core/portal`
 Reference host: `portal-examples/portal-host`
 
@@ -51,19 +51,15 @@ This document specifies:
 ### 2.2 Existing application persistence
 
 Several remotes (`feature-filter-table`, `basket-trading`,
-`feature-instrument-tiles`) already call `useViewContext()` from
-`@vuu-ui/vuu-layout` and use its `load` / `save` / `purge` functions, for
-example:
+`feature-instrument-tiles`) and shared components such as `vuu-table` persist
+state through `useViewContext()` `load` / `save` / `purge` from
+`@vuu-ui/vuu-layout`. When mounted directly by the portal there is no `View`
+above the remote, so nothing is persisted.
 
-```ts
-const { load, save } = useViewContext();
-const config = useMemo(() => load?.() ?? NO_CONFIG, [load]);
-save?.(tableConfig, "table-config");
-```
-
-When mounted directly by the portal there is no `View` above the remote, so
-`save` is `undefined` and nothing is persisted. The new service must provide a
-path for these remotes to persist without rewriting them (see §6.6).
+`@vuu-ui/vuu-layout` is to be removed. This design **does not** provide a
+`useViewContext` compatibility layer. Components that save properties will be
+migrated to the portal persistence service separately, after it is delivered
+(see §3, non-goals).
 
 ### 2.3 Reference: `vuu-shell` persistence-manager
 
@@ -98,17 +94,21 @@ this design does not change them.
 - G4. Users can inspect what is saved and selectively clear it.
 - G5. Clearing is safe while applications are running (no immediate re-save of
   the cleared value; applications can react).
-- G6. Existing `useViewContext` `load` / `save` consumers can be supported
-  without code changes.
+- G6. The API is general enough for shared components (e.g. `vuu-table`,
+  filters) to adopt later as the replacement for `useViewContext`
+  `load` / `save`.
 
 ### Non-goals
 
 - Server-side implementation of the remote store (only its contract, §7.4).
+- A `useViewContext` adapter, and migration of existing components or remotes
+  to the new service. Both are follow-up work.
 - Layout / workspace persistence (`vuu-shell` workspace services). A future
   workspace feature may use this service as its backend.
 - Sharing settings between users, or admin-managed defaults.
 - Encryption at rest in `localStorage`.
-- Import/export of settings (possible later; see §12).
+- Import/export of settings (possible later; see §12, Q6).
+- Viewing saved values in the UI (possible later; see §12, Q5).
 
 ## 4. Terminology
 
@@ -179,8 +179,13 @@ descriptor that mounted the remote. This prevents one application reading or
 clearing another's data and removes the risk of two remotes choosing the same
 key.
 
-- Default: `descriptor.clientIdentifier` (unique, stable, admin-managed; e.g.
+- Resolution: `descriptor.persistenceKey ?? descriptor.clientIdentifier`.
+- `clientIdentifier` is the default (unique, stable, admin-managed; e.g.
   `local-feature-filter-table`).
+- `persistenceKey` is a new optional field on `RemoteModuleDescriptor`.
+  Admins set it to keep a user's saved settings when a module is
+  re-registered under a new `clientIdentifier`. It must be unique across the
+  registry; the registry rejects duplicates.
 - The same federated component registered twice (e.g. the filter table with
   two different `tableSchema` props) gets two descriptors and therefore two
   independent settings documents.
@@ -188,14 +193,12 @@ key.
   version `1`. (Portals on the same origin are separated by the storage key
   prefix, §7.2.)
 
-Open question Q1 covers whether a dedicated `persistenceKey` descriptor field
-is preferable.
-
 ### 5.3 Versioning
 
 - A new application version starts with an **empty** document. Documents for
-  earlier versions are retained until cleared by the user (or by a retention
-  policy, Q4).
+  earlier versions are kept indefinitely until the user clears them
+  (Q4; a "keep last N versions" policy may follow).
+- The version dimension is `descriptor.version` (Q3).
 - Applications that want to carry settings forward do so explicitly on
   startup (§6.3, `previousVersions()` / `importFrom()`), because only the
   application knows how to migrate its own data.
@@ -252,8 +255,8 @@ sequenceDiagram
 - The settings document is loaded **in parallel** with the remote code and the
   remote is rendered only once both are ready (the existing `Suspense`
   boundary is reused; the store exposes a `ready` promise). This guarantees
-  synchronous reads on first render — required by the existing
-  `useMemo(() => load?.() ...)` style.
+  synchronous reads on first render, so components can initialise state from
+  saved values without an extra render or loading state.
 - If loading fails, the store becomes `ready` with an empty document and
   `status = "error"`; the application renders with defaults and writes are
   held in memory (not persisted) until the next successful load. The failure is
@@ -417,20 +420,18 @@ export interface PortalPersistenceService {
   re-mounts) share state.
 - A `usePortalPersistence()` hook exposes the service to shell components.
 
-### 6.6 `useViewContext` compatibility
+### 6.6 Use by shared components
 
-Existing remotes call `useViewContext().load/save/purge`. A
-`PersistentViewContextProvider` adapter maps these to the store:
+Shared components (e.g. `vuu-table`) are used by many applications, so they
+must not assume a fixed key. When they are migrated (out of scope here), they
+should:
 
-| `ViewContextAPI`     | Store call                                                  |
-| -------------------- | ----------------------------------------------------------- |
-| `load()`             | `getAll()` (the filter table reads its whole config object) |
-| `load(key)`          | `get(key)`                                                  |
-| `save(state, key)`   | `set(key, state)`                                           |
-| `purge(key)`         | `remove(key)`                                               |
-
-`@vuu-ui/core` does not depend on `@vuu-ui/vuu-layout`, so the adapter cannot
-live in `core` without adding that dependency. See Q2 for placement options.
+- take an optional key (or key prefix) prop from the owning application, e.g.
+  `persistenceKey="instruments/table"`;
+- read and write through `useOptionalApplicationSettings()` so they work with
+  or without a portal;
+- supply `label` / `group` metadata so their entries are identifiable in the
+  Saved settings UI.
 
 ## 7. Storage backends
 
@@ -547,8 +548,7 @@ the default and documents how to switch to the remote backend via
 | FR-14 | Clearing every key in a document deletes the document rather than saving an empty one. |
 | FR-15 | Logout flushes pending writes, then disposes the service. A different user logging in on the same browser never sees the previous user's data. |
 | FR-16 | The portal shell's own state (e.g. nav expanded, app switcher mode) uses the reserved `vuu.portal` application key and appears in the Saved settings UI as "Portal". |
-| FR-17 | A `useViewContext` adapter lets existing remotes persist without code changes (§6.6). |
-| FR-18 | Hooks work outside a portal (`useOptionalApplicationSettings`, and `usePersistentState` falls back to plain state) so remotes remain usable standalone and in tests. |
+| FR-17 | Hooks work outside a portal (`useOptionalApplicationSettings`, and `usePersistentState` falls back to plain state) so remotes remain usable standalone and in tests. |
 
 ### 8.2 Non-functional
 
@@ -775,23 +775,24 @@ core/test/persistence/, core/test/saved-settings/
    backends, `PortalPersistenceService`, `ApplicationSettingsStore`, hooks,
    unit tests.
 2. **Shell integration** — `PortalShell` / `WindowHost` `persistence` prop,
-   `RemoteModule` store provisioning and ready gating, logout flush, portal
+   `persistenceKey` on `RemoteModuleDescriptor`, `RemoteModule` store provisioning and ready gating, logout flush, portal
    shell's own settings under `vuu.portal`.
 3. **Saved settings UI** — dialog, tree, confirmation, toasts, header user menu,
    nav context-menu entry; component tests.
-4. **Adoption** — `useViewContext` adapter; migrate `feature-filter-table` as the
-   reference remote; update `remote-module-template` and docs.
+4. **Documentation** — usage guide for remote authors; update
+   `remote-module-template` and `portal-design.md`. Migrating existing
+   components (e.g. `vuu-table`) and remotes is follow-up work.
 5. **Remote backend** — `RemotePersistenceBackend` against the §7.4 contract,
    conflict handling, retry; portal-host configuration example.
 
-## 12. Open questions
+## 12. Decisions
 
-| #  | Question | Proposal |
+| #  | Question | Decision |
 | -- | -------- | -------- |
-| Q1 | Application key: `clientIdentifier`, `name`, or a new `persistenceKey` descriptor field? | `clientIdentifier` by default, with an optional `persistenceKey` override for admins who need to preserve data across re-registration. |
-| Q2 | Where does the `useViewContext` adapter live, given `core` does not depend on `vuu-layout`? | Option A: add `vuu-layout` as a `core` dependency and wrap every remote. Option B: export the adapter from `vuu-shell` and let `RemoteModule` accept a `wrapper` component supplied by the host. Option C: remotes wrap themselves. Recommend **B**. |
-| Q3 | Is `descriptor.version` the right version dimension, or should remotes declare a settings schema version independent of deployment version? | Use `descriptor.version`, as requested; revisit if admins bump versions for non-breaking releases. |
+| Q1 | Application key: `clientIdentifier`, `name`, or a new `persistenceKey` descriptor field? | `clientIdentifier` by default, with an optional `persistenceKey` descriptor override for admins who need to preserve data across re-registration (§5.2). |
+| Q2 | How do existing `useViewContext` `load` / `save` consumers persist? | No adapter. `@vuu-ui/vuu-layout` will be removed; components that save properties (e.g. `vuu-table`) will be migrated to the portal service later (§2.2, §6.6). |
+| Q3 | Is `descriptor.version` the right version dimension, or should remotes declare a settings schema version independent of deployment version? | Use `descriptor.version`; revisit if admins bump versions for non-breaking releases. |
 | Q4 | Retention of previous-version documents. | Keep indefinitely in v1; users clear via UI. Consider "keep last N versions" later. |
-| Q5 | Should the user be able to view saved values (read-only JSON) in the UI? | Not in v1; useful for support — candidate for a later "Details" disclosure. |
+| Q5 | Should the user be able to view saved values (read-only JSON) in the UI? | Not in v1; candidate for a later "Details" disclosure. |
 | Q6 | Import/export of settings (Preferences dialog secondary actions). | Out of scope for v1; the document format supports it. |
 | Q7 | Should `local` authentication mode default to `localStorage` or in-memory? | `localStorage`, consistent with the example host. |
