@@ -6,7 +6,7 @@ persisted: the model is rebuilt in the browser from the module descriptors and
 the Keycloak read models. It lives in `src/data/applications.ts`.
 
 The naming rules it relies on are summarised in
-[keycloak-naming.md](../keycloak-naming.md).
+[keycloak-naming.md](./keycloak-naming.md).
 
 ## Inputs
 
