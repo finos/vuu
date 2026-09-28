@@ -1,0 +1,19 @@
+.vuuAdminApplicationCell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--salt-spacing-100);
+}
+
+.vuuAdminApplicationCell-tag {
+  padding: 0 var(--salt-spacing-50);
+  border: 1px solid var(--salt-status-info-borderColor);
+  border-radius: var(--salt-palette-corner-weak);
+  color: var(--salt-status-info-foreground);
+  font-size: var(--salt-text-label-fontSize);
+  line-height: 1.4;
+}
+
+.vuuAdminApplicationCell-unassigned {
+  color: var(--salt-content-secondary-foreground);
+  font-style: italic;
+}
