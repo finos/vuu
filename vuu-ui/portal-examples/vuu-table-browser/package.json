@@ -5,7 +5,7 @@
   "scripts": {
     "prebuild": "npm run build --workspace @vuu-ui/portal-build",
     "build": "portal-build --config ./portal-build.json",
-    "start": "serve -p 5009 ../../dist_portal/vuu-table-browser"
+    "start": "ws --directory ../../dist_portal/vuu-table-browser --spa index.html --port 5004"
   },
   "type": "module",
   "private": true,

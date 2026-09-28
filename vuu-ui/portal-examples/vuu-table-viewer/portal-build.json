@@ -5,7 +5,7 @@
     "entry": "./src/index.tsx",
     "htmlTemplate": "../remote-module-template/index.html",
     "output": "../../dist_portal/vuu-table-viewer",
-    "publicPath": "http://localhost:5/"
+    "publicPath": "http://localhost:5005/"
   },
   "html": {
     "title": "vuuTableViewer (standalone)"
