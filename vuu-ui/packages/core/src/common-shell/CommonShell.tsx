@@ -9,6 +9,8 @@ import {
 import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import type { ComponentType, ReactNode } from "react";
 import { ModalProvider } from "../modal-provider/ModalProvider";
+import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
+import { SavedStateProvider } from "../saved-state/SavedStateProvider";
 import {
   PortalPersistenceRoot,
   type PortalPersistenceProps,
@@ -20,6 +22,8 @@ export interface CommonShellProps extends PortalPersistenceProps {
   DataSourceProvider?: ComponentType<{ children: ReactNode }>;
   density?: Density;
   mode?: Mode;
+  /** Registered modules, for the Saved state dialog's titles and order. */
+  remoteModules?: RemoteModuleDescriptor[];
   theme?: ThemeName;
 }
 
@@ -34,6 +38,7 @@ export const CommonShell = ({
   mode = "light",
   persistence,
   portalId,
+  remoteModules,
   theme = "vuu-theme",
 }: CommonShellProps & { children: ReactNode }) => (
   <SaltProviderNext
@@ -44,9 +49,11 @@ export const CommonShell = ({
     theme={theme}
   >
     <PortalPersistenceRoot persistence={persistence} portalId={portalId}>
-      <ModalProvider>
-        <DataSourceProvider>{children}</DataSourceProvider>
-      </ModalProvider>
+      <SavedStateProvider remoteModules={remoteModules}>
+        <ModalProvider>
+          <DataSourceProvider>{children}</DataSourceProvider>
+        </ModalProvider>
+      </SavedStateProvider>
     </PortalPersistenceRoot>
   </SaltProviderNext>
 );

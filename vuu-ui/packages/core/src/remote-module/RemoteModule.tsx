@@ -12,6 +12,7 @@ import {
   useOptionalPortalPersistence,
 } from "../persistence/PersistenceContext";
 import type { StateMigration } from "../persistence/StateMigrations";
+import { useOptionalSavedState } from "../saved-state/SavedStateContext";
 import { useInRouterContext, useLocation } from "react-router-dom";
 import { RemoteModuleErrorBoundary } from "./RemoteModuleErrorBoundary";
 
@@ -176,6 +177,18 @@ const useRemoteModuleState = ({
       return service.markOpen(store.applicationKey, store.applicationVersion);
     }
   }, [service, store]);
+
+  // Once the module renders, say what wasn't carried forward (§5.4.7).
+  const reportCarryForward = useOptionalSavedState()?.reportCarryForward;
+  useEffect(() => {
+    if (service && store && reportCarryForward && store.status !== "loading") {
+      const report = service.consumeCarryForwardReport(
+        store.applicationKey,
+        store.applicationVersion,
+      );
+      if (report) reportCarryForward(report);
+    }
+  }, [reportCarryForward, service, store]);
 
   // `use` must be called on every render; a thenable already marked as
   // fulfilled doesn't suspend.

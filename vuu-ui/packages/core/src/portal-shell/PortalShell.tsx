@@ -44,8 +44,12 @@ const usePortalShellProps = () => {
 };
 
 const PortalWindowRoute = () => {
-  const { DataSourceProvider, id, persistence, portalId = id } =
-    usePortalShellProps();
+  const {
+    DataSourceProvider,
+    id,
+    persistence,
+    portalId = id,
+  } = usePortalShellProps();
   return (
     <WindowHost
       DataSourceProvider={DataSourceProvider}
@@ -95,7 +99,11 @@ const PortalLayout = () => {
   });
 
   return (
-    <CommonShell {...providerProps} portalId={portalId}>
+    <CommonShell
+      {...providerProps}
+      portalId={portalId}
+      remoteModules={remoteModules}
+    >
       <div className={classBase} id={id}>
         {children}
         <div className={`${classBase}-content`}>

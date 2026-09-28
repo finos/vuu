@@ -18,7 +18,7 @@ export const WindowHost = (props: WindowHostProps) => {
   );
 
   return (
-    <WindowShell {...props}>
+    <WindowShell remoteModules={modules} {...props}>
       {descriptor ? (
         <PortalModuleRegistryProvider remoteModules={modules}>
           <RemoteModule key={descriptor.id} {...descriptor} />

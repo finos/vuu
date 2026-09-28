@@ -1,18 +1,22 @@
-import { Button, Toolbar, ToolbarContent, Tooltray } from "@salt-ds/core";
+import { Toolbar, ToolbarContent, Tooltray } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import type { HTMLAttributes } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
+import { PortalUserMenu } from "./PortalUserMenu";
 
 import portalHeaderCss from "./PortalHeader.css";
-import { usePortalLogout } from "./usePortalLogout";
 
 const classBase = "vuuPortalHeader";
 
-export interface PortalHeaderProps extends HTMLAttributes<HTMLDivElement> {}
+export interface PortalHeaderProps extends HTMLAttributes<HTMLDivElement> {
+  /** Extra user menu items, shown above **Saved state…**. */
+  userMenuItems?: ReactNode;
+}
 
 export const PortalHeader = ({
   className: classNameProp,
+  userMenuItems,
   ...htmlAttributes
 }: PortalHeaderProps) => {
   const targetWindow = useWindow();
@@ -23,20 +27,12 @@ export const PortalHeader = ({
   });
 
   const className = cx(classBase, classNameProp);
-  const logout = usePortalLogout();
 
   return (
     <Toolbar className={className} role="banner" {...htmlAttributes}>
       <ToolbarContent position="end">
         <Tooltray align="end">
-          <Button
-            appearance="transparent"
-            className={`${classBase}-menuItem`}
-            onClick={logout}
-            sentiment="neutral"
-          >
-            Log out
-          </Button>
+          <PortalUserMenu>{userMenuItems}</PortalUserMenu>
         </Tooltray>
       </ToolbarContent>
     </Toolbar>

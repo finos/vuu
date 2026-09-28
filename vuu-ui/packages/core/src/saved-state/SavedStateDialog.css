@@ -1,0 +1,148 @@
+.vuuSavedStateDialog.saltDialog {
+  height: min(680px, calc(100vh - 80px));
+  max-height: calc(100vh - 80px);
+  max-width: calc(100vw - 80px);
+  width: 880px;
+}
+
+.vuuSavedStateDialog-content.saltDialogContent {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.vuuSavedStateDialog-stack {
+  flex: 1;
+  min-height: 0;
+}
+
+.vuuSavedStateDialog-note {
+  color: var(--salt-content-secondary-foreground);
+  flex: none;
+}
+
+.vuuSavedStateDialog-filterBar {
+  flex: none;
+}
+
+.vuuSavedStateDialog-search {
+  flex: 0 1 390px;
+}
+
+.vuuSavedStateDialog-scopeLabel {
+  flex: none;
+}
+
+.vuuSavedStateDialog-scope.saltDropdown {
+  flex: 0 1 280px;
+}
+
+/* vuu-theme hides the Dropdown chevron (§9.13); Show needs it. */
+.salt-theme .vuuSavedStateDialog .vuuSavedStateDialog-scope.saltDropdown .saltDropdown-toggle {
+  display: inline-block;
+}
+
+.vuuSavedStateDialog-treeActions {
+  margin-left: auto;
+}
+
+.vuuSavedStateDialog-treeContainer {
+  border: var(--salt-size-fixed-100) var(--salt-borderStyle-solid) var(--salt-separable-primary-borderColor);
+  border-radius: var(--salt-palette-corner-weak, 0);
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--salt-spacing-100) var(--salt-spacing-200) var(--salt-spacing-100) var(--salt-spacing-100);
+}
+
+.vuuSavedStateDialog-status {
+  align-items: center;
+  border: var(--salt-size-fixed-100) var(--salt-borderStyle-solid) var(--salt-separable-primary-borderColor);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--salt-spacing-100);
+  justify-content: center;
+  min-height: 0;
+  padding: var(--salt-spacing-300);
+  text-align: center;
+}
+
+.vuuSavedStateDialog-empty {
+  border-style: dashed;
+}
+
+.vuuSavedStateDialog-empty .saltText:last-child {
+  max-width: 560px;
+}
+
+.vuuSavedStateDialog-actions.saltDialogActions {
+  align-items: center;
+}
+
+.vuuSavedStateDialog-clearAll {
+  margin-right: auto;
+}
+
+.vuuSavedStateDialog-summary {
+  margin-right: var(--salt-spacing-200);
+}
+
+.vuuSavedStateTree-content {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  gap: var(--salt-spacing-200);
+  min-height: var(--salt-size-selectable);
+  min-width: 0;
+}
+
+.vuuSavedStateTree-labelGroup {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  gap: var(--salt-spacing-100);
+  min-width: 0;
+}
+
+.vuuSavedStateTree-label {
+  white-space: nowrap;
+}
+
+.vuuSavedStateTree-content[data-kind="application"] .vuuSavedStateTree-label,
+.vuuSavedStateTree-content[data-kind="unavailable"] .vuuSavedStateTree-label {
+  font-weight: var(--salt-text-fontWeight-strong);
+}
+
+.vuuSavedStateTree-key {
+  font-family: var(--salt-text-code-fontFamily, monospace);
+  font-size: var(--salt-text-notation-fontSize, 0.9em);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vuuSavedStateTree-meta {
+  flex: none;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.vuuSavedStateTree-openTag.saltTag {
+  --saltTag-background: transparent;
+  --saltTag-borderColor: var(--salt-accent-borderColor);
+  --saltTag-color: var(--salt-accent-foreground, var(--salt-content-accent-foreground));
+  border-radius: 999px;
+}
+
+.vuuSavedStateTree-tag.saltTag {
+  border-radius: 999px;
+}
+
+.vuuSavedStateTree-unreadable {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--salt-spacing-50);
+}

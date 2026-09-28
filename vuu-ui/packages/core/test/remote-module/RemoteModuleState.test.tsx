@@ -158,6 +158,55 @@ describe("RemoteModule saved state", () => {
     });
   });
 
+  it("reports state that wasn't carried forward in a toast (§9.15)", async () => {
+    const { SavedStateProvider } = await import("../../src/saved-state");
+    const { SaltProvider } = await import("@salt-ds/core");
+    vi.mocked(loadRemote).mockResolvedValue({
+      default: Counter,
+      stateMigrations: [
+        {
+          version: 2,
+          migrate: (state) =>
+            state.update("count", (_count, entry) =>
+              entry.reject("Counts are no longer kept."),
+            ),
+        },
+      ] satisfies StateMigration[],
+    });
+    const mfUrl = nextUrl();
+    await act(async () => {
+      root.render(
+        <SaltProvider>
+          <PortalPersistenceProvider service={service}>
+            <SavedStateProvider>
+              <Suspense fallback="Loading">
+                <RemoteModule
+                  clientIdentifier="orders"
+                  mfComponent="Orders"
+                  mfScope="orders"
+                  mfUrl={mfUrl}
+                  title="Orders"
+                  version={2}
+                />
+              </Suspense>
+            </SavedStateProvider>
+          </PortalPersistenceProvider>
+        </SaltProvider>,
+      );
+    });
+    expect(container.querySelector("[data-testid=remote]")?.textContent).toBe(
+      "orders@2:0",
+    );
+    const toast = document.body.querySelector(".vuuSavedStateToasts");
+    expect(toast?.textContent).toContain(
+      "Some saved state wasn't carried forward",
+    );
+    expect(toast?.textContent).toContain(
+      "Orders has been updated. 1 item couldn't be kept: count.",
+    );
+    expect(toast?.textContent).toContain("Review");
+  });
+
   it("loads the remote code once for both the component and its migrations", async () => {
     await renderModule({ version: 2 });
     expect(loadRemote).toHaveBeenCalledTimes(1);

@@ -25,7 +25,7 @@ export {
   PortalShell,
   type PortalShellProps,
 } from "./portal-shell/PortalShell";
-export { NavContainer } from './portal-shell/NavContainer';
+export { NavContainer } from "./portal-shell/NavContainer";
 export {
   PortalModuleRegistryProvider,
   usePortalModuleRegistry,
@@ -51,3 +51,20 @@ export {
   NAV_EXPANDED_KEY,
   useNavGroupExpansion,
 } from "./portal-app-switcher/useNavGroupExpansion";
+export {
+  PortalUserMenu,
+  type PortalUserMenuProps,
+} from "./portal-header/PortalUserMenu";
+export {
+  ClearSavedStateConfirmation,
+  type ClearSavedStateConfirmationProps,
+  getApplicationKey,
+  SavedStateDialog,
+  type SavedStateDialogProps,
+  SavedStateProvider,
+  type SavedStateProviderProps,
+  type SavedStateToastProps,
+  SavedStateTree,
+  type SavedStateTreeProps,
+  useSavedStateDialog,
+} from "./saved-state";

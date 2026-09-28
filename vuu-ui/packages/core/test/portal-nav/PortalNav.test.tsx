@@ -5,6 +5,10 @@ import { MemoryRouter, useLocation } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { RemoteModuleDescriptor } from "../../src/RemoteModuleDescriptor";
 import { PortalNav } from "../../src/portal-nav/PortalNav";
+import {
+  SavedStateContext,
+  type SavedStateContextValue,
+} from "../../src/saved-state/SavedStateContext";
 
 const modules: RemoteModuleDescriptor[] = [
   {
@@ -132,5 +136,77 @@ describe("PortalNav module launch actions", () => {
       "/trading/orders",
     );
     expect(open).not.toHaveBeenCalled();
+  });
+});
+
+describe("PortalNav Saved state entry (§9.2)", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+
+  beforeEach(() => {
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    container = document.createElement("div");
+    document.body.append(container);
+    root = createRoot(container);
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+    vi.restoreAllMocks();
+  });
+
+  it("opens the Saved state dialog scoped to the module's application", async () => {
+    const open = vi.fn();
+    const savedState: SavedStateContextValue = {
+      applicationKeyForModule: (moduleId) =>
+        moduleId === 42 ? "admin" : undefined,
+      notify: vi.fn(),
+      open,
+      reportCarryForward: vi.fn(),
+    };
+    await act(async () => {
+      root.render(
+        <SavedStateContext.Provider value={savedState}>
+          <MemoryRouter>
+            <PortalNav remoteModules={modules} />
+          </MemoryRouter>
+        </SavedStateContext.Provider>,
+      );
+    });
+    const admin = getByRole(container, "link", { name: "Administration" });
+    await act(async () => {
+      fireEvent.contextMenu(admin, { clientX: 10, clientY: 20 });
+    });
+    expect(
+      getByRole(document.body, "menuitem", { name: "Open in new Tab" }),
+    ).toBeTruthy();
+    expect(
+      document.body.querySelector(".vuuContextMenuDivider"),
+    ).not.toBeNull();
+    await act(async () => {
+      fireEvent.click(
+        getByRole(document.body, "menuitem", { name: "Saved state…" }),
+      );
+    });
+    expect(open).toHaveBeenCalledExactlyOnceWith("admin");
+  });
+
+  it("has no Saved state entry outside a shell", async () => {
+    await act(async () => {
+      root.render(
+        <MemoryRouter>
+          <PortalNav remoteModules={modules} />
+        </MemoryRouter>,
+      );
+    });
+    await act(async () => {
+      fireEvent.contextMenu(
+        getByRole(container, "link", { name: "Administration" }),
+      );
+    });
+    expect(
+      queryByRole(document.body, "menuitem", { name: "Saved state…" }),
+    ).toBeNull();
   });
 });
