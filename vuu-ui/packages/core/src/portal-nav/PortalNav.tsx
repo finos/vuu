@@ -18,7 +18,8 @@ import {
   useContextMenu,
   type MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useNavGroupExpansion } from "../portal-app-switcher/useNavGroupExpansion";
 import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
 import { Link, useHref, useLocation } from "react-router-dom";
 import { getWindowHostPath } from "../window-host/window-host-routing";
@@ -46,7 +47,8 @@ const moduleMenuBuilder: MenuBuilder = (location) =>
 
 function NestedItem(props: { item: NavItem; icon?: boolean }) {
   const { item, icon } = props;
-  const [collapsed, setCollapsed] = useState(false);
+  const [expanded, setExpanded] = useNavGroupExpansion(item.href);
+  const collapsed = !expanded;
   const location = useLocation();
   const targetWindow = useWindow();
   const windowHref = useHref(
@@ -74,7 +76,10 @@ function NestedItem(props: { item: NavItem; icon?: boolean }) {
       <VerticalNavigationItem
         active={location.pathname.startsWith(item.href) && collapsed}
       >
-        <Collapsible onOpenChange={(_, expanded) => setCollapsed(!expanded)}>
+        <Collapsible
+          open={expanded}
+          onOpenChange={(_, open) => setExpanded(open)}
+        >
           <VerticalNavigationItemContent>
             <CollapsibleTrigger>
               <VerticalNavigationItemTrigger>

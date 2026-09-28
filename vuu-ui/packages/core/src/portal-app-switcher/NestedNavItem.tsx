@@ -11,7 +11,7 @@ import {
 } from "@salt-ds/core";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { useContextMenu, type MenuBuilder } from "@vuu-ui/vuu-context-menu";
-import { useState } from "react";
+import { useNavGroupExpansion } from "./useNavGroupExpansion";
 import { Link, useHref, useLocation } from "react-router-dom";
 import { useWindow } from "@salt-ds/window";
 import { getWindowHostPath } from "../window-host/window-host-routing";
@@ -29,7 +29,8 @@ const moduleMenuBuilder: MenuBuilder = (location) =>
 
 export function NestedNavItem(props: { item: NavItem; icon?: boolean }) {
   const { item, icon } = props;
-  const [collapsed, setCollapsed] = useState(false);
+  const [expanded, setExpanded] = useNavGroupExpansion(item.href);
+  const collapsed = !expanded;
   const location = useLocation();
   const targetWindow = useWindow();
   const windowHref = useHref(
@@ -57,7 +58,10 @@ export function NestedNavItem(props: { item: NavItem; icon?: boolean }) {
       <VerticalNavigationItem
         active={location.pathname.startsWith(item.href) && collapsed}
       >
-        <Collapsible onOpenChange={(_, expanded) => setCollapsed(!expanded)}>
+        <Collapsible
+          open={expanded}
+          onOpenChange={(_, open) => setExpanded(open)}
+        >
           <VerticalNavigationItemContent>
             <CollapsibleTrigger>
               <VerticalNavigationItemTrigger>

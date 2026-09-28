@@ -9,8 +9,12 @@ import {
 import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import type { ComponentType, ReactNode } from "react";
 import { ModalProvider } from "../modal-provider/ModalProvider";
+import {
+  PortalPersistenceRoot,
+  type PortalPersistenceProps,
+} from "./PortalPersistenceRoot";
 
-export interface CommonShellProps {
+export interface CommonShellProps extends PortalPersistenceProps {
   accent?: Accent;
   corner?: Corner;
   DataSourceProvider?: ComponentType<{ children: ReactNode }>;
@@ -28,6 +32,8 @@ export const CommonShell = ({
   DataSourceProvider = VuuDataSourceProvider,
   density = "medium",
   mode = "light",
+  persistence,
+  portalId,
   theme = "vuu-theme",
 }: CommonShellProps & { children: ReactNode }) => (
   <SaltProviderNext
@@ -37,8 +43,10 @@ export const CommonShell = ({
     mode={mode}
     theme={theme}
   >
-    <ModalProvider>
-      <DataSourceProvider>{children}</DataSourceProvider>
-    </ModalProvider>
+    <PortalPersistenceRoot persistence={persistence} portalId={portalId}>
+      <ModalProvider>
+        <DataSourceProvider>{children}</DataSourceProvider>
+      </ModalProvider>
+    </PortalPersistenceRoot>
   </SaltProviderNext>
 );

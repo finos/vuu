@@ -239,6 +239,8 @@ export class ApplicationStateStoreImpl implements ApplicationStateStore {
   async load(
     migrations?: readonly StateMigration[] | Promise<readonly StateMigration[]>,
   ) {
+    // Only awaited if carry-forward is needed; don't report it as unhandled.
+    Promise.resolve(migrations).catch(() => undefined);
     try {
       const document =
         (await this.#host.backend.load(this.ref)) ??

@@ -457,6 +457,10 @@ export const useAuthenticatedUser = () => {
   return identity.user;
 };
 
+/** The authenticated user, or undefined when there is no identity provider. */
+export const useOptionalAuthenticatedUser = () =>
+  useContext(IdentityContext)?.user;
+
 export const useIdentityToken = () => {
   const identity = useContext(IdentityContext);
   if (!identity) {

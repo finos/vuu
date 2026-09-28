@@ -44,8 +44,15 @@ const usePortalShellProps = () => {
 };
 
 const PortalWindowRoute = () => {
-  const { DataSourceProvider } = usePortalShellProps();
-  return <WindowHost DataSourceProvider={DataSourceProvider} />;
+  const { DataSourceProvider, id, persistence, portalId = id } =
+    usePortalShellProps();
+  return (
+    <WindowHost
+      DataSourceProvider={DataSourceProvider}
+      persistence={persistence}
+      portalId={portalId}
+    />
+  );
 };
 
 export const PortalShell = (props: PortalShellProps) => {
@@ -72,8 +79,14 @@ export const PortalShell = (props: PortalShellProps) => {
 };
 
 const PortalLayout = () => {
-  const { children, id, remoteModules, title, ...providerProps } =
-    usePortalShellProps();
+  const {
+    children,
+    id,
+    portalId = id,
+    remoteModules,
+    title: _title,
+    ...providerProps
+  } = usePortalShellProps();
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-portal-shell",
@@ -82,7 +95,7 @@ const PortalLayout = () => {
   });
 
   return (
-    <CommonShell {...providerProps}>
+    <CommonShell {...providerProps} portalId={portalId}>
       <div className={classBase} id={id}>
         {children}
         <div className={`${classBase}-content`}>

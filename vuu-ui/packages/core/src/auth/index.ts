@@ -9,6 +9,7 @@ export {
   useIdentityToken,
   useModuleRegistry,
   useLogout,
+  useOptionalAuthenticatedUser,
   useOptionalVuuConnectionId,
   usePortalVuuAuthTarget,
   useVuuAuthorizations,

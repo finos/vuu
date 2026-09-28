@@ -41,3 +41,13 @@ export type {
   RemoteModuleDescriptor,
 } from "./RemoteModuleDescriptor";
 export * from "./persistence";
+export {
+  ANONYMOUS_USER,
+  PortalPersistenceRoot,
+  type PortalPersistenceProps,
+} from "./common-shell/PortalPersistenceRoot";
+export { usePortalLogout } from "./portal-header/usePortalLogout";
+export {
+  NAV_EXPANDED_KEY,
+  useNavGroupExpansion,
+} from "./portal-app-switcher/useNavGroupExpansion";

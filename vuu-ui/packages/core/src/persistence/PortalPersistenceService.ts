@@ -74,6 +74,8 @@ export interface PortalPersistenceService {
     applicationKey: string,
     applicationVersion: number,
   ): CarryForwardReport | undefined;
+  isDisposed(): boolean;
+  /** Flushes pending writes, then stops the service (FR-6, FR-15). */
   dispose(): void;
 }
 
@@ -112,6 +114,8 @@ class DefaultPortalPersistenceService
   #now: () => Date;
   #disposed = false;
   #cleanup: Array<() => void> = [];
+  #attached = false;
+  #targetWindow: Window | null;
 
   constructor({
     backend,
@@ -131,6 +135,19 @@ class DefaultPortalPersistenceService
     this.limits = { maxDocumentSize, maxEntrySize };
     this.#now = now;
 
+    this.#targetWindow = targetWindow;
+  }
+
+  /**
+   * Listeners are attached when the first store is created, not in the
+   * constructor, so that a service created and discarded during render (e.g.
+   * by StrictMode) leaves nothing behind.
+   */
+  #attach() {
+    if (this.#attached) return;
+    this.#attached = true;
+    const { backend, user } = this;
+    const targetWindow = this.#targetWindow;
     if (backend.subscribe) {
       this.#cleanup.push(
         backend.subscribe(user, (ref) => this.#handleExternalChange(ref)),
@@ -211,6 +228,7 @@ class DefaultPortalPersistenceService
     if (this.#disposed) {
       throw Error("PortalPersistenceService has been disposed");
     }
+    this.#attach();
     const id = refId({ applicationKey, applicationVersion });
     let store = this.#stores.get(id);
     if (!store) {
@@ -289,6 +307,7 @@ class DefaultPortalPersistenceService
   }
 
   subscribe(listener: (ref: DocumentRef, event: StateChangeEvent) => void) {
+    if (!this.#disposed) this.#attach();
     this.#listeners.add(listener);
     return () => {
       this.#listeners.delete(listener);
