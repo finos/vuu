@@ -1,6 +1,7 @@
 import fs from "fs";
 import { readPackageJson } from "./utils.mjs";
 import { execWait, getCommandLineArg } from "./utils.mjs";
+import { createTypeDefExports } from "./type-defs-exports.mjs";
 
 const packageJson = readPackageJson();
 const { name: scopedPackageName } = packageJson;
@@ -46,30 +47,11 @@ async function createTypeDefs() {
 function writePackageJSON() {
   return new Promise((resolve, reject) => {
     const packageJson = readPackageJson(`${outdir}/package.json`);
-    const exports = {
-      ...packageJson.exports,
-      ".": {
-        ...packageJson.exports["."],
-        types: "./types/index.d.ts",
-      },
-    };
-    if (packageJson.exports["./portal"]) {
-      exports["./portal"] = {
-        ...packageJson.exports["./portal"],
-        types: "./types/portal.d.ts",
-      };
-    }
+    const exports = createTypeDefExports(packageJson.exports);
     const newPackage = {
       ...packageJson,
       files: (packageJson.files || []).concat("/types"),
-      exports: {
-        ...packageJson.exports,
-        ".": {
-          ...packageJson.exports["."],
-          default: "./src/index.js",
-          types: "./types/index.d.ts",
-        },
-      },
+      exports,
       types: "types/index.d.ts",
     };
     fs.writeFile(
