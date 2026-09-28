@@ -2,8 +2,10 @@ import {
   NavContainer,
   PortalAppSwitcher,
   PortalHeader,
+  PortalLogo,
   PortalShell,
 } from "@vuu-ui/core/portal";
+import { VuuLogo } from "@vuu-ui/vuu-icons";
 import {
   AuthenticationProvider,
   type PortalModuleRegistry,
@@ -64,6 +66,9 @@ export const SingleLevelAppSwitcher = () => (
       title="Portal Demo"
     >
       <NavContainer>
+        <PortalLogo alt="Portal home" style={{ gridArea: "logo" }}>
+          <VuuLogo />
+        </PortalLogo>
         <PortalAppSwitcher
           displayStyle="icon-only"
           remoteModules={remoteModules.modules}

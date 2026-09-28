@@ -12,4 +12,8 @@ body {
   --vuuPortalShell-leftPanel-color: white;
 
   --vuuPortalNav-itemLabel-color: white;
+
+  .vuuNavContainer .vuuPortalLogo {
+    grid-area: logo;
+  }
 }
