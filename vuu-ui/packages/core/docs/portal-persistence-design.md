@@ -1,7 +1,6 @@
 # Portal Application State Persistence and Saved State UI — Design
 
-Status: **Reviewed — ready for implementation** (decisions recorded in §12),
-except §5.4 *Keeping saved state compatible*, which is **proposed** (Q8–Q10)
+Status: **Reviewed — ready for implementation** (decisions recorded in §12)
 Package: `@vuu-ui/core/portal`
 Reference host: `portal-examples/portal-host`
 
@@ -254,13 +253,13 @@ key.
 - The version dimension is `descriptor.version` (Q3).
 - A new application version starts with a **copy** of the most recent earlier
   version's document, updated by the release's migrations before the
-  application renders (§5.4). *(Proposed, Q8. Previously a new version started empty.)*
+  application renders (§5.4). (Q8)
 - Earlier-version documents are never modified, and are kept until the user
   clears them (Q4; a "keep last N versions" policy may follow). Rolling an
   application back therefore restores exactly the state it had before.
 - `schemaVersion` migrations of the envelope are handled inside the service.
 
-### 5.4 Keeping saved state compatible *(proposed)*
+### 5.4 Keeping saved state compatible
 
 #### 5.4.1 The problem
 
@@ -291,8 +290,8 @@ again.
 - **Never silently change meaning.** A migrated value must mean what it meant
   before, or not be used. Dropping a removed column from a layout is safe.
   Dropping one clause from `ccy = "EUR" and exchange = "XLON"` is not: the
-  user would see rows they believe are filtered out. Filters are migrated
-  whole or rejected.
+  user would see rows they believe are filtered out. If any part of a filter
+  can't be migrated, the entire filter is rejected (Q9).
 - **Forwards only, never in place.** Migrations run on a copy. The previous
   version's document is never modified, so a failed migration can't lose the
   original, and rolling back restores exactly the state the old version had.
@@ -345,11 +344,13 @@ export const stateMigrations: StateMigration[] = [
           : renameFilterColumns(filter, { ccy: "currency" }),
       );
       state.update("filters/named", (named, entry) =>
-        named.map((f) =>
-          filterUsesColumns(f.filter, ["lotSize"])
-            ? (entry.notify(`"${f.name}" uses a removed column`), { ...f, unavailable: true })
-            : { ...f, filter: renameFilterColumns(f.filter, { ccy: "currency" }) },
-        ),
+        named.flatMap((f) => {
+          if (filterUsesColumns(f.filter, ["lotSize"])) {
+            entry.notify(`Saved filter "${f.name}" used a removed column`);
+            return [];
+          }
+          return [{ ...f, filter: renameFilterColumns(f.filter, { ccy: "currency" }) }];
+        }),
       );
     },
   },
@@ -392,7 +393,7 @@ Guidance for migration authors:
 | Group by | Group column removed | Drop it, and `notify`: grouping changes what the user sees. |
 | Active filter | Column renamed | Rewrite the filter. Silent. |
 | Active filter | Any clause refers to a removed column | `reject`: the filter isn't applied. |
-| Named filters | Some filters refer to removed columns | Keep the rest; mark the affected ones unavailable and `notify`, so the user can see and delete them in the app's filter UI. |
+| Named filters | Some filters refer to removed columns | Remove each affected filter whole and `notify`; keep the rest, with renames applied. |
 | Any | Feature removed | `remove` the key. Silent. |
 
 #### 5.4.5 API
@@ -1115,7 +1116,7 @@ fully-selected parents as well as their leaves.
 - `useSavedStateDialog()`: `{ open(applicationKey?) }`, to open the dialog
   from anywhere in the shell.
 
-### 9.15 Carried-forward state *(proposed, §5.4)*
+### 9.15 Carried-forward state (§5.4)
 
 - An application whose document was carried forward shows *"Carried forward
   from version M"* in its metadata.
@@ -1193,6 +1194,6 @@ core/test/persistence/, core/test/saved-state/
 | Q5 | Should the user be able to view saved values (read-only JSON) in the UI? | Not in v1; candidate for a later "Details" disclosure. |
 | Q6 | Import/export of saved state. | Out of scope for v1; the document format supports it. |
 | Q7 | Should `local` authentication mode default to `localStorage` or in-memory? | `localStorage`, consistent with the example host. |
-| Q8 | Should a new application version start empty, or with the previous version's state? | **Proposed:** carry forward automatically, running release migrations shipped with each version (§5.4). |
-| Q9 | Can a filter be partially migrated (dropping clauses that reference removed columns)? | **Proposed:** no. Filters are migrated whole or rejected, because partial migration changes their meaning (§5.4.2). |
-| Q10 | What happens to values a migration can't keep? | **Proposed:** remove them from the new version, record them in `notCarriedForward`, and tell the user; the original stays in the previous version's document (§5.4.5). |
+| Q8 | Should a new application version start empty, or with the previous version's state? | Carry forward automatically, running the release migrations shipped with each version (§5.4). |
+| Q9 | Can a filter be partially migrated (dropping clauses that reference removed columns)? | No. If any part of a filter is rejected, the entire filter is rejected, because partial migration changes its meaning. This applies to each named filter individually (§5.4.2, §5.4.4). |
+| Q10 | What happens to values a migration can't keep? | Remove them from the new version, record them in `notCarriedForward`, and tell the user; the original stays in the previous version's document (§5.4.5). |
