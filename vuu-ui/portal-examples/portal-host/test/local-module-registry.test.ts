@@ -28,11 +28,6 @@ describe("local portal module registry", () => {
         mfUrl: "http://localhost:5004",
       },
       {
-        mfComponent: "VuuTableViewer",
-        mfScope: "vuuTableViewer",
-        mfUrl: "http://localhost:5005",
-      },
-      {
         mfComponent: "VuuBasketTradingFeatureLocal",
         mfScope: "basketTrading",
         mfUrl: "http://localhost:5006",
@@ -49,7 +44,6 @@ describe("local portal module registry", () => {
       { name: "module-admin", vuu: { connectionId: "module-admin" } },
       { name: "user-admin", vuu: { connectionId: "user-admin" } },
       { name: "vuu-table-browser", vuu: undefined },
-      { name: "vuu-table-viewer", vuu: undefined },
       { name: "basket-trading", vuu: { connectionId: "basket" } },
       { name: "feature-simple-div", vuu: { connectionId: "simul" } },
     ]);
