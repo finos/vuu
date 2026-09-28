@@ -6,7 +6,7 @@ import {
   loadRemote,
   registerRemotes,
 } from "@module-federation/enhanced/runtime";
-import React, { lazy, use, useEffect, useMemo } from "react";
+import React, { Suspense, lazy, use, useEffect, useMemo } from "react";
 import {
   ApplicationStateProvider,
   useOptionalPortalPersistence,
@@ -245,7 +245,11 @@ function RawRemoteModule<ComponentProps extends object | undefined>(
         onError?.(error);
       }}
     >
-      <RemoteModuleContent {...props} />
+      {/* Suspend here, not at the root, so the shell (and its persistence
+          service) commits while the code and saved state load. */}
+      <Suspense fallback={null}>
+        <RemoteModuleContent {...props} />
+      </Suspense>
     </RemoteModuleErrorBoundary>
   );
 }

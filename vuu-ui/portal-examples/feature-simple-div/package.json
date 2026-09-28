@@ -6,7 +6,7 @@
     "prebuild": "npm run build --workspace @vuu-ui/portal-build",
     "build": "portal-build --config ./portal-build.json",
     "dev": "rsbuild dev",
-    "start": "serve -p 5001 ../../dist_portal/feature-filter-table"
+    "start": "ws --directory ../../dist_portal/feature-simple-div --spa index.html --port 5004"
   },
   "type": "module",
   "private": true,

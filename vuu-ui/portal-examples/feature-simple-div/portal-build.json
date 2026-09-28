@@ -17,7 +17,8 @@
     "name": "simpleDiv",
     "dts": false,
     "exposes": {
-      "./SimpleDiv": "./src/SimpleDiv"
+      "./SimpleDiv": "./src/SimpleDiv",
+      "./SimpleDivLocal": "./src/SimpleDivLocal"
     },
     "shared": {
       "react": {

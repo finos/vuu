@@ -3,6 +3,7 @@ import { useMemo } from "react";
 
 import "./SimpleDiv.css";
 import { Table } from "@vuu-ui/vuu-table";
+import { SavedStateDemo } from "./SavedStateDemo";
 
 const SimpleDiv = () => {
   const user = useAuthenticatedUser();
@@ -27,9 +28,11 @@ const SimpleDiv = () => {
     <div className="vuuSimpleDiv">
       <div>Simple Div</div>
       <div>{`Haha sucker ${user.userName}`}</div>
+      <SavedStateDemo />
       <Table config={config} dataSource={dataSource} />
     </div>
   );
 };
 
+export { stateMigrations } from "./SavedStateDemo";
 export default SimpleDiv;

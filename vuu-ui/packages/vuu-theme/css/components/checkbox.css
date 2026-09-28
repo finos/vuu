@@ -8,7 +8,7 @@
 
   /* Tree checkboxes aren't inside .saltCheckbox; without this, unchecked ones are invisible. */
   .saltTreeNode-checkbox.saltCheckboxIcon:not(.saltCheckboxIcon-checked,.saltCheckboxIcon-disabled) {
-    border-color: var(--vuu-color-gray-20);
+    border-color: var(--vuu-color-gray-30);
   }
 
   .saltCheckbox:hover {

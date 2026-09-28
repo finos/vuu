@@ -13,6 +13,15 @@
   overflow: hidden;
 }
 
+/* Scroll the tree, not the dialog content, so the filter bar stays visible. */
+.vuuSavedStateDialog-content .saltDialogContent-inner {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .vuuSavedStateDialog-stack {
   flex: 1;
   min-height: 0;
@@ -51,7 +60,7 @@
 .vuuSavedStateDialog-treeContainer {
   border: var(--salt-size-fixed-100) var(--salt-borderStyle-solid) var(--salt-separable-primary-borderColor);
   border-radius: var(--salt-palette-corner-weak, 0);
-  flex: 1;
+  flex: 0 1 auto;
   min-height: 0;
   overflow: auto;
   padding: var(--salt-spacing-100) var(--salt-spacing-200) var(--salt-spacing-100) var(--salt-spacing-100);
@@ -82,7 +91,7 @@
   align-items: center;
 }
 
-.vuuSavedStateDialog-clearAll {
+.vuuSavedStateDialog-clearAll.saltButton {
   margin-right: auto;
 }
 
@@ -130,19 +139,26 @@
   white-space: nowrap;
 }
 
-.vuuSavedStateTree-openTag.saltTag {
-  --saltTag-background: transparent;
-  --saltTag-borderColor: var(--salt-accent-borderColor);
-  --saltTag-color: var(--salt-accent-foreground, var(--salt-content-accent-foreground));
-  border-radius: 999px;
-}
-
-.vuuSavedStateTree-tag.saltTag {
-  border-radius: 999px;
-}
-
 .vuuSavedStateTree-unreadable {
   align-items: center;
   display: inline-flex;
   gap: var(--salt-spacing-50);
+}
+
+/* vuu-theme doesn't define the Salt category tokens that Tag uses. */
+.vuuSavedStateTree-openTag.saltTag {
+  border-radius: 999px;
+  --tag-primary-background: var(
+    --salt-category-1-background,
+    color-mix(in srgb, var(--salt-accent-background) 8%, transparent)
+  );
+  --tag-primary-borderColor: var(--salt-category-1-borderColor, var(--salt-accent-borderColor));
+  --tag-primary-foreground: var(--salt-category-1-foreground, var(--salt-accent-borderColor));
+}
+
+.vuuSavedStateTree-tag.saltTag {
+  border-radius: 999px;
+  --tag-primary-background: var(--salt-category-1-background, transparent);
+  --tag-primary-borderColor: var(--salt-category-1-borderColor, var(--salt-separable-primary-borderColor));
+  --tag-primary-foreground: var(--salt-category-1-foreground, var(--salt-content-secondary-foreground));
 }

@@ -92,10 +92,14 @@ const noopSubscribe = () => () => undefined;
  * useState-like hook backed by the store. Returns defaultValue when there is
  * no saved value, and reverts to defaultValue when the key is cleared. Outside
  * a portal it behaves like useState (FR-17).
+ *
+ * `T` is unconstrained so that, like useState, a literal default is widened
+ * (`usePersistentState("count", 0)` is a number); `& JsonValue` still rejects
+ * values that aren't JSON.
  */
-export function usePersistentState<T extends JsonValue>(
+export function usePersistentState<T>(
   key: string,
-  defaultValue: T,
+  defaultValue: T & JsonValue,
   metadata?: EntryMetadata,
 ): [T, SetPersistentState<T>] {
   const store = useOptionalApplicationState();
@@ -115,7 +119,7 @@ export function usePersistentState<T extends JsonValue>(
     [key, store],
   );
   const getSnapshot = useCallback(
-    () => (store ? store.get<T>(key) : undefined),
+    () => (store ? store.get<T & JsonValue>(key) : undefined),
     [key, store],
   );
   const storedValue = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
@@ -134,12 +138,12 @@ export function usePersistentState<T extends JsonValue>(
         setLocalValue(value);
         return;
       }
-      const previous = store.get<T>(key) ?? defaultRef.current;
+      const previous = store.get<T & JsonValue>(key) ?? defaultRef.current;
       const next =
         typeof value === "function"
           ? (value as (previous: T) => T)(previous)
           : value;
-      store.set<T>(key, next, { label, group });
+      store.set(key, next as T & JsonValue, { label, group });
     },
     [group, key, label, store],
   );
