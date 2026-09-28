@@ -12,6 +12,7 @@ import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { Range } from "@vuu-ui/vuu-utils";
 import { MemoryRouter } from "react-router-dom";
 import {
+  type ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -22,10 +23,14 @@ import { GroupsEditForm } from "user-admin/src/components/groups-edit-form/Group
 import { RolesEditForm } from "user-admin/src/components/roles-edit-form/RolesEditForm";
 import { UserEditForm } from "user-admin/src/components/user-edit-form/UserEditForm";
 import { ModulePickerModuleDescriptor } from "user-admin/src/components/module-picker/ModulePicker";
+import { ApplicationModelProvider } from "user-admin/src/data/ApplicationModelProvider";
+import { ApplicationsPage } from "user-admin/src/pages/applications/ApplicationsPage";
 import { GroupsPage } from "user-admin/src/pages/groups/GroupsPage";
 import { RolesPage } from "user-admin/src/pages/roles/RolesPage";
 import { UsersPage } from "user-admin/src/pages/users/UsersPage";
 import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
+
+import "user-admin/src/UserAdmin.css";
 
 const remoteModules: RemoteModuleDescriptor[] = [
   {
@@ -71,6 +76,20 @@ const remoteModules: RemoteModuleDescriptor[] = [
     version: 1,
   },
 ];
+
+/**
+ * The context the admin pages expect: routing for `?application=`, the portal
+ * module registry, and the application model derived from both.
+ */
+const AdminContext = ({ children }: { children: ReactNode }) => (
+  <MemoryRouter>
+    <PortalModuleRegistryProvider remoteModules={remoteModules}>
+      <ApplicationModelProvider>
+        <div className="vuuIdentityAdmin">{children}</div>
+      </ApplicationModelProvider>
+    </PortalModuleRegistryProvider>
+  </MemoryRouter>
+);
 
 const modulePickerModules: ModulePickerModuleDescriptor[] = remoteModules.map(
   ({ accessRole, title }) => ({
@@ -174,11 +193,11 @@ export const DefaultUserEditForm = () => {
   return (
     <div style={{ width: 480, height: 800 }}>
       {dataRow ? (
-        <PortalModuleRegistryProvider remoteModules={remoteModules}>
+        <AdminContext>
           <EditModeProvider>
             <UserEditForm dataRow={dataRow} dataSource={dataSource} />
           </EditModeProvider>
-        </PortalModuleRegistryProvider>
+        </AdminContext>
       ) : (
         <p role="status">Loading user...</p>
       )}
@@ -187,21 +206,28 @@ export const DefaultUserEditForm = () => {
 };
 
 /** tags=data-consumer */
-export const DefaultUsersPage = () => {
-  return (
-    <PortalModuleRegistryProvider remoteModules={remoteModules}>
-      <UsersPage />
-    </PortalModuleRegistryProvider>
-  );
-};
+export const DefaultUsersPage = () => (
+  <AdminContext>
+    <UsersPage />
+  </AdminContext>
+);
+
+/** tags=data-consumer */
+export const DefaultApplicationsPage = () => (
+  <AdminContext>
+    <ApplicationsPage />
+  </AdminContext>
+);
 
 const ROLE_COLUMNS = [
   "role_id",
   "role_name",
+  "role_display_name",
   "client_id",
   "client_identifier",
   "client_name",
   "description",
+  "group_count",
 ];
 const GROUP_COLUMNS = [
   "group_id",
@@ -267,9 +293,11 @@ export const DefaultRolesEditPage = () => {
   return (
     <div style={{ width: 480, height: 500 }}>
       {dataRow ? (
-        <EditModeProvider>
-          <RolesEditForm dataRow={dataRow} dataSource={dataSource} />
-        </EditModeProvider>
+        <AdminContext>
+          <EditModeProvider>
+            <RolesEditForm dataRow={dataRow} dataSource={dataSource} />
+          </EditModeProvider>
+        </AdminContext>
       ) : (
         <p role="status">Loading role...</p>
       )}
@@ -279,9 +307,9 @@ export const DefaultRolesEditPage = () => {
 
 /** tags=data-consumer */
 export const DefaultRolesPage = () => (
-  <PortalModuleRegistryProvider remoteModules={remoteModules}>
+  <AdminContext>
     <RolesPage />
-  </PortalModuleRegistryProvider>
+  </AdminContext>
 );
 
 /** tags=data-consumer */
@@ -339,9 +367,11 @@ export const DefaultGroupsEditPage = () => {
   return (
     <div style={{ width: 480, height: 600 }}>
       {dataRow ? (
-        <EditModeProvider>
-          <GroupsEditForm dataRow={dataRow} dataSource={dataSource} />
-        </EditModeProvider>
+        <AdminContext>
+          <EditModeProvider>
+            <GroupsEditForm dataRow={dataRow} dataSource={dataSource} />
+          </EditModeProvider>
+        </AdminContext>
       ) : (
         <p role="status">Loading group...</p>
       )}
@@ -351,9 +381,7 @@ export const DefaultGroupsEditPage = () => {
 
 /** tags=data-consumer */
 export const DefaultGroupsPage = () => (
-  <MemoryRouter>
-    <PortalModuleRegistryProvider remoteModules={remoteModules}>
-      <GroupsPage />
-    </PortalModuleRegistryProvider>
-  </MemoryRouter>
+  <AdminContext>
+    <GroupsPage />
+  </AdminContext>
 );

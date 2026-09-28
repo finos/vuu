@@ -37,6 +37,12 @@ vi.mock("@vuu-ui/vuu-notifications", () => ({
 vi.mock("@vuu-ui/core", () => ({
   useModal: () => modal,
 }));
+vi.mock("../src/data/ApplicationModelProvider", () => ({
+  ApplicationModelProvider: ({ children }: { children: ReactNode }) => children,
+}));
+vi.mock("../src/pages/applications/ApplicationsPage", () => ({
+  ApplicationsPage: () => <div>Applications page</div>,
+}));
 vi.mock("../src/pages/overview/OverviewPage", () => ({
   OverviewPage: () => {
     const { remoteModules: modules } = usePortalModuleRegistry();
@@ -137,10 +143,18 @@ describe("embedded identity routes", () => {
     expect(getComputedStyle(workspace).flexDirection).toBe("row");
     expect(getComputedStyle(rail).display).toBe("flex");
     expect(getComputedStyle(rail).flexDirection).toBe("column");
-    expect(rail.querySelectorAll("a")).toHaveLength(4);
+    expect(
+      [...rail.querySelectorAll("a")].map(({ textContent }) => textContent),
+    ).toEqual(["Overview", "Applications", "Users", "Groups", "Roles"]);
     expect(rail.querySelector('[aria-current="page"]')?.textContent).toBe(
       "Overview",
     );
+    await act(async () =>
+      rail
+        .querySelector<HTMLAnchorElement>('a[href$="/applications"]')
+        ?.click(),
+    );
+    expect(container.textContent).toContain("Applications page");
     expect(
       container.querySelector('a[href$="/users"]')?.getAttribute("href"),
     ).toBe(`${mount}/users`);
