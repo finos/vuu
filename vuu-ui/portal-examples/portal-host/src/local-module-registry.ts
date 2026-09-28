@@ -26,7 +26,7 @@ const localUserAdminConfig = {
 export const localPortalModuleRegistry = {
   modules: [
     {
-      clientIdentifier: "local-user-admin",
+      clientIdentifier: "vuu-user-admin",
       ComponentProps: { config: localUserAdminConfig },
       description: "Manage local users, groups and roles",
       enabled: true,
@@ -43,7 +43,7 @@ export const localPortalModuleRegistry = {
       version: 1,
     },
     {
-      clientIdentifier: "local-basket-trading",
+      clientIdentifier: "vuu-basket-trading",
       description: "Trade baskets with local test data",
       enabled: true,
       id: "local-basket-trading",
@@ -59,7 +59,7 @@ export const localPortalModuleRegistry = {
       version: 1,
     },
     {
-      clientIdentifier: "local-feature-filter-table",
+      clientIdentifier: "vuu-feature-filter-table",
       ComponentProps: {
         tableSchema: simulModule.schemas.instruments,
       },
@@ -77,7 +77,7 @@ export const localPortalModuleRegistry = {
       version: 1,
     },
     {
-      clientIdentifier: "local-module-admin",
+      clientIdentifier: "vuu-module-admin",
       description: "Manage local module discovery entries",
       enabled: true,
       id: "local-module-admin",

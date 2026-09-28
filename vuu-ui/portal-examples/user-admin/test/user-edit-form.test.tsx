@@ -135,12 +135,12 @@ describe("useUserEditForm", () => {
       mocks.remoteModules.length,
       {
         accessRole: "user-admin-access",
-        clientIdentifier: "local-user-admin",
+        clientIdentifier: "vuu-user-admin",
         title: "User administration",
       },
       {
         accessRole: "basket-trading-access",
-        clientIdentifier: "local-basket-trading",
+        clientIdentifier: "vuu-basket-trading",
         title: "Basket Trading",
       },
     );
@@ -158,7 +158,7 @@ describe("useUserEditForm", () => {
       modules: [
         {
           accessRole: "user-admin-access",
-          clientIdentifier: "local-user-admin",
+          clientIdentifier: "vuu-user-admin",
           selectedGroupIds: ["group-user-admin-read"],
           groups: [
             {
@@ -170,7 +170,7 @@ describe("useUserEditForm", () => {
         },
         {
           accessRole: "basket-trading-access",
-          clientIdentifier: "local-basket-trading",
+          clientIdentifier: "vuu-basket-trading",
           selectedGroupIds: ["group-basket-trading-read"],
           groups: [
             {

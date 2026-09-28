@@ -73,7 +73,6 @@ describe("UserAdminModule", () => {
       "user-alice:group-user-admin-read",
       "user-bob:group-module-admin-read",
       "user-alice:group-basket-trading-read",
-      "user-alice:group-admins",
     ]);
     expect(
       tables.user_group_roles.data.map(
@@ -110,12 +109,12 @@ describe("UserAdminModule", () => {
       "user-admin-admin": clientIdentifierFor("user-admin-admin"),
     }).toEqual({
       "basket-trading-access": "vuu-portal",
-      "basket-trading-trade": "basket-trading",
+      "basket-trading-trade": "vuu-basket-trading",
       "feature-filter-table-access": "vuu-portal",
       "module-admin-access": "vuu-portal",
-      "module-admin-admin": "module-admin",
+      "module-admin-admin": "vuu-module-admin",
       "user-admin-access": "vuu-portal",
-      "user-admin-admin": "user-admin",
+      "user-admin-admin": "vuu-user-admin",
     });
   });
 
@@ -344,8 +343,8 @@ describe("UserAdminModule", () => {
         .map(({ client, role }) => [client?.clientId, role.id])
         .sort(),
     ).toEqual([
-      ["basket-trading", "role-basket-trading-trade"],
-      ["user-admin", "role-user-admin-admin"],
+      ["vuu-basket-trading", "role-basket-trading-trade"],
+      ["vuu-user-admin", "role-user-admin-admin"],
     ]);
     expect(
       module.tables.groups.findByKey(group?.id ?? "")?.[
@@ -376,8 +375,8 @@ describe("UserAdminModule", () => {
         .map(({ client, role }) => [client?.clientId, role.id])
         .sort(),
     ).toEqual([
-      ["basket-trading", "role-basket-trading-trade"],
-      ["user-admin", "role-user-admin-admin"],
+      ["vuu-basket-trading", "role-basket-trading-trade"],
+      ["vuu-user-admin", "role-user-admin-admin"],
     ]);
     expect(
       module.tables.group_roles.data
@@ -414,14 +413,14 @@ describe("UserAdminModule", () => {
     ).toBe(false);
   });
 
-  it("creates session roles for non-Vuu clients when the client ID and identifier match", async () => {
+  it("creates session roles for module clients when the client ID and identifier match", async () => {
     const module = createModule();
     const source = rolesDataSource(module);
     const session = await source.createSessionDataSource("Empty");
 
     await session.addRow({
       client_id: "client-user-admin",
-      client_identifier: "user-admin",
+      client_identifier: "vuu-user-admin",
       client_name: "User Admin",
       description: "",
       role_name: "user-admin-session-role",
@@ -431,7 +430,7 @@ describe("UserAdminModule", () => {
     expect(
       (await module.store.snapshot()).clientRoles.some(
         ({ client, role }) =>
-          client.clientId === "user-admin" &&
+          client.clientId === "vuu-user-admin" &&
           role.name === "user-admin-session-role",
       ),
     ).toBe(true);
@@ -444,7 +443,7 @@ describe("UserAdminModule", () => {
 
     await session.addRow({
       client_id: "client-user-admin",
-      client_identifier: "basket-trading",
+      client_identifier: "vuu-basket-trading",
       client_name: "User Admin",
       description: "",
       role_name: "inconsistent-client-role",
@@ -478,7 +477,18 @@ describe("UserAdminModule", () => {
   });
 
   it("reconciles relationship changes and module access assignments", async () => {
-    const module = createModule();
+    const snapshot = structuredClone(USER_ADMIN_INITIAL_SNAPSHOT);
+    const unmanagedGroup = {
+      id: "group-unmanaged",
+      name: "unmanaged",
+      path: "/unmanaged",
+    };
+    snapshot.groups.push(unmanagedGroup);
+    snapshot.userGroups.push({
+      group: unmanagedGroup,
+      user: { email: "alice@example.com", id: "user-alice", username: "alice" },
+    });
+    const module = createModule(snapshot);
     const source = dataSource(module);
 
     await rpc(source, "assignUserToGroup", {
@@ -543,7 +553,7 @@ describe("UserAdminModule", () => {
       module.tables.user_groups.findByKey("user-alice:group-module-admin-read"),
     ).toBeDefined();
     expect(
-      module.tables.user_groups.findByKey("user-alice:group-admins"),
+      module.tables.user_groups.findByKey("user-alice:group-unmanaged"),
     ).toBeDefined();
   });
 
