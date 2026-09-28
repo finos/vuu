@@ -12,6 +12,7 @@ export {
   useOptionalAuthenticatedUser,
   useOptionalVuuConnectionId,
   usePortalVuuAuthTarget,
+  useVuuServers,
   useVuuAuthorizations,
   useVuuAccessToken,
   useVuuConnectionId, VuuConnectionError, type AuthenticationErrorHandler,

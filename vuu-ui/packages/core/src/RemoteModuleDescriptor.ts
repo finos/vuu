@@ -1,4 +1,5 @@
 import type { VuuModuleDescriptor } from "@vuu-ui/vuu-protocol-types";
+import type { VuuServerDescriptor } from "./VuuServerDescriptor";
 
 export interface RemoteModuleDescriptor extends VuuModuleDescriptor {
   ComponentProps?: Record<string, unknown>;
@@ -12,4 +13,9 @@ export interface RemoteModuleDescriptor extends VuuModuleDescriptor {
 
 export interface PortalModuleRegistry {
   modules: RemoteModuleDescriptor[];
+  /**
+   * The Vuu servers available to the user. When omitted, `useVuuServers`
+   * falls back to the servers referenced by module `vuu` connections.
+   */
+  servers?: VuuServerDescriptor[];
 }

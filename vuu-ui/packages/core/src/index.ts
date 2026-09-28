@@ -5,6 +5,10 @@ export type {
   PortalModuleRegistry,
   RemoteModuleDescriptor,
 } from "./RemoteModuleDescriptor";
+export type {
+  LocalVuuServer,
+  VuuServerDescriptor,
+} from "./VuuServerDescriptor";
 export { DataContext } from "./context-definitions/DataContext";
 export {
   DataProvider,

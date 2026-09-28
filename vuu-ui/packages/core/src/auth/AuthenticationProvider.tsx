@@ -5,6 +5,10 @@ import type {
 } from "@vuu-ui/vuu-data-types";
 import { DataProvider } from "../context-definitions/DataProvider";
 import type { PortalModuleRegistry } from "../RemoteModuleDescriptor";
+import type {
+  LocalVuuServer,
+  VuuServerDescriptor,
+} from "../VuuServerDescriptor";
 import {
   createContext,
   useCallback,
@@ -81,6 +85,12 @@ export interface VuuConnectionAuthenticationProps {
 export interface LocalAuthenticationProps {
   authorizations?: string[];
   children: ReactNode;
+  /**
+   * Vuu servers simulated in the browser. A module (or a nested
+   * `mode="vuu-connection"` provider) whose `vuu.connectionId` matches one of
+   * these receives that server's data context instead of a websocket.
+   */
+  localServers?: LocalVuuServer[];
   mode: "local";
   registry?: PortalModuleRegistry;
   user?: User;
@@ -94,6 +104,8 @@ export type AuthenticationProviderProps =
 interface IdentityContextValue {
   authHandler: AuthHandler;
   getIdentityToken: () => Promise<string>;
+  /** Present only in local mode, keyed by connectionId. */
+  localServers?: ReadonlyMap<string, LocalVuuServer>;
   logout: () => Promise<void>;
   moduleRegistry?: PortalModuleRegistry;
   portalTarget: VuuAuthTarget;
@@ -111,6 +123,7 @@ const VuuConnectionContext = createContext<VuuConnectionContextValue | null>(
   null,
 );
 const EMPTY_AUTHORIZATIONS: string[] = [];
+const EMPTY_LOCAL_SERVERS: LocalVuuServer[] = [];
 const EMPTY_MODULE_REGISTRY: PortalModuleRegistry = { modules: [] };
 
 export const normalizeVuuAuthTarget = (
@@ -356,17 +369,14 @@ const AuthenticatedIdentityProvider = ({
   );
 };
 
-const VuuConnectionAuthenticationProvider = ({
+const RemoteVuuConnectionProvider = ({
   children,
   connection,
+  identity,
   onError,
-}: VuuConnectionAuthenticationProps) => {
-  const identity = useContext(IdentityContext);
-  if (!identity) {
-    throw new AuthenticationConfigurationError(
-      'AuthenticationProvider mode="vuu-connection" requires an identity provider',
-    );
-  }
+}: Omit<VuuConnectionAuthenticationProps, "mode"> & {
+  identity: IdentityContextValue;
+}) => {
   const target = useMemo(
     () => normalizeVuuAuthTarget(connection, identity.portalTarget),
     [connection, identity.portalTarget],
@@ -393,12 +403,81 @@ const VuuConnectionAuthenticationProvider = ({
   );
 };
 
+const LocalVuuConnectionProvider = ({
+  children,
+  connection,
+  localServers,
+}: {
+  children: ReactNode;
+  connection: RemoteModuleConnection;
+  localServers: ReadonlyMap<string, LocalVuuServer>;
+}) => {
+  const parentConnection = useContext(VuuConnectionContext);
+  const localServer = localServers.get(connection.connectionId);
+  if (!localServer) {
+    throw new AuthenticationConfigurationError(
+      `No local Vuu server is registered for connection ${connection.connectionId}`,
+    );
+  }
+  if (!parentConnection) {
+    throw new AuthenticationConfigurationError(
+      "No authenticated VUU connection has been installed",
+    );
+  }
+  const { DataSourceProvider } = localServer;
+  return (
+    <VuuConnectionContext.Provider
+      value={{
+        connectionId: localServer.connectionId,
+        session: parentConnection.session,
+      }}
+    >
+      <DataSourceProvider>{children}</DataSourceProvider>
+    </VuuConnectionContext.Provider>
+  );
+};
+
+const VuuConnectionAuthenticationProvider = ({
+  children,
+  connection,
+  onError,
+}: VuuConnectionAuthenticationProps) => {
+  const identity = useContext(IdentityContext);
+  if (!identity) {
+    throw new AuthenticationConfigurationError(
+      'AuthenticationProvider mode="vuu-connection" requires an identity provider',
+    );
+  }
+  return identity.localServers ? (
+    <LocalVuuConnectionProvider
+      connection={connection}
+      localServers={identity.localServers}
+    >
+      {children}
+    </LocalVuuConnectionProvider>
+  ) : (
+    <RemoteVuuConnectionProvider
+      connection={connection}
+      identity={identity}
+      onError={onError}
+    >
+      {children}
+    </RemoteVuuConnectionProvider>
+  );
+};
+
 const LocalAuthenticationProvider = ({
   authorizations = EMPTY_AUTHORIZATIONS,
   children,
+  localServers = EMPTY_LOCAL_SERVERS,
   registry = EMPTY_MODULE_REGISTRY,
   user = { userName: "local-user" },
 }: LocalAuthenticationProps) => {
+  const localServerMap = useMemo(
+    () =>
+      new Map(localServers.map((server) => [server.connectionId, server])),
+    [localServers],
+  );
   const session = useMemo<VuuSession>(
     () => ({
       authorizations,
@@ -416,6 +495,7 @@ const LocalAuthenticationProvider = ({
         logout: async () => undefined,
       },
       getIdentityToken: async () => "",
+      localServers: localServerMap,
       logout: async () => undefined,
       moduleRegistry: registry,
       portalTarget: {
@@ -426,7 +506,7 @@ const LocalAuthenticationProvider = ({
       registry: vuuConnectionRegistry,
       user,
     }),
-    [registry, user],
+    [localServerMap, registry, user],
   );
 
   return (
@@ -499,6 +579,81 @@ export const usePortalVuuAuthTarget = () => {
     );
   }
   return identity.portalTarget;
+};
+
+const toServerDescriptor = ({
+  connectionId,
+  description,
+  restUrl,
+  title,
+  websocketUrl,
+}: VuuServerDescriptor): VuuServerDescriptor => ({
+  connectionId,
+  title,
+  ...(description === undefined ? {} : { description }),
+  ...(restUrl === undefined ? {} : { restUrl }),
+  ...(websocketUrl === undefined ? {} : { websocketUrl }),
+});
+
+const isUsableServer = (
+  server: VuuServerDescriptor,
+  identity: IdentityContextValue,
+) => {
+  if (identity.localServers) {
+    return identity.localServers.has(server.connectionId);
+  }
+  try {
+    normalizeVuuAuthTarget(server, identity.portalTarget);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * The Vuu servers available to the user, de-duplicated by `connectionId`.
+ *
+ * Servers come from, in order of precedence: the `servers` argument, the
+ * portal registry's `servers`, the local servers passed to a local-mode
+ * `AuthenticationProvider`, or the `vuu` connections of registered modules.
+ * Servers that can't be connected to are omitted: in local mode, those with
+ * no local implementation; otherwise, those missing `restUrl` or
+ * `websocketUrl` that aren't the portal's own server.
+ */
+export const useVuuServers = (
+  servers?: VuuServerDescriptor[],
+): VuuServerDescriptor[] => {
+  const identity = useContext(IdentityContext);
+  return useMemo(() => {
+    if (!identity) {
+      return servers ? dedupeServers(servers.map(toServerDescriptor)) : [];
+    }
+    const moduleRegistry = identity.moduleRegistry;
+    const candidates =
+      servers ??
+      moduleRegistry?.servers ??
+      (identity.localServers && identity.localServers.size > 0
+        ? Array.from(identity.localServers.values())
+        : (moduleRegistry?.modules ?? []).flatMap(({ vuu }) =>
+            vuu ? [{ ...vuu, title: vuu.connectionId }] : [],
+          ));
+    return dedupeServers(
+      candidates
+        .filter((server) => isUsableServer(server, identity))
+        .map(toServerDescriptor),
+    );
+  }, [identity, servers]);
+};
+
+const dedupeServers = (servers: VuuServerDescriptor[]) => {
+  const seen = new Set<string>();
+  return servers.filter(({ connectionId }) => {
+    if (seen.has(connectionId)) {
+      return false;
+    }
+    seen.add(connectionId);
+    return true;
+  });
 };
 
 export const useLogout = () => {
