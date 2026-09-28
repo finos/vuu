@@ -145,8 +145,24 @@ const AccessRoleNote = ({
   );
 };
 
-const SelectedRoles = ({ items }: { items: GroupRoleItem[] }) => (
-  <ListBox aria-label="Assigned roles" bordered readOnly selected={[]}>
+const accessRoleItemFor = (
+  entry: ApplicationDetails | undefined,
+): GroupRoleItem | undefined =>
+  entry?.accessRole
+    ? {
+        label: `${entry.accessRole.roleName} (${entry.application.title} access, always included)`,
+        name: entry.accessRole.roleId,
+      }
+    : undefined;
+
+const SelectedRoles = ({
+  "aria-label": ariaLabel = "Assigned roles",
+  items,
+}: {
+  "aria-label"?: string;
+  items: GroupRoleItem[];
+}) => (
+  <ListBox aria-label={ariaLabel} bordered readOnly selected={[]}>
     {items.map((item) => (
       <Option key={item.name} value={item}>
         {item.label ?? item.name}
@@ -154,6 +170,15 @@ const SelectedRoles = ({ items }: { items: GroupRoleItem[] }) => (
     ))}
   </ListBox>
 );
+
+const withAccessRole = (
+  accessRole: GroupRoleItem | undefined,
+  items: GroupRoleItem[],
+) => (accessRole ? [accessRole, ...items] : items);
+
+/** The access role can't be removed, so it is listed outside the picker. */
+const FixedAccessRole = ({ item }: { item?: GroupRoleItem }) =>
+  item ? <SelectedRoles aria-label="Access role" items={[item]} /> : null;
 
 export interface GroupsEditFormProps {
   /** Application to preselect when creating a group. */
@@ -432,20 +457,31 @@ const CreateGroupForm = ({
               <>
                 <AccessRoleNote entry={entry} included />
                 {locked ? (
-                  <SelectedRoles items={selectedItems} />
-                ) : allRoleItems.length === 0 ? (
-                  <p role="status">
-                    {entry.application.title} has no roles of its own yet.
-                  </p>
-                ) : (
-                  <ItemPicker
-                    allItems={allRoleItems}
-                    aria-label="Group roles"
-                    itemTypeName="role"
-                    onSelectedItemsChange={onSelectedItemsChange}
-                    selectedItems={selectedItems}
-                    style={{ height: 360 }}
+                  <SelectedRoles
+                    items={withAccessRole(
+                      accessRoleItemFor(entry),
+                      selectedItems,
+                    )}
                   />
+                ) : allRoleItems.length === 0 ? (
+                  <>
+                    <FixedAccessRole item={accessRoleItemFor(entry)} />
+                    <p role="status">
+                      {entry.application.title} has no roles of its own yet.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <FixedAccessRole item={accessRoleItemFor(entry)} />
+                    <ItemPicker
+                      allItems={allRoleItems}
+                      aria-label="Group roles"
+                      itemTypeName="role"
+                      onSelectedItemsChange={onSelectedItemsChange}
+                      selectedItems={selectedItems}
+                      style={{ height: 360 }}
+                    />
+                  </>
                 )}
               </>
             )}
@@ -728,16 +764,28 @@ const EditGroupForm = ({ dataRow, dataSource }: GroupsEditFormProps) => {
                   </>
                 ) : null}
                 {!canStage ? (
-                  <SelectedRoles items={selectedItems} />
-                ) : (
-                  <ItemPicker
-                    allItems={allRoleItems}
-                    aria-label="Group roles"
-                    itemTypeName="role"
-                    onSelectedItemsChange={onSelectedItemsChange}
-                    selectedItems={selectedItems}
-                    style={{ height: 360 }}
+                  <SelectedRoles
+                    items={withAccessRole(
+                      hasAccessRole ? accessRoleItemFor(entry) : undefined,
+                      selectedItems,
+                    )}
                   />
+                ) : (
+                  <>
+                    <FixedAccessRole
+                      item={
+                        hasAccessRole ? accessRoleItemFor(entry) : undefined
+                      }
+                    />
+                    <ItemPicker
+                      allItems={allRoleItems}
+                      aria-label="Group roles"
+                      itemTypeName="role"
+                      onSelectedItemsChange={onSelectedItemsChange}
+                      selectedItems={selectedItems}
+                      style={{ height: 360 }}
+                    />
+                  </>
                 )}
               </>
             )}
