@@ -16,18 +16,20 @@ enforcement boundary.
 
 ## Navigation and layout
 
-Relative nested routes expose `overview`, `users`, `groups` and `roles`; the index
-redirects to Overview. A persistent, visible left navigation rail lists those
-pages vertically alongside the routed content, including at narrow widths; it
-does not become a top tab strip. The module has no dependency on `@vuu-ui/vuu-layout` and
-does not use GridLayout. Semantic HTML/CSS provides the layout, with inline Salt
-SidePanels for read-only details and create/edit forms.
+Relative nested routes expose `overview`, `applications`, `users`, `groups` and
+`roles`; the index redirects to Overview. A persistent, visible left navigation
+rail lists those pages vertically alongside the routed content, including at
+narrow widths; it does not become a top tab strip. The module has no dependency
+on `@vuu-ui/vuu-layout` and does not use GridLayout. Semantic HTML/CSS provides
+the layout, with inline Salt SidePanels for read-only details and create/edit
+forms.
 
-Overview contains four live count cards (users, groups, client roles, clients),
-quick actions and grouped cross-entity search. There is no activity panel or
-access map. Selecting a result opens relationship details. Entity pages and
-relationship lists use virtualized Vuu Tables and DataSourceStats footers, not
-paging controls.
+Overview shows one card per application (users with access, groups, roles and
+configuration status) linking to its Applications detail, quick actions
+(grant application access, create application group, create application role)
+and grouped cross-entity search. Selecting a result opens relationship details.
+Entity pages and relationship lists use virtualized Vuu Tables and
+DataSourceStats footers, not paging controls.
 
 Every shared admin table uses `columnDefaultWidth: 120`. Rendered columns named
 `email`, either by logical alias or server name, have an explicit width of 150.
@@ -38,6 +40,56 @@ Search uses VuuInput `onCommit`, `commitOnBlur={false}` and
 press Enter to apply or reset. Vuu's current filter grammar cannot represent
 double quotes, backslashes, tabs or line breaks inside string values; the UI
 reports those values as unsupported rather than constructing malformed filters.
+
+## Applications
+
+Admin users think in terms of access to applications, while all permissioning is
+done through Keycloak groups and client roles. Keycloak is the only store, so
+there is no persisted application entity: applications are derived at runtime
+from the host-provided module descriptors (`PortalModuleRegistryProvider`)
+combined with the Keycloak read models. Realm roles and Keycloak administrator
+roles are never loaded. For now the admin user sees all applications.
+
+Each remote module (an application from the user's perspective) has:
+
+- a Keycloak client, identified by the descriptor's `clientIdentifier`, which
+  owns the application's own client roles;
+- exactly one access role, the descriptor's `accessRole`, on the `vuu-portal`
+  client. Access roles use the `-access` suffix, for example
+  `module-admin-access`;
+- one or more groups. Groups are associated with exactly one application by
+  naming convention: the group name (the last `group_path` segment) starts with
+  the access role minus `-access`, plus `-` (for example `module-admin-`).
+  When prefixes overlap the longest match wins.
+
+Users are only ever assigned to groups, never directly to roles. A user can open
+an application when one of their groups includes its access role. The model
+(`src/data/applications.ts`) classifies every group and role as belonging to an
+application, or as Unassigned when it matches no naming convention.
+
+The Applications page lists each application with its users-with-access, group
+and role counts and a status badge, plus an Unassigned entry. The detail view
+shows the access role, client and group prefix, links to grant access and to
+create a group or role for that application, and tabs for its groups, roles,
+users and configuration checks. Checks report: a descriptor access role without
+the `-access` suffix, duplicate access roles, ambiguous group prefixes, a
+missing access role or client, an application with no groups, a group missing
+the access role or containing roles from another application, application roles
+not in any group, and groups/roles that match no application.
+
+Groups, Roles and Users pages show an Application column and an application
+filter (also driven by the `?application=` search parameter; `Unassigned` shows
+naming drift, or users with no application access). Group and role scopes are
+applied as ID filters computed from the client-side model, which loads at most
+1000 rows per lookup table; user scopes filter on `module_access`.
+
+Creating a group starts by choosing an application: the name is entered as a
+suffix after the fixed application prefix, the access role is always included
+and the role picker offers only that application's roles. Editing a group keeps
+the access role, and offers to restore it if missing. Creating a role requires an
+application and assigns the role to that application's client. Portal access
+roles are shown read-only; they are managed with the module descriptor, not in
+this module.
 
 ## Server-driven data contract
 
@@ -177,9 +229,10 @@ canonical names.
 The new module-access RPCs are an explicit backend prerequisite. If the source
 does not expose them or returns malformed data, the editor reports the contract
 gap and does not guess group membership; ordinary user fields remain editable.
-Associating groups with portal modules is not part of this slice and remains a
-Phase 3 boundary. This phase only consumes server-derived module options and
-assigns users to existing eligible groups.
+Groups are associated with applications only by the naming convention described
+under Applications; no additional group metadata is stored. The user editor
+consumes server-derived module options and assigns users to existing eligible
+groups.
 
 The old DockLayout/drawer and editable-users-grid requirements are superseded
 by this routed Identity Admin design.
