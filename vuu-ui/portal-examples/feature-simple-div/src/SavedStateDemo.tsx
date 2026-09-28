@@ -19,7 +19,10 @@ export const stateMigrations: StateMigration[] = [
   },
 ];
 
-/** Shows usePersistentState outside a portal as ordinary component state. */
+/**
+ * Saves a click count and a note with usePersistentState. Outside a portal
+ * they behave like ordinary component state.
+ */
 export const SavedStateDemo = () => {
   const store = useOptionalApplicationState();
   const savedState = useSavedStateDialog();

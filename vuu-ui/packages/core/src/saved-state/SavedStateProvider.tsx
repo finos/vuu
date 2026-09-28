@@ -36,7 +36,7 @@ const describeCarryForward = (
     return {
       status: "warning",
       title: "Some saved state wasn't carried forward",
-      body: `${title} has been updated. Its saved state couldn't be kept, so it has opened with its default view.${notes ? ` ${notes}` : ""}`,
+      body: `${title} has been updated. Your saved state couldn't be carried forward, so it has opened with its default view.${notes ? ` ${notes}` : ""}`,
     };
   }
   if (report.rejected.length > 0) {

@@ -155,15 +155,18 @@ export const describeClearResult = (
   const items = selectionWeight(model, succeeded);
   const applications = new Set(succeeded.map((item) => item.applicationKey))
     .size;
+  const reloadTitles = [
+    ...new Set(
+      result.requiresReload.map(({ applicationKey }) =>
+        titleFor(model, applicationKey),
+      ),
+    ),
+  ];
   const reload =
-    result.requiresReload.length > 0
-      ? ` Reload to return ${formatList([
-          ...new Set(
-            result.requiresReload.map(({ applicationKey }) =>
-              titleFor(model, applicationKey),
-            ),
-          ),
-        ])} to its default view.`
+    reloadTitles.length > 0
+      ? ` Reload to return ${formatList(reloadTitles)} to ${
+          reloadTitles.length === 1 ? "its default view" : "their default views"
+        }.`
       : "";
 
   if (result.failed.length > 0) {

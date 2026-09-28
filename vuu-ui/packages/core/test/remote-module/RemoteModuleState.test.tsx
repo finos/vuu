@@ -207,6 +207,50 @@ describe("RemoteModule saved state", () => {
     expect(toast?.textContent).toContain("Review");
   });
 
+  it("says when an aborted carry-forward opened the default view (§5.4.7)", async () => {
+    const { SavedStateProvider } = await import("../../src/saved-state");
+    const { SaltProvider } = await import("@salt-ds/core");
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    vi.mocked(loadRemote).mockResolvedValue({
+      default: Counter,
+      stateMigrations: [
+        {
+          version: 2,
+          migrate: () => {
+            throw Error("broken migration");
+          },
+        },
+      ] satisfies StateMigration[],
+    });
+    const mfUrl = nextUrl();
+    await act(async () => {
+      root.render(
+        <SaltProvider>
+          <PortalPersistenceProvider service={service}>
+            <SavedStateProvider>
+              <RemoteModule
+                clientIdentifier="orders"
+                mfComponent="Orders"
+                mfScope="orders"
+                mfUrl={mfUrl}
+                title="Orders"
+                version={2}
+              />
+            </SavedStateProvider>
+          </PortalPersistenceProvider>
+        </SaltProvider>,
+      );
+    });
+    expect(container.querySelector("[data-testid=remote]")?.textContent).toBe(
+      "orders@2:0",
+    );
+    expect(
+      document.body.querySelector(".vuuSavedStateToasts")?.textContent,
+    ).toContain(
+      "Orders has been updated. Your saved state couldn't be carried forward, so it has opened with its default view.",
+    );
+  });
+
   it("loads the remote code once for both the component and its migrations", async () => {
     await renderModule({ version: 2 });
     expect(loadRemote).toHaveBeenCalledTimes(1);

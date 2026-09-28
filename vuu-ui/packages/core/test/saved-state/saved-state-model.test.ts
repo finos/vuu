@@ -23,6 +23,7 @@ import {
   toTreeSelection,
 } from "../../src/saved-state/saved-state-model";
 import { toSavedStateApplications } from "../../src/saved-state/SavedStateContext";
+import { describeClearResult } from "../../src/saved-state/SavedStateDialog";
 import type { RemoteModuleDescriptor } from "../../src/RemoteModuleDescriptor";
 
 const NOW = new Date("2025-06-10T12:00:00.000Z");
@@ -377,5 +378,66 @@ describe("toSavedStateApplications", () => {
         module("off", "/Off", { enabled: false }),
       ]).map(({ applicationKey }) => applicationKey),
     ).toEqual(["orders", "baskets-v2", "admin"]);
+  });
+});
+
+describe("describeClearResult", () => {
+  const ref = (applicationKey: string, applicationVersion: number) => ({
+    user: "steve",
+    applicationKey,
+    applicationVersion,
+  });
+
+  it("counts cleared items and asks open applications to reload", () => {
+    const m = model();
+    const selection = [
+      {
+        applicationKey: "instruments",
+        applicationVersion: 2,
+        keys: ["scratch"],
+      },
+      { applicationKey: "vuu.portal", applicationVersion: 1 },
+    ];
+    expect(
+      describeClearResult(m, selection, {
+        cleared: [],
+        failed: [],
+        requiresReload: [ref("instruments", 2)],
+      }),
+    ).toEqual({
+      status: "success",
+      title: "Saved state cleared",
+      body: "2 items cleared from 2 applications. Reload to return Instruments to its default view.",
+    });
+    expect(
+      describeClearResult(m, selection, {
+        cleared: [],
+        failed: [],
+        requiresReload: [ref("instruments", 2), ref("vuu.portal", 1)],
+      }).body,
+    ).toBe(
+      "2 items cleared from 2 applications. Reload to return Instruments and Portal to their default views.",
+    );
+  });
+
+  it("names the applications that couldn't be cleared", () => {
+    const selection = [
+      {
+        applicationKey: "instruments",
+        applicationVersion: 2,
+        keys: ["scratch"],
+      },
+    ];
+    expect(
+      describeClearResult(model(), selection, {
+        cleared: [],
+        failed: [{ ref: ref("instruments", 2), error: Error("full") }],
+        requiresReload: [],
+      }),
+    ).toEqual({
+      status: "error",
+      title: "Saved state couldn't be cleared",
+      body: "Saved state for Instruments couldn't be cleared. It is still selected, so you can try again.",
+    });
   });
 });
