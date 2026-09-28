@@ -641,8 +641,6 @@ The following portal examples demonstrate the complete pattern:
 - `portal-examples/portal-host/src/local-module-registry.ts`: checked-in local
   descriptors;
 - `portal-examples/basket-trading`: production and local basket exposures;
-- `portal-examples/feature-filter-table`: production and local SIMUL
-  exposures (being retired in favour of `vuu-table-viewer`);
 - `portal-examples/user-admin`: production and local user-admin exposures;
 - `portal-examples/feature-simple-div`: saved state with `usePersistentState`
   and an exported `stateMigrations`;
