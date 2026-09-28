@@ -4,7 +4,10 @@ import { useWindow } from "@salt-ds/window";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import cx from "clsx";
 import { useEffect, useMemo } from "react";
-import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
+import {
+  isNestedModule,
+  type RemoteModuleDescriptor,
+} from "../RemoteModuleDescriptor";
 import { IconNavItem } from "./IconNavItem";
 import { NestedNavItem } from "./NestedNavItem";
 import { buildNavItems } from "./nav-item-utils";
@@ -66,7 +69,11 @@ export const PortalAppSwitcher = ({
       return buildNavItems(remoteModules, effectiveMenuStyle);
     }
     const resolvedRemoteModules = remoteModules.map((remoteModule) => {
-      if (remoteModule.navIconUrl || remoteModule.navIconName) {
+      if (
+        remoteModule.navIconUrl ||
+        remoteModule.navIconName ||
+        isNestedModule(remoteModule)
+      ) {
         return remoteModule;
       }
       console.log(

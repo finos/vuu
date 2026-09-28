@@ -37,6 +37,13 @@ environment and set the initial URL through browser history.
 public `RemoteModuleDescriptor` type. Together these define the visual shell,
 navigation model, and route metadata for a portal.
 
+A descriptor's `navLocation` places the module in the navigation, e.g.
+`/Trading/Baskets`. A module with an empty `navLocation` (`""` or `"/"`) is a
+nested module: the shell still registers and routes it, but the navigation
+omits it, and another module renders it with `RemoteModule`. The table viewer
+nested in the table browser is an example. `isNestedModule(descriptor)` tests
+for this.
+
 `PortalHeader` renders `PortalUserMenu`, which offers **Saved state…** and
 **Log out**. Additional items go in its `userMenuItems` prop. Log out saves
 pending saved state before signing the user out.

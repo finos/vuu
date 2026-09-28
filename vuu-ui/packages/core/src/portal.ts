@@ -36,9 +36,10 @@ export {
   RemoteModule,
   type RemoteModuleProps,
 } from "./remote-module/RemoteModule";
-export type {
-  PortalModuleRegistry,
-  RemoteModuleDescriptor,
+export {
+  isNestedModule,
+  type PortalModuleRegistry,
+  type RemoteModuleDescriptor,
 } from "./RemoteModuleDescriptor";
 export * from "./persistence";
 export {

@@ -16,7 +16,10 @@ import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import { useMemo } from "react";
 import { useNavGroupExpansion } from "../portal-app-switcher/useNavGroupExpansion";
-import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
+import {
+  isNestedModule,
+  type RemoteModuleDescriptor,
+} from "../RemoteModuleDescriptor";
 import { Link, useLocation } from "react-router-dom";
 import { useNavContextMenu } from "../portal-app-switcher/useNavContextMenu";
 
@@ -108,6 +111,9 @@ const buildNavItems = (remoteModules: RemoteModuleDescriptor[]) => {
   const navItemsByPath = new Map<string, NavItem>();
 
   for (const remoteModule of remoteModules) {
+    if (isNestedModule(remoteModule)) {
+      continue;
+    }
     const pathSegments = remoteModule.navLocation.split("/").filter(Boolean);
     const [parentTitle, childTitle] = pathSegments;
 

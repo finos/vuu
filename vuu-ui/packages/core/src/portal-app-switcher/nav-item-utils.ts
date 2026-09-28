@@ -1,12 +1,18 @@
-import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
+import {
+  isNestedModule,
+  type RemoteModuleDescriptor,
+} from "../RemoteModuleDescriptor";
 import type { AppSwitcherMenuStyle, NavItem } from "./PortalAppSwitcher";
 
 const toNavigationPath = (path: string) => path.replace(/\/\*$/, "");
 
 export const buildNavItems = (
-  remoteModules: RemoteModuleDescriptor[],
+  registeredModules: RemoteModuleDescriptor[],
   menuStyle: AppSwitcherMenuStyle = "two-level",
 ): NavItem[] => {
+  const remoteModules = registeredModules.filter(
+    (remoteModule) => !isNestedModule(remoteModule),
+  );
   if (menuStyle === "single-level") {
     return remoteModules.flatMap(
       ({ id, navLocation, navIconName, navIconUrl, path }) => {
