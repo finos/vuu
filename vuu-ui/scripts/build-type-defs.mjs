@@ -49,25 +49,24 @@ function writePackageJSON() {
     const exports = {
       ...packageJson.exports,
       ".": {
-        ...packageJson.exports["."],
         types: "./types/index.d.ts",
+        ...packageJson.exports["."],
       },
     };
     if (packageJson.exports["./portal"]) {
       exports["./portal"] = {
-        ...packageJson.exports["./portal"],
         types: "./types/portal.d.ts",
+        ...packageJson.exports["./portal"],
       };
     }
     const newPackage = {
       ...packageJson,
       files: (packageJson.files || []).concat("/types"),
       exports: {
-        ...packageJson.exports,
+        ...exports,
         ".": {
-          ...packageJson.exports["."],
+          ...exports["."],
           default: "./src/index.js",
-          types: "./types/index.d.ts",
         },
       },
       types: "types/index.d.ts",

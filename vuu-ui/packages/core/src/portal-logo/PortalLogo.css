@@ -11,10 +11,4 @@
     outline: var(--salt-focused-outline);
     outline-offset: -2px;
   }
-
-  > svg,
-  .vuuPortalLogo-image {
-    max-height: var(--vuuPortalLogo-maxSize, 44px);
-    max-width: var(--vuuPortalLogo-maxSize, 44px);
-  }
 }
