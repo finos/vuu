@@ -1,5 +1,6 @@
 import {
   PortalAppSwitcher,
+  type AppSwitcherMenuStyle,
   type RemoteModuleDescriptor,
 } from "@vuu-ui/core/portal";
 import type { ReactNode } from "react";
@@ -75,11 +76,15 @@ export const SingleLevelAppSwitcher = () => (
   </AppSwitcherFrame>
 );
 
-export const NestedAppSwitcher = () => (
+export const NestedAppSwitcher = ({
+  menuStyle = "two-level",
+}: {
+  menuStyle?: AppSwitcherMenuStyle;
+}) => (
   <AppSwitcherFrame>
     <PortalAppSwitcher
       displayStyle="text-only"
-      menuStyle="two-level"
+      menuStyle={menuStyle}
       remoteModules={twoLevelModules}
     />
   </AppSwitcherFrame>
