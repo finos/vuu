@@ -141,19 +141,13 @@ const { modules: remoteModules } = useModuleRegistry();
 return <PortalShell remoteModules={remoteModules} title="Portal Demo" />;
 ```
 
-`PortalShell` in `packages/core/src/portal-shell/PortalShell.tsx` uses the same
-array in three ways:
-
-- It passes the array to `PortalNav`.
-- It creates one React Router route per descriptor, normalizing `path` to end
-  in `/*`.
-- It renders `RemoteModule` for the selected route and provides the full
-  registry through `PortalModuleRegistryProvider`, allowing a loaded remote to
-  discover other registered modules.
-
-`PortalNav` in `packages/core/src/portal-nav/PortalNav.tsx` builds its hierarchy
-from `location` (for example, `/Admin/Users`) and uses `path` as the navigation
-target.
+`PortalShell` in `packages/core/src/portal-shell/PortalShell.tsx` uses the array
+to create one React Router route per descriptor, normalizing `path` to end in
+`/*`, and provides the full registry through `PortalModuleRegistryProvider` so
+a loaded remote can discover other registered modules. The host composes its
+navigation separately: `NavContainer` contains `PortalLogo` and
+`PortalAppSwitcher`, which builds its hierarchy from `navLocation` (for example,
+`/Admin/Users`) and uses `path` as the navigation target.
 
 ## Descriptor contract
 
@@ -168,7 +162,7 @@ are:
 | `mfScope` | Runtime remote name. It must equal the producer's `ModuleFederationPlugin.name`. |
 | `mfComponent` | Exposed module key without the producer's leading `./`. For an exposure named `./UserAdmin`, use `UserAdmin`. |
 | `path` | React Router path used by `PortalShell`; `/*` is added when absent. |
-| `location` | Slash-separated navigation placement and labels consumed by `PortalNav`. |
+| `navLocation` | Slash-separated navigation placement and labels consumed by `PortalAppSwitcher`. |
 | `vuu` | Optional `{ connectionId, restUrl?, websocketUrl? }` describing the VUU data connection to install around this remote. |
 
 The remaining protocol metadata is `clientIdentifier`, `description`,

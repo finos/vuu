@@ -51,9 +51,8 @@ This document specifies:
 - The authenticated user is available via `useAuthenticatedUser()`
   (`User = { userName: string }`). In `local` mode it defaults to
   `local-user`.
-- `PortalHeader` renders only a **Log out** button. The nav components
-  (`PortalNav`, and `PortalAppSwitcher` through `NestedNavItem` and
-  `IconNavItem`) share a per-module context menu, `useNavContextMenu`
+- `PortalHeader` renders only a **Log out** button. `PortalAppSwitcher` uses
+  the per-module context menu, `useNavContextMenu`
   (`src/portal-app-switcher/`), with **Open in new Tab** / **Open in new
   Window**.
 
@@ -906,7 +905,7 @@ transparent `Button` with an `Avatar` and the user name.
 
 [![Header user menu with Saved state… and Log out](assets/saved-state/01-entry-user-menu.png)](assets/saved-state/01-entry-user-menu.png)
 
-**Navigation context menu.** In `PortalNav` and `PortalAppSwitcher`, a
+**Navigation context menu.** In `PortalAppSwitcher`, a
 divider and **Saved state…** follow the existing *Open in new Tab / Window*
 items. This opens the dialog scoped to that application (§9.4).
 
@@ -1272,8 +1271,8 @@ this section describes the code.
 - **Code references.** Since #2481, `PortalShell` creates its own browser
   router, with a `WINDOW_HOST_ROUTE` route (`PortalWindowRoute` → `WindowHost`)
   and a catch-all portal layout. The navigation context menu is
-  `useNavContextMenu`, shared by `PortalNav` and `PortalAppSwitcher` (through
-  `NestedNavItem` and `IconNavItem`). §2.1 has been updated.
+  `useNavContextMenu`, used by the items in `PortalAppSwitcher`. §2.1 has been
+  updated.
 - **Where the service lives.** `CommonShell` renders `PortalPersistenceRoot`,
   which creates the service. `PortalShell`, `WindowShell` and `WindowHost` all
   accept `persistence` and `portalId`. `PortalShell` passes both to its window

@@ -17,12 +17,26 @@ portal title and the descriptors for its registered remote modules, then:
 - creates the browser router, including routes that render each remote module
   through `RemoteModule` and the standalone `WindowHost` route.
 
-Compose `NavContainer`, `PortalAppSwitcher` or `PortalNav`, and `PortalHeader`
-as children as needed; the shell does not add them automatically. Children render
-inside the shared providers and router, before the routed module content, and
-are omitted on standalone window routes. The optional `id` is applied to the
-portal root element. The `title` prop does not create a heading; supply branding
-through children.
+Compose `NavContainer` with `PortalLogo` and `PortalAppSwitcher`, and add
+`PortalHeader` as children as needed; the shell does not add them automatically.
+Pass a single direct `PortalLandingPage` child to supply content for the default
+`/` route:
+
+```tsx
+<PortalShell remoteModules={remoteModules} title="Portal">
+  <NavContainer>{/* portal navigation */}</NavContainer>
+  <PortalLandingPage>
+    <MyLandingPage />
+  </PortalLandingPage>
+  <PortalHeader />
+</PortalShell>
+```
+
+The landing page is rendered inside the routed content area, not as shell
+chrome. Other children render inside the shared providers and router, and are
+omitted on standalone window routes. Without a `PortalLandingPage`, the root
+route is empty. The optional `id` is applied to the portal root element. The
+`title` prop does not create a heading; supply branding through children.
 
 Render `PortalShell` directly beneath the host's `AuthenticationProvider`, without
 an external router. The router persists across shell prop and registry updates,
@@ -33,9 +47,10 @@ The shell requires a browser DOM and history and does not support server-side
 rendering or an injected memory router. Tests should render it directly in a DOM
 environment and set the initial URL through browser history.
 
-`PortalShell` is supported by `PortalHeader`, `PortalNav`, their styles, and the
-public `RemoteModuleDescriptor` type. Together these define the visual shell,
-navigation model, and route metadata for a portal.
+`PortalShell` is supported by `PortalHeader`, `NavContainer`, `PortalAppSwitcher`,
+`PortalLandingPage`, and the public `RemoteModuleDescriptor` type. Together
+these define the visual shell, navigation model, and route metadata for a
+portal.
 
 A descriptor's `navLocation` places the module in the navigation, e.g.
 `/Trading/Baskets`. A module with an empty `navLocation` (`""` or `"/"`) is a
@@ -50,13 +65,13 @@ pending saved state before signing the user out.
 
 ## WindowHost and module launch menus
 
-`PortalNav` and `PortalAppSwitcher` module links provide **Open in new Tab**
-and **Open in new Window** via right-click, the context-menu key, or Shift+F10.
-Inside a shell, links to modules with an application key (see
+`PortalAppSwitcher` module links provide **Open in new Tab** and **Open in new
+Window** via right-click, the context-menu key, or Shift+F10. Inside a shell,
+links to modules with an application key (see
 [Saved state](#saved-state)) also offer **Saved state…**, which opens the
-Saved state dialog scoped to that module. Navigation groups retain
-their normal expand/collapse behavior. Opening a module leaves the current
-portal route unchanged.
+Saved state dialog scoped to that module. Navigation groups retain their normal
+expand/collapse behavior. Opening a module leaves the current portal route
+unchanged.
 
 `PortalShell` mounts `WindowHost` at `WINDOW_HOST_ROUTE`
 (`/window/:moduleId/*`) for both authenticated and local bootstraps. It forwards

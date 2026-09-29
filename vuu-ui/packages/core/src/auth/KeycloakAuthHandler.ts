@@ -37,7 +37,15 @@ export class KeycloakAuthHandler implements AuthHandler {
       throw Error("No username from Keycloak");
     }
 
-    return { user: { userName } };
+    const { given_name, family_name, email } = keycloak.tokenParsed ?? {};
+    return {
+      user: {
+        userName,
+        first_name: given_name,
+        last_name: family_name,
+        email,
+      },
+    };
   };
 
   async getIdentityToken() {

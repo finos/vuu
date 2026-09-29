@@ -1,9 +1,40 @@
 .vuuPortalAppSwitcher {
-  &.saltVerticalNavigation {
-    width: 100%;
+  width: 100%;
 
+  &.saltVerticalNavigation {
     ol {
       gap: 20px;
+    }
+  }
+
+  &.vuuPortalAppSwitcher-dashboard {
+    --dashboardNavItemIcon-size: var(--vuuDashboardNavIcon-size, 90px);
+    --dashboardNavItem-size: calc(var(--dashboardNavItemIcon-size) + 40px);
+    align-items: center;
+    display: grid;
+    gap: var(--salt-spacing-400);
+    grid-template-columns: repeat(auto-fit, var(--dashboardNavItem-size));
+    grid-auto-rows: var(--dashboardNavItem-size);
+    justify-content: center;
+
+    .vuuDashboardNavItem {
+      background-color: var(--vuuDashboardNavItem-background);
+      align-items: center;
+      display: flex;
+      flex-direction: column;
+      gap: var(--salt-spacing-200);
+      height: 100%;
+      justify-content: space-around;
+      text-decoration: none;
+
+      .vuuIcon {
+        --vuu-icon-size: var(--dashboardNavItemIcon-size);
+      }
+
+      .vuuDashboardNavItem-label {
+        font-size: var(--vuuDashboardNavItem-fontSize, 16px);
+        text-decoration: none;
+      }
     }
   }
 
@@ -17,7 +48,7 @@
 
       .vuuIconNavItem-flyout {
         align-items: center;
-        background-color: var(--salt-actionable-bold-background);
+        background-color: var(--vuuNavItem-background, var(--salt-actionable-bold-background));
         border-radius: 18px;
         display: flex;
         column-gap: 0;
@@ -33,7 +64,7 @@
 
         .vuuIconNavItem-label {
           display: inline-block;
-          font-size: 16px;
+          font-size: var(--vuuNavItem-fontSize, 16px);
           font-weight: bold;
           overflow: hidden;
           text-align: right;
@@ -46,8 +77,8 @@
 
       &.vuuIconNavItem-active {
         .vuuIconNavItem-flyout {
-          background-color: var(--salt-selectable-foreground-selected);
-          color: white;
+          background-color: var(--vuuNavItem-selected-background, var(--salt-selectable-foreground-selected));
+          color: var(--vuuNavItem-selected-color, white);
 
           .vuuIcon {
             --vuu-icon-color: white;
@@ -57,15 +88,16 @@
 
       &:hover {
         .vuuIconNavItem-flyout {
-          background-color: var(--salt-selectable-foreground-selected);
-          color: white;
+          background-color: var(--vuuNavItem-selected-background, var(--salt-selectable-foreground-selected));
+          color: var(--vuuNavItem-selected-color, white);
+          interpolate-size: allow-keywords;
 
           .vuuIcon {
-            --vuu-icon-color: white;
+            --vuu-icon-color: var(--vuuNavItem-selected-color, white);
           }
           .vuuIconNavItem-label {
             transition-delay: 0.6s;
-            width: 120px;
+            width: auto;
           }
         }
       }

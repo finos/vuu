@@ -1,15 +1,18 @@
 import {
+  AuthenticationProvider,
+  type PortalModuleRegistry,
+} from "@vuu-ui/core";
+import {
   NavContainer,
   PortalAppSwitcher,
   PortalHeader,
+  PortalLandingPage,
   PortalLogo,
   PortalShell,
 } from "@vuu-ui/core/portal";
 import { VuuLogo } from "@vuu-ui/vuu-icons";
-import {
-  AuthenticationProvider,
-  type PortalModuleRegistry,
-} from "@vuu-ui/core";
+import { MemoryRouter } from "react-router-dom";
+import { dashBoardIcon, ordersIcon, positionsIcon } from "./portal-icons";
 
 const remoteModules = {
   modules: [
@@ -18,6 +21,7 @@ const remoteModules = {
       description: "User administration",
       id: "user-admin",
       navLocation: "/UserAdmin",
+      navIconUrl: dashBoardIcon,
       accessRole: "user-admin-access",
       mfComponent: "UserAdmin",
       mfScope: "userAdmin",
@@ -32,6 +36,7 @@ const remoteModules = {
       description: "Module administration",
       id: "module-admin",
       navLocation: "/ModuleAdmin",
+      navIconUrl: ordersIcon,
       accessRole: "module-admin-access",
       mfComponent: "ModuleAdmin",
       mfScope: "moduleAdmin",
@@ -46,6 +51,7 @@ const remoteModules = {
       description: "Basket trading",
       id: "basket-trading",
       navLocation: "/BasketTrading",
+      navIconUrl: positionsIcon,
       accessRole: "basket-trading-access",
       mfComponent: "BasketTrading",
       mfScope: "basketTrading",
@@ -58,7 +64,7 @@ const remoteModules = {
   ],
 } satisfies PortalModuleRegistry;
 
-export const SingleLevelAppSwitcher = () => (
+export const PortalShellWithNavContainer = () => (
   <AuthenticationProvider mode="local" registry={remoteModules}>
     <PortalShell
       id="portal-demo"
@@ -67,14 +73,66 @@ export const SingleLevelAppSwitcher = () => (
     >
       <NavContainer>
         <PortalLogo alt="Portal home" style={{ gridArea: "logo" }}>
-          <VuuLogo />
+          <VuuLogo size={30} />
         </PortalLogo>
         <PortalAppSwitcher
           displayStyle="icon-only"
           remoteModules={remoteModules.modules}
         />
       </NavContainer>
+      <PortalLandingPage>
+        <main>
+          <h1>Welcome to Portal Demo</h1>
+          <p>Select an application to get started.</p>
+        </main>
+      </PortalLandingPage>
       <PortalHeader />
     </PortalShell>
   </AuthenticationProvider>
+);
+
+export const PortalShellWithNavLandingPage = () => (
+  <AuthenticationProvider mode="local" registry={remoteModules}>
+    <PortalShell
+      id="portal-demo"
+      remoteModules={remoteModules.modules}
+      title="Portal Demo"
+    >
+      <NavContainer>
+        <PortalLogo alt="Portal home" style={{ gridArea: "logo" }}>
+          <VuuLogo size={30} />
+        </PortalLogo>
+        <PortalAppSwitcher
+          displayStyle="icon-only"
+          remoteModules={remoteModules.modules}
+        />
+      </NavContainer>
+      <PortalLandingPage>
+        <NavContainer mode="dashboard">
+          <PortalLogo alt="Portal home" style={{ gridArea: "logo" }}>
+            <VuuLogo size={50} />
+          </PortalLogo>
+          <PortalAppSwitcher
+            displayStyle="dashboard"
+            remoteModules={remoteModules.modules}
+          />
+        </NavContainer>
+      </PortalLandingPage>
+      <PortalHeader />
+    </PortalShell>
+  </AuthenticationProvider>
+);
+
+export const NavContainerAsContent = () => (
+  <MemoryRouter>
+    <NavContainer mode="dashboard">
+      <PortalLogo alt="Portal home" style={{ gridArea: "logo" }}>
+        <VuuLogo size={60} />
+      </PortalLogo>
+      <PortalAppSwitcher
+        displayStyle="dashboard"
+        remoteModules={remoteModules.modules}
+      />
+    </NavContainer>
+  </MemoryRouter>
 );

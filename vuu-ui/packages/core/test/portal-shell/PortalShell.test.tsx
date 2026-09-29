@@ -59,21 +59,6 @@ vi.mock("@vuu-ui/vuu-data-react", () => ({
 vi.mock("../../src/portal-header/PortalHeader", () => ({
   PortalHeader: () => <div data-portal-header />,
 }));
-vi.mock("../../src/portal-nav-panel/PortalNavPanel", () => ({
-  PortalNavPanel: ({
-    remoteModules,
-  }: {
-    remoteModules: RemoteModuleDescriptor[];
-  }) => (
-    <nav className="vuuPortalNavPanel">
-      {remoteModules.map(({ id, path }) => (
-        <Link className="vuuPortalNavPanel-link" key={id} to={path}>
-          {path}
-        </Link>
-      ))}
-    </nav>
-  ),
-}));
 vi.mock("../../src/remote-module/RemoteModule", async () => {
   const { usePortalModuleRegistry } = await import(
     "../../src/portal-module-registry/PortalModuleRegistry"
@@ -103,6 +88,7 @@ vi.mock("../../src/remote-module/RemoteModule", async () => {
 });
 
 import { PortalShell } from "../../src/portal-shell/PortalShell";
+import { PortalLandingPage } from "../../src/portal-shell/PortalLandingPage";
 import { AuthenticationProvider } from "../../src/auth/AuthenticationProvider";
 import { WindowShell } from "../../src/window-shell/WindowShell";
 import { getWindowHostPath } from "../../src/window-host/window-host-routing";
@@ -214,26 +200,59 @@ describe("Portal and window shells", () => {
     });
   });
 
-  it("renders the PortalNavPanel at the root path and navigates to a module", async () => {
+  it("renders PortalLandingPage at the root path and navigates to a module", async () => {
     await act(async () => {
-      root.render(<PortalShell remoteModules={modules} title="Portal" />);
+      root.render(
+        <PortalShell remoteModules={modules} title="Portal">
+          <header data-portal-chrome>Portal chrome</header>
+          <PortalLandingPage>
+            <section data-portal-landing-page>
+              <p>Welcome to the portal</p>
+              <Link to="/orders">Open orders</Link>
+            </section>
+          </PortalLandingPage>
+        </PortalShell>,
+      );
     });
 
-    const links = [
-      ...container.querySelectorAll<HTMLAnchorElement>(
-        ".vuuPortalShell-content .vuuPortalNavPanel-link",
+    expect(
+      container.querySelector(
+        ".vuuPortalShell-content > .vuuPortalLandingPage [data-portal-landing-page]",
       ),
-    ];
-    expect(links.map((link) => link.getAttribute("href"))).toEqual([
-      "/users/admin",
-      "/orders",
-    ]);
+    ).not.toBeNull();
+    expect(
+      container.querySelector(".vuuPortalShell > [data-portal-chrome]"),
+    ).not.toBeNull();
     expect(container.querySelector("output")).toBeNull();
 
-    await act(async () => links[1].click());
+    await act(async () => {
+      container
+        .querySelector<HTMLAnchorElement>(
+          ".vuuPortalShell-content [data-portal-landing-page] a",
+        )
+        ?.click();
+    });
     expect(window.location.pathname).toBe("/orders");
-    expect(container.querySelector(".vuuPortalNavPanel")).toBeNull();
     expect(container.querySelector("output")?.dataset.module).toBe("Orders");
+  });
+
+  it("renders PortalLandingPage at the default route when hosted at a nested path", async () => {
+    window.history.replaceState(null, "", "/showcase/VuuPortal/PortalShell");
+    await act(async () => {
+      root.render(
+        <PortalShell remoteModules={modules} title="Portal">
+          <PortalLandingPage>
+            <p data-portal-landing-page>Welcome to the portal</p>
+          </PortalLandingPage>
+        </PortalShell>,
+      );
+    });
+
+    expect(
+      container.querySelector(
+        ".vuuPortalShell-content .vuuPortalLandingPage [data-portal-landing-page]",
+      ),
+    ).not.toBeNull();
   });
 
   it("uses an injected data source provider instead of the remote default", async () => {
