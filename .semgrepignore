@@ -20,6 +20,8 @@ vuu-ui/tools/vuu-showcase/src/shared-utils.ts
 vuu-ui/tools/vuu-showcase/src/showcase-main/showcase-utils.ts
 vuu-ui/sample-apps/standalone-table/scripts/build.mjs
 vuu-ui/portal-examples/standalone-table/scripts/build.mjs
+vuu-ui/portal-examples/vuu-table-browser/src/AddServerForm.tsx
+vuu-ui/portal-examples/vuu-table-browser/test/VuuTableBrowser.test.tsx
 vuu-ui/sample-apps/app-vuu-basket-trader/scripts/build.mjs
 vuu-ui/sample-apps/app-vuu-example/scripts/build.mjs
 vuu-ui/showcase/scripts/build-docs.mjs
