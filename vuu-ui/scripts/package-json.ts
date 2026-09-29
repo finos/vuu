@@ -2,14 +2,13 @@ import fs from "fs";
 
 export const readPackageJson = (path = "package.json") => readJson(path);
 
-type PackageExports = {
-  ".": {
+type PackageExports = Record<
+  string,
+  {
     import: string;
-  };
-  [subpath: string]: {
-    import: string;
-  };
-};
+    types?: string;
+  }
+>;
 
 type Json = {
   exports?: PackageExports;
@@ -61,8 +60,12 @@ export async function writePackageJSON(
     );
 
     if (style) {
-      exports['./style'] = { import: style };
-      exports[style] = { import: style };
+      const styleExport = {
+        types: `${style}.d.ts`,
+        import: style,
+      };
+      exports["./style"] = styleExport;
+      exports[style] = styleExport;
     }
 
     const newPackage: Json = {
