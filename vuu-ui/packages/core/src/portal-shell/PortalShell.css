@@ -23,7 +23,7 @@
     grid-area: header;
   }
 
-  .vuuPortal-content {
+  .vuuPortalShell-content {
     grid-area: content;
   }
 }
