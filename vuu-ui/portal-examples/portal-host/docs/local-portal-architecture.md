@@ -597,7 +597,7 @@ production parity, introduce a small `LocalModuleRegistryStore` with
 - the module-discovery test module projects the same store as its `modules`
   table; and
 - successful edit-session commits update the store, causing `PortalShell` and
-  `PortalNav` to rerender.
+  the host-rendered `PortalAppSwitcher` to rerender.
 
 This avoids maintaining separate module-admin table data and navigation
 registry data.

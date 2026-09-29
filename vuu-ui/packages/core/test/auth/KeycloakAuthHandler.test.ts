@@ -4,7 +4,12 @@ const keycloak = vi.hoisted(() => ({
   init: vi.fn().mockResolvedValue(true),
   logout: vi.fn().mockResolvedValue(undefined),
   token: "identity-token",
-  tokenParsed: { preferred_username: "alice" },
+  tokenParsed: {
+    email: "alice@example.test",
+    family_name: "Smith",
+    given_name: "Alice",
+    preferred_username: "alice",
+  },
   updateToken: vi.fn().mockResolvedValue(false),
 }));
 
@@ -34,10 +39,20 @@ describe("KeycloakAuthHandler", () => {
     });
 
     await expect(handler.authenticate()).resolves.toEqual({
-      user: { userName: "alice" },
+      user: {
+        email: "alice@example.test",
+        first_name: "Alice",
+        last_name: "Smith",
+        userName: "alice",
+      },
     });
     await expect(handler.authenticate()).resolves.toEqual({
-      user: { userName: "alice" },
+      user: {
+        email: "alice@example.test",
+        first_name: "Alice",
+        last_name: "Smith",
+        userName: "alice",
+      },
     });
     expect(keycloak.init).toHaveBeenCalledTimes(1);
 

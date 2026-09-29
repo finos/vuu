@@ -14,10 +14,15 @@ import { buildNavItems, circleQuestionMarkIcon } from "./nav-item-utils";
 
 import portalNavCss from "./PortalAppSwitcher.css";
 import { useLocation } from "react-router-dom";
+import { DashboardNavItem } from "./DashboardNavItem";
 
 const classBase = "vuuPortalAppSwitcher";
 
-export type AppSwitcherDisplayStyle = "icon-only" | "icon text" | "text-only";
+export type AppSwitcherDisplayStyle =
+  | "icon-only"
+  | "icon text"
+  | "text-only"
+  | "dashboard";
 export type AppSwitcherMenuStyle = "single-level" | "two-level";
 
 export interface NavItem {
@@ -63,7 +68,7 @@ export const PortalAppSwitcher = ({
   });
 
   const navItems = useMemo(() => {
-    if (displayStyle !== "icon-only") {
+    if (displayStyle !== "icon-only" && displayStyle !== "dashboard") {
       return buildNavItems(remoteModules, effectiveMenuStyle);
     }
     const resolvedRemoteModules = remoteModules.map((remoteModule) => {
@@ -85,11 +90,18 @@ export const PortalAppSwitcher = ({
     return buildNavItems(resolvedRemoteModules, effectiveMenuStyle);
   }, [displayStyle, effectiveMenuStyle, remoteModules]);
 
-  const NavItem = iconOnly ? IconNavItem : NestedNavItem;
+  const NavItem =
+    displayStyle === "dashboard"
+      ? DashboardNavItem
+      : iconOnly
+        ? IconNavItem
+        : NestedNavItem;
+
+  const Container = displayStyle === "dashboard" ? "nav" : VerticalNavigation;
 
   return (
     <ContextMenuProvider>
-      <VerticalNavigation
+      <Container
         className={cx(
           classBase,
           `${classBase}-${displayStyle}`,
@@ -103,7 +115,7 @@ export const PortalAppSwitcher = ({
             key={navItem.href}
           />
         ))}
-      </VerticalNavigation>
+      </Container>
     </ContextMenuProvider>
   );
 };

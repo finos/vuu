@@ -419,7 +419,7 @@ props, so a module opened in its own window uses the same saved state.
 - `PortalHeader` shows the user menu with **Saved state…** and **Log out**.
   Log out saves pending changes before signing the user out. Extra menu items
   go in its `userMenuItems` prop.
-- Module links in `PortalNav` and `PortalAppSwitcher` have **Saved state…** in
+- Module links in `PortalAppSwitcher` have **Saved state…** in
   their context menu, which opens the dialog scoped to that module.
 - `portal-examples/portal-host` registers a **Saved state demo** module
   (`feature-simple-div`) that uses `usePersistentState` and exports
