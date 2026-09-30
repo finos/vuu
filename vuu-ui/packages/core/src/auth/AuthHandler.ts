@@ -2,8 +2,8 @@ import type { AuthConfig } from "./AuthConfig";
 
 export type User = {
   userName: string;
-  first_name?: string;
-  last_name?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
 };
 

@@ -41,16 +41,16 @@ describe("KeycloakAuthHandler", () => {
     await expect(handler.authenticate()).resolves.toEqual({
       user: {
         email: "alice@example.test",
-        first_name: "Alice",
-        last_name: "Smith",
+        firstName: "Alice",
+        lastName: "Smith",
         userName: "alice",
       },
     });
     await expect(handler.authenticate()).resolves.toEqual({
       user: {
         email: "alice@example.test",
-        first_name: "Alice",
-        last_name: "Smith",
+        firstName: "Alice",
+        lastName: "Smith",
         userName: "alice",
       },
     });
