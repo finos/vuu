@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { createHash } from "node:crypto";
 import {
   chmodSync,
@@ -10,7 +11,6 @@ import { execFileSync, spawn, type ChildProcess } from "node:child_process";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 interface PortalService {
   name: string;
@@ -55,19 +55,24 @@ interface ManagedServicesState {
   services: ManagedService[];
 }
 
-const workspaceRoot = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "..",
-);
-const workspaceId = createHash("sha256")
-  .update(workspaceRoot)
-  .digest("hex")
-  .slice(0, 20);
-const controlAddress =
-  process.platform === "win32"
-    ? `\\\\.\\pipe\\vuu-portal-${workspaceId}`
-    : path.join(os.tmpdir(), `vuu-portal-${workspaceId}.sock`);
-const statePath = path.join(os.tmpdir(), `vuu-portal-${workspaceId}.json`);
+interface ControlPaths {
+  controlAddress: string;
+  statePath: string;
+}
+
+const getControlPaths = (absoluteConfigPath: string): ControlPaths => {
+  const configId = createHash("sha256")
+    .update(absoluteConfigPath)
+    .digest("hex")
+    .slice(0, 20);
+  return {
+    controlAddress:
+      process.platform === "win32"
+        ? `\\\\.\\pipe\\vuu-portal-${configId}`
+        : path.join(os.tmpdir(), `vuu-portal-${configId}.sock`),
+    statePath: path.join(os.tmpdir(), `vuu-portal-${configId}.json`),
+  };
+};
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -106,7 +111,7 @@ const parseServiceConfig = (
 };
 
 const loadConfig = (configPath: string) => {
-  const absoluteConfigPath = path.resolve(workspaceRoot, configPath);
+  const absoluteConfigPath = path.resolve(process.cwd(), configPath);
   const configDirectory = path.dirname(absoluteConfigPath);
   const value: unknown = JSON.parse(readFileSync(absoluteConfigPath, "utf8"));
   if (
@@ -188,7 +193,9 @@ const selectServices = (
 const sleep = (milliseconds: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, milliseconds));
 
-const readManagedState = (): ManagedServicesState | undefined => {
+const readManagedState = (
+  { statePath }: ControlPaths,
+): ManagedServicesState | undefined => {
   try {
     const state: unknown = JSON.parse(readFileSync(statePath, "utf8"));
     if (
@@ -278,24 +285,26 @@ const signalManagedProcess = (
   }
 };
 
-const removeStaleState = () => {
+const removeStaleState = ({ controlAddress, statePath }: ControlPaths) => {
   if (existsSync(statePath)) unlinkSync(statePath);
   if (process.platform !== "win32" && existsSync(controlAddress)) {
     unlinkSync(controlAddress);
   }
 };
 
-const stopOrphanedProcesses = async (): Promise<void> => {
-  const state = readManagedState();
+const stopOrphanedProcesses = async (
+  controlPaths: ControlPaths,
+): Promise<void> => {
+  const state = readManagedState(controlPaths);
   if (!state) {
-    removeStaleState();
+    removeStaleState(controlPaths);
     console.log("Portal services are not running.");
     return;
   }
 
   const services = state.services.filter(isManagedProcessRunning);
   if (services.length === 0) {
-    removeStaleState();
+    removeStaleState(controlPaths);
     console.log("Portal services are not running.");
     return;
   }
@@ -324,11 +333,13 @@ const stopOrphanedProcesses = async (): Promise<void> => {
     );
   }
 
-  removeStaleState();
+  removeStaleState(controlPaths);
   console.log(`Stopped ${services.length} orphaned portal server(s).`);
 };
 
-const isAlreadyRunning = (): Promise<boolean> =>
+const isAlreadyRunning = (
+  { controlAddress }: ControlPaths,
+): Promise<boolean> =>
   new Promise<boolean>((resolve, reject) => {
     const connection = net.createConnection(controlAddress);
     connection.once("connect", () => {
@@ -344,9 +355,12 @@ const isAlreadyRunning = (): Promise<boolean> =>
     });
   });
 
-const stop = async (): Promise<void> => {
+const stop = async (configPath: string): Promise<void> => {
+  const controlPaths = getControlPaths(
+    path.resolve(process.cwd(), configPath),
+  );
   const supervisorFound = await new Promise<boolean>((resolve, reject) => {
-    const connection = net.createConnection(controlAddress);
+    const connection = net.createConnection(controlPaths.controlAddress);
     let response = "";
 
     connection.setEncoding("utf8");
@@ -368,21 +382,22 @@ const stop = async (): Promise<void> => {
   });
 
   if (!supervisorFound) {
-    await stopOrphanedProcesses();
+    await stopOrphanedProcesses(controlPaths);
     return;
   }
 
   const deadline = Date.now() + 10000;
-  while (existsSync(statePath) && Date.now() < deadline) {
+  while (existsSync(controlPaths.statePath) && Date.now() < deadline) {
     await sleep(100);
   }
-  if (existsSync(statePath)) {
+  if (existsSync(controlPaths.statePath)) {
     throw new Error("Timed out waiting for portal servers to stop.");
   }
 };
 
 const start = async (options: StartOptions): Promise<void> => {
   const { absoluteConfigPath, config } = loadConfig(options.configPath);
+  const controlPaths = getControlPaths(absoluteConfigPath);
   const services = selectServices(
     config,
     path.dirname(absoluteConfigPath),
@@ -400,18 +415,21 @@ const start = async (options: StartOptions): Promise<void> => {
     }
   }
 
-  if (await isAlreadyRunning()) {
+  if (await isAlreadyRunning(controlPaths)) {
     throw new Error("Portal services are already running; use npm run portal:stop.");
   }
-  const previousState = readManagedState();
+  const previousState = readManagedState(controlPaths);
   if (previousState?.services.some(isManagedProcessRunning)) {
     throw new Error(
       "Portal servers from a previous run are still active; use npm run portal:stop.",
     );
   }
-  if (previousState) unlinkSync(statePath);
-  if (process.platform !== "win32" && existsSync(controlAddress)) {
-    unlinkSync(controlAddress);
+  if (previousState) unlinkSync(controlPaths.statePath);
+  if (
+    process.platform !== "win32" &&
+    existsSync(controlPaths.controlAddress)
+  ) {
+    unlinkSync(controlPaths.controlAddress);
   }
 
   const controlServer = net.createServer();
@@ -453,7 +471,7 @@ const start = async (options: StartOptions): Promise<void> => {
     await Promise.all(children.map(({ closed }) => closed));
     await controlServerClosed;
 
-    removeStaleState();
+    removeStaleState(controlPaths);
     shutdownResolve();
     return shutdownComplete;
   };
@@ -461,14 +479,16 @@ const start = async (options: StartOptions): Promise<void> => {
   const listen = (): Promise<void> =>
     new Promise<void>((resolve, reject) => {
       controlServer.once("error", reject);
-      controlServer.listen(controlAddress, () => {
+      controlServer.listen(controlPaths.controlAddress, () => {
         controlServer.off("error", reject);
         resolve();
       });
     });
 
   await listen();
-  if (process.platform !== "win32") chmodSync(controlAddress, 0o600);
+  if (process.platform !== "win32") {
+    chmodSync(controlPaths.controlAddress, 0o600);
+  }
 
   controlServer.on("connection", (connection) => {
     connection.once("data", (data) => {
@@ -502,10 +522,14 @@ const start = async (options: StartOptions): Promise<void> => {
               },
             ],
       );
-      writeFileSync(statePath, JSON.stringify({ services: managedServices }), {
-        mode: 0o600,
-      });
-      if (process.platform !== "win32") chmodSync(statePath, 0o600);
+      writeFileSync(
+        controlPaths.statePath,
+        JSON.stringify({ services: managedServices }),
+        { mode: 0o600 },
+      );
+      if (process.platform !== "win32") {
+        chmodSync(controlPaths.statePath, 0o600);
+      }
     };
 
     for (const service of services) {
@@ -513,7 +537,7 @@ const start = async (options: StartOptions): Promise<void> => {
         "serve",
         ["--listen", String(service.port), service.outputDirectory],
         {
-          cwd: workspaceRoot,
+          cwd: process.cwd(),
           stdio: "inherit",
         },
       );
@@ -580,10 +604,11 @@ const start = async (options: StartOptions): Promise<void> => {
 };
 
 const usage = `Usage:
-  npm run portal:serve [-- --config <path>] [--host <name>] [--remotes <name,...>]
-  npm run portal:serve -- --host-only
+  portal-serve start [--config <path>] [--host <name>] [--remotes <name,...>]
+  portal-serve start --host-only
+  portal-serve stop [--config <path>]
 
-Configuration paths are relative to vuu-ui. Output directories are relative to the config file.`;
+Configuration paths are relative to the current working directory. Output directories are relative to the config file.`;
 
 const parseStartOptions = (args: string[]): StartOptions => {
   const options: StartOptions = {
@@ -597,9 +622,7 @@ const parseStartOptions = (args: string[]): StartOptions => {
     const value = args[index + 1];
     if (argument === "--help" || argument === "-h") {
       options.help = true;
-    } else if (
-      argument === "--host-only"
-    ) {
+    } else if (argument === "--host-only") {
       options.hostOnly = true;
     } else if (argument === "--config" || argument === "--host") {
       if (!value || value.startsWith("--")) {
@@ -637,6 +660,28 @@ const parseStartOptions = (args: string[]): StartOptions => {
   return options;
 };
 
+const parseStopConfigPath = (
+  args: string[],
+): { configPath: string; help: boolean } => {
+  let configPath = "portal-serve.config.json";
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index];
+    if (argument === "--help" || argument === "-h") {
+      return { configPath, help: true };
+    }
+    if (argument !== "--config") {
+      throw new Error(`Unknown portal:stop option: ${argument}`);
+    }
+    const value = args[index + 1];
+    if (!value || value.startsWith("--")) {
+      throw new Error("--config requires a value");
+    }
+    configPath = value;
+    index += 1;
+  }
+  return { configPath, help: false };
+};
+
 const [command, ...args] = process.argv.slice(2);
 try {
   if (command === "start") {
@@ -647,10 +692,14 @@ try {
       await start(startOptions);
     }
   } else if (command === "stop") {
-    if (args.length > 0) throw new Error("portal:stop does not accept options");
-    await stop();
+    const stopOptions = parseStopConfigPath(args);
+    if (stopOptions.help) {
+      console.log("Usage: portal-serve stop [--config <path>]");
+    } else {
+      await stop(stopOptions.configPath);
+    }
   } else {
-    throw new Error(`${usage}\n\nUsage: node scripts/portal-serve.ts <start|stop>`);
+    throw new Error(usage);
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));

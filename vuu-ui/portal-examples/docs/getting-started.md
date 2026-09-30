@@ -465,6 +465,11 @@ the local registry. In another terminal, run `npm run portal:stop` to stop
 those instances. Pressing Ctrl+C in the `portal:serve` terminal also stops
 them. Build the local artifacts first with `npm run build:mf:local`.
 
+The `@vuu-ui/portal-build` package provides the `portal-serve` executable
+and `portal:start`/`portal:stop` package scripts for other portal projects.
+See the [portal build tool guide](../../tools/portal-build-tool/README.md#serving-a-portal)
+for setup and configuration details.
+
 The default service list is in `vuu-ui/portal-serve.config.json`. To start the
 host with only selected remotes, pass their configured names:
 
