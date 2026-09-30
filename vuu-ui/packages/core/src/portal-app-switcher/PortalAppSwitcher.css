@@ -10,11 +10,13 @@
   &.vuuPortalAppSwitcher-dashboard {
     --dashboardNavItemIcon-size: var(--vuuDashboardNavIcon-size, 90px);
     --dashboardNavItem-size: calc(var(--dashboardNavItemIcon-size) + 40px);
+    --dashboardNavItem-height: var(--vuuDashboardNavItem-height, var(--dashboardNavItem-size));
+    --dashboardNavItem-width: var(--vuuDashboardNavItem-width, var(--dashboardNavItem-size));
     align-items: center;
     display: grid;
     gap: var(--salt-spacing-400);
-    grid-template-columns: repeat(auto-fit, var(--dashboardNavItem-size));
-    grid-auto-rows: var(--dashboardNavItem-size);
+    grid-template-columns: repeat(auto-fit, var(--dashboardNavItem-width));
+    grid-auto-rows: var(--dashboardNavItem-height);
     justify-content: center;
 
     .vuuDashboardNavItem {

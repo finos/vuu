@@ -8,7 +8,7 @@
     "nav content";
 
   height: 100vh;
-  padding: var(--salt-spacing-50);
+  padding: var(--vuuPortalShell-padding, var(--salt-spacing-50));
   width: 100vw;
 
   .vuuNavContainer {
