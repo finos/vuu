@@ -8,7 +8,7 @@ let identityTokenRefresh: Promise<string> | undefined;
 
 const getKeycloak = (authConfig: AuthConfig) => {
   if (!keycloak) {
-    const { authUrl: url, realm = 'vuu', clientId = 'vuu-portal' } = authConfig;
+    const { authUrl: url, realm = "vuu", clientId = "vuu-portal" } = authConfig;
     keycloak = new Keycloak({
       url,
       realm,
@@ -20,7 +20,7 @@ const getKeycloak = (authConfig: AuthConfig) => {
 };
 
 export class KeycloakAuthHandler implements AuthHandler {
-  constructor(private authConfig: AuthConfig) { }
+  constructor(private authConfig: AuthConfig) {}
 
   authenticate = async () => {
     const keycloak = getKeycloak(this.authConfig);
@@ -41,8 +41,8 @@ export class KeycloakAuthHandler implements AuthHandler {
     return {
       user: {
         userName,
-        first_name: given_name,
-        last_name: family_name,
+        firstName: given_name,
+        lastName: family_name,
         email,
       },
     };
