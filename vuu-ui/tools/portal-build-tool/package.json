@@ -12,7 +12,8 @@
     }
   },
   "bin": {
-    "portal-build": "./dist/cli.js"
+    "portal-build": "./dist/cli.js",
+    "portal-serve": "./dist/serve-cli.js"
   },
   "files": [
     "dist",
@@ -23,6 +24,8 @@
     "build": "tsc --project tsconfig.build.json && node ./scripts/set-cli-permissions.mjs",
     "prepare": "npm run build",
     "prepack": "npm run build",
+    "portal:start": "node ./dist/serve-cli.js start",
+    "portal:stop": "node ./dist/serve-cli.js stop",
     "test": "vitest run --root ../.. tools/portal-build-tool/test",
     "typecheck": "tsc --noEmit --project tsconfig.json"
   },
@@ -30,7 +33,8 @@
     "@module-federation/enhanced": "2.8.0",
     "@rsbuild/core": "^2.1.3",
     "@rsbuild/plugin-react": "^2.0.0",
-    "@rsdoctor/rspack-plugin": "^1.6.1"
+    "@rsdoctor/rspack-plugin": "^1.6.1",
+    "serve": "^14.2.4"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

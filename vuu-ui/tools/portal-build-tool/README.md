@@ -21,6 +21,62 @@ The config path is resolved from the current working directory. All paths in
 the config are resolved relative to the directory containing that config, so
 the package does not depend on a repository layout.
 
+## Serving a portal
+
+The package also provides a `portal-serve` executable and package scripts for
+starting and stopping a configured host with its remotes. From a consuming
+application's root, add `@vuu-ui/portal-build` as a dependency, place a
+`portal-serve.config.json` there, and run:
+
+```sh
+npm exec -- portal-serve start
+npm exec -- portal-serve stop
+```
+
+The package's own scripts are also available when running commands from the
+package directory or as an npm workspace:
+
+```sh
+npm run portal:start -- --config ../../portal-serve.config.json
+npm run portal:stop -- --config ../../portal-serve.config.json
+```
+
+`portal-serve start` starts the configured default host and all configured
+remotes. Select a different host and only the remotes needed for a session with
+`--host <name>` and `--remotes <name,...>`, or start only the host with
+`--host-only`. Both the start and stop commands accept `--config <path>`; the
+path is relative to the current working directory, and output `directory`
+values in that JSON file are relative to the file itself.
+
+```sh
+npm exec -- portal-serve start --config configs/portal-serve.json \
+  --host demo-host --remotes orders,risk
+npm exec -- portal-serve stop --config configs/portal-serve.json
+```
+
+The configuration contains a `defaultHost`, a `hosts` array, and a `remotes`
+array. Each entry has a unique `name`, a `port`, and a `directory`:
+
+```json
+{
+  "defaultHost": "portal-host",
+  "hosts": [
+    {
+      "name": "portal-host",
+      "port": 5001,
+      "directory": "dist/portal-host"
+    }
+  ],
+  "remotes": [
+    {
+      "name": "orders",
+      "port": 5002,
+      "directory": "dist/orders"
+    }
+  ]
+}
+```
+
 ## Building a complete portal
 
 Use a project-level `portal-build-all.json` when one command should build a

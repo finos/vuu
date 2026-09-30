@@ -28,6 +28,8 @@
     "prebuild:mf": "npm run build --workspace @vuu-ui/portal-build",
     "build:mf": "portal-build --all-config ./portal-build-all.json",
     "build:mf:local": "npm run build:mf -- --local",
+    "portal:serve": "npm exec --workspace @vuu-ui/portal-build -- portal-serve start --config ../../portal-serve.config.json",
+    "portal:stop": "npm exec --workspace @vuu-ui/portal-build -- portal-serve stop --config ../../portal-serve.config.json",
     "build:app": "node ./sample-apps/app-vuu-example/scripts/build.ts",
     "build:app:insecure": "npm run build:app -- --insecure",
     "build:table": "cd sample-apps/standalone-table && node scripts/build.mjs",

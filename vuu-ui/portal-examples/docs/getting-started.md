@@ -446,7 +446,7 @@ The current local example uses:
 
 | Port | Artifact |
 | --- | --- |
-| 5001 | portal host, with its package `start:local` script |
+| 5001 | portal host |
 | 5002 | module-admin |
 | 5003 | user-admin |
 | 5004 | vuu-table-browser |
@@ -454,19 +454,53 @@ The current local example uses:
 | 5006 | basket-trading |
 | 5007 | feature-simple-div |
 
-Start the local example in separate terminals:
+To start the complete local example from `vuu-ui`, run:
 
 ```sh
-npm --prefix portal-examples/module-admin run start
-npm --prefix portal-examples/user-admin run start
-npm --prefix portal-examples/vuu-table-browser run start
-npm --prefix portal-examples/vuu-table-viewer run start
-npm --prefix portal-examples/basket-trading run start
-npm --prefix portal-examples/feature-simple-div run start
-npm --prefix portal-examples/portal-host run start:local
+npm run portal:serve
 ```
 
-Then open `http://localhost:5001`.
+This command stays in the foreground and starts the host plus the remotes in
+the local registry. In another terminal, run `npm run portal:stop` to stop
+those instances. Pressing Ctrl+C in the `portal:serve` terminal also stops
+them. Build the local artifacts first with `npm run build:mf:local`.
+
+The `@vuu-ui/portal-build` package provides the `portal-serve` executable
+and `portal:start`/`portal:stop` package scripts for other portal projects.
+See the [portal build tool guide](../../tools/portal-build-tool/README.md#serving-a-portal)
+for setup and configuration details.
+
+The default service list is in `vuu-ui/portal-serve.config.json`. To start the
+host with only selected remotes, pass their configured names:
+
+```sh
+npm run portal:serve -- --remotes module-admin,basket-trading
+```
+
+Start just the configured host with:
+
+```sh
+npm run portal:serve -- --host-only
+```
+
+For another portal setup, provide a config file and select a host and remotes:
+
+```sh
+npm run portal:serve -- --config configs/another-portal.json --host demo-host --remotes orders,risk
+```
+
+Each config lists `defaultHost`, `hosts`, and `remotes`; every host/remote entry
+has a unique `name`, `port`, and `directory`. Directories are resolved relative
+to the config file. Add or change entries in `portal-serve.config.json` to
+configure this example, or pass another config to launch a different portal.
+The selected output directories must contain the built `index.html` and
+`serve.json`. After starting the default setup, open `http://localhost:5001`.
+
+Each artifact's `public/serve.json` is copied into its `dist_portal` folder
+during the build. It configures SPA fallback for root and nested routes; the
+remote artifacts also set a development CORS header so the host can load their
+federation manifests and chunks. These settings only affect the local Vercel
+`serve` example.
 
 When using nginx, map its host listener to `dist_portal/portal-host` and map
 each remote origin to its corresponding `dist_portal/<package>` directory. The
@@ -477,7 +511,7 @@ Use unique ports and keep these values aligned:
 
 - producer `vuu.module-federation.port`;
 - producer `output.publicPath`;
-- package start script;
+- portal serve configuration;
 - local registry `mfUrl`; and
 - nginx/development-server mapping.
 
