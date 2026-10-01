@@ -67,10 +67,22 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   (Object.getPrototypeOf(value) === Object.prototype ||
     Object.getPrototypeOf(value) === null);
 
+const isArrayIndex = (key: PropertyKey, length: number): key is string => {
+  if (typeof key !== "string" || key === "") return false;
+  const index = Number(key);
+  return (
+    Number.isInteger(index) &&
+    index >= 0 &&
+    index < length &&
+    String(index) === key
+  );
+};
+
 /**
  * Returns a description of the first non-JSON part of value, or undefined if
  * value is a JSON value. Rejects undefined, functions, symbols, bigints,
- * non-finite numbers, class instances and cycles.
+ * non-finite numbers, class instances, cycles, and properties JSON would
+ * silently omit.
  */
 export const findNonJsonValue = (
   value: unknown,
@@ -91,8 +103,27 @@ export const findNonJsonValue = (
       seen.add(value);
       try {
         if (Array.isArray(value)) {
+          if (Object.getPrototypeOf(value) !== Array.prototype) {
+            return `${path} is not a plain array`;
+          }
+          for (const key of Reflect.ownKeys(value)) {
+            if (key === "length") continue;
+            if (!isArrayIndex(key, value.length)) {
+              return `${path} has a non-JSON property`;
+            }
+            const descriptor = Object.getOwnPropertyDescriptor(value, key);
+            if (!descriptor?.enumerable || !("value" in descriptor)) {
+              return `${path}[${key}] is not a JSON value`;
+            }
+          }
           for (let i = 0; i < value.length; i++) {
-            const problem = findNonJsonValue(value[i], `${path}[${i}]`, seen);
+            const descriptor = Object.getOwnPropertyDescriptor(value, `${i}`);
+            if (!descriptor) return `${path}[${i}] is missing`;
+            const problem = findNonJsonValue(
+              descriptor.value,
+              `${path}[${i}]`,
+              seen,
+            );
             if (problem) return problem;
           }
           return undefined;
@@ -100,8 +131,19 @@ export const findNonJsonValue = (
         if (!isPlainObject(value)) {
           return `${path} is not a plain object`;
         }
-        for (const [key, child] of Object.entries(value)) {
-          const problem = findNonJsonValue(child, `${path}.${key}`, seen);
+        for (const key of Reflect.ownKeys(value)) {
+          if (typeof key !== "string") {
+            return `${path} has a symbol key`;
+          }
+          const descriptor = Object.getOwnPropertyDescriptor(value, key);
+          if (!descriptor?.enumerable || !("value" in descriptor)) {
+            return `${path}.${key} is not a JSON property`;
+          }
+          const problem = findNonJsonValue(
+            descriptor.value,
+            `${path}.${key}`,
+            seen,
+          );
           if (problem) return problem;
         }
         return undefined;

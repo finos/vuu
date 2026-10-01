@@ -113,12 +113,30 @@ describe("JSON value helpers", () => {
   it("finds values that aren't JSON", () => {
     const cycle: Record<string, unknown> = {};
     cycle.self = cycle;
+    const sparseArray = new Array(1);
+    const arrayWithExtraProperty = Object.assign([1], { extra: 2 });
+    const objectWithSymbolKey = { a: 1, [Symbol("extra")]: 2 };
+    const objectWithHiddenProperty = { a: 1 };
+    Object.defineProperty(objectWithHiddenProperty, "hidden", { value: 2 });
+    const objectWithGetter = Object.defineProperty({}, "a", {
+      enumerable: true,
+      get: () => 1,
+    });
+
     expect(findNonJsonValue({ a: [1, "x", null, true] })).toBeUndefined();
+    expect(
+      findNonJsonValue(Object.freeze({ a: Object.freeze([1]) })),
+    ).toBeUndefined();
     expect(findNonJsonValue(undefined)).toBeDefined();
     expect(findNonJsonValue({ a: () => 1 })).toBeDefined();
     expect(findNonJsonValue({ a: new Date() })).toBeDefined();
     expect(findNonJsonValue({ a: Number.NaN })).toBeDefined();
     expect(findNonJsonValue(cycle)).toBeDefined();
+    expect(findNonJsonValue(sparseArray)).toBeDefined();
+    expect(findNonJsonValue(arrayWithExtraProperty)).toBeDefined();
+    expect(findNonJsonValue(objectWithSymbolKey)).toBeDefined();
+    expect(findNonJsonValue(objectWithHiddenProperty)).toBeDefined();
+    expect(findNonJsonValue(objectWithGetter)).toBeDefined();
   });
 
   it("compares, clones and freezes", () => {

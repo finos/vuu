@@ -89,6 +89,10 @@ describe("PortalPersistenceService", () => {
       const store = await readyStore(createService().getStore("orders", 1));
       expect(() => store.set("x", (() => 1) as never)).toThrow(TypeError);
       expect(() => store.set("x", undefined as never)).toThrow(TypeError);
+      expect(() => store.set("x", new Date() as never)).toThrow(/not JSON/);
+      expect(() =>
+        store.set("x", Object.assign([1], { extra: 2 }) as never),
+      ).toThrow(/not JSON/);
       expect(() => store.set("", 1)).toThrow(TypeError);
       expect(() => store.set("k".repeat(257), 1)).toThrow(TypeError);
     });
