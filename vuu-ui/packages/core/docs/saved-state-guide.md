@@ -18,45 +18,57 @@ covers what a remote author needs.
 
 - The portal gives each application its own store. It's scoped to the
   signed-in user, the application key and the application version.
-- Read and write named JSON values with `usePersistentState`, or with the
-  store from `useApplicationState`.
-- Values are available synchronously on first render. Writes are saved
-  shortly after they're made.
+- Load and save named JSON values with the `{ load, save }` pair from
+  `usePersistedState`. It's already scoped to your application.
+- `load` is synchronous: saved state has loaded before your application
+  renders. `save` is fire and forget: it's written shortly afterwards, and
+  never causes a render.
+- Your component owns its state. Saving is an after-effect of a change of
+  state, not a way to change it.
 - Give each value a `label` and `group`, so users can recognise it in the
   Saved state dialog.
 - When a release changes the shape or meaning of saved values, bump the
   descriptor `version` and export `stateMigrations`.
-- Outside a portal, the hooks fall back to ordinary component state.
+- Outside a portal, `load` returns `undefined` and `save` does nothing.
 
 Everything below is exported from `@vuu-ui/core/portal`.
 
 ## Saving a value
 
-`usePersistentState` works like `useState`, but the value is saved:
+`usePersistedState` returns a `load`/`save` pair, like the one `useViewContext`
+offers in `vuu-layout`. Keep state in your component as usual; initialise it
+with `load` and call `save` when it changes:
 
 ```tsx
-import { usePersistentState } from "@vuu-ui/core/portal";
+import { usePersistedState } from "@vuu-ui/core/portal";
+
+const SORT_KEY = "table/sort";
 
 export const Orders = () => {
-  const [sort, setSort] = usePersistentState<SortDef>("table/sort", NO_SORT, {
-    label: "Sort order",
-    group: "Table",
-  });
-  const [count, setCount] = usePersistentState("demo/count", 0);
-
-  return (
-    <>
-      <OrdersTable sort={sort} onSortChange={setSort} />
-      <Button onClick={() => setCount((value) => value + 1)}>{count}</Button>
-    </>
+  const { load, save } = usePersistedState();
+  const [sort, setSort] = useState<SortDef>(
+    () => load<SortDef>(SORT_KEY) ?? NO_SORT,
   );
+
+  const handleSortChange = (nextSort: SortDef) => {
+    setSort(nextSort);
+    save(nextSort, SORT_KEY, { label: "Sort order", group: "Table" });
+  };
+
+  return <OrdersTable sort={sort} onSortChange={handleSortChange} />;
 };
 ```
 
-- It returns `defaultValue` when nothing is saved for the key. When the user
-  clears the key, it goes back to `defaultValue`, and the component re-renders.
-- As with `useState`, a literal default is widened: `usePersistentState("n", 0)`
-  gives a `number`.
+| Member | Use |
+| ------ | --- |
+| `load<T>(key)` | The value saved under `key`, or `undefined`. |
+| `save(state, key, { label?, group? }?)` | Save `state` under `key`. Asynchronous and debounced; it doesn't render anything. |
+
+- `load` and `save` are stable for the life of the application, so they're
+  safe in dependency arrays.
+- `save` doesn't notify your component. Neither do changes made elsewhere,
+  such as clearing from the Saved state dialog (see
+  [Reacting to Clear](#reacting-to-clear)).
 - Values must be JSON: `null`, booleans, numbers, strings, arrays and plain
   objects. `Date`s, functions, `undefined`, class instances and cycles are
   rejected. In development they throw; in production they're logged and
@@ -84,7 +96,7 @@ clear. Without metadata, a value appears under its key, such as
 `filters/active`. Give it a label (and, optionally, a group) instead:
 
 ```ts
-usePersistentState("filters/active", "", {
+save(filter, "filters/active", {
   label: "Active filter",
   group: "Filters",
 });
@@ -95,8 +107,8 @@ filters", "Split position". Use sentence case and no trailing punctuation.
 
 ## Using the store directly
 
-For more than one value, or when a value isn't tied to a single component,
-use the store:
+`load` and `save` are enough for most applications. For more control, such as
+removing values or reacting to changes made elsewhere, use the store:
 
 ```ts
 import { useApplicationState } from "@vuu-ui/core/portal";
@@ -145,10 +157,10 @@ state.
 When the user clears saved state from the dialog, open applications are told
 straight away:
 
-- `usePersistentState` values go back to their defaults, so the application
-  returns to its default view without a reload.
-- If you read the store directly, subscribe to it and reset when your keys
-  are cleared.
+- `load` returns `undefined` for cleared keys from then on, but components
+  aren't re-rendered: state already loaded stays as it is.
+- To return to the default view straight away, use the store directly,
+  subscribe to it and reset when your keys are cleared.
 - If an open application doesn't subscribe, the dialog's success toast offers
   **Reload**.
 
@@ -190,7 +202,7 @@ applicationKey = descriptor.persistenceKey ?? descriptor.clientIdentifier
   re-registered under a new `clientIdentifier`. It must be unique across the
   registry.
 - A descriptor with neither, or without an integer `version`, gets no store.
-  `usePersistentState` then behaves like `useState`.
+  `load` then returns `undefined` and `save` does nothing.
 - The same remote registered twice, for example with different
   `ComponentProps`, gets two independent documents.
 
@@ -369,8 +381,9 @@ A component used by many applications mustn't assume a fixed key:
 
 ## Running outside a portal and in tests
 
-- Standalone, and in tests without a portal, `usePersistentState` is ordinary
-  component state and `useOptionalApplicationState()` returns `undefined`.
+- Standalone, and in tests without a portal, `usePersistedState().load`
+  returns `undefined`, `save` does nothing, and
+  `useOptionalApplicationState()` returns `undefined`.
 - To test with saved state, provide a store from an in-memory service:
 
 ```tsx
@@ -420,5 +433,5 @@ props, so a module opened in its own window uses the same saved state.
   Log out saves pending changes before signing the user out. Extra menu items
   go in its `userMenuItems` prop.
 - `portal-examples/portal-host` registers a **Saved state demo** module
-  (`feature-simple-div`) that uses `usePersistentState` and exports
+  (`feature-simple-div`) that uses `usePersistedState` and exports
   `stateMigrations`.

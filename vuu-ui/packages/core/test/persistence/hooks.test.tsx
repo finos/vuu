@@ -10,11 +10,10 @@ import {
   createPortalPersistenceService,
   useApplicationState,
   useOptionalApplicationState,
-  usePersistentState,
+  type PersistedStateAPI,
+  usePersistedState,
   usePortalPersistence,
 } from "../../src/persistence";
-
-type Setter = (value: number | ((previous: number) => number)) => void;
 
 describe("persistence hooks", () => {
   let container: HTMLDivElement;
@@ -44,85 +43,82 @@ describe("persistence hooks", () => {
     vi.restoreAllMocks();
   });
 
-  let setCount: Setter;
-  const Counter = () => {
-    const [count, set] = usePersistentState("count", 0, {
-      label: "Count",
-      group: "Demo",
-    });
-    setCount = set;
-    return <span data-testid="count">{count}</span>;
+  let api: PersistedStateAPI;
+  let renders = 0;
+  const Probe = () => {
+    renders += 1;
+    api = usePersistedState();
+    return null;
   };
-  const text = () =>
-    container.querySelector("[data-testid=count]")?.textContent;
 
-  it("reads and writes through the application's store", () => {
+  it("loads and saves through the application's store", async () => {
+    store.set("count", 3);
     act(() =>
       root.render(
         <ApplicationStateProvider store={store}>
-          <Counter />
+          <Probe />
         </ApplicationStateProvider>,
       ),
     );
-    expect(text()).toBe("0");
-    act(() => setCount(5));
-    expect(text()).toBe("5");
+    expect(api.load("count")).toBe(3);
+    expect(api.load("missing")).toBeUndefined();
+    act(() => api.save(5, "count", { label: "Count", group: "Demo" }));
     expect(store.get("count")).toBe(5);
-    act(() => setCount((n) => n + 1));
-    expect(store.get("count")).toBe(6);
-  });
-
-  it("declares metadata on mount", async () => {
-    act(() =>
-      root.render(
-        <ApplicationStateProvider store={store}>
-          <Counter />
-        </ApplicationStateProvider>,
-      ),
-    );
-    act(() => setCount(1));
+    expect(api.load("count")).toBe(5);
     await store.flush();
     const [summary] = await service.list();
     expect(summary.entries[0]).toMatchObject({ label: "Count", group: "Demo" });
   });
 
-  it("reflects changes made elsewhere, and reverts to the default when cleared", async () => {
+  it("does not render when state is saved or changed elsewhere", () => {
+    renders = 0;
     act(() =>
       root.render(
         <ApplicationStateProvider store={store}>
-          <Counter />
+          <Probe />
         </ApplicationStateProvider>,
       ),
     );
-    act(() => store.set("count", 9));
-    expect(text()).toBe("9");
-    await act(async () => {
-      await service.clear([
-        { applicationKey: "orders", applicationVersion: 1 },
-      ]);
-    });
-    expect(text()).toBe("0");
+    const first = api;
+    const rendersBefore = renders;
+    act(() => api.save(1, "count"));
+    act(() => store.set("count", 2));
+    expect(renders).toBe(rendersBefore);
+    expect(api).toBe(first);
   });
 
-  it("falls back to plain state outside a portal", () => {
-    act(() => root.render(<Counter />));
-    expect(text()).toBe("0");
-    act(() => setCount(3));
-    expect(text()).toBe("3");
+  it("waits for the store to load before rendering", async () => {
+    const loading = service.getStore("orders", 2);
+    expect(loading.status).toBe("loading");
+    await act(async () =>
+      root.render(
+        <ApplicationStateProvider store={loading}>
+          <Probe />
+        </ApplicationStateProvider>,
+      ),
+    );
+    expect(loading.status).toBe("ready");
+    expect(api.load("count")).toBeUndefined();
   });
 
-  it("falls back to plain state when the provider has no store", () => {
+  it("does nothing outside a portal", () => {
+    act(() => root.render(<Probe />));
+    expect(api.load("count")).toBeUndefined();
+    expect(() => api.save(3, "count")).not.toThrow();
+  });
+
+  it("does nothing when the provider has no store", () => {
     act(() =>
       root.render(
         <ApplicationStateProvider store={store}>
           <ApplicationStateProvider store={undefined}>
-            <Counter />
+            <Probe />
           </ApplicationStateProvider>
         </ApplicationStateProvider>,
       ),
     );
-    act(() => setCount(3));
-    expect(text()).toBe("3");
+    act(() => api.save(3, "count"));
+    expect(api.load("count")).toBeUndefined();
     expect(store.get("count")).toBeUndefined();
   });
 

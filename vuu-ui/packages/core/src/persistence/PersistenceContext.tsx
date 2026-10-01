@@ -1,16 +1,8 @@
-import {
-  type ReactNode,
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { type ReactNode, createContext, useContext, useMemo } from "react";
 import type { ApplicationStateStore } from "./ApplicationStateStore";
 import type { PortalPersistenceService } from "./PortalPersistenceService";
 import type { EntryMetadata, JsonValue } from "./StateDocument";
+import { useStoreReady } from "./useStoreReady";
 
 const PortalPersistenceContext = createContext<
   PortalPersistenceService | undefined
@@ -84,72 +76,43 @@ export function useOptionalApplicationState():
   return useContext(ApplicationStateContext) ?? undefined;
 }
 
-type SetPersistentState<T> = (value: T | ((previous: T) => T)) => void;
+export interface PersistedStateAPI {
+  /**
+   * Returns the value saved under `key`, or undefined if nothing is saved.
+   * Synchronous: saved state has been loaded before the module renders.
+   */
+  load: <T extends JsonValue = JsonValue>(key: string) => T | undefined;
+  /**
+   * Saves `state` under `key`. Fire and forget: the write is debounced and
+   * asynchronous, and does not cause a render.
+   */
+  save: (state: JsonValue, key: string, metadata?: EntryMetadata) => void;
+}
 
-const noopSubscribe = () => () => undefined;
+const NO_PERSISTED_STATE: PersistedStateAPI = {
+  load: () => undefined,
+  save: () => undefined,
+};
+
+const createPersistedStateAPI = (
+  store: ApplicationStateStore,
+): PersistedStateAPI => ({
+  load: (key) => store.get(key),
+  save: (state, key, metadata) => store.set(key, state, metadata),
+});
 
 /**
- * useState-like hook backed by the store. Returns defaultValue when there is
- * no saved value, and reverts to defaultValue when the key is cleared. Outside
- * a portal it behaves like useState (FR-17).
- *
- * `T` is unconstrained so that, like useState, a literal default is widened
- * (`usePersistentState("count", 0)` is a number); `& JsonValue` still rejects
- * values that aren't JSON.
+ * load/save for the saved state of the enclosing remote module (provided by
+ * RemoteModule) or, in the portal's own components, the portal (provided by
+ * PortalShell). Calls to save do not trigger a render; saving is an
+ * after-effect of a change of state the component already manages itself.
+ * Outside a portal, load returns undefined and save does nothing.
  */
-export function usePersistentState<T>(
-  key: string,
-  defaultValue: T & JsonValue,
-  metadata?: EntryMetadata,
-): [T, SetPersistentState<T>] {
+export function usePersistedState(): PersistedStateAPI {
   const store = useOptionalApplicationState();
-  const defaultRef = useRef(defaultValue);
-  defaultRef.current = defaultValue;
-  const [localValue, setLocalValue] = useState<T>(defaultValue);
-
-  const subscribe = useCallback(
-    (onChange: () => void) =>
-      store
-        ? store.subscribe((event) => {
-            if (event.keys.length === 0 || event.keys.includes(key)) {
-              onChange();
-            }
-          })
-        : noopSubscribe(),
-    [key, store],
+  useStoreReady(store);
+  return useMemo(
+    () => (store ? createPersistedStateAPI(store) : NO_PERSISTED_STATE),
+    [store],
   );
-  const getSnapshot = useCallback(
-    () => (store ? store.get<T & JsonValue>(key) : undefined),
-    [key, store],
-  );
-  const storedValue = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-
-  const label = metadata?.label;
-  const group = metadata?.group;
-  useEffect(() => {
-    if (store && (label !== undefined || group !== undefined)) {
-      store.describe(key, { label, group });
-    }
-  }, [group, key, label, store]);
-
-  const setValue = useCallback<SetPersistentState<T>>(
-    (value) => {
-      if (!store) {
-        setLocalValue(value);
-        return;
-      }
-      const previous = store.get<T & JsonValue>(key) ?? defaultRef.current;
-      const next =
-        typeof value === "function"
-          ? (value as (previous: T) => T)(previous)
-          : value;
-      store.set(key, next as T & JsonValue, { label, group });
-    },
-    [group, key, label, store],
-  );
-
-  if (!store) {
-    return [localValue, setValue];
-  }
-  return [storedValue ?? defaultValue, setValue];
 }

@@ -6,12 +6,13 @@ import {
   loadRemote,
   registerRemotes,
 } from "@module-federation/enhanced/runtime";
-import React, { Suspense, lazy, use, useEffect, useMemo } from "react";
+import React, { Suspense, lazy, useEffect, useMemo } from "react";
 import {
   ApplicationStateProvider,
   useOptionalPortalPersistence,
 } from "../persistence/PersistenceContext";
 import type { StateMigration } from "../persistence/StateMigrations";
+import { useStoreReady } from "../persistence/useStoreReady";
 import { useOptionalSavedState } from "../saved-state/SavedStateContext";
 import { useInRouterContext, useLocation } from "react-router-dom";
 import { RemoteModuleErrorBoundary } from "./RemoteModuleErrorBoundary";
@@ -116,11 +117,6 @@ const forgetRemote = (mfUrl: string, mfScope: string, mfComponent: string) => {
   remoteExports.delete(key);
 };
 
-const READY = Object.assign(Promise.resolve(), {
-  status: "fulfilled",
-  value: undefined,
-});
-
 const toStateMigrations = (exports: RemoteExports) =>
   Array.isArray(exports.stateMigrations) ? exports.stateMigrations : [];
 
@@ -190,9 +186,7 @@ const useRemoteModuleState = ({
     }
   }, [reportCarryForward, service, store]);
 
-  // `use` must be called on every render; a thenable already marked as
-  // fulfilled doesn't suspend.
-  use(store?.status === "loading" ? store.ready : READY);
+  useStoreReady(store);
   return store;
 };
 

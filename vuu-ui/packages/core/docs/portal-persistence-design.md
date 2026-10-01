@@ -130,7 +130,7 @@ never be confused in code, documentation or the UI.
 | | **Saved state** (this design) | **Settings** (future) |
 | - | - | - |
 | What it is | How the user left an application, captured **automatically** as they work: filters, named filters, sort order, column layout, grouping, selected tab, panel sizes. | Choices the user makes **deliberately** in a portal-managed Settings dialog: theme (light/dark), density, number and date formatting, and application-specific settings. |
-| Who writes it | The application, via `ApplicationStateStore` / `usePersistentState`. | The user, via the Settings dialog. |
+| Who writes it | The application, via `usePersistedState` (`load`/`save`) or `ApplicationStateStore`. | The user, via the Settings dialog. |
 | Scope | Per user, application and application version. | Portal-wide, or per application. |
 | When it's lost | When the user clears it, or when the application version changes. | Only when the user changes it. |
 | User-facing UI | **Saved state** dialog: review and clear only. | **Settings** dialog: view and edit, using the Salt Preferences dialog pattern. |
@@ -502,7 +502,7 @@ other.
 ```mermaid
 flowchart LR
   subgraph Remote module
-    H[usePersistentState / useApplicationState]
+    H[usePersistedState / useApplicationState]
   end
   subgraph "@vuu-ui/core/portal"
     C[ApplicationStateContext]
@@ -643,24 +643,34 @@ export function useApplicationState(): ApplicationStateStore;
 /** Same, but returns undefined when not hosted by a portal (standalone apps, tests). */
 export function useOptionalApplicationState(): ApplicationStateStore | undefined;
 
+export interface PersistedStateAPI {
+  /** The saved value, or undefined. Synchronous: state loads before render. */
+  load<T extends JsonValue = JsonValue>(key: string): T | undefined;
+  /** Fire and forget: debounced, asynchronous, and never causes a render. */
+  save(state: JsonValue, key: string, metadata?: EntryMetadata): void;
+}
+
 /**
- * useState-like hook backed by the store. Returns defaultValue when there is
- * no saved value, and reverts to defaultValue when the key is cleared.
+ * load/save pre-scoped to the enclosing application's store: provided by
+ * RemoteModule for a remote, and by PortalShell for the portal's own
+ * components. Outside a portal, load returns undefined and save is a no-op.
  */
-export function usePersistentState<T>(
-  key: string,
-  defaultValue: T & JsonValue,
-  metadata?: EntryMetadata,
-): [T, (value: T | ((previous: T) => T)) => void];
+export function usePersistedState(): PersistedStateAPI;
 ```
+
+The API mirrors `load`/`save` on `useViewContext` in `vuu-layout`. It is
+deliberately not `useState`-like: the component owns its state, and saving is
+an after-effect of a change of state rather than a way to make one.
 
 Example:
 
 ```tsx
-const [sort, setSort] = usePersistentState<SortDef>("table/sort", NO_SORT, {
-  label: "Sort order",
-  group: "Table",
-});
+const { load, save } = usePersistedState();
+const [sort, setSort] = useState(() => load<SortDef>("table/sort") ?? NO_SORT);
+const handleSortChange = (nextSort: SortDef) => {
+  setSort(nextSort);
+  save(nextSort, "table/sort", { label: "Sort order", group: "Table" });
+};
 ```
 
 ### 6.5 Shell-level service API
@@ -845,11 +855,11 @@ the default and documents how to switch to the remote backend via
 | FR-10 | On save conflict, the service reloads the document and re-applies only the locally changed keys (key-level last-writer-wins), then retries once. |
 | FR-11 | Changes from other tabs/windows (backend `subscribe`) update cached documents and notify subscribers with reason `external`. |
 | FR-12 | `clear` removes selected keys, or whole documents, across any set of applications and versions in one operation, returning per-document success/failure. |
-| FR-13 | Clearing cancels pending writes for the cleared keys and notifies running applications with reason `clear`; `usePersistentState` reverts to its default. |
+| FR-13 | Clearing cancels pending writes for the cleared keys and notifies running applications (store subscribers) with reason `clear`. `usePersistedState` does not re-render; `load` returns `undefined` for cleared keys. |
 | FR-14 | Clearing every key in a document deletes the document rather than saving an empty one. |
 | FR-15 | Logout flushes pending writes, then disposes the service. A different user logging in on the same browser never sees the previous user's data. |
 | FR-16 | The portal shell's own state (e.g. nav expanded, app switcher mode) uses the reserved `vuu.portal` application key and appears in the Saved state UI as "Portal". |
-| FR-17 | Hooks work outside a portal (`useOptionalApplicationState`, and `usePersistentState` falls back to plain state) so remotes remain usable standalone and in tests. |
+| FR-17 | Hooks work outside a portal (`useOptionalApplicationState` returns undefined; `usePersistedState` loads nothing and saves nothing) so remotes remain usable standalone and in tests. |
 | FR-18 | On first load of a new version, the service copies the latest earlier document and runs the application's `stateMigrations` for each intervening version, in order, once, before the application renders (§5.4.3). |
 | FR-19 | An error inside `update` rejects only that entry. Any other migration error aborts the carry-forward, so the version starts empty; the previous document is never modified (§5.4.4). |
 | FR-20 | Rejected entries are removed from the new version's document and recorded in `notCarriedForward`; the previous version's document is unchanged (§5.4.5). |
@@ -1262,11 +1272,11 @@ this section describes the code.
   (in every build, not only development). `update`'s callback receives the
   entry helper as its second argument; `reject` is on that helper, not on
   `MigratableState`.
-- **`usePersistentState` signature (§6.4).** It's
-  `usePersistentState<T>(key, defaultValue: T & JsonValue, metadata?)`. With
-  `T extends JsonValue`, TypeScript inferred literal types
-  (`usePersistentState("count", 0)` was typed `0`). The intersection widens
-  literals like `useState` does, and still rejects non-JSON values.
+- **`usePersistedState` (§6.4).** Replaces the earlier `useState`-like
+  `usePersistentState(key, defaultValue)`. It returns a `{ load, save }` pair
+  that doesn't subscribe to the store, so saving never triggers a render.
+  `PortalShell` renders its children once the portal's own store has loaded,
+  and `RemoteModule` once the module's store has, so `load` is synchronous.
 - **Sizes** are UTF-16 bytes (string length × 2), matching localStorage's
   quota, for every backend.
 
@@ -1295,14 +1305,15 @@ this section describes the code.
   unmount/remount doesn't dispose a service that's still in use.
 - **Logout.** `PortalUserMenu`'s **Log out** uses `usePortalLogout`, which
   flushes and disposes the service before logging out (FR-15).
-- **Portal state.** The portal's own store (`vuu.portal`, version 1) isn't
-  ready-gated: nothing waits for it. Navigation group expansion is saved there
-  under `nav/expanded`, and applied when it has loaded.
+- **Portal state.** The portal's own store (`vuu.portal`, version 1) is
+  ready-gated below `PortalPersistenceRoot`'s service, inside a `Suspense`
+  boundary, so the service survives while it loads. Navigation group
+  expansion is loaded from there under `nav/expanded` on first render.
 - **Store provisioning.** `RemoteModule` creates a store only when it has an
   application key (`persistenceKey ?? clientIdentifier`) and an integer
   `version`. Otherwise it provides no store, so the portal's own store is
-  never visible to a remote (FR-3), and `usePersistentState` behaves like
-  `useState`. The remote's exposed module is loaded once, for both its default
+  never visible to a remote (FR-3), and `usePersistedState` loads and saves
+  nothing. The remote's exposed module is loaded once, for both its default
   export and its `stateMigrations` export.
 - **`Suspense` boundary.** §6.2 assumed an existing `Suspense` boundary. There
   wasn't one below the router, so a suspending module suspended the whole
@@ -1397,5 +1408,5 @@ this section describes the code.
   migrations, is [saved-state-guide.md](./saved-state-guide.md).
   `remote-module-template` contains only an HTML page, so it has no example to
   update. `portal-examples/feature-simple-div` is the example instead: it uses
-  `usePersistentState`, exports `stateMigrations`, and is registered in
+  `usePersistedState`, exports `stateMigrations`, and is registered in
   `portal-host` as **Saved state demo**.
