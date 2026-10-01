@@ -66,12 +66,9 @@ pending saved state before signing the user out.
 ## WindowHost and module launch menus
 
 `PortalAppSwitcher` module links provide **Open in new Tab** and **Open in new
-Window** via right-click, the context-menu key, or Shift+F10. Inside a shell,
-links to modules with an application key (see
-[Saved state](#saved-state)) also offer **Saved state…**, which opens the
-Saved state dialog scoped to that module. Navigation groups retain their normal
-expand/collapse behavior. Opening a module leaves the current portal route
-unchanged.
+Window** via right-click, the context-menu key, or Shift+F10. Navigation groups
+retain their normal expand/collapse behavior. Opening a module leaves the
+current portal route unchanged.
 
 `PortalShell` mounts `WindowHost` at `WINDOW_HOST_ROUTE`
 (`/window/:moduleId/*`) for both authenticated and local bootstraps. It forwards
