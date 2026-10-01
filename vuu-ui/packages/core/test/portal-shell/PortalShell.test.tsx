@@ -463,7 +463,7 @@ describe("Portal and window shells", () => {
     expect(container.textContent).toContain("Module details");
   });
 
-  it("forwards data-source provider updates to window routes without portal chrome", async () => {
+  it("forwards shared shell configuration to window routes without portal chrome", async () => {
     const LocalDataSourceProvider = ({ children }: { children: ReactNode }) => (
       <div data-provider="local">{children}</div>
     );
@@ -472,9 +472,13 @@ describe("Portal and window shells", () => {
       root.render(
         <AuthenticationProvider mode="local" registry={{ modules }}>
           <PortalShell
+            accent="teal"
+            corner="sharp"
             DataSourceProvider={LocalDataSourceProvider}
+            density="low"
             mode="dark"
             remoteModules={modules}
+            theme="salt-theme"
             title="Portal"
           />
         </AuthenticationProvider>,
@@ -489,9 +493,15 @@ describe("Portal and window shells", () => {
     );
     expect(container.querySelector(".vuuPortalShell")).toBeNull();
     expect(container.querySelector("[data-portal-nav]")).toBeNull();
-    expect(
-      container.querySelector("[data-mode]")?.getAttribute("data-mode"),
-    ).toBe("light");
+    expect(container.querySelector("[data-accent]")).toMatchObject({
+      dataset: {
+        accent: "teal",
+        corner: "sharp",
+        density: "low",
+        mode: "dark",
+        theme: "salt-theme",
+      },
+    });
   });
 
   it("resolves a window module from the current registry, ignoring URL descriptors", async () => {
