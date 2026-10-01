@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/portal-build",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Reusable Rsbuild and Module Federation build tool for portal applications",
   "type": "module",
   "main": "./dist/index.js",
