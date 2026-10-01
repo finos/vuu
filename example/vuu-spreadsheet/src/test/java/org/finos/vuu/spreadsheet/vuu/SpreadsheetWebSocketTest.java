@@ -17,6 +17,7 @@ import org.finos.vuu.net.TableRowUpdates;
 import org.finos.vuu.net.ViewServerMessage;
 import org.finos.vuu.net.row.RowUpdate;
 import org.finos.vuu.net.row.RowUpdateType;
+import org.finos.vuu.net.row.RowUpdateType$;
 import org.finos.vuu.net.rpc.RpcErrorResult;
 import org.finos.vuu.net.rpc.RpcSuccessResult;
 import org.finos.vuu.net.rpc.ViewPortContext;
@@ -202,7 +203,7 @@ class SpreadsheetWebSocketTest {
                 .orElseThrow(() -> new AssertionError("Connection closed"));
         if (msg.body() instanceof TableRowUpdates updates) {
             Arrays.stream(updates.rows())
-                    .filter(u -> u.updateType().equals(RowUpdateType.UPDATE()))
+                    .filter(u -> u.updateType().equals(RowUpdateType$.MODULE$.UPDATE()))
                     .forEach(this::applyRowUpdate);
         }
         return msg;

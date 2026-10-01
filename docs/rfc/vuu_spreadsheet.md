@@ -1,4 +1,4 @@
-# `example/vuu-spreadsheet`: An Excel-like Calculation Engine Driven by Vuu Tables
+# `Vuu-spreadsheet`: An Excel-like Calculation Engine Driven by Vuu Tables
 
 **Status: Implemented (server side).** `example/vuu-spreadsheet` exists as designed below. All
 150 tests pass: engine unit tests, a randomized test against a naive oracle, and an end-to-end
