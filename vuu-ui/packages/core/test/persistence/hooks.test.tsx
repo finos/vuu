@@ -70,6 +70,25 @@ describe("persistence hooks", () => {
     expect(summary.entries[0]).toMatchObject({ label: "Count", group: "Demo" });
   });
 
+  it("loads the whole saved state when no key is given", () => {
+    act(() =>
+      root.render(
+        <ApplicationStateProvider store={store}>
+          <Probe />
+        </ApplicationStateProvider>,
+      ),
+    );
+    expect(api.load()).toBeUndefined();
+    act(() => {
+      api.save(1, "count");
+      api.save(["a"], "filters/named");
+    });
+    expect(api.load()).toEqual({ count: 1, "filters/named": ["a"] });
+    expect(
+      api.load<{ count: number; "filters/named": string[] }>()?.count,
+    ).toBe(1);
+  });
+
   it("does not render when state is saved or changed elsewhere", () => {
     renders = 0;
     act(() =>
@@ -104,6 +123,7 @@ describe("persistence hooks", () => {
   it("does nothing outside a portal", () => {
     act(() => root.render(<Probe />));
     expect(api.load("count")).toBeUndefined();
+    expect(api.load()).toBeUndefined();
     expect(() => api.save(3, "count")).not.toThrow();
   });
 

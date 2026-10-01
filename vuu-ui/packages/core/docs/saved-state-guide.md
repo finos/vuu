@@ -62,8 +62,12 @@ export const Orders = () => {
 | Member | Use |
 | ------ | --- |
 | `load<T>(key)` | The value saved under `key`, or `undefined`. |
+| `load<T>()` | Without a key, all of the application's saved state for this user, as an object keyed by value key, or `undefined` if nothing is saved. |
 | `save(state, key, { label?, group? }?)` | Save `state` under `key`. Asynchronous and debounced; it doesn't render anything. |
 
+- The portal already scopes `load` and `save` to the signed-in user and your
+  application, so the only key you supply is the key of a value within your
+  saved state.
 - `load` and `save` are stable for the life of the application, so they're
   safe in dependency arrays.
 - `save` doesn't notify your component. Neither do changes made elsewhere,

@@ -644,14 +644,20 @@ export function useApplicationState(): ApplicationStateStore;
 export function useOptionalApplicationState(): ApplicationStateStore | undefined;
 
 export interface PersistedStateAPI {
-  /** The saved value, or undefined. Synchronous: state loads before render. */
+  /**
+   * With a key, the value saved under it; without one, the whole saved state
+   * for this user and application. Undefined if nothing is saved.
+   * Synchronous: state loads before render.
+   */
   load<T extends JsonValue = JsonValue>(key: string): T | undefined;
+  load<T extends object = Readonly<Record<string, JsonValue>>>(): T | undefined;
   /** Fire and forget: debounced, asynchronous, and never causes a render. */
   save(state: JsonValue, key: string, metadata?: EntryMetadata): void;
 }
 
 /**
- * load/save pre-scoped to the enclosing application's store: provided by
+ * load/save pre-scoped (user + application key + version) to the enclosing
+ * application's store, so callers only supply value keys. Provided by
  * RemoteModule for a remote, and by PortalShell for the portal's own
  * components. Outside a portal, load returns undefined and save is a no-op.
  */

@@ -76,12 +76,20 @@ export function useOptionalApplicationState():
   return useContext(ApplicationStateContext) ?? undefined;
 }
 
+/** Every value saved for the application, by key. */
+export type PersistedStateDocument = Readonly<Record<string, JsonValue>>;
+
 export interface PersistedStateAPI {
   /**
-   * Returns the value saved under `key`, or undefined if nothing is saved.
-   * Synchronous: saved state has been loaded before the module renders.
+   * With a `key`, returns the value saved under it. Without one, returns the
+   * whole saved state for this user and application. Returns undefined if
+   * nothing is saved. Synchronous: saved state has been loaded before the
+   * module renders.
    */
-  load: <T extends JsonValue = JsonValue>(key: string) => T | undefined;
+  load: {
+    <T extends JsonValue = JsonValue>(key: string): T | undefined;
+    <T extends object = PersistedStateDocument>(): T | undefined;
+  };
   /**
    * Saves `state` under `key`. Fire and forget: the write is debounced and
    * asynchronous, and does not cause a render.
@@ -90,21 +98,27 @@ export interface PersistedStateAPI {
 }
 
 const NO_PERSISTED_STATE: PersistedStateAPI = {
-  load: () => undefined,
+  load: (() => undefined) as PersistedStateAPI["load"],
   save: () => undefined,
 };
 
 const createPersistedStateAPI = (
   store: ApplicationStateStore,
 ): PersistedStateAPI => ({
-  load: (key) => store.get(key),
+  load: ((key?: string) => {
+    if (key !== undefined) {
+      return store.get(key);
+    }
+    return store.keys().length > 0 ? store.getAll() : undefined;
+  }) as PersistedStateAPI["load"],
   save: (state, key, metadata) => store.set(key, state, metadata),
 });
 
 /**
  * load/save for the saved state of the enclosing remote module (provided by
  * RemoteModule) or, in the portal's own components, the portal (provided by
- * PortalShell). Calls to save do not trigger a render; saving is an
+ * PortalShell). Both are pre-scoped to the user and application, so the only
+ * key a caller supplies is the key of a value within that state. Calls to save do not trigger a render; saving is an
  * after-effect of a change of state the component already manages itself.
  * Outside a portal, load returns undefined and save does nothing.
  */
