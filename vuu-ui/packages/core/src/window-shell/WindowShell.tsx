@@ -2,6 +2,7 @@ import { FlexItem, FlexLayout } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import type { ReactNode } from "react";
+import { PortalHeader } from "../portal-header/PortalHeader";
 import {
   CommonShell,
   type CommonShellProps,
@@ -31,6 +32,9 @@ export const WindowShell = ({
   return (
     <CommonShell {...providerProps}>
       <FlexLayout className={classBase} direction="column" id={id}>
+        <FlexItem className={`${classBase}-header`}>
+          <PortalHeader />
+        </FlexItem>
         <FlexItem className={`${classBase}-content`}>
           <div className={`${classBase}-content`}>{children}</div>
         </FlexItem>
