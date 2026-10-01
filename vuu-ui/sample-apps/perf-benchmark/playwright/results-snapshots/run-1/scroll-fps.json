@@ -1,0 +1,90 @@
+{
+  "vuu-10000rows": {
+    "grid": "vuu",
+    "rowCount": 10000,
+    "frames": 119,
+    "durationMs": 2052.399999976158,
+    "fps": 57.980900409950486,
+    "longTaskCount": 1,
+    "totalBlockingTimeMs": 39,
+    "maxTaskDurationMs": 89,
+    "capturedAt": "2026-10-01T07:16:27.152Z"
+  },
+  "vuu-100000rows": {
+    "grid": "vuu",
+    "rowCount": 100000,
+    "frames": 122,
+    "durationMs": 2038.3999999761581,
+    "fps": 59.85086342299203,
+    "longTaskCount": 0,
+    "totalBlockingTimeMs": 0,
+    "maxTaskDurationMs": 0,
+    "capturedAt": "2026-10-01T07:16:31.905Z"
+  },
+  "ag-grid-client-10000rows": {
+    "grid": "ag-grid-client",
+    "rowCount": 10000,
+    "frames": 124,
+    "durationMs": 2065.2000000476837,
+    "fps": 60.042610883757966,
+    "longTaskCount": 0,
+    "totalBlockingTimeMs": 0,
+    "maxTaskDurationMs": 0,
+    "capturedAt": "2026-10-01T07:16:35.566Z"
+  },
+  "ag-grid-client-100000rows": {
+    "grid": "ag-grid-client",
+    "rowCount": 100000,
+    "frames": 97,
+    "durationMs": 2083.899999976158,
+    "fps": 46.547339124290886,
+    "longTaskCount": 11,
+    "totalBlockingTimeMs": 51,
+    "maxTaskDurationMs": 63,
+    "capturedAt": "2026-10-01T07:16:41.791Z"
+  },
+  "ag-grid-server-10000rows": {
+    "grid": "ag-grid-server",
+    "rowCount": 10000,
+    "frames": 123,
+    "durationMs": 2057.1999999284744,
+    "fps": 59.790005835250106,
+    "longTaskCount": 0,
+    "totalBlockingTimeMs": 0,
+    "maxTaskDurationMs": 0,
+    "capturedAt": "2026-10-01T07:16:45.367Z"
+  },
+  "ag-grid-server-100000rows": {
+    "grid": "ag-grid-server",
+    "rowCount": 100000,
+    "frames": 126,
+    "durationMs": 2080.5,
+    "fps": 60.56236481614996,
+    "longTaskCount": 0,
+    "totalBlockingTimeMs": 0,
+    "maxTaskDurationMs": 0,
+    "capturedAt": "2026-10-01T07:16:49.073Z"
+  },
+  "ag-grid-vuu-10000rows": {
+    "grid": "ag-grid-vuu",
+    "rowCount": 10000,
+    "frames": 115,
+    "durationMs": 2131,
+    "fps": 53.965274519005156,
+    "longTaskCount": 0,
+    "totalBlockingTimeMs": 0,
+    "maxTaskDurationMs": 0,
+    "capturedAt": "2026-10-01T07:16:53.044Z"
+  },
+  "ag-grid-vuu-100000rows": {
+    "grid": "ag-grid-vuu",
+    "rowCount": 100000,
+    "frames": 124,
+    "durationMs": 2053.5,
+    "fps": 60.38470903335768,
+    "longTaskCount": 0,
+    "totalBlockingTimeMs": 0,
+    "maxTaskDurationMs": 0,
+    "capturedAt": "2026-10-01T07:16:58.804Z"
+  }
+}

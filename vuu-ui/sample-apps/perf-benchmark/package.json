@@ -1,0 +1,48 @@
+{
+  "name": "perf-benchmark",
+  "version": "2.1.17",
+  "private": true,
+  "description": "Standalone performance benchmark comparing VUU's Table against ag-grid. VUU runs against a real local VUU server (see vuu-repo/example/main); ag-grid runs against an equivalent controlled-rate feed server.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 4173",
+    "build": "vite build",
+    "preview": "vite preview --port 4173 --strictPort",
+    "feed-server": "tsx feed-server/server.ts",
+    "vuu-server": "powershell -ExecutionPolicy Bypass -File scripts/start-vuu-server.ps1",
+    "test": "playwright test"
+  },
+  "dependencies": {
+    "@vuu-ui/vuu-data-react": "2.1.17",
+    "@vuu-ui/vuu-data-remote": "2.1.17",
+    "@vuu-ui/vuu-data-types": "2.1.17",
+    "@vuu-ui/vuu-icons": "2.1.17",
+    "@vuu-ui/vuu-protocol-types": "2.1.17",
+    "@vuu-ui/vuu-table": "2.1.17",
+    "@vuu-ui/vuu-table-types": "2.1.17",
+    "@vuu-ui/vuu-theme": "2.1.17",
+    "@vuu-ui/vuu-utils": "2.1.17",
+    "ag-grid-community": "^36.0.2",
+    "ag-grid-enterprise": "^36.0.2",
+    "ag-grid-react": "^36.0.2",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^20.0.0",
+    "@types/react": ">=18.3.3",
+    "@types/react-dom": ">=18.0.0",
+    "@vitejs/plugin-react": "4.3.4",
+    "@types/ws": "^8.5.0",
+    "magic-string": "^0.30.0",
+    "tsx": "^4.19.1",
+    "typescript": "5.8.3",
+    "vite": "6.4.1",
+    "vite-tsconfig-paths": "5.1.4",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "vuu-10000rows": {
+    "grid": "vuu",
+    "rowCount": 10000,
+    "frames": 114,
+    "durationMs": 2071.2000000476837,
+    "fps": 55.04055619803759,
+    "longTaskCount": 0,
+    "totalBlockingTimeMs": 0,
+    "maxTaskDurationMs": 0,
+    "capturedAt": "2026-08-05T08:33:43.730Z"
+  },
+  "vuu-100000rows": {
+    "grid": "vuu",
+    "rowCount": 100000,
+    "frames": 123,
+    "durationMs": 2034.6000001430511,
+    "fps": 60.45414331630392,
+    "longTaskCount": 0,
+    "totalBlockingTimeMs": 0,
+    "maxTaskDurationMs": 0,
+    "capturedAt": "2026-08-05T08:33:47.148Z"
+  },
+  "ag-grid-10000rows": {
+    "grid": "ag-grid",
+    "rowCount": 10000,
+    "frames": 124,
+    "durationMs": 2055.2999999523163,
+    "fps": 60.33182503910711,
+    "longTaskCount": 0,
+    "totalBlockingTimeMs": 0,
+    "maxTaskDurationMs": 0,
+    "capturedAt": "2026-08-05T08:33:50.659Z"
+  },
+  "ag-grid-100000rows": {
+    "grid": "ag-grid",
+    "rowCount": 100000,
+    "frames": 81,
+    "durationMs": 2019.9000000953674,
+    "fps": 40.10099509687394,
+    "longTaskCount": 16,
+    "totalBlockingTimeMs": 216,
+    "maxTaskDurationMs": 90,
+    "capturedAt": "2026-08-05T08:33:55.259Z"
+  }
+}

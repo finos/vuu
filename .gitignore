@@ -5,6 +5,7 @@
 /.idea/
 target/
 /gc.log
+hs_err_pid*.log
 /**/*.iml
 /vuu-book/src/.DS_Store
 .DS_Store
