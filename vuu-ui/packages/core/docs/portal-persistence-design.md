@@ -909,6 +909,10 @@ transparent `Button` with an `Avatar` and the user name.
 divider and **Saved state…** follow the existing *Open in new Tab / Window*
 items. This opens the dialog scoped to that application (§9.4).
 
+> **Note:** this entry point has since been removed. The navigation context
+> menu offers only *Open in new Tab / Window*; use the header user menu or
+> `useSavedStateDialog().open(applicationKey)` instead.
+
 [![Navigation context menu with Saved state…](assets/saved-state/02-entry-nav-context-menu.png)](assets/saved-state/02-entry-nav-context-menu.png)
 
 **Programmatic.** `useSavedStateDialog().open(applicationKey?)` lets an
