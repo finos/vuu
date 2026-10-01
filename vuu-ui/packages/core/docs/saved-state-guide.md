@@ -1,4 +1,4 @@
-# Saved state: a guide for remote authors
+# Saved state: getting started for remote authors
 
 A portal saves each application's runtime state for the user and restores it
 the next time the application opens: filters, sort order, column layouts,
@@ -10,90 +10,127 @@ Saved state isn't Settings. A future, explicit Settings dialog will manage
 choices such as theme and number formatting. Use the term "saved state" for
 this feature in code, identifiers and copy.
 
-The design, including the requirements and the reasons behind them, is in
-[portal-persistence-design.md](./portal-persistence-design.md). This guide
-covers what a remote author needs.
+Follow the four steps below to add saved state to a remote module. The later
+sections cover direct store access, release migrations, and standalone use.
+The design and implementation notes are in
+[portal-persistence-design.md](./portal-persistence-design.md).
 
-## At a glance
+Everything here is exported from `@vuu-ui/core/portal`.
 
-- The portal gives each application its own store. It's scoped to the
-  signed-in user, the application key and the application version.
-- Read and write named JSON values with `usePersistentState`, or with the
-  store from `useApplicationState`.
-- Values are available synchronously on first render. Writes are saved
-  shortly after they're made.
-- Give each value a `label` and `group`, so users can recognise it in the
-  Saved state dialog.
-- When a release changes the shape or meaning of saved values, bump the
-  descriptor `version` and export `stateMigrations`.
-- Outside a portal, the hooks fall back to ordinary component state.
+## Getting started
 
-Everything below is exported from `@vuu-ui/core/portal`.
+### 1. Configure the module descriptor
 
-## Saving a value
+Saved state is scoped to the signed-in user, an application key, and a
+version. `version` and `clientIdentifier` come from `VuuModuleDescriptor`;
+`persistenceKey` is an optional `RemoteModuleDescriptor` override. Apply these
+fields to the descriptor you register:
 
-`usePersistentState` works like `useState`, but the value is saved:
+```ts
+import type { RemoteModuleDescriptor } from "@vuu-ui/core/portal";
+
+const savedStateFields = {
+  clientIdentifier: "orders-v2",
+  persistenceKey: "orders", // Keeps the same saved state after an ID change.
+  version: 1,
+} satisfies Pick<
+  RemoteModuleDescriptor,
+  "clientIdentifier" | "persistenceKey" | "version"
+>;
+```
+
+Keep `clientIdentifier` stable, or set a stable `persistenceKey` if the
+identifier may change when the module is re-registered. Keep `version` as an
+integer and bump it when a release changes the shape or meaning of saved
+values; see [Release migrations](#release-migrations). Without a usable key
+and integer version, the remote gets no persistent store and the hook behaves
+like `useState`.
+
+### 2. Read and write JSON state
+
+For a value that belongs to a component, `usePersistentState` works like
+React's `useState` and restores the saved value on the component's first
+render:
 
 ```tsx
 import { usePersistentState } from "@vuu-ui/core/portal";
 
-export const Orders = () => {
-  const [sort, setSort] = usePersistentState<SortDef>("table/sort", NO_SORT, {
-    label: "Sort order",
-    group: "Table",
-  });
-  const [count, setCount] = usePersistentState("demo/count", 0);
+type OrdersView = {
+  filter: string;
+  sort: "symbol" | "quantity";
+};
 
+export const Orders = () => {
+  const [view, setView] = usePersistentState<OrdersView>(
+    "orders/view",
+    { filter: "", sort: "symbol" },
+    { label: "Orders view", group: "Orders" },
+  );
   return (
-    <>
-      <OrdersTable sort={sort} onSortChange={setSort} />
-      <Button onClick={() => setCount((value) => value + 1)}>{count}</Button>
-    </>
+    <OrdersTable
+      filter={view.filter}
+      sort={view.sort}
+      onFilterChange={(filter) => setView((previous) => ({ ...previous, filter }))}
+      onSortChange={(sort) => setView((previous) => ({ ...previous, sort }))}
+    />
   );
 };
 ```
 
-- It returns `defaultValue` when nothing is saved for the key. When the user
-  clears the key, it goes back to `defaultValue`, and the component re-renders.
+- When no value has been saved, the hook returns `defaultValue`.
+- Setters update the value immediately; writes are saved after a short delay.
 - As with `useState`, a literal default is widened: `usePersistentState("n", 0)`
   gives a `number`.
 - Values must be JSON: `null`, booleans, numbers, strings, arrays and plain
-  objects. `Date`s, functions, `undefined`, class instances and cycles are
-  rejected. In development they throw; in production they're logged and
-  ignored.
+  objects. `Date`s, functions, `undefined`, non-finite numbers, class
+  instances and cycles are rejected. In development they throw; in production
+  they're logged and ignored. Sparse arrays and symbol, accessor,
+  non-enumerable, or extra array properties are also rejected rather than
+  silently omitted during serialization.
 - Setting a value that's deep-equal to the saved one does nothing.
 - A value can be up to 256 KB when serialised, and an application's saved
   state up to 1 MB.
 
-### Keys
+For values shared across components or not naturally owned by one component,
+use the store from [`useApplicationState`](#using-the-store-directly). Use
+`useOptionalApplicationState` instead if the same code must also run outside a
+portal.
 
-- Keys are non-empty strings of up to 256 characters.
-- Use `/` to group related keys, for example `filters/active` and
-  `filters/named`. It's only a convention; the service doesn't treat it
-  specially.
-- Keys beginning with `vuu.` are reserved for the portal and shared VUU
-  components.
-- You don't need to prefix keys with your application name. The portal
-  already keeps each application's state separate (see
-  [Application key](#application-key)).
+### 3. Choose stable keys and useful labels
 
-### Labels and groups
+Each saved value needs a stable, non-empty key of up to 256 characters. The
+key identifies that value across renders and releases, so keep it stable or
+write a [migration](#release-migrations) when it must change. Keys are scoped
+to the application's store; you don't need to prefix them with the
+application name. Use `/` to group related keys, such as `filters/active` and
+`table/sort` (it's a naming convention, not special service behavior).
 
-The Saved state dialog lists every saved value, and users choose what to
-clear. Without metadata, a value appears under its key, such as
-`filters/active`. Give it a label (and, optionally, a group) instead:
-
-```ts
-usePersistentState("filters/active", "", {
-  label: "Active filter",
-  group: "Filters",
-});
-```
+The Saved state dialog lets users find and clear individual values. Give each
+value a human-readable `label`; optionally use `group` to collect related
+values. Without metadata, the dialog falls back to showing the key. The
+application title comes from the module descriptor's `title`.
 
 Write labels as the user would describe the value: "Column layout", "Saved
 filters", "Split position". Use sentence case and no trailing punctuation.
+Keys beginning with `vuu.` are reserved for the portal and shared VUU
+components.
 
-## Using the store directly
+### 4. Return to defaults when users clear state
+
+Users can clear selected values, an application's saved state, or all saved
+state from the portal's Saved state dialog. When a value used by
+`usePersistentState` is cleared, the hook returns its `defaultValue` and the
+component re-renders without requiring a reload. Clearing the application's
+state therefore returns the module to its default view.
+
+If you read values directly from the store, subscribe and respond to cleared
+keys; otherwise the dialog's success message offers a **Reload** action when
+an open application needs one. See [Reacting to Clear](#reacting-to-clear) for
+the store event details.
+
+## Advanced topics
+
+### Using the store directly
 
 For more than one value, or when a value isn't tied to a single component,
 use the store:
@@ -140,7 +177,7 @@ the application still renders, using its defaults. `store.status` is
 Saved state dialog tells the user. Don't block the application on saved
 state.
 
-## Reacting to Clear
+### Reacting to Clear
 
 When the user clears saved state from the dialog, open applications are told
 straight away:
@@ -152,7 +189,7 @@ straight away:
 - If an open application doesn't subscribe, the dialog's success toast offers
   **Reload**.
 
-## Opening the Saved state dialog
+### Opening the Saved state dialog
 
 An application can offer its own way in, such as a "Reset view" button.
 `useSavedStateDialog` opens the dialog, scoped to the current application:
@@ -176,7 +213,7 @@ return savedState.available ? (
 Outside a portal shell, `available` is `false` and `open` does nothing. Call
 `open()` with no key to show all applications.
 
-## Application key
+### Application key
 
 The portal, not the remote, decides which document an application uses. The
 key comes from the module descriptor:
@@ -185,7 +222,7 @@ key comes from the module descriptor:
 applicationKey = descriptor.persistenceKey ?? descriptor.clientIdentifier
 ```
 
-- `clientIdentifier` is the default. It's unique and stable.
+- `clientIdentifier` is the default. Keep it unique and stable.
 - Set `persistenceKey` to keep users' saved state when a module is
   re-registered under a new `clientIdentifier`. It must be unique across the
   registry.

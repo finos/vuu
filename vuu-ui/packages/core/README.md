@@ -7,4 +7,7 @@ Portal host and remote-module APIs are exported separately from
 `@vuu-ui/core/portal` so portal dependencies are not included in the shared
 module.
 
-See [the portal design](./docs/portal-design.md) for details.
+For remote authors, start with the
+[saved-state getting started guide](./docs/saved-state-guide.md). See
+[the portal design](./docs/portal-design.md) for the host and module
+architecture.
