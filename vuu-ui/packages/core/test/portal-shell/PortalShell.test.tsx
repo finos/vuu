@@ -60,6 +60,7 @@ vi.mock("../../src/remote-module/RemoteModule", async () => {
   const { usePortalModuleRegistry } = await import(
     "../../src/portal-module-registry/PortalModuleRegistry"
   );
+  const { PortalLink } = await import("../../src/portal-link/PortalLink");
   return {
     RemoteModule: ({
       mfComponent,
@@ -69,13 +70,22 @@ vi.mock("../../src/remote-module/RemoteModule", async () => {
       mfUrl: string;
     }) => {
       const { remoteModules } = usePortalModuleRegistry();
+      const modulePath =
+        remoteModules
+          .find((module) => module.mfComponent === mfComponent)
+          ?.path.replace(/\/\*$/, "") ?? "/";
       return (
         <>
           <output data-module={mfComponent} data-url={mfUrl}>
             {remoteModules.length}
           </output>
           <Routes>
-            <Route index element={<Link to="details">Details</Link>} />
+            <Route
+              index
+              element={
+                <PortalLink to={`${modulePath}/details`}>Details</PortalLink>
+              }
+            />
             <Route path="details" element={<p>Module details</p>} />
           </Routes>
         </>

@@ -1,6 +1,8 @@
 import { useParams } from "react-router-dom";
 import { useModuleRegistry } from "../auth/AuthenticationProvider";
 import { PortalModuleRegistryProvider } from "../portal-module-registry/PortalModuleRegistry";
+import { PortalLinkProvider } from "../portal-link/PortalLink";
+import { getWindowHostPath } from "./window-host-routing";
 import {
   WindowShell,
   type WindowShellProps,
@@ -20,9 +22,14 @@ export const WindowHost = (props: WindowHostProps) => {
   return (
     <WindowShell remoteModules={modules} {...props}>
       {descriptor ? (
-        <PortalModuleRegistryProvider remoteModules={modules}>
-          <RemoteModule key={descriptor.id} {...descriptor} />
-        </PortalModuleRegistryProvider>
+        <PortalLinkProvider
+          modulePath={descriptor.path}
+          windowPath={getWindowHostPath(descriptor.id)}
+        >
+          <PortalModuleRegistryProvider remoteModules={modules}>
+            <RemoteModule key={descriptor.id} {...descriptor} />
+          </PortalModuleRegistryProvider>
+        </PortalLinkProvider>
       ) : (
         <div role="alert">
           This module is unavailable or you do not have access to it.
