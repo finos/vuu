@@ -64,40 +64,27 @@ const usePortalShellProps = () => {
 
 const PortalWindowRoute = () => {
   const {
+    accent,
+    corner,
     DataSourceProvider,
+    density,
     id,
+    mode,
     persistence,
     portalId = id,
+    theme,
   } = usePortalShellProps();
   return (
     <WindowHost
+      accent={accent}
+      corner={corner}
       DataSourceProvider={DataSourceProvider}
+      density={density}
+      mode={mode}
       persistence={persistence}
       portalId={portalId}
+      theme={theme}
     />
-  );
-};
-
-export const PortalShell = (props: PortalShellProps) => {
-  const router = useMemo(
-    () =>
-      createBrowserRouter([
-        {
-          path: WINDOW_HOST_ROUTE,
-          element: <PortalWindowRoute />,
-        },
-        {
-          path: "*",
-          element: <PortalLayout />,
-        },
-      ]),
-    [],
-  );
-
-  return (
-    <PortalShellContext.Provider value={props}>
-      <RouterProvider router={router} />
-    </PortalShellContext.Provider>
   );
 };
 
@@ -155,5 +142,28 @@ const PortalLayout = () => {
         </div>
       </div>
     </CommonShell>
+  );
+};
+
+export const PortalShell = (props: PortalShellProps) => {
+  const router = useMemo(
+    () =>
+      createBrowserRouter([
+        {
+          path: WINDOW_HOST_ROUTE,
+          element: <PortalWindowRoute />,
+        },
+        {
+          path: "*",
+          element: <PortalLayout />,
+        },
+      ]),
+    [],
+  );
+
+  return (
+    <PortalShellContext.Provider value={props}>
+      <RouterProvider router={router} />
+    </PortalShellContext.Provider>
   );
 };

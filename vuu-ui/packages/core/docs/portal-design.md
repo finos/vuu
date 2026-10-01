@@ -34,9 +34,11 @@ Pass a single direct `PortalLandingPage` child to supply content for the default
 
 The landing page is rendered inside the routed content area, not as shell
 chrome. Other children render inside the shared providers and router, and are
-omitted on standalone window routes. Without a `PortalLandingPage`, the root
-route is empty. The optional `id` is applied to the portal root element. The
-`title` prop does not create a heading; supply branding through children.
+omitted on standalone window routes. A future opt-in attribute may allow
+selected chrome elements to render alongside the remote in a window. Without a
+`PortalLandingPage`, the root route is empty. The optional `id` is applied to
+the portal root element. The `title` prop does not create a heading; supply
+branding through children.
 
 Render `PortalShell` directly beneath the host's `AuthenticationProvider`, without
 an external router. The router persists across shell prop and registry updates,
@@ -111,9 +113,10 @@ MIME-type or manifest JSON parsing errors.
 ## WindowShell
 
 `WindowShell` is the presentation shell for a single-module window. It owns
-its layout and styles, renders `PortalHeader` and its supplied `children`, and
-has no portal navigation rail or module-routing logic. `WindowHost` forwards
-the optional shell ID, theme settings, and data-source provider to it.
+its layout and styles and renders only its supplied `children` (normally the
+remote module). It adds no default header or portal chrome and has no portal
+navigation rail or module-routing logic. `WindowHost` forwards the optional
+shell ID, theme settings, and data-source provider to it.
 
 `PortalShell` retains its portal-specific branding, navigation, and routes.
 Both shells use the internal `CommonShell` component for the same Salt

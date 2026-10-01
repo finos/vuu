@@ -56,9 +56,6 @@ vi.mock("@vuu-ui/vuu-data-react", () => ({
     <div data-provider="remote">{children}</div>
   ),
 }));
-vi.mock("../../src/portal-header/PortalHeader", () => ({
-  PortalHeader: () => <div data-portal-header />,
-}));
 vi.mock("../../src/remote-module/RemoteModule", async () => {
   const { usePortalModuleRegistry } = await import(
     "../../src/portal-module-registry/PortalModuleRegistry"
@@ -312,9 +309,8 @@ describe("Portal and window shells", () => {
     expect(container.querySelector(".vuuWindowShell")?.id).toBe(
       "module-window",
     );
-    expect(
-      container.querySelector(".vuuWindowShell-header [data-portal-header]"),
-    ).not.toBeNull();
+    expect(container.querySelector(".vuuWindowShell-header")).toBeNull();
+    expect(container.querySelector("[data-portal-header]")).toBeNull();
     expect(
       container.querySelector(".vuuWindowShell-content")?.textContent,
     ).toBe("Hosted content");
@@ -463,7 +459,7 @@ describe("Portal and window shells", () => {
     expect(container.textContent).toContain("Module details");
   });
 
-  it("forwards data-source provider updates to window routes without portal chrome", async () => {
+  it("forwards shared shell configuration to window routes without portal chrome", async () => {
     const LocalDataSourceProvider = ({ children }: { children: ReactNode }) => (
       <div data-provider="local">{children}</div>
     );
@@ -472,9 +468,13 @@ describe("Portal and window shells", () => {
       root.render(
         <AuthenticationProvider mode="local" registry={{ modules }}>
           <PortalShell
+            accent="teal"
+            corner="sharp"
             DataSourceProvider={LocalDataSourceProvider}
+            density="low"
             mode="dark"
             remoteModules={modules}
+            theme="salt-theme"
             title="Portal"
           />
         </AuthenticationProvider>,
@@ -489,9 +489,15 @@ describe("Portal and window shells", () => {
     );
     expect(container.querySelector(".vuuPortalShell")).toBeNull();
     expect(container.querySelector("[data-portal-nav]")).toBeNull();
-    expect(
-      container.querySelector("[data-mode]")?.getAttribute("data-mode"),
-    ).toBe("light");
+    expect(container.querySelector("[data-accent]")).toMatchObject({
+      dataset: {
+        accent: "teal",
+        corner: "sharp",
+        density: "low",
+        mode: "dark",
+        theme: "salt-theme",
+      },
+    });
   });
 
   it("resolves a window module from the current registry, ignoring URL descriptors", async () => {
