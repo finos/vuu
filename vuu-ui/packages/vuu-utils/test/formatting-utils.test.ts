@@ -96,6 +96,33 @@ describe("formatting-utils", () => {
       expect(format2(-12345.6789)).toEqual("-12345.68");
       expect(format2(-0.6)).toEqual("-0.60");
     });
+    it("formats numbers that toString writes in exponent notation", () => {
+      const format = numericFormatter({
+        type: {
+          name: "number",
+          formatting: {
+            decimals: 2,
+          },
+        },
+      });
+      expect(format(1.5e-7)).toEqual("0.00");
+      expect(format("1.5e-7")).toEqual("0.00");
+      expect(format(1.5e21)).toEqual("1,500,000,000,000,000,000,000");
+      expect(format(-1.5e21)).toEqual("-1,500,000,000,000,000,000,000");
+
+      const format2 = numericFormatter({
+        type: {
+          name: "number",
+          formatting: {
+            decimals: 8,
+            useLocaleString: false,
+          },
+        },
+      });
+      expect(format2(1.5e-7)).toEqual("0.00000015");
+      expect(format2(-1.5e-7)).toEqual("-0.00000015");
+      expect(format2(1.5e21)).toEqual("1500000000000000000000");
+    });
   });
 
   it("supports truncation rather than rounding of decimals", () => {
