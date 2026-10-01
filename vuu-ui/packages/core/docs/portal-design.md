@@ -61,6 +61,13 @@ omits it, and another module renders it with `RemoteModule`. The table viewer
 nested in the table browser is an example. `isNestedModule(descriptor)` tests
 for this.
 
+Use `PortalLink` from `@vuu-ui/core/portal` for links within a remote module.
+It behaves like React Router's `NavLink` in the portal and maps absolute links
+under the module's portal route to the matching path under `/window/:moduleId`
+when the module is opened in a standalone window. Relative links retain React
+Router's normal behavior. Set `routeScope="portal"` for an absolute link that
+intentionally navigates outside the current module.
+
 `PortalHeader` renders `PortalUserMenu`, which offers **Saved state…** and
 **Log out**. Additional items go in its `userMenuItems` prop. Log out saves
 pending saved state before signing the user out.

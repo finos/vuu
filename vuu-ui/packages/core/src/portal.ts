@@ -2,6 +2,7 @@ export {
   PortalHeader,
   type PortalHeaderProps,
 } from "./portal-header/PortalHeader";
+export { PortalLink, type PortalLinkProps } from "./portal-link/PortalLink";
 export { PortalLogo, type PortalLogoProps } from "./portal-logo/PortalLogo";
 export {
   PortalAppSwitcher,

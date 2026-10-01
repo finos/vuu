@@ -1,10 +1,10 @@
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import { useModal } from "@vuu-ui/core";
+import { PortalLink } from "@vuu-ui/core/portal";
 import { useCallback, useEffect, useState } from "react";
 import {
   Link,
   Navigate,
-  NavLink,
   Outlet,
   Route,
   Routes,
@@ -79,9 +79,9 @@ const AdminLayout = () => {
             {(
               ["overview", "applications", "users", "groups", "roles"] as const
             ).map((page) => (
-              <NavLink key={page} to={`../${page}`} relative="path">
+              <PortalLink key={page} to={`../${page}`} relative="path">
                 {page[0].toUpperCase() + page.slice(1)}
-              </NavLink>
+              </PortalLink>
             ))}
           </nav>
           <div className="vuuIdentityAdmin-content">

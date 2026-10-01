@@ -18,6 +18,7 @@ import {
 import { partition } from "@vuu-ui/vuu-utils";
 import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
 import { PortalModuleRegistryProvider } from "../portal-module-registry/PortalModuleRegistry";
+import { PortalLinkProvider } from "../portal-link/PortalLink";
 import { RemoteModule } from "../remote-module/RemoteModule";
 import {
   CommonShell,
@@ -131,9 +132,13 @@ const PortalLayout = () => {
                   key={id}
                   path={getRemoteRoutePath(path)}
                   element={
-                    <PortalModuleRegistryProvider remoteModules={remoteModules}>
-                      <RemoteModule {...feature} />
-                    </PortalModuleRegistryProvider>
+                    <PortalLinkProvider modulePath={path}>
+                      <PortalModuleRegistryProvider
+                        remoteModules={remoteModules}
+                      >
+                        <RemoteModule {...feature} />
+                      </PortalModuleRegistryProvider>
+                    </PortalLinkProvider>
                   }
                 />
               );
