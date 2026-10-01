@@ -56,9 +56,6 @@ vi.mock("@vuu-ui/vuu-data-react", () => ({
     <div data-provider="remote">{children}</div>
   ),
 }));
-vi.mock("../../src/portal-header/PortalHeader", () => ({
-  PortalHeader: () => <div data-portal-header />,
-}));
 vi.mock("../../src/remote-module/RemoteModule", async () => {
   const { usePortalModuleRegistry } = await import(
     "../../src/portal-module-registry/PortalModuleRegistry"
@@ -312,9 +309,8 @@ describe("Portal and window shells", () => {
     expect(container.querySelector(".vuuWindowShell")?.id).toBe(
       "module-window",
     );
-    expect(
-      container.querySelector(".vuuWindowShell-header [data-portal-header]"),
-    ).not.toBeNull();
+    expect(container.querySelector(".vuuWindowShell-header")).toBeNull();
+    expect(container.querySelector("[data-portal-header]")).toBeNull();
     expect(
       container.querySelector(".vuuWindowShell-content")?.textContent,
     ).toBe("Hosted content");

@@ -111,9 +111,10 @@ MIME-type or manifest JSON parsing errors.
 ## WindowShell
 
 `WindowShell` is the presentation shell for a single-module window. It owns
-its layout and styles, renders `PortalHeader` and its supplied `children`, and
-has no portal navigation rail or module-routing logic. `WindowHost` forwards
-the optional shell ID, theme settings, and data-source provider to it.
+its layout and styles and renders only its supplied `children` (normally the
+remote module). It adds no default header or portal chrome and has no portal
+navigation rail or module-routing logic. `WindowHost` forwards the optional
+shell ID, theme settings, and data-source provider to it.
 
 `PortalShell` retains its portal-specific branding, navigation, and routes.
 Both shells use the internal `CommonShell` component for the same Salt
