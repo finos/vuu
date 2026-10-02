@@ -24,8 +24,9 @@ This document specifies:
    that consolidates notifications from every server and from client code.
    No websocket is opened solely for notifications: feeds attach to whatever
    connections already exist, whether opened by the monitor or by a remote.
-3. **Nav item decorations**: a Salt `Badge` showing the unread count, and a
-   presence indicator, on each `PortalAppSwitcher` item.
+3. **Nav item decorations**: a Salt `Badge` showing the unread count on each
+   `PortalAppSwitcher` item (cleared when the app is opened), with items
+   whose server is offline shown slightly greyed and not openable.
 4. Moving `NotificationsProvider` to the **portal level**, with a
    **presentation policy** so that toasts are only shown for the application
    the user currently has open.
@@ -147,11 +148,14 @@ is no cross-window state sharing (`portal-design.md`).
 
 ### Non-goals
 
-- Server-side changes beyond the recommendations in §13.
+- **Any server-side change.** This work uses the generic Notifications
+  module exactly as it is (§13).
 - Push notifications when no portal page is open (Web Push / OS
   notifications) — possible later, see §15.
-- Cross-device read-state synchronisation (requires a server store; the
+- Cross-device read-state synchronisation (would need a server store; the
   persistence backend makes it possible later).
+- Marking notifications read or dismissed **on the server**. Read and delete
+  state is client-side only.
 
 ## 4. Requirements
 
@@ -160,17 +164,18 @@ is no cross-window state sharing (`portal-design.md`).
 | FR-1  | On login, the portal connects to each distinct Vuu server referenced by navigable modules, up to `maxMonitoredServers` (default 8).                |
 | FR-2  | Servers are prioritised: the open module's server, then servers of visible nav items, then app switcher display order.                            |
 | FR-3  | When a remote is opened, it reuses the monitored connection if one exists.                                                                          |
-| FR-4  | A server's presence is derived from connection state and shown on every nav item using that server.                                               |
+| FR-4  | A server's presence is derived from connection state. A nav item whose server is offline (or denies the user) is shown slightly greyed and cannot be opened. |
 | FR-5  | Monitoring failures never surface as errors in the shell; they only change presence. Unmonitored servers show presence `unknown`.                |
 | FR-6  | For every connected server that publishes `NOTIFICATIONS/notifications`, the portal subscribes once and feeds the central store.                  |
 | FR-7  | Servers without the table are supported (presence only).                                                                                           |
-| FR-8  | Each nav item shows a `Badge` with the unread count for notifications attributed to it; a nav group shows the sum of its children.               |
+| FR-8  | Each nav item shows a `Badge` with the unread count for notifications attributed to it; a nav group shows the sum of its children. Opening a module marks its notifications read, clearing the badge. |
 | FR-9  | Client notifications raised through `useNotifications()` are recorded in the store, tagged with the originating module.                          |
-| FR-10 | Toasts are shown only for notifications attributed to the currently open module (or to the portal itself).                                       |
+| FR-10 | Toasts are shown only for notifications attributed to the currently open module (or to the portal itself). Banners are portal-wide.           |
 | FR-11 | The compact viewer shows the unread total and the latest notification text.                                                                        |
-| FR-12 | The expanded viewer lists notifications with filters (application/server, level, read state, type, text, time) and actions (mark read/unread, mark all read, delete, clear). |
+| FR-12 | The expanded viewer lists notifications with filters (application/server, level, read state, type, text, time) and client-side actions (mark read/unread, mark all read, delete, clear). |
 | FR-13 | Read and deleted state persists per user across reloads.                                                                                           |
-| FR-14 | Badge and presence are accessible (accessible name/description, not colour alone).                                                                |
+| FR-14 | Badge and presence are accessible (accessible description/tooltip and `aria-disabled`, not visual styling alone).                               |
+| FR-16 | No server-side changes are required.                                                                                                                |
 | FR-15 | Works in `local` mode with simulated servers.                                                                                                       |
 
 ## 5. Architecture overview
@@ -428,14 +433,12 @@ export interface PortalNotification {
   level: NotificationLevel;
   title: string;
   message: string;
-  receivedAt: number;           // client receipt time
-  createdAt?: number;           // server `createdTime` if present (§13)
+  receivedAt: number;           // client receipt time; the schema has no creation time (§13)
   expiresAt?: number;           // `expiryTime`
   expired: boolean;             // server deleted the row
   initial: boolean;             // part of the first snapshot
   read: boolean;
   attributes: Record<string, unknown>; // additional columns, e.g. source, priority
-  actions?: NotificationActionDescriptor[]; // e.g. dismiss RPC, "Open application"
 }
 
 export interface NotificationOrigin {
@@ -448,12 +451,14 @@ export interface NotificationOrigin {
 - `level` maps `INFO→info`, `WARNING→warning`, `ERROR→error`, unknown → `info`.
 - `type` maps `toast→toast`, `banner→banner`, anything else → `silent`.
 - Rows in the **initial snapshot** are `initial: true`. They are added as
-  unread unless their key is in the persisted read set (§8.4), and they never
-  toast.
+  unread unless their key is in the persisted read set (§8.4) or their module
+  is currently open (§7.6), and they never toast (banners still show, §9.3).
+  Their `receivedAt` is the snapshot time, so the viewer labels them
+  "before <login time>" rather than giving a precise time.
 - A row delete sets `expired: true` (the item stays in history until
   retention removes it; the viewer can hide expired items via a filter).
-- Row updates (e.g. server-side `status = "dismissed"`) update the record; a
-  `status` of `dismissed` marks it read.
+- Row updates refresh the record's fields (including additional columns)
+  but do not change its read state.
 
 ### 7.4 Attribution to modules
 
@@ -505,6 +510,22 @@ by other means:
 const { publish } = usePortalNotifications();
 publish({ id, kind, level, title, message, attributes });
 ```
+
+### 7.6 Read on open
+
+The server has no per-user read state and this work makes no server changes,
+so "read" is a client concept and the natural signal is the user opening the
+application:
+
+- When a module becomes the **active route**, all notifications attributed
+  to it are marked read, clearing its badge.
+- While it remains active, newly arriving notifications for it are stored as
+  already read (they are still toasted, §9.2), so the badge never appears on
+  the app the user is looking at.
+- Notifications attributed to several modules (rare shared-server case) are
+  marked read when any of them is opened.
+- The viewer can still mark items unread again; that is honoured until the
+  module is next opened.
 
 ## 8. Notification store
 
@@ -632,11 +653,12 @@ Default policy:
 
 | Condition                                                                | Result   |
 | ------------------------------------------------------------------------ | -------- |
-| `initial`, `expired`, `doNotDisturb`, or `kind === "silent"`             | `none`   |
+| `expired`, `doNotDisturb`, or `kind === "silent"`                        | `none`   |
+| server `banner` (any server, any module, including the initial snapshot) | `banner` (portal-wide, §9.3) |
+| `initial` (other kinds)                                                  | `none`   |
 | client notification from the active module                                | as requested (unchanged behaviour) |
 | client notification from a module that is not active (e.g. still unmounting) | `none` |
-| server `banner` with no module attribution (portal-wide, e.g. maintenance) | `banner` |
-| server notification attributed to the active module                       | `toast` / `banner` per `kind` |
+| server `toast` attributed to the active module                            | `toast`  |
 | server notification for any other module                                  | `none` (badge + compact viewer only) |
 | `panelOpen`                                                              | `none` (it appears in the list) |
 
@@ -647,9 +669,14 @@ server collapse into one "5 new notifications from <server>" toast).
 
 ### 9.3 Banners
 
-Banners render at the top of the portal content area using the existing
-workspace notification slot, with a close button, and are removed when the
-underlying row expires.
+Banners are **portal-wide**: a server `banner` is shown regardless of which
+module is open or which server sent it, because banner content (system
+maintenance, market open/close) is relevant to the whole session. They render
+at the top of the portal content area using the existing workspace
+notification slot, labelled with the originating application, with a close
+button. Closing a banner marks it read; it is removed when the underlying row
+expires. Multiple banners stack (max 2 visible, then "+n more" opens the
+panel). Unexpired banners present at login are shown unless already read.
 
 ## 10. UI
 
@@ -660,43 +687,52 @@ A shared `NavItemDecoration` is used by `IconNavItem`, `NestedNavItem` and
 counts and presence by `moduleId` (and children's `moduleId`s for groups).
 
 ```
-icon-only                      icon text / text-only           dashboard tile
-┌──────┐                       ┌──────────────────────────┐    ┌─────────────────┐
-│ [▣]③ │  ← Badge (unread)     │ ● Trading: Baskets    ③  │    │ ③          ●    │
-│   ◌  │  ← presence dot       │ ○ Risk: Limits           │    │   [icon]        │
-└──────┘                       └──────────────────────────┘    │   Baskets       │
-                                                               └─────────────────┘
+icon-only                 icon text / text-only           dashboard tile
+┌──────┐                  ┌──────────────────────────┐    ┌─────────────────┐
+│ [▣]③ │ ← Badge (unread) │ [▣] Trading: Baskets  ③  │    │ ③               │
+│ [▢]  │ ← greyed: offline│ [▢] Risk: Limits (grey)  │    │   [icon]        │
+└──────┘                  └──────────────────────────┘    │   Baskets       │
+                                                          └─────────────────┘
 ```
 
 - **Badge**: Salt `Badge` wrapping the icon (icon-only/dashboard) or
   trailing the label (text styles). `max={99}`. Hidden at 0. Groups sum
   their children.
-- **Presence**: a small status dot at the icon's bottom-right (icon-only) or
-  leading the label. Colour from Salt status tokens *and* a shape/pattern so
-  it is not colour-only: `online` = solid (shown only if
-  `showOnlinePresence` is enabled, default off to reduce noise),
-  `connecting`/`degraded` = ring, `offline` = hollow with strike, icon
-  dimmed to 50% opacity, `unauthorized` = lock glyph, `unknown` = nothing.
+- **Presence**: no extra glyph. Only states that stop the user opening the
+  app are shown:
+  - `offline` and `unauthorized`: the item is **slightly greyed**
+    (`--vuuNavItem-unavailable-opacity`, default `0.45`, plus
+    `filter: grayscale(1)` on the icon). The item is `aria-disabled="true"`
+    and is not navigable — the user cannot use the app while its server is
+    unreachable. Activating it triggers an immediate re-probe of the server
+    (rather than waiting for `probeIntervalMs`) and shows the tooltip; if the
+    probe succeeds the item un-greys and a second activation navigates.
+    "Open in new Tab/Window" context menu items are disabled likewise.
+  - `online`, `connecting`, `degraded`, `unknown`: rendered normally.
+    `degraded` (reconnecting after being online) is shown only in the
+    tooltip, to avoid flicker during brief reconnects; it greys only if the
+    registry gives up and presence becomes `offline`.
+  - If the open module's server goes offline, its item greys but the module
+    stays mounted; the remote's own lost-connection handling applies.
 - **Accessibility**: the link's accessible name stays the module title;
-  an `aria-describedby` hidden span gives e.g. "3 unread notifications.
-  Server offline since 12:04." The same text is the hover tooltip (flyout
+  an `aria-describedby` hidden span gives e.g. "3 unread notifications."
+  or "Unavailable: server offline since 12:04." The same text is the hover tooltip (flyout
   for icon-only). Badge count changes are **not** announced individually;
   a single polite live region in the indicator (§10.2) announces new
   notifications.
 - **Interaction**: clicking the item navigates as today. The nav item
   context menu gains "Show notifications" (opens the panel filtered to that
   module) and "Mark notifications read".
-- Opening a module does **not** auto-mark its notifications read (they may
-  be action items); this is an open question (§16).
+- Opening a module marks its notifications read (§7.6).
 
 Styling via new CSS custom properties, e.g.
-`--vuuNavItem-presence-offline-color`, `--vuuNavItem-badge-offset`.
+`--vuuNavItem-unavailable-opacity`, `--vuuNavItem-badge-offset`.
 
 `PortalAppSwitcher` gains props:
 
 ```ts
 showNotificationBadges?: boolean; // default true
-showPresence?: boolean | "problems-only"; // default "problems-only"
+showPresence?: boolean;           // default true (greys unavailable items)
 ```
 
 ### 10.2 Compact viewer — `NotificationsIndicator`
@@ -732,13 +768,13 @@ indicator or the context menu.
 │ Today                                                              │
 │ ● ⚠ Risk Limit Alert                          Risk · 12:04        │
 │     Account ACC-1042 exceeded intraday VaR limit by 12%            │
-│     [Open Risk]  [Dismiss on server]               ✓  🗑           │
+│     [Open Risk]                                     ✓  🗑           │
 │   ⓘ Market Status                              Portal · 11:58     │
 │     US Equity markets are now OPEN …                   ✓  🗑      │
 │ Earlier                                                            │
 │   ⛔ Order Rejection (expired)                 OMS · 09:12        │
 ├───────────────────────────────────────────────────────────────────┤
-│ Servers: ● Portal  ● OMS  ○ Risk (offline 3m)  ◌ Pricing          │
+│ Servers: Portal ✓  OMS ✓  Risk ✕ offline 3m  Pricing –             │
 └───────────────────────────────────────────────────────────────────┘
 ```
 
@@ -750,9 +786,9 @@ indicator or the context menu.
   notifications), level, read state, kind, show expired, free-text search.
   Filter state persists in the portal store. Clear-all link when filtered.
 - **Item actions**: mark read/unread, delete (local), "Open <app>"
-  (navigates to the attributed module — normally exactly one), and, when the
-  server exposes it, **"Dismiss on server"** (invokes the server's dismiss
-  RPC — see §13).
+  (navigates to the attributed module — normally exactly one; disabled
+  when its server is unavailable). Delete is local only: it removes the item
+  and records a tombstone so it is not re-added by a later snapshot (§8.3).
 - **Bulk**: mark all read (respects current filter), delete all read,
   multi-select with Shift/Ctrl.
 - **Footer**: server presence summary — this is where the user sees all
@@ -800,26 +836,70 @@ and connections (§2.5).
 - **Read/delete state** is synchronised between pages of the same origin and
   user via a `BroadcastChannel("vuu-portal-notifications:<portalId>:<user>")`
   carrying `read-state` and `delete` events, and is persisted (§8.4).
-- **Connection fan-out** (N tabs × M servers) is a known cost. A later phase
-  can elect a leader tab with the Web Locks API, which monitors and
-  rebroadcasts presence and notifications over the channel while other tabs
-  only connect for open modules. Not in v1.
+- **Connection fan-out.** See §12.1. Not addressed in v1.
 
-## 13. Server-side recommendations
+### 12.1 Why tab leader election might be needed
 
-The UI works with the current module, but these would improve it (to raise
-with the server team):
+Every full portal tab is a separate JavaScript runtime with its own
+`ConnectionManager`, registry and dedicated workers, and nothing is shared
+between tabs (§2.5). With monitoring, each portal tab therefore opens up to
+`1 + maxMonitoredServers` websockets as soon as it loads, whether or not the
+user is using it. A user with T portal tabs holds `T × 9` connections, and
+each one costs:
 
-1. Add a `createdTime` (epochTimestamp) column to `NotificationsSchema`, so
-   ordering and "new since" do not rely on client receipt time and initial
-   snapshots can be dated.
-2. Standardise the dismiss RPC name and semantics in the generic module
-   (`dismissNotification`, by key rather than viewport selection), and
-   advertise it via the table's menu/RPC metadata so the UI can offer
-   "Dismiss on server" generically.
-3. Optionally a standard `module`/`clientIdentifier` column, only needed for
-   attribution on shared servers (§7.4) and an `actionUrl` column for deep links.
-4. Optional per-user read state on the server for cross-device sync.
+- a token exchange at startup and on every reconnect (load on the identity
+  provider and each server's auth endpoint);
+- a server-side session plus a notifications viewport on every Vuu server;
+- a dedicated worker and heartbeat traffic in the browser;
+- duplicate presence probing when a server is down (T tabs each probing).
+
+Without monitoring, a background tab only holds connections for the apps
+open in it, so this is a cost the feature introduces.
+
+**Leader election** removes the duplication: tabs compete for a Web Lock
+(`navigator.locks.request("vuu-portal-monitor:<portalId>:<user>")`). The holder
+(leader) runs the `VuuServerMonitor` and feeds, and rebroadcasts presence
+and notification events on the `BroadcastChannel`; followers build their
+stores from those events and connect only for the modules they actually
+open. When the leader tab closes, the lock passes automatically to another
+tab, which starts monitoring. Server load then scales with users rather than
+with users × tabs.
+
+It is not needed for v1 because:
+
+- module **windows** do not monitor (they only connect for their own app,
+  which they need anyway), so the fan-out is limited to full portal tabs;
+- users of a single-page portal app typically keep one portal tab;
+- the cost is bounded (`maxMonitoredServers` = 8) and connections are mostly
+  idle apart from heartbeats.
+
+It becomes worthwhile if telemetry shows users routinely running several
+portal tabs, or if Vuu servers enforce per-user session limits that
+multiple tabs could exhaust. The design keeps it possible: the store is
+already fed by events (§8.1), so a follower's store can be fed from the
+channel instead of from feeds without UI changes. Followers must also apply
+the presentation policy themselves, so a toast appears only in the tab where
+the relevant module is open.
+
+## 13. Server constraints
+
+This work makes **no server-side changes**. It relies only on what the
+generic Notifications module already provides, which means:
+
+- **No creation time.** Ordering uses client receipt time; rows in the
+  initial snapshot are only known to pre-date login (§7.3).
+- **No server read state.** "Read" is client-side, derived from opening the
+  module and from explicit user action (§7.6), persisted per user locally
+  (§8.4).
+- **No generic dismiss.** Dismissal RPCs are server specific (e.g. the
+  example's `dismissNotification`), so delete is a local operation only.
+- **No module column.** Attribution relies on the 1:1 app/server mapping
+  (§7.4); additional columns such as `clientIdentifier` are used if a server
+  happens to publish them.
+
+Possible future server enhancements (out of scope): a `createdTime` column,
+a standard dismiss RPC, a standard module/deep-link column, and server-side
+per-user read state for cross-device sync.
 
 ## 14. Performance and failure modes
 
@@ -827,8 +907,9 @@ with the server team):
 | ---------------------------------------- | ------------------------------------------------------------------------- |
 | Login burst of token exchanges/sockets  | Cap, stagger, open module first.                                          |
 | A dedicated worker per connection       | Bounded by `maxMonitoredServers`; workers are idle apart from heartbeats.   |
-| Server down at login                    | Presence `offline`, slow probing; never throws into the shell.            |
-| Token exchange denied                    | Presence `unauthorized`; no probing; item still navigable (remote shows its normal error). |
+| Server down at login                    | Presence `offline`, item greyed, slow probing (immediate on click); never throws into the shell. |
+| Token exchange denied                    | Presence `unauthorized`; no probing; item greyed and not navigable.        |
+| More modules than the cap               | Accept for now (`maxMonitoredServers` = 8). If needed, limit the rail to the monitored items and move the rest into a "… more" overflow menu. |
 | Notification storms                      | Per-server `maxPerServer` viewport range; toast coalescing; store cap.    |
 | Re-render cost                           | `useSyncExternalStore` selectors per module; incremental counts.          |
 | Remote over cap opened then closed      | Feed disposed with connection; notifications retained; presence → `unknown` after release. |
@@ -841,10 +922,12 @@ with the server team):
   registry; presence mapping from state sequences; registry `onStateChange`
   and `reconnecting`/`unauthorized` states; row mapping and
   insert/update/delete handling; store queries, counts, retention,
-  tombstones; default presentation policy table; nested
+  tombstones; read-on-open; default presentation policy table (incl.
+  portal-wide banners); nested
   `NotificationsProvider` pass-through.
-- **Component**: nav item badge/presence rendering and accessible
-  descriptions in all display styles; indicator ticker; panel filters and
+- **Component**: nav item badge rendering, greyed/`aria-disabled`
+  unavailable items and click-to-reprobe, and accessible descriptions in all
+  display styles; indicator ticker; panel filters and
   actions.
 - **Integration**: local-mode portal with a simulated server publishing a
   `NOTIFICATIONS/notifications` table (add to `vuu-data-test`), plus a
@@ -870,15 +953,13 @@ with the server team):
 
 Each phase is independently shippable behind `PortalShellProps` flags.
 
-## 17. Open questions
+## 17. Decisions
 
-1. Should opening a module mark its notifications read, or only explicit
-   user action?
-2. Should "delete" also dismiss on the server when supported, or remain a
-   local action with a separate "Dismiss on server"?
-3. Default `maxMonitoredServers` — with ~1 connection per icon, is 8 the
-   right default, or should it be derived from the rail's visible capacity?
-4. Should `online` presence be shown, or only problems (current default)?
-5. Are banners (`type = "banner"`) portal-wide by definition, or should they
-   follow the active-module rule like toasts?
-6. Is a Web Locks leader-tab model required for v1 given expected tab counts?
+| # | Question                                   | Decision                                                                                   |
+| - | ------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| 1 | Does opening a module mark its notifications read? | Yes. The server cannot record read state, so opening the module clears its badge (§7.6). |
+| 2 | Server changes?                            | None. Delete and read are client-side only (§13).                                          |
+| 3 | `maxMonitoredServers` default              | 8. If registries outgrow it, limit the nav rail and add a "… more" overflow (§14).          |
+| 4 | How is presence shown?                     | Only unavailability: offline/unauthorized items are slightly greyed and cannot be opened (§10.1). |
+| 5 | Are banners portal-wide?                   | Yes (§9.3).                                                                               |
+| 6 | Tab leader election in v1?                 | No; rationale and trigger conditions in §12.1.                                              |
