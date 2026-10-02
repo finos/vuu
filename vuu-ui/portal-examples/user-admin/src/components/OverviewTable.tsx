@@ -1,3 +1,4 @@
+import { H4 } from "@salt-ds/core";
 import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
 import { Table } from "@vuu-ui/vuu-table";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
@@ -87,22 +88,23 @@ const OverviewTableView = ({
         : [],
       columnLayout: "static",
       columnDefaultWidth: 120,
+      columnSeparators: false,
       rowSeparators: true,
-      zebraStripes: true,
+      zebraStripes: false,
     }),
     [adminConfig, name, schema],
   );
 
   return (
     <section className="vuuIdentityAdmin-table" aria-label={title}>
-      {title ? <h3>{title}</h3> : null}
+      {title ? <H4>{title}</H4> : null}
       {error ? (
         <p role="alert">{error}</p>
       ) : loading ? (
         <p role="status">Loading table...</p>
       ) : schema && dataSource ? (
         <>
-          <div className="vuuIdentityAdmin-tableViewport">
+          <div className="vuuIdentityAdmin-tableViewport vuuIdentityAdmin-tableCard">
             <Table
               config={config}
               dataSource={dataSource}

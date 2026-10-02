@@ -15,6 +15,7 @@ import { ApplicationModelContext } from "../src/data/useApplicationModel";
 import {
   GroupApplicationCell,
   RoleApplicationCell,
+  RoleTypeCell,
 } from "../src/components/ApplicationCell";
 import {
   groupScopeFilter,
@@ -304,14 +305,17 @@ describe("application-centred admin UX", () => {
     it("lists applications and explains how access is granted", async () => {
       await renderPage("?application=basket-trading");
 
-      const list = container.querySelector('ul[aria-label="Applications"]');
+      const list = container.querySelector(
+        '[role="radiogroup"][aria-label="Applications"]',
+      );
       expect(
-        [...(list?.querySelectorAll("button") ?? [])].map(
-          (button) => button.querySelector("span")?.firstChild?.textContent,
+        [...(list?.querySelectorAll('[role="radio"]') ?? [])].map(
+          (card) =>
+            card.querySelector(".vuuAdminApplications-listTitle")?.textContent,
         ),
       ).toEqual(["Basket Trading", "User Admin", "Unassigned"]);
       expect(
-        list?.querySelector('[aria-current="true"]')?.textContent,
+        list?.querySelector('[aria-checked="true"]')?.textContent,
       ).toContain("Basket Trading");
 
       const groups = container.querySelector(
@@ -322,10 +326,10 @@ describe("application-centred admin UX", () => {
           [...row.querySelectorAll("td")].map(({ textContent }) => textContent),
         ),
       ).toEqual([
-        ["basket-trading-read", "2", "viewer", "OK"],
-        ["basket-trading-trade", "1", "trader", "Missing access role"],
+        ["basket-trading-read", "2 members", "Accessviewer", "Healthy"],
+        ["basket-trading-trade", "1 member", "trader", "Missing access role"],
       ]);
-      expect(container.textContent).toContain("Users with access3");
+      expect(container.textContent).toContain("3 users with access");
       expect(
         container
           .querySelector<HTMLAnchorElement>(
@@ -412,13 +416,37 @@ describe("application-centred admin UX", () => {
     );
     expect(
       [...container.querySelectorAll("p")].map(
+        (cell) =>
+          cell.querySelector(
+            ".vuuAdminApplicationCell-title, .vuuAdminApplicationCell-unassigned",
+          )?.textContent,
+      ),
+    ).toEqual(["Basket Trading", "Unassigned", "User Admin", "Basket Trading"]);
+  });
+
+  it("marks portal access roles", async () => {
+    await renderWithModel(
+      <>
+        {[
+          { client_identifier: "vuu-portal", role_name: "user-admin-access" },
+          { client_identifier: "vuu-basket-trading", role_name: "trader" },
+          { client_identifier: "legacy", role_name: "legacy-role" },
+        ].map((dataRow) => (
+          <p key={dataRow.role_name}>
+            <RoleTypeCell
+              {...({
+                column: { name: "role_id" },
+                dataRow,
+              } as unknown as TableCellRendererProps)}
+            />
+          </p>
+        ))}
+      </>,
+    );
+    expect(
+      [...container.querySelectorAll("p")].map(
         ({ textContent }) => textContent,
       ),
-    ).toEqual([
-      "Basket Trading",
-      "Unassigned",
-      "User AdminAccess",
-      "Basket Trading",
-    ]);
+    ).toEqual(["Access", "Application", "Unassigned"]);
   });
 });

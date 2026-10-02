@@ -10,7 +10,11 @@ import type {
 import { dataRowFactory, type DataRowFunc } from "@vuu-ui/vuu-table";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { Range } from "@vuu-ui/vuu-utils";
-import { MemoryRouter } from "react-router-dom";
+import {
+  createMemoryRouter,
+  MemoryRouter,
+  RouterProvider,
+} from "react-router-dom";
 import {
   type ReactNode,
   useCallback,
@@ -29,6 +33,7 @@ import { GroupsPage } from "user-admin/src/pages/groups/GroupsPage";
 import { RolesPage } from "user-admin/src/pages/roles/RolesPage";
 import { UsersPage } from "user-admin/src/pages/users/UsersPage";
 import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
+import UserAdmin from "user-admin/src/UserAdmin";
 
 import "user-admin/src/UserAdmin.css";
 
@@ -107,7 +112,9 @@ export const DefaultModulePicker = () => {
 
   const onSelectedModulesChange = useCallback(
     (newSelectedModules: ModulePickerModuleDescriptor[]) => {
-      console.log(`onSelectedModulesChange ${JSON.stringify(newSelectedModules, null, 2)}`)
+      console.log(
+        `onSelectedModulesChange ${JSON.stringify(newSelectedModules, null, 2)}`,
+      );
       setSelectedModules(newSelectedModules);
     },
     [],
@@ -163,7 +170,9 @@ export const DefaultUserEditForm = () => {
           message.tableSchema.columns as readonly SchemaColumn[],
         );
       } else if (message.type === "subscribe-failed") {
-        console.error(`User editor data source subscription failed: ${message.msg}`);
+        console.error(
+          `User editor data source subscription failed: ${message.msg}`,
+        );
       } else if (message.type === "viewport-update" && message.rows?.[0]) {
         if (!DataRow) {
           console.error(
@@ -188,7 +197,6 @@ export const DefaultUserEditForm = () => {
       dataSource.unsubscribe();
     };
   }, [dataSource]);
-
 
   return (
     <div style={{ width: 480, height: 800 }}>
@@ -385,3 +393,27 @@ export const DefaultGroupsPage = () => (
     <GroupsPage />
   </AdminContext>
 );
+
+/** The complete Identity Admin module, as mounted by the portal. */
+export const DefaultUserAdmin = () => {
+  const router = useMemo(
+    () =>
+      createMemoryRouter(
+        [
+          {
+            path: "/admin/*",
+            element: (
+              <PortalModuleRegistryProvider remoteModules={remoteModules}>
+                <div style={{ height: "100vh" }}>
+                  <UserAdmin />
+                </div>
+              </PortalModuleRegistryProvider>
+            ),
+          },
+        ],
+        { initialEntries: ["/admin/overview"] },
+      ),
+    [],
+  );
+  return <RouterProvider router={router} />;
+};

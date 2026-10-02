@@ -7,13 +7,14 @@ import {
   type EditLifecycle,
 } from "@vuu-ui/vuu-data-editing";
 import {
+  Banner,
+  BannerContent,
   Button,
   Dropdown,
   FormField,
   FormFieldHelperText,
   FormFieldLabel,
   Input,
-  ListBox,
   Option,
   Tab,
   TabBar,
@@ -21,10 +22,12 @@ import {
   TabPanel,
   Tabs,
   TabTrigger,
+  Tag,
+  Text,
   ToggleButton,
   ToggleButtonGroup,
-  Toolbar,
 } from "@salt-ds/core";
+import { KeyIcon, LockedIcon } from "@salt-ds/icons";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { type ItemDescriptor, ItemPicker } from "@vuu-ui/vuu-ui-controls";
@@ -41,6 +44,12 @@ import {
   type SyntheticEvent,
 } from "react";
 import { errorMessage } from "../../data/admin-contract";
+import {
+  AppAvatar,
+  RoleList,
+  RoleRow,
+  useApplicationCategory,
+} from "../admin-ui/AdminUi";
 import {
   type ApplicationDetails,
   type ApplicationModel,
@@ -126,22 +135,28 @@ const AccessRoleNote = ({
   const { accessRole, application } = entry;
   if (!accessRole) {
     return (
-      <p role="alert">
-        Access role "{application.accessRole}" was not found on the vuu-portal
-        client. Members of this group cannot open {application.title}.
-      </p>
+      <Banner status="error">
+        <BannerContent role="alert">
+          Access role "{application.accessRole}" was not found on the vuu-portal
+          client. Members of this group cannot open {application.title}.
+        </BannerContent>
+      </Banner>
     );
   }
   return included ? (
-    <p role="note" className={`${classBase}-accessRole`}>
-      Includes access role <strong>{accessRole.roleName}</strong>, which lets
-      members open {application.title}.
-    </p>
+    <Banner className={`${classBase}-accessRole`} status="info">
+      <BannerContent role="note">
+        Includes access role <strong>{accessRole.roleName}</strong>, which lets
+        members open {application.title}.
+      </BannerContent>
+    </Banner>
   ) : (
-    <p role="alert">
-      This group does not include access role {accessRole.roleName}, so its
-      members cannot open {application.title}.
-    </p>
+    <Banner status="warning">
+      <BannerContent role="alert">
+        This group does not include access role {accessRole.roleName}, so its
+        members cannot open {application.title}.
+      </BannerContent>
+    </Banner>
   );
 };
 
@@ -157,19 +172,63 @@ const accessRoleItemFor = (
 
 const SelectedRoles = ({
   "aria-label": ariaLabel = "Assigned roles",
+  entry,
   items,
 }: {
   "aria-label"?: string;
+  entry?: ApplicationDetails;
   items: GroupRoleItem[];
-}) => (
-  <ListBox aria-label={ariaLabel} bordered readOnly selected={[]}>
-    {items.map((item) => (
-      <Option key={item.name} value={item}>
-        {item.label ?? item.name}
-      </Option>
-    ))}
-  </ListBox>
-);
+}) => {
+  const { model } = useApplicationModel();
+  const category = useApplicationCategory(entry?.application.name);
+  if (items.length === 0) {
+    return (
+      <Text color="secondary" role="status">
+        No roles assigned.
+      </Text>
+    );
+  }
+  return (
+    <RoleList aria-label={ariaLabel}>
+      {items.map((item) => {
+        const role = model.rolesById.get(item.name);
+        const isAccessRole = item.name === entry?.accessRole?.roleId;
+        const roleApplication = model.byName.get(
+          model.roleApplication.get(item.name) ?? "",
+        )?.application;
+        const ownRole =
+          !!entry && roleApplication?.name === entry.application.name;
+        return (
+          <RoleRow
+            description={
+              isAccessRole && entry
+                ? `Lets members open ${entry.application.title}`
+                : (roleApplication?.title ?? role?.clientIdentifier)
+            }
+            end={
+              isAccessRole ? (
+                <Tag bordered>Always included</Tag>
+              ) : ownRole ? (
+                <Tag category={category}>Application</Tag>
+              ) : entry ? (
+                <Tag bordered>Other application</Tag>
+              ) : null
+            }
+            icon={
+              isAccessRole ? (
+                <LockedIcon aria-hidden />
+              ) : (
+                <KeyIcon aria-hidden />
+              )
+            }
+            key={item.name}
+            name={role?.roleName ?? item.label ?? item.name}
+          />
+        );
+      })}
+    </RoleList>
+  );
+};
 
 const withAccessRole = (
   accessRole: GroupRoleItem | undefined,
@@ -177,8 +236,16 @@ const withAccessRole = (
 ) => (accessRole ? [accessRole, ...items] : items);
 
 /** The access role can't be removed, so it is listed outside the picker. */
-const FixedAccessRole = ({ item }: { item?: GroupRoleItem }) =>
-  item ? <SelectedRoles aria-label="Access role" items={[item]} /> : null;
+const FixedAccessRole = ({
+  entry,
+  item,
+}: {
+  entry?: ApplicationDetails;
+  item?: GroupRoleItem;
+}) =>
+  item ? (
+    <SelectedRoles aria-label="Access role" entry={entry} items={[item]} />
+  ) : null;
 
 export interface GroupsEditFormProps {
   /** Application to preselect when creating a group. */
@@ -394,10 +461,10 @@ const CreateGroupForm = ({
         ) : null}
         {saving ? <p role="status">Saving group...</p> : null}
         <Tabs defaultValue="GroupDetails">
-          <TabBar inset divider>
-            <TabList appearance="bordered">
+          <TabBar divider>
+            <TabList>
               <Tab value="GroupDetails">
-                <TabTrigger>Group Details</TabTrigger>
+                <TabTrigger>Details</TabTrigger>
               </Tab>
               <Tab value="Roles">
                 <TabTrigger>Roles</TabTrigger>
@@ -410,7 +477,13 @@ const CreateGroupForm = ({
                 <FormFieldLabel>Application</FormFieldLabel>
                 <Dropdown<ApplicationDetails>
                   aria-label="Application"
+                  bordered
                   data-icon="triangle-down"
+                  startAdornment={
+                    entry ? (
+                      <AppAvatar application={entry.application} size={0.75} />
+                    ) : undefined
+                  }
                   onSelectionChange={onApplicationSelectionChange}
                   placeholder="Please select value"
                   value={entry?.application.title ?? ""}
@@ -430,6 +503,7 @@ const CreateGroupForm = ({
               <FormField necessity="asterisk">
                 <FormFieldLabel>Group name</FormFieldLabel>
                 <Input
+                  bordered
                   disabled={!entry}
                   inputProps={{ "aria-label": "Group name" }}
                   onChange={onSuffixChange}
@@ -458,6 +532,7 @@ const CreateGroupForm = ({
                 <AccessRoleNote entry={entry} included />
                 {locked ? (
                   <SelectedRoles
+                    entry={entry}
                     items={withAccessRole(
                       accessRoleItemFor(entry),
                       selectedItems,
@@ -465,14 +540,20 @@ const CreateGroupForm = ({
                   />
                 ) : allRoleItems.length === 0 ? (
                   <>
-                    <FixedAccessRole item={accessRoleItemFor(entry)} />
+                    <FixedAccessRole
+                      entry={entry}
+                      item={accessRoleItemFor(entry)}
+                    />
                     <p role="status">
                       {entry.application.title} has no roles of its own yet.
                     </p>
                   </>
                 ) : (
                   <>
-                    <FixedAccessRole item={accessRoleItemFor(entry)} />
+                    <FixedAccessRole
+                      entry={entry}
+                      item={accessRoleItemFor(entry)}
+                    />
                     <ItemPicker
                       allItems={allRoleItems}
                       aria-label="Group roles"
@@ -487,16 +568,18 @@ const CreateGroupForm = ({
             )}
           </TabPanel>
         </Tabs>
-        <div className="vuuIdentityAdmin-formActions">
-          <Button type="submit" disabled={locked}>
-            Save
-          </Button>
+        <div className="vuuIdentityAdmin-panelFooter">
           <Button
-            type="button"
+            appearance="bordered"
             disabled={saving}
             onClick={() => void closeSession()}
+            sentiment="neutral"
+            type="button"
           >
             {rowStaged ? "Close" : "Cancel"}
+          </Button>
+          <Button disabled={locked} sentiment="accented" type="submit">
+            Save
           </Button>
         </div>
       </form>
@@ -684,22 +767,28 @@ const EditGroupForm = ({ dataRow, dataSource }: GroupsEditFormProps) => {
 
   return (
     <DataEditingProvider editSession={editSession}>
-      <Toolbar>
+      <div className="vuuIdentityAdmin-mode">
+        <Text color="secondary" styleAs="label">
+          {isEditMode
+            ? "Editing. Save or cancel your changes."
+            : "Switch to Edit to change this group's roles."}
+        </Text>
         <ToggleButtonGroup
+          aria-label="Mode"
           onChange={onToggleEditMode}
           value={isEditMode ? "edit" : "view"}
         >
           <ToggleButton value="view">View</ToggleButton>
           <ToggleButton value="edit">Edit</ToggleButton>
         </ToggleButtonGroup>
-      </Toolbar>
+      </div>
       {error ? <p role="alert">{error}</p> : null}
       <form className={classBase}>
         <Tabs defaultValue="GroupDetails">
-          <TabBar inset divider>
-            <TabList appearance="bordered">
+          <TabBar divider>
+            <TabList>
               <Tab value="GroupDetails">
-                <TabTrigger>Group Details</TabTrigger>
+                <TabTrigger>Details</TabTrigger>
               </Tab>
               <Tab value="Roles">
                 <TabTrigger>Roles</TabTrigger>
@@ -710,14 +799,25 @@ const EditGroupForm = ({ dataRow, dataSource }: GroupsEditFormProps) => {
             <dl className="vuuIdentityAdmin-details">
               <div>
                 <dt>Application</dt>
-                <dd>{entry ? entry.application.title : "Unassigned"}</dd>
+                <dd>
+                  {entry ? (
+                    <span className="vuuAdminApplicationCell">
+                      <AppAvatar application={entry.application} size={0.9} />
+                      {entry.application.title}
+                    </span>
+                  ) : (
+                    "Unassigned"
+                  )}
+                </dd>
               </div>
             </dl>
             {!entry && !loading ? (
-              <p role="note">
-                This group's name does not start with any application's group
-                prefix, so it does not grant access to an application.
-              </p>
+              <Banner status="warning">
+                <BannerContent role="note">
+                  This group's name does not start with any application's group
+                  prefix, so it does not grant access to an application.
+                </BannerContent>
+              </Banner>
             ) : null}
             <EditField
               dataRow={dataRow}
@@ -765,6 +865,7 @@ const EditGroupForm = ({ dataRow, dataSource }: GroupsEditFormProps) => {
                 ) : null}
                 {!canStage ? (
                   <SelectedRoles
+                    entry={entry}
                     items={withAccessRole(
                       hasAccessRole ? accessRoleItemFor(entry) : undefined,
                       selectedItems,
@@ -773,6 +874,7 @@ const EditGroupForm = ({ dataRow, dataSource }: GroupsEditFormProps) => {
                 ) : (
                   <>
                     <FixedAccessRole
+                      entry={entry}
                       item={
                         hasAccessRole ? accessRoleItemFor(entry) : undefined
                       }
@@ -792,13 +894,15 @@ const EditGroupForm = ({ dataRow, dataSource }: GroupsEditFormProps) => {
           </TabPanel>
         </Tabs>
       </form>
-      <EditButtons
-        canCancel={sessionActive && !staging && editSession.canCancel}
-        canSave={sessionActive && !staging && editSession.canSave}
-        editSession={editSession}
-        onCancel={onCancel}
-        onSave={onSave}
-      />
+      <div className="vuuIdentityAdmin-panelFooter">
+        <EditButtons
+          canCancel={sessionActive && !staging && editSession.canCancel}
+          canSave={sessionActive && !staging && editSession.canSave}
+          editSession={editSession}
+          onCancel={onCancel}
+          onSave={onSave}
+        />
+      </div>
     </DataEditingProvider>
   );
 };

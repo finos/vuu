@@ -6,12 +6,18 @@ import type {
 } from "@vuu-ui/vuu-table-types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { GROUP_APPLICATION_CELL_RENDERER } from "../../components/ApplicationCell";
+import {
+  GROUP_APPLICATION_CELL_RENDERER,
+  GROUP_NAME_CELL_RENDERER,
+  GROUP_ROLES_CELL_RENDERER,
+} from "../../components/ApplicationCell";
 import { USER_ADMIN_TABLES } from "../../data/user-admin-tables";
 import {
   groupScopeFilter,
   useApplicationScope,
 } from "../../data/useApplicationScope";
+
+export const GROUP_ROW_HEIGHT = 44;
 
 export const useGroupsPage = () => {
   const { VuuDataSource } = useData();
@@ -49,16 +55,41 @@ export const useGroupsPage = () => {
             name: "string",
             renderer: { name: GROUP_APPLICATION_CELL_RENDERER },
           },
-          width: 180,
+          minWidth: 160,
+          maxWidth: 320,
+          width: 200,
         },
-        { name: "group_display_name", label: "Group" },
-        { name: "group_path", label: "Path", width: 240 },
-        { name: "user_count", label: "Users" },
-        { name: "role_count", label: "Roles" },
+        {
+          name: "group_display_name",
+          label: "Group",
+          type: {
+            name: "string",
+            renderer: { name: GROUP_NAME_CELL_RENDERER },
+          },
+          minWidth: 180,
+          maxWidth: 400,
+          width: 240,
+        },
+        { name: "user_count", label: "Members", minWidth: 100, width: 100 },
+        {
+          name: "role_count",
+          label: "Roles",
+          align: "left",
+          type: {
+            name: "number",
+            renderer: { name: GROUP_ROLES_CELL_RENDERER },
+          },
+          minWidth: 240,
+          maxWidth: 600,
+          width: 360,
+        },
+        { name: "group_path", label: "Path", hidden: true },
         { name: "parent_group_id", label: "", hidden: true },
       ],
-      columnSeparators: true,
-      zebraStripes: true,
+      columnLayout: "fit",
+      columnSeparators: false,
+      rowSeparators: true,
+      zebraStripes: false,
     }),
     [],
   );

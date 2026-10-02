@@ -5,6 +5,7 @@ import {
   TabPanel,
   Tabs,
   TabTrigger,
+  Text,
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
@@ -59,30 +60,38 @@ export const UserEditForm = ({ dataRow, dataSource }: UserEditFormProps) => {
 
   return (
     <DataEditingProvider editSession={editSession}>
-      <ToggleButtonGroup
-        onChange={onToggleEditMode}
-        value={isEditMode ? "edit" : "view"}
-      >
-        <ToggleButton value="view">View</ToggleButton>
-        <ToggleButton value="edit">Edit</ToggleButton>
-      </ToggleButtonGroup>
+      <div className="vuuIdentityAdmin-mode">
+        <Text color="secondary" styleAs="label">
+          {isEditMode
+            ? "Editing. Save or cancel your changes."
+            : "Switch to Edit to change this user."}
+        </Text>
+        <ToggleButtonGroup
+          aria-label="Mode"
+          onChange={onToggleEditMode}
+          value={isEditMode ? "edit" : "view"}
+        >
+          <ToggleButton value="view">View</ToggleButton>
+          <ToggleButton value="edit">Edit</ToggleButton>
+        </ToggleButtonGroup>
+      </div>
 
       <form className={classBase}>
         <Tabs defaultValue="UserDetails">
-          <TabBar inset divider>
-            <TabList appearance="bordered">
+          <TabBar divider>
+            <TabList>
               <Tab value="UserDetails">
-                <TabTrigger>UserDetails</TabTrigger>
+                <TabTrigger>Profile</TabTrigger>
               </Tab>
               <Tab value="Permissions">
-                <TabTrigger>Permissions</TabTrigger>
+                <TabTrigger>Application access</TabTrigger>
               </Tab>
             </TabList>
           </TabBar>
           <TabPanel value="UserDetails">
             <EditField
               dataRow={dataRow}
-              label="UserName"
+              label="Username"
               name="username"
               readOnly
               required
@@ -94,8 +103,8 @@ export const UserEditForm = ({ dataRow, dataSource }: UserEditFormProps) => {
               required
               type="email"
             />
-            <EditField dataRow={dataRow} label="First Name" name="first_name" />
-            <EditField dataRow={dataRow} label="Last Name" name="last_name" />
+            <EditField dataRow={dataRow} label="First name" name="first_name" />
+            <EditField dataRow={dataRow} label="Last name" name="last_name" />
             <EditField
               dataRow={dataRow}
               label="Enabled"
@@ -104,7 +113,7 @@ export const UserEditForm = ({ dataRow, dataSource }: UserEditFormProps) => {
             />
             <EditField
               dataRow={dataRow}
-              label="Temporary Password"
+              label="Temporary password"
               name="temporary_password"
               type="password"
             />
@@ -122,15 +131,16 @@ export const UserEditForm = ({ dataRow, dataSource }: UserEditFormProps) => {
             />
           </TabPanel>
         </Tabs>
-        <div className="vuuIdentityAdmin-formActions" />
       </form>
-      <EditButtons
-        canCancel={editSession.canCancel}
-        canSave={editSession.canSave}
-        editSession={editSession}
-        onCancel={onCancel}
-        onSave={onSave}
-      />
+      <div className="vuuIdentityAdmin-panelFooter">
+        <EditButtons
+          canCancel={editSession.canCancel}
+          canSave={editSession.canSave}
+          editSession={editSession}
+          onCancel={onCancel}
+          onSave={onSave}
+        />
+      </div>
     </DataEditingProvider>
   );
 };

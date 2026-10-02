@@ -6,12 +6,18 @@ import type {
 } from "@vuu-ui/vuu-table-types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ROLE_APPLICATION_CELL_RENDERER } from "../../components/ApplicationCell";
+import {
+  ROLE_APPLICATION_CELL_RENDERER,
+  ROLE_NAME_CELL_RENDERER,
+  ROLE_TYPE_CELL_RENDERER,
+} from "../../components/ApplicationCell";
 import { USER_ADMIN_TABLES } from "../../data/user-admin-tables";
 import {
   roleScopeFilter,
   useApplicationScope,
 } from "../../data/useApplicationScope";
+
+export const ROLE_ROW_HEIGHT = 52;
 
 export const useRolesPage = () => {
   const { VuuDataSource } = useData();
@@ -51,18 +57,47 @@ export const useRolesPage = () => {
             name: "string",
             renderer: { name: ROLE_APPLICATION_CELL_RENDERER },
           },
+          minWidth: 160,
+          maxWidth: 320,
           width: 200,
         },
-        { name: "role_name", label: "Role name", width: 200 },
-        { name: "role_display_name", label: "Short name" },
-        { name: "description", label: "Description" },
-        { name: "group_count", label: "Groups" },
-        { name: "client_name", label: "Client", hidden: true },
+        {
+          name: "role_name",
+          label: "Role",
+          type: {
+            name: "string",
+            renderer: { name: ROLE_NAME_CELL_RENDERER },
+          },
+          minWidth: 220,
+          maxWidth: 560,
+          width: 320,
+        },
+        {
+          name: "role_id",
+          label: "Type",
+          type: {
+            name: "string",
+            renderer: { name: ROLE_TYPE_CELL_RENDERER },
+          },
+          minWidth: 120,
+          width: 140,
+        },
+        {
+          name: "client_name",
+          label: "Client",
+          minWidth: 120,
+          maxWidth: 320,
+          width: 160,
+        },
+        { name: "group_count", label: "Groups", minWidth: 80, width: 90 },
+        { name: "role_display_name", label: "Short name", hidden: true },
+        { name: "description", label: "Description", hidden: true },
         { name: "client_id", label: "", hidden: true },
-        { name: "role_id", label: "", hidden: true },
       ],
-      columnSeparators: true,
-      zebraStripes: true,
+      columnLayout: "fit",
+      columnSeparators: false,
+      rowSeparators: true,
+      zebraStripes: false,
     }),
     [],
   );

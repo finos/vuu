@@ -7,21 +7,27 @@ import {
   type EditLifecycle,
 } from "@vuu-ui/vuu-data-editing";
 import {
+  Banner,
+  BannerContent,
   Button,
+  Code,
+  Divider,
   Dropdown,
   FormField,
   FormFieldHelperText,
   FormFieldLabel,
   Option,
+  Text,
   ToggleButton,
   ToggleButtonGroup,
-  Toolbar,
 } from "@salt-ds/core";
+import { UserGroupIcon } from "@salt-ds/icons";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { useNotifications } from "@vuu-ui/vuu-notifications";
 import { isRpcError } from "@vuu-ui/vuu-utils";
 import { errorMessage } from "../../data/admin-contract";
+import { AppAvatar, GroupName, plural } from "../admin-ui/AdminUi";
 import { type ApplicationDetails, classifyRole } from "../../data/applications";
 import {
   useApplicationModel,
@@ -279,7 +285,16 @@ const CreateRoleForm = ({
             <FormFieldLabel>Application</FormFieldLabel>
             <Dropdown<ApplicationDetails>
               aria-label="Application"
+              bordered
               data-icon="triangle-down"
+              startAdornment={
+                application ? (
+                  <AppAvatar
+                    application={application.application}
+                    size={0.75}
+                  />
+                ) : undefined
+              }
               onSelectionChange={onApplicationSelectionChange}
               placeholder="Please select value"
               value={application?.application.title ?? ""}
@@ -314,16 +329,22 @@ const CreateRoleForm = ({
             name="description"
           />
         </fieldset>
-        <div className="vuuIdentityAdmin-formActions">
-          <Button type="submit" disabled={!sessionActive || saving || created}>
-            Save
-          </Button>
+        <div className="vuuIdentityAdmin-panelFooter">
           <Button
-            type="button"
+            appearance="bordered"
             disabled={saving}
             onClick={() => void closeSession()}
+            sentiment="neutral"
+            type="button"
           >
             {created ? "Close" : "Cancel"}
+          </Button>
+          <Button
+            disabled={!sessionActive || saving || created}
+            sentiment="accented"
+            type="submit"
+          >
+            Save
           </Button>
         </div>
       </form>
@@ -342,7 +363,16 @@ const RoleApplicationSummary = ({ dataRow }: { dataRow: DataRow }) => {
     <dl className="vuuIdentityAdmin-details">
       <div>
         <dt>Application</dt>
-        <dd>{match ? match.application.title : "Unassigned"}</dd>
+        <dd>
+          {match ? (
+            <span className="vuuAdminApplicationCell">
+              <AppAvatar application={match.application} size={0.9} />
+              {match.application.title}
+            </span>
+          ) : (
+            "Unassigned"
+          )}
+        </dd>
       </div>
       <div>
         <dt>Role type</dt>
@@ -354,7 +384,54 @@ const RoleApplicationSummary = ({ dataRow }: { dataRow: DataRow }) => {
               : "Not linked to an application"}
         </dd>
       </div>
+      <div>
+        <dt>Client</dt>
+        <dd>
+          <Code>{String(dataRow.client_identifier ?? "")}</Code>
+        </dd>
+      </div>
     </dl>
+  );
+};
+
+/** The groups a role is assigned to, from the application model. */
+const RoleGroups = ({ dataRow }: { dataRow: DataRow }) => {
+  const { model } = useApplicationModel();
+  const roleId = String(dataRow.role_id ?? "");
+  const groups = [...model.groupsById.values()].filter(({ roleIds }) =>
+    roleIds.includes(roleId),
+  );
+  return (
+    <section className="vuuIdentityAdmin-section">
+      <Text className="vuuIdentityAdmin-sectionTitle">
+        {groups.length === 0
+          ? "Not included in any group"
+          : `Included in ${plural(groups.length, "group")}`}
+      </Text>
+      {groups.length > 0 ? (
+        <ul aria-label="Groups with this role" className="vuuAdminUi-roleList">
+          {groups.map((group) => {
+            const application = model.byName.get(
+              model.groupApplication.get(group.groupId) ?? "",
+            )?.application;
+            return (
+              <li className="vuuAdminUi-roleRow" key={group.groupId}>
+                <span className="vuuAdminUi-roleRowIcon">
+                  <UserGroupIcon aria-hidden />
+                </span>
+                <GroupName
+                  name={group.groupName}
+                  prefix={application?.groupPrefix}
+                />
+                <Text color="secondary" styleAs="label">
+                  {plural(group.userCount, "member")}
+                </Text>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </section>
   );
 };
 
@@ -365,12 +442,14 @@ const AccessRoleDetails = ({ dataRow }: { dataRow: DataRow }) => {
       ?.application.title ?? "";
   return (
     <form className={classBase}>
+      <Banner status="info">
+        <BannerContent role="note">
+          This role controls who can open {title}. It is defined by the
+          application's module descriptor and cannot be changed here. Every{" "}
+          {title} group includes it.
+        </BannerContent>
+      </Banner>
       <RoleApplicationSummary dataRow={dataRow} />
-      <p role="note">
-        This role controls who can open {title}. It is defined by the
-        application's module descriptor and cannot be edited here. Every {title}{" "}
-        group includes it.
-      </p>
       <EditField
         dataRow={dataRow}
         label="Role name"
@@ -383,6 +462,8 @@ const AccessRoleDetails = ({ dataRow }: { dataRow: DataRow }) => {
         name="description"
         readOnly
       />
+      <Divider variant="tertiary" />
+      <RoleGroups dataRow={dataRow} />
     </form>
   );
 };
@@ -419,15 +500,21 @@ const EditApplicationRoleForm = ({
 
   return (
     <DataEditingProvider editSession={editSession}>
-      <Toolbar>
+      <div className="vuuIdentityAdmin-mode">
+        <Text color="secondary" styleAs="label">
+          {isEditMode
+            ? "Editing. Save or cancel your changes."
+            : "Switch to Edit to change this role."}
+        </Text>
         <ToggleButtonGroup
+          aria-label="Mode"
           onChange={onToggleEditMode}
           value={isEditMode ? "edit" : "view"}
         >
           <ToggleButton value="view">View</ToggleButton>
           <ToggleButton value="edit">Edit</ToggleButton>
         </ToggleButtonGroup>
-      </Toolbar>
+      </div>
 
       <form className={classBase}>
         <RoleApplicationSummary dataRow={dataRow} />
@@ -444,14 +531,18 @@ const EditApplicationRoleForm = ({
           required
         />
         <EditField dataRow={dataRow} label="Description" name="description" />
+        <Divider variant="tertiary" />
+        <RoleGroups dataRow={dataRow} />
       </form>
-      <EditButtons
-        canCancel={editSession.canCancel}
-        canSave={editSession.canSave}
-        editSession={editSession}
-        onCancel={onCancel}
-        onSave={onSave}
-      />
+      <div className="vuuIdentityAdmin-panelFooter">
+        <EditButtons
+          canCancel={editSession.canCancel}
+          canSave={editSession.canSave}
+          editSession={editSession}
+          onCancel={onCancel}
+          onSave={onSave}
+        />
+      </div>
     </DataEditingProvider>
   );
 };

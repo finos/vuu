@@ -1,24 +1,56 @@
-import {
-  Button,
-  FlexLayout,
-  SidePanel,
-  SidePanelCloseButton,
-  SidePanelContent,
-  SidePanelHeader,
-  SidePanelProvider,
-  SidePanelTitle,
-  Toolbar,
-  Tooltray,
-} from "@salt-ds/core";
+import { Avatar, Button, SidePanelTitle } from "@salt-ds/core";
+import { AddIcon, UserGroupIcon } from "@salt-ds/icons";
 import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
 import { Table } from "@vuu-ui/vuu-table";
+import type { DataRow } from "@vuu-ui/vuu-table-types";
+import {
+  AppAvatar,
+  PanelHeading,
+  plural,
+} from "../../components/admin-ui/AdminUi";
+import { AdminTablePage } from "../../components/admin-table-page/AdminTablePage";
 import { ApplicationFilter } from "../../components/ApplicationFilter";
 import { GroupsEditForm } from "../../components/groups-edit-form/GroupsEditForm";
-import { useGroupsPage } from "./useGroupsPage";
+import {
+  applicationForGroupName,
+  groupNameFromPath,
+} from "../../data/applications";
+import { useApplications } from "../../data/useApplicationModel";
+import { GROUP_ROW_HEIGHT, useGroupsPage } from "./useGroupsPage";
 
-import "./GroupsPage.css";
-
-const classBase = "vuuGroupsPage";
+const GroupHeading = ({ dataRow }: { dataRow?: DataRow }) => {
+  const { applications } = useApplications();
+  const isNew = dataRow?.group_id === undefined;
+  const groupName = groupNameFromPath(dataRow?.group_path);
+  const application = applicationForGroupName(applications, groupName);
+  const userCount = Number(dataRow?.user_count ?? 0);
+  return (
+    <PanelHeading
+      avatar={
+        application ? (
+          <AppAvatar application={application} size={2} />
+        ) : (
+          <Avatar
+            aria-hidden
+            color="category-20"
+            fallbackIcon={<UserGroupIcon />}
+            size={2}
+          />
+        )
+      }
+      subtitle={
+        isNew
+          ? "Bundle an application's roles for its users"
+          : `${application ? `${application.title} group` : "Unassigned group"} · ${plural(userCount, "member")}`
+      }
+      title={
+        <SidePanelTitle styleAs="h3">
+          {isNew ? "New group" : (groupName ?? "Group")}
+        </SidePanelTitle>
+      }
+    />
+  );
+};
 
 export const GroupsPage = () => {
   const {
@@ -36,74 +68,47 @@ export const GroupsPage = () => {
 
   return (
     <EditModeProvider isEditMode={dataRow && dataRow.group_id === undefined}>
-      <SidePanelProvider
-        open={open}
-        onOpenChange={(nextOpen) => {
+      <AdminTablePage
+        actions={
+          <Button onClick={createGroup} sentiment="accented">
+            <AddIcon aria-hidden /> Create group
+          </Button>
+        }
+        dataSource={dataSource}
+        description="Each group belongs to one application and bundles its roles."
+        filter={
+          <ApplicationFilter onChange={setApplication} value={application} />
+        }
+        noun="group"
+        onPanelOpenChange={(nextOpen) => {
           if (nextOpen) {
             setOpen(true);
           } else {
             close();
           }
         }}
-      >
-        <FlexLayout
-          className={classBase}
-          style={{
-            width: "100%",
-            height: "100%",
-            border:
-              "var(--salt-size-fixed-100) var(--salt-borderStyle-solid) var(--salt-container-bold-borderColor)",
-            borderRadius: "var(--salt-palette-corner-weak)",
-          }}
-          gap={0}
-        >
-          <FlexLayout
-            direction="column"
-            style={{ flex: "1 1 auto", overflow: "hidden", padding: 8 }}
-            gap={8}
-          >
-            <Toolbar style={{ flex: "0 0 32px" }}>
-              <Tooltray>
-                <ApplicationFilter
-                  onChange={setApplication}
-                  value={application}
-                />
-              </Tooltray>
-              <Tooltray align="end">
-                <Button className={`${classBase}-add`} onClick={createGroup}>
-                  Create Group
-                </Button>
-              </Tooltray>
-            </Toolbar>
-
-            <div
-              style={{ flex: "1 1 auto", height: "100%", overflow: "hidden" }}
-            >
-              <Table
-                config={config}
-                dataSource={dataSource}
-                onSelect={onSelect}
-              />
-            </div>
-          </FlexLayout>
-          <SidePanel position="right" className="vuuIdentityAdmin-panel">
-            <SidePanelHeader>
-              <SidePanelCloseButton />
-              <SidePanelTitle>Group Details</SidePanelTitle>
-            </SidePanelHeader>
-            <SidePanelContent>
-              {dataRow ? (
-                <GroupsEditForm
-                  application={application}
-                  dataRow={dataRow}
-                  dataSource={dataSource}
-                  onClose={close}
-                />
-              ) : null}
-            </SidePanelContent>
-          </SidePanel>
-        </FlexLayout>
-      </SidePanelProvider>
+        panelContent={
+          dataRow ? (
+            <GroupsEditForm
+              application={application}
+              dataRow={dataRow}
+              dataSource={dataSource}
+              onClose={close}
+            />
+          ) : null
+        }
+        panelHeading={<GroupHeading dataRow={dataRow} />}
+        panelOpen={open}
+        table={
+          <Table
+            config={config}
+            dataSource={dataSource}
+            onSelect={onSelect}
+            rowHeight={GROUP_ROW_HEIGHT}
+          />
+        }
+        title="Groups"
+      />
     </EditModeProvider>
   );
 };

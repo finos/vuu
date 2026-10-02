@@ -5,8 +5,9 @@
 
   .vuuModulePickerListItem {
     align-items: center;
-    border: solid 1px var(--salt-container-tertiary-borderColor);
-    border-radius: var(--salt-curve-100);
+    background: var(--salt-container-primary-background);
+    border: solid 1px var(--salt-separable-tertiary-borderColor);
+    border-radius: var(--salt-palette-corner, var(--salt-curve-100));
     display: grid;
     gap: var(--salt-spacing-300);
     height: auto;
@@ -29,7 +30,7 @@
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-rows: auto auto;
 
-    .vuuModulePicker-moduleName {
+    .vuuModulePicker-module {
       grid-column: 1;
       grid-row: 1;
     }
@@ -51,7 +52,15 @@
     }
   }
 
+  .vuuModulePicker-module {
+    align-items: center;
+    display: flex;
+    gap: var(--salt-spacing-100);
+    min-width: 0;
+  }
+
   .vuuModulePicker-moduleName {
+    font-weight: var(--salt-text-fontWeight-strong);
     min-width: 0;
     overflow-wrap: anywhere;
     white-space: normal;

@@ -1,19 +1,22 @@
 .vuuAdminApplicationCell {
-  display: inline-flex;
   align-items: center;
+  display: inline-flex;
   gap: var(--salt-spacing-100);
+  min-width: 0;
 }
 
-.vuuAdminApplicationCell-tag {
-  padding: 0 var(--salt-spacing-50);
-  border: 1px solid var(--salt-status-info-borderColor);
-  border-radius: var(--salt-palette-corner-weak);
-  color: var(--salt-status-info-foreground);
-  font-size: var(--salt-text-label-fontSize);
-  line-height: 1.4;
+.vuuAdminApplicationCell-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .vuuAdminApplicationCell-unassigned {
   color: var(--salt-content-secondary-foreground);
   font-style: italic;
+}
+
+.vuuAdminApplicationCell-tags {
+  flex-wrap: nowrap;
+  overflow: hidden;
 }

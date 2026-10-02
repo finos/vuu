@@ -17,6 +17,8 @@ import {
   useContext,
   useMemo,
 } from "react";
+import { useApplications } from "../../data/useApplicationModel";
+import { AppAvatar } from "../admin-ui/AdminUi";
 import type { ModulePermissions } from "../user-edit-form/ModulePermissions";
 import { PermissionGroupPicker } from "./PermissionGroupPicker";
 
@@ -31,6 +33,29 @@ type AvailableListItemProps = ComponentProps<
 >;
 
 const getItemLabel = (item: ItemDescriptor) => item.label ?? item.name;
+
+/** The application avatar and name for a module. */
+const ModuleName = ({
+  item,
+  label,
+}: {
+  item: ItemDescriptor;
+  label: ReactNode;
+}) => {
+  const { applications } = useApplications();
+  // Module items are keyed by their application's access role.
+  const application = applications.find(
+    ({ accessRole, name }) => accessRole === item.name || name === item.name,
+  );
+  return (
+    <span className="vuuModulePicker-module">
+      {application ? <AppAvatar application={application} size={1} /> : null}
+      <span className="vuuItemPicker-text vuuModulePicker-moduleName">
+        {label}
+      </span>
+    </span>
+  );
+};
 
 /** Extends ItemDescriptor with the permission options and current selection used to populate
  * the ComboBox embedded within the custom SelectedItem. */
@@ -146,9 +171,7 @@ const ModulePickerSelectedListItem = ({
       data-name={item.name}
     >
       {item.icon ? <Icon name={item.icon} /> : null}
-      <span className="vuuItemPicker-text vuuModulePicker-moduleName">
-        {valueWithHighlighting}
-      </span>
+      <ModuleName item={item} label={valueWithHighlighting} />
       <PermissionGroupPicker
         item={moduleDescriptor}
         multiselect={permissionMultiselect}
@@ -196,12 +219,11 @@ const ModulePickerAvailableListItem = ({
       data-name={item.name}
       disabled={disabled}
     >
-      <span className="vuuItemPicker-text vuuModulePicker-moduleName">
-        {valueWithHighlighting}
-      </span>
+      <ModuleName item={item} label={valueWithHighlighting} />
       {!readOnly ? (
         <Button
-          appearance="solid"
+          appearance="bordered"
+          sentiment="neutral"
           className="vuuItemPickerListItem-action vuuModulePicker-addButton"
           onClick={onAdd}
           disabled={disabled}

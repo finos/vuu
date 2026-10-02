@@ -1,4 +1,5 @@
-import { Dropdown, FormField, FormFieldLabel, Option } from "@salt-ds/core";
+import { Dropdown, Option } from "@salt-ds/core";
+import { FilterIcon } from "@salt-ds/icons";
 import type { SyntheticEvent } from "react";
 import { UNASSIGNED } from "../data/applications";
 import { useApplications } from "../data/useApplicationModel";
@@ -32,25 +33,25 @@ export const ApplicationFilter = ({
   const selected =
     options.find((option) => option.value === value) ?? options[0];
   return (
-    <FormField labelPlacement="left" style={{ width: 320 }}>
-      <FormFieldLabel>Application</FormFieldLabel>
-      <Dropdown<ApplicationFilterOption>
-        aria-label="Application filter"
-        onSelectionChange={(
-          _event: SyntheticEvent,
-          [option]: ApplicationFilterOption[],
-        ) => {
-          if (option) onChange(option.value);
-        }}
-        selected={[selected]}
-        value={selected.label}
-      >
-        {options.map((option) => (
-          <Option key={option.value || "all"} value={option}>
-            {option.label}
-          </Option>
-        ))}
-      </Dropdown>
-    </FormField>
+    <Dropdown<ApplicationFilterOption>
+      aria-label="Application filter"
+      bordered
+      className="vuuIdentityAdmin-applicationFilter"
+      startAdornment={<FilterIcon aria-hidden />}
+      onSelectionChange={(
+        _event: SyntheticEvent,
+        [option]: ApplicationFilterOption[],
+      ) => {
+        if (option) onChange(option.value);
+      }}
+      selected={[selected]}
+      value={selected.label}
+    >
+      {options.map((option) => (
+        <Option key={option.value || "all"} value={option}>
+          {option.label}
+        </Option>
+      ))}
+    </Dropdown>
   );
 };

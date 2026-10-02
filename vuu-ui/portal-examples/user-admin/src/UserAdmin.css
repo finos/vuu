@@ -1,5 +1,5 @@
 .vuuIdentityAdmin {
-  --admin-border: var(--salt-container-primary-borderColor);
+  --admin-border: var(--salt-separable-tertiary-borderColor);
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -8,7 +8,7 @@
   min-height: 0;
   overflow: auto;
   color: var(--salt-content-primary-foreground);
-  background: var(--salt-container-primary-background);
+  background: var(--salt-container-secondary-background);
   container-type: inline-size;
   container-name: identity-admin;
 }
@@ -16,12 +16,12 @@
 .vuuIdentityAdmin h1,
 .vuuIdentityAdmin h2,
 .vuuIdentityAdmin h3,
+.vuuIdentityAdmin h4,
 .vuuIdentityAdmin p {
   margin: 0;
 }
 
 .vuuIdentityAdmin-header,
-.vuuIdentityAdmin-pageHeader,
 .vuuIdentityAdmin-quickActions {
   display: flex;
   align-items: center;
@@ -29,19 +29,29 @@
 }
 
 .vuuIdentityAdmin-header {
+  flex: none;
   justify-content: space-between;
-  padding: var(--salt-spacing-200);
+  padding: var(--salt-spacing-150) var(--salt-spacing-300);
   border-bottom: 1px solid var(--admin-border);
+  background: var(--salt-container-primary-background);
+}
+
+.vuuIdentityAdmin-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--salt-spacing-150);
+  min-width: 0;
 }
 
 .vuuIdentityAdmin h1 {
-  font-size: var(--salt-text-h2-fontSize);
-}
-.vuuIdentityAdmin h2 {
   font-size: var(--salt-text-h3-fontSize);
+  font-weight: var(--salt-text-h3-fontWeight);
+  line-height: var(--salt-text-h3-lineHeight);
 }
-.vuuIdentityAdmin h3 {
-  font-size: var(--salt-text-h4-fontSize);
+
+.vuuIdentityAdmin-headerSearch.saltInput {
+  flex: 0 1 420px;
+  min-width: 200px;
 }
 
 .vuuIdentityAdmin-workspace {
@@ -64,29 +74,21 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  flex: 0 0 180px;
-  gap: var(--salt-spacing-100);
-  padding: var(--salt-spacing-150) var(--salt-spacing-100);
+  flex: 0 0 216px;
+  padding: var(--salt-spacing-200) 0;
   border-right: 1px solid var(--admin-border);
-  background: var(--salt-container-secondary-background);
+  background: var(--salt-container-primary-background);
   overflow-y: auto;
 }
 
-.vuuIdentityAdmin a {
-  color: var(--salt-actionable-primary-background);
+.vuuIdentityAdmin a:not(.saltVerticalNavigationItemTrigger, .saltLink) {
+  color: var(--salt-content-accent-foreground);
   text-underline-offset: 4px;
 }
 
-.vuuIdentityAdmin-navigation a {
-  padding: var(--salt-spacing-150) var(--salt-spacing-100);
+.vuuIdentityAdmin-navigation .saltVerticalNavigationItemTrigger {
+  gap: var(--salt-spacing-150);
   text-decoration: none;
-  border-left: 3px solid transparent;
-}
-
-.vuuIdentityAdmin-navigation a.active {
-  border-color: var(--salt-actionable-primary-background);
-  background: var(--salt-container-primary-background);
-  font-weight: var(--salt-text-fontWeight-strong);
 }
 
 .vuuIdentityAdmin-navigation a[aria-disabled="true"] {
@@ -104,28 +106,109 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--salt-spacing-150);
+  gap: var(--salt-spacing-300);
   min-width: 0;
   min-height: 0;
-  padding: var(--salt-spacing-200);
+  overflow: auto;
+  padding: var(--salt-spacing-300) var(--salt-spacing-400);
 }
 
-.vuuIdentityAdmin-pageHeader {
-  justify-content: space-between;
+/* A page with a list on the left and a SidePanel on the right. */
+.vuuIdentityAdmin-pageWithPanel {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
 }
-.vuuIdentityAdmin-pageHeader p {
-  margin-top: var(--salt-spacing-100);
+
+.vuuIdentityAdmin-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--salt-spacing-150);
 }
-.vuuIdentityAdmin-search {
-  max-width: 620px;
+
+.vuuIdentityAdmin-toolbar > .vuuIdentityAdmin .vuuIdentityAdmin-applicationFilter {
+  width: 260px;
 }
+
+.vuuIdentityAdmin-count {
+  margin-left: auto;
+}
+
+.vuuIdentityAdmin .vuuIdentityAdmin-applicationFilter {
+  width: 260px;
+}
+
+.vuuIdentityAdmin-count {
+  color: var(--salt-content-secondary-foreground);
+  white-space: nowrap;
+}
+
+/* Vuu tables presented as a card. */
+.vuuIdentityAdmin-tableCard {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 240px;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--salt-palette-corner, 8px);
+  background: var(--salt-container-primary-background);
+}
+
+.vuuIdentityAdmin-tableCard .vuuTable {
+  --vuuTable-background: var(--salt-container-primary-background);
+  --vuuTableHeaderCell-background: var(--salt-container-primary-background);
+}
+
+/* Vuu sizes cells assuming a global border-box reset, which the portal host
+   does not provide. Without it, body cells are wider than their headers. */
+.vuuIdentityAdmin .vuuTableCell {
+  box-sizing: border-box;
+}
+
+/* Cells with a custom renderer are centred vertically; plain text cells keep
+   Vuu's inline-block layout (and its text-overflow ellipsis). */
+.vuuIdentityAdmin-tableCard .vuuTableCell:has(> *) {
+  align-items: center;
+  display: inline-flex;
+}
+
+.vuuIdentityAdmin-tableCard .vuuTableCell > * {
+  line-height: var(--salt-text-lineHeight);
+  min-width: 0;
+}
+
+.vuuIdentityAdmin-cell {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-100);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.vuuIdentityAdmin-cell > .vuuAdminUi-stack {
+  line-height: var(--salt-text-label-lineHeight);
+}
+
+.vuuIdentityAdmin-cell .saltTag {
+  flex: none;
+}
+
 .vuuIdentityAdmin-searchFieldset {
   border: 0;
   margin: 0;
   padding: 0;
 }
 .vuuIdentityAdmin-editNotice {
-  padding: var(--salt-spacing-100) var(--salt-spacing-200);
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-100);
+  padding: var(--salt-spacing-100) var(--salt-spacing-400);
+  border-bottom: 1px solid var(--salt-status-warning-borderColor);
+  background: var(--salt-status-warning-background);
 }
 
 .vuuIdentityAdmin-split {
@@ -140,40 +223,90 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+  gap: var(--salt-spacing-100);
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
-  border: 1px solid var(--admin-border);
 }
 
-.vuuIdentityAdmin-table h3 {
-  padding: var(--salt-spacing-100);
-}
 .vuuIdentityAdmin-tableViewport {
   flex: 1;
   min-height: 0;
   min-width: 0;
 }
+
+.vuuIdentityAdmin-tableViewport.vuuIdentityAdmin-tableCard {
+  min-height: 160px;
+}
 .vuuIdentityAdmin .vuuIdentityAdmin-panel {
-  --saltSidePanel-width: min(480px, 45%);
+  --saltSidePanel-width: min(460px, 45%);
+  --saltSidePanel-padding: 0;
+}
+.vuuIdentityAdmin-panel .saltSidePanel-inner {
+  box-shadow: var(--salt-overlayable-shadow-popout);
+}
+.vuuIdentityAdmin-panel .saltSidePanelHeader {
+  align-items: flex-start;
+  border-bottom: 1px solid var(--admin-border);
+  padding: var(--salt-spacing-300);
+}
+.vuuIdentityAdmin-panel .saltSidePanelHeader > .vuuAdminUi-panelHeading {
+  flex: 1;
 }
 .vuuIdentityAdmin-panel .saltSidePanelContent {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--salt-spacing-300);
+  min-height: 0;
   overflow: auto;
+  padding: var(--salt-spacing-300);
+}
+
+.vuuIdentityAdmin-mode {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-200);
+  justify-content: space-between;
+}
+
+/* Form actions, pinned to the bottom of the side panel. */
+.vuuIdentityAdmin-panelFooter {
+  background: var(--salt-container-primary-background);
+  border-top: 1px solid var(--admin-border);
+  bottom: calc(-1 * var(--salt-spacing-300));
+  display: flex;
+  gap: var(--salt-spacing-100);
+  justify-content: flex-end;
+  margin: auto calc(-1 * var(--salt-spacing-300)) calc(-1 * var(--salt-spacing-300));
+  padding: var(--salt-spacing-200) var(--salt-spacing-300);
+  position: sticky;
+}
+
+.vuuIdentityAdmin-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-150);
+}
+
+.vuuIdentityAdmin-sectionTitle {
+  font-weight: var(--salt-text-fontWeight-strong);
 }
 
 .vuuIdentityAdmin-details {
-  display: flex;
-  flex-direction: column;
-  gap: var(--salt-spacing-100);
+  display: grid;
+  grid-template-columns: minmax(120px, max-content) 1fr;
+  gap: var(--salt-spacing-150) var(--salt-spacing-300);
+  margin: 0;
 }
 
 .vuuIdentityAdmin-details > div {
-  display: flex;
-  gap: var(--salt-spacing-100);
+  display: contents;
 }
 .vuuIdentityAdmin-details dt {
-  flex: 0 0 40%;
-  text-transform: capitalize;
+  color: var(--salt-content-secondary-foreground);
+}
+.vuuIdentityAdmin-details dt::first-letter {
+  text-transform: uppercase;
 }
 .vuuIdentityAdmin-details dd {
   margin: 0;
@@ -187,28 +320,6 @@
 .vuuIdentityAdmin-relationships > .vuuIdentityAdmin-table {
   flex: none;
   height: 260px;
-}
-.vuuIdentityAdmin-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--salt-spacing-150);
-}
-
-.vuuIdentityAdmin-stat {
-  flex: 1 1 150px;
-  padding: var(--salt-spacing-200);
-  border: 1px solid var(--admin-border);
-  background: var(--salt-container-secondary-background);
-}
-
-.vuuIdentityAdmin-stat strong {
-  display: block;
-  font-size: var(--salt-text-h1-fontSize);
-  margin-top: var(--salt-spacing-100);
-}
-.vuuIdentityAdmin-stat p {
-  overflow-wrap: anywhere;
-  font-size: var(--salt-text-label-fontSize);
 }
 .vuuIdentityAdmin-searchResults {
   flex: 1;
@@ -227,8 +338,10 @@
 }
 .vuuIdentityAdmin [role="alert"] {
   color: var(--salt-status-error-foreground);
-  padding: var(--salt-spacing-100);
   overflow-wrap: anywhere;
+}
+.vuuIdentityAdmin .saltBanner[role="alert"] {
+  color: inherit;
 }
 .vuuIdentityAdmin form {
   display: flex;
@@ -242,7 +355,13 @@
 
 @container identity-admin (max-width: 760px) {
   .vuuIdentityAdmin-navigation {
-    flex-basis: 120px;
+    flex-basis: 56px;
+  }
+  .vuuIdentityAdmin-navigation .saltVerticalNavigationItemLabel {
+    display: none;
+  }
+  .vuuIdentityAdmin-page {
+    padding: var(--salt-spacing-200);
   }
   .vuuIdentityAdmin-header {
     align-items: flex-start;
@@ -262,4 +381,37 @@
     --saltSidePanel-width: 100%;
     min-height: 320px;
   }
+}
+
+/* Item pickers (application access, group roles) aligned with panel content. */
+.vuuIdentityAdmin .vuuItemPicker {
+  gap: var(--salt-spacing-150);
+  padding: 0;
+}
+
+.vuuIdentityAdmin .vuuItemPicker-search {
+  padding: 0;
+}
+
+.vuuIdentityAdmin .vuuItemPicker-search .saltInput {
+  border: var(--salt-size-fixed-100) var(--salt-borderStyle-solid) var(--salt-editable-borderColor);
+  border-radius: var(--salt-palette-corner-weak, 0);
+}
+
+.vuuIdentityAdmin .vuuItemPicker-search .saltInput-focused {
+  border-color: var(--salt-editable-borderColor-active);
+}
+
+.vuuIdentityAdmin .vuuItemPicker-search .saltInput-activationIndicator {
+  display: none;
+}
+
+.vuuIdentityAdmin .vuuItemPicker-scrollContainer .vuuItemPicker-sectionHeader {
+  color: var(--salt-content-secondary-foreground);
+  font-weight: var(--salt-text-fontWeight-strong);
+  padding: 0;
+}
+
+.vuuIdentityAdmin .vuuItemPicker-scrollContainer .vuuItemPicker-availableList .saltOption {
+  padding-left: var(--salt-spacing-100);
 }

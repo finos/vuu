@@ -1,6 +1,9 @@
-import { usePortalModuleRegistry } from "@vuu-ui/core/portal";
+import { Tag, Text } from "@salt-ds/core";
+import type { usePortalModuleRegistry } from "@vuu-ui/core/portal";
 import type { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import { registerComponent } from "@vuu-ui/vuu-utils";
+import { useApplications } from "../data/useApplicationModel";
+import { AppTag } from "./admin-ui/AdminUi";
 
 export const MODULE_ACCESS_CELL_RENDERER = "vuu-portal-module-access-cell";
 
@@ -31,13 +34,51 @@ export const resolveModuleAccessSummary = (
   remoteModules: ReturnType<typeof usePortalModuleRegistry>["remoteModules"],
 ) => resolveModuleAccessValues(value, remoteModules).join(", ");
 
+const accessRolesOf = (value: unknown) =>
+  typeof value === "string"
+    ? value
+        .split(",")
+        .map((accessRole) => accessRole.trim())
+        .filter(Boolean)
+    : [];
+
+/** One coloured tag per application the user can open. */
 export const ModuleAccessCell = ({
   column,
   dataRow,
 }: TableCellRendererProps) => {
-  const { remoteModules } = usePortalModuleRegistry();
-  const values = resolveModuleAccessValues(dataRow[column.name], remoteModules);
-  return <>{values.join(", ")}</>;
+  const { applications } = useApplications();
+  const accessRoles = accessRolesOf(dataRow[column.name]);
+  if (accessRoles.length === 0) {
+    return (
+      <Text color="secondary" styleAs="label">
+        No application access
+      </Text>
+    );
+  }
+  return (
+    <span
+      className="vuuIdentityAdmin-cell"
+      title={accessRoles
+        .map(
+          (accessRole) =>
+            applications.find((app) => app.accessRole === accessRole)?.title ??
+            accessRole,
+        )
+        .join(", ")}
+    >
+      {accessRoles.map((accessRole) => {
+        const application = applications.find(
+          (candidate) => candidate.accessRole === accessRole,
+        );
+        return application ? (
+          <AppTag application={application} key={accessRole} />
+        ) : (
+          <Tag key={accessRole}>{accessRole}</Tag>
+        );
+      })}
+    </span>
+  );
 };
 
 registerComponent(
