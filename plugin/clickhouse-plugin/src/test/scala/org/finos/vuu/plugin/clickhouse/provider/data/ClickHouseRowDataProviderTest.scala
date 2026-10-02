@@ -36,7 +36,7 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
         offset = 0,
         limit = 100)
 
-      data.size shouldEqual 5
+      data.length shouldEqual 5
 
       stopClient()
     }
@@ -59,7 +59,7 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
         offset = 0,
         limit = 100)
 
-      data.size shouldEqual 5
+      data.length shouldEqual 5
       val first = data.head
       first.key shouldEqual "5"
       first.data("id") shouldEqual "5"
@@ -86,7 +86,7 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
         offset = 0,
         limit = 100)
 
-      data.size shouldEqual 1
+      data.length shouldEqual 1
       val first = data.head
       first.key shouldEqual "2"
       first.data("id") shouldEqual "2"
@@ -113,7 +113,7 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
         offset = 0,
         limit = 100)
 
-      data.size shouldEqual 2
+      data.length shouldEqual 2
       val first = data.head
       first.key shouldEqual "2"
       first.data("id") shouldEqual "2"
@@ -140,7 +140,7 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
         offset = 1,
         limit = 100)
 
-      data.size shouldEqual 1
+      data.length shouldEqual 1
       val first = data.head
       first.key shouldEqual "1"
       first.data("id") shouldEqual "1"
@@ -167,7 +167,7 @@ class ClickHouseRowDataProviderTest extends AnyFeatureSpec with GivenWhenThen wi
         offset = 0,
         limit = 1)
 
-      data.size shouldEqual 1
+      data.length shouldEqual 1
       val first = data.head
       first.key shouldEqual "2"
       first.data("id") shouldEqual "2"
