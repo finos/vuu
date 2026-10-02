@@ -80,12 +80,7 @@ const mountAndPressEnd = async (
   await cell.click();
   await expect(cell).toBeFocused();
   await page.keyboard.press("End");
-  // End moves focus after a fixed delay, which is not always long enough for
-  // the last row to have rendered, so focus the last cell explicitly.
-  const lastCell = table.locateCell(1_000_001, 1);
-  await expect(lastCell).toBeVisible();
-  await lastCell.click();
-  await expect(lastCell).toBeFocused();
+  await expect(table.locateCell(1_000_001, 1)).toBeFocused();
   const rowsAtEnd = await getVisibleRowIndices(page);
   expect(rowsAtEnd.at(-1)).toBe(1_000_001);
   return rowsAtEnd;
@@ -112,11 +107,10 @@ test.describe("Virtualised Table, keyboard paging", () => {
     test("THEN viewport shows the last rows again", async ({ mount, page }) => {
       const rowsAtEnd = await mountAndPressEnd(mount, page);
       const rowsAfterPageUp = await pageUp(page, rowsAtEnd);
-      // focus a known row (keyboard focus is applied after a fixed delay)
-      const table = new TableOM(page.getByRole("table"));
-      await table.locateCell(rowsAfterPageUp.at(-2) as number, 1).click();
       await page.keyboard.press("PageDown");
       await expect.poll(() => getVisibleRowIndices(page)).toEqual(rowsAtEnd);
+      const table = new TableOM(page.getByRole("table"));
+      await expect(table.locateCell(1_000_001, 1)).toBeFocused();
     });
   });
 });

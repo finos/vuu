@@ -22,7 +22,7 @@ import {
   getNextEditableCellPos,
 } from "./table-dom-utils";
 import { ScrollRequestHandler } from "./useTableScroll";
-import { FocusCell } from "./useCellFocus";
+import type { FocusCell, FocusCellWhenRendered } from "./useCellFocus";
 import { CellPos } from "@vuu-ui/vuu-table-types";
 import { CellFocusState } from "./CellFocusState";
 
@@ -98,6 +98,9 @@ const focusControlWithinCell = (e: KeyboardEvent, el: HTMLElement | null) => {
 };
 
 const PageKeys = ["Home", "End", "PageUp", "PageDown"];
+const isSameCellPos = ([r1, c1]: CellPos, [r2, c2]: CellPos) =>
+  r1 === r2 && c1 === c2;
+
 export const isPagingKey = (key: string): key is PageKey =>
   PageKeys.includes(key);
 
@@ -116,6 +119,7 @@ export interface NavigationHookProps {
   disableHighlightOnFocus?: boolean;
   editSessionInProgress?: boolean;
   focusCell: FocusCell;
+  focusCellWhenRendered: FocusCellWhenRendered;
   highlightedIndex?: number;
   label?: string;
   navigationStyle: TableNavigationStyle;
@@ -137,6 +141,7 @@ export const useKeyboardNavigation = ({
   disableHighlightOnFocus,
   editSessionInProgress,
   focusCell,
+  focusCellWhenRendered,
   headerCount,
   highlightedIndex: highlightedIndexProp,
   navigationStyle,
@@ -183,58 +188,52 @@ export const useKeyboardNavigation = ({
     [focusCell, navigationStyle, setHighlightedIdx],
   );
 
+  /**
+   * Request the scroll for a paging operation and return the position
+   * of the row that should then receive focus. Rows will be re-rendered
+   * following the scroll, so focus must not be applied until that has
+   * happened.
+   */
   const nextPageItemIdx = useCallback(
     (
       key: "PageDown" | "PageUp" | "Home" | "End",
       [rowIdx, colIdx]: CellPos,
-    ): Promise<CellPos> =>
-      new Promise((resolve) => {
-        let newRowIdx = rowIdx;
-        switch (key) {
-          case "PageDown": {
-            newRowIdx = Math.min(rowCount - 1, rowIdx + viewportRowCount);
-            if (newRowIdx !== rowIdx) {
-              requestScroll?.({ type: "scroll-page", direction: "down" });
-            }
-            break;
+    ): CellPos => {
+      const minRowIndex = headerCount + 1;
+      let newRowIdx = rowIdx;
+      switch (key) {
+        case "PageDown": {
+          newRowIdx = Math.min(maxRowIndex, rowIdx + viewportRowCount);
+          if (newRowIdx !== rowIdx) {
+            requestScroll?.({ type: "scroll-page", direction: "down" });
           }
-          case "PageUp": {
-            newRowIdx = Math.max(0, rowIdx - viewportRowCount);
-            if (newRowIdx !== rowIdx) {
-              requestScroll?.({ type: "scroll-page", direction: "up" });
-            }
-            break;
-          }
-          case "Home": {
-            newRowIdx = headerCount + 1;
-            if (newRowIdx !== rowIdx) {
-              requestScroll?.({ type: "scroll-end", direction: "home" });
-            }
-            break;
-          }
-          case "End": {
-            newRowIdx = rowCount + headerCount;
-            if (newRowIdx !== rowIdx) {
-              requestScroll?.({ type: "scroll-end", direction: "end" });
-            }
-            break;
-          }
+          break;
         }
-        // Introduce a delay to allow the scroll operation to complete,
-        // which will trigger a range reset and rerender of rows. We
-        // might need to tweak how this works. If we introduce too big
-        // a delay, we risk seeing the newly rendered rows, with the focus
-        // still on the old cell, which will be apparent as a brief flash
-        // of the old cell focus before switching to correct cell. If we were
-        // to change the way re assign keys such that we can guarantee that
-        // when we page down, rows in same position get same keys, then same
-        // cell would be focussed in new page as previous and issue would not
-        // arise.
-        setTimeout(() => {
-          resolve([newRowIdx, colIdx]);
-        }, 35);
-      }),
-    [headerCount, requestScroll, rowCount, viewportRowCount],
+        case "PageUp": {
+          newRowIdx = Math.max(minRowIndex, rowIdx - viewportRowCount);
+          if (newRowIdx !== rowIdx) {
+            requestScroll?.({ type: "scroll-page", direction: "up" });
+          }
+          break;
+        }
+        case "Home": {
+          newRowIdx = minRowIndex;
+          if (newRowIdx !== rowIdx) {
+            requestScroll?.({ type: "scroll-end", direction: "home" });
+          }
+          break;
+        }
+        case "End": {
+          newRowIdx = maxRowIndex;
+          if (newRowIdx !== rowIdx) {
+            requestScroll?.({ type: "scroll-end", direction: "end" });
+          }
+          break;
+        }
+      }
+      return [newRowIdx, colIdx];
+    },
+    [headerCount, maxRowIndex, requestScroll, viewportRowCount],
   );
 
   const handleFocus = useCallback(() => {
@@ -263,52 +262,57 @@ export const useKeyboardNavigation = ({
   ]);
 
   const navigateChildItems = useCallback(
-    async (
+    (
       navigationStyle: "cell" | "tree" = "cell",
       key: NavigationKey,
       shiftKey = false,
-    ): Promise<undefined> => {
-      const { cellPos } = cellFocusStateRef.current;
+    ) => {
+      const { cellPos, pendingCellPos } = cellFocusStateRef.current;
       if (cellPos === undefined) {
         throw Error("navigateChildItems called before cellPos is set");
       }
+
+      if (isPagingKey(key)) {
+        // A previous paging operation may still be awaiting render
+        const currentPos = pendingCellPos ?? cellPos;
+        const nextPos = nextPageItemIdx(key, currentPos);
+        if (!isSameCellPos(nextPos, currentPos)) {
+          focusCellWhenRendered(nextPos);
+          setHighlightedIndex(nextPos[0]);
+        }
+        return;
+      }
+
       const [rowIdx, colIdx] = cellPos;
       let nextRowIdx = -1,
         nextColIdx = -1;
 
-      if (isPagingKey(key)) {
-        [nextRowIdx, nextColIdx] = await nextPageItemIdx(key, cellPos);
-      } else {
-        const treeNodeOperation = getTreeNodeOperation(
+      const treeNodeOperation = getTreeNodeOperation(
+        containerRef,
+        navigationStyle,
+        cellPos,
+        key,
+        shiftKey,
+      );
+      if (treeNodeOperation === "expand" || treeNodeOperation === "collapse") {
+        onToggleGroup(treeNodeOperation, rowIdx - headerCount - 1);
+      } else if (treeNodeOperation === "level-up") {
+        [nextRowIdx, nextColIdx] = getLevelUp(containerRef, cellPos);
+      } else if (editSessionInProgress) {
+        [nextRowIdx, nextColIdx] = getNextEditableCellPos(
           containerRef,
-          navigationStyle,
-          cellPos,
           key,
-          shiftKey,
+          cellPos,
+          columnCount,
+          maxRowIndex,
         );
-        if (
-          treeNodeOperation === "expand" ||
-          treeNodeOperation === "collapse"
-        ) {
-          onToggleGroup(treeNodeOperation, rowIdx - headerCount - 1);
-        } else if (treeNodeOperation === "level-up") {
-          [nextRowIdx, nextColIdx] = getLevelUp(containerRef, cellPos);
-        } else if (editSessionInProgress) {
-          [nextRowIdx, nextColIdx] = getNextEditableCellPos(
-            containerRef,
-            key,
-            cellPos,
-            columnCount,
-            maxRowIndex,
-          );
-        } else {
-          [nextRowIdx, nextColIdx] = getNextCellPos(
-            key,
-            cellPos,
-            columnCount,
-            maxRowIndex,
-          );
-        }
+      } else {
+        [nextRowIdx, nextColIdx] = getNextCellPos(
+          key,
+          cellPos,
+          columnCount,
+          maxRowIndex,
+        );
       }
 
       if (nextRowIdx !== rowIdx || nextColIdx !== colIdx) {
@@ -319,6 +323,7 @@ export const useKeyboardNavigation = ({
     [
       cellFocusStateRef,
       nextPageItemIdx,
+      focusCellWhenRendered,
       containerRef,
       editSessionInProgress,
       onToggleGroup,
@@ -338,15 +343,25 @@ export const useKeyboardNavigation = ({
   );
 
   const moveHighlightedRow = useCallback(
-    async (key: NavigationKey) => {
+    (key: NavigationKey) => {
       const { current: highlighted } = highlightedIndexRef;
-      const [nextRowIdx] = isPagingKey(key)
-        ? await nextPageItemIdx(key, [highlighted ?? -1, 0])
-        : getNextCellPos(key, [highlighted ?? -1, 0], columnCount, maxRowIndex);
-      if (nextRowIdx !== highlighted) {
-        setHighlightedIndex(nextRowIdx);
-        // TO(DO make this a scroll request)
-        scrollRowIntoViewIfNecessary(nextRowIdx);
+      if (isPagingKey(key)) {
+        // the paging scroll brings the highlighted row into view
+        const [nextRowIdx] = nextPageItemIdx(key, [highlighted ?? -1, 0]);
+        if (nextRowIdx !== highlighted) {
+          setHighlightedIndex(nextRowIdx);
+        }
+      } else {
+        const [nextRowIdx] = getNextCellPos(
+          key,
+          [highlighted ?? -1, 0],
+          columnCount,
+          maxRowIndex,
+        );
+        if (nextRowIdx !== highlighted) {
+          setHighlightedIndex(nextRowIdx);
+          scrollRowIntoViewIfNecessary(nextRowIdx);
+        }
       }
     },
     [
