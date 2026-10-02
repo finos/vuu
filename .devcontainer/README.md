@@ -1,14 +1,37 @@
 ### Vuu setup using Devcontainers
 
+The dev container gives you everything needed to build and run Vuu, including the parts of the
+build that start their own containers (the `clickhouse-plugin` tests). For the full design and the
+reasoning behind it, see [`docs/rfc/devcontainer.md`](../docs/rfc/devcontainer.md).
+
+#### What's included
+
+| Tool    | Version |
+|---------|---------|
+| JDK     | 21 (the code targets Java 17, so 17-compatible builds still work) |
+| Maven   | 3.9.16 (same as `./mvnw`) |
+| Scala   | 3.3.8 (same as `vuu.scala.version` in the root `pom.xml`) |
+| Node / npm | latest (Node 26 / npm 12 at time of writing) |
+| Python  | 3.13, with a venv at `/opt/venv` already on `PATH` and `example/python-integration`'s `requirements.txt` pre-installed |
+| Podman  | 5.x, rootless, plus a Docker-compatible API socket for Testcontainers |
+
 #### Prerequisites
-1. Have `Docker` installed and running.
+1. Have `Docker` or `Podman` installed and running.
+   - With Podman on macOS/Windows, the Podman machine must be running (`podman machine start`).
+   - The host should have at least 2 CPUs, 12 GB memory and 32 GB storage available to the
+     container engine (see `hostRequirements` in `devcontainer.json`).
 
 ---
 
 #### Set-up for VS Code
 1. Install `Dev Containers` extension: https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers
-2. Press `F1` -> Select `Dev Containers: Clone Repository in Container Volume...`
-3. Use `Vuu` repository url: `https://github.com/finos/vuu.git`
+2. If you use Podman rather than Docker, set `Dev › Containers: Docker Path` to `podman` in VS Code settings
+   (`"dev.containers.dockerPath": "podman"`).
+3. Press `F1` -> Select `Dev Containers: Clone Repository in Container Volume...`
+4. Use `Vuu` repository url: `https://github.com/finos/vuu.git`
+
+If you already have the repo checked out, you can instead open it and use
+`Dev Containers: Reopen in Container`.
 
 ---
 
@@ -19,7 +42,7 @@
 4. Click on `Build Container and Continue` button. Now it will clone the source code, build the image and create/configure your dev container.
 5. Follow the on-screen instructions to start up the IntelliJ client.
 6. Download Scala plugin and restart your IntelliJ to apply the newly installed plugin. The IDE client might not start automatically in that case just open the already created devcontainer. You can see the list of created dev containers from the screen in step 1.
-7. Set your Scala SDK (you should already have Scala installed in your env):  `Project Structure` -> `Global Libraries` -> `Add using + icon` -> `Scala SDK` -> `Select the one already installed` -> `OK`
+7. Set your Scala SDK to the Scala 3.3.8 already installed in the container:  `Project Structure` -> `Global Libraries` -> `Add using + icon` -> `Scala SDK` -> select `3.3.8` (installed under `/usr/local/sdkman/candidates/scala/current`) -> `OK`
 8. Refresh your maven project (https://stackoverflow.com/a/63022272)
 
 **In case clone fails to pull the whole project**
@@ -29,5 +52,54 @@
   # might have to remove the existing files/folders inside vuu/
   git clone https://github.com/finos/vuu.git .
 ```
+
+---
+
+#### Building and testing
+
+Build everything, including the `clickhouse-plugin` tests that start ClickHouse in a container:
+
+```bash
+./mvnw install
+```
+
+Run the Python integration example (its requirements are already installed in `/opt/venv`):
+
+```bash
+cd example/python-integration/python && python start_server.py
+```
+
+See [`example/python-integration/README.md`](../example/python-integration/README.md) for the
+full steps, including building the module first.
+
+#### Containers inside the dev container
+
+Podman runs inside the dev container as the `vscode` user, so you can use `podman run`,
+`podman build` and so on directly. Images and containers live inside the dev container and are
+separate from your host's.
+
+When the container starts, it also starts Podman's Docker-compatible API socket at
+`/home/vscode/.podman/podman.sock`. `DOCKER_HOST` points at it, so Testcontainers and other tools
+that use the Docker API work without any extra set-up.
+
+To make nested containers work, the dev container runs with extra privileges (see `runArgs` in
+`devcontainer.json`). It is therefore less isolated from your host than a default container.
+
+#### Troubleshooting
+
+- **`Previous attempts to find a Docker environment failed`** during a Maven build: the Podman
+  API socket isn't running. Start it with:
+  ```bash
+  /usr/local/bin/start-podman-service.sh
+  ```
+  If it fails, check `~/.podman/podman-service.log`.
+- **Leftover test containers:** Testcontainers' automatic clean-up (Ryuk) is disabled inside the
+  dev container, so a test run that's killed part-way can leave containers running. Remove them
+  with:
+  ```bash
+  podman rm -f -a
+  ```
+- **Changes to `.devcontainer/` or `example/python-integration/python/requirements.txt`** only
+  take effect after rebuilding the container (`Dev Containers: Rebuild Container` in VS Code).
 
 ---
