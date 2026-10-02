@@ -1,4 +1,51 @@
-FROM   mcr.microsoft.com/devcontainers/java:17
+# JDK 21 matches the version CI builds/releases with (the code itself targets --release 17).
+# Debian trixie base gives Python 3.13 and Podman 5.x from the distro repos.
+FROM mcr.microsoft.com/devcontainers/java:21-trixie
+
+# Python (for example/python-integration - JPype + pytest in a venv) and Podman.
+RUN apt-get update \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y --no-install-recommends \
+        python3 \
+        python3-dev \
+        python3-pip \
+        python3-venv \
+        build-essential \
+        podman \
+        fuse-overlayfs \
+        slirp4netns \
+        passt \
+        nftables \
+        curl \
+        uidmap \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Rootless Podman for the non-root 'vscode' user. Containers get their own network namespace
+# (pasta) rather than the host's, so published ports work - Testcontainers relies on them.
+RUN { grep -q '^vscode:' /etc/subuid || echo 'vscode:100000:65536' >> /etc/subuid; } \
+    && { grep -q '^vscode:' /etc/subgid || echo 'vscode:100000:65536' >> /etc/subgid; } \
+    && mkdir -p /home/vscode/.config/containers \
+    && printf '[storage]\ndriver = "overlay"\n\n[storage.options.overlay]\nmount_program = "/usr/bin/fuse-overlayfs"\n' \
+        > /home/vscode/.config/containers/storage.conf \
+    && printf '[containers]\nuserns = "host"\nipcns = "host"\nutsns = "host"\ncgroupns = "host"\ncgroups = "disabled"\nlog_driver = "k8s-file"\n\n[engine]\ncgroup_manager = "cgroupfs"\nevents_logger = "file"\n' \
+        > /home/vscode/.config/containers/containers.conf \
+    && chown -R vscode:vscode /home/vscode/.config
+
+# Pre-install example/python-integration's requirements into a venv owned by 'vscode' and put it
+# first on PATH. Debian's system Python is "externally managed" (PEP 668), so a venv is needed.
+# The requirements file comes from the 'python-integration' build context (see devcontainer.json).
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
+COPY --from=python-integration requirements.txt /tmp/requirements.txt
+RUN python3 -m venv "${VIRTUAL_ENV}" \
+    && "${VIRTUAL_ENV}/bin/pip" install --no-cache-dir --upgrade pip \
+    && "${VIRTUAL_ENV}/bin/pip" install --no-cache-dir -r /tmp/requirements.txt \
+    && rm /tmp/requirements.txt \
+    && chown -R vscode:vscode "${VIRTUAL_ENV}"
+
+# Docker-compatible API socket for Testcontainers - started by postStartCommand (devcontainer.json).
+COPY ./start-podman-service.sh /usr/local/bin/start-podman-service.sh
 
 COPY ./install-sdk-packages.sh ./install-sdk-packages.sh
 
