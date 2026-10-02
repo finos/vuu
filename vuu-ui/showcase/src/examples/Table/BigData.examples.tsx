@@ -14,7 +14,7 @@ import {
 } from "react";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 
-export const SimpleTable = () => {
+const BigTableTemplate = ({ rowCount }: { rowCount: number }) => {
   const config = useMemo<TableConfig>(
     () => ({
       columns: columnGenerator(5),
@@ -26,7 +26,7 @@ export const SimpleTable = () => {
 
   const dataSource = useMemo<DataSource>(() => {
     const data = new ArrayProxy(
-      1_000_000_000,
+      rowCount,
       rowGenerator(config.columns.map((col) => col.name)),
     );
     return new ArrayDataSource({
@@ -38,9 +38,16 @@ export const SimpleTable = () => {
   }, [config.columns]);
 
   return (
-    <Table config={config} dataSource={dataSource} height={625} width={1000} />
+    <Table config={config} dataSource={dataSource} height="100%" width={1000} />
   );
 };
+
+export const SimpleTableMillionRows = () => (
+  <BigTableTemplate rowCount={1_000_000} />
+);
+export const SimpleTableBillionRows = () => (
+  <BigTableTemplate rowCount={1_000_000_000} />
+);
 
 export const TableScrollingAPI = () => {
   const [rowInputValue, setRowInputValue] = useState("");

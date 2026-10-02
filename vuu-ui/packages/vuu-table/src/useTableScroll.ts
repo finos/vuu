@@ -108,6 +108,47 @@ const getPctScroll = (container: HTMLElement) => {
   ];
 };
 
+/**
+ * Positions closer than this are considered in sync. When browser is zoomed,
+ * scroll positions snap to device pixels, so are often fractional.
+ */
+const SCROLL_SYNC_TOLERANCE = 1;
+
+const getProportionalScrollPosition = (
+  sourcePos: number,
+  sourceMax: number,
+  targetMax: number,
+) => (sourceMax > 0 ? (sourcePos / sourceMax) * targetMax : 0);
+
+/**
+ * Scroll target to the same proportional position as source, unless already
+ * there. Comparing positions, rather than tracking which container initiated a
+ * scroll, means the echo scroll event from target is a no-op and we are not
+ * thrown out of sync by scroll events the browser itself fires (e.g. on zoom).
+ */
+const syncScrollPosition = (source: HTMLElement, target: HTMLElement) => {
+  const [sourceMaxLeft, sourceMaxTop] = getMaxScroll(source);
+  const [targetMaxLeft, targetMaxTop] = getMaxScroll(target);
+  const left = Math.round(
+    getProportionalScrollPosition(
+      source.scrollLeft,
+      sourceMaxLeft,
+      targetMaxLeft,
+    ),
+  );
+  const top = getProportionalScrollPosition(
+    source.scrollTop,
+    sourceMaxTop,
+    targetMaxTop,
+  );
+  if (
+    Math.abs(target.scrollLeft - left) >= SCROLL_SYNC_TOLERANCE ||
+    Math.abs(target.scrollTop - top) >= SCROLL_SYNC_TOLERANCE
+  ) {
+    target.scrollTo({ left, top, behavior: "auto" });
+  }
+};
+
 export const noScrolling: ScrollingAPI = {
   scrollToIndex: () => undefined,
   scrollToKey: () => undefined,
@@ -178,13 +219,7 @@ export const useTableScroll = ({
 }: TableScrollHookProps) => {
   const firstRowRef = useRef<number>(0);
   const rowHeightRef = useRef(rowHeight);
-  const contentContainerScrolledRef = useRef(false);
   const contentContainerPosRef = useRef<ScrollPos>({
-    scrollTop: 0,
-    scrollLeft: 0,
-  });
-  const scrollbarContainerScrolledRef = useRef(false);
-  const scrollbarContainerPosRef = useRef<ScrollPos>({
     scrollTop: 0,
     scrollLeft: 0,
   });
@@ -297,64 +332,20 @@ export const useTableScroll = ({
   // by remeasuring after a short delay.
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
   const checkScrollbarScrollPosition = useCallback(() => {
-    const { current: scrollPos } = scrollbarContainerPosRef;
     const { current: contentContainer } = contentContainerRef;
-
     const { current: scrollbarContainer } = scrollbarContainerRef;
-
     if (scrollbarContainer && contentContainer) {
-      const [scrollLeft, pctScrollLeft, , scrollTop, pctScrollTop] =
-        getPctScroll(scrollbarContainer);
-
-      if (
-        scrollLeft !== scrollPos.scrollLeft ||
-        scrollTop !== scrollPos.scrollTop
-      ) {
-        scrollbarContainerScrolledRef.current = true;
-
-        scrollPos.scrollLeft = scrollLeft;
-        scrollPos.scrollTop = scrollTop;
-
-        const [maxScrollLeft, maxScrollTop] = getMaxScroll(contentContainer);
-        const contentScrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
-        const contentScrollTop = pctScrollTop * maxScrollTop;
-
-        contentContainer.scrollTo({
-          left: contentScrollLeft,
-          top: contentScrollTop,
-          behavior: "auto",
-        });
-      }
-
-      scrollTimerRef.current = null;
+      syncScrollPosition(scrollbarContainer, contentContainer);
     }
+    scrollTimerRef.current = null;
   }, []);
 
   const handleScrollbarContainerScroll = useCallback(() => {
     const { current: contentContainer } = contentContainerRef;
     const { current: scrollbarContainer } = scrollbarContainerRef;
-    const { current: contentContainerScrolled } = contentContainerScrolledRef;
-    const { current: scrollPos } = scrollbarContainerPosRef;
 
-    if (contentContainerScrolled) {
-      contentContainerScrolledRef.current = false;
-    } else if (contentContainer && scrollbarContainer) {
-      scrollbarContainerScrolledRef.current = true;
-      const [scrollLeft, pctScrollLeft, , scrollTop, pctScrollTop] =
-        getPctScroll(scrollbarContainer);
-
-      scrollPos.scrollLeft = scrollLeft;
-      scrollPos.scrollTop = scrollTop;
-
-      const [maxScrollLeft, maxScrollTop] = getMaxScroll(scrollbarContainer);
-      const contentScrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
-      const contentScrollTop = pctScrollTop * maxScrollTop;
-
-      contentContainer.scrollTo({
-        left: contentScrollLeft,
-        top: contentScrollTop,
-        behavior: "auto",
-      });
+    if (contentContainer && scrollbarContainer) {
+      syncScrollPosition(scrollbarContainer, contentContainer);
     }
 
     if (scrollTimerRef.current) {
@@ -366,32 +357,15 @@ export const useTableScroll = ({
   }, [checkScrollbarScrollPosition, onVerticalScrollInSitu]);
 
   const handleContentContainerScroll = useCallback(() => {
-    const { current: scrollbarContainerScrolled } =
-      scrollbarContainerScrolledRef;
     const { current: contentContainer } = contentContainerRef;
     const { current: scrollbarContainer } = scrollbarContainerRef;
     const { current: scrollPos } = contentContainerPosRef;
 
     if (contentContainer && scrollbarContainer) {
-      const [
-        scrollLeft,
-        pctScrollLeft,
-        maxScrollLeft,
-        scrollTop,
-        pctScrollTop,
-        maxScrollTop,
-      ] = getPctScroll(contentContainer);
+      const [scrollLeft, , , scrollTop, pctScrollTop] =
+        getPctScroll(contentContainer);
 
-      contentContainerScrolledRef.current = true;
-
-      if (scrollbarContainerScrolled) {
-        scrollbarContainerScrolledRef.current = false;
-      } else {
-        scrollbarContainer.scrollLeft = Math.round(
-          pctScrollLeft * maxScrollLeft,
-        );
-        scrollbarContainer.scrollTop = pctScrollTop * maxScrollTop;
-      }
+      syncScrollPosition(contentContainer, scrollbarContainer);
 
       if (scrollPos.scrollTop !== scrollTop) {
         handleVerticalScroll(scrollTop, pctScrollTop);
@@ -456,7 +430,6 @@ export const useTableScroll = ({
       if (contentContainer) {
         const [maxScrollLeft, maxScrollTop] = getMaxScroll(contentContainer);
         const { scrollLeft, scrollTop } = contentContainer;
-        contentContainerScrolledRef.current = false;
         switch (scrollRequest.type) {
           case "scroll-top":
             {

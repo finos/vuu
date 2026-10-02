@@ -187,6 +187,78 @@ export function getScrollbarSize() {
   return size;
 }
 
+/**
+ * Used when the max scroll height cannot be measured, e.g. outside a browser.
+ */
+export const DEFAULT_MAX_SCROLL_HEIGHT = 33_000_000;
+
+// Larger than the limit of any current browser engine.
+const MAX_PROBE_HEIGHT = 2 ** 26;
+
+const maxScrollHeightByDevicePixelRatio = new Map<number, number>();
+
+/**
+ * Measure the largest scrollHeight (in CSS pixels) the browser supports for a
+ * scrollable element. Engines have an internal layout limit, which shrinks in
+ * CSS pixels as browser zoom increases, e.g.
+ *   Chromium/WebKit: ~33.5M at 100%, ~11.18M at 300%
+ *   Firefox:         ~17.9M at 100%, ~5.97M at 300%
+ * Chromium/WebKit clamp heights above the limit, Firefox ignores them entirely,
+ * so a single oversized probe cannot be used. Instead we binary search for the
+ * largest height that is honoured. Browser zoom changes devicePixelRatio, so
+ * results are cached per ratio.
+ */
+export function getMaxScrollHeight(
+  doc: Document | undefined = globalThis.document,
+) {
+  if (doc?.body === undefined || doc.body === null) {
+    return DEFAULT_MAX_SCROLL_HEIGHT;
+  }
+
+  const devicePixelRatio = doc.defaultView?.devicePixelRatio ?? 1;
+  const cachedValue = maxScrollHeightByDevicePixelRatio.get(devicePixelRatio);
+  if (cachedValue !== undefined) {
+    return cachedValue;
+  }
+
+  const outer = doc.createElement("div");
+  outer.style.cssText =
+    "position:absolute;top:-200px;left:-200px;width:50px;height:50px;overflow:scroll;visibility:hidden;";
+  const inner = doc.createElement("div");
+  inner.style.width = "1px";
+  outer.appendChild(inner);
+  doc.body.appendChild(outer);
+
+  const isHonoured = (height: number) => {
+    inner.style.height = `${height}px`;
+    // allow for sub-pixel rounding of layout units
+    return outer.scrollHeight >= height - 1;
+  };
+
+  let lo = 0;
+  let hi = MAX_PROBE_HEIGHT;
+  while (hi - lo > 1) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (isHonoured(mid)) {
+      lo = mid;
+    } else {
+      hi = mid;
+    }
+  }
+
+  inner.style.height = `${lo}px`;
+  const maxScrollHeight = Math.min(lo, outer.scrollHeight);
+  outer.remove();
+
+  // zero means no layout engine (e.g. non-browser test environment)
+  if (maxScrollHeight > 0) {
+    maxScrollHeightByDevicePixelRatio.set(devicePixelRatio, maxScrollHeight);
+    return maxScrollHeight;
+  }
+
+  return DEFAULT_MAX_SCROLL_HEIGHT;
+}
+
 export type MouseEventTypes = "dblclick" | "click";
 export type KeyboardEventTypes = "keydown" | "keypress" | "keyup";
 
