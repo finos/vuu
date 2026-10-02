@@ -17,10 +17,7 @@ import { useOptionalSavedState } from "../saved-state/SavedStateContext";
 import { useInRouterContext, useLocation } from "react-router-dom";
 import { RemoteModuleErrorBoundary } from "./RemoteModuleErrorBoundary";
 
-export interface RemoteModuleProps<
-  ComponentProps extends object | undefined = object,
-> {
-  ComponentProps?: ComponentProps;
+export interface RemoteModuleProps {
   ViewProps?: {
     allowRename?: boolean;
     closeable?: boolean;
@@ -190,11 +187,8 @@ const useRemoteModuleState = ({
   return store;
 };
 
-function RemoteModuleContent<ComponentProps extends object | undefined>(
-  props: RemoteModuleProps<ComponentProps>,
-) {
+function RemoteModuleContent(props: RemoteModuleProps) {
   const {
-    ComponentProps: componentProps,
     css: _css,
     mfComponent,
     mfScope,
@@ -205,9 +199,7 @@ function RemoteModuleContent<ComponentProps extends object | undefined>(
   } = props;
   const store = useRemoteModuleState(props);
   const RemoteComponent = getRemoteComponent(mfUrl, mfScope, mfComponent);
-  const remoteComponent = (
-    <RemoteComponent {...remoteProps} {...componentProps} />
-  );
+  const remoteComponent = <RemoteComponent {...remoteProps} />;
 
   // Always provide a value, so the portal's own store is never visible to
   // the module (FR-3).
@@ -224,9 +216,7 @@ function RemoteModuleContent<ComponentProps extends object | undefined>(
   );
 }
 
-function RawRemoteModule<ComponentProps extends object | undefined>(
-  props: RemoteModuleProps<ComponentProps>,
-) {
+function RawRemoteModule(props: RemoteModuleProps) {
   const { mfComponent, mfScope, mfUrl, onError } = props;
 
   return (

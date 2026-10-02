@@ -404,8 +404,8 @@ server; otherwise, those without `restUrl` and `websocketUrl` that aren't the
 portal's own server. The developer modules `vuu-table-browser` and
 `vuu-table-viewer` use it to browse every server's tables. The browser renders
 one viewer remote per server with that server's `vuu` connection, and shares
-the selected table through `TableRegistrationContext`, so neither module needs
-`ComponentProps`. The viewer is registered as a nested module, with an empty
+the selected table through `TableRegistrationContext`; descriptors can't pass
+props to a module. The viewer is registered as a nested module, with an empty
 `navLocation`, so it has no navigation entry of its own.
 
 To browse a Vuu server that no module uses, choose **Add server** in the

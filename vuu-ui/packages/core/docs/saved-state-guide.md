@@ -208,7 +208,7 @@ applicationKey = descriptor.persistenceKey ?? descriptor.clientIdentifier
 - A descriptor with neither, or without an integer `version`, gets no store.
   `load` then returns `undefined` and `save` does nothing.
 - The same remote registered twice, for example with different
-  `ComponentProps`, gets two independent documents.
+  `clientIdentifier`s, gets two independent documents.
 
 ```ts
 {

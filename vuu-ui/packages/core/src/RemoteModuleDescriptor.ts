@@ -1,7 +1,6 @@
 import type { VuuModuleDescriptor } from "@vuu-ui/vuu-protocol-types";
 
 export interface RemoteModuleDescriptor extends VuuModuleDescriptor {
-  ComponentProps?: Record<string, unknown>;
   /**
    * Where the module appears in the portal navigation, e.g.
    * `/Trading/Baskets`. An empty location (`""` or `"/"`) marks a nested
