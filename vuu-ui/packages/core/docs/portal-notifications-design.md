@@ -67,6 +67,18 @@ connection acquired by the portal is reused — not duplicated — when the user
 opens a remote that uses the same server. This is the property the design
 relies on.
 
+**Deployment assumption.** In real deployments a remote application and its
+Vuu server are normally **1:1** — each nav icon represents one application
+backed by its own Vuu server. Separate applications sharing a Vuu server is
+rare. The only common exception is modules that use the **portal's own
+server** (no `vuu` descriptor, e.g. admin applications). The design is
+optimised for 1:1 and treats sharing as a degenerate case that still works
+(§7.4). Consequences:
+
+- The number of monitored connections is roughly the number of nav icons,
+  so the monitoring cap is effectively a cap on monitored icons (§6.1).
+- A nav item's presence and unread count are simply those of its server.
+
 ### 2.2 Notifications on the server
 
 The generic module (`vuu/.../core/module/notifications/NotificationModule.scala`,
@@ -146,7 +158,7 @@ is no cross-window state sharing (`portal-design.md`).
 | ID    | Requirement                                                                                                                                         |
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | FR-1  | On login, the portal connects to each distinct Vuu server referenced by navigable modules, up to `maxMonitoredServers` (default 8).                |
-| FR-2  | Servers are prioritised: the open module's server, then servers in app switcher display order.                                                     |
+| FR-2  | Servers are prioritised: the open module's server, then servers of visible nav items, then app switcher display order.                            |
 | FR-3  | When a remote is opened, it reuses the monitored connection if one exists.                                                                          |
 | FR-4  | A server's presence is derived from connection state and shown on every nav item using that server.                                               |
 | FR-5  | Monitoring failures never surface as errors in the shell; they only change presence. Unmonitored servers show presence `unknown`.                |
@@ -226,23 +238,27 @@ The candidate list is computed from the module registry the switcher renders:
    if `vuu` is absent.
 3. De-duplicate, keeping first occurrence; drop servers that are not usable
    (same rule as `isUsableServer` in `useVuuServers`).
-4. Move the server of the **currently open module** (from the router location)
-   to the front.
+4. Order by priority: the server of the **currently open module** (from the
+   router location) first, then servers of nav items that are **visible**,
+   then the rest in display order.
 5. The portal server is always connected and does not count against the cap.
 6. Take the first `maxMonitoredServers`.
 
-Because several modules typically share a server, the number of connections
-is the number of distinct servers, which is normally well below the number of
-icons. The cap protects against large registries.
+With the 1:1 app/server assumption (§2.1) step 3 rarely removes anything, so
+there is roughly one connection per icon and the cap is the real bound. The
+default (8) should be at least the number of icons visible in a typical nav
+rail; hosts with taller rails can raise it.
 
-Re-evaluation happens when the registry or open module changes. Changes are
-applied with **hysteresis**: a server that drops out of the top N is released
-only after `releaseDelayMs` (default 30 s), so switching between applications
-does not churn connections.
+Visibility is tracked with an `IntersectionObserver` on nav items (the rail
+root), registered by `NavItemDecoration`. Items in a collapsed nav group
+count as not visible, but the group header shows the aggregate of whatever
+of its children are monitored. Visibility only re-orders priority; it never
+releases the open module's server.
 
-Optional later refinement: if the nav rail scrolls, an `IntersectionObserver`
-on nav items can promote visible items. Not required for v1 (the user stated
-the visible icon count is naturally bounded).
+Re-evaluation happens when the registry, open module or visible set changes.
+Changes are applied with **hysteresis**: a server that drops out of the top N
+is released only after `releaseDelayMs` (default 30 s), so scrolling the rail
+or switching between applications does not churn connections.
 
 ### 6.2 Lifecycle
 
@@ -441,10 +457,13 @@ export interface NotificationOrigin {
 
 ### 7.4 Attribution to modules
 
-A server notification belongs to a server. By default it is attributed to
-**every navigable module that uses that server** (`origin.moduleIds`). For
-servers shared by many modules this can over-badge, so attribution is
-pluggable:
+A server notification belongs to a server. In the normal 1:1 case (§2.1)
+attribution is trivial: the notification is attributed to the one navigable
+module that uses that server (`origin.moduleIds = [thatModule]`), so the
+nav item's badge is the server's unread count.
+
+For the rare shared-server case, and for the portal's own server, attribution
+is pluggable:
 
 ```ts
 export type NotificationAttribution = (
@@ -453,11 +472,14 @@ export type NotificationAttribution = (
 ) => RemoteModuleDescriptor["id"][];
 ```
 
-Default: if the notification has an attribute `module` / `clientIdentifier`
-matching a module's `clientIdentifier`, attribute only to that module;
-otherwise attribute to all modules on the server. Portal-server notifications
-not matching a module are attributed to the **portal** itself (shown in the
-viewer and header, not on any nav item).
+Default:
+
+1. One module on the server → that module.
+2. Several modules: if the notification has an attribute `module` /
+   `clientIdentifier` matching a module's `clientIdentifier`, that module;
+   otherwise all modules on the server.
+3. Portal-server notifications not matching a module are attributed to the
+   **portal** itself (shown in the viewer and header, not on any nav item).
 
 ### 7.5 Client notifications
 
@@ -728,7 +750,7 @@ indicator or the context menu.
   notifications), level, read state, kind, show expired, free-text search.
   Filter state persists in the portal store. Clear-all link when filtered.
 - **Item actions**: mark read/unread, delete (local), "Open <app>"
-  (navigates to the attributed module; if several, a menu), and, when the
+  (navigates to the attributed module — normally exactly one), and, when the
   server exposes it, **"Dismiss on server"** (invokes the server's dismiss
   RPC — see §13).
 - **Bulk**: mark all read (respects current filter), delete all read,
@@ -763,8 +785,8 @@ Exports from `@vuu-ui/core/portal`: `NotificationsIndicator`,
 `useVuuServerStatus`, `useVuuServerStatuses`, `useModuleServerStatus`, and the
 types above.
 
-Remote authors need no changes. Remotes that want module-specific
-attribution should publish a `clientIdentifier`/`module` attribute from their
+Remote authors need no changes. In the rare case of several modules sharing
+a server, a module that wants module-specific attribution should publish a `clientIdentifier`/`module` attribute from their
 server's notifications provider.
 
 ## 12. Multiple windows and tabs
@@ -795,8 +817,8 @@ with the server team):
    (`dismissNotification`, by key rather than viewport selection), and
    advertise it via the table's menu/RPC metadata so the UI can offer
    "Dismiss on server" generically.
-3. Optionally a standard `module`/`clientIdentifier` column for attribution
-   (§7.4) and an `actionUrl` column for deep links.
+3. Optionally a standard `module`/`clientIdentifier` column, only needed for
+   attribution on shared servers (§7.4) and an `actionUrl` column for deep links.
 4. Optional per-user read state on the server for cross-device sync.
 
 ## 14. Performance and failure modes
@@ -815,7 +837,7 @@ with the server team):
 
 ## 15. Testing
 
-- **Unit** (Vitest): monitor selection/cap/priority/hysteresis with a fake
+- **Unit** (Vitest): monitor selection/cap/priority (open, visible, display order)/hysteresis with a fake
   registry; presence mapping from state sequences; registry `onStateChange`
   and `reconnecting`/`unauthorized` states; row mapping and
   insert/update/delete handling; store queries, counts, retention,
@@ -835,7 +857,8 @@ with the server team):
 ## 16. Phased delivery
 
 1. **Connection foundation** — registry state API; `VuuServerMonitor`;
-   presence hooks; presence on nav items. Add shared singletons.
+   visibility tracking; presence hooks; presence on nav items. Add shared
+   singletons.
 2. **Ingestion and store** — feed manager, store, persistence of read state,
    badges on nav items.
 3. **Portal-level provider** — hoisting, pass-through nesting, origin
@@ -849,15 +872,13 @@ Each phase is independently shippable behind `PortalShellProps` flags.
 
 ## 17. Open questions
 
-1. Attribution: should a server notification badge every module on that
-   server, or must servers tag notifications with a module (§7.4)?
-2. Should opening a module mark its notifications read, or only explicit
+1. Should opening a module mark its notifications read, or only explicit
    user action?
-3. Should "delete" also dismiss on the server when supported, or remain a
+2. Should "delete" also dismiss on the server when supported, or remain a
    local action with a separate "Dismiss on server"?
-4. Default `maxMonitoredServers` — is 8 appropriate for production
-   registries?
-5. Should `online` presence be shown, or only problems (current default)?
-6. Are banners (`type = "banner"`) portal-wide by definition, or should they
+3. Default `maxMonitoredServers` — with ~1 connection per icon, is 8 the
+   right default, or should it be derived from the rail's visible capacity?
+4. Should `online` presence be shown, or only problems (current default)?
+5. Are banners (`type = "banner"`) portal-wide by definition, or should they
    follow the active-module rule like toasts?
-7. Is a Web Locks leader-tab model required for v1 given expected tab counts?
+6. Is a Web Locks leader-tab model required for v1 given expected tab counts?
