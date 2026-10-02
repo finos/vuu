@@ -340,6 +340,7 @@ export const useTable = ({
     cellFocusStateRef,
     columns,
     getRowAtPosition,
+    rowCount,
     rowHeight,
     scrollingApiRef,
     setRange,

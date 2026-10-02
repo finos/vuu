@@ -116,6 +116,8 @@
   height: calc(100% - var(--horizontal-scrollbar-height) - var(--vuu-table-footer-height));
   position: relative;
   overflow: auto;
+  /* scroll position is managed by the table, browser must not adjust it when rows are repositioned */
+  overflow-anchor: none;
   overscroll-behavior: none;
   width: var(--table-content-container-width);
 }
@@ -139,6 +141,8 @@
 .vuuTable-body {
   --scrollLimitNotice-height: 0px;
   height: calc(var(--content-height) + var(--scrollLimitNotice-height));
+  /* rows shifted in situ (virtualised keyboard navigation) must not extend the scrollable height */
+  overflow-y: clip;
   position: relative;
 }
 

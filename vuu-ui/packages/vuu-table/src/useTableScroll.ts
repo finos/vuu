@@ -199,6 +199,10 @@ export interface TableScrollHookProps {
    */
   onVerticalScrollInSitu?: (rowIndexOffsetCount: number) => void;
   rowHeight: number;
+  /**
+   * Total number of rows in the dataset
+   */
+  rowCount: number;
   scrollingApiRef?: ForwardedRef<ScrollingAPI>;
   setRange: (range: VuuRange) => void;
   showPaginationControls?: boolean;
@@ -213,6 +217,7 @@ export const useTableScroll = ({
   onVerticalScroll,
   onVerticalScrollInSitu,
   rowHeight,
+  rowCount,
   scrollingApiRef,
   setRange,
   viewportMeasurements,
@@ -430,6 +435,38 @@ export const useTableScroll = ({
       if (contentContainer) {
         const [maxScrollLeft, maxScrollTop] = getMaxScroll(contentContainer);
         const { scrollLeft, scrollTop } = contentContainer;
+
+        /**
+         * With a virtualised scroll, keyboard navigation shifts the rendered rows
+         * within the viewport without moving the scroll position. Once we reach
+         * the first or last page, we scroll to top or end instead, so rows are
+         * correctly aligned and the in situ offset is reset.
+         */
+        const scrollInSitu = (offset: number) => {
+          const firstRow = firstRowRef.current + offset;
+          const maxFirstRow = Math.max(0, rowCount - viewportRowCount);
+          if (firstRow <= 0 || firstRow >= maxFirstRow) {
+            const top = firstRow <= 0 ? 0 : maxScrollTop;
+            if (Math.abs(scrollTop - top) < SCROLL_SYNC_TOLERANCE) {
+              // no scroll event will fire, reset rows for current position
+              handleVerticalScroll(
+                scrollTop,
+                maxScrollTop > 0 ? scrollTop / maxScrollTop : 0,
+              );
+            } else {
+              contentContainer.scrollTo({
+                top,
+                left: scrollLeft,
+                behavior: "instant",
+              });
+            }
+          } else {
+            onVerticalScrollInSitu?.(offset);
+            firstRowRef.current = firstRow;
+            setRange({ from: firstRow, to: firstRow + viewportRowCount });
+          }
+        };
+
         switch (scrollRequest.type) {
           case "scroll-top":
             {
@@ -475,14 +512,7 @@ export const useTableScroll = ({
                 );
                 if (direction && distance) {
                   if (isVirtualScroll) {
-                    const offset = direction === "down" ? 1 : -1;
-                    onVerticalScrollInSitu?.(offset);
-                    const firstRow = firstRowRef.current + offset;
-                    firstRowRef.current = firstRow;
-                    setRange({
-                      from: firstRow,
-                      to: firstRow + viewportRowCount,
-                    });
+                    scrollInSitu(direction === "down" ? 1 : -1);
                   } else {
                     let newScrollLeft = scrollLeft;
                     let newScrollTop = scrollTop;
@@ -512,12 +542,9 @@ export const useTableScroll = ({
             {
               const { direction } = scrollRequest;
               if (isVirtualScroll) {
-                const offset =
-                  direction === "down" ? viewportRowCount : -viewportRowCount;
-                onVerticalScrollInSitu?.(offset);
-                const firstRow = firstRowRef.current + offset;
-                firstRowRef.current = firstRow;
-                setRange({ from: firstRow, to: firstRow + viewportRowCount });
+                scrollInSitu(
+                  direction === "down" ? viewportRowCount : -viewportRowCount,
+                );
               } else {
                 const scrollBy =
                   direction === "down" ? appliedPageSize : -appliedPageSize;
@@ -552,8 +579,10 @@ export const useTableScroll = ({
     },
     [
       appliedPageSize,
+      handleVerticalScroll,
       isVirtualScroll,
       onVerticalScrollInSitu,
+      rowCount,
       rowHeight,
       setRange,
       totalHeaderHeight,
