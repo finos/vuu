@@ -7,7 +7,6 @@ import org.finos.vuu.plugin.virtualized.api.{VirtualizedSessionTableColumn, Virt
 import org.finos.vuu.viewport.ViewPortColumns
 
 import java.util
-import scala.collection.mutable.ArrayBuffer
 
 class ClickHouseRowDataProvider(client: ClickHouseClient,
                                 tableDef: VirtualizedSessionTableDef) {
@@ -18,20 +17,40 @@ class ClickHouseRowDataProvider(client: ClickHouseClient,
                       clauseWithParams: ClauseWithParams,
                       orderBy: String,
                       offset: Int,
-                      limit: Int): IndexedSeq[RowWithData] = {
+                      limit: Int): Array[RowWithData] = {
 
     val query = buildQuery(viewPortColumns, clauseWithParams.clause, orderBy, offset, limit)
 
     client.executeQuery(query, clauseWithParams.params) { records =>
-      val buf = new ArrayBuffer[RowWithData](records.getResultRows.toInt)
-      val it = records.iterator()
-      while (it.hasNext) {
-        val record = it.next()
-        buf += rowDataMapper.mapRowData(record)
-      }
-      buf.toIndexedSeq
-    }
+      val totalRows = records.getResultRows.toInt
 
+      if (totalRows == 0) {
+        Array.empty
+      } else {
+        val initialCapacity = Math.max((totalRows / 0.75f).toInt + 1, 16)
+        val seenKeys = new util.HashSet[Any](initialCapacity)
+
+        val array = new Array[RowWithData](totalRows)
+        var count = 0
+
+        val it = records.iterator()
+        while (it.hasNext) {
+          val record = it.next()
+          val row = rowDataMapper.mapRowData(record)
+
+          if (seenKeys.add(row.key)) {
+            array(count) = row
+            count += 1
+          }
+        }
+
+        if (count == totalRows) {
+          array
+        } else {
+          util.Arrays.copyOf(array, count)
+        }
+      }
+    }
   }
 
   private def buildQuery(viewPortColumns: ViewPortColumns,
