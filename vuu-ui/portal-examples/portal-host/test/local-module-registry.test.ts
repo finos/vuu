@@ -54,27 +54,6 @@ describe("local portal module registry", () => {
       { name: "basket-trading", vuu: { connectionId: "basket" } },
       { name: "feature-simple-div", vuu: { connectionId: "simul" } },
     ]);
-    expect(
-      localPortalModuleRegistry.modules.find(
-        ({ name }) => name === "user-admin",
-      )?.ComponentProps,
-    ).toEqual({
-      config: {
-        clients: { table: { module: "USER_ADMIN", table: "clients" } },
-        group_roles: {
-          table: { module: "USER_ADMIN", table: "group_roles" },
-        },
-        groups: { table: { module: "USER_ADMIN", table: "groups" } },
-        roles: { table: { module: "USER_ADMIN", table: "roles" } },
-        user_group_roles: {
-          table: { module: "USER_ADMIN", table: "user_group_roles" },
-        },
-        user_groups: {
-          table: { module: "USER_ADMIN", table: "user_groups" },
-        },
-        users: { table: { module: "USER_ADMIN", table: "users" } },
-      },
-    });
   });
 
   it("nests the table viewer inside the table browser", () => {

@@ -97,8 +97,9 @@ this module.
 ## Server-driven data contract
 
 All reads and writes use the host-scoped Vuu APIs. There are no browser calls to
-Keycloak, arbitrary URLs or REST endpoints. The default module is
-`KEYCLOAK_ADMIN` and the default tables are:
+Keycloak, arbitrary URLs or REST endpoints. The tables are known to the module
+and are not passed in by the host: the default module is `USER_ADMIN` and the
+default tables are:
 
 | Table | Purpose |
 | --- | --- |

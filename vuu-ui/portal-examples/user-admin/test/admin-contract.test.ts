@@ -54,7 +54,7 @@ describe("server-driven identity contract", () => {
   it("uses configured table and columns without inventing a schema", () => {
     expect(tableFor(config, "users")).toEqual(schema.table);
     expect(tableFor(config, "roles")).toEqual({
-      module: "KEYCLOAK_ADMIN",
+      module: "USER_ADMIN",
       table: "roles",
     });
     expect(columnFor(config, "users", "username")).toBe("login");

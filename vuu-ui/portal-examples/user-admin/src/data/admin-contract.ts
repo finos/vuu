@@ -1,6 +1,7 @@
 import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import type { Filter } from "@vuu-ui/vuu-filter-types";
 import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { USER_ADMIN_MODULE } from "./user-admin-tables";
 
 export type Entity = "users" | "groups" | "roles";
 export type AdminTableName =
@@ -73,7 +74,7 @@ export const DEFAULT_HIDDEN_COLUMNS: Partial<
 };
 
 export const tableFor = (config: AdminConfig, name: AdminTableName): VuuTable =>
-  config[name]?.table ?? { module: "KEYCLOAK_ADMIN", table: name };
+  config[name]?.table ?? { module: USER_ADMIN_MODULE, table: name };
 
 export const columnFor = (
   config: AdminConfig,

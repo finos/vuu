@@ -542,7 +542,7 @@ implementation details.
 ### User admin
 
 `portal-examples/user-admin` expects the default VUU module
-`KEYCLOAK_ADMIN` and these tables, as defined by
+`USER_ADMIN` and these tables, as defined by
 `src/data/admin-contract.ts`:
 
 - `users`

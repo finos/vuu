@@ -1,7 +1,9 @@
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 
+export const USER_ADMIN_MODULE = "USER_ADMIN";
+
 const table = (name: string): VuuTable => ({
-  module: "USER_ADMIN",
+  module: USER_ADMIN_MODULE,
   table: name,
 });
 
