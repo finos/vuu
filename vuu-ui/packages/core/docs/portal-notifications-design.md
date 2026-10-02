@@ -869,7 +869,8 @@ It is not needed for v1 because:
 
 - module **windows** do not monitor (they only connect for their own app,
   which they need anyway), so the fan-out is limited to full portal tabs;
-- users of a single-page portal app typically keep one portal tab;
+- users are **not expected to open multiple portal tabs** (confirmed
+  product assumption); additional pages are module windows;
 - the cost is bounded (`maxMonitoredServers` = 8) and connections are mostly
   idle apart from heartbeats.
 
@@ -962,4 +963,4 @@ Each phase is independently shippable behind `PortalShellProps` flags.
 | 3 | `maxMonitoredServers` default              | 8. If registries outgrow it, limit the nav rail and add a "… more" overflow (§14).          |
 | 4 | How is presence shown?                     | Only unavailability: offline/unauthorized items are slightly greyed and cannot be opened (§10.1). |
 | 5 | Are banners portal-wide?                   | Yes (§9.3).                                                                               |
-| 6 | Tab leader election in v1?                 | No; rationale and trigger conditions in §12.1.                                              |
+| 6 | Tab leader election in v1?                 | No. Users are not expected to open multiple portal tabs; revisit only if that changes (§12.1). |
