@@ -120,7 +120,21 @@ const addChildValues = (
     const ts = 0;
     const isNew = false;
     // prettier-ignore
-    const row = [index.value, index.value, isLeaf,false,depth,0,fullKey,0,ts, isNew, ...blanks, attribute, attributeValue ] as DataSourceRow
+    const row = [
+      index.value,
+      index.value,
+      isLeaf,
+      false,
+      depth,
+      0,
+      fullKey,
+      0,
+      ts,
+      isNew,
+      ...blanks,
+      attribute,
+      attributeValue,
+    ] as DataSourceRow;
     rows.push(row);
     rowCount += 1;
 

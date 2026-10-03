@@ -6,9 +6,11 @@ import type {
 } from "@vuu-ui/vuu-filter-types";
 import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
+  getDefaultTimeZone,
   isValidTimeString,
-  isValidTimeStringMillis,
-  Time,
+  type RelativeDate,
+  temporalFilterAsQuery,
+  type TemporalInfo,
 } from "@vuu-ui/vuu-utils";
 
 export const isTimeToday = (
@@ -20,7 +22,16 @@ export interface SerializableFilter {
   asQuery: () => string;
 }
 
-export class ExtendedSingleValueFilterClause implements SerializableSingleValueFilterClause {
+const timeStringWithFraction = /^\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?$/;
+
+/**
+ * A filter clause on a time of day value (TimeString). The time is resolved
+ * against a date ('today' by default) only when the query is created, so a
+ * persisted filter remains relative.
+ */
+export class ExtendedSingleValueFilterClause
+  implements SerializableSingleValueFilterClause
+{
   #options: ExtendedFilterOptions;
 
   constructor(
@@ -33,18 +44,27 @@ export class ExtendedSingleValueFilterClause implements SerializableSingleValueF
   }
   name?: string | undefined;
 
+  get extendedOptions() {
+    return this.#options;
+  }
+
   asQuery() {
     const { column, op, value } = this;
-    if (isTimeToday(this.#options)) {
-      if (isValidTimeString(value) || isValidTimeStringMillis(value)) {
-        const timeValue = +Time(value).asDate();
-        if (op === ">=") {
-          return `${column} > ${timeValue - 1}`;
-        } else if (op === "<=") {
-          return `${column} < ${timeValue + 1}`;
-        } else {
-          return `${column} ${op} ${timeValue}`;
-        }
+    const { date, encoding = "epochMillis", timeZone } = this.#options;
+    if (this.#options.type === "TimeString") {
+      if (
+        typeof value === "string" &&
+        (isValidTimeString(value) || timeStringWithFraction.test(value))
+      ) {
+        const temporalInfo: TemporalInfo = {
+          kind: "time",
+          encoding,
+          precision: encoding === "epochNanos" ? "ns" : "ms",
+          timeZone: timeZone ?? getDefaultTimeZone(),
+        };
+        return temporalFilterAsQuery({ column, op, value }, temporalInfo, {
+          date: date as RelativeDate,
+        });
       } else {
         throw Error(
           `[ExtendedSingleValueFilterClause] invalid TimeString ${value}`,

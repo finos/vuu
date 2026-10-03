@@ -1,7 +1,6 @@
 import { test, type Page } from "../../../../../playwright/fixtures";
 import { expect } from "../../../../../playwright/fixtures";
 
-
 const FILTER_CONTAINER = ".vuuCustomFilters-filters";
 
 const addButton = (page: Page) =>

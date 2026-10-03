@@ -31,12 +31,12 @@ export type Operator = "";
 const applyPrefix = (completions: Completion[], prefix?: string) =>
   prefix
     ? completions.map((completion) => ({
-      ...completion,
-      apply:
-        typeof completion.apply === "function"
-          ? completion.apply
-          : `${prefix}${completion.apply ?? completion.label}`,
-    }))
+        ...completion,
+        apply:
+          typeof completion.apply === "function"
+            ? completion.apply
+            : `${prefix}${completion.apply ?? completion.label}`,
+      }))
     : completions;
 
 const isOperator = (node?: SyntaxNode): node is SyntaxNode =>
@@ -224,32 +224,31 @@ export const useColumnAutoComplete = (
             context,
             suggestionProvider,
           );
-        case "RelationalExpression":
-          {
-            if (isCompleteRelationalExpression(nodeBefore)) {
-              return {
-                from: context.pos,
-                options: booleanJoinSuggestions.concat({
-                  label: ", <truthy expression>, <falsy expression>",
-                  apply: ", ",
-                }),
-              };
+        case "RelationalExpression": {
+          if (isCompleteRelationalExpression(nodeBefore)) {
+            return {
+              from: context.pos,
+              options: booleanJoinSuggestions.concat({
+                label: ", <truthy expression>, <falsy expression>",
+                apply: ", ",
+              }),
+            };
+          } else {
+            const operator = getRelationalOperator(nodeBefore, state);
+            const columnName = getColumnName(nodeBefore, state);
+            if (!operator) {
+              const options = await suggestionProvider.getSuggestions(
+                "condition-operator",
+                {
+                  columnName,
+                },
+              );
+              return { from: context.pos, options };
             } else {
-              const operator = getRelationalOperator(nodeBefore, state);
-              const columnName = getColumnName(nodeBefore, state);
-              if (!operator) {
-                const options = await suggestionProvider.getSuggestions(
-                  "condition-operator",
-                  {
-                    columnName,
-                  },
-                );
-                return { from: context.pos, options };
-              } else {
-                return makeSuggestions(context, "expression");
-              }
+              return makeSuggestions(context, "expression");
             }
           }
+        }
 
         case "RelationalOperator":
           // we need the type of the expression on the other side of the operator
@@ -295,14 +294,13 @@ export const useColumnAutoComplete = (
           }
 
           break;
-        case "OpenBrace":
-          {
-            // Might be a function expression, might be parenthesized
-            const functionName = getFunctionName(nodeBefore, state);
-            // If not function, what came before - if it's an operator
-            // we restrict to numerics
-            return makeSuggestions(context, "expression", { functionName });
-          }
+        case "OpenBrace": {
+          // Might be a function expression, might be parenthesized
+          const functionName = getFunctionName(nodeBefore, state);
+          // If not function, what came before - if it's an operator
+          // we restrict to numerics
+          return makeSuggestions(context, "expression", { functionName });
+        }
         case "ArgList": {
           const functionName = getFunctionName(nodeBefore, state);
           const lastArgument = getLastChild(nodeBefore, context);

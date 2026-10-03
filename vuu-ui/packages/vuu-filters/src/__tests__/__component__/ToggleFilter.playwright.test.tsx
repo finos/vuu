@@ -1,7 +1,5 @@
 import { test, expect } from "../../../../../playwright/fixtures";
 
-
-
 test(`A simple uncontrolled togglefilter with no defaultValue
     shows All by default
     selects correct value when clicked

@@ -2,7 +2,7 @@ import { Completion } from "@codemirror/autocomplete";
 import { AnnotationType } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { isNumericColumn } from "@vuu-ui/vuu-utils";
+import { isNumericColumn, isTemporalColumn } from "@vuu-ui/vuu-utils";
 
 export interface VuuCompletion extends Completion {
   isIllustration?: boolean;
@@ -84,7 +84,11 @@ export const numericOperators: Completion[] = [
 ];
 
 export const getRelationalOperators = (column?: ColumnDescriptor) => {
-  if (column === undefined || isNumericColumn(column)) {
+  if (
+    column === undefined ||
+    isNumericColumn(column) ||
+    isTemporalColumn(column)
+  ) {
     return numericOperators;
   } else {
     return equalityOperators;

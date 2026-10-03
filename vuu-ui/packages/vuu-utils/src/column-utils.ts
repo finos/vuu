@@ -40,6 +40,7 @@ import type {
 } from "@vuu-ui/vuu-table-types";
 import { type CSSProperties } from "react";
 import { moveItem } from "./array-utils";
+import { getTemporalInfo } from "./date/temporal";
 import { queryClosest } from "./html-utils";
 
 /**
@@ -180,19 +181,44 @@ export const fromServerDataType = (
       return "number";
     case "boolean":
       return "boolean";
+    case "epochtimestamp":
+    case "epochtimestampnano":
+      return "date/time";
     default:
       return "string";
   }
 };
 
+/**
+ * Returns true if serverDataType is epochtimestampnano. Note: prefer
+ * getTemporalInfo, which describes encoding, kind and time zone.
+ */
 export const isNanoTimestampColumn = ({
   serverDataType,
 }: DataValueDescriptor) => serverDataType === "epochtimestampnano";
 
-export const isTimestampColumn = (column: ColumnDescriptor) =>
+/**
+ * Returns true if serverDataType is epochtimestamp or epochtimestampnano.
+ * Note: this does not recognise legacy columns (long with a date/time type),
+ * use isTemporalColumn for that.
+ */
+export const isTimestampColumn = (column: DataValueDescriptor) =>
   column.serverDataType === "epochtimestamp" || isNanoTimestampColumn(column);
 
-export const isNumericColumn = ({ serverDataType, type }: ColumnDescriptor) => {
+/**
+ * Returns true for any column holding a temporal value, see getTemporalInfo.
+ */
+export const isTemporalColumn = (column?: DataValueDescriptor) =>
+  getTemporalInfo(column) !== undefined;
+
+/**
+ * Numeric columns, excluding those that hold temporal values.
+ */
+export const isNumericColumn = (column: ColumnDescriptor) => {
+  const { serverDataType, type } = column;
+  if (isTemporalColumn(column)) {
+    return false;
+  }
   if (
     serverDataType === "int" ||
     serverDataType === "long" ||
@@ -210,24 +236,43 @@ export const isNumericColumn = ({ serverDataType, type }: ColumnDescriptor) => {
   return false;
 };
 
+/**
+ * Checks the 'type' only, returns true for 'date/time' (or 'date').
+ * @deprecated use getTemporalInfo or isDateTimeDataValue
+ */
 export const isDateTimeDataType = (
-  column: ColumnDescriptor,
-): column is DateTimeDataValueDescriptor =>
-  (isTypeDescriptor(column.type) ? column.type.name : column.type) ===
-  "date/time";
+  column: DataValueDescriptor,
+): column is DateTimeDataValueDescriptor => {
+  const typeName = isTypeDescriptor(column.type)
+    ? column.type.name
+    : column.type;
+  return typeName === "date/time" || typeName === "date";
+};
 
+/**
+ * Checks the 'type' only, returns true for 'time'.
+ * @deprecated use getTemporalInfo or isTimeDataValue
+ */
 export const isTimeDataType = (
-  column: ColumnDescriptor,
+  column: DataValueDescriptor,
 ): column is TimeDataValueDescriptor =>
   (isTypeDescriptor(column.type) ? column.type.name : column.type) === "time";
 
-export const isDateTimeDataValue = (column: ColumnDescriptor) =>
-  isTimestampColumn(column) || isDateTimeDataType(column);
+/**
+ * Temporal value of kind 'datetime' or 'date' (i.e has a meaningful date component)
+ */
+export const isDateTimeDataValue = (column?: DataValueDescriptor) => {
+  const kind = getTemporalInfo(column)?.kind;
+  return kind === "datetime" || kind === "date";
+};
 
+/**
+ * Temporal value of kind 'time' (time of day)
+ */
 export const isTimeDataValue = (
-  column?: ColumnDescriptor,
+  column?: DataValueDescriptor,
 ): column is TimeDataValueDescriptor =>
-  (isTypeDescriptor(column?.type) ? column.type.name : column?.type) === "time";
+  getTemporalInfo(column)?.kind === "time";
 
 /**
  * A time column is edited/filtered with millisecond precision if its
@@ -517,19 +562,23 @@ export const sortPinnedColumns = (
   let pinnedWidthLeft = selectionBookendWidth;
   for (const column of columns) {
     // prettier-ignore
-    switch(column.pin){
-      case "left": {
-        leftPinnedColumns.push({
-          ...column,
-          pinnedWidth: 0,
-          pinnedOffset: pinnedWidthLeft
-        });
-        pinnedWidthLeft += column.width;
-      }
-      break;
-    // store right pinned columns initially in reverse order
-      case "right": rightPinnedColumns.unshift(column); break;
-      default: restColumns.push(column)
+    switch (column.pin) {
+      case "left":
+        {
+          leftPinnedColumns.push({
+            ...column,
+            pinnedWidth: 0,
+            pinnedOffset: pinnedWidthLeft,
+          });
+          pinnedWidthLeft += column.width;
+        }
+        break;
+      // store right pinned columns initially in reverse order
+      case "right":
+        rightPinnedColumns.unshift(column);
+        break;
+      default:
+        restColumns.push(column);
     }
   }
 
@@ -1039,6 +1088,7 @@ export const getDefaultColumnType = (
     case "boolean":
       return "boolean";
     case "epochtimestamp":
+    case "epochtimestampnano":
       return "date/time";
     default:
       return "string";

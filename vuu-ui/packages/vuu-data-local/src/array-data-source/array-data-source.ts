@@ -10,12 +10,16 @@ import type {
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   DataSourceSubscribedMessage,
+  SetFilterOptions,
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
 } from "@vuu-ui/vuu-data-types";
 import { filterPredicate, parseFilter } from "@vuu-ui/vuu-filter-parser";
-import type { Filter } from "@vuu-ui/vuu-filter-types";
+import type {
+  ColumnDescriptorsByName,
+  Filter,
+} from "@vuu-ui/vuu-filter-types";
 import type {
   LinkDescriptorWithLabel,
   SelectRequest,
@@ -42,6 +46,8 @@ import {
   buildColumnMap,
   combineFilters,
   filterAsQuery,
+  filterRequiresResolution,
+  getColumnsByNameForFilter,
   getAddedItems,
   hasBaseFilter,
   hasFilter,
@@ -140,6 +146,7 @@ export class ArrayDataSource
 
   /** Map reflecting positions of columns in client data sent to user */
   #columnMap: ColumnMap;
+  #filterColumnsByName: ColumnDescriptorsByName | undefined;
   protected _config: WithBaseFilter<WithFullConfig> & {
     visualLink?: LinkDescriptorWithLabel;
   } = vanillaConfig;
@@ -625,8 +632,20 @@ export class ArrayDataSource
 
   private getFilterPredicate() {
     const {
-      filterSpec: { filterStruct },
+      filterSpec: { filter, filterStruct: rawFilterStruct },
     } = combineFilters(this._config);
+    // Filters on temporal columns (and serializable filters) are evaluated
+    // using the resolved query, so local semantics match those of the server
+    // e.g a date '=' clause resolves to a range covering the whole day.
+    const filterStruct =
+      rawFilterStruct &&
+      filter &&
+      filterRequiresResolution(
+        rawFilterStruct,
+        getColumnsByNameForFilter(this.tableSchema, this.#filterColumnsByName),
+      )
+        ? parseFilter(filter)
+        : rawFilterStruct;
     if (filterStruct) {
       // When a dataMap exists use actual raw-data positions so the predicate
       // remains correct after processNewColumns rebuilds #columnMap.
@@ -1128,9 +1147,15 @@ export class ArrayDataSource
     };
   }
 
-  setFilter(filter: Filter) {
+  setFilter(filter: Filter, options?: SetFilterOptions) {
+    this.#filterColumnsByName = options?.columnsByName;
     const dataSourceFilter: DataSourceFilter = {
-      filter: filterAsQuery(filter),
+      filter: filterAsQuery(filter, {
+        columnsByName: getColumnsByNameForFilter(
+          this.tableSchema,
+          options?.columnsByName,
+        ),
+      }),
       filterStruct: filter,
     };
     this.filter = dataSourceFilter;

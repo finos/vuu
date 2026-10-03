@@ -67,7 +67,21 @@ const addChildValues = (
 
     // we create all nodes as non-leaf in a TreeTable, even those with no childNodes
     // prettier-ignore
-    const row = [index.value, index.value, false, false, depth, 0, fullKey, 0, timestamp, isNew, nodeData, ...blanks, label ] as DataSourceRow;
+    const row = [
+      index.value,
+      index.value,
+      false,
+      false,
+      depth,
+      0,
+      fullKey,
+      0,
+      timestamp,
+      isNew,
+      nodeData,
+      ...blanks,
+      label,
+    ] as DataSourceRow;
     if (icon) {
       iconProvider?.setIcon(fullKey, icon);
     }

@@ -5,7 +5,7 @@ export type PerfFunction<T extends VoidFunction> = (
 
 export function debounce<T extends VoidFunction>(
   callback: T,
-  timeInterval: number
+  timeInterval: number,
 ): PerfFunction<T> {
   let timeout: number | undefined;
   return (...args: unknown[]) => {
@@ -16,7 +16,7 @@ export function debounce<T extends VoidFunction>(
 
 export function throttle<T extends VoidFunction>(
   callback: T,
-  limit: number
+  limit: number,
 ): PerfFunction<T> {
   let wait = false;
   let lastArgs: unknown[] | undefined = undefined;

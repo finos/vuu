@@ -28,7 +28,7 @@ interface ReactElementWithJSON<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   P = any,
   T extends // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    JsonEnabledJSXElementConstructor<any> = JsonEnabledJSXElementConstructor<any>,
+  JsonEnabledJSXElementConstructor<any> = JsonEnabledJSXElementConstructor<any>,
 > {
   type: T;
   props: P;

@@ -3,7 +3,7 @@
 // seemed to be picking up node version, not browser version
 
 export const uuid = (size = 21): string => {
-  let id = '';
+  let id = "";
   const bytes = crypto.getRandomValues(new Uint8Array(size));
 
   // A compact alternative for `for (var i = 0; i < step; i++)`.
@@ -21,9 +21,9 @@ export const uuid = (size = 21): string => {
       // `A-Z`
       id += (byte - 26).toString(36).toUpperCase();
     } else if (byte < 63) {
-      id += '_';
+      id += "_";
     } else {
-      id += '-';
+      id += "-";
     }
   }
   return id;

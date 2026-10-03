@@ -145,10 +145,12 @@ export const dataDescriptorTypeToVuuRowDataItemType = ({
     case "double":
     case "int":
     case "long":
+    case "epochtimestamp":
       return "number";
     case "boolean":
       return "boolean";
     default:
+      // includes epochtimestampnano, encoded as string
       return "string";
   }
 };

@@ -20,7 +20,6 @@
     min-width: 0px;
   }
 
-
   .saltPillInput-inputWrapper {
     height: 100%;
     padding: 0;
@@ -35,7 +34,6 @@
   .saltPillInput-activationIndicator {
     display: none;
   }
-
 }
 
 .vuuExpandoOption {
@@ -43,7 +41,6 @@
   padding-left: var(--salt-spacing-200);
   padding-right: var(--salt-spacing-200);
 }
-
 
 .vuuExpandoCombobox:before {
   content: attr(data-text);

@@ -37,3 +37,7 @@ export {
   type DateTimePattern,
   type TimePattern,
 } from "./types";
+export { defaultDateTimePatternByKind } from "./dateTimePattern";
+export { EpochTimestamp, type TemporalEncoding } from "./EpochTimestamp";
+export * from "./temporal";
+export * from "./time-zone";

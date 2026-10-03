@@ -112,7 +112,9 @@ test.describe("exportToCsv", () => {
 
     // ensure no spurious download event fires
     let downloadFired = false;
-    page.on("download", () => { downloadFired = true; });
+    page.on("download", () => {
+      downloadFired = true;
+    });
 
     await page.locator("button", { hasText: "Export (max 50 rows)" }).click();
 
@@ -158,7 +160,9 @@ test.describe("ExportColumnDescriptor — exportFormatter and label", () => {
 
     const [download] = await Promise.all([
       page.waitForEvent("download"),
-      page.locator("button", { hasText: "Download instruments-formatted.csv" }).click(),
+      page
+        .locator("button", { hasText: "Download instruments-formatted.csv" })
+        .click(),
     ]);
 
     const filePath = await download.path();
@@ -181,7 +185,9 @@ test.describe("ExportColumnDescriptor — exportFormatter and label", () => {
 
     const [download] = await Promise.all([
       page.waitForEvent("download"),
-      page.locator("button", { hasText: "Download instruments-formatted.csv" }).click(),
+      page
+        .locator("button", { hasText: "Download instruments-formatted.csv" })
+        .click(),
     ]);
 
     const filePath = await download.path();
@@ -192,7 +198,11 @@ test.describe("ExportColumnDescriptor — exportFormatter and label", () => {
 
     expect(dataRows.length).toBeGreaterThan(0);
     // every data row's lotSize column should end with " units"
-    expect(dataRows.every((row) => row.split(",").some((cell) => cell.endsWith(" units")))).toBe(true);
+    expect(
+      dataRows.every((row) =>
+        row.split(",").some((cell) => cell.endsWith(" units")),
+      ),
+    ).toBe(true);
   });
 });
 

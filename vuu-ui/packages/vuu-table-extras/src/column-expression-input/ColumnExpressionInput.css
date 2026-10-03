@@ -1,92 +1,91 @@
-
 .vuuColumnExpressionInput {
-    --vuuFilterEditor-background: var(--salt-container-primary-background);
-    --vuuFilterEditor-color: var(--salt-content-primary-foreground);
-    --vuuFilterEditor-fontFamily: var(--salt-typography-fontFamily);
-    --vuuFilterEditor-fontSize: var(--salt-text-fontSize);
-    --vuuFilterEditor-cursorColor: var(--salt-content-secondary-foreground);
-    --vuuFilterEditor-selectionBackground: var(--salt-text-background-selected);
-    --vuuFilterEditor-tooltipBackground: var(--salt-container-primary-background);
-    --vuuFilterEditor-tooltipBorder: solid 1px var(--vuu-color-purple-10); 
-    --vuuFilterEditor-tooltipElevation: var(--salt-overlayable-shadow-popout);
-    --vuuFilterEditor-suggestion-selectedBackground: var(--vuu-color-gray-10);
-    --vuuFilterEditor-suggestion-selectedColor: var(--salt-content-primary-foreground);
-    --vuuFilterEditor-suggestion-detailColor: var(--salt-content-secondary-foreground-disabled);
-    --vuuFilterEditor-suggestion-height: 24px;
-    --vuuFilterEditor-variableColor: var(--vuu-color-purple-10);
+  --vuuFilterEditor-background: var(--salt-container-primary-background);
+  --vuuFilterEditor-color: var(--salt-content-primary-foreground);
+  --vuuFilterEditor-fontFamily: var(--salt-typography-fontFamily);
+  --vuuFilterEditor-fontSize: var(--salt-text-fontSize);
+  --vuuFilterEditor-cursorColor: var(--salt-content-secondary-foreground);
+  --vuuFilterEditor-selectionBackground: var(--salt-text-background-selected);
+  --vuuFilterEditor-tooltipBackground: var(--salt-container-primary-background);
+  --vuuFilterEditor-tooltipBorder: solid 1px var(--vuu-color-purple-10);
+  --vuuFilterEditor-tooltipElevation: var(--salt-overlayable-shadow-popout);
+  --vuuFilterEditor-suggestion-selectedBackground: var(--vuu-color-gray-10);
+  --vuuFilterEditor-suggestion-selectedColor: var(--salt-content-primary-foreground);
+  --vuuFilterEditor-suggestion-detailColor: var(--salt-content-secondary-foreground-disabled);
+  --vuuFilterEditor-suggestion-height: 24px;
+  --vuuFilterEditor-variableColor: var(--vuu-color-purple-10);
 
-    align-items: center;
-    box-sizing: border-box;
-    height: 30px;
+  align-items: center;
+  box-sizing: border-box;
+  height: 30px;
 }
 
 .vuuColumnExpressionInput-FilterButton,
 .vuuColumnExpressionInput-ClearButton {
-    --vuu-icon-size: 12px;
-    --saltButton-width: 28px;
+  --vuu-icon-size: 12px;
+  --saltButton-width: 28px;
 }
 
 .expression-type-container {
-    margin: 0 3px 0 auto;
-    color: var(--salt-content-secondary-foreground)
+  margin: 0 3px 0 auto;
+  color: var(--salt-content-secondary-foreground);
 }
 
 .expression-kind {
-    display: inline-block;
-    width: 50px;
+  display: inline-block;
+  width: 50px;
 }
 
 .expression-type {
-    display: inline-block;
-    text-align: right;
-    width: 50px;
+  display: inline-block;
+  text-align: right;
+  width: 50px;
 }
 
 .vuuSuggestion {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .vuuFunctionDoc {
-    padding: 13px 7px;
+  padding: 13px 7px;
 }
 
 .vuuFunctionDoc .function-heading {
-    display: flex;
-    gap: 3px;
+  display: flex;
+  gap: 3px;
 }
 
 .vuuFunctionDoc .function-name {
-    font-weight: 700;
-    text-transform: capitalize;
+  font-weight: 700;
+  text-transform: capitalize;
 }
 
 .vuuFunctionDoc .param-list {
-    color: var(--vuu-color-gray-50);
-    white-space: pre;
+  color: var(--vuu-color-gray-50);
+  white-space: pre;
 }
 
 .vuuFunctionDoc .function-type {
-    color: var(--vuu-color-gray-50);
-    font-weight: 700;
-    margin-left: auto;
-    text-transform: capitalize;
+  color: var(--vuu-color-gray-50);
+  font-weight: 700;
+  margin-left: auto;
+  text-transform: capitalize;
 }
 
 .vuuFunctionDoc .example-container {
-    background-color: var(--vuu-color-gray-03);
-    margin: 6px 0;
-    padding: 3px;
+  background-color: var(--vuu-color-gray-03);
+  margin: 6px 0;
+  padding: 3px;
 }
 
 .vuuFunctionDoc .example-expression {
-    color: var(--vuu-color-gray-80);
-    font-family: var(--salt-typography-fontFamily-code);
-    font-weight: 500;
-    padding: 8px;
+  color: var(--vuu-color-gray-80);
+  font-family: var(--salt-typography-fontFamily-code);
+  font-weight: 500;
+  padding: 8px;
 }
 
 .vuuFunctionDoc .example-result {
-    margin-left: 8px;
-    margin-top: 6px;
+  margin-left: 8px;
+  margin-top: 6px;
 }

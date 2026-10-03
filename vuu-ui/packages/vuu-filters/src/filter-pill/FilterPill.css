@@ -1,11 +1,10 @@
 .vuuFilterPill {
-    --saltButton-textTransform: none;
-    max-width: var(--vuuFilterPill-maxWidth, 200px);
+  --saltButton-textTransform: none;
+  max-width: var(--vuuFilterPill-maxWidth, 200px);
 }
 
 .vuuFilterPill-tooltip {
-    ul {
-        padding-left: var(--salt-spacing-400);
-    }    
+  ul {
+    padding-left: var(--salt-spacing-400);
+  }
 }
-

@@ -7,11 +7,9 @@ import {
 } from "@vuu-ui/vuu-filter-types";
 import {
   filterAsQuery,
-  formatDate,
-  isDateTimeDataValue,
+  formatTemporalFilterValue,
   isMultiClauseFilter,
-  dateTimePattern,
-  defaultPatternsByType,
+  isTemporal,
 } from "@vuu-ui/vuu-utils";
 import { filterClauses } from "../filter-utils";
 
@@ -31,17 +29,12 @@ function formatFilterValue(
   columnsByName?: ColumnDescriptorsByName,
 ): FilterClause {
   const column = columnsByName?.[filter.column];
-  if (column && isDateTimeDataValue(column)) {
-    const pattern = dateTimePattern(column.type);
-    const formatter = (n: number) =>
-      formatDate({ date: pattern.date ?? defaultPatternsByType.date })(
-        new Date(n),
-      );
+  if (column && isTemporal(column)) {
     return applyFormatter(
       filter as
-        | SingleValueFilterClause<number>
-        | MultiValueFilterClause<number[]>,
-      formatter,
+        | SingleValueFilterClause<number | string>
+        | MultiValueFilterClause<Array<number | string>>,
+      (value) => formatTemporalFilterValue(value, column),
     );
   }
 

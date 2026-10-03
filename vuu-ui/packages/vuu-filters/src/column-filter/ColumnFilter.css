@@ -1,50 +1,49 @@
 .vuuColumnFilter {
-    --vuuTimeInput-outline: none;
-    
-    border: solid 1px var(--salt-editable-borderColor);
-    max-width: 200px;
-    padding-left: 4px;
-    padding-right: 4px;
-    width: var(--vuuColumnFilter-width, fit-content);
+  --vuuTimeInput-outline: none;
 
-    .vuuColumnFilter-rangeHigh {
-        position: relative;
-    }
+  border: solid 1px var(--salt-editable-borderColor);
+  max-width: 200px;
+  padding-left: 4px;
+  padding-right: 4px;
+  width: var(--vuuColumnFilter-width, fit-content);
 
-    .vuuColumnFilter-rangeHigh::before {
-        content: "";
-        width: 1px;
-        position: absolute;
-        background: var(--salt-separable-primary-borderColor);
-        /* Accomodate button border */
-        left: calc(-1 * var(--salt-spacing-100));
-        top: -1px;
-        bottom: -1px;
-    }
+  .vuuColumnFilter-rangeHigh {
+    position: relative;
+  }
 
-    .vuuTimePicker {
-        border-radius: 6px;
-    }
+  .vuuColumnFilter-rangeHigh::before {
+    content: "";
+    width: 1px;
+    position: absolute;
+    background: var(--salt-separable-primary-borderColor);
+    /* Accomodate button border */
+    left: calc(-1 * var(--salt-spacing-100));
+    top: -1px;
+    bottom: -1px;
+  }
 
-    .vuuTimePicker + .vuuTimePicker {
-        margin-left: var(--salt-spacing-100);
-    }
+  .vuuTimePicker {
+    border-radius: 6px;
+  }
 
-    .vuuTimeInput {
-        border: none;
-    }
+  .vuuTimePicker + .vuuTimePicker {
+    margin-left: var(--salt-spacing-100);
+  }
 
-    .vuuTimeInput:focus-visible {
-        outline: none;
-    }
+  .vuuTimeInput {
+    border: none;
+  }
 
+  .vuuTimeInput:focus-visible {
+    outline: none;
+  }
 }
 
 .vuuColumnFilter-trigger {
-    --saltButton-borderRadius: 4px 0px 0px 4px;
-    --saltButton-padding: var(--salt-spacing-200);
+  --saltButton-borderRadius: 4px 0px 0px 4px;
+  --saltButton-padding: var(--salt-spacing-200);
 }
 
 .vuuColumnFilter-invalid {
-    border-color: red;
+  border-color: red;
 }

@@ -7,7 +7,7 @@ export const getValue = (node: SyntaxNode, state: EditorState) =>
 export const getNodeByName = (
   node: SyntaxNode,
   state: EditorState,
-  nodeName = "Column"
+  nodeName = "Column",
 ) => {
   if (node.firstChild?.name === nodeName) {
     return getValue(node.firstChild, state);

@@ -32,8 +32,7 @@ type TabName = keyof typeof TabLabels;
 
 const classBase = "vuuTabbedTableConfigPanel";
 export interface TabbedTableConfigPanelProps
-  extends
-    ColumnPickerProps,
+  extends ColumnPickerProps,
     Pick<TableSettingsPanelProps, "onDisplayAttributeChange">,
     Pick<TableProps, "config">,
     HTMLAttributes<HTMLDivElement> {

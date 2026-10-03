@@ -12,13 +12,13 @@ import dataSourceStats from "./DatasourceStats.css";
 export type ItemLabel =
   | string
   | {
-    singlular: string;
-    plural: string;
-  };
+      singlular: string;
+      plural: string;
+    };
 
 export interface DataSourceStatsProps
   extends DatasourceStatsHookProps,
-  Omit<HTMLAttributes<HTMLDivElement>, "children"> {
+    Omit<HTMLAttributes<HTMLDivElement>, "children"> {
   /**
    * children will be displayed when selection present. Intended
    * use case is display of action button(s) that will operate on

@@ -1,7 +1,5 @@
 import { test, expect } from "../../../../../playwright/fixtures";
 
-
-
 test.describe("Given two TabbedFilterContainers with different values for filterProvider", () => {
   test(`When a filter value is entered 
       Then the local clear and save buttons are enabled
@@ -78,7 +76,9 @@ test.describe("Given two TabbedFilterContainers with different values for filter
 
     await expect(page.getByRole("dialog")).toBeInViewport();
     const dialog = page.getByRole("dialog");
-    await expect(dialog.getByRole("heading", { name: "Save Filter" })).toBeVisible();
+    await expect(
+      dialog.getByRole("heading", { name: "Save Filter" }),
+    ).toBeVisible();
     await expect(dialog.getByPlaceholder("Please enter")).toBeFocused();
 
     await expect(dialog.getByRole("button", { name: "cancel" })).toBeEnabled();

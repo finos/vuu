@@ -18,10 +18,10 @@ const classBase = "vuuTabbedFilterContainer";
 
 export interface TabbedFilterContainerProps
   extends HTMLAttributes<HTMLDivElement>,
-  Pick<
-    FilterContainerProps,
-    "filter" | "filterProviderKey" | "onFilterApplied" | "onFilterCleared"
-  > {
+    Pick<
+      FilterContainerProps,
+      "filter" | "filterProviderKey" | "onFilterApplied" | "onFilterCleared"
+    > {
   SavedFilterPanelProps?: Pick<
     SavedFilterPanelProps,
     "availableColumns" | "filterPillPermissions"
@@ -43,7 +43,6 @@ export const TabbedFilterContainer = ({
   savedFilterLabel = "Saved",
   ...htmlAttributes
 }: TabbedFilterContainerProps) => {
-
   return (
     <div {...htmlAttributes} className={cx(classBase, className)}>
       <TabsNext defaultValue="ad-hoc-filter">

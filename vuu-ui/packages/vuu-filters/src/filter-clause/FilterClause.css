@@ -43,7 +43,8 @@
     border-color: var(--salt-editable-borderColor-active);
   }
 
-  .saltComboBox-focused,.saltComboBox-focused:hover {
+  .saltComboBox-focused,
+  .saltComboBox-focused:hover {
     outline: none;
   }
 

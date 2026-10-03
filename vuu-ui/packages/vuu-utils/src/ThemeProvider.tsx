@@ -43,7 +43,7 @@ export type ThemeAttributes = {
 };
 
 export const useThemeAttributes = (
-  themeAttributes?: ThemeAttributes
+  themeAttributes?: ThemeAttributes,
 ): [string, string, ThemeMode] => {
   const context = useContext(ThemeContext);
   if (themeAttributes) {
@@ -66,7 +66,7 @@ const createThemedChildren = (
   children: ReactNode,
   theme: string,
   themeMode: ThemeMode,
-  density: Density
+  density: Density,
 ) => {
   if (isValidElement<HTMLAttributes<HTMLElement>>(children)) {
     return cloneElement(children, {
@@ -74,7 +74,7 @@ const createThemedChildren = (
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         children.props?.className,
         `${theme}-theme`,
-        `salt-density-${density}`
+        `salt-density-${density}`,
       ),
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
@@ -83,7 +83,7 @@ const createThemedChildren = (
   } else {
     console.warn(
       `\nThemeProvider can only apply CSS classes for theming to a single nested child element of the ThemeProvider.
-            Wrap elements with a single container`
+            Wrap elements with a single container`,
     );
     return children;
   }

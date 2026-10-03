@@ -21,7 +21,7 @@ const classBase = "vuuInlineFilter";
 export type FilterValueChangeHandler = (filter: VuuFilter) => void;
 export interface InlineFilterProps
   extends Partial<BaseRowProps>,
-  Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
+    Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   onFilterApplied?: FilterAppliedHandler;
   onFilterCleared?: () => void;
   table: TableSchemaTable;
