@@ -19,3 +19,32 @@ describe("parseFilter", () => {
     });
   });
 });
+
+describe("parseFilter, large integers", () => {
+  it("preserves epoch nano values as strings", () => {
+    expect(parseFilter("ts > 1710460800123456789")).toEqual({
+      column: "ts",
+      op: ">",
+      value: "1710460800123456789",
+    });
+  });
+  it("parses safe integers as numbers", () => {
+    expect(parseFilter("ts > 1710460800123")).toEqual({
+      column: "ts",
+      op: ">",
+      value: 1710460800123,
+    });
+  });
+});
+
+describe("parseFilter, inclusive range operators", () => {
+  it("parses >= and <=", () => {
+    expect(parseFilter("(ts >= 100 and ts <= 200)")).toEqual({
+      op: "and",
+      filters: [
+        { column: "ts", op: ">=", value: 100 },
+        { column: "ts", op: "<=", value: 200 },
+      ],
+    });
+  });
+});
