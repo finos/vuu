@@ -1,9 +1,13 @@
 export * from "./ArrayProxy";
+export * from "./core/filter/PermissionFilter";
+export * from "./core/filter/PermissionFilteredTable";
 export * from "./core/module/VuuModule";
 export { ensureVuuModule } from "./core/module/ModuleContainer";
+export * from "./core/user/CurrentUser";
 export { default as tableContainer } from "./core/table/TableContainer";
 export * from "./local-datasource-provider/LocalDatasourceProvider";
 export * from "./makeSuggestions";
+export * from "./notifications";
 export * from "./schemas";
 export * from "./simul";
 export * from "./basket";
