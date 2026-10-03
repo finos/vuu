@@ -61,7 +61,8 @@ export const treeSourceFromFileSystem = (
       );
       const treeSourceNode: TreeSourceNode<NodeData> = {
         id: `${route}${toLabel(fileName)}`,
-        icon,
+        // a folder with an Index.mdx displays that document
+        icon: documentPath ? "document" : icon,
         label: toLabel(fileName),
         childNodes,
       };
@@ -78,9 +79,11 @@ export const treeSourceFromFileSystem = (
       const name = dropLastPathSegment(dropLastPathSegment(fileName, "."), ".");
       const id = `${route}${toLabel(name)}`;
 
+      const documentPath = getDocumentPath(dirFiles, fileName);
       const treeSourceNode: TreeSourceNode<NodeData> = {
         id,
-        icon: "box",
+        // examples with an accompanying mdx document display the document
+        icon: documentPath ? "document" : "box",
         label: toLabel(name),
         childNodes: treeSourceFromExportedComponents(
           exhibitsPath,
@@ -91,7 +94,6 @@ export const treeSourceFromFileSystem = (
         ),
       };
 
-      const documentPath = getDocumentPath(dirFiles, fileName);
       if (documentPath) {
         treeSourceNode.nodeData = treeSourceFromDocument(
           exhibitsPath,
@@ -111,7 +113,7 @@ export const treeSourceFromFileSystem = (
       if (!dirFiles.has(`${name}.examples.tsx`)) {
         treeSourceNodes.push({
           id: `${route}${toLabel(name)}`,
-          icon: "box",
+          icon: "document",
           label: toLabel(name),
           nodeData: {
             name,
