@@ -47,6 +47,7 @@ import {
   combineFilters,
   filterAsQuery,
   filterRequiresResolution,
+  getColumnsByName,
   getColumnsByNameForFilter,
   getAddedItems,
   hasBaseFilter,
@@ -190,6 +191,7 @@ export class ArrayDataSource
     }
 
     this.columnDescriptors = columnDescriptors;
+    this.#filterColumnsByName = getColumnsByName(columnDescriptors);
     this.dataMap = dataMap;
     this.key = keyColumn
       ? this.columnDescriptors.findIndex((col) => col.name === keyColumn)
@@ -1148,12 +1150,17 @@ export class ArrayDataSource
   }
 
   setFilter(filter: Filter, options?: SetFilterOptions) {
-    this.#filterColumnsByName = options?.columnsByName;
+    // our own columnDescriptors may carry a type (e.g legacy long columns
+    // with a date/time type), these are overridden by any passed in options.
+    this.#filterColumnsByName = {
+      ...getColumnsByName(this.columnDescriptors),
+      ...options?.columnsByName,
+    };
     const dataSourceFilter: DataSourceFilter = {
       filter: filterAsQuery(filter, {
         columnsByName: getColumnsByNameForFilter(
           this.tableSchema,
-          options?.columnsByName,
+          this.#filterColumnsByName,
         ),
       }),
       filterStruct: filter,

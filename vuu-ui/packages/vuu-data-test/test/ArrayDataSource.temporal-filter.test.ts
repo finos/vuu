@@ -75,4 +75,19 @@ describe("ArrayDataSource, filters on temporal columns", () => {
     );
     expect(await getIds(dataSource)).toEqual(["4"]);
   });
+
+  it("a filter on a legacy long column uses the type from its own column descriptors", async () => {
+    const dataSource = new ArrayDataSource({
+      columnDescriptors: columnDescriptors.map((col) =>
+        col.name === "legacyTime" ? { ...col, type: "date/time" } : col,
+      ),
+      data: data as never,
+      keyColumn: "id",
+    });
+    dataSource.setFilter({ column: "legacyTime", op: "=", value: day });
+    expect(dataSource.filter.filter).toEqual(
+      `legacyTime >= ${day} and legacyTime < ${day + 24 * hour}`,
+    );
+    expect(await getIds(dataSource)).toEqual(["2", "3"]);
+  });
 });
