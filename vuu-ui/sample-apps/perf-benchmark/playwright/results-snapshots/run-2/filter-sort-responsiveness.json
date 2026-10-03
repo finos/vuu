@@ -1,0 +1,82 @@
+{
+  "vuu-10000rows": {
+    "grid": "vuu",
+    "rowCount": 10000,
+    "sortMs": 162,
+    "filterMs": 175,
+    "longTaskCount": 1,
+    "totalBlockingTimeMs": 21,
+    "maxTaskDurationMs": 71,
+    "capturedAt": "2026-10-01T07:18:49.991Z"
+  },
+  "vuu-100000rows": {
+    "grid": "vuu",
+    "rowCount": 100000,
+    "sortMs": 91,
+    "filterMs": 306,
+    "longTaskCount": 0,
+    "totalBlockingTimeMs": 0,
+    "maxTaskDurationMs": 0,
+    "capturedAt": "2026-10-01T07:18:53.154Z"
+  },
+  "ag-grid-server-10000rows": {
+    "grid": "ag-grid-server",
+    "rowCount": 10000,
+    "sortMs": 194,
+    "filterMs": 643,
+    "longTaskCount": 1,
+    "totalBlockingTimeMs": 22,
+    "maxTaskDurationMs": 72,
+    "capturedAt": "2026-10-01T07:19:08.672Z"
+  },
+  "ag-grid-client-10000rows": {
+    "grid": "ag-grid-client",
+    "rowCount": 10000,
+    "sortMs": 322,
+    "filterMs": 550,
+    "longTaskCount": 1,
+    "totalBlockingTimeMs": 7,
+    "maxTaskDurationMs": 57,
+    "capturedAt": "2026-10-01T07:18:55.877Z"
+  },
+  "ag-grid-client-100000rows": {
+    "grid": "ag-grid-client",
+    "rowCount": 100000,
+    "sortMs": 2469,
+    "filterMs": 2242,
+    "longTaskCount": 13,
+    "totalBlockingTimeMs": 3814,
+    "maxTaskDurationMs": 646,
+    "capturedAt": "2026-10-01T07:19:06.226Z"
+  },
+  "ag-grid-server-100000rows": {
+    "grid": "ag-grid-server",
+    "rowCount": 100000,
+    "sortMs": 253,
+    "filterMs": 680,
+    "longTaskCount": 1,
+    "totalBlockingTimeMs": 24,
+    "maxTaskDurationMs": 74,
+    "capturedAt": "2026-10-01T07:19:11.530Z"
+  },
+  "ag-grid-vuu-10000rows": {
+    "grid": "ag-grid-vuu",
+    "rowCount": 10000,
+    "sortMs": 156,
+    "filterMs": 221,
+    "longTaskCount": 1,
+    "totalBlockingTimeMs": 16,
+    "maxTaskDurationMs": 66,
+    "capturedAt": "2026-10-01T07:19:13.892Z"
+  },
+  "ag-grid-vuu-100000rows": {
+    "grid": "ag-grid-vuu",
+    "rowCount": 100000,
+    "sortMs": 51,
+    "filterMs": 363,
+    "longTaskCount": 0,
+    "totalBlockingTimeMs": 0,
+    "maxTaskDurationMs": 0,
+    "capturedAt": "2026-10-01T07:19:16.937Z"
+  }
+}

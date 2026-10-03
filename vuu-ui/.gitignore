@@ -1,5 +1,8 @@
 node_modules/
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
+**/test-results/
+**/playwright-report/
+**/playwright/reports/
+**/blob-report/
+**/playwright/.cache/
+*.tsbuildinfo
+sample-apps/perf-benchmark/scripts/.tools/

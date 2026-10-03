@@ -1,0 +1,62 @@
+{
+  "vuu-10000rows": {
+    "grid": "vuu",
+    "rowCount": 10000,
+    "updatesPerSecondTarget": 1000,
+    "messagesSent": 49,
+    "rowsUpdated": 4900,
+    "totalDriftMs": 157,
+    "maxDriftMs": 157,
+    "avgDriftMs": 3.204081632653061,
+    "longTaskCount": 0,
+    "totalBlockingTimeMs": 0,
+    "maxTaskDurationMs": 0,
+    "capturedAt": "2026-08-05T08:34:01.201Z"
+  },
+  "vuu-100000rows": {
+    "grid": "vuu",
+    "rowCount": 100000,
+    "updatesPerSecondTarget": 1000,
+    "messagesSent": 49,
+    "rowsUpdated": 4900,
+    "totalDriftMs": 139.19999980926514,
+    "maxDriftMs": 139.19999980926514,
+    "avgDriftMs": 2.840816322638064,
+    "longTaskCount": 0,
+    "totalBlockingTimeMs": 0,
+    "maxTaskDurationMs": 0,
+    "capturedAt": "2026-08-05T08:34:07.388Z"
+  },
+  "ag-grid-10000rows": {
+    "grid": "ag-grid",
+    "rowCount": 10000,
+    "updatesPerSecondTarget": 1000,
+    "type": "streamStats",
+    "requestId": 1,
+    "messagesSent": 50,
+    "rowsUpdated": 5000,
+    "totalDriftMs": 350.98359999994864,
+    "maxDriftMs": 16.578099999998813,
+    "avgDriftMs": 7.019671999998973,
+    "longTaskCount": 0,
+    "totalBlockingTimeMs": 0,
+    "maxTaskDurationMs": 0,
+    "capturedAt": "2026-08-05T08:34:13.568Z"
+  },
+  "ag-grid-100000rows": {
+    "grid": "ag-grid",
+    "rowCount": 100000,
+    "updatesPerSecondTarget": 1000,
+    "type": "streamStats",
+    "requestId": 1,
+    "messagesSent": 50,
+    "rowsUpdated": 5000,
+    "totalDriftMs": 373.80070000000705,
+    "maxDriftMs": 15.603000000002794,
+    "avgDriftMs": 7.476014000000141,
+    "longTaskCount": 13,
+    "totalBlockingTimeMs": 167,
+    "maxTaskDurationMs": 91,
+    "capturedAt": "2026-08-05T08:34:20.552Z"
+  }
+}

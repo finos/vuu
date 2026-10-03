@@ -1,0 +1,74 @@
+{
+  "vuu-10000rows": {
+    "grid": "vuu",
+    "rowCount": 10000,
+    "totalUpdates": 100000,
+    "durationMs": 831,
+    "updatesPerSecond": 120336.94344163658,
+    "capturedAt": "2026-10-01T07:18:22.833Z"
+  },
+  "vuu-100000rows": {
+    "grid": "vuu",
+    "rowCount": 100000,
+    "totalUpdates": 5000,
+    "durationMs": 38,
+    "updatesPerSecond": 131578.94736842107,
+    "capturedAt": "2026-10-01T07:18:25.226Z"
+  },
+  "ag-grid-client-10000rows": {
+    "grid": "ag-grid-client",
+    "rowCount": 10000,
+    "type": "burstResult",
+    "requestId": 1,
+    "totalUpdates": 100000,
+    "durationMs": 368.0824000000139,
+    "updatesPerSecond": 271678.2981201933,
+    "capturedAt": "2026-10-01T07:18:31.858Z"
+  },
+  "ag-grid-client-100000rows": {
+    "grid": "ag-grid-client",
+    "rowCount": 100000,
+    "type": "burstResult",
+    "requestId": 1,
+    "totalUpdates": 5000,
+    "durationMs": 17.260499999974854,
+    "updatesPerSecond": 289678.74627080816,
+    "capturedAt": "2026-10-01T07:18:36.570Z"
+  },
+  "ag-grid-server-10000rows": {
+    "grid": "ag-grid-server",
+    "rowCount": 10000,
+    "type": "burstResult",
+    "requestId": 1,
+    "totalUpdates": 100000,
+    "durationMs": 449.0889000000316,
+    "updatesPerSecond": 222673.06094626914,
+    "capturedAt": "2026-10-01T07:18:40.117Z"
+  },
+  "ag-grid-server-100000rows": {
+    "grid": "ag-grid-server",
+    "rowCount": 100000,
+    "type": "burstResult",
+    "requestId": 1,
+    "totalUpdates": 5000,
+    "durationMs": 35.870599999965634,
+    "updatesPerSecond": 139389.91820612954,
+    "capturedAt": "2026-10-01T07:18:41.529Z"
+  },
+  "ag-grid-vuu-10000rows": {
+    "grid": "ag-grid-vuu",
+    "rowCount": 10000,
+    "totalUpdates": 100000,
+    "durationMs": 1229,
+    "updatesPerSecond": 81366.96501220504,
+    "capturedAt": "2026-10-01T07:18:44.655Z"
+  },
+  "ag-grid-vuu-100000rows": {
+    "grid": "ag-grid-vuu",
+    "rowCount": 100000,
+    "totalUpdates": 5000,
+    "durationMs": 51,
+    "updatesPerSecond": 98039.21568627452,
+    "capturedAt": "2026-10-01T07:18:47.251Z"
+  }
+}

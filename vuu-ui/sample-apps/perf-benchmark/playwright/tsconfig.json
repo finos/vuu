@@ -1,0 +1,7 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["@playwright/test", "node"]
+  },
+  "include": ["**/*.ts", "../src/harness/types.ts", "../../../global.d.ts"]
+}
