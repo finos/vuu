@@ -1,14 +1,18 @@
 import { useCallback, useState } from "react";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
+import type { ColumnDescriptor, TableConfig } from "@vuu-ui/vuu-table-types";
 import {
   exportCsvTemplate,
   exportToCsv,
+  type ExportColumnDescriptor,
   type ExportCsvTemplateOptions,
   type ExportToCsvOptions,
 } from "./export-utils";
 
 export interface UseCsvExportProps {
   dataSource?: DataSource;
+  tableConfig?: TableConfig;
+  columns?: readonly (string | ExportColumnDescriptor | ColumnDescriptor)[];
   onError?: (error: Error) => void;
   onSuccess?: () => void;
 }
@@ -16,8 +20,8 @@ export interface UseCsvExportProps {
 export interface UseCsvExportResult {
   isExporting: boolean;
   error: Error | null;
-  exportCsv: <TName extends string = string>(
-    options?: ExportToCsvOptions<TName>,
+  exportCsv: (
+    options?: ExportToCsvOptions,
     overrideDataSource?: DataSource,
   ) => Promise<void>;
   exportTemplate: (
@@ -37,11 +41,17 @@ export function useCsvExport(
       ? { dataSource: propsOrDataSource }
       : (propsOrDataSource as UseCsvExportProps) ?? {};
 
-  const { dataSource: defaultDataSource, onError, onSuccess } = config;
+  const {
+    dataSource: defaultDataSource,
+    tableConfig,
+    columns: defaultColumns,
+    onError,
+    onSuccess,
+  } = config;
 
   const exportCsv = useCallback(
-    async <TName extends string = string>(
-      options?: ExportToCsvOptions<TName>,
+    async (
+      options?: ExportToCsvOptions,
       overrideDataSource?: DataSource,
     ) => {
       const activeDataSource = overrideDataSource ?? defaultDataSource;
@@ -58,7 +68,14 @@ export function useCsvExport(
       setIsExporting(true);
       setError(null);
       try {
+        const columnsToExport =
+          options?.columns ??
+          options?.columnDescriptors ??
+          defaultColumns ??
+          tableConfig?.columns;
+
         await exportToCsv(activeDataSource, {
+          columns: columnsToExport,
           ...options,
           onError: (err) => {
             setError(err);
@@ -81,7 +98,7 @@ export function useCsvExport(
         setIsExporting(false);
       }
     },
-    [defaultDataSource, onError, onSuccess],
+    [defaultDataSource, defaultColumns, tableConfig, onError, onSuccess],
   );
 
   const exportTemplate = useCallback(
@@ -103,7 +120,13 @@ export function useCsvExport(
       setIsExporting(true);
       setError(null);
       try {
+        const templateColumns =
+          options?.columns ??
+          defaultColumns ??
+          tableConfig?.columns;
+
         await exportCsvTemplate(activeDataSource, {
+          columns: templateColumns,
           ...options,
           onError: (err) => {
             setError(err);
@@ -126,7 +149,7 @@ export function useCsvExport(
         setIsExporting(false);
       }
     },
-    [defaultDataSource, onError, onSuccess],
+    [defaultDataSource, defaultColumns, tableConfig, onError, onSuccess],
   );
 
   return {

@@ -481,4 +481,250 @@ describe("export-utils", () => {
       expect(onSuccess).toHaveBeenCalled();
     });
   });
+
+  describe("client columns and formatting", () => {
+    it("supports client columns (source = 'client') using exportFormatter and rowAccessor proxy", async () => {
+      let csvContent = "";
+      vi.stubGlobal(
+        "Blob",
+        vi.fn(function (
+          this: { content: BlobPart[] },
+          content: BlobPart[],
+        ) {
+          csvContent = content[0] as string;
+        }),
+      );
+
+      await exportToCsv(mockDataSource as unknown as DataSource, {
+        filename: "client-columns.csv",
+        columns: [
+          { name: "ric" },
+          {
+            name: "ricAndCurrency",
+            source: "client",
+            label: "RIC / CCY",
+            exportFormatter: (_, row) => `${row?.ric}/${row?.currency}`,
+          },
+          {
+            name: "actions",
+            source: "client",
+            label: "Actions",
+          },
+        ],
+      });
+
+      const lines = csvContent.split("\r\n").filter(Boolean);
+      // "actions" is automatically excluded because it is a client column without an exportFormatter
+      expect(lines[0]).toBe("ric,RIC / CCY");
+      expect(lines[1]).toBe("VOD.L,VOD.L/GBP");
+      expect(lines[2]).toBe("BP.L,BP.L/GBP");
+    });
+
+    it("respects exportable: false to exclude server or client columns", async () => {
+      let csvContent = "";
+      vi.stubGlobal(
+        "Blob",
+        vi.fn(function (
+          this: { content: BlobPart[] },
+          content: BlobPart[],
+        ) {
+          csvContent = content[0] as string;
+        }),
+      );
+
+      await exportToCsv(mockDataSource as unknown as DataSource, {
+        filename: "exportable-false.csv",
+        columns: [
+          { name: "ric" },
+          { name: "currency", exportable: false },
+          {
+            name: "computed",
+            source: "client",
+            exportable: false,
+            exportFormatter: (_, row) => `${row?.ric}`,
+          },
+        ],
+      });
+
+      const lines = csvContent.split("\r\n").filter(Boolean);
+      expect(lines[0]).toBe("ric");
+      expect(lines[1]).toBe("VOD.L");
+      expect(lines[2]).toBe("BP.L");
+    });
+
+    it("allows exportable: true to explicitly export a client column even without formatters", async () => {
+      let csvContent = "";
+      vi.stubGlobal(
+        "Blob",
+        vi.fn(function (
+          this: { content: BlobPart[] },
+          content: BlobPart[],
+        ) {
+          csvContent = content[0] as string;
+        }),
+      );
+
+      await exportToCsv(mockDataSource as unknown as DataSource, {
+        filename: "client-explicit.csv",
+        columns: [
+          { name: "ric" },
+          {
+            name: "placeholder",
+            source: "client",
+            exportable: true,
+          },
+        ],
+      });
+
+      const lines = csvContent.split("\r\n").filter(Boolean);
+      expect(lines[0]).toBe("ric,placeholder");
+      expect(lines[1]).toBe("VOD.L,");
+      expect(lines[2]).toBe("BP.L,");
+    });
+
+    it("supports client columns with exportFormatter receiving rowAccessor", async () => {
+      let csvContent = "";
+      vi.stubGlobal(
+        "Blob",
+        vi.fn(function (
+          this: { content: BlobPart[] },
+          content: BlobPart[],
+        ) {
+          csvContent = content[0] as string;
+        }),
+      );
+
+      await exportToCsv(mockDataSource as unknown as DataSource, {
+        filename: "client-formatter.csv",
+        columns: [
+          {
+            name: "computed",
+            source: "client",
+            label: "Formatted Column",
+            exportFormatter: (_val, row) => `CURR_${row?.currency}`,
+          },
+          { name: "ric" },
+        ],
+      });
+
+      const lines = csvContent.split("\r\n").filter(Boolean);
+      expect(lines[0]).toBe("Formatted Column,ric");
+      expect(lines[1]).toBe("CURR_GBP,VOD.L");
+      expect(lines[2]).toBe("CURR_GBP,BP.L");
+    });
+
+    it("automatically applies table getValueFormatter for formatted columns", async () => {
+      let csvContent = "";
+      vi.stubGlobal(
+        "Blob",
+        vi.fn(function (
+          this: { content: BlobPart[] },
+          content: BlobPart[],
+        ) {
+          csvContent = content[0] as string;
+        }),
+      );
+
+      mockSessionDataSource.subscribe.mockImplementation(
+        (_props: unknown, callback: (msg: unknown) => void) => {
+          callback({
+            type: "subscribed",
+            columns: ["ric", "price", "vuuRowNum"],
+          });
+          callback({
+            type: "viewport-update",
+            mode: "size-only",
+            size: 1,
+          });
+          callback({
+            type: "viewport-update",
+            mode: "batch",
+            rows: [
+              [0, 0, false, false, 0, 0, "key0", false, 0, false, "VOD.L", 12.3, 1],
+            ],
+          });
+        },
+      );
+
+      await exportToCsv(mockDataSource as unknown as DataSource, {
+        filename: "formatted-types.csv",
+        columns: [
+          { name: "ric" },
+          {
+            name: "price",
+            serverDataType: "double",
+            type: {
+              name: "number",
+              formatting: { decimals: 2, zeroPad: true, useLocaleString: false },
+            },
+          },
+        ],
+      });
+
+      const lines = csvContent.split("\r\n").filter(Boolean);
+      expect(lines[0]).toBe("ric,price");
+      expect(lines[1]).toBe("VOD.L,12.30");
+    });
+
+    it("preserves explicit column order and filters out hidden columns", async () => {
+      let csvContent = "";
+      vi.stubGlobal(
+        "Blob",
+        vi.fn(function (
+          this: { content: BlobPart[] },
+          content: BlobPart[],
+        ) {
+          csvContent = content[0] as string;
+        }),
+      );
+
+      await exportToCsv(mockDataSource as unknown as DataSource, {
+        filename: "reordered.csv",
+        columns: [
+          { name: "description" },
+          {
+            name: "clientTag",
+            source: "client",
+            exportFormatter: (_, row) => `TAG_${row?.ric}`,
+          },
+          { name: "currency", hidden: true },
+          { name: "ric" },
+        ],
+      });
+
+      const lines = csvContent.split("\r\n").filter(Boolean);
+      expect(lines[0]).toBe("description,clientTag,ric");
+      expect(lines[1]).toBe("Vodafone,TAG_VOD.L,VOD.L");
+      expect(lines[2]).toBe("BP,TAG_BP.L,BP.L");
+    });
+
+    it("exportCsvTemplate filters out client columns and hidden columns when ColumnDescriptor array is passed", async () => {
+      mockSessionDataSource.subscribe.mockImplementation(
+        (_props: unknown, callback: (msg: unknown) => void) => {
+          callback({
+            type: "subscribed",
+            columns: ["ric"],
+          });
+        },
+      );
+
+      const onSuccess = vi.fn();
+      await exportCsvTemplate(mockDataSource as unknown as DataSource, {
+        filename: "safe-template.csv",
+        columns: [
+          { name: "ric" },
+          { name: "actionButton", source: "client" },
+          { name: "currency", hidden: true },
+        ],
+        onSuccess,
+      });
+
+      expect(mockDataSource.createSessionDataSource).toHaveBeenCalledWith(
+        "Empty",
+        "export",
+        { columns: ["ric"] },
+      );
+      expect(onSuccess).toHaveBeenCalled();
+    });
+  });
 });

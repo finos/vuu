@@ -278,6 +278,8 @@ export declare type PinLocation = "left" | "right";
 
 export declare type ColumnAlignment = "left" | "right";
 
+export type RowAccessor = Record<string, unknown>;
+
 /** This is a public description of a Column, defining all the
  * column attributes that can be defined by client. */
 export interface ColumnDescriptor extends DataValueDescriptor {
@@ -299,8 +301,10 @@ export interface ColumnDescriptor extends DataValueDescriptor {
    */
   colHeaderContentRenderer?: string;
   colHeaderLabelRenderer?: string;
-  /** Formats a raw value for CSV export; return value is still CSV-escaped. */
-  exportFormatter?: (value: unknown) => string;
+  /** Whether this column should be included in file/CSV exports. Defaults to true. */
+  exportable?: boolean;
+  /** Formats a raw value for CSV export; optionally receives row context. Return value is still CSV-escaped. */
+  exportFormatter?: (value: unknown, row: RowAccessor) => string;
   flex?: number;
   /**
    * Only used when the column is included in a grouby clause.
