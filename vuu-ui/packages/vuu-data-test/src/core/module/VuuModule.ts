@@ -42,6 +42,13 @@ import { TickingArrayDataSource } from "../../TickingArrayDataSource";
 import { RuntimeVisualLink } from "../../RuntimeVisualLink";
 import moduleContainer from "./ModuleContainer";
 import { sessionTableRow, sessionTableSchema } from "../../session-table-utils";
+import {
+  AllowAllPermissionFilter,
+  type PermissionFunction,
+} from "../filter/PermissionFilter";
+import { PermissionFilteredTable } from "../filter/PermissionFilteredTable";
+import { getCurrentUser, type VuuModuleUser } from "../user/CurrentUser";
+import tableContainer from "../table/TableContainer";
 
 const assertUpdateIsValid = (
   schema: TableSchema,
@@ -98,6 +105,12 @@ type Subscription = {
   dataSource: DataSourceBase<DataSourceRowWithBigint>;
   sessionTableName?: string;
   sourceTableName?: string;
+  /**
+   * The table viewed by this subscription. Where a permission filter applies,
+   * this will be a PermissionFilteredTable
+   */
+  table: Table;
+  user: VuuModuleUser;
 };
 export abstract class VuuModule<T extends string = string>
   implements IVuuModule<T> {
@@ -137,6 +150,17 @@ export abstract class VuuModule<T extends string = string>
     _sourceTable: Table,
     _sessionTable: Table,
   ) {}
+  /**
+   * Optional, per table. Restricts the rows visible to each viewport, based on
+   * the viewport (and the user who owns it).
+   */
+  protected permissionFunctions?: Partial<Record<T, PermissionFunction>>;
+
+  /**
+   * Invoked before a dataSource is created. Can be used, for example, to
+   * lazily start a data provider.
+   */
+  protected beforeCreateDataSource?(tableName: T): void;
 
   getTableSchema(tableName: string) {
     return (
@@ -349,9 +373,22 @@ export abstract class VuuModule<T extends string = string>
     viewport?: string,
     config?: DataSourceConfig & { session?: SessionDataSourceOverrides },
   ) => {
+    this.beforeCreateDataSource?.(tableName);
     const columnDescriptors = this.getColumnDescriptors(tableName);
-    const table = this.tables[tableName];
     const sessionTable = this.#sessionTableMap[tableName];
+    const user = getCurrentUser();
+    const permissionFunction = sessionTable
+      ? undefined
+      : this.permissionFunctions?.[tableName];
+    const viewportId = permissionFunction ? (viewport ?? uuid()) : viewport;
+    const permissionFilteredTable = permissionFunction
+      ? this.createPermissionFilteredTable(
+          this.tables[tableName],
+          permissionFunction,
+          { id: viewportId as string, user },
+        )
+      : undefined;
+    const table = permissionFilteredTable ?? this.tables[tableName];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const vuuModule = this as IVuuModule<any>;
@@ -369,13 +406,17 @@ export abstract class VuuModule<T extends string = string>
         menu: this.menus?.[tableName],
         rpcServices: this.getServices(tableName),
         rpcMenuServices: this.getMenuServices(tableName),
-        viewport,
+        viewport: viewportId,
         visualLinkService: this.visualLinkService,
         vuuModule,
       });
 
     dataSource.on("subscribed", this.handlePostSubscribeActivities);
     dataSource.on("unsubscribed", this.unregisterViewport);
+    if (permissionFilteredTable) {
+      dataSource.on("subscribed", () => permissionFilteredTable.attach());
+      dataSource.on("unsubscribed", () => permissionFilteredTable.dispose());
+    }
 
     const existingSubscriptions = this.#subscriptionMap.get(tableName);
     const subscription = {
@@ -383,6 +424,8 @@ export abstract class VuuModule<T extends string = string>
       dataSource,
       sessionTableName: sessionTable ? tableName : undefined,
       sourceTableName: this.#sessionSourceTableMap[tableName],
+      table: table || sessionTable,
+      user,
     };
     if (existingSubscriptions) {
       existingSubscriptions.push(subscription);
@@ -392,6 +435,21 @@ export abstract class VuuModule<T extends string = string>
 
     return dataSource;
   };
+
+  private createPermissionFilteredTable(
+    table: Table,
+    permissionFunction: PermissionFunction,
+    viewport: { id: string; user: VuuModuleUser },
+  ) {
+    const permissionFilter = permissionFunction(viewport, tableContainer);
+    if (permissionFilter === AllowAllPermissionFilter) {
+      return undefined;
+    }
+    return new PermissionFilteredTable(
+      table,
+      permissionFilter.createPredicate(table.map),
+    );
+  }
 
   getServices(tableName: T) {
     const tableServices = this.services?.[tableName];
