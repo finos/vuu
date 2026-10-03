@@ -364,8 +364,13 @@
     padding: var(--salt-spacing-200);
   }
   .vuuIdentityAdmin-header {
-    align-items: flex-start;
+    align-items: stretch;
     flex-direction: column;
+    gap: var(--salt-spacing-100);
+  }
+  .vuuIdentityAdmin-headerSearch.saltInput {
+    flex: none;
+    min-width: 0;
   }
   .vuuIdentityAdmin-quickActions {
     flex-wrap: wrap;
