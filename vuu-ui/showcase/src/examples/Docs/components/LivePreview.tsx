@@ -3,6 +3,7 @@ import { ChevronDownIcon, CopyIcon, SuccessTickIcon } from "@salt-ds/icons";
 import cx from "clsx";
 import {
   Children,
+  Fragment,
   isValidElement,
   useState,
   type HTMLAttributes,
@@ -38,13 +39,26 @@ const textContent = (node: ReactNode): string =>
     .join("");
 
 /**
- * A fenced code block renders as <pre><code className="language-xxx">.
+ * Shiki wraps each highlighted code block in a Fragment, unwrap these so
+ * the code blocks can be identified.
+ */
+const flattenFragments = (node: ReactNode): ReactNode[] =>
+  Children.toArray(node).flatMap((child) =>
+    isValidElement<{ children?: ReactNode }>(child) && child.type === Fragment
+      ? flattenFragments(child.props.children)
+      : [child],
+  );
+
+/**
+ * A fenced code block renders as <pre><code className="language-xxx">,
+ * or as <pre className="shiki ..."> when syntax highlighted by Shiki.
  */
 const isCodeBlock = (node: ReactNode) => {
-  if (isValidElement<{ children?: ReactNode }>(node)) {
+  if (isValidElement<{ children?: ReactNode; className?: string }>(node)) {
     const code = node.props.children;
     return (
       node.type === "pre" ||
+      /\bshiki\b/.test(node.props.className ?? "") ||
       (isValidElement<{ className?: string }>(code) &&
         /language-/.test(code.props.className ?? ""))
     );
@@ -78,7 +92,7 @@ export const LivePreview = ({
 
   const preview: ReactNode[] = [];
   const code: ReactNode[] = [];
-  Children.toArray(children).forEach((child) =>
+  flattenFragments(children).forEach((child) =>
     (isCodeBlock(child) ? code : preview).push(child),
   );
 

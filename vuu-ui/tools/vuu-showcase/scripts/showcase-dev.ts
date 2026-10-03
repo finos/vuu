@@ -1,5 +1,5 @@
 import mdx from "@mdx-js/rollup";
-import remarkGfm from "remark-gfm";
+import { mdxOptions } from "./mdx-options";
 import fs from "fs";
 import MagicString from "magic-string";
 import { createFilter, createServer, type PluginOption } from "vite";
@@ -110,7 +110,7 @@ const server = await createServer({
     include: ["@salt-ds/core", "@salt-ds/lab", "@salt-ds/icons"],
   },
   root: __dirname,
-  plugins: [cssInline(), mdx({ remarkPlugins: [remarkGfm] })],
+  plugins: [cssInline(), mdx(mdxOptions)],
   server: {
     proxy: {
       "/api/authn": {

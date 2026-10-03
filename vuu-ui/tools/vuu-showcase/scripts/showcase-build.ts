@@ -6,7 +6,7 @@ import path from "path";
 import { treeSourceFromFileSystem } from "./treeSourceFromFileSystem";
 import type { Plugin, PluginBuild, OnLoadArgs } from "esbuild";
 import mdx from "@mdx-js/esbuild";
-import remarkGfm from "remark-gfm";
+import { mdxOptions } from "./mdx-options";
 import handler from "serve-handler";
 import http from "http";
 import https from "https";
@@ -71,7 +71,7 @@ const esbuildConfig = {
   env: "production",
   external: ["./themes/salt-theme-next.ts", "./themes/vuu-theme.ts"],
   name: "showcase",
-  plugins: [cssInlinePlugin, mdx({ remarkPlugins: [remarkGfm] })],
+  plugins: [cssInlinePlugin, mdx(mdxOptions)],
   outdir: `${outdir}`,
   splitting: true,
   target: "esnext",

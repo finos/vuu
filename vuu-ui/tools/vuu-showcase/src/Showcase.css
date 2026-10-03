@@ -109,6 +109,23 @@ body {
       }
     }
 
+    /* Shiki syntax highlighting, token colours for light and dark modes */
+    pre.shiki span {
+      color: var(--shiki-light);
+      font-style: var(--shiki-light-font-style);
+      font-weight: var(--shiki-light-font-weight);
+    }
+  }
+
+  [data-mode="dark"] &.vuuShowcase-mdx {
+    pre.shiki span {
+      color: var(--shiki-dark);
+      font-style: var(--shiki-dark-font-style);
+      font-weight: var(--shiki-dark-font-weight);
+    }
+  }
+
+  &.vuuShowcase-mdx {
     table:not([role]) {
       border-collapse: collapse;
       font-size: 13px;
