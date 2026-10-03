@@ -247,9 +247,9 @@ key.
   Admins set it to keep a user's saved state when a module is
   re-registered under a new `clientIdentifier`. It must be unique across the
   registry; the registry rejects duplicates.
-- The same federated component registered twice (e.g. the filter table with
-  two different `tableSchema` props) gets two descriptors and therefore two
-  independent state documents.
+- The same federated component registered twice (under two different
+  `clientIdentifier`s) gets two descriptors and therefore two independent
+  state documents.
 - The portal shell's own state uses the reserved key `vuu.portal` at
   version `1`. (Portals on the same origin are separated by the storage key
   prefix, §7.2.)
