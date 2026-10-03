@@ -51,7 +51,6 @@ export const SimpleTableBillionRows = () => (
 
 export const TableScrollingAPI = () => {
   const [rowInputValue, setRowInputValue] = useState("");
-  const [scrollPosition, setScrollPosition] = useState("");
   const scrollingAPI = useRef<ScrollingAPI>(noScrolling);
 
   const handleChangeRowInput = useCallback<
@@ -60,21 +59,8 @@ export const TableScrollingAPI = () => {
     const { value } = evt.target as HTMLInputElement;
     setRowInputValue(value);
   }, []);
-  const handleChangeScrollPosition = useCallback<
-    ChangeEventHandler<HTMLInputElement>
-  >((evt) => {
-    const { value } = evt.target as HTMLInputElement;
-    setScrollPosition(value);
-  }, []);
 
   const handleScrollToIndex = useCallback(() => {
-    const rowIndex = parseInt(rowInputValue);
-    if (!isNaN(rowIndex)) {
-      scrollingAPI.current.scrollToIndex(rowIndex);
-    }
-  }, [rowInputValue]);
-
-  const handleScrollToPosition = useCallback(() => {
     const rowIndex = parseInt(rowInputValue);
     if (!isNaN(rowIndex)) {
       scrollingAPI.current.scrollToIndex(rowIndex);
@@ -91,7 +77,7 @@ export const TableScrollingAPI = () => {
 
   const dataSource = useMemo<DataSource>(() => {
     const data = new ArrayProxy(
-      1_000_000_000,
+      1_000_000,
       rowGenerator(config.columns.map((col) => col.name)),
     );
     return new ArrayDataSource({
@@ -112,10 +98,8 @@ export const TableScrollingAPI = () => {
         width={1000}
       />
       <Toolbar style={{ marginTop: 50 }}>
-        <Input value={rowInputValue} onChange={handleChangeRowInput} />
+        <Input bordered value={rowInputValue} onChange={handleChangeRowInput} />
         <Button onClick={handleScrollToIndex}>Scroll To Row at Index</Button>
-        <Input value={scrollPosition} onChange={handleChangeScrollPosition} />
-        <Button onClick={handleScrollToPosition}>Scroll To Position</Button>
       </Toolbar>
     </>
   );

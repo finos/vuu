@@ -63,6 +63,9 @@ export type ScrollRequest =
 export type ScrollRequestHandler = (request: ScrollRequest) => void;
 
 export interface ScrollingAPI {
+  /**
+   * Scroll the row at the given (zero based) index into view.
+   */
   scrollToIndex: (itemIndex: number) => void;
   scrollToKey: (rowKey: string) => void;
 }
@@ -260,6 +263,7 @@ export const useTableScroll = ({
 
   const {
     appliedPageSize,
+    contentHeight,
     isVirtualScroll,
     rowCount: viewportRowCount,
     totalHeaderHeight,
@@ -634,20 +638,50 @@ export const useTableScroll = ({
   );
 
   const scrollHandles: ScrollingAPI = useMemo(
-    // TODO not complete yet
     () => ({
+      /**
+       * If row is not fully within the viewport, scroll so that it is the
+       * first row in the viewport (or as near as possible, for the last rows).
+       */
       scrollToIndex: (rowIndex: number) => {
-        if (scrollbarContainerRef.current) {
-          // TODO hardcoded rowHeight
-          const scrollPos = (rowIndex - 30) * 20;
-          scrollbarContainerRef.current.scrollTop = scrollPos;
+        const { current: contentContainer } = contentContainerRef;
+        const { current: firstVisibleRow } = firstRowRef;
+        // The last row in viewport may be partially visible
+        const fullyVisibleRowCount = Math.max(1, viewportRowCount - 1);
+        if (
+          contentContainer === null ||
+          (rowIndex >= firstVisibleRow &&
+            rowIndex < firstVisibleRow + fullyVisibleRowCount)
+        ) {
+          return;
         }
+        const firstRow = Math.min(
+          Math.max(0, rowIndex),
+          Math.max(0, rowCount - viewportRowCount),
+        );
+        const [, maxScrollTop] = getMaxScroll(contentContainer);
+        // When scrolling is virtualised, the first row at a given scroll position
+        // is offset by a proportion of the virtualised extent (see
+        // virtualRowPositioning), so we invert that calculation here.
+        const virtualisedExtent = isVirtualScroll
+          ? rowCount * rowHeight - contentHeight
+          : 0;
+        const scrollTop =
+          maxScrollTop > 0
+            ? (firstRow * rowHeight * maxScrollTop) /
+              (maxScrollTop + virtualisedExtent)
+            : 0;
+        contentContainer.scrollTo({
+          top: Math.min(scrollTop, maxScrollTop),
+          left: contentContainer.scrollLeft,
+          behavior: "instant",
+        });
       },
       scrollToKey: (rowKey: string) => {
         console.log(`scrollToKey ${rowKey}`);
       },
     }),
-    [],
+    [contentHeight, isVirtualScroll, rowCount, rowHeight, viewportRowCount],
   );
 
   useImperativeHandle(scrollingApiRef, () => {
