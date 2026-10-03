@@ -120,13 +120,19 @@ const getProportionalScrollPosition = (
   targetMax: number,
 ) => (sourceMax > 0 ? (sourcePos / sourceMax) * targetMax : 0);
 
+type ScrollCoordinates = { left: number; top: number };
+
 /**
  * Scroll target to the same proportional position as source, unless already
  * there. Comparing positions, rather than tracking which container initiated a
- * scroll, means the echo scroll event from target is a no-op and we are not
- * thrown out of sync by scroll events the browser itself fires (e.g. on zoom).
+ * scroll, means we are not thrown out of sync by scroll events the browser
+ * itself fires (e.g. on zoom). Returns the position target was scrolled to, if
+ * any, so the resulting scroll event on target can be recognised as an echo.
  */
-const syncScrollPosition = (source: HTMLElement, target: HTMLElement) => {
+const syncScrollPosition = (
+  source: HTMLElement,
+  target: HTMLElement,
+): ScrollCoordinates | undefined => {
   const [sourceMaxLeft, sourceMaxTop] = getMaxScroll(source);
   const [targetMaxLeft, targetMaxTop] = getMaxScroll(target);
   const left = Math.round(
@@ -146,7 +152,27 @@ const syncScrollPosition = (source: HTMLElement, target: HTMLElement) => {
     Math.abs(target.scrollTop - top) >= SCROLL_SYNC_TOLERANCE
   ) {
     target.scrollTo({ left, top, behavior: "auto" });
+    return { left, top };
   }
+};
+
+/**
+ * A scroll event on a container we have just scrolled programmatically must not
+ * be synced back to the other container. Some browsers (e.g. WebKit) animate a
+ * mouse wheel scroll, so by the time the echo event arrives, the source may have
+ * scrolled further. Syncing back would cancel the animation.
+ */
+const isEchoScroll = (
+  el: HTMLElement,
+  expectedPosRef: { current: ScrollCoordinates | undefined },
+) => {
+  const { current: expectedPos } = expectedPosRef;
+  expectedPosRef.current = undefined;
+  return (
+    expectedPos !== undefined &&
+    Math.abs(el.scrollLeft - expectedPos.left) < SCROLL_SYNC_TOLERANCE &&
+    Math.abs(el.scrollTop - expectedPos.top) < SCROLL_SYNC_TOLERANCE
+  );
 };
 
 export const noScrolling: ScrollingAPI = {
@@ -336,11 +362,18 @@ export const useTableScroll = ({
   // we may drop scroll events. Make sure we get the final resting position right
   // by remeasuring after a short delay.
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
+  // positions we have programmatically scrolled each container to
+  const expectedContentPosRef = useRef<ScrollCoordinates>(undefined);
+  const expectedScrollbarPosRef = useRef<ScrollCoordinates>(undefined);
+
   const checkScrollbarScrollPosition = useCallback(() => {
     const { current: contentContainer } = contentContainerRef;
     const { current: scrollbarContainer } = scrollbarContainerRef;
     if (scrollbarContainer && contentContainer) {
-      syncScrollPosition(scrollbarContainer, contentContainer);
+      expectedContentPosRef.current = syncScrollPosition(
+        scrollbarContainer,
+        contentContainer,
+      );
     }
     scrollTimerRef.current = null;
   }, []);
@@ -350,13 +383,17 @@ export const useTableScroll = ({
     const { current: scrollbarContainer } = scrollbarContainerRef;
 
     if (contentContainer && scrollbarContainer) {
-      syncScrollPosition(scrollbarContainer, contentContainer);
+      if (!isEchoScroll(scrollbarContainer, expectedScrollbarPosRef)) {
+        expectedContentPosRef.current = syncScrollPosition(
+          scrollbarContainer,
+          contentContainer,
+        );
+        if (scrollTimerRef.current) {
+          clearTimeout(scrollTimerRef.current);
+        }
+        scrollTimerRef.current = setTimeout(checkScrollbarScrollPosition, 60);
+      }
     }
-
-    if (scrollTimerRef.current) {
-      clearTimeout(scrollTimerRef.current);
-    }
-    scrollTimerRef.current = setTimeout(checkScrollbarScrollPosition, 60);
 
     onVerticalScrollInSitu?.(0);
   }, [checkScrollbarScrollPosition, onVerticalScrollInSitu]);
@@ -370,7 +407,12 @@ export const useTableScroll = ({
       const [scrollLeft, , , scrollTop, pctScrollTop] =
         getPctScroll(contentContainer);
 
-      syncScrollPosition(contentContainer, scrollbarContainer);
+      if (!isEchoScroll(contentContainer, expectedContentPosRef)) {
+        expectedScrollbarPosRef.current = syncScrollPosition(
+          contentContainer,
+          scrollbarContainer,
+        );
+      }
 
       if (scrollPos.scrollTop !== scrollTop) {
         handleVerticalScroll(scrollTop, pctScrollTop);
