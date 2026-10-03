@@ -1,0 +1,74 @@
+import { LivePreview } from "../components/LivePreview";
+import { FlashingPrices } from "./03-Formatting.examples";
+
+# Table
+
+`Table` is the data grid of the Vuu UI library. It shows large, fast-changing datasets, such as prices, orders or positions, and stays fast with hundreds of thousands of rows and frequent updates. It works with any Vuu `DataSource`, so the same component can show an in-memory array or a live table streamed from a Vuu server.
+
+<LivePreview>
+  <FlashingPrices />
+</LivePreview>
+
+## Features
+
+- **Virtualized rendering.** Only the visible rows and columns are rendered, so large datasets scroll smoothly.
+- **Live data.** Rows update in place as the data source changes, and renderers can flash changed values.
+- **Columns.** Fixed or fluid widths, pinned columns, multi-level headings, resizing, reordering and per-column menus.
+- **Formatting.** Number and date formatting, mapped values and pluggable cell renderers.
+- **Selection.** Single, extended and checkbox row selection, non-selectable rows and cell block selection.
+- **Sorting, filtering and grouping.** Multi-column sorting, a filter expression language, nested groups and aggregations, all done by the data source.
+- **Theming.** Built on Salt design tokens, so it follows the active theme, light or dark mode and density.
+- **Accessibility.** ARIA table roles and full keyboard navigation.
+- **Persistence.** Configuration is a plain object, so user changes can be saved and restored.
+
+## When to use
+
+Use `Table` for:
+
+- Large datasets, or data that updates in real time.
+- Data from a Vuu server, or any other `DataSource`.
+- Data that users need to sort, filter, group or select.
+
+Consider another component for:
+
+- Short, static lists of a few rows that don't need virtualization or a data source. A Salt `Table` or a plain HTML table is simpler.
+- Hierarchical data that isn't the result of grouping. Use `TreeTable` from `@vuu-ui/vuu-datatable` instead.
+- Choosing a value from a list. Use a Salt `Dropdown` or `ComboBox`.
+
+## Architecture
+
+The Table renders what the data source gives it. It doesn't sort, filter or group data itself. When a user clicks a header to sort, the Table asks the data source to sort, and the data source sends back the new rows. This is how the same Table works with in-browser data and with server data that would be too large to send to the browser.
+
+```text
+               TableConfig (columns, display settings)
+                              |
+                              v
+  +------------+  visible rows  +-------+  onConfigChange  +----------+
+  | DataSource | -------------> | Table | ---------------> | Your app |
+  |            | <------------- |       |                  | (saves   |
+  +------------+  range, sort,  +-------+                  |  config) |
+                  filter, groupBy,                         +----------+
+                  selection
+```
+
+| Package                    | Contents                                                                                     |
+| -------------------------- | -------------------------------------------------------------------------------------------- |
+| `@vuu-ui/vuu-table`        | `Table` and the built-in cell renderers.                                                     |
+| `@vuu-ui/vuu-table-types`  | Types such as `TableConfig`, `ColumnDescriptor` and `DataRow`.                               |
+| `@vuu-ui/vuu-data-local`   | `ArrayDataSource` and other in-browser data sources.                                         |
+| `@vuu-ui/vuu-data-remote`  | `VuuDataSource`, for data from a Vuu server.                                                 |
+| `@vuu-ui/vuu-table-extras` | More cell renderers, column and table settings panels, and the column picker.                |
+
+## Documentation
+
+| Page                                                          | What it covers                                                                          |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| [Getting started](./01-GettingStarted.mdx)                     | Installing, rendering your first Table, server data and saving configuration.           |
+| [Columns](./02-Columns.mdx)                                    | Column definitions, layout, pinning, grouped headings and header menus.                 |
+| [Formatting and renderers](./03-Formatting.mdx)                | Number and date formatting, mapped values, cell renderers and search highlighting.      |
+| [Selection](./04-Selection.mdx)                                | Selection models, selection events, initial selection and cell block selection.         |
+| [Sorting, filtering and grouping](./05-SortingAndGrouping.mdx) | Sorting, filter expressions, grouping and aggregation.                                  |
+| [Layout](./06-Layout.mdx)                                      | Sizing, row height and density, empty states, custom headers and large datasets.        |
+| [Styling](./07-Styling.mdx)                                    | Display attributes, row and column class names, and CSS custom properties.              |
+| [Accessibility](./08-Accessibility.mdx)                        | ARIA structure, focus, keyboard interactions and labelling.                             |
+| [API reference](./09-ApiReference.mdx)                         | Every prop, configuration property and type.                                            |

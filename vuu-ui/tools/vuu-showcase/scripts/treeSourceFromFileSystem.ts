@@ -6,6 +6,9 @@ export const dropLastPathSegment = (path: string, separator = "/") => {
   return path.slice(0, path.lastIndexOf(separator));
 };
 
+// A numeric prefix e.g "01-" can be used to control ordering, it is not displayed
+const toLabel = (name: string) => name.replace(/^\d+-/, "");
+
 const getDocumentPath = (
   dirFiles: Set<string>,
   fileName: string,
@@ -57,7 +60,7 @@ export const treeSourceFromFileSystem = (
       const treeSourceNode: TreeSourceNode<NodeData> = {
         id: `${route}${fileName}`,
         icon,
-        label: fileName,
+        label: toLabel(fileName),
         childNodes,
       };
       if (documentPath) {
@@ -76,7 +79,7 @@ export const treeSourceFromFileSystem = (
       const treeSourceNode: TreeSourceNode<NodeData> = {
         id,
         icon: "box",
-        label: name,
+        label: toLabel(name),
         childNodes: treeSourceFromExportedComponents(
           exhibitsPath,
           env,
@@ -99,21 +102,21 @@ export const treeSourceFromFileSystem = (
       treeSourceNodes.push(treeSourceNode);
     } else if (fileName.match(/^[Ii]ndex.mdx$/)) {
       documentPath = `${exhibitsPath}/${fileName}`;
-    } else if (fileName.match(/mdx$/)) {
-      // ignore
-      // assume for nown the only (non-index_ mdx files we support are ones wirth matching examples file)
-    } else if (fileName.match(/.mdx$/)) {
+    } else if (fileName.match(/\.mdx$/)) {
       const name = dropLastPathSegment(fileName, ".");
-      const id = `${route}${name}`;
-      treeSourceNodes.push({
-        id,
-        icon: "box",
-        label: name,
-        nodeData: {
-          name,
-          path: `${exhibitsPath}/${fileName}`,
-        },
-      });
+      // mdx files with a matching examples file are rendered as the document
+      // for that examples node (see above), standalone mdx files are leaf nodes
+      if (!dirFiles.has(`${name}.examples.tsx`)) {
+        treeSourceNodes.push({
+          id: `${route}${name}`,
+          icon: "box",
+          label: toLabel(name),
+          nodeData: {
+            name,
+            ...treeSourceFromDocument(exhibitsPath, env, route, fileName),
+          },
+        });
+      }
     }
   });
   return [treeSourceNodes, Array.from(tags), documentPath];

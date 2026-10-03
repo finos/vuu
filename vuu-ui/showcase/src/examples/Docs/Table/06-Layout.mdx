@@ -1,0 +1,441 @@
+import { LivePreview } from "../components/LivePreview";
+import {
+  CustomHeader,
+  Density,
+  EmptyState,
+  ExplicitSize,
+  FillContainer,
+  LargeDataset,
+  MaxViewportRowLimit,
+  NoColumnHeaders,
+  RowHeight,
+  ViewportRowLimit,
+} from "./06-Layout.examples";
+
+# Layout
+
+This page covers:
+
+- how the Table is sized
+- how row height is set
+- what it shows when there is no data
+- how it renders very large datasets
+
+## Sizing
+
+The Table measures its own size and renders only the rows and columns that fit. There are three ways to size it:
+
+| Approach                 | Props                                     | Use when                                                                 |
+| ------------------------ | ----------------------------------------- | ------------------------------------------------------------------------ |
+| Explicit size            | `width`, `height`                         | The Table has a fixed place in the layout.                               |
+| Fill the parent          | none, or `width="100%"` / `height="100%"` | The Table sits in a resizable panel, layout cell or flex container.       |
+| Size to a number of rows | `viewportRowLimit`, `maxViewportRowLimit` | The Table is part of a form or a dropdown, and should show a fixed number of rows. |
+
+### Explicit size
+
+`width` and `height` accept a number of pixels or any CSS length.
+
+<LivePreview>
+  <ExplicitSize />
+</LivePreview>
+
+```tsx
+export const ExplicitSize = () => {
+  const config = useMemo<TableConfig>(
+    () => ({ columns, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  return (
+    <Table config={config} dataSource={dataSource} height={250} width={600} />
+  );
+};
+```
+
+### Fill the parent
+
+Without `width` and `height`, the Table fills its parent and follows it as it resizes. The parent must have a defined height. Drag the corner of the dashed container below to resize it. With `columnLayout: "fit"`, the columns resize too.
+
+<LivePreview>
+  <FillContainer />
+</LivePreview>
+
+```tsx
+export const FillContainer = () => {
+  const config = useMemo<TableConfig>(
+    () => ({ columns, columnLayout: "fit", rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  return (
+    // Drag the bottom right corner of the container to resize it
+    <div className="docs-resizable-container">
+      <Table config={config} dataSource={dataSource} />
+    </div>
+  );
+};
+```
+
+```css
+.docs-resizable-container {
+  height: 250px;
+  overflow: hidden;
+  resize: both;
+  width: 600px;
+}
+```
+
+> **Tip:** in a flex column layout, set `height="auto"` and give the Table a flex value with the `--vuuMeasuredContainer-flex` CSS custom property.
+
+### Size by row count
+
+`viewportRowLimit` sets the height to show exactly that many rows, plus the header. The height then follows the row height, so it adapts to density changes.
+
+<LivePreview>
+  <ViewportRowLimit />
+</LivePreview>
+
+```tsx
+export const ViewportRowLimit = () => {
+  const config = useMemo<TableConfig>(
+    () => ({ columns, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  return (
+    <Table
+      config={config}
+      dataSource={dataSource}
+      viewportRowLimit={5}
+      width={800}
+    />
+  );
+};
+```
+
+`maxViewportRowLimit` works the same way, but the Table shrinks when there are fewer rows than the limit. Filter the table below to see its height change.
+
+<LivePreview stacked>
+  <MaxViewportRowLimit />
+</LivePreview>
+
+```tsx
+export const MaxViewportRowLimit = () => {
+  const [filter, setFilter] = useState("");
+  const config = useMemo<TableConfig>(
+    () => ({ columns, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  const handleChange: ToggleButtonGroupProps["onChange"] = (e) => {
+    const { value } = e.currentTarget;
+    setFilter(value);
+    dataSource.filter = { filter: value };
+  };
+
+  return (
+    <>
+      <ToggleButtonGroup onChange={handleChange} value={filter}>
+        <ToggleButton value="">All</ToggleButton>
+        <ToggleButton value='exchange = "LSE"'>LSE</ToggleButton>
+        <ToggleButton value='exchange = "SIX"'>SIX</ToggleButton>
+      </ToggleButtonGroup>
+      <Table
+        config={config}
+        dataSource={dataSource}
+        maxViewportRowLimit={10}
+        width={800}
+      />
+    </>
+  );
+};
+```
+
+> **Note:** `height`, `rowHeight` and `viewportRowLimit` constrain each other. You can pass any two of them, but don't pass all three.
+
+### Best practices
+
+- Let the Table fill its container in application layouts. Use explicit sizes only for fixed-size components.
+- Use `maxViewportRowLimit` for tables inside dropdowns and popups, so they don't show a block of empty rows.
+
+## Row height and density
+
+By default, row height comes from CSS and follows the Salt density of the surrounding `SaltProvider`. Use high density for data-heavy trading screens, and medium or low density for touch screens or less dense displays.
+
+<LivePreview stacked>
+  <Density />
+</LivePreview>
+
+```tsx
+export const Density = () => {
+  const [density, setDensity] = useState<"high" | "medium" | "low">("high");
+  const config = useMemo<TableConfig>(
+    () => ({ columns, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  const handleChange: ToggleButtonGroupProps["onChange"] = (e) =>
+    setDensity(e.currentTarget.value as "high" | "medium" | "low");
+
+  return (
+    <>
+      <ToggleButtonGroup onChange={handleChange} value={density}>
+        <ToggleButton value="high">High</ToggleButton>
+        <ToggleButton value="medium">Medium</ToggleButton>
+        <ToggleButton value="low">Low</ToggleButton>
+      </ToggleButtonGroup>
+      <SaltProvider density={density}>
+        <Table
+          config={config}
+          dataSource={dataSource}
+          height={250}
+          width={800}
+        />
+      </SaltProvider>
+    </>
+  );
+};
+```
+
+To set heights explicitly, use `rowHeight` for data rows and `colHeaderRowHeight` for header rows, both in pixels. Explicit heights override CSS, so the Table no longer responds to density changes.
+
+<LivePreview>
+  <RowHeight />
+</LivePreview>
+
+```tsx
+export const RowHeight = () => {
+  const config = useMemo<TableConfig>(
+    () => ({ columns, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  return (
+    <Table
+      colHeaderRowHeight={36}
+      config={config}
+      dataSource={dataSource}
+      height={250}
+      rowHeight={32}
+      width={800}
+    />
+  );
+};
+```
+
+### Best practices
+
+- Prefer density over explicit heights. Density keeps the Table consistent with the other Salt components around it.
+- If a custom cell renderer needs more space, such as a sparkline or a button, set `rowHeight` to fit it rather than letting the content overflow.
+
+## Empty state
+
+Use `EmptyDisplay` to pass a component that is rendered when the data source has no rows. It is shown in the body of the table, below the column headers.
+
+<LivePreview stacked>
+  <EmptyState />
+</LivePreview>
+
+```tsx
+const NoMatchingRows = () => (
+  <div className="docs-empty-display">No stocks match the current filter</div>
+);
+
+export const EmptyState = () => {
+  const [filter, setFilter] = useState('currency = "JPY"');
+  const config = useMemo<TableConfig>(
+    () => ({ columns, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource({
+    filterSpec: { filter: 'currency = "JPY"' },
+  });
+
+  const handleChange: ToggleButtonGroupProps["onChange"] = (e) => {
+    const { value } = e.currentTarget;
+    setFilter(value);
+    dataSource.filter = { filter: value };
+  };
+
+  return (
+    <>
+      <ToggleButtonGroup onChange={handleChange} value={filter}>
+        <ToggleButton value='currency = "JPY"'>JPY</ToggleButton>
+        <ToggleButton value='currency = "GBP"'>GBP</ToggleButton>
+      </ToggleButtonGroup>
+      <Table
+        EmptyDisplay={NoMatchingRows}
+        config={config}
+        dataSource={dataSource}
+        height={250}
+        width={800}
+      />
+    </>
+  );
+};
+```
+
+### Best practices
+
+- Explain why the table is empty and, if you can, what to do about it. For example, "No orders today" is more helpful than a blank grid, and "No stocks match the current filter" tells the user how to fix it.
+- Keep the column headers visible, so users can still see the structure of the data and change the sort or columns.
+
+## Headers
+
+### Hiding column headers
+
+Set `showColumnHeaders={false}` to render data rows only. This suits a Table used inside another component, such as a list, a search result panel or a dropdown, where column headers would be clutter.
+
+<LivePreview>
+  <NoColumnHeaders />
+</LivePreview>
+
+```tsx
+export const NoColumnHeaders = () => {
+  const config = useMemo<TableConfig>(
+    () => ({ columns: stockColumns.slice(0, 3), columnLayout: "fit" }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  return (
+    <Table
+      config={config}
+      dataSource={dataSource}
+      height={200}
+      showColumnHeaders={false}
+      width={400}
+    />
+  );
+};
+```
+
+### Custom header rows
+
+Use `customHeader` to add your own rows below the column headers. They scroll horizontally with the columns. Typical uses are inline filters, a totals row or an "add new row" form. Pass a component, an element, or an array of either. Components receive `BaseRowProps`:
+
+| Prop             | Description                                                                        |
+| ---------------- | ---------------------------------------------------------------------------------- |
+| `ariaRole`       | The ARIA role for the row element (`"row"`).                                       |
+| `ariaRowIndex`   | The `aria-rowindex` for the row, following the column header rows.                 |
+| `columns`        | The runtime column descriptors, including each column's current `width`.          |
+| `virtualColSpan` | The total width of the columns to the left that are not rendered (horizontal virtualization). Add a spacer of this width before your cells. |
+
+<LivePreview>
+  <CustomHeader />
+</LivePreview>
+
+```tsx
+const ColumnTypeHeader = ({
+  ariaRole,
+  ariaRowIndex,
+  columns,
+  virtualColSpan = 0,
+}: BaseRowProps) => (
+  <div
+    aria-rowindex={ariaRowIndex}
+    className="docs-type-header"
+    role={ariaRole}
+  >
+    <div style={{ width: virtualColSpan }} />
+    {columns
+      .filter((column) => !column.hidden)
+      .map((column) => (
+        <div
+          className="docs-type-header-cell"
+          key={column.name}
+          role="cell"
+          style={{ width: column.width }}
+        >
+          {column.serverDataType}
+        </div>
+      ))}
+  </div>
+);
+
+export const CustomHeader = () => {
+  const config = useMemo<TableConfig>(
+    () => ({ columns, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  return (
+    <Table
+      config={config}
+      customHeader={ColumnTypeHeader}
+      dataSource={dataSource}
+      height={300}
+      width={800}
+    />
+  );
+};
+```
+
+```css
+.docs-type-header {
+  display: flex;
+  height: 20px;
+  /* align with data cells, which follow the row selection bookend */
+  padding-left: var(--table-selection-bookend-width, 4px);
+}
+
+.docs-type-header-cell {
+  box-sizing: border-box;
+  flex: none;
+  padding: 0 var(--vuuTableCell-padding, 8px);
+}
+```
+
+## Large datasets
+
+The Table is virtualized in both directions:
+
+- **Rows:** only the rows in view are rendered. When the user scrolls, the Table asks the data source for the new range of rows. With a Vuu server, only those rows are sent over the network, so a table of millions of rows loads and scrolls as fast as a small one.
+- **Columns:** with many columns, the columns outside the horizontal scroll position (plus a small buffer) are not rendered.
+
+The table below has 100,000 rows, but only about 20 row elements are ever in the DOM.
+
+<LivePreview>
+  <LargeDataset />
+</LivePreview>
+
+```tsx
+export const LargeDataset = () => {
+  const config = useMemo<TableConfig>(
+    () => ({ columns: stockColumns, rowSeparators: true, zebraStripes: true }),
+    [],
+  );
+  const dataSource = useMemo(
+    () =>
+      new ArrayDataSource({
+        columnDescriptors: stockColumns,
+        data: generateStockData(100_000),
+        keyColumn: "ric",
+      }),
+    [],
+  );
+
+  return (
+    <Table config={config} dataSource={dataSource} height={350} width={700} />
+  );
+};
+```
+
+`renderBufferSize` (default `0`) renders extra rows above and below the visible area. A small buffer can make fast scrolling smoother, but a large one renders rows nobody sees.
+
+### Best practices
+
+- Don't load large datasets into the browser if you can avoid it. `ArrayDataSource` is convenient for small and medium datasets. For very large or live datasets, use `VuuDataSource`, which keeps the data on the server.
+- Don't wrap the Table in a scrolling container. The Table manages its own scrolling, and virtualization only works when it does.
+
+## Next steps
+
+- Customize colors, stripes and row styles in [Styling](./07-Styling.mdx).
+- See every layout prop in the [API reference](./09-ApiReference.mdx).

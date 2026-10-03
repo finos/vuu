@@ -1,0 +1,28 @@
+.vuuDocsLivePreview {
+  background: var(--salt-container-primary-background);
+  border: 1px solid var(--salt-separable-tertiary-borderColor);
+  border-radius: var(--salt-palette-corner-weak, 4px)
+    var(--salt-palette-corner-weak, 4px) 0 0;
+  line-height: normal;
+  margin: var(--salt-spacing-200) 0 0 0;
+  padding: var(--salt-spacing-300);
+}
+
+.vuuDocsLivePreview-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-200);
+}
+
+.vuuDocsLivePreview + pre {
+  border-top: none;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  margin-top: 0;
+}
+
+/* A preview with no code block beneath it */
+.vuuDocsLivePreview:not(:has(+ pre)) {
+  border-radius: var(--salt-palette-corner-weak, 4px);
+  margin-bottom: var(--salt-spacing-300);
+}

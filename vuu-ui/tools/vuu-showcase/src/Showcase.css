@@ -38,6 +38,107 @@ body {
     line-height: 2;
     padding: var(--salt-spacing-400);
     height: auto;
+
+    > * {
+      max-width: 1100px;
+    }
+
+    h1 {
+      font-size: 28px;
+      line-height: 1.3;
+      margin: 0 0 var(--salt-spacing-200) 0;
+    }
+
+    h2 {
+      border-bottom: 1px solid var(--salt-separable-tertiary-borderColor);
+      font-size: 21px;
+      line-height: 1.3;
+      margin: var(--salt-spacing-500) 0 var(--salt-spacing-200) 0;
+      padding-bottom: var(--salt-spacing-100);
+    }
+
+    h3 {
+      font-size: 16px;
+      line-height: 1.4;
+      margin: var(--salt-spacing-300) 0 var(--salt-spacing-100) 0;
+    }
+
+    h4 {
+      font-size: 14px;
+      margin: var(--salt-spacing-200) 0 0 0;
+    }
+
+    p {
+      margin: 0 0 var(--salt-spacing-150) 0;
+    }
+
+    ul,
+    ol {
+      margin: 0 0 var(--salt-spacing-150) 0;
+      padding-left: var(--salt-spacing-400);
+    }
+
+    li {
+      line-height: 1.8;
+    }
+
+    a {
+      color: var(--salt-content-accent-foreground);
+    }
+
+    code {
+      background: var(--salt-container-secondary-background);
+      border-radius: 3px;
+      font-family: var(--salt-typography-fontFamily-code, monospace);
+      font-size: 12.5px;
+      padding: 1px 4px;
+    }
+
+    pre {
+      background: var(--salt-container-secondary-background);
+      border: 1px solid var(--salt-separable-tertiary-borderColor);
+      border-radius: 4px;
+      line-height: 1.5;
+      margin: var(--salt-spacing-150) 0 var(--salt-spacing-300) 0;
+      overflow-x: auto;
+      padding: var(--salt-spacing-200) var(--salt-spacing-300);
+
+      code {
+        background: none;
+        padding: 0;
+      }
+    }
+
+    table:not([role]) {
+      border-collapse: collapse;
+      font-size: 13px;
+      line-height: 1.5;
+      margin: var(--salt-spacing-150) 0 var(--salt-spacing-300) 0;
+      width: 100%;
+
+      th {
+        background: var(--salt-container-secondary-background);
+        text-align: left;
+      }
+
+      th,
+      td {
+        border: 1px solid var(--salt-separable-tertiary-borderColor);
+        padding: var(--salt-spacing-75) var(--salt-spacing-150);
+        vertical-align: top;
+      }
+    }
+
+    blockquote {
+      background: var(--salt-container-secondary-background);
+      border-left: 4px solid var(--salt-palette-accent-border, var(--salt-accent-borderColor));
+      margin: var(--salt-spacing-200) 0;
+      padding: var(--salt-spacing-100) var(--salt-spacing-300);
+
+      p:last-child {
+        margin-bottom: 0;
+      }
+    }
   }
 }
 

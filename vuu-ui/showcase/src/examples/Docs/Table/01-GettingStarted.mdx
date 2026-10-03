@@ -1,0 +1,248 @@
+import { LivePreview } from "../components/LivePreview";
+import {
+  BasicTable,
+  FillContainer,
+  PersistConfig,
+  ServerData,
+} from "./01-GettingStarted.examples";
+
+# Getting started
+
+This page walks through rendering your first `Table`: installing the package, describing columns, supplying data and controlling size. It also covers how to work with server data and how to persist user changes to the table configuration.
+
+## Installation
+
+`Table` is published in the `@vuu-ui/vuu-table` package. Type definitions for configuration objects live in `@vuu-ui/vuu-table-types`, and local (in-browser) data sources are provided by `@vuu-ui/vuu-data-local`.
+
+```bash
+npm install @vuu-ui/vuu-table @vuu-ui/vuu-table-types @vuu-ui/vuu-data-local
+```
+
+```tsx
+import { Table } from "@vuu-ui/vuu-table";
+import type { TableConfig } from "@vuu-ui/vuu-table-types";
+import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
+```
+
+## The two required props
+
+A `Table` needs exactly two things:
+
+| Prop         | Type          | Purpose                                                                                     |
+| ------------ | ------------- | ------------------------------------------------------------------------------------------- |
+| `config`     | `TableConfig` | **What** to display: the list of columns, plus optional display attributes.                 |
+| `dataSource` | `DataSource`  | **Where** the data comes from: a local array, JSON, or a live Vuu server viewport.          |
+
+The Table never holds a full copy of the data. It asks the `DataSource` for the rows that are currently visible (plus a small buffer). The data source sends back just those rows, and sends updates as the data changes. This is why the same Table can show 30 local rows or 30 million rows from a server.
+
+## Basic table
+
+Here is the simplest possible table. It uses an `ArrayDataSource` built from an array of rows, where each row is an array of values in the same order as the column descriptors. `keyColumn` identifies the column that uniquely identifies each row. If you omit it, the first column is used.
+
+<LivePreview>
+  <BasicTable />
+</LivePreview>
+
+```tsx
+import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
+import { Table } from "@vuu-ui/vuu-table";
+import type { ColumnDescriptor, TableConfig } from "@vuu-ui/vuu-table-types";
+import { useMemo } from "react";
+
+const stockColumns: ColumnDescriptor[] = [
+  { name: "ric", label: "RIC", serverDataType: "string", width: 90 },
+  { name: "name", label: "Name", serverDataType: "string", width: 170 },
+  { name: "sector", label: "Sector", serverDataType: "string", width: 110 },
+  { name: "exchange", label: "Exchange", serverDataType: "string", width: 90 },
+  { name: "currency", label: "Ccy", serverDataType: "string", width: 60 },
+  { name: "price", label: "Price", serverDataType: "double", width: 90 },
+  { name: "change", label: "Change", serverDataType: "double", width: 90 },
+  { name: "volume", label: "Volume", serverDataType: "long", width: 110 },
+  { name: "lastTrade", label: "Last trade", serverDataType: "long", type: "date/time", width: 150 },
+  { name: "esg", label: "ESG", serverDataType: "boolean", width: 60 },
+];
+
+const stockData = [
+  ["AAPL.OQ", "Apple Inc", "Technology", "NASDAQ", "USD", 227.52, 0.0124, 51204330, 1790782140000, true],
+  ["MSFT.OQ", "Microsoft Corp", "Technology", "NASDAQ", "USD", 438.11, -0.0042, 18330120, 1790782080000, true],
+  // ...
+];
+
+export const BasicTable = () => {
+  const config = useMemo<TableConfig>(() => ({ columns: stockColumns }), []);
+
+  const dataSource = useMemo(
+    () =>
+      new ArrayDataSource({
+        columnDescriptors: stockColumns,
+        data: stockData,
+        keyColumn: "ric",
+      }),
+    [],
+  );
+
+  return (
+    <Table config={config} dataSource={dataSource} height={360} width={800} />
+  );
+};
+```
+
+The same `stockColumns` and `stockData` are used throughout these pages. They are defined in `sample-data.ts`, alongside the example source files.
+
+Points to note:
+
+- Numeric columns (`serverDataType` of `int`, `long`, `double` and so on) are right-aligned automatically.
+- `boolean` columns render a read-only checkbox automatically.
+- `type: "date/time"` formats epoch-millisecond values as dates (see [Formatting](./03-Formatting.mdx)).
+- Columns can be resized and reordered by dragging, and sorted by clicking the column header. All of this works out of the box.
+
+### Best practices
+
+- **Always memoize `config` and `dataSource`.** Creating a new data source on every render will tear down and recreate the subscription. A new `config` object will cause the Table to rebuild its column model.
+- Give every column an explicit `serverDataType`. It drives default alignment, formatting and cell rendering.
+- Provide a `keyColumn` with genuinely unique values. Selection, updates and editing all rely on row keys.
+
+## Sizing
+
+The Table virtualizes rows and columns, so it must know how much space it has. There are two ways to give it that information:
+
+1. **Explicit size**: pass `height` and `width` props (numbers are pixels, strings are any CSS length such as `"100%"`), as in the example above.
+2. **Fill the container**: omit `height` and `width`, and the Table will measure and fill its parent element. The parent must have a resolvable height (a fixed height, or a flex/grid child with a constrained size).
+
+<LivePreview>
+  <FillContainer />
+</LivePreview>
+
+```tsx
+export const FillContainer = () => {
+  const config = useMemo<TableConfig>(
+    () => ({ columns: stockColumns, rowSeparators: true, zebraStripes: true }),
+    [],
+  );
+
+  const dataSource = useMemo(
+    () =>
+      new ArrayDataSource({
+        columnDescriptors: stockColumns,
+        data: stockData,
+        keyColumn: "ric",
+      }),
+    [],
+  );
+
+  return (
+    <div style={{ height: 300, width: "100%" }}>
+      <Table config={config} dataSource={dataSource} />
+    </div>
+  );
+};
+```
+
+> If the Table renders headers but no rows, the most likely cause is a parent with no height. See [Layout](./06-Layout.mdx) for more sizing options, including sizing by row count.
+
+## Server data
+
+To display data from a Vuu server, use a `VuuDataSource` and point it at a server table. In an application, the data source class is normally obtained from the `useData` hook. That way the same component works against a live server, or against local test data when it's rendered inside a `LocalDataSourceProvider` (which is how this showcase works).
+
+<LivePreview>
+  <ServerData />
+</LivePreview>
+
+```tsx
+import { getSchema } from "@vuu-ui/vuu-data-test";
+import { useData } from "@vuu-ui/vuu-utils";
+
+export const ServerData = () => {
+  const { VuuDataSource } = useData();
+  const schema = getSchema("instruments");
+
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns: schema.columns,
+      rowSeparators: true,
+      zebraStripes: true,
+    }),
+    [schema],
+  );
+
+  const dataSource = useMemo(
+    () => new VuuDataSource({ table: schema.table }),
+    [VuuDataSource, schema],
+  );
+
+  return (
+    <Table
+      config={config}
+      dataSource={dataSource}
+      height={360}
+      renderBufferSize={20}
+      width="100%"
+    />
+  );
+};
+```
+
+`renderBufferSize` sets how many rows are rendered above and below the visible viewport. A larger buffer makes fast scrolling smoother, at the cost of rendering more DOM. The minimum (and default) is 5.
+
+## Persisting configuration
+
+Users can change the table configuration at runtime, for example by resizing, moving, hiding or pinning columns. Each time they do, the Table calls `onConfigChange` with the new `TableConfig` and a description of what changed. Store the config and pass it back on the next render, and the user's layout survives a page reload.
+
+Try resizing or dragging a column in the example below.
+
+<LivePreview>
+  <PersistConfig />
+</LivePreview>
+
+```tsx
+export const PersistConfig = () => {
+  const [config, setConfig] = useState<TableConfig>({
+    columns: stockColumns.slice(0, 6),
+    rowSeparators: true,
+  });
+  const [lastChange, setLastChange] = useState("none");
+
+  const dataSource = useMemo(
+    () =>
+      new ArrayDataSource({
+        columnDescriptors: stockColumns,
+        data: stockData,
+        keyColumn: "ric",
+      }),
+    [],
+  );
+
+  const handleConfigChange: TableConfigChangeHandler = (
+    newConfig,
+    changeType,
+  ) => {
+    // persist newConfig, e.g. to localStorage or a user-settings service
+    setConfig(newConfig);
+    setLastChange(changeType.type);
+  };
+
+  return (
+    <>
+      <Table
+        config={config}
+        dataSource={dataSource}
+        height={240}
+        onConfigChange={handleConfigChange}
+        width={700}
+      />
+      <code>Last config change: {lastChange}</code>
+    </>
+  );
+};
+```
+
+The change types are `column-resized`, `column-moved`, `column-added`, `column-removed`, `column-pinned`, `columns-hidden`, `calculated-column-added` and `settings-panel`.
+
+Data-related state, such as sort, filter and group-by, belongs to the **data source** rather than the table config. To persist it, listen for the data source `config` event, or read `dataSource.config`.
+
+## Next steps
+
+- [Columns](./02-Columns.mdx): labels, widths, pinning, multi-level headings
+- [Formatting](./03-Formatting.mdx): number and date formatting, built-in and custom cell renderers
+- [Selection](./04-Selection.mdx): single, extended and checkbox selection
+- [API reference](./09-ApiReference.mdx): every prop and configuration option

@@ -1,0 +1,36 @@
+.docs-resizable-container {
+  border: 1px dashed var(--salt-separable-primary-borderColor);
+  height: 250px;
+  min-height: 120px;
+  min-width: 300px;
+  overflow: hidden;
+  resize: both;
+  width: 600px;
+}
+
+.docs-empty-display {
+  align-items: center;
+  color: var(--salt-content-secondary-foreground);
+  display: flex;
+  height: 100%;
+  justify-content: center;
+}
+
+.docs-type-header {
+  background: var(--salt-container-secondary-background);
+  color: var(--salt-content-secondary-foreground);
+  display: flex;
+  font-size: 11px;
+  font-style: italic;
+  height: 20px;
+  line-height: 20px;
+  /* align with data cells, which follow the row selection bookend */
+  padding-left: var(--table-selection-bookend-width, 4px);
+}
+
+.docs-type-header-cell {
+  box-sizing: border-box;
+  flex: none;
+  overflow: hidden;
+  padding: 0 var(--vuuTableCell-padding, 8px);
+}

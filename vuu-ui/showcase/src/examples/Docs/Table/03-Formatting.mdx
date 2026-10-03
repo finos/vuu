@@ -1,0 +1,435 @@
+import { LivePreview } from "../components/LivePreview";
+import {
+  CustomCellRenderer,
+  DateFormatting,
+  FlashingPrices,
+  MappedValues,
+  NumberFormatting,
+  ProgressRenderers,
+  SearchHighlighting,
+} from "./03-Formatting.examples";
+
+# Formatting and renderers
+
+By default, a cell displays its value as plain text. A column's `type` property changes how values are displayed. Use it to:
+
+- **Format** values: control decimal places, thousands separators and date or time patterns.
+- **Map** raw values to display labels.
+- **Render** values with a cell renderer, either a built-in one (checkbox, flashing price, progress bar) or your own React component.
+
+`type` is either a simple type name, such as `"date/time"`, or a type descriptor object:
+
+```ts
+type: {
+  name: "number",                      // the logical type
+  formatting: { decimals: 2 },         // optional formatting options
+  renderer: { name: "vuu.progress" },  // optional cell renderer
+}
+```
+
+## Number formatting
+
+Numeric columns (`serverDataType` of `int`, `long`, `double` or `scaleddecimal`) are right aligned by default. Without a `type`, values display exactly as they arrive (`51204330`, `117.3`). Add `formatting` to control the display:
+
+| Option             | Type                     | Default   | Description                                                                                                                      |
+| ------------------ | ------------------------ | --------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `decimals`         | `number`                 | `4`       | Maximum number of decimal places. Values with more decimal places are rounded or truncated.                                      |
+| `zeroPad`          | `boolean`                | `false`   | Pad with trailing zeros to exactly `decimals` places (`117.3` → `117.30`).                                                       |
+| `alignOnDecimals`  | `boolean`                | `false`   | Pad with invisible, fixed-width spaces instead of zeros, so decimal points line up vertically.                                   |
+| `roundingRule`     | `"round" \| "truncate"`  | `"round"` | How extra decimal places are removed.                                                                                            |
+| `useLocaleString`  | `boolean`                | `true`    | Format the integer part with the user's locale thousands separator (`51,204,330`).                                               |
+
+<LivePreview>
+  <NumberFormatting />
+</LivePreview>
+
+```tsx
+const config: TableConfig = {
+  columns: [
+    { name: "ric", label: "RIC", width: 90 },
+    {
+      name: "price",
+      label: "Price",
+      serverDataType: "double",
+      type: { name: "number", formatting: { decimals: 2, zeroPad: true } },
+    },
+    {
+      name: "change",
+      label: "Change",
+      serverDataType: "double",
+      type: {
+        name: "number",
+        formatting: { decimals: 3, roundingRule: "truncate" },
+      },
+    },
+    {
+      name: "volume",
+      label: "Volume",
+      serverDataType: "long",
+      type: {
+        name: "number",
+        formatting: { decimals: 0, useLocaleString: true },
+      },
+      width: 120,
+    },
+  ],
+  rowSeparators: true,
+};
+```
+
+### Best practices
+
+- Show prices with a fixed number of decimal places using `zeroPad`. Values like `117.3` and `117.30` look different but mean the same thing, and fixed decimals make columns easier to scan.
+- Use `alignOnDecimals` for values with varying precision, where zeros would suggest a precision the data doesn't have.
+- Use thousands separators for large integer values such as quantities and volumes.
+- Formatting only changes the display. Sorting, filtering and copying use the underlying value.
+
+## Date and time formatting
+
+Date and time values are epoch timestamps in milliseconds. Set `type: "date/time"` to show them as dates. The default pattern shows both date and time (`30.09.2026 15:05:09`). Add `formatting.pattern` to choose a date pattern, a time pattern, or both:
+
+| Date pattern      | Example          |
+| ----------------- | ---------------- |
+| `"dd.mm.yyyy"`    | 30.09.2026       |
+| `"dd/mm/yyyy"`    | 30/09/2026       |
+| `"mm/dd/yyyy"`    | 09/30/2026       |
+| `"yyyy-mm-dd"`    | 2026-09-30       |
+| `"dd MMM yyyy"`   | 30 Sep 2026      |
+| `"dd MMMM yyyy"`  | 30 September 2026 |
+| `"MMM dd, yyyy"`  | Sep 30, 2026     |
+| `"MMMM dd, yyyy"` | September 30, 2026 |
+
+| Time pattern      | Example       |
+| ----------------- | ------------- |
+| `"hh:mm:ss"`      | 15:05:09      |
+| `"hh:mm:ss a"`    | 03:05:09 pm   |
+| `"hh:mm:ss.ms"`   | 15:05:09.250  |
+
+<LivePreview>
+  <DateFormatting />
+</LivePreview>
+
+```tsx
+const config: TableConfig = {
+  columns: [
+    { name: "id", label: "ID", width: 60 },
+    { name: "tradeDate", label: "Trade date", type: "date/time", width: 160 },
+    {
+      name: "settleDate",
+      label: "Settle date",
+      type: {
+        name: "date/time",
+        formatting: { pattern: { date: "dd MMM yyyy" } },
+      },
+      width: 120,
+    },
+    {
+      name: "tradeTime",
+      label: "Trade time",
+      type: {
+        name: "date/time",
+        formatting: { pattern: { time: "hh:mm:ss a" } },
+      },
+      width: 120,
+    },
+    {
+      name: "execTime",
+      label: "Execution time",
+      type: {
+        name: "date/time",
+        formatting: { pattern: { date: "yyyy-mm-dd", time: "hh:mm:ss.ms" } },
+      },
+      width: 200,
+    },
+  ],
+  rowSeparators: true,
+};
+```
+
+Values are displayed in the user's local time zone. A value of `0` is shown as an empty cell.
+
+### Best practices
+
+- Show only what the user needs. If every value in a column falls on the same day, show the time only.
+- Use an unambiguous date pattern (`"dd MMM yyyy"` or `"yyyy-mm-dd"`) when users span regions, since `03/04/2026` means different dates in the UK and the US.
+- Use millisecond precision (`"hh:mm:ss.ms"`) only for execution or audit timestamps where ordering within a second matters.
+
+## Mapped values
+
+To display a label in place of a raw code, add a `map` to the `renderer`. Values that aren't in the map display as an empty cell, so make sure the map covers every value.
+
+<LivePreview>
+  <MappedValues />
+</LivePreview>
+
+```tsx
+const config: TableConfig = {
+  columns: [
+    { name: "ric", label: "RIC", width: 90 },
+    { name: "name", label: "Name", width: 170 },
+    {
+      name: "currency",
+      label: "Currency",
+      type: {
+        name: "string",
+        renderer: {
+          map: {
+            USD: "US Dollar",
+            GBP: "Pound Sterling",
+            EUR: "Euro",
+            CHF: "Swiss Franc",
+            JPY: "Japanese Yen",
+          },
+        },
+      },
+      width: 140,
+    },
+  ],
+  rowSeparators: true,
+};
+```
+
+## Cell renderers
+
+A cell renderer is a React component that renders the content of a cell. You register it by name with `registerComponent` from `@vuu-ui/vuu-utils`, and assign it to a column with `type.renderer.name`. Because the configuration only holds the name, it stays serializable and can be saved and restored like any other table configuration.
+
+### Built-in renderers
+
+| Renderer name                 | Package                    | Description                                                                                                                                           |
+| ----------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkbox-cell`               | `@vuu-ui/vuu-table`        | Applied automatically to `boolean` columns. Read-only unless the column is `editable`.                                                                |
+| `input-cell`                  | `@vuu-ui/vuu-table`        | Applied automatically to `editable` columns that don't have another renderer.                                                                         |
+| `toggle-cell`                 | `@vuu-ui/vuu-table`        | A button that cycles through a fixed list of values (`renderer: { name: "toggle-cell", values: [...] }`). Clicking it commits the next value.        |
+| `vuu.price-move-background`   | `@vuu-ui/vuu-table-extras` | Flashes when the value changes: green when it goes up, red when it goes down. Set `flashStyle` to `"bg-only"` (default), `"arrow-bg"` or `"arrow"`. |
+| `vuu.progress`                | `@vuu-ui/vuu-table-extras` | A progress bar for this value as a percentage of the value in `associatedField`.                                                                      |
+| `vuu.pct-progress`            | `@vuu-ui/vuu-table-extras` | A progress bar for a value between `0` and `1`.                                                                                                       |
+| `dropdown-cell`, `lookup-cell` | `@vuu-ui/vuu-table-extras` | Edit controls that let users pick a value from a list. See the editing examples in the showcase.                                                     |
+
+The `vuu-table-extras` renderers register themselves when the package is imported. Import it once at application startup:
+
+```ts
+import "@vuu-ui/vuu-table-extras";
+```
+
+### Progress
+
+<LivePreview>
+  <ProgressRenderers />
+</LivePreview>
+
+```tsx
+const config: TableConfig = {
+  columns: [
+    { name: "orderId", label: "Order", width: 90 },
+    { name: "ric", label: "RIC", width: 90 },
+    { name: "quantity", label: "Quantity" },
+    {
+      name: "filledQty",
+      label: "Filled",
+      type: {
+        name: "number",
+        renderer: { name: "vuu.progress", associatedField: "quantity" },
+      },
+      width: 140,
+    },
+    {
+      name: "pctComplete",
+      label: "Complete",
+      type: { name: "number", renderer: { name: "vuu.pct-progress" } },
+      width: 140,
+    },
+  ],
+  rowSeparators: true,
+};
+```
+
+### Flashing prices
+
+`vuu.price-move-background` is designed for real-time data. This example uses a `VuuDataSource` with simulated price updates. Watch the bid and ask columns.
+
+<LivePreview>
+  <FlashingPrices />
+</LivePreview>
+
+```tsx
+const priceType = (
+  flashStyle: "bg-only" | "arrow-bg" | "arrow",
+  decimals: number,
+) => ({
+  name: "number" as const,
+  formatting: { decimals, zeroPad: decimals > 0 },
+  renderer: { name: "vuu.price-move-background", flashStyle },
+});
+
+const priceColumns: ColumnDescriptor[] = [
+  { name: "ric", label: "RIC", serverDataType: "string", width: 90 },
+  { name: "bid", label: "Bid", serverDataType: "double", type: priceType("arrow-bg", 2) },
+  { name: "ask", label: "Ask", serverDataType: "double", type: priceType("arrow-bg", 2) },
+  { name: "bidSize", label: "Bid size", serverDataType: "double", type: priceType("bg-only", 0) },
+  { name: "askSize", label: "Ask size", serverDataType: "double", type: priceType("arrow", 0) },
+];
+
+export const FlashingPrices = () => {
+  const { VuuDataSource } = useData();
+  const config = useMemo<TableConfig>(
+    () => ({ columns: priceColumns, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useMemo(
+    () =>
+      new VuuDataSource({
+        columns: ["ric", "bid", "ask", "bidSize", "askSize"],
+        table: { module: "SIMUL", table: "prices" },
+      }),
+    [VuuDataSource],
+  );
+  return (
+    <Table config={config} dataSource={dataSource} height={300} width={520} />
+  );
+};
+```
+
+#### Best practices
+
+- Use flashing only for values where the direction of change matters to the user, such as prices and quotes. Flashing every column of a fast-ticking table is distracting, and hides the changes that matter.
+- `"arrow"` and `"arrow-bg"` show direction without relying on colour alone, which helps users with colour-vision deficiencies.
+
+### Custom cell renderers
+
+A cell renderer receives `TableCellRendererProps`:
+
+| Prop                          | Description                                                                                          |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `column`                      | The runtime column descriptor, including `name`, `type` and `valueFormatter`.                        |
+| `dataRow`                     | The row. Read values with `dataRow[columnName]`. `dataRow.key` is the row key.                       |
+| `onEdit`                      | For editable renderers, call this to report `"change"` and `"commit"` edits.                         |
+| `searchPattern`               | The table's current `searchPattern`, in lower case, if you want to support highlighting.             |
+| `editedDuringCurrentSession`  | `true` if the cell has been edited during the current edit session.                                  |
+
+This example registers a renderer that shows a coloured percentage with a direction arrow. The same column also uses a **header content renderer** (`colHeaderContentRenderer`) to add an information icon with a tooltip next to the label. Header renderers are registered with the `"column-header-content-renderer"` component type. To replace the label entirely, use `colHeaderLabelRenderer` instead.
+
+<LivePreview>
+  <CustomCellRenderer />
+</LivePreview>
+
+```tsx
+import type {
+  HeaderCellProps,
+  TableCellRendererProps,
+  TableConfig,
+} from "@vuu-ui/vuu-table-types";
+import { registerComponent } from "@vuu-ui/vuu-utils";
+
+const ChangeCell = ({ column, dataRow }: TableCellRendererProps) => {
+  const value = dataRow[column.name] as number;
+  const direction = value > 0 ? "up" : value < 0 ? "down" : "flat";
+  const arrow = direction === "up" ? "▲" : direction === "down" ? "▼" : "";
+  return (
+    <span className={`vuuDocsChangeCell vuuDocsChangeCell-${direction}`}>
+      <span aria-hidden>{arrow}</span>
+      {(value * 100).toFixed(2)}%
+    </span>
+  );
+};
+
+registerComponent("docs-change-cell", ChangeCell, "cell-renderer", {
+  serverDataType: "double",
+});
+
+const InfoHeader = ({ column }: Omit<HeaderCellProps, "id" | "index">) => (
+  <span
+    className="vuuDocsInfoHeader"
+    title={`${column.label} is the change since the previous close`}
+  >
+    ⓘ
+  </span>
+);
+
+registerComponent("docs-info-header", InfoHeader, "column-header-content-renderer");
+
+const config: TableConfig = {
+  columns: [
+    { name: "ric", label: "RIC", width: 90 },
+    { name: "name", label: "Name", width: 170 },
+    { name: "price", label: "Price", serverDataType: "double" },
+    {
+      name: "change",
+      label: "Change",
+      colHeaderContentRenderer: "docs-info-header",
+      serverDataType: "double",
+      type: { name: "number", renderer: { name: "docs-change-cell" } },
+      width: 110,
+    },
+  ],
+  rowSeparators: true,
+};
+```
+
+```css
+.vuuDocsChangeCell {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+  width: 100%;
+}
+.vuuDocsChangeCell-up {
+  color: var(--salt-sentiment-positive-foreground-informative);
+}
+.vuuDocsChangeCell-down {
+  color: var(--salt-sentiment-negative-foreground-informative);
+}
+```
+
+#### Best practices
+
+- Register renderers at module level, not inside a component. Registration is global and should happen once, before any table that uses the renderer is rendered.
+- Use a namespaced name (`myapp.change-cell`) to avoid collisions with built-in or third-party renderers.
+- Keep renderers cheap. A renderer runs for every visible cell and re-runs on every update to the row, which can happen many times a second with real-time data. Avoid effects and expensive computation, and consider wrapping the component in `React.memo`.
+- Use `column.valueFormatter(value)` if you want the column's `formatting` options to apply to the value your renderer shows.
+- Don't rely on colour alone to convey meaning. The example also uses an arrow and a sign.
+- The options passed to `registerComponent` (such as `serverDataType`, `label` and `description`) describe the renderer to configuration tools, such as the column settings panel. They don't restrict where you can use it in code.
+
+## Highlighting search matches
+
+Set `searchPattern` to highlight matching text in every cell. Matching is case-insensitive. `searchPattern` only highlights. It doesn't filter rows. To filter, set a filter on the data source (see [Sorting and grouping](./05-SortingAndGrouping.mdx)).
+
+<LivePreview stacked>
+  <SearchHighlighting />
+</LivePreview>
+
+```tsx
+export const SearchHighlighting = () => {
+  const [searchPattern, setSearchPattern] = useState("");
+  const config = useMemo<TableConfig>(
+    () => ({ columns: stockColumns.slice(0, 5), rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  return (
+    <>
+      <Input
+        inputProps={{ "aria-label": "Highlight text" }}
+        onChange={(e) => setSearchPattern(e.target.value)}
+        placeholder="Type to highlight, e.g. 'tech'"
+        value={searchPattern}
+      />
+      <Table
+        config={config}
+        dataSource={dataSource}
+        height={300}
+        searchPattern={searchPattern}
+        width={540}
+      />
+    </>
+  );
+};
+```
+
+Custom cell renderers don't highlight automatically. They receive `searchPattern` as a prop if you want to add highlighting.
+
+## Next steps
+
+- Highlight rows based on their data with [row class name generators](./07-Styling.mdx#row-class-names).
+- See all formatting and renderer types in the [API reference](./09-ApiReference.mdx).

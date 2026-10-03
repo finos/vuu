@@ -1,0 +1,272 @@
+# API reference
+
+This page lists the props of `Table` and the types used to configure it. For explanations and examples, follow the links to the topic pages.
+
+```tsx
+import { Table, type TableProps } from "@vuu-ui/vuu-table";
+import type {
+  ColumnDescriptor,
+  DataRow,
+  TableConfig,
+} from "@vuu-ui/vuu-table-types";
+import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
+```
+
+## Table props
+
+### Required
+
+| Prop         | Type          | Description                                                                                          |
+| ------------ | ------------- | ---------------------------------------------------------------------------------------------------- |
+| `config`     | `TableConfig` | Columns and display settings. See [TableConfig](#tableconfig).                                       |
+| `dataSource` | `DataSource`  | Supplies the rows. Any Vuu `DataSource`, for example `ArrayDataSource` or a remote `VuuDataSource`. |
+
+### Size and layout
+
+See [Layout](./06-Layout.mdx).
+
+| Prop                  | Type                 | Default        | Description                                                                                                                       |
+| --------------------- | -------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `height`              | `number \| string`   | fill parent    | Height of the Table. Without it, the Table fills its parent's height.                                                             |
+| `width`               | `number \| string`   | fill parent    | Width of the Table. Without it, the Table fills its parent's width.                                                               |
+| `viewportRowLimit`    | `number`             |                | Sets the height to show exactly this many rows.                                                                                   |
+| `maxViewportRowLimit` | `number`             |                | Like `viewportRowLimit`, but the Table shrinks when there are fewer rows.                                                         |
+| `rowHeight`           | `number`             | from CSS       | Height of data rows in pixels. Overrides the theme and density.                                                                   |
+| `colHeaderRowHeight`  | `number`             | from CSS       | Height of each header row in pixels.                                                                                              |
+| `renderBufferSize`    | `number`             | `0`            | Number of extra rows to render above and below the viewport.                                                                      |
+| `showColumnHeaders`   | `boolean`            | `true`         | Set to `false` to hide the column headers.                                                                                        |
+| `customHeader`        | `CustomHeader \| CustomHeader[]` |  | Components or elements rendered below the column headers. Components receive [`BaseRowProps`](#baserowprops).                    |
+| `EmptyDisplay`        | `ComponentType`      |                | Rendered in place of rows when the data source has no rows.                                                                       |
+| `className`, `style`, `id` |                 |                | Applied to the outer container.                                                                                                   |
+
+Don't set `height`, `rowHeight` and `viewportRowLimit` together.
+
+### Columns and headers
+
+See [Columns](./02-Columns.mdx).
+
+| Prop                    | Type                    | Default | Description                                                                                                     |
+| ----------------------- | ----------------------- | ------- | --------------------------------------------------------------------------------------------------------------- |
+| `allowDragColumnHeader` | `boolean`               | `true`  | Lets users drag column headers to reorder columns.                                                              |
+| `showColumnHeaderMenus` | `boolean \| ColumnMenuPermissions` | `true` | Shows a menu button on every column header. Pass [`ColumnMenuPermissions`](#columnmenupermissions) to choose which items it offers. |
+| `HeaderCell`            | `FC<HeaderCellProps>`   |         | Replaces the default header cell. Your component is then responsible for sorting, resizing and so on.           |
+| `onConfigChange`        | `TableConfigChangeHandler` |      | Called when the user changes the configuration, for example by resizing, moving or hiding a column. See [Handlers](#handlers). |
+
+### Selection
+
+See [Selection](./04-Selection.mdx).
+
+| Prop                      | Type                                | Default      | Description                                                                                                   |
+| ------------------------- | ----------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------- |
+| `selectionModel`          | `TableSelectionModel`               | `"extended"` | `"none"`, `"single"`, `"single-no-deselect"`, `"extended"`, `"checkbox"` or `"checkbox-disabled"`.            |
+| `allowSelectAll`          | `boolean`                           |              | With `"checkbox"`, shows a select-all checkbox in the header.                                                 |
+| `allowSelectCheckboxRow`  | `boolean`                           |              | With `"checkbox"`, clicking anywhere on the row toggles it, not just the checkbox.                            |
+| `isRowSelectable`         | `(dataRow: DataRow) => boolean`     |              | Rows for which this returns `false` can't be selected.                                                        |
+| `autoSelectFirstRow`      | `true`                              |              | Selects the first row when the Table loads.                                                                   |
+| `autoSelectRowKey`        | `string`                            |              | Selects the row with this key when the Table loads.                                                           |
+| `revealSelected`          | `boolean`                           |              | With grouped data, expands the groups that contain selected rows.                                             |
+| `rowSelectionBorder`      | `boolean`                           |              | Draws a border around each block of adjacent selected rows.                                                   |
+| `allowCellBlockSelection` | `boolean`                           |              | Lets users select a rectangular block of cells with the mouse or **Shift+Arrow** keys.                        |
+| `onSelect`                | `(dataRow: DataRow \| null) => void` |             | Called when the user selects a row, or with `null` when they deselect it.                                     |
+| `onSelectionChange`       | `SelectionChangeHandler`            |              | Called with the select request sent to the data source.                                                       |
+| `onSelectCellBlock`       | `(cellBlock: TableCellBlock) => void` |            | Called when the user finishes selecting a block of cells.                                                     |
+
+### Navigation and focus
+
+See [Accessibility](./08-Accessibility.mdx).
+
+| Prop               | Type                                    | Default  | Description                                                                         |
+| ------------------ | --------------------------------------- | -------- | ----------------------------------------------------------------------------------- |
+| `navigationStyle`  | `"cell" \| "row" \| "tree" \| "none"`   | `"cell"` | What the arrow keys move between.                                                   |
+| `disableFocus`     | `boolean`                               | `false`  | Removes the Table from the tab order.                                               |
+| `highlightedIndex` | `number`                                |          | Controls which row is highlighted. The value is an `aria-rowindex`.                 |
+| `onHighlight`      | `(idx: number) => void`                 |          | Called when the highlighted row changes.                                            |
+| `onRowClick`       | `TableRowClickHandler`                  |          | Called when the user clicks a row, or presses **Enter** or **Space** on it.         |
+
+### Grouping, search and actions
+
+| Prop                | Type                                | Default          | Description                                                                                                                              |
+| ------------------- | ----------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `groupToggleTarget` | `"group-column" \| "toggle-icon"`   | `"group-column"` | Where the user must click to expand or collapse a group. See [Grouping](./05-SortingAndGrouping.mdx#grouping).                         |
+| `searchPattern`     | `string`                            |                  | Highlights matching text in every cell. See [Highlighting search matches](./03-Formatting.mdx#highlighting-search-matches).              |
+| `rowActionHandlers` | `Record<string, RowActionHandler>`  |                  | Handlers that custom cell renderers can call through the table context, for example for a delete button in a row.                       |
+| `Row`               | `FC<RowProps>`                      |                  | Replaces the default row component.                                                                                                      |
+
+### Drag and drop
+
+| Prop            | Type                                                                              | Description                                    |
+| --------------- | --------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `allowDragDrop` | `boolean \| "drop-indicator" \| "natural-movement" \| "drag-copy" \| "drop-only"` | Lets users drag rows, using the given strategy. |
+| `onDragStart`   | `DragStartHandler`                                                                | Called when a row drag starts.                 |
+| `onDrop`        | `(dragDropState: DragDropState) => void`                                          | Called when a dragged row is dropped.          |
+
+### Experimental
+
+These props exist but don't work reliably yet. Avoid them in production code.
+
+| Prop                     | Type                       | Status                                                                                                          |
+| ------------------------ | -------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `showPaginationControls` | `boolean`                  | Shows page controls instead of scroll bars. With `ArrayDataSource` the page controls change but the rows don't. |
+| `scrollingApiRef`        | `Ref<ScrollingAPI>`        | `scrollToIndex` uses a fixed row height and offset, and `scrollToKey` is not implemented.                       |
+| `allowColumnResizing`    | `boolean`                  | Declared but not used. Use `resizeable: false` on individual columns instead.                                   |
+| `allowColumnRemoval`     | `boolean`                  | Declared but not used.                                                                                          |
+
+## TableConfig
+
+`TableConfig` is a plain, serializable object. Save it, for example from `onConfigChange`, to restore the user's layout later.
+
+| Property                 | Type                                 | Default      | Description                                                                                                                     |
+| ------------------------ | ------------------------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `columns`                | `ColumnDescriptor[]`                 | required     | The columns to show, in order. See [ColumnDescriptor](#columndescriptor).                                                       |
+| `columnLayout`           | `"static" \| "fit" \| "manual"`      | `"static"`   | How column widths respond to the Table width. See [Column layout](./02-Columns.mdx#column-layout-static-and-fit).               |
+| `columnDefaultWidth`     | `number`                             | `100`        | Width of columns that don't set `width`.                                                                                        |
+| `columnFormatHeader`     | `"capitalize" \| "uppercase"`        |              | Transforms every column label.                                                                                                  |
+| `zebraStripes`           | `boolean`                            | `false`      | Gives alternate rows a different background.                                                                                    |
+| `rowSeparators`          | `boolean`                            | `false`      | Draws lines between rows.                                                                                                       |
+| `columnSeparators`       | `boolean`                            | `false`      | Draws lines between columns.                                                                                                    |
+| `rowClassNameGenerators` | `string[]`                           |              | IDs of registered functions that return class names for each row. See [Row class names](./07-Styling.mdx#row-class-names).      |
+| `checkboxColumnWidth`    | `number`                             | `25`         | Width of the checkbox column used by `selectionModel="checkbox"`.                                                               |
+| `selectionBookendWidth`  | `number`                             | `4`          | Width of the colored bar at the left edge of selected rows.                                                                     |
+
+## ColumnDescriptor
+
+### Identity and layout
+
+| Property   | Type                     | Default             | Description                                                                                             |
+| ---------- | ------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------- |
+| `name`     | `string`                 | required            | The data source column to show.                                                                         |
+| `label`    | `string`                 | `name`              | Text shown in the column header.                                                                        |
+| `width`    | `number`                 | `columnDefaultWidth` | Width in pixels.                                                                                       |
+| `minWidth` | `number`                 | `50`                | Minimum width when `columnLayout` is `"fit"`.                                                           |
+| `maxWidth` | `number`                 | `250`               | Maximum width when `columnLayout` is `"fit"`.                                                           |
+| `flex`     | `number`                 |                     | With `columnLayout="fit"`, this column absorbs extra width first, in proportion to its `flex` value.   |
+| `align`    | `"left" \| "right"`      | by type             | Text alignment. Numeric columns are right aligned by default.                                           |
+| `hidden`   | `boolean`                | `false`             | Hides the column but keeps it in the configuration.                                                     |
+| `pin`      | `"left" \| "right" \| false` |                 | Keeps the column visible at the left or right edge when the Table scrolls horizontally.                 |
+| `heading`  | `string[]`               |                     | Extra header rows above the label. Adjacent columns with the same heading share one header cell.        |
+| `className`| `string`                 |                     | Class name added to the column header and every cell in the column.                                     |
+| `source`   | `"server" \| "client"`   | `"server"`          | `"client"` columns don't exist in the data source. Use them with a custom renderer, for example for buttons. |
+
+### Data type and rendering
+
+See [Formatting and renderers](./03-Formatting.mdx).
+
+| Property         | Type                                  | Description                                                                                                                                       |
+| ---------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `serverDataType` | `VuuColumnDataType`                   | The type of the data: `"string"`, `"char"`, `"int"`, `"long"`, `"double"`, `"boolean"`, `"epochtimestamp"` and others.                           |
+| `type`           | `DataValueTypeSimple \| DataValueTypeDescriptor` | How to display the value. A simple type, such as `"number"`, `"boolean"`, `"date/time"` or `"time"`, or an object with `name`, `formatting` and `renderer`. |
+| `type.formatting`| `ColumnTypeFormatting`                | Number and date formatting. See [ColumnTypeFormatting](#columntypeformatting).                                                                   |
+| `type.renderer`  | `ColumnTypeRendering \| MappedValueTypeRenderer \| ...` | A cell renderer, or a `map` of raw values to display values. See [ColumnTypeRendering](#columntyperendering).                       |
+| `colHeaderLabelRenderer`, `colHeaderContentRenderer` | `string` | IDs of registered components that render the header label, or extra content in the header.                                       |
+| `getIcon`        | `(row: DataRow) => string \| undefined` | When the data is grouped by this column, returns an icon name to show next to the group label.                                                |
+| `exportFormatter`| `(value: unknown) => string`          | Formats the value when the data is exported as CSV.                                                                                              |
+
+### Behavior
+
+| Property                | Type                                         | Default | Description                                                                         |
+| ----------------------- | -------------------------------------------- | ------- | ----------------------------------------------------------------------------------- |
+| `sortable`              | `boolean`                                    | `true`  | Set to `false` so that clicking the header doesn't sort.                            |
+| `resizeable`            | `boolean`                                    | `true`  | Set to `false` to remove the resize handle.                                         |
+| `groupable`             | `boolean`                                    | `true`  | Set to `false` so users can't group by this column.                                 |
+| `allowColumnHeaderMenu` | `false`                                      |         | Removes the menu button from this column header.                                    |
+| `selected`              | `boolean`                                    |         | Shows the column in a selected style. This is visual only.                          |
+| `editable`              | `boolean \| { insert: boolean; update: boolean }` |    | Lets users edit values in this column. See the editing examples in the showcase.    |
+
+`aggregate`, `locked` and `removeable` are declared on `ColumnDescriptor` but have no effect yet. Set aggregations on the data source instead (see [DataSource configuration](#datasource-configuration)).
+
+## ColumnTypeFormatting
+
+| Property          | Type                     | Default   | Description                                                                         |
+| ----------------- | ------------------------ | --------- | ----------------------------------------------------------------------------------- |
+| `decimals`        | `number`                 | `4`       | Maximum number of decimal places.                                                   |
+| `zeroPad`         | `boolean`                | `false`   | Pads with trailing zeros to exactly `decimals` places.                              |
+| `alignOnDecimals` | `boolean`                | `false`   | Pads with invisible spaces so that decimal points line up.                          |
+| `roundingRule`    | `"round" \| "truncate"`  | `"round"` | How extra decimal places are removed.                                               |
+| `useLocaleString` | `boolean`                | `true`    | Adds the locale's thousands separator.                                              |
+| `pattern`         | `{ date?: DatePattern; time?: TimePattern }` |  | Date and time format for `"date/time"` columns. See [Date and time formatting](./03-Formatting.mdx#date-and-time-formatting). |
+
+## ColumnTypeRendering
+
+| Property          | Type                                        | Description                                                                                              |
+| ----------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `name`            | `string`                                    | ID of a registered cell renderer, for example `"vuu.price-move-background"`. See [Built-in renderers](./03-Formatting.mdx#built-in-renderers). |
+| `associatedField` | `string`                                    | Another column the renderer reads, for example the maximum value for `"vuu.progress"`.                   |
+| `flashStyle`      | `"bg-only" \| "arrow-bg" \| "arrow"`        | Animation style for `"vuu.price-move-background"`.                                                       |
+| `componentProps`  | `Record<string, string \| number \| boolean>` | Extra props passed to the renderer component.                                                          |
+
+To display mapped values instead of a renderer, use `renderer: { map: { [rawValue]: displayValue } }`. See [Mapped values](./03-Formatting.mdx#mapped-values).
+
+## ColumnMenuPermissions
+
+Pass this to `showColumnHeaderMenus` to choose the menu items. See [Column header menus](./02-Columns.mdx#column-header-menus).
+
+| Property           | Type      | Menu items                                    |
+| ------------------ | --------- | --------------------------------------------- |
+| `allowSort`        | `boolean` | Sort ascending, descending, add to multi-sort |
+| `allowGroup`       | `boolean` | Group by this column                          |
+| `allowAggregation` | `boolean` | Aggregations, when grouped                    |
+| `allowHide`        | `boolean` | Hide column                                   |
+| `allowRemove`      | `boolean` | Remove column                                 |
+| `allowPin`         | `boolean` | Pin left, pin right, unpin                    |
+
+## DataRow
+
+Event handlers and cell renderers receive rows as `DataRow` objects. Read column values by name, for example `dataRow.price`.
+
+| Property      | Type      | Description                                           |
+| ------------- | --------- | ----------------------------------------------------- |
+| `key`         | `string`  | The row key, from the data source's key column.       |
+| `index`       | `number`  | Position of the row in the data source.               |
+| `isSelected`  | `boolean` | Whether the row is selected.                          |
+| `depth`       | `number`  | Group level. `0` for ungrouped rows.                  |
+| `isLeaf`      | `boolean` | `false` for group rows.                               |
+| `isExpanded`  | `boolean` | For group rows, whether the group is expanded.        |
+| `childCount`  | `number`  | For group rows, the number of child rows.             |
+| _column name_ | value     | The value of each column, such as `dataRow.price`.    |
+
+## Handlers
+
+| Type                       | Signature                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| `TableRowClickHandler`     | `(evt: MouseEvent, row: DataRow) => void`                                       |
+| `TableRowSelectHandler`    | `(dataRow: DataRow \| null) => void`                                             |
+| `SelectionChangeHandler`   | `(selectionChange: SelectionChange) => void`. `selectionChange.type` is `"SELECT_ROW"`, `"DESELECT_ROW"`, `"SELECT_ROW_RANGE"`, `"SELECT_ALL"` or `"DESELECT_ALL"`. |
+| `TableConfigChangeHandler` | `(config: TableConfig, changeType: TableConfigChangeType) => void`. `changeType.type` is `"column-added"`, `"column-removed"`, `"column-moved"`, `"column-resized"`, `"column-pinned"`, `"columns-hidden"`, `"calculated-column-added"` or `"settings-panel"`. |
+| `RowActionHandler`         | `(rowActionId: string, dataRow: DataRow) => void`                               |
+| `TableCellBlock`           | `{ columnRange: VuuRange; rowRange: VuuRange }`                                 |
+
+## BaseRowProps
+
+Props passed to [custom header](./06-Layout.mdx#custom-header-rows) components.
+
+| Property         | Type                        | Description                                                                         |
+| ---------------- | --------------------------- | ----------------------------------------------------------------------------------- |
+| `columns`        | `RuntimeColumnDescriptor[]` | The rendered columns, with their computed `width`.                                  |
+| `virtualColSpan` | `number`                    | Width of the columns to the left that aren't rendered (horizontal virtualization).  |
+| `ariaRole`       | `string`                    | Role to put on your row element.                                                    |
+| `ariaRowIndex`   | `number`                    | `aria-rowindex` to put on your row element.                                         |
+
+## DataSource configuration
+
+Sorting, filtering, grouping and aggregation are properties of the data source, not of the Table. Set them in the constructor or assign them later. See [Sorting, filtering and grouping](./05-SortingAndGrouping.mdx).
+
+| Property       | Type                                             | Example                                                       |
+| -------------- | ------------------------------------------------ | ------------------------------------------------------------- |
+| `sort`         | `{ sortDefs: { column: string; sortType: "A" \| "D" }[] }` | `{ sortDefs: [{ column: "price", sortType: "D" }] }` |
+| `filter`       | `{ filter: string }`                             | `{ filter: 'exchange = "LSE" and price > 100' }`              |
+| `groupBy`      | `string[]`                                       | `["sector", "exchange"]`                                      |
+| `aggregations` | `{ column: string; aggType: number }[]`          | `[{ column: "volume", aggType: 1 }]` (1 = sum)                |
+
+In the `ArrayDataSource` constructor, the initial filter is called `filterSpec`, not `filter`. Aggregations passed to the `ArrayDataSource` constructor are not calculated, so assign `dataSource.aggregations` after construction. `ArrayDataSource` currently applies only the last aggregation in the list.
+
+Other `ArrayDataSource` constructor options:
+
+| Option              | Type                 | Description                                                     |
+| ------------------- | -------------------- | --------------------------------------------------------------- |
+| `columnDescriptors` | `ColumnDescriptor[]` | The columns in the data, with `name` and `serverDataType`.      |
+| `data`              | `unknown[][]`        | The rows, as arrays of values in column order.                  |
+| `keyColumn`         | `string`             | Column whose values identify each row. Defaults to the first.   |
+
+## CSS
+
+See [Styling](./07-Styling.mdx) for the CSS custom properties and class names you can use to style the Table.
