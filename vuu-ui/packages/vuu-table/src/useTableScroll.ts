@@ -63,6 +63,9 @@ export type ScrollRequest =
 export type ScrollRequestHandler = (request: ScrollRequest) => void;
 
 export interface ScrollingAPI {
+  /**
+   * Scroll the row at the given (zero based) index into view.
+   */
   scrollToIndex: (itemIndex: number) => void;
   scrollToKey: (rowKey: string) => void;
 }
@@ -106,6 +109,73 @@ const getPctScroll = (container: HTMLElement) => {
     pctScrollTop,
     maxScrollTop,
   ];
+};
+
+/**
+ * Positions closer than this are considered in sync. When browser is zoomed,
+ * scroll positions snap to device pixels, so are often fractional.
+ */
+const SCROLL_SYNC_TOLERANCE = 1;
+
+const getProportionalScrollPosition = (
+  sourcePos: number,
+  sourceMax: number,
+  targetMax: number,
+) => (sourceMax > 0 ? (sourcePos / sourceMax) * targetMax : 0);
+
+type ScrollCoordinates = { left: number; top: number };
+
+/**
+ * Scroll target to the same proportional position as source, unless already
+ * there. Comparing positions, rather than tracking which container initiated a
+ * scroll, means we are not thrown out of sync by scroll events the browser
+ * itself fires (e.g. on zoom). Returns the position target was scrolled to, if
+ * any, so the resulting scroll event on target can be recognised as an echo.
+ */
+const syncScrollPosition = (
+  source: HTMLElement,
+  target: HTMLElement,
+): ScrollCoordinates | undefined => {
+  const [sourceMaxLeft, sourceMaxTop] = getMaxScroll(source);
+  const [targetMaxLeft, targetMaxTop] = getMaxScroll(target);
+  const left = Math.round(
+    getProportionalScrollPosition(
+      source.scrollLeft,
+      sourceMaxLeft,
+      targetMaxLeft,
+    ),
+  );
+  const top = getProportionalScrollPosition(
+    source.scrollTop,
+    sourceMaxTop,
+    targetMaxTop,
+  );
+  if (
+    Math.abs(target.scrollLeft - left) >= SCROLL_SYNC_TOLERANCE ||
+    Math.abs(target.scrollTop - top) >= SCROLL_SYNC_TOLERANCE
+  ) {
+    target.scrollTo({ left, top, behavior: "auto" });
+    return { left, top };
+  }
+};
+
+/**
+ * A scroll event on a container we have just scrolled programmatically must not
+ * be synced back to the other container. Some browsers (e.g. WebKit) animate a
+ * mouse wheel scroll, so by the time the echo event arrives, the source may have
+ * scrolled further. Syncing back would cancel the animation.
+ */
+const isEchoScroll = (
+  el: HTMLElement,
+  expectedPosRef: { current: ScrollCoordinates | undefined },
+) => {
+  const { current: expectedPos } = expectedPosRef;
+  expectedPosRef.current = undefined;
+  return (
+    expectedPos !== undefined &&
+    Math.abs(el.scrollLeft - expectedPos.left) < SCROLL_SYNC_TOLERANCE &&
+    Math.abs(el.scrollTop - expectedPos.top) < SCROLL_SYNC_TOLERANCE
+  );
 };
 
 export const noScrolling: ScrollingAPI = {
@@ -158,6 +228,10 @@ export interface TableScrollHookProps {
    */
   onVerticalScrollInSitu?: (rowIndexOffsetCount: number) => void;
   rowHeight: number;
+  /**
+   * Total number of rows in the dataset
+   */
+  rowCount: number;
   scrollingApiRef?: ForwardedRef<ScrollingAPI>;
   setRange: (range: VuuRange) => void;
   showPaginationControls?: boolean;
@@ -172,19 +246,14 @@ export const useTableScroll = ({
   onVerticalScroll,
   onVerticalScrollInSitu,
   rowHeight,
+  rowCount,
   scrollingApiRef,
   setRange,
   viewportMeasurements,
 }: TableScrollHookProps) => {
   const firstRowRef = useRef<number>(0);
   const rowHeightRef = useRef(rowHeight);
-  const contentContainerScrolledRef = useRef(false);
   const contentContainerPosRef = useRef<ScrollPos>({
-    scrollTop: 0,
-    scrollLeft: 0,
-  });
-  const scrollbarContainerScrolledRef = useRef(false);
-  const scrollbarContainerPosRef = useRef<ScrollPos>({
     scrollTop: 0,
     scrollLeft: 0,
   });
@@ -194,6 +263,7 @@ export const useTableScroll = ({
 
   const {
     appliedPageSize,
+    contentHeight,
     isVirtualScroll,
     rowCount: viewportRowCount,
     totalHeaderHeight,
@@ -296,101 +366,56 @@ export const useTableScroll = ({
   // we may drop scroll events. Make sure we get the final resting position right
   // by remeasuring after a short delay.
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
+  // positions we have programmatically scrolled each container to
+  const expectedContentPosRef = useRef<ScrollCoordinates>(undefined);
+  const expectedScrollbarPosRef = useRef<ScrollCoordinates>(undefined);
+
   const checkScrollbarScrollPosition = useCallback(() => {
-    const { current: scrollPos } = scrollbarContainerPosRef;
     const { current: contentContainer } = contentContainerRef;
-
     const { current: scrollbarContainer } = scrollbarContainerRef;
-
     if (scrollbarContainer && contentContainer) {
-      const [scrollLeft, pctScrollLeft, , scrollTop, pctScrollTop] =
-        getPctScroll(scrollbarContainer);
-
-      if (
-        scrollLeft !== scrollPos.scrollLeft ||
-        scrollTop !== scrollPos.scrollTop
-      ) {
-        scrollbarContainerScrolledRef.current = true;
-
-        scrollPos.scrollLeft = scrollLeft;
-        scrollPos.scrollTop = scrollTop;
-
-        const [maxScrollLeft, maxScrollTop] = getMaxScroll(contentContainer);
-        const contentScrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
-        const contentScrollTop = pctScrollTop * maxScrollTop;
-
-        contentContainer.scrollTo({
-          left: contentScrollLeft,
-          top: contentScrollTop,
-          behavior: "auto",
-        });
-      }
-
-      scrollTimerRef.current = null;
+      expectedContentPosRef.current = syncScrollPosition(
+        scrollbarContainer,
+        contentContainer,
+      );
     }
+    scrollTimerRef.current = null;
   }, []);
 
   const handleScrollbarContainerScroll = useCallback(() => {
     const { current: contentContainer } = contentContainerRef;
     const { current: scrollbarContainer } = scrollbarContainerRef;
-    const { current: contentContainerScrolled } = contentContainerScrolledRef;
-    const { current: scrollPos } = scrollbarContainerPosRef;
 
-    if (contentContainerScrolled) {
-      contentContainerScrolledRef.current = false;
-    } else if (contentContainer && scrollbarContainer) {
-      scrollbarContainerScrolledRef.current = true;
-      const [scrollLeft, pctScrollLeft, , scrollTop, pctScrollTop] =
-        getPctScroll(scrollbarContainer);
-
-      scrollPos.scrollLeft = scrollLeft;
-      scrollPos.scrollTop = scrollTop;
-
-      const [maxScrollLeft, maxScrollTop] = getMaxScroll(scrollbarContainer);
-      const contentScrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
-      const contentScrollTop = pctScrollTop * maxScrollTop;
-
-      contentContainer.scrollTo({
-        left: contentScrollLeft,
-        top: contentScrollTop,
-        behavior: "auto",
-      });
+    if (contentContainer && scrollbarContainer) {
+      if (!isEchoScroll(scrollbarContainer, expectedScrollbarPosRef)) {
+        expectedContentPosRef.current = syncScrollPosition(
+          scrollbarContainer,
+          contentContainer,
+        );
+        if (scrollTimerRef.current) {
+          clearTimeout(scrollTimerRef.current);
+        }
+        scrollTimerRef.current = setTimeout(checkScrollbarScrollPosition, 60);
+      }
     }
-
-    if (scrollTimerRef.current) {
-      clearTimeout(scrollTimerRef.current);
-    }
-    scrollTimerRef.current = setTimeout(checkScrollbarScrollPosition, 60);
 
     onVerticalScrollInSitu?.(0);
   }, [checkScrollbarScrollPosition, onVerticalScrollInSitu]);
 
   const handleContentContainerScroll = useCallback(() => {
-    const { current: scrollbarContainerScrolled } =
-      scrollbarContainerScrolledRef;
     const { current: contentContainer } = contentContainerRef;
     const { current: scrollbarContainer } = scrollbarContainerRef;
     const { current: scrollPos } = contentContainerPosRef;
 
     if (contentContainer && scrollbarContainer) {
-      const [
-        scrollLeft,
-        pctScrollLeft,
-        maxScrollLeft,
-        scrollTop,
-        pctScrollTop,
-        maxScrollTop,
-      ] = getPctScroll(contentContainer);
+      const [scrollLeft, , , scrollTop, pctScrollTop] =
+        getPctScroll(contentContainer);
 
-      contentContainerScrolledRef.current = true;
-
-      if (scrollbarContainerScrolled) {
-        scrollbarContainerScrolledRef.current = false;
-      } else {
-        scrollbarContainer.scrollLeft = Math.round(
-          pctScrollLeft * maxScrollLeft,
+      if (!isEchoScroll(contentContainer, expectedContentPosRef)) {
+        expectedScrollbarPosRef.current = syncScrollPosition(
+          contentContainer,
+          scrollbarContainer,
         );
-        scrollbarContainer.scrollTop = pctScrollTop * maxScrollTop;
       }
 
       if (scrollPos.scrollTop !== scrollTop) {
@@ -456,7 +481,38 @@ export const useTableScroll = ({
       if (contentContainer) {
         const [maxScrollLeft, maxScrollTop] = getMaxScroll(contentContainer);
         const { scrollLeft, scrollTop } = contentContainer;
-        contentContainerScrolledRef.current = false;
+
+        /**
+         * With a virtualised scroll, keyboard navigation shifts the rendered rows
+         * within the viewport without moving the scroll position. Once we reach
+         * the first or last page, we scroll to top or end instead, so rows are
+         * correctly aligned and the in situ offset is reset.
+         */
+        const scrollInSitu = (offset: number) => {
+          const firstRow = firstRowRef.current + offset;
+          const maxFirstRow = Math.max(0, rowCount - viewportRowCount);
+          if (firstRow <= 0 || firstRow >= maxFirstRow) {
+            const top = firstRow <= 0 ? 0 : maxScrollTop;
+            if (Math.abs(scrollTop - top) < SCROLL_SYNC_TOLERANCE) {
+              // no scroll event will fire, reset rows for current position
+              handleVerticalScroll(
+                scrollTop,
+                maxScrollTop > 0 ? scrollTop / maxScrollTop : 0,
+              );
+            } else {
+              contentContainer.scrollTo({
+                top,
+                left: scrollLeft,
+                behavior: "instant",
+              });
+            }
+          } else {
+            onVerticalScrollInSitu?.(offset);
+            firstRowRef.current = firstRow;
+            setRange({ from: firstRow, to: firstRow + viewportRowCount });
+          }
+        };
+
         switch (scrollRequest.type) {
           case "scroll-top":
             {
@@ -502,14 +558,7 @@ export const useTableScroll = ({
                 );
                 if (direction && distance) {
                   if (isVirtualScroll) {
-                    const offset = direction === "down" ? 1 : -1;
-                    onVerticalScrollInSitu?.(offset);
-                    const firstRow = firstRowRef.current + offset;
-                    firstRowRef.current = firstRow;
-                    setRange({
-                      from: firstRow,
-                      to: firstRow + viewportRowCount,
-                    });
+                    scrollInSitu(direction === "down" ? 1 : -1);
                   } else {
                     let newScrollLeft = scrollLeft;
                     let newScrollTop = scrollTop;
@@ -539,12 +588,9 @@ export const useTableScroll = ({
             {
               const { direction } = scrollRequest;
               if (isVirtualScroll) {
-                const offset =
-                  direction === "down" ? viewportRowCount : -viewportRowCount;
-                onVerticalScrollInSitu?.(offset);
-                const firstRow = firstRowRef.current + offset;
-                firstRowRef.current = firstRow;
-                setRange({ from: firstRow, to: firstRow + viewportRowCount });
+                scrollInSitu(
+                  direction === "down" ? viewportRowCount : -viewportRowCount,
+                );
               } else {
                 const scrollBy =
                   direction === "down" ? appliedPageSize : -appliedPageSize;
@@ -579,8 +625,10 @@ export const useTableScroll = ({
     },
     [
       appliedPageSize,
+      handleVerticalScroll,
       isVirtualScroll,
       onVerticalScrollInSitu,
+      rowCount,
       rowHeight,
       setRange,
       totalHeaderHeight,
@@ -590,20 +638,50 @@ export const useTableScroll = ({
   );
 
   const scrollHandles: ScrollingAPI = useMemo(
-    // TODO not complete yet
     () => ({
+      /**
+       * If row is not fully within the viewport, scroll so that it is the
+       * first row in the viewport (or as near as possible, for the last rows).
+       */
       scrollToIndex: (rowIndex: number) => {
-        if (scrollbarContainerRef.current) {
-          // TODO hardcoded rowHeight
-          const scrollPos = (rowIndex - 30) * 20;
-          scrollbarContainerRef.current.scrollTop = scrollPos;
+        const { current: contentContainer } = contentContainerRef;
+        const { current: firstVisibleRow } = firstRowRef;
+        // The last row in viewport may be partially visible
+        const fullyVisibleRowCount = Math.max(1, viewportRowCount - 1);
+        if (
+          contentContainer === null ||
+          (rowIndex >= firstVisibleRow &&
+            rowIndex < firstVisibleRow + fullyVisibleRowCount)
+        ) {
+          return;
         }
+        const firstRow = Math.min(
+          Math.max(0, rowIndex),
+          Math.max(0, rowCount - viewportRowCount),
+        );
+        const [, maxScrollTop] = getMaxScroll(contentContainer);
+        // When scrolling is virtualised, the first row at a given scroll position
+        // is offset by a proportion of the virtualised extent (see
+        // virtualRowPositioning), so we invert that calculation here.
+        const virtualisedExtent = isVirtualScroll
+          ? rowCount * rowHeight - contentHeight
+          : 0;
+        const scrollTop =
+          maxScrollTop > 0
+            ? (firstRow * rowHeight * maxScrollTop) /
+              (maxScrollTop + virtualisedExtent)
+            : 0;
+        contentContainer.scrollTo({
+          top: Math.min(scrollTop, maxScrollTop),
+          left: contentContainer.scrollLeft,
+          behavior: "instant",
+        });
       },
       scrollToKey: (rowKey: string) => {
         console.log(`scrollToKey ${rowKey}`);
       },
     }),
-    [],
+    [contentHeight, isVirtualScroll, rowCount, rowHeight, viewportRowCount],
   );
 
   useImperativeHandle(scrollingApiRef, () => {

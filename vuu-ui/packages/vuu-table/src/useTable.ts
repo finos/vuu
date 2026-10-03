@@ -340,6 +340,7 @@ export const useTable = ({
     cellFocusStateRef,
     columns,
     getRowAtPosition,
+    rowCount,
     rowHeight,
     scrollingApiRef,
     setRange,
@@ -641,6 +642,7 @@ export const useTable = ({
 
   const {
     focusCell,
+    focusCellWhenRendered,
     focusCellPlaceholderKeyDown,
     focusCellPlaceholderRef,
     setTableBodyRef: tableBodyRef,
@@ -668,6 +670,7 @@ export const useTable = ({
     disableFocus,
     editSessionInProgress: editSession?.inEditMode,
     focusCell,
+    focusCellWhenRendered,
     headerCount: headerState.count,
     highlightedIndex: highlightedIndexProp,
     navigationStyle,

@@ -14,6 +14,7 @@ import {
   virtualRowPositioning,
 } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useRef } from "react";
+import { useMaxScrollHeight } from "./useMaxScrollHeight";
 
 export interface TableViewportHookProps {
   columns: RuntimeColumnDescriptor[];
@@ -51,9 +52,6 @@ export interface TableViewportHookResult extends ViewportMeasurements {
   setScrollTop: (scrollTop: number, scrollPct: number) => void;
 }
 
-// This is just below the actual max pixel height on chrome/edge and safari
-const MAX_PIXEL_HEIGHT = 33_000_000;
-
 const UNMEASURED_VIEWPORT: TableViewportHookResult = {
   appliedPageSize: 0,
   contentHeight: 0,
@@ -78,6 +76,7 @@ const getViewportHeightProps = (
   rowCount: number,
   rowHeight: number,
   size: MeasuredSize,
+  maxScrollHeight: number,
   showPaginationControls = false,
 ) => {
   if (showPaginationControls) {
@@ -88,7 +87,7 @@ const getViewportHeightProps = (
     };
   } else {
     const virtualContentHeight = rowCount * rowHeight;
-    const pixelContentHeight = Math.min(virtualContentHeight, MAX_PIXEL_HEIGHT);
+    const pixelContentHeight = Math.min(virtualContentHeight, maxScrollHeight);
     const virtualisedExtent = virtualContentHeight - pixelContentHeight;
     return {
       pixelContentHeight,
@@ -109,9 +108,16 @@ export const useTableViewport = ({
 }: TableViewportHookProps): TableViewportHookResult => {
   const inSituRowOffsetRef = useRef(0);
   const pctScrollTopRef = useRef(0);
+  const maxScrollHeight = useMaxScrollHeight();
 
   const { virtualContentHeight, pixelContentHeight, virtualisedExtent } =
-    getViewportHeightProps(rowCount, rowHeight, size, showPaginationControls);
+    getViewportHeightProps(
+      rowCount,
+      rowHeight,
+      size,
+      maxScrollHeight,
+      showPaginationControls,
+    );
 
   const { pinnedWidthLeft, pinnedWidthRight, unpinnedWidth } = useMemo(
     () => measurePinnedColumns(columns, selectionEndSize),
@@ -140,16 +146,14 @@ export const useTableViewport = ({
    * The inSituRowOffset is used to simulate scrolling through a very large dataset
    * without actually moving the scroll position. It is triggered by keyboard
    * navigation. A simulated scroll operation will always be of one or more rows.
-   * A value of zero is a request to reset the offset.
+   * A value of zero is a request to reset the offset. The offset may be
+   * negative, e.g when paging up from the end of the dataset.
    */
   const setInSituRowOffset = useCallback((rowIndexOffset: number) => {
     if (rowIndexOffset === 0) {
       inSituRowOffsetRef.current = 0;
     } else {
-      inSituRowOffsetRef.current = Math.max(
-        0,
-        inSituRowOffsetRef.current + rowIndexOffset,
-      );
+      inSituRowOffsetRef.current += rowIndexOffset;
     }
   }, []);
 
