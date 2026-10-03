@@ -46,3 +46,7 @@ vuu-ui/packages/vuu-data-remote/src/inlined-worker.js
 #JFR
 *.jfr
 .profileconfig.json
+
+#Google Antigravity CLI
+agy.md
+.agyignore
