@@ -150,13 +150,13 @@
   box-sizing: border-box;
   display: inline-flex;
   font-family: var(--salt-text-action-fontFamily);
-  font-size: var(--salt-text-action-fontSize);
+  font-size: var(--salt-text-fontSize);
   font-weight: var(--salt-text-action-fontWeight);
   gap: var(--salt-spacing-100);
   height: var(--salt-size-base);
   justify-content: center;
   letter-spacing: var(--salt-text-action-letterSpacing);
-  line-height: var(--salt-text-action-lineHeight);
+  line-height: var(--salt-text-lineHeight);
   padding: 0 var(--salt-spacing-100);
   text-decoration: none;
   text-transform: var(--salt-text-action-textTransform);

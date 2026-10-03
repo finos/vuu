@@ -43,6 +43,7 @@ import { GroupsPage } from "./pages/groups/GroupsPage";
 import { OverviewPage } from "./pages/overview/OverviewPage";
 import { RolesPage } from "./pages/roles/RolesPage";
 import { UsersPage } from "./pages/users/UsersPage";
+import "./themeFallbacks.css";
 import "./UserAdmin.css";
 
 export const SEARCH_PARAM = "search";

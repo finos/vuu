@@ -81,7 +81,7 @@
   overflow-y: auto;
 }
 
-.vuuIdentityAdmin a:not(.saltVerticalNavigationItemTrigger, .saltLink) {
+.vuuIdentityAdmin a:not(.saltVerticalNavigationItemTrigger, .saltLink, .vuuAdminUi-buttonLink) {
   color: var(--salt-content-accent-foreground);
   text-underline-offset: 4px;
 }
@@ -337,7 +337,7 @@
   padding: var(--salt-spacing-300);
 }
 .vuuIdentityAdmin [role="alert"] {
-  color: var(--salt-status-error-foreground);
+  color: var(--salt-status-error-foreground-informative);
   overflow-wrap: anywhere;
 }
 .vuuIdentityAdmin .saltBanner[role="alert"] {
