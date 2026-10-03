@@ -1,11 +1,16 @@
-import { FormattingSettingsProps } from "@vuu-ui/vuu-table-types";
+import type {
+  FormattingSettingsProps,
+  FractionalSecondDigits,
+} from "@vuu-ui/vuu-table-types";
 import {
   DatePattern,
   DateTimePattern,
   TimePattern,
   dateTimeLabelByType,
+  dateTimePattern,
   defaultPatternsByType,
   fallbackDateTimePattern,
+  getTemporalInfo,
   getTypeFormattingFromColumn,
   isDatePattern,
   isTimePattern,
@@ -22,6 +27,27 @@ import {
 import React, { SyntheticEvent, useCallback, useMemo, useState } from "react";
 
 const toggleValues = ["date", "time", "both"] as const;
+
+const DEFAULT = "default";
+const fractionalSecondDigitOptions = [DEFAULT, "0", "3", "6", "9"] as const;
+const timeZoneOptions = [
+  DEFAULT,
+  "local",
+  "UTC",
+  "Europe/London",
+  "Europe/Paris",
+  "America/New_York",
+  "Asia/Tokyo",
+  "Asia/Hong_Kong",
+] as const;
+const localeOptions = [
+  DEFAULT,
+  "en-GB",
+  "en-US",
+  "de-DE",
+  "fr-FR",
+  "ja-JP",
+] as const;
 type ToggleValue = (typeof toggleValues)[number];
 
 function getToggleValue(pattern: DateTimePattern): ToggleValue {
@@ -47,7 +73,13 @@ export const DateTimeFormattingSettings: React.FC<FormattingSettingsProps> = ({
   onChangeFormatting: onChange,
 }) => {
   const formatting = getTypeFormattingFromColumn(column);
-  const { pattern = fallbackDateTimePattern } = formatting;
+  const temporalInfo = getTemporalInfo(column);
+  // When no pattern has been configured, show the default for the column kind
+  const {
+    pattern = temporalInfo
+      ? dateTimePattern(column.type, temporalInfo.kind)
+      : fallbackDateTimePattern,
+  } = formatting;
   const toggleValue = useMemo(() => getToggleValue(pattern), [pattern]);
 
   const [fallbackState, setFallbackState] = useState<Required<DateTimePattern>>(
@@ -55,6 +87,35 @@ export const DateTimeFormattingSettings: React.FC<FormattingSettingsProps> = ({
       time: pattern.time ?? defaultPatternsByType.time,
       date: pattern.date ?? defaultPatternsByType.date,
     },
+  );
+
+  const onFractionalSecondDigitsChange = useCallback(
+    (_: SyntheticEvent, [value]: string[]) => {
+      const { fractionalSecondDigits, ...rest } = formatting;
+      void fractionalSecondDigits;
+      onChange(
+        value === DEFAULT
+          ? rest
+          : {
+              ...rest,
+              fractionalSecondDigits: parseInt(
+                value,
+                10,
+              ) as FractionalSecondDigits,
+            },
+      );
+    },
+    [formatting, onChange],
+  );
+
+  const onFormattingOptionChange = useCallback(
+    (key: "locale" | "timeZone") =>
+      (_: SyntheticEvent, [value]: string[]) => {
+        const { [key]: _previous, ...rest } = formatting;
+        void _previous;
+        onChange(value === DEFAULT ? rest : { ...rest, [key]: value });
+      },
+    [formatting, onChange],
   );
 
   const onPatternChange = useCallback(
@@ -142,6 +203,59 @@ export const DateTimeFormattingSettings: React.FC<FormattingSettingsProps> = ({
             </Dropdown>
           </FormField>
         ))}
+
+      {pattern.time ? (
+        <FormField labelPlacement="top">
+          <FormFieldLabel>Fractional second digits</FormFieldLabel>
+          <Dropdown<string>
+            onSelectionChange={onFractionalSecondDigitsChange}
+            selected={[`${formatting.fractionalSecondDigits ?? DEFAULT}`]}
+            value={`${formatting.fractionalSecondDigits ?? DEFAULT}`}
+          >
+            {fractionalSecondDigitOptions
+              .filter(
+                (digits) =>
+                  temporalInfo?.precision === "ns" ||
+                  (digits !== "6" && digits !== "9"),
+              )
+              .map((digits) => (
+                <Option key={digits} value={digits}>
+                  {digits}
+                </Option>
+              ))}
+          </Dropdown>
+        </FormField>
+      ) : null}
+
+      <FormField labelPlacement="top">
+        <FormFieldLabel>Time zone</FormFieldLabel>
+        <Dropdown<string>
+          onSelectionChange={onFormattingOptionChange("timeZone")}
+          selected={[formatting.timeZone ?? DEFAULT]}
+          value={formatting.timeZone ?? DEFAULT}
+        >
+          {timeZoneOptions.map((timeZone) => (
+            <Option key={timeZone} value={timeZone}>
+              {timeZone}
+            </Option>
+          ))}
+        </Dropdown>
+      </FormField>
+
+      <FormField labelPlacement="top">
+        <FormFieldLabel>Locale</FormFieldLabel>
+        <Dropdown<string>
+          onSelectionChange={onFormattingOptionChange("locale")}
+          selected={[formatting.locale ?? DEFAULT]}
+          value={formatting.locale ?? DEFAULT}
+        >
+          {localeOptions.map((locale) => (
+            <Option key={locale} value={locale}>
+              {locale}
+            </Option>
+          ))}
+        </Dropdown>
+      </FormField>
     </>
   );
 };

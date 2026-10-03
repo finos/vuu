@@ -11,7 +11,8 @@ import React, { useCallback } from "react";
 import { BaseNumericFormattingSettings } from "./BaseNumericFormattingSettings";
 
 import longTypeFormattingSettingsCss from "./LongTypeFormattingSettings.css";
-import { isTypeDescriptor } from "@vuu-ui/vuu-utils";
+import { isTemporalColumn, isTypeDescriptor } from "@vuu-ui/vuu-utils";
+import { DateTimeFormattingSettings } from "./DateTimeFormattingSettings";
 
 const classBase = "vuuLongColumnFormattingSettings";
 
@@ -50,10 +51,14 @@ export const LongTypeFormattingSettings = (props: FormattingSettingsProps) => {
           ))}
         </ToggleButtonGroup>
       </FormField>
-      <BaseNumericFormattingSettings {...props} />
+      {isTemporalColumn(column) ? (
+        <DateTimeFormattingSettings {...props} />
+      ) : (
+        <BaseNumericFormattingSettings {...props} />
+      )}
     </div>
   );
 };
 
-const toggleValues = ["number", "date/time"] as const;
+const toggleValues = ["number", "date/time", "date", "time"] as const;
 type ToggleValue = (typeof toggleValues)[number];

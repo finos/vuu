@@ -4,7 +4,11 @@ import type {
   DataValueTypeDescriptor,
   TableConfig,
 } from "@vuu-ui/vuu-table-types";
-import { hasValidationRules, isTypeDescriptor } from "@vuu-ui/vuu-utils";
+import {
+  hasValidationRules,
+  isTemporalColumn,
+  isTypeDescriptor,
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 import type { BulkEditPanelProps } from "./BulkEditPanel";
 import type { EditValueChangeHandler } from "./useColumnCascadingEditor";
@@ -43,8 +47,15 @@ export const useBulkEditPanel = ({
               name: col.name,
               serverDataType: col.serverDataType ?? "string",
               type: isTypeDescriptor(col.type)
-                ? addRenderer(col.type, "input-cell")
-                : "string",
+                ? addRenderer(
+                    col.type,
+                    isTemporalColumn(col)
+                      ? "temporal-input-cell"
+                      : "input-cell",
+                  )
+                : isTemporalColumn(col)
+                  ? col.type
+                  : "string",
               clientSideEditValidationCheck: hasValidationRules(col.type)
                 ? buildValidationChecker(col.type.rules)
                 : undefined,

@@ -3,10 +3,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import type { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
-import {
-  getVuuEditMessage,
-  isEditRowReadOnly,
-} from "@vuu-ui/vuu-data-editing";
+import { getVuuEditMessage, isEditRowReadOnly } from "@vuu-ui/vuu-data-editing";
 import {
   dataDescriptorTypeToVuuRowDataItemType,
   registerComponent,
@@ -14,16 +11,27 @@ import {
 import cx from "clsx";
 
 import inputCellCss from "./InputCell.css";
-import { useInputCell } from "./useInputCell";
+import { type InputCellHookProps, useInputCell } from "./useInputCell";
 
 const classBase = "vuuTableInputCell";
 
+export interface InputCellProps
+  extends TableCellRendererProps,
+    Pick<InputCellHookProps, "formatValue" | "parseValue"> {
+  className?: string;
+  placeholder?: string;
+}
+
 export const InputCell = ({
+  className,
   column,
   dataRow,
   editedDuringCurrentSession,
+  formatValue,
   onEdit,
-}: TableCellRendererProps) => {
+  parseValue,
+  placeholder,
+}: InputCellProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-input-cell",
@@ -43,17 +51,16 @@ export const InputCell = ({
     ...editProps
   } = useInputCell({
     column,
+    formatValue,
     onEdit,
-    type: column.serverDataType ?? dataDescriptorTypeToVuuRowDataItemType(column),
+    parseValue,
+    type:
+      column.serverDataType ?? dataDescriptorTypeToVuuRowDataItemType(column),
     value: dataValue,
   });
 
   // TODO can this move into useEdtableText ?
-  const editRejectedMessage = getVuuEditMessage(
-    dataRow,
-    column,
-    previousValue,
-  );
+  const editRejectedMessage = getVuuEditMessage(dataRow, column, previousValue);
   const errorMessage = warningMessage ?? editRejectedMessage;
 
   const endAdornment =
@@ -74,7 +81,7 @@ export const InputCell = ({
     <Input
       {...editProps}
       bordered
-      className={cx(classBase, {
+      className={cx(classBase, className, {
         [`${classBase}-edited`]: editedDuringCurrentSession === true,
         [`${classBase}-error`]: warningMessage !== undefined,
         [`${classBase}-warning`]:
@@ -86,6 +93,7 @@ export const InputCell = ({
         ...inputProps,
         "aria-invalid": errorMessage ? true : undefined,
         "aria-label": column.label,
+        placeholder,
       }}
       readOnly={readOnly}
       startAdornment={startAdornment}
