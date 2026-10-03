@@ -6,7 +6,9 @@ export const dropLastPathSegment = (path: string, separator = "/") => {
   return path.slice(0, path.lastIndexOf(separator));
 };
 
-// A numeric prefix e.g "01-" can be used to control ordering, it is not displayed
+// A numeric prefix e.g "01-" can be used to control ordering. It is not
+// displayed and is not part of the route (as with Docusaurus). Tree keys are
+// derived from labels, so ids must use the same, unprefixed, names.
 const toLabel = (name: string) => name.replace(/^\d+-/, "");
 
 const getDocumentPath = (
@@ -53,12 +55,12 @@ export const treeSourceFromFileSystem = (
       const [childNodes, , documentPath] = treeSourceFromFileSystem(
         filePath,
         env,
-        `${route}${fileName}/`,
+        `${route}${toLabel(fileName)}/`,
         "box",
         tags,
       );
       const treeSourceNode: TreeSourceNode<NodeData> = {
-        id: `${route}${fileName}`,
+        id: `${route}${toLabel(fileName)}`,
         icon,
         label: toLabel(fileName),
         childNodes,
@@ -74,7 +76,7 @@ export const treeSourceFromFileSystem = (
       }
     } else if (fileName.match(/examples.tsx$/)) {
       const name = dropLastPathSegment(dropLastPathSegment(fileName, "."), ".");
-      const id = `${route}${name}`;
+      const id = `${route}${toLabel(name)}`;
 
       const treeSourceNode: TreeSourceNode<NodeData> = {
         id,
@@ -83,7 +85,7 @@ export const treeSourceFromFileSystem = (
         childNodes: treeSourceFromExportedComponents(
           exhibitsPath,
           env,
-          `${route}${name}/`,
+          `${route}${toLabel(name)}/`,
           fileName,
           tags,
         ),
@@ -94,7 +96,7 @@ export const treeSourceFromFileSystem = (
         treeSourceNode.nodeData = treeSourceFromDocument(
           exhibitsPath,
           env,
-          `${route}${name}/`,
+          `${route}${toLabel(name)}/`,
           documentPath,
         );
       }
@@ -108,7 +110,7 @@ export const treeSourceFromFileSystem = (
       // for that examples node (see above), standalone mdx files are leaf nodes
       if (!dirFiles.has(`${name}.examples.tsx`)) {
         treeSourceNodes.push({
-          id: `${route}${name}`,
+          id: `${route}${toLabel(name)}`,
           icon: "box",
           label: toLabel(name),
           nodeData: {

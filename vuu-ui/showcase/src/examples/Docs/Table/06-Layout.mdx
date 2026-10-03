@@ -37,7 +37,6 @@ The Table measures its own size and renders only the rows and columns that fit. 
 
 <LivePreview>
   <ExplicitSize />
-</LivePreview>
 
 ```tsx
 export const ExplicitSize = () => {
@@ -53,13 +52,14 @@ export const ExplicitSize = () => {
 };
 ```
 
+</LivePreview>
+
 ### Fill the parent
 
 Without `width` and `height`, the Table fills its parent and follows it as it resizes. The parent must have a defined height. Drag the corner of the dashed container below to resize it. With `columnLayout: "fit"`, the columns resize too.
 
 <LivePreview>
   <FillContainer />
-</LivePreview>
 
 ```tsx
 export const FillContainer = () => {
@@ -87,6 +87,8 @@ export const FillContainer = () => {
 }
 ```
 
+</LivePreview>
+
 > **Tip:** in a flex column layout, set `height="auto"` and give the Table a flex value with the `--vuuMeasuredContainer-flex` CSS custom property.
 
 ### Size by row count
@@ -95,7 +97,6 @@ export const FillContainer = () => {
 
 <LivePreview>
   <ViewportRowLimit />
-</LivePreview>
 
 ```tsx
 export const ViewportRowLimit = () => {
@@ -116,11 +117,12 @@ export const ViewportRowLimit = () => {
 };
 ```
 
+</LivePreview>
+
 `maxViewportRowLimit` works the same way, but the Table shrinks when there are fewer rows than the limit. Filter the table below to see its height change.
 
 <LivePreview stacked>
   <MaxViewportRowLimit />
-</LivePreview>
 
 ```tsx
 export const MaxViewportRowLimit = () => {
@@ -155,6 +157,8 @@ export const MaxViewportRowLimit = () => {
 };
 ```
 
+</LivePreview>
+
 > **Note:** `height`, `rowHeight` and `viewportRowLimit` constrain each other. You can pass any two of them, but don't pass all three.
 
 ### Best practices
@@ -168,7 +172,6 @@ By default, row height comes from CSS and follows the Salt density of the surrou
 
 <LivePreview stacked>
   <Density />
-</LivePreview>
 
 ```tsx
 export const Density = () => {
@@ -202,11 +205,12 @@ export const Density = () => {
 };
 ```
 
+</LivePreview>
+
 To set heights explicitly, use `rowHeight` for data rows and `colHeaderRowHeight` for header rows, both in pixels. Explicit heights override CSS, so the Table no longer responds to density changes.
 
 <LivePreview>
   <RowHeight />
-</LivePreview>
 
 ```tsx
 export const RowHeight = () => {
@@ -229,6 +233,8 @@ export const RowHeight = () => {
 };
 ```
 
+</LivePreview>
+
 ### Best practices
 
 - Prefer density over explicit heights. Density keeps the Table consistent with the other Salt components around it.
@@ -240,7 +246,6 @@ Use `EmptyDisplay` to pass a component that is rendered when the data source has
 
 <LivePreview stacked>
   <EmptyState />
-</LivePreview>
 
 ```tsx
 const NoMatchingRows = () => (
@@ -281,6 +286,8 @@ export const EmptyState = () => {
 };
 ```
 
+</LivePreview>
+
 ### Best practices
 
 - Explain why the table is empty and, if you can, what to do about it. For example, "No orders today" is more helpful than a blank grid, and "No stocks match the current filter" tells the user how to fix it.
@@ -294,7 +301,6 @@ Set `showColumnHeaders={false}` to render data rows only. This suits a Table use
 
 <LivePreview>
   <NoColumnHeaders />
-</LivePreview>
 
 ```tsx
 export const NoColumnHeaders = () => {
@@ -316,6 +322,8 @@ export const NoColumnHeaders = () => {
 };
 ```
 
+</LivePreview>
+
 ### Custom header rows
 
 Use `customHeader` to add your own rows below the column headers. They scroll horizontally with the columns. Typical uses are inline filters, a totals row or an "add new row" form. Pass a component, an element, or an array of either. Components receive `BaseRowProps`:
@@ -329,7 +337,6 @@ Use `customHeader` to add your own rows below the column headers. They scroll ho
 
 <LivePreview>
   <CustomHeader />
-</LivePreview>
 
 ```tsx
 const ColumnTypeHeader = ({
@@ -393,6 +400,8 @@ export const CustomHeader = () => {
 }
 ```
 
+</LivePreview>
+
 ## Large datasets
 
 The Table is virtualized in both directions:
@@ -404,7 +413,6 @@ The table below has 100,000 rows, but only about 20 row elements are ever in the
 
 <LivePreview>
   <LargeDataset />
-</LivePreview>
 
 ```tsx
 export const LargeDataset = () => {
@@ -427,6 +435,8 @@ export const LargeDataset = () => {
   );
 };
 ```
+
+</LivePreview>
 
 `renderBufferSize` (default `0`) renders extra rows above and below the visible area. A small buffer can make fast scrolling smoother, but a large one renders rows nobody sees.
 

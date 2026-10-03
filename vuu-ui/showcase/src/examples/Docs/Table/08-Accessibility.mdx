@@ -53,7 +53,6 @@ In the example below, choose a navigation style, click the first column header (
 
 <LivePreview stacked>
   <NavigationStyle />
-</LivePreview>
 
 ```tsx
 export const NavigationStyle = () => {
@@ -87,6 +86,8 @@ export const NavigationStyle = () => {
   );
 };
 ```
+
+</LivePreview>
 
 ## Keyboard interactions
 
@@ -144,7 +145,6 @@ In this example, `navigationStyle="row"` and `selectionModel="none"` make each r
 
 <LivePreview stacked>
   <RowActivation />
-</LivePreview>
 
 ```tsx
 export const RowActivation = () => {
@@ -175,6 +175,8 @@ export const RowActivation = () => {
 };
 ```
 
+</LivePreview>
+
 You can also control the highlighted row from outside the Table with `highlightedIndex` and listen for changes with `onHighlight`. The index is an `aria-rowindex`, so the first data row comes after the header rows.
 
 ## Labelling the table
@@ -183,7 +185,6 @@ Every table needs a name that tells screen reader users what it contains. The Ta
 
 <LivePreview stacked>
   <LabelledTable />
-</LivePreview>
 
 ```tsx
 export const LabelledTable = () => {
@@ -203,6 +204,8 @@ export const LabelledTable = () => {
   );
 };
 ```
+
+</LivePreview>
 
 ## Best practices
 

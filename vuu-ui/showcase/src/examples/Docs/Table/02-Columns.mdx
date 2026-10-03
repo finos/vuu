@@ -37,7 +37,6 @@ Columns are described by an array of `ColumnDescriptor` objects in `TableConfig.
 
 <LivePreview>
   <ColumnDefinitions />
-</LivePreview>
 
 ```tsx
 const config: TableConfig = {
@@ -60,6 +59,8 @@ export const ColumnDefinitions = () => {
   );
 };
 ```
+
+</LivePreview>
 
 In this example `price` has no `width`, so it uses the `columnDefaultWidth` of 90px. The `sector` column exists in the data but isn't displayed.
 
@@ -84,7 +85,6 @@ In this example the table is 700px wide but the columns only need 540px. `name` 
 
 <LivePreview>
   <FitColumnLayout />
-</LivePreview>
 
 ```tsx
 const config: TableConfig = {
@@ -107,6 +107,8 @@ export const FitColumnLayout = () => {
 };
 ```
 
+</LivePreview>
+
 ### Best practices
 
 - Use `"fit"` for tables with a few columns that should look complete at any width, such as tables in dialogs, side panels or dashboards.
@@ -122,7 +124,6 @@ Scroll this table horizontally. `RIC` stays on the left and `ESG` stays on the r
 
 <LivePreview>
   <PinnedColumns />
-</LivePreview>
 
 ```tsx
 const config: TableConfig = {
@@ -147,6 +148,8 @@ export const PinnedColumns = () => {
 };
 ```
 
+</LivePreview>
+
 Users can also pin and unpin columns from the column header menu (see [Column header menus](#column-header-menus) below).
 
 ### Best practices
@@ -160,7 +163,6 @@ Users can also pin and unpin columns from the column header menu (see [Column he
 
 <LivePreview>
   <GroupedHeadings />
-</LivePreview>
 
 ```tsx
 const config: TableConfig = {
@@ -176,6 +178,8 @@ const config: TableConfig = {
   rowSeparators: true,
 };
 ```
+
+</LivePreview>
 
 The table renders as many heading rows as the deepest `heading` array, here two. Columns with fewer levels show an empty heading cell at the lower levels.
 
@@ -211,7 +215,6 @@ In this example:
 
 <LivePreview>
   <HeaderOptions />
-</LivePreview>
 
 ```tsx
 const config: TableConfig = {
@@ -247,6 +250,8 @@ export const HeaderOptions = () => {
   );
 };
 ```
+
+</LivePreview>
 
 ### Column header menus
 

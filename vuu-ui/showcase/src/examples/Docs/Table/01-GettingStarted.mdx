@@ -41,7 +41,6 @@ Here is the simplest possible table. It uses an `ArrayDataSource` built from an 
 
 <LivePreview>
   <BasicTable />
-</LivePreview>
 
 ```tsx
 import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
@@ -87,6 +86,8 @@ export const BasicTable = () => {
 };
 ```
 
+</LivePreview>
+
 The same `stockColumns` and `stockData` are used throughout these pages. They are defined in `sample-data.ts`, alongside the example source files.
 
 Points to note:
@@ -111,7 +112,6 @@ The Table virtualizes rows and columns, so it must know how much space it has. T
 
 <LivePreview>
   <FillContainer />
-</LivePreview>
 
 ```tsx
 export const FillContainer = () => {
@@ -138,6 +138,8 @@ export const FillContainer = () => {
 };
 ```
 
+</LivePreview>
+
 > If the Table renders headers but no rows, the most likely cause is a parent with no height. See [Layout](./06-Layout.mdx) for more sizing options, including sizing by row count.
 
 ## Server data
@@ -146,7 +148,6 @@ To display data from a Vuu server, use a `VuuDataSource` and point it at a serve
 
 <LivePreview>
   <ServerData />
-</LivePreview>
 
 ```tsx
 import { getSchema } from "@vuu-ui/vuu-data-test";
@@ -182,6 +183,8 @@ export const ServerData = () => {
 };
 ```
 
+</LivePreview>
+
 `renderBufferSize` sets how many rows are rendered above and below the visible viewport. A larger buffer makes fast scrolling smoother, at the cost of rendering more DOM. The minimum (and default) is 5.
 
 ## Persisting configuration
@@ -192,7 +195,6 @@ Try resizing or dragging a column in the example below.
 
 <LivePreview>
   <PersistConfig />
-</LivePreview>
 
 ```tsx
 export const PersistConfig = () => {
@@ -235,6 +237,8 @@ export const PersistConfig = () => {
   );
 };
 ```
+
+</LivePreview>
 
 The change types are `column-resized`, `column-moved`, `column-added`, `column-removed`, `column-pinned`, `columns-hidden`, `calculated-column-added` and `settings-panel`.
 

@@ -21,7 +21,11 @@ const isExternalLink = (href = "") => /^[a-z]+:/i.test(href);
 export const toShowcaseHref = (href: string, baseUrl: string) => {
   const [path, hash] = href.split("#");
   if (path.endsWith(".mdx")) {
-    const route = path.replace(/\.mdx$/, "").replace(/(^|\/)[Ii]ndex$/, "$1");
+    // Numeric ordering prefixes (e.g "02-") are not part of Showcase routes
+    const route = path
+      .replace(/\.mdx$/, "")
+      .replace(/(^|\/)[Ii]ndex$/, "$1")
+      .replace(/(^|\/)\d+-/g, "$1");
     const { pathname } = new URL(route || ".", baseUrl);
     // The url hash is used by the Showcase for theme settings, so
     // the target heading is passed as a query parameter instead.

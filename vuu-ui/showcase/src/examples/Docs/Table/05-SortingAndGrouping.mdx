@@ -40,7 +40,6 @@ Columns with `sortable: false` ignore clicks. Users can also sort from the colum
 
 <LivePreview stacked>
   <HeaderSorting />
-</LivePreview>
 
 ```tsx
 export const HeaderSorting = () => {
@@ -69,6 +68,8 @@ export const HeaderSorting = () => {
 };
 ```
 
+</LivePreview>
+
 The data source emits a `"config"` event whenever its sort, filter, groupBy or aggregations change. Listen to it to keep other UI in sync, or to save the user's view.
 
 ## Sorting from code
@@ -77,7 +78,6 @@ Set `dataSource.sort` to apply a sort. A sort is a list of `{ column, sortType }
 
 <LivePreview stacked>
   <ProgrammaticSort />
-</LivePreview>
 
 ```tsx
 export const ProgrammaticSort = () => {
@@ -127,6 +127,8 @@ export const ProgrammaticSort = () => {
 };
 ```
 
+</LivePreview>
+
 ### Best practices
 
 - Choose a meaningful default sort for the task. For example, show the most recent first in a trade blotter, or the largest first in a risk view.
@@ -148,7 +150,6 @@ Strings use double quotes. Booleans are `true` and `false`. Set `{ filter: "" }`
 
 <LivePreview stacked>
   <Filtering />
-</LivePreview>
 
 ```tsx
 export const Filtering = () => {
@@ -183,6 +184,8 @@ export const Filtering = () => {
 };
 ```
 
+</LivePreview>
+
 For user-facing filter UI, the `@vuu-ui/vuu-filters` package provides ready-made components (filter bar, filter editor, quick filters) that produce these expressions. See the **Filters** section of the showcase.
 
 ### Best practices
@@ -202,7 +205,6 @@ Users can also group from the column header menu. In the group column header, ea
 
 <LivePreview stacked>
   <Grouping />
-</LivePreview>
 
 ```tsx
 export const Grouping = () => {
@@ -233,6 +235,8 @@ export const Grouping = () => {
 };
 ```
 
+</LivePreview>
+
 By default, clicking anywhere in the group cell expands or collapses the group. Set `groupToggleTarget="toggle-icon"` so that only a click on the toggle icon expands the group. This is useful when a click on the row should select it instead. With the keyboard, focus a group cell and press **Shift+ArrowRight** to expand it or **Shift+ArrowLeft** to collapse it. With `navigationStyle="tree"`, you don't need to hold Shift. If the group is already collapsed, the collapse key moves focus up to its parent group.
 
 ## Aggregation
@@ -250,7 +254,6 @@ When data is grouped, group rows are empty by default. Set `dataSource.aggregati
 
 <LivePreview>
   <Aggregation />
-</LivePreview>
 
 ```tsx
 export const Aggregation = () => {
@@ -282,6 +285,8 @@ export const Aggregation = () => {
   );
 };
 ```
+
+</LivePreview>
 
 > **Note:** the Vuu server supports any number of aggregations at once. The in-browser `ArrayDataSource` used in these examples currently applies only one aggregation (the last one in the list).
 

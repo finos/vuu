@@ -41,7 +41,6 @@ Numeric columns (`serverDataType` of `int`, `long`, `double` or `scaleddecimal`)
 
 <LivePreview>
   <NumberFormatting />
-</LivePreview>
 
 ```tsx
 const config: TableConfig = {
@@ -77,6 +76,8 @@ const config: TableConfig = {
 };
 ```
 
+</LivePreview>
+
 ### Best practices
 
 - Show prices with a fixed number of decimal places using `zeroPad`. Values like `117.3` and `117.30` look different but mean the same thing, and fixed decimals make columns easier to scan.
@@ -107,7 +108,6 @@ Date and time values are epoch timestamps in milliseconds. Set `type: "date/time
 
 <LivePreview>
   <DateFormatting />
-</LivePreview>
 
 ```tsx
 const config: TableConfig = {
@@ -146,6 +146,8 @@ const config: TableConfig = {
 };
 ```
 
+</LivePreview>
+
 Values are displayed in the user's local time zone. A value of `0` is shown as an empty cell.
 
 ### Best practices
@@ -160,7 +162,6 @@ To display a label in place of a raw code, add a `map` to the `renderer`. Values
 
 <LivePreview>
   <MappedValues />
-</LivePreview>
 
 ```tsx
 const config: TableConfig = {
@@ -189,6 +190,8 @@ const config: TableConfig = {
 };
 ```
 
+</LivePreview>
+
 ## Cell renderers
 
 A cell renderer is a React component that renders the content of a cell. You register it by name with `registerComponent` from `@vuu-ui/vuu-utils`, and assign it to a column with `type.renderer.name`. Because the configuration only holds the name, it stays serializable and can be saved and restored like any other table configuration.
@@ -215,7 +218,6 @@ import "@vuu-ui/vuu-table-extras";
 
 <LivePreview>
   <ProgressRenderers />
-</LivePreview>
 
 ```tsx
 const config: TableConfig = {
@@ -243,13 +245,14 @@ const config: TableConfig = {
 };
 ```
 
+</LivePreview>
+
 ### Flashing prices
 
 `vuu.price-move-background` is designed for real-time data. This example uses a `VuuDataSource` with simulated price updates. Watch the bid and ask columns.
 
 <LivePreview>
   <FlashingPrices />
-</LivePreview>
 
 ```tsx
 const priceType = (
@@ -289,6 +292,8 @@ export const FlashingPrices = () => {
 };
 ```
 
+</LivePreview>
+
 #### Best practices
 
 - Use flashing only for values where the direction of change matters to the user, such as prices and quotes. Flashing every column of a fast-ticking table is distracting, and hides the changes that matter.
@@ -310,7 +315,6 @@ This example registers a renderer that shows a coloured percentage with a direct
 
 <LivePreview>
   <CustomCellRenderer />
-</LivePreview>
 
 ```tsx
 import type {
@@ -381,6 +385,8 @@ const config: TableConfig = {
 }
 ```
 
+</LivePreview>
+
 #### Best practices
 
 - Register renderers at module level, not inside a component. Registration is global and should happen once, before any table that uses the renderer is rendered.
@@ -396,7 +402,6 @@ Set `searchPattern` to highlight matching text in every cell. Matching is case-i
 
 <LivePreview stacked>
   <SearchHighlighting />
-</LivePreview>
 
 ```tsx
 export const SearchHighlighting = () => {
@@ -426,6 +431,8 @@ export const SearchHighlighting = () => {
   );
 };
 ```
+
+</LivePreview>
 
 Custom cell renderers don't highlight automatically. They receive `searchPattern` as a prop if you want to add highlighting.
 

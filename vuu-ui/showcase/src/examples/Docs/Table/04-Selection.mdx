@@ -34,7 +34,6 @@ Switch between models to try them:
 
 <LivePreview stacked>
   <SelectionModels />
-</LivePreview>
 
 ```tsx
 export const SelectionModels = () => {
@@ -73,6 +72,8 @@ export const SelectionModels = () => {
 };
 ```
 
+</LivePreview>
+
 ### Best practices
 
 - Choose the simplest model that supports the task. If users act on one row at a time (opening a detail view, for example), use `"single"` or `"single-no-deselect"`.
@@ -89,7 +90,6 @@ With `selectionModel="checkbox"`, by default only a click on the checkbox itself
 
 <LivePreview>
   <CheckboxSelection />
-</LivePreview>
 
 ```tsx
 <Table
@@ -102,6 +102,8 @@ With `selectionModel="checkbox"`, by default only a click on the checkbox itself
   width={660}
 />
 ```
+
+</LivePreview>
 
 The width of the checkbox column is set by `checkboxColumnWidth` in `TableConfig` (default `25`).
 
@@ -121,7 +123,6 @@ Select some rows (try **Shift**+click and **Ctrl**/**⌘**+click), then clear th
 
 <LivePreview stacked>
   <SelectionEvents />
-</LivePreview>
 
 ```tsx
 export const SelectionEvents = () => {
@@ -173,6 +174,8 @@ export const SelectionEvents = () => {
 };
 ```
 
+</LivePreview>
+
 ### Best practices
 
 - Use `onSelect` for master-detail patterns. It gives you the full row, so you don't need to look it up.
@@ -187,7 +190,6 @@ In this example only rows with an ESG flag can be selected. A **Shift**+click ra
 
 <LivePreview>
   <NonSelectableRows />
-</LivePreview>
 
 ```tsx
 const isRowSelectable = (dataRow: DataRow) => dataRow.esg === true;
@@ -203,6 +205,8 @@ const isRowSelectable = (dataRow: DataRow) => dataRow.esg === true;
 />;
 ```
 
+</LivePreview>
+
 ### Best practices
 
 - Explain why a row can't be selected, for example with a tooltip, a status column or the row style. A row that silently ignores clicks feels broken.
@@ -216,7 +220,6 @@ const isRowSelectable = (dataRow: DataRow) => dataRow.esg === true;
 
 <LivePreview>
   <InitialSelection />
-</LivePreview>
 
 ```tsx
 <Table
@@ -229,6 +232,8 @@ const isRowSelectable = (dataRow: DataRow) => dataRow.esg === true;
 />
 ```
 
+</LivePreview>
+
 ## Selection styling
 
 By default, a selected row has a highlighted background and a coloured "bookend" on its left and right edges. Adjacent selected rows form a single visual block. Two options change this:
@@ -238,7 +243,6 @@ By default, a selected row has a highlighted background and a coloured "bookend"
 
 <LivePreview>
   <SelectionBorder />
-</LivePreview>
 
 ```tsx
 const config: TableConfig = {
@@ -256,6 +260,8 @@ const config: TableConfig = {
 />;
 ```
 
+</LivePreview>
+
 See [Styling](./07-Styling.mdx) for the CSS custom properties that control selection colours.
 
 ## Cell block selection
@@ -271,7 +277,6 @@ Cell block selection is separate from row selection. In this example, row select
 
 <LivePreview stacked>
   <CellBlockSelection />
-</LivePreview>
 
 ```tsx
 export const CellBlockSelection = () => {
@@ -302,6 +307,8 @@ export const CellBlockSelection = () => {
   );
 };
 ```
+
+</LivePreview>
 
 ## Next steps
 

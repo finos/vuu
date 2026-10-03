@@ -33,7 +33,6 @@ They are part of `TableConfig`, so they are saved with the rest of the user's co
 
 <LivePreview stacked>
   <DisplayAttributes />
-</LivePreview>
 
 ```tsx
 type DisplayAttribute = "zebraStripes" | "rowSeparators" | "columnSeparators";
@@ -79,6 +78,8 @@ export const DisplayAttributes = () => {
 };
 ```
 
+</LivePreview>
+
 ### Best practices
 
 - Use zebra stripes or row separators on wide tables, to help the eye follow a row across the screen. Using both together is usually more than you need.
@@ -97,7 +98,6 @@ Here, rows where the price has moved by 1.5% or more are tinted green or red:
 
 <LivePreview>
   <RowClassNames />
-</LivePreview>
 
 ```tsx
 const bigMovers: RowClassGenerator = {
@@ -141,6 +141,8 @@ export const RowClassNames = () => {
 }
 ```
 
+</LivePreview>
+
 ### Best practices
 
 - Keep generators fast and free of side effects. They run every time a row renders, which for a live data source can be many times a second.
@@ -153,7 +155,6 @@ Set `className` on a `ColumnDescriptor` to add a class to the column's header ce
 
 <LivePreview>
   <ColumnClassName />
-</LivePreview>
 
 ```tsx
 export const ColumnClassName = () => {
@@ -184,13 +185,14 @@ export const ColumnClassName = () => {
 }
 ```
 
+</LivePreview>
+
 ## CSS custom properties
 
 The Table defines CSS custom properties for its main colors and spacing. Their defaults come from Salt tokens. Set them on a class passed to the Table's `className` to style one table, or higher up (for example on `.vuuTable` in your app's stylesheet) to style every table.
 
 <LivePreview>
   <CustomProperties />
-</LivePreview>
 
 ```tsx
 export const CustomProperties = () => {
@@ -225,6 +227,8 @@ export const CustomProperties = () => {
   --vuuTable-fontFamily: Georgia, serif;
 }
 ```
+
+</LivePreview>
 
 | Custom property                              | Default                                     | Description                                                       |
 | -------------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------- |
