@@ -411,7 +411,7 @@ the selected table through `TableRegistrationContext`, so neither module needs
 To browse a Vuu server that no module uses, choose **Add server** in the
 table browser and enter a name, the server's WebSocket URL, and its
 authentication (REST) URL. The name must differ from the servers already
-listed. The browser saves these servers with `usePersistentState`, under the
+listed. The browser saves these servers with `usePersistedState`, under the
 key `manualServers`, so they are restored next time, and each one can be
 removed from its navigation entry. They are known only to the browser: nothing
 is added to the module registry or the Vuu protocol. The portal authenticates
@@ -664,7 +664,7 @@ After portal deployment is stable:
 - The local descriptor omits `vuu`.
 - The local adapter calls `ensureVuuModule()` and exports the same feature.
 - Every table and RPC used by the feature has a tested local implementation.
-- Values to keep use `usePersistentState` or `useApplicationState`, with
+- Values to keep are saved with `usePersistedState` (`load`/`save`), with
   labels. A release that changes saved values bumps `version` and exports
   `stateMigrations`, from both exposures.
 
@@ -688,7 +688,7 @@ The following portal examples demonstrate the complete pattern:
   descriptors;
 - `portal-examples/basket-trading`: production and local basket exposures;
 - `portal-examples/user-admin`: production and local user-admin exposures;
-- `portal-examples/feature-simple-div`: saved state with `usePersistentState`
+- `portal-examples/feature-simple-div`: saved state with `usePersistedState`
   and an exported `stateMigrations`;
 - `portal-examples/vuu-table-browser` and `vuu-table-viewer`: developer
   modules that browse the tables of every server from `useVuuServers()`, with

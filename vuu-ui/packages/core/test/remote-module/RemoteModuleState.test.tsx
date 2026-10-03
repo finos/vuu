@@ -18,7 +18,7 @@ import {
   createPortalPersistenceService,
   useOptionalApplicationState,
   useOptionalPortalPersistence,
-  usePersistentState,
+  usePersistedState,
 } from "../../src/persistence";
 import { RemoteModule } from "../../src/remote-module/RemoteModule";
 import { MemoryStorage, entry, stateDocument } from "../persistence/test-utils";
@@ -28,7 +28,7 @@ let remoteProps: Record<string, unknown> = {};
 const Counter = (props: Record<string, unknown>) => {
   remoteProps = props;
   const store = useOptionalApplicationState();
-  const [count] = usePersistentState("count", 0);
+  const count = usePersistedState().load<number>("count") ?? 0;
   return (
     <div data-testid="remote">
       {store ? `${store.applicationKey}@${store.applicationVersion}` : "none"}:
@@ -298,12 +298,10 @@ describe("PortalPersistenceRoot", () => {
   const Probe = () => {
     captured = useOptionalPortalPersistence();
     const store = useOptionalApplicationState();
-    const [value, setValue] = usePersistentState(
-      "nav/expanded",
-      [] as string[],
-    );
+    const { load, save } = usePersistedState();
+    const value = load<string[]>("nav/expanded") ?? [];
     return (
-      <button type="button" onClick={() => setValue(["/Orders"])}>
+      <button type="button" onClick={() => save(["/Orders"], "nav/expanded")}>
         {store?.applicationKey}:{value.join(",")}
       </button>
     );

@@ -169,8 +169,8 @@ support it:
 - The **Saved state** dialog lets users clear saved state for one, several or
   all applications, or for individual items.
 
-Remotes use `usePersistentState`, `useApplicationState` or
-`useOptionalApplicationState`, and export `stateMigrations` when a release
+Remotes use the `{ load, save }` pair from `usePersistedState` (or, for more
+control, `useApplicationState` / `useOptionalApplicationState`), and export `stateMigrations` when a release
 changes saved values. See:
 
 - [saved-state-guide.md](./saved-state-guide.md), a guide for remote authors;

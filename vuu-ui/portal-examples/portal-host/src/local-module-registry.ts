@@ -109,7 +109,7 @@ export const localPortalModuleRegistry = {
     },
     {
       clientIdentifier: "vuu-feature-simple-div",
-      description: "Try out saved state with usePersistentState",
+      description: "Try out saved state with usePersistedState",
       enabled: true,
       id: "local-feature-simple-div",
       navIconUrl: positionsIcon,

@@ -1,11 +1,13 @@
-import { type ReactNode, useEffect, useMemo } from "react";
+import { type ReactNode, Suspense, useEffect, useMemo } from "react";
 import { useOptionalAuthenticatedUser } from "@vuu-ui/core";
 import { InMemoryPersistenceBackend } from "../persistence/InMemoryPersistenceBackend";
 import {
   DEFAULT_PORTAL_ID,
   LocalStoragePersistenceBackend,
 } from "../persistence/LocalStoragePersistenceBackend";
+import type { ApplicationStateStore } from "../persistence/ApplicationStateStore";
 import type { PersistenceBackend } from "../persistence/PersistenceBackend";
+import { useStoreReady } from "../persistence/useStoreReady";
 import {
   ApplicationStateProvider,
   PortalPersistenceProvider,
@@ -80,6 +82,21 @@ const useDisposeOnUnmount = (service: PortalPersistenceService) => {
 };
 
 /**
+ * Renders children once the store has loaded, so that `load` (see
+ * usePersistedState) returns saved values on first render.
+ */
+const WhenReady = ({
+  children,
+  store,
+}: {
+  children: ReactNode;
+  store: ApplicationStateStore;
+}) => {
+  useStoreReady(store);
+  return children;
+};
+
+/**
  * Creates the PortalPersistenceService for the authenticated user (FR-1) and
  * provides it, along with the portal's own `vuu.portal` store, to the shell.
  */
@@ -113,7 +130,11 @@ export const PortalPersistenceRoot = ({
   return (
     <PortalPersistenceProvider service={service}>
       <ApplicationStateProvider store={portalStore}>
-        {children}
+        {/* Suspend below the root, so the service survives while the
+            portal's saved state loads. */}
+        <Suspense fallback={null}>
+          <WhenReady store={portalStore}>{children}</WhenReady>
+        </Suspense>
       </ApplicationStateProvider>
     </PortalPersistenceProvider>
   );

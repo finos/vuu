@@ -1,5 +1,5 @@
-import { useCallback } from "react";
-import { usePersistentState } from "../persistence/PersistenceContext";
+import { useCallback, useState } from "react";
+import { usePersistedState } from "../persistence/PersistenceContext";
 
 /** Portal saved state key (in `vuu.portal`) for expanded navigation groups. */
 export const NAV_EXPANDED_KEY = "nav/expanded";
@@ -12,22 +12,24 @@ const metadata = {
 
 /** Whether a navigation group is expanded, kept in the portal's saved state. */
 export const useNavGroupExpansion = (groupId: string) => {
-  const [expanded, setExpanded] = usePersistentState<string[]>(
-    NAV_EXPANDED_KEY,
-    NONE,
-    metadata,
-  );
-  const open = Array.isArray(expanded) && expanded.includes(groupId);
+  const { load, save } = usePersistedState();
+  const [open, setOpenState] = useState(() => {
+    const expanded = load<string[]>(NAV_EXPANDED_KEY);
+    return Array.isArray(expanded) && expanded.includes(groupId);
+  });
   const setOpen = useCallback(
-    (nextOpen: boolean) =>
-      setExpanded((previous) => {
-        const groups = Array.isArray(previous) ? previous : NONE;
-        if (nextOpen) {
-          return groups.includes(groupId) ? groups : [...groups, groupId];
-        }
-        return groups.filter((group) => group !== groupId);
-      }),
-    [groupId, setExpanded],
+    (nextOpen: boolean) => {
+      setOpenState(nextOpen);
+      const saved = load<string[]>(NAV_EXPANDED_KEY);
+      const groups = Array.isArray(saved) ? saved : NONE;
+      const expanded = nextOpen
+        ? groups.includes(groupId)
+          ? groups
+          : [...groups, groupId]
+        : groups.filter((group) => group !== groupId);
+      save(expanded, NAV_EXPANDED_KEY, metadata);
+    },
+    [groupId, load, save],
   );
   return [open, setOpen] as const;
 };

@@ -19,7 +19,7 @@ import {
   useVuuServers,
   type VuuServerDescriptor,
 } from "@vuu-ui/core";
-import { RemoteModule, usePersistentState } from "@vuu-ui/core/portal";
+import { RemoteModule, usePersistedState } from "@vuu-ui/core/portal";
 import type { RemoteModuleConnection } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
@@ -32,6 +32,10 @@ import "./VuuTableBrowser.css";
 const VIEWER_CLIENT_IDENTIFIER = "vuu-table-viewer";
 
 const MANUAL_SERVERS_KEY = "manualServers";
+const MANUAL_SERVERS_METADATA = {
+  group: "Servers",
+  label: "Manually added Vuu servers",
+};
 const NO_MANUAL_SERVERS: ManualServer[] = [];
 
 interface BrowsableServer {
@@ -248,13 +252,16 @@ export default function VuuTableBrowser() {
   const [retryCount, setRetryCount] = useState<Record<string, number>>({});
   const [sources, setSources] = useState<Record<string, SourceState>>({});
   const [addingServer, setAddingServer] = useState(false);
-  const [manualServers, setManualServers] = usePersistentState<ManualServer[]>(
-    MANUAL_SERVERS_KEY,
-    NO_MANUAL_SERVERS,
-    {
-      group: "Servers",
-      label: "Manually added Vuu servers",
+  const { load, save } = usePersistedState();
+  const [manualServers, setManualServers] = useState<ManualServer[]>(
+    () => load<ManualServer[]>(MANUAL_SERVERS_KEY) ?? NO_MANUAL_SERVERS,
+  );
+  const saveManualServers = useCallback(
+    (servers: ManualServer[]) => {
+      setManualServers(servers);
+      save(servers, MANUAL_SERVERS_KEY, MANUAL_SERVERS_METADATA);
     },
+    [save],
   );
 
   const modules = useMemo(() => {
@@ -386,16 +393,16 @@ export default function VuuTableBrowser() {
 
   const handleAddServer = useCallback(
     (server: ManualServer) => {
-      setManualServers((current) => current.concat(server));
+      saveManualServers(manualServers.concat(server));
       setAddingServer(false);
     },
-    [setManualServers],
+    [manualServers, saveManualServers],
   );
 
   const handleRemoveServer = useCallback(
     (sourceId: string) => {
-      setManualServers((current) =>
-        current.filter(({ connectionId }) => connectionId !== sourceId),
+      saveManualServers(
+        manualServers.filter(({ connectionId }) => connectionId !== sourceId),
       );
       const withoutSource = (current: Set<string>) => {
         const next = new Set(current);
@@ -410,7 +417,14 @@ export default function VuuTableBrowser() {
         navigate({ pathname: basePath, search: location.search });
       }
     },
-    [basePath, location.search, navigate, route?.sourceId, setManualServers],
+    [
+      basePath,
+      location.search,
+      manualServers,
+      navigate,
+      route?.sourceId,
+      saveManualServers,
+    ],
   );
 
   const routeModule = route
