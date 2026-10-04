@@ -10,7 +10,8 @@ import timeInputCss from "./TimeInput.css";
 const classBase = "vuuTimeInput";
 
 export interface TimeInputProps
-  extends TimeInputHookProps,
+  extends
+    TimeInputHookProps,
     Omit<
       HTMLAttributes<HTMLInputElement>,
       "defaultValue" | "onChange" | "value"
@@ -52,8 +53,7 @@ export const TimeInput = forwardRef<HTMLInputElement, TimeInputProps>(
         {...eventHandlers}
         aria-placeholder={placeholder}
         className={cx(classBase, className)}
-        defaultValue={defaultValue}
-        key={defaultValue}
+        defaultValue={value === undefined ? defaultValue : undefined}
         placeholder={placeholder}
         readOnly
         ref={useForkRef(ref, inputRef)}

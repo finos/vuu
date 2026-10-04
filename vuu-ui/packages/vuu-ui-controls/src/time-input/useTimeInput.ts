@@ -13,7 +13,6 @@ import {
   MouseEventHandler,
   RefCallback,
   useCallback,
-  useMemo,
   useRef,
 } from "react";
 import { Digit, MaskedInput } from "./MaskedInput";
@@ -36,96 +35,94 @@ export const useTimeInput = ({
   value,
 }: TimeInputHookProps) => {
   const mousedDownRef = useRef(false);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
   const maskedInputRef = useRef<MaskedInput | undefined>(undefined);
-  useMemo(() => {
-    if (maskedInputRef.current === undefined) {
-      maskedInputRef.current = new MaskedInput(defaultValue, null);
-      maskedInputRef.current.on(
-        "change",
-        (e: ChangeEvent<HTMLInputElement>) => {
-          onChange?.(e);
-        },
-      );
-    }
+  if (maskedInputRef.current === undefined) {
+    maskedInputRef.current = new MaskedInput(value ?? defaultValue, null);
+    maskedInputRef.current.on("change", (e: ChangeEvent<HTMLInputElement>) => {
+      onChangeRef.current?.(e);
+    });
+  }
+  const maskedInput = maskedInputRef.current;
 
-    if (value && value !== maskedInputRef.current.value) {
-      maskedInputRef.current.value = value;
-    }
-  }, [defaultValue, onChange, value]);
+  if (value !== undefined) {
+    maskedInput.value = value;
+  }
 
-  const setInputEl = useCallback<RefCallback<HTMLInputElement>>((el) => {
-    if (el && maskedInputRef.current) {
-      maskedInputRef.current.input = el;
-    }
-  }, []);
-  const back = useRef(false);
+  const setInputEl = useCallback<RefCallback<HTMLInputElement>>(
+    (el) => {
+      maskedInput.input = el;
+    },
+    [maskedInput],
+  );
 
-  const commitValue = useCallback<CommitHandler<HTMLInputElement, string>>(
-    (evt, value) => {
-      if (isValidTimeString(value)) {
-        onCommit(evt, value, "text-input");
-      } else if (value === "hh:mm:ss") {
-        console.log("no value set");
-      } else {
-        console.log(`value is not valid`);
+  const commitValue = useCallback(
+    (evt: React.KeyboardEvent<HTMLInputElement>) => {
+      // An empty input (placeholder showing) has no value to commit
+      if (evt.currentTarget.value !== "") {
+        const { value } = maskedInput;
+        if (isValidTimeString(value)) {
+          onCommit(evt, value, "text-input");
+        }
       }
     },
-    [onCommit],
+    [maskedInput, onCommit],
   );
 
   const handleKeyDown = useCallback<KeyboardEventHandler<HTMLInputElement>>(
     (e) => {
-      const { current: maskedInput } = maskedInputRef;
-      if (maskedInput) {
-        if (e.key === "Backspace") {
-          maskedInput.backspace();
-          back.current = true;
-        } else if (isDigit(e.key)) {
-          maskedInput.update(e.key);
-        } else if (e.key === "ArrowLeft") {
-          maskedInput.moveFocus("left");
-        } else if (e.key === "ArrowRight") {
-          maskedInput.moveFocus("right");
-        } else if (e.key === "ArrowUp") {
-          maskedInput.incrementValue();
-        } else if (e.key === "ArrowDown") {
-          maskedInput.decrementValue();
-        } else if (e.key === "v" && e.metaKey) {
-          // keyboard paste, do not prevent default
-          return;
-        } else if (e.key === "Tab") {
-          return;
-        } else if (e.key === "Enter") {
-          commitValue(e, maskedInput.value);
-        }
+      if (e.ctrlKey || e.metaKey || e.altKey || e.key === "Tab") {
+        // allow paste, copy, select all, browser shortcuts and focus navigation
+        return;
+      }
+      if (e.key === "Backspace") {
+        maskedInput.backspace();
+      } else if (isDigit(e.key)) {
+        maskedInput.update(e.key);
+      } else if (e.key === "ArrowLeft") {
+        maskedInput.moveFocus("left");
+      } else if (e.key === "ArrowRight") {
+        maskedInput.moveFocus("right");
+      } else if (e.key === "ArrowUp") {
+        maskedInput.incrementValue();
+      } else if (e.key === "ArrowDown") {
+        maskedInput.decrementValue();
+      } else if (e.key === "Home") {
+        maskedInput.select("hours");
+      } else if (e.key === "End") {
+        maskedInput.select("seconds");
+      } else if (e.key === "Enter") {
+        commitValue(e);
+      } else if (e.key === "Escape") {
+        return;
       }
       e.preventDefault();
     },
-    [commitValue],
+    [commitValue, maskedInput],
   );
 
   const handleDoubleClick = useCallback(() => {
-    maskedInputRef.current?.doubleClick();
-  }, []);
+    maskedInput.doubleClick();
+  }, [maskedInput]);
 
   const handlePaste = useCallback<ClipboardEventHandler<HTMLInputElement>>(
     (e) => {
-      const value = e.clipboardData.getData("text");
-      if (isValidTimeString(value)) {
-        maskedInputRef.current?.pasteValue(value);
-      }
+      e.preventDefault();
+      maskedInput.pasteValue(e.clipboardData.getData("text"));
     },
-    [],
+    [maskedInput],
   );
 
   const handleFocus = useCallback<FocusEventHandler<HTMLInputElement>>(() => {
-    // If keboard has been used, how do we detect SHIFT + TAB
     if (mousedDownRef.current) {
+      // selection will be handled by mouseUp
       mousedDownRef.current = false;
     } else {
-      maskedInputRef.current?.focus();
+      maskedInput.focus();
     }
-  }, []);
+  }, [maskedInput]);
 
   const handleMouseDown = useCallback<MouseEventHandler>(() => {
     mousedDownRef.current = true;
@@ -134,15 +131,15 @@ export const useTimeInput = ({
   const handleMouseUp = useCallback<MouseEventHandler<HTMLInputElement>>(
     (e) => {
       e.preventDefault();
-      maskedInputRef.current?.click();
+      maskedInput.click();
     },
-    [],
+    [maskedInput],
   );
 
   return {
     inputRef: setInputEl,
     eventHandlers: {
-      onBlur: maskedInputRef.current?.blur,
+      onBlur: maskedInput.blur,
       onDoubleClick: handleDoubleClick,
       onFocus: handleFocus,
       onKeyDown: handleKeyDown,

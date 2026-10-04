@@ -25,9 +25,8 @@
         outline: var(--vuuTimeInput-outline, var(--salt-focused-outline));
     }
 
-}
-
-.invalid {
-    border-color: red;
+    &.vuuTimeInput-invalid {
+        border-color: var(--vuuTimeInput-invalid-borderColor, var(--salt-status-error-borderColor, red));
+    }
 }
 

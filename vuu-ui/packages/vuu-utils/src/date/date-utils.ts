@@ -87,7 +87,7 @@ export function updateTimeString<T extends TimeUnit>(
   }
 }
 
-const validTimePattern = /(?:[0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]/;
+const validTimePattern = /^(?:[0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/;
 export const isValidTimeString = (value: unknown): value is TimeString =>
   typeof value === "string" && validTimePattern.test(value);
 

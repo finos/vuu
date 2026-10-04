@@ -1,6 +1,6 @@
 import { Button, Input } from "@salt-ds/core";
 import { TimeInput, TimeInputProps } from "@vuu-ui/vuu-ui-controls";
-import { asTimeString, CommitHandler, TimeString } from "@vuu-ui/vuu-utils";
+import { CommitHandler, TimeString } from "@vuu-ui/vuu-utils";
 import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
 
 export const NativeHtmlTimeInput = () => {
@@ -37,12 +37,21 @@ export const NativeHtmlTimeInput = () => {
   );
 };
 
+interface TimeInputTemplateProps extends Partial<TimeInputProps> {
+  /**
+   * When controlled, changes are applied to state by default.
+   * Set this to simulate an owner that rejects changes.
+   */
+  rejectChanges?: boolean;
+}
+
 const TimeInputTemplate = ({
   defaultValue,
   onChange,
   onCommit,
+  rejectChanges = false,
   value: valueProp,
-}: Partial<TimeInputProps>) => {
+}: TimeInputTemplateProps) => {
   const [value, setValue] = useState(valueProp);
   const [changeValues, setChangeValues] = useState<string[]>([]);
   const [commitValues, setCommitValues] = useState<string[]>([]);
@@ -55,15 +64,16 @@ const TimeInputTemplate = ({
     (e) => {
       const { value } = e.target;
       setChangeValues((values) => [...values, value]);
-      console.log(`change value ${value}`);
+      if (valueProp !== undefined && !rejectChanges) {
+        setValue(value as TimeString);
+      }
       onChange?.(e);
     },
-    [onChange],
+    [onChange, rejectChanges, valueProp],
   );
 
   const handleCommit = useCallback<CommitHandler<HTMLInputElement, TimeString>>(
     (e, value) => {
-      console.log(`commit value ${value}`);
       setCommitValues((values) => [...values, value]);
       onCommit?.(e, value);
     },
@@ -71,7 +81,6 @@ const TimeInputTemplate = ({
   );
 
   const setTime = useCallback((time: TimeString) => {
-    console.log(`set time ${time}`);
     setValue(time);
   }, []);
 
@@ -119,11 +128,18 @@ export const TestTimeInput = ({
   defaultValue,
   onChange,
   onCommit,
-}: Partial<Pick<TimeInputProps, "defaultValue" | "onChange" | "onCommit">>) => (
+  rejectChanges,
+  value,
+}: Pick<
+  TimeInputTemplateProps,
+  "defaultValue" | "onChange" | "onCommit" | "rejectChanges" | "value"
+>) => (
   <TimeInputTemplate
     defaultValue={defaultValue}
     onChange={onChange}
     onCommit={onCommit}
+    rejectChanges={rejectChanges}
+    value={value}
   />
 );
 
@@ -137,17 +153,6 @@ export const VuuTimeInputDefaultValue = () => (
   <TimeInputTemplate defaultValue="00:59:59" />
 );
 
-export const VuuTimeInputControlled = () => {
-  const [value, setValue] = useState<TimeString>("09:00:00");
-
-  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
-    (e) => {
-      const { value } = e.target;
-      console.log(`setValue ${value}`);
-      setValue(asTimeString(value, false));
-    },
-    [],
-  );
-
-  return <TimeInputTemplate onChange={handleChange} value={value} />;
-};
+export const VuuTimeInputControlled = () => (
+  <TimeInputTemplate value="09:00:00" />
+);
