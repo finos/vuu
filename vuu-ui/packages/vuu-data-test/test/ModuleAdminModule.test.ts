@@ -1,5 +1,6 @@
 import { MODULE_ADMIN_RPC } from "@heswell/module-admin/contracts";
 import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import moduleContainer from "../src/core/module/ModuleContainer";
 import {
@@ -245,7 +246,7 @@ describe("ModuleAdminModule", () => {
 
   it("keeps the browser implementation on the contracts entry point", async () => {
     const source = await readFile(
-      "packages/vuu-data-test/src/module-admin/ModuleAdminModule.ts",
+      resolve(__dirname, "../src/module-admin/ModuleAdminModule.ts"),
       "utf8",
     );
 
