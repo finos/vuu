@@ -43,8 +43,9 @@ const NO_CONFIG: FilterTableConfig = {};
 const defaultTableConfig: Partial<TableConfig> = {
   columnLayout: "fit",
   columnDefaultWidth: 130,
+  columnSeparators: true,
   rowSeparators: true,
-  zebraStripes: true,
+  zebraStripes: false,
 };
 
 type FilterTableConfig = {
