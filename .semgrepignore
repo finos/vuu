@@ -31,6 +31,7 @@ vuu-ui/scripts/build.mjs
 vuu-ui/scripts/build-rslib.ts
 vuu-ui/scripts/build-typelib.mjs
 vuu-ui/scripts/copy-license.ts
+vuu-ui/scripts/launch-app.ts
 vuu-ui/scripts/utils.ts
 vuu-ui/tools/vuu-showcase/scripts/build-file-list.ts
 vuu-ui/tools/vuu-showcase/scripts/showcase-build.ts
