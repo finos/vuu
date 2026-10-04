@@ -67,6 +67,22 @@ describe("getCustomAndTableFeatures", () => {
     );
   });
 
+  it("matches table-specific features by VuuTable", () => {
+    const { tableFeatures } = getCustomAndTableFeatures(
+      [
+        {
+          ...spreadsheetFeature,
+          featureProps: {
+            vuuTables: [{ module: "SIMUL", table: "SPREADSHEET" }],
+          },
+        },
+      ],
+      tableSchemas,
+    );
+    expect(tableFeatures).toHaveLength(1);
+    expect(tableFeatures[0].ComponentProps?.tableSchema).toBe(tableSchemas[1]);
+  });
+
   it("resolves custom feature schemas by VuuTable", () => {
     const { dynamicFeatures } = getCustomAndTableFeatures(
       [
