@@ -11,7 +11,7 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "dependencies": {
-    "@heswell/module-admin": "1.0.0",
+    "@heswell/module-admin": "1.1.0",
     "@heswell/user-admin": "1.0.1",
     "@vuu-ui/vuu-data-editing": "3.4.0",
     "@vuu-ui/vuu-data-local": "3.4.0",

@@ -1,10 +1,7 @@
 import {
-  moduleDefinitionsToRows,
-  modulePermissionsFor,
-  type ModuleAccessRole,
-  type ModuleDefinition,
-  type ModulePermissionRow,
-  type ModuleRow,
+  managedModuleColumnValues,
+  managedModulePermissionValues,
+  type ManagedModule,
 } from "@heswell/module-admin/contracts";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import type { Table } from "../Table";
@@ -14,87 +11,31 @@ type Row = Array<bigint | VuuRowDataItemType>;
 type Tables = Record<ModuleAdminTableName, Table>;
 
 export type ModuleAdminSnapshot = {
-  moduleAccessRoles: readonly ModuleAccessRole[];
-  modules: readonly ModuleDefinition[];
-  timestamp: number;
+  modules: readonly ManagedModule[];
 };
 
 const rowsEqual = (left: Row, right: Row) =>
   left.length === right.length &&
   left.every((value, index) => value === right[index]);
 
-const systemValues = (timestamp: number) => ({
-  vuuCreatedTimestamp: timestamp,
-  vuuMsg: "",
-  vuuUpdatedTimestamp: timestamp,
-});
-
 const toRow = (table: Table, values: Record<string, VuuRowDataItemType>) =>
   table.schema.columns.map(
     ({ name }) => values[name] ?? "",
   ) as VuuRowDataItemType[];
 
-const moduleValues = (
-  [
-    id,
-    name,
-    title,
-    description,
-    version,
-    enabled,
-    location,
-    path,
-    mfComponent,
-    mfScope,
-    mfUrl,
-    vuuConnectionId,
-    vuuWebsocketUrl,
-    vuuRestUrl,
-  ]: ModuleRow,
-  timestamp: number,
-) => ({
-  ...systemValues(timestamp),
-  description,
-  enabled,
-  id,
-  location,
-  mfComponent,
-  mfScope,
-  mfUrl,
-  name,
-  path,
-  title,
-  version,
-  vuuConnectionId,
-  vuuRestUrl,
-  vuuWebsocketUrl,
-});
-
-const permissionValues = (
-  [id, moduleId, role]: ModulePermissionRow,
-  timestamp: number,
-) => ({
-  ...systemValues(timestamp),
-  id,
-  module_id: moduleId,
-  role,
-});
-
 export const projectModuleAdminSnapshot = (
   snapshot: ModuleAdminSnapshot,
   tables: Tables,
 ): Record<ModuleAdminTableName, Row[]> => ({
-  modulePermissions: modulePermissionsFor(
-    snapshot.modules,
-    snapshot.moduleAccessRoles,
-  ).map((row) =>
-    toRow(tables.modulePermissions, permissionValues(row, snapshot.timestamp)),
+  modulePermissions: managedModulePermissionValues(snapshot.modules).map(
+    (values) => toRow(tables.modulePermissions, values),
   ),
-  modules: moduleDefinitionsToRows(snapshot.modules).map((row) =>
-    toRow(tables.modules, moduleValues(row, snapshot.timestamp)),
+  modules: snapshot.modules.map((module) =>
+    toRow(tables.modules, managedModuleColumnValues(module)),
   ),
 });
 
+/** Brings the tables into line with the snapshot, emitting row-level updates. */
 export const reconcileModuleAdminTables = (
   snapshot: ModuleAdminSnapshot,
   tables: Tables,

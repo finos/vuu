@@ -6,6 +6,9 @@
     "prebuild": "npm run build --workspace @vuu-ui/portal-build",
     "build": "portal-build --config ./portal-build.json",
     "dev": "rsbuild dev",
+    "test": "vitest run --root ../.. portal-examples/module-admin/test",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "biome lint src test",
     "start": "ws --directory ../../dist_portal/module-admin --spa index.html --port 5002"
   },
   "type": "module",
@@ -20,15 +23,18 @@
   "devDependencies": {
     "@vuu-ui/portal-build": "0.1.0",
     "@vuu-ui/vuu-data-types": "3.4.0",
-    "@vuu-ui/vuu-table-types": "3.4.0"
+    "@vuu-ui/vuu-table-types": "3.4.0",
+    "@vuu-ui/vuu-theme": "3.4.0"
   },
   "dependencies": {
-    "@vuu-ui/vuu-data-editing": "3.4.0",
-    "@vuu-ui/vuu-data-react": "3.4.0",
+    "@heswell/module-admin": "1.1.0",
+    "@salt-ds/core": "1.67.0",
+    "@salt-ds/icons": "1.18.3",
+    "@vuu-ui/core": "3.4.0",
     "@vuu-ui/vuu-data-test": "3.4.0",
-    "@vuu-ui/vuu-table": "3.4.0",
-    "@vuu-ui/vuu-utils": "3.4.0",
-    "@vuu-ui/core": "3.4.0"
+    "@vuu-ui/vuu-notifications": "3.4.0",
+    "@vuu-ui/vuu-protocol-types": "3.4.0",
+    "@vuu-ui/vuu-utils": "3.4.0"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",
@@ -44,6 +50,10 @@
         {
           "module": "MODULE_DISCOVERY",
           "table": "modules"
+        },
+        {
+          "module": "MODULE_DISCOVERY",
+          "table": "modulePermissions"
         }
       ]
     },

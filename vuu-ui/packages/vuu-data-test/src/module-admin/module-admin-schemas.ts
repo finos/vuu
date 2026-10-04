@@ -16,6 +16,7 @@ export const MODULE_ADMIN_TABLE_SCHEMAS: Readonly<
   modules: {
     columns: [
       { name: "id", serverDataType: "int" },
+      { name: "parentModuleId", serverDataType: "int" },
       { name: "name", serverDataType: "string" },
       { name: "title", serverDataType: "string" },
       { name: "description", serverDataType: "string" },
@@ -29,6 +30,7 @@ export const MODULE_ADMIN_TABLE_SCHEMAS: Readonly<
       { name: "vuuConnectionId", serverDataType: "string" },
       { name: "vuuWebsocketUrl", serverDataType: "string" },
       { name: "vuuRestUrl", serverDataType: "string" },
+      { name: "navIconUrl", serverDataType: "string" },
       ...VUU_DEFAULT_COLUMNS,
     ],
     key: "id",

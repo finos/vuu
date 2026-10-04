@@ -14,7 +14,9 @@ export {
   type ModuleAdminSnapshot,
 } from "./snapshot-projection";
 export type {
+  ManagedModule,
   ModuleAccessRole,
+  ModuleConfig,
   ModuleDefinition,
   ModulePermissionRow,
   ModuleRow,

@@ -1,1 +1,1 @@
-export { default } from "./ModuleAdmin";
+import("./bootstrap");

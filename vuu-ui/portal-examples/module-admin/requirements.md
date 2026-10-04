@@ -1,119 +1,103 @@
-# Module Admin UI Requirements
+# Module Admin
 
-## Purpose
+Module Admin is a portal remote module for managing the remote modules that
+module discovery publishes, such as `user-admin` and `basket-trading`.
+Administrators can register new remotes, edit existing ones, enable or disable
+them, and delete them.
 
-Provide a simple module-federated administration feature that displays the modules known to VUU module discovery. Phase 1 is a read-only view of the VUU `modules` table.
+The approved designs are in [`docs/designs`](docs/designs/README.md).
 
-## Scope
+## Data
 
-- Create the UI package at `vuu-ui/portal-examples/module-admin`.
-- Follow `vuu-ui/portal-examples/user-admin` for package structure, federation setup, VUU data access, table configuration, and view sizing.
-- Render one table only: `{ module: "MODULE_DISCOVERY", table: "modules" }`.
+Module Admin reads two `MODULE_DISCOVERY` tables:
 
-## Package and Federation Identity
+| Table               | Purpose                                                            |
+| ------------------- | ------------------------------------------------------------------ |
+| `modules`           | One row per module: identity, menu location, route, federation details, Vuu connection, `enabled`, `version` and timestamps |
+| `modulePermissions` | Effective access role for each module. Child modules inherit their parent's role. |
 
-- Package name: `module-admin`.
-- Primary component and default export: `ModuleAdmin`.
-- Module Federation name: `moduleAdmin`.
-- Exposed module: `"./ModuleAdmin": "./src/ModuleAdmin"`.
-- Development port: `5008`, following the existing sample-feature port sequence.
-- Declare the required VUU table in package metadata:
+Changes go through RPCs on the `modules` table. The request and response shapes
+come from the shared contract `@heswell/module-admin/contracts`:
 
-  ```json
-  {
-    "vuu": {
-      "featureProps": {
-        "vuuTables": [
-          {
-            "module": "MODULE_DISCOVERY",
-            "table": "modules"
-          }
-        ]
-      }
-    }
-  }
-  ```
+| RPC                | Params                               | Result               |
+| ------------------ | ------------------------------------ | -------------------- |
+| `createModule`     | `module` (JSON `ModuleConfig`)       | `{ id, version }`    |
+| `updateModule`     | `id`, `changes` (JSON partial config), `expectedVersion` | `{ id, version }` |
+| `setModuleEnabled` | `id`, `enabled`                      | `{ id, version }`    |
+| `deleteModule`     | `id`, `deleteChildren`               | `{ deletedIds }`     |
 
-## Server and Data Contract
+- `updateModule` uses optimistic concurrency. If `expectedVersion` is stale, the
+  server rejects the call and the UI shows the error.
+- The server checks every RPC with `validateModuleConfig`. It requires unique
+  names and routes, valid URLs, and all three Vuu connection fields once a
+  connection id is set. The UI runs the same validation as the user types.
 
-- Backend package: `packages/vuu-portal` in the `heswell/vuu-websocket`
-  repository.
-- Module discovery is installed in the portal VUU server, so this remote uses
-  the host's `portal` connection.
-- The UI must discover the schema from the connected VUU server and subscribe to the VUU table identified exactly by `{ module: "MODULE_DISCOVERY", table: "modules" }`.
-- The expected server schema, in order, is:
+## UI
 
-  | Column | Type | Notes |
-  | --- | --- | --- |
-  | `id` | `int` | Key |
-  | `name` | `string` |  |
-  | `title` | `string` |  |
-  | `description` | `string` |  |
-  | `version` | `int` |  |
-  | `enabled` | `boolean` |  |
-  | `location` | `string` |  |
-  | `mfComponent` | `string` |  |
-  | `mfScope` | `string` |  |
-  | `mfUrl` | `string` |  |
+- **Overview.** A card grid with KPIs (total, enabled, disabled, needs
+  attention), search, status filter, group-by (none, menu section or status) and
+  sort. Each card shows the title, name, route, location, access role,
+  enabled state and remote-check status. Cards are the default because there
+  are only a small number of modules.
+- **Alternative views.** A menu tree that previews the portal navigation, and a
+  compact table.
+- **Details panel.** Opens when a card is selected. It shows the federation
+  details, the Vuu connection, the access role (inherited or explicit),
+  child modules and the remote check result.
+- **Create.** A full page form. The module name, route, scope and access role
+  are derived from the title until the user edits them. Validation messages
+  appear only after a field has been touched or the user tries to save.
+- **Edit.** A side panel that shows which fields have changed, with save and
+  reset. Saving bumps the module's version.
+- **Enable/disable.** A confirmation dialog. Disabled modules stay listed but
+  are hidden from users of the portal.
+- **Delete.** A confirmation dialog. If the module has children, the user can
+  delete them too ("Delete N modules"). The server will keep an audit history
+  in a later iteration.
 
-- Subscribe with all schema columns in server-provided order; do not duplicate the schema as the runtime source of column definitions.
-- The server currently seeds `module-admin` and `user-admin` rows in an in-memory provider. Server-side changes are not persistent.
-- Although `modules` exposes an edit-session service, phase 1 must not invoke it.
-- The feature must not hard-code an endpoint or create its own connection; it
-  must use the host-provided portal VUU connection scope and configuration.
-- Do not fetch a module registry. The raw VUU table remains this screen's data
-  source; portal remote discovery is supplied by `LOGIN_SUCCESS`.
+## Remote checks
 
-## Data Access
+The browser checks that a remote is reachable, not the server, because in
+containerised deployments only the user's browser may be able to reach the
+remote URL. The check:
 
-- Obtain the server API through `useData().getServerAPI()`.
-- Discover the table schema with the server API before creating the data source.
-- Create the table subscription with `useSessionDataSource()`, using the discovered schema and all of its columns.
-- Use a stable component-local identifier to scope data-source and viewport identifiers.
-- Do not depend on `@vuu-ui/vuu-layout` or require a VUU view context.
-- Reuse the host VUU session and lifecycle; do not instantiate a separate websocket client or data provider inside the federated feature.
+1. Fetches the remote's federation manifest from `mfUrl` and records the response time.
+2. Parses the module federation manifest.
+3. Compares the manifest with the configured `mfScope` and exposed component.
 
-## Table and Layout Behavior
+The result is shown on the card and in the details panel. A failed check is
+only advisory and never blocks saving.
 
-- Render a standard `Table` from `@vuu-ui/vuu-table`.
-- Use the discovered schema to construct the table configuration.
-- Enable row separators and zebra stripes, consistent with `user-admin`.
-- Display the table read-only; row selection, if supplied by the standard table, must not trigger an admin action.
-- The feature root and table container must fill the available height and width and preserve `min-height: 0` and `min-width: 0` where needed for embedding in a VUU view.
-- Do not add tabs, drawers, forms, toolbars, dialogs, or secondary panels in phase 1.
+## Server (vuu-websocket `vuu-portal`)
 
-## Loading and Error Handling
+- Module definitions are stored in a writable YAML file, set by
+  `vuu.portal.modulesFile` (default `modules.yaml`). On first start the file is
+  seeded from the built-in module definitions and `module-access.yaml`.
+- Saves are atomic: the server writes a temp file and renames it. A change is
+  persisted before the `MODULE_DISCOVERY` tables are updated, so a failed save
+  leaves the tables unchanged.
+- Admin RPCs require the role set by `vuu.portal.moduleAdminRole` (default
+  `module-admin-access`). Without this check, any user could register a remote
+  URL that other users' browsers would load.
 
-- Show an explicit loading state while server access and schema discovery are pending; do not render the table until its schema, configuration, and data source are ready.
-- Show an explicit, user-visible error state if server access, schema discovery, or data-source setup fails.
-- Error handling must preserve the original error for diagnostics and must not convert a failure into an empty-table success state.
-- Connection and authentication failures remain owned by the host VUU session; the feature may present the surfaced failure but must not implement a separate login or connection fallback.
+A more robust store may replace the YAML file later.
 
-## Integration Constraints
+## Local data
 
-- The feature is intended to run inside a host that supplies compatible VUU connection and view contexts.
-- Standalone use requires a host that supplies the authenticated portal VUU
-  connection.
-- The UI must not work around this gap by disabling authentication, manufacturing tokens, calling the registry directly, or implementing its own authentication flow. A compatible host/server authentication arrangement is an external integration dependency.
+`ModuleAdminLocal.ts` registers `moduleAdminModule` from `@vuu-ui/vuu-data-test`.
+It provides the same tables and RPCs in memory, so the UI can run without a
+server, for example in the showcase or standalone with
+`LocalDataSourceProvider`.
 
-## Non-Goals for Phase 1
+## Development
 
-- Creating, editing, enabling, disabling, or deleting module records.
-- Calling the `modules` edit-session service.
-- Displaying permissions, users, or any table other than `modules`.
-- Managing or mutating the module registry.
-- Fetching or reproducing the portal-login module registry.
-- Persisting server data.
-- Providing standalone authentication or websocket connection configuration.
+```sh
+npm run typecheck
+npm run lint
+npm run test        # vitest (happy-dom), tests in ./test
+npm run build       # outputs to vuu-ui/dist_portal/module-admin
+npm start           # serves the build on port 5002 (requires the `ws` package)
+```
 
-## Acceptance Criteria
-
-1. The package and federation metadata use the identities specified above and declare only the `MODULE_DISCOVERY/modules` VUU table.
-2. The feature obtains its server API and session data source from the host using `useData()` and `useSessionDataSource()` without depending on `@vuu-ui/vuu-layout` or a view context.
-3. The feature discovers the schema from the server and subscribes to exactly `{ module: "MODULE_DISCOVERY", table: "modules" }` with all schema columns.
-4. A single read-only VUU `Table` fills the available view and uses row separators and zebra stripes.
-5. Loading and failure states are explicit, and failures are not presented as an empty successful table.
-6. The browser makes no request to `/module-registry`; discovery arrives in the
-   portal `LOGIN_SUCCESS`, and the feature does not create an independent VUU
-   connection.
-7. No create, edit, delete, permissions, users, registry-management, persistence, or authentication workaround behavior is present.
+The standalone entry (`src/bootstrap.tsx`) imports `@vuu-ui/vuu-theme`. When the
+module is hosted in the portal, the host provides the theme instead.
