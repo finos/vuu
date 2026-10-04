@@ -127,20 +127,25 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
   }
 
   private def copyDataToSessionTable(copyOption: SessionTableCopyOption, vp: ViewPort, sessionTable: InMemSessionDataTable, columns: List[String]): Unit = {
-    copyOption match {
-      case All =>
-        val vpColumns = ViewPortColumnCreator.create(vp.table.asTable, columns)
-        val iterator = vp.getKeys.iterator.take(tableContainer.rpcOptions.maxSessionTableSize)
-        while (iterator.hasNext) {
-          sessionTable.processUpdate(vp.table.pullRow(iterator.next(), vpColumns))
+    vp.table match {
+      case exporter: SessionTableDataExporter =>
+        exporter.exportData(copyOption, vp, sessionTable, columns)
+      case _ =>
+        copyOption match {
+          case All =>
+            val vpColumns = ViewPortColumnCreator.create(vp.table.asTable, columns)
+            val iterator = vp.getKeys.iterator.take(tableContainer.rpcOptions.maxSessionTableSize)
+            while (iterator.hasNext) {
+              sessionTable.processUpdate(vp.table.pullRow(iterator.next(), vpColumns))
+            }
+          case Selected =>
+            val vpColumns = ViewPortColumnCreator.create(vp.table.asTable, columns)
+            val iterator = vp.getSelection.iterator.take(tableContainer.rpcOptions.maxSessionTableSize)
+            while (iterator.hasNext) {
+              sessionTable.processUpdate(vp.table.pullRow(iterator.next(), vpColumns))
+            }
+          case Empty =>
         }
-      case Selected =>
-        val vpColumns = ViewPortColumnCreator.create(vp.table.asTable, columns)
-        val iterator = vp.getSelection.iterator.take(tableContainer.rpcOptions.maxSessionTableSize)
-        while (iterator.hasNext) {
-          sessionTable.processUpdate(vp.table.pullRow(iterator.next(), vpColumns))
-        }
-      case Empty =>
     }
   }
 
