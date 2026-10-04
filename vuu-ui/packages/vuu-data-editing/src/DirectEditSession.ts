@@ -39,6 +39,14 @@ export class DirectEditSession
     return false;
   }
 
+  async cancel(
+    _key: string,
+    _columnName: string,
+    _restoredValue: VuuRowDataItemType,
+  ): Promise<RpcResult> {
+    return { data: undefined, type: "SUCCESS_RESULT" };
+  }
+
   async commit(
     key: string,
     columnName: string,

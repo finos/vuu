@@ -44,8 +44,13 @@ const editSession = useMemo(
 ```
 
 Both `EditSession` and `DirectEditSession` implement `TableEditSession`, the
-subset of behaviour `Table` cells rely on (`commit`, `inEditMode`,
-`isCellEdited` and `cellEditChanged` events). `DataEditingProvider` and
+subset of behaviour `Table` cells rely on (`commit`, `cancel`, `inEditMode`,
+`isCellEdited` and `cellEditChanged` events).
+
+`cancel` is invoked when the user abandons an in-progress cell edit (Escape).
+Typed values are only sent to the session on commit, so cancelling never sends
+an RPC. `EditSession.cancel` discards any invalid edit recorded for the cell,
+restoring a previously committed valid edit if there was one. `DataEditingProvider` and
 `useEditSession` are typed against this interface. Features that only a staged
 session supports (inline add row, undo row change) narrow to `EditSession`
 with `instanceof`.

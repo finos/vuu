@@ -76,4 +76,15 @@ describe("DirectEditSession", () => {
       editSession.commit("key-1", "price", 100, 101, true),
     ).rejects.toThrow("does not support editCell");
   });
+
+  it("cancel sends nothing to the server", async () => {
+    const editCell = vi.fn();
+    const editSession = new DirectEditSession({
+      dataSource: createDataSource(editCell),
+    });
+    await expect(editSession.cancel("key-1", "price", 100)).resolves.toEqual(
+      success,
+    );
+    expect(editCell).not.toHaveBeenCalled();
+  });
 });

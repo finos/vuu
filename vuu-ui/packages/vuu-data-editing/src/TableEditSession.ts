@@ -23,6 +23,17 @@ export interface TableEditSession {
     typedValue: string | number | boolean,
     isValid: boolean,
   ): Promise<RpcResult>;
+  /**
+   * Invoked when user abandons an in-progress cell edit, restoring the value
+   * the cell held before editing began. Values that have only been typed, not
+   * committed, have never been sent to the server, so nothing is sent here.
+   * Any invalid edit previously recorded for the cell is discarded.
+   */
+  cancel(
+    key: string,
+    columnName: string,
+    restoredValue: VuuRowDataItemType,
+  ): Promise<RpcResult>;
   isCellEdited(key: string, columnName: string): boolean;
   on<E extends keyof TableEditSessionEvents>(
     event: E,

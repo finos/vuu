@@ -764,6 +764,28 @@ export class EditSession
     return this.#cellCommitRevisions.get(key)?.get(columnName) === revision;
   }
 
+  async cancel(
+    key: string,
+    columnName: string,
+    restoredValue: VuuRowDataItemType,
+  ): Promise<RpcResult> {
+    const cellEdits = this.#rowEdits.get(key)?.cellEdits;
+    const cellEdit = cellEdits?.get(columnName);
+    if (this.inEditMode && cellEdits && cellEdit && !cellEdit.isValid) {
+      // Only an invalid edit can be outstanding, a valid one would already
+      // reflect the restored value. Invalid values are never sent to server.
+      this.#storeCellEdit(
+        key,
+        cellEdits,
+        columnName,
+        cellEdit.originalValue,
+        restoredValue,
+        true,
+      );
+    }
+    return { data: undefined, type: "SUCCESS_RESULT" };
+  }
+
   async commit(
     key: string,
     columnName: string,

@@ -57,6 +57,14 @@ export const TableCell = ({
 
       const { editType, isValid = true, previousValue = "", value } = editState;
       if (editPhase === "commit" && editSession) {
+        if (editType === "cancel") {
+          if (isNewRow) {
+            // uncommitted values are never applied to the new row draft
+            return { data: undefined, type: "SUCCESS_RESULT" };
+          }
+          return editSession.cancel(dataRow.key, name, value);
+        }
+
         if (stagedEditSession && isNewRow) {
           const isEmptyValue = typeof value === "string" && value.trim() === "";
           if (!isValid && !isEmptyValue) {
@@ -69,11 +77,6 @@ export const TableCell = ({
           ) {
             return stagedEditSession.addNewRow();
           }
-          return { data: undefined, type: "SUCCESS_RESULT" };
-        }
-
-        if (editType === "cancel" && !stagedEditSession) {
-          // nothing was sent to server, so there is nothing to revert
           return { data: undefined, type: "SUCCESS_RESULT" };
         }
 
