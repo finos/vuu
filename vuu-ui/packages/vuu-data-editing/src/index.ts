@@ -1,4 +1,16 @@
-export { DataEditingProvider, useEditSession } from "./DataEditingProvider";
+export {
+  DataEditingProvider,
+  useEditSession,
+  useTableEditSession,
+} from "./DataEditingProvider";
+export {
+  DirectEditSession,
+  type DirectEditSessionConstructorProps,
+} from "./DirectEditSession";
+export type {
+  TableEditSession,
+  TableEditSessionEvents,
+} from "./TableEditSession";
 export { useCellEdited } from "./useCellEdited";
 export { useEditState } from "./useEditState";
 export {

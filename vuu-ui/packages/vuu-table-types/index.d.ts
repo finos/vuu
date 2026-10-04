@@ -84,21 +84,11 @@ export interface EditEventState {
   value: VuuRowDataItemType;
 }
 
-export interface DataCellEditEvent extends EditEventState {
-  columnName?: string;
-  dataRow?: DataRow;
-}
-
-export declare type DataCellEditNotification = (
-  editEvent: DataCellEditEvent,
-) => void;
-
 export interface TableCellProps {
   className?: string;
   column: RuntimeColumnDescriptor;
   dataRow: DataRow;
   onClick?: (event: MouseEvent, column: RuntimeColumnDescriptor) => void;
-  onDataEdited?: TableCellEditHandler;
   searchPattern?: Lowercase<string>;
 }
 
@@ -129,8 +119,7 @@ export declare type TableRowClickHandlerInternal = (
   keepExistingSelection: boolean,
 ) => void;
 
-export interface TableCellRendererProps
-  extends Omit<TableCellProps, "onDataEdited"> {
+export interface TableCellRendererProps extends TableCellProps {
   /**
    * has the value of this edit control been changed during the current edit session.
    * This can go from true to false if control is edited to revert a previous change
@@ -551,7 +540,6 @@ export interface RowProps extends BaseRowProps {
   offset: number;
   onCellEdit?: CellEditHandler;
   onClick?: TableRowClickHandlerInternal;
-  onDataEdited?: TableCellEditHandler;
   onToggleGroup?: (row: DataSourceRow, column: RuntimeColumnDescriptor) => void;
   searchPattern: Lowercase<string>;
   showBookends?: boolean;

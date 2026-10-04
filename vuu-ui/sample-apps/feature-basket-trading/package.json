@@ -22,6 +22,7 @@
     "@vuu-ui/vuu-table-types": "3.4.0"
   },
   "dependencies": {
+    "@vuu-ui/vuu-data-editing": "3.4.0",
     "@vuu-ui/vuu-data-remote": "3.4.0",
     "@vuu-ui/vuu-data-react": "3.4.0",
     "@vuu-ui/vuu-filters": "3.4.0",

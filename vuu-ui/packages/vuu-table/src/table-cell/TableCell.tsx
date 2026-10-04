@@ -1,6 +1,10 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { useCellEdited, useEditSession } from "@vuu-ui/vuu-data-editing";
+import {
+  useCellEdited,
+  useEditSession,
+  useTableEditSession,
+} from "@vuu-ui/vuu-data-editing";
 import type {
   TableCellEditHandler,
   TableCellProps,
@@ -18,7 +22,6 @@ export const TableCell = ({
   column,
   dataRow,
   onClick,
-  onDataEdited,
   searchPattern = "",
 }: TableCellProps) => {
   const targetWindow = useWindow();
@@ -28,11 +31,13 @@ export const TableCell = ({
     window: targetWindow,
   });
 
-  const editSession = useEditSession();
+  const editSession = useTableEditSession();
+  // Only a staged EditSession supports inline insertion of new rows
+  const stagedEditSession = useEditSession();
 
   const { className, style } = useCell(column, classBase, false);
   const { ariaColIndex, CellRenderer, name, valueFormatter } = column;
-  const isNewRow = editSession?.isNewRow(dataRow.key) ?? false;
+  const isNewRow = stagedEditSession?.isNewRow(dataRow.key) ?? false;
   const isInsertOnly =
     isDataValueEditable(column, "insert") &&
     !isDataValueEditable(column, "update");
@@ -44,37 +49,32 @@ export const TableCell = ({
 
   const handleDataItemEdited = useCallback<TableCellEditHandler>(
     async (editState, editPhase) => {
-      const editOperation = editSession?.isNewRow(dataRow.key)
-        ? "insert"
-        : "update";
-      if (!isDataValueEditable(column, editOperation)) {
+      const isNewRow = stagedEditSession?.isNewRow(dataRow.key) ?? false;
+      if (!isDataValueEditable(column, isNewRow ? "insert" : "update")) {
         return;
       }
 
-      if (onDataEdited) {
-        return onDataEdited(
-          {
-            ...editState,
-            columnName: name,
-            dataRow,
-          },
-          editPhase,
-        );
-      }
-
-      const { isValid = true, previousValue = "", value } = editState;
+      const { editType, isValid = true, previousValue = "", value } = editState;
       if (editPhase === "commit" && editSession) {
-        if (editSession.isNewRow(dataRow.key)) {
+        if (editType === "cancel") {
+          if (isNewRow) {
+            // uncommitted values are never applied to the new row draft
+            return { data: undefined, type: "SUCCESS_RESULT" };
+          }
+          return editSession.cancel(dataRow.key, name, value);
+        }
+
+        if (stagedEditSession && isNewRow) {
           const isEmptyValue = typeof value === "string" && value.trim() === "";
           if (!isValid && !isEmptyValue) {
             return { errorMessage: "Invalid value", type: "ERROR_RESULT" };
           }
-          editSession.setNewRowValue(name, value);
+          stagedEditSession.setNewRowValue(name, value);
           if (
-            editSession.isNewRowFinalColumn(name) ||
-            editSession.isNewRowComplete()
+            stagedEditSession.isNewRowFinalColumn(name) ||
+            stagedEditSession.isNewRowComplete()
           ) {
-            return editSession.addNewRow();
+            return stagedEditSession.addNewRow();
           }
           return { data: undefined, type: "SUCCESS_RESULT" };
         }
@@ -88,7 +88,7 @@ export const TableCell = ({
         );
       }
     },
-    [column, dataRow, editSession, name, onDataEdited],
+    [column, dataRow, editSession, name, stagedEditSession],
   );
 
   const handleClick = useCallback<MouseEventHandler>(

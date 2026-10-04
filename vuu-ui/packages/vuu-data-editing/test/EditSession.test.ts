@@ -411,4 +411,80 @@ describe("EditSession", () => {
     expect(editStateListener).toHaveBeenCalledTimes(1);
     expect(editStateListener).toHaveBeenCalledWith("clean");
   });
+
+  describe("cancel", () => {
+    it("does not record an edit or send anything when no edit was committed", async () => {
+      const cellEditListener = vi.fn();
+      const editStateListener = vi.fn();
+      await editSession.begin();
+      editSession.on("cellEditChanged", cellEditListener);
+      editSession.on("editState", editStateListener);
+
+      const response = await editSession.cancel("key-01", "col-1", 100);
+
+      expect(response.type).toEqual("SUCCESS_RESULT");
+      expect(edit).not.toHaveBeenCalled();
+      expect(editSession.isCellEdited("key-01", "col-1")).toEqual(false);
+      expect(editSession.hasRowChanges("key-01")).toEqual(false);
+      expect(editSession.editState).toEqual("clean");
+      expect(cellEditListener).not.toHaveBeenCalled();
+      expect(editStateListener).not.toHaveBeenCalled();
+    });
+
+    it("discards an invalid edit, without sending anything to server", async () => {
+      await editSession.begin();
+      await editSession.commit("key-01", "col-1", 100, "abc", false);
+      expect(editSession.invalidCount).toEqual(1);
+      expect(editSession.editState).toEqual("invalid");
+
+      await editSession.cancel("key-01", "col-1", 100);
+
+      expect(edit).not.toHaveBeenCalled();
+      expect(editSession.invalidCount).toEqual(0);
+      expect(editSession.editCount).toEqual(0);
+      expect(editSession.hasRowChanges("key-01")).toEqual(false);
+      expect(editSession.editState).toEqual("clean");
+    });
+
+    it("restores a previously committed valid edit when an invalid edit is cancelled", async () => {
+      await editSession.begin();
+      await editSession.commit("key-01", "col-1", 100, 150, true);
+      await editSession.commit("key-01", "col-1", 150, "abc", false);
+      expect(editSession.invalidCount).toEqual(1);
+      expect(editSession.editCount).toEqual(0);
+      vi.mocked(edit).mockClear();
+
+      await editSession.cancel("key-01", "col-1", 150);
+
+      expect(edit).not.toHaveBeenCalled();
+      expect(editSession.invalidCount).toEqual(0);
+      expect(editSession.editCount).toEqual(1);
+      expect(editSession.isCellEdited("key-01", "col-1")).toEqual(true);
+      expect(editSession.editState).toEqual("dirty");
+
+      // reverting the committed edit still returns the cell to its original state
+      await editSession.commit("key-01", "col-1", 150, 100, true);
+      expect(editSession.isCellEdited("key-01", "col-1")).toEqual(false);
+      expect(editSession.editState).toEqual("clean");
+    });
+
+    it("leaves a committed valid edit unchanged", async () => {
+      await editSession.begin();
+      await editSession.commit("key-01", "col-1", 100, 150, true);
+      vi.mocked(edit).mockClear();
+
+      await editSession.cancel("key-01", "col-1", 150);
+
+      expect(edit).not.toHaveBeenCalled();
+      expect(editSession.editCount).toEqual(1);
+      expect(editSession.isCellEdited("key-01", "col-1")).toEqual(true);
+    });
+
+    it("is a no-op outside an edit session", async () => {
+      await expect(
+        editSession.cancel("key-01", "col-1", 100),
+      ).resolves.toEqual({ data: undefined, type: "SUCCESS_RESULT" });
+      expect(edit).not.toHaveBeenCalled();
+    });
+  });
 });

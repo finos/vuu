@@ -9,6 +9,7 @@ import type {
 } from "@vuu-ui/vuu-data-types";
 import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
+import type { TableEditSession } from "./TableEditSession";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
 export type EditActionType = "deleteRow" | "addRow" | "editCell";
@@ -79,7 +80,10 @@ type EditSessionEvents = {
   newRow: (newRowState: NewRowState) => void;
 };
 
-export class EditSession extends EventEmitter<EditSessionEvents> {
+export class EditSession
+  extends EventEmitter<EditSessionEvents>
+  implements TableEditSession
+{
   static readonly newRowKey = "__vuu_new_row__";
   /**
    *  Row key => row edits
@@ -758,6 +762,28 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
   #isLatestCellCommit(key: string, columnName: string, revision: number) {
     return this.#cellCommitRevisions.get(key)?.get(columnName) === revision;
+  }
+
+  async cancel(
+    key: string,
+    columnName: string,
+    restoredValue: VuuRowDataItemType,
+  ): Promise<RpcResult> {
+    const cellEdits = this.#rowEdits.get(key)?.cellEdits;
+    const cellEdit = cellEdits?.get(columnName);
+    if (this.inEditMode && cellEdits && cellEdit && !cellEdit.isValid) {
+      // Only an invalid edit can be outstanding, a valid one would already
+      // reflect the restored value. Invalid values are never sent to server.
+      this.#storeCellEdit(
+        key,
+        cellEdits,
+        columnName,
+        cellEdit.originalValue,
+        restoredValue,
+        true,
+      );
+    }
+    return { data: undefined, type: "SUCCESS_RESULT" };
   }
 
   async commit(
