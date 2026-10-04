@@ -54,7 +54,7 @@ const configPath = getCommandLineArg("--config", true);
 const features = getCommandLineArg(
   "--features",
   true,
-  "feature-filter-table,feature-instrument-tiles,feature-basket-trading",
+  "feature-filter-table,feature-instrument-tiles,feature-basket-trading,feature-spreadsheet",
 );
 if (configPath) {
   configFile = configPath;

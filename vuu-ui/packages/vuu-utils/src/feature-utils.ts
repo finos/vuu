@@ -20,6 +20,12 @@ export interface ViewConfig {
   header?: boolean;
 }
 
+/**
+ * A Vuu table can be identified either by a full VuuTable (module + table)
+ * or simply by table name.
+ */
+export type VuuTableSpecifier = VuuTable | string;
+
 export interface DynamicFeatureProps<P extends object | undefined = object> {
   /**
     props that will be passed to the lazily loaded component.
@@ -28,6 +34,11 @@ export interface DynamicFeatureProps<P extends object | undefined = object> {
   ViewProps?: ViewConfig;
   css?: string;
   height?: number;
+  /**
+   * Name of icon to display alongside feature in palette. If not
+   * specified, a default icon will be used.
+   */
+  icon?: string;
   title?: string;
   /** 
    The url of javascript bundle to lazily load. Bundle must provide a default export
@@ -49,8 +60,12 @@ export interface DynamicFeatureDescriptor {
    */
   css?: string;
   featureProps?: {
-    vuuTables?: "*" | VuuTable[];
+    vuuTables?: "*" | VuuTableSpecifier[];
   };
+  /**
+   * Name of icon to display alongside feature in palette.
+   */
+  icon?: string;
   leftNavLocation: "vuu-features" | "vuu-tables";
   name: string;
   title: string;
@@ -111,14 +126,16 @@ export const isCustomFeature = (feature: DynamicFeatureDescriptor) =>
   feature.leftNavLocation === "vuu-features";
 
 export const isWildcardSchema = (
-  vuuTables?: "*" | VuuTable[],
+  vuuTables?: "*" | VuuTableSpecifier[],
 ): vuuTables is "*" => vuuTables === "*";
 export const isVuuTables = (
-  vuuTables?: "*" | VuuTable[],
-): vuuTables is VuuTable[] => Array.isArray(vuuTables);
+  vuuTables?: "*" | VuuTableSpecifier[],
+): vuuTables is VuuTableSpecifier[] => Array.isArray(vuuTables);
 
-export interface FeaturePropsWithFilterTableFeature
-  extends Omit<DynamicFeatureProps, "ComponentProps"> {
+export interface FeaturePropsWithFilterTableFeature extends Omit<
+  DynamicFeatureProps,
+  "ComponentProps"
+> {
   ComponentProps: FilterTableFeatureProps;
 }
 
@@ -129,9 +146,25 @@ export const hasFilterTableFeatureProps = (
   props.ComponentProps !== null &&
   "tableSchema" in props.ComponentProps;
 
-export const isSameTable = (t1: VuuTable, t2: VuuTable) => {
+export const isSameTable = (t1: VuuTable, t2: VuuTable) =>
   t1.module === t2.module && t1.table == t2.table;
-};
+
+/**
+ * Match a VuuTable against a specifier. A string specifier
+ * matches on table name only, regardless of module.
+ */
+export const matchesVuuTable = (
+  vuuTableSpecifier: VuuTableSpecifier,
+  vuuTable: VuuTable,
+) =>
+  typeof vuuTableSpecifier === "string"
+    ? vuuTableSpecifier === vuuTable.table
+    : isSameTable(vuuTableSpecifier, vuuTable);
+
+const getTableName = (vuuTableSpecifier: VuuTableSpecifier) =>
+  typeof vuuTableSpecifier === "string"
+    ? vuuTableSpecifier
+    : vuuTableSpecifier.table;
 
 // Sort TableScheas by module
 export const byModule = (schema1: TableSchema, schema2: TableSchema) => {
@@ -218,24 +251,44 @@ export const getCustomAndTableFeatures = (
   const customFeatures: DynamicFeatureProps[] = [];
   const tableFeatures: DynamicFeatureProps<FilterTableFeatureProps>[] = [];
 
+  // Wildcard features (e.g FilterTable) are processed first, so they are listed
+  // ahead of table-specific features for the same table.
+  const [wildcardTableFeaturesConfig, specificTableFeaturesConfig] = partition(
+    tableFeaturesConfig,
+    ({ featureProps }) => isWildcardSchema(featureProps?.vuuTables),
+  );
+
   for (const {
     featureProps = {},
     viewProps,
     ...feature
-  } of tableFeaturesConfig) {
+  } of wildcardTableFeaturesConfig.concat(specificTableFeaturesConfig)) {
     const { vuuTables } = featureProps;
-    // Currently FilterTable is the only 'tableFeature' and it uses the wildcard
-    if (isWildcardSchema(vuuTables)) {
-      if (tableSchemas) {
-        for (const tableSchema of tableSchemas) {
+    if (
+      tableSchemas &&
+      (isWildcardSchema(vuuTables) || isVuuTables(vuuTables))
+    ) {
+      const isWildcard = isWildcardSchema(vuuTables);
+      for (const tableSchema of tableSchemas) {
+        if (
+          isWildcard ||
+          vuuTables.some((vuuTable) =>
+            matchesVuuTable(vuuTable, tableSchema.table),
+          )
+        ) {
+          const tableTitle = `${tableSchema.table.module} ${wordify(
+            tableSchema.table.table,
+          )}`;
           tableFeatures.push({
             ...feature,
             ComponentProps: {
               tableSchema,
             },
-            title: `${tableSchema.table.module} ${wordify(
-              tableSchema.table.table,
-            )}`,
+            // table-specific features are qualified by feature title, to
+            // distinguish them from the generic (wildcard) feature
+            title: isWildcard
+              ? tableTitle
+              : `${tableTitle.trim()} (${feature.title})`,
             ViewProps: {
               ...viewProps,
               allowRename: true,
@@ -258,8 +311,8 @@ export const getCustomAndTableFeatures = (
           ...feature,
           ComponentProps: vuuTables.reduce<Record<string, TableSchema>>(
             (map, vuuTable) => {
-              map[`${vuuTable.table}Schema`] = tableSchemas.find(
-                (tableSchema) => isSameTable(vuuTable, tableSchema.table),
+              map[`${getTableName(vuuTable)}Schema`] = tableSchemas.find(
+                (tableSchema) => matchesVuuTable(vuuTable, tableSchema.table),
               ) as TableSchema;
               return map;
             },

@@ -7,16 +7,16 @@ import {
   TableFooter,
   TableFooterTray,
 } from "@vuu-ui/vuu-table-extras";
-import type { FilterTableFeatureProps } from "@vuu-ui/vuu-utils";
-import { useFilterTableFeature } from "./useFilterTableFeature";
+import type { FilterTableFeatureProps as SpreadsheetFeatureProps } from "@vuu-ui/vuu-utils";
+import { useSpreadsheetFeature } from "./useSpreadsheetFeature";
 import { ContextPanelProvider } from "@vuu-ui/vuu-ui-controls";
-
-import "./VuuFilterTableFeature.css";
 import { DataEditingProvider } from "@vuu-ui/vuu-data-editing";
 
-const classBase = "vuuFilterTableFeature";
+import "./VuuSpreadsheetFeature.css";
 
-const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
+const classBase = "vuuSpreadsheetFeature";
+
+const VuuSpreadsheetFeature = ({ tableSchema }: SpreadsheetFeatureProps) => {
   const {
     columnModel,
     editSession,
@@ -25,7 +25,7 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     menuActionHandler,
     onTableDisplayAttributeChange,
     tableProps,
-  } = useFilterTableFeature({ tableSchema });
+  } = useSpreadsheetFeature({ tableSchema });
   return tableProps.dataSource ? (
     <ContextMenuProvider
       menuActionHandler={menuActionHandler}
@@ -62,4 +62,4 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
   ) : null;
 };
 
-export default VuuFilterTableFeature;
+export default VuuSpreadsheetFeature;

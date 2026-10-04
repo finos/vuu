@@ -59,7 +59,7 @@ const DisableOnSuspend: DataSourceSuspenseProps = {
   escalateToDisable: true,
 };
 
-export const useFilterTableFeature = ({
+export const useSpreadsheetFeature = ({
   tableSchema,
 }: FilterTableFeatureProps) => {
   const { id, load, save, title } = useViewContext();

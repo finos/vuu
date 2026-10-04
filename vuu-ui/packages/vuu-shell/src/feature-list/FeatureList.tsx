@@ -23,9 +23,7 @@ export type GroupedFeatureProps<P extends object | undefined = object> = Record<
 
 export interface FeatureListProps extends HTMLAttributes<HTMLDivElement> {
   features:
-    | DynamicFeatureProps[]
-    | GroupedFeatureProps
-    | StaticFeatureDescriptor[];
+    DynamicFeatureProps[] | GroupedFeatureProps | StaticFeatureDescriptor[];
 }
 
 export const FeatureList = ({
@@ -65,7 +63,7 @@ export const FeatureList = ({
       return [
         <div className={`${classBase}-standalone`} key={0}>
           <Palette key="0" orientation="vertical">
-            {features.map(({ ViewProps, ...featureProps }, i) => (
+            {features.map(({ ViewProps, icon, ...featureProps }, i) => (
               <PaletteItem
                 ViewProps={{
                   closeable: true,
@@ -79,7 +77,7 @@ export const FeatureList = ({
                 key={i}
                 value={featureProps.title}
               >
-                <Icon name="draggable" size={18} />
+                <Icon name={icon ?? "draggable"} size={18} />
                 <span className={`${classBase}-itemName`}>
                   {featureProps.title}
                 </span>
@@ -95,7 +93,11 @@ export const FeatureList = ({
           <Palette orientation="vertical">
             {featureList.map(
               (
-                { ViewProps, ...featureProps }: DynamicFeatureProps<object>,
+                {
+                  ViewProps,
+                  icon,
+                  ...featureProps
+                }: DynamicFeatureProps<object>,
                 i: Key,
               ) => {
                 return (
@@ -112,7 +114,7 @@ export const FeatureList = ({
                     key={i}
                     value={featureProps.title}
                   >
-                    <Icon name="draggable" size={18} />
+                    <Icon name={icon ?? "draggable"} size={18} />
                     <span className={`${classBase}-itemName`}>
                       {featureProps.title}
                     </span>
