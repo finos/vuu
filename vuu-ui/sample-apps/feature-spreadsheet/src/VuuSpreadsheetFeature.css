@@ -1,0 +1,28 @@
+.vuuSpreadsheetFeature {
+  /* Excel (classic) gridline colour */
+  --vuuSpreadsheet-gridLineColor: #d0d7e5;
+  --vuuDatasourceStats-gap: var(--salt-spacing-200);
+  --vuuTableCell-padding-editable: 0;
+  min-height: 100px;
+
+  .vuuTable {
+    --cell-borderColor: var(--vuuSpreadsheet-gridLineColor);
+    --row-borderColor: var(--vuuSpreadsheet-gridLineColor);
+  }
+
+  /* Input fills the cell, with no border of its own, gridlines provide the cell outline */
+  .vuuTableCell.vuuTableCell-editable .vuuTableInputCell.saltInput {
+    --saltInput-background: transparent;
+    --saltInput-background-hover: transparent;
+    --saltInput-height: 100%;
+    --saltInput-minHeight: 100%;
+    border: none;
+    border-radius: 0;
+  }
+}
+
+.vuuSpreadsheetFeature-footer {
+  --vuuToolbarProxy-height: auto;
+  background: var(--salt-container-primary-background);
+  border-top: var(--salt-container-primary-borderColor) solid 1px;
+}

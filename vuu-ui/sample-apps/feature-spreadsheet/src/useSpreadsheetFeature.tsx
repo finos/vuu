@@ -26,6 +26,8 @@ import { useViewContext } from "@vuu-ui/vuu-layout";
 import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { useTableConfig } from "@vuu-ui/vuu-table";
 import type {
+  ColumnDescriptor,
+  DefaultColumnConfiguration,
   TableConfig,
   TableConfigChangeHandler,
 } from "@vuu-ui/vuu-table-types";
@@ -40,11 +42,28 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const NO_CONFIG: FilterTableConfig = {};
 
+const ROW_COLUMN = "row";
+
+const rowHeaderColumnConfig: Partial<ColumnDescriptor> = {
+  allowColumnHeaderMenu: false,
+  className: "vuuSpreadsheet-rowHeader",
+  label: " ",
+  pin: "left",
+  resizeable: false,
+  sortable: false,
+  type: {
+    name: "number",
+    renderer: { name: "spreadsheet-row-header" },
+  },
+  width: 50,
+};
+
 const defaultTableConfig: Partial<TableConfig> = {
   columnLayout: "fit",
   columnDefaultWidth: 130,
+  columnSeparators: true,
   rowSeparators: true,
-  zebraStripes: true,
+  zebraStripes: false,
 };
 
 type FilterTableConfig = {
@@ -59,7 +78,7 @@ const DisableOnSuspend: DataSourceSuspenseProps = {
   escalateToDisable: true,
 };
 
-export const useFilterTableFeature = ({
+export const useSpreadsheetFeature = ({
   tableSchema,
 }: FilterTableFeatureProps) => {
   const { id, load, save, title } = useViewContext();
@@ -155,7 +174,21 @@ export const useFilterTableFeature = ({
     [filterConfigFromState, save],
   );
 
-  const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
+  const {
+    getDefaultColumnConfig: getShellDefaultColumnConfig,
+    handleRpcResponse,
+  } = useShellContext();
+
+  const getDefaultColumnConfig = useCallback<DefaultColumnConfiguration>(
+    (tableName, columnName) =>
+      columnName === ROW_COLUMN
+        ? {
+            ...getShellDefaultColumnConfig?.(tableName, columnName),
+            ...rowHeaderColumnConfig,
+          }
+        : getShellDefaultColumnConfig?.(tableName, columnName),
+    [getShellDefaultColumnConfig],
+  );
 
   const initialTableConfig = useMemo(
     () => ({
@@ -201,8 +234,9 @@ export const useFilterTableFeature = ({
     height: "auto",
     onAvailableColumnsChange: handleAvailableColumnsChange,
     onConfigChange: handleTableConfigChange,
+    allowCellBlockSelection: true,
     renderBufferSize: 20,
-    rowSelectionBorder: true,
+    selectionModel: "none" as const,
   };
 
   // It is important that these values are not assigned in advance. They

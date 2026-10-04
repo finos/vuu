@@ -1,0 +1,23 @@
+.vuuSpreadsheetFeature {
+  --vuuSpreadsheet-headerBackground: #e4ecf7;
+  --vuuSpreadsheet-headerBorderColor: #9eb6ce;
+  --vuuSpreadsheet-headerColor: #27413e;
+}
+
+/* The cell hosting the renderer, identified by the column className */
+.vuuTableCell.vuuSpreadsheet-rowHeader {
+  background: var(--vuuSpreadsheet-headerBackground);
+  border-right-color: var(--vuuSpreadsheet-headerBorderColor);
+  box-shadow: inset 0 -1px 0 var(--vuuSpreadsheet-headerBorderColor);
+  color: var(--vuuSpreadsheet-headerColor);
+  cursor: default;
+  padding: 0;
+  text-align: center;
+  user-select: none;
+}
+
+.vuuSpreadsheetRowHeaderCell {
+  display: block;
+  font-weight: normal;
+  width: 100%;
+}
