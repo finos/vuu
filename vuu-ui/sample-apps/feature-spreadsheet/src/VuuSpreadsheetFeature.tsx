@@ -12,6 +12,7 @@ import { useSpreadsheetFeature } from "./useSpreadsheetFeature";
 import { ContextPanelProvider } from "@vuu-ui/vuu-ui-controls";
 import { DataEditingProvider } from "@vuu-ui/vuu-data-editing";
 
+import "./cell-renderers/RowHeaderCell";
 import "./VuuSpreadsheetFeature.css";
 
 const classBase = "vuuSpreadsheetFeature";
