@@ -1,9 +1,9 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import {
-  EditSession,
   useCellEdited,
   useEditSession,
+  useTableEditSession,
 } from "@vuu-ui/vuu-data-editing";
 import type {
   TableCellEditHandler,
@@ -31,10 +31,9 @@ export const TableCell = ({
     window: targetWindow,
   });
 
-  const editSession = useEditSession();
+  const editSession = useTableEditSession();
   // Only a staged EditSession supports inline insertion of new rows
-  const stagedEditSession =
-    editSession instanceof EditSession ? editSession : undefined;
+  const stagedEditSession = useEditSession();
 
   const { className, style } = useCell(column, classBase, false);
   const { ariaColIndex, CellRenderer, name, valueFormatter } = column;

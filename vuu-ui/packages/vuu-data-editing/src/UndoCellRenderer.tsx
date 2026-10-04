@@ -7,7 +7,7 @@ import type {
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { registerComponent } from "@vuu-ui/vuu-utils";
 import { useEditSession } from "./DataEditingProvider";
-import { type EditActionType, EditSession } from "./EditSession";
+import type { EditActionType } from "./EditSession";
 
 export const UNDO_CELL_RENDERER = "vuu.undo-cell";
 
@@ -54,14 +54,12 @@ export const UndoCellRenderer = ({
       <Button
         appearance="transparent"
         aria-label={tooltipContent}
-        onClick={() => {
-          if (editSession instanceof EditSession) {
-            editSession.undoRowChange(
-              dataRow.key,
-              dataRow.vuuAction as EditActionType,
-            );
-          }
-        }}
+        onClick={() =>
+          editSession?.undoRowChange(
+            dataRow.key,
+            dataRow.vuuAction as EditActionType,
+          )
+        }
         style={{ height: "100%", width: "100%" }}
       >
         {icon ? <Icon name={icon} /> : null}

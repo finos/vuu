@@ -50,10 +50,15 @@ subset of behaviour `Table` cells rely on (`commit`, `cancel`, `inEditMode`,
 `cancel` is invoked when the user abandons an in-progress cell edit (Escape).
 Typed values are only sent to the session on commit, so cancelling never sends
 an RPC. `EditSession.cancel` discards any invalid edit recorded for the cell,
-restoring a previously committed valid edit if there was one. `DataEditingProvider` and
-`useEditSession` are typed against this interface. Features that only a staged
-session supports (inline add row, undo row change) narrow to `EditSession`
-with `instanceof`.
+restoring a previously committed valid edit if there was one.
+
+`DataEditingProvider` accepts any `TableEditSession`. Two hooks read it:
+
+- `useTableEditSession` returns whatever session is provided. Table cells use
+  it to commit and cancel edits.
+- `useEditSession` returns the session only if it is a staged `EditSession`,
+  otherwise `undefined` (or throws, when called with `true`). Features that only
+  a staged session supports (inline add row, undo row change, edit mode) use it.
 
 ## RPC routing
 
@@ -161,7 +166,7 @@ view-only columns are dropped by `reconcileWithSessionSchema` rather than sent.
 | `src/useEditableTable.ts`     | Connects an `EditSession` to React and a VUU data source, exposing handlers and state for editable tables.                         |
 | `src/TableEditSession.ts`     | Defines the `TableEditSession` interface implemented by both edit session types.                                                   |
 | `src/DirectEditSession.ts`    | Implements direct editing against the source table, with no session table or edit tracking.                                       |
-| `src/DataEditingProvider.tsx` | Provides the active `TableEditSession` through React context.                                                                      |
+| `src/DataEditingProvider.tsx` | Provides the active `TableEditSession` through React context (`useTableEditSession`, `useEditSession`).                             |
 | `src/EditModeProvider.tsx`    | Provides shared view/edit mode state for editing controls.                                                                         |
 | `src/EditButtons.tsx`         | Renders save, cancel, delete, and add-row controls based on edit-session state.                                                    |
 | `src/edit-utils.tsx`          | Supplies user-facing stale-update messages.                                                                                        |
