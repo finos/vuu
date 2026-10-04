@@ -158,7 +158,6 @@ export const useTable = ({
   isRowSelectable,
   navigationStyle = "cell",
   onConfigChange,
-  // onDataEdited: onDataEditedProp,
   onDragStart,
   onDrop,
   onHighlight,

@@ -26,6 +26,30 @@ ignores callbacks from obsolete data-source bindings.
 `DataEditingProvider` makes the session available to nested controls, while
 `EditButtons` reflects session state in the available editing actions.
 
+### Direct editing
+
+Some services allow cells to be edited directly on the source table, without a
+session table. For these, use `DirectEditSession`. It has no begin/end
+lifecycle and does not track edits: `commit` sends `editCell` straight to the
+source data source and returns the server response.
+
+```tsx
+const editSession = useMemo(
+  () => new DirectEditSession({ dataSource }),
+  [dataSource],
+);
+<DataEditingProvider editSession={editSession}>
+  <Table dataSource={dataSource} config={config} />
+</DataEditingProvider>;
+```
+
+Both `EditSession` and `DirectEditSession` implement `TableEditSession`, the
+subset of behaviour `Table` cells rely on (`commit`, `inEditMode`,
+`isCellEdited` and `cellEditChanged` events). `DataEditingProvider` and
+`useEditSession` are typed against this interface. Features that only a staged
+session supports (inline add row, undo row change) narrow to `EditSession`
+with `instanceof`.
+
 ## RPC routing
 
 `EditSession` resolves the target of every editing RPC through its `dataSource`
@@ -130,7 +154,9 @@ view-only columns are dropped by `reconcileWithSessionSchema` rather than sent.
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `src/EditSession.tsx`         | Implements the edit-session lifecycle, change tracking, row operations, validation state, save, cancel, and stale-update handling. |
 | `src/useEditableTable.ts`     | Connects an `EditSession` to React and a VUU data source, exposing handlers and state for editable tables.                         |
-| `src/DataEditingProvider.tsx` | Provides the active `EditSession` through React context.                                                                           |
+| `src/TableEditSession.ts`     | Defines the `TableEditSession` interface implemented by both edit session types.                                                   |
+| `src/DirectEditSession.ts`    | Implements direct editing against the source table, with no session table or edit tracking.                                       |
+| `src/DataEditingProvider.tsx` | Provides the active `TableEditSession` through React context.                                                                      |
 | `src/EditModeProvider.tsx`    | Provides shared view/edit mode state for editing controls.                                                                         |
 | `src/EditButtons.tsx`         | Renders save, cancel, delete, and add-row controls based on edit-session state.                                                    |
 | `src/edit-utils.tsx`          | Supplies user-facing stale-update messages.                                                                                        |

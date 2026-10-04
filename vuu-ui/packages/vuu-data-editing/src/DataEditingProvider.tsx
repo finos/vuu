@@ -1,14 +1,16 @@
 import { createContext, type ReactNode, useContext } from "react";
-import type { EditSession } from "./EditSession";
+import type { TableEditSession } from "./TableEditSession";
 
-const DataEditingContext = createContext<EditSession | undefined>(undefined);
+const DataEditingContext = createContext<TableEditSession | undefined>(
+  undefined,
+);
 
 export const DataEditingProvider = ({
   children,
   editSession,
 }: {
   children: ReactNode;
-  editSession: EditSession;
+  editSession: TableEditSession;
 }) => {
   return (
     <DataEditingContext.Provider value={editSession}>
@@ -19,8 +21,8 @@ export const DataEditingProvider = ({
 
 export function useEditSession(
   throwIfUnavailable?: false,
-): EditSession | undefined;
-export function useEditSession(throwIfUnavailable: true): EditSession;
+): TableEditSession | undefined;
+export function useEditSession(throwIfUnavailable: true): TableEditSession;
 export function useEditSession(throwIfUnavailable = false) {
   const editSession = useContext(DataEditingContext);
   if (editSession === undefined) {

@@ -45,6 +45,9 @@ export interface UseInlineAddRowProps {
 
 export const useInlineAddRow = ({ columns }: UseInlineAddRowProps) => {
   const editSession = useEditSession(true);
+  if (!(editSession instanceof EditSession)) {
+    throw Error("[useInlineAddRow] inline add row requires an EditSession");
+  }
   const containerRef = useRef<HTMLDivElement>(null);
   const inlineAddColumns = useMemo(
     () =>

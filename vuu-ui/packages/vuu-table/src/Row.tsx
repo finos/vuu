@@ -29,7 +29,6 @@ export const Row = memo(
     offset,
     onCellEdit,
     onClick,
-    onDataEdited,
     onToggleGroup,
     searchPattern,
     showBookends = true,
@@ -124,7 +123,6 @@ export const Row = memo(
               dataRow={dataRow}
               key={column.name}
               onClick={isGroup || isJsonCell ? handleGroupCellClick : undefined}
-              onDataEdited={onDataEdited}
               searchPattern={searchPattern}
             />
           );

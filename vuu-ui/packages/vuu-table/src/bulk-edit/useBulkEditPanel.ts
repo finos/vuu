@@ -87,7 +87,6 @@ export const useBulkEditPanel = ({
   return {
     tableConfig,
     onBulkChange: handleBulkChange,
-    // onDataEdited: handleDataEdited,
     onRowChange: handleRowChange,
   };
 };

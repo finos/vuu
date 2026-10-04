@@ -9,6 +9,7 @@ import type {
 } from "@vuu-ui/vuu-data-types";
 import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
+import type { TableEditSession } from "./TableEditSession";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
 export type EditActionType = "deleteRow" | "addRow" | "editCell";
@@ -79,7 +80,10 @@ type EditSessionEvents = {
   newRow: (newRowState: NewRowState) => void;
 };
 
-export class EditSession extends EventEmitter<EditSessionEvents> {
+export class EditSession
+  extends EventEmitter<EditSessionEvents>
+  implements TableEditSession
+{
   static readonly newRowKey = "__vuu_new_row__";
   /**
    *  Row key => row edits
