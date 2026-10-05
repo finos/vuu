@@ -175,6 +175,28 @@ export const moduleIssues = (
   return issues;
 };
 
+/** A short name for an issue, e.g. `remote unreachable`. */
+export const issueLabel = (
+  issue: ModuleIssue,
+  remote?: Pick<RemoteCheck, "status">,
+) =>
+  issue.kind === "noAccessRole"
+    ? "no access role"
+    : remote?.status === "unreachable"
+      ? "remote unreachable"
+      : "remote mismatch";
+
+/** One line describing a module's issues, or "" when there are none. */
+export const issueSummary = ({
+  issues,
+  remote,
+}: Pick<ModuleView, "issues" | "remote">) =>
+  issues.length === 0
+    ? ""
+    : issues.length === 1
+      ? issues[0].message
+      : `${issues.length} issues · ${issues.map((issue) => issueLabel(issue, remote)).join(", ")}`;
+
 export const toModuleViews = (
   modules: readonly ManagedModule[],
   manifests: Readonly<Record<string, ManifestResult>>,

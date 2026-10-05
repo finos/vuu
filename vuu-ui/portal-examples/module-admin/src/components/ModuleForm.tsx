@@ -86,7 +86,9 @@ export const Field = ({
       <FormFieldLabel className={`${classBase}-label`}>
         {label}
         {modified ? (
-          <span className={`${classBase}-modified`}>Modified</span>
+          <span className={`${classBase}-modified`} title="Modified">
+            <span className={`${classBase}-srOnly`}>(modified)</span>
+          </span>
         ) : null}
       </FormFieldLabel>
       {children}
