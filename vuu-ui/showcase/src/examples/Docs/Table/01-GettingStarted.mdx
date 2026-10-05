@@ -57,7 +57,7 @@ const stockColumns: ColumnDescriptor[] = [
   { name: "price", label: "Price", serverDataType: "double", width: 90 },
   { name: "change", label: "Change", serverDataType: "double", width: 90 },
   { name: "volume", label: "Volume", serverDataType: "long", width: 110 },
-  { name: "lastTrade", label: "Last trade", serverDataType: "long", type: "date/time", width: 150 },
+  { name: "lastTrade", label: "Last trade", serverDataType: "epochtimestamp", width: 150 },
   { name: "esg", label: "ESG", serverDataType: "boolean", width: 60 },
 ];
 
@@ -94,7 +94,7 @@ Points to note:
 
 - Numeric columns (`serverDataType` of `int`, `long`, `double` and so on) are right-aligned automatically.
 - `boolean` columns render a read-only checkbox automatically.
-- `type: "date/time"` formats epoch-millisecond values as dates (see [Formatting](./03-Formatting.mdx)).
+- `epochtimestamp` columns are formatted as dates and times automatically (see [Formatting](./03-Formatting.mdx)).
 - Columns can be resized and reordered by dragging, and sorted by clicking the column header. All of this works out of the box.
 
 ### Best practices

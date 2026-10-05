@@ -87,7 +87,7 @@ const config: TableConfig = {
 
 ## Date and time formatting
 
-Date and time values are epoch timestamps in milliseconds. Set `type: "date/time"` to show them as dates. The default pattern shows both date and time (`30.09.2026 15:05:09`). Add `formatting.pattern` to choose a date pattern, a time pattern, or both:
+Columns with a `serverDataType` of `epochtimestamp` (epoch milliseconds) or `epochtimestampnano` (epoch nanoseconds) are formatted as dates and times automatically. The default pattern shows both date and time (`30.09.2026 15:05:09`). Set `type` to `"date/time"` with `formatting.pattern` to choose a date pattern, a time pattern, or both:
 
 | Date pattern      | Example          |
 | ----------------- | ---------------- |
@@ -95,7 +95,7 @@ Date and time values are epoch timestamps in milliseconds. Set `type: "date/time
 | `"dd/mm/yyyy"`    | 30/09/2026       |
 | `"mm/dd/yyyy"`    | 09/30/2026       |
 | `"yyyy-mm-dd"`    | 2026-09-30       |
-| `"dd MMM yyyy"`   | 30 Sep 2026      |
+| `"dd MMM yyyy"`   | 30 Sept 2026     |
 | `"dd MMMM yyyy"`  | 30 September 2026 |
 | `"MMM dd, yyyy"`  | Sep 30, 2026     |
 | `"MMMM dd, yyyy"` | September 30, 2026 |
@@ -113,7 +113,7 @@ Date and time values are epoch timestamps in milliseconds. Set `type: "date/time
 const config: TableConfig = {
   columns: [
     { name: "id", label: "ID", width: 60 },
-    { name: "tradeDate", label: "Trade date", type: "date/time", width: 160 },
+    { name: "tradeDate", label: "Trade date", width: 160 },
     {
       name: "settleDate",
       label: "Settle date",
@@ -148,7 +148,7 @@ const config: TableConfig = {
 
 </LivePreview>
 
-Values are displayed in the user's local time zone. A value of `0` is shown as an empty cell.
+Values are displayed in the application default time zone, which is the user's local time zone unless changed. A value of `0` is shown as an empty cell. For time zones, nanosecond precision, filtering and editing, see [Date and Time](../DateTime/Index.mdx).
 
 ### Best practices
 
