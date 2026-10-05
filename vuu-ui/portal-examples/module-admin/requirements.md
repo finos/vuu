@@ -34,21 +34,32 @@ come from the shared contract `@heswell/module-admin/contracts`:
 
 ## UI
 
-- **Overview.** A card grid with KPIs (total, enabled, disabled, needs
-  attention), search, status filter, group-by (none, menu section or status) and
-  sort. Each card shows the title, name, route, location, access role,
-  enabled state and remote-check status. Cards are the default because there
-  are only a small number of modules.
-- **Alternative views.** A menu tree that previews the portal navigation, and a
-  compact table.
-- **Details panel.** Opens when a card is selected. It shows the federation
-  details, the Vuu connection, the access role (inherited or explicit),
-  child modules and the remote check result.
-- **Create.** A full page form. The module name, route, scope and access role
+Each page has its own URL and scrolls independently. A left nav links to
+Overview, Modules (with a count), Menu structure and Needs attention, and the
+header search finds modules by title, name, scope, route or role.
+
+- **Overview** (`overview`, the default). Summary cards with counts: registered,
+  enabled, disabled, needs attention, menu sections and dedicated Vuu
+  connections. Each card links to the matching filtered list. A banner
+  highlights modules that need attention.
+- **Modules** (`modules?status=`). One simple card per module, grouped (none,
+  menu section or status) and sorted. A status toggle, filter box and a
+  Cards/List switch sit in a sticky header. Cards show the title, name,
+  version, enabled state, menu location, access role and a one-line issue
+  summary. Hovering darkens the card background and border with a neutral
+  colour; no card is ever shown as selected.
+- **Menu structure** (`menu`). A preview of the portal navigation tree.
+- **Module details** (`modules/:name`). Shows only the selected module: a hero
+  with status and actions, issue banners with fixes, then portal navigation,
+  federation (with the remote check), Vuu connection, access, related modules
+  and history. Breadcrumbs and a previous/next pager move between modules.
+- **Create** (`modules/new`). A full page form. The module name, route, scope and access role
   are derived from the title until the user edits them. Validation messages
   appear only after a field has been touched or the user tries to save.
-- **Edit.** A side panel that shows which fields have changed, with save and
-  reset. Saving bumps the module's version.
+- **Edit** (`modules/:name/edit`). A full page form with section jump links,
+  changed fields highlighted, a list of changes and a sticky save bar.
+  Leaving with unsaved changes asks for confirmation. Saving bumps the
+  module's version.
 - **Enable/disable.** A confirmation dialog. Disabled modules stay listed but
   are hidden from users of the portal.
 - **Delete.** A confirmation dialog. If the module has children, the user can
@@ -65,7 +76,7 @@ remote URL. The check:
 2. Parses the module federation manifest.
 3. Compares the manifest with the configured `mfScope` and exposed component.
 
-The result is shown on the card and in the details panel. A failed check is
+The result is shown on the card and on the module details page. A failed check is
 only advisory and never blocks saving.
 
 ## Server (vuu-websocket `vuu-portal`)

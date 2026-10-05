@@ -1,5 +1,7 @@
 import {
+  Button,
   Dropdown,
+  Input,
   Option,
   Text,
   ToggleButton,
@@ -7,23 +9,18 @@ import {
   Tooltip,
 } from "@salt-ds/core";
 import {
+  CloseIcon,
+  FilterIcon,
   GridIcon,
-  InfoIcon,
   ListIcon,
-  TreeIcon,
   WarningIcon,
 } from "@salt-ds/icons";
 import type { SyntheticEvent } from "react";
-import {
-  type GroupBy,
-  type SortBy,
-  type StatusFilter,
-  relativeTime,
-} from "../data/module-model";
+import type { GroupBy, SortBy, StatusFilter } from "../data/module-model";
+import type { ViewMode } from "../ModuleAdminContext";
+import { inputValue } from "./ModuleForm";
 
 const classBase = "vuuModuleAdmin";
-
-export type ViewMode = "cards" | "tree" | "table";
 
 const GROUP_LABELS: Record<GroupBy, string> = {
   none: "None",
@@ -38,14 +35,15 @@ const SORT_LABELS: Record<SortBy, string> = {
 
 export interface ModuleToolbarProps {
   counts: Record<StatusFilter, number>;
-  filter: StatusFilter;
+  filter: string;
   groupBy: GroupBy;
-  lastCheckedAt?: number;
-  onFilterChange: (filter: StatusFilter) => void;
+  onFilterChange: (filter: string) => void;
   onGroupByChange: (groupBy: GroupBy) => void;
   onSortByChange: (sortBy: SortBy) => void;
+  onStatusChange: (status: StatusFilter) => void;
   onViewChange: (view: ViewMode) => void;
   sortBy: SortBy;
+  status: StatusFilter;
   view: ViewMode;
 }
 
@@ -56,20 +54,21 @@ export const ModuleToolbar = ({
   counts,
   filter,
   groupBy,
-  lastCheckedAt,
   onFilterChange,
   onGroupByChange,
   onSortByChange,
+  onStatusChange,
   onViewChange,
   sortBy,
+  status,
   view,
 }: ModuleToolbarProps) => (
   <div className={`${classBase}-toolbar`}>
     <ToggleButtonGroup
-      aria-label="Filter modules"
+      aria-label="Filter by status"
       className={`${classBase}-filters`}
-      onChange={(event) => onFilterChange(buttonValue(event) as StatusFilter)}
-      value={filter}
+      onChange={(event) => onStatusChange(buttonValue(event) as StatusFilter)}
+      value={status}
     >
       <ToggleButton value="all">
         All <span className={`${classBase}-count`}>{counts.all}</span>
@@ -85,81 +84,88 @@ export const ModuleToolbar = ({
         <span className={`${classBase}-count`}>{counts.attention}</span>
       </ToggleButton>
     </ToggleButtonGroup>
-    <span className={`${classBase}-toolbarSpacer`} />
-    <Text
-      className={`${classBase}-checkedNote`}
-      color="secondary"
-      styleAs="label"
-    >
-      <InfoIcon aria-hidden />
-      {lastCheckedAt
-        ? `Remote status checked from this browser · ${relativeTime(lastCheckedAt)}`
-        : "Remote status not checked yet"}
-    </Text>
-    {view !== "tree" ? (
-      <>
-        <div className={`${classBase}-select`}>
-          <Text color="secondary" styleAs="label">
-            Group by
-          </Text>
-          <Dropdown
-            bordered
-            aria-label="Group by"
-            onSelectionChange={(_, [value]) =>
-              value && onGroupByChange(value as GroupBy)
-            }
-            selected={[groupBy]}
-            value={GROUP_LABELS[groupBy]}
+    <Input
+      aria-label="Filter modules"
+      bordered
+      className={`${classBase}-filterInput`}
+      endAdornment={
+        filter ? (
+          <Button
+            appearance="transparent"
+            aria-label="Clear filter"
+            onClick={() => onFilterChange("")}
           >
-            {(Object.keys(GROUP_LABELS) as GroupBy[]).map((key) => (
-              <Option key={key} value={key}>
-                {GROUP_LABELS[key]}
-              </Option>
-            ))}
-          </Dropdown>
-        </div>
-        <div className={`${classBase}-select`}>
-          <Text color="secondary" styleAs="label">
-            Sort
-          </Text>
-          <Dropdown
-            bordered
-            aria-label="Sort by"
-            onSelectionChange={(_, [value]) =>
-              value && onSortByChange(value as SortBy)
-            }
-            selected={[sortBy]}
-            value={SORT_LABELS[sortBy]}
-          >
-            {(Object.keys(SORT_LABELS) as SortBy[]).map((key) => (
-              <Option key={key} value={key}>
-                {SORT_LABELS[key]}
-              </Option>
-            ))}
-          </Dropdown>
-        </div>
-      </>
-    ) : null}
-    <ToggleButtonGroup
-      aria-label="View"
-      onChange={(event) => onViewChange(buttonValue(event) as ViewMode)}
-      value={view}
-    >
-      <Tooltip content="Cards">
-        <ToggleButton aria-label="Cards" value="cards">
-          <GridIcon aria-hidden />
-        </ToggleButton>
-      </Tooltip>
-      <Tooltip content="Menu structure">
-        <ToggleButton aria-label="Menu structure" value="tree">
-          <TreeIcon aria-hidden />
-        </ToggleButton>
-      </Tooltip>
-      <Tooltip content="Table">
-        <ToggleButton aria-label="Table" value="table">
-          <ListIcon aria-hidden />
-        </ToggleButton>
-      </Tooltip>
-    </ToggleButtonGroup>
+            <CloseIcon aria-hidden />
+          </Button>
+        ) : null
+      }
+      inputProps={{
+        onKeyDown: (event) => {
+          if (event.key === "Escape") onFilterChange("");
+        },
+        placeholder: "Filter modules",
+      }}
+      onChange={(event) => onFilterChange(inputValue(event))}
+      startAdornment={<FilterIcon aria-hidden />}
+      value={filter}
+    />
+    <div className={`${classBase}-toolbarEnd`}>
+      <div className={`${classBase}-select`}>
+        <Text color="secondary" styleAs="label">
+          Group by
+        </Text>
+        <Dropdown
+          bordered
+          aria-label="Group by"
+          onSelectionChange={(_, [value]) =>
+            value && onGroupByChange(value as GroupBy)
+          }
+          selected={[groupBy]}
+          value={GROUP_LABELS[groupBy]}
+        >
+          {(Object.keys(GROUP_LABELS) as GroupBy[]).map((key) => (
+            <Option key={key} value={key}>
+              {GROUP_LABELS[key]}
+            </Option>
+          ))}
+        </Dropdown>
+      </div>
+      <div className={`${classBase}-select`}>
+        <Text color="secondary" styleAs="label">
+          Sort
+        </Text>
+        <Dropdown
+          bordered
+          aria-label="Sort by"
+          onSelectionChange={(_, [value]) =>
+            value && onSortByChange(value as SortBy)
+          }
+          selected={[sortBy]}
+          value={SORT_LABELS[sortBy]}
+        >
+          {(Object.keys(SORT_LABELS) as SortBy[]).map((key) => (
+            <Option key={key} value={key}>
+              {SORT_LABELS[key]}
+            </Option>
+          ))}
+        </Dropdown>
+      </div>
+      <ToggleButtonGroup
+        aria-label="View"
+        onChange={(event) => onViewChange(buttonValue(event) as ViewMode)}
+        value={view}
+      >
+        <Tooltip content="Cards">
+          <ToggleButton aria-label="Cards" value="cards">
+            <GridIcon aria-hidden />
+          </ToggleButton>
+        </Tooltip>
+        <Tooltip content="List">
+          <ToggleButton aria-label="List" value="table">
+            <ListIcon aria-hidden />
+          </ToggleButton>
+        </Tooltip>
+      </ToggleButtonGroup>
+    </div>
   </div>
 );
