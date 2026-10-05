@@ -66,21 +66,29 @@ export const TimeInput = forwardRef<HTMLInputElement, TimeInputProps>(
         ? (normaliseTimeString(defaultValue, milliseconds) ?? defaultValue)
         : undefined;
 
+    // The container sizes itself (via css pseudo elements) to the wider of
+    // placeholder and a sample value, rendered in the input font.
     return (
-      <input
-        {...htmlAttributes}
-        {...eventHandlers}
-        aria-placeholder={placeholder}
-        className={cx(classBase, className, {
-          [`${classBase}-milliseconds`]: milliseconds,
-        })}
-        defaultValue={displayDefaultValue}
-        placeholder={placeholder}
-        readOnly
-        ref={useForkRef(ref, inputRef)}
-        spellCheck="false"
-        value={displayValue}
-      />
+      <span
+        className={`${classBase}-container`}
+        data-placeholder={placeholder}
+        data-sample-value={milliseconds ? "00:00:00.000" : "00:00:00"}
+      >
+        <input
+          {...htmlAttributes}
+          {...eventHandlers}
+          aria-placeholder={placeholder}
+          className={cx(classBase, className, {
+            [`${classBase}-milliseconds`]: milliseconds,
+          })}
+          defaultValue={displayDefaultValue}
+          placeholder={placeholder}
+          readOnly
+          ref={useForkRef(ref, inputRef)}
+          spellCheck="false"
+          value={displayValue}
+        />
+      </span>
     );
   },
 );

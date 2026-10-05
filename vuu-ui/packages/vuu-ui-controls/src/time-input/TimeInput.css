@@ -1,36 +1,68 @@
 /*
- * Theme fonts use equal width digits, so width is expressed in ch and scales
- * with font-size (i.e density). Separators (':' '.') are ~0.4ch.
- * Content width fits the wider of value and default placeholder:
- *   seconds       value '00:00:00' ~6.8ch, placeholder 'hh:mm:ss' ~7.1ch
- *                 (~7.3ch at the small font size of high density, due to hinting)
- *   milliseconds  value '00:00:00.000' ~10.2ch, placeholder 'hh:mm:ss.sss' ~10.2ch
- * Override with --vuuTimeInput-width if a custom placeholder is used.
- * An extra 1px accommodates the caret.
+ * The input is sized to fit its content, the wider of placeholder and value,
+ * in whatever font is in use. The container is a single cell grid, two hidden
+ * pseudo elements, rendering the placeholder and a sample value with the same
+ * font, padding and border as the input, determine the column width. The
+ * input then fills the column. An extra 1px accommodates the caret.
+ * Font size, height and padding follow density.
+ * --vuuTimeInput-width can be used to set an explicit (content) width.
  */
-.salt-density-high .vuuTimeInput:not(.vuuTimeInput-milliseconds) {
-  --time-input-content-width: 7.35ch;
-}
+.vuuTimeInput-container {
+  --time-input-border: var(--vuuTimeInput-borderWidth, 1px);
+  --time-input-padding: var(
+    --vuuTimeInput-paddingInline,
+    var(--salt-spacing-50)
+  );
 
-.vuuTimeInput {
-  --time-input-content-width: 7.15ch;
-
-  background: var(--vuuTimeInput-background, inherit);
-  border-width: var(--vuuTimeInput-borderWidth, 1px);
-  box-sizing: content-box;
+  display: inline-grid;
   font-family: var(--salt-typography-fontFamily);
   font-size: var(--vuuTimeInput-fontSize, var(--salt-text-fontSize));
   font-variant-numeric: tabular-nums;
+  /* prevent stretch by flex/grid parents */
+  width: fit-content;
+
+  &::before,
+  &::after {
+    border: 0 solid transparent;
+    border-inline-width: var(--time-input-border);
+    box-sizing: content-box;
+    grid-area: 1 / 1;
+    height: 0;
+    /* allow for the caret px in padding, large fallback is effectively none */
+    max-width: calc(var(--vuuTimeInput-width, 10000px) - 1px);
+    padding-inline: var(--time-input-padding);
+    padding-inline-end: calc(var(--time-input-padding) + 1px);
+    visibility: hidden;
+    white-space: pre;
+  }
+
+  &::before {
+    content: attr(data-placeholder);
+  }
+
+  &::after {
+    content: attr(data-sample-value);
+  }
+}
+
+.vuuTimeInput {
+  background: var(--vuuTimeInput-background, inherit);
+  border-width: var(--time-input-border);
+  box-sizing: content-box;
+  font-family: inherit;
+  font-size: inherit;
+  font-variant-numeric: inherit;
+  grid-area: 1 / 1;
   height: calc(
     var(--vuuTimeInput-height, var(--salt-size-base)) - 2 *
-      var(--vuuTimeInput-borderWidth, 1px)
+      var(--time-input-border)
   );
-  padding: 0 var(--vuuTimeInput-paddingInline, var(--salt-spacing-50));
-  width: var(--vuuTimeInput-width, calc(var(--time-input-content-width) + 1px));
-
-  &.vuuTimeInput-milliseconds {
-    --time-input-content-width: 10.2ch;
-  }
+  /* min-width (percentage) fills the column, without contributing to its size */
+  min-width: calc(
+    100% - 2 * var(--time-input-padding) - 2 * var(--time-input-border)
+  );
+  padding: 0 var(--time-input-padding);
+  width: var(--vuuTimeInput-width, 0px);
 
   &:focus::-webkit-input-placeholder {
     color: transparent;

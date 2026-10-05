@@ -504,19 +504,54 @@ test.describe("TimeInput", () => {
           expect(m.fontSize, density).toEqual(m.saltFontSize);
           expect(m.height, density).toEqual(m.saltSizeBase);
           const required = Math.max(m.valueWidth, m.placeholderWidth);
-          // fits content (incl caret). Width is set in ch, the relationship
-          // between ch and rendered text width varies with font hinting and
-          // platform font rendering, so allow a proportional tolerance.
-          const tolerance = Math.max(2, required * 0.1);
+          // fits content (incl caret), allowing for sub-pixel rounding
           expect(m.contentWidth, density).toBeGreaterThanOrEqual(required);
-          expect(m.contentWidth, density).toBeLessThanOrEqual(
-            required + tolerance,
-          );
+          expect(m.contentWidth, density).toBeLessThanOrEqual(required + 2);
           widths.push(m.contentWidth);
         }
         // width grows with density
         expect([...widths].sort((a, b) => a - b)).toEqual(widths);
         expect(widths[0]).toBeLessThan(widths[3]);
+      });
+    }
+
+    for (const width of [40, 150]) {
+      test(`--vuuTimeInput-width overrides content width (${width}px)`, async ({
+        mount,
+      }) => {
+        const component = await mount("UiControls/TimeInput/TestTimeInput", {
+          defaultValue: "23:59:59",
+        });
+        const timeinput = component.locator(".vuuTimeInput");
+        await timeinput.evaluate((el, width) => {
+          (el.parentElement as HTMLElement).style.setProperty(
+            "--vuuTimeInput-width",
+            `${width}px`,
+          );
+        }, width);
+        const contentWidth = await timeinput.evaluate((el) =>
+          parseFloat(getComputedStyle(el).width),
+        );
+        expect(contentWidth).toBe(width);
+      });
+    }
+
+    for (const fontFamily of ["serif", "monospace", "Arial, sans-serif"]) {
+      test(`width fits content when font is not the theme font (${fontFamily})`, async ({
+        mount,
+      }) => {
+        const component = await mount("UiControls/TimeInput/TestTimeInput", {
+          defaultValue: "23:59:59.888",
+          milliseconds: true,
+        });
+        const timeinput = component.locator(".vuuTimeInput");
+        await timeinput.evaluate((el, fontFamily) => {
+          (el.parentElement as HTMLElement).style.fontFamily = fontFamily;
+        }, fontFamily);
+        const m = await measure(timeinput, "medium");
+        const required = Math.max(m.valueWidth, m.placeholderWidth);
+        expect(m.contentWidth).toBeGreaterThanOrEqual(required);
+        expect(m.contentWidth).toBeLessThanOrEqual(required + 2);
       });
     }
   });
