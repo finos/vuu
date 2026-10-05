@@ -74,6 +74,7 @@ Node 26 is a *Current* (non-LTS) release. Teams wanting LTS should set the featu
 | `.devcontainer/Dockerfile` | Base image, apt packages, rootless Podman config, Python venv, SDKMAN installs |
 | `.devcontainer/install-sdk-packages.sh` | SDKMAN installs of Maven and Scala |
 | `.devcontainer/start-podman-service.sh` | Starts Podman's Docker-compatible API socket (idempotent) |
+| `.devcontainer/generate-dev-certs.sh` | Generates the self-signed TLS cert/key for the example servers (idempotent) — see the addendum |
 
 ### Python requirements at build time
 
@@ -159,7 +160,8 @@ Podman provides a compatible API via `podman system service`.
    copy `start-podman-service.sh` → SDKMAN (Maven, Scala) → Node feature (Node, npm, nvm, yarn,
    pnpm).
 2. **Create/start:** container runs with the `runArgs` above and `containerEnv`.
-3. **Post-start:** `start-podman-service.sh` brings the Podman API socket up.
+3. **Post-start:** `start-podman-service.sh` brings the Podman API socket up, and
+   `generate-dev-certs.sh` makes sure the example servers' TLS cert exists (see the addendum).
 
 ---
 
@@ -230,6 +232,59 @@ Failures observed (and fixed) along the way, for reference when diagnosing simil
 - **JDK:** change the base image tag (`java:<version>-trixie`) in line with CI's `java-version`.
 - **Node/npm:** pin by replacing `latest` in the `node:2` feature options if reproducibility is
   needed.
+
+## Addendum — TLS cert for the example servers on 127.0.0.1
+
+**Status: Implemented and verified end-to-end** (`devcontainer up` → cert generated → `SimulMain`
+started → `curl --cacert <generated cert> https://127.0.0.1:8443` → HTTP 200; same for
+`https://localhost:8443`; `openssl s_client -verify_ip 127.0.0.1` against WSS on 8090 →
+`Verify return code: 0 (ok)`).
+
+### Problem
+
+`SimulMain` (`example/main`) serves HTTPS on 8443 and WSS on 8090 using the PEM files committed at
+`example/main/src/main/resources/certs/{cert,key}.pem`. That cert has `CN=localhost` and **no
+subject alternative names**, so browsers and TLS clients reject it for `https://127.0.0.1` (and
+modern browsers ignore the CN, so they reject it for `localhost` too).
+
+### Design
+
+- **Generation:** `generate-dev-certs.sh` (copied to `/usr/local/bin/`) runs as a second
+  `postStartCommand` entry (object form, so it runs alongside `start-podman-service.sh`). It uses
+  `openssl req -x509` to create an RSA-2048, SHA-256, self-signed server cert with:
+  - SANs `DNS:localhost`, `IP:127.0.0.1`, `IP:::1`
+  - `basicConstraints=CA:FALSE`, `keyUsage=digitalSignature,keyEncipherment`,
+    `extendedKeyUsage=serverAuth`
+  - 825 days validity — the longest macOS/iOS accept for a trusted TLS server cert
+  - an unencrypted PKCS#8 key (`chmod 600`), which Vert.x's `PemKeyCertOptions` reads directly
+- **Idempotent:** an existing cert is kept unless it is missing, expires within 30 days, or lacks
+  the `127.0.0.1` SAN, so a browser exception or OS trust added for it survives container restarts
+  and rebuilds. `--force` regenerates unconditionally.
+- **Location:** `${containerWorkspaceFolder}/.devcontainer/certs/` — inside the workspace so it can
+  be imported into the host's trust store, and **gitignored** so generated keys are never
+  committed. `openssl` is installed explicitly in the image.
+- **Wiring:** `devcontainer.json`'s `containerEnv` sets `VUU_CERT_PATH` / `VUU_KEY_PATH` to those
+  files. `SimulMain` resolves each path as *env var if set and non-empty, else the existing
+  `vuu.certPath` / `vuu.keyPath` from `application.conf`* (`EnvVars` + `createSsl` in
+  `SimulMain.scala`), and both the HTTP/2 server and the websocket server use it. Outside the dev
+  container nothing is set, so behaviour is unchanged and the committed certs are used.
+
+### Alternatives considered
+
+| Alternative | Outcome |
+|-------------|---------|
+| Hard-code the dev-container path in `SimulMain.scala` | Rejected: breaks `SimulMain` everywhere outside the dev container. |
+| Overwrite the committed `example/main/.../certs/*.pem` on start | Rejected: dirties the working tree on every start and risks committing generated keys. |
+| `vuu.certPath = ${?VUU_CERT_PATH}` in `application.conf` | Would also work; resolving in `SimulMain` was chosen to keep the override explicit in code. |
+| Regenerate on every start | Rejected: would invalidate any browser/OS trust each time. |
+| A local CA (e.g. mkcert) | Not needed for a dev-only self-signed cert; would add a tool and a CA key to manage. |
+
+### Scope
+
+Only `SimulMain` reads the env vars. `example/main-java` (`VuuExampleMain`),
+`example/main-clickhouse` (`ClickHouseMain`) and `example/python-integration` (`start_server.py`)
+still use their committed certs; they could adopt the same `VUU_CERT_PATH`/`VUU_KEY_PATH` override
+if needed.
 
 ## User documentation
 
