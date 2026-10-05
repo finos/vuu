@@ -19,6 +19,10 @@ import {
   RuntimeColumnDescriptor,
 } from "@vuu-ui/vuu-table-types";
 import { ScaledDecimal } from "../ScaledDecimal";
+import {
+  isTimeDataValue,
+  isTimeDataValueWithMilliseconds,
+} from "../column-utils";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",
@@ -178,6 +182,16 @@ const collectFiltersForColumn = (
 const stringifyBoolean = (value: string | number | boolean) =>
   typeof value === "boolean" ? "${filter.value}" : value;
 
+/**
+ * The full-day range used as default value of a time range filter.
+ */
+export const getDefaultTimeRange = (
+  column: ColumnDescriptor,
+): [string, string] =>
+  isTimeDataValueWithMilliseconds(column)
+    ? ["00:00:00.000", "23:59:59.999"]
+    : ["00:00:00", "23:59:59"];
+
 export const getColumnValueFromFilter = (
   column: ColumnDescriptor,
   operator: ColumnFilterOp,
@@ -217,8 +231,8 @@ export const getColumnValueFromFilter = (
     }
   }
   if (operator.startsWith("between")) {
-    if (column.type === "time") {
-      return ["00:00:00", "23:59:59"];
+    if (isTimeDataValue(column)) {
+      return getDefaultTimeRange(column);
     } else {
       return ["", ""];
     }

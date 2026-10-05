@@ -376,12 +376,28 @@ export const ControlledNumericRangeFilter = () => {
     </DataSourceProvider>
   );
 };
+const timeColumn: ColumnDescriptor = {
+  name: "vuuCreatedTimestamp",
+  serverDataType: "long",
+  type: "time",
+};
+
+const timeColumnMilliseconds: ColumnDescriptor = {
+  name: "vuuCreatedTimestamp",
+  serverDataType: "long",
+  type: { name: "time", formatting: { pattern: { time: "hh:mm:ss.ms" } } },
+};
+
 export const ControlledTimeRangeFilter = ({
+  column = timeColumn,
   onColumnFilterChange,
   onColumnRangeFilterChange,
   onCommit,
   value: valueProp = ["00:00:00", "23:59:59"],
-}: ColumnFilterPassthroughProps & { value?: [string, string] }) => {
+}: ColumnFilterPassthroughProps & {
+  column?: ColumnDescriptor;
+  value?: [string, string];
+}) => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
     return new VuuDataSource({ table: instrumentsSchema.table });
@@ -428,11 +444,7 @@ export const ControlledTimeRangeFilter = ({
         <FormField>
           <FormFieldLabel>Price</FormFieldLabel>
           <ColumnFilter
-            column={{
-              name: "vuuCreatedTimestamp",
-              serverDataType: "long",
-              type: "time",
-            }}
+            column={column}
             onColumnFilterChange={handleColumnFilterChange}
             onColumnRangeFilterChange={handleColumnRangeFilterChange}
             onCommit={handleCommit}
@@ -445,6 +457,16 @@ export const ControlledTimeRangeFilter = ({
     </DataSourceProvider>
   );
 };
+
+export const ControlledTimeRangeFilterMilliseconds = (
+  props: ColumnFilterPassthroughProps & { value?: [string, string] },
+) => (
+  <ControlledTimeRangeFilter
+    {...props}
+    column={timeColumnMilliseconds}
+    value={props.value ?? ["00:00:00.000", "23:59:59.999"]}
+  />
+);
 
 export const ControlledToggleFilter = () => {
   const { VuuDataSource } = useData();
@@ -531,7 +553,7 @@ export const ContainerManagedTextColumnFilter = ({
           </FormField>
         </FilterContainer>
       </ContainerTemplate>
-    {recorder}
+      {recorder}
     </DataSourceProvider>
   );
 };
@@ -770,10 +792,24 @@ export const ContainerManagedToggleFilterWithFilter = () => (
   />
 );
 
+const createdTimeColumn: ColumnDescriptor = {
+  name: "vuuCreatedTime",
+  serverDataType: "long",
+  type: "time",
+};
+
+const createdTimeColumnMilliseconds: ColumnDescriptor = {
+  name: "vuuCreatedTime",
+  serverDataType: "long",
+  type: { name: "time", formatting: { pattern: { time: "hh:mm:ss.ms" } } },
+};
+
 export const ContainerManagedBetweenColumnTimeFilter = ({
+  column = createdTimeColumn,
   filter: filterProp,
   op = "between",
 }: {
+  column?: ColumnDescriptor;
   filter?: FilterContainerFilter;
   op?: "between" | "between-inclusive";
 }) => {
@@ -781,14 +817,20 @@ export const ContainerManagedBetweenColumnTimeFilter = ({
   const [filter, setFilter] = useState<FilterContainerFilter | undefined>(
     filterProp,
   );
-  const clearFilter = () => setFilter(undefined);
-
-  console.log({ filter });
-  if (filter) {
-    console.log(filterAsQuery(filter));
-  }
-
-  console.log(JSON.stringify(filter, null, 2));
+  const { record, recorder } = useCallbackRecorder();
+  const handleFilterApplied = useCallback<
+    FilterAppliedHandler<FilterContainerFilter>
+  >(
+    (filter) => {
+      record(filter, filterAsQuery(filter));
+      setFilter(filter);
+    },
+    [record],
+  );
+  const clearFilter = useCallback(() => {
+    record("filter cleared");
+    setFilter(undefined);
+  }, [record]);
 
   const dataSource = useMemo(() => {
     return new VuuDataSource({ table: instrumentsSchema.table });
@@ -807,16 +849,12 @@ export const ContainerManagedBetweenColumnTimeFilter = ({
         <FilterContainer
           filter={filter}
           onFilterCleared={clearFilter}
-          onFilterApplied={setFilter}
+          onFilterApplied={handleFilterApplied}
         >
           <FormField>
-            <FormFieldLabel>Lot Size</FormFieldLabel>
+            <FormFieldLabel>Created time</FormFieldLabel>
             <FilterContainerColumnFilter
-              column={{
-                name: "vuuCreatedTime",
-                serverDataType: "long",
-                type: "time",
-              }}
+              column={column}
               extendedFilterOptions={{ date: "today", type: "TimeString" }}
               onColumnFilterChange={handleColumnFilterChange}
               operator={op}
@@ -826,6 +864,7 @@ export const ContainerManagedBetweenColumnTimeFilter = ({
         </FilterContainer>
         <FilterDisplay filter={filter} />
       </ContainerTemplate>
+      {recorder}
     </DataSourceProvider>
   );
 };
@@ -854,6 +893,39 @@ export const ContainerManagedBetweenColumnTimeFilterWithFilter = () => (
 
 export const ContainerManagedBetweenInclusiveColumnTimeFilter = () => (
   <ContainerManagedBetweenColumnTimeFilter op="between-inclusive" />
+);
+
+export const ContainerManagedTimeRangeFilterMilliseconds = ({
+  filter,
+}: {
+  filter?: FilterContainerFilter;
+}) => (
+  <ContainerManagedBetweenColumnTimeFilter
+    column={createdTimeColumnMilliseconds}
+    filter={filter}
+  />
+);
+
+export const ContainerManagedTimeRangeFilterMillisecondsWithFilter = () => (
+  <ContainerManagedTimeRangeFilterMilliseconds
+    filter={{
+      op: "and",
+      filters: [
+        {
+          column: "vuuCreatedTime",
+          op: ">=",
+          value: "12:00:00.250",
+          extendedOptions: { date: "today", type: "TimeString" },
+        },
+        {
+          column: "vuuCreatedTime",
+          op: "<=",
+          value: "13:00:00.750",
+          extendedOptions: { date: "today", type: "TimeString" },
+        },
+      ],
+    }}
+  />
 );
 
 export const ContainerManagedMultipleColumnFilters = () => {

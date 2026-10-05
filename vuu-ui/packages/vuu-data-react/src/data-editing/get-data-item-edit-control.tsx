@@ -16,7 +16,11 @@ import {
   isTimeDataValue,
 } from "@vuu-ui/vuu-utils";
 import type { InputProps } from "@salt-ds/core";
-import { asTimeString } from "@vuu-ui/vuu-utils";
+import {
+  asTimeString,
+  asTimeStringMillis,
+  isTimeDataValueWithMilliseconds,
+} from "@vuu-ui/vuu-utils";
 import { ToggleFilter } from "@vuu-ui/vuu-filters";
 
 /**
@@ -95,7 +99,16 @@ export const getDataItemEditControl = ({
   } else if (isTimeDataValue(dataDescriptor)) {
     if (InputProps?.inputProps) {
       const { value, onChange } = InputProps.inputProps;
-      return (
+      return isTimeDataValueWithMilliseconds(dataDescriptor) ? (
+        <VuuTimePicker
+          className={className}
+          milliseconds
+          value={asTimeStringMillis(value, true)}
+          onChange={onChange}
+          onCommit={onCommit}
+          data-edit-control
+        />
+      ) : (
         <VuuTimePicker
           className={className}
           value={asTimeString(value, true)}

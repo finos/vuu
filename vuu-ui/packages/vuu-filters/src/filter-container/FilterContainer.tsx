@@ -27,6 +27,8 @@ import {
 import {
   filtersAreEqual,
   getColumnValueFromFilter,
+  getDefaultTimeRange,
+  isTimeDataValue,
   isBetweenOperator,
 } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -40,14 +42,15 @@ const notEmpty = (value: ColumnFilterValue) =>
   Array.isArray(value) ? value[0] !== "" && value[1] !== "" : value !== "";
 
 export interface FilterContainerProps
-  extends HTMLAttributes<HTMLDivElement>,
-    ColumnFilterContainerHookProps {
+  extends HTMLAttributes<HTMLDivElement>, ColumnFilterContainerHookProps {
   children: ReactNode;
   filterProviderKey?: string;
 }
 
-export interface FilterContainerColumnFilterProps
-  extends Omit<ColumnFilterProps, "defaultValue" | "onCommit" | "value"> {
+export interface FilterContainerColumnFilterProps extends Omit<
+  ColumnFilterProps,
+  "defaultValue" | "onCommit" | "value"
+> {
   defaultValue?: ColumnFilterValue;
 }
 
@@ -86,8 +89,8 @@ export const FilterContainerColumnFilter = ({
 
       if (isNullFilter(currentFilter) && notEmpty(valueRef.current)) {
         if (Array.isArray(valueRef.current)) {
-          if (column.type === "time") {
-            valueRef.current = ["00:00:00", "23:59:59"];
+          if (isTimeDataValue(column)) {
+            valueRef.current = getDefaultTimeRange(column);
           } else {
             valueRef.current = ["", ""];
           }
