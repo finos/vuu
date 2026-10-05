@@ -163,7 +163,6 @@ are:
 | `mfComponent` | Exposed module key without the producer's leading `./`. For an exposure named `./UserAdmin`, use `UserAdmin`. |
 | `path` | React Router path used by `PortalShell`; `/*` is added when absent. |
 | `navLocation` | Slash-separated navigation placement and labels consumed by `PortalAppSwitcher`. |
-| `vuu` | Optional `{ connectionId, restUrl?, websocketUrl? }` describing the VUU data connection to install around this remote. |
 
 The remaining protocol metadata is `clientIdentifier`, `description`,
 `enabled`, `id`, `accessRole`, `name`, `title`, and `version`. The current
@@ -217,30 +216,34 @@ Module Federation and VUU authentication solve separate problems:
 
 - `registerRemotes()` and `loadRemote()` locate and execute JavaScript and
   negotiate shared JavaScript dependencies.
-- A descriptor's optional `vuu` property selects the authenticated VUU REST
-  and websocket connection used by the rendered component.
+- `RemoteModule` fetches the remote's required `config.json` from the same
+  base URL as `mf-manifest.json` and uses it to select the authenticated VUU
+  REST and websocket connection for the rendered component.
 
-`RawRemoteModule` first obtains the federated React component independently of
-`vuu`. When `vuu` is present, it wraps that component in:
+`RemoteModule` starts the federated code load and the `config.json` request in
+parallel. When the config contains a VUU connection, it wraps the loaded
+component in:
 
 ```tsx
-<AuthenticationProvider mode="vuu-connection" connection={vuu}>
+<AuthenticationProvider mode="vuu-connection" connection={connection}>
   {remoteComponent}
 </AuthenticationProvider>
 ```
 
 That provider reuses the browser identity handler, exchanges a VUU token for
 the specified target, opens or reuses the connection keyed by `connectionId`,
-and installs a connection-scoped `VuuDataSource` and server API. If the
-descriptor's `connectionId` is the portal connection, omitted endpoints may
-inherit the portal endpoints; a distinct connection must supply both REST and
-websocket URLs. A remote with no `vuu` metadata still loads and renders through
-Module Federation, inheriting the surrounding portal VUU context rather than
-creating a separate connection.
+and installs a connection-scoped `VuuDataSource` and server API. `restUrl` and
+`websocketUrl` must be supplied together and require `connectionId`;
+`connectionId` alone is valid for local in-browser servers or sharing a known
+host connection. An empty `{}` config means the remote inherits the surrounding
+portal VUU context rather than creating a separate connection. `RemoteModule`
+still accepts an explicit `vuu` prop for callers that intentionally override
+the remote config, such as one table-viewer instance per server.
 
 Conversely, successfully authenticating a VUU connection does not register or
-load a federated container. Failures should be diagnosed on the appropriate
-side of this boundary.
+load a federated container. A missing or invalid `config.json` fails the remote
+before render, and failures should be diagnosed on the appropriate side of this
+boundary.
 
 ## Building a producer
 
@@ -337,9 +340,10 @@ sequenceDiagram
     Shell->>Shell: Build navigation and routes
     Shell->>Remote: Render selected descriptor
     Remote->>MF: registerRemotes(scope, mfUrl + "/mf-manifest.json")
-    opt descriptor.vuu is present
+    Remote->>Producer: Fetch mfUrl + "/config.json"
+    opt config has connection
         Remote->>Auth: Install connection-scoped VUU provider
-        Auth->>Portal: Authenticate/open descriptor's VUU target
+        Auth->>Portal: Authenticate/open configured VUU target
     end
     Remote->>MF: React.lazy calls loadRemote(scope + "/" + component)
     MF->>Producer: Fetch manifest, container, and chunks
@@ -404,12 +408,15 @@ compatible with the host's singleton `@vuu-ui/core` and related shares. Align
 the portal package manifests and rebuild both host and producer rather than
 relaxing strictness or permitting duplicate singleton libraries.
 
-### VUU connection failure after the remote loads
+### Remote config or VUU connection failure
 
-If runtime registration succeeds but a descriptor with `vuu` does not render,
-inspect its `vuu.connectionId`, `restUrl`, and `websocketUrl`, along with the
-token exchange and websocket login. The connection provider waits for its VUU
-session before rendering the lazy child, so `loadRemote()` may not run until
-that authentication completes. This remains separate from federation manifest
-resolution: use network/runtime evidence to determine whether the failure is
-in the VUU connection or the later manifest/container/share load.
+Every remote must serve `<mfUrl>/config.json` next to `mf-manifest.json`, even
+when the file is `{}`. A missing file often returns `index.html` from static
+servers, which surfaces as an "is not valid JSON" `RemoteModuleConfigError`.
+If config loading succeeds but a configured connection does not render, inspect
+`connectionId`, `restUrl`, and `websocketUrl`, along with the token exchange and
+websocket login. The connection provider waits for its VUU session before
+rendering the lazy child, so `loadRemote()` may not run until that
+authentication completes. This remains separate from federation manifest
+resolution: use network/runtime evidence to determine whether the failure is in
+the config/VUU connection or the later manifest/container/share load.

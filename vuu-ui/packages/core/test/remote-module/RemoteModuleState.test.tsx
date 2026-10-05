@@ -51,6 +51,10 @@ describe("RemoteModule saved state", () => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
     remoteProps = {};
     vi.mocked(loadRemote).mockResolvedValue({ default: Counter });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("{}")),
+    );
     container = document.createElement("div");
     document.body.append(container);
     root = createRoot(container);
@@ -75,6 +79,7 @@ describe("RemoteModule saved state", () => {
     container.remove();
     service.dispose();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   const renderModule = async (

@@ -13,13 +13,7 @@ import {
 
 const classBase = "vuuModuleTable";
 
-export const ModuleTableView = ({
-  groups,
-  selectedId,
-}: {
-  groups: ModuleGroup[];
-  selectedId?: number;
-}) => {
+export const ModuleTableView = ({ groups }: { groups: ModuleGroup[] }) => {
   const actions = useModuleActions();
   return (
     <table className={classBase}>
@@ -45,13 +39,18 @@ export const ModuleTableView = ({
           ) : null}
           {group.modules.map((module) => (
             <tr
-              aria-selected={module.id === selectedId}
-              className={cx({
-                [`${classBase}-disabled`]: !module.enabled,
-                [`${classBase}-selected`]: module.id === selectedId,
-              })}
+              className={cx({ [`${classBase}-disabled`]: !module.enabled })}
               key={module.id}
               onClick={() => actions.select(module)}
+              onKeyDown={(event) => {
+                if (
+                  event.target === event.currentTarget &&
+                  event.key === "Enter"
+                ) {
+                  actions.select(module);
+                }
+              }}
+              tabIndex={0}
             >
               <td>
                 <span className={`${classBase}-module`}>

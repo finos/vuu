@@ -29,6 +29,7 @@ import {
   vuuConnectionRegistry,
   type VuuConnectionRegistry,
 } from "../connection-management/VuuConnectionRegistry";
+import { loadRemoteModuleConfig } from "../remote-module/remote-module-config";
 import { VuuTokenExchangeError } from "./VuuTokenExchange";
 import type {
   VuuAuthTarget,
@@ -86,9 +87,10 @@ export interface LocalAuthenticationProps {
   authorizations?: string[];
   children: ReactNode;
   /**
-   * Vuu servers simulated in the browser. A module (or a nested
-   * `mode="vuu-connection"` provider) whose `vuu.connectionId` matches one of
-   * these receives that server's data context instead of a websocket.
+   * Vuu servers simulated in the browser. A module whose `config.json`
+   * `connectionId` (or a nested `mode="vuu-connection"` provider whose
+   * `connection.connectionId`) matches one of these receives that server's
+   * data context instead of a websocket.
    */
   localServers?: LocalVuuServer[];
   mode: "local";
@@ -595,21 +597,66 @@ const isUsableServer = (
   }
 };
 
+interface ModuleConnection {
+  title: string;
+  vuu?: RemoteModuleConnection;
+}
+
+const EMPTY_MODULE_CONNECTIONS: ModuleConnection[] = [];
+
 /**
- * The distinct Vuu servers referenced by the `vuu` connections of registered
- * modules, in registry order. Servers that can't be connected to are
- * omitted: in local mode, those with no local implementation; otherwise,
- * those missing `restUrl` or `websocketUrl` that aren't the portal's own
- * server.
+ * Reads the `vuu` connection of each registered module from the
+ * `config.json` it publishes. A module whose config can't be loaded is
+ * treated as having no connection.
+ */
+const useModuleConnections = (
+  modules: PortalModuleRegistry["modules"] | undefined,
+) => {
+  const [connections, setConnections] = useState(EMPTY_MODULE_CONNECTIONS);
+  useEffect(() => {
+    let active = true;
+    if (!modules?.length) {
+      setConnections(EMPTY_MODULE_CONNECTIONS);
+      return;
+    }
+    Promise.all(
+      modules.map(({ mfUrl, title }) =>
+        loadRemoteModuleConfig(mfUrl).then(
+          ({ vuu }) => ({ title, vuu }),
+          (error: unknown) => {
+            console.warn(`[useVuuServers] ${String(error)}`);
+            return { title };
+          },
+        ),
+      ),
+    ).then((nextConnections) => {
+      if (active) {
+        setConnections(nextConnections);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [modules]);
+  return connections;
+};
+
+/**
+ * The distinct Vuu servers used by registered modules, in registry order,
+ * read from the `config.json` each module publishes. The list is empty until
+ * the configs have loaded. Servers that can't be connected to are omitted:
+ * in local mode, those with no local implementation; otherwise, those
+ * missing `restUrl` or `websocketUrl` that aren't the portal's own server.
  */
 export const useVuuServers = (): VuuServerDescriptor[] => {
   const identity = useContext(IdentityContext);
+  const connections = useModuleConnections(identity?.moduleRegistry?.modules);
   return useMemo(() => {
     const servers = new Map<string, VuuServerDescriptor>();
     if (!identity) {
       return [];
     }
-    for (const { title, vuu } of identity.moduleRegistry?.modules ?? []) {
+    for (const { title, vuu } of connections) {
       if (!vuu || !isUsableServer(vuu, identity)) {
         continue;
       }
@@ -628,7 +675,7 @@ export const useVuuServers = (): VuuServerDescriptor[] => {
       }
     }
     return Array.from(servers.values());
-  }, [identity]);
+  }, [connections, identity]);
 };
 
 export const useLogout = () => {

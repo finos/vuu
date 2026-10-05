@@ -10,6 +10,14 @@ export type {
   LocalVuuServer,
   VuuServerDescriptor,
 } from "./VuuServerDescriptor";
+export {
+  loadRemoteModuleConfig,
+  parseRemoteModuleConfig,
+  REMOTE_MODULE_CONFIG_FILE,
+  RemoteModuleConfigError,
+  remoteModuleConfigUrl,
+  type RemoteModuleConfig,
+} from "./remote-module/remote-module-config";
 export { DataContext } from "./context-definitions/DataContext";
 export {
   DataProvider,

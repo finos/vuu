@@ -6,13 +6,12 @@ bootstrap creates a `BrowserRouter`.
 
 The host scopes the authenticated portal module registry through the typed
 `PortalModuleRegistryProvider` context around the user-admin remote. The
-descriptor includes the existing remote loading and connection fields plus the
-stable `clientIdentifier` and module access-role metadata in `accessRole`.
-User-admin does not
-authenticate against Keycloak, receive the registry as component props, or
-fetch a second module list; this host-provided contract is reserved for
-module-oriented access work. The provider and hook are also the role-check
-enforcement boundary.
+descriptor includes remote loading fields plus the stable `clientIdentifier`
+and module access-role metadata in `accessRole`; VUU connection details come
+from the remote's `config.json`. User-admin does not authenticate against
+Keycloak, receive the registry as component props, or fetch a second module
+list; this host-provided contract is reserved for module-oriented access work.
+The provider and hook are also the role-check enforcement boundary.
 
 ## Navigation and layout
 

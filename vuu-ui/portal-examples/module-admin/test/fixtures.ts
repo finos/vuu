@@ -27,9 +27,6 @@ export const MODULES: ManagedModule[] = [
     path: "/basket/trade",
     title: "Basket trading",
     updated: 3_000,
-    vuuConnectionId: "basket",
-    vuuRestUrl: "https://localhost:8445/api/authn",
-    vuuWebsocketUrl: "wss://localhost:8093/websocket",
   }),
   managedModule({
     accessRole: "vuu-table-browser-access",
@@ -62,6 +59,5 @@ export const MODULES: ManagedModule[] = [
     name: "order-blotter",
     path: "/trading/orders",
     title: "Order blotter",
-    vuuConnectionId: "orders",
   }),
 ];
