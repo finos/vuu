@@ -379,20 +379,15 @@ test.describe("TimeInput", () => {
       const timeinput = component.locator(".vuuTimeInput");
       const box = await timeinput.boundingBox();
       if (!box) throw Error("no bounding box");
-      // click at far right of text, i.e. within seconds
+      // Input width fits its text, so 85% across the content box is within
+      // the seconds. (Measuring text via computed `font` is unreliable, webkit
+      // may return an empty font shorthand.)
       const caretPos = await timeinput.evaluate((el: HTMLInputElement) => {
-        const span = document.createElement("span");
         const style = getComputedStyle(el);
-        span.style.font = style.font;
-        span.style.position = "absolute";
-        span.textContent = "12:34:5";
-        document.body.appendChild(span);
-        const width = span.getBoundingClientRect().width;
-        span.remove();
         return (
-          width +
+          parseFloat(style.borderLeftWidth) +
           parseFloat(style.paddingLeft) +
-          parseFloat(style.borderLeftWidth)
+          parseFloat(style.width) * 0.85
         );
       });
       await timeinput.click({ position: { x: caretPos, y: box.height / 2 } });
@@ -466,7 +461,10 @@ test.describe("TimeInput", () => {
         const span = document.createElement("span");
         span.style.cssText =
           "position:absolute;visibility:hidden;white-space:pre";
-        span.style.font = style.font;
+        // set longhands, webkit may return an empty font shorthand
+        span.style.fontFamily = style.fontFamily;
+        span.style.fontSize = style.fontSize;
+        span.style.fontWeight = style.fontWeight;
         span.style.fontVariantNumeric = style.fontVariantNumeric;
         el.parentElement?.appendChild(span);
         const textWidth = (text: string) => {
