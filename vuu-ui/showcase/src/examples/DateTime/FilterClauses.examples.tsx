@@ -19,13 +19,20 @@ import {
   setDefaultTimeZone,
   getDefaultTimeZone,
 } from "@vuu-ui/vuu-utils";
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   createDateTimeDataSource,
   type ExampleColumn,
   toColumnDescriptor,
 } from "./date-time-data";
-import { DateTimeTable, ExampleLayout, JsonValue } from "./date-time-templates";
+import {
+  Code,
+  DateTimeTable,
+  ExampleLayout,
+  ExampleTable,
+  JsonValue,
+} from "./date-time-templates";
 
 const vuuTable = { module: "TEST", table: "DateTime" };
 
@@ -362,8 +369,7 @@ export const TemporalFilterQueries = () => {
     const initial = getDefaultTimeZone();
     return () => setDefaultTimeZone(initial);
   }, []);
-  const toggleTimeZone = () => {
-    const tz = timeZone === "UTC" ? "local" : "UTC";
+  const setAppTimeZone = (tz: string) => {
     setDefaultTimeZone(tz);
     setTimeZone(tz);
   };
@@ -375,55 +381,73 @@ export const TemporalFilterQueries = () => {
         <>
           Filter structures (as held by the UI) and the query string sent to the
           server. Dates applied to timestamps become ranges, in the column time
-          zone (application default: <strong>{timeZone}</strong>,{" "}
-          <button onClick={toggleTimeZone} type="button">
-            toggle UTC/local
-          </button>
-          ). Column configuration:{" "}
-          <code>
-            {JSON.stringify(
-              columnDescriptors.map(({ name, serverDataType, type }) => ({
-                name,
-                serverDataType,
-                type,
-              })),
-            )}
-          </code>
+          zone. Columns without a time zone use the application default.
         </>
       }
     >
-      <div
+      <div style={{ alignItems: "center", display: "flex", gap: 8 }}>
+        <span>Application default time zone</span>
+        <ToggleButtonGroup
+          onChange={(e) =>
+            setAppTimeZone((e.currentTarget as HTMLButtonElement).value)
+          }
+          value={timeZone}
+        >
+          <ToggleButton value="local">local</ToggleButton>
+          <ToggleButton value="UTC">UTC</ToggleButton>
+        </ToggleButtonGroup>
+      </div>
+      <ExampleTable
+        columns={[
+          { label: "Column", width: 160 },
+          { label: "serverDataType", width: 180 },
+          { label: "type" },
+        ]}
+        rows={columnDescriptors
+          .filter(({ name }) => name !== "id" && name !== "ccy")
+          .map(({ name, serverDataType, type }) => ({
+            key: name,
+            cells: [
+              <Code key="name">{name}</Code>,
+              <Code key="sdt">{serverDataType}</Code>,
+              type === undefined ? (
+                <em key="type">none</em>
+              ) : (
+                <Code key="type">{type}</Code>
+              ),
+            ],
+          }))}
+      />
+      <ExampleTable
         key={timeZone}
-        style={{
-          display: "grid",
-          fontFamily: "monospace",
-          fontSize: 12,
-          gap: "6px 16px",
-          gridTemplateColumns: "200px 420px 200px auto",
-          overflowWrap: "anywhere",
-        }}
-      >
-        <strong>example</strong>
-        <strong>filter</strong>
-        <strong>display value</strong>
-        <strong>query</strong>
-        {queryExamples.map(({ description, filter }) => {
+        columns={[
+          { label: "Example", width: "16%" },
+          { label: "Filter", width: "34%" },
+          { label: "Display value", width: "16%" },
+          { label: "Query", width: "34%" },
+        ]}
+        rows={queryExamples.map(({ description, filter }) => {
           let query: string;
           try {
             query = filterAsQuery(filter, { columnsByName });
           } catch (e) {
             query = String(e);
           }
-          return (
-            <Fragment key={description}>
-              <span>{description}</span>
-              <JsonValue value={filter} />
-              <span>{describeValue(filter)}</span>
-              <span data-testid="query">{query}</span>
-            </Fragment>
-          );
+          return {
+            key: description,
+            cells: [
+              <span key="desc" style={{ fontWeight: 600 }}>
+                {description}
+              </span>,
+              <Code key="filter">{filter}</Code>,
+              <span key="display">{describeValue(filter)}</span>,
+              <Code key="query" testId="query">
+                {query}
+              </Code>,
+            ],
+          };
         })}
-      </div>
+      />
     </ExampleLayout>
   );
 };
