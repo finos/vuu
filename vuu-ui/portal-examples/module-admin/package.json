@@ -34,7 +34,8 @@
     "@vuu-ui/vuu-data-test": "3.4.0",
     "@vuu-ui/vuu-notifications": "3.4.0",
     "@vuu-ui/vuu-protocol-types": "3.4.0",
-    "@vuu-ui/vuu-utils": "3.4.0"
+    "@vuu-ui/vuu-utils": "3.4.0",
+    "react-router-dom": "7.18.3"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",

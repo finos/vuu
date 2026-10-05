@@ -1,462 +1,271 @@
-import type { ModuleConfig } from "@heswell/module-admin/contracts";
 import {
-  Banner,
-  BannerContent,
   Button,
   Input,
-  Spinner,
   Text,
+  VerticalNavigation,
+  VerticalNavigationItem,
+  VerticalNavigationItemContent,
+  VerticalNavigationItemLabel,
+  VerticalNavigationItemTrigger,
 } from "@salt-ds/core";
 import {
-  AddIcon,
   CloseIcon,
+  GridIcon,
+  HomeIcon,
   LayersIcon,
-  RefreshIcon,
   SearchIcon,
+  TearOutIcon,
+  TreeIcon,
+  WarningIcon,
 } from "@salt-ds/icons";
-import {
-  NotificationType,
-  NotificationsProvider,
-  useNotifications,
-} from "@vuu-ui/vuu-notifications";
+import { PortalLink } from "@vuu-ui/core/portal";
+import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import cx from "clsx";
+import { type ReactNode, useState } from "react";
+import {
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import { inputValue } from "./components/ModuleForm";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CreateModulePage } from "./components/CreateModulePage";
-import { EditModulePanel } from "./components/EditModulePanel";
-import { EmptyState } from "./components/EmptyState";
 import {
-  type ModuleActions,
-  ModuleActionsContext,
-} from "./components/ModuleActions";
-import { ModuleDetailsPanel } from "./components/ModuleDetailsPanel";
-import {
-  DeleteModuleDialog,
-  DisableModuleDialog,
-} from "./components/ModuleDialogs";
-import { ModuleGrid } from "./components/ModuleGrid";
-import { ModuleKpis } from "./components/ModuleKpis";
-import { ModuleTableView } from "./components/ModuleTableView";
-import { ModuleToolbar, type ViewMode } from "./components/ModuleToolbar";
-import { MenuTreeView } from "./components/MenuTreeView";
-import { errorMessage } from "./data/errors";
-import {
-  type GroupBy,
-  type ModuleView,
-  type SortBy,
-  type StatusFilter,
-  groupModules,
-  matchesSearch,
-  matchesStatus,
-  moduleKpis,
-  sortModules,
-  toConfig,
-  toModuleViews,
-} from "./data/module-model";
-import { useModuleAdminData } from "./data/useModuleAdminData";
-import { useRemoteChecks } from "./data/useRemoteChecks";
+  ModuleAdminProvider,
+  useModuleAdmin,
+  useModuleBase,
+} from "./ModuleAdminContext";
+import { MenuPage } from "./pages/MenuPage";
+import { ModuleDetailsPage } from "./pages/ModuleDetailsPage";
+import { ModulesPage } from "./pages/ModulesPage";
+import { NewModulePage } from "./pages/NewModulePage";
+import { OverviewPage, SEARCH_PARAM } from "./pages/OverviewPage";
 import "./themeFallbacks.css";
 import "./ModuleAdmin.css";
 
 const classBase = "vuuModuleAdmin";
 
-type Page =
-  | { kind: "overview" }
-  | { kind: "create"; initial?: ModuleConfig; sourceTitle?: string };
+/** User Admin's route in the portal. */
+const USER_ADMIN_PATH = "/administration/users";
 
-type Panel = { kind: "details" | "edit"; id: number } | undefined;
-type Dialog = { kind: "disable" | "delete"; id: number } | undefined;
+export { duplicateConfig } from "./ModuleAdminContext";
 
-const STATUS_FILTERS: StatusFilter[] = [
-  "all",
-  "enabled",
-  "disabled",
-  "attention",
-];
+const NavItem = ({
+  active,
+  badge,
+  icon,
+  label,
+  to,
+  tone,
+}: {
+  active: boolean;
+  badge?: number;
+  icon: ReactNode;
+  label: string;
+  to: string;
+  tone?: "warning";
+}) => (
+  <VerticalNavigationItem active={active}>
+    <VerticalNavigationItemContent>
+      <VerticalNavigationItemTrigger render={<PortalLink end to={to} />}>
+        {icon}
+        <VerticalNavigationItemLabel>{label}</VerticalNavigationItemLabel>
+        {badge !== undefined ? (
+          <span
+            className={cx(`${classBase}-navBadge`, {
+              [`${classBase}-navBadge-warning`]: tone === "warning",
+            })}
+          >
+            {badge}
+          </span>
+        ) : null}
+      </VerticalNavigationItemTrigger>
+    </VerticalNavigationItemContent>
+  </VerticalNavigationItem>
+);
 
-/** Prefill for duplicating a module: name, route and scope must be unique. */
-export const duplicateConfig = (module: ModuleView): ModuleConfig => {
-  const config = toConfig(module);
-  return {
-    ...config,
-    enabled: true,
-    name: `${config.name}-copy`,
-    path: config.path ? `${config.path}-copy` : "",
-    title: `${config.title} (copy)`,
-    accessRole: module.accessRole,
-  };
+const Navigation = () => {
+  const { kpis, paths } = useModuleAdmin();
+  const { pathname } = useLocation();
+  const [params] = useSearchParams();
+  const within = (path: string) =>
+    pathname === path || pathname.startsWith(`${path}/`);
+  const attention =
+    pathname === `${paths.base}/modules` &&
+    params.get("status") === "attention";
+  return (
+    <nav aria-label="Module administration" className={`${classBase}-nav`}>
+      <VerticalNavigation appearance="indicator">
+        <NavItem
+          active={within(`${paths.base}/overview`)}
+          icon={<HomeIcon aria-hidden />}
+          label="Overview"
+          to={paths.overview()}
+        />
+        <NavItem
+          active={within(`${paths.base}/modules`) && !attention}
+          badge={kpis.total}
+          icon={<GridIcon aria-hidden />}
+          label="Modules"
+          to={paths.modules()}
+        />
+        <NavItem
+          active={within(paths.menu)}
+          icon={<TreeIcon aria-hidden />}
+          label="Menu structure"
+          to={paths.menu}
+        />
+      </VerticalNavigation>
+      {kpis.modulesWithIssues > 0 ? (
+        <>
+          <hr className={`${classBase}-navDivider`} />
+          <VerticalNavigation appearance="indicator">
+            <NavItem
+              active={attention}
+              badge={kpis.modulesWithIssues}
+              icon={<WarningIcon aria-hidden />}
+              label="Needs attention"
+              to={paths.modules("attention")}
+              tone="warning"
+            />
+          </VerticalNavigation>
+        </>
+      ) : null}
+      <span className={`${classBase}-spacer`} />
+      <PortalLink
+        className={`${classBase}-navFooterLink`}
+        routeScope="portal"
+        to={USER_ADMIN_PATH}
+      >
+        <TearOutIcon aria-hidden /> Open User Admin
+      </PortalLink>
+    </nav>
+  );
 };
 
-const ModuleAdminApp = () => {
-  const { client, error, loading, modules } = useModuleAdminData();
-  const remoteChecks = useRemoteChecks();
-  const { showNotification } = useNotifications();
+/** Searches from any page; matches are listed on the Overview page. */
+const HeaderSearch = () => {
+  const { paths } = useModuleAdmin();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [params] = useSearchParams();
+  const onOverview = pathname === paths.overview();
+  const committed = onOverview ? (params.get(SEARCH_PARAM) ?? "") : "";
+  const [value, setValue] = useState(committed);
+  const [synced, setSynced] = useState(committed);
+  if (committed !== synced) {
+    setSynced(committed);
+    setValue(committed);
+  }
 
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<StatusFilter>("all");
-  const [groupBy, setGroupBy] = useState<GroupBy>("none");
-  const [sortBy, setSortBy] = useState<SortBy>("menu");
-  const [view, setView] = useState<ViewMode>("cards");
-  const [page, setPage] = useState<Page>({ kind: "overview" });
-  const [panel, setPanel] = useState<Panel>();
-  const [dialog, setDialog] = useState<Dialog>();
-
-  const notify = useCallback(
-    (status: "success" | "error", header: string, content?: string) =>
-      showNotification({
-        content: content ?? "",
-        header,
-        status,
-        type: NotificationType.Toast,
-      }),
-    [showNotification],
-  );
-
-  const checkAll = useCallback(
-    () => remoteChecks.check(modules.map(({ mfUrl }) => mfUrl)),
-    [modules, remoteChecks],
-  );
-
-  // Check every remote once, when the modules first arrive.
-  const checkedOnLoad = useRef(false);
-  useEffect(() => {
-    if (!checkedOnLoad.current && !loading && modules.length > 0) {
-      checkedOnLoad.current = true;
-      void checkAll();
+  const search = (term: string) => {
+    setValue(term);
+    if (term.trim() || onOverview) {
+      navigate(paths.overview(term.trim()), { replace: onOverview });
     }
-  }, [checkAll, loading, modules.length]);
-
-  const views = useMemo(
-    () => toModuleViews(modules, remoteChecks.manifests),
-    [modules, remoteChecks.manifests],
-  );
-  const byId = useCallback(
-    (id?: number) => views.find((module) => module.id === id),
-    [views],
-  );
-  const counts = useMemo(
-    () =>
-      Object.fromEntries(
-        STATUS_FILTERS.map((status) => [
-          status,
-          views.filter(
-            (module) =>
-              matchesSearch(module, search) && matchesStatus(module, status),
-          ).length,
-        ]),
-      ) as Record<StatusFilter, number>,
-    [search, views],
-  );
-  const visible = useMemo(
-    () =>
-      sortModules(
-        views.filter(
-          (module) =>
-            matchesSearch(module, search) && matchesStatus(module, filter),
-        ),
-        sortBy,
-      ),
-    [filter, search, sortBy, views],
-  );
-  const groups = useMemo(
-    () => groupModules(visible, groupBy),
-    [groupBy, visible],
-  );
-  const kpis = useMemo(() => moduleKpis(views), [views]);
-
-  const panelModule = byId(panel?.id);
-  const dialogModule = byId(dialog?.id);
-
-  // A module deleted elsewhere closes its panel.
-  useEffect(() => {
-    if (panel && !loading && !panelModule) setPanel(undefined);
-  }, [loading, panel, panelModule]);
-
-  const setEnabled = useCallback(
-    async (module: ModuleView, enabled: boolean) => {
-      try {
-        await client.setModuleEnabled(module.id, enabled);
-        notify(
-          "success",
-          `${module.title} ${enabled ? "enabled" : "disabled"}`,
-        );
-      } catch (cause) {
-        notify(
-          "error",
-          `Could not ${enabled ? "enable" : "disable"} ${module.title}`,
-          errorMessage(cause),
-        );
-      }
-    },
-    [client, notify],
-  );
-
-  const actions = useMemo<ModuleActions>(
-    () => ({
-      checkRemote: (module) => remoteChecks.check([module.mfUrl]),
-      delete: (module) => setDialog({ id: module.id, kind: "delete" }),
-      duplicate: (module) =>
-        setPage({
-          initial: duplicateConfig(module),
-          kind: "create",
-          sourceTitle: module.title,
-        }),
-      edit: (module) => setPanel({ id: module.id, kind: "edit" }),
-      select: (module) => setPanel({ id: module.id, kind: "details" }),
-      toggleEnabled: (module) =>
-        module.enabled
-          ? setDialog({ id: module.id, kind: "disable" })
-          : void setEnabled(module, true),
-    }),
-    [remoteChecks, setEnabled],
-  );
-
-  const createModule = async (config: ModuleConfig) => {
-    try {
-      const { id } = await client.createModule(config);
-      notify(
-        "success",
-        `${config.title} registered`,
-        config.enabled
-          ? "Users holding its access role can now open it"
-          : "Saved as disabled",
-      );
-      setPage({ kind: "overview" });
-      setPanel({ id, kind: "details" });
-      return true;
-    } catch (cause) {
-      notify("error", "Could not create module", errorMessage(cause));
-      return false;
-    }
-  };
-
-  const updateModule = async (
-    module: ModuleView,
-    changes: Partial<ModuleConfig>,
-    expectedVersion: number,
-  ) => {
-    try {
-      await client.updateModule(module.id, changes, expectedVersion);
-      notify("success", `${module.title} updated`);
-      return true;
-    } catch (cause) {
-      notify("error", `Could not update ${module.title}`, errorMessage(cause));
-      return false;
-    }
-  };
-
-  const deleteModule = async (module: ModuleView, deleteChildren: boolean) => {
-    setDialog(undefined);
-    try {
-      const { deletedIds } = await client.deleteModule(
-        module.id,
-        deleteChildren,
-      );
-      notify(
-        "success",
-        deletedIds.length > 1
-          ? `${deletedIds.length} modules deleted`
-          : `${module.title} deleted`,
-      );
-      if (panel && deletedIds.includes(panel.id)) setPanel(undefined);
-    } catch (cause) {
-      notify("error", `Could not delete ${module.title}`, errorMessage(cause));
-    }
-  };
-
-  const clearFilters = () => {
-    setSearch("");
-    setFilter("all");
-  };
-  const openCreate = () => setPage({ kind: "create" });
-
-  const renderBody = () => {
-    if (loading) {
-      return (
-        <div className={`${classBase}-loading`}>
-          <Spinner aria-label="Loading modules" />
-        </div>
-      );
-    }
-    if (visible.length === 0) {
-      return (
-        <EmptyState
-          filtered={views.length > 0}
-          onClearFilters={clearFilters}
-          onCreate={openCreate}
-        />
-      );
-    }
-    if (view === "tree")
-      return <MenuTreeView modules={visible} selectedId={panel?.id} />;
-    if (view === "table")
-      return <ModuleTableView groups={groups} selectedId={panel?.id} />;
-    return (
-      <ModuleGrid
-        groups={groups}
-        onCreate={openCreate}
-        selectedId={panel?.id}
-      />
-    );
   };
 
   return (
-    <ModuleActionsContext.Provider value={actions}>
-      <div className={classBase}>
-        <header className={`${classBase}-appHeader`}>
-          <span className={`${classBase}-brandIcon`}>
-            <LayersIcon aria-hidden />
-          </span>
-          <strong>Module Admin</strong>
-          <Text color="secondary">
-            Remote modules registered with module discovery
-          </Text>
-          <span className={`${classBase}-spacer`} />
-          {page.kind === "overview" ? (
-            <Input
-              aria-label="Search modules"
-              bordered
-              className={`${classBase}-search`}
-              endAdornment={
-                search ? (
-                  <Button
-                    appearance="transparent"
-                    aria-label="Clear search"
-                    onClick={() => setSearch("")}
-                  >
-                    <CloseIcon aria-hidden />
-                  </Button>
-                ) : null
-              }
-              inputProps={{
-                placeholder: "Search title, name, scope, route or role…",
-              }}
-              onChange={(event) => setSearch(inputValue(event))}
-              startAdornment={<SearchIcon aria-hidden />}
-              value={search}
-            />
-          ) : null}
-        </header>
-        {page.kind === "create" ? (
-          <CreateModulePage
-            initial={page.initial}
-            key={page.sourceTitle ?? "new"}
-            modules={modules}
-            onCancel={() => setPage({ kind: "overview" })}
-            onCreate={createModule}
-            remoteChecks={remoteChecks}
-            sourceTitle={page.sourceTitle}
-          />
-        ) : (
-          <div
-            className={cx(`${classBase}-workspace`, {
-              [`${classBase}-withPanel`]: panelModule,
-            })}
+    <Input
+      aria-label="Search modules"
+      bordered
+      className={`${classBase}-search`}
+      endAdornment={
+        value ? (
+          <Button
+            appearance="transparent"
+            aria-label="Clear search"
+            onClick={() => search("")}
           >
-            <main className={`${classBase}-main`}>
-              <div className={`${classBase}-pageHeader`}>
-                <div>
-                  <h1 className={`${classBase}-title`}>Modules</h1>
-                  <Text color="secondary">
-                    Define new remote modules and maintain how existing modules
-                    are loaded, connected, secured and placed in the portal
-                    menu.
-                  </Text>
-                </div>
-                <span className={`${classBase}-spacer`} />
-                <Button
-                  appearance="bordered"
-                  disabled={modules.length === 0}
-                  onClick={checkAll}
-                >
-                  <RefreshIcon aria-hidden /> Check all remotes
-                </Button>
-                <Button onClick={openCreate} sentiment="accented">
-                  <AddIcon aria-hidden /> New module
-                </Button>
-              </div>
-              {error ? (
-                <Banner status="error">
-                  <BannerContent>
-                    Module discovery is unavailable: {error}
-                  </BannerContent>
-                </Banner>
-              ) : null}
-              {views.length > 0 ? (
-                <>
-                  <ModuleKpis
-                    kpis={kpis}
-                    onShowIssues={() => setFilter("attention")}
-                  />
-                  <ModuleToolbar
-                    counts={counts}
-                    filter={filter}
-                    groupBy={groupBy}
-                    lastCheckedAt={remoteChecks.lastCheckedAt}
-                    onFilterChange={setFilter}
-                    onGroupByChange={setGroupBy}
-                    onSortByChange={setSortBy}
-                    onViewChange={setView}
-                    sortBy={sortBy}
-                    view={view}
-                  />
-                </>
-              ) : null}
-              <div className={`${classBase}-body`}>{renderBody()}</div>
-            </main>
-            {panelModule && panel?.kind === "details" ? (
-              <ModuleDetailsPanel
-                module={panelModule}
-                onClose={() => setPanel(undefined)}
-              />
-            ) : null}
-            {panelModule && panel?.kind === "edit" ? (
-              <EditModulePanel
-                key={panelModule.id}
-                module={panelModule}
-                modules={modules}
-                onClose={() =>
-                  setPanel({ id: panelModule.id, kind: "details" })
-                }
-                onSave={(changes, expectedVersion) =>
-                  updateModule(panelModule, changes, expectedVersion)
-                }
-                remoteChecks={remoteChecks}
-              />
-            ) : null}
-          </div>
-        )}
-        {dialogModule && dialog?.kind === "disable" ? (
-          <DisableModuleDialog
-            module={dialogModule}
-            onCancel={() => setDialog(undefined)}
-            onConfirm={() => {
-              setDialog(undefined);
-              void setEnabled(dialogModule, false);
-            }}
-          />
-        ) : null}
-        {dialogModule && dialog?.kind === "delete" ? (
-          <DeleteModuleDialog
-            module={dialogModule}
-            onCancel={() => setDialog(undefined)}
-            onConfirm={(deleteChildren) =>
-              deleteModule(dialogModule, deleteChildren)
-            }
-            onDisableInstead={() =>
-              setDialog({ id: dialogModule.id, kind: "disable" })
-            }
-          />
-        ) : null}
-      </div>
-    </ModuleActionsContext.Provider>
+            <CloseIcon aria-hidden />
+          </Button>
+        ) : null
+      }
+      inputProps={{
+        onKeyDown: (event) => {
+          if (event.key === "Escape") {
+            search("");
+          } else if (event.key === "Enter") {
+            search(value);
+          }
+        },
+        placeholder: "Search title, name, scope, route or role…",
+      }}
+      onChange={(event) => {
+        const term = inputValue(event);
+        // Once results are showing, refine them as the user types.
+        if (onOverview && committed) search(term);
+        else setValue(term);
+      }}
+      startAdornment={<SearchIcon aria-hidden />}
+      value={value}
+    />
   );
 };
 
-const ModuleAdmin = () => (
-  <NotificationsProvider>
-    <ModuleAdminApp />
-  </NotificationsProvider>
+const ModuleAdminLayout = () => (
+  <div className={classBase}>
+    <header className={`${classBase}-appHeader`}>
+      <span className={`${classBase}-brandIcon`}>
+        <LayersIcon aria-hidden />
+      </span>
+      <strong className={`${classBase}-brandName`}>Module Admin</strong>
+      <Text className={`${classBase}-brandTagline`} color="secondary">
+        Remote modules registered with module discovery
+      </Text>
+      <span className={`${classBase}-spacer`} />
+      <HeaderSearch />
+    </header>
+    <div className={`${classBase}-workspace`}>
+      <Navigation />
+      <main className={`${classBase}-content`}>
+        <Outlet />
+      </main>
+    </div>
+  </div>
 );
+
+const NotFound = () => {
+  const { paths } = useModuleAdmin();
+  return (
+    <div className={`${classBase}-page`}>
+      <p>
+        Page not found.{" "}
+        <PortalLink to={paths.overview()}>Go to Overview</PortalLink>
+      </p>
+    </div>
+  );
+};
+
+const ModuleAdmin = () => {
+  const base = useModuleBase();
+  return (
+    <NotificationsProvider>
+      <Routes>
+        <Route
+          element={
+            <ModuleAdminProvider base={base}>
+              <ModuleAdminLayout />
+            </ModuleAdminProvider>
+          }
+        >
+          <Route index element={<Navigate replace to={`${base}/overview`} />} />
+          <Route path="overview" element={<OverviewPage />} />
+          <Route path="modules" element={<ModulesPage />} />
+          <Route path="modules/new" element={<NewModulePage />} />
+          <Route path="modules/:name" element={<ModuleDetailsPage />} />
+          <Route
+            path="modules/:name/edit"
+            element={<ModuleDetailsPage editing />}
+          />
+          <Route path="menu" element={<MenuPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    </NotificationsProvider>
+  );
+};
 
 export default ModuleAdmin;

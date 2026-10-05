@@ -3,10 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
   configChanges,
   groupModules,
+  issueSummary,
   joinLocation,
   matchesSearch,
   matchesStatus,
   menuSections,
+  moduleIssues,
   moduleKpis,
   sortModules,
   splitLocation,
@@ -177,5 +179,35 @@ describe("toModuleViews", () => {
       sections: 2,
       total: 4,
     });
+  });
+});
+
+describe("issueSummary", () => {
+  const unreachable = {
+    checkedAt: 1,
+    elapsedMs: 1,
+    exposes: [],
+    items: [],
+    status: "unreachable" as const,
+    summary: "Remote entry could not be loaded",
+  };
+
+  it("is empty when there are no issues", () => {
+    expect(issueSummary({ issues: [] })).toBe("");
+  });
+
+  it("uses the message for a single issue", () => {
+    expect(issueSummary({ issues: moduleIssues("") })).toBe(
+      "No access role – no user can open this module",
+    );
+  });
+
+  it("counts and names multiple issues", () => {
+    expect(
+      issueSummary({
+        issues: moduleIssues("", unreachable),
+        remote: unreachable,
+      }),
+    ).toBe("2 issues · remote unreachable, no access role");
   });
 });
