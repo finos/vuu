@@ -5,7 +5,6 @@ import type { DataSource, SchemaColumn } from "@vuu-ui/vuu-data-types";
 import { TableProvider } from "@vuu-ui/vuu-table-extras";
 import {
   CustomHeader,
-  // DataCellEditNotification,
   DataRow,
   GroupToggleTarget,
   HeaderCellProps,
@@ -211,13 +210,6 @@ export interface TableProps
    */
   onConfigChange?: TableConfigChangeHandler;
 
-  /**
-   * In a Table with editable cells, this callback will be invoked every time
-   * a user performs any edit operation on an editable field.
-   */
-  // TODO can we scrap this and leave it to the editSession ?
-  // onDataEdited?: DataCellEditNotification;
-
   onDragStart?: DragStartHandler;
   onDrop?: (dragDropState: DragDropState) => void;
 
@@ -343,7 +335,6 @@ const TableCore = ({
   navigationStyle = "cell",
   // onAvailableColumnsChange,
   onConfigChange,
-  // onDataEdited: onDataEditedProp,
   onDragStart,
   onDrop,
   onHighlight,
@@ -427,7 +418,6 @@ const TableCore = ({
     id,
     navigationStyle,
     onConfigChange,
-    // onDataEdited: onDataEditedProp,
     onDragStart,
     onDrop,
     onHighlight,
@@ -561,7 +551,6 @@ const TableCore = ({
                     isSelectable={isRowSelectable?.(dataRow)}
                     key={dataRow.renderIndex}
                     onClick={onRowClick}
-                    // onDataEdited={onDataEdited}
                     offset={showPaginationControls ? 0 : getRowOffset(dataRow)}
                     onToggleGroup={onToggleGroup}
                     showBookends={selectionBookendWidth > 0}
@@ -636,7 +625,6 @@ export const Table = forwardRef(function Table(
     navigationStyle,
     onAvailableColumnsChange,
     onConfigChange,
-    // onDataEdited,
     onDragStart,
     onDrop,
     onHighlight,
@@ -791,7 +779,6 @@ export const Table = forwardRef(function Table(
           navigationStyle={navigationStyle}
           onAvailableColumnsChange={onAvailableColumnsChange}
           onConfigChange={onConfigChange}
-          // onDataEdited={onDataEdited}
           onDragStart={onDragStart}
           onDrop={onDrop}
           onHighlight={onHighlight}

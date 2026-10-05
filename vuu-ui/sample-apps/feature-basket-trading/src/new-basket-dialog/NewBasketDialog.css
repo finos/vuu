@@ -1,5 +1,10 @@
 .vuuBasketNewBasketDialog {
     --vuuPrompt-minHeight: 120px;
+    &.saltDialog {
+        /* override Salt's percentage-based 'medium' dialog width */
+        width: var(--vuuBasketNewBasketDialog-width, 420px);
+        max-width: 90vw;
+    }
     border: solid 1px var(--salt-container-primary-borderColor);
     border-radius: 6px;
     .saltDialogContent {
