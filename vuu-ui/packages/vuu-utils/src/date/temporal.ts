@@ -56,7 +56,9 @@ const getTypeName = ({ type }: TemporalDescriptor) =>
  *   - epochtimestamp => epochMillis
  *   - epochtimestampnano => epochNanos
  *   - long, int, double (or unspecified) => epochMillis, but only when the
- *     'type' is a temporal type (legacy usage, pre epochtimestamp)
+ *     'type' is a temporal type. This legacy usage (pre epochtimestamp) is
+ *     DEPRECATED and supported only for backward compatibility. Timestamps
+ *     should be described by the server as epochtimestamp or epochtimestampnano.
  * - kind is determined by 'type' ('date/time', 'date', 'time'), default 'datetime'.
  *   An explicit type of 'number' opts an epochtimestamp column out of temporal
  *   treatment altogether.

@@ -114,6 +114,8 @@ export const TemporalKinds = () => {
 /**
  * Before epochtimestamp, timestamps could only be described by the server
  * as 'long'. Only the column 'type' can identify these as temporal.
+ * DEPRECATED: use of long for timestamp values is supported for backward
+ * compatibility only. Use epochtimestamp or epochtimestampnano.
  */
 export const LegacyLongTimestamps = () => {
   const columns = useMemo<ExampleColumn[]>(
@@ -744,6 +746,7 @@ export const FormattingSettingsEpochTimestampNano = () => (
   </ExampleLayout>
 );
 
+/** DEPRECATED usage: long for timestamp values, see LegacyLongTimestamps */
 export const FormattingSettingsLegacyLong = () => (
   <ExampleLayout
     title="Formatting settings, legacy long"
