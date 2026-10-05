@@ -1,0 +1,80 @@
+.vuuSplitPane {
+  --vuuSplitPane-align: stretch;
+  --vuuSplitPane-direction: row;
+  --vuuSplitPane-gap: 0;
+  --vuuSplitPane-justify: flex-start;
+  --vuuSplitPane-margin: 0;
+  --vuuSplitPane-padding: 0;
+  --vuuSplitPane-splitterSize: 3px;
+  --vuuSplitPane-splitter-background: var(--salt-separable-secondary-borderColor);
+  --vuuSplitPane-splitter-background-active: var(--salt-separable-primary-borderColor);
+  /* invisible zone either side of splitter that will respond to pointer */
+  --vuuSplitPane-splitter-grabZone: 4px;
+
+  align-items: var(--vuuSplitPane-align);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: var(--vuuSplitPane-direction);
+  flex-wrap: nowrap;
+  gap: var(--vuuSplitPane-gap);
+  justify-content: var(--vuuSplitPane-justify);
+  margin: var(--vuuSplitPane-margin);
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  padding: var(--vuuSplitPane-padding);
+}
+
+/*
+ * Zero specificity so any styles applied by user to panes will win. Panes must be
+ * allowed to shrink below their content size, else Splitter cannot be moved.
+ */
+:where(.vuuSplitPane) > :where(:not(.vuuSplitPane-splitter)) {
+  box-sizing: border-box;
+}
+:where(.vuuSplitPane-row) > :where(:not(.vuuSplitPane-splitter)) {
+  min-width: 0;
+}
+:where(.vuuSplitPane-column) > :where(:not(.vuuSplitPane-splitter)) {
+  min-height: 0;
+}
+
+.vuuSplitPane-splitter {
+  background-color: var(--vuuSplitPane-splitter-background);
+  flex: 0 0 var(--vuuSplitPane-splitterSize);
+  outline: none;
+  position: relative;
+  touch-action: none;
+  z-index: 1;
+}
+
+.vuuSplitPane-splitter::before {
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.vuuSplitPane-row > .vuuSplitPane-splitter {
+  cursor: ew-resize;
+}
+.vuuSplitPane-row > .vuuSplitPane-splitter::before {
+  left: calc(-1 * var(--vuuSplitPane-splitter-grabZone));
+  right: calc(-1 * var(--vuuSplitPane-splitter-grabZone));
+}
+
+.vuuSplitPane-column > .vuuSplitPane-splitter {
+  cursor: ns-resize;
+}
+.vuuSplitPane-column > .vuuSplitPane-splitter::before {
+  bottom: calc(-1 * var(--vuuSplitPane-splitter-grabZone));
+  top: calc(-1 * var(--vuuSplitPane-splitter-grabZone));
+}
+
+.vuuSplitPane-splitter:hover,
+.vuuSplitPane-splitter-active {
+  --vuuSplitPane-splitter-background: var(--vuuSplitPane-splitter-background-active);
+}
+
+.vuuSplitPane-splitter:focus-visible {
+  outline: var(--salt-focused-outline);
+}
