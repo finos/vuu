@@ -18,7 +18,7 @@ import {
 } from "../data/module-model";
 import { type ModuleDraft, useModuleDraft } from "../data/useModuleDraft";
 import type { RemoteChecks } from "../data/useRemoteChecks";
-import { ErrorCount } from "./EditModulePanel";
+import { ErrorCount } from "./ErrorCount";
 import {
   AccessRoleField,
   CheckRemoteButton,

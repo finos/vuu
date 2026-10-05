@@ -1,14 +1,11 @@
-import { Button, Text } from "@salt-ds/core";
-import { AddIcon, EditIcon, TreeIcon } from "@salt-ds/icons";
+import { Text } from "@salt-ds/core";
+import { AddIcon, ChevronRightIcon, MenuIcon, TreeIcon } from "@salt-ds/icons";
 import cx from "clsx";
 import type { KeyboardEvent } from "react";
-import type { ModuleView } from "../data/module-model";
-import { ModuleActionsMenu, useModuleActions } from "./ModuleActions";
+import { type ModuleView, issueSummary } from "../data/module-model";
+import { useModuleActions } from "./ModuleActions";
 import {
-  ConnectionTag,
   EnabledStatus,
-  FactList,
-  HostStatus,
   IssueBanner,
   MenuLocation,
   NavIcon,
@@ -24,13 +21,7 @@ export const remoteName = (
     ? `${module.mfScope}/${module.mfComponent.replace(/^\.\//, "")}`
     : "–";
 
-export const ModuleCard = ({
-  module,
-  selected,
-}: {
-  module: ModuleView;
-  selected?: boolean;
-}) => {
+export const ModuleCard = ({ module }: { module: ModuleView }) => {
   const actions = useModuleActions();
   const select = () => actions.select(module);
   const onKeyDown = (event: KeyboardEvent) => {
@@ -42,76 +33,46 @@ export const ModuleCard = ({
       select();
     }
   };
+  const issues = issueSummary(module);
 
   return (
     <article
       aria-label={module.title}
       className={cx(classBase, {
         [`${classBase}-disabled`]: !module.enabled,
-        [`${classBase}-selected`]: selected,
       })}
       onClick={select}
       onKeyDown={onKeyDown}
       tabIndex={0}
     >
-      <header className={`${classBase}-header`}>
-        <NavIcon name={module.name} url={module.navIconUrl} />
-        <div className={`${classBase}-titles`}>
-          <h3 className={`${classBase}-title`}>{module.title}</h3>
-          <code className={`${classBase}-name`}>
-            {module.name} · v{module.version}
-          </code>
-        </div>
-        <EnabledStatus enabled={module.enabled} />
-      </header>
-      {module.description ? (
-        <Text className={`${classBase}-description`}>{module.description}</Text>
-      ) : null}
-      {module.issues.length > 0 ? (
-        <div className={`${classBase}-issues`}>
-          {module.issues.map((issue) => (
-            <IssueBanner key={issue.kind}>{issue.message}</IssueBanner>
-          ))}
-        </div>
-      ) : null}
-      <FactList
-        facts={[
-          ["Menu", <MenuLocation key="menu" module={module} />],
-          ["Route", <code key="route">{module.path || "–"}</code>],
-          ["Remote", <code key="remote">{remoteName(module)}</code>],
-          ["Host", <HostStatus key="host" module={module} />],
-        ]}
-      />
-      <footer className={`${classBase}-footer`}>
-        <div className={`${classBase}-tags`}>
-          <RoleTag module={module} />
-          <ConnectionTag module={module} />
-        </div>
-        <div className={`${classBase}-actions`}>
-          <Button
-            appearance="transparent"
-            aria-label={`Edit ${module.title}`}
-            onClick={(event) => {
-              event.stopPropagation();
-              actions.edit(module);
-            }}
-          >
-            <EditIcon aria-hidden />
-          </Button>
-          <ModuleActionsMenu module={module} />
-        </div>
-      </footer>
-      {module.children.length > 0 ? (
-        <div className={`${classBase}-children`}>
-          <TreeIcon aria-hidden />
-          <Text color="secondary">
-            Child {module.children.length === 1 ? "module" : "modules"}:
+      <div className={`${classBase}-body`}>
+        <header className={`${classBase}-header`}>
+          <NavIcon name={module.name} url={module.navIconUrl} />
+          <div className={`${classBase}-titles`}>
+            <h3 className={`${classBase}-title`}>{module.title}</h3>
+            <code className={`${classBase}-name`}>
+              {module.name} · v{module.version}
+            </code>
+          </div>
+          <EnabledStatus enabled={module.enabled} />
+        </header>
+        {module.description ? (
+          <Text className={`${classBase}-description`}>
+            {module.description}
           </Text>
-          <strong>
-            {module.children.map(({ title }) => title).join(", ")}
-          </strong>
+        ) : null}
+        <div className={`${classBase}-menu`}>
+          {module.parent ? <TreeIcon aria-hidden /> : <MenuIcon aria-hidden />}
+          <MenuLocation module={module} />
         </div>
-      ) : null}
+        {issues ? <IssueBanner>{issues}</IssueBanner> : null}
+      </div>
+      <footer className={`${classBase}-footer`}>
+        <RoleTag module={module} />
+        <span className={`${classBase}-open`}>
+          Open <ChevronRightIcon aria-hidden />
+        </span>
+      </footer>
     </article>
   );
 };

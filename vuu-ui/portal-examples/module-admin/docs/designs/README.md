@@ -1,5 +1,9 @@
 # Module Admin – UI designs
 
+> **Superseded in part by [v2](./v2/README.md):** v2 adds an Overview page with
+> summary counts and search, simpler module cards, and a page for each module's
+> details in place of the side panel. It also fixes page scrolling.
+
 High-resolution mockups (3200×2000, 2× density) for the module-admin rewrite.
 They use the Salt `theme-next` and Vuu theme tokens at high density, matching
 the portal and `user-admin`. Data is the `DEFAULT_MODULE_DEFINITIONS` seed,
