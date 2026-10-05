@@ -44,6 +44,23 @@ export type FilterContextFilterMenuActionHandler = <
 ) => void;
 
 export interface FilterContextProps {
+  /**
+   * Returns the column descriptor used by a ColumnFilter (within a
+   * FilterContainer) for the named column, if one is registered.
+   */
+  getColumnFilterColumn?: (
+    key: string,
+    columnName: string,
+  ) => ColumnDescriptor | undefined;
+  /**
+   * Register the column descriptor used by a ColumnFilter, which may differ
+   * from the Table column descriptor, e.g. a different date/time pattern.
+   * Returns a function to unregister.
+   */
+  registerColumnFilterColumn?: (
+    key: string,
+    column: ColumnDescriptor,
+  ) => () => void;
   deleteFilter: (key: string, filterId: string) => void;
   saveFilter: (key: string, name: string) => void;
   filterDescriptors: Map<string, FilterContainerFilterDescriptor[]>;
@@ -96,6 +113,27 @@ export const FilterContext = createContext<FilterContextProps>({
       "[FilterContext] setCurrentFilter, no FilterProvider has been configured",
     ),
 });
+
+/**
+ * Access the column descriptors registered by ColumnFilters
+ * (see FilterContainerColumnFilter).
+ */
+export function useColumnFilterRegistry(key = "GLOBAL") {
+  const { getColumnFilterColumn, registerColumnFilterColumn } =
+    useContext(FilterContext);
+  const getColumn = useCallback(
+    (columnName: string) => getColumnFilterColumn?.(key, columnName),
+    [getColumnFilterColumn, key],
+  );
+  const register = useCallback(
+    (column: ColumnDescriptor) => registerColumnFilterColumn?.(key, column),
+    [key, registerColumnFilterColumn],
+  );
+  return {
+    getColumnFilterColumn: getColumn,
+    registerColumnFilterColumn: register,
+  };
+}
 
 interface SavedFilterHookProps {
   availableColumns?: ColumnDescriptor[];

@@ -4,19 +4,39 @@ import {
   MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
 import type {
+  ColumnDescriptor,
+  DataRow,
   TableContextMenuDef,
   TableContextMenuOptions,
   TableMenuLocation,
 } from "@vuu-ui/vuu-table-types";
-import { filtersAreEqual } from "@vuu-ui/vuu-utils";
+import {
+  filtersAreEqual,
+  getTemporalCellFilter,
+  getTemporalInfo,
+  withDateTimePattern,
+  type DateTimePattern,
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useRef } from "react";
-import { useSavedFilters } from "../filter-provider/FilterContext";
+import {
+  useColumnFilterRegistry,
+  useSavedFilters,
+} from "../filter-provider/FilterContext";
 import { FilterAggregator } from "../FilterAggregator";
 
 const EmptyAggregator = new FilterAggregator();
 
 export interface FilterContextMenuHookProps {
   filterColumns: string[] | "*";
+  /**
+   * The date/time pattern of the ColumnFilter for a temporal column, keyed by
+   * column name. A filter created from a cell value matches the value at the
+   * precision displayed by the ColumnFilter, e.g a ColumnFilter with time
+   * pattern 'hh:mm:ss.ms' filters the whole millisecond. Where no pattern is
+   * provided, the column descriptor registered by a FilterContainerColumnFilter
+   * for the column is used, if there is one, otherwise the Table column.
+   */
+  filterPatterns?: Record<string, DateTimePattern>;
   filterProviderKey?: string;
 }
 
@@ -24,13 +44,54 @@ const defaultProps: FilterContextMenuHookProps = {
   filterColumns: "*",
 };
 
+interface CellFilter {
+  /** The column descriptor with which the filter is created */
+  column: ColumnDescriptor;
+  label: string;
+  op: "=" | "between-inclusive";
+  value: string | number | [string, string];
+}
+
 export const useFilterContextMenu = ({
   filterColumns = "*",
+  filterPatterns,
   filterProviderKey,
 }: FilterContextMenuHookProps = defaultProps): TableContextMenuDef => {
   const { currentFilter, clearCurrentFilter, setCurrentFilter } =
     useSavedFilters(filterProviderKey);
+  const { getColumnFilterColumn } = useColumnFilterRegistry(filterProviderKey);
   const filterAggregatorRef = useRef(EmptyAggregator);
+
+  /**
+   * A temporal value is filtered at the precision with which the ColumnFilter
+   * (if there is one, otherwise the Table) displays it. A ColumnFilter on a
+   * 'datetime' column displays a date (DatePicker). A filterPatterns pattern
+   * is applied as given.
+   */
+  const getCellFilter = useCallback(
+    (column: ColumnDescriptor, dataRow: DataRow): CellFilter => {
+      const value = dataRow[column.name] as string | number;
+      if (getTemporalInfo(column)) {
+        const pattern = filterPatterns?.[column.name];
+        const columnFilterColumn = pattern
+          ? undefined
+          : getColumnFilterColumn(column.name);
+        const filterColumn = pattern
+          ? withDateTimePattern(column, pattern)
+          : columnFilterColumn;
+        const temporalCellFilter = getTemporalCellFilter(
+          filterColumn ?? column,
+          value,
+          columnFilterColumn !== undefined,
+        );
+        if (temporalCellFilter) {
+          return { column: filterColumn ?? column, ...temporalCellFilter };
+        }
+      }
+      return { column, label: `${value}`, op: "=", value };
+    },
+    [filterPatterns, getColumnFilterColumn],
+  );
 
   useMemo(() => {
     if (
@@ -48,7 +109,6 @@ export const useFilterContextMenu = ({
         const { column, dataRow } = options;
         const { current: fag } = filterAggregatorRef;
         const { name, label = name } = column;
-        const value = dataRow[column.name] as string | number;
 
         const ClearFilter: ContextMenuItemDescriptor = {
           id: "filter-clear",
@@ -57,6 +117,7 @@ export const useFilterContextMenu = ({
         };
 
         if (filterColumns === "*" || filterColumns.includes(column.name)) {
+          const { label: value } = getCellFilter(column, dataRow);
           const SetFilter: ContextMenuItemDescriptor = {
             id: "filter-set",
             label: `Set filter ${label} '${value}'`,
@@ -96,7 +157,7 @@ export const useFilterContextMenu = ({
           return [];
         }
       },
-      [filterColumns],
+      [filterColumns, getCellFilter],
     );
 
   const menuActionHandler = useCallback<
@@ -115,8 +176,8 @@ export const useFilterContextMenu = ({
 
           case "filter-add":
             {
-              const value = dataRow[column.name] as string | number;
-              fag.add(column, value, "=");
+              const cellFilter = getCellFilter(column, dataRow);
+              fag.add(cellFilter.column, cellFilter.value, cellFilter.op);
               if (fag.filter) {
                 setCurrentFilter(fag.filter);
               }
@@ -132,9 +193,9 @@ export const useFilterContextMenu = ({
             break;
           case "filter-set":
             {
-              const value = dataRow[column.name] as string | number;
+              const cellFilter = getCellFilter(column, dataRow);
               fag.clear();
-              fag.add(column, value, "=");
+              fag.add(cellFilter.column, cellFilter.value, cellFilter.op);
               if (fag.filter) {
                 setCurrentFilter(fag.filter);
               }
@@ -147,7 +208,7 @@ export const useFilterContextMenu = ({
         return false;
       }
     },
-    [clearCurrentFilter, setCurrentFilter],
+    [clearCurrentFilter, getCellFilter, setCurrentFilter],
   );
 
   return {

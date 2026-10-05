@@ -141,6 +141,42 @@ describe("temporalFilterAsQuery", () => {
         ),
       ).toEqual(`ts < ${nine + 1000}000000`);
     });
+    it("THEN a nano column resolves it to the period implied by its precision", () => {
+      const nine = utc(2024, 2, 15, 9);
+      const time = { ...dateTimeNanos, kind: "time" } as const;
+      const opts = { date: "2024-03-15" } as const;
+      expect(
+        temporalFilterAsQuery(
+          { column: "ts", op: "=", value: "09:00:00.123" },
+          time,
+          opts,
+        ),
+      ).toEqual(`(ts >= ${nine + 123}000000 and ts < ${nine + 124}000000)`);
+      expect(
+        temporalFilterAsQuery(
+          { column: "ts", op: "=", value: "09:00:00.123456" },
+          time,
+          opts,
+        ),
+      ).toEqual(`(ts >= ${nine + 123}456000 and ts < ${nine + 123}457000)`);
+      expect(
+        temporalFilterAsQuery(
+          { column: "ts", op: "=", value: "09:00:00.123456789" },
+          time,
+          opts,
+        ),
+      ).toEqual(`ts = ${nine + 123}456789`);
+    });
+    it("THEN a millisecond column compares milliseconds exactly", () => {
+      const nine = utc(2024, 2, 15, 9);
+      expect(
+        temporalFilterAsQuery(
+          { column: "ts", op: ">", value: "09:00:00.123" },
+          { ...dateTimeMillis, kind: "time" },
+          { date: "2024-03-15" },
+        ),
+      ).toEqual(`ts > ${nine + 123}`);
+    });
   });
 });
 

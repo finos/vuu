@@ -2,7 +2,14 @@ import {
   FilterContainerFilter,
   FilterContainerFilterDescriptor,
 } from "@vuu-ui/vuu-filter-types";
-import { ReactElement, ReactNode, useCallback, useMemo, useState } from "react";
+import {
+  ReactElement,
+  ReactNode,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { FilterNamePrompt } from "../saved-filters/FilterNamePrompt";
 import { DeleteFilterPrompt } from "../saved-filters/DeleteFilterPrompt";
 import {
@@ -67,6 +74,33 @@ export const FilterProvider = ({
   );
 
   const [dialog, setDialog] = useState<ReactElement | null>(null);
+
+  const columnFilterColumnsRef = useRef(
+    new Map<string, Map<string, ColumnDescriptor>>(),
+  );
+
+  const registerColumnFilterColumn = useCallback(
+    (key: string, column: ColumnDescriptor) => {
+      const { current: columnsByKey } = columnFilterColumnsRef;
+      let columns = columnsByKey.get(key);
+      if (columns === undefined) {
+        columnsByKey.set(key, (columns = new Map()));
+      }
+      columns.set(column.name, column);
+      return () => {
+        if (columns.get(column.name) === column) {
+          columns.delete(column.name);
+        }
+      };
+    },
+    [],
+  );
+
+  const getColumnFilterColumn = useCallback(
+    (key: string, columnName: string) =>
+      columnFilterColumnsRef.current.get(key)?.get(columnName),
+    [],
+  );
 
   const deleteFilter = useCallback(
     (key: string, filterId: string) => {
@@ -282,6 +316,8 @@ export const FilterProvider = ({
   return (
     <FilterContext.Provider
       value={{
+        getColumnFilterColumn,
+        registerColumnFilterColumn,
         onFilterMenuAction: handleFilterMenuAction,
         deleteFilter,
         saveFilter: handleSaveFilter,

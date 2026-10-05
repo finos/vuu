@@ -178,7 +178,11 @@ export const getDataItemEditControl = ({
       <VuuTimePicker
         className={className}
         milliseconds
-        value={toTimeString(value, baseValue, temporalInfo, true)}
+        value={
+          value === ""
+            ? ("" as TimeStringMillis)
+            : toTimeString(value, baseValue, temporalInfo, true)
+        }
         onChange={onChange}
         onCommit={handleCommitTime}
         data-edit-control
@@ -186,7 +190,11 @@ export const getDataItemEditControl = ({
     ) : (
       <VuuTimePicker
         className={className}
-        value={toTimeString(value, baseValue, temporalInfo)}
+        value={
+          value === ""
+            ? ("" as TimeString)
+            : toTimeString(value, baseValue, temporalInfo)
+        }
         onChange={onChange}
         onCommit={handleCommitTime}
         data-edit-control

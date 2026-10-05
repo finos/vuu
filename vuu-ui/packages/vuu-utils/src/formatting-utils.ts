@@ -3,6 +3,7 @@ import {
   ColumnDescriptor,
   ColumnTypeFormatting,
   ColumnTypeValueMap,
+  FractionalSecondDigits,
   ValueFormatter,
 } from "@vuu-ui/vuu-table-types";
 import { isMappedValueTypeRenderer, isTypeDescriptor } from "./column-utils";
@@ -24,6 +25,33 @@ export const defaultValueFormatter = (value: unknown) =>
   value == null ? "" : typeof value === "string" ? value : value.toString();
 
 /**
+ * The number of fractional second digits displayed for a temporal value:
+ * type.formatting.fractionalSecondDigits if set, otherwise 3 for an
+ * 'hh:mm:ss.ms' time pattern, 9 for a nanosecond column with any other time
+ * pattern, else 0.
+ */
+export const getFractionalSecondDigits = (
+  column: DataValueDescriptor,
+  temporalInfo = getTemporalInfo(column),
+): FractionalSecondDigits => {
+  if (temporalInfo === undefined) {
+    return 0;
+  }
+  const pattern = dateTimePattern(column.type, temporalInfo.kind);
+  const formatting = isTypeDescriptor(column.type)
+    ? column.type.formatting
+    : undefined;
+  return (
+    formatting?.fractionalSecondDigits ??
+    (pattern.time === "hh:mm:ss.ms"
+      ? 3
+      : temporalInfo.precision === "ns" && pattern.time
+        ? 9
+        : 0)
+  );
+};
+
+/**
  * Creates a formatter for a temporal value (see getTemporalInfo). Handles
  * millisecond and nanosecond encodings, the configured (or default) pattern,
  * time zone, locale and fractional second digits.
@@ -36,18 +64,15 @@ export const temporalFormatter = (
   if (temporalInfo === undefined) {
     return defaultValueFormatter;
   }
-  const { encoding, kind, precision, timeZone } = temporalInfo;
+  const { encoding, kind, timeZone } = temporalInfo;
   const formatting = isTypeDescriptor(column.type)
     ? (column.type.formatting ?? DEFAULT_NUMERIC_FORMAT)
     : DEFAULT_NUMERIC_FORMAT;
   const pattern = dateTimePattern(column.type, kind);
-  const fractionalSecondDigits =
-    formatting.fractionalSecondDigits ??
-    (pattern.time === "hh:mm:ss.ms"
-      ? 3
-      : precision === "ns" && pattern.time
-        ? 9
-        : 0);
+  const fractionalSecondDigits = getFractionalSecondDigits(
+    column,
+    temporalInfo,
+  );
 
   const formatter = formatTimestamp(pattern, {
     fractionalSecondDigits,

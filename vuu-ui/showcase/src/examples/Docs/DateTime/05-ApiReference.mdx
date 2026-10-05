@@ -76,6 +76,7 @@ type RelativeDate = "today" | "yesterday" | DateStringISO; // yyyy-mm-dd
 | `formatTimestamp(pattern, options?)`      | Returns a formatter for `EpochTimestamp` values. Options: `fractionalSecondDigits` (default 3 for `hh:mm:ss.ms`, otherwise 0), `locale`, `timeZone`. |
 | `formatDate(pattern, options?)`           | Returns a formatter for JavaScript `Date` values.                                                 |
 | `dateTimePattern(type?, kind?)`           | The pattern of a column `type`, or the default pattern for the kind (derived from `type` if omitted). |
+| `getFractionalSecondDigits(column, temporalInfo?)` | The fractional second digits displayed for a column: `formatting.fractionalSecondDigits`, otherwise 3 for `hh:mm:ss.ms`, 9 for a nanosecond column with a time, otherwise 0. |
 | `withDateTimePattern(descriptor, pattern?)` | A copy of a temporal descriptor with `type` set from the pattern (`date/time`, `date` or `time`), keeping other formatting. Used by the `ColumnFilter` `pattern` prop. |
 
 `ColumnTypeFormatting` (in `@vuu-ui/vuu-table-types`) has the temporal options `pattern`, `fractionalSecondDigits`, `locale` and `timeZone`. See [Formatting](./02-Formatting.mdx).
@@ -88,6 +89,8 @@ type RelativeDate = "today" | "yesterday" | DateStringISO; // yyyy-mm-dd
 | `temporalFilterAsQuery(clause, temporalInfo, { date }?)`  | Converts a single temporal clause. `date` (a `RelativeDate`, default `"today"`) resolves time of day values. See [Filtering](./03-Filtering.mdx). |
 | `getColumnsByNameForFilter(tableSchema, columnsByName?)`  | Schema columns merged with client column descriptors.                                            |
 | `filterRequiresResolution(filter, columnsByName?)`        | Whether a filter has clauses that must be converted with column information.                     |
+| `getTemporalCellFilter(column, value, dateOnly?)` | A clause (`{ label, op, value }`) matching a wire value at the precision displayed by `column`. Used by `useFilterContextMenu`. See [Filtering](./03-Filtering.mdx#filtering-from-the-table-context-menu). |
+| `useColumnFilterRegistry(filterProviderKey?)` | (`@vuu-ui/vuu-filters`) Registers, and looks up, the column of each `FilterContainerColumnFilter` within a `FilterProvider`. |
 | `getDefaultTimeRange(column)`                             | The default range for a time column filter, `["00:00:00", "23:59:59"]` (with `.000`/`.999` in millisecond mode). |
 | `dateFilterAsQuery`                                       | Deprecated. Use `temporalFilterAsQuery`.                                                          |
 

@@ -109,7 +109,13 @@ export const ONE_DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
 
 const timeOfDayPattern = /^\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?$/;
 
-type Granularity = "day" | "second" | "exact";
+const NANOS_PER_SECOND = 1_000_000_000;
+const NANOS_PER_MILLI = 1_000_000;
+
+/**
+ * 'day', 'exact' or the size, in nanoseconds, of the period a value represents.
+ */
+type Granularity = "day" | "exact" | number;
 
 export interface TemporalFilterAsQueryOptions {
   /**
@@ -131,10 +137,15 @@ const resolveTemporalFilterValue = (
     const millis = timeOfDayToEpochMillis(hms as TimeString, date, timeZone);
     const nanos = parseInt(fraction.padEnd(9, "0"), 10);
     const ts = EpochTimestamp.fromMillis(
-      millis + Math.floor(nanos / 1_000_000),
-      encoding === "epochNanos" ? nanos % 1_000_000 : 0,
+      millis + Math.floor(nanos / NANOS_PER_MILLI),
+      encoding === "epochNanos" ? nanos % NANOS_PER_MILLI : 0,
     );
-    return [ts, fraction ? "exact" : "second"];
+    // The precision of the value determines the period it represents, e.g
+    // 10:00:00.123 is the whole millisecond, unless the column encoding
+    // cannot represent anything finer.
+    const period = 10 ** (9 - Math.min(fraction.length, 9));
+    const unit = encoding === "epochNanos" ? 1 : NANOS_PER_MILLI;
+    return [ts, period > unit ? period : "exact"];
   }
   const ts = EpochTimestamp.fromWire(
     value instanceof ScaledDecimal ? value.asLong : value,
@@ -152,7 +163,7 @@ const resolveTemporalFilterValue = (
     ts.subMilliNanos === 0 &&
     ts.epochMillis % 1000 === 0
   ) {
-    return [ts, "second"];
+    return [ts, NANOS_PER_SECOND];
   }
   return [ts, "exact"];
 };
@@ -164,7 +175,10 @@ const resolveTemporalFilterValue = (
  *   day (in the column time zone), e.g as selected from a DatePicker. The clause
  *   applies to the whole day: '=' becomes a [startOfDay, startOfNextDay) range,
  *   '>' becomes '>= startOfNextDay' etc. Day boundaries are DST safe.
- * - second: time of day values (TimeString or whole second 'time' values)
+ * - period: time of day values (TimeString or whole second 'time' values). A
+ *   TimeString represents the period implied by its precision, e.g hh:mm:ss is
+ *   the whole second, hh:mm:ss.fff the whole millisecond (on a nanosecond
+ *   column), and is treated like the day granularity above.
  * - exact: all other values
  * Values are encoded according to the column encoding (millis or nanos).
  */
@@ -195,7 +209,7 @@ export function temporalFilterAsQuery(
           EpochTimestamp.fromMillis(startOfDay(ts.epochMillis, timeZone)),
           EpochTimestamp.fromMillis(startOfNextDay(ts.epochMillis, timeZone)),
         ]
-      : [ts, EpochTimestamp.fromMillis(ts.epochMillis + 1000)];
+      : [ts, EpochTimestamp.fromNanos(ts.epochNanos + BigInt(granularity))];
 
   const from = start.toLiteral(encoding);
   const to = end.toLiteral(encoding);

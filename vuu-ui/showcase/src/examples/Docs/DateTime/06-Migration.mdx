@@ -30,6 +30,8 @@ Filter queries sent to the server for temporal columns are now generated from th
 | Time column filters store a `TimeString` (for example `"09:30:00"`) with `extendedOptions`. Previously they stored an epoch value fixed to the day the filter was created. Persisted filters with epoch values are still read correctly. | Update code that inspects `filter.value` for time columns. See [Time of day filters](./03-Filtering.mdx#time-of-day-filters). |
 | `TimeDateFilterOptions.date` is `"yesterday"` or an ISO date string (`yyyy-mm-dd`), replacing a `Date` object, so options can be persisted as JSON. | Convert `Date` values to `yyyy-mm-dd`. |
 | `ExtendedSingleValueFilterClause` emits `>=` and `<=` directly, with second or exact bounds, instead of rewriting them as `>` or `<` with a ±1 adjustment. | Update expected query strings. |
+| A time string with a fraction applies to the period of its precision rather than being compared exactly. On an `epochtimestampnano` column, `= 09:30:00.123` matches the whole millisecond. Millisecond columns are unchanged. | Use 9 fractional digits for an exact nanosecond comparison. |
+| `useFilterContextMenu` filters temporal cell values at the precision of the column filter (or Table), using a range or time of day clause rather than `=` the raw value. | Set `filterPatterns` to control the precision. |
 | The filter parser returns integer literals beyond `Number.MAX_SAFE_INTEGER` as strings. | Handle `string` values for nanosecond columns. |
 | The filter grammar gained `>=` and `<=`, which renumbered the generated term ids in `filter-parser.terms.js`. | Rebuild code that imports numeric term ids directly. |
 

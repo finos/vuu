@@ -1,5 +1,7 @@
 import { LivePreview } from "../components/LivePreview";
 import {
+  ContextMenuFilterMatchesColumnFilter,
+  ContextMenuFilterPatterns,
   DateColumnFilters,
   DateFilterClause,
   FilterPatternOverride,
@@ -16,13 +18,13 @@ On the server, a filter on a temporal column compares it with epoch literals in 
 
 `temporalFilterAsQuery(clause, temporalInfo)` interprets the clause value at one of three granularities:
 
-| Granularity | When                                                                                                                                     | Effect                                                     |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| **day**     | the column kind is `date`, or the value on a `datetime` column is exactly the start of a day in the column time zone (as a date picker produces) | The clause applies to the whole calendar day.            |
-| **second**  | a time of day string (`hh:mm:ss`), or a whole-second value on a `time` column                                                           | The clause applies to that whole second.                   |
-| **exact**   | anything else, including time strings with a fraction                                                                                    | The value is compared exactly.                             |
+| Granularity | When | Effect |
+| ----------- | ---- | ------ |
+| **day** | the column kind is `date`, or the value on a `datetime` column is exactly the start of a day in the column time zone (as a date picker produces) | The clause applies to the whole calendar day. |
+| **period** | a time of day string, or a whole-second value on a `time` column | The clause applies to the period of the time string's precision: the whole second for `hh:mm:ss`, the whole millisecond for `hh:mm:ss.fff`, and so on. |
+| **exact** | anything else, or a period no longer than the column encoding unit (a millisecond for `epochtimestamp`, a nanosecond for `epochtimestampnano`) | The value is compared exactly. |
 
-For day and second granularity, each operator is expanded against a half-open range `[from, to)`:
+For day and period granularity, each operator is expanded against a half-open range `[from, to)`:
 
 | Operator | Query                          |
 | -------- | ------------------------------ |
@@ -85,7 +87,7 @@ const filter: ExtendedFilter = {
 };
 ```
 
-`ExtendedSingleValueFilterClause` resolves the time against `date`, in `timeZone`, only when the query is created. A saved filter therefore stays relative to "today", and the options are plain JSON. Time strings may include a fraction (`hh:mm:ss.fff`, up to 9 digits), which makes the comparison exact.
+`ExtendedSingleValueFilterClause` resolves the time against `date`, in `timeZone`, only when the query is created. A saved filter therefore stays relative to "today", and the options are plain JSON. Time strings may include a fraction (`hh:mm:ss.fff`, up to 9 digits). The clause applies to the period of that precision, so `09:30:00.123` on a nanosecond column matches the whole millisecond.
 
 ## Column filters
 
@@ -132,6 +134,43 @@ The pattern sets the filter's kind. A pattern with only a time gives a `time` fi
 
 <LivePreview>
   <FilterPatternOverride />
+</LivePreview>
+
+### Filtering from the Table context menu
+
+`useFilterContextMenu` (in `@vuu-ui/vuu-filters`) adds "Set filter" and "Add … to existing filter" items to the Table context menu, which filter on the value of the clicked cell. A temporal value is filtered at the precision with which the filter displays it, not the precision of the cell. For example, where the Table shows nanoseconds and the column filter shows a time with milliseconds, the filter matches the whole millisecond.
+
+The precision is taken from, in order:
+
+1. The `filterPatterns` option of `useFilterContextMenu`, keyed by column name. The pattern is applied to the Table column with `withDateTimePattern`.
+2. The `FilterContainerColumnFilter` for the column, within the same `FilterProvider`. Each one registers its column (with any `pattern` applied) via `useColumnFilterRegistry`. A `datetime` column filter shows a date picker, so it filters the whole day.
+3. The Table column formatting.
+
+| Filter kind | Clause |
+| ----------- | ------ |
+| `date` | `=` the start of the day, which matches the whole day. |
+| `time` | `=` a time of day, truncated to the displayed precision. Like any time of day filter, this resolves against today, so a value from another day will not match its own row. |
+| `datetime` | `between-inclusive` the start and end of the displayed period (for example the whole second), or `=` where the period is the encoding unit. |
+
+The menu item label shows the value as the filter displays it. `getTemporalCellFilter(column, value)` (in `@vuu-ui/vuu-utils`) builds the clause.
+
+```tsx
+const filterContextMenuProps = useFilterContextMenu({
+  // optional, otherwise the column filter or Table precision is used
+  filterPatterns: { execTime: { date: "yyyy-mm-dd", time: "hh:mm:ss.ms" } },
+});
+
+<ContextMenuProvider {...filterContextMenuProps}>
+  <Table config={config} dataSource={dataSource} />
+</ContextMenuProvider>;
+```
+
+<LivePreview>
+  <ContextMenuFilterMatchesColumnFilter />
+</LivePreview>
+
+<LivePreview>
+  <ContextMenuFilterPatterns />
 </LivePreview>
 
 ## Filter clauses

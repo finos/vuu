@@ -1,4 +1,8 @@
 import {
+  ContextMenuFilterMatchesColumnFilter as ContextMenuFilterMatchesColumnFilterExample,
+  ContextMenuFilterPatterns as ContextMenuFilterPatternsExample,
+} from "../../DateTime/ContextMenuFilters.examples";
+import {
   DateColumnFilters as DateColumnFiltersExample,
   FilterPatternOverride as FilterPatternOverrideExample,
   TimeColumnFilters as TimeColumnFiltersExample,
@@ -16,6 +20,14 @@ export const DateColumnFilters = () => <DateColumnFiltersExample />;
 export const TimeColumnFilters = () => <TimeColumnFiltersExample />;
 
 export const FilterPatternOverride = () => <FilterPatternOverrideExample />;
+
+export const ContextMenuFilterMatchesColumnFilter = () => (
+  <ContextMenuFilterMatchesColumnFilterExample />
+);
+
+export const ContextMenuFilterPatterns = () => (
+  <ContextMenuFilterPatternsExample />
+);
 
 export const DateFilterClause = () => <DateFilterClauseExample />;
 

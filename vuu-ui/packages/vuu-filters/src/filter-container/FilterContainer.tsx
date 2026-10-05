@@ -1,6 +1,7 @@
 import cx from "clsx";
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -22,6 +23,7 @@ import { ColumnFilter, ColumnFilterProps } from "../column-filter/ColumnFilter";
 import {
   filterDescriptorHasFilter,
   isNullFilter,
+  useColumnFilterRegistry,
   useSavedFilters,
 } from "../filter-provider/FilterContext";
 import {
@@ -78,6 +80,13 @@ export const FilterContainerColumnFilter = ({
     onCommit: onFilterContextCommit,
     register,
   } = useFilterContext(column, true);
+
+  const { registerColumnFilterColumn } =
+    useColumnFilterRegistry(filterProviderKey);
+  useEffect(
+    () => registerColumnFilterColumn(column),
+    [column, registerColumnFilterColumn],
+  );
 
   const initialValue = useMemo(
     () => register(column, operator),
