@@ -469,6 +469,43 @@ test.describe("TimeInput", () => {
       return { component, timeinput };
     };
 
+    test("input is wide enough to display the full value at every density", async ({
+      mount,
+    }) => {
+      const component = await mount("UiControls/TimeInput/TestTimeInput", {
+        defaultValue: "23:59:59.888",
+        milliseconds: true,
+      });
+      const timeinput = component.locator(".vuuTimeInput");
+      for (const density of ["high", "medium", "low", "touch"]) {
+        const { contentWidth, textWidth } = await timeinput.evaluate(
+          (el: HTMLInputElement, density) => {
+            for (const node of document.querySelectorAll(
+              "[class*=salt-density-]",
+            )) {
+              node.className = node.className.replace(
+                /salt-density-\w+/,
+                `salt-density-${density}`,
+              );
+            }
+            const style = getComputedStyle(el);
+            const ctx = document.createElement("canvas").getContext("2d")!;
+            ctx.font = style.font;
+            return {
+              contentWidth:
+                el.clientWidth -
+                parseFloat(style.paddingLeft) -
+                parseFloat(style.paddingRight),
+              textWidth: ctx.measureText(el.value).width,
+            };
+          },
+          density,
+        );
+        // leave room for the caret
+        expect(contentWidth, density).toBeGreaterThan(textWidth + 2);
+      }
+    });
+
     test("renders placeholder and empty value when no defaultValue", async ({
       mount,
     }) => {

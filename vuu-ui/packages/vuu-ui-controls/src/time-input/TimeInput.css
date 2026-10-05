@@ -11,24 +11,16 @@
   --time-input-width: 90px;
 }
 
-.salt-density-high .vuuTimeInput-milliseconds {
-  --time-input-width: 85px;
-}
-.salt-density-medium .vuuTimeInput-milliseconds {
-  --time-input-width: 100px;
-}
-.salt-density-low .vuuTimeInput-milliseconds {
-  --time-input-width: 115px;
-}
-.salt-density-touch .vuuTimeInput-milliseconds {
-  --time-input-width: 130px;
-}
-
 .vuuTimeInput {
   background: var(--vuuTimeInput-background, inherit);
   border-width: 1px;
   font-family: var(--salt-typography-fontFamily);
   width: var(--vuuTimeInput-width, var(--time-input-width));
+
+  /* the additional ".sss" is ~2.1em wide, allow extra room for the caret */
+  &.vuuTimeInput-milliseconds {
+    width: var(--vuuTimeInput-width, calc(var(--time-input-width) + 3em));
+  }
 
   &:focus::-webkit-input-placeholder {
     color: transparent;
