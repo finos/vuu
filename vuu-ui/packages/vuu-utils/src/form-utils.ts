@@ -9,7 +9,12 @@ import {
   stringIsValidInt,
   stringIsValidLong,
 } from "./data-utils";
-import { isValidTimeString, Time } from "./date";
+import {
+  isValidTimeString,
+  isValidTimeStringMillis,
+  normaliseTimeString,
+  Time,
+} from "./date";
 import { queryClosest } from "./html-utils";
 import { ExtendedFilterOptions } from "@vuu-ui/vuu-filter-types";
 import {
@@ -62,8 +67,11 @@ export type CommitHandler<
 ) => void;
 
 export const isValidRange = <T>([val1, val2]: [T, T]) => {
-  if (isValidTimeString(val1) && isValidTimeString(val2)) {
-    return val2 > val1;
+  // compare at millisecond precision, so either precision is supported
+  const time1 = normaliseTimeString(val1, true);
+  const time2 = normaliseTimeString(val2, true);
+  if (time1 && time2) {
+    return time2 > time1;
   }
   return true;
 };
@@ -195,7 +203,7 @@ export function getTypedValue(
       return value === "true" ? true : false;
 
     case "time":
-      if (isValidTimeString(value)) {
+      if (isValidTimeString(value) || isValidTimeStringMillis(value)) {
         // We don't manipulate the values of 'extended' filters, the
         // ExtendedFilter impementation will do that.
         if (options?.type === "TimeString") {

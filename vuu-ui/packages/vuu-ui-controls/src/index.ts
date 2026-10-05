@@ -41,6 +41,8 @@ export * from "./vuu-date-picker";
 export * from "./vuu-input";
 export {
   VuuTimePicker,
+  type VuuTimePickerMillisecondsProps,
   type VuuTimePickerProps,
+  type VuuTimePickerSecondsProps,
 } from "./vuu-time-picker/VuuTimePicker";
 export * from "./vuu-typeahead-input";

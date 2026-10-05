@@ -1,5 +1,6 @@
 export {
   asTimeString,
+  asTimeStringMillis,
   decrementTimeUnitValue,
   incrementTimeUnitValue,
   isValidTimeString,

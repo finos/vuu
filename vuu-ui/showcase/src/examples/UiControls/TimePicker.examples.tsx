@@ -1,5 +1,8 @@
 import { Button, Input } from "@salt-ds/core";
-import { VuuTimePicker, VuuTimePickerProps } from "@vuu-ui/vuu-ui-controls";
+import {
+  VuuTimePicker,
+  VuuTimePickerSecondsProps,
+} from "@vuu-ui/vuu-ui-controls";
 import { asTimeString, CommitHandler, TimeString } from "@vuu-ui/vuu-utils";
 import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
 
@@ -7,7 +10,7 @@ const TimePickerTemplate = ({
   defaultValue,
   onChange,
   value: valueProp,
-}: Partial<VuuTimePickerProps>) => {
+}: Partial<VuuTimePickerSecondsProps>) => {
   const [value, setValue] = useState(valueProp);
 
   useMemo(() => {

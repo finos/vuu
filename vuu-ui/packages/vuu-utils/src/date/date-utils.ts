@@ -149,6 +149,8 @@ export function asTimeString(
     }
   } else if (isValidTimeString(value)) {
     return value;
+  } else if (isValidTimeStringMillis(value)) {
+    return value.slice(0, 8) as TimeString;
   } else if (typeof value === "number") {
     // we are assuming we have a value representing milliseconds since epoch.
     // If not, we will get an unpredictable time here. Is this too risky ?
@@ -162,6 +164,43 @@ export function asTimeString(
   } else {
     throw Error(
       `[date-utils] asTimeString, value ${value} is not valid TimeString`,
+    );
+  }
+}
+
+/**
+ * Millisecond precision equivalent of asTimeString. Accepts a TimeString,
+ * TimeStringMillis or a timestamp (millis since epoch, number or string).
+ */
+export function asTimeStringMillis(
+  value: unknown,
+  allowUndefined: false,
+): TimeStringMillis;
+export function asTimeStringMillis(
+  value: unknown,
+  allowUndefined?: true,
+): TimeStringMillis | undefined;
+export function asTimeStringMillis(
+  value: unknown,
+  allowUndefined = false,
+): TimeStringMillis | undefined {
+  if (value === undefined) {
+    if (allowUndefined) {
+      return value;
+    } else {
+      throw Error("[date-utils] asTimeStringMillis, value cannot be undefined");
+    }
+  }
+  const timeString = normaliseTimeString(value, true);
+  if (timeString) {
+    return timeString;
+  } else if (typeof value === "number") {
+    return Time.millisToTimeStringMillis(value);
+  } else if (typeof value === "string" && /^\d+$/.test(value)) {
+    return Time.millisToTimeStringMillis(parseInt(value));
+  } else {
+    throw Error(
+      `[date-utils] asTimeStringMillis, value ${value} is not valid TimeStringMillis`,
     );
   }
 }
@@ -235,6 +274,11 @@ export const Time = (timeString: TimeString | TimeStringMillis): Time =>
 
 Time.millisToTimeString = (timestamp: number) =>
   new Date(timestamp).toTimeString().slice(0, 8) as TimeString;
+
+Time.millisToTimeStringMillis = (timestamp: number) => {
+  const date = new Date(timestamp);
+  return `${date.toTimeString().slice(0, 8)}.${`${date.getMilliseconds()}`.padStart(3, "0")}` as TimeStringMillis;
+};
 
 function timeToString(
   hours: number,

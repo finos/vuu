@@ -5,7 +5,11 @@ import type {
   TimeTodayFilterOptions,
 } from "@vuu-ui/vuu-filter-types";
 import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
-import { isValidTimeString, Time } from "@vuu-ui/vuu-utils";
+import {
+  isValidTimeString,
+  isValidTimeStringMillis,
+  Time,
+} from "@vuu-ui/vuu-utils";
 
 export const isTimeToday = (
   options: ExtendedFilterOptions,
@@ -16,9 +20,7 @@ export interface SerializableFilter {
   asQuery: () => string;
 }
 
-export class ExtendedSingleValueFilterClause
-  implements SerializableSingleValueFilterClause
-{
+export class ExtendedSingleValueFilterClause implements SerializableSingleValueFilterClause {
   #options: ExtendedFilterOptions;
 
   constructor(
@@ -34,7 +36,7 @@ export class ExtendedSingleValueFilterClause
   asQuery() {
     const { column, op, value } = this;
     if (isTimeToday(this.#options)) {
-      if (isValidTimeString(value)) {
+      if (isValidTimeString(value) || isValidTimeStringMillis(value)) {
         const timeValue = +Time(value).asDate();
         if (op === ">=") {
           return `${column} > ${timeValue - 1}`;
@@ -45,7 +47,7 @@ export class ExtendedSingleValueFilterClause
         }
       } else {
         throw Error(
-          `[ExtendedSingleValueFilterClause] invalid TimeStrong ${value}`,
+          `[ExtendedSingleValueFilterClause] invalid TimeString ${value}`,
         );
       }
     } else {

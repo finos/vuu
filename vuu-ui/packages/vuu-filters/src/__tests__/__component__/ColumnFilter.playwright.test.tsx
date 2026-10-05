@@ -1,9 +1,6 @@
 import { expect, test } from "../../../../../playwright/fixtures";
 
-
-import {
-  FilterContainerFilter,
-} from "@vuu-ui/vuu-filter-types";
+import { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
 import { ColumnFilterProps } from "../../column-filter/ColumnFilter";
 
 const BBG = { name: "bbg", serverDataType: "string" };
@@ -12,6 +9,11 @@ const VUU_CREATED = {
   name: "vuuCreatedTimestamp",
   serverDataType: "long",
   type: "time",
+};
+const VUU_CREATED_MILLIS = {
+  name: "vuuCreatedTimestamp",
+  serverDataType: "long",
+  type: { name: "time", formatting: { pattern: { time: "hh:mm:ss.ms" } } },
 };
 
 test.describe("ColumnFilter", () => {
@@ -368,6 +370,138 @@ test.describe("ColumnFilter", () => {
       //   timeout: 5_000,
       // });
     });
+  });
+});
+
+test.describe("Time range filter, with milliseconds", () => {
+  test("renders default full day range at millisecond precision", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Filters/ColumnFilter/ControlledTimeRangeFilterMilliseconds");
+    const inputs = page.locator(".vuuColumnFilter").getByRole("textbox");
+    await expect(inputs).toHaveCount(2);
+    await expect(inputs.nth(0)).toHaveValue("00:00:00.000");
+    await expect(inputs.nth(1)).toHaveValue("23:59:59.999");
+    await expect(inputs.nth(0)).toHaveClass(/vuuTimeInput-milliseconds/);
+    await expect(inputs.nth(1)).toHaveClass(/vuuTimeInput-milliseconds/);
+  });
+
+  test("typing hours and milliseconds invokes change handlers with millisecond values", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Filters/ColumnFilter/ControlledTimeRangeFilterMilliseconds");
+    const records = page.getByTestId("callback-records");
+    const inputs = page.locator(".vuuColumnFilter").getByRole("textbox");
+    const input1 = inputs.nth(0);
+    const input2 = inputs.nth(1);
+
+    // click on the HOURS value of first input
+    const box1 = (await input1.boundingBox())!;
+    await page.mouse.click(box1.x + 10, box1.y + 10);
+    await page.keyboard.press("1");
+    await page.keyboard.press("2");
+    await expect(input1).toHaveValue("12:00:00.000");
+
+    await expect(records).toHaveValue(
+      JSON.stringify([
+        ["10:00:00.000", VUU_CREATED_MILLIS, "between"],
+        ["12:00:00.000", VUU_CREATED_MILLIS, "between"],
+      ]),
+    );
+
+    // click on the MILLISECONDS value of second input
+    const box2 = (await input2.boundingBox())!;
+    await page.mouse.click(box2.x + box2.width - 8, box2.y + 10);
+    await expect(input2).toHaveSelection(9, 12);
+    await page.keyboard.press("1");
+    await page.keyboard.press("2");
+    await page.keyboard.press("3");
+    await expect(input2).toHaveValue("23:59:59.123");
+
+    const recorded = JSON.parse(await records.inputValue()) as unknown[][];
+    expect(recorded.at(-1)).toEqual([
+      "23:59:59.123",
+      VUU_CREATED_MILLIS,
+      "between",
+    ]);
+  });
+});
+
+test.describe("Time range filter with milliseconds, with FilterContainer", () => {
+  test("commit applies filter with millisecond precision values", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      "Filters/ColumnFilter/ContainerManagedTimeRangeFilterMilliseconds",
+    );
+    const records = page.getByTestId("callback-records");
+    const inputs = page.locator(".vuuColumnFilter").getByRole("textbox");
+    const input1 = inputs.nth(0);
+    const input2 = inputs.nth(1);
+
+    await expect(input1).toHaveValue("00:00:00.000");
+    await expect(input2).toHaveValue("23:59:59.999");
+
+    const box = (await input1.boundingBox())!;
+    await page.mouse.click(box.x + 10, box.y + 10);
+    await page.keyboard.press("1");
+    await page.keyboard.press("2");
+    await expect(input1).toHaveValue("12:00:00.000");
+    await page.keyboard.press("Tab");
+    await expect(input2).toBeFocused();
+    await expect(input2).toHaveSelection(0, 2);
+    await page.keyboard.press("1");
+    await page.keyboard.press("3");
+    await expect(input2).toHaveValue("13:59:59.999");
+    await page.keyboard.press("Enter");
+
+    await expect(input1).toHaveValue("12:00:00.000");
+    await expect(input2).toHaveValue("13:59:59.999");
+
+    await expect(page.locator(".vuuFilterDisplay")).toContainText(
+      "12:00:00.000 - 13:59:59.999",
+    );
+
+    await expect(records).not.toHaveValue("[]");
+    const [[filter, query]] = JSON.parse(await records.inputValue());
+    expect(filter).toEqual({
+      op: "and",
+      filters: [
+        {
+          column: "vuuCreatedTime",
+          op: ">",
+          value: "12:00:00.000",
+          extendedOptions: { date: "today", type: "TimeString" },
+        },
+        {
+          column: "vuuCreatedTime",
+          op: "<",
+          value: "13:59:59.999",
+          extendedOptions: { date: "today", type: "TimeString" },
+        },
+      ],
+    });
+    // query uses timestamps, range must preserve millisecond precision
+    const [, from, to] = /> (\d+) and vuuCreatedTime < (\d+)$/.exec(query)!;
+    expect(Number(to) - Number(from)).toBe(2 * 60 * 60 * 1000 - 1);
+  });
+
+  test("filter provided via container is rendered with millisecond values", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      "Filters/ColumnFilter/ContainerManagedTimeRangeFilterMillisecondsWithFilter",
+    );
+    const inputs = page.locator(".vuuColumnFilter").getByRole("textbox");
+    await expect(inputs.nth(0)).toHaveValue("12:00:00.250");
+    await expect(inputs.nth(1)).toHaveValue("13:00:00.750");
+    await expect(page.locator(".vuuFilterDisplay")).toContainText(
+      "12:00:00.250 - 13:00:00.750",
+    );
   });
 });
 

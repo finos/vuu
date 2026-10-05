@@ -229,6 +229,17 @@ export const isTimeDataValue = (
 ): column is TimeDataValueDescriptor =>
   (isTypeDescriptor(column?.type) ? column.type.name : column?.type) === "time";
 
+/**
+ * A time column is edited/filtered with millisecond precision if its
+ * formatting pattern includes milliseconds.
+ */
+export const isTimeDataValueWithMilliseconds = (
+  column?: ColumnDescriptor,
+): column is TimeDataValueDescriptor =>
+  isTimeDataValue(column) &&
+  isTypeDescriptor(column.type) &&
+  column.type.formatting?.pattern?.time === "hh:mm:ss.ms";
+
 export const isPinned = (column: ColumnDescriptor) =>
   typeof column.pin === "string";
 
@@ -1104,7 +1115,11 @@ export const assertAllColumnsAreIncludedInSubscription = (
   const unsubscribedColumns: string[] = [];
   for (const column of columns) {
     // temp exclusion for vuuAction, this will be removed later
-    if (column.source !== "client" && column.name !== 'vuuAction' && !columnNames?.includes(column.name)) {
+    if (
+      column.source !== "client" &&
+      column.name !== "vuuAction" &&
+      !columnNames?.includes(column.name)
+    ) {
       unsubscribedColumns.push(column.name);
     }
   }
