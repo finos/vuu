@@ -13,7 +13,11 @@ import { useCsvExport } from "@vuu-ui/vuu-table-extras";
 import { Button } from "@salt-ds/core";
 
 const MyTable = () => {
-  const { isExporting, exportCsv, exportTemplate } = useCsvExport(dataSource);
+  // Pass tableConfig to automatically export visible columns, custom order, formatters, and client columns
+  const { isExporting, exportCsv, exportTemplate } = useCsvExport({
+    dataSource,
+    tableConfig,
+  });
 
   return (
     <div>
@@ -67,9 +71,9 @@ await exportCsvTemplate(dataSource, {
 ## `exportToCsv`
 
 ```ts
-exportToCsv<TName extends string = string>(
+exportToCsv(
   dataSource: DataSource,
-  options?: ExportToCsvOptions<TName>,
+  options?: ExportToCsvOptions,
 ): Promise<void>
 ```
 
@@ -81,7 +85,8 @@ Options (`ExportToCsvOptions`):
 | `copyOption` | `CopyOption` | `"All"` | `"All"` exports every row, `"Selected"` only the currently selected rows. |
 | `excludeColumns` | `string[]` | `[]` | Additional columns to omit, on top of the always-excluded `vuuMsg`, `vuuAction`, `vuuRowNum`. |
 | `maxRows` | `number` | `10_000` | Row limit for the export. Fails if the server reports more rows than this before requesting data. |
-| `columnDescriptors` | `ExportColumnDescriptor<TName>[]` | `undefined` | Custom labels and cell formatters per column (see [Column labels and formatters](#column-labels-and-formatters)). |
+| `columnDescriptors` | `(ExportColumnDescriptor \| ColumnDescriptor)[]` | `undefined` | Custom labels, formatters, or client columns (alias for `columns`). |
+| `columns` | `(string \| ExportColumnDescriptor \| ColumnDescriptor)[]` | `undefined` | Columns to include in export and their order. Accepts table `ColumnDescriptor[]`. |
 | `overrides` | `SessionDataSourceOverrides` | `undefined` | Divergent export table or column overrides. |
 | `timeout` | `number` | `30_000` | Milliseconds before the export times out (0 to disable). |
 | `onError` | `(error: Error) => void` | `undefined` | Callback invoked on error. |
@@ -104,7 +109,7 @@ Options (`ExportCsvTemplateOptions`):
 |---|---|---|---|
 | `filename` | `string` | `"template.csv"` | Downloaded filename. |
 | `excludeColumns` | `string[]` | `[]` | Columns to omit from the template. |
-| `columns` | `string[]` | `undefined` | Specific subset and order of columns to include. |
+| `columns` | `(string \| ColumnDescriptor)[]` | `undefined` | Specific subset and order of columns to include. Client columns and hidden columns are automatically excluded. |
 | `overrides` | `SessionDataSourceOverrides` | `undefined` | Divergent table schema overrides. |
 | `timeout` | `number` | `10_000` | Milliseconds before template creation times out (0 to disable). |
 | `onError` | `(error: Error) => void` | `undefined` | Callback invoked on error. |
@@ -115,9 +120,9 @@ Options (`ExportCsvTemplateOptions`):
 ## `exportSessionTableToCsv`
 
 ```ts
-exportSessionTableToCsv<TName extends string = string>(
+exportSessionTableToCsv(
   dataSource: DataSource,
-  options?: ExportToCsvOptions<TName>,
+  options?: ExportToCsvOptions,
 ): Promise<void>
 ```
 
@@ -129,43 +134,49 @@ If `dataSource.table` is already a session table (`isSessionTable(dataSource.tab
 
 ---
 
-## Column labels and formatters
+## Column descriptors, formatters, and client columns
+
+`ExportColumnDescriptor` extends table `ColumnDescriptor`:
 
 ```ts
-type ExportColumnDescriptor<TName extends string = string> = {
-  name: TName;
-  /** Override the column name used as the CSV header label. */
-  label?: string;
-  exportFormatter?: (value: unknown) => string;
-};
+type RowAccessor = Record<string, unknown>;
+
+type ExportColumnDescriptor =
+  | ExportServerColumnDescriptor
+  | ExportClientColumnDescriptor;
 ```
 
 ```tsx
-const descriptors: ExportColumnDescriptor[] = [
+const columns: ExportColumnDescriptor[] = [
   { name: "ric", label: "RIC Code" },
   { name: "lotSize", label: "Lot Size", exportFormatter: (v) => `${v} units` },
+  {
+    name: "notional",
+    source: "client",
+    label: "Notional",
+    exportFormatter: (_, row) =>
+      `$${((row?.price as number) * (row?.lotSize as number)).toLocaleString()}`,
+  },
 ];
 
 await exportToCsv(dataSource, {
   filename: "instruments.csv",
-  columnDescriptors: descriptors,
+  columns,
 });
 ```
 
-`exportFormatter` is applied per-cell before CSV escaping. `label` overrides only the header row — the underlying column selection and order are unaffected. Omitting `columnDescriptors` exports every subscribed column (excluding the always-excluded set) using its raw column name as both header and value.
+### Table formatters
+When standard table `ColumnDescriptor` objects are passed (e.g. from `tableConfig.columns`), `exportToCsv` automatically applies table formatters (`type.formatting` for decimals, dates, timestamps, mapped values) via `getValueFormatter` if no custom `exportFormatter` is specified.
 
----
+### Client columns (`source = 'client'`)
+Columns configured with `source: "client"` are not sent in server subscription requests. Their values are computed per-row using `exportFormatter(value, row)`. `row` is a proxy allowing clean field access by column name (`row.ric`, `row.price`).
 
-## Exporting a divergent export table
-
-By default the session table is built from the target data source's config, so it carries the target table's columns. When exports should target a separate table with its own schema, pass `overrides`:
-
-```ts
-await exportToCsv(dataSource, {
-  filename: "instruments-overrides.csv",
-  overrides: { columns: ["ric", "currency", "lotSize"], table: EXPORT_TABLE },
-});
-```
+### Excluding columns (`exportable: false` and UI-only columns)
+Columns are excluded from CSV exports under the following conditions:
+- `exportable: false`: explicitly excludes any server or client column.
+- `hidden: true`: table hidden columns are skipped.
+- `isSystemColumn: true`: system columns (such as the checkbox row selector) are skipped.
+- **UI-only client columns**: client columns with no `exportFormatter` (e.g. action buttons, delete icon buttons, undo cells) are **automatically excluded by default**. Set `exportable: true` if an empty placeholder column is explicitly required.
 
 ```ts
 type SessionDataSourceOverrides = {

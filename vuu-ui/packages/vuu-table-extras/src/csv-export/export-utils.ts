@@ -6,21 +6,47 @@ import type {
   DataSourceSubscribedMessage,
   SessionDataSourceOverrides,
 } from "@vuu-ui/vuu-data-types";
-import { isSessionTable, metadataKeys, Range } from "@vuu-ui/vuu-utils";
+import type { ColumnDescriptor, RowAccessor } from "@vuu-ui/vuu-table-types";
+import {
+  buildColumnMap,
+  getValueFormatter,
+  isSessionTable,
+  metadataKeys,
+  Range,
+  type ColumnMap,
+} from "@vuu-ui/vuu-utils";
 
-export type ExportColumnDescriptor<TName extends string = string> = {
-  name: TName;
-  /** Override the column name used as the CSV header label. */
-  label?: string;
-  exportFormatter?: (value: unknown) => string;
-};
+export type { RowAccessor };
 
-export interface ExportToCsvOptions<TName extends string = string> {
+export type ExportServerColumnDescriptor =
+  Omit<ColumnDescriptor, "source" | "exportFormatter"> & {
+    name: string;
+    source?: "server";
+    label?: string;
+    exportable?: boolean;
+    exportFormatter?: (value: unknown, row: RowAccessor) => string;
+  };
+
+export type ExportClientColumnDescriptor =
+  Omit<ColumnDescriptor, "source" | "exportFormatter"> & {
+    name: string;
+    source: "client";
+    label?: string;
+    exportable?: boolean;
+    exportFormatter: (value: unknown, row: RowAccessor) => string;
+  };
+
+export type ExportColumnDescriptor =
+  | ExportServerColumnDescriptor
+  | ExportClientColumnDescriptor;
+
+export interface ExportToCsvOptions {
   filename?: string;
   copyOption?: CopyOption;
   excludeColumns?: string[];
   maxRows?: number;
-  columnDescriptors?: ExportColumnDescriptor<TName>[];
+  columnDescriptors?: readonly (ExportColumnDescriptor | ColumnDescriptor)[];
+  columns?: readonly (string | ExportColumnDescriptor | ColumnDescriptor)[];
   overrides?: SessionDataSourceOverrides;
   /** Timeout in milliseconds before the export times out. Default: 30_000ms (0 to disable). */
   timeout?: number;
@@ -31,7 +57,7 @@ export interface ExportToCsvOptions<TName extends string = string> {
 export interface ExportCsvTemplateOptions {
   filename?: string;
   excludeColumns?: string[];
-  columns?: string[];
+  columns?: readonly (string | ColumnDescriptor)[];
   overrides?: SessionDataSourceOverrides;
   /** Timeout in milliseconds before template generation times out. Default: 10_000ms (0 to disable). */
   timeout?: number;
@@ -66,6 +92,40 @@ const triggerCsvDownload = (csv: string, filename: string): void => {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 };
 
+const createRowAccessor = (
+  row: DataSourceRow,
+  columnMap: ColumnMap,
+): RowAccessor => {
+  return new Proxy({} as RowAccessor, {
+    get(_, prop: string | symbol) {
+      if (typeof prop === "string") {
+        const idx = columnMap[prop];
+        if (idx !== undefined) {
+          return row[idx];
+        }
+      }
+      return undefined;
+    },
+    has(_, prop: string | symbol) {
+      return typeof prop === "string" && columnMap[prop] !== undefined;
+    },
+  });
+};
+
+export const isExportableColumn = (
+  descriptor?: ExportColumnDescriptor | ColumnDescriptor,
+): boolean => {
+  if (!descriptor) return true;
+  if (descriptor.exportable === false) return false;
+  if (descriptor.hidden) return false;
+  if (descriptor.isSystemColumn) return false;
+  if (descriptor.exportable === true) return true;
+   if (descriptor.source === "client" && !descriptor.exportFormatter) {
+    return false;
+  }
+  return true;
+};
+
 /** Downloads a single-row CSV containing only the column headers, for use as an import template. */
 export const exportCsvTemplate = async (
   dataSource: DataSource,
@@ -81,8 +141,19 @@ export const exportCsvTemplate = async (
     onSuccess,
   } = options;
 
+  // Extract column names, filtering out client-only and hidden columns if ColumnDescriptor objects were passed
+  const targetColumnNames: string[] | undefined = columns
+    ? columns
+        .filter((col) =>
+          typeof col === "string"
+            ? true
+            : isExportableColumn(col) && col.source !== "client",
+        )
+        .map((col) => (typeof col === "string" ? col : col.name))
+    : undefined;
+
   const sessionOverrides: SessionDataSourceOverrides | undefined =
-    overrides ?? (columns ? { columns } : undefined);
+    overrides ?? (targetColumnNames ? { columns: targetColumnNames } : undefined);
 
   if (
     !isSessionTable(dataSource.table) &&
@@ -152,7 +223,7 @@ export const exportCsvTemplate = async (
   }
 
   const schema = dataSource.tableSchema;
-  const targetColumns = columns ?? overrides?.columns;
+  const targetColumns = targetColumnNames ?? overrides?.columns;
   if (targetColumns !== undefined) {
     if (schema) {
       const schemaColumnNames = new Set(schema.columns.map((col) => col.name));
@@ -203,21 +274,37 @@ export const exportCsvTemplate = async (
  * then triggers a browser download. The session data source is unsubscribed automatically once the download
  * is initiated.
  */
-export const exportSessionTableToCsv = async <TName extends string = string>(
+export const exportSessionTableToCsv = async (
   dataSource: DataSource,
-  options: ExportToCsvOptions<TName> = {},
+  options: ExportToCsvOptions = {},
 ): Promise<void> => {
   const {
     filename = "export.csv",
     copyOption = "All",
     excludeColumns = [],
     maxRows = MAX_EXPORT_ROWS,
-    columnDescriptors,
+    columnDescriptors: rawColumnDescriptors,
+    columns: rawColumns,
     overrides,
     timeout = DEFAULT_EXPORT_TIMEOUT,
     onError,
     onSuccess,
   } = options;
+
+  const rawInputColumns = rawColumns ?? rawColumnDescriptors;
+  const columnDescriptors = rawInputColumns?.map((col) =>
+    typeof col === "string" ? { name: col } : col,
+  );
+
+  const sessionOverrides: SessionDataSourceOverrides | undefined = overrides
+    ? {
+        ...overrides,
+        columns: overrides.columns?.filter((name) => {
+          const desc = columnDescriptors?.find((d) => d.name === name);
+          return desc?.source !== "client";
+        }),
+      }
+    : undefined;
 
   const isRemote = !!dataSource.isRemote;
 
@@ -243,7 +330,7 @@ export const exportSessionTableToCsv = async <TName extends string = string>(
       sessionDataSource = await dataSource.createSessionDataSource(
         copyOption,
         "export",
-        overrides,
+        sessionOverrides,
       );
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
@@ -271,8 +358,11 @@ export const exportSessionTableToCsv = async <TName extends string = string>(
   const activeSessionDataSource = sessionDataSource;
   const excluded = new Set([...EXPORT_EXCLUDED_COLUMNS, ...excludeColumns]);
   let exportCols: string[] = [];
-  let colNameToRowIdx: Record<string, number> = {};
-  let descriptorMap: Record<string, ExportColumnDescriptor> = {};
+  let colNameToRowIdx: ColumnMap = {};
+  let descriptorMap: Record<
+    string,
+    ExportColumnDescriptor | ColumnDescriptor
+  > = {};
   let totalSize = 0;
   let nextRequestedFrom = 0;
   const collectedRows = new Map<number, DataSourceRow>();
@@ -311,7 +401,12 @@ export const exportSessionTableToCsv = async <TName extends string = string>(
         if (columnDescriptors) {
           const subscribedSet = new Set(columns);
           const unknown = columnDescriptors
-            .filter((d) => !excluded.has(d.name) && !subscribedSet.has(d.name))
+            .filter(
+              (d) =>
+                d.source !== "client" &&
+                !excluded.has(d.name) &&
+                !subscribedSet.has(d.name),
+            )
             .map((d) => d.name);
           if (unknown.length > 0) {
             fail(
@@ -325,11 +420,41 @@ export const exportSessionTableToCsv = async <TName extends string = string>(
             columnDescriptors.map((d) => [d.name, d]),
           );
         }
-        exportCols = columns.filter((name) => !excluded.has(name));
+
+        if (rawColumns) {
+          exportCols = rawColumns
+            .map((c) => (typeof c === "string" ? c : c.name))
+            .filter(
+              (name) =>
+                !excluded.has(name) && isExportableColumn(descriptorMap[name]),
+            );
+        } else if (columnDescriptors?.some((d) => d.source === "client")) {
+          const definedNames = new Set<string>(
+            columnDescriptors.map((d) => d.name),
+          );
+          const remainingSubscribed = columns.filter(
+            (name) =>
+              !excluded.has(name) &&
+              !definedNames.has(name) &&
+              isExportableColumn(descriptorMap[name]),
+          );
+          exportCols = [
+            ...columnDescriptors
+              .filter(
+                (d) => !excluded.has(d.name) && isExportableColumn(d),
+              )
+              .map((d) => d.name),
+            ...remainingSubscribed,
+          ];
+        } else {
+          exportCols = columns.filter(
+            (name) =>
+              !excluded.has(name) && isExportableColumn(descriptorMap[name]),
+          );
+        }
+
         // column values start after the fixed metadata block
-        colNameToRowIdx = Object.fromEntries(
-          columns.map((name, i) => [name, metadataKeys.count + i]),
-        );
+        colNameToRowIdx = buildColumnMap(columns);
       } else if (message.type === "viewport-update") {
         if (message.mode === "size-only") {
           totalSize = message.size ?? 0;
@@ -380,12 +505,34 @@ export const exportSessionTableToCsv = async <TName extends string = string>(
             for (let i = 0; i < totalSize; i++) {
               const row = collectedRows.get(i);
               if (row) {
+                const rowAccessor = createRowAccessor(row, colNameToRowIdx);
                 lines.push(
                   exportCols
                     .map((c) => {
-                      const raw = row[colNameToRowIdx[c]];
-                      const formatter = descriptorMap[c]?.exportFormatter;
-                      return csvCell(formatter ? formatter(raw) : raw);
+                      const descriptor = descriptorMap[c];
+                      const isClientCol = descriptor?.source === "client";
+                      const raw = isClientCol
+                        ? undefined
+                        : colNameToRowIdx[c] !== undefined
+                          ? row[colNameToRowIdx[c]]
+                          : undefined;
+
+                      let formatted: unknown;
+                      if (descriptor?.exportFormatter) {
+                        formatted = descriptor.exportFormatter(
+                          raw,
+                          rowAccessor,
+                        );
+                      } else if (
+                        descriptor &&
+                        ("type" in descriptor || "serverDataType" in descriptor)
+                      ) {
+                        const tableFormatter = getValueFormatter(descriptor);
+                        formatted = tableFormatter(raw);
+                      } else {
+                        formatted = raw;
+                      }
+                      return csvCell(formatted);
                     })
                     .join(","),
                 );
@@ -411,7 +558,7 @@ export const exportSessionTableToCsv = async <TName extends string = string>(
     };
 
     activeSessionDataSource.subscribe(
-      { range: Range(0, 0), columns: overrides?.columns },
+      { range: Range(0, 0), columns: sessionOverrides?.columns },
       handleMessage,
     );
   });
@@ -420,9 +567,9 @@ export const exportSessionTableToCsv = async <TName extends string = string>(
 /**
  * Creates an export session table from `dataSource`, collects all rows in memory, then triggers a CSV download.
  */
-export const exportToCsv = async <TName extends string = string>(
+export const exportToCsv = async (
   dataSource: DataSource,
-  options?: ExportToCsvOptions<TName>,
+  options?: ExportToCsvOptions,
 ): Promise<void> => {
   return exportSessionTableToCsv(dataSource, options);
 };

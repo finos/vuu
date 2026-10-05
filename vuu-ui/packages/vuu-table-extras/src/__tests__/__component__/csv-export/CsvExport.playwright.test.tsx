@@ -286,4 +286,39 @@ test.describe("useCsvExport hook", () => {
   });
 });
 
+test.describe("Client columns and automatic action column exclusion", () => {
+  test("WHEN client columns with exportFormatter are exported THEN client data is formatted and UI action columns are excluded", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvExport/CsvExportWithClientColumns");
+
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      page
+        .locator("button", {
+          hasText: "Download instruments-client-cols.csv",
+        })
+        .click(),
+    ]);
+
+    expect(download.suggestedFilename()).toBe("instruments-client-cols.csv");
+    const filePath = await download.path();
+    if (!filePath) throw new Error("download path not available");
+    const content = fs.readFileSync(filePath, "utf-8");
+    const lines = content.split("\r\n").filter(Boolean);
+    const [header, firstDataRow] = lines;
+
+    // Header has RIC Code, currency, and Composite Key, but actions is excluded
+    expect(header).toBe("RIC Code,currency,Composite Key");
+    expect(header).not.toContain("actions");
+
+    // First data row has formatted client column (ric:currency)
+    expect(lines.length).toBeGreaterThan(1);
+    const [ric, ccy, compositeKey] = firstDataRow.split(",");
+    expect(compositeKey).toBe(`${ric}:${ccy}`);
+  });
+});
+
+
 
