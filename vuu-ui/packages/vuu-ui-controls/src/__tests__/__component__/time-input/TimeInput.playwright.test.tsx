@@ -415,8 +415,9 @@ test.describe("TimeInput", () => {
       await preInput.press("Tab");
       await expect(timeinput).toHaveSelection(0, 2);
 
+      // overtyping the first digit preserves the second
       await timeinput.press("1");
-      await expect(timeinput).toHaveValue("10:00:00");
+      await expect(timeinput).toHaveValue("19:00:00");
       await expect(timeinput).toHaveSelection(1, 2);
       await timeinput.press("5");
       await expect(timeinput).toHaveValue("15:00:00");
@@ -442,8 +443,124 @@ test.describe("TimeInput", () => {
       await timeinput.press("ArrowUp");
       await expect(
         component.getByTestId("time-input-change-values"),
-      ).toHaveValue(JSON.stringify(["10:00:00", "10:00:00"]));
+      ).toHaveValue(JSON.stringify(["19:00:00", "10:00:00"]));
       await expect(timeinput).toHaveValue("09:00:00");
+    });
+  });
+
+  test.describe("WHEN milliseconds enabled", () => {
+    const mountAndFocus = async (
+      mount: Mount,
+      props: Record<string, unknown> = {
+        defaultValue: "00:00:00.000",
+        milliseconds: true,
+      },
+    ) => {
+      const component = await mount(
+        "UiControls/TimeInput/TestTimeInput",
+        props,
+      );
+      const preInput = component.getByTestId("pre-timeinput").locator("input");
+      await preInput.focus();
+      await preInput.press("Tab");
+      const timeinput = component.locator(".vuuTimeInput");
+      await expect(timeinput).toBeFocused();
+      await expect(timeinput).toHaveSelection(0, 2);
+      return { component, timeinput };
+    };
+
+    test("renders placeholder and empty value when no defaultValue", async ({
+      mount,
+    }) => {
+      const component = await mount("UiControls/TimeInput/TestTimeInput", {
+        milliseconds: true,
+      });
+      const timeinput = component.locator(".vuuTimeInput");
+      await expect(timeinput).toHaveValue("");
+      await expect(timeinput).toHaveAttribute("placeholder", "hh:mm:ss.sss");
+      await expect(timeinput).toHaveClass(/vuuTimeInput-milliseconds/);
+    });
+
+    test("defaultValue without milliseconds is displayed with milliseconds", async ({
+      mount,
+    }) => {
+      const component = await mount("UiControls/TimeInput/TestTimeInput", {
+        defaultValue: "12:34:56",
+        milliseconds: true,
+      });
+      await expect(component.locator(".vuuTimeInput")).toHaveValue(
+        "12:34:56.000",
+      );
+    });
+
+    test("typing nine digits enters a complete time, Enter commits", async ({
+      mount,
+    }) => {
+      const { component, timeinput } = await mountAndFocus(mount);
+      await timeinput.pressSequentially("123456");
+      await expect(timeinput).toHaveValue("12:34:56.000");
+      await expect(timeinput).toHaveSelection(9, 12);
+      await timeinput.press("7");
+      await expect(timeinput).toHaveSelection(10, 12);
+      await timeinput.press("8");
+      await expect(timeinput).toHaveSelection(11, 12);
+      await timeinput.press("9");
+      await expect(timeinput).toHaveValue("12:34:56.789");
+      await expect(timeinput).toHaveSelection(9, 12);
+      await timeinput.press("Enter");
+      await expect(
+        component.getByTestId("time-input-commit-values"),
+      ).toHaveValue(JSON.stringify(["12:34:56.789"]));
+    });
+
+    test("arrow keys navigate to milliseconds and adjust value", async ({
+      mount,
+    }) => {
+      const { timeinput } = await mountAndFocus(mount);
+      await timeinput.press("ArrowRight");
+      await timeinput.press("ArrowRight");
+      await timeinput.press("ArrowRight");
+      await expect(timeinput).toHaveSelection(9, 12);
+      await timeinput.press("ArrowRight");
+      await expect(timeinput).toHaveSelection(9, 12);
+      await timeinput.press("ArrowDown");
+      await expect(timeinput).toHaveValue("00:00:00.999");
+      await timeinput.press("ArrowUp");
+      await timeinput.press("ArrowUp");
+      await expect(timeinput).toHaveValue("00:00:00.001");
+      await expect(timeinput).toHaveSelection(9, 12);
+    });
+
+    test("End selects milliseconds, Backspace clears them", async ({
+      mount,
+    }) => {
+      const { timeinput } = await mountAndFocus(mount, {
+        defaultValue: "12:34:56.789",
+        milliseconds: true,
+      });
+      await timeinput.press("End");
+      await expect(timeinput).toHaveSelection(9, 12);
+      await timeinput.press("Backspace");
+      await expect(timeinput).toHaveValue("12:34:56.000");
+      await expect(timeinput).toHaveSelection(6, 8);
+    });
+
+    test("controlled, typing updates value via owner", async ({ mount }) => {
+      const { component, timeinput } = await mountAndFocus(mount, {
+        milliseconds: true,
+        value: "09:00:00.250",
+      });
+      await expect(timeinput).toHaveValue("09:00:00.250");
+      await timeinput.press("End");
+      await timeinput.pressSequentially("5");
+      await expect(timeinput).toHaveValue("09:00:00.550");
+      await expect(timeinput).toHaveSelection(10, 12);
+      await timeinput.press("ArrowUp");
+      await expect(timeinput).toHaveValue("09:00:00.551");
+      await expect(timeinput).toHaveSelection(9, 12);
+      await expect(
+        component.getByTestId("time-input-change-values"),
+      ).toHaveValue(JSON.stringify(["09:00:00.550", "09:00:00.551"]));
     });
   });
 });

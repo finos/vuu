@@ -2,7 +2,9 @@ import {
   type CommitHandler,
   DateStringISO,
   isValidTimeString,
+  isValidTimeStringMillis,
   type TimeString,
+  type TimeStringMillis,
 } from "@vuu-ui/vuu-utils";
 import {
   ChangeEvent,
@@ -15,32 +17,64 @@ import {
   useCallback,
   useRef,
 } from "react";
-import { Digit, MaskedInput } from "./MaskedInput";
+import { Digit, MaskedInput, TimeValue } from "./MaskedInput";
 
 const isDigit = (char: string): char is Digit =>
   char.length === 1 && /[0-9]/.test(char);
 
-export interface TimeInputHookProps {
+interface TimeInputCommonProps {
   date?: Date | DateStringISO;
-  defaultValue?: TimeString;
   onChange?: ChangeEventHandler<HTMLInputElement>;
+}
+
+export interface TimeInputSecondsProps extends TimeInputCommonProps {
+  defaultValue?: TimeString;
+  /**
+   * When true, time is entered and displayed with millisecond
+   * precision, hh:mm:ss.SSS
+   */
+  milliseconds?: false;
   onCommit: CommitHandler<HTMLInputElement, TimeString>;
   value?: TimeString;
 }
 
+export interface TimeInputMillisecondsProps extends TimeInputCommonProps {
+  defaultValue?: TimeStringMillis;
+  /**
+   * When true, time is entered and displayed with millisecond
+   * precision, hh:mm:ss.SSS
+   */
+  milliseconds: true;
+  onCommit: CommitHandler<HTMLInputElement, TimeStringMillis>;
+  value?: TimeStringMillis;
+}
+
+export type TimeInputHookProps =
+  TimeInputSecondsProps | TimeInputMillisecondsProps;
+
 export const useTimeInput = ({
   defaultValue,
+  milliseconds = false,
   onChange,
-  onCommit,
+  onCommit: onCommitProp,
   value,
 }: TimeInputHookProps) => {
+  const onCommit = onCommitProp as CommitHandler<HTMLInputElement, TimeValue>;
   const mousedDownRef = useRef(false);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
   const maskedInputRef = useRef<MaskedInput | undefined>(undefined);
-  if (maskedInputRef.current === undefined) {
-    maskedInputRef.current = new MaskedInput(value ?? defaultValue, null);
+  if (
+    maskedInputRef.current === undefined ||
+    maskedInputRef.current.milliseconds !== milliseconds
+  ) {
+    // A change of precision requires a new MaskedInput, current value is retained
+    maskedInputRef.current = new MaskedInput(
+      value ?? maskedInputRef.current?.value ?? defaultValue,
+      null,
+      { milliseconds },
+    );
     maskedInputRef.current.on("change", (e: ChangeEvent<HTMLInputElement>) => {
       onChangeRef.current?.(e);
     });
@@ -63,12 +97,16 @@ export const useTimeInput = ({
       // An empty input (placeholder showing) has no value to commit
       if (evt.currentTarget.value !== "") {
         const { value } = maskedInput;
-        if (isValidTimeString(value)) {
+        if (
+          milliseconds
+            ? isValidTimeStringMillis(value)
+            : isValidTimeString(value)
+        ) {
           onCommit(evt, value, "text-input");
         }
       }
     },
-    [maskedInput, onCommit],
+    [maskedInput, milliseconds, onCommit],
   );
 
   const handleKeyDown = useCallback<KeyboardEventHandler<HTMLInputElement>>(
@@ -90,9 +128,9 @@ export const useTimeInput = ({
       } else if (e.key === "ArrowDown") {
         maskedInput.decrementValue();
       } else if (e.key === "Home") {
-        maskedInput.select("hours");
+        maskedInput.selectFirst();
       } else if (e.key === "End") {
-        maskedInput.select("seconds");
+        maskedInput.selectLast();
       } else if (e.key === "Enter") {
         commitValue(e);
       } else if (e.key === "Escape") {

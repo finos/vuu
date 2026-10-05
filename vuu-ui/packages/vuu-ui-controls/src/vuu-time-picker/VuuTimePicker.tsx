@@ -3,12 +3,13 @@ import { useWindow } from "@salt-ds/window";
 import { CommitHandler, TimeString } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { HTMLAttributes } from "react";
-import { TimeInput, TimeInputProps } from "../time-input/TimeInput";
+import { TimeInput, TimeInputSecondsProps } from "../time-input/TimeInput";
 
 import timePickerCss from "./VuuTimePicker.css";
 
 export interface VuuTimePickerProps
-  extends Pick<TimeInputProps, "defaultValue" | "onChange" | "value">,
+  extends
+    Pick<TimeInputSecondsProps, "defaultValue" | "onChange" | "value">,
     Omit<
       HTMLAttributes<HTMLDivElement>,
       "defaultValue" | "onChange" | "value"

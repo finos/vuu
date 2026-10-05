@@ -3,57 +3,52 @@ import {
   decrementTimeUnitValue,
   EventEmitter,
   incrementTimeUnitValue,
-  isValidTimeString,
+  normaliseTimeString,
   TimeString,
+  TimeStringMillis,
   TimeUnit,
   TimeUnitValue,
   updateTimeString,
   zeroTime,
-  zeroTimeUnit,
+  zeroTimeMillis,
 } from "@vuu-ui/vuu-utils";
 import { ChangeEventHandler } from "react";
 
 export type Digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 
-type NullSelection = {
-  end: null;
-  start: null;
-};
-type Selection =
-  | {
-      end: number;
-      start: number;
-    }
-  | NullSelection;
+export type TimeValue = TimeString | TimeStringMillis;
 
-const NullSelection: NullSelection = { end: null, start: null };
-const FullSelection: Selection = { end: 0, start: 8 };
+type UnitSpec = {
+  length: number;
+  max: number;
+  start: number;
+};
 
-const unitStart: Record<TimeUnit, number> = {
-  hours: 0,
-  minutes: 3,
-  seconds: 6,
+const unitSpec: Record<TimeUnit, UnitSpec> = {
+  hours: { start: 0, length: 2, max: 23 },
+  minutes: { start: 3, length: 2, max: 59 },
+  seconds: { start: 6, length: 2, max: 59 },
+  milliseconds: { start: 9, length: 3, max: 999 },
 };
-const unitMaxValue: Record<TimeUnit, number> = {
-  hours: 23,
-  minutes: 59,
-  seconds: 59,
-};
-const nextUnit: Record<TimeUnit, TimeUnit> = {
-  hours: "minutes",
-  minutes: "seconds",
-  seconds: "seconds",
-};
-const previousUnit: Record<TimeUnit, TimeUnit> = {
-  hours: "hours",
-  minutes: "hours",
-  seconds: "minutes",
-};
+
+const secondsUnits: TimeUnit[] = ["hours", "minutes", "seconds"];
+const millisecondsUnits: TimeUnit[] = [...secondsUnits, "milliseconds"];
 
 export const invalidClassName = "vuuTimeInput-invalid";
 
-const isValidUnitValue = (unit: TimeUnit, value: string) =>
-  /^[0-9]{2}$/.test(value) && parseInt(value) <= unitMaxValue[unit];
+const isValidUnitValue = (unit: TimeUnit, value: string) => {
+  const { length, max } = unitSpec[unit];
+  return (
+    value.length === length && /^[0-9]+$/.test(value) && parseInt(value) <= max
+  );
+};
+
+export interface MaskedInputOptions {
+  /**
+   * When true, value includes milliseconds, hh:mm:ss.SSS
+   */
+  milliseconds?: boolean;
+}
 
 export type MaskedInputEvents = {
   change: ChangeEventHandler<HTMLInputElement>;
@@ -63,21 +58,49 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
   #controlled = false;
   #input: HTMLInputElement | null = null;
   #isFocused = false;
+  #milliseconds: boolean;
   #selectionStart = -1;
   #selectionEnd = -1;
-  #value: TimeString;
-  #unitSelected?: TimeUnit;
-  #halfUnitSelected?: TimeUnit;
+  #units: TimeUnit[];
+  #value: TimeValue;
+  #selectedUnit?: TimeUnit;
+  /**
+   * The number of digits of the selected unit that have been entered.
+   * 0 means the whole unit is selected.
+   */
+  #digitIndex = 0;
 
   constructor(
-    defaultValue: TimeString | undefined,
+    defaultValue: TimeValue | undefined,
     inputEl: HTMLInputElement | null = null,
+    { milliseconds = false }: MaskedInputOptions = {},
   ) {
     super();
-    this.#value = defaultValue ?? zeroTime;
+    this.#milliseconds = milliseconds;
+    this.#units = milliseconds ? millisecondsUnits : secondsUnits;
+    this.#value = this.normalise(defaultValue) ?? this.zeroValue;
     if (inputEl) {
       this.input = inputEl;
     }
+  }
+
+  get milliseconds() {
+    return this.#milliseconds;
+  }
+
+  private get zeroValue(): TimeValue {
+    return this.#milliseconds ? zeroTimeMillis : zeroTime;
+  }
+
+  /**
+   * Length of the formatted value, hh:mm:ss or hh:mm:ss.SSS
+   */
+  get length() {
+    return this.#milliseconds ? 12 : 8;
+  }
+
+  private normalise(value: unknown): TimeValue | undefined {
+    return normaliseTimeString(value, this.#milliseconds);
   }
 
   /**
@@ -90,7 +113,13 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
     }
     this.#input?.removeEventListener("change", this.emitSyntheticChangeEvent);
     this.#input = el;
-    el?.addEventListener("change", this.emitSyntheticChangeEvent);
+    if (el) {
+      el.addEventListener("change", this.emitSyntheticChangeEvent);
+      if (el.value !== "" && el.value !== this.#value) {
+        // e.g. input previously used with a different precision
+        el.value = this.#value;
+      }
+    }
   }
 
   /**
@@ -135,11 +164,25 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
     this.#selectionEnd = value;
   }
 
-  private get selectedUnit(): TimeUnit | undefined {
-    return this.#unitSelected ?? this.#halfUnitSelected;
+  private nextUnit(unit: TimeUnit) {
+    const index = this.#units.indexOf(unit);
+    return this.#units[Math.min(index + 1, this.#units.length - 1)];
   }
 
-  private setValue(value: TimeString) {
+  private previousUnit(unit: TimeUnit) {
+    const index = this.#units.indexOf(unit);
+    return this.#units[Math.max(index - 1, 0)];
+  }
+
+  private get firstUnit() {
+    return this.#units[0];
+  }
+
+  private get lastUnit() {
+    return this.#units[this.#units.length - 1];
+  }
+
+  private setValue(value: TimeValue) {
     if (!this.#controlled) {
       this.#value = value;
     }
@@ -165,8 +208,8 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
   }
 
   private getUnitValue<T extends TimeUnit>(unit: T): TimeUnitValue<T> {
-    const start = unitStart[unit];
-    return this.#value.slice(start, start + 2) as TimeUnitValue<T>;
+    const { start, length } = unitSpec[unit];
+    return this.#value.slice(start, start + length) as TimeUnitValue<T>;
   }
 
   private setUnitValue(unit: TimeUnit, value: string) {
@@ -175,9 +218,9 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
       unit,
       value as TimeUnitValue<TimeUnit>,
     );
-    if (newValue !== this.#value) {
-      this.setValue(newValue);
-    }
+    // Dispatch even if unchanged: every accepted keystroke fires onChange,
+    // existing consumers (e.g. ColumnFilter) rely on this.
+    this.setValue(newValue);
   }
 
   private setInvalid(invalid: boolean) {
@@ -197,12 +240,14 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
   }
 
   /**
-   * Setting the value this way invokes 'controlled' mode
+   * Setting the value this way invokes 'controlled' mode. Value
+   * will be normalised to the configured precision.
    */
-  set value(value: TimeString) {
+  set value(value: TimeValue) {
     this.#controlled = true;
-    if (value !== this.#value) {
-      this.#value = value;
+    const normalisedValue = this.normalise(value);
+    if (normalisedValue !== undefined && normalisedValue !== this.#value) {
+      this.#value = normalisedValue;
       if (this.isFocused) {
         // React will update the input value after this, which
         // will lose our selection. Restore it once that has happened.
@@ -215,78 +260,88 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
 
   clear(unit: TimeUnit) {
     if (this.#input) {
-      this.setUnitValue(unit, zeroTimeUnit);
-    }
-  }
-
-  select(unit: TimeUnit, halfUnit = false) {
-    if (this.#input) {
-      const offset = halfUnit ? 1 : 0;
-      this.selectionStart = unitStart[unit] + offset;
-      this.selectionEnd = unitStart[unit] + 2;
-      this.#input.setSelectionRange(this.selectionStart, this.selectionEnd);
-      if (halfUnit) {
-        this.#halfUnitSelected = unit;
-        this.#unitSelected = undefined;
-      } else {
-        this.#halfUnitSelected = undefined;
-        this.#unitSelected = unit;
-      }
-    }
-  }
-
-  removeSelection() {
-    this.selectionStart = this.selectionEnd = 8;
-    this.#unitSelected = undefined;
-    this.#halfUnitSelected = undefined;
-  }
-
-  restoreSelection() {
-    if (this.#unitSelected) {
-      this.select(this.#unitSelected);
-    } else if (this.#halfUnitSelected) {
-      this.select(this.#halfUnitSelected, true);
-    }
-  }
-
-  moveFocus(direction: "left" | "right") {
-    const unit = this.selectedUnit;
-    if (unit) {
-      this.select(direction === "right" ? nextUnit[unit] : previousUnit[unit]);
-    } else {
-      this.select(direction === "right" ? "hours" : "seconds");
+      this.setUnitValue(unit, "0".repeat(unitSpec[unit].length));
     }
   }
 
   /**
-   * Replace the entire value, e.g. from a paste. Invalid values are ignored.
-   * Returns true if value was accepted.
+   * Select a unit. If digitIndex > 0, only the digits of the unit
+   * not yet entered are selected.
+   */
+  select(unit: TimeUnit, digitIndex = 0) {
+    if (this.#input && this.#units.includes(unit)) {
+      const { start, length } = unitSpec[unit];
+      this.selectionStart = start + digitIndex;
+      this.selectionEnd = start + length;
+      this.#input.setSelectionRange(this.selectionStart, this.selectionEnd);
+      this.#selectedUnit = unit;
+      this.#digitIndex = digitIndex;
+    }
+  }
+
+  removeSelection() {
+    this.selectionStart = this.selectionEnd = this.length;
+    this.#selectedUnit = undefined;
+    this.#digitIndex = 0;
+  }
+
+  restoreSelection() {
+    if (this.#selectedUnit) {
+      this.select(this.#selectedUnit, this.#digitIndex);
+    }
+  }
+
+  selectFirst() {
+    this.select(this.firstUnit);
+  }
+
+  selectLast() {
+    this.select(this.lastUnit);
+  }
+
+  moveFocus(direction: "left" | "right") {
+    const unit = this.#selectedUnit;
+    if (unit) {
+      this.select(
+        direction === "right" ? this.nextUnit(unit) : this.previousUnit(unit),
+      );
+    } else if (direction === "right") {
+      this.selectFirst();
+    } else {
+      this.selectLast();
+    }
+  }
+
+  /**
+   * Replace the entire value, e.g. from a paste. Values with or without
+   * milliseconds are accepted and converted to the configured precision.
+   * Invalid values are ignored. Returns true if value was accepted.
    */
   pasteValue(value: string) {
-    const trimmedValue = value.trim();
-    if (this.#input && isValidTimeString(trimmedValue)) {
+    const normalisedValue = this.normalise(value.trim());
+    if (this.#input && normalisedValue !== undefined) {
       this.setInvalid(false);
-      if (trimmedValue !== this.#value) {
-        this.setValue(trimmedValue);
+      if (normalisedValue !== this.#value) {
+        this.setValue(normalisedValue);
       }
-      this.select("hours");
+      this.selectFirst();
       return true;
     }
     return false;
   }
 
   private getUnitAtCursorPos(cursorPos = this.cursorPos): TimeUnit {
-    if (cursorPos < 3) {
-      return "hours";
-    } else if (cursorPos < 6) {
-      return "minutes";
-    } else {
-      return "seconds";
+    for (let i = this.#units.length - 1; i > 0; i--) {
+      const unit = this.#units[i];
+      if (cursorPos >= unitSpec[unit].start) {
+        return unit;
+      }
     }
+    return this.firstUnit;
   }
 
   private get activeUnit(): TimeUnit {
-    return this.selectedUnit ?? this.getUnitAtCursorPos();
+    return this.#selectedUnit ?? this.getUnitAtCursorPos();
   }
 
   incrementValue() {
@@ -323,88 +378,88 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
   backspace() {
     if (this.#input) {
       const unit = this.activeUnit;
-      const isPartiallyEntered = this.#halfUnitSelected === unit;
+      const isPartiallyEntered =
+        this.#selectedUnit === unit && this.#digitIndex > 0;
       this.setInvalid(false);
       this.clear(unit);
-      this.select(isPartiallyEntered ? unit : previousUnit[unit]);
+      this.select(isPartiallyEntered ? unit : this.previousUnit(unit));
     }
   }
 
   /**
    * Typing the first digit of a unit sets the unit to that digit followed
-   * by zero, e.g '1' => '10' and selection moves to the second digit. If
+   * by zeros, e.g '1' => '10' and selection moves to the next digit. If
    * the digit cannot be the first digit of a valid unit, e.g '3' for hours,
-   * the unit is set to '03' and selection advances to the next unit.
-   * Typing the second digit completes the unit and selection advances to the
-   * next unit. A second digit which would produce an invalid value is
-   * rejected and the input is marked as invalid.
+   * the unit is zero padded, e.g '03', and selection advances to the next unit.
+   * Typing the last digit completes the unit and selection advances to the
+   * next unit. A digit which would produce an invalid value is rejected and
+   * the input is marked as invalid.
    */
   update(key: Digit) {
     if (this.#input) {
       const unit = this.activeUnit;
-      const isSecondDigit = this.#halfUnitSelected === unit;
-      const digit = parseInt(key);
-      const maxFirstDigit = Math.floor(unitMaxValue[unit] / 10);
+      const { length, max } = unitSpec[unit];
+      const digitIndex =
+        this.#selectedUnit === unit && this.#digitIndex < length
+          ? this.#digitIndex
+          : 0;
+      const maxFirstDigit = Math.floor(max / 10 ** (length - 1));
 
       let newUnitValue: string;
-      let advance: boolean;
+      let nextDigitIndex: number;
 
-      if (isSecondDigit) {
-        newUnitValue = this.getUnitValue(unit)[0] + key;
-        advance = true;
-      } else if (digit > maxFirstDigit) {
-        newUnitValue = `0${key}`;
-        advance = true;
+      if (digitIndex === 0 && parseInt(key) > maxFirstDigit) {
+        newUnitValue = key.padStart(length, "0");
+        nextDigitIndex = length;
       } else {
-        newUnitValue = `${key}0`;
-        advance = false;
+        // Overwrite the digit at digitIndex, preserving trailing digits.
+        // If that yields an out-of-range value (e.g. 19 -> 29 hours),
+        // zero-fill the trailing digits instead.
+        const unitValue = this.getUnitValue(unit);
+        const head = unitValue.slice(0, digitIndex).concat(key);
+        const overwritten = head.concat(unitValue.slice(digitIndex + 1));
+        newUnitValue = isValidUnitValue(unit, overwritten)
+          ? overwritten
+          : head.padEnd(length, "0");
+        nextDigitIndex = digitIndex + 1;
       }
 
       if (!isValidUnitValue(unit, newUnitValue)) {
         this.setInvalid(true);
-        this.select(unit, isSecondDigit);
+        this.select(unit, digitIndex);
         return;
       }
 
       this.setInvalid(false);
       this.setUnitValue(unit, newUnitValue);
 
-      if (advance) {
-        this.select(nextUnit[unit]);
+      if (nextDigitIndex === length) {
+        this.select(this.nextUnit(unit));
       } else {
-        this.select(unit, true);
+        this.select(unit, nextDigitIndex);
       }
     }
   }
 
-  private getSelection(): Selection {
+  private getSelection() {
     if (this.#input) {
       const { selectionEnd, selectionStart } = this.#input;
-      if (selectionEnd === null || selectionStart === null) {
-        return NullSelection;
-      } else if (selectionStart === 0 && selectionEnd === 8) {
-        return FullSelection;
-      } else {
-        return {
-          end: selectionEnd,
-          start: selectionStart,
-        };
-      }
+      return { end: selectionEnd, start: selectionStart };
     } else {
-      throw Error(`[MaskedInput] selection referenced, but no input`);
+      throw Error("[MaskedInput] selection referenced, but no input");
     }
   }
 
   click() {
     if (this.#input) {
       this.#isFocused = true;
-      const selection = this.getSelection();
-      if (selection.start === null) {
-        this.select("hours");
-      } else if (selection === FullSelection) {
-        // do nothing
+      const { start, end } = this.getSelection();
+      if (start === null) {
+        this.selectFirst();
+      } else if (start === 0 && end === this.length) {
+        // full selection, do nothing
       } else {
-        this.select(this.getUnitAtCursorPos(selection.start));
+        this.select(this.getUnitAtCursorPos(start));
       }
     }
   }
@@ -423,7 +478,7 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
       this.#isFocused = true;
 
       requestAnimationFrame(() => {
-        this.select("hours");
+        this.selectFirst();
       });
     }
   };

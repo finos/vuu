@@ -4,7 +4,7 @@ import {
   invalidClassName,
   MaskedInput,
 } from "../src/time-input/MaskedInput";
-import { TimeString } from "@vuu-ui/vuu-utils";
+import { TimeString, TimeStringMillis } from "@vuu-ui/vuu-utils";
 
 type Mode = "uncontrolled" | "controlled" | "controlled-rejecting";
 
@@ -128,14 +128,23 @@ describe("MaskedInput", () => {
           expect(selection(input)).toEqual([6, 8]);
         });
 
-        it("THEN overtyping the first digit of a unit replaces the whole unit", () => {
+        it("THEN overtyping the first digit of a unit preserves the second digit", () => {
           if (mode === "controlled-rejecting") return;
           typeDigits(maskedInput, "123456");
           maskedInput.select("hours");
           maskedInput.update("2");
-          expectValue("20:34:56");
+          expectValue("22:34:56");
           maskedInput.update("3");
           expectValue("23:34:56");
+        });
+
+        it("THEN overtyping the first digit zero-fills if preserving the second digit would be out of range", () => {
+          if (mode === "controlled-rejecting") return;
+          typeDigits(maskedInput, "195959");
+          maskedInput.select("hours");
+          maskedInput.update("2");
+          expectValue("20:59:59");
+          expect(input.classList.contains("vuuTimeInput-invalid")).toBe(false);
         });
 
         it("THEN invalid second digit is rejected and input marked invalid", () => {
@@ -156,13 +165,14 @@ describe("MaskedInput", () => {
           expect(selection(input)).toEqual([3, 5]);
         });
 
-        it("THEN overtyping a digit with the same digit advances without a change event", () => {
+        it("THEN overtyping a digit with the same digit advances and still fires change", () => {
           maskedInput.update("1");
           if (mode === "controlled-rejecting") return;
           maskedInput.select("hours");
           const changeCount = changeValues.length;
           maskedInput.update("1");
-          expect(changeValues.length).toEqual(changeCount);
+          expect(changeValues.length).toEqual(changeCount + 1);
+          expect(changeValues.at(-1)).toEqual("10:00:00");
           expect(selection(input)).toEqual([1, 2]);
           maskedInput.update("0");
           expect(selection(input)).toEqual([3, 5]);
@@ -368,6 +378,195 @@ describe("MaskedInput", () => {
       expect(handler).not.toHaveBeenCalled();
       input2.dispatchEvent(new Event("change"));
       expect(handler).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("milliseconds", () => {
+    for (const mode of ["uncontrolled", "controlled"] as const) {
+      describe(`${mode} mode`, () => {
+        let maskedInput: MaskedInput;
+        let input: HTMLInputElement;
+        let changeValues: string[];
+
+        const setup = (initialValue: TimeStringMillis = "00:00:00.000") => {
+          changeValues = [];
+          input = createInput(initialValue);
+          if (mode === "uncontrolled") {
+            maskedInput = new MaskedInput(initialValue, input, {
+              milliseconds: true,
+            });
+          } else {
+            maskedInput = new MaskedInput(undefined, input, {
+              milliseconds: true,
+            });
+            maskedInput.value = initialValue;
+          }
+          maskedInput.on("change", (e) => {
+            changeValues.push(e.target.value);
+            if (mode === "controlled") {
+              maskedInput.value = e.target.value as TimeStringMillis;
+            }
+          });
+          maskedInput.focus();
+          vi.advanceTimersToNextTimer();
+        };
+
+        const expectValue = (value: string) => {
+          expect(maskedInput.value).toEqual(value);
+          expect(input.value).toEqual(value);
+        };
+
+        beforeEach(() => {
+          vi.useFakeTimers();
+          setup();
+        });
+
+        it("THEN focus selects hours", () => {
+          expect(selection(input)).toEqual([0, 2]);
+        });
+
+        it("THEN typing nine digits enters a complete time", () => {
+          // prettier-ignore
+          const expected: [string, number[]][] = [
+            ["10:00:00.000", [1, 2]],
+            ["12:00:00.000", [3, 5]],
+            ["12:30:00.000", [4, 5]],
+            ["12:34:00.000", [6, 8]],
+            ["12:34:50.000", [7, 8]],
+            ["12:34:56.000", [9, 12]],
+            ["12:34:56.700", [10, 12]],
+            ["12:34:56.780", [11, 12]],
+            ["12:34:56.789", [9, 12]],
+          ];
+          "123456789".split("").forEach((digit, i) => {
+            maskedInput.update(digit as Digit);
+            expectValue(expected[i][0]);
+            expect(selection(input)).toEqual(expected[i][1]);
+          });
+          expect(changeValues).toEqual(expected.map(([value]) => value));
+        });
+
+        it("THEN any digit is valid as first digit of milliseconds", () => {
+          maskedInput.selectLast();
+          maskedInput.update("9");
+          expectValue("00:00:00.900");
+          expect(selection(input)).toEqual([10, 12]);
+          maskedInput.update("9");
+          maskedInput.update("9");
+          expectValue("00:00:00.999");
+          expect(input.classList.contains(invalidClassName)).toBe(false);
+        });
+
+        it("THEN right arrow moves through all four units, stopping at milliseconds", () => {
+          const expectedSelections = [
+            [3, 5],
+            [6, 8],
+            [9, 12],
+            [9, 12],
+          ];
+          for (const expected of expectedSelections) {
+            maskedInput.moveFocus("right");
+            expect(selection(input)).toEqual(expected);
+          }
+          maskedInput.moveFocus("left");
+          expect(selection(input)).toEqual([6, 8]);
+        });
+
+        it("THEN selectLast selects milliseconds", () => {
+          maskedInput.selectLast();
+          expect(selection(input)).toEqual([9, 12]);
+        });
+
+        it("THEN ArrowUp/Down increment and decrement milliseconds, with wrap", () => {
+          maskedInput.selectLast();
+          maskedInput.decrementValue();
+          expectValue("00:00:00.999");
+          expect(selection(input)).toEqual([9, 12]);
+          maskedInput.incrementValue();
+          expectValue("00:00:00.000");
+          maskedInput.incrementValue();
+          expectValue("00:00:00.001");
+        });
+
+        it("THEN incrementing seconds preserves milliseconds", () => {
+          maskedInput.pasteValue("00:00:59.500");
+          maskedInput.select("seconds");
+          maskedInput.incrementValue();
+          expectValue("00:00:00.500");
+        });
+
+        it("THEN backspace from milliseconds clears and moves to seconds", () => {
+          maskedInput.pasteValue("12:34:56.789");
+          maskedInput.selectLast();
+          maskedInput.backspace();
+          expectValue("12:34:56.000");
+          expect(selection(input)).toEqual([6, 8]);
+          maskedInput.backspace();
+          expectValue("12:34:00.000");
+          expect(selection(input)).toEqual([3, 5]);
+        });
+
+        it("THEN backspace with milliseconds partially entered clears and keeps them selected", () => {
+          maskedInput.selectLast();
+          maskedInput.update("4");
+          maskedInput.update("5");
+          expect(selection(input)).toEqual([11, 12]);
+          maskedInput.backspace();
+          expectValue("00:00:00.000");
+          expect(selection(input)).toEqual([9, 12]);
+        });
+
+        it("THEN paste accepts values with or without milliseconds", () => {
+          expect(maskedInput.pasteValue("12:34:56.789")).toBe(true);
+          expectValue("12:34:56.789");
+          expect(maskedInput.pasteValue("01:02:03")).toBe(true);
+          expectValue("01:02:03.000");
+          expect(maskedInput.pasteValue("01:02:03.4")).toBe(false);
+          expectValue("01:02:03.000");
+        });
+
+        it("THEN click selects the unit at the caret, including milliseconds", () => {
+          maskedInput.blur();
+          input.setSelectionRange(10, 10);
+          maskedInput.click();
+          expect(selection(input)).toEqual([9, 12]);
+          input.setSelectionRange(8, 8);
+          maskedInput.click();
+          expect(selection(input)).toEqual([6, 8]);
+          input.setSelectionRange(0, 12);
+          maskedInput.click();
+          expect(selection(input)).toEqual([0, 12]);
+        });
+      });
+    }
+
+    it("value without milliseconds is normalised", () => {
+      const maskedInput = new MaskedInput("12:34:56", createInput(), {
+        milliseconds: true,
+      });
+      expect(maskedInput.value).toEqual("12:34:56.000");
+      maskedInput.value = "01:02:03";
+      expect(maskedInput.value).toEqual("01:02:03.000");
+    });
+
+    it("default value is zero time with milliseconds", () => {
+      const maskedInput = new MaskedInput(undefined, createInput(), {
+        milliseconds: true,
+      });
+      expect(maskedInput.value).toEqual("00:00:00.000");
+      expect(maskedInput.length).toEqual(12);
+    });
+
+    it("milliseconds are removed when not configured", () => {
+      const maskedInput = new MaskedInput("12:34:56.789", createInput());
+      expect(maskedInput.value).toEqual("12:34:56");
+      expect(maskedInput.length).toEqual(8);
+    });
+
+    it("attached input showing a value of different precision is updated", () => {
+      const input = createInput("12:34:56");
+      new MaskedInput("12:34:56", input, { milliseconds: true });
+      expect(input.value).toEqual("12:34:56.000");
     });
   });
 });
