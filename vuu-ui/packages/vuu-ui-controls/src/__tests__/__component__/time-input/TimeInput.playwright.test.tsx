@@ -504,9 +504,14 @@ test.describe("TimeInput", () => {
           expect(m.fontSize, density).toEqual(m.saltFontSize);
           expect(m.height, density).toEqual(m.saltSizeBase);
           const required = Math.max(m.valueWidth, m.placeholderWidth);
-          // fits content (incl caret), allowing for font hinting at different sizes
+          // fits content (incl caret). Width is set in ch, the relationship
+          // between ch and rendered text width varies with font hinting and
+          // platform font rendering, so allow a proportional tolerance.
+          const tolerance = Math.max(2, required * 0.1);
           expect(m.contentWidth, density).toBeGreaterThanOrEqual(required);
-          expect(m.contentWidth, density).toBeLessThanOrEqual(required + 2);
+          expect(m.contentWidth, density).toBeLessThanOrEqual(
+            required + tolerance,
+          );
           widths.push(m.contentWidth);
         }
         // width grows with density
