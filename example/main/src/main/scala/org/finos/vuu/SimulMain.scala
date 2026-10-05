@@ -91,15 +91,28 @@ object ConfigKeys {
   final val restModuleConfig = "vuu.restModule"
 }
 
+// Environment variables that, when set, override vuu.certPath / vuu.keyPath. The dev container
+// (.devcontainer/devcontainer.json) sets them to a self-signed cert it generates on startup that
+// is valid for https://127.0.0.1 and https://localhost.
+object EnvVars {
+  final val certPath = "VUU_CERT_PATH"
+  final val keyPath = "VUU_KEY_PATH"
+}
+
+private def createSsl(c: Config): VuuSSLByCertAndKey = {
+  def pathFor(envVar: String, configKey: String): String =
+    sys.env.get(envVar).filter(_.nonEmpty).getOrElse(c.getString(configKey))
+
+  VuuSSLByCertAndKey(pathFor(EnvVars.certPath, ConfigKeys.certPath), pathFor(EnvVars.keyPath, ConfigKeys.keyPath))
+}
+
 private def createHttpServerFactory(c: Config): HttpServerFactory = {
   val options = VuuHttp2ServerOptions()
     .withWebRoot(AbsolutePathWebRoot(c.getString(ConfigKeys.webroot), directoryListings = true))
     .withPort(8443)
 
   if (c.getBoolean(ConfigKeys.sslEnabled)) {
-    VuuHttp2ServerFactory(options.withSsl(
-      VuuSSLByCertAndKey(c.getString(ConfigKeys.certPath), c.getString(ConfigKeys.keyPath))
-    ))
+    VuuHttp2ServerFactory(options.withSsl(createSsl(c)))
   } else {
     VuuHttp2ServerFactory(options.withSslDisabled())
   }
@@ -112,7 +125,7 @@ private def createWebSocketOptions(c: Config): VuuWebSocketOptions = {
     .withBindAddress("0.0.0.0")
 
   if (c.getBoolean(ConfigKeys.sslEnabled)) {
-    options.withSsl(VuuSSLByCertAndKey(c.getString(ConfigKeys.certPath), c.getString(ConfigKeys.keyPath)))
+    options.withSsl(createSsl(c))
   } else {
     options.withSslDisabled()
   }

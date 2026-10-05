@@ -72,6 +72,26 @@ cd example/python-integration/python && python start_server.py
 See [`example/python-integration/README.md`](../example/python-integration/README.md) for the
 full steps, including building the module first.
 
+#### HTTPS on 127.0.0.1 (example servers)
+
+Each time the container starts, it makes sure there's a self-signed TLS cert valid for
+`https://127.0.0.1`, `https://localhost` and `https://[::1]` at `.devcontainer/certs/cert.pem` and
+`.devcontainer/certs/key.pem` (gitignored). The container sets `VUU_CERT_PATH` and
+`VUU_KEY_PATH` to these files. When those are set, `SimulMain` uses them for its HTTPS (8443) and
+WSS (8090) endpoints instead of the `vuu.certPath`/`vuu.keyPath` defaults in `application.conf`.
+
+The cert is kept across restarts, so a browser exception or trust you've added for it stays valid.
+It's regenerated only if it's missing, expires within 30 days, or doesn't cover 127.0.0.1. To
+force a new one:
+
+```bash
+/usr/local/bin/generate-dev-certs.sh --force
+```
+
+Your browser won't trust the cert by default. Either accept the warning, or import
+`.devcontainer/certs/cert.pem` into your host's trust store (for example Keychain Access on macOS)
+and mark it as trusted.
+
 #### Containers inside the dev container
 
 Podman runs inside the dev container as the `vscode` user, so you can use `podman run`,
