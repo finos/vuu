@@ -16,6 +16,17 @@ export {
 } from "./editActionRowClassNameGenerator";
 export { EditButtons, type EditButtonProps } from "./EditButtons";
 export {
+  EditField,
+  type DropdownEditFieldProps,
+  type EditFieldProps,
+  type EditFieldType,
+  type TextFieldType
+} from "./edit-field/EditField";
+export {
+  useEditField,
+  type EditFieldHookProps
+} from "./edit-field/useEditField";
+export {
   EditModeProvider,
   useEditMode,
   type EditModeContextProps
@@ -54,4 +65,5 @@ export {
   type EditMode
 } from "./useEditableTable";
 export { useEditState } from "./useEditState";
+export { StaleUpdateError } from "@vuu-ui/vuu-utils";
 
