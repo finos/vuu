@@ -21,6 +21,7 @@ import {
   loadTheme,
 } from "./shared-utils";
 import { DataLocation } from "./showcase-main/ShowcaseProvider";
+import { createMdxComponents } from "./mdx-components";
 import { simulModule } from "@vuu-ui/vuu-data-test";
 
 import "./Showcase.css";
@@ -137,9 +138,14 @@ export const ShowcaseStandalone = ({
             }
           } else {
             const Component = targetModule.default;
+            const isMDX = nodeData.path.endsWith("mdx");
             setContentState({
-              component: <Component />,
-              isMDX: nodeData.path.endsWith("mdx"),
+              component: isMDX ? (
+                <Component components={createMdxComponents(nodeData.path)} />
+              ) : (
+                <Component />
+              ),
+              isMDX,
             });
           }
         } else {

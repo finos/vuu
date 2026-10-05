@@ -6,9 +6,11 @@ export const IFrame = () => {
   const { dataLocation, density, theme, themeMode } = useShowcaseContext();
   const location = useLocation();
   const src = useMemo(() => {
-    const src = `${location.pathname}?standalone&theme=${theme}#themeMode=${themeMode},density=${density},dataLocation=${dataLocation}`;
+    const anchor = new URLSearchParams(location.search).get("anchor");
+    const anchorParam = anchor ? `&anchor=${encodeURIComponent(anchor)}` : "";
+    const src = `${location.pathname}?standalone&theme=${theme}${anchorParam}#themeMode=${themeMode},density=${density},dataLocation=${dataLocation}`;
     return src;
-  }, [dataLocation, density, location.pathname, theme, themeMode]);
+  }, [dataLocation, density, location.pathname, location.search, theme, themeMode]);
 
   return (
     <div className="ShowCaseIFrame-container">

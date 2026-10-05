@@ -6,6 +6,11 @@ export const dropLastPathSegment = (path: string, separator = "/") => {
   return path.slice(0, path.lastIndexOf(separator));
 };
 
+// A numeric prefix e.g "01-" can be used to control ordering. It is not
+// displayed and is not part of the route (as with Docusaurus). Tree keys are
+// derived from labels, so ids must use the same, unprefixed, names.
+const toLabel = (name: string) => name.replace(/^\d+-/, "");
+
 const getDocumentPath = (
   dirFiles: Set<string>,
   fileName: string,
@@ -50,14 +55,15 @@ export const treeSourceFromFileSystem = (
       const [childNodes, , documentPath] = treeSourceFromFileSystem(
         filePath,
         env,
-        `${route}${fileName}/`,
+        `${route}${toLabel(fileName)}/`,
         "box",
         tags,
       );
       const treeSourceNode: TreeSourceNode<NodeData> = {
-        id: `${route}${fileName}`,
-        icon,
-        label: fileName,
+        id: `${route}${toLabel(fileName)}`,
+        // a folder with an Index.mdx displays that document
+        icon: documentPath ? "document" : icon,
+        label: toLabel(fileName),
         childNodes,
       };
       if (documentPath) {
@@ -71,27 +77,28 @@ export const treeSourceFromFileSystem = (
       }
     } else if (fileName.match(/examples.tsx$/)) {
       const name = dropLastPathSegment(dropLastPathSegment(fileName, "."), ".");
-      const id = `${route}${name}`;
+      const id = `${route}${toLabel(name)}`;
 
+      const documentPath = getDocumentPath(dirFiles, fileName);
       const treeSourceNode: TreeSourceNode<NodeData> = {
         id,
-        icon: "box",
-        label: name,
+        // examples with an accompanying mdx document display the document
+        icon: documentPath ? "document" : "box",
+        label: toLabel(name),
         childNodes: treeSourceFromExportedComponents(
           exhibitsPath,
           env,
-          `${route}${name}/`,
+          `${route}${toLabel(name)}/`,
           fileName,
           tags,
         ),
       };
 
-      const documentPath = getDocumentPath(dirFiles, fileName);
       if (documentPath) {
         treeSourceNode.nodeData = treeSourceFromDocument(
           exhibitsPath,
           env,
-          `${route}${name}/`,
+          `${route}${toLabel(name)}/`,
           documentPath,
         );
       }
@@ -99,21 +106,21 @@ export const treeSourceFromFileSystem = (
       treeSourceNodes.push(treeSourceNode);
     } else if (fileName.match(/^[Ii]ndex.mdx$/)) {
       documentPath = `${exhibitsPath}/${fileName}`;
-    } else if (fileName.match(/mdx$/)) {
-      // ignore
-      // assume for nown the only (non-index_ mdx files we support are ones wirth matching examples file)
-    } else if (fileName.match(/.mdx$/)) {
+    } else if (fileName.match(/\.mdx$/)) {
       const name = dropLastPathSegment(fileName, ".");
-      const id = `${route}${name}`;
-      treeSourceNodes.push({
-        id,
-        icon: "box",
-        label: name,
-        nodeData: {
-          name,
-          path: `${exhibitsPath}/${fileName}`,
-        },
-      });
+      // mdx files with a matching examples file are rendered as the document
+      // for that examples node (see above), standalone mdx files are leaf nodes
+      if (!dirFiles.has(`${name}.examples.tsx`)) {
+        treeSourceNodes.push({
+          id: `${route}${toLabel(name)}`,
+          icon: "document",
+          label: toLabel(name),
+          nodeData: {
+            name,
+            ...treeSourceFromDocument(exhibitsPath, env, route, fileName),
+          },
+        });
+      }
     }
   });
   return [treeSourceNodes, Array.from(tags), documentPath];

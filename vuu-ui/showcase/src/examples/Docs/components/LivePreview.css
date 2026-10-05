@@ -1,0 +1,54 @@
+.vuuDocsLivePreview {
+  border: 1px solid var(--salt-separable-tertiary-borderColor);
+  border-radius: var(--salt-palette-corner-weak, 4px);
+  line-height: normal;
+  margin: var(--salt-spacing-200) 0 var(--salt-spacing-300) 0;
+  overflow: hidden;
+}
+
+.vuuDocsLivePreview-preview {
+  background: var(--salt-container-primary-background);
+  padding: var(--salt-spacing-300);
+}
+
+.vuuDocsLivePreview-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-200);
+}
+
+.vuuDocsLivePreview-toolbar {
+  align-items: center;
+  background: var(--salt-container-secondary-background);
+  border-top: 1px solid var(--salt-separable-tertiary-borderColor);
+  display: flex;
+  gap: var(--salt-spacing-100);
+  justify-content: flex-end;
+  padding: var(--salt-spacing-50) var(--salt-spacing-100);
+}
+
+.vuuDocsLivePreview-chevron {
+  transition: transform 0.15s ease-in-out;
+}
+
+.vuuDocsLivePreview-chevron-open {
+  transform: rotate(180deg);
+}
+
+.vuuDocsLivePreview-code {
+  border-top: 1px solid var(--salt-separable-tertiary-borderColor);
+}
+
+/* Specific enough to override the Showcase's general mdx pre styles */
+.vuuDocsLivePreview.vuuDocsLivePreview-withCode .vuuDocsLivePreview-code {
+  pre {
+    border: none;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  /* successive code blocks, e.g tsx then css */
+  pre + pre {
+    border-top: 1px solid var(--salt-separable-tertiary-borderColor);
+  }
+}

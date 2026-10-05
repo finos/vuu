@@ -266,6 +266,10 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
   private applySelectedKeyValues(keys: string[], revealSelected = false) {
     keys.forEach((key) => {
       const rowIdx = this.indexOfRowWithKey(key);
+      if (rowIdx === -1) {
+        // e.g a stale or mistyped url, there is nothing to select
+        return;
+      }
       const row = this.#data[rowIdx];
       row[SELECTED] = 1;
 
