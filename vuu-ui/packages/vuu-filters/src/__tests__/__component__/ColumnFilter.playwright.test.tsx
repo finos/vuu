@@ -474,13 +474,23 @@ test.describe("Time range filter with milliseconds, with FilterContainer", () =>
           column: "vuuCreatedTime",
           op: ">",
           value: "12:00:00.000",
-          extendedOptions: { date: "today", type: "TimeString" },
+          extendedOptions: {
+            date: "today",
+            encoding: "epochMillis",
+            timeZone: "local",
+            type: "TimeString",
+          },
         },
         {
           column: "vuuCreatedTime",
           op: "<",
           value: "13:59:59.999",
-          extendedOptions: { date: "today", type: "TimeString" },
+          extendedOptions: {
+            date: "today",
+            encoding: "epochMillis",
+            timeZone: "local",
+            type: "TimeString",
+          },
         },
       ],
     });
