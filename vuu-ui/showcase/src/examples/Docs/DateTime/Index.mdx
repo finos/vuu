@@ -1,0 +1,50 @@
+import { LivePreview } from "../components/LivePreview";
+import { TemporalKinds } from "./01-Columns.examples";
+
+# Date and Time
+
+Vuu tables often hold timestamps: trade times, settlement dates, execution times with nanosecond precision. This section describes how the Vuu UI identifies, encodes, formats, filters and edits date and time values, and how to configure each of these.
+
+<LivePreview>
+  <TemporalKinds />
+</LivePreview>
+
+## Background
+
+The Vuu server provides a data type for each column of each table. The UI refers to this as the column's `serverDataType`. It is distinct from the optional client-side `type` property of a `ColumnDescriptor`, which guides how the UI renders, formats and edits values.
+
+Support for temporal values has evolved over three generations, and the UI supports all three:
+
+| Generation         | Server data type         | Client configuration                                       | Wire encoding                           | Identified as temporal by  |
+| ------------------ | ------------------------ | ---------------------------------------------------------- | --------------------------------------- | -------------------------- |
+| 1 (**deprecated**) | `long`                   | a temporal `type`: `"date/time"`, `"date"` or `"time"`     | epoch milliseconds, a `number`          | the client supplied `type` |
+| 2                  | `epochtimestamp`         | none required                                              | epoch milliseconds, a `number`          | the server data type       |
+| 3                  | `epochtimestampnano`     | none required                                              | epoch nanoseconds, a `string` of digits | the server data type       |
+
+:::warning[Deprecated]
+Using `long` for timestamp values is deprecated and should no longer be used. The server should provide a data type of `epochtimestamp` (millisecond precision) or `epochtimestampnano` (nanosecond precision) for timestamp columns. Generation 1 columns are still recognised so that existing clients keep working, but support may be removed in a future release. See [Migrating from long timestamps](./01-Columns.mdx#migrating-from-long-timestamps).
+:::
+
+Nanosecond values are sent as strings because they exceed `Number.MAX_SAFE_INTEGER` and cannot be represented exactly as JavaScript numbers.
+
+The server uses `0` for an unset timestamp. The UI treats `null`, `undefined`, `""`, `0` and `"0"` as "no value", so the epoch itself (`1970-01-01T00:00:00Z`) cannot be represented.
+
+## Core model
+
+All date and time behaviour in the UI comes from two pieces in `@vuu-ui/vuu-utils`:
+
+- **`getTemporalInfo(descriptor)`** decides whether a column or form field holds a temporal value, and if so its **kind** (`datetime`, `date` or `time`), **encoding** (`epochMillis` or `epochNanos`), **precision** (`ms` or `ns`) and **time zone**. The formatter, cell renderer selection, filter serialization, filter editors, form controls and the column settings panel all use it.
+- **`EpochTimestamp`** is an immutable value type with nanosecond precision. It decodes values from the wire, converts to and from calendar fields in any time zone, and encodes values back for the server.
+
+## Documentation
+
+| Page                                     | What it covers                                                                                   |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| [Columns](./01-Columns.mdx)              | How a column is identified as temporal, configuration, and migrating from `long` timestamps.      |
+| [Formatting](./02-Formatting.mdx)        | Date and time patterns, fractional seconds, time zones, locales and the settings panel.           |
+| [Filtering](./03-Filtering.mdx)          | How temporal filters are serialized, time of day filters, column filters and filter clauses.      |
+| [Editing](./04-Editing.mdx)              | Table cell editing, form edit controls, date and time pickers.                                    |
+| [API reference](./05-ApiReference.mdx)   | `TemporalInfo`, `EpochTimestamp`, time zone helpers and utility functions.                        |
+| [Migration](./06-Migration.mdx)          | Changes that may affect existing clients.                                                         |
+
+The `DateTime` folder in the Showcase has further examples of every combination of `serverDataType`, `type` and display option.
