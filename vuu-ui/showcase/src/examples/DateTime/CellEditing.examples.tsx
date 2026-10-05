@@ -1,12 +1,15 @@
+import {
+  DataEditingProvider,
+  DirectEditSession,
+} from "@vuu-ui/vuu-data-editing";
 import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
-import type { DataValueDescriptor } from "@vuu-ui/vuu-data-types";
-import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import type { DataSource, DataValueDescriptor } from "@vuu-ui/vuu-data-types";
+import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { TableCell } from "@vuu-ui/vuu-table";
 import { dataRowFactory } from "@vuu-ui/vuu-table/src/data-row/DataRow";
 import type {
   ColumnDescriptor,
   RuntimeColumnDescriptor,
-  TableCellEditHandler,
 } from "@vuu-ui/vuu-table-types";
 import { VuuDatePicker } from "@vuu-ui/vuu-ui-controls";
 import {
@@ -121,28 +124,31 @@ const EditableCell = ({
   // prettier-ignore
   const dataRow = DataRow([0, 0, true, false, 1, 0, "key", 0, 0, false, value]);
 
-  const handleDataEdited = useCallback(
-    (async (editState, editPhase) => {
-      if (editPhase === "commit") {
-        if (editState.isValid === false) {
-          // the cell displays the validation message
-          return { errorMessage: "Invalid value", type: "ERROR_RESULT" };
-        }
-        onCommit(column.name, editState.value as VuuRowDataItemType);
-        return { data: undefined, type: "SUCCESS_RESULT" };
-      }
-    }) as TableCellEditHandler,
-    [column.name, onCommit],
+  // Edits are committed via the TableEditSession provided to the cell. A
+  // DirectEditSession over a stub editCell reports the committed (wire) value.
+  const editSession = useMemo(
+    () =>
+      new DirectEditSession({
+        dataSource: {
+          editCell: async (
+            _key: string,
+            columnName: string,
+            value: VuuRowDataItemType,
+          ): Promise<RpcResult> => {
+            onCommit(columnName, value);
+            return { data: undefined, type: "SUCCESS_RESULT" };
+          },
+        } as unknown as DataSource,
+      }),
+    [onCommit],
   );
 
   return (
-    <div style={{ height: 24, width: 240 }}>
-      <TableCell
-        column={runtimeColumn}
-        dataRow={dataRow}
-        onDataEdited={handleDataEdited}
-      />
-    </div>
+    <DataEditingProvider editSession={editSession}>
+      <div style={{ height: 24, width: 240 }}>
+        <TableCell column={runtimeColumn} dataRow={dataRow} />
+      </div>
+    </DataEditingProvider>
   );
 };
 

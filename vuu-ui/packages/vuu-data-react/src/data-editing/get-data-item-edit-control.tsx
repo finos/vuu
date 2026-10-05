@@ -107,7 +107,8 @@ function toTimeString(
       : (timeString as TimeString);
   } else if (typeof value === "string") {
     if (milliseconds) {
-      const timeString = value.length === 8 ? `${value}.000` : value.slice(0, 12);
+      const timeString =
+        value.length === 8 ? `${value}.000` : value.slice(0, 12);
       if (isValidTimeStringMillis(timeString)) {
         return timeString;
       }
