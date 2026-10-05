@@ -16,7 +16,6 @@ export const BasketSelectorRow = ({
   highlighted,
   offset,
   onClick,
-  onDataEdited,
   onToggleGroup,
   ...htmlAttributes
 }: RowProps) => {

@@ -33,7 +33,6 @@ This document is intended to be implementable without additional clarification.
 2. Communication is managed by a singleton `ConnectionManager`.
 3. Websocket protocol handling is in a web worker (`worker.ts` + `DedicatedWorker`).
 4. Host config (`config.json`) currently includes:
-   - `ssl`
    - `authUrl`
    - `restUrl`
    - `websocketUrl`
@@ -77,9 +76,9 @@ This document is intended to be implementable without additional clarification.
 1. Host MUST discover remotes from the portal websocket
    `LOGIN_SUCCESS.moduleRegistry` payload.
 2. The registry is produced by the portal server's module-discovery module.
-3. Registry entries MUST include enough data to:
-   - locate and load the remote module bundle
-   - identify target VUU connection/server details for that module
+3. Registry entries MUST include enough data to locate and load the remote
+   module bundle. Target VUU connection/server details come from the remote's
+   required `config.json`.
 
 ---
 
@@ -116,7 +115,6 @@ Host config MUST continue to support:
 
 ```json
 {
-  "ssl": true,
   "authUrl": "http://localhost:5001",
   "restUrl": "https://localhost:8443/api/authn",
   "websocketUrl": "wss://localhost:8091/websocket-portal"
@@ -129,14 +127,13 @@ Semantics:
 - `restUrl`: Portal REST base used for token exchange.
 - `websocketUrl`: Default portal websocket endpoint.
 
-## 6.2 Module registry schema
+## 6.2 Module registry and remote config schema
 
-Each remote descriptor MUST provide:
+Each remote descriptor MUST provide remote loading metadata only. VUU server
+metadata is not carried in the descriptor; every remote publishes a required
+`config.json` next to its `mf-manifest.json`.
 
-1. Remote loading metadata.
-2. VUU connection metadata.
-
-Minimum required shape:
+Minimum descriptor shape:
 
 ```json
 {
@@ -145,19 +142,27 @@ Minimum required shape:
   "name": "basket-trading",
   "title": "Basket Trading",
   "remoteEntry": "/basket-trading/remoteEntry.js",
-  "exposedModule": "./Feature",
-  "vuu": {
-    "connectionId": "basket-trading",
-    "restUrl": "https://localhost:8445/api/authn",
-    "websocketUrl": "wss://localhost:8093/websocket-basket-trading"
-  }
+  "exposedModule": "./Feature"
+}
+```
+
+Remote `config.json` shape:
+
+```json
+{
+  "connectionId": "basket-trading",
+  "restUrl": "https://localhost:8445/api/authn",
+  "websocketUrl": "wss://localhost:8093/websocket-basket-trading"
 }
 ```
 
 Notes:
 
-- `connectionId` MUST be unique per module instance in host runtime.
-- If `vuu.websocketUrl` is omitted, host MAY fallback to portal `websocketUrl` (for compatibility).
+- `connectionId` identifies the VUU server in host runtime.
+- `restUrl` and `websocketUrl` must be supplied together and require
+  `connectionId`.
+- `{}` means the remote uses no dedicated VUU server and inherits the portal
+  connection.
 
 ---
 
@@ -186,7 +191,8 @@ Notes:
 2. Host registers available remotes and presents them in navigation similarly to current feature model.
 3. On remote activation/load:
    - resolve module descriptor
-   - ensure connection exists for descriptor `connectionId`
+   - load the remote's `config.json`
+   - ensure a connection exists for its `connectionId` when present
    - render `RemoteModule` with connection scope + lazy-loaded module component.
 4. Drag-and-drop instantiation from the feature list MUST continue unchanged for users:
    - no alternative mandatory flow (e.g. click-only launch) may replace current DnD behavior
