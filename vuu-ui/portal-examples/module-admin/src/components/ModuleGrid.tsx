@@ -8,11 +8,9 @@ const classBase = "vuuModuleAdmin";
 export const ModuleGrid = ({
   groups,
   onCreate,
-  selectedId,
 }: {
   groups: ModuleGroup[];
   onCreate: () => void;
-  selectedId?: number;
 }) => (
   <div className={`${classBase}-groups`}>
     {groups.map((group, index) => (
@@ -31,11 +29,7 @@ export const ModuleGrid = ({
         ) : null}
         <div className={`${classBase}-grid`}>
           {group.modules.map((module) => (
-            <ModuleCard
-              key={module.id}
-              module={module}
-              selected={module.id === selectedId}
-            />
+            <ModuleCard key={module.id} module={module} />
           ))}
           {index === groups.length - 1 ? (
             <NewModuleCard onClick={onCreate} />
