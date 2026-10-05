@@ -448,6 +448,74 @@ test.describe("TimeInput", () => {
     });
   });
 
+  test.describe("density and sizing", () => {
+    const densities = ["high", "medium", "low", "touch"] as const;
+
+    const measure = (timeinput: Locator, density: string) =>
+      timeinput.evaluate(async (el: HTMLInputElement, density) => {
+        await document.fonts.ready;
+        for (const node of document.querySelectorAll(
+          "[class*=salt-density-]",
+        )) {
+          node.className = node.className.replace(
+            /salt-density-\w+/,
+            `salt-density-${density}`,
+          );
+        }
+        const style = getComputedStyle(el);
+        const span = document.createElement("span");
+        span.style.cssText =
+          "position:absolute;visibility:hidden;white-space:pre";
+        span.style.font = style.font;
+        span.style.fontVariantNumeric = style.fontVariantNumeric;
+        el.parentElement?.appendChild(span);
+        const textWidth = (text: string) => {
+          span.textContent = text;
+          return span.getBoundingClientRect().width;
+        };
+        const result = {
+          contentWidth: parseFloat(style.width),
+          fontSize: style.fontSize,
+          height: el.getBoundingClientRect().height,
+          placeholderWidth: textWidth(el.placeholder),
+          saltFontSize: style.getPropertyValue("--salt-text-fontSize").trim(),
+          saltSizeBase: parseFloat(style.getPropertyValue("--salt-size-base")),
+          valueWidth: textWidth(el.value),
+        };
+        span.remove();
+        return result;
+      }, density);
+
+    for (const [mode, props] of [
+      ["seconds", { defaultValue: "23:59:59" }],
+      ["milliseconds", { defaultValue: "23:59:59.888", milliseconds: true }],
+    ] as const) {
+      test(`${mode}: font, height and width follow density, width just fits content`, async ({
+        mount,
+      }) => {
+        const component = await mount(
+          "UiControls/TimeInput/TestTimeInput",
+          props,
+        );
+        const timeinput = component.locator(".vuuTimeInput");
+        const widths: number[] = [];
+        for (const density of densities) {
+          const m = await measure(timeinput, density);
+          expect(m.fontSize, density).toEqual(m.saltFontSize);
+          expect(m.height, density).toEqual(m.saltSizeBase);
+          const required = Math.max(m.valueWidth, m.placeholderWidth);
+          // fits content (incl caret), allowing for font hinting at different sizes
+          expect(m.contentWidth, density).toBeGreaterThanOrEqual(required);
+          expect(m.contentWidth, density).toBeLessThanOrEqual(required + 2);
+          widths.push(m.contentWidth);
+        }
+        // width grows with density
+        expect([...widths].sort((a, b) => a - b)).toEqual(widths);
+        expect(widths[0]).toBeLessThan(widths[3]);
+      });
+    }
+  });
+
   test.describe("WHEN milliseconds enabled", () => {
     const mountAndFocus = async (
       mount: Mount,
@@ -468,43 +536,6 @@ test.describe("TimeInput", () => {
       await expect(timeinput).toHaveSelection(0, 2);
       return { component, timeinput };
     };
-
-    test("input is wide enough to display the full value at every density", async ({
-      mount,
-    }) => {
-      const component = await mount("UiControls/TimeInput/TestTimeInput", {
-        defaultValue: "23:59:59.888",
-        milliseconds: true,
-      });
-      const timeinput = component.locator(".vuuTimeInput");
-      for (const density of ["high", "medium", "low", "touch"]) {
-        const { contentWidth, textWidth } = await timeinput.evaluate(
-          (el: HTMLInputElement, density) => {
-            for (const node of document.querySelectorAll(
-              "[class*=salt-density-]",
-            )) {
-              node.className = node.className.replace(
-                /salt-density-\w+/,
-                `salt-density-${density}`,
-              );
-            }
-            const style = getComputedStyle(el);
-            const ctx = document.createElement("canvas").getContext("2d")!;
-            ctx.font = style.font;
-            return {
-              contentWidth:
-                el.clientWidth -
-                parseFloat(style.paddingLeft) -
-                parseFloat(style.paddingRight),
-              textWidth: ctx.measureText(el.value).width,
-            };
-          },
-          density,
-        );
-        // leave room for the caret
-        expect(contentWidth, density).toBeGreaterThan(textWidth + 2);
-      }
-    });
 
     test("renders placeholder and empty value when no defaultValue", async ({
       mount,

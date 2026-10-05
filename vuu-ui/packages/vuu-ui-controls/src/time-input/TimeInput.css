@@ -1,25 +1,35 @@
-.salt-density-high .vuuTimeInput {
-  --time-input-width: 60px;
-}
-.salt-density-medium .vuuTimeInput {
-  --time-input-width: 70px;
-}
-.salt-density-low .vuuTimeInput {
-  --time-input-width: 80px;
-}
-.salt-density-touch .vuuTimeInput {
-  --time-input-width: 90px;
+/*
+ * Theme fonts use equal width digits, so width is expressed in ch and scales
+ * with font-size (i.e density). Separators (':' '.') are ~0.4ch.
+ * Content width fits the wider of value and default placeholder:
+ *   seconds       value '00:00:00' ~6.8ch, placeholder 'hh:mm:ss' ~7.1ch
+ *                 (~7.3ch at the small font size of high density, due to hinting)
+ *   milliseconds  value '00:00:00.000' ~10.2ch, placeholder 'hh:mm:ss.sss' ~10.2ch
+ * Override with --vuuTimeInput-width if a custom placeholder is used.
+ * An extra 1px accommodates the caret.
+ */
+.salt-density-high .vuuTimeInput:not(.vuuTimeInput-milliseconds) {
+  --time-input-content-width: 7.35ch;
 }
 
 .vuuTimeInput {
-  background: var(--vuuTimeInput-background, inherit);
-  border-width: 1px;
-  font-family: var(--salt-typography-fontFamily);
-  width: var(--vuuTimeInput-width, var(--time-input-width));
+  --time-input-content-width: 7.15ch;
 
-  /* the additional ".sss" is ~2.1em wide, allow extra room for the caret */
+  background: var(--vuuTimeInput-background, inherit);
+  border-width: var(--vuuTimeInput-borderWidth, 1px);
+  box-sizing: content-box;
+  font-family: var(--salt-typography-fontFamily);
+  font-size: var(--vuuTimeInput-fontSize, var(--salt-text-fontSize));
+  font-variant-numeric: tabular-nums;
+  height: calc(
+    var(--vuuTimeInput-height, var(--salt-size-base)) - 2 *
+      var(--vuuTimeInput-borderWidth, 1px)
+  );
+  padding: 0 var(--vuuTimeInput-paddingInline, var(--salt-spacing-50));
+  width: var(--vuuTimeInput-width, calc(var(--time-input-content-width) + 1px));
+
   &.vuuTimeInput-milliseconds {
-    width: var(--vuuTimeInput-width, calc(var(--time-input-width) + 3em));
+    --time-input-content-width: 10.2ch;
   }
 
   &:focus::-webkit-input-placeholder {
