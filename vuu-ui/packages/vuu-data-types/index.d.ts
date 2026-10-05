@@ -1,7 +1,4 @@
-import type {
-  ColumnDescriptorsByName,
-  Filter,
-} from "@vuu-ui/vuu-filter-types";
+import type { ColumnDescriptorsByName, Filter } from "@vuu-ui/vuu-filter-types";
 
 export interface SetFilterOptions {
   columnsByName?: ColumnDescriptorsByName;
@@ -513,6 +510,10 @@ export interface DataSourceConstructorProps
   viewport?: string;
 }
 
+/**
+ * The Vuu server a remote module connects to. Published by the remote in its
+ * `config.json`, not by the module registry.
+ */
 export interface RemoteModuleConnection {
   connectionId: string;
   restUrl?: string;

@@ -12,7 +12,24 @@ import {
   loadRemote,
   registerRemotes,
 } from "@module-federation/enhanced/runtime";
+import {
+  AuthenticationProvider,
+  useOptionalVuuConnectionId,
+} from "../../src/auth/AuthenticationProvider";
+import type { LocalVuuServer } from "../../src/auth/AuthenticationProvider";
 import { RemoteModule } from "../../src/remote-module/RemoteModule";
+
+/** The config.json served by each remote, keyed by its URL. */
+const remoteConfigs = new Map<string, string>();
+
+const ConnectionProbe = () => (
+  <div>connection:{useOptionalVuuConnectionId() ?? "none"}</div>
+);
+
+const localServer = (connectionId: string): LocalVuuServer => ({
+  connectionId,
+  DataSourceProvider: ({ children }) => children,
+});
 
 const RemoteModuleRoute = () => {
   const navigate = useNavigate();
@@ -42,6 +59,13 @@ describe("RemoteModule", () => {
       default: () => <div>Connectionless remote loaded</div>,
     });
     vi.mocked(registerRemotes).mockImplementation(() => {});
+    remoteConfigs.clear();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async (url: string) => new Response(remoteConfigs.get(url) ?? "{}"),
+      ),
+    );
     container = document.createElement("div");
     document.body.append(container);
     root = createRoot(container);
@@ -52,6 +76,77 @@ describe("RemoteModule", () => {
     await act(async () => root.unmount());
     container.remove();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  const renderInLocalPortal = async (
+    mfUrl: string,
+    props: Partial<Parameters<typeof RemoteModule>[0]> = {},
+  ) => {
+    vi.mocked(loadRemote).mockResolvedValue({ default: ConnectionProbe });
+    await act(async () => {
+      root.render(
+        <AuthenticationProvider
+          localServers={[localServer("orders"), localServer("override")]}
+          mode="local"
+        >
+          <Suspense fallback="Loading">
+            <RemoteModule
+              mfComponent="Orders"
+              mfScope="orders"
+              mfUrl={mfUrl}
+              {...props}
+            />
+          </Suspense>
+        </AuthenticationProvider>,
+      );
+    });
+  };
+
+  it("connects a remote to the Vuu server named in its config.json", async () => {
+    remoteConfigs.set(
+      "http://localhost:5100/config.json",
+      JSON.stringify({ connectionId: "orders" }),
+    );
+    await renderInLocalPortal("http://localhost:5100/");
+
+    expect(fetch).toHaveBeenCalledWith("http://localhost:5100/config.json");
+    expect(container.textContent).toBe("connection:orders");
+  });
+
+  it("uses the portal connection when config.json names no Vuu server", async () => {
+    await renderInLocalPortal("http://localhost:5101");
+
+    expect(container.textContent).toBe("connection:local");
+  });
+
+  it("prefers an explicit vuu prop to config.json", async () => {
+    remoteConfigs.set(
+      "http://localhost:5102/config.json",
+      JSON.stringify({ connectionId: "orders" }),
+    );
+    await renderInLocalPortal("http://localhost:5102", {
+      vuu: { connectionId: "override" },
+    });
+
+    expect(container.textContent).toBe("connection:override");
+  });
+
+  it("reports a remote whose config.json is missing", async () => {
+    // Static servers answer unknown paths with index.html.
+    remoteConfigs.set("http://localhost:5103/config.json", "<!doctype html>");
+    const onError = vi.fn();
+    await renderInLocalPortal("http://localhost:5103", { onError });
+
+    expect(container.textContent).toContain(
+      "An error occurred while creating the remote module.",
+    );
+    expect(onError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: expect.stringContaining("is not valid JSON"),
+        name: "RemoteModuleConfigError",
+      }),
+    );
   });
 
   it("loads a remote without a Vuu connection when metadata is absent", async () => {

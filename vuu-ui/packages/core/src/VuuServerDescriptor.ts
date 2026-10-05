@@ -2,9 +2,9 @@ import type { RemoteModuleConnection } from "@vuu-ui/vuu-data-types";
 import type { ComponentType, ReactNode } from "react";
 
 /**
- * A Vuu server referenced by the `vuu` connection of one or more registered
- * modules. `restUrl` and `websocketUrl` are absent when the server is the
- * portal's own Vuu server.
+ * A Vuu server used by one or more registered modules, as published in each
+ * module's `config.json`. `restUrl` and `websocketUrl` are absent when the
+ * server is the portal's own Vuu server or a local (in-browser) server.
  */
 export interface VuuServerDescriptor extends RemoteModuleConnection {
   /** Titles of the registered modules that use this server. */

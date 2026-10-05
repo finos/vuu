@@ -82,8 +82,9 @@ array. Each entry has a unique `name`, a `port`, and a `directory`:
 Use a project-level `portal-build-all.json` when one command should build a
 host and its configured remote modules. Targets run in declaration order, and
 the order is stable for both the CLI and API. `--local` selects the host's
-local entry and manifest; remote-module targets always use their remote build.
-Use `--target <name>` to build one configured target.
+local entry and manifest; remote-module targets always use their remote build
+and reject direct `--local` builds. Use `--target <name>` to build one
+configured target.
 
 ```json
 {
@@ -172,6 +173,14 @@ runtime as the legacy remote-module builder:
   "server": {
     "corsOrigins": ["http://localhost:5002"]
   },
+  "manifest": {
+    "filename": "./config.json",
+    "remote": {
+      "connectionId": "example",
+      "restUrl": "https://localhost:8445/api/authn",
+      "websocketUrl": "wss://localhost:8093/websocket-example"
+    }
+  },
   "moduleFederation": {
     "name": "example",
     "dts": false,
@@ -195,9 +204,12 @@ runtime as the legacy remote-module builder:
 Remote `moduleFederation.exposes` requests beginning with `src/` are normalized
 to `./src/` for Rspack. `publicPath` controls the runtime URL used to load
 remote chunks, while `server.corsOrigins` controls development-server CORS.
-Remote shared dependency versions may be explicit or use
-`requiredVersion: "package"` when the dependency is declared by the consuming
-application.
+A remote-module target must define `manifest`; the build writes
+`manifest.filename` (normally `./config.json`) next to `mf-manifest.json` using
+`manifest.remote` as the file contents. Use an empty object when the remote has
+no dedicated VUU server. Remote shared dependency versions may be explicit or
+use `requiredVersion: "package"` when the dependency is declared by the
+consuming application.
 
 Set `"target": "application"` for a standalone portal application that is not
 a Module Federation container. It uses the same entry, HTML, output, React, and
@@ -221,11 +233,14 @@ CSS-inline build settings without emitting a federation container or manifest.
   "manifest": {
     "filename": "./config.json",
     "remote": {
-      "ssl": true,
-      "authUrl": "https://localhost:8080"
+      "authUrl": "https://localhost:8080",
+      "restUrl": "https://localhost:8443/api/authn",
+      "websocketUrl": "wss://localhost:8091/websocket-portal"
     },
     "local": {
-      "ssl": false
+      "authUrl": "https://localhost:8080",
+      "restUrl": "https://localhost:8443/api/authn",
+      "websocketUrl": "wss://localhost:8091/websocket-portal"
     }
   },
   "moduleFederation": {
@@ -269,8 +284,8 @@ JavaScript, CSS, or JSON files.
 the package dependency have different names, for example
 `@vuu-ui/core/portal` with `package:@vuu-ui/core`. A build variant can override
 `entry`, `output`, `manifest`, or `moduleFederation` under `builds.local` or
-`builds.remote`. If no local manifest is provided, the remote manifest is
-used.
+`builds.remote`. For host builds, if no local manifest is provided, the remote
+manifest is used.
 
 For VUU packages that share the release version of `@vuu-ui/core`, use
 `requiredVersion: "package:@vuu-ui/core"` rather than hardcoding a VUU release

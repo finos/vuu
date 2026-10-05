@@ -13,6 +13,14 @@
   "server": {
     "corsOrigins": ["http://localhost:5002"]
   },
+  "manifest": {
+    "filename": "./config.json",
+    "remote": {
+      "connectionId": "module-admin",
+      "restUrl": "https://localhost:8443/api/authn",
+      "websocketUrl": "wss://localhost:8091/websocket-portal"
+    }
+  },
   "moduleFederation": {
     "name": "moduleAdmin",
     "dts": false,

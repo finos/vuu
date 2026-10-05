@@ -6,7 +6,7 @@ import {
   loadRemote,
   registerRemotes,
 } from "@module-federation/enhanced/runtime";
-import React, { Suspense, lazy, useEffect, useMemo } from "react";
+import React, { Suspense, lazy, use, useEffect, useMemo } from "react";
 import {
   ApplicationStateProvider,
   useOptionalPortalPersistence,
@@ -16,6 +16,10 @@ import { useStoreReady } from "../persistence/useStoreReady";
 import { useOptionalSavedState } from "../saved-state/SavedStateContext";
 import { useInRouterContext, useLocation } from "react-router-dom";
 import { RemoteModuleErrorBoundary } from "./RemoteModuleErrorBoundary";
+import {
+  forgetRemoteModuleConfig,
+  loadRemoteModuleConfig,
+} from "./remote-module-config";
 
 export interface RemoteModuleProps {
   ViewProps?: {
@@ -36,6 +40,11 @@ export interface RemoteModuleProps {
   title?: string;
   /** The module's version; saved state is kept per version. */
   version?: number;
+  /**
+   * The Vuu server the module connects to. Normally omitted: the connection
+   * is read from the `config.json` the remote publishes at `mfUrl`. Set it to
+   * point a generic module, such as a table viewer, at a specific server.
+   */
   vuu?: RemoteModuleConnection;
   width?: number;
 }
@@ -101,7 +110,11 @@ const getRemoteComponent = (
   let component = components.get(componentKey);
 
   if (component === undefined) {
-    component = lazy(() => loadRemoteExports(mfUrl, mfScope, mfComponent));
+    // Start loading now, alongside the module's config.json, rather than
+    // when the component first renders. Capturing the request means a
+    // failure is reported, not silently retried, on the next render.
+    const exports = loadRemoteExports(mfUrl, mfScope, mfComponent);
+    component = lazy(() => exports);
     components.set(componentKey, component);
   }
 
@@ -112,6 +125,7 @@ const forgetRemote = (mfUrl: string, mfScope: string, mfComponent: string) => {
   const key = getRemoteComponentKey(mfUrl, mfScope, mfComponent);
   components.delete(key);
   remoteExports.delete(key);
+  forgetRemoteModuleConfig(mfUrl);
 };
 
 const toStateMigrations = (exports: RemoteExports) =>
@@ -199,14 +213,15 @@ function RemoteModuleContent(props: RemoteModuleProps) {
   } = props;
   const store = useRemoteModuleState(props);
   const RemoteComponent = getRemoteComponent(mfUrl, mfScope, mfComponent);
+  const connection = vuu ?? use(loadRemoteModuleConfig(mfUrl)).vuu;
   const remoteComponent = <RemoteComponent {...remoteProps} />;
 
   // Always provide a value, so the portal's own store is never visible to
   // the module (FR-3).
   return (
     <ApplicationStateProvider store={store}>
-      {vuu ? (
-        <AuthenticationProvider mode="vuu-connection" connection={vuu}>
+      {connection ? (
+        <AuthenticationProvider mode="vuu-connection" connection={connection}>
           {remoteComponent}
         </AuthenticationProvider>
       ) : (

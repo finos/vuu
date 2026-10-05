@@ -1,4 +1,11 @@
 import type { ModuleConfig } from "@heswell/module-admin/contracts";
+import {
+  parseRemoteModuleConfig,
+  REMOTE_MODULE_CONFIG_FILE,
+  RemoteModuleConfigError,
+  type RemoteModuleConfig,
+  remoteModuleConfigUrl,
+} from "@vuu-ui/core";
 
 /**
  * Remote checks run in the browser: they show whether the remote can be
@@ -6,6 +13,16 @@ import type { ModuleConfig } from "@heswell/module-admin/contracts";
  */
 
 export const MANIFEST_FILE = "mf-manifest.json";
+export const CONFIG_FILE = REMOTE_MODULE_CONFIG_FILE;
+
+/**
+ * The remote's `config.json`, which every remote must publish. It names the
+ * Vuu server the remote uses, if any; the portal won't load a remote without
+ * a valid config.
+ */
+export type RemoteConfigResult =
+  | ({ status: "loaded" } & RemoteModuleConfig)
+  | { status: "invalid"; error: string };
 
 export type ManifestResult =
   | { status: "checking" }
@@ -17,6 +34,7 @@ export type ManifestResult =
       name: string;
       /** Exposed component names, without the leading `./`. */
       exposes: string[];
+      config: RemoteConfigResult;
     }
   | { status: "unreachable"; checkedAt: number; error: string };
 
@@ -34,7 +52,12 @@ export interface RemoteCheck {
   checkedAt?: number;
   elapsedMs?: number;
   exposes: string[];
+  /** Checks against the remote's mf-manifest.json. */
   items: RemoteCheckItem[];
+  /** Checks against the remote's config.json, once the remote is reached. */
+  configItems: RemoteCheckItem[];
+  /** The remote's config.json, once the remote has been reached. */
+  config?: RemoteConfigResult;
 }
 
 export const manifestUrl = (mfUrl: string) =>
@@ -70,12 +93,53 @@ export const parseManifest = (
   return { exposes, name: json.name };
 };
 
+const describeFetchError = (cause: unknown) =>
+  cause instanceof TypeError
+    ? "Network or CORS error"
+    : cause instanceof Error
+      ? cause.message
+      : String(cause);
+
+/** Fetches and validates the remote's config.json, as the portal does. */
+export const fetchRemoteConfig = async (
+  mfUrl: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<RemoteConfigResult> => {
+  try {
+    const response = await fetchImpl(remoteModuleConfigUrl(mfUrl), {
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      throw new Error(`${CONFIG_FILE} returned HTTP ${response.status}`);
+    }
+    let json: unknown;
+    try {
+      json = await response.json();
+    } catch {
+      // Static servers commonly answer a missing file with index.html.
+      throw new Error(`${CONFIG_FILE} is missing or not valid JSON`);
+    }
+    const { vuu } = parseRemoteModuleConfig(json, CONFIG_FILE);
+    return vuu ? { status: "loaded", vuu } : { status: "loaded" };
+  } catch (cause) {
+    return {
+      error:
+        cause instanceof RemoteModuleConfigError
+          ? `${CONFIG_FILE}: ${cause.reason}`
+          : describeFetchError(cause),
+      status: "invalid",
+    };
+  }
+};
+
 export const fetchManifest = async (
   mfUrl: string,
   fetchImpl: typeof fetch = fetch,
   now: () => number = Date.now,
 ): Promise<ManifestResult> => {
   const started = now();
+  // Fetched alongside the manifest; only reported if the remote is reachable.
+  const config = fetchRemoteConfig(mfUrl, fetchImpl);
   try {
     const response = await fetchImpl(manifestUrl(mfUrl), {
       cache: "no-store",
@@ -87,6 +151,7 @@ export const fetchManifest = async (
     const checkedAt = now();
     return {
       checkedAt,
+      config: await config,
       elapsedMs: checkedAt - started,
       exposes,
       name,
@@ -95,12 +160,7 @@ export const fetchManifest = async (
   } catch (cause) {
     return {
       checkedAt: now(),
-      error:
-        cause instanceof TypeError
-          ? "Network or CORS error"
-          : cause instanceof Error
-            ? cause.message
-            : String(cause),
+      error: describeFetchError(cause),
       status: "unreachable",
     };
   }
@@ -114,7 +174,38 @@ const hostOf = (url: string) => {
   }
 };
 
-/** Compares a module's federation settings with its remote's manifest. */
+/** The config.json check, followed by the Vuu connection it declares. */
+const configItems = (config: RemoteConfigResult): RemoteCheckItem[] => {
+  if (config.status === "invalid") {
+    return [{ detail: config.error, label: "Config", ok: false }];
+  }
+  const { vuu } = config;
+  return [
+    {
+      detail: vuu
+        ? `${CONFIG_FILE} · Vuu server ${vuu.connectionId}`
+        : `${CONFIG_FILE} · uses the portal's Vuu connection`,
+      label: "Config",
+      ok: true,
+    },
+    ...(vuu
+      ? [
+          { detail: vuu.connectionId, label: "Connection id", ok: true },
+          ...(vuu.websocketUrl
+            ? [{ detail: vuu.websocketUrl, label: "WebSocket URL", ok: true }]
+            : []),
+          ...(vuu.restUrl
+            ? [{ detail: vuu.restUrl, label: "Auth (REST) URL", ok: true }]
+            : []),
+        ]
+      : []),
+  ];
+};
+
+/**
+ * Compares a module's federation settings with its remote's manifest, and
+ * checks the remote's config.json.
+ */
 export const compareRemote = (
   module: Pick<ModuleConfig, "mfComponent" | "mfScope" | "mfUrl">,
   manifest: ManifestResult | undefined,
@@ -122,6 +213,7 @@ export const compareRemote = (
   if (!manifest) return undefined;
   if (manifest.status === "checking") {
     return {
+      configItems: [],
       exposes: [],
       items: [],
       status: "checking",
@@ -131,6 +223,7 @@ export const compareRemote = (
   if (manifest.status === "unreachable") {
     return {
       checkedAt: manifest.checkedAt,
+      configItems: [],
       exposes: [],
       items: [
         { detail: manifest.error, label: "Manifest not loaded", ok: false },
@@ -163,9 +256,13 @@ export const compareRemote = (
       ok: exposeOk,
     },
   ];
-  const ok = scopeOk && exposeOk;
+  const { config } = manifest;
+  const configOk = config.status === "loaded";
+  const ok = scopeOk && exposeOk && configOk;
   return {
     checkedAt: manifest.checkedAt,
+    config,
+    configItems: configItems(config),
     elapsedMs: manifest.elapsedMs,
     exposes: manifest.exposes,
     items,
@@ -174,6 +271,8 @@ export const compareRemote = (
       ? "Reachable from this browser"
       : !scopeOk
         ? `Remote declares scope ${manifest.name}, not ${module.mfScope}`
-        : `Remote does not expose ./${component}`,
+        : !exposeOk
+          ? `Remote does not expose ./${component}`
+          : `Remote ${CONFIG_FILE} is missing or invalid`,
   };
 };

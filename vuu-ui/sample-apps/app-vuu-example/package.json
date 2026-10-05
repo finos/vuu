@@ -12,6 +12,7 @@
   "keywords": [],
   "author": "heswell",
   "license": "Apache-2.0",
+  "type": "module",
   "sideEffects": [
     "**/*.css"
   ],
@@ -30,11 +31,9 @@
     "clsx": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "@vuu-ui/grid-layout": "3.5.0",
-    "@vuu-ui/core": "3.5.0"
+    "@vuu-ui/vuu-layout": "3.5.10"
   },
   "engines": {
     "node": ">=24.0.0"
-  },
-  "type": "module"
+  }
 }

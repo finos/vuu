@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "author": "heswell",
   "license": "Apache-2.0",
+  "type": "module",
   "scripts": {
     "build": "node ../../scripts/run-build-rslib.ts",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
@@ -34,6 +35,5 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },
-  "sideEffects": false,
-  "type": "module"
+  "sideEffects": false
 }
