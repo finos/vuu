@@ -1,5 +1,9 @@
 # Module Admin – UI designs
 
+> **Superseded in part by [v2](./v2/README.md):** v2 adds an Overview page with
+> summary counts and search, simpler module cards, and a page for each module's
+> details in place of the side panel. It also fixes page scrolling.
+
 High-resolution mockups (3200×2000, 2× density) for the module-admin rewrite.
 They use the Salt `theme-next` and Vuu theme tokens at high density, matching
 the portal and `user-admin`. Data is the `DEFAULT_MODULE_DEFINITIONS` seed,
@@ -33,9 +37,9 @@ plus two example rows: `notifications` and `order-blotter` (disabled, with probl
   menu entry and inherit the parent's access role.
 - **Fields are grouped by the server contract**: identity (`name`, `title`,
   `description`, `navIconUrl`), portal navigation (`location`, `path`,
-  `parentModuleId`), module federation (`mfUrl`, `mfScope`, `mfComponent`), Vuu
-  connection (`vuuConnectionId`, `vuuWebsocketUrl`, `vuuRestUrl`) and access
-  (`modulePermissions.role`).
+  `parentModuleId`), module federation (`mfUrl`, `mfScope`, `mfComponent`), and
+  access (`modulePermissions.role`). VUU connection fields were removed from
+  the UI; connections now come from each remote's `config.json`.
 - **Helpful defaults.** The route is suggested from the menu location, and the
   access role from the name (`<name>-access`, following the `user-admin`
   naming rules). The exposed component is chosen from the remote's manifest.
@@ -57,7 +61,11 @@ plus two example rows: `notifications` and `order-blotter` (disabled, with probl
   different route than users do. The UI fetches each remote's
   `mf-manifest.json`, which needs CORS, as module federation already does. It
   runs the check on load and on demand ("Check all remotes" or "Check remote"),
-  and confirms the scope and the exposed components. Results are labelled
+  and confirms the scope and the exposed components. It also fetches the
+  remote's `config.json`, validates it as the portal does, and shows the Vuu
+  `connectionId`, WebSocket URL and auth (REST) URL it declares. A missing or
+  invalid `config.json` is reported as a mismatch, because the portal won't
+  load the remote without it. Results are labelled
   "checked from this browser" and are not saved.
 
 ## Open questions

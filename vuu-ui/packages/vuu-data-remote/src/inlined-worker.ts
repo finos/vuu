@@ -228,6 +228,45 @@ var WindowRange = class _WindowRange {
   }
 };
 
+// ../vuu-utils/src/protocol-message-utils.ts
+var MENU_RPC_TYPES = [
+  "VIEW_PORT_MENUS_SELECT_RPC",
+  "VIEW_PORT_MENU_TABLE_RPC",
+  "VIEW_PORT_MENU_ROW_RPC",
+  "VIEW_PORT_MENU_CELL_RPC"
+];
+var INVALID_SESSION = "Invalid session";
+var SESSION_LIMIT_EXCEEDED = "User session limit exceeded";
+var INVALID_TOKEN = "Invalid token";
+var TOKEN_EXPIRED = "Token has expired";
+var InvalidLoginMessages = [
+  INVALID_SESSION,
+  SESSION_LIMIT_EXCEEDED,
+  INVALID_TOKEN,
+  TOKEN_EXPIRED
+];
+var isErrorMessage = (message) => typeof message == "object" && (message == null ? void 0 : message.type) === "ERROR";
+var isLoginErrorMessage = (message) => typeof message === "string" && InvalidLoginMessages.includes(message);
+var isSelectRequest = (message) => message && typeof message === "object" && "type" in message && (message.type === "SELECT_ROW" || message.type === "DESELECT_ROW" || message.type === "SELECT_ROW_RANGE" || message.type === "SELECT_ALL" || message.type === "DESELECT_ALL");
+var isRpcServiceRequest = (message) => message.type === "RPC_REQUEST";
+var hasViewPortContext = (message) => message.context.type === "VIEWPORT_CONTEXT";
+var isVuuMenuRpcRequest = (message) => MENU_RPC_TYPES.includes(message["type"]);
+var isOpenDialogAction = (action) => action !== void 0 && action.type === "OPEN_DIALOG_ACTION";
+var isCreateVpSuccess = (response) => response.type === "CREATE_VP_SUCCESS";
+var isSessionTable = (table) => {
+  if (table !== null && typeof table === "object" && "table" in table && "module" in table) {
+    return table.table.startsWith("session");
+  }
+  return false;
+};
+function isActionMessage(rpcResponse) {
+  return rpcResponse.type === "VIEW_PORT_MENU_RESP";
+}
+function isSessionTableActionMessage(rpcResponse) {
+  var _a, _b;
+  return isActionMessage(rpcResponse) && isOpenDialogAction(rpcResponse.action) && isSessionTable(rpcResponse.action.table) && (((_a = rpcResponse.action) == null ? void 0 : _a.renderComponent) === "inline-form" || ((_b = rpcResponse.action) == null ? void 0 : _b.renderComponent) === "grid");
+}
+
 // ../vuu-utils/src/logging-utils.ts
 var logLevels = ["error", "warn", "info", "debug"];
 var isValidLogLevel = (value) => typeof value === "string" && logLevels.includes(value);
@@ -306,53 +345,15 @@ var RangeMonitor = class {
   }
 };
 
-// ../vuu-utils/src/protocol-message-utils.ts
-var MENU_RPC_TYPES = [
-  "VIEW_PORT_MENUS_SELECT_RPC",
-  "VIEW_PORT_MENU_TABLE_RPC",
-  "VIEW_PORT_MENU_ROW_RPC",
-  "VIEW_PORT_MENU_CELL_RPC"
-];
-var INVALID_SESSION = "Invalid session";
-var SESSION_LIMIT_EXCEEDED = "User session limit exceeded";
-var INVALID_TOKEN = "Invalid token";
-var TOKEN_EXPIRED = "Token has expired";
-var InvalidLoginMessages = [
-  INVALID_SESSION,
-  SESSION_LIMIT_EXCEEDED,
-  INVALID_TOKEN,
-  TOKEN_EXPIRED
-];
-var isErrorMessage = (message) => typeof message == "object" && (message == null ? void 0 : message.type) === "ERROR";
-var isLoginErrorMessage = (message) => typeof message === "string" && InvalidLoginMessages.includes(message);
-var isSelectRequest = (message) => message && typeof message === "object" && "type" in message && (message.type === "SELECT_ROW" || message.type === "DESELECT_ROW" || message.type === "SELECT_ROW_RANGE" || message.type === "SELECT_ALL" || message.type === "DESELECT_ALL");
-var isRpcServiceRequest = (message) => message.type === "RPC_REQUEST";
-var hasViewPortContext = (message) => message.context.type === "VIEWPORT_CONTEXT";
-var isVuuMenuRpcRequest = (message) => MENU_RPC_TYPES.includes(message["type"]);
-var isOpenDialogAction = (action) => action !== void 0 && action.type === "OPEN_DIALOG_ACTION";
-var isCreateVpSuccess = (response) => response.type === "CREATE_VP_SUCCESS";
-var isSessionTable = (table) => {
-  if (table !== null && typeof table === "object" && "table" in table && "module" in table) {
-    return table.table.startsWith("session");
-  }
-  return false;
-};
-function isActionMessage(rpcResponse) {
-  return rpcResponse.type === "VIEW_PORT_MENU_RESP";
-}
-function isSessionTableActionMessage(rpcResponse) {
-  var _a, _b;
-  return isActionMessage(rpcResponse) && isOpenDialogAction(rpcResponse.action) && isSessionTable(rpcResponse.action.table) && (((_a = rpcResponse.action) == null ? void 0 : _a.renderComponent) === "inline-form" || ((_b = rpcResponse.action) == null ? void 0 : _b.renderComponent) === "grid");
-}
-
 // ../vuu-utils/src/keyset.ts
 var EMPTY = [];
 var KeySet = class {
   constructor(range) {
     __publicField(this, "keys", /* @__PURE__ */ new Map());
+    __publicField(this, "freeKeys", []);
     __publicField(this, "nextKeyValue", 0);
     __publicField(this, "range");
-    this.range = range;
+    this.range = { from: range.from, to: range.to };
     this.init(range);
   }
   next(free = EMPTY) {
@@ -364,6 +365,7 @@ var KeySet = class {
   }
   init({ from, to }) {
     this.keys.clear();
+    this.freeKeys.length = 0;
     this.nextKeyValue = 0;
     for (let rowIndex = from; rowIndex < to; rowIndex++) {
       const nextKeyValue = this.next();
@@ -371,26 +373,33 @@ var KeySet = class {
     }
     return true;
   }
-  reset(range) {
-    const { from, to } = range;
-    const newSize = to - from;
-    const currentSize = this.range.to - this.range.from;
-    this.range = range;
-    if (currentSize > newSize) {
-      return this.init(range);
-    }
-    const freeKeys = [];
+  /**
+   * Keys assigned to rows that remain within range are never changed, keys
+   * released by rows leaving the range are recycled for rows entering the
+   * range. Keys are never re-sequenced, clients may retain rows (and their
+   * keys) that remain within range, so re-assigning keys to those rows would
+   * risk duplicate keys on the client.
+   * Note: range is copied, callers may mutate the range object they pass.
+   * Returns false, keys are never resequenced.
+   */
+  reset({ from, to }) {
+    this.range = { from, to };
+    const { freeKeys } = this;
     this.keys.forEach((keyValue, rowIndex) => {
       if (rowIndex < from || rowIndex >= to) {
         freeKeys.push(keyValue);
         this.keys.delete(rowIndex);
       }
     });
+    let freeKeyIndex = 0;
     for (let rowIndex = from; rowIndex < to; rowIndex++) {
       if (!this.keys.has(rowIndex)) {
-        const nextKeyValue = this.next(freeKeys);
+        const nextKeyValue = freeKeyIndex < freeKeys.length ? freeKeys[freeKeyIndex++] : this.nextKeyValue++;
         this.keys.set(rowIndex, nextKeyValue);
       }
+    }
+    if (freeKeyIndex > 0) {
+      freeKeys.splice(0, freeKeyIndex);
     }
     return false;
   }
@@ -573,8 +582,9 @@ var ArrayBackedMovingWindow = class {
     __publicField(this, "setRowCount", (rowCount) => {
       var _a;
       (_a = log.info) == null ? void 0 : _a.call(log, \`setRowCount \${rowCount}\`);
-      if (rowCount < this.internalData.length) {
-        this.internalData.length = rowCount;
+      const dataLength = Math.max(0, rowCount - __privateGet(this, _range).from);
+      if (dataLength < this.internalData.length) {
+        this.internalData.length = dataLength;
       }
       if (rowCount < this.rowCount) {
         this.rowsWithinRange = 0;
@@ -657,6 +667,7 @@ var ArrayBackedMovingWindow = class {
     const currentFrom = this.clientRange.from;
     const currentTo = Math.min(this.clientRange.to, this.rowCount);
     if (from === currentFrom && to === currentTo) {
+      this.clientRange.to = to;
       return [false, EMPTY_ARRAY];
     }
     const originalRange = this.clientRange.copy();
@@ -671,18 +682,9 @@ var ArrayBackedMovingWindow = class {
     }
     const clientRows = [];
     const offset = __privateGet(this, _range).from;
-    if (to > originalRange.to) {
-      const start = Math.max(from, originalRange.to);
-      for (let i = start - offset; i < to - offset; i++) {
-        const row = this.internalData[i];
-        if (row) {
-          clientRows.push(row);
-        }
-      }
-    } else {
-      const end = Math.min(originalRange.from, to);
-      for (let i = from - offset; i < end - offset; i++) {
-        const row = this.internalData[i];
+    for (let i = from; i < to; i++) {
+      if (i < originalRange.from || i >= originalRange.to) {
+        const row = this.internalData[i - offset];
         if (row) {
           clientRows.push(row);
         }

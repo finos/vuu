@@ -13,6 +13,14 @@
   "server": {
     "corsOrigins": ["http://localhost:5002"]
   },
+  "manifest": {
+    "filename": "./config.json",
+    "remote": {
+      "connectionId": "simul",
+      "restUrl": "https://localhost:8443/api/authn",
+      "websocketUrl": "wss://localhost:8090/websocket"
+    }
+  },
   "moduleFederation": {
     "name": "instrumentTiles",
     "dts": false,

@@ -14,25 +14,35 @@ import type {
   LocalVuuServer,
   VuuServerDescriptor,
 } from "../../src/VuuServerDescriptor";
+import type { RemoteModuleConnection } from "@vuu-ui/vuu-data-types";
+
+/** The config.json served by each module, keyed by its URL. */
+const remoteConfigs = new Map<string, string>();
+// Configs are cached by URL, so every module gets a URL of its own.
+let urlSequence = 0;
 
 const moduleDescriptor = (
   name: string,
-  vuu?: PortalModuleRegistry["modules"][number]["vuu"],
-): PortalModuleRegistry["modules"][number] => ({
-  accessRole: `${name}-access`,
-  clientIdentifier: name,
-  description: name,
-  id: name,
-  mfComponent: name,
-  mfScope: name,
-  mfUrl: "http://localhost:5010",
-  name,
-  navLocation: `/${name}`,
-  path: `/${name}`,
-  title: name,
-  version: 1,
-  ...(vuu ? { vuu } : {}),
-});
+  vuu?: RemoteModuleConnection,
+  config = JSON.stringify(vuu ?? {}),
+): PortalModuleRegistry["modules"][number] => {
+  const mfUrl = `http://localhost:5010/${name}-${urlSequence++}`;
+  remoteConfigs.set(`${mfUrl}/config.json`, config);
+  return {
+    accessRole: `${name}-access`,
+    clientIdentifier: name,
+    description: name,
+    id: name,
+    mfComponent: name,
+    mfScope: name,
+    mfUrl,
+    name,
+    navLocation: `/${name}`,
+    path: `/${name}`,
+    title: name,
+    version: 1,
+  };
+};
 
 const localServer = (
   connectionId: string,
@@ -79,6 +89,14 @@ describe("Vuu servers", () => {
     document.body.append(container);
     root = createRoot(container);
     servers = undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) =>
+        remoteConfigs.has(url)
+          ? new Response(remoteConfigs.get(url))
+          : new Response("Not found", { status: 404 }),
+      ),
+    );
   });
 
   afterEach(() => {
@@ -170,6 +188,33 @@ describe("Vuu servers", () => {
         { connectionId: "basket", moduleTitles: ["baskets", "basket-admin"] },
         { connectionId: "simul", moduleTitles: ["tiles"] },
       ]);
+    });
+
+    it("omits modules whose config.json can't be loaded", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      await act(async () => {
+        root.render(
+          <AuthenticationProvider
+            localServers={[localServer("simul")]}
+            mode="local"
+            registry={{
+              modules: [
+                moduleDescriptor("missing", undefined, "<!doctype html>"),
+                moduleDescriptor("tiles", { connectionId: "simul" }),
+              ],
+            }}
+          >
+            <ServersProbe />
+          </AuthenticationProvider>,
+        );
+      });
+
+      expect(servers).toEqual([
+        { connectionId: "simul", moduleTitles: ["tiles"] },
+      ]);
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining("is not valid JSON"),
+      );
     });
 
     it("lists no servers when no module has a vuu connection", async () => {

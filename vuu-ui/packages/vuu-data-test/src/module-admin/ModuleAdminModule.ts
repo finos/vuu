@@ -68,9 +68,10 @@ const EXAMPLE_MODULES: readonly ManagedModule[] = [
     mfScope: "orderBlotter",
     mfUrl: "http://localhost:5009",
     navIconUrl: MODULE_NAV_ICONS.tables,
-    vuuConnectionId: "orders",
-    vuuWebsocketUrl: "wss://localhost:8095/websocket-orders",
-    vuuRestUrl: "https://localhost:8447/api/authn",
+    // Vuu connections are published by each remote in its config.json.
+    vuuConnectionId: "",
+    vuuWebsocketUrl: "",
+    vuuRestUrl: "",
     accessRole: "",
     created: INITIAL_TIMESTAMP,
     updated: INITIAL_TIMESTAMP,
