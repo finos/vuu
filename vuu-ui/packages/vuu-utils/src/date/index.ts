@@ -26,6 +26,7 @@ export {
   dateTimePattern,
   defaultPatternsByType,
   fallbackDateTimePattern,
+  withDateTimePattern,
 } from "./dateTimePattern";
 export * from "./formatter";
 export {

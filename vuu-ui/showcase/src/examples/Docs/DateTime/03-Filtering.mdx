@@ -2,6 +2,7 @@ import { LivePreview } from "../components/LivePreview";
 import {
   DateColumnFilters,
   DateFilterClause,
+  FilterPatternOverride,
   TemporalFilterQueries,
   TimeColumnFilters,
   TimeFilterClause,
@@ -103,6 +104,34 @@ The default `between` range for a time column is `00:00:00` to `23:59:59`, or `0
 
 <LivePreview>
   <TimeColumnFilters />
+</LivePreview>
+
+### Filter pattern
+
+By default a column filter uses the column's `type` to choose its control: a date picker for `date` and `datetime` columns, or a time picker for `time` columns (with milliseconds if the time pattern is `hh:mm:ss.ms`). To use different formatting in a filter than in the Table, set the `pattern` prop on `ColumnFilter` or `FilterContainerColumnFilter`:
+
+```tsx
+const execTime: ColumnDescriptor = {
+  name: "execTime",
+  serverDataType: "epochtimestampnano",
+  type: {
+    name: "date/time",
+    formatting: { pattern: { date: "yyyy-mm-dd", time: "hh:mm:ss" } },
+  },
+};
+
+// Table shows 2026-09-30 16:05:09.123456789
+<FilterContainerColumnFilter
+  column={execTime}
+  operator="between"
+  pattern={{ time: "hh:mm:ss.ms" }} // time of day today, with milliseconds
+/>
+```
+
+The pattern sets the filter's kind. A pattern with only a time gives a `time` filter, with only a date a `date` filter, and with both a `datetime` filter. The column's time zone and other formatting are kept. The column passed to the change and commit handlers has the pattern applied (`withDateTimePattern`), so values are handled to match the control. The time picker accepts at most millisecond precision.
+
+<LivePreview>
+  <FilterPatternOverride />
 </LivePreview>
 
 ## Filter clauses

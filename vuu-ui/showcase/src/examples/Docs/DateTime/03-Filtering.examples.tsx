@@ -1,5 +1,6 @@
 import {
   DateColumnFilters as DateColumnFiltersExample,
+  FilterPatternOverride as FilterPatternOverrideExample,
   TimeColumnFilters as TimeColumnFiltersExample,
 } from "../../DateTime/ColumnFilters.examples";
 import {
@@ -13,6 +14,8 @@ export const TemporalFilterQueries = () => <TemporalFilterQueriesExample />;
 export const DateColumnFilters = () => <DateColumnFiltersExample />;
 
 export const TimeColumnFilters = () => <TimeColumnFiltersExample />;
+
+export const FilterPatternOverride = () => <FilterPatternOverrideExample />;
 
 export const DateFilterClause = () => <DateFilterClauseExample />;
 

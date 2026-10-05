@@ -15,7 +15,11 @@ import {
 } from "@vuu-ui/vuu-filters";
 import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { DataSourceProvider, filterAsQuery } from "@vuu-ui/vuu-utils";
+import {
+  DataSourceProvider,
+  type DateTimePattern,
+  filterAsQuery,
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 import {
   createDateTimeDataSource,
@@ -29,6 +33,7 @@ interface FilterField {
   extendedFilterOptions?: ExtendedFilterOptions;
   label: string;
   operator?: ColumnFilterOp;
+  pattern?: DateTimePattern;
 }
 
 const tableColumnsFor = (fields: FilterField[]): ExampleColumn[] => [
@@ -94,13 +99,14 @@ const FilterContainerTemplate = ({
           }}
         >
           {filterColumns.map(
-            ({ column, extendedFilterOptions, label, operator }) => (
+            ({ column, extendedFilterOptions, label, operator, pattern }) => (
               <FormField key={`${column.name}-${label}`}>
                 <FormFieldLabel>{label}</FormFieldLabel>
                 <FilterContainerColumnFilter
                   column={column}
                   extendedFilterOptions={extendedFilterOptions}
                   operator={operator}
+                  pattern={pattern}
                 />
               </FormField>
             ),
@@ -301,6 +307,61 @@ export const TimeColumnFiltersOtherDays = () => {
  * A standalone ColumnFilter, the committed values and the filter query each
  * would produce.
  */
+/**
+ * The Table and ColumnFilter can use different patterns for the same column.
+ */
+export const FilterPatternOverride = () => {
+  const fields = useMemo<FilterField[]>(
+    () => [
+      {
+        column: {
+          name: "execTime",
+          type: {
+            name: "date/time",
+            formatting: { pattern: { date: "yyyy-mm-dd", time: "hh:mm:ss" } },
+          },
+          width: 260,
+        },
+        label: "Exec time today, milliseconds (between)",
+        operator: "between",
+        pattern: { time: "hh:mm:ss.ms" },
+      },
+      {
+        column: {
+          name: "tradeTime",
+          type: {
+            name: "date/time",
+            formatting: { pattern: { date: "dd MMM yyyy", time: "hh:mm:ss" } },
+          },
+          width: 200,
+        },
+        label: "Trade date (=)",
+        pattern: { date: "dd MMM yyyy" },
+      },
+    ],
+    [],
+  );
+  return (
+    <ExampleLayout
+      title="Filter pattern override"
+      notes={
+        <>
+          The <code>pattern</code> prop of ColumnFilter (and
+          FilterContainerColumnFilter) overrides the pattern configured on the
+          column. Here the Table shows <code>execTime</code> (an{" "}
+          <code>epochtimestampnano</code> column) as date and time with
+          nanoseconds, while the filter accepts a time of day today, with
+          milliseconds (<code>{`{ time: "hh:mm:ss.ms" }`}</code>). A time only
+          pattern renders a time picker, a pattern with a date renders a date
+          picker.
+        </>
+      }
+    >
+      <FilterContainerTemplate fields={fields} />
+    </ExampleLayout>
+  );
+};
+
 export const StandaloneTemporalColumnFilters = () => {
   const columns = useMemo<
     { column: ColumnDescriptor; operator: ColumnFilterOp }[]

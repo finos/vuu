@@ -76,6 +76,7 @@ type RelativeDate = "today" | "yesterday" | DateStringISO; // yyyy-mm-dd
 | `formatTimestamp(pattern, options?)`      | Returns a formatter for `EpochTimestamp` values. Options: `fractionalSecondDigits` (default 3 for `hh:mm:ss.ms`, otherwise 0), `locale`, `timeZone`. |
 | `formatDate(pattern, options?)`           | Returns a formatter for JavaScript `Date` values.                                                 |
 | `dateTimePattern(type?, kind?)`           | The pattern of a column `type`, or the default pattern for the kind (derived from `type` if omitted). |
+| `withDateTimePattern(descriptor, pattern?)` | A copy of a temporal descriptor with `type` set from the pattern (`date/time`, `date` or `time`), keeping other formatting. Used by the `ColumnFilter` `pattern` prop. |
 
 `ColumnTypeFormatting` (in `@vuu-ui/vuu-table-types`) has the temporal options `pattern`, `fractionalSecondDigits`, `locale` and `timeZone`. See [Formatting](./02-Formatting.mdx).
 

@@ -29,7 +29,9 @@ import {
   getColumnValueFromFilter,
   getDefaultTimeRange,
   isTimeDataValue,
+  withDateTimePattern,
   isBetweenOperator,
+  type DateTimePattern,
 } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -55,11 +57,21 @@ export interface FilterContainerColumnFilterProps extends Omit<
 }
 
 export const FilterContainerColumnFilter = ({
-  column,
+  column: columnProp,
   operator = "=",
+  pattern,
   variant,
   ...props
 }: FilterContainerColumnFilterProps) => {
+  const { date, time } = pattern ?? {};
+  const column = useMemo(
+    () =>
+      withDateTimePattern(
+        columnProp,
+        date || time ? ({ date, time } as DateTimePattern) : undefined,
+      ),
+    [columnProp, date, time],
+  );
   const {
     filterProviderKey,
     onChange: onFilterContextChange,
