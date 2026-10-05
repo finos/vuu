@@ -44,16 +44,10 @@ describe("local portal module registry", () => {
         mfUrl: "http://localhost:5007",
       },
     ]);
+    // Vuu connections are published by each remote in its config.json.
     expect(
-      localPortalModuleRegistry.modules.map(({ name, vuu }) => ({ name, vuu })),
-    ).toEqual([
-      { name: "module-admin", vuu: { connectionId: "module-admin" } },
-      { name: "user-admin", vuu: { connectionId: "user-admin" } },
-      { name: "vuu-table-browser", vuu: undefined },
-      { name: "vuu-table-viewer", vuu: undefined },
-      { name: "basket-trading", vuu: { connectionId: "basket" } },
-      { name: "feature-simple-div", vuu: { connectionId: "simul" } },
-    ]);
+      localPortalModuleRegistry.modules.filter((module) => "vuu" in module),
+    ).toEqual([]);
   });
 
   it("nests the table viewer inside the table browser", () => {
@@ -89,6 +83,5 @@ describe("local portal module registry", () => {
       name: "module-admin",
       path: "/administration/modules",
     });
-    expect(moduleAdmin?.vuu).toEqual({ connectionId: "module-admin" });
   });
 });

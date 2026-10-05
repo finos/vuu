@@ -1,5 +1,5 @@
 import { StatusIndicator, Tag, Text } from "@salt-ds/core";
-import { LinkedIcon, LockedIcon, WarningIcon } from "@salt-ds/icons";
+import { LockedIcon, WarningIcon } from "@salt-ds/icons";
 import cx from "clsx";
 import type { CSSProperties, ReactNode } from "react";
 import type { ModuleView } from "../data/module-model";
@@ -106,18 +106,6 @@ export const RoleTag = ({ module }: { module: ModuleView }) =>
       No access role
     </Tag>
   );
-
-export const ConnectionTag = ({ module }: { module: ModuleView }) =>
-  module.vuuConnectionId ? (
-    <Tag
-      bordered
-      className={`${classBase}-tag`}
-      title={`Dedicated Vuu connection ${module.vuuWebsocketUrl}`}
-    >
-      <LinkedIcon aria-hidden />
-      {module.vuuConnectionId}
-    </Tag>
-  ) : null;
 
 export const HostStatus = ({ module }: { module: ModuleView }) => {
   const status = module.remote?.status;

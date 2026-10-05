@@ -129,7 +129,6 @@ export const ExampleTable = ({
   rows: { key: string; cells: ReactNode[] }[];
 }) => (
   <table
-    role="table"
     style={{
       border: "1px solid var(--salt-separable-tertiary-borderColor)",
       borderCollapse: "collapse",

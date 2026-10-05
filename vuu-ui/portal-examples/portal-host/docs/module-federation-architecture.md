@@ -83,16 +83,17 @@ The checked-in local registry loads the `module-admin`, `user-admin`,
 exposures are unchanged; additional local adapter exposures explicitly ensure
 `userAdminModule`, `basketModule`, `simulModule`, or `moduleAdminModule` is
 registered and then export the production feature. As in the authenticated
-registry, modules declare `vuu` connections (`module-admin`, `user-admin`,
-`basket`, and `simul`). `local-vuu-servers.ts` implements each one in the
-browser with `createLocalVuuServer`, serving MODULE_DISCOVERY, USER_ADMIN,
-BASKET, and SIMUL respectively, and the host passes them to
-`AuthenticationProvider` as `localServers`. The table browser and viewer need
-no local adapter: the browser lists the servers derived from those
-connections, and a viewer rendered with `vuu={{ connectionId: "simul" }}` sees
-only the SIMUL tables. The local user-admin descriptor maps its tables to the
-browser-only `USER_ADMIN` module; module-admin uses the browser-only
-`MODULE_DISCOVERY` module.
+registry, VUU server bindings come from each remote's required `config.json`
+(`module-admin`, `user-admin`, `basket`, and `simul`). `local-vuu-servers.ts`
+implements each configured `connectionId` in the browser with
+`createLocalVuuServer`, serving MODULE_DISCOVERY, USER_ADMIN, BASKET, and SIMUL
+respectively, and the host passes them to `AuthenticationProvider` as
+`localServers`. The table browser and viewer need no local adapter: the browser
+lists the servers derived from remote configs, and a viewer rendered with an
+explicit `vuu` override for `connectionId: "simul"` sees only the SIMUL tables.
+The local user-admin descriptor maps its tables to the browser-only
+`USER_ADMIN` module; module-admin uses the browser-only `MODULE_DISCOVERY`
+module.
 `@vuu-ui/vuu-data-test` is a strict Module Federation singleton so the host
 provider and all adapters resolve the same module container.
 

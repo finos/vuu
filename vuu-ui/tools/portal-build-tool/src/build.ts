@@ -95,6 +95,10 @@ export const buildPortal = async ({
               },
               filenameHash: false,
               minify: false,
+              manifest: {
+                filename: plan.manifest.filename,
+                generate: () => plan.manifest.value,
+              },
               sourceMap: {
                 js: "cheap-module-source-map",
                 css: true,

@@ -13,6 +13,10 @@
   "server": {
     "corsOrigins": ["http://localhost:5001"]
   },
+  "manifest": {
+    "filename": "./config.json",
+    "remote": {}
+  },
   "moduleFederation": {
     "name": "vuuTableViewer",
     "dts": false,

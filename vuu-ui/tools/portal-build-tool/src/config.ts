@@ -324,7 +324,7 @@ export const parsePortalBuildConfig = (
           }
           return configValue.manifest as Record<string, unknown>;
         })();
-  if (target === "host" && !manifest) {
+  if ((target === "host" || target === "remote-module") && !manifest) {
     invalidConfig("manifest", "must be an object");
   }
 
@@ -578,7 +578,10 @@ export const createPortalBuildPlan = (
       configPath,
       entry: path.resolve(root, config.paths.entry as string),
       htmlTemplate: path.resolve(root, config.paths.htmlTemplate),
-      manifest: { filename: "", value: {} },
+      manifest: {
+        filename: config.manifest?.filename ?? "",
+        value: config.manifest?.[mode] ?? config.manifest?.remote ?? {},
+      },
       mode,
       target,
       moduleFederation: mergeModuleFederation(

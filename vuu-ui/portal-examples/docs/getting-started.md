@@ -317,8 +317,8 @@ The active sequence is:
 3. open the portal VUU websocket;
 4. receive `LOGIN_SUCCESS.moduleRegistry`;
 5. render navigation and routes from the registry; and
-6. authenticate each selected remote's VUU connection when its descriptor has
-   `vuu` metadata.
+6. load each selected remote's `config.json` and authenticate its VUU
+   connection when that config declares one.
 
 The portal server is responsible for returning only modules the user is
 authorized to access.
@@ -362,19 +362,21 @@ Keycloak, exchange tokens, or open a websocket.
 
 ### Simulate Vuu servers in local mode
 
-In the authenticated portal, a module's `vuu` connection names the Vuu server
-it talks to. Local mode keeps the same descriptors: give each local module a
-`vuu` connection, and implement each `connectionId` in the browser with
-`createLocalVuuServer` from `@vuu-ui/vuu-data-test`:
+A remote's required `config.json` names the Vuu server it talks to. Local mode
+uses the same remote config but resolves its `connectionId` to an in-browser
+server supplied by the host with `createLocalVuuServer` from
+`@vuu-ui/vuu-data-test`. For example, the basket-trading remote publishes this
+`config.json` next to its `mf-manifest.json`:
+
+```json
+{
+  "connectionId": "basket",
+  "restUrl": "https://localhost:8445/api/authn",
+  "websocketUrl": "wss://localhost:8093/websocket-basket-trading"
+}
+```
 
 ```ts
-// local-module-registry.ts
-{
-  clientIdentifier: "vuu-basket-trading",
-  /* ... */
-  vuu: { connectionId: "basket" },
-}
-
 // local-vuu-servers.ts
 import {
   basketModule,
@@ -388,24 +390,23 @@ export const localVuuServers = [
 ];
 ```
 
-Pass them to the local `AuthenticationProvider` as `localServers`. A module
-whose `vuu.connectionId` matches a local server gets that server's data
+Pass them to the local `AuthenticationProvider` as `localServers`. A remote
+whose config `connectionId` matches a local server gets that server's data
 context instead of a websocket: its `getTableList`, `getTableSchema`, and
 `VuuDataSource` cover only the server's own modules. A connection with no
 matching local server fails with an `AuthenticationConfigurationError`.
-Modules without `vuu` keep using the host's `DataSourceProvider`. Test
-packages other than `vuu-data-test` can implement `LocalVuuServer` directly:
-a `connectionId` plus a `DataSourceProvider` component.
+Remotes with an empty `{}` config keep using the host's `DataSourceProvider`.
+Test packages other than `vuu-data-test` can implement `LocalVuuServer`
+directly: a `connectionId` plus a `DataSourceProvider` component.
 
-`useVuuServers()` returns the distinct servers referenced by registered
-modules' `vuu` connections, with the titles of the modules that use each one.
-It omits servers it can't connect to: in local mode, those with no local
-server; otherwise, those without `restUrl` and `websocketUrl` that aren't the
-portal's own server. The developer modules `vuu-table-browser` and
-`vuu-table-viewer` use it to browse every server's tables. The browser renders
-one viewer remote per server with that server's `vuu` connection, and shares
-the selected table through `TableRegistrationContext`; descriptors can't pass
-props to a module. The viewer is registered as a nested module, with an empty
+`useVuuServers()` loads registered modules' remote configs and returns the
+distinct configured servers, with the titles of the modules that use each one.
+It returns `[]` until configs have loaded and skips modules whose config fails
+to load. The developer modules `vuu-table-browser` and `vuu-table-viewer` use
+it to browse every server's tables. The browser renders one viewer remote per
+server with that server passed as an explicit `vuu` override, and shares the
+selected table through `TableRegistrationContext`; descriptors can't pass props
+to a module. The viewer is registered as a nested module, with an empty
 `navLocation`, so it has no navigation entry of its own.
 
 To browse a Vuu server that no module uses, choose **Add server** in the
@@ -572,26 +573,32 @@ Assign a stable federation scope and exposure:
 }
 ```
 
-Add a production descriptor with the application's VUU server details. At this
-point, the application can run both standalone and as a remote without any
-local-mode work.
+Add a production descriptor with the remote's loading, routing, navigation,
+and authorization metadata. At this point, the application can run both
+standalone and as a remote without any local-mode work.
 
 ### Step 4: preserve per-application VUU servers
 
-Give each remote descriptor a stable, unique connection ID and its own token
-exchange and websocket endpoints:
+Give each remote a `portal-build.json` manifest that emits a required
+`config.json` next to `mf-manifest.json`. Put the stable connection ID and its
+own token exchange and websocket endpoints in that config:
 
-```ts
-vuu: {
-  connectionId: "existing-orders",
-  restUrl: "https://existing-orders.example.com/api/authn",
-  websocketUrl: "wss://existing-orders.example.com/websocket",
+```json
+"manifest": {
+  "filename": "./config.json",
+  "remote": {
+    "connectionId": "existing-orders",
+    "restUrl": "https://existing-orders.example.com/api/authn",
+    "websocketUrl": "wss://existing-orders.example.com/websocket"
+  }
 }
 ```
 
-The portal browser identity is reused, but each VUU target exchanges its own
-token and owns an independently scoped connection. Do not move all remote data
-through the portal server unless that is an intentional backend redesign.
+Use `"remote": {}` when a remote has no dedicated VUU server and should use the
+portal connection. The portal browser identity is reused, but each VUU target
+exchanges its own token and owns an independently scoped connection. Do not
+move all remote data through the portal server unless that is an intentional
+backend redesign.
 
 ### Step 5: port local data behavior
 
@@ -610,9 +617,11 @@ one local table while leaving related tables stale.
 
 ### Step 6: add the local exposure and descriptor
 
-Expose `<Application>Local`, add it to the checked-in local registry, and omit
-`vuu`. Keep the same `mfScope`, URL, route, and navigation metadata unless the
-local scenario intentionally differs.
+Expose `<Application>Local` and add it to the checked-in local registry.
+Local registry descriptors never include `vuu`; they keep the same `mfScope`,
+URL, route, and navigation metadata unless the local scenario intentionally
+differs. Local mode uses the remote `config.json` connection ID to select an
+in-browser local server.
 
 ### Step 7: migrate application by application
 
@@ -660,8 +669,10 @@ After portal deployment is stable:
 - `mfScope` exactly matches the producer name.
 - `mfComponent` exactly matches an exposure without its leading `./`.
 - `mfUrl/mf-manifest.json` is reachable from the host.
-- The production descriptor has the correct `vuu` target.
-- The local descriptor omits `vuu`.
+- The remote build emits `config.json` next to `mf-manifest.json`.
+- The remote config has the correct VUU target, or `{}` for no dedicated
+  server.
+- Descriptors do not include `vuu`.
 - The local adapter calls `ensureVuuModule()` and exports the same feature.
 - Every table and RPC used by the feature has a tested local implementation.
 - Values to keep are saved with `usePersistedState` (`load`/`save`), with
@@ -692,7 +703,7 @@ The following portal examples demonstrate the complete pattern:
   and an exported `stateMigrations`;
 - `portal-examples/vuu-table-browser` and `vuu-table-viewer`: developer
   modules that browse the tables of every server from `useVuuServers()`, with
-  one viewer remote per server, bound to it through `vuu`;
+  one viewer remote per server, bound through an explicit `vuu` override;
 - `portal-examples/portal-host/src/local-vuu-servers.ts`: local servers built
   with `createLocalVuuServer`; and
 - `packages/vuu-data-test/src/user-admin`: a browser-local multi-table VUU

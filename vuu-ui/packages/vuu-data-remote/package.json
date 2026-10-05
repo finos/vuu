@@ -4,6 +4,7 @@
   "main": "src/index.ts",
   "author": "heswell",
   "license": "Apache-2.0",
+  "type": "module",
   "scripts": {
     "build": "node ../../scripts/build-worker.ts && node ../../scripts/run-build-rslib.ts",
     "build:worker": "node ../../scripts/build-worker.ts",

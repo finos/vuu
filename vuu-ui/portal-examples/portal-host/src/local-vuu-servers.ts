@@ -8,10 +8,10 @@ import {
 } from "@vuu-ui/vuu-data-test";
 
 /**
- * In-browser implementations of the Vuu servers referenced by the `vuu`
- * connections in the local registry. A module rendered with
- * `vuu={{ connectionId }}` gets the data context of the matching server, and
- * the table browser lists these servers.
+ * In-browser implementations of the Vuu servers used by the remote modules in
+ * the local registry. A module whose `config.json` declares a matching
+ * `connectionId` gets the data context of that server instead of a
+ * websocket, and the table browser lists these servers.
  */
 export const localVuuServers: LocalVuuServer[] = [
   createLocalVuuServer({
