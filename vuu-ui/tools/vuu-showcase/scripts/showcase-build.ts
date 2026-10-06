@@ -10,9 +10,15 @@ import { mdxOptions } from "./mdx-options";
 import handler from "serve-handler";
 import http from "http";
 import https from "https";
-import open from "open";
 import { fileURLToPath } from "url";
+import { parseArgs } from "util";
 import { TreeSourceNode } from "@vuu-ui/vuu-utils";
+
+const { values: args } = parseArgs({
+  options: {
+    "build-only": { type: "boolean", default: false },
+  },
+});
 
 type ProxyRoute = {
   url: string;
@@ -125,6 +131,12 @@ async function main() {
   `;
   await writeFile(HTML_TEMPLATE, "./.showcase/prod/index.html");
 
+  if (!args["build-only"]) {
+    serve(treeSourceJson);
+  }
+}
+
+function serve(treeSourceJson: TreeSourceNode[]) {
   const rootPaths = joinRootPaths(treeSourceJson);
   const routingPattern = `/(${rootPaths})/**`;
   console.log({ routingPattern });
@@ -167,11 +179,9 @@ async function main() {
     });
   });
 
-  await server.listen(4173, () => {
-    console.log("Running at http://localhost:4173");
+  server.listen(4173, () => {
+    console.log("Showcase is running at http://localhost:4173/");
   });
-
-  open("http://localhost:4173/");
 }
 
 main();
