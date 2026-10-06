@@ -72,4 +72,15 @@ class TableDefBuilderTest {
         assertEquals(1000, tableDef.options().rangeSettings().maxRangeWidth());
     }
 
+    @Test
+    void buildWithAllowAllPermissionFilter() {
+        TableDef tableDef = new TableDefBuilder()
+                .name("myTable")
+                .keyField("myKey")
+                .allowAllPermissionFunction()
+                .build();
+
+        assertNotNull(tableDef.options().permissionFunction());
+    }
+
 }

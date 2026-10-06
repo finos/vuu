@@ -1,5 +1,6 @@
 package org.finos.vuu.api;
 
+import org.finos.vuu.core.filter.type.AllowAllPermissionFilter$;
 import org.finos.vuu.core.filter.type.PermissionFilter;
 import org.finos.vuu.core.table.Column;
 import org.finos.vuu.core.table.RangeSettings;
@@ -173,6 +174,15 @@ public class TableDefBuilder {
         var function2 = ScalaFunctionConverter.toScala(permissionFunction);
         this.tableDefOptions = (TableDefOptions) tableDefOptions.withPermissionFunction(function2);
         return this;
+    }
+
+    /**
+     * Sets permission filter function to AllowAllPermissionFilter.
+     *
+     * @return this builder
+     */
+    public TableDefBuilder allowAllPermissionFunction() {
+        return permissionFunction((vp, tableContainer) -> AllowAllPermissionFilter$.MODULE$);
     }
 
     /**
