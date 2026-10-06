@@ -1,4 +1,4 @@
-import { FormField, FormFieldLabel } from "@salt-ds/core";
+import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import {
   FilterContainerColumnFilter,
@@ -15,7 +15,7 @@ import {
   type DateTimePattern,
   filterAsQuery,
 } from "@vuu-ui/vuu-utils";
-import { useEffect, useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   createDateTimeDataSource,
   type ExampleColumn,
@@ -64,11 +64,14 @@ interface FilterField {
 
 const ContextMenuFilterTemplate = ({
   filterFields,
+  filterFieldsOnDemand = false,
   filterPatterns,
   notes,
   title,
 }: Pick<FilterContextMenuHookProps, "filterPatterns"> & {
   filterFields?: FilterField[];
+  /** ColumnFilters are created only when the 'Show filters' button is pressed */
+  filterFieldsOnDemand?: boolean;
   notes: ReactNode;
   title: string;
 }) => {
@@ -82,6 +85,8 @@ const ContextMenuFilterTemplate = ({
   );
   const dataSource = useMemo(() => createDateTimeDataSource(tableColumns), []);
   const { currentFilter } = useSavedFilters();
+  const [showFilterFields, setShowFilterFields] =
+    useState(!filterFieldsOnDemand);
   const filterContextMenuProps = useFilterContextMenu({
     filterColumns: ["ccy", "execTime", "tradeTime", "legacyCreated"],
     filterPatterns,
@@ -99,7 +104,16 @@ const ContextMenuFilterTemplate = ({
     <ExampleLayout title={title} notes={notes}>
       <DataSourceProvider dataSource={dataSource}>
         <div style={{ display: "flex", gap: 24 }}>
-          {filterFields ? (
+          {filterFieldsOnDemand ? (
+            <Button
+              data-testid="toggle-filters"
+              onClick={() => setShowFilterFields((show) => !show)}
+              style={{ alignSelf: "flex-start" }}
+            >
+              {showFilterFields ? "Hide filters" : "Show filters"}
+            </Button>
+          ) : null}
+          {filterFields && showFilterFields ? (
             <FilterPanel style={{ width: 320 }}>
               {filterFields.map(({ columnName, label, operator, pattern }) => (
                 <FormField key={columnName}>
@@ -190,6 +204,51 @@ export const ContextMenuFilterMatchesColumnFilter = () => (
     />
   </FilterProvider>
 );
+
+const onDemandFilterFields: FilterField[] = [
+  { columnName: "ccy", label: "Currency" },
+  { columnName: "execTime", label: "Exec time today" },
+  { columnName: "tradeTime", label: "Trade date" },
+];
+
+/**
+ * Where ColumnFilters are created on demand, they are not registered until
+ * shown. FilterProvider columnFilterPatterns configures their patterns, so
+ * the context menu knows their precision whether or not they are mounted.
+ */
+export const ContextMenuFilterColumnFilterPatterns = () => {
+  const columnFilterPatterns = useMemo<Record<string, DateTimePattern>>(
+    () => ({
+      execTime: { time: "hh:mm:ss" },
+      tradeTime: { date: "dd MMM yyyy" },
+    }),
+    [],
+  );
+  return (
+    <FilterProvider columnFilterPatterns={columnFilterPatterns}>
+      <ContextMenuFilterTemplate
+        filterFields={onDemandFilterFields}
+        filterFieldsOnDemand
+        title="Context menu filter, FilterProvider columnFilterPatterns"
+        notes={
+          <>
+            The ColumnFilters are created only when shown, and have no{" "}
+            <code>pattern</code> prop. The FilterProvider{" "}
+            <code>columnFilterPatterns</code> prop sets the pattern of the{" "}
+            <code>execTime</code> ColumnFilter to{" "}
+            <code>{`{ time: "hh:mm:ss" }`}</code> and of the{" "}
+            <code>tradeTime</code> ColumnFilter to{" "}
+            <code>{`{ date: "dd MMM yyyy" }`}</code>. Right click a cell before
+            showing the filters: <code>execTime</code> (nanoseconds in the
+            Table) is filtered to the whole second, today, and{" "}
+            <code>tradeTime</code> to the whole day, as the ColumnFilters will
+            display them.
+          </>
+        }
+      />
+    </FilterProvider>
+  );
+};
 
 /**
  * Without ColumnFilters, filterPatterns can describe the precision of the

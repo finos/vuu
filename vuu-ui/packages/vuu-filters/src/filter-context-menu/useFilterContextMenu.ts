@@ -59,23 +59,29 @@ export const useFilterContextMenu = ({
 }: FilterContextMenuHookProps = defaultProps): TableContextMenuDef => {
   const { currentFilter, clearCurrentFilter, setCurrentFilter } =
     useSavedFilters(filterProviderKey);
-  const { getColumnFilterColumn } = useColumnFilterRegistry(filterProviderKey);
+  const { getColumnFilterColumn, getColumnFilterPattern } =
+    useColumnFilterRegistry(filterProviderKey);
   const filterAggregatorRef = useRef(EmptyAggregator);
 
   /**
    * A temporal value is filtered at the precision with which the ColumnFilter
    * (if there is one, otherwise the Table) displays it. A ColumnFilter on a
    * 'datetime' column displays a date (DatePicker). A filterPatterns pattern
-   * is applied as given.
+   * is applied as given. The ColumnFilter is the mounted (registered)
+   * ColumnFilter, else as configured by FilterProvider columnFilterPatterns.
    */
   const getCellFilter = useCallback(
     (column: ColumnDescriptor, dataRow: DataRow): CellFilter => {
       const value = dataRow[column.name] as string | number;
       if (getTemporalInfo(column)) {
         const pattern = filterPatterns?.[column.name];
+        const columnFilterPattern = getColumnFilterPattern(column.name);
         const columnFilterColumn = pattern
           ? undefined
-          : getColumnFilterColumn(column.name);
+          : (getColumnFilterColumn(column.name) ??
+            (columnFilterPattern
+              ? withDateTimePattern(column, columnFilterPattern)
+              : undefined));
         const filterColumn = pattern
           ? withDateTimePattern(column, pattern)
           : columnFilterColumn;
@@ -90,7 +96,7 @@ export const useFilterContextMenu = ({
       }
       return { column, label: `${value}`, op: "=", value };
     },
-    [filterPatterns, getColumnFilterColumn],
+    [filterPatterns, getColumnFilterColumn, getColumnFilterPattern],
   );
 
   useMemo(() => {

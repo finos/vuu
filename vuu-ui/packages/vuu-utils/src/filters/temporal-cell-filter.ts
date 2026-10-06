@@ -1,4 +1,5 @@
 import type { DataValueDescriptor } from "@vuu-ui/vuu-data-types";
+import type { FractionalSecondDigits } from "@vuu-ui/vuu-table-types";
 import {
   dateTimePattern,
   defaultPatternsByType,
@@ -25,7 +26,7 @@ const pad2 = (n: number) => `${n}`.padStart(2, "0");
  * Describes a filter that matches a temporal value at the precision with which
  * it is displayed by the given column descriptor, e.g. where the descriptor
  * displays milliseconds, the filter matches the whole millisecond.
- * - date (or dateOnly) => the whole day, as a start of day value
+ * - date => the whole day, as a start of day value
  * - time => a time of day (TimeString), truncated to the displayed precision
  * - datetime => a range, unless the displayed precision is that of the encoding
  * The filter is suitable for FilterAggregator.add (with the same descriptor) and
@@ -33,14 +34,17 @@ const pad2 = (n: number) => `${n}`.padStart(2, "0");
  *
  * @param column the descriptor of the filter (or table cell) displaying the value
  * @param value a value as received from the server
- * @param dateOnly a 'datetime' value is displayed as a date (e.g. by a
- * DatePicker). Ignored for 'time' descriptors.
+ * @param columnFilter the value is displayed by a ColumnFilter, rather than a
+ * table cell. A ColumnFilter displays a 'datetime' value as a date (DatePicker,
+ * so the filter is the whole day) and a 'time' value to the second, or to the
+ * millisecond with the 'hh:mm:ss.ms' pattern (TimeInput supports no finer
+ * precision, whereas a table cell displays nanos by default).
  * @returns undefined if value is empty or column is not temporal
  */
 export const getTemporalCellFilter = (
   column: DataValueDescriptor,
   value: unknown,
-  dateOnly = false,
+  columnFilter = false,
 ): TemporalCellFilter | undefined => {
   const temporalInfo = getTemporalInfo(column);
   if (temporalInfo === undefined) {
@@ -55,7 +59,7 @@ export const getTemporalCellFilter = (
   const pattern = dateTimePattern(column.type, kind);
   if (
     kind === "date" ||
-    (dateOnly && kind === "datetime") ||
+    (columnFilter && kind === "datetime") ||
     pattern.time === undefined
   ) {
     const { date = defaultPatternsByType.date } = pattern;
@@ -69,15 +73,21 @@ export const getTemporalCellFilter = (
     };
   }
 
-  const digits = Math.max(
-    0,
-    Math.min(9, getFractionalSecondDigits(column, temporalInfo)),
-  );
+  const digits = columnFilter
+    ? pattern.time === "hh:mm:ss.ms"
+      ? 3
+      : 0
+    : Math.max(0, Math.min(9, getFractionalSecondDigits(column, temporalInfo)));
   const unit = encoding === "epochNanos" ? 1n : 1_000_000n;
   const period = 10n ** BigInt(9 - digits);
   const startNanos = ts.epochNanos - (ts.epochNanos % period);
   const start = EpochTimestamp.fromNanos(startNanos);
-  const label = temporalFormatter(column, temporalInfo)(start.toWire(encoding));
+  const label = columnFilter
+    ? formatTimestamp(pattern, {
+        fractionalSecondDigits: digits as FractionalSecondDigits,
+        timeZone,
+      })(start)
+    : temporalFormatter(column, temporalInfo)(start.toWire(encoding));
 
   if (kind === "time") {
     const { hour, minute, second } = ts.getFields(timeZone);

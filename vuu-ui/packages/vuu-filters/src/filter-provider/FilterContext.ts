@@ -6,6 +6,7 @@ import {
 import { FilterAction } from "../filter-pill/FilterMenu";
 import { createContext, useCallback, useContext } from "react";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import type { DateTimePattern } from "@vuu-ui/vuu-utils";
 
 export const filterDescriptorHasFilter = (
   f: FilterContainerFilterDescriptor,
@@ -52,6 +53,12 @@ export interface FilterContextProps {
     key: string,
     columnName: string,
   ) => ColumnDescriptor | undefined;
+  /**
+   * The date/time pattern of the ColumnFilter for the named column, as
+   * configured by FilterProvider columnFilterPatterns. Available whether or
+   * not the ColumnFilter is mounted.
+   */
+  getColumnFilterPattern?: (columnName: string) => DateTimePattern | undefined;
   /**
    * Register the column descriptor used by a ColumnFilter, which may differ
    * from the Table column descriptor, e.g. a different date/time pattern.
@@ -119,8 +126,11 @@ export const FilterContext = createContext<FilterContextProps>({
  * (see FilterContainerColumnFilter).
  */
 export function useColumnFilterRegistry(key = "GLOBAL") {
-  const { getColumnFilterColumn, registerColumnFilterColumn } =
-    useContext(FilterContext);
+  const {
+    getColumnFilterColumn,
+    getColumnFilterPattern,
+    registerColumnFilterColumn,
+  } = useContext(FilterContext);
   const getColumn = useCallback(
     (columnName: string) => getColumnFilterColumn?.(key, columnName),
     [getColumnFilterColumn, key],
@@ -129,8 +139,13 @@ export function useColumnFilterRegistry(key = "GLOBAL") {
     (column: ColumnDescriptor) => registerColumnFilterColumn?.(key, column),
     [key, registerColumnFilterColumn],
   );
+  const getPattern = useCallback(
+    (columnName: string) => getColumnFilterPattern?.(columnName),
+    [getColumnFilterPattern],
+  );
   return {
     getColumnFilterColumn: getColumn,
+    getColumnFilterPattern: getPattern,
     registerColumnFilterColumn: register,
   };
 }

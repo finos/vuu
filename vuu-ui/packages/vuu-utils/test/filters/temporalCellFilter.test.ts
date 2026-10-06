@@ -50,7 +50,7 @@ describe("getTemporalCellFilter", () => {
         "09:05:07.123456789",
       );
     });
-    it("THEN dateOnly is ignored", () => {
+    it("THEN a ColumnFilter displays milliseconds with the hh:mm:ss.ms pattern", () => {
       const ms = nanoColumn({
         name: "time",
         formatting: { pattern: { time: "hh:mm:ss.ms" }, timeZone: "UTC" },
@@ -59,9 +59,22 @@ describe("getTemporalCellFilter", () => {
         "09:05:07.123",
       );
     });
+    it("THEN a ColumnFilter displays seconds otherwise, although the table displays nanos", () => {
+      const s = nanoColumn({
+        name: "time",
+        formatting: { pattern: { time: "hh:mm:ss" }, timeZone: "UTC" },
+      });
+      expect(getTemporalCellFilter(s, nanos)?.value).toEqual(
+        "09:05:07.123456789",
+      );
+      expect(getTemporalCellFilter(s, nanos, true)).toMatchObject({
+        label: "09:05:07",
+        value: "09:05:07",
+      });
+    });
   });
 
-  describe("WHEN kind is date, or dateOnly", () => {
+  describe("WHEN kind is date, or datetime displayed by a ColumnFilter", () => {
     it("THEN value is the start of the day", () => {
       const date = nanoColumn({
         name: "date",

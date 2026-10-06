@@ -18,7 +18,7 @@ import {
   insertOrReplaceFilter,
   renameFilter,
 } from "./filter-descriptor-utils";
-import { uuid } from "@vuu-ui/vuu-utils";
+import { uuid, type DateTimePattern } from "@vuu-ui/vuu-utils";
 import {
   EMPTY_FILTER,
   EmptyFilterDescriptor,
@@ -55,6 +55,15 @@ const mapToRecord = (savedFilters: SavedFilterMap) => {
 
 export interface FilterProviderProps {
   children: ReactNode;
+  /**
+   * Date/time patterns, keyed by column name, of the ColumnFilters
+   * (FilterContainerColumnFilter) within this provider. A ColumnFilter
+   * without a pattern prop uses the pattern configured here. As these are
+   * available whether or not a ColumnFilter is mounted, the filter context
+   * menu can match a temporal cell value at the precision of the ColumnFilter,
+   * even where ColumnFilters are created on demand.
+   */
+  columnFilterPatterns?: Record<string, DateTimePattern>;
   onFiltersSaved?: (savedFilters: SavedFilterRecord) => void;
   savedFilters?: SavedFilterRecord;
   filterNameMaxLength?: number;
@@ -62,6 +71,7 @@ export interface FilterProviderProps {
 
 export const FilterProvider = ({
   children,
+  columnFilterPatterns,
   onFiltersSaved,
   savedFilters: savedFiltersProp,
   filterNameMaxLength,
@@ -94,6 +104,11 @@ export const FilterProvider = ({
       };
     },
     [],
+  );
+
+  const getColumnFilterPattern = useCallback(
+    (columnName: string) => columnFilterPatterns?.[columnName],
+    [columnFilterPatterns],
   );
 
   const getColumnFilterColumn = useCallback(
@@ -317,6 +332,7 @@ export const FilterProvider = ({
     <FilterContext.Provider
       value={{
         getColumnFilterColumn,
+        getColumnFilterPattern,
         registerColumnFilterColumn,
         onFilterMenuAction: handleFilterMenuAction,
         deleteFilter,

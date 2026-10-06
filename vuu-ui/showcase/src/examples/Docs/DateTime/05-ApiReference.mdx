@@ -17,35 +17,35 @@ interface TemporalInfo {
 }
 ```
 
-| Function                                            | Description                                                                                                                         |
-| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `getTemporalInfo(descriptor)`                       | Returns the `TemporalInfo` of a column or field descriptor, or `undefined` if it is not temporal. See [Columns](./01-Columns.mdx).    |
-| `isTemporal(descriptor)`                            | `true` if `getTemporalInfo` returns a value.                                                                                        |
-| `isTemporalTypeName(name)`                          | `true` for `"date/time"`, `"date"` and `"time"`.                                                                                    |
-| `formatTemporalInput(timestamp, info)`              | Formats an `EpochTimestamp` (or `undefined`, giving `""`) as editable text: `yyyy-mm-dd hh:mm:ss[.fffffffff]`, or the date or time part only. Sub-second digits appear only when non-zero. `info` needs `kind`, `precision` and `timeZone`. |
-| `parseTemporalInput(input, info, baseValue?)`       | Parses editable text, or raw epoch digits, to an `EpochTimestamp`, or `undefined` if invalid. Missing parts come from `baseValue`. Validates ranges. |
-| `temporalInputPlaceholder(kind)`                    | The input format for a `TemporalKind`, for use as a placeholder.                                                                    |
-| `defaultFractionalSecondDigits(info)`               | `9` for nanosecond precision, `3` for millisecond.                                                                                  |
+| Function                                      | Description                                                                                                                                                                                                                                 |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getTemporalInfo(descriptor)`                 | Returns the `TemporalInfo` of a column or field descriptor, or `undefined` if it is not temporal. See [Columns](./01-Columns.mdx).                                                                                                          |
+| `isTemporal(descriptor)`                      | `true` if `getTemporalInfo` returns a value.                                                                                                                                                                                                |
+| `isTemporalTypeName(name)`                    | `true` for `"date/time"`, `"date"` and `"time"`.                                                                                                                                                                                            |
+| `formatTemporalInput(timestamp, info)`        | Formats an `EpochTimestamp` (or `undefined`, giving `""`) as editable text: `yyyy-mm-dd hh:mm:ss[.fffffffff]`, or the date or time part only. Sub-second digits appear only when non-zero. `info` needs `kind`, `precision` and `timeZone`. |
+| `parseTemporalInput(input, info, baseValue?)` | Parses editable text, or raw epoch digits, to an `EpochTimestamp`, or `undefined` if invalid. Missing parts come from `baseValue`. Validates ranges.                                                                                        |
+| `temporalInputPlaceholder(kind)`              | The input format for a `TemporalKind`, for use as a placeholder.                                                                                                                                                                            |
+| `defaultFractionalSecondDigits(info)`         | `9` for nanosecond precision, `3` for millisecond.                                                                                                                                                                                          |
 
 ## EpochTimestamp
 
 An immutable timestamp with nanosecond precision, stored as epoch milliseconds plus the nanoseconds within the millisecond.
 
-| Member                                         | Description                                                                         |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `EpochTimestamp.fromWire(value, encoding)`     | Decodes a row or filter value. Returns `undefined` for empty values (`null`, `undefined`, `""`, `0`, `"0"`, `0n`) and invalid values. |
-| `EpochTimestamp.fromMillis(millis, subMilliNanos?)` | From epoch milliseconds, plus optional nanoseconds within the millisecond.     |
-| `EpochTimestamp.fromNanos(nanos)`              | From epoch nanoseconds, as a `bigint`, `string` or `number`.                        |
-| `EpochTimestamp.fromDate(date)`                | From a JavaScript `Date`.                                                           |
-| `EpochTimestamp.fromFields(fields, timeZone?, subMilliNanos?)` | From calendar fields (`year`, `month`, `day` required), interpreted in a time zone. |
-| `toWire(encoding)`                             | Encodes for the server: a `number` for `epochMillis`, a `string` for `epochNanos`.  |
-| `toLiteral(encoding)`                          | Encodes as an unquoted literal for a filter query.                                  |
-| `toDate()`                                     | A JavaScript `Date` (millisecond precision).                                        |
-| `getFields(timeZone?)`                         | Year, month, day, hour, minute, second and millisecond in a time zone.              |
-| `fractionalSecond(digits)`                     | The sub-second digits, truncated to `digits`.                                       |
-| `epochMillis`, `subMilliNanos`, `epochNanos`   | The raw components. `epochNanos` is a `bigint`.                                     |
-| `compare(other)`, `equals(other)`              | Comparison.                                                                         |
-| `addUnits(n, encoding)`                        | Adds `n` units of the encoding (milliseconds or nanoseconds).                       |
+| Member                                                         | Description                                                                                                                           |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `EpochTimestamp.fromWire(value, encoding)`                     | Decodes a row or filter value. Returns `undefined` for empty values (`null`, `undefined`, `""`, `0`, `"0"`, `0n`) and invalid values. |
+| `EpochTimestamp.fromMillis(millis, subMilliNanos?)`            | From epoch milliseconds, plus optional nanoseconds within the millisecond.                                                            |
+| `EpochTimestamp.fromNanos(nanos)`                              | From epoch nanoseconds, as a `bigint`, `string` or `number`.                                                                          |
+| `EpochTimestamp.fromDate(date)`                                | From a JavaScript `Date`.                                                                                                             |
+| `EpochTimestamp.fromFields(fields, timeZone?, subMilliNanos?)` | From calendar fields (`year`, `month`, `day` required), interpreted in a time zone.                                                   |
+| `toWire(encoding)`                                             | Encodes for the server: a `number` for `epochMillis`, a `string` for `epochNanos`.                                                    |
+| `toLiteral(encoding)`                                          | Encodes as an unquoted literal for a filter query.                                                                                    |
+| `toDate()`                                                     | A JavaScript `Date` (millisecond precision).                                                                                          |
+| `getFields(timeZone?)`                                         | Year, month, day, hour, minute, second and millisecond in a time zone.                                                                |
+| `fractionalSecond(digits)`                                     | The sub-second digits, truncated to `digits`.                                                                                         |
+| `epochMillis`, `subMilliNanos`, `epochNanos`                   | The raw components. `epochNanos` is a `bigint`.                                                                                       |
+| `compare(other)`, `equals(other)`                              | Comparison.                                                                                                                           |
+| `addUnits(n, encoding)`                                        | Adds `n` units of the encoding (milliseconds or nanoseconds).                                                                         |
 
 ## Time zones
 
@@ -54,45 +54,45 @@ type TimeZoneSpec = "local" | "UTC" | string; // string: an IANA time zone
 type RelativeDate = "today" | "yesterday" | DateStringISO; // yyyy-mm-dd
 ```
 
-| Function                                        | Description                                                                 |
-| ----------------------------------------------- | --------------------------------------------------------------------------- |
-| `setDefaultTimeZone(timeZone)`                  | Sets the time zone used where a column doesn't set one. Default `"local"`.  |
-| `getDefaultTimeZone()`                          | The current default.                                                        |
-| `getDateTimeFields(millis, timeZone?)`          | Calendar fields of an instant in a time zone.                               |
-| `fromDateTimeFields(fields, timeZone?)`         | The instant of calendar fields in a time zone.                              |
-| `startOfDay(millis, timeZone?)`                 | Start of the day containing an instant.                                     |
-| `startOfNextDay(millis, timeZone?)`             | Start of the following day. Correct for 23 and 25 hour days.                |
-| `isStartOfDay(millis, timeZone?)`               | Whether an instant is the start of a day.                                   |
-| `resolveRelativeDate(date?, timeZone?)`         | The calendar date (a `CalendarDate` from `@internationalized/date`) of a `RelativeDate` or `Date`. Default `"today"`. |
-| `timeOfDayToEpochMillis(time, date?, timeZone?)` | Epoch millis of a time of day (`hh:mm:ss[.fff]`) on a `RelativeDate`. Default `"today"`. |
+| Function                                         | Description                                                                                                           |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `setDefaultTimeZone(timeZone)`                   | Sets the time zone used where a column doesn't set one. Default `"local"`.                                            |
+| `getDefaultTimeZone()`                           | The current default.                                                                                                  |
+| `getDateTimeFields(millis, timeZone?)`           | Calendar fields of an instant in a time zone.                                                                         |
+| `fromDateTimeFields(fields, timeZone?)`          | The instant of calendar fields in a time zone.                                                                        |
+| `startOfDay(millis, timeZone?)`                  | Start of the day containing an instant.                                                                               |
+| `startOfNextDay(millis, timeZone?)`              | Start of the following day. Correct for 23 and 25 hour days.                                                          |
+| `isStartOfDay(millis, timeZone?)`                | Whether an instant is the start of a day.                                                                             |
+| `resolveRelativeDate(date?, timeZone?)`          | The calendar date (a `CalendarDate` from `@internationalized/date`) of a `RelativeDate` or `Date`. Default `"today"`. |
+| `timeOfDayToEpochMillis(time, date?, timeZone?)` | Epoch millis of a time of day (`hh:mm:ss[.fff]`) on a `RelativeDate`. Default `"today"`.                              |
 
 ## Formatting
 
-| Function                                  | Description                                                                                       |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `getValueFormatter(column)`               | The formatter for a column. Uses `temporalFormatter` for temporal columns.                        |
-| `temporalFormatter(column, temporalInfo?)`| Formats wire values with the column's pattern, time zone, locale and fractional digits.           |
-| `formatTemporalFilterValue(value, column)`| Formats a filter value for display.                                                               |
-| `formatTimestamp(pattern, options?)`      | Returns a formatter for `EpochTimestamp` values. Options: `fractionalSecondDigits` (default 3 for `hh:mm:ss.ms`, otherwise 0), `locale`, `timeZone`. |
-| `formatDate(pattern, options?)`           | Returns a formatter for JavaScript `Date` values.                                                 |
-| `dateTimePattern(type?, kind?)`           | The pattern of a column `type`, or the default pattern for the kind (derived from `type` if omitted). |
+| Function                                           | Description                                                                                                                                                                  |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getValueFormatter(column)`                        | The formatter for a column. Uses `temporalFormatter` for temporal columns.                                                                                                   |
+| `temporalFormatter(column, temporalInfo?)`         | Formats wire values with the column's pattern, time zone, locale and fractional digits.                                                                                      |
+| `formatTemporalFilterValue(value, column)`         | Formats a filter value for display.                                                                                                                                          |
+| `formatTimestamp(pattern, options?)`               | Returns a formatter for `EpochTimestamp` values. Options: `fractionalSecondDigits` (default 3 for `hh:mm:ss.ms`, otherwise 0), `locale`, `timeZone`.                         |
+| `formatDate(pattern, options?)`                    | Returns a formatter for JavaScript `Date` values.                                                                                                                            |
+| `dateTimePattern(type?, kind?)`                    | The pattern of a column `type`, or the default pattern for the kind (derived from `type` if omitted).                                                                        |
 | `getFractionalSecondDigits(column, temporalInfo?)` | The fractional second digits displayed for a column: `formatting.fractionalSecondDigits`, otherwise 3 for `hh:mm:ss.ms`, 9 for a nanosecond column with a time, otherwise 0. |
-| `withDateTimePattern(descriptor, pattern?)` | A copy of a temporal descriptor with `type` set from the pattern (`date/time`, `date` or `time`), keeping other formatting. Used by the `ColumnFilter` `pattern` prop. |
+| `withDateTimePattern(descriptor, pattern?)`        | A copy of a temporal descriptor with `type` set from the pattern (`date/time`, `date` or `time`), keeping other formatting. Used by the `ColumnFilter` `pattern` prop.       |
 
 `ColumnTypeFormatting` (in `@vuu-ui/vuu-table-types`) has the temporal options `pattern`, `fractionalSecondDigits`, `locale` and `timeZone`. See [Formatting](./02-Formatting.mdx).
 
 ## Filters
 
-| Function                                                  | Description                                                                                       |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `filterAsQuery(filter, { columnsByName }?)`               | Converts a filter to a query string, using each column's `serverDataType` and `type`.           |
-| `temporalFilterAsQuery(clause, temporalInfo, { date }?)`  | Converts a single temporal clause. `date` (a `RelativeDate`, default `"today"`) resolves time of day values. See [Filtering](./03-Filtering.mdx). |
-| `getColumnsByNameForFilter(tableSchema, columnsByName?)`  | Schema columns merged with client column descriptors.                                            |
-| `filterRequiresResolution(filter, columnsByName?)`        | Whether a filter has clauses that must be converted with column information.                     |
-| `getTemporalCellFilter(column, value, dateOnly?)` | A clause (`{ label, op, value }`) matching a wire value at the precision displayed by `column`. Used by `useFilterContextMenu`. See [Filtering](./03-Filtering.mdx#filtering-from-the-table-context-menu). |
-| `useColumnFilterRegistry(filterProviderKey?)` | (`@vuu-ui/vuu-filters`) Registers, and looks up, the column of each `FilterContainerColumnFilter` within a `FilterProvider`. |
-| `getDefaultTimeRange(column)`                             | The default range for a time column filter, `["00:00:00", "23:59:59"]` (with `.000`/`.999` in millisecond mode). |
-| `dateFilterAsQuery`                                       | Deprecated. Use `temporalFilterAsQuery`.                                                          |
+| Function                                                 | Description                                                                                                                                                                                                                                                    |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filterAsQuery(filter, { columnsByName }?)`              | Converts a filter to a query string, using each column's `serverDataType` and `type`.                                                                                                                                                                          |
+| `temporalFilterAsQuery(clause, temporalInfo, { date }?)` | Converts a single temporal clause. `date` (a `RelativeDate`, default `"today"`) resolves time of day values. See [Filtering](./03-Filtering.mdx).                                                                                                              |
+| `getColumnsByNameForFilter(tableSchema, columnsByName?)` | Schema columns merged with client column descriptors.                                                                                                                                                                                                          |
+| `filterRequiresResolution(filter, columnsByName?)`       | Whether a filter has clauses that must be converted with column information.                                                                                                                                                                                   |
+| `getTemporalCellFilter(column, value, columnFilter?)`    | A clause (`{ label, op, value }`) matching a wire value at the precision displayed by `column`, in a table cell or (`columnFilter`) a ColumnFilter. Used by `useFilterContextMenu`. See [Filtering](./03-Filtering.mdx#filtering-from-the-table-context-menu). |
+| `useColumnFilterRegistry(filterProviderKey?)`            | (`@vuu-ui/vuu-filters`) Registers, and looks up, the column of each `FilterContainerColumnFilter` within a `FilterProvider`, and looks up the patterns configured by `FilterProvider` `columnFilterPatterns`.                                                  |
+| `getDefaultTimeRange(column)`                            | The default range for a time column filter, `["00:00:00", "23:59:59"]` (with `.000`/`.999` in millisecond mode).                                                                                                                                               |
+| `dateFilterAsQuery`                                      | Deprecated. Use `temporalFilterAsQuery`.                                                                                                                                                                                                                       |
 
 Types in `@vuu-ui/vuu-filter-types`:
 
@@ -114,17 +114,17 @@ type ExtendedFilterOptions = TimeTodayFilterOptions | TimeDateFilterOptions;
 
 ## Editing
 
-| Function                                       | Description                                                                                     |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `getTypedValue(value, type, throwIfInvalid?, options?)` | Converts a text value to a typed value. Temporal types return the wire value.                   |
+| Function                                                          | Description                                                                                     |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `getTypedValue(value, type, throwIfInvalid?, options?)`           | Converts a text value to a typed value. Temporal types return the wire value.                   |
 | `getTypedTemporalValue(value, info, throwIfInvalid?, baseValue?)` | Converts a text value to the wire value of a temporal field.                                    |
-| `getTypedValueForDescriptor(value, descriptor, throwIfInvalid?)` | Converts a text value using the field descriptor, including deprecated `long` timestamp fields. |
-| `isTimeDataValueWithMilliseconds(descriptor)`  | Whether a time field uses millisecond mode (the `hh:mm:ss.ms` pattern).                         |
+| `getTypedValueForDescriptor(value, descriptor, throwIfInvalid?)`  | Converts a text value using the field descriptor, including deprecated `long` timestamp fields. |
+| `isTimeDataValueWithMilliseconds(descriptor)`                     | Whether a time field uses millisecond mode (the `hh:mm:ss.ms` pattern).                         |
 
 ## Column predicates
 
-| Function                                  | Status                                     |
-| ----------------------------------------- | ------------------------------------------ |
-| `isDateTimeDataValue`, `isTimeDataValue`  | Supported. `kind` is `datetime` or `date`, or `time`. |
-| `isTimestampColumn`, `isNanoTimestampColumn` | Supported. Check the `serverDataType` only. |
-| `isDateTimeDataType`, `isTimeDataType`    | Deprecated. Use `getTemporalInfo`.          |
+| Function                                     | Status                                                |
+| -------------------------------------------- | ----------------------------------------------------- |
+| `isDateTimeDataValue`, `isTimeDataValue`     | Supported. `kind` is `datetime` or `date`, or `time`. |
+| `isTimestampColumn`, `isNanoTimestampColumn` | Supported. Check the `serverDataType` only.           |
+| `isDateTimeDataType`, `isTimeDataType`       | Deprecated. Use `getTemporalInfo`.                    |

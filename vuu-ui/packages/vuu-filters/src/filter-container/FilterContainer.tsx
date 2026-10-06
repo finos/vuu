@@ -56,15 +56,22 @@ export interface FilterContainerColumnFilterProps extends Omit<
   "defaultValue" | "onCommit" | "value"
 > {
   defaultValue?: ColumnFilterValue;
+  /**
+   * See ColumnFilter pattern. Defaults to the pattern configured for the
+   * column by FilterProvider columnFilterPatterns, if any.
+   */
+  pattern?: DateTimePattern;
 }
 
 export const FilterContainerColumnFilter = ({
   column: columnProp,
   operator = "=",
-  pattern,
+  pattern: patternProp,
   variant,
   ...props
 }: FilterContainerColumnFilterProps) => {
+  const { getColumnFilterPattern } = useColumnFilterRegistry();
+  const pattern = patternProp ?? getColumnFilterPattern(columnProp.name);
   const { date, time } = pattern ?? {};
   const column = useMemo(
     () =>
