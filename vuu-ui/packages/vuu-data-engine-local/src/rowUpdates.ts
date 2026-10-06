@@ -1,0 +1,32 @@
+import type { VuuRange, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import type { Table } from "./Table";
+
+export type UpdateHandler = (
+  updates: (RowUpdates | RowInsert | RowDelete)[],
+) => void;
+
+export interface UpdateGenerator {
+  setTable: (table: Table) => void;
+  setRange: (range: VuuRange) => void;
+}
+
+export type UpdateType = "I" | "D" | "U";
+
+// Allow up to 20 updates https://catchts.com/even-length
+type MAXIMUM_ALLOWED_BOUNDARY = 20;
+type RepeatingTuple<
+  Tuple extends Array<unknown>,
+  Result extends Array<unknown> = [],
+  Count extends ReadonlyArray<number> = [],
+> = Count["length"] extends MAXIMUM_ALLOWED_BOUNDARY
+  ? Result
+  : Tuple extends []
+    ? []
+    : Result extends []
+      ? RepeatingTuple<Tuple, Tuple, [...Count, 1]>
+      : RepeatingTuple<Tuple, Result | [...Result, ...Tuple], [...Count, 1]>;
+
+type UpdatePairs = RepeatingTuple<[number, VuuRowDataItemType]>;
+export type RowUpdates = ["U", number, ...UpdatePairs];
+export type RowInsert = ["I", ...VuuRowDataItemType[]];
+export type RowDelete = ["D", string];

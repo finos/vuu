@@ -10,5 +10,12 @@ export default defineConfig({
       "tools/portal-build-tool/test/**/**.test.(js|ts|tsx)",
     ],
     environment: "happy-dom",
+    server: {
+      deps: {
+        // the data engine packages depend on @vuu-ui workspace packages,
+        // which are published as typescript source, so must be transformed
+        inline: [/@heswell\/vuu-/],
+      },
+    },
   },
 });
