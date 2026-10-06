@@ -2,7 +2,7 @@ import { DependencyList, EffectCallback, useLayoutEffect, useRef } from "react";
 
 export const useLayoutEffectSkipFirst = (
   func: EffectCallback,
-  deps: DependencyList,
+  deps: DependencyList
 ) => {
   const goodToGo = useRef(false);
   useLayoutEffect(() => {

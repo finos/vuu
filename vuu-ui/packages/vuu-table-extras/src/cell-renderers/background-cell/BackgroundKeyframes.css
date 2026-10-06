@@ -1,27 +1,28 @@
+
 @keyframes vuubgup1 {
-  0% {
-    background-color: var(--salt-sentiment-positive-foreground-informative);
-    color: white;
-  }
+    0% {
+      background-color: var(--salt-sentiment-positive-foreground-informative);
+      color: white;
+    }
 
-  40% {
-    color: white;
-  }
-  60% {
-    color: var(--salt-content-primary-foreground);
-  }
+    40% {
+      color: white;
+    }  
+    60% {
+      color: var(--salt-content-primary-foreground);
+    }  
 
-  100% {
-    background-color: transparent;
-    color: var(--salt-content-primary-foreground);
+    100% {
+      background-color: transparent;
+      color: var(--salt-content-primary-foreground);
+    }
   }
-}
-
-@keyframes vuubgup2 {
-  0% {
-    background-color: var(--salt-sentiment-positive-foreground-informative);
-    color: white;
-  }
+  
+  @keyframes vuubgup2 {
+    0% {
+      background-color: var(--salt-sentiment-positive-foreground-informative);
+      color: white;
+    }
 
     30% {
       color: white;
@@ -30,138 +31,139 @@
       color: var(--salt-content-primary-foreground);
     }  
 
-  100% {
-    background-color: transparent;
-    color: var(--salt-content-primary-foreground);
+    100% {
+      background-color: transparent;
+      color: var(--salt-content-primary-foreground);
+    }
   }
-}
-
-@keyframes vuubgdown1 {
-  0% {
-    background-color: var(--salt-sentiment-negative-foreground-informative);
-    color: white;
+  
+  @keyframes vuubgdown1 {
+    0% {
+      background-color: var(--salt-sentiment-negative-foreground-informative);
+      color: white;
+    }
+    30% {
+      color: white;
+    }  
+    33% {
+      color: var(--salt-content-primary-foreground);
+    }  
+    100% {
+      background-color: transparent;
+      color: var(--salt-content-primary-foreground);
+    }
   }
-  30% {
-    color: white;
+  
+  @keyframes vuubgdown2 {
+    0% {
+      background-color: var(--salt-sentiment-negative-foreground-informative);
+      color: white;
+    }
+    30% {
+      color: white;
+    }  
+    33% {
+      color: var(--salt-content-primary-foreground);
+    }  
+    100% {
+      background-color: transparent;
+      color: var(--salt-content-primary-foreground);
+    }
   }
-  33% {
-    color: var(--salt-content-primary-foreground);
+  
+  @keyframes vuuarrowup1 {
+    from {
+      color: var(--salt-sentiment-positive-foreground-informative);
+    }
+    to {
+      color: transparent;
+    }
   }
-  100% {
-    background-color: transparent;
-    color: var(--salt-content-primary-foreground);
+  
+  @keyframes vuuarrowup2 {
+    from {
+      color: var(--salt-sentiment-positive-foreground-informative);
+    }
+    to {
+      color: transparent;
+    }
   }
-}
-
-@keyframes vuubgdown2 {
-  0% {
-    background-color: var(--salt-sentiment-negative-foreground-informative);
-    color: white;
+  
+  @keyframes vuuarrowdown1 {
+    from {
+      color: var(--salt-sentiment-negative-foreground-informative);
+    }
+    to {
+      color: transparent;
+    }
   }
-  30% {
-    color: white;
+  
+  @keyframes vuuarrowdown2 {
+    from {
+      color: var(--salt-sentiment-negative-foreground-informative);
+    }
+    to {
+      color: transparent;
+    }
   }
-  33% {
-    color: var(--salt-content-primary-foreground);
+  
+  @keyframes vuubgarrowup1 {
+    0% {
+      color: var(--salt-sentiment-positive-foreground-informative);
+      background-color: var(--salt-sentiment-positive-foreground-informative);
+    }
+    20% {
+      color: var(--salt-sentiment-positive-foreground-informative);
+      background-color: transparent;
+    }
+    100% {
+      color: transparent;
+      background-color: transparent;
+    }
   }
-  100% {
-    background-color: transparent;
-    color: var(--salt-content-primary-foreground);
+  
+  @keyframes vuubgarrowup2 {
+    0% {
+      color: var(--salt-sentiment-positive-foreground-informative);
+      background-color: var(--salt-sentiment-positive-foreground-informative);
+    }
+    20% {
+      color: var(-salt-sentiment-positive-foreground-informative);
+      background-color: transparent;
+    }
+    100% {
+      color: transparent;
+      background-color: transparent;
+    }
   }
-}
-
-@keyframes vuuarrowup1 {
-  from {
-    color: var(--salt-sentiment-positive-foreground-informative);
+  
+  @keyframes vuubgarrowdown1 {
+    0% {
+      color: var(--salt-sentiment-negative-foreground-informative);
+      background-color: var(--salt-sentiment-negative-foreground-informative);
+    }
+    20% {
+      color: var(--salt-sentiment-negative-foreground-informative);
+      background-color: transparent;
+    }
+    100% {
+      color: transparent;
+      background-color: transparent;
+    }
   }
-  to {
-    color: transparent;
+  
+  @keyframes vuubgarrowdown2 {
+    0% {
+      color: var(--salt-sentiment-negative-foreground-informative);
+      background-color: var(--salt-sentiment-negative-foreground-informative);
+    }
+    20% {
+      color: var(--salt-sentiment-negative-foreground-informative);
+      background-color: transparent;
+    }
+    100% {
+      color: transparent;
+      background-color: transparent;
+    }
   }
-}
-
-@keyframes vuuarrowup2 {
-  from {
-    color: var(--salt-sentiment-positive-foreground-informative);
-  }
-  to {
-    color: transparent;
-  }
-}
-
-@keyframes vuuarrowdown1 {
-  from {
-    color: var(--salt-sentiment-negative-foreground-informative);
-  }
-  to {
-    color: transparent;
-  }
-}
-
-@keyframes vuuarrowdown2 {
-  from {
-    color: var(--salt-sentiment-negative-foreground-informative);
-  }
-  to {
-    color: transparent;
-  }
-}
-
-@keyframes vuubgarrowup1 {
-  0% {
-    color: var(--salt-sentiment-positive-foreground-informative);
-    background-color: var(--salt-sentiment-positive-foreground-informative);
-  }
-  20% {
-    color: var(--salt-sentiment-positive-foreground-informative);
-    background-color: transparent;
-  }
-  100% {
-    color: transparent;
-    background-color: transparent;
-  }
-}
-
-@keyframes vuubgarrowup2 {
-  0% {
-    color: var(--salt-sentiment-positive-foreground-informative);
-    background-color: var(--salt-sentiment-positive-foreground-informative);
-  }
-  20% {
-    color: var(-salt-sentiment-positive-foreground-informative);
-    background-color: transparent;
-  }
-  100% {
-    color: transparent;
-    background-color: transparent;
-  }
-}
-
-@keyframes vuubgarrowdown1 {
-  0% {
-    color: var(--salt-sentiment-negative-foreground-informative);
-    background-color: var(--salt-sentiment-negative-foreground-informative);
-  }
-  20% {
-    color: var(--salt-sentiment-negative-foreground-informative);
-    background-color: transparent;
-  }
-  100% {
-    color: transparent;
-    background-color: transparent;
-  }
-}
-
-@keyframes vuubgarrowdown2 {
-  0% {
-    color: var(--salt-sentiment-negative-foreground-informative);
-    background-color: var(--salt-sentiment-negative-foreground-informative);
-  }
-  20% {
-    color: var(--salt-sentiment-negative-foreground-informative);
-    background-color: transparent;
-  }
-  100% {
-    color: transparent;
-    background-color: transparent;
-  }
-}
+  

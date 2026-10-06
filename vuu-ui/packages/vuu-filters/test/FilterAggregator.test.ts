@@ -236,9 +236,9 @@ describe("FilterAggregator", () => {
 
       describe("WHEN a value tuple is added for a time column", () => {
         const tradeTime = {
-          name: "tradeTime",
-          serverDataType: "epochtimestamp",
-          type: "time",
+              name: "tradeTime",
+              serverDataType: "epochtimestamp",
+              type: "time",
         } as const;
         const extendedOptions = {
           type: "TimeString",

@@ -1,10 +1,10 @@
 
 .vuuTableToggleCell {
-  --saltButton-borderRadius: 4px;
-  --saltButton-height: 16px;
-  font-weight: 500;
-  position: relative;
-  top: 1px;
+    --saltButton-borderRadius: 4px;
+    --saltButton-height: 16px;
+    font-weight: 500;
+    position: relative;
+    top: 1px;;
 }
 .vuuTableToggleCell-side {
     --saltButton-minWidth: 40px;

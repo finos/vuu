@@ -207,11 +207,11 @@ export class FilterAggregator {
       );
       if (value1 !== undefined && value2 !== undefined) {
         this.#filters.set(column.name, {
-          op: "and",
-          filters: [
+              op: "and",
+              filters: [
             createClause(isInclusive ? ">=" : ">", value1),
             createClause(isInclusive ? "<=" : "<", value2),
-          ],
+              ],
         } as FilterContainerFilter);
       } else if (value1 !== undefined) {
         this.#filters.set(column.name, createClause("=", value1));

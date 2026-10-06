@@ -224,31 +224,32 @@ export const useColumnAutoComplete = (
             context,
             suggestionProvider,
           );
-        case "RelationalExpression": {
-          if (isCompleteRelationalExpression(nodeBefore)) {
-            return {
-              from: context.pos,
-              options: booleanJoinSuggestions.concat({
-                label: ", <truthy expression>, <falsy expression>",
-                apply: ", ",
-              }),
-            };
-          } else {
-            const operator = getRelationalOperator(nodeBefore, state);
-            const columnName = getColumnName(nodeBefore, state);
-            if (!operator) {
-              const options = await suggestionProvider.getSuggestions(
-                "condition-operator",
-                {
-                  columnName,
-                },
-              );
-              return { from: context.pos, options };
+        case "RelationalExpression":
+          {
+            if (isCompleteRelationalExpression(nodeBefore)) {
+              return {
+                from: context.pos,
+                options: booleanJoinSuggestions.concat({
+                  label: ", <truthy expression>, <falsy expression>",
+                  apply: ", ",
+                }),
+              };
             } else {
-              return makeSuggestions(context, "expression");
+              const operator = getRelationalOperator(nodeBefore, state);
+              const columnName = getColumnName(nodeBefore, state);
+              if (!operator) {
+                const options = await suggestionProvider.getSuggestions(
+                  "condition-operator",
+                  {
+                    columnName,
+                  },
+                );
+                return { from: context.pos, options };
+              } else {
+                return makeSuggestions(context, "expression");
+              }
             }
           }
-        }
 
         case "RelationalOperator":
           // we need the type of the expression on the other side of the operator

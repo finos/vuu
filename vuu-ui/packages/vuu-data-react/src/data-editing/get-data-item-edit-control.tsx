@@ -174,32 +174,32 @@ export const getDataItemEditControl = ({
         onCommit(evt, timeString);
       }
     };
-    return isTimeDataValueWithMilliseconds(dataDescriptor) ? (
-      <VuuTimePicker
-        className={className}
-        milliseconds
+      return isTimeDataValueWithMilliseconds(dataDescriptor) ? (
+        <VuuTimePicker
+          className={className}
+          milliseconds
         value={
           value === ""
             ? ("" as TimeStringMillis)
             : toTimeString(value, baseValue, temporalInfo, true)
         }
-        onChange={onChange}
+          onChange={onChange}
         onCommit={handleCommitTime}
-        data-edit-control
-      />
-    ) : (
-      <VuuTimePicker
-        className={className}
+          data-edit-control
+        />
+      ) : (
+        <VuuTimePicker
+          className={className}
         value={
           value === ""
             ? ("" as TimeString)
             : toTimeString(value, baseValue, temporalInfo)
         }
-        onChange={onChange}
+          onChange={onChange}
         onCommit={handleCommitTime}
-        data-edit-control
-      />
-    );
+          data-edit-control
+        />
+      );
   } else if (temporalInfo) {
     const baseValue = toEpochTimestamp(
       InputProps?.inputProps?.value,
@@ -221,7 +221,7 @@ export const getDataItemEditControl = ({
           temporalInfo.timeZone,
           baseValue.subMilliNanos,
         );
-      }
+    }
       onCommit(evt, `${timestamp.toWire(temporalInfo.encoding)}`);
     };
     return (

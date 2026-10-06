@@ -15,26 +15,26 @@ export interface VuuBroadcastChannel<T> extends EventTarget {
     type: K,
     listener: (
       this: BroadcastChannel,
-      evt: VuuBroadcastChannelEventMap<T>[K],
+      evt: VuuBroadcastChannelEventMap<T>[K]
     ) => void,
-    options?: boolean | AddEventListenerOptions,
+    options?: boolean | AddEventListenerOptions
   ): void;
   addEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions,
+    options?: boolean | AddEventListenerOptions
   ): void;
   removeEventListener<K extends keyof VuuBroadcastChannelEventMap<T>>(
     type: K,
     listener: (
       this: BroadcastChannel,
-      evt: VuuBroadcastChannelEventMap<T>[K],
+      evt: VuuBroadcastChannelEventMap<T>[K]
     ) => void,
-    options?: boolean | EventListenerOptions,
+    options?: boolean | EventListenerOptions
   ): void;
   removeEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject,
-    options?: boolean | EventListenerOptions,
+    options?: boolean | EventListenerOptions
   ): void;
 }

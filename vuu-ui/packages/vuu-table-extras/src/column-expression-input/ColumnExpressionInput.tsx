@@ -13,7 +13,7 @@ const classBase = "vuuColumnExpressionInput";
 
 export type ColumnExpressionSubmitHandler = (
   source: string,
-  expression: ColumnDefinitionExpression | undefined,
+  expression: ColumnDefinitionExpression | undefined
 ) => void;
 
 export interface ColumnExpressionInputProps
@@ -49,6 +49,6 @@ export const ColumnExpressionInput = memo(
   },
   (prevProps, newProps) => {
     return prevProps.source === newProps.source;
-  },
+  }
 );
 ColumnExpressionInput.displayName = "ColumnExpressionInput";

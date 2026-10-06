@@ -34,32 +34,42 @@
 
 .vuuColumnSettingsPanel-buttonNavPrev {
   --vuu-icon-left: 6px;
-  padding-left: 24px;
+  padding-left: 24px
 }
 
 .vuuColumnSettingsPanel-buttonNavNext {
   --vuu-icon-left: calc(100% - 18px);
-  padding-right: 24px;
+  padding-right: 24px
 }
 
-[data-icon="align-left"] {
-  --vuu-icon-svg: var(--vuu-svg-align-left);
-}
 
-[data-icon="align-right"] {
-  --vuu-icon-svg: var(--vuu-svg-align-right);
-}
 
-[data-icon="pin-left"] {
-  --vuu-icon-svg: var(--vuu-svg-pin-left);
-}
-[data-icon="pin-float"] {
-  --vuu-icon-svg: var(--vuu-svg-pin-float);
-}
-[data-icon="pin-right"] {
-  --vuu-icon-svg: var(--vuu-svg-pin-right);
-}
+[data-icon='align-left'] {
+    --vuu-icon-svg: var(--vuu-svg-align-left);
+  }
 
-.vuuColumnSettingsPanel-editing .vuuColumnNameLabel-edit {
-  display: none;
-}
+  [data-icon='align-right'] {
+    --vuu-icon-svg: var(--vuu-svg-align-right);
+  }
+
+  [data-icon='pin-left'] {
+    --vuu-icon-svg: var(--vuu-svg-pin-left);
+  }
+  [data-icon='pin-float'] {
+    --vuu-icon-svg: var(--vuu-svg-pin-float);
+  }
+  [data-icon='pin-right'] {
+    --vuu-icon-svg: var(--vuu-svg-pin-right);
+  }
+
+  .vuuColumnSettingsPanel-editing .vuuColumnNameLabel-edit {
+    display: none;
+  }
+  
+
+
+  
+  
+  
+  
+  

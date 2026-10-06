@@ -9,9 +9,9 @@
 }
 
 .vuuFilterToggleButton-overlay-panel {
-  --vuuFilterDisplay-padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--salt-spacing-400);
-  padding: var(--salt-spacing-200);
+    --vuuFilterDisplay-padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--salt-spacing-400);
+    padding: var(--salt-spacing-200)
 }

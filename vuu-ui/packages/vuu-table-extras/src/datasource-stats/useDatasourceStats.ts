@@ -71,6 +71,6 @@ export const useDatasourceStats = ({
     selectedCount,
     size,
     freezeTime,
-    maxScroll: maxRangeEnd,
+    maxScroll: maxRangeEnd
   };
 };
