@@ -19,6 +19,7 @@ import {
   getTargetTreeNode,
   isComponentDescriptor,
   loadTheme,
+  resolveModulePath,
 } from "./shared-utils";
 import { DataLocation } from "./showcase-main/ShowcaseProvider";
 import { createMdxComponents } from "./mdx-components";
@@ -122,7 +123,7 @@ export const ShowcaseStandalone = ({
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         const targetModule: Module = await import(
-          /* @vite-ignore */ `/${nodeData.path}`
+          /* @vite-ignore */ `/${resolveModulePath(nodeData.path)}`
         );
 
         if (targetModule) {

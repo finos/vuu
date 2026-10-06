@@ -98,14 +98,13 @@ export const treeSourceFromFileSystem = (
         treeSourceNode.nodeData = treeSourceFromDocument(
           exhibitsPath,
           env,
-          `${route}${toLabel(name)}/`,
           documentPath,
         );
       }
 
       treeSourceNodes.push(treeSourceNode);
     } else if (fileName.match(/^[Ii]ndex.mdx$/)) {
-      documentPath = `${exhibitsPath}/${fileName}`;
+      documentPath = treeSourceFromDocument(exhibitsPath, env, fileName).path;
     } else if (fileName.match(/\.mdx$/)) {
       const name = dropLastPathSegment(fileName, ".");
       // mdx files with a matching examples file are rendered as the document
@@ -117,7 +116,7 @@ export const treeSourceFromFileSystem = (
           label: toLabel(name),
           nodeData: {
             name,
-            ...treeSourceFromDocument(exhibitsPath, env, route, fileName),
+            ...treeSourceFromDocument(exhibitsPath, env, fileName),
           },
         });
       }
@@ -126,17 +125,17 @@ export const treeSourceFromFileSystem = (
   return [treeSourceNodes, Array.from(tags), documentPath];
 };
 
+// Document paths retain the .mdx extension in all environments, it identifies
+// the node as a document. The showcase loader resolves the compiled .js file
+// in production.
 const treeSourceFromDocument = (
   exhibitsPath: string,
   env: "development" | "production",
-  route: string,
   fileName: string,
 ): NodeData => {
-  const resolvedFileName =
-    env === "production" ? fileName.replace(/.mdx/, ".js") : fileName;
-
+  const exhibitsPrefix = env === "production" ? "showcase/" : "";
   return {
-    path: `${exhibitsPath}/${resolvedFileName}`,
+    path: `${exhibitsPrefix}${exhibitsPath}/${fileName}`,
   };
 };
 
