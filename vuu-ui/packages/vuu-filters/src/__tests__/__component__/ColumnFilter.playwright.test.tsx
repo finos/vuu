@@ -669,3 +669,19 @@ test.describe("ColumnFilter with FilterContainer", () => {
     );
   });
 });
+
+test.describe("ColumnFilter toggle variant", () => {
+  test("uses labels as button text when provided", async ({ mount }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ControlledToggleFilterWithLabels",
+    );
+    await expect(component.getByRole("radio")).toHaveCount(3);
+    const buyButton = component.getByRole("radio", {
+      name: "Buy",
+      exact: true,
+    });
+    await expect(buyButton).toHaveAttribute("value", "BUY");
+    await buyButton.click();
+    await expect(buyButton).toBeChecked();
+  });
+});

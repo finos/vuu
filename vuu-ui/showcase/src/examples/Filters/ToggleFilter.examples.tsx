@@ -15,11 +15,15 @@ const containerStyle = {
 
 const BuySellFilterTemplate = ({
   defaultValue,
+  labels,
   onCommit,
   table,
   value,
 }: Partial<
-  Pick<ToggleFilterProps, "defaultValue" | "onCommit" | "table" | "value">
+  Pick<
+    ToggleFilterProps,
+    "defaultValue" | "labels" | "onCommit" | "table" | "value"
+  >
 >) => {
   const handleCommit: CommitHandler<HTMLElement> = (e, value) => {
     onCommit?.(e, value);
@@ -29,6 +33,7 @@ const BuySellFilterTemplate = ({
       <ToggleFilter
         column="side"
         defaultValue={defaultValue}
+        labels={labels}
         onCommit={handleCommit}
         table={table}
         value={value}
@@ -48,6 +53,13 @@ export const SimpleBuySellFilterInitialised = () => {
     />
   );
 };
+
+export const SimpleBuySellFilterWithLabels = () => (
+  <BuySellFilterTemplate
+    labels={["Buy", "Sell"]}
+    onCommit={(_e, v) => console.log(v as string)}
+  />
+);
 
 export const SimpleControlledBuySellFilter = () => {
   const [value, setValue] = useState("");

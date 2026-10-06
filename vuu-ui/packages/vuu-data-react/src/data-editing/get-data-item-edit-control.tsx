@@ -49,6 +49,11 @@ export interface DataItemEditControlProps {
   dataDescriptor: DataValueDescriptor;
   editOperation?: "insert" | "update";
   errorMessage?: string;
+  /**
+   * Optional labels, only used with 'toggle' variant. If provided, must
+   * have same number of items as values. Defaults to values.
+   */
+  labels?: string[];
   onCommit: CommitHandler<HTMLElement>;
   table?: TableSchemaTable;
   /**
@@ -132,6 +137,7 @@ export const getDataItemEditControl = ({
   dataDescriptor,
   editOperation = "update",
   errorMessage,
+  labels,
   onCommit,
   table,
   values,
@@ -240,6 +246,7 @@ export const getDataItemEditControl = ({
           className={className}
           column={dataDescriptor.name}
           data-edit-control
+          labels={labels}
           onCommit={onCommit}
           table={table}
           values={values}

@@ -25,6 +25,21 @@ test(`A simple uncontrolled togglefilter with a defaultValue
   await expect(component.getByRole("radio", { name: "SELL" })).toBeChecked();
 });
 
+test(`A togglefilter with labels
+    uses labels as button text
+    commits the value, not the label
+     `, async ({ mount }) => {
+  const component = await mount(
+    "Filters/ToggleFilter/SimpleBuySellFilterWithLabels",
+  );
+
+  await expect(component.getByRole("radio")).toHaveCount(3);
+  const buyButton = component.getByRole("radio", { name: "Buy", exact: true });
+  await expect(buyButton).toHaveAttribute("value", "BUY");
+  await buyButton.click();
+  await expect(buyButton).toBeChecked();
+});
+
 test(`A simple controlled togglefilter with no defaultValue
     shows All by default
     selects correct value when clicked
