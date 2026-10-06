@@ -45,6 +45,7 @@
     "playwright:gallery:serve": "serve --single --listen 3100 playwright/gallery/dist",
     "playwright:coverage": "node playwright/generate-coverage.cjs",
     "test:playwright:components": "playwright test --config=playwright.config.ts --project=components-chromium",
+    "test:playwright:perf": "VUU_PERF=1 playwright test --config=playwright.config.ts --project=components-chromium Table-scroll-performance",
     "test:vite": "npm run build:worker && vitest run",
     "bump": "node ./scripts/version.mjs",
     "pub": "node ./scripts/publish.ts",

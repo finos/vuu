@@ -399,13 +399,19 @@
     }
   }
 
+  /*
+   * Rows are rendered in renderIndex (recycled key) order, not row order, so
+   * DOM sibling selectors cannot be used to identify selection block
+   * boundaries. Table computes these as data attributes instead.
+   */
+
   /* non-selected row immediately followed by a selected row */
-  .vuuTableRow:not([aria-selected="true"]):has(+ .vuuTableRow[aria-selected="true"]) {
+  .vuuTableRow[data-precedes-selection="true"] {
     border-bottom-color: transparent;
   }
 
   /* first row in a selection block, including a selection block of one row */
-  .vuuTableRow:not([aria-selected="true"]) + .vuuTableRow[aria-selected="true"],
+  .vuuTableRow[aria-selected="true"][data-selection-start="true"],
   .vuuTableRow[aria-selected="true"][data-first-row="true"] {
     border-radius: 0;
 
@@ -434,7 +440,7 @@
   }
 
   /* Last row in a selection block, including a selection block of one row */
-  .vuuTableRow[aria-selected="true"]:has(+ .vuuTableRow:not([aria-selected="true"])) {
+  .vuuTableRow[aria-selected="true"][data-selection-end="true"] {
     border-bottom-color: var(--vuu-table-row-borderColor-selected);
 
     .vuuStickyLeft .vuuTableRowBookend {

@@ -44,6 +44,7 @@ import {
 import { Row as DefaultRow } from "./Row";
 import { TableCellBlock } from "./cell-block/cellblock-utils";
 import { PaginationControl } from "./pagination";
+import { getRowsInRenderOrder } from "./render-order";
 import { ScrollLimitNotice } from "./scroll-limit-notice";
 import { TableHeader } from "./table-header";
 import { useMeasuredHeight } from "./useMeasuredHeight";
@@ -74,11 +75,10 @@ const RowProxy = forwardRef<
   );
 });
 
-export interface TableProps
-  extends Omit<
-    MeasuredContainerProps,
-    "onDragStart" | "onDrop" | "onSelect" | "searchPattern"
-  > {
+export interface TableProps extends Omit<
+  MeasuredContainerProps,
+  "onDragStart" | "onDrop" | "onSelect" | "searchPattern"
+> {
   /**
    * A react function component that will be rendered if there are no rows to display
    */
@@ -536,30 +536,46 @@ const TableCore = ({
                   rowCount={dataSource.size}
                 />
               ) : null}
-              {dataRows.map((dataRow) => {
-                const ariaRowIndex = dataRow.index + headerCount + 1;
-                return (
-                  <Row
-                    aria-rowindex={ariaRowIndex}
-                    classNameGenerator={rowClassNameGenerator}
-                    columns={scrollProps.columnsWithinViewport}
-                    // This is used for styling selection only.
-                    data-first-row={dataRow.index === 0 ? "true" : undefined}
-                    dataRow={dataRow}
-                    groupToggleTarget={groupToggleTarget}
-                    highlighted={highlightedIndex === ariaRowIndex}
-                    isSelectable={isRowSelectable?.(dataRow)}
-                    key={dataRow.renderIndex}
-                    onClick={onRowClick}
-                    offset={showPaginationControls ? 0 : getRowOffset(dataRow)}
-                    onToggleGroup={onToggleGroup}
-                    showBookends={selectionBookendWidth > 0}
-                    searchPattern={lowerCaseSearchPattern}
-                    virtualColSpan={scrollProps.virtualColSpan}
-                    zebraStripes={tableAttributes.zebraStripes}
-                  />
-                );
-              })}
+              {getRowsInRenderOrder(dataRows).map(
+                ({
+                  dataRow,
+                  precedesSelection,
+                  selectionEnd,
+                  selectionStart,
+                }) => {
+                  const ariaRowIndex = dataRow.index + headerCount + 1;
+                  return (
+                    <Row
+                      aria-rowindex={ariaRowIndex}
+                      classNameGenerator={rowClassNameGenerator}
+                      columns={scrollProps.columnsWithinViewport}
+                      // These are used for styling selection only. Rows are rendered
+                      // in renderIndex order, not row order, so CSS sibling selectors
+                      // cannot be used to identify selection block boundaries.
+                      data-first-row={dataRow.index === 0 ? "true" : undefined}
+                      data-precedes-selection={
+                        precedesSelection ? "true" : undefined
+                      }
+                      data-selection-end={selectionEnd ? "true" : undefined}
+                      data-selection-start={selectionStart ? "true" : undefined}
+                      dataRow={dataRow}
+                      groupToggleTarget={groupToggleTarget}
+                      highlighted={highlightedIndex === ariaRowIndex}
+                      isSelectable={isRowSelectable?.(dataRow)}
+                      key={dataRow.renderIndex}
+                      onClick={onRowClick}
+                      offset={
+                        showPaginationControls ? 0 : getRowOffset(dataRow)
+                      }
+                      onToggleGroup={onToggleGroup}
+                      showBookends={selectionBookendWidth > 0}
+                      searchPattern={lowerCaseSearchPattern}
+                      virtualColSpan={scrollProps.virtualColSpan}
+                      zebraStripes={tableAttributes.zebraStripes}
+                    />
+                  );
+                },
+              )}
               {/* 
                 The focusCellPlaceholder allows us to deal with the situation where a cell 
                 that has focus is scrolled out of the viewport. That cell, along with the 
@@ -755,8 +771,8 @@ export const Table = forwardRef(function Table(
     >
       <RowProxy ref={rowRef} height={rowHeightProp} />
       {size &&
-        rowHeight &&
-        (footerHeight || showPaginationControls !== true) ? (
+      rowHeight &&
+      (footerHeight || showPaginationControls !== true) ? (
         <TableCore
           EmptyDisplay={EmptyDisplay}
           HeaderCell={HeaderCell}
