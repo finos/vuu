@@ -43,6 +43,7 @@
     "lint:error": "biome lint --diagnostic-level=error",
     "format:check": "biome check --skip=lint --skip=assist",
     "format": "biome format --write .",
+    "bump:versions": "node ./scripts/bump-versions.ts",
     "deploy:websocket-test": "node ./tools/deploy-websocket-test.mjs",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
     "showcase": "cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-dev.ts",
