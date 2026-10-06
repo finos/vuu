@@ -4,6 +4,10 @@ import { ReactElement } from "react";
 type Environment = "development" | "production";
 export const env = process.env.NODE_ENV as Environment;
 
+// mdx documents are compiled to .js in the production build
+export const resolveModulePath = (path: string) =>
+  env === "production" ? path.replace(/\.mdx$/, ".js") : path;
+
 export type VuuExample = {
   (props?: { [key: string]: unknown }): ReactElement;
 };
