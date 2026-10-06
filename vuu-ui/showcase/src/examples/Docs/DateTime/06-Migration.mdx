@@ -24,6 +24,7 @@ Filter queries sent to the server for temporal columns are now generated from th
 | Change | What to do |
 | ------ | ---------- |
 | `=` and `!=` on a date (or a start-of-day datetime) become whole-day ranges, and `>`, `>=`, `<`, `<=` use day or second bounds. Previously `col = <midnight>` was sent as exact equality and matched nothing. | Update expected query strings. See [Filtering](./03-Filtering.mdx#type-aware-serialization). |
+| The FilterClause date editor stores the start of the selected day for every operator. Previously `>` and `<=` stored the end of the day (`23:59:59.999`). Queries are unchanged, and persisted filters with end-of-day values give the same query. | Update code that inspects `filter.value` for date clauses. |
 | `DataSource.setFilter` serializes using the `tableSchema` columns, plus an optional `{ columnsByName }`. | Pass `columnsByName` for deprecated `long` timestamp columns, otherwise they are treated as numbers. |
 | Nanosecond columns are filtered in nanoseconds. Previously millisecond values were sent. | None. |
 | `getTypedValue` returns the wire value for `epochtimestamp`, `epochtimestampnano`, `date/time` and `date`: a `number` of milliseconds or a `string` of nanoseconds. It previously returned the raw input string. | Update callers that expected a string. |
