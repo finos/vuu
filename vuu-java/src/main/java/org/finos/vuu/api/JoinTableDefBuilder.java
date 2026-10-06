@@ -1,5 +1,6 @@
 package org.finos.vuu.api;
 
+import org.finos.vuu.core.filter.type.AllowAllPermissionFilter$;
 import org.finos.vuu.core.filter.type.PermissionFilter;
 import org.finos.vuu.core.table.Column;
 import org.finos.vuu.core.table.RangeSettings;
@@ -129,7 +130,7 @@ public class JoinTableDefBuilder {
      * @return this builder
      */
     public JoinTableDefBuilder withPrivateVisibility() {
-       return visibility(TableVisibility.PRIVATE());
+        return visibility(TableVisibility.PRIVATE());
     }
 
     /**
@@ -163,6 +164,15 @@ public class JoinTableDefBuilder {
         var function2 = ScalaFunctionConverter.toScala(permissionFunction);
         this.joinTableDefOptions = (JoinTableDefOptions) joinTableDefOptions.withPermissionFunction(function2);
         return this;
+    }
+
+    /**
+     * Sets permission filter function to AllowAllPermissionFilter.
+     *
+     * @return this builder
+     */
+    public JoinTableDefBuilder allowAllPermissionFunction() {
+        return permissionFunction((vp, tableContainer) -> AllowAllPermissionFilter$.MODULE$);
     }
 
     /**

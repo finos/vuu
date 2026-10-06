@@ -84,4 +84,15 @@ class JoinTableDefBuilderTest {
         assertEquals(1000, tableDef.options().rangeSettings().maxRangeWidth());
     }
 
+    @Test
+    void buildWithAllowAllPermissionFilter() {
+        JoinTableDef tableDef = new JoinTableDefBuilder()
+                .name("myTable")
+                .baseTable(baseTable)
+                .allowAllPermissionFunction()
+                .build();
+
+        assertNotNull(tableDef.options().permissionFunction());
+    }
+
 }
