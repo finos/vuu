@@ -16,7 +16,7 @@
     "@vuu-ui/vuu-table-types": "3.5.2"
   },
   "dependencies": {
-    "@vuu-ui/grid-layout": "3.5.0",
+    "@vuu-ui/grid-layout": "3.5.2",
     "@salt-ds/core": "1.67.0",
     "@salt-ds/styles": "0.2.1",
     "@salt-ds/window": "0.1.1",
@@ -30,7 +30,7 @@
     "@vuu-ui/vuu-ui-controls": "3.5.2",
     "@vuu-ui/vuu-utils": "3.5.2",
     "@module-federation/enhanced": "2.8.0",
-    "@vuu-ui/core": "3.5.0",
+    "@vuu-ui/core": "3.5.2",
     "html-to-image": "^1.11.11"
   },
   "peerDependencies": {
