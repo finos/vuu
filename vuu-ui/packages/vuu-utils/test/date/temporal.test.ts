@@ -72,6 +72,16 @@ describe("EpochTimestamp", () => {
     expect(t1?.compare(t2 as EpochTimestamp)).toBeLessThan(0);
     expect(t1?.equals(t1)).toBe(true);
   });
+
+  it("returns undefined for a value outside the range of a Date", () => {
+    const nanos = "1790722800000000000";
+    expect(EpochTimestamp.fromWire(nanos, "epochNanos")).toBeDefined();
+    expect(EpochTimestamp.fromWire(nanos, "epochMillis")).toBeUndefined();
+    expect(
+      EpochTimestamp.fromWire(Number(nanos), "epochMillis"),
+    ).toBeUndefined();
+    expect(EpochTimestamp.fromWire(8.64e15, "epochMillis")).toBeDefined();
+  });
 });
 
 describe("getTemporalInfo", () => {

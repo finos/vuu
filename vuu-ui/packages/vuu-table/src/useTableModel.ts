@@ -175,8 +175,7 @@ export interface ColumnActionUpdateProp {
   width?: ColumnDescriptor["width"];
 }
 
-export interface ColumnActionTableConfig
-  extends WithBaseFilter<WithFullConfig> {
+export interface ColumnActionTableConfig extends WithBaseFilter<WithFullConfig> {
   confirmed?: boolean;
   type: "tableConfig";
 }
@@ -505,10 +504,19 @@ function setTableSchema(
   if (columns.some(columnWithoutDataType)) {
     const cols = columns.map((column) => {
       const serverDataType = getDataType(column, tableSchema);
-      return {
+      if (serverDataType === column.serverDataType) {
+        return column;
+      }
+      const columnWithServerDataType = {
         ...column,
         align: column.align ?? getDefaultAlignment(serverDataType),
         serverDataType,
+      };
+      // valueFormatter depends on serverDataType (e.g. epochtimestampnano
+      // values are decoded as nanos), so must be rebuilt.
+      return {
+        ...columnWithServerDataType,
+        valueFormatter: getValueFormatter(columnWithServerDataType),
       };
     });
 

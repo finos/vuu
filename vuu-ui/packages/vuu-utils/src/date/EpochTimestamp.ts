@@ -17,6 +17,8 @@ export type TemporalEncoding = "epochMillis" | "epochNanos";
 
 const NANOS_PER_MILLI = 1_000_000n;
 const integerPattern = /^-?\d+$/;
+/** The range of a JavaScript Date, +/- 100,000,000 days from the epoch. */
+const MAX_EPOCH_MILLIS = 8.64e15;
 
 /**
  * A timestamp with nanosecond precision. Internally represented as epoch
@@ -87,9 +89,21 @@ export class EpochTimestamp {
 
   /**
    * Decode a value as received from the server, or held in a filter,
-   * in the given encoding. Returns undefined for an empty or invalid value.
+   * in the given encoding. Returns undefined for an empty or invalid value,
+   * including a value outside the range of a JavaScript Date (e.g. a nanos
+   * value decoded as millis).
    */
   static fromWire(
+    value: unknown,
+    encoding: TemporalEncoding,
+  ): EpochTimestamp | undefined {
+    const ts = EpochTimestamp.decode(value, encoding);
+    return ts !== undefined && Math.abs(ts.epochMillis) <= MAX_EPOCH_MILLIS
+      ? ts
+      : undefined;
+  }
+
+  private static decode(
     value: unknown,
     encoding: TemporalEncoding,
   ): EpochTimestamp | undefined {
