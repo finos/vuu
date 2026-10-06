@@ -13,7 +13,11 @@ import {
 } from "@vuu-ui/vuu-data-react";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { isNumericColumn, isTextColumn } from "@vuu-ui/vuu-utils";
+import {
+  isNumericColumn,
+  isTemporalColumn,
+  isTextColumn,
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useRef } from "react";
 import {
   ColumnFunctionDescriptor,
@@ -88,7 +92,11 @@ const arithmeticOperators = [
 ];
 
 const getOperators = (column?: ColumnDescriptor) => {
-  if (column === undefined || isNumericColumn(column)) {
+  if (
+    column === undefined ||
+    isNumericColumn(column) ||
+    isTemporalColumn(column)
+  ) {
     return arithmeticOperators;
   } else {
     return NO_OPERATORS;

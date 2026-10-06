@@ -2,7 +2,7 @@ import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   isNumericColumn,
   isTextColumn,
-  isTimestampColumn,
+  isTemporalColumn,
 } from "@vuu-ui/vuu-utils";
 import type {
   FilterClauseOp,
@@ -29,7 +29,7 @@ export const numericOperators: NumericFilterClauseOp[] = [
 export const getOperators = (column: ColumnDescriptor): FilterClauseOp[] => {
   if (isTextColumn(column)) {
     return textOperators;
-  } else if (isNumericColumn(column) || isTimestampColumn(column)) {
+  } else if (isNumericColumn(column) || isTemporalColumn(column)) {
     return numericOperators;
   } else {
     throw Error("getOperators only supports text and numeric columns");

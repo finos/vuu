@@ -33,7 +33,7 @@ FilterName { identifier }
 
 Column { identifier }
 
-Operator { Eq | NotEq | Gt | Lt | Starts | Ends | Contains }
+Operator { Eq | NotEq | Gt | Gte | Lt | Lte | Starts | Ends | Contains }
 
 Values { value (Comma value)* }
 
@@ -57,7 +57,9 @@ value { Number | String | True | False }
   Eq { "=" }
   NotEq { "!=" }
   Gt { ">" }
+  Gte { ">=" }
   Lt { "<" }
+  Lte { "<=" }
   Comma { "," }
   LBrack { "[" }
   RBrack { "]" }

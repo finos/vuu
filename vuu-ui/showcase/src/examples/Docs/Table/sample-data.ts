@@ -19,8 +19,7 @@ export const stockColumns: ColumnDescriptor[] = [
   {
     name: "lastTrade",
     label: "Last trade",
-    serverDataType: "long",
-    type: "date/time",
+    serverDataType: "epochtimestamp",
     width: 150,
   },
   { name: "esg", label: "ESG", serverDataType: "boolean", width: 60 },

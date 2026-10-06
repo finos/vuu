@@ -3,7 +3,9 @@ import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { MultiSelectionHandler } from "@vuu-ui/vuu-ui-controls";
 import {
   CommitHandler,
+  getTypedValueForDescriptor,
   isNumericColumn,
+  isTemporalColumn,
   queryClosest,
 } from "@vuu-ui/vuu-utils";
 import {
@@ -76,7 +78,15 @@ const createFilterClause = (
     }
   } else {
     const column = findColumn(availableColumns, identifier);
-    if (isNumericColumn(column)) {
+    if (isTemporalColumn(column)) {
+      return {
+        column: identifier,
+        op: "=",
+        value: getTypedValueForDescriptor(value, column, true) as
+          | number
+          | string,
+      };
+    } else if (isNumericColumn(column)) {
       const numericValue = asNumeric(value, column);
       return {
         column: identifier,

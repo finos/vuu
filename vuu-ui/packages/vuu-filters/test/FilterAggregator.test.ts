@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FilterAggregator } from "../src/FilterAggregator";
-import { Time } from "@vuu-ui/vuu-utils";
+import { filterAsQuery, Time } from "@vuu-ui/vuu-utils";
+import type { Filter } from "@vuu-ui/vuu-filter-types";
 
 describe("FilterAggregator", () => {
   describe("returns correct 'filter'", () => {
@@ -234,146 +235,162 @@ describe("FilterAggregator", () => {
       });
 
       describe("WHEN a value tuple is added for a time column", () => {
-        it("THEN a between filter is created with numeric time values", () => {
-          const aggregator = new FilterAggregator();
-          aggregator.add(
-            {
+        const tradeTime = {
               name: "tradeTime",
               serverDataType: "epochtimestamp",
               type: "time",
-            },
-            ["10:00:00", "12:30:00"],
-          );
-          expect(aggregator.filter).toEqual({
+        } as const;
+        const extendedOptions = {
+          type: "TimeString",
+          date: "today",
+          encoding: "epochMillis",
+          timeZone: "local",
+        };
+        const asJson = (filter: unknown) => JSON.parse(JSON.stringify(filter));
+
+        it("THEN a between filter is created with TimeString values, resolved against today", () => {
+          const aggregator = new FilterAggregator();
+          aggregator.add(tradeTime, ["10:00:00", "12:30:00"]);
+          expect(asJson(aggregator.filter)).toEqual({
             op: "and",
             filters: [
               {
                 column: "tradeTime",
                 op: ">",
-                value: +Time("10:00:00").asDate(),
+                value: "10:00:00",
+                extendedOptions,
               },
               {
                 column: "tradeTime",
                 op: "<",
-                value: +Time("12:30:00").asDate(),
+                value: "12:30:00",
+                extendedOptions,
               },
             ],
           });
+          expect(filterAsQuery(aggregator.filter as Filter)).toEqual(
+            `tradeTime >= ${+Time("10:00:01").asDate()} and tradeTime < ${+Time("12:30:00").asDate()}`,
+          );
         });
 
-        it("THEN an '=' filter is created when only first time present", () => {
+        it("THEN an '=' filter is created when only first time present, matching the whole second", () => {
           const aggregator = new FilterAggregator();
-          aggregator.add(
-            {
-              name: "tradeTime",
-              serverDataType: "epochtimestamp",
-              type: "time",
-            },
-            ["09:15:00", ""],
-          );
-          expect(aggregator.filter).toEqual({
+          aggregator.add(tradeTime, ["09:15:00", ""]);
+          expect(asJson(aggregator.filter)).toEqual({
             column: "tradeTime",
             op: "=",
-            value: +Time("09:15:00").asDate(),
+            value: "09:15:00",
+            extendedOptions,
           });
+          expect(filterAsQuery(aggregator.filter as Filter)).toEqual(
+            `tradeTime >= ${+Time("09:15:00").asDate()} and tradeTime < ${+Time("09:15:01").asDate()}`,
+          );
         });
 
         it("THEN a '<' filter is created when only second time present", () => {
           const aggregator = new FilterAggregator();
-          aggregator.add(
-            {
-              name: "tradeTime",
-              serverDataType: "epochtimestamp",
-              type: "time",
-            },
-            ["", "18:00:00"],
-          );
-          expect(aggregator.filter).toEqual({
+          aggregator.add(tradeTime, ["", "18:00:00"]);
+          expect(asJson(aggregator.filter)).toEqual({
             column: "tradeTime",
             op: "<",
-            value: +Time("18:00:00").asDate(),
+            value: "18:00:00",
+            extendedOptions,
           });
         });
 
-        it("THEN a between filter is created when the first time is numeric (previously set) and second time present", () => {
+        it("THEN a numeric (legacy, previously persisted) time value is converted to a TimeString", () => {
           const aggregator = new FilterAggregator();
           const firstTime = +Time("13:00:00").asDate();
-          aggregator.add(
-            {
-              name: "tradeTime",
-              serverDataType: "epochtimestamp",
-              type: "time",
-            },
-            [firstTime.toString(), "18:00:00"],
-          );
-          expect(aggregator.filter).toEqual({
+          aggregator.add(tradeTime, [firstTime.toString(), "18:00:00"]);
+          expect(asJson(aggregator.filter)).toEqual({
             op: "and",
             filters: [
               {
                 column: "tradeTime",
                 op: ">",
-                value: firstTime,
+                value: "13:00:00",
+                extendedOptions,
               },
               {
                 column: "tradeTime",
                 op: "<",
-                value: +Time("18:00:00").asDate(),
+                value: "18:00:00",
+                extendedOptions,
               },
             ],
           });
         });
 
-        it("THEN a between filter is created when the first time is present and second time is numeric (previously set)", () => {
-          const aggregator = new FilterAggregator();
-          const secondTime = +Time("18:00:00").asDate();
-          aggregator.add(
-            {
-              name: "tradeTime",
-              serverDataType: "epochtimestamp",
-              type: "time",
-            },
-            ["13:00:00", secondTime.toString()],
-          );
-          expect(aggregator.filter).toEqual({
-            op: "and",
-            filters: [
-              {
-                column: "tradeTime",
-                op: ">",
-                value: +Time("13:00:00").asDate(),
-              },
-              {
-                column: "tradeTime",
-                op: "<",
-                value: secondTime,
-              },
-            ],
-          });
-        });
-
-        it("THEN between-inclusive uses > and < when no extended options provided", () => {
+        it("THEN between-inclusive uses >= and <=", () => {
           const aggregator = new FilterAggregator();
           aggregator.add(
-            {
-              name: "tradeTime",
-              serverDataType: "epochtimestamp",
-              type: "time",
-            },
+            tradeTime,
             ["08:00:00", "09:00:00"],
+            "between-inclusive",
+          );
+          expect(asJson(aggregator.filter)).toEqual({
+            op: "and",
+            filters: [
+              {
+                column: "tradeTime",
+                op: ">=",
+                value: "08:00:00",
+                extendedOptions,
+              },
+              {
+                column: "tradeTime",
+                op: "<=",
+                value: "09:00:00",
+                extendedOptions,
+              },
+            ],
+          });
+          // <= 09:00:00 includes the whole of that second
+          expect(filterAsQuery(aggregator.filter as Filter)).toEqual(
+            `tradeTime >= ${+Time("08:00:00").asDate()} and tradeTime < ${+Time("09:00:01").asDate()}`,
+          );
+        });
+
+        it("THEN nano time columns are serialized with nanosecond values", () => {
+          const aggregator = new FilterAggregator();
+          aggregator.add(
+            {
+              name: "tradeTime",
+              serverDataType: "epochtimestampnano",
+              type: "time",
+            },
+            "09:15:00",
+          );
+          expect(filterAsQuery(aggregator.filter as Filter)).toEqual(
+            `tradeTime >= ${+Time("09:15:00").asDate()}000000 and tradeTime < ${+Time("09:15:01").asDate()}000000`,
+          );
+        });
+      });
+
+      describe("WHEN a value tuple is added for a date column", () => {
+        it("THEN between-inclusive values are typed as epoch millis", () => {
+          const aggregator = new FilterAggregator();
+          aggregator.add(
+            {
+              name: "tradeDate",
+              serverDataType: "epochtimestamp",
+              type: "date/time",
+            },
+            ["2024-03-01", "2024-03-31"],
             "between-inclusive",
           );
           expect(aggregator.filter).toEqual({
             op: "and",
             filters: [
               {
-                column: "tradeTime",
-                op: ">",
-                value: +Time("08:00:00").asDate(),
+                column: "tradeDate",
+                op: ">=",
+                value: new Date(2024, 2, 1).getTime(),
               },
               {
-                column: "tradeTime",
-                op: "<",
-                value: +Time("09:00:00").asDate(),
+                column: "tradeDate",
+                op: "<=",
+                value: new Date(2024, 2, 31).getTime(),
               },
             ],
           });

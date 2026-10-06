@@ -1,4 +1,11 @@
-import type { Filter } from "@vuu-ui/vuu-filter-types";
+import type {
+  ColumnDescriptorsByName,
+  Filter,
+} from "@vuu-ui/vuu-filter-types";
+
+export interface SetFilterOptions {
+  columnsByName?: ColumnDescriptorsByName;
+}
 import type {
   LinkDescriptorWithLabel,
   NoAction,
@@ -109,6 +116,7 @@ export declare type DataValueTypeSimple =
   | "boolean"
   | "json"
   | DateTimeDataValueTypeSimple
+  | DateDataValueTypeSimple
   | TimeDataValueTypeSimple
   | DecimalValueTypeSimple
   | "checkbox";
@@ -117,14 +125,40 @@ export declare type DataValueType =
   | DataValueTypeSimple
   | DataValueTypeDescriptor;
 
+/** Time of day only, date component (if any) is not displayed */
 export declare type TimeDataValueTypeSimple = "time";
+/** Date and time of day */
 export declare type DateTimeDataValueTypeSimple = "date/time";
+/** Calendar date only, time of day (if any) is not displayed */
+export declare type DateDataValueTypeSimple = "date";
+/**
+ * The DataValueTypeSimple values that identify a value as temporal. Can be used to
+ * refine a numeric serverDataType (legacy) or the 'kind' of an epochtimestamp or
+ * epochtimestampnano value.
+ */
+export declare type TemporalDataValueTypeSimple =
+  | DateTimeDataValueTypeSimple
+  | DateDataValueTypeSimple
+  | TimeDataValueTypeSimple;
 export declare type DecimalValueTypeSimple = "decimal" | "scaleddecimal";
 
 export declare type DateTimeDataValueType =
-  | DateTimeColumnTypeSimple
+  | DateTimeDataValueTypeSimple
+  | DateDataValueTypeSimple
   | (Omit<DataValueTypeDescriptor, "name"> & {
-      name: DateTimeColumnTypeSimple;
+      name: DateTimeDataValueTypeSimple | DateDataValueTypeSimple;
+    });
+
+export declare type TimeDataValueType =
+  | TimeDataValueTypeSimple
+  | (Omit<DataValueTypeDescriptor, "name"> & {
+      name: TimeDataValueTypeSimple;
+    });
+
+export declare type TemporalDataValueType =
+  | TemporalDataValueTypeSimple
+  | (Omit<DataValueTypeDescriptor, "name"> & {
+      name: TemporalDataValueTypeSimple;
     });
 
 export declare type BulkEdit = "bulk" | false | "read-only";
@@ -740,9 +774,15 @@ export interface DataSourceBase<
    * (or ExtendedFilter) object. The real advantage to using this is the additional set
    * of capabilities the ExtendedFilter offers.
    * Eventually, this will replace the existing filter setter
+   *
+   * Filter clauses on temporal columns are serialized according to the column
+   * type (see temporalFilterAsQuery), e.g a date '=' becomes a day range. Column
+   * types are taken from the tableSchema, where available. Pass columnsByName
+   * where columns are refined on the client (e.g a long column with type 'date/time'
+   * or 'time', or a column with a time zone).
    */
   clearFilter?: () => void;
-  setFilter?: (filter: Filter) => void;
+  setFilter?: (filter: Filter, options?: SetFilterOptions) => void;
 
   /**
    * Only implemented on JSON DataSource

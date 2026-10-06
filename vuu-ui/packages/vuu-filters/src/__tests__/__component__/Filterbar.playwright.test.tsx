@@ -299,41 +299,36 @@ test.describe("FilterBar", () => {
     await expect(page.getByRole("button", { name: "Save" })).toBeFocused();
   });
 
-  const getDate = (kind: "start-today" | "end-today") => {
+  const getDate = () => {
     const today = new Date();
-    today.setHours(
-      kind === "start-today" ? 0 : 23,
-      kind === "start-today" ? 0 : 59,
-      kind === "start-today" ? 0 : 59,
-      kind === "start-today" ? 0 : 999,
-    );
+    today.setHours(0, 0, 0, 0);
     return today;
   };
 
   const dateCases = [
     {
       op: "=",
-      expectedValue: () => getDate("start-today").getTime(),
+      expectedValue: () => getDate().getTime(),
     },
     {
       op: "!=",
-      expectedValue: () => getDate("start-today").getTime(),
+      expectedValue: () => getDate().getTime(),
     },
     {
       op: ">",
-      expectedValue: () => getDate("end-today").getTime(),
+      expectedValue: () => getDate().getTime(),
     },
     {
       op: ">=",
-      expectedValue: () => getDate("start-today").getTime(),
+      expectedValue: () => getDate().getTime(),
     },
     {
       op: "<",
-      expectedValue: () => getDate("start-today").getTime(),
+      expectedValue: () => getDate().getTime(),
     },
     {
       op: "<=",
-      expectedValue: () => getDate("end-today").getTime(),
+      expectedValue: () => getDate().getTime(),
     },
   ];
 

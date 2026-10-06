@@ -61,10 +61,10 @@ const T = Date.UTC(2026, 8, 30, 14, 5, 9, 250);
 const day = 86_400_000;
 const tradeColumns: ColumnDescriptor[] = [
   { name: "id", label: "ID", serverDataType: "string", width: 60 },
-  { name: "tradeDate", serverDataType: "long" },
-  { name: "settleDate", serverDataType: "long" },
-  { name: "tradeTime", serverDataType: "long" },
-  { name: "execTime", serverDataType: "long" },
+  { name: "tradeDate", serverDataType: "epochtimestamp" },
+  { name: "settleDate", serverDataType: "epochtimestamp" },
+  { name: "tradeTime", serverDataType: "epochtimestamp" },
+  { name: "execTime", serverDataType: "epochtimestamp" },
 ];
 const tradeData = [
   ["T1", T, T + 2 * day, T, T],
@@ -80,7 +80,6 @@ export const DateFormatting = () => {
         {
           name: "tradeDate",
           label: "Trade date",
-          type: "date/time",
           width: 160,
         },
         {

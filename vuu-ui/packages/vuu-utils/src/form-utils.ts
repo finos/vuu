@@ -14,7 +14,17 @@ import {
   isValidTimeStringMillis,
   normaliseTimeString,
   Time,
-} from "./date";
+} from "./date/date-utils";
+import type { TemporalEncoding } from "./date/EpochTimestamp";
+import { EpochTimestamp } from "./date/EpochTimestamp";
+import {
+  getTemporalInfo,
+  parseTemporalInput,
+  type TemporalInfo,
+} from "./date/temporal";
+import { getDefaultTimeZone } from "./date/time-zone";
+import type { DataValueDescriptor } from "@vuu-ui/vuu-data-types";
+import { isTypeDescriptor } from "./column-utils";
 import { queryClosest } from "./html-utils";
 import { ExtendedFilterOptions } from "@vuu-ui/vuu-filter-types";
 import {
@@ -202,6 +212,31 @@ export function getTypedValue(
     case "boolean":
       return value === "true" ? true : false;
 
+    case "epochtimestamp":
+    case "epochtimestampnano":
+    case "date/time":
+    case "date": {
+      const encoding: TemporalEncoding =
+        type === "epochtimestampnano" ? "epochNanos" : "epochMillis";
+      const timestamp = parseTemporalInput(value, {
+        kind: type === "date" ? "date" : "datetime",
+        encoding,
+        precision: encoding === "epochNanos" ? "ns" : "ms",
+        timeZone: getDefaultTimeZone(),
+      });
+      if (timestamp) {
+        return timestamp.toWire(encoding);
+      } else if (throwIfInvalid) {
+        throw new DataValidationError(
+          `value ${value} is not a valid ${type}`,
+          "date/time",
+          getActualType(value),
+        );
+      } else {
+        return undefined;
+      }
+    }
+
     case "time":
       if (isValidTimeString(value) || isValidTimeStringMillis(value)) {
         // We don't manipulate the values of 'extended' filters, the
@@ -222,4 +257,56 @@ export function getTypedValue(
     default:
       return value;
   }
+}
+
+/**
+ * Convert a string value (from user input or a filter control) to the wire
+ * representation of a temporal value, using the column's TemporalInfo.
+ * - time kind: a TimeString is applied to today's date (in the column time zone)
+ * - any kind: canonical input (see parseTemporalInput) or raw epoch digits
+ * Values are returned in the column encoding (number for epochMillis, string
+ * for epochNanos).
+ */
+export function getTypedTemporalValue(
+  value: string,
+  temporalInfo: TemporalInfo,
+  throwIfInvalid = false,
+  baseValue?: EpochTimestamp,
+): number | string | undefined {
+  if (value === "") {
+    return undefined;
+  }
+  const timestamp = parseTemporalInput(value, temporalInfo, baseValue);
+  if (timestamp) {
+    return timestamp.toWire(temporalInfo.encoding);
+  } else if (throwIfInvalid) {
+    throw new DataValidationError(
+      `value ${value} is not a valid ${temporalInfo.kind}`,
+      temporalInfo.kind,
+      getActualType(value),
+    );
+  }
+}
+
+/**
+ * Like getTypedValue, but takes a column (or form field) descriptor. Temporal
+ * values are handled according to getTemporalInfo, other values according to
+ * the type name, if there is one, otherwise the serverDataType.
+ */
+export function getTypedValueForDescriptor(
+  value: string,
+  descriptor: DataValueDescriptor,
+  throwIfInvalid = false,
+): VuuRowDataItemType | ScaledDecimal | bigint | undefined {
+  const temporalInfo = getTemporalInfo(descriptor);
+  if (temporalInfo) {
+    return getTypedTemporalValue(value, temporalInfo, throwIfInvalid);
+  }
+  const { serverDataType = "string", type } = descriptor;
+  const dataType = isTypeDescriptor(type)
+    ? type.name
+    : (type ?? serverDataType);
+  return throwIfInvalid
+    ? getTypedValue(value, dataType, true)
+    : getTypedValue(value, dataType, false);
 }

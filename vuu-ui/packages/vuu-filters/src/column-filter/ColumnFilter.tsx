@@ -7,13 +7,17 @@ import {
   getDataItemEditControl,
 } from "@vuu-ui/vuu-data-react";
 import cx from "clsx";
-import { ForwardedRef, forwardRef } from "react";
+import { ForwardedRef, forwardRef, useMemo } from "react";
 import { ColumnFilterHookProps, useColumnFilter } from "./useColumnFilter";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
 import columnFilterCss from "./ColumnFilter.css";
-import { isBetweenOperator } from "@vuu-ui/vuu-utils";
+import {
+  type DateTimePattern,
+  isBetweenOperator,
+  withDateTimePattern,
+} from "@vuu-ui/vuu-utils";
 
 const classBase = "vuuColumnFilter";
 
@@ -23,7 +27,20 @@ export interface ColumnFilterProps
     Pick<
       DataItemEditControlProps,
       "TypeaheadProps" | "table" | "values" | "variant"
-    > {}
+    > {
+  /**
+   * Temporal columns only. The date/time pattern used by the filter control,
+   * overriding any pattern configured on the column type. The pattern also
+   * determines the control rendered: a time picker for a time only pattern
+   * (with milliseconds if time is 'hh:mm:ss.ms'), otherwise a date picker.
+   * This allows a filter to use different formatting to the Table, e.g.
+   * the Table might display nanoseconds whilst the filter accepts a time
+   * of day with milliseconds. The column passed to change and commit
+   * handlers is the column with this pattern applied (see withDateTimePattern),
+   * so that filter values are interpreted consistently with the control.
+   */
+  pattern?: DateTimePattern;
+}
 
 export const ColumnFilter = forwardRef(function ColumnFilter(
   {
@@ -37,6 +54,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
     onColumnRangeFilterChange,
     onCommit: onCommitProp,
     operator = "=",
+    pattern,
     table,
     value: valueProp,
     values,
@@ -52,10 +70,20 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
     window: targetWindow,
   });
 
+  const { date, time } = pattern ?? {};
+  const controlDescriptor = useMemo(
+    () =>
+      withDateTimePattern(
+        column,
+        date || time ? ({ date, time } as DateTimePattern) : undefined,
+      ),
+    [column, date, time],
+  );
+
   const { InputProps, InputPropsRange, isInvalid, onCommit, onCommitRange } =
     useColumnFilter({
       InputProps: InputPropsProp,
-      column,
+      column: controlDescriptor,
       defaultValue,
       extendedFilterOptions,
       onColumnFilterChange,
@@ -77,7 +105,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
         InputProps,
         TypeaheadProps,
         commitWhenCleared: true,
-        dataDescriptor: column,
+        dataDescriptor: controlDescriptor,
         onCommit,
         table,
         values,
@@ -89,7 +117,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
             className: `${classBase}-rangeHigh`,
             commitWhenCleared: true,
             variant,
-            dataDescriptor: column,
+            dataDescriptor: controlDescriptor,
             onCommit: onCommitRange,
             table,
           })

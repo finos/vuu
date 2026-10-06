@@ -116,9 +116,18 @@ export const walkTree = (tree: Tree, source: string) => {
         filterExpression.setValue(source.substring(from + 1, to - 1));
         break;
 
-      case "Number":
-        filterExpression.setValue(parseFloat(source.substring(from, to)));
+      case "Number": {
+        const numericText = source.substring(from, to);
+        const numericValue = parseFloat(numericText);
+        // Integers too large to be represented safely (e.g epoch nanos) are
+        // preserved as string, to avoid loss of precision.
+        filterExpression.setValue(
+          /^-?\d+$/.test(numericText) && !Number.isSafeInteger(numericValue)
+            ? numericText
+            : numericValue,
+        );
         break;
+      }
 
       case "True":
         filterExpression.setValue(true);

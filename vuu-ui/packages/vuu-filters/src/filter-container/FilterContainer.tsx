@@ -1,6 +1,7 @@
 import cx from "clsx";
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -22,6 +23,7 @@ import { ColumnFilter, ColumnFilterProps } from "../column-filter/ColumnFilter";
 import {
   filterDescriptorHasFilter,
   isNullFilter,
+  useColumnFilterRegistry,
   useSavedFilters,
 } from "../filter-provider/FilterContext";
 import {
@@ -29,7 +31,9 @@ import {
   getColumnValueFromFilter,
   getDefaultTimeRange,
   isTimeDataValue,
+  withDateTimePattern,
   isBetweenOperator,
+  type DateTimePattern,
 } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -52,20 +56,45 @@ export interface FilterContainerColumnFilterProps extends Omit<
   "defaultValue" | "onCommit" | "value"
 > {
   defaultValue?: ColumnFilterValue;
+  /**
+   * See ColumnFilter pattern. Defaults to the pattern configured for the
+   * column by FilterProvider columnFilterPatterns or columnTypeFilterPatterns,
+   * if any.
+   */
+  pattern?: DateTimePattern;
 }
 
 export const FilterContainerColumnFilter = ({
-  column,
+  column: columnProp,
   operator = "=",
+  pattern: patternProp,
   variant,
   ...props
 }: FilterContainerColumnFilterProps) => {
+  const { getColumnFilterPattern } = useColumnFilterRegistry();
+  const pattern = patternProp ?? getColumnFilterPattern(columnProp);
+  const { date, time } = pattern ?? {};
+  const column = useMemo(
+    () =>
+      withDateTimePattern(
+        columnProp,
+        date || time ? ({ date, time } as DateTimePattern) : undefined,
+      ),
+    [columnProp, date, time],
+  );
   const {
     filterProviderKey,
     onChange: onFilterContextChange,
     onCommit: onFilterContextCommit,
     register,
   } = useFilterContext(column, true);
+
+  const { registerColumnFilterColumn } =
+    useColumnFilterRegistry(filterProviderKey);
+  useEffect(
+    () => registerColumnFilterColumn(column),
+    [column, registerColumnFilterColumn],
+  );
 
   const initialValue = useMemo(
     () => register(column, operator),

@@ -19,10 +19,8 @@ import {
   RuntimeColumnDescriptor,
 } from "@vuu-ui/vuu-table-types";
 import { ScaledDecimal } from "../ScaledDecimal";
-import {
-  isTimeDataValue,
-  isTimeDataValueWithMilliseconds,
-} from "../column-utils";
+import { isTimeDataValueWithMilliseconds } from "../column-utils";
+import { getTemporalInfo } from "../date/temporal";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",
@@ -202,7 +200,7 @@ export const getColumnValueFromFilter = (
       if (operator.startsWith("between")) {
         if (filter.op === "=") {
           return [`${filter.value}`, ""];
-        } else if (filter.op === "<") {
+        } else if (filter.op === "<" || filter.op === "<=") {
           return ["", `${filter.value}`];
         }
       } else {
@@ -231,7 +229,7 @@ export const getColumnValueFromFilter = (
     }
   }
   if (operator.startsWith("between")) {
-    if (isTimeDataValue(column)) {
+    if (getTemporalInfo(column)?.kind === "time") {
       return getDefaultTimeRange(column);
     } else {
       return ["", ""];

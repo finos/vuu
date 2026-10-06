@@ -39,7 +39,7 @@ export function useCsvExport(
   const config =
     propsOrDataSource && "table" in propsOrDataSource
       ? { dataSource: propsOrDataSource }
-      : (propsOrDataSource as UseCsvExportProps) ?? {};
+      : ((propsOrDataSource as UseCsvExportProps) ?? {});
 
   const {
     dataSource: defaultDataSource,

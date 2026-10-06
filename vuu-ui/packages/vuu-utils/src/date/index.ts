@@ -26,6 +26,7 @@ export {
   dateTimePattern,
   defaultPatternsByType,
   fallbackDateTimePattern,
+  withDateTimePattern,
 } from "./dateTimePattern";
 export * from "./formatter";
 export {
@@ -37,3 +38,7 @@ export {
   type DateTimePattern,
   type TimePattern,
 } from "./types";
+export { defaultDateTimePatternByKind } from "./dateTimePattern";
+export { EpochTimestamp, type TemporalEncoding } from "./EpochTimestamp";
+export * from "./temporal";
+export * from "./time-zone";

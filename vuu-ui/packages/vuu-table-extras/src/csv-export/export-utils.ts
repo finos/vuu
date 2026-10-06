@@ -248,9 +248,9 @@ export const exportCsvTemplate = async (
   const excluded = new Set([...EXPORT_EXCLUDED_COLUMNS, ...excludeColumns]);
   const exportCols = targetColumns
     ? targetColumns.filter((name) => !excluded.has(name))
-    : schema?.columns
+    : (schema?.columns
         .filter((col) => !excluded.has(col.name))
-        .map((col) => col.name) ?? [];
+        .map((col) => col.name) ?? []);
 
   if (exportCols.length === 0) {
     const error = new Error(

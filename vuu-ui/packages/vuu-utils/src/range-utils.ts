@@ -152,10 +152,14 @@ const constrainRangeWidth = (range: VuuRange, maxRangeWidth = Number.MAX_SAFE_IN
   console.warn(`[range-utils] range ${range.from} - ${range.to} exceeds maxRangeWidth ${maxRangeWidth} for this table `);
   return {
     from: range.from,
-    to: range.from + maxRangeWidth
-  }
-}
-export const constrainRange = (range: VuuRange, maxRangeEnd: number, maxRangeWidth?: number) => {
+    to: range.from + maxRangeWidth,
+  };
+};
+export const constrainRange = (
+  range: VuuRange,
+  maxRangeEnd: number,
+  maxRangeWidth?: number,
+) => {
   if (maxRangeEnd > 0 && maxRangeEnd < range.to) {
     if (maxRangeEnd > range.from) {
       return constrainRangeWidth({
@@ -168,4 +172,4 @@ export const constrainRange = (range: VuuRange, maxRangeEnd: number, maxRangeWid
   } else {
     return constrainRangeWidth(range, maxRangeWidth);
   }
-}
+};

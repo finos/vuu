@@ -1,0 +1,70 @@
+import { LivePreview } from "../components/LivePreview";
+import {
+  DatePickerTimeZones,
+  EditableTemporalCells,
+  TemporalEditControls,
+} from "./04-Editing.examples";
+
+# Editing
+
+Temporal values are edited in the column time zone and committed in the column encoding: a `number` of epoch milliseconds for `epochtimestamp`, a `string` of epoch nanoseconds for `epochtimestampnano`. Parts of the value that the user does not edit are kept, so editing the date of a timestamp keeps its time of day, and editing the time keeps its date.
+
+## Table cells
+
+An editable temporal column uses the `temporal-input-cell` renderer, registered by `@vuu-ui/vuu-table`, instead of the generic `input-cell`.
+
+- **Display.** While editing, the value is shown in a fixed format that does not depend on locale, in the column time zone:
+  - `date`: `yyyy-mm-dd`
+  - `datetime`: `yyyy-mm-dd hh:mm:ss[.fffffffff]`
+  - `time`: `hh:mm:ss[.fffffffff]`
+
+  Sub-second digits appear only when non-zero, up to the precision of the encoding, so nanosecond values are not changed by an edit that does not touch them.
+- **Input.** The user can also type a raw epoch value (9 or more digits). Missing parts are taken from the existing value. Invalid input is reported as a validation error on the cell.
+- **Commit.** Edits are committed through the `TableEditSession` provided by `DataEditingProvider`.
+
+Bulk edit uses the same cell.
+
+<LivePreview>
+  <EditableTemporalCells />
+
+```ts
+{
+  name: "execTime",
+  serverDataType: "epochtimestampnano",
+  type: { name: "date/time", formatting: { timeZone: "UTC" } },
+  editable: true,
+}
+```
+
+</LivePreview>
+
+## Forms and edit controls
+
+`getDataItemEditControl` (in `@vuu-ui/vuu-data-react`) chooses a control with `getTemporalInfo`:
+
+- **`date` and `datetime`** use a `VuuDatePicker`. Picking a date keeps the existing time of day (including nanoseconds) of a `datetime` value.
+- **`time`** uses a `VuuTimePicker`, in milliseconds mode when the column uses the `hh:mm:ss.ms` pattern. When editing an existing timestamp, the new time is applied to that timestamp's date. When there is no timestamp, as in a filter, it commits a time string.
+
+`getTypedValue` (in `@vuu-ui/vuu-utils`) converts a value entered as text to the wire value for `epochtimestamp`, `epochtimestampnano`, `date/time` and `date` fields.
+
+<LivePreview>
+  <TemporalEditControls />
+</LivePreview>
+
+## VuuDatePicker
+
+| Prop                         | Type                        | Description                                                                                                                                    |
+| ---------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value`                      | `EpochTimestamp \| number`  | The current value. The calendar date is derived in `timeZone`. An alternative to `selectedDate`.                                               |
+| `timeZone`                   | `TimeZoneSpec`              | Defaults to the application default time zone.                                                                                                 |
+| `onCommit(evt, epochMillis)` | function                    | Called when a date is picked, or when a valid date is typed and Enter pressed. Receives the start of the day in `timeZone`, in epoch millis.     |
+
+The same date can be a different instant in different time zones:
+
+<LivePreview>
+  <DatePickerTimeZones />
+</LivePreview>
+
+## TimeInput and VuuTimePicker
+
+Both controls work with time strings (`hh:mm:ss`), or with `hh:mm:ss.SSS` when the `milliseconds` prop is set. They are not time zone aware: callers convert to and from timestamps using the column's `TemporalInfo`, as `getDataItemEditControl` does.

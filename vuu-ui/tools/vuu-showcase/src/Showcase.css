@@ -156,6 +156,39 @@ body {
         margin-bottom: 0;
       }
     }
+
+    .vuuAdmonition {
+      --admonition-borderColor: var(--salt-status-info-borderColor);
+      --admonition-background: var(--salt-status-info-background);
+      background: var(--admonition-background);
+      border-left: 4px solid var(--admonition-borderColor);
+      border-radius: 4px;
+      margin: var(--salt-spacing-200) 0;
+      padding: var(--salt-spacing-100) var(--salt-spacing-300);
+
+      > p:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .vuuAdmonition-title {
+      font-weight: var(--salt-text-fontWeight-strong, 600);
+    }
+
+    .vuuAdmonition-tip {
+      --admonition-borderColor: var(--salt-status-success-borderColor);
+      --admonition-background: var(--salt-status-success-background);
+    }
+
+    .vuuAdmonition-warning {
+      --admonition-borderColor: var(--salt-status-warning-borderColor);
+      --admonition-background: var(--salt-status-warning-background);
+    }
+
+    .vuuAdmonition-danger {
+      --admonition-borderColor: var(--salt-status-error-borderColor);
+      --admonition-background: var(--salt-status-error-background);
+    }
   }
 }
 

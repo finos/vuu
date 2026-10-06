@@ -188,11 +188,31 @@ export type RoundingRule = "truncate" | "round";
 export declare type ColumnTypeFormatting = {
   alignOnDecimals?: boolean;
   decimals?: number;
+  /**
+   * Temporal values only. Number of sub-second digits to display when the
+   * pattern includes a time component. Defaults to 0 for millisecond
+   * timestamps (3 if the legacy 'hh:mm:ss.ms' pattern is used) and to 9
+   * for nanosecond timestamps.
+   */
+  fractionalSecondDigits?: FractionalSecondDigits;
+  /**
+   * Temporal values only. Overrides the locale implied by the date pattern.
+   * The pattern then determines the style of each field (numeric, short or
+   * long month name), the locale determines field order and language.
+   */
+  locale?: string;
   roundingRule?: RoundingRule;
   pattern?: DateTimePattern;
+  /**
+   * Temporal values only. Time zone used to display (and edit/filter) the
+   * value. 'local' (the default) or 'UTC' or any IANA time zone id.
+   */
+  timeZone?: string;
   useLocaleString?: boolean;
   zeroPad?: boolean;
 };
+
+export declare type FractionalSecondDigits = 0 | 3 | 6 | 9;
 
 export declare type ColumnTypeValueMap = { [key: string]: string };
 

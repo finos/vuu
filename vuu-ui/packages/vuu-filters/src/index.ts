@@ -12,7 +12,10 @@ export {
   type FilterContainerProps,
 } from "./filter-container/FilterContainer";
 export type { FilterAppliedHandler } from "./filter-container/useFilterContainer";
-export { useFilterContextMenu } from "./filter-context-menu/useFilterContextMenu";
+export {
+  type FilterContextMenuHookProps,
+  useFilterContextMenu,
+} from "./filter-context-menu/useFilterContextMenu";
 export { FilterDisplay } from "./filter-display/FilterDisplay";
 export * from "./filter-editor";
 export { FilterPanel } from "./filter-panel/FilterPanel";
@@ -22,8 +25,16 @@ export {
   FilterPillNext,
   type FilterPillNextProps,
 } from "./filter-pill/FilterPillNext";
-export { NULL_FILTER, useSavedFilters } from "./filter-provider/FilterContext";
-export { FilterProvider } from "./filter-provider/FilterProvider";
+export {
+  NULL_FILTER,
+  type ColumnFilterPatternColumn,
+  useColumnFilterRegistry,
+  useSavedFilters,
+} from "./filter-provider/FilterContext";
+export {
+  FilterProvider,
+  type FilterProviderProps,
+} from "./filter-provider/FilterProvider";
 export * from "./filter-utils";
 export * from "./FilterModel";
 export * from "./inline-filter";
