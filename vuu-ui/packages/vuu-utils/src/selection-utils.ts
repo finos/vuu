@@ -67,8 +67,7 @@ export const splitSelectableRanges = (
         fromRowKey: fromKey,
         toRowKey: toKey,
         // first sub-range respects the caller's preserve flag; subsequent ones must preserve
-        preserveExistingSelection:
-          requests.length > 0 ? true : preserveExistingSelection,
+        preserveExistingSelection: requests.length > 0 ? true : preserveExistingSelection,
       } as Omit<SelectRequest, "vpId">);
       fromKey = undefined;
       toKey = undefined;
@@ -79,8 +78,7 @@ export const splitSelectableRanges = (
       type: "SELECT_ROW_RANGE",
       fromRowKey: fromKey,
       toRowKey: toKey,
-      preserveExistingSelection:
-        requests.length > 0 ? true : preserveExistingSelection,
+      preserveExistingSelection: requests.length > 0 ? true : preserveExistingSelection,
     } as Omit<SelectRequest, "vpId">);
   }
   return requests;

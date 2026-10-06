@@ -21,8 +21,8 @@
 
 .vuuColumnExpressionInput-FilterButton,
 .vuuColumnExpressionInput-ClearButton {
-  --vuu-icon-size: 12px;
-  --saltButton-width: 28px;
+    --vuu-icon-size: 12px;
+    --saltButton-width: 28px;
 }
 
 .expression-type-container {
@@ -31,61 +31,61 @@
 }
 
 .expression-kind {
-  display: inline-block;
-  width: 50px;
+    display: inline-block;
+    width: 50px;
 }
 
 .expression-type {
-  display: inline-block;
-  text-align: right;
-  width: 50px;
+    display: inline-block;
+    text-align: right;
+    width: 50px;
 }
 
 .vuuSuggestion {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .vuuFunctionDoc {
-  padding: 13px 7px;
+    padding: 13px 7px;
 }
 
 .vuuFunctionDoc .function-heading {
-  display: flex;
-  gap: 3px;
+    display: flex;
+    gap: 3px;
 }
 
 .vuuFunctionDoc .function-name {
-  font-weight: 700;
-  text-transform: capitalize;
+    font-weight: 700;
+    text-transform: capitalize;
 }
 
 .vuuFunctionDoc .param-list {
-  color: var(--vuu-color-gray-50);
-  white-space: pre;
+    color: var(--vuu-color-gray-50);
+    white-space: pre;
 }
 
 .vuuFunctionDoc .function-type {
-  color: var(--vuu-color-gray-50);
-  font-weight: 700;
-  margin-left: auto;
-  text-transform: capitalize;
+    color: var(--vuu-color-gray-50);
+    font-weight: 700;
+    margin-left: auto;
+    text-transform: capitalize;
 }
 
 .vuuFunctionDoc .example-container {
-  background-color: var(--vuu-color-gray-03);
-  margin: 6px 0;
-  padding: 3px;
+    background-color: var(--vuu-color-gray-03);
+    margin: 6px 0;
+    padding: 3px;
 }
 
 .vuuFunctionDoc .example-expression {
-  color: var(--vuu-color-gray-80);
-  font-family: var(--salt-typography-fontFamily-code);
-  font-weight: 500;
-  padding: 8px;
+    color: var(--vuu-color-gray-80);
+    font-family: var(--salt-typography-fontFamily-code);
+    font-weight: 500;
+    padding: 8px;
 }
 
 .vuuFunctionDoc .example-result {
-  margin-left: 8px;
-  margin-top: 6px;
+    margin-left: 8px;
+    margin-top: 6px;
 }

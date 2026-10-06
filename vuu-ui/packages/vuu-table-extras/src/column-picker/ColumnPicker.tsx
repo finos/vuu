@@ -14,7 +14,8 @@ const classBase = "vuuColumnPicker";
 export const classBaseListItem = "vuuColumnPickerListItem";
 
 export interface ColumnPickerProps
-  extends ColumnPickerHookProps,
+  extends
+    ColumnPickerHookProps,
     Pick<ListBoxProps<ColumnDescriptor>, "selected" | "onSelectionChange">,
     HTMLAttributes<HTMLDivElement> {}
 

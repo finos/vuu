@@ -175,7 +175,8 @@ export interface ColumnActionUpdateProp {
   width?: ColumnDescriptor["width"];
 }
 
-export interface ColumnActionTableConfig extends WithBaseFilter<WithFullConfig> {
+export interface ColumnActionTableConfig
+  extends WithBaseFilter<WithFullConfig> {
   confirmed?: boolean;
   type: "tableConfig";
 }

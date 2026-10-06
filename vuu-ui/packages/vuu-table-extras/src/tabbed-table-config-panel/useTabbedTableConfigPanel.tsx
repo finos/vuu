@@ -7,7 +7,8 @@ import { TableSettingsPanelProps } from "../table-settings-panel/TableSettingsPa
 import { TabbedTableConfigPanel } from "./TabbedTableConfigPanel";
 
 export interface TabbedTableConfigPanelHookProps
-  extends Pick<ColumnPickerProps, "columnModel">,
+  extends
+    Pick<ColumnPickerProps, "columnModel">,
     Pick<TableSettingsPanelProps, "onDisplayAttributeChange">,
     Pick<TableProps, "config"> {
   /**

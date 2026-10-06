@@ -1,9 +1,10 @@
 .vuuFilterEditor {
-  align-items: center;
-  display: flex;
-  gap: var(--salt-spacing-200);
-  height: var(--vuuFilterEditor-height, calc(var(--salt-size-base) + var(--salt-size-unit)));
-  grid-column: 1 / 4;
-  grid-row: 2 / 3;
-  width: 100%;
+    align-items: center;
+    display: flex;
+    gap: var(--salt-spacing-200);
+    height: var(--vuuFilterEditor-height, calc(var(--salt-size-base) + var(--salt-size-unit)));
+    grid-column: 1 / 4;
+    grid-row: 2 / 3;
+    width: 100%;
+    
 }

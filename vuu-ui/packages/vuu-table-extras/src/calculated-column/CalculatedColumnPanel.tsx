@@ -19,8 +19,7 @@ import { useCalculatedColumnPanel } from "./useCalculatedColumnPanel";
 
 const classBase = "vuuCalculatedColumnPanel";
 
-export interface CalculatedColumnPanelProps
-  extends HTMLAttributes<HTMLDivElement> {
+export interface CalculatedColumnPanelProps extends HTMLAttributes<HTMLDivElement> {
   column: ColumnDescriptor;
   columnModel: ColumnModel;
   onChangeColumn: (column: ColumnDescriptor) => void;

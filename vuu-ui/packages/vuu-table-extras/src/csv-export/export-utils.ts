@@ -73,10 +73,7 @@ const DEFAULT_TEMPLATE_TIMEOUT = 10_000;
 
 const csvCell = (value: unknown): string => {
   const s = value == null ? "" : String(value);
-  return s.includes(",") ||
-    s.includes('"') ||
-    s.includes("\n") ||
-    s.includes("\r")
+  return s.includes(",") || s.includes('"') || s.includes("\n") || s.includes("\r")
     ? `"${s.replace(/"/g, '""')}"`
     : s;
 };
@@ -230,9 +227,7 @@ export const exportCsvTemplate = async (
   if (targetColumns !== undefined) {
     if (schema) {
       const schemaColumnNames = new Set(schema.columns.map((col) => col.name));
-      const unknown = targetColumns.filter(
-        (name) => !schemaColumnNames.has(name),
-      );
+      const unknown = targetColumns.filter((name) => !schemaColumnNames.has(name));
       if (unknown.length > 0) {
         console.warn(
           `[exportCsvTemplate] unknown column(s) in view tableSchema: ${unknown.join(", ")}`,

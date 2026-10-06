@@ -1,6 +1,7 @@
 import { test } from "../../../../../playwright/fixtures";
 import { expect } from "../../../../../playwright/fixtures";
 
+
 test.describe("FilterClause", () => {
   test("new clause renders the column field focused with suggestions", async ({
     mount,

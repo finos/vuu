@@ -31,12 +31,12 @@ export type Operator = "";
 const applyPrefix = (completions: Completion[], prefix?: string) =>
   prefix
     ? completions.map((completion) => ({
-        ...completion,
-        apply:
-          typeof completion.apply === "function"
-            ? completion.apply
-            : `${prefix}${completion.apply ?? completion.label}`,
-      }))
+      ...completion,
+      apply:
+        typeof completion.apply === "function"
+          ? completion.apply
+          : `${prefix}${completion.apply ?? completion.label}`,
+    }))
     : completions;
 
 const isOperator = (node?: SyntaxNode): node is SyntaxNode =>
@@ -294,13 +294,14 @@ export const useColumnAutoComplete = (
           }
 
           break;
-        case "OpenBrace": {
-          // Might be a function expression, might be parenthesized
-          const functionName = getFunctionName(nodeBefore, state);
-          // If not function, what came before - if it's an operator
-          // we restrict to numerics
-          return makeSuggestions(context, "expression", { functionName });
-        }
+        case "OpenBrace":
+          {
+            // Might be a function expression, might be parenthesized
+            const functionName = getFunctionName(nodeBefore, state);
+            // If not function, what came before - if it's an operator
+            // we restrict to numerics
+            return makeSuggestions(context, "expression", { functionName });
+          }
         case "ArgList": {
           const functionName = getFunctionName(nodeBefore, state);
           const lastArgument = getLastChild(nodeBefore, context);

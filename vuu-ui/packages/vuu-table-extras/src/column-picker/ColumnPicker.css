@@ -1,5 +1,6 @@
 .vuuColumnPicker {
-  &.vuuColumnPicker-withCalculated {
-    --label-margin-left: 8px;
-  }
+
+    &.vuuColumnPicker-withCalculated {
+        --label-margin-left: 8px;
+    }
 }

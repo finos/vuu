@@ -25,9 +25,7 @@ export const useDatasourceStats = ({
   const [selectedCount, setSelectedCount] = useState(0);
   const [range, setRange] = useState<Range>(dataSource.range);
   const [size, setSize] = useState(dataSource.size);
-  const [maxRangeEnd, setMaxRangeEnd] = useState(
-    dataSource.maxRangeEnd ?? Number.MAX_SAFE_INTEGER,
-  );
+  const [maxRangeEnd, setMaxRangeEnd] = useState(dataSource.maxRangeEnd ?? Number.MAX_SAFE_INTEGER);
   const [freezeTime, setFreezeTime] = useState(
     formatTime(dataSource.freezeTimestamp),
   );
@@ -47,15 +45,12 @@ export const useDatasourceStats = ({
     setSelectedCount(count);
   }, []);
 
-  const handleSize = useCallback(
-    (size: number, maxRangeEnd = Number.MAX_SAFE_INTEGER) => {
-      setSize(size);
-      if (maxRangeEnd !== Number.MAX_SAFE_INTEGER) {
-        setMaxRangeEnd(maxRangeEnd);
-      }
-    },
-    [],
-  );
+  const handleSize = useCallback((size: number, maxRangeEnd = Number.MAX_SAFE_INTEGER) => {
+    setSize(size);
+    if (maxRangeEnd !== Number.MAX_SAFE_INTEGER) {
+      setMaxRangeEnd(maxRangeEnd);
+    }
+  }, []);
 
   useMemo(() => {
     setSize(dataSource.size);

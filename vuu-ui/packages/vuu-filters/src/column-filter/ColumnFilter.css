@@ -40,10 +40,10 @@
 }
 
 .vuuColumnFilter-trigger {
-  --saltButton-borderRadius: 4px 0px 0px 4px;
-  --saltButton-padding: var(--salt-spacing-200);
+    --saltButton-borderRadius: 4px 0px 0px 4px;
+    --saltButton-padding: var(--salt-spacing-200);
 }
 
 .vuuColumnFilter-invalid {
-  border-color: red;
+    border-color: red;
 }

@@ -1,8 +1,8 @@
 .vuuFilterContainer {
-  display: var(--vuuFilterContainer-display, flex);
-  flex: var(--vuuFilterContainer-flex);
-  flex-direction: var(--vuuFilterContainer-flexDirection, column);
-  gap: var(--salt-spacing-100);
-  height: var(--vuuFilterContainer-height);
-  overflow: auto;
+    display: var(--vuuFilterContainer-display,flex);
+    flex: var(--vuuFilterContainer-flex);
+    flex-direction: var(--vuuFilterContainer-flexDirection,column);
+    gap: var(--salt-spacing-100);
+    height: var(--vuuFilterContainer-height);
+    overflow: auto;
 }

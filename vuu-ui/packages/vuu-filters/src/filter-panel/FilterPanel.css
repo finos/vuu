@@ -1,5 +1,5 @@
 .vuuFilterPanel {
-  --vuuPrompt-minHeight: fit-content;
+    --vuuPrompt-minHeight: fit-content;
 
   display: flex;
   flex-direction: column;
@@ -17,3 +17,4 @@
     justify-content: space-between;
   }
 }
+

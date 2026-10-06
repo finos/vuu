@@ -3,7 +3,10 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import type { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
-import { getVuuEditMessage, isEditRowReadOnly } from "@vuu-ui/vuu-data-editing";
+import {
+  getVuuEditMessage,
+  isEditRowReadOnly,
+} from "@vuu-ui/vuu-data-editing";
 import {
   dataDescriptorTypeToVuuRowDataItemType,
   registerComponent,
@@ -60,7 +63,11 @@ export const InputCell = ({
   });
 
   // TODO can this move into useEdtableText ?
-  const editRejectedMessage = getVuuEditMessage(dataRow, column, previousValue);
+  const editRejectedMessage = getVuuEditMessage(
+    dataRow,
+    column,
+    previousValue,
+  );
   const errorMessage = warningMessage ?? editRejectedMessage;
 
   const endAdornment =

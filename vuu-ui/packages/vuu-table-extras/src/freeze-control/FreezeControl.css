@@ -70,7 +70,8 @@
 }
 
 .vuuFreezeControl-customBadge-flashing {
-  animation: flashGreenRed var(--freeze-control-flash-duration, 0.25s) steps(1, end) infinite;
+  animation: flashGreenRed var(--freeze-control-flash-duration, 0.25s)
+    steps(1, end) infinite;
 }
 
 .vuuFreezeControl-customBadge[data-overflow="true"] {

@@ -1,7 +1,4 @@
-import type {
-  VuuColumnDataType,
-  VuuRowDataItemType,
-} from "@vuu-ui/vuu-protocol-types";
+import type { VuuColumnDataType, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import type { DataValueTypeSimple } from "@vuu-ui/vuu-data-types";
 import type {
   RuntimeColumnDescriptor,

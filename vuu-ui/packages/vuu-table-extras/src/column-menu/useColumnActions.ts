@@ -42,7 +42,7 @@ export const useColumnActions = ({
   > = (columnMenuActionType, column): boolean => {
     if (column && dataSource) {
       // prettier-ignore
-      switch (columnMenuActionType) {
+      switch(columnMenuActionType){
         // 1) DataSource operations ...
         case "sort-asc":
           return (

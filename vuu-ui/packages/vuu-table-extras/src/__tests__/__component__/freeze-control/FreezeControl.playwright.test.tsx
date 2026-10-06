@@ -1,8 +1,5 @@
-import {
-  test,
-  expect,
-  type Locator,
-} from "../../../../../../playwright/fixtures";
+import { test, expect, type Locator } from "../../../../../../playwright/fixtures";
+
 
 // Section below just to improve test readability
 type ComponentFixture = Locator;

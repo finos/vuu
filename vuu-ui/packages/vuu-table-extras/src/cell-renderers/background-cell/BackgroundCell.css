@@ -1,3 +1,4 @@
+
 .vuuBackgroundCell {
   --background-animation-duration: 10s;
   color: var(--vuuBackgroundCell-color, var(--salt-content-primary-foreground));

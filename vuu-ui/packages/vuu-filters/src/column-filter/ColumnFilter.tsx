@@ -22,8 +22,7 @@ import {
 const classBase = "vuuColumnFilter";
 
 export interface ColumnFilterProps
-  extends
-    ColumnFilterHookProps,
+  extends ColumnFilterHookProps,
     Omit<SegmentedButtonGroupProps, "defaultValue">,
     Pick<
       DataItemEditControlProps,

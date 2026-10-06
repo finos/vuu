@@ -23,12 +23,12 @@
     color: white;
   }
 
-  30% {
-    color: white;
-  }
-  33% {
-    color: var(--salt-content-primary-foreground);
-  }
+    30% {
+      color: white;
+    }  
+    33% {
+      color: var(--salt-content-primary-foreground);
+    }  
 
   100% {
     background-color: transparent;
