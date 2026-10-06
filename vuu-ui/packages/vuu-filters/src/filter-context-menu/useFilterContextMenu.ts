@@ -68,14 +68,15 @@ export const useFilterContextMenu = ({
    * (if there is one, otherwise the Table) displays it. A ColumnFilter on a
    * 'datetime' column displays a date (DatePicker). A filterPatterns pattern
    * is applied as given. The ColumnFilter is the mounted (registered)
-   * ColumnFilter, else as configured by FilterProvider columnFilterPatterns.
+   * ColumnFilter, else as configured by FilterProvider columnFilterPatterns
+   * or columnTypeFilterPatterns.
    */
   const getCellFilter = useCallback(
     (column: ColumnDescriptor, dataRow: DataRow): CellFilter => {
       const value = dataRow[column.name] as string | number;
       if (getTemporalInfo(column)) {
         const pattern = filterPatterns?.[column.name];
-        const columnFilterPattern = getColumnFilterPattern(column.name);
+        const columnFilterPattern = getColumnFilterPattern(column);
         const columnFilterColumn = pattern
           ? undefined
           : (getColumnFilterColumn(column.name) ??

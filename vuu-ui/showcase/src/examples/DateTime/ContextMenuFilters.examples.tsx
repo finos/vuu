@@ -4,6 +4,7 @@ import {
   FilterContainerColumnFilter,
   FilterPanel,
   FilterProvider,
+  type FilterProviderProps,
   useFilterContextMenu,
   useSavedFilters,
   type FilterContextMenuHookProps,
@@ -213,36 +214,48 @@ const onDemandFilterFields: FilterField[] = [
 
 /**
  * Where ColumnFilters are created on demand, they are not registered until
- * shown. FilterProvider columnFilterPatterns configures their patterns, so
+ * shown. FilterProvider columnFilterPatterns (by column name) and
+ * columnTypeFilterPatterns (by serverDataType) configure their patterns, so
  * the context menu knows their precision whether or not they are mounted.
  */
 export const ContextMenuFilterColumnFilterPatterns = () => {
   const columnFilterPatterns = useMemo<Record<string, DateTimePattern>>(
+    () => ({ execTime: { time: "hh:mm:ss" } }),
+    [],
+  );
+  const columnTypeFilterPatterns = useMemo<
+    FilterProviderProps["columnTypeFilterPatterns"]
+  >(
     () => ({
-      execTime: { time: "hh:mm:ss" },
-      tradeTime: { date: "dd MMM yyyy" },
+      epochtimestamp: { date: "dd MMM yyyy" },
+      epochtimestampnano: { time: "hh:mm:ss.ms" },
     }),
     [],
   );
   return (
-    <FilterProvider columnFilterPatterns={columnFilterPatterns}>
+    <FilterProvider
+      columnFilterPatterns={columnFilterPatterns}
+      columnTypeFilterPatterns={columnTypeFilterPatterns}
+    >
       <ContextMenuFilterTemplate
         filterFields={onDemandFilterFields}
         filterFieldsOnDemand
-        title="Context menu filter, FilterProvider columnFilterPatterns"
+        title="Context menu filter, FilterProvider columnFilterPatterns and columnTypeFilterPatterns"
         notes={
           <>
             The ColumnFilters are created only when shown, and have no{" "}
             <code>pattern</code> prop. The FilterProvider{" "}
-            <code>columnFilterPatterns</code> prop sets the pattern of the{" "}
-            <code>execTime</code> ColumnFilter to{" "}
-            <code>{`{ time: "hh:mm:ss" }`}</code> and of the{" "}
-            <code>tradeTime</code> ColumnFilter to{" "}
-            <code>{`{ date: "dd MMM yyyy" }`}</code>. Right click a cell before
-            showing the filters: <code>execTime</code> (nanoseconds in the
-            Table) is filtered to the whole second, today, and{" "}
-            <code>tradeTime</code> to the whole day, as the ColumnFilters will
-            display them.
+            <code>columnTypeFilterPatterns</code> prop sets the pattern for{" "}
+            <code>epochtimestamp</code> columns to{" "}
+            <code>{`{ date: "dd MMM yyyy" }`}</code> and for{" "}
+            <code>epochtimestampnano</code> columns to{" "}
+            <code>{`{ time: "hh:mm:ss.ms" }`}</code>. The{" "}
+            <code>columnFilterPatterns</code> prop overrides the latter for{" "}
+            <code>execTime</code>, with <code>{`{ time: "hh:mm:ss" }`}</code>.
+            Right click a cell before showing the filters: <code>execTime</code>{" "}
+            (nanoseconds in the Table) is filtered to the whole second, today,
+            and <code>tradeTime</code> (an <code>epochtimestamp</code>) to the
+            whole day, as the ColumnFilters will display them.
           </>
         }
       />

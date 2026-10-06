@@ -58,7 +58,8 @@ export interface FilterContainerColumnFilterProps extends Omit<
   defaultValue?: ColumnFilterValue;
   /**
    * See ColumnFilter pattern. Defaults to the pattern configured for the
-   * column by FilterProvider columnFilterPatterns, if any.
+   * column by FilterProvider columnFilterPatterns or columnTypeFilterPatterns,
+   * if any.
    */
   pattern?: DateTimePattern;
 }
@@ -71,7 +72,7 @@ export const FilterContainerColumnFilter = ({
   ...props
 }: FilterContainerColumnFilterProps) => {
   const { getColumnFilterPattern } = useColumnFilterRegistry();
-  const pattern = patternProp ?? getColumnFilterPattern(columnProp.name);
+  const pattern = patternProp ?? getColumnFilterPattern(columnProp);
   const { date, time } = pattern ?? {};
   const column = useMemo(
     () =>

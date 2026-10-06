@@ -29,6 +29,8 @@ import {
   UNSAVED_FILTER,
 } from "./FilterContext";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import type { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
+import type { ColumnFilterPatternColumn } from "./FilterContext";
 
 const findActiveFilter = (
   filterDescriptors: FilterContainerFilterDescriptor[],
@@ -64,6 +66,15 @@ export interface FilterProviderProps {
    * even where ColumnFilters are created on demand.
    */
   columnFilterPatterns?: Record<string, DateTimePattern>;
+  /**
+   * Date/time patterns, keyed by serverDataType, of the ColumnFilters within
+   * this provider, e.g. { epochtimestampnano: { time: "hh:mm:ss.ms" } }.
+   * Applies to columns with no entry in columnFilterPatterns. The column must
+   * have a serverDataType (a Table column has one, from the table schema).
+   */
+  columnTypeFilterPatterns?: Partial<
+    Record<VuuColumnDataType, DateTimePattern>
+  >;
   onFiltersSaved?: (savedFilters: SavedFilterRecord) => void;
   savedFilters?: SavedFilterRecord;
   filterNameMaxLength?: number;
@@ -72,6 +83,7 @@ export interface FilterProviderProps {
 export const FilterProvider = ({
   children,
   columnFilterPatterns,
+  columnTypeFilterPatterns,
   onFiltersSaved,
   savedFilters: savedFiltersProp,
   filterNameMaxLength,
@@ -107,8 +119,10 @@ export const FilterProvider = ({
   );
 
   const getColumnFilterPattern = useCallback(
-    (columnName: string) => columnFilterPatterns?.[columnName],
-    [columnFilterPatterns],
+    ({ name, serverDataType }: ColumnFilterPatternColumn) =>
+      columnFilterPatterns?.[name] ??
+      (serverDataType ? columnTypeFilterPatterns?.[serverDataType] : undefined),
+    [columnFilterPatterns, columnTypeFilterPatterns],
   );
 
   const getColumnFilterColumn = useCallback(

@@ -111,7 +111,7 @@ The default `between` range for a time column is `00:00:00` to `23:59:59`, or `0
 
 ### Filter pattern
 
-By default a column filter uses the column's `type` to choose its control: a date picker for `date` and `datetime` columns, or a time picker for `time` columns (with milliseconds if the time pattern is `hh:mm:ss.ms`). To use different formatting in a filter than in the Table, set the `pattern` prop on `ColumnFilter` or `FilterContainerColumnFilter` (which otherwise uses the pattern configured for the column by `FilterProvider` `columnFilterPatterns`, see [Filtering from the Table context menu](#filtering-from-the-table-context-menu)):
+By default a column filter uses the column's `type` to choose its control: a date picker for `date` and `datetime` columns, or a time picker for `time` columns (with milliseconds if the time pattern is `hh:mm:ss.ms`). To use different formatting in a filter than in the Table, set the `pattern` prop on `ColumnFilter` or `FilterContainerColumnFilter` (which otherwise uses the pattern configured for the column by `FilterProvider` `columnFilterPatterns` or `columnTypeFilterPatterns`, see [Filtering from the Table context menu](#filtering-from-the-table-context-menu)):
 
 ```tsx
 const execTime: ColumnDescriptor = {
@@ -145,7 +145,7 @@ The precision is taken from, in order:
 
 1. The `filterPatterns` option of `useFilterContextMenu`, keyed by column name. The pattern is applied to the Table column with `withDateTimePattern`.
 2. The `FilterContainerColumnFilter` for the column, within the same `FilterProvider`. Each one registers its column (with any `pattern` applied) via `useColumnFilterRegistry` when it mounts. A `datetime` column filter shows a date picker, so it filters the whole day. A `time` column filter shows the whole second, or the whole millisecond with the `hh:mm:ss.ms` pattern, whatever the Table shows.
-3. The `columnFilterPatterns` prop of the `FilterProvider`, keyed by column name. This describes the ColumnFilters whether or not they are mounted, so use it where ColumnFilters are created on demand (for example in a panel that is not yet open). It is also the default `pattern` of each `FilterContainerColumnFilter`, so the pattern is configured once.
+3. The `columnFilterPatterns` prop of the `FilterProvider`, keyed by column name, else its `columnTypeFilterPatterns` prop, keyed by `serverDataType`. These describe the ColumnFilters whether or not they are mounted, so use them where ColumnFilters are created on demand (for example in a panel that is not yet open). They also provide the default `pattern` of each `FilterContainerColumnFilter`, so the pattern is configured once. A `columnTypeFilterPatterns` entry applies only to a column with a `serverDataType`: a Table column has one (from the table schema), a column passed to a ColumnFilter may not. Only temporal columns are affected, so a `long` entry applies only to `long` columns with a date/time `type`.
 4. The Table column formatting.
 
 | Filter kind | Clause                                                                                                                                                                     |
@@ -179,10 +179,13 @@ Where ColumnFilters are created on demand, configure their patterns on the `Filt
 
 ```tsx
 <FilterProvider
+  // by column name
   columnFilterPatterns={{
     execTime: { time: "hh:mm:ss" },
     tradeTime: { date: "dd MMM yyyy" },
   }}
+  // by serverDataType, for columns not named above
+  columnTypeFilterPatterns={{ epochtimestampnano: { time: "hh:mm:ss.ms" } }}
 >
   {/* no pattern prop, the FilterProvider pattern is used */}
   <FilterContainerColumnFilter column={execTimeColumn} />

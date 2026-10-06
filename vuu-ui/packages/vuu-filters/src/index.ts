@@ -27,10 +27,14 @@ export {
 } from "./filter-pill/FilterPillNext";
 export {
   NULL_FILTER,
+  type ColumnFilterPatternColumn,
   useColumnFilterRegistry,
   useSavedFilters,
 } from "./filter-provider/FilterContext";
-export { FilterProvider } from "./filter-provider/FilterProvider";
+export {
+  FilterProvider,
+  type FilterProviderProps,
+} from "./filter-provider/FilterProvider";
 export * from "./filter-utils";
 export * from "./FilterModel";
 export * from "./inline-filter";

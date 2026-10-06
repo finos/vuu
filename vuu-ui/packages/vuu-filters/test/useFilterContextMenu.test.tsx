@@ -67,10 +67,16 @@ describe("useFilterContextMenu, temporal cell", () => {
   let container: HTMLDivElement;
   let root: Root;
 
-  const render = (columnFilterPatterns?: Record<string, DateTimePattern>) =>
+  const render = (
+    columnFilterPatterns?: Record<string, DateTimePattern>,
+    columnTypeFilterPatterns?: Record<string, DateTimePattern>,
+  ) =>
     act(() =>
       root.render(
-        <FilterProvider columnFilterPatterns={columnFilterPatterns}>
+        <FilterProvider
+          columnFilterPatterns={columnFilterPatterns}
+          columnTypeFilterPatterns={columnTypeFilterPatterns}
+        >
           <Fixture />
         </FilterProvider>,
       ),
@@ -108,6 +114,26 @@ describe("useFilterContextMenu, temporal cell", () => {
   it("WHEN the configured ColumnFilter pattern has milliseconds THEN filters the whole millisecond", () => {
     render({ execTime: { time: "hh:mm:ss.ms" } });
     expect(setFilterLabel()).toEqual("Set filter execTime '23:00:00.123'");
+  });
+
+  it("WHEN a pattern is configured for the serverDataType THEN filters at that precision", () => {
+    render(undefined, { epochtimestampnano: { time: "hh:mm:ss.ms" } });
+    expect(setFilterLabel()).toEqual("Set filter execTime '23:00:00.123'");
+  });
+
+  it("WHEN a pattern is configured for the column and its serverDataType THEN the column pattern applies", () => {
+    render(
+      { execTime: { time: "hh:mm:ss" } },
+      { epochtimestampnano: { time: "hh:mm:ss.ms" } },
+    );
+    expect(setFilterLabel()).toEqual("Set filter execTime '23:00:00'");
+  });
+
+  it("WHEN a pattern is configured for another serverDataType THEN filters at Table precision", () => {
+    render(undefined, { epochtimestamp: { time: "hh:mm:ss" } });
+    expect(setFilterLabel()).toEqual(
+      "Set filter execTime '2026-09-29 23:00:00.123456789'",
+    );
   });
 
   it("WHEN the configured ColumnFilter pattern is a date THEN filters the whole day", () => {
