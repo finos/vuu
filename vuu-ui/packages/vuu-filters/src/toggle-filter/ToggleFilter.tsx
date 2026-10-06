@@ -45,6 +45,11 @@ import toggleFilterCss from "./ToggleFilter.css";
 export interface ToggleFilterProps
   extends ToggleButtonGroupProps,
     ToggleFilterHookProps {
+  /**
+   * Optional labels for the toggle buttons. If provided, must contain
+   * the same number of items as values. Defaults to values.
+   */
+  labels?: string[];
   onCommit: CommitHandler<HTMLElement>;
 }
 
@@ -55,6 +60,7 @@ export const ToggleFilter = forwardRef(function ToggleFilter(
     className,
     column,
     defaultValue: defaultValueProp,
+    labels,
     onCommit,
     table,
     value: valueProp,
@@ -69,6 +75,12 @@ export const ToggleFilter = forwardRef(function ToggleFilter(
     css: toggleFilterCss,
     window: targetWindow,
   });
+
+  if (labels !== undefined && labels.length !== values.length) {
+    throw Error(
+      "[ToggleFilter] labels must have the same number of items as values",
+    );
+  }
 
   const [defaultValue, value] = getValues(defaultValueProp, valueProp);
 
@@ -98,7 +110,7 @@ export const ToggleFilter = forwardRef(function ToggleFilter(
       <ToggleButton key="all" value="all">
         ALL
       </ToggleButton>
-      {values.map((toggleValue) => (
+      {values.map((toggleValue, i) => (
         <ToggleButton
           className={cx({
             [`${classBase}-onlyAvailableValue`]:
@@ -107,7 +119,7 @@ export const ToggleFilter = forwardRef(function ToggleFilter(
           key={toggleValue}
           value={toggleValue}
         >
-          {toggleValue}
+          {labels?.[i] ?? toggleValue}
         </ToggleButton>
       ))}
     </ToggleButtonGroup>
