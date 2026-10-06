@@ -10,6 +10,7 @@ import { mdxOptions } from "./mdx-options";
 import handler from "serve-handler";
 import http from "http";
 import https from "https";
+import open from "open";
 import { fileURLToPath } from "url";
 import { TreeSourceNode } from "@vuu-ui/vuu-utils";
 
@@ -167,8 +168,10 @@ async function main() {
   });
 
   await server.listen(4173, () => {
-    console.log("Showcase is running at http://localhost:4173/");
+    console.log("Running at http://localhost:4173");
   });
+
+  open("http://localhost:4173/");
 }
 
 main();

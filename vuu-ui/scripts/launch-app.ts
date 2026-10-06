@@ -16,6 +16,7 @@ import fs from "node:fs";
 import http from "node:http";
 import https from "node:https";
 import { parseArgs } from "node:util";
+import open from "open";
 import handler from "serve-handler";
 
 const { values: args } = parseArgs({
@@ -158,5 +159,5 @@ server.listen(port, () => {
   auth url : ${authUrl.href}/authn
   websocket: ${wsUrl}
   `);
-  console.log(`Vuu app is running at http://localhost:${port}/index.html`);
+  open(`http://localhost:${port}/index.html`);
 });
