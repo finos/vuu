@@ -13,6 +13,11 @@ import type { TableEditSession } from "./TableEditSession";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
 export type EditActionType = "deleteRow" | "addRow" | "editCell";
+export type EditSessionValue = VuuRowDataItemType | object;
+export type EditCommitOptions = {
+  dataSourceValue?: VuuRowDataItemType;
+  syncToDataSource?: boolean;
+};
 /** Column name to default value mapping applied to every addRow call when a column is absent from the row data. */
 export type RowDefaultDataItemValues = Record<string, VuuRowDataItemType>;
 export type EditSessionApi = "createSessionDataSource" | "beginEditSession";
@@ -61,8 +66,8 @@ export class EditError extends Error {}
 export class SupersededEditError extends Error {}
 
 type CellEdit = {
-  originalValue: VuuRowDataItemType;
-  editedValue: VuuRowDataItemType;
+  originalValue: EditSessionValue;
+  editedValue: EditSessionValue;
   isValid: boolean;
 };
 
@@ -158,6 +163,20 @@ export class EditSession
 
   get isDirty(): boolean {
     return this.editState !== "clean";
+  }
+  get canCancel() {
+    return (
+      this.lifecycle.status === "active" ||
+      (this.lifecycle.status === "error" && this.lifecycle.operation === "end")
+    );
+  }
+
+  get canSave() {
+    return (
+      this.canCancel &&
+      (this.editState === "dirty" || this.editState === "stale") &&
+      this.invalidCount === 0
+    );
   }
 
   #emitEditStateChange(oldState: EditState, force = false) {
@@ -692,8 +711,8 @@ export class EditSession
     key: string,
     cellEdits: Map<string, CellEdit>,
     column: string,
-    originalValue: VuuRowDataItemType,
-    editedValue: VuuRowDataItemType,
+    originalValue: EditSessionValue,
+    editedValue: EditSessionValue,
     isValid: boolean,
   ) {
     const wasEdited = this.isCellEdited(key, column);
@@ -789,9 +808,10 @@ export class EditSession
   async commit(
     key: string,
     columnName: string,
-    originalValue: VuuRowDataItemType,
-    typedValue: string | number | boolean,
+    originalValue: EditSessionValue,
+    typedValue: EditSessionValue,
     isValid: boolean,
+    { dataSourceValue, syncToDataSource = true }: EditCommitOptions = {},
   ): Promise<RpcResult> {
     if (
       this.#lifecycle.status !== "active" &&
@@ -816,11 +836,20 @@ export class EditSession
         isValid,
       );
 
-      if (this.dataSource?.editCell) {
+      if (syncToDataSource && this.dataSource?.editCell) {
+        const valueForDataSource = dataSourceValue ?? typedValue;
+        if (
+          typeof valueForDataSource === "object" &&
+          valueForDataSource !== null
+        ) {
+          throw new Error(
+            "Custom edit values require a scalar dataSourceValue.",
+          );
+        }
         const response = await this.dataSource.editCell(
           key,
           columnName,
-          typedValue,
+          valueForDataSource as VuuRowDataItemType,
         );
         if (!this.inEditMode) {
           // Edit session ended in the meantime; exit gracefully.

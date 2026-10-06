@@ -21,6 +21,17 @@ export {
 } from "./edit-utils";
 export { EditButtons, type EditButtonProps } from "./EditButtons";
 export {
+  EditField,
+  type DropdownEditFieldProps,
+  type EditFieldProps,
+  type EditFieldType,
+  type TextFieldType,
+} from "./edit-field/EditField";
+export {
+  useEditField,
+  type EditFieldHookProps,
+} from "./edit-field/useEditField";
+export {
   EditModeProvider,
   useEditMode,
   type EditModeContextProps,
@@ -30,13 +41,23 @@ export {
   EditSession,
   SupersededEditError,
   type EditActionType,
+  type EditCommitOptions,
   type EditLifecycle,
   type EditSessionConstructorProps,
+  type EditSessionValue,
   type NewRowState,
   type EditState,
   type RowDefaultDataItemValues,
 } from "./EditSession";
 export { StaleUpdateError } from "@vuu-ui/vuu-utils";
+export {
+  lookupOptionsFromRows,
+  useLookupValues,
+  type LookupOption,
+  type LookupValuedHookProps,
+  type OptionMap,
+} from "./lookup-values/useLookupValues";
+export { useEditable, type EditableHookProps } from "./useEditable";
 export {
   EDIT_ACTION_ROW_CLASS_NAME_GENERATOR,
   editActionRowClassNameGenerator,
