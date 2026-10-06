@@ -19,7 +19,6 @@
     "@vuu-ui/vuu-table-types": "3.4.1",
     "default-browser": "^5.2.1",
     "is-inside-container": "^1.0.0",
-    "open": "10.1.0",
     "remark-gfm": "^4.0.1",
     "serve-handler": "6.1.6"
   },
