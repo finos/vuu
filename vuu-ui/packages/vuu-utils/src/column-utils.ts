@@ -37,6 +37,7 @@ import type {
   TableHeadings,
   ValueListRenderer,
 } from "@vuu-ui/vuu-table-types";
+import type { TableModel } from "@vuu-ui/vuu-table";
 import type { CSSProperties } from "react";
 import { moveItem } from "./array-utils";
 import { getTemporalInfo } from "./date/temporal";
