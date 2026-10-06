@@ -37,7 +37,7 @@
     "mermaid": "^12.1.0",
     "symlink-dir": "^6.0.5",
     "watcher": "2.3.1",
-    "@vuu-ui/core": "3.5.0",
+    "@vuu-ui/core": "3.5.5",
     "open": "10.1.0",
     "serve-handler": "6.1.6"
   },
