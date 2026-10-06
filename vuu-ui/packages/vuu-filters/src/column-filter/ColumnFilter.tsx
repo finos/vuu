@@ -26,7 +26,7 @@ export interface ColumnFilterProps
     Omit<SegmentedButtonGroupProps, "defaultValue">,
     Pick<
       DataItemEditControlProps,
-      "TypeaheadProps" | "table" | "values" | "variant"
+      "TypeaheadProps" | "labels" | "table" | "values" | "variant"
     > {
   /**
    * Temporal columns only. The date/time pattern used by the filter control,
@@ -50,6 +50,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
     column,
     defaultValue,
     extendedFilterOptions,
+    labels,
     onColumnFilterChange,
     onColumnRangeFilterChange,
     onCommit: onCommitProp,
@@ -106,6 +107,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
         TypeaheadProps,
         commitWhenCleared: true,
         dataDescriptor: controlDescriptor,
+        labels,
         onCommit,
         table,
         values,

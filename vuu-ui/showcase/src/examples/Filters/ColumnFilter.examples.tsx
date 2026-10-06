@@ -468,7 +468,9 @@ export const ControlledTimeRangeFilterMilliseconds = (
   />
 );
 
-export const ControlledToggleFilter = () => {
+export const ControlledToggleFilter = ({
+  labels,
+}: Pick<ColumnFilterProps, "labels">) => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
     return new VuuDataSource({ table: ordersSchema.table });
@@ -494,6 +496,7 @@ export const ControlledToggleFilter = () => {
               name: "side",
               serverDataType: "string",
             }}
+            labels={labels}
             onColumnFilterChange={setValue}
             onCommit={handleCommit}
             table={ordersSchema.table}
@@ -506,6 +509,10 @@ export const ControlledToggleFilter = () => {
     </DataSourceProvider>
   );
 };
+
+export const ControlledToggleFilterWithLabels = () => (
+  <ControlledToggleFilter labels={["Buy", "Sell"]} />
+);
 
 export const ContainerManagedTextColumnFilter = ({
   onFilterApplied,
