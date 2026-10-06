@@ -38,6 +38,7 @@
     "deploy:websocket-test": "node ./tools/deploy-websocket-test.mjs",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
     "showcase": "cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-dev.ts",
+    "showcase:build": "npm run build:worker && cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-build.ts --build-only",
     "showcase:prod": "npm run build:worker && cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-build.ts",
     "playwright:gallery": "rsbuild dev --config playwright/gallery/rsbuild.config.ts",
     "playwright:gallery:build": "rsbuild build --config playwright/gallery/rsbuild.config.ts",
