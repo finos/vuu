@@ -704,4 +704,40 @@ test.describe("ColumnFilter toggle variant with FilterContainer", () => {
     await expect(sellButton).toBeChecked();
     await expect(page.locator(".vuuFilterDisplay")).toContainText("SELL");
   });
+
+  test("selects button matching filter provided via container", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedToggleFilterWithFilter",
+    );
+    await expect(
+      component.getByRole("radio", { name: "BUY", exact: true }),
+    ).toBeChecked();
+  });
+
+  test("selects labelled button matching filter provided via container", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedToggleFilterWithLabelsAndFilter",
+    );
+    await expect(
+      component.getByRole("radio", { name: "Sell", exact: true }),
+    ).toBeChecked();
+  });
+
+  test("clicking ALL clears filter provided via container", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedToggleFilterWithFilter",
+    );
+    await component.getByRole("radio", { name: "ALL", exact: true }).click();
+    await expect(
+      component.getByRole("radio", { name: "ALL", exact: true }),
+    ).toBeChecked();
+    await expect(page.locator(".vuuFilterDisplay")).not.toContainText("BUY");
+  });
 });

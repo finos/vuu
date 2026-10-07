@@ -777,6 +777,7 @@ export const ContainerManagedToggleFilter = ({
     <DataSourceProvider dataSource={dataSource}>
       <ContainerTemplate flexDirection="row" width={700}>
         <FilterContainer
+          filter={filter}
           onFilterCleared={clearFilter}
           onFilterApplied={setFilter}
         >
@@ -805,6 +806,13 @@ export const ContainerManagedToggleFilterWithFilter = () => (
 
 export const ContainerManagedToggleFilterWithLabels = () => (
   <ContainerManagedToggleFilter labels={["Buy", "Sell"]} />
+);
+
+export const ContainerManagedToggleFilterWithLabelsAndFilter = () => (
+  <ContainerManagedToggleFilter
+    filter={{ column: "side", op: "=", value: "SELL" }}
+    labels={["Buy", "Sell"]}
+  />
 );
 
 const createdTimeColumn: ColumnDescriptor = {
