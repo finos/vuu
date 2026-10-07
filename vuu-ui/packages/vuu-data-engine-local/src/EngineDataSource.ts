@@ -2,10 +2,11 @@ import {
   type DataEngine,
   inMemoryDataEngine,
   type LinkFilter,
+  type RowHeader,
   type RowPredicate,
+  type RowWriter,
   type ViewportBatch,
   type ViewportEngine,
-  type ViewportRow,
 } from "@heswell/vuu-viewport";
 import type {
   DataSourceBase,
@@ -106,6 +107,9 @@ export interface EngineDataSourceConstructorProps
  * delegated to a viewport engine from `@heswell/vuu-viewport`. The engine
  * computes minimal deltas, which are converted here to the client protocol.
  */
+/** client rows: 10 header slots, then column values */
+const CLIENT_DATA_OFFSET = 10;
+
 export class EngineDataSource
   extends EventEmitter<DataSourceEvents>
   implements DataSourceBase<DataSourceRowWithBigint>
@@ -121,7 +125,7 @@ export class EngineDataSource
   public viewport: string;
 
   #dataEngine: DataEngine;
-  #engine: ViewportEngine | undefined;
+  #engine: ViewportEngine<DataSourceRowWithBigint> | undefined;
   #freezeTimestamp: number | undefined = undefined;
   #keys = new RowKeys(NULL_RANGE);
   #linkFilter: LinkFilter | undefined;
@@ -211,6 +215,7 @@ export class EngineDataSource
       groupBy,
       id: this.viewport,
       onPendingChanges: this.#handlePendingChanges,
+      rowWriter: this.#rowWriter,
       permissionFilter: this.#permissionFilter,
       range: this.#bufferedRange,
       sort,
@@ -222,7 +227,7 @@ export class EngineDataSource
     return engine;
   }
 
-  protected get engine(): ViewportEngine {
+  protected get engine(): ViewportEngine<DataSourceRowWithBigint> {
     if (this.#engine === undefined) {
       this.#engine = this.#createEngine();
     }
@@ -284,37 +289,45 @@ export class EngineDataSource
   // client protocol
   // ---------------------------------------------------------------------------
 
-  #toClientRow(viewportRow: ViewportRow): DataSourceRowWithBigint {
-    const { rowIndex, rowKey, sel, ts, data } = viewportRow;
-    const grouped = this.#isGrouped;
-    const dataStart = grouped ? 6 : 0;
-    const dataLen = data.length;
-    const clientRow = new Array(10 + dataLen - dataStart) as unknown[];
-    clientRow[0] = rowIndex;
-    clientRow[1] = this.#keys.keyFor(rowIndex);
-    if (grouped) {
-      clientRow[2] = data[3];
-      clientRow[3] = data[1];
-      clientRow[4] = data[0];
-      clientRow[5] = data[5];
-    } else {
-      clientRow[2] = true;
-      clientRow[3] = false;
-      clientRow[4] = 0;
-      clientRow[5] = 0;
-    }
-    clientRow[6] = rowKey;
-    clientRow[7] = sel;
-    clientRow[8] = ts;
-    clientRow[9] = false;
-    for (let i = dataStart, j = 10; i < dataLen; i++, j++) {
-      const value = data[i] as unknown;
-      clientRow[j] = typeof value === "bigint" ? value.toString() : value;
-    }
-    this.#rows.set(rowIndex, clientRow as DataSourceRowWithBigint);
+  /**
+   * The engine builds client rows directly: header fields first, then column
+   * values written by the engine from CLIENT_DATA_OFFSET. Values are already
+   * in protocol form (bigints converted). _config is updated before the
+   * engine is called, so #isGrouped is current here.
+   */
+  #rowWriter: RowWriter<DataSourceRowWithBigint> = {
+    dataOffset: CLIENT_DATA_OFFSET,
+    treeColumnsInData: false,
+    create: (header: Readonly<RowHeader>, valueCount: number) => {
+      const { rowIndex } = header;
+      const clientRow = new Array(CLIENT_DATA_OFFSET + valueCount) as unknown[];
+      clientRow[0] = rowIndex;
+      clientRow[1] = this.#keys.keyFor(rowIndex);
+      if (this.#isGrouped) {
+        clientRow[2] = header.isLeaf;
+        clientRow[3] = header.isExpanded;
+        clientRow[4] = header.depth;
+        clientRow[5] = header.childCount;
+      } else {
+        clientRow[2] = true;
+        clientRow[3] = false;
+        clientRow[4] = 0;
+        clientRow[5] = 0;
+      }
+      clientRow[6] = header.rowKey;
+      clientRow[7] = header.sel;
+      clientRow[8] = header.ts;
+      clientRow[9] = false;
+      return clientRow as DataSourceRowWithBigint;
+    },
+    values: (row) => row as unknown[],
+  };
+
+  #cacheRow(clientRow: DataSourceRowWithBigint) {
+    const rowIndex = clientRow[0];
+    this.#rows.set(rowIndex, clientRow);
     if (rowIndex < this.#rowsLo) this.#rowsLo = rowIndex;
     if (rowIndex >= this.#rowsHi) this.#rowsHi = rowIndex + 1;
-    return clientRow as DataSourceRowWithBigint;
   }
 
   /**
@@ -344,7 +357,7 @@ export class EngineDataSource
     this.#rowsHi = Math.min(hi, to);
   }
 
-  #dispatch(batch: ViewportBatch) {
+  #dispatch(batch: ViewportBatch<DataSourceRowWithBigint>) {
     const sizeChanged = batch.size !== this.#size;
     this.#size = batch.size;
     if (sizeChanged) {
@@ -354,7 +367,10 @@ export class EngineDataSource
       return;
     }
     if (batch.rows.length > 0) {
-      const rows = batch.rows.map((row) => this.#toClientRow(row));
+      const { rows } = batch;
+      for (let i = 0; i < rows.length; i++) {
+        this.#cacheRow(rows[i]);
+      }
       this.clientCallback?.({
         clientViewportId: this.viewport,
         mode: "batch",
@@ -648,7 +664,7 @@ export class EngineDataSource
     // populated now, so rows are immediately available via getRowAtIndex
     this.#clearRows();
     for (const row of batch.rows) {
-      this.#toClientRow(row);
+      this.#cacheRow(row);
     }
     this.#size = batch.size;
     this.#pendingChanges = false;
@@ -745,7 +761,7 @@ export class EngineDataSource
   select(selectRequest: Omit<SelectRequest, "vpId">) {
     const engine = this.engine;
     this.#flushIfPending();
-    let batch: ViewportBatch;
+    let batch: ViewportBatch<DataSourceRowWithBigint>;
     switch (selectRequest.type) {
       case "SELECT_ROW": {
         const { preserveExistingSelection, rowKey } = selectRequest as Omit<
