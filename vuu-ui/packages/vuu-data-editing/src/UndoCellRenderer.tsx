@@ -47,6 +47,10 @@ export const UndoCellRenderer = ({
   );
   const tooltipContent = getUndoTooltipContent(dataRow.vuuAction);
 
+  if (dataRow.vuuAction === "addRow") {
+    editSession?.registerAddedRow?.(dataRow.key);
+  }
+
   if (tooltipContent === undefined) return null;
 
   return (

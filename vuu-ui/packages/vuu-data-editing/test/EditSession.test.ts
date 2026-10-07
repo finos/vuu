@@ -268,6 +268,106 @@ describe("EditSession", () => {
     expect(insertedRowSession.addCount).toBe(0);
   });
 
+  it("decrements addCount when an added row is deleted and then undone, even if server returns no wasInsertedRow", async () => {
+    const undoRowChange = vi.fn().mockResolvedValue({
+      data: undefined,
+      type: "SUCCESS_RESULT",
+    });
+    const select = vi.fn();
+    const editApi: DataSource = {
+      addRow: vi.fn().mockResolvedValue({
+        data: undefined,
+        type: "SUCCESS_RESULT",
+      }),
+      createSessionDataSource: vi.fn(
+        async () => editApi as unknown as DataSource,
+      ),
+      deleteSelectedRows: vi.fn().mockResolvedValue({
+        type: "SUCCESS_RESULT",
+      }),
+      endEditSession: vi.fn(),
+      select,
+      selectedRowsCount: 1,
+      tableSchema: { key: "id", columns: [] },
+      undoRowChange,
+    } as unknown as DataSource;
+
+    const session = new EditSession({ dataSource: editApi });
+    await session.begin();
+    await session.addRow({ id: "row-001" });
+    expect(session.addCount).toBe(1);
+    expect(session.isAddedRow("row-001")).toBe(true);
+
+    await session.deleteSelectedRows();
+    expect(session.deleteCount).toBe(1);
+    expect(select).toHaveBeenCalledWith({ type: "DESELECT_ALL" });
+
+    // Undoing with action "deleteRow" and no server wasInsertedRow flag
+    await session.undoRowChange("row-001", "deleteRow");
+
+    expect(session.deleteCount).toBe(0);
+    expect(session.addCount).toBe(0);
+    expect(session.isAddedRow("row-001")).toBe(false);
+    expect(session.editState).toBe("clean");
+  });
+
+  it("decrements addCount when an asynchronously registered added row is deleted and then undone", async () => {
+    const undoRowChange = vi.fn().mockResolvedValue({
+      data: undefined,
+      type: "SUCCESS_RESULT",
+    });
+    const editApi: DataSource = {
+      addRow: vi.fn().mockResolvedValue({
+        data: undefined,
+        type: "SUCCESS_RESULT",
+      }),
+      createSessionDataSource: vi.fn(
+        async () => editApi as unknown as DataSource,
+      ),
+      deleteSelectedRows: vi.fn().mockResolvedValue({
+        type: "SUCCESS_RESULT",
+      }),
+      endEditSession: vi.fn(),
+      selectedRowsCount: 1,
+      undoRowChange,
+    } as unknown as DataSource;
+
+    const session = new EditSession({ dataSource: editApi });
+    await session.begin();
+    // Server-assigned key arrives via viewport and is registered
+    await session.addRow({});
+    expect(session.addCount).toBe(1);
+    session.registerAddedRow("server-gen-002");
+    expect(session.isAddedRow("server-gen-002")).toBe(true);
+
+    await session.deleteSelectedRows();
+    expect(session.deleteCount).toBe(1);
+
+    await session.undoRowChange("server-gen-002", "deleteRow");
+    expect(session.deleteCount).toBe(0);
+    expect(session.addCount).toBe(0);
+    expect(session.editState).toBe("clean");
+  });
+
+  it("does not delete or increment count when selectedRowsCount is 0", async () => {
+    const deleteSelectedRows = vi.fn();
+    const editApi: DataSource = {
+      createSessionDataSource: vi.fn(
+        async () => editApi as unknown as DataSource,
+      ),
+      deleteSelectedRows,
+      endEditSession: vi.fn(),
+      selectedRowsCount: 0,
+    } as unknown as DataSource;
+
+    const session = new EditSession({ dataSource: editApi });
+    await session.begin();
+    await session.deleteSelectedRows();
+
+    expect(deleteSelectedRows).not.toHaveBeenCalled();
+    expect(session.deleteCount).toBe(0);
+  });
+
   it("clears cell markers after undoing row changes", async () => {
     const undoRowChange = vi.fn().mockResolvedValue({
       data: undefined,

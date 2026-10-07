@@ -158,6 +158,31 @@ This matters for cell editing in particular: `editCell` sends a column name to
 the session table, so it must come from the edit schema. `rowDefaults` naming
 view-only columns are dropped by `reconcileWithSessionSchema` rather than sent.
 
+## Row operations lifecycle (add, delete, undo)
+
+### Added row tracking
+
+Newly inserted rows are tracked by key in `#addedRowKeys: Set<string>`. Keys are captured:
+1. Synchronously at `addRow()` time if the key column is populated in the submitted data or returned in the RPC response.
+2. Asynchronously via `registerAddedRow(key)` when rows arrive in the session table and are rendered by `UndoCellRenderer` with `vuuAction === "addRow"`.
+
+Tracking keys separately from the `addCount` counter allows `EditSession` to identify inserted rows across their full lifecycle, even if their `vuuAction` is subsequently overwritten (for example, by a soft delete).
+
+### Deletions and selection clearing
+
+`deleteSelectedRows` captures `selectedRowsCount` from the data source and issues the delete RPC against the active session table. On success:
+1. `deleteCount` is incremented.
+2. Selection is explicitly cleared via `dataSource.select({ type: "DESELECT_ALL" })`. This ensures that rows marked for deletion do not remain selected, immediately disabling the Delete button and preventing duplicate deletions that would artificially inflate `deleteCount`.
+3. In addition, `useEditableTable` exports `isRowSelectable: (row) => !isEditRowReadOnly(row)` so consumers can prevent soft-deleted rows from being re-selected in the table.
+
+### Undo reconciliation
+
+When `undoRowChange(key, action)` is called on a row:
+- If `action === "deleteRow"`, `deleteCount` is decremented.
+- If the row was an inserted row (`action === "addRow"`, `isAddedRow(key)`, or server response `wasInsertedRow === true`), `addCount` is also decremented and the key is removed from `#addedRowKeys`.
+
+This decouples the client from requiring the remote server to return a `wasInsertedRow` response flag: when an added row is soft-deleted and then undone, the client correctly decrements both counters and returns `editState` to `"clean"`.
+
 ## Files
 
 | File                          | Responsibility                                                                                                                     |

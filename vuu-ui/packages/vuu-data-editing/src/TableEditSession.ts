@@ -35,6 +35,8 @@ export interface TableEditSession {
     restoredValue: VuuRowDataItemType,
   ): Promise<RpcResult>;
   isCellEdited(key: string, columnName: string): boolean;
+  registerAddedRow?(key: string): void;
+  isAddedRow?(key: string): boolean;
   on<E extends keyof TableEditSessionEvents>(
     event: E,
     listener: TableEditSessionEvents[E],

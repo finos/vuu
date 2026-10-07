@@ -4,6 +4,7 @@ import type {
   DeleteRowMode,
 } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
+import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { useData, useLayoutEffectSkipFirst } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -15,6 +16,7 @@ import {
   type RowDefaultDataItemValues,
 } from "./EditSession";
 import { EDIT_ACTION_ROW_CLASS_NAME_GENERATOR } from "./editActionRowClassNameGenerator";
+import { isEditRowReadOnly } from "./edit-utils";
 
 const EDIT_ACTION_ROW_CLASS_NAME_GENERATORS = [
   EDIT_ACTION_ROW_CLASS_NAME_GENERATOR,
@@ -237,6 +239,9 @@ export const useEditableTable = ({
     onDelete: handleDelete,
     onSave: handleSave,
     onUndoRowChange: handleUndoRowChange,
+    isRowSelectable: isEditMode
+      ? (dataRow: DataRow) => !isEditRowReadOnly(dataRow)
+      : undefined,
     rowClassNameGenerators: isEditMode
       ? EDIT_ACTION_ROW_CLASS_NAME_GENERATORS
       : undefined,
