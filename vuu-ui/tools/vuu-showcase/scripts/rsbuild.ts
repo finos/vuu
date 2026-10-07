@@ -36,6 +36,24 @@ const sharedPackages = [
   "react-router-dom",
 ] as const;
 
+/**
+ * VUU_DATA_ENGINE=local runs the showcase against @heswell/vuu-data-engine-local
+ * (published from heswell/vuu-websocket), the @heswell/vuu-viewport engine backed
+ * replacement for @vuu-ui/vuu-data-test. Both packages expose the same API, so
+ * examples are unchanged.
+ */
+const useDataEngineLocal = process.env.VUU_DATA_ENGINE === "local";
+const resolve = useDataEngineLocal
+  ? {
+      alias: {
+        "@vuu-ui/vuu-data-test$": "@heswell/vuu-data-engine-local",
+      },
+    }
+  : undefined;
+if (useDataEngineLocal) {
+  console.log("[showcase] using @heswell/vuu-data-engine-local");
+}
+
 const getShowcaseSharedDependencies = (role: "host" | "remote") =>
   Object.fromEntries([
     ...sharedPackages.map((packageName) => [
@@ -95,6 +113,7 @@ export const createShowcaseRsbuilds = async (
         cleanDistPath: true,
       },
       plugins: [pluginReact(), pluginCssInline()],
+      resolve,
       root: uiDirectory,
       server: {
         port: 5173,
@@ -148,6 +167,7 @@ export const createShowcaseRsbuilds = async (
         module: false,
       },
       plugins: [pluginReact(), pluginCssInline()],
+      resolve,
       root: uiDirectory,
       dev: {
         hmr: false,

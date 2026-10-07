@@ -33,10 +33,8 @@ import {
   isComponentDescriptor,
   isDocumentDescriptor,
   loadTheme,
-  resolveModulePath,
 } from "./shared-utils";
 import { DataLocation } from "./showcase-main/ShowcaseProvider";
-import { createMdxComponents } from "./mdx-components";
 import { simulModule } from "@vuu-ui/vuu-data-test";
 
 import "./Showcase.css";
@@ -155,52 +153,10 @@ export const ShowcaseStandalone = ({
       return undefined;
     }
     const targetTreeNode = getTargetTreeNode<unknown>(url, treeSource);
-    if (targetTreeNode) {
-      const { nodeData } = targetTreeNode;
-      try {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const targetModule: Module = await import(
-          /* @vite-ignore */ `/${resolveModulePath(nodeData.path)}`
-        );
-
-        if (targetModule) {
-          if (isComponentDescriptor(nodeData)) {
-            const Component = targetModule[nodeData.componentName];
-            if (Component) {
-              setContentState({
-                component: <Component />,
-                isMDX: nodeData.path.endsWith("mdx"),
-              });
-            } else {
-              console.warn(`Example Componentnot found`);
-            }
-          } else {
-            const Component = targetModule.default;
-            const isMDX = nodeData.path.endsWith("mdx");
-            setContentState({
-              component: isMDX ? (
-                <Component components={createMdxComponents(nodeData.path)} />
-              ) : (
-                <Component />
-              ),
-              isMDX,
-            });
-          }
-        } else {
-          // root app has been loaded with no example selection, therefore nothing to load into iframe
-        }
-      } catch (err) {
-        const match = err.message.match(/[a-zA-Z]*.css/);
-        if (match) {
-          console.log(
-            `A component is trying to load ${match[0]} using salt css injection. The css plugin has not converted this file. See showcase-vite-api.ts`,
-          );
-        } else {
-          throw err;
-        }
-      }
+    if (!targetTreeNode) {
+      return undefined;
     }
+    const { nodeData } = targetTreeNode;
 
     setContentState(null);
     setLoadError(null);
