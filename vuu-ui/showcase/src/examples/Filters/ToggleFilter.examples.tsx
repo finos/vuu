@@ -56,7 +56,7 @@ export const SimpleBuySellFilterInitialised = () => {
 
 export const SimpleBuySellFilterWithLabels = () => (
   <BuySellFilterTemplate
-    labels={["Buy", "Sell"]}
+    labels={["Long", "Short"]}
     onCommit={(_e, v) => console.log(v as string)}
   />
 );

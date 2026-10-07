@@ -512,7 +512,7 @@ export const ControlledToggleFilter = ({
 };
 
 export const ControlledToggleFilterWithLabels = () => (
-  <ControlledToggleFilter labels={["Buy", "Sell"]} />
+  <ControlledToggleFilter labels={["Long", "Short"]} />
 );
 
 export const ContainerManagedTextColumnFilter = ({
@@ -805,13 +805,13 @@ export const ContainerManagedToggleFilterWithFilter = () => (
 );
 
 export const ContainerManagedToggleFilterWithLabels = () => (
-  <ContainerManagedToggleFilter labels={["Buy", "Sell"]} />
+  <ContainerManagedToggleFilter labels={["Long", "Short"]} />
 );
 
 export const ContainerManagedToggleFilterWithLabelsAndFilter = () => (
   <ContainerManagedToggleFilter
     filter={{ column: "side", op: "=", value: "SELL" }}
-    labels={["Buy", "Sell"]}
+    labels={["Long", "Short"]}
   />
 );
 

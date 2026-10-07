@@ -1,7 +1,5 @@
 import { test, expect } from "../../../../../playwright/fixtures";
 
-
-
 test(`A simple uncontrolled togglefilter with no defaultValue
     shows All by default
     selects correct value when clicked
@@ -34,10 +32,16 @@ test(`A togglefilter with labels
   );
 
   await expect(component.getByRole("radio")).toHaveCount(3);
-  const buyButton = component.getByRole("radio", { name: "Buy", exact: true });
-  await expect(buyButton).toHaveAttribute("value", "BUY");
-  await buyButton.click();
-  await expect(buyButton).toBeChecked();
+  const longButton = component.getByRole("radio", {
+    name: "Long",
+    exact: true,
+  });
+  await expect(longButton).toHaveAttribute("value", "BUY");
+  await expect(
+    component.getByRole("radio", { name: "BUY", exact: true }),
+  ).toHaveCount(0);
+  await longButton.click();
+  await expect(longButton).toBeChecked();
 });
 
 test(`A simple controlled togglefilter with no defaultValue
