@@ -108,7 +108,7 @@ export const ToggleFilter = forwardRef(function ToggleFilter(
       value={value}
     >
       <ToggleButton key="all" value="all">
-        ALL
+        all
       </ToggleButton>
       {values.map((toggleValue, i) => (
         <ToggleButton

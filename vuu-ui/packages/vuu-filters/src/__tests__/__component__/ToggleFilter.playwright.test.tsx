@@ -7,7 +7,7 @@ test(`A simple uncontrolled togglefilter with no defaultValue
   const component = await mount("Filters/ToggleFilter/SimpleBuySellFilter");
 
   await expect(component.getByRole("radio")).toHaveCount(3);
-  await expect(component.getByRole("radio", { name: "ALL" })).toBeChecked();
+  await expect(component.getByRole("radio", { name: "all" })).toBeChecked();
   await component.getByRole("radio", { name: "BUY" }).click();
   await expect(component.getByRole("radio", { name: "BUY" })).toBeChecked();
 });
@@ -53,7 +53,7 @@ test(`A simple controlled togglefilter with no defaultValue
   );
 
   await expect(component.getByRole("radio")).toHaveCount(3);
-  await expect(component.getByRole("radio", { name: "ALL" })).toBeChecked();
+  await expect(component.getByRole("radio", { name: "all" })).toBeChecked();
   await component.getByRole("radio", { name: "BUY" }).click();
   await expect(component.getByRole("radio", { name: "BUY" })).toBeChecked();
 });
@@ -77,7 +77,7 @@ test(`A controlled togglefilter with datasource filtered to eliminate one value
   );
 
   await expect(component.getByRole("radio")).toHaveCount(3);
-  await expect(component.getByRole("radio", { name: "ALL" })).toBeChecked();
+  await expect(component.getByRole("radio", { name: "all" })).toBeChecked();
   await expect(component.getByRole("radio", { name: "BUY" })).toContainClass(
     "vuuToggleFilter-onlyAvailableValue",
   );
