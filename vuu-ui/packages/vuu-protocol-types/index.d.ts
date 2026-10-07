@@ -42,12 +42,6 @@ export interface VuuLoginRequest {
   type: "LOGIN";
 }
 
-export interface VuuModuleConnection {
-  connectionId: string;
-  restUrl?: string;
-  websocketUrl?: string;
-}
-
 export interface VuuModuleDescriptor {
   clientIdentifier: string;
   description: string;
@@ -70,7 +64,6 @@ export interface VuuModuleDescriptor {
   path: string;
   title: string;
   version: number;
-  vuu?: VuuModuleConnection;
 }
 
 export interface VuuModuleRecord extends VuuModuleDescriptor {
@@ -249,7 +242,9 @@ export interface VuuViewportRangeReject {
   viewPortId: string;
 }
 
-export type VuuViewportRangeResponse = VuuViewportRangeSuccess | VuuViewportRangeReject
+export type VuuViewportRangeResponse =
+  | VuuViewportRangeSuccess
+  | VuuViewportRangeReject;
 
 export interface VuuViewportDisableRequest {
   type: "DISABLE_VP";
@@ -346,11 +341,11 @@ export declare type SelectRowResponse = SelectRowSuccess | SelectRowReject;
 export declare interface SelectSuccessWithRowCount {
   selectedRowCount: number;
   type:
-  | "SELECT_ROW_SUCCESS"
-  | "DESELECT_ROW_SUCCESS"
-  | "SELECT_ROW_RANGE_SUCCESS"
-  | "SELECT_ALL_SUCCESS"
-  | "DESELECT_ALL_SUCCESS";
+    | "SELECT_ROW_SUCCESS"
+    | "DESELECT_ROW_SUCCESS"
+    | "SELECT_ROW_RANGE_SUCCESS"
+    | "SELECT_ALL_SUCCESS"
+    | "DESELECT_ALL_SUCCESS";
 }
 
 export interface SelectRowSuccess extends SelectSuccessWithRowCount {
@@ -616,7 +611,11 @@ export declare type EditCellRpcServiceRequest = {
 };
 
 export declare type BeginEditSessionParams = {
-  editSessionMode?: "inline-all-rows" | "all-rows" | "selected-rows" | "empty-session-table";
+  editSessionMode?:
+    | "inline-all-rows"
+    | "all-rows"
+    | "selected-rows"
+    | "empty-session-table";
 };
 export declare type BeginEditSessionRpcServiceRequest = {
   context: ViewportRpcContext;

@@ -3,7 +3,7 @@ import {
   type ManagedModule,
   type ModuleConfig,
 } from "@heswell/module-admin/contracts";
-import { Button, Link, Switch, Tag, Text } from "@salt-ds/core";
+import { Button, Link, Tag, Text } from "@salt-ds/core";
 import {
   ChevronRightIcon,
   FolderClosedIcon,
@@ -22,11 +22,9 @@ import { ErrorCount } from "./ErrorCount";
 import {
   AccessRoleField,
   CheckRemoteButton,
-  ConnectionFields,
   FederationFields,
   IdentityFields,
   NavigationFields,
-  useConnectionToggle,
 } from "./ModuleForm";
 import { EnabledStatus, FactList, NavIcon } from "./ui";
 
@@ -195,7 +193,6 @@ export const CreateModulePage = ({
   sourceTitle,
 }: CreateModulePageProps) => {
   const draft = useModuleDraft({ initial, mode: "create", modules });
-  const [connection, setConnection] = useConnectionToggle(draft);
   const [saving, setSaving] = useState(false);
   const props = { draft, mode: "create" as const, modules };
   const { config } = draft;
@@ -310,21 +307,12 @@ export const CreateModulePage = ({
                 <PortalMenuPreview config={config} modules={modules} />
               </div>
             </section>
-            <section
-              aria-label="Access and connection"
-              className={`${classBase}-card`}
-            >
+            <section aria-label="Access" className={`${classBase}-card`}>
               <header className={`${classBase}-cardHeader`}>
-                <h2>Access &amp; connection</h2>
+                <h2>Access</h2>
               </header>
               <div className={`${classBase}-cardBody ${classBase}-stack`}>
                 <AccessRoleField {...props} />
-                <Switch
-                  checked={connection}
-                  label="Uses a dedicated Vuu connection"
-                  onChange={(event) => setConnection(event.target.checked)}
-                />
-                {connection ? <ConnectionFields {...props} /> : null}
               </div>
             </section>
           </div>

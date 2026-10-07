@@ -108,17 +108,15 @@ the host's `LocalDataSourceProvider` cannot find it.
 `@vuu-ui/vuu-data-test` is not currently in
 `getSharedDependencies()` in `scripts/module-federation-utils.ts`.
 
-### A local descriptor cannot contain a fake VUU connection
+### Local descriptors do not carry VUU connections
 
-`RemoteModule` wraps a component in
-`AuthenticationProvider mode="vuu-connection"` whenever its descriptor has a
-`vuu` property. That provider performs token exchange and opens a websocket.
-
-Local descriptors must therefore omit `vuu`; placeholder URLs such as
-`local://` are not sufficient. The current protocol type
-`VuuModuleRegistry.modules` uses `VuuModuleRecord[]`, whose `vuu` field is
-required, so the portal-facing registry type also needs to support descriptors
-whose `vuu` connection is optional.
+`RemoteModule` reads VUU connection metadata from the remote's required
+`config.json`, not from the registry descriptor. Local descriptors must not add
+fake `vuu` data; placeholder URLs such as `local://` are not sufficient. In
+local mode, a config with `connectionId` is resolved against the host's
+`localServers` map, so the same remote `config.json` can serve identity mode
+(with URLs) and local mode (with the in-browser server matching its
+`connectionId`).
 
 ## Proposed architecture
 
@@ -252,18 +250,11 @@ Remote mode remains close to the current
 ```
 
 The portal VUU websocket returns `LOGIN_SUCCESS.moduleRegistry`. Descriptors
-for applications with their own VUU servers include:
-
-```ts
-vuu: {
-  connectionId: "user-admin",
-  restUrl: "https://...",
-  websocketUrl: "wss://..."
-}
-```
-
-`RemoteModule` then installs the per-remote authenticated VUU scope around the
-loaded feature.
+contain only loading, routing, navigation, and authorization metadata. For
+applications with their own VUU servers, `RemoteModule` fetches the remote's
+`config.json` next to `mf-manifest.json` and installs the per-remote
+authenticated VUU scope around the loaded feature when that config contains a
+connection.
 
 ### Local bootstrap
 
@@ -325,10 +316,10 @@ export interface PortalModuleRegistry {
 
 Use it in `IdentityContextValue`, `useModuleRegistry()`, and local host
 configuration. The server's `VuuModuleRegistry` remains assignable because its
-records contain all descriptor fields, including `vuu`.
+records contain the descriptor fields; VUU connection metadata is loaded
+separately from each remote's config.
 
-This avoids unsafe casts and lets local descriptors omit `vuu`, which is
-required to prevent network authentication in local mode.
+This avoids unsafe casts and keeps local descriptors free of `vuu` properties.
 
 ## Remote package structure
 
@@ -637,7 +628,8 @@ sequenceDiagram
     Host->>PortalVUU: Exchange token and open portal websocket
     PortalVUU-->>Host: LOGIN_SUCCESS.moduleRegistry
     Host->>MF: Register selected remote manifest
-    Host->>AppVUU: Exchange token/open descriptor.vuu connection
+    Host->>Host: Fetch remote config.json
+    Host->>AppVUU: Exchange token/open configured VUU connection
     Host->>MF: Load scope/Application
     MF-->>Feature: Production feature component
     Feature->>AppVUU: VuuDataSource through scoped provider
@@ -709,8 +701,8 @@ removed from the topology.
 
 - Validate the local registry at startup and fail with the descriptor ID when
   `mfUrl`, `mfScope`, `mfComponent`, `path`, or `location` is missing.
-- Reject any local descriptor containing `vuu`; otherwise it can accidentally
-  initiate network authentication.
+- Reject any local descriptor containing `vuu`; connection metadata must come
+  from the remote config and resolve to a local server by `connectionId`.
 - Give a clear error when a local adapter loads but does not register the VUU
   module needed by the feature's first table.
 - Detect duplicate local module names instead of silently replacing an
@@ -727,8 +719,8 @@ removed from the topology.
 
 ### Phase 1: portal infrastructure
 
-1. Add a portal-facing registry type whose descriptors allow `vuu` to be
-   absent.
+1. Add a portal-facing registry type whose descriptors do not include VUU
+   connection metadata.
 2. Let `AuthenticationProvider mode="local"` accept a module registry,
    authorizations, and a synthetic local connection context.
 3. Add the `DataSourceProvider` injection point to `PortalShell`.
@@ -761,9 +753,9 @@ For each SPA:
 2. Expose the production feature through Module Federation.
 3. Port or create its local `VuuModule`.
 4. Add a local adapter exposure.
-5. Add remote and local descriptors.
-6. Verify that remote descriptors use the application's own VUU connection and
-   local descriptors omit `vuu`.
+5. Add remote and local descriptors plus the remote's required `config.json`.
+6. Verify that the config identifies the application's VUU connection and local
+   descriptors omit `vuu`.
 7. Retain thin standalone entries only where standalone execution is still
    valuable.
 
@@ -784,7 +776,7 @@ Each migrated remote should be exercised in these combinations:
 | --- | --- | --- | --- |
 | standalone remote | production | application's VUU server | Existing production behavior |
 | standalone local | shared feature plus local setup | local module | Existing local behavior |
-| portal remote | production | descriptor-scoped VUU server | Feature uses its own authenticated connection |
+| portal remote | production | config-scoped VUU server | Feature uses its own authenticated connection |
 | portal local | local adapter | shared local module container | Feature loads through MF with no network auth/data |
 
 Also verify:
