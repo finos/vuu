@@ -661,7 +661,9 @@ export class EditSession
       this.#setLifecycle({ status: "ending", sessionDataSource });
 
       try {
-        await this.dataSource?.endEditSession?.(saveChanges, force);
+        if (sessionDataSource.status !== "unsubscribed" || saveChanges) {
+          await this.dataSource?.endEditSession?.(saveChanges, force);
+        }
         this.#clearEdits();
         this.#sessionDataSource = undefined;
         this.#setLifecycle({ status: "idle" });

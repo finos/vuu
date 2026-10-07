@@ -146,6 +146,30 @@ test.describe("Given a CsvUpload with rowDefaults", () => {
   });
 });
 
+test.describe("Given a CsvUpload where server reports session errors", () => {
+  test("WHEN a CSV is uploaded and server flags key already exists THEN Import remains disabled and error is displayed", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvUpload/CsvUploadWithServerSessionError");
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: "valid-schema.csv",
+      mimeType: "text/csv",
+      buffer: Buffer.from("id\nrow-001\n"),
+    });
+
+    await expect(page.locator(".saltFileDropZone")).toHaveClass(
+      /saltFileDropZone-error/,
+      { timeout: 5000 },
+    );
+    await expect(page.locator(".vuuCsvUpload-importErrorItem")).toContainText(
+      "Row 1: key already exists",
+    );
+    await expect(page.locator("button", { hasText: "Import" })).toBeDisabled();
+  });
+});
+
 test.describe("Given a DataUploadPreview", () => {
   test("uploads CSV rows directly from the toolbar", async ({
     mount,
