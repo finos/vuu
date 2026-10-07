@@ -63,7 +63,7 @@ Mean time per operation, 100k rows, Node 24, Apple Silicon:
 | filter                                        | 5.7 ms   | 1.3 ms  | 4.3x     |
 | groupBy ccy, set/clear                        | 1.6 ms   | 1.2 ms  | 1.3x     |
 | groupBy ccy + exchange, set/clear             | 2.2 ms   | 2.0 ms  | 1.1x     |
-| scroll, 100 range changes                     | 0.81 ms  | 1.14 ms | 0.7x     |
+| scroll, 100 range changes                     | 0.82 ms  | 0.51 ms | 1.6x     |
 | 1000 ticks, random rows                       | 1543 ms  | 0.35 ms | ~4400x   |
 | 1000 ticks, rows in viewport                  | 0.63 ms  | 0.10 ms | 6.6x     |
 | 1000 ticks, sorted column                     | 3012 ms  | 1.9 ms  | ~1600x   |
@@ -78,7 +78,8 @@ Notes:
   table size. The engine uses keyed lookup and sends each changed row once.
 - On updates, legacy does not re-sort or re-filter rows. The engine does, so the tick
   comparisons understate the engine's advantage.
-- Scrolling is slightly slower on the engine, about 11 µs per range change.
+- Scrolling: the engine uses an array-backed row key allocator (`RowKeys`) and prunes its row
+  cache incrementally, so range changes cost in proportion to the rows entering or leaving the range.
 
 ## Tests
 

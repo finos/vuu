@@ -47,7 +47,6 @@ import {
   type ColumnMap,
   type DataSourceConfigChanges,
   EventEmitter,
-  KeySet,
   NULL_RANGE,
   Range,
   filterAsQuery,
@@ -58,6 +57,7 @@ import {
   vanillaConfig,
   withConfigDefaults,
 } from "@vuu-ui/vuu-utils";
+import { RowKeys } from "./RowKeys";
 import { Table, type TableRow } from "./Table";
 
 const { KEY } = metadataKeys;
@@ -70,9 +70,6 @@ const nextFrame = (callback: () => void) => {
     globalThis.setTimeout(callback, 0);
   }
 };
-
-const toClientValue = (value: unknown): VuuRowDataItemType =>
-  typeof value === "bigint" ? value.toString() : (value as VuuRowDataItemType);
 
 const buildTableSchema = (
   columns: readonly ColumnDescriptor[],
@@ -126,7 +123,7 @@ export class EngineDataSource
   #dataEngine: DataEngine;
   #engine: ViewportEngine | undefined;
   #freezeTimestamp: number | undefined = undefined;
-  #keys = new KeySet(NULL_RANGE);
+  #keys = new RowKeys(NULL_RANGE);
   #linkFilter: LinkFilter | undefined;
   #links: LinkDescriptorWithLabel[] | undefined;
   #maxRangeEnd = Number.MAX_SAFE_INTEGER;
@@ -137,6 +134,12 @@ export class EngineDataSource
   #renderBufferSize: number;
   /** client rows last sent, by position, within buffered range */
   #rows = new Map<number, DataSourceRowWithBigint>();
+  // all keys in #rows lie within [#rowsLo, #rowsHi), allows incremental pruning
+  #rowsLo = Number.MAX_SAFE_INTEGER;
+  #rowsHi = 0;
+  #bufferedRangeCache: VuuRange | undefined = undefined;
+  #bufferedRangeSource: Range | undefined = undefined;
+  #bufferedRangeMax = -1;
   #size = 0;
   #status: DataSourceStatus = "initialising";
   #table: Table;
@@ -242,10 +245,23 @@ export class EngineDataSource
   }
 
   get #bufferedRange(): VuuRange {
-    const { from, to } = this.#range.withBuffer;
-    return this.#maxRangeEnd === Number.MAX_SAFE_INTEGER
-      ? { from, to }
-      : { from, to: Math.min(to, this.#maxRangeEnd) };
+    if (
+      this.#bufferedRangeCache === undefined ||
+      this.#bufferedRangeSource !== this.#range ||
+      this.#bufferedRangeMax !== this.#maxRangeEnd
+    ) {
+      const { from, to } = this.#range.withBuffer;
+      this.#bufferedRangeCache = { from, to: Math.min(to, this.#maxRangeEnd) };
+      this.#bufferedRangeSource = this.#range;
+      this.#bufferedRangeMax = this.#maxRangeEnd;
+    }
+    return this.#bufferedRangeCache;
+  }
+
+  #clearRows() {
+    this.#rows.clear();
+    this.#rowsLo = Number.MAX_SAFE_INTEGER;
+    this.#rowsHi = 0;
   }
 
   #handlePendingChanges = () => {
@@ -270,53 +286,62 @@ export class EngineDataSource
 
   #toClientRow(viewportRow: ViewportRow): DataSourceRowWithBigint {
     const { rowIndex, rowKey, sel, ts, data } = viewportRow;
-    let clientRow: DataSourceRowWithBigint;
-    if (this.#isGrouped) {
-      const [depth, isExpanded, , isLeaf, , count] = data;
-      clientRow = [
-        rowIndex,
-        this.#keys.keyFor(rowIndex),
-        isLeaf as boolean,
-        isExpanded as boolean,
-        depth as number,
-        count as number,
-        rowKey,
-        sel,
-        ts,
-        false,
-      ];
-      for (let i = 6; i < data.length; i++) {
-        clientRow.push(toClientValue(data[i]));
-      }
+    const grouped = this.#isGrouped;
+    const dataStart = grouped ? 6 : 0;
+    const dataLen = data.length;
+    const clientRow = new Array(10 + dataLen - dataStart) as unknown[];
+    clientRow[0] = rowIndex;
+    clientRow[1] = this.#keys.keyFor(rowIndex);
+    if (grouped) {
+      clientRow[2] = data[3];
+      clientRow[3] = data[1];
+      clientRow[4] = data[0];
+      clientRow[5] = data[5];
     } else {
-      clientRow = [
-        rowIndex,
-        this.#keys.keyFor(rowIndex),
-        true,
-        false,
-        0,
-        0,
-        rowKey,
-        sel,
-        ts,
-        false,
-      ];
-      for (let i = 0; i < data.length; i++) {
-        clientRow.push(toClientValue(data[i]));
-      }
+      clientRow[2] = true;
+      clientRow[3] = false;
+      clientRow[4] = 0;
+      clientRow[5] = 0;
     }
-    this.#rows.set(rowIndex, clientRow);
-    return clientRow;
+    clientRow[6] = rowKey;
+    clientRow[7] = sel;
+    clientRow[8] = ts;
+    clientRow[9] = false;
+    for (let i = dataStart, j = 10; i < dataLen; i++, j++) {
+      const value = data[i] as unknown;
+      clientRow[j] = typeof value === "bigint" ? value.toString() : value;
+    }
+    this.#rows.set(rowIndex, clientRow as DataSourceRowWithBigint);
+    if (rowIndex < this.#rowsLo) this.#rowsLo = rowIndex;
+    if (rowIndex >= this.#rowsHi) this.#rowsHi = rowIndex + 1;
+    return clientRow as DataSourceRowWithBigint;
   }
 
+  /**
+   * Remove cached rows outside the buffered range or beyond size. Cost is
+   * proportional to the number of indices leaving the range, not cache size.
+   */
   #pruneRows() {
-    const { from, to } = this.#bufferedRange;
-    const size = this.#size;
-    for (const rowIndex of this.#rows.keys()) {
-      if (rowIndex < from || rowIndex >= to || rowIndex >= size) {
-        this.#rows.delete(rowIndex);
-      }
+    const lo = this.#rowsLo;
+    const hi = this.#rowsHi;
+    if (lo >= hi) {
+      return;
     }
+    const { from, to: bufferedTo } = this.#bufferedRange;
+    const to = Math.min(bufferedTo, this.#size);
+    if (to <= from || to <= lo || from >= hi) {
+      this.#clearRows();
+      return;
+    }
+    const rows = this.#rows;
+    for (let i = lo, end = Math.min(hi, from); i < end; i++) {
+      rows.delete(i);
+    }
+    for (let i = Math.max(to, lo); i < hi; i++) {
+      rows.delete(i);
+    }
+    this.#rowsLo = Math.max(lo, from);
+    this.#rowsHi = Math.min(hi, to);
   }
 
   #dispatch(batch: ViewportBatch) {
@@ -357,7 +382,7 @@ export class EngineDataSource
 
   /** Send every row in the current range, irrespective of what was sent before */
   sendRowsToClient() {
-    this.#rows.clear();
+    this.#clearRows();
     this.#pendingChanges = false;
     this.#dispatch(this.engine.getCurrentRange());
   }
@@ -444,7 +469,7 @@ export class EngineDataSource
     this.#engine?.destroy();
     this.#engine = undefined;
     this.#pendingChanges = false;
-    this.#rows.clear();
+    this.#clearRows();
   }
 
   suspend() {
@@ -510,7 +535,7 @@ export class EngineDataSource
       const newPageCount = Math.ceil(this.size / (range.to - range.from));
       this.#range = range;
       const bufferedRange = this.#bufferedRange;
-      const keysResequenced = this.#keys.reset(bufferedRange) as unknown;
+      const keysResequenced = this.#keys.reset(bufferedRange);
       this.#pendingChanges = false;
       const batch = this.engine.setRange(bufferedRange);
       this.#pruneRows();
@@ -621,7 +646,7 @@ export class EngineDataSource
     });
     // rows will be resent to client in full on next frame, but the cache is
     // populated now, so rows are immediately available via getRowAtIndex
-    this.#rows.clear();
+    this.#clearRows();
     for (const row of batch.rows) {
       this.#toClientRow(row);
     }
