@@ -10,12 +10,13 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
-    "@mdx-js/loader": "3.1.1",
-    "@types/serve-handler": "6.1.4",
+    "@heswell/vuu-data-engine-local": "1.0.0",
     "@mdx-js/esbuild": "3.1.1",
+    "@mdx-js/loader": "3.1.1",
     "@mdx-js/rollup": "3.1.1",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
+    "@types/serve-handler": "6.1.4",
     "@vuu-ui/vuu-data-types": "4.0.0-alpha.20",
     "@vuu-ui/vuu-table-types": "4.0.0-alpha.20",
     "default-browser": "^5.2.1",
@@ -25,16 +26,16 @@
     "serve-handler": "6.1.6"
   },
   "dependencies": {
-    "@vuu-ui/core": "4.0.0-alpha.20",
     "@fontsource/open-sans": "^4.5.13",
+    "@salt-ds/core": "1.67.0",
+    "@salt-ds/theme": "1.43.0",
+    "@vuu-ui/core": "4.0.0-alpha.20",
     "@vuu-ui/vuu-datatable": "4.0.0-alpha.20",
     "@vuu-ui/vuu-icons": "4.0.0-alpha.20",
     "@vuu-ui/vuu-notifications": "4.0.0-alpha.20",
     "@vuu-ui/vuu-theme": "4.0.0-alpha.20",
     "@vuu-ui/vuu-ui-controls": "4.0.0-alpha.20",
     "@vuu-ui/vuu-utils": "4.0.0-alpha.20",
-    "@salt-ds/core": "1.67.0",
-    "@salt-ds/theme": "1.43.0",
     "open": "10.1.0",
     "serve-handler": "6.1.6"
   },

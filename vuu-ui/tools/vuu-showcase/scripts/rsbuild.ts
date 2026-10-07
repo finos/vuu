@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { createRsbuild } from "@rsbuild/core";
@@ -38,7 +37,7 @@ const sharedPackages = [
 ] as const;
 
 /**
- * VUU_DATA_ENGINE=local runs the showcase against @vuu-ui/vuu-data-engine-local
+ * VUU_DATA_ENGINE=local runs the showcase against @heswell/vuu-data-engine-local
  * (published from heswell/vuu-websocket), the @heswell/vuu-viewport engine backed
  * replacement for @vuu-ui/vuu-data-test. Both packages expose the same API, so
  * examples are unchanged.
@@ -47,17 +46,12 @@ const useDataEngineLocal = process.env.VUU_DATA_ENGINE === "local";
 const resolve = useDataEngineLocal
   ? {
       alias: {
-        "@vuu-ui/vuu-data-test$": "@vuu-ui/vuu-data-engine-local",
+        "@vuu-ui/vuu-data-test$": "@heswell/vuu-data-engine-local",
       },
     }
   : undefined;
 if (useDataEngineLocal) {
-  if (!existsSync(path.join(uiDirectory, "node_modules/@vuu-ui/vuu-data-engine-local"))) {
-    throw Error(
-      "[showcase] VUU_DATA_ENGINE=local requires @vuu-ui/vuu-data-engine-local, install it with: npm install --no-save @vuu-ui/vuu-data-engine-local@alpha",
-    );
-  }
-  console.log("[showcase] using @vuu-ui/vuu-data-engine-local");
+  console.log("[showcase] using @heswell/vuu-data-engine-local");
 }
 
 const getShowcaseSharedDependencies = (role: "host" | "remote") =>
