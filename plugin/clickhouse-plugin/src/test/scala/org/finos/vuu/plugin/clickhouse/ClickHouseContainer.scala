@@ -26,7 +26,7 @@ class ClickHouseContainer(tag: String) extends GenericContainer(
 }
 
 object ClickHouseContainer {
-  private val defaultVersion = "26.7-distroless"
+  private val defaultVersion = "26.8-distroless"
   private val logger = LoggerFactory.getLogger(ClickHouseContainer.getClass)
   private val imageName = "clickhouse/clickhouse-server"
   private val port = 8123
