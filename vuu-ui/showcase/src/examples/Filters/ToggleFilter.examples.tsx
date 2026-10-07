@@ -10,7 +10,7 @@ import { useMemo, useState } from "react";
 
 const containerStyle = {
   padding: 12,
-  width: 200,
+  width: 300,
 };
 
 const BuySellFilterTemplate = ({
