@@ -152,8 +152,10 @@ export const exportCsvTemplate = async (
         .map((col) => (typeof col === "string" ? col : col.name))
     : undefined;
 
+  const targetColumns = targetColumnNames ?? overrides?.columns;
+
   const sessionOverrides: SessionDataSourceOverrides | undefined =
-    overrides ?? (targetColumnNames ? { columns: targetColumnNames } : undefined);
+    overrides ?? (targetColumns ? { columns: targetColumns } : undefined);
 
   if (
     !isSessionTable(dataSource.table) &&
@@ -201,9 +203,24 @@ export const exportCsvTemplate = async (
               if (message.type === "subscribed") {
                 const { columns: subColumns } =
                   message as DataSourceSubscribedMessage;
-                const exportCols = subColumns.filter(
-                  (name) => !excluded.has(name),
-                );
+                const exportCols = targetColumns
+                  ? targetColumns.filter((name) => !excluded.has(name))
+                  : subColumns.filter((name) => !excluded.has(name));
+
+                if (exportCols.length === 0) {
+                  cleanup();
+                  const error = new Error(
+                    "exportCsvTemplate: no columns available for export",
+                  );
+                  if (onError) {
+                    onError(error);
+                    resolve();
+                  } else {
+                    reject(error);
+                  }
+                  return;
+                }
+
                 const header = exportCols.map(csvCell).join(",");
                 triggerCsvDownload(`${header}\r\n`, filename);
                 cleanup();
@@ -223,7 +240,6 @@ export const exportCsvTemplate = async (
   }
 
   const schema = dataSource.tableSchema;
-  const targetColumns = targetColumnNames ?? overrides?.columns;
   if (targetColumns !== undefined) {
     if (schema) {
       const schemaColumnNames = new Set(schema.columns.map((col) => col.name));

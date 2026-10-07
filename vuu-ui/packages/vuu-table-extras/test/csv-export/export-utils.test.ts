@@ -393,6 +393,65 @@ describe("export-utils", () => {
       expect(onSuccess).toHaveBeenCalled();
     });
 
+    it("respects columns option in template export even if sessionDataSource returns additional columns", async () => {
+      let csvContent = "";
+      vi.stubGlobal(
+        "Blob",
+        vi.fn(function (
+          this: { content: BlobPart[] },
+          content: BlobPart[],
+        ) {
+          csvContent = content[0] as string;
+        }),
+      );
+
+      mockSessionDataSource.subscribe.mockImplementation(
+        (_props: unknown, callback: (msg: unknown) => void) => {
+          callback({
+            type: "subscribed",
+            columns: ["ric", "currency", "description", "vuuRowNum"],
+          });
+        },
+      );
+
+      const onSuccess = vi.fn();
+      await exportCsvTemplate(mockDataSource as unknown as DataSource, {
+        filename: "selective-template.csv",
+        columns: ["ric", "currency"],
+        onSuccess,
+      });
+
+      expect(mockDataSource.createSessionDataSource).toHaveBeenCalledWith(
+        "Empty",
+        "export",
+        { columns: ["ric", "currency"] },
+      );
+      expect(csvContent).toBe("ric,currency\r\n");
+      expect(onSuccess).toHaveBeenCalled();
+    });
+
+    it("handles no columns available in session table path", async () => {
+      mockSessionDataSource.subscribe.mockImplementation(
+        (_props: unknown, callback: (msg: unknown) => void) => {
+          callback({
+            type: "subscribed",
+            columns: ["vuuRowNum"],
+          });
+        },
+      );
+
+      const onError = vi.fn();
+      await exportCsvTemplate(mockDataSource as unknown as DataSource, {
+        onError,
+      });
+
+      expect(onError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining("no columns available for export"),
+        }),
+      );
+    });
+
     it("falls back to tableSchema if status is initialising and triggers onSuccess", async () => {
       const uninitializedDs = {
         table: { module: "SIMUL", table: "instruments" },
