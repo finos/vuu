@@ -76,7 +76,6 @@ export interface VuuModuleDescriptor {
 export interface VuuModuleRecord extends VuuModuleDescriptor {
   enabled: boolean;
   id: number;
-  vuu: VuuModuleConnection;
 }
 
 export interface VuuModuleRegistry {
