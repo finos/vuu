@@ -2,6 +2,9 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
+    benchmark: {
+      include: ["packages/**/bench/**/*.bench.ts"],
+    },
     dangerouslyIgnoreUnhandledErrors: true,
     include: [
       "packages/**/test/**/**.test.(js|ts|tsx)",

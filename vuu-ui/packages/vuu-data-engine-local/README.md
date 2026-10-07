@@ -38,6 +38,48 @@ npm run showcase:engine   # equivalent to: VUU_DATA_ENGINE=local npm run showcas
 This aliases `@vuu-ui/vuu-data-test` to `@vuu-ui/vuu-data-engine-local` in the showcase
 rsbuild config. The examples themselves don't change.
 
+## Performance
+
+`bench/datasource.bench.ts` compares the legacy `TickingArrayDataSource`
+(`@vuu-ui/vuu-data-test`) with the engine `ModuleDataSource` on the same data and scenarios.
+`@vuu-ui/vuu-data-test` is a dev dependency, used only for this comparison.
+
+```sh
+npm run bench:data-engine                    # 100k rows
+BENCH_ROWS=10000 npm run bench:data-engine   # smaller run
+```
+
+`requestAnimationFrame` is made synchronous during the bench, so each timing includes delivering
+rows to the client. `test/LegacyParity.test.ts` checks that both implementations give the same
+results for the sort, filter and groupBy scenarios.
+
+Mean time per operation, 100k rows, Node 24, Apple Silicon:
+
+| Scenario                                      | legacy   | engine  | speed-up |
+| --------------------------------------------- | -------- | ------- | -------- |
+| create + subscribe                            | 24.1 ms  | 8.7 ms  | 2.8x     |
+| sort numeric column                           | 62.1 ms  | 14.1 ms | 4.4x     |
+| sort two columns                              | 64.6 ms  | 17.1 ms | 3.8x     |
+| filter                                        | 5.7 ms   | 1.3 ms  | 4.3x     |
+| groupBy ccy, set/clear                        | 1.6 ms   | 1.2 ms  | 1.3x     |
+| groupBy ccy + exchange, set/clear             | 2.2 ms   | 2.0 ms  | 1.1x     |
+| scroll, 100 range changes                     | 0.81 ms  | 1.14 ms | 0.7x     |
+| 1000 ticks, random rows                       | 1543 ms  | 0.35 ms | ~4400x   |
+| 1000 ticks, rows in viewport                  | 0.63 ms  | 0.10 ms | 6.6x     |
+| 1000 ticks, sorted column                     | 3012 ms  | 1.9 ms  | ~1600x   |
+| 1000 ticks, filtered column                   | 1903 ms  | 0.55 ms | ~3400x   |
+| 1000 ticks, grouped                           | 1205 ms  | 0.39 ms | ~3100x   |
+| 500 deletes + 500 inserts                     | 1628 ms  | 0.60 ms | ~2700x   |
+| 500 deletes + 500 inserts, sorted             | 2564 ms  | 1.57 ms | ~1600x   |
+
+Notes:
+
+- The legacy update path finds each row with a linear search, so per-update cost grows with
+  table size. The engine uses keyed lookup and sends each changed row once.
+- On updates, legacy does not re-sort or re-filter rows. The engine does, so the tick
+  comparisons understate the engine's advantage.
+- Scrolling is slightly slower on the engine, about 11 µs per range change.
+
 ## Tests
 
 ```sh
