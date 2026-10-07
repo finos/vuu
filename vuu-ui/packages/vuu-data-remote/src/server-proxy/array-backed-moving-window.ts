@@ -79,8 +79,9 @@ export class ArrayBackedMovingWindow {
 
   setRowCount = (rowCount: number) => {
     log.info?.(`setRowCount ${rowCount}`);
-    if (rowCount < this.internalData.length) {
-      this.internalData.length = rowCount;
+    const dataLength = Math.max(0, rowCount - this.#range.from);
+    if (dataLength < this.internalData.length) {
+      this.internalData.length = dataLength;
     }
     if (rowCount < this.rowCount) {
       // Brute force, works
@@ -136,6 +137,9 @@ export class ArrayBackedMovingWindow {
     const currentTo = Math.min(this.clientRange.to, this.rowCount);
 
     if (from === currentFrom && to === currentTo) {
+      // currentTo may have been clamped to rowCount, the requested range
+      // must still be stored, else rows added later will be missed.
+      this.clientRange.to = to;
       return [false, EMPTY_ARRAY] as RangeTuple;
     }
 
@@ -153,27 +157,16 @@ export class ArrayBackedMovingWindow {
     const clientRows: VuuRow[] = [];
     const offset = this.#range.from;
 
-    // if (this.hasAllRowsWithinRange) {
-    if (to > originalRange.to) {
-      const start = Math.max(from, originalRange.to);
-      for (let i = start - offset; i < to - offset; i++) {
-        const row = this.internalData[i];
-        if (row) {
-          clientRows.push(row);
-        }
-      }
-    } else {
-      const end = Math.min(originalRange.from, to);
-      for (let i = from - offset; i < end - offset; i++) {
-        const row = this.internalData[i];
+    // Return every row within the new client range that was not within the
+    // original client range. Range may have grown at both ends.
+    for (let i = from; i < to; i++) {
+      if (i < originalRange.from || i >= originalRange.to) {
+        const row = this.internalData[i - offset];
         if (row) {
           clientRows.push(row);
         }
       }
     }
-    // } else if (this.rowsWithinRange > 0) {
-    //   // console.log(`[ArrayBackedMovingWindow] has some client rows but not all`);
-    // }
 
     const serverDataRequired = this.bufferBreakout(from, to);
     return [serverDataRequired, clientRows] as RangeTuple;

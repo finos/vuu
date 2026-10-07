@@ -263,4 +263,18 @@ describe("DataRowMovingWindow", () => {
       expect(movingWindow.data.map((d) => d.col1)).toEqual([10_000]);
     });
   });
+
+  // prettier-ignore
+  describe("setRowCount", () => {
+    it("discards rows beyond rowCount when range.from > 0", () => {
+      movingWindow = new DataRowMovingWindow({ from: 100, to: 130 });
+      movingWindow.setRowCount(200);
+      for (let i = 100; i < 130; i++) {
+        movingWindow.add(DataRow([i, i - 100, false, false, 1, 0, `key-${i}`, 0, 0, false, i]));
+      }
+      movingWindow.setRowCount(110);
+      expect(movingWindow.getAtIndex(109)).toBeDefined();
+      expect(movingWindow.data.filter((row) => row && row.index >= 110)).toEqual([]);
+    });
+  });
 });

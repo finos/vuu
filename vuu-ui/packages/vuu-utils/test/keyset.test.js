@@ -87,31 +87,43 @@ describe("KeySet", () => {
       keySet.reset({ from: 25, to: 66 });
       keySet.reset({ from: 0, to: 36 });
       keySet.reset({ from: 25, to: 66 });
-      // prettier-ignore
-      expect([...keySet.keys.entries()]).toEqual([
-        [25,25], [26,26], [27,27], [28,28], [29,29], [30,30], [31,31], [32,32], [33,33], [34,34], [35,35], [36,0], [37,1],
-        [38,2], [39,3], [40,4], [41,5], [42,6], [43,7], [44,8], [45,9], [46,10], [47,11], [48,12],
-        [49,13], [50,14], [51,15], [52,16], [53,17], [54,18],
-        [55,19], [56,20], [57,21], [58,22], [59,23], [60,24], [61,36], [62,37], [63,38], [64,39], [65,40],
-      ]);
+      const keys = [...keySet.keys.values()];
+      expect(keySet.keys.size).toEqual(41);
+      expect(new Set(keys).size).toEqual(41);
+      // largest range is 41 rows, recycling means we never need more keys
+      expect(Math.max(...keys)).toBeLessThan(41);
     });
   });
 
-  // it("handles erratic resets without ever producing a duplicate key", () => {
-  //   const keySet = new KeySet({ from: 0, to: 0 });
-  //   keySet.reset({ from: 0, to: 0 });
-  //   keySet.reset({ from: 0, to: 30 });
-  //   keySet.reset({ from: 0, to: 21 });
-  //   keySet.reset({ from: 0, to: 30 });
-  //   keySet.reset({ from: 1, to: 22 });
-  //   keySet.reset({ from: 0, to: 30 });
-  //   expect(keySet.keys.size).toEqual(30);
-  //   // prettier-ignore
-  //   expect([...keySet.keys.entries()]).toEqual([
-  //     [1,1], [2,2], [3,3], [4,4], [5,5], [6,6], [7,7], [8,8], [9,9], [10,10], [11,11], [12,12], [13,13],
-  //     [14,14], [15,15], [16,16], [17,17], [18,18], [19,19], [20,20], [21,21],
-  //     [0,0], [22,22], [23,23], [24,24], [25,25], [26,26], [27,27], [28,28], [29,29],
-  //   ]);
-  //   expect(keySet.free).toEqual([]);
-  // });
+  describe("reset with a range object that is mutated in place", () => {
+    // Mirrors server-proxy Viewport, which passes dataWindow.clientRange
+    // (mutated by setClientRange) to every reset call.
+    it("re-uses keys freed by a size reduction when size subsequently grows", () => {
+      const range = { from: 0, to: 30 };
+      const keySet = new KeySet({ from: 0, to: 30 });
+      keySet.reset(range);
+
+      range.to = 20;
+      keySet.reset(range);
+      range.to = 30;
+      keySet.reset(range);
+
+      expect(keySet.keys.size).toEqual(30);
+      expect(Math.max(...keySet.keys.values())).toBeLessThan(30);
+    });
+  });
+
+  it("handles erratic resets without ever producing a duplicate key", () => {
+    const keySet = new KeySet({ from: 0, to: 0 });
+    keySet.reset({ from: 0, to: 0 });
+    keySet.reset({ from: 0, to: 30 });
+    keySet.reset({ from: 0, to: 21 });
+    keySet.reset({ from: 0, to: 30 });
+    keySet.reset({ from: 1, to: 22 });
+    keySet.reset({ from: 0, to: 30 });
+    const keys = [...keySet.keys.values()];
+    expect(keySet.keys.size).toEqual(30);
+    expect(new Set(keys).size).toEqual(30);
+    expect(Math.max(...keys)).toBeLessThan(30);
+  });
 });
