@@ -86,6 +86,25 @@ const getMaxScroll = (container: HTMLElement) => {
   return [scrollWidth - clientWidth, scrollHeight - clientHeight];
 };
 
+/**
+ * scrollTop, scrollHeight and clientHeight are rounded by the browser, so at
+ * the very top or end of the scroll range they may disagree by a pixel or so,
+ * depending on the display's devicePixelRatio. With virtualised scrolling, one
+ * pixel of scroll can represent hundreds of rows, so treat positions this close
+ * to either end as being exactly at that end.
+ */
+const SCROLL_END_TOLERANCE = 2;
+
+export const getPctScrollTop = (scrollTop: number, maxScrollTop: number) => {
+  if (maxScrollTop <= 0 || scrollTop < SCROLL_END_TOLERANCE) {
+    return 0;
+  } else if (maxScrollTop - scrollTop < SCROLL_END_TOLERANCE) {
+    return 1;
+  } else {
+    return scrollTop / maxScrollTop;
+  }
+};
+
 const getPctScroll = (container: HTMLElement) => {
   const {
     clientHeight,
@@ -99,7 +118,7 @@ const getPctScroll = (container: HTMLElement) => {
   const maxScrollLeft = scrollWidth - clientWidth;
   const pctScrollLeft = scrollLeft / (scrollWidth - clientWidth);
   const maxScrollTop = scrollHeight - clientHeight;
-  const pctScrollTop = scrollTop / (scrollHeight - clientHeight);
+  const pctScrollTop = getPctScrollTop(scrollTop, maxScrollTop);
 
   return [
     scrollLeft,
@@ -497,7 +516,7 @@ export const useTableScroll = ({
               // no scroll event will fire, reset rows for current position
               handleVerticalScroll(
                 scrollTop,
-                maxScrollTop > 0 ? scrollTop / maxScrollTop : 0,
+                getPctScrollTop(scrollTop, maxScrollTop),
               );
             } else {
               contentContainer.scrollTo({
