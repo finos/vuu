@@ -1,5 +1,7 @@
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { ToggleFilter, ToggleFilterProps } from "@vuu-ui/vuu-filters";
+import { Table } from "@vuu-ui/vuu-table";
+import { TableConfig } from "@vuu-ui/vuu-table-types";
 import {
   CommitHandler,
   DataSourceProvider,
@@ -111,7 +113,7 @@ export const ControlledBuySellFilterWithBuyOnlyDataSource = () => {
     const tableSchema = getSchema("parentOrders");
     return new VuuDataSource({
       columns: tableSchema.columns.map(toColumnName),
-      filterSpec: { filter: 'side = "BUY"' },
+      baseFilterSpec: { filter: 'side = "BUY"' },
       table: tableSchema.table,
     });
   }, [VuuDataSource]);
@@ -125,3 +127,79 @@ export const ControlledBuySellFilterWithBuyOnlyDataSource = () => {
     </DataSourceProvider>
   );
 };
+
+/**
+ * Toggle selection is applied as a filter to the DataSource, as it would
+ * be in an application. A baseFilter can be used to restrict available data.
+ * The Table subscribes to the DataSource, so filter changes are processed.
+ */
+const BuySellFilterAppliedToDataSourceTemplate = ({
+  baseFilter,
+  initialValue = "",
+}: {
+  baseFilter?: string;
+  initialValue?: string;
+}) => {
+  const [value, setValue] = useState(initialValue);
+  const { VuuDataSource } = useData();
+
+  const dataSource = useMemo(() => {
+    const tableSchema = getSchema("parentOrders");
+    return new VuuDataSource({
+      baseFilterSpec: baseFilter ? { filter: baseFilter } : undefined,
+      columns: tableSchema.columns.map(toColumnName),
+      filterSpec: initialValue
+        ? { filter: `side = "${initialValue}"` }
+        : undefined,
+      table: tableSchema.table,
+    });
+  }, [VuuDataSource, baseFilter, initialValue]);
+
+  const tableConfig = useMemo<TableConfig>(
+    () => ({
+      columns: getSchema("parentOrders").columns,
+    }),
+    [],
+  );
+
+  const handleCommit: CommitHandler<HTMLElement> = (_e, v) => {
+    const value = v as string;
+    setValue(value);
+    if (value === "") {
+      dataSource.clearFilter?.();
+    } else {
+      dataSource.setFilter?.({ column: "side", op: "=", value });
+    }
+  };
+
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <BuySellFilterTemplate
+        onCommit={handleCommit}
+        table={{ module: "SIMUL", table: "parentOrders" }}
+        value={value}
+      />
+      <Table
+        config={tableConfig}
+        dataSource={dataSource}
+        height={400}
+        width={800}
+      />
+    </DataSourceProvider>
+  );
+};
+
+export const BuySellFilterAppliedToDataSource = () => (
+  <BuySellFilterAppliedToDataSourceTemplate />
+);
+
+export const BuySellFilterAppliedToBuyOnlyDataSource = () => (
+  <BuySellFilterAppliedToDataSourceTemplate baseFilter='side = "BUY"' />
+);
+
+export const BuySellFilterAppliedToBuyOnlyDataSourceInitialised = () => (
+  <BuySellFilterAppliedToDataSourceTemplate
+    baseFilter='side = "BUY"'
+    initialValue="BUY"
+  />
+);

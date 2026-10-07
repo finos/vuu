@@ -124,3 +124,49 @@ test(`A togglefilter with datasource where all values have data
     component.locator(".vuuToggleFilter-unavailableValue"),
   ).toHaveCount(0);
 });
+
+test.describe("availability check when toggle value is applied as DataSource filter", () => {
+  test(`selecting a value does not flag the other value as unavailable`, async ({
+    mount,
+  }) => {
+    const component = await mount(
+      "Filters/ToggleFilter/BuySellFilterAppliedToDataSource",
+    );
+    const buyButton = component.getByRole("radio", { name: "BUY" });
+    const sellButton = component.getByRole("radio", { name: "SELL" });
+    await buyButton.click();
+    await expect(buyButton).toBeChecked();
+    await expect(sellButton).not.toContainClass(
+      "vuuToggleFilter-unavailableValue",
+    );
+  });
+
+  test(`availability established before filter on column is applied persists`, async ({
+    mount,
+  }) => {
+    const component = await mount(
+      "Filters/ToggleFilter/BuySellFilterAppliedToBuyOnlyDataSource",
+    );
+    const buyButton = component.getByRole("radio", { name: "BUY" });
+    const sellButton = component.getByRole("radio", { name: "SELL" });
+    await expect(sellButton).toContainClass("vuuToggleFilter-unavailableValue");
+    await buyButton.click();
+    await expect(buyButton).toBeChecked();
+    await expect(sellButton).toContainClass("vuuToggleFilter-unavailableValue");
+  });
+
+  test(`with initial filter on column, no values are flagged until filter is removed`, async ({
+    mount,
+  }) => {
+    const component = await mount(
+      "Filters/ToggleFilter/BuySellFilterAppliedToBuyOnlyDataSourceInitialised",
+    );
+    const sellButton = component.getByRole("radio", { name: "SELL" });
+    await expect(component.getByRole("radio", { name: "BUY" })).toBeChecked();
+    await expect(sellButton).not.toContainClass(
+      "vuuToggleFilter-unavailableValue",
+    );
+    await component.getByRole("radio", { name: "All" }).click();
+    await expect(sellButton).toContainClass("vuuToggleFilter-unavailableValue");
+  });
+});
