@@ -170,3 +170,40 @@ test.describe("availability check when toggle value is applied as DataSource fil
     await expect(sellButton).toContainClass("vuuToggleFilter-unavailableValue");
   });
 });
+
+test.describe("multiple interacting ToggleFilters", () => {
+  const UNAVAILABLE = "vuuToggleFilter-unavailableValue";
+  test(`selections flag values with no matching data in other filters`, async ({
+    mount,
+  }) => {
+    const component = await mount(
+      "Filters/ToggleFilter/MultipleInteractingToggleFilters",
+    );
+    const sideFilter = component.getByTestId("side-filter");
+    const regionFilter = component.getByTestId("region-filter");
+    const statusFilter = component.getByTestId("status-filter");
+    const sell = sideFilter.getByRole("radio", { name: "SELL" });
+    const apac = regionFilter.getByRole("radio", { name: "APAC" });
+    const amer = regionFilter.getByRole("radio", { name: "AMER" });
+    const cancelled = statusFilter.getByRole("radio", { name: "Cancelled" });
+
+    await expect(component.locator(`.${UNAVAILABLE}`)).toHaveCount(0);
+
+    await apac.click();
+    await expect(sell).toContainClass(UNAVAILABLE);
+    await expect(sideFilter.getByRole("radio", { name: "BUY" })).toContainClass(
+      "vuuToggleFilter-onlyAvailableValue",
+    );
+    await expect(cancelled).toContainClass(UNAVAILABLE);
+    // region is filtered, its availability is not re-checked
+    await expect(amer).not.toContainClass(UNAVAILABLE);
+
+    await regionFilter.getByRole("radio", { name: "All" }).click();
+    await expect(component.locator(`.${UNAVAILABLE}`)).toHaveCount(0);
+
+    await cancelled.click();
+    await expect(sell).toContainClass(UNAVAILABLE);
+    await expect(apac).toContainClass(UNAVAILABLE);
+    await expect(amer).toContainClass(UNAVAILABLE);
+  });
+});
