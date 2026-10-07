@@ -21,18 +21,23 @@ export const getLevelUp = (
   cellPos: CellPos,
 ): CellPos => {
   const cell = getTableCell(containerRef, cellPos);
-  let row = cell?.parentElement;
-  const level = parseInt(row?.ariaLevel ?? "1");
-  if (level > 1) {
+  const row = cell?.parentElement;
+  const level = parseInt(row?.getAttribute("aria-level") ?? "1");
+  if (level > 1 && containerRef.current) {
+    // Rows are not rendered in row order (see render-order.ts), so we cannot
+    // walk DOM siblings, look up preceding rows by aria-rowindex instead.
     const targetLevel = `${level - 1}`;
-    while (row !== null && row.ariaLevel !== targetLevel) {
-      row = row.previousElementSibling as HTMLElement;
-    }
-    if (row) {
-      const nextRowIndex = parseInt(row.ariaRowIndex ?? "- 1");
-      if (nextRowIndex !== -1) {
-        return [nextRowIndex, 1];
+    let ariaRowIndex = parseInt(row?.getAttribute("aria-rowindex") ?? "0") - 1;
+    while (ariaRowIndex > 0) {
+      const prevRow = containerRef.current.querySelector<HTMLElement>(
+        `.vuuTableRow[aria-rowindex='${ariaRowIndex}']`,
+      );
+      if (prevRow === null) {
+        break;
+      } else if (prevRow.getAttribute("aria-level") === targetLevel) {
+        return [ariaRowIndex, 1];
       }
+      ariaRowIndex -= 1;
     }
   }
   return cellPos;
