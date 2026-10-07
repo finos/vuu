@@ -685,3 +685,23 @@ test.describe("ColumnFilter toggle variant", () => {
     await expect(buyButton).toBeChecked();
   });
 });
+
+test.describe("ColumnFilter toggle variant with FilterContainer", () => {
+  test("uses labels as button text, filter uses values", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedToggleFilterWithLabels",
+    );
+    await expect(component.getByRole("radio")).toHaveCount(3);
+    const sellButton = component.getByRole("radio", {
+      name: "Sell",
+      exact: true,
+    });
+    await expect(sellButton).toHaveAttribute("value", "SELL");
+    await sellButton.click();
+    await expect(sellButton).toBeChecked();
+    await expect(page.locator(".vuuFilterDisplay")).toContainText("SELL");
+  });
+});

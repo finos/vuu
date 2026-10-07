@@ -14,6 +14,7 @@ import {
   FilterDisplay,
   FilterContainerProps,
   FilterContainerColumnFilter,
+  FilterContainerColumnFilterProps,
   FilterAppliedHandler,
 } from "@vuu-ui/vuu-filters";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
@@ -753,7 +754,9 @@ export const ContainerManagedNumericRangeFilterWithFilter = () => (
 
 export const ContainerManagedToggleFilter = ({
   filter: filterProp,
-}: Pick<FilterContainerProps, "filter">) => {
+  labels,
+}: Pick<FilterContainerProps, "filter"> &
+  Pick<FilterContainerColumnFilterProps, "labels">) => {
   const { VuuDataSource } = useData();
   const [filter, setFilter] = useState<FilterContainerFilter | undefined>(
     filterProp,
@@ -781,6 +784,7 @@ export const ContainerManagedToggleFilter = ({
             <FormFieldLabel>Side</FormFieldLabel>
             <FilterContainerColumnFilter
               column={column}
+              labels={labels}
               table={{ module: "SIMUL", table: "parentOrders" }}
               values={["BUY", "SELL"]}
               variant="toggle"
@@ -797,6 +801,10 @@ export const ContainerManagedToggleFilterWithFilter = () => (
   <ContainerManagedToggleFilter
     filter={{ column: "side", op: "=", value: "BUY" }}
   />
+);
+
+export const ContainerManagedToggleFilterWithLabels = () => (
+  <ContainerManagedToggleFilter labels={["Buy", "Sell"]} />
 );
 
 const createdTimeColumn: ColumnDescriptor = {
