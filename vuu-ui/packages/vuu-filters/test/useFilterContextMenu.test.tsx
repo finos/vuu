@@ -17,7 +17,7 @@ import { useSavedFilters } from "../src/filter-provider/FilterContext";
 import { FilterProvider } from "../src/filter-provider/FilterProvider";
 
 // creates a Worker on import, not needed here
-vi.mock("@vuu-ui/vuu-data-remote", () => ({}));
+vi.mock("@vuu-ui/vuu-data-remote", () => ({ ConnectionManager: {} }));
 
 const execTime: ColumnDescriptor = {
   name: "execTime",
