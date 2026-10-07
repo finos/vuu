@@ -82,3 +82,45 @@ test(`A controlled togglefilter with datasource filtered to eliminate one value
     "vuuToggleFilter-onlyAvailableValue",
   );
 });
+
+test(`A controlled togglefilter with datasource filtered to eliminate one value
+    flags the value with no matching data as unavailable
+    shows a tooltip on hover
+    still allows the unavailable value to be selected
+     `, async ({ mount, page }) => {
+  const component = await mount(
+    "Filters/ToggleFilter/ControlledBuySellFilterWithBuyOnlyDataSource",
+  );
+
+  const buyButton = component.getByRole("radio", { name: "BUY" });
+  const sellButton = component.getByRole("radio", { name: "SELL" });
+
+  await expect(sellButton).toContainClass("vuuToggleFilter-unavailableValue");
+  await expect(buyButton).not.toContainClass(
+    "vuuToggleFilter-unavailableValue",
+  );
+  await expect(
+    component.getByRole("radio", { name: "All" }),
+  ).not.toContainClass("vuuToggleFilter-unavailableValue");
+
+  await sellButton.hover();
+  await expect(page.getByRole("tooltip")).toHaveText("No matching data");
+
+  await buyButton.hover();
+  await expect(page.getByRole("tooltip")).toHaveCount(0);
+
+  await sellButton.click();
+  await expect(sellButton).toBeChecked();
+});
+
+test(`A togglefilter with datasource where all values have data
+    flags no values as unavailable
+     `, async ({ mount }) => {
+  const component = await mount(
+    "Filters/ToggleFilter/ControlledBuySellFilterWithDataSource",
+  );
+  await expect(component.getByRole("radio")).toHaveCount(3);
+  await expect(
+    component.locator(".vuuToggleFilter-unavailableValue"),
+  ).toHaveCount(0);
+});

@@ -24,6 +24,17 @@ export interface ToggleFilterHookProps {
   values: string[];
 }
 
+export interface ToggleFilterHookResult {
+  /**
+   * If only one of the toggle values has matching data, that value.
+   */
+  onlyAvailableValue?: string;
+  /**
+   * Toggle values for which there is no matching data.
+   */
+  unavailableValues: string[];
+}
+
 const typeaheadRefreshRequired = (
   f1: FilterContainerFilter | null,
   f2: FilterContainerFilter | null,
@@ -46,7 +57,11 @@ export const useToggleFilter = ({
 }: ToggleFilterHookProps) => {
   const { currentFilter } = useSavedFilters();
   const currentFilterRef = useRef(currentFilter.filter);
-  const [typeaheadValues, setTypeaheadValues] = useState<string[]>([]);
+  // undefined until we have a response, so we don't flag values as
+  // unavailable before we know.
+  const [typeaheadValues, setTypeaheadValues] = useState<string[] | undefined>(
+    undefined,
+  );
   const getSuggestions = useTypeaheadSuggestions();
 
   const refreshSuggestions = useCallback(
@@ -55,7 +70,7 @@ export const useToggleFilter = ({
       const params: TypeaheadParams = [vuuTable, column];
       getSuggestions(params).then((suggestions) => {
         if (suggestions === false) {
-          setTypeaheadValues([]);
+          setTypeaheadValues(undefined);
         } else {
           assertValid(values, suggestions);
           setTypeaheadValues(suggestions);
@@ -83,8 +98,16 @@ export const useToggleFilter = ({
     currentFilterRef.current = currentFilter.filter;
   }, [currentFilter.filter, refreshSuggestions, table]);
 
-  const [firstValue] = typeaheadValues;
-
-  // onlyAvailableValue
-  return typeaheadValues.length === 1 ? firstValue : undefined;
+  return useMemo<ToggleFilterHookResult>(() => {
+    if (typeaheadValues === undefined) {
+      return { unavailableValues: [] };
+    }
+    return {
+      onlyAvailableValue:
+        typeaheadValues.length === 1 ? typeaheadValues[0] : undefined,
+      unavailableValues: values.filter(
+        (value) => !typeaheadValues.includes(value),
+      ),
+    };
+  }, [typeaheadValues, values]);
 };
