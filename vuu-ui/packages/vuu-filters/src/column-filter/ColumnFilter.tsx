@@ -99,6 +99,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
       {...buttonGroupProps}
       className={cx(classBase, className, {
         [`${classBase}-invalid`]: isInvalid,
+        [`${classBase}-toggle`]: variant === "toggle",
       })}
       ref={forwardRef}
     >

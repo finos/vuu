@@ -2,6 +2,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   ToggleButtonGroupProps,
+  Tooltip,
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -43,8 +44,7 @@ import toggleFilterCss from "./ToggleFilter.css";
  * behaving like a regular ToggleButtonGroup.
  */
 export interface ToggleFilterProps
-  extends ToggleButtonGroupProps,
-    ToggleFilterHookProps {
+  extends ToggleButtonGroupProps, ToggleFilterHookProps {
   /**
    * Optional labels for the toggle buttons. If provided, must contain
    * the same number of items as values. Defaults to values.
@@ -54,6 +54,8 @@ export interface ToggleFilterProps
 }
 
 const classBase = "vuuToggleFilter";
+
+const NO_MATCHING_DATA = "No matching data";
 
 export const ToggleFilter = forwardRef(function ToggleFilter(
   {
@@ -84,7 +86,11 @@ export const ToggleFilter = forwardRef(function ToggleFilter(
 
   const [defaultValue, value] = getValues(defaultValueProp, valueProp);
 
-  const onlyAvailableValue = useToggleFilter({ column, table, values });
+  const { onlyAvailableValue, unavailableValues } = useToggleFilter({
+    column,
+    table,
+    values,
+  });
 
   const handleChange = useCallback(
     (e: SyntheticEvent<HTMLButtonElement>) => {
@@ -108,20 +114,29 @@ export const ToggleFilter = forwardRef(function ToggleFilter(
       value={value}
     >
       <ToggleButton key="all" value="all">
-        ALL
+        All
       </ToggleButton>
-      {values.map((toggleValue, i) => (
-        <ToggleButton
-          className={cx({
-            [`${classBase}-onlyAvailableValue`]:
-              onlyAvailableValue === toggleValue,
-          })}
-          key={toggleValue}
-          value={toggleValue}
-        >
-          {labels?.[i] ?? toggleValue}
-        </ToggleButton>
-      ))}
+      {values.map((toggleValue, i) => {
+        const unavailable = unavailableValues.includes(toggleValue);
+        return (
+          <Tooltip
+            content={NO_MATCHING_DATA}
+            disabled={!unavailable}
+            key={toggleValue}
+          >
+            <ToggleButton
+              className={cx({
+                [`${classBase}-onlyAvailableValue`]:
+                  onlyAvailableValue === toggleValue,
+                [`${classBase}-unavailableValue`]: unavailable,
+              })}
+              value={toggleValue}
+            >
+              {labels?.[i] ?? toggleValue}
+            </ToggleButton>
+          </Tooltip>
+        );
+      })}
     </ToggleButtonGroup>
   );
 });

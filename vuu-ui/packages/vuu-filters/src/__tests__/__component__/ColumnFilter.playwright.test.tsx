@@ -676,12 +676,74 @@ test.describe("ColumnFilter toggle variant", () => {
       "Filters/ColumnFilter/ControlledToggleFilterWithLabels",
     );
     await expect(component.getByRole("radio")).toHaveCount(3);
-    const buyButton = component.getByRole("radio", {
-      name: "Buy",
+    const longButton = component.getByRole("radio", {
+      name: "Long",
       exact: true,
     });
-    await expect(buyButton).toHaveAttribute("value", "BUY");
-    await buyButton.click();
-    await expect(buyButton).toBeChecked();
+    await expect(longButton).toHaveAttribute("value", "BUY");
+    await expect(
+      component.getByRole("radio", { name: "BUY", exact: true }),
+    ).toHaveCount(0);
+    await longButton.click();
+    await expect(longButton).toBeChecked();
+  });
+});
+
+test.describe("ColumnFilter toggle variant with FilterContainer", () => {
+  test("uses labels as button text, filter uses values", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedToggleFilterWithLabels",
+    );
+    await expect(component.getByRole("radio")).toHaveCount(3);
+    const shortButton = component.getByRole("radio", {
+      name: "Short",
+      exact: true,
+    });
+    await expect(shortButton).toHaveAttribute("value", "SELL");
+    await expect(
+      component.getByRole("radio", { name: "SELL", exact: true }),
+    ).toHaveCount(0);
+    await shortButton.click();
+    await expect(shortButton).toBeChecked();
+    await expect(page.locator(".vuuFilterDisplay")).toContainText("SELL");
+  });
+
+  test("selects button matching filter provided via container", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedToggleFilterWithFilter",
+    );
+    await expect(
+      component.getByRole("radio", { name: "BUY", exact: true }),
+    ).toBeChecked();
+  });
+
+  test("selects labelled button matching filter provided via container", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedToggleFilterWithLabelsAndFilter",
+    );
+    await expect(
+      component.getByRole("radio", { name: "Short", exact: true }),
+    ).toBeChecked();
+  });
+
+  test("clicking All clears filter provided via container", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedToggleFilterWithFilter",
+    );
+    await component.getByRole("radio", { name: "All", exact: true }).click();
+    await expect(
+      component.getByRole("radio", { name: "All", exact: true }),
+    ).toBeChecked();
+    await expect(page.locator(".vuuFilterDisplay")).not.toContainText("BUY");
   });
 });

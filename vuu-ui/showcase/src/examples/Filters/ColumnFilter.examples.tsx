@@ -14,6 +14,7 @@ import {
   FilterDisplay,
   FilterContainerProps,
   FilterContainerColumnFilter,
+  FilterContainerColumnFilterProps,
   FilterAppliedHandler,
 } from "@vuu-ui/vuu-filters";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
@@ -511,7 +512,7 @@ export const ControlledToggleFilter = ({
 };
 
 export const ControlledToggleFilterWithLabels = () => (
-  <ControlledToggleFilter labels={["Buy", "Sell"]} />
+  <ControlledToggleFilter labels={["Long", "Short"]} />
 );
 
 export const ContainerManagedTextColumnFilter = ({
@@ -753,7 +754,9 @@ export const ContainerManagedNumericRangeFilterWithFilter = () => (
 
 export const ContainerManagedToggleFilter = ({
   filter: filterProp,
-}: Pick<FilterContainerProps, "filter">) => {
+  labels,
+}: Pick<FilterContainerProps, "filter"> &
+  Pick<FilterContainerColumnFilterProps, "labels">) => {
   const { VuuDataSource } = useData();
   const [filter, setFilter] = useState<FilterContainerFilter | undefined>(
     filterProp,
@@ -774,6 +777,7 @@ export const ContainerManagedToggleFilter = ({
     <DataSourceProvider dataSource={dataSource}>
       <ContainerTemplate flexDirection="row" width={700}>
         <FilterContainer
+          filter={filter}
           onFilterCleared={clearFilter}
           onFilterApplied={setFilter}
         >
@@ -781,6 +785,7 @@ export const ContainerManagedToggleFilter = ({
             <FormFieldLabel>Side</FormFieldLabel>
             <FilterContainerColumnFilter
               column={column}
+              labels={labels}
               table={{ module: "SIMUL", table: "parentOrders" }}
               values={["BUY", "SELL"]}
               variant="toggle"
@@ -796,6 +801,17 @@ export const ContainerManagedToggleFilter = ({
 export const ContainerManagedToggleFilterWithFilter = () => (
   <ContainerManagedToggleFilter
     filter={{ column: "side", op: "=", value: "BUY" }}
+  />
+);
+
+export const ContainerManagedToggleFilterWithLabels = () => (
+  <ContainerManagedToggleFilter labels={["Long", "Short"]} />
+);
+
+export const ContainerManagedToggleFilterWithLabelsAndFilter = () => (
+  <ContainerManagedToggleFilter
+    filter={{ column: "side", op: "=", value: "SELL" }}
+    labels={["Long", "Short"]}
   />
 );
 
