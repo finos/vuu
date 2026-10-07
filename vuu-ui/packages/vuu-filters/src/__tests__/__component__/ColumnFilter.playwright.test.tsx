@@ -733,16 +733,16 @@ test.describe("ColumnFilter toggle variant with FilterContainer", () => {
     ).toBeChecked();
   });
 
-  test("clicking all clears filter provided via container", async ({
+  test("clicking All clears filter provided via container", async ({
     mount,
     page,
   }) => {
     const component = await mount(
       "Filters/ColumnFilter/ContainerManagedToggleFilterWithFilter",
     );
-    await component.getByRole("radio", { name: "all", exact: true }).click();
+    await component.getByRole("radio", { name: "All", exact: true }).click();
     await expect(
-      component.getByRole("radio", { name: "all", exact: true }),
+      component.getByRole("radio", { name: "All", exact: true }),
     ).toBeChecked();
     await expect(page.locator(".vuuFilterDisplay")).not.toContainText("BUY");
   });
