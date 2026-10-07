@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/vuu-data-local",
-  "version": "3.5.5",
+  "version": "4.0.0-alpha.20",
   "main": "src/index.ts",
   "author": "heswell",
   "type": "module",
@@ -12,14 +12,14 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
-    "@vuu-ui/vuu-data-types": "3.5.5",
-    "@vuu-ui/vuu-table-types": "3.5.5",
-    "@vuu-ui/vuu-filter-types": "3.5.5",
-    "@vuu-ui/vuu-protocol-types": "3.5.5"
+    "@vuu-ui/vuu-data-types": "4.0.0-alpha.20",
+    "@vuu-ui/vuu-table-types": "4.0.0-alpha.20",
+    "@vuu-ui/vuu-filter-types": "4.0.0-alpha.20",
+    "@vuu-ui/vuu-protocol-types": "4.0.0-alpha.20"
   },
   "dependencies": {
-    "@vuu-ui/vuu-filter-parser": "3.5.5",
-    "@vuu-ui/vuu-utils": "3.5.5"
+    "@vuu-ui/vuu-filter-parser": "4.0.0-alpha.20",
+    "@vuu-ui/vuu-utils": "4.0.0-alpha.20"
   },
   "sideEffects": false
 }
