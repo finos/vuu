@@ -2,9 +2,6 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    benchmark: {
-      include: ["packages/**/bench/**/*.bench.ts"],
-    },
     dangerouslyIgnoreUnhandledErrors: true,
     include: [
       "packages/**/test/**/**.test.(js|ts|tsx)",
@@ -13,12 +10,5 @@ export default defineConfig({
       "tools/portal-build-tool/test/**/**.test.(js|ts|tsx)",
     ],
     environment: "happy-dom",
-    server: {
-      deps: {
-        // the data engine packages depend on @vuu-ui workspace packages,
-        // which are published as typescript source, so must be transformed
-        inline: [/@heswell\/vuu-/],
-      },
-    },
   },
 });

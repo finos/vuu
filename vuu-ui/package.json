@@ -47,8 +47,6 @@
     "deploy:websocket-test": "node ./tools/deploy-websocket-test.mjs",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
     "showcase": "cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-dev.ts",
-    "bench:data-engine": "vitest bench --run packages/vuu-data-engine-local",
-    "showcase:engine": "VUU_DATA_ENGINE=local npm run showcase",
     "showcase:prod": "npm run build:worker && cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-build.ts",
     "playwright:gallery": "rsbuild dev --config playwright/gallery/rsbuild.config.ts",
     "playwright:gallery:build": "rsbuild build --config playwright/gallery/rsbuild.config.ts",
