@@ -24,7 +24,6 @@ export const localPortalModuleRegistry = {
       path: "/administration/modules",
       title: "Module administration",
       version: 1,
-      vuu: { connectionId: "module-admin" },
     },
 
     {
@@ -42,7 +41,6 @@ export const localPortalModuleRegistry = {
       path: "/administration/users",
       title: "User administration",
       version: 1,
-      vuu: { connectionId: "user-admin" },
     },
     {
       clientIdentifier: "vuu-table-browser",
@@ -91,7 +89,6 @@ export const localPortalModuleRegistry = {
       path: "/trading/baskets",
       title: "Basket Trading",
       version: 1,
-      vuu: { connectionId: "basket" },
     },
     {
       clientIdentifier: "vuu-feature-simple-div",
@@ -108,7 +105,6 @@ export const localPortalModuleRegistry = {
       path: "/examples/saved-state-demo",
       title: "Saved state demo",
       version: 1,
-      vuu: { connectionId: "simul" },
     },
   ],
 } satisfies PortalModuleRegistry;

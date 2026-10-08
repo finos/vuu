@@ -24,13 +24,7 @@ import {
   UploadIcon,
 } from "@salt-ds/icons";
 import cx from "clsx";
-import {
-  type ChangeEvent,
-  type ReactNode,
-  useId,
-  useRef,
-  useState,
-} from "react";
+import { type ChangeEvent, type ReactNode, useId, useRef } from "react";
 import { menuSections } from "../data/module-model";
 import type { RemoteChecks } from "../data/useRemoteChecks";
 import type { DraftField, ModuleDraft } from "../data/useModuleDraft";
@@ -613,57 +607,6 @@ export const FederationFields = ({
     </div>
   );
 };
-
-/* ---------------------------------------------------------- Vuu connection */
-
-export const useConnectionToggle = (draft: ModuleDraft) => {
-  const { vuuConnectionId, vuuRestUrl, vuuWebsocketUrl } = draft.config;
-  const [on, setOn] = useState(
-    Boolean(vuuConnectionId || vuuRestUrl || vuuWebsocketUrl),
-  );
-  const toggle = (next: boolean) => {
-    setOn(next);
-    if (!next) {
-      draft.set("vuuConnectionId", "");
-      draft.set("vuuWebsocketUrl", "");
-      draft.set("vuuRestUrl", "");
-    }
-  };
-  return [on, toggle] as const;
-};
-
-export const ConnectionFields = ({ draft, mode }: ModuleFormProps) => (
-  <div className={`${classBase}-grid`}>
-    <TextField
-      draft={draft}
-      field="vuuConnectionId"
-      helper="Name of the connection, unique per Vuu server"
-      label="Connection id"
-      mode={mode}
-      monospace
-      required
-    />
-    <TextField
-      draft={draft}
-      field="vuuRestUrl"
-      label="Auth (REST) URL"
-      mode={mode}
-      monospace
-      placeholder="https://host:8443/api/authn"
-      required
-    />
-    <TextField
-      className={`${classBase}-wide`}
-      draft={draft}
-      field="vuuWebsocketUrl"
-      label="WebSocket URL"
-      mode={mode}
-      monospace
-      placeholder="wss://host:8090/websocket"
-      required
-    />
-  </div>
-);
 
 /* ---------------------------------------------------------- Access & status */
 

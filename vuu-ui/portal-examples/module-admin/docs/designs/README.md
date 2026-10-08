@@ -37,9 +37,9 @@ plus two example rows: `notifications` and `order-blotter` (disabled, with probl
   menu entry and inherit the parent's access role.
 - **Fields are grouped by the server contract**: identity (`name`, `title`,
   `description`, `navIconUrl`), portal navigation (`location`, `path`,
-  `parentModuleId`), module federation (`mfUrl`, `mfScope`, `mfComponent`), Vuu
-  connection (`vuuConnectionId`, `vuuWebsocketUrl`, `vuuRestUrl`) and access
-  (`modulePermissions.role`).
+  `parentModuleId`), module federation (`mfUrl`, `mfScope`, `mfComponent`), and
+  access (`modulePermissions.role`). VUU connection fields were removed from
+  the UI; connections now come from each remote's `config.json`.
 - **Helpful defaults.** The route is suggested from the menu location, and the
   access role from the name (`<name>-access`, following the `user-admin`
   naming rules). The exposed component is chosen from the remote's manifest.
