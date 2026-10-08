@@ -180,7 +180,7 @@ describe("compareRemote", () => {
       MODULE,
       loaded("basketTrading", ["VuuBasketTradingFeature"]),
     );
-    expect(check?.items.slice(3)).toEqual([
+    expect(check?.configItems).toEqual([
       {
         detail: "config.json · Vuu server basket",
         label: "Config",
@@ -205,7 +205,7 @@ describe("compareRemote", () => {
       }),
     );
     expect(noVuu?.status).toBe("ok");
-    expect(noVuu?.items.slice(3)).toEqual([
+    expect(noVuu?.configItems).toEqual([
       {
         detail: "config.json · uses the portal's Vuu connection",
         label: "Config",
@@ -224,11 +224,14 @@ describe("compareRemote", () => {
     );
     expect(check?.status).toBe("mismatch");
     expect(check?.summary).toBe("Remote config.json is missing or invalid");
-    expect(check?.items.at(-1)).toEqual({
-      detail: "config.json is missing or not valid JSON",
-      label: "Config",
-      ok: false,
-    });
+    expect(check?.configItems).toEqual([
+      {
+        detail: "config.json is missing or not valid JSON",
+        label: "Config",
+        ok: false,
+      },
+    ]);
+    expect(check?.items.every(({ ok }) => ok)).toBe(true);
   });
 
   it("reports an unreachable remote by host", () => {

@@ -929,14 +929,22 @@
 
 /* --------------------------------------------------------- remote check */
 
+.vuuModuleCheck-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-100, 8px);
+  margin-top: var(--salt-spacing-200, 12px);
+}
 .vuuModuleCheck {
   border: 1px solid var(--module-admin-border);
   border-radius: var(--module-admin-radius);
   display: flex;
   flex-direction: column;
   gap: var(--salt-spacing-100, 8px);
-  margin-top: var(--salt-spacing-200, 12px);
   padding: var(--salt-spacing-150, 10px) var(--salt-spacing-200, 12px);
+}
+.vuuModuleCheck-title {
+  font-weight: var(--salt-text-label-fontWeight-strong, 600);
 }
 .vuuModuleCheck-items {
   display: flex;
