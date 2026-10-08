@@ -43,7 +43,20 @@ export const PortalModuleIdContext = createContext<ModuleId | undefined>(
   undefined,
 );
 
+/** What the notifications panel shows when opened. */
+export interface NotificationsPanelRequest {
+  /** Show only these modules' notifications. */
+  moduleIds?: ModuleId[];
+  /** Scroll to, and focus, this notification. */
+  focusKey?: string;
+}
+
 export interface PortalNotificationsPresentation {
+  /** Opens the notifications panel. */
+  openPanel: (request?: NotificationsPanelRequest) => void;
+  closePanel: () => void;
+  /** The request the panel was last opened with. */
+  panelRequest: NotificationsPanelRequest;
   /** Hides toasts and banners. Notifications are still recorded. */
   doNotDisturb: boolean;
   setDoNotDisturb: (doNotDisturb: boolean) => void;

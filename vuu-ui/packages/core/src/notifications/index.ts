@@ -28,6 +28,7 @@ export type {
   PortalNotificationsOptions,
 } from "./notification-types";
 export {
+  type NotificationsPanelRequest,
   PortalModuleIdContext,
   type PortalNotificationsAPI,
   type PortalNotificationsPresentation,
@@ -59,3 +60,12 @@ export {
   type NotificationFeedStatus,
   ServerNotificationFeed,
 } from "./ServerNotificationFeed";
+export {
+  NotificationsIndicator,
+  type NotificationsIndicatorProps,
+} from "./NotificationsIndicator";
+export {
+  NOTIFICATIONS_PANEL_STATE_KEY,
+  NotificationsPanel,
+  type NotificationsPanelFilters,
+} from "./NotificationsPanel";

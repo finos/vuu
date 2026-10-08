@@ -1,11 +1,15 @@
 import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ModuleServerMap } from "../../src/connection-management/ModuleServerMap";
 import { LocalServerMonitor } from "../../src/connection-management/VuuServerMonitor";
 import { NotificationStore } from "../../src/notifications/NotificationStore";
-import { PortalNotificationsContext } from "../../src/notifications/PortalNotificationsContext";
+import {
+  PortalNotificationsContext,
+  type PortalNotificationsPresentation,
+  PortalNotificationsPresentationContext,
+} from "../../src/notifications/PortalNotificationsContext";
 import type { PortalNotification } from "../../src/notifications/notification-types";
 import {
   PortalAppSwitcher,
@@ -65,6 +69,7 @@ describe("PortalAppSwitcher notification badges", () => {
   let container: HTMLDivElement;
   let root: Root;
   let store: NotificationStore;
+  let presentation: PortalNotificationsPresentation | null;
 
   beforeEach(() => {
     // @ts-expect-error React test flag
@@ -73,6 +78,7 @@ describe("PortalAppSwitcher notification badges", () => {
     document.body.append(container);
     root = createRoot(container);
     store = new NotificationStore();
+    presentation = null;
   });
 
   afterEach(async () => {
@@ -91,7 +97,11 @@ describe("PortalAppSwitcher notification badges", () => {
             <PortalNotificationsContext.Provider
               value={{ registerHost: () => undefined, store }}
             >
-              <PortalAppSwitcher {...props} />
+              <PortalNotificationsPresentationContext.Provider
+                value={presentation}
+              >
+                <PortalAppSwitcher {...props} />
+              </PortalNotificationsPresentationContext.Provider>
             </PortalNotificationsContext.Provider>
           </VuuServerMonitorProvider>
         </MemoryRouter>,
@@ -160,6 +170,36 @@ describe("PortalAppSwitcher notification badges", () => {
     expect(badgeText(m2)).toBeUndefined();
     expect(m2.querySelector(".vuuNavItemPresence-statusBadge")).not.toBeNull();
     expect(description(m2)).toMatch(/^Unavailable: .*\.$/);
+  });
+
+  it("offers to show an unavailable module's notifications from the overlay", async () => {
+    const { modules, monitor } = await createMonitor();
+    monitor.setPresence("risk", "offline");
+    const openPanel = vi.fn();
+    presentation = {
+      closePanel: vi.fn(),
+      doNotDisturb: false,
+      openPanel,
+      panelOpen: false,
+      presentationOf: () => "silent",
+      setDoNotDisturb: vi.fn(),
+      setPanelOpen: vi.fn(),
+    } as unknown as PortalNotificationsPresentation;
+    await render(monitor, {
+      displayStyle: "icon-only",
+      remoteModules: modules,
+    });
+    const showButton = () =>
+      [...document.querySelectorAll('[role="dialog"] button')].find(
+        (button) => button.textContent === "Show notifications",
+      ) as HTMLButtonElement | undefined;
+
+    await act(async () => link("m2").click());
+    expect(showButton()).toBeUndefined();
+
+    await act(async () => store.upsert(notification(["m2"])));
+    await act(async () => showButton()?.click());
+    expect(openPanel).toHaveBeenCalledWith({ moduleIds: ["m2"] });
   });
 
   it("sums a collapsed group's available children", async () => {

@@ -1257,6 +1257,39 @@ above:
 - `useNotificationPresentation()` exposes `doNotDisturb`, `panelOpen` and
   their setters for Phase 4, and `presentationOf(notification)`.
 
+### 16.4 Phase 4 implementation notes
+
+Phase 4 is implemented. `PortalShell` renders `NotificationsPanel`, and
+`PortalHeader` renders `NotificationsIndicator` before the user menu. These
+are the places where it differs from, or adds to, the design above:
+
+- The panel is opened through `useNotificationPresentation()`:
+  `openPanel({moduleIds?, focusKey?})` and `closePanel()`. The latest
+  request is available as `panelRequest`. A request with `moduleIds` sets
+  the applications filter. A request with `focusKey` expands, scrolls to and
+  focuses that notification.
+- The panel is a Salt `Drawer` on the right with no scrim, so the portal
+  stays usable. Clicking outside does not close it; the close button, the
+  bell and Escape do.
+- The list is not virtualised, and there is no Shift/Ctrl multi-select.
+  "Mark all read" and "Delete read" act on the notifications that match the
+  current filters.
+- Selecting a notification expands it and marks it read. On a focused
+  notification, Delete deletes it and R toggles read.
+- The filters are saved in the portal's application state under
+  `notificationsPanel`.
+- The Do not disturb switch is in the panel footer, next to a summary of
+  the server statuses.
+- `PortalHeaderProps.notificationsIndicator` is `true` by default; `false`
+  hides the bell, and an object passes `NotificationsIndicatorProps`
+  (`compactStyle`, `tickerDurationMs`). The ticker and the polite live
+  announcement are only for notifications that arrive while the portal is
+  open, not for the initial snapshot.
+- The nav item context menu has "Show notifications" and "Mark
+  notifications read" when the portal has notifications. The unavailable
+  overlay shows a "Show notifications" button when the module has unread
+  notifications.
+
 ## 17. Decisions
 
 | # | Question                                   | Decision                                                                                   |

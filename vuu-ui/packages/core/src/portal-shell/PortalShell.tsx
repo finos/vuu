@@ -31,6 +31,7 @@ import {
   VuuServerMonitorProvider,
 } from "../server-monitor/VuuServerMonitorProvider";
 import type { PortalNotificationsOptions } from "../notifications/notification-types";
+import { NotificationsPanel } from "../notifications/NotificationsPanel";
 import { PortalNotificationBanners } from "../notifications/PortalNotificationBanners";
 import { PortalModuleIdContext } from "../notifications/PortalNotificationsContext";
 import { PortalNotificationsProvider } from "../notifications/PortalNotificationsProvider";
@@ -186,6 +187,7 @@ const PortalLayout = () => {
                 })}
               </Routes>
             </div>
+            <NotificationsPanel />
           </div>
         </PortalNotificationsProvider>
       </CommonShell>

@@ -19,6 +19,7 @@ import {
 } from "../connection-management/server-status";
 import {
   useModuleUnreadCount,
+  useNotificationPresentation,
   useUnreadCount,
 } from "../notifications/PortalNotificationsProvider";
 import {
@@ -91,6 +92,7 @@ const UnavailableDetail = ({
 }) => {
   const { detail, presence, since } = status;
   const unreadCount = useModuleUnreadCount(showUnread ? moduleId : undefined);
+  const presentation = useNotificationPresentation();
   const now = Date.now();
   const unauthorized = presence === "unauthorized";
   const lastOnline =
@@ -139,15 +141,26 @@ const UnavailableDetail = ({
           {describeUnread(unreadCount)}
         </div>
       ) : null}
-      {unauthorized ? null : (
+      {unauthorized && !(presentation && unreadCount > 0) ? null : (
         <div className={`${classBase}-actions`}>
-          <Button
-            disabled={detail?.checking}
-            onClick={() => onRetry(moduleId)}
-            sentiment="neutral"
-          >
-            Retry now
-          </Button>
+          {unauthorized ? null : (
+            <Button
+              disabled={detail?.checking}
+              onClick={() => onRetry(moduleId)}
+              sentiment="neutral"
+            >
+              Retry now
+            </Button>
+          )}
+          {presentation && unreadCount > 0 ? (
+            <Button
+              appearance="bordered"
+              onClick={() => presentation.openPanel({ moduleIds: [moduleId] })}
+              sentiment="neutral"
+            >
+              Show notifications
+            </Button>
+          ) : null}
         </div>
       )}
     </div>

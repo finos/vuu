@@ -11,7 +11,10 @@ import type {
   ModuleServerMap,
 } from "../connection-management/ModuleServerMap";
 import type { NotificationStore } from "./NotificationStore";
-import type { PortalNotificationsPresentation } from "./PortalNotificationsContext";
+import type {
+  NotificationsPanelRequest,
+  PortalNotificationsPresentation,
+} from "./PortalNotificationsContext";
 import type {
   NotificationLevel,
   PortalNotification,
@@ -68,6 +71,9 @@ export const usePortalPresentation = ({
 }: UsePortalPresentationProps) => {
   const [doNotDisturb, setDoNotDisturb] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [panelRequest, setPanelRequest] = useState<NotificationsPanelRequest>(
+    {},
+  );
   const [state] = useState<PresentationState>(() => ({
     portalToasts: new WeakSet(),
     recordingClient: false,
@@ -148,13 +154,19 @@ export const usePortalPresentation = ({
 
   const presentation = useMemo<PortalNotificationsPresentation>(
     () => ({
+      closePanel: () => setPanelOpen(false),
       doNotDisturb,
+      openPanel: (request = {}) => {
+        setPanelRequest(request);
+        setPanelOpen(true);
+      },
       panelOpen,
+      panelRequest,
       presentationOf,
       setDoNotDisturb,
       setPanelOpen,
     }),
-    [doNotDisturb, panelOpen, presentationOf],
+    [doNotDisturb, panelOpen, panelRequest, presentationOf],
   );
 
   return { interceptor, presentation, presentationOfRef, state };
