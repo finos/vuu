@@ -4,7 +4,6 @@ import {
   ChevronRightIcon,
   GridIcon,
   InfoIcon,
-  LinkedIcon,
   LockedIcon,
   MenuIcon,
   StopIcon,
@@ -165,9 +164,6 @@ const Summary = () => {
   const children = views.length - topLevel.length;
   const disabled = views.filter(({ enabled }) => !enabled);
   const sections = menuSections(modules);
-  const portalConnection = views.filter(
-    ({ vuuConnectionId }) => !vuuConnectionId,
-  ).length;
   return (
     <section aria-label="Summary" className={`${classBase}-summaries`}>
       <SummaryCard
@@ -226,13 +222,6 @@ const Summary = () => {
         label="Menu sections"
         to={paths.menu}
         value={kpis.sections}
-      />
-      <SummaryCard
-        detail={`${plural(portalConnection, "module")} ${portalConnection === 1 ? "uses" : "use"} the portal connection`}
-        icon={<LinkedIcon aria-hidden />}
-        label="Dedicated Vuu connections"
-        to={paths.modules()}
-        value={kpis.connections}
       />
     </section>
   );
@@ -325,8 +314,7 @@ const SearchResults = ({ search }: { search: string }) => {
         </table>
       )}
       <Text color="secondary" styleAs="label">
-        Search matches title, name, scope, route, menu location, access role and
-        Vuu connection.{" "}
+        Search matches title, name, scope, route, menu location and access role.{" "}
         <PortalLink to={paths.modules()}>Browse all modules</PortalLink>
       </Text>
     </section>

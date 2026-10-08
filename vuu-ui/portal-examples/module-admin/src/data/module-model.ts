@@ -47,9 +47,11 @@ export const toManagedModules = (
         title: text(row.title),
         updated: int(row.vuuUpdatedTimestamp),
         version: int(row.version),
-        vuuConnectionId: text(row.vuuConnectionId),
-        vuuRestUrl: text(row.vuuRestUrl),
-        vuuWebsocketUrl: text(row.vuuWebsocketUrl),
+        // Vuu connections are published by each remote in its config.json,
+        // these legacy contract fields are no longer managed here.
+        vuuConnectionId: "",
+        vuuRestUrl: "",
+        vuuWebsocketUrl: "",
       };
     })
     .sort((left, right) => left.id - right.id);
@@ -239,7 +241,6 @@ export const matchesSearch = (module: ModuleView, search: string) => {
     module.path,
     module.location,
     module.effectiveAccessRole,
-    module.vuuConnectionId,
   ].some((value) => value.toLowerCase().includes(term));
 };
 
@@ -301,15 +302,11 @@ export interface ModuleKpis {
   enabled: number;
   disabled: number;
   sections: number;
-  connections: number;
   issues: number;
   modulesWithIssues: number;
 }
 
 export const moduleKpis = (modules: readonly ModuleView[]): ModuleKpis => ({
-  connections: new Set(
-    modules.map(({ vuuConnectionId }) => vuuConnectionId).filter(Boolean),
-  ).size,
   disabled: modules.filter(({ enabled }) => !enabled).length,
   enabled: modules.filter(({ enabled }) => enabled).length,
   issues: modules.reduce((count, { issues }) => count + issues.length, 0),

@@ -171,7 +171,6 @@ describe("toModuleViews", () => {
 
   it("computes the KPIs", () => {
     expect(moduleKpis(views)).toEqual({
-      connections: 2,
       disabled: 1,
       enabled: 3,
       issues: 3,

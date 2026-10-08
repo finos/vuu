@@ -13,7 +13,7 @@ import {
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import VuuTableBrowser, { browserBasePath } from "../src/VuuTableBrowser";
 
 const viewerModule: PortalModuleRegistry["modules"][number] = {
@@ -36,18 +36,37 @@ const localServer = (connectionId: string): LocalVuuServer => ({
   DataSourceProvider: ({ children }: { children: ReactNode }) => children,
 });
 
+/** The config.json each test module publishes, keyed by its URL. */
+const remoteConfigs = new Map<string, Record<string, string>>();
+
+const stubRemoteConfigFetch = () =>
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(
+      async (url: string) =>
+        new Response(JSON.stringify(remoteConfigs.get(url) ?? {})),
+    ),
+  );
+
 const featureModule = (
   name: string,
   title: string,
   connectionId?: string,
-): PortalModuleRegistry["modules"][number] => ({
-  ...viewerModule,
-  clientIdentifier: name,
-  id: name,
-  name,
-  title,
-  ...(connectionId ? { vuu: { connectionId } } : {}),
-});
+): PortalModuleRegistry["modules"][number] => {
+  const mfUrl = `http://localhost/${name}`;
+  remoteConfigs.set(
+    `${mfUrl}/config.json`,
+    connectionId ? { connectionId } : {},
+  );
+  return {
+    ...viewerModule,
+    clientIdentifier: name,
+    id: name,
+    mfUrl,
+    name,
+    title,
+  };
+};
 
 describe("VuuTableBrowser", () => {
   let container: HTMLDivElement;
@@ -55,6 +74,7 @@ describe("VuuTableBrowser", () => {
 
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    stubRemoteConfigFetch();
     container = document.createElement("div");
     document.body.append(container);
     root = createRoot(container);
@@ -63,6 +83,7 @@ describe("VuuTableBrowser", () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    vi.unstubAllGlobals();
   });
 
   const renderBrowser = async (

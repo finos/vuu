@@ -8,7 +8,6 @@ import {
   MenuPanel,
   MenuTrigger,
   Spinner,
-  Switch,
   Text,
 } from "@salt-ds/core";
 import {
@@ -19,7 +18,6 @@ import {
   EditIcon,
   HistoryIcon,
   LayersIcon,
-  LinkedIcon,
   LockedIcon,
   MenuIcon,
   MicroMenuIcon,
@@ -47,13 +45,11 @@ import { ErrorCount } from "../components/ErrorCount";
 import { useModuleActions } from "../components/ModuleActions";
 import {
   AccessRoleField,
-  ConnectionFields,
   EnabledField,
   FederationFields,
   IdentityFields,
   NavIconPicker,
   NavigationFields,
-  useConnectionToggle,
 } from "../components/ModuleForm";
 import { RemoteCheckBox } from "../components/RemoteCheckBox";
 import {
@@ -460,31 +456,6 @@ const ModuleOverview = ({ module }: { module: ModuleView }) => {
               onRecheck={() => actions.checkRemote(module)}
             />
           </Card>
-          <Card>
-            <SectionHeading icon={<LinkedIcon aria-hidden />}>
-              Vuu connection
-            </SectionHeading>
-            {module.vuuConnectionId ? (
-              <FactList
-                facts={[
-                  [
-                    "Connection id",
-                    <code key="i">{module.vuuConnectionId}</code>,
-                  ],
-                  [
-                    "WebSocket URL",
-                    <code key="w">{module.vuuWebsocketUrl}</code>,
-                  ],
-                  ["Auth (REST) URL", <code key="a">{module.vuuRestUrl}</code>],
-                ]}
-                variant="panel"
-              />
-            ) : (
-              <Text color="secondary">
-                Uses the portal's default Vuu connection.
-              </Text>
-            )}
-          </Card>
         </div>
         <aside aria-label="Module summary" className={`${classBase}-aside`}>
           <Card>
@@ -537,7 +508,6 @@ const SECTIONS = [
   ["identity", "Identity"],
   ["navigation", "Navigation"],
   ["federation", "Federation"],
-  ["connection", "Connection"],
   ["access", "Access"],
 ] as const;
 
@@ -559,7 +529,6 @@ const ModuleEditor = ({ module }: { module: ModuleView }) => {
     moduleId: module.id,
     modules,
   });
-  const [connection, setConnection] = useConnectionToggle(draft);
   const [saving, setSaving] = useState(false);
   const changedFields = Object.keys(draft.changes) as (keyof ModuleConfig)[];
   const movedOn = module.version !== base.version;
@@ -647,26 +616,6 @@ const ModuleEditor = ({ module }: { module: ModuleView }) => {
               Module federation
             </SectionHeading>
             <FederationFields {...props} remoteChecks={remoteChecks} />
-          </Card>
-          <Card id="connection">
-            <div className={`${classBase}-cardHeader`}>
-              <SectionHeading icon={<LinkedIcon aria-hidden />}>
-                Vuu connection
-              </SectionHeading>
-              <Switch
-                aria-label="Uses a dedicated Vuu connection"
-                checked={connection}
-                label="Dedicated connection"
-                onChange={(event) => setConnection(event.target.checked)}
-              />
-            </div>
-            {connection ? (
-              <ConnectionFields {...props} />
-            ) : (
-              <Text color="secondary">
-                Uses the portal's default Vuu connection.
-              </Text>
-            )}
           </Card>
         </div>
         <aside aria-label="Access and changes" className={`${classBase}-aside`}>

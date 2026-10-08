@@ -152,6 +152,14 @@ describe("portal build configuration", () => {
         output: "./dist/example",
         publicPath: "http://localhost:5002/",
       },
+      manifest: {
+        filename: "./config.json",
+        remote: {
+          connectionId: "orders",
+          restUrl: "https://localhost:8443/api/authn",
+          websocketUrl: "wss://localhost:8091/websocket",
+        },
+      },
       moduleFederation: {
         name: "example",
         dts: false,
@@ -183,6 +191,34 @@ describe("portal build configuration", () => {
     expect(plan.publicPath).toBe("http://localhost:5002/");
     expect(plan.exposes).toEqual({ "./Feature": "./src/Feature" });
     expect(plan.moduleFederation.name).toBe("example");
+    expect(plan.manifest).toEqual({
+      filename: "./config.json",
+      value: {
+        connectionId: "orders",
+        restUrl: "https://localhost:8443/api/authn",
+        websocketUrl: "wss://localhost:8091/websocket",
+      },
+    });
+  });
+
+  it("rejects remote modules without a manifest", () => {
+    expect(() =>
+      parsePortalBuildConfig({
+        version: 1,
+        target: "remote-module",
+        paths: {
+          entry: "./src/index.tsx",
+          htmlTemplate: "./index.html",
+          output: "./dist",
+          publicPath: "http://localhost:5002/",
+        },
+        moduleFederation: {
+          name: "example",
+          exposes: { "./Feature": "./src/Feature" },
+          shared: {},
+        },
+      }),
+    ).toThrow("Invalid portal build config: manifest must be an object");
   });
 
   it("rejects remote modules without an exposed module", () => {
@@ -196,6 +232,7 @@ describe("portal build configuration", () => {
           output: "./dist",
           publicPath: "http://localhost:5002/",
         },
+        manifest: { filename: "./config.json", remote: {} },
         moduleFederation: {
           name: "example",
           shared: {},
@@ -317,6 +354,7 @@ describe("portal build configuration", () => {
           output: "./dist",
           publicPath: "http://localhost:5002/",
         },
+        manifest: { filename: "./config.json", remote: {} },
         moduleFederation: {
           name: "moduleAdmin",
           exposes: { "./ModuleAdmin": "./src/ModuleAdmin" },
