@@ -759,6 +759,12 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   }
 
   async endEditSession(saveChanges = false, force = false) {
+    if (this.#status === "unsubscribed" || !this.server || !this.viewport) {
+      if (!saveChanges) {
+        return;
+      }
+      throw Error("Cannot save changes: server or viewport are undefined");
+    }
     const type = "RPC_REQUEST";
     const rpcName = "endEditSession";
     const rpcResponse = await this.rpcRequest(

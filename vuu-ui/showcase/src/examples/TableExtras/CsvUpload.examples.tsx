@@ -157,6 +157,30 @@ export const CsvUploadWithRowDefaults = () => {
   );
 };
 
+export const CsvUploadWithServerSessionError = () => {
+  const dataSource = useMemo(() => {
+    const sessionDs = {
+      table: { module: "TEST", table: "session-items" },
+      tableSchema: rowDefaultsSchema,
+      columns: ["id", "vuuMsg"],
+      addRow: async () => ({
+        data: { vuuMsg: "key already exists" },
+        type: "SUCCESS_RESULT" as const,
+      }),
+      endEditSession: async () => void 0,
+    };
+    return {
+      table: { module: "TEST", table: "items" },
+      tableSchema: rowDefaultsSchema,
+      createSessionDataSource: async () => sessionDs as unknown as DataSource,
+      subscribe: async () => void 0,
+      unsubscribe: () => void 0,
+    } as unknown as DataSource;
+  }, []);
+
+  return <CsvUpload dataSource={dataSource} />;
+};
+
 const IMPORT_TABLE: VuuTable = { module: "TEST", table: "items-import" };
 
 const importOnlySchema: TableSchema = {

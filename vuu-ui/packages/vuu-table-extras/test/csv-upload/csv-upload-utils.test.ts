@@ -2,9 +2,12 @@ import { describe, expect, it, vi } from "vitest";
 import {
   buildRowErrorMessage,
   executeBatchRpcCalls,
+  getInlineRowErrorMessage,
+  getRowVuuMsgError,
   mergeValidationWithParseErrors,
   normalizeTableData,
   toValidationErrorsFromParseRowErrors,
+  waitForSessionErrors,
 } from "../../src/csv-upload/parse/csv-upload-utils";
 import { CsvParseErrorEnum } from "../../src/csv-upload/parse/csv-parse";
 import {
@@ -223,6 +226,86 @@ describe("csv-upload-utils", () => {
 
       expect(errors).toEqual(["x: server rejected"]);
       expect(results).toHaveLength(0);
+    });
+  });
+
+  describe("getInlineRowErrorMessage", () => {
+    it("extracts vuuMsg or msg from result data", () => {
+      expect(
+        getInlineRowErrorMessage({
+          type: "SUCCESS_RESULT",
+          data: { vuuMsg: "key already exists" },
+        }),
+      ).toBe("key already exists");
+
+      expect(
+        getInlineRowErrorMessage({
+          type: "SUCCESS_RESULT",
+          data: { msg: "invalid value" },
+        }),
+      ).toBe("invalid value");
+    });
+
+    it("returns undefined when no message exists or string is blank", () => {
+      expect(getInlineRowErrorMessage({ type: "SUCCESS_RESULT", data: {} })).toBeUndefined();
+      expect(getInlineRowErrorMessage({ type: "SUCCESS_RESULT", data: { vuuMsg: "   " } })).toBeUndefined();
+      expect(getInlineRowErrorMessage(null)).toBeUndefined();
+      expect(getInlineRowErrorMessage("not an object")).toBeUndefined();
+    });
+  });
+
+  describe("getRowVuuMsgError", () => {
+    it("extracts error from array row using data indices", () => {
+      // row[0] = rowIndex (1), row[10] = vuuMsg, row[11] = vuuRowNum (2)
+      const row = [1, 0, true, false, 0, 0, "key1", 0, 0, false, "duplicate key", 2] as any;
+      const error = getRowVuuMsgError(row, 10, 11);
+      expect(error).toBe("Row 2: duplicate key");
+    });
+
+    it("falls back to row index when vuuRowNum is missing", () => {
+      const row = [0, 0, true, false, 0, 0, "key1", 0, 0, false, "failed"] as any;
+      const error = getRowVuuMsgError(row, 10, -1);
+      expect(error).toBe("Row 1: failed");
+    });
+
+    it("returns undefined when vuuMsg is empty", () => {
+      const row = [0, 0, true, false, 0, 0, "key1", 0, 0, false, ""] as any;
+      expect(getRowVuuMsgError(row, 10, -1)).toBeUndefined();
+    });
+  });
+
+  describe("waitForSessionErrors", () => {
+    it("returns immediately for non-remote sessions", async () => {
+      const errors = new Map<string, string>();
+      const keys = new Set<string>();
+      const listeners = new Set<() => void>();
+      const result = await waitForSessionErrors(false, errors, keys, 5, listeners);
+      expect(result).toEqual([]);
+    });
+
+    it("returns immediately if errors already exist", async () => {
+      const errors = new Map<string, string>([["1", "Row 2: error"]]);
+      const keys = new Set<string>();
+      const listeners = new Set<() => void>();
+      const result = await waitForSessionErrors(true, errors, keys, 5, listeners);
+      expect(result).toEqual(["Row 2: error"]);
+    });
+
+    it("resolves when listeners trigger and expected rows are reached", async () => {
+      const errors = new Map<string, string>();
+      const keys = new Set<string>();
+      const listeners = new Set<() => void>();
+
+      const promise = waitForSessionErrors(true, errors, keys, 2, listeners);
+
+      keys.add("1");
+      keys.add("2");
+      for (const listener of listeners) {
+        listener();
+      }
+
+      const result = await promise;
+      expect(result).toEqual([]);
     });
   });
 });
