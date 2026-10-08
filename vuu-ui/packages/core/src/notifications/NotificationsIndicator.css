@@ -1,0 +1,37 @@
+.vuuNotificationsIndicator {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-50);
+  min-width: 0;
+
+  .vuuNotificationsIndicator-ticker {
+    gap: var(--salt-spacing-75);
+    max-width: var(--vuuNotificationsIndicator-tickerWidth, 480px);
+    min-width: 0;
+  }
+
+  .vuuNotificationsIndicator-tickerTitle {
+    flex: none;
+    font-weight: var(--salt-text-fontWeight-strong);
+  }
+
+  .vuuNotificationsIndicator-tickerMessage {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .vuuNotificationsIndicator-tickerAge {
+    color: var(--salt-content-secondary-foreground);
+    flex: none;
+  }
+
+  .vuuNotificationsIndicator-announcer {
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+}

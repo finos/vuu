@@ -148,6 +148,16 @@ const shared = {
     strictVersion: true,
     requiredVersion: vuuVersion,
   },
+  "@vuu-ui/vuu-data-remote": {
+    singleton: true,
+    strictVersion: true,
+    requiredVersion: vuuVersion,
+  },
+  "@vuu-ui/vuu-notifications": {
+    singleton: true,
+    strictVersion: true,
+    requiredVersion: vuuVersion,
+  },
 };
 ```
 
@@ -161,6 +171,12 @@ contexts. `@vuu-ui/vuu-data-test` must be a singleton in local mode because it
 owns the local `ModuleContainer`. Duplicating either package can produce a
 successfully loaded remote that cannot see the host's context or registered
 local modules.
+
+`@vuu-ui/vuu-data-remote` and `@vuu-ui/vuu-notifications` must be singletons
+for the portal's server status and notifications. The first owns the
+connections the portal monitors and the second the notifications context, so
+a duplicate copy would hide a remote's connections or notifications from the
+portal.
 
 Keep `strictVersion: true`. An incompatible React or VUU version should fail
 during shared-module negotiation instead of silently creating a second
@@ -316,9 +332,11 @@ The active sequence is:
 2. exchange the identity token for a portal VUU token;
 3. open the portal VUU websocket;
 4. receive `LOGIN_SUCCESS.moduleRegistry`;
-5. render navigation and routes from the registry; and
-6. load each selected remote's `config.json` and authenticate its VUU
-   connection when that config declares one.
+5. render navigation and routes from the registry;
+6. load every navigable module's `config.json`; and
+7. connect to the Vuu servers those configs name, the open module's first,
+   to show their status in the navigation and collect their notifications.
+   A remote that opens uses the connection already made.
 
 The portal server is responsible for returning only modules the user is
 authorized to access.
@@ -419,6 +437,44 @@ is added to the module registry or the Vuu protocol. The portal authenticates
 to them with the same token exchange as any other server, so the server must
 accept it. In local mode, a manually added server fails to connect unless its
 name matches a local server.
+
+### Server status and notifications
+
+`PortalShell` connects to every application's Vuu server, up to
+`maxMonitoredServers` (default 8), not just the open application's. The
+AppSwitcher then:
+
+- greys out applications whose server is offline, refuses the user, or whose
+  `config.json` can't be loaded, with a status badge and an overlay
+  explaining why and offering **Retry now**;
+- shows each application's unread notification count as a badge.
+
+If the open application's server goes down, a frosted overlay covers the
+application until it's back. Notifications also appear in a bell in
+`PortalHeader`, a notifications panel, toasts for the open application, and
+portal-wide banners.
+
+Notifications come from each server's `NOTIFICATIONS/notifications` table.
+No server or remote changes are needed. To tune or turn this off, pass
+`serverMonitor` and `notifications` options to `PortalShell`, for example:
+
+```tsx
+<PortalShell
+  notifications={{ maxNotifications: 200 }}
+  remoteModules={modules}
+  serverMonitor={{ maxMonitoredServers: 12, offlineAfterMs: 5_000 }}
+  title="My Portal"
+/>
+```
+
+`serverMonitor={false}` stops the portal connecting to servers for
+monitoring, and `notifications={false}` turns notifications off. See the
+[portal reference](../../packages/core/docs/portal-design.md#server-status-and-notifications)
+for all options.
+
+In local mode, every local server is online. To simulate notifications, add
+`notificationsModule` from `@vuu-ui/vuu-data-test` to a local server's
+`modules`; the portal-host example does this for `basket` and `simul`.
 
 ## 6. Build and run
 
@@ -662,6 +718,9 @@ After portal deployment is stable:
 - Local mode installs `LocalDataSourceProvider`.
 - Remote mode retains `VuuDataSourceProvider`.
 - Local mode makes no Keycloak, token-exchange, or websocket request.
+- In remote mode, with a server stopped, its application is greyed out in the
+  AppSwitcher, and the open application is covered by the connection lost
+  overlay.
 
 ### Remote
 
@@ -681,8 +740,8 @@ After portal deployment is stable:
 
 ### Federation and deployment
 
-- React, core VUU contexts, and the local module runtime are strict compatible
-  shares.
+- React, core VUU contexts, the local module runtime, `@vuu-ui/vuu-data-remote`
+  and `@vuu-ui/vuu-notifications` are strict compatible shares.
 - Host and remote artifacts were built with compatible federation tooling.
 - Manifest URLs, public paths, server ports, and proxy/nginx mappings agree.
 - CORS permits the host origin to load remote manifests and chunks.

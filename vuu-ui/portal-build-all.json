@@ -40,6 +40,16 @@
       "requiredVersion": "package:@vuu-ui/core",
       "singleton": true,
       "strictVersion": true
+    },
+    "@vuu-ui/vuu-data-remote": {
+      "requiredVersion": "package:@vuu-ui/core",
+      "singleton": true,
+      "strictVersion": true
+    },
+    "@vuu-ui/vuu-notifications": {
+      "requiredVersion": "package:@vuu-ui/core",
+      "singleton": true,
+      "strictVersion": true
     }
   },
   "targets": [

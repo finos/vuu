@@ -6,15 +6,29 @@ import {
   loadRemote,
   registerRemotes,
 } from "@module-federation/enhanced/runtime";
-import React, { Suspense, lazy, use, useEffect, useMemo } from "react";
+import { NotificationOriginProvider } from "@vuu-ui/vuu-notifications";
+import React, {
+  Suspense,
+  lazy,
+  use,
+  useContext,
+  useEffect,
+  useMemo,
+} from "react";
 import {
   ApplicationStateProvider,
   useOptionalPortalPersistence,
 } from "../persistence/PersistenceContext";
 import type { StateMigration } from "../persistence/StateMigrations";
 import { useStoreReady } from "../persistence/useStoreReady";
+import { PortalModuleIdContext } from "../notifications/PortalNotificationsContext";
+import { useRegisterNotificationHost } from "../notifications/PortalNotificationsProvider";
 import { useOptionalSavedState } from "../saved-state/SavedStateContext";
 import { useInRouterContext, useLocation } from "react-router-dom";
+import {
+  ConnectionLostOverlay,
+  useLostConnectionStatus,
+} from "./ConnectionLostOverlay";
 import { RemoteModuleErrorBoundary } from "./RemoteModuleErrorBoundary";
 import {
   forgetRemoteModuleConfig,
@@ -212,21 +226,42 @@ function RemoteModuleContent(props: RemoteModuleProps) {
     ...remoteProps
   } = props;
   const store = useRemoteModuleState(props);
+  useRegisterNotificationHost(vuu?.connectionId);
+  const moduleId = useContext(PortalModuleIdContext);
   const RemoteComponent = getRemoteComponent(mfUrl, mfScope, mfComponent);
   const connection = vuu ?? use(loadRemoteModuleConfig(mfUrl)).vuu;
+  const lostStatus = useLostConnectionStatus(connection?.connectionId);
   const remoteComponent = <RemoteComponent {...remoteProps} />;
 
   // Always provide a value, so the portal's own store is never visible to
   // the module (FR-3).
   return (
     <ApplicationStateProvider store={store}>
-      {connection ? (
-        <AuthenticationProvider mode="vuu-connection" connection={connection}>
-          {remoteComponent}
-        </AuthenticationProvider>
-      ) : (
-        remoteComponent
-      )}
+      <NotificationOriginProvider
+        connectionId={connection?.connectionId}
+        moduleId={moduleId}
+      >
+        {/* Kept mounted while the connection is lost, but unusable. */}
+        <div
+          className="vuuRemoteModule"
+          inert={lostStatus !== undefined}
+          style={{ display: "contents" }}
+        >
+          {connection ? (
+            <AuthenticationProvider
+              mode="vuu-connection"
+              connection={connection}
+            >
+              {remoteComponent}
+            </AuthenticationProvider>
+          ) : (
+            remoteComponent
+          )}
+        </div>
+        {lostStatus ? (
+          <ConnectionLostOverlay status={lostStatus} title={props.title} />
+        ) : null}
+      </NotificationOriginProvider>
     </ApplicationStateProvider>
   );
 }
