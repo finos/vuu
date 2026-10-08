@@ -1688,7 +1688,9 @@ var WebSocketConnection = class extends EventEmitter {
     this.connectionStatus = "closed";
     if (reason === "failure") {
       if (__privateGet(this, _deferredOpen)) {
-        __privateGet(this, _deferredOpen).reject(Error("connection failed"));
+        __privateGet(this, _deferredOpen).reject(
+          Error(\`Unable to connect to VUU server at \${__privateGet(this, _url)}\`)
+        );
         __privateSet(this, _deferredOpen, void 0);
       }
     } else {
@@ -2779,7 +2781,10 @@ var handleMessageFromClient = async ({
         }
         postMessage({ type: "connected", loginResponse });
       } catch (err) {
-        postMessage({ type: "connection-failed", reason: String(err) });
+        postMessage({
+          type: "connection-failed",
+          reason: err instanceof Error ? err.message : String(err)
+        });
       }
       break;
     // If any of the messages below are received BEFORE we have connected and created

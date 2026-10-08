@@ -1,16 +1,19 @@
+import { useOptionalVuuConnectionId } from "@vuu-ui/core";
 import {
   ConnectionManager,
   ConnectionStatus,
+  DEFAULT_CONNECTION_ID,
   isConnected,
 } from "@vuu-ui/vuu-data-remote";
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
 import { LostConnectionIndicator } from "../lost-connection-indicator/LostConnectionIndicator";
 
 export const useLostConnection = () => {
   const { hideNotification, showNotification } = useNotifications();
+  const connectionId = useOptionalVuuConnectionId() ?? DEFAULT_CONNECTION_ID;
 
-  const isConnectedRef = useRef(ConnectionManager.connected);
+  const isConnectedRef = useRef(ConnectionManager.connectedFor(connectionId));
 
   const handleConnectionStatusChange = useCallback(
     (connectionStatus: ConnectionStatus) => {
@@ -30,7 +33,12 @@ export const useLostConnection = () => {
     [hideNotification, showNotification],
   );
 
-  useMemo(async () => {
-    ConnectionManager.on("connection-status", handleConnectionStatusChange);
-  }, [handleConnectionStatusChange]);
+  useEffect(
+    () =>
+      ConnectionManager.onConnectionStatus(
+        connectionId,
+        handleConnectionStatusChange,
+      ),
+    [connectionId, handleConnectionStatusChange],
+  );
 };
