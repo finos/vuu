@@ -52,7 +52,10 @@ export interface RemoteCheck {
   checkedAt?: number;
   elapsedMs?: number;
   exposes: string[];
+  /** Checks against the remote's mf-manifest.json. */
   items: RemoteCheckItem[];
+  /** Checks against the remote's config.json, once the remote is reached. */
+  configItems: RemoteCheckItem[];
   /** The remote's config.json, once the remote has been reached. */
   config?: RemoteConfigResult;
 }
@@ -210,6 +213,7 @@ export const compareRemote = (
   if (!manifest) return undefined;
   if (manifest.status === "checking") {
     return {
+      configItems: [],
       exposes: [],
       items: [],
       status: "checking",
@@ -219,6 +223,7 @@ export const compareRemote = (
   if (manifest.status === "unreachable") {
     return {
       checkedAt: manifest.checkedAt,
+      configItems: [],
       exposes: [],
       items: [
         { detail: manifest.error, label: "Manifest not loaded", ok: false },
@@ -253,11 +258,11 @@ export const compareRemote = (
   ];
   const { config } = manifest;
   const configOk = config.status === "loaded";
-  items.push(...configItems(config));
   const ok = scopeOk && exposeOk && configOk;
   return {
     checkedAt: manifest.checkedAt,
     config,
+    configItems: configItems(config),
     elapsedMs: manifest.elapsedMs,
     exposes: manifest.exposes,
     items,

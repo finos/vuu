@@ -1,9 +1,49 @@
 import { Button, Text } from "@salt-ds/core";
 import { ErrorIcon, RefreshIcon, SuccessCircleIcon } from "@salt-ds/icons";
-import cx from "clsx";
 import { type ModuleView, relativeTime } from "../data/module-model";
+import {
+  CONFIG_FILE,
+  MANIFEST_FILE,
+  type RemoteCheckItem,
+} from "../data/remote-check";
 
 const classBase = "vuuModuleCheck";
+
+const CheckItems = ({
+  emptyText,
+  items,
+  title,
+}: {
+  emptyText: string;
+  items: RemoteCheckItem[];
+  title: string;
+}) => (
+  <section aria-label={title} className={classBase}>
+    <Text className={`${classBase}-title`} styleAs="label">
+      <code>{title}</code>
+    </Text>
+    {items.length > 0 ? (
+      <ul className={`${classBase}-items`}>
+        {items.map((item) => (
+          <li key={item.label}>
+            {item.ok ? (
+              <SuccessCircleIcon
+                aria-label="Passed"
+                className={`${classBase}-ok`}
+              />
+            ) : (
+              <ErrorIcon aria-label="Failed" className={`${classBase}-fail`} />
+            )}
+            <strong>{item.label}</strong>
+            <code>{item.detail}</code>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <Text color="secondary">{emptyText}</Text>
+    )}
+  </section>
+);
 
 export const RemoteCheckBox = ({
   module,
@@ -13,35 +53,24 @@ export const RemoteCheckBox = ({
   onRecheck: () => void;
 }) => {
   const check = module.remote;
+  const checking = check?.status === "checking";
+  const emptyText = checking
+    ? "Checking remote…"
+    : check?.status === "unreachable"
+      ? "Not checked, the remote is unreachable."
+      : "Remote not checked yet.";
   return (
-    <div className={cx(classBase, check && `${classBase}-${check.status}`)}>
-      {check && check.status !== "checking" ? (
-        <ul className={`${classBase}-items`}>
-          {check.items.map((item) => (
-            <li key={item.label}>
-              {item.ok ? (
-                <SuccessCircleIcon
-                  aria-label="Passed"
-                  className={`${classBase}-ok`}
-                />
-              ) : (
-                <ErrorIcon
-                  aria-label="Failed"
-                  className={`${classBase}-fail`}
-                />
-              )}
-              <strong>{item.label}</strong>
-              <code>{item.detail}</code>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <Text color="secondary">
-          {check?.status === "checking"
-            ? "Checking remote…"
-            : "Remote not checked yet."}
-        </Text>
-      )}
+    <div className={`${classBase}-group`}>
+      <CheckItems
+        emptyText={checking ? emptyText : "Remote not checked yet."}
+        items={check?.items ?? []}
+        title={MANIFEST_FILE}
+      />
+      <CheckItems
+        emptyText={emptyText}
+        items={check?.configItems ?? []}
+        title={CONFIG_FILE}
+      />
       <div className={`${classBase}-footer`}>
         <Text color="secondary" styleAs="label">
           {check?.checkedAt
@@ -50,7 +79,7 @@ export const RemoteCheckBox = ({
         </Text>
         <Button
           appearance="transparent"
-          disabled={check?.status === "checking" || !module.mfUrl}
+          disabled={checking || !module.mfUrl}
           onClick={onRecheck}
         >
           <RefreshIcon aria-hidden /> Re-check
