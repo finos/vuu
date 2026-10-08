@@ -55,4 +55,5 @@ export {
 export {
   ToggleFilter,
   type ToggleFilterProps,
+  type ToggleFilterValue,
 } from "./toggle-filter/ToggleFilter";

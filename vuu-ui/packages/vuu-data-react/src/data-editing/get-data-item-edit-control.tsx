@@ -23,7 +23,7 @@ import {
   type TimeStringMillis,
 } from "@vuu-ui/vuu-utils";
 import type { InputProps } from "@salt-ds/core";
-import { ToggleFilter } from "@vuu-ui/vuu-filters";
+import { ToggleFilter, type ToggleFilterValue } from "@vuu-ui/vuu-filters";
 
 /**
  * variant can be used to provide a rendering hint to the filter control rendered.
@@ -61,9 +61,10 @@ export interface DataItemEditControlProps {
    * They will be validated against server with Typeahead service, so
    * unavailable options are not offered.
    * Recommended for toggle filters, not usually necessary for other
-   * filter variants.
+   * filter variants. Boolean values are supported for toggle filters on
+   * boolean columns, where values default to [true, false].
    */
-  values?: string[];
+  values?: ToggleFilterValue[];
   variant?: FilterControlVariant;
 }
 
@@ -126,6 +127,8 @@ function toTimeString(
   }
 }
 
+const BOOLEAN_TOGGLE_VALUES: ToggleFilterValue[] = [true, false];
+
 export type ValidationStatus = "initial" | true | string;
 
 export const getDataItemEditControl = ({
@@ -180,32 +183,32 @@ export const getDataItemEditControl = ({
         onCommit(evt, timeString);
       }
     };
-      return isTimeDataValueWithMilliseconds(dataDescriptor) ? (
-        <VuuTimePicker
-          className={className}
-          milliseconds
+    return isTimeDataValueWithMilliseconds(dataDescriptor) ? (
+      <VuuTimePicker
+        className={className}
+        milliseconds
         value={
           value === ""
             ? ("" as TimeStringMillis)
             : toTimeString(value, baseValue, temporalInfo, true)
         }
-          onChange={onChange}
+        onChange={onChange}
         onCommit={handleCommitTime}
-          data-edit-control
-        />
-      ) : (
-        <VuuTimePicker
-          className={className}
+        data-edit-control
+      />
+    ) : (
+      <VuuTimePicker
+        className={className}
         value={
           value === ""
             ? ("" as TimeString)
             : toTimeString(value, baseValue, temporalInfo)
         }
-          onChange={onChange}
+        onChange={onChange}
         onCommit={handleCommitTime}
-          data-edit-control
-        />
-      );
+        data-edit-control
+      />
+    );
   } else if (temporalInfo) {
     const baseValue = toEpochTimestamp(
       InputProps?.inputProps?.value,
@@ -227,7 +230,7 @@ export const getDataItemEditControl = ({
           temporalInfo.timeZone,
           baseValue.subMilliNanos,
         );
-    }
+      }
       onCommit(evt, `${timestamp.toWire(temporalInfo.encoding)}`);
     };
     return (
@@ -237,6 +240,22 @@ export const getDataItemEditControl = ({
         timeZone={temporalInfo.timeZone}
         value={baseValue}
         data-edit-control
+      />
+    );
+  } else if (
+    variant === "toggle" &&
+    dataDescriptor.serverDataType === "boolean"
+  ) {
+    return (
+      <ToggleFilter
+        className={className}
+        column={dataDescriptor.name}
+        data-edit-control
+        labels={labels}
+        onCommit={onCommit}
+        table={table}
+        values={values?.length ? values : BOOLEAN_TOGGLE_VALUES}
+        value={InputProps?.inputProps?.value ?? "all"}
       />
     );
   } else if (dataDescriptor.serverDataType === "string" && table) {
