@@ -306,6 +306,23 @@ describe("VuuServerMonitor", () => {
     expect(monitor.getModuleStatus("m0").detail?.checking).toBeUndefined();
   });
 
+  it("keeps the status of a connection read by id up to date", async () => {
+    const { monitor, registry } = await setup({
+      count: 1,
+      options: { offlineAfterMs: 3000 },
+    });
+    // e.g. a module's override connection, which the monitor doesn't track.
+    expect(monitor.getStatus("override").presence).toBe("unknown");
+    registry.setState("override", "connected");
+    expect(monitor.getStatus("override").presence).toBe("online");
+    registry.setState("override", "reconnecting");
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(monitor.getStatus("override")).toMatchObject({
+      presence: "offline",
+      detail: { reconnecting: true },
+    });
+  });
+
   it("does not show a brief connection drop as offline", async () => {
     const { monitor, registry } = await setup({
       count: 1,

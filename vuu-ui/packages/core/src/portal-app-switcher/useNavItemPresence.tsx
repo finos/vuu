@@ -27,6 +27,10 @@ import {
   useNavItemVisibility,
   useRetryModule,
 } from "../server-monitor/VuuServerMonitorProvider";
+import {
+  formatDuration,
+  formatTime,
+} from "../server-monitor/presence-format";
 import type { NavItem } from "./PortalAppSwitcher";
 
 const classBase = "vuuNavItemPresence";
@@ -39,24 +43,6 @@ export interface UnavailableModule {
   status: VuuServerStatus;
   title: string;
 }
-
-const formatTime = (epochMs: number) =>
-  new Date(epochMs).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-const formatDuration = (ms: number) => {
-  const minutes = Math.floor(ms / 60_000);
-  if (minutes < 1) {
-    return "just now";
-  }
-  if (minutes < 60) {
-    return `${minutes} min`;
-  }
-  const hours = Math.floor(minutes / 60);
-  return `${hours} h ${minutes % 60} min`;
-};
 
 export const describeUnavailable = ({ detail, since }: VuuServerStatus) => {
   const reason = detail?.reason ?? "Server unavailable";

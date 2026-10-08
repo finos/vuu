@@ -906,7 +906,7 @@ hover / focus on an unavailable item:
     lost" and "Reconnecting automatically…"; **Retry now** skips the
     registry's wait and attempts to reconnect immediately.
   - If the open module's server goes offline, its item greys but the module
-    stays mounted; the remote's own lost-connection handling applies.
+    stays mounted, covered by the connection lost overlay (§16.6).
 - **Accessibility**: the link's accessible name stays the module title;
   an `aria-describedby` hidden span gives e.g. "3 unread notifications."
   or "Unavailable: server not responding since 12:04." The status badge
@@ -1344,6 +1344,28 @@ to, the design above:
   attempt settles. The monitor sets `detail.checking` meanwhile ("Checking…",
   button disabled) and ignores repeat retries. The retry schedule then
   continues from the next interval.
+
+#### Connection lost overlay
+
+- While a module's server is `offline` (including a lost connection still
+  reconnecting after `offlineAfterMs`) or `unauthorized`, `RemoteModule`
+  covers the module with `ConnectionLostOverlay`. The module stays mounted,
+  inside a `display: contents` wrapper made `inert`, so its UI can't be
+  used or focused; the AppSwitcher and the rest of the portal stay usable.
+- The overlay is a frosted backdrop: a translucent tint of the container
+  background with `backdrop-filter: blur(6px) grayscale(0.8)
+  contrast(0.85)`, fading in (no animation with reduced motion). It holds an
+  `alertdialog` (`aria-modal`, focused when shown) giving the reason, how
+  long the server has been offline, the retry state and **Retry now**
+  (`VuuServerStatusSource.retry(connectionId)`); for `unauthorized`, "Contact
+  your administrator" and no retry. It goes as soon as the server is online.
+- The status read is the module's connection, including an override
+  `vuu` connection. Statuses read by id for connections the monitor doesn't
+  track are now recomputed on every refresh, so they stay current.
+- `PortalShell` and `WindowShell` content areas are `position: relative;
+  isolation: isolate` to contain the overlay. `WindowShell` now has an
+  observe-only server monitor (`options={false}`), so a module in its own
+  window gets the overlay too, without the window acquiring connections.
 
 ## 17. Decisions
 

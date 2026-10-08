@@ -203,6 +203,15 @@ export const useModuleServerStatusList = (
   );
 };
 
+/** Reconnects to a server now. */
+export const useRetryConnection = () => {
+  const monitor = useServerMonitor();
+  return useCallback(
+    (connectionId: string) => monitor?.retry(connectionId),
+    [monitor],
+  );
+};
+
 /** Retries a module's server connection, or reloads its config. */
 export const useRetryModule = () => {
   const monitor = useServerMonitor();

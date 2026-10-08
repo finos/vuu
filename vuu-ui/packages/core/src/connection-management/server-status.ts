@@ -76,6 +76,8 @@ export interface VuuServerStatusSource {
   getModuleStatus(moduleId: ModuleId): VuuServerStatus;
   getStatuses(): ReadonlyMap<string, VuuServerStatus>;
   subscribe(listener: () => void): () => void;
+  /** Reconnect to a server now, without waiting for the next attempt. */
+  retry(connectionId: string): void;
   /** Reconnect now, or reload a failed module config. */
   retryModule(moduleId: ModuleId): void;
   setDisplayOrder(moduleIds: ModuleId[]): void;

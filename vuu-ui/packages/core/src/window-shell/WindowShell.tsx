@@ -9,6 +9,7 @@ import {
 import type { ModuleId } from "../connection-management/ModuleServerMap";
 import { PortalNotificationsProvider } from "../notifications/PortalNotificationsProvider";
 import type { PortalNotificationsOptions } from "../notifications/notification-types";
+import { VuuServerMonitorProvider } from "../server-monitor/VuuServerMonitorProvider";
 
 import windowShellCss from "./WindowShell.css";
 
@@ -18,8 +19,9 @@ export interface WindowShellProps extends CommonShellProps {
   children: ReactNode;
   id?: string;
   /**
-   * Notifications from the servers this window connects to. There is no
-   * server monitor in a window, so only the window's own modules connect.
+   * Notifications from the servers this window connects to. The window's
+   * server monitor doesn't acquire connections, so only the window's own
+   * modules connect.
    */
   notifications?: PortalNotificationsOptions | false;
   /** The module shown in the window; toasts are shown only for it. */
@@ -40,19 +42,23 @@ export const WindowShell = ({
     window: targetWindow,
   });
 
+  // Observes, but never acquires, connections: the window's module holds its
+  // own, and its connection lost overlay needs their status.
   return (
-    <CommonShell {...providerProps}>
-      <PortalNotificationsProvider
-        openModuleId={openModuleId}
-        options={notifications}
-        portalId={providerProps.portalId}
-      >
-        <FlexLayout className={classBase} direction="column" id={id}>
-          <FlexItem className={`${classBase}-content`}>
-            <div className={`${classBase}-content`}>{children}</div>
-          </FlexItem>
-        </FlexLayout>
-      </PortalNotificationsProvider>
-    </CommonShell>
+    <VuuServerMonitorProvider options={false}>
+      <CommonShell {...providerProps}>
+        <PortalNotificationsProvider
+          openModuleId={openModuleId}
+          options={notifications}
+          portalId={providerProps.portalId}
+        >
+          <FlexLayout className={classBase} direction="column" id={id}>
+            <FlexItem className={`${classBase}-content`}>
+              <div className={`${classBase}-content`}>{children}</div>
+            </FlexItem>
+          </FlexLayout>
+        </PortalNotificationsProvider>
+      </CommonShell>
+    </VuuServerMonitorProvider>
   );
 };

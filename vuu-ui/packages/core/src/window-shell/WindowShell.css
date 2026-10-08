@@ -10,6 +10,9 @@
 
     .vuuWindowShell-content {
       height: 100%;
+      /* Contains a remote module's connection lost overlay. */
+      isolation: isolate;
+      position: relative;
     }
   }
 }

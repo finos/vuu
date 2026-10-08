@@ -31,5 +31,8 @@
 
   .vuuPortalShell-content {
     grid-area: content;
+    /* Contains a remote module's connection lost overlay. */
+    isolation: isolate;
+    position: relative;
   }
 }

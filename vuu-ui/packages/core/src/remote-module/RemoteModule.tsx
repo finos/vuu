@@ -25,6 +25,10 @@ import { PortalModuleIdContext } from "../notifications/PortalNotificationsConte
 import { useRegisterNotificationHost } from "../notifications/PortalNotificationsProvider";
 import { useOptionalSavedState } from "../saved-state/SavedStateContext";
 import { useInRouterContext, useLocation } from "react-router-dom";
+import {
+  ConnectionLostOverlay,
+  useLostConnectionStatus,
+} from "./ConnectionLostOverlay";
 import { RemoteModuleErrorBoundary } from "./RemoteModuleErrorBoundary";
 import {
   forgetRemoteModuleConfig,
@@ -226,6 +230,7 @@ function RemoteModuleContent(props: RemoteModuleProps) {
   const moduleId = useContext(PortalModuleIdContext);
   const RemoteComponent = getRemoteComponent(mfUrl, mfScope, mfComponent);
   const connection = vuu ?? use(loadRemoteModuleConfig(mfUrl)).vuu;
+  const lostStatus = useLostConnectionStatus(connection?.connectionId);
   const remoteComponent = <RemoteComponent {...remoteProps} />;
 
   // Always provide a value, so the portal's own store is never visible to
@@ -236,13 +241,26 @@ function RemoteModuleContent(props: RemoteModuleProps) {
         connectionId={connection?.connectionId}
         moduleId={moduleId}
       >
-        {connection ? (
-          <AuthenticationProvider mode="vuu-connection" connection={connection}>
-            {remoteComponent}
-          </AuthenticationProvider>
-        ) : (
-          remoteComponent
-        )}
+        {/* Kept mounted while the connection is lost, but unusable. */}
+        <div
+          className="vuuRemoteModule"
+          inert={lostStatus !== undefined}
+          style={{ display: "contents" }}
+        >
+          {connection ? (
+            <AuthenticationProvider
+              mode="vuu-connection"
+              connection={connection}
+            >
+              {remoteComponent}
+            </AuthenticationProvider>
+          ) : (
+            remoteComponent
+          )}
+        </div>
+        {lostStatus ? (
+          <ConnectionLostOverlay status={lostStatus} title={props.title} />
+        ) : null}
       </NotificationOriginProvider>
     </ApplicationStateProvider>
   );

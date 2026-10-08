@@ -147,6 +147,7 @@ abstract class ServerStatusStore implements VuuServerStatusSource {
     };
   };
 
+  retry(_connectionId: string) {}
   abstract retryModule(moduleId: ModuleId): void;
   setDisplayOrder(_moduleIds: ModuleId[]) {}
   setOpenModule(_moduleId: ModuleId | undefined) {}
@@ -172,6 +173,14 @@ abstract class ServerStatusStore implements VuuServerStatusSource {
     }
     if (changed) {
       this.#statuses = statuses;
+    }
+    // Connections read by id, e.g. a module's override connection.
+    for (const [id, previous] of this.#untrackedStatuses) {
+      if (statuses.has(id)) {
+        this.#untrackedStatuses.delete(id);
+      } else {
+        this.#untrackedStatuses.set(id, this.computeStatus(id, previous));
+      }
     }
     // Module statuses also depend on the map, which may have changed alone.
     for (const listener of this.#listeners) {
