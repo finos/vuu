@@ -41,6 +41,10 @@ type ConnectionRegistryEntry = {
   listeners: Set<SessionListener>;
   promise?: Promise<VuuSession>;
   reconnectPromise?: Promise<void>;
+  /** Notified when the current reconnect attempt settles. */
+  reconnectAttemptListeners?: Set<() => void>;
+  /** Set while waiting between reconnect attempts; skips the wait. */
+  reconnectWake?: () => void;
   refCount: number;
   session?: VuuSession;
   state: VuuServerConnectionState;
@@ -144,6 +148,23 @@ export class VuuConnectionRegistry {
         entry.promise = undefined;
       });
     return entry.promise;
+  }
+
+  /**
+   * Skips the wait before the next reconnect attempt of a lost connection.
+   * Resolves when that attempt settles, or returns undefined if the
+   * connection is not reconnecting.
+   */
+  reconnectNow(connectionId: string): Promise<void> | undefined {
+    const entry = this.#entries.get(connectionId);
+    if (!entry?.reconnectPromise) {
+      return undefined;
+    }
+    return new Promise<void>((resolve) => {
+      entry.reconnectAttemptListeners ??= new Set();
+      entry.reconnectAttemptListeners.add(resolve);
+      entry.reconnectWake?.();
+    });
   }
 
   release(connectionId: string) {
@@ -330,7 +351,14 @@ export class VuuConnectionRegistry {
     entry.reconnectPromise = (async () => {
       let lastError: Error | undefined;
       for (const interval of this.#retryIntervals) {
-        await new Promise((resolve) => setTimeout(resolve, interval * 1000));
+        await new Promise<void>((resolve) => {
+          const timer = setTimeout(resolve, interval * 1000);
+          entry.reconnectWake = () => {
+            clearTimeout(timer);
+            resolve();
+          };
+        });
+        entry.reconnectWake = undefined;
         if (entry.refCount === 0 || entry.intentionalDisconnect) {
           return;
         }
@@ -338,6 +366,7 @@ export class VuuConnectionRegistry {
           await this.#authenticateAndConnect(entry, true);
           return;
         } catch (error) {
+          this.#settleReconnectAttempt(entry);
           lastError =
             error instanceof Error
               ? error
@@ -365,8 +394,18 @@ export class VuuConnectionRegistry {
       });
     })().finally(() => {
       entry.reconnectPromise = undefined;
+      entry.reconnectWake = undefined;
+      this.#settleReconnectAttempt(entry);
     });
     return entry.reconnectPromise;
+  }
+
+  #settleReconnectAttempt(entry: ConnectionRegistryEntry) {
+    const listeners = entry.reconnectAttemptListeners;
+    entry.reconnectAttemptListeners = undefined;
+    listeners?.forEach((listener) => {
+      listener();
+    });
   }
 
   async #disconnectEntry(entry: ConnectionRegistryEntry) {

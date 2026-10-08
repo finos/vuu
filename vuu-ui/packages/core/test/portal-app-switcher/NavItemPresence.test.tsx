@@ -169,7 +169,7 @@ describe("PortalAppSwitcher presence", () => {
     const retryButton = [...dialog.querySelectorAll("button")].find(
       (button) => button.textContent === "Retry now",
     )!;
-    expect(retryButton.disabled).toBe(true);
+    expect(retryButton.disabled).toBe(false);
   });
 
   it("closes the details on Escape", async () => {

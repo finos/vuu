@@ -533,6 +533,25 @@ describe("VuuConnectionRegistry", () => {
       registry.release(target.connectionId);
     });
 
+    it("skips the reconnect wait when asked to reconnect now", async () => {
+      const connectionClient = new TestConnectionClient();
+      const registry = new VuuConnectionRegistry({
+        connectionClient,
+        exchangeToken: vi.fn().mockResolvedValue(session),
+        retryIntervals: [60],
+      });
+      await registry.acquire(authHandler, target);
+      expect(registry.reconnectNow(target.connectionId)).toBeUndefined();
+
+      connectionClient.connected = false;
+      connectionClient.listener?.("disconnected");
+      expect(registry.getState(target.connectionId)).toBe("reconnecting");
+
+      await registry.reconnectNow(target.connectionId);
+      expect(registry.getState(target.connectionId)).toBe("connected");
+      registry.release(target.connectionId);
+    });
+
     it("reports unauthorized when a reconnect is denied", async () => {
       const connectionClient = new TestConnectionClient();
       const registry = new VuuConnectionRegistry({

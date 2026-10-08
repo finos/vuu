@@ -903,8 +903,8 @@ hover / focus on an unavailable item:
     registry is still reconnecting after that, presence becomes `offline`
     and the item greys straight away, rather than after the registry's full
     retry schedule (about 4 minutes). The overlay then reads "Connection
-    lost" and "Reconnecting automatically…", with **Retry now** disabled
-    since the registry is already retrying.
+    lost" and "Reconnecting automatically…"; **Retry now** skips the
+    registry's wait and attempts to reconnect immediately.
   - If the open module's server goes offline, its item greys but the module
     stays mounted; the remote's own lost-connection handling applies.
 - **Accessibility**: the link's accessible name stays the module title;
@@ -1336,8 +1336,14 @@ to, the design above:
   endpoint }`. Any other registry state clears the timer; a later drop starts
   a new grace period. The monitor neither releases nor probes while the
   registry reconnects.
-- `useNavItemPresence` shows "Reconnecting automatically…" and disables
-  **Retry now** when `detail.reconnecting` is set.
+- `useNavItemPresence` shows "Reconnecting automatically…" when
+  `detail.reconnecting` is set.
+- **Retry now** (or activating the greyed item) calls
+  `VuuConnectionRegistry.reconnectNow(connectionId)`, which cuts short the
+  wait before the registry's next reconnect attempt and resolves when that
+  attempt settles. The monitor sets `detail.checking` meanwhile ("Checking…",
+  button disabled) and ignores repeat retries. The retry schedule then
+  continues from the next interval.
 
 ## 17. Decisions
 

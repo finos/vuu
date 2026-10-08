@@ -60,6 +60,16 @@ class FakeRegistry {
     });
   });
 
+  reconnectNow = vi.fn((connectionId: string) => {
+    if (this.states.get(connectionId) !== "reconnecting") {
+      return undefined;
+    }
+    return new Promise<void>((resolve) => {
+      this.reconnectAttempt = resolve;
+    });
+  });
+  reconnectAttempt?: () => void;
+
   release = vi.fn((connectionId: string) => {
     const refCount = Math.max(0, this.getRefCount(connectionId) - 1);
     this.refCounts.set(connectionId, refCount);
@@ -263,6 +273,37 @@ describe("VuuServerMonitor", () => {
     registry.setState("s0", "connected");
     expect(monitor.getModuleStatus("m0").presence).toBe("online");
     expect(monitor.getModuleStatus("m0").detail).toBeUndefined();
+  });
+
+  it("reconnects a lost connection now on retry, showing it checking", async () => {
+    const { monitor, registry } = await setup({
+      count: 1,
+      options: { offlineAfterMs: 3000 },
+    });
+    registry.settle("s0");
+    await vi.advanceTimersByTimeAsync(0);
+    registry.setState("s0", "reconnecting");
+    await vi.advanceTimersByTimeAsync(3000);
+
+    monitor.retryModule("m0");
+    expect(registry.reconnectNow).toHaveBeenCalledWith("s0");
+    expect(registry.acquire).toHaveBeenCalledTimes(1);
+    expect(monitor.getModuleStatus("m0").detail).toMatchObject({
+      checking: true,
+      reconnecting: true,
+    });
+
+    // A second retry while checking is ignored.
+    monitor.retryModule("m0");
+    expect(registry.reconnectNow).toHaveBeenCalledTimes(1);
+
+    registry.reconnectAttempt?.();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(monitor.getModuleStatus("m0")).toMatchObject({
+      presence: "offline",
+      detail: { reconnecting: true },
+    });
+    expect(monitor.getModuleStatus("m0").detail?.checking).toBeUndefined();
   });
 
   it("does not show a brief connection drop as offline", async () => {

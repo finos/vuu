@@ -101,10 +101,10 @@ const UnavailableDetail = ({
       : "";
   const retryText = unauthorized
     ? "Contact your administrator"
-    : detail?.reconnecting
-      ? "Reconnecting automatically…"
-      : detail?.checking
-        ? "Checking…"
+    : detail?.checking
+      ? "Checking…"
+      : detail?.reconnecting
+        ? "Reconnecting automatically…"
         : detail?.nextAttemptAt !== undefined
           ? `Retrying automatically at ${formatTime(detail.nextAttemptAt)}`
           : undefined;
@@ -147,7 +147,7 @@ const UnavailableDetail = ({
         <div className={`${classBase}-actions`}>
           {unauthorized ? null : (
             <Button
-              disabled={detail?.checking || detail?.reconnecting}
+              disabled={detail?.checking}
               onClick={() => onRetry(moduleId)}
               sentiment="neutral"
             >

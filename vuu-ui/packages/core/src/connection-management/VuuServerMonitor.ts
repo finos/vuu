@@ -200,6 +200,8 @@ interface ServerRecord {
 
 /** A connection that was lost and is being reconnected by the registry. */
 interface LostConnection {
+  /** True while a user-requested reconnect attempt is in flight. */
+  checking?: boolean;
   lostAt: number;
   /** Set once the grace period has passed; the server is shown offline. */
   offline: boolean;
@@ -333,7 +335,15 @@ export class VuuServerMonitor extends ServerStatusStore {
 
   /** Connects to a server now, without waiting for the next probe. */
   retry(connectionId: string) {
-    if (!this.#running || connectionId === this.map.portalConnectionId) {
+    if (!this.#running) {
+      return;
+    }
+    const lost = this.#lost.get(connectionId);
+    if (lost) {
+      this.#reconnectNow(connectionId, lost);
+      return;
+    }
+    if (connectionId === this.map.portalConnectionId) {
       return;
     }
     const record =
@@ -389,6 +399,7 @@ export class VuuServerMonitor extends ServerStatusStore {
           monitored,
           presence,
           detail: {
+            checking: lost.checking || undefined,
             endpoint: endpointHost(record?.target?.websocketUrl),
             lastOnlineAt: record?.lastOnlineAt ?? lost.lostAt,
             reason: REASON.connectionLost,
@@ -693,6 +704,25 @@ export class VuuServerMonitor extends ServerStatusStore {
       }
     }, this.#options.offlineAfterMs);
     this.#lost.set(connectionId, lost);
+  }
+
+  /** Skips the registry's wait before its next reconnect attempt. */
+  #reconnectNow(connectionId: string, lost: LostConnection) {
+    if (lost.checking) {
+      return;
+    }
+    const attempt = this.#registry.reconnectNow(connectionId);
+    if (!attempt) {
+      return;
+    }
+    lost.checking = true;
+    this.refresh();
+    attempt.finally(() => {
+      lost.checking = false;
+      if (this.#lost.get(connectionId) === lost) {
+        this.refresh();
+      }
+    });
   }
 
   #clearLost(connectionId: string) {
