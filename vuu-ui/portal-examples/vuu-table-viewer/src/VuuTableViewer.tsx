@@ -25,13 +25,14 @@ const SelectedTable = ({ table }: { table: VuuTable }) => {
   const [schema, setSchema] = useState<TableSchema>();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: attempt intentionally retries schema loading.
+  const { module, table: tableName } = table;
   useEffect(() => {
     let active = true;
     setError(undefined);
     setSchema(undefined);
 
     getServerAPI()
-      .then((server) => server.getTableSchema(table))
+      .then((server) => server.getTableSchema({ module, table: tableName }))
       .then(
         (nextSchema) => {
           if (active) {
@@ -48,7 +49,7 @@ const SelectedTable = ({ table }: { table: VuuTable }) => {
     return () => {
       active = false;
     };
-  }, [attempt, getServerAPI, table]);
+  }, [attempt, getServerAPI, module, tableName]);
 
   const dataSource = useMemo<DataSource | undefined>(
     () =>
@@ -137,12 +138,22 @@ export default function VuuTableViewer() {
       ? registration.selectedTable.table
       : undefined;
 
+  // Depend on the registration callbacks, not the context value: the value
+  // changes whenever the selected table changes, and re-running this effect
+  // would unregister the tables and deselect the table, looping forever.
+  const registerTables = registration?.registerTables;
+  const reportSourceStatus = registration?.reportSourceStatus;
+  const unregisterTables = registration?.unregisterTables;
+
   useEffect(() => {
-    if (!registration || sourceId === undefined) {
+    if (
+      !registerTables ||
+      !reportSourceStatus ||
+      !unregisterTables ||
+      sourceId === undefined
+    ) {
       return;
     }
-    const { registerTables, reportSourceStatus, unregisterTables } =
-      registration;
     let active = true;
     reportSourceStatus(sourceId, "loading");
 
@@ -166,7 +177,13 @@ export default function VuuTableViewer() {
       active = false;
       unregisterTables(sourceId);
     };
-  }, [getServerAPI, registration, sourceId]);
+  }, [
+    getServerAPI,
+    registerTables,
+    reportSourceStatus,
+    sourceId,
+    unregisterTables,
+  ]);
 
   if (selectedTable) {
     return (
