@@ -6,7 +6,6 @@ import type {
 } from "@vuu-ui/vuu-table-types";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { registerComponent } from "@vuu-ui/vuu-utils";
-import { useEffect } from "react";
 import { useEditSession } from "./DataEditingProvider";
 import type { EditActionType } from "./EditSession";
 
@@ -47,12 +46,6 @@ export const UndoCellRenderer = ({
     renderer?.componentProps as UndoCellRendererComponentProps | undefined,
   );
   const tooltipContent = getUndoTooltipContent(dataRow.vuuAction);
-
-  useEffect(() => {
-    if (dataRow.vuuAction === "addRow") {
-      editSession?.registerAddedRow?.(dataRow.key);
-    }
-  }, [dataRow.key, dataRow.vuuAction, editSession]);
 
   if (tooltipContent === undefined) return null;
 

@@ -40,6 +40,7 @@ export {
   EditError,
   EditSession,
   SupersededEditError,
+  type AddRowResultData,
   type EditActionType,
   type EditCommitOptions,
   type EditLifecycle,

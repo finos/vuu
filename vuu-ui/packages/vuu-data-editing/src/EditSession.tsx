@@ -5,7 +5,6 @@ import type {
   EditSessionMode,
   SchemaColumn,
   SessionType,
-  UndoRowChangeResult,
 } from "@vuu-ui/vuu-data-types";
 import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
@@ -31,6 +30,11 @@ export type EditSessionConstructorProps = {
   /** Default column values merged into every addRow call for absent columns. Pass a stable reference. */
   rowDefaults?: RowDefaultDataItemValues;
 };
+
+export type AddRowResultData = {
+  key?: string | number;
+};
+
 const toEditSessionMode = (copyOption: CopyOption): EditSessionMode => {
   switch (copyOption) {
     case "All":
@@ -214,14 +218,6 @@ export class EditSession
       this.#addCount = newCount;
       this.#emitEditStateChange(oldState, oldCount === 0 || newCount === 0);
     }
-  }
-
-  registerAddedRow(key: string) {
-    this.#addedRowKeys.add(key);
-  }
-
-  isAddedRow(key: string): boolean {
-    return this.#addedRowKeys.has(key);
   }
 
   #setStale(isStale: boolean) {
@@ -416,18 +412,9 @@ export class EditSession
       );
     }
     if (!isRpcError(response)) {
-      const keyColumn = this.dataSource?.tableSchema?.key;
-      const key =
-        keyColumn && rowData[keyColumn] !== undefined
-          ? String(rowData[keyColumn])
-          : response?.data &&
-              typeof response.data === "object" &&
-              "key" in response.data
-            ? String((response.data as { key: unknown }).key)
-            : undefined;
-
-      if (key !== undefined) {
-        this.#addedRowKeys.add(key);
+      const key = (response.data as AddRowResultData | undefined)?.key;
+      if (key !== undefined && key !== null) {
+        this.#addedRowKeys.add(String(key));
       }
       this.#setAddCount(this.#addCount + 1);
     }
@@ -508,12 +495,8 @@ export class EditSession
       this.#deleteCount = Math.max(0, this.#deleteCount - 1);
     }
 
-    // If the server deleted a newly inserted row, decrement addCount
-    const wasInsertedRow =
-      action === "addRow" ||
-      this.#addedRowKeys.has(key) ||
-      (response?.data as UndoRowChangeResult | undefined)?.wasInsertedRow ===
-        true;
+    // If the row was newly inserted, decrement addCount
+    const wasInsertedRow = action === "addRow" || this.#addedRowKeys.has(key);
     if (wasInsertedRow) {
       this.#addedRowKeys.delete(key);
       this.#addCount = Math.max(0, this.#addCount - 1);

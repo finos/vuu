@@ -152,10 +152,9 @@ A cell is considered edited only when `originalValue !== editedValue && isValid 
 3. **Submit**: `editSession.addNewRow()` validates required columns and delegates to `addRow()`.
 4. **`addRow(rowData)`**:
    - Calls `dataSource.addRow(rowData)` with `#rowDefaults` merged in.
-   - On success, extracts the row key (from `rowData[keyColumn]` or server `response.data.key`) and adds it to `#addedRowKeys`.
+   - On success, extracts the row key directly from the response map (`response.data.key`) and records it in `#addedRowKeys`.
    - Increments `addCount`.
    - Resets new-row form draft and increments `draftRevision`.
-5. **Asynchronous registration**: For server-generated keys received via subscription row updates, `registerAddedRow(key)` registers the key so that subsequent delete/undo operations accurately track the row.
 
 ### Row Deletions (`deleteSelectedRows`)
 
@@ -178,11 +177,10 @@ editSession.undoRowChange(key, action);
 2. **Reverts deletions**: If `action === "deleteRow"`, decrements `deleteCount`.
 3. **Reverts insertions**: If the row was an inserted row:
    - `action === "addRow"` OR
-   - `isAddedRow(key)` (key exists in `#addedRowKeys`) OR
-   - Server returns `wasInsertedRow: true`
+   - Row key exists in private `#addedRowKeys`
    - Decrements `addCount` and removes `key` from `#addedRowKeys`.
 
-> **Robust Add-Delete-Undo**: Even if a row was added, then soft-deleted (`action` became `"deleteRow"`), and the server purges the row on undo without returning `wasInsertedRow`, `EditSession` identifies the row via `#addedRowKeys` and decrements **both** `deleteCount` and `addCount`, returning `editState` cleanly to `"clean"`.
+> **Robust Add-Delete-Undo**: Even if a row was added, then soft-deleted (`action` became `"deleteRow"`), and the server purges the row on undo without returning any special flag, `EditSession` identifies the row via `#addedRowKeys` and decrements **both** `deleteCount` and `addCount`, returning `editState` cleanly to `"clean"`.
 
 ### Session Completion (`end`) & Stale Handling
 
@@ -286,7 +284,6 @@ Pre-built action buttons wired to `EditSession`:
 ### `UndoCellRenderer`
 
 Registered as `"vuu.undo-cell"`. Renders an Undo button in the row's action column:
-- Automatically registers added rows via `editSession.registerAddedRow(key)` when `dataRow.vuuAction === "addRow"`.
 - Dispatches `editSession.undoRowChange(key, action)` on click.
 - Tooltip dynamically reflects action: `"Undo insert row"`, `"Undo delete row"`, or `"Undo row edits"`.
 
