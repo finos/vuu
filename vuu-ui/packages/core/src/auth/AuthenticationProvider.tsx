@@ -3,6 +3,8 @@ import type {
   DataSourceConstructorProps,
   RemoteModuleConnection,
 } from "@vuu-ui/vuu-data-types";
+import type { LoginErrorMessage } from "@vuu-ui/vuu-protocol-types";
+import { isLoginErrorMessage } from "@vuu-ui/vuu-utils";
 import { DataProvider } from "../context-definitions/DataProvider";
 import type { PortalModuleRegistry } from "../RemoteModuleDescriptor";
 import type {
@@ -15,7 +17,9 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import type { AuthConfig } from "./AuthConfig";
@@ -29,7 +33,7 @@ import {
   vuuConnectionRegistry,
   type VuuConnectionRegistry,
 } from "../connection-management/VuuConnectionRegistry";
-import { loadRemoteModuleConfig } from "../remote-module/remote-module-config";
+import { ModuleServerMap } from "../connection-management/ModuleServerMap";
 import { VuuTokenExchangeError } from "./VuuTokenExchange";
 import type {
   VuuAuthTarget,
@@ -46,20 +50,31 @@ export class AuthenticationConfigurationError extends Error {
 
 export class VuuConnectionError extends Error {
   readonly failure?: VuuTokenExchangeFailure;
+  /** Set when the VUU server rejected the login, e.g. an invalid or expired token. */
+  readonly loginError?: LoginErrorMessage;
   readonly status?: number;
 
   constructor(
     readonly connectionId: string,
     cause: unknown,
   ) {
-    const detail = cause instanceof Error ? `: ${cause.message}` : "";
-    super(`VUU connection authentication failed for ${connectionId}${detail}`, {
+    const causeMessage =
+      cause instanceof Error
+        ? cause.message
+        : typeof cause === "string"
+          ? cause
+          : undefined;
+    const detail = causeMessage ? `: ${causeMessage}` : "";
+    super(`VUU connection ${connectionId} failed${detail}`, {
       cause,
     });
     this.name = "VuuConnectionError";
     if (cause instanceof VuuTokenExchangeError) {
       this.failure = cause.failure;
       this.status = cause.status;
+    }
+    if (isLoginErrorMessage(causeMessage)) {
+      this.loginError = causeMessage;
     }
   }
 }
@@ -103,13 +118,16 @@ export type AuthenticationProviderProps =
   | LocalAuthenticationProps
   | VuuConnectionAuthenticationProps;
 
-interface IdentityContextValue {
+export interface IdentityContextValue {
+  /** Registers a callback run at logout, before connections are closed. */
+  addLogoutListener: (listener: () => void) => () => void;
   authHandler: AuthHandler;
   getIdentityToken: () => Promise<string>;
   /** Present only in local mode, keyed by connectionId. */
   localServers?: ReadonlyMap<string, LocalVuuServer>;
   logout: () => Promise<void>;
   moduleRegistry?: PortalModuleRegistry;
+  moduleServerMap: ModuleServerMap;
   portalTarget: VuuAuthTarget;
   registry: VuuConnectionRegistry;
   user: User;
@@ -127,6 +145,11 @@ const VuuConnectionContext = createContext<VuuConnectionContextValue | null>(
 const EMPTY_AUTHORIZATIONS: string[] = [];
 const EMPTY_LOCAL_SERVERS: LocalVuuServer[] = [];
 const EMPTY_MODULE_REGISTRY: PortalModuleRegistry = { modules: [] };
+const LOCAL_PORTAL_TARGET: VuuAuthTarget = {
+  connectionId: "local",
+  restUrl: "local://",
+  websocketUrl: "ws://local",
+};
 
 export const normalizeVuuAuthTarget = (
   connection: RemoteModuleConnection,
@@ -152,6 +175,78 @@ export const normalizeVuuAuthTarget = (
     restUrl,
     websocketUrl,
   };
+};
+
+const unusableServerReason = (
+  connection: RemoteModuleConnection,
+  portalTarget: VuuAuthTarget,
+  localServers?: ReadonlyMap<string, LocalVuuServer>,
+) => {
+  if (localServers) {
+    return localServers.has(connection.connectionId)
+      ? undefined
+      : `no local Vuu server is registered for connection ${connection.connectionId}`;
+  }
+  try {
+    normalizeVuuAuthTarget(connection, portalTarget);
+    return undefined;
+  } catch (error) {
+    return error instanceof Error ? error.message : String(error);
+  }
+};
+
+/**
+ * One `ModuleServerMap` per identity, loading module configs for as long
+ * as the provider is mounted.
+ */
+const useModuleServerMapInstance = (
+  registry: PortalModuleRegistry | undefined,
+  portalTarget: VuuAuthTarget,
+  localServers?: ReadonlyMap<string, LocalVuuServer>,
+) => {
+  const modules = registry?.modules;
+  // The portal session, and so the registry object, changes on reconnect.
+  const modulesKey = JSON.stringify(
+    modules?.map(({ id, mfUrl, navLocation }) => [id, mfUrl, navLocation]),
+  );
+  const modulesRef = useRef(modules);
+  modulesRef.current = modules;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on modulesKey, not the modules array
+  const moduleServerMap = useMemo(
+    () =>
+      new ModuleServerMap({
+        getUnusableReason: (connection) =>
+          unusableServerReason(connection, portalTarget, localServers),
+        modules: modulesRef.current ?? [],
+        portalConnectionId: portalTarget.connectionId,
+      }),
+    [localServers, portalTarget, modulesKey],
+  );
+  useEffect(() => {
+    moduleServerMap.start();
+    return () => moduleServerMap.stop();
+  }, [moduleServerMap]);
+  return moduleServerMap;
+};
+
+const useLogoutListeners = () => {
+  const listeners = useRef(new Set<() => void>());
+  const addLogoutListener = useCallback((listener: () => void) => {
+    listeners.current.add(listener);
+    return () => {
+      listeners.current.delete(listener);
+    };
+  }, []);
+  const notifyLogout = useCallback(() => {
+    listeners.current.forEach((listener) => {
+      try {
+        listener();
+      } catch (error) {
+        console.error("[AuthenticationProvider] logout listener failed", error);
+      }
+    });
+  }, []);
+  return [addLogoutListener, notifyLogout] as const;
 };
 
 const useConnectionSession = (
@@ -331,25 +426,35 @@ const AuthenticatedIdentityProvider = ({
     () => authHandler.getIdentityToken(),
     [authHandler],
   );
+  const [addLogoutListener, notifyLogout] = useLogoutListeners();
   const logout = useCallback(async () => {
+    notifyLogout();
     await registry.disconnectAll();
     await authHandler.logout();
-  }, [authHandler, registry]);
+  }, [authHandler, notifyLogout, registry]);
+  const moduleServerMap = useModuleServerMapInstance(
+    session?.moduleRegistry,
+    portalTarget,
+  );
   const identityContext = useMemo<IdentityContextValue>(
     () => ({
+      addLogoutListener,
       authHandler,
       getIdentityToken,
       logout,
       moduleRegistry: session?.moduleRegistry,
+      moduleServerMap,
       portalTarget,
       registry,
       user: identity.user,
     }),
     [
+      addLogoutListener,
       authHandler,
       getIdentityToken,
       identity.user,
       logout,
+      moduleServerMap,
       portalTarget,
       registry,
       session?.moduleRegistry,
@@ -488,8 +593,15 @@ const LocalAuthenticationProvider = ({
     }),
     [authorizations, registry, user],
   );
+  const [addLogoutListener, notifyLogout] = useLogoutListeners();
+  const moduleServerMap = useModuleServerMapInstance(
+    registry,
+    LOCAL_PORTAL_TARGET,
+    localServerMap,
+  );
   const identityContext = useMemo<IdentityContextValue>(
     () => ({
+      addLogoutListener,
       authHandler: {
         authenticate: async () => ({ user }),
         getIdentityToken: async () => "",
@@ -497,17 +609,23 @@ const LocalAuthenticationProvider = ({
       },
       getIdentityToken: async () => "",
       localServers: localServerMap,
-      logout: async () => undefined,
-      moduleRegistry: registry,
-      portalTarget: {
-        connectionId: "local",
-        restUrl: "local://",
-        websocketUrl: "ws://local",
+      logout: async () => {
+        notifyLogout();
       },
+      moduleRegistry: registry,
+      moduleServerMap,
+      portalTarget: LOCAL_PORTAL_TARGET,
       registry: vuuConnectionRegistry,
       user,
     }),
-    [localServerMap, registry, user],
+    [
+      addLogoutListener,
+      localServerMap,
+      moduleServerMap,
+      notifyLogout,
+      registry,
+      user,
+    ],
   );
 
   return (
@@ -582,64 +700,11 @@ export const usePortalVuuAuthTarget = () => {
   return identity.portalTarget;
 };
 
-const isUsableServer = (
-  connection: RemoteModuleConnection,
-  identity: IdentityContextValue,
-) => {
-  if (identity.localServers) {
-    return identity.localServers.has(connection.connectionId);
-  }
-  try {
-    normalizeVuuAuthTarget(connection, identity.portalTarget);
-    return true;
-  } catch {
-    return false;
-  }
-};
+/** The identity context, for portal services built on it. */
+export const useOptionalIdentityContext = () => useContext(IdentityContext);
 
-interface ModuleConnection {
-  title: string;
-  vuu?: RemoteModuleConnection;
-}
-
-const EMPTY_MODULE_CONNECTIONS: ModuleConnection[] = [];
-
-/**
- * Reads the `vuu` connection of each registered module from the
- * `config.json` it publishes. A module whose config can't be loaded is
- * treated as having no connection.
- */
-const useModuleConnections = (
-  modules: PortalModuleRegistry["modules"] | undefined,
-) => {
-  const [connections, setConnections] = useState(EMPTY_MODULE_CONNECTIONS);
-  useEffect(() => {
-    let active = true;
-    if (!modules?.length) {
-      setConnections(EMPTY_MODULE_CONNECTIONS);
-      return;
-    }
-    Promise.all(
-      modules.map(({ mfUrl, title }) =>
-        loadRemoteModuleConfig(mfUrl).then(
-          ({ vuu }) => ({ title, vuu }),
-          (error: unknown) => {
-            console.warn(`[useVuuServers] ${String(error)}`);
-            return { title };
-          },
-        ),
-      ),
-    ).then((nextConnections) => {
-      if (active) {
-        setConnections(nextConnections);
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [modules]);
-  return connections;
-};
+const noSubscription = () => () => undefined;
+const noVersion = () => -1;
 
 /**
  * The distinct Vuu servers used by registered modules, in registry order,
@@ -650,16 +715,23 @@ const useModuleConnections = (
  */
 export const useVuuServers = (): VuuServerDescriptor[] => {
   const identity = useContext(IdentityContext);
-  const connections = useModuleConnections(identity?.moduleRegistry?.modules);
+  const moduleServerMap = identity?.moduleServerMap;
+  const version = useSyncExternalStore(
+    moduleServerMap?.subscribe ?? noSubscription,
+    moduleServerMap?.getVersion ?? noVersion,
+  );
+  // biome-ignore lint/correctness/useExhaustiveDependencies: version changes when the map does
   return useMemo(() => {
-    const servers = new Map<string, VuuServerDescriptor>();
-    if (!identity) {
+    if (!identity?.moduleRegistry || !moduleServerMap?.settled) {
       return [];
     }
-    for (const { title, vuu } of connections) {
-      if (!vuu || !isUsableServer(vuu, identity)) {
+    const servers = new Map<string, VuuServerDescriptor>();
+    for (const { id, title } of identity.moduleRegistry.modules) {
+      const resolution = moduleServerMap.get(id);
+      if (resolution.status !== "resolved" || !resolution.connection) {
         continue;
       }
+      const vuu = resolution.connection;
       const server = servers.get(vuu.connectionId);
       if (server) {
         server.moduleTitles.push(title);
@@ -675,7 +747,8 @@ export const useVuuServers = (): VuuServerDescriptor[] => {
       }
     }
     return Array.from(servers.values());
-  }, [connections, identity]);
+    // version changes whenever a module resolves.
+  }, [identity, moduleServerMap, version]);
 };
 
 export const useLogout = () => {
