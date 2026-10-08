@@ -70,7 +70,11 @@ intentionally navigates outside the current module.
 
 `PortalHeader` renders `PortalUserMenu`, which offers **Saved state…** and
 **Log out**. Additional items go in its `userMenuItems` prop. Log out saves
-pending saved state before signing the user out.
+pending saved state before signing the user out. Before the user menu it
+renders `NotificationsIndicator`, a bell with the unread count (see
+[Server status and notifications](#server-status-and-notifications)). Set
+`notificationsIndicator={false}` to hide it, or pass an object of
+`NotificationsIndicatorProps`.
 
 ## WindowHost and module launch menus
 
@@ -125,11 +129,77 @@ remote module). It adds no default header or portal chrome and has no portal
 navigation rail or module-routing logic. `WindowHost` forwards the optional
 shell ID, theme settings, and data-source provider to it.
 
+`WindowShell` also shows notifications for its module, as toasts, and marks
+them read while the window is open. It has no banners, panel or bell. Its
+server monitor only observes: the window opens no connections beyond its
+module's own, but the module is still covered by the connection lost overlay
+when its server goes down.
+
 `PortalShell` retains its portal-specific branding, navigation, and routes.
 Both shells use the internal `CommonShell` component for the same Salt
 theme defaults, modal provider, and default or injected data-source provider.
 Authentication remains outside the shells. Sharing providers rather than
 layout flags allows the two shells to evolve independently.
+
+## Context panel
+
+Both `PortalShell` and `WindowShell` host a context panel: a slide-out drawer
+overlaying the right edge of the shell, used for content such as a table
+column picker or filter container. It is rendered in the `vuu-shell-context`
+landmark element, and the panel itself has the id `context-panel`
+(`VuuShellLocation.ContextPanel`).
+
+Any code below the shell, including remote modules, opens and closes it with
+the hooks from `@vuu-ui/core`:
+
+```tsx
+import { useContextPanel, useHideContextPanel } from "@vuu-ui/core";
+
+const showContextPanel = useContextPanel();
+const hideContextPanel = useHideContextPanel();
+
+showContextPanel(<ColumnPicker columnModel={columnModel} />, "Columns");
+```
+
+Because `@vuu-ui/core` is a shared Module Federation singleton, remote modules
+reach the shell's panel. These are separate from the hooks of the same names in
+`@vuu-ui/vuu-ui-controls`, used by `@vuu-ui/vuu-shell`; a remote module must
+use the `@vuu-ui/core` versions.
+
+### Content keeps its owner's context
+
+The panel displays content but does not own it. `RemoteModule` gives each
+module its own context panel provider, which holds the module's content and
+renders it into the panel with a React portal. The content therefore stays in
+the module's React tree and sees the module's context (its Vuu connection,
+saved state, notification origin and any providers of its own), even though it
+is displayed in the shell.
+
+One owner at a time has the panel. If another module, or the shell, opens it,
+the previous owner's content is removed, and that owner can no longer close the
+panel. The panel also closes when its owner unmounts, on **Escape**, from its
+close button, or when the portal navigates to another route. Focus returns to
+the element that was focused when it opened.
+
+### Placement
+
+A module's `contextPanelPlacement`, set on its `RemoteModuleDescriptor` or
+`RemoteModule`, says where its content is displayed:
+
+- `"shell"` (the default): the shell's panel, in the `vuu-shell-context`
+  landmark.
+- `"module"`: a panel within the module's frame, overlaying the right edge of
+  the module's nearest positioned ancestor. This suits layouts with modules
+  side by side. Each module has its own panel, independent of the shell's, and
+  it has no landmark ids, which must be unique.
+
+Module code is the same either way: placement is chosen by the host. The
+showcase examples `VuuPortal/ContextPanel` demonstrate both placements in a
+portal-hosted module.
+
+`ContextPanelProvider` can be nested to customise behaviour for a subtree:
+with a `resolveComponent` function, `showContextPanel` also accepts a
+component name. Without a shell, it shows content in a dialog.
 
 ## RemoteModule
 
@@ -137,6 +207,11 @@ layout flags allows the two shells to evolve independently.
 module. It registers the remote manifest, lazy-loads and caches the exposed
 React component, reports loading errors, and passes configured component props
 to the remote.
+
+The component is the module's `default` export. Set `mfExport` (on the
+component or the `RemoteModuleDescriptor`) to render a named export instead,
+for a remote that exposes several components from one module, such as the
+showcase examples remote.
 
 The loaded component is wrapped with an `AuthenticationProvider` in
 `vuu-connection` mode.
@@ -151,6 +226,107 @@ in parallel with the remote code, runs the remote's exported
 `stateMigrations` when a new version opens for the first time, and renders the
 remote only once both are ready. It suspends inside its own `Suspense`
 boundary, so the rest of the shell stays visible while a module loads.
+
+While the module's server is offline or refuses the user, `RemoteModule`
+covers the module with `ConnectionLostOverlay`, a frosted, blurred layer
+holding a dialog that explains the problem and offers **Retry now**. The
+module stays mounted but is `inert`, so it can't be used until the server is
+back; the rest of the portal stays usable.
+
+## Server status and notifications
+
+`PortalShell` connects to the Vuu server of every application in the
+navigation, not just the open one, so that it can show which servers are
+unavailable and collect their notifications. A remote that later opens uses
+the connection already made.
+
+### Server status
+
+A `VuuServerMonitor` works out each application's server from its
+`config.json` and connects to them in priority order: the open application
+first, then visible navigation items, then the rest. The portal server is
+always connected. The `serverMonitor` prop of `PortalShell` takes
+`ServerMonitorOptions`:
+
+| Option                | Default  | Meaning                                                                 |
+| --------------------- | -------- | ----------------------------------------------------------------------- |
+| `enabled`             | `true`   | `false` (or `serverMonitor={false}`) observes connections but opens none |
+| `maxMonitoredServers` | `8`      | Servers connected for monitoring, not counting the portal server        |
+| `offlineAfterMs`      | `3000`   | How long a dropped connection is shown as available while it reconnects |
+| `releaseDelayMs`      | `30000`  | How long a server that drops out of the top N stays connected            |
+| `probeIntervalMs`     | `60000`  | How often a server is checked again after reconnecting has given up     |
+| `staggerMs`           | `150`    | Delay between connections at startup                                    |
+
+`PortalAppSwitcher` greys out an application that can't be used and shows a
+status badge on it. This happens when its server is offline, refuses the
+user, or its `config.json` can't be loaded (a missing config counts as
+offline). The item can't be opened. Hovering or focusing it opens an overlay
+with the reason, how long the server has been unavailable, when it will
+retry, its unread notifications and **Retry now**; clicking the item retries
+too. A dropped connection is shown this way once it has been reconnecting for
+`offlineAfterMs`. Set `showPresence={false}` on `PortalAppSwitcher` to turn
+this off.
+
+Hooks for custom UI: `useVuuServerStatus(connectionId)`,
+`useVuuServerStatuses()` and `useModuleServerStatus(moduleId)`. Each returns
+`VuuServerStatus` values, whose `presence` is one of `online`, `connecting`,
+`degraded`, `offline`, `unauthorized`, `unavailable` or `unknown`.
+
+### Notifications
+
+The portal subscribes to the `NOTIFICATIONS/notifications` table of every
+connected server; servers without that table are skipped. It maps these
+columns:
+
+- `id`
+- `title`
+- `message`
+- `level`: `INFO`, `SUCCESS`, `WARNING` or `ERROR`
+- `type`: `toast` or `banner`; anything else is recorded silently
+- `vuuCreatedTimestamp`
+- `expiryTime`
+
+Other columns become attributes. Each notification is attributed to the
+application whose server sent it. Notifications from a connection a module
+opened itself, through a `vuu` override, go to that module, and anything
+else goes to the portal.
+
+- **Badges.** `PortalAppSwitcher` shows each application's unread count on
+  its item; groups show the total of their children. Set
+  `showNotificationBadges={false}` to hide them.
+- **Read state.** Opening an application marks its notifications read.
+  Read and deleted notifications are saved in the portal's saved state and
+  shared with the user's other portal pages in the same browser.
+- **Toasts and banners.** A server toast is shown only for the open
+  application. Banners are shown across the portal, below the header, until
+  the user closes them.
+- **Bell and panel.** `NotificationsIndicator` in the header shows the
+  unread count and, briefly, the latest notification. It opens
+  `NotificationsPanel`, a drawer listing all notifications with filters,
+  mark read, delete, **Do not disturb** and a summary of server status. The
+  nav item context menu has **Show notifications** and **Mark notifications
+  read**.
+
+The `notifications` prop of `PortalShell` takes `PortalNotificationsOptions`:
+`enabled`, `maxNotifications` (default 500), `maxPerServer` (rows subscribed
+per server, default 200), `attribution` and `policy`. `policy` decides which
+notifications are shown as toasts or banners; `notifications={false}` turns
+notifications off.
+
+Remotes need no changes. Notifications they raise with
+`useNotifications().showNotification` are recorded in the portal's list when
+they are errors or warnings, or when `record` is set. A remote can add one to
+the list with `usePortalNotifications().publish`. For custom UI, use
+`useUnreadCount`, `useModuleUnreadCount`, `useNotificationList` and
+`useLatestNotification`.
+
+In local mode, servers are always online and notifications come from local
+servers that include `notificationsModule` from `@vuu-ui/vuu-data-test`.
+`@vuu-ui/vuu-data-remote` and `@vuu-ui/vuu-notifications` must be shared
+singletons, so the portal sees remotes' connections and notifications.
+
+See [portal-notifications-design.md](./portal-notifications-design.md) for
+the design and its implementation notes.
 
 ## Saved state
 
@@ -188,6 +364,7 @@ core/
 |   |-- connection-management/
 |   |-- context-definitions/
 |   |-- modal-provider/
+|   |-- notifications/
 |   |-- persistence/
 |   |-- portal-app-switcher/
 |   |-- portal-header/
@@ -196,6 +373,7 @@ core/
 |   |-- portal-shell/
 |   |-- remote-module/
 |   |-- saved-state/
+|   |-- server-monitor/
 |   |-- window-host/
 |   |-- window-shell/
 |   |-- index.ts

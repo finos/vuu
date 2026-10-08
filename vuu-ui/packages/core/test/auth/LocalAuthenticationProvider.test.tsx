@@ -48,7 +48,9 @@ describe("AuthenticationProvider local mode", () => {
   });
 
   it("publishes the local registry and synthetic VUU session without network authentication", async () => {
-    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}"));
     const webSocketConstructor = vi.fn();
     vi.stubGlobal("WebSocket", webSocketConstructor);
     const Probe = () => {
@@ -86,7 +88,12 @@ describe("AuthenticationProvider local mode", () => {
       moduleCount: 1,
       token: "",
     });
-    expect(fetchSpy).not.toHaveBeenCalled();
+    // Only module configs are fetched; nothing authenticates.
+    expect(
+      fetchSpy.mock.calls.filter(
+        ([url]) => !String(url).endsWith("/config.json"),
+      ),
+    ).toEqual([]);
     expect(webSocketConstructor).not.toHaveBeenCalled();
   });
 

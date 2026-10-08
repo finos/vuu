@@ -26,6 +26,7 @@
     "@salt-ds/window": "0.1.1",
     "@vuu-ui/vuu-context-menu": "4.0.0-alpha.20",
     "@vuu-ui/vuu-data-react": "4.0.0-alpha.20",
+    "@vuu-ui/vuu-notifications": "4.0.0-alpha.20",
     "@vuu-ui/vuu-data-remote": "4.0.0-alpha.20",
     "@vuu-ui/vuu-data-types": "4.0.0-alpha.20",
     "@vuu-ui/vuu-icons": "4.0.0-alpha.20",

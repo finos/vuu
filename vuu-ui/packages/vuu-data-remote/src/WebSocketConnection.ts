@@ -299,7 +299,9 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
     this.connectionStatus = "closed";
     if (reason === "failure") {
       if (this.#deferredOpen) {
-        this.#deferredOpen.reject(Error("connection failed"));
+        this.#deferredOpen.reject(
+          Error(`Unable to connect to VUU server at ${this.#url}`),
+        );
         this.#deferredOpen = undefined;
       }
     } else {
