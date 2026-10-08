@@ -15,18 +15,38 @@ import { Link, useLocation } from "react-router-dom";
 import { useWindow } from "@salt-ds/window";
 import type { NavItem } from "./PortalAppSwitcher";
 import { useNavContextMenu } from "./useNavContextMenu";
+import { useNavItemPresence } from "./useNavItemPresence";
+import type { KeyboardEvent } from "react";
 
 const classBase = "vuuPortalAppSwitcher";
 
-export function NestedNavItem(props: { item: NavItem; icon?: boolean }) {
-  const { item, icon } = props;
+export function NestedNavItem(props: {
+  item: NavItem;
+  icon?: boolean;
+  showNotificationBadges?: boolean;
+  showPresence?: boolean;
+}) {
+  const {
+    item,
+    icon,
+    showNotificationBadges = true,
+    showPresence = true,
+  } = props;
   const [expanded, setExpanded] = useNavGroupExpansion(item.href);
   const collapsed = !expanded;
   const location = useLocation();
   const targetWindow = useWindow();
+  // An expanded group's children show their own badges.
+  const { anchorProps, badge, className, elements, unavailable } =
+    useNavItemPresence({
+      enabled: showPresence,
+      item,
+      showNotificationBadge: showNotificationBadges && collapsed,
+    });
   const { onContextMenu, onKeyDown } = useNavContextMenu({
     item,
     targetWindow,
+    unavailable,
   });
 
   if (Array.isArray(item.children) && item.children.length > 0) {
@@ -38,21 +58,28 @@ export function NestedNavItem(props: { item: NavItem; icon?: boolean }) {
           open={expanded}
           onOpenChange={(_, open) => setExpanded(open)}
         >
-          <VerticalNavigationItemContent>
-            <CollapsibleTrigger>
+          <VerticalNavigationItemContent className={className}>
+            <CollapsibleTrigger {...anchorProps}>
               <VerticalNavigationItemTrigger>
                 {icon ? <Icon aria-hidden name="filter" /> : undefined}
                 <VerticalNavigationItemLabel>
                   {item.title}
                 </VerticalNavigationItemLabel>
+                {badge}
                 <VerticalNavigationItemExpansionIcon />
               </VerticalNavigationItemTrigger>
             </CollapsibleTrigger>
+            {elements}
           </VerticalNavigationItemContent>
           <CollapsiblePanel>
             <VerticalNavigationSubMenu>
               {item.children.map((child) => (
-                <NestedNavItem key={child.href} item={child} />
+                <NestedNavItem
+                  key={child.href}
+                  item={child}
+                  showNotificationBadges={showNotificationBadges}
+                  showPresence={showPresence}
+                />
               ))}
             </VerticalNavigationSubMenu>
           </CollapsiblePanel>
@@ -63,11 +90,15 @@ export function NestedNavItem(props: { item: NavItem; icon?: boolean }) {
 
   return (
     <VerticalNavigationItem active={location.pathname === item.href}>
-      <VerticalNavigationItemContent>
+      <VerticalNavigationItemContent className={className}>
         <Link
+          {...anchorProps}
           to={item.href}
           onContextMenu={onContextMenu}
-          onKeyDown={onKeyDown}
+          onKeyDown={(event: KeyboardEvent<HTMLAnchorElement>) => {
+            anchorProps.onKeyDown(event);
+            onKeyDown?.(event);
+          }}
         >
           {icon ? (
             <Icon
@@ -79,7 +110,9 @@ export function NestedNavItem(props: { item: NavItem; icon?: boolean }) {
           <VerticalNavigationItemLabel>
             {item.title}
           </VerticalNavigationItemLabel>
+          {badge}
         </Link>
+        {elements}
       </VerticalNavigationItemContent>
     </VerticalNavigationItem>
   );

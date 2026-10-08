@@ -8,6 +8,15 @@
   flex: none;
 }
 
+.vuuAdminUi-avatarWithIcon .vuuAdminUi-appIcon {
+  --vuu-icon-color: currentColor;
+  --vuu-icon-size: calc(var(--avatar-container-size) * 0.6);
+  display: block;
+  height: var(--vuu-icon-size);
+  position: relative;
+  width: var(--vuu-icon-size);
+}
+
 .vuuAdminUi-pageHeader {
   align-items: flex-end;
   display: flex;

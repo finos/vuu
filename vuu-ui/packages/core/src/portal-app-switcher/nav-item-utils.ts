@@ -82,3 +82,12 @@ export const buildNavItems = (
 
   return [...navItemsByPath.values()];
 };
+
+/** Module ids in display order, depth first. */
+export const navItemModuleIds = (
+  navItems: NavItem[],
+): NonNullable<NavItem["moduleId"]>[] =>
+  navItems.flatMap((navItem) => [
+    ...(navItem.moduleId === undefined ? [] : [navItem.moduleId]),
+    ...navItemModuleIds(navItem.children ?? []),
+  ]);

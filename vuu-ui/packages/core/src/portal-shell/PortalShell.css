@@ -2,9 +2,10 @@
   column-gap: var(--salt-spacing-50);
   display: grid;
   grid-template-columns: 56px 1fr;
-  grid-template-rows: 56px 1fr;
+  grid-template-rows: 56px auto 1fr;
   grid-template-areas:
     "nav header"
+    "nav banners"
     "nav content";
 
   height: 100vh;
@@ -23,7 +24,15 @@
     grid-area: header;
   }
 
+  .vuuPortalShell-banners {
+    grid-area: banners;
+    min-width: 0;
+  }
+
   .vuuPortalShell-content {
     grid-area: content;
+    /* Contains a remote module's connection lost overlay. */
+    isolation: isolate;
+    position: relative;
   }
 }
