@@ -20,6 +20,7 @@ export interface ContextMenuItemBase {
 }
 
 export interface ContextMenuLeafItemDescriptor extends ContextMenuItemBase {
+  disabled?: boolean;
   id: string;
   options?: unknown;
 }
@@ -82,6 +83,7 @@ export const menuItemsFromMenuDescriptors = (
         key={index}
         className={menuItem.className}
         data-icon={menuItem.icon}
+        disabled={menuItem.disabled}
         onClick={() => menuActionHandler(menuItem.id, menuItem.options)}
       >
         {menuItem.label}
