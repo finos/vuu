@@ -15,12 +15,20 @@ import {
   type VuuSessionResolver,
 } from "./VuuSessionResolver";
 
-type EntryState =
+export type VuuServerConnectionState =
   | "idle"
   | "authenticating"
   | "connecting"
   | "connected"
-  | "failed";
+  | "reconnecting"
+  | "failed"
+  | "unauthorized";
+
+export type VuuConnectionStateListener = (
+  connectionId: string,
+  state: VuuServerConnectionState,
+  error?: Error,
+) => void;
 
 type SessionListener = (session: VuuSession) => void;
 type ErrorListener = (error: Error) => void;
@@ -33,9 +41,13 @@ type ConnectionRegistryEntry = {
   listeners: Set<SessionListener>;
   promise?: Promise<VuuSession>;
   reconnectPromise?: Promise<void>;
+  /** Notified when the current reconnect attempt settles. */
+  reconnectAttemptListeners?: Set<() => void>;
+  /** Set while waiting between reconnect attempts; skips the wait. */
+  reconnectWake?: () => void;
   refCount: number;
   session?: VuuSession;
-  state: EntryState;
+  state: VuuServerConnectionState;
   target: VuuAuthTarget;
   unsubscribeStatus?: () => void;
 };
@@ -61,6 +73,15 @@ export interface VuuConnectionRegistryOptions {
   sessionResolver?: VuuSessionResolver;
 }
 
+const isAuthorizationDenied = (error: unknown) =>
+  error instanceof VuuTokenExchangeError &&
+  error.failure === "authorization-denied";
+
+const toError = (error: unknown, connectionId: string) =>
+  error instanceof Error
+    ? error
+    : new Error(`VUU connection ${connectionId} failed`, { cause: error });
+
 const connectionFailed = (status: ConnectionStatus) =>
   status === "connection-failed" ||
   status === "disconnected" ||
@@ -71,6 +92,7 @@ export class VuuConnectionRegistry {
   readonly #entries = new Map<string, ConnectionRegistryEntry>();
   readonly #retryIntervals: number[];
   readonly #sessionResolver: VuuSessionResolver;
+  readonly #stateListeners = new Set<VuuConnectionStateListener>();
 
   constructor({
     connectionClient = ConnectionManager,
@@ -112,10 +134,37 @@ export class VuuConnectionRegistry {
       });
     }
 
-    entry.promise = this.#authenticateAndConnect(entry).finally(() => {
-      entry.promise = undefined;
-    });
+    entry.promise = this.#authenticateAndConnect(entry)
+      .catch((error: unknown) => {
+        const err = toError(error, target.connectionId);
+        this.#setState(
+          entry,
+          isAuthorizationDenied(error) ? "unauthorized" : "failed",
+          err,
+        );
+        throw error;
+      })
+      .finally(() => {
+        entry.promise = undefined;
+      });
     return entry.promise;
+  }
+
+  /**
+   * Skips the wait before the next reconnect attempt of a lost connection.
+   * Resolves when that attempt settles, or returns undefined if the
+   * connection is not reconnecting.
+   */
+  reconnectNow(connectionId: string): Promise<void> | undefined {
+    const entry = this.#entries.get(connectionId);
+    if (!entry?.reconnectPromise) {
+      return undefined;
+    }
+    return new Promise<void>((resolve) => {
+      entry.reconnectAttemptListeners ??= new Set();
+      entry.reconnectAttemptListeners.add(resolve);
+      entry.reconnectWake?.();
+    });
   }
 
   release(connectionId: string) {
@@ -167,6 +216,47 @@ export class VuuConnectionRegistry {
     return this.#entries.get(connectionId)?.refCount ?? 0;
   }
 
+  /** State of an acquired connection, `undefined` if it has no entry. */
+  getState(connectionId: string): VuuServerConnectionState | undefined {
+    return this.#entries.get(connectionId)?.state;
+  }
+
+  /**
+   * Observe state changes of every entry, including entries acquired by
+   * others. An entry that is removed reports `idle`.
+   */
+  onStateChange(listener: VuuConnectionStateListener) {
+    this.#stateListeners.add(listener);
+    return () => {
+      this.#stateListeners.delete(listener);
+    };
+  }
+
+  /** Ids of entries that are currently connected. */
+  connectedIds() {
+    return [...this.#entries.values()]
+      .filter(({ state }) => state === "connected")
+      .map(({ target }) => target.connectionId);
+  }
+
+  #setState(
+    entry: ConnectionRegistryEntry,
+    state: VuuServerConnectionState,
+    error?: Error,
+  ) {
+    if (entry.state === state) {
+      return;
+    }
+    entry.state = state;
+    this.#stateListeners.forEach((listener) => {
+      try {
+        listener(entry.target.connectionId, state, error);
+      } catch (err) {
+        console.error("[VuuConnectionRegistry] state listener failed", err);
+      }
+    });
+  }
+
   #getOrCreateEntry(authHandler: AuthHandler, target: VuuAuthTarget) {
     const existing = this.#entries.get(target.connectionId);
     if (existing) {
@@ -199,13 +289,20 @@ export class VuuConnectionRegistry {
     return entry;
   }
 
-  async #authenticateAndConnect(entry: ConnectionRegistryEntry) {
-    entry.state = "authenticating";
+  async #authenticateAndConnect(
+    entry: ConnectionRegistryEntry,
+    reconnecting = false,
+  ) {
+    if (!reconnecting) {
+      this.#setState(entry, "authenticating");
+    }
     const session = await this.#sessionResolver.resolve(
       entry.authHandler,
       entry.target,
     );
-    entry.state = "connecting";
+    if (!reconnecting) {
+      this.#setState(entry, "connecting");
+    }
     const connectionResult =
       await this.#connectionClient.connectWithLoginResponseTo(
         entry.target.connectionId,
@@ -217,7 +314,6 @@ export class VuuConnectionRegistry {
       );
     const { status } = connectionResult;
     if (status !== "connected" && status !== "reconnected") {
-      entry.state = "failed";
       throw Error(
         `VUU websocket connection ${entry.target.connectionId} failed with ${status}`,
       );
@@ -228,7 +324,7 @@ export class VuuConnectionRegistry {
       moduleRegistry: connectionResult.loginResponse.moduleRegistry,
     };
     entry.session = connectedSession;
-    entry.state = "connected";
+    this.#setState(entry, "connected");
     entry.unsubscribeStatus ??= this.#connectionClient.onConnectionStatus(
       entry.target.connectionId,
       (nextStatus) => {
@@ -251,17 +347,26 @@ export class VuuConnectionRegistry {
     if (entry.reconnectPromise) {
       return entry.reconnectPromise;
     }
+    this.#setState(entry, "reconnecting");
     entry.reconnectPromise = (async () => {
       let lastError: Error | undefined;
       for (const interval of this.#retryIntervals) {
-        await new Promise((resolve) => setTimeout(resolve, interval * 1000));
+        await new Promise<void>((resolve) => {
+          const timer = setTimeout(resolve, interval * 1000);
+          entry.reconnectWake = () => {
+            clearTimeout(timer);
+            resolve();
+          };
+        });
+        entry.reconnectWake = undefined;
         if (entry.refCount === 0 || entry.intentionalDisconnect) {
           return;
         }
         try {
-          await this.#authenticateAndConnect(entry);
+          await this.#authenticateAndConnect(entry, true);
           return;
         } catch (error) {
+          this.#settleReconnectAttempt(entry);
           lastError =
             error instanceof Error
               ? error
@@ -269,27 +374,38 @@ export class VuuConnectionRegistry {
                   `VUU connection ${entry.target.connectionId} failed to reconnect`,
                   { cause: error },
                 );
-          if (
-            error instanceof VuuTokenExchangeError &&
-            error.failure === "authorization-denied"
-          ) {
+          if (isAuthorizationDenied(error)) {
             break;
           }
         }
       }
-      entry.state = "failed";
       const error =
         lastError ??
         Error(
           `VUU connection ${entry.target.connectionId} failed to reconnect`,
         );
+      this.#setState(
+        entry,
+        isAuthorizationDenied(lastError) ? "unauthorized" : "failed",
+        error,
+      );
       entry.errorListeners.forEach((listener) => {
         listener(error);
       });
     })().finally(() => {
       entry.reconnectPromise = undefined;
+      entry.reconnectWake = undefined;
+      this.#settleReconnectAttempt(entry);
     });
     return entry.reconnectPromise;
+  }
+
+  #settleReconnectAttempt(entry: ConnectionRegistryEntry) {
+    const listeners = entry.reconnectAttemptListeners;
+    entry.reconnectAttemptListeners = undefined;
+    listeners?.forEach((listener) => {
+      listener();
+    });
   }
 
   async #disconnectEntry(entry: ConnectionRegistryEntry) {
@@ -303,7 +419,10 @@ export class VuuConnectionRegistry {
     }
     entry.errorListeners.clear();
     entry.listeners.clear();
-    this.#entries.delete(entry.target.connectionId);
+    if (this.#entries.get(entry.target.connectionId) === entry) {
+      this.#entries.delete(entry.target.connectionId);
+      this.#setState(entry, "idle");
+    }
     await this.#connectionClient.destroyConnection(entry.target.connectionId);
   }
 }

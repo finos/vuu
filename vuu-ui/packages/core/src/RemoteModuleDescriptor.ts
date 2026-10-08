@@ -1,6 +1,17 @@
 import type { VuuModuleDescriptor } from "@vuu-ui/vuu-protocol-types";
+import type { ContextPanelPlacement } from "./context-panel/ContextPanelSlot";
 
 export interface RemoteModuleDescriptor extends VuuModuleDescriptor {
+  /**
+   * Where content the module shows in the context panel is displayed.
+   * Defaults to `"shell"`.
+   */
+  contextPanelPlacement?: ContextPanelPlacement;
+  /**
+   * The export of the `mfComponent` module to render. Defaults to
+   * `"default"`.
+   */
+  mfExport?: string;
   /**
    * Where the module appears in the portal navigation, e.g.
    * `/Trading/Baskets`. An empty location (`""` or `"/"`) marks a nested

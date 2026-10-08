@@ -76,7 +76,10 @@ const handleMessageFromClient = async ({
         }
         postMessage({ type: "connected", loginResponse });
       } catch (err: unknown) {
-        postMessage({ type: "connection-failed", reason: String(err) });
+        postMessage({
+          type: "connection-failed",
+          reason: err instanceof Error ? err.message : String(err),
+        });
       }
       break;
     // If any of the messages below are received BEFORE we have connected and created

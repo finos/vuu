@@ -1,23 +1,35 @@
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { Link } from "react-router-dom";
 import type { NavItem } from "./PortalAppSwitcher";
-import type { CSSProperties } from "react";
+import type { CSSProperties, KeyboardEvent } from "react";
 import cx from "clsx";
 import { useNavContextMenu } from "./useNavContextMenu";
+import { useNavItemPresence } from "./useNavItemPresence";
 
 const classBase = "vuuIconNavItem";
 
 export function IconNavItem({
   active,
   item,
+  showNotificationBadges = true,
+  showPresence = true,
 }: {
   active: boolean;
   item: NavItem;
+  showNotificationBadges?: boolean;
+  showPresence?: boolean;
 }) {
   const { href, navIconName = "custom", navIconUrl, title } = item;
+  const { anchorProps, badge, className, elements, unavailable } =
+    useNavItemPresence({
+      enabled: showPresence,
+      item,
+      showNotificationBadge: showNotificationBadges,
+    });
   const { onContextMenu, onKeyDown } = useNavContextMenu({
     item,
     targetWindow: window,
+    unavailable,
   });
 
   const style = navIconUrl
@@ -26,21 +38,36 @@ export function IconNavItem({
       } as CSSProperties)
     : undefined;
   return (
-    <Link
-      aria-label={title}
-      className={cx(classBase, {
-        [`${classBase}-active`]: active,
-      })}
-      onContextMenu={onContextMenu}
-      onKeyDown={onKeyDown}
-      to={href}
-    >
-      <div className={`${classBase}-flyout`}>
-        <Icon aria-label={title} name={navIconName} style={style} size={24} />
-        <span className={`${classBase}-label`}>
-          <span style={{ paddingRight: 12 }}>{title}</span>
-        </span>
-      </div>
-    </Link>
+    <>
+      <Link
+        {...anchorProps}
+        aria-label={title}
+        className={cx(classBase, className, {
+          [`${classBase}-active`]: active,
+        })}
+        onContextMenu={onContextMenu}
+        onKeyDown={(event: KeyboardEvent<HTMLAnchorElement>) => {
+          anchorProps.onKeyDown(event);
+          onKeyDown?.(event);
+        }}
+        to={href}
+      >
+        <div className={`${classBase}-flyout`}>
+          <span className="vuuNavItem-icon">
+            <Icon
+              aria-label={title}
+              name={navIconName}
+              style={style}
+              size={24}
+            />
+            {badge}
+          </span>
+          <span className={`${classBase}-label`}>
+            <span style={{ paddingRight: 12 }}>{title}</span>
+          </span>
+        </div>
+      </Link>
+      {elements}
+    </>
   );
 }

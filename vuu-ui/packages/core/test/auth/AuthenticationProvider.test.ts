@@ -61,8 +61,29 @@ describe("normalizeVuuAuthTarget", () => {
       connectionId: "module-admin",
       failure: "authorization-denied",
       message:
-        "VUU connection authentication failed for module-admin: VUU authorization denied for module-admin (403)",
+        "VUU connection module-admin failed: VUU authorization denied for module-admin (403)",
       status: 403,
     });
+  });
+
+  it("includes string rejection reasons and identifies login errors", () => {
+    expect(new VuuConnectionError("vuu", "Invalid token")).toMatchObject({
+      connectionId: "vuu",
+      loginError: "Invalid token",
+      message: "VUU connection vuu failed: Invalid token",
+    });
+  });
+
+  it("does not flag connection failures as login errors", () => {
+    const error = new VuuConnectionError(
+      "vuu",
+      Error(
+        "Unable to connect to VUU server at wss://localhost:8090/websocket",
+      ),
+    );
+    expect(error.message).toBe(
+      "VUU connection vuu failed: Unable to connect to VUU server at wss://localhost:8090/websocket",
+    );
+    expect(error.loginError).toBeUndefined();
   });
 });

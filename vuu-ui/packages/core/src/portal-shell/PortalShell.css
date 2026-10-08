@@ -2,9 +2,10 @@
   column-gap: var(--salt-spacing-50);
   display: grid;
   grid-template-columns: 56px 1fr;
-  grid-template-rows: 56px 1fr;
+  grid-template-rows: 56px auto 1fr;
   grid-template-areas:
     "nav header"
+    "nav banners"
     "nav content";
 
   height: 100vh;
@@ -23,7 +24,29 @@
     grid-area: header;
   }
 
+  .vuuPortalShell-banners {
+    grid-area: banners;
+    min-width: 0;
+  }
+
   .vuuPortalShell-content {
     grid-area: content;
+    /* Contains a remote module's connection lost overlay. */
+    isolation: isolate;
+    position: relative;
+  }
+
+  /* Zero width host; the panel slides out leftwards over the content. */
+  .vuuPortalShell-context {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    justify-self: end;
+    position: relative;
+    width: 0;
+    z-index: 2;
+
+    .vuuContextPanel {
+      height: 100%;
+    }
   }
 }

@@ -10,8 +10,9 @@ import {
   Text,
 } from "@salt-ds/core";
 import { LockedIcon } from "@salt-ds/icons";
+import { Icon } from "@vuu-ui/vuu-ui-controls";
 import cx from "clsx";
-import { type ReactNode, useCallback } from "react";
+import { type CSSProperties, type ReactNode, useCallback } from "react";
 import {
   Link as RouterLink,
   type LinkProps as RouterLinkProps,
@@ -53,23 +54,46 @@ export const useApplicationCategory = (name: string | undefined) => {
 };
 
 export interface AppAvatarProps extends Omit<AvatarProps, "color" | "name"> {
-  application?: Pick<PortalApplication, "name" | "title">;
+  application?: Pick<
+    PortalApplication,
+    "name" | "navIconName" | "navIconUrl" | "title"
+  >;
 }
 
+/**
+ * The application's navigation icon, in its colour, as the AppSwitcher
+ * shows it. Initials when it has no icon.
+ */
 export const AppAvatar = ({
   application,
   className,
   ...props
 }: AppAvatarProps) => {
   const category = useApplicationCategory(application?.name);
+  const { navIconName, navIconUrl } = application ?? {};
+  const hasIcon = Boolean(navIconName || navIconUrl);
   return (
     <Avatar
       {...props}
       aria-hidden
-      className={cx(`${classBase}-avatar`, className)}
+      className={cx(`${classBase}-avatar`, className, {
+        [`${classBase}-avatarWithIcon`]: hasIcon,
+      })}
       color={category ? `category-${category}` : undefined}
       name={application?.title}
-    />
+    >
+      {hasIcon ? (
+        <Icon
+          className={`${classBase}-appIcon`}
+          name={navIconName ?? "custom"}
+          style={
+            navIconUrl
+              ? ({ "--vuu-icon-svg": `url('${navIconUrl}')` } as CSSProperties)
+              : undefined
+          }
+        />
+      ) : null}
+    </Avatar>
   );
 };
 
@@ -90,8 +114,10 @@ export const AdminLink = ({
   <Link {...props} render={<RouterLink relative="path" to={to} />} />
 );
 
-export interface AdminButtonLinkProps
-  extends Omit<RouterLinkProps, "relative"> {
+export interface AdminButtonLinkProps extends Omit<
+  RouterLinkProps,
+  "relative"
+> {
   sentiment?: "accented" | "neutral";
 }
 
