@@ -18,6 +18,11 @@ reasoning behind it, see [`docs/rfc/devcontainer.md`](../docs/rfc/devcontainer.m
 #### Prerequisites
 1. Have `Docker` or `Podman` installed and running.
    - With Podman on macOS/Windows, the Podman machine must be running (`podman machine start`).
+   - With rootless Podman on Linux (no Podman machine), set `VUU_DEVCONTAINER_USERNS=keep-id` in
+     the environment your IDE is started from, for example in
+     `~/.config/environment.d/vuu.conf` (then log out and back in). Without it, your host user
+     maps to `root` in the container, and the `vscode` user can't write to the workspace. Leave
+     it unset with Docker, which doesn't support `keep-id`.
    - The host should have at least 2 CPUs, 12 GB memory and 32 GB storage available to the
      container engine (see `hostRequirements` in `devcontainer.json`).
 
@@ -106,6 +111,10 @@ To make nested containers work, the dev container runs with extra privileges (se
 `devcontainer.json`). It is therefore less isolated from your host than a default container.
 
 #### Troubleshooting
+
+- **`EACCES` / `permission denied` writing to the workspace** (e.g. `npm install`) with rootless
+  Podman on Linux: `VUU_DEVCONTAINER_USERNS=keep-id` isn't set in your IDE's environment (see
+  [Prerequisites](#prerequisites)). Set it, restart the IDE and rebuild the container.
 
 - **`Previous attempts to find a Docker environment failed`** during a Maven build: the Podman
   API socket isn't running. Start it with:
