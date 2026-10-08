@@ -1,9 +1,18 @@
 # Portal Server Presence and Notifications — Design
 
-Status: **Proposed**
+Status: **Proposed** (revised 2026-10-08)
 Package: `@vuu-ui/core/portal` (with changes to `@vuu-ui/vuu-notifications`,
 `@vuu-ui/vuu-data-remote` and `core/src/connection-management`)
 Reference host: `portal-examples/portal-host`
+
+> **Revision 2026-10-08.** Re-evaluated against `ui-portal-latest` at
+> `dce5e25e1`. The main change since the original draft is #2535: a module's
+> Vuu server is no longer part of its registry descriptor but is published by
+> the remote in its own `config.json`, loaded asynchronously. Affected
+> sections: §2.1, §2.2, §2.4, §5, §6.1, §6.5, §7.4, §7.5, §14, §15, §16, §17.
+> The connection registry API is unchanged, so §6.3 still applies as written.
+> #2506 added a simulated Notifications module to `vuu-data-test`, which
+> covers part of the test plan.
 
 ## 1. Summary
 
@@ -50,18 +59,36 @@ This document specifies:
   tick) when it reaches zero. It reconnects with back-off
   (`[1,2,3,5,10,30,60,120]` s) while `refCount > 0`, then gives up, sets
   `state = "failed"` and notifies error listeners.
-- `RemoteModule` wraps a remote in
-  `<AuthenticationProvider mode="vuu-connection" connection={vuu}>`. Its
-  `useConnectionSession` acquires the connection on mount and releases on
-  unmount, and **throws** on connection failure (caught by
-  `RemoteModuleErrorBoundary`).
-- `useVuuServers()` (`core/src/auth/AuthenticationProvider.tsx`) already
-  derives the distinct servers referenced by the module registry
-  (`VuuServerDescriptor { connectionId, moduleTitles, restUrl?, websocketUrl? }`).
-- Modules without `vuu`, or whose `vuu.connectionId` equals the portal's
+- **A module's server is published by the remote, not the registry.** Since
+  #2535, `RemoteModuleDescriptor` has no `vuu` field. Every remote publishes
+  a `config.json` beside its `mf-manifest.json`. It contains
+  `{ connectionId, restUrl?, websocketUrl? }`, or `{}` if the remote has no
+  dedicated server. `loadRemoteModuleConfig(mfUrl)`
+  (`core/src/remote-module/remote-module-config.ts`) fetches and validates
+  it. Results are cached per URL, a failed load is forgotten so it can be
+  retried, and `forgetRemoteModuleConfig` evicts an entry. **The
+  module→server mapping is therefore asynchronous and can fail per module.**
+- `RemoteModule` loads `config.json` in parallel with the federated code and
+  resolves the connection as `props.vuu ?? config.vuu`. The `vuu` prop is an
+  override for generic modules, e.g. `VuuTableBrowser` embeds a table viewer
+  pointed at another server. When a connection is resolved, it wraps the
+  remote in
+  `<AuthenticationProvider mode="vuu-connection" connection={connection}>`.
+  Its `useConnectionSession` acquires the connection on mount, releases it
+  on unmount, and **throws** on connection failure. A missing or invalid
+  config also throws. Both are caught by `RemoteModuleErrorBoundary`.
+- `useVuuServers()` (`core/src/auth/AuthenticationProvider.tsx`) derives the
+  distinct servers by loading the `config.json` of **every** registered
+  module (`VuuServerDescriptor { connectionId, moduleTitles, restUrl?,
+  websocketUrl? }`). The list is empty until the configs load, and a module
+  whose config fails is treated as having no server. This is local hook
+  state: it doesn't expose a per-module mapping, and each caller repeats the
+  work (the fetches themselves are cached).
+- Modules whose config is `{}`, or whose `connectionId` equals the portal's
   connection ID, use the **portal connection**, which is always open.
 - In `local` mode, servers are simulated (`LocalVuuServer`) and there are no
-  websockets.
+  websockets. A module is matched to a local server by the `connectionId` in
+  its `config.json`.
 
 Because the registry is reference counted and keyed by `connectionId`, a
 connection acquired by the portal is reused — not duplicated — when the user
@@ -108,6 +135,17 @@ by menu RPCs and handled in `useVuuMenuActions`. This is a response to a user
 action, not an unsolicited notification, but it should still be captured by
 the consolidated store (§7.5).
 
+**Client-side simulation (#2506).** `@vuu-ui/vuu-data-test` now mirrors the
+server module. `NotificationModule` (`NOTIFICATIONS` / `notifications`) takes
+a pluggable provider and additional columns, defined with
+`NotificationsSchema.allFrom(...)`. `SimulatedNotificationsModule` uses a
+`SimulatedNotificationsProvider` that emits sample toasts and banners with
+`source`, `priority` and `status` columns, and expires them. A
+`DismissNotificationRpcHandler` implements the example's
+`dismissNotification` RPC. Rows are filtered by `audience` against
+`CurrentUser` (`PermissionFilteredTable`). None of the portal-host's
+`localVuuServers` include this module yet (§15).
+
 ### 2.3 Client notifications today
 
 `@vuu-ui/vuu-notifications` provides `NotificationsProvider`,
@@ -120,10 +158,12 @@ are fire-and-forget: there is no history, no origin and no read state.
 ### 2.4 Module Federation sharing
 
 `portal-build.json` declares `react`, `react-dom`, `react-router-dom`,
-`@vuu-ui/core`, `@vuu-ui/core/portal`, `@vuu-ui/vuu-data-editing` and
-`@vuu-ui/vuu-shell` as shared singletons. **`@vuu-ui/vuu-notifications` is not
-shared**, so a remote's `useNotifications()` cannot currently see a provider
-mounted by the host. Contexts created in `@vuu-ui/core/portal` are shared.
+`@vuu-ui/core`, `@vuu-ui/core/portal`, `@vuu-ui/vuu-data-editing`,
+`@vuu-ui/vuu-data-test` and `@vuu-ui/vuu-shell` as shared singletons.
+**Neither `@vuu-ui/vuu-notifications` nor `@vuu-ui/vuu-data-remote` is
+shared**. As a result, a remote's `useNotifications()` can't see a provider
+mounted by the host. Contexts created in `@vuu-ui/core/portal` are shared,
+and so is the `remote-module-config` cache in `@vuu-ui/core`.
 
 ### 2.5 Windows
 
@@ -164,7 +204,7 @@ is no cross-window state sharing (`portal-design.md`).
 | FR-1  | On login, the portal connects to each distinct Vuu server referenced by navigable modules, up to `maxMonitoredServers` (default 8).                |
 | FR-2  | Servers are prioritised: the open module's server, then servers of visible nav items, then app switcher display order.                            |
 | FR-3  | When a remote is opened, it reuses the monitored connection if one exists.                                                                          |
-| FR-4  | A server's presence is derived from connection state. A nav item whose server is offline (or denies the user) is shown slightly greyed and cannot be opened. |
+| FR-4  | A server's presence is derived from connection state. A nav item whose server is offline (or denies the user), or whose `config.json` can't be loaded, is shown slightly greyed and cannot be opened. |
 | FR-5  | Monitoring failures never surface as errors in the shell; they only change presence. Unmonitored servers show presence `unknown`.                |
 | FR-6  | For every connected server that publishes `NOTIFICATIONS/notifications`, the portal subscribes once and feeds the central store.                  |
 | FR-7  | Servers without the table are supported (presence only).                                                                                           |
@@ -192,6 +232,7 @@ flowchart LR
     POL[PresentationPolicy]
     NC[NotificationsCenter<br/>toasts / banners]
     MON[VuuServerMonitor]
+    MSM[ModuleServerMap<br/>config.json per module]
     FM[NotificationFeedManager]
     REG[VuuConnectionRegistry<br/>ref-counted]
     CM[ConnectionManager]
@@ -200,6 +241,8 @@ flowchart LR
   SRV1[(Vuu server A<br/>NOTIFICATIONS)]
   SRV2[(Vuu server B)]
 
+  MSM -- moduleId → connectionId --> MON
+  MSM -- moduleId → connectionId --> FM
   MON -- acquire/release --> REG
   RM -- acquire/release --> REG
   REG --> CM
@@ -221,6 +264,7 @@ New pieces, all in `@vuu-ui/core/portal` (shared singleton) unless noted:
 
 | Unit                          | Kind              | Responsibility                                                       |
 | ----------------------------- | ----------------- | -------------------------------------------------------------------- |
+| `ModuleServerMap`             | class + hook      | Load every module's `config.json` once and map module ↔ server (§6.1). |
 | `VuuServerMonitor`            | class + provider  | Choose servers to monitor, hold registry refs, compute presence.     |
 | `NotificationFeedManager`     | class             | Attach one notifications viewport to each connected server.          |
 | `NotificationStore`           | class             | Consolidated, observable notification history and read state.        |
@@ -235,12 +279,59 @@ New pieces, all in `@vuu-ui/core/portal` (shared singleton) unless noted:
 
 ### 6.1 Which servers are monitored
 
-The candidate list is computed from the module registry the switcher renders:
+#### Module → server mapping
+
+Because a module's server comes from its `config.json` (§2.1), the monitor,
+the feeds, attribution (§7.4) and nav item decorations (§10.1) all need one
+shared, observable mapping. A new `ModuleServerMap` in
+`core/src/connection-management` (created per `IdentityContext`) provides
+it:
+
+```ts
+export type ModuleServerResolution =
+  | { status: "loading" }
+  | { status: "resolved"; connectionId: string; connection?: RemoteModuleConnection } // connection absent ⇒ portal server
+  | { status: "error"; error: RemoteModuleConfigError };
+
+interface ModuleServerMap {
+  get(moduleId: RemoteModuleDescriptor["id"]): ModuleServerResolution;
+  modulesFor(connectionId: string): RemoteModuleDescriptor["id"][];
+  /** Evict and reload a failed (or stale) config. */
+  retry(moduleId: RemoteModuleDescriptor["id"]): void;
+  subscribe(listener: () => void): () => void;
+}
+```
+
+- The map starts when the registry arrives and calls
+  `loadRemoteModuleConfig(mfUrl)` for each **navigable** module, in
+  priority order (below). Nested modules load lazily when they are opened.
+  It uses the existing cache, so `RemoteModule` later opens without another
+  fetch, and failed loads are retried by `retry` (via
+  `forgetRemoteModuleConfig`).
+- `{}` and configs whose `connectionId` is the portal's resolve to the
+  portal server.
+- `useVuuServers()` is reimplemented on top of the map, so configs are loaded
+  once per page and the hook's current behaviour stays the same.
+- `RemoteModule`'s `vuu` prop override (e.g. a table viewer embedded by
+  `VuuTableBrowser`) is **not** in the map. Such connections aren't
+  monitored, but feeds still attach to them (§7.1), and their notifications
+  are attributed by `connectionId` (§7.4).
+
+A module whose config is still `loading` has presence `unknown`. A module
+whose config fails can't be opened in any case, because `RemoteModule` would
+throw. It therefore gets presence `unavailable` (§6.4) and is greyed like an
+offline server. Activating it calls `retry` (§10.1).
+
+#### Selection
+
+The candidate list is computed from the module registry the switcher
+renders:
 
 1. Take navigable modules (`!isNestedModule`) in **display order** (the order
    `buildNavItems` produces).
-2. Map each to its server key: `vuu.connectionId`, or the portal connection ID
-   if `vuu` is absent.
+2. Map each to its server with `ModuleServerMap`. Skip modules whose config is
+   `loading` or `error`. They join the candidate list when they resolve, which
+   triggers re-evaluation.
 3. De-duplicate, keeping first occurrence; drop servers that are not usable
    (same rule as `isUsableServer` in `useVuuServers`).
 4. Order by priority: the server of the **currently open module** (from the
@@ -248,6 +339,11 @@ The candidate list is computed from the module registry the switcher renders:
    then the rest in display order.
 5. The portal server is always connected and does not count against the cap.
 6. Take the first `maxMonitoredServers`.
+
+Config fetches are cheap, static and cached, so the map loads every
+navigable module's config, not just those under the cap. The open module's
+config goes first. This means a config failure shows on every nav item,
+monitored or not.
 
 With the 1:1 app/server assumption (§2.1) step 3 rarely removes anything, so
 there is roughly one connection per icon and the cap is the real bound. The
@@ -336,7 +432,8 @@ export type VuuServerPresence =
   | "degraded"      // reconnecting after having been online
   | "offline"       // failed, or disconnected and probing
   | "unauthorized"  // token exchange denied for this user
-  | "unknown";      // not monitored (over cap) and not otherwise connected
+  | "unavailable"   // module's config.json failed to load or is invalid (§6.1)
+  | "unknown";      // not monitored (over cap), config still loading, or not otherwise connected
 
 export interface VuuServerStatus {
   connectionId: string;
@@ -358,12 +455,24 @@ useModuleServerStatus(moduleId: RemoteModuleDescriptor["id"]): VuuServerStatus;
 Implemented with `useSyncExternalStore` over the monitor, so only affected
 nav items re-render.
 
+`unavailable` is a property of the **module**, not the server. So
+`useModuleServerStatus` combines the module's `ModuleServerMap` resolution
+with its server's status: `loading` → `unknown`, `error` → `unavailable`,
+and `resolved` → that server's status. `useVuuServerStatus(connectionId)`
+never returns `unavailable`.
+
 ### 6.5 Local mode
 
 `LocalAuthenticationProvider` has no registry connections. A
 `LocalServerMonitor` reports every local server as `online` (or a status a
 `LocalVuuServer` may optionally expose for demos, e.g. `presence?:
 Observable<VuuServerPresence>`), so the UI can be exercised in the showcase.
+`ModuleServerMap` works the same in local mode. Modules are matched to
+local servers by the `connectionId` in their `config.json`, and a module
+whose `connectionId` has no local server is `unavailable`, consistent with
+`isUsableServer`. Local feeds subscribe to a local server's
+`NOTIFICATIONS/notifications` table through its data context instead of a
+websocket.
 
 ### 6.6 Configuration
 
@@ -463,11 +572,17 @@ export interface NotificationOrigin {
 ### 7.4 Attribution to modules
 
 A server notification belongs to a server. In the normal 1:1 case (§2.1)
-attribution is trivial: the notification is attributed to the one navigable
-module that uses that server (`origin.moduleIds = [thatModule]`), so the
-nav item's badge is the server's unread count.
+attribution is trivial: `ModuleServerMap.modulesFor(connectionId)` returns
+the one navigable module that uses that server (`origin.moduleIds =
+[thatModule]`), so the nav item's badge is the server's unread count.
 
-For the rare shared-server case, and for the portal's own server, attribution
+Attribution is computed when a notification arrives and **re-computed when
+the map changes**. For example, a feed may attach to a connection opened
+through a `vuu` override before the configs of the modules on that server
+have loaded.
+
+For the rare shared-server case, the portal's own server, and connections
+that only exist through a `RemoteModule` `vuu` override (§6.1), attribution
 is pluggable:
 
 ```ts
@@ -485,11 +600,24 @@ Default:
    otherwise all modules on the server.
 3. Portal-server notifications not matching a module are attributed to the
    **portal** itself (shown in the viewer and header, not on any nav item).
+4. A server with no module in the map (only reached through a `vuu`
+   override, e.g. a table viewer embedded in `VuuTableBrowser`) is attributed
+   to the module that **hosts** the override. That is the nearest
+   `NotificationOriginProvider` (§7.5) that acquired the connection, so the
+   badge appears on the table browser item. If no host is known, the
+   notification goes to the portal.
 
 ### 7.5 Client notifications
 
 `RemoteModule` wraps each remote in a `NotificationOriginProvider` that
-supplies `{ moduleId, connectionId }`. `useNotifications().showNotification`
+supplies `{ moduleId, connectionId }`. `connectionId` is the connection
+`RemoteModuleContent` actually resolves (`props.vuu ?? config.vuu`, §2.1),
+so it is known only after `config.json` has loaded. The provider is
+therefore mounted **inside** the config `use()` boundary, beside the
+`vuu-connection` `AuthenticationProvider`. Nested `RemoteModule`s (e.g. table
+viewers) mount their own provider, and it records its host module as
+`parentModuleId` for attribution rule 4 (§7.4).
+`useNotifications().showNotification`
 inside a remote then records a `PortalNotification` with
 `origin.source = "client"` before presenting it, so:
 
@@ -700,7 +828,7 @@ icon-only                 icon text / text-only           dashboard tile
   their children.
 - **Presence**: no extra glyph. Only states that stop the user opening the
   app are shown:
-  - `offline` and `unauthorized`: the item is **slightly greyed**
+  - `offline`, `unauthorized` and `unavailable`: the item is **slightly greyed**
     (`--vuuNavItem-unavailable-opacity`, default `0.45`, plus
     `filter: grayscale(1)` on the icon). The item is `aria-disabled="true"`
     and is not navigable — the user cannot use the app while its server is
@@ -708,6 +836,10 @@ icon-only                 icon text / text-only           dashboard tile
     (rather than waiting for `probeIntervalMs`) and shows the tooltip; if the
     probe succeeds the item un-greys and a second activation navigates.
     "Open in new Tab/Window" context menu items are disabled likewise.
+    For `unavailable` (config failure), activation calls
+    `ModuleServerMap.retry(moduleId)` instead of re-probing the server. The
+    tooltip shows the `RemoteModuleConfigError.reason`, e.g. "Unavailable:
+    config.json is not valid JSON".
   - `online`, `connecting`, `degraded`, `unknown`: rendered normally.
     `degraded` (reconnecting after being online) is shown only in the
     tooltip, to avoid flicker during brief reconnects; it greys only if the
@@ -916,35 +1048,46 @@ per-user read state for cross-device sync.
 | Remote over cap opened then closed      | Feed disposed with connection; notifications retained; presence → `unknown` after release. |
 | Logout                                   | Monitor stops before `registry.disconnectAll()`; store cleared.            |
 | Server lacks notifications table        | Detected once via table list; presence only.                              |
+| Module `config.json` missing/invalid     | Presence `unavailable`, item greyed with the reason in its tooltip; click retries the load. Never throws into the shell (only an opened module throws, as today). |
+| Config fetches at login                  | One static, cached GET per navigable module, open module first; reused by `RemoteModule` and `useVuuServers`. |
 
 ## 15. Testing
 
-- **Unit** (Vitest): monitor selection/cap/priority (open, visible, display order)/hysteresis with a fake
-  registry; presence mapping from state sequences; registry `onStateChange`
+- **Unit** (Vitest): `ModuleServerMap` (loading/resolved/error, `{}` →
+  portal server, `modulesFor`, retry, single fetch per module shared with
+  `RemoteModule`; `useVuuServers` behaviour unchanged on top of it); monitor
+  selection/cap/priority (open, visible, display order), hysteresis and
+  late-resolving configs, using a fake registry; presence mapping from
+  state sequences, including `unavailable`; registry `onStateChange`
   and `reconnecting`/`unauthorized` states; row mapping and
   insert/update/delete handling; store queries, counts, retention,
-  tombstones; read-on-open; default presentation policy table (incl.
-  portal-wide banners); nested
+  tombstones; attribution, including re-attribution when the map changes
+  and `vuu`-override connections; read-on-open; default presentation
+  policy table (incl. portal-wide banners); nested
   `NotificationsProvider` pass-through.
 - **Component**: nav item badge rendering, greyed/`aria-disabled`
-  unavailable items and click-to-reprobe, and accessible descriptions in all
-  display styles; indicator ticker; panel filters and
-  actions.
-- **Integration**: local-mode portal with a simulated server publishing a
-  `NOTIFICATIONS/notifications` table (add to `vuu-data-test`), plus a
-  showcase example under `VuuPortal/` with controls to change presence and
-  inject notifications.
+  unavailable items, click-to-reprobe and click-to-retry config, and
+  accessible descriptions in all display styles; indicator ticker; panel
+  filters and actions.
+- **Integration**: local-mode portal-host. The simulated module already
+  exists (`SimulatedNotificationsModule`, #2506). Add it to one or more of
+  the portal-host `localVuuServers` (e.g. `simul` and `basket`) so badges
+  appear on more than one item, and include a module whose `config.json` is
+  missing to exercise `unavailable`. Also add a showcase example under
+  `VuuPortal/` with controls to change presence and inject notifications.
 - **Manual/E2E**: portal-host against `SimulMain` with
   `SimulatedNotificationsModule` on two servers; kill one server to verify
   presence; verify one websocket per server in DevTools.
 
 ## 16. Phased delivery
 
-1. **Connection foundation** — registry state API; `VuuServerMonitor`;
-   visibility tracking; presence hooks; presence on nav items. Add shared
+1. **Connection foundation** — `ModuleServerMap` (and `useVuuServers` on top
+   of it); registry state API; `VuuServerMonitor`; visibility tracking;
+   presence hooks; presence on nav items, including `unavailable`. Add shared
    singletons.
 2. **Ingestion and store** — feed manager, store, persistence of read state,
-   badges on nav items.
+   badges on nav items; add the simulated Notifications module to
+   portal-host local servers.
 3. **Portal-level provider** — hoisting, pass-through nesting, origin
    tagging, presentation policy, banners.
 4. **Viewer** — `NotificationsIndicator`, `NotificationsPanel` with filters
@@ -964,3 +1107,6 @@ Each phase is independently shippable behind `PortalShellProps` flags.
 | 4 | How is presence shown?                     | Only unavailability: offline/unauthorized items are slightly greyed and cannot be opened (§10.1). |
 | 5 | Are banners portal-wide?                   | Yes (§9.3).                                                                               |
 | 6 | Tab leader election in v1?                 | No. Users are not expected to open multiple portal tabs; revisit only if that changes (§12.1). |
+| 7 | Where does the module→server mapping come from? (revision 2026-10-08) | Each remote's `config.json` (#2535), loaded for all navigable modules by a shared `ModuleServerMap` that `useVuuServers` also uses (§6.1). |
+| 8 | How is a failed `config.json` shown? (revision 2026-10-08) | Proposed: presence `unavailable`, greyed and not openable like an offline server; activation retries the load (§6.4, §10.1). |
+| 9 | Notifications from `vuu`-override connections? (revision 2026-10-08) | Proposed: attributed to the hosting module (e.g. the table browser), else the portal (§7.4). Override connections are never monitored. |
