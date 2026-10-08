@@ -259,13 +259,13 @@ describe("csv-upload-utils", () => {
       // row[0] = rowIndex (1), row[10] = vuuMsg, row[11] = vuuRowNum (2)
       const row = [1, 0, true, false, 0, 0, "key1", 0, 0, false, "duplicate key", 2] as any;
       const error = getRowVuuMsgError(row, 10, 11);
-      expect(error).toBe("Row 2: duplicate key");
+      expect(error).toEqual({ rowNum: 2, message: "duplicate key" });
     });
 
     it("falls back to row index when vuuRowNum is missing", () => {
       const row = [0, 0, true, false, 0, 0, "key1", 0, 0, false, "failed"] as any;
       const error = getRowVuuMsgError(row, 10, -1);
-      expect(error).toBe("Row 1: failed");
+      expect(error).toEqual({ rowNum: 1, message: "failed" });
     });
 
     it("returns undefined when vuuMsg is empty", () => {
@@ -276,7 +276,7 @@ describe("csv-upload-utils", () => {
 
   describe("waitForSessionErrors", () => {
     it("returns immediately for non-remote sessions", async () => {
-      const errors = new Map<string, string>();
+      const errors = new Map<string, { rowNum: number; message: string }>();
       const keys = new Set<string>();
       const listeners = new Set<() => void>();
       const result = await waitForSessionErrors(false, errors, keys, 5, listeners);
@@ -284,15 +284,17 @@ describe("csv-upload-utils", () => {
     });
 
     it("returns immediately if errors already exist", async () => {
-      const errors = new Map<string, string>([["1", "Row 2: error"]]);
+      const errors = new Map<string, { rowNum: number; message: string }>([
+        ["1", { rowNum: 2, message: "error" }],
+      ]);
       const keys = new Set<string>();
       const listeners = new Set<() => void>();
       const result = await waitForSessionErrors(true, errors, keys, 5, listeners);
-      expect(result).toEqual(["Row 2: error"]);
+      expect(result).toEqual([{ rowNum: 2, message: "error" }]);
     });
 
     it("resolves when listeners trigger and expected rows are reached", async () => {
-      const errors = new Map<string, string>();
+      const errors = new Map<string, { rowNum: number; message: string }>();
       const keys = new Set<string>();
       const listeners = new Set<() => void>();
 

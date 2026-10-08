@@ -8,10 +8,11 @@ import {
   type CsvValidationResult,
   type CsvColumnValidator,
   type CsvValidationStructuredError,
+  type CsvValidationError,
+  CsvValidationErrorEnum,
   validateCsvAgainstSchema,
 } from "./parse/csv-schema-validation";
 import {
-  buildRowErrorMessage,
   createUploadError,
   hasFileParseErrors,
   isCsvParseError,
@@ -249,7 +250,23 @@ export const useCsvUpload = ({
           }
 
           if (sessionErrors.length > 0) {
-            throw Error(buildRowErrorMessage("Import failed", sessionErrors));
+            const serverValidationErrors: CsvValidationError[] =
+              sessionErrors.map(({ rowNum, message }) => ({
+                rowNum,
+                column: "*",
+                message,
+                value: "",
+                errorEnum: CsvValidationErrorEnum.CUSTOM_VALIDATION,
+              }));
+
+            setValidation((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    errors: [...prev.errors, ...serverValidationErrors],
+                  }
+                : undefined,
+            );
           }
 
           onImportSessionReady?.(sessionDataSource);

@@ -163,7 +163,10 @@ test.describe("Given a CsvUpload where server reports session errors", () => {
       /saltFileDropZone-error/,
       { timeout: 5000 },
     );
-    await expect(page.locator(".vuuCsvUpload-importErrorItem")).toContainText(
+    await expect(page.locator(".vuuCsvUpload-dropZone")).toContainText(
+      "Your file contains errors",
+    );
+    await expect(page.locator(".vuuCsvUpload-errorItem")).toContainText(
       "Row 1: key already exists",
     );
     await expect(page.locator("button", { hasText: "Import" })).toBeDisabled();

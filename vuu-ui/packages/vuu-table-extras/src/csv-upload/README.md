@@ -121,7 +121,6 @@ idle
 processing          ← onProcessingStarted()
  │
  ├─ parse / schema / client validation errors ──► failed   ← onError({ errors })
- ├─ server session validation errors (vuuMsg) ──► failed   ← onError({ errors })
  │
  ▼
 preview-ready       ← onImportSessionReady(sessionDataSource)
@@ -168,7 +167,7 @@ type CsvUploadErrorResult = {
 type CsvUploadErrors = {
   schemaError?: CsvUploadError;      // CSV columns don't match table schema
   validationError?: CsvUploadError;  // Parse-level or row-level validation failure
-  importError?: CsvUploadError;      // RPC failure during row insertion or server session validation failure (vuuMsg)
+  importError?: CsvUploadError;      // Network/RPC failure during row insertion or session commit
 };
 
 type CsvUploadError = {
@@ -285,9 +284,10 @@ Row payloads sent to `addRow` differ by validity:
 When rows are added to the session table, the Vuu remote server validates rows against backend constraints (such as duplicate key checks or domain rules). If the server flags any row by writing an error into `vuuMsg` (e.g. `"key already exists"`):
 
 1. `useCsvUpload` detects the populated `vuuMsg` from the session table.
-2. The upload session transitions directly to `failed`, surfacing the error(s) via `onError({ errors: { importError } })`.
-3. The **Import** button remains **disabled** (`canImport` is `false`), preventing invalid records from being committed to the target table.
-4. The temporary session table is automatically discarded.
+2. The server-reported errors are merged into the client's `validation.errors` list.
+3. The component displays **"Your file contains errors"** alongside the list of affected rows (without raising a spurious RPC failure).
+4. The **Import** button remains **disabled** (`canImport` is `false` because `validation.errors.length > 0`), preventing invalid records from being committed.
+5. The session table remains available so the user can inspect both valid and error rows in preview mode.
 
 On `endEditSession(save: true)`, the server skips any row where `vuuMsg` is non-empty, so error rows are never committed to the source table.
 

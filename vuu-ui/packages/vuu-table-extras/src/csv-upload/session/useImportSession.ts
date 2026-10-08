@@ -25,6 +25,7 @@ import {
   getRowVuuMsgError,
   toErrorMessage,
   waitForSessionErrors,
+  type SessionRowError,
   type SessionRowUpdateListener,
 } from "../parse/csv-upload-utils";
 import { CSV_FIRST_DATA_ROW_NUMBER } from "../parse/csv-constants";
@@ -51,7 +52,7 @@ export interface UseImportSessionReturn {
   checkSessionTableErrors: (
     sessionDs: DataSource,
     expectedRowCount: number,
-  ) => Promise<string[]>;
+  ) => Promise<SessionRowError[]>;
   closePendingEditSession: (save: boolean) => Promise<void>;
   editSession: EditSession;
   endEditSessionAndNotify: (
@@ -71,7 +72,9 @@ export const useImportSession = ({
   processingPromiseRef,
   onImportSessionEnded,
 }: UseImportSessionProps): UseImportSessionReturn => {
-  const sessionErrorsRef = useRef<Map<string | number, string>>(new Map());
+  const sessionErrorsRef = useRef<Map<string | number, SessionRowError>>(
+    new Map(),
+  );
   const receivedRowKeysRef = useRef<Set<string | number>>(new Set());
   const sessionRowUpdateListenersRef = useRef<Set<SessionRowUpdateListener>>(
     new Set(),
@@ -340,9 +343,10 @@ export const useImportSession = ({
           }
           const inlineMsg = getInlineRowErrorMessage(result);
           if (inlineMsg) {
-            rpcErrors.push(
-              `${rowNum === 0 ? "Header" : `Row ${rowNum}`}: ${inlineMsg}`,
-            );
+            sessionErrorsRef.current.set(rowNum, {
+              rowNum,
+              message: inlineMsg,
+            });
           }
         } catch (error) {
           rpcErrors.push(
@@ -363,7 +367,7 @@ export const useImportSession = ({
     async (
       sessionDs: DataSource,
       expectedRowCount: number,
-    ): Promise<string[]> => {
+    ): Promise<SessionRowError[]> => {
       return waitForSessionErrors(
         sessionDs.isRemote ?? false,
         sessionErrorsRef.current,
