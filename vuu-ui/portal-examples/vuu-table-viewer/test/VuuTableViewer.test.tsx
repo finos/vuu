@@ -18,20 +18,21 @@ const getTableSchema = vi.fn(async (_table: VuuTable) => {
   throw Error("schema unavailable");
 });
 
+const getServerAPI = async () => ({
+  getTableList,
+  getTableSchema,
+  rpcCall: async () => {
+    throw Error("not used");
+  },
+});
+
 const TestDataProvider = ({ children }: { children: ReactNode }) => (
-  <DataProvider
-    VuuDataSource={VuuDataSource}
-    getServerAPI={async () => ({
-      getTableList,
-      getTableSchema,
-      rpcCall: async () => {
-        throw Error("not used");
-      },
-    })}
-  >
+  <DataProvider VuuDataSource={VuuDataSource} getServerAPI={getServerAPI}>
     {children}
   </DataProvider>
 );
+
+const connection = { connectionId: "test-source" };
 
 const localServers = [
   { connectionId: "test-source", DataSourceProvider: TestDataProvider },
@@ -68,7 +69,7 @@ describe("VuuTableViewer", () => {
         <AuthenticationProvider localServers={localServers} mode="local">
           <TableRegistrationContext.Provider value={registration}>
             <AuthenticationProvider
-              connection={{ connectionId: "test-source" }}
+              connection={connection}
               mode="vuu-connection"
             >
               <VuuTableViewer />
@@ -96,6 +97,45 @@ describe("VuuTableViewer", () => {
     await act(async () => root.unmount());
     expect(registration.unregisterTables).toHaveBeenCalledWith("test-source");
     root = createRoot(container);
+  });
+
+  it("does not reload its tables when the selected table changes", async () => {
+    const callbacks = {
+      registerTables: vi.fn(),
+      reportSourceStatus: vi.fn(),
+      unregisterTables: vi.fn(),
+    };
+    const render = (registration: TableRegistrationContextValue) =>
+      root.render(
+        <AuthenticationProvider localServers={localServers} mode="local">
+          <TableRegistrationContext.Provider value={registration}>
+            <AuthenticationProvider
+              connection={connection}
+              mode="vuu-connection"
+            >
+              <VuuTableViewer />
+            </AuthenticationProvider>
+          </TableRegistrationContext.Provider>
+        </AuthenticationProvider>,
+      );
+
+    await act(async () => render({ ...callbacks }));
+    await act(async () =>
+      render({
+        ...callbacks,
+        selectedTable: { sourceId: "test-source", table: { ...tables[0] } },
+      }),
+    );
+    await act(async () =>
+      render({
+        ...callbacks,
+        selectedTable: { sourceId: "test-source", table: { ...tables[0] } },
+      }),
+    );
+
+    expect(getTableList).toHaveBeenCalledTimes(1);
+    expect(callbacks.unregisterTables).not.toHaveBeenCalled();
+    expect(getTableSchema).toHaveBeenCalledTimes(1);
   });
 
   it("explains how to use it when opened outside the table browser", async () => {
@@ -129,7 +169,7 @@ describe("VuuTableViewer", () => {
         <AuthenticationProvider localServers={localServers} mode="local">
           <TableRegistrationContext.Provider value={registration}>
             <AuthenticationProvider
-              connection={{ connectionId: "test-source" }}
+              connection={connection}
               mode="vuu-connection"
             >
               <VuuTableViewer />

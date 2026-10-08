@@ -207,6 +207,7 @@ async function main() {
         pluginReact(),
         pluginCssInline({
           include: [
+            "/packages/core/",
             "/packages/grid-layout/",
             "/packages/vuu-datatable/",
             "/packages/vuu-context-menu/",

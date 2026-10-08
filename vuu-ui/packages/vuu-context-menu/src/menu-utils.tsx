@@ -21,6 +21,7 @@ export interface ContextMenuItemBase {
 }
 
 export interface ContextMenuLeafItemDescriptor extends ContextMenuItemBase {
+  disabled?: boolean;
   id: string;
   options?: unknown;
 }

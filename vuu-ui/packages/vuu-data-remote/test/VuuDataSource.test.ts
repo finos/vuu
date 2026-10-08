@@ -27,6 +27,8 @@ vi.mock("../src/ConnectionManager", () => ({
         rpcCall: vi.fn(),
         send: vi.fn(),
         subscribe: vi.fn(),
+        destroy: vi.fn(),
+        unsubscribe: vi.fn(),
       });
     });
 
@@ -180,6 +182,7 @@ describe("VuuDataSource", () => {
         } as RpcResultSuccess);
         const session = await source.createSessionDataSource("Empty");
         expect(session?.isSessionDataSourceOf(source)).toBe(true);
+        await session!.subscribe({}, vi.fn());
         vi.spyOn(session!, "rpcRequest").mockResolvedValue({
           type: "SUCCESS_RESULT",
         } as RpcResultSuccess);

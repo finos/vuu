@@ -64,6 +64,16 @@
       "@vuu-ui/vuu-shell": {
         "requiredVersion": "package:@vuu-ui/core",
         "strictVersion": true
+      },
+      "@vuu-ui/vuu-data-remote": {
+        "requiredVersion": "package:@vuu-ui/core",
+        "singleton": true,
+        "strictVersion": true
+      },
+      "@vuu-ui/vuu-notifications": {
+        "requiredVersion": "package:@vuu-ui/core",
+        "singleton": true,
+        "strictVersion": true
       }
     }
   }

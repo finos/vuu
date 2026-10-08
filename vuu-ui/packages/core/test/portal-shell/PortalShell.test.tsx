@@ -10,42 +10,64 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { RemoteModuleDescriptor } from "../../src/RemoteModuleDescriptor";
 
-vi.mock("@salt-ds/core", () => ({
-  FlexItem: ({ children, className }: HTMLAttributes<HTMLDivElement>) => (
-    <div className={className}>{children}</div>
-  ),
-  FlexLayout: ({ children, className, id }: HTMLAttributes<HTMLDivElement>) => (
-    <div className={className} id={id}>
-      {children}
-    </div>
-  ),
-  SaltProviderNext: ({
-    accent,
-    children,
-    corner,
-    density,
-    mode,
-    theme,
-  }: {
-    accent: string;
-    children: ReactNode;
-    corner: string;
-    density: string;
-    mode: string;
-    theme: string;
-  }) => (
-    <div
-      data-accent={accent}
-      data-corner={corner}
-      data-density={density}
-      data-mode={mode}
-      data-theme={theme}
-    >
-      {children}
-    </div>
-  ),
-  useAriaAnnouncer: () => ({ announce: () => undefined }),
-}));
+vi.mock("@salt-ds/core", async () => {
+  const { forwardRef } = await import("react");
+  return {
+    Button: forwardRef<HTMLButtonElement, HTMLAttributes<HTMLButtonElement>>(
+      function Button(
+        {
+          appearance: _appearance,
+          sentiment: _sentiment,
+          ...props
+        }: HTMLAttributes<HTMLButtonElement> & {
+          appearance?: string;
+          sentiment?: string;
+        },
+        ref,
+      ) {
+        return <button {...props} ref={ref} />;
+      },
+    ),
+    FlexItem: ({ children, className }: HTMLAttributes<HTMLDivElement>) => (
+      <div className={className}>{children}</div>
+    ),
+    FlexLayout: ({
+      children,
+      className,
+      id,
+    }: HTMLAttributes<HTMLDivElement>) => (
+      <div className={className} id={id}>
+        {children}
+      </div>
+    ),
+    SaltProviderNext: ({
+      accent,
+      children,
+      corner,
+      density,
+      mode,
+      theme,
+    }: {
+      accent: string;
+      children: ReactNode;
+      corner: string;
+      density: string;
+      mode: string;
+      theme: string;
+    }) => (
+      <div
+        data-accent={accent}
+        data-corner={corner}
+        data-density={density}
+        data-mode={mode}
+        data-theme={theme}
+      >
+        {children}
+      </div>
+    ),
+    useAriaAnnouncer: () => ({ announce: () => undefined }),
+  };
+});
 vi.mock("../../src/modal-provider/ModalProvider", () => ({
   ModalProvider: ({ children }: { children: ReactNode }) => (
     <div data-provider="modal">{children}</div>
@@ -56,11 +78,37 @@ vi.mock("@vuu-ui/vuu-data-react", () => ({
     <div data-provider="remote">{children}</div>
   ),
 }));
+vi.mock("@vuu-ui/vuu-notifications", () => ({
+  isWorkspaceNotification: () => false,
+  NotificationsProvider: ({ children }: { children: ReactNode }) => children,
+  useNotifications: () => ({
+    hideNotification: () => undefined,
+    showNotification: () => undefined,
+  }),
+}));
+vi.mock("../../src/notifications/PortalNotificationBanners", () => ({
+  PortalNotificationBanners: () => null,
+}));
 vi.mock("../../src/remote-module/RemoteModule", async () => {
-  const { usePortalModuleRegistry } = await import(
-    "../../src/portal-module-registry/PortalModuleRegistry"
-  );
+  const { usePortalModuleRegistry } =
+    await import("../../src/portal-module-registry/PortalModuleRegistry");
   const { PortalLink } = await import("../../src/portal-link/PortalLink");
+  const { useContextPanel } =
+    await import("../../src/context-panel/ContextPanelProvider");
+  const { Button } = await import("@salt-ds/core");
+  const ShowContextPanelButton = ({ module }: { module: string }) => {
+    const showContextPanel = useContextPanel();
+    return (
+      <Button
+        data-show-context-panel
+        onClick={() =>
+          showContextPanel(<p data-panel-content>{module} settings</p>, module)
+        }
+      >
+        Settings
+      </Button>
+    );
+  };
   return {
     RemoteModule: ({
       mfComponent,
@@ -79,6 +127,7 @@ vi.mock("../../src/remote-module/RemoteModule", async () => {
           <output data-module={mfComponent} data-url={mfUrl}>
             {remoteModules.length}
           </output>
+          <ShowContextPanelButton module={mfComponent} />
           <Routes>
             <Route
               index
@@ -149,63 +198,66 @@ describe("Portal and window shells", () => {
     window.history.replaceState(null, "", "/");
   });
 
-  it.each([
-    BrowserRouter,
-    MemoryRouter,
-  ])("rejects an external $name instead of nesting routers", async (OuterRouter) => {
-    const render = async () => {
-      await act(async () => {
-        root.render(
-          <OuterRouter>
-            <PortalShell remoteModules={modules} title="Portal" />
-          </OuterRouter>,
-        );
-      });
-    };
-    await expect(render()).rejects.toThrow(
-      "You cannot render a <Router> inside another <Router>. You should never have more than one in your app.",
-    );
-  });
+  it.each([BrowserRouter, MemoryRouter])(
+    "rejects an external $name instead of nesting routers",
+    async (OuterRouter) => {
+      const render = async () => {
+        await act(async () => {
+          root.render(
+            <OuterRouter>
+              <PortalShell remoteModules={modules} title="Portal" />
+            </OuterRouter>,
+          );
+        });
+      };
+      await expect(render()).rejects.toThrow(
+        "You cannot render a <Router> inside another <Router>. You should never have more than one in your app.",
+      );
+    },
+  );
 
   it.each([
     ["/users/admin", "UserAdmin"],
     ["/orders", "Orders"],
-  ])("provides the complete registry at %s without an external router", async (path, module) => {
-    window.history.replaceState(null, "", path);
-    await act(async () => {
-      root.render(<PortalShell remoteModules={modules} title="Portal" />);
-    });
+  ])(
+    "provides the complete registry at %s without an external router",
+    async (path, module) => {
+      window.history.replaceState(null, "", path);
+      await act(async () => {
+        root.render(<PortalShell remoteModules={modules} title="Portal" />);
+      });
 
-    expect(
-      [...container.querySelectorAll("output")].map((element) => [
-        element.dataset.module,
-        element.textContent,
-      ]),
-    ).toEqual([[module, "2"]]);
-    expect(container.querySelector("[data-portal-nav]")).toBeNull();
-    expect(container.querySelector("[data-portal-header]")).toBeNull();
-    expect(container.querySelector("h3")).toBeNull();
-    expect(container.querySelectorAll(".vuuPortalShell")).toHaveLength(1);
-    expect(container.querySelector(".vuuWindowShell")).toBeNull();
-    expect(container.querySelectorAll('[data-provider="remote"]')).toHaveLength(
-      1,
-    );
-    expect(container.querySelectorAll('[data-provider="modal"]')).toHaveLength(
-      1,
-    );
-    expect(
-      container.querySelector('[data-accent] [data-provider="modal"]'),
-    ).not.toBeNull();
-    expect(container.querySelector("[data-accent]")).toMatchObject({
-      dataset: {
-        accent: "purple",
-        corner: "rounded",
-        density: "medium",
-        mode: "light",
-        theme: "vuu-theme",
-      },
-    });
-  });
+      expect(
+        [...container.querySelectorAll("output")].map((element) => [
+          element.dataset.module,
+          element.textContent,
+        ]),
+      ).toEqual([[module, "2"]]);
+      expect(container.querySelector("[data-portal-nav]")).toBeNull();
+      expect(container.querySelector("[data-portal-header]")).toBeNull();
+      expect(container.querySelector("h3")).toBeNull();
+      expect(container.querySelectorAll(".vuuPortalShell")).toHaveLength(1);
+      expect(container.querySelector(".vuuWindowShell")).toBeNull();
+      expect(
+        container.querySelectorAll('[data-provider="remote"]'),
+      ).toHaveLength(1);
+      expect(
+        container.querySelectorAll('[data-provider="modal"]'),
+      ).toHaveLength(1);
+      expect(
+        container.querySelector('[data-accent] [data-provider="modal"]'),
+      ).not.toBeNull();
+      expect(container.querySelector("[data-accent]")).toMatchObject({
+        dataset: {
+          accent: "purple",
+          corner: "rounded",
+          density: "medium",
+          mode: "light",
+          theme: "vuu-theme",
+        },
+      });
+    },
+  );
 
   it("renders PortalLandingPage at the root path and navigates to a module", async () => {
     await act(async () => {
@@ -453,21 +505,21 @@ describe("Portal and window shells", () => {
     ).toBe("dark");
   });
 
-  it.each([
-    "/users/admin",
-    "/users/admin/*",
-  ])("supports a fresh portal deep link with module path %s", async (path) => {
-    window.history.replaceState(null, "", "/users/admin/details");
-    await act(async () => {
-      root.render(
-        <PortalShell
-          remoteModules={[{ ...modules[0], path }]}
-          title="Portal"
-        />,
-      );
-    });
-    expect(container.textContent).toContain("Module details");
-  });
+  it.each(["/users/admin", "/users/admin/*"])(
+    "supports a fresh portal deep link with module path %s",
+    async (path) => {
+      window.history.replaceState(null, "", "/users/admin/details");
+      await act(async () => {
+        root.render(
+          <PortalShell
+            remoteModules={[{ ...modules[0], path }]}
+            title="Portal"
+          />,
+        );
+      });
+      expect(container.textContent).toContain("Module details");
+    },
+  );
 
   it("forwards shared shell configuration to window routes without portal chrome", async () => {
     const LocalDataSourceProvider = ({ children }: { children: ReactNode }) => (
@@ -542,15 +594,14 @@ describe("Portal and window shells", () => {
     );
   });
 
-  it.each([
-    "missing",
-    "01",
-    "https%3A%2F%2Funtrusted.example",
-  ])("does not load a remote for an unregistered module ID %s", async (id) => {
-    await renderWindow(`/window/${id}`);
-    expect(container.querySelector("output")).toBeNull();
-    expect(container.querySelector('[role="alert"]')).not.toBeNull();
-  });
+  it.each(["missing", "01", "https%3A%2F%2Funtrusted.example"])(
+    "does not load a remote for an unregistered module ID %s",
+    async (id) => {
+      await renderWindow(`/window/${id}`);
+      expect(container.querySelector("output")).toBeNull();
+      expect(container.querySelector('[role="alert"]')).not.toBeNull();
+    },
+  );
 
   it("preserves module-relative links in a window", async () => {
     await renderWindow("/window/1");
@@ -582,5 +633,107 @@ describe("Portal and window shells", () => {
     await renderWindow("/window/1", [{ ...modules[0], enabled: false }]);
     expect(container.querySelector("output")).toBeNull();
     expect(container.querySelector('[role="alert"]')).not.toBeNull();
+  });
+  describe("context panel", () => {
+    const contextPanelHost = () =>
+      container.querySelector<HTMLElement>("#vuu-shell-context");
+    const contextPanel = () =>
+      container.querySelector<HTMLElement>(
+        "#vuu-shell-context > #context-panel",
+      );
+    const showContextPanel = async () => {
+      await act(async () => {
+        container
+          .querySelector<HTMLButtonElement>("[data-show-context-panel]")
+          ?.click();
+      });
+    };
+
+    it("is hosted, collapsed, in the portal shell", async () => {
+      window.history.replaceState(null, "", "/orders");
+      await act(async () => {
+        root.render(<PortalShell remoteModules={modules} title="Portal" />);
+      });
+      expect(
+        container.querySelector(".vuuPortalShell > #vuu-shell-context"),
+      ).not.toBeNull();
+      expect(contextPanelHost()?.className).toBe("vuuPortalShell-context");
+      expect(contextPanel()?.classList).not.toContain(
+        "vuuContextPanel-expanded",
+      );
+      expect(container.querySelector("[data-panel-content]")).toBeNull();
+    });
+
+    it("shows content requested by a remote module and closes it", async () => {
+      window.history.replaceState(null, "", "/orders");
+      await act(async () => {
+        root.render(<PortalShell remoteModules={modules} title="Portal" />);
+      });
+      await showContextPanel();
+
+      expect(contextPanel()?.classList).toContain("vuuContextPanel-expanded");
+      expect(
+        contextPanel()?.querySelector(".vuuContextPanel-title")?.textContent,
+      ).toBe("Orders");
+      expect(
+        contextPanel()?.querySelector("[data-panel-content]")?.textContent,
+      ).toBe("Orders settings");
+      expect(document.activeElement).toBe(
+        contextPanel()?.querySelector(".vuuContextPanel-close"),
+      );
+
+      await act(async () => {
+        contextPanel()
+          ?.querySelector<HTMLButtonElement>(".vuuContextPanel-close")
+          ?.click();
+      });
+      expect(contextPanel()?.classList).not.toContain(
+        "vuuContextPanel-expanded",
+      );
+      expect(container.querySelector("[data-panel-content]")).toBeNull();
+    });
+
+    it("closes on Escape", async () => {
+      window.history.replaceState(null, "", "/orders");
+      await act(async () => {
+        root.render(<PortalShell remoteModules={modules} title="Portal" />);
+      });
+      await showContextPanel();
+      await act(async () => {
+        contextPanel()?.dispatchEvent(
+          new KeyboardEvent("keydown", { bubbles: true, key: "Escape" }),
+        );
+      });
+      expect(container.querySelector("[data-panel-content]")).toBeNull();
+    });
+
+    it("closes when the portal navigates to another route", async () => {
+      window.history.replaceState(null, "", "/users/admin");
+      await act(async () => {
+        root.render(<PortalShell remoteModules={modules} title="Portal" />);
+      });
+      await showContextPanel();
+      expect(container.querySelector("[data-panel-content]")).not.toBeNull();
+
+      await act(async () => {
+        container.querySelector<HTMLAnchorElement>("a")?.click();
+      });
+      expect(window.location.pathname).toBe("/users/admin/details");
+      expect(container.querySelector("[data-panel-content]")).toBeNull();
+    });
+
+    it("is hosted in a window for a remote module", async () => {
+      await renderWindow("/window/2");
+      expect(
+        container.querySelector(".vuuWindowShell > #vuu-shell-context"),
+      ).not.toBeNull();
+      expect(contextPanelHost()?.className).toBe("vuuWindowShell-context");
+
+      await showContextPanel();
+      expect(contextPanel()?.classList).toContain("vuuContextPanel-expanded");
+      expect(
+        contextPanel()?.querySelector("[data-panel-content]")?.textContent,
+      ).toBe("Orders settings");
+    });
   });
 });
