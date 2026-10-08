@@ -135,3 +135,90 @@
     }
   }
 }
+
+.vuuNavItem-icon {
+  display: inline-flex;
+  position: relative;
+}
+
+.vuuNavItem-unavailable {
+  cursor: default;
+
+  :is(
+    .vuuIcon,
+    .vuuIconNavItem-label,
+    .vuuDashboardNavItem-label,
+    .saltVerticalNavigationItemLabel
+  ) {
+    opacity: var(--vuuNavItem-unavailable-opacity, 0.45);
+  }
+
+  .vuuIcon {
+    filter: grayscale(1);
+  }
+}
+
+.vuuNavItemPresence-statusBadge {
+  align-items: center;
+  background: var(--salt-container-primary-background);
+  border-radius: 50%;
+  display: inline-flex;
+  justify-content: center;
+  line-height: 0;
+
+  .vuuNavItem-icon > & {
+    position: absolute;
+    right: var(--vuuNavItem-badge-offset, -4px);
+    top: var(--vuuNavItem-badge-offset, -4px);
+  }
+}
+
+.vuuNavItemPresence-overlay {
+  background: var(--salt-container-primary-background);
+  border: var(--salt-size-border) var(--salt-container-primary-borderStyle)
+    var(--salt-container-primary-borderColor);
+  border-radius: var(--salt-palette-corner, 0);
+  box-shadow: var(--salt-overlayable-shadow-popout);
+  color: var(--salt-content-primary-foreground);
+  display: flex;
+  flex-direction: column;
+  font-size: var(--salt-text-fontSize);
+  gap: var(--salt-spacing-200);
+  margin: var(--salt-spacing-100);
+  max-width: var(--vuuNavItem-unavailableOverlay-width, 320px);
+  padding: var(--salt-spacing-200);
+  text-transform: none;
+  width: max-content;
+  z-index: var(--salt-zIndex-popout, 1100);
+
+  .vuuNavItemPresence-module {
+    display: flex;
+    flex-direction: column;
+    gap: var(--salt-spacing-50);
+  }
+
+  .vuuNavItemPresence-headline {
+    align-items: center;
+    display: flex;
+    font-weight: var(--salt-text-fontWeight-strong);
+    gap: var(--salt-spacing-100);
+  }
+
+  :is(
+    .vuuNavItemPresence-since,
+    .vuuNavItemPresence-retry,
+    .vuuNavItemPresence-details
+  ) {
+    color: var(--salt-content-secondary-foreground);
+  }
+
+  .vuuNavItemPresence-details summary {
+    cursor: pointer;
+  }
+
+  .vuuNavItemPresence-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: var(--salt-spacing-100);
+  }
+}

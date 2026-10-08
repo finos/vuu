@@ -74,3 +74,16 @@ export {
   type SavedStateTreeProps,
   useSavedStateDialog,
 } from "./saved-state";
+export {
+  useModuleServerStatus,
+  useVuuServerStatus,
+  useVuuServerStatuses,
+  VuuServerMonitorProvider,
+  type VuuServerMonitorProviderProps,
+} from "./server-monitor";
+export type {
+  ServerMonitorOptions,
+  VuuServerPresence,
+  VuuServerStatus,
+  VuuServerStatusDetail,
+} from "./connection-management/server-status";

@@ -10,7 +10,12 @@ import {
 } from "../RemoteModuleDescriptor";
 import { IconNavItem } from "./IconNavItem";
 import { NestedNavItem } from "./NestedNavItem";
-import { buildNavItems, circleQuestionMarkIcon } from "./nav-item-utils";
+import {
+  buildNavItems,
+  circleQuestionMarkIcon,
+  navItemModuleIds,
+} from "./nav-item-utils";
+import { useServerMonitor } from "../server-monitor/VuuServerMonitorProvider";
 
 import portalNavCss from "./PortalAppSwitcher.css";
 import { useLocation } from "react-router-dom";
@@ -19,10 +24,7 @@ import { DashboardNavItem } from "./DashboardNavItem";
 const classBase = "vuuPortalAppSwitcher";
 
 export type AppSwitcherDisplayStyle =
-  | "icon-only"
-  | "icon text"
-  | "text-only"
-  | "dashboard";
+  "icon-only" | "icon text" | "text-only" | "dashboard";
 export type AppSwitcherMenuStyle = "single-level" | "two-level";
 
 export interface NavItem {
@@ -39,12 +41,18 @@ export interface PortalAppSwitcherProps {
   /** Single-level renders each module with a colon-separated navigation label. */
   menuStyle?: AppSwitcherMenuStyle;
   remoteModules: RemoteModuleDescriptor[];
+  /**
+   * Greys applications whose server is unavailable, and explains why on
+   * hover. Default true.
+   */
+  showPresence?: boolean;
 }
 
 export const PortalAppSwitcher = ({
   displayStyle = "text-only",
   menuStyle = "two-level",
   remoteModules,
+  showPresence = true,
 }: PortalAppSwitcherProps) => {
   const iconOnly = displayStyle === "icon-only";
   const location = useLocation();
@@ -90,6 +98,12 @@ export const PortalAppSwitcher = ({
     return buildNavItems(resolvedRemoteModules, effectiveMenuStyle);
   }, [displayStyle, effectiveMenuStyle, remoteModules]);
 
+  // The monitor prioritises servers in the order the user sees them.
+  const monitor = useServerMonitor();
+  useEffect(() => {
+    monitor?.setDisplayOrder(navItemModuleIds(navItems));
+  }, [monitor, navItems]);
+
   const NavItem =
     displayStyle === "dashboard"
       ? DashboardNavItem
@@ -113,6 +127,7 @@ export const PortalAppSwitcher = ({
             active={location.pathname.startsWith(navItem.href)}
             item={navItem}
             key={navItem.href}
+            showPresence={showPresence}
           />
         ))}
       </Container>

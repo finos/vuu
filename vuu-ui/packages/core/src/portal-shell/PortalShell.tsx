@@ -24,6 +24,11 @@ import {
   CommonShell,
   type CommonShellProps,
 } from "../common-shell/CommonShell";
+import type { ServerMonitorOptions } from "../connection-management/server-status";
+import {
+  useTrackOpenModule,
+  VuuServerMonitorProvider,
+} from "../server-monitor/VuuServerMonitorProvider";
 import { WindowHost } from "../window-host/WindowHost";
 import { WINDOW_HOST_ROUTE } from "../window-host/window-host-routing";
 import {
@@ -48,6 +53,11 @@ export interface PortalShellProps extends CommonShellProps {
   children?: ReactNode;
   id?: string;
   remoteModules: RemoteModuleDescriptor[];
+  /**
+   * Monitoring of the application servers in the navigation. `false` stops
+   * connections being opened for applications that are not open.
+   */
+  serverMonitor?: ServerMonitorOptions | false;
   title: string;
 }
 
@@ -89,12 +99,20 @@ const PortalWindowRoute = () => {
   );
 };
 
+const OpenModuleTracker = ({
+  remoteModules,
+}: Pick<PortalShellProps, "remoteModules">) => {
+  useTrackOpenModule(remoteModules);
+  return null;
+};
+
 const PortalLayout = () => {
   const {
     children,
     id,
     portalId = id,
     remoteModules,
+    serverMonitor,
     title: _title,
     ...providerProps
   } = usePortalShellProps();
@@ -115,38 +133,41 @@ const PortalLayout = () => {
   });
 
   return (
-    <CommonShell
-      {...providerProps}
-      portalId={portalId}
-      remoteModules={remoteModules}
-    >
-      <div className={classBase} id={id}>
-        {portalChromeElements}
-        <div className={`${classBase}-content`}>
-          <Routes>
-            <Route path="/" element={landingPage} />
-            <Route path="*" element={landingPage} />
-            {remoteModules.map(({ id, path, ...feature }) => {
-              return (
-                <Route
-                  key={id}
-                  path={getRemoteRoutePath(path)}
-                  element={
-                    <PortalLinkProvider modulePath={path}>
-                      <PortalModuleRegistryProvider
-                        remoteModules={remoteModules}
-                      >
-                        <RemoteModule {...feature} />
-                      </PortalModuleRegistryProvider>
-                    </PortalLinkProvider>
-                  }
-                />
-              );
-            })}
-          </Routes>
+    <VuuServerMonitorProvider options={serverMonitor}>
+      <CommonShell
+        {...providerProps}
+        portalId={portalId}
+        remoteModules={remoteModules}
+      >
+        <OpenModuleTracker remoteModules={remoteModules} />
+        <div className={classBase} id={id}>
+          {portalChromeElements}
+          <div className={`${classBase}-content`}>
+            <Routes>
+              <Route path="/" element={landingPage} />
+              <Route path="*" element={landingPage} />
+              {remoteModules.map(({ id, path, ...feature }) => {
+                return (
+                  <Route
+                    key={id}
+                    path={getRemoteRoutePath(path)}
+                    element={
+                      <PortalLinkProvider modulePath={path}>
+                        <PortalModuleRegistryProvider
+                          remoteModules={remoteModules}
+                        >
+                          <RemoteModule {...feature} />
+                        </PortalModuleRegistryProvider>
+                      </PortalLinkProvider>
+                    }
+                  />
+                );
+              })}
+            </Routes>
+          </div>
         </div>
-      </div>
-    </CommonShell>
+      </CommonShell>
+    </VuuServerMonitorProvider>
   );
 };
 

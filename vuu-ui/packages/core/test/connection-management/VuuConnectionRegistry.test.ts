@@ -447,4 +447,147 @@ describe("VuuConnectionRegistry", () => {
     registry.release(target.connectionId);
     registry.release(target.connectionId);
   });
+
+  describe("state observation", () => {
+    it("reports state changes for initial connect and release", async () => {
+      const connectionClient = new TestConnectionClient();
+      const registry = new VuuConnectionRegistry({
+        connectionClient,
+        exchangeToken: vi.fn().mockResolvedValue(session),
+      });
+      const listener = vi.fn();
+      registry.onStateChange(listener);
+
+      expect(registry.getState(target.connectionId)).toBeUndefined();
+      await registry.acquire(authHandler, target);
+      expect(registry.getState(target.connectionId)).toBe("connected");
+      expect(registry.connectedIds()).toEqual([target.connectionId]);
+
+      registry.release(target.connectionId);
+      await new Promise((resolve) => setTimeout(resolve, 1));
+
+      expect(listener.mock.calls.map(([id, state]) => [id, state])).toEqual([
+        ["orders", "authenticating"],
+        ["orders", "connecting"],
+        ["orders", "connected"],
+        ["orders", "idle"],
+      ]);
+      expect(registry.getState(target.connectionId)).toBeUndefined();
+      expect(registry.connectedIds()).toEqual([]);
+    });
+
+    it("marks a denied initial acquire unauthorized", async () => {
+      const registry = new VuuConnectionRegistry({
+        connectionClient: new TestConnectionClient(),
+        exchangeToken: vi
+          .fn()
+          .mockRejectedValue(
+            new VuuTokenExchangeError("VUU authorization denied", 403),
+          ),
+      });
+      const listener = vi.fn();
+      registry.onStateChange(listener);
+
+      await expect(registry.acquire(authHandler, target)).rejects.toThrow();
+
+      expect(registry.getState(target.connectionId)).toBe("unauthorized");
+      expect(listener).toHaveBeenLastCalledWith(
+        "orders",
+        "unauthorized",
+        expect.any(VuuTokenExchangeError),
+      );
+      registry.release(target.connectionId);
+    });
+
+    it("marks a failed initial acquire failed", async () => {
+      const registry = new VuuConnectionRegistry({
+        connectionClient: new TestConnectionClient(),
+        exchangeToken: vi.fn().mockRejectedValue(new Error("unreachable")),
+      });
+
+      await expect(registry.acquire(authHandler, target)).rejects.toThrow(
+        "unreachable",
+      );
+
+      expect(registry.getState(target.connectionId)).toBe("failed");
+      registry.release(target.connectionId);
+    });
+
+    it("reports reconnecting while reconnecting, then connected", async () => {
+      const connectionClient = new TestConnectionClient();
+      const registry = new VuuConnectionRegistry({
+        connectionClient,
+        exchangeToken: vi.fn().mockResolvedValue(session),
+        retryIntervals: [0],
+      });
+      const states: string[] = [];
+      await registry.acquire(authHandler, target);
+      registry.onStateChange((_id, state) => states.push(state));
+
+      connectionClient.connected = false;
+      connectionClient.listener?.("disconnected");
+      expect(registry.getState(target.connectionId)).toBe("reconnecting");
+      await new Promise((resolve) => setTimeout(resolve, 1));
+
+      expect(states).toEqual(["reconnecting", "connected"]);
+      registry.release(target.connectionId);
+    });
+
+    it("reports unauthorized when a reconnect is denied", async () => {
+      const connectionClient = new TestConnectionClient();
+      const registry = new VuuConnectionRegistry({
+        connectionClient,
+        exchangeToken: vi
+          .fn()
+          .mockResolvedValueOnce(session)
+          .mockRejectedValue(
+            new VuuTokenExchangeError("VUU authorization denied", 403),
+          ),
+        retryIntervals: [0, 0],
+      });
+      await registry.acquire(authHandler, target);
+
+      connectionClient.connected = false;
+      connectionClient.listener?.("disconnected");
+      await new Promise((resolve) => setTimeout(resolve, 1));
+
+      expect(registry.getState(target.connectionId)).toBe("unauthorized");
+      registry.release(target.connectionId);
+    });
+
+    it("reports failed when reconnect attempts are exhausted", async () => {
+      const connectionClient = new TestConnectionClient();
+      const registry = new VuuConnectionRegistry({
+        connectionClient,
+        exchangeToken: vi
+          .fn()
+          .mockResolvedValueOnce(session)
+          .mockRejectedValue(new Error("down")),
+        retryIntervals: [0, 0],
+      });
+      await registry.acquire(authHandler, target);
+
+      connectionClient.connected = false;
+      connectionClient.listener?.("disconnected");
+      await new Promise((resolve) => setTimeout(resolve, 5));
+
+      expect(registry.getState(target.connectionId)).toBe("failed");
+      registry.release(target.connectionId);
+    });
+
+    it("stops notifying an unsubscribed listener", async () => {
+      const registry = new VuuConnectionRegistry({
+        connectionClient: new TestConnectionClient(),
+        exchangeToken: vi.fn().mockResolvedValue(session),
+      });
+      const listener = vi.fn();
+      const unsubscribe = registry.onStateChange(listener);
+      unsubscribe();
+
+      await registry.acquire(authHandler, target);
+
+      expect(listener).not.toHaveBeenCalled();
+      registry.release(target.connectionId);
+    });
+  });
 });

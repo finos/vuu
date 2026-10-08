@@ -1165,6 +1165,32 @@ per-user read state for cross-device sync.
 
 Each phase is independently shippable behind `PortalShellProps` flags.
 
+### 16.1 Phase 1 implementation notes
+
+Phase 1 is implemented. These are the places where it differs from, or adds
+to, the design above:
+
+- `ModuleServerMap` loads the config of nested (grouped) modules eagerly,
+  rather than when their group is expanded.
+- `VuuServerStatusDetail` has a `checking` flag, which is set while an
+  acquisition is in progress. The overlay uses it to show "Checking…".
+- `LocalServerMonitor.setPresence` lets local-server demos and tests
+  simulate outages.
+- `VuuServerMonitorProvider` accepts a `monitor` prop, so a monitor can be
+  injected.
+- `serverMonitor: false` on `PortalShell` maps to `{ enabled: false }`.
+  Config failures are still shown.
+- The unavailable overlay is an inline, non-modal `role="dialog"` positioned
+  with `useFloatingUI`. It is not a Salt `Overlay`.
+- Group items are greyed only when all their leaf children are unavailable.
+  They never block expand or collapse.
+- Leaf context menus disable "Open in new Tab/Window" while the module is
+  unavailable. This needed a `disabled` flag on
+  `ContextMenuLeafItemDescriptor` in `vuu-context-menu`.
+- Extra hooks: `useModuleServerStatusList` and `useRetryModule`.
+- `@vuu-ui/vuu-data-remote` and `@vuu-ui/vuu-notifications` are shared
+  singletons in all `portal-build.json` files.
+
 ## 17. Decisions
 
 | # | Question                                   | Decision                                                                                   |
