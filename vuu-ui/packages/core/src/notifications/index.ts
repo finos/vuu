@@ -69,3 +69,9 @@ export {
   NotificationsPanel,
   type NotificationsPanelFilters,
 } from "./NotificationsPanel";
+export {
+  type NotificationSyncChannel,
+  type NotificationSyncMessage,
+  notificationSyncChannelName,
+  syncNotificationState,
+} from "./notification-sync";

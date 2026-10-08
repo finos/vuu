@@ -113,6 +113,7 @@ describe("NotificationStore", () => {
     store.markRead(["s1:1"]);
     expect(listener).toHaveBeenLastCalledWith({
       keys: ["s1:1"],
+      read: true,
       type: "read-state",
     });
     expect(store.unreadCount()).toBe(1);

@@ -58,8 +58,9 @@ export type NotificationCountFilter = Pick<
 export type NotificationStoreEvent =
   | { type: "added"; notification: PortalNotification }
   | { type: "updated"; notification: PortalNotification }
-  | { type: "removed"; keys: string[] }
-  | { type: "read-state"; keys: string[] | "all" };
+  /** `deleted` when the user deleted them, rather than evicted or pruned. */
+  | { type: "removed"; keys: string[]; deleted?: boolean }
+  | { type: "read-state"; keys: string[] | "all"; read: boolean };
 
 /**
  * Chooses the modules a server notification is attributed to, from the

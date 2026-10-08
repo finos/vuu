@@ -210,10 +210,17 @@ export class NotificationStore {
         this.#readKeys.delete(notification.key);
       }
     }
+    if (!read && keys !== "all") {
+      // Also forget read state for keys not (yet) in the store.
+      for (const key of keys) {
+        this.#readKeys.delete(key);
+      }
+    }
     if (changed.length > 0) {
       this.#emit({
         type: "read-state",
         keys: keys === "all" ? "all" : changed,
+        read,
       });
     }
   }
@@ -233,7 +240,7 @@ export class NotificationStore {
         this.#tombstones.set(notification.key, now);
       }
     }
-    this.#remove(targets);
+    this.#remove(targets, true);
   }
 
   /**
@@ -466,7 +473,7 @@ export class NotificationStore {
     }
   }
 
-  #remove(notifications: PortalNotification[]) {
+  #remove(notifications: PortalNotification[], deleted = false) {
     if (notifications.length === 0) {
       return;
     }
@@ -476,7 +483,10 @@ export class NotificationStore {
       this.#expiredAt.delete(notification.key);
     }
     this.#sorted = undefined;
-    this.#emit({ type: "removed", keys: notifications.map(({ key }) => key) });
+    const keys = notifications.map(({ key }) => key);
+    this.#emit(
+      deleted ? { type: "removed", keys, deleted } : { type: "removed", keys },
+    );
   }
 
   /** Evicts the oldest read notifications, then the oldest, over the cap. */

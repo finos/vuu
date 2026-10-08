@@ -92,6 +92,7 @@ const PortalWindowRoute = () => {
     density,
     id,
     mode,
+    notifications,
     persistence,
     portalId = id,
     theme,
@@ -103,6 +104,7 @@ const PortalWindowRoute = () => {
       DataSourceProvider={DataSourceProvider}
       density={density}
       mode={mode}
+      notifications={notifications}
       persistence={persistence}
       portalId={portalId}
       theme={theme}
@@ -156,6 +158,7 @@ const PortalLayout = () => {
         <PortalNotificationsProvider
           openModuleId={openModuleId}
           options={notifications}
+          portalId={portalId}
         >
           <div className={classBase} id={id}>
             {portalChromeElements}

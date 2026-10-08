@@ -1290,6 +1290,34 @@ are the places where it differs from, or adds to, the design above:
   overlay shows a "Show notifications" button when the module has unread
   notifications.
 
+### 16.5 Phase 5 implementation notes
+
+Phase 5 is implemented. These are the places where it differs from, or adds
+to, the design above:
+
+- `syncNotificationState(store, channel)` shares state over
+  `BroadcastChannel("vuu-portal-notifications:<portalId>:<user>")`. Each
+  message carries keys marked read (with the time), keys marked unread, and
+  keys deleted (with the time). The receiving page applies read and deleted
+  keys with `loadReadState`, so they also apply to notifications it receives
+  later. Changes received from the channel are not sent back.
+- To support this, the store's `read-state` event now carries `read`, and
+  `removed` carries `deleted: true` when the user deleted the
+  notifications. Eviction, expiry pruning and `clear()` are not shared.
+  "Mark all read" sends the keys it marked, so it does not mark another
+  page's notifications that the sender does not have.
+- `PortalNotificationsProvider` takes a `portalId` (default "vuu-portal");
+  `PortalShell` and module windows pass the shell's `portalId`. Sync is off
+  where `BroadcastChannel` is not available.
+- `WindowShell` mounts `PortalNotificationsProvider`, with new
+  `notifications` and `openModuleId` props. `WindowHost` passes the window's
+  module, and `PortalShell` passes its `notifications` options to windows.
+  Windows have no server monitor, so feeds attach only to the connections
+  the window's module opens. With in-browser local servers, every local
+  server is fed, as in the portal.
+- Windows show toasts only for their module, and mark its notifications
+  read while open. They have no banners row, panel or bell.
+
 ## 17. Decisions
 
 | # | Question                                   | Decision                                                                                   |

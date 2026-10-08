@@ -12,6 +12,7 @@ import {
 import { useOptionalIdentityContext } from "../auth/AuthenticationProvider";
 import type { ModuleId } from "../connection-management/ModuleServerMap";
 import { useData } from "../context-definitions/DataProvider";
+import { DEFAULT_PORTAL_ID } from "../persistence/LocalStoragePersistenceBackend";
 import { useOptionalApplicationState } from "../persistence/PersistenceContext";
 import type { LocalVuuServer } from "../VuuServerDescriptor";
 import { NotificationFeedManager } from "./NotificationFeedManager";
@@ -31,6 +32,10 @@ import {
   PortalToastPresenter,
   usePortalPresentation,
 } from "./PortalNotificationsPresentation";
+import {
+  notificationSyncChannelName,
+  syncNotificationState,
+} from "./notification-sync";
 import type {
   NotificationCountFilter,
   NotificationQuery,
@@ -48,6 +53,11 @@ export interface PortalNotificationsProviderProps {
   /** The module whose route is open; its notifications are marked read. */
   openModuleId?: ModuleId;
   options?: PortalNotificationsOptions | false;
+  /**
+   * Pages of the same portal and user (tabs and module windows) share read
+   * and deleted state. Default "vuu-portal".
+   */
+  portalId?: string;
 }
 
 const LocalNotificationFeed = ({
@@ -116,6 +126,32 @@ const useReadStatePersistence = (store: NotificationStore) => {
   }, [portalState, store]);
 };
 
+/** Shares read and deleted state with the portal's other pages. */
+const useReadStateSync = (
+  store: NotificationStore,
+  enabled: boolean,
+  portalId: string,
+  userName: string | undefined,
+) => {
+  useEffect(() => {
+    if (
+      !enabled ||
+      userName === undefined ||
+      typeof BroadcastChannel === "undefined"
+    ) {
+      return;
+    }
+    const channel = new BroadcastChannel(
+      notificationSyncChannelName(portalId, userName),
+    );
+    const stop = syncNotificationState(store, channel);
+    return () => {
+      stop();
+      channel.close();
+    };
+  }, [enabled, portalId, store, userName]);
+};
+
 /**
  * Collects notifications from every server the portal's modules use, and
  * from client code, into one store that the navigation badges and the
@@ -126,6 +162,7 @@ export const PortalNotificationsProvider = ({
   children,
   openModuleId,
   options,
+  portalId = DEFAULT_PORTAL_ID,
 }: PortalNotificationsProviderProps) => {
   const identity = useOptionalIdentityContext();
   const enabled = options !== false && options?.enabled !== false;
@@ -178,6 +215,12 @@ export const PortalNotificationsProvider = ({
   ]);
 
   useReadStatePersistence(store);
+  useReadStateSync(
+    store,
+    enabled && identity !== undefined,
+    portalId,
+    userName,
+  );
 
   useEffect(() => {
     store.setOpenModule(enabled ? openModuleId : undefined);

@@ -8,6 +8,7 @@ import {
   type WindowShellProps,
 } from "../window-shell/WindowShell";
 import { RemoteModule } from "../remote-module/RemoteModule";
+import { PortalModuleIdContext } from "../notifications/PortalNotificationsContext";
 
 export type WindowHostProps = Omit<WindowShellProps, "children">;
 
@@ -20,14 +21,20 @@ export const WindowHost = (props: WindowHostProps) => {
   );
 
   return (
-    <WindowShell remoteModules={modules} {...props}>
+    <WindowShell
+      openModuleId={descriptor?.id}
+      remoteModules={modules}
+      {...props}
+    >
       {descriptor ? (
         <PortalLinkProvider
           modulePath={descriptor.path}
           windowPath={getWindowHostPath(descriptor.id)}
         >
           <PortalModuleRegistryProvider remoteModules={modules}>
-            <RemoteModule key={descriptor.id} {...descriptor} />
+            <PortalModuleIdContext.Provider value={descriptor.id}>
+              <RemoteModule key={descriptor.id} {...descriptor} />
+            </PortalModuleIdContext.Provider>
           </PortalModuleRegistryProvider>
         </PortalLinkProvider>
       ) : (
