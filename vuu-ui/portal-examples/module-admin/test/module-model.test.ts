@@ -23,6 +23,7 @@ import { MODULES } from "./fixtures";
 
 const LOADED = (name: string, exposes: string[]): ManifestResult => ({
   checkedAt: 10,
+  config: { status: "loaded" },
   elapsedMs: 5,
   exposes,
   name,
