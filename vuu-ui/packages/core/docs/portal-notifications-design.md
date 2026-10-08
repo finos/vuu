@@ -123,12 +123,22 @@ Java `NotificationsModuleBuilder`) creates table `notifications` in module
 | `level`      | string         | `INFO` \| `WARNING` \| `ERROR`                |
 | `audience`   | string         | filtered per user by the permission function  |
 | _additional_ | any            | per server, e.g. `source`, `priority`, `status` |
+| `vuuCreatedTimestamp` | epochTimestamp | Vuu default column, set by the server on insert |
+| `vuuUpdatedTimestamp` | epochTimestamp | Vuu default column, set on every insert/update |
+| `vuuMsg`     | string         | Vuu default column, unused here               |
+
+The `notifications` `TableDef` uses the default `TableDefOptions`
+(`includeDefaultColumns = true`), so Vuu appends its default columns
+(`DefaultColumn.scala`). `InMemRowDataMerger` stamps them with the server
+clock: `vuuCreatedTimestamp` when a row is first inserted, and
+`vuuUpdatedTimestamp` on every update. The `vuu-data-test` simulation
+(#2506) includes `vuuCreatedTimestamp` too.
 
 A notification therefore **arrives as a row insert** on a viewport subscribed
 to that table, and **expires as a row delete**. Dismissal is server specific
 (the example registers a `dismissNotification` viewport RPC that sets
-`status = "dismissed"`). There is no creation timestamp column and no
-per-user read state on the server.
+`status = "dismissed"`). Every row has a **server creation time**
+(`vuuCreatedTimestamp`), but the server keeps no per-user read state.
 
 Separately, `ShowNotificationAction` (`SHOW_NOTIFICATION_ACTION`) is returned
 by menu RPCs and handled in `useVuuMenuActions`. This is a response to a user
@@ -516,7 +526,7 @@ const NOTIFICATIONS_TABLE = { module: "NOTIFICATIONS", table: "notifications" };
    set `notificationsSupported = false` and stop. (Cached per connection.)
 2. Fetch the schema (`getTableSchema`) to learn the additional columns.
 3. Create a `VuuDataSource` with `connectionId`, all columns, sort
-   `expiryTime` descending, range `{ from: 0, to: maxPerServer }` (default
+   `vuuCreatedTimestamp` descending, range `{ from: 0, to: maxPerServer }` (default
    200).
 4. Map rows to `ServerNotificationRecord` and pass inserts/updates/deletes
    to the store.
@@ -542,7 +552,8 @@ export interface PortalNotification {
   level: NotificationLevel;
   title: string;
   message: string;
-  receivedAt: number;           // client receipt time; the schema has no creation time (§13)
+  createdAt: number;            // server `vuuCreatedTimestamp`; client time for client notifications
+  receivedAt: number;           // client receipt time
   expiresAt?: number;           // `expiryTime`
   expired: boolean;             // server deleted the row
   initial: boolean;             // part of the first snapshot
@@ -562,8 +573,7 @@ export interface NotificationOrigin {
 - Rows in the **initial snapshot** are `initial: true`. They are added as
   unread unless their key is in the persisted read set (§8.4) or their module
   is currently open (§7.6), and they never toast (banners still show, §9.3).
-  Their `receivedAt` is the snapshot time, so the viewer labels them
-  "before <login time>" rather than giving a precise time.
+  The viewer shows their real `createdAt` time, like any other notification.
 - A row delete sets `expired: true` (the item stays in history until
   retention removes it; the viewer can hide expired items via a filter).
 - Row updates refresh the record's fields (including additional columns)
@@ -1019,8 +1029,11 @@ the relevant module is open.
 This work makes **no server-side changes**. It relies only on what the
 generic Notifications module already provides, which means:
 
-- **No creation time.** Ordering uses client receipt time; rows in the
-  initial snapshot are only known to pre-date login (§7.3).
+- **Server time, not client time.** Notifications are ordered and shown by
+  `vuuCreatedTimestamp` (§2.2), the server's clock. Times from different
+  servers are only as consistent as those servers' clocks. If a server
+  omits the column (its table built with `includeDefaultColumns = false`),
+  `createdAt` falls back to `receivedAt`.
 - **No server read state.** "Read" is client-side, derived from opening the
   module and from explicit user action (§7.6), persisted per user locally
   (§8.4).
@@ -1030,7 +1043,7 @@ generic Notifications module already provides, which means:
   (§7.4); additional columns such as `clientIdentifier` are used if a server
   happens to publish them.
 
-Possible future server enhancements (out of scope): a `createdTime` column,
+Possible future server enhancements (out of scope): a standard dismiss RPC,
 a standard dismiss RPC, a standard module/deep-link column, and server-side
 per-user read state for cross-device sync.
 
