@@ -224,7 +224,7 @@ is no cross-window state sharing (`portal-design.md`).
 | FR-11 | The compact viewer shows the unread total and the latest notification text.                                                                        |
 | FR-12 | The expanded viewer lists notifications with filters (application/server, level, read state, type, text, time) and client-side actions (mark read/unread, mark all read, delete, clear). |
 | FR-13 | Read and deleted state persists per user across reloads.                                                                                           |
-| FR-14 | Badge and presence are accessible (accessible description/tooltip and `aria-disabled`, not visual styling alone).                               |
+| FR-14 | Badge and presence are accessible (accessible description/tooltip and `aria-disabled`, not visual styling alone). An unavailable item shows a status badge with a hover/focus overlay explaining the cause, retry timing, and offering Retry now. |
 | FR-16 | No server-side changes are required.                                                                                                                |
 | FR-15 | Works in `local` mode with simulated servers.                                                                                                       |
 
@@ -451,6 +451,17 @@ export interface VuuServerStatus {
   since: number;            // epoch ms of last presence change
   monitored: boolean;
   notificationsSupported?: boolean; // set by the feed (§7.2)
+  /** Details for the unavailable overlay (§10.1); set for offline/unauthorized/unavailable. */
+  detail?: VuuServerStatusDetail;
+}
+
+export interface VuuServerStatusDetail {
+  reason: string;           // short, user-facing, e.g. "Server not responding"
+  error?: string;           // underlying message, e.g. token exchange failure or RemoteModuleConfigError.reason
+  endpoint?: string;        // host of websocketUrl/config URL, never the token
+  lastOnlineAt?: number;    // epoch ms, if the server was ever online this session
+  lastAttemptAt?: number;   // epoch ms of last connect/probe/config load
+  nextAttemptAt?: number;   // epoch ms of next scheduled probe; absent when not retrying (unauthorized)
 }
 ```
 
@@ -828,28 +839,63 @@ counts and presence by `moduleId` (and children's `moduleId`s for groups).
 icon-only                 icon text / text-only           dashboard tile
 ┌──────┐                  ┌──────────────────────────┐    ┌─────────────────┐
 │ [▣]③ │ ← Badge (unread) │ [▣] Trading: Baskets  ③  │    │ ③               │
-│ [▢]  │ ← greyed: offline│ [▢] Risk: Limits (grey)  │    │   [icon]        │
-└──────┘                  └──────────────────────────┘    │   Baskets       │
+│ [▢]⚠ │ ← status badge,  │ [▢] Risk: Limits (grey) ⚠│    │   [icon]        │
+└──────┘   greyed: offline└──────────────────────────┘    │   Baskets       │
                                                           └─────────────────┘
+hover / focus on an unavailable item:
+┌──────┐ ┌──────────────────────────────────────────────────┐
+│ [▢]⚠ │─┤ ⚠ Risk: Limits is unavailable                    │
+└──────┘ │ Server not responding                            │
+         │ Offline since 12:04 (8 min) · last online 11:56  │
+         │ Server: risk.example.com            ▸ Details    │
+         │ Retrying automatically at 12:13                  │
+         │ 3 unread notifications                           │
+         │               [Retry now]  [Show notifications]  │
+         └──────────────────────────────────────────────────┘
 ```
 
 - **Badge**: Salt `Badge` wrapping the icon (icon-only/dashboard) or
   trailing the label (text styles). `max={99}`. Hidden at 0. Groups sum
   their children.
-- **Presence**: no extra glyph. Only states that stop the user opening the
-  app are shown:
+- **Presence**: only states that stop the user opening the app are shown:
   - `offline`, `unauthorized` and `unavailable`: the item is **slightly greyed**
     (`--vuuNavItem-unavailable-opacity`, default `0.45`, plus
     `filter: grayscale(1)` on the icon). The item is `aria-disabled="true"`
     and is not navigable — the user cannot use the app while its server is
-    unreachable. Activating it triggers an immediate re-probe of the server
-    (rather than waiting for `probeIntervalMs`) and shows the tooltip; if the
-    probe succeeds the item un-greys and a second activation navigates.
-    "Open in new Tab/Window" context menu items are disabled likewise.
-    For `unavailable` (config failure), activation calls
-    `ModuleServerMap.retry(moduleId)` instead of re-probing the server. The
-    tooltip shows the `RemoteModuleConfigError.reason`, e.g. "Unavailable:
-    config.json is not valid JSON".
+    unreachable. "Open in new Tab/Window" context menu items are disabled
+    likewise.
+  - The Badge slot shows a **status badge** instead of the unread count: a
+    Salt status icon in the badge (`warning` for `offline`/`unavailable`,
+    `error` for `unauthorized`), not greyed so it stays legible. The unread
+    count is not lost; it moves into the overlay. Groups show the status
+    badge only if **all** their children are unavailable; otherwise they
+    show the sum of their available children's counts, and the overlay
+    lists the unavailable children.
+  - **Unavailable overlay**: hovering the item (after the standard tooltip
+    delay) or focusing it with the keyboard opens a Salt `Overlay`
+    (`placement="right"` in the rail, `"bottom"` on dashboard tiles)
+    anchored to the item. It replaces the plain tooltip for unavailable
+    items. It is built from `VuuServerStatus.detail` (§6.4):
+    - headline: "<module title> is unavailable";
+    - `reason`, per presence: `offline` → "Server not responding" /
+      "Connection lost"; `unauthorized` → "You don't have access to this
+      application's server"; `unavailable` → "Application configuration
+      could not be loaded";
+    - since/duration, and last online time when known;
+    - `endpoint` (host only), and `error` in a collapsible "Details" line;
+    - retry status: "Retrying automatically at <time>", "Checking…" while a
+      probe runs, or "Contact your administrator" for `unauthorized`;
+    - unread count for the module, if any;
+    - actions: **Retry now** (re-probe the server, or
+      `ModuleServerMap.retry(moduleId)` for `unavailable`; hidden for
+      `unauthorized`) and **Show notifications** (opens the panel filtered
+      to the module; hidden when there are none).
+    The overlay stays open while the pointer is over it or it holds focus,
+    closes on `Esc`/pointer leave, and updates live: if a retry succeeds it
+    shows "Available again" briefly and closes, and the item un-greys.
+  - Activating (clicking) an unavailable item doesn't navigate. It opens the
+    overlay pinned and starts **Retry now**. If the retry succeeds, the item
+    un-greys and the next activation navigates.
   - `online`, `connecting`, `degraded`, `unknown`: rendered normally.
     `degraded` (reconnecting after being online) is shown only in the
     tooltip, to avoid flicker during brief reconnects; it greys only if the
@@ -858,17 +904,23 @@ icon-only                 icon text / text-only           dashboard tile
     stays mounted; the remote's own lost-connection handling applies.
 - **Accessibility**: the link's accessible name stays the module title;
   an `aria-describedby` hidden span gives e.g. "3 unread notifications."
-  or "Unavailable: server offline since 12:04." The same text is the hover tooltip (flyout
-  for icon-only). Badge count changes are **not** announced individually;
-  a single polite live region in the indicator (§10.2) announces new
-  notifications.
+  or "Unavailable: server not responding since 12:04." The status badge
+  icon is `aria-hidden`; that description carries the meaning. For
+  available items, the same text is the hover tooltip (flyout for
+  icon-only). The unavailable overlay is a non-modal dialog
+  (`role="dialog"`, labelled by its headline) opened on focus, and its
+  buttons are reachable with `Tab` from the item. Badge count changes are
+  **not** announced individually; a single polite live region in the
+  indicator (§10.2) announces new notifications, and presence changes of
+  the open module ("Risk: Limits is unavailable").
 - **Interaction**: clicking the item navigates as today. The nav item
   context menu gains "Show notifications" (opens the panel filtered to that
   module) and "Mark notifications read".
 - Opening a module marks its notifications read (§7.6).
 
 Styling via new CSS custom properties, e.g.
-`--vuuNavItem-unavailable-opacity`, `--vuuNavItem-badge-offset`.
+`--vuuNavItem-unavailable-opacity`, `--vuuNavItem-badge-offset`,
+`--vuuNavItem-unavailableOverlay-width` (default `320px`).
 
 `PortalAppSwitcher` gains props:
 
@@ -1079,7 +1131,10 @@ per-user read state for cross-device sync.
   policy table (incl. portal-wide banners); nested
   `NotificationsProvider` pass-through.
 - **Component**: nav item badge rendering, greyed/`aria-disabled`
-  unavailable items, click-to-reprobe and click-to-retry config, and
+  unavailable items with status badge, unavailable overlay (hover, focus,
+  pinned on click; content per presence; Retry now / Show notifications;
+  live update and close on recovery; group aggregation), click-to-reprobe
+  and click-to-retry config, and
   accessible descriptions in all display styles; indicator ticker; panel
   filters and actions.
 - **Integration**: local-mode portal-host. The simulated module already
@@ -1117,7 +1172,7 @@ Each phase is independently shippable behind `PortalShellProps` flags.
 | 1 | Does opening a module mark its notifications read? | Yes. The server cannot record read state, so opening the module clears its badge (§7.6). |
 | 2 | Server changes?                            | None. Delete and read are client-side only (§13).                                          |
 | 3 | `maxMonitoredServers` default              | 8. If registries outgrow it, limit the nav rail and add a "… more" overflow (§14).          |
-| 4 | How is presence shown?                     | Only unavailability: offline/unauthorized items are slightly greyed and cannot be opened (§10.1). |
+| 4 | How is presence shown?                     | Only unavailability: offline/unauthorized/unavailable items are slightly greyed, cannot be opened, and show a status badge whose hover/focus overlay explains why, when it will retry, and offers Retry now (§10.1). |
 | 5 | Are banners portal-wide?                   | Yes (§9.3).                                                                               |
 | 6 | Tab leader election in v1?                 | No. Users are not expected to open multiple portal tabs; revisit only if that changes (§12.1). |
 | 7 | Where does the module→server mapping come from? (revision 2026-10-08) | Each remote's `config.json` (#2535), loaded for all navigable modules by a shared `ModuleServerMap` that `useVuuServers` also uses (§6.1). |
