@@ -178,7 +178,7 @@ const collectFiltersForColumn = (
 
 // Just until we fully support bool values in filters
 const stringifyBoolean = (value: string | number | boolean) =>
-  typeof value === "boolean" ? "${filter.value}" : value;
+  typeof value === "boolean" ? `${value}` : value;
 
 /**
  * The full-day range used as default value of a time range filter.

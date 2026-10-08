@@ -1,4 +1,5 @@
 import { expect, test } from "../../../../../playwright/fixtures";
+import type { Page } from "@playwright/test";
 
 import { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
 import { ColumnFilterProps } from "../../column-filter/ColumnFilter";
@@ -745,5 +746,87 @@ test.describe("ColumnFilter toggle variant with FilterContainer", () => {
       component.getByRole("radio", { name: "All", exact: true }),
     ).toBeChecked();
     await expect(page.locator(".vuuFilterDisplay")).not.toContainText("BUY");
+  });
+});
+
+test.describe("ColumnFilter boolean toggle variant with FilterContainer", () => {
+  const records = (page: Page) => page.getByTestId("callback-records");
+
+  test("defaults values to true/false when none provided", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedBooleanToggleFilter",
+    );
+    await expect(component.getByRole("radio")).toHaveCount(3);
+    await expect(
+      component.getByRole("radio", { name: "true", exact: true }),
+    ).toHaveAttribute("value", "true");
+    await expect(
+      component.getByRole("radio", { name: "false", exact: true }),
+    ).toHaveAttribute("value", "false");
+  });
+
+  test("selecting a value generates a boolean filter", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedBooleanToggleFilter",
+    );
+    await component.getByRole("radio", { name: "true", exact: true }).click();
+    await component.getByRole("radio", { name: "false", exact: true }).click();
+    await expect(records(page)).toHaveValue(
+      JSON.stringify([
+        [{ column: "supported", op: "=", value: true }],
+        [{ column: "supported", op: "=", value: false }],
+      ]),
+    );
+  });
+
+  test("labels are used as button text, filter uses boolean values", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedBooleanToggleFilterWithLabels",
+    );
+    const yesButton = component.getByRole("radio", {
+      name: "Yes",
+      exact: true,
+    });
+    await expect(yesButton).toHaveAttribute("value", "true");
+    await yesButton.click();
+    await expect(yesButton).toBeChecked();
+    await expect(records(page)).toHaveValue(
+      JSON.stringify([[{ column: "supported", op: "=", value: true }]]),
+    );
+  });
+
+  test("selects button matching boolean filter provided via container", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedBooleanToggleFilterWithFilter",
+    );
+    await expect(
+      component.getByRole("radio", { name: "false", exact: true }),
+    ).toBeChecked();
+  });
+
+  test("clicking All clears boolean filter provided via container", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedBooleanToggleFilterWithFilter",
+    );
+    await component.getByRole("radio", { name: "All", exact: true }).click();
+    await expect(
+      component.getByRole("radio", { name: "All", exact: true }),
+    ).toBeChecked();
+    await expect(records(page)).toHaveValue(
+      JSON.stringify([["filter cleared"]]),
+    );
   });
 });

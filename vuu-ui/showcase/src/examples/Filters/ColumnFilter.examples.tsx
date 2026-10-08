@@ -815,6 +815,82 @@ export const ContainerManagedToggleFilterWithLabelsAndFilter = () => (
   />
 );
 
+export const ContainerManagedBooleanToggleFilter = ({
+  filter: filterProp,
+  labels,
+  values,
+}: Pick<FilterContainerProps, "filter"> &
+  Pick<FilterContainerColumnFilterProps, "labels" | "values">) => {
+  const { VuuDataSource } = useData();
+  const [filter, setFilter] = useState<FilterContainerFilter | undefined>(
+    filterProp,
+  );
+  const { record, recorder } = useCallbackRecorder();
+
+  const handleFilterApplied = useCallback<
+    FilterAppliedHandler<FilterContainerFilter>
+  >(
+    (filter) => {
+      record(filter);
+      setFilter(filter);
+    },
+    [record],
+  );
+
+  const handleFilterCleared = useCallback(() => {
+    record("filter cleared");
+    setFilter(undefined);
+  }, [record]);
+
+  const dataSource = useMemo(() => {
+    return new VuuDataSource({ table: instrumentsSchema.table });
+  }, [VuuDataSource]);
+
+  const column: ColumnDescriptor = {
+    label: "Supported",
+    name: "supported",
+    serverDataType: "boolean",
+  };
+
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <ContainerTemplate flexDirection="row" width={700}>
+        <FilterContainer
+          filter={filter}
+          onFilterCleared={handleFilterCleared}
+          onFilterApplied={handleFilterApplied}
+        >
+          <FormField>
+            <FormFieldLabel>Supported</FormFieldLabel>
+            <FilterContainerColumnFilter
+              column={column}
+              labels={labels}
+              table={{ module: "SIMUL", table: "instruments" }}
+              values={values}
+              variant="toggle"
+            />
+          </FormField>
+        </FilterContainer>
+        <FilterDisplay columns={[column]} filter={filter} />
+      </ContainerTemplate>
+      {recorder}
+    </DataSourceProvider>
+  );
+};
+
+export const ContainerManagedBooleanToggleFilterWithLabels = () => (
+  <ContainerManagedBooleanToggleFilter
+    labels={["Yes", "No"]}
+    values={[true, false]}
+  />
+);
+
+export const ContainerManagedBooleanToggleFilterWithFilter = () => (
+  <ContainerManagedBooleanToggleFilter
+    filter={{ column: "supported", op: "=", value: false }}
+  />
+);
+
 const createdTimeColumn: ColumnDescriptor = {
   name: "vuuCreatedTime",
   serverDataType: "long",
