@@ -3,6 +3,7 @@ export {
   useModuleServerStatus,
   useModuleServerStatusList,
   useNavItemVisibility,
+  useOpenModuleId,
   useRetryModule,
   useServerMonitor,
   useTrackOpenModule,

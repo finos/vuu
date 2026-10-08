@@ -11,15 +11,22 @@ const classBase = "vuuDashboardNavItem";
 export function DashboardNavItem({
   active,
   item,
+  showNotificationBadges = true,
   showPresence = true,
 }: {
   active: boolean;
   item: NavItem;
+  showNotificationBadges?: boolean;
   showPresence?: boolean;
 }) {
   const { href, navIconName = "custom", navIconUrl, title } = item;
-  const { anchorProps, className, elements, statusBadge, unavailable } =
-    useNavItemPresence({ enabled: showPresence, item, placement: "bottom" });
+  const { anchorProps, badge, className, elements, unavailable } =
+    useNavItemPresence({
+      enabled: showPresence,
+      item,
+      placement: "bottom",
+      showNotificationBadge: showNotificationBadges,
+    });
   const { onContextMenu, onKeyDown } = useNavContextMenu({
     item,
     targetWindow: window,
@@ -48,7 +55,7 @@ export function DashboardNavItem({
       >
         <span className="vuuNavItem-icon">
           <Icon aria-label={title} name={navIconName} style={style} />
-          {statusBadge}
+          {badge}
         </span>
         <span className={`${classBase}-label`}>
           <span>{title}</span>

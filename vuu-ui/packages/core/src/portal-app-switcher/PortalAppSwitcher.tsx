@@ -42,6 +42,11 @@ export interface PortalAppSwitcherProps {
   menuStyle?: AppSwitcherMenuStyle;
   remoteModules: RemoteModuleDescriptor[];
   /**
+   * Shows each application's unread notifications count. Requires
+   * `PortalNotificationsProvider`. Default true.
+   */
+  showNotificationBadges?: boolean;
+  /**
    * Greys applications whose server is unavailable, and explains why on
    * hover. Default true.
    */
@@ -52,6 +57,7 @@ export const PortalAppSwitcher = ({
   displayStyle = "text-only",
   menuStyle = "two-level",
   remoteModules,
+  showNotificationBadges = true,
   showPresence = true,
 }: PortalAppSwitcherProps) => {
   const iconOnly = displayStyle === "icon-only";
@@ -127,6 +133,7 @@ export const PortalAppSwitcher = ({
             active={location.pathname.startsWith(navItem.href)}
             item={navItem}
             key={navItem.href}
+            showNotificationBadges={showNotificationBadges}
             showPresence={showPresence}
           />
         ))}

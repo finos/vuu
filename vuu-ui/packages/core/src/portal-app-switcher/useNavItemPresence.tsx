@@ -1,4 +1,4 @@
-import { Button, StatusIndicator, useFloatingUI } from "@salt-ds/core";
+import { Badge, Button, StatusIndicator, useFloatingUI } from "@salt-ds/core";
 import cx from "clsx";
 import {
   type FocusEvent,
@@ -17,6 +17,10 @@ import {
   isUnavailablePresence,
   type VuuServerStatus,
 } from "../connection-management/server-status";
+import {
+  useModuleUnreadCount,
+  useUnreadCount,
+} from "../notifications/PortalNotificationsProvider";
 import {
   useModuleServerStatusList,
   useNavItemVisibility,
@@ -59,6 +63,11 @@ export const describeUnavailable = ({ detail, since }: VuuServerStatus) => {
   return `Unavailable: ${reason.toLowerCase()}${sinceText}.`;
 };
 
+export const describeUnread = (count: number) =>
+  `${count} unread notification${count === 1 ? "" : "s"}`;
+
+const EMPTY_IDS: ModuleId[] = [];
+
 const leafModules = (item: NavItem): { moduleId: ModuleId; title: string }[] =>
   item.moduleId !== undefined
     ? [{ moduleId: item.moduleId, title: item.title }]
@@ -73,12 +82,15 @@ const UnavailableDetail = ({
   headlineId,
   module: { moduleId, status, title },
   onRetry,
+  showUnread,
 }: {
   headlineId?: string;
   module: UnavailableModule;
   onRetry: (moduleId: ModuleId) => void;
+  showUnread: boolean;
 }) => {
   const { detail, presence, since } = status;
+  const unreadCount = useModuleUnreadCount(showUnread ? moduleId : undefined);
   const now = Date.now();
   const unauthorized = presence === "unauthorized";
   const lastOnline =
@@ -122,6 +134,11 @@ const UnavailableDetail = ({
       {retryText ? (
         <div className={`${classBase}-retry`}>{retryText}</div>
       ) : null}
+      {unreadCount > 0 ? (
+        <div className={`${classBase}-unread`}>
+          {describeUnread(unreadCount)}
+        </div>
+      ) : null}
       {unauthorized ? null : (
         <div className={`${classBase}-actions`}>
           <Button
@@ -141,6 +158,11 @@ export interface NavItemPresenceProps {
   enabled?: boolean;
   item: NavItem;
   placement?: "bottom" | "right";
+  /**
+   * Show the unread notifications badge. A group shows the total for its
+   * available children, so turn it off while the group is expanded.
+   */
+  showNotificationBadge?: boolean;
 }
 
 export interface NavItemPresence {
@@ -158,11 +180,15 @@ export interface NavItemPresence {
   };
   /** Classname for the item, greyed when unavailable. */
   className?: string;
+  /**
+   * The unread notifications badge, or a status badge in its place while
+   * unavailable.
+   */
+  badge: ReactNode;
   /** The description and overlay, to render after the anchor. */
   elements: ReactNode;
-  /** Shown in place of the badge while unavailable. */
-  statusBadge: ReactNode;
   unavailable: boolean;
+  unreadCount: number;
 }
 
 /**
@@ -175,6 +201,7 @@ export const useNavItemPresence = ({
   enabled = true,
   item,
   placement = "right",
+  showNotificationBadge = true,
 }: NavItemPresenceProps): NavItemPresence => {
   const modules = useMemo(() => leafModules(item), [item]);
   const moduleIds = useMemo(
@@ -198,6 +225,19 @@ export const useNavItemPresence = ({
     enabled &&
     modules.length > 0 &&
     unavailableModules.length === modules.length;
+
+  const availableModuleIds = useMemo(() => {
+    if (unavailableModules.length === 0) {
+      return moduleIds;
+    }
+    const unavailableIds = new Set(
+      unavailableModules.map(({ moduleId }) => moduleId),
+    );
+    return moduleIds.filter((id) => !unavailableIds.has(id));
+  }, [moduleIds, unavailableModules]);
+  const unreadCount = useUnreadCount({
+    moduleIds: showNotificationBadge ? availableModuleIds : EMPTY_IDS,
+  });
 
   const [open, setOpen] = useState(false);
   const [recovered, setRecovered] = useState(false);
@@ -293,9 +333,15 @@ export const useNavItemPresence = ({
 
   const descriptionId = useId();
   const headlineId = useId();
+  const description = [
+    unavailable ? describeUnavailable(unavailableModules[0].status) : "",
+    unreadCount > 0 ? `${describeUnread(unreadCount)}.` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const anchorProps: NavItemPresence["anchorProps"] = {
-    "aria-describedby": unavailable ? descriptionId : undefined,
+    "aria-describedby": description ? descriptionId : undefined,
     "aria-disabled": unavailable && !isGroup ? true : undefined,
     onBlur,
     onClick: (event) => {
@@ -324,7 +370,7 @@ export const useNavItemPresence = ({
     ref,
   };
 
-  const statusBadge = unavailable ? (
+  const badge = unavailable ? (
     <span aria-hidden className={`${classBase}-statusBadge`}>
       <StatusIndicator
         status={
@@ -336,13 +382,17 @@ export const useNavItemPresence = ({
         }
       />
     </span>
+  ) : unreadCount > 0 ? (
+    <span aria-hidden className={`${classBase}-unreadBadge`}>
+      <Badge max={99} value={unreadCount} />
+    </span>
   ) : null;
 
   const elements = (
     <>
-      {unavailable ? (
+      {description ? (
         <span className={`${classBase}-description`} hidden id={descriptionId}>
-          {describeUnavailable(unavailableModules[0].status)}
+          {description}
         </span>
       ) : null}
       {open && showOverlay ? (
@@ -375,6 +425,7 @@ export const useNavItemPresence = ({
                 key={module.moduleId}
                 module={module}
                 onRetry={retry}
+                showUnread={showNotificationBadge}
               />
             ))
           )}
@@ -385,9 +436,10 @@ export const useNavItemPresence = ({
 
   return {
     anchorProps,
+    badge,
     className: unavailable ? "vuuNavItem-unavailable" : undefined,
     elements,
-    statusBadge,
     unavailable,
+    unreadCount,
   };
 };

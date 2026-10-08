@@ -23,15 +23,26 @@ const classBase = "vuuPortalAppSwitcher";
 export function NestedNavItem(props: {
   item: NavItem;
   icon?: boolean;
+  showNotificationBadges?: boolean;
   showPresence?: boolean;
 }) {
-  const { item, icon, showPresence = true } = props;
+  const {
+    item,
+    icon,
+    showNotificationBadges = true,
+    showPresence = true,
+  } = props;
   const [expanded, setExpanded] = useNavGroupExpansion(item.href);
   const collapsed = !expanded;
   const location = useLocation();
   const targetWindow = useWindow();
-  const { anchorProps, className, elements, statusBadge, unavailable } =
-    useNavItemPresence({ enabled: showPresence, item });
+  // An expanded group's children show their own badges.
+  const { anchorProps, badge, className, elements, unavailable } =
+    useNavItemPresence({
+      enabled: showPresence,
+      item,
+      showNotificationBadge: showNotificationBadges && collapsed,
+    });
   const { onContextMenu, onKeyDown } = useNavContextMenu({
     item,
     targetWindow,
@@ -54,7 +65,7 @@ export function NestedNavItem(props: {
                 <VerticalNavigationItemLabel>
                   {item.title}
                 </VerticalNavigationItemLabel>
-                {statusBadge}
+                {badge}
                 <VerticalNavigationItemExpansionIcon />
               </VerticalNavigationItemTrigger>
             </CollapsibleTrigger>
@@ -66,6 +77,7 @@ export function NestedNavItem(props: {
                 <NestedNavItem
                   key={child.href}
                   item={child}
+                  showNotificationBadges={showNotificationBadges}
                   showPresence={showPresence}
                 />
               ))}
@@ -98,7 +110,7 @@ export function NestedNavItem(props: {
           <VerticalNavigationItemLabel>
             {item.title}
           </VerticalNavigationItemLabel>
-          {statusBadge}
+          {badge}
         </Link>
         {elements}
       </VerticalNavigationItemContent>

@@ -81,6 +81,7 @@ export {
   VuuServerMonitorProvider,
   type VuuServerMonitorProviderProps,
 } from "./server-monitor";
+export * from "./notifications";
 export type {
   ServerMonitorOptions,
   VuuServerPresence,

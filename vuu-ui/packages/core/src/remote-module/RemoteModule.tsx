@@ -13,6 +13,7 @@ import {
 } from "../persistence/PersistenceContext";
 import type { StateMigration } from "../persistence/StateMigrations";
 import { useStoreReady } from "../persistence/useStoreReady";
+import { useRegisterNotificationHost } from "../notifications/PortalNotificationsProvider";
 import { useOptionalSavedState } from "../saved-state/SavedStateContext";
 import { useInRouterContext, useLocation } from "react-router-dom";
 import { RemoteModuleErrorBoundary } from "./RemoteModuleErrorBoundary";
@@ -212,6 +213,7 @@ function RemoteModuleContent(props: RemoteModuleProps) {
     ...remoteProps
   } = props;
   const store = useRemoteModuleState(props);
+  useRegisterNotificationHost(vuu?.connectionId);
   const RemoteComponent = getRemoteComponent(mfUrl, mfScope, mfComponent);
   const connection = vuu ?? use(loadRemoteModuleConfig(mfUrl)).vuu;
   const remoteComponent = <RemoteComponent {...remoteProps} />;

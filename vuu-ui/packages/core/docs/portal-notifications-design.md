@@ -1191,6 +1191,37 @@ to, the design above:
 - `@vuu-ui/vuu-data-remote` and `@vuu-ui/vuu-notifications` are shared
   singletons in all `portal-build.json` files.
 
+### 16.2 Phase 2 implementation notes
+
+Phase 2 is implemented in `src/notifications/`. `PortalShell` mounts
+`PortalNotificationsProvider` unless `notifications={false}`, and wraps each
+route in a `PortalModuleIdContext`. These are the places where it differs
+from, or adds to, the design above:
+
+- Read state is saved in the existing `vuu.portal` application state, under
+  the entry `notifications`. It is not saved under a separate
+  `portal.notifications` key. Saves are debounced by 500ms and skipped when
+  nothing has changed.
+- On logout the feeds are disposed but the store is not cleared. Clearing
+  it would save an empty read state. The provider creates a new store for
+  each user instead.
+- `publish` (§8.2) was added in this phase rather than Phase 3.
+- `RemoteModule` registers its `vuu` override connection with
+  `useRegisterNotificationHost`, so those notifications are attributed to
+  the hosting module (decision 9).
+- Nav item badges come from `useNavItemPresence`, which now returns `badge`.
+  `badge` is the status badge while the item is unavailable; otherwise it is
+  the unread count. The `aria-describedby` text includes "N unread
+  notifications." and the unavailable overlay shows the module's count.
+- An expanded group hides its badge, because its children show their own.
+- A group's badge sums its children's counts. A notification attributed to
+  two children of the same group is counted twice. This is rare.
+- Local Vuu modules are shared between servers by module name. In
+  portal-host, `basket` and `simul` both include the simulated
+  notifications module, so their apps show the same notifications.
+- The context menu entries and "Show notifications" in the overlay are left
+  to Phase 4, with the panel.
+
 ## 17. Decisions
 
 | # | Question                                   | Decision                                                                                   |

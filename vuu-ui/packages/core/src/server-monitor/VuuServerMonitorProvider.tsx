@@ -226,19 +226,26 @@ export const useNavItemVisibility = (
   }, [moduleId, ref, visibility]);
 };
 
-/** Reports the open module, the monitor's highest priority. */
-export const useTrackOpenModule = (
+/** The module whose route is open, if any. */
+export const useOpenModuleId = (
   remoteModules: Pick<RemoteModuleDescriptor, "id" | "path">[],
 ) => {
-  const monitor = useServerMonitor();
   const { pathname } = useLocation();
-  const openModuleId = useMemo(
+  return useMemo(
     () =>
       remoteModules.find(({ path }) =>
         matchPath({ end: false, path: path.replace(/\/?\*$/, "") }, pathname),
       )?.id,
     [pathname, remoteModules],
   );
+};
+
+/** Reports the open module, the monitor's highest priority. */
+export const useTrackOpenModule = (
+  remoteModules: Pick<RemoteModuleDescriptor, "id" | "path">[],
+) => {
+  const monitor = useServerMonitor();
+  const openModuleId = useOpenModuleId(remoteModules);
   useEffect(() => {
     monitor?.setOpenModule(openModuleId);
   }, [monitor, openModuleId]);

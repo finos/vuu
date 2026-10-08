@@ -26,9 +26,13 @@ import {
 } from "../common-shell/CommonShell";
 import type { ServerMonitorOptions } from "../connection-management/server-status";
 import {
+  useOpenModuleId,
   useTrackOpenModule,
   VuuServerMonitorProvider,
 } from "../server-monitor/VuuServerMonitorProvider";
+import type { PortalNotificationsOptions } from "../notifications/notification-types";
+import { PortalModuleIdContext } from "../notifications/PortalNotificationsContext";
+import { PortalNotificationsProvider } from "../notifications/PortalNotificationsProvider";
 import { WindowHost } from "../window-host/WindowHost";
 import { WINDOW_HOST_ROUTE } from "../window-host/window-host-routing";
 import {
@@ -52,6 +56,11 @@ const isPortalLandingPage = (
 export interface PortalShellProps extends CommonShellProps {
   children?: ReactNode;
   id?: string;
+  /**
+   * Notifications from the applications' servers, shown as badges in the
+   * navigation. `false` disables them.
+   */
+  notifications?: PortalNotificationsOptions | false;
   remoteModules: RemoteModuleDescriptor[];
   /**
    * Monitoring of the application servers in the navigation. `false` stops
@@ -110,6 +119,7 @@ const PortalLayout = () => {
   const {
     children,
     id,
+    notifications,
     portalId = id,
     remoteModules,
     serverMonitor,
@@ -117,6 +127,7 @@ const PortalLayout = () => {
     ...providerProps
   } = usePortalShellProps();
   const targetWindow = useWindow();
+  const openModuleId = useOpenModuleId(remoteModules);
   const [
     [landingPage = <PortalLandingPage />, ...unexpectedLandingPages],
     portalChromeElements,
@@ -140,32 +151,39 @@ const PortalLayout = () => {
         remoteModules={remoteModules}
       >
         <OpenModuleTracker remoteModules={remoteModules} />
-        <div className={classBase} id={id}>
-          {portalChromeElements}
-          <div className={`${classBase}-content`}>
-            <Routes>
-              <Route path="/" element={landingPage} />
-              <Route path="*" element={landingPage} />
-              {remoteModules.map(({ id, path, ...feature }) => {
-                return (
-                  <Route
-                    key={id}
-                    path={getRemoteRoutePath(path)}
-                    element={
-                      <PortalLinkProvider modulePath={path}>
-                        <PortalModuleRegistryProvider
-                          remoteModules={remoteModules}
-                        >
-                          <RemoteModule {...feature} />
-                        </PortalModuleRegistryProvider>
-                      </PortalLinkProvider>
-                    }
-                  />
-                );
-              })}
-            </Routes>
+        <PortalNotificationsProvider
+          openModuleId={openModuleId}
+          options={notifications}
+        >
+          <div className={classBase} id={id}>
+            {portalChromeElements}
+            <div className={`${classBase}-content`}>
+              <Routes>
+                <Route path="/" element={landingPage} />
+                <Route path="*" element={landingPage} />
+                {remoteModules.map(({ id, path, ...feature }) => {
+                  return (
+                    <Route
+                      key={id}
+                      path={getRemoteRoutePath(path)}
+                      element={
+                        <PortalModuleIdContext.Provider value={id}>
+                          <PortalLinkProvider modulePath={path}>
+                            <PortalModuleRegistryProvider
+                              remoteModules={remoteModules}
+                            >
+                              <RemoteModule {...feature} />
+                            </PortalModuleRegistryProvider>
+                          </PortalLinkProvider>
+                        </PortalModuleIdContext.Provider>
+                      }
+                    />
+                  );
+                })}
+              </Routes>
+            </div>
           </div>
-        </div>
+        </PortalNotificationsProvider>
       </CommonShell>
     </VuuServerMonitorProvider>
   );

@@ -173,6 +173,21 @@
   }
 }
 
+.vuuNavItemPresence-unreadBadge {
+  display: inline-flex;
+  line-height: 0;
+
+  .vuuNavItem-icon > & {
+    position: absolute;
+    right: var(--vuuNavItem-badge-offset, -4px);
+    top: var(--vuuNavItem-badge-offset, -4px);
+  }
+
+  .saltVerticalNavigationItemTrigger > & {
+    margin-inline-start: auto;
+  }
+}
+
 .vuuNavItemPresence-overlay {
   background: var(--salt-container-primary-background);
   border: var(--salt-size-border) var(--salt-container-primary-borderStyle)
