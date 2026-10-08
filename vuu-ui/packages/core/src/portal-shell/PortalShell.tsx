@@ -31,6 +31,7 @@ import {
   VuuServerMonitorProvider,
 } from "../server-monitor/VuuServerMonitorProvider";
 import type { PortalNotificationsOptions } from "../notifications/notification-types";
+import { PortalNotificationBanners } from "../notifications/PortalNotificationBanners";
 import { PortalModuleIdContext } from "../notifications/PortalNotificationsContext";
 import { PortalNotificationsProvider } from "../notifications/PortalNotificationsProvider";
 import { WindowHost } from "../window-host/WindowHost";
@@ -157,6 +158,9 @@ const PortalLayout = () => {
         >
           <div className={classBase} id={id}>
             {portalChromeElements}
+            <div className={`${classBase}-banners`}>
+              <PortalNotificationBanners />
+            </div>
             <div className={`${classBase}-content`}>
               <Routes>
                 <Route path="/" element={landingPage} />

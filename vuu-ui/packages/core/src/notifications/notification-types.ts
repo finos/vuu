@@ -1,5 +1,6 @@
 import type { ModuleId } from "../connection-management/ModuleServerMap";
 import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
+import type { PresentationPolicy } from "./presentation-policy";
 
 export type NotificationLevel = "info" | "warning" | "error" | "success";
 export type NotificationKind = "toast" | "banner" | "silent";
@@ -78,4 +79,6 @@ export interface PortalNotificationsOptions {
   /** Rows subscribed per server. Default 200. */
   maxPerServer?: number;
   attribution?: NotificationAttribution;
+  /** Decides which notifications are shown as toasts or banners. */
+  policy?: PresentationPolicy;
 }

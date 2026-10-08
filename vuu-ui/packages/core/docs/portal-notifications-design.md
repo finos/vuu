@@ -1222,6 +1222,41 @@ from, or adds to, the design above:
 - The context menu entries and "Show notifications" in the overlay are left
   to Phase 4, with the panel.
 
+### 16.3 Phase 3 implementation notes
+
+Phase 3 is implemented. `PortalNotificationsProvider` always renders a
+`NotificationsProvider`, with an interceptor while notifications are
+enabled. These are the places where it differs from, or adds to, the design
+above:
+
+- The interceptor takes one argument, `(notification) => "present" |
+  "suppress"`. The origin is on the notification (`notification.origin`),
+  which `useNotifications` fills from the nearest
+  `NotificationOriginProvider`.
+- `NotificationsProvider` keeps its contexts on `globalThis` (via
+  `Symbol.for`), so separately bundled copies still find the portal's
+  provider.
+- The policy is set through `PortalShellProps.notifications.policy`
+  (`PortalNotificationsOptions.policy`), not a separate
+  `notificationPolicy` prop.
+- For client notifications, any result other than `none` presents the
+  notification as the caller requested. `panelOpen` only affects server and
+  `publish()` notifications.
+- Client toasts are recorded when `record` is set, or by default when their
+  status is `error` or `warning`. They are attributed to
+  `origin.moduleId ?? origin.parentModuleId`.
+- Server and `publish()` toasts are rate-limited per source: at most 3 are
+  visible, and after 5 within 2s the rest are held back and shown as one
+  "N more notifications" toast once the burst has been quiet for 2s.
+- Banners are a new inline `PortalNotificationBanners` component, in its
+  own grid row between the header and the content. They do not use
+  `WorkspaceNotification`, which is a full-workspace overlay. At most two are
+  shown, with a "+n more" button to show the rest.
+- Banners are exempt from read-on-open: they stay unread until the user
+  closes them, which marks them read.
+- `useNotificationPresentation()` exposes `doNotDisturb`, `panelOpen` and
+  their setters for Phase 4, and `presentationOf(notification)`.
+
 ## 17. Decisions
 
 | # | Question                                   | Decision                                                                                   |

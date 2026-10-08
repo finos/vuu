@@ -156,6 +156,15 @@ describe("NotificationStore", () => {
     expect(store.get("s1:4")?.read).toBe(false);
   });
 
+  it("leaves banners unread when their module is open", () => {
+    const store = new NotificationStore();
+    store.upsert(notification("1", { kind: "banner" }));
+    store.setOpenModule("a");
+    store.upsert(notification("2", { kind: "banner" }));
+    store.reattribute(() => ["a"]);
+    expect(store.unreadCount({ moduleIds: ["a"] })).toBe(2);
+  });
+
   it("reattributes notifications and moves their counts", () => {
     const store = new NotificationStore();
     store.upsert(notification("1", { moduleIds: [] }));

@@ -30,6 +30,7 @@ export type {
 export {
   PortalModuleIdContext,
   type PortalNotificationsAPI,
+  type PortalNotificationsPresentation,
   type PublishedNotification,
 } from "./PortalNotificationsContext";
 export {
@@ -39,10 +40,19 @@ export {
   useLatestNotification,
   useModuleUnreadCount,
   useNotificationList,
+  useNotificationPresentation,
   usePortalNotifications,
   useRegisterNotificationHost,
   useUnreadCount,
 } from "./PortalNotificationsProvider";
+export {
+  defaultPresentationPolicy,
+  type Presentation,
+  type PresentationContext,
+  type PresentationPolicy,
+  ToastRateLimiter,
+  type ToastRateLimiterOptions,
+} from "./presentation-policy";
 export {
   type NotificationFeedScope,
   type NotificationFeedSink,

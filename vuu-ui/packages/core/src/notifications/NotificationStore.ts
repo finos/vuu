@@ -238,7 +238,8 @@ export class NotificationStore {
 
   /**
    * Sets the module the user has open. Its notifications are marked read,
-   * and so are new ones attributed to it while it stays open.
+   * and so are new ones attributed to it while it stays open. Banners are
+   * not: they stay unread until the user closes them.
    */
   setOpenModule(moduleId: ModuleId | undefined) {
     this.#openModuleId = moduleId;
@@ -246,7 +247,7 @@ export class NotificationStore {
       this.markRead(
         [...this.#notifications.values()]
           .filter(
-            ({ origin, read }) => !read && origin.moduleIds.includes(moduleId),
+            (notification) => !notification.read && this.#isOpen(notification),
           )
           .map(({ key }) => key),
       );
@@ -429,8 +430,10 @@ export class NotificationStore {
     }
   }
 
-  #isOpen({ origin }: PortalNotification) {
+  /** Banners are portal-wide, so stay unread until closed. */
+  #isOpen({ kind, origin }: PortalNotification) {
     return (
+      kind !== "banner" &&
       this.#openModuleId !== undefined &&
       origin.moduleIds.includes(this.#openModuleId)
     );

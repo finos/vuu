@@ -3,6 +3,11 @@ import type {
   DataSourceConstructorProps,
   DataSourceRow,
 } from "@vuu-ui/vuu-data-types";
+import {
+  NotificationOriginProvider,
+  NotificationsProvider,
+  useNotifications,
+} from "@vuu-ui/vuu-notifications";
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -14,6 +19,7 @@ import {
   PortalNotificationsProvider,
   useModuleUnreadCount,
   useNotificationList,
+  useNotificationPresentation,
   usePortalNotifications,
   useUnreadCount,
 } from "../../src/notifications/PortalNotificationsProvider";
@@ -26,7 +32,14 @@ import {
 import type { PortalNotificationsAPI } from "../../src/notifications/PortalNotificationsContext";
 import { testModule } from "../connection-management/test-modules";
 
-const COLUMNS = ["id", "title", "message", "level", "vuuCreatedTimestamp"];
+const COLUMNS = [
+  "id",
+  "title",
+  "message",
+  "level",
+  "vuuCreatedTimestamp",
+  "type",
+];
 
 const sources: FakeDataSource[] = [];
 
@@ -66,6 +79,7 @@ class FakeDataSource {
             "",
             "INFO",
             1000 + i,
+            "TOAST",
           ] as unknown as DataSourceRow,
       ),
       size: ids.length,
@@ -79,7 +93,10 @@ const getServerAPI = async () => ({
     tables: [{ module: "NOTIFICATIONS", table: "notifications" }],
   }),
   getTableSchema: async (table: { module: string; table: string }) => ({
-    columns: COLUMNS.map((name) => ({ name, serverDataType: "string" as const })),
+    columns: COLUMNS.map((name) => ({
+      name,
+      serverDataType: "string" as const,
+    })),
     key: "id",
     table,
   }),
@@ -123,9 +140,7 @@ describe("PortalNotificationsProvider", () => {
     // m0 uses the simul local server, m1 the portal's own.
     vi.spyOn(globalThis, "fetch").mockImplementation(async (url) =>
       Response.json(
-        String(url).includes("/m0")
-          ? { connectionId: "simul" }
-          : {},
+        String(url).includes("/m0") ? { connectionId: "simul" } : {},
       ),
     );
   });
@@ -148,7 +163,7 @@ describe("PortalNotificationsProvider", () => {
     );
   };
 
-  const render = async (openModuleId?: string) => {
+  const render = async (openModuleId?: string, content?: ReactNode) => {
     await act(async () =>
       root.render(
         <AuthenticationProvider
@@ -159,6 +174,7 @@ describe("PortalNotificationsProvider", () => {
           <PortalPersistenceRoot persistence={backend}>
             <PortalNotificationsProvider openModuleId={openModuleId}>
               <Probe />
+              {content}
             </PortalNotificationsProvider>
           </PortalPersistenceRoot>
         </AuthenticationProvider>,
@@ -167,7 +183,8 @@ describe("PortalNotificationsProvider", () => {
     await flush();
   };
 
-  const output = () => JSON.parse(container.querySelector("output")!.textContent!);
+  const output = () =>
+    JSON.parse(container.querySelector("output")!.textContent!);
 
   it("feeds local server notifications into the store, attributed to their module", async () => {
     await render();
@@ -242,5 +259,105 @@ describe("PortalNotificationsProvider", () => {
     expect(sources).toHaveLength(0);
     expect(api).toBeUndefined();
     expect(output()).toEqual({ list: [], m0: 0, total: 0 });
+  });
+  describe("presentation", () => {
+    const toasts = () =>
+      [...document.querySelectorAll(".vuuToastNotification")].map(
+        (toast) => toast.textContent,
+      );
+
+    /** Server rows are part of the initial snapshot for 500ms. */
+    const afterSnapshot = async () => {
+      await act(async () => sources[0].send(["0"]));
+      vi.setSystemTime(Date.now() + 1000);
+    };
+
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+    });
+
+    let showNotification: ReturnType<
+      typeof useNotifications
+    >["showNotification"];
+    const Client = () => {
+      ({ showNotification } = useNotifications());
+      return null;
+    };
+    const ModuleClient = ({ moduleId }: { moduleId: string }) => (
+      <NotificationOriginProvider moduleId={moduleId}>
+        {/* A module's own provider passes notifications to the portal's. */}
+        <NotificationsProvider>
+          <Client />
+        </NotificationsProvider>
+      </NotificationOriginProvider>
+    );
+
+    afterEach(() => {
+      vi.useRealTimers();
+      document.querySelectorAll(".vuuToastNotification").forEach((toast) => {
+        toast.remove();
+      });
+    });
+
+    it("toasts server notifications for the open module only", async () => {
+      await render("m0");
+      await afterSnapshot();
+      expect(toasts()).toEqual([]);
+      await act(async () => sources[0].send(["0", "1"]));
+      expect(toasts()).toEqual([expect.stringContaining("title 1")]);
+
+      await render("m1");
+      await act(async () => sources[0].send(["0", "1", "2"]));
+      expect(toasts()).toHaveLength(1);
+      expect(output().m0).toBe(1);
+    });
+
+    it("does not toast while do not disturb is on", async () => {
+      let presentation: ReturnType<typeof useNotificationPresentation>;
+      const Settings = () => {
+        presentation = useNotificationPresentation();
+        return null;
+      };
+      await render("m0", <Settings />);
+      await act(async () => presentation?.setDoNotDisturb(true));
+      await afterSnapshot();
+      await act(async () => sources[0].send(["0", "1"]));
+      expect(toasts()).toEqual([]);
+      expect(output().list).toContain("simul:1");
+    });
+
+    it("records client errors and attributes them to the calling module", async () => {
+      await render("m0", <ModuleClient moduleId="m1" />);
+      await act(async () => {
+        showNotification({ header: "Failed", status: "error", type: "toast" });
+      });
+      expect(toasts()).toEqual([]);
+      const [notification] = api?.store.query() ?? [];
+      expect(notification).toMatchObject({
+        level: "error",
+        origin: { moduleIds: ["m1"], source: "client" },
+        title: "Failed",
+      });
+    });
+
+    it("shows client toasts from the open module, recording only errors and warnings", async () => {
+      await render("m1", <ModuleClient moduleId="m1" />);
+      await act(async () => {
+        showNotification({ header: "Saved", status: "success", type: "toast" });
+      });
+      expect(toasts()).toEqual([expect.stringContaining("Saved")]);
+      expect(api?.store.query()).toEqual([]);
+
+      await act(async () => {
+        showNotification({
+          header: "Saved",
+          record: true,
+          status: "success",
+          type: "toast",
+        });
+      });
+      expect(toasts()).toHaveLength(2);
+      expect(api?.store.query()).toHaveLength(1);
+    });
   });
 });

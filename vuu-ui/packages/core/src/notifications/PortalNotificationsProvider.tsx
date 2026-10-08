@@ -1,3 +1,4 @@
+import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import {
   type ReactNode,
   useCallback,
@@ -23,8 +24,13 @@ import {
   PortalModuleIdContext,
   PortalNotificationsContext,
   type PortalNotificationsContextValue,
+  PortalNotificationsPresentationContext,
   type PublishedNotification,
 } from "./PortalNotificationsContext";
+import {
+  PortalToastPresenter,
+  usePortalPresentation,
+} from "./PortalNotificationsPresentation";
 import type {
   NotificationCountFilter,
   NotificationQuery,
@@ -123,7 +129,7 @@ export const PortalNotificationsProvider = ({
 }: PortalNotificationsProviderProps) => {
   const identity = useOptionalIdentityContext();
   const enabled = options !== false && options?.enabled !== false;
-  const { attribution, maxNotifications, maxPerServer } = options || {};
+  const { attribution, maxNotifications, maxPerServer, policy } = options || {};
   const userName = identity?.user.userName;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: a new store per user
@@ -207,13 +213,38 @@ export const PortalNotificationsProvider = ({
     [enabled, identity, registerHost, store],
   );
 
+  const { interceptor, presentation, presentationOfRef, state } =
+    usePortalPresentation({
+      moduleServerMap,
+      openModuleId,
+      policy,
+      store: value ? store : undefined,
+    });
+
   return (
-    <PortalNotificationsContext.Provider value={value}>
-      {manager && localServers ? (
-        <LocalNotificationFeeds localServers={localServers} manager={manager} />
-      ) : null}
-      {children}
-    </PortalNotificationsContext.Provider>
+    <NotificationsProvider interceptor={interceptor}>
+      <PortalNotificationsContext.Provider value={value}>
+        <PortalNotificationsPresentationContext.Provider
+          value={value ? presentation : null}
+        >
+          {value ? (
+            <PortalToastPresenter
+              moduleServerMap={moduleServerMap}
+              presentationOfRef={presentationOfRef}
+              state={state}
+              store={store}
+            />
+          ) : null}
+          {manager && localServers ? (
+            <LocalNotificationFeeds
+              localServers={localServers}
+              manager={manager}
+            />
+          ) : null}
+          {children}
+        </PortalNotificationsPresentationContext.Provider>
+      </PortalNotificationsContext.Provider>
+    </NotificationsProvider>
   );
 };
 
@@ -334,3 +365,10 @@ export const useRegisterNotificationHost = (
     }
   }, [connectionId, moduleId, registerHost]);
 };
+
+/**
+ * Presentation settings, e.g. do not disturb, or `undefined` when there is
+ * no portal or notifications are disabled.
+ */
+export const useNotificationPresentation = () =>
+  useContext(PortalNotificationsPresentationContext) ?? undefined;

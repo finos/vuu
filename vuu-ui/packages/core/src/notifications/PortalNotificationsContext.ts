@@ -6,6 +6,7 @@ import type {
   NotificationLevel,
   PortalNotification,
 } from "./notification-types";
+import type { Presentation } from "./presentation-policy";
 
 export interface PublishedNotification {
   /** Unique within the publishing module. */
@@ -41,3 +42,17 @@ export const PortalNotificationsContext =
 export const PortalModuleIdContext = createContext<ModuleId | undefined>(
   undefined,
 );
+
+export interface PortalNotificationsPresentation {
+  /** Hides toasts and banners. Notifications are still recorded. */
+  doNotDisturb: boolean;
+  setDoNotDisturb: (doNotDisturb: boolean) => void;
+  /** The notifications panel is showing, so toasts are not needed. */
+  panelOpen: boolean;
+  setPanelOpen: (panelOpen: boolean) => void;
+  /** Whether a notification is presented, and how. */
+  presentationOf: (notification: PortalNotification) => Presentation;
+}
+
+export const PortalNotificationsPresentationContext =
+  createContext<PortalNotificationsPresentation | null>(null);
