@@ -1202,5 +1202,5 @@ to, the design above:
 | 5 | Are banners portal-wide?                   | Yes (§9.3).                                                                               |
 | 6 | Tab leader election in v1?                 | No. Users are not expected to open multiple portal tabs; revisit only if that changes (§12.1). |
 | 7 | Where does the module→server mapping come from? (revision 2026-10-08) | Each remote's `config.json` (#2535), loaded for all navigable modules by a shared `ModuleServerMap` that `useVuuServers` also uses (§6.1). |
-| 8 | How is a failed `config.json` shown? (revision 2026-10-08) | Proposed: presence `unavailable`, greyed and not openable like an offline server; activation retries the load (§6.4, §10.1). |
+| 8 | How is a failed `config.json` shown? (revision 2026-10-08) | Treated as offline: presence `unavailable`, greyed and not openable; the overlay offers Retry now, and activation also retries the load (§6.4, §10.1). |
 | 9 | Notifications from `vuu`-override connections? (revision 2026-10-08) | Proposed: attributed to the hosting module (e.g. the table browser), else the portal (§7.4). Override connections are never monitored. |
