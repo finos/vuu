@@ -26,7 +26,13 @@
 
   // Podman inside the container needs /dev/fuse (fuse-overlayfs), /dev/net/tun (pasta networking) and relaxed seccomp/AppArmor plus unmasked /proc
   // to create user namespaces and mounts.
+  //
+  // --userns comes from VUU_DEVCONTAINER_USERNS on the host and is empty (the engine default)
+  // when unset. With rootless Podman on Linux set it to "keep-id", otherwise the host user maps
+  // to root in the container and 'vscode' can't write to the workspace (e.g. npm install fails).
+  // Docker doesn't support keep-id, so leave it unset there.
   "runArgs": [
+    "--userns=${localEnv:VUU_DEVCONTAINER_USERNS}",
     "--device=/dev/fuse",
     "--device=/dev/net/tun",
     "--cap-add=SYS_ADMIN",

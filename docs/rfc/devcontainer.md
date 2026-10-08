@@ -1,4 +1,4 @@
-# Dev Container — Toolchain, Python and Nested Podman
+li# Dev Container — Toolchain, Python and Nested Podman
 
 **Status: Implemented.** The `.devcontainer/` set-up described below exists and has been verified
 end-to-end with the [Dev Containers CLI](https://github.com/devcontainers/cli) on a Podman host
@@ -111,7 +111,7 @@ Podman runs **rootless as the `vscode` user**, nested inside the dev container. 
 | Item | Purpose |
 |------|---------|
 | `podman` | The engine |
-| `uidmap` + `/etc/subuid`, `/etc/subgid` entries for `vscode` | User-namespace ID ranges for rootless containers |
+| `uidmap` + `/etc/subuid`, `/etc/subgid` entries for `vscode` | User-namespace ID ranges for rootless containers: `1-999` and `1001-65536` (every ID except `vscode`'s own), as a rootless host engine only maps IDs 0-65536 into the dev container |
 | `fuse-overlayfs` + `storage.conf` (`driver = "overlay"`, `mount_program = fuse-overlayfs`) | Overlay storage without kernel overlay-in-userns support |
 | `passt` (pasta), `slirp4netns` | Rootless container networking; pasta is Podman 5's default |
 | `nftables` | `netavark` shells out to `nft` to set up the default bridge network / port forwards |

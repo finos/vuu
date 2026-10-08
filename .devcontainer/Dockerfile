@@ -24,8 +24,13 @@ RUN apt-get update \
 
 # Rootless Podman for the non-root 'vscode' user. Containers get their own network namespace
 # (pasta) rather than the host's, so published ports work - Testcontainers relies on them.
-RUN { grep -q '^vscode:' /etc/subuid || echo 'vscode:100000:65536' >> /etc/subuid; } \
-    && { grep -q '^vscode:' /etc/subgid || echo 'vscode:100000:65536' >> /etc/subgid; } \
+# vscode's sub-IDs are every ID in 1-65536 except its own (1000). A rootless host engine (e.g.
+# Podman on Linux) only maps IDs 0-65536 into the dev container, so the base image's default
+# 100000:65536 range doesn't exist there and nested Podman can't start. This range works on any
+# host engine and still gives nested containers 65536 IDs (0-65535, incl. nobody/65534).
+RUN for f in /etc/subuid /etc/subgid; do \
+        sed -i '/^vscode:/d' "$f" && printf 'vscode:1:999\nvscode:1001:64536\n' >> "$f"; \
+    done \
     && mkdir -p /home/vscode/.config/containers \
     && printf '[storage]\ndriver = "overlay"\n\n[storage.options.overlay]\nmount_program = "/usr/bin/fuse-overlayfs"\n' \
         > /home/vscode/.config/containers/storage.conf \
