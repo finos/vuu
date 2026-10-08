@@ -468,6 +468,11 @@ export const RemoteStatusLine = ({
       Checked from this browser: manifest found · exposes{" "}
       {check.exposes.map((name) => `./${name}`).join(", ") || "nothing"}
       {check.elapsedMs !== undefined ? ` · ${check.elapsedMs} ms` : ""}
+      {check.config?.status === "loaded"
+        ? check.config.vuu
+          ? ` · Vuu server ${check.config.vuu.connectionId}`
+          : " · no Vuu server"
+        : ""}
       {check.status === "mismatch" ? ` · ${check.summary}` : ""}
     </Text>
   );
