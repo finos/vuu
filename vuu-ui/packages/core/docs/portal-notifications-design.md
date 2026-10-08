@@ -439,8 +439,8 @@ interface VuuConnectionRegistry {
 export type VuuServerPresence =
   | "online"        // connected / reconnected
   | "connecting"    // authenticating, connecting (first attempt)
-  | "degraded"      // reconnecting after having been online
-  | "offline"       // failed, or disconnected and probing
+  | "degraded"      // reconnecting after having been online, within offlineAfterMs
+  | "offline"       // failed, disconnected and probing, or still reconnecting after offlineAfterMs
   | "unauthorized"  // token exchange denied for this user
   | "unavailable"   // module's config.json failed to load or is invalid (§6.1)
   | "unknown";      // not monitored (over cap), config still loading, or not otherwise connected
@@ -462,6 +462,7 @@ export interface VuuServerStatusDetail {
   lastOnlineAt?: number;    // epoch ms, if the server was ever online this session
   lastAttemptAt?: number;   // epoch ms of last connect/probe/config load
   nextAttemptAt?: number;   // epoch ms of next scheduled probe; absent when not retrying (unauthorized)
+  reconnecting?: boolean;   // a lost connection the registry is still reconnecting
 }
 ```
 
@@ -897,9 +898,13 @@ hover / focus on an unavailable item:
     overlay pinned and starts **Retry now**. If the retry succeeds, the item
     un-greys and the next activation navigates.
   - `online`, `connecting`, `degraded`, `unknown`: rendered normally.
-    `degraded` (reconnecting after being online) is shown only in the
-    tooltip, to avoid flicker during brief reconnects; it greys only if the
-    registry gives up and presence becomes `offline`.
+    `degraded` (reconnecting after being online) lasts at most
+    `offlineAfterMs` (default 3s), so brief reconnects don't flicker. If the
+    registry is still reconnecting after that, presence becomes `offline`
+    and the item greys straight away, rather than after the registry's full
+    retry schedule (about 4 minutes). The overlay then reads "Connection
+    lost" and "Reconnecting automatically…", with **Retry now** disabled
+    since the registry is already retrying.
   - If the open module's server goes offline, its item greys but the module
     stays mounted; the remote's own lost-connection handling applies.
 - **Accessibility**: the link's accessible name stays the module title;
@@ -1317,6 +1322,22 @@ to, the design above:
   server is fed, as in the portal.
 - Windows show toasts only for their module, and mark its notifications
   read while open. They have no banners row, panel or bell.
+
+### 16.6 Lost connection follow-up
+
+- A connection that dropped after a successful start used to stay `degraded`
+  (rendered normally) until the registry exhausted its retry intervals, so
+  the AppSwitcher didn't show the outage for minutes.
+- `VuuServerMonitor` now starts a grace timer (`offlineAfterMs`, default
+  3_000, via the injectable scheduler) when the registry reports
+  `reconnecting` for any connection, including the portal's. When it fires
+  with the registry still reconnecting, presence becomes `offline` with
+  detail `{ reason: "Connection lost", reconnecting: true, lastOnlineAt,
+  endpoint }`. Any other registry state clears the timer; a later drop starts
+  a new grace period. The monitor neither releases nor probes while the
+  registry reconnects.
+- `useNavItemPresence` shows "Reconnecting automatically…" and disables
+  **Retry now** when `detail.reconnecting` is set.
 
 ## 17. Decisions
 

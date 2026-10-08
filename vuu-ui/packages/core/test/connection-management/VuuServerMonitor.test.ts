@@ -229,6 +229,79 @@ describe("VuuServerMonitor", () => {
     expect(monitor.getModuleStatus("m0").presence).toBe("degraded");
   });
 
+  it("shows a lost connection offline once the grace period passes", async () => {
+    const { monitor, registry } = await setup({
+      count: 1,
+      options: { offlineAfterMs: 3000 },
+    });
+    registry.settle("s0");
+    await vi.advanceTimersByTimeAsync(0);
+    const listener = vi.fn();
+    monitor.subscribe(listener);
+
+    vi.setSystemTime(10_000);
+    registry.setState("s0", "reconnecting");
+    expect(monitor.getModuleStatus("m0").presence).toBe("degraded");
+    await vi.advanceTimersByTimeAsync(2999);
+    expect(monitor.getModuleStatus("m0").presence).toBe("degraded");
+
+    listener.mockClear();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(listener).toHaveBeenCalled();
+    expect(monitor.getModuleStatus("m0")).toMatchObject({
+      presence: "offline",
+      detail: {
+        endpoint: "s0.example.test",
+        lastOnlineAt: 10_000,
+        reason: "Connection lost",
+        reconnecting: true,
+      },
+    });
+    // The registry is still reconnecting, nothing more to acquire.
+    expect(registry.release).not.toHaveBeenCalled();
+
+    registry.setState("s0", "connected");
+    expect(monitor.getModuleStatus("m0").presence).toBe("online");
+    expect(monitor.getModuleStatus("m0").detail).toBeUndefined();
+  });
+
+  it("does not show a brief connection drop as offline", async () => {
+    const { monitor, registry } = await setup({
+      count: 1,
+      options: { offlineAfterMs: 3000 },
+    });
+    registry.settle("s0");
+    await vi.advanceTimersByTimeAsync(0);
+
+    registry.setState("s0", "reconnecting");
+    await vi.advanceTimersByTimeAsync(1000);
+    registry.setState("s0", "connected");
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(monitor.getModuleStatus("m0").presence).toBe("online");
+
+    // A later drop starts a new grace period.
+    registry.setState("s0", "reconnecting");
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(monitor.getModuleStatus("m0").presence).toBe("degraded");
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(monitor.getModuleStatus("m0").presence).toBe("offline");
+  });
+
+  it("shows a lost portal connection offline after the grace period", async () => {
+    const { monitor, registry } = await setup({
+      count: 1,
+      options: { offlineAfterMs: 3000 },
+    });
+    registry.setState("portal", "connected");
+    registry.setState("portal", "reconnecting");
+    expect(monitor.getStatus("portal").presence).toBe("degraded");
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(monitor.getStatus("portal")).toMatchObject({
+      presence: "offline",
+      detail: { reason: "Connection lost", reconnecting: true },
+    });
+  });
+
   it("releases a server that drops out of the selection only after the release delay", async () => {
     const { monitor, registry } = await setup({
       count: 2,

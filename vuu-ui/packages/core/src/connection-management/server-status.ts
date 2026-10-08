@@ -31,6 +31,8 @@ export interface VuuServerStatusDetail {
   lastAttemptAt?: number;
   /** Epoch ms of the next scheduled probe; absent when not retrying. */
   nextAttemptAt?: number;
+  /** True while the registry reconnects a connection that was lost. */
+  reconnecting?: boolean;
 }
 
 export interface VuuServerStatus {
@@ -55,6 +57,11 @@ export interface ServerMonitorOptions {
   enabled?: boolean;
   /** Default 8. Excludes the portal server. */
   maxMonitoredServers?: number;
+  /**
+   * Default 3_000. How long a lost connection is shown as degraded while it
+   * reconnects, before it is shown as offline.
+   */
+  offlineAfterMs?: number;
   /** Default 30_000. */
   releaseDelayMs?: number;
   /** Default 60_000. */

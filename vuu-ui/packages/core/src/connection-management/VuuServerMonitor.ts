@@ -22,6 +22,7 @@ import type {
 export const DEFAULT_SERVER_MONITOR_OPTIONS: Required<ServerMonitorOptions> = {
   enabled: true,
   maxMonitoredServers: 8,
+  offlineAfterMs: 3_000,
   probeIntervalMs: 60_000,
   releaseDelayMs: 30_000,
   staggerMs: 150,
@@ -197,6 +198,14 @@ interface ServerRecord {
   wasOnline: boolean;
 }
 
+/** A connection that was lost and is being reconnected by the registry. */
+interface LostConnection {
+  lostAt: number;
+  /** Set once the grace period has passed; the server is shown offline. */
+  offline: boolean;
+  timer?: ReturnType<typeof setTimeout>;
+}
+
 export interface VuuServerMonitorProps {
   authHandler: AuthHandler;
   moduleServerMap: ModuleServerMap;
@@ -223,6 +232,7 @@ export class VuuServerMonitor extends ServerStatusStore {
   readonly #authHandler: AuthHandler;
   readonly #options: Required<ServerMonitorOptions>;
   readonly #random: () => number;
+  readonly #lost = new Map<string, LostConnection>();
   readonly #records = new Map<string, ServerRecord>();
   readonly #registry: VuuConnectionRegistry;
   readonly #resolveTarget: VuuServerMonitorProps["resolveTarget"];
@@ -285,6 +295,9 @@ export class VuuServerMonitor extends ServerStatusStore {
       this.#queueTimer = undefined;
     }
     this.#queue = [];
+    for (const connectionId of [...this.#lost.keys()]) {
+      this.#clearLost(connectionId);
+    }
     for (const record of this.#records.values()) {
       this.#clearTimers(record);
       if (record.held) {
@@ -364,8 +377,27 @@ export class VuuServerMonitor extends ServerStatusStore {
     const record = this.#records.get(connectionId);
     const state = this.#registry.getState(connectionId);
     const monitored = isPortal || this.#selected.has(connectionId);
-    const presence = this.#presence(isPortal, state, record);
+    const presence = this.#presence(connectionId, isPortal, state, record);
     const failed = presence === "offline" || presence === "unauthorized";
+    const lost =
+      state === "reconnecting" ? this.#lost.get(connectionId) : undefined;
+    if (lost && failed) {
+      return nextStatus(
+        previous,
+        {
+          connectionId,
+          monitored,
+          presence,
+          detail: {
+            endpoint: endpointHost(record?.target?.websocketUrl),
+            lastOnlineAt: record?.lastOnlineAt ?? lost.lostAt,
+            reason: REASON.connectionLost,
+            reconnecting: true,
+          },
+        },
+        this.now(),
+      );
+    }
     return nextStatus(
       previous,
       {
@@ -395,6 +427,7 @@ export class VuuServerMonitor extends ServerStatusStore {
   }
 
   #presence(
+    connectionId: string,
     isPortal: boolean,
     state: VuuServerConnectionState | undefined,
     record?: ServerRecord,
@@ -403,7 +436,7 @@ export class VuuServerMonitor extends ServerStatusStore {
       case "connected":
         return "online";
       case "reconnecting":
-        return "degraded";
+        return this.#lost.get(connectionId)?.offline ? "offline" : "degraded";
       case "failed":
         return "offline";
       case "unauthorized":
@@ -600,6 +633,11 @@ export class VuuServerMonitor extends ServerStatusStore {
   }
 
   #handleStateChange(connectionId: string, state: VuuServerConnectionState) {
+    if (state === "reconnecting") {
+      this.#markLost(connectionId);
+    } else {
+      this.#clearLost(connectionId);
+    }
     const record = this.#records.get(connectionId);
     if (record) {
       if (state === "connected") {
@@ -634,6 +672,37 @@ export class VuuServerMonitor extends ServerStatusStore {
       }
     }
     this.refresh();
+  }
+
+  /**
+   * Shows a lost connection as degraded while the registry reconnects, and
+   * as offline if it has not reconnected within `offlineAfterMs`. Brief drops
+   * don't flicker the navigation, longer ones are visible without waiting
+   * for the registry to give up.
+   */
+  #markLost(connectionId: string) {
+    if (this.#lost.has(connectionId)) {
+      return;
+    }
+    const lost: LostConnection = { lostAt: this.now(), offline: false };
+    lost.timer = this.#scheduler.setTimeout(() => {
+      lost.timer = undefined;
+      if (this.#lost.get(connectionId) === lost) {
+        lost.offline = true;
+        this.refresh();
+      }
+    }, this.#options.offlineAfterMs);
+    this.#lost.set(connectionId, lost);
+  }
+
+  #clearLost(connectionId: string) {
+    const lost = this.#lost.get(connectionId);
+    if (lost) {
+      if (lost.timer) {
+        this.#scheduler.clearTimeout(lost.timer);
+      }
+      this.#lost.delete(connectionId);
+    }
   }
 
   #scheduleProbe(record: ServerRecord) {

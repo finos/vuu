@@ -144,6 +144,34 @@ describe("PortalAppSwitcher presence", () => {
     expect(pathname).toBe("/m0");
   });
 
+  it("explains a lost connection that is reconnecting", async () => {
+    const { modules, monitor } = await createMonitor();
+    const getStatus = monitor.getStatus.bind(monitor);
+    const lost = {
+      ...getStatus("risk"),
+      detail: { reason: "Connection lost", reconnecting: true },
+      presence: "offline" as const,
+    };
+    vi.spyOn(monitor, "getStatus").mockImplementation((connectionId) =>
+      connectionId === "risk" ? lost : getStatus(connectionId),
+    );
+    monitor.setPresence("risk", "offline");
+    await render(monitor, {
+      displayStyle: "icon-only",
+      remoteModules: modules,
+    });
+
+    expect(link("m2").classList).toContain("vuuNavItem-unavailable");
+    await act(async () => link("m2").click());
+    const dialog = container.querySelector('[role="dialog"]')!;
+    expect(dialog.textContent).toContain("Connection lost");
+    expect(dialog.textContent).toContain("Reconnecting automatically…");
+    const retryButton = [...dialog.querySelectorAll("button")].find(
+      (button) => button.textContent === "Retry now",
+    )!;
+    expect(retryButton.disabled).toBe(true);
+  });
+
   it("closes the details on Escape", async () => {
     const { modules, monitor } = await createMonitor();
     monitor.setPresence("risk", "offline");
