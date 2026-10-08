@@ -502,6 +502,7 @@ websocket.
 export interface ServerMonitorOptions {
   enabled?: boolean;            // default true
   maxMonitoredServers?: number; // default 8, excludes portal server
+  offlineAfterMs?: number;      // default 3_000 (§16.6)
   releaseDelayMs?: number;      // default 30_000
   probeIntervalMs?: number;     // default 60_000
   staggerMs?: number;           // default 150
@@ -1009,10 +1010,12 @@ interface PortalShellProps {
     maxPerServer?: number;
     attribution?: NotificationAttribution;
     policy?: PresentationPolicy;
-    recordClientNotifications?: (n: Notification) => boolean;
   } | false;
 }
 ```
+
+Client notifications are recorded according to `record` (§7.5); there is no
+`recordClientNotifications` option.
 
 Exports from `@vuu-ui/core/portal`: `NotificationsIndicator`,
 `NotificationsPanel`, `usePortalNotifications`, `useNotificationList`,
