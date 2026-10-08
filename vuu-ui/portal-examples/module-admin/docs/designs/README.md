@@ -61,7 +61,11 @@ plus two example rows: `notifications` and `order-blotter` (disabled, with probl
   different route than users do. The UI fetches each remote's
   `mf-manifest.json`, which needs CORS, as module federation already does. It
   runs the check on load and on demand ("Check all remotes" or "Check remote"),
-  and confirms the scope and the exposed components. Results are labelled
+  and confirms the scope and the exposed components. It also fetches the
+  remote's `config.json`, validates it as the portal does, and shows the Vuu
+  `connectionId`, WebSocket URL and auth (REST) URL it declares. A missing or
+  invalid `config.json` is reported as a mismatch, because the portal won't
+  load the remote without it. Results are labelled
   "checked from this browser" and are not saved.
 
 ## Open questions

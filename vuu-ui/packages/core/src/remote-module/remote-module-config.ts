@@ -15,10 +15,11 @@ export interface RemoteModuleConfig {
 export class RemoteModuleConfigError extends Error {
   constructor(
     readonly url: string,
-    message: string,
+    /** Why the config was rejected, without the URL. */
+    readonly reason: string,
     options?: ErrorOptions,
   ) {
-    super(`Invalid remote module config ${url}: ${message}`, options);
+    super(`Invalid remote module config ${url}: ${reason}`, options);
     this.name = "RemoteModuleConfigError";
   }
 }
