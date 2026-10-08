@@ -11,12 +11,20 @@ import cx from "clsx";
 import { ForwardedRef, forwardRef, SyntheticEvent, useCallback } from "react";
 import { type ToggleFilterHookProps, useToggleFilter } from "./useToggleFilter";
 
+export type ToggleFilterValue = string | number | boolean;
+
 type Value = ToggleButtonGroupProps["value"];
 
+const toToggleButtonValue = (
+  value: ToggleFilterValue | Value | undefined,
+): Value | undefined => (typeof value === "boolean" ? `${value}` : value);
+
 const getValues = (
-  defaultValue: Value | undefined,
-  value: Value | undefined,
+  defaultValueProp: ToggleFilterValue | Value | undefined,
+  valueProp: ToggleFilterValue | Value | undefined,
 ) => {
+  const defaultValue = toToggleButtonValue(defaultValueProp);
+  const value = toToggleButtonValue(valueProp);
   if (defaultValue === undefined && value === undefined) {
     return ["all"];
   } else if (defaultValue !== undefined && value !== undefined) {
@@ -44,13 +52,22 @@ import toggleFilterCss from "./ToggleFilter.css";
  * behaving like a regular ToggleButtonGroup.
  */
 export interface ToggleFilterProps
-  extends ToggleButtonGroupProps, ToggleFilterHookProps {
+  extends
+    Omit<ToggleButtonGroupProps, "defaultValue" | "value">,
+    Omit<ToggleFilterHookProps, "values"> {
+  defaultValue?: ToggleFilterValue | Value;
   /**
    * Optional labels for the toggle buttons. If provided, must contain
    * the same number of items as values. Defaults to values.
    */
   labels?: string[];
   onCommit: CommitHandler<HTMLElement>;
+  value?: ToggleFilterValue | Value;
+  /**
+   * Values for the toggle buttons. Boolean values are converted to
+   * strings internally, the original value is passed to onCommit.
+   */
+  values: ToggleFilterValue[];
 }
 
 const classBase = "vuuToggleFilter";
@@ -86,10 +103,12 @@ export const ToggleFilter = forwardRef(function ToggleFilter(
 
   const [defaultValue, value] = getValues(defaultValueProp, valueProp);
 
+  const stringValues = values.map(String);
+
   const { onlyAvailableValue, unavailableValues } = useToggleFilter({
     column,
     table,
-    values,
+    values: stringValues,
   });
 
   const handleChange = useCallback(
@@ -98,10 +117,11 @@ export const ToggleFilter = forwardRef(function ToggleFilter(
       if (value === "all") {
         onCommit(e, "");
       } else {
-        onCommit(e, value);
+        const toggleValue = values.find((v) => `${v}` === value);
+        onCommit(e, typeof toggleValue === "boolean" ? toggleValue : value);
       }
     },
-    [onCommit],
+    [onCommit, values],
   );
 
   return (
@@ -116,7 +136,7 @@ export const ToggleFilter = forwardRef(function ToggleFilter(
       <ToggleButton key="all" value="all">
         All
       </ToggleButton>
-      {values.map((toggleValue, i) => {
+      {stringValues.map((toggleValue, i) => {
         const unavailable = unavailableValues.includes(toggleValue);
         return (
           <Tooltip

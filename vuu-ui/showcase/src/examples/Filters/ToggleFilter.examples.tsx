@@ -89,6 +89,24 @@ export const SimpleControlledBuySellFilterInitialised = () => {
   );
 };
 
+export const SimpleControlledBooleanFilter = () => {
+  const [value, setValue] = useState<boolean | "">("");
+  return (
+    <div style={containerStyle}>
+      <ToggleFilter
+        column="active"
+        labels={["Active", "Inactive"]}
+        onCommit={(_e, v) => {
+          console.log(`commit ${typeof v} ${v}`);
+          setValue(v as boolean | "");
+        }}
+        value={value}
+        values={[true, false]}
+      />
+    </div>
+  );
+};
+
 export const ControlledBuySellFilterWithDataSource = () => {
   const [value, setValue] = useState("");
   const { VuuDataSource } = useData();
