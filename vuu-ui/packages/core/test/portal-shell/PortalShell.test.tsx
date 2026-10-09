@@ -95,17 +95,18 @@ vi.mock("../../src/remote-module/RemoteModule", async () => {
   const { PortalLink } = await import("../../src/portal-link/PortalLink");
   const { useContextPanel } =
     await import("../../src/context-panel/ContextPanelProvider");
+  const { Button } = await import("@salt-ds/core");
   const ShowContextPanelButton = ({ module }: { module: string }) => {
     const showContextPanel = useContextPanel();
     return (
-      <button
+      <Button
         data-show-context-panel
         onClick={() =>
           showContextPanel(<p data-panel-content>{module} settings</p>, module)
         }
       >
         Settings
-      </button>
+      </Button>
     );
   };
   return {

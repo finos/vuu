@@ -1,3 +1,4 @@
+import { Button } from "@salt-ds/core";
 import { act, createContext, useContext, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -128,7 +129,7 @@ describe("ShellContextPanelProvider", () => {
     act(() =>
       root.render(
         <ShellContextPanelProvider>
-          <button data-trigger>Open</button>
+          <Button data-trigger>Open</Button>
           <Consumer />
           <ShellContextPanel className="host" />
         </ShellContextPanelProvider>,
