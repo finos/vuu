@@ -1,7 +1,6 @@
 import React, { SyntheticEvent, useCallback } from "react";
 import { ThemeSwitch } from "@vuu-ui/vuu-shell";
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
-import type { HostMode } from "../shared-utils";
 import { Density, useShowcaseContext } from "./ShowcaseProvider";
 import { ThemePicker } from "./theme-picker/ThemePicker";
 import { DataSourcePicker } from "./data-source-picker/DataSourcePicker";
@@ -11,10 +10,8 @@ export const ContentToolbar = () => {
     dataConsumer,
     dataLocation,
     density,
-    hostMode,
     onChangeDensity,
     onChangeDataLocation,
-    onChangeHostMode,
     onChangeTheme,
     onChangeThemeMode,
     theme,
@@ -22,20 +19,11 @@ export const ContentToolbar = () => {
   } = useShowcaseContext();
 
   const launchStandaloneWindow = useCallback(() => {
-    const hostParam = hostMode ? `,host=${hostMode}` : "";
     window.open(
-      `${location.href}?standalone&theme=${theme}#themeMode=${themeMode},density=${density},dataLocation=${dataLocation}${hostParam}`,
+      `${location.href}?standalone&theme=${theme}#themeMode=${themeMode},density=${density},dataLocation=${dataLocation}`,
       "_blank",
     );
-  }, [dataLocation, density, hostMode, theme, themeMode]);
-
-  const handleHostModeChange = useCallback(
-    (evt: SyntheticEvent) => {
-      const { value } = evt.target as HTMLInputElement;
-      onChangeHostMode(value as HostMode);
-    },
-    [onChangeHostMode],
-  );
+  }, [dataLocation, density, theme, themeMode]);
 
   const handleDensityChange = useCallback(
     (evt: SyntheticEvent) => {
@@ -72,19 +60,6 @@ export const ContentToolbar = () => {
         <ToggleButton value="low">Low</ToggleButton>
         <ToggleButton value="touch">Touch</ToggleButton>
       </ToggleButtonGroup>
-
-      {hostMode ? (
-        <ToggleButtonGroup
-          aria-label="Host example"
-          className="vuuToggleButtonGroup"
-          data-variant="primary"
-          onChange={handleHostModeChange}
-          value={hostMode}
-        >
-          <ToggleButton value="component">Component</ToggleButton>
-          <ToggleButton value="portal">Portal</ToggleButton>
-        </ToggleButtonGroup>
-      ) : null}
 
       {dataConsumer ? (
         <DataSourcePicker
