@@ -3,7 +3,7 @@ import {
   ListOption,
   LookupTableDetails,
 } from "@vuu-ui/vuu-table-types";
-import { VuuDataSource } from "@vuu-ui/vuu-data-remote";
+import { useData } from "@vuu-ui/core";
 import {
   buildColumnMap,
   getSelectedOption,
@@ -15,6 +15,8 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { useMemo, useState } from "react";
 
+type DataSourceConstructor = ReturnType<typeof useData>["VuuDataSource"];
+
 const NO_VALUES: ListOption[] = [];
 
 const toListOption = (value: string): ListOption => ({
@@ -22,14 +24,28 @@ const toListOption = (value: string): ListOption => ({
   value,
 });
 
-const lookupValueMap = new Map<string, Promise<ListOption[]>>();
+const lookupValueMaps = new WeakMap<
+  DataSourceConstructor,
+  Map<string, Promise<ListOption[]>>
+>();
 
-const loadLookupValues = ({
-  labelColumn,
-  table,
-  valueColumn,
-}: LookupTableDetails): Promise<ListOption[]> => {
+const getLookupValueMap = (VuuDataSource: DataSourceConstructor) => {
+  let lookupValueMap = lookupValueMaps.get(VuuDataSource);
+  if (!lookupValueMap) {
+    lookupValueMap = new Map();
+    lookupValueMaps.set(VuuDataSource, lookupValueMap);
+  }
+  return lookupValueMap;
+};
+
+const loadLookupValues = (
+  VuuDataSource: DataSourceConstructor,
+  { labelColumn, table, valueColumn }: LookupTableDetails,
+): Promise<ListOption[]> => {
+  // Lookup tables are cached per data source constructor, which is bound to
+  // a specific VUU connection.
   const tableKey = `${table.module}:${table.table}`;
+  const lookupValueMap = getLookupValueMap(VuuDataSource);
   const lookupValues = lookupValueMap.get(tableKey);
   if (lookupValues) {
     return lookupValues;
@@ -87,6 +103,7 @@ export const useLookupValues = (
 ) => {
   const { type: columnType } = column;
   const { getLookupValues } = useShellContext();
+  const { VuuDataSource } = useData();
 
   const initialState = useMemo<LookupState>(() => {
     if (
@@ -115,14 +132,14 @@ export const useLookupValues = (
   useMemo(() => {
     if (values === NO_VALUES) {
       const lookupDetails = getLookupDetails(column);
-      loadLookupValues(lookupDetails).then((values) =>
+      loadLookupValues(VuuDataSource, lookupDetails).then((values) =>
         setLookupState({
           initialValue: getSelectedOption(values, initialValueProp) ?? null,
           values,
         }),
       );
     }
-  }, [values, column, initialValueProp]);
+  }, [values, column, initialValueProp, VuuDataSource]);
 
   return {
     initialValue,
