@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 import path from "node:path";
-import { createRsbuild } from "@rsbuild/core";
+import { createRsbuild, type RsbuildPlugin } from "@rsbuild/core";
 import { pluginReact } from "@rsbuild/plugin-react";
 import { ModuleFederationPlugin } from "@module-federation/enhanced/rspack";
 import { BannerPlugin } from "@rspack/core";
@@ -19,6 +19,7 @@ const sharedPackages = [
   "@salt-ds/core",
   "@salt-ds/theme",
   "@vuu-ui/core",
+  "@vuu-ui/core/portal",
   "@vuu-ui/vuu-data-editing",
   "@vuu-ui/vuu-data-react",
   "@vuu-ui/vuu-data-test",
@@ -53,6 +54,20 @@ const resolve = useDataEngineLocal
 if (useDataEngineLocal) {
   console.log("[showcase] using @heswell/vuu-data-engine-local");
 }
+
+/**
+ * RemoteModule reads a remote's runtime config from `config.json`, beside
+ * `mf-manifest.json`. Examples get their data from the showcase's data
+ * source provider, so the showcase remote declares no Vuu server.
+ */
+const pluginRemoteModuleConfig = (): RsbuildPlugin => ({
+  name: "showcase:remote-module-config",
+  setup(api) {
+    api.processAssets({ stage: "additional" }, ({ compilation, sources }) => {
+      compilation.emitAsset("config.json", new sources.RawSource("{}\n"));
+    });
+  },
+});
 
 const getShowcaseSharedDependencies = (role: "host" | "remote") =>
   Object.fromEntries([
@@ -166,7 +181,7 @@ export const createShowcaseRsbuilds = async (
         cleanDistPath: false,
         module: false,
       },
-      plugins: [pluginReact(), pluginCssInline()],
+      plugins: [pluginReact(), pluginCssInline(), pluginRemoteModuleConfig()],
       resolve,
       root: uiDirectory,
       dev: {

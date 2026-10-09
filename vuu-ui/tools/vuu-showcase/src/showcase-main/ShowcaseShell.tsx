@@ -9,7 +9,13 @@ import {
 import { SaltProviderNext, Text } from "@salt-ds/core";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getTargetTreeNode, loadTheme } from "../shared-utils";
+import {
+  getDefaultHostMode,
+  getTargetTreeNode,
+  type HostMode,
+  isComponentDescriptor,
+  loadTheme,
+} from "../shared-utils";
 import { ShowcaseContent } from "./ShowcaseContent";
 import { ShowcaseProvider } from "./ShowcaseProvider";
 import {
@@ -27,16 +33,19 @@ export interface AppProps {
 
 export const ShowcaseShell = ({ treeSource }: AppProps) => {
   const navigate = useNavigate();
-  const initialIsDataConsumer = useMemo(() => {
+  const initialNodeData = useMemo(() => {
     const url = new URL(document.location.href);
-    const treeNode = getTargetTreeNode(url, treeSource, false) as any;
-    return (
-      (treeNode && treeNode.nodeData.tags?.includes("data-consumer")) ?? false
-    );
+    return getTargetTreeNode(url, treeSource, false)?.nodeData;
   }, [treeSource]);
   const navTree = useMemo(() => buildNavTree(treeSource), [treeSource]);
   const [themeReady, setThemeReady] = useState(false);
-  const [dataConsumer, setDataConsumer] = useState(initialIsDataConsumer);
+  const [nodeData, setNodeData] = useState<unknown>(initialNodeData);
+  const [hostMode, setHostMode] = useState<HostMode>(() =>
+    getDefaultHostMode(initialNodeData),
+  );
+  const isComponent = isComponentDescriptor(nodeData);
+  const dataConsumer =
+    isComponent && (nodeData.tags?.includes("data-consumer") ?? false);
 
   useEffect(() => {
     loadTheme("vuu-theme").then(() => {
@@ -50,7 +59,8 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
     if (dataRow) {
       const path = pathFromNavKey(dataRow.key);
       if (path !== undefined) {
-        setDataConsumer(dataRow.nodeData?.tags?.includes("data-consumer"));
+        setNodeData(dataRow.nodeData);
+        setHostMode(getDefaultHostMode(dataRow.nodeData));
         navigate(path);
       }
     }
@@ -70,7 +80,11 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
       theme="vuu-theme"
       mode="light"
     >
-      <ShowcaseProvider isDataConsumer={dataConsumer}>
+      <ShowcaseProvider
+        hostMode={isComponent ? hostMode : undefined}
+        isDataConsumer={dataConsumer}
+        onChangeHostMode={setHostMode}
+      >
         <GridLayoutProvider>
           <GridLayout
             colsAndRows={{

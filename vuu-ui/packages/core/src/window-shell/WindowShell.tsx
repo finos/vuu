@@ -7,6 +7,10 @@ import {
   type CommonShellProps,
 } from "../common-shell/CommonShell";
 import type { ModuleId } from "../connection-management/ModuleServerMap";
+import {
+  ShellContextPanel,
+  ShellContextPanelProvider,
+} from "../context-panel/ShellContextPanel";
 import { PortalNotificationsProvider } from "../notifications/PortalNotificationsProvider";
 import type { PortalNotificationsOptions } from "../notifications/notification-types";
 import { VuuServerMonitorProvider } from "../server-monitor/VuuServerMonitorProvider";
@@ -52,11 +56,14 @@ export const WindowShell = ({
           options={notifications}
           portalId={providerProps.portalId}
         >
-          <FlexLayout className={classBase} direction="column" id={id}>
-            <FlexItem className={`${classBase}-content`}>
-              <div className={`${classBase}-content`}>{children}</div>
-            </FlexItem>
-          </FlexLayout>
+          <ShellContextPanelProvider>
+            <FlexLayout className={classBase} direction="column" id={id}>
+              <FlexItem className={`${classBase}-content`}>
+                <div className={`${classBase}-content`}>{children}</div>
+              </FlexItem>
+              <ShellContextPanel className={`${classBase}-context`} />
+            </FlexLayout>
+          </ShellContextPanelProvider>
         </PortalNotificationsProvider>
       </CommonShell>
     </VuuServerMonitorProvider>

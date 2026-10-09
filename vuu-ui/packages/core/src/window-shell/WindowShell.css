@@ -2,7 +2,22 @@
   box-sizing: border-box;
   height: 100vh;
   padding: var(--salt-spacing-200);
+  position: relative;
   width: 100vw;
+
+  /* Zero width host; the panel slides out leftwards over the content. */
+  .vuuWindowShell-context {
+    bottom: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 0;
+    z-index: 2;
+
+    .vuuContextPanel {
+      height: 100%;
+    }
+  }
 
   .saltFlexItem.vuuWindowShell-content {
     --saltFlexItem-basis: auto;
