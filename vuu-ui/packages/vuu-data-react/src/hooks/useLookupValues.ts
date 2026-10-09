@@ -3,7 +3,8 @@ import {
   ListOption,
   LookupTableDetails,
 } from "@vuu-ui/vuu-table-types";
-import { useData } from "@vuu-ui/core";
+import { useData, useOptionalVuuConnectionId } from "@vuu-ui/core";
+import { DEFAULT_CONNECTION_ID } from "@vuu-ui/vuu-data-remote";
 import {
   buildColumnMap,
   getSelectedOption,
@@ -24,28 +25,16 @@ const toListOption = (value: string): ListOption => ({
   value,
 });
 
-const lookupValueMaps = new WeakMap<
-  DataSourceConstructor,
-  Map<string, Promise<ListOption[]>>
->();
-
-const getLookupValueMap = (VuuDataSource: DataSourceConstructor) => {
-  let lookupValueMap = lookupValueMaps.get(VuuDataSource);
-  if (!lookupValueMap) {
-    lookupValueMap = new Map();
-    lookupValueMaps.set(VuuDataSource, lookupValueMap);
-  }
-  return lookupValueMap;
-};
+// Keyed by connectionId as well as table, different VUU servers may
+// expose tables with the same name.
+const lookupValueMap = new Map<string, Promise<ListOption[]>>();
 
 const loadLookupValues = (
+  connectionId: string,
   VuuDataSource: DataSourceConstructor,
   { labelColumn, table, valueColumn }: LookupTableDetails,
 ): Promise<ListOption[]> => {
-  // Lookup tables are cached per data source constructor, which is bound to
-  // a specific VUU connection.
-  const tableKey = `${table.module}:${table.table}`;
-  const lookupValueMap = getLookupValueMap(VuuDataSource);
+  const tableKey = `${connectionId}:${table.module}:${table.table}`;
   const lookupValues = lookupValueMap.get(tableKey);
   if (lookupValues) {
     return lookupValues;
@@ -104,6 +93,7 @@ export const useLookupValues = (
   const { type: columnType } = column;
   const { getLookupValues } = useShellContext();
   const { VuuDataSource } = useData();
+  const connectionId = useOptionalVuuConnectionId() ?? DEFAULT_CONNECTION_ID;
 
   const initialState = useMemo<LookupState>(() => {
     if (
@@ -132,14 +122,15 @@ export const useLookupValues = (
   useMemo(() => {
     if (values === NO_VALUES) {
       const lookupDetails = getLookupDetails(column);
-      loadLookupValues(VuuDataSource, lookupDetails).then((values) =>
-        setLookupState({
-          initialValue: getSelectedOption(values, initialValueProp) ?? null,
-          values,
-        }),
+      loadLookupValues(connectionId, VuuDataSource, lookupDetails).then(
+        (values) =>
+          setLookupState({
+            initialValue: getSelectedOption(values, initialValueProp) ?? null,
+            values,
+          }),
       );
     }
-  }, [values, column, initialValueProp, VuuDataSource]);
+  }, [values, column, initialValueProp, connectionId, VuuDataSource]);
 
   return {
     initialValue,
