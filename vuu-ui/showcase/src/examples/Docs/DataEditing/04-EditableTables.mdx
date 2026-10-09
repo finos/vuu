@@ -23,12 +23,12 @@ cancelling returns to View.
 | `showInlineAddRow` | Shows an empty row at the top of the table for adding rows. |
 | `undoColumn` | Adds a column with an undo button on each changed row. Pass a partial column descriptor to customise it. |
 | `copyOption` | Rows copied into the session table: `All` (default), `Selected` or `Empty`. |
-| `deleteMode` | `soft` (default) or `hard`. See [Concepts](concepts.md#deleting-rows). |
+| `deleteMode` | `soft` (default) or `hard`. See [Concepts](./02-Concepts.mdx#deleting-rows). |
 | `rowDefaults` | Values for columns the user doesn't fill in when adding a row. Pass a stable reference. |
 | `editSessionApi` | `createSessionDataSource` (default) or `beginEditSession`. |
 | `confirmCancel` | `() => Promise<boolean>`, called before discarding unsaved changes. |
 | `onSave`, `onCancel` | Called after a successful save or cancel. |
-| `onError` | Called when begin, save, cancel or delete fails. See [Error handling](error_handling.md). |
+| `onError` | Called when begin, save, cancel or delete fails. See [Error handling](./10-ErrorHandling.mdx). |
 | `editModeToggle`, `showEditModeToggle` | Replace or hide the View/Edit toggle. |
 | `toolbar`, `footer` | Extra toolbar content; footer content shown in view mode. |
 | `saveLabel` | Label for the Save button. |
@@ -71,7 +71,7 @@ A column's spec is either:
 | `input-cell` | `@vuu-ui/vuu-table` | text and numbers (the default) |
 | `checkbox-cell`, `toggle-cell` | `@vuu-ui/vuu-table` | booleans |
 | `temporal-input-cell` | `@vuu-ui/vuu-table` | dates and times |
-| `dropdown-cell` | `@vuu-ui/vuu-table-extras` | a fixed list of values, or values from a lookup table (see [Lookups](lookups.md)) |
+| `dropdown-cell` | `@vuu-ui/vuu-table-extras` | a fixed list of values, or values from a lookup table (see [Lookups](./07-Lookups.mdx)) |
 
 Import the package that registers a renderer before you use it by name.
 
@@ -184,4 +184,4 @@ again.
 To add rows one at a time from a form, without entering edit mode, use
 `CreateRowForm` against the table's data source. It has its own edit session
 and saves each row as soon as the user clicks Create. See
-[Edit forms](edit_forms.md).
+[Edit forms](./05-EditForms.mdx).
