@@ -425,6 +425,23 @@ export class EditSession
     return this.#rowEdits.has(key);
   }
 
+  /**
+   * The edited values for a row, keyed by column name. Includes invalid
+   * edits. Returns an empty object when the row has no edits.
+   */
+  getEditedValues(key: string): Record<string, EditSessionValue> {
+    const cellEdits = this.#rowEdits.get(key)?.cellEdits;
+    if (!cellEdits) {
+      return {};
+    }
+    return Object.fromEntries(
+      Array.from(cellEdits, ([column, { editedValue }]) => [
+        column,
+        editedValue,
+      ]),
+    );
+  }
+
   isCellEdited(key: string, columnName: string): boolean {
     const cellEdit = this.#rowEdits.get(key)?.cellEdits.get(columnName);
     return (
