@@ -17,6 +17,8 @@ import {
 } from "./EditSession";
 import { EDIT_ACTION_ROW_CLASS_NAME_GENERATOR } from "./editActionRowClassNameGenerator";
 import { isEditRowReadOnly } from "./edit-utils";
+import { useEditMode } from "./EditModeProvider";
+import { type EditErrorHandler, reportEditError } from "./edit-errors";
 
 const EDIT_ACTION_ROW_CLASS_NAME_GENERATORS = [
   EDIT_ACTION_ROW_CLASS_NAME_GENERATOR,
@@ -32,11 +34,23 @@ export interface EditableTableHookProps {
   columns?: string[];
   dataSource?: DataSource;
   addRowsCount?: number;
+  /** @default "soft" */
   deleteMode?: DeleteRowMode;
+  /** @default "createSessionDataSource" */
   editSessionApi?: EditSessionApi;
+  /** Rows copied into the session table when editing begins. @default "All" */
   copyOption?: CopyOption;
-  isEditMode: boolean;
+  /**
+   * Begins (true) or ends (false) the edit session. When omitted, edit mode
+   * is read from the nearest EditModeProvider.
+   */
+  isEditMode?: boolean;
   onCancel: () => void;
+  /**
+   * Called when begin, save, cancel or delete fails. Defaults to
+   * console.error. Use this to surface errors, e.g. as a notification.
+   */
+  onError?: EditErrorHandler;
   onSave: () => void;
   /** Default column values applied to every addRow call. Pass a stable reference — a new object triggers EditSession recreation. */
   rowDefaults?: RowDefaultDataItemValues;
@@ -53,16 +67,25 @@ export const useEditableTable = ({
   deleteMode = "soft",
   editSessionApi = "createSessionDataSource",
   copyOption = "All",
-  isEditMode,
+  isEditMode: isEditModeProp,
   onCancel,
+  onError,
   onSave,
   rowDefaults,
   table,
 }: EditableTableHookProps) => {
   const { VuuDataSource } = useData();
+  const { isEditMode: isEditModeContext } = useEditMode();
+  const isEditMode = isEditModeProp ?? isEditModeContext;
   const [selectionCount, setSelectionCount] = useState(0);
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
   useLayoutEffectSkipFirst(() => {
-    console.warn("[useEditableTable] columns and or table changed");
+    if (process.env.NODE_ENV !== "production" && !dataSourceProp) {
+      console.warn(
+        "[useEditableTable] columns or table changed, a new DataSource and EditSession will be created. Pass stable (memoized) values.",
+      );
+    }
   }, [columns, table]);
 
   const sourceDataSource = useMemo(() => {
@@ -108,7 +131,7 @@ export const useEditableTable = ({
       setSelectionCount(0);
       onCancel();
     } catch (error) {
-      console.error("[useEditableTable] cancel edit session failed", error);
+      reportEditError("useEditableTable", onErrorRef.current, error, "cancel");
     }
   }, [editSession, onCancel]);
 
@@ -119,14 +142,26 @@ export const useEditableTable = ({
         setSelectionCount(0);
         onSave();
       } catch (error) {
-        console.error("[useEditableTable] save edit session failed", error);
+        reportEditError("useEditableTable", onErrorRef.current, error, "save");
       }
     },
     [editSession, onSave],
   );
 
   const handleDelete = useCallback(async () => {
-    await editSession.deleteSelectedRows();
+    try {
+      const response = await editSession.deleteSelectedRows();
+      if (response.type === "ERROR_RESULT") {
+        reportEditError(
+          "useEditableTable",
+          onErrorRef.current,
+          new Error(response.errorMessage),
+          "delete",
+        );
+      }
+    } catch (error) {
+      reportEditError("useEditableTable", onErrorRef.current, error, "delete");
+    }
   }, [editSession]);
 
   const handleUndoRowChange = useCallback(
@@ -190,10 +225,15 @@ export const useEditableTable = ({
 
     void transition.catch((error) => {
       if (isEditMode) {
-        console.error("[useEditableTable] begin edit session failed", error);
+        reportEditError("useEditableTable", onErrorRef.current, error, "begin");
         onCancelRef.current();
       } else {
-        console.error("[useEditableTable] end edit session failed", error);
+        reportEditError(
+          "useEditableTable",
+          onErrorRef.current,
+          error,
+          "cancel",
+        );
       }
     });
   }, [copyOption, editSession, isEditMode]);
@@ -202,10 +242,8 @@ export const useEditableTable = ({
     lifecycle.status === "active" ||
     (lifecycle.status === "error" && lifecycle.operation === "end");
 
-  const canSave =
-    canCancel &&
-    (editState === "dirty" || editState === "stale") &&
-    editSession.invalidCount === 0;
+  // editState is "invalid" whenever invalidCount > 0, so this matches editSession.canSave
+  const canSave = canCancel && (editState === "dirty" || editState === "stale");
   const isEditSessionReady =
     isEditMode &&
     sessionDataSource !== undefined &&
@@ -232,6 +270,8 @@ export const useEditableTable = ({
     dataSource,
     editSchema,
     editSession,
+    editState,
+    isEditMode,
     lifecycle,
     hasSelection: selectionCount > 0,
     isEditSessionReady,

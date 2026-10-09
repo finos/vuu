@@ -14,6 +14,11 @@ export type {
 export { useCellEdited } from "./useCellEdited";
 export { useEditState } from "./useEditState";
 export {
+  useEditSessionState,
+  type EditSessionStateSnapshot,
+} from "./useEditSessionState";
+export type { EditErrorHandler, EditOperation } from "./edit-errors";
+export {
   getVuuEditMessage,
   isInlineEditingSession,
   isEditRowReadOnly,
@@ -44,6 +49,7 @@ export {
   type EditActionType,
   type EditCommitOptions,
   type EditLifecycle,
+  type EditSessionApi,
   type EditSessionConstructorProps,
   type EditSessionValue,
   type NewRowState,
