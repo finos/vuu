@@ -11,6 +11,9 @@ import {
 // SIMUL creates tables that BASKET joins, so it must be imported first.
 import { simulModule } from "../src/simul/SimulModule";
 import { basketModule } from "../src/basket/BasketModule";
+import type { TickingArrayDataSource } from "../src/TickingArrayDataSource";
+import { Range } from "@vuu-ui/vuu-utils";
+import { SimulatedNotificationsModule } from "../src/notifications/simulated/SimulatedNotificationsModule";
 
 type TestServerAPI = Pick<ServerAPI, "getTableList" | "getTableSchema">;
 
@@ -95,5 +98,42 @@ describe("createLocalVuuServer", () => {
 
     expect(modules.has("SIMUL")).toBe(true);
     expect(modules.has("BASKET")).toBe(true);
+  });
+
+  it("uses its own module instances rather than the global registry", async () => {
+    const first = SimulatedNotificationsModule({ simulate: false });
+    const second = SimulatedNotificationsModule({ simulate: false });
+    const server = createLocalVuuServer({
+      connectionId: "first",
+      modules: [first],
+    });
+    expect(moduleContainer.get("NOTIFICATIONS")).toBe(second);
+
+    first.publish({ id: "only-on-first" });
+    let dataSource: unknown;
+    const Probe = () => {
+      const { VuuDataSource } = useData();
+      dataSource = new VuuDataSource({
+        table: { module: "NOTIFICATIONS", table: "notifications" },
+      });
+      return null;
+    };
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    const root = createRoot(document.createElement("div"));
+    await act(async () => {
+      root.render(
+        <server.DataSourceProvider>
+          <Probe />
+        </server.DataSourceProvider>,
+      );
+    });
+    act(() => root.unmount());
+    const tickingDataSource = dataSource as TickingArrayDataSource;
+    tickingDataSource.subscribe({ range: Range(0, 10) }, () => undefined);
+    expect(tickingDataSource.getRowByKey("only-on-first")).toBeDefined();
+    expect(first.tables.notifications.findByKey("only-on-first")).toBeDefined();
+    expect(
+      second.tables.notifications.findByKey("only-on-first"),
+    ).toBeUndefined();
   });
 });
