@@ -1,5 +1,6 @@
 export * from "./auth";
 export * from "./connection-management";
+export * from "./context-panel";
 export { ModalProvider, useModal } from "./modal-provider/ModalProvider";
 export {
   isNestedModule,
@@ -19,10 +20,7 @@ export {
   type RemoteModuleConfig,
 } from "./remote-module/remote-module-config";
 export { DataContext } from "./context-definitions/DataContext";
-export {
-  DataProvider,
-  useData,
-} from "./context-definitions/DataProvider";
+export { DataProvider, useData } from "./context-definitions/DataProvider";
 export {
   type SelectedSourceTable,
   TableRegistrationContext,

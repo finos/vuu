@@ -1,0 +1,64 @@
+.vuuContextPanel {
+  --header-height: var(--vuuContextPanel-header-height, 48px);
+  background: var(
+    --vuuContextPanel-background,
+    var(--salt-container-primary-background)
+  );
+  position: relative;
+  transition: width 0.3s ease-in-out;
+  width: var(--vuu-side-panel-width, 0px);
+  z-index: 1;
+}
+
+.vuuContextPanel-expanded {
+  --vuu-side-panel-width: var(--vuuContextPanel-width, 300px);
+  --vuu-side-panel-shadow: -4px 4px 4px rgba(0, 0, 0, 0.1);
+  --vuu-side-panel-padding: var(--vuuContextPanel-padding, 24px);
+
+  .vuuContextPanel-inner {
+    padding: 24px 8px 24px 18px;
+  }
+}
+
+.vuuContextPanel-overlay {
+  width: 0px;
+}
+
+.vuuContextPanel-inner {
+  background-color: inherit;
+  box-shadow: var(--vuu-side-panel-shadow, none);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  overflow: auto;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition-property: padding-left, padding-right, width;
+  transition-duration: 0.3s;
+  transition-timing-function: ease-in-out;
+  width: var(--vuu-side-panel-width, 0px);
+}
+
+.vuuContextPanel-header {
+  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+  flex: 0 0 var(--header-height);
+  justify-content: space-between;
+}
+
+.vuuContextPanel-title {
+  font-size: 20px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.vuuContextPanel-content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-right: 16px;
+  position: relative;
+  width: 100%;
+}
