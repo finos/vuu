@@ -177,6 +177,11 @@
   display: inline-flex;
   line-height: 0;
 
+  /* Vuu theme does not yet define --salt-sentiment-accent-background */
+  .saltBadge-badge {
+    background: var(--salt-sentiment-accent-background, var(--salt-palette-accent));
+  }
+
   .vuuNavItem-icon > & {
     position: absolute;
     right: var(--vuuNavItem-badge-offset, -4px);
