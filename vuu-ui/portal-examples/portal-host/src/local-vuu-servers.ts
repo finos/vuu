@@ -20,8 +20,8 @@ export const localNotificationModules: ReadonlyMap<string, NotificationModule> =
   new Map([
     ["module-admin", SimulatedNotificationsModule({ simulate: false })],
     ["user-admin", SimulatedNotificationsModule({ simulate: false })],
-    ["basket", SimulatedNotificationsModule()],
-    ["simul", SimulatedNotificationsModule()],
+    ["basket", SimulatedNotificationsModule({ simulate: false })],
+    ["simul", SimulatedNotificationsModule({ simulate: false })],
   ]);
 
 const notificationsFor = (connectionId: string) => {
