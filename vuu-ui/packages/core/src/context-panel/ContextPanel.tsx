@@ -5,11 +5,12 @@ import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
   useCallback,
+  useEffect,
   useLayoutEffect,
   useRef,
-  type KeyboardEventHandler,
   type ReactElement,
   type ReactNode,
+  type Ref,
 } from "react";
 import { useHideContextPanel } from "./ContextPanelProvider";
 
@@ -20,8 +21,11 @@ const classBase = "vuuContextPanel";
 export interface ContextPanelProps {
   readonly className?: string;
   readonly content?: ReactElement;
+  /** The element within which content is displayed, for a React portal. */
+  readonly contentRef?: Ref<HTMLDivElement>;
   readonly expanded?: boolean;
   readonly id?: string;
+  /** Called to close the panel. Defaults to `hideContextPanel`. */
   readonly onClose?: () => void;
   readonly overlay?: boolean;
   readonly title?: ReactNode;
@@ -30,6 +34,7 @@ export interface ContextPanelProps {
 export const ContextPanel = ({
   className,
   content,
+  contentRef,
   expanded = false,
   id,
   onClose,
@@ -43,19 +48,29 @@ export const ContextPanel = ({
     window: targetWindow,
   });
   const hideContextPanel = useHideContextPanel();
+  const rootRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const handleClose = useCallback(() => {
-    hideContextPanel?.();
-    onClose?.();
+    if (onClose) {
+      onClose();
+    } else {
+      hideContextPanel?.();
+    }
   }, [hideContextPanel, onClose]);
-  const handleKeyDown = useCallback<KeyboardEventHandler>(
-    (event) => {
+
+  // A native listener, as the React events of portalled content propagate
+  // through its owner's tree, not the panel's.
+  useEffect(() => {
+    const root = rootRef.current;
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         handleClose();
       }
-    },
-    [handleClose],
-  );
+    };
+    root?.addEventListener("keydown", handleKeyDown);
+    return () => root?.removeEventListener("keydown", handleKeyDown);
+  }, [handleClose]);
+
   useLayoutEffect(() => {
     if (expanded) {
       closeButtonRef.current?.focus();
@@ -72,7 +87,7 @@ export const ContextPanel = ({
       })}
       id={id}
       inert={!expanded}
-      onKeyDown={handleKeyDown}
+      ref={rootRef}
     >
       <div className={`${classBase}-inner`}>
         <div className={`${classBase}-header`}>
@@ -88,7 +103,7 @@ export const ContextPanel = ({
             <CloseIcon aria-hidden />
           </Button>
         </div>
-        <div className={`${classBase}-content`}>
+        <div className={`${classBase}-content`} ref={contentRef}>
           {expanded ? content : null}
         </div>
       </div>

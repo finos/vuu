@@ -1,4 +1,4 @@
-import { act } from "react";
+import { act, createContext, useContext, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -9,6 +9,8 @@ import {
   useHideContextPanel,
   type ShowContextPanel,
 } from "../../src/context-panel";
+import { ModuleContextPanel } from "../../src/context-panel/ModuleContextPanel";
+import { SlotContextPanelProvider } from "../../src/context-panel/ContextPanelSlot";
 
 let show: ShowContextPanel | undefined;
 let hide: (() => void) | undefined;
@@ -172,5 +174,109 @@ describe("ShellContextPanelProvider", () => {
     expect(() => show?.("ColumnPicker", "Columns")).toThrow(
       "must be provided as a React element",
     );
+  });
+
+  describe("content owners", () => {
+    const OwnerContext = createContext("shell");
+    const OwnerValue = () => <p data-content>{useContext(OwnerContext)}</p>;
+
+    const showers: Record<string, ShowContextPanel> = {};
+    const hiders: Record<string, (() => void) | undefined> = {};
+    const Owner = ({ name }: { name: string }) => {
+      showers[name] = useContextPanel();
+      hiders[name] = useHideContextPanel();
+      return null;
+    };
+
+    let setShowModuleB: (show: boolean) => void = () => undefined;
+    const Shell = ({ placementB }: { placementB?: "module" }) => {
+      const [showModuleB, setShow] = useState(true);
+      setShowModuleB = setShow;
+      return (
+        <ShellContextPanelProvider>
+          <OwnerContext.Provider value="module-a">
+            <SlotContextPanelProvider>
+              <Owner name="a" />
+            </SlotContextPanelProvider>
+          </OwnerContext.Provider>
+          {showModuleB ? (
+            <div data-module-b>
+              <OwnerContext.Provider value="module-b">
+                <ModuleContextPanel placement={placementB}>
+                  <Owner name="b" />
+                </ModuleContextPanel>
+              </OwnerContext.Provider>
+            </div>
+          ) : null}
+          <ShellContextPanel />
+        </ShellContextPanelProvider>
+      );
+    };
+
+    const shellContent = () =>
+      container.querySelector("#vuu-shell-context [data-content]");
+
+    it("renders content with its owner's context", () => {
+      act(() => root.render(<Shell />));
+      act(() => showers.a(<OwnerValue />, "A"));
+      expect(shellContent()?.textContent).toBe("module-a");
+    });
+
+    it("replaces content from another owner, which can no longer hide it", () => {
+      act(() => root.render(<Shell />));
+      act(() => showers.a(<OwnerValue />, "A"));
+      act(() => showers.b(<OwnerValue />, "B"));
+      expect(
+        container.querySelectorAll("#vuu-shell-context [data-content]"),
+      ).toHaveLength(1);
+      expect(shellContent()?.textContent).toBe("module-b");
+      expect(
+        container.querySelector("#vuu-shell-context h2")?.textContent,
+      ).toBe("B");
+
+      act(() => hiders.a?.());
+      expect(shellContent()?.textContent).toBe("module-b");
+      act(() => hiders.b?.());
+      expect(shellContent()).toBeNull();
+    });
+
+    it("closes when the owner unmounts", () => {
+      act(() => root.render(<Shell />));
+      act(() => showers.b(<OwnerValue />, "B"));
+      act(() => setShowModuleB(false));
+      expect(shellContent()).toBeNull();
+      expect(
+        container.querySelector("#context-panel")?.classList,
+      ).not.toContain("vuuContextPanel-expanded");
+    });
+
+    it("closes on Escape from within portalled content", () => {
+      act(() => root.render(<Shell />));
+      act(() => showers.a(<OwnerValue />, "A"));
+      act(() => {
+        shellContent()?.dispatchEvent(
+          new KeyboardEvent("keydown", { bubbles: true, key: "Escape" }),
+        );
+      });
+      expect(shellContent()).toBeNull();
+    });
+
+    it("hosts content within the module when placement is module", () => {
+      act(() => root.render(<Shell placementB="module" />));
+      act(() => showers.b(<OwnerValue />, "B"));
+      expect(shellContent()).toBeNull();
+      expect(
+        container.querySelector(
+          "[data-module-b] .vuuModuleContextPanel [data-content]",
+        )?.textContent,
+      ).toBe("module-b");
+
+      // The shell and module panels are independent.
+      act(() => showers.a(<OwnerValue />, "A"));
+      expect(shellContent()?.textContent).toBe("module-a");
+      expect(
+        container.querySelector("[data-module-b] [data-content]")?.textContent,
+      ).toBe("module-b");
+    });
   });
 });

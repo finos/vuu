@@ -27,7 +27,7 @@ import {
   type CommonShellProps,
 } from "../common-shell/CommonShell";
 import type { ServerMonitorOptions } from "../connection-management/server-status";
-import { useHideContextPanel } from "../context-panel/ContextPanelProvider";
+import { useContextPanelSlot } from "../context-panel/ContextPanelSlot";
 import {
   ShellContextPanel,
   ShellContextPanelProvider,
@@ -129,10 +129,10 @@ const OpenModuleTracker = ({
 /** Content in the context panel belongs to the module that opened it. */
 const CloseContextPanelOnNavigation = () => {
   const { pathname } = useLocation();
-  const hideContextPanel = useHideContextPanel();
+  const closeContextPanel = useContextPanelSlot()?.close;
   useEffect(() => {
-    hideContextPanel?.();
-  }, [hideContextPanel, pathname]);
+    closeContextPanel?.();
+  }, [closeContextPanel, pathname]);
   return null;
 };
 

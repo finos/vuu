@@ -164,10 +164,36 @@ showContextPanel(<ColumnPicker columnModel={columnModel} />, "Columns");
 Because `@vuu-ui/core` is a shared Module Federation singleton, remote modules
 reach the shell's panel. These are separate from the hooks of the same names in
 `@vuu-ui/vuu-ui-controls`, used by `@vuu-ui/vuu-shell`; a remote module must
-use the `@vuu-ui/core` versions. Content is rendered in the shell, so it sees
-the shell's React context, not the remote module's. The panel closes on
-**Escape**, from its close button, or when the portal navigates to another
-route, and focus returns to the element that was focused when it opened.
+use the `@vuu-ui/core` versions.
+
+### Content keeps its owner's context
+
+The panel displays content but does not own it. `RemoteModule` gives each
+module its own context panel provider, which holds the module's content and
+renders it into the panel with a React portal. The content therefore stays in
+the module's React tree and sees the module's context (its Vuu connection,
+saved state, notification origin and any providers of its own), even though it
+is displayed in the shell.
+
+One owner at a time has the panel. If another module, or the shell, opens it,
+the previous owner's content is removed, and that owner can no longer close the
+panel. The panel also closes when its owner unmounts, on **Escape**, from its
+close button, or when the portal navigates to another route. Focus returns to
+the element that was focused when it opened.
+
+### Placement
+
+A module's `contextPanelPlacement`, set on its `RemoteModuleDescriptor` or
+`RemoteModule`, says where its content is displayed:
+
+- `"shell"` (the default): the shell's panel, in the `vuu-shell-context`
+  landmark.
+- `"module"`: a panel within the module's frame, overlaying the right edge of
+  the module's nearest positioned ancestor. This suits layouts with modules
+  side by side. Each module has its own panel, independent of the shell's, and
+  it has no landmark ids, which must be unique.
+
+Module code is the same either way: placement is chosen by the host.
 
 `ContextPanelProvider` can be nested to customise behaviour for a subtree:
 with a `resolveComponent` function, `showContextPanel` also accepts a

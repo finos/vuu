@@ -18,6 +18,11 @@ import {
 } from "../../src/auth/AuthenticationProvider";
 import type { LocalVuuServer } from "../../src/auth/AuthenticationProvider";
 import { RemoteModule } from "../../src/remote-module/RemoteModule";
+import { useContextPanel } from "../../src/context-panel/ContextPanelProvider";
+import {
+  ShellContextPanel,
+  ShellContextPanelProvider,
+} from "../../src/context-panel/ShellContextPanel";
 
 /** The config.json served by each remote, keyed by its URL. */
 const remoteConfigs = new Map<string, string>();
@@ -225,5 +230,84 @@ describe("RemoteModule", () => {
     });
 
     expect(container.textContent).toContain("Connectionless remote loaded");
+  });
+
+  describe("context panel", () => {
+    const ContextPanelRemote = () => {
+      const showContextPanel = useContextPanel();
+      return (
+        <button
+          data-show-context-panel
+          onClick={() => showContextPanel(<ConnectionProbe />, "Settings")}
+          type="button"
+        >
+          Settings
+        </button>
+      );
+    };
+
+    const renderInShell = async (
+      mfUrl: string,
+      props: Partial<Parameters<typeof RemoteModule>[0]> = {},
+    ) => {
+      remoteConfigs.set(
+        `${mfUrl}/config.json`,
+        JSON.stringify({ connectionId: "orders" }),
+      );
+      vi.mocked(loadRemote).mockResolvedValue({ default: ContextPanelRemote });
+      await act(async () => {
+        root.render(
+          <AuthenticationProvider
+            localServers={[localServer("orders")]}
+            mode="local"
+          >
+            <ShellContextPanelProvider>
+              <div data-module-frame>
+                <Suspense fallback="Loading">
+                  <RemoteModule
+                    mfComponent="Settings"
+                    mfScope="settings"
+                    mfUrl={mfUrl}
+                    {...props}
+                  />
+                </Suspense>
+              </div>
+              <ShellContextPanel />
+            </ShellContextPanelProvider>
+          </AuthenticationProvider>,
+        );
+      });
+      await act(async () => {
+        container
+          .querySelector<HTMLButtonElement>("[data-show-context-panel]")
+          ?.click();
+      });
+    };
+
+    it("shows content in the shell's panel, with the module's context", async () => {
+      await renderInShell("http://localhost:5110");
+
+      expect(
+        container.querySelector("#vuu-shell-context .vuuContextPanel-content")
+          ?.textContent,
+      ).toBe("connection:orders");
+      expect(container.querySelector(".vuuModuleContextPanel")).toBeNull();
+    });
+
+    it("shows content in a panel within the module's frame", async () => {
+      await renderInShell("http://localhost:5111", {
+        contextPanelPlacement: "module",
+      });
+
+      expect(
+        container.querySelector(
+          "[data-module-frame] .vuuModuleContextPanel .vuuContextPanel-content",
+        )?.textContent,
+      ).toBe("connection:orders");
+      expect(
+        container.querySelector("#vuu-shell-context .vuuContextPanel")
+          ?.classList,
+      ).not.toContain("vuuContextPanel-expanded");
+    });
   });
 });

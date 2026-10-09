@@ -15,6 +15,8 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
+import { ModuleContextPanel } from "../context-panel/ModuleContextPanel";
+import type { ContextPanelPlacement } from "../context-panel/ContextPanelSlot";
 import {
   ApplicationStateProvider,
   useOptionalPortalPersistence,
@@ -43,6 +45,12 @@ export interface RemoteModuleProps {
   };
   /** With `version`, identifies the module's saved state, unless `persistenceKey` is set. */
   clientIdentifier?: string;
+  /**
+   * Where content the module shows in the context panel is displayed: the
+   * shell's panel (the default) or a panel within the module's frame, the
+   * module's nearest positioned ancestor.
+   */
+  contextPanelPlacement?: ContextPanelPlacement;
   css?: string;
   height?: number;
   mfComponent: string;
@@ -217,6 +225,7 @@ const useRemoteModuleState = ({
 
 function RemoteModuleContent(props: RemoteModuleProps) {
   const {
+    contextPanelPlacement,
     css: _css,
     mfComponent,
     mfScope,
@@ -231,7 +240,11 @@ function RemoteModuleContent(props: RemoteModuleProps) {
   const RemoteComponent = getRemoteComponent(mfUrl, mfScope, mfComponent);
   const connection = vuu ?? use(loadRemoteModuleConfig(mfUrl)).vuu;
   const lostStatus = useLostConnectionStatus(connection?.connectionId);
-  const remoteComponent = <RemoteComponent {...remoteProps} />;
+  const remoteComponent = (
+    <ModuleContextPanel placement={contextPanelPlacement}>
+      <RemoteComponent {...remoteProps} />
+    </ModuleContextPanel>
+  );
 
   // Always provide a value, so the portal's own store is never visible to
   // the module (FR-3).
