@@ -34,6 +34,7 @@
     "@vuu-ui/vuu-theme": "3.5.5",
     "@vuu-ui/vuu-ui-controls": "3.5.5",
     "@vuu-ui/vuu-utils": "3.5.5",
+    "mermaid": "^12.1.0",
     "symlink-dir": "^6.0.5",
     "watcher": "2.3.1"
   },
