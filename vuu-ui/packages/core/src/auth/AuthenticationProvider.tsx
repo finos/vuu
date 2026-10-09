@@ -3,6 +3,8 @@ import type {
   DataSourceConstructorProps,
   RemoteModuleConnection,
 } from "@vuu-ui/vuu-data-types";
+import type { LoginErrorMessage } from "@vuu-ui/vuu-protocol-types";
+import { isLoginErrorMessage } from "@vuu-ui/vuu-utils";
 import { DataProvider } from "../context-definitions/DataProvider";
 import type { PortalModuleRegistry } from "../RemoteModuleDescriptor";
 import type {
@@ -48,20 +50,31 @@ export class AuthenticationConfigurationError extends Error {
 
 export class VuuConnectionError extends Error {
   readonly failure?: VuuTokenExchangeFailure;
+  /** Set when the VUU server rejected the login, e.g. an invalid or expired token. */
+  readonly loginError?: LoginErrorMessage;
   readonly status?: number;
 
   constructor(
     readonly connectionId: string,
     cause: unknown,
   ) {
-    const detail = cause instanceof Error ? `: ${cause.message}` : "";
-    super(`VUU connection authentication failed for ${connectionId}${detail}`, {
+    const causeMessage =
+      cause instanceof Error
+        ? cause.message
+        : typeof cause === "string"
+          ? cause
+          : undefined;
+    const detail = causeMessage ? `: ${causeMessage}` : "";
+    super(`VUU connection ${connectionId} failed${detail}`, {
       cause,
     });
     this.name = "VuuConnectionError";
     if (cause instanceof VuuTokenExchangeError) {
       this.failure = cause.failure;
       this.status = cause.status;
+    }
+    if (isLoginErrorMessage(causeMessage)) {
+      this.loginError = causeMessage;
     }
   }
 }
