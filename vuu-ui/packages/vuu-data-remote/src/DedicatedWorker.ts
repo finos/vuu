@@ -50,7 +50,7 @@ export class DedicatedWorker {
           status: "connected",
         });
       } else if (message.type === "connection-failed") {
-        this.#deferredConnection?.reject(message.reason);
+        this.#deferredConnection?.reject(Error(message.reason));
       } else {
         onMessage(message);
       }
