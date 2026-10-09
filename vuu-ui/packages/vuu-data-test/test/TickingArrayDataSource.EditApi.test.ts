@@ -505,6 +505,7 @@ describe("createSessionDataSource", () => {
     expect(editDataSource?.isSessionDataSourceOf?.(sourceDataSource)).toBe(
       true,
     );
+    await editDataSource?.subscribe({ range: Range(0, 10) }, vi.fn());
     sourceDataSource.suspend(false);
     vi.spyOn(sessionDataSource, "rpcRequest").mockImplementation(async () => {
       sourceTable.insert(["row-002", "Bob", ""]);
@@ -522,7 +523,9 @@ describe("createSessionDataSource", () => {
     );
 
     updates.mockClear();
-    await editDataSource?.endEditSession?.(true);
+    await expect(editDataSource?.endEditSession?.(true)).rejects.toThrow(
+      "Cannot save changes: datasource is unsubscribed",
+    );
     expect(updates).not.toHaveBeenCalled();
   });
 });
