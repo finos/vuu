@@ -191,7 +191,9 @@ export const EditField = ({
   });
 
   const warningMessage = isEditMode
-    ? (fieldMessage ?? formFieldErrors?.[name] ?? newRowState.errors[name])
+    ? (fieldMessage ??
+      // within an EditForm, fieldErrors already include new row errors
+      (formFieldErrors ? formFieldErrors[name] : newRowState.errors[name]))
     : undefined;
 
   return (

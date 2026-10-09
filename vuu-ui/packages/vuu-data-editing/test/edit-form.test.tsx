@@ -219,6 +219,63 @@ describe("CreateRowForm", () => {
     expect(dataSource.addRow).toHaveBeenCalledWith({ name: "Alice" });
     expect(onSaved).toHaveBeenCalled();
   });
+
+  it("shows a server rejection in the banner, then allows a retry", async () => {
+    const dataSource = createDataSource();
+    dataSource.addRow = vi
+      .fn()
+      .mockResolvedValueOnce({ errorMessage: "Rejected", type: "ERROR_RESULT" })
+      .mockResolvedValue(SUCCESS);
+    const onSaved = vi.fn();
+    await act(async () => {
+      root.render(
+        <CreateRowForm
+          dataSource={dataSource}
+          fields={[
+            { label: "Name", name: "name" },
+            { label: "Notes", name: "notes", required: false },
+          ]}
+          onSaved={onSaved}
+        />,
+      );
+      await flush();
+    });
+    const [name] = Array.from(container.querySelectorAll("input"));
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value",
+      )?.set?.call(name, "Alice");
+      name.dispatchEvent(new Event("input", { bubbles: true }));
+      name.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+      );
+      await flush();
+    });
+    const submit = () =>
+      act(async () => {
+        container
+          .querySelector("form")
+          ?.dispatchEvent(
+            new Event("submit", { bubbles: true, cancelable: true }),
+          );
+        await flush();
+        await flush();
+      });
+
+    await submit();
+    expect(container.querySelector(".vuuEditForm-error")?.textContent).toBe(
+      "Rejected",
+    );
+    expect(
+      container.querySelector('[data-field="notes"]')?.textContent,
+    ).not.toContain("Rejected");
+    expect(onSaved).not.toHaveBeenCalled();
+
+    await submit();
+    expect(dataSource.addRow).toHaveBeenCalledTimes(2);
+    expect(onSaved).toHaveBeenCalled();
+  });
 });
 
 describe("getDataRowValues", () => {
