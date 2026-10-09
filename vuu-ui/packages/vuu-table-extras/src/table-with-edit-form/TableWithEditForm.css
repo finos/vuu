@@ -1,0 +1,37 @@
+.vuuTableWithEditForm {
+  --vuuTableWithEditForm-formWidth: 320px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.vuuTableWithEditForm-toolbar {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--salt-spacing-100);
+  padding: var(--salt-spacing-50) var(--salt-spacing-100);
+}
+
+.vuuTableWithEditForm-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.vuuTableWithEditForm-table {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.vuuTableWithEditForm-detail {
+  border-left: var(--salt-size-border) var(--salt-separable-borderStyle) var(--salt-separable-primary-borderColor);
+  flex: 0 0 var(--vuuTableWithEditForm-formWidth);
+  overflow: auto;
+  padding: var(--salt-spacing-100);
+}
+
+.vuuTableWithEditForm-placeholder {
+  color: var(--salt-content-secondary-foreground);
+}
