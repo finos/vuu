@@ -51,7 +51,7 @@ export const UNDO_COLUMN: ColumnDescriptor = {
 
 export interface EditableColumnsHookProps {
   /** Column descriptors used in view mode and as the base for edit mode. */
-  columns: ColumnDescriptor[];
+  columns: readonly ColumnDescriptor[];
   /**
    * Whether the table is currently showing the edit session. Typically
    * `isEditSessionReady` from `useEditableTable`. When false, `columns` are
@@ -144,12 +144,12 @@ export const getEditableColumns = ({
   isEditing,
   readOnly = DEFAULT_READ_ONLY_COLUMNS,
   undoColumn = false,
-}: EditableColumnsHookProps): ColumnDescriptor[] => {
+}: EditableColumnsHookProps): readonly ColumnDescriptor[] => {
   if (!isEditing) {
     return columns;
   }
 
-  const baseColumns: ColumnDescriptor[] =
+  const baseColumns: readonly ColumnDescriptor[] =
     columnsDiverge && editSchema
       ? editSchema.columns
           .filter(({ name }) => name !== "vuuAction")

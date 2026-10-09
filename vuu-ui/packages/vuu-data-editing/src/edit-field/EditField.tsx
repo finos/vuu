@@ -15,6 +15,7 @@ import { dataDescriptorTypeToVuuRowDataItemType } from "@vuu-ui/vuu-utils";
 import type { DataValueValidationChecker } from "@vuu-ui/vuu-data-types";
 import type { VuuColumnDataType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { useEditMode } from "../EditModeProvider";
+import { useEditFormContext } from "../edit-form/EditFormContext";
 import { useEditSessionState } from "../useEditSessionState";
 import {
   useLookupValues,
@@ -84,6 +85,7 @@ export const EditField = ({
   const editSession = useEditSession();
 
   const { isEditMode } = useEditMode();
+  const formFieldErrors = useEditFormContext()?.fieldErrors;
   const isNewRow = editSession?.isNewRow(dataRow.key) ?? false;
   const { newRowState } = useEditSessionState(
     isNewRow ? editSession : undefined,
@@ -189,7 +191,7 @@ export const EditField = ({
   });
 
   const warningMessage = isEditMode
-    ? (fieldMessage ?? newRowState.errors[name])
+    ? (fieldMessage ?? formFieldErrors?.[name] ?? newRowState.errors[name])
     : undefined;
 
   return (
