@@ -22,10 +22,30 @@ export const keyFromPath = (path: string) => {
 };
 
 export type ComponentDescriptor = {
+  /** `key=value` pairs, other than `tags`, from the example's annotation. */
+  attributes?: Record<string, string>;
   componentName: string;
   kind: "component";
   moduleName: string;
+  tags?: string[];
 };
+
+/**
+ * How the standalone page hosts an example: rendered directly, or loaded by
+ * a `RemoteModule` within a `PortalShell`, as an application would be.
+ */
+export type HostMode = "component" | "portal";
+
+/** Examples tagged `remote-module` are hosted in a portal by default. */
+export const REMOTE_MODULE_TAG = "remote-module";
+
+export const asHostMode = (input: string | undefined): HostMode | undefined =>
+  input === "component" || input === "portal" ? input : undefined;
+
+export const getDefaultHostMode = (nodeData: unknown): HostMode =>
+  isComponentDescriptor(nodeData) && nodeData.tags?.includes(REMOTE_MODULE_TAG)
+    ? "portal"
+    : "component";
 
 export type DocumentDescriptor = {
   kind: "document";

@@ -3,6 +3,8 @@ import path from "node:path";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 
 export type ComponentDescriptor = {
+  /** `key=value` pairs, other than `tags`, from the example's annotation. */
+  attributes?: Record<string, string>;
   componentName: string;
   kind: "component";
   moduleName: string;
@@ -32,10 +34,12 @@ export const moduleNameFromRelativePath = (relativePath: string) =>
 export const exposeNameFromModuleName = (moduleName: string) =>
   `./${moduleName}`;
 
+type ExampleAnnotation = Pick<ComponentDescriptor, "attributes" | "tags">;
+
 const descriptorFromFile = (
   relativePath: string,
   componentName?: string,
-  tags?: string[],
+  annotation?: ExampleAnnotation,
 ): ShowcaseNodeData =>
   componentName === undefined
     ? {
@@ -46,8 +50,29 @@ const descriptorFromFile = (
         componentName,
         kind: "component",
         moduleName: moduleNameFromRelativePath(relativePath),
-        tags,
+        ...annotation,
       };
+
+const annotationAttribute = /([a-zA-Z][\w-]*)=([^\s*]*)/g;
+
+/**
+ * Parses an example annotation, a doc comment made up only of `key=value`
+ * pairs, e.g. `/** tags=data-consumer,remote-module title=Orders *\/`.
+ * `tags` is a comma separated list; other keys are kept as attributes.
+ */
+export const parseExampleAnnotation = (
+  annotation: string,
+): ExampleAnnotation => {
+  const result: ExampleAnnotation = {};
+  for (const [, key, value] of annotation.matchAll(annotationAttribute)) {
+    if (key === "tags") {
+      result.tags = value.split(",").filter(Boolean);
+    } else {
+      (result.attributes ??= {})[key] = value;
+    }
+  }
+  return result;
+};
 
 const exportedComponents = (
   filePath: string,
@@ -56,14 +81,14 @@ const exportedComponents = (
   tags: Set<string>,
 ): TreeSourceNode<ShowcaseNodeData>[] => {
   const tokens =
-    /export const ([A-Z][A-Za-z0-9_]*)\s*=|\/\*\*\s*tags=([-a-z,]*)\s*\*\//g;
+    /export const ([A-Z][A-Za-z0-9_]*)\s*=|\/\*\*\s*((?:[a-zA-Z][\w-]*=[^\s*]*\s*)+)\*\//g;
   const childNodes: TreeSourceNode<ShowcaseNodeData>[] = [];
-  let componentTags: string[] | undefined;
+  let annotation: ExampleAnnotation | undefined;
 
   for (const match of fs.readFileSync(filePath, "utf8").matchAll(tokens)) {
     if (match[2] !== undefined) {
-      componentTags = match[2].split(",").filter(Boolean);
-      componentTags.forEach((tag) => tags.add(tag));
+      annotation = parseExampleAnnotation(match[2]);
+      annotation.tags?.forEach((tag) => tags.add(tag));
     } else {
       const componentName = match[1];
       childNodes.push({
@@ -72,10 +97,10 @@ const exportedComponents = (
         nodeData: descriptorFromFile(
           relativePath,
           componentName,
-          componentTags,
+          annotation,
         ) as ComponentDescriptor,
       });
-      componentTags = undefined;
+      annotation = undefined;
     }
   }
 
@@ -144,7 +169,9 @@ const discoverDirectory = (
     } else if (fileName.toLowerCase() === "index.mdx") {
       const moduleName = moduleNameFromRelativePath(relativePath);
       exposes[exposeNameFromModuleName(moduleName)] = filePath;
-      directoryDocument = descriptorFromFile(relativePath) as DocumentDescriptor;
+      directoryDocument = descriptorFromFile(
+        relativePath,
+      ) as DocumentDescriptor;
     } else if (fileName.endsWith(documentFileSuffix)) {
       const name = fileName.slice(0, -documentFileSuffix.length);
       const moduleName = moduleNameFromRelativePath(relativePath);

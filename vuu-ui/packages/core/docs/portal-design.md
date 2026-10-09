@@ -141,12 +141,77 @@ theme defaults, modal provider, and default or injected data-source provider.
 Authentication remains outside the shells. Sharing providers rather than
 layout flags allows the two shells to evolve independently.
 
+## Context panel
+
+Both `PortalShell` and `WindowShell` host a context panel: a slide-out drawer
+overlaying the right edge of the shell, used for content such as a table
+column picker or filter container. It is rendered in the `vuu-shell-context`
+landmark element, and the panel itself has the id `context-panel`
+(`VuuShellLocation.ContextPanel`).
+
+Any code below the shell, including remote modules, opens and closes it with
+the hooks from `@vuu-ui/core`:
+
+```tsx
+import { useContextPanel, useHideContextPanel } from "@vuu-ui/core";
+
+const showContextPanel = useContextPanel();
+const hideContextPanel = useHideContextPanel();
+
+showContextPanel(<ColumnPicker columnModel={columnModel} />, "Columns");
+```
+
+Because `@vuu-ui/core` is a shared Module Federation singleton, remote modules
+reach the shell's panel. These are separate from the hooks of the same names in
+`@vuu-ui/vuu-ui-controls`, used by `@vuu-ui/vuu-shell`; a remote module must
+use the `@vuu-ui/core` versions.
+
+### Content keeps its owner's context
+
+The panel displays content but does not own it. `RemoteModule` gives each
+module its own context panel provider, which holds the module's content and
+renders it into the panel with a React portal. The content therefore stays in
+the module's React tree and sees the module's context (its Vuu connection,
+saved state, notification origin and any providers of its own), even though it
+is displayed in the shell.
+
+One owner at a time has the panel. If another module, or the shell, opens it,
+the previous owner's content is removed, and that owner can no longer close the
+panel. The panel also closes when its owner unmounts, on **Escape**, from its
+close button, or when the portal navigates to another route. Focus returns to
+the element that was focused when it opened.
+
+### Placement
+
+A module's `contextPanelPlacement`, set on its `RemoteModuleDescriptor` or
+`RemoteModule`, says where its content is displayed:
+
+- `"shell"` (the default): the shell's panel, in the `vuu-shell-context`
+  landmark.
+- `"module"`: a panel within the module's frame, overlaying the right edge of
+  the module's nearest positioned ancestor. This suits layouts with modules
+  side by side. Each module has its own panel, independent of the shell's, and
+  it has no landmark ids, which must be unique.
+
+Module code is the same either way: placement is chosen by the host. The
+showcase examples `VuuPortal/ContextPanel` demonstrate both placements in a
+portal-hosted module.
+
+`ContextPanelProvider` can be nested to customise behaviour for a subtree:
+with a `resolveComponent` function, `showContextPanel` also accepts a
+component name. Without a shell, it shows content in a dialog.
+
 ## RemoteModule
 
 `RemoteModule` is the runtime loader and connection boundary for a federated
 module. It registers the remote manifest, lazy-loads and caches the exposed
 React component, reports loading errors, and passes configured component props
 to the remote.
+
+The component is the module's `default` export. Set `mfExport` (on the
+component or the `RemoteModuleDescriptor`) to render a named export instead,
+for a remote that exposes several components from one module, such as the
+showcase examples remote.
 
 The loaded component is wrapped with an `AuthenticationProvider` in
 `vuu-connection` mode.

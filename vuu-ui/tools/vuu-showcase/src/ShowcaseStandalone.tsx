@@ -27,13 +27,21 @@ import {
   registerRemotes,
 } from "@module-federation/enhanced/runtime";
 import {
+  asHostMode,
   ComponentDescriptor,
   DocumentDescriptor,
+  getDefaultHostMode,
   getTargetTreeNode,
+  type HostMode,
   isComponentDescriptor,
   isDocumentDescriptor,
   loadTheme,
 } from "./shared-utils";
+import {
+  SHOWCASE_REMOTE_NAME,
+  SHOWCASE_REMOTE_URL,
+  ShowcasePortalHost,
+} from "./ShowcasePortalHost";
 import { DataLocation } from "./showcase-main/ShowcaseProvider";
 import { simulModule } from "@vuu-ui/vuu-data-test";
 
@@ -78,8 +86,8 @@ type ContentState = {
 
 type ExampleModule = Record<string, ComponentType>;
 
-const remoteName = "showcase_examples";
-const remoteManifest = "/showcase-examples/mf-manifest.json";
+const remoteName = SHOWCASE_REMOTE_NAME;
+const remoteManifest = `${SHOWCASE_REMOTE_URL}/mf-manifest.json`;
 let showcaseRemoteRegistered = false;
 
 const loadExampleModule = async (
@@ -100,9 +108,21 @@ const loadExampleModule = async (
   return module;
 };
 
+const getTargetNodeData = (treeSource: TreeSourceNode[]) => {
+  const url = new URL(document.location.href);
+  if (url.pathname === "/") {
+    return undefined;
+  }
+  const nodeData = getTargetTreeNode<unknown>(url, treeSource)?.nodeData;
+  return isComponentDescriptor(nodeData) || isDocumentDescriptor(nodeData)
+    ? nodeData
+    : undefined;
+};
+
 // The theme is passed as a queryString parameter in the url
-// themeMode and density are passed via the url hash, so can be
-// changed without refreshing the page
+// themeMode, density, dataLocation and host are passed via the url hash,
+// so can be changed without refreshing the page. host defaults to "portal"
+// for examples tagged remote-module.
 export const ShowcaseStandalone = ({
   treeSource,
 }: {
@@ -113,6 +133,7 @@ export const ShowcaseStandalone = ({
   const densityRef = useRef<Density>("high");
   const themeModeRef = useRef<ThemeMode>("light");
   const dataLocationRef = useRef<DataLocation>("local");
+  const hostModeRef = useRef<HostMode | undefined>(undefined);
 
   const [contentState, setContentState] = useState<ContentState | null>(null);
   const [loadError, setLoadError] = useState<Error | null>(null);
@@ -125,12 +146,15 @@ export const ShowcaseStandalone = ({
       const _themeMode = asThemeMode(getUrlParameter("themeMode"));
       const _dataLocation = asDataLocation(getUrlParameter("dataLocation"));
       const _density = asDensity(getUrlParameter("density"));
+      const _hostMode = asHostMode(getUrlParameter("host"));
       if (
         _themeMode !== themeModeRef.current ||
         _density !== densityRef.current ||
-        _dataLocation !== dataLocationRef.current
+        _dataLocation !== dataLocationRef.current ||
+        _hostMode !== hostModeRef.current
       ) {
         dataLocationRef.current = _dataLocation;
+        hostModeRef.current = _hostMode;
         densityRef.current = _density;
         themeModeRef.current = _themeMode;
         forceRefresh({});
@@ -146,17 +170,15 @@ export const ShowcaseStandalone = ({
     }
   }, [theme]);
 
+  const nodeData = useMemo(() => getTargetNodeData(treeSource), [treeSource]);
+  const hostMode = hostModeRef.current ?? getDefaultHostMode(nodeData);
+  const portalHosted = hostMode === "portal" && isComponentDescriptor(nodeData);
+
   useEffect(() => {
     let cancelled = false;
-    const url = new URL(document.location.href);
-    if (url.pathname === "/") {
+    if (!nodeData || portalHosted) {
       return undefined;
     }
-    const targetTreeNode = getTargetTreeNode<unknown>(url, treeSource);
-    if (!targetTreeNode) {
-      return undefined;
-    }
-    const { nodeData } = targetTreeNode;
 
     setContentState(null);
     setLoadError(null);
@@ -189,7 +211,7 @@ export const ShowcaseStandalone = ({
     return () => {
       cancelled = true;
     };
-  }, [treeSource]);
+  }, [nodeData, portalHosted]);
 
   return (
     <SaltProviderNext
@@ -202,7 +224,20 @@ export const ShowcaseStandalone = ({
       headingFont={headingFont}
     >
       <ThemeLoadChecker theme={theme}>
-        {dataLocationRef.current === "local" ? (
+        {portalHosted ? (
+          <ShowcasePortalHost
+            DataSourceProvider={
+              dataLocationRef.current === "local"
+                ? LocalDataSourceProvider
+                : VuuDataSourceProvider
+            }
+            density={densityRef.current}
+            descriptor={nodeData}
+            mode={themeModeRef.current}
+            path={document.location.pathname}
+            theme={theme}
+          />
+        ) : dataLocationRef.current === "local" ? (
           <LocalDataSourceProvider>
             <div
               className={cx("vuuShowcase-StandaloneRoot", {

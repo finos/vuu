@@ -7,6 +7,7 @@ import {
   type ReactElement,
   type ReactNode,
   useContext,
+  useEffect,
   useMemo,
 } from "react";
 import {
@@ -14,6 +15,7 @@ import {
   Route,
   RouterProvider,
   Routes,
+  useLocation,
 } from "react-router-dom";
 import { partition } from "@vuu-ui/vuu-utils";
 import type { RemoteModuleDescriptor } from "../RemoteModuleDescriptor";
@@ -25,6 +27,11 @@ import {
   type CommonShellProps,
 } from "../common-shell/CommonShell";
 import type { ServerMonitorOptions } from "../connection-management/server-status";
+import { useContextPanelSlot } from "../context-panel/ContextPanelSlot";
+import {
+  ShellContextPanel,
+  ShellContextPanelProvider,
+} from "../context-panel/ShellContextPanel";
 import {
   useOpenModuleId,
   useTrackOpenModule,
@@ -119,6 +126,16 @@ const OpenModuleTracker = ({
   return null;
 };
 
+/** Content in the context panel belongs to the module that opened it. */
+const CloseContextPanelOnNavigation = () => {
+  const { pathname } = useLocation();
+  const closeContextPanel = useContextPanelSlot()?.close;
+  useEffect(() => {
+    closeContextPanel?.();
+  }, [closeContextPanel, pathname]);
+  return null;
+};
+
 const PortalLayout = () => {
   const {
     children,
@@ -160,38 +177,42 @@ const PortalLayout = () => {
           options={notifications}
           portalId={portalId}
         >
-          <div className={classBase} id={id}>
-            {portalChromeElements}
-            <div className={`${classBase}-banners`}>
-              <PortalNotificationBanners />
+          <ShellContextPanelProvider>
+            <CloseContextPanelOnNavigation />
+            <div className={classBase} id={id}>
+              {portalChromeElements}
+              <div className={`${classBase}-banners`}>
+                <PortalNotificationBanners />
+              </div>
+              <div className={`${classBase}-content`}>
+                <Routes>
+                  <Route path="/" element={landingPage} />
+                  <Route path="*" element={landingPage} />
+                  {remoteModules.map(({ id, path, ...feature }) => {
+                    return (
+                      <Route
+                        key={id}
+                        path={getRemoteRoutePath(path)}
+                        element={
+                          <PortalModuleIdContext.Provider value={id}>
+                            <PortalLinkProvider modulePath={path}>
+                              <PortalModuleRegistryProvider
+                                remoteModules={remoteModules}
+                              >
+                                <RemoteModule {...feature} />
+                              </PortalModuleRegistryProvider>
+                            </PortalLinkProvider>
+                          </PortalModuleIdContext.Provider>
+                        }
+                      />
+                    );
+                  })}
+                </Routes>
+              </div>
+              <ShellContextPanel className={`${classBase}-context`} />
+              <NotificationsPanel />
             </div>
-            <div className={`${classBase}-content`}>
-              <Routes>
-                <Route path="/" element={landingPage} />
-                <Route path="*" element={landingPage} />
-                {remoteModules.map(({ id, path, ...feature }) => {
-                  return (
-                    <Route
-                      key={id}
-                      path={getRemoteRoutePath(path)}
-                      element={
-                        <PortalModuleIdContext.Provider value={id}>
-                          <PortalLinkProvider modulePath={path}>
-                            <PortalModuleRegistryProvider
-                              remoteModules={remoteModules}
-                            >
-                              <RemoteModule {...feature} />
-                            </PortalModuleRegistryProvider>
-                          </PortalLinkProvider>
-                        </PortalModuleIdContext.Provider>
-                      }
-                    />
-                  );
-                })}
-              </Routes>
-            </div>
-            <NotificationsPanel />
-          </div>
+          </ShellContextPanelProvider>
         </PortalNotificationsProvider>
       </CommonShell>
     </VuuServerMonitorProvider>
