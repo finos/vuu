@@ -71,6 +71,21 @@ export interface EditFormHookProps {
 
 const EMPTY_ERRORS: EditFormFieldErrors = {};
 
+/**
+ * Plain column values of a row. Table DataRows are Proxies with no own
+ * keys, so they cannot be spread; they serialize via `toJSON`.
+ */
+export const getDataRowValues = (
+  dataRow: DataRow,
+): Record<string, VuuRowDataItemType> => {
+  const { toJSON } = dataRow as { toJSON?: unknown };
+  const values =
+    typeof toJSON === "function"
+      ? (toJSON.call(dataRow) as Record<string, VuuRowDataItemType>)
+      : { ...dataRow };
+  return { ...values, key: dataRow.key };
+};
+
 const hasErrors = (errors: EditFormFieldErrors | undefined) =>
   errors !== undefined && errors !== null && Object.keys(errors).length > 0;
 
@@ -160,7 +175,10 @@ export const useEditForm = ({
     if (isCreate) {
       return editSession.newRowState.values;
     } else if (dataRow) {
-      return { ...dataRow, ...editSession.getEditedValues(dataRow.key) };
+      return {
+        ...getDataRowValues(dataRow),
+        ...editSession.getEditedValues(dataRow.key),
+      };
     }
     return {};
   }, [dataRow, editSession, isCreate]);
