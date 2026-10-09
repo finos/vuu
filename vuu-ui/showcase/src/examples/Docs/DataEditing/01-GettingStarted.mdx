@@ -18,7 +18,7 @@ then with a form beside the table.
 
 You don't need a server for local development or tests. Wrap your component in
 `LocalDataSourceProvider` from `@vuu-ui/vuu-data-test`, which implements all of
-this in the browser. See [Testing](testing.md).
+this in the browser. See [Testing](./11-Testing.mdx).
 
 ## Step 1: an editable table
 
@@ -142,10 +142,10 @@ their changes by clicking another row. Pass `allowCreate={false}` to hide New.
 
 - Ask before throwing away unsaved changes: pass
   `confirmCancel={useConfirmDiscard()}` (needs a `ModalProvider`). See
-  [Editable tables](editable_tables.md).
+  [Editable tables](./04-EditableTables.mdx).
 - Lay out your own form with `EditForm` and `EditField`. See
-  [Edit forms](edit_forms.md).
-- Fill dropdowns from another Vuu table. See [Lookups](lookups.md).
-- Show save failures to the user. See [Error handling](error_handling.md).
+  [Edit forms](./05-EditForms.mdx).
+- Fill dropdowns from another Vuu table. See [Lookups](./07-Lookups.mdx).
+- Show save failures to the user. See [Error handling](./10-ErrorHandling.mdx).
 - Not sure a session table is right for your data? See
-  [Choosing an editing model](choosing_a_model.md).
+  [Choosing an editing model](./03-ChoosingAModel.mdx).
