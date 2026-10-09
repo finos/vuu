@@ -401,6 +401,58 @@ describe("NotificationModule", () => {
   });
 });
 
+describe("NotificationModule.publish", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("inserts a row with defaults, visible to subscribed viewports", () => {
+    const { module } = createTestModule();
+    setCurrentUser("steve");
+    const dataSource = createSubscribedDataSource(module);
+    const before = dataSource.size;
+
+    const id = module.publish({ title: "Hello", level: "WARNING" });
+
+    const table = module.tables.notifications;
+    const { map } = table;
+    const row = table.findByKey(id);
+    expect(row[map.title]).toBe("Hello");
+    expect(row[map.level]).toBe("WARNING");
+    expect(row[map.type]).toBe("toast");
+    expect(row[map.audience]).toBe("all");
+    expect(row[map.priority]).toBe(0);
+    expect(row[map.vuuCreatedTimestamp]).toBeGreaterThan(0);
+    expect(dataSource.size).toBe(before + 1);
+    setCurrentUser(undefined);
+  });
+
+  it("updates an existing id and deletes the row at expiryTime", () => {
+    vi.useFakeTimers();
+    const { module } = createTestModule();
+    const table = module.tables.notifications;
+    const id = module.publish({ id: "p1", title: "One" });
+    const created = table.findByKey(id)[table.map.vuuCreatedTimestamp];
+    vi.advanceTimersByTime(10);
+    module.publish({
+      id: "p1",
+      title: "Two",
+      expiryTime: Date.now() + 1000,
+    });
+    expect(table.findByKey("p1")[table.map.title]).toBe("Two");
+    expect(table.findByKey("p1")[table.map.vuuCreatedTimestamp]).toBe(created);
+    vi.advanceTimersByTime(1000);
+    expect(table.findByKey("p1")).toBeUndefined();
+  });
+
+  it("does not auto-start a provider that was stopped explicitly", () => {
+    const { module, provider } = createTestModule();
+    module.stop();
+    createSubscribedDataSource(module);
+    expect(provider.start).not.toHaveBeenCalled();
+  });
+});
+
 describe("SimulatedNotificationsProvider", () => {
   beforeEach(() => {
     vi.useFakeTimers();

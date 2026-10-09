@@ -473,8 +473,29 @@ monitoring, and `notifications={false}` turns notifications off. See the
 for all options.
 
 In local mode, every local server is online. To simulate notifications, add
-`notificationsModule` from `@vuu-ui/vuu-data-test` to a local server's
-`modules`; the portal-host example does this for `basket` and `simul`.
+a `SimulatedNotificationsModule()` from `@vuu-ui/vuu-data-test` to a local
+server's `modules`. Use a separate instance per server, so each server's
+notifications only badge its own applications. Pass `{ simulate: false }` to
+turn off random notifications. The portal-host example gives every local
+server its own notifications module, with random notifications on `basket`
+and `simul`.
+
+To create a notification at runtime, call `publish` on the module. In the
+portal-host local mode, you can do this from the devtools console:
+
+```js
+vuuNotifications.servers(); // ["module-admin", "user-admin", "basket", "simul"]
+vuuNotifications.publish("basket", {
+  title: "Order filled",
+  message: "ORD-1234 filled",
+  level: "WARNING", // INFO | WARNING | ERROR
+  type: "toast", // toast | banner
+  expiresInMs: 30_000, // optional, the server deletes it after this delay
+});
+vuuNotifications.delete("basket", id);
+vuuNotifications.stopSimulation(); // stop random notifications on every server
+vuuNotifications.startSimulation("simul");
+```
 
 ## 6. Build and run
 
