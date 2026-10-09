@@ -1,27 +1,35 @@
 import {
-  Accent,
-  ActionFont,
-  HeadingFont,
+  type Accent,
+  type ActionFont,
+  type HeadingFont,
   SaltProviderNext,
 } from "@salt-ds/core";
 import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
-  Density,
+  type Density,
   getUrlParameter,
   ThemeLoadChecker,
-  ThemeMode,
-  TreeSourceNode,
+  type ThemeMode,
+  type TreeSourceNode,
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
+  type ComponentType,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  type ExhibitImporter,
   getTargetTreeNode,
+  importExhibitByUrl,
   isComponentDescriptor,
   loadTheme,
-  resolveModulePath,
 } from "./shared-utils";
-import { DataLocation } from "./showcase-main/ShowcaseProvider";
+import type { DataLocation } from "./showcase-main/ShowcaseProvider";
 import { createMdxComponents } from "./mdx-components";
 import { simulModule } from "@vuu-ui/vuu-data-test";
 
@@ -70,11 +78,13 @@ type ContentState = {
 // themeMode and density are passed via the url hash, so can be
 // changed without refreshing the page
 export const ShowcaseStandalone = ({
+  importExhibit = importExhibitByUrl,
   treeSource,
 }: {
+  importExhibit?: ExhibitImporter;
   treeSource: TreeSourceNode[];
 }) => {
-  console.log(`[ShowcaseStandalone] render`);
+  console.log("[ShowcaseStandalone] render");
   const [, forceRefresh] = useState({});
   const densityRef = useRef<Density>("high");
   const themeModeRef = useRef<ThemeMode>("light");
@@ -120,25 +130,25 @@ export const ShowcaseStandalone = ({
     if (targetTreeNode) {
       const { nodeData } = targetTreeNode;
       try {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const targetModule: Module = await import(
-          /* @vite-ignore */ `/${resolveModulePath(nodeData.path)}`
-        );
+        const targetModule = await importExhibit(nodeData.path);
 
         if (targetModule) {
           if (isComponentDescriptor(nodeData)) {
-            const Component = targetModule[nodeData.componentName];
+            const Component = targetModule[nodeData.componentName] as
+              | ComponentType
+              | undefined;
             if (Component) {
               setContentState({
                 component: <Component />,
                 isMDX: nodeData.path.endsWith("mdx"),
               });
             } else {
-              console.warn(`Example Componentnot found`);
+              console.warn("Example Componentnot found");
             }
           } else {
-            const Component = targetModule.default;
+            const Component = targetModule.default as ComponentType<{
+              components?: ReturnType<typeof createMdxComponents>;
+            }>;
             const isMDX = nodeData.path.endsWith("mdx");
             setContentState({
               component: isMDX ? (
@@ -163,7 +173,7 @@ export const ShowcaseStandalone = ({
         }
       }
     }
-  }, [treeSource]);
+  }, [importExhibit, treeSource]);
 
   return (
     <SaltProviderNext
