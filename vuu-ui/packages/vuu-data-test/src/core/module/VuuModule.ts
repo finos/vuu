@@ -786,7 +786,7 @@ export abstract class VuuModule<T extends string = string>
         }
       }
       sessionTable.insert(row);
-      return { type: "SUCCESS_RESULT", data: undefined };
+      return { type: "SUCCESS_RESULT", data: { key: rowKey } };
     }
     return {
       type: "ERROR_RESULT",

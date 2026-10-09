@@ -140,6 +140,11 @@ export const executeBatchRpcCalls = async <T>(
   return { errors, results };
 };
 
+export type SessionRowError = {
+  rowNum: number;
+  message: string;
+};
+
 export type SessionRowUpdateListener = () => void;
 
 export const getInlineRowErrorMessage = (result: unknown): string | undefined => {
@@ -147,7 +152,7 @@ export const getInlineRowErrorMessage = (result: unknown): string | undefined =>
     const data = result.data;
     const msg = data.vuuMsg ?? data.msg;
     if (typeof msg === "string" && msg.trim() !== "") {
-      return msg;
+      return msg.trim();
     }
   }
   return undefined;
@@ -157,7 +162,7 @@ export const getRowVuuMsgError = (
   row: DataSourceRow,
   vuuMsgDataIndex: number,
   vuuRowNumDataIndex: number,
-): string | undefined => {
+): SessionRowError | undefined => {
   if (vuuMsgDataIndex === -1) {
     return undefined;
   }
@@ -167,26 +172,26 @@ export const getRowVuuMsgError = (
   if (typeof msg === "string" && msg.trim() !== "") {
     const rowNum =
       vuuRowNumDataIndex !== -1 && row[vuuRowNumDataIndex] !== undefined
-        ? row[vuuRowNumDataIndex]
+        ? Number(row[vuuRowNumDataIndex])
         : Number(row[metadataKeys.IDX]) + CSV_FIRST_DATA_ROW_NUMBER;
-    return `Row ${rowNum}: ${msg}`;
+    return { rowNum, message: msg.trim() };
   }
   return undefined;
 };
 
 export const waitForSessionErrors = (
   isRemote: boolean,
-  sessionErrors: Map<string | number, string>,
+  sessionErrors: Map<string | number, SessionRowError>,
   receivedRowKeys: Set<string | number>,
   expectedRowCount: number,
   listeners: Set<SessionRowUpdateListener>,
   timeoutMs = 500,
-): Promise<string[]> => {
+): Promise<SessionRowError[]> => {
   if (sessionErrors.size > 0 || !isRemote) {
     return Promise.resolve([...sessionErrors.values()]);
   }
 
-  return new Promise<string[]>((resolve) => {
+  return new Promise<SessionRowError[]>((resolve) => {
     let timeoutId: ReturnType<typeof setTimeout>;
     const onUpdate = () => {
       if (

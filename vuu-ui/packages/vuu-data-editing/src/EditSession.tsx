@@ -5,7 +5,6 @@ import type {
   EditSessionMode,
   SchemaColumn,
   SessionType,
-  UndoRowChangeResult,
 } from "@vuu-ui/vuu-data-types";
 import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
@@ -31,6 +30,11 @@ export type EditSessionConstructorProps = {
   /** Default column values merged into every addRow call for absent columns. Pass a stable reference. */
   rowDefaults?: RowDefaultDataItemValues;
 };
+
+export type AddRowResultData = {
+  key?: string | number;
+};
+
 const toEditSessionMode = (copyOption: CopyOption): EditSessionMode => {
   switch (copyOption) {
     case "All":
@@ -94,6 +98,7 @@ export class EditSession
    *  Row key => row edits
    */
   #rowEdits = new Map<string, RowEditDetails>();
+  #addedRowKeys = new Set<string>();
   #editCount = 0;
   #deleteCount = 0;
   #addCount = 0;
@@ -196,20 +201,22 @@ export class EditSession
   }
 
   #setDeleteCount(val: number) {
-    if (val !== this.#deleteCount) {
+    const newCount = Math.max(0, val);
+    if (newCount !== this.#deleteCount) {
       const oldState = this.editState;
       const oldCount = this.#deleteCount;
-      this.#deleteCount = val;
-      this.#emitEditStateChange(oldState, oldCount === 0 || val === 0);
+      this.#deleteCount = newCount;
+      this.#emitEditStateChange(oldState, oldCount === 0 || newCount === 0);
     }
   }
 
   #setAddCount(val: number) {
-    if (val !== this.#addCount) {
+    const newCount = Math.max(0, val);
+    if (newCount !== this.#addCount) {
       const oldState = this.editState;
       const oldCount = this.#addCount;
-      this.#addCount = val;
-      this.#emitEditStateChange(oldState, oldCount === 0 || val === 0);
+      this.#addCount = newCount;
+      this.#emitEditStateChange(oldState, oldCount === 0 || newCount === 0);
     }
   }
 
@@ -364,9 +371,10 @@ export class EditSession
       throw Error("[EditSession] datasource does not support deleting rows");
     }
 
-    // We rely purely on the datasource-supplied selectedRowsCount for counting deletions
-    // captured before the RPC call since execution deselects the deleted rows.
     const selectedRowsCount = this.dataSource?.selectedRowsCount ?? 0;
+    if (selectedRowsCount === 0) {
+      return { data: undefined, type: "SUCCESS_RESULT" };
+    }
 
     const response = await deleteSelectedRows.call(
       this.dataSource,
@@ -382,6 +390,7 @@ export class EditSession
     if (selectedRowsCount > 0) {
       this.#setDeleteCount(this.#deleteCount + selectedRowsCount);
     }
+    await this.dataSource?.select?.({ type: "DESELECT_ALL" });
     return response;
   }
 
@@ -403,6 +412,10 @@ export class EditSession
       );
     }
     if (!isRpcError(response)) {
+      const key = (response.data as AddRowResultData | undefined)?.key;
+      if (key !== undefined && key !== null) {
+        this.#addedRowKeys.add(String(key));
+      }
       this.#setAddCount(this.#addCount + 1);
     }
     return response;
@@ -479,16 +492,14 @@ export class EditSession
     }
 
     if (action === "deleteRow") {
-      this.#deleteCount--;
+      this.#deleteCount = Math.max(0, this.#deleteCount - 1);
     }
 
-    // If the server deleted a newly inserted row, decrement addCount
-    const wasInsertedRow =
-      action === "addRow" ||
-      (response?.data as UndoRowChangeResult | undefined)?.wasInsertedRow ===
-        true;
+    // If the row was newly inserted, decrement addCount
+    const wasInsertedRow = action === "addRow" || this.#addedRowKeys.has(key);
     if (wasInsertedRow) {
-      this.#addCount--;
+      this.#addedRowKeys.delete(key);
+      this.#addCount = Math.max(0, this.#addCount - 1);
     }
 
     this.#emitEditStateChange(oldState);
@@ -504,6 +515,7 @@ export class EditSession
         .map((columnName) => [key, columnName] as const),
     );
     this.#rowEdits.clear();
+    this.#addedRowKeys.clear();
     this.#cellCommitRevisions.clear();
     this.#editCount = 0;
     this.#deleteCount = 0;
