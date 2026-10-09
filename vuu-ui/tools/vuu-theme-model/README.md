@@ -16,11 +16,27 @@ npm run build:theme-model
 node tools/vuu-theme-model/src/cli.ts \
   --entry path/to/css/theme-next.css \
   [--fallback path/to/css/theme.css] \
-  [--name my-theme] [--out my-theme.json] [--pretty] [--verbose]
+  [--name my-theme] [--out my-theme.json] [--module my-theme.js] \
+  [--pretty] [--verbose]
 ```
 
-`npm run build:theme-model` writes `vuu-theme.json` and `salt-theme.json` to
-`showcase/src/examples/ThemeBrowser/generated/` (gitignored).
+- `--out` writes the model as JSON.
+- `--module` writes an ES module exporting `model` (the JSON model) and
+  `stylesheet` (the whole theme flattened into one stylesheet, with `@import`
+  inlined and `@font-face` removed, ready for `CSSStyleSheet.replaceSync`).
+- With neither option, the JSON model is written to stdout.
+
+`npm run build:theme-model` writes `vuu-theme.js` and `salt-theme.js` modules to
+`showcase/src/examples/ThemeBrowser/generated/` (gitignored). It runs
+automatically before `npm run showcase`, `showcase:build` and `showcase:prod`.
+
+### Theme Browser
+
+The showcase example `ThemeBrowser` loads these modules. The subject theme's
+stylesheet is applied only inside a shadow-root sandbox, so the browser's own
+UI is never styled by the theme being explored. Fonts declared by the theme are
+not loaded by the sandbox; typography previews use them only if the host page
+has already loaded them.
 
 The entry may be either a tree of files linked by `@import` (e.g.
 `@vuu-ui/vuu-theme`) or a bundled file containing `/* css/... */` source marker

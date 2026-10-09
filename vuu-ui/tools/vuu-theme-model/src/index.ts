@@ -7,3 +7,4 @@ export {
   buildThemeModel,
   buildThemeModelFromSources,
 } from "./build-theme-model.ts";
+export { buildThemeStylesheet } from "./build-theme-stylesheet.ts";
