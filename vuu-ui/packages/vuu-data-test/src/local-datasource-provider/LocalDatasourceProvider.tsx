@@ -16,16 +16,23 @@ import moduleContainer, {
   ensureVuuModule,
 } from "../core/module/ModuleContainer";
 import type { VuuModule } from "../core/module/VuuModule";
-import tableContainer from "../core/table/TableContainer";
 
 /**
  * Creates a Provider that installs both legacy and core data contexts,
- * backed by in-browser VuuModules. When `moduleNames` is supplied, only
- * those modules are visible; otherwise every registered module is.
+ * backed by in-browser VuuModules. When `modules` is supplied, only those
+ * module instances are visible; otherwise every registered module is.
  */
-const createLocalDataSourceProvider = (moduleNames?: ReadonlySet<string>) => {
+// biome-ignore lint/suspicious/noExplicitAny: Modules use different table-name unions.
+const createLocalDataSourceProvider = (modules?: VuuModule<any>[]) => {
+  const ownModules = modules
+    ? new Map(modules.map((module) => [module.name, module]))
+    : undefined;
   const getModule = (moduleName: string) => {
-    if (moduleNames && !moduleNames.has(moduleName)) {
+    if (ownModules) {
+      const module = ownModules.get(moduleName);
+      if (module) {
+        return module;
+      }
       throw Error(
         `[LocalDataSourceProvider] module ${moduleName} is not available on this server`,
       );
@@ -39,9 +46,11 @@ const createLocalDataSourceProvider = (moduleNames?: ReadonlySet<string>) => {
   > = {
     getTableList: async () => {
       const tables: VuuTable[] = [];
-      for (const moduleName of moduleNames ?? moduleContainer.moduleNames) {
-        for (const tableName of getModule(moduleName).getTableList()) {
-          tables.push(tableContainer.getTable(tableName).schema.table);
+      for (const moduleName of ownModules?.keys() ??
+        moduleContainer.moduleNames) {
+        const module = getModule(moduleName);
+        for (const tableName of module.getTableList()) {
+          tables.push(module.getTableSchema(tableName).table);
         }
       }
       return { tables };
@@ -123,7 +132,9 @@ export interface LocalVuuServerOptions {
 
 /**
  * Simulates a Vuu server in the browser, publishing the tables of the given
- * modules. Pass the result to a local-mode `AuthenticationProvider` as one of
+ * modules. Module instances are resolved from this server, not by name from
+ * the global registry, so servers can each have their own instance of a
+ * module (e.g. NOTIFICATIONS). Pass the result to a local-mode `AuthenticationProvider` as one of
  * its `localServers`.
  */
 export const createLocalVuuServer = ({
@@ -133,8 +144,6 @@ export const createLocalVuuServer = ({
   modules.forEach(ensureVuuModule);
   return {
     connectionId,
-    DataSourceProvider: createLocalDataSourceProvider(
-      new Set(modules.map(({ name }) => name)),
-    ),
+    DataSourceProvider: createLocalDataSourceProvider(modules),
   };
 };

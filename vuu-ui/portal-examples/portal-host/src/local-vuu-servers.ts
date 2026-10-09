@@ -3,36 +3,56 @@ import {
   basketModule,
   createLocalVuuServer,
   moduleAdminModule,
-  notificationsModule,
+  type NotificationModule,
+  SimulatedNotificationsModule,
   simulModule,
   userAdminModule,
 } from "@vuu-ui/vuu-data-test";
+
+/**
+ * Each local server has its own NOTIFICATIONS module, so a notification
+ * published on one server only badges the nav items of modules using that
+ * server. `basket` and `simul` also generate random notifications; the
+ * admin servers only publish notifications created from the devtools
+ * console (see local-notifications-devtools.ts).
+ */
+export const localNotificationModules: ReadonlyMap<string, NotificationModule> =
+  new Map([
+    ["module-admin", SimulatedNotificationsModule({ simulate: false })],
+    ["user-admin", SimulatedNotificationsModule({ simulate: false })],
+    ["basket", SimulatedNotificationsModule()],
+    ["simul", SimulatedNotificationsModule()],
+  ]);
+
+const notificationsFor = (connectionId: string) => {
+  const module = localNotificationModules.get(connectionId);
+  if (!module) {
+    throw Error(`no notifications module for local server ${connectionId}`);
+  }
+  return module;
+};
 
 /**
  * In-browser implementations of the Vuu servers used by the remote modules in
  * the local registry. A module whose `config.json` declares a matching
  * `connectionId` gets the data context of that server instead of a
  * websocket, and the table browser lists these servers.
- *
- * `basket` and `simul` include simulated notifications, so their modules
- * show notification badges in the app switcher. Local modules are shared
- * across servers by name, so both servers publish the same notifications.
  */
 export const localVuuServers: LocalVuuServer[] = [
   createLocalVuuServer({
     connectionId: "module-admin",
-    modules: [moduleAdminModule],
+    modules: [moduleAdminModule, notificationsFor("module-admin")],
   }),
   createLocalVuuServer({
     connectionId: "user-admin",
-    modules: [userAdminModule],
+    modules: [userAdminModule, notificationsFor("user-admin")],
   }),
   createLocalVuuServer({
     connectionId: "basket",
-    modules: [basketModule, notificationsModule],
+    modules: [basketModule, notificationsFor("basket")],
   }),
   createLocalVuuServer({
     connectionId: "simul",
-    modules: [simulModule, notificationsModule],
+    modules: [simulModule, notificationsFor("simul")],
   }),
 ];
