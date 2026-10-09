@@ -45,3 +45,18 @@ export {
   TableSettingsPanel,
   type TableDisplayAttributeChangeHandler,
 } from "./table-settings-panel/TableSettingsPanel";
+export {
+  type BulkEditDialogHookProps,
+  useBulkEditDialog,
+} from "./bulk-edit-dialog/useBulkEditDialog";
+export {
+  EditableTable,
+  type EditableTableMode,
+  type EditableTableProps,
+} from "./editable-table/EditableTable";
+export {
+  TableWithEditForm,
+  type TableWithEditFormField,
+  type TableWithEditFormMode,
+  type TableWithEditFormProps,
+} from "./table-with-edit-form/TableWithEditForm";
