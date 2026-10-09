@@ -6,9 +6,23 @@
 features. It coordinates edit-session state with editable data sources and
 provides React integrations for edit-mode controls.
 
-The initial implementation is copied from `@vuu-ui/vuu-utils`. The originals
-remain in place so existing consumers continue to work while applications
-migrate to this package.
+The package is organised in layers. Applications should start at the highest
+layer that fits and drop down only when they need more control:
+
+1. **Pattern components** – `EditForm`, `CreateRowForm` (this package) and
+   `EditableTable`, `TableWithEditForm`, `BulkEditDialog`
+   (`@vuu-ui/vuu-table-extras`).
+2. **Composable hooks** – `useEditableTable`, `useEditForm`,
+   `useEditableColumns`, `useEditSessionState`, `useLookupOptions`,
+   `useConfirmDiscard`, `useEntityDraft`, `useAsyncValidation`,
+   `useCustomEditField`.
+3. **Primitives** – `EditSession`, `DirectEditSession`, `DataEditingProvider`,
+   `EditModeProvider`, `EditField`, `EditButtons`, cell renderers.
+
+Errors raised by asynchronous edit operations are routed to an optional
+`onError(error, operation)` callback (`EditErrorHandler`). When no handler is
+supplied they are logged with `console.error`, so failures are never silently
+swallowed.
 
 ## Architecture
 
