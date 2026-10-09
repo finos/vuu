@@ -4,6 +4,37 @@ Shared data editing APIs, state management, and React components for VUU UI.
 
 This package coordinates edit-session state with editable data sources (both in-memory and remote Vuu session tables) and provides React hooks and UI controls for table editing.
 
+## Quick start
+
+Most applications don't need to assemble the pieces in this package by hand.
+`@vuu-ui/vuu-table-extras` provides ready-made patterns built on it:
+
+```tsx
+import { EditableTable } from "@vuu-ui/vuu-table-extras";
+
+<EditableTable
+  allowDelete
+  config={{ columns }}
+  dataSource={dataSource}
+  editable={{ price: true, quantity: true }}
+  showInlineAddRow
+/>
+```
+
+See the Data Editing guides in the Vuu docs (`docs/ui/data_editing/`), starting
+with [Getting started](../../../docs/ui/data_editing/getting_started.md), and the
+_DataEditing_ examples in the showcase.
+
+## Layers
+
+| Layer | Use it when | APIs |
+| ----- | ----------- | ---- |
+| Pattern components (`@vuu-ui/vuu-table-extras`) | A standard editing UI fits. | `EditableTable`, `TableWithEditForm`, `useBulkEditDialog` |
+| Composable hooks and components (this package) | You need your own layout or behaviour. | `useEditableTable`, `useEditableColumns`, `useEditForm`, `EditForm`, `CreateRowForm`, `EditButtons`, `useConfirmDiscard`, `useEditSessionState`, `useEntityDraft`, `useAsyncValidation`, `useLookupOptions` |
+| Primitives (this package) | You are building a new pattern. | `EditSession`, `DirectEditSession`, `DataEditingProvider`, `EditModeProvider` |
+
+The rest of this document describes the primitives and how they work.
+
 ---
 
 ## Table of Contents
@@ -155,6 +186,7 @@ A cell is considered edited only when `originalValue !== editedValue && isValid 
    - On success, extracts the row key directly from the response map (`response.data.key`) and records it in `#addedRowKeys`.
    - Increments `addCount`.
    - Resets new-row form draft and increments `draftRevision`.
+5. **Rejection**: if the server rejects the row, the draft is kept and the message is stored in `errors` under `rowErrorColumn` (the final column, where an inline add row shows it). Forms show it in their error banner. The next change to the draft clears it.
 
 ### Row Deletions (`deleteSelectedRows`)
 
