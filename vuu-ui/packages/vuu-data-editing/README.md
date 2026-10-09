@@ -21,8 +21,9 @@ import { EditableTable } from "@vuu-ui/vuu-table-extras";
 />
 ```
 
-See the Data Editing guides in the Vuu docs (`docs/ui/data_editing/`), starting
-with [Getting started](../../../docs/ui/data_editing/getting_started.md), and the
+See the Data Editing guides in the showcase (_Docs / DataEditing_, source in
+[`showcase/src/examples/Docs/DataEditing`](../../showcase/src/examples/Docs/DataEditing/)), starting
+with [Getting started](../../showcase/src/examples/Docs/DataEditing/01-GettingStarted.mdx), and the
 _DataEditing_ examples in the showcase.
 
 ## Layers

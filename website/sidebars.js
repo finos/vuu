@@ -93,27 +93,6 @@ module.exports = {
         "ui/visual_linking",
         "ui/custom_controls",
         "ui/calculated_columns",
-        {
-          type: "category",
-          label: "Data Editing",
-          items: [
-            "ui/data_editing/getting_started",
-            "ui/data_editing/concepts",
-            "ui/data_editing/choosing_a_model",
-            "ui/data_editing/editable_tables",
-            "ui/data_editing/edit_forms",
-            "ui/data_editing/draft_forms",
-            "ui/data_editing/lookups",
-            "ui/data_editing/bulk_editing",
-            "ui/data_editing/divergent_edit_tables",
-            "ui/data_editing/error_handling",
-            "ui/data_editing/testing",
-          ],
-          link: {
-            type: "doc",
-            id: "ui/data_editing/data_editing",
-          },
-        },
       ],
 
       link: {
