@@ -130,11 +130,20 @@ export const applyRuntimeColumnWidthsToConfig = (
   tableConfig: TableConfig,
   columns: RuntimeColumnDescriptor[],
 ): TableConfig => {
+  // Runtime columns may include synthetic columns (group column, checkbox
+  // column) that must never be written back to config, so we update the
+  // config columns rather than deriving config from runtime columns.
+  const runtimeColumns = columns.flatMap((column) =>
+    isGroupColumn(column) ? column.columns : column,
+  );
   return {
     ...tableConfig,
-    columns: columns.map((column) => ({
+    columns: tableConfig.columns.map((column) => ({
       ...column,
-      width: column.width ?? getRuntimeColumnWidth(column, columns),
+      width:
+        runtimeColumns.find(({ name }) => name === column.name)?.width ??
+        column.width ??
+        DEFAULT_COL_WIDTH,
     })),
     columnLayout: "manual",
   };
