@@ -52,6 +52,12 @@ export type NewRowState = {
   errors: Readonly<Record<string, string>>;
   submitting: boolean;
   values: Readonly<Record<string, VuuRowDataItemType>>;
+  /**
+   * Set when the server rejected the row. The message is reported against
+   * this column (the final column, where an inline add row shows it) and is
+   * cleared by the next change to the draft.
+   */
+  rowErrorColumn?: string;
 };
 
 export type EditLifecycle =
@@ -287,12 +293,17 @@ export class EditSession
   }
 
   setNewRowValue(column: string, value: VuuRowDataItemType) {
-    const errors = { ...this.#newRowState.errors };
+    const { rowErrorColumn, ...newRowState } = this.#newRowState;
+    const errors = { ...newRowState.errors };
     delete errors[column];
+    if (rowErrorColumn !== undefined) {
+      // the server rejection applied to the previous draft
+      delete errors[rowErrorColumn];
+    }
     this.#setNewRowState({
-      ...this.#newRowState,
+      ...newRowState,
       errors,
-      values: { ...this.#newRowState.values, [column]: value },
+      values: { ...newRowState.values, [column]: value },
     });
   }
 
@@ -310,7 +321,14 @@ export class EditSession
         })
         .map((column) => [column, "Value required"]),
     );
-    const errors = { ...this.#newRowState.errors, ...missingErrors };
+    const { rowErrorColumn, ...newRowState } = this.#newRowState;
+    // a previous server rejection must not block a retry
+    const { [rowErrorColumn ?? ""]: _serverError, ...fieldErrors } =
+      newRowState.errors;
+    const errors =
+      rowErrorColumn === undefined
+        ? { ...newRowState.errors, ...missingErrors }
+        : { ...fieldErrors, ...missingErrors };
 
     if (Object.keys(errors).length > 0) {
       this.#setNewRowState({ ...this.#newRowState, errors });
@@ -321,7 +339,7 @@ export class EditSession
       return { data: undefined, type: "SUCCESS_RESULT" };
     }
 
-    this.#setNewRowState({ ...this.#newRowState, submitting: true });
+    this.#setNewRowState({ ...newRowState, errors, submitting: true });
     try {
       const response = await this.addRow({ ...this.#newRowState.values });
       if (isRpcError(response)) {
@@ -331,6 +349,7 @@ export class EditSession
           errors: finalColumn
             ? { [finalColumn]: response.errorMessage }
             : this.#newRowState.errors,
+          rowErrorColumn: finalColumn,
           submitting: false,
         });
         return response;
@@ -354,6 +373,7 @@ export class EditSession
         errors: finalColumn
           ? { [finalColumn]: errorMessage }
           : this.#newRowState.errors,
+        rowErrorColumn: finalColumn,
         submitting: false,
       });
       return { errorMessage, type: "ERROR_RESULT" };

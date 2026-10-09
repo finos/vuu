@@ -254,13 +254,15 @@ export const useEditForm = ({
     [editSession],
   );
 
-  const fieldErrors = useMemo<EditFormFieldErrors>(
-    () =>
-      isCreate
-        ? { ...sessionState.newRowState.errors, ...validationErrors }
-        : validationErrors,
-    [isCreate, sessionState.newRowState.errors, validationErrors],
-  );
+  const { errors: newRowErrors, rowErrorColumn } = sessionState.newRowState;
+  const fieldErrors = useMemo<EditFormFieldErrors>(() => {
+    if (!isCreate) {
+      return validationErrors;
+    }
+    // a server rejection of the row is shown in the form error banner
+    const { [rowErrorColumn ?? ""]: _rowError, ...errors } = newRowErrors;
+    return { ...errors, ...validationErrors };
+  }, [isCreate, newRowErrors, rowErrorColumn, validationErrors]);
 
   const isDirty = isCreate
     ? Object.keys(sessionState.newRowState.values).length > 0
