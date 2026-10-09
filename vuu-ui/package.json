@@ -14,7 +14,8 @@
     "packages/**",
     "sample-apps/**",
     "tools/vite-plugin-inline-css",
-    "tools/vuu-showcase"
+    "tools/vuu-showcase",
+    "tools/vuu-theme-model"
   ],
   "scripts": {
     "lint": "biome lint",
@@ -51,7 +52,8 @@
     "pub:debug": "node ./scripts/publish.ts --debug",
     "typecheck": "tsc --noEmit --project tsconfig-typecheck.json",
     "patch-package": "patch-package",
-    "postinstall": "npm run patch-package"
+    "postinstall": "npm run patch-package",
+    "build:theme-model": "npm run build --workspace=@vuu-ui/vuu-theme-model"
   },
   "dependencies": {
     "@dnd-kit/react": "^0.1.21",

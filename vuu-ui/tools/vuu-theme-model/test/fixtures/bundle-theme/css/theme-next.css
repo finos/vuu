@@ -1,0 +1,12 @@
+/* css/foundations/size.css */
+.salt-density-high {
+  --salt-size-base: 20px;
+}
+/* css/next/palette/accent.css */
+.salt-theme.salt-theme-next[data-mode=light] {
+  --salt-palette-accent: var(--salt-color-blue-500);
+}
+/* css/next/deprecated/palette.css */
+.salt-theme {
+  --salt-deprecated: red;
+}

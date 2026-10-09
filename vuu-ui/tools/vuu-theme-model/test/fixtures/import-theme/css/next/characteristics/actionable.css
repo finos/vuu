@@ -1,0 +1,15 @@
+.salt-theme.salt-theme-next {
+  --salt-actionable-bold-background: var(--salt-palette-accent);
+  --salt-actionable-bold-background-hover: var(--salt-palette-missing, red);
+  --salt-actionable-cursor-hover: pointer;
+}
+
+.salt-theme.salt-theme-next {
+  --salt-actionable-cursor-hover: grab;
+}
+
+@media (prefers-reduced-motion) {
+  .salt-theme.salt-theme-next {
+    --salt-actionable-cursor-hover: default;
+  }
+}

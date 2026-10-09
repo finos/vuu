@@ -1,0 +1,7 @@
+/* Foundations */
+@import url(foundations/size.css);
+@import url(foundations/color.css);
+@import url(next/palette/accent.css);
+@import url(next/characteristics/actionable.css);
+@import url(next/deprecated/palette.css);
+@import "palette/legacy.css";
