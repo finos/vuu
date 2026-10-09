@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
+import type { HostMode } from "../shared-utils";
 
 export const DEFAULT_DENSITY: Density = "medium";
 export const DEFAULT_THEME = "salt-theme";
@@ -19,8 +20,11 @@ export interface ShowcaseContextProps {
   dataConsumer: boolean;
   dataLocation: DataLocation;
   density: Density;
+  /** Undefined when the selected example can't be portal hosted. */
+  hostMode?: HostMode;
   onChangeDataLocation: (dataLocation: DataLocation) => void;
   onChangeDensity: (density: Density) => void;
+  onChangeHostMode: (hostMode: HostMode) => void;
   onChangeTheme: (theme: string) => void;
   onChangeThemeMode: (themeMode: ThemeMode) => void;
   theme: string;
@@ -35,6 +39,8 @@ export const ShowcaseContext = createContext<ShowcaseContextProps>({
     console.log("[ShowcaseContext] No data location change handler provided"),
   onChangeDensity: () =>
     console.log("[ShowcaseContext] No density change handler provided"),
+  onChangeHostMode: () =>
+    console.log("[ShowcaseContext] No host mode change handler provided"),
   onChangeTheme: () =>
     console.log("[ShowcaseContext] No theme change handler provided"),
   onChangeThemeMode: () =>
@@ -51,12 +57,16 @@ export type ThemeClasses = [string, string, ThemeMode];
 
 interface ShowcaseProviderProps {
   children: ReactNode;
+  hostMode?: HostMode;
   isDataConsumer?: boolean;
+  onChangeHostMode: (hostMode: HostMode) => void;
 }
 
 export const ShowcaseProvider = ({
   children,
+  hostMode,
   isDataConsumer = false,
+  onChangeHostMode,
 }: ShowcaseProviderProps) => {
   const [dataLocation, setDataLocation] = useState<DataLocation>("local");
   const [density, setDensity] = useState<Density>("high");
@@ -78,8 +88,10 @@ export const ShowcaseProvider = ({
         dataConsumer: isDataConsumer,
         dataLocation,
         density,
+        hostMode,
         onChangeDataLocation,
         onChangeDensity,
+        onChangeHostMode,
         onChangeTheme,
         onChangeThemeMode,
         theme,

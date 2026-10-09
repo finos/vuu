@@ -8,6 +8,11 @@ export interface RemoteModuleDescriptor extends VuuModuleDescriptor {
    */
   contextPanelPlacement?: ContextPanelPlacement;
   /**
+   * The export of the `mfComponent` module to render. Defaults to
+   * `"default"`.
+   */
+  mfExport?: string;
+  /**
    * Where the module appears in the portal navigation, e.g.
    * `/Trading/Baskets`. An empty location (`""` or `"/"`) marks a nested
    * module: it is registered and routed but has no navigation entry, and

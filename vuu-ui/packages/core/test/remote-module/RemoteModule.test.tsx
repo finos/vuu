@@ -232,6 +232,61 @@ describe("RemoteModule", () => {
     expect(container.textContent).toContain("Connectionless remote loaded");
   });
 
+  describe("mfExport", () => {
+    beforeEach(() => {
+      vi.mocked(loadRemote).mockResolvedValue({
+        First: () => <div>First example</div>,
+        Second: () => <div>Second example</div>,
+      });
+    });
+
+    const renderExport = async (mfExport: string, onError = vi.fn()) => {
+      await act(async () => {
+        root.render(
+          <Suspense fallback="Loading">
+            <RemoteModule
+              key={mfExport}
+              mfComponent="examples/Named"
+              mfExport={mfExport}
+              mfScope="named"
+              mfUrl="http://localhost:5200"
+              onError={onError}
+            />
+          </Suspense>,
+        );
+      });
+      return onError;
+    };
+
+    it("renders a named export of the module", async () => {
+      await renderExport("Second");
+      expect(container.textContent).toBe("Second example");
+
+      await renderExport("First");
+      expect(container.textContent).toBe("First example");
+      // Both components come from one load of the module.
+      expect(
+        vi
+          .mocked(loadRemote)
+          .mock.calls.filter(([id]) => id === "named/examples/Named"),
+      ).toHaveLength(1);
+    });
+
+    it("reports a missing export", async () => {
+      const onError = await renderExport("Missing");
+
+      expect(container.textContent).toContain(
+        "An error occurred while creating the remote module.",
+      );
+      expect(onError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message:
+            "Remote module named/examples/Named has no component export 'Missing'",
+        }),
+      );
+    });
+  });
+
   describe("context panel", () => {
     const ContextPanelRemote = () => {
       const showContextPanel = useContextPanel();

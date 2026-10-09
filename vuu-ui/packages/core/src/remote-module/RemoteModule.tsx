@@ -54,6 +54,12 @@ export interface RemoteModuleProps {
   css?: string;
   height?: number;
   mfComponent: string;
+  /**
+   * The export of the `mfComponent` module to render. Defaults to
+   * `"default"`; set it when a module exposes several components as named
+   * exports.
+   */
+  mfExport?: string;
   mfScope: string;
   mfUrl: string;
   onError?: (error: Error) => void;
@@ -71,10 +77,13 @@ export interface RemoteModuleProps {
   width?: number;
 }
 
-type RemoteExports = {
-  default: React.ComponentType<Record<string, unknown>>;
+type RemoteComponent = React.ComponentType<Record<string, unknown>>;
+
+type RemoteExports = Record<string, unknown> & {
   stateMigrations?: readonly StateMigration[];
 };
+
+const DEFAULT_EXPORT = "default";
 
 const getRemoteComponentKey = (
   mfUrl: string,
@@ -123,19 +132,35 @@ const loadRemoteExports = (
   return exports;
 };
 
+const isComponentExport = (value: unknown): value is RemoteComponent =>
+  typeof value === "function" ||
+  (typeof value === "object" && value !== null && "$$typeof" in value);
+
 const getRemoteComponent = (
   mfUrl: string,
   mfScope: string,
   mfComponent: string,
+  mfExport = DEFAULT_EXPORT,
 ) => {
-  const componentKey = getRemoteComponentKey(mfUrl, mfScope, mfComponent);
+  const componentKey = `${getRemoteComponentKey(mfUrl, mfScope, mfComponent)}#${mfExport}`;
   let component = components.get(componentKey);
 
   if (component === undefined) {
     // Start loading now, alongside the module's config.json, rather than
     // when the component first renders. Capturing the request means a
     // failure is reported, not silently retried, on the next render.
-    const exports = loadRemoteExports(mfUrl, mfScope, mfComponent);
+    const exports = loadRemoteExports(mfUrl, mfScope, mfComponent).then(
+      (remote) => {
+        const Component = remote[mfExport];
+        if (!isComponentExport(Component)) {
+          throw Error(
+            `Remote module ${mfScope}/${mfComponent} has no component export '${mfExport}'`,
+          );
+        }
+        return { default: Component };
+      },
+    );
+    exports.catch(() => undefined);
     component = lazy(() => exports);
     components.set(componentKey, component);
   }
@@ -143,9 +168,14 @@ const getRemoteComponent = (
   return component;
 };
 
-const forgetRemote = (mfUrl: string, mfScope: string, mfComponent: string) => {
+const forgetRemote = (
+  mfUrl: string,
+  mfScope: string,
+  mfComponent: string,
+  mfExport = DEFAULT_EXPORT,
+) => {
   const key = getRemoteComponentKey(mfUrl, mfScope, mfComponent);
-  components.delete(key);
+  components.delete(`${key}#${mfExport}`);
   remoteExports.delete(key);
   forgetRemoteModuleConfig(mfUrl);
 };
@@ -228,6 +258,7 @@ function RemoteModuleContent(props: RemoteModuleProps) {
     contextPanelPlacement,
     css: _css,
     mfComponent,
+    mfExport,
     mfScope,
     mfUrl,
     persistenceKey: _persistenceKey,
@@ -237,7 +268,12 @@ function RemoteModuleContent(props: RemoteModuleProps) {
   const store = useRemoteModuleState(props);
   useRegisterNotificationHost(vuu?.connectionId);
   const moduleId = useContext(PortalModuleIdContext);
-  const RemoteComponent = getRemoteComponent(mfUrl, mfScope, mfComponent);
+  const RemoteComponent = getRemoteComponent(
+    mfUrl,
+    mfScope,
+    mfComponent,
+    mfExport,
+  );
   const connection = vuu ?? use(loadRemoteModuleConfig(mfUrl)).vuu;
   const lostStatus = useLostConnectionStatus(connection?.connectionId);
   const remoteComponent = (
@@ -280,7 +316,7 @@ function RemoteModuleContent(props: RemoteModuleProps) {
 }
 
 function RawRemoteModule(props: RemoteModuleProps) {
-  const { mfComponent, mfScope, mfUrl, onError } = props;
+  const { mfComponent, mfExport, mfScope, mfUrl, onError } = props;
 
   return (
     <RemoteModuleErrorBoundary
@@ -288,7 +324,7 @@ function RawRemoteModule(props: RemoteModuleProps) {
       mfScope={mfScope}
       mfUrl={mfUrl}
       onError={(error) => {
-        forgetRemote(mfUrl, mfScope, mfComponent);
+        forgetRemote(mfUrl, mfScope, mfComponent, mfExport);
         onError?.(error);
       }}
     >

@@ -193,7 +193,9 @@ A module's `contextPanelPlacement`, set on its `RemoteModuleDescriptor` or
   side by side. Each module has its own panel, independent of the shell's, and
   it has no landmark ids, which must be unique.
 
-Module code is the same either way: placement is chosen by the host.
+Module code is the same either way: placement is chosen by the host. The
+showcase examples `VuuPortal/ContextPanel` demonstrate both placements in a
+portal-hosted module.
 
 `ContextPanelProvider` can be nested to customise behaviour for a subtree:
 with a `resolveComponent` function, `showContextPanel` also accepts a
@@ -205,6 +207,11 @@ component name. Without a shell, it shows content in a dialog.
 module. It registers the remote manifest, lazy-loads and caches the exposed
 React component, reports loading errors, and passes configured component props
 to the remote.
+
+The component is the module's `default` export. Set `mfExport` (on the
+component or the `RemoteModuleDescriptor`) to render a named export instead,
+for a remote that exposes several components from one module, such as the
+showcase examples remote.
 
 The loaded component is wrapped with an `AuthenticationProvider` in
 `vuu-connection` mode.
