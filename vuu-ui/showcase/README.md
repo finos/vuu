@@ -34,16 +34,15 @@ example. Ordinary doc comments are ignored.
 
 ## Portal hosting
 
-The toolbar's **Component / Portal** toggle chooses how the selected example
-is hosted. **Portal** renders a `PortalShell` that loads the example with
-`RemoteModule` from the `showcase_examples` remote, just as a portal loads an
-application. The example therefore gets the portal's services, such as the
-context panel, modals, notifications and saved state, and goes through the
-same loading path, including the remote's `config.json`.
+An example tagged `remote-module` is hosted in a portal: the showcase renders
+a `PortalShell` that loads the example with `RemoteModule` from the
+`showcase_examples` remote, just as a portal loads an application. The example
+therefore gets the portal's services, such as the context panel, modals,
+notifications and saved state, and goes through the same loading path,
+including the remote's `config.json`. Other examples are rendered directly.
 
-Examples tagged `remote-module` open in **Portal** mode; the rest open in
-**Component** mode. In a standalone window the mode is the `host` hash
-parameter, `host=portal` or `host=component`.
+To override this in a standalone window, add `host=portal` or
+`host=component` to the URL hash, e.g. `#themeMode=light,host=portal`.
 
 These attributes configure the module when portal hosted:
 

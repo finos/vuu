@@ -10,10 +10,7 @@ import { SaltProviderNext, Text } from "@salt-ds/core";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  getDefaultHostMode,
   getTargetTreeNode,
-  type HostMode,
-  isComponentDescriptor,
   keyFromPath,
   loadTheme,
   pathFromKey,
@@ -31,18 +28,15 @@ export interface AppProps {
 
 export const ShowcaseShell = ({ treeSource }: AppProps) => {
   const navigate = useNavigate();
-  const initialNodeData = useMemo(() => {
+  const initialIsDataConsumer = useMemo(() => {
     const url = new URL(document.location.href);
-    return getTargetTreeNode(url, treeSource, false)?.nodeData;
+    const treeNode = getTargetTreeNode(url, treeSource, false) as any;
+    return (
+      (treeNode && treeNode.nodeData.tags?.includes("data-consumer")) ?? false
+    );
   }, [treeSource]);
   const [themeReady, setThemeReady] = useState(false);
-  const [nodeData, setNodeData] = useState<unknown>(initialNodeData);
-  const [hostMode, setHostMode] = useState<HostMode>(() =>
-    getDefaultHostMode(initialNodeData),
-  );
-  const isComponent = isComponentDescriptor(nodeData);
-  const dataConsumer =
-    isComponent && (nodeData.tags?.includes("data-consumer") ?? false);
+  const [dataConsumer, setDataConsumer] = useState(initialIsDataConsumer);
 
   useEffect(() => {
     loadTheme("vuu-theme").then(() => {
@@ -55,8 +49,7 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
   const handleSelect: TableRowSelectHandler = (dataRow) => {
     if (dataRow) {
       const path = pathFromKey(dataRow.key);
-      setNodeData(dataRow.nodeData);
-      setHostMode(getDefaultHostMode(dataRow.nodeData));
+      setDataConsumer(dataRow.nodeData?.tags?.includes("data-consumer"));
       navigate(path);
     }
   };
@@ -76,11 +69,7 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
       theme="vuu-theme"
       mode="light"
     >
-      <ShowcaseProvider
-        hostMode={isComponent ? hostMode : undefined}
-        isDataConsumer={dataConsumer}
-        onChangeHostMode={setHostMode}
-      >
+      <ShowcaseProvider isDataConsumer={dataConsumer}>
         <GridLayoutProvider>
           <GridLayout
             colsAndRows={{
