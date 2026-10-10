@@ -18,7 +18,7 @@ jobs:
 
     strategy:
       matrix:
-        package-folder: [toolbox, vuu, vuu-java]
+        package-folder: [ toolbox, vuu, vuu-java, plugin/virtualized-table-plugin, plugin/clickhouse-plugin ]
 
     steps:
     - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
@@ -73,8 +73,8 @@ jobs:
         readarray -t LICENSES < <(cat target/generated-resources/licenses.xml | xq -x '//name' | sort -u)
                 
         BANNED=()        
-                
-        # Collect the ones that arent allowed        
+        
+        # Collect the ones that aren't allowed        
         for license1 in "${LICENSES[@]}"; do          
           found=false
           for license2 in "${ALLOWED_LICENCES[@]}"; do            
@@ -96,8 +96,15 @@ jobs:
           exit 1
         fi
 
+    - name: Prepare artifact name
+      shell: bash
+      run: |
+        # Replace all forward slashes with hyphens using bash parameter expansion
+        RAW_FOLDER="${{ matrix.package-folder }}"
+        echo "SAFE_PACKAGE_NAME=${RAW_FOLDER//\//-}" >> $GITHUB_ENV
+
     - name: Upload license XML reports
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
       with:
-        name: ${{ matrix.package-folder }}-license-xml-report
+        name: ${{ env.SAFE_PACKAGE_NAME }}-license-xml-report
         path: '**/${{ matrix.package-folder }}/target/generated-resources/licenses.xml'
