@@ -237,73 +237,22 @@ class ViewPortImpl(val id: String,
       sendUpdatesOnChange(range.get())
   }
 
-  override def selectRow(rowKey: String, preserveExistingSelection: Boolean): Unit = {
-    viewPortLock.synchronized {
-      if (!rowKeyToIndex.containsKey(rowKey)) {
-        throw new Exception(s"Rowkey $rowKey not found in view port $id")
-      }
-      if (preserveExistingSelection) {
-        selection = selection + rowKey
-      } else {
-        selection = Set(rowKey)
-      }
-      sendUpdatesOnChange(range.get())
-    }
+  val selectionManager: ViewPortSelectionManager = table match {
+    case provider: SelectionManagerProvider => provider.createSelectionManager(this)
+    case _ => new DefaultViewPortSelectionManager(this)
   }
 
-  override def deselectRow(rowKey: String, preserveExistingSelection: Boolean): Unit = {
-    viewPortLock.synchronized {
-      if (!this.selection.contains(rowKey)) {
-        throw new Exception(s"Rowkey $rowKey not found in existing selection of view port $id")
-      }
+  override def selectRow(rowKey: String, preserveExistingSelection: Boolean): Unit = selectionManager.selectRow(rowKey, preserveExistingSelection)
 
-      if (preserveExistingSelection) {
-        selection = selection - rowKey
-      } else {
-        // When preserveExistingSelection is false, deselect a row means clearing all selected rows
-        selection = Set.empty
-      }
-      sendUpdatesOnChange(range.get())
-    }
-  }
+  override def deselectRow(rowKey: String, preserveExistingSelection: Boolean): Unit = selectionManager.deselectRow(rowKey, preserveExistingSelection)
 
-  override def selectRowRange(fromRowKey: String, toRowKey: String, preserveExistingSelection: Boolean): Unit = {
-    viewPortLock.synchronized {
-      val indexMap = keys.zipWithIndex.toMap
-      if (!indexMap.contains(fromRowKey)) {
-        throw new Exception(s"Rowkey $fromRowKey not found in view port $id")
-      } else if (!indexMap.contains(toRowKey)) {
-        throw new Exception(s"Rowkey $toRowKey not found in view port $id")
-      }
+  override def selectRowRange(fromRowKey: String, toRowKey: String, preserveExistingSelection: Boolean): Unit = selectionManager.selectRowRange(fromRowKey, toRowKey, preserveExistingSelection)
 
-      val index1 = indexMap.getOrElse(fromRowKey, -1)
-      val index2 = indexMap.getOrElse(toRowKey, -1)
-      val fromIndex = Math.min(index1, index2)
-      val toIndex = Math.max(index1 + 1, index2 + 1)
-      if (preserveExistingSelection) {
-        selection = selection ++ keys.sliceToArray(fromIndex, toIndex)
-      } else {
-        selection = keys.sliceToArray(fromIndex, toIndex).toSet
-      }
-      sendUpdatesOnChange(range.get())
-    }
-  }
+  override def selectAll(): Unit = selectionManager.selectAll()
 
-  override def selectAll(): Unit = {
-    viewPortLock.synchronized {
-      selection = keys.toSet
-      sendUpdatesOnChange(range.get())
-    }
-  }
+  override def deselectAll(): Unit = selectionManager.deselectAll()
 
-  override def deselectAll(): Unit = {
-    viewPortLock.synchronized {
-      selection = Set.empty
-      sendUpdatesOnChange(range.get())
-    }
-  }
-
-  override def getSelection: Set[String] = selection
+  override def getSelection: Set[String] = selectionManager.getSelection
 
   def setRange(newRange: ViewPortRange): Unit = {
     val isValidRange = newRange.isValid(table.asTable.getTableDef.options.rangeSettings)
@@ -351,7 +300,7 @@ class ViewPortImpl(val id: String,
 
   override def sortSpec: SortSpec = structuralFields.get().sortSpec
 
-  private def sendUpdatesOnChange(currentRange: ViewPortRange): Unit = {
+  private[viewport] def sendUpdatesOnChange(currentRange: ViewPortRange): Unit = {
     val from = currentRange.from
     val to = currentRange.to
 
@@ -386,8 +335,6 @@ class ViewPortImpl(val id: String,
 
   @volatile
   private var keys: ViewPortKeys = EmptyViewPortKeys
-  @volatile
-  private var selection: Set[String] = Set.empty
 
   private val subscribedKeys = ConcurrentHashMap.newKeySet[String]()
   private val rowKeyToIndex = new ConcurrentHashMap[String, Int]()

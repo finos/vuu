@@ -8,8 +8,13 @@ enum SessionTableCopyOption(val name: String) {
 
 object SessionTableCopyOption {
 
+  private val copyOptionByName = SessionTableCopyOption.values.map(f => f.name -> f).toMap
+
   def fromString(s: String): SessionTableCopyOption = {
-    SessionTableCopyOption.values.find(_.name == s).getOrElse(Empty)
+    s match {
+      case null => Empty
+      case _ => copyOptionByName.getOrElse(s, Empty)
+    }
   }
 
   val ALL: SessionTableCopyOption = SessionTableCopyOption.All
