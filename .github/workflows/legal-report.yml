@@ -18,7 +18,7 @@ jobs:
 
     strategy:
       matrix:
-        package-folder: [toolbox, vuu, vuu-java]
+        package-folder: [ toolbox, vuu, vuu-java, plugin/virtualized-table-plugin, plugin/clickhouse-plugin ]
 
     steps:
     - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
@@ -73,8 +73,8 @@ jobs:
         readarray -t LICENSES < <(cat target/generated-resources/licenses.xml | xq -x '//name' | sort -u)
                 
         BANNED=()        
-                
-        # Collect the ones that arent allowed        
+        
+        # Collect the ones that aren't allowed        
         for license1 in "${LICENSES[@]}"; do          
           found=false
           for license2 in "${ALLOWED_LICENCES[@]}"; do            
