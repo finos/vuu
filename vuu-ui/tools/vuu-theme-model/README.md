@@ -27,12 +27,13 @@ node tools/vuu-theme-model/src/cli.ts \
 - With neither option, the JSON model is written to stdout.
 
 `npm run build:theme-model` writes `vuu-theme.js` and `salt-theme.js` modules to
-`showcase/src/examples/ThemeBrowser/generated/` (gitignored). It runs
+`tools/vuu-showcase/src/theme-browser/generated/` (gitignored). It runs
 automatically before `npm run showcase`, `showcase:build` and `showcase:prod`.
 
 ### Theme Browser
 
-The showcase example `ThemeBrowser` loads these modules. The subject theme's
+The showcase's built-in Theme Browser (the **Theme** entry in the showcase
+navigation, route `/Theme`) loads these modules. The subject theme's
 stylesheet is applied only inside a shadow-root sandbox, so the browser's own
 UI is never styled by the theme being explored. Fonts declared by the theme are
 not loaded by the sandbox; typography previews use them only if the host page

@@ -1,6 +1,4 @@
-// The Theme Browser chrome is styled exclusively with its own --tb-* tokens, so
-// it is never affected by the theme under observation (or the showcase theme).
-export const themeBrowserCss = `
+/* The Theme Browser chrome is styled exclusively with its own --tb-* tokens, so it is never affected by the theme under observation (or the showcase theme). */
 .vuuThemeBrowser {
   /* Chrome tokens – deliberately independent of the theme under observation */
   & {
@@ -1648,4 +1646,3 @@ export const themeBrowserCss = `
     flex: none;
   }
 }
-`;

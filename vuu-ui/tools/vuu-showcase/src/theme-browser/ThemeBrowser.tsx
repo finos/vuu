@@ -1,5 +1,3 @@
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
 import type { ThemeModel } from "@vuu-ui/vuu-theme-model/src/theme-model-types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CharacteristicView } from "./CharacteristicView";
@@ -8,7 +6,6 @@ import { FoundationsView } from "./FoundationsView";
 import { Header } from "./Header";
 import { Axes, defaultAxes, ThemeIndex } from "./model-utils";
 import { ThemeSource, themeSources } from "./theme-sources";
-import { themeBrowserCss } from "./ThemeBrowser.css";
 import {
   ThemeBrowserContext,
   ThemeBrowserContextProps,
@@ -16,6 +13,8 @@ import {
 } from "./ThemeBrowserContext";
 import { ThemeSandbox } from "./ThemeSandbox";
 import { TiersView } from "./TiersView";
+
+import "./ThemeBrowser.css";
 
 const SUPPORTED_SCHEMA_VERSION = 1;
 const DEFAULT_SELECTION = "--salt-actionable-bold-background";
@@ -50,13 +49,6 @@ export const ThemeBrowser = ({
   defaultTheme,
   sources = themeSources,
 }: ThemeBrowserProps) => {
-  const targetWindow = useWindow();
-  useComponentCssInjection({
-    testId: "vuu-theme-browser",
-    css: themeBrowserCss,
-    window: targetWindow,
-  });
-
   const [sourceId, setSourceId] = useState(defaultTheme ?? sources[0]?.id);
   const source = sources.find((s) => s.id === sourceId) ?? sources[0];
   const [loadState, setLoadState] = useState<LoadState>({ status: "loading" });

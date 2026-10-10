@@ -2,6 +2,7 @@ import "./Showcase.css";
 
 import React, { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ShowcaseShell } from "./showcase-main/ShowcaseShell";
+import { THEME_ID } from "./showcase-main/tree-nav/nav-tree";
 import { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import { ReactElement } from "react";
 
@@ -20,6 +21,7 @@ export const Showcase = ({ treeSource }: { treeSource: TreeSourceNode[] }) => {
       <Routes>
         <Route path="/" element={<ShowcaseShell treeSource={treeSource} />}>
           {createRoutes(treeSource)}
+          <Route path={THEME_ID} />
         </Route>
       </Routes>
     </BrowserRouter>
