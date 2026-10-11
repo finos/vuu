@@ -32,6 +32,16 @@ import { ApplicationsPage } from "user-admin/src/pages/applications/Applications
 import { GroupsPage } from "user-admin/src/pages/groups/GroupsPage";
 import { RolesPage } from "user-admin/src/pages/roles/RolesPage";
 import { UsersPage } from "user-admin/src/pages/users/UsersPage";
+import {
+  USER_COLUMNS,
+  USER_ROW_HEIGHT,
+  usersTableConfig,
+} from "user-admin/src/pages/users/usersTable";
+import {
+  TableEditorForm,
+  TableEditorProvider,
+  TableEditorTable,
+} from "@vuu-ui/vuu-table-extras";
 import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
 import UserAdmin from "user-admin/src/UserAdmin";
 
@@ -130,26 +140,13 @@ export const DefaultModulePicker = () => {
   );
 };
 
-const USER_COLUMNS = [
-  "user_id",
-  "username",
-  "email",
-  "first_name",
-  "last_name",
-  "enabled",
-  "email_verified",
-  "password_update_required",
-  "last_login",
-  "group_count",
-  "role_count",
-  "module_access",
-  "module_access_count",
-];
-
+/**
+ * UserEditForm renders within a TableEditorForm, editing the row selected in
+ * the TableEditorTable alongside it.
+ */
 /** tags=data-consumer */
 export const DefaultUserEditForm = () => {
   const { VuuDataSource } = useData();
-  const [dataRow, setDataRow] = useState<DataRow>();
   const dataSource = useMemo(
     () =>
       new VuuDataSource({
@@ -158,58 +155,23 @@ export const DefaultUserEditForm = () => {
       }),
     [VuuDataSource],
   );
-
-  useEffect(() => {
-    let active = true;
-    let DataRow: DataRowFunc | undefined;
-    const subscribe: DataSourceSubscribeCallback = (message) => {
-      if (!active) return;
-      if (message.type === "subscribed") {
-        [DataRow] = dataRowFactory(
-          message.columns,
-          message.tableSchema.columns as readonly SchemaColumn[],
-        );
-      } else if (message.type === "subscribe-failed") {
-        console.error(
-          `User editor data source subscription failed: ${message.msg}`,
-        );
-      } else if (message.type === "viewport-update" && message.rows?.[0]) {
-        if (!DataRow) {
-          console.error(
-            "The user table sent rows before supplying its column metadata.",
-          );
-          return;
-        }
-        setDataRow(DataRow(message.rows[0]));
-      }
-    };
-
-    void dataSource
-      .subscribe({ range: Range(0, 1) }, subscribe)
-      .catch((cause: unknown) => {
-        if (active) {
-          console.error("User editor data source subscription failed:", cause);
-        }
-      });
-
-    return () => {
-      active = false;
-      dataSource.unsubscribe();
-    };
-  }, [dataSource]);
+  const config = useMemo(() => usersTableConfig({ compact: true }), []);
 
   return (
-    <div style={{ width: 480, height: 800 }}>
-      {dataRow ? (
-        <AdminContext>
-          <EditModeProvider>
-            <UserEditForm dataRow={dataRow} dataSource={dataSource} />
-          </EditModeProvider>
-        </AdminContext>
-      ) : (
-        <p role="status">Loading user...</p>
-      )}
-    </div>
+    <AdminContext>
+      <TableEditorProvider dataSource={dataSource} editIn="form">
+        <div style={{ display: "flex", gap: 16, height: 800 }}>
+          <div style={{ flex: "1 1 auto", minWidth: 0 }}>
+            <TableEditorTable config={config} rowHeight={USER_ROW_HEIGHT} />
+          </div>
+          <div style={{ flex: "0 0 480px" }}>
+            <TableEditorForm placeholder="Select a user" showButtons={false}>
+              <UserEditForm />
+            </TableEditorForm>
+          </div>
+        </div>
+      </TableEditorProvider>
+    </AdminContext>
   );
 };
 

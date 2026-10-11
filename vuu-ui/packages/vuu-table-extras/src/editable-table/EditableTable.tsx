@@ -1,28 +1,25 @@
-import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import {
-  DataEditingProvider,
-  type EditableColumnsConfig,
-  type EditableTableHookProps,
-  EditButtons,
-  useEditableColumns,
-  useEditableTable,
+import type {
+  EditableColumnsConfig,
+  EditableTableHookProps,
 } from "@vuu-ui/vuu-data-editing";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
-import { Table, type TableProps } from "@vuu-ui/vuu-table";
+import type { TableProps } from "@vuu-ui/vuu-table";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
-import {
-  type ReactNode,
-  type SyntheticEvent,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { DataSourceStats } from "../datasource-stats/DatasourceStats";
-import { InlineAddRow } from "../inline-add-row";
 import { TableFooter, TableFooterTray } from "../table-footer/TableFooter";
+import {
+  TableEditorButtons,
+  TableEditorModeToggle,
+  TableEditorProvider,
+  type TableEditorProviderProps,
+  TableEditorTable,
+  type TableEditorTableProps,
+} from "../table-editor";
+import { useTableEditorContext } from "../table-editor/TableEditorContext";
 
 import editableTableCss from "./EditableTable.css";
 
@@ -85,40 +82,98 @@ export interface EditableTableProps
 
 const classBase = "vuuEditableTable";
 
+interface EditableTableLayoutProps {
+  className?: string;
+  editModeToggle?: ReactNode;
+  footer?: ReactNode;
+  saveLabel?: string;
+  showEditModeToggle: boolean;
+  sourceDataSource: DataSource;
+  style?: CSSProperties;
+  tableProps: TableEditorTableProps;
+  testId: string;
+  toolbar?: ReactNode;
+}
+
+const EditableTableLayout = ({
+  className,
+  editModeToggle,
+  footer,
+  saveLabel,
+  showEditModeToggle,
+  sourceDataSource,
+  style,
+  tableProps,
+  testId,
+  toolbar,
+}: EditableTableLayoutProps) => {
+  const { editableTable, mode } = useTableEditorContext("EditableTable");
+  const showToolbar = showEditModeToggle || toolbar !== undefined;
+  return (
+    <div
+      className={cx(classBase, className, {
+        [`${classBase}-editing`]: mode === "edit",
+      })}
+      data-testid={`edit-table${testId}`}
+      style={style}
+    >
+      {showToolbar ? (
+        <div className={`${classBase}-toolbar`}>
+          {showEditModeToggle
+            ? (editModeToggle ?? <TableEditorModeToggle testId={testId} />)
+            : null}
+          {toolbar}
+        </div>
+      ) : null}
+      <div className={`${classBase}-table`}>
+        <TableEditorTable data-testid={`table${testId}`} {...tableProps} />
+      </div>
+      <TableFooter>
+        {editableTable?.isEditSessionReady ? (
+          <TableFooterTray position="center">
+            <TableEditorButtons saveLabel={saveLabel} />
+          </TableFooterTray>
+        ) : (
+          (footer ?? <DataSourceStats dataSource={sourceDataSource} />)
+        )}
+      </TableFooter>
+    </div>
+  );
+};
+
 /**
  * A Table with View/Edit modes. Entering edit mode starts an edit session
  * against a session copy of `dataSource`; edits are only applied when the
  * user saves. All the wiring (session lifecycle, editable columns, row
  * styling for edited/added/deleted rows, Save/Cancel/Delete buttons, the
  * inline add row) is handled internally.
+ *
+ * This is the default layout of `TableEditorProvider editIn="table"`; compose
+ * `TableEditorTable`, `TableEditorModeToggle` and `TableEditorButtons`
+ * directly for a different one.
  */
 export const EditableTable = ({
   allowDelete = false,
   className,
-  config,
   confirmCancel,
   copyOption,
-  dataSource: sourceDataSource,
+  dataSource,
   defaultEditMode = "view",
-  deleteMode = allowDelete ? "soft" : undefined,
-  editMode: editModeProp,
+  deleteMode,
+  editMode,
   editModeToggle,
   editSessionApi,
-  editable,
   footer,
   onCancel,
   onEditModeChange,
   onError,
   onSave,
-  readOnly,
   rowDefaults,
   saveLabel,
   showEditModeToggle = true,
-  showInlineAddRow = false,
   style,
   testId = "",
   toolbar,
-  undoColumn = false,
   ...tableProps
 }: EditableTableProps) => {
   const targetWindow = useWindow();
@@ -128,178 +183,37 @@ export const EditableTable = ({
     window: targetWindow,
   });
 
-  const [editModeState, setEditModeState] =
-    useState<EditableTableMode>(defaultEditMode);
-  const isControlled = editModeProp !== undefined;
-  const editMode = isControlled ? editModeProp : editModeState;
-
-  const setEditMode = useCallback(
-    (nextMode: EditableTableMode) => {
-      if (!isControlled) {
-        setEditModeState(nextMode);
-      }
-      onEditModeChange?.(nextMode);
-    },
-    [isControlled, onEditModeChange],
-  );
-
-  const handleCancel = useCallback(() => {
-    setEditMode("view");
-    onCancel?.();
-  }, [onCancel, setEditMode]);
-
-  const handleSaved = useCallback(() => {
-    setEditMode("view");
-    onSave?.();
-  }, [onSave, setEditMode]);
-
-  const {
-    canCancel,
-    canSave,
-    columnsDiverge,
-    dataSource,
-    editSchema,
-    editSession,
-    hasSelection,
-    isEditSessionReady,
-    isRowSelectable,
-    onCancel: cancelEdit,
-    onDelete,
-    onSave: saveEdit,
-    rowClassNameGenerators,
-  } = useEditableTable({
-    copyOption,
-    dataSource: sourceDataSource,
-    deleteMode,
-    editSessionApi,
-    isEditMode: editMode === "edit",
-    onCancel: handleCancel,
-    onError,
-    onSave: handleSaved,
-    rowDefaults,
-  });
-
-  const columns = useEditableColumns({
-    actionColumn: allowDelete ? "hidden" : false,
-    columns: config.columns,
-    columnsDiverge,
-    editSchema,
-    editable,
-    isEditing: isEditSessionReady,
-    readOnly,
-    undoColumn,
-  });
-
-  const tableConfig = useMemo<TableConfig>(
-    () => ({
-      ...config,
-      columns,
-      rowClassNameGenerators: isEditSessionReady
-        ? (config.rowClassNameGenerators ?? []).concat(
-            rowClassNameGenerators ?? [],
-          )
-        : config.rowClassNameGenerators,
-    }),
-    [columns, config, isEditSessionReady, rowClassNameGenerators],
-  );
-
-  const handleToggleEditMode = useCallback(
-    (e: SyntheticEvent<HTMLButtonElement>) => {
-      const nextMode = (e.currentTarget as HTMLButtonElement)
-        .value as EditableTableMode;
-      if (nextMode === "view" && editMode === "edit") {
-        // route through the edit session so confirmCancel/onCancel apply
-        void (async () => {
-          if (
-            !confirmCancel ||
-            editSession.editState === "clean" ||
-            (await confirmCancel())
-          ) {
-            cancelEdit();
-          }
-        })();
-      } else {
-        setEditMode(nextMode);
-      }
-    },
-    [cancelEdit, confirmCancel, editMode, editSession, setEditMode],
-  );
-
-  const showToolbar = showEditModeToggle || toolbar !== undefined;
-
   return (
-    <div
-      className={cx(classBase, className, {
-        [`${classBase}-editing`]: editMode === "edit",
-      })}
-      data-testid={`edit-table${testId}`}
-      style={style}
+    <TableEditorProvider
+      allowDelete={allowDelete}
+      confirmCancel={confirmCancel}
+      copyOption={copyOption}
+      dataSource={dataSource}
+      defaultMode={defaultEditMode}
+      deleteMode={deleteMode}
+      editIn="table"
+      editSessionApi={editSessionApi}
+      mode={editMode}
+      onCancelled={onCancel}
+      onError={onError}
+      onModeChange={
+        onEditModeChange as TableEditorProviderProps["onModeChange"]
+      }
+      onSaved={onSave}
+      rowDefaults={rowDefaults}
     >
-      {showToolbar ? (
-        <div className={`${classBase}-toolbar`}>
-          {showEditModeToggle
-            ? (editModeToggle ?? (
-                <ToggleButtonGroup
-                  onChange={handleToggleEditMode}
-                  value={editMode}
-                >
-                  <ToggleButton
-                    data-testid={`toggle-view${testId}`}
-                    value="view"
-                  >
-                    View
-                  </ToggleButton>
-                  <ToggleButton
-                    data-testid={`toggle-edit${testId}`}
-                    value="edit"
-                  >
-                    Edit
-                  </ToggleButton>
-                </ToggleButtonGroup>
-              ))
-            : null}
-          {toolbar}
-        </div>
-      ) : null}
-      <div className={`${classBase}-table`}>
-        <DataEditingProvider editSession={editSession}>
-          <Table
-            data-testid={`table${testId}`}
-            renderBufferSize={10}
-            {...tableProps}
-            config={tableConfig}
-            customHeader={
-              isEditSessionReady && showInlineAddRow ? InlineAddRow : undefined
-            }
-            dataSource={dataSource}
-            isRowSelectable={
-              isEditSessionReady && allowDelete ? isRowSelectable : undefined
-            }
-            selectionModel={
-              isEditSessionReady && allowDelete ? "checkbox" : "none"
-            }
-          />
-        </DataEditingProvider>
-      </div>
-      <TableFooter>
-        {!isEditSessionReady ? (
-          (footer ?? <DataSourceStats dataSource={sourceDataSource} />)
-        ) : (
-          <TableFooterTray position="center">
-            <EditButtons
-              canCancel={canCancel}
-              canSave={canSave}
-              confirmCancel={confirmCancel}
-              editSession={editSession}
-              hasSelection={allowDelete ? hasSelection : undefined}
-              onCancel={cancelEdit}
-              onDelete={allowDelete ? onDelete : undefined}
-              onSave={saveEdit}
-              saveLabel={saveLabel}
-            />
-          </TableFooterTray>
-        )}
-      </TableFooter>
-    </div>
+      <EditableTableLayout
+        className={className}
+        editModeToggle={editModeToggle}
+        footer={footer}
+        saveLabel={saveLabel}
+        showEditModeToggle={showEditModeToggle}
+        sourceDataSource={dataSource}
+        style={style}
+        tableProps={tableProps}
+        testId={testId}
+        toolbar={toolbar}
+      />
+    </TableEditorProvider>
   );
 };

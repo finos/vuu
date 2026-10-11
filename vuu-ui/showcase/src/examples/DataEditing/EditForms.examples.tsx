@@ -12,9 +12,17 @@ import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import type { RpcResult } from "@vuu-ui/vuu-protocol-types";
 import { Table } from "@vuu-ui/vuu-table";
 import {
+  TableEditorButtons,
+  TableEditorCreateForm,
+  TableEditorForm,
+  TableEditorModeToggle,
+  TableEditorNewButton,
+  TableEditorPanelCloseButton,
+  TableEditorProvider,
+  TableEditorTable,
   TableWithEditForm,
-  type TableWithEditFormContentProps,
   type TableWithEditFormPanelVisibility,
+  useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import {
@@ -22,6 +30,9 @@ import {
   FormField,
   FormFieldLabel,
   Input,
+  SidePanel,
+  SidePanelContent,
+  SidePanelHeader,
   SidePanelTitle,
   Tab,
   TabBar,
@@ -32,7 +43,7 @@ import {
   Text,
 } from "@salt-ds/core";
 import { useData } from "@vuu-ui/vuu-utils";
-import { useCallback, useMemo, useState } from "react";
+import { type CSSProperties, useCallback, useMemo, useState } from "react";
 import {
   CURRENCIES,
   INSTRUMENTS,
@@ -120,70 +131,118 @@ export const TableWithFormAlwaysVisible = () => (
   </LocalDataSourceProvider>
 );
 
-const InstrumentFormContent = ({
-  dataRow,
-  form,
-}: TableWithEditFormContentProps) => (
-  <Tabs defaultValue="details">
-    <TabBar divider>
-      <TabList>
-        <Tab value="details">
-          <TabTrigger>Details</TabTrigger>
-        </Tab>
-        <Tab value="trading">
-          <TabTrigger>Trading</TabTrigger>
-        </Tab>
-      </TabList>
-    </TabBar>
-    <TabPanel value="details">
-      <EditField dataRow={dataRow} label="RIC" name="ric" readOnly />
-      <EditField dataRow={dataRow} label="Description" name="description" />
-    </TabPanel>
-    <TabPanel value="trading">
-      <EditField dataRow={dataRow} label="Currency" name="currency" />
-      <EditField dataRow={dataRow} label="Exchange" name="exchange" />
-      <EditField
-        dataRow={dataRow}
-        label="Lot size"
-        name="lotSize"
-        serverDataType="int"
-      />
-      {form.isEditMode ? null : (
-        <Text styleAs="label">Click Edit to change trading details</Text>
-      )}
-    </TabPanel>
-  </Tabs>
-);
-
-const TableWithCustomFormTemplate = () => {
-  const dataSource = useInstrumentsDataSource();
+const InstrumentPanelHeader = () => {
+  const { mode, selectedRow } = useTableEditor();
   return (
-    <div style={{ height: 500, width: 1100 }}>
-      <TableWithEditForm
-        config={instrumentsTableConfig}
-        createFields={createFields}
-        createTitle="New instrument"
-        dataSource={dataSource}
-        panelHeader={({ dataRow, mode }) => (
-          <div>
-            <SidePanelTitle>
-              {mode === "create"
-                ? "New instrument"
-                : String(dataRow?.description ?? "")}
-            </SidePanelTitle>
-            {dataRow ? <Text color="secondary">{dataRow.ric}</Text> : null}
-          </div>
-        )}
-        renderFormContent={(props) => <InstrumentFormContent {...props} />}
-        validate={validateInstrument}
-      />
-    </div>
+    <SidePanelHeader>
+      <div style={{ flex: 1 }}>
+        <SidePanelTitle>
+          {mode === "create"
+            ? "New instrument"
+            : String(selectedRow?.description ?? "")}
+        </SidePanelTitle>
+        {mode !== "create" && selectedRow ? (
+          <Text color="secondary">{selectedRow.ric}</Text>
+        ) : null}
+      </div>
+      <TableEditorPanelCloseButton />
+    </SidePanelHeader>
   );
 };
 
 /**
- * Pattern 5, with a custom panel header and form content laid out in tabs,
- * using `panelHeader` and `renderFormContent`.
+ * Custom form content: EditFields laid out in tabs. EditFields read the
+ * row from the enclosing form, so no dataRow is needed.
+ */
+const InstrumentFormContent = () => {
+  const { isEditing } = useTableEditor();
+  return (
+    <>
+      <TableEditorModeToggle />
+      <Tabs defaultValue="details">
+        <TabBar divider>
+          <TabList>
+            <Tab value="details">
+              <TabTrigger>Details</TabTrigger>
+            </Tab>
+            <Tab value="trading">
+              <TabTrigger>Trading</TabTrigger>
+            </Tab>
+          </TabList>
+        </TabBar>
+        <TabPanel value="details">
+          <EditField label="RIC" name="ric" readOnly />
+          <EditField label="Description" name="description" />
+        </TabPanel>
+        <TabPanel value="trading">
+          <EditField label="Currency" name="currency" />
+          <EditField label="Exchange" name="exchange" />
+          <EditField label="Lot size" name="lotSize" serverDataType="int" />
+          {isEditing ? null : (
+            <Text styleAs="label">
+              Switch to Edit to change trading details
+            </Text>
+          )}
+        </TabPanel>
+      </Tabs>
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <TableEditorButtons />
+      </div>
+    </>
+  );
+};
+
+const TableWithCustomFormTemplate = () => {
+  const dataSource = useInstrumentsDataSource();
+  return (
+    <TableEditorProvider dataSource={dataSource} editIn="form">
+      <div style={{ display: "flex", height: 500, width: 1100 }}>
+        <div
+          style={{
+            display: "flex",
+            flex: 1,
+            flexDirection: "column",
+            minWidth: 0,
+          }}
+        >
+          <div style={{ display: "flex", gap: 8, padding: 4 }}>
+            <Text styleAs="h3" style={{ flex: 1 }}>
+              Instruments
+            </Text>
+            <TableEditorNewButton>New instrument</TableEditorNewButton>
+          </div>
+          <div style={{ flex: 1, minHeight: 0 }}>
+            <TableEditorTable config={instrumentsTableConfig} />
+          </div>
+        </div>
+        <SidePanel
+          position="right"
+          style={{ "--saltSidePanel-width": "360px" } as CSSProperties}
+        >
+          <InstrumentPanelHeader />
+          <SidePanelContent>
+            <TableEditorForm
+              placeholder="Select an instrument"
+              showButtons={false}
+              validate={validateInstrument}
+            >
+              <InstrumentFormContent />
+            </TableEditorForm>
+            <TableEditorCreateForm
+              fields={createFields}
+              validate={validateInstrument}
+            />
+          </SidePanelContent>
+        </SidePanel>
+      </div>
+    </TableEditorProvider>
+  );
+};
+
+/**
+ * Pattern 5, composed from the TableEditor components: a custom layout,
+ * toolbar and panel header, with form content laid out in tabs and the
+ * View/Edit toggle and Save/Cancel buttons placed within the form.
  */
 export const TableWithCustomForm = () => (
   <LocalDataSourceProvider>
@@ -286,25 +345,23 @@ const sameTags = (a: Tags, b: Tags) =>
  * Removing then re-adding a tag reverts the edit, so the form is no longer
  * dirty.
  */
-const TagsField = ({
-  dataRow,
-  name,
-}: {
-  dataRow: DataRow;
-  name: string;
-}) => {
+const TagsField = ({ dataRow, name }: { dataRow: DataRow; name: string }) => {
   const originalValue = useMemo(
     () => parseTags(dataRow[name]),
     [dataRow, name],
   );
-  const { error, isDirty, setValue, value = originalValue } =
-    useCustomEditField<Tags>({
-      equals: sameTags,
-      name,
-      originalValue,
-      rowKey: dataRow.key,
-      serialize: (tags) => tags.join(","),
-    });
+  const {
+    error,
+    isDirty,
+    setValue,
+    value = originalValue,
+  } = useCustomEditField<Tags>({
+    equals: sameTags,
+    name,
+    originalValue,
+    rowKey: dataRow.key,
+    serialize: (tags) => tags.join(","),
+  });
   const [newTag, setNewTag] = useState("");
   return (
     <FormField>
@@ -369,10 +426,7 @@ const CustomEditFieldTemplate = () => {
       <div style={{ flex: "0 0 360px" }}>
         {dataRow ? (
           <>
-            <Button
-              disabled={isEditMode}
-              onClick={() => setIsEditMode(true)}
-            >
+            <Button disabled={isEditMode} onClick={() => setIsEditMode(true)}>
               Edit
             </Button>
             <EditForm

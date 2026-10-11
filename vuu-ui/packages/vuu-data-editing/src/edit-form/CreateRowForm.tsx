@@ -1,5 +1,5 @@
 import type { DataRow } from "@vuu-ui/vuu-table-types";
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import { EditSession } from "../EditSession";
 import {
   type DropdownEditFieldProps,
@@ -24,6 +24,8 @@ export interface CreateRowFormProps
     | "mode"
     | "requiredColumns"
   > {
+  /** Rendered after the fields. */
+  children?: ReactNode;
   /**
    * Fields, in tab order. Every field is required unless it sets
    * `required: false`.
@@ -42,7 +44,11 @@ const NEW_ROW = { key: EditSession.newRowKey } as DataRow;
  * The form is single-use: close it from `onSaved`/`onCancelled`, or remount
  * it (change its `key`) to create another row.
  */
-export const CreateRowForm = ({ fields, ...props }: CreateRowFormProps) => {
+export const CreateRowForm = ({
+  children,
+  fields,
+  ...props
+}: CreateRowFormProps) => {
   const fieldNames = fields.map(({ name }) => name).join();
   const requiredNames = fields
     .filter(({ required }) => required !== false)
@@ -75,6 +81,7 @@ export const CreateRowForm = ({ fields, ...props }: CreateRowFormProps) => {
           required={field.required !== false}
         />
       ))}
+      {children}
     </EditForm>
   );
 };

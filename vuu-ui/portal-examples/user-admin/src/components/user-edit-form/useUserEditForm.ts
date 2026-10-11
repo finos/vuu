@@ -28,9 +28,9 @@ const permissionDescriptor = ({
 });
 
 export const useUserEditForm = (
-  dataRow: DataRow,
+  dataRow: DataRow | undefined,
   dataSource: DataSource,
-  editSession: Pick<EditSession, "commit">,
+  editSession: Pick<EditSession, "commit"> | undefined,
 ) => {
   const { remoteModules } = usePortalModuleRegistry();
   const { showNotification } = useNotifications();
@@ -114,7 +114,14 @@ export const useUserEditForm = (
   const handleSelectedModulesChange = useCallback<SelectedModulesChangeHandler>(
     (newSelectedModules) => {
       const originalModulePermissions = originalModulePermissionsRef.current;
-      if (!modulePermissions || !originalModulePermissions) return;
+      if (
+        !dataRow ||
+        !editSession ||
+        !modulePermissions ||
+        !originalModulePermissions
+      ) {
+        return;
+      }
       const updatedPermissions = modulePermissions.withSelectedModules(
         newSelectedModules,
         allModules.map(({ name }) => name),

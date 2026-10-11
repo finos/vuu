@@ -56,10 +56,9 @@ export {
 } from "./editable-table/EditableTable";
 export {
   TableWithEditForm,
-  type TableWithEditFormContentProps,
   type TableWithEditFormField,
   type TableWithEditFormMode,
-  type TableWithEditFormPanelState,
   type TableWithEditFormPanelVisibility,
   type TableWithEditFormProps,
 } from "./table-with-edit-form/TableWithEditForm";
+export * from "./table-editor";

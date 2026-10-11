@@ -138,8 +138,9 @@ const createFields: CreateRowFormField[] = [
 The panel opens when a row is selected; pass `panelVisibility="always"` to keep
 it open. Row selection is locked while the form is being edited, so the user
 can't lose their changes by clicking another row. Pass `allowCreate={false}`
-to hide New. To lay the form out yourself, for example in tabs, use
-`renderFormContent` (see [Edit forms](./05-EditForms.mdx)).
+to hide New. To use your own page layout or form content, for example tabs,
+compose the `TableEditor` components it is built from (see
+[Composing your own layout](./05-EditForms.mdx#composing-your-own-layout)).
 
 ## Next steps
 

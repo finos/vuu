@@ -4,7 +4,7 @@ There are three form components, from most to least complete:
 
 | Component | Use it to |
 | --------- | --------- |
-| `TableWithEditForm` (`@vuu-ui/vuu-table-extras`) | show a table with a form for the selected row in a side panel, with Edit and New |
+| `TableWithEditForm` (`@vuu-ui/vuu-table-extras`) | show a table with a form for the selected row in a side panel, with Edit and New. To arrange the pieces yourself, compose the [`TableEditor` components](#composing-your-own-layout) it is built from |
 | `CreateRowForm` | add a row from a list of fields |
 | `EditForm` | lay out your own form for editing or adding a row |
 
@@ -35,15 +35,13 @@ panel can't be closed.
 | Prop | Description |
 | ---- | ----------- |
 | `panelVisibility` | `"on-select"` (default): the panel opens when a row is selected, or Edit or New is clicked, and closes when the selection is cleared or its close button is clicked. `"always"`: the panel is always shown, with `placeholder` when no row is selected, and has no close button. |
-| `panelHeader` | Replaces the panel header. A node, or a function of `{ dataRow, mode }`. The close button is still added when the panel can be closed. |
-| `renderFormContent` | Renders the body of the edit form in place of `fields`. See [Custom form content](#custom-form-content). |
 | `panelClassName` | Class for the `SidePanel`, e.g. to set `--saltSidePanel-width` (default `320px`). |
-| `fields` | Fields shown for the selected row. See [Fields](#fields). Optional when `renderFormContent` is used. |
+| `fields` | Fields shown for the selected row. See [Fields](#fields). |
 | `createFields` | Fields shown when adding a row. Defaults to `fields`. |
 | `allowCreate` | Show the New button. Default `true`. |
 | `validate`, `validateCreate` | Client-side validation for edit and create. `validateCreate` defaults to `validate`. |
-| `formTitle` | Panel title for the selected row: a title, or a function of the row. Ignored when `panelHeader` is set. |
-| `createTitle` | Panel title for the create form. Default `"New"`. Ignored when `panelHeader` is set. |
+| `formTitle` | Panel title for the selected row: a title, or a function of the row. |
+| `createTitle` | Panel title for the create form. Default `"New"`. |
 | `placeholder` | Shown in the panel when no row is selected. |
 | `confirmCancel` | Asked before discarding unsaved changes. See `useConfirmDiscard`. |
 | `onModeChange` | Called with `"view"`, `"edit"` or `"create"`. |
@@ -51,47 +49,97 @@ panel can't be closed.
 | `deleteMode`, `editSessionApi`, `rowDefaults`, `onError` | Passed to the form's edit session. |
 | `testId` | Suffix for `data-testid`s. |
 
-### Custom form content
+## Composing your own layout
 
-`fields` lays out one `EditField` per field. For anything else, such as tabs or
-a custom editor, use `renderFormContent`. It is called with the selected
-`dataRow`, the `form` state (`isEditMode`, `isDirty`, `errors`, ...) and the
-`mode`. Render `EditField`s for the row; they are editable while the form is in
-edit mode, and Save and Cancel are added below them.
+`TableWithEditForm` covers a table with a generated form. When you need your
+own header, toolbar, panel layout or form content, such as tabs or custom
+editors, compose the components it is built from. They are all in
+`@vuu-ui/vuu-table-extras`:
+
+| Component | Role |
+| --------- | ---- |
+| `TableEditorProvider` | Owns the editing state: mode, selected row, side panel and edit session. Wrap the whole layout in it, with `editIn="form"`. |
+| `TableEditorTable` | The table. Selecting a row selects it for the form; selection is locked while editing. |
+| `TableEditorForm` | The form for the selected row. Renders `children`, or an `EditField` per entry in `fields`, and `placeholder` when no row is selected. Takes `EditForm` props such as `validate`, `title` and `showButtons`. |
+| `TableEditorCreateForm` | The form for a new row, shown in create mode. Takes `CreateRowForm` props. |
+| `TableEditorNewButton` | Enters create mode. |
+| `TableEditorModeToggle` | View/Edit toggle. |
+| `TableEditorButtons` | Save and Cancel. Render inside a form with `showButtons={false}`. |
+| `TableEditorPanelCloseButton` | Closes the side panel; not rendered while the panel can't be closed. |
+
+`TableEditorProvider` also provides a Salt `SidePanelProvider`, so a Salt
+`SidePanel` anywhere inside it opens and closes with the selection. Any
+component inside the provider can call `useTableEditor()` for the state and
+actions: `mode`, `isEditing`, `selectedRow`, `panelOpen`, `canClosePanel`,
+`startEdit()`, `startCreate()`, `cancel()` and `setPanelOpen()`.
 
 ```tsx
-<TableWithEditForm
-  config={config}
-  createFields={createFields}
-  dataSource={dataSource}
-  panelHeader={({ dataRow, mode }) => (
-    <SidePanelTitle>
-      {mode === "create" ? "New instrument" : dataRow?.description}
-    </SidePanelTitle>
-  )}
-  panelVisibility="always"
-  renderFormContent={({ dataRow }) => (
-    <Tabs defaultValue="details">
-      <TabBar divider>
-        <TabList>
-          <Tab value="details"><TabTrigger>Details</TabTrigger></Tab>
-          <Tab value="trading"><TabTrigger>Trading</TabTrigger></Tab>
-        </TabList>
-      </TabBar>
-      <TabPanel value="details">
-        <EditField dataRow={dataRow} label="Description" name="description" />
-      </TabPanel>
-      <TabPanel value="trading">
-        <EditField dataRow={dataRow} label="Lot size" name="lotSize" serverDataType="int" />
-      </TabPanel>
-    </Tabs>
-  )}
-/>
+import {
+  TableEditorButtons,
+  TableEditorCreateForm,
+  TableEditorForm,
+  TableEditorModeToggle,
+  TableEditorNewButton,
+  TableEditorPanelCloseButton,
+  TableEditorProvider,
+  TableEditorTable,
+  useTableEditor,
+} from "@vuu-ui/vuu-table-extras";
+
+const PanelHeader = () => {
+  const { mode, selectedRow } = useTableEditor();
+  return (
+    <SidePanelHeader>
+      <SidePanelTitle>
+        {mode === "create" ? "New instrument" : selectedRow?.description}
+      </SidePanelTitle>
+      <TableEditorPanelCloseButton />
+    </SidePanelHeader>
+  );
+};
+
+const InstrumentEditor = ({ dataSource }) => (
+  <TableEditorProvider dataSource={dataSource} editIn="form">
+    <header>
+      <h2>Instruments</h2>
+      <TableEditorNewButton>New instrument</TableEditorNewButton>
+    </header>
+    <TableEditorTable config={config} />
+    <SidePanel position="right">
+      <PanelHeader />
+      <SidePanelContent>
+        <TableEditorForm showButtons={false} validate={validateInstrument}>
+          <TableEditorModeToggle />
+          <Tabs defaultValue="details">
+            {/* TabBar ... */}
+            <TabPanel value="details">
+              <EditField label="Description" name="description" />
+            </TabPanel>
+            <TabPanel value="trading">
+              <EditField label="Lot size" name="lotSize" serverDataType="int" />
+            </TabPanel>
+          </Tabs>
+          <TableEditorButtons />
+        </TableEditorForm>
+        <TableEditorCreateForm fields={createFields} validate={validateInstrument} />
+      </SidePanelContent>
+    </SidePanel>
+  </TableEditorProvider>
+);
 ```
 
-The create form is always built from `createFields` (or `fields`). See the
-showcase examples `EditForms / TableWithForm`, `TableWithFormAlwaysVisible`
-and `TableWithCustomForm`.
+- `EditField`s inside `TableEditorForm` edit the selected row; they don't need
+  a `dataRow`. They are read-only until the form is in edit mode.
+- A custom editor, such as a picker that edits a non-field value, can commit
+  to the form's edit session from `useEditFormContext().editSession` (or use
+  `useCustomEditField`). Its changes are saved, or discarded, with the fields.
+- After a save, `selectedRow` holds the saved values, so headers built from it
+  update immediately.
+
+See the showcase examples `EditForms / TableWithForm`,
+`TableWithFormAlwaysVisible` and `TableWithCustomForm`, and the user-admin
+`UsersPage`, which keeps its own page layout and a form with tabs and a module
+permissions picker.
 
 ## Fields
 

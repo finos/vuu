@@ -1,37 +1,39 @@
 import {
   Button,
   SidePanel,
-  SidePanelCloseButton,
   SidePanelContent,
   SidePanelHeader,
-  SidePanelProvider,
   SidePanelTitle,
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import {
-  CreateRowForm,
-  type CreateRowFormField,
-  EditField,
-  type EditFieldProps,
-  EditForm,
-  type EditFormHookProps,
-  type EditFormHookResult,
-  type EditFormValidator,
-  type EditFormValues,
-  getDataRowValues,
+import type {
+  EditFormHookProps,
+  EditFormValidator,
 } from "@vuu-ui/vuu-data-editing";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
-import { Table, type TableProps } from "@vuu-ui/vuu-table";
+import type { TableProps } from "@vuu-ui/vuu-table";
 import type { DataRow, TableConfig } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
-import { type ReactNode, useCallback, useRef, useState } from "react";
+import type { CSSProperties, ReactNode } from "react";
+import {
+  TableEditorCreateForm,
+  type TableEditorField,
+  TableEditorForm,
+  type TableEditorMode,
+  TableEditorNewButton,
+  TableEditorPanelCloseButton,
+  type TableEditorPanelVisibility,
+  TableEditorProvider,
+  TableEditorTable,
+  useTableEditor,
+} from "../table-editor";
 
 import tableWithEditFormCss from "./TableWithEditForm.css";
 
-export type TableWithEditFormMode = "view" | "edit" | "create";
+export type TableWithEditFormMode = TableEditorMode;
 
-export type TableWithEditFormField = CreateRowFormField;
+export type TableWithEditFormField = TableEditorField;
 
 /**
  * - `on-select`: the side panel opens when a row is selected (or New is
@@ -40,29 +42,16 @@ export type TableWithEditFormField = CreateRowFormField;
  * - `always`: the side panel is always visible, showing `placeholder` when
  *   no row is selected.
  */
-export type TableWithEditFormPanelVisibility = "on-select" | "always";
-
-export interface TableWithEditFormPanelState {
-  /** The selected row, undefined in create mode or when nothing is selected. */
-  dataRow?: DataRow;
-  mode: TableWithEditFormMode;
-}
-
-export interface TableWithEditFormContentProps {
-  dataRow: DataRow;
-  /** State of the form: edit mode, dirty, errors, the edit session etc. */
-  form: EditFormHookResult;
-  mode: TableWithEditFormMode;
-}
+export type TableWithEditFormPanelVisibility = TableEditorPanelVisibility;
 
 export interface TableWithEditFormProps
   extends Omit<
       TableProps,
       | "config"
+      | "customHeader"
       | "dataSource"
       | "isRowSelectable"
       | "onError"
-      | "onSelect"
       | "selectionModel"
     >,
     Pick<
@@ -78,34 +67,17 @@ export interface TableWithEditFormProps
   createFields?: readonly TableWithEditFormField[];
   createTitle?: ReactNode;
   dataSource: DataSource;
-  /**
-   * Fields for the detail form, in tab order. Not needed for the edit form
-   * when `renderFormContent` is provided; still used by the create form
-   * unless `createFields` is provided.
-   */
+  /** Fields for the detail form, in tab order. */
   fields?: readonly TableWithEditFormField[];
   /** Title shown in the side panel header. */
   formTitle?: ReactNode | ((dataRow: DataRow) => ReactNode);
   onModeChange?: (mode: TableWithEditFormMode) => void;
   /** Applied to the SidePanel, e.g. to set `--saltSidePanel-width`. */
   panelClassName?: string;
-  /**
-   * Replaces the default side panel header (a title from `formTitle` or
-   * `createTitle`). The close button is still rendered when the panel can
-   * be closed.
-   */
-  panelHeader?: ReactNode | ((state: TableWithEditFormPanelState) => ReactNode);
   /** @default "on-select" */
   panelVisibility?: TableWithEditFormPanelVisibility;
   /** Shown in the side panel when no row is selected. */
   placeholder?: ReactNode;
-  /**
-   * Renders the body of the edit form in place of `fields`, e.g. to lay
-   * fields out in tabs or include custom editors. Render `EditField`s with
-   * the supplied `dataRow`; they are editable while `form.isEditMode` is
-   * true.
-   */
-  renderFormContent?: (props: TableWithEditFormContentProps) => ReactNode;
   testId?: string;
   /** Extra content rendered in the toolbar. */
   toolbar?: ReactNode;
@@ -116,18 +88,62 @@ export interface TableWithEditFormProps
 
 const classBase = "vuuTableWithEditForm";
 
-const NO_ROWS_SELECTABLE = () => false;
+const NO_FIELDS: readonly TableWithEditFormField[] = [];
 
-/** A plain snapshot of a row that, unlike a table DataRow, can be updated. */
-const toRowSnapshot = (values: EditFormValues): DataRow => {
-  const snapshot = { ...values };
-  return {
-    ...snapshot,
-    hasColumn: (name: string) => name in snapshot,
-  } as unknown as DataRow;
+const EditButton = ({ testId }: { testId: string }) => {
+  const { isEditing, selectedRow, startEdit } = useTableEditor();
+  return (
+    <Button
+      data-testid={`edit-button${testId}`}
+      disabled={isEditing || selectedRow === undefined}
+      onClick={startEdit}
+    >
+      Edit
+    </Button>
+  );
 };
 
-const NO_FIELDS: readonly TableWithEditFormField[] = [];
+const PanelTitle = ({
+  createTitle,
+  formTitle,
+}: Pick<TableWithEditFormProps, "createTitle" | "formTitle">) => {
+  const { mode, selectedRow } = useTableEditor();
+  const title =
+    mode === "create"
+      ? createTitle
+      : selectedRow
+        ? typeof formTitle === "function"
+          ? formTitle(selectedRow)
+          : formTitle
+        : null;
+  return title ? <SidePanelTitle>{title}</SidePanelTitle> : null;
+};
+
+interface TableWithEditFormLayoutProps {
+  className?: string;
+  style?: CSSProperties;
+  children: ReactNode;
+}
+
+const TableWithEditFormLayout = ({
+  children,
+  className,
+  style,
+  testId,
+}: TableWithEditFormLayoutProps & { testId: string }) => {
+  const { mode, panelOpen } = useTableEditor();
+  return (
+    <div
+      className={cx(classBase, className, `${classBase}-${mode}`, {
+        [`${classBase}-panelOpen`]: panelOpen,
+      })}
+      data-testid={`table-with-edit-form${testId}`}
+      style={style}
+    >
+      {children}
+    </div>
+  );
+};
 
 /**
  * Master–detail editing: a Table with a form for the selected row, shown in
@@ -141,6 +157,10 @@ const NO_FIELDS: readonly TableWithEditFormField[] = [];
  * Row selection is locked, and the side panel cannot be closed, while a
  * form is being edited, so changes cannot be lost by clicking another row.
  * Use `confirmCancel` to guard Cancel.
+ *
+ * This is the default layout of `TableEditorProvider editIn="form"`. For a
+ * custom layout or form, compose `TableEditorTable`, `TableEditorForm` etc
+ * within a `TableEditorProvider` directly.
  */
 export const TableWithEditForm = ({
   allowCreate = true,
@@ -157,10 +177,8 @@ export const TableWithEditForm = ({
   onError,
   onModeChange,
   panelClassName,
-  panelHeader,
   panelVisibility = "on-select",
   placeholder = "Select a row to see its details",
-  renderFormContent,
   rowDefaults,
   style,
   testId = "",
@@ -176,187 +194,36 @@ export const TableWithEditForm = ({
     window: targetWindow,
   });
 
-  const [mode, setModeState] = useState<TableWithEditFormMode>("view");
-  const [selectedRow, setSelectedRow] = useState<DataRow | undefined>();
-  const [createKey, setCreateKey] = useState(0);
-  const [panelOpen, setPanelOpen] = useState(panelVisibility === "always");
-  const panelOpenBeforeCreateRef = useRef(panelOpen);
-  const submittedValuesRef = useRef<EditFormValues | undefined>(undefined);
-
-  const setMode = useCallback(
-    (nextMode: TableWithEditFormMode) => {
-      setModeState(nextMode);
-      onModeChange?.(nextMode);
-    },
-    [onModeChange],
-  );
-
-  const handleSelect = useCallback((dataRow: DataRow | null) => {
-    setSelectedRow(
-      dataRow ? toRowSnapshot(getDataRowValues(dataRow)) : undefined,
-    );
-    setPanelOpen(dataRow !== null);
-  }, []);
-
-  const startEdit = useCallback(() => {
-    setPanelOpen(true);
-    setMode("edit");
-  }, [setMode]);
-  const startCreate = useCallback(() => {
-    setCreateKey((key) => key + 1);
-    panelOpenBeforeCreateRef.current = panelOpen;
-    setPanelOpen(true);
-    setMode("create");
-  }, [panelOpen, setMode]);
-  const showView = useCallback(() => setMode("view"), [setMode]);
-  const handleCreateDone = useCallback(() => {
-    // restore the panel to how it was before New was clicked
-    setPanelOpen(panelOpenBeforeCreateRef.current);
-    setMode("view");
-  }, [setMode]);
-
-  const validateEdit = useCallback<EditFormValidator>(
-    (values) => {
-      // remember what is being saved, the selected row snapshot is
-      // updated with these values once the save succeeds
-      submittedValuesRef.current = values;
-      return validate?.(values);
-    },
-    [validate],
-  );
-
-  const handleEditSaved = useCallback(() => {
-    const values = submittedValuesRef.current;
-    if (values) {
-      setSelectedRow(toRowSnapshot(values));
-    }
-    setMode("view");
-  }, [setMode]);
-
-  const isEditing = mode !== "view";
-  const alwaysVisible = panelVisibility === "always";
-  const canClosePanel = !alwaysVisible && !isEditing;
-  const isPanelOpen = alwaysVisible || isEditing || panelOpen;
-
-  const handlePanelOpenChange = useCallback(
-    (open: boolean) => {
-      // the panel stays open while a form is being edited
-      if (open || canClosePanel) {
-        setPanelOpen(open);
-      }
-    },
-    [canClosePanel],
-  );
-
-  const renderHeader = () => {
-    if (panelHeader !== undefined) {
-      return typeof panelHeader === "function"
-        ? panelHeader({
-            dataRow: mode === "create" ? undefined : selectedRow,
-            mode,
-          })
-        : panelHeader;
-    }
-    const title =
-      mode === "create"
-        ? createTitle
-        : selectedRow
-          ? typeof formTitle === "function"
-            ? formTitle(selectedRow)
-            : formTitle
-          : null;
-    return title ? <SidePanelTitle>{title}</SidePanelTitle> : null;
-  };
-
-  const renderDetail = () => {
-    if (mode === "create") {
-      return (
-        <CreateRowForm
-          confirmCancel={confirmCancel}
-          data-testid={`create-form${testId}`}
-          dataSource={dataSource}
-          editSessionApi={editSessionApi}
-          fields={createFields ?? fields}
-          key={createKey}
-          onCancelled={handleCreateDone}
-          onError={onError}
-          onSaved={handleCreateDone}
-          rowDefaults={rowDefaults}
-          validate={validateCreate}
-        />
-      );
-    } else if (selectedRow) {
-      return (
-        <EditForm
-          confirmCancel={confirmCancel}
-          data-testid={`edit-form${testId}`}
-          dataRow={selectedRow}
-          dataSource={dataSource}
-          deleteMode={deleteMode}
-          editSessionApi={editSessionApi}
-          isEditMode={mode === "edit"}
-          key={selectedRow.key}
-          onCancelled={showView}
-          onError={onError}
-          onSaved={handleEditSaved}
-          rowDefaults={rowDefaults}
-          validate={validateEdit}
-        >
-          {renderFormContent
-            ? (form: EditFormHookResult) =>
-                renderFormContent({ dataRow: selectedRow, form, mode })
-            : fields.map((field) => (
-                <EditField
-                  {...(field as EditFieldProps)}
-                  dataRow={selectedRow}
-                  key={field.name}
-                />
-              ))}
-        </EditForm>
-      );
-    }
-    return <div className={`${classBase}-placeholder`}>{placeholder}</div>;
-  };
-
   return (
-    <SidePanelProvider onOpenChange={handlePanelOpenChange} open={isPanelOpen}>
-      <div
-        className={cx(classBase, className, `${classBase}-${mode}`, {
-          [`${classBase}-panelOpen`]: isPanelOpen,
-        })}
-        data-testid={`table-with-edit-form${testId}`}
+    <TableEditorProvider
+      confirmCancel={confirmCancel}
+      dataSource={dataSource}
+      deleteMode={deleteMode}
+      editIn="form"
+      editSessionApi={editSessionApi}
+      onError={onError}
+      onModeChange={onModeChange}
+      panelVisibility={panelVisibility}
+      rowDefaults={rowDefaults}
+    >
+      <TableWithEditFormLayout
+        className={className}
         style={style}
+        testId={testId}
       >
         <div className={`${classBase}-main`}>
           <div className={`${classBase}-toolbar`}>
-            <Button
-              data-testid={`edit-button${testId}`}
-              disabled={isEditing || selectedRow === undefined}
-              onClick={startEdit}
-            >
-              Edit
-            </Button>
+            <EditButton testId={testId} />
             {allowCreate ? (
-              <Button
-                data-testid={`new-button${testId}`}
-                disabled={isEditing}
-                onClick={startCreate}
-              >
-                New
-              </Button>
+              <TableEditorNewButton data-testid={`new-button${testId}`} />
             ) : null}
             {toolbar}
           </div>
           <div className={`${classBase}-table`}>
-            <Table
+            <TableEditorTable
               data-testid={`table${testId}`}
-              renderBufferSize={10}
               {...tableProps}
               config={config}
-              dataSource={dataSource}
-              isRowSelectable={isEditing ? NO_ROWS_SELECTABLE : undefined}
-              onSelect={handleSelect}
-              selectionModel="single"
             />
           </div>
         </div>
@@ -366,14 +233,24 @@ export const TableWithEditForm = ({
           position="right"
         >
           <SidePanelHeader className={`${classBase}-panelHeader`}>
-            {renderHeader()}
-            {canClosePanel ? <SidePanelCloseButton /> : null}
+            <PanelTitle createTitle={createTitle} formTitle={formTitle} />
+            <TableEditorPanelCloseButton />
           </SidePanelHeader>
           <SidePanelContent className={`${classBase}-detail`}>
-            {renderDetail()}
+            <TableEditorForm
+              data-testid={`edit-form${testId}`}
+              fields={fields}
+              placeholder={placeholder}
+              validate={validate}
+            />
+            <TableEditorCreateForm
+              data-testid={`create-form${testId}`}
+              fields={createFields ?? fields}
+              validate={validateCreate}
+            />
           </SidePanelContent>
         </SidePanel>
-      </div>
-    </SidePanelProvider>
+      </TableWithEditFormLayout>
+    </TableEditorProvider>
   );
 };
