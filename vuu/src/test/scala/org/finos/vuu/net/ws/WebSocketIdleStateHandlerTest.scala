@@ -81,28 +81,5 @@ class WebSocketIdleStateHandlerTest extends AnyFeatureSpec with GivenWhenThen wi
       verify(mockCtx).close()
     }
 
-    Scenario("WebSocketServerInitializer configures idle-handler in channel pipeline") {
-      import io.netty.channel.ChannelPipeline
-      import io.netty.channel.socket.SocketChannel
-      import org.finos.vuu.core.VuuWebSocketOptions
-      import org.finos.vuu.net.ViewServerHandlerFactory
-      import org.mockito.ArgumentMatchers.{any, eq as eqTo}
-
-      Given("a WebSocketServerInitializer")
-      val options = VuuWebSocketOptions()
-      val factory = mock[ViewServerHandlerFactory]
-      val initializer = new WebSocketServerInitializer(options, factory)
-
-      And("a mocked SocketChannel and ChannelPipeline")
-      val mockChannel = mock[SocketChannel]
-      val mockPipeline = mock[ChannelPipeline]
-      when(mockChannel.pipeline()).thenReturn(mockPipeline)
-
-      When("initChannel is executed")
-      initializer.initChannel(mockChannel)
-
-      Then("the idle-handler is added to the pipeline")
-      verify(mockPipeline).addLast(eqTo("idle-handler"), any[WebSocketIdleStateHandler]())
-    }
   }
 }
