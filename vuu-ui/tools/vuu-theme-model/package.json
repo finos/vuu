@@ -10,7 +10,7 @@
     "vuu-theme-model": "src/cli.ts"
   },
   "scripts": {
-    "build:vuu-theme": "node src/cli.ts --entry ../../packages/vuu-theme/css/theme-next.css --name vuu-theme --module ../vuu-showcase/src/theme-browser/generated/vuu-theme.js --summary ../vuu-showcase/src/theme-browser/generated/vuu-theme.summary.js",
+    "build:vuu-theme": "node src/cli.ts --entry ../../packages/vuu-theme/css/theme-next.css --name vuu-theme --module ../vuu-showcase/src/theme-browser/generated/vuu-theme.js --summary ../vuu-showcase/src/theme-browser/generated/vuu-theme.summary.js --search ../vuu-showcase/src/theme-browser/generated/vuu-theme.search.js",
     "build:salt-theme": "node src/cli.ts --entry ../../node_modules/@salt-ds/theme/css/theme-next.css --fallback ../../node_modules/@salt-ds/theme/css/theme.css --name salt-theme --module ../vuu-showcase/src/theme-browser/generated/salt-theme.js",
     "build": "npm run build:vuu-theme && npm run build:salt-theme",
     "test": "vitest run",
