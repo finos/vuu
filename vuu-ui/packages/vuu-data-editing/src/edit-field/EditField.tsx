@@ -13,7 +13,11 @@ import { useEditField } from "./useEditField";
 import { useEditSession } from "../DataEditingProvider";
 import { dataDescriptorTypeToVuuRowDataItemType } from "@vuu-ui/vuu-utils";
 import type { DataValueValidationChecker } from "@vuu-ui/vuu-data-types";
-import type { VuuColumnDataType, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import type {
+  VuuColumnDataType,
+  VuuRowDataItemType,
+  VuuTable,
+} from "@vuu-ui/vuu-protocol-types";
 import { useEditMode } from "../EditModeProvider";
 import { useEditFormContext } from "../edit-form/EditFormContext";
 import { useEditSessionState } from "../useEditSessionState";
@@ -110,6 +114,19 @@ export const EditField = ({
     ...options,
   });
 
+  // staging through the form also clears this field's validation error
+  const formSetValue = form?.setValue;
+  const setNewRowValue = useCallback(
+    (name: string, value: VuuRowDataItemType) => {
+      if (formSetValue) {
+        formSetValue(name, value);
+      } else {
+        editSession?.setNewRowValue(name, value);
+      }
+    },
+    [editSession, formSetValue],
+  );
+
   const onEdit = useCallback<TableCellEditHandler>(
     async (editState, editPhase) => {
       const { isValid = true, previousValue = "", value } = editState;
@@ -119,7 +136,7 @@ export const EditField = ({
           if (!isValid && !isEmptyValue) {
             return { errorMessage: "Invalid value", type: "ERROR_RESULT" };
           }
-          editSession.setNewRowValue(name, value);
+          setNewRowValue(name, value);
           if (
             !deferNewRow &&
             (editSession.isNewRowFinalColumn(name) ||
@@ -143,11 +160,11 @@ export const EditField = ({
         deferNewRow &&
         editSession?.isNewRow(dataRow.key)
       ) {
-        editSession.setNewRowValue(name, value);
+        setNewRowValue(name, value);
         return { data: undefined, type: "SUCCESS_RESULT" };
       }
     },
-    [dataRow, deferNewRow, editSession, name],
+    [dataRow, deferNewRow, editSession, name, setNewRowValue],
   );
 
   const necessity = required ? "asterisk" : undefined;
