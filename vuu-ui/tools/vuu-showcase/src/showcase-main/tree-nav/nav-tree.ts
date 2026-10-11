@@ -215,3 +215,23 @@ export const createNavIndex = (tree: TreeSourceNode<NavNodeData>[]) => {
     pathForKey: (key) => keyToPath.get(key),
   } as NavIndex;
 };
+
+/**
+ * Router state recording the page a route was opened from, e.g a document
+ * that embeds an example. The nav highlights that page rather than the
+ * route's nearest ancestor.
+ */
+export interface NavFromState {
+  navFrom: string;
+}
+
+export const navFromState = (route: string): NavFromState => ({
+  navFrom: route,
+});
+
+export const getNavFrom = (state: unknown) =>
+  typeof state === "object" &&
+  state !== null &&
+  typeof (state as Partial<NavFromState>).navFrom === "string"
+    ? (state as NavFromState).navFrom
+    : undefined;
