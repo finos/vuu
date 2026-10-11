@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
-import { PROPS_PARAM } from "../../example-props";
 import { ChromeIcon } from "../chrome/ChromeIcon";
 import { useShowcaseContext } from "../ShowcaseProvider";
 import { ChromeSelect } from "./ChromeSelect";
@@ -213,16 +212,13 @@ export const ComparePanel = ({ onPromote, title }: ComparePanelProps) => {
   const { pathname } = useLocation();
   const { preview, setPreview } = useShowcaseContext();
   const [layout, setLayout] = useCompareLayout();
-  // compare the example as configured in the Props panel
-  const [searchParams] = useSearchParams();
-  const props = searchParams.get(PROPS_PARAM);
   const cells = useMemo(
     () =>
       compareCells(preview, layout).map((cell) => ({
         ...cell,
-        src: standaloneUrl(pathname, cell.state, null, false, props),
+        src: standaloneUrl(pathname, cell.state),
       })),
-    [layout, pathname, preview, props],
+    [layout, pathname, preview],
   );
   const viewportWidth = compareViewportWidth(preview.vp);
   const isAxis = (axis: CompareAxis) =>

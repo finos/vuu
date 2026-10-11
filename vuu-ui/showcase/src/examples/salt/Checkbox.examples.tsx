@@ -1,6 +1,5 @@
 import { Checkbox, SwitchProps } from "@salt-ds/core";
 import { ChangeEvent, useState } from "react";
-import { defineExampleProps } from "@vuu-ui/vuu-showcase/example-props";
 
 export const DefaultCheckbox = ({
   label = "Default",
@@ -8,12 +7,6 @@ export const DefaultCheckbox = ({
 }: Partial<SwitchProps>) => {
   return <Checkbox data-showcase-center {...props} label={label} />;
 };
-DefaultCheckbox.props = defineExampleProps({
-  label: { type: "string", default: "Default" },
-  checked: { type: "boolean", default: false },
-  disabled: { type: "boolean", default: false },
-  onChange: { type: "action" },
-});
 
 export const CheckedSwitch = () => {
   return <DefaultCheckbox checked label="Checked Checkbox" />;

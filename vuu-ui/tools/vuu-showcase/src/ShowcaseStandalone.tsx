@@ -32,18 +32,6 @@ import {
   loadTheme,
 } from "./shared-utils";
 import type { DataLocation } from "./showcase-main/ShowcaseProvider";
-import {
-  decodeExampleProps,
-  describeActionArgs,
-  EXAMPLE_ACTION_MESSAGE,
-  EXAMPLE_PROPS_MESSAGE,
-  type ExampleActionMessage,
-  type ExamplePropDefs,
-  type ExamplePropsMessage,
-  getExamplePropDefs,
-  PROPS_PARAM,
-  sanitiseExampleProps,
-} from "./example-props";
 import { OPEN_PALETTE_MESSAGE } from "./showcase-main/command-palette/palette-messages";
 import { simulModule } from "@vuu-ui/vuu-data-test";
 
@@ -84,40 +72,8 @@ const asDataLocation = (input: string | undefined): DataLocation => {
 };
 
 type ContentState = {
-  Component: ComponentType<Record<string, unknown>>;
-  propDefs?: ExamplePropDefs;
+  component: ReactNode;
 };
-
-const readHashProps = () =>
-  new URL(document.location.href).hash.match(
-    new RegExp(`[#,]${PROPS_PARAM}=([-_A-Za-z0-9]*)`),
-  )?.[1] ?? "";
-
-/**
- * Callback props declared by the example are reported to the showcase, which
- * shows them in its actions log. Standalone, in its own window, they are
- * logged to the console.
- */
-const createActionHandlers = (defs: ExamplePropDefs = {}) =>
-  Object.fromEntries(
-    Object.entries(defs)
-      .filter(([, def]) => def.type === "action")
-      .map(([name]) => [
-        name,
-        (...args: unknown[]) => {
-          const message: ExampleActionMessage = {
-            args: describeActionArgs(args),
-            name,
-            type: EXAMPLE_ACTION_MESSAGE,
-          };
-          if (window.parent === window) {
-            console.log(`[action] ${name}`, ...args);
-          } else {
-            window.parent.postMessage(message, window.location.origin);
-          }
-        },
-      ]),
-  );
 
 /**
  * An embedded example (an example within a document) sizes its iframe to fit
@@ -153,7 +109,6 @@ export const ShowcaseStandalone = ({
   const densityRef = useRef<Density>("high");
   const themeModeRef = useRef<ThemeMode>("light");
   const dataLocationRef = useRef<DataLocation>("local");
-  const propsRef = useRef("");
 
   const [contentState, setContentState] = useState<ContentState | null>(null);
 
@@ -183,16 +138,13 @@ export const ShowcaseStandalone = ({
       const _themeMode = asThemeMode(getUrlParameter("themeMode"));
       const _dataLocation = asDataLocation(getUrlParameter("dataLocation"));
       const _density = asDensity(getUrlParameter("density"));
-      const _props = readHashProps();
       if (
         _themeMode !== themeModeRef.current ||
         _density !== densityRef.current ||
-        _dataLocation !== dataLocationRef.current ||
-        _props !== propsRef.current
+        _dataLocation !== dataLocationRef.current
       ) {
         dataLocationRef.current = _dataLocation;
         densityRef.current = _density;
-        propsRef.current = _props;
         themeModeRef.current = _themeMode;
         forceRefresh({});
       }
@@ -221,18 +173,9 @@ export const ShowcaseStandalone = ({
         if (targetModule) {
           if (isComponentDescriptor(nodeData)) {
             const Component = targetModule[nodeData.componentName] as
-              | (ComponentType<Record<string, unknown>> & { props?: unknown })
-              | undefined;
+              ComponentType | undefined;
             if (Component) {
-              const propDefs = getExamplePropDefs(Component.props);
-              setContentState({ Component, propDefs });
-              if (propDefs && window.parent !== window) {
-                const message: ExamplePropsMessage = {
-                  defs: propDefs,
-                  type: EXAMPLE_PROPS_MESSAGE,
-                };
-                window.parent.postMessage(message, window.location.origin);
-              }
+              setContentState({ component: <Component /> });
             } else {
               console.warn("Example Componentnot found");
             }
@@ -241,7 +184,7 @@ export const ShowcaseStandalone = ({
             console.warn(`[ShowcaseStandalone] ${nodeData.path} is a document`);
           } else {
             const Component = targetModule.default as ComponentType;
-            setContentState({ Component });
+            setContentState({ component: <Component /> });
           }
         } else {
           // root app has been loaded with no example selection, therefore nothing to load into iframe
@@ -258,26 +201,6 @@ export const ShowcaseStandalone = ({
       }
     }
   }, [importExhibit, treeSource]);
-
-  const propDefs = contentState?.propDefs;
-  const actionHandlers = useMemo(
-    () => createActionHandlers(propDefs),
-    [propDefs],
-  );
-  const encodedProps = propsRef.current;
-  const propValues = useMemo(
-    () =>
-      propDefs
-        ? sanitiseExampleProps(propDefs, decodeExampleProps(encodedProps))
-        : {},
-    [encodedProps, propDefs],
-  );
-
-  let content: ReactNode = null;
-  if (contentState) {
-    const { Component } = contentState;
-    content = <Component {...actionHandlers} {...propValues} />;
-  }
 
   return (
     <SaltProviderNext
@@ -298,7 +221,7 @@ export const ShowcaseStandalone = ({
               })}
               ref={rootRef}
             >
-              {content}
+              {contentState?.component}
             </div>
           </LocalDataSourceProvider>
         ) : (
@@ -314,7 +237,7 @@ export const ShowcaseStandalone = ({
               })}
               ref={rootRef}
             >
-              {content}
+              {contentState?.component}
             </div>
           </VuuDataSourceProvider>
         )}
