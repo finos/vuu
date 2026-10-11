@@ -1,6 +1,6 @@
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import {
   findTreeNode,
   isComponentDescriptor,
@@ -28,6 +28,7 @@ export const ShowcaseContent = ({
   treeSource,
 }: ShowcaseContentProps) => {
   const { pathname } = useLocation();
+  const [searchParams] = useSearchParams();
   const path = pathname.replace(/\/$/, "");
   const isHomeRoute = path === "";
   const isThemeRoute = path === THEME_PATH;
@@ -43,7 +44,7 @@ export const ShowcaseContent = ({
       {isHomeRoute ? (
         <HomePage onSearch={onSearch} treeSource={treeSource} />
       ) : isThemeRoute ? (
-        <ThemeBrowser />
+        <ThemeBrowser token={searchParams.get("token") ?? undefined} />
       ) : treeNode && isIndexNode(treeNode) ? (
         <FolderIndex treeNode={treeNode} />
       ) : treeNode && isComponentDescriptor(treeNode.nodeData) ? (
