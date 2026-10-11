@@ -31,7 +31,7 @@ import {
   type NavNodeData,
   sectionFromPath,
 } from "./tree-nav/nav-tree";
-import { NAV_FILTER_INPUT_SELECTOR, ShowcaseNav } from "./tree-nav/ShowcaseNav";
+import { focusNavFilter, ShowcaseNav } from "./tree-nav/ShowcaseNav";
 
 import "./chrome/chrome.css";
 import "./ShowcaseShell.css";
@@ -39,14 +39,6 @@ import "./ShowcaseShell.css";
 export interface AppProps {
   treeSource: TreeSourceNode[];
 }
-
-const focusNavFilter = () => {
-  const input = document.querySelector<HTMLInputElement>(
-    `.ShowcaseShell-nav ${NAV_FILTER_INPUT_SELECTOR}`,
-  );
-  input?.focus();
-  input?.select();
-};
 
 const isTextEntryTarget = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
@@ -211,7 +203,7 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
                 style={{ gridArea: "2/2/3/3" }}
                 title="Showcase Content"
               >
-                <ShowcaseContent treeSource={treeSource} />
+                <ShowcaseContent onSearch={focusNavFilter} treeSource={treeSource} />
               </GridLayoutItem>
             </GridLayout>
           </GridLayoutProvider>
