@@ -38,7 +38,7 @@ import type {
   TableHeadings,
   ValueListRenderer,
 } from "@vuu-ui/vuu-table-types";
-import { type CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { moveItem } from "./array-utils";
 import { getTemporalInfo } from "./date/temporal";
 import { queryClosest } from "./html-utils";
@@ -1058,6 +1058,18 @@ export const getGroupIcon = (
   } else {
     const { getIcon } = columns[depth - 1];
     return getIcon?.(dataRow);
+  }
+};
+
+export const getGroupAdornment = (
+  columns: RuntimeColumnDescriptor[],
+  dataRow: DataRow,
+): ReactNode => {
+  const { depth, isLeaf } = dataRow;
+  if (isLeaf || depth === 0 || depth > columns.length) {
+    return null;
+  } else {
+    return columns[depth - 1].getGroupAdornment?.(dataRow) ?? null;
   }
 };
 

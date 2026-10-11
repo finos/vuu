@@ -1,4 +1,3 @@
-import type { TableRowSelectHandler } from "@vuu-ui/vuu-table-types";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import { version as vuuVersion } from "@vuu-ui/vuu-utils/package.json";
 import {
@@ -8,8 +7,15 @@ import {
   GridLayoutProvider,
 } from "@heswell/grid-layout";
 import { SaltProviderNext } from "@salt-ds/core";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { useLocation } from "react-router-dom";
 import { getTargetTreeNode, loadTheme } from "../shared-utils";
 import {
   getStoredNavWidth,
@@ -18,16 +24,14 @@ import {
 } from "./chrome/chrome-settings";
 import { ShowcaseContent } from "./ShowcaseContent";
 import { ShowcaseProvider } from "./ShowcaseProvider";
-import { TopBar } from "./top-bar";
+import { TopBar, type TopBarProps } from "./top-bar";
 import {
-  buildNavTree,
   countExamples,
   getExampleNodes,
   type NavNodeData,
-  navKeyFromPath,
-  pathFromNavKey,
+  sectionFromPath,
 } from "./tree-nav/nav-tree";
-import { TreeNavPanel } from "./tree-nav/TreeNavPanel";
+import { NAV_FILTER_INPUT_SELECTOR, ShowcaseNav } from "./tree-nav/ShowcaseNav";
 
 import "./chrome/chrome.css";
 import "./ShowcaseShell.css";
@@ -37,13 +41,44 @@ export interface AppProps {
 }
 
 const focusNavFilter = () => {
-  document
-    .querySelector<HTMLInputElement>(".ShowcaseShell-nav .vuuTreeNavPanel-search input")
-    ?.focus();
+  const input = document.querySelector<HTMLInputElement>(
+    `.ShowcaseShell-nav ${NAV_FILTER_INPUT_SELECTOR}`,
+  );
+  input?.focus();
+  input?.select();
+};
+
+const isTextEntryTarget = (target: EventTarget | null) =>
+  target instanceof HTMLElement &&
+  (target.isContentEditable ||
+    target.tagName === "INPUT" ||
+    target.tagName === "TEXTAREA" ||
+    target.tagName === "SELECT");
+
+type ChromeModeContextValue = ReturnType<typeof useChromeMode>;
+const ChromeModeContext = createContext<ChromeModeContextValue>({
+  chromeMode: "light",
+  toggleChromeMode: () => undefined,
+});
+
+/**
+ * GridLayout does not re-render its items when their props change, so state
+ * is passed to the TopBar via context.
+ */
+const ShellTopBar = (
+  props: Omit<TopBarProps, "chromeMode" | "onToggleChromeMode">,
+) => {
+  const { chromeMode, toggleChromeMode } = useContext(ChromeModeContext);
+  return (
+    <TopBar
+      {...props}
+      chromeMode={chromeMode}
+      onToggleChromeMode={toggleChromeMode}
+    />
+  );
 };
 
 export const ShowcaseShell = ({ treeSource }: AppProps) => {
-  const navigate = useNavigate();
   const initialIsDataConsumer = useMemo(() => {
     const url = new URL(document.location.href);
     const treeNode = getTargetTreeNode(url, treeSource, false) as any;
@@ -51,7 +86,6 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
       (treeNode && treeNode.nodeData.tags?.includes("data-consumer")) ?? false
     );
   }, [treeSource]);
-  const navTree = useMemo(() => buildNavTree(treeSource), [treeSource]);
   const exampleCount = useMemo(
     () =>
       countExamples(
@@ -66,7 +100,8 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
   }));
   const [themeReady, setThemeReady] = useState(false);
   const [dataConsumer, setDataConsumer] = useState(initialIsDataConsumer);
-  const { chromeMode, toggleChromeMode } = useChromeMode();
+  const chromeModeState = useChromeMode();
+  const { chromeMode } = chromeModeState;
 
   useEffect(() => {
     loadTheme("vuu-theme").then(() => {
@@ -79,6 +114,15 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
       if ((evt.metaKey || evt.ctrlKey) && evt.key.toLowerCase() === "k") {
         evt.preventDefault();
         focusNavFilter();
+      } else if (
+        evt.key === "/" &&
+        !evt.metaKey &&
+        !evt.ctrlKey &&
+        !evt.altKey &&
+        !isTextEntryTarget(evt.target)
+      ) {
+        evt.preventDefault();
+        focusNavFilter();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -86,15 +130,10 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
   }, []);
 
   const { pathname } = useLocation();
-  const handleSelect: TableRowSelectHandler = (dataRow) => {
-    if (dataRow) {
-      const path = pathFromNavKey(dataRow.key);
-      if (path !== undefined) {
-        setDataConsumer(dataRow.nodeData?.tags?.includes("data-consumer"));
-        navigate(path);
-      }
-    }
-  };
+  const section = sectionFromPath(pathname);
+  const handleSelectExample = useCallback((nodeData?: NavNodeData) => {
+    setDataConsumer(nodeData?.tags?.includes("data-consumer") ?? false);
+  }, []);
 
   const handleGridLayoutChanged = useCallback<GridLayoutChangeHandler>(
     (_gridId, { cols }) => {
@@ -116,68 +155,68 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
       theme="vuu-theme"
       mode={chromeMode}
     >
-      <ShowcaseProvider isDataConsumer={dataConsumer}>
-        <GridLayoutProvider>
-          <GridLayout
-            className="ShowcaseShell"
-            colsAndRows={colsAndRows}
-            data-chrome-mode={chromeMode}
-            full-page
-            id="ShowcaseShell"
-            onChange={handleGridLayoutChanged}
-          >
-            {/* Shell items are locked: no header (so not draggable) and not drop targets */}
-
-            {/* ------ App Header -------*/}
-            <GridLayoutItem
-              className="ShowcaseShell-header"
-              header={false}
-              id="app-header"
-              style={{
-                gridArea: "1/1/2/3",
-              }}
+      <ChromeModeContext.Provider value={chromeModeState}>
+        <ShowcaseProvider isDataConsumer={dataConsumer}>
+          <GridLayoutProvider>
+            <GridLayout
+              className="ShowcaseShell"
+              colsAndRows={colsAndRows}
+              data-chrome-mode={chromeMode}
+              data-section={section}
+              full-page
+              id="ShowcaseShell"
+              onChange={handleGridLayoutChanged}
             >
-              <TopBar
-                chromeMode={chromeMode}
-                exampleCount={exampleCount}
-                onSearch={focusNavFilter}
-                onToggleChromeMode={toggleChromeMode}
-                version={vuuVersion}
-              />
-            </GridLayoutItem>
+              {/* Shell items are locked: no header (so not draggable) and not drop targets */}
 
-            {/* ------ Left Nav -------*/}
-            <GridLayoutItem
-              className="ShowcaseShell-nav"
-              header={false}
-              id="palette"
-              resizeable="hv"
-              style={{
-                gridArea: "2/1/3/2",
-              }}
-            >
-              <TreeNavPanel
-                className="ShowcaseNav"
-                autoSelectRowKey={navKeyFromPath(pathname)}
-                onSelect={handleSelect}
-                source={navTree}
-              />
-            </GridLayoutItem>
+              {/* ------ App Header -------*/}
+              <GridLayoutItem
+                className="ShowcaseShell-header"
+                header={false}
+                id="app-header"
+                style={{
+                  gridArea: "1/1/2/3",
+                }}
+              >
+                <ShellTopBar
+                  exampleCount={exampleCount}
+                  onSearch={focusNavFilter}
+                  version={vuuVersion}
+                />
+              </GridLayoutItem>
 
-            {/* ------ Content Container -------*/}
-            <GridLayoutItem
-              className="ShowcaseShell-content"
-              header={false}
-              id="ContentContainer"
-              resizeable="h"
-              style={{ gridArea: "2/2/3/3" }}
-              title="Showcase Content"
-            >
-              <ShowcaseContent treeSource={treeSource} />
-            </GridLayoutItem>
-          </GridLayout>
-        </GridLayoutProvider>
-      </ShowcaseProvider>
+              {/* ------ Left Nav -------*/}
+              <GridLayoutItem
+                className="ShowcaseShell-nav"
+                header={false}
+                id="palette"
+                resizeable="hv"
+                style={{
+                  gridArea: "2/1/3/2",
+                }}
+              >
+                <ShowcaseNav
+                  exampleCount={exampleCount}
+                  onSelectExample={handleSelectExample}
+                  treeSource={treeSource}
+                />
+              </GridLayoutItem>
+
+              {/* ------ Content Container -------*/}
+              <GridLayoutItem
+                className="ShowcaseShell-content"
+                header={false}
+                id="ContentContainer"
+                resizeable="h"
+                style={{ gridArea: "2/2/3/3" }}
+                title="Showcase Content"
+              >
+                <ShowcaseContent treeSource={treeSource} />
+              </GridLayoutItem>
+            </GridLayout>
+          </GridLayoutProvider>
+        </ShowcaseProvider>
+      </ChromeModeContext.Provider>
     </SaltProviderNext>
   ) : null;
 };
