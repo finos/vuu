@@ -1,6 +1,6 @@
 import type { ThemeToken } from "@vuu-ui/vuu-theme-model/src/theme-model-types";
 import cx from "clsx";
-import { KeyboardEvent, useEffect, useRef, useState } from "react";
+import { KeyboardEvent, useRef, useState } from "react";
 import { PRIMARY_AXES, TIER_INFO } from "./model-utils";
 import { ThemeBrowserViewId, useThemeBrowser } from "./ThemeBrowserContext";
 import type { ThemeSource } from "./theme-sources";
@@ -20,18 +20,6 @@ const SearchBox = () => {
   const [open, setOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(0);
   const results = open ? index.search(query) : [];
-
-  useEffect(() => {
-    const focusSearch = (e: globalThis.KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        inputRef.current?.focus();
-        inputRef.current?.select();
-      }
-    };
-    window.addEventListener("keydown", focusSearch);
-    return () => window.removeEventListener("keydown", focusSearch);
-  }, []);
 
   const choose = (token: ThemeToken) => {
     select(token.name, "tiers");
@@ -71,7 +59,6 @@ const SearchBox = () => {
           ref={inputRef}
           value={query}
         />
-        <kbd>⌘K</kbd>
       </label>
       {results.length ? (
         <ul className="search-results" role="listbox">

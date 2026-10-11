@@ -4,9 +4,11 @@
  * affected by the theme selected for preview. Chrome light/dark mode is
  * independent of the preview theme mode.
  */
-.ShowcaseShell {
-  --sc-font: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text",
-    "Segoe UI", sans-serif;
+.ShowcaseShell,
+.ShowcaseChrome {
+  --sc-font:
+    "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+    sans-serif;
   --sc-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
 
   --sc-accent: #6c4bd8;
@@ -43,16 +45,20 @@
   --sc-space-6: 24px;
   --sc-space-8: 32px;
 
-  --sc-shadow-1: 0 1px 2px rgba(20, 20, 40, 0.06), 0 1px 1px rgba(20, 20, 40, 0.04);
-  --sc-shadow-2: 0 8px 24px rgba(20, 20, 40, 0.08), 0 2px 6px rgba(20, 20, 40, 0.05);
-  --sc-shadow-3: 0 24px 64px rgba(20, 20, 40, 0.22), 0 4px 12px rgba(20, 20, 40, 0.08);
+  --sc-shadow-1:
+    0 1px 2px rgba(20, 20, 40, 0.06), 0 1px 1px rgba(20, 20, 40, 0.04);
+  --sc-shadow-2:
+    0 8px 24px rgba(20, 20, 40, 0.08), 0 2px 6px rgba(20, 20, 40, 0.05);
+  --sc-shadow-3:
+    0 24px 64px rgba(20, 20, 40, 0.22), 0 4px 12px rgba(20, 20, 40, 0.08);
 
   --sc-topbar-height: 52px;
 
   color-scheme: light;
 }
 
-.ShowcaseShell[data-chrome-mode="dark"] {
+.ShowcaseShell[data-chrome-mode="dark"],
+.ShowcaseChrome[data-chrome-mode="dark"] {
   --sc-accent: #9b82ff;
   --sc-accent-strong: #b3a0ff;
   --sc-accent-soft: rgba(155, 130, 255, 0.14);

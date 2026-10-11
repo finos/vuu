@@ -31,6 +31,7 @@ import {
 } from "./shared-utils";
 import type { DataLocation } from "./showcase-main/ShowcaseProvider";
 import { createMdxComponents } from "./mdx-components";
+import { OPEN_PALETTE_MESSAGE } from "./showcase-main/command-palette/palette-messages";
 import { simulModule } from "@vuu-ui/vuu-data-test";
 
 import "./Showcase.css";
@@ -96,6 +97,22 @@ export const ShowcaseStandalone = ({
   const theme = useMemo(() => getUrlParameter("theme", "vuu-theme"), []);
 
   useEffect(() => {
+    // keys pressed within the showcase iframe never reach the showcase
+    if (window.parent === window) return;
+    const forwardPaletteShortcut = (evt: KeyboardEvent) => {
+      if ((evt.metaKey || evt.ctrlKey) && evt.key.toLowerCase() === "k") {
+        evt.preventDefault();
+        window.parent.postMessage(
+          { type: OPEN_PALETTE_MESSAGE },
+          window.location.origin,
+        );
+      }
+    };
+    window.addEventListener("keydown", forwardPaletteShortcut);
+    return () => window.removeEventListener("keydown", forwardPaletteShortcut);
+  }, []);
+
+  useEffect(() => {
     const checkUrlParams = () => {
       const _themeMode = asThemeMode(getUrlParameter("themeMode"));
       const _dataLocation = asDataLocation(getUrlParameter("dataLocation"));
@@ -135,8 +152,7 @@ export const ShowcaseStandalone = ({
         if (targetModule) {
           if (isComponentDescriptor(nodeData)) {
             const Component = targetModule[nodeData.componentName] as
-              | ComponentType
-              | undefined;
+              ComponentType | undefined;
             if (Component) {
               setContentState({
                 component: <Component />,
