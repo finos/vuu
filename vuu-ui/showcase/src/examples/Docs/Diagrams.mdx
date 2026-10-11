@@ -1,0 +1,22 @@
+# Diagrams
+
+Showcase documents can include [Mermaid](https://mermaid.js.org) diagrams, authored as fenced code blocks with the `mermaid` language, the same form supported by GitHub and Docusaurus. Diagrams follow the Showcase light/dark theme mode.
+
+````md
+```mermaid
+flowchart LR
+  ...
+```
+````
+
+## Example
+
+The flow of a viewport subscription between the UI and the Vuu server:
+
+```mermaid
+flowchart LR
+  Table["Table component"] -->|subscribe| DataSource
+  DataSource -->|CREATE_VP| Server["Vuu server"]
+  Server -->|TABLE_ROW updates| DataSource
+  DataSource -->|rows| Table
+```
