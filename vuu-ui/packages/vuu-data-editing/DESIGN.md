@@ -14,8 +14,7 @@ layer that fits and drop down only when they need more control:
    (`@vuu-ui/vuu-table-extras`).
 2. **Composable hooks** – `useEditableTable`, `useEditForm`,
    `useEditableColumns`, `useEditSessionState`, `useLookupOptions`,
-   `useConfirmDiscard`, `useEntityDraft`, `useAsyncValidation`,
-   `useCustomEditField`.
+   `useConfirmDiscard`, `useCustomEditField`.
 3. **Primitives** – `EditSession`, `DirectEditSession`, `DataEditingProvider`,
    `EditModeProvider`, `EditField`, `EditButtons`, cell renderers.
 
@@ -219,8 +218,6 @@ This decouples the client from requiring the remote server to return an extra re
 | `src/useEditForm.ts`          | Form state for editing or creating one row in its own edit session.                                                                |
 | `src/edit-form/`              | `EditForm`, `CreateRowForm` and `EditFormContext` (`useEditFormContext`).                                                          |
 | `src/useCustomEditField.ts`   | Connects a custom field control to the enclosing edit form.                                                                        |
-| `src/useEntityDraft.ts`       | Local draft state for forms that save through an RPC rather than a session table.                                                  |
-| `src/useAsyncValidation.ts`   | Debounced, cancellable, cached asynchronous field validation.                                                                      |
 | `src/lookup-values/`          | `useLookupValues` and `useLookupOptions`, which load options from lookup tables.                                                   |
 | `src/index.ts`                | Defines the package's public API.                                                                                                  |
 
