@@ -6,50 +6,17 @@ export const EXAMPLES_ID = "Examples";
 
 export const THEME_PATH = `/${THEME_ID}`;
 
-const ROOT_KEY = "$root";
-const EXAMPLES_KEY = `${ROOT_KEY}|${EXAMPLES_ID}`;
-
 export type NavNodeData = {
   componentName?: string;
   count?: number;
   description?: string;
+  /** a presentational grouping node, has no route */
+  heading?: boolean;
   live?: boolean;
   path?: string;
   route?: string;
   sourceRange?: [number, number];
   tags?: string[];
-};
-
-/**
- * Builds the showcase navigation tree from the example tree source. Docs and
- * Theme are promoted to the top level, every other example is grouped under
- * Examples. Grouping is purely presentational, example urls are unchanged.
- */
-export const buildNavTree = (
-  treeSource: TreeSourceNode[],
-): TreeSourceNode[] => {
-  const docs = treeSource.find((node) => node.id === DOCS_ID);
-  const examples = treeSource.filter((node) => node !== docs);
-  const navTree: TreeSourceNode[] = [];
-  if (docs) {
-    navTree.push(docs);
-  }
-  navTree.push(
-    {
-      id: THEME_ID,
-      icon: "palette",
-      label: THEME_ID,
-      nodeData: { route: THEME_PATH } as NavNodeData,
-    },
-    {
-      id: EXAMPLES_ID,
-      icon: "folder",
-      label: EXAMPLES_ID,
-      childNodes: examples,
-      expanded: true,
-    },
-  );
-  return navTree;
 };
 
 const isDocsPath = (pathname: string) =>
@@ -104,31 +71,100 @@ export const buildExamplesIndexNode = (
   };
 };
 
-/** Maps a url pathname to the key of the corresponding nav tree row */
-export const navKeyFromPath = (pathname: string) => {
-  const path = pathname.replace(/\/$/, "");
-  if (path === "") {
-    return undefined;
-  } else if (path === THEME_PATH || isDocsPath(path)) {
-    return `${ROOT_KEY}${path.split("/").join("|")}`;
+export const GETTING_STARTED_LABEL = "Getting started";
+export const COMPONENTS_LABEL = "Components";
+
+const byLabel = (n1: TreeSourceNode, n2: TreeSourceNode) =>
+  n1.label.localeCompare(n2.label);
+
+/**
+ * Builds the sidebar tree for a showcase section. Examples are presented
+ * under two headings, standalone pages under Getting started and component
+ * folders under Components. Docs presents the content of the Docs folder.
+ * The Theme section has no nav tree. Grouping is purely presentational,
+ * example urls are unchanged.
+ */
+export const buildSectionTree = (
+  section: ShowcaseSection,
+  treeSource: TreeSourceNode<NavNodeData>[],
+): TreeSourceNode<NavNodeData>[] => {
+  if (section === "docs") {
+    const docs = treeSource.find((node) => node.id === DOCS_ID);
+    return (docs?.childNodes ?? []).map((node) =>
+      node.childNodes?.length ? { ...node, expanded: true } : node,
+    );
+  } else if (section === "examples") {
+    const examples = getExampleNodes(treeSource);
+    const pages = examples.filter((node) => !node.childNodes?.length);
+    const folders = examples
+      .filter((node) => node.childNodes?.length)
+      .sort(byLabel);
+    const sectionTree: TreeSourceNode<NavNodeData>[] = [];
+    if (pages.length > 0) {
+      sectionTree.push({
+        childNodes: pages,
+        expanded: true,
+        id: "$heading/getting-started",
+        label: GETTING_STARTED_LABEL,
+        nodeData: { heading: true },
+      });
+    }
+    if (folders.length > 0) {
+      sectionTree.push({
+        childNodes: folders,
+        expanded: true,
+        id: "$heading/components",
+        label: COMPONENTS_LABEL,
+        nodeData: { count: folders.length, heading: true },
+      });
+    }
+    return sectionTree;
   } else {
-    return `${EXAMPLES_KEY}${path.split("/").join("|")}`;
+    return [];
   }
 };
 
+const ROOT_KEY = "$root";
+
+export interface NavIndex {
+  /** true if pathname is a page (not a folder) in the nav tree */
+  isPagePath: (pathname: string) => boolean;
+  /** The nav tree row key for a url pathname, if that route is in the tree */
+  keyForPath: (pathname: string) => string | undefined;
+  /** The url pathname for a nav tree row key, undefined for headings */
+  pathForKey: (key: string) => string | undefined;
+}
+
 /**
- * Maps a nav tree row key to a url pathname. Returns undefined for the
- * Examples group itself, which has no route of its own.
+ * Maps between url pathnames and the row keys of a nav tree. Row keys are
+ * assigned by TreeDataSource from the keySegment (or label) of each node,
+ * pathnames are derived from node ids.
  */
-export const pathFromNavKey = (key: string) => {
-  if (key === EXAMPLES_KEY) {
-    return undefined;
-  }
-  const routeKey = key.startsWith(`${EXAMPLES_KEY}|`)
-    ? `${ROOT_KEY}${key.slice(EXAMPLES_KEY.length)}`
-    : key;
-  return `/${routeKey
-    .slice(ROOT_KEY.length + 1)
-    .split("|")
-    .join("/")}`;
+export const createNavIndex = (tree: TreeSourceNode<NavNodeData>[]) => {
+  const keyToPath = new Map<string, string>();
+  const pathToKey = new Map<string, string>();
+  const pagePaths = new Set<string>();
+  const visit = (nodes: TreeSourceNode<NavNodeData>[], keyBase: string) => {
+    for (const node of nodes) {
+      const key = `${keyBase}|${node.keySegment ?? node.label}`;
+      if (!node.nodeData?.heading) {
+        const path = `/${node.id}`;
+        keyToPath.set(key, path);
+        pathToKey.set(path, key);
+        if (!node.childNodes?.length) {
+          pagePaths.add(path);
+        }
+      }
+      if (node.childNodes) {
+        visit(node.childNodes, key);
+      }
+    }
+  };
+  visit(tree, ROOT_KEY);
+  const normalise = (pathname: string) => pathname.replace(/(.)\/$/, "$1");
+  return {
+    isPagePath: (pathname) => pagePaths.has(normalise(pathname)),
+    keyForPath: (pathname) => pathToKey.get(normalise(pathname)),
+    pathForKey: (key) => keyToPath.get(key),
+  } as NavIndex;
 };

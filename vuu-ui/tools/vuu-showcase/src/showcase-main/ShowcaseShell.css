@@ -37,9 +37,77 @@ body {
   --vuuTree-toggle-expand: var(--vuu-svg-chevron-right);
   --vuuTree-toggle-collapse: var(--vuu-svg-chevron-right);
   --vuuTree-node-expanded-transform: rotate(90deg) translate(1px, 1px);
-  --vuuTree-icon-color: var(--salt-sentiment-accent-background);
-  --vuuTree-font-size: 12px;
-  height: 100%;
+  --vuuTree-icon-color: var(--sc-text-4);
+
+  --vuuTreeNavPanel-background: var(--sc-surface);
+  --vuuTreeNavPanel-color: var(--sc-text-2);
+  --vuuTreeNavPanel-color-folder: var(--sc-text);
+  --vuuTreeNavPanel-color-selected: var(--sc-accent-text);
+  --vuuTreeNavPanel-background-hover: var(--sc-surface-2);
+  --vuuTreeNavPanel-background-selected: var(--sc-accent-soft);
+  --vuuTreeNavPanel-selectionBar: var(--sc-accent);
+  --vuuTreeNavPanel-heading-color: var(--sc-text-3);
+  --vuuTreeNavPanel-adornment-color: var(--sc-text-4);
+  --vuuTreeNavPanel-toggle-color: var(--sc-text-3);
+  --vuuTreeNavPanel-highlight-color: var(--sc-accent-text);
+  --vuuTreeNavPanel-borderColor: var(--sc-border);
+  --vuuTreeNavPanel-fontSize: 13px;
+  --vuuTreeNavPanel-indent: 16px;
+
+  font-family: var(--sc-font);
+}
+
+.ShowcaseNavRowAdornment-count {
+  color: var(--sc-text-4);
+}
+
+.ShowcaseNavRowAdornment-star {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  color: var(--sc-text-4);
+  cursor: pointer;
+  display: inline-flex;
+  height: 20px;
+  justify-content: center;
+  margin-right: -4px;
+  padding: 0;
+  visibility: hidden;
+  width: 20px;
+
+  &:hover {
+    color: var(--sc-warn);
+  }
+}
+
+.vuuTableRow:hover .ShowcaseNavRowAdornment-star,
+.ShowcaseNavRowAdornment-star-on {
+  visibility: visible;
+}
+
+.ShowcaseNavRowAdornment-star-on {
+  color: var(--sc-warn);
+
+  svg {
+    fill: currentColor;
+  }
+}
+
+/* The Theme section has no nav, the GridLayout tracks are only read on
+   creation so the nav column is collapsed with css */
+.vuuGridLayout.ShowcaseShell[data-section="theme"] {
+  grid-template-columns: 0 1fr !important;
+
+  > .ShowcaseShell-nav,
+  > .vuuGridSplitter {
+    display: none;
+  }
+
+  /* space reserved for the (hidden) splitter */
+  > .ShowcaseShell-content.has-v-splitter {
+    margin-left: 0;
+  }
 }
 
 .ShowcaseContentToolbar {

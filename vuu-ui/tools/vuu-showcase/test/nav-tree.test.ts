@@ -2,11 +2,12 @@ import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import { describe, expect, it } from "vitest";
 import {
   buildExamplesIndexNode,
-  buildNavTree,
+  buildSectionTree,
+  COMPONENTS_LABEL,
   countExamples,
+  createNavIndex,
+  GETTING_STARTED_LABEL,
   type NavNodeData,
-  navKeyFromPath,
-  pathFromNavKey,
   sectionFromPath,
 } from "../src/showcase-main/tree-nav/nav-tree";
 
@@ -31,63 +32,94 @@ const treeSource: TreeSourceNode[] = [
 ];
 
 describe("nav-tree", () => {
-  describe("buildNavTree", () => {
-    it("promotes Docs and Theme, groups everything else under Examples", () => {
-      const navTree = buildNavTree(treeSource);
-      expect(navTree.map(({ id }) => id)).toEqual([
-        "Docs",
-        "Theme",
-        "Examples",
+  const source: TreeSourceNode<NavNodeData>[] = [
+    {
+      id: "Docs",
+      label: "Docs",
+      childNodes: [
+        {
+          id: "Docs/Table",
+          label: "Table",
+          childNodes: [{ id: "Docs/Table/Intro", label: "Intro" }],
+        },
+        { id: "Docs/Diagrams", label: "Diagrams" },
+      ],
+    },
+    ...(treeSource.slice(1) as TreeSourceNode<NavNodeData>[]),
+    {
+      id: "Basket",
+      label: "Basket",
+      childNodes: [{ id: "Basket/Ticket", keySegment: "T1", label: "Ticket" }],
+    },
+  ];
+
+  describe("buildSectionTree", () => {
+    it("groups examples under Getting started and Components headings", () => {
+      const tree = buildSectionTree("examples", source);
+      expect(tree.map(({ label }) => label)).toEqual([
+        GETTING_STARTED_LABEL,
+        COMPONENTS_LABEL,
       ]);
-      expect(navTree[0]).toBe(treeSource[0]);
-      expect(navTree[2].childNodes).toEqual([treeSource[1], treeSource[2]]);
-      expect(navTree[2].expanded).toBe(true);
+      const [gettingStarted, components] = tree;
+      expect(gettingStarted.childNodes?.map(({ id }) => id)).toEqual([
+        "Layout",
+      ]);
+      // folders sorted by label
+      expect(components.childNodes?.map(({ id }) => id)).toEqual([
+        "Basket",
+        "Table",
+      ]);
+      expect(tree.every((node) => node.expanded)).toBe(true);
+      expect(tree.every((node) => node.nodeData?.heading)).toBe(true);
+      expect(components.nodeData?.count).toEqual(2);
     });
-    it("omits Docs when the tree source has none", () => {
-      const navTree = buildNavTree(treeSource.slice(1));
-      expect(navTree.map(({ id }) => id)).toEqual(["Theme", "Examples"]);
+    it("omits empty headings", () => {
+      const tree = buildSectionTree("examples", [source[0], source[1]]);
+      expect(tree.map(({ label }) => label)).toEqual([COMPONENTS_LABEL]);
     });
-  });
-
-  describe("navKeyFromPath", () => {
-    it("returns undefined for the root", () => {
-      expect(navKeyFromPath("/")).toBeUndefined();
+    it("presents the content of Docs, folders expanded", () => {
+      const tree = buildSectionTree("docs", source);
+      expect(tree.map(({ id }) => id)).toEqual(["Docs/Table", "Docs/Diagrams"]);
+      expect(tree[0].expanded).toBe(true);
+      expect(tree[1].expanded).toBeUndefined();
     });
-    it("maps Theme and Docs paths to top level keys", () => {
-      expect(navKeyFromPath("/Theme")).toEqual("$root|Theme");
-      expect(navKeyFromPath("/Docs")).toEqual("$root|Docs");
-      expect(navKeyFromPath("/Docs/Table")).toEqual("$root|Docs|Table");
-    });
-    it("maps example paths to keys under Examples", () => {
-      expect(navKeyFromPath("/Table/Misc/DefaultTable")).toEqual(
-        "$root|Examples|Table|Misc|DefaultTable",
-      );
-      expect(navKeyFromPath("/DocsExtra")).toEqual("$root|Examples|DocsExtra");
-    });
-    it("ignores a trailing slash", () => {
-      expect(navKeyFromPath("/Docs/Table/")).toEqual("$root|Docs|Table");
+    it("has no tree for the theme section", () => {
+      expect(buildSectionTree("theme", source)).toEqual([]);
     });
   });
 
-  describe("pathFromNavKey", () => {
-    it("maps keys back to unchanged urls", () => {
-      expect(pathFromNavKey("$root|Theme")).toEqual("/Theme");
-      expect(pathFromNavKey("$root|Docs|Table")).toEqual("/Docs/Table");
-      expect(pathFromNavKey("$root|Examples|Table|Misc|DefaultTable")).toEqual(
-        "/Table/Misc/DefaultTable",
+  describe("createNavIndex", () => {
+    const navIndex = createNavIndex(buildSectionTree("examples", source));
+    it("maps paths to the row keys TreeDataSource assigns", () => {
+      expect(navIndex.keyForPath("/Table/Misc/DefaultTable")).toEqual(
+        "$root|Components|Table|Misc|DefaultTable",
+      );
+      expect(navIndex.keyForPath("/Layout")).toEqual(
+        "$root|Getting started|Layout",
       );
     });
-    it("returns undefined for the Examples group", () => {
-      expect(pathFromNavKey("$root|Examples")).toBeUndefined();
+    it("uses keySegment in keys and ignores a trailing slash", () => {
+      expect(navIndex.keyForPath("/Basket/Ticket/")).toEqual(
+        "$root|Components|Basket|T1",
+      );
     });
-    it("round trips with navKeyFromPath", () => {
-      for (const path of [
-        "/Theme",
-        "/Docs/Table",
-        "/Table/Misc/DefaultTable",
-      ]) {
-        expect(pathFromNavKey(navKeyFromPath(path) as string)).toEqual(path);
-      }
+    it("maps keys back to paths, headings have none", () => {
+      expect(navIndex.pathForKey("$root|Components|Basket|T1")).toEqual(
+        "/Basket/Ticket",
+      );
+      expect(navIndex.pathForKey("$root|Components")).toBeUndefined();
+      expect(navIndex.keyForPath("/Docs/Table")).toBeUndefined();
+    });
+    it("identifies pages, as opposed to folders", () => {
+      expect(navIndex.isPagePath("/Table/Misc/DefaultTable")).toBe(true);
+      expect(navIndex.isPagePath("/Table/Misc")).toBe(false);
+      expect(navIndex.isPagePath("/Unknown")).toBe(false);
+    });
+    it("indexes docs paths for the docs tree", () => {
+      const docsIndex = createNavIndex(buildSectionTree("docs", source));
+      expect(docsIndex.keyForPath("/Docs/Table/Intro")).toEqual(
+        "$root|Table|Intro",
+      );
     });
   });
 

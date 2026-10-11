@@ -22,6 +22,7 @@ import type {
   FunctionComponentElement,
   HTMLAttributes,
   MouseEvent,
+  ReactNode,
 } from "react";
 
 export declare type ColumnMoveHandler = (
@@ -320,6 +321,12 @@ export interface ColumnDescriptor extends DataValueDescriptor {
    * The icon will be displayed alongside the group label
    */
   getIcon?: (row: DataRow) => string | undefined;
+  /**
+   * Only used when the column is included in a groupby clause.
+   * Content rendered at the end of the group cell, after the label, e.g
+   * a count or status indicator.
+   */
+  getGroupAdornment?: (row: DataRow) => ReactNode;
   /**
    * Can this column be included in a groupBy operation ? Default is true.
    */

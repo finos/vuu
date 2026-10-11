@@ -1,0 +1,124 @@
+.ShowcaseNavFilter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-2);
+  padding: var(--sc-space-3) var(--sc-space-3) var(--sc-space-2);
+}
+
+.ShowcaseNavFilter-field {
+  align-items: center;
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  color: var(--sc-text-3);
+  display: flex;
+  gap: var(--sc-space-2);
+  height: 32px;
+  padding: 0 var(--sc-space-1) 0 10px;
+
+  &:focus-within {
+    border-color: var(--sc-focus);
+    box-shadow: 0 0 0 3px var(--sc-accent-soft);
+  }
+
+  kbd {
+    border: 1px solid var(--sc-border);
+    border-radius: 4px;
+    color: var(--sc-text-3);
+    font-family: var(--sc-mono);
+    font-size: 11px;
+    line-height: 16px;
+    margin-right: 6px;
+    padding: 0 5px;
+  }
+}
+
+.ShowcaseNavFilter-input {
+  background: transparent;
+  border: none;
+  color: var(--sc-text);
+  flex: 1;
+  font: inherit;
+  font-size: 13px;
+  min-width: 0;
+  outline: none;
+  padding: 0;
+
+  /* the focus ring is drawn on the field */
+  &:focus,
+  &:focus-visible {
+    outline: none;
+  }
+
+  &::placeholder {
+    color: var(--sc-text-3);
+  }
+}
+
+.ShowcaseNavFilter-clear {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: var(--sc-radius-sm);
+  color: var(--sc-text-3);
+  cursor: pointer;
+  display: inline-flex;
+  height: 24px;
+  justify-content: center;
+  padding: 0;
+  width: 24px;
+
+  &:hover {
+    background: var(--sc-surface-2);
+    color: var(--sc-text);
+  }
+}
+
+.ShowcaseNavFilter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sc-space-1);
+}
+
+.ShowcaseNavFilter-chip {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  color: var(--sc-text-2);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 11px;
+  gap: 4px;
+  padding: 3px 6px;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--sc-border-strong);
+    color: var(--sc-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sc-focus);
+    outline-offset: 1px;
+  }
+}
+
+.ShowcaseNavFilter-chip-on,
+.ShowcaseNavFilter-chip-on:hover {
+  background: var(--sc-accent-soft);
+  border-color: transparent;
+  color: var(--sc-accent-text);
+  font-weight: 560;
+}
+
+.ShowcaseLiveDot {
+  background: var(--sc-ok);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px var(--sc-ok-halo);
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 6px;
+  width: 6px;
+}
