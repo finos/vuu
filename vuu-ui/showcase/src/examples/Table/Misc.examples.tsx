@@ -23,7 +23,6 @@ import {
   View,
 } from "@vuu-ui/vuu-layout";
 import { ContextPanel } from "@vuu-ui/vuu-shell";
-import { defineExampleProps } from "@vuu-ui/vuu-showcase/example-props";
 import { GroupHeaderCell, Table, TableProps } from "@vuu-ui/vuu-table";
 import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import {
@@ -112,19 +111,6 @@ export const TestTable = ({
     />
   );
 };
-TestTable.props = defineExampleProps({
-  rowCount: { type: "number", default: 1000, min: 0, max: 1_000_000 },
-  rowHeight: { type: "number", default: 20, min: 12, max: 64 },
-  colHeaderRowHeight: { type: "number", default: 24, min: 12, max: 64 },
-  renderBufferSize: { type: "number", default: 5, min: 0, max: 100 },
-  width: { type: "number", default: 1000, min: 200 },
-  height: { type: "number", default: 625, min: 100 },
-  columnLayout: {
-    type: "select",
-    options: ["static", "fit", "manual"],
-    description: "How column widths respond to the table width",
-  },
-});
 
 class SwitchableTestDataSource extends EventEmitter<DataSourceEvents> {
   columns = ["value"];

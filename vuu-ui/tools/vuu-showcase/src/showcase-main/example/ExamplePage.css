@@ -145,16 +145,6 @@
   }
 }
 
-.ShowcaseExamplePage-previewBody {
-  display: flex;
-  flex: 1 1 auto;
-  min-height: 0;
-
-  > .ShowcasePreviewCanvas {
-    min-width: 0;
-  }
-}
-
 .ShowcaseExamplePage-docFrame {
   flex: 1 1 auto;
   min-height: 0;
