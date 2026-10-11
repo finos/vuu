@@ -3,6 +3,7 @@ import {
   DEFAULT_PREVIEW_STATE,
   readPreviewState,
   sanitisePreviewState,
+  standaloneDocUrl,
   standaloneUrl,
   writePreviewParams,
 } from "../src/showcase-main/example/preview-state";
@@ -64,6 +65,27 @@ describe("preview-state", () => {
       standaloneUrl("/Table/Misc/TestTable", DEFAULT_PREVIEW_STATE, "a b"),
     ).toBe(
       "/Table/Misc/TestTable?standalone&theme=vuu-theme&anchor=a%20b#themeMode=light,density=high,dataLocation=local",
+    );
+  });
+
+  it("builds the url of an example embedded in a document", () => {
+    expect(
+      standaloneUrl(
+        "/Docs/Table/Columns/Pinned",
+        DEFAULT_PREVIEW_STATE,
+        null,
+        true,
+      ),
+    ).toBe(
+      "/Docs/Table/Columns/Pinned?standalone&theme=vuu-theme&embed#themeMode=light,density=high,dataLocation=local",
+    );
+  });
+
+  it("builds the url of a document in its own window", () => {
+    expect(
+      standaloneDocUrl("/Docs/Table/Columns", DEFAULT_PREVIEW_STATE, "pinned"),
+    ).toBe(
+      "/Docs/Table/Columns?standalone&density=high&ds=local&mode=light&theme=vuu-theme&vp=fill&anchor=pinned",
     );
   });
 });

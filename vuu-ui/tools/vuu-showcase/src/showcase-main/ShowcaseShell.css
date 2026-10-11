@@ -61,6 +61,29 @@ body {
   color: var(--sc-text-4);
 }
 
+/* numbered docs chapters, the number takes the place of the icon */
+.ShowcaseShell-nav .vuuTableGroupCell:has(.ShowcaseNavRowAdornment-ordinal) {
+  .vuuTableGroupCell-adornment {
+    flex: 0 0 auto;
+    margin: 0 8px 0 4px;
+    order: 1;
+  }
+  .vuuTableGroupCell-label {
+    flex: 1 1 auto;
+    order: 2;
+  }
+}
+
+.ShowcaseNavRowAdornment-ordinal {
+  color: var(--sc-text-4);
+  font-size: 12px;
+}
+
+[aria-selected="true"] .ShowcaseNavRowAdornment-ordinal {
+  color: var(--sc-accent-text);
+  opacity: 0.7;
+}
+
 .ShowcaseNavRowAdornment-star {
   align-items: center;
   background: none;

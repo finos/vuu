@@ -83,6 +83,37 @@ describe("nav-tree", () => {
       expect(tree[0].expanded).toBe(true);
       expect(tree[1].expanded).toBeUndefined();
     });
+    it("presents chapters as pages, numbered chapters without an icon", () => {
+      const chapter: TreeSourceNode<NavNodeData> = {
+        id: "Docs/Guide/Columns",
+        icon: "document",
+        label: "Columns",
+        nodeData: { order: 2, path: "Docs/Guide/02-Columns.mdx" },
+        childNodes: [
+          {
+            id: "Docs/Guide/Columns/Pinned",
+            label: "Pinned",
+            nodeData: {
+              componentName: "Pinned",
+              path: "Docs/Guide/02-Columns.examples.tsx",
+            },
+          },
+        ],
+      };
+      const [guide] = buildSectionTree("docs", [
+        {
+          id: "Docs",
+          label: "Docs",
+          childNodes: [
+            { id: "Docs/Guide", label: "Guide", childNodes: [chapter] },
+          ],
+        },
+      ]);
+      const [columns] = guide.childNodes ?? [];
+      expect(columns.childNodes).toBeUndefined();
+      expect(columns.icon).toBeUndefined();
+      expect(guide.expanded).toBe(true);
+    });
     it("has no tree for the theme section", () => {
       expect(buildSectionTree("theme", source)).toEqual([]);
     });
@@ -114,6 +145,12 @@ describe("nav-tree", () => {
       expect(navIndex.isPagePath("/Table/Misc/DefaultTable")).toBe(true);
       expect(navIndex.isPagePath("/Table/Misc")).toBe(false);
       expect(navIndex.isPagePath("/Unknown")).toBe(false);
+    });
+    it("falls back to the nearest ancestor in the tree", () => {
+      expect(navIndex.keyForNearestPath("/Table/Misc/DefaultTable/x")).toEqual(
+        "$root|Components|Table|Misc|DefaultTable",
+      );
+      expect(navIndex.keyForNearestPath("/Unknown/Path")).toBeUndefined();
     });
     it("indexes docs paths for the docs tree", () => {
       const docsIndex = createNavIndex(buildSectionTree("docs", source));

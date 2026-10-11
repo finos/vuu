@@ -115,8 +115,7 @@ describe("home-model", () => {
       },
       {
         art: "theme",
-        description:
-          "vuu-theme · 934 tokens in 3 tiers",
+        description: "vuu-theme · 934 tokens in 3 tiers",
         path: "/Theme",
         title: "Theme Browser",
       },
