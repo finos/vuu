@@ -14,7 +14,8 @@ class WebSocketIdleStateHandler(readerIdleTime: Duration)
     super.channelIdle(ctx, evt)
     if (evt.state() == IdleState.READER_IDLE || evt.state() == IdleState.ALL_IDLE) {
       val remoteAddress = Option(ctx.channel()).map(_.remoteAddress()).getOrElse("unknown")
-      logger.warn(s"Closing idle connection from $remoteAddress due to idle state: ${evt.state()}")
+      logger.error(s"[SESSION] ${evt.state()} timeout exceeded. Remote address: $remoteAddress")
+      ctx.writeAndFlush("Idle timeout exceeded")
       ctx.close()
     }
   }

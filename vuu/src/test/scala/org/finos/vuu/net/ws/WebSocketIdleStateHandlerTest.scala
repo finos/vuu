@@ -29,6 +29,7 @@ class WebSocketIdleStateHandlerTest extends AnyFeatureSpec with GivenWhenThen wi
       handler.channelIdle(mockCtx, IdleStateEvent.READER_IDLE_STATE_EVENT)
 
       Then("the connection is closed")
+      verify(mockCtx).writeAndFlush("Idle timeout exceeded")
       verify(mockCtx).close()
     }
 
@@ -46,6 +47,7 @@ class WebSocketIdleStateHandlerTest extends AnyFeatureSpec with GivenWhenThen wi
       handler.channelIdle(mockCtx, IdleStateEvent.ALL_IDLE_STATE_EVENT)
 
       Then("the connection is closed")
+      verify(mockCtx).writeAndFlush("Idle timeout exceeded")
       verify(mockCtx).close()
     }
 
@@ -78,6 +80,7 @@ class WebSocketIdleStateHandlerTest extends AnyFeatureSpec with GivenWhenThen wi
       handler.channelIdle(mockCtx, IdleStateEvent.READER_IDLE_STATE_EVENT)
 
       Then("the context is still safely closed without throwing NPE")
+      verify(mockCtx).writeAndFlush("Idle timeout exceeded")
       verify(mockCtx).close()
     }
 
