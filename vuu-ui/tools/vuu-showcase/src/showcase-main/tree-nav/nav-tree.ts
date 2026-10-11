@@ -37,6 +37,7 @@ export const buildNavTree = (
       icon: "folder",
       label: EXAMPLES_ID,
       childNodes: examples,
+      expanded: true,
     },
   );
   return navTree;

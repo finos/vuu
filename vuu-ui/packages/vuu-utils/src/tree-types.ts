@@ -5,5 +5,7 @@ export interface TreeSourceNode<T = unknown> {
   header?: boolean;
   label: string;
   childNodes?: TreeSourceNode<T>[];
+  /** node is rendered expanded initially */
+  expanded?: boolean;
   tags?: string[];
 }

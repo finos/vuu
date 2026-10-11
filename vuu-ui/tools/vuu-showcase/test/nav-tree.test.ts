@@ -37,6 +37,7 @@ describe("nav-tree", () => {
       ]);
       expect(navTree[0]).toBe(treeSource[0]);
       expect(navTree[2].childNodes).toEqual([treeSource[1], treeSource[2]]);
+      expect(navTree[2].expanded).toBe(true);
     });
     it("omits Docs when the tree source has none", () => {
       const navTree = buildNavTree(treeSource.slice(1));

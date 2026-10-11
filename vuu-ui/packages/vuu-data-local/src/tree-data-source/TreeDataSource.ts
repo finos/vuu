@@ -91,6 +91,8 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
       this.#iconProvider,
     );
 
+    this.expandedRows = getInitiallyExpandedKeys(data);
+
     console.table(this.#data);
 
     if (this.columnDescriptors) {
@@ -474,6 +476,24 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
     return this.visibleRows[rowIdx];
   }
 }
+
+// keys must match those assigned by treeToDataSourceRows
+const getInitiallyExpandedKeys = (
+  treeSourceNodes: TreeSourceNode[],
+  keyBase = "$root",
+  expandedKeys = new Set<string>(),
+) => {
+  for (const { childNodes, expanded, label } of treeSourceNodes) {
+    const key = `${keyBase}|${label}`;
+    if (expanded) {
+      expandedKeys.add(key);
+    }
+    if (childNodes) {
+      getInitiallyExpandedKeys(childNodes, key, expandedKeys);
+    }
+  }
+  return expandedKeys;
+};
 
 function getVisibleRows(
   rows: DataSourceRow[],
