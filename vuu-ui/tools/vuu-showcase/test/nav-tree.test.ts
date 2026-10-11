@@ -10,6 +10,7 @@ import {
   type NavNodeData,
   sectionFromPath,
   getNavFrom,
+  getNavFromForPath,
   navFromState,
 } from "../src/showcase-main/tree-nav/nav-tree";
 
@@ -212,5 +213,12 @@ describe("navFrom state", () => {
     expect(getNavFrom(null)).toBeUndefined();
     expect(getNavFrom(undefined)).toBeUndefined();
     expect(getNavFrom({ navFrom: 1 })).toBeUndefined();
+  });
+  it("applies only within the section of the route", () => {
+    const state = navFromState("/Docs/DateTime");
+    expect(getNavFromForPath(state, "/Docs/DateTime/Columns/X")).toBe(
+      "/Docs/DateTime",
+    );
+    expect(getNavFromForPath(state, "/Table/Misc/X")).toBeUndefined();
   });
 });

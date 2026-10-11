@@ -65,6 +65,18 @@ describe("example-model", () => {
     ]);
   });
 
+  it("builds breadcrumbs leading to the page a route was opened from", () => {
+    expect(
+      getBreadcrumbs("/Docs/Table/Flash/Example", source, "/Docs/Table"),
+    ).toEqual([
+      { label: "Docs", path: "/Docs" },
+      { label: "Table", path: "/Docs/Table" },
+    ]);
+    expect(getBreadcrumbs("/Docs/Table/Flash", source, "/Docs")).toEqual([
+      { label: "Docs", path: "/Docs" },
+    ]);
+  });
+
   it("finds adjacent examples in nav order, folders sorted by label", () => {
     expect(getAdjacentExamples("/Chart/Line", source)).toMatchObject({
       next: { id: "Table/Misc/TestTable" },
