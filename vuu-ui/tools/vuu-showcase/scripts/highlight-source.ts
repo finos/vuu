@@ -2,19 +2,13 @@ import fs from "fs";
 import path from "path";
 import { createHighlighter, type Highlighter } from "shiki";
 
-/**
- * Example source, highlighted at build time. Tokens rather than html are
- * emitted, so the client renders them as React elements. Each token is
- * [text, styleIndex], styles hold the light and dark colours (the chrome mode
- * selects which is used) and font style flags.
- */
-export type HighlightedSource = {
-  lines: [string, number][][];
-  styles: [light: string, dark: string, fontStyle: number][];
-};
+import {
+  type HighlightedSource,
+  SOURCE_URL_PREFIX,
+  sourceUrl,
+} from "../src/showcase-main/example/source-url";
 
-/** Url prefix under which highlighted sources are served */
-export const SOURCE_URL_PREFIX = "/showcase-source/";
+export { type HighlightedSource, SOURCE_URL_PREFIX, sourceUrl };
 
 const LIGHT_THEME = "github-light";
 const DARK_THEME = "github-dark";
@@ -53,13 +47,6 @@ export const highlightSource = async (
   );
   return { lines, styles };
 };
-
-/**
- * Example paths are relative to the showcase folder, e.g
- * ./src/examples/Table/Misc.examples.tsx. The url drops the leading ./
- */
-export const sourceUrl = (examplePath: string) =>
-  `${SOURCE_URL_PREFIX}${examplePath.replace(/^\.\//, "")}.json`;
 
 const isExampleSource = (relativePath: string) =>
   relativePath.startsWith("src/examples/") &&
