@@ -10,6 +10,8 @@ import { ExampleHeader } from "./ExampleHeader";
 import { type ExampleTab, ExampleTabs, panelId, tabId } from "./ExampleTabs";
 import { PreviewBar } from "./PreviewBar";
 import { PreviewCanvas } from "./PreviewCanvas";
+import { SourceDock, useSourceDock } from "./SourceDock";
+import { SourceView } from "./SourceView";
 import { standaloneUrl } from "./preview-state";
 import { usePreviewSource } from "./usePreviewSource";
 
@@ -17,7 +19,7 @@ import "./ExamplePage.css";
 
 const classBase = "ShowcaseExamplePage";
 
-export type ExampleTabId = "preview" | "docs";
+export type ExampleTabId = "preview" | "source" | "docs";
 
 export const isDataConsumer = (nodeData?: NavNodeData) =>
   nodeData?.tags?.includes("data-consumer") ?? false;
@@ -76,6 +78,7 @@ export const ExamplePage = ({ treeNode, treeSource }: ExamplePageProps) => {
   const tabs = useMemo(() => {
     const tabs: ExampleTab<ExampleTabId>[] = [
       { id: "preview", label: "Preview" },
+      { id: "source", label: "Source" },
     ];
     if (docNode) {
       tabs.push({ id: "docs", label: "Docs" });
@@ -85,6 +88,7 @@ export const ExamplePage = ({ treeNode, treeSource }: ExamplePageProps) => {
 
   const [selectedTab, setSelectedTab] = useSelectedTab(tabs);
   const isMounted = useVisited(selectedTab, pathname);
+  const sourceDock = useSourceDock();
 
   const panelProps = (tab: ExampleTabId) => ({
     "aria-labelledby": tabId(idPrefix, tab),
@@ -107,6 +111,8 @@ export const ExamplePage = ({ treeNode, treeSource }: ExamplePageProps) => {
         <PreviewBar
           dataConsumer={isDataConsumer(treeNode.nodeData)}
           onReload={reload}
+          onToggleSourceDock={sourceDock.toggle}
+          sourceDockOpen={sourceDock.open}
           standaloneHref={src}
           viewportControls
         />
@@ -117,7 +123,19 @@ export const ExamplePage = ({ treeNode, treeSource }: ExamplePageProps) => {
           title={treeNode.label}
           viewport={preview.vp}
         />
+        {sourceDock.open ? (
+          <SourceDock
+            height={sourceDock.height}
+            nodeData={treeNode.nodeData ?? {}}
+            onResize={sourceDock.setHeight}
+          />
+        ) : null}
       </div>
+      {selectedTab === "source" ? (
+        <div {...panelProps("source")}>
+          <SourceView nodeData={treeNode.nodeData ?? {}} />
+        </div>
+      ) : null}
       {docNode && isMounted("docs") ? (
         <div {...panelProps("docs")}>
           <div className={`${classBase}-docFrame`}>
