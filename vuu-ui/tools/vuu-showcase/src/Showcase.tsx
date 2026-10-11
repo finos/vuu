@@ -11,8 +11,8 @@ const createRoutes = (treeSource: TreeSourceNode[]): ReactElement[] =>
     return Array.isArray(childNodes)
       ? routes
           .concat(createRoutes(childNodes))
-          .concat(<Route key={label} path={id} element={label} />)
-      : routes.concat(<Route key={label} path={id} />);
+          .concat(<Route key={id} path={id} element={label} />)
+      : routes.concat(<Route key={id} path={id} />);
   }, []);
 
 export const Showcase = ({ treeSource }: { treeSource: TreeSourceNode[] }) => {

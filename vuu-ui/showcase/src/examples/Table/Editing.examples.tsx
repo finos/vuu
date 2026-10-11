@@ -871,6 +871,7 @@ export const TestTableEmptyWithUpload = () => (
   </LocalDataSourceProvider>
 );
 
+/** @title Test table five rows */
 export const TestTableFIveRows = () => (
   <LocalDataSourceProvider>
     <NotificationsProvider>

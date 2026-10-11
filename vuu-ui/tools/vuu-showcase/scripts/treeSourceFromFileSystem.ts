@@ -1,15 +1,16 @@
 import fs from "fs";
 import path from "path";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
+import { parseExampleExports } from "./example-exports";
+import { humanise } from "./humanise";
 
 export const dropLastPathSegment = (path: string, separator = "/") => {
   return path.slice(0, path.lastIndexOf(separator));
 };
 
 // A numeric prefix e.g "01-" can be used to control ordering. It is not
-// displayed and is not part of the route (as with Docusaurus). Tree keys are
-// derived from labels, so ids must use the same, unprefixed, names.
-const toLabel = (name: string) => name.replace(/^\d+-/, "");
+// displayed and is not part of the route (as with Docusaurus).
+const toRouteSegment = (name: string) => name.replace(/^\d+-/, "");
 
 const getDocumentPath = (
   dirFiles: Set<string>,
@@ -21,21 +22,48 @@ const getDocumentPath = (
   }
 };
 
-const exportPattern =
-  /(export const ([A-Z][a-zA-Z]+) = )|(\/\*\*\s*tags=([-a-z]*)\s*\*\/)/g;
-
 export type NodeData = {
   componentName?: string;
+  /** folders only, number of examples within */
+  count?: number;
+  description?: string;
+  /** true for an example that consumes data, or a folder containing one */
+  live?: boolean;
   name?: string;
-  path: string;
+  path?: string;
+  /** examples only, 1-based inclusive line range within the examples file */
+  sourceRange?: [number, number];
   tags?: string[];
 };
 
+/**
+ * Builds the showcase tree from the examples folder. Node ids (and hence
+ * routes) and keySegments are derived from file and export names, labels are
+ * humanised versions of the same names, for display only.
+ */
 export const treeSourceFromFileSystem = (
   exhibitsPath: string,
   route = "",
   icon = "folder",
   tags = new Set<string>(),
+): [TreeSourceNode<NodeData>[], string[], string | undefined] => {
+  const [treeSourceNodes, tagList, documentPath] = buildTreeSource(
+    exhibitsPath,
+    route,
+    icon,
+    tags,
+  );
+  if (route === "") {
+    addFolderSummaries(treeSourceNodes);
+  }
+  return [treeSourceNodes, tagList, documentPath];
+};
+
+const buildTreeSource = (
+  exhibitsPath: string,
+  route: string,
+  icon: string,
+  tags: Set<string>,
 ): [TreeSourceNode<NodeData>[], string[], string | undefined] => {
   const treeSourceNodes: TreeSourceNode<NodeData>[] = [];
   let documentPath: string | undefined;
@@ -49,19 +77,20 @@ export const treeSourceFromFileSystem = (
 
   dirFiles.forEach((fileName) => {
     const filePath = path.join(exhibitsPath, fileName);
-    // console.log(`[treeSourceFromFileSystem] ${exhibitsPath}  ${filePath}`);
     if (fs.lstatSync(filePath).isDirectory()) {
-      const [childNodes, , documentPath] = treeSourceFromFileSystem(
+      const segment = toRouteSegment(fileName);
+      const [childNodes, , documentPath] = buildTreeSource(
         filePath,
-        `${route}${toLabel(fileName)}/`,
+        `${route}${segment}/`,
         "box",
         tags,
       );
       const treeSourceNode: TreeSourceNode<NodeData> = {
-        id: `${route}${toLabel(fileName)}`,
+        id: `${route}${segment}`,
         // a folder with an Index.mdx displays that document
         icon: documentPath ? "document" : icon,
-        label: toLabel(fileName),
+        keySegment: segment,
+        label: humanise(fileName),
         childNodes,
       };
       if (documentPath) {
@@ -75,17 +104,19 @@ export const treeSourceFromFileSystem = (
       }
     } else if (fileName.match(/examples.tsx$/)) {
       const name = dropLastPathSegment(dropLastPathSegment(fileName, "."), ".");
-      const id = `${route}${toLabel(name)}`;
+      const segment = toRouteSegment(name);
+      const id = `${route}${segment}`;
 
       const documentPath = getDocumentPath(dirFiles, fileName);
       const treeSourceNode: TreeSourceNode<NodeData> = {
         id,
         // examples with an accompanying mdx document display the document
         icon: documentPath ? "document" : "box",
-        label: toLabel(name),
+        keySegment: segment,
+        label: humanise(name),
         childNodes: treeSourceFromExportedComponents(
           exhibitsPath,
-          `${route}${toLabel(name)}/`,
+          `${id}/`,
           fileName,
           tags,
         ),
@@ -106,10 +137,12 @@ export const treeSourceFromFileSystem = (
       // mdx files with a matching examples file are rendered as the document
       // for that examples node (see above), standalone mdx files are leaf nodes
       if (!dirFiles.has(`${name}.examples.tsx`)) {
+        const segment = toRouteSegment(name);
         treeSourceNodes.push({
-          id: `${route}${toLabel(name)}`,
+          id: `${route}${segment}`,
           icon: "document",
-          label: toLabel(name),
+          keySegment: segment,
+          label: humanise(name),
           nodeData: {
             name,
             ...treeSourceFromDocument(exhibitsPath, fileName),
@@ -134,31 +167,59 @@ const treeSourceFromExportedComponents = (
   route: string,
   fileName: string,
   tagsList: Set<string>,
-) => {
+): TreeSourceNode<NodeData>[] => {
   const filePath = path.join(exhibitsPath, fileName);
   const text = fs.readFileSync(filePath).toString();
-  let match = exportPattern.exec(text);
-  const treeSourceNodes: TreeSourceNode<NodeData>[] = [];
-  let tags: string[] | undefined;
-  while (match != null) {
-    // console.log({ m1: match[1], m2: match[2], m3: match[3], m4: match[4] });
-    if (match[4] !== undefined) {
-      tags = match[4].split(",");
-      tags.forEach((tag) => tagsList.add(tag));
-    } else {
-      const componentName = match[2];
-      treeSourceNodes.push({
+  return parseExampleExports(fileName, text).map(
+    ({ componentName, description, sourceRange, tags, title }) => {
+      tags?.forEach((tag) => tagsList.add(tag));
+      const nodeData: NodeData = {
+        componentName,
+        path: `${exhibitsPath}/${fileName}`,
+        sourceRange,
+        tags,
+      };
+      if (description) {
+        nodeData.description = description;
+      }
+      if (tags?.includes("data-consumer")) {
+        nodeData.live = true;
+      }
+      return {
         id: `${route}${componentName}`,
-        label: componentName,
-        nodeData: {
-          componentName,
-          path: `${exhibitsPath}/${fileName}`,
-          tags,
-        },
-      });
-      tags = undefined;
+        keySegment: componentName,
+        label: title ?? humanise(componentName),
+        nodeData,
+      };
+    },
+  );
+};
+
+const isExample = ({ nodeData }: TreeSourceNode<NodeData>) =>
+  typeof nodeData?.componentName === "string";
+
+/**
+ * Records, on every folder, the number of examples it contains and whether
+ * any of them consume data.
+ */
+const addFolderSummaries = (
+  treeSourceNodes: TreeSourceNode<NodeData>[],
+): { count: number; live: boolean } => {
+  let count = 0;
+  let live = false;
+  for (const node of treeSourceNodes) {
+    if (node.childNodes?.length) {
+      const summary = addFolderSummaries(node.childNodes);
+      node.nodeData = { ...node.nodeData, count: summary.count };
+      if (summary.live) {
+        node.nodeData.live = true;
+      }
+      count += summary.count;
+      live ||= summary.live;
+    } else if (isExample(node)) {
+      count += 1;
+      live ||= node.nodeData?.live === true;
     }
-    match = exportPattern.exec(text);
   }
-  return treeSourceNodes;
+  return { count, live };
 };

@@ -1,0 +1,75 @@
+.ShowcaseFolderIndex {
+  height: 100%;
+  overflow: auto;
+  padding: 24px 32px;
+}
+
+.ShowcaseFolderIndex-header {
+  align-items: baseline;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ShowcaseFolderIndex-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.ShowcaseFolderIndex-count,
+.ShowcaseFolderIndex-itemCount {
+  color: var(--salt-content-secondary-foreground);
+  font-size: 12px;
+}
+
+.ShowcaseFolderIndex-list {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ShowcaseFolderIndex-item {
+  border: 1px solid var(--salt-container-primary-borderColor);
+  border-radius: 6px;
+  color: var(--salt-content-primary-foreground);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+  padding: 10px 12px;
+  text-decoration: none;
+}
+
+.ShowcaseFolderIndex-item:hover {
+  background: var(--salt-actionable-subtle-background-hover);
+}
+
+.ShowcaseFolderIndex-item:focus-visible {
+  outline: 2px solid var(--salt-focused-outlineColor);
+  outline-offset: 1px;
+}
+
+.ShowcaseFolderIndex-itemTitle {
+  align-items: center;
+  display: flex;
+  font-weight: 600;
+  gap: 6px;
+}
+
+.ShowcaseFolderIndex-itemDescription {
+  color: var(--salt-content-secondary-foreground);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.ShowcaseFolderIndex-live {
+  background: var(--salt-status-success-foreground-decorative);
+  border-radius: 50%;
+  display: inline-block;
+  height: 6px;
+  width: 6px;
+}

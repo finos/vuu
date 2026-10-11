@@ -121,7 +121,7 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
               style={{ gridArea: "2/2/3/3" }}
               title="Showcase Content"
             >
-              <ShowcaseContent />
+              <ShowcaseContent treeSource={treeSource} />
             </GridLayoutItem>
           </GridLayout>
         </GridLayoutProvider>
