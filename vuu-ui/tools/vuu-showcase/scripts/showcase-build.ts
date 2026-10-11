@@ -6,6 +6,7 @@ import { parseArgs } from "util";
 import { buildFileList } from "./build-file-list";
 import { mdxOptions } from "./mdx-options";
 import { treeSourceFromFileSystem } from "./treeSourceFromFileSystem";
+import { writeHighlightedSources } from "./highlight-source";
 import { createFolder, writeFile } from "./utils";
 
 /**
@@ -34,6 +35,26 @@ const showcaseRoot = path.resolve(import.meta.dirname, "../src/root.ts");
 // useComponentCssInjection. Their css must be imported as a string.
 const inlineCssPackages =
   /[\\/]packages[\\/](grid-layout|vuu-chart|vuu-context-menu|vuu-datatable|vuu-data-react|vuu-filters|vuu-layout|vuu-notifications|vuu-popups|vuu-shell|vuu-table|vuu-table-extras|vuu-ui-controls)[\\/]/;
+
+/** Paths of the examples modules, the source shown by the Source tab */
+const collectExamplePaths = (
+  treeSourceNodes: TreeSourceNode[],
+  paths = new Set<string>(),
+) => {
+  for (const { childNodes, nodeData } of treeSourceNodes) {
+    const { componentName, path } = (nodeData ?? {}) as {
+      componentName?: string;
+      path?: string;
+    };
+    if (componentName && path) {
+      paths.add(path);
+    }
+    if (childNodes) {
+      collectExamplePaths(childNodes, paths);
+    }
+  }
+  return paths;
+};
 
 const collectExhibitPaths = (
   treeSourceNodes: TreeSourceNode[],
@@ -105,6 +126,8 @@ const rsbuildConfig: RsbuildConfig = {
     entry: { index: path.join(srcDir, "index.js") },
     define: {
       "process.env.NODE_DEBUG": false,
+      // Open in VS Code links are dev only
+      "process.env.SHOWCASE_SOURCE_ROOT": JSON.stringify(""),
     },
   },
   html: {
@@ -184,6 +207,12 @@ async function main() {
   try {
     const { close } = await rsbuild.build();
     await close();
+    const sourceCount = await writeHighlightedSources(
+      collectExamplePaths(treeSourceJson),
+      showcaseDir,
+      outDir,
+    );
+    console.log(`highlighted ${sourceCount} example sources`);
   } catch (e) {
     console.error(e);
     process.exit(1);

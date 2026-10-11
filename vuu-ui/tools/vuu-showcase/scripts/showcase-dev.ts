@@ -9,6 +9,11 @@ import Watcher from "watcher";
 
 import { createFolder, linkSourceDirectory, writeFile } from "./utils";
 import { treeSourceFromFileSystem } from "./treeSourceFromFileSystem";
+import {
+  highlightSource,
+  resolveSourcePath,
+  SOURCE_URL_PREFIX,
+} from "./highlight-source";
 
 const pathToExhibits = "./src/examples";
 
@@ -68,6 +73,35 @@ function cssInline(): PluginOption {
   };
 }
 
+/**
+ * Serves highlighted example source, see highlight-source.ts. In dev this is
+ * done on request, so the source is always current. The prod build writes
+ * every file up front.
+ */
+function exampleSource(): PluginOption {
+  return {
+    name: "vuu-showcase-example-source",
+    configureServer(server) {
+      server.middlewares.use(SOURCE_URL_PREFIX, async (req, res, next) => {
+        const urlPath = (req.url ?? "").split("?")[0].replace(/^\//, "");
+        const filePath = urlPath.endsWith(".json")
+          ? resolveSourcePath(cwd, urlPath.slice(0, -".json".length))
+          : undefined;
+        if (filePath === undefined || !fs.existsSync(filePath)) {
+          return next();
+        }
+        try {
+          const code = fs.readFileSync(filePath, "utf8");
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify(await highlightSource(code)));
+        } catch (err) {
+          next(err);
+        }
+      });
+    },
+  };
+}
+
 // 2) Create the .showcase working directory
 if (!fs.existsSync(".showcase/dev")) {
   createFolder(".showcase/dev");
@@ -101,6 +135,8 @@ const server = await createServer({
   configFile: false,
   define: {
     "process.env.NODE_DEBUG": false,
+    // enables Open in VS Code links, dev only
+    "process.env.SHOWCASE_SOURCE_ROOT": JSON.stringify(cwd),
   },
   esbuild: {
     jsx: `automatic`,
@@ -110,7 +146,7 @@ const server = await createServer({
     include: ["@salt-ds/core", "@salt-ds/lab", "@salt-ds/icons"],
   },
   root: __dirname,
-  plugins: [cssInline(), mdx(mdxOptions)],
+  plugins: [cssInline(), exampleSource(), mdx(mdxOptions)],
   server: {
     proxy: {
       "/api/authn": {

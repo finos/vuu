@@ -30,13 +30,15 @@ const modes: { icon: ChromeIconName; label: string; value: ThemeMode }[] = [
   { icon: "moon", label: "Dark", value: "dark" },
 ];
 
-const viewports: Record<ViewportPreset, { icon: ChromeIconName; label: string }> =
-  {
-    fill: { icon: "fill", label: "Fill available space" },
-    "1440": { icon: "monitor", label: "Desktop, 1440px" },
-    "1024": { icon: "laptop", label: "Laptop, 1024px" },
-    "768": { icon: "tablet", label: "Tablet, 768px" },
-  };
+const viewports: Record<
+  ViewportPreset,
+  { icon: ChromeIconName; label: string }
+> = {
+  fill: { icon: "fill", label: "Fill available space" },
+  "1440": { icon: "monitor", label: "Desktop, 1440px" },
+  "1024": { icon: "laptop", label: "Laptop, 1024px" },
+  "768": { icon: "tablet", label: "Tablet, 768px" },
+};
 
 export interface PreviewBarProps {
   /** show the data source control, for examples that consume data */

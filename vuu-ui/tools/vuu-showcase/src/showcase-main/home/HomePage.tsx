@@ -1,14 +1,8 @@
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
-import {
-  type MouseEvent,
-  type ReactNode,
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
-import { useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
 import { vuuThemeSummary } from "../../theme-browser/theme-summary";
 import { ChromeIcon } from "../chrome/ChromeIcon";
+import { RouteLink } from "../chrome/RouteLink";
 import { useRecent } from "../tree-nav/nav-store";
 import type { NavNodeData } from "../tree-nav/nav-tree";
 import { areaArtVariant, FEATURED_AREA_COUNT, START_HERE } from "./home-config";
@@ -28,40 +22,11 @@ const classBase = "ShowcaseHome";
 const MAX_RECENT = 6;
 
 const isMac =
-  typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+  typeof navigator !== "undefined" &&
+  /Mac|iPhone|iPad/.test(navigator.platform);
 
 const plural = (count: number, noun: string) =>
   `${count} ${noun}${count === 1 ? "" : "s"}`;
-
-/**
- * An anchor for an in-app route, so links can be opened in a new tab, while
- * a plain click navigates client side.
- */
-const RouteLink = ({
-  children,
-  className,
-  path,
-}: {
-  children: ReactNode;
-  className?: string;
-  path: string;
-}) => {
-  const navigate = useNavigate();
-  const handleClick = useCallback(
-    (e: MouseEvent<HTMLAnchorElement>) => {
-      if (!e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) {
-        e.preventDefault();
-        navigate(path);
-      }
-    },
-    [navigate, path],
-  );
-  return (
-    <a className={className} href={path} onClick={handleClick}>
-      {children}
-    </a>
-  );
-};
 
 const LiveDot = () => (
   <span className="ShowcaseLiveDot" title="Uses live data" />
@@ -215,49 +180,52 @@ export const HomePage = ({ onSearch, treeSource }: HomePageProps) => {
               onClick={() => setShowAllAreas((show) => !show)}
               type="button"
             >
-              {showAllAreas
-                ? "Show fewer"
-                : `All ${areas.length} areas`}
+              {showAllAreas ? "Show fewer" : `All ${areas.length} areas`}
               <ChromeIcon name="arrow-right" size={14} />
             </button>
           ) : null}
         </h2>
         <ul className={`${classBase}-areas`}>
-          {visibleAreas.map(({ count, id, label, liveCount, path, samples }) => (
-            <li className={`${classBase}-card ${classBase}-areaCard`} key={id}>
-              <div className={`${classBase}-thumb`}>
-                <AreaArt variant={areaArtVariant(id)} />
-              </div>
-              <div className={`${classBase}-meta`}>
-                <RouteLink className={`${classBase}-areaLink`} path={path}>
-                  <span className={`${classBase}-cardTitle`}>{label}</span>
-                </RouteLink>
-                <span className={`${classBase}-cardDescription`}>
-                  {plural(count, "example")}
-                  {liveCount > 0 ? (
-                    <span className={`${classBase}-live`}>
-                      <LiveDot />
-                      {liveCount} live
-                    </span>
+          {visibleAreas.map(
+            ({ count, id, label, liveCount, path, samples }) => (
+              <li
+                className={`${classBase}-card ${classBase}-areaCard`}
+                key={id}
+              >
+                <div className={`${classBase}-thumb`}>
+                  <AreaArt variant={areaArtVariant(id)} />
+                </div>
+                <div className={`${classBase}-meta`}>
+                  <RouteLink className={`${classBase}-areaLink`} path={path}>
+                    <span className={`${classBase}-cardTitle`}>{label}</span>
+                  </RouteLink>
+                  <span className={`${classBase}-cardDescription`}>
+                    {plural(count, "example")}
+                    {liveCount > 0 ? (
+                      <span className={`${classBase}-live`}>
+                        <LiveDot />
+                        {liveCount} live
+                      </span>
+                    ) : null}
+                  </span>
+                  {samples.length ? (
+                    <ul className={`${classBase}-samples`}>
+                      {samples.map((sample) => (
+                        <li key={sample.path}>
+                          <RouteLink
+                            className={`${classBase}-sample`}
+                            path={sample.path}
+                          >
+                            {sample.label}
+                          </RouteLink>
+                        </li>
+                      ))}
+                    </ul>
                   ) : null}
-                </span>
-                {samples.length ? (
-                  <ul className={`${classBase}-samples`}>
-                    {samples.map((sample) => (
-                      <li key={sample.path}>
-                        <RouteLink
-                          className={`${classBase}-sample`}
-                          path={sample.path}
-                        >
-                          {sample.label}
-                        </RouteLink>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </div>
-            </li>
-          ))}
+                </div>
+              </li>
+            ),
+          )}
         </ul>
       </section>
     </div>
