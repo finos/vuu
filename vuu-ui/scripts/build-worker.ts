@@ -50,7 +50,17 @@ export const buildWorker = async (
         ],
       },
       optimization: {
-        minimize: false,
+        // No compression or mangling, the minimizer is used to strip comments
+        minimize: true,
+        minimizer: [
+          new rspack.SwcJsMinimizerRspackPlugin({
+            minimizerOptions: {
+              compress: false,
+              mangle: false,
+              format: { comments: false },
+            },
+          }),
+        ],
         nodeEnv: "development",
         splitChunks: false,
       },
