@@ -14,7 +14,7 @@ import { recentStore, useFavourites, useRecent } from "./nav-store";
 import {
   buildSectionTree,
   createNavIndex,
-  getNavFrom,
+  getNavFromForPath,
   type NavNodeData,
   sectionFromPath,
   type ShowcaseSection,
@@ -82,13 +82,9 @@ export const ShowcaseNav = ({
   const navIndex = sectionNav?.navIndex;
   // A route opened from another page in this section, e.g an example opened
   // from the document that embeds it, keeps that page highlighted.
-  const navFrom = getNavFrom(locationState);
+  const navFrom = getNavFromForPath(locationState, pathname);
   const keyForRoute = (route: string) =>
-    sectionNav?.navIndex.keyForNearestPath(
-      navFrom !== undefined && sectionFromPath(navFrom) === section
-        ? navFrom
-        : route,
-    );
+    sectionNav?.navIndex.keyForNearestPath(navFrom ?? route);
 
   // autoSelectRowKey determines the initial selection only. Selections made
   // in the nav itself need no help, but when the route changes by some other

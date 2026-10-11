@@ -50,12 +50,27 @@ export const getAdjacentExamples = (
 
 /**
  * Breadcrumb trail for a route, excluding the target node itself. The first
- * crumb is the section, Examples (which is the home page) or Docs.
+ * crumb is the section, Examples (which is the home page) or Docs. When the
+ * route was opened from another page (navFrom), e.g an example opened from
+ * the document that embeds it, the trail leads to that page instead.
  */
 export const getBreadcrumbs = (
   pathname: string,
   treeSource: NavNode[],
+  navFrom?: string,
 ): Crumb[] => {
+  if (navFrom !== undefined) {
+    const from = navFrom.replace(/\/$/, "");
+    const crumbs = getBreadcrumbs(from, treeSource);
+    if (crumbs.some(({ path }) => path === from)) {
+      return crumbs;
+    }
+    const node = findTreeNode(from, treeSource);
+    return crumbs.concat({
+      label: node?.label ?? from.split("/").pop() ?? from,
+      path: from,
+    });
+  }
   const segments = pathname.replace(/^\/|\/$/g, "").split("/");
   const isDocs = segments[0] === DOCS_ID;
   const crumbs: Crumb[] = [
