@@ -6,6 +6,7 @@ import {
   type HTMLAttributes,
   type ReactNode,
 } from "react";
+import { Mermaid } from "./Mermaid";
 
 const isExternalLink = (href = "") => /^[a-z]+:/i.test(href);
 
@@ -110,5 +111,10 @@ export const createMdxComponents = (documentPath: string) => {
     }
   };
 
-  return { a: MdxLink, h2: createHeading("h2"), h3: createHeading("h3") };
+  return {
+    a: MdxLink,
+    h2: createHeading("h2"),
+    h3: createHeading("h3"),
+    Mermaid,
+  };
 };
