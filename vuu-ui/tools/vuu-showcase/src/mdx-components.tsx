@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { Mermaid } from "./Mermaid";
+import { slugify } from "./slugify";
 
 const isExternalLink = (href = "") => /^[a-z]+:/i.test(href);
 
@@ -46,15 +47,7 @@ const textContent = (children: ReactNode): string =>
     )
     .join("");
 
-/**
- * Generates a GitHub/Docusaurus compatible heading id
- */
-export const slugify = (text: string) =>
-  text
-    .trim()
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-");
+export { slugify };
 
 const scrollToHeading = (id: string) =>
   document.getElementById(id)?.scrollIntoView({ block: "start" });

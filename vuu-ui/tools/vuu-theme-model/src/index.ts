@@ -12,3 +12,12 @@ export {
   summariseThemeModel,
   type ThemeModelSummary,
 } from "./summarise-theme-model.ts";
+export {
+  applicableValue,
+  type Axes,
+  resolveTokenValue,
+} from "./resolve-token.ts";
+export {
+  buildTokenSearchIndex,
+  type TokenSearchEntry,
+} from "./token-search-index.ts";
