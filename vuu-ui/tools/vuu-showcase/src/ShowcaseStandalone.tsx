@@ -43,7 +43,7 @@ import {
   ShowcasePortalHost,
 } from "./ShowcasePortalHost";
 import { DataLocation } from "./showcase-main/ShowcaseProvider";
-import { simulModule } from "@vuu-ui/vuu-data-test";
+import { createMdxComponents } from "./mdx-components";
 
 import "./Showcase.css";
 
@@ -84,7 +84,10 @@ type ContentState = {
   isMDX: boolean;
 };
 
-type ExampleModule = Record<string, ComponentType>;
+type ExampleModule = Record<
+  string,
+  ComponentType<{ components?: ReturnType<typeof createMdxComponents> }>
+>;
 
 const remoteName = SHOWCASE_REMOTE_NAME;
 const remoteManifest = `${SHOWCASE_REMOTE_URL}/mf-manifest.json`;
@@ -192,7 +195,13 @@ export const ShowcaseStandalone = ({
         }
         if (!cancelled) {
           setContentState({
-            component: <Component />,
+            component: isDocumentDescriptor(nodeData) ? (
+              <Component
+                components={createMdxComponents(`${nodeData.moduleName}.mdx`)}
+              />
+            ) : (
+              <Component />
+            ),
             isMDX: isDocumentDescriptor(nodeData),
           });
         }

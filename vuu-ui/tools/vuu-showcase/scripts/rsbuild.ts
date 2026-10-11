@@ -6,6 +6,7 @@ import { ModuleFederationPlugin } from "@module-federation/enhanced/rspack";
 import { BannerPlugin } from "@rspack/core";
 import { pluginCssInline } from "../../rsbuild-plugin-inline-css/src/index.js";
 import { discoverShowcaseExamples } from "./showcase-examples.ts";
+import { mdxOptions } from "./mdx-options";
 
 const require = createRequire(import.meta.url);
 const uiDirectory = path.resolve(import.meta.dirname, "../../..");
@@ -91,7 +92,16 @@ const output = (directory: string, assetPrefix: string, development: boolean) =>
     root: directory,
   },
   filenameHash: !development,
-  minify: !development,
+  minify: development
+    ? false
+    : {
+        jsOptions: {
+          minimizerOptions: {
+            compress: { keep_classnames: true, keep_fnames: true },
+            mangle: { keep_classnames: true, keep_fnames: true },
+          },
+        },
+      },
   module: true,
   sourceMap: {
     css: true,
@@ -155,6 +165,7 @@ export const createShowcaseRsbuilds = async (
       },
       tools: {
         rspack: {
+          optimization: { sideEffects: false },
           output: moduleOutput("/"),
           plugins: [
             new BannerPlugin({
@@ -197,6 +208,7 @@ export const createShowcaseRsbuilds = async (
       },
       tools: {
         rspack: {
+          optimization: { sideEffects: false },
           module: {
             rules: [
               {
@@ -204,6 +216,7 @@ export const createShowcaseRsbuilds = async (
                 use: [
                   {
                     loader: require.resolve("@mdx-js/loader"),
+                    options: mdxOptions,
                   },
                 ],
               },

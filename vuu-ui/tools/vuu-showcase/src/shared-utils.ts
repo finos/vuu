@@ -1,19 +1,6 @@
 import { importCSS, type TreeSourceNode } from "@vuu-ui/vuu-utils";
 import type { ReactElement } from "react";
 
-export type ExhibitModule = Record<string, unknown>;
-
-/**
- * Loads the module (examples or mdx document) for an exhibit, identified by
- * the path recorded in treeSource. By default, the module is loaded by url,
- * which works with the Vite dev server. The production (rsbuild) build passes
- * an importer backed by a generated map of bundled modules.
- */
-export type ExhibitImporter = (path: string) => Promise<ExhibitModule>;
-
-export const importExhibitByUrl: ExhibitImporter = (path) =>
-  import(/* webpackIgnore: true */ /* @vite-ignore */ `/${path}`);
-
 export type VuuExample = (props?: { [key: string]: unknown }) => ReactElement;
 
 export const pathFromKey = (key: string) => key.slice(5).split("|").join("/");

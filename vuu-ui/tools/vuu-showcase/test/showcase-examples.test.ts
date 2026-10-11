@@ -46,6 +46,53 @@ describe("showcase example discovery", () => {
     });
   });
 
+  it("keeps ordered document routes distinct from federation source paths", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "showcase-"));
+    try {
+      const docsDirectory = path.join(directory, "01-Docs");
+      fs.mkdirSync(docsDirectory);
+      fs.writeFileSync(path.join(docsDirectory, "Index.mdx"), "# Docs");
+      fs.writeFileSync(path.join(docsDirectory, "02-Guide.mdx"), "# Guide");
+      fs.writeFileSync(path.join(docsDirectory, "03-Panel.mdx"), "# Panel");
+      fs.writeFileSync(
+        path.join(docsDirectory, "03-Panel.examples.tsx"),
+        "export const Panel = () => null;",
+      );
+
+      const { exposes, treeSource } = discoverShowcaseExamples(directory);
+      expect(treeSource[0]).toEqual(
+        expect.objectContaining({
+          id: "Docs",
+          label: "Docs",
+          nodeData: { kind: "document", moduleName: "examples/01-Docs/Index" },
+        }),
+      );
+      expect(treeSource[0].childNodes?.map(({ id }) => id)).toEqual([
+        "Docs/Guide",
+        "Docs/Panel",
+      ]);
+      expect(treeSource[0].childNodes?.[1]).toEqual(
+        expect.objectContaining({
+          nodeData: {
+            kind: "document",
+            moduleName: "examples/01-Docs/03-Panel",
+          },
+          childNodes: [
+            expect.objectContaining({ id: "Docs/Panel/Panel" }),
+          ],
+        }),
+      );
+      expect(exposes["./examples/01-Docs/02-Guide"]).toBe(
+        path.join(docsDirectory, "02-Guide.mdx"),
+      );
+      expect(exposes["./examples/01-Docs/03-Panel"]).toBe(
+        path.join(docsDirectory, "03-Panel.mdx"),
+      );
+    } finally {
+      fs.rmSync(directory, { force: true, recursive: true });
+    }
+  });
+
   it("annotates only the export that follows an annotation", () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "showcase-"));
     try {

@@ -25,6 +25,7 @@ export type ShowcaseExamples = {
 
 const componentFileSuffix = ".examples.tsx";
 const documentFileSuffix = ".mdx";
+const toLabel = (name: string) => name.replace(/^\d+-/, "");
 
 export const moduleNameFromRelativePath = (relativePath: string) =>
   `examples/${relativePath
@@ -127,15 +128,15 @@ const discoverDirectory = (
       const [childNodes, document] = discoverDirectory(
         filePath,
         relativePath,
-        `${route}${fileName}/`,
+        `${route}${toLabel(fileName)}/`,
         tags,
         exposes,
       );
       const node: TreeSourceNode<ShowcaseNodeData> = {
         childNodes,
         icon: "folder",
-        id: `${route}${fileName}`,
-        label: fileName,
+        id: `${route}${toLabel(fileName)}`,
+        label: toLabel(fileName),
       };
       if (document) {
         node.nodeData = document;
@@ -152,12 +153,12 @@ const discoverDirectory = (
         childNodes: exportedComponents(
           filePath,
           relativePath,
-          `${route}${name}/`,
+          `${route}${toLabel(name)}/`,
           tags,
         ),
         icon: "box",
-        id: `${route}${name}`,
-        label: name,
+        id: `${route}${toLabel(name)}`,
+        label: toLabel(name),
       };
       const documentFileName = `${name}${documentFileSuffix}`;
       if (directoryFiles.has(documentFileName)) {
@@ -176,12 +177,14 @@ const discoverDirectory = (
       const name = fileName.slice(0, -documentFileSuffix.length);
       const moduleName = moduleNameFromRelativePath(relativePath);
       exposes[exposeNameFromModuleName(moduleName)] = filePath;
-      treeSource.push({
-        icon: "box",
-        id: `${route}${name}`,
-        label: name,
-        nodeData: descriptorFromFile(relativePath) as DocumentDescriptor,
-      });
+      if (!directoryFiles.has(`${name}${componentFileSuffix}`)) {
+        treeSource.push({
+          icon: "document",
+          id: `${route}${toLabel(name)}`,
+          label: toLabel(name),
+          nodeData: descriptorFromFile(relativePath) as DocumentDescriptor,
+        });
+      }
     }
   }
 
