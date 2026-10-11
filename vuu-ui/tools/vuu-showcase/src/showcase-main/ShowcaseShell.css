@@ -10,8 +10,16 @@ body {
   color: var(--sc-text);
   font-family: var(--sc-font);
 
+  /* keep items within their grid track, content scrolls within them */
   > .vuuGridLayoutItem {
     border: none;
+    min-height: 0;
+    min-width: 0;
+
+    > .vuuGridLayoutItemContent {
+      min-height: 0;
+      min-width: 0;
+    }
   }
 
   .vuuGridSplitter {
@@ -34,21 +42,25 @@ body {
 }
 
 .ShowcaseNav {
-  --vuuTree-toggle-expand: var(--vuu-svg-chevron-right);
-  --vuuTree-toggle-collapse: var(--vuu-svg-chevron-right);
-  --vuuTree-node-expanded-transform: rotate(90deg) translate(1px, 1px);
-  --vuuTree-icon-color: var(--sc-text-4);
-
   --vuuTreeNavPanel-background: var(--sc-surface);
   --vuuTreeNavPanel-color: var(--sc-text-2);
-  --vuuTreeNavPanel-color-folder: var(--sc-text);
+  --vuuTreeNavPanel-color-folder: var(--sc-text-2);
+  --vuuTreeNavPanel-color-expanded: var(--sc-text);
+  --vuuTreeNavPanel-fontWeight-expanded: 540;
+  --vuuTreeNavPanel-guide-color: var(--sc-border);
   --vuuTreeNavPanel-color-selected: var(--sc-accent-text);
   --vuuTreeNavPanel-background-hover: var(--sc-surface-2);
   --vuuTreeNavPanel-background-selected: var(--sc-accent-soft);
   --vuuTreeNavPanel-selectionBar: var(--sc-accent);
   --vuuTreeNavPanel-heading-color: var(--sc-text-3);
   --vuuTreeNavPanel-adornment-color: var(--sc-text-4);
-  --vuuTreeNavPanel-toggle-color: var(--sc-text-3);
+  --vuuTreeNavPanel-toggle-color: var(--sc-text-4);
+  --vuuTreeNavPanel-toggle-size: 12px;
+  --vuuTreeNavPanel-toggle-svg: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="black" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5 10.5 8 6 12.5"/></svg>');
+  --vuuTreeNavPanel-toggle-transform: none;
+  --vuuTreeNavPanel-toggle-transform-expanded: rotate(90deg);
+  --vuuTreeNavPanel-toggle-left: 0;
+  --vuuTreeNavPanel-toggle-top: 0;
   --vuuTreeNavPanel-highlight-color: var(--sc-accent-text);
   --vuuTreeNavPanel-borderColor: var(--sc-border);
   --vuuTreeNavPanel-fontSize: 13px;

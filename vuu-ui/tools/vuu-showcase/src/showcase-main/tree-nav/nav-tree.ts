@@ -113,6 +113,18 @@ const toDocsNavNode = (
   };
 };
 
+/** Only document pages are marked by an icon, folders and examples have none */
+const withDocumentIconsOnly = (
+  node: TreeSourceNode<NavNodeData>,
+): TreeSourceNode<NavNodeData> => ({
+  ...node,
+  childNodes: node.childNodes?.map(withDocumentIconsOnly),
+  icon:
+    node.icon === "document" && !node.childNodes?.length
+      ? node.icon
+      : undefined,
+});
+
 const byLabel = (n1: TreeSourceNode, n2: TreeSourceNode) =>
   n1.label.localeCompare(n2.label);
 
@@ -131,7 +143,7 @@ export const buildSectionTree = (
     const docs = treeSource.find((node) => node.id === DOCS_ID);
     return (docs?.childNodes ?? []).map(toDocsNavNode);
   } else if (section === "examples") {
-    const examples = getExampleNodes(treeSource);
+    const examples = getExampleNodes(treeSource).map(withDocumentIconsOnly);
     const pages = examples.filter((node) => !node.childNodes?.length);
     const folders = examples
       .filter((node) => node.childNodes?.length)
