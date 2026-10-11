@@ -102,8 +102,8 @@ These props let the user add and remove rows:
 ## Step 3: a table with an edit form
 
 Some data is easier to edit in a form. `TableWithEditForm` shows the selected
-row in a form beside the table. The user clicks Edit to change it, or New to
-add a row.
+row in a form, in a side panel beside the table. The user clicks Edit to change
+it, or New to add a row.
 
 ```tsx
 import type { CreateRowFormField } from "@vuu-ui/vuu-data-editing";
@@ -135,8 +135,11 @@ const createFields: CreateRowFormField[] = [
 />;
 ```
 
-Row selection is locked while the form is being edited, so the user can't lose
-their changes by clicking another row. Pass `allowCreate={false}` to hide New.
+The panel opens when a row is selected; pass `panelVisibility="always"` to keep
+it open. Row selection is locked while the form is being edited, so the user
+can't lose their changes by clicking another row. Pass `allowCreate={false}`
+to hide New. To lay the form out yourself, for example in tabs, use
+`renderFormContent` (see [Edit forms](./05-EditForms.mdx)).
 
 ## Next steps
 

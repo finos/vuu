@@ -1,6 +1,7 @@
 import {
   CreateRowForm,
   type CreateRowFormField,
+  EditField,
   EditForm,
   type EditFormValidator,
   getDataRowValues,
@@ -10,9 +11,26 @@ import type { DataSource } from "@vuu-ui/vuu-data-types";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import type { RpcResult } from "@vuu-ui/vuu-protocol-types";
 import { Table } from "@vuu-ui/vuu-table";
-import { TableWithEditForm } from "@vuu-ui/vuu-table-extras";
+import {
+  TableWithEditForm,
+  type TableWithEditFormContentProps,
+  type TableWithEditFormPanelVisibility,
+} from "@vuu-ui/vuu-table-extras";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
-import { Button, FormField, FormFieldLabel, Input } from "@salt-ds/core";
+import {
+  Button,
+  FormField,
+  FormFieldLabel,
+  Input,
+  SidePanelTitle,
+  Tab,
+  TabBar,
+  TabList,
+  TabPanel,
+  Tabs,
+  TabTrigger,
+  Text,
+} from "@salt-ds/core";
 import { useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 import {
@@ -59,7 +77,11 @@ const validateInstrument: EditFormValidator = ({ currency, lotSize }) => {
   return errors;
 };
 
-const TableWithEditFormTemplate = () => {
+const TableWithEditFormTemplate = ({
+  panelVisibility,
+}: {
+  panelVisibility?: TableWithEditFormPanelVisibility;
+}) => {
   const dataSource = useInstrumentsDataSource();
   return (
     <div style={{ height: 500, width: 1100 }}>
@@ -70,6 +92,7 @@ const TableWithEditFormTemplate = () => {
         dataSource={dataSource}
         fields={instrumentFields}
         formTitle={(row) => `Instrument ${row.ric}`}
+        panelVisibility={panelVisibility}
         validate={validateInstrument}
       />
     </div>
@@ -77,12 +100,94 @@ const TableWithEditFormTemplate = () => {
 };
 
 /**
- * Pattern 5. Master–detail. Select a row to see it in the form, Edit to
- * change it, New to add a row. Selection is locked while editing.
+ * Pattern 5. Master–detail. Select a row to open it in the side panel, Edit
+ * to change it, New to add a row. Selection is locked, and the panel cannot
+ * be closed, while editing.
  */
 export const TableWithForm = () => (
   <LocalDataSourceProvider>
     <TableWithEditFormTemplate />
+  </LocalDataSourceProvider>
+);
+
+/**
+ * Pattern 5, with the side panel always visible. A placeholder is shown
+ * when no row is selected.
+ */
+export const TableWithFormAlwaysVisible = () => (
+  <LocalDataSourceProvider>
+    <TableWithEditFormTemplate panelVisibility="always" />
+  </LocalDataSourceProvider>
+);
+
+const InstrumentFormContent = ({
+  dataRow,
+  form,
+}: TableWithEditFormContentProps) => (
+  <Tabs defaultValue="details">
+    <TabBar divider>
+      <TabList>
+        <Tab value="details">
+          <TabTrigger>Details</TabTrigger>
+        </Tab>
+        <Tab value="trading">
+          <TabTrigger>Trading</TabTrigger>
+        </Tab>
+      </TabList>
+    </TabBar>
+    <TabPanel value="details">
+      <EditField dataRow={dataRow} label="RIC" name="ric" readOnly />
+      <EditField dataRow={dataRow} label="Description" name="description" />
+    </TabPanel>
+    <TabPanel value="trading">
+      <EditField dataRow={dataRow} label="Currency" name="currency" />
+      <EditField dataRow={dataRow} label="Exchange" name="exchange" />
+      <EditField
+        dataRow={dataRow}
+        label="Lot size"
+        name="lotSize"
+        serverDataType="int"
+      />
+      {form.isEditMode ? null : (
+        <Text styleAs="label">Click Edit to change trading details</Text>
+      )}
+    </TabPanel>
+  </Tabs>
+);
+
+const TableWithCustomFormTemplate = () => {
+  const dataSource = useInstrumentsDataSource();
+  return (
+    <div style={{ height: 500, width: 1100 }}>
+      <TableWithEditForm
+        config={instrumentsTableConfig}
+        createFields={createFields}
+        createTitle="New instrument"
+        dataSource={dataSource}
+        panelHeader={({ dataRow, mode }) => (
+          <div>
+            <SidePanelTitle>
+              {mode === "create"
+                ? "New instrument"
+                : String(dataRow?.description ?? "")}
+            </SidePanelTitle>
+            {dataRow ? <Text color="secondary">{dataRow.ric}</Text> : null}
+          </div>
+        )}
+        renderFormContent={(props) => <InstrumentFormContent {...props} />}
+        validate={validateInstrument}
+      />
+    </div>
+  );
+};
+
+/**
+ * Pattern 5, with a custom panel header and form content laid out in tabs,
+ * using `panelHeader` and `renderFormContent`.
+ */
+export const TableWithCustomForm = () => (
+  <LocalDataSourceProvider>
+    <TableWithCustomFormTemplate />
   </LocalDataSourceProvider>
 );
 
