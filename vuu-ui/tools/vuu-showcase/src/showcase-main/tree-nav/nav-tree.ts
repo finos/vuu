@@ -10,6 +10,8 @@ export type NavNodeData = {
   componentName?: string;
   count?: number;
   description?: string;
+  /** routes of documents that embed this example */
+  docs?: string[];
   /** a presentational grouping node, has no route */
   heading?: boolean;
   live?: boolean;
