@@ -1,8 +1,8 @@
-import { Avatar, SidePanelContent, SidePanelHeader, Tag } from "@salt-ds/core";
+import { Avatar, SidePanelContent, Tag } from "@salt-ds/core";
 import {
   TableWithEditFormPanel,
+  TableWithEditFormPanelHeader,
   TableEditorForm,
-  TableEditorPanelCloseButton,
   TableWithEditFormTablePanel,
   TableWithEditForm,
   TableWithEditFormTable,
@@ -75,10 +75,9 @@ export const UsersPage = () => {
         <TableWithEditFormTable config={config} rowHeight={USER_ROW_HEIGHT} />
       </TableWithEditFormTablePanel>
       <TableWithEditFormPanel className="vuuIdentityAdmin-panel">
-        <SidePanelHeader>
+        <TableWithEditFormPanelHeader>
           <UserHeading />
-          <TableEditorPanelCloseButton />
-        </SidePanelHeader>
+        </TableWithEditFormPanelHeader>
         <SidePanelContent>
           <TableEditorForm>
             <UserEditForm />
