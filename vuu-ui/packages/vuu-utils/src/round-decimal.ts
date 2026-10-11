@@ -10,6 +10,22 @@ export const exceedsMaxSafeInteger = (value: string) =>
   value.length > MAX_INTEGER_DIGITS ||
   (value.length === MAX_INTEGER_DIGITS && value > MAX_SAFE_INTEGER);
 
+const carriesIntoIntegral = (
+  fraction: string,
+  decimals: number,
+  roundingRule: RoundingRule,
+) =>
+  roundingRule === "round" &&
+  decimals !== DECIMALS_AUTO &&
+  fraction.length > decimals &&
+  parseFloat(`0.${fraction}`).toFixed(decimals).startsWith("1");
+
+const incrementIntegral = (integral: string) => {
+  const negative = integral.startsWith("-");
+  const magnitude = BigInt(negative ? integral.slice(1) : integral) + 1n;
+  return `${negative ? "-" : ""}${magnitude}`;
+};
+
 type PadMap = {
   DIGIT: string;
   TWO_DIGITS: string;
@@ -84,6 +100,19 @@ function pad(n: string, dp: number, Pad: PadMap): string {
   return n;
 }
 
+const toPlainString = (value: number) => {
+  const [coefficient, exponent] = value.toString().split("e");
+  if (exponent === undefined) {
+    return coefficient;
+  }
+  const sign = value < 0 ? "-" : "";
+  const digits = coefficient.replace(/[-.]/g, "");
+  const point = Number(exponent) + 1;
+  return point > 0
+    ? `${sign}${digits.padEnd(point, "0")}`
+    : `${sign}0.${"0".repeat(-point)}${digits}`;
+};
+
 export function roundDecimal(
   value?: number,
   align = Align.Right,
@@ -100,7 +129,10 @@ export function roundDecimal(
   let fraction: string;
   let Pad: PadMap | null;
 
-  const [part1, part2 = ""] = value.toString().split(".");
+  const [whole, part2 = ""] = toPlainString(value).split(".");
+  const part1 = carriesIntoIntegral(part2, decimals, roundingRule)
+    ? incrementIntegral(whole)
+    : whole;
   const actualDecimals = part2.length;
 
   integral =
@@ -108,7 +140,7 @@ export function roundDecimal(
       ? "-0"
       : useLocaleString
         ? parseFloat(part1).toLocaleString()
-        : parseFloat(part1).toString();
+        : part1;
 
   if (align === Align.Left && alignOnDecimals) {
     integral = padLeft(integral);
@@ -164,7 +196,10 @@ export function roundScaledDecimal(
     return "";
   }
 
-  const [part1, part2 = ""] = value.split(".");
+  const [whole, part2 = ""] = value.split(".");
+  const part1 = carriesIntoIntegral(part2, decimals, roundingRule)
+    ? incrementIntegral(whole)
+    : whole;
   const actualDecimals = part2.length;
 
   integral =
