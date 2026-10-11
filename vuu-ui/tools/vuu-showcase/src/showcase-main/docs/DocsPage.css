@@ -80,19 +80,6 @@
   justify-content: space-between;
 }
 
-.ShowcaseDocsPage-edit {
-  align-items: center;
-  color: var(--sc-accent-text);
-  display: inline-flex;
-  font-weight: 500;
-  gap: 6px;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
 .ShowcaseDocsPage-updated {
   color: var(--sc-text-3);
 }
@@ -230,26 +217,6 @@
       color: var(--sc-accent-text);
     }
   }
-}
-
-.ShowcaseDocsRail-edit {
-  align-items: center;
-  color: var(--sc-accent-text);
-  display: inline-flex;
-  font: 500 13px/20px var(--sc-font);
-  gap: 6px;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
-.ShowcaseDocsRail-file {
-  color: var(--sc-text-3);
-  font: 400 12px/18px var(--sc-mono);
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 @container (max-width: 960px) {

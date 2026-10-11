@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import {
   documentFolderRoute,
   documentLabel,
-  editUrl,
   embeddedExampleRoute,
   flattenDocuments,
   formatLastUpdated,
@@ -92,12 +91,6 @@ describe("docs-model", () => {
   it("estimates reading time, at least one minute", () => {
     expect(readingMinutes("")).toBe(1);
     expect(readingMinutes("word ".repeat(1000))).toBe(5);
-  });
-
-  it("builds a GitHub edit url", () => {
-    expect(editUrl("src/examples/Docs/Table/02-Columns.mdx")).toBe(
-      "https://github.com/finos/vuu/edit/main/vuu-ui/showcase/src/examples/Docs/Table/02-Columns.mdx",
-    );
   });
 
   it("formats last updated dates", () => {
