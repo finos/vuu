@@ -42,7 +42,8 @@ export const getInitialChromeMode = (): ChromeMode => {
  * an explicit choice is persisted. Independent of the preview theme mode.
  */
 export const useChromeMode = () => {
-  const [chromeMode, setChromeMode] = useState<ChromeMode>(getInitialChromeMode);
+  const [chromeMode, setChromeMode] =
+    useState<ChromeMode>(getInitialChromeMode);
 
   useEffect(() => {
     if (
@@ -61,6 +62,16 @@ export const useChromeMode = () => {
     query.addEventListener("change", handleChange);
     return () => query.removeEventListener("change", handleChange);
   }, []);
+
+  // Salt renders popups (Dropdown lists, Tooltips, Dialogs) into the body, so
+  // the chrome tokens and the Salt mapping are applied from the document root.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.showcaseChrome = chromeMode;
+    return () => {
+      delete root.dataset.showcaseChrome;
+    };
+  }, [chromeMode]);
 
   const toggleChromeMode = useCallback(() => {
     setChromeMode((mode) => {

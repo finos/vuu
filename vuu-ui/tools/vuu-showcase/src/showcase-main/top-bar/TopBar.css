@@ -107,25 +107,16 @@
 }
 
 .ShowcaseTopBar-search {
-  align-items: center;
-  background: var(--sc-surface-2);
-  border: 1px solid var(--sc-border);
-  border-radius: 9px;
-  color: var(--sc-text-3);
-  cursor: pointer;
-  display: flex;
+  --saltButton-borderRadius: 9px;
+  --saltButton-fontWeight: 400;
+  --saltButton-height: 34px;
+  --saltButton-justifyContent: flex-start;
+  --saltButton-text-color: var(--sc-text-3);
+  --saltButton-width: 100%;
   gap: var(--sc-space-2);
-  height: 34px;
   margin-left: auto;
   max-width: 360px;
   min-width: 160px;
-  padding: 0 var(--sc-space-2) 0 11px;
-  text-align: left;
-  width: 100%;
-
-  &:hover {
-    border-color: var(--sc-border-strong);
-  }
 }
 
 .ShowcaseTopBar-searchLabel {
@@ -136,23 +127,13 @@
 }
 
 .ShowcaseTopBar-iconButton {
+  --saltButton-height: 32px;
+  --saltButton-padding: 0;
+  --saltButton-width: 32px;
   align-items: center;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--sc-radius);
-  color: var(--sc-text-2);
-  cursor: pointer;
-  display: grid;
+  display: inline-flex;
   flex: 0 0 auto;
-  height: 32px;
-  padding: 0;
-  place-items: center;
-  width: 32px;
-
-  &:hover {
-    background: var(--sc-surface-2);
-    color: var(--sc-text);
-  }
+  justify-content: center;
 }
 
 @media (max-width: 960px) {
@@ -164,7 +145,7 @@
     display: none;
   }
   .ShowcaseTopBar-search {
+    --saltButton-width: 34px;
     min-width: 0;
-    width: 34px;
   }
 }

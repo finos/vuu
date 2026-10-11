@@ -97,15 +97,9 @@ body {
 }
 
 .ShowcaseNavRowAdornment-star {
-  align-items: center;
-  background: none;
-  border: none;
   border-radius: 4px;
   color: var(--sc-text-4);
-  cursor: pointer;
-  display: inline-flex;
   height: 20px;
-  justify-content: center;
   margin-right: -4px;
   padding: 0;
   visibility: hidden;
@@ -117,11 +111,12 @@ body {
 }
 
 .vuuTableRow:hover .ShowcaseNavRowAdornment-star,
-.ShowcaseNavRowAdornment-star-on {
+.ShowcaseNavRowAdornment-star[aria-pressed="true"] {
   visibility: visible;
 }
 
-.ShowcaseNavRowAdornment-star-on {
+.ShowcaseNavRowAdornment-star.saltToggleButton[aria-pressed="true"] {
+  background: transparent;
   color: var(--sc-warn);
 
   svg {

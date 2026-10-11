@@ -1,3 +1,4 @@
+import { Button, Dialog, Input, ToggleButton } from "@salt-ds/core";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
@@ -243,20 +244,20 @@ const PaletteBody = ({
     label: string,
     count?: number,
   ) => (
-    <button
-      aria-pressed={scope === id}
+    <ToggleButton
       className={`${classBase}-scope`}
       key={id ?? "all"}
-      onClick={() => setScope(id)}
+      onChange={() => setScope(id)}
       onMouseDown={(evt) => evt.preventDefault()}
+      selected={scope === id}
       tabIndex={-1}
-      type="button"
+      value={id ?? "all"}
     >
       {label}
       {count !== undefined ? (
         <span className={`${classBase}-scopeCount`}>{count}</span>
       ) : null}
-    </button>
+    </ToggleButton>
   );
 
   let rowIndex = 0;
@@ -267,25 +268,35 @@ const PaletteBody = ({
   return (
     <>
       <div className={`${classBase}-header`}>
-        <ChromeIcon name="search" />
-        <input
-          aria-activedescendant={activeId}
-          aria-autocomplete="list"
-          aria-controls={`${classBase}-results`}
-          aria-expanded="true"
-          aria-label="Search examples, docs, tokens and commands"
-          autoFocus
+        <Input
+          bordered={false}
           className={`${classBase}-input`}
-          onChange={(evt) => setQuery(evt.target.value)}
-          onKeyDown={handleKeyDown}
+          endAdornment={
+            <Button
+              appearance="bordered"
+              className={`${classBase}-esc`}
+              onClick={onClose}
+              tabIndex={-1}
+            >
+              esc
+            </Button>
+          }
+          inputProps={{
+            "aria-activedescendant": activeId,
+            "aria-autocomplete": "list",
+            "aria-controls": `${classBase}-results`,
+            "aria-expanded": true,
+            "aria-label": "Search examples, docs, tokens and commands",
+            autoFocus: true,
+            onKeyDown: handleKeyDown,
+            role: "combobox",
+            spellCheck: false,
+          }}
+          onChange={(evt) => setQuery((evt.target as HTMLInputElement).value)}
           placeholder="Search examples, docs, tokens and commands…"
-          role="combobox"
-          spellCheck={false}
+          startAdornment={<ChromeIcon name="search" />}
           value={query}
         />
-        <button className={`${classBase}-esc`} onClick={onClose} type="button">
-          esc
-        </button>
       </div>
       <div className={`${classBase}-scopes`}>
         {chip(undefined, "All", total)}
@@ -361,30 +372,17 @@ export const CommandPalette = ({
   onClose,
   ...props
 }: CommandPaletteProps) => {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
-  useLayoutEffect(() => {
-    const dialog = dialogRef.current;
-    if (open && dialog && !dialog.open) {
-      dialog.showModal();
-    } else if (!open && dialog?.open) {
-      dialog.close();
-    }
-  }, [open]);
-
   return (
-    <dialog
+    <Dialog
       aria-label="Search"
       className={`ShowcaseChrome ${classBase}`}
       data-chrome-mode={props.chromeMode}
-      onClick={(evt) => {
-        // a click on the dialog element itself is a click on the backdrop
-        if (evt.target === dialogRef.current) onClose();
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
       }}
-      onClose={onClose}
-      ref={dialogRef}
+      open={open}
     >
       {open ? <PaletteBody {...props} onClose={onClose} /> : null}
-    </dialog>
+    </Dialog>
   );
 };

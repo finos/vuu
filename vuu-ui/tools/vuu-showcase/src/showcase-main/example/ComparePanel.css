@@ -84,8 +84,8 @@
 }
 
 .ShowcaseCompare-promote {
-  background: var(--sc-surface);
-  border: 1px solid var(--sc-border);
+  --saltButton-padding: 0;
+  --saltButton-width: 28px;
   box-shadow: var(--sc-shadow-1);
   opacity: 0;
   position: absolute;

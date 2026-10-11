@@ -3,6 +3,7 @@ import { useState } from "react";
 import { displayValue, TIER_INFO, withoutPrefix } from "./model-utils";
 import { TokenPreview } from "./TokenPreview";
 import { useStageStyle, useThemeBrowser } from "./ThemeBrowserContext";
+import { TileButton } from "./TileButton";
 
 const USED_BY_LIMIT = 10;
 
@@ -164,7 +165,7 @@ export const TokenDetail = ({ name }: { name?: string }) => {
         {usedBy.length ? (
           <div className="used-by">
             {visibleUsers.map((t) => (
-              <button
+              <TileButton
                 className="used-chip"
                 key={t.name}
                 onClick={() => select(t.name)}
@@ -172,15 +173,15 @@ export const TokenDetail = ({ name }: { name?: string }) => {
               >
                 <span className={cx("tier-mark xs", t.tier)} />
                 <span className="mono">{withoutPrefix(t.name)}</span>
-              </button>
+              </TileButton>
             ))}
             {usedBy.length > visibleUsers.length ? (
-              <button
+              <TileButton
                 className="used-chip more"
                 onClick={() => setShowAllUsers(token.name)}
               >
                 +{usedBy.length - visibleUsers.length} more
-              </button>
+              </TileButton>
             ) : null}
           </div>
         ) : (
@@ -196,12 +197,12 @@ export const TokenDetail = ({ name }: { name?: string }) => {
           <span className="mono">
             {location ? `${location.file}:${location.line}` : "—"}
           </span>
-          <button className="ghost" disabled>
+          <TileButton className="ghost" disabled>
             Open in VS Code
-          </button>
-          <button className="ghost" disabled>
+          </TileButton>
+          <TileButton className="ghost" disabled>
             Edit value
-          </button>
+          </TileButton>
         </div>
         <div className="roadmap">
           Editing &amp; VS Code integration – roadmap

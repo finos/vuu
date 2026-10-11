@@ -10,6 +10,7 @@ import {
 import { TokenDetail } from "./TokenDetail";
 import { TokenPreview } from "./TokenPreview";
 import { useStageStyle, useThemeBrowser } from "./ThemeBrowserContext";
+import { TileButton } from "./TileButton";
 
 const SPECIMEN_PROPERTIES = ["background", "borderColor", "foreground"];
 const SWATCH_LABELS: Record<string, string> = {
@@ -117,7 +118,7 @@ export const CharacteristicView = ({
         <div className="cell-swatches">
           {swatches.map(([property, token]) =>
             token ? (
-              <button
+              <TileButton
                 className={cx("sw", { selected: token.name === detailToken })}
                 key={property}
                 onClick={(e) => {
@@ -128,7 +129,7 @@ export const CharacteristicView = ({
               >
                 <TokenPreview token={token} size="xs" />
                 {SWATCH_LABELS[property]}
-              </button>
+              </TileButton>
             ) : (
               <span className="sw none" key={property}>
                 {SWATCH_LABELS[property]}
@@ -145,7 +146,7 @@ export const CharacteristicView = ({
       <nav className="char-list">
         <div className="list-title">Characteristics</div>
         {groups.map((g) => (
-          <button
+          <TileButton
             className={cx("char-item", { selected: g === group })}
             key={g.name}
             onClick={() => onSelectCharacteristic(g.name)}
@@ -153,7 +154,7 @@ export const CharacteristicView = ({
             <span className="tier-mark xs characteristics" />
             <span>{g.name}</span>
             <span className="count">{g.tokens.length}</span>
-          </button>
+          </TileButton>
         ))}
       </nav>
       <section className="char-main">

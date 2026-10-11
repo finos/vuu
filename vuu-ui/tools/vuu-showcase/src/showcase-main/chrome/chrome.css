@@ -4,6 +4,7 @@
  * affected by the theme selected for preview. Chrome light/dark mode is
  * independent of the preview theme mode.
  */
+:root[data-showcase-chrome],
 .ShowcaseShell,
 .ShowcaseChrome {
   --sc-font:
@@ -57,6 +58,7 @@
   color-scheme: light;
 }
 
+:root[data-showcase-chrome="dark"],
 .ShowcaseShell[data-chrome-mode="dark"],
 .ShowcaseChrome[data-chrome-mode="dark"] {
   --sc-accent: #9b82ff;

@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { DIAGNOSTIC_INFO } from "./model-utils";
 import { TokenPreview } from "./TokenPreview";
 import { useThemeBrowser } from "./ThemeBrowserContext";
+import { TileButton } from "./TileButton";
 
 interface MissingFamily {
   family: string;
@@ -74,14 +75,14 @@ const UnresolvedTable = ({
                 </td>
                 <td>
                   {referrer ? (
-                    <button
+                    <TileButton
                       className="link mono"
                       onClick={() => select(referrer.name, "tiers")}
                       title={referrers.join("\n")}
                     >
                       {referrer.name}
                       {referrers.length > 1 ? ` +${referrers.length - 1}` : ""}
-                    </button>
+                    </TileButton>
                   ) : (
                     "—"
                   )}
@@ -134,12 +135,12 @@ const DiagnosticTable = ({
               <td>{d.message}</td>
               <td>
                 {d.token && index.token(d.token) ? (
-                  <button
+                  <TileButton
                     className="link mono"
                     onClick={() => select(d.token!, "tiers")}
                   >
                     {d.token}
-                  </button>
+                  </TileButton>
                 ) : (
                   <span className="mono">{d.token ?? "—"}</span>
                 )}
@@ -173,7 +174,7 @@ export const DiagnosticsView = () => {
     <main className="diag-view">
       <div className="diag-summary">
         {[...byType.entries()].map(([t, list]) => (
-          <button
+          <TileButton
             className={cx("diag-card", {
               has: list.length,
               selected: t === type,
@@ -184,7 +185,7 @@ export const DiagnosticsView = () => {
             <div className="diag-count">{list.length}</div>
             <div className="diag-label">{DIAGNOSTIC_INFO[t].label}</div>
             <div className="muted">{DIAGNOSTIC_INFO[t].blurb}</div>
-          </button>
+          </TileButton>
         ))}
       </div>
       {diagnostics.length === 0 ? (

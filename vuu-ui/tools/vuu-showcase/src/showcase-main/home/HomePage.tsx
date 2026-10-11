@@ -1,3 +1,4 @@
+import { Button } from "@salt-ds/core";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import { useMemo, useState } from "react";
 import { vuuThemeSummary } from "../../theme-browser/theme-summary";
@@ -67,10 +68,10 @@ export const HomePage = ({ onSearch, treeSource }: HomePageProps) => {
           Interactive examples, guides and the design tokens behind every Vuu
           component. Pick a theme and density once – every example follows.
         </p>
-        <button
+        <Button
+          appearance="bordered"
           className={`${classBase}-search`}
           onClick={onSearch}
-          type="button"
         >
           <ChromeIcon name="search" size={18} />
           <span className={`${classBase}-searchLabel`}>
@@ -78,7 +79,7 @@ export const HomePage = ({ onSearch, treeSource }: HomePageProps) => {
           </span>
           <kbd>{isMac ? "⌘" : "Ctrl"}</kbd>
           <kbd>K</kbd>
-        </button>
+        </Button>
         <dl className={`${classBase}-stats`}>
           <div>
             <dt>examples</dt>
@@ -174,15 +175,16 @@ export const HomePage = ({ onSearch, treeSource }: HomePageProps) => {
         <h2 className={`${classBase}-heading`} id={`${classBase}-areas`}>
           Browse by area
           {areas.length > FEATURED_AREA_COUNT ? (
-            <button
+            <Button
+              appearance="transparent"
               aria-expanded={showAllAreas}
               className={`${classBase}-headingAction`}
               onClick={() => setShowAllAreas((show) => !show)}
-              type="button"
+              sentiment="accented"
             >
               {showAllAreas ? "Show fewer" : `All ${areas.length} areas`}
               <ChromeIcon name="arrow-right" size={14} />
-            </button>
+            </Button>
           ) : null}
         </h2>
         <ul className={`${classBase}-areas`}>

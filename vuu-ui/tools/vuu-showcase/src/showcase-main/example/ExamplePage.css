@@ -90,40 +90,17 @@
   padding-top: 22px;
 }
 
-.ShowcaseExampleTabs {
-  border-bottom: 1px solid var(--sc-border);
+.ShowcaseExampleTabs-root {
   display: flex;
-  flex: 0 0 auto;
-  gap: var(--sc-space-6);
-  padding: 0 var(--sc-space-8);
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
 }
 
-.ShowcaseExampleTabs-tab {
-  align-items: center;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--sc-text-3);
-  cursor: pointer;
-  display: inline-flex;
-  font: 600 14px/1 var(--sc-font);
-  gap: 6px;
-  margin-bottom: -1px;
-  padding: var(--sc-space-3) 0;
-
-  &:hover {
-    color: var(--sc-text);
-  }
-
-  &[aria-selected="true"] {
-    border-bottom-color: var(--sc-accent);
-    color: var(--sc-text);
-  }
-
-  &:focus-visible {
-    border-radius: var(--sc-radius-sm);
-    outline: 2px solid var(--sc-focus);
-  }
+.ShowcaseExampleTabs {
+  border-bottom: 1px solid var(--sc-border);
+  flex: 0 0 auto;
+  padding: 0 var(--sc-space-8);
 }
 
 .ShowcaseExampleTabs-count {
@@ -152,4 +129,9 @@
   > .ShowCaseIFrame {
     display: block;
   }
+}
+
+.ShowcaseExampleHeader-iconButton {
+  --saltButton-padding: 0;
+  --saltButton-width: 28px;
 }

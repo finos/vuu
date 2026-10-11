@@ -1,9 +1,9 @@
+import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import cx from "clsx";
 import {
   Children,
   Fragment,
   isValidElement,
-  type MouseEvent,
   type ReactNode,
   useState,
 } from "react";
@@ -82,7 +82,7 @@ export const LivePreview = ({
   defaultShowCode = false,
   stacked = false,
 }: LivePreviewProps) => {
-  const { docRoute, documentPath, hrefForRoute, navigateTo } = useDocsContext();
+  const { docRoute, documentPath, navigateTo } = useDocsContext();
   const [tab, setTab] = useState<Tab>(defaultShowCode ? "code" : "preview");
   const [copied, setCopied] = useState(false);
 
@@ -114,13 +114,6 @@ export const LivePreview = ({
     );
   };
 
-  const handleOpenExample = (evt: MouseEvent<HTMLAnchorElement>) => {
-    if (firstExample && !evt.metaKey && !evt.ctrlKey && !evt.shiftKey) {
-      evt.preventDefault();
-      navigateTo(firstExample.route);
-    }
-  };
-
   return (
     <section className={classBase}>
       <header className={`${classBase}-header`}>
@@ -131,45 +124,36 @@ export const LivePreview = ({
         <span className={`${classBase}-live`}>· live example</span>
         <span className={`${classBase}-spacer`} />
         {tab === "code" ? (
-          <button
+          <Button
+            appearance="transparent"
             className={`${classBase}-action`}
             onClick={handleCopy}
-            type="button"
           >
             <ChromeIcon name={copied ? "check" : "copy"} size={14} />
             {copied ? "Copied" : "Copy"}
-          </button>
+          </Button>
         ) : null}
         {code.length > 0 ? (
-          <div
+          <ToggleButtonGroup
             aria-label="View"
-            className={`${classBase}-tabs ShowcaseSegmented`}
-            role="tablist"
+            className={`${classBase}-tabs`}
+            onChange={(e) => setTab(e.currentTarget.value as Tab)}
+            value={tab}
           >
-            {(["preview", "code"] as Tab[]).map((value) => (
-              <button
-                aria-selected={tab === value}
-                className={`${classBase}-tab`}
-                key={value}
-                onClick={() => setTab(value)}
-                role="tab"
-                type="button"
-              >
-                {value === "preview" ? "Preview" : "Code"}
-              </button>
-            ))}
-          </div>
+            <ToggleButton value="preview">Preview</ToggleButton>
+            <ToggleButton value="code">Code</ToggleButton>
+          </ToggleButtonGroup>
         ) : null}
         {firstExample ? (
-          <a
+          <Button
+            appearance="transparent"
             aria-label={`Open ${firstExample.name} example`}
-            className={`${classBase}-open ShowcaseIconButton`}
-            href={hrefForRoute(firstExample.route)}
-            onClick={handleOpenExample}
+            className={`${classBase}-open`}
+            onClick={() => navigateTo(firstExample.route)}
             title="Open example"
           >
             <ChromeIcon name="external" size={14} />
-          </a>
+          </Button>
         ) : null}
       </header>
       {/* the preview stays mounted, so switching tabs doesn't reload it */}

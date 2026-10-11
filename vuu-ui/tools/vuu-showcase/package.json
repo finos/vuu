@@ -25,6 +25,7 @@
   "dependencies": {
     "@fontsource/open-sans": "^4.5.13",
     "@salt-ds/core": "1.72.0",
+    "@salt-ds/lab": "1.0.0-alpha.105",
     "@salt-ds/theme": "1.47.0",
     "@vuu-ui/vuu-datatable": "3.5.10",
     "@vuu-ui/vuu-icons": "3.5.10",

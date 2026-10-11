@@ -1,3 +1,4 @@
+import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import cx from "clsx";
 import {
   type CSSProperties,
@@ -97,49 +98,47 @@ export const SourceView = ({ className, nodeData }: SourceViewProps) => {
           {fileName(path)}
         </span>
         {sourceRange ? (
-          <div className="ShowcaseSegmented" role="group" aria-label="Show">
-            <button
-              aria-pressed={scope === "example"}
-              onClick={() => setScope("example")}
-              type="button"
-            >
-              This example
-            </button>
-            <button
-              aria-pressed={scope === "file"}
-              onClick={() => setScope("file")}
-              type="button"
-            >
-              Whole file
-            </button>
-          </div>
+          <ToggleButtonGroup
+            aria-label="Show"
+            onChange={(e) =>
+              setScope(e.currentTarget.value as "example" | "file")
+            }
+            value={scope}
+          >
+            <ToggleButton value="example">This example</ToggleButton>
+            <ToggleButton value="file">Whole file</ToggleButton>
+          </ToggleButtonGroup>
         ) : null}
         <div className={`${classBase}-actions`}>
-          <button
-            className="ShowcaseButton"
+          <Button
+            appearance="bordered"
             disabled={lines.length === 0}
             onClick={copy}
-            type="button"
           >
             <ChromeIcon name={copied ? "check" : "copy"} />
             {copied ? "Copied" : "Copy"}
-          </button>
+          </Button>
           {links.github ? (
-            <a
-              className="ShowcaseButton"
-              href={links.github}
-              rel="noopener noreferrer"
-              target="_blank"
+            <Button
+              appearance="bordered"
+              onClick={() =>
+                window.open(links.github, "_blank", "noopener,noreferrer")
+              }
             >
               <ChromeIcon name="github" />
               GitHub
-            </a>
+            </Button>
           ) : null}
           {links.vscode ? (
-            <a className="ShowcaseButton" href={links.vscode}>
+            <Button
+              appearance="bordered"
+              onClick={() => {
+                if (links.vscode) location.href = links.vscode;
+              }}
+            >
               <ChromeIcon name="code" />
               VS Code
-            </a>
+            </Button>
           ) : null}
         </div>
       </div>

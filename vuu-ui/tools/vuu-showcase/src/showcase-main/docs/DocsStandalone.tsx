@@ -15,6 +15,7 @@ import { DocsPage } from "./DocsPage";
 
 import "../chrome/chrome.css";
 import "../chrome/controls.css";
+import "../chrome/salt-chrome.css";
 
 type NavNode = TreeSourceNode<NavNodeData>;
 
