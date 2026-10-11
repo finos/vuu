@@ -1,0 +1,99 @@
+.ShowcaseCompare {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.ShowcaseCompare-canvas {
+  background-color: var(--sc-bg);
+  background-image: radial-gradient(
+    var(--sc-border-strong) 1px,
+    transparent 1px
+  );
+  background-size: 16px 16px;
+  box-sizing: border-box;
+  /* a wide matrix scrolls within the canvas, it must not widen the page */
+  contain: inline-size;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--sc-space-6) var(--sc-space-8);
+}
+
+.ShowcaseCompare-grid {
+  align-items: start;
+  display: grid;
+  gap: var(--sc-space-4) var(--sc-space-6);
+  min-width: 0;
+}
+
+.ShowcaseCompare-colHeader {
+  color: var(--sc-text-1);
+  font: 600 13px/20px var(--sc-font);
+}
+
+.ShowcaseCompare-rowHeader {
+  align-self: center;
+  color: var(--sc-text-2);
+  font: 500 13px/20px var(--sc-font);
+
+  > span {
+    display: block;
+    transform: rotate(180deg);
+    writing-mode: vertical-rl;
+  }
+}
+
+.ShowcaseCompare-cell {
+  min-width: 0;
+  position: relative;
+
+  &:hover > .ShowcaseCompare-promote,
+  > .ShowcaseCompare-promote:focus-visible {
+    opacity: 1;
+  }
+}
+
+.ShowcaseCompare-frame {
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-lg);
+  box-shadow: var(--sc-shadow-2);
+  min-height: 80px;
+  overflow: hidden;
+  position: relative;
+
+  > .ShowCaseIFrame {
+    border: none;
+    left: 0;
+    position: absolute;
+    top: 0;
+    transform-origin: 0 0;
+  }
+}
+
+.ShowcaseCompare-pending {
+  color: var(--sc-text-4);
+  font: 400 12px/1 var(--sc-font);
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.ShowcaseCompare-promote {
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  box-shadow: var(--sc-shadow-1);
+  opacity: 0;
+  position: absolute;
+  right: var(--sc-space-2);
+  top: var(--sc-space-2);
+  transition: opacity 120ms;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
