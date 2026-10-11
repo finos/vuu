@@ -110,32 +110,6 @@ body {
   }
 }
 
-.ShowcaseContentToolbar {
-  --saltToolbar-height: 30px;
-  --saltButton-height: 28px;
-  --saltButton-width: 28px;
-
-  [data-align="end"] {
-    margin-left: auto;
-  }
-  [data-align="end"] ~ [data-align="end"] {
-    margin-left: 0;
-  }
-}
-
-.ShowcaseContentToolbar > .Responsive-inner {
-  align-items: center;
-}
-
-.ShowcaseContentToolbar {
-  --saltToolbar-background: transparent;
-  --vuuToolbarProxy-height: 40px;
-  background: var(--sc-surface);
-  border-bottom: solid 1px var(--sc-border);
-  flex: 0 0 auto;
-  padding: 0 var(--sc-space-3);
-}
-
 .ShowcaseContent {
   background-color: var(--sc-surface);
   display: flex;
@@ -144,17 +118,6 @@ body {
   height: 100%;
   overflow: hidden;
   position: relative;
-}
-
-.ShowcaseContent-main {
-  flex: 1 1 auto;
-  min-height: 0;
-  position: relative;
-}
-
-.ShowCaseIFrame-container {
-  height: 100%;
-  width: 100%;
 }
 
 .ShowCaseIFrame {

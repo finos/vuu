@@ -1,0 +1,114 @@
+/* Shared controls for the showcase chrome, styled with --sc-* tokens only */
+
+.ShowcaseButton,
+.ShowcaseIconButton,
+.ShowcaseSegmented > button,
+.ShowcaseSelect-button {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--sc-radius-sm);
+  color: var(--sc-text-2);
+  cursor: pointer;
+  display: inline-flex;
+  font: 500 13px/1 var(--sc-font);
+  gap: 6px;
+  height: 30px;
+  justify-content: center;
+  padding: 0 var(--sc-space-2);
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--sc-surface-2);
+    color: var(--sc-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sc-focus);
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    color: var(--sc-text-4);
+    cursor: default;
+    pointer-events: none;
+  }
+}
+
+.ShowcaseButton {
+  background: var(--sc-surface);
+  border-color: var(--sc-border);
+  box-shadow: var(--sc-shadow-1);
+  color: var(--sc-text);
+  font-weight: 600;
+  padding: 0 var(--sc-space-3);
+}
+
+.ShowcaseButton-active {
+  color: var(--sc-accent-text);
+}
+
+.ShowcaseIconButton {
+  padding: 0;
+  width: 30px;
+
+  &[aria-pressed="true"] {
+    background: var(--sc-surface-3);
+    color: var(--sc-text);
+  }
+}
+
+.ShowcaseButton.ShowcaseIconButton {
+  width: 32px;
+}
+
+.ShowcaseSegmented {
+  background: var(--sc-surface-2);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+
+  > button {
+    color: var(--sc-text-3);
+    height: 26px;
+  }
+
+  > button[aria-pressed="true"],
+  > button[aria-checked="true"] {
+    background: var(--sc-surface);
+    box-shadow: var(--sc-shadow-1);
+    color: var(--sc-text);
+    font-weight: 600;
+  }
+
+  > .ShowcaseIconButton {
+    width: 30px;
+  }
+}
+
+.ShowcaseControlLabel {
+  color: var(--sc-text-3);
+  font: 600 11px/1 var(--sc-font);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ShowcaseStatusDot {
+  background: var(--sc-text-4);
+  border-radius: 50%;
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 8px;
+  width: 8px;
+
+  &[data-status="ok"] {
+    background: var(--sc-ok);
+    box-shadow: 0 0 0 3px var(--sc-ok-halo);
+  }
+  &[data-status="warn"] {
+    background: var(--sc-warn);
+  }
+}
