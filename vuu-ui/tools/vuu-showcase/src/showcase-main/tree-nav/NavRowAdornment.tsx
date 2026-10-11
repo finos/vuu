@@ -1,5 +1,5 @@
 import type { DataRow } from "@vuu-ui/vuu-table-types";
-import cx from "clsx";
+import { ToggleButton } from "@salt-ds/core";
 import type { MouseEvent } from "react";
 import { ChromeIcon } from "../chrome/ChromeIcon";
 import { favouritesStore, useFavourites } from "./nav-store";
@@ -20,22 +20,20 @@ const FavouriteToggle = ({ label, path }: { label: string; path: string }) => {
     favouritesStore.toggle(path);
   };
   return (
-    <button
+    <ToggleButton
       aria-label={
         isFavourite
           ? `Remove ${label} from favourites`
           : `Add ${label} to favourites`
       }
-      aria-pressed={isFavourite}
-      className={cx(`${classBase}-star`, {
-        [`${classBase}-star-on`]: isFavourite,
-      })}
+      className={`${classBase}-star`}
       onClick={handleClick}
+      selected={isFavourite}
       tabIndex={-1}
-      type="button"
+      value="favourite"
     >
       <ChromeIcon name="star" size={14} />
-    </button>
+    </ToggleButton>
   );
 };
 

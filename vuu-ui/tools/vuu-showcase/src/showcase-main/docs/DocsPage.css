@@ -59,6 +59,11 @@
   white-space: nowrap;
 }
 
+.ShowcaseDocsPage-openWindow {
+  --saltButton-padding: 0;
+  --saltButton-width: 28px;
+}
+
 .ShowcaseDocsPage-error {
   color: var(--sc-warn);
 }
@@ -475,22 +480,13 @@
 }
 
 .ShowcaseLivePreview-action {
-  align-items: center;
-  background: transparent;
-  border: 0;
-  border-radius: var(--sc-radius-sm);
-  color: var(--sc-text-2);
-  cursor: pointer;
-  display: inline-flex;
-  font: 500 12px/1 var(--sc-font);
+  font-size: 12px;
   gap: 4px;
-  height: 26px;
-  padding: 0 var(--sc-space-2);
+}
 
-  &:hover {
-    background: var(--sc-surface-3);
-    color: var(--sc-text);
-  }
+.ShowcaseLivePreview-open {
+  --saltButton-padding: 0;
+  --saltButton-width: 28px;
 }
 
 .ShowcaseLivePreview-preview {

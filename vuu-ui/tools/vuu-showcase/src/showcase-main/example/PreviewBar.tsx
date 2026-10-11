@@ -1,4 +1,5 @@
-import { type ReactNode } from "react";
+import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+import type { ReactNode, SyntheticEvent } from "react";
 import { ChromeIcon, type ChromeIconName } from "../chrome/ChromeIcon";
 import { useShowcaseContext } from "../ShowcaseProvider";
 import { ChromeSelect } from "./ChromeSelect";
@@ -52,6 +53,9 @@ export interface PreviewBarProps {
   viewportControls?: boolean;
 }
 
+const valueOf = <T extends string>(e: SyntheticEvent<HTMLButtonElement>) =>
+  e.currentTarget.value as T;
+
 const Separator = () => <span className={`${classBase}-separator`} />;
 
 const Group = ({ children, label }: { children: ReactNode; label: string }) => (
@@ -84,36 +88,39 @@ export const PreviewBar = ({
           options={themeOptions}
           value={preview.theme}
         />
-        <div className="ShowcaseSegmented" role="group" aria-label="Mode">
+        <ToggleButtonGroup
+          aria-label="Mode"
+          className={`${classBase}-segmented`}
+          onChange={(e) => setPreview({ mode: valueOf<ThemeMode>(e) })}
+          value={preview.mode}
+        >
           {modes.map(({ icon, label, value }) => (
-            <button
+            <ToggleButton
               aria-label={label}
-              aria-pressed={preview.mode === value}
-              className="ShowcaseIconButton"
+              className={`${classBase}-iconToggle`}
               key={value}
-              onClick={() => setPreview({ mode: value })}
               title={`${label} mode`}
-              type="button"
+              value={value}
             >
               <ChromeIcon name={icon} size={15} />
-            </button>
+            </ToggleButton>
           ))}
-        </div>
+        </ToggleButtonGroup>
       </Group>
       <Separator />
       <Group label="Density">
-        <div className="ShowcaseSegmented" role="group" aria-label="Density">
+        <ToggleButtonGroup
+          aria-label="Density"
+          className={`${classBase}-segmented`}
+          onChange={(e) => setPreview({ density: valueOf<Density>(e) })}
+          value={preview.density}
+        >
           {DENSITIES.map((density: Density) => (
-            <button
-              aria-pressed={preview.density === density}
-              key={density}
-              onClick={() => setPreview({ density })}
-              type="button"
-            >
+            <ToggleButton key={density} value={density}>
               {capitalise(density)}
-            </button>
+            </ToggleButton>
           ))}
-        </div>
+        </ToggleButtonGroup>
       </Group>
       {dataConsumer ? (
         <>
@@ -129,53 +136,55 @@ export const PreviewBar = ({
 
       <div className={`${classBase}-end`}>
         {viewportControls ? (
-          <div className="ShowcaseSegmented" role="group" aria-label="Viewport">
+          <ToggleButtonGroup
+            aria-label="Viewport"
+            className={`${classBase}-segmented`}
+            onChange={(e) => setPreview({ vp: valueOf<ViewportPreset>(e) })}
+            value={preview.vp}
+          >
             {VIEWPORT_PRESETS.map((vp) => (
-              <button
+              <ToggleButton
                 aria-label={viewports[vp].label}
-                aria-pressed={preview.vp === vp}
-                className="ShowcaseIconButton"
+                className={`${classBase}-iconToggle`}
                 key={vp}
-                onClick={() => setPreview({ vp })}
                 title={viewports[vp].label}
-                type="button"
+                value={vp}
               >
                 <ChromeIcon name={viewports[vp].icon} size={15} />
-              </button>
+              </ToggleButton>
             ))}
-          </div>
+          </ToggleButtonGroup>
         ) : null}
         {onToggleSourceDock ? (
-          <button
+          <ToggleButton
             aria-label="Show source"
-            aria-pressed={sourceDockOpen}
-            className="ShowcaseIconButton"
-            onClick={onToggleSourceDock}
+            className={`${classBase}-iconButton`}
+            onChange={onToggleSourceDock}
+            selected={sourceDockOpen ?? false}
             title="Show source below the preview"
-            type="button"
+            value="source"
           >
             <ChromeIcon name="source-panel" />
-          </button>
+          </ToggleButton>
         ) : null}
-        <button
+        <Button
+          appearance="transparent"
           aria-label="Reload"
-          className="ShowcaseIconButton"
+          className={`${classBase}-iconButton`}
           onClick={onReload}
           title="Reload"
-          type="button"
         >
           <ChromeIcon name="refresh" />
-        </button>
-        <a
+        </Button>
+        <Button
+          appearance="transparent"
           aria-label="Open in new window"
-          className="ShowcaseIconButton"
-          href={standaloneHref}
-          rel="noopener"
-          target="_blank"
+          className={`${classBase}-iconButton`}
+          onClick={() => window.open(standaloneHref, "_blank", "noopener")}
           title="Open in new window"
         >
           <ChromeIcon name="external" />
-        </a>
+        </Button>
       </div>
     </div>
   );

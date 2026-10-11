@@ -45,32 +45,18 @@
 }
 
 .ShowcaseHome-search {
-  align-items: center;
-  background: var(--sc-surface);
-  border: 1px solid var(--sc-border-strong);
-  border-radius: 12px;
+  --saltButton-borderRadius: 12px;
+  --saltButton-fontWeight: 400;
+  --saltButton-height: 46px;
+  --saltButton-justifyContent: flex-start;
+  --saltButton-padding: 14px;
+  --saltButton-text-color: var(--sc-text-3);
+  --saltButton-width: 100%;
   box-shadow: var(--sc-shadow-2);
-  box-sizing: border-box;
-  color: var(--sc-text-3);
   cursor: text;
-  display: flex;
-  font: inherit;
   font-size: 14.5px;
   gap: 10px;
-  height: 46px;
   max-width: 640px;
-  padding: 0 12px 0 15px;
-  text-align: left;
-  width: 100%;
-
-  &:hover {
-    border-color: var(--sc-text-4);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--sc-focus);
-    outline-offset: 2px;
-  }
 
   kbd {
     border: 1px solid var(--sc-border-strong);
@@ -132,24 +118,11 @@
 }
 
 .ShowcaseHome-headingAction {
-  align-items: center;
-  background: none;
-  border: none;
-  border-radius: var(--sc-radius-sm);
-  color: var(--sc-accent-text);
-  cursor: pointer;
-  display: inline-flex;
-  font: inherit;
+  --saltButton-padding: 4px;
   font-size: 13px;
-  font-weight: 560;
   gap: 4px;
   letter-spacing: 0;
-  padding: 2px 4px;
   text-transform: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
 
   &[aria-expanded="true"] .ShowcaseChromeIcon {
     transform: rotate(180deg);

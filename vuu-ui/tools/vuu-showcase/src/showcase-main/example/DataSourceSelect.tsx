@@ -58,7 +58,12 @@ export const DataSourceSelect = ({
       },
       {
         adornment: <StatusDot status={status} />,
-        description: VUU_SERVER_URL,
+        description:
+          status === "unreachable"
+            ? "Not reachable · start a Vuu server on localhost:8090"
+            : status === "checking"
+              ? "Checking server…"
+              : VUU_SERVER_URL,
         icon: <ChromeIcon name="plug" />,
         label: "Vuu server",
         value: "remote",
@@ -67,20 +72,9 @@ export const DataSourceSelect = ({
     [status],
   );
 
-  const footer =
-    status === "unreachable" ? (
-      <>
-        <StatusDot status={status} /> Server not reachable · start a Vuu server
-        on localhost:8090
-      </>
-    ) : status === "checking" ? (
-      "Checking Vuu server…"
-    ) : undefined;
-
   return (
     <ChromeSelect
       aria-label="Data source"
-      footer={footer}
       onChange={onChange}
       onOpenChange={(open) => open && probe()}
       options={options}

@@ -3,6 +3,7 @@ import cx from "clsx";
 import { useEffect, useMemo, useState } from "react";
 import { rampOf, readableOn, shortName, toHex } from "./model-utils";
 import { useStageStyle, useThemeBrowser } from "./ThemeBrowserContext";
+import { TileButton } from "./TileButton";
 
 const SCALE_LIMIT = 10;
 
@@ -163,7 +164,7 @@ export const FoundationsView = () => {
                   return (
                     <td key={s}>
                       {token ? (
-                        <button
+                        <TileButton
                           className="big-cell"
                           onClick={() => select(token.name, "tiers")}
                           style={{ background: value }}
@@ -175,7 +176,7 @@ export const FoundationsView = () => {
                           >
                             {toHex(value).replace("#", "")}
                           </span>
-                        </button>
+                        </TileButton>
                       ) : null}
                     </td>
                   );
@@ -234,7 +235,7 @@ export const FoundationsView = () => {
         })}
         <div className="weights">
           {weights.map((t) => (
-            <button
+            <TileButton
               className="weight"
               key={t.name}
               onClick={() => select(t.name, "tiers")}
@@ -243,7 +244,7 @@ export const FoundationsView = () => {
               <span style={{ fontWeight: resolve(t.name) }}>Ag</span>
               <span className="mono">{resolve(t.name)}</span>
               <span className="muted">{t.segments.at(-1)}</span>
-            </button>
+            </TileButton>
           ))}
         </div>
       </section>
@@ -255,7 +256,7 @@ export const FoundationsView = () => {
         </div>
         <div className="shadows stage" style={shadowStage}>
           {shadows.map((t) => (
-            <button
+            <TileButton
               className="shadow-card"
               key={t.name}
               onClick={() => select(t.name, "tiers")}
@@ -267,12 +268,12 @@ export const FoundationsView = () => {
               title={t.name}
             >
               <span>{t.segments.at(-1)}</span>
-            </button>
+            </TileButton>
           ))}
         </div>
         <div className="curves">
           {curves.map((t) => (
-            <button
+            <TileButton
               className="curve"
               key={t.name}
               onClick={() => select(t.name, "tiers")}
@@ -284,7 +285,7 @@ export const FoundationsView = () => {
               />
               <span className="mono">{t.segments.at(-1)}</span>
               <span className="muted">{resolve(t.name)}</span>
-            </button>
+            </TileButton>
           ))}
         </div>
       </section>

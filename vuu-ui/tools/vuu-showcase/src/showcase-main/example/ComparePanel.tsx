@@ -1,3 +1,4 @@
+import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { ChromeIcon } from "../chrome/ChromeIcon";
@@ -177,9 +178,10 @@ const CompareCellView = ({
           <span className={`${classBase}-pending`}>Waiting…</span>
         )}
       </div>
-      <button
+      <Button
+        appearance="bordered"
         aria-label={`Open ${label} in Preview`}
-        className={`${classBase}-promote ShowcaseIconButton`}
+        className={`${classBase}-promote`}
         onClick={() =>
           onPromote({
             density: cell.state.density,
@@ -188,10 +190,9 @@ const CompareCellView = ({
           })
         }
         title="Open in Preview"
-        type="button"
       >
         <ChromeIcon name="arrow-right" size={14} />
-      </button>
+      </Button>
     </div>
   );
 };
@@ -296,19 +297,22 @@ export const ComparePanel = ({ onPromote, title }: ComparePanelProps) => {
           />
         </div>
         <div className="ShowcasePreviewBar-end">
-          <div className="ShowcaseSegmented" role="group" aria-label="Size">
+          <ToggleButtonGroup
+            aria-label="Size"
+            onChange={(e) =>
+              setLayout({
+                ...layout,
+                size: e.currentTarget.value as CompareSize,
+              })
+            }
+            value={layout.size}
+          >
             {sizes.map(({ label, title, value }) => (
-              <button
-                aria-pressed={layout.size === value}
-                key={value}
-                onClick={() => setLayout({ ...layout, size: value })}
-                title={title}
-                type="button"
-              >
+              <ToggleButton key={value} title={title} value={value}>
                 {label}
-              </button>
+              </ToggleButton>
             ))}
-          </div>
+          </ToggleButtonGroup>
         </div>
       </div>
       <div className={`${classBase}-canvas`}>
