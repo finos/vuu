@@ -14,6 +14,7 @@ import {
   resolveSourcePath,
   SOURCE_URL_PREFIX,
 } from "./highlight-source";
+import { buildDocsSearchIndex, DOCS_INDEX_URL } from "./docs-search-index";
 
 const pathToExhibits = "./src/examples";
 
@@ -102,6 +103,26 @@ function exampleSource(): PluginOption {
   };
 }
 
+/**
+ * Serves the docs search index, built on request so it reflects the current
+ * mdx content. The prod build writes it up front.
+ */
+function docsSearchIndex(): PluginOption {
+  return {
+    name: "vuu-showcase-docs-search-index",
+    configureServer(server) {
+      server.middlewares.use(DOCS_INDEX_URL, (_req, res, next) => {
+        try {
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify(buildDocsSearchIndex(treeSourceJson, cwd)));
+        } catch (err) {
+          next(err);
+        }
+      });
+    },
+  };
+}
+
 // 2) Create the .showcase working directory
 if (!fs.existsSync(".showcase/dev")) {
   createFolder(".showcase/dev");
@@ -146,7 +167,12 @@ const server = await createServer({
     include: ["@salt-ds/core", "@salt-ds/lab", "@salt-ds/icons"],
   },
   root: __dirname,
-  plugins: [cssInline(), exampleSource(), mdx(mdxOptions)],
+  plugins: [
+    cssInline(),
+    docsSearchIndex(),
+    exampleSource(),
+    mdx(mdxOptions),
+  ],
   server: {
     proxy: {
       "/api/authn": {

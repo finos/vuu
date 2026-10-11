@@ -6,6 +6,7 @@ import { parseArgs } from "util";
 import { buildFileList } from "./build-file-list";
 import { mdxOptions } from "./mdx-options";
 import { treeSourceFromFileSystem } from "./treeSourceFromFileSystem";
+import { DOCS_INDEX_URL, writeDocsSearchIndex } from "./docs-search-index";
 import { writeHighlightedSources } from "./highlight-source";
 import { createFolder, writeFile } from "./utils";
 
@@ -213,6 +214,13 @@ async function main() {
       outDir,
     );
     console.log(`highlighted ${sourceCount} example sources`);
+    const docCount = writeDocsSearchIndex(
+      treeSourceJson,
+      showcaseDir,
+      outDir,
+      DOCS_INDEX_URL,
+    );
+    console.log(`indexed ${docCount} doc sections for search`);
   } catch (e) {
     console.error(e);
     process.exit(1);
