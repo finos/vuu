@@ -31,7 +31,7 @@ _DataEditing_ examples in the showcase.
 | Layer | Use it when | APIs |
 | ----- | ----------- | ---- |
 | Pattern components (`@vuu-ui/vuu-table-extras`) | A standard editing UI fits. | `EditableTable`, `TableWithEditForm`, `useBulkEditDialog` |
-| Composable hooks and components (this package) | You need your own layout or behaviour. | `useEditableTable`, `useEditableColumns`, `useEditForm`, `EditForm`, `CreateRowForm`, `EditButtons`, `useConfirmDiscard`, `useEditSessionState`, `useEntityDraft`, `useAsyncValidation`, `useLookupOptions` |
+| Composable hooks and components (this package) | You need your own layout or behaviour. | `useEditableTable`, `useEditableColumns`, `useEditForm`, `EditForm`, `CreateRowForm`, `EditButtons`, `useConfirmDiscard`, `useEditSessionState`, `useLookupOptions` |
 | Primitives (this package) | You are building a new pattern. | `EditSession`, `DirectEditSession`, `DataEditingProvider`, `EditModeProvider` |
 
 The rest of this document describes the primitives and how they work.

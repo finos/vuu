@@ -9,21 +9,19 @@ never see half-finished changes.
   an edit form in a few lines of code.
 - [Concepts and lifecycle](./02-Concepts.mdx): edit sessions, session tables, edit
   state and the lifecycle.
-- [Choosing an editing model](./03-ChoosingAModel.mdx): staged session, direct
-  edit, or a draft form saved with an RPC.
+- [Choosing an editing model](./03-ChoosingAModel.mdx): staged session or direct
+  edit.
 - [Editable tables](./04-EditableTables.mdx): `EditableTable`, editable columns,
   insert, delete, undo and cell editors.
 - [Edit forms](./05-EditForms.mdx): `EditForm`, `CreateRowForm`,
   `TableWithEditForm`, custom fields and validation.
-- [Draft forms](./06-DraftForms.mdx): forms for things that are not table rows,
-  with `useEntityDraft` and `useAsyncValidation`.
-- [Lookups](./07-Lookups.mdx): dropdowns filled from a Vuu table.
-- [Bulk editing](./08-BulkEditing.mdx): edit many rows at once in a dialog.
-- [Divergent edit tables](./09-DivergentEditTables.mdx): when the edit table has a
+- [Lookups](./06-Lookups.mdx): dropdowns filled from a Vuu table.
+- [Bulk editing](./07-BulkEditing.mdx): edit many rows at once in a dialog.
+- [Divergent edit tables](./08-DivergentEditTables.mdx): when the edit table has a
   different schema from the view table.
-- [Error handling](./10-ErrorHandling.mdx): rejected edits, stale saves and
+- [Error handling](./09-ErrorHandling.mdx): rejected edits, stale saves and
   `onError`.
-- [Testing](./11-Testing.mdx): testing editing code without a server.
+- [Testing](./10-Testing.mdx): testing editing code without a server.
 
 ## Layers
 
@@ -33,7 +31,7 @@ when you need more control.
 | Layer | What you get | Exports |
 | ----- | ------------ | ------- |
 | Pattern components | A complete editing UI, configured with props | `EditableTable`, `TableWithEditForm`, `useBulkEditDialog` (`@vuu-ui/vuu-table-extras`); `EditForm`, `CreateRowForm` (`@vuu-ui/vuu-data-editing`) |
-| Composable hooks | The state and handlers behind the patterns, for your own layout | `useEditableTable`, `useEditableColumns`, `useEditForm`, `useEditSessionState`, `useCustomEditField`, `useConfirmDiscard`, `useLookupOptions`, `useEntityDraft`, `useAsyncValidation` |
+| Composable hooks | The state and handlers behind the patterns, for your own layout | `useEditableTable`, `useEditableColumns`, `useEditForm`, `useEditSessionState`, `useCustomEditField`, `useConfirmDiscard`, `useLookupOptions` |
 | Primitives | The building blocks | `EditSession`, `DirectEditSession`, `DataEditingProvider`, `EditModeProvider`, `EditField`, `EditButtons`, cell renderers |
 
 Every pattern described here has a working example in the showcase, under
