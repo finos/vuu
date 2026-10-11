@@ -13,13 +13,13 @@ import type { RpcResult } from "@vuu-ui/vuu-protocol-types";
 import { Table } from "@vuu-ui/vuu-table";
 import {
   TableWithEditFormPanel,
+  TableWithEditFormPanelHeader,
   TableEditorButtons,
   TableEditorCreateForm,
   TableEditorForm,
   TableEditorModeToggle,
   TableEditorNewButton,
   TableEditorPlaceholder,
-  TableEditorPanelCloseButton,
   TableEditorToolbar,
   TableWithEditFormTablePanel,
   TableWithEditForm,
@@ -34,7 +34,6 @@ import {
   FormFieldLabel,
   Input,
   SidePanelContent,
-  SidePanelHeader,
   SidePanelTitle,
   Tab,
   TabBar,
@@ -136,8 +135,8 @@ export const TableWithFormAlwaysVisible = () => (
 const InstrumentPanelHeader = () => {
   const { mode, selectedRow } = useTableEditor();
   return (
-    <SidePanelHeader>
-      <div style={{ flex: 1 }}>
+    <TableWithEditFormPanelHeader>
+      <div>
         <SidePanelTitle>
           {mode === "create"
             ? "New instrument"
@@ -147,8 +146,7 @@ const InstrumentPanelHeader = () => {
           <Text color="secondary">{selectedRow.ric}</Text>
         ) : null}
       </div>
-      <TableEditorPanelCloseButton />
-    </SidePanelHeader>
+    </TableWithEditFormPanelHeader>
   );
 };
 

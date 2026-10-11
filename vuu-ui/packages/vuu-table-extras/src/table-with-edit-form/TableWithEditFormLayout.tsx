@@ -1,7 +1,16 @@
-import { SidePanel, type SidePanelProps } from "@salt-ds/core";
+import {
+  SidePanel,
+  SidePanelHeader,
+  type SidePanelHeaderProps,
+  type SidePanelProps,
+} from "@salt-ds/core";
 import cx from "clsx";
 import { forwardRef, type HTMLAttributes } from "react";
-import { TableEditorTable, type TableEditorTableProps } from "../table-editor";
+import {
+  TableEditorPanelCloseButton,
+  TableEditorTable,
+  type TableEditorTableProps,
+} from "../table-editor";
 
 const classBase = "vuuTableWithEditForm";
 
@@ -57,5 +66,38 @@ export const TableWithEditFormPanel = forwardRef<
       position="right"
       ref={forwardedRef}
     />
+  );
+});
+
+export interface TableWithEditFormPanelHeaderProps
+  extends SidePanelHeaderProps {
+  /**
+   * Render a close button after the children. It is hidden while the panel
+   * can't be closed, i.e. while editing. Defaults to true.
+   */
+  canClose?: boolean;
+}
+
+/**
+ * The Salt `SidePanelHeader` of a `TableWithEditFormPanel`. Its first child
+ * fills the available width; a close button follows unless `canClose` is
+ * false.
+ */
+export const TableWithEditFormPanelHeader = forwardRef<
+  HTMLDivElement,
+  TableWithEditFormPanelHeaderProps
+>(function TableWithEditFormPanelHeader(
+  { canClose = true, children, className, ...props },
+  forwardedRef,
+) {
+  return (
+    <SidePanelHeader
+      {...props}
+      className={cx(`${classBase}-panelHeader`, className)}
+      ref={forwardedRef}
+    >
+      {children}
+      {canClose ? <TableEditorPanelCloseButton /> : null}
+    </SidePanelHeader>
   );
 });

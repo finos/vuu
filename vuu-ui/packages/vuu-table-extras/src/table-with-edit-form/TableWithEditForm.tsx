@@ -1,8 +1,4 @@
-import {
-  SidePanelContent,
-  SidePanelHeader,
-  SidePanelTitle,
-} from "@salt-ds/core";
+import { SidePanelContent, SidePanelTitle } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import type {
@@ -21,7 +17,6 @@ import {
   TableEditorForm,
   type TableEditorMode,
   TableEditorNewButton,
-  TableEditorPanelCloseButton,
   type TableEditorPanelVisibility,
   TableEditorPlaceholder,
   TableEditorToolbar,
@@ -32,6 +27,7 @@ import { TableEditorProvider } from "../table-editor/TableEditorProvider";
 
 import {
   TableWithEditFormPanel,
+  TableWithEditFormPanelHeader,
   TableWithEditFormTablePanel,
   TableWithEditFormTable,
 } from "./TableWithEditFormLayout";
@@ -178,10 +174,9 @@ const DefaultContent = ({
       className={panelClassName}
       data-testid={`edit-panel${testId}`}
     >
-      <SidePanelHeader className={`${classBase}-panelHeader`}>
+      <TableWithEditFormPanelHeader>
         <PanelTitle createTitle={createTitle} formTitle={formTitle} />
-        <TableEditorPanelCloseButton />
-      </SidePanelHeader>
+      </TableWithEditFormPanelHeader>
       <SidePanelContent className={`${classBase}-detail`}>
         <TableEditorPlaceholder>{placeholder}</TableEditorPlaceholder>
         <TableEditorForm
