@@ -10,6 +10,10 @@ import flexboxCss from "./Flexbox.css";
 
 const classBase = "hwFlexbox";
 
+/**
+ * @deprecated vuu-layout is deprecated. For two panes separated by a
+ * draggable splitter, use `SplitPane` from `@vuu-ui/vuu-ui-controls`.
+ */
 const Flexbox = forwardRef(function Flexbox(
   props: FlexboxProps,
   ref: ForwardedRef<HTMLDivElement>,

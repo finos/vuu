@@ -26,6 +26,7 @@ export * from "./price-ticker";
 export { Prompt, type PromptProps } from "./prompt/Prompt";
 export { SortableList, SortableOption } from "./sortable-list/SortableList";
 export * from "./split-button";
+export * from "./split-pane";
 export * from "./table-search";
 export * from "./tabs-next";
 export * from "./tabstrip";
