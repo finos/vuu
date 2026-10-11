@@ -169,7 +169,7 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
       groupBy: this._configWithVisualLink.groupBy,
       range: this.range,
       sort: this.sort,
-      tableSchema: treeSchema(this.columnDescriptors),
+      tableSchema: this.tableSchema,
     });
 
     this.clientCallback({
@@ -439,6 +439,10 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
     }
     this.computeVisibleRows();
     this.sendRowsToClient();
+  }
+
+  get tableSchema() {
+    return treeSchema(this.columnDescriptors);
   }
 
   get status() {
