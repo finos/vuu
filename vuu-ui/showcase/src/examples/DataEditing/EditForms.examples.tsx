@@ -216,7 +216,7 @@ const TableWithCustomFormTemplate = () => {
         <InstrumentPanelHeader />
         <SidePanelContent>
           <TableEditorPlaceholder>Select an instrument</TableEditorPlaceholder>
-          <TableEditorForm showButtons={false} validate={validateInstrument}>
+          <TableEditorForm validate={validateInstrument}>
             <InstrumentFormContent />
           </TableEditorForm>
           <TableEditorCreateForm

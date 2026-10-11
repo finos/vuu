@@ -80,7 +80,7 @@ export const UsersPage = () => {
           <TableEditorPanelCloseButton />
         </SidePanelHeader>
         <SidePanelContent>
-          <TableEditorForm showButtons={false}>
+          <TableEditorForm>
             <UserEditForm />
           </TableEditorForm>
         </SidePanelContent>

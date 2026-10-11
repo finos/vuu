@@ -167,7 +167,7 @@ export const DefaultUserEditForm = () => {
           </div>
           <div style={{ flex: "0 0 480px" }}>
             <TableEditorPlaceholder>Select a user</TableEditorPlaceholder>
-            <TableEditorForm showButtons={false}>
+            <TableEditorForm>
               <UserEditForm />
             </TableEditorForm>
           </div>

@@ -1,9 +1,9 @@
 import { usePortalModuleRegistry } from "@vuu-ui/core/portal";
-import type { EditSession } from "@vuu-ui/vuu-data-editing";
+import { useCustomEditField } from "@vuu-ui/vuu-data-editing";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { errorMessage } from "../../data/admin-contract";
 import {
   loadUserModuleAccess,
@@ -27,19 +27,22 @@ const permissionDescriptor = ({
   name: groupId,
 });
 
-export const useUserEditForm = (
-  dataRow: DataRow | undefined,
-  dataSource: DataSource,
-  editSession: Pick<EditSession, "commit"> | undefined,
-) => {
+const equalPermissions = (a: ModulePermissions, b: ModulePermissions) =>
+  a.equals(b);
+const serializePermissions = (permissions: ModulePermissions) =>
+  JSON.stringify(permissions.toJSON());
+
+/**
+ * Loads the user's module permissions and edits them as a custom field of the
+ * enclosing form's edit session, so changes are saved, or discarded, with the
+ * form's other fields.
+ */
+export const useUserEditForm = (dataRow: DataRow, dataSource: DataSource) => {
   const { remoteModules } = usePortalModuleRegistry();
   const { showNotification } = useNotifications();
   const [moduleAccess, setModuleAccess] = useState<UserModuleAccess>();
-  const [modulePermissions, setModulePermissions] =
+  const [originalModulePermissions, setOriginalModulePermissions] =
     useState<ModulePermissions>();
-  const originalModulePermissionsRef = useRef<ModulePermissions | undefined>(
-    undefined,
-  );
   const notifyFailure = useCallback(
     (header: string, cause: unknown) => {
       showNotification({
@@ -53,7 +56,7 @@ export const useUserEditForm = (
   );
 
   useEffect(() => {
-    const userId = dataRow?.user_id;
+    const userId = dataRow.user_id;
     if (typeof userId !== "string") {
       console.error("User editor cannot load module access without a user ID.");
       return;
@@ -74,8 +77,7 @@ export const useUserEditForm = (
             })),
           );
           setModuleAccess(access);
-          setModulePermissions(original);
-          originalModulePermissionsRef.current = original;
+          setOriginalModulePermissions(original);
         }
       })
       .catch((cause: unknown) => {
@@ -88,7 +90,7 @@ export const useUserEditForm = (
     return () => {
       active = false;
     };
-  }, [dataRow, dataRow?.user_id, dataSource, notifyFailure, remoteModules]);
+  }, [dataRow, dataSource, notifyFailure, remoteModules]);
 
   const allModules = useMemo<ModulePickerModuleDescriptor[]>(
     () =>
@@ -111,62 +113,34 @@ export const useUserEditForm = (
     [moduleAccess, remoteModules],
   );
 
+  const { setValue, value: modulePermissions } =
+    useCustomEditField<ModulePermissions>({
+      equals: equalPermissions,
+      name: MODULE_PERMISSIONS_COLUMN,
+      onError: (cause) =>
+        notifyFailure("Unable to update user permissions", cause),
+      originalValue: originalModulePermissions,
+      rowKey: dataRow.key,
+      serialize: serializePermissions,
+    });
+
   const handleSelectedModulesChange = useCallback<SelectedModulesChangeHandler>(
     (newSelectedModules) => {
-      const originalModulePermissions = originalModulePermissionsRef.current;
-      if (
-        !dataRow ||
-        !editSession ||
-        !modulePermissions ||
-        !originalModulePermissions
-      ) {
-        return;
+      if (modulePermissions) {
+        void setValue(
+          modulePermissions.withSelectedModules(
+            newSelectedModules,
+            allModules.map(({ name }) => name),
+          ),
+        );
       }
-      const updatedPermissions = modulePermissions.withSelectedModules(
-        newSelectedModules,
-        allModules.map(({ name }) => name),
-      );
-      const nextPermissions = updatedPermissions.equals(
-        originalModulePermissions,
-      )
-        ? originalModulePermissions
-        : updatedPermissions;
-
-      void editSession
-        .commit(
-          dataRow.key,
-          MODULE_PERMISSIONS_COLUMN,
-          originalModulePermissions,
-          nextPermissions,
-          true,
-          {
-            dataSourceValue: JSON.stringify(nextPermissions.toJSON()),
-          },
-        )
-        .then(() => {
-          setModulePermissions(nextPermissions);
-        })
-        .catch((cause: unknown) => {
-          console.error(
-            "User editor failed to update module permissions:",
-            cause,
-          );
-          notifyFailure("Unable to update user permissions", cause);
-        });
     },
-    [allModules, dataRow, editSession, modulePermissions, notifyFailure],
+    [allModules, modulePermissions, setValue],
   );
-
-  const resetModulePermissions = useCallback(() => {
-    const originalModulePermissions = originalModulePermissionsRef.current;
-    if (!originalModulePermissions) return;
-    setModulePermissions(originalModulePermissions);
-  }, []);
 
   return {
     allModules,
     modulePermissions,
     onSelectedModulesChange: handleSelectedModulesChange,
-    resetModulePermissions,
   };
 };
