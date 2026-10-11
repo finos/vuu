@@ -14,7 +14,8 @@
     "packages/**",
     "sample-apps/**",
     "tools/vite-plugin-inline-css",
-    "tools/vuu-showcase"
+    "tools/vuu-showcase",
+    "tools/vuu-theme-model"
   ],
   "scripts": {
     "lint": "biome lint",
@@ -36,9 +37,9 @@
     "launch:demo:electron": "cd tools/electron && node ./node_modules/.bin/electron .",
     "deploy:websocket-test": "node ./tools/deploy-websocket-test.mjs",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
-    "showcase": "cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-dev.ts",
-    "showcase:build": "npm run build:worker && cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-build.ts --build-only",
-    "showcase:prod": "npm run build:worker && cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-build.ts",
+    "showcase": "npm run build:theme-model && cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-dev.ts",
+    "showcase:build": "npm run build:worker && npm run build:theme-model && cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-build.ts --build-only",
+    "showcase:prod": "npm run build:worker && npm run build:theme-model && cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-build.ts",
     "playwright:gallery": "rsbuild dev --config playwright/gallery/rsbuild.config.ts",
     "playwright:gallery:build": "rsbuild build --config playwright/gallery/rsbuild.config.ts",
     "playwright:gallery:serve": "serve --single --listen 3100 playwright/gallery/dist",
@@ -51,7 +52,8 @@
     "pub:debug": "node ./scripts/publish.ts --debug",
     "typecheck": "tsc --noEmit --project tsconfig-typecheck.json",
     "patch-package": "patch-package",
-    "postinstall": "npm run patch-package"
+    "postinstall": "npm run patch-package",
+    "build:theme-model": "npm run build --workspace=@vuu-ui/vuu-theme-model"
   },
   "dependencies": {
     "@dnd-kit/react": "^0.1.21",

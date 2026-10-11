@@ -1,0 +1,25 @@
+{
+  "name": "@vuu-ui/vuu-theme-model",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Build-time parser producing a navigable model of a Salt theme (foundations, palette, characteristics)",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "bin": {
+    "vuu-theme-model": "src/cli.ts"
+  },
+  "scripts": {
+    "build:vuu-theme": "node src/cli.ts --entry ../../packages/vuu-theme/css/theme-next.css --name vuu-theme --module ../vuu-showcase/src/theme-browser/generated/vuu-theme.js",
+    "build:salt-theme": "node src/cli.ts --entry ../../node_modules/@salt-ds/theme/css/theme-next.css --fallback ../../node_modules/@salt-ds/theme/css/theme.css --name salt-theme --module ../vuu-showcase/src/theme-browser/generated/salt-theme.js",
+    "build": "npm run build:vuu-theme && npm run build:salt-theme",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/css-tree": "^3.2.0"
+  },
+  "dependencies": {
+    "css-tree": "^3.2.1"
+  }
+}

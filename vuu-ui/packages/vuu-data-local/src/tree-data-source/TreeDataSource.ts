@@ -36,18 +36,12 @@ import { IconProvider } from "./IconProvider";
 import { parseFilter } from "@vuu-ui/vuu-filter-parser";
 import { FilterClause } from "@vuu-ui/vuu-filter-types";
 
-const TREE_SCHEMA: TableSchema = {
-  columns: [
-    { name: "nodeData", serverDataType: "string" },
-    { name: "Level 1", serverDataType: "string" },
-    { name: "Level 2", serverDataType: "string" },
-    { name: "Level 3", serverDataType: "string" },
-    { name: "Level 4", serverDataType: "string" },
-    { name: "Level 5", serverDataType: "string" },
-  ],
+// The number of Level columns depends on the depth of the tree
+const treeSchema = (columns: ColumnDescriptor[]): TableSchema => ({
+  columns: columns.map(({ name }) => ({ name, serverDataType: "string" })),
   key: "",
   table: { module: "", table: "" },
-};
+});
 
 type VisibleRowIndex = Record<number, number>;
 
@@ -96,6 +90,8 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
       data,
       this.#iconProvider,
     );
+
+    this.expandedRows = getInitiallyExpandedKeys(data);
 
     console.table(this.#data);
 
@@ -160,7 +156,7 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
       groupBy: this._configWithVisualLink.groupBy,
       range: this.range,
       sort: this.sort,
-      tableSchema: TREE_SCHEMA,
+      tableSchema: treeSchema(this.columnDescriptors),
     });
 
     this.clientCallback({
@@ -480,6 +476,24 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
     return this.visibleRows[rowIdx];
   }
 }
+
+// keys must match those assigned by treeToDataSourceRows
+const getInitiallyExpandedKeys = (
+  treeSourceNodes: TreeSourceNode[],
+  keyBase = "$root",
+  expandedKeys = new Set<string>(),
+) => {
+  for (const { childNodes, expanded, label } of treeSourceNodes) {
+    const key = `${keyBase}|${label}`;
+    if (expanded) {
+      expandedKeys.add(key);
+    }
+    if (childNodes) {
+      getInitiallyExpandedKeys(childNodes, key, expandedKeys);
+    }
+  }
+  return expandedKeys;
+};
 
 function getVisibleRows(
   rows: DataSourceRow[],
