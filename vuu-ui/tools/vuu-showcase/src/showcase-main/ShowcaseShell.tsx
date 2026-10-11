@@ -33,6 +33,7 @@ import { focusNavFilter, ShowcaseNav } from "./tree-nav/ShowcaseNav";
 
 import "./chrome/chrome.css";
 import "./chrome/controls.css";
+import "./chrome/salt-chrome.css";
 import "./ShowcaseShell.css";
 
 export interface AppProps {

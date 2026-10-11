@@ -1,4 +1,4 @@
-import cx from "clsx";
+import { Button, Input, ToggleButton } from "@salt-ds/core";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import { ChromeIcon, type ChromeIconName } from "../chrome/ChromeIcon";
 import type { NavFilterChip, NavFilterState } from "./nav-filter";
@@ -44,42 +44,41 @@ export const NavFilter = ({
 
   return (
     <div className={classBase}>
-      <div className={`${classBase}-field`}>
-        <ChromeIcon name="filter" />
-        <input
-          aria-label={placeholder}
-          className={`${classBase}-input`}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          spellCheck={false}
-          type="text"
-          value={filter.query}
-        />
-        {filter.query ? (
-          <button
-            aria-label="Clear filter"
-            className={`${classBase}-clear`}
-            onClick={() => onChange({ ...filter, query: "" })}
-            type="button"
-          >
-            <ChromeIcon name="close" size={14} />
-          </button>
-        ) : (
-          <kbd aria-hidden>/</kbd>
-        )}
-      </div>
+      <Input
+        className={`${classBase}-field`}
+        endAdornment={
+          filter.query ? (
+            <Button
+              appearance="transparent"
+              aria-label="Clear filter"
+              className={`${classBase}-clear`}
+              onClick={() => onChange({ ...filter, query: "" })}
+            >
+              <ChromeIcon name="close" size={14} />
+            </Button>
+          ) : (
+            <kbd aria-hidden>/</kbd>
+          )
+        }
+        inputProps={{
+          "aria-label": placeholder,
+          onKeyDown: handleKeyDown,
+          spellCheck: false,
+        }}
+        onChange={handleChange}
+        placeholder={placeholder}
+        startAdornment={<ChromeIcon name="filter" />}
+        value={filter.query}
+      />
       {showChips ? (
         <div className={`${classBase}-chips`} role="group" aria-label="Show">
           {chips.map(({ chip, icon, label }) => (
-            <button
-              aria-pressed={filter.chip === chip}
-              className={cx(`${classBase}-chip`, {
-                [`${classBase}-chip-on`]: filter.chip === chip,
-              })}
+            <ToggleButton
+              className={`${classBase}-chip`}
               key={chip}
-              onClick={() => toggleChip(chip)}
-              type="button"
+              onChange={() => toggleChip(chip)}
+              selected={filter.chip === chip}
+              value={chip}
             >
               {icon ? (
                 <ChromeIcon name={icon} size={12} />
@@ -87,7 +86,7 @@ export const NavFilter = ({
                 <span className="ShowcaseLiveDot" />
               )}
               {label}
-            </button>
+            </ToggleButton>
           ))}
         </div>
       ) : null}

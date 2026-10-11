@@ -16,6 +16,7 @@ import {
 import { TokenDetail } from "./TokenDetail";
 import { TokenPreview } from "./TokenPreview";
 import { useThemeBrowser } from "./ThemeBrowserContext";
+import { TileButton } from "./TileButton";
 
 /** [referenced token, referencing token, kind] */
 type Edge = [string, string, "chain" | "fan"];
@@ -155,9 +156,12 @@ const GroupSection = ({
             <TokenRow key={t.name} token={t} lineage={lineage.has(t.name)} />
           ))}
           {restShown.length < rest.length ? (
-            <button className="more-row" onClick={() => onShowAll(key, true)}>
+            <TileButton
+              className="more-row"
+              onClick={() => onShowAll(key, true)}
+            >
               + {rest.length - restShown.length} more in {group.name}
-            </button>
+            </TileButton>
           ) : null}
         </div>
       );
@@ -169,13 +173,19 @@ const GroupSection = ({
             <TokenRow key={t.name} token={t} lineage={lineage.has(t.name)} />
           ))}
           {shown.length < tokens.length ? (
-            <button className="more-row" onClick={() => onShowAll(key, true)}>
+            <TileButton
+              className="more-row"
+              onClick={() => onShowAll(key, true)}
+            >
               + {tokens.length - shown.length} more in {group.name}
-            </button>
+            </TileButton>
           ) : showAll && onPath.length > 0 && onPath.length < tokens.length ? (
-            <button className="more-row" onClick={() => onShowAll(key, false)}>
+            <TileButton
+              className="more-row"
+              onClick={() => onShowAll(key, false)}
+            >
               − show path only
-            </button>
+            </TileButton>
           ) : null}
         </div>
       );
@@ -191,7 +201,7 @@ const GroupSection = ({
       className={cx("group", { expanded })}
       data-members={group.tokens.join(" ")}
     >
-      <button
+      <TileButton
         aria-expanded={expanded}
         className="group-header"
         onClick={() => onToggle(key)}
@@ -207,7 +217,7 @@ const GroupSection = ({
           <span className="chip accent">{onPath.length} in path</span>
         ) : null}
         <span className="group-count">{tokens.length}</span>
-      </button>
+      </TileButton>
       {colors.length ? (
         <div className="mini-strip">
           {colors.map((t) => (

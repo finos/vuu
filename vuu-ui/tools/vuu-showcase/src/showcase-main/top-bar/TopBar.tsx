@@ -1,3 +1,4 @@
+import { Button } from "@salt-ds/core";
 import cx from "clsx";
 import type { MouseEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -33,7 +34,8 @@ export interface TopBarProps {
 }
 
 const isMac =
-  typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+  typeof navigator !== "undefined" &&
+  /Mac|iPhone|iPad/.test(navigator.platform);
 
 export const TopBar = ({
   chromeMode,
@@ -103,10 +105,10 @@ export const TopBar = ({
         ))}
       </nav>
 
-      <button
+      <Button
+        appearance="bordered"
         className={`${classBase}-search`}
         onClick={onSearch}
-        type="button"
       >
         <ChromeIcon name="search" />
         <span className={`${classBase}-searchLabel`}>
@@ -114,18 +116,18 @@ export const TopBar = ({
         </span>
         <kbd>{isMac ? "⌘" : "Ctrl"}</kbd>
         <kbd>K</kbd>
-      </button>
+      </Button>
 
-      <button
+      <Button
+        appearance="transparent"
         aria-label={`Switch to ${nextMode} appearance`}
         className={`${classBase}-iconButton`}
         data-chrome-mode-toggle
         onClick={onToggleChromeMode}
         title={`Switch to ${nextMode} appearance`}
-        type="button"
       >
         <ChromeIcon name={chromeMode === "light" ? "sun" : "moon"} />
-      </button>
+      </Button>
       <a
         aria-label="Vuu on GitHub"
         className={`${classBase}-iconButton`}

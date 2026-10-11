@@ -28,9 +28,16 @@
   gap: var(--sc-space-1);
   margin-left: auto;
 
-  > .ShowcaseSegmented {
+  > .ShowcasePreviewBar-segmented {
     margin-right: var(--sc-space-2);
   }
+}
+
+.ShowcasePreviewBar-iconButton,
+.ShowcasePreviewBar-iconToggle {
+  --saltButton-padding: 0;
+  padding: 0;
+  width: 28px;
 }
 
 .ShowcasePreviewBar-swatch {

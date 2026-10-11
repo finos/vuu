@@ -1,30 +1,18 @@
-.ShowcaseCommandPalette {
+.ShowcaseCommandPalette.saltDialog {
   background: var(--sc-surface);
   border: 1px solid var(--sc-border);
   border-radius: var(--sc-radius-lg);
+  bottom: auto;
   box-shadow: var(--sc-shadow-3);
   color: var(--sc-text);
   font-family: var(--sc-font);
   font-size: 13px;
+  height: auto;
   margin: 12vh auto auto;
   max-height: min(640px, 76vh);
   overflow: hidden;
   padding: 0;
   width: min(720px, calc(100vw - 32px));
-
-  &[open] {
-    display: flex;
-    flex-direction: column;
-  }
-
-  &::backdrop {
-    backdrop-filter: blur(3px);
-    background: rgba(20, 20, 32, 0.32);
-  }
-
-  &[data-chrome-mode="dark"]::backdrop {
-    background: rgba(0, 0, 0, 0.55);
-  }
 
   kbd {
     background: var(--sc-surface);
@@ -52,41 +40,23 @@
 }
 
 .ShowcaseCommandPalette-input {
+  --saltInput-height: 32px;
   background: transparent;
-  border: none;
   caret-color: var(--sc-accent);
-  color: var(--sc-text);
-  flex: 1;
-  font-family: inherit;
   font-size: 17px;
-  height: 32px;
-  outline: none;
+  gap: var(--sc-space-3);
   padding: 0;
 
-  &::placeholder {
-    color: var(--sc-text-4);
-  }
-
-  &:focus,
-  &:focus-visible {
-    outline: none;
+  .saltInput-input {
+    font-size: 17px;
   }
 }
 
 .ShowcaseCommandPalette-esc {
-  background: var(--sc-surface);
-  border: 1px solid var(--sc-border-strong);
-  border-radius: 5px;
-  color: var(--sc-text-3);
-  cursor: pointer;
-  font-family: inherit;
+  --saltButton-height: 20px;
+  --saltButton-padding: 6px;
   font-size: 11px;
-  line-height: 18px;
-  padding: 0 6px;
-
-  &:hover {
-    color: var(--sc-text);
-  }
+  font-weight: 400;
 }
 
 .ShowcaseCommandPalette-scopes {
@@ -99,29 +69,14 @@
 }
 
 .ShowcaseCommandPalette-scope {
-  align-items: center;
-  background: transparent;
-  border: 1px solid var(--sc-border);
   border-radius: 999px;
-  color: var(--sc-text-2);
-  cursor: pointer;
-  display: inline-flex;
-  font-family: inherit;
   font-size: 12px;
   gap: 5px;
   height: 24px;
   padding: 0 10px;
 
-  &:hover {
-    border-color: var(--sc-border-strong);
-    color: var(--sc-text);
-  }
-
-  &[aria-pressed="true"] {
-    background: var(--sc-accent-soft);
-    border-color: transparent;
-    color: var(--sc-accent-text);
-    font-weight: 600;
+  &:not([aria-pressed="true"]) {
+    border-color: var(--sc-border);
   }
 }
 

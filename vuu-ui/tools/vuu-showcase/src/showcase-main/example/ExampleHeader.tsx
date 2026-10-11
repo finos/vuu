@@ -1,7 +1,8 @@
+import { Button, ToggleButton } from "@salt-ds/core";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { Fragment, useCallback, useMemo, useState } from "react";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { ChromeIcon } from "../chrome/ChromeIcon";
 import { RouteLink } from "../chrome/RouteLink";
 import { useShowcaseContext } from "../ShowcaseProvider";
@@ -49,6 +50,7 @@ export const ExampleHeader = ({ treeNode, treeSource }: ExampleHeaderProps) => {
   const favourites = useFavourites();
   const isFavourite = favourites.includes(route);
   const [copied, copyLink] = useCopyLink();
+  const navigate = useNavigate();
 
   const crumbs = useMemo(
     () => getBreadcrumbs(pathname, treeSource, navFrom),
@@ -88,67 +90,65 @@ export const ExampleHeader = ({ treeNode, treeSource }: ExampleHeaderProps) => {
         ) : null}
       </div>
       <div className={`${classBase}-actions`}>
-        {previous ? (
-          <RouteLink
-            aria-label={`Previous example, ${previous.label}`}
-            className="ShowcaseButton ShowcaseIconButton"
-            path={routeOf(previous)}
-            title={`Previous: ${previous.label}`}
-          >
-            <ChromeIcon name="arrow-left" />
-          </RouteLink>
-        ) : (
-          <button className="ShowcaseButton ShowcaseIconButton" disabled>
-            <ChromeIcon name="arrow-left" />
-          </button>
-        )}
-        {next ? (
-          <RouteLink
-            aria-label={`Next example, ${next.label}`}
-            className="ShowcaseButton ShowcaseIconButton"
-            path={routeOf(next)}
-            title={`Next: ${next.label}`}
-          >
-            <ChromeIcon name="arrow-right" />
-          </RouteLink>
-        ) : (
-          <button className="ShowcaseButton ShowcaseIconButton" disabled>
-            <ChromeIcon name="arrow-right" />
-          </button>
-        )}
-        <button
-          aria-pressed={isFavourite}
-          className={cx("ShowcaseButton", {
-            "ShowcaseButton-active": isFavourite,
-          })}
-          onClick={() => favouritesStore.toggle(route)}
-          type="button"
+        <Button
+          appearance="bordered"
+          aria-label={
+            previous
+              ? `Previous example, ${previous.label}`
+              : "Previous example"
+          }
+          className={`${classBase}-iconButton`}
+          disabled={!previous}
+          onClick={() => previous && navigate(routeOf(previous))}
+          title={previous ? `Previous: ${previous.label}` : undefined}
+        >
+          <ChromeIcon name="arrow-left" />
+        </Button>
+        <Button
+          appearance="bordered"
+          aria-label={next ? `Next example, ${next.label}` : "Next example"}
+          className={`${classBase}-iconButton`}
+          disabled={!next}
+          onClick={() => next && navigate(routeOf(next))}
+          title={next ? `Next: ${next.label}` : undefined}
+        >
+          <ChromeIcon name="arrow-right" />
+        </Button>
+        <ToggleButton
+          onChange={() => favouritesStore.toggle(route)}
+          selected={isFavourite}
+          value="favourite"
         >
           <ChromeIcon
             name="star"
             fill={isFavourite ? "currentColor" : "none"}
           />
           Favourite
-        </button>
-        <button className="ShowcaseButton" onClick={copyLink} type="button">
+        </ToggleButton>
+        <Button appearance="bordered" onClick={copyLink}>
           <ChromeIcon name={copied ? "check" : "link"} />
           {copied ? "Copied" : "Copy link"}
-        </button>
+        </Button>
         {sourceLinks.vscode ? (
-          <a className="ShowcaseButton" href={sourceLinks.vscode}>
+          <Button
+            appearance="bordered"
+            onClick={() => {
+              if (sourceLinks.vscode) location.href = sourceLinks.vscode;
+            }}
+          >
             <ChromeIcon name="code" />
             Open in VS Code
-          </a>
+          </Button>
         ) : sourceLinks.github ? (
-          <a
-            className="ShowcaseButton"
-            href={sourceLinks.github}
-            rel="noopener noreferrer"
-            target="_blank"
+          <Button
+            appearance="bordered"
+            onClick={() =>
+              window.open(sourceLinks.github, "_blank", "noopener,noreferrer")
+            }
           >
             <ChromeIcon name="github" />
             View on GitHub
-          </a>
+          </Button>
         ) : null}
       </div>
     </header>

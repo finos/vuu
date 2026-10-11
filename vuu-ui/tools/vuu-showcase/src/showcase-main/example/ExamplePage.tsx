@@ -1,5 +1,5 @@
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
-import { useCallback, useEffect, useId, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { isDocumentDescriptor } from "../../shared-utils";
 import { IFrame } from "../iframe";
@@ -8,7 +8,7 @@ import type { NavNodeData } from "../tree-nav/nav-tree";
 import { getParentNode, routeOf } from "./example-model";
 import { ComparePanel } from "./ComparePanel";
 import { ExampleHeader } from "./ExampleHeader";
-import { type ExampleTab, ExampleTabs, panelId, tabId } from "./ExampleTabs";
+import { type ExampleTab, ExampleTabPanel, ExampleTabs } from "./ExampleTabs";
 import { PreviewBar } from "./PreviewBar";
 import { PreviewCanvas } from "./PreviewCanvas";
 import { SourceDock, useSourceDock } from "./SourceDock";
@@ -72,7 +72,6 @@ const useVisited = (selected: string, pathname: string) => {
 };
 
 export const ExamplePage = ({ treeNode, treeSource }: ExamplePageProps) => {
-  const idPrefix = useId();
   const { pathname } = useLocation();
   const { preview: previewState, setPreview } = useShowcaseContext();
   const { preview, reload, reloadKey, src } = usePreviewSource();
@@ -99,75 +98,68 @@ export const ExamplePage = ({ treeNode, treeSource }: ExamplePageProps) => {
   const sourceDock = useSourceDock();
 
   const panelProps = (tab: ExampleTabId) => ({
-    "aria-labelledby": tabId(idPrefix, tab),
     className: `${classBase}-panel`,
-    hidden: tab !== selectedTab,
-    id: panelId(idPrefix, tab),
-    role: "tabpanel",
+    value: tab,
   });
 
   return (
     <div className={classBase}>
       <ExampleHeader treeNode={treeNode} treeSource={treeSource} />
-      <ExampleTabs
-        idPrefix={idPrefix}
-        onChange={setSelectedTab}
-        tabs={tabs}
-        value={selectedTab}
-      />
-      <div {...panelProps("preview")}>
-        <PreviewBar
-          dataConsumer={isDataConsumer(treeNode.nodeData)}
-          onReload={reload}
-          onToggleSourceDock={sourceDock.toggle}
-          sourceDockOpen={sourceDock.open}
-          standaloneHref={src}
-          viewportControls
-        />
-        <PreviewCanvas
-          density={preview.density}
-          key={reloadKey}
-          src={src}
-          title={treeNode.label}
-          viewport={preview.vp}
-        />
-        {sourceDock.open ? (
-          <SourceDock
-            height={sourceDock.height}
-            nodeData={treeNode.nodeData ?? {}}
-            onResize={sourceDock.setHeight}
+      <ExampleTabs onChange={setSelectedTab} tabs={tabs} value={selectedTab}>
+        <ExampleTabPanel {...panelProps("preview")}>
+          <PreviewBar
+            dataConsumer={isDataConsumer(treeNode.nodeData)}
+            onReload={reload}
+            onToggleSourceDock={sourceDock.toggle}
+            sourceDockOpen={sourceDock.open}
+            standaloneHref={src}
+            viewportControls
           />
-        ) : null}
-      </div>
-      {/* not kept mounted, leaving the tab releases all its iframes */}
-      {selectedTab === "compare" ? (
-        <div {...panelProps("compare")}>
-          <ComparePanel
-            onPromote={(state) => {
-              setPreview(state);
-              // setSearchParams updates don't chain, so the tab change must
-              // also carry the preview params
-              setSelectedTab("preview", state);
-            }}
+          <PreviewCanvas
+            density={preview.density}
+            key={reloadKey}
+            src={src}
             title={treeNode.label}
+            viewport={preview.vp}
           />
-        </div>
-      ) : null}
-      {selectedTab === "source" ? (
-        <div {...panelProps("source")}>
-          <SourceView nodeData={treeNode.nodeData ?? {}} />
-        </div>
-      ) : null}
-      {docNode && isMounted("docs") ? (
-        <div {...panelProps("docs")}>
-          <div className={`${classBase}-docFrame`}>
-            <IFrame
-              src={standaloneUrl(routeOf(docNode), previewState)}
-              title={docNode.label}
+          {sourceDock.open ? (
+            <SourceDock
+              height={sourceDock.height}
+              nodeData={treeNode.nodeData ?? {}}
+              onResize={sourceDock.setHeight}
             />
-          </div>
-        </div>
-      ) : null}
+          ) : null}
+        </ExampleTabPanel>
+        {/* not kept mounted, leaving the tab releases all its iframes */}
+        {selectedTab === "compare" ? (
+          <ExampleTabPanel {...panelProps("compare")}>
+            <ComparePanel
+              onPromote={(state) => {
+                setPreview(state);
+                // setSearchParams updates don't chain, so the tab change must
+                // also carry the preview params
+                setSelectedTab("preview", state);
+              }}
+              title={treeNode.label}
+            />
+          </ExampleTabPanel>
+        ) : null}
+        {selectedTab === "source" ? (
+          <ExampleTabPanel {...panelProps("source")}>
+            <SourceView nodeData={treeNode.nodeData ?? {}} />
+          </ExampleTabPanel>
+        ) : null}
+        {docNode && isMounted("docs") ? (
+          <ExampleTabPanel {...panelProps("docs")}>
+            <div className={`${classBase}-docFrame`}>
+              <IFrame
+                src={standaloneUrl(routeOf(docNode), previewState)}
+                title={docNode.label}
+              />
+            </div>
+          </ExampleTabPanel>
+        ) : null}
+      </ExampleTabs>
     </div>
   );
 };

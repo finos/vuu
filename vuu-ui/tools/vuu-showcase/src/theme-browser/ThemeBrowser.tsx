@@ -13,6 +13,7 @@ import {
 } from "./ThemeBrowserContext";
 import { ThemeSandbox } from "./ThemeSandbox";
 import { TiersView } from "./TiersView";
+import { TileButton } from "./TileButton";
 
 import "./ThemeBrowser.css";
 
@@ -159,13 +160,13 @@ export const ThemeBrowser = ({
                   {sources
                     .filter((s) => s !== source)
                     .map((s) => (
-                      <button
+                      <TileButton
                         className="ghost"
                         key={s.id}
                         onClick={() => setSourceId(s.id)}
                       >
                         Try {s.label}
-                      </button>
+                      </TileButton>
                     ))}
                 </p>
               ) : null}

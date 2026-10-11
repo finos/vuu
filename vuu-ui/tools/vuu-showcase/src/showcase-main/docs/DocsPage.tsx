@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { Button } from "@salt-ds/core";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { mdxComponents, scrollToHeading } from "../../mdx-components";
 import { findTreeNode, isComponentDescriptor } from "../../shared-utils";
@@ -279,16 +280,21 @@ export const DocsPage = ({
                 </span>
               ) : null}
               {standalone ? null : (
-                <a
+                <Button
+                  appearance="transparent"
                   aria-label="Open in new window"
-                  className="ShowcaseIconButton"
-                  href={standaloneDocUrl(docRoute, preview)}
-                  rel="noreferrer"
-                  target="_blank"
+                  className={`${classBase}-openWindow`}
+                  onClick={() =>
+                    window.open(
+                      standaloneDocUrl(docRoute, preview),
+                      "_blank",
+                      "noreferrer",
+                    )
+                  }
                   title="Open in new window"
                 >
                   <ChromeIcon name="external" size={14} />
-                </a>
+                </Button>
               )}
             </div>
             <article className="ShowcaseDocs" ref={articleRef}>

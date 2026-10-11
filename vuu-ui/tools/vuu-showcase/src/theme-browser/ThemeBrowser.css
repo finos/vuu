@@ -1,5 +1,6 @@
-/* The Theme Browser chrome is styled exclusively with its own --tb-* tokens, so it is never affected by the theme under observation (or the showcase theme). */
-.vuuThemeBrowser {
+/* The Theme Browser chrome is styled exclusively with its own --tb-* tokens, so it is never affected by the theme under observation (or the showcase theme).
+ * The repeated class lifts nested rules (0,4,0) above vuu-theme's Salt component overrides (0,3,0). */
+.vuuThemeBrowser.vuuThemeBrowser.vuuThemeBrowser {
   /* Chrome tokens – deliberately independent of the theme under observation */
   & {
     --tb-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -21,6 +22,26 @@
     --tb-f: #8a5cf6;
     --tb-p: #0d9488;
     --tb-c: #e2730f;
+    /* chrome tokens consumed by the Salt controls (see salt-chrome.css) */
+    --sc-font: var(--tb-font);
+    --sc-radius-sm: var(--tb-radius);
+    --sc-radius: var(--tb-radius);
+    --sc-focus: var(--tb-accent);
+    --sc-text: var(--tb-text);
+    --sc-text-2: var(--tb-text-2);
+    --sc-text-3: var(--tb-text-2);
+    --sc-surface: var(--tb-surface);
+    --sc-surface-2: var(--tb-subtle);
+    --sc-surface-3: var(--tb-line);
+    --sc-border: var(--tb-border);
+    --sc-border-strong: #c3c8d2;
+    --sc-accent: var(--tb-accent);
+    --sc-accent-strong: #2f48e0;
+    --sc-accent-soft: var(--tb-accent-soft);
+    --sc-accent-text: var(--tb-accent);
+    --sc-on-accent: var(--tb-on-accent);
+    --sc-shadow-2: 0 4px 12px rgb(0 0 0 / 0.12);
+    --sc-shadow-3: 0 12px 32px rgb(0 0 0 / 0.18);
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -38,7 +59,10 @@
   .muted {
     color: var(--tb-text-2);
   }
-  button {
+  /* TileButton (Salt Button) – restore native button layout; designed classes below override */
+  .tb-tile {
+    display: inline-block;
+    gap: normal;
     font: inherit;
     color: inherit;
   }
@@ -172,68 +196,28 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    height: 32px;
-    padding: 0 10px;
-    border: 1px solid var(--tb-border);
-    border-radius: var(--tb-radius);
-    background: var(--tb-surface);
+  }
+  .theme-picker .saltDropdown {
     font-weight: 600;
+    width: auto;
   }
   .theme-dot {
+    display: inline-block;
+    flex: none;
     width: 14px;
     height: 14px;
     border-radius: 50%;
     background: conic-gradient(var(--tb-f) 0 33%, var(--tb-p) 0 66%, var(--tb-c) 0);
   }
-  .chev {
-    opacity: 0.6;
-  }
   .tabs {
-    display: flex;
-    height: 100%;
-    gap: 4px;
+    align-self: stretch;
+    --salt-size-base: 52px;
   }
-  .tab {
-    position: relative;
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    border: none;
-    background: none;
-    color: var(--tb-text-2);
-    font-weight: 600;
-  }
-  .tab.selected {
-    color: var(--tb-text);
-  }
-  .tab.selected::after {
-    content: "";
-    position: absolute;
-    left: 8px;
-    right: 8px;
-    bottom: 0;
-    height: 2px;
-    background: var(--tb-accent);
+  .tabs .badge {
+    margin-left: 6px;
   }
   .search {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 8px;
     width: 280px;
-    height: 32px;
-    padding: 0 10px;
-    border-radius: var(--tb-radius);
-    background: var(--tb-canvas);
-    border: 1px solid var(--tb-border);
-  }
-  .search input {
-    flex: 1;
-    border: none;
-    background: none;
-    font: inherit;
-    color: inherit;
-    outline: none;
   }
   .search-icon {
     font-size: 15px;
@@ -271,26 +255,8 @@
     text-transform: capitalize;
     color: var(--tb-text-2);
   }
-  .segmented {
-    display: flex;
-    padding: 2px;
-    border-radius: calc(var(--tb-radius) + 2px);
-    background: var(--tb-subtle);
-  }
   .seg {
-    height: 24px;
-    padding: 0 10px;
-    border: none;
-    border-radius: var(--tb-radius);
-    background: none;
-    color: var(--tb-text-2);
     text-transform: capitalize;
-  }
-  .seg.selected {
-    background: var(--tb-surface);
-    color: var(--tb-text);
-    font-weight: 600;
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
   }
   .axes-note {
     margin-left: auto;
@@ -450,6 +416,7 @@
     color: var(--tb-text-2);
   }
   .mini-strip {
+    position: relative;
     display: flex;
     gap: 2px;
     height: 6px;
@@ -1303,15 +1270,29 @@
   *::after {
     box-sizing: border-box;
   }
-  button {
+  .tb-tile {
     cursor: pointer;
     text-align: inherit;
   }
-  button:disabled {
+  .tb-tile:disabled {
     cursor: default;
   }
-  button:focus-visible,
-  select:focus-visible {
+  /* TileButton: Salt Button visuals neutralised via its hooks */
+  .saltButton.tb-tile {
+    --saltButton-alignItems: normal;
+    --saltButton-background: transparent;
+    --saltButton-background-active: transparent;
+    --saltButton-background-hover: transparent;
+    --saltButton-borderRadius: 0;
+    --saltButton-borderWidth: 0;
+    --saltButton-height: auto;
+    --saltButton-justifyContent: normal;
+    --saltButton-letterSpacing: normal;
+    --saltButton-padding: 0;
+    --saltButton-textAlign: inherit;
+    --saltButton-textTransform: none;
+  }
+  .tb-tile:focus-visible {
     outline: 2px solid var(--tb-accent);
     outline-offset: 1px;
   }
@@ -1354,34 +1335,11 @@
     margin-right: 8px;
   }
 
-  /* theme picker */
-  .theme-picker {
-    position: relative;
-    cursor: pointer;
-  }
-  .theme-picker select {
-    appearance: none;
-    border: none;
-    background: none;
-    font: inherit;
-    font-weight: 600;
-    color: inherit;
-    cursor: pointer;
-    outline: none;
-    padding-right: 4px;
-  }
-  .theme-picker:focus-within {
-    border-color: var(--tb-accent);
-  }
   .theme-picker .muted {
     font-weight: 400;
   }
 
-  /* tabs, axes */
-  .tab:hover,
-  .seg:hover {
-    color: var(--tb-text);
-  }
+  /* axes */
   .axes-row {
     flex-wrap: wrap;
     height: auto;
@@ -1398,10 +1356,6 @@
   .search-container {
     position: relative;
     margin-left: auto;
-  }
-  .search:focus-within {
-    border-color: var(--tb-accent);
-    background: var(--tb-surface);
   }
   .search-results {
     position: absolute;
