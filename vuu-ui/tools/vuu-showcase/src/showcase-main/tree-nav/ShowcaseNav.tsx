@@ -23,7 +23,18 @@ import { TreeNavPanel } from "./TreeNavPanel";
 
 export const NAV_FILTER_INPUT_SELECTOR = ".ShowcaseNavFilter-input";
 
+/** Focuses (and selects the content of) the sidebar filter input */
+export const focusNavFilter = () => {
+  const input = document.querySelector<HTMLInputElement>(
+    `.ShowcaseNav ${NAV_FILTER_INPUT_SELECTOR}`,
+  );
+  input?.focus();
+  input?.select();
+};
+
 type NavSection = Exclude<ShowcaseSection, "theme">;
+
+const normalisePath = (pathname: string) => pathname.replace(/(.)\/$/, "$1");
 
 const createSectionNav = (
   section: NavSection,
@@ -69,25 +80,33 @@ export const ShowcaseNav = ({
   const sectionNav = section === "theme" ? undefined : sectionNavs[section];
   const navIndex = sectionNav?.navIndex;
 
-  // autoSelectRowKey determines the initial selection only, so it is held
-  // stable within a section. A changing value would cause the table to
-  // re-bind its dataSource (and reset scroll position) on every navigation.
-  const [initialSelection, setInitialSelection] = useState({
-    key: sectionNav?.navIndex.keyForPath(pathname),
+  // autoSelectRowKey determines the initial selection only. Selections made
+  // in the nav itself need no help, but when the route changes by some other
+  // means (home page links, back button) the tree is re-mounted, to select
+  // and reveal the new route. A changing autoSelectRowKey alone would not
+  // achieve this, and would reset the scroll position of the tree.
+  const route = normalisePath(pathname);
+  const [navState, setNavState] = useState(() => ({
+    generation: 0,
+    key: sectionNav?.navIndex.keyForPath(route),
+    route,
     sectionNav,
-  });
-  if (initialSelection.sectionNav !== sectionNav) {
-    setInitialSelection({
-      key: sectionNav?.navIndex.keyForPath(pathname),
+  }));
+  if (navState.sectionNav !== sectionNav || navState.route !== route) {
+    const isExternalNavigation = navState.sectionNav === sectionNav;
+    setNavState({
+      generation: navState.generation + (isExternalNavigation ? 1 : 0),
+      key: sectionNav?.navIndex.keyForPath(route),
+      route,
       sectionNav,
     });
   }
 
   useEffect(() => {
     if (sectionNavs.examples.navIndex.isPagePath(pathname)) {
-      recentStore.push(pathname.replace(/(.)\/$/, "$1"));
+      recentStore.push(route);
     }
-  }, [pathname, sectionNavs]);
+  }, [pathname, route, sectionNavs]);
 
   // The filter is reset whenever the section changes
   const [navFilterState, setNavFilterState] = useState<{
@@ -125,13 +144,15 @@ export const ShowcaseNav = ({
     (dataRow) => {
       if (dataRow && navIndex) {
         const path = navIndex.pathForKey(dataRow.key);
-        if (path !== undefined && path !== pathname) {
+        if (path !== undefined && path !== route) {
           onSelectExample?.(dataRow.nodeData as NavNodeData | undefined);
+          // the nav already reflects this route
+          setNavState((state) => ({ ...state, route: path }));
           navigate(path);
         }
       }
     },
-    [navIndex, navigate, onSelectExample, pathname],
+    [navIndex, navigate, onSelectExample, route],
   );
 
   if (sectionNav === undefined) {
@@ -140,13 +161,10 @@ export const ShowcaseNav = ({
 
   return (
     <TreeNavPanel
-      autoSelectRowKey={
-        initialSelection.sectionNav === sectionNav
-          ? initialSelection.key
-          : sectionNav.navIndex.keyForPath(pathname)
-      }
+      autoSelectRowKey={navState.key}
       className="ShowcaseNav"
       filterPredicate={filterPredicate}
+      key={navState.generation}
       header={
         <NavFilter
           filter={navFilter}
