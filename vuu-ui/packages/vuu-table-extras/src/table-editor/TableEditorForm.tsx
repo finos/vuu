@@ -46,6 +46,12 @@ export interface TableEditorFormProps
   children?: ReactNode;
   /** Fields for the default form content, in tab order. */
   fields?: readonly TableEditorField[];
+  /**
+   * Render the built-in Save and Cancel buttons. When you compose the form's
+   * content as `children`, render `TableEditorButtons` where you want them.
+   * @default true without `children`, false with them
+   */
+  showButtons?: boolean;
 }
 
 /** Lets the provider route `cancel` (e.g. from a mode toggle) via the form. */
@@ -76,6 +82,7 @@ export const TableEditorForm = ({
   children,
   className,
   fields,
+  showButtons = children === undefined,
   validate,
   ...formProps
 }: TableEditorFormProps) => {
@@ -121,6 +128,7 @@ export const TableEditorForm = ({
       key={selectedRow.key}
       onCancelled={onEditCancelled}
       onSaved={handleSaved}
+      showButtons={showButtons}
       validate={validateEdit}
     >
       {children ??

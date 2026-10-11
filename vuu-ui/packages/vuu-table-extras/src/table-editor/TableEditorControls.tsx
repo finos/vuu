@@ -24,8 +24,9 @@ export interface TableEditorButtonsProps {
  * Save and Cancel (and, for table editing with `allowDelete`, Delete)
  * buttons for the enclosing `EditableTable` or
  * `TableWithEditForm`. Disabled outside edit
- * mode. When editing in a form, render them within `TableEditorForm` or
- * `TableEditorCreateForm`, with `showButtons={false}` on the form.
+ * mode. When editing in a form, render them within the `children` of
+ * `TableEditorForm` (which then omits its own buttons), or within
+ * `TableEditorCreateForm` with `showButtons={false}`.
  */
 export const TableEditorButtons = ({
   hideCancel,

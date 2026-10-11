@@ -7,13 +7,12 @@ import {
   TabTrigger,
   Text,
 } from "@salt-ds/core";
-import { EditField, useEditFormContext } from "@vuu-ui/vuu-data-editing";
+import { EditField } from "@vuu-ui/vuu-data-editing";
 import {
   TableEditorButtons,
   TableEditorModeToggle,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
-import { useEffect } from "react";
 import { ModulePicker } from "../module-picker/ModulePicker";
 import { useUserEditForm } from "./useUserEditForm";
 
@@ -28,19 +27,11 @@ const classBase = "vuuUserEditForm";
  */
 export const UserEditForm = () => {
   const { dataSource, isEditing, selectedRow } = useTableEditor();
-  const form = useEditFormContext();
-  const {
-    allModules,
-    modulePermissions,
-    onSelectedModulesChange,
-    resetModulePermissions,
-  } = useUserEditForm(selectedRow, dataSource, form?.editSession);
-
-  useEffect(() => {
-    if (!isEditing) {
-      resetModulePermissions();
-    }
-  }, [isEditing, resetModulePermissions]);
+  if (selectedRow === undefined) {
+    throw Error("UserEditForm must be rendered within a TableEditorForm");
+  }
+  const { allModules, modulePermissions, onSelectedModulesChange } =
+    useUserEditForm(selectedRow, dataSource);
 
   return (
     <>

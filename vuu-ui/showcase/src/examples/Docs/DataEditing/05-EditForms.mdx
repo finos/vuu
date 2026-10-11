@@ -69,14 +69,14 @@ editing props (`dataSource`, `confirmCancel`, `panelVisibility`, `rowDefaults`,
 | `TableWithEditFormTablePanel` | A column holding the table and anything above or below it, such as a header or toolbar. Fills the space beside the side panel. |
 | `TableWithEditFormTable` | The table, sized to fill the rest of `TableWithEditFormTablePanel`. Selecting a row selects it for the form; selection is locked while editing. Takes `Table` props. |
 | `TableWithEditFormPanel` | The Salt `SidePanel` for the form, on the right. Opens and closes with the selection. Takes `SidePanel` props, such as `className` and `style`; compose `SidePanelHeader` and `SidePanelContent` inside it. |
-| `TableEditorForm` | The form for the selected row. Renders `children`, or an `EditField` per entry in `fields`. Renders nothing when no row is selected. Takes `EditForm` props such as `validate`, `title` and `showButtons`. |
+| `TableEditorForm` | The form for the selected row. Renders `children`, or an `EditField` per entry in `fields`. Renders nothing when no row is selected. Takes `EditForm` props such as `validate` and `title`. Renders its own Save and Cancel only without `children`; with `children`, place `TableEditorButtons` yourself. |
 | `TableEditorCreateForm` | The form for a new row, shown in create mode. Takes `CreateRowForm` props. |
 | `TableEditorPlaceholder` | Its `children`, shown only when no row is selected and no row is being created. |
 | `TableEditorToolbar` | A row for controls above the table. |
 | `TableEditorEditButton` | Makes the selected row's form editable. |
 | `TableEditorNewButton` | Enters create mode. |
 | `TableEditorModeToggle` | View/Edit toggle. |
-| `TableEditorButtons` | Save and Cancel. Render inside a form with `showButtons={false}`. |
+| `TableEditorButtons` | Save and Cancel. Render inside a composed `TableEditorForm`, or a `TableEditorCreateForm` with `showButtons={false}`. |
 | `TableEditorPanelCloseButton` | Closes the side panel; not rendered while the panel can't be closed. |
 
 `TableWithEditForm` provides the Salt `SidePanelProvider`, so `TableWithEditFormPanel`
@@ -127,7 +127,7 @@ const InstrumentEditor = ({ dataSource }) => (
       <PanelHeader />
       <SidePanelContent>
         <TableEditorPlaceholder>Select an instrument</TableEditorPlaceholder>
-        <TableEditorForm showButtons={false} validate={validateInstrument}>
+        <TableEditorForm validate={validateInstrument}>
           <TableEditorModeToggle />
           <Tabs defaultValue="details">
             {/* TabBar ... */}
@@ -149,9 +149,10 @@ const InstrumentEditor = ({ dataSource }) => (
 
 - `EditField`s inside `TableEditorForm` edit the selected row; they don't need
   a `dataRow`. They are read-only until the form is in edit mode.
-- A custom editor, such as a picker that edits a non-field value, can commit
-  to the form's edit session from `useEditFormContext().editSession` (or use
-  `useCustomEditField`). Its changes are saved, or discarded, with the fields.
+- A custom editor, such as a picker that edits a non-field value, should use
+  `useCustomEditField`. It commits to the form's edit session, so its changes
+  are saved, or discarded, with the fields, and it resets itself when editing
+  ends. There's no need to track or reset the value yourself.
 - After a save, `selectedRow` holds the saved values, so headers built from it
   update immediately.
 
