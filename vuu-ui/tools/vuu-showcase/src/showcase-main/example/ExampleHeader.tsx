@@ -6,7 +6,7 @@ import { ChromeIcon } from "../chrome/ChromeIcon";
 import { RouteLink } from "../chrome/RouteLink";
 import { useShowcaseContext } from "../ShowcaseProvider";
 import { favouritesStore, useFavourites } from "../tree-nav/nav-store";
-import type { NavNodeData } from "../tree-nav/nav-tree";
+import { getNavFromForPath, type NavNodeData } from "../tree-nav/nav-tree";
 import {
   getAdjacentExamples,
   getBreadcrumbs,
@@ -42,7 +42,8 @@ const useCopyLink = () => {
 };
 
 export const ExampleHeader = ({ treeNode, treeSource }: ExampleHeaderProps) => {
-  const { pathname } = useLocation();
+  const { pathname, state: locationState } = useLocation();
+  const navFrom = getNavFromForPath(locationState, pathname);
   const { nodeData = {} } = treeNode;
   const route = routeOf(treeNode);
   const favourites = useFavourites();
@@ -50,8 +51,8 @@ export const ExampleHeader = ({ treeNode, treeSource }: ExampleHeaderProps) => {
   const [copied, copyLink] = useCopyLink();
 
   const crumbs = useMemo(
-    () => getBreadcrumbs(pathname, treeSource),
-    [pathname, treeSource],
+    () => getBreadcrumbs(pathname, treeSource, navFrom),
+    [navFrom, pathname, treeSource],
   );
   const { next, previous } = useMemo(
     () => getAdjacentExamples(pathname, treeSource),

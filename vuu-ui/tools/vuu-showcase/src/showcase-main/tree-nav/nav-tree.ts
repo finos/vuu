@@ -235,3 +235,15 @@ export const getNavFrom = (state: unknown) =>
   typeof (state as Partial<NavFromState>).navFrom === "string"
     ? (state as NavFromState).navFrom
     : undefined;
+
+/**
+ * The page a route was opened from, if it is in the same section as the
+ * route. Only then can it stand in for the route's position in the nav.
+ */
+export const getNavFromForPath = (state: unknown, pathname: string) => {
+  const navFrom = getNavFrom(state);
+  return navFrom !== undefined &&
+    sectionFromPath(navFrom) === sectionFromPath(pathname)
+    ? navFrom
+    : undefined;
+};
