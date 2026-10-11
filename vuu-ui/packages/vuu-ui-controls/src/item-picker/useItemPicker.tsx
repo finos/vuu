@@ -1,6 +1,6 @@
 import { queryClosest, reorderItems } from "@vuu-ui/vuu-utils";
 import {
-  type ChangeEventHandler,
+  type FormEventHandler,
   type MouseEventHandler,
   useCallback,
   useMemo,
@@ -84,7 +84,7 @@ export const useItemPicker = ({
 
   const [searchPattern, setSearchPattern] = useState("");
 
-  const handleChangeSearchInput = useCallback<ChangeEventHandler>((evt) => {
+  const handleChangeSearchInput = useCallback<FormEventHandler>((evt) => {
     const { value } = evt.target as HTMLInputElement;
     setSearchPattern(value);
   }, []);

@@ -24,7 +24,7 @@ import {
   UploadIcon,
 } from "@salt-ds/icons";
 import cx from "clsx";
-import { type ChangeEvent, type ReactNode, useId, useRef } from "react";
+import { type ChangeEvent, type FormEvent, type ReactNode, useId, useRef } from "react";
 import { menuSections } from "../data/module-model";
 import type { RemoteChecks } from "../data/useRemoteChecks";
 import type { DraftField, ModuleDraft } from "../data/useModuleDraft";
@@ -43,7 +43,7 @@ export interface ModuleFormProps {
   moduleId?: number;
 }
 
-export const inputValue = (event: ChangeEvent<Element>) =>
+export const inputValue = (event: FormEvent<Element>) =>
   (event.target as HTMLInputElement | HTMLTextAreaElement).value;
 
 /** A labelled form field showing its validation error or helper text. */
