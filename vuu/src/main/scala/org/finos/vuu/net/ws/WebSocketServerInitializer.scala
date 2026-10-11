@@ -18,18 +18,18 @@ class WebSocketServerInitializer(val options: VuuWebSocketOptions,
 
     applySSL(ch, pipeline)
 
-    pipeline.addLast("idle-handler", new WebSocketIdleStateHandler(WebSocketConstants.CLIENT_IDLE_TIMEOUT))
+    pipeline.addLast("idle-handler", new WebSocketIdleStateHandler(options.clientIdleTimeout))
 
     pipeline.addLast("http-codec", new HttpServerCodec())
     
-    pipeline.addLast("aggregator", new HttpObjectAggregator(WebSocketConstants.MAX_CONTENT_LENGTH))
+    pipeline.addLast("aggregator", new HttpObjectAggregator(options.maxContentLength))
 
     if (options.compressionEnabled) {
-      pipeline.addLast("compression", new WebSocketServerCompressionHandler(WebSocketConstants.MAX_CONTENT_LENGTH))
+      pipeline.addLast("compression", new WebSocketServerCompressionHandler(options.maxContentLength))
     }
     
     pipeline.addLast("protocol", new WebSocketServerProtocolHandler(s"/${options.uri}", null,
-      options.compressionEnabled, WebSocketConstants.MAX_CONTENT_LENGTH))
+      options.compressionEnabled, options.maxContentLength))
     
     //each tcp session will have a local view server handler,
     //this allows us to call (handler.close() when disconnected

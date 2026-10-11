@@ -22,14 +22,14 @@ class WebSocketClientInitializer(val options: VuuClientOptions) extends ChannelI
 
     pipeline.addLast("http-codec", new HttpClientCodec())
 
-    pipeline.addLast("aggregator", new HttpObjectAggregator(WebSocketConstants.MAX_CONTENT_LENGTH))
+    pipeline.addLast("aggregator", new HttpObjectAggregator(options.maxContentLength))
 
     if (options.compressionEnabled) {
-      pipeline.addLast("compression", new WebSocketClientCompressionHandler(WebSocketConstants.MAX_CONTENT_LENGTH))
+      pipeline.addLast("compression", new WebSocketClientCompressionHandler(options.maxContentLength))
     }
 
     pipeline.addLast("protocol", new WebSocketClientProtocolHandler(uri, V13, null, options.compressionEnabled,
-      new DefaultHttpHeaders(), WebSocketConstants.MAX_CONTENT_LENGTH))
+      new DefaultHttpHeaders(), options.maxContentLength))
 
     pipeline.addLast("handler", new WebSocketClientHandler(WebSocketClientSession(ch)))
 
