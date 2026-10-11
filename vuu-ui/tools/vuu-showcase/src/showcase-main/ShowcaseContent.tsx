@@ -1,12 +1,15 @@
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 import { useLocation } from "react-router-dom";
-import { findTreeNode, isIndexNode } from "../shared-utils";
+import {
+  findTreeNode,
+  isComponentDescriptor,
+  isIndexNode,
+} from "../shared-utils";
 import { ThemeBrowser } from "../theme-browser";
-import { ContentToolbar } from "./ContentToolbar";
+import { DocumentPage, ExamplePage } from "./example";
 import { FolderIndex } from "./folder-index";
 import { HomePage } from "./home";
-import { IFrame } from "./iframe";
 import { type NavNodeData, THEME_PATH } from "./tree-nav/nav-tree";
 
 export interface ShowcaseContentProps {
@@ -17,9 +20,8 @@ export interface ShowcaseContentProps {
 
 /**
  * Content area of the showcase shell. Examples and docs render in an iframe,
- * below the toolbar that controls theme, density etc. The home page, Theme
- * Browser and folder indexes are built into the shell and render directly,
- * they do not use the toolbar.
+ * below the preview bar that controls theme, density etc. The home page, Theme
+ * Browser and folder indexes are built into the shell and render directly.
  */
 export const ShowcaseContent = ({
   onSearch,
@@ -44,13 +46,10 @@ export const ShowcaseContent = ({
         <ThemeBrowser />
       ) : treeNode && isIndexNode(treeNode) ? (
         <FolderIndex treeNode={treeNode} />
+      ) : treeNode && isComponentDescriptor(treeNode.nodeData) ? (
+        <ExamplePage treeNode={treeNode} />
       ) : (
-        <>
-          <ContentToolbar />
-          <div className="ShowcaseContent-main">
-            <IFrame />
-          </div>
-        </>
+        <DocumentPage treeNode={treeNode} />
       )}
     </div>
   );
