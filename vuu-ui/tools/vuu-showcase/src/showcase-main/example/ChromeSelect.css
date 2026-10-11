@@ -88,6 +88,9 @@
 }
 
 .ShowcaseSelect-footer {
+  align-items: center;
+  display: flex;
+  gap: var(--sc-space-2);
   border-top: 1px solid var(--sc-border);
   color: var(--sc-text-3);
   font: 400 12px/1.4 var(--sc-font);
