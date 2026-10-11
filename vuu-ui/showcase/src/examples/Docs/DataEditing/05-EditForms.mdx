@@ -4,7 +4,7 @@ There are three form components, from most to least complete:
 
 | Component | Use it to |
 | --------- | --------- |
-| `TableWithEditForm` (`@vuu-ui/vuu-table-extras`) | show a table with a form for the selected row, with Edit and New |
+| `TableWithEditForm` (`@vuu-ui/vuu-table-extras`) | show a table with a form for the selected row in a side panel, with Edit and New |
 | `CreateRowForm` | add a row from a list of fields |
 | `EditForm` | lay out your own form for editing or adding a row |
 
@@ -27,20 +27,71 @@ applies the change to the source table.
 />
 ```
 
+The form is shown in a Salt `SidePanel` to the right of the table. Selecting a
+row shows it read-only; Edit makes the form editable and New replaces it with
+a create form. While a form is being edited, row selection is locked and the
+panel can't be closed.
+
 | Prop | Description |
 | ---- | ----------- |
-| `fields` | Fields shown for the selected row. See [Fields](#fields). |
+| `panelVisibility` | `"on-select"` (default): the panel opens when a row is selected, or Edit or New is clicked, and closes when the selection is cleared or its close button is clicked. `"always"`: the panel is always shown, with `placeholder` when no row is selected, and has no close button. |
+| `panelHeader` | Replaces the panel header. A node, or a function of `{ dataRow, mode }`. The close button is still added when the panel can be closed. |
+| `renderFormContent` | Renders the body of the edit form in place of `fields`. See [Custom form content](#custom-form-content). |
+| `panelClassName` | Class for the `SidePanel`, e.g. to set `--saltSidePanel-width` (default `320px`). |
+| `fields` | Fields shown for the selected row. See [Fields](#fields). Optional when `renderFormContent` is used. |
 | `createFields` | Fields shown when adding a row. Defaults to `fields`. |
 | `allowCreate` | Show the New button. Default `true`. |
 | `validate`, `validateCreate` | Client-side validation for edit and create. `validateCreate` defaults to `validate`. |
-| `formTitle` | A title, or a function of the selected row. |
-| `createTitle` | Title of the create form. Default `"New"`. |
-| `placeholder` | Shown when no row is selected. |
+| `formTitle` | Panel title for the selected row: a title, or a function of the row. Ignored when `panelHeader` is set. |
+| `createTitle` | Panel title for the create form. Default `"New"`. Ignored when `panelHeader` is set. |
+| `placeholder` | Shown in the panel when no row is selected. |
 | `confirmCancel` | Asked before discarding unsaved changes. See `useConfirmDiscard`. |
 | `onModeChange` | Called with `"view"`, `"edit"` or `"create"`. |
 | `toolbar` | Extra toolbar content. |
 | `deleteMode`, `editSessionApi`, `rowDefaults`, `onError` | Passed to the form's edit session. |
 | `testId` | Suffix for `data-testid`s. |
+
+### Custom form content
+
+`fields` lays out one `EditField` per field. For anything else, such as tabs or
+a custom editor, use `renderFormContent`. It is called with the selected
+`dataRow`, the `form` state (`isEditMode`, `isDirty`, `errors`, ...) and the
+`mode`. Render `EditField`s for the row; they are editable while the form is in
+edit mode, and Save and Cancel are added below them.
+
+```tsx
+<TableWithEditForm
+  config={config}
+  createFields={createFields}
+  dataSource={dataSource}
+  panelHeader={({ dataRow, mode }) => (
+    <SidePanelTitle>
+      {mode === "create" ? "New instrument" : dataRow?.description}
+    </SidePanelTitle>
+  )}
+  panelVisibility="always"
+  renderFormContent={({ dataRow }) => (
+    <Tabs defaultValue="details">
+      <TabBar divider>
+        <TabList>
+          <Tab value="details"><TabTrigger>Details</TabTrigger></Tab>
+          <Tab value="trading"><TabTrigger>Trading</TabTrigger></Tab>
+        </TabList>
+      </TabBar>
+      <TabPanel value="details">
+        <EditField dataRow={dataRow} label="Description" name="description" />
+      </TabPanel>
+      <TabPanel value="trading">
+        <EditField dataRow={dataRow} label="Lot size" name="lotSize" serverDataType="int" />
+      </TabPanel>
+    </Tabs>
+  )}
+/>
+```
+
+The create form is always built from `createFields` (or `fields`). See the
+showcase examples `EditForms / TableWithForm`, `TableWithFormAlwaysVisible`
+and `TableWithCustomForm`.
 
 ## Fields
 
