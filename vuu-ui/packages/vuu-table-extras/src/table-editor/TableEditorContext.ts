@@ -27,7 +27,7 @@ export type TableEditorMode = "view" | "edit" | "create";
  */
 export type TableEditorPanelVisibility = "on-select" | "always";
 
-/** State and actions of the enclosing `TableEditorProvider`. */
+/** State and actions of the enclosing `EditableTable` or `TableWithEditForm`. */
 export interface TableEditorState {
   /**
    * Form editing: whether the side panel can be closed. False while editing
@@ -92,11 +92,13 @@ export const TableEditorContext = createContext<
 export const useTableEditorContext = (componentName: string) => {
   const context = useContext(TableEditorContext);
   if (context === undefined) {
-    throw Error(`${componentName} must be used within a TableEditorProvider`);
+    throw Error(
+      `${componentName} must be used within an EditableTable or TableWithEditForm`,
+    );
   }
   return context;
 };
 
-/** State and actions of the enclosing `TableEditorProvider`. */
+/** State and actions of the enclosing `EditableTable` or `TableWithEditForm`. */
 export const useTableEditor = (): TableEditorState =>
   useTableEditorContext("useTableEditor");

@@ -53,12 +53,15 @@ panel can't be closed.
 
 `TableWithEditForm` covers a table with a generated form. When you need your
 own header, toolbar, panel layout or form content, such as tabs or custom
-editors, compose the components it is built from. They are all in
+editors, give `TableWithEditForm` `children`. It then renders those instead of
+its default layout, and still owns the editing state: mode, selected row, side
+panel and edit session. With `children` it takes only the editing props
+(`dataSource`, `confirmCancel`, `panelVisibility`, `rowDefaults`,
+`onModeChange`, ...). Lay out the components it is built from, all in
 `@vuu-ui/vuu-table-extras`:
 
 | Component | Role |
 | --------- | ---- |
-| `TableEditorProvider` | Owns the editing state: mode, selected row, side panel and edit session. Wrap the whole layout in it, with `editIn="form"`. |
 | `TableEditorTable` | The table. Selecting a row selects it for the form; selection is locked while editing. |
 | `TableEditorForm` | The form for the selected row. Renders `children`, or an `EditField` per entry in `fields`, and `placeholder` when no row is selected. Takes `EditForm` props such as `validate`, `title` and `showButtons`. |
 | `TableEditorCreateForm` | The form for a new row, shown in create mode. Takes `CreateRowForm` props. |
@@ -67,9 +70,9 @@ editors, compose the components it is built from. They are all in
 | `TableEditorButtons` | Save and Cancel. Render inside a form with `showButtons={false}`. |
 | `TableEditorPanelCloseButton` | Closes the side panel; not rendered while the panel can't be closed. |
 
-`TableEditorProvider` also provides a Salt `SidePanelProvider`, so a Salt
+`TableWithEditForm` also provides a Salt `SidePanelProvider`, so a Salt
 `SidePanel` anywhere inside it opens and closes with the selection. Any
-component inside the provider can call `useTableEditor()` for the state and
+component inside it can call `useTableEditor()` for the state and
 actions: `mode`, `isEditing`, `selectedRow`, `panelOpen`, `canClosePanel`,
 `startEdit()`, `startCreate()`, `cancel()` and `setPanelOpen()`.
 
@@ -81,8 +84,8 @@ import {
   TableEditorModeToggle,
   TableEditorNewButton,
   TableEditorPanelCloseButton,
-  TableEditorProvider,
   TableEditorTable,
+  TableWithEditForm,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
 
@@ -99,7 +102,7 @@ const PanelHeader = () => {
 };
 
 const InstrumentEditor = ({ dataSource }) => (
-  <TableEditorProvider dataSource={dataSource} editIn="form">
+  <TableWithEditForm dataSource={dataSource}>
     <header>
       <h2>Instruments</h2>
       <TableEditorNewButton>New instrument</TableEditorNewButton>
@@ -124,7 +127,7 @@ const InstrumentEditor = ({ dataSource }) => (
         <TableEditorCreateForm fields={createFields} validate={validateInstrument} />
       </SidePanelContent>
     </SidePanel>
-  </TableEditorProvider>
+  </TableWithEditForm>
 );
 ```
 

@@ -117,7 +117,7 @@ const FormEditorTable = ({
 };
 
 /**
- * The Table of a `TableEditorProvider`, bound to its dataSource and mode.
+ * The Table of the enclosing `EditableTable` or `TableWithEditForm`, bound to its dataSource and mode.
  *
  * - Table editing: cells become editable in edit mode, edited, added and
  *   deleted rows are styled, and rows can be checked for deletion when

@@ -39,8 +39,8 @@ import {
 } from "user-admin/src/pages/users/usersTable";
 import {
   TableEditorForm,
-  TableEditorProvider,
   TableEditorTable,
+  TableWithEditForm,
 } from "@vuu-ui/vuu-table-extras";
 import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
 import UserAdmin from "user-admin/src/UserAdmin";
@@ -159,7 +159,7 @@ export const DefaultUserEditForm = () => {
 
   return (
     <AdminContext>
-      <TableEditorProvider dataSource={dataSource} editIn="form">
+      <TableWithEditForm dataSource={dataSource}>
         <div style={{ display: "flex", gap: 16, height: 800 }}>
           <div style={{ flex: "1 1 auto", minWidth: 0 }}>
             <TableEditorTable config={config} rowHeight={USER_ROW_HEIGHT} />
@@ -170,7 +170,7 @@ export const DefaultUserEditForm = () => {
             </TableEditorForm>
           </div>
         </div>
-      </TableEditorProvider>
+      </TableWithEditForm>
     </AdminContext>
   );
 };

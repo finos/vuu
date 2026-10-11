@@ -15,7 +15,7 @@ import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type { TableProps } from "@vuu-ui/vuu-table";
 import type { DataRow, TableConfig } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import {
   TableEditorCreateForm,
   type TableEditorField,
@@ -24,10 +24,11 @@ import {
   TableEditorNewButton,
   TableEditorPanelCloseButton,
   type TableEditorPanelVisibility,
-  TableEditorProvider,
   TableEditorTable,
   useTableEditor,
 } from "../table-editor";
+
+import { TableEditorProvider } from "../table-editor/TableEditorProvider";
 
 import tableWithEditFormCss from "./TableWithEditForm.css";
 
@@ -44,38 +45,55 @@ export type TableWithEditFormField = TableEditorField;
  */
 export type TableWithEditFormPanelVisibility = TableEditorPanelVisibility;
 
-export interface TableWithEditFormProps
-  extends Omit<
+/** Props for the editing state, whether or not `children` are given. */
+export interface TableWithEditFormBaseProps
+  extends Pick<
+    EditFormHookProps,
+    "deleteMode" | "editSessionApi" | "onError" | "rowDefaults"
+  > {
+  /** Asked before a form with unsaved changes is discarded. */
+  confirmCancel?: () => boolean | Promise<boolean>;
+  dataSource: DataSource;
+  onModeChange?: (mode: TableWithEditFormMode) => void;
+  /** @default "on-select" */
+  panelVisibility?: TableWithEditFormPanelVisibility;
+}
+
+/**
+ * Your own layout: compose `TableEditorTable`, a Salt `SidePanel` containing
+ * `TableEditorForm` and `TableEditorCreateForm`, `TableEditorNewButton` etc.
+ */
+export interface TableWithEditFormComposedProps
+  extends TableWithEditFormBaseProps {
+  children: ReactNode;
+}
+
+/** The default layout: a toolbar, the table and a generated form. */
+export interface TableWithEditFormDefaultProps
+  extends TableWithEditFormBaseProps,
+    Omit<
       TableProps,
+      | "children"
       | "config"
       | "customHeader"
       | "dataSource"
       | "isRowSelectable"
       | "onError"
       | "selectionModel"
-    >,
-    Pick<
-      EditFormHookProps,
-      "deleteMode" | "editSessionApi" | "onError" | "rowDefaults"
     > {
   /** Show a New button that opens an empty form for adding a row. */
   allowCreate?: boolean;
+  children?: undefined;
   config: TableConfig;
-  /** Asked before a form with unsaved changes is discarded. */
-  confirmCancel?: () => boolean | Promise<boolean>;
   /** Fields for the create form. Defaults to `fields`. */
   createFields?: readonly TableWithEditFormField[];
   createTitle?: ReactNode;
-  dataSource: DataSource;
   /** Fields for the detail form, in tab order. */
   fields?: readonly TableWithEditFormField[];
   /** Title shown in the side panel header. */
   formTitle?: ReactNode | ((dataRow: DataRow) => ReactNode);
-  onModeChange?: (mode: TableWithEditFormMode) => void;
   /** Applied to the SidePanel, e.g. to set `--saltSidePanel-width`. */
   panelClassName?: string;
-  /** @default "on-select" */
-  panelVisibility?: TableWithEditFormPanelVisibility;
   /** Shown in the side panel when no row is selected. */
   placeholder?: ReactNode;
   testId?: string;
@@ -85,6 +103,10 @@ export interface TableWithEditFormProps
   /** Validator for the create form. Defaults to `validate`. */
   validateCreate?: EditFormValidator;
 }
+
+export type TableWithEditFormProps =
+  | TableWithEditFormComposedProps
+  | TableWithEditFormDefaultProps;
 
 const classBase = "vuuTableWithEditForm";
 
@@ -106,7 +128,7 @@ const EditButton = ({ testId }: { testId: string }) => {
 const PanelTitle = ({
   createTitle,
   formTitle,
-}: Pick<TableWithEditFormProps, "createTitle" | "formTitle">) => {
+}: Pick<TableWithEditFormDefaultProps, "createTitle" | "formTitle">) => {
   const { mode, selectedRow } = useTableEditor();
   const title =
     mode === "create"
@@ -119,19 +141,36 @@ const PanelTitle = ({
   return title ? <SidePanelTitle>{title}</SidePanelTitle> : null;
 };
 
-interface TableWithEditFormLayoutProps {
-  className?: string;
-  style?: CSSProperties;
-  children: ReactNode;
-}
+type DefaultLayoutProps = Omit<
+  TableWithEditFormDefaultProps,
+  keyof TableWithEditFormBaseProps
+>;
 
-const TableWithEditFormLayout = ({
-  children,
+const DefaultLayout = ({
+  allowCreate = true,
   className,
+  config,
+  createFields,
+  createTitle = "New",
+  fields = NO_FIELDS,
+  formTitle,
+  panelClassName,
+  placeholder = "Select a row to see its details",
   style,
-  testId,
-}: TableWithEditFormLayoutProps & { testId: string }) => {
+  testId = "",
+  toolbar,
+  validate,
+  validateCreate = validate,
+  ...tableProps
+}: DefaultLayoutProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-table-with-edit-form",
+    css: tableWithEditFormCss,
+    window: targetWindow,
+  });
   const { mode, panelOpen } = useTableEditor();
+
   return (
     <div
       className={cx(classBase, className, `${classBase}-${mode}`, {
@@ -140,7 +179,45 @@ const TableWithEditFormLayout = ({
       data-testid={`table-with-edit-form${testId}`}
       style={style}
     >
-      {children}
+      <div className={`${classBase}-main`}>
+        <div className={`${classBase}-toolbar`}>
+          <EditButton testId={testId} />
+          {allowCreate ? (
+            <TableEditorNewButton data-testid={`new-button${testId}`} />
+          ) : null}
+          {toolbar}
+        </div>
+        <div className={`${classBase}-table`}>
+          <TableEditorTable
+            data-testid={`table${testId}`}
+            {...tableProps}
+            config={config}
+          />
+        </div>
+      </div>
+      <SidePanel
+        className={cx(`${classBase}-panel`, panelClassName)}
+        data-testid={`edit-panel${testId}`}
+        position="right"
+      >
+        <SidePanelHeader className={`${classBase}-panelHeader`}>
+          <PanelTitle createTitle={createTitle} formTitle={formTitle} />
+          <TableEditorPanelCloseButton />
+        </SidePanelHeader>
+        <SidePanelContent className={`${classBase}-detail`}>
+          <TableEditorForm
+            data-testid={`edit-form${testId}`}
+            fields={fields}
+            placeholder={placeholder}
+            validate={validate}
+          />
+          <TableEditorCreateForm
+            data-testid={`create-form${testId}`}
+            fields={createFields ?? fields}
+            validate={validateCreate}
+          />
+        </SidePanelContent>
+      </SidePanel>
     </div>
   );
 };
@@ -152,47 +229,31 @@ const TableWithEditFormLayout = ({
  * - Selecting a row shows it, read-only, in the form. With
  *   `panelVisibility="on-select"` (the default) this opens the side panel.
  * - Edit makes the form editable; Save/Cancel return to read-only.
- * - New (when `allowCreate`) shows an empty form; Create adds the row.
+ * - New shows an empty form; Create adds the row.
  *
  * Row selection is locked, and the side panel cannot be closed, while a
  * form is being edited, so changes cannot be lost by clicking another row.
  * Use `confirmCancel` to guard Cancel.
  *
- * This is the default layout of `TableEditorProvider editIn="form"`. For a
- * custom layout or form, compose `TableEditorTable`, `TableEditorForm` etc
- * within a `TableEditorProvider` directly.
+ * Without `children`, renders a toolbar, the table and a form generated from
+ * `fields`. With `children`, renders them instead: lay out
+ * `TableEditorTable`, a Salt `SidePanel` (opened and closed for you) with
+ * `TableEditorForm` and `TableEditorCreateForm`, and the other `TableEditor`
+ * controls however you like. Read the state with `useTableEditor`.
  */
-export const TableWithEditForm = ({
-  allowCreate = true,
-  className,
-  config,
-  confirmCancel,
-  createFields,
-  createTitle = "New",
-  dataSource,
-  deleteMode,
-  editSessionApi,
-  fields = NO_FIELDS,
-  formTitle,
-  onError,
-  onModeChange,
-  panelClassName,
-  panelVisibility = "on-select",
-  placeholder = "Select a row to see its details",
-  rowDefaults,
-  style,
-  testId = "",
-  toolbar,
-  validate,
-  validateCreate = validate,
-  ...tableProps
-}: TableWithEditFormProps) => {
-  const targetWindow = useWindow();
-  useComponentCssInjection({
-    testId: "vuu-table-with-edit-form",
-    css: tableWithEditFormCss,
-    window: targetWindow,
-  });
+export const TableWithEditForm = (props: TableWithEditFormProps) => {
+  const {
+    children,
+    confirmCancel,
+    dataSource,
+    deleteMode,
+    editSessionApi,
+    onError,
+    onModeChange,
+    panelVisibility = "on-select",
+    rowDefaults,
+    ...layoutProps
+  } = props;
 
   return (
     <TableEditorProvider
@@ -206,51 +267,7 @@ export const TableWithEditForm = ({
       panelVisibility={panelVisibility}
       rowDefaults={rowDefaults}
     >
-      <TableWithEditFormLayout
-        className={className}
-        style={style}
-        testId={testId}
-      >
-        <div className={`${classBase}-main`}>
-          <div className={`${classBase}-toolbar`}>
-            <EditButton testId={testId} />
-            {allowCreate ? (
-              <TableEditorNewButton data-testid={`new-button${testId}`} />
-            ) : null}
-            {toolbar}
-          </div>
-          <div className={`${classBase}-table`}>
-            <TableEditorTable
-              data-testid={`table${testId}`}
-              {...tableProps}
-              config={config}
-            />
-          </div>
-        </div>
-        <SidePanel
-          className={cx(`${classBase}-panel`, panelClassName)}
-          data-testid={`edit-panel${testId}`}
-          position="right"
-        >
-          <SidePanelHeader className={`${classBase}-panelHeader`}>
-            <PanelTitle createTitle={createTitle} formTitle={formTitle} />
-            <TableEditorPanelCloseButton />
-          </SidePanelHeader>
-          <SidePanelContent className={`${classBase}-detail`}>
-            <TableEditorForm
-              data-testid={`edit-form${testId}`}
-              fields={fields}
-              placeholder={placeholder}
-              validate={validate}
-            />
-            <TableEditorCreateForm
-              data-testid={`create-form${testId}`}
-              fields={createFields ?? fields}
-              validate={validateCreate}
-            />
-          </SidePanelContent>
-        </SidePanel>
-      </TableWithEditFormLayout>
+      {children ?? <DefaultLayout {...(layoutProps as DefaultLayoutProps)} />}
     </TableEditorProvider>
   );
 };

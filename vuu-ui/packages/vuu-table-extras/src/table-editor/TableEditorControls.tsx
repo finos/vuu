@@ -22,7 +22,8 @@ export interface TableEditorButtonsProps {
 
 /**
  * Save and Cancel (and, for table editing with `allowDelete`, Delete)
- * buttons for the enclosing `TableEditorProvider`. Disabled outside edit
+ * buttons for the enclosing `EditableTable` or
+ * `TableWithEditForm`. Disabled outside edit
  * mode. When editing in a form, render them within `TableEditorForm` or
  * `TableEditorCreateForm`, with `showButtons={false}` on the form.
  */
@@ -76,7 +77,8 @@ export interface TableEditorModeToggleProps
 }
 
 /**
- * View/Edit toggle for the enclosing `TableEditorProvider`. Switching to View
+ * View/Edit toggle for the enclosing `EditableTable` or
+ * `TableWithEditForm`. Switching to View
  * discards changes, asking `confirmCancel` first. When editing in a form it
  * is disabled until a row is selected, and while a row is being created.
  */

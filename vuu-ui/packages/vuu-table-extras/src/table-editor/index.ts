@@ -22,10 +22,6 @@ export {
   type TableEditorFormProps,
 } from "./TableEditorForm";
 export {
-  TableEditorProvider,
-  type TableEditorProviderProps,
-} from "./TableEditorProvider";
-export {
   TableEditorTable,
   type TableEditorTableProps,
 } from "./TableEditorTable";

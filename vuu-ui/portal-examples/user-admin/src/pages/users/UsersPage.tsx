@@ -2,8 +2,8 @@ import { Avatar, SidePanelTitle, Tag } from "@salt-ds/core";
 import {
   TableEditorForm,
   TableEditorPanelCloseButton,
-  TableEditorProvider,
   TableEditorTable,
+  TableWithEditForm,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
 import { PanelHeading } from "../../components/admin-ui/AdminUi";
@@ -46,7 +46,7 @@ const UserHeading = () => {
 export const UsersPage = () => {
   const { application, config, dataSource, setApplication } = useUsersPage();
   return (
-    <TableEditorProvider dataSource={dataSource} editIn="form">
+    <TableWithEditForm dataSource={dataSource}>
       <AdminTablePage
         dataSource={dataSource}
         description="Grant application access by adding users to an application's groups."
@@ -68,6 +68,6 @@ export const UsersPage = () => {
         table={<TableEditorTable config={config} rowHeight={USER_ROW_HEIGHT} />}
         title="Users"
       />
-    </TableEditorProvider>
+    </TableWithEditForm>
   );
 };
