@@ -99,3 +99,67 @@
   justify-content: flex-end;
   padding-top: 22px;
 }
+
+.ShowcaseExampleTabs {
+  border-bottom: 1px solid var(--sc-border);
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--sc-space-6);
+  padding: 0 var(--sc-space-8);
+}
+
+.ShowcaseExampleTabs-tab {
+  align-items: center;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--sc-text-3);
+  cursor: pointer;
+  display: inline-flex;
+  font: 600 14px/1 var(--sc-font);
+  gap: 6px;
+  margin-bottom: -1px;
+  padding: var(--sc-space-3) 0;
+
+  &:hover {
+    color: var(--sc-text);
+  }
+
+  &[aria-selected="true"] {
+    border-bottom-color: var(--sc-accent);
+    color: var(--sc-text);
+  }
+
+  &:focus-visible {
+    border-radius: var(--sc-radius-sm);
+    outline: 2px solid var(--sc-focus);
+  }
+}
+
+.ShowcaseExampleTabs-count {
+  background: var(--sc-surface-2);
+  border-radius: 999px;
+  color: var(--sc-text-3);
+  font-size: 11px;
+  padding: 2px 6px;
+}
+
+.ShowcaseExamplePage-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.ShowcaseExamplePage-docFrame {
+  flex: 1 1 auto;
+  min-height: 0;
+
+  > .ShowCaseIFrame {
+    display: block;
+  }
+}
