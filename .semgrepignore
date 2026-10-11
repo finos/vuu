@@ -38,3 +38,5 @@ vuu-ui/tools/vuu-showcase/scripts/utils.ts
 vuu-ui/tools/vuu-showcase/scripts/treeSourceFromFileSystem.ts
 vuu-ui/tools/vuu-showcase/src/showcase-utils.ts
 
+vuu-ui/tools/vuu-showcase/src/theme-browser/ThemeSandbox.ts
+vuu-ui/tools/vuu-theme-model/src/build-theme-stylesheet.ts
