@@ -161,9 +161,10 @@ const InstrumentEditor = ({ dataSource }) => (
 
 See the showcase examples `EditForms / TableWithForm`,
 `TableWithFormAlwaysVisible` and `TableWithCustomForm`, and the user-admin
-`UsersPage` and `GroupsPage`. `UsersPage` keeps its own page layout and a form
-with tabs and a module permissions picker; `GroupsPage` also has a custom
-create form.
+`UsersPage`, `GroupsPage` and `RolesPage`. `UsersPage` keeps its own page
+layout and a form with tabs and a module permissions picker; `GroupsPage` and
+`RolesPage` also have custom create forms. `RolesPage` picks a different form
+for each row, using `useEditFormContext().dataRow` inside `TableEditorForm`.
 
 ### Custom create forms
 
@@ -199,6 +200,10 @@ const CreateGroupForm = () => {
 
 - `setValue(name, value)` also clears a validation error keyed by `name`, so
   keying errors to the value they describe clears them as the user edits.
+  `EditField`s in a create form go through `setValue` too.
+- If the row is added but the save then fails, the error is shown and Create
+  stays enabled. Clicking it again retries the save without adding the row a
+  second time.
 - Local state in the create form survives between creates unless it remounts.
   Render it only while `useTableEditor().mode === "create"` to start each new
   row from a blank form.

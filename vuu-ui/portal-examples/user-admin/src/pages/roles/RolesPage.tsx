@@ -1,17 +1,17 @@
-import {
-  Avatar,
-  Button,
-  SidePanel,
-  SidePanelCloseButton,
-  SidePanelContent,
-  SidePanelHeader,
-  SidePanelProvider,
-  Tag,
-} from "@salt-ds/core";
+import { Avatar, SidePanelContent, Tag } from "@salt-ds/core";
 import { KeyIcon } from "@salt-ds/icons";
-import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
-import { Table } from "@vuu-ui/vuu-table";
-import type { DataRow } from "@vuu-ui/vuu-table-types";
+import {
+  TableEditorForm,
+  TableEditorNewButton,
+  TableWithEditForm,
+  TableWithEditFormPanel,
+  TableWithEditFormPanelHeader,
+  TableWithEditFormTable,
+  TableWithEditFormTablePanel,
+  useTableEditor,
+} from "@vuu-ui/vuu-table-extras";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   AccessTag,
   AppTag,
@@ -27,14 +27,19 @@ import {
   useApplicationCategory,
 } from "../../components/admin-ui/AdminUi";
 import { ApplicationFilter } from "../../components/ApplicationFilter";
-import { RolesEditForm } from "../../components/roles-edit-form/RolesEditForm";
+import {
+  CreateRoleForm,
+  RoleEditForm,
+} from "../../components/roles-edit-form/RolesEditForm";
 import { classifyRole } from "../../data/applications";
 import { useApplications } from "../../data/useApplicationModel";
 import { ROLE_ROW_HEIGHT, useRolesPage } from "./useRolesPage";
 
-const RoleHeading = ({ dataRow }: { dataRow?: DataRow }) => {
+const RoleHeading = () => {
+  const { mode, selectedRow } = useTableEditor();
   const { applications } = useApplications();
-  const isNew = dataRow?.role_id === undefined;
+  const isNew = mode === "create";
+  const dataRow = isNew ? undefined : selectedRow;
   const match = isNew
     ? undefined
     : classifyRole(
@@ -76,69 +81,54 @@ const RoleHeading = ({ dataRow }: { dataRow?: DataRow }) => {
   );
 };
 
-export const RolesPage = () => {
-  const {
-    application,
-    close,
-    config,
-    createRole,
-    dataRow,
-    dataSource,
-    onSelect,
-    open,
-    setApplication,
-    setOpen,
-  } = useRolesPage();
+/** Starts creating a role when the page is opened with `?create=true`. */
+const CreateRoleFromSearchParams = () => {
+  const { startCreate } = useTableEditor();
+  const [params, setParams] = useSearchParams();
+  useEffect(() => {
+    if (params.get("create") === "true") {
+      startCreate();
+      const next = new URLSearchParams(params);
+      next.delete("create");
+      setParams(next, { replace: true });
+    }
+  }, [params, setParams, startCreate]);
+  return null;
+};
 
+export const RolesPage = () => {
+  const { application, config, dataSource, setApplication } = useRolesPage();
   return (
-    <EditModeProvider isEditMode={dataRow && dataRow?.role_id === undefined}>
-      <SidePanelProvider onOpenChange={setOpen} open={open}>
-        <div className="vuuIdentityAdmin-pageWithPanel">
-          <section className="vuuIdentityAdmin-page">
-            <PageHeader
-              description="Access roles open an application; application roles grant what users can do in it."
-              title="Roles"
-            >
-              <PageHeaderActions>
-                <Button onClick={createRole} sentiment="accented">
-                  <KeyIcon aria-hidden /> Create role
-                </Button>
-              </PageHeaderActions>
-            </PageHeader>
-            <AdminToolbar>
-              <ApplicationFilter
-                onChange={setApplication}
-                value={application}
-              />
-              <RowCount dataSource={dataSource} noun="role" />
-            </AdminToolbar>
-            <div className="vuuIdentityAdmin-tableCard">
-              <Table
-                config={config}
-                dataSource={dataSource}
-                onSelect={onSelect}
-                rowHeight={ROLE_ROW_HEIGHT}
-              />
-            </div>
-          </section>
-          <SidePanel className="vuuIdentityAdmin-panel" position="right">
-            <SidePanelHeader>
-              <RoleHeading dataRow={dataRow} />
-              <SidePanelCloseButton />
-            </SidePanelHeader>
-            <SidePanelContent>
-              {dataRow ? (
-                <RolesEditForm
-                  application={application}
-                  dataRow={dataRow}
-                  dataSource={dataSource}
-                  onClose={close}
-                />
-              ) : null}
-            </SidePanelContent>
-          </SidePanel>
-        </div>
-      </SidePanelProvider>
-    </EditModeProvider>
+    <TableWithEditForm dataSource={dataSource}>
+      <CreateRoleFromSearchParams />
+      <TableWithEditFormTablePanel className="vuuIdentityAdmin-page">
+        <PageHeader
+          description="Access roles open an application; application roles grant what users can do in it."
+          title="Roles"
+        >
+          <PageHeaderActions>
+            <TableEditorNewButton sentiment="accented">
+              <KeyIcon aria-hidden /> Create role
+            </TableEditorNewButton>
+          </PageHeaderActions>
+        </PageHeader>
+        <AdminToolbar>
+          <ApplicationFilter onChange={setApplication} value={application} />
+          <RowCount dataSource={dataSource} noun="role" />
+        </AdminToolbar>
+        <TableWithEditFormTable config={config} rowHeight={ROLE_ROW_HEIGHT} />
+      </TableWithEditFormTablePanel>
+      <TableWithEditFormPanel className="vuuIdentityAdmin-panel">
+        <TableWithEditFormPanelHeader>
+          <RoleHeading />
+        </TableWithEditFormPanelHeader>
+        <SidePanelContent>
+          <TableEditorForm>
+            <RoleEditForm />
+          </TableEditorForm>
+          <CreateRoleForm application={application} />
+        </SidePanelContent>
+      </TableWithEditFormPanel>
+    </TableWithEditForm>
   );
 };

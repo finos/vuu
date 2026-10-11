@@ -125,6 +125,14 @@ export const useEditForm = ({
   const [validationErrors, setValidationErrors] =
     useState<EditFormFieldErrors>(EMPTY_ERRORS);
   const savingRef = useRef(false);
+  // Create mode: the row has been added but the session has not yet been
+  // saved. A retry after a failed save must not add the row again.
+  const rowAddedRef = useRef(false);
+  const [rowAdded, setRowAdded] = useState(false);
+  const markRowAdded = useCallback((added: boolean) => {
+    rowAddedRef.current = added;
+    setRowAdded(added);
+  }, []);
 
   const callbacksRef = useRef({ onCancelled, onError, onSaved, validate });
   callbacksRef.current = { onCancelled, onError, onSaved, validate };
@@ -160,11 +168,12 @@ export const useEditForm = ({
   useEffect(() => {
     setError(undefined);
     setValidationErrors(EMPTY_ERRORS);
+    markRowAdded(false);
     const transition = isEditMode
       ? editSession.begin(isCreate ? "Empty" : "Selected")
       : editSession.end();
     transition.catch((cause) => fail(cause, isEditMode ? "begin" : "cancel"));
-  }, [editSession, fail, isCreate, isEditMode]);
+  }, [editSession, fail, isCreate, isEditMode, markRowAdded]);
 
   useEffect(
     () => () => {
@@ -195,17 +204,19 @@ export const useEditForm = ({
         return false;
       }
       setError(undefined);
-      const errors = callbacksRef.current.validate?.(getValues());
-      if (hasErrors(errors)) {
-        setValidationErrors(errors as EditFormFieldErrors);
-        return false;
+      if (!rowAddedRef.current) {
+        const errors = callbacksRef.current.validate?.(getValues());
+        if (hasErrors(errors)) {
+          setValidationErrors(errors as EditFormFieldErrors);
+          return false;
+        }
+        setValidationErrors(EMPTY_ERRORS);
       }
-      setValidationErrors(EMPTY_ERRORS);
 
       savingRef.current = true;
       setSaving(true);
       try {
-        if (isCreate) {
+        if (isCreate && !rowAddedRef.current) {
           const response = await editSession.addNewRow();
           if (isRpcError(response)) {
             setError(new Error(response.errorMessage));
@@ -214,8 +225,10 @@ export const useEditForm = ({
             // missing required values, errors are shown against the fields
             return false;
           }
+          markRowAdded(true);
         }
         await editSession.end(true, force);
+        markRowAdded(false);
         callbacksRef.current.onSaved?.();
         return true;
       } catch (cause) {
@@ -226,20 +239,21 @@ export const useEditForm = ({
         setSaving(false);
       }
     },
-    [editSession, fail, getValues, isCreate],
+    [editSession, fail, getValues, isCreate, markRowAdded],
   );
 
   /** Discards all changes and ends the edit session. */
   const cancel = useCallback(async () => {
     try {
       await editSession.end();
+      markRowAdded(false);
       setValidationErrors(EMPTY_ERRORS);
       setError(undefined);
       callbacksRef.current.onCancelled?.();
     } catch (cause) {
       fail(cause, "cancel");
     }
-  }, [editSession, fail]);
+  }, [editSession, fail, markRowAdded]);
 
   /** Create mode: stage a value without rendering an EditField. */
   const setValue = useCallback(
@@ -275,7 +289,9 @@ export const useEditForm = ({
     canSave:
       !saving &&
       (isCreate
-        ? sessionState.isActive && editSession.isNewRowComplete()
+        ? rowAdded
+          ? sessionState.inEditMode
+          : sessionState.isActive && editSession.isNewRowComplete()
         : sessionState.canSave),
     cancel,
     /** The row being edited, a new-row placeholder in create mode. */
@@ -287,6 +303,8 @@ export const useEditForm = ({
     isDirty,
     isEditMode,
     mode,
+    /** Create mode: the row was added, saving the session failed. */
+    rowAdded,
     saving,
     setValue,
     submit,

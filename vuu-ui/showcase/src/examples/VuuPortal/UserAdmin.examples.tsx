@@ -3,31 +3,22 @@ import {
   PortalModuleRegistryProvider,
   type RemoteModuleDescriptor,
 } from "@vuu-ui/core/portal";
-import type {
-  DataSourceSubscribeCallback,
-  SchemaColumn,
-} from "@vuu-ui/vuu-data-types";
-import { dataRowFactory, type DataRowFunc } from "@vuu-ui/vuu-table";
-import type { DataRow, TableConfig } from "@vuu-ui/vuu-table-types";
-import { Range } from "@vuu-ui/vuu-utils";
+import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import {
   createMemoryRouter,
   MemoryRouter,
   RouterProvider,
 } from "react-router-dom";
-import {
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { ModulePicker } from "user-admin";
 import {
   CreateGroupForm,
   GroupEditForm,
 } from "user-admin/src/components/groups-edit-form/GroupsEditForm";
-import { RolesEditForm } from "user-admin/src/components/roles-edit-form/RolesEditForm";
+import {
+  CreateRoleForm,
+  RoleEditForm,
+} from "user-admin/src/components/roles-edit-form/RolesEditForm";
 import { UserEditForm } from "user-admin/src/components/user-edit-form/UserEditForm";
 import { ModulePickerModuleDescriptor } from "user-admin/src/components/module-picker/ModulePicker";
 import { ApplicationModelProvider } from "user-admin/src/data/ApplicationModelProvider";
@@ -47,7 +38,6 @@ import {
   TableEditorTable,
   TableWithEditForm,
 } from "@vuu-ui/vuu-table-extras";
-import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
 import UserAdmin from "user-admin/src/UserAdmin";
 
 import "user-admin/src/UserAdmin.css";
@@ -214,10 +204,23 @@ const GROUP_COLUMNS = [
   "role_count",
 ];
 
+const ROLE_TABLE_CONFIG: TableConfig = {
+  columns: [
+    { name: "role_name", label: "Role", width: 220 },
+    { name: "client_identifier", label: "Client", width: 180 },
+    { name: "group_count", label: "Groups", width: 100 },
+  ],
+  columnLayout: "fit",
+};
+
+/**
+ * RoleEditForm renders within a TableEditorForm, editing the row selected
+ * in the TableEditorTable alongside it. CreateRoleForm is shown instead
+ * while a role is being created.
+ */
 /** tags=data-consumer */
 export const DefaultRolesEditPage = () => {
   const { VuuDataSource } = useData();
-  const [dataRow, setDataRow] = useState<DataRow>();
   const dataSource = useMemo(
     () =>
       new VuuDataSource({
@@ -227,57 +230,34 @@ export const DefaultRolesEditPage = () => {
     [VuuDataSource],
   );
 
-  useEffect(() => {
-    let active = true;
-    let DataRow: DataRowFunc | undefined;
-    const subscribe: DataSourceSubscribeCallback = (message) => {
-      if (!active) return;
-      if (message.type === "subscribed") {
-        [DataRow] = dataRowFactory(
-          message.columns,
-          message.tableSchema.columns as readonly SchemaColumn[],
-        );
-      } else if (message.type === "subscribe-failed") {
-        console.error(
-          `Role editor data source subscription failed: ${message.msg}`,
-        );
-      } else if (message.type === "viewport-update" && message.rows?.[0]) {
-        if (!DataRow) {
-          console.error(
-            "The role table sent rows before supplying its column metadata.",
-          );
-          return;
-        }
-        setDataRow(DataRow(message.rows[0]));
-      }
-    };
-
-    void dataSource
-      .subscribe({ range: Range(0, 1) }, subscribe)
-      .catch((cause: unknown) => {
-        if (active) {
-          console.error("Role editor data source subscription failed:", cause);
-        }
-      });
-
-    return () => {
-      active = false;
-      dataSource.unsubscribe();
-    };
-  }, [dataSource]);
-
   return (
-    <div style={{ width: 480, height: 500 }}>
-      {dataRow ? (
-        <AdminContext>
-          <EditModeProvider>
-            <RolesEditForm dataRow={dataRow} dataSource={dataSource} />
-          </EditModeProvider>
-        </AdminContext>
-      ) : (
-        <p role="status">Loading role...</p>
-      )}
-    </div>
+    <AdminContext>
+      <TableWithEditForm dataSource={dataSource}>
+        <div style={{ display: "flex", gap: 16, height: 800 }}>
+          <div
+            style={{
+              display: "flex",
+              flex: "1 1 auto",
+              flexDirection: "column",
+              gap: 8,
+              minWidth: 0,
+            }}
+          >
+            <TableEditorNewButton style={{ alignSelf: "flex-start" }}>
+              Create role
+            </TableEditorNewButton>
+            <TableEditorTable config={ROLE_TABLE_CONFIG} />
+          </div>
+          <div style={{ flex: "0 0 480px" }}>
+            <TableEditorPlaceholder>Select a role</TableEditorPlaceholder>
+            <TableEditorForm>
+              <RoleEditForm />
+            </TableEditorForm>
+            <CreateRoleForm />
+          </div>
+        </div>
+      </TableWithEditForm>
+    </AdminContext>
   );
 };
 

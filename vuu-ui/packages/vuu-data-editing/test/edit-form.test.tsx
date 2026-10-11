@@ -276,6 +276,59 @@ describe("CreateRowForm", () => {
     expect(dataSource.addRow).toHaveBeenCalledTimes(2);
     expect(onSaved).toHaveBeenCalled();
   });
+
+  it("retries a failed save without adding the row again", async () => {
+    const dataSource = createDataSource();
+    dataSource.endEditSession = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("Session failure"))
+      .mockResolvedValue(undefined);
+    const onSaved = vi.fn();
+    await act(async () => {
+      root.render(
+        <CreateRowForm
+          dataSource={dataSource}
+          fields={[{ label: "Name", name: "name" }]}
+          onSaved={onSaved}
+        />,
+      );
+      await flush();
+    });
+    const [name] = Array.from(container.querySelectorAll("input"));
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value",
+      )?.set?.call(name, "Alice");
+      name.dispatchEvent(new Event("input", { bubbles: true }));
+      await flush();
+    });
+    const submit = () =>
+      act(async () => {
+        container
+          .querySelector("form")
+          ?.dispatchEvent(
+            new Event("submit", { bubbles: true, cancelable: true }),
+          );
+        await flush();
+        await flush();
+      });
+
+    await submit();
+    expect(container.querySelector(".vuuEditForm-error")?.textContent).toBe(
+      "Session failure",
+    );
+    expect(onSaved).not.toHaveBeenCalled();
+    const save = Array.from(container.querySelectorAll("button")).find(
+      (b) => b.textContent === "Create",
+    );
+    expect(save?.disabled).toBe(false);
+
+    await submit();
+    expect(dataSource.addRow).toHaveBeenCalledTimes(1);
+    expect(dataSource.endEditSession).toHaveBeenCalledTimes(2);
+    expect(onSaved).toHaveBeenCalled();
+  });
 });
 
 describe("getDataRowValues", () => {
