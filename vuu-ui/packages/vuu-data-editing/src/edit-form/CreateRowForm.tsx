@@ -28,12 +28,14 @@ export interface CreateRowFormProps
   children?: ReactNode;
   /**
    * Fields, in tab order. Every field is required unless it sets
-   * `required: false`.
+   * `required: false`. Omit to compose custom editors as `children`, which
+   * stage their values with `setValue` from `useEditFormContext`.
    */
-  fields: readonly CreateRowFormField[];
+  fields?: readonly CreateRowFormField[];
 }
 
 const NEW_ROW = { key: EditSession.newRowKey } as DataRow;
+const NO_FIELDS: readonly CreateRowFormField[] = [];
 
 /**
  * A form that adds one row to `dataSource`. Renders an `EditField` per entry
@@ -46,7 +48,7 @@ const NEW_ROW = { key: EditSession.newRowKey } as DataRow;
  */
 export const CreateRowForm = ({
   children,
-  fields,
+  fields = NO_FIELDS,
   ...props
 }: CreateRowFormProps) => {
   const fieldNames = fields.map(({ name }) => name).join();

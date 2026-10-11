@@ -71,7 +71,7 @@ editing props (`dataSource`, `confirmCancel`, `panelVisibility`, `rowDefaults`,
 | `TableWithEditFormPanel` | The Salt `SidePanel` for the form, on the right. Opens and closes with the selection. Takes `SidePanel` props, such as `className` and `style`; compose `TableWithEditFormPanelHeader` and `SidePanelContent` inside it. |
 | `TableWithEditFormPanelHeader` | The panel's `SidePanelHeader`. Its first child fills the width and a close button follows; pass `canClose={false}` to leave the close button out. Takes `SidePanelHeader` props. |
 | `TableEditorForm` | The form for the selected row. Renders `children`, or an `EditField` per entry in `fields`. Renders nothing when no row is selected. Takes `EditForm` props such as `validate` and `title`. Renders its own Save and Cancel only without `children`; with `children`, place `TableEditorButtons` yourself. |
-| `TableEditorCreateForm` | The form for a new row, shown in create mode. Takes `CreateRowForm` props. |
+| `TableEditorCreateForm` | The form for a new row, shown in create mode. Takes `CreateRowForm` props. Renders `children` after any `fields`; see [Custom create forms](#custom-create-forms). |
 | `TableEditorPlaceholder` | Its `children`, shown only when no row is selected and no row is being created. |
 | `TableEditorToolbar` | A row for controls above the table. |
 | `TableEditorEditButton` | Makes the selected row's form editable. |
@@ -155,11 +155,53 @@ const InstrumentEditor = ({ dataSource }) => (
   ends. There's no need to track or reset the value yourself.
 - After a save, `selectedRow` holds the saved values, so headers built from it
   update immediately.
+- `TableEditorForm` and `TableEditorCreateForm` take `onSaved` and
+  `onCancelled`, for side effects such as a notification. They run before the
+  panel is updated, so there's no need to close or reset anything yourself.
 
 See the showcase examples `EditForms / TableWithForm`,
 `TableWithFormAlwaysVisible` and `TableWithCustomForm`, and the user-admin
-`UsersPage`, which keeps its own page layout and a form with tabs and a module
-permissions picker.
+`UsersPage` and `GroupsPage`. `UsersPage` keeps its own page layout and a form
+with tabs and a module permissions picker; `GroupsPage` also has a custom
+create form.
+
+### Custom create forms
+
+When a new row's values aren't one input per column, leave out `fields` and
+render your own editors as `children`. Stage each value with `setValue` from
+`useEditFormContext()`; staged values are what `validate` receives and what is
+added when the user clicks Create.
+
+```tsx
+const NewGroupValues = ({ groupName, roleAssignments }) => {
+  const { fieldErrors, setValue } = useEditFormContext();
+  useEffect(() => setValue("group_name", groupName), [groupName, setValue]);
+  useEffect(
+    () => setValue("role_assignments", roleAssignments),
+    [roleAssignments, setValue],
+  );
+  return fieldErrors.group_name ? (
+    <p role="alert">{fieldErrors.group_name}</p>
+  ) : null;
+};
+
+const CreateGroupForm = () => {
+  const [suffix, setSuffix] = useState("");
+  // ... other local state
+  return (
+    <TableEditorCreateForm onSaved={notifyCreated} validate={validate}>
+      <Input value={suffix} onChange={(e) => setSuffix(e.target.value)} />
+      <NewGroupValues groupName={groupName} roleAssignments={roleAssignments} />
+    </TableEditorCreateForm>
+  );
+};
+```
+
+- `setValue(name, value)` also clears a validation error keyed by `name`, so
+  keying errors to the value they describe clears them as the user edits.
+- Local state in the create form survives between creates unless it remounts.
+  Render it only while `useTableEditor().mode === "create"` to start each new
+  row from a blank form.
 
 ## Fields
 

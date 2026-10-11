@@ -8,7 +8,7 @@ import type {
   SchemaColumn,
 } from "@vuu-ui/vuu-data-types";
 import { dataRowFactory, type DataRowFunc } from "@vuu-ui/vuu-table";
-import type { DataRow } from "@vuu-ui/vuu-table-types";
+import type { DataRow, TableConfig } from "@vuu-ui/vuu-table-types";
 import { Range } from "@vuu-ui/vuu-utils";
 import {
   createMemoryRouter,
@@ -23,7 +23,10 @@ import {
   useState,
 } from "react";
 import { ModulePicker } from "user-admin";
-import { GroupsEditForm } from "user-admin/src/components/groups-edit-form/GroupsEditForm";
+import {
+  CreateGroupForm,
+  GroupEditForm,
+} from "user-admin/src/components/groups-edit-form/GroupsEditForm";
 import { RolesEditForm } from "user-admin/src/components/roles-edit-form/RolesEditForm";
 import { UserEditForm } from "user-admin/src/components/user-edit-form/UserEditForm";
 import { ModulePickerModuleDescriptor } from "user-admin/src/components/module-picker/ModulePicker";
@@ -39,6 +42,7 @@ import {
 } from "user-admin/src/pages/users/usersTable";
 import {
   TableEditorForm,
+  TableEditorNewButton,
   TableEditorPlaceholder,
   TableEditorTable,
   TableWithEditForm,
@@ -284,10 +288,23 @@ export const DefaultRolesPage = () => (
   </AdminContext>
 );
 
+const GROUP_TABLE_CONFIG: TableConfig = {
+  columns: [
+    { name: "group_display_name", label: "Group", width: 200 },
+    { name: "user_count", label: "Members", width: 100 },
+    { name: "role_count", label: "Roles", width: 100 },
+  ],
+  columnLayout: "fit",
+};
+
+/**
+ * GroupEditForm renders within a TableEditorForm, editing the row selected
+ * in the TableEditorTable alongside it. CreateGroupForm is shown instead
+ * while a group is being created.
+ */
 /** tags=data-consumer */
 export const DefaultGroupsEditPage = () => {
   const { VuuDataSource } = useData();
-  const [dataRow, setDataRow] = useState<DataRow>();
   const dataSource = useMemo(
     () =>
       new VuuDataSource({
@@ -297,57 +314,34 @@ export const DefaultGroupsEditPage = () => {
     [VuuDataSource],
   );
 
-  useEffect(() => {
-    let active = true;
-    let DataRow: DataRowFunc | undefined;
-    const subscribe: DataSourceSubscribeCallback = (message) => {
-      if (!active) return;
-      if (message.type === "subscribed") {
-        [DataRow] = dataRowFactory(
-          message.columns,
-          message.tableSchema.columns as readonly SchemaColumn[],
-        );
-      } else if (message.type === "subscribe-failed") {
-        console.error(
-          `Group editor data source subscription failed: ${message.msg}`,
-        );
-      } else if (message.type === "viewport-update" && message.rows?.[0]) {
-        if (!DataRow) {
-          console.error(
-            "The group table sent rows before supplying its column metadata.",
-          );
-          return;
-        }
-        setDataRow(DataRow(message.rows[0]));
-      }
-    };
-
-    void dataSource
-      .subscribe({ range: Range(0, 1) }, subscribe)
-      .catch((cause: unknown) => {
-        if (active) {
-          console.error("Group editor data source subscription failed:", cause);
-        }
-      });
-
-    return () => {
-      active = false;
-      dataSource.unsubscribe();
-    };
-  }, [dataSource]);
-
   return (
-    <div style={{ width: 480, height: 600 }}>
-      {dataRow ? (
-        <AdminContext>
-          <EditModeProvider>
-            <GroupsEditForm dataRow={dataRow} dataSource={dataSource} />
-          </EditModeProvider>
-        </AdminContext>
-      ) : (
-        <p role="status">Loading group...</p>
-      )}
-    </div>
+    <AdminContext>
+      <TableWithEditForm dataSource={dataSource}>
+        <div style={{ display: "flex", gap: 16, height: 800 }}>
+          <div
+            style={{
+              display: "flex",
+              flex: "1 1 auto",
+              flexDirection: "column",
+              gap: 8,
+              minWidth: 0,
+            }}
+          >
+            <TableEditorNewButton style={{ alignSelf: "flex-start" }}>
+              Create group
+            </TableEditorNewButton>
+            <TableEditorTable config={GROUP_TABLE_CONFIG} />
+          </div>
+          <div style={{ flex: "0 0 480px" }}>
+            <TableEditorPlaceholder>Select a group</TableEditorPlaceholder>
+            <TableEditorForm>
+              <GroupEditForm />
+            </TableEditorForm>
+            <CreateGroupForm />
+          </div>
+        </div>
+      </TableWithEditForm>
+    </AdminContext>
   );
 };
 
