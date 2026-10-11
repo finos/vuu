@@ -14,6 +14,7 @@ import { recentStore, useFavourites, useRecent } from "./nav-store";
 import {
   buildSectionTree,
   createNavIndex,
+  getNavFrom,
   type NavNodeData,
   sectionFromPath,
   type ShowcaseSection,
@@ -67,7 +68,7 @@ export const ShowcaseNav = ({
   treeSource,
 }: ShowcaseNavProps) => {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const { pathname, state: locationState } = useLocation();
   const section = sectionFromPath(pathname);
 
   const sectionNavs = useMemo(() => {
@@ -79,6 +80,15 @@ export const ShowcaseNav = ({
   }, [treeSource]);
   const sectionNav = section === "theme" ? undefined : sectionNavs[section];
   const navIndex = sectionNav?.navIndex;
+  // A route opened from another page in this section, e.g an example opened
+  // from the document that embeds it, keeps that page highlighted.
+  const navFrom = getNavFrom(locationState);
+  const keyForRoute = (route: string) =>
+    sectionNav?.navIndex.keyForNearestPath(
+      navFrom !== undefined && sectionFromPath(navFrom) === section
+        ? navFrom
+        : route,
+    );
 
   // autoSelectRowKey determines the initial selection only. Selections made
   // in the nav itself need no help, but when the route changes by some other
@@ -88,7 +98,7 @@ export const ShowcaseNav = ({
   const route = normalisePath(pathname);
   const [navState, setNavState] = useState(() => ({
     generation: 0,
-    key: sectionNav?.navIndex.keyForNearestPath(route),
+    key: keyForRoute(route),
     route,
     sectionNav,
   }));
@@ -96,7 +106,7 @@ export const ShowcaseNav = ({
     const isExternalNavigation = navState.sectionNav === sectionNav;
     setNavState({
       generation: navState.generation + (isExternalNavigation ? 1 : 0),
-      key: sectionNav?.navIndex.keyForNearestPath(route),
+      key: keyForRoute(route),
       route,
       sectionNav,
     });

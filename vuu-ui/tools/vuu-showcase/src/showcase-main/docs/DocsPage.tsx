@@ -19,7 +19,7 @@ import { ChromeIcon } from "../chrome/ChromeIcon";
 import { getBreadcrumbs } from "../example/example-model";
 import { standaloneDocUrl, standaloneUrl } from "../example/preview-state";
 import { useShowcaseContext } from "../ShowcaseProvider";
-import type { NavNodeData } from "../tree-nav/nav-tree";
+import { navFromState, type NavNodeData } from "../tree-nav/nav-tree";
 import {
   DocsContext,
   type DocsContextValue,
@@ -75,7 +75,11 @@ const PageLink = ({ children, className, route }: PageLinkProps) => {
  * standalone document (one opened in its own window) navigates to other
  * documents in the same window, other routes open standalone if they can.
  */
-const useDocumentLinks = (treeSource: NavNode[], standalone: boolean) => {
+const useDocumentLinks = (
+  treeSource: NavNode[],
+  standalone: boolean,
+  docRoute: string,
+) => {
   const navigate = useNavigate();
   const { preview } = useShowcaseContext();
   const hrefForRoute = useCallback(
@@ -95,13 +99,16 @@ const useDocumentLinks = (treeSource: NavNode[], standalone: boolean) => {
   const navigateTo = useCallback(
     (route: string, anchor?: string) => {
       const href = hrefForRoute(route, anchor);
-      if (standalone && !isDocumentNode(findTreeNode(route, treeSource))) {
+      const isDocument = isDocumentNode(findTreeNode(route, treeSource));
+      if (standalone && !isDocument) {
         window.location.assign(href);
-      } else {
+      } else if (isDocument) {
         navigate(href);
+      } else {
+        navigate(href, { state: navFromState(docRoute) });
       }
     },
-    [hrefForRoute, navigate, standalone, treeSource],
+    [docRoute, hrefForRoute, navigate, standalone, treeSource],
   );
   return useMemo(
     () => ({ hrefForRoute, navigateTo }),
@@ -176,7 +183,7 @@ export const DocsPage = ({
   const [error, setError] = useState<string>();
   const [outline, setOutline] = useState<PageOutline>(EMPTY_OUTLINE);
 
-  const links = useDocumentLinks(treeSource, standalone);
+  const links = useDocumentLinks(treeSource, standalone, docRoute);
   const docsContext = useMemo<DocsContextValue>(
     () => ({ docRoute, documentPath, ...links }),
     [docRoute, documentPath, links],

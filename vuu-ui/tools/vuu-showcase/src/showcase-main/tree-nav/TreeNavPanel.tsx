@@ -12,11 +12,10 @@ const classBase = "vuuTreeNavPanel";
 
 const isNotHeading = ({ depth }: DataRow) => depth !== 1;
 
-export interface TreeNavPanelProps
-  extends Pick<
-    TreeTableProps,
-    "autoSelectRowKey" | "onSelect" | "renderNodeAdornment" | "rowHeight"
-  > {
+export interface TreeNavPanelProps extends Pick<
+  TreeTableProps,
+  "autoSelectRowKey" | "onSelect" | "renderNodeAdornment" | "rowHeight"
+> {
   className?: string;
   /**
    * Filter applied to tree nodes. When provided, the panel is controlled and
