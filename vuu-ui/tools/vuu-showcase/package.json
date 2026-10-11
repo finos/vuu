@@ -10,7 +10,7 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
-    "@mdx-js/esbuild": "3.1.1",
+    "@mdx-js/loader": "3.1.1",
     "@mdx-js/rollup": "3.1.1",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
@@ -20,8 +20,7 @@
     "default-browser": "^5.2.1",
     "is-inside-container": "^1.0.0",
     "remark-directive": "^4.0.0",
-    "remark-gfm": "^4.0.1",
-    "serve-handler": "6.1.6"
+    "remark-gfm": "^4.0.1"
   },
   "dependencies": {
     "@fontsource/open-sans": "^4.5.13",

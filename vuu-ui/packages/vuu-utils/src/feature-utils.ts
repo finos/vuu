@@ -1,9 +1,9 @@
 import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { ListOption } from "@vuu-ui/vuu-table-types";
+import type { ListOption } from "@vuu-ui/vuu-table-types";
 import { partition } from "./array-utils";
 import { wordify } from "./text-utils";
-import React, { ReactElement } from "react";
+import React, { type ReactElement } from "react";
 import { getLayoutComponent } from "./component-registry";
 
 export type PathMap = {
@@ -36,6 +36,28 @@ export interface DynamicFeatureProps<P extends object | undefined = object> {
   url: string;
   width?: number;
 }
+
+export type FeatureModule = { default: React.ComponentType<object> };
+export type FeatureImporter = (url: string) => Promise<FeatureModule>;
+
+const importFeatureByUrl: FeatureImporter = (url) =>
+  import(/* webpackIgnore: true */ /* @vite-ignore */ url);
+
+let featureImporter: FeatureImporter = importFeatureByUrl;
+
+/**
+ * By default, a dynamic feature is loaded from its url with a native
+ * dynamic import. An application that bundles its features can install
+ * an importer that resolves feature urls to bundled modules. Use
+ * `importFeatureByUrl` as a fallback for unknown urls.
+ */
+export const setFeatureImporter = (importer: FeatureImporter) => {
+  featureImporter = importer;
+};
+
+export const importFeature = (url: string) => featureImporter(url);
+
+export { importFeatureByUrl };
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment

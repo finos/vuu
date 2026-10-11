@@ -1,18 +1,21 @@
-import { createFolder, formatDuration, writeFile } from "./utils.ts";
-import { build } from "./esbuild.ts";
-import { buildFileList } from "./build-file-list.ts";
-import fs from "fs";
+import { createRsbuild, rspack, type RsbuildConfig } from "@rsbuild/core";
+import { pluginReact } from "@rsbuild/plugin-react";
+import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import path from "path";
-import { treeSourceFromFileSystem } from "./treeSourceFromFileSystem";
-import type { Plugin, PluginBuild, OnLoadArgs } from "esbuild";
-import mdx from "@mdx-js/esbuild";
-import { mdxOptions } from "./mdx-options";
-import handler from "serve-handler";
-import http from "http";
-import https from "https";
-import { fileURLToPath } from "url";
 import { parseArgs } from "util";
-import { TreeSourceNode } from "@vuu-ui/vuu-utils";
+import { buildFileList } from "./build-file-list";
+import { mdxOptions } from "./mdx-options";
+import { treeSourceFromFileSystem } from "./treeSourceFromFileSystem";
+import { createFolder, writeFile } from "./utils";
+
+/**
+ * Production build of the Showcase, using rsbuild. Run from the showcase folder.
+ *
+ * Exhibits (examples and mdx documents) and features are loaded at runtime,
+ * by path. Rather than emit one module per source file, at a predictable url,
+ * we generate an entry module that maps each path to a lazy `import()`.
+ * This allows rspack to bundle and code split everything normally.
+ */
 
 const { values: args } = parseArgs({
   options: {
@@ -20,238 +23,178 @@ const { values: args } = parseArgs({
   },
 });
 
-type ProxyRoute = {
-  url: string;
-  remoteUrl: string;
+const pathToExhibits = "./src/examples";
+const pathToFeatures = "./src/features";
+const showcaseDir = process.cwd();
+const srcDir = path.resolve(showcaseDir, ".showcase/prod-src");
+const outDir = path.resolve(showcaseDir, ".showcase/prod");
+const showcaseRoot = path.resolve(import.meta.dirname, "../src/root.ts");
+
+// Components in these packages inject their own css, using salt
+// useComponentCssInjection. Their css must be imported as a string.
+const inlineCssPackages =
+  /[\\/]packages[\\/](grid-layout|vuu-chart|vuu-context-menu|vuu-datatable|vuu-data-react|vuu-filters|vuu-layout|vuu-notifications|vuu-popups|vuu-shell|vuu-table|vuu-table-extras|vuu-ui-controls)[\\/]/;
+
+const collectExhibitPaths = (
+  treeSourceNodes: TreeSourceNode[],
+  paths = new Set<string>(),
+) => {
+  for (const { childNodes, nodeData } of treeSourceNodes) {
+    const exhibitPath = (nodeData as { path?: string } | undefined)?.path;
+    if (exhibitPath) {
+      paths.add(exhibitPath);
+    }
+    if (childNodes) {
+      collectExhibitPaths(childNodes, paths);
+    }
+  }
+  return paths;
 };
 
-const pathToSrc = "./src/examples";
+const importPath = (filePath: string) =>
+  path
+    .relative(srcDir, path.resolve(showcaseDir, filePath))
+    .split(path.sep)
+    .join("/");
 
-const examples = buildFileList(pathToSrc, /examples.tsx$/);
-const mdxFiles = buildFileList(pathToSrc, /.mdx$/);
-const features = buildFileList("./src/features", /feature.tsx$/);
+const lazyImport = (filePath: string) =>
+  `() => import(${JSON.stringify(importPath(filePath))})`;
 
-// TODO use a separate build call for each theme, without bundling
-const themes = ["./src/themes/salt-theme-next.ts", "./src/themes/vuu-theme.ts"];
+const createEntryModule = (exhibitPaths: Set<string>) => {
+  const exhibits = Array.from(exhibitPaths)
+    .sort()
+    .map((p) => `  ${JSON.stringify(p)}: ${lazyImport(p)},`)
+    .join("\n");
 
-const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
-const currentDir = path.dirname(__filename); // get the name of the directory
-const showcaseIndex = path.join(currentDir, "../src/root.ts");
+  // Feature urls, as used by the examples in production, e.g
+  // /features/FilterTable.feature.js
+  const features = buildFileList(pathToFeatures, /\.feature\.tsx$/)
+    .map((p) => {
+      const url = `/features/${path.basename(p).replace(/\.tsx$/, ".js")}`;
+      return `  ${JSON.stringify(url)}: ${lazyImport(p)},`;
+    })
+    .join("\n");
 
-const outdir = ".showcase/prod";
+  return `import { importFeatureByUrl, setFeatureImporter } from "@vuu-ui/vuu-utils";
+import start from ${JSON.stringify(importPath(showcaseRoot))};
+import treeSource from "./treeSourceJson.js";
 
-const proxyRoutes: ProxyRoute[] = [
-  { url: "/api/authn", remoteUrl: "https://localhost:8443/api/authn" },
-];
+const exhibits = {
+${exhibits}
+};
 
-const entryPoints = [showcaseIndex]
-  .concat(examples)
-  .concat(features)
-  .concat(mdxFiles)
-  .concat(themes);
+const features = {
+${features}
+};
 
-const cssInlinePlugin: Plugin = {
-  name: "CssInline",
-  setup(build: PluginBuild) {
-    build.onLoad(
-      {
-        filter:
-          /packages\/(vuu|grid)-(chart|context-menu|datatable|filters|layout|popups|shell|table-extras|ui-controls|table)\/.*.css$/,
+setFeatureImporter((url) => features[url]?.() ?? importFeatureByUrl(url));
+
+start(treeSource, (exhibitPath) => {
+  const importExhibit = exhibits[exhibitPath];
+  return importExhibit
+    ? importExhibit()
+    : Promise.reject(new Error(\`No Showcase module for \${exhibitPath}\`));
+});
+`;
+};
+
+const rsbuildConfig: RsbuildConfig = {
+  mode: "production",
+  plugins: [pluginReact()],
+  source: {
+    entry: { index: path.join(srcDir, "index.js") },
+    define: {
+      "process.env.NODE_DEBUG": false,
+    },
+  },
+  html: {
+    title: "Vuu Showcase",
+  },
+  output: {
+    distPath: { root: outDir },
+    cleanDistPath: true,
+    sourceMap: { js: "source-map" },
+    minify: {
+      // vuu-layout identifies components by function name (typeOf)
+      jsOptions: {
+        minimizerOptions: {
+          compress: { keep_classnames: true, keep_fnames: true },
+          mangle: { keep_classnames: true, keep_fnames: true },
+        },
       },
-      async (args: OnLoadArgs) => {
-        const css = await fs.promises.readFile(args.path, "utf8");
-        // css = await esbuild.transform(css, { loader: "css", minify: true });
-        return { loader: "text", contents: css };
+    },
+  },
+  performance: {
+    printFileSize: false,
+  },
+  server: {
+    port: 4173,
+    strictPort: true,
+    // Showcase routes are client side routes, all are served index.html
+    historyApiFallback: true,
+    proxy: {
+      "/api/authn": {
+        target: "https://localhost:8443",
+        changeOrigin: true,
+        // Local auth services often use self-signed certs.
+        secure: false,
       },
-    );
+    },
+  },
+  tools: {
+    rspack: (config, { appendPlugins, addRules }) => {
+      addRules({
+        test: /\.mdx$/,
+        use: [{ loader: "@mdx-js/loader", options: mdxOptions }],
+      });
+      appendPlugins(
+        new rspack.NormalModuleReplacementPlugin(/\.css$/, (resource) => {
+          if (inlineCssPackages.test(resource.context ?? "")) {
+            resource.request = `${resource.request}?inline`;
+          }
+        }),
+      );
+      // Several packages declare "sideEffects": false but still register
+      // components (e.g. vuu-layout containers) via module side effects.
+      config.optimization = { ...config.optimization, sideEffects: false };
+      return config;
+    },
   },
 };
 
-// 2) Create the .showcase working directory
-if (!fs.existsSync(".showcase/prod")) {
-  createFolder(".showcase/prod");
-}
-
-const esbuildConfig = {
-  entryPoints,
-  env: "production",
-  external: ["./themes/salt-theme-next.ts", "./themes/vuu-theme.ts"],
-  name: "showcase",
-  plugins: [cssInlinePlugin, mdx(mdxOptions)],
-  outdir: `${outdir}`,
-  splitting: true,
-  target: "esnext",
-};
-
 async function main() {
-  console.log("[CLEAN]");
-  // Create the deploy folder
-  createFolder(outdir);
+  const [treeSourceJson] = treeSourceFromFileSystem(pathToExhibits);
 
-  console.log("[BUILD]");
-  const [{ duration }] = await Promise.all([build(esbuildConfig)]).catch(
-    (e) => {
-      console.error(e);
-      process.exit(1);
-    },
-  );
-
-  const [treeSourceJson /*, tags*/] = treeSourceFromFileSystem(
-    "./src/examples",
-    "production",
-  );
+  createFolder(srcDir);
   await writeFile(
     `export default ${JSON.stringify(treeSourceJson)};`,
-    path.resolve(outdir, "treeSourceJson.js"),
+    path.join(srcDir, "treeSourceJson.js"),
+  );
+  await writeFile(
+    createEntryModule(collectExhibitPaths(treeSourceJson)),
+    path.join(srcDir, "index.js"),
   );
 
-  console.log(`\nbuild took ${formatDuration(duration)}`);
+  const rsbuild = await createRsbuild({
+    cwd: showcaseDir,
+    rsbuildConfig,
+  });
 
-  // 2.3 create index.html
-  const HTML_TEMPLATE = `
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Vuu Showcase</title>
-    <link rel="stylesheet" href="/tools/vuu-showcase/src/root.css" />
-    <script type="module">
-      const { default: treeSource } = await import("/treeSourceJson.js");
-      const { default: start } = await import(
-        "/tools/vuu-showcase/src/root.js"
-      );
-      start(treeSource);
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
-</html>
-  `;
-  await writeFile(HTML_TEMPLATE, "./.showcase/prod/index.html");
+  const start = performance.now();
+  try {
+    const { close } = await rsbuild.build();
+    await close();
+  } catch (e) {
+    console.error(e);
+    process.exit(1);
+  }
+  console.log(
+    `\nbuild took ${((performance.now() - start) / 1000).toFixed(1)}s`,
+  );
 
   if (!args["build-only"]) {
-    serve(treeSourceJson);
+    await rsbuild.preview();
   }
-}
-
-function serve(treeSourceJson: TreeSourceNode[]) {
-  const rootPaths = joinRootPaths(treeSourceJson);
-  const routingPattern = `/(${rootPaths})/**`;
-  console.log({ routingPattern });
-
-  const server = http.createServer((request, response) => {
-    if (forwardProxyRequest(request, response, proxyRoutes)) {
-      return;
-    }
-
-    // You pass two more arguments for config and middleware
-    // More details here:
-    return handler(request, response, {
-      public: outdir,
-      rewrites: [
-        {
-          source: "/themes/vuu-theme.css",
-          destination: "/showcase/src/themes/vuu-theme.css",
-        },
-        {
-          source: routingPattern,
-          destination: "index.html",
-        },
-        {
-          source: "/features/FilterTable.feature.css",
-          destination: "/showcase/src/features/FilterTable.feature.css",
-        },
-        {
-          source: "/features/FilterTable.feature.js",
-          destination: "/showcase/src/features/FilterTable.feature.js",
-        },
-        {
-          source: "/features/BasketTrading.feature.css",
-          destination: "/showcase/src/features/BasketTrading.feature.css",
-        },
-        {
-          source: "/features/BasketTrading.feature.js",
-          destination: "/showcase/src/features/BasketTrading.feature.js",
-        },
-      ],
-    });
-  });
-
-  server.listen(4173, () => {
-    console.log("Showcase is running at http://localhost:4173/");
-  });
 }
 
 main();
-
-function joinRootPaths(treeNodes: TreeSourceNode[]) {
-  return treeNodes.map(({ id }) => id).join("|");
-}
-
-function forwardProxyRequest(
-  request: http.IncomingMessage,
-  response: http.ServerResponse,
-  routes: ProxyRoute[],
-): boolean {
-  const requestUrl = request.url;
-  if (!requestUrl) {
-    return false;
-  }
-
-  const currentUrl = new URL(requestUrl, "http://localhost");
-  const matchedRoute = routes.find(({ url }) => currentUrl.pathname.startsWith(url));
-  if (!matchedRoute) {
-    return false;
-  }
-
-  const remote = new URL(matchedRoute.remoteUrl);
-  const suffixPath = currentUrl.pathname.slice(matchedRoute.url.length);
-  const targetPath = `${joinUrlPaths(remote.pathname, suffixPath)}${currentUrl.search}`;
-  const requestModule = remote.protocol === "http:" ? http : https;
-
-  const proxyRequest = requestModule.request(
-    {
-      protocol: remote.protocol,
-      hostname: remote.hostname,
-      port: remote.port ? Number(remote.port) : undefined,
-      path: targetPath,
-      method: request.method,
-      headers: {
-        ...request.headers,
-        host: remote.host,
-      },
-      // Local auth services often use self-signed certs.
-      ...(remote.protocol === "https:" ? { rejectUnauthorized: false } : {}),
-    },
-    (proxyResponse) => {
-      response.writeHead(proxyResponse.statusCode ?? 502, proxyResponse.headers);
-      proxyResponse.pipe(response);
-    },
-  );
-
-  proxyRequest.on("error", (error) => {
-    console.error(`Proxy ${matchedRoute.url} failed`, error);
-    if (!response.headersSent) {
-      response.writeHead(502, { "content-type": "text/plain" });
-    }
-    response.end("Bad Gateway");
-  });
-
-  request.pipe(proxyRequest);
-  return true;
-}
-
-function joinUrlPaths(basePath: string, suffixPath: string) {
-  if (!suffixPath) {
-    return basePath;
-  }
-  if (basePath.endsWith("/") && suffixPath.startsWith("/")) {
-    return `${basePath.slice(0, -1)}${suffixPath}`;
-  }
-  if (!basePath.endsWith("/") && !suffixPath.startsWith("/")) {
-    return `${basePath}/${suffixPath}`;
-  }
-  return `${basePath}${suffixPath}`;
-}
