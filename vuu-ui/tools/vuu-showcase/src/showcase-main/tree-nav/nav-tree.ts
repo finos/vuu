@@ -9,7 +9,16 @@ export const THEME_PATH = `/${THEME_ID}`;
 const ROOT_KEY = "$root";
 const EXAMPLES_KEY = `${ROOT_KEY}|${EXAMPLES_ID}`;
 
-export type NavNodeData = { route?: string; tags?: string[] };
+export type NavNodeData = {
+  componentName?: string;
+  count?: number;
+  description?: string;
+  live?: boolean;
+  path?: string;
+  route?: string;
+  sourceRange?: [number, number];
+  tags?: string[];
+};
 
 /**
  * Builds the showcase navigation tree from the example tree source. Docs and

@@ -245,8 +245,13 @@ export class TreeDataSource extends BaseDataSource implements DataSourceBase {
       const filterSet = [];
       const regex = new RegExp(`${filter.value}`, "i");
       for (const row of this.#data) {
-        const { [KEY]: key, [IDX]: idx } = row;
-        if (regex.test(lastPathSegment(key, "|"))) {
+        const { [DEPTH]: depth, [KEY]: key, [IDX]: idx } = row;
+        // the label follows nodeData and one column per ancestor level
+        const label = row[metadataKeys.count + depth];
+        if (
+          regex.test(lastPathSegment(key, "|")) ||
+          (typeof label === "string" && regex.test(label))
+        ) {
           filterSet.push(idx);
         }
       }
@@ -483,8 +488,8 @@ const getInitiallyExpandedKeys = (
   keyBase = "$root",
   expandedKeys = new Set<string>(),
 ) => {
-  for (const { childNodes, expanded, label } of treeSourceNodes) {
-    const key = `${keyBase}|${label}`;
+  for (const { childNodes, expanded, keySegment, label } of treeSourceNodes) {
+    const key = `${keyBase}|${keySegment ?? label}`;
     if (expanded) {
       expandedKeys.add(key);
     }
