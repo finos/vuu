@@ -12,6 +12,7 @@ import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import type { RpcResult } from "@vuu-ui/vuu-protocol-types";
 import { Table } from "@vuu-ui/vuu-table";
 import {
+  EditFormPanel,
   TableEditorButtons,
   TableEditorCreateForm,
   TableEditorForm,
@@ -19,9 +20,10 @@ import {
   TableEditorNewButton,
   TableEditorPlaceholder,
   TableEditorPanelCloseButton,
-  TableEditorTable,
   TableEditorToolbar,
+  TablePanel,
   TableWithEditForm,
+  TableWithEditFormTable,
   type TableWithEditFormPanelVisibility,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
@@ -31,7 +33,6 @@ import {
   FormField,
   FormFieldLabel,
   Input,
-  SidePanel,
   SidePanelContent,
   SidePanelHeader,
   SidePanelTitle,
@@ -200,26 +201,16 @@ const TableWithCustomFormTemplate = () => {
       dataSource={dataSource}
       style={{ height: 500, width: 1100 }}
     >
-      <div
-        style={{
-          display: "flex",
-          flex: 1,
-          flexDirection: "column",
-          minWidth: 0,
-        }}
-      >
+      <TablePanel>
         <TableEditorToolbar>
           <Text styleAs="h3" style={{ flex: 1 }}>
             Instruments
           </Text>
           <TableEditorNewButton>New instrument</TableEditorNewButton>
         </TableEditorToolbar>
-        <div style={{ flex: 1, minHeight: 0 }}>
-          <TableEditorTable config={instrumentsTableConfig} />
-        </div>
-      </div>
-      <SidePanel
-        position="right"
+        <TableWithEditFormTable config={instrumentsTableConfig} />
+      </TablePanel>
+      <EditFormPanel
         style={{ "--saltSidePanel-width": "360px" } as CSSProperties}
       >
         <InstrumentPanelHeader />
@@ -233,7 +224,7 @@ const TableWithCustomFormTemplate = () => {
             validate={validateInstrument}
           />
         </SidePanelContent>
-      </SidePanel>
+      </EditFormPanel>
     </TableWithEditForm>
   );
 };

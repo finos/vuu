@@ -12,6 +12,7 @@ import {
 } from "@salt-ds/core";
 import { LockedIcon } from "@salt-ds/icons";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
+import type { DataSource } from "@vuu-ui/vuu-data-types";
 import cx from "clsx";
 import { type CSSProperties, type ReactNode, useCallback } from "react";
 import {
@@ -19,6 +20,7 @@ import {
   type LinkProps as RouterLinkProps,
   useNavigate,
 } from "react-router-dom";
+import { useRowCount } from "../../data/useRowCount";
 import type { PortalApplication } from "../../data/applications";
 import { useApplications } from "../../data/useApplicationModel";
 
@@ -217,6 +219,25 @@ export const PageHeader = ({
 /** A row of actions, e.g. inside a `PageHeader`. */
 export const PageHeaderActions = ({ children }: { children: ReactNode }) => (
   <div className={`${classBase}-actions`}>{children}</div>
+);
+
+/** A row holding a page's filters, row count etc, above its table. */
+export const AdminToolbar = ({ children }: { children: ReactNode }) => (
+  <div className="vuuIdentityAdmin-toolbar">{children}</div>
+);
+
+/** The live row count of `dataSource`, e.g. "12 users". */
+export const RowCount = ({
+  dataSource,
+  noun,
+}: {
+  dataSource: DataSource;
+  /** Singular noun, e.g. "group". */
+  noun: string;
+}) => (
+  <Text aria-live="polite" className="vuuIdentityAdmin-count" color="secondary">
+    {plural(useRowCount(dataSource), noun)}
+  </Text>
 );
 
 /**

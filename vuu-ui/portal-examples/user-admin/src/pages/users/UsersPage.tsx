@@ -1,27 +1,23 @@
 import { Avatar, SidePanelContent, SidePanelHeader, Tag } from "@salt-ds/core";
 import {
+  EditFormPanel,
   TableEditorForm,
   TableEditorPanelCloseButton,
-  TableEditorTable,
+  TablePanel,
   TableWithEditForm,
+  TableWithEditFormTable,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
 import {
+  AdminToolbar,
   PageHeader,
   PanelHeading,
   PanelHeadingSubtitle,
   PanelHeadingTags,
   PanelHeadingText,
   PanelHeadingTitle,
-} from "../../components/admin-ui/AdminUi";
-import {
-  AdminPage,
-  AdminPanel,
-  AdminTableCard,
-  AdminToolbar,
-  adminPageWithPanelClassName,
   RowCount,
-} from "../../components/admin-table-page/AdminTablePage";
+} from "../../components/admin-ui/AdminUi";
 import { ApplicationFilter } from "../../components/ApplicationFilter";
 import { userDisplayName } from "../../components/UserCells";
 import { UserEditForm } from "../../components/user-edit-form/UserEditForm";
@@ -62,11 +58,8 @@ const UserHeading = () => {
 export const UsersPage = () => {
   const { application, config, dataSource, setApplication } = useUsersPage();
   return (
-    <TableWithEditForm
-      className={adminPageWithPanelClassName}
-      dataSource={dataSource}
-    >
-      <AdminPage>
+    <TableWithEditForm dataSource={dataSource}>
+      <TablePanel className="vuuIdentityAdmin-page vuuIdentityAdmin-users">
         <PageHeader
           description="Grant application access by adding users to an application's groups."
           title="Users"
@@ -79,11 +72,9 @@ export const UsersPage = () => {
           />
           <RowCount dataSource={dataSource} noun="user" />
         </AdminToolbar>
-        <AdminTableCard>
-          <TableEditorTable config={config} rowHeight={USER_ROW_HEIGHT} />
-        </AdminTableCard>
-      </AdminPage>
-      <AdminPanel>
+        <TableWithEditFormTable config={config} rowHeight={USER_ROW_HEIGHT} />
+      </TablePanel>
+      <EditFormPanel className="vuuIdentityAdmin-panel">
         <SidePanelHeader>
           <UserHeading />
           <TableEditorPanelCloseButton />
@@ -93,7 +84,7 @@ export const UsersPage = () => {
             <UserEditForm />
           </TableEditorForm>
         </SidePanelContent>
-      </AdminPanel>
+      </EditFormPanel>
     </TableWithEditForm>
   );
 };
