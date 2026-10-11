@@ -63,12 +63,12 @@ describe("matchesNavFilter", () => {
     expect(
       matchesNavFilter({ chip: "favourites", query: "" }, context, live),
     ).toBe(false);
-    expect(matchesNavFilter({ chip: "recent", query: "live" }, context, live)).toBe(
-      true,
-    );
-    expect(matchesNavFilter({ chip: "recent", query: "x" }, context, live)).toBe(
-      false,
-    );
+    expect(
+      matchesNavFilter({ chip: "recent", query: "live" }, context, live),
+    ).toBe(true);
+    expect(
+      matchesNavFilter({ chip: "recent", query: "x" }, context, live),
+    ).toBe(false);
   });
 });
 

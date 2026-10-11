@@ -7,21 +7,18 @@ import {
   GridLayoutProvider,
 } from "@heswell/grid-layout";
 import { SaltProviderNext } from "@salt-ds/core";
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { loadTheme } from "../shared-utils";
+import { type ExhibitImporter, loadTheme } from "../shared-utils";
 import {
   getStoredNavWidth,
   storeNavWidth,
   useChromeMode,
 } from "./chrome/chrome-settings";
+import {
+  ChromeModeContext,
+  useChromeModeContext,
+} from "./chrome/ChromeModeContext";
 import { CommandPalette, OPEN_PALETTE_MESSAGE } from "./command-palette";
 import { ShowcaseContent } from "./ShowcaseContent";
 import { ShowcaseProvider } from "./ShowcaseProvider";
@@ -39,6 +36,8 @@ import "./chrome/controls.css";
 import "./ShowcaseShell.css";
 
 export interface AppProps {
+  /** loads mdx documents, which render in the shell */
+  importExhibit?: ExhibitImporter;
   treeSource: TreeSourceNode[];
 }
 
@@ -49,12 +48,6 @@ const isTextEntryTarget = (target: EventTarget | null) =>
     target.tagName === "TEXTAREA" ||
     target.tagName === "SELECT");
 
-type ChromeModeContextValue = ReturnType<typeof useChromeMode>;
-const ChromeModeContext = createContext<ChromeModeContextValue>({
-  chromeMode: "light",
-  toggleChromeMode: () => undefined,
-});
-
 /**
  * GridLayout does not re-render its items when their props change, so state
  * is passed to the TopBar via context.
@@ -62,7 +55,7 @@ const ChromeModeContext = createContext<ChromeModeContextValue>({
 const ShellTopBar = (
   props: Omit<TopBarProps, "chromeMode" | "onToggleChromeMode">,
 ) => {
-  const { chromeMode, toggleChromeMode } = useContext(ChromeModeContext);
+  const { chromeMode, toggleChromeMode } = useChromeModeContext();
   return (
     <TopBar
       {...props}
@@ -72,7 +65,7 @@ const ShellTopBar = (
   );
 };
 
-export const ShowcaseShell = ({ treeSource }: AppProps) => {
+export const ShowcaseShell = ({ importExhibit, treeSource }: AppProps) => {
   const exampleCount = useMemo(
     () =>
       countExamples(
@@ -154,7 +147,7 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
       mode={chromeMode}
     >
       <ChromeModeContext.Provider value={chromeModeState}>
-        <ShowcaseProvider>
+        <ShowcaseProvider importExhibit={importExhibit}>
           <GridLayoutProvider>
             <GridLayout
               className="ShowcaseShell"

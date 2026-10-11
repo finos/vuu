@@ -104,14 +104,36 @@ export const writePreviewParams = (
   return nextParams;
 };
 
-/** The iframe contract understood by ShowcaseStandalone (unchanged) */
+/**
+ * The iframe contract understood by ShowcaseStandalone. An embedded example
+ * (one rendered within a document) has no padding and sizes its iframe to
+ * fit its content.
+ */
 export const standaloneUrl = (
   pathname: string,
   { density, ds, mode, theme }: PreviewState,
   anchor?: string | null,
+  embed = false,
 ) => {
   const anchorParam = anchor ? `&anchor=${encodeURIComponent(anchor)}` : "";
-  return `${pathname}?standalone&theme=${theme}${anchorParam}#themeMode=${mode},density=${density},dataLocation=${ds}`;
+  const embedParam = embed ? "&embed" : "";
+  return `${pathname}?standalone&theme=${theme}${anchorParam}${embedParam}#themeMode=${mode},density=${density},dataLocation=${ds}`;
+};
+
+/**
+ * A document in its own window. Documents render in the showcase chrome, the
+ * preview state applies to the examples they embed.
+ */
+export const standaloneDocUrl = (
+  pathname: string,
+  preview: PreviewState,
+  anchor?: string | null,
+) => {
+  const params = writePreviewParams(new URLSearchParams(), preview);
+  if (anchor) {
+    params.set("anchor", anchor);
+  }
+  return `${pathname}?standalone&${params}`;
 };
 
 const PREFERENCES_KEY = "vuu-showcase.preview";

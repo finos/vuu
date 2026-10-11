@@ -94,6 +94,16 @@ export const getTargetTreeNode = <T = unknown>(
   }
 };
 
+/**
+ * A standalone url (one with the ?standalone param) for a document. Documents
+ * render in the showcase chrome (DocsStandalone), not as an example.
+ */
+export const isStandaloneDocument = (treeSource: TreeSourceNode[]) =>
+  isDocumentDescriptor(
+    getTargetTreeNode(new URL(document.location.href), treeSource, false)
+      ?.nodeData,
+  );
+
 export const loadTheme = (themeName: string): Promise<void> =>
   // The theme module imports the theme css. This works in the Vite dev server
   // and in the bundled (rsbuild) production build, which emits the css as a

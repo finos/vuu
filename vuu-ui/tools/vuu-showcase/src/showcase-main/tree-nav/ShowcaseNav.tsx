@@ -88,7 +88,7 @@ export const ShowcaseNav = ({
   const route = normalisePath(pathname);
   const [navState, setNavState] = useState(() => ({
     generation: 0,
-    key: sectionNav?.navIndex.keyForPath(route),
+    key: sectionNav?.navIndex.keyForNearestPath(route),
     route,
     sectionNav,
   }));
@@ -96,7 +96,7 @@ export const ShowcaseNav = ({
     const isExternalNavigation = navState.sectionNav === sectionNav;
     setNavState({
       generation: navState.generation + (isExternalNavigation ? 1 : 0),
-      key: sectionNav?.navIndex.keyForPath(route),
+      key: sectionNav?.navIndex.keyForNearestPath(route),
       route,
       sectionNav,
     });

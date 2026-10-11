@@ -1,20 +1,10 @@
-.ShowcaseExamplePage,
-.ShowcaseDocumentPage {
+.ShowcaseExamplePage {
   background: var(--sc-surface);
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
   font-family: var(--sc-font);
   min-height: 0;
-}
-
-.ShowcaseDocumentPage-frame {
-  flex: 1 1 auto;
-  min-height: 0;
-
-  > .ShowCaseIFrame {
-    display: block;
-  }
 }
 
 .ShowcaseExampleHeader {

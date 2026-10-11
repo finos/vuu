@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import type { DocSearchEntry } from "../src/showcase-main/command-palette/docs-index";
-import { slugify } from "../src/slugify";
+import { createSlugger, slugify } from "../src/slugify";
 
 export { DOCS_INDEX_URL } from "../src/showcase-main/command-palette/docs-index";
 export type { DocSearchEntry };
@@ -87,6 +87,7 @@ export const docSearchEntries = (
   const entries: DocSearchEntry[] = [];
   let h2: string | undefined;
   let intro: DocSearchEntry | undefined;
+  const headingId = createSlugger();
   for (const section of extractSections(mdx)) {
     if (section.level <= 1) {
       // the h1 repeats the document label, its text belongs to the intro
@@ -96,7 +97,10 @@ export const docSearchEntries = (
     } else if (section.heading) {
       if (section.level === 2) h2 = section.heading;
       entries.push({
-        anchor: slugify(section.heading),
+        anchor:
+          section.level <= 3
+            ? headingId(section.heading)
+            : slugify(section.heading),
         breadcrumb,
         route,
         text: sectionText(section),

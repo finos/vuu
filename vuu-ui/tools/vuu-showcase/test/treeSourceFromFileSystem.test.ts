@@ -74,6 +74,14 @@ describe("treeSourceFromFileSystem", () => {
     });
   });
 
+  it("orders numbered documents, without the prefix in the route", () => {
+    const docs = byId(tree, "Docs");
+    const chapter = byId(docs.childNodes ?? [], "Docs/Chapter");
+    expect(chapter.nodeData).toMatchObject({ order: 2 });
+    expect(chapter.nodeData?.path).toMatch(/Docs\/02-Chapter.mdx$/);
+    expect(docs.nodeData?.order).toBeUndefined();
+  });
+
   it("keeps document paths alongside counts", () => {
     const columns = byId(
       byId(tree, "Tables").childNodes ?? [],
