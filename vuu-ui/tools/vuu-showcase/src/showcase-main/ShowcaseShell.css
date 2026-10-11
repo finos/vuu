@@ -3,6 +3,36 @@ body {
   overflow: hidden;
 }
 
+/* ------ Shell frame (GridLayout), styled with chrome --sc-* tokens ------ */
+.vuuGridLayout.ShowcaseShell {
+  --vuu-grid-gap: 0px;
+  background: var(--sc-bg);
+  color: var(--sc-text);
+  font-family: var(--sc-font);
+
+  > .vuuGridLayoutItem {
+    border: none;
+  }
+
+  .vuuGridSplitter {
+    --splitter-background: var(--sc-border);
+    --splitter-borderColor: var(--sc-surface);
+    --splitter-borderWidth: 3px;
+  }
+  .vuuGridSplitter:hover,
+  .vuuGridSplitter-active {
+    --splitter-background: var(--sc-accent);
+  }
+}
+
+.ShowcaseShell-nav {
+  background: var(--sc-surface);
+}
+
+.ShowcaseShell-content {
+  background: var(--sc-bg);
+}
+
 .ShowcaseNav {
   --vuuTree-toggle-expand: var(--vuu-svg-chevron-right);
   --vuuTree-toggle-collapse: var(--vuu-svg-chevron-right);
@@ -12,7 +42,6 @@ body {
   height: 100%;
 }
 
-.ShowcaseToolbar,
 .ShowcaseContentToolbar {
   --saltToolbar-height: 30px;
   --saltButton-height: 28px;
@@ -26,7 +55,6 @@ body {
   }
 }
 
-.ShowcaseToolbar > .Responsive-inner,
 .ShowcaseContentToolbar > .Responsive-inner {
   align-items: center;
 }
@@ -34,12 +62,14 @@ body {
 .ShowcaseContentToolbar {
   --saltToolbar-background: transparent;
   --vuuToolbarProxy-height: 40px;
-  border-bottom: solid 1px var(--salt-container-primary-borderColor);
+  background: var(--sc-surface);
+  border-bottom: solid 1px var(--sc-border);
   flex: 0 0 auto;
+  padding: 0 var(--sc-space-3);
 }
 
 .ShowcaseContent {
-  background-color: var(--salt-container-primary-background);
+  background-color: var(--sc-surface);
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;

@@ -1,0 +1,81 @@
+/*
+ * Showcase chrome tokens. The showcase shell (top bar, sidebar, content frame,
+ * shell pages) is styled exclusively with these --sc-* tokens, so it is never
+ * affected by the theme selected for preview. Chrome light/dark mode is
+ * independent of the preview theme mode.
+ */
+.ShowcaseShell {
+  --sc-font: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+  --sc-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+
+  --sc-accent: #6c4bd8;
+  --sc-accent-strong: #5a37cc;
+  --sc-accent-soft: #efeafd;
+  --sc-accent-text: #5a37cc;
+  --sc-on-accent: #ffffff;
+
+  --sc-bg: #f7f7f9;
+  --sc-surface: #ffffff;
+  --sc-surface-2: #f2f2f5;
+  --sc-surface-3: #e9e9ee;
+  --sc-border: #e3e3e8;
+  --sc-border-strong: #d0d0d8;
+
+  --sc-text: #17171c;
+  --sc-text-2: #4b4b57;
+  --sc-text-3: #7c7c89;
+  --sc-text-4: #a3a3ae;
+
+  --sc-ok: #1f9d6b;
+  --sc-ok-halo: rgba(31, 157, 107, 0.15);
+  --sc-warn: #d38a12;
+  --sc-focus: #6c4bd8;
+
+  --sc-radius-sm: 6px;
+  --sc-radius: 8px;
+  --sc-radius-lg: 12px;
+
+  --sc-space-1: 4px;
+  --sc-space-2: 8px;
+  --sc-space-3: 12px;
+  --sc-space-4: 16px;
+  --sc-space-6: 24px;
+  --sc-space-8: 32px;
+
+  --sc-shadow-1: 0 1px 2px rgba(20, 20, 40, 0.06), 0 1px 1px rgba(20, 20, 40, 0.04);
+  --sc-shadow-2: 0 8px 24px rgba(20, 20, 40, 0.08), 0 2px 6px rgba(20, 20, 40, 0.05);
+  --sc-shadow-3: 0 24px 64px rgba(20, 20, 40, 0.22), 0 4px 12px rgba(20, 20, 40, 0.08);
+
+  --sc-topbar-height: 52px;
+
+  color-scheme: light;
+}
+
+.ShowcaseShell[data-chrome-mode="dark"] {
+  --sc-accent: #9b82ff;
+  --sc-accent-strong: #b3a0ff;
+  --sc-accent-soft: rgba(155, 130, 255, 0.14);
+  --sc-accent-text: #b8a6ff;
+  --sc-on-accent: #111116;
+
+  --sc-bg: #111116;
+  --sc-surface: #18181f;
+  --sc-surface-2: #1f1f28;
+  --sc-surface-3: #2a2a35;
+  --sc-border: #2a2a34;
+  --sc-border-strong: #3a3a46;
+
+  --sc-text: #ececf1;
+  --sc-text-2: #b6b6c3;
+  --sc-text-3: #85859a;
+  --sc-text-4: #5f5f70;
+
+  --sc-focus: #9b82ff;
+
+  --sc-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --sc-shadow-2: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --sc-shadow-3: 0 24px 64px rgba(0, 0, 0, 0.6);
+
+  color-scheme: dark;
+}
