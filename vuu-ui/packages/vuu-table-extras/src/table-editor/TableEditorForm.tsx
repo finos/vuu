@@ -82,7 +82,7 @@ const useFormCss = () => {
 };
 
 /**
- * Form editing: the selected row of the enclosing `TableEditorProvider`,
+ * Form editing: the selected row of the enclosing `TableWithEditForm`,
  * read-only in view mode and editable in edit mode. Renders nothing in
  * create mode (see `TableEditorCreateForm`), and `placeholder` when no row
  * is selected.

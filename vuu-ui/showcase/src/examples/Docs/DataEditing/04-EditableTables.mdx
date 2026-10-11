@@ -99,22 +99,23 @@ The dialog only appears when there are changes to lose.
 ## Composing your own layout
 
 `EditableTable` is built from the `TableEditor` components in
-`@vuu-ui/vuu-table-extras`. When you want your own toolbar or footer, compose
-them inside a `TableEditorProvider` (`editIn="table"` is the default). The
-provider takes `EditableTable`'s editing props (`allowDelete`, `confirmCancel`,
-`copyOption`, `rowDefaults`, `mode`/`defaultMode`, `onSaved`, ...), and
-`TableEditorTable` takes the table props plus `editable`, `readOnly`,
-`undoColumn` and `showInlineAddRow`.
+`@vuu-ui/vuu-table-extras`. When you want your own toolbar or footer, give
+`EditableTable` `children`. It then renders those instead of its default
+layout, and still owns the editing state. With `children`, `EditableTable`
+takes only the editing props (`allowDelete`, `confirmCancel`, `copyOption`,
+`rowDefaults`, `editMode`/`defaultEditMode`, `onSave`, ...). The table props,
+plus `editable`, `readOnly`, `undoColumn` and `showInlineAddRow`, go on
+`TableEditorTable`.
 
 ```tsx
 import {
+  EditableTable,
   TableEditorButtons,
   TableEditorModeToggle,
-  TableEditorProvider,
   TableEditorTable,
 } from "@vuu-ui/vuu-table-extras";
 
-<TableEditorProvider allowDelete dataSource={dataSource}>
+<EditableTable allowDelete dataSource={dataSource}>
   <header>
     <h2>Instruments</h2>
     <TableEditorModeToggle />
@@ -123,10 +124,10 @@ import {
   <footer>
     <TableEditorButtons />
   </footer>
-</TableEditorProvider>;
+</EditableTable>;
 ```
 
-Components inside the provider can call `useTableEditor()` for `mode`,
+Components inside `EditableTable` can call `useTableEditor()` for `mode`,
 `isEditing`, `startEdit()` and `cancel()`. Form editing uses the same
 components; see [Composing your own layout](./05-EditForms.mdx#composing-your-own-layout).
 

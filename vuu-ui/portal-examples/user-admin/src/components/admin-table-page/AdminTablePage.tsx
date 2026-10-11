@@ -21,7 +21,7 @@ export interface AdminTablePageProps {
   filter: ReactNode;
   /**
    * Omit, with `panelOpen`, when an enclosing provider (e.g. a
-   * `TableEditorProvider`) already drives the side panel.
+   * `TableWithEditForm`) already drives the side panel.
    */
   onPanelOpenChange?: (open: boolean) => void;
   /** @default <SidePanelCloseButton /> */

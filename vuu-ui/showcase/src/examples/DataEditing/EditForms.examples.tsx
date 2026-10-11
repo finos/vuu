@@ -18,7 +18,6 @@ import {
   TableEditorModeToggle,
   TableEditorNewButton,
   TableEditorPanelCloseButton,
-  TableEditorProvider,
   TableEditorTable,
   TableWithEditForm,
   type TableWithEditFormPanelVisibility,
@@ -195,7 +194,7 @@ const InstrumentFormContent = () => {
 const TableWithCustomFormTemplate = () => {
   const dataSource = useInstrumentsDataSource();
   return (
-    <TableEditorProvider dataSource={dataSource} editIn="form">
+    <TableWithEditForm dataSource={dataSource}>
       <div style={{ display: "flex", height: 500, width: 1100 }}>
         <div
           style={{
@@ -235,7 +234,7 @@ const TableWithCustomFormTemplate = () => {
           </SidePanelContent>
         </SidePanel>
       </div>
-    </TableEditorProvider>
+    </TableWithEditForm>
   );
 };
 
