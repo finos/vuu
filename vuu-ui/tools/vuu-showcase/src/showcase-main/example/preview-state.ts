@@ -114,14 +114,10 @@ export const standaloneUrl = (
   { density, ds, mode, theme }: PreviewState,
   anchor?: string | null,
   embed = false,
-  /** encoded example prop values, see example-props.ts */
-  props?: string | null,
 ) => {
   const anchorParam = anchor ? `&anchor=${encodeURIComponent(anchor)}` : "";
   const embedParam = embed ? "&embed" : "";
-  // in the hash, so prop changes don't reload the example
-  const propsParam = props ? `,props=${props}` : "";
-  return `${pathname}?standalone&theme=${theme}${anchorParam}${embedParam}#themeMode=${mode},density=${density},dataLocation=${ds}${propsParam}`;
+  return `${pathname}?standalone&theme=${theme}${anchorParam}${embedParam}#themeMode=${mode},density=${density},dataLocation=${ds}`;
 };
 
 /**

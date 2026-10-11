@@ -11,7 +11,6 @@ import { ExampleHeader } from "./ExampleHeader";
 import { type ExampleTab, ExampleTabs, panelId, tabId } from "./ExampleTabs";
 import { PreviewBar } from "./PreviewBar";
 import { PreviewCanvas } from "./PreviewCanvas";
-import { PropsPanel } from "./PropsPanel";
 import { RelatedPanel } from "./RelatedPanel";
 import { SourceDock, useSourceDock } from "./SourceDock";
 import { SourceView } from "./SourceView";
@@ -20,7 +19,6 @@ import {
   standaloneUrl,
   writePreviewParams,
 } from "./preview-state";
-import { useExampleProps, usePropsPanelOpen } from "./useExampleProps";
 import { usePreviewSource } from "./usePreviewSource";
 
 import "./ExamplePage.css";
@@ -110,12 +108,6 @@ export const ExamplePage = ({ treeNode, treeSource }: ExamplePageProps) => {
   const [selectedTab, setSelectedTab] = useSelectedTab(tabs);
   const isMounted = useVisited(selectedTab, pathname);
   const sourceDock = useSourceDock();
-  const exampleProps = useExampleProps(reloadKey);
-  // flagged at build time, so the panel is there before the example loads.
-  // In dev, a declaration added since the server started is reported at load
-  const hasProps =
-    treeNode.nodeData?.props === true || exampleProps.defs !== undefined;
-  const [propsPanelOpen, togglePropsPanel] = usePropsPanelOpen();
 
   const panelProps = (tab: ExampleTabId) => ({
     "aria-labelledby": tabId(idPrefix, tab),
@@ -138,33 +130,18 @@ export const ExamplePage = ({ treeNode, treeSource }: ExamplePageProps) => {
         <PreviewBar
           dataConsumer={isDataConsumer(treeNode.nodeData)}
           onReload={reload}
-          onTogglePropsPanel={hasProps ? togglePropsPanel : undefined}
           onToggleSourceDock={sourceDock.toggle}
-          propsPanelOpen={propsPanelOpen}
           sourceDockOpen={sourceDock.open}
           standaloneHref={src}
           viewportControls
         />
-        <div className={`${classBase}-previewBody`}>
-          <PreviewCanvas
-            density={preview.density}
-            key={reloadKey}
-            src={src}
-            title={treeNode.label}
-            viewport={preview.vp}
-          />
-          {hasProps && propsPanelOpen ? (
-            <PropsPanel
-              componentName={treeNode.nodeData?.componentName ?? "Example"}
-              defs={exampleProps.defs}
-              log={exampleProps.log}
-              onChange={exampleProps.setValue}
-              onClearLog={exampleProps.clearLog}
-              onReset={exampleProps.reset}
-              values={exampleProps.values}
-            />
-          ) : null}
-        </div>
+        <PreviewCanvas
+          density={preview.density}
+          key={reloadKey}
+          src={src}
+          title={treeNode.label}
+          viewport={preview.vp}
+        />
         {sourceDock.open ? (
           <SourceDock
             height={sourceDock.height}

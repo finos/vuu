@@ -44,10 +44,7 @@ export interface PreviewBarProps {
   /** show the data source control, for examples that consume data */
   dataConsumer?: boolean;
   onReload: () => void;
-  /** provided when the example declares editable props */
-  onTogglePropsPanel?: () => void;
   onToggleSourceDock?: () => void;
-  propsPanelOpen?: boolean;
   sourceDockOpen?: boolean;
   /** url of the content rendered standalone, opened in a new window */
   standaloneHref: string;
@@ -71,9 +68,7 @@ const Group = ({ children, label }: { children: ReactNode; label: string }) => (
 export const PreviewBar = ({
   dataConsumer = false,
   onReload,
-  onTogglePropsPanel,
   onToggleSourceDock,
-  propsPanelOpen,
   sourceDockOpen,
   standaloneHref,
   viewportControls = false,
@@ -149,18 +144,6 @@ export const PreviewBar = ({
               </button>
             ))}
           </div>
-        ) : null}
-        {onTogglePropsPanel ? (
-          <button
-            aria-label="Show props"
-            aria-pressed={propsPanelOpen}
-            className="ShowcaseIconButton"
-            onClick={onTogglePropsPanel}
-            title="Show the props panel"
-            type="button"
-          >
-            <ChromeIcon name="sliders" />
-          </button>
         ) : null}
         {onToggleSourceDock ? (
           <button

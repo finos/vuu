@@ -1,45 +1,17 @@
 import { Button } from "@salt-ds/core";
 import { CSSProperties } from "react";
 import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
-import {
-  defineExampleProps,
-  type ExampleProps,
-} from "@vuu-ui/vuu-showcase/example-props";
 
-const defaultButtonProps = defineExampleProps({
-  appearance: {
-    type: "select",
-    options: ["solid", "bordered", "transparent"],
-    default: "solid",
-  },
-  sentiment: {
-    type: "select",
-    options: ["accented", "neutral", "positive", "negative", "caution"],
-    default: "neutral",
-  },
-  disabled: { type: "boolean", default: false },
-  label: { type: "string", default: "Button" },
-  onClick: { type: "action" },
-});
-
-export const DefaultButton = ({
-  appearance,
-  disabled,
-  label = "Button",
-  onClick,
-  sentiment,
-}: ExampleProps<typeof defaultButtonProps>) => (
-  <Button
-    appearance={appearance}
-    data-showcase-center
-    disabled={disabled}
-    onClick={onClick}
-    sentiment={sentiment}
-  >
-    {label}
-  </Button>
-);
-DefaultButton.props = defaultButtonProps;
+export const DefaultButton = () => {
+  const handleClick = () => {
+    console.log("Button click");
+  };
+  return (
+    <Button data-showcase-center onClick={handleClick}>
+      Button
+    </Button>
+  );
+};
 
 export const IconButtons = () => {
   return (
