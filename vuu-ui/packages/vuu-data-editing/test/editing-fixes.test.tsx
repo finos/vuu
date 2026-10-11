@@ -128,14 +128,14 @@ describe("data editing fixes", () => {
     expect(save.disabled).toBe(false);
   });
 
-  it("EditButtons canSave prop overrides the session value", async () => {
+  it("EditButtons canSave prop cannot enable Save without session changes", async () => {
     const { editSession } = createEditSession();
     await act(async () =>
       root.render(
         <EditButtons canSave editSession={editSession} onSave={vi.fn()} />,
       ),
     );
-    expect(container.querySelector("button")?.disabled).toBe(false);
+    expect(container.querySelector("button")?.disabled).toBe(true);
   });
 
   it("EditField checkbox commits a boolean value", async () => {
