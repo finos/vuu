@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { type TreeSourceNode } from "@vuu-ui/vuu-utils";
+import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 
 export const dropLastPathSegment = (path: string, separator = "/") => {
   return path.slice(0, path.lastIndexOf(separator));
@@ -33,13 +33,12 @@ export type NodeData = {
 
 export const treeSourceFromFileSystem = (
   exhibitsPath: string,
-  env: "development" | "production" = "development",
   route = "",
   icon = "folder",
   tags = new Set<string>(),
 ): [TreeSourceNode<NodeData>[], string[], string | undefined] => {
   const treeSourceNodes: TreeSourceNode<NodeData>[] = [];
-  let documentPath: string | undefined = undefined;
+  let documentPath: string | undefined;
   const dirFiles = new Set<string>();
 
   // First store all directory file name in a set so we can check membership of related files
@@ -54,7 +53,6 @@ export const treeSourceFromFileSystem = (
     if (fs.lstatSync(filePath).isDirectory()) {
       const [childNodes, , documentPath] = treeSourceFromFileSystem(
         filePath,
-        env,
         `${route}${toLabel(fileName)}/`,
         "box",
         tags,
@@ -87,7 +85,6 @@ export const treeSourceFromFileSystem = (
         label: toLabel(name),
         childNodes: treeSourceFromExportedComponents(
           exhibitsPath,
-          env,
           `${route}${toLabel(name)}/`,
           fileName,
           tags,
@@ -97,14 +94,13 @@ export const treeSourceFromFileSystem = (
       if (documentPath) {
         treeSourceNode.nodeData = treeSourceFromDocument(
           exhibitsPath,
-          env,
           documentPath,
         );
       }
 
       treeSourceNodes.push(treeSourceNode);
     } else if (fileName.match(/^[Ii]ndex.mdx$/)) {
-      documentPath = treeSourceFromDocument(exhibitsPath, env, fileName).path;
+      documentPath = treeSourceFromDocument(exhibitsPath, fileName).path;
     } else if (fileName.match(/\.mdx$/)) {
       const name = dropLastPathSegment(fileName, ".");
       // mdx files with a matching examples file are rendered as the document
@@ -116,7 +112,7 @@ export const treeSourceFromFileSystem = (
           label: toLabel(name),
           nodeData: {
             name,
-            ...treeSourceFromDocument(exhibitsPath, env, fileName),
+            ...treeSourceFromDocument(exhibitsPath, fileName),
           },
         });
       }
@@ -125,23 +121,16 @@ export const treeSourceFromFileSystem = (
   return [treeSourceNodes, Array.from(tags), documentPath];
 };
 
-// Document paths retain the .mdx extension in all environments, it identifies
-// the node as a document. The showcase loader resolves the compiled .js file
-// in production.
+// The .mdx extension identifies the node as a document.
 const treeSourceFromDocument = (
   exhibitsPath: string,
-  env: "development" | "production",
   fileName: string,
-): NodeData => {
-  const exhibitsPrefix = env === "production" ? "showcase/" : "";
-  return {
-    path: `${exhibitsPrefix}${exhibitsPath}/${fileName}`,
-  };
-};
+): NodeData => ({
+  path: `${exhibitsPath}/${fileName}`,
+});
 
 const treeSourceFromExportedComponents = (
   exhibitsPath: string,
-  env: "development" | "production",
   route: string,
   fileName: string,
   tagsList: Set<string>,
@@ -150,10 +139,7 @@ const treeSourceFromExportedComponents = (
   const text = fs.readFileSync(filePath).toString();
   let match = exportPattern.exec(text);
   const treeSourceNodes: TreeSourceNode<NodeData>[] = [];
-  const exhibitsPrefix = env === "production" ? "showcase/" : "";
-  const resolvedFileName =
-    env === "production" ? fileName.replace(/.tsx/, ".js") : fileName;
-  let tags: string[] | undefined = undefined;
+  let tags: string[] | undefined;
   while (match != null) {
     // console.log({ m1: match[1], m2: match[2], m3: match[3], m4: match[4] });
     if (match[4] !== undefined) {
@@ -166,7 +152,7 @@ const treeSourceFromExportedComponents = (
         label: componentName,
         nodeData: {
           componentName,
-          path: `${exhibitsPrefix}${exhibitsPath}/${resolvedFileName}`,
+          path: `${exhibitsPath}/${fileName}`,
           tags,
         },
       });

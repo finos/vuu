@@ -1,16 +1,20 @@
-import { importCSS, TreeSourceNode } from "@vuu-ui/vuu-utils";
-import { ReactElement } from "react";
+import { importCSS, type TreeSourceNode } from "@vuu-ui/vuu-utils";
+import type { ReactElement } from "react";
 
-type Environment = "development" | "production";
-export const env = process.env.NODE_ENV as Environment;
+export type ExhibitModule = Record<string, unknown>;
 
-// mdx documents are compiled to .js in the production build
-export const resolveModulePath = (path: string) =>
-  env === "production" ? path.replace(/\.mdx$/, ".js") : path;
+/**
+ * Loads the module (examples or mdx document) for an exhibit, identified by
+ * the path recorded in treeSource. By default, the module is loaded by url,
+ * which works with the Vite dev server. The production (rsbuild) build passes
+ * an importer backed by a generated map of bundled modules.
+ */
+export type ExhibitImporter = (path: string) => Promise<ExhibitModule>;
 
-export type VuuExample = {
-  (props?: { [key: string]: unknown }): ReactElement;
-};
+export const importExhibitByUrl: ExhibitImporter = (path) =>
+  import(/* webpackIgnore: true */ /* @vite-ignore */ `/${path}`);
+
+export type VuuExample = (props?: { [key: string]: unknown }) => ReactElement;
 
 export const pathFromKey = (key: string) => key.slice(5).split("|").join("/");
 export const keyFromPath = (path: string) => {
@@ -72,28 +76,16 @@ export const getTargetTreeNode = <T = unknown>(
 };
 
 export const loadTheme = (themeName: string): Promise<void> =>
-  new Promise((resolve) => {
-    const _importCSS = () => {
+  // The theme module imports the theme css. This works in the Vite dev server
+  // and in the bundled (rsbuild) production build, which emits the css as a
+  // separate chunk, loaded with the theme module.
+  import(`./themes/${themeName}.ts`).then(
+    () => undefined,
+    () =>
       importCSS(`/themes/${themeName}.css`).then((styleSheet) => {
         document.adoptedStyleSheets = [
           ...document.adoptedStyleSheets,
           styleSheet,
         ];
-
-        resolve();
-      });
-    };
-
-    if (env === "development") {
-      try {
-        // see if we have a theme in local themes folder
-        import(`./themes/${themeName}.ts`).then(() => {
-          resolve();
-        });
-      } catch (e) {
-        _importCSS();
-      }
-    } else {
-      _importCSS();
-    }
-  });
+      }),
+  );
