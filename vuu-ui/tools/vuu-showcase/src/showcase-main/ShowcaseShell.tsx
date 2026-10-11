@@ -16,7 +16,7 @@ import React, {
   useState,
 } from "react";
 import { useLocation } from "react-router-dom";
-import { getTargetTreeNode, loadTheme } from "../shared-utils";
+import { loadTheme } from "../shared-utils";
 import {
   getStoredNavWidth,
   storeNavWidth,
@@ -34,6 +34,7 @@ import {
 import { focusNavFilter, ShowcaseNav } from "./tree-nav/ShowcaseNav";
 
 import "./chrome/chrome.css";
+import "./chrome/controls.css";
 import "./ShowcaseShell.css";
 
 export interface AppProps {
@@ -71,13 +72,6 @@ const ShellTopBar = (
 };
 
 export const ShowcaseShell = ({ treeSource }: AppProps) => {
-  const initialIsDataConsumer = useMemo(() => {
-    const url = new URL(document.location.href);
-    const treeNode = getTargetTreeNode(url, treeSource, false) as any;
-    return (
-      (treeNode && treeNode.nodeData.tags?.includes("data-consumer")) ?? false
-    );
-  }, [treeSource]);
   const exampleCount = useMemo(
     () =>
       countExamples(
@@ -91,7 +85,6 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
     rows: ["52px", "1fr"],
   }));
   const [themeReady, setThemeReady] = useState(false);
-  const [dataConsumer, setDataConsumer] = useState(initialIsDataConsumer);
   const chromeModeState = useChromeMode();
   const { chromeMode } = chromeModeState;
 
@@ -123,10 +116,6 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
 
   const { pathname } = useLocation();
   const section = sectionFromPath(pathname);
-  const handleSelectExample = useCallback((nodeData?: NavNodeData) => {
-    setDataConsumer(nodeData?.tags?.includes("data-consumer") ?? false);
-  }, []);
-
   const handleGridLayoutChanged = useCallback<GridLayoutChangeHandler>(
     (_gridId, { cols }) => {
       const navWidth = parseInt(cols[0], 10);
@@ -148,7 +137,7 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
       mode={chromeMode}
     >
       <ChromeModeContext.Provider value={chromeModeState}>
-        <ShowcaseProvider isDataConsumer={dataConsumer}>
+        <ShowcaseProvider>
           <GridLayoutProvider>
             <GridLayout
               className="ShowcaseShell"
@@ -189,7 +178,6 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
               >
                 <ShowcaseNav
                   exampleCount={exampleCount}
-                  onSelectExample={handleSelectExample}
                   treeSource={treeSource}
                 />
               </GridLayoutItem>
