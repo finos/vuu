@@ -3,6 +3,8 @@ import ts from "typescript";
 export type ExampleExport = {
   componentName: string;
   description?: string;
+  /** declares editable props, `Example.props = defineExampleProps(…)` */
+  hasProps?: boolean;
   /** 1-based, inclusive line range of the export, including its doc comment */
   sourceRange: [number, number];
   tags?: string[];
@@ -55,6 +57,24 @@ const readDocComment = (statement: ts.Statement) => {
   return { description, tags, title };
 };
 
+// names of examples with a props declaration: `Example.props = …`
+const findPropsDeclarations = (sourceFile: ts.SourceFile) => {
+  const names = new Set<string>();
+  for (const statement of sourceFile.statements) {
+    if (
+      ts.isExpressionStatement(statement) &&
+      ts.isBinaryExpression(statement.expression) &&
+      statement.expression.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isPropertyAccessExpression(statement.expression.left) &&
+      ts.isIdentifier(statement.expression.left.expression) &&
+      statement.expression.left.name.text === "props"
+    ) {
+      names.add(statement.expression.left.expression.text);
+    }
+  }
+  return names;
+};
+
 /**
  * Finds the examples exported from an examples module. Every exported const
  * whose name begins with an upper case letter is an example. A JSDoc comment
@@ -67,6 +87,9 @@ const readDocComment = (statement: ts.Statement) => {
  *    *\/
  *
  * The legacy form `/** tags=data-consumer *\/` is still supported.
+ *
+ * An example that declares editable props (`Example.props = …`, see
+ * example-props.ts) is flagged with hasProps.
  */
 export const parseExampleExports = (
   fileName: string,
@@ -82,6 +105,7 @@ export const parseExampleExports = (
   const lineOf = (pos: number) =>
     sourceFile.getLineAndCharacterOfPosition(pos).line + 1;
 
+  const propsDeclarations = findPropsDeclarations(sourceFile);
   const examples: ExampleExport[] = [];
   for (const statement of sourceFile.statements) {
     if (ts.isVariableStatement(statement) && isExported(statement)) {
@@ -99,6 +123,9 @@ export const parseExampleExports = (
             sourceRange: [start, end],
           };
           if (description) example.description = description;
+          if (propsDeclarations.has(example.componentName)) {
+            example.hasProps = true;
+          }
           if (tags) example.tags = tags;
           if (title) example.title = title;
           examples.push(example);

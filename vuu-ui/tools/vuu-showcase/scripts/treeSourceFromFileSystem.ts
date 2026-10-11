@@ -38,6 +38,8 @@ export type NodeData = {
   /** the numeric ordering prefix of the file, if any, e.g 2 for 02-Columns */
   order?: number;
   path?: string;
+  /** examples only, the example declares editable props */
+  props?: boolean;
   /** examples only, 1-based inclusive line range within the examples file */
   sourceRange?: [number, number];
   tags?: string[];
@@ -204,7 +206,7 @@ const treeSourceFromExportedComponents = (
   const filePath = path.join(exhibitsPath, fileName);
   const text = fs.readFileSync(filePath).toString();
   return parseExampleExports(fileName, text).map(
-    ({ componentName, description, sourceRange, tags, title }) => {
+    ({ componentName, description, hasProps, sourceRange, tags, title }) => {
       tags?.forEach((tag) => tagsList.add(tag));
       const nodeData: NodeData = {
         componentName,
@@ -214,6 +216,9 @@ const treeSourceFromExportedComponents = (
       };
       if (description) {
         nodeData.description = description;
+      }
+      if (hasProps) {
+        nodeData.props = true;
       }
       if (tags?.includes("data-consumer")) {
         nodeData.live = true;

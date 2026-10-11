@@ -19,6 +19,7 @@ import {
 } from "@vuu-ui/vuu-table-types";
 import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { SyntheticEvent, useCallback, useMemo, useState } from "react";
+import { defineExampleProps } from "@vuu-ui/vuu-showcase/example-props";
 
 import "./Misc.examples.css";
 import "./TableSelection.examples.css";
@@ -56,15 +57,17 @@ const DataTableTemplate = ({
       rowSeparators: true,
       zebraStripes: true,
       ...configProp,
-      columns: schema.columns.filter(col => col.name !== 'vuuMsg').map<ColumnDescriptor>((col) =>
-        selectedColumn.includes(col.name)
-          ? {
-              ...col,
-              selected: true,
-              status: "warning",
-            }
-          : col,
-      ),
+      columns: schema.columns
+        .filter((col) => col.name !== "vuuMsg")
+        .map<ColumnDescriptor>((col) =>
+          selectedColumn.includes(col.name)
+            ? {
+                ...col,
+                selected: true,
+                status: "warning",
+              }
+            : col,
+        ),
     };
   }, [configProp, schema.columns, selectedColumn]);
 
@@ -192,6 +195,13 @@ export const CheckboxSelection = ({
     />
   );
 };
+
+CheckboxSelection.props = defineExampleProps({
+  checkboxColumnWidth: { type: "number", min: 20, max: 100 },
+  columnLayout: { type: "select", options: ["static", "fit", "manual"] },
+  height: { type: "number", default: 645, min: 100 },
+  width: { type: "number", default: 1000, min: 200 },
+});
 
 /** tags=data-consumer */
 export const CheckboxSelectionFillWidth = () => (

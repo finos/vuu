@@ -125,6 +125,13 @@ const paths = {
       <path d="M9 7v3M9 12.25v.01" />
     </>
   ),
+  sliders: (
+    <>
+      <path d="M3 5h3M9.5 5H15M3 13h7.5M14 13h1" />
+      <circle cx="7.75" cy="5" r="1.75" />
+      <circle cx="12.25" cy="13" r="1.75" />
+    </>
+  ),
 } as const;
 
 export type ChromeIconName = keyof typeof paths;
