@@ -104,3 +104,20 @@ export const getSourceLinks = (
       : undefined,
   };
 };
+
+/**
+ * Examples related to the example at pathname: the other examples in its
+ * examples file and the documents, other than its own, that embed it.
+ */
+export const getRelated = (pathname: string, treeSource: NavNode[]) => {
+  const id = pathname.replace(/^\/|\/$/g, "");
+  const example = findTreeNode(pathname, treeSource) as NavNode | undefined;
+  const parent = getParentNode(pathname, treeSource) as NavNode | undefined;
+  const siblings = ((parent?.childNodes ?? []) as NavNode[]).filter(
+    (node) => node.id !== id && isExample(node),
+  );
+  const docs = (example?.nodeData?.docs ?? [])
+    .map((docId) => findTreeNode(`/${docId}`, treeSource) as NavNode)
+    .filter((node): node is NavNode => node !== undefined);
+  return { docs, siblings };
+};

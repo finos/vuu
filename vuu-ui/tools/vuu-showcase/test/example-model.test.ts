@@ -4,6 +4,7 @@ import {
   getAdjacentExamples,
   getBreadcrumbs,
   getParentNode,
+  getRelated,
   getSourceLinks,
 } from "../src/showcase-main/example/example-model";
 import type { NavNodeData } from "../src/showcase-main/tree-nav/nav-tree";
@@ -105,5 +106,24 @@ describe("example-model", () => {
     expect(getSourceLinks(nodeData, "/dev/vuu-ui/showcase/").vscode).toBe(
       "vscode://file/dev/vuu-ui/showcase/src/examples/Table/Misc.examples.tsx:10",
     );
+  });
+});
+
+describe("getRelated", () => {
+  it("lists the other examples in the file", () => {
+    const { docs, siblings } = getRelated("/Table/Misc/TestTable", source);
+    expect(siblings.map((n) => n.id)).toEqual(["Table/Misc/AutoTable"]);
+    expect(docs).toEqual([]);
+  });
+
+  it("resolves the documents that embed the example", () => {
+    const withDocs = structuredClone(source);
+    const misc = withDocs[2].childNodes?.[0];
+    const testTable = misc?.childNodes?.[0];
+    if (testTable?.nodeData) {
+      testTable.nodeData.docs = ["Intro", "Missing"];
+    }
+    const { docs } = getRelated("/Table/Misc/TestTable", withDocs);
+    expect(docs.map((n) => n.id)).toEqual(["Intro"]);
   });
 });
