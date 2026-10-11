@@ -1,7 +1,12 @@
 .ShowcaseFolderIndex {
+  background: var(--sc-bg);
+  box-sizing: border-box;
+  color: var(--sc-text);
+  font-family: var(--sc-font);
+  font-size: 13px;
   height: 100%;
   overflow: auto;
-  padding: 24px 32px;
+  padding: var(--sc-space-6) var(--sc-space-8);
 }
 
 .ShowcaseFolderIndex-header {
@@ -13,19 +18,21 @@
 
 .ShowcaseFolderIndex-title {
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 650;
+  letter-spacing: -0.01em;
   margin: 0;
 }
 
 .ShowcaseFolderIndex-count,
 .ShowcaseFolderIndex-itemCount {
-  color: var(--salt-content-secondary-foreground);
+  color: var(--sc-text-3);
   font-size: 12px;
+  font-variant-numeric: tabular-nums;
 }
 
 .ShowcaseFolderIndex-list {
   display: grid;
-  gap: 8px;
+  gap: var(--sc-space-3);
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   list-style: none;
   margin: 0;
@@ -33,23 +40,28 @@
 }
 
 .ShowcaseFolderIndex-item {
-  border: 1px solid var(--salt-container-primary-borderColor);
-  border-radius: 6px;
-  color: var(--salt-content-primary-foreground);
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-lg);
+  box-shadow: var(--sc-shadow-1);
+  box-sizing: border-box;
+  color: var(--sc-text);
   display: flex;
   flex-direction: column;
   gap: 4px;
   height: 100%;
-  padding: 10px 12px;
+  padding: var(--sc-space-3) var(--sc-space-4);
   text-decoration: none;
+  transition: border-color 0.12s, box-shadow 0.12s;
 }
 
 .ShowcaseFolderIndex-item:hover {
-  background: var(--salt-actionable-subtle-background-hover);
+  border-color: var(--sc-border-strong);
+  box-shadow: var(--sc-shadow-2);
 }
 
 .ShowcaseFolderIndex-item:focus-visible {
-  outline: 2px solid var(--salt-focused-outlineColor);
+  outline: 2px solid var(--sc-focus);
   outline-offset: 1px;
 }
 
@@ -61,13 +73,14 @@
 }
 
 .ShowcaseFolderIndex-itemDescription {
-  color: var(--salt-content-secondary-foreground);
+  color: var(--sc-text-2);
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .ShowcaseFolderIndex-live {
-  background: var(--salt-status-success-foreground-decorative);
+  background: var(--sc-ok);
+  box-shadow: 0 0 0 3px var(--sc-ok-halo);
   border-radius: 50%;
   display: inline-block;
   height: 6px;

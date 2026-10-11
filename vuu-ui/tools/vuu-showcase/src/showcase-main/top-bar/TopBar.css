@@ -1,0 +1,170 @@
+.ShowcaseTopBar {
+  align-items: center;
+  background: var(--sc-surface);
+  border-bottom: 1px solid var(--sc-border);
+  box-sizing: border-box;
+  color: var(--sc-text);
+  display: flex;
+  font-family: var(--sc-font);
+  font-size: 13px;
+  gap: var(--sc-space-4);
+  height: 100%;
+  padding: 0 var(--sc-space-4) 0 14px;
+
+  a,
+  button {
+    -webkit-font-smoothing: antialiased;
+    color: inherit;
+    font: inherit;
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--sc-focus);
+    outline-offset: 1px;
+  }
+
+  kbd {
+    background: var(--sc-surface);
+    border: 1px solid var(--sc-border);
+    border-radius: 5px;
+    box-shadow: 0 1px 0 var(--sc-border);
+    color: var(--sc-text-3);
+    font-family: var(--sc-font);
+    font-size: 11px;
+    line-height: 16px;
+    padding: 0 6px;
+  }
+}
+
+.ShowcaseTopBar-brand {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 10px;
+  min-width: 238px;
+  text-decoration: none;
+}
+
+.ShowcaseTopBar-logo {
+  background: linear-gradient(140deg, #7e5cf0, #4c2bb8);
+  border-radius: var(--sc-radius);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+  color: #fff;
+  display: grid;
+  font-size: 13px;
+  font-weight: 800;
+  height: 28px;
+  place-items: center;
+  width: 28px;
+}
+
+.ShowcaseTopBar-title {
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.ShowcaseTopBar-version {
+  border: 1px solid var(--sc-border);
+  border-radius: 999px;
+  color: var(--sc-text-3);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 1px 6px;
+}
+
+.ShowcaseTopBar-sections {
+  display: flex;
+  gap: 2px;
+}
+
+.ShowcaseTopBar-section {
+  align-items: center;
+  border-radius: var(--sc-radius);
+  color: var(--sc-text-2);
+  display: flex;
+  font-weight: 520;
+  gap: 7px;
+  padding: 7px 12px;
+  text-decoration: none;
+
+  &:hover {
+    background: var(--sc-surface-2);
+    color: var(--sc-text);
+  }
+}
+
+.ShowcaseTopBar-section-active {
+  background: var(--sc-surface-2);
+  color: var(--sc-text);
+}
+
+.ShowcaseTopBar-sectionCount {
+  color: var(--sc-text-3);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ShowcaseTopBar-search {
+  align-items: center;
+  background: var(--sc-surface-2);
+  border: 1px solid var(--sc-border);
+  border-radius: 9px;
+  color: var(--sc-text-3);
+  cursor: pointer;
+  display: flex;
+  gap: var(--sc-space-2);
+  height: 34px;
+  margin-left: auto;
+  max-width: 360px;
+  min-width: 160px;
+  padding: 0 var(--sc-space-2) 0 11px;
+  text-align: left;
+  width: 100%;
+
+  &:hover {
+    border-color: var(--sc-border-strong);
+  }
+}
+
+.ShowcaseTopBar-searchLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ShowcaseTopBar-iconButton {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--sc-radius);
+  color: var(--sc-text-2);
+  cursor: pointer;
+  display: grid;
+  flex: 0 0 auto;
+  height: 32px;
+  padding: 0;
+  place-items: center;
+  width: 32px;
+
+  &:hover {
+    background: var(--sc-surface-2);
+    color: var(--sc-text);
+  }
+}
+
+@media (max-width: 960px) {
+  .ShowcaseTopBar-brand {
+    min-width: 0;
+  }
+  .ShowcaseTopBar-searchLabel,
+  .ShowcaseTopBar-search kbd {
+    display: none;
+  }
+  .ShowcaseTopBar-search {
+    min-width: 0;
+    width: 34px;
+  }
+}

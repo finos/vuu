@@ -39,7 +39,6 @@ export const ContentToolbar = () => {
       style={{
         height: 30,
       }}
-      data-mode="light"
     >
       <ThemePicker theme={theme} onChange={onChangeTheme} />
 

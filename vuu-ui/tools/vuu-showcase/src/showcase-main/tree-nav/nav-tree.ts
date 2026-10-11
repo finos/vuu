@@ -55,6 +55,55 @@ export const buildNavTree = (
 const isDocsPath = (pathname: string) =>
   pathname === `/${DOCS_ID}` || pathname.startsWith(`/${DOCS_ID}/`);
 
+export type ShowcaseSection = "docs" | "examples" | "theme";
+
+/** The top level section of the showcase a url pathname belongs to */
+export const sectionFromPath = (pathname: string): ShowcaseSection => {
+  const path = pathname.replace(/\/$/, "");
+  if (path === THEME_PATH) {
+    return "theme";
+  } else if (isDocsPath(path)) {
+    return "docs";
+  } else {
+    return "examples";
+  }
+};
+
+/** The example nodes of the tree source, i.e everything except Docs */
+export const getExampleNodes = <T = NavNodeData>(
+  treeSource: TreeSourceNode<T>[],
+) => treeSource.filter((node) => node.id !== DOCS_ID);
+
+/** Total number of examples in a list of nodes, using the folder counts */
+export const countExamples = (nodes: TreeSourceNode<NavNodeData>[]) =>
+  nodes.reduce((count, { childNodes, nodeData }) => {
+    if (childNodes?.length) {
+      return count + (nodeData?.count ?? 0);
+    } else if (typeof nodeData?.componentName === "string") {
+      return count + 1;
+    }
+    return count;
+  }, 0);
+
+/**
+ * A synthetic node that groups all examples, so the examples root can be
+ * presented like any other folder.
+ */
+export const buildExamplesIndexNode = (
+  treeSource: TreeSourceNode<NavNodeData>[],
+): TreeSourceNode<NavNodeData> => {
+  const childNodes = getExampleNodes(treeSource);
+  return {
+    childNodes,
+    id: EXAMPLES_ID,
+    label: EXAMPLES_ID,
+    nodeData: {
+      count: countExamples(childNodes),
+      live: childNodes.some(({ nodeData }) => nodeData?.live),
+    },
+  };
+};
+
 /** Maps a url pathname to the key of the corresponding nav tree row */
 export const navKeyFromPath = (pathname: string) => {
   const path = pathname.replace(/\/$/, "");
