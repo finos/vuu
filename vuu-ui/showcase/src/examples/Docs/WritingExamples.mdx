@@ -1,0 +1,71 @@
+# Writing examples
+
+Examples are the components exported from `*.examples.tsx` files under `showcase/src/examples`. Every exported `const` whose name starts with an upper case letter is an example. The folder and file names give its place in the navigation tree, its name gives its title, so `Table/Misc.examples.tsx` exporting `TestTable` is shown as _Table › Misc › Test table_.
+
+## Metadata
+
+A JSDoc comment on the export adds optional metadata:
+
+```tsx
+/**
+ * A table of 1,000 rows of generated data.
+ * @title Test table
+ * @tags data-consumer
+ */
+export const TestTable = () => …
+```
+
+- The description is shown in the example header, in search results and on folder pages.
+- `@title` replaces the title derived from the export name.
+- `@tags data-consumer` marks an example that consumes data. It gets the data source control, local or a remote Vuu server, and the _Live data_ filter. The older form `/** tags=data-consumer */` still works.
+
+## Editable props
+
+An example can declare props that the showcase lets the reader change. A **Props** panel beside the preview has a control for each one. Changes are applied without reloading the example and are held in the url, so a configured example can be shared or compared.
+
+Declare the props with `defineExampleProps` and attach them to the example as its `props`:
+
+```tsx
+import {
+  defineExampleProps,
+  type ExampleProps,
+} from "@vuu-ui/vuu-showcase/example-props";
+
+const defaultButtonProps = defineExampleProps({
+  appearance: {
+    type: "select",
+    options: ["solid", "bordered", "transparent"],
+    default: "solid",
+  },
+  disabled: { type: "boolean", default: false },
+  label: { type: "string", default: "Button" },
+  onClick: { type: "action" },
+});
+
+export const DefaultButton = ({
+  appearance,
+  disabled,
+  label = "Button",
+  onClick,
+}: ExampleProps<typeof defaultButtonProps>) => (
+  <Button appearance={appearance} disabled={disabled} onClick={onClick}>
+    {label}
+  </Button>
+);
+DefaultButton.props = defaultButtonProps;
+```
+
+`ExampleProps` derives the props type from the declaration, `appearance` above is typed `"solid" | "bordered" | "transparent"`. An example that has its own props type, perhaps because other examples render it, can keep that type and just attach a declaration.
+
+| type          | control                                   | options              |
+| ------------- | ----------------------------------------- | -------------------- |
+| `boolean`     | switch                                    |                      |
+| `number`      | number input                              | `min`, `max`, `step` |
+| `string`      | text input                                |                      |
+| `select`      | segmented control, or a list when longer  | `options` (required) |
+| `multiselect` | toggle chips, the value is an array       | `options` (required) |
+| `action`      | a callback, its calls are listed in a log |                      |
+
+Every type accepts a `description`, shown under the prop name, and all but `action` accept a `default`, shown by the control when no value is set. Only values changed from the default are passed to the example, so its own default values apply otherwise. Keep the two in step.
+
+**Copy as JSX** copies the example element with the changed values, e.g. `<DefaultButton appearance="bordered" label="Save" />`.
