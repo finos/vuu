@@ -6,6 +6,7 @@ import { IFrame } from "../iframe";
 import { useShowcaseContext } from "../ShowcaseProvider";
 import type { NavNodeData } from "../tree-nav/nav-tree";
 import { getParentNode, getRelated, routeOf } from "./example-model";
+import { ComparePanel } from "./ComparePanel";
 import { ExampleHeader } from "./ExampleHeader";
 import { type ExampleTab, ExampleTabs, panelId, tabId } from "./ExampleTabs";
 import { PreviewBar } from "./PreviewBar";
@@ -13,14 +14,19 @@ import { PreviewCanvas } from "./PreviewCanvas";
 import { RelatedPanel } from "./RelatedPanel";
 import { SourceDock, useSourceDock } from "./SourceDock";
 import { SourceView } from "./SourceView";
-import { standaloneUrl } from "./preview-state";
+import {
+  type PreviewState,
+  standaloneUrl,
+  writePreviewParams,
+} from "./preview-state";
 import { usePreviewSource } from "./usePreviewSource";
 
 import "./ExamplePage.css";
 
 const classBase = "ShowcaseExamplePage";
 
-export type ExampleTabId = "preview" | "source" | "docs" | "related";
+export type ExampleTabId =
+  "preview" | "compare" | "source" | "docs" | "related";
 
 export const isDataConsumer = (nodeData?: NavNodeData) =>
   nodeData?.tags?.includes("data-consumer") ?? false;
@@ -35,10 +41,12 @@ const useSelectedTab = <T extends string>(tabs: ExampleTab<T>[]) => {
   const param = searchParams.get("tab");
   const selected = tabs.find((tab) => tab.id === param)?.id ?? tabs[0].id;
   const setSelected = useCallback(
-    (tab: T) =>
+    (tab: T, changes?: Partial<PreviewState>) =>
       setSearchParams(
         (params) => {
-          const next = new URLSearchParams(params);
+          const next = changes
+            ? writePreviewParams(params, changes)
+            : new URLSearchParams(params);
           if (tab === tabs[0].id) {
             next.delete("tab");
           } else {
@@ -68,7 +76,7 @@ const useVisited = (selected: string, pathname: string) => {
 export const ExamplePage = ({ treeNode, treeSource }: ExamplePageProps) => {
   const idPrefix = useId();
   const { pathname } = useLocation();
-  const { preview: previewState } = useShowcaseContext();
+  const { preview: previewState, setPreview } = useShowcaseContext();
   const { preview, reload, reloadKey, src } = usePreviewSource();
 
   const docNode = useMemo(() => {
@@ -85,6 +93,7 @@ export const ExamplePage = ({ treeNode, treeSource }: ExamplePageProps) => {
   const tabs = useMemo(() => {
     const tabs: ExampleTab<ExampleTabId>[] = [
       { id: "preview", label: "Preview" },
+      { id: "compare", label: "Compare" },
       { id: "source", label: "Source" },
     ];
     if (docNode) {
@@ -141,6 +150,20 @@ export const ExamplePage = ({ treeNode, treeSource }: ExamplePageProps) => {
           />
         ) : null}
       </div>
+      {/* not kept mounted, leaving the tab releases all its iframes */}
+      {selectedTab === "compare" ? (
+        <div {...panelProps("compare")}>
+          <ComparePanel
+            onPromote={(state) => {
+              setPreview(state);
+              // setSearchParams updates don't chain, so the tab change must
+              // also carry the preview params
+              setSelectedTab("preview", state);
+            }}
+            title={treeNode.label}
+          />
+        </div>
+      ) : null}
       {selectedTab === "related" ? (
         <div {...panelProps("related")}>
           <RelatedPanel
