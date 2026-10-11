@@ -390,7 +390,10 @@ export function initializeDragContainer(
     const draggable = getDraggableEl(target);
     if (draggable) {
       const tab = draggable.querySelector<HTMLElement>('[role="tab"]');
-      if (tab) {
+      const isTabAction =
+        (target as HTMLElement).closest?.('button:not([role="tab"])') !==
+        null;
+      if (tab && !isTabAction) {
         mouseDown = { tab, x: clientX, y: clientY };
       }
       const { left, top } = draggable.getBoundingClientRect();

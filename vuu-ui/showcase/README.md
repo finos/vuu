@@ -4,6 +4,10 @@ Run `npm run showcase` from `vuu-ui` for development, or
 `npm run showcase:prod` for a production build served at
 `http://localhost:4173`.
 
+Run `npm run showcase:build` to build without starting a server or opening a
+browser. Both builds generate the Theme Browser models and preserve the MDX
+syntax highlighting, Mermaid diagrams, document links and ordered navigation.
+
 The shell is an Rsbuild host. Examples are exposed by the
 `showcase_examples` Module Federation remote at `/showcase-examples/`; the
 shell keeps each selected example isolated in its existing iframe. Adding an
