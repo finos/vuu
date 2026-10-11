@@ -66,7 +66,9 @@ editing props (`dataSource`, `confirmCancel`, `panelVisibility`, `rowDefaults`,
 
 | Component | Role |
 | --------- | ---- |
-| `TableEditorTable` | The table. Selecting a row selects it for the form; selection is locked while editing. |
+| `TablePanel` | A column holding the table and anything above or below it, such as a header or toolbar. Fills the space beside the side panel. |
+| `TableWithEditFormTable` | The table, sized to fill the rest of `TablePanel`. Selecting a row selects it for the form; selection is locked while editing. Takes `Table` props. |
+| `EditFormPanel` | The Salt `SidePanel` for the form, on the right. Opens and closes with the selection. Takes `SidePanel` props, such as `className` and `style`; compose `SidePanelHeader` and `SidePanelContent` inside it. |
 | `TableEditorForm` | The form for the selected row. Renders `children`, or an `EditField` per entry in `fields`. Renders nothing when no row is selected. Takes `EditForm` props such as `validate`, `title` and `showButtons`. |
 | `TableEditorCreateForm` | The form for a new row, shown in create mode. Takes `CreateRowForm` props. |
 | `TableEditorPlaceholder` | Its `children`, shown only when no row is selected and no row is being created. |
@@ -77,14 +79,15 @@ editing props (`dataSource`, `confirmCancel`, `panelVisibility`, `rowDefaults`,
 | `TableEditorButtons` | Save and Cancel. Render inside a form with `showButtons={false}`. |
 | `TableEditorPanelCloseButton` | Closes the side panel; not rendered while the panel can't be closed. |
 
-`TableWithEditForm` also provides a Salt `SidePanelProvider`, so a Salt
-`SidePanel` anywhere inside it opens and closes with the selection. Any
+`TableWithEditForm` provides the Salt `SidePanelProvider`, so `EditFormPanel`
+(or any Salt `SidePanel` inside it) opens and closes with the selection. Any
 component inside it can call `useTableEditor()` for the state and
 actions: `mode`, `isEditing`, `selectedRow`, `panelOpen`, `canClosePanel`,
 `startEdit()`, `startCreate()`, `cancel()` and `setPanelOpen()`.
 
 ```tsx
 import {
+  EditFormPanel,
   TableEditorButtons,
   TableEditorCreateForm,
   TableEditorForm,
@@ -92,9 +95,10 @@ import {
   TableEditorNewButton,
   TableEditorPanelCloseButton,
   TableEditorPlaceholder,
-  TableEditorTable,
   TableEditorToolbar,
+  TablePanel,
   TableWithEditForm,
+  TableWithEditFormTable,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
 
@@ -112,14 +116,14 @@ const PanelHeader = () => {
 
 const InstrumentEditor = ({ dataSource }) => (
   <TableWithEditForm dataSource={dataSource} style={{ height: 500 }}>
-    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+    <TablePanel>
       <TableEditorToolbar>
         <H2>Instruments</H2>
         <TableEditorNewButton>New instrument</TableEditorNewButton>
       </TableEditorToolbar>
-      <TableEditorTable config={config} />
-    </div>
-    <SidePanel position="right">
+      <TableWithEditFormTable config={config} />
+    </TablePanel>
+    <EditFormPanel>
       <PanelHeader />
       <SidePanelContent>
         <TableEditorPlaceholder>Select an instrument</TableEditorPlaceholder>
@@ -138,7 +142,7 @@ const InstrumentEditor = ({ dataSource }) => (
         </TableEditorForm>
         <TableEditorCreateForm fields={createFields} validate={validateInstrument} />
       </SidePanelContent>
-    </SidePanel>
+    </EditFormPanel>
   </TableWithEditForm>
 );
 ```

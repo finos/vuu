@@ -1,5 +1,4 @@
 import {
-  SidePanel,
   SidePanelContent,
   SidePanelHeader,
   SidePanelTitle,
@@ -25,13 +24,17 @@ import {
   TableEditorPanelCloseButton,
   type TableEditorPanelVisibility,
   TableEditorPlaceholder,
-  TableEditorTable,
   TableEditorToolbar,
   useTableEditor,
 } from "../table-editor";
 
 import { TableEditorProvider } from "../table-editor/TableEditorProvider";
 
+import {
+  EditFormPanel,
+  TablePanel,
+  TableWithEditFormTable,
+} from "./TableWithEditFormLayout";
 import tableWithEditFormCss from "./TableWithEditForm.css";
 
 export type TableWithEditFormMode = TableEditorMode;
@@ -158,25 +161,22 @@ const DefaultContent = ({
   ...tableProps
 }: DefaultContentProps) => (
   <>
-    <div className={`${classBase}-main`}>
+    <TablePanel>
       <TableEditorToolbar>
         <TableEditorEditButton data-testid={`edit-button${testId}`} />
         {allowCreate ? (
           <TableEditorNewButton data-testid={`new-button${testId}`} />
         ) : null}
       </TableEditorToolbar>
-      <div className={`${classBase}-table`}>
-        <TableEditorTable
-          data-testid={`table${testId}`}
-          {...tableProps}
-          config={config}
-        />
-      </div>
-    </div>
-    <SidePanel
-      className={cx(`${classBase}-panel`, panelClassName)}
+      <TableWithEditFormTable
+        data-testid={`table${testId}`}
+        {...tableProps}
+        config={config}
+      />
+    </TablePanel>
+    <EditFormPanel
+      className={panelClassName}
       data-testid={`edit-panel${testId}`}
-      position="right"
     >
       <SidePanelHeader className={`${classBase}-panelHeader`}>
         <PanelTitle createTitle={createTitle} formTitle={formTitle} />
@@ -195,7 +195,7 @@ const DefaultContent = ({
           validate={validateCreate}
         />
       </SidePanelContent>
-    </SidePanel>
+    </EditFormPanel>
   </>
 );
 
@@ -241,12 +241,12 @@ const Container = ({
  * form is being edited, so changes cannot be lost by clicking another row.
  * Use `confirmCancel` to guard Cancel.
  *
- * Renders a flex row container. Without `children` it holds a toolbar, the
- * table and a form generated from `fields`. Otherwise it holds `children`:
- * compose `TableEditorTable`, a Salt `SidePanel` (opened and closed for you)
- * with `TableEditorForm`, `TableEditorCreateForm` and
- * `TableEditorPlaceholder`, and the other `TableEditor` components. Read the
- * state with `useTableEditor`.
+ * Renders a flex row container and provides a Salt `SidePanelProvider`.
+ * Without `children` it holds a toolbar, the table and a form generated from
+ * `fields`. Otherwise it holds `children`: a `TablePanel` holding a
+ * `TableWithEditFormTable`, and an `EditFormPanel` (opened and closed for
+ * you) holding `TableEditorForm`, `TableEditorCreateForm`,
+ * `TableEditorPlaceholder` etc. Read the state with `useTableEditor`.
  */
 export const TableWithEditForm = (props: TableWithEditFormProps) => {
   const {

@@ -67,4 +67,12 @@ export {
   type TableWithEditFormPanelVisibility,
   type TableWithEditFormProps,
 } from "./table-with-edit-form/TableWithEditForm";
+export {
+  EditFormPanel,
+  type EditFormPanelProps,
+  TablePanel,
+  type TablePanelProps,
+  TableWithEditFormTable,
+  type TableWithEditFormTableProps,
+} from "./table-with-edit-form/TableWithEditFormLayout";
 export * from "./table-editor";

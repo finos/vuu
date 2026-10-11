@@ -1,9 +1,11 @@
 import {
   Avatar,
   Button,
+  SidePanel,
   SidePanelCloseButton,
   SidePanelContent,
   SidePanelHeader,
+  SidePanelProvider,
   Tag,
 } from "@salt-ds/core";
 import { KeyIcon } from "@salt-ds/icons";
@@ -13,6 +15,7 @@ import type { DataRow } from "@vuu-ui/vuu-table-types";
 import {
   AccessTag,
   AppTag,
+  AdminToolbar,
   PageHeader,
   PageHeaderActions,
   PanelHeading,
@@ -20,16 +23,9 @@ import {
   PanelHeadingTags,
   PanelHeadingText,
   PanelHeadingTitle,
+  RowCount,
   useApplicationCategory,
 } from "../../components/admin-ui/AdminUi";
-import {
-  AdminPage,
-  AdminPageWithPanel,
-  AdminPanel,
-  AdminTableCard,
-  AdminToolbar,
-  RowCount,
-} from "../../components/admin-table-page/AdminTablePage";
 import { ApplicationFilter } from "../../components/ApplicationFilter";
 import { RolesEditForm } from "../../components/roles-edit-form/RolesEditForm";
 import { classifyRole } from "../../data/applications";
@@ -96,48 +92,53 @@ export const RolesPage = () => {
 
   return (
     <EditModeProvider isEditMode={dataRow && dataRow?.role_id === undefined}>
-      <AdminPageWithPanel onOpenChange={setOpen} open={open}>
-        <AdminPage>
-          <PageHeader
-            description="Access roles open an application; application roles grant what users can do in it."
-            title="Roles"
-          >
-            <PageHeaderActions>
-              <Button onClick={createRole} sentiment="accented">
-                <KeyIcon aria-hidden /> Create role
-              </Button>
-            </PageHeaderActions>
-          </PageHeader>
-          <AdminToolbar>
-            <ApplicationFilter onChange={setApplication} value={application} />
-            <RowCount dataSource={dataSource} noun="role" />
-          </AdminToolbar>
-          <AdminTableCard>
-            <Table
-              config={config}
-              dataSource={dataSource}
-              onSelect={onSelect}
-              rowHeight={ROLE_ROW_HEIGHT}
-            />
-          </AdminTableCard>
-        </AdminPage>
-        <AdminPanel>
-          <SidePanelHeader>
-            <RoleHeading dataRow={dataRow} />
-            <SidePanelCloseButton />
-          </SidePanelHeader>
-          <SidePanelContent>
-            {dataRow ? (
-              <RolesEditForm
-                application={application}
-                dataRow={dataRow}
-                dataSource={dataSource}
-                onClose={close}
+      <SidePanelProvider onOpenChange={setOpen} open={open}>
+        <div className="vuuIdentityAdmin-pageWithPanel">
+          <section className="vuuIdentityAdmin-page">
+            <PageHeader
+              description="Access roles open an application; application roles grant what users can do in it."
+              title="Roles"
+            >
+              <PageHeaderActions>
+                <Button onClick={createRole} sentiment="accented">
+                  <KeyIcon aria-hidden /> Create role
+                </Button>
+              </PageHeaderActions>
+            </PageHeader>
+            <AdminToolbar>
+              <ApplicationFilter
+                onChange={setApplication}
+                value={application}
               />
-            ) : null}
-          </SidePanelContent>
-        </AdminPanel>
-      </AdminPageWithPanel>
+              <RowCount dataSource={dataSource} noun="role" />
+            </AdminToolbar>
+            <div className="vuuIdentityAdmin-tableCard">
+              <Table
+                config={config}
+                dataSource={dataSource}
+                onSelect={onSelect}
+                rowHeight={ROLE_ROW_HEIGHT}
+              />
+            </div>
+          </section>
+          <SidePanel className="vuuIdentityAdmin-panel" position="right">
+            <SidePanelHeader>
+              <RoleHeading dataRow={dataRow} />
+              <SidePanelCloseButton />
+            </SidePanelHeader>
+            <SidePanelContent>
+              {dataRow ? (
+                <RolesEditForm
+                  application={application}
+                  dataRow={dataRow}
+                  dataSource={dataSource}
+                  onClose={close}
+                />
+              ) : null}
+            </SidePanelContent>
+          </SidePanel>
+        </div>
+      </SidePanelProvider>
     </EditModeProvider>
   );
 };
