@@ -28,7 +28,6 @@ import {
 import { DocsToc, readTocEntries, type TocEntry } from "./DocsToc";
 import {
   documentLabel,
-  editUrl,
   formatLastUpdated,
   getDocNeighbours,
   isDocumentNode,
@@ -237,7 +236,6 @@ export const DocsPage = ({
     () => getDocNeighbours(docRoute, treeSource),
     [docRoute, treeSource],
   );
-  const fileName = documentPath?.split("/").pop();
   const lastUpdated = nodeData?.lastUpdated;
 
   const scrollToExample = (name: string) =>
@@ -296,24 +294,11 @@ export const DocsPage = ({
               ) : null}
             </article>
             <footer className={`${classBase}-footer`}>
-              {documentPath || lastUpdated ? (
+              {lastUpdated ? (
                 <div className={`${classBase}-meta`}>
-                  {documentPath ? (
-                    <a
-                      className={`${classBase}-edit`}
-                      href={editUrl(documentPath)}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      <ChromeIcon name="pencil" size={14} />
-                      Edit this page
-                    </a>
-                  ) : null}
-                  {lastUpdated ? (
-                    <span className={`${classBase}-updated`}>
-                      Last updated {formatLastUpdated(lastUpdated)}
-                    </span>
-                  ) : null}
+                  <span className={`${classBase}-updated`}>
+                    Last updated {formatLastUpdated(lastUpdated)}
+                  </span>
                 </div>
               ) : null}
               {previous || next ? (
@@ -375,20 +360,6 @@ export const DocsPage = ({
                   </li>
                 ))}
               </ul>
-            </section>
-          ) : null}
-          {documentPath ? (
-            <section className="ShowcaseDocsRail-card">
-              <a
-                className="ShowcaseDocsRail-edit"
-                href={editUrl(documentPath)}
-                rel="noreferrer"
-                target="_blank"
-              >
-                <ChromeIcon name="github" size={14} />
-                Edit this page
-              </a>
-              <div className="ShowcaseDocsRail-file">{fileName}</div>
             </section>
           ) : null}
         </aside>

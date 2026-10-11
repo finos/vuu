@@ -125,7 +125,6 @@ const paths = {
       <path d="M9 7v3M9 12.25v.01" />
     </>
   ),
-  pencil: <path d="M12.25 3.25a1.77 1.77 0 0 1 2.5 2.5L6.5 14 3 15l1-3.5z" />,
 } as const;
 
 export type ChromeIconName = keyof typeof paths;

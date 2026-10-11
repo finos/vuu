@@ -3,9 +3,6 @@ import { DOCS_ID, type NavNodeData } from "../tree-nav/nav-tree";
 
 type NavNode = TreeSourceNode<NavNodeData>;
 
-export const GITHUB_EDIT_URL =
-  "https://github.com/finos/vuu/edit/main/vuu-ui/showcase";
-
 const WORDS_PER_MINUTE = 200;
 
 export const isIndexDocument = (documentPath = "") =>
@@ -66,9 +63,6 @@ export const readingMinutes = (text: string) => {
   const words = text.trim().split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / WORDS_PER_MINUTE));
 };
-
-export const editUrl = (documentPath: string) =>
-  `${GITHUB_EDIT_URL}/${documentPath.replace(/^\.\//, "")}`;
 
 /** e.g 2026-10-05 => 5 Oct 2026, dates are formatted as UTC */
 export const formatLastUpdated = (date: string, locale = "en-GB") => {
