@@ -9,6 +9,10 @@ import { Table } from "@vuu-ui/vuu-table";
 import {
   EditableTable,
   type EditableTableMode,
+  TableEditorFooter,
+  TableEditorModeToggle,
+  TableEditorTable,
+  TableEditorToolbar,
 } from "@vuu-ui/vuu-table-extras";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import { ModalProvider } from "@vuu-ui/core";
@@ -157,14 +161,23 @@ const UnsavedChangesTemplate = () => {
   return (
     <div style={{ height: 400, width: 900 }}>
       <EditableTable
-        config={instrumentsTableConfig}
         confirmCancel={confirmDiscard}
         dataSource={dataSource}
         editMode={editMode}
         onEditModeChange={setEditMode}
-        readOnly={["ric", "vuuMsg"]}
-        toolbar={<span>Mode: {editMode}</span>}
-      />
+      >
+        <TableEditorToolbar>
+          <TableEditorModeToggle />
+          <span>Mode: {editMode}</span>
+        </TableEditorToolbar>
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <TableEditorTable
+            config={instrumentsTableConfig}
+            readOnly={["ric", "vuuMsg"]}
+          />
+        </div>
+        <TableEditorFooter />
+      </EditableTable>
     </div>
   );
 };

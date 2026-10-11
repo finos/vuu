@@ -29,12 +29,14 @@ cancelling returns to View.
 | `confirmCancel` | `() => Promise<boolean>`, called before discarding unsaved changes. |
 | `onSave`, `onCancel` | Called after a successful save or cancel. |
 | `onError` | Called when begin, save, cancel or delete fails. See [Error handling](./09-ErrorHandling.mdx). |
-| `editModeToggle`, `showEditModeToggle` | Replace or hide the View/Edit toggle. |
-| `toolbar`, `footer` | Extra toolbar content; footer content shown in view mode. |
+| `showEditModeToggle` | Show the View/Edit toggle. Default `true`. |
 | `saveLabel` | Label for the Save button. |
+| `className`, `style` | For the container. |
 | `testId` | Suffix for the `data-testid` of the parts, for tests. |
 
-Other `Table` props are passed through.
+Other `Table` props are passed through. To add your own toolbar or footer
+content, compose the layout instead; see
+[Composing your own layout](#composing-your-own-layout).
 
 ## Editable columns
 
@@ -99,31 +101,40 @@ The dialog only appears when there are changes to lose.
 ## Composing your own layout
 
 `EditableTable` is built from the `TableEditor` components in
-`@vuu-ui/vuu-table-extras`. When you want your own toolbar or footer, give
-`EditableTable` `children`. It then renders those instead of its default
-layout, and still owns the editing state. With `children`, `EditableTable`
-takes only the editing props (`allowDelete`, `confirmCancel`, `copyOption`,
-`rowDefaults`, `editMode`/`defaultEditMode`, `onSave`, ...). The table props,
-plus `editable`, `readOnly`, `undoColumn` and `showInlineAddRow`, go on
-`TableEditorTable`.
+`@vuu-ui/vuu-table-extras`. It always renders its container, a flex column,
+and owns the editing state. Without `children` it lays out a default toolbar,
+table and footer. Give it `children` to lay out the pieces yourself. With
+`children`, `EditableTable` takes only the editing props (`allowDelete`,
+`confirmCancel`, `copyOption`, `rowDefaults`, `editMode`/`defaultEditMode`,
+`onSave`, ...) and `className`/`style`. The table props, plus `editable`,
+`readOnly`, `undoColumn` and `showInlineAddRow`, go on `TableEditorTable`.
+
+| Component | Role |
+| --------- | ---- |
+| `TableEditorTable` | The table. In edit mode it shows the session table, with editable cells and row styling for changes. |
+| `TableEditorToolbar` | A row for controls above the table. |
+| `TableEditorModeToggle` | View/Edit toggle. |
+| `TableEditorFooter` | A table footer: Save and Cancel (and Delete) while editing, otherwise its `children`, by default the row count. |
+| `TableEditorButtons` | Save and Cancel, for when you want them somewhere other than the footer. |
 
 ```tsx
 import {
   EditableTable,
-  TableEditorButtons,
+  TableEditorFooter,
   TableEditorModeToggle,
   TableEditorTable,
+  TableEditorToolbar,
 } from "@vuu-ui/vuu-table-extras";
 
 <EditableTable allowDelete dataSource={dataSource}>
-  <header>
-    <h2>Instruments</h2>
+  <TableEditorToolbar>
+    <H2>Instruments</H2>
     <TableEditorModeToggle />
-  </header>
-  <TableEditorTable config={config} readOnly={["ric"]} showInlineAddRow />
-  <footer>
-    <TableEditorButtons />
-  </footer>
+  </TableEditorToolbar>
+  <div style={{ flex: 1, minHeight: 0 }}>
+    <TableEditorTable config={config} readOnly={["ric"]} showInlineAddRow />
+  </div>
+  <TableEditorFooter saveLabel="Apply" />
 </EditableTable>;
 ```
 

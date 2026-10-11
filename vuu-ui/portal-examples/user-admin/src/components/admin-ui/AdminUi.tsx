@@ -5,6 +5,7 @@ import {
   H2,
   Link,
   type LinkProps,
+  SidePanelTitle,
   StatusIndicator,
   Tag,
   Text,
@@ -114,10 +115,8 @@ export const AdminLink = ({
   <Link {...props} render={<RouterLink relative="path" to={to} />} />
 );
 
-export interface AdminButtonLinkProps extends Omit<
-  RouterLinkProps,
-  "relative"
-> {
+export interface AdminButtonLinkProps
+  extends Omit<RouterLinkProps, "relative"> {
   sentiment?: "accented" | "neutral";
 }
 
@@ -196,13 +195,14 @@ export const StatusText = ({
   </span>
 );
 
+/** A page title and description. `children` (e.g. buttons) align to the right. */
 export const PageHeader = ({
-  actions,
+  children,
   description,
   title,
 }: {
-  actions?: ReactNode;
-  description?: ReactNode;
+  children?: ReactNode;
+  description?: string;
   title: string;
 }) => (
   <header className={`${classBase}-pageHeader`}>
@@ -210,34 +210,41 @@ export const PageHeader = ({
       <H2>{title}</H2>
       {description ? <Text color="secondary">{description}</Text> : null}
     </div>
-    {actions ? <div className={`${classBase}-actions`}>{actions}</div> : null}
+    {children}
   </header>
 );
 
-/** The heading of a side panel: avatar, title, subtitle and optional tags. */
-export const PanelHeading = ({
-  avatar,
-  subtitle,
-  tags,
-  title,
-}: {
-  avatar: ReactNode;
-  subtitle?: ReactNode;
-  tags?: ReactNode;
-  title: ReactNode;
-}) => (
-  <div className={`${classBase}-panelHeading`}>
-    {avatar}
-    <div className={`${classBase}-stack`}>
-      <span className={`${classBase}-panelTitle`}>{title}</span>
-      {subtitle ? (
-        <Text color="secondary" styleAs="label">
-          {subtitle}
-        </Text>
-      ) : null}
-      {tags ? <div className={`${classBase}-tags`}>{tags}</div> : null}
-    </div>
-  </div>
+/** A row of actions, e.g. inside a `PageHeader`. */
+export const PageHeaderActions = ({ children }: { children: ReactNode }) => (
+  <div className={`${classBase}-actions`}>{children}</div>
+);
+
+/**
+ * The heading of a side panel. Compose an avatar and a `PanelHeadingText`
+ * holding `PanelHeadingTitle`, `PanelHeadingSubtitle` and `PanelHeadingTags`.
+ */
+export const PanelHeading = ({ children }: { children: ReactNode }) => (
+  <div className={`${classBase}-panelHeading`}>{children}</div>
+);
+
+export const PanelHeadingText = ({ children }: { children: ReactNode }) => (
+  <div className={`${classBase}-stack`}>{children}</div>
+);
+
+export const PanelHeadingTitle = ({ children }: { children: ReactNode }) => (
+  <SidePanelTitle className={`${classBase}-panelTitle`} styleAs="h3">
+    {children}
+  </SidePanelTitle>
+);
+
+export const PanelHeadingSubtitle = ({ children }: { children: ReactNode }) => (
+  <Text color="secondary" styleAs="label">
+    {children}
+  </Text>
+);
+
+export const PanelHeadingTags = ({ children }: { children: ReactNode }) => (
+  <div className={`${classBase}-tags`}>{children}</div>
 );
 
 export const Metric = ({

@@ -124,6 +124,34 @@ export const TableEditorModeToggle = ({
   );
 };
 
+export type TableEditorEditButtonProps = Omit<ButtonProps, "onClick">;
+
+/**
+ * Form editing: makes the selected row's form editable. Disabled while
+ * editing and when no row is selected.
+ */
+export const TableEditorEditButton = forwardRef<
+  HTMLButtonElement,
+  TableEditorEditButtonProps
+>(function TableEditorEditButton(
+  { children = "Edit", disabled, ...props },
+  ref,
+) {
+  const { isEditing, selectedRow, startEdit } = useTableEditorContext(
+    "TableEditorEditButton",
+  );
+  return (
+    <Button
+      {...props}
+      disabled={disabled || isEditing || selectedRow === undefined}
+      onClick={startEdit}
+      ref={ref}
+    >
+      {children}
+    </Button>
+  );
+});
+
 export type TableEditorNewButtonProps = Omit<ButtonProps, "onClick">;
 
 /**

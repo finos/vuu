@@ -1,5 +1,3 @@
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
 import {
   CreateRowForm,
   type CreateRowFormField,
@@ -14,8 +12,6 @@ import {
 } from "@vuu-ui/vuu-data-editing";
 import { type ReactNode, useCallback, useLayoutEffect, useRef } from "react";
 import { useTableEditorContext } from "./TableEditorContext";
-
-import tableEditorFormCss from "./TableEditorForm.css";
 
 const classBase = "vuuTableEditorForm";
 
@@ -50,8 +46,6 @@ export interface TableEditorFormProps
   children?: ReactNode;
   /** Fields for the default form content, in tab order. */
   fields?: readonly TableEditorField[];
-  /** Shown when no row is selected. */
-  placeholder?: ReactNode;
 }
 
 /** Lets the provider route `cancel` (e.g. from a mode toggle) via the form. */
@@ -72,30 +66,19 @@ const FormRegistration = () => {
   return null;
 };
 
-const useFormCss = () => {
-  const targetWindow = useWindow();
-  useComponentCssInjection({
-    testId: "vuu-table-editor-form",
-    css: tableEditorFormCss,
-    window: targetWindow,
-  });
-};
-
 /**
  * Form editing: the selected row of the enclosing `TableWithEditForm`,
  * read-only in view mode and editable in edit mode. Renders nothing in
- * create mode (see `TableEditorCreateForm`), and `placeholder` when no row
- * is selected.
+ * create mode (see `TableEditorCreateForm`) and when no row is selected (see
+ * `TableEditorPlaceholder`).
  */
 export const TableEditorForm = ({
   children,
   className,
   fields,
-  placeholder,
   validate,
   ...formProps
 }: TableEditorFormProps) => {
-  useFormCss();
   const {
     confirmCancel,
     dataSource,
@@ -122,12 +105,8 @@ export const TableEditorForm = ({
     [onEditSaved],
   );
 
-  if (editIn !== "form" || mode === "create") {
+  if (editIn !== "form" || mode === "create" || selectedRow === undefined) {
     return null;
-  } else if (selectedRow === undefined) {
-    return placeholder ? (
-      <div className={`${classBase}-placeholder`}>{placeholder}</div>
-    ) : null;
   }
 
   return (
@@ -166,7 +145,6 @@ export const TableEditorCreateForm = ({
   className,
   ...formProps
 }: TableEditorCreateFormProps) => {
-  useFormCss();
   const {
     confirmCancel,
     createKey,

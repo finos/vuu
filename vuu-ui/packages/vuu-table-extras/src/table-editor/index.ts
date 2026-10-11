@@ -8,6 +8,8 @@ export {
 export {
   TableEditorButtons,
   type TableEditorButtonsProps,
+  TableEditorEditButton,
+  type TableEditorEditButtonProps,
   TableEditorModeToggle,
   type TableEditorModeToggleProps,
   TableEditorNewButton,
@@ -21,6 +23,14 @@ export {
   TableEditorForm,
   type TableEditorFormProps,
 } from "./TableEditorForm";
+export {
+  TableEditorFooter,
+  type TableEditorFooterProps,
+  TableEditorPlaceholder,
+  type TableEditorPlaceholderProps,
+  TableEditorToolbar,
+  type TableEditorToolbarProps,
+} from "./TableEditorLayout";
 export {
   TableEditorTable,
   type TableEditorTableProps,

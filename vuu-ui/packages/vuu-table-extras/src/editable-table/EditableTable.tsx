@@ -8,15 +8,14 @@ import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type { TableProps } from "@vuu-ui/vuu-table";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
-import type { ReactNode } from "react";
-import { DataSourceStats } from "../datasource-stats/DatasourceStats";
-import { TableFooter, TableFooterTray } from "../table-footer/TableFooter";
+import type { CSSProperties, ReactNode } from "react";
 import {
-  TableEditorButtons,
+  TableEditorFooter,
   TableEditorModeToggle,
   TableEditorTable,
+  TableEditorToolbar,
+  useTableEditor,
 } from "../table-editor";
-import { useTableEditorContext } from "../table-editor/TableEditorContext";
 import {
   TableEditorProvider,
   type TableEditorProviderProps,
@@ -26,7 +25,7 @@ import editableTableCss from "./EditableTable.css";
 
 export type EditableTableMode = "view" | "edit";
 
-/** Props for the editing state, whether or not `children` are given. */
+/** Props for the editing state and container, with or without `children`. */
 export interface EditableTableBaseProps
   extends Pick<
     EditableTableHookProps,
@@ -37,6 +36,7 @@ export interface EditableTableBaseProps
    * rows can be deleted. Rows already marked for deletion cannot be selected.
    */
   allowDelete?: boolean;
+  className?: string;
   /** Asked before an edit session with unsaved changes is discarded. */
   confirmCancel?: () => boolean | Promise<boolean>;
   /** The source (view) dataSource. Edits are staged in a session table. */
@@ -48,11 +48,14 @@ export interface EditableTableBaseProps
   onCancel?: () => void;
   onEditModeChange?: (editMode: EditableTableMode) => void;
   onSave?: () => void;
+  style?: CSSProperties;
+  /** Suffix appended to built-in test ids (`edit-table`, `toggle-edit` …). */
+  testId?: string;
 }
 
 /**
- * Your own layout: compose `TableEditorTable`, `TableEditorModeToggle`,
- * `TableEditorButtons` etc.
+ * Your own layout: compose `TableEditorTable`, `TableEditorToolbar`,
+ * `TableEditorModeToggle`, `TableEditorFooter`, `TableEditorButtons` etc.
  */
 export interface EditableTableComposedProps extends EditableTableBaseProps {
   children: ReactNode;
@@ -64,12 +67,14 @@ export interface EditableTableDefaultProps
     Omit<
       TableProps,
       | "children"
+      | "className"
       | "config"
       | "customHeader"
       | "dataSource"
       | "isRowSelectable"
       | "onError"
       | "selectionModel"
+      | "style"
     > {
   children?: undefined;
   /** Table config used in view mode. Edit mode columns are derived from it. */
@@ -79,20 +84,12 @@ export interface EditableTableDefaultProps
    * the read-only defaults (vuuCreatedTimestamp etc) and `readOnly`.
    */
   editable?: EditableColumnsConfig;
-  /** Replaces the default View/Edit toggle. */
-  editModeToggle?: ReactNode;
-  /** Rendered in the footer in view mode. Defaults to row count stats. */
-  footer?: ReactNode;
   /** Columns that can never be edited. */
   readOnly?: readonly string[];
   saveLabel?: string;
   showEditModeToggle?: boolean;
   /** Show an inline row, above the column headers, for adding new rows. */
   showInlineAddRow?: boolean;
-  /** Suffix appended to built-in test ids (`edit-table`, `toggle-edit` …). */
-  testId?: string;
-  /** Extra content rendered in the toolbar after the mode toggle. */
-  toolbar?: ReactNode;
   /** Adds a column with an undo button for edited rows. */
   undoColumn?: boolean;
 }
@@ -103,31 +100,46 @@ export type EditableTableProps =
 
 const classBase = "vuuEditableTable";
 
-type DefaultLayoutProps = Omit<
+type DefaultContentProps = Omit<
   EditableTableDefaultProps,
-  keyof EditableTableBaseProps
->;
+  keyof EditableTableBaseProps | "children"
+> & { testId: string };
 
-const DefaultLayout = ({
-  className,
-  editModeToggle,
-  footer,
+const DefaultContent = ({
   saveLabel,
   showEditModeToggle = true,
-  style,
-  testId = "",
-  toolbar,
+  testId,
   ...tableProps
-}: DefaultLayoutProps) => {
+}: DefaultContentProps) => (
+  <>
+    {showEditModeToggle ? (
+      <TableEditorToolbar>
+        <TableEditorModeToggle testId={testId} />
+      </TableEditorToolbar>
+    ) : null}
+    <div className={`${classBase}-table`}>
+      <TableEditorTable data-testid={`table${testId}`} {...tableProps} />
+    </div>
+    <TableEditorFooter saveLabel={saveLabel} />
+  </>
+);
+
+const Container = ({
+  children,
+  className,
+  style,
+  testId,
+}: Pick<EditableTableBaseProps, "className" | "style"> & {
+  children: ReactNode;
+  testId: string;
+}) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-editable-table",
     css: editableTableCss,
     window: targetWindow,
   });
-  const { dataSource, editableTable, mode } =
-    useTableEditorContext("EditableTable");
-  const showToolbar = showEditModeToggle || toolbar !== undefined;
+  const { mode } = useTableEditor();
   return (
     <div
       className={cx(classBase, className, {
@@ -136,26 +148,7 @@ const DefaultLayout = ({
       data-testid={`edit-table${testId}`}
       style={style}
     >
-      {showToolbar ? (
-        <div className={`${classBase}-toolbar`}>
-          {showEditModeToggle
-            ? (editModeToggle ?? <TableEditorModeToggle testId={testId} />)
-            : null}
-          {toolbar}
-        </div>
-      ) : null}
-      <div className={`${classBase}-table`}>
-        <TableEditorTable data-testid={`table${testId}`} {...tableProps} />
-      </div>
-      <TableFooter>
-        {editableTable?.isEditSessionReady ? (
-          <TableFooterTray position="center">
-            <TableEditorButtons saveLabel={saveLabel} />
-          </TableFooterTray>
-        ) : (
-          (footer ?? <DataSourceStats dataSource={dataSource} />)
-        )}
-      </TableFooter>
+      {children}
     </div>
   );
 };
@@ -167,10 +160,11 @@ const DefaultLayout = ({
  * styling for edited/added/deleted rows, Save/Cancel/Delete buttons, the
  * inline add row) is handled internally.
  *
- * Without `children`, renders a toolbar with a View/Edit toggle, the table
- * and a footer with Save/Cancel. With `children`, renders them instead: lay
- * out `TableEditorTable`, `TableEditorModeToggle`, `TableEditorButtons` etc
- * however you like, and read the state with `useTableEditor`.
+ * Renders a flex column container. Without `children` it holds a toolbar
+ * with a View/Edit toggle, the table and a footer with Save/Cancel.
+ * Otherwise it holds `children`: compose `TableEditorTable`,
+ * `TableEditorToolbar`, `TableEditorModeToggle`, `TableEditorFooter` etc.
+ * Read the state with `useTableEditor`.
  */
 export const EditableTable = (props: EditableTableProps) => {
   const {
@@ -188,7 +182,10 @@ export const EditableTable = (props: EditableTableProps) => {
     onError,
     onSave,
     rowDefaults,
-    ...layoutProps
+    className,
+    style,
+    testId = "",
+    ...contentProps
   } = props;
 
   return (
@@ -210,7 +207,14 @@ export const EditableTable = (props: EditableTableProps) => {
       onSaved={onSave}
       rowDefaults={rowDefaults}
     >
-      {children ?? <DefaultLayout {...(layoutProps as DefaultLayoutProps)} />}
+      <Container className={className} style={style} testId={testId}>
+        {children ?? (
+          <DefaultContent
+            {...(contentProps as Omit<DefaultContentProps, "testId">)}
+            testId={testId}
+          />
+        )}
+      </Container>
     </TableEditorProvider>
   );
 };
