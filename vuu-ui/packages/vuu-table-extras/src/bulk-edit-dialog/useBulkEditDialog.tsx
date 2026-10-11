@@ -6,7 +6,7 @@ import {
 } from "@vuu-ui/vuu-data-editing";
 import type { CopyOption, DataSource } from "@vuu-ui/vuu-data-types";
 import { BulkEditPanel, type BulkEditPanelProps } from "@vuu-ui/vuu-table";
-import { useModal } from "@vuu-ui/vuu-ui-controls";
+import { useModal } from "@vuu-ui/core";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface BulkEditDialogHookProps
