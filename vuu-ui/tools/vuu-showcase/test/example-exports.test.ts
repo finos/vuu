@@ -40,4 +40,21 @@ describe("parseExampleExports", () => {
     expect(examples[1].sourceRange).toEqual([4, 8]);
     expect(examples[3].sourceRange).toEqual([17, 17]);
   });
+  it("flags examples with a props declaration", () => {
+    const source = `
+export const WithProps = () => null;
+WithProps.props = { rowCount: { type: "number" } };
+export const WithoutProps = () => null;
+WithoutProps.displayName = "x";
+`;
+    expect(
+      parseExampleExports("Props.examples.tsx", source).map(
+        ({ componentName, hasProps }) => ({ componentName, hasProps }),
+      ),
+    ).toEqual([
+      { componentName: "WithProps", hasProps: true },
+      { componentName: "WithoutProps", hasProps: undefined },
+    ]);
+    expect(examples.every(({ hasProps }) => hasProps === undefined)).toBe(true);
+  });
 });

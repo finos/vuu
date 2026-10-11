@@ -20,6 +20,8 @@ export type NavNodeData = {
   /** numeric ordering prefix, e.g 2 for 02-Columns.mdx, shown for chapters */
   order?: number;
   path?: string;
+  /** the example declares editable props, see example-props.ts */
+  props?: boolean;
   route?: string;
   sourceRange?: [number, number];
   tags?: string[];
