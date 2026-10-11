@@ -3,6 +3,7 @@ import {
   SidePanelHeader,
   type SidePanelHeaderProps,
   type SidePanelProps,
+  useForkRef,
 } from "@salt-ds/core";
 import cx from "clsx";
 import { forwardRef, type HTMLAttributes } from "react";
@@ -51,6 +52,30 @@ export const TableWithEditFormTable = (props: TableWithEditFormTableProps) => (
 
 export type TableWithEditFormPanelProps = Omit<SidePanelProps, "position">;
 
+const animationWidth = "--saltSidePanel-animation-width";
+
+/**
+ * While SidePanel animates open, its content is sized from
+ * --saltSidePanel-animation-width, which SidePanel measures in a layout
+ * effect. On the first open that effect runs before the panel is mounted,
+ * so the width is never set and a percentage width resolves against the
+ * growing panel, making the content reflow as it slides in. Measure it
+ * ourselves when the panel mounts mid-animation. The panel unmounts when
+ * closed, so each open starts from a fresh element.
+ */
+const measureAnimationWidth = (el: HTMLDivElement | null) => {
+  if (
+    el?.classList.contains("saltSidePanel-enterAnimation") &&
+    !el.style.getPropertyValue(animationWidth)
+  ) {
+    const { animation } = el.style;
+    el.style.animation = "none";
+    const { width } = el.getBoundingClientRect();
+    el.style.animation = animation;
+    el.style.setProperty(animationWidth, `${width}px`);
+  }
+};
+
 /**
  * The Salt `SidePanel`, on the right, that holds the form. `TableWithEditForm`
  * opens and closes it. Compose `SidePanelHeader` and `SidePanelContent`.
@@ -59,12 +84,13 @@ export const TableWithEditFormPanel = forwardRef<
   HTMLDivElement,
   TableWithEditFormPanelProps
 >(function TableWithEditFormPanel({ className, ...props }, forwardedRef) {
+  const ref = useForkRef(measureAnimationWidth, forwardedRef);
   return (
     <SidePanel
       {...props}
       className={cx(`${classBase}-panel`, className)}
       position="right"
-      ref={forwardedRef}
+      ref={ref}
     />
   );
 });
