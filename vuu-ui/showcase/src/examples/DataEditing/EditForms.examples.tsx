@@ -12,7 +12,7 @@ import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import type { RpcResult } from "@vuu-ui/vuu-protocol-types";
 import { Table } from "@vuu-ui/vuu-table";
 import {
-  EditFormPanel,
+  TableWithEditFormPanel,
   TableEditorButtons,
   TableEditorCreateForm,
   TableEditorForm,
@@ -21,7 +21,7 @@ import {
   TableEditorPlaceholder,
   TableEditorPanelCloseButton,
   TableEditorToolbar,
-  TablePanel,
+  TableWithEditFormTablePanel,
   TableWithEditForm,
   TableWithEditFormTable,
   type TableWithEditFormPanelVisibility,
@@ -201,7 +201,7 @@ const TableWithCustomFormTemplate = () => {
       dataSource={dataSource}
       style={{ height: 500, width: 1100 }}
     >
-      <TablePanel>
+      <TableWithEditFormTablePanel>
         <TableEditorToolbar>
           <Text styleAs="h3" style={{ flex: 1 }}>
             Instruments
@@ -209,8 +209,8 @@ const TableWithCustomFormTemplate = () => {
           <TableEditorNewButton>New instrument</TableEditorNewButton>
         </TableEditorToolbar>
         <TableWithEditFormTable config={instrumentsTableConfig} />
-      </TablePanel>
-      <EditFormPanel
+      </TableWithEditFormTablePanel>
+      <TableWithEditFormPanel
         style={{ "--saltSidePanel-width": "360px" } as CSSProperties}
       >
         <InstrumentPanelHeader />
@@ -224,7 +224,7 @@ const TableWithCustomFormTemplate = () => {
             validate={validateInstrument}
           />
         </SidePanelContent>
-      </EditFormPanel>
+      </TableWithEditFormPanel>
     </TableWithEditForm>
   );
 };
