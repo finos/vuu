@@ -27,6 +27,8 @@ export type NodeData = {
   /** folders only, number of examples within */
   count?: number;
   description?: string;
+  /** examples only, routes of documents (other than its own) that embed it */
+  docs?: string[];
   /** true for an example that consumes data, or a folder containing one */
   live?: boolean;
   name?: string;
@@ -55,6 +57,7 @@ export const treeSourceFromFileSystem = (
   );
   if (route === "") {
     addFolderSummaries(treeSourceNodes);
+    addDocReferences(treeSourceNodes);
   }
   return [treeSourceNodes, tagList, documentPath];
 };
@@ -197,6 +200,77 @@ const treeSourceFromExportedComponents = (
 
 const isExample = ({ nodeData }: TreeSourceNode<NodeData>) =>
   typeof nodeData?.componentName === "string";
+
+const EXAMPLES_IMPORT =
+  /import\s*\{([^}]*)\}\s*from\s*["'](\.{1,2}\/[^"']*\.examples)(?:\.tsx)?["']/g;
+
+/**
+ * The examples rendered by an mdx document, identified as `<path>#<name>`.
+ * An example is embedded if it is imported from an examples module and
+ * used as a JSX element.
+ */
+export const findEmbeddedExamples = (mdxPath: string, text: string) => {
+  const embedded: string[] = [];
+  for (const [, names, importPath] of text.matchAll(EXAMPLES_IMPORT)) {
+    const examplePath = path.posix.join(
+      path.posix.dirname(mdxPath),
+      `${importPath}.tsx`,
+    );
+    for (const name of names.split(",").map((n) => n.trim())) {
+      const localName = name.split(/\s+as\s+/).pop() ?? name;
+      if (localName && text.includes(`<${localName}`)) {
+        const exportName = name.split(/\s+as\s+/)[0];
+        embedded.push(`${examplePath}#${exportName}`);
+      }
+    }
+  }
+  return embedded;
+};
+
+const visitNodes = (
+  nodes: TreeSourceNode<NodeData>[],
+  visit: (node: TreeSourceNode<NodeData>) => void,
+) => {
+  for (const node of nodes) {
+    visit(node);
+    if (node.childNodes) {
+      visitNodes(node.childNodes, visit);
+    }
+  }
+};
+
+/**
+ * Records, on each example, the documents that embed it. The document of
+ * the example's own examples file is excluded, it is presented separately.
+ */
+const addDocReferences = (treeSourceNodes: TreeSourceNode<NodeData>[]) => {
+  const examples = new Map<string, TreeSourceNode<NodeData>>();
+  visitNodes(treeSourceNodes, (node) => {
+    if (isExample(node) && node.nodeData?.path) {
+      const key = `${path.posix.normalize(node.nodeData.path)}#${node.nodeData.componentName}`;
+      examples.set(key, node);
+    }
+  });
+  visitNodes(treeSourceNodes, (node) => {
+    const mdxPath = node.nodeData?.path;
+    if (mdxPath?.endsWith(".mdx")) {
+      const text = fs.readFileSync(mdxPath).toString();
+      for (const key of findEmbeddedExamples(
+        path.posix.normalize(mdxPath),
+        text,
+      )) {
+        const example = examples.get(key);
+        const parentId = example?.id.slice(0, example.id.lastIndexOf("/"));
+        if (example?.nodeData && parentId !== node.id) {
+          const docs = (example.nodeData.docs ??= []);
+          if (!docs.includes(node.id)) {
+            docs.push(node.id);
+          }
+        }
+      }
+    }
+  });
+};
 
 /**
  * Records, on every folder, the number of examples it contains and whether
