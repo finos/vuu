@@ -35,7 +35,7 @@ panel can't be closed.
 | Prop | Description |
 | ---- | ----------- |
 | `panelVisibility` | `"on-select"` (default): the panel opens when a row is selected, or Edit or New is clicked, and closes when the selection is cleared or its close button is clicked. `"always"`: the panel is always shown, with the `placeholder` text when no row is selected, and has no close button. |
-| `panelClassName` | Class for the `SidePanel`, e.g. to set `--saltSidePanel-width` (default `320px`). |
+| `panelClassName` | Class for the `SidePanel`, e.g. to set `--saltSidePanel-width` (default `320px`). Any CSS length works, including a percentage such as `min(460px, 45%)`; the form keeps its width while the panel slides open. |
 | `fields` | Fields shown for the selected row. See [Fields](#fields). |
 | `createFields` | Fields shown when adding a row. Defaults to `fields`. |
 | `allowCreate` | Show the New button. Default `true`. |
@@ -68,7 +68,7 @@ editing props (`dataSource`, `confirmCancel`, `panelVisibility`, `rowDefaults`,
 | --------- | ---- |
 | `TableWithEditFormTablePanel` | A column holding the table and anything above or below it, such as a header or toolbar. Fills the space beside the side panel. |
 | `TableWithEditFormTable` | The table, sized to fill the rest of `TableWithEditFormTablePanel`. Selecting a row selects it for the form; selection is locked while editing. Takes `Table` props. |
-| `TableWithEditFormPanel` | The Salt `SidePanel` for the form, on the right. Opens and closes with the selection. Takes `SidePanel` props, such as `className` and `style`; compose `TableWithEditFormPanelHeader` and `SidePanelContent` inside it. |
+| `TableWithEditFormPanel` | The Salt `SidePanel` for the form, on the right. Opens and closes with the selection. Takes `SidePanel` props, such as `className` and `style`; set its width with `--saltSidePanel-width` (any CSS length). Compose `TableWithEditFormPanelHeader` and `SidePanelContent` inside it. |
 | `TableWithEditFormPanelHeader` | The panel's `SidePanelHeader`. Its first child fills the width and a close button follows; pass `canClose={false}` to leave the close button out. Takes `SidePanelHeader` props. |
 | `TableEditorForm` | The form for the selected row. Renders `children`, or an `EditField` per entry in `fields`. Renders nothing when no row is selected. Takes `EditForm` props such as `validate` and `title`. Renders its own Save and Cancel only without `children`; with `children`, place `TableEditorButtons` yourself. |
 | `TableEditorCreateForm` | The form for a new row, shown in create mode. Takes `CreateRowForm` props. Renders `children` after any `fields`; see [Custom create forms](#custom-create-forms). |
