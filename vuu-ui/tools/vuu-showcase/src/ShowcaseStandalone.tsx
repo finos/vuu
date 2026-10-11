@@ -9,6 +9,7 @@ import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
   type Density,
   getUrlParameter,
+  hasUrlParameter,
   ThemeLoadChecker,
   type ThemeMode,
   type TreeSourceNode,
@@ -17,6 +18,7 @@ import cx from "clsx";
 import {
   type ComponentType,
   type ReactNode,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -30,7 +32,6 @@ import {
   loadTheme,
 } from "./shared-utils";
 import type { DataLocation } from "./showcase-main/ShowcaseProvider";
-import { createMdxComponents } from "./mdx-components";
 import { OPEN_PALETTE_MESSAGE } from "./showcase-main/command-palette/palette-messages";
 import { simulModule } from "@vuu-ui/vuu-data-test";
 
@@ -72,8 +73,26 @@ const asDataLocation = (input: string | undefined): DataLocation => {
 
 type ContentState = {
   component: ReactNode;
-  isMDX: boolean;
 };
+
+/**
+ * An embedded example (an example within a document) sizes its iframe to fit
+ * its content. The iframe is same origin, so it can be sized directly.
+ */
+const useFitFrameToContent = (embed: boolean) =>
+  useCallback(
+    (root: HTMLDivElement | null) => {
+      const frame = window.frameElement as HTMLIFrameElement | null;
+      if (!embed || !frame || !root) return;
+      // the root mounts once the theme has loaded, hence a callback ref
+      const observer = new ResizeObserver(() => {
+        frame.style.height = `${Math.ceil(root.getBoundingClientRect().height)}px`;
+      });
+      observer.observe(root);
+      return () => observer.disconnect();
+    },
+    [embed],
+  );
 
 // The theme is passed as a queryString parameter in the url
 // themeMode and density are passed via the url hash, so can be
@@ -95,6 +114,8 @@ export const ShowcaseStandalone = ({
 
   // We only need this once as entire page will refresh if theme changes
   const theme = useMemo(() => getUrlParameter("theme", "vuu-theme"), []);
+  const embed = useMemo(() => hasUrlParameter("embed"), []);
+  const rootRef = useFitFrameToContent(embed);
 
   useEffect(() => {
     // keys pressed within the showcase iframe never reach the showcase
@@ -154,26 +175,16 @@ export const ShowcaseStandalone = ({
             const Component = targetModule[nodeData.componentName] as
               ComponentType | undefined;
             if (Component) {
-              setContentState({
-                component: <Component />,
-                isMDX: nodeData.path.endsWith("mdx"),
-              });
+              setContentState({ component: <Component /> });
             } else {
               console.warn("Example Componentnot found");
             }
+          } else if (nodeData.path.endsWith("mdx")) {
+            // documents render in the showcase chrome, see DocsStandalone
+            console.warn(`[ShowcaseStandalone] ${nodeData.path} is a document`);
           } else {
-            const Component = targetModule.default as ComponentType<{
-              components?: ReturnType<typeof createMdxComponents>;
-            }>;
-            const isMDX = nodeData.path.endsWith("mdx");
-            setContentState({
-              component: isMDX ? (
-                <Component components={createMdxComponents(nodeData.path)} />
-              ) : (
-                <Component />
-              ),
-              isMDX,
-            });
+            const Component = targetModule.default as ComponentType;
+            setContentState({ component: <Component /> });
           }
         } else {
           // root app has been loaded with no example selection, therefore nothing to load into iframe
@@ -206,8 +217,9 @@ export const ShowcaseStandalone = ({
           <LocalDataSourceProvider>
             <div
               className={cx("vuuShowcase-StandaloneRoot", {
-                "vuuShowcase-mdx": contentState?.isMDX,
+                "vuuShowcase-embed": embed,
               })}
+              ref={rootRef}
             >
               {contentState?.component}
             </div>
@@ -221,8 +233,9 @@ export const ShowcaseStandalone = ({
           >
             <div
               className={cx("vuuShowcase-StandaloneRoot", {
-                "vuuShowcase-mdx": contentState?.isMDX,
+                "vuuShowcase-embed": embed,
               })}
+              ref={rootRef}
             >
               {contentState?.component}
             </div>

@@ -14,7 +14,11 @@ export type NavNodeData = {
   docs?: string[];
   /** a presentational grouping node, has no route */
   heading?: boolean;
+  /** documents only, date (yyyy-mm-dd) of the last commit */
+  lastUpdated?: string;
   live?: boolean;
+  /** numeric ordering prefix, e.g 2 for 02-Columns.mdx, shown for chapters */
+  order?: number;
   path?: string;
   route?: string;
   sourceRange?: [number, number];
@@ -76,6 +80,37 @@ export const buildExamplesIndexNode = (
 export const GETTING_STARTED_LABEL = "Getting started";
 export const COMPONENTS_LABEL = "Components";
 
+const isDocument = ({ nodeData }: TreeSourceNode<NavNodeData>) =>
+  nodeData?.path?.endsWith(".mdx") === true;
+
+const isExampleNode = ({ nodeData }: TreeSourceNode<NavNodeData>) =>
+  typeof nodeData?.componentName === "string";
+
+/**
+ * Docs nav: a chapter (a document with examples) is a page, its examples are
+ * listed on the page itself. Numbered chapters are shown with their number in
+ * place of an icon. Folders are expanded.
+ */
+const toDocsNavNode = (
+  node: TreeSourceNode<NavNodeData>,
+): TreeSourceNode<NavNodeData> => {
+  const { childNodes = [] } = node;
+  const isChapter =
+    isDocument(node) &&
+    childNodes.length > 0 &&
+    childNodes.every(isExampleNode);
+  const icon = node.nodeData?.order === undefined ? node.icon : undefined;
+  if (isChapter || childNodes.length === 0) {
+    return { ...node, childNodes: undefined, icon };
+  }
+  return {
+    ...node,
+    childNodes: childNodes.map(toDocsNavNode),
+    expanded: true,
+    icon,
+  };
+};
+
 const byLabel = (n1: TreeSourceNode, n2: TreeSourceNode) =>
   n1.label.localeCompare(n2.label);
 
@@ -92,9 +127,7 @@ export const buildSectionTree = (
 ): TreeSourceNode<NavNodeData>[] => {
   if (section === "docs") {
     const docs = treeSource.find((node) => node.id === DOCS_ID);
-    return (docs?.childNodes ?? []).map((node) =>
-      node.childNodes?.length ? { ...node, expanded: true } : node,
-    );
+    return (docs?.childNodes ?? []).map(toDocsNavNode);
   } else if (section === "examples") {
     const examples = getExampleNodes(treeSource);
     const pages = examples.filter((node) => !node.childNodes?.length);
@@ -133,6 +166,11 @@ export interface NavIndex {
   isPagePath: (pathname: string) => boolean;
   /** The nav tree row key for a url pathname, if that route is in the tree */
   keyForPath: (pathname: string) => string | undefined;
+  /**
+   * The row key for a pathname or, if that route is not in the tree, its
+   * nearest ancestor, e.g the chapter of an example embedded in a document.
+   */
+  keyForNearestPath: (pathname: string) => string | undefined;
   /** The url pathname for a nav tree row key, undefined for headings */
   pathForKey: (key: string) => string | undefined;
 }
@@ -167,6 +205,13 @@ export const createNavIndex = (tree: TreeSourceNode<NavNodeData>[]) => {
   return {
     isPagePath: (pathname) => pagePaths.has(normalise(pathname)),
     keyForPath: (pathname) => pathToKey.get(normalise(pathname)),
+    keyForNearestPath: (pathname) => {
+      const segments = normalise(pathname).split("/");
+      for (let i = segments.length; i > 1; i--) {
+        const key = pathToKey.get(segments.slice(0, i).join("/"));
+        if (key) return key;
+      }
+    },
     pathForKey: (key) => keyToPath.get(key),
   } as NavIndex;
 };

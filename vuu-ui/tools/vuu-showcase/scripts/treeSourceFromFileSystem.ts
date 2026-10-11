@@ -1,3 +1,4 @@
+import { execFileSync } from "child_process";
 import fs from "fs";
 import path from "path";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
@@ -31,7 +32,11 @@ export type NodeData = {
   docs?: string[];
   /** true for an example that consumes data, or a folder containing one */
   live?: boolean;
+  /** documents only, date (yyyy-mm-dd) of the last commit to the document */
+  lastUpdated?: string;
   name?: string;
+  /** the numeric ordering prefix of the file, if any, e.g 2 for 02-Columns */
+  order?: number;
   path?: string;
   /** examples only, 1-based inclusive line range within the examples file */
   sourceRange?: [number, number];
@@ -99,7 +104,7 @@ const buildTreeSource = (
       if (documentPath) {
         treeSourceNode.nodeData = {
           name: fileName,
-          path: documentPath,
+          ...documentData(documentPath),
         };
       }
       if (Array.isArray(childNodes) && childNodes.length > 0) {
@@ -134,7 +139,7 @@ const buildTreeSource = (
 
       treeSourceNodes.push(treeSourceNode);
     } else if (fileName.match(/^[Ii]ndex.mdx$/)) {
-      documentPath = treeSourceFromDocument(exhibitsPath, fileName).path;
+      documentPath = `${exhibitsPath}/${fileName}`;
     } else if (fileName.match(/\.mdx$/)) {
       const name = dropLastPathSegment(fileName, ".");
       // mdx files with a matching examples file are rendered as the document
@@ -157,13 +162,38 @@ const buildTreeSource = (
   return [treeSourceNodes, Array.from(tags), documentPath];
 };
 
+/** Date of the last commit to a file, undefined if not committed */
+const gitLastUpdated = (filePath: string) => {
+  try {
+    const date = execFileSync(
+      "git",
+      ["log", "-1", "--format=%cs", "--", path.basename(filePath)],
+      { cwd: path.dirname(filePath), encoding: "utf8", stdio: "pipe" },
+    ).trim();
+    return date || undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const documentData = (documentPath: string): NodeData => {
+  const nodeData: NodeData = { path: documentPath };
+  const lastUpdated = gitLastUpdated(documentPath);
+  if (lastUpdated) {
+    nodeData.lastUpdated = lastUpdated;
+  }
+  const order = path.basename(documentPath).match(/^(\d+)-/)?.[1];
+  if (order) {
+    nodeData.order = parseInt(order, 10);
+  }
+  return nodeData;
+};
+
 // The .mdx extension identifies the node as a document.
 const treeSourceFromDocument = (
   exhibitsPath: string,
   fileName: string,
-): NodeData => ({
-  path: `${exhibitsPath}/${fileName}`,
-});
+): NodeData => documentData(`${exhibitsPath}/${fileName}`);
 
 const treeSourceFromExportedComponents = (
   exhibitsPath: string,

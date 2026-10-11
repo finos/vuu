@@ -7,13 +7,21 @@ export default `<!doctype html>
     <script type="module">
       import React from "react";
       import {createRoot} from "react-dom/client";
-      import { Showcase, ShowcaseStandalone } from "@vuu-ui/vuu-showcase";
+      import {
+        DocsStandalone,
+        isStandaloneDocument,
+        Showcase,
+        ShowcaseStandalone,
+      } from "@vuu-ui/vuu-showcase";
       import { hasUrlParameter } from "@vuu-ui/vuu-utils";
       const { default: treeSource } = await import("/treeSourceJson.js");
       const container = document.getElementById("root");
       const root = createRoot(container);
       if (hasUrlParameter("standalone")) {
-        root.render(React.createElement(ShowcaseStandalone, { treeSource }));
+        const Standalone = isStandaloneDocument(treeSource)
+          ? DocsStandalone
+          : ShowcaseStandalone;
+        root.render(React.createElement(Standalone, { treeSource }));
       } else {
         root.render(React.createElement(Showcase, { treeSource }));
       }

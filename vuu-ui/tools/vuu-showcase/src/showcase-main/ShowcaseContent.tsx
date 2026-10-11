@@ -7,7 +7,8 @@ import {
   isIndexNode,
 } from "../shared-utils";
 import { ThemeBrowser } from "../theme-browser";
-import { DocumentPage, ExamplePage } from "./example";
+import { DocsPage } from "./docs";
+import { ExamplePage } from "./example";
 import { FolderIndex } from "./folder-index";
 import { HomePage } from "./home";
 import { type NavNodeData, THEME_PATH } from "./tree-nav/nav-tree";
@@ -19,8 +20,8 @@ export interface ShowcaseContentProps {
 }
 
 /**
- * Content area of the showcase shell. Examples and docs render in an iframe,
- * below the preview bar that controls theme, density etc. The home page, Theme
+ * Content area of the showcase shell. Examples render in an iframe, below the
+ * preview bar that controls theme, density etc. Docs, the home page, Theme
  * Browser and folder indexes are built into the shell and render directly.
  */
 export const ShowcaseContent = ({
@@ -52,9 +53,12 @@ export const ShowcaseContent = ({
           treeNode={treeNode}
           treeSource={treeSource as TreeSourceNode<NavNodeData>[]}
         />
-      ) : (
-        <DocumentPage treeNode={treeNode} />
-      )}
+      ) : treeNode ? (
+        <DocsPage
+          treeNode={treeNode}
+          treeSource={treeSource as TreeSourceNode<NavNodeData>[]}
+        />
+      ) : null}
     </div>
   );
 };

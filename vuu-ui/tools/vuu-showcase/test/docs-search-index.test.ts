@@ -58,6 +58,22 @@ describe("docSearchEntries", () => {
     ]);
   });
 
+  it("suffixes repeated headings, as the rendered page does", () => {
+    const repeated = docSearchEntries(
+      "## A\n\n### Best practices\n\n## B\n\n### Best practices\n",
+      "/Docs/X",
+      "X",
+      [],
+    );
+    expect(repeated.map((e) => e.anchor)).toEqual([
+      undefined,
+      "a",
+      "best-practices",
+      "b",
+      "best-practices-1",
+    ]);
+  });
+
   it("keeps prose only, as plain text", () => {
     expect(entries[0].text).toBe(
       "The columns of a Table are described by ColumnDescriptor.",

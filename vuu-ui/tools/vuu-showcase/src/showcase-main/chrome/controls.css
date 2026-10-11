@@ -77,7 +77,8 @@
   }
 
   > button[aria-pressed="true"],
-  > button[aria-checked="true"] {
+  > button[aria-checked="true"],
+  > button[aria-selected="true"] {
     background: var(--sc-surface);
     box-shadow: var(--sc-shadow-1);
     color: var(--sc-text);

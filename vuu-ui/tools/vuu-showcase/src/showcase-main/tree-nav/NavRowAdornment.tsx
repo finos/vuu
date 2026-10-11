@@ -47,6 +47,14 @@ export const NavRowAdornment = ({ dataRow, path }: NavRowAdornmentProps) => {
       <span className={`${classBase}-count`}>{nodeData.count}</span>
     ) : null;
   }
+  if (typeof nodeData.order === "number") {
+    // a numbered docs chapter, positioned before the label by css
+    return (
+      <span className={`${classBase}-ordinal`}>
+        {String(nodeData.order).padStart(2, "0")}
+      </span>
+    );
+  }
   const label = dataRow[`Level ${dataRow.depth}`];
   return (
     <>
