@@ -47,7 +47,10 @@ export const ShowcaseContent = ({
       ) : treeNode && isIndexNode(treeNode) ? (
         <FolderIndex treeNode={treeNode} />
       ) : treeNode && isComponentDescriptor(treeNode.nodeData) ? (
-        <ExamplePage treeNode={treeNode} />
+        <ExamplePage
+          treeNode={treeNode}
+          treeSource={treeSource as TreeSourceNode<NavNodeData>[]}
+        />
       ) : (
         <DocumentPage treeNode={treeNode} />
       )}

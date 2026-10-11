@@ -30,7 +30,8 @@
   }
 }
 
-.ShowcasePreviewCanvas:not([data-viewport="fill"]) > .ShowcasePreviewCanvas-device {
+.ShowcasePreviewCanvas:not([data-viewport="fill"])
+  > .ShowcasePreviewCanvas-device {
   /* auto margins centre the device, but overflow safely to the right */
   flex-shrink: 0;
   margin-inline: auto;

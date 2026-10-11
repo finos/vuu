@@ -16,11 +16,7 @@ import {
   writePreviewParams,
 } from "./example/preview-state";
 
-export type {
-  DataLocation,
-  Density,
-  ThemeMode,
-} from "./example/preview-state";
+export type { DataLocation, Density, ThemeMode } from "./example/preview-state";
 
 export interface ShowcaseContextProps {
   preview: PreviewState;
@@ -66,6 +62,8 @@ export const ShowcaseProvider = ({ children }: { children: ReactNode }) => {
   const value = useMemo(() => ({ preview, setPreview }), [preview, setPreview]);
 
   return (
-    <ShowcaseContext.Provider value={value}>{children}</ShowcaseContext.Provider>
+    <ShowcaseContext.Provider value={value}>
+      {children}
+    </ShowcaseContext.Provider>
   );
 };
