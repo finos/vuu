@@ -2,7 +2,6 @@ import path from "path";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import { describe, expect, it } from "vitest";
 import {
-  findEmbeddedExamples,
   type NodeData,
   treeSourceFromFileSystem,
 } from "../scripts/treeSourceFromFileSystem";
@@ -94,26 +93,5 @@ describe("treeSourceFromFileSystem", () => {
     expect(byId(docs.childNodes ?? [], "Docs/1.Introduction").label).toEqual(
       "Introduction",
     );
-  });
-});
-
-describe("findEmbeddedExamples", () => {
-  const mdx = `
-import { Flash, Other as Renamed, Unused } from "./Table/Formatting.examples";
-import { Thing } from "../shared/Thing.examples.tsx";
-import { NotAnExample } from "./component";
-
-<Flash />
-<Renamed height={200} />
-<Thing />
-<NotAnExample />
-`;
-
-  it("identifies examples imported and rendered by a document", () => {
-    expect(findEmbeddedExamples("src/examples/Docs/Table.mdx", mdx)).toEqual([
-      "src/examples/Docs/Table/Formatting.examples.tsx#Flash",
-      "src/examples/Docs/Table/Formatting.examples.tsx#Other",
-      "src/examples/shared/Thing.examples.tsx#Thing",
-    ]);
   });
 });

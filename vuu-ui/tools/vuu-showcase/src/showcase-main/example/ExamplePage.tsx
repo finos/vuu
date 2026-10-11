@@ -5,13 +5,12 @@ import { isDocumentDescriptor } from "../../shared-utils";
 import { IFrame } from "../iframe";
 import { useShowcaseContext } from "../ShowcaseProvider";
 import type { NavNodeData } from "../tree-nav/nav-tree";
-import { getParentNode, getRelated, routeOf } from "./example-model";
+import { getParentNode, routeOf } from "./example-model";
 import { ComparePanel } from "./ComparePanel";
 import { ExampleHeader } from "./ExampleHeader";
 import { type ExampleTab, ExampleTabs, panelId, tabId } from "./ExampleTabs";
 import { PreviewBar } from "./PreviewBar";
 import { PreviewCanvas } from "./PreviewCanvas";
-import { RelatedPanel } from "./RelatedPanel";
 import { SourceDock, useSourceDock } from "./SourceDock";
 import { SourceView } from "./SourceView";
 import {
@@ -25,8 +24,7 @@ import "./ExamplePage.css";
 
 const classBase = "ShowcaseExamplePage";
 
-export type ExampleTabId =
-  "preview" | "compare" | "source" | "docs" | "related";
+export type ExampleTabId = "preview" | "compare" | "source" | "docs";
 
 export const isDataConsumer = (nodeData?: NavNodeData) =>
   nodeData?.tags?.includes("data-consumer") ?? false;
@@ -84,12 +82,6 @@ export const ExamplePage = ({ treeNode, treeSource }: ExamplePageProps) => {
     return isDocumentDescriptor(parent?.nodeData) ? parent : undefined;
   }, [pathname, treeSource]);
 
-  const related = useMemo(
-    () => getRelated(pathname, treeSource),
-    [pathname, treeSource],
-  );
-  const relatedCount = related.docs.length + related.siblings.length;
-
   const tabs = useMemo(() => {
     const tabs: ExampleTab<ExampleTabId>[] = [
       { id: "preview", label: "Preview" },
@@ -99,11 +91,8 @@ export const ExamplePage = ({ treeNode, treeSource }: ExamplePageProps) => {
     if (docNode) {
       tabs.push({ id: "docs", label: "Docs" });
     }
-    if (relatedCount > 0) {
-      tabs.push({ count: relatedCount, id: "related", label: "Related" });
-    }
     return tabs;
-  }, [docNode, relatedCount]);
+  }, [docNode]);
 
   const [selectedTab, setSelectedTab] = useSelectedTab(tabs);
   const isMounted = useVisited(selectedTab, pathname);
@@ -161,15 +150,6 @@ export const ExamplePage = ({ treeNode, treeSource }: ExamplePageProps) => {
               setSelectedTab("preview", state);
             }}
             title={treeNode.label}
-          />
-        </div>
-      ) : null}
-      {selectedTab === "related" ? (
-        <div {...panelProps("related")}>
-          <RelatedPanel
-            docs={related.docs}
-            fileLabel={getParentNode(pathname, treeSource)?.label}
-            siblings={related.siblings}
           />
         </div>
       ) : null}
