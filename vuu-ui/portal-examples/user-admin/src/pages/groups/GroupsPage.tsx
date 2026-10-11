@@ -1,14 +1,32 @@
-import { Avatar, Button, SidePanelTitle } from "@salt-ds/core";
+import {
+  Avatar,
+  Button,
+  SidePanelCloseButton,
+  SidePanelContent,
+  SidePanelHeader,
+} from "@salt-ds/core";
 import { AddIcon, UserGroupIcon } from "@salt-ds/icons";
 import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
 import { Table } from "@vuu-ui/vuu-table";
 import type { DataRow } from "@vuu-ui/vuu-table-types";
 import {
   AppAvatar,
+  PageHeader,
+  PageHeaderActions,
   PanelHeading,
+  PanelHeadingSubtitle,
+  PanelHeadingText,
+  PanelHeadingTitle,
   plural,
 } from "../../components/admin-ui/AdminUi";
-import { AdminTablePage } from "../../components/admin-table-page/AdminTablePage";
+import {
+  AdminPage,
+  AdminPageWithPanel,
+  AdminPanel,
+  AdminTableCard,
+  AdminToolbar,
+  RowCount,
+} from "../../components/admin-table-page/AdminTablePage";
 import { ApplicationFilter } from "../../components/ApplicationFilter";
 import { GroupsEditForm } from "../../components/groups-edit-form/GroupsEditForm";
 import {
@@ -25,30 +43,28 @@ const GroupHeading = ({ dataRow }: { dataRow?: DataRow }) => {
   const application = applicationForGroupName(applications, groupName);
   const userCount = Number(dataRow?.user_count ?? 0);
   return (
-    <PanelHeading
-      avatar={
-        application ? (
-          <AppAvatar application={application} size={2} />
-        ) : (
-          <Avatar
-            aria-hidden
-            color="category-20"
-            fallbackIcon={<UserGroupIcon />}
-            size={2}
-          />
-        )
-      }
-      subtitle={
-        isNew
-          ? "Bundle an application's roles for its users"
-          : `${application ? `${application.title} group` : "Unassigned group"} · ${plural(userCount, "member")}`
-      }
-      title={
-        <SidePanelTitle styleAs="h3">
+    <PanelHeading>
+      {application ? (
+        <AppAvatar application={application} size={2} />
+      ) : (
+        <Avatar
+          aria-hidden
+          color="category-20"
+          fallbackIcon={<UserGroupIcon />}
+          size={2}
+        />
+      )}
+      <PanelHeadingText>
+        <PanelHeadingTitle>
           {isNew ? "New group" : (groupName ?? "Group")}
-        </SidePanelTitle>
-      }
-    />
+        </PanelHeadingTitle>
+        <PanelHeadingSubtitle>
+          {isNew
+            ? "Bundle an application's roles for its users"
+            : `${application ? `${application.title} group` : "Unassigned group"} · ${plural(userCount, "member")}`}
+        </PanelHeadingSubtitle>
+      </PanelHeadingText>
+    </PanelHeading>
   );
 };
 
@@ -68,47 +84,57 @@ export const GroupsPage = () => {
 
   return (
     <EditModeProvider isEditMode={dataRow && dataRow.group_id === undefined}>
-      <AdminTablePage
-        actions={
-          <Button onClick={createGroup} sentiment="accented">
-            <AddIcon aria-hidden /> Create group
-          </Button>
-        }
-        dataSource={dataSource}
-        description="Each group belongs to one application and bundles its roles."
-        filter={
-          <ApplicationFilter onChange={setApplication} value={application} />
-        }
-        noun="group"
-        onPanelOpenChange={(nextOpen) => {
+      <AdminPageWithPanel
+        onOpenChange={(nextOpen) => {
           if (nextOpen) {
             setOpen(true);
           } else {
             close();
           }
         }}
-        panelContent={
-          dataRow ? (
-            <GroupsEditForm
-              application={application}
-              dataRow={dataRow}
+        open={open}
+      >
+        <AdminPage>
+          <PageHeader
+            description="Each group belongs to one application and bundles its roles."
+            title="Groups"
+          >
+            <PageHeaderActions>
+              <Button onClick={createGroup} sentiment="accented">
+                <AddIcon aria-hidden /> Create group
+              </Button>
+            </PageHeaderActions>
+          </PageHeader>
+          <AdminToolbar>
+            <ApplicationFilter onChange={setApplication} value={application} />
+            <RowCount dataSource={dataSource} noun="group" />
+          </AdminToolbar>
+          <AdminTableCard>
+            <Table
+              config={config}
               dataSource={dataSource}
-              onClose={close}
+              onSelect={onSelect}
+              rowHeight={GROUP_ROW_HEIGHT}
             />
-          ) : null
-        }
-        panelHeading={<GroupHeading dataRow={dataRow} />}
-        panelOpen={open}
-        table={
-          <Table
-            config={config}
-            dataSource={dataSource}
-            onSelect={onSelect}
-            rowHeight={GROUP_ROW_HEIGHT}
-          />
-        }
-        title="Groups"
-      />
+          </AdminTableCard>
+        </AdminPage>
+        <AdminPanel>
+          <SidePanelHeader>
+            <GroupHeading dataRow={dataRow} />
+            <SidePanelCloseButton />
+          </SidePanelHeader>
+          <SidePanelContent>
+            {dataRow ? (
+              <GroupsEditForm
+                application={application}
+                dataRow={dataRow}
+                dataSource={dataSource}
+                onClose={close}
+              />
+            ) : null}
+          </SidePanelContent>
+        </AdminPanel>
+      </AdminPageWithPanel>
     </EditModeProvider>
   );
 };

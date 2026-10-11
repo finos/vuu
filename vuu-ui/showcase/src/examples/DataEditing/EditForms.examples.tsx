@@ -17,8 +17,10 @@ import {
   TableEditorForm,
   TableEditorModeToggle,
   TableEditorNewButton,
+  TableEditorPlaceholder,
   TableEditorPanelCloseButton,
   TableEditorTable,
+  TableEditorToolbar,
   TableWithEditForm,
   type TableWithEditFormPanelVisibility,
   useTableEditor,
@@ -194,46 +196,44 @@ const InstrumentFormContent = () => {
 const TableWithCustomFormTemplate = () => {
   const dataSource = useInstrumentsDataSource();
   return (
-    <TableWithEditForm dataSource={dataSource}>
-      <div style={{ display: "flex", height: 500, width: 1100 }}>
-        <div
-          style={{
-            display: "flex",
-            flex: 1,
-            flexDirection: "column",
-            minWidth: 0,
-          }}
-        >
-          <div style={{ display: "flex", gap: 8, padding: 4 }}>
-            <Text styleAs="h3" style={{ flex: 1 }}>
-              Instruments
-            </Text>
-            <TableEditorNewButton>New instrument</TableEditorNewButton>
-          </div>
-          <div style={{ flex: 1, minHeight: 0 }}>
-            <TableEditorTable config={instrumentsTableConfig} />
-          </div>
+    <TableWithEditForm
+      dataSource={dataSource}
+      style={{ height: 500, width: 1100 }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          flexDirection: "column",
+          minWidth: 0,
+        }}
+      >
+        <TableEditorToolbar>
+          <Text styleAs="h3" style={{ flex: 1 }}>
+            Instruments
+          </Text>
+          <TableEditorNewButton>New instrument</TableEditorNewButton>
+        </TableEditorToolbar>
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <TableEditorTable config={instrumentsTableConfig} />
         </div>
-        <SidePanel
-          position="right"
-          style={{ "--saltSidePanel-width": "360px" } as CSSProperties}
-        >
-          <InstrumentPanelHeader />
-          <SidePanelContent>
-            <TableEditorForm
-              placeholder="Select an instrument"
-              showButtons={false}
-              validate={validateInstrument}
-            >
-              <InstrumentFormContent />
-            </TableEditorForm>
-            <TableEditorCreateForm
-              fields={createFields}
-              validate={validateInstrument}
-            />
-          </SidePanelContent>
-        </SidePanel>
       </div>
+      <SidePanel
+        position="right"
+        style={{ "--saltSidePanel-width": "360px" } as CSSProperties}
+      >
+        <InstrumentPanelHeader />
+        <SidePanelContent>
+          <TableEditorPlaceholder>Select an instrument</TableEditorPlaceholder>
+          <TableEditorForm showButtons={false} validate={validateInstrument}>
+            <InstrumentFormContent />
+          </TableEditorForm>
+          <TableEditorCreateForm
+            fields={createFields}
+            validate={validateInstrument}
+          />
+        </SidePanelContent>
+      </SidePanel>
     </TableWithEditForm>
   );
 };

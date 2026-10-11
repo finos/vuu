@@ -39,6 +39,7 @@ import {
 } from "user-admin/src/pages/users/usersTable";
 import {
   TableEditorForm,
+  TableEditorPlaceholder,
   TableEditorTable,
   TableWithEditForm,
 } from "@vuu-ui/vuu-table-extras";
@@ -165,7 +166,8 @@ export const DefaultUserEditForm = () => {
             <TableEditorTable config={config} rowHeight={USER_ROW_HEIGHT} />
           </div>
           <div style={{ flex: "0 0 480px" }}>
-            <TableEditorForm placeholder="Select a user" showButtons={false}>
+            <TableEditorPlaceholder>Select a user</TableEditorPlaceholder>
+            <TableEditorForm showButtons={false}>
               <UserEditForm />
             </TableEditorForm>
           </div>

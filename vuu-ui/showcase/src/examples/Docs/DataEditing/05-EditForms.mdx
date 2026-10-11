@@ -34,37 +34,44 @@ panel can't be closed.
 
 | Prop | Description |
 | ---- | ----------- |
-| `panelVisibility` | `"on-select"` (default): the panel opens when a row is selected, or Edit or New is clicked, and closes when the selection is cleared or its close button is clicked. `"always"`: the panel is always shown, with `placeholder` when no row is selected, and has no close button. |
+| `panelVisibility` | `"on-select"` (default): the panel opens when a row is selected, or Edit or New is clicked, and closes when the selection is cleared or its close button is clicked. `"always"`: the panel is always shown, with the `placeholder` text when no row is selected, and has no close button. |
 | `panelClassName` | Class for the `SidePanel`, e.g. to set `--saltSidePanel-width` (default `320px`). |
 | `fields` | Fields shown for the selected row. See [Fields](#fields). |
 | `createFields` | Fields shown when adding a row. Defaults to `fields`. |
 | `allowCreate` | Show the New button. Default `true`. |
 | `validate`, `validateCreate` | Client-side validation for edit and create. `validateCreate` defaults to `validate`. |
-| `formTitle` | Panel title for the selected row: a title, or a function of the row. |
+| `formTitle` | Panel title for the selected row: a string, or a function of the row. |
 | `createTitle` | Panel title for the create form. Default `"New"`. |
-| `placeholder` | Shown in the panel when no row is selected. |
+| `placeholder` | Text shown in the panel when no row is selected. |
 | `confirmCancel` | Asked before discarding unsaved changes. See `useConfirmDiscard`. |
 | `onModeChange` | Called with `"view"`, `"edit"` or `"create"`. |
-| `toolbar` | Extra toolbar content. |
 | `deleteMode`, `editSessionApi`, `rowDefaults`, `onError` | Passed to the form's edit session. |
+| `className`, `style` | For the container. |
 | `testId` | Suffix for `data-testid`s. |
+
+Other `Table` props are passed through. For anything beyond these, such as
+extra toolbar content, compose the layout yourself.
 
 ## Composing your own layout
 
 `TableWithEditForm` covers a table with a generated form. When you need your
 own header, toolbar, panel layout or form content, such as tabs or custom
-editors, give `TableWithEditForm` `children`. It then renders those instead of
-its default layout, and still owns the editing state: mode, selected row, side
-panel and edit session. With `children` it takes only the editing props
-(`dataSource`, `confirmCancel`, `panelVisibility`, `rowDefaults`,
-`onModeChange`, ...). Lay out the components it is built from, all in
+editors, give `TableWithEditForm` `children`. It always renders its container,
+a flex row, and owns the editing state: mode, selected row, side panel and edit
+session. Without `children` it lays out a default toolbar, table and panel;
+with `children` you lay out the pieces it is built from, and it takes only the
+editing props (`dataSource`, `confirmCancel`, `panelVisibility`, `rowDefaults`,
+`onModeChange`, ...) and `className`/`style`. The pieces, all in
 `@vuu-ui/vuu-table-extras`:
 
 | Component | Role |
 | --------- | ---- |
 | `TableEditorTable` | The table. Selecting a row selects it for the form; selection is locked while editing. |
-| `TableEditorForm` | The form for the selected row. Renders `children`, or an `EditField` per entry in `fields`, and `placeholder` when no row is selected. Takes `EditForm` props such as `validate`, `title` and `showButtons`. |
+| `TableEditorForm` | The form for the selected row. Renders `children`, or an `EditField` per entry in `fields`. Renders nothing when no row is selected. Takes `EditForm` props such as `validate`, `title` and `showButtons`. |
 | `TableEditorCreateForm` | The form for a new row, shown in create mode. Takes `CreateRowForm` props. |
+| `TableEditorPlaceholder` | Its `children`, shown only when no row is selected and no row is being created. |
+| `TableEditorToolbar` | A row for controls above the table. |
+| `TableEditorEditButton` | Makes the selected row's form editable. |
 | `TableEditorNewButton` | Enters create mode. |
 | `TableEditorModeToggle` | View/Edit toggle. |
 | `TableEditorButtons` | Save and Cancel. Render inside a form with `showButtons={false}`. |
@@ -84,7 +91,9 @@ import {
   TableEditorModeToggle,
   TableEditorNewButton,
   TableEditorPanelCloseButton,
+  TableEditorPlaceholder,
   TableEditorTable,
+  TableEditorToolbar,
   TableWithEditForm,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
@@ -102,15 +111,18 @@ const PanelHeader = () => {
 };
 
 const InstrumentEditor = ({ dataSource }) => (
-  <TableWithEditForm dataSource={dataSource}>
-    <header>
-      <h2>Instruments</h2>
-      <TableEditorNewButton>New instrument</TableEditorNewButton>
-    </header>
-    <TableEditorTable config={config} />
+  <TableWithEditForm dataSource={dataSource} style={{ height: 500 }}>
+    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      <TableEditorToolbar>
+        <H2>Instruments</H2>
+        <TableEditorNewButton>New instrument</TableEditorNewButton>
+      </TableEditorToolbar>
+      <TableEditorTable config={config} />
+    </div>
     <SidePanel position="right">
       <PanelHeader />
       <SidePanelContent>
+        <TableEditorPlaceholder>Select an instrument</TableEditorPlaceholder>
         <TableEditorForm showButtons={false} validate={validateInstrument}>
           <TableEditorModeToggle />
           <Tabs defaultValue="details">

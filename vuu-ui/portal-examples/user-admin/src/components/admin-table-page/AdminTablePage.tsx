@@ -1,43 +1,65 @@
 import {
   SidePanel,
-  SidePanelCloseButton,
-  SidePanelContent,
-  SidePanelHeader,
+  type SidePanelProps,
   SidePanelProvider,
+  type SidePanelProviderProps,
   Text,
 } from "@salt-ds/core";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
+import cx from "clsx";
 import type { ReactNode } from "react";
 import { useRowCount } from "../../data/useRowCount";
-import { PageHeader, plural } from "../admin-ui/AdminUi";
+import { plural } from "../admin-ui/AdminUi";
 
-export interface AdminTablePageProps {
-  actions?: ReactNode;
+/*
+ * The layout pieces shared by the Users, Groups and Roles pages:
+ *
+ *   AdminPageWithPanel (or a TableWithEditForm, which drives the panel itself)
+ *     AdminPage
+ *       PageHeader
+ *       AdminToolbar  (a filter, RowCount …)
+ *       AdminTableCard (the table)
+ *     AdminPanel  (SidePanelHeader, SidePanelContent)
+ */
+
+export const adminPageWithPanelClassName = "vuuIdentityAdmin-pageWithPanel";
+
+/** A page with a side panel, the panel's open state managed by the caller. */
+export const AdminPageWithPanel = ({
+  children,
+  onOpenChange,
+  open,
+}: Pick<SidePanelProviderProps, "onOpenChange" | "open"> & {
+  children: ReactNode;
+}) => (
+  <SidePanelProvider open={open} onOpenChange={onOpenChange}>
+    <div className={adminPageWithPanelClassName}>{children}</div>
+  </SidePanelProvider>
+);
+
+export const AdminPage = ({
+  children,
+  className,
+}: {
+  children: ReactNode;
   className?: string;
-  dataSource: DataSource;
-  description: string;
-  /** Singular noun for the row count, e.g. "group". */
-  noun: string;
-  filter: ReactNode;
-  /**
-   * Omit, with `panelOpen`, when an enclosing provider (e.g. a
-   * `TableWithEditForm`) already drives the side panel.
-   */
-  onPanelOpenChange?: (open: boolean) => void;
-  /** @default <SidePanelCloseButton /> */
-  panelCloseButton?: ReactNode;
-  panelContent: ReactNode;
-  panelHeading: ReactNode;
-  panelOpen?: boolean;
-  table: ReactNode;
-  title: string;
-}
+}) => (
+  <section className={cx("vuuIdentityAdmin-page", className)}>
+    {children}
+  </section>
+);
 
-const RowCount = ({
+export const AdminToolbar = ({ children }: { children: ReactNode }) => (
+  <div className="vuuIdentityAdmin-toolbar">{children}</div>
+);
+
+/** The live row count of `dataSource`, e.g. "12 users". */
+export const RowCount = ({
   dataSource,
   noun,
 }: {
   dataSource: DataSource;
+  /** Singular noun, e.g. "group". */
   noun: string;
 }) => (
   <Text aria-live="polite" className="vuuIdentityAdmin-count" color="secondary">
@@ -45,49 +67,15 @@ const RowCount = ({
   </Text>
 );
 
-/**
- * The layout shared by the Users, Groups and Roles pages: a header, a
- * toolbar, a table card and a side panel for the selected row.
- */
-export const AdminTablePage = ({
-  actions,
-  className,
-  dataSource,
-  description,
-  filter,
-  noun,
-  onPanelOpenChange,
-  panelCloseButton = <SidePanelCloseButton />,
-  panelContent,
-  panelHeading,
-  panelOpen,
-  table,
-  title,
-}: AdminTablePageProps) => {
-  const page = (
-    <div className="vuuIdentityAdmin-pageWithPanel">
-      <section className={`vuuIdentityAdmin-page ${className ?? ""}`.trim()}>
-        <PageHeader actions={actions} description={description} title={title} />
-        <div className="vuuIdentityAdmin-toolbar">
-          {filter}
-          <RowCount dataSource={dataSource} noun={noun} />
-        </div>
-        <div className="vuuIdentityAdmin-tableCard">{table}</div>
-      </section>
-      <SidePanel position="right" className="vuuIdentityAdmin-panel">
-        <SidePanelHeader>
-          {panelHeading}
-          {panelCloseButton}
-        </SidePanelHeader>
-        <SidePanelContent>{panelContent}</SidePanelContent>
-      </SidePanel>
-    </div>
-  );
-  return panelOpen === undefined ? (
-    page
-  ) : (
-    <SidePanelProvider open={panelOpen} onOpenChange={onPanelOpenChange}>
-      {page}
-    </SidePanelProvider>
-  );
-};
+export const AdminTableCard = ({ children }: { children: ReactNode }) => (
+  <div className="vuuIdentityAdmin-tableCard">{children}</div>
+);
+
+/** The right hand side panel. Compose SidePanelHeader and SidePanelContent. */
+export const AdminPanel = ({ className, ...props }: SidePanelProps) => (
+  <SidePanel
+    {...props}
+    className={cx("vuuIdentityAdmin-panel", className)}
+    position="right"
+  />
+);
