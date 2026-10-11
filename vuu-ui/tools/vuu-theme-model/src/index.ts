@@ -8,3 +8,7 @@ export {
   buildThemeModelFromSources,
 } from "./build-theme-model.ts";
 export { buildThemeStylesheet } from "./build-theme-stylesheet.ts";
+export {
+  summariseThemeModel,
+  type ThemeModelSummary,
+} from "./summarise-theme-model.ts";
