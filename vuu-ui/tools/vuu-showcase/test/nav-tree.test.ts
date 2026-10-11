@@ -9,6 +9,8 @@ import {
   GETTING_STARTED_LABEL,
   type NavNodeData,
   sectionFromPath,
+  getNavFrom,
+  navFromState,
 } from "../src/showcase-main/tree-nav/nav-tree";
 
 const treeSource: TreeSourceNode[] = [
@@ -199,5 +201,16 @@ describe("nav-tree", () => {
       ]);
       expect(node.nodeData).toEqual({ count: 6, live: true });
     });
+  });
+});
+
+describe("navFrom state", () => {
+  it("round trips the route a page was opened from", () => {
+    expect(getNavFrom(navFromState("/Docs/DateTime"))).toBe("/Docs/DateTime");
+  });
+  it("ignores missing or unrelated state", () => {
+    expect(getNavFrom(null)).toBeUndefined();
+    expect(getNavFrom(undefined)).toBeUndefined();
+    expect(getNavFrom({ navFrom: 1 })).toBeUndefined();
   });
 });
