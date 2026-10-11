@@ -174,6 +174,7 @@ export const ShowcaseNav = ({
       className="ShowcaseNav"
       filterPredicate={filterPredicate}
       key={navState.generation}
+      indentGuides
       header={
         <NavFilter
           filter={navFilter}
