@@ -68,10 +68,10 @@ export {
   type TableWithEditFormProps,
 } from "./table-with-edit-form/TableWithEditForm";
 export {
-  EditFormPanel,
-  type EditFormPanelProps,
-  TablePanel,
-  type TablePanelProps,
+  TableWithEditFormPanel,
+  type TableWithEditFormPanelProps,
+  TableWithEditFormTablePanel,
+  type TableWithEditFormTablePanelProps,
   TableWithEditFormTable,
   type TableWithEditFormTableProps,
 } from "./table-with-edit-form/TableWithEditFormLayout";

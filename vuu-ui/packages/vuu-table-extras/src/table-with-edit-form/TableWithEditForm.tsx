@@ -31,8 +31,8 @@ import {
 import { TableEditorProvider } from "../table-editor/TableEditorProvider";
 
 import {
-  EditFormPanel,
-  TablePanel,
+  TableWithEditFormPanel,
+  TableWithEditFormTablePanel,
   TableWithEditFormTable,
 } from "./TableWithEditFormLayout";
 import tableWithEditFormCss from "./TableWithEditForm.css";
@@ -161,7 +161,7 @@ const DefaultContent = ({
   ...tableProps
 }: DefaultContentProps) => (
   <>
-    <TablePanel>
+    <TableWithEditFormTablePanel>
       <TableEditorToolbar>
         <TableEditorEditButton data-testid={`edit-button${testId}`} />
         {allowCreate ? (
@@ -173,8 +173,8 @@ const DefaultContent = ({
         {...tableProps}
         config={config}
       />
-    </TablePanel>
-    <EditFormPanel
+    </TableWithEditFormTablePanel>
+    <TableWithEditFormPanel
       className={panelClassName}
       data-testid={`edit-panel${testId}`}
     >
@@ -195,7 +195,7 @@ const DefaultContent = ({
           validate={validateCreate}
         />
       </SidePanelContent>
-    </EditFormPanel>
+    </TableWithEditFormPanel>
   </>
 );
 
@@ -243,8 +243,8 @@ const Container = ({
  *
  * Renders a flex row container and provides a Salt `SidePanelProvider`.
  * Without `children` it holds a toolbar, the table and a form generated from
- * `fields`. Otherwise it holds `children`: a `TablePanel` holding a
- * `TableWithEditFormTable`, and an `EditFormPanel` (opened and closed for
+ * `fields`. Otherwise it holds `children`: a `TableWithEditFormTablePanel` holding a
+ * `TableWithEditFormTable`, and an `TableWithEditFormPanel` (opened and closed for
  * you) holding `TableEditorForm`, `TableEditorCreateForm`,
  * `TableEditorPlaceholder` etc. Read the state with `useTableEditor`.
  */
