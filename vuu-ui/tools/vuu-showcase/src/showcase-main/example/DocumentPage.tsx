@@ -22,7 +22,11 @@ export const DocumentPage = ({ treeNode }: DocumentPageProps) => {
         standaloneHref={src}
       />
       <div className="ShowcaseDocumentPage-frame">
-        <IFrame key={reloadKey} src={src} title={treeNode?.label ?? "Document"} />
+        <IFrame
+          key={reloadKey}
+          src={src}
+          title={treeNode?.label ?? "Document"}
+        />
       </div>
     </div>
   );

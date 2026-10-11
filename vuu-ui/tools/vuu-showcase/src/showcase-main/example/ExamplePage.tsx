@@ -1,5 +1,6 @@
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import type { NavNodeData } from "../tree-nav/nav-tree";
+import { ExampleHeader } from "./ExampleHeader";
 import { PreviewBar } from "./PreviewBar";
 import { PreviewCanvas } from "./PreviewCanvas";
 import { usePreviewSource } from "./usePreviewSource";
@@ -13,12 +14,14 @@ export const isDataConsumer = (nodeData?: NavNodeData) =>
 
 export interface ExamplePageProps {
   treeNode: TreeSourceNode<NavNodeData>;
+  treeSource: TreeSourceNode<NavNodeData>[];
 }
 
-export const ExamplePage = ({ treeNode }: ExamplePageProps) => {
+export const ExamplePage = ({ treeNode, treeSource }: ExamplePageProps) => {
   const { preview, reload, reloadKey, src } = usePreviewSource();
   return (
     <div className={classBase}>
+      <ExampleHeader treeNode={treeNode} treeSource={treeSource} />
       <PreviewBar
         dataConsumer={isDataConsumer(treeNode.nodeData)}
         onReload={reload}

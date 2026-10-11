@@ -24,7 +24,10 @@ export interface DataSourceSelectProps {
   value: DataLocation;
 }
 
-export const DataSourceSelect = ({ onChange, value }: DataSourceSelectProps) => (
+export const DataSourceSelect = ({
+  onChange,
+  value,
+}: DataSourceSelectProps) => (
   <ChromeSelect
     aria-label="Data source"
     onChange={onChange}
