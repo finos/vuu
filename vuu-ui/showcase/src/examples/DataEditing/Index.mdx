@@ -1,0 +1,36 @@
+# Data Editing patterns
+
+`@vuu-ui/vuu-data-editing` provides the editing building blocks (edit sessions,
+hooks, fields and forms). `@vuu-ui/vuu-table-extras` composes them into ready
+made patterns. The examples in this folder show each pattern working against
+local test data. Start with the highest level component that fits, and drop
+down a layer only when you need to.
+
+| #   | Pattern                         | Use it when                                                              | Example                                       |
+| --- | ------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------- |
+| 1   | View/Edit toggle                | Users browse a table and occasionally edit several cells, then Save      | `EditableTable / ViewEditToggle`              |
+| 2   | Insert / update / delete + undo | Users maintain a reference table: add, change and remove rows            | `EditableTable / InsertUpdateDelete`          |
+| 3   | Custom cell editors             | Some columns need a dropdown or other editor; only some are editable     | `EditableTable / CustomEditors`               |
+| 4   | Direct edit                     | Each cell edit should be applied immediately, with no Save/Cancel        | `EditableTable / DirectEdit`                  |
+| 5   | Master–detail form              | Rows have many fields, or fields that do not fit in a cell               | `EditForms / TableWithForm`                   |
+| 6   | Create row form                 | Rows are added through a form, with client and server validation         | `EditForms / CreateRowWithValidation`         |
+| 7   | Custom edit field               | A field needs a non standard editor (list, picker, permissions …)        | `EditForms / CustomEditField`                 |
+| 8   | Entity draft form               | The thing being edited is not a table row, it is saved via an RPC        | `EditForms / EntityDraftForm`                 |
+| 9   | Bulk edit dialog                | Users select rows and edit them together, away from the main table       | `BulkEdit / BulkEditDialog`                   |
+| 10  | Unsaved changes                 | Changes must not be lost by accident: confirm discard, force save        | `EditableTable / UnsavedChanges`              |
+| 11  | Divergent edit schema           | The session table has different columns from the table being viewed      | `Table / Editing / UseEditableTableWithEditColumns` |
+
+## Layers
+
+1. **Components** – `EditableTable`, `TableWithEditForm`, `useBulkEditDialog`
+   (in `vuu-table-extras`); `EditForm`, `CreateRowForm`, `EditField`,
+   `EditButtons` (in `vuu-data-editing`). Use these first.
+2. **Hooks** – `useEditableTable`, `useEditableColumns`, `useEditForm`,
+   `useCustomEditField`, `useConfirmDiscard`, `useEntityDraft`,
+   `useAsyncValidation`, `useEditSessionState`. Use these to build your own
+   layout around the same behaviour.
+3. **Core** – `EditSession`, `DirectEditSession`, `DataEditingProvider`,
+   `EditModeProvider`. Use these when the hooks do not fit.
+
+See the Data Editing section of the Vuu documentation for a getting started
+guide and the detailed reference.

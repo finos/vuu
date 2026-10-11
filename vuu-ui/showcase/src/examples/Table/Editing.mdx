@@ -2,7 +2,7 @@
 
 The pattern of data editing currently supported in Vuu tables revolves around the concept of an _edit session_. An _edit session_
 can be explicitly activated by the user, for example we can provide an _Edit_ button for this purpose. An _edit session_ can also
-be activated programatically as part of an edit workflow. For example, the user may click a context menu option in a table to "Edit selected rows",
+be activated programmatically as part of an edit workflow. For example, the user may click a context menu option in a table to "Edit selected rows",
 an _edit session_ should be created as part of the processing to facilitate this.
 
 Editing is supported either _in place_ or _externally_. When we offer _in place_ editing, the edit controls are presented directly in the table that the user has been viewing.
@@ -10,7 +10,7 @@ In _external_ mode, data to be edited is presented in a separate table, generall
 table is created for the duration of the edit session (see below).
 
 An _edit session_ follows a simple lifecycle. The session is created/activated, one or more edit operations are performed then the session is ended. Session termination includes
-an option to save the edits applied during he course of the session. At that point, at session end with the save option enabled, all edits accumulated during the
+an option to save the edits applied during the course of the session. At that point, at session end with the save option enabled, all edits accumulated during the
 course of the session are applied to the source table. Updates will be sent to any other logged in users looking at the same data - those users will now see the updated data.
 
 The _edit session_ is backed on the Vuu server with a _session table_. This is a temporary table, unique to the edit session, that stores those rows from the source table that are
@@ -18,20 +18,27 @@ available for editing (the rows are copied from the source table). Exactly which
 
 ## I am an application author, I use vuu-ui components, how do I implement data editing in my app ?
 
+The quickest route is a pattern component from `@vuu-ui/vuu-table-extras`: `EditableTable` (a table with View/Edit
+toggle and Save/Cancel buttons), `TableWithEditForm` (a table with an edit form beside it) or `useBulkEditDialog`.
+See the _DataEditing_ examples in this showcase and the
+[Data Editing guides](../Docs/DataEditing/01-GettingStarted.mdx). The rest of this page describes the lower-level pieces those components are built from.
+
 An EditSession should be instantiated and made available to the Table and its subcomponents through a _DataEditingProvider_. `useEditableTable`
 creates the session through the source datasource's `createSessionDataSource(copyOption)` API. Pass the hook's active `dataSource` directly to
 `Table`; it is the source datasource in view mode and the session datasource while editing. Use `sourceDataSource` for source-only controls such
 as statistics, filters, and external workflows.
 
-Table cells can be rendered with editable content for one or more table columns. Editing is enabled on a colunm, not on individual cells. Editing is enabled by setting the _editable_
-attribute to true on one or more of the ColumnDescriptors included in TableConfig. The actual edit control used to render the editable content will be an InputCell by default. This is
-an embedded TextInput control and allows free input of text, with all the usual expected behaviour of the TextInput. ALternative edit controls can be employed and may be more suitable,
+Table cells can be rendered with editable content for one or more table columns. Editing is enabled on a column, not on individual cells. Editing is enabled by setting the _editable_
+attribute to true on one or more of the ColumnDescriptors included in TableConfig. Rather than setting this by hand,
+you can pass an `editable` spec to `useEditableColumns` or `EditableTable`, naming the editable columns and,
+optionally, the edit control for each. The actual edit control used to render the editable content will be an InputCell by default. This is
+an embedded TextInput control and allows free input of text, with all the usual expected behaviour of the TextInput. Alternative edit controls can be employed and may be more suitable,
 depending on the data.
 
 - Dropdown
 - DatePicker
 
-```DataValueTypeDescriptor
+```tsx
     <DataEditingProvider editSession={editSession}>
       <Table config={config} dataSource={dataSource} />
     </DataEditingProvider>
@@ -50,20 +57,20 @@ controls must implement the _onEdit_ callback prop, defined on the _TableCellRen
 - the number of invalid edits
 
 The edit lifecycle operations, createSessionDataSource, editCell and endEditSession are all instigated through the _EditSession_. It also
-acts as an _EventEmitter_ emitting a state change event whenever significant status changes occur. UI controls that manage the overall edit session, e.g Save and Cancel buttons, use state maneged by the _EditSession_
+acts as an _EventEmitter_ emitting a state change event whenever significant status changes occur. UI controls that manage the overall edit session, e.g Save and Cancel buttons, use state managed by the _EditSession_
 to determine their correct render status.
 
 - **InputCell**, **useInputCell** - InputCell is the most commonly used edit control embedded within Table cells to manage editable content. Translates low level mouse and keyboard interactions to the edit
   operations _change_ and _commit_. It drives the transition of editable cells into and out of _edit mode_. It maintains _editState_ for the
   edit control - keeping track of the original and current value as well as tracking when the control is in edit mode. When an embedded control is in edit mode, it is primed
-  for user edit operations and will handle all keyboard input. When it is in _passive_ mode, it will allow Table navigation to handle leyv=boars, so arrow keys, for example,
+  for user edit operations and will handle all keyboard input. When it is in _passive_ mode, it will allow Table navigation to handle keyboard input, so arrow keys, for example,
   will navigate the user to next cell rather than navigate within the control text.
 
   - dispatches a custom DOM event
 
     - "vuu-commit"
 
-  _useEditableText_ manages _editState_. This includes the current and original value of the edit control and any nessage associated with an invalid state.
+  _useEditableText_ manages _editState_. This includes the current and original value of the edit control and any message associated with an invalid state.
 
 - **useEditableTable**
 - **useTable**

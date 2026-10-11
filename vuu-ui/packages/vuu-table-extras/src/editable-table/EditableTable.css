@@ -1,0 +1,19 @@
+.vuuEditableTable {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.vuuEditableTable-toolbar {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--salt-spacing-100);
+  padding: var(--salt-spacing-50) var(--salt-spacing-100);
+}
+
+.vuuEditableTable-table {
+  flex: 1 1 auto;
+  min-height: 0;
+}

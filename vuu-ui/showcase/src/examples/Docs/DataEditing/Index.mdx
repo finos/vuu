@@ -1,0 +1,40 @@
+# Data Editing
+
+`@vuu-ui/vuu-data-editing` lets users edit Vuu table data from the UI, either
+in a table or in a form. Edits are made in a temporary, server-side _session
+table_ and applied to the source table only when the user saves, so other users
+never see half-finished changes.
+
+- [Getting started](./01-GettingStarted.mdx): an editable table and a table with
+  an edit form in a few lines of code.
+- [Concepts and lifecycle](./02-Concepts.mdx): edit sessions, session tables, edit
+  state and the lifecycle.
+- [Choosing an editing model](./03-ChoosingAModel.mdx): staged session, direct
+  edit, or a draft form saved with an RPC.
+- [Editable tables](./04-EditableTables.mdx): `EditableTable`, editable columns,
+  insert, delete, undo and cell editors.
+- [Edit forms](./05-EditForms.mdx): `EditForm`, `CreateRowForm`,
+  `TableWithEditForm`, custom fields and validation.
+- [Draft forms](./06-DraftForms.mdx): forms for things that are not table rows,
+  with `useEntityDraft` and `useAsyncValidation`.
+- [Lookups](./07-Lookups.mdx): dropdowns filled from a Vuu table.
+- [Bulk editing](./08-BulkEditing.mdx): edit many rows at once in a dialog.
+- [Divergent edit tables](./09-DivergentEditTables.mdx): when the edit table has a
+  different schema from the view table.
+- [Error handling](./10-ErrorHandling.mdx): rejected edits, stale saves and
+  `onError`.
+- [Testing](./11-Testing.mdx): testing editing code without a server.
+
+## Layers
+
+The API comes in three layers. Start at the top, and drop down a layer only
+when you need more control.
+
+| Layer | What you get | Exports |
+| ----- | ------------ | ------- |
+| Pattern components | A complete editing UI, configured with props | `EditableTable`, `TableWithEditForm`, `useBulkEditDialog` (`@vuu-ui/vuu-table-extras`); `EditForm`, `CreateRowForm` (`@vuu-ui/vuu-data-editing`) |
+| Composable hooks | The state and handlers behind the patterns, for your own layout | `useEditableTable`, `useEditableColumns`, `useEditForm`, `useEditSessionState`, `useCustomEditField`, `useConfirmDiscard`, `useLookupOptions`, `useEntityDraft`, `useAsyncValidation` |
+| Primitives | The building blocks | `EditSession`, `DirectEditSession`, `DataEditingProvider`, `EditModeProvider`, `EditField`, `EditButtons`, cell renderers |
+
+Every pattern described here has a working example in the showcase, under
+**Data Editing**.

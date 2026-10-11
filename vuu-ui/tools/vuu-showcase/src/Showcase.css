@@ -115,6 +115,11 @@ body {
       font-style: var(--shiki-light-font-style);
       font-weight: var(--shiki-light-font-weight);
     }
+
+    .vuuMermaid {
+      margin: var(--salt-spacing-150) 0 var(--salt-spacing-300) 0;
+      overflow-x: auto;
+    }
   }
 
   [data-mode="dark"] &.vuuShowcase-mdx {
