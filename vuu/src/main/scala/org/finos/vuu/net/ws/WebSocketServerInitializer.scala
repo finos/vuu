@@ -1,14 +1,12 @@
 package org.finos.vuu.net.ws
 
-import io.netty.channel.{ChannelInitializer, ChannelPipeline}
 import io.netty.channel.socket.SocketChannel
+import io.netty.channel.{ChannelInitializer, ChannelPipeline}
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler
 import io.netty.handler.codec.http.{HttpObjectAggregator, HttpServerCodec}
 import org.finos.vuu.core.VuuWebSocketOptions
-import org.finos.vuu.net.ViewServerHandlerFactory
-
-import java.net.URI;
+import org.finos.vuu.net.ViewServerHandlerFactory;
 
 class WebSocketServerInitializer(val options: VuuWebSocketOptions,
                                  val factory: ViewServerHandlerFactory) extends ChannelInitializer[SocketChannel] {
@@ -19,6 +17,8 @@ class WebSocketServerInitializer(val options: VuuWebSocketOptions,
     val pipeline = ch.pipeline()
 
     applySSL(ch, pipeline)
+
+    pipeline.addLast("idle-handler", new WebSocketIdleStateHandler(WebSocketConstants.CLIENT_IDLE_TIMEOUT))
 
     pipeline.addLast("http-codec", new HttpServerCodec())
     
