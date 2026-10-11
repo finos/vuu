@@ -69,6 +69,20 @@ export const ShowcaseNav = ({
   const sectionNav = section === "theme" ? undefined : sectionNavs[section];
   const navIndex = sectionNav?.navIndex;
 
+  // autoSelectRowKey determines the initial selection only, so it is held
+  // stable within a section. A changing value would cause the table to
+  // re-bind its dataSource (and reset scroll position) on every navigation.
+  const [initialSelection, setInitialSelection] = useState({
+    key: sectionNav?.navIndex.keyForPath(pathname),
+    sectionNav,
+  });
+  if (initialSelection.sectionNav !== sectionNav) {
+    setInitialSelection({
+      key: sectionNav?.navIndex.keyForPath(pathname),
+      sectionNav,
+    });
+  }
+
   useEffect(() => {
     if (sectionNavs.examples.navIndex.isPagePath(pathname)) {
       recentStore.push(pathname.replace(/(.)\/$/, "$1"));
@@ -126,7 +140,11 @@ export const ShowcaseNav = ({
 
   return (
     <TreeNavPanel
-      autoSelectRowKey={sectionNav.navIndex.keyForPath(pathname)}
+      autoSelectRowKey={
+        initialSelection.sectionNav === sectionNav
+          ? initialSelection.key
+          : sectionNav.navIndex.keyForPath(pathname)
+      }
       className="ShowcaseNav"
       filterPredicate={filterPredicate}
       header={
