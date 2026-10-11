@@ -1,5 +1,5 @@
 import type { ThemeModel } from "@vuu-ui/vuu-theme-model/src/theme-model-types";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CharacteristicView } from "./CharacteristicView";
 import { DiagnosticsView } from "./DiagnosticsView";
 import { FoundationsView } from "./FoundationsView";
@@ -38,6 +38,8 @@ export interface ThemeBrowserProps {
   /** id of the theme source shown initially */
   defaultTheme?: string;
   sources?: ThemeSource[];
+  /** name of a token to select, e.g. from a deep link */
+  token?: string;
 }
 
 /**
@@ -48,6 +50,7 @@ export interface ThemeBrowserProps {
 export const ThemeBrowser = ({
   defaultTheme,
   sources = themeSources,
+  token,
 }: ThemeBrowserProps) => {
   const [sourceId, setSourceId] = useState(defaultTheme ?? sources[0]?.id);
   const source = sources.find((s) => s.id === sourceId) ?? sources[0];
@@ -109,6 +112,15 @@ export const ThemeBrowser = ({
     },
     [ready, view],
   );
+
+  // a requested token is selected once, the user can then browse away from it
+  const appliedToken = useRef<string>(undefined);
+  useEffect(() => {
+    if (ready && token && token !== appliedToken.current) {
+      appliedToken.current = token;
+      select(token, "tiers");
+    }
+  }, [ready, select, token]);
 
   const contextValue = useMemo<ThemeBrowserContextProps | undefined>(
     () =>
