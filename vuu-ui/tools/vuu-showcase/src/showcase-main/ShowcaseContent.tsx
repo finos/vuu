@@ -6,7 +6,11 @@ import { ThemeBrowser } from "../theme-browser";
 import { ContentToolbar } from "./ContentToolbar";
 import { FolderIndex } from "./folder-index";
 import { IFrame } from "./iframe";
-import { type NavNodeData, THEME_PATH } from "./tree-nav/nav-tree";
+import {
+  buildExamplesIndexNode,
+  type NavNodeData,
+  THEME_PATH,
+} from "./tree-nav/nav-tree";
 
 export interface ShowcaseContentProps {
   treeSource: TreeSourceNode[];
@@ -20,10 +24,15 @@ export interface ShowcaseContentProps {
  */
 export const ShowcaseContent = ({ treeSource }: ShowcaseContentProps) => {
   const { pathname } = useLocation();
-  const isThemeRoute = pathname.replace(/\/$/, "") === THEME_PATH;
+  const path = pathname.replace(/\/$/, "");
+  const isThemeRoute = path === THEME_PATH;
+  // Until there is a home page, the root displays an index of all examples
   const treeNode = useMemo(
-    () => findTreeNode(pathname, treeSource as TreeSourceNode<NavNodeData>[]),
-    [pathname, treeSource],
+    () =>
+      path === ""
+        ? buildExamplesIndexNode(treeSource as TreeSourceNode<NavNodeData>[])
+        : findTreeNode(pathname, treeSource as TreeSourceNode<NavNodeData>[]),
+    [path, pathname, treeSource],
   );
   return (
     <div className="ShowcaseContent">

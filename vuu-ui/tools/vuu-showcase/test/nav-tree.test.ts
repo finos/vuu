@@ -1,9 +1,13 @@
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import { describe, expect, it } from "vitest";
 import {
+  buildExamplesIndexNode,
   buildNavTree,
+  countExamples,
+  type NavNodeData,
   navKeyFromPath,
   pathFromNavKey,
+  sectionFromPath,
 } from "../src/showcase-main/tree-nav/nav-tree";
 
 const treeSource: TreeSourceNode[] = [
@@ -84,6 +88,47 @@ describe("nav-tree", () => {
       ]) {
         expect(pathFromNavKey(navKeyFromPath(path) as string)).toEqual(path);
       }
+    });
+  });
+
+  describe("sectionFromPath", () => {
+    it("identifies the docs and theme sections", () => {
+      expect(sectionFromPath("/Docs")).toEqual("docs");
+      expect(sectionFromPath("/Docs/Table/Intro")).toEqual("docs");
+      expect(sectionFromPath("/Theme")).toEqual("theme");
+      expect(sectionFromPath("/Theme/")).toEqual("theme");
+    });
+    it("treats everything else as examples", () => {
+      expect(sectionFromPath("/")).toEqual("examples");
+      expect(sectionFromPath("/Table/Misc/DefaultTable")).toEqual("examples");
+      expect(sectionFromPath("/DocsLike")).toEqual("examples");
+    });
+  });
+
+  describe("countExamples / buildExamplesIndexNode", () => {
+    const source: TreeSourceNode<NavNodeData>[] = [
+      { id: "Docs", label: "Docs", childNodes: [{ id: "Docs/A", label: "A" }] },
+      {
+        id: "Table",
+        label: "Table",
+        nodeData: { count: 5, live: true },
+        childNodes: [{ id: "Table/Misc", label: "Misc" }],
+      },
+      { id: "Single", label: "Single", nodeData: { componentName: "Single" } },
+      { id: "Empty", label: "Empty" },
+    ];
+    it("sums folder counts and example leaves", () => {
+      expect(countExamples(source.slice(1))).toEqual(6);
+    });
+    it("builds a synthetic Examples folder, excluding Docs", () => {
+      const node = buildExamplesIndexNode(source);
+      expect(node.id).toEqual("Examples");
+      expect(node.childNodes?.map(({ id }) => id)).toEqual([
+        "Table",
+        "Single",
+        "Empty",
+      ]);
+      expect(node.nodeData).toEqual({ count: 6, live: true });
     });
   });
 });
