@@ -40,7 +40,3 @@
   min-height: 0;
   overflow: auto;
 }
-
-.vuuTableWithEditForm-placeholder {
-  color: var(--salt-content-secondary-foreground);
-}

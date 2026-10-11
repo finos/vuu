@@ -1,8 +1,11 @@
 import { Avatar, SidePanelTitle, Tag } from "@salt-ds/core";
-import { EditModeProvider } from "@vuu-ui/vuu-data-editing";
-import { Table } from "@vuu-ui/vuu-table";
-import type { DataRow, TableRowSelectHandler } from "@vuu-ui/vuu-table-types";
-import { useCallback, useState } from "react";
+import {
+  TableEditorForm,
+  TableEditorPanelCloseButton,
+  TableEditorProvider,
+  TableEditorTable,
+  useTableEditor,
+} from "@vuu-ui/vuu-table-extras";
 import { PanelHeading } from "../../components/admin-ui/AdminUi";
 import { AdminTablePage } from "../../components/admin-table-page/AdminTablePage";
 import { ApplicationFilter } from "../../components/ApplicationFilter";
@@ -11,7 +14,8 @@ import { UserEditForm } from "../../components/user-edit-form/UserEditForm";
 import { USER_ROW_HEIGHT } from "./usersTable";
 import { useUsersPage } from "./useUsersPage";
 
-const UserHeading = ({ dataRow }: { dataRow?: DataRow }) => {
+const UserHeading = () => {
+  const { selectedRow: dataRow } = useTableEditor();
   const name = dataRow ? userDisplayName(dataRow) : "";
   return (
     <PanelHeading
@@ -40,22 +44,9 @@ const UserHeading = ({ dataRow }: { dataRow?: DataRow }) => {
 };
 
 export const UsersPage = () => {
-  const [open, setOpen] = useState(false);
-  const [dataRow, setDataRow] = useState<DataRow | undefined>();
   const { application, config, dataSource, setApplication } = useUsersPage();
-
-  const handleSelect = useCallback<TableRowSelectHandler>((dataRow) => {
-    if (dataRow) {
-      setDataRow(dataRow);
-      setOpen(true);
-    } else {
-      setDataRow(undefined);
-      setOpen(false);
-    }
-  }, []);
-
   return (
-    <EditModeProvider>
+    <TableEditorProvider dataSource={dataSource} editIn="form">
       <AdminTablePage
         dataSource={dataSource}
         description="Grant application access by adding users to an application's groups."
@@ -67,24 +58,16 @@ export const UsersPage = () => {
           />
         }
         noun="user"
-        onPanelOpenChange={setOpen}
+        panelCloseButton={<TableEditorPanelCloseButton />}
         panelContent={
-          dataRow ? (
-            <UserEditForm dataRow={dataRow} dataSource={dataSource} />
-          ) : null
+          <TableEditorForm showButtons={false}>
+            <UserEditForm />
+          </TableEditorForm>
         }
-        panelHeading={<UserHeading dataRow={dataRow} />}
-        panelOpen={open}
-        table={
-          <Table
-            config={config}
-            dataSource={dataSource}
-            onSelect={handleSelect}
-            rowHeight={USER_ROW_HEIGHT}
-          />
-        }
+        panelHeading={<UserHeading />}
+        table={<TableEditorTable config={config} rowHeight={USER_ROW_HEIGHT} />}
         title="Users"
       />
-    </EditModeProvider>
+    </TableEditorProvider>
   );
 };

@@ -19,10 +19,16 @@ export interface AdminTablePageProps {
   /** Singular noun for the row count, e.g. "group". */
   noun: string;
   filter: ReactNode;
-  onPanelOpenChange: (open: boolean) => void;
+  /**
+   * Omit, with `panelOpen`, when an enclosing provider (e.g. a
+   * `TableEditorProvider`) already drives the side panel.
+   */
+  onPanelOpenChange?: (open: boolean) => void;
+  /** @default <SidePanelCloseButton /> */
+  panelCloseButton?: ReactNode;
   panelContent: ReactNode;
   panelHeading: ReactNode;
-  panelOpen: boolean;
+  panelOpen?: boolean;
   table: ReactNode;
   title: string;
 }
@@ -51,13 +57,14 @@ export const AdminTablePage = ({
   filter,
   noun,
   onPanelOpenChange,
+  panelCloseButton = <SidePanelCloseButton />,
   panelContent,
   panelHeading,
   panelOpen,
   table,
   title,
-}: AdminTablePageProps) => (
-  <SidePanelProvider open={panelOpen} onOpenChange={onPanelOpenChange}>
+}: AdminTablePageProps) => {
+  const page = (
     <div className="vuuIdentityAdmin-pageWithPanel">
       <section className={`vuuIdentityAdmin-page ${className ?? ""}`.trim()}>
         <PageHeader actions={actions} description={description} title={title} />
@@ -70,10 +77,17 @@ export const AdminTablePage = ({
       <SidePanel position="right" className="vuuIdentityAdmin-panel">
         <SidePanelHeader>
           {panelHeading}
-          <SidePanelCloseButton />
+          {panelCloseButton}
         </SidePanelHeader>
         <SidePanelContent>{panelContent}</SidePanelContent>
       </SidePanel>
     </div>
-  </SidePanelProvider>
-);
+  );
+  return panelOpen === undefined ? (
+    page
+  ) : (
+    <SidePanelProvider open={panelOpen} onOpenChange={onPanelOpenChange}>
+      {page}
+    </SidePanelProvider>
+  );
+};

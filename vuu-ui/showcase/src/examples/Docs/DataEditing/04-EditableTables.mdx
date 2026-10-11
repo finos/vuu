@@ -96,9 +96,44 @@ const confirmDiscard = useConfirmDiscard({
 
 The dialog only appears when there are changes to lose.
 
+## Composing your own layout
+
+`EditableTable` is built from the `TableEditor` components in
+`@vuu-ui/vuu-table-extras`. When you want your own toolbar or footer, compose
+them inside a `TableEditorProvider` (`editIn="table"` is the default). The
+provider takes `EditableTable`'s editing props (`allowDelete`, `confirmCancel`,
+`copyOption`, `rowDefaults`, `mode`/`defaultMode`, `onSaved`, ...), and
+`TableEditorTable` takes the table props plus `editable`, `readOnly`,
+`undoColumn` and `showInlineAddRow`.
+
+```tsx
+import {
+  TableEditorButtons,
+  TableEditorModeToggle,
+  TableEditorProvider,
+  TableEditorTable,
+} from "@vuu-ui/vuu-table-extras";
+
+<TableEditorProvider allowDelete dataSource={dataSource}>
+  <header>
+    <h2>Instruments</h2>
+    <TableEditorModeToggle />
+  </header>
+  <TableEditorTable config={config} readOnly={["ric"]} showInlineAddRow />
+  <footer>
+    <TableEditorButtons />
+  </footer>
+</TableEditorProvider>;
+```
+
+Components inside the provider can call `useTableEditor()` for `mode`,
+`isEditing`, `startEdit()` and `cancel()`. Form editing uses the same
+components; see [Composing your own layout](./05-EditForms.mdx#composing-your-own-layout).
+
 ## Building your own editable table
 
-When `EditableTable`'s layout doesn't fit, use the hooks it is built from.
+When you need more control than the components give, use the hooks they are
+built from.
 
 ```tsx
 import {

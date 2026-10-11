@@ -1,4 +1,4 @@
-import { Banner, BannerContent, Button } from "@salt-ds/core";
+import { Banner, BannerContent } from "@salt-ds/core";
 import {
   type FormEvent,
   type HTMLAttributes,
@@ -6,13 +6,13 @@ import {
   useCallback,
 } from "react";
 import { DataEditingProvider } from "../DataEditingProvider";
-import { EditButtons } from "../EditButtons";
 import { EditModeProvider } from "../EditModeProvider";
 import {
   type EditFormHookProps,
   type EditFormHookResult,
   useEditForm,
 } from "../useEditForm";
+import { EditFormButtons } from "./EditFormButtons";
 import { EditFormContext } from "./EditFormContext";
 
 import "./EditForm.css";
@@ -36,7 +36,10 @@ export interface EditFormProps
   hideCancel?: boolean;
   /** @default "Save" in edit mode, "Create" in create mode */
   saveLabel?: string;
-  /** Render the buttons yourself, e.g. in a dialog footer. */
+  /**
+   * Set false to render the buttons yourself, with `EditFormButtons`.
+   * @default true
+   */
   showButtons?: boolean;
   title?: ReactNode;
 }
@@ -48,8 +51,8 @@ export interface EditFormProps
  *
  * In edit mode, fields are editable while `isEditMode` is true (or the
  * enclosing `EditModeProvider` is in edit mode). Create mode is always
- * editable; fields must use `dataRow={{ key: EditSession.newRowKey }}` and
- * `deferNewRow` (`CreateRowForm` does this for you).
+ * editable. `EditField`s pick up the form's row (a new-row placeholder in
+ * create mode), so need no `dataRow` prop.
  */
 export const EditForm = ({
   children,
@@ -68,7 +71,7 @@ export const EditForm = ({
   onSaved,
   requiredColumns,
   rowDefaults,
-  saveLabel = mode === "create" ? "Create" : "Save",
+  saveLabel,
   showButtons = true,
   title,
   validate,
@@ -89,7 +92,7 @@ export const EditForm = ({
     rowDefaults,
     validate,
   });
-  const { cancel, canSave, editSession, error, saving, submit } = form;
+  const { canSave, editSession, error, saving, submit } = form;
 
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
@@ -100,13 +103,6 @@ export const EditForm = ({
     },
     [canSave, submit],
   );
-
-  const handleCancel = useCallback(async () => {
-    if (confirmCancel && form.isDirty && !(await confirmCancel())) {
-      return;
-    }
-    cancel();
-  }, [cancel, confirmCancel, form.isDirty]);
 
   const content = (
     <form
@@ -129,26 +125,11 @@ export const EditForm = ({
       </div>
       {showButtons && form.isEditMode ? (
         <div className={`${classBase}-buttons`}>
-          {mode === "edit" ? (
-            <EditButtons
-              canSave={canSave}
-              editSession={editSession}
-              onCancel={hideCancel ? undefined : handleCancel}
-              onSave={submit}
-              saveLabel={saveLabel}
-            />
-          ) : (
-            <>
-              <Button disabled={!canSave} sentiment="accented" type="submit">
-                {saveLabel}
-              </Button>
-              {hideCancel ? null : (
-                <Button disabled={saving} onClick={handleCancel}>
-                  Cancel
-                </Button>
-              )}
-            </>
-          )}
+          <EditFormButtons
+            confirmCancel={confirmCancel}
+            hideCancel={hideCancel}
+            saveLabel={saveLabel}
+          />
         </div>
       ) : null}
     </form>

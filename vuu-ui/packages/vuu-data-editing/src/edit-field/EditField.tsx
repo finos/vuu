@@ -36,13 +36,17 @@ export interface EditFieldProps {
    * are not sent to the server.
    */
   clientSideEditValidationCheck?: DataValueValidationChecker;
-  /** The row being edited. Use `{ key: EditSession.newRowKey }` for a new row. */
-  dataRow: DataRow;
+  /**
+   * The row being edited. Use `{ key: EditSession.newRowKey }` for a new row.
+   * Defaults to the row of the enclosing `EditForm`.
+   */
+  dataRow?: DataRow;
   /**
    * For new rows only. When true, values are staged in the EditSession draft
    * and the row is not added until `editSession.addNewRow()` is called (e.g.
    * from a form Save button). When false, the row is added as soon as the
-   * final (or last required) field is committed.
+   * final (or last required) field is committed. Defaults to true inside a
+   * create-mode `EditForm`, otherwise false.
    */
   deferNewRow?: boolean;
   label: string;
@@ -70,10 +74,17 @@ export interface DropdownEditFieldProps extends EditFieldProps {
  * edit mode. Commits on Enter or blur (text), selection (dropdown) or toggle
  * (checkbox).
  */
+const resolveDataRow = (dataRow?: DataRow) => {
+  if (dataRow === undefined) {
+    throw Error("EditField needs a dataRow prop or an enclosing EditForm");
+  }
+  return dataRow;
+};
+
 export const EditField = ({
   clientSideEditValidationCheck,
-  dataRow,
-  deferNewRow = false,
+  dataRow: dataRowProp,
+  deferNewRow: deferNewRowProp,
   label,
   name,
   readOnly = false,
@@ -83,9 +94,12 @@ export const EditField = ({
   ...options
 }: EditFieldProps | DropdownEditFieldProps) => {
   const editSession = useEditSession();
+  const form = useEditFormContext();
+  const dataRow = resolveDataRow(dataRowProp ?? form?.dataRow);
+  const deferNewRow = deferNewRowProp ?? form?.mode === "create";
 
   const { isEditMode } = useEditMode();
-  const formFieldErrors = useEditFormContext()?.fieldErrors;
+  const formFieldErrors = form?.fieldErrors;
   const isNewRow = editSession?.isNewRow(dataRow.key) ?? false;
   const { newRowState } = useEditSessionState(
     isNewRow ? editSession : undefined,

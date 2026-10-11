@@ -71,6 +71,8 @@ export interface EditFormHookProps {
 
 const EMPTY_ERRORS: EditFormFieldErrors = {};
 
+const NEW_ROW = { key: EditSession.newRowKey } as DataRow;
+
 /**
  * Plain column values of a row. Table DataRows are Proxies with no own
  * keys, so they cannot be spread; they serialize via `toJSON`.
@@ -276,6 +278,8 @@ export const useEditForm = ({
         ? sessionState.isActive && editSession.isNewRowComplete()
         : sessionState.canSave),
     cancel,
+    /** The row being edited, a new-row placeholder in create mode. */
+    dataRow: isCreate ? NEW_ROW : dataRow,
     editSession,
     error: error ?? sessionState.error,
     fieldErrors,
