@@ -165,6 +165,7 @@ export const ChromeSelect = <T extends string = string>({
       >
         {icon ?? selected?.icon}
         <span className={`${classBase}-value`}>{selected?.label}</span>
+        {selected?.adornment}
         <ChromeIcon name="selector" size={14} />
       </button>
       {open ? (
