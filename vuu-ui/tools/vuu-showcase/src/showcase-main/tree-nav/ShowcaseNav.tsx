@@ -142,17 +142,20 @@ export const ShowcaseNav = ({
 
   const handleSelect = useCallback<TableRowSelectHandler>(
     (dataRow) => {
-      if (dataRow && navIndex) {
+      // The row selected for the current route may be its nearest ancestor,
+      // e.g the chapter of an example embedded in a document. Its (auto)
+      // selection must not navigate away from the route.
+      if (dataRow && navIndex && dataRow.key !== navState.key) {
         const path = navIndex.pathForKey(dataRow.key);
         if (path !== undefined && path !== route) {
           onSelectExample?.(dataRow.nodeData as NavNodeData | undefined);
           // the nav already reflects this route
-          setNavState((state) => ({ ...state, route: path }));
+          setNavState((state) => ({ ...state, key: dataRow.key, route: path }));
           navigate(path);
         }
       }
     },
-    [navIndex, navigate, onSelectExample, route],
+    [navIndex, navState.key, navigate, onSelectExample, route],
   );
 
   if (sectionNav === undefined) {
