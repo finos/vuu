@@ -28,7 +28,7 @@ cancelling returns to View.
 | `editSessionApi` | `createSessionDataSource` (default) or `beginEditSession`. |
 | `confirmCancel` | `() => Promise<boolean>`, called before discarding unsaved changes. |
 | `onSave`, `onCancel` | Called after a successful save or cancel. |
-| `onError` | Called when begin, save, cancel or delete fails. See [Error handling](./10-ErrorHandling.mdx). |
+| `onError` | Called when begin, save, cancel or delete fails. See [Error handling](./09-ErrorHandling.mdx). |
 | `editModeToggle`, `showEditModeToggle` | Replace or hide the View/Edit toggle. |
 | `toolbar`, `footer` | Extra toolbar content; footer content shown in view mode. |
 | `saveLabel` | Label for the Save button. |
@@ -71,7 +71,7 @@ A column's spec is either:
 | `input-cell` | `@vuu-ui/vuu-table` | text and numbers (the default) |
 | `checkbox-cell`, `toggle-cell` | `@vuu-ui/vuu-table` | booleans |
 | `temporal-input-cell` | `@vuu-ui/vuu-table` | dates and times |
-| `dropdown-cell` | `@vuu-ui/vuu-table-extras` | a fixed list of values, or values from a lookup table (see [Lookups](./07-Lookups.mdx)) |
+| `dropdown-cell` | `@vuu-ui/vuu-table-extras` | a fixed list of values, or values from a lookup table (see [Lookups](./06-Lookups.mdx)) |
 
 Import the package that registers a renderer before you use it by name.
 
