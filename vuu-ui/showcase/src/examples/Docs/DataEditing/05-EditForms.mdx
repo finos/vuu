@@ -287,20 +287,21 @@ import { EditField, EditForm } from "@vuu-ui/vuu-data-editing";
 - For create mode, pass `mode="create"`, `columns` and `requiredColumns`, and
   give each field `dataRow={{ key: EditSession.newRowKey }}` and `deferNewRow`.
   `CreateRowForm` does all this for you.
-- `children` can be a function that receives the form state, for example to
-  show fields depending on other values:
+- A component inside the form can call `useEditFormContext()` for the form
+  state, for example to show fields depending on other values:
 
   ```tsx
+  const ExpiryField = ({ row }) => {
+    const { getValues } = useEditFormContext();
+    return getValues().type === "future" ? (
+      <EditField dataRow={row} label="Expiry" name="expiry" />
+    ) : null;
+  };
+
   <EditForm {...props}>
-    {(form) => (
-      <>
-        <EditField dataRow={row} label="Type" name="type" />
-        {form.getValues().type === "future" ? (
-          <EditField dataRow={row} label="Expiry" name="expiry" />
-        ) : null}
-      </>
-    )}
-  </EditForm>
+    <EditField dataRow={row} label="Type" name="type" />
+    <ExpiryField row={row} />
+  </EditForm>;
   ```
 
 - `showButtons={false}` hides the built-in Save and Cancel so you can render

@@ -3,7 +3,13 @@ import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CreateRowForm, EditField, EditForm, getDataRowValues } from "../src";
+import {
+  CreateRowForm,
+  EditField,
+  EditForm,
+  getDataRowValues,
+  useEditFormContext,
+} from "../src";
 
 vi.hoisted(() => {
   class MockWorker {
@@ -83,6 +89,26 @@ describe("EditForm", () => {
   };
 
   const dataRow = { key: "k1", price: 100 } as unknown as DataRow;
+
+  it("re-renders context consumers as values change", async () => {
+    const row = { key: "k1", price: 100, type: "stock" } as unknown as DataRow;
+    const Expiry = () =>
+      useEditFormContext().getValues().type === "future" ? (
+        <span>Expiry</span>
+      ) : null;
+    await render(
+      <EditForm dataRow={row} dataSource={createDataSource()} isEditMode>
+        <EditField dataRow={row} label="Price" name="price" />
+        <EditField dataRow={row} label="Type" name="type" />
+        <Expiry />
+      </EditForm>,
+    );
+    const [price, type] = container.querySelectorAll("input");
+    await typeAndCommit(price, "101");
+    expect(container.textContent).not.toContain("Expiry");
+    await typeAndCommit(type, "future");
+    expect(container.textContent).toContain("Expiry");
+  });
 
   it("shows validate errors on the matching EditField", async () => {
     const dataSource = createDataSource();

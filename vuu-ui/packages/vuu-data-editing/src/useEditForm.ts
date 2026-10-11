@@ -145,6 +145,21 @@ export const useEditForm = ({
 
   const sessionState = useEditSessionState(editSession);
 
+  // editState stays "dirty" across further edits, so re-render on each change
+  // to this row's values, for consumers that read getValues().
+  const [, setValuesRevision] = useState(0);
+  const rowKey = dataRow?.key;
+  useEffect(() => {
+    if (isCreate || rowKey === undefined) return;
+    const onCellEditChanged = (key: string) => {
+      if (key === rowKey) setValuesRevision((n) => n + 1);
+    };
+    editSession.on("cellEditChanged", onCellEditChanged);
+    return () => {
+      editSession.removeListener("cellEditChanged", onCellEditChanged);
+    };
+  }, [editSession, isCreate, rowKey]);
+
   const fail = useCallback(
     (cause: unknown, operation: "begin" | "cancel" | "save") => {
       const err = toError(cause);
