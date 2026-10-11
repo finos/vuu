@@ -28,6 +28,11 @@ export interface TreeNavPanelProps extends Pick<
    * render no header.
    */
   header?: ReactNode;
+  /**
+   * Vertical guide lines connect the children of an expanded node, the
+   * selected node is marked on its guide.
+   */
+  indentGuides?: boolean;
   /** Text highlighted in node labels, usually the current filter text */
   searchPattern?: string;
   source: TreeSourceNode[];
@@ -49,6 +54,7 @@ export const TreeNavPanel = ({
   filterPredicate: filterPredicateProp,
   footer,
   header,
+  indentGuides = false,
   onSelect,
   renderNodeAdornment,
   rowHeight = 30,
@@ -68,6 +74,7 @@ export const TreeNavPanel = ({
     <div
       className={cx(classBase, className, {
         [`${classBase}-headings`]: topLevelHeadings,
+        [`${classBase}-indentGuides`]: indentGuides,
       })}
       style={style}
     >
