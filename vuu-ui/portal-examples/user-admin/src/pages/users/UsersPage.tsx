@@ -59,7 +59,7 @@ export const UsersPage = () => {
   const { application, config, dataSource, setApplication } = useUsersPage();
   return (
     <TableWithEditForm dataSource={dataSource}>
-      <TableWithEditFormTablePanel className="vuuIdentityAdmin-page vuuIdentityAdmin-users">
+      <TableWithEditFormTablePanel className="vuuIdentityAdmin-page">
         <PageHeader
           description="Grant application access by adding users to an application's groups."
           title="Users"

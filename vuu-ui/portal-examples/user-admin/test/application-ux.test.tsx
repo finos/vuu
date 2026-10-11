@@ -1,12 +1,11 @@
-import { act } from "react";
+import { act, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
-import type { DataRow } from "@vuu-ui/vuu-table-types";
-import { EditModeProvider, EditSession } from "@vuu-ui/vuu-data-editing";
+import { TableWithEditForm, useTableEditor } from "@vuu-ui/vuu-table-extras";
 import { PortalModuleRegistryProvider } from "@vuu-ui/core/portal";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GroupsEditForm } from "../src/components/groups-edit-form/GroupsEditForm";
+import { CreateGroupForm } from "../src/components/groups-edit-form/GroupsEditForm";
 import {
   buildApplicationModel,
   deriveApplications,
@@ -213,15 +212,18 @@ describe("application-centred admin UX", () => {
       endEditSession.mockReset().mockResolvedValue({ type: "SUCCESS_RESULT" });
     });
 
+    const StartCreate = () => {
+      const { startCreate } = useTableEditor();
+      useEffect(() => startCreate(), [startCreate]);
+      return null;
+    };
+
     const renderForm = (application?: string) =>
       renderWithModel(
-        <EditModeProvider isEditMode>
-          <GroupsEditForm
-            application={application}
-            dataRow={{ key: EditSession.newRowKey } as unknown as DataRow}
-            dataSource={dataSource}
-          />
-        </EditModeProvider>,
+        <TableWithEditForm dataSource={dataSource}>
+          <StartCreate />
+          <CreateGroupForm application={application} />
+        </TableWithEditForm>,
       );
 
     const typeGroupName = async (value: string) => {

@@ -22,9 +22,7 @@ type ProviderOwnedProps =
   | "dataSource"
   | "deleteMode"
   | "editSessionApi"
-  | "onCancelled"
   | "onError"
-  | "onSaved"
   | "rowDefaults";
 
 export interface TableEditorFormProps
@@ -82,6 +80,8 @@ export const TableEditorForm = ({
   children,
   className,
   fields,
+  onCancelled,
+  onSaved,
   showButtons = children === undefined,
   validate,
   ...formProps
@@ -107,10 +107,15 @@ export const TableEditorForm = ({
     [validate],
   );
 
-  const handleSaved = useCallback(
-    () => onEditSaved(submittedValuesRef.current),
-    [onEditSaved],
-  );
+  const handleCancelled = useCallback(() => {
+    onCancelled?.();
+    onEditCancelled();
+  }, [onCancelled, onEditCancelled]);
+
+  const handleSaved = useCallback(() => {
+    onSaved?.();
+    onEditSaved(submittedValuesRef.current);
+  }, [onEditSaved, onSaved]);
 
   if (editIn !== "form" || mode === "create" || selectedRow === undefined) {
     return null;
@@ -126,7 +131,7 @@ export const TableEditorForm = ({
       dataSource={dataSource}
       isEditMode={mode === "edit"}
       key={selectedRow.key}
-      onCancelled={onEditCancelled}
+      onCancelled={handleCancelled}
       onSaved={handleSaved}
       showButtons={showButtons}
       validate={validateEdit}
@@ -146,11 +151,14 @@ export interface TableEditorCreateFormProps
 /**
  * Form editing: a form for adding a row, shown in create mode (see
  * `TableEditorNewButton`). Renders an `EditField` per entry in `fields`,
- * followed by `children`.
+ * followed by `children`. Custom editors in `children` stage values with
+ * `setValue` from `useEditFormContext`.
  */
 export const TableEditorCreateForm = ({
   children,
   className,
+  onCancelled,
+  onSaved,
   ...formProps
 }: TableEditorCreateFormProps) => {
   const {
@@ -163,11 +171,14 @@ export const TableEditorCreateForm = ({
     onCreateDone,
   } = useTableEditorContext("TableEditorCreateForm");
 
-  const handleCancelled = useCallback(
-    () => onCreateDone(false),
-    [onCreateDone],
-  );
-  const handleSaved = useCallback(() => onCreateDone(true), [onCreateDone]);
+  const handleCancelled = useCallback(() => {
+    onCancelled?.();
+    onCreateDone(false);
+  }, [onCancelled, onCreateDone]);
+  const handleSaved = useCallback(() => {
+    onSaved?.();
+    onCreateDone(true);
+  }, [onCreateDone, onSaved]);
 
   if (editIn !== "form" || mode !== "create") {
     return null;
