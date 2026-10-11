@@ -10,8 +10,8 @@ export interface EditButtonProps {
    */
   canCancel?: boolean;
   /**
-   * Enables the Save button. Defaults to `editSession.canSave`, so only
-   * provide this to override the session-derived value.
+   * An extra condition for enabling Save. Save is only enabled when this is
+   * not false and `editSession.canSave` is true.
    */
   canSave?: boolean;
   editSession?: EditSession;
@@ -51,7 +51,7 @@ export const EditButtons = ({
     editState,
     isDirty,
   } = useEditSessionState(editSession);
-  const canSave = canSaveProp ?? sessionCanSave;
+  const canSave = canSaveProp !== false && sessionCanSave;
   const canCancel = canCancelProp ?? sessionCanCancel;
 
   const handleSave = useCallback(async () => {

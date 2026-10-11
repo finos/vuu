@@ -1,4 +1,4 @@
-import { useModal } from "@vuu-ui/vuu-ui-controls";
+import { useModal } from "@vuu-ui/core";
 import { createElement, useCallback } from "react";
 
 export interface ConfirmDiscardHookProps {

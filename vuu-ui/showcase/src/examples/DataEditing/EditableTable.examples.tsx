@@ -11,7 +11,7 @@ import {
   type EditableTableMode,
 } from "@vuu-ui/vuu-table-extras";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
-import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
+import { ModalProvider } from "@vuu-ui/core";
 import { useData } from "@vuu-ui/vuu-utils";
 import { useMemo, useState } from "react";
 import {
