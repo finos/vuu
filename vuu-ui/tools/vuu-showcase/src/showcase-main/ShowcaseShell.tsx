@@ -22,6 +22,7 @@ import {
   storeNavWidth,
   useChromeMode,
 } from "./chrome/chrome-settings";
+import { CommandPalette, OPEN_PALETTE_MESSAGE } from "./command-palette";
 import { ShowcaseContent } from "./ShowcaseContent";
 import { ShowcaseProvider } from "./ShowcaseProvider";
 import { TopBar, type TopBarProps } from "./top-bar";
@@ -86,7 +87,10 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
   }));
   const [themeReady, setThemeReady] = useState(false);
   const chromeModeState = useChromeMode();
-  const { chromeMode } = chromeModeState;
+  const { chromeMode, toggleChromeMode } = chromeModeState;
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const openPalette = useCallback(() => setPaletteOpen(true), []);
+  const closePalette = useCallback(() => setPaletteOpen(false), []);
 
   useEffect(() => {
     loadTheme("vuu-theme").then(() => {
@@ -98,7 +102,7 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
     const handleKeyDown = (evt: KeyboardEvent) => {
       if ((evt.metaKey || evt.ctrlKey) && evt.key.toLowerCase() === "k") {
         evt.preventDefault();
-        focusNavFilter();
+        setPaletteOpen((open) => !open);
       } else if (
         evt.key === "/" &&
         !evt.metaKey &&
@@ -110,8 +114,21 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
         focusNavFilter();
       }
     };
+    // examples run in a same origin iframe, which forwards mod+K
+    const handleMessage = (evt: MessageEvent) => {
+      if (
+        evt.origin === window.location.origin &&
+        evt.data?.type === OPEN_PALETTE_MESSAGE
+      ) {
+        setPaletteOpen(true);
+      }
+    };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("message", handleMessage);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("message", handleMessage);
+    };
   }, []);
 
   const { pathname } = useLocation();
@@ -161,7 +178,7 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
               >
                 <ShellTopBar
                   exampleCount={exampleCount}
-                  onSearch={focusNavFilter}
+                  onSearch={openPalette}
                   version={vuuVersion}
                 />
               </GridLayoutItem>
@@ -192,12 +209,19 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
                 title="Showcase Content"
               >
                 <ShowcaseContent
-                  onSearch={focusNavFilter}
+                  onSearch={openPalette}
                   treeSource={treeSource}
                 />
               </GridLayoutItem>
             </GridLayout>
           </GridLayoutProvider>
+          <CommandPalette
+            chromeMode={chromeMode}
+            onClose={closePalette}
+            onToggleChromeMode={toggleChromeMode}
+            open={paletteOpen}
+            treeSource={treeSource}
+          />
         </ShowcaseProvider>
       </ChromeModeContext.Provider>
     </SaltProviderNext>
