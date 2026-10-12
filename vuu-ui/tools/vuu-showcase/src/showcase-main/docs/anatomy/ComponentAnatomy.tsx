@@ -51,7 +51,7 @@ const DEPTH_HUES = [
 const hueFor = (depth: number) => DEPTH_HUES[depth % DEPTH_HUES.length];
 
 const TIER_LABELS: Record<AnatomyTier, string> = {
-  hook: "Component hook",
+  api: "API variable",
   internal: "Internal",
   characteristics: "Characteristic",
   palette: "Palette",
@@ -59,7 +59,7 @@ const TIER_LABELS: Record<AnatomyTier, string> = {
   other: "Salt (other)",
 };
 const LEGEND: AnatomyTier[] = [
-  "hook",
+  "api",
   "characteristics",
   "palette",
   "foundations",
