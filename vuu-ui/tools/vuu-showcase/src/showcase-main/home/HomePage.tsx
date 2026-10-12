@@ -104,6 +104,10 @@ export const HomePage = ({ onSearch, treeSource }: HomePageProps) => {
             component tests.
           </p>
           <p>Patterns illustrate component usage in varied scenarios.</p>
+          <p>
+            Inspect components under multiple themes, vary theme density and
+            mode.
+          </p>
         </div>
         <Button
           appearance="bordered"
