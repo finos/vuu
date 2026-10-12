@@ -1,11 +1,11 @@
 import {
-  TabListNext,
-  TabNext,
-  TabNextPanel,
-  type TabNextPanelProps,
-  TabNextTrigger,
-  TabsNext,
-} from "@salt-ds/lab";
+  TabList,
+  Tab,
+  TabPanel,
+  type TabPanelProps,
+  TabTrigger,
+  Tabs,
+} from "@salt-ds/core";
 import type { ReactNode, SyntheticEvent } from "react";
 
 export interface ExampleTab<T extends string = string> {
@@ -30,31 +30,31 @@ export const ExampleTabs = <T extends string = string>({
   tabs,
   value,
 }: ExampleTabsProps<T>) => (
-  <TabsNext
+  <Tabs
     className={`${classBase}-root`}
     onChange={(_: SyntheticEvent | null, tab: string) => onChange(tab as T)}
     value={value}
   >
-    <TabListNext
+    <TabList
       appearance="transparent"
       aria-label="Example views"
       className={classBase}
     >
       {tabs.map(({ count, id, label }) => (
-        <TabNext key={id} value={id}>
-          <TabNextTrigger>
+        <Tab key={id} value={id}>
+          <TabTrigger>
             {label}
             {count !== undefined ? (
               <span className={`${classBase}-count`}>{count}</span>
             ) : null}
-          </TabNextTrigger>
-        </TabNext>
+          </TabTrigger>
+        </Tab>
       ))}
-    </TabListNext>
+    </TabList>
     {children}
-  </TabsNext>
+  </Tabs>
 );
 
-export const ExampleTabPanel = (props: TabNextPanelProps) => (
-  <TabNextPanel {...props} />
+export const ExampleTabPanel = (props: TabPanelProps) => (
+  <TabPanel {...props} />
 );
