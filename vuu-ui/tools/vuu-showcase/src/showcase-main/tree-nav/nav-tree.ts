@@ -75,7 +75,6 @@ export const buildExamplesIndexNode = (
   };
 };
 
-export const GETTING_STARTED_LABEL = "Getting started";
 export const COMPONENTS_LABEL = "Components";
 
 const isDocument = ({ nodeData }: TreeSourceNode<NavNodeData>) =>
@@ -125,9 +124,10 @@ const byLabel = (n1: TreeSourceNode, n2: TreeSourceNode) =>
   n1.label.localeCompare(n2.label);
 
 /**
- * Builds the sidebar tree for a showcase section. Examples are presented
- * under two headings, standalone pages under Getting started and component
- * folders under Components. Docs presents the content of the Docs folder.
+ * Builds the sidebar tree for a showcase section. Examples presents the
+ * component folders under a Components heading; standalone pages at the top
+ * level of the examples folder are not listed. Docs presents the content of
+ * the Docs folder.
  * The Theme section has no nav tree. Grouping is purely presentational,
  * example urls are unchanged.
  */
@@ -140,20 +140,10 @@ export const buildSectionTree = (
     return (docs?.childNodes ?? []).map(toDocsNavNode);
   } else if (section === "examples") {
     const examples = getExampleNodes(treeSource).map(withDocumentIconsOnly);
-    const pages = examples.filter((node) => !node.childNodes?.length);
     const folders = examples
       .filter((node) => node.childNodes?.length)
       .sort(byLabel);
     const sectionTree: TreeSourceNode<NavNodeData>[] = [];
-    if (pages.length > 0) {
-      sectionTree.push({
-        childNodes: pages,
-        expanded: true,
-        id: "$heading/getting-started",
-        label: GETTING_STARTED_LABEL,
-        nodeData: { heading: true },
-      });
-    }
     if (folders.length > 0) {
       sectionTree.push({
         childNodes: folders,

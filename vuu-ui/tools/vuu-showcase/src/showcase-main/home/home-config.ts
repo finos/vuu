@@ -4,11 +4,6 @@ import type { StartHereEntry } from "./home-model";
 export const START_HERE: StartHereEntry[] = [
   { kind: "guide", path: "/Docs/Table" },
   { kind: "theme" },
-  {
-    description: "What a Vuu app can do",
-    kind: "page",
-    path: "/1.ApplicationFeatures",
-  },
 ];
 
 /** Number of areas shown before 'All areas' is selected */
