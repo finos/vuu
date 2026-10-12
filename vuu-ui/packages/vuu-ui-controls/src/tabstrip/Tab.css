@@ -108,7 +108,7 @@
 .vuuTab.vuuFocusVisible {
   background: var(
     --vuuTab-hover-background,
-    var(--salt-navigable-primary-background-hover)
+    var(--salt-navigable-background-hover)
   );
   outline-color: var(
     --vuuTab-focusVisible-color,
@@ -132,7 +132,7 @@
 
 .vuuTabstrip-draggingTab .vuuTab-selected:before {
   --tab-before-content: "";
-  --tab-before-background: var(--salt-navigable-indicator-color-active);
+  --tab-before-background: var(--salt-navigable-accent-indicator-active);
   --tab-before-height: var(--tab-thumb-height);
   --tab-before-inset: var(--tab-activationIndicator-inset);
   --tab-before-width: var(--tab-activationIndicator-thumb-width);
@@ -153,6 +153,6 @@
 .vuuTab:hover:not(.vuuTab-closeHover, .vuuTab-selected) {
   background: var(
     --vuuTab-hover-background,
-    var(--salt-navigable-primary-background-hover)
+    var(--salt-navigable-background-hover)
   );
 }
