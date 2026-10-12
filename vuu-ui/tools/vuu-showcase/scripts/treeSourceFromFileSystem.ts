@@ -30,6 +30,8 @@ export type NodeData = {
   /** folders only, number of examples within */
   count?: number;
   description?: string;
+  /** examples only, Playwright test files (relative to vuu-ui) using it */
+  fixtureFor?: string[];
   /** true for an example that consumes data, or a folder containing one */
   live?: boolean;
   /** documents only, date (yyyy-mm-dd) of the last commit to the document */

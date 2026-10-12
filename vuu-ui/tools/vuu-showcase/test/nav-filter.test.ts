@@ -70,6 +70,17 @@ describe("matchesNavFilter", () => {
       matchesNavFilter({ chip: "recent", query: "x" }, context, live),
     ).toBe(false);
   });
+  it("filters test fixtures", () => {
+    const fixture = node("k-pinned", "Pinned columns", {
+      fixtureFor: ["packages/a.playwright.test.tsx"],
+    });
+    expect(
+      matchesNavFilter({ chip: "fixtures", query: "" }, context, fixture),
+    ).toBe(true);
+    expect(
+      matchesNavFilter({ chip: "fixtures", query: "" }, context, pinned),
+    ).toBe(false);
+  });
 });
 
 describe("isNavFilterActive", () => {

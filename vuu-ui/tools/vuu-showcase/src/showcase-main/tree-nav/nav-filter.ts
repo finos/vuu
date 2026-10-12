@@ -1,7 +1,7 @@
 import type { TreeNodeFilterProps } from "@vuu-ui/vuu-data-local";
 import type { NavNodeData } from "./nav-tree";
 
-export type NavFilterChip = "live" | "favourites" | "recent";
+export type NavFilterChip = "live" | "fixtures" | "favourites" | "recent";
 
 export interface NavFilterState {
   chip?: NavFilterChip;
@@ -35,6 +35,9 @@ export const matchesNavFilter = (
     return false;
   }
   if (chip === "live" && !data.live) {
+    return false;
+  }
+  if (chip === "fixtures" && !data.fixtureFor?.length) {
     return false;
   }
   const path = pathForKey(key);

@@ -12,6 +12,9 @@ export interface NavRowAdornmentProps {
   path?: string;
 }
 
+export const fixtureTitle = (testFileCount: number) =>
+  `Test fixture, used by ${testFileCount} Playwright test file${testFileCount === 1 ? "" : "s"}`;
+
 const FavouriteToggle = ({ label, path }: { label: string; path: string }) => {
   const isFavourite = useFavourites().includes(path);
   const handleClick = (evt: MouseEvent) => {
@@ -56,6 +59,14 @@ export const NavRowAdornment = ({ dataRow, path }: NavRowAdornmentProps) => {
   const label = dataRow[`Level ${dataRow.depth}`];
   return (
     <>
+      {nodeData.fixtureFor?.length ? (
+        <span
+          className={`${classBase}-fixture`}
+          title={fixtureTitle(nodeData.fixtureFor.length)}
+        >
+          <ChromeIcon name="flask" size={12} />
+        </span>
+      ) : null}
       {nodeData.live ? (
         <span className="ShowcaseLiveDot" title="Uses live data" />
       ) : null}
