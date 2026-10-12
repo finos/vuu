@@ -10,7 +10,7 @@
 export const ANATOMY_SCHEMA_VERSION = 1;
 
 /**
- * hook            - a public component variable, e.g --vuuTable-background
+ * api             - an API variable, public to the component, e.g --vuuTable-background
  * internal        - a private component variable, e.g --table-background
  * characteristics - theme tiers, from the theme model
  * palette
@@ -18,7 +18,7 @@ export const ANATOMY_SCHEMA_VERSION = 1;
  * other           - a theme variable that is not part of a tier
  */
 export type AnatomyTier =
-  "hook" | "internal" | "characteristics" | "palette" | "foundations" | "other";
+  "api" | "internal" | "characteristics" | "palette" | "foundations" | "other";
 
 export type ChainStep =
   | {

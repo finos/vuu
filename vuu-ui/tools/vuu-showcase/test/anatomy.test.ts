@@ -149,10 +149,10 @@ describe("parseVarReference", () => {
 
 describe("tierOf", () => {
   const none = () => undefined;
-  it("identifies component hooks", () => {
-    expect(tierOf("--vuuTable-background", none)).toBe("hook");
-    expect(tierOf("--VuuTableRow-fontSize", none)).toBe("hook");
-    expect(tierOf("--saltButton-padding", none)).toBe("hook");
+  it("identifies API variables", () => {
+    expect(tierOf("--vuuTable-background", none)).toBe("api");
+    expect(tierOf("--VuuTableRow-fontSize", none)).toBe("api");
+    expect(tierOf("--saltButton-padding", none)).toBe("api");
   });
   it("uses the theme, then falls back to other or internal", () => {
     expect(tierOf("--salt-accent", (n) => themeTiers[n])).toBe(
@@ -182,7 +182,7 @@ describe("buildAnatomy", () => {
     expect(model.elements.map((e) => e.parent)).toEqual([null, 0, 0]);
   });
 
-  it("follows a chain through hooks, fallbacks and the theme", () => {
+  it("follows a chain through API variables, fallbacks and the theme", () => {
     const { model } = build();
     const background = refOf(model.nodes[0].refs, "background", ".vuuThing");
     expect(names(background?.chain ?? [])).toEqual([
@@ -192,7 +192,7 @@ describe("buildAnatomy", () => {
       "--salt-color-x",
       "rgb(1, 2, 3)",
     ]);
-    expect(background?.chain[1]).toMatchObject({ tier: "hook", set: false });
+    expect(background?.chain[1]).toMatchObject({ tier: "api", set: false });
     expect(background?.chain[2]).toMatchObject({
       tier: "characteristics",
       set: true,

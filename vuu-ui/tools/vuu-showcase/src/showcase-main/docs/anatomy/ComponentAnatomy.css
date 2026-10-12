@@ -1,6 +1,6 @@
 /* Chrome only (--sc-* tokens), never the theme being documented. */
 .ShowcaseAnatomy {
-  --anatomy-hook: #2563eb;
+  --anatomy-api: #2563eb;
   --anatomy-internal: #94a3b8;
   --anatomy-characteristics: #e2730f;
   --anatomy-palette: #0d9488;
@@ -338,8 +338,8 @@
   height: 8px;
   width: 8px;
 
-  &[data-tier="hook"] {
-    background: var(--anatomy-hook);
+  &[data-tier="api"] {
+    background: var(--anatomy-api);
   }
   &[data-tier="internal"] {
     background: var(--anatomy-internal);
