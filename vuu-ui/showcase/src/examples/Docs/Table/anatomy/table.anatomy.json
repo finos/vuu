@@ -1,4 +1,4 @@
-{"schemaVersion":1,"component":"Table","example":"/Docs/Table/Styling/TableAnatomy","theme":"vuu-theme","mode":"light","density":"high","size":[640,260],
+{"schemaVersion":1,"component":"Table","example":"/Docs/Table/Anatomy/TableAnatomy","theme":"vuu-theme","mode":"light","density":"high","size":[640,260],
   "nodes": [
     {"id":0,"parent":null,"depth":0,"tag":"div","classes":["vuuMeasuredContainer","vuuTable"],"variantClasses":[],"count":1,"total":1,
       "instances": [0],

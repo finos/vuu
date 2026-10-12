@@ -3,7 +3,7 @@ import {
   LabelledTable,
   NavigationStyle,
   RowActivation,
-} from "./08-Accessibility.examples";
+} from "./09-Accessibility.examples";
 
 # Accessibility
 
@@ -211,7 +211,7 @@ export const LabelledTable = () => {
 
 - **Give every column a clear label.** The label is read with each column header, and screen readers repeat it as users move between columns. Avoid abbreviations that only make sense visually.
 - **Don't rely on color alone.** If you color rows or cells to show meaning, such as rising and falling prices, also show it another way: a sign (`+1.5%`), an icon or a text label. This helps users with color vision deficiencies, and it still works in high-contrast modes.
-- **Keep contrast high.** If you override colors with [CSS custom properties](./07-Styling.mdx#css-custom-properties), check that text meets WCAG AA contrast (4.5:1) against both the normal and the selected row backgrounds. Use Salt tokens so dark mode keeps working.
+- **Keep contrast high.** If you override colors with [CSS custom properties](./08-Styling.mdx#css-custom-properties), check that text meets WCAG AA contrast (4.5:1) against both the normal and the selected row backgrounds. Use Salt tokens so dark mode keeps working.
 - **Make custom cells keyboard-friendly.** If a [cell renderer](./03-Formatting.mdx#cell-renderers) contains an interactive control, make sure it can be reached and operated from the keyboard, and give it an accessible name.
 - **Choose the right height.** Very short tables with long data force a lot of scrolling. Use [`viewportRowLimit` or `maxViewportRowLimit`](./06-Layout.mdx#size-by-row-count) to show a sensible number of rows.
 - **Announce changes that aren't caused by the user.** If live data updates, filtering or sorting change the table without user action, consider a short `aria-live` status message, for example "Showing 12 of 30 rows".
@@ -233,5 +233,5 @@ export const LabelledTable = () => {
 
 ## Next steps
 
-- Look up every prop and type in the [API reference](./09-ApiReference.mdx).
+- Look up every prop and type in the [API reference](./10-ApiReference.mdx).
 - Review selection behavior in [Selection](./04-Selection.mdx).
