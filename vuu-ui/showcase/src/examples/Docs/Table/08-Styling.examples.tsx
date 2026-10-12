@@ -17,7 +17,7 @@ import {
   useStockDataSource,
 } from "./sample-data";
 
-import "./07-Styling.css";
+import "./08-Styling.css";
 
 const columns = stockColumns.slice(0, 8);
 
@@ -201,33 +201,6 @@ export const CustomProperties = () => {
       dataSource={dataSource}
       height={250}
       width={800}
-    />
-  );
-};
-
-/**
- * The Table captured by the Anatomy section. Static data and a fixed size, so
- * that each capture is the same. Regenerate the capture with
- * `npm run showcase:anatomy` (see tools/vuu-showcase/scripts/anatomy).
- */
-export const TableAnatomy = () => {
-  const config = useMemo<TableConfig>(
-    () => ({
-      columns: stockColumns.slice(0, 6),
-      rowSeparators: true,
-      zebraStripes: true,
-    }),
-    [],
-  );
-  const dataSource = useStockDataSource();
-
-  return (
-    <Table
-      autoSelectRowKey="NVDA.OQ"
-      config={config}
-      dataSource={dataSource}
-      height={260}
-      width={640}
     />
   );
 };

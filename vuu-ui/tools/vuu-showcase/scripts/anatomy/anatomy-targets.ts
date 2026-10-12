@@ -28,7 +28,7 @@ export interface AnatomyTarget {
 export const anatomyTargets: AnatomyTarget[] = [
   {
     component: "Table",
-    example: "/Docs/Table/Styling/TableAnatomy",
+    example: "/Docs/Table/Anatomy/TableAnatomy",
     rootSelector: ".vuuTable",
     prefer: [".vuuTableRow[aria-selected='true']"],
     nested: [{ selector: ".saltButton", name: "Button", keep: /\.vuu/ }],
