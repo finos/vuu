@@ -26,7 +26,7 @@ export const vuuTheme = EditorView.theme(
       color: "var(--vuu-color-gray-50)",
     },
     ".cm-completionMatchedText": {
-      color: "var(--vuu-color-gray-80)",
+      color: "var(--salt-color-gray-800)",
       fontWeight: 700,
       textDecoration: "none",
     },

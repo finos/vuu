@@ -10,17 +10,17 @@
     --saltButton-minWidth: 40px;
 }
 .vuuTableToggleCell.vuuCycleStateButton-buy {
-    background-color: var(--vuu-color-green-50);
+    background-color: var(--salt-color-green-500);
 }
 
 .vuuTableToggleCell.vuuCycleStateButton-sell {
-    background-color: var(--vuu-color-red-50);
+    background-color: var(--salt-color-red-500);
 
 }
 
 .vuuTableCell .vuuTableToggleCell:focus {
     /* TODO fix use of important */
-    border: solid 2px var(--vuu-color-purple-10) !important;
+    border: solid 2px var(--vuu-color-purple) !important;
     color: white !important;
     height: 18px !important;
     top: 0px !important;
