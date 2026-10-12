@@ -9,6 +9,7 @@ const classBase = "ShowcaseNavFilter";
 
 const chips: { chip: NavFilterChip; icon?: ChromeIconName; label: string }[] = [
   { chip: "live", label: "Live data" },
+  { chip: "fixtures", icon: "flask", label: "Test fixtures" },
   { chip: "favourites", icon: "star", label: "Favourites" },
   { chip: "recent", icon: "clock", label: "Recent" },
 ];

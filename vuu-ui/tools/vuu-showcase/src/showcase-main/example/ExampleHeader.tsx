@@ -1,4 +1,4 @@
-import { Button, ToggleButton } from "@salt-ds/core";
+import { Button, Link, ToggleButton } from "@salt-ds/core";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { Fragment, useCallback, useMemo, useState } from "react";
@@ -12,6 +12,7 @@ import {
   getAdjacentExamples,
   getBreadcrumbs,
   getSourceLinks,
+  getTestFileLinks,
   routeOf,
 } from "./example-model";
 import { writePreviewParams } from "./preview-state";
@@ -23,6 +24,42 @@ export interface ExampleHeaderProps {
   treeNode: TreeSourceNode<NavNodeData>;
   treeSource: TreeSourceNode<NavNodeData>[];
 }
+
+const fileName = (file: string) => file.split("/").pop() ?? file;
+
+const FixtureNotice = ({ testFiles }: { testFiles: string[] }) => (
+  <div className={`${classBase}-fixtures`}>
+    <ChromeIcon name="flask" size={14} />
+    <div>
+      <p className={`${classBase}-fixturesText`}>
+        This example is a fixture for{" "}
+        {testFiles.length === 1
+          ? "a Playwright test"
+          : `${testFiles.length} Playwright test files`}
+        . Changes to it may break these tests.
+      </p>
+      <ul className={`${classBase}-fixturesList`}>
+        {testFiles.map((file) => {
+          const { github, vscode } = getTestFileLinks(
+            file,
+            SHOWCASE_SOURCE_ROOT,
+          );
+          return (
+            <li key={file}>
+              <Link
+                href={vscode ?? github}
+                target={vscode ? undefined : "_blank"}
+                title={file}
+              >
+                {fileName(file)}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </div>
+);
 
 const useCopyLink = () => {
   const [searchParams] = useSearchParams();
@@ -84,9 +121,20 @@ export const ExampleHeader = ({ treeNode, treeSource }: ExampleHeaderProps) => {
               Live data
             </span>
           ) : null}
+          {nodeData.fixtureFor?.length ? (
+            <span
+              className={cx(`${classBase}-pill`, `${classBase}-pill-fixture`)}
+            >
+              <ChromeIcon name="flask" size={12} />
+              Test fixture
+            </span>
+          ) : null}
         </div>
         {nodeData.description ? (
           <p className={`${classBase}-description`}>{nodeData.description}</p>
+        ) : null}
+        {nodeData.fixtureFor?.length ? (
+          <FixtureNotice testFiles={nodeData.fixtureFor} />
         ) : null}
       </div>
       <div className={`${classBase}-actions`}>

@@ -74,6 +74,43 @@
   color: var(--sc-ok);
 }
 
+.ShowcaseExampleHeader-pill-fixture {
+  background: var(--sc-accent-soft);
+  color: var(--sc-accent-text);
+}
+
+.ShowcaseExampleHeader-fixtures {
+  align-items: flex-start;
+  background: var(--sc-surface-2);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  color: var(--sc-text-2);
+  display: flex;
+  font: 400 13px/1.5 var(--sc-font);
+  gap: 8px;
+  max-width: 80ch;
+  padding: 8px 12px;
+
+  > .ShowcaseChromeIcon {
+    color: var(--sc-accent-text);
+    flex: 0 0 auto;
+    margin-top: 3px;
+  }
+}
+
+.ShowcaseExampleHeader-fixturesText {
+  margin: 0;
+}
+
+.ShowcaseExampleHeader-fixturesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+}
+
 .ShowcaseExampleHeader-description {
   color: var(--sc-text-2);
   font: 400 14px/1.55 var(--sc-font);

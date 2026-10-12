@@ -12,6 +12,8 @@ export type NavNodeData = {
   componentName?: string;
   count?: number;
   description?: string;
+  /** examples only, Playwright test files (relative to vuu-ui) using it */
+  fixtureFor?: string[];
   /** a presentational grouping node, has no route */
   heading?: boolean;
   /** documents only, date (yyyy-mm-dd) of the last commit */
