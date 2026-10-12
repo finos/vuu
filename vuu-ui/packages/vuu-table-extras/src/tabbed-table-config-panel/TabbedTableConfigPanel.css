@@ -4,14 +4,14 @@
 
     inset: 0;
     position: absolute;
-    .saltTabsNext {
+    .saltTabs {
         height: 100%;
-        .saltTabListNext {
+        .saltTabList {
             border-bottom: solid var(--salt-separable-secondary-borderColor) 1px;
             height: var(--tabs-height);
         }
 
-        .saltTabNextPanel {
+        .saltTabPanel {
             height: calc(100% - var(--tabs-height));
         }
     }

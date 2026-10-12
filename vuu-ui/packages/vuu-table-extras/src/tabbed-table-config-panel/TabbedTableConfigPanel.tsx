@@ -1,10 +1,12 @@
 import {
-  TabListNext,
-  TabNext,
-  TabNextPanel,
-  TabNextTrigger,
-  TabsNext,
-} from "@salt-ds/lab";
+  Button,
+  TabBar,
+  TabList,
+  Tab,
+  TabPanel,
+  TabTrigger,
+  Tabs,
+} from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
@@ -20,7 +22,6 @@ import {
   TableSettingsPanelProps,
 } from "../table-settings-panel/TableSettingsPanel";
 
-import { Button } from "@salt-ds/core";
 import css from "./TabbedTableConfigPanel.css";
 
 const TabLabels = {
@@ -90,25 +91,27 @@ export const TabbedTableConfigPanel = ({
 
   return (
     <div {...htmlAttributes} className={cx(classBase, className)}>
-      <TabsNext onChange={handleChange} value={value}>
-        <TabListNext appearance="transparent">
-          <TabNext value="table-settings">
-            <TabNextTrigger>Table settings</TabNextTrigger>
-          </TabNext>
-          <TabNext value="table-columns">
-            <TabNextTrigger>Table columns</TabNextTrigger>
-          </TabNext>
-          <TabNext disabled={columns.length === 0} value="column-settings">
-            <TabNextTrigger>Column settings</TabNextTrigger>
-          </TabNext>
-        </TabListNext>
-        <TabNextPanel value="table-settings">
+      <Tabs onChange={handleChange} value={value}>
+        <TabBar>
+          <TabList appearance="transparent">
+            <Tab value="table-settings">
+              <TabTrigger>Table settings</TabTrigger>
+            </Tab>
+            <Tab value="table-columns">
+              <TabTrigger>Table columns</TabTrigger>
+            </Tab>
+            <Tab disabled={columns.length === 0} value="column-settings">
+              <TabTrigger>Column settings</TabTrigger>
+            </Tab>
+          </TabList>
+        </TabBar>
+        <TabPanel value="table-settings">
           <TableSettingsPanel
             onDisplayAttributeChange={onDisplayAttributeChange}
             tableDisplayAttributes={config}
           />
-        </TabNextPanel>
-        <TabNextPanel value="table-columns">
+        </TabPanel>
+        <TabPanel value="table-columns">
           <>
             <ColumnPicker
               columnModel={columnModel}
@@ -123,8 +126,8 @@ export const TabbedTableConfigPanel = ({
               </div>
             ) : null}
           </>
-        </TabNextPanel>
-        <TabNextPanel value="column-settings">
+        </TabPanel>
+        <TabPanel value="column-settings">
           {columns.length > 0 ? (
             <ColumnSettingsPanel
               column={columns[0]}
@@ -132,8 +135,8 @@ export const TabbedTableConfigPanel = ({
               onClickEditCalculatedColumn={onEditCalculatedColumn}
             />
           ) : null}
-        </TabNextPanel>
-      </TabsNext>
+        </TabPanel>
+      </Tabs>
     </div>
   );
 };

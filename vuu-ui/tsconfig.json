@@ -2,7 +2,6 @@
   "compilerOptions": {
     "noImplicitAny": true,
     "target": "esnext",
-    "downlevelIteration": true,
     "lib": ["dom", "dom.iterable", "esnext", "WebWorker"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -12,7 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "jsx": "react-jsx",
     "sourceMap": true

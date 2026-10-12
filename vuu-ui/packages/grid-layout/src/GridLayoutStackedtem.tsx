@@ -12,11 +12,11 @@ import {
 
 import {
   TabBar,
-  TabListNext,
-  TabNext,
-  TabNextTrigger,
-  TabsNext,
-} from "@salt-ds/lab";
+  TabList,
+  Tab,
+  TabTrigger,
+  Tabs,
+} from "@salt-ds/core";
 import { GridLayoutItemProps } from "./GridLayoutItem";
 import { useGridChildProps } from "./useGridChildProps";
 import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
@@ -152,18 +152,18 @@ export const GridLayoutStackedItem = ({
         key={id}
         style={style}
       >
-        <TabsNext
+        <Tabs
           onChange={handleTabSelectionChange}
-          value={tabState.tabs[tabState.active]?.label ?? null}
+          value={tabState.tabs[tabState.active]?.label ?? ""}
         >
           <TabBar divider>
-            <TabListNext
+            <TabList
               appearance="transparent"
               className="vuuDragContainer"
               id={tabsId}
             >
               {tabState.tabs.map(({ id: gridLayoutItemId, label }, index) => (
-                <TabNext
+                <Tab
                   className="vuuDraggableItem"
                   data-index={index}
                   data-grid-layout-item-id={gridLayoutItemId}
@@ -172,13 +172,13 @@ export const GridLayoutStackedItem = ({
                   value={label}
                   key={label}
                 >
-                  <TabNextTrigger>{label}</TabNextTrigger>
+                  <TabTrigger>{label}</TabTrigger>
                   {showMenu ? (
                     <TabMenu layoutItemId={gridLayoutItemId} />
                   ) : null}
-                </TabNext>
+                </Tab>
               ))}
-            </TabListNext>
+            </TabList>
             <IconButton
               aria-label="Create Tab"
               className={`${classBaseItem}-addTabButton`}
@@ -191,7 +191,7 @@ export const GridLayoutStackedItem = ({
               tabIndex={-1}
             />
           </TabBar>
-        </TabsNext>
+        </Tabs>
       </div>
       <AddTabDialog
         open={confirmationOpen}
