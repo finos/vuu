@@ -145,18 +145,6 @@ export const HomePage = ({ onSearch, treeSource }: HomePageProps) => {
         </dl>
       </section>
 
-      {recentPages.length > 0 ? (
-        <section
-          aria-labelledby={`${classBase}-recent`}
-          className={`${classBase}-section`}
-        >
-          <h2 className={`${classBase}-heading`} id={`${classBase}-recent`}>
-            Recently viewed
-          </h2>
-          <PageList icon="clock" pages={recentPages} />
-        </section>
-      ) : null}
-
       {addedPages.length > 0 ? (
         <section
           aria-labelledby={`${classBase}-added`}
@@ -166,6 +154,18 @@ export const HomePage = ({ onSearch, treeSource }: HomePageProps) => {
             What&apos;s new
           </h2>
           <PageList icon="star" pages={addedPages} />
+        </section>
+      ) : null}
+
+      {recentPages.length > 0 ? (
+        <section
+          aria-labelledby={`${classBase}-recent`}
+          className={`${classBase}-section`}
+        >
+          <h2 className={`${classBase}-heading`} id={`${classBase}-recent`}>
+            Recently viewed
+          </h2>
+          <PageList icon="clock" pages={recentPages} />
         </section>
       ) : null}
     </div>
