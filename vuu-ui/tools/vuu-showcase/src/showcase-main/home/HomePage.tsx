@@ -97,10 +97,14 @@ export const HomePage = ({ onSearch, treeSource }: HomePageProps) => {
     <div className={classBase}>
       <section className={`${classBase}-hero`}>
         <h1 className={`${classBase}-title`}>Vuu Showcase</h1>
-        <p className={`${classBase}-pitch`}>
-          Develop and test Vuu components in isolation. Every example renders
-          standalone and doubles as a fixture for Playwright component tests.
-        </p>
+        <div className={`${classBase}-pitch`}>
+          <p>
+            Develop and test Vuu components in isolation. Every example renders
+            standalone. Examples can be used as fixtures for Playwright
+            component tests.
+          </p>
+          <p>Patterns illustrate component usage in varied scenarios.</p>
+        </div>
         <Button
           appearance="bordered"
           className={`${classBase}-search`}
