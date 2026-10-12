@@ -1,5 +1,7 @@
-.salt-theme.vuu-theme,
 .salt-theme.vuu-theme {
+  --salt-typography-fontFamily-openSans: "Open Sans";
+  --salt-typography-fontFamily-amplitude: "Amplitude";
+  --salt-typography-fontFamily-ptMono: "PT Mono";
   --salt-typography-fontFamily-nunito: "Nunito Sans";
 
   --salt-typography-fontWeight-light: 300;
@@ -11,5 +13,7 @@
 
   --salt-typography-textDecoration-none: none;
   --salt-typography-textDecoration-underline: underline;
-  --salt-typography-textDecoration-italic: italic;
+
+  --salt-typography-fontStyle-normal: normal;
+  --salt-typography-fontStyle-italic: italic;
 }
