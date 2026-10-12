@@ -6,7 +6,6 @@ import {
   COMPONENTS_LABEL,
   countExamples,
   createNavIndex,
-  GETTING_STARTED_LABEL,
   type NavNodeData,
   sectionFromPath,
   getNavFrom,
@@ -57,16 +56,10 @@ describe("nav-tree", () => {
   ];
 
   describe("buildSectionTree", () => {
-    it("groups examples under Getting started and Components headings", () => {
+    it("groups example folders under Components, omitting top level pages", () => {
       const tree = buildSectionTree("examples", source);
-      expect(tree.map(({ label }) => label)).toEqual([
-        GETTING_STARTED_LABEL,
-        COMPONENTS_LABEL,
-      ]);
-      const [gettingStarted, components] = tree;
-      expect(gettingStarted.childNodes?.map(({ id }) => id)).toEqual([
-        "Layout",
-      ]);
+      expect(tree.map(({ label }) => label)).toEqual([COMPONENTS_LABEL]);
+      const [components] = tree;
       // folders sorted by label
       expect(components.childNodes?.map(({ id }) => id)).toEqual([
         "Basket",
@@ -128,9 +121,7 @@ describe("nav-tree", () => {
       expect(navIndex.keyForPath("/Table/Misc/DefaultTable")).toEqual(
         "$root|Components|Table|Misc|DefaultTable",
       );
-      expect(navIndex.keyForPath("/Layout")).toEqual(
-        "$root|Getting started|Layout",
-      );
+      expect(navIndex.keyForPath("/Layout")).toBeUndefined();
     });
     it("uses keySegment in keys and ignores a trailing slash", () => {
       expect(navIndex.keyForPath("/Basket/Ticket/")).toEqual(
