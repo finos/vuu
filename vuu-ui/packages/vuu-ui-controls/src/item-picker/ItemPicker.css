@@ -37,7 +37,7 @@
     }
 
     .vuuHighlight {
-      color: var(--vuu-color-blue-40);
+      color: var(--salt-color-blue-400);
       text-decoration: underline;
     }
 

@@ -14,7 +14,7 @@
 
   --saltFormField-width: fit-content;
 
-  border-bottom: solid 1px var(--vuu-color-gray-05);
+  border-bottom: solid 1px var(--salt-color-gray-100);
   flex: 0 0 var(--basket-toolbar-height, 110px);
   margin-bottom: 8px;
   padding: 8px 16px;
@@ -72,10 +72,10 @@
 }
 
 .vuuCycleStateButton-buy {
-  background-color: var(--vuu-color-green-50);
+  background-color: var(--salt-color-green-500);
 }
 .vuuCycleStateButton-sell {
-  background-color: var(--vuu-color-red-50);
+  background-color: var(--salt-color-red-500);
 }
 
 .vuuBasketToolbar-side,
@@ -115,7 +115,7 @@
   top: -12px;
   width: 1px;
   height: 60px;
-  background-color: var(--vuu-color-gray-05);
+  background-color: var(--salt-color-gray-100);
 }
 
 .vuuBasketToolbar-takeOffMarket,
@@ -172,7 +172,7 @@
 }
 
 .vuuBasketToolbar-status {
-  background-color: var(--vuu-color-green-60);
+  background-color: var(--salt-color-green-600);
   border-radius: 12px;
   color: white;
   padding: 3px 9px;
