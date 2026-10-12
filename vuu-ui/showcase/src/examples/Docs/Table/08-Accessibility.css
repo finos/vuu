@@ -1,0 +1,5 @@
+.docs-table-heading {
+  font-size: var(--salt-text-h3-fontSize);
+  font-weight: var(--salt-text-h3-fontWeight);
+  margin: 0 0 var(--salt-spacing-100);
+}

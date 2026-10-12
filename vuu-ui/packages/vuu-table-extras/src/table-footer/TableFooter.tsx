@@ -12,11 +12,23 @@ export interface TableFooterProps extends HTMLAttributes<HTMLDivElement> {
 
 const classBase = "vuuTableFooter";
 
-export const TableFooterTray = ({ children, position = 'end' }: { children: ReactNode, position?: 'center' | 'end' }) => {
-  return <div className={cx(`${classBase}Tray`, {
-    [`${classBase}Tray-center`]: position === 'center',
-    [`${classBase}Tray-end`]: position === 'end'
-  })}>{children}</div>;
+export const TableFooterTray = ({
+  children,
+  position = "end",
+}: {
+  children: ReactNode;
+  position?: "center" | "end";
+}) => {
+  return (
+    <div
+      className={cx(`${classBase}Tray`, {
+        [`${classBase}Tray-center`]: position === "center",
+        [`${classBase}Tray-end`]: position === "end",
+      })}
+    >
+      {children}
+    </div>
+  );
 };
 
 export const TableFooter = ({

@@ -89,12 +89,39 @@ export declare type Filter = FilterClause | MultiClauseFilter;
  */
 export declare type FilterHandler = (filter: Filter) => void;
 
-export declare type TimeTodayFilterOptions = {
+/**
+ * Common options for extended filters on temporal columns. These allow the
+ * filter to be serialized without reference to the column descriptor.
+ */
+export declare type TemporalFilterOptions = {
+  /**
+   * Encoding of the column values, epochNanos for epochtimestampnano
+   * columns. Default is epochMillis
+   */
+  encoding?: "epochMillis" | "epochNanos";
+  /**
+   * IANA time zone (or 'local' | 'UTC') in which time of day values are
+   * interpreted. Defaults to the application default time zone.
+   */
+  timeZone?: string;
+};
+
+/**
+ * Filter values are TimeStrings (hh:mm:ss), resolved against today's date
+ * at the time the filter query is created. A persisted filter therefore
+ * always applies to 'today'.
+ */
+export declare type TimeTodayFilterOptions = TemporalFilterOptions & {
   date: "today";
   type: "TimeString";
 };
-export declare type TimeDateFilterOptions = {
-  date: Date;
+/**
+ * Filter values are TimeStrings (hh:mm:ss), resolved against the given date
+ * Note: date was previously typed as a Date object, it is now an ISO date
+ * string (yyyy-mm-dd) so the options can be safely persisted as JSON.
+ */
+export declare type TimeDateFilterOptions = TemporalFilterOptions & {
+  date: "yesterday" | `${number}-${number}-${number}`;
   type: "TimeString";
 };
 

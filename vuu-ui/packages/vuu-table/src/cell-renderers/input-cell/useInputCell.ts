@@ -31,6 +31,19 @@ export interface InputCellHookProps<
   value?: T;
   onEdit?: TableCellEditHandler;
   type?: VuuColumnDataType | DataValueTypeSimple;
+  /**
+   * Convert the value to the string presented for editing. Default is toString.
+   */
+  formatValue?: (value?: T) => string;
+  /**
+   * Convert the edited string back to a typed value. Default uses getTypedValue
+   * with type. Should throw a DataValidationError if throwIfInvalid and value is
+   * not valid.
+   */
+  parseValue?: (
+    value: string,
+    throwIfInvalid: boolean,
+  ) => VuuRowDataItemType | undefined;
 }
 
 type EditState = {
@@ -48,16 +61,27 @@ export const useInputCell = <T extends string | number | boolean = string>({
   value,
   onEdit,
   type = "string",
+  formatValue = stringValueOf,
+  parseValue: parseValueProp,
 }: InputCellHookProps<T>) => {
+  const parseValue = useCallback(
+    (value: string, throwIfInvalid: boolean) =>
+      parseValueProp
+        ? parseValueProp(value, throwIfInvalid)
+        : throwIfInvalid
+          ? getTypedValue(value, type, true)
+          : getTypedValue(value, type),
+    [parseValueProp, type],
+  );
   const [editState, setEditState] = useState<EditState>({
     editing: false,
-    value: stringValueOf(value),
+    value: formatValue(value),
   });
-  const initialValueRef = useRef<string>(value?.toString() ?? "");
+  const initialValueRef = useRef<string>(formatValue(value));
   const isDirtyRef = useRef(false);
 
   useEffect(() => {
-    const nextValue = stringValueOf(value);
+    const nextValue = formatValue(value);
     if (initialValueRef.current !== nextValue) {
       initialValueRef.current = nextValue;
       isDirtyRef.current = false;
@@ -67,7 +91,7 @@ export const useInputCell = <T extends string | number | boolean = string>({
         value: nextValue,
       }));
     }
-  }, [value]);
+  }, [formatValue, value]);
 
   const commit = useCallback(async () => {
     const { value } = editState;
@@ -81,9 +105,9 @@ export const useInputCell = <T extends string | number | boolean = string>({
     } else {
       //save initial value,it could be reset by time async operation completes
       const { current: initialValue } = initialValueRef;
-      const previousValue = getTypedValue(initialValue, type);
+      const previousValue = parseValue(initialValue, false);
       try {
-        const typedValue = getTypedValue(value, type, true);
+        const typedValue = parseValue(value, true) as VuuRowDataItemType;
         const response = await onEdit?.(
           {
             editType: "commit",
@@ -143,7 +167,7 @@ export const useInputCell = <T extends string | number | boolean = string>({
       }
     }
     return false;
-  }, [column, editState, onEdit, type]);
+  }, [column, editState, onEdit, parseValue]);
 
   /**
    * Depending on the current state (editing or not, dirty or not) activation will either be
@@ -167,7 +191,10 @@ export const useInputCell = <T extends string | number | boolean = string>({
                 editType: "cancel",
                 isValid: true,
                 previousValue,
-                value: getTypedValue(initialValueRef.current, type, true),
+                value: parseValue(
+                  initialValueRef.current,
+                  true,
+                ) as VuuRowDataItemType,
               },
               "commit",
             );
@@ -186,7 +213,7 @@ export const useInputCell = <T extends string | number | boolean = string>({
         input.select();
       }
     },
-    [commit, editState, onEdit, type],
+    [commit, editState, onEdit, parseValue],
   );
 
   const handleKeyDown = useCallback(

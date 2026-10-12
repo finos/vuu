@@ -33,14 +33,25 @@ body {
 
 .ShowcaseContentToolbar {
   --saltToolbar-background: transparent;
+  --vuuToolbarProxy-height: 40px;
   border-bottom: solid 1px var(--salt-container-primary-borderColor);
   flex: 0 0 auto;
 }
 
 .ShowcaseContent {
   background-color: var(--salt-container-primary-background);
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   height: 100%;
   overflow: hidden;
+  position: relative;
+}
+
+.ShowcaseContent-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
 }
 
 .ShowCaseIFrame-container {

@@ -50,8 +50,8 @@ export const walkTree = (tree, source) => {
         console.log(
           `Node ${name} [${from}:${to}] '${source.substring(
             cursor.from,
-            cursor.to
-          )}'`
+            cursor.to,
+          )}'`,
         );
     }
   } while (cursor.next());

@@ -828,6 +828,63 @@ test.describe("Edit conflicts", () => {
       await expect(cancelButton).toBeEnabled();
     });
 
+    test("cancelling an uncommitted edit does not mark the cell as edited", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Table/Editing/EditableInstruments");
+      const table = new TableOM(page.getByTestId("table-1"));
+      await page.getByRole("radio", { name: "Edit" }).click();
+
+      const saveButton = page.getByRole("button", { name: "Save" });
+      await expect(saveButton).toBeDisabled();
+
+      const cell = table.locateCell(3, 6);
+      const originalValue = await cell.getByRole("textbox").inputValue();
+      await cell.dblclick();
+      await table.assertCellIsFocused(cell, "textbox");
+      await cell.pressSequentially("123");
+      await cell.press("Escape");
+
+      await table.assertCellIsEditing(cell, NOT_EDITING);
+      await table.assertCellValue(cell, originalValue, "textbox");
+      await expect(cell.locator(".saltInput")).not.toContainClass(
+        "vuuTableInputCell-edited",
+      );
+      await expect(saveButton).toBeDisabled();
+    });
+
+    test("cancelling a rejected edit restores a previously committed edit", async ({
+      mount,
+      page,
+    }) => {
+      await mount("Table/Editing/EditableInstruments");
+      const table = new TableOM(page.getByTestId("table-1"));
+      await page.getByRole("radio", { name: "Edit" }).click();
+
+      const saveButton = page.getByRole("button", { name: "Save" });
+      const cell = table.locateCell(3, 6);
+      const input = cell.locator(".saltInput");
+
+      await cell.dblclick();
+      await cell.pressSequentially("123");
+      await cell.press("Enter");
+      await expect(input).toContainClass("vuuTableInputCell-edited");
+      await expect(saveButton).toBeEnabled();
+
+      await cell.dblclick();
+      await cell.pressSequentially("abc");
+      await cell.press("Enter");
+      await expect(input).toContainClass("vuuTableInputCell-error");
+      await expect(saveButton).toBeDisabled();
+
+      await cell.press("Escape");
+      await expect(input).not.toContainClass("vuuTableInputCell-error");
+      await expect(input).toContainClass("vuuTableInputCell-edited");
+      await table.assertCellValue(cell, "123", "textbox");
+      await expect(saveButton).toBeEnabled();
+    });
+
     test("Save disabled whilst rejected edits", async ({ mount, page }) => {
       await mount("Table/Editing/EditableInstruments");
       const table = new TableOM(page.getByTestId("table-1"));

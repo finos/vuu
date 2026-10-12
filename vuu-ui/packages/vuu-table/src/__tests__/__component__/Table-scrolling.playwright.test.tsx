@@ -247,18 +247,18 @@ test.describe("Table scrolling and keyboard navigation", () => {
         });
         test.describe("WHEN table is scrolled exactly one viewport width", () => {
           test("THEN next set of columns are rendered", async ({
-            browserName,
             mount,
             page,
           }) => {
-            // The scroll wheel doesn't seem to work in firefox
-            test.skip(browserName === "firefox");
-
             await mount("Table/TEST/TwoHundredColumns");
             const table = new TableOM(page.getByRole("table"));
             const cell = table.locateCell(2, 1);
             await cell.click();
-            await page.mouse.wheel(900, 0);
+            // Set the scroll position directly. WebKit animates a mouse wheel
+            // scroll and columns rendered depend on the intermediate positions.
+            await page
+              .locator(".vuuTable-contentContainer")
+              .evaluate((el) => (el.scrollLeft = 900));
 
             await table.assertRenderedColumns({
               rendered: { from: 6, to: 14 },

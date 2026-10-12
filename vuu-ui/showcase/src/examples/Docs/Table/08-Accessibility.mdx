@@ -1,0 +1,237 @@
+import { LivePreview } from "../components/LivePreview";
+import {
+  LabelledTable,
+  NavigationStyle,
+  RowActivation,
+} from "./08-Accessibility.examples";
+
+# Accessibility
+
+The Table is built from `div` elements with ARIA roles, not from a native HTML `<table>`. This lets it virtualize rows and columns while still exposing a table structure to assistive technology. It is fully operable from the keyboard: users can move through headers and cells, sort, select rows, expand groups and open column menus without a mouse.
+
+## ARIA structure
+
+| Element                   | Role           | Attributes                                                                                                                   |
+| ------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Table body                | `table`        | `aria-rowcount`: the number of data rows.                                                                                     |
+| Header area               | `rowgroup`     |                                                                                                                              |
+| Header row                | `row`          | `aria-rowindex`, starting at 1. With [grouped column headings](./02-Columns.mdx), each heading level is a row of its own.   |
+| Column header             | `columnheader` | `aria-colindex`, and `aria-label` set to "_Label_ column header".                                                            |
+| Data row                  | `row`          | `aria-rowindex`, continuing after the header rows. `aria-selected="true"` when the row is selected.                           |
+| Group row                 | `row`          | `aria-expanded` and `aria-level` (1 for the top level), in addition to the data row attributes.                              |
+| Data cell                 | `cell`         | `aria-colindex`, starting at 1.                                                                                               |
+| Column menu button        | `button`       | `aria-haspopup="menu"`.                                                                                                       |
+
+Because of virtualization, only the rows and columns in or near the viewport are in the DOM. `aria-rowindex` and `aria-colindex` give each rendered element its position in the full table, so a screen reader can report "row 512 of 10,000" correctly.
+
+## Focus
+
+The Table is a single tab stop. When users **Tab** into the Table for the first time, focus goes to the first column header. If there are no headers, it goes to the first data cell. From there, users move with the arrow keys. If they **Tab** away and back again, focus returns to the last cell they visited.
+
+The row containing the focused cell is highlighted with the hover background (`--vuuTableRow-background-highlighted`). Focused column headers, and focused cells in a selected row, also get a 2px outline in the Salt focus color (`--salt-focused-outlineColor`). Other data cells get no outline by default. See [Known limitations](#known-limitations) for a one-line CSS fix.
+
+Set `disableFocus` to remove the Table from the tab order entirely. This is only appropriate when the Table is purely decorative or another control drives it, for example a list of results that the user navigates from a search box.
+
+## Navigation style
+
+The `navigationStyle` prop controls what the arrow keys move between:
+
+| Value              | Behavior                                                                                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `"cell"` (default) | Focus moves from cell to cell in all four directions, including into the column headers. The row containing the focused cell is highlighted.                        |
+| `"row"`            | The arrow keys move a row highlight up and down. Focus stays on the table, not on individual cells. Hovering the mouse over a row also highlights it.               |
+| `"tree"`           | Like `"cell"`, but **ArrowRight** and **ArrowLeft** expand and collapse group rows without needing **Shift**. Use it for tables that show only grouped data.        |
+| `"none"`           | The arrow keys do nothing. Mouse interaction still works.                                                                                                           |
+
+In the example below, choose a navigation style, click the first column header (or **Tab** into the table) and use the arrow keys. Press **Enter** or **Space** to select the highlighted row.
+
+### Best practices
+
+- Use `"cell"` for data that users read or copy cell by cell, and for tables with interactive cells, such as editable cells or cells with buttons.
+- Use `"row"` when each row represents one item that users act on as a whole, such as a list of orders they open. It is less verbose for screen reader users because they don't hear every cell.
+- Use `"none"` only when the Table is not interactive and is not the only way to reach its data.
+
+<LivePreview stacked>
+  <NavigationStyle />
+
+```tsx
+export const NavigationStyle = () => {
+  const [navigationStyle, setNavigationStyle] =
+    useState<TableNavigationStyle>("cell");
+  const config = useMemo<TableConfig>(
+    () => ({ columns, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  const handleChange: ToggleButtonGroupProps["onChange"] = (e) =>
+    setNavigationStyle(e.currentTarget.value as TableNavigationStyle);
+
+  return (
+    <>
+      <ToggleButtonGroup onChange={handleChange} value={navigationStyle}>
+        <ToggleButton value="cell">Cell</ToggleButton>
+        <ToggleButton value="row">Row</ToggleButton>
+        <ToggleButton value="none">None</ToggleButton>
+      </ToggleButtonGroup>
+      <Table
+        config={config}
+        dataSource={dataSource}
+        height={300}
+        navigationStyle={navigationStyle}
+        selectionModel="single"
+        width={700}
+      />
+    </>
+  );
+};
+```
+
+</LivePreview>
+
+## Keyboard interactions
+
+### Moving around
+
+| Key                        | Cell navigation                                                                 | Row navigation                         |
+| -------------------------- | ------------------------------------------------------------------------------- | -------------------------------------- |
+| **ArrowDown**              | Moves focus to the cell below. From a column header, moves to the first row.    | Highlights the next row.               |
+| **ArrowUp**                | Moves focus to the cell above. From the first row, moves to the column header.  | Highlights the previous row.           |
+| **ArrowRight**             | Moves focus to the next cell in the row.                                        | No effect.                             |
+| **ArrowLeft**              | Moves focus to the previous cell in the row.                                    | No effect.                             |
+| **PageDown**               | Scrolls down one page and moves focus down by the number of visible rows.       | Same, moving the highlight.            |
+| **PageUp**                 | Scrolls up one page and moves focus up by the number of visible rows.           | Same, moving the highlight.            |
+| **Home**                   | Scrolls to the top and moves focus to the first row, in the same column.        | Highlights the first row.              |
+| **End**                    | Scrolls to the bottom and moves focus to the last row, in the same column.      | Highlights the last row.               |
+| **Tab** / **Shift+Tab**    | Moves focus out of the Table, to the next or previous focusable element.        | Same.                                  |
+
+The Table scrolls automatically to keep the focused cell or highlighted row in view.
+
+### Selecting
+
+| Key                       | Action                                                                                                                         |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Enter** or **Space**    | Selects the highlighted row, exactly as a click would. Depending on the [selection model](./04-Selection.mdx), pressing it again on a selected row deselects it. It also calls `onRowClick`. |
+| **Shift+Arrow keys**      | With `allowCellBlockSelection`, extends a block of selected cells from the focused cell. See [Cell block selection](./04-Selection.mdx#cell-block-selection). |
+| **Cmd+C**                 | With a cell block selected, copies it to the clipboard as tab-separated text.                                                  |
+
+### Column headers
+
+| Key                    | Action                                                                                                                 |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **Enter**              | Sorts by the column. Press again to reverse the sort. See [Sorting](./05-SortingAndGrouping.mdx#sorting-by-column-header).    |
+| **Shift+ArrowRight**   | Moves focus to the column menu button, if the column has one. Press **Enter** to open the menu and **Escape** to close it. |
+| **Space**              | Picks up the column (unless `allowDragColumnHeader` is `false`). **ArrowLeft** and **ArrowRight** move it, **Space** or **Enter** drops it, and **Escape** cancels. |
+
+### Groups
+
+| Key                                  | Action                                                                                                       |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| **Shift+ArrowRight**                 | On a collapsed group cell, expands the group.                                                                |
+| **Shift+ArrowLeft**                  | On an expanded group cell, collapses the group. On a collapsed group, moves focus to the parent group.       |
+| **ArrowRight** / **ArrowLeft**       | With `navigationStyle="tree"`, the same as above without **Shift**.                                          |
+| **Shift+ArrowRight** (group header)  | Moves focus through the column pills in the group header, then to the button that removes all grouping.      |
+
+## Row activation
+
+`onRowClick` is called when the user clicks a row, and also when they press **Enter** or **Space** on the highlighted row. Use it for actions such as opening a detail view, and you get keyboard support for free. Its second argument is the `DataRow`, so you can read column values directly from it.
+
+In this example, `navigationStyle="row"` and `selectionModel="none"` make each row behave like a single, activatable item. Click a row, then use the arrow keys and **Enter** to open others.
+
+### Best practices
+
+- Don't attach actions to `onClick` handlers inside cell renderers when `onRowClick` will do. Handlers inside cells are not reachable from the keyboard unless the renderer also handles keys.
+- If a row action is destructive or hard to undo, ask for confirmation. Users press **Enter** and **Space** often while navigating.
+
+<LivePreview stacked>
+  <RowActivation />
+
+```tsx
+export const RowActivation = () => {
+  const [opened, setOpened] = useState("none");
+  const config = useMemo<TableConfig>(
+    () => ({ columns, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  const handleRowClick: TableProps["onRowClick"] = (_evt, row) =>
+    setOpened(String(row.name));
+
+  return (
+    <>
+      <Text>Last opened: {opened}</Text>
+      <Table
+        config={config}
+        dataSource={dataSource}
+        height={300}
+        navigationStyle="row"
+        onRowClick={handleRowClick}
+        selectionModel="none"
+        width={700}
+      />
+    </>
+  );
+};
+```
+
+</LivePreview>
+
+You can also control the highlighted row from outside the Table with `highlightedIndex` and listen for changes with `onHighlight`. The index is an `aria-rowindex`, so the first data row comes after the header rows.
+
+## Labelling the table
+
+Every table needs a name that tells screen reader users what it contains. The Table doesn't take a label prop, and attributes such as `aria-label` passed to it go on its outer container, not on the element with `role="table"`. Instead, put a visible heading directly before the Table and wrap both in a `section` labelled by that heading. Screen readers announce the section's name as users enter it, and users can jump to the heading.
+
+<LivePreview stacked>
+  <LabelledTable />
+
+```tsx
+export const LabelledTable = () => {
+  const config = useMemo<TableConfig>(
+    () => ({ columns, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  return (
+    <section aria-labelledby="docs-watchlist-heading">
+      <h3 className="docs-table-heading" id="docs-watchlist-heading">
+        European watchlist
+      </h3>
+      <Table config={config} dataSource={dataSource} height={250} width={700} />
+    </section>
+  );
+};
+```
+
+</LivePreview>
+
+## Best practices
+
+- **Give every column a clear label.** The label is read with each column header, and screen readers repeat it as users move between columns. Avoid abbreviations that only make sense visually.
+- **Don't rely on color alone.** If you color rows or cells to show meaning, such as rising and falling prices, also show it another way: a sign (`+1.5%`), an icon or a text label. This helps users with color vision deficiencies, and it still works in high-contrast modes.
+- **Keep contrast high.** If you override colors with [CSS custom properties](./07-Styling.mdx#css-custom-properties), check that text meets WCAG AA contrast (4.5:1) against both the normal and the selected row backgrounds. Use Salt tokens so dark mode keeps working.
+- **Make custom cells keyboard-friendly.** If a [cell renderer](./03-Formatting.mdx#cell-renderers) contains an interactive control, make sure it can be reached and operated from the keyboard, and give it an accessible name.
+- **Choose the right height.** Very short tables with long data force a lot of scrolling. Use [`viewportRowLimit` or `maxViewportRowLimit`](./06-Layout.mdx#size-by-row-count) to show a sensible number of rows.
+- **Announce changes that aren't caused by the user.** If live data updates, filtering or sorting change the table without user action, consider a short `aria-live` status message, for example "Showing 12 of 30 rows".
+
+## Known limitations
+
+- A focused data cell has no focus outline unless its row is selected. Only the row highlight shows where focus is, which may not be enough for WCAG 2.4.7 (Focus Visible). Add this rule to your app's CSS to outline the focused cell:
+
+  ```css
+  .vuuTable .vuuTableCell:focus-visible {
+    outline: solid 2px var(--salt-focused-outlineColor);
+    outline-offset: -2px;
+  }
+  ```
+
+- The column menu button has no accessible name. Screen readers announce it only as "menu button".
+- `aria-rowcount` counts the data rows only, not the header rows, so it can be lower than the highest `aria-rowindex`.
+- When focus enters the Table on a column header with `navigationStyle="row"`, **Enter** and **Space** act on the header rather than on the highlighted row. Click a row, or use cell navigation, to select with the keyboard.
+
+## Next steps
+
+- Look up every prop and type in the [API reference](./09-ApiReference.mdx).
+- Review selection behavior in [Selection](./04-Selection.mdx).

@@ -1,10 +1,15 @@
 import fs from "fs";
 import path from "path";
-import { type TreeSourceNode } from "@vuu-ui/vuu-utils";
+import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 
 export const dropLastPathSegment = (path: string, separator = "/") => {
   return path.slice(0, path.lastIndexOf(separator));
 };
+
+// A numeric prefix e.g "01-" can be used to control ordering. It is not
+// displayed and is not part of the route (as with Docusaurus). Tree keys are
+// derived from labels, so ids must use the same, unprefixed, names.
+const toLabel = (name: string) => name.replace(/^\d+-/, "");
 
 const getDocumentPath = (
   dirFiles: Set<string>,
@@ -28,13 +33,12 @@ export type NodeData = {
 
 export const treeSourceFromFileSystem = (
   exhibitsPath: string,
-  env: "development" | "production" = "development",
   route = "",
   icon = "folder",
   tags = new Set<string>(),
 ): [TreeSourceNode<NodeData>[], string[], string | undefined] => {
   const treeSourceNodes: TreeSourceNode<NodeData>[] = [];
-  let documentPath: string | undefined = undefined;
+  let documentPath: string | undefined;
   const dirFiles = new Set<string>();
 
   // First store all directory file name in a set so we can check membership of related files
@@ -49,15 +53,15 @@ export const treeSourceFromFileSystem = (
     if (fs.lstatSync(filePath).isDirectory()) {
       const [childNodes, , documentPath] = treeSourceFromFileSystem(
         filePath,
-        env,
-        `${route}${fileName}/`,
+        `${route}${toLabel(fileName)}/`,
         "box",
         tags,
       );
       const treeSourceNode: TreeSourceNode<NodeData> = {
-        id: `${route}${fileName}`,
-        icon,
-        label: fileName,
+        id: `${route}${toLabel(fileName)}`,
+        // a folder with an Index.mdx displays that document
+        icon: documentPath ? "document" : icon,
+        label: toLabel(fileName),
         childNodes,
       };
       if (documentPath) {
@@ -71,71 +75,62 @@ export const treeSourceFromFileSystem = (
       }
     } else if (fileName.match(/examples.tsx$/)) {
       const name = dropLastPathSegment(dropLastPathSegment(fileName, "."), ".");
-      const id = `${route}${name}`;
+      const id = `${route}${toLabel(name)}`;
 
+      const documentPath = getDocumentPath(dirFiles, fileName);
       const treeSourceNode: TreeSourceNode<NodeData> = {
         id,
-        icon: "box",
-        label: name,
+        // examples with an accompanying mdx document display the document
+        icon: documentPath ? "document" : "box",
+        label: toLabel(name),
         childNodes: treeSourceFromExportedComponents(
           exhibitsPath,
-          env,
-          `${route}${name}/`,
+          `${route}${toLabel(name)}/`,
           fileName,
           tags,
         ),
       };
 
-      const documentPath = getDocumentPath(dirFiles, fileName);
       if (documentPath) {
         treeSourceNode.nodeData = treeSourceFromDocument(
           exhibitsPath,
-          env,
-          `${route}${name}/`,
           documentPath,
         );
       }
 
       treeSourceNodes.push(treeSourceNode);
     } else if (fileName.match(/^[Ii]ndex.mdx$/)) {
-      documentPath = `${exhibitsPath}/${fileName}`;
-    } else if (fileName.match(/mdx$/)) {
-      // ignore
-      // assume for nown the only (non-index_ mdx files we support are ones wirth matching examples file)
-    } else if (fileName.match(/.mdx$/)) {
+      documentPath = treeSourceFromDocument(exhibitsPath, fileName).path;
+    } else if (fileName.match(/\.mdx$/)) {
       const name = dropLastPathSegment(fileName, ".");
-      const id = `${route}${name}`;
-      treeSourceNodes.push({
-        id,
-        icon: "box",
-        label: name,
-        nodeData: {
-          name,
-          path: `${exhibitsPath}/${fileName}`,
-        },
-      });
+      // mdx files with a matching examples file are rendered as the document
+      // for that examples node (see above), standalone mdx files are leaf nodes
+      if (!dirFiles.has(`${name}.examples.tsx`)) {
+        treeSourceNodes.push({
+          id: `${route}${toLabel(name)}`,
+          icon: "document",
+          label: toLabel(name),
+          nodeData: {
+            name,
+            ...treeSourceFromDocument(exhibitsPath, fileName),
+          },
+        });
+      }
     }
   });
   return [treeSourceNodes, Array.from(tags), documentPath];
 };
 
+// The .mdx extension identifies the node as a document.
 const treeSourceFromDocument = (
   exhibitsPath: string,
-  env: "development" | "production",
-  route: string,
   fileName: string,
-): NodeData => {
-  const resolvedFileName =
-    env === "production" ? fileName.replace(/.mdx/, ".js") : fileName;
-
-  return {
-    path: `${exhibitsPath}/${resolvedFileName}`,
-  };
-};
+): NodeData => ({
+  path: `${exhibitsPath}/${fileName}`,
+});
 
 const treeSourceFromExportedComponents = (
   exhibitsPath: string,
-  env: "development" | "production",
   route: string,
   fileName: string,
   tagsList: Set<string>,
@@ -144,10 +139,7 @@ const treeSourceFromExportedComponents = (
   const text = fs.readFileSync(filePath).toString();
   let match = exportPattern.exec(text);
   const treeSourceNodes: TreeSourceNode<NodeData>[] = [];
-  const exhibitsPrefix = env === "production" ? "showcase/" : "";
-  const resolvedFileName =
-    env === "production" ? fileName.replace(/.tsx/, ".js") : fileName;
-  let tags: string[] | undefined = undefined;
+  let tags: string[] | undefined;
   while (match != null) {
     // console.log({ m1: match[1], m2: match[2], m3: match[3], m4: match[4] });
     if (match[4] !== undefined) {
@@ -160,7 +152,7 @@ const treeSourceFromExportedComponents = (
         label: componentName,
         nodeData: {
           componentName,
-          path: `${exhibitsPrefix}${exhibitsPath}/${resolvedFileName}`,
+          path: `${exhibitsPath}/${fileName}`,
           tags,
         },
       });

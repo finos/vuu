@@ -52,6 +52,51 @@ import { CsvUpload } from "@vuu-ui/vuu-table-extras";
 
 ---
 
+## Headless Hook (`useCsvUpload`)
+
+For custom upload interfaces that do not use the default `<CsvUpload />` dialog, use the headless hook directly:
+
+```tsx
+import { useCsvUpload } from "@vuu-ui/vuu-table-extras";
+
+const {
+  canImport,
+  cancelImport,
+  importData,
+  isImporting,
+  isProcessingFile,
+  onDrop,
+  onTriggerChange,
+  sessionTable,
+  schema,
+  validation,
+  error,
+} = useCsvUpload({
+  dataSource,
+  importMode: "direct",
+  onImported: handleImported,
+  onError: handleError,
+});
+```
+
+### Hook Return Values
+
+| Property | Type | Description |
+|---|---|---|
+| `canImport` | `boolean` | `true` when the CSV passed validation, rows were staged without server errors, and the import can be committed. |
+| `cancelImport` | `() => Promise<void>` | Discards the current staged session and resets upload state. |
+| `importData` | `() => Promise<boolean>` | Commits the staged session (in `"direct"` mode) or triggers `onPreview` (in `"preview"` mode). |
+| `isImporting` | `boolean` | `true` while the import commit is in progress. |
+| `isProcessingFile` | `boolean` | `true` while parsing the CSV and staging rows in the session table. |
+| `onDrop` | `(event, files) => void` | Event handler for file drop zones. |
+| `onTriggerChange` | `(event, files) => void` | Event handler for file input elements. |
+| `sessionTable` | `VuuTable \| undefined` | The active server session table descriptor. |
+| `schema` | `TableSchema \| undefined` | The active validation schema. |
+| `validation` | `CsvValidationResult \| undefined` | Current CSV validation state and parsed rows. |
+| `error` | `CsvUploadErrorResult \| undefined` | Active error details (schema, validation, or import error). |
+
+---
+
 ## Lifecycle & Phases
 
 The component progresses through the following phases. Use the `CsvUploadPhase` type to track state in the consuming component.
@@ -75,7 +120,7 @@ idle
  ▼
 processing          ← onProcessingStarted()
  │
- ├─ parse / schema / validation errors ──► failed   ← onError({ errors })
+ ├─ parse / schema / client validation errors ──► failed   ← onError({ errors })
  │
  ▼
 preview-ready       ← onImportSessionReady(sessionDataSource)
@@ -84,7 +129,7 @@ preview-ready       ← onImportSessionReady(sessionDataSource)
  ▼
 importing           ← onClose()
  │
- ├─ RPC import error ──► failed              ← onError({ errors })
+ ├─ RPC import error ──► failed                           ← onError({ errors })
  │
  ▼
 imported            ← onImported(result)
@@ -122,7 +167,7 @@ type CsvUploadErrorResult = {
 type CsvUploadErrors = {
   schemaError?: CsvUploadError;      // CSV columns don't match table schema
   validationError?: CsvUploadError;  // Parse-level or row-level validation failure
-  importError?: CsvUploadError;      // RPC failure during row insertion
+  importError?: CsvUploadError;      // Network/RPC failure during row insertion or session commit
 };
 
 type CsvUploadError = {
@@ -234,7 +279,17 @@ Row payloads sent to `addRow` differ by validity:
 - **Valid rows** — full column data plus `vuuRowNum` and `vuuMsg: ""`.
 - **Error rows** — only `{ vuuRowNum, vuuMsg }` (no column data); the session table key is set to the string value of `vuuRowNum`.
 
-On `endEditSession(save: true)` the server skips any row where `vuuMsg` is non-empty, so error rows are never committed to the source table.
+### Server-side validation and `vuuMsg` detection
+
+When rows are added to the session table, the Vuu remote server validates rows against backend constraints (such as duplicate key checks or domain rules). If the server flags any row by writing an error into `vuuMsg` (e.g. `"key already exists"`):
+
+1. `useCsvUpload` detects the populated `vuuMsg` from the session table.
+2. The server-reported errors are merged into the client's `validation.errors` list.
+3. The component displays **"Your file contains errors"** alongside the list of affected rows (without raising a spurious RPC failure).
+4. The **Import** button remains **disabled** (`canImport` is `false` because `validation.errors.length > 0`), preventing invalid records from being committed.
+5. The session table remains available so the user can inspect both valid and error rows in preview mode.
+
+On `endEditSession(save: true)`, the server skips any row where `vuuMsg` is non-empty, so error rows are never committed to the source table.
 
 ---
 
@@ -250,7 +305,7 @@ By default the CSV is validated against `dataSource.tableSchema` and the session
 />
 ```
 
-`importSchema` does double duty: its column names become the session datasource columns, and it replaces `dataSource.tableSchema` as the schema the CSV is validated against. That second role is not optional — `processFile` validates the CSV *before* the session begins, and `useCsvUpload` does not subscribe to the session datasource itself (rows are added via `addRow` RPCs directly). When `onImportSessionReady` fires, subscribing to the session datasource is left to the consumer (e.g. `<Table />` or `DataUploadPreview`) to manage viewport rendering. The import schema has to be known up front.
+`importSchema` does double duty: its column names become the session datasource columns, and it replaces `dataSource.tableSchema` as the schema the CSV is validated against. That second role is not optional — `processFile` validates the CSV *before* the session begins. When `onImportSessionReady` fires, the session datasource can also be bound to consumer UI components (e.g. `<Table />` or `DataUploadPreview`) for interactive review. The import schema has to be known up front.
 
 | Props | Behaviour |
 |---|---|

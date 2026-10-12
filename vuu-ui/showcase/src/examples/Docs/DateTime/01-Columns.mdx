@@ -1,0 +1,133 @@
+import { LivePreview } from "../components/LivePreview";
+import {
+  DeprecatedLongTimestamps,
+  ResolvedTemporalInfo,
+  TemporalKinds,
+} from "./01-Columns.examples";
+
+# Columns
+
+The Vuu server provides a data type for each column of each table, which the UI refers to as `serverDataType`. A column holds a temporal value when its `serverDataType` is `epochtimestamp` or `epochtimestampnano`, or (deprecated) when the client gives a numeric column a temporal `type`. The client-side `type` then decides what the user sees: a date and time, a date only, or a time of day.
+
+## How a column is identified
+
+`getTemporalInfo(descriptor)` takes any column or form-field descriptor (`serverDataType` and `type`). It returns `undefined` if the value is not temporal, otherwise a `TemporalInfo`:
+
+```ts
+interface TemporalInfo {
+  kind: "datetime" | "date" | "time"; // what the value means to the user
+  encoding: "epochMillis" | "epochNanos"; // how it is sent on the wire
+  precision: "ms" | "ns"; // finest resolution of the encoding
+  timeZone: TimeZoneSpec; // "local" | "UTC" | an IANA zone id
+}
+```
+
+The rules are:
+
+- **Encoding comes from `serverDataType`, never from `type`.**
+  - `epochtimestamp` gives `epochMillis`.
+  - `epochtimestampnano` gives `epochNanos`.
+  - `long`, `int`, `double` (or no `serverDataType`) give `epochMillis`, but only when `type` is temporal. This is deprecated and kept for backward compatibility only.
+- **Kind comes from `type`.** The type name (a string, or the `name` of a type descriptor) is `"date/time"`, `"date"` or `"time"`. When no temporal type is given, the kind is `"datetime"`.
+- **Opting out.** `type: "number"` on an `epochtimestamp` or `epochtimestampnano` column disables temporal treatment, so the raw epoch value is displayed as a number.
+- **Time zone** comes from `type.formatting.timeZone`, falling back to the application default (see [Time zones](./02-Formatting.mdx#time-zones)).
+
+| `serverDataType`        | `type`                                      | kind         | encoding    |
+| ----------------------- | ------------------------------------------- | ------------ | ----------- |
+| `epochtimestamp`        | none                                        | datetime     | epochMillis |
+| `epochtimestamp`        | `"date"`                                    | date         | epochMillis |
+| `epochtimestamp`        | `"time"`                                    | time         | epochMillis |
+| `epochtimestamp`        | `"number"`                                  | not temporal |             |
+| `epochtimestampnano`    | none, `"date/time"`, `"date"` or `"time"`   | as per type  | epochNanos  |
+| `long` (deprecated)     | `"date/time"`, `"date"` or `"time"`         | as per type  | epochMillis |
+| `long`                  | none                                        | not temporal |             |
+
+These are the results of `getTemporalInfo` for some typical descriptors:
+
+<LivePreview>
+  <ResolvedTemporalInfo />
+
+```ts
+import { getTemporalInfo } from "@vuu-ui/vuu-utils";
+
+getTemporalInfo({ serverDataType: "epochtimestamp", type: "date" });
+// { kind: "date", encoding: "epochMillis", precision: "ms", timeZone: "local" }
+```
+
+</LivePreview>
+
+## Configuring columns
+
+A temporal column is configured with the standard `ColumnDescriptor.type`, either a type name or a type descriptor with `formatting`. The same instant can be shown in several ways:
+
+<LivePreview>
+  <TemporalKinds />
+
+```ts
+const columns: ColumnDescriptor[] = [
+  // date and time, the default for a timestamp
+  { name: "tradeTime", serverDataType: "epochtimestamp" },
+  // date only
+  { name: "tradeDate", serverDataType: "epochtimestamp", type: "date" },
+  // time of day only
+  { name: "tradeTimeOfDay", serverDataType: "epochtimestamp", type: "time" },
+  // opt out, show the raw epoch value
+  { name: "tradeTimeRaw", serverDataType: "epochtimestamp", type: "number" },
+  // nanosecond precision, sent by the server as a string
+  { name: "execTime", serverDataType: "epochtimestampnano" },
+];
+```
+
+</LivePreview>
+
+Formatting options, such as patterns and time zones, are described in [Formatting](./02-Formatting.mdx):
+
+```ts
+{
+  name: "execTime",
+  serverDataType: "epochtimestampnano",
+  type: {
+    name: "time",
+    formatting: {
+      pattern: { time: "hh:mm:ss" },
+      fractionalSecondDigits: 3,
+      timeZone: "America/New_York",
+    },
+  },
+}
+```
+
+## Default column types
+
+- `fromServerDataType` and `getDefaultColumnType` return `"date/time"` for `epochtimestamp` and `epochtimestampnano`.
+- `dataDescriptorTypeToVuuRowDataItemType` returns `"number"` for `epochtimestamp` and `"string"` for `epochtimestampnano`.
+- `isNumericColumn` returns `false` for any temporal column, including a deprecated `long` with a temporal type.
+
+## Migrating from long timestamps
+
+:::warning[Deprecated]
+Using `long` for timestamp values is deprecated and should no longer be used.
+:::
+
+Before `epochtimestamp` existed, the only data type the server could provide for a timestamp was `long`, and the client had to supply a temporal `type` so that the UI knew to treat it as a timestamp. Without the `type`, the value is just a number:
+
+<LivePreview>
+  <DeprecatedLongTimestamps />
+
+```ts
+// deprecated
+{ name: "legacyCreated", serverDataType: "long", type: "date/time" }
+```
+
+</LivePreview>
+
+Instead, the server should provide `epochtimestamp` (or `epochtimestampnano`) as the column's data type. The client then needs no `type`, unless it wants a specific kind or formatting:
+
+```ts
+{ name: "lastUpdate", serverDataType: "epochtimestamp" }
+```
+
+Once the column has a temporal `serverDataType`:
+
+- filters on it are serialized correctly without the client passing `columnsByName` to `setFilter` (see [Filtering](./03-Filtering.mdx#where-serialization-happens));
+- the column is recognised as temporal everywhere the server schema is used, including where no client column configuration is available.

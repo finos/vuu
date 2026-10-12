@@ -1,0 +1,26 @@
+.vuuDocsChangeCell {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.vuuDocsChangeCell-up {
+  color: var(--salt-sentiment-positive-foreground-informative);
+}
+
+.vuuDocsChangeCell-down {
+  color: var(--salt-sentiment-negative-foreground-informative);
+}
+
+.vuuDocsInfoHeader {
+  color: var(--salt-content-secondary-foreground);
+  cursor: help;
+  font-size: 11px;
+  margin-left: 4px;
+}
+
+.vuuDocsSearchInput {
+  width: 240px;
+}

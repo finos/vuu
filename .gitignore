@@ -13,6 +13,10 @@ target/
 .metals/**
 
 .vscode/**
+
+# Self-signed TLS cert/key generated on dev container start (.devcontainer/generate-dev-certs.sh)
+.devcontainer/certs/
+
 node_modules
 yarn-debug.log*
 yarn-error.log*
@@ -46,3 +50,7 @@ vuu-ui/packages/vuu-data-remote/src/inlined-worker.js
 #JFR
 *.jfr
 .profileconfig.json
+
+#Google Antigravity CLI
+agy.md
+.agyignore

@@ -258,7 +258,7 @@ describe("undoRowChange", () => {
 });
 
 describe("endEditSession", () => {
-  it("dispatches endEditSession RPC with { save: true } when saving changes", async () => {
+  it("dispatches endEditSession RPC with { save: true, force: false } when saving changes", async () => {
     const ds = createDataSource();
 
     await ds.endEditSession(true);
@@ -267,7 +267,21 @@ describe("endEditSession", () => {
       expect.objectContaining({
         type: "RPC_REQUEST",
         rpcName: "endEditSession",
-        params: { save: true },
+        params: { save: true, force: false },
+      }),
+    );
+  });
+
+  it("dispatches endEditSession RPC with { save: true, force: true } when force is specified", async () => {
+    const ds = createDataSource();
+
+    await ds.endEditSession(true, true);
+
+    expect(ds.rpcRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "RPC_REQUEST",
+        rpcName: "endEditSession",
+        params: { save: true, force: true },
       }),
     );
   });
@@ -284,6 +298,24 @@ describe("endEditSession", () => {
         params: {},
       }),
     );
+  });
+
+  it("does not dispatch RPC and returns cleanly when discarding an unsubscribed datasource", async () => {
+    const ds = createDataSource();
+    ds.unsubscribe();
+
+    await expect(ds.endEditSession(false)).resolves.toBeUndefined();
+    expect(ds.rpcRequest).not.toHaveBeenCalled();
+  });
+
+  it("throws error when trying to save changes on an unsubscribed datasource", async () => {
+    const ds = createDataSource();
+    ds.unsubscribe();
+
+    await expect(ds.endEditSession(true)).rejects.toThrow(
+      "Cannot save changes: datasource is unsubscribed",
+    );
+    expect(ds.rpcRequest).not.toHaveBeenCalled();
   });
 
   it("throws 'unknown error' for an unrecognised server error", async () => {

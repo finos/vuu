@@ -19,6 +19,8 @@ import {
   RuntimeColumnDescriptor,
 } from "@vuu-ui/vuu-table-types";
 import { ScaledDecimal } from "../ScaledDecimal";
+import { isTimeDataValueWithMilliseconds } from "../column-utils";
+import { getTemporalInfo } from "../date/temporal";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",
@@ -176,7 +178,17 @@ const collectFiltersForColumn = (
 
 // Just until we fully support bool values in filters
 const stringifyBoolean = (value: string | number | boolean) =>
-  typeof value === "boolean" ? "${filter.value}" : value;
+  typeof value === "boolean" ? `${value}` : value;
+
+/**
+ * The full-day range used as default value of a time range filter.
+ */
+export const getDefaultTimeRange = (
+  column: ColumnDescriptor,
+): [string, string] =>
+  isTimeDataValueWithMilliseconds(column)
+    ? ["00:00:00.000", "23:59:59.999"]
+    : ["00:00:00", "23:59:59"];
 
 export const getColumnValueFromFilter = (
   column: ColumnDescriptor,
@@ -188,7 +200,7 @@ export const getColumnValueFromFilter = (
       if (operator.startsWith("between")) {
         if (filter.op === "=") {
           return [`${filter.value}`, ""];
-        } else if (filter.op === "<") {
+        } else if (filter.op === "<" || filter.op === "<=") {
           return ["", `${filter.value}`];
         }
       } else {
@@ -217,8 +229,8 @@ export const getColumnValueFromFilter = (
     }
   }
   if (operator.startsWith("between")) {
-    if (column.type === "time") {
-      return ["00:00:00", "23:59:59"];
+    if (getTemporalInfo(column)?.kind === "time") {
+      return getDefaultTimeRange(column);
     } else {
       return ["", ""];
     }

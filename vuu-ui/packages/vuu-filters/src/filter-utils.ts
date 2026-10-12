@@ -8,6 +8,7 @@ import {
   FilterWithPartialClause,
   MultiClauseFilter,
   NumericFilterClauseOp,
+  SingleValueFilterClause,
 } from "@vuu-ui/vuu-filter-types";
 import {
   extractFilterForColumn,
@@ -19,9 +20,9 @@ import {
   isMultiValueFilter,
   isOrFilter,
   isSingleValueFilter,
-  isTimeDataValue,
+  isTemporal,
+  formatTemporalFilterValue,
   partition,
-  Time,
 } from "@vuu-ui/vuu-utils";
 
 export const AND = "and";
@@ -473,6 +474,14 @@ export const getNumericFilter = (
 
 type FilterClauseList = Array<[string, string]>;
 
+const formatValueForDisplay = (
+  value: SingleValueFilterClause["value"],
+  column: ColumnDescriptor,
+) =>
+  isTemporal(column)
+    ? formatTemporalFilterValue(value, column)
+    : value.toString();
+
 /**
  * Restructure a FilterContainerFilter into a list of [column, value] tuples
  * suitable for display in a text based control.
@@ -488,26 +497,19 @@ export const getFilterClausesForDisplay = (
     const column = columns.find((c) => c.name === filter.column);
     if (column) {
       const { name, label = name } = column;
-      clauses.push([label, filter.value.toString()]);
+      clauses.push([label, formatValueForDisplay(filter.value, column)]);
     } else {
       clauses.push([filter.column, filter.value.toString()]);
     }
   } else if (isBetweenFilter(filter)) {
     const [f1, f2] = filter.filters;
     const column = columns.find((c) => c.name === f1.column);
-    if (
-      isTimeDataValue(column) &&
-      typeof f1.value === "number" &&
-      typeof f2.value === "number"
-    ) {
+    if (column) {
       const { name, label = name } = column;
       clauses.push([
         label,
-        `${Time.millisToTimeString(f1.value)} - ${Time.millisToTimeString(f2.value)}`,
+        `${formatValueForDisplay(f1.value, column)} - ${formatValueForDisplay(f2.value, column)}`,
       ]);
-    } else if (column) {
-      const { name, label = name } = column;
-      clauses.push([label, `${f1.value} - ${f2.value}`]);
     } else {
       clauses.push([f1.column, `${f1.value} - ${f2.value}`]);
     }

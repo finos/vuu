@@ -9,11 +9,12 @@ export interface IKeySet {
 
 export class KeySet implements IKeySet {
   private keys = new Map<number, number>();
+  private freeKeys: number[] = [];
   private nextKeyValue = 0;
   private range: VuuRange;
 
   constructor(range: VuuRange) {
-    this.range = range;
+    this.range = { from: range.from, to: range.to };
     this.init(range);
   }
 
@@ -27,6 +28,7 @@ export class KeySet implements IKeySet {
 
   private init({ from, to }: VuuRange) {
     this.keys.clear();
+    this.freeKeys.length = 0;
     this.nextKeyValue = 0;
 
     for (let rowIndex = from; rowIndex < to; rowIndex++) {
@@ -37,21 +39,19 @@ export class KeySet implements IKeySet {
     return true;
   }
 
-  public reset(range: VuuRange) {
-    const { from, to } = range;
+  /**
+   * Keys assigned to rows that remain within range are never changed, keys
+   * released by rows leaving the range are recycled for rows entering the
+   * range. Keys are never re-sequenced, clients may retain rows (and their
+   * keys) that remain within range, so re-assigning keys to those rows would
+   * risk duplicate keys on the client.
+   * Note: range is copied, callers may mutate the range object they pass.
+   * Returns false, keys are never resequenced.
+   */
+  public reset({ from, to }: VuuRange) {
+    this.range = { from, to };
 
-    const newSize = to - from;
-    const currentSize = this.range.to - this.range.from;
-    this.range = range;
-
-    if (currentSize > newSize) {
-      // We re-initialize the range when the range size reduces, even though this will
-      // potentially re-render all items.
-      return this.init(range);
-    }
-
-    const freeKeys: number[] = [];
-
+    const { freeKeys } = this;
     this.keys.forEach((keyValue, rowIndex) => {
       if (rowIndex < from || rowIndex >= to) {
         freeKeys.push(keyValue);
@@ -59,11 +59,19 @@ export class KeySet implements IKeySet {
       }
     });
 
+    let freeKeyIndex = 0;
     for (let rowIndex = from; rowIndex < to; rowIndex++) {
       if (!this.keys.has(rowIndex)) {
-        const nextKeyValue = this.next(freeKeys);
+        const nextKeyValue =
+          freeKeyIndex < freeKeys.length
+            ? freeKeys[freeKeyIndex++]
+            : this.nextKeyValue++;
         this.keys.set(rowIndex, nextKeyValue);
       }
+    }
+
+    if (freeKeyIndex > 0) {
+      freeKeys.splice(0, freeKeyIndex);
     }
 
     return false;

@@ -9,15 +9,14 @@ import {
 import { SaltProviderNext, Text } from "@salt-ds/core";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  getTargetTreeNode,
-  keyFromPath,
-  loadTheme,
-  pathFromKey,
-} from "../shared-utils";
-import { ContentToolbar } from "./ContentToolbar";
-import { IFrame } from "./iframe";
+import { getTargetTreeNode, loadTheme } from "../shared-utils";
+import { ShowcaseContent } from "./ShowcaseContent";
 import { ShowcaseProvider } from "./ShowcaseProvider";
+import {
+  buildNavTree,
+  navKeyFromPath,
+  pathFromNavKey,
+} from "./tree-nav/nav-tree";
 import { TreeNavPanel } from "./tree-nav/TreeNavPanel";
 
 import "./ShowcaseShell.css";
@@ -35,6 +34,7 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
       (treeNode && treeNode.nodeData.tags?.includes("data-consumer")) ?? false
     );
   }, [treeSource]);
+  const navTree = useMemo(() => buildNavTree(treeSource), [treeSource]);
   const [themeReady, setThemeReady] = useState(false);
   const [dataConsumer, setDataConsumer] = useState(initialIsDataConsumer);
 
@@ -48,18 +48,19 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
   const { pathname } = useLocation();
   const handleSelect: TableRowSelectHandler = (dataRow) => {
     if (dataRow) {
-      const path = pathFromKey(dataRow.key);
-      setDataConsumer(dataRow.nodeData?.tags?.includes("data-consumer"));
-      navigate(path);
+      const path = pathFromNavKey(dataRow.key);
+      if (path !== undefined) {
+        setDataConsumer(dataRow.nodeData?.tags?.includes("data-consumer"));
+        navigate(path);
+      }
     }
   };
 
-  const handleGridLayoutChanged = useCallback<GridLayoutChangeHandler>(
-    (/*gridId, gridLayoutDescriptor*/) => {
-      // TODO
-    },
-    [],
-  );
+  const handleGridLayoutChanged = useCallback<GridLayoutChangeHandler>((
+    /*gridId, gridLayoutDescriptor*/
+  ) => {
+    // TODO
+  }, []);
 
   return themeReady ? (
     <SaltProviderNext
@@ -74,7 +75,7 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
           <GridLayout
             colsAndRows={{
               cols: ["200px", "1fr"],
-              rows: ["48px", "40px", "1fr"],
+              rows: ["48px", "1fr"],
             }}
             full-page
             id="ShowcaseShell"
@@ -100,43 +101,27 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
               id="palette"
               resizeable="hv"
               style={{
-                gridArea: "2/1/4/2",
+                gridArea: "2/1/3/2",
               }}
             >
               <TreeNavPanel
                 className="ShowcaseNav"
-                autoSelectRowKey={keyFromPath(pathname)}
+                autoSelectRowKey={navKeyFromPath(pathname)}
                 onSelect={handleSelect}
                 resizeable
-                source={treeSource}
+                source={navTree}
                 style={{ flexGrow: 0, flexShrink: 0, flexBasis: 200 }}
               />
-            </GridLayoutItem>
-
-            {/* ------ Content Toolbar -------*/}
-            <GridLayoutItem
-              id="app-toolbar"
-              resizeable="h"
-              style={{ gridArea: "2/2/3/3" }}
-            >
-              <ContentToolbar />
             </GridLayoutItem>
 
             {/* ------ Content Container -------*/}
             <GridLayoutItem
               id="ContentContainer"
-              style={{ gridArea: "3/2/4/3" }}
+              resizeable="h"
+              style={{ gridArea: "2/2/3/3" }}
               title="Showcase Content"
             >
-              <div
-                className={`ShowcaseContent`}
-                style={{
-                  flex: "1 1 auto",
-                  position: "relative",
-                }}
-              >
-                <IFrame />
-              </div>
+              <ShowcaseContent />
             </GridLayoutItem>
           </GridLayout>
         </GridLayoutProvider>

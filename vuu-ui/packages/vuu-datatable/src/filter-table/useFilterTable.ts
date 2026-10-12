@@ -1,5 +1,6 @@
 import { FilterBarProps } from "@vuu-ui/vuu-filters";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
+import { getColumnsByName } from "@vuu-ui/vuu-utils";
 import { FilterTableProps } from "./FilterTable";
 import { FilterHandler } from "@vuu-ui/vuu-filter-types";
 
@@ -10,11 +11,12 @@ export const useFilterTable = ({
     dataSource,
   },
 }: FilterTableProps) => {
+  const columnsByName = useMemo(() => getColumnsByName(columns), [columns]);
   const handleApplyFilter = useCallback<FilterHandler>(
     (filter) => {
-      dataSource.setFilter?.(filter);
+      dataSource.setFilter?.(filter, { columnsByName });
     },
-    [dataSource],
+    [columnsByName, dataSource],
   );
 
   const handleClearFilter = useCallback(() => {

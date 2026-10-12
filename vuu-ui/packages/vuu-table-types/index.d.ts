@@ -84,21 +84,11 @@ export interface EditEventState {
   value: VuuRowDataItemType;
 }
 
-export interface DataCellEditEvent extends EditEventState {
-  columnName?: string;
-  dataRow?: DataRow;
-}
-
-export declare type DataCellEditNotification = (
-  editEvent: DataCellEditEvent,
-) => void;
-
 export interface TableCellProps {
   className?: string;
   column: RuntimeColumnDescriptor;
   dataRow: DataRow;
   onClick?: (event: MouseEvent, column: RuntimeColumnDescriptor) => void;
-  onDataEdited?: TableCellEditHandler;
   searchPattern?: Lowercase<string>;
 }
 
@@ -129,8 +119,7 @@ export declare type TableRowClickHandlerInternal = (
   keepExistingSelection: boolean,
 ) => void;
 
-export interface TableCellRendererProps
-  extends Omit<TableCellProps, "onDataEdited"> {
+export interface TableCellRendererProps extends TableCellProps {
   /**
    * has the value of this edit control been changed during the current edit session.
    * This can go from true to false if control is edited to revert a previous change
@@ -199,11 +188,31 @@ export type RoundingRule = "truncate" | "round";
 export declare type ColumnTypeFormatting = {
   alignOnDecimals?: boolean;
   decimals?: number;
+  /**
+   * Temporal values only. Number of sub-second digits to display when the
+   * pattern includes a time component. Defaults to 0 for millisecond
+   * timestamps (3 if the legacy 'hh:mm:ss.ms' pattern is used) and to 9
+   * for nanosecond timestamps.
+   */
+  fractionalSecondDigits?: FractionalSecondDigits;
+  /**
+   * Temporal values only. Overrides the locale implied by the date pattern.
+   * The pattern then determines the style of each field (numeric, short or
+   * long month name), the locale determines field order and language.
+   */
+  locale?: string;
   roundingRule?: RoundingRule;
   pattern?: DateTimePattern;
+  /**
+   * Temporal values only. Time zone used to display (and edit/filter) the
+   * value. 'local' (the default) or 'UTC' or any IANA time zone id.
+   */
+  timeZone?: string;
   useLocaleString?: boolean;
   zeroPad?: boolean;
 };
+
+export declare type FractionalSecondDigits = 0 | 3 | 6 | 9;
 
 export declare type ColumnTypeValueMap = { [key: string]: string };
 
@@ -278,6 +287,8 @@ export declare type PinLocation = "left" | "right";
 
 export declare type ColumnAlignment = "left" | "right";
 
+export type RowAccessor = Record<string, unknown>;
+
 /** This is a public description of a Column, defining all the
  * column attributes that can be defined by client. */
 export interface ColumnDescriptor extends DataValueDescriptor {
@@ -299,8 +310,10 @@ export interface ColumnDescriptor extends DataValueDescriptor {
    */
   colHeaderContentRenderer?: string;
   colHeaderLabelRenderer?: string;
-  /** Formats a raw value for CSV export; return value is still CSV-escaped. */
-  exportFormatter?: (value: unknown) => string;
+  /** Whether this column should be included in file/CSV exports. Defaults to true. */
+  exportable?: boolean;
+  /** Formats a raw value for CSV export; optionally receives row context. Return value is still CSV-escaped. */
+  exportFormatter?: (value: unknown, row: RowAccessor) => string;
   flex?: number;
   /**
    * Only used when the column is included in a grouby clause.
@@ -551,7 +564,6 @@ export interface RowProps extends BaseRowProps {
   offset: number;
   onCellEdit?: CellEditHandler;
   onClick?: TableRowClickHandlerInternal;
-  onDataEdited?: TableCellEditHandler;
   onToggleGroup?: (row: DataSourceRow, column: RuntimeColumnDescriptor) => void;
   searchPattern: Lowercase<string>;
   showBookends?: boolean;

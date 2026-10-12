@@ -1,33 +1,81 @@
-.salt-density-high .vuuTimeInput {
-    --time-input-width: 60px;
-}
-.salt-density-medium .vuuTimeInput {
-    --time-input-width: 70px;
-}
-.salt-density-low .vuuTimeInput {
-    --time-input-width: 80px;
-}
-.salt-density-touch .vuuTimeInput {
-    --time-input-width: 90px;
+/*
+ * The input is sized to fit its content, the wider of placeholder and value,
+ * in whatever font is in use. The container is a single cell grid, two hidden
+ * pseudo elements, rendering the placeholder and a sample value with the same
+ * font, padding and border as the input, determine the column width. The
+ * input then fills the column. An extra 1px accommodates the caret.
+ * Font size, height and padding follow density.
+ * --vuuTimeInput-width can be used to set an explicit (content) width.
+ */
+.vuuTimeInput-container {
+  --time-input-border: var(--vuuTimeInput-borderWidth, 1px);
+  --time-input-padding: var(
+    --vuuTimeInput-paddingInline,
+    var(--salt-spacing-50)
+  );
+
+  display: inline-grid;
+  font-family: var(--salt-typography-fontFamily);
+  font-size: var(--vuuTimeInput-fontSize, var(--salt-text-fontSize));
+  font-variant-numeric: tabular-nums;
+  /* prevent stretch by flex/grid parents */
+  width: fit-content;
+
+  &::before,
+  &::after {
+    border: 0 solid transparent;
+    border-inline-width: var(--time-input-border);
+    box-sizing: content-box;
+    grid-area: 1 / 1;
+    height: 0;
+    /* allow for the caret px in padding, large fallback is effectively none */
+    max-width: calc(var(--vuuTimeInput-width, 10000px) - 1px);
+    padding-inline: var(--time-input-padding);
+    padding-inline-end: calc(var(--time-input-padding) + 1px);
+    visibility: hidden;
+    white-space: pre;
+  }
+
+  &::before {
+    content: attr(data-placeholder);
+  }
+
+  &::after {
+    content: attr(data-sample-value);
+  }
 }
 
 .vuuTimeInput {
-    background: var(--vuuTimeInput-background, inherit);
-    border-width: 1px;
-    font-family: var(--salt-typography-fontFamily);
-    width: var(--vuuTimeInput-width, var(--time-input-width));
+  background: var(--vuuTimeInput-background, inherit);
+  border-width: var(--time-input-border);
+  box-sizing: content-box;
+  font-family: inherit;
+  font-size: inherit;
+  font-variant-numeric: inherit;
+  grid-area: 1 / 1;
+  height: calc(
+    var(--vuuTimeInput-height, var(--salt-size-base)) - 2 *
+      var(--time-input-border)
+  );
+  /* min-width (percentage) fills the column, without contributing to its size */
+  min-width: calc(
+    100% - 2 * var(--time-input-padding) - 2 * var(--time-input-border)
+  );
+  padding: 0 var(--time-input-padding);
+  width: var(--vuuTimeInput-width, 0px);
 
-    &:focus::-webkit-input-placeholder {
-        color: transparent;
-    }
+  &:focus::-webkit-input-placeholder {
+    color: transparent;
+  }
 
-    &:focus {
-        outline: var(--vuuTimeInput-outline, var(--salt-focused-outline));
-    }
+  &:focus {
+    outline: var(--vuuTimeInput-outline, var(--salt-focused-outline));
+  }
 
+  &.vuuTimeInput-invalid {
+    border-color: var(
+      --vuuTimeInput-invalid-borderColor,
+      var(--salt-status-error-borderColor, red)
+    );
+  }
 }
-
-.invalid {
-    border-color: red;
-}
-

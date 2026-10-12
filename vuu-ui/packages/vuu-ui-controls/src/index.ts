@@ -26,16 +26,24 @@ export * from "./price-ticker";
 export { Prompt, type PromptProps } from "./prompt/Prompt";
 export { SortableList, SortableOption } from "./sortable-list/SortableList";
 export * from "./split-button";
+export * from "./split-pane";
 export * from "./table-search";
 export * from "./tabs-next";
 export * from "./tabstrip";
-export { TimeInput, type TimeInputProps } from "./time-input/TimeInput";
+export {
+  TimeInput,
+  type TimeInputMillisecondsProps,
+  type TimeInputProps,
+  type TimeInputSecondsProps,
+} from "./time-input/TimeInput";
 export * from "./toolbar";
 export * from "./utils";
 export * from "./vuu-date-picker";
 export * from "./vuu-input";
 export {
   VuuTimePicker,
+  type VuuTimePickerMillisecondsProps,
   type VuuTimePickerProps,
+  type VuuTimePickerSecondsProps,
 } from "./vuu-time-picker/VuuTimePicker";
 export * from "./vuu-typeahead-input";

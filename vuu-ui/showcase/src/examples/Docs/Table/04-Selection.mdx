@@ -1,0 +1,316 @@
+import { LivePreview } from "../components/LivePreview";
+import {
+  CellBlockSelection,
+  CheckboxSelection,
+  InitialSelection,
+  NonSelectableRows,
+  SelectionBorder,
+  SelectionEvents,
+  SelectionModels,
+} from "./04-Selection.examples";
+
+# Selection
+
+The Table supports row selection, from a single row to large multi-row selections with checkboxes. It also supports selecting a rectangular block of cells. **Selection state is held by the `DataSource`**, not by the Table. When the user selects a row, the Table sends a select request to the data source. The data source records it and re-sends the affected rows with their selected flag set. This means:
+
+- Selection survives scrolling and virtualization. Rows that are selected stay selected when they scroll out of view and back.
+- With a Vuu server, the selection is known on the server. Server-side actions, such as context menu RPC calls, can operate on "the selected rows".
+- To change the selection from code, you call `dataSource.select(...)` rather than setting a Table prop.
+
+## Selection models
+
+Set the `selectionModel` prop to choose how users select rows. The default is `"extended"`.
+
+| `selectionModel`       | Behaviour                                                                                                                                                         |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `"none"`               | Rows can't be selected. Users can still highlight rows with the keyboard.                                                                                         |
+| `"single"`             | Click selects a row and deselects any other. Clicking the selected row deselects it.                                                                              |
+| `"single-no-deselect"` | As `"single"`, but clicking the selected row does nothing, so once a row is selected there is always exactly one selected row. Useful for master-detail layouts. |
+| `"extended"`           | Click selects one row. **Shift**+click selects a range. **Ctrl**+click (**⌘**+click on macOS) adds or removes a row while keeping the rest of the selection.      |
+| `"checkbox"`           | Adds a pinned checkbox column. Clicking checkboxes toggles rows on and off, so users can build up a multi-row selection without holding a modifier key.           |
+| `"checkbox-disabled"`  | Keeps the checkbox column but turns off selection. Use it to suspend selection temporarily without the layout shifting.                                           |
+
+Switch between models to try them:
+
+<LivePreview stacked>
+  <SelectionModels />
+
+```tsx
+export const SelectionModels = () => {
+  const [selectionModel, setSelectionModel] =
+    useState<TableSelectionModel>("extended");
+  const config = useMemo<TableConfig>(
+    () => ({ columns, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  const handleChange: ToggleButtonGroupProps["onChange"] = (e) => {
+    dataSource.select?.({ type: "DESELECT_ALL" });
+    setSelectionModel(e.currentTarget.value as TableSelectionModel);
+  };
+
+  return (
+    <>
+      <ToggleButtonGroup onChange={handleChange} value={selectionModel}>
+        <ToggleButton value="none">none</ToggleButton>
+        <ToggleButton value="single">single</ToggleButton>
+        <ToggleButton value="single-no-deselect">single-no-deselect</ToggleButton>
+        <ToggleButton value="extended">extended</ToggleButton>
+        <ToggleButton value="checkbox">checkbox</ToggleButton>
+      </ToggleButtonGroup>
+      <Table
+        config={config}
+        dataSource={dataSource}
+        height={300}
+        key={selectionModel}
+        selectionModel={selectionModel}
+        width={640}
+      />
+    </>
+  );
+};
+```
+
+</LivePreview>
+
+### Best practices
+
+- Choose the simplest model that supports the task. If users act on one row at a time (opening a detail view, for example), use `"single"` or `"single-no-deselect"`.
+- Use `"extended"` for power users working with large data sets who know modifier keys. Use `"checkbox"` when multi-selection is important and users may not know about modifier keys, or on touch devices.
+- Use `"none"` for read-only, informational tables. Users can still navigate rows with the keyboard.
+- Users can also select rows with the keyboard: move the highlight with the arrow keys and press **Enter** or **Space**. See [Accessibility](./08-Accessibility.mdx).
+
+## Checkbox selection
+
+With `selectionModel="checkbox"`, by default only a click on the checkbox itself changes the selection. Two props refine this:
+
+- **allowSelectCheckboxRow**: a click anywhere on the row toggles its checkbox.
+- **allowSelectAll**: adds a checkbox to the header that selects or deselects every row in the data source, not just the visible rows.
+
+<LivePreview>
+  <CheckboxSelection />
+
+```tsx
+<Table
+  allowSelectAll
+  allowSelectCheckboxRow
+  config={config}
+  dataSource={dataSource}
+  height={300}
+  selectionModel="checkbox"
+  width={660}
+/>
+```
+
+</LivePreview>
+
+The width of the checkbox column is set by `checkboxColumnWidth` in `TableConfig` (default `25`).
+
+## Responding to selection
+
+Three ways to observe selection:
+
+| API                                         | When it fires                                     | What you get                                                                                                                       |
+| ------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `onSelect`                                  | The user selects or deselects a row                | The `DataRow` that was selected, or `null` when the user deselected a row. Good for "show details of the selected row".            |
+| `onSelectionChange`                         | The user changes the selection                    | The select request sent to the data source: `SELECT_ROW`, `DESELECT_ROW`, `SELECT_ROW_RANGE`, `SELECT_ALL` or `DESELECT_ALL`.       |
+| `dataSource.on("row-selection", handler)`   | The selection changes, including from code        | The number of selected rows.                                                                                                       |
+
+To clear or change the selection from code, call `dataSource.select()` with the same kind of request. Programmatic changes don't trigger `onSelect` or `onSelectionChange`.
+
+Select some rows (try **Shift**+click and **Ctrl**/**⌘**+click), then clear the selection:
+
+<LivePreview stacked>
+  <SelectionEvents />
+
+```tsx
+export const SelectionEvents = () => {
+  const [lastSelected, setLastSelected] = useState<string>("none");
+  const [lastRequest, setLastRequest] = useState<string>("none");
+  const [selectedCount, setSelectedCount] = useState(0);
+  const config = useMemo<TableConfig>(
+    () => ({ columns, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  useEffect(() => {
+    const handleRowSelection = (count: number) => setSelectedCount(count);
+    dataSource.on("row-selection", handleRowSelection);
+    return () => {
+      dataSource.removeListener("row-selection", handleRowSelection);
+    };
+  }, [dataSource]);
+
+  const handleSelect: TableRowSelectHandler = (dataRow) => {
+    setLastSelected(dataRow ? `${dataRow.ric} (${dataRow.name})` : "null");
+  };
+
+  const handleSelectionChange: SelectionChangeHandler = (selectionChange) => {
+    setLastRequest(JSON.stringify(selectionChange));
+  };
+
+  const clearSelection = () => dataSource.select?.({ type: "DESELECT_ALL" });
+
+  return (
+    <>
+      <Table
+        config={config}
+        dataSource={dataSource}
+        height={260}
+        onSelect={handleSelect}
+        onSelectionChange={handleSelectionChange}
+        width={640}
+      />
+      <div>
+        <Button onClick={clearSelection}>Clear selection</Button>
+      </div>
+      <code>Selected rows: {selectedCount}</code>
+      <code>onSelect: {lastSelected}</code>
+      <code>onSelectionChange: {lastRequest}</code>
+    </>
+  );
+};
+```
+
+</LivePreview>
+
+### Best practices
+
+- Use `onSelect` for master-detail patterns. It gives you the full row, so you don't need to look it up.
+- Don't copy the selection into React state just so you can act on it. With a Vuu server data source, server-side actions can target the selected rows directly. With large selections (for example after **Select all**), the client may not have all the selected rows loaded.
+- If you clear the selection from code, give the user a visible way to do it too, such as a **Clear selection** button.
+
+## Rows that can't be selected
+
+`isRowSelectable` is called with each `DataRow`. Rows for which it returns `false` can't be selected by click, keyboard, range selection or cell block selection. They get the `vuuTableRow-noSelect` class, so you can style them.
+
+In this example only rows with an ESG flag can be selected. A **Shift**+click range automatically skips the other rows.
+
+<LivePreview>
+  <NonSelectableRows />
+
+```tsx
+const isRowSelectable = (dataRow: DataRow) => dataRow.esg === true;
+
+<Table
+  allowSelectCheckboxRow
+  config={config}
+  dataSource={dataSource}
+  height={300}
+  isRowSelectable={isRowSelectable}
+  selectionModel="checkbox"
+  width={760}
+/>;
+```
+
+</LivePreview>
+
+### Best practices
+
+- Explain why a row can't be selected, for example with a tooltip, a status column or the row style. A row that silently ignores clicks feels broken.
+- Keep `isRowSelectable` fast and stable (define it outside the component or wrap it in `useCallback`). It runs for every visible row.
+
+## Initial selection
+
+- **autoSelectRowKey**: selects the row with this key when the table first loads. If there is no such row, nothing happens.
+- **autoSelectFirstRow**: selects the first row when the table first loads.
+- **revealSelected**: for grouped data, expands the groups that contain the selected rows so they're visible.
+
+<LivePreview>
+  <InitialSelection />
+
+```tsx
+<Table
+  autoSelectRowKey="VOD.L"
+  config={config}
+  dataSource={dataSource}
+  height={300}
+  selectionModel="single"
+  width={640}
+/>
+```
+
+</LivePreview>
+
+## Selection styling
+
+By default, a selected row has a highlighted background and a coloured "bookend" on its left and right edges. Adjacent selected rows form a single visual block. Two options change this:
+
+- **selectionBookendWidth** (in `TableConfig`): the width in pixels of the bookends. The default is `4`. Set it to `0` to remove them.
+- **rowSelectionBorder** (Table prop): draws a border around each block of selected rows.
+
+<LivePreview>
+  <SelectionBorder />
+
+```tsx
+const config: TableConfig = {
+  columns,
+  rowSeparators: true,
+  selectionBookendWidth: 0,
+};
+
+<Table
+  config={config}
+  dataSource={dataSource}
+  height={300}
+  rowSelectionBorder
+  width={640}
+/>;
+```
+
+</LivePreview>
+
+See [Styling](./07-Styling.mdx) for the CSS custom properties that control selection colours.
+
+## Cell block selection
+
+Set `allowCellBlockSelection` to let users select a rectangular block of cells, like in a spreadsheet:
+
+- **Mouse**: press on a cell and drag.
+- **Keyboard**: focus a cell, hold **Shift** and press the arrow keys.
+
+Press **⌘**+**C** to copy the block to the clipboard as tab-separated text, ready to paste into a spreadsheet. `onSelectCellBlock` gives you the row and column ranges of the block.
+
+Cell block selection is separate from row selection. In this example, row selection is turned off with `selectionModel="none"`, so a click doesn't select the row.
+
+<LivePreview stacked>
+  <CellBlockSelection />
+
+```tsx
+export const CellBlockSelection = () => {
+  const [cellBlock, setCellBlock] = useState("none");
+  const config = useMemo<TableConfig>(
+    () => ({ columns, columnSeparators: true, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  const handleSelectCellBlock: TableProps["onSelectCellBlock"] = (block) => {
+    setCellBlock(JSON.stringify(block));
+  };
+
+  return (
+    <>
+      <Table
+        allowCellBlockSelection
+        config={config}
+        dataSource={dataSource}
+        height={300}
+        onSelectCellBlock={handleSelectCellBlock}
+        selectionModel="none"
+        width={640}
+      />
+      <code>onSelectCellBlock: {cellBlock}</code>
+    </>
+  );
+};
+```
+
+</LivePreview>
+
+## Next steps
+
+- Learn the keyboard interactions for selection in [Accessibility](./08-Accessibility.mdx).
+- See the [API reference](./09-ApiReference.mdx) for all selection props and handler types.

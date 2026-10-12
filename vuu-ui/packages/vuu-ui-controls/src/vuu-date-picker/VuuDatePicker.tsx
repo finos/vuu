@@ -1,17 +1,17 @@
-import { CommitHandler } from "@vuu-ui/vuu-utils";
 import {
-  DateValue,
-  getLocalTimeZone,
-  isSameDay,
-  isSameMonth,
-  isSameYear,
-} from "@internationalized/date";
+  type CommitHandler,
+  EpochTimestamp,
+  fromDateTimeFields,
+  type TimeZoneSpec,
+} from "@vuu-ui/vuu-utils";
+import { CalendarDate, type DateValue } from "@internationalized/date";
 import cx from "clsx";
 import {
-  ChangeEvent,
-  KeyboardEvent,
-  SyntheticEvent,
+  type ChangeEvent,
+  type KeyboardEvent,
+  type SyntheticEvent,
   useCallback,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -20,74 +20,106 @@ import { DatePicker, DatePickerProps } from "../date-picker";
 
 const classBase = "VuuDatePicker";
 
-const isSameDate = (d1: DateValue, d2?: DateValue) =>
-  d2 !== undefined &&
-  isSameDay(d1, d2) &&
-  isSameMonth(d1, d2) &&
-  isSameYear(d1, d2);
-
 const datePattern = /^\d{1,2} [a-z]{3} \d{4}$/i;
 const isValidDate = (value?: string) =>
   value !== undefined &&
-  value?.match(datePattern) !== null &&
+  value.match(datePattern) !== null &&
   !Number.isNaN(new Date(value).getDay());
 
-const localTimeZone = getLocalTimeZone();
+const isSameDate = (d1: DateValue, d2?: DateValue) =>
+  d2 !== undefined && d1.compare(d2) === 0;
 
-const toEpochMillis = (
-  date: DateValue,
-  timezone: string = getLocalTimeZone(),
-): number => date.toDate(timezone).getTime();
-
-type DateState =
-  | {
-      datePickerKey: "controlled";
-      defaultDate: undefined;
-      selectedDate: DateValue;
-    }
-  | {
-      datePickerKey: "uncontrolled";
-      defaultDate: DateValue | undefined;
-      selectedDate: undefined;
-    };
-
-const getDates = (selectedDate: DateValue | undefined): DateState => {
-  if (selectedDate) {
-    return {
-      datePickerKey: "controlled",
-      defaultDate: undefined,
-      selectedDate,
-    };
-  } else {
-    return {
-      datePickerKey: "uncontrolled",
-      defaultDate: undefined,
-      selectedDate,
-    };
+/**
+ * The calendar date of an epoch value, in the given time zone
+ */
+const toCalendarDateInTimeZone = (
+  value: EpochTimestamp | number | undefined,
+  timeZone?: TimeZoneSpec,
+): CalendarDate | undefined => {
+  const timestamp =
+    value instanceof EpochTimestamp
+      ? value
+      : EpochTimestamp.fromWire(value, "epochMillis");
+  if (timestamp) {
+    const { year, month, day } = timestamp.getFields(timeZone);
+    return new CalendarDate(year, month, day);
   }
 };
+
+/**
+ * Epoch millis of the start of the given date, in the given time zone.
+ */
+const startOfDateInTimeZone = (date: DateValue, timeZone?: TimeZoneSpec) =>
+  fromDateTimeFields(
+    {
+      year: date.year,
+      month: date.month,
+      day: date.day,
+      hour: 0,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    },
+    timeZone,
+  );
+
+export interface VuuDatePickerProps
+  extends Omit<
+    DatePickerProps<SingleSelectionValueType>,
+    "defaultSelectedDate" | "onChange"
+  > {
+  /**
+   * Invoked when user selects a date from the calendar, or enters a valid date and
+   * presses Enter. Value is epoch millis at the start of the selected day, in timeZone.
+   */
+  onCommit?: CommitHandler<HTMLElement, number>;
+  preserveFocusOnSelect?: boolean;
+  /**
+   * The time zone used to convert between epoch values and calendar dates.
+   * Defaults to the application default time zone (see setDefaultTimeZone).
+   */
+  timeZone?: TimeZoneSpec;
+  /**
+   * An epoch value (millis as number, or millis/nanos as EpochTimestamp). An
+   * alternative to selectedDate, when the date is derived from a timestamp. The
+   * calendar date is determined in timeZone.
+   */
+  value?: EpochTimestamp | number;
+}
 
 export const VuuDatePicker = ({
   className,
   onSelectionChange,
-  selectedDate: selectedDateProp,
   onCommit,
   preserveFocusOnSelect,
+  selectedDate: selectedDateProp,
+  timeZone,
+  value,
   ...props
-}: Omit<DatePickerProps<SingleSelectionValueType>, "defaultSelectedDate"> & {
-  onCommit?: CommitHandler<HTMLElement, number>;
-  preserveFocusOnSelect?: boolean;
-}) => {
-  const [open, _setOpen] = useState(false);
-  const valueRef = useRef("");
+}: VuuDatePickerProps) => {
+  const [open, setOpen] = useState(false);
+  const inputValueRef = useRef("");
   const datePickerRef = useRef<HTMLDivElement>(null);
 
-  const dateState = useRef<DateState>(getDates(selectedDateProp));
-
-  const setOpen = (o: boolean) => {
-    console.log(`setOpen ${o}`);
-    _setOpen(o);
-  };
+  const controlledDate = useMemo(
+    () => selectedDateProp ?? toCalendarDateInTimeZone(value, timeZone),
+    [selectedDateProp, timeZone, value],
+  );
+  const [selectedDate, setSelectedDate] = useState<DateValue | undefined>(
+    controlledDate,
+  );
+  const controlledDateRef = useRef(controlledDate);
+  if (
+    controlledDate !== undefined &&
+    (controlledDateRef.current === undefined ||
+      controlledDate.compare(controlledDateRef.current) !== 0)
+  ) {
+    // value has been changed by client
+    controlledDateRef.current = controlledDate;
+    if (!isSameDate(controlledDate, selectedDate)) {
+      setSelectedDate(controlledDate);
+    }
+  }
 
   const commitDateChange = useCallback(
     (e: SyntheticEvent<Element>, date: DateValue) => {
@@ -95,7 +127,7 @@ export const VuuDatePicker = ({
       setOpen(false);
       onCommit?.(
         e as SyntheticEvent<HTMLElement>,
-        toEpochMillis(date, localTimeZone),
+        startOfDateInTimeZone(date, timeZone),
       );
 
       if (preserveFocusOnSelect) {
@@ -104,33 +136,22 @@ export const VuuDatePicker = ({
         });
       }
     },
-    [onCommit, onSelectionChange, preserveFocusOnSelect],
+    [onCommit, onSelectionChange, preserveFocusOnSelect, timeZone],
   );
 
   const handleSelectionChange = useCallback(
-    (e: SyntheticEvent<Element>, date: DateValue) => {
-      const { selectedDate } = dateState.current;
-      // id date is undefined, we're openung the picker on an empty field
-      if (date) {
-        if (selectedDate === undefined) {
-          dateState.current = getDates(date);
-          commitDateChange(e, date);
-        } else if (!isSameDate(date, selectedDate)) {
-          dateState.current.selectedDate = date;
-          commitDateChange(e, date);
-        }
+    (e: SyntheticEvent<Element>, date?: DateValue) => {
+      // if date is undefined, we're opening the picker on an empty field
+      if (date && !isSameDate(date, selectedDate)) {
+        setSelectedDate(date);
+        commitDateChange(e, date);
       }
     },
-    [commitDateChange],
+    [commitDateChange, selectedDate],
   );
 
-  const handleChange = (evt: ChangeEvent<HTMLInputElement>, value = "") => {
-    console.log(`handleChange`, {
-      evt,
-      value,
-    });
-    valueRef.current = value;
-    console.log(`is '${value}' a valid date ? ${isValidDate(value)}`);
+  const handleChange = (_evt: ChangeEvent<HTMLInputElement>, value = "") => {
+    inputValueRef.current = value;
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -140,26 +161,23 @@ export const VuuDatePicker = ({
   };
 
   const handleKeyDownCapture = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Enter") {
-      if (isValidDate(valueRef.current)) {
-        console.log(`committayaface (${valueRef.current})`);
-      } else {
-        console.log(
-          `nice try cowboy, but '${valueRef.current}' is nota valid date`,
-        );
-        e.stopPropagation();
-      }
+    // Prevent an invalid typed entry being committed
+    if (
+      e.key === "Enter" &&
+      inputValueRef.current !== "" &&
+      !isValidDate(inputValueRef.current)
+    ) {
+      e.stopPropagation();
     }
   };
 
-  const { datePickerKey, defaultDate, selectedDate } = dateState.current;
-
+  // The DatePicker is controlled once we have a date, uncontrolled (allowing
+  // user to type freely) until then.
   return (
     <DatePicker
       {...props}
       className={cx(classBase, className)}
-      defaultSelectedDate={defaultDate}
-      key={datePickerKey}
+      key={selectedDate ? "controlled" : "uncontrolled"}
       open={open}
       onChange={handleChange}
       onKeyDown={handleKeyDown}
@@ -167,7 +185,7 @@ export const VuuDatePicker = ({
       onOpenChange={setOpen}
       ref={datePickerRef}
       onSelectionChange={(e, date) =>
-        handleSelectionChange(e, date as DateValue)
+        handleSelectionChange(e, date as DateValue | undefined)
       }
       selectedDate={selectedDate}
     />

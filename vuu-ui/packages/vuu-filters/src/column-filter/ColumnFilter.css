@@ -45,6 +45,10 @@
     --saltButton-padding: var(--salt-spacing-200);
 }
 
+.vuuColumnFilter-toggle {
+    max-width: none;
+}
+
 .vuuColumnFilter-invalid {
     border-color: red;
 }

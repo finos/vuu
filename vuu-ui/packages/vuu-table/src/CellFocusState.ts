@@ -10,6 +10,11 @@ export interface ICellFocusState {
   placeholderEl: HTMLDivElement | null;
   pos: { top: number } | undefined;
   cellPos: CellPos | undefined;
+  /**
+   * Cell to be focused once it has been rendered, e.g after a paging
+   * operation which will re-render rows.
+   */
+  pendingCellPos?: CellPos;
 }
 
 export class CellFocusState implements ICellFocusState {
@@ -18,6 +23,7 @@ export class CellFocusState implements ICellFocusState {
   outsideViewport: "above" | "below" | false = false;
   placeholderEl: HTMLDivElement | null = null;
   pos: { top: number } | undefined = undefined;
+  pendingCellPos: CellPos | undefined = undefined;
 
   set cell(cell: HTMLDivElement) {
     this.#el = cell;

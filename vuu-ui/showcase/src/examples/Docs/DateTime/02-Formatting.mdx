@@ -1,0 +1,153 @@
+import { LivePreview } from "../components/LivePreview";
+import {
+  DateAndTimePatterns,
+  FormattingSettings,
+  FractionalSeconds,
+  Locales,
+  TimeZones,
+} from "./02-Formatting.examples";
+
+# Formatting
+
+A temporal column is formatted with options in `type.formatting`. The same options are used by the table cell, filter pills and tooltips.
+
+| Option                   | Type                                          | Default                                                                                   | Description                                                                                                                                                             |
+| ------------------------ | --------------------------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pattern`                | `{ date?: DatePattern; time?: TimePattern }`  | `date`: `dd.mm.yyyy`, `time`: `hh:mm:ss`, `datetime`: both                                 | The date and time patterns. Provide one or both.                                                                                                                         |
+| `fractionalSecondDigits` | `0 \| 3 \| 6 \| 9`                            | `9` for nanosecond columns when a time is shown, `3` with the `hh:mm:ss.ms` pattern, else `0` | Sub-second digits shown after the seconds. Digits beyond the precision of the encoding are shown as zeros.                                                             |
+| `timeZone`               | `"local" \| "UTC" \| string`                  | the application default                                                                   | An IANA time zone such as `"Europe/London"`. Used for display, editing and filtering.                                                                                   |
+| `locale`                 | `string`                                      | implied by the pattern                                                                    | The pattern sets the style of each field (numeric, short or long month); the locale sets field order and language.                                                      |
+
+## Patterns
+
+| Date pattern     | Example            |
+| ---------------- | ------------------ |
+| `yyyy-mm-dd`     | `2026-09-30`       |
+| `dd.mm.yyyy`     | `30.09.2026`       |
+| `dd/mm/yyyy`     | `30/09/2026`       |
+| `mm/dd/yyyy`     | `09/30/2026`       |
+| `dd MMM yyyy`    | `30 Sept 2026`     |
+| `dd MMMM yyyy`   | `30 September 2026`|
+| `MMM dd, yyyy`   | `Sep 30, 2026`     |
+| `MMMM dd, yyyy`  | `September 30, 2026` |
+
+| Time pattern    | Example        |
+| --------------- | -------------- |
+| `hh:mm:ss`      | `15:05:09`     |
+| `hh:mm:ss a`    | `03:05:09 pm`  |
+| `hh:mm:ss.ms`   | `15:05:09.123` |
+
+`hh:mm:ss.ms` is kept for compatibility. It is equivalent to `hh:mm:ss` with `fractionalSecondDigits: 3`, but it also switches time pickers and time filters into millisecond mode.
+
+<LivePreview>
+  <DateAndTimePatterns />
+
+```ts
+const columns: ColumnDescriptor[] = [
+  {
+    name: "isoDate",
+    serverDataType: "epochtimestamp",
+    type: { name: "date", formatting: { pattern: { date: "yyyy-mm-dd" } } },
+  },
+  {
+    name: "time12",
+    serverDataType: "epochtimestamp",
+    type: { name: "time", formatting: { pattern: { time: "hh:mm:ss a" } } },
+  },
+  {
+    name: "dateTime",
+    serverDataType: "epochtimestamp",
+    type: {
+      name: "date/time",
+      formatting: { pattern: { date: "MMM dd, yyyy", time: "hh:mm:ss" } },
+    },
+  },
+];
+```
+
+</LivePreview>
+
+## Fractional seconds
+
+Values are decoded with `EpochTimestamp`, so nanosecond values never lose precision. `fractionalSecondDigits` truncates (it does not round) the sub-second part:
+
+<LivePreview>
+  <FractionalSeconds />
+
+```ts
+{
+  name: "execTime",
+  serverDataType: "epochtimestampnano",
+  type: { name: "time", formatting: { fractionalSecondDigits: 6 } },
+}
+```
+
+</LivePreview>
+
+## Time zones
+
+Values are shown in the application default time zone, which is `"local"` (the browser's time zone) unless changed:
+
+```ts
+import { setDefaultTimeZone } from "@vuu-ui/vuu-utils";
+
+setDefaultTimeZone("UTC");
+```
+
+A column overrides the default with `formatting.timeZone`. The column time zone is used to display, edit and filter the column, so a filter for "30 September" on a UTC column means the UTC day. All conversions are safe across daylight saving transitions.
+
+<LivePreview>
+  <TimeZones />
+
+```ts
+{
+  name: "tradeTime",
+  serverDataType: "epochtimestamp",
+  type: { name: "date/time", formatting: { timeZone: "America/New_York" } },
+}
+```
+
+</LivePreview>
+
+## Locales
+
+<LivePreview>
+  <Locales />
+
+```ts
+{
+  name: "tradeTime",
+  serverDataType: "epochtimestamp",
+  type: {
+    name: "date/time",
+    formatting: {
+      locale: "de-DE",
+      pattern: { date: "dd MMMM yyyy", time: "hh:mm:ss" },
+    },
+  },
+}
+```
+
+</LivePreview>
+
+## Column settings panel
+
+The column formatting settings panel (`ColumnFormattingPanel` in `@vuu-ui/vuu-table-extras`) shows date and time settings for any temporal column, including a deprecated `long` column whose type has been set to a temporal type. Users can choose the date and time pattern, time zone, locale and fractional-second digits. 6 and 9 digits are offered only for nanosecond columns.
+
+<LivePreview>
+  <FormattingSettings />
+</LivePreview>
+
+## Formatting values in code
+
+- `getValueFormatter(column)` returns `temporalFormatter(column)` for a temporal column. It renders empty values, including `0`, as an empty string.
+- `formatTimestamp(pattern, options)` formats an `EpochTimestamp`.
+- `formatDate(pattern)` formats a JavaScript `Date`.
+- `formatTemporalFilterValue(value, column)` formats a filter value: a time string is shown as entered, and a start-of-day value on a `datetime` column (a whole-day filter) is shown as a date.
+
+## Best practices
+
+- Describe timestamps on the server as `epochtimestamp` or `epochtimestampnano`, not `long`.
+- Use `type: "date"` or `type: "time"` rather than a pattern alone, so filtering and editing work at the right granularity too.
+- Set `timeZone` on columns whose values belong to a market or venue, such as an exchange's local trading time.
+- Use an unambiguous date pattern (`dd MMM yyyy` or `yyyy-mm-dd`) when users span regions.

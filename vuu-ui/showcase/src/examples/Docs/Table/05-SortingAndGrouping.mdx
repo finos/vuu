@@ -1,0 +1,302 @@
+import { LivePreview } from "../components/LivePreview";
+import {
+  Aggregation,
+  Filtering,
+  Grouping,
+  HeaderSorting,
+  ProgrammaticSort,
+} from "./05-SortingAndGrouping.examples";
+
+# Sorting, filtering and grouping
+
+The Table doesn't sort, filter or group data itself. These operations belong to the `DataSource`. With a Vuu server they run on the server, so they work the same way for 30 rows or 30 million. The Table's job is to:
+
+- let the user request these operations, by clicking column headers or using the column menu
+- show the current state: sort indicators in the headers, a group column and expandable group rows
+
+You can also drive all three operations from code by setting properties on the data source:
+
+```ts
+dataSource.sort = { sortDefs: [{ column: "price", sortType: "D" }] };
+dataSource.filter = { filter: 'currency = "USD"' };
+dataSource.groupBy = ["sector"];
+dataSource.aggregations = [{ column: "volume", aggType: 1 }];
+```
+
+## Sorting by column header
+
+Click a column header to sort by that column.
+
+| Action                                       | Result                                                                                         |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Click an unsorted header                     | Sort ascending by this column only.                                                            |
+| Click it again                               | Sort descending.                                                                               |
+| Click it a third time                        | Remove the sort.                                                                               |
+| **Shift**+click another header               | Add the column to the sort (multi-column sort). Each header shows its position in the sort.    |
+| **Shift**+click a header that is already sorted | Reverse that column's direction, keeping the other sort columns.                           |
+| Press **Enter** on a focused header          | Same as clicking it.                                                                           |
+
+Columns with `sortable: false` ignore clicks. Users can also sort from the column header menu. Sort the table below and watch the `sortDefs` change:
+
+<LivePreview stacked>
+  <HeaderSorting />
+
+```tsx
+export const HeaderSorting = () => {
+  const [sort, setSort] = useState("none");
+  const config = useMemo<TableConfig>(
+    () => ({ columns, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  useEffect(() => {
+    const handleConfigChange = (config: DataSourceConfig) =>
+      setSort(JSON.stringify(config.sort?.sortDefs ?? []));
+    dataSource.on("config", handleConfigChange);
+    return () => {
+      dataSource.removeListener("config", handleConfigChange);
+    };
+  }, [dataSource]);
+
+  return (
+    <>
+      <Table config={config} dataSource={dataSource} height={300} width={800} />
+      <code>sortDefs: {sort}</code>
+    </>
+  );
+};
+```
+
+</LivePreview>
+
+The data source emits a `"config"` event whenever its sort, filter, groupBy or aggregations change. Listen to it to keep other UI in sync, or to save the user's view.
+
+## Sorting from code
+
+Set `dataSource.sort` to apply a sort. A sort is a list of `{ column, sortType }` definitions in priority order. `sortType` is `"A"` (ascending) or `"D"` (descending). To start with a sort already applied, pass `sort` to the data source constructor. Set `{ sortDefs: [] }` to remove the sort.
+
+<LivePreview stacked>
+  <ProgrammaticSort />
+
+```tsx
+export const ProgrammaticSort = () => {
+  const config = useMemo<TableConfig>(
+    () => ({ columns, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource({
+    sort: { sortDefs: [{ column: "volume", sortType: "D" }] },
+  });
+
+  return (
+    <>
+      <div style={{ display: "flex", gap: 8 }}>
+        <Button
+          onClick={() => {
+            dataSource.sort = {
+              sortDefs: [{ column: "volume", sortType: "D" }],
+            };
+          }}
+        >
+          Most active
+        </Button>
+        <Button
+          onClick={() => {
+            dataSource.sort = {
+              sortDefs: [
+                { column: "sector", sortType: "A" },
+                { column: "change", sortType: "D" },
+              ],
+            };
+          }}
+        >
+          Best by sector
+        </Button>
+        <Button
+          onClick={() => {
+            dataSource.sort = { sortDefs: [] };
+          }}
+        >
+          Clear sort
+        </Button>
+      </div>
+      <Table config={config} dataSource={dataSource} height={300} width={800} />
+    </>
+  );
+};
+```
+
+</LivePreview>
+
+### Best practices
+
+- Choose a meaningful default sort for the task. For example, show the most recent first in a trade blotter, or the largest first in a risk view.
+- Don't turn off sorting just to protect a carefully chosen order. Users expect to be able to sort a data table. Let them sort, and give them an easy way back, such as a **Reset view** action.
+- Persist the user's sort along with their column configuration, so the table looks the same the next time they open it.
+
+## Filtering
+
+Set `dataSource.filter` to a filter expression in the Vuu filter language:
+
+| Syntax                                      | Example                                  |
+| ------------------------------------------- | ---------------------------------------- |
+| Compare a value: `=`, `!=`, `>`, `<`        | `price > 100`                            |
+| String tests: `starts`, `ends`, `contains`  | `name starts "B"`                        |
+| Set membership: `in [...]`                  | `currency in ["GBP","EUR"]`              |
+| Combine: `and`, `or`, parentheses           | `(sector = "Energy" or esg = true) and change > 0` |
+
+Strings use double quotes. Booleans are `true` and `false`. Set `{ filter: "" }` to remove the filter. To start with a filter already applied, pass `filterSpec: { filter }` to the data source constructor.
+
+<LivePreview stacked>
+  <Filtering />
+
+```tsx
+export const Filtering = () => {
+  const [filter, setFilter] = useState("");
+  const config = useMemo<TableConfig>(
+    () => ({ columns, rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  const handleChange: ToggleButtonGroupProps["onChange"] = (e) => {
+    const { value } = e.currentTarget;
+    setFilter(value);
+    dataSource.filter = { filter: value };
+  };
+
+  return (
+    <>
+      <ToggleButtonGroup onChange={handleChange} value={filter}>
+        <ToggleButton value="">All</ToggleButton>
+        <ToggleButton value='currency = "USD"'>USD</ToggleButton>
+        <ToggleButton value='sector in ["Energy","Materials"]'>
+          Energy &amp; Materials
+        </ToggleButton>
+        <ToggleButton value="change > 0 and esg = true">
+          ESG risers
+        </ToggleButton>
+      </ToggleButtonGroup>
+      <Table config={config} dataSource={dataSource} height={300} width={800} />
+    </>
+  );
+};
+```
+
+</LivePreview>
+
+For user-facing filter UI, the `@vuu-ui/vuu-filters` package provides ready-made components (filter bar, filter editor, quick filters) that produce these expressions. See the **Filters** section of the showcase.
+
+### Best practices
+
+- Show users that a filter is active. A filtered table looks just like a complete one, so users may assume they are seeing everything.
+- Use `EmptyDisplay` to explain when a filter matches no rows (see [Layout](./06-Layout.mdx#empty-state)).
+- Use `searchPattern` (see [Formatting](./03-Formatting.mdx#highlighting-search-matches)) when users want to find rows without hiding the others.
+
+## Grouping
+
+Set `dataSource.groupBy` to a list of column names to group rows into a hierarchy. When the data is grouped, the Table:
+
+- Replaces the grouped columns with a single **group column**, pinned to the left, that shows the group values and an expand or collapse toggle.
+- Shows each group as a row that can be expanded to show its contents. Grouping by more than one column creates nested groups.
+
+Users can also group from the column header menu. In the group column header, each grouped column is shown as a pill. Users can drag the pills to reorder the grouping, or remove a pill to ungroup that column.
+
+<LivePreview stacked>
+  <Grouping />
+
+```tsx
+export const Grouping = () => {
+  const [groupBy, setGroupBy] = useState("sector");
+  const config = useMemo<TableConfig>(
+    () => ({ columns: stockColumns.slice(0, 8), rowSeparators: true }),
+    [],
+  );
+  const dataSource = useStockDataSource({ groupBy: ["sector"] });
+
+  const handleChange: ToggleButtonGroupProps["onChange"] = (e) => {
+    const { value } = e.currentTarget;
+    setGroupBy(value);
+    dataSource.groupBy = value === "" ? [] : value.split(",");
+  };
+
+  return (
+    <>
+      <ToggleButtonGroup onChange={handleChange} value={groupBy}>
+        <ToggleButton value="">None</ToggleButton>
+        <ToggleButton value="sector">Sector</ToggleButton>
+        <ToggleButton value="exchange">Exchange</ToggleButton>
+        <ToggleButton value="currency,sector">Currency, sector</ToggleButton>
+      </ToggleButtonGroup>
+      <Table config={config} dataSource={dataSource} height={360} width={860} />
+    </>
+  );
+};
+```
+
+</LivePreview>
+
+By default, clicking anywhere in the group cell expands or collapses the group. Set `groupToggleTarget="toggle-icon"` so that only a click on the toggle icon expands the group. This is useful when a click on the row should select it instead. With the keyboard, focus a group cell and press **Shift+ArrowRight** to expand it or **Shift+ArrowLeft** to collapse it. With `navigationStyle="tree"`, you don't need to hold Shift. If the group is already collapsed, the collapse key moves focus up to its parent group.
+
+## Aggregation
+
+When data is grouped, group rows are empty by default. Set `dataSource.aggregations` to show a summary value for each group:
+
+| `aggType` | Aggregation    |
+| --------- | -------------- |
+| `1`       | Sum            |
+| `2`       | Average        |
+| `3`       | Count          |
+| `4`       | High (maximum) |
+| `5`       | Low (minimum)  |
+| `6`       | Distinct       |
+
+<LivePreview>
+  <Aggregation />
+
+```tsx
+export const Aggregation = () => {
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns: stockColumns.slice(0, 8).map((column) =>
+        column.name === "volume"
+          ? { ...column, type: { name: "number", formatting: { decimals: 0 } } }
+          : column,
+      ),
+      rowSeparators: true,
+    }),
+    [],
+  );
+  const dataSource = useStockDataSource({ groupBy: ["sector"] });
+
+  useEffect(() => {
+    dataSource.aggregations = [{ column: "volume", aggType: 1 }];
+  }, [dataSource]);
+
+  return (
+    <Table
+      config={config}
+      dataSource={dataSource}
+      groupToggleTarget="toggle-icon"
+      height={300}
+      width={860}
+    />
+  );
+};
+```
+
+</LivePreview>
+
+> **Note:** the Vuu server supports any number of aggregations at once. The in-browser `ArrayDataSource` used in these examples currently applies only one aggregation (the last one in the list).
+
+### Best practices
+
+- Group by columns with a small number of distinct values, such as sector, currency or status. Grouping by a near-unique column creates as many groups as rows.
+- Add aggregations to group rows. Without them, collapsed groups give the user no information about their contents.
+- Choose an aggregation that makes sense for the column. Sum quantities and notionals, but average (or don't aggregate) prices and percentages.
+
+## Next steps
+
+- Control sizing, density and empty states in [Layout](./06-Layout.mdx).
+- See the `DataSource` sort, filter and group types in the [API reference](./09-ApiReference.mdx).

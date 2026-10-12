@@ -1,0 +1,59 @@
+# Migration
+
+Date and time handling was consolidated around `getTemporalInfo` and `EpochTimestamp`. Most of the behaviour changes below are bug fixes, but any client that depended on the previous behaviour should review them.
+
+:::warning[Deprecated]
+Using `long` for timestamp values is deprecated and should no longer be used. The server should provide a data type of `epochtimestamp` or `epochtimestampnano` for timestamp columns. Columns with a `long` data type and a temporal `type` still work, but support may be removed in a future release. See [Migrating from long timestamps](./01-Columns.mdx#migrating-from-long-timestamps).
+:::
+
+## Display
+
+| Change | What to do |
+| ------ | ---------- |
+| A column with `type: "time"` (string form) renders the time only. Previously it rendered date and time unless a pattern was set. | Set `type: "date/time"` if the date should be shown. |
+| Nanosecond values render correctly. Previously the millisecond digits were lost and the sub-millisecond digits appended in the wrong place. | Update any code or tests that parse rendered text. |
+| `epochtimestamp` and `epochtimestampnano` columns default to `type: "date/time"` rather than `"string"`, in `fromServerDataType` and `getDefaultColumnType`. | Set `type: "number"` to show the raw epoch value. |
+| `isNumericColumn` returns `false` for temporal columns, including deprecated `long` columns with a temporal `type`. Numeric formatting and numeric-only filter operators no longer apply. | None, unless you relied on numeric treatment of timestamps. |
+
+## Filters and queries
+
+:::warning[Query strings have changed]
+Filter queries sent to the server for temporal columns are now generated from the column's `serverDataType` and `type`. Code or tests that assert on generated query strings will need updating.
+:::
+
+| Change | What to do |
+| ------ | ---------- |
+| `=` and `!=` on a date (or a start-of-day datetime) become whole-day ranges, and `>`, `>=`, `<`, `<=` use day or second bounds. Previously `col = <midnight>` was sent as exact equality and matched nothing. | Update expected query strings. See [Filtering](./03-Filtering.mdx#type-aware-serialization). |
+| The FilterClause date editor stores the start of the selected day for every operator. Previously `>` and `<=` stored the end of the day (`23:59:59.999`). Queries are unchanged, and persisted filters with end-of-day values give the same query. | Update code that inspects `filter.value` for date clauses. |
+| `DataSource.setFilter` serializes using the `tableSchema` columns, plus an optional `{ columnsByName }`. | Pass `columnsByName` for deprecated `long` timestamp columns, otherwise they are treated as numbers. |
+| Nanosecond columns are filtered in nanoseconds. Previously millisecond values were sent. | None. |
+| `getTypedValue` returns the wire value for `epochtimestamp`, `epochtimestampnano`, `date/time` and `date`: a `number` of milliseconds or a `string` of nanoseconds. It previously returned the raw input string. | Update callers that expected a string. |
+| Time column filters store a `TimeString` (for example `"09:30:00"`) with `extendedOptions`. Previously they stored an epoch value fixed to the day the filter was created. Persisted filters with epoch values are still read correctly. | Update code that inspects `filter.value` for time columns. See [Time of day filters](./03-Filtering.mdx#time-of-day-filters). |
+| `TimeDateFilterOptions.date` is `"yesterday"` or an ISO date string (`yyyy-mm-dd`), replacing a `Date` object, so options can be persisted as JSON. | Convert `Date` values to `yyyy-mm-dd`. |
+| `ExtendedSingleValueFilterClause` emits `>=` and `<=` directly, with second or exact bounds, instead of rewriting them as `>` or `<` with a ±1 adjustment. | Update expected query strings. |
+| A time string with a fraction applies to the period of its precision rather than being compared exactly. On an `epochtimestampnano` column, `= 09:30:00.123` matches the whole millisecond. Millisecond columns are unchanged. | Use 9 fractional digits for an exact nanosecond comparison. |
+| `useFilterContextMenu` filters temporal cell values at the precision of the column filter (or Table), using a range or time of day clause rather than `=` the raw value. | Set `filterPatterns` to control the precision. |
+| The filter parser returns integer literals beyond `Number.MAX_SAFE_INTEGER` as strings. | Handle `string` values for nanosecond columns. |
+| The filter grammar gained `>=` and `<=`, which renumbered the generated term ids in `filter-parser.terms.js`. | Rebuild code that imports numeric term ids directly. |
+
+## Components and APIs
+
+| Change | What to do |
+| ------ | ---------- |
+| `VuuDatePicker`: `onChange` was removed and `value` and `timeZone` were added. `onCommit` receives start-of-day milliseconds in the picker's time zone. | Use `onCommit`. See [VuuDatePicker](./04-Editing.mdx#vuudatepicker). |
+| `FilterClauseValueEditorDate` and `FilterClauseValueEditorTime` need a `temporalInfo` prop, and `value` is `number \| string` rather than `number`. | Pass `getTemporalInfo(column)`. |
+| Editable temporal table cells use the `temporal-input-cell` renderer, so users edit formatted text rather than raw epoch numbers. | Set an explicit renderer if you relied on `input-cell` for these columns. See [Table cells](./04-Editing.mdx#table-cells). |
+| `getDataItemEditControl` commits wire values for temporal fields (a `number` of milliseconds or a `string` of nanoseconds). Date edits keep the time of day and time edits keep the date. | Update `onCommit` handlers that expected text. |
+
+## Deprecated APIs
+
+These still work, but should be replaced:
+
+| Deprecated | Replacement |
+| ---------- | ----------- |
+| `long` server data type for timestamps, with a temporal `type` | `epochtimestamp` or `epochtimestampnano` |
+| `isDateTimeDataType(column)` | `getTemporalInfo(column)`, or `isDateTimeDataValue(column)` |
+| `isTimeDataType(column)` | `getTemporalInfo(column)?.kind === "time"`, or `isTimeDataValue(column)` |
+| `dateFilterAsQuery(clause, opts)` | `temporalFilterAsQuery(clause, temporalInfo, options)` |
+
+See the [API reference](./05-ApiReference.mdx) for the replacements.

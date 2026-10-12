@@ -1,25 +1,32 @@
 export {
   asTimeString,
+  asTimeStringMillis,
   decrementTimeUnitValue,
   incrementTimeUnitValue,
   isValidTimeString,
+  isValidTimeStringMillis,
+  normaliseTimeString,
   Time,
   toCalendarDate,
   type DateStringISO,
   type Hours,
+  type Milliseconds,
   type Minutes,
   type Seconds,
   type TimeString,
+  type TimeStringMillis,
   type TimeUnit,
   type TimeUnitValue,
   updateTimeString,
   zeroTime,
+  zeroTimeMillis,
   zeroTimeUnit,
 } from "./date-utils";
 export {
   dateTimePattern,
   defaultPatternsByType,
   fallbackDateTimePattern,
+  withDateTimePattern,
 } from "./dateTimePattern";
 export * from "./formatter";
 export {
@@ -31,3 +38,7 @@ export {
   type DateTimePattern,
   type TimePattern,
 } from "./types";
+export { defaultDateTimePatternByKind } from "./dateTimePattern";
+export { EpochTimestamp, type TemporalEncoding } from "./EpochTimestamp";
+export * from "./temporal";
+export * from "./time-zone";

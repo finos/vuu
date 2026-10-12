@@ -1,12 +1,12 @@
 import { Table, TableProps } from "@vuu-ui/vuu-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { TestTableName, getSchema } from "@vuu-ui/vuu-data-test";
 import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 import { SchemaColumn } from "@vuu-ui/vuu-data-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { DemoTableContainer } from "./DemoTableContainer";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
-import { useData } from "@vuu-ui/vuu-utils";
+import { getMaxScrollHeight, useData } from "@vuu-ui/vuu-utils";
 
 const extendColumnConfig = (
   columns: readonly SchemaColumn[],
@@ -54,3 +54,8 @@ const TestTable = ({
 export const TwoHundredColumns = (props: Partial<TableProps>) => (
   <TestTable tableName="TwoHundredColumns" {...props} width={914} />
 );
+
+export const MaxScrollHeight = () => {
+  const [maxScrollHeight] = useState(() => getMaxScrollHeight());
+  return <div data-testid="max-scroll-height">{maxScrollHeight}</div>;
+};

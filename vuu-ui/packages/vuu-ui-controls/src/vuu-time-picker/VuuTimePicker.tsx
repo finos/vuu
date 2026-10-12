@@ -1,26 +1,45 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { CommitHandler, TimeString } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { HTMLAttributes } from "react";
-import { TimeInput, TimeInputProps } from "../time-input/TimeInput";
+import {
+  TimeInput,
+  TimeInputMillisecondsProps,
+  TimeInputProps,
+  TimeInputSecondsProps,
+} from "../time-input/TimeInput";
 
 import timePickerCss from "./VuuTimePicker.css";
 
-export interface VuuTimePickerProps
-  extends Pick<TimeInputProps, "defaultValue" | "onChange" | "value">,
-    Omit<
-      HTMLAttributes<HTMLDivElement>,
-      "defaultValue" | "onChange" | "value"
-    > {
-  onCommit: CommitHandler<HTMLInputElement, TimeString>;
-}
+type VuuTimePickerHtmlAttributes = Omit<
+  HTMLAttributes<HTMLDivElement>,
+  "defaultValue" | "onChange" | "value"
+>;
+
+type TimePickerInputProps =
+  "defaultValue" | "milliseconds" | "onChange" | "onCommit" | "value";
+
+export type VuuTimePickerSecondsProps = Pick<
+  TimeInputSecondsProps,
+  TimePickerInputProps
+> &
+  VuuTimePickerHtmlAttributes;
+
+export type VuuTimePickerMillisecondsProps = Pick<
+  TimeInputMillisecondsProps,
+  TimePickerInputProps
+> &
+  VuuTimePickerHtmlAttributes;
+
+export type VuuTimePickerProps =
+  VuuTimePickerSecondsProps | VuuTimePickerMillisecondsProps;
 
 const classBase = "vuuTimePicker";
 
 export const VuuTimePicker = ({
   className,
   defaultValue,
+  milliseconds,
   onChange,
   onCommit,
   value,
@@ -36,10 +55,13 @@ export const VuuTimePicker = ({
   return (
     <div {...htmlAttributes} className={cx(classBase, className)}>
       <TimeInput
-        defaultValue={defaultValue}
-        onChange={onChange}
-        onCommit={onCommit}
-        value={value}
+        {...({
+          defaultValue,
+          milliseconds,
+          onChange,
+          onCommit,
+          value,
+        } as TimeInputProps)}
       />
     </div>
   );

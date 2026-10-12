@@ -5,13 +5,18 @@ import type {
   EditSessionMode,
   SchemaColumn,
   SessionType,
-  UndoRowChangeResult,
 } from "@vuu-ui/vuu-data-types";
 import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter, isRpcError, StaleUpdateError } from "@vuu-ui/vuu-utils";
+import type { TableEditSession } from "./TableEditSession";
 
 export type EditState = "clean" | "dirty" | "invalid" | "stale";
 export type EditActionType = "deleteRow" | "addRow" | "editCell";
+export type EditSessionValue = VuuRowDataItemType | object;
+export type EditCommitOptions = {
+  dataSourceValue?: VuuRowDataItemType;
+  syncToDataSource?: boolean;
+};
 /** Column name to default value mapping applied to every addRow call when a column is absent from the row data. */
 export type RowDefaultDataItemValues = Record<string, VuuRowDataItemType>;
 export type EditSessionApi = "createSessionDataSource" | "beginEditSession";
@@ -25,6 +30,11 @@ export type EditSessionConstructorProps = {
   /** Default column values merged into every addRow call for absent columns. Pass a stable reference. */
   rowDefaults?: RowDefaultDataItemValues;
 };
+
+export type AddRowResultData = {
+  key?: string | number;
+};
+
 const toEditSessionMode = (copyOption: CopyOption): EditSessionMode => {
   switch (copyOption) {
     case "All":
@@ -60,8 +70,8 @@ export class EditError extends Error {}
 export class SupersededEditError extends Error {}
 
 type CellEdit = {
-  originalValue: VuuRowDataItemType;
-  editedValue: VuuRowDataItemType;
+  originalValue: EditSessionValue;
+  editedValue: EditSessionValue;
   isValid: boolean;
 };
 
@@ -79,12 +89,16 @@ type EditSessionEvents = {
   newRow: (newRowState: NewRowState) => void;
 };
 
-export class EditSession extends EventEmitter<EditSessionEvents> {
+export class EditSession
+  extends EventEmitter<EditSessionEvents>
+  implements TableEditSession
+{
   static readonly newRowKey = "__vuu_new_row__";
   /**
    *  Row key => row edits
    */
   #rowEdits = new Map<string, RowEditDetails>();
+  #addedRowKeys = new Set<string>();
   #editCount = 0;
   #deleteCount = 0;
   #addCount = 0;
@@ -155,6 +169,20 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   get isDirty(): boolean {
     return this.editState !== "clean";
   }
+  get canCancel() {
+    return (
+      this.lifecycle.status === "active" ||
+      (this.lifecycle.status === "error" && this.lifecycle.operation === "end")
+    );
+  }
+
+  get canSave() {
+    return (
+      this.canCancel &&
+      (this.editState === "dirty" || this.editState === "stale") &&
+      this.invalidCount === 0
+    );
+  }
 
   #emitEditStateChange(oldState: EditState, force = false) {
     const newState = this.editState;
@@ -173,20 +201,22 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   #setDeleteCount(val: number) {
-    if (val !== this.#deleteCount) {
+    const newCount = Math.max(0, val);
+    if (newCount !== this.#deleteCount) {
       const oldState = this.editState;
       const oldCount = this.#deleteCount;
-      this.#deleteCount = val;
-      this.#emitEditStateChange(oldState, oldCount === 0 || val === 0);
+      this.#deleteCount = newCount;
+      this.#emitEditStateChange(oldState, oldCount === 0 || newCount === 0);
     }
   }
 
   #setAddCount(val: number) {
-    if (val !== this.#addCount) {
+    const newCount = Math.max(0, val);
+    if (newCount !== this.#addCount) {
       const oldState = this.editState;
       const oldCount = this.#addCount;
-      this.#addCount = val;
-      this.#emitEditStateChange(oldState, oldCount === 0 || val === 0);
+      this.#addCount = newCount;
+      this.#emitEditStateChange(oldState, oldCount === 0 || newCount === 0);
     }
   }
 
@@ -341,9 +371,10 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       throw Error("[EditSession] datasource does not support deleting rows");
     }
 
-    // We rely purely on the datasource-supplied selectedRowsCount for counting deletions
-    // captured before the RPC call since execution deselects the deleted rows.
     const selectedRowsCount = this.dataSource?.selectedRowsCount ?? 0;
+    if (selectedRowsCount === 0) {
+      return { data: undefined, type: "SUCCESS_RESULT" };
+    }
 
     const response = await deleteSelectedRows.call(
       this.dataSource,
@@ -359,6 +390,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     if (selectedRowsCount > 0) {
       this.#setDeleteCount(this.#deleteCount + selectedRowsCount);
     }
+    await this.dataSource?.select?.({ type: "DESELECT_ALL" });
     return response;
   }
 
@@ -380,6 +412,10 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       );
     }
     if (!isRpcError(response)) {
+      const key = (response.data as AddRowResultData | undefined)?.key;
+      if (key !== undefined && key !== null) {
+        this.#addedRowKeys.add(String(key));
+      }
       this.#setAddCount(this.#addCount + 1);
     }
     return response;
@@ -456,16 +492,14 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
 
     if (action === "deleteRow") {
-      this.#deleteCount--;
+      this.#deleteCount = Math.max(0, this.#deleteCount - 1);
     }
 
-    // If the server deleted a newly inserted row, decrement addCount
-    const wasInsertedRow =
-      action === "addRow" ||
-      (response?.data as UndoRowChangeResult | undefined)?.wasInsertedRow ===
-        true;
+    // If the row was newly inserted, decrement addCount
+    const wasInsertedRow = action === "addRow" || this.#addedRowKeys.has(key);
     if (wasInsertedRow) {
-      this.#addCount--;
+      this.#addedRowKeys.delete(key);
+      this.#addCount = Math.max(0, this.#addCount - 1);
     }
 
     this.#emitEditStateChange(oldState);
@@ -481,6 +515,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         .map((columnName) => [key, columnName] as const),
     );
     this.#rowEdits.clear();
+    this.#addedRowKeys.clear();
     this.#cellCommitRevisions.clear();
     this.#editCount = 0;
     this.#deleteCount = 0;
@@ -638,7 +673,9 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
       this.#setLifecycle({ status: "ending", sessionDataSource });
 
       try {
-        await this.dataSource?.endEditSession?.(saveChanges, force);
+        if (sessionDataSource.status !== "unsubscribed" || saveChanges) {
+          await this.dataSource?.endEditSession?.(saveChanges, force);
+        }
         this.#clearEdits();
         this.#sessionDataSource = undefined;
         this.#setLifecycle({ status: "idle" });
@@ -688,8 +725,8 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     key: string,
     cellEdits: Map<string, CellEdit>,
     column: string,
-    originalValue: VuuRowDataItemType,
-    editedValue: VuuRowDataItemType,
+    originalValue: EditSessionValue,
+    editedValue: EditSessionValue,
     isValid: boolean,
   ) {
     const wasEdited = this.isCellEdited(key, column);
@@ -760,12 +797,35 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     return this.#cellCommitRevisions.get(key)?.get(columnName) === revision;
   }
 
+  async cancel(
+    key: string,
+    columnName: string,
+    restoredValue: VuuRowDataItemType,
+  ): Promise<RpcResult> {
+    const cellEdits = this.#rowEdits.get(key)?.cellEdits;
+    const cellEdit = cellEdits?.get(columnName);
+    if (this.inEditMode && cellEdits && cellEdit && !cellEdit.isValid) {
+      // Only an invalid edit can be outstanding, a valid one would already
+      // reflect the restored value. Invalid values are never sent to server.
+      this.#storeCellEdit(
+        key,
+        cellEdits,
+        columnName,
+        cellEdit.originalValue,
+        restoredValue,
+        true,
+      );
+    }
+    return { data: undefined, type: "SUCCESS_RESULT" };
+  }
+
   async commit(
     key: string,
     columnName: string,
-    originalValue: VuuRowDataItemType,
-    typedValue: string | number | boolean,
+    originalValue: EditSessionValue,
+    typedValue: EditSessionValue,
     isValid: boolean,
+    { dataSourceValue, syncToDataSource = true }: EditCommitOptions = {},
   ): Promise<RpcResult> {
     if (
       this.#lifecycle.status !== "active" &&
@@ -790,11 +850,20 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
         isValid,
       );
 
-      if (this.dataSource?.editCell) {
+      if (syncToDataSource && this.dataSource?.editCell) {
+        const valueForDataSource = dataSourceValue ?? typedValue;
+        if (
+          typeof valueForDataSource === "object" &&
+          valueForDataSource !== null
+        ) {
+          throw new Error(
+            "Custom edit values require a scalar dataSourceValue.",
+          );
+        }
         const response = await this.dataSource.editCell(
           key,
           columnName,
-          typedValue,
+          valueForDataSource as VuuRowDataItemType,
         );
         if (!this.inEditMode) {
           // Edit session ended in the meantime; exit gracefully.

@@ -1,6 +1,7 @@
 import cx from "clsx";
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -22,12 +23,17 @@ import { ColumnFilter, ColumnFilterProps } from "../column-filter/ColumnFilter";
 import {
   filterDescriptorHasFilter,
   isNullFilter,
+  useColumnFilterRegistry,
   useSavedFilters,
 } from "../filter-provider/FilterContext";
 import {
   filtersAreEqual,
   getColumnValueFromFilter,
+  getDefaultTimeRange,
+  isTimeDataValue,
+  withDateTimePattern,
   isBetweenOperator,
+  type DateTimePattern,
 } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -40,29 +46,55 @@ const notEmpty = (value: ColumnFilterValue) =>
   Array.isArray(value) ? value[0] !== "" && value[1] !== "" : value !== "";
 
 export interface FilterContainerProps
-  extends HTMLAttributes<HTMLDivElement>,
-    ColumnFilterContainerHookProps {
+  extends HTMLAttributes<HTMLDivElement>, ColumnFilterContainerHookProps {
   children: ReactNode;
   filterProviderKey?: string;
 }
 
-export interface FilterContainerColumnFilterProps
-  extends Omit<ColumnFilterProps, "defaultValue" | "onCommit" | "value"> {
+export interface FilterContainerColumnFilterProps extends Omit<
+  ColumnFilterProps,
+  "defaultValue" | "onCommit" | "value"
+> {
   defaultValue?: ColumnFilterValue;
+  /**
+   * See ColumnFilter pattern. Defaults to the pattern configured for the
+   * column by FilterProvider columnFilterPatterns or columnTypeFilterPatterns,
+   * if any.
+   */
+  pattern?: DateTimePattern;
 }
 
 export const FilterContainerColumnFilter = ({
-  column,
+  column: columnProp,
   operator = "=",
+  pattern: patternProp,
   variant,
   ...props
 }: FilterContainerColumnFilterProps) => {
+  const { getColumnFilterPattern } = useColumnFilterRegistry();
+  const pattern = patternProp ?? getColumnFilterPattern(columnProp);
+  const { date, time } = pattern ?? {};
+  const column = useMemo(
+    () =>
+      withDateTimePattern(
+        columnProp,
+        date || time ? ({ date, time } as DateTimePattern) : undefined,
+      ),
+    [columnProp, date, time],
+  );
   const {
     filterProviderKey,
     onChange: onFilterContextChange,
     onCommit: onFilterContextCommit,
     register,
   } = useFilterContext(column, true);
+
+  const { registerColumnFilterColumn } =
+    useColumnFilterRegistry(filterProviderKey);
+  useEffect(
+    () => registerColumnFilterColumn(column),
+    [column, registerColumnFilterColumn],
+  );
 
   const initialValue = useMemo(
     () => register(column, operator),
@@ -86,8 +118,8 @@ export const FilterContainerColumnFilter = ({
 
       if (isNullFilter(currentFilter) && notEmpty(valueRef.current)) {
         if (Array.isArray(valueRef.current)) {
-          if (column.type === "time") {
-            valueRef.current = ["00:00:00", "23:59:59"];
+          if (isTimeDataValue(column)) {
+            valueRef.current = getDefaultTimeRange(column);
           } else {
             valueRef.current = ["", ""];
           }

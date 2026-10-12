@@ -1,0 +1,10 @@
+/* css/legacy/foundations/color.css */
+.salt-theme {
+  --salt-color-blue-500: rgb(var(--salt-color-blue-500-rgb));
+  --salt-color-blue-500-rgb: 38, 112, 169;
+  --salt-color-unused: red;
+}
+@font-face {
+  font-family: "Fixture Sans";
+  src: url(fixture.woff2) format("woff2");
+}

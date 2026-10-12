@@ -7,6 +7,8 @@ import type {
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   DataSourceSuspenseProps,
+  SetFilterOptions,
+  TableSchema,
   WithBaseFilter,
   WithFullConfig,
 } from "@vuu-ui/vuu-data-types";
@@ -27,7 +29,7 @@ import {
   withConfigDefaults,
 } from "./datasource-utils";
 import { Range } from "../range-utils";
-import { filterAsQuery } from "../filters";
+import { filterAsQuery, getColumnsByNameForFilter } from "../filters";
 import { Filter } from "@vuu-ui/vuu-filter-types";
 
 export type ConfigWithVisualLink = WithBaseFilter<WithFullConfig> & {
@@ -176,9 +178,14 @@ export abstract class BaseDataSource
     };
   }
 
-  setFilter(filter: Filter) {
+  setFilter(filter: Filter, options?: SetFilterOptions) {
     const dataSourceFilter: DataSourceFilter = {
-      filter: filterAsQuery(filter),
+      filter: filterAsQuery(filter, {
+        columnsByName: getColumnsByNameForFilter(
+          (this as { tableSchema?: TableSchema }).tableSchema,
+          options?.columnsByName,
+        ),
+      }),
       filterStruct: filter,
     };
     this.filter = dataSourceFilter;

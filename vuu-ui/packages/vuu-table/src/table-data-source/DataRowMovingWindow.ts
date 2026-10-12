@@ -15,8 +15,9 @@ export class DataRowMovingWindow {
   }
 
   setRowCount = (rowCount: number) => {
-    if (rowCount < this.data.length) {
-      this.data.length = rowCount;
+    const dataLength = Math.max(0, rowCount - this.#range.from);
+    if (dataLength < this.data.length) {
+      this.data.length = dataLength;
     }
 
     this.rowCount = rowCount;

@@ -1,8 +1,8 @@
 import { useCallback, useSyncExternalStore } from "react";
-import type { EditSession } from "./EditSession";
+import type { TableEditSession } from "./TableEditSession";
 
 export const useCellEdited = (
-  editSession: EditSession | undefined,
+  editSession: TableEditSession | undefined,
   key: string,
   columnName: string,
 ) => {

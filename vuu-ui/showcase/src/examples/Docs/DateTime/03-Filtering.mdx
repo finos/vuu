@@ -1,0 +1,214 @@
+import { LivePreview } from "../components/LivePreview";
+import {
+  ContextMenuFilterColumnFilterPatterns,
+  ContextMenuFilterMatchesColumnFilter,
+  ContextMenuFilterPatterns,
+  DateColumnFilters,
+  DateFilterClause,
+  FilterPatternOverride,
+  TemporalFilterQueries,
+  TimeColumnFilters,
+  TimeFilterClause,
+} from "./03-Filtering.examples";
+
+# Filtering
+
+On the server, a filter on a temporal column compares it with epoch literals in the column's encoding: milliseconds for `epochtimestamp`, nanoseconds for `epochtimestampnano`. Users think in dates and times of day instead. "Trades on 30 September" is a range of timestamps, and what that range is depends on the column's time zone and encoding. So the UI converts a temporal filter clause to a query using the column descriptor.
+
+## Type-aware serialization
+
+`temporalFilterAsQuery(clause, temporalInfo)` interprets the clause value at one of three granularities:
+
+| Granularity | When                                                                                                                                             | Effect                                                                                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **day**     | the column kind is `date`, or the value on a `datetime` column is exactly the start of a day in the column time zone (as a date picker produces) | The clause applies to the whole calendar day.                                                                                                          |
+| **period**  | a time of day string, or a whole-second value on a `time` column                                                                                 | The clause applies to the period of the time string's precision: the whole second for `hh:mm:ss`, the whole millisecond for `hh:mm:ss.fff`, and so on. |
+| **exact**   | anything else, or a period no longer than the column encoding unit (a millisecond for `epochtimestamp`, a nanosecond for `epochtimestampnano`)   | The value is compared exactly.                                                                                                                         |
+
+For day and period granularity, each operator is expanded against a half-open range `[from, to)`:
+
+| Operator | Query                        |
+| -------- | ---------------------------- |
+| `=`      | `(col >= from and col < to)` |
+| `!=`     | `(col < from or col >= to)`  |
+| `>`      | `col >= to`                  |
+| `>=`     | `col >= from`                |
+| `<`      | `col < from`                 |
+| `<=`     | `col < to`                   |
+
+Day bounds are calculated in the column time zone, and are correct across daylight saving transitions (a day may be 23 or 25 hours long). On an `epochtimestampnano` column, the bounds are emitted in nanoseconds.
+
+<LivePreview>
+  <TemporalFilterQueries />
+
+```ts
+import { filterAsQuery } from "@vuu-ui/vuu-utils";
+
+// tradeDate is an epochtimestamp column, type "date", in Europe/London
+const filter = { column: "tradeDate", op: "=", value: startOfDayMillis };
+filterAsQuery(filter, { columnsByName });
+// (tradeDate >= 1790722800000 and tradeDate < 1790809200000)
+```
+
+</LivePreview>
+
+## Where serialization happens
+
+Both `DataSource.setFilter` implementations (`VuuDataSource` for server data, `ArrayDataSource` for local data) accept an optional second argument:
+
+```ts
+dataSource.setFilter(filter, { columnsByName });
+```
+
+The column descriptors used are the `tableSchema` columns merged with any client supplied `columnsByName`. Client descriptors win, so a deprecated `long` column with a temporal `type` is still recognised. `getColumnsByNameForFilter(tableSchema, columnsByName)` builds this map.
+
+`ArrayDataSource` also uses its own `columnDescriptors`. When a filter contains temporal clauses, it is converted to a query and then evaluated locally, so local and server data sources return the same rows.
+
+`filterAsQuery(filter, { columnsByName })` is the general entry point. `dateFilterAsQuery` is deprecated; use `temporalFilterAsQuery`.
+
+## Filter language
+
+The filter grammar (`@vuu-ui/vuu-filter-parser`) supports `=`, `!=`, `>`, `>=`, `<`, `<=`, `in`, `starts`, `ends` and `contains`. Integer literals too large for a JavaScript number, such as epoch nanoseconds, are kept as strings so that they are not rounded.
+
+## Time of day filters
+
+A filter such as "executed after 09:30" should mean the same thing every day. So `time` columns are filtered with a time string plus `extendedOptions`, rather than with an epoch value fixed when the filter was created:
+
+```ts
+const filter: ExtendedFilter = {
+  column: "execTime",
+  op: ">=",
+  value: "09:30:00",
+  extendedOptions: {
+    type: "TimeString",
+    date: "today", // or "yesterday", or an ISO date "2026-09-30"
+    encoding: "epochNanos",
+    timeZone: "Europe/London",
+  },
+};
+```
+
+`ExtendedSingleValueFilterClause` resolves the time against `date`, in `timeZone`, only when the query is created. A saved filter therefore stays relative to "today", and the options are plain JSON. Time strings may include a fraction (`hh:mm:ss.fff`, up to 9 digits). The clause applies to the period of that precision, so `09:30:00.123` on a nanosecond column matches the whole millisecond.
+
+## Column filters
+
+`FilterContainer` builds a filter from a set of column filter controls, using `FilterAggregator`:
+
+- **`date` and `datetime` columns** produce a clause whose value is the start of the selected day, in the column encoding. The query covers the whole day.
+- **`time` columns** produce a time of day clause, as above. Epoch values in filters saved by earlier versions are converted to the equivalent time of day.
+- **Operators** (`=`, `>`, `>=`, `<`, `<=` and `between`) are honoured for temporal columns. Other columns always use `=`.
+- An empty temporal value removes that column's clause.
+
+The default `between` range for a time column is `00:00:00` to `23:59:59`, or `00:00:00.000` to `23:59:59.999` for a column with millisecond time format (`getDefaultTimeRange`).
+
+<LivePreview>
+  <DateColumnFilters />
+</LivePreview>
+
+<LivePreview>
+  <TimeColumnFilters />
+</LivePreview>
+
+### Filter pattern
+
+By default a column filter uses the column's `type` to choose its control: a date picker for `date` and `datetime` columns, or a time picker for `time` columns (with milliseconds if the time pattern is `hh:mm:ss.ms`). To use different formatting in a filter than in the Table, set the `pattern` prop on `ColumnFilter` or `FilterContainerColumnFilter` (which otherwise uses the pattern configured for the column by `FilterProvider` `columnFilterPatterns` or `columnTypeFilterPatterns`, see [Filtering from the Table context menu](#filtering-from-the-table-context-menu)):
+
+```tsx
+const execTime: ColumnDescriptor = {
+  name: "execTime",
+  serverDataType: "epochtimestampnano",
+  type: {
+    name: "date/time",
+    formatting: { pattern: { date: "yyyy-mm-dd", time: "hh:mm:ss" } },
+  },
+};
+
+// Table shows 2026-09-30 16:05:09.123456789
+<FilterContainerColumnFilter
+  column={execTime}
+  operator="between"
+  pattern={{ time: "hh:mm:ss.ms" }} // time of day today, with milliseconds
+/>;
+```
+
+The pattern sets the filter's kind. A pattern with only a time gives a `time` filter, with only a date a `date` filter, and with both a `datetime` filter. The column's time zone and other formatting are kept. The column passed to the change and commit handlers has the pattern applied (`withDateTimePattern`), so values are handled to match the control. The time picker accepts at most millisecond precision.
+
+<LivePreview>
+  <FilterPatternOverride />
+</LivePreview>
+
+### Filtering from the Table context menu
+
+`useFilterContextMenu` (in `@vuu-ui/vuu-filters`) adds "Set filter" and "Add … to existing filter" items to the Table context menu, which filter on the value of the clicked cell. A temporal value is filtered at the precision with which the filter displays it, not the precision of the cell. For example, where the Table shows nanoseconds and the column filter shows a time with milliseconds, the filter matches the whole millisecond.
+
+The precision is taken from, in order:
+
+1. The `filterPatterns` option of `useFilterContextMenu`, keyed by column name. The pattern is applied to the Table column with `withDateTimePattern`.
+2. The `FilterContainerColumnFilter` for the column, within the same `FilterProvider`. Each one registers its column (with any `pattern` applied) via `useColumnFilterRegistry` when it mounts. A `datetime` column filter shows a date picker, so it filters the whole day. A `time` column filter shows the whole second, or the whole millisecond with the `hh:mm:ss.ms` pattern, whatever the Table shows.
+3. The `columnFilterPatterns` prop of the `FilterProvider`, keyed by column name, else its `columnTypeFilterPatterns` prop, keyed by `serverDataType`. These describe the ColumnFilters whether or not they are mounted, so use them where ColumnFilters are created on demand (for example in a panel that is not yet open). They also provide the default `pattern` of each `FilterContainerColumnFilter`, so the pattern is configured once. A `columnTypeFilterPatterns` entry applies only to a column with a `serverDataType`: a Table column has one (from the table schema), a column passed to a ColumnFilter may not. Only temporal columns are affected, so a `long` entry applies only to `long` columns with a date/time `type`.
+4. The Table column formatting.
+
+| Filter kind | Clause                                                                                                                                                                     |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `date`      | `=` the start of the day, which matches the whole day.                                                                                                                     |
+| `time`      | `=` a time of day, truncated to the displayed precision. Like any time of day filter, this resolves against today, so a value from another day will not match its own row. |
+| `datetime`  | `between-inclusive` the start and end of the displayed period (for example the whole second), or `=` where the period is the encoding unit.                                |
+
+The menu item label shows the value as the filter displays it. `getTemporalCellFilter(column, value)` (in `@vuu-ui/vuu-utils`) builds the clause.
+
+```tsx
+const filterContextMenuProps = useFilterContextMenu({
+  // optional, otherwise the column filter or Table precision is used
+  filterPatterns: { execTime: { date: "yyyy-mm-dd", time: "hh:mm:ss.ms" } },
+});
+
+<ContextMenuProvider {...filterContextMenuProps}>
+  <Table config={config} dataSource={dataSource} />
+</ContextMenuProvider>;
+```
+
+<LivePreview>
+  <ContextMenuFilterMatchesColumnFilter />
+</LivePreview>
+
+<LivePreview>
+  <ContextMenuFilterPatterns />
+</LivePreview>
+
+Where ColumnFilters are created on demand, configure their patterns on the `FilterProvider`:
+
+```tsx
+<FilterProvider
+  // by column name
+  columnFilterPatterns={{
+    execTime: { time: "hh:mm:ss" },
+    tradeTime: { date: "dd MMM yyyy" },
+  }}
+  // by serverDataType, for columns not named above
+  columnTypeFilterPatterns={{ epochtimestampnano: { time: "hh:mm:ss.ms" } }}
+>
+  {/* no pattern prop, the FilterProvider pattern is used */}
+  <FilterContainerColumnFilter column={execTimeColumn} />
+</FilterProvider>
+```
+
+<LivePreview>
+  <ContextMenuFilterColumnFilterPatterns />
+</LivePreview>
+
+## Filter clauses
+
+In the `FilterEditor` and `FilterClause` components, the operators and value editor are chosen with `getTemporalInfo`:
+
+- **`FilterClauseValueEditorDate`** shows a date picker in the column time zone, and commits the start of the day in the column encoding. It is used for `date` and `datetime` columns.
+- **`FilterClauseValueEditorTime`** shows a time picker and commits a time string. It is used for `time` columns.
+
+<LivePreview>
+  <DateFilterClause />
+</LivePreview>
+
+<LivePreview>
+  <TimeFilterClause />
+</LivePreview>
+
+Filter values in pills, tooltips and clause lists are displayed with `formatTemporalFilterValue`: a time string is shown as entered, and a whole-day value is shown as a date.

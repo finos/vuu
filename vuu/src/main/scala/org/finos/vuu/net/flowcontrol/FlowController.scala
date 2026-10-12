@@ -10,9 +10,12 @@ case class SendHeartbeat() extends FlowControlOp
 
 case class BatchSize(size: Int) extends FlowControlOp
 
+object DefaultBatchSize extends BatchSize(300)
+
 case class Disconnect() extends FlowControlOp
 
 trait FlowController {
+
   def process(msg: ViewServerMessage): Unit
 
   def shouldSend(): FlowControlOp
@@ -47,7 +50,7 @@ private case class DefaultFlowController(sessionId: ClientSessionId)(implicit ti
       logger.warn(s"[SESSION] Disconnecting session ${sessionId.sessionId} because it has not responded for ${timeSinceLastMessage}ms")
       Disconnect()
     else
-      BatchSize(300)
+      DefaultBatchSize
   }
 
   private def shouldSendHeartbeat(timeSinceLastMessage: Long, timeSinceLastHeartbeat: Long): Boolean = {
@@ -77,6 +80,6 @@ object NoHeartbeatFlowController extends FlowController {
   }
 
   override def shouldSend(): FlowControlOp = {
-    BatchSize(300)
+    DefaultBatchSize
   }
 }

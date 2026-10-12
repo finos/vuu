@@ -1,0 +1,8 @@
+.salt-theme.salt-theme-next[data-mode="light"],
+.salt-theme.salt-theme-next[data-mode="dark"][data-accent="blue"] {
+  --salt-palette-accent: var(--salt-color-blue-500);
+}
+
+.salt-theme.salt-theme-next[data-mode=dark][data-accent=teal] {
+  --salt-palette-accent: var(--salt-color-teal-500);
+}

@@ -1,6 +1,7 @@
 import {
-  DynamicFeatureProps,
+  type DynamicFeatureProps,
   importCSS,
+  importFeature,
   registerComponent,
 } from "@vuu-ui/vuu-utils";
 import React, { useEffect } from "react";
@@ -21,7 +22,7 @@ const useCachedFeature = (url: string) => {
   if (!componentsMap.has(url)) {
     componentsMap.set(
       url,
-      React.lazy(() => import(/* @vite-ignore */ url)),
+      React.lazy(() => importFeature(url)),
     );
   }
 

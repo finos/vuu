@@ -1,5 +1,6 @@
 import type { RpcResult, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
-import { isRpcError } from "@vuu-ui/vuu-utils";
+import type { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import { isRpcError, metadataKeys } from "@vuu-ui/vuu-utils";
 import type { CsvUploadError } from "../CsvUpload";
 import type { CsvParseError } from "./csv-parse";
 import { CSV_FIRST_DATA_ROW_NUMBER } from "./csv-constants";
@@ -138,3 +139,78 @@ export const executeBatchRpcCalls = async <T>(
 
   return { errors, results };
 };
+
+export type SessionRowError = {
+  rowNum: number;
+  message: string;
+};
+
+export type SessionRowUpdateListener = () => void;
+
+export const getInlineRowErrorMessage = (result: unknown): string | undefined => {
+  if (isRecord(result) && "data" in result && isRecord(result.data)) {
+    const data = result.data;
+    const msg = data.vuuMsg ?? data.msg;
+    if (typeof msg === "string" && msg.trim() !== "") {
+      return msg.trim();
+    }
+  }
+  return undefined;
+};
+
+export const getRowVuuMsgError = (
+  row: DataSourceRow,
+  vuuMsgDataIndex: number,
+  vuuRowNumDataIndex: number,
+): SessionRowError | undefined => {
+  if (vuuMsgDataIndex === -1) {
+    return undefined;
+  }
+  const msg = Array.isArray(row)
+    ? row[vuuMsgDataIndex]
+    : (row as Record<string, unknown> | undefined)?.vuuMsg;
+  if (typeof msg === "string" && msg.trim() !== "") {
+    const rowNum =
+      vuuRowNumDataIndex !== -1 && row[vuuRowNumDataIndex] !== undefined
+        ? Number(row[vuuRowNumDataIndex])
+        : Number(row[metadataKeys.IDX]) + CSV_FIRST_DATA_ROW_NUMBER;
+    return { rowNum, message: msg.trim() };
+  }
+  return undefined;
+};
+
+export const waitForSessionErrors = (
+  isRemote: boolean,
+  sessionErrors: Map<string | number, SessionRowError>,
+  receivedRowKeys: Set<string | number>,
+  expectedRowCount: number,
+  listeners: Set<SessionRowUpdateListener>,
+  timeoutMs = 500,
+): Promise<SessionRowError[]> => {
+  if (sessionErrors.size > 0 || !isRemote) {
+    return Promise.resolve([...sessionErrors.values()]);
+  }
+
+  return new Promise<SessionRowError[]>((resolve) => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const onUpdate = () => {
+      if (
+        sessionErrors.size > 0 ||
+        receivedRowKeys.size >= expectedRowCount
+      ) {
+        cleanup();
+        resolve([...sessionErrors.values()]);
+      }
+    };
+    const cleanup = () => {
+      clearTimeout(timeoutId);
+      listeners.delete(onUpdate);
+    };
+    listeners.add(onUpdate);
+    timeoutId = setTimeout(() => {
+      cleanup();
+      resolve([...sessionErrors.values()]);
+    }, timeoutMs);
+  });
+};
+

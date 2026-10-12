@@ -1,9 +1,7 @@
 import { expect, test } from "../../../../../playwright/fixtures";
+import type { Page } from "@playwright/test";
 
-
-import {
-  FilterContainerFilter,
-} from "@vuu-ui/vuu-filter-types";
+import { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
 import { ColumnFilterProps } from "../../column-filter/ColumnFilter";
 
 const BBG = { name: "bbg", serverDataType: "string" };
@@ -12,6 +10,11 @@ const VUU_CREATED = {
   name: "vuuCreatedTimestamp",
   serverDataType: "long",
   type: "time",
+};
+const VUU_CREATED_MILLIS = {
+  name: "vuuCreatedTimestamp",
+  serverDataType: "long",
+  type: { name: "time", formatting: { pattern: { time: "hh:mm:ss.ms" } } },
 };
 
 test.describe("ColumnFilter", () => {
@@ -371,6 +374,148 @@ test.describe("ColumnFilter", () => {
   });
 });
 
+test.describe("Time range filter, with milliseconds", () => {
+  test("renders default full day range at millisecond precision", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Filters/ColumnFilter/ControlledTimeRangeFilterMilliseconds");
+    const inputs = page.locator(".vuuColumnFilter").getByRole("textbox");
+    await expect(inputs).toHaveCount(2);
+    await expect(inputs.nth(0)).toHaveValue("00:00:00.000");
+    await expect(inputs.nth(1)).toHaveValue("23:59:59.999");
+    await expect(inputs.nth(0)).toHaveClass(/vuuTimeInput-milliseconds/);
+    await expect(inputs.nth(1)).toHaveClass(/vuuTimeInput-milliseconds/);
+  });
+
+  test("typing hours and milliseconds invokes change handlers with millisecond values", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Filters/ColumnFilter/ControlledTimeRangeFilterMilliseconds");
+    const records = page.getByTestId("callback-records");
+    const inputs = page.locator(".vuuColumnFilter").getByRole("textbox");
+    const input1 = inputs.nth(0);
+    const input2 = inputs.nth(1);
+
+    // click on the HOURS value of first input
+    const box1 = (await input1.boundingBox())!;
+    await page.mouse.click(box1.x + 10, box1.y + 10);
+    await page.keyboard.press("1");
+    await page.keyboard.press("2");
+    await expect(input1).toHaveValue("12:00:00.000");
+
+    await expect(records).toHaveValue(
+      JSON.stringify([
+        ["10:00:00.000", VUU_CREATED_MILLIS, "between"],
+        ["12:00:00.000", VUU_CREATED_MILLIS, "between"],
+      ]),
+    );
+
+    // click on the MILLISECONDS value of second input
+    const box2 = (await input2.boundingBox())!;
+    await page.mouse.click(box2.x + box2.width - 8, box2.y + 10);
+    await expect(input2).toHaveSelection(9, 12);
+    await page.keyboard.press("1");
+    await page.keyboard.press("2");
+    await page.keyboard.press("3");
+    await expect(input2).toHaveValue("23:59:59.123");
+
+    const recorded = JSON.parse(await records.inputValue()) as unknown[][];
+    expect(recorded.at(-1)).toEqual([
+      "23:59:59.123",
+      VUU_CREATED_MILLIS,
+      "between",
+    ]);
+  });
+});
+
+test.describe("Time range filter with milliseconds, with FilterContainer", () => {
+  test("commit applies filter with millisecond precision values", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      "Filters/ColumnFilter/ContainerManagedTimeRangeFilterMilliseconds",
+    );
+    const records = page.getByTestId("callback-records");
+    const inputs = page.locator(".vuuColumnFilter").getByRole("textbox");
+    const input1 = inputs.nth(0);
+    const input2 = inputs.nth(1);
+
+    await expect(input1).toHaveValue("00:00:00.000");
+    await expect(input2).toHaveValue("23:59:59.999");
+
+    const box = (await input1.boundingBox())!;
+    await page.mouse.click(box.x + 10, box.y + 10);
+    await page.keyboard.press("1");
+    await page.keyboard.press("2");
+    await expect(input1).toHaveValue("12:00:00.000");
+    await page.keyboard.press("Tab");
+    await expect(input2).toBeFocused();
+    await expect(input2).toHaveSelection(0, 2);
+    await page.keyboard.press("1");
+    await page.keyboard.press("3");
+    await expect(input2).toHaveValue("13:59:59.999");
+    await page.keyboard.press("Enter");
+
+    await expect(input1).toHaveValue("12:00:00.000");
+    await expect(input2).toHaveValue("13:59:59.999");
+
+    await expect(page.locator(".vuuFilterDisplay")).toContainText(
+      "12:00:00.000 - 13:59:59.999",
+    );
+
+    await expect(records).not.toHaveValue("[]");
+    const [[filter, query]] = JSON.parse(await records.inputValue());
+    expect(filter).toEqual({
+      op: "and",
+      filters: [
+        {
+          column: "vuuCreatedTime",
+          op: ">",
+          value: "12:00:00.000",
+          extendedOptions: {
+            date: "today",
+            encoding: "epochMillis",
+            timeZone: "local",
+            type: "TimeString",
+          },
+        },
+        {
+          column: "vuuCreatedTime",
+          op: "<",
+          value: "13:59:59.999",
+          extendedOptions: {
+            date: "today",
+            encoding: "epochMillis",
+            timeZone: "local",
+            type: "TimeString",
+          },
+        },
+      ],
+    });
+    // query uses timestamps, range must preserve millisecond precision
+    const [, from, to] = /> (\d+) and vuuCreatedTime < (\d+)$/.exec(query)!;
+    expect(Number(to) - Number(from)).toBe(2 * 60 * 60 * 1000 - 1);
+  });
+
+  test("filter provided via container is rendered with millisecond values", async ({
+    mount,
+    page,
+  }) => {
+    await mount(
+      "Filters/ColumnFilter/ContainerManagedTimeRangeFilterMillisecondsWithFilter",
+    );
+    const inputs = page.locator(".vuuColumnFilter").getByRole("textbox");
+    await expect(inputs.nth(0)).toHaveValue("12:00:00.250");
+    await expect(inputs.nth(1)).toHaveValue("13:00:00.750");
+    await expect(page.locator(".vuuFilterDisplay")).toContainText(
+      "12:00:00.250 - 13:00:00.750",
+    );
+  });
+});
+
 test.describe("ColumnFilter with FilterContainer", () => {
   test("Text filter, select value from list commits filter", async ({
     mount,
@@ -522,6 +667,166 @@ test.describe("ColumnFilter with FilterContainer", () => {
         [{ column: "lotSize", op: "=", value: 1001 }],
         ["filter cleared"],
       ]),
+    );
+  });
+});
+
+test.describe("ColumnFilter toggle variant", () => {
+  test("uses labels as button text when provided", async ({ mount }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ControlledToggleFilterWithLabels",
+    );
+    await expect(component.getByRole("radio")).toHaveCount(3);
+    const longButton = component.getByRole("radio", {
+      name: "Long",
+      exact: true,
+    });
+    await expect(longButton).toHaveAttribute("value", "BUY");
+    await expect(
+      component.getByRole("radio", { name: "BUY", exact: true }),
+    ).toHaveCount(0);
+    await longButton.click();
+    await expect(longButton).toBeChecked();
+  });
+});
+
+test.describe("ColumnFilter toggle variant with FilterContainer", () => {
+  test("uses labels as button text, filter uses values", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedToggleFilterWithLabels",
+    );
+    await expect(component.getByRole("radio")).toHaveCount(3);
+    const shortButton = component.getByRole("radio", {
+      name: "Short",
+      exact: true,
+    });
+    await expect(shortButton).toHaveAttribute("value", "SELL");
+    await expect(
+      component.getByRole("radio", { name: "SELL", exact: true }),
+    ).toHaveCount(0);
+    await shortButton.click();
+    await expect(shortButton).toBeChecked();
+    await expect(page.locator(".vuuFilterDisplay")).toContainText("SELL");
+  });
+
+  test("selects button matching filter provided via container", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedToggleFilterWithFilter",
+    );
+    await expect(
+      component.getByRole("radio", { name: "BUY", exact: true }),
+    ).toBeChecked();
+  });
+
+  test("selects labelled button matching filter provided via container", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedToggleFilterWithLabelsAndFilter",
+    );
+    await expect(
+      component.getByRole("radio", { name: "Short", exact: true }),
+    ).toBeChecked();
+  });
+
+  test("clicking All clears filter provided via container", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedToggleFilterWithFilter",
+    );
+    await component.getByRole("radio", { name: "All", exact: true }).click();
+    await expect(
+      component.getByRole("radio", { name: "All", exact: true }),
+    ).toBeChecked();
+    await expect(page.locator(".vuuFilterDisplay")).not.toContainText("BUY");
+  });
+});
+
+test.describe("ColumnFilter boolean toggle variant with FilterContainer", () => {
+  const records = (page: Page) => page.getByTestId("callback-records");
+
+  test("defaults values to true/false when none provided", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedBooleanToggleFilter",
+    );
+    await expect(component.getByRole("radio")).toHaveCount(3);
+    await expect(
+      component.getByRole("radio", { name: "true", exact: true }),
+    ).toHaveAttribute("value", "true");
+    await expect(
+      component.getByRole("radio", { name: "false", exact: true }),
+    ).toHaveAttribute("value", "false");
+  });
+
+  test("selecting a value generates a boolean filter", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedBooleanToggleFilter",
+    );
+    await component.getByRole("radio", { name: "true", exact: true }).click();
+    await component.getByRole("radio", { name: "false", exact: true }).click();
+    await expect(records(page)).toHaveValue(
+      JSON.stringify([
+        [{ column: "supported", op: "=", value: true }],
+        [{ column: "supported", op: "=", value: false }],
+      ]),
+    );
+  });
+
+  test("labels are used as button text, filter uses boolean values", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedBooleanToggleFilterWithLabels",
+    );
+    const yesButton = component.getByRole("radio", {
+      name: "Yes",
+      exact: true,
+    });
+    await expect(yesButton).toHaveAttribute("value", "true");
+    await yesButton.click();
+    await expect(yesButton).toBeChecked();
+    await expect(records(page)).toHaveValue(
+      JSON.stringify([[{ column: "supported", op: "=", value: true }]]),
+    );
+  });
+
+  test("selects button matching boolean filter provided via container", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedBooleanToggleFilterWithFilter",
+    );
+    await expect(
+      component.getByRole("radio", { name: "false", exact: true }),
+    ).toBeChecked();
+  });
+
+  test("clicking All clears boolean filter provided via container", async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      "Filters/ColumnFilter/ContainerManagedBooleanToggleFilterWithFilter",
+    );
+    await component.getByRole("radio", { name: "All", exact: true }).click();
+    await expect(
+      component.getByRole("radio", { name: "All", exact: true }),
+    ).toBeChecked();
+    await expect(records(page)).toHaveValue(
+      JSON.stringify([["filter cleared"]]),
     );
   });
 });

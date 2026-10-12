@@ -1,0 +1,278 @@
+import { LivePreview } from "../components/LivePreview";
+import {
+  ColumnClassName,
+  CustomProperties,
+  DisplayAttributes,
+  RowClassNames,
+} from "./07-Styling.examples";
+
+# Styling
+
+The Table is styled with plain CSS and Salt design tokens, so it follows the active Salt theme, mode (light or dark) and density with no extra work. You can customize it at four levels:
+
+| Level                                   | Mechanism                                   | Use for                                                   |
+| --------------------------------------- | ------------------------------------------- | --------------------------------------------------------- |
+| [Display attributes](#display-attributes) | `zebraStripes`, `rowSeparators`, `columnSeparators` in `TableConfig` | The basic look of the grid. Users can change these at runtime. |
+| [Row class names](#row-class-names)     | `rowClassNameGenerators` in `TableConfig`   | Styling whole rows based on their data.                   |
+| [Column class names](#column-class-names) | `className` on a `ColumnDescriptor`       | Styling every cell (and the header) in a column.          |
+| [CSS custom properties](#css-custom-properties) | `--vuuTable*` variables               | Changing colors, padding and fonts for one table or a whole app. |
+
+For styling individual cells based on their value, use a [cell renderer](./03-Formatting.mdx#cell-renderers).
+
+## Display attributes
+
+Three `TableConfig` flags control the basic look of the grid:
+
+| Attribute          | Default | Effect                                                         |
+| ------------------ | ------- | -------------------------------------------------------------- |
+| `zebraStripes`     | `false` | Gives alternate rows a different background color.            |
+| `rowSeparators`    | `false` | Draws a horizontal line between rows.                          |
+| `columnSeparators` | `false` | Draws a vertical line between columns.                         |
+
+They are part of `TableConfig`, so they are saved with the rest of the user's configuration.
+
+<LivePreview stacked>
+  <DisplayAttributes />
+
+```tsx
+type DisplayAttribute = "zebraStripes" | "rowSeparators" | "columnSeparators";
+
+export const DisplayAttributes = () => {
+  const [attributes, setAttributes] = useState<DisplayAttribute[]>([
+    "zebraStripes",
+  ]);
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns,
+      zebraStripes: attributes.includes("zebraStripes"),
+      rowSeparators: attributes.includes("rowSeparators"),
+      columnSeparators: attributes.includes("columnSeparators"),
+    }),
+    [attributes],
+  );
+  const dataSource = useStockDataSource();
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value as DisplayAttribute;
+    setAttributes((current) =>
+      current.includes(value)
+        ? current.filter((attribute) => attribute !== value)
+        : current.concat(value),
+    );
+  };
+
+  return (
+    <>
+      <CheckboxGroup
+        checkedValues={attributes}
+        direction="horizontal"
+        onChange={handleChange}
+      >
+        <Checkbox label="zebraStripes" value="zebraStripes" />
+        <Checkbox label="rowSeparators" value="rowSeparators" />
+        <Checkbox label="columnSeparators" value="columnSeparators" />
+      </CheckboxGroup>
+      <Table config={config} dataSource={dataSource} height={250} width={800} />
+    </>
+  );
+};
+```
+
+</LivePreview>
+
+### Best practices
+
+- Use zebra stripes or row separators on wide tables, to help the eye follow a row across the screen. Using both together is usually more than you need.
+- Use column separators when columns are narrow and their values could be mistaken for each other.
+
+## Row class names
+
+A row class name generator is a function that takes a row and returns a CSS class name, or nothing. Use them to style whole rows based on their data, for example to show buy and sell orders in different colors, or to highlight filled orders.
+
+Generators are registered by name, so a `TableConfig` can refer to them and still be saved as JSON:
+
+1. Register the generator with `registerComponent(id, generator, "row-class-generator")`.
+2. List its id in `rowClassNameGenerators` in the `TableConfig`. If you list more than one, the Table applies all the class names they return.
+
+Here, rows where the price has moved by 1.5% or more are tinted green or red:
+
+<LivePreview>
+  <RowClassNames />
+
+```tsx
+const bigMovers: RowClassGenerator = {
+  id: "docs-big-movers",
+  fn: (dataRow: DataRow) => {
+    const change = dataRow.change as number;
+    if (change >= 0.015) {
+      return "docs-big-mover-up";
+    } else if (change <= -0.015) {
+      return "docs-big-mover-down";
+    }
+  },
+};
+
+registerComponent("docs-big-movers", bigMovers, "row-class-generator");
+
+export const RowClassNames = () => {
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns,
+      rowClassNameGenerators: ["docs-big-movers"],
+      rowSeparators: true,
+    }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  return (
+    <Table config={config} dataSource={dataSource} height={300} width={800} />
+  );
+};
+```
+
+```css
+.vuuTableRow.docs-big-mover-up {
+  background-color: var(--salt-status-success-background);
+}
+
+.vuuTableRow.docs-big-mover-down {
+  background-color: var(--salt-status-error-background);
+}
+```
+
+</LivePreview>
+
+### Best practices
+
+- Keep generators fast and free of side effects. They run every time a row renders, which for a live data source can be many times a second.
+- Use row styling for information about the whole row (status, side, alerts). For a single value, use a cell renderer instead.
+- Don't use color alone to carry meaning. Pair it with a value or icon that users can read, such as a status column.
+
+## Column class names
+
+Set `className` on a `ColumnDescriptor` to add a class to the column's header cell and every data cell in the column.
+
+<LivePreview>
+  <ColumnClassName />
+
+```tsx
+export const ColumnClassName = () => {
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns: columns.map((column) =>
+        column.name === "price"
+          ? { ...column, className: "docs-key-column" }
+          : column,
+      ),
+      rowSeparators: true,
+    }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  return (
+    <Table config={config} dataSource={dataSource} height={250} width={800} />
+  );
+};
+```
+
+```css
+.vuuTableCell.docs-key-column,
+.vuuTableHeaderCell.docs-key-column {
+  background-color: var(--salt-container-secondary-background);
+  font-weight: var(--salt-text-fontWeight-strong);
+}
+```
+
+</LivePreview>
+
+## CSS custom properties
+
+The Table defines CSS custom properties for its main colors and spacing. Their defaults come from Salt tokens. Set them on a class passed to the Table's `className` to style one table, or higher up (for example on `.vuuTable` in your app's stylesheet) to style every table.
+
+<LivePreview>
+  <CustomProperties />
+
+```tsx
+export const CustomProperties = () => {
+  const config = useMemo<TableConfig>(
+    () => ({ columns, rowSeparators: true, zebraStripes: true }),
+    [],
+  );
+  const dataSource = useStockDataSource();
+
+  return (
+    <Table
+      autoSelectRowKey="MSFT.OQ"
+      className="docs-custom-table"
+      config={config}
+      dataSource={dataSource}
+      height={250}
+      width={800}
+    />
+  );
+};
+```
+
+```css
+.docs-custom-table {
+  --vuuTable-background: #fdfcf7;
+  --vuuTable-zebraColor: #f4f1e6;
+  --vuuTableHeaderCell-background: #ece6d2;
+  --vuuTableRow-background-selected: #dbe8f7;
+  --vuuTableRow-bookend-background-selected: #2a6ebb;
+  --vuuTableRow-background-highlighted: #efe9d6;
+  --vuuTableCell-padding: 0 12px;
+  --vuuTable-fontFamily: Georgia, serif;
+}
+```
+
+</LivePreview>
+
+| Custom property                              | Default                                     | Description                                                       |
+| -------------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------- |
+| `--vuuTable-background`                      | `--salt-container-primary-background`       | Background color of the table.                                    |
+| `--vuuTable-zebraColor`                      | `--salt-container-secondary-background`     | Background color of alternate rows when `zebraStripes` is on.     |
+| `--vuuTable-fontFamily`                      | `--salt-typography-fontFamily`              | Font family of the table.                                         |
+| `--VuuTableRow-fontSize`                     | `--salt-text-fontSize`                      | Font size of data rows. Note the capital `V`.                     |
+| `--VuuTableHeader-fontSize`                  | `--salt-text-label-fontSize`                | Font size of column headers. Note the capital `V`.                |
+| `--vuuTableHeader-background`                | `--vuuTable-background`                     | Background color of the header area.                              |
+| `--vuuTableHeader-borderColor`               | `--salt-separable-tertiary-borderColor`     | Color of the line below the column headers.                       |
+| `--vuuTableHeaderCell-background`            | `--vuuTable-background`                     | Background color of column header cells.                          |
+| `--vuuTableRow-background-highlighted`       | `--salt-selectable-background-hover`        | Background color of the row under the mouse or keyboard focus.    |
+| `--vuuTableRow-background-selected`         | `--salt-selectable-background-selected`     | Background color of selected rows.                                |
+| `--vuuTableRow-bookend-background-selected`  | `--salt-selectable-background-selected`     | Color of the selection bookends at each end of a selected row.    |
+| `--vuuTableRow-borderColor-selected`         | `--salt-selectable-borderColor-selected`    | Border color around a selected block when `rowSelectionBorder` is on. |
+| `--vuuTable-row-selection-borderRadius`      | `5px`                                       | Corner radius of the selection border.                            |
+| `--vuuTableCell-padding`                     | `0 11px 0 8px`                              | Padding of data cells.                                            |
+| `--vuuTableCell-outline`                     | `solid 2px --salt-focused-outlineColor`     | Outline of the focused cell.                                      |
+| `--vuuTablePinnedColumn-borderColor`         | `--salt-container-primary-borderColor`      | Border color at the edge of pinned columns.                       |
+| `--vuuTable-column-selected-borderColor`     | `--salt-selectable-borderColor-selected`    | Border color of a selected column header.                         |
+
+### CSS class names
+
+To style parts of the Table not covered by custom properties, target these class names. Keep selectors scoped to your own class, so that they don't affect other tables.
+
+| Selector                       | Element                                                         |
+| ------------------------------ | --------------------------------------------------------------- |
+| `.vuuTable`                    | The root element. Your `className` is added here.               |
+| `.vuuTableRow`                 | A data row.                                                     |
+| `.vuuTableRow-even`            | An even row, when `zebraStripes` is on.                         |
+| `.vuuTableRow-highlighted`     | The highlighted (hovered or focused) row.                       |
+| `.vuuTableRow[aria-selected="true"]` | A selected row.                                           |
+| `.vuuTableRow-noSelect`        | A row that can't be selected (see `isRowSelectable`).           |
+| `.vuuTableCell`                | A data cell.                                                    |
+| `.vuuTableCell-right`          | A right-aligned data cell.                                      |
+| `.vuuTableHeaderCell`          | A column header cell.                                           |
+| `.vuuPinLeft`, `.vuuPinRight`  | A cell or header cell in a pinned column.                       |
+
+### Best practices
+
+- Prefer custom properties to selectors. They are the supported way to style the Table, and they are less likely to break when the Table's internals change.
+- Use Salt tokens rather than hard-coded colors, as in the row class name example. Then your styles follow the theme into dark mode. (The colors in the custom properties example are hard-coded only to make the change obvious.)
+
+## Next steps
+
+- Learn about keyboard support and screen readers in [Accessibility](./08-Accessibility.mdx).
+- See every config option in the [API reference](./09-ApiReference.mdx).

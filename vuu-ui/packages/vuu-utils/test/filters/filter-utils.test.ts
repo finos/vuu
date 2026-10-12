@@ -64,6 +64,25 @@ describe("getColumnValueFromFilter", () => {
       ),
     ).toEqual("GBP");
   });
+  it("returns stringified value from a boolean filter clause", () => {
+    const column = { name: "supported", serverDataType: "boolean" } as const;
+    expect(
+      getColumnValueFromFilter(column, "=", {
+        column: "supported",
+        op: "=",
+        value: false,
+      }),
+    ).toEqual("false");
+    expect(
+      getColumnValueFromFilter(column, "=", {
+        op: "and",
+        filters: [
+          { column: "currency", op: "=", value: "GBP" },
+          { column: "supported", op: "=", value: true },
+        ],
+      }),
+    ).toEqual("true");
+  });
   it("returns default value for a simple filter clause, when not found", () => {
     expect(
       getColumnValueFromFilter(

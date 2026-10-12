@@ -2,4 +2,13 @@
     .vuuToggleFilter-onlyAvailableValue:not([aria-checked="true"],:hover) {
         background-color: var(--vuuToggleFilter-implicitActive-bg, var(--salt-actionable-bold-background));
     }
+
+    /* Mirrors Salt disabled ToggleButton styling, but remains interactive */
+    .vuuToggleFilter-unavailableValue:not([aria-checked="true"]) {
+        background: var(--toggleButton-background);
+        border-color: var(--toggleButton-borderColor);
+        color: var(--toggleButton-text-color);
+        cursor: var(--vuuToggleFilter-unavailableValue-cursor, var(--salt-cursor-disabled));
+        opacity: var(--vuuToggleFilter-unavailableValue-opacity, 0.4);
+    }
 }

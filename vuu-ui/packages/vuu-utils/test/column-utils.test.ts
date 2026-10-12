@@ -3,6 +3,7 @@ import type { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { describe, expect, it } from "vitest";
 import {
   addColumnToSubscribedColumns,
+  applyRuntimeColumnWidthsToConfig,
   applyWidthToColumns,
   getColumnsInViewport,
 } from "../src/column-utils";
@@ -507,5 +508,35 @@ describe("addColumnToSubscribedColumns", () => {
       { name: "price", serverDataType: "double" },
       { name: "vuuCreatedTimestamp", serverDataType: "long" },
     ]);
+  });
+});
+
+describe("applyRuntimeColumnWidthsToConfig", () => {
+  it("does not leak group column into config, uses widths of grouped columns", () => {
+    const runtimeColumns = [
+      {
+        name: "group-col",
+        isGroup: true,
+        width: 300,
+        columns: [{ name: "ccy", width: 120 }],
+      },
+      { name: "price", width: 80 },
+    ] as unknown as RuntimeColumnDescriptor[];
+
+    const config = applyRuntimeColumnWidthsToConfig(
+      {
+        columnLayout: "fit",
+        columns: [{ name: "ccy" }, { name: "price" }, { name: "qty" }],
+      },
+      runtimeColumns,
+    );
+    expect(config).toEqual({
+      columnLayout: "manual",
+      columns: [
+        { name: "ccy", width: 120 },
+        { name: "price", width: 80 },
+        { name: "qty", width: 100 },
+      ],
+    });
   });
 });

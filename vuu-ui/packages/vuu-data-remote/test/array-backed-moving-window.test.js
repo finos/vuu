@@ -178,4 +178,46 @@ describe("ArrayBackedMovingWindow", () => {
       ]);
     });
   });
+
+  describe("render key related issues", () => {
+    test("setClientRange returns rows added at both ends when range grows in both directions", () => {
+      const movingWindow = new ArrayBackedMovingWindow(
+        { from: 10, to: 20 },
+        { from: 0, to: 40 },
+        10,
+      );
+      movingWindow.setRowCount(100);
+      applyUpdates(movingWindow, createTableRows("VP-001", 0, 40));
+
+      const [, clientRows] = movingWindow.setClientRange(5, 25);
+      expect(clientRows.map((r) => r.rowIndex).sort((a, b) => a - b)).toEqual([
+        5, 6, 7, 8, 9, 20, 21, 22, 23, 24,
+      ]);
+    });
+
+    test("setClientRange updates clientRange when new range end equals rowCount", () => {
+      const movingWindow = new ArrayBackedMovingWindow(
+        { from: 0, to: 30 },
+        { from: 0, to: 40 },
+        10,
+      );
+      movingWindow.setRowCount(20);
+      movingWindow.setClientRange(0, 20);
+      expect(movingWindow.clientRange.to).toEqual(20);
+    });
+
+    test("setRowCount discards rows beyond rowCount when range.from > 0", () => {
+      const movingWindow = new ArrayBackedMovingWindow(
+        { from: 100, to: 130 },
+        { from: 100, to: 130 },
+        0,
+      );
+      movingWindow.setRowCount(200);
+      applyUpdates(movingWindow, createTableRows("VP-001", 100, 130, 200));
+
+      movingWindow.setRowCount(110);
+      expect(movingWindow.getAtIndex(109)).toBeDefined();
+      expect(movingWindow.getAtIndex(115)).toBeUndefined();
+    });
+  });
 });

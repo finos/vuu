@@ -1,0 +1,24 @@
+.vuuTableRow.docs-big-mover-up {
+  background-color: var(--salt-status-success-background);
+}
+
+.vuuTableRow.docs-big-mover-down {
+  background-color: var(--salt-status-error-background);
+}
+
+.vuuTableCell.docs-key-column,
+.vuuTableHeaderCell.docs-key-column {
+  background-color: var(--salt-container-secondary-background);
+  font-weight: var(--salt-text-fontWeight-strong);
+}
+
+.docs-custom-table {
+  --vuuTable-background: #fdfcf7;
+  --vuuTable-zebraColor: #f4f1e6;
+  --vuuTableHeaderCell-background: #ece6d2;
+  --vuuTableRow-background-selected: #dbe8f7;
+  --vuuTableRow-bookend-background-selected: #2a6ebb;
+  --vuuTableRow-background-highlighted: #efe9d6;
+  --vuuTableCell-padding: 0 12px;
+  --vuuTable-fontFamily: Georgia, serif;
+}

@@ -8,7 +8,7 @@ import {
 } from "@vuu-ui/vuu-table-extras";
 import { Button } from "@salt-ds/core";
 import { Table } from "@vuu-ui/vuu-table";
-import type { TableConfig } from "@vuu-ui/vuu-table-types";
+import type { ColumnDescriptor, TableConfig } from "@vuu-ui/vuu-table-types";
 import { useCallback, useMemo, useState } from "react";
 
 const TABLE_NAME = "instruments";
@@ -399,6 +399,61 @@ const CsvExportWithHookContent = () => {
 export const CsvExportWithHook = () => (
   <LocalDataSourceProvider>
     <CsvExportWithHookContent />
+  </LocalDataSourceProvider>
+);
+
+const INSTRUMENTS_CLIENT_COLUMNS: (ExportColumnDescriptor | ColumnDescriptor)[] = [
+  { name: "ric", label: "RIC Code" },
+  { name: "currency" },
+  {
+    name: "compositeKey",
+    source: "client",
+    label: "Composite Key",
+    exportFormatter: (_val, row) => `${row?.ric}:${row?.currency}`,
+  } as ExportColumnDescriptor,
+  {
+    name: "actions",
+    source: "client",
+  } as ColumnDescriptor,
+];
+
+const CsvExportWithClientColumnsContent = () => {
+  const [status, setStatus] = useState<string | undefined>();
+  const dataSource = useMemo(
+    () => simulModule.createDataSource(TABLE_NAME),
+    [],
+  );
+
+  const handleExport = useCallback(async () => {
+    setStatus(undefined);
+    try {
+      await exportToCsv(dataSource as DataSource, {
+        filename: "instruments-client-cols.csv",
+        columns: INSTRUMENTS_CLIENT_COLUMNS,
+        onError: (err) => setStatus(`Export failed: ${err.message}`),
+        onSuccess: () => setStatus("Download started"),
+      });
+    } catch (e) {
+      setStatus(`Export failed: ${(e as Error).message}`);
+    }
+  }, [dataSource]);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: 12 }}>
+      <Button onClick={handleExport}>Download instruments-client-cols.csv</Button>
+      <p style={{ fontSize: 12, margin: 0, color: "#555" }}>
+        Exports ric, currency, and client-sourced compositeKey; excludes actions
+      </p>
+      {status ? (
+        <span style={{ fontSize: 12, fontWeight: 600 }}>{status}</span>
+      ) : null}
+    </div>
+  );
+};
+
+export const CsvExportWithClientColumns = () => (
+  <LocalDataSourceProvider>
+    <CsvExportWithClientColumnsContent />
   </LocalDataSourceProvider>
 );
 

@@ -1,75 +1,69 @@
-import { useCallback, useState } from "react";
-import { getLocalTimeZone, DateValue } from "@internationalized/date";
-import { CommitHandler, toCalendarDate } from "@vuu-ui/vuu-utils";
-import { NumericFilterClauseOp } from "@vuu-ui/vuu-filter-types";
-import { FilterClauseValueEditor } from "../filterClauseTypes";
+import { useCallback } from "react";
+import {
+  type CommitHandler,
+  EpochTimestamp,
+  isValidTimeString,
+  type TemporalInfo,
+  type TimeString,
+} from "@vuu-ui/vuu-utils";
+import type { NumericFilterClauseOp } from "@vuu-ui/vuu-filter-types";
+import type { FilterClauseValueEditor } from "../filterClauseTypes";
 import { VuuTimePicker } from "@vuu-ui/vuu-ui-controls";
 
 interface FilterClauseValueEditorTimeProps
   extends Pick<FilterClauseValueEditor, "onChangeValue" | "inputProps"> {
   className?: string;
-  value: number | undefined;
   operator: NumericFilterClauseOp;
+  temporalInfo: TemporalInfo;
+  /**
+   * A TimeString (hh:mm:ss) or, for filters created by an earlier version,
+   * an epoch value.
+   */
+  value: number | string | undefined;
 }
 
-export const FilterClauseValueEditorTime = (
-  props: FilterClauseValueEditorTimeProps,
-) => {
-  const { className, onChangeValue, operator, value } = props;
-  const toEpochMilliS = getEpochMillisConverter(operator);
+const pad = (n: number) => `${n}`.padStart(2, "0");
 
-  const [date, setDate] = useState<DateValue | undefined>(() =>
-    getInitialState(value),
-  );
+const toTimeString = (
+  value: number | string | undefined,
+  { encoding, timeZone }: TemporalInfo,
+): TimeString | undefined => {
+  if (isValidTimeString(value)) {
+    return value;
+  }
+  const timestamp = EpochTimestamp.fromWire(value, encoding);
+  if (timestamp) {
+    const { hour, minute, second } = timestamp.getFields(timeZone);
+    return `${pad(hour)}:${pad(minute)}:${pad(second)}` as TimeString;
+  }
+};
 
-  const handleCommit = useCallback<CommitHandler<HTMLInputElement, string>>(
-    (e, selectedDateInputValue) => {
-      console.log("change time");
-      if (selectedDateInputValue) {
-        const dateValue = toCalendarDate(new Date(selectedDateInputValue));
-        setDate(dateValue);
-        if (selectedDateInputValue /* && source === "calendar"*/) {
-          onChangeValue(toEpochMilliS(dateValue));
-        }
+/**
+ * Time filter value editor. Emits a TimeString value. When the filter query
+ * is created, the time is resolved against today's date (in the column time
+ * zone), so a saved filter always applies to the current day.
+ */
+export const FilterClauseValueEditorTime = ({
+  className,
+  onChangeValue,
+  temporalInfo,
+  value,
+}: FilterClauseValueEditorTimeProps) => {
+  const handleCommit = useCallback<CommitHandler<HTMLInputElement, TimeString>>(
+    (_e, timeString) => {
+      if (isValidTimeString(timeString)) {
+        onChangeValue(timeString);
       }
     },
-    [onChangeValue, toEpochMilliS],
+    [onChangeValue],
   );
-
-  const onBlur = useCallback(() => {
-    date && onChangeValue(toEpochMilliS(date));
-  }, [date, onChangeValue, toEpochMilliS]);
 
   return (
     <VuuTimePicker
       data-field="value"
-      // inputProps={inputProps}
       className={className}
-      onBlur={onBlur}
+      defaultValue={toTimeString(value, temporalInfo)}
       onCommit={handleCommit}
-      // selectedDate={date}
     />
   );
 };
-
-function getInitialState(value: FilterClauseValueEditorTimeProps["value"]) {
-  return value ? toCalendarDate(new Date(value)) : undefined;
-}
-
-const getEpochMillisConverter =
-  (op: NumericFilterClauseOp) =>
-  (date: DateValue, timezone: string = getLocalTimeZone()): number => {
-    const d = date.toDate(timezone);
-    switch (op) {
-      case ">":
-      case "<=":
-        d.setHours(23, 59, 59, 999);
-        return d.getTime();
-      case ">=":
-      case "<":
-      case "=": // converted to "< `start of next day` and >= `start of this day`" when query is created
-      case "!=": // converted to ">= `start of next day` or < `start of this day`" when query is created
-        d.setHours(0, 0, 0, 0);
-        return d.getTime();
-    }
-  };

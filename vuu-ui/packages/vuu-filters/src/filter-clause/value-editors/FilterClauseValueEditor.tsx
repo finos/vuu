@@ -8,7 +8,7 @@ import {
   NumericFilterClauseOp,
   SingleValueFilterClauseOp,
 } from "@vuu-ui/vuu-filter-types";
-import { isDateTimeDataValue, isTimeDataValue } from "@vuu-ui/vuu-utils";
+import { getTemporalInfo } from "@vuu-ui/vuu-utils";
 import { ForwardedRef, forwardRef } from "react";
 import { FilterClauseValueEditorDate } from "./FilterClauseValueEditorDate";
 import { FilterClauseValueEditorTime } from "./FilterClauseValueEditorTime";
@@ -49,24 +49,27 @@ export const FilterClauseValueEditor = forwardRef(
       return null;
     }
 
-    if (isDateTimeDataValue(selectedColumn)) {
-      return (
-        <FilterClauseValueEditorDate
-          inputProps={inputProps}
-          className={cx(`${classBase}Field`, `${classBase}Value`)}
-          value={value as number}
-          operator={operator as NumericFilterClauseOp}
-          onChangeValue={onChangeValue}
-        />
-      );
-    } else if (isTimeDataValue(selectedColumn)) {
+    const temporalInfo = getTemporalInfo(selectedColumn);
+    if (temporalInfo?.kind === "time") {
       return (
         <FilterClauseValueEditorTime
           inputProps={inputProps}
           className={cx(`${classBase}Field`, `${classBase}Value`)}
-          value={value as number}
+          value={value as number | string}
           operator={operator as NumericFilterClauseOp}
           onChangeValue={onChangeValue}
+          temporalInfo={temporalInfo}
+        />
+      );
+    } else if (temporalInfo) {
+      return (
+        <FilterClauseValueEditorDate
+          inputProps={inputProps}
+          className={cx(`${classBase}Field`, `${classBase}Value`)}
+          value={value as number | string}
+          operator={operator as NumericFilterClauseOp}
+          onChangeValue={onChangeValue}
+          temporalInfo={temporalInfo}
         />
       );
     }

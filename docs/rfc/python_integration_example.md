@@ -9,7 +9,18 @@ shutdown hooks and exits via `pytest`'s smoke test. See "What actually shipped" 
 the design (the webroot path) had to change from what was originally proposed here. See the
 addendum below for the `Snakes` table extension — also implemented and verified end-to-end, now
 entirely in Python (superseding this doc's original "Non-goals" line about a Python provider API
-being out of scope — see the addendum for why that turned out to be straightforward).
+being out of scope — see the addendum for why that turned out to be straightforward). A second
+addendum below extends `Snakes` further with a `Location` table and a `SnakeLocations` join table —
+both defined in Python, demonstrating Vuu's join-table API from a JPype script. **Status:
+Implemented and verified end-to-end** — see the addendum for the one API mismatch (a Scala varargs
+parameter) found only by actually running it. A third addendum adds a right-click "Delete Selected
+Snake(s)" menu item to `Snakes` and a nested "Convert To..." submenu, backed by RPC handlers
+defined in Python — **Status: Implemented and verified end-to-end**, including one small, reusable
+addition to `vuu-java` (see the addendum for why attaching a menu needed that, where a plain JPype
+proxy did not suffice). A fourth addendum scales `Snakes` up from 23 hand-written rows to
+`SNAKE_COUNT` (10,000 by default) procedurally-generated ones, with `Location` scaling 1:1 as
+always — **Status: Implemented and verified end-to-end**, including actually measuring (not
+assuming) the resulting startup time and per-second tick cadence.
 
 ### Introduction
 
@@ -621,3 +632,902 @@ module's own compiled output — that classpath change is what the Python versio
 needs.
 
 </details>
+
+## Addendum 2: `Location` and `SnakeLocations` — a ticking join table, defined entirely in Python
+
+**Status: Implemented.** Built and run end-to-end against a real JVM (`jpype1==1.7.1`, Temurin JDK
+17 via `JAVA_HOME`): the server starts with `Location` and `SnakeLocations` registered alongside
+`Snakes`, both tables populate correctly, and a debug tap confirmed `SnakeLocations` returns live
+`Snakes` columns (e.g. `name`) joined against changing `Location` coordinates once a second — see
+"Validation" below. One design detail below had to change from what was originally proposed — a
+Scala varargs parameter rejected a plain Python `str` — found only by actually running it, the same
+way the base design's webroot correction was found. `test_start_server.py` was extended and passes.
+
+### Motivation
+
+The `Snakes` addendum proved Python can define a plain table and a manually-driven provider. It
+doesn't touch two things a realistic Vuu module needs: a **join table** (the composed view most UIs
+actually subscribe to) and a provider that **ticks on its own schedule** rather than being driven
+once by a fixed sample list. This addendum adds both, built on top of `Snakes`:
+
+- A new `Location` table — keyed by the same `id` as `Snakes` — holding each snake's current
+  `x_coordinate`/`y_coordinate`.
+- A `SnakeLocations` join table combining `Snakes` and `Location` on `id`, exposing every `Snakes`
+  column plus the two coordinate columns — the thing a client would actually subscribe to, to see
+  snakes moving around in real time.
+- `Location` is populated with one row per existing sample snake at startup, then a background loop
+  ticks new coordinates into it once a second for as long as the server runs, simulating movement.
+
+Everything here is Python-only, same as `Snakes`: `Location`'s `TableDef` and provider reuse the
+same `TableDefBuilder`/`ColumnBuilder`/`TickingProvider` shapes the `Snakes` addendum already
+established, and `SnakeLocations`' `JoinTableDef` is built via `vuu-java`'s
+`JoinTableDefBuilder`/`JoinToBuilder` — Java classes, but plain builders with no Scala-only syntax,
+callable from JPype the same way `TableDefBuilder`/`ColumnBuilder` already are.
+
+### Goals
+
+- `Location` table (namespace `SNAKES`, alongside `Snakes`): key field `id`, columns `id` (string,
+  matching a `Snakes.id`), `x_coordinate` (double), `y_coordinate` (double).
+- `Location` populated with one row per `sample_snakes` entry immediately at startup (same moment
+  `Snakes`' sample rows are ticked in), then a per-second background loop nudges every row's
+  coordinates, for the life of the process.
+- `SnakeLocations` join table: base table `Snakes`, joined to `Location` on `id` (`LeftOuterJoin` —
+  the only join type Vuu has, and the right one here since every snake always has a location),
+  exposing all of `Snakes`' columns plus `x_coordinate`/`y_coordinate`.
+- Both `Location` (table + provider) and `SnakeLocations` (join table) defined in `start_server.py`
+  — no new compiled Java/Scala, no new Maven dependency (`JoinTableDefBuilder`/`JoinToBuilder`
+  already come from `vuu-java`, already on this module's classpath).
+
+### Non-goals
+
+- Realistic movement physics. A small bounded random walk per tick is enough to demonstrate live
+  values flowing through the join to a subscribed viewport — not a goal in itself here.
+- A new join type or multi-level join (joining a join table to another table). `SnakeLocations` is
+  a single, terminal `LeftOuterJoin` between two base tables.
+- Registering the per-second tick loop with `LifecycleContainer` as a first-class `Provider`
+  lifecycle (the way `SimulatedPricesProvider`'s `LifeCycleRunner` does on the Scala side, per
+  `example/price/src/main/scala/org/finos/vuu/provider/simulation/SimulatedPricesProvider.scala`).
+  A plain Python daemon thread is enough for an example script; see "Open questions" below for why
+  this is believed sufficient rather than proven.
+
+### Design
+
+All additions live in `start_server.py`'s `main()`, in two places: the new table/provider/join
+definitions go immediately after the existing `Snakes` definitions (before `snakes_module` is
+built, since `Location` and `SnakeLocations` join `snakes_module`'s own `.addTable`/`.addJoinTable`
+chain); the population-and-tick-loop code goes where the `Snakes` sample data is ticked in today,
+right after `lifecycle.start()`.
+
+#### New imports
+
+```python
+import random
+import threading
+import time
+
+from org.finos.vuu.api import ColumnBuilder, TableDefBuilder, JoinTableDefBuilder, JoinToBuilder
+from org.finos.vuu.core.table import Columns
+from java.util import List as JList
+```
+
+`Columns` (`org.finos.vuu.core.table.Columns`) is the same Scala `object` `SimulationModule` uses
+to build a join table's `joinColumns` (`Columns.allFrom(...)` / `Columns.allFromExceptDefaultAnd(...)`)
+— a static forwarder call, exactly like the `.apply()`/`ModuleFactory.withNamespace(...)` calls
+already confirmed working from JPype in the base design's "Open questions" section.
+
+#### `Location`'s `TableDef`
+
+Same `TableDefBuilder` shape `Snakes` already uses, plus `.joinFields(...)` so `id` is exposed as a
+joinable field — `Snakes`' existing `TableDefBuilder` chain needs the same addition, since a join
+needs the key field declared on *both* sides (mirroring `PriceModule`'s `prices` table and
+`SimulationModule`'s `instruments` table, which both declare `joinFields = List("ric")` before
+`SimulationModule` joins them):
+
+```python
+snakes_table_def = (
+    TableDefBuilder()
+    .name("Snakes")
+    .keyField("id")
+    .joinFields(JList.of("id"))                      # new — exposes "id" as a join key
+    .customColumns(
+        ColumnBuilder()
+        .addString("type")
+        .addString("name")
+        .addString("id")
+        .addInt("age")
+        .addDouble("weight")
+        .build()
+    )
+    .build()
+)
+
+location_table_def = (
+    TableDefBuilder()
+    .name("Location")
+    .keyField("id")
+    .joinFields(JList.of("id"))
+    .customColumns(
+        ColumnBuilder()
+        .addString("id")
+        .addDouble("x_coordinate")
+        .addDouble("y_coordinate")
+        .build()
+    )
+    .build()
+)
+```
+
+#### `Location`'s provider
+
+No new provider class needed — `TickingProvider` (already defined for `Snakes`, see the addendum
+above) is generic over any table's columns (it dispatches on each column's actual `DataType` in
+`tick()`), so it works unchanged for `Location`'s two `double` columns. Only a new factory closure
+is needed, since `ModuleFactory.addTable`'s second argument is per-table:
+
+```python
+@jpype.JImplements("scala.Function2")
+class LocationProviderFactory:
+    @jpype.JOverride
+    def apply(self, table, view_server):
+        return TickingProvider(table)
+```
+
+#### `SnakeLocations`' `JoinTableDef`
+
+`ModuleFactory.addJoinTable` takes a `TableDefContainer => JoinTableDef` function (`scala.Function1`)
+rather than a realized `JoinTableDef` — the same reason `addTable`'s provider argument is a factory
+function rather than a `Provider` instance: at the point this chain is being built, `Location` isn't
+registered in the container yet. `ModuleFactory.asModule()` (see
+`vuu/src/main/scala/org/finos/vuu/core/module/ModuleFactory.scala`) registers every `.addTable(...)`
+call's `TableDef` into the container *before* it realizes any `.addJoinTable(...)` function, so by
+the time this closure runs, `table_def_container.get("SNAKES", "Snakes")` and `.get("SNAKES",
+"Location")` both resolve — same pattern `SimulationModule` uses to reach `PriceModule`'s `prices`
+table via `tableDefs.get(PriceModule.NAME, "prices")`:
+
+```python
+@jpype.JImplements("scala.Function1")
+class SnakeLocationsJoinFactory:
+    @jpype.JOverride
+    def apply(self, table_def_container):
+        snakes_td = table_def_container.get("SNAKES", "Snakes")
+        location_td = table_def_container.get("SNAKES", "Location")
+        # allFromExceptDefaultAnd's excludeColumns is a Scala varargs (String*), which is a
+        # scala.collection.immutable.Seq at the JVM boundary - a plain Python str isn't
+        # accepted (see "Open questions" below), so it's built via the same
+        # ListBuffer().toList() pattern already used elsewhere in this script for Scala List
+        # arguments.
+        exclude_columns = ListBuffer()
+        exclude_columns.append("id")
+        join_columns = list(Columns.allFrom(snakes_td)) + list(
+            Columns.allFromExceptDefaultAnd(location_td, exclude_columns.toList())
+        )
+        return (
+            JoinTableDefBuilder()
+            .name("SnakeLocations")
+            .baseTable(snakes_td)
+            .joinColumns(join_columns)
+            .joinTos(JList.of(
+                JoinToBuilder().table(location_td).leftKey("id").rightKey("id").build()
+            ))
+            .build()
+        )
+```
+
+`Columns.allFrom(snakes_td)` pulls in all of `Snakes`' columns; `Columns.allFromExceptDefaultAnd
+(location_td, ...)` pulls in `Location`'s columns except the default columns and `id` itself (`id`
+is already coming from the `Snakes` side — this is exactly the `excludeColumns` pattern
+`SimulationModule` uses to avoid a duplicate `ric` column when joining `instruments`/`prices`).
+`JoinToBuilder` defaults `joinType` to `LeftOuterJoin`, so it doesn't need to be set explicitly.
+
+#### Registering both with the module
+
+```python
+snakes_module = (
+    ModuleFactory.withNamespace("SNAKES", table_def_container)
+    .addTable(snakes_table_def, SnakesProviderFactory())
+    .addTable(location_table_def, LocationProviderFactory())
+    .addJoinTable(SnakeLocationsJoinFactory())
+    .asModule()
+)
+```
+
+#### Populating `Location` at startup and ticking it every second
+
+Placed right after `lifecycle.start()`, alongside the existing `Snakes` sample-data ticking:
+
+```python
+snakes_provider = server.providerContainer().getProviderForTable("Snakes").get()
+sample_snakes = [
+    {"id": "s1", "name": "Kaa", "type": "Python", "age": 40, "weight": 91.5},
+    # ...as today
+]
+for snake in sample_snakes:
+    snakes_provider.tick(snake["id"], snake)
+
+location_provider = server.providerContainer().getProviderForTable("Location").get()
+
+BOUNDS = 100.0   # coordinate space is a 100x100 square
+STEP = 2.0       # max distance a snake moves per tick, in either axis
+
+positions = {
+    snake["id"]: {"x": random.uniform(0, BOUNDS), "y": random.uniform(0, BOUNDS)}
+    for snake in sample_snakes
+}
+
+def tick_locations() -> None:
+    for snake_id, pos in positions.items():
+        pos["x"] = min(max(pos["x"] + random.uniform(-STEP, STEP), 0.0), BOUNDS)
+        pos["y"] = min(max(pos["y"] + random.uniform(-STEP, STEP), 0.0), BOUNDS)
+        location_provider.tick(
+            snake_id, {"id": snake_id, "x_coordinate": pos["x"], "y_coordinate": pos["y"]}
+        )
+
+tick_locations()  # populate Location with starting positions before reporting ready
+
+def location_loop() -> None:
+    while True:
+        time.sleep(1)
+        tick_locations()
+
+threading.Thread(target=location_loop, name="location-ticker", daemon=True).start()
+```
+
+The `[VUU] Ready` line should also report `Location`'s initial population, mirroring how it already
+reports `Snakes`':
+
+```python
+print(
+    f"[VUU] Ready — wss://{host}:{WS_PORT}/websocket  https://{host}:{HTTPS_PORT}"
+    f"  (ticked {len(sample_snakes)} rows into Snakes, {len(positions)} rows into Location)",
+    flush=True,
+)
+```
+
+A plain `threading.Thread(daemon=True)` is used rather than any JVM-side scheduler — the loop only
+needs to call `.tick(...)` on a Python object once a second, which needs no JPype proxying at all
+(unlike `TickingProvider`/the two factories above, which proxy actual JVM interfaces). This mirrors
+the base design's approach of doing as little through JPype as the goal requires: `LifeCycleRunner`
+(what `SimulatedPricesProvider` uses on the Scala side, in
+`example/price/src/main/scala/org/finos/vuu/provider/simulation/SimulatedPricesProvider.scala`) is
+a JVM-side background-thread abstraction that plain Python `threading` already provides directly.
+
+### Open questions / risks — resolved during implementation
+
+All checked directly against a running JVM (`jpype1==1.7.1`, Temurin JDK 17) before this addendum
+was finalized, the same way the `Snakes` addendum's own open questions were resolved:
+
+1. **`scala.Function1` via `@jpype.JImplements`.** Confirmed — proxies exactly as cleanly as
+   `Provider`/`scala.Function2` did for `Snakes`, for the same reason (single-abstract-method
+   interface at the bytecode level). `ModuleFactory.addJoinTable(SnakeLocationsJoinFactory())`
+   builds and runs with no proxy errors.
+2. **`Column[]` from a Python `list`.** Confirmed — `.joinColumns(join_columns)`, where
+   `join_columns` is a plain Python `list` built from `list(...) + list(...)` on two JPype array
+   results, auto-converts to the Java `Column[]` parameter with no explicit `jpype.JArray(Column)`
+   wrapper needed.
+3. **`java.util.List.of(...)` for `.joinTos(...)`.** Confirmed working as written
+   (`JList.of(JoinToBuilder()....build())`); not separately re-tried with a bare Python list.
+4. **Cross-table resolution via `TableDefContainer.get`.** Confirmed — log output showed `Creating
+   table Location` followed by `Creating joinTable SnakeLocations` and `Adding joinDef for
+   SnakeLocations` with no errors, i.e. `table_def_container.get("SNAKES", "Location")` resolved
+   correctly inside `SnakeLocationsJoinFactory.apply` once `Location` had been added via
+   `.addTable` earlier in the same chain, exactly as `ModuleFactory.asModule()`'s realization order
+   predicted.
+5. **End-to-end confirmation the join actually ticks live.** Confirmed — see "Validation" below.
+6. **Daemon-thread shutdown behaviour.** Confirmed — `test_start_server.py`'s existing SIGTERM/exit
+   code 143 assertion still passes with `location_loop`'s background thread running; it doesn't
+   block interpreter exit or leave the process hanging.
+7. **New finding, not anticipated above:** `Columns.allFromExceptDefaultAnd(table, excludeColumns:
+   String*)`'s varargs parameter is a `scala.collection.immutable.Seq` at the JVM boundary, not a
+   bare `String` — calling it as `Columns.allFromExceptDefaultAnd(location_td, "id")` (as originally
+   sketched above) fails with `TypeError: No matching overloads found for *static*
+   Columns.allFromExceptDefaultAnd(TableDef,str)`. Fixed by building the exclusion list the same way
+   this script already builds `VuuServerConfig`'s Scala `List` arguments —
+   `ListBuffer().append("id").toList()` — and passing that instead. This only surfaced by actually
+   calling it; nothing about the Java-visible method signature (`Columns.allFromExceptDefaultAnd
+   (TableDef, Seq)`, per `javap`-equivalent inspection) makes the varargs-vs-Seq distinction obvious
+   from Python.
+
+### Validation
+
+Checked directly against a running JVM (`jpype1==1.7.1`, Temurin JDK 17), first with a full server
+start and then with a short-lived debug tap added temporarily to `start_server.py` (not part of the
+final diff) that read `SnakeLocations` back directly via `server.tableContainer().getTable
+("SnakeLocations").pullRow("s1")`:
+
+- Server start log confirms `Creating table Location`, `Loading provider for table Location...`,
+  `Creating joinTable SnakeLocations`, `Adding joinDef for SnakeLocations`, and
+  `Initializing class jdk.proxy2.$ProxyN TickingProvider-Location` (the same JDK dynamic-proxy
+  confirmation used to validate `Snakes`' provider) — no exceptions anywhere in the chain.
+- `[VUU] Ready` reports `ticked 23 rows into Snakes, 23 rows into Location`, confirming both
+  tables' startup population ran.
+- The debug tap's `pullRow("s1")` read back `name='Kaa'` (from `Snakes`, via the base-table side of
+  the join) alongside `x_coordinate`/`y_coordinate` (from `Location`) in the same row, and the
+  coordinate values changed across four reads one second apart — direct confirmation the join
+  reflects `Location`'s per-second ticks live, joined against the correct `Snakes` row by `id`, not
+  just that the module built without exceptions.
+- `wss://…:8090/websocket` accepted a plain TCP connect with the new module included, same as the
+  base design and the `Snakes` addendum.
+- `test_start_server.py`'s existing subprocess smoke test (extended with an assertion on the
+  `Location` row count in the `Ready` line) passed: the process starts, reports ready, accepts a
+  websocket TCP connection, and exits with code 143 on `SIGTERM` — confirming the new background
+  tick thread doesn't change the process's clean-shutdown behaviour.
+
+### Testing strategy
+
+`test_start_server.py`'s existing smoke test was extended with one assertion: that the `[VUU] Ready`
+line also reports `23 rows into Location`, alongside the pre-existing assertion for `Snakes`' 23
+rows. Live-update correctness (coordinates actually changing once a second through the join) was
+checked manually via the debug tap described under "Validation" rather than added to the subprocess
+smoke test, consistent with that test's existing scope (port-listening and clean-shutdown checks,
+not data-correctness checks).
+
+### Files
+
+**Changed only** — no new files, same as the `Snakes` addendum:
+- `example/python-integration/python/start_server.py` — `Location` `TableDef` + `joinFields` added
+  to `Snakes`, `LocationProviderFactory`, `SnakeLocationsJoinFactory`, both tables/the join table
+  added to `snakes_module`'s builder chain, `Location` populated and ticked every second via a
+  daemon thread, `[VUU] Ready` line updated.
+- `example/python-integration/python/test_start_server.py` — updated assertion for the `Ready` line.
+- `example/python-integration/README.md` — describes `Location`/`SnakeLocations`.
+
+### Scope
+
+An estimated ~70–90 line addition to `start_server.py` (two new table-def/provider-factory blocks,
+one join-table factory, and the population/tick-loop code), no new Maven module, no new dependency.
+Comparable in size to the `Snakes` addendum itself.
+
+## Addendum 3: RPC-driven right-click menus ("Delete Selected", nested "Convert To..."), defined in Python
+
+**Status: Implemented.** Built and verified end-to-end against a real JVM: right-clicking a
+selection on `Snakes` now offers a "Delete Selected Snake(s)" menu item whose Python-implemented
+callback deletes the selected row(s) via `table.processDelete(key)`, and a nested "Convert To..."
+submenu with three more items (Adder/Black Mamba/Grass Snake) that each set the selection's `type`
+column via a partial `RowBuilder` update. Unlike the two addenda above, this one needed a small,
+reusable addition to `vuu-java` (not just calls into existing API) — see "Design" and "Open
+questions" below for why, and why it was kept general rather than Snakes-shaped.
+
+**Revision note:** an alternative design was also built and verified along the way — a small
+compiled Java class (`SnakesRpcService`, matching `example/permission`'s `PermissionsRpcService`
+shape) living inside `example/python-integration` itself, touching nothing outside the module.
+It worked identically (same live-JVM validation, same result). It was tried specifically to answer
+"does this need to touch `vuu-java` at all?", and was then rolled back in favour of the version
+described below — kept 100% Python (bar the JVM interop this addendum's own "Design" section
+explains is unavoidable), on the view that a small, general, reusable addition to `vuu-java` (a
+module that already exists to bridge Scala-only shapes for Java/JPype callers) was preferable to
+a table-specific compiled class inside the example. Both are legitimate, verified designs; this is
+the one in the current diff.
+
+### Motivation
+
+`Snakes` so far only reacts to Python calling `.tick(...)` on it directly — nothing a client can
+trigger itself. Vuu's per-table RPC mechanism (right-click context menus, backed by an
+`RpcHandler`) is how a real client-driven action reaches a table, and `SelectionViewPortMenuItem`
+(an action over the client's current row selection) is the most common shape of it — a "cancel
+selected orders" or, here, "delete selected rows" menu item, the same shape
+`example/permission`'s `PermissionsRpcService` already uses for `Add`/`Remove Permission`. This
+addendum adds exactly that to `Snakes`, entirely in Python, extending the pattern the
+`Snakes`/`Location`/`SnakeLocations` addenda already established for tables, providers and join
+tables.
+
+### Goals
+
+- A right-click context menu item on `Snakes`, "Delete Selected Snake(s)", that deletes every
+  currently-selected row from `Snakes` via `table.processDelete(key)` when clicked.
+- A nested "Convert To..." submenu (a `ViewPortMenuFolder`) alongside it, with three more items —
+  Adder, Black Mamba, Grass Snake — each setting every selected row's `type` column to that species
+  via a *partial* `RowBuilder` update (only `type` is set before `processUpdate`, relying on
+  `InMemRowDataMerger.mergeWithDefaults` to merge that into each row rather than replacing it, so
+  `name`/`age`/`weight` are left untouched).
+- Both defined in Python, the same way `Snakes`' provider is: JPype proxies over the relevant
+  Scala single-abstract-method (SAM) interfaces, not compiled Java/Scala.
+- `Location`/`SnakeLocations` untouched — this is `Snakes`-specific, wired through the same
+  `ModuleFactory.addTable(...)` call `Snakes` already uses, via its optional third argument.
+
+### Non-goals
+
+- Deleting the corresponding `Location` row, or otherwise reconciling `Location`'s per-second tick
+  loop with `Snakes` deletions/type changes. A deleted snake's `Location` row keeps being ticked
+  (it just no longer appears via `SnakeLocations`, since the join follows `Snakes`' row set) —
+  harmless for an example script, and cleaning it up is a separate concern from adding these menu
+  items.
+- Any menu item shape other than `SelectionViewPortMenuItem` (`TableViewPortMenuItem`,
+  `CellViewPortMenuItem`, `RowViewPortMenuItem` all exist in the same file but aren't needed here).
+- Undo, confirmation dialogs, or any other UX around either action — the menu item's
+  `ViewPortAction` return value supports an `OpenDialogViewPortAction` for this kind of thing, but
+  a plain `NoAction` is all this addendum asks for in both cases.
+- More than three species on the "Convert To..." submenu, or a general "set any column to any
+  value" mechanism — three fixed, hardcoded items is what was asked for.
+
+### Design
+
+#### Why this needed a `vuu-java` addition, not just Python
+
+`SelectionViewPortMenuItem`'s callback (`func: (ViewPortSelection, ClientSessionId) =>
+ViewPortAction`) is a plain `scala.Function2` — the exact SAM shape already proxied from Python for
+`SnakesProviderFactory`/`LocationProviderFactory` via `@jpype.JImplements("scala.Function2")`. And
+`ModuleFactory.addTable`'s optional third argument, `(DataTable, Provider, ProviderContainer,
+TableContainer) => ViewPortDef` (what the two-arg overload defaults to
+`ViewPortDef.createDefault(...)` for), is a `scala.Function4` — same story, same JPype pattern.
+
+Attaching a *menu* to a table, however, means overriding `RpcHandler.menuItems()` on a concrete
+`RpcHandler` instance — and `menuItems()` already has a default body (`EmptyViewPortMenu`), so it
+isn't something a bare interface proxy can be asked to "implement" the way `Provider`'s genuinely
+abstract methods are. Checked directly against the compiled bytecode (`javap -p` on
+`RpcHandler.class`):
+
+```
+public interface org.finos.vuu.net.rpc.RpcHandler extends com.typesafe.scalalogging.StrictLogging {
+  public abstract java.lang.String rpcNotSupportedMsg();
+  public abstract void org$finos$vuu$net$rpc$RpcHandler$_setter_$rpcNotSupportedMsg_$eq(java.lang.String);
+  public default org.finos.vuu.viewport.ViewPortMenu menuItems();
+  public abstract java.util.concurrent.ConcurrentHashMap ...rpcHandlerMap();
+  public abstract void ..._setter_$...rpcHandlerMap_$eq(java.util.concurrent.ConcurrentHashMap);
+  ...
+}
+```
+
+`RpcHandler` genuinely is a plain Java `interface` at the bytecode level, so a JPype
+`@jpype.JImplements` proxy *can* technically be constructed — but doing so means also implementing
+the abstract getter/setter pairs backing the trait's private fields, whose names are
+Scala-compiler-mangled (`org$finos$vuu$net$rpc$RpcHandler$_setter_$...`, `$` and all) — not
+writable as a normal Python `def`, only via `setattr(cls, "...$...", fn)` on an otherwise-illegal
+identifier, reimplementing Scala trait-initialization plumbing that's really an implementation
+detail of how `RpcHandler` happens to compile today. Not something to depend on surviving a Scala
+compiler upgrade — ruled out as too fragile, in favour of subclassing `DefaultRpcHandlerImpl` in a
+real JVM language instead (the way every existing table in the repo that attaches a menu already
+does — `PermissionsRpcService`, `EditPersonRecordRpcHandler`, etc.). `vuu-java`'s existing
+`RpcHandlerBuilder` (used for registering named RPCs, e.g. in `example/main-java`'s
+`JavaExampleModule`) has no equivalent for menus at all.
+
+The fix, mirroring how `vuu-java` already bridges other Scala-only shapes for Java/JPype callers
+(`JoinTableDefBuilder`/`JoinToBuilder` for join tables), is a small addition to `vuu-java` itself:
+
+**New: `vuu-java/src/main/java/org/finos/vuu/net/rpc/RpcHandlerWithMenu.java`**
+
+```java
+package org.finos.vuu.net.rpc;
+
+import org.finos.vuu.viewport.ViewPortMenu;
+
+public class RpcHandlerWithMenu extends DefaultRpcHandlerImpl {
+    private final ViewPortMenu menu;
+
+    public RpcHandlerWithMenu(ViewPortMenu menu) {
+        this.menu = menu;
+    }
+
+    @Override
+    public ViewPortMenu menuItems() {
+        return menu;
+    }
+}
+```
+
+**Changed: `RpcHandlerBuilder`** gets a `.menu(ViewPortMenu)` method alongside its existing
+`.addRpc(...)`, and `.build()` picks `RpcHandlerWithMenu` over `DefaultRpcHandler.apply()` when a
+menu was configured:
+
+```java
+public RpcHandlerBuilder menu(ViewPortMenu menu) {
+    this.menu = menu;
+    return this;
+}
+
+public RpcHandler build() {
+    RpcHandler rpcHandler = (menu != null) ? new RpcHandlerWithMenu(menu) : DefaultRpcHandler.apply();
+    rpcs.forEach(rpcHandler::registerRpc);
+    return rpcHandler;
+}
+```
+
+This is deliberately general (any `ViewPortMenu`, not a `Snakes`-specific type), kept in `vuu-java`
+rather than `example/python-integration`, consistent with `vuu-java` already being "Java-friendly
+builders over Scala-only shapes" and not specific to any one example. `SelectionViewPortMenuItem`
+is itself a `ViewPortMenuItem`/`ViewPortMenu` (sealed trait hierarchy), so a single item can be
+passed to `.menu(...)` directly with no need to wrap it via `ViewPortMenu.apply(...)`.
+
+#### Python side — `start_server.py`
+
+New imports:
+
+```python
+from org.finos.vuu.api import ColumnBuilder, TableDefBuilder, JoinTableDefBuilder, JoinToBuilder, ViewPortDef
+from org.finos.vuu.net.rpc import RpcHandlerBuilder
+from org.finos.vuu.viewport import SelectionViewPortMenuItem
+```
+
+`ViewPortAction`'s `NoAction` case (returned by a delete action that doesn't need to tell the
+client anything else) is a plain Scala `object`, not a case class — its singleton lives on the
+`MODULE$` static field of the compiler-generated `NoAction$` class. `$` isn't a legal character in
+a Python identifier, so `from ... import NoAction$` and `x.MODULE$` are both unwritable; `JClass` +
+`getattr` sidesteps both:
+
+```python
+NO_ACTION = getattr(jpype.JClass("org.finos.vuu.viewport.NoAction$"), "MODULE$")
+```
+
+The callback itself, proxied the same way `SnakesProviderFactory` already is:
+
+```python
+@jpype.JImplements("scala.Function2")
+class DeleteSelectedSnakesAction:
+    def __init__(self, table):
+        self.table = table
+
+    @jpype.JOverride
+    def apply(self, selection, session):
+        # selection.selectionKeys() is a scala.collection.immutable.Set[String] - iterated the
+        # same way Vuu's own Scala code does when acting on a selection (see
+        # EditableTestModule.deleteSelectedRows), via .iterator()/.hasNext()/.next(), rather
+        # than relying on Python's iteration protocol working on a Scala collection.
+        keys = selection.selectionKeys().iterator()
+        while keys.hasNext():
+            self.table.processDelete(str(keys.next()))
+        return NO_ACTION
+```
+
+#### The nested "Convert To..." submenu
+
+`ConvertSnakeTypeAction` is the same `scala.Function2` shape again, parameterized by the target
+species so one class covers all three items:
+
+```python
+@jpype.JImplements("scala.Function2")
+class ConvertSnakeTypeAction:
+    def __init__(self, table, new_type):
+        self.table = table
+        self.new_type = new_type
+
+    @jpype.JOverride
+    def apply(self, selection, session):
+        type_column = self.table.columnForName("type")
+        keys = selection.selectionKeys().iterator()
+        while keys.hasNext():
+            row_builder = self.table.rowBuilder()
+            row_builder.setKey(str(keys.next()))
+            row_builder.setString(type_column, self.new_type)
+            self.table.processUpdate(row_builder.build())
+        return NO_ACTION
+```
+
+Nesting one `ViewPortMenu` inside another means `ViewPortMenuFolder(name: String, menus:
+Seq[ViewPortMenu])` — a plain case class, but its `menus` field is (like `Columns.
+allFromExceptDefaultAnd`'s `excludeColumns` in the join-table addendum) a `Seq` at the JVM
+boundary, not something a Python list converts to automatically. Built via the same
+`ListBuffer().toList()` workaround:
+
+```python
+convert_to_items = ListBuffer()
+for label, new_type, rpc_suffix in (
+    ("Adder", "Adder", "ADDER"),
+    ("Black Mamba", "Black mamba", "BLACK_MAMBA"),
+    ("Grass Snake", "Grass snake", "GRASS_SNAKE"),
+):
+    convert_to_items.append(
+        SelectionViewPortMenuItem(
+            label, "", ConvertSnakeTypeAction(table, new_type), f"CONVERT_TO_{rpc_suffix}"
+        )
+    )
+convert_to_menu = ViewPortMenuFolder("Convert To...", convert_to_items.toList())
+```
+
+#### Wiring both onto `Snakes`
+
+The `ModuleFactory.addTable` third argument combines the delete item and the "Convert To..."
+folder as siblings under one root folder, then attaches that to `RpcHandlerBuilder` exactly as
+before:
+
+```python
+@jpype.JImplements("scala.Function4")
+class SnakesViewPortDefFactory:
+    @jpype.JOverride
+    def apply(self, table, provider, provider_container, table_container):
+        delete_menu_item = SelectionViewPortMenuItem(
+            "Delete Selected Snake(s)", "", DeleteSelectedSnakesAction(table), "DELETE_SELECTED_SNAKES"
+        )
+
+        convert_to_items = ListBuffer()
+        # ... build convert_to_items as above ...
+        convert_to_menu = ViewPortMenuFolder("Convert To...", convert_to_items.toList())
+
+        top_level_items = ListBuffer()
+        top_level_items.append(delete_menu_item)
+        top_level_items.append(convert_to_menu)
+        menu = ViewPortMenuFolder("ROOT", top_level_items.toList())
+
+        rpc_handler = RpcHandlerBuilder().menu(menu).build()
+        return ViewPortDef(table.getTableDef().getColumns(), rpc_handler)
+```
+
+```python
+snakes_module = (
+    ModuleFactory.withNamespace("SNAKES", table_def_container)
+    .addTable(snakes_table_def, SnakesProviderFactory(), SnakesViewPortDefFactory())
+    .addTable(location_table_def, LocationProviderFactory())
+    .addJoinTable(SnakeLocationsJoinFactory())
+    .asModule()
+)
+```
+
+`Location`'s `addTable` call is left on the two-arg overload — it gets the default `ViewPortDef`
+(no menu), exactly as before.
+
+### Open questions / risks — resolved during implementation
+
+All checked directly against a running JVM (`jpype1==1.7.1`, Temurin JDK 17) before this addendum
+was finalized:
+
+1. **`scala.Function4` via `@jpype.JImplements`.** Confirmed — proxies the same way
+   `Function2`/`Function1` already do (single-abstract-method interface at the bytecode level,
+   regardless of arity). `SnakesViewPortDefFactory` builds and runs with no proxy errors.
+2. **`NoAction$.MODULE$` access from Python.** Confirmed — `getattr(jpype.JClass("org.finos.vuu.
+   viewport.NoAction$"), "MODULE$")` resolves the singleton and can be returned from the
+   `Function2` callback with no error.
+3. **`SelectionViewPortMenuItem`'s direct constructor call from Python.** Confirmed —
+   `SelectionViewPortMenuItem(name, filter, callback_instance, rpcName)` (a 4-arg case-class
+   constructor call) works exactly like `TableDefBuilder`/other direct-construction calls
+   elsewhere in this script.
+4. **`RpcHandlerWithMenu`/`RpcHandlerBuilder.menu(...)`.** Confirmed both in isolation (a new
+   `RpcHandlerBuilderTest` in `vuu-java`, asserting the built handler's `menuMap()` contains the
+   configured item under its `rpcName`) and end-to-end (see "Validation" below).
+5. **Iterating `selection.selectionKeys()` from Python.** Confirmed — `scala.collection.immutable.
+   Set[String]` doesn't implement `java.lang.Iterable`, so plain Python `for key in
+   selection.selectionKeys()` isn't expected to work; `.iterator()`/`.hasNext()`/`.next()` (the
+   same idiom `EditableTestModule.deleteSelectedRows` uses in Scala) does.
+6. **Whether `RpcHandler` could be proxied directly instead of adding `RpcHandlerWithMenu`.**
+   Resolved by reading the actual compiled bytecode (`javap`, see "Design" above) — it technically
+   can be constructed as a bare JPype proxy, but only by implementing Scala-mangled private-field
+   accessors, judged too fragile to ship (see "Design").
+7. **`ViewPortMenuFolder(name, menus: Seq[ViewPortMenu])` from Python (added for "Convert To...").**
+   Confirmed to need the same `ListBuffer().toList()` treatment as `Columns.
+   allFromExceptDefaultAnd`'s varargs — checked directly rather than assumed, given that earlier
+   surprise. Nesting one folder inside another (the root `ViewPortMenuFolder` containing both the
+   delete item and the `Convert To...` folder) works the same way, confirmed via the debug tap's
+   `menuItems()`/`.menus()` walk described under "Validation" below.
+8. **A partial `RowBuilder` update (only `type` set) merging rather than replacing.** Confirmed by
+   reading `InMemRowDataMerger.mergeWithDefaults` (starts from the existing row's data, then
+   overlays the update's fields) before relying on it, then confirmed again live: converting one
+   snake's type left its `name`/`age`/`weight` unchanged (see "Validation").
+
+No other API mismatches were found this time (unlike the join-table addendum's `Columns.
+allFromExceptDefaultAnd` varargs surprise) — every other call worked as designed on the first run
+against a live JVM.
+
+### Validation
+
+Checked directly against a running JVM, with a short-lived debug tap added temporarily to
+`start_server.py` (not part of the final diff, deleted after use) that, ~1s after startup:
+
+- Called `SnakesViewPortDefFactory().apply(snakes_table, None, None, None)` directly against the
+  live `Snakes` `DataTable` (the other three arguments are unused by the factory, so `None` is
+  fine) and inspected the resulting `ViewPortDef`'s `service().menuMap()`: confirmed it
+  `.contains("DELETE_SELECTED_SNAKES")` and that the mapped item's `.name()` is `"Delete Selected
+  Snake(s)"`.
+- Read `snakes_table.pullRow("s5")` beforehand (`RowWithData` — the row exists).
+- Built a `ViewPortSelection` wrapping just `"s5"`'s key (via the same `ListBuffer().toList()`
+  pattern already used elsewhere in this script for Scala collection arguments, then `.toSet()`)
+  with `None` for the `ViewPortSelection`'s `viewPort` field and for the callback's
+  `ClientSessionId` parameter — both safe to omit here since the callback never touches either —
+  and called the menu item's `func()` on it directly.
+- Read `snakes_table.pullRow("s5")` again afterward: `EmptyRowData$` — the row is gone. Direct
+  confirmation the menu item's callback actually deletes from the live table, not just that it
+  builds without exceptions.
+- `vuu-java`'s full test suite (910+ tests, including the new `RpcHandlerBuilderTest`'s three
+  cases) and the existing `test_start_server.py` smoke test both still pass unmodified.
+- The alternative compiled-Java-in-example design (see "Revision note" above) was checked
+  identically — same debug tap, same `RowWithData` → `EmptyRowData$` result — before being rolled
+  back in favour of this version.
+- **"Convert To..." checked separately, added after the above**: confirmed `menuMap` also contains
+  `CONVERT_TO_ADDER`/`CONVERT_TO_BLACK_MAMBA`/`CONVERT_TO_GRASS_SNAKE`; walked `menuItems()` via
+  `.menus()` (a `ViewPortMenuFolder`'s `Seq[ViewPortMenu]` field, same `.iterator()` idiom as
+  selections) and confirmed the top level is `ViewPortMenuFolder("ROOT")` containing exactly the
+  delete item and a `ViewPortMenuFolder("Convert To...")` with exactly its three named children;
+  read a snake's row before (`type='Python'`, plus its `name`/`age`/`weight`), invoked
+  `CONVERT_TO_ADDER`'s `func()` on a selection wrapping that row's key, then read it again
+  afterward: `type='Adder'`, `name`/`age`/`weight` all unchanged — confirming the partial update
+  merges rather than replaces.
+
+### Testing strategy
+
+- **`vuu-java/src/test/java/org/finos/vuu/net/rpc/RpcHandlerBuilderTest.java`** (new): unit tests
+  for `RpcHandlerBuilder.menu(...)` in isolation — a handler built with no menu exposes an empty
+  `menuMap()`; one built with a `SelectionViewPortMenuItem` exposes it under its `rpcName`; a
+  handler combining `.menu(...)` and `.addRpc(...)` exposes both. Mirrors the existing
+  `JoinToBuilderTest`/`JoinTableDefBuilderTest` style for `vuu-java` builder tests.
+- End-to-end correctness (the callback actually deleting from a live table, reached via the same
+  path a real client's right-click would use) was checked manually via the debug tap described
+  under "Validation" rather than added to `test_start_server.py`'s subprocess smoke test — building
+  a genuine `ViewPort`/client selection from a smoke test would need a real websocket client, which
+  is out of that test's existing scope (port-listening and clean-shutdown checks only).
+
+### Files
+
+**New:**
+- `vuu-java/src/main/java/org/finos/vuu/net/rpc/RpcHandlerWithMenu.java`
+- `vuu-java/src/test/java/org/finos/vuu/net/rpc/RpcHandlerBuilderTest.java`
+
+**Changed:**
+- `vuu-java/src/main/java/org/finos/vuu/net/rpc/RpcHandlerBuilder.java` — added `.menu(ViewPortMenu)`.
+- `example/python-integration/python/start_server.py` — `DeleteSelectedSnakesAction`,
+  `ConvertSnakeTypeAction`, `SnakesViewPortDefFactory` (now building a `ViewPortMenuFolder` of
+  both), the `NoAction` singleton lookup, and `Snakes`' `addTable` call switched to the 3-arg
+  overload.
+- `example/python-integration/README.md` — describes both menu items.
+
+**Considered, built, verified, then not used (see "Revision note" above):**
+- A compiled `example/python-integration/src/main/java/org/finos/vuu/module/SnakesRpcService.java`
+  (with `pom.xml` `packaging` switched to `jar` to compile it) — a working alternative that kept
+  `vuu-java` untouched at the cost of adding compiled Java inside the example module. Not part of
+  the current diff; `pom.xml` stays `packaging=pom`.
+
+### Scope
+
+A ~90-line addition to `start_server.py` (delete item + nested "Convert To..." folder, three
+items) plus a small, general-purpose `vuu-java` addition (one new ~20-line class, one new builder
+method, one new test file) — the only addendum so far that touches code outside
+`example/python-integration`, because the gap it closes (attaching a `ViewPortMenu` without
+subclassing a concrete JVM class) belongs in the shared Java-interop layer, not the example.
+
+## Addendum 4: scaling `Snakes` up to 10,000 procedurally-generated rows
+
+**Status: Implemented.** `Snakes`' 23 hand-written sample rows are replaced with `SNAKE_COUNT`
+(10,000 by default) procedurally-generated ones; `Location` scales with it 1:1, as it always has.
+Verified end-to-end against a real JVM, including actually measuring the performance
+consequences rather than assuming them — see "Validation" below.
+
+### Motivation
+
+23 hardcoded rows was enough to prove the table/provider/join/menu mechanisms work, but doesn't
+exercise anything at a scale closer to what a real Vuu table looks like, or give a UI something
+substantial to page/filter/sort through. Writing 10,000 rows out by hand isn't practical, so this
+addendum replaces the hardcoded list with a small generator function instead.
+
+### Goals
+
+- `Snakes` populated with `SNAKE_COUNT` rows at startup (10,000 by default), each with a
+  plausible-looking `id`/`name`/`type`/`age`/`weight` — not literally random noise, e.g. `type`
+  drawn from the same species already used across the old sample data plus the "Convert To..."
+  menu (so type-based filtering/grouping in a client stays meaningful).
+- `Location` continues to scale 1:1 with `Snakes`, as it's always been designed to (one row per
+  `Snakes` row, populated at startup, re-ticked once a second).
+- `SNAKE_COUNT` a single, easy-to-change constant, not a value baked into multiple places.
+- Measure, rather than assume, what this does to startup time and the per-second `Location` tick
+  loop's actual cadence — both were unmeasured guesses in earlier addenda's comments and are worth
+  checking now that the row count is large enough for the answer to matter.
+
+### Non-goals
+
+- Deterministic/seeded generation. Each run's data is freshly random (`random.choice`/
+  `random.randint`/`random.uniform`, unseeded) — fine for an example server, and matches the
+  existing `Location` movement code (also unseeded).
+- Batching or otherwise optimizing the tick loops beyond what was already there. Still one JPype
+  `.tick()` call per row, both at startup and per `Location` cycle — see "Validation" for why this
+  turned out not to need optimizing.
+- Making `SNAKE_COUNT` configurable via a CLI flag/env var. It's a top-of-file constant, consistent
+  with `WS_PORT`/`HTTPS_PORT`/`BOUNDS`/`STEP` already being plain constants rather than configurable
+  inputs elsewhere in this script.
+
+### Design
+
+`sample_snakes = [...]` (23 hardcoded dicts) is replaced with a module-level generator function
+and two small data pools, placed alongside the other module-level constants:
+
+```python
+SNAKE_COUNT = 10_000
+
+SNAKE_TYPES = [
+    "Python", "Grass snake", "Reticulated python", "Ball python", "Cobra",
+    "Anaconda", "Black mamba", "Boa constrictor", "Corn snake", "King cobra",
+    "Rattlesnake", "Copperhead", "Cottonmouth", "Adder", "Sidewinder",
+    "Milk snake", "Kingsnake", "Rat snake", "Hognose snake", "Bull snake",
+    "Taipan",
+]
+
+SNAKE_NAMES = [
+    "Kaa", "Nagini", "Sir Hiss", "Monty", "Cleo", "Jafar", "Titan", "Venom",
+    "Rex", "Slyther", "Basilisk", "Rattles", "Copper", "Marsh", "Zigzag",
+    "Dune", "Speedy", "Milky", "Sunny", "Rusty", "Piglet", "Bruiser", "Sting",
+]
+
+
+def _generate_snakes(count: int) -> list[dict]:
+    return [
+        {
+            "id": f"s{i}",
+            "name": f"{random.choice(SNAKE_NAMES)} {i}",
+            "type": random.choice(SNAKE_TYPES),
+            "age": random.randint(1, 40),
+            "weight": round(random.uniform(0.1, 100.0), 2),
+        }
+        for i in range(1, count + 1)
+    ]
+```
+
+`SNAKE_TYPES` reuses the exact species strings the old 23-row list and the "Convert To..." menu
+already use (`"Adder"`, `"Black mamba"`, `"Grass snake"`, etc.) so a "Convert To..." action still
+produces a value that matches what naturally-generated rows already contain, rather than
+introducing a fourth, differently-cased variant. `_generate_snakes` is a plain module-level
+function (like `_read_classpath`/`_local_hostname`) — it needs no JVM access, unlike everything
+inside `main()`.
+
+The call site inside `main()` shrinks to one line:
+
+```python
+sample_snakes = _generate_snakes(SNAKE_COUNT)
+for snake in sample_snakes:
+    snakes_provider.tick(snake["id"], snake)
+```
+
+`positions = {snake["id"]: ... for snake in sample_snakes}` (building `Location`'s starting
+positions) and everything downstream of it needed no changes — it was already generic over
+however many rows `sample_snakes` contains.
+
+### Open questions / risks — resolved during implementation
+
+1. **How long startup actually takes at 10,000 rows.** Not assumed — measured directly (see
+   "Validation"). ~2.4s from process start to the `[VUU] Ready` line, comfortably inside
+   `test_start_server.py`'s existing 90s `READY_TIMEOUT_S` with no changes needed there.
+2. **Whether the `Location` per-second tick loop keeps up at 10,000 rows.** Not assumed either —
+   measured directly. `tick_locations()` (10,000 individual JPype `.tick()` calls) took
+   ~0.4–0.5s per cycle, so `location_loop`'s actual cadence (fixed 1s `time.sleep` plus however
+   long the tick takes) is closer to ~1.5s than a clean 1Hz — real, but far milder than a
+   worst-case guess might suggest; the loop's own comment and this doc were updated to state the
+   measured number rather than a speculative one.
+3. **Whether the existing menu items (delete, "Convert To...") still work correctly at this
+   scale.** Confirmed — same debug-tap pattern as the earlier addenda, run against the live
+   10,000-row table: converting one row's `type` and then deleting it both worked exactly as they
+   did at 23 rows.
+
+### Validation
+
+Checked directly against a running JVM (`jpype1==1.7.1`, Temurin JDK 17), via a short-lived debug
+tap added temporarily to `start_server.py` (not part of the final diff, deleted after use) that
+timed `main()`'s own execution rather than guessing:
+
+- `t0 = time.monotonic()` at the top of `main()`, printed against `time.monotonic()` again right
+  after the `[VUU] Ready` line: **2.368s** measured end-to-end (JVM start, module registration,
+  10,000 `Snakes` ticks, 10,000 `Location` ticks, all of it).
+- Wrapped each `tick_locations()` call inside `location_loop` with timing: **0.413s** and
+  **0.476s** measured on the first two cycles — consistent, not a one-off.
+- `[VUU] Ready` correctly reported `ticked 10000 rows into Snakes, 10000 rows into Location`.
+- Picked one row from the middle of the generated set (`sample_snakes[5000]`, not `s1`, to confirm
+  this isn't special-cased to the first row), read its `type` before, invoked `CONVERT_TO_ADDER`'s
+  `func()` on a selection wrapping its key, confirmed `type` changed to `'Adder'`, then invoked
+  `DELETE_SELECTED_SNAKES`'s `func()` on the same key and confirmed the row was gone
+  (`EmptyRowData$`) — both menu items from Addendum 3 still work correctly against the live
+  10,000-row table.
+- `test_start_server.py`'s real (non-debug-tap) smoke test, run against the actual `start_server.py`
+  unmodified: **passed in 4.91s**, comfortably inside the existing timeouts.
+
+Run entirely on alternate ports (18090/18443) during development, to avoid conflicting with an
+already-running instance of the same server on the default ports — the real smoke test run above
+used the real default ports (8090/8443) once they were free, and passed identically.
+
+### Testing strategy
+
+`test_start_server.py` was updated to import `SNAKE_COUNT` from `start_server` and assert against
+it (`f"ticked {SNAKE_COUNT} rows into Snakes"` / `f"{SNAKE_COUNT} rows into Location"`) rather than
+a hardcoded `23`, so the test stays correct if `SNAKE_COUNT` is changed again later without needing
+a matching edit in the test file. Row-count correctness at scale (not just "the process didn't
+crash") and the menu items' continued correctness were both checked via the debug tap described
+under "Validation" rather than added to the subprocess smoke test, consistent with that test's
+existing scope.
+
+### Files
+
+**Changed:**
+- `example/python-integration/python/start_server.py` — `SNAKE_COUNT`/`SNAKE_TYPES`/`SNAKE_NAMES`
+  constants and `_generate_snakes(...)` added; the hardcoded 23-row `sample_snakes` list replaced
+  with a call to it; module docstring and the `location_loop` comment updated with the measured
+  timing numbers.
+- `example/python-integration/python/test_start_server.py` — imports and asserts against
+  `SNAKE_COUNT` instead of a hardcoded `23`.
+- `example/python-integration/README.md` — row count and per-second cadence description updated.
+
+### Scope
+
+A small, self-contained change: one generator function plus two data-pool constants (~30 lines),
+a one-line change at each of the two call sites that used the old hardcoded list, and a couple of
+comment/doc updates to state measured (not assumed) performance numbers. No `vuu-java` changes, no
+new files, no pom changes.

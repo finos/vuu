@@ -21,16 +21,15 @@ vuu-ui/sample-apps/standalone-table/scripts/build.mjs
 vuu-ui/sample-apps/app-vuu-basket-trader/scripts/build.mjs
 vuu-ui/sample-apps/app-vuu-example/scripts/build.mjs
 vuu-ui/showcase/scripts/build-docs.mjs
-vuu-ui/showcase/scripts/build-rollup.mjs
 vuu-ui/showcase/scripts/parse-stories.mjs
 vuu-ui/showcase/scripts/build.ts
 vuu-ui/showcase/scripts/utils.mjs
-vuu-ui/scripts/build-rollup.mjs
 vuu-ui/scripts/utils.mjs
 vuu-ui/scripts/build.mjs
 vuu-ui/scripts/build-rslib.ts
 vuu-ui/scripts/build-typelib.mjs
 vuu-ui/scripts/copy-license.ts
+vuu-ui/scripts/launch-app.ts
 vuu-ui/scripts/utils.ts
 vuu-ui/tools/vuu-showcase/scripts/build-file-list.ts
 vuu-ui/tools/vuu-showcase/scripts/showcase-build.ts
@@ -39,3 +38,5 @@ vuu-ui/tools/vuu-showcase/scripts/utils.ts
 vuu-ui/tools/vuu-showcase/scripts/treeSourceFromFileSystem.ts
 vuu-ui/tools/vuu-showcase/src/showcase-utils.ts
 
+vuu-ui/tools/vuu-showcase/src/theme-browser/ThemeSandbox.ts
+vuu-ui/tools/vuu-theme-model/src/build-theme-stylesheet.ts

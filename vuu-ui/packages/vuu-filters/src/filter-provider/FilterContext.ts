@@ -6,6 +6,14 @@ import {
 import { FilterAction } from "../filter-pill/FilterMenu";
 import { createContext, useCallback, useContext } from "react";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import type { DateTimePattern } from "@vuu-ui/vuu-utils";
+import type { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
+
+/** The column attributes by which a ColumnFilter pattern is configured */
+export type ColumnFilterPatternColumn = {
+  name: string;
+  serverDataType?: VuuColumnDataType;
+};
 
 export const filterDescriptorHasFilter = (
   f: FilterContainerFilterDescriptor,
@@ -44,6 +52,32 @@ export type FilterContextFilterMenuActionHandler = <
 ) => void;
 
 export interface FilterContextProps {
+  /**
+   * Returns the column descriptor used by a ColumnFilter (within a
+   * FilterContainer) for the named column, if one is registered.
+   */
+  getColumnFilterColumn?: (
+    key: string,
+    columnName: string,
+  ) => ColumnDescriptor | undefined;
+  /**
+   * The date/time pattern of the ColumnFilter for the column, as configured
+   * by FilterProvider columnFilterPatterns (by column name) or
+   * columnTypeFilterPatterns (by serverDataType). Available whether or not
+   * the ColumnFilter is mounted.
+   */
+  getColumnFilterPattern?: (
+    column: ColumnFilterPatternColumn,
+  ) => DateTimePattern | undefined;
+  /**
+   * Register the column descriptor used by a ColumnFilter, which may differ
+   * from the Table column descriptor, e.g. a different date/time pattern.
+   * Returns a function to unregister.
+   */
+  registerColumnFilterColumn?: (
+    key: string,
+    column: ColumnDescriptor,
+  ) => () => void;
   deleteFilter: (key: string, filterId: string) => void;
   saveFilter: (key: string, name: string) => void;
   filterDescriptors: Map<string, FilterContainerFilterDescriptor[]>;
@@ -96,6 +130,35 @@ export const FilterContext = createContext<FilterContextProps>({
       "[FilterContext] setCurrentFilter, no FilterProvider has been configured",
     ),
 });
+
+/**
+ * Access the column descriptors registered by ColumnFilters
+ * (see FilterContainerColumnFilter).
+ */
+export function useColumnFilterRegistry(key = "GLOBAL") {
+  const {
+    getColumnFilterColumn,
+    getColumnFilterPattern,
+    registerColumnFilterColumn,
+  } = useContext(FilterContext);
+  const getColumn = useCallback(
+    (columnName: string) => getColumnFilterColumn?.(key, columnName),
+    [getColumnFilterColumn, key],
+  );
+  const register = useCallback(
+    (column: ColumnDescriptor) => registerColumnFilterColumn?.(key, column),
+    [key, registerColumnFilterColumn],
+  );
+  const getPattern = useCallback(
+    (column: ColumnFilterPatternColumn) => getColumnFilterPattern?.(column),
+    [getColumnFilterPattern],
+  );
+  return {
+    getColumnFilterColumn: getColumn,
+    getColumnFilterPattern: getPattern,
+    registerColumnFilterColumn: register,
+  };
+}
 
 interface SavedFilterHookProps {
   availableColumns?: ColumnDescriptor[];

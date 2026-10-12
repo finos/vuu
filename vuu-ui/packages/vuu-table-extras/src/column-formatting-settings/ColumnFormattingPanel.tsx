@@ -10,6 +10,7 @@ import {
   getCellRendererOptions,
   getConfigurationEditor,
   isColumnTypeRenderer,
+  isTemporalColumn,
   isTypeDescriptor,
 } from "@vuu-ui/vuu-utils";
 import { Dropdown, FormField, FormFieldLabel, Option } from "@salt-ds/core";
@@ -128,17 +129,23 @@ function getFormattingSettingsComponent(props: FormattingSettingsProps) {
   const { column } = props;
 
   switch (column.serverDataType) {
+    case "long":
+      // a long may hold a number or (legacy) an epoch timestamp, user can switch
+      return <LongTypeFormattingSettings {...props} />;
+    case "epochtimestamp":
+    case "epochtimestampnano":
+      return <DateTimeFormattingSettings {...props} />;
     case "double":
     case "scaleddecimal2":
     case "scaleddecimal4":
     case "scaleddecimal6":
     case "scaleddecimal8":
     case "int":
-      return <BaseNumericFormattingSettings {...props} />;
-    case "long":
-      return <LongTypeFormattingSettings {...props} />;
-    case "epochtimestamp":
-      return <DateTimeFormattingSettings {...props} />;
+      return isTemporalColumn(column) ? (
+        <DateTimeFormattingSettings {...props} />
+      ) : (
+        <BaseNumericFormattingSettings {...props} />
+      );
     default:
       return null;
   }

@@ -2,7 +2,14 @@ import {
   FilterContainerFilter,
   FilterContainerFilterDescriptor,
 } from "@vuu-ui/vuu-filter-types";
-import { ReactElement, ReactNode, useCallback, useMemo, useState } from "react";
+import {
+  ReactElement,
+  ReactNode,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { FilterNamePrompt } from "../saved-filters/FilterNamePrompt";
 import { DeleteFilterPrompt } from "../saved-filters/DeleteFilterPrompt";
 import {
@@ -11,7 +18,7 @@ import {
   insertOrReplaceFilter,
   renameFilter,
 } from "./filter-descriptor-utils";
-import { uuid } from "@vuu-ui/vuu-utils";
+import { uuid, type DateTimePattern } from "@vuu-ui/vuu-utils";
 import {
   EMPTY_FILTER,
   EmptyFilterDescriptor,
@@ -22,6 +29,8 @@ import {
   UNSAVED_FILTER,
 } from "./FilterContext";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import type { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
+import type { ColumnFilterPatternColumn } from "./FilterContext";
 
 const findActiveFilter = (
   filterDescriptors: FilterContainerFilterDescriptor[],
@@ -48,6 +57,24 @@ const mapToRecord = (savedFilters: SavedFilterMap) => {
 
 export interface FilterProviderProps {
   children: ReactNode;
+  /**
+   * Date/time patterns, keyed by column name, of the ColumnFilters
+   * (FilterContainerColumnFilter) within this provider. A ColumnFilter
+   * without a pattern prop uses the pattern configured here. As these are
+   * available whether or not a ColumnFilter is mounted, the filter context
+   * menu can match a temporal cell value at the precision of the ColumnFilter,
+   * even where ColumnFilters are created on demand.
+   */
+  columnFilterPatterns?: Record<string, DateTimePattern>;
+  /**
+   * Date/time patterns, keyed by serverDataType, of the ColumnFilters within
+   * this provider, e.g. { epochtimestampnano: { time: "hh:mm:ss.ms" } }.
+   * Applies to columns with no entry in columnFilterPatterns. The column must
+   * have a serverDataType (a Table column has one, from the table schema).
+   */
+  columnTypeFilterPatterns?: Partial<
+    Record<VuuColumnDataType, DateTimePattern>
+  >;
   onFiltersSaved?: (savedFilters: SavedFilterRecord) => void;
   savedFilters?: SavedFilterRecord;
   filterNameMaxLength?: number;
@@ -55,6 +82,8 @@ export interface FilterProviderProps {
 
 export const FilterProvider = ({
   children,
+  columnFilterPatterns,
+  columnTypeFilterPatterns,
   onFiltersSaved,
   savedFilters: savedFiltersProp,
   filterNameMaxLength,
@@ -67,6 +96,40 @@ export const FilterProvider = ({
   );
 
   const [dialog, setDialog] = useState<ReactElement | null>(null);
+
+  const columnFilterColumnsRef = useRef(
+    new Map<string, Map<string, ColumnDescriptor>>(),
+  );
+
+  const registerColumnFilterColumn = useCallback(
+    (key: string, column: ColumnDescriptor) => {
+      const { current: columnsByKey } = columnFilterColumnsRef;
+      let columns = columnsByKey.get(key);
+      if (columns === undefined) {
+        columnsByKey.set(key, (columns = new Map()));
+      }
+      columns.set(column.name, column);
+      return () => {
+        if (columns.get(column.name) === column) {
+          columns.delete(column.name);
+        }
+      };
+    },
+    [],
+  );
+
+  const getColumnFilterPattern = useCallback(
+    ({ name, serverDataType }: ColumnFilterPatternColumn) =>
+      columnFilterPatterns?.[name] ??
+      (serverDataType ? columnTypeFilterPatterns?.[serverDataType] : undefined),
+    [columnFilterPatterns, columnTypeFilterPatterns],
+  );
+
+  const getColumnFilterColumn = useCallback(
+    (key: string, columnName: string) =>
+      columnFilterColumnsRef.current.get(key)?.get(columnName),
+    [],
+  );
 
   const deleteFilter = useCallback(
     (key: string, filterId: string) => {
@@ -282,6 +345,9 @@ export const FilterProvider = ({
   return (
     <FilterContext.Provider
       value={{
+        getColumnFilterColumn,
+        getColumnFilterPattern,
+        registerColumnFilterColumn,
         onFilterMenuAction: handleFilterMenuAction,
         deleteFilter,
         saveFilter: handleSaveFilter,

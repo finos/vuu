@@ -46,7 +46,7 @@
     color: var(--salt-content-primary-foreground);
   }
   .vuuDatasourceStats-tooltray {
-    justify-self: end;;
+    justify-self: end;
     margin: 0 var(--salt-spacing-200);
     grid-area: panel-end;
   }

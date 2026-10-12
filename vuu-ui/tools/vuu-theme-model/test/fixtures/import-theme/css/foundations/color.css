@@ -1,0 +1,5 @@
+.salt-theme {
+  --salt-color-blue-500-rgb: 38, 112, 169;
+  --salt-color-blue-500: rgb(var(--salt-color-blue-500-rgb));
+  --salt-color-teal-500: #00838f;
+}

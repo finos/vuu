@@ -1,4 +1,10 @@
-import { createContext, ReactNode, useContext, useState } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 export interface EditModeContextProps {
   isEditMode: boolean;
@@ -14,8 +20,19 @@ const EditModeContext = createContext<EditModeContextProps>({
  * Implemented as a standalone Provider so that EditMode cna be implemented
  * at higher level than individual edit controls.
  */
-export const EditModeProvider = ({ children }: { children: ReactNode }) => {
-  const [isEditMode, setEditMode] = useState(false);
+export const EditModeProvider = ({
+  children,
+  isEditMode: isEditModeProp = false,
+}: {
+  children: ReactNode;
+  isEditMode?: boolean;
+}) => {
+  const [isEditMode, setEditMode] = useState(isEditModeProp);
+
+  useEffect(() => {
+    setEditMode(isEditModeProp);
+  }, [isEditModeProp]);
+
   return (
     <EditModeContext.Provider value={{ isEditMode, setEditMode }}>
       {children}

@@ -1,0 +1,7 @@
+.salt-density-high {
+  --salt-size-base: 20px;
+}
+
+.salt-density-medium {
+  --salt-size-base: 28px;
+}

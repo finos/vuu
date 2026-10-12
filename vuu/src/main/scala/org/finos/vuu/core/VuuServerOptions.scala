@@ -6,6 +6,8 @@ import org.finos.vuu.net.http.{HttpServerFactory, NoHttpServerFactory}
 import org.finos.vuu.net.ssl.{VuuSSLDisabled, VuuSSLOptions}
 import org.finos.vuu.plugin.Plugin
 
+import java.time.Duration
+
 trait VuuSecurityOptions {
   def loginTokenService: LoginTokenService
 
@@ -20,9 +22,16 @@ object VuuSecurityOptions {
 
 object VuuWebSocketOptions {
   def apply(): VuuWebSocketOptions = {
-    VuuWebSocketOptionsImpl(wsPort = 8090, uri = "/websocket", bindAddress = "0.0.0.0",
-      sslOptions = VuuSSLDisabled, compressionEnabled = true, nativeTransportEnabled = true,
-      maxSessionsPerUser = 1
+    VuuWebSocketOptionsImpl(
+      wsPort = 8090,
+      uri = "/websocket",
+      bindAddress = "0.0.0.0",
+      sslOptions = VuuSSLDisabled,
+      compressionEnabled = true,
+      nativeTransportEnabled = true,
+      maxSessionsPerUser = 1,
+      maxContentLength = 262_144, //256KB
+      clientIdleTimeout = Duration.ofSeconds(20)
     )
   }
 }
@@ -67,6 +76,10 @@ trait VuuWebSocketOptions {
 
   def nativeTransportEnabled: Boolean
 
+  def clientIdleTimeout: Duration
+
+  def maxContentLength: Int
+
   def maxSessionsPerUser: Int
 
   def withWsPort(port: Int): VuuWebSocketOptions
@@ -84,6 +97,10 @@ trait VuuWebSocketOptions {
   def withNativeTransport(withNativeTransport: Boolean): VuuWebSocketOptions
 
   def withMaxSessionsPerUser(maxSessionsPerUser: Int): VuuWebSocketOptions
+
+  def withMaxContentLength(maxContentLength: Int): VuuWebSocketOptions
+
+  def withClientIdleTimeout(clientIdleTimeout: Duration): VuuWebSocketOptions
 }
 
 trait VuuThreadingOptions {
@@ -128,7 +145,9 @@ private case class VuuWebSocketOptionsImpl(wsPort: Int,
                                            sslOptions: VuuSSLOptions,
                                            compressionEnabled: Boolean,
                                            nativeTransportEnabled: Boolean,
-                                           maxSessionsPerUser: Int
+                                           maxSessionsPerUser: Int,
+                                           maxContentLength: Int,
+                                           clientIdleTimeout: Duration
                                           ) extends VuuWebSocketOptions {
   override def withWsPort(port: Int): VuuWebSocketOptions = this.copy(wsPort = port)
 
@@ -149,6 +168,12 @@ private case class VuuWebSocketOptionsImpl(wsPort: Int,
 
   override def withMaxSessionsPerUser(maxSessionsPerUser: Int): VuuWebSocketOptions =
     this.copy(maxSessionsPerUser = maxSessionsPerUser)
+
+  override def withMaxContentLength(maxContentLength: Int): VuuWebSocketOptions =
+    this.copy(maxContentLength = maxContentLength)
+
+  override def withClientIdleTimeout(clientIdleTimeout: Duration): VuuWebSocketOptions =
+    this.copy(clientIdleTimeout = clientIdleTimeout)
 }
 
 case class VuuThreadingOptionsImpl(viewPortThreads: Int, treeViewPortThreads: Int) extends VuuThreadingOptions {

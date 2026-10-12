@@ -3,6 +3,7 @@ import type {
   DataSourceConstructorProps,
   SessionDataSourceOverrides,
   ServerAPI,
+  WithBaseFilter,
 } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { DataProvider } from "@vuu-ui/vuu-utils";
@@ -43,6 +44,7 @@ const getServerAPI = async () => serverAPI;
 class VuuDataSource {
   constructor({
     aggregations,
+    baseFilterSpec,
     columns,
     filterSpec,
     groupBy,
@@ -52,8 +54,11 @@ class VuuDataSource {
     viewport,
     visualLink,
   }: DataSourceConstructorProps) {
-    const config: DataSourceConfig & { session?: SessionDataSourceOverrides } = {
+    const config: WithBaseFilter<DataSourceConfig> & {
+      session?: SessionDataSourceOverrides;
+    } = {
       aggregations,
+      baseFilterSpec,
       columns,
       filterSpec,
       groupBy,

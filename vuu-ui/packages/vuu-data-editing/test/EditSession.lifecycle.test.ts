@@ -86,7 +86,11 @@ describe("EditSession lifecycle", () => {
     createSession = vi.fn(
       async () => dataSource as unknown as DataSource,
     ) as CreateSession;
-    const dataSource = new MockDataSource(endEdit, createSession, editCell) as unknown as DataSource;
+    const dataSource = new MockDataSource(
+      endEdit,
+      createSession,
+      editCell,
+    ) as unknown as DataSource;
     editSession = new EditSession({ dataSource: dataSource });
   });
 
@@ -108,12 +112,37 @@ describe("EditSession lifecycle", () => {
       type: "SUCCESS_RESULT",
     });
     editSession = new EditSession({
-      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) as unknown as DataSource,
+      dataSource: new MockDataSource(
+        endEdit,
+        createSession,
+        editCell,
+        addRow,
+      ) as unknown as DataSource,
     });
 
     await editSession.addRow({ id: 7, name: "Alice" });
 
     expect(addRow).toHaveBeenCalledWith({ id: 7, name: "Alice" });
+    expect(editSession.addCount).toBe(1);
+  });
+
+  it("adds a new row through the datasource addRow method", async () => {
+    const datasourceAddRow = vi.fn<AddRow>().mockResolvedValue(SUCCESS);
+    const source = new MockDataSource(
+      endEdit,
+      createSession,
+      editCell,
+      datasourceAddRow,
+    ) as unknown as DataSource;
+    editSession = new EditSession({ dataSource: source });
+    editSession.configureNewRow(["role_name"], ["role_name"]);
+    editSession.setNewRowValue("role_name", "Administrator");
+
+    await expect(editSession.addNewRow()).resolves.toEqual(SUCCESS);
+
+    expect(datasourceAddRow).toHaveBeenCalledWith({
+      role_name: "Administrator",
+    });
     expect(editSession.addCount).toBe(1);
   });
 
@@ -123,7 +152,12 @@ describe("EditSession lifecycle", () => {
       type: "ERROR_RESULT",
     });
     editSession = new EditSession({
-      dataSource: new MockDataSource(endEdit, createSession, editCell, addRow) as unknown as DataSource,
+      dataSource: new MockDataSource(
+        endEdit,
+        createSession,
+        editCell,
+        addRow,
+      ) as unknown as DataSource,
     });
 
     await editSession.addRow({ id: 7 });

@@ -1,0 +1,285 @@
+import { LivePreview } from "../components/LivePreview";
+import {
+  ColumnDefinitions,
+  FitColumnLayout,
+  GroupedHeadings,
+  HeaderOptions,
+  PinnedColumns,
+} from "./02-Columns.examples";
+
+# Columns
+
+Columns are described by an array of `ColumnDescriptor` objects in `TableConfig.columns`. A descriptor controls what a column shows (`name`, `label`, `type`), how it is sized (`width`, `minWidth`, `maxWidth`, `flex`), where it sits (`pin`, `hidden`) and what the user can do with it (`sortable`, `resizeable`, `allowColumnHeaderMenu`).
+
+> The examples on this and later pages use a small helper hook, `useStockDataSource()`, which returns a memoised `ArrayDataSource` over the sample stock data from [Getting started](./01-GettingStarted.mdx). This keeps the code focused on the feature being described.
+>
+> ```tsx
+> const useStockDataSource = () =>
+>   useMemo(
+>     () =>
+>       new ArrayDataSource({
+>         columnDescriptors: stockColumns,
+>         data: stockData,
+>         keyColumn: "ric",
+>       }),
+>     [],
+>   );
+> ```
+
+## Column definitions
+
+`name` is the only required property. It must match a column name in the data source. Use it to pick which data source columns to show and in what order. The Table does not need to display every column the data source provides.
+
+- **label**: the text shown in the column header. Defaults to `name`.
+- **width**: the width in pixels. Defaults to `columnDefaultWidth` from the `TableConfig`, or `100` if that isn't set.
+- **align**: `"left"` or `"right"`. Numeric columns (`int`, `long`, `double`) are right aligned by default and other types are left aligned.
+- **hidden**: hides the column. A hidden column stays part of the configuration, so a user can show it again, for example from a column picker.
+
+<LivePreview>
+  <ColumnDefinitions />
+
+```tsx
+const config: TableConfig = {
+  columns: [
+    { name: "ric", label: "RIC", width: 90 },
+    { name: "name", label: "Company", width: 180 },
+    { name: "currency", label: "Currency", align: "right", width: 80 },
+    { name: "price", label: "Price", minWidth: 80 },
+    { name: "volume", label: "Volume", width: 120 },
+    { name: "sector", hidden: true },
+  ],
+  columnDefaultWidth: 90,
+  rowSeparators: true,
+};
+
+export const ColumnDefinitions = () => {
+  const dataSource = useStockDataSource();
+  return (
+    <Table config={config} dataSource={dataSource} height={300} width={620} />
+  );
+};
+```
+
+</LivePreview>
+
+In this example `price` has no `width`, so it uses the `columnDefaultWidth` of 90px. The `sector` column exists in the data but isn't displayed.
+
+### Best practices
+
+- Always set a `label`. Data source column names are often terse identifiers (`ccy`, `bbg`, `lastTrade`) and aren't suitable for display.
+- Give columns a width that suits their content rather than relying on the default. Identifiers and currency codes can be narrow, while names and descriptions need more room.
+- Keep the default alignment for numbers. Right-aligned numbers are much easier to compare by magnitude.
+- Prefer `hidden: true` to removing a column from the configuration when the user might want to see it again.
+
+## Column layout: static and fit
+
+`TableConfig.columnLayout` controls how column widths respond to the width of the table.
+
+| Value                | Behaviour                                                                                                                                                                                                                    |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `"static"` (default) | Columns are always exactly the width you specified. If they are narrower than the table, there is empty space on the right. If they are wider, the table scrolls horizontally.                                       |
+| `"fit"`              | Columns stretch or shrink to fill the available width, within each column's `minWidth` (default 50) and `maxWidth` (default 250). Columns with a `flex` value absorb the change first. Without `flex`, all columns share it. |
+| `"manual"`           | Set automatically when a user resizes a column in a `"fit"` table. From then on, widths are not recalculated.                                                                                                                |
+
+In this example the table is 700px wide but the columns only need 540px. `name` is the only `flex` column, so it absorbs all the extra space, up to its `maxWidth` of 400px. If you resize the panel, only `name` changes width.
+
+<LivePreview>
+  <FitColumnLayout />
+
+```tsx
+const config: TableConfig = {
+  columnLayout: "fit",
+  columns: [
+    { name: "ric", label: "RIC", width: 90, maxWidth: 100 },
+    { name: "name", label: "Name", width: 160, maxWidth: 400, flex: 1 },
+    { name: "sector", label: "Sector", width: 110 },
+    { name: "price", label: "Price", width: 90, maxWidth: 120 },
+    { name: "change", label: "Change", width: 90, maxWidth: 120 },
+  ],
+  rowSeparators: true,
+};
+
+export const FitColumnLayout = () => {
+  const dataSource = useStockDataSource();
+  return (
+    <Table config={config} dataSource={dataSource} height={300} width={700} />
+  );
+};
+```
+
+</LivePreview>
+
+### Best practices
+
+- Use `"fit"` for tables with a few columns that should look complete at any width, such as tables in dialogs, side panels or dashboards.
+- Use `"static"` (the default) for wide, data-dense tables where users expect to scroll horizontally and where column widths are personalised.
+- With `"fit"`, set `flex` on one or two columns that hold free text, and set a `maxWidth` on short, fixed-width values (codes, flags, numbers) so they don't stretch.
+- If the total `maxWidth` of all columns is less than the table width, every column grows to its `maxWidth` and the remaining space stays empty. Raise `maxWidth` on a flex column if you need the table to always fill its width.
+
+## Pinned columns
+
+Set `pin: "left"` or `pin: "right"` to keep a column visible while the rest of the table scrolls horizontally. Pin a key identifier to the left so the user always knows which row they are reading. Pin a status or an action column to the right.
+
+Scroll this table horizontally. `RIC` stays on the left and `ESG` stays on the right.
+
+<LivePreview>
+  <PinnedColumns />
+
+```tsx
+const config: TableConfig = {
+  columns: stockColumns.map<ColumnDescriptor>((column) => {
+    if (column.name === "ric") {
+      return { ...column, pin: "left" };
+    } else if (column.name === "esg") {
+      return { ...column, pin: "right" };
+    } else {
+      return column;
+    }
+  }),
+  columnSeparators: true,
+  rowSeparators: true,
+};
+
+export const PinnedColumns = () => {
+  const dataSource = useStockDataSource();
+  return (
+    <Table config={config} dataSource={dataSource} height={300} width={600} />
+  );
+};
+```
+
+</LivePreview>
+
+Users can also pin and unpin columns from the column header menu (see [Column header menus](#column-header-menus) below).
+
+### Best practices
+
+- Pin at most one or two columns on each side. Pinned columns reduce the scrollable area, and too many defeat the purpose of pinning.
+- Pin the column the user needs in order to identify a row, not the column with the most interesting value.
+
+## Grouped column headings
+
+`heading` adds one or more rows of headings above the column labels. It is an array of strings, from the top level down. Adjacent columns with the same heading at the same level share a single spanning heading cell.
+
+<LivePreview>
+  <GroupedHeadings />
+
+```tsx
+const config: TableConfig = {
+  columns: [
+    { name: "ric", label: "RIC", width: 90, heading: ["Instrument"] },
+    { name: "name", label: "Name", width: 170, heading: ["Instrument"] },
+    { name: "exchange", label: "Exchange", heading: ["Instrument"] },
+    { name: "price", label: "Price", heading: ["Pricing", "Last"] },
+    { name: "change", label: "Change", heading: ["Pricing", "Last"] },
+    { name: "volume", label: "Volume", width: 110, heading: ["Pricing", "Session"] },
+  ],
+  columnSeparators: true,
+  rowSeparators: true,
+};
+```
+
+</LivePreview>
+
+The table renders as many heading rows as the deepest `heading` array, here two. Columns with fewer levels show an empty heading cell at the lower levels.
+
+### Best practices
+
+- Use grouped headings to tie related columns together (bid and ask, or a set of risk measures), not just for decoration.
+- Use `columnSeparators: true` with grouped headings so the group boundaries are clear.
+- Group columns are only formed from **adjacent** columns. If a user moves a column away from its group, it gets its own heading cell.
+
+## Column headers
+
+Each column header shows the label, a sort indicator, a column menu button and a resize handle. Users can also drag headers to reorder columns. You can control all of these.
+
+| Setting                                         | Level  | Effect                                                                         |
+| ----------------------------------------------- | ------ | ------------------------------------------------------------------------------ |
+| `sortable: false`                               | Column | Clicking the header doesn't sort this column.                                 |
+| `resizeable: false`                             | Column | No resize handle is shown.                                                     |
+| `allowColumnHeaderMenu: false`                  | Column | No menu button on this column header.                                          |
+| `selected: true`                                | Column | Highlights the column (`vuuTableHeaderCell-selected`).                         |
+| `columnFormatHeader: "uppercase" \| "capitalize"` | Config | Transforms every label.                                                       |
+| `allowDragColumnHeader={false}`                 | Table  | Turns off drag-to-reorder for all headers. Defaults to `true`.                 |
+| `showColumnHeaderMenus`                         | Table  | `true` (default), `false`, or a `ColumnMenuPermissions` object (see below).    |
+| `showColumnHeaders={false}`                     | Table  | Hides the header row completely.                                               |
+
+In this example:
+
+- `RIC` is not sortable.
+- `Price` cannot be resized.
+- `Change` has no menu.
+- `Volume` is highlighted.
+- All labels are upper-cased.
+- Columns can't be dragged.
+
+<LivePreview>
+  <HeaderOptions />
+
+```tsx
+const config: TableConfig = {
+  columns: [
+    { name: "ric", label: "ric", width: 90, sortable: false },
+    { name: "name", label: "company name", width: 170 },
+    { name: "price", label: "price", resizeable: false },
+    { name: "change", label: "change", allowColumnHeaderMenu: false },
+    { name: "volume", label: "volume", width: 110, selected: true },
+  ],
+  columnFormatHeader: "uppercase",
+  rowSeparators: true,
+};
+
+export const HeaderOptions = () => {
+  const dataSource = useStockDataSource();
+  return (
+    <Table
+      allowDragColumnHeader={false}
+      config={config}
+      dataSource={dataSource}
+      height={300}
+      showColumnHeaderMenus={{
+        allowSort: true,
+        allowHide: true,
+        allowGroup: false,
+        allowAggregation: false,
+        allowRemove: false,
+        allowPin: false,
+      }}
+      width={560}
+    />
+  );
+};
+```
+
+</LivePreview>
+
+### Column header menus
+
+When `showColumnHeaderMenus` is `true`, each header has a menu with all the column actions available for that column. Pass a `ColumnMenuPermissions` object to choose which groups of actions appear:
+
+| Permission         | Menu items                                                        |
+| ------------------ | ----------------------------------------------------------------- |
+| `allowSort`        | Sort ascending, sort descending, add to or remove from multi-sort |
+| `allowGroup`       | Group by this column, or add it to the existing grouping          |
+| `allowAggregation` | Aggregate (count, distinct, and for numeric columns sum, average, high, low) when the data is grouped |
+| `allowHide`        | Hide column                                                       |
+| `allowRemove`      | Remove column                                                     |
+| `allowPin`         | Pin left, pin right, unpin                                        |
+
+Any change the user makes through the menu is reported through `onConfigChange` (for column changes) or applied to the `DataSource` (for sort, group and aggregation). See [Persisting configuration](./01-GettingStarted.mdx#persisting-configuration).
+
+### Best practices
+
+- Turn off menu permissions that don't make sense for your data. For example, turn off `allowGroup` and `allowAggregation` for a short reference list.
+- If a table is read-only and minimal (for example, a lookup list in a dialog), set `showColumnHeaderMenus={false}` and consider `allowDragColumnHeader={false}`.
+- Prefer `sortable: false` on columns where sorting has no meaning (free-text notes, icons, actions) rather than turning off sorting for the whole table.
+
+## Resizing and reordering
+
+Users resize a column by dragging the handle on the right edge of its header. They reorder columns by dragging a header to a new position. Both actions are reported to `onConfigChange` with change types `"column-resized"` and `"column-moved"`, so your app can persist them.
+
+## Next steps
+
+- Format column values and add custom cell renderers in [Formatting and renderers](./03-Formatting.mdx).
+- Sort, filter and group by column in [Sorting and grouping](./05-SortingAndGrouping.mdx).
+- See every `ColumnDescriptor` property in the [API reference](./09-ApiReference.mdx#columndescriptor).

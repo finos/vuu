@@ -12,6 +12,7 @@ import { FunctionComponent as FC, HTMLAttributes } from "react";
 import {
   hasCustomRenderer,
   isColumnTypeRenderer,
+  isTemporalColumn,
   isTypeDescriptor,
 } from "./column-utils";
 
@@ -296,6 +297,15 @@ export function getEditRuleValidator(name: string) {
 function dataCellRenderer(column: ColumnDescriptor) {
   if (column.serverDataType === "boolean" && !hasCustomRenderer(column.type)) {
     return cellRenderersMap.get("checkbox-cell");
+  } else if (
+    column.editable &&
+    !hasCustomRenderer(column.type) &&
+    isTemporalColumn(column) &&
+    cellRenderersMap.has("temporal-input-cell")
+  ) {
+    // temporal values are edited in a canonical, locale independent
+    // format, in the column time zone and encoding.
+    return cellRenderersMap.get("temporal-input-cell");
   } else if (column.editable && !hasCustomRenderer(column.type)) {
     // we can only offer a text input edit as a generic editor.
     // If a more specialised editor is required, user must configure

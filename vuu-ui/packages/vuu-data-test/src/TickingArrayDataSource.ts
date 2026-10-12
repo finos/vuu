@@ -334,13 +334,20 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return super.columns;
   }
 
-  async endEditSession(saveChanges = false) {
+  async endEditSession(saveChanges = false, force = false) {
+    if (this.status === "unsubscribed" || !this.viewport) {
+      if (!saveChanges) {
+        return;
+      }
+      throw Error("Cannot save changes: datasource is unsubscribed");
+    }
+
     const type = "RPC_REQUEST";
     const rpcName = "endEditSession";
 
     const rpcResponse = await this.rpcRequest(
       saveChanges
-        ? { type, rpcName, params: { save: true } }
+        ? { type, rpcName, params: { save: true, force } }
         : { type, rpcName, params: {} },
     );
 
