@@ -65,7 +65,7 @@
 }
 
 .vuuTooltip-error {
-  --tooltip-background: var(--vuu-color-red-50);
+  --tooltip-background: var(--salt-color-red-500);
   --tooltip-color: white;
   color: white;
 }
