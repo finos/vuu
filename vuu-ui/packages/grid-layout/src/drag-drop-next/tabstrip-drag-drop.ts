@@ -28,7 +28,10 @@ const isRemoteContainer = (
   sourceElement: HTMLElement,
   targetElement: HTMLElement,
 ) => {
-  return sourceElement.parentElement !== targetElement?.parentElement;
+  return (
+    queryClosest(sourceElement, ".vuuDragContainer", true) !==
+    queryClosest(targetElement, ".vuuDragContainer", true)
+  );
 };
 
 const getDataIndex = (el: HTMLElement | null) =>
@@ -51,7 +54,7 @@ export function initializeDragContainer(
       const droppedTab = document
         .getElementById(tabsId)
         ?.querySelector(
-          `[data-label="${tabLabel}"] .saltTabNextTrigger`,
+          `[data-label="${tabLabel}"] .saltTabTrigger`,
         ) as HTMLButtonElement;
       droppedTab?.focus();
     });
