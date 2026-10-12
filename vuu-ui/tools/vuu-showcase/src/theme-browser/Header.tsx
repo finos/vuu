@@ -3,10 +3,13 @@ import {
   Dropdown,
   Input,
   Option,
+  Tab,
+  TabList,
+  TabTrigger,
+  Tabs,
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
-import { TabListNext, TabNext, TabNextTrigger, TabsNext } from "@salt-ds/lab";
 import cx from "clsx";
 import { KeyboardEvent, useRef, useState } from "react";
 import { PRIMARY_AXES, TIER_INFO } from "./model-utils";
@@ -161,23 +164,23 @@ export const Header = ({
             {Object.keys(model.tokens).length} tokens
           </span>
         </div>
-        <TabsNext
+        <Tabs
           onChange={(_, id) => onChangeView(id as ThemeBrowserViewId)}
           value={view}
         >
-          <TabListNext appearance="transparent" className="tabs">
+          <TabList appearance="transparent" className="tabs">
             {VIEWS.map(([id, label]) => (
-              <TabNext key={id} value={id}>
-                <TabNextTrigger>
+              <Tab key={id} value={id}>
+                <TabTrigger>
                   {label}
                   {id === "diagnostics" && issues ? (
                     <span className="badge warn">{issues}</span>
                   ) : null}
-                </TabNextTrigger>
-              </TabNext>
+                </TabTrigger>
+              </Tab>
             ))}
-          </TabListNext>
-        </TabsNext>
+          </TabList>
+        </Tabs>
         <SearchBox />
       </div>
       <div className="axes-row">
