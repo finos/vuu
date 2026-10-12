@@ -9,6 +9,8 @@
 }
 
 .ShowcaseDocsPage-scroll {
+  /* lets wide blocks (e.g. ComponentAnatomy) break out of the column */
+  container-type: inline-size;
   flex: 1 1 auto;
   min-width: 0;
   overflow: auto;
