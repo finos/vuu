@@ -12,6 +12,8 @@ type NavNode = TreeSourceNode<NavNodeData>;
 export const GITHUB_SOURCE_URL =
   "https://github.com/finos/vuu/blob/main/vuu-ui/showcase";
 
+const VUU_UI_GITHUB_URL = "https://github.com/finos/vuu/blob/main/vuu-ui";
+
 export interface Crumb {
   label: string;
   path: string;
@@ -117,5 +119,17 @@ export const getSourceLinks = (
     vscode: sourceRoot
       ? `vscode://file/${trimSlashes(sourceRoot)}/${file}${start ? `:${start}` : ""}`
       : undefined,
+  };
+};
+
+/**
+ * Links to a test file, given its path relative to the vuu-ui folder. The
+ * source root is the showcase folder, within vuu-ui.
+ */
+export const getTestFileLinks = (file: string, sourceRoot = "") => {
+  const root = trimSlashes(sourceRoot).split("/").slice(0, -1).join("/");
+  return {
+    github: `${VUU_UI_GITHUB_URL}/${file}`,
+    vscode: root ? `vscode://file/${root}/${file}` : undefined,
   };
 };

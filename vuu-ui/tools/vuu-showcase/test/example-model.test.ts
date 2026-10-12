@@ -5,6 +5,7 @@ import {
   getBreadcrumbs,
   getParentNode,
   getSourceLinks,
+  getTestFileLinks,
 } from "../src/showcase-main/example/example-model";
 import type { NavNodeData } from "../src/showcase-main/tree-nav/nav-tree";
 
@@ -116,6 +117,17 @@ describe("example-model", () => {
     });
     expect(getSourceLinks(nodeData, "/dev/vuu-ui/showcase/").vscode).toBe(
       "vscode://file/dev/vuu-ui/showcase/src/examples/Table/Misc.examples.tsx:10",
+    );
+  });
+
+  it("builds test file links", () => {
+    const file = "packages/vuu-filters/src/__tests__/F.playwright.test.tsx";
+    expect(getTestFileLinks(file)).toEqual({
+      github: `https://github.com/finos/vuu/blob/main/vuu-ui/${file}`,
+      vscode: undefined,
+    });
+    expect(getTestFileLinks(file, "/dev/vuu-ui/showcase/").vscode).toBe(
+      `vscode://file/dev/vuu-ui/${file}`,
     );
   });
 });

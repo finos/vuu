@@ -96,6 +96,11 @@ body {
   opacity: 0.7;
 }
 
+.ShowcaseNavRowAdornment-fixture {
+  color: var(--sc-text-3);
+  display: inline-flex;
+}
+
 .ShowcaseNavRowAdornment-star {
   border-radius: 4px;
   color: var(--sc-text-4);
