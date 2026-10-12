@@ -85,7 +85,8 @@
     "@rsbuild/plugin-babel": "^2.1.0",
     "@rsbuild/plugin-react": "^2.0.0",
     "@rslib/core": "0.23.1",
-    "@salt-ds/core": "1.54.1",
+    "@salt-ds/core": "1.72.0",
+    "@salt-ds/lab": "1.0.0-alpha.105",
     "@testing-library/dom": "^9.0.0",
     "@types/jsdom": "^21.1.2",
     "@types/serve-handler": "^6.1.4",
@@ -102,9 +103,8 @@
     "serve-handler": "^6.1.6",
     "tinycolor2": "1.4.2",
     "tsx": "^4.19.1",
-    "typescript": "5.8.3",
+    "typescript": "7.0.2",
     "vite": "6.4.1",
-    "vite-tsconfig-paths": "5.1.4",
     "vitest": "3.1.1"
   },
   "optionalDependencies": {
