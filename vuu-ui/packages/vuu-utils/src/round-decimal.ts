@@ -10,6 +10,22 @@ export const exceedsMaxSafeInteger = (value: string) =>
   value.length > MAX_INTEGER_DIGITS ||
   (value.length === MAX_INTEGER_DIGITS && value > MAX_SAFE_INTEGER);
 
+const carriesIntoIntegral = (
+  fraction: string,
+  decimals: number,
+  roundingRule: RoundingRule,
+) =>
+  roundingRule === "round" &&
+  decimals !== DECIMALS_AUTO &&
+  fraction.length > decimals &&
+  parseFloat(`0.${fraction}`).toFixed(decimals).startsWith("1");
+
+const incrementIntegral = (integral: string) => {
+  const negative = integral.startsWith("-");
+  const magnitude = BigInt(negative ? integral.slice(1) : integral) + 1n;
+  return `${negative ? "-" : ""}${magnitude}`;
+};
+
 type PadMap = {
   DIGIT: string;
   TWO_DIGITS: string;
@@ -100,7 +116,10 @@ export function roundDecimal(
   let fraction: string;
   let Pad: PadMap | null;
 
-  const [part1, part2 = ""] = value.toString().split(".");
+  const [whole, part2 = ""] = value.toString().split(".");
+  const part1 = carriesIntoIntegral(part2, decimals, roundingRule)
+    ? incrementIntegral(whole)
+    : whole;
   const actualDecimals = part2.length;
 
   integral =
@@ -164,7 +183,10 @@ export function roundScaledDecimal(
     return "";
   }
 
-  const [part1, part2 = ""] = value.split(".");
+  const [whole, part2 = ""] = value.split(".");
+  const part1 = carriesIntoIntegral(part2, decimals, roundingRule)
+    ? incrementIntegral(whole)
+    : whole;
   const actualDecimals = part2.length;
 
   integral =
