@@ -130,11 +130,13 @@ export const ComponentAnatomy = ({
   );
 
   const [width, height] = size;
-  const padX = maxDepth * LEVEL_SIDE + MARGIN;
+  const minPadX = maxDepth * LEVEL_SIDE + MARGIN;
   const padTop = maxDepth * LEVEL_TOP + MARGIN;
   const padBottom = maxDepth * LEVEL_SIDE + MARGIN + 18;
   const scale =
-    stageWidth > 0 ? Math.min(1, (stageWidth - 2 * padX) / width) : 1;
+    stageWidth > 0 ? Math.min(1, (stageWidth - 2 * minPadX) / width) : 1;
+  // Centre the capture when the stage is wider than its natural size
+  const padX = Math.max(minPadX, (stageWidth - width * scale) / 2);
 
   const toComponent = (e: MouseEvent<HTMLDivElement>) => {
     const box = e.currentTarget.getBoundingClientRect();

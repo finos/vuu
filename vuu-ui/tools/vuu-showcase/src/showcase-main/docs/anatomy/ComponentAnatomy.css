@@ -115,11 +115,12 @@
 
 .ShowcaseAnatomy-split {
   display: grid;
-  grid-template-columns: minmax(220px, 38%) 1fr;
+  grid-template-columns: fit-content(55%) 1fr;
   height: 440px;
 }
 
 .ShowcaseAnatomy-tree {
+  min-width: 220px;
   border-right: 1px solid var(--sc-border);
   overflow: auto;
   padding: var(--sc-space-1) 0;
@@ -378,4 +379,14 @@
     display: inline-flex;
     gap: 6px;
   }
+}
+
+/* ------ breakout ------ */
+
+/* Docs text is capped at a readable measure; the anatomy needs room, so it
+   breaks out of the column to the width of the scroll area (cqi). */
+.ShowcaseDocs .ShowcaseAnatomy {
+  --anatomy-width: max(100%, min(100cqi - 2 * var(--sc-space-8), 1400px));
+  margin-inline: calc((100% - var(--anatomy-width)) / 2);
+  width: var(--anatomy-width);
 }
