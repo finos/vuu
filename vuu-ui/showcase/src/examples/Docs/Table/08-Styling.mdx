@@ -6,9 +6,7 @@ import {
   MassOrders,
   RowClassNames,
   TradePairs,
-} from "./07-Styling.examples";
-import tableAnatomy from "./anatomy/table.anatomy.json";
-import tableAnatomyImage from "./anatomy/table.anatomy.png";
+} from "./08-Styling.examples";
 
 # Styling
 
@@ -22,6 +20,8 @@ The Table is styled with plain CSS and Salt design tokens, so it follows the act
 | [CSS custom properties](#css-custom-properties) | `--vuuTable*` variables               | Changing colors, padding and fonts for one table or a whole app. |
 
 For styling individual cells based on their value, use a [cell renderer](./03-Formatting.mdx#cell-renderers).
+
+To see which of these variables style each part of the Table, and how they resolve to the theme, see [Anatomy](./07-Anatomy.mdx).
 
 ## Display attributes
 
@@ -390,21 +390,7 @@ To style parts of the Table not covered by custom properties, target these class
 - Prefer custom properties to selectors. They are the supported way to style the Table, and they are less likely to break when the Table's internals change.
 - Use Salt tokens rather than hard-coded colors, as in the row class name example. Then your styles follow the theme into dark mode. (The colors in the custom properties example are hard-coded only to make the change obvious.)
 
-## Anatomy
-
-The anatomy below shows how the Table is built and which theme variables style each part of it. Select an element in the picture or in the DOM structure. The picture outlines the selected element and each of its ancestors. The panel on the right lists the CSS properties set on that element with theme variables, and the custom properties it defines for the elements inside it. Each variable is traced from the Table's own API variables (`--vuuTable*`), through Salt's characteristics and palette, to the foundation value.
-
-<ComponentAnatomy
-  anatomy={tableAnatomy}
-  image={tableAnatomyImage}
-  initialSelection="vuuTableCell"
-/>
-
-Repeated elements, such as rows and cells, appear once in the DOM structure. Styles that apply only to some of them, or only in a state such as `:hover` or `:focus`, are listed with the selector that applies them. A dashed variable is not set by the theme, so its fallback is used. Those are the API variables you can set to customize the Table.
-
-> The anatomy is captured from the `TableAnatomy` example with vuu-theme, in light mode and high density. After changing the Table's CSS, regenerate it with `npm run showcase:anatomy` while the Showcase is running.
-
 ## Next steps
 
-- Learn about keyboard support and screen readers in [Accessibility](./08-Accessibility.mdx).
-- See every config option in the [API reference](./09-ApiReference.mdx).
+- Learn about keyboard support and screen readers in [Accessibility](./09-Accessibility.mdx).
+- See every config option in the [API reference](./10-ApiReference.mdx).

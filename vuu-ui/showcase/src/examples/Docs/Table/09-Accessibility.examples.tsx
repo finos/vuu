@@ -13,7 +13,7 @@ import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import { useMemo, useState } from "react";
 import { stockColumns, useStockDataSource } from "./sample-data";
 
-import "./08-Accessibility.css";
+import "./09-Accessibility.css";
 
 const columns = stockColumns.slice(0, 7);
 
