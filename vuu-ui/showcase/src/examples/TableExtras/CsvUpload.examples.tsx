@@ -349,7 +349,7 @@ export const CsvUploadWithImportFailure = () => {
         }}
       />
       {capturedError && (
-        <div style={{ marginTop: 10, color: "var(--salt-status-error-foreground)" }} data-testid="test-error-output">
+        <div style={{ marginTop: 10, color: "var(--salt-status-error-foreground-informative)" }} data-testid="test-error-output">
           <strong>Captured onError callback:</strong> {capturedError}
         </div>
       )}
@@ -406,7 +406,7 @@ export const CsvUploadWithExternalErrorDialog = () => {
       <Dialog open={isErrorDialogOpen} onOpenChange={setIsErrorDialogOpen}>
         <DialogHeader header="Custom Dialog: Import Failed" />
         <DialogContent>
-          <div style={{ padding: 16, color: "var(--salt-status-error-foreground)" }}>
+          <div style={{ padding: 16, color: "var(--salt-status-error-foreground-informative)" }}>
             <p><strong>System Exception Detected:</strong></p>
             <p>{errorResult?.errors.importError?.message || "An unexpected error occurred during database injection."}</p>
           </div>

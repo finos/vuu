@@ -20,8 +20,8 @@
   width: 100%;
   max-width: 480px;
   padding: var(--salt-spacing-100) var(--salt-spacing-200);
-  background-color: rgba(var(--salt-palette-interact-error-background), 0.05);
-  border-radius: var(--salt-size-borderRadius);
+  background-color: var(--salt-status-error-background);
+  border-radius: var(--salt-palette-corner);
   text-align: left;
 }
 
@@ -32,9 +32,9 @@
 }
 
 .vuuCsvUpload-errorItem {
-  font-size: var(--salt-text-fontSize-small);
-  color: var(--salt-status-error-foreground);
-  line-height: var(--salt-text-lineHeight-small);
+  font-size: var(--salt-text-label-fontSize);
+  color: var(--salt-status-error-foreground-informative);
+  line-height: var(--salt-text-label-lineHeight);
   word-break: break-word;
   margin-bottom: var(--salt-spacing-50);
 }
@@ -49,8 +49,8 @@
 
 .vuuCsvUpload-errors {
   border: solid 1px var(--salt-status-error-borderColor);
-  border-radius: var(--salt-size-borderRadius);
-  color: var(--salt-status-error-foreground);
+  border-radius: var(--salt-palette-corner);
+  color: var(--salt-status-error-foreground-informative);
   display: grid;
   gap: var(--salt-spacing-100);
   padding: var(--salt-spacing-200);
