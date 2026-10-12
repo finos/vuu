@@ -7,7 +7,7 @@ body {
   --vuuTree-toggle-expand: var(--vuu-svg-chevron-right);
   --vuuTree-toggle-collapse: var(--vuu-svg-chevron-right);
   --vuuTree-node-expanded-transform: rotate(90deg) translate(1px, 1px);
-  --vuuTree-icon-color: var(--salt-palette-accent-background);
+  --vuuTree-icon-color: var(--salt-sentiment-accent-background);
   --vuuTree-font-size: 12px;
   height: 100%;
 }

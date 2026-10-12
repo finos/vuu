@@ -59,7 +59,7 @@
 
 .vuuTabstrip-overflowMenu-open {
   --saltButton-background: var(--salt-actionable-subtle-background-active);
-  --saltButton-text-color: var(--salt-actionable-subtle-text-color-active);
+  --saltButton-text-color: var(--salt-actionable-subtle-foreground-active);
 }
 
 .vuuTabstrip-overflowMenu-open .saltButton {
@@ -93,7 +93,7 @@
   --tabstrip-height: 100%;
   --tabstrip-dragging-display: block;
 
-  --tabs-tab-background: var(--salt-navigable-primary-background-hover);
+  --tabs-tab-background: var(--salt-navigable-background-hover);
   --tabs-tab-before-content: "";
   --tabs-tab-before-background: var(--salt-navigable-indicator-hover);
   --tabs-tab-before-height: var(--tab-activationIndicator-thumb-height);

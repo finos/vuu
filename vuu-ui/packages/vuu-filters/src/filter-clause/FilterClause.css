@@ -16,7 +16,7 @@
   display: flex;
   flex-direction: row;
   gap: var(--salt-spacing-50);
-  height: calc(var(--salt-size-base) + var(--salt-size-spacing-100));
+  height: calc(var(--salt-size-base) + var(--salt-spacing-100));
   min-width: calc(var(--salt-size-base) * 4);
   padding: 0 var(--salt-spacing-100);
   width: fit-content;

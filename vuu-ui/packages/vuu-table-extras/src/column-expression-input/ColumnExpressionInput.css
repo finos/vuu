@@ -5,7 +5,7 @@
     --vuuFilterEditor-fontFamily: var(--salt-typography-fontFamily);
     --vuuFilterEditor-fontSize: var(--salt-text-fontSize);
     --vuuFilterEditor-cursorColor: var(--salt-content-secondary-foreground);
-    --vuuFilterEditor-selectionBackground: var(--salt-text-background-selected);
+    --vuuFilterEditor-selectionBackground: var(--salt-selectable-background-selected);
     --vuuFilterEditor-tooltipBackground: var(--salt-container-primary-background);
     --vuuFilterEditor-tooltipBorder: solid 1px var(--vuu-color-purple-10); 
     --vuuFilterEditor-tooltipElevation: var(--salt-overlayable-shadow-popout);

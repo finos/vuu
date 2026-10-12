@@ -29,7 +29,7 @@
 .vuuDraggable-dropIndicator {
   /* height: var(--saltDraggable-spacer-height, var(--tabstrip-height)); */
   /* width: var(--saltDraggable-spacer-width, 0); */
-  background-color: var(--salt-palette-accent-background);
+  background-color: var(--salt-sentiment-accent-background);
   height: 2px;
   width: 100%;
 }
@@ -39,7 +39,7 @@
   width: 6px;
   height: 6px;
   border-radius: 3px;
-  background-color: var(--salt-palette-accent-background);
+  background-color: var(--salt-sentiment-accent-background);
   position: absolute;
   top: -2px;
   left: -3px;
