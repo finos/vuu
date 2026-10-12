@@ -187,13 +187,13 @@ export const varReferences = (value: string) =>
   [...value.matchAll(/var\(\s*(--[\w-]+)/g)].map(([, name]) => name);
 
 /** e.g --vuuTable-background, --VuuTableRow-fontSize, --saltButton-padding */
-const isComponentHook = (name: string) => /^--(vuu|Vuu|salt)[A-Z]/.test(name);
+const isApiVariable = (name: string) => /^--(vuu|Vuu|salt)[A-Z]/.test(name);
 
 export type ThemeTierLookup = (name: string) => AnatomyTier | undefined;
 
 export const tierOf = (name: string, themeTier: ThemeTierLookup) =>
-  isComponentHook(name)
-    ? "hook"
+  isApiVariable(name)
+    ? "api"
     : (themeTier(name) ?? (name.startsWith("--salt-") ? "other" : "internal"));
 
 const MAX_CHAIN = 24;

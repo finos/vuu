@@ -276,7 +276,7 @@ To style parts of the Table not covered by custom properties, target these class
 
 ## Anatomy
 
-The anatomy below shows how the Table is built and which theme variables style each part of it. Select an element in the picture or in the DOM structure. The picture outlines the selected element and each of its ancestors. The panel on the right lists the CSS properties set on that element with theme variables, and the custom properties it defines for the elements inside it. Each variable is traced from the Table's own hooks (`--vuuTable*`), through Salt's characteristics and palette, to the foundation value.
+The anatomy below shows how the Table is built and which theme variables style each part of it. Select an element in the picture or in the DOM structure. The picture outlines the selected element and each of its ancestors. The panel on the right lists the CSS properties set on that element with theme variables, and the custom properties it defines for the elements inside it. Each variable is traced from the Table's own API variables (`--vuuTable*`), through Salt's characteristics and palette, to the foundation value.
 
 <ComponentAnatomy
   anatomy={tableAnatomy}
@@ -284,7 +284,7 @@ The anatomy below shows how the Table is built and which theme variables style e
   initialSelection="vuuTableCell"
 />
 
-Repeated elements, such as rows and cells, appear once in the DOM structure. Styles that apply only to some of them, or only in a state such as `:hover` or `:focus`, are listed with the selector that applies them. A dashed variable is not set by the theme, so its fallback is used. Those are the hooks you can set to customize the Table.
+Repeated elements, such as rows and cells, appear once in the DOM structure. Styles that apply only to some of them, or only in a state such as `:hover` or `:focus`, are listed with the selector that applies them. A dashed variable is not set by the theme, so its fallback is used. Those are the API variables you can set to customize the Table.
 
 > The anatomy is captured from the `TableAnatomy` example with vuu-theme, in light mode and high density. After changing the Table's CSS, regenerate it with `npm run showcase:anatomy` while the Showcase is running.
 
