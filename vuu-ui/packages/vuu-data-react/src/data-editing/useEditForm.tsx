@@ -12,7 +12,7 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { Button } from "@salt-ds/core";
 import {
-  type ChangeEventHandler,
+  type FormEventHandler,
   type FocusEventHandler,
   useCallback,
   useMemo,
@@ -271,7 +271,7 @@ export const useEditForm = ({
     [dataSource, entity, formFieldDescriptors, setValidationState],
   );
 
-  const handleFieldChange = useCallback<ChangeEventHandler<HTMLElement>>(
+  const handleFieldChange = useCallback<FormEventHandler<HTMLElement>>(
     (evt) => {
       const { current: fieldName } = focusedFieldRef;
       if (fieldName) {

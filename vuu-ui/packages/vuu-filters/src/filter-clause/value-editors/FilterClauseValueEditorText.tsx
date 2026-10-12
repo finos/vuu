@@ -9,7 +9,7 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { Option, useForkRef } from "@salt-ds/core";
 import {
-  type ChangeEventHandler,
+  type FormEventHandler,
   type ForwardedRef,
   forwardRef,
   type HTMLAttributes,
@@ -124,7 +124,7 @@ export const FilterClauseValueEditorText = forwardRef(
       }
     }, [table, column, valueInputValue, getSuggestions, isMultiValue]);
 
-    const handleInputChange = useCallback<ChangeEventHandler<HTMLElement>>(
+    const handleInputChange = useCallback<FormEventHandler<HTMLElement>>(
       (evt) => {
         const { value } = evt.target as HTMLInputElement;
         setValueInputValue(value);

@@ -8,7 +8,7 @@ import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { type CommitHandler, getTypedValue, queryClosest } from "@vuu-ui/vuu-utils";
 import {
-  type ChangeEventHandler,
+  type FormEventHandler,
   type FocusEventHandler,
   useCallback,
   useMemo,
@@ -131,7 +131,7 @@ export const useBulkEditRow = ({
     }
   }, []);
 
-  const handleChange = useCallback<ChangeEventHandler<HTMLElement>>(
+  const handleChange = useCallback<FormEventHandler<HTMLElement>>(
     (evt) => {
       const { current: fieldName } = focusedFieldRef;
       if (fieldName) {

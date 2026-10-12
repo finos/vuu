@@ -49,7 +49,7 @@ export const useEditTabName = ({
   const dialog = useMemo(() => {
     const getDialogStyle = () => {
       const tabElement = document.querySelector(
-        `.saltTabNext[data-grid-layout-item-id="${id}"]`,
+        `.saltTab[data-grid-layout-item-id="${id}"]`,
       );
       if (tabElement) {
         const { left, bottom } = tabElement.getBoundingClientRect();
