@@ -1,11 +1,9 @@
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
-import { findTreeNode } from "../../shared-utils";
 import {
   countExamples,
   DOCS_ID,
   getExampleNodes,
   type NavNodeData,
-  THEME_PATH,
 } from "../tree-nav/nav-tree";
 
 type NavNode = TreeSourceNode<NavNodeData>;
@@ -18,42 +16,12 @@ export interface PageRef {
   live?: boolean;
 }
 
-export interface AreaSummary {
-  count: number;
-  id: string;
-  label: string;
-  liveCount: number;
-  path: string;
-  samples: PageRef[];
-}
-
 export interface HomeStats {
   docChapters: number;
   docGuides: number;
   examples: number;
   liveExamples: number;
 }
-
-export type StartHereEntry =
-  | { kind: "guide"; path: string }
-  | { kind: "theme" }
-  | { kind: "page"; path: string; description: string };
-
-export type StartHereArt = "guide" | "theme" | "page";
-
-export interface StartHereCard {
-  art: StartHereArt;
-  description: string;
-  path: string;
-  title: string;
-}
-
-export interface ThemeSummaryLike {
-  name: string;
-  tokenCount: number;
-}
-
-const SAMPLE_COUNT = 3;
 
 const isExample = (node: NavNode) =>
   !node.childNodes?.length && typeof node.nodeData?.componentName === "string";
@@ -124,86 +92,39 @@ export const getHomeStats = (treeSource: NavNode[]): HomeStats => {
   };
 };
 
-/**
- * One summary per top level component folder, largest first. Samples are the
- * first examples found, depth first.
- */
-export const getAreas = (treeSource: NavNode[]): AreaSummary[] =>
-  getExampleNodes(treeSource)
-    .filter((node) => node.childNodes?.length)
-    .map((node) => {
-      const samples: PageRef[] = [];
-      const childNodes = node.childNodes ?? [];
-      visitLeaves(childNodes, (leaf) => {
-        if (samples.length < SAMPLE_COUNT && isExample(leaf)) {
-          samples.push({
-            label: leaf.label,
-            live: leaf.nodeData?.live,
-            path: `/${leaf.id}`,
-            trail: [],
-          });
-        }
-      });
-      return {
-        count: node.nodeData?.count ?? 0,
-        id: node.id,
-        label: node.label,
-        liveCount: countLiveExamples(childNodes),
-        path: `/${node.id}`,
-        samples,
-      };
-    })
-    .sort((a1, a2) => a2.count - a1.count || a1.label.localeCompare(a2.label));
+export interface AddedPageRef extends PageRef {
+  /** date (yyyy-mm-dd) the example was added */
+  added: string;
+}
 
 /**
- * Resolves the curated Start here entries against the tree. Entries whose
- * route no longer exists are dropped, rather than presenting a broken link.
+ * The most recently added examples, newest first. Examples added on the same
+ * date retain their tree order.
  */
-export const getStartHereCards = (
-  entries: StartHereEntry[],
+export const getRecentlyAdded = (
   treeSource: NavNode[],
-  themeSummary?: ThemeSummaryLike,
-): StartHereCard[] => {
-  const cards: StartHereCard[] = [];
-  for (const entry of entries) {
-    if (entry.kind === "theme") {
-      cards.push({
-        art: "theme",
-        description: themeSummary
-          ? `${themeSummary.name} · ${themeSummary.tokenCount} tokens in 3 tiers`
-          : "Foundations, palette and characteristics",
-        path: THEME_PATH,
-        title: "Theme Browser",
-      });
-      continue;
+  limit: number,
+): AddedPageRef[] => {
+  const examples: AddedPageRef[] = [];
+  const visit = (nodes: NavNode[], trail: string[]) => {
+    for (const node of nodes) {
+      if (node.childNodes?.length) {
+        visit(node.childNodes, trail.concat(node.label));
+      } else if (isExample(node) && node.nodeData?.added) {
+        examples.push({
+          added: node.nodeData.added,
+          label: node.label,
+          live: node.nodeData.live,
+          path: `/${node.id}`,
+          trail,
+        });
+      }
     }
-    const node = findTreeNode(entry.path, treeSource);
-    if (node === undefined) {
-      continue;
-    }
-    if (entry.kind === "guide") {
-      const chapters = node.childNodes ?? [];
-      const first = chapters.at(0)?.label;
-      const last = chapters.at(-1)?.label;
-      cards.push({
-        art: "guide",
-        description:
-          first && last && chapters.length > 1
-            ? `${chapters.length} chapters · ${first} → ${last}`
-            : `${chapters.length} chapter${chapters.length === 1 ? "" : "s"}`,
-        path: entry.path,
-        title: `${node.label} guide`,
-      });
-    } else {
-      cards.push({
-        art: "page",
-        description: entry.description,
-        path: entry.path,
-        title: node.label,
-      });
-    }
-  }
-  return cards;
+  };
+  visit(getExampleNodes(treeSource), []);
+  return examples
+    .sort((e1, e2) => e2.added.localeCompare(e1.added))
+    .slice(0, limit);
 };
 
 /** Recently viewed paths resolved to pages, unknown paths are dropped */
