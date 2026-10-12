@@ -7,6 +7,8 @@ export const EXAMPLES_ID = "Examples";
 export const THEME_PATH = `/${THEME_ID}`;
 
 export type NavNodeData = {
+  /** examples only, date (yyyy-mm-dd) first added to the showcase */
+  added?: string;
   componentName?: string;
   count?: number;
   description?: string;

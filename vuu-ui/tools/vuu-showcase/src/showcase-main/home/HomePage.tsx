@@ -1,18 +1,17 @@
 import { Button } from "@salt-ds/core";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { vuuThemeSummary } from "../../theme-browser/theme-summary";
-import { ChromeIcon } from "../chrome/ChromeIcon";
+import { ChromeIcon, type ChromeIconName } from "../chrome/ChromeIcon";
 import { RouteLink } from "../chrome/RouteLink";
 import { useRecent } from "../tree-nav/nav-store";
 import type { NavNodeData } from "../tree-nav/nav-tree";
-import { areaArtVariant, FEATURED_AREA_COUNT, START_HERE } from "./home-config";
-import { AreaArt, StartHereArtwork } from "./HomeArt";
 import {
+  type AddedPageRef,
   createPageIndex,
-  getAreas,
   getHomeStats,
-  getStartHereCards,
+  getRecentlyAdded,
+  type PageRef,
   resolveRecent,
 } from "./home-model";
 
@@ -21,16 +20,55 @@ import "./HomePage.css";
 const classBase = "ShowcaseHome";
 
 const MAX_RECENT = 6;
+const MAX_ADDED = 3;
 
 const isMac =
   typeof navigator !== "undefined" &&
   /Mac|iPhone|iPad/.test(navigator.platform);
 
-const plural = (count: number, noun: string) =>
-  `${count} ${noun}${count === 1 ? "" : "s"}`;
+const formatDate = (date: string) =>
+  new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 
 const LiveDot = () => (
   <span className="ShowcaseLiveDot" title="Uses live data" />
+);
+
+const PageList = ({
+  icon,
+  pages,
+}: {
+  icon: ChromeIconName;
+  pages: (PageRef & Partial<Pick<AddedPageRef, "added">>)[];
+}) => (
+  <ul className={`${classBase}-pages`}>
+    {pages.map(({ added, label, live, path, trail }) => (
+      <li key={path}>
+        <RouteLink className={`${classBase}-page`} path={path}>
+          <ChromeIcon name={icon} size={14} />
+          <span className={`${classBase}-pageText`}>
+            <span className={`${classBase}-pageLabel`}>
+              {label}
+              {live ? <LiveDot /> : null}
+            </span>
+            {trail.length ? (
+              <span className={`${classBase}-pageTrail`}>
+                {trail.join(" › ")}
+              </span>
+            ) : null}
+          </span>
+          {added ? (
+            <time className={`${classBase}-pageDate`} dateTime={added}>
+              {formatDate(added)}
+            </time>
+          ) : null}
+        </RouteLink>
+      </li>
+    ))}
+  </ul>
 );
 
 export interface HomePageProps {
@@ -40,19 +78,14 @@ export interface HomePageProps {
 
 export const HomePage = ({ onSearch, treeSource }: HomePageProps) => {
   const source = treeSource as TreeSourceNode<NavNodeData>[];
-  const { areas, pageIndex, startHere, stats } = useMemo(
+  const { addedPages, pageIndex, stats } = useMemo(
     () => ({
-      areas: getAreas(source),
+      addedPages: getRecentlyAdded(source, MAX_ADDED),
       pageIndex: createPageIndex(source),
-      startHere: getStartHereCards(START_HERE, source, vuuThemeSummary),
       stats: getHomeStats(source),
     }),
     [source],
   );
-  const [showAllAreas, setShowAllAreas] = useState(false);
-  const visibleAreas = showAllAreas
-    ? areas
-    : areas.slice(0, FEATURED_AREA_COUNT);
 
   const recent = useRecent();
   const recentPages = useMemo(
@@ -63,10 +96,10 @@ export const HomePage = ({ onSearch, treeSource }: HomePageProps) => {
   return (
     <div className={classBase}>
       <section className={`${classBase}-hero`}>
-        <h1 className={`${classBase}-title`}>Build trading apps with Vuu</h1>
+        <h1 className={`${classBase}-title`}>Vuu Showcase</h1>
         <p className={`${classBase}-pitch`}>
-          Interactive examples, guides and the design tokens behind every Vuu
-          component. Pick a theme and density once – every example follows.
+          Develop and test Vuu components in isolation. Every example renders
+          standalone and doubles as a fixture for Playwright component tests.
         </p>
         <Button
           appearance="bordered"
@@ -112,124 +145,21 @@ export const HomePage = ({ onSearch, treeSource }: HomePageProps) => {
           <h2 className={`${classBase}-heading`} id={`${classBase}-recent`}>
             Recently viewed
           </h2>
-          <ul className={`${classBase}-recent`}>
-            {recentPages.map(({ label, live, path, trail }) => (
-              <li key={path}>
-                <RouteLink className={`${classBase}-recentItem`} path={path}>
-                  <ChromeIcon name="clock" size={14} />
-                  <span className={`${classBase}-recentText`}>
-                    <span className={`${classBase}-recentLabel`}>
-                      {label}
-                      {live ? <LiveDot /> : null}
-                    </span>
-                    {trail.length ? (
-                      <span className={`${classBase}-recentTrail`}>
-                        {trail.join(" › ")}
-                      </span>
-                    ) : null}
-                  </span>
-                </RouteLink>
-              </li>
-            ))}
-          </ul>
+          <PageList icon="clock" pages={recentPages} />
         </section>
       ) : null}
 
-      {startHere.length > 0 ? (
+      {addedPages.length > 0 ? (
         <section
-          aria-labelledby={`${classBase}-start`}
+          aria-labelledby={`${classBase}-added`}
           className={`${classBase}-section`}
         >
-          <h2 className={`${classBase}-heading`} id={`${classBase}-start`}>
-            Start here
+          <h2 className={`${classBase}-heading`} id={`${classBase}-added`}>
+            What&apos;s new
           </h2>
-          <div className={`${classBase}-startHere`}>
-            {startHere.map(({ art, description, path, title }) => (
-              <RouteLink
-                className={`${classBase}-card ${classBase}-featureCard`}
-                key={path}
-                path={path}
-              >
-                <div className={`${classBase}-thumb`}>
-                  <StartHereArtwork art={art} />
-                </div>
-                <div className={`${classBase}-meta`}>
-                  <span className={`${classBase}-metaText`}>
-                    <span className={`${classBase}-cardTitle`}>{title}</span>
-                    <span className={`${classBase}-cardDescription`}>
-                      {description}
-                    </span>
-                  </span>
-                  <ChromeIcon name="arrow-right" />
-                </div>
-              </RouteLink>
-            ))}
-          </div>
+          <PageList icon="star" pages={addedPages} />
         </section>
       ) : null}
-
-      <section
-        aria-labelledby={`${classBase}-areas`}
-        className={`${classBase}-section`}
-      >
-        <h2 className={`${classBase}-heading`} id={`${classBase}-areas`}>
-          Browse by area
-          {areas.length > FEATURED_AREA_COUNT ? (
-            <Button
-              appearance="transparent"
-              aria-expanded={showAllAreas}
-              className={`${classBase}-headingAction`}
-              onClick={() => setShowAllAreas((show) => !show)}
-              sentiment="accented"
-            >
-              {showAllAreas ? "Show fewer" : `All ${areas.length} areas`}
-              <ChromeIcon name="arrow-right" size={14} />
-            </Button>
-          ) : null}
-        </h2>
-        <ul className={`${classBase}-areas`}>
-          {visibleAreas.map(
-            ({ count, id, label, liveCount, path, samples }) => (
-              <li
-                className={`${classBase}-card ${classBase}-areaCard`}
-                key={id}
-              >
-                <div className={`${classBase}-thumb`}>
-                  <AreaArt variant={areaArtVariant(id)} />
-                </div>
-                <div className={`${classBase}-meta`}>
-                  <RouteLink className={`${classBase}-areaLink`} path={path}>
-                    <span className={`${classBase}-cardTitle`}>{label}</span>
-                  </RouteLink>
-                  <span className={`${classBase}-cardDescription`}>
-                    {plural(count, "example")}
-                    {liveCount > 0 ? (
-                      <span className={`${classBase}-live`}>
-                        <LiveDot />
-                        {liveCount} live
-                      </span>
-                    ) : null}
-                  </span>
-                  {samples.length ? (
-                    <ul className={`${classBase}-samples`}>
-                      {samples.map((sample) => (
-                        <li key={sample.path}>
-                          <RouteLink
-                            className={`${classBase}-sample`}
-                            path={sample.path}
-                          >
-                            {sample.label}
-                          </RouteLink>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
-              </li>
-            ),
-          )}
-        </ul>
-      </section>
     </div>
   );
 };
