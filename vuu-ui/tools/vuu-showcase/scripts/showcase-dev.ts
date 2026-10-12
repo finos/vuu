@@ -9,6 +9,7 @@ import Watcher from "watcher";
 
 import { createFolder, linkSourceDirectory, writeFile } from "./utils";
 import { treeSourceFromFileSystem } from "./treeSourceFromFileSystem";
+import { syncExampleHistory } from "./example-history";
 import {
   highlightSource,
   resolveSourcePath,
@@ -20,6 +21,7 @@ const pathToExhibits = "./src/examples";
 
 // 1) Build the exhibit structure that will be used to create nav tree in showcase GUI
 const [treeSourceJson /*, tags*/] = treeSourceFromFileSystem(pathToExhibits);
+syncExampleHistory(treeSourceJson, pathToExhibits);
 
 const watcher = new Watcher(pathToExhibits, {
   recursive: true,
@@ -167,12 +169,7 @@ const server = await createServer({
     include: ["@salt-ds/core", "@salt-ds/icons"],
   },
   root: __dirname,
-  plugins: [
-    cssInline(),
-    docsSearchIndex(),
-    exampleSource(),
-    mdx(mdxOptions),
-  ],
+  plugins: [cssInline(), docsSearchIndex(), exampleSource(), mdx(mdxOptions)],
   server: {
     proxy: {
       "/api/authn": {

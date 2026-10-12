@@ -6,6 +6,7 @@ import { parseArgs } from "util";
 import { buildFileList } from "./build-file-list";
 import { mdxOptions } from "./mdx-options";
 import { treeSourceFromFileSystem } from "./treeSourceFromFileSystem";
+import { syncExampleHistory } from "./example-history";
 import { DOCS_INDEX_URL, writeDocsSearchIndex } from "./docs-search-index";
 import { writeHighlightedSources } from "./highlight-source";
 import { createFolder, writeFile } from "./utils";
@@ -188,6 +189,7 @@ const rsbuildConfig: RsbuildConfig = {
 
 async function main() {
   const [treeSourceJson] = treeSourceFromFileSystem(pathToExhibits);
+  syncExampleHistory(treeSourceJson, pathToExhibits);
 
   createFolder(srcDir);
   await writeFile(
