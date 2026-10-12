@@ -12,6 +12,7 @@ trait VuuClientOptions {
   def sslOptions: VuuClientSSLOptions
   def compressionEnabled: Boolean
   def nativeTransportEnabled: Boolean
+  def maxContentLength: Int
   def withHost(host: String): VuuClientOptions
   def withPort(port: Int): VuuClientOptions
   def withPath(path: String): VuuClientOptions
@@ -19,6 +20,7 @@ trait VuuClientOptions {
   def withSslDisabled(): VuuClientOptions
   def withCompression(withCompression: Boolean): VuuClientOptions
   def withNativeTransport(withNativeTransport: Boolean): VuuClientOptions
+  def withMaxContentLength(maxContentLength: Int): VuuClientOptions
 
   def buildUri(): URI = {
     val protocol = sslOptions match {
@@ -38,7 +40,8 @@ object VuuClientOptions {
       path = "websocket",
       sslOptions = VuuClientSSLDisabled, 
       compressionEnabled = true, 
-      nativeTransportEnabled = true
+      nativeTransportEnabled = true,
+      maxContentLength = 262_144, //256KB
     )
   }
   
@@ -49,7 +52,8 @@ private case class VuuClientOptionsImpl(host: String,
                                 path: String,
                                 sslOptions: VuuClientSSLOptions,
                                 compressionEnabled: Boolean,
-                                nativeTransportEnabled: Boolean) extends VuuClientOptions {
+                                nativeTransportEnabled: Boolean,
+                                maxContentLength: Int) extends VuuClientOptions {
 
   override def withHost(host: String): VuuClientOptions = this.copy(host = host)
 
@@ -65,6 +69,7 @@ private case class VuuClientOptionsImpl(host: String,
 
   override def withCompression(compressionEnabled: Boolean): VuuClientOptions = this.copy(compressionEnabled = compressionEnabled)
 
+  override def withMaxContentLength(maxContentLength: Int): VuuClientOptions = this.copy(maxContentLength = maxContentLength)
 }
 
 
