@@ -105,7 +105,7 @@ export const HomePage = ({ onSearch, treeSource }: HomePageProps) => {
           </p>
           <p>Patterns illustrate component usage in varied scenarios.</p>
           <p>
-            Inspect components under multiple themes, vary theme density and
+            Inspect components under multiple themes, switch theme densities and
             mode.
           </p>
         </div>
