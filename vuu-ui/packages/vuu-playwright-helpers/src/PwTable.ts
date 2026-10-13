@@ -73,10 +73,12 @@ export class PwTable extends PlaywrightPageObject {
   }
 
   headerCell(columnName: string): PwTableHeaderCell {
-    const escapedColumnName = columnName.replace(
-      /["\\\u0000-\u001f\u007f]/g,
-      (character) => `\\${character.charCodeAt(0).toString(16)} `,
-    );
+    const escapedColumnName = Array.from(columnName, (character) => {
+      const code = character.charCodeAt(0);
+      return character === '"' || character === "\\" || code < 32 || code === 127
+        ? `\\${code.toString(16)} `
+        : character;
+    }).join("");
     return new PwTableHeaderCell(
       this.page,
       `${this.cssSelector ?? this.defaultCssSelector} >> .vuuTableHeaderCell[data-column-name="${escapedColumnName}"]`,
