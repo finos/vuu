@@ -1,5 +1,5 @@
 import { expect, test } from "../../../../../playwright/fixtures";
-import { TableOM } from "@vuu-ui/vuu-playwright-helpers";
+import { PwTable } from "@vuu-ui/vuu-playwright-helpers";
 
 const RENDER_BUFFER = 5;
 const ROW_COUNT = 1000;
@@ -21,7 +21,7 @@ test.describe("WHEN it initially renders", () => {
     page,
   }) => {
     await mount("Table/Misc/TestTable");
-    const table = new TableOM(page, '[data-testid="test-table"]');
+    const table = new PwTable(page, '[data-testid="test-table"]');
     await table.assertRenderedRows(
       { from: 1, to: 30 },
       RENDER_BUFFER,

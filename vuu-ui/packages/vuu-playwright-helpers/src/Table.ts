@@ -17,7 +17,7 @@ const xpathStringLiteral = (value: string) => {
   return `concat('${value.split("'").join(`', "'", '`)}')`;
 };
 
-export class TableOM extends PlaywrightPageObject {
+export class PwTable extends PlaywrightPageObject {
   protected readonly defaultCssSelector = ".vuuTable";
 
   /**
@@ -76,7 +76,7 @@ export class TableOM extends PlaywrightPageObject {
       return columnHeader.getAttribute("aria-colindex").then((ariaColIndex) => {
         if (ariaColIndex === null) {
           throw Error(
-            `TableOM, locateCell, column "${column}" does not have an aria-colindex`,
+            `PwTable, locateCell, column "${column}" does not have an aria-colindex`,
           );
         }
         return this.#locator.locator(
@@ -149,7 +149,7 @@ export class TableOM extends PlaywrightPageObject {
     if (target) {
       await expect(target).toHaveValue(text);
     } else {
-      throw Error("TableOM, assertCellValue, invalid parameters");
+      throw Error("PwTable, assertCellValue, invalid parameters");
     }
   }
 
@@ -176,7 +176,7 @@ export class TableOM extends PlaywrightPageObject {
     if (target) {
       await expect(target).toHaveText(text);
     } else {
-      throw Error("TableOM, assertCellContent, invalid parameters");
+      throw Error("PwTable, assertCellContent, invalid parameters");
     }
   }
 
@@ -205,7 +205,7 @@ export class TableOM extends PlaywrightPageObject {
     if (target) {
       await expect(target).toBeFocused();
     } else {
-      throw Error("TableOM, assertCellIsFocused, invalid parameters");
+      throw Error("PwTable, assertCellIsFocused, invalid parameters");
     }
   }
 
@@ -243,7 +243,7 @@ export class TableOM extends PlaywrightPageObject {
         );
       }
     } else {
-      throw Error("TableOM, assertCellIsEditing, invalid parameters");
+      throw Error("PwTable, assertCellIsEditing, invalid parameters");
     }
   }
 
