@@ -1,2 +1,3 @@
 export { PlaywrightPageObject } from "./PlaywrightPageObject";
-export { PwTable } from "./Table";
+export { PwTable } from "./PwTable";
+export { PwTableHeaderCell } from "./PwTableHeaderCell";

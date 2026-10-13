@@ -1015,12 +1015,15 @@ test.describe("Inline row editing (session)", () => {
     await expect(submitButton).toBeDisabled();
 
     const table = new PwTable(page);
-    // Column 2 = bbg (column 1 is the checkbox selector)
-    const cell = table.locateCell(2, 2);
-    await cell.dblclick();
-    await cell.pressSequentially("X");
-    await cell.press("Enter");
+    const cell = await table.cell("bbg", 2);
+    const originalValue = await cell.getByRole("textbox").inputValue();
+    await table.editCell("bbg", 2, "X", "cancel");
+    await expect(cell.getByRole("textbox")).toHaveValue(originalValue);
+    await expect(submitButton).toBeDisabled();
 
+    await table.editCell("bbg", 2, "X");
+
+    await expect(cell.getByRole("textbox")).toHaveValue("X");
     await expect(submitButton).toBeEnabled();
   });
 

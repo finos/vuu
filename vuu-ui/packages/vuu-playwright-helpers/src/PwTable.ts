@@ -1,6 +1,7 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { PlaywrightPageObject } from "./PlaywrightPageObject";
+import { PwTableHeaderCell } from "./PwTableHeaderCell";
 
 type AriaRole = "cell" | "textbox" | "combobox";
 
@@ -48,6 +49,38 @@ export class PwTable extends PlaywrightPageObject {
    */
   row(row: number) {
     return this.#locator.locator(`[aria-rowindex="${row}"]`);
+  }
+
+  /**
+   * Locate cell by column name and 1-based aria row index, including headers.
+   */
+  cell(colName: string, ariaRowIndex: number): Promise<Locator> {
+    return this.locateCell(ariaRowIndex, colName);
+  }
+
+  async editCell(
+    columnName: string,
+    ariaRowIndex: number,
+    value: string,
+    action: "commit" | "cancel" = "commit",
+  ): Promise<void> {
+    const cell = await this.cell(columnName, ariaRowIndex);
+    await cell.dblclick();
+    const textbox = cell.getByRole("textbox");
+    await textbox.fill(value);
+    await expect(textbox).toHaveValue(value);
+    await textbox.press(action === "commit" ? "Enter" : "Escape");
+  }
+
+  headerCell(columnName: string): PwTableHeaderCell {
+    const escapedColumnName = columnName.replace(
+      /["\\\u0000-\u001f\u007f]/g,
+      (character) => `\\${character.charCodeAt(0).toString(16)} `,
+    );
+    return new PwTableHeaderCell(
+      this.page,
+      `${this.cssSelector ?? this.defaultCssSelector} >> .vuuTableHeaderCell[data-column-name="${escapedColumnName}"]`,
+    );
   }
 
   /**
