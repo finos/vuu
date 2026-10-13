@@ -12,7 +12,7 @@ test.describe("Cell navigation with keyboard", () => {
       test.skip(browserName === "firefox");
 
       await mount("Table/Misc/TabInAndOutFixture");
-      const table = new TableOM(page.getByRole("table"));
+      const table = new TableOM(page);
       await table.assertVisible();
 
       const input = page.getByTestId("input-start");
@@ -30,7 +30,7 @@ test.describe("Cell navigation with keyboard", () => {
       page,
     }) => {
       await mount("Table/Misc/TabInAndOutFixture");
-      const table = new TableOM(page.getByRole("table"));
+      const table = new TableOM(page);
       await table.assertVisible();
 
       let header = table.locateColumnHeader(1);
@@ -49,7 +49,7 @@ test.describe("Cell navigation with keyboard", () => {
         page,
       }) => {
         await mount("Table/Misc/TabInAndOutFixture");
-        const table = new TableOM(page.getByRole("table"));
+        const table = new TableOM(page);
         await table.assertVisible();
 
         const header1 = table.locateColumnHeader(1);
@@ -74,7 +74,7 @@ test.describe("Cell navigation with keyboard", () => {
         test.skip(browserName === "firefox");
 
         await mount("Table/Misc/TabInAndOutFixture");
-        const table = new TableOM(page.getByRole("table"));
+        const table = new TableOM(page);
         await table.assertVisible();
 
         const start = page.getByTestId("input-start");
@@ -95,7 +95,7 @@ test.describe("Cell navigation with keyboard", () => {
         page,
       }) => {
         await mount("Table/Misc/TabInAndOutFixture");
-        const table = new TableOM(page.getByRole("table"));
+        const table = new TableOM(page);
         await table.assertVisible();
 
         const header = table.locateColumnHeader(1);

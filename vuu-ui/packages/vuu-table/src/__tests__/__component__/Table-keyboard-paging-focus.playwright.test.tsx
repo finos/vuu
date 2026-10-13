@@ -21,7 +21,7 @@ const mountTable = async (
   page: Page,
 ) => {
   await mount("Table/BigData/SimpleTableMillionRows");
-  return new TableOM(page.getByRole("table"));
+  return new TableOM(page);
 };
 
 /**

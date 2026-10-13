@@ -11,7 +11,7 @@ const pressEndAndAssertLastRowRendered = async (
   page: import("@playwright/test").Page,
 ) => {
   await mount("Table/BigData/SimpleTableMillionRows");
-  const table = new TableOM(page.getByRole("table"));
+  const table = new TableOM(page);
 
   const cell = table.locateCell(2, 1);
   await cell.click();
@@ -36,7 +36,7 @@ test.describe("Table with one billion rows", () => {
       page,
     }) => {
       await mount("Table/BigData/SimpleTableBillionRows");
-      const table = new TableOM(page.getByRole("table"));
+      const table = new TableOM(page);
 
       const cell = table.locateCell(2, 1);
       await cell.click();

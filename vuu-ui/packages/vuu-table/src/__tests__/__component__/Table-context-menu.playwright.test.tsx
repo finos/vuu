@@ -6,7 +6,7 @@ test.describe("WHEN context menu is configured on table", () => {
     test("THEN context menu is displayed", async ({ mount, page }) => {
       await mount("Table/ContextMenu/LocalContextMenu");
 
-      const table = new TableOM(page.getByRole("table"));
+      const table = new TableOM(page);
       await table.locateCell("AAOP N").click({ button: "right" });
 
       const menu = page.getByRole("menu");
@@ -21,7 +21,7 @@ test.describe("WHEN context menu is configured on table", () => {
     }) => {
       await mount("Table/ContextMenu/LocalContextMenu");
 
-      const table = new TableOM(page.getByRole("table"));
+      const table = new TableOM(page);
       const cell = table.locateCell("AAOP N");
       await cell.click({ button: "right" });
       await expect(cell).toContainClass("ContextOpen");
@@ -37,7 +37,7 @@ test.describe("WHEN no context menu is configured on table", () => {
     test("THEN no context menu is displayed", async ({ mount, page }) => {
       await mount("Table/Modules/SIMUL/ParentOrders");
 
-      const table = new TableOM(page.getByRole("table"));
+      const table = new TableOM(page);
       const cell = table.locateCell("GBP").nth(0);
       await cell.click({ button: "right" });
       await expect(page.getByRole("menu")).not.toBeAttached();

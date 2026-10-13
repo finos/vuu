@@ -1,5 +1,6 @@
-import { expect, type Locator } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { PlaywrightPageObject } from "./PlaywrightPageObject";
 
 type AriaRole = "cell" | "textbox" | "combobox";
 
@@ -16,10 +17,22 @@ const xpathStringLiteral = (value: string) => {
   return `concat('${value.split("'").join(`', "'", '`)}')`;
 };
 
-export class TableOM {
-  #locator: Locator;
-  constructor(locator: Locator) {
-    this.#locator = locator;
+export class TableOM extends PlaywrightPageObject {
+  protected readonly defaultCssSelector = ".vuuTable";
+
+  /**
+   * @param page the Playwright page
+   * @param cssSelector optional selector for the Table, overrides defaultCssSelector
+   */
+  constructor(
+    page: Page,
+    private readonly cssSelector?: string,
+  ) {
+    super(page);
+  }
+
+  get #locator(): Locator {
+    return this.page.locator(this.cssSelector ?? this.defaultCssSelector);
   }
 
   get contentContainer() {

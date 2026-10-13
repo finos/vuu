@@ -21,7 +21,7 @@ test.describe("WHEN it initially renders", () => {
     page,
   }) => {
     await mount("Table/Misc/TestTable");
-    const table = new TableOM(page.getByTestId("test-table"));
+    const table = new TableOM(page, '[data-testid="test-table"]');
     await table.assertRenderedRows(
       { from: 1, to: 30 },
       RENDER_BUFFER,

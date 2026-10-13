@@ -30,7 +30,7 @@ test.describe("Table scrollbar and content containers stay in sync", () => {
       page,
     }) => {
       await mount("Table/BigData/SimpleTableMillionRows");
-      const table = new TableOM(page.getByRole("table"));
+      const table = new TableOM(page);
       const cell = table.locateCell(2, 1);
       await cell.click();
 
@@ -57,7 +57,7 @@ test.describe("Table scrollbar and content containers stay in sync", () => {
       page,
     }) => {
       await mount("Table/BigData/SimpleTableMillionRows");
-      const table = new TableOM(page.getByRole("table"));
+      const table = new TableOM(page);
       await expect(table.locateCell(2, 1)).toBeVisible();
 
       await page.evaluate(() => {

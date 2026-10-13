@@ -75,7 +75,7 @@ const mountAndPressEnd = async (
   page: Page,
 ) => {
   await mount("Table/BigData/SimpleTableMillionRows");
-  const table = new TableOM(page.getByRole("table"));
+  const table = new TableOM(page);
   const cell = table.locateCell(2, 1);
   await cell.click();
   await expect(cell).toBeFocused();
@@ -109,7 +109,7 @@ test.describe("Virtualised Table, keyboard paging", () => {
       const rowsAfterPageUp = await pageUp(page, rowsAtEnd);
       await page.keyboard.press("PageDown");
       await expect.poll(() => getVisibleRowIndices(page)).toEqual(rowsAtEnd);
-      const table = new TableOM(page.getByRole("table"));
+      const table = new TableOM(page);
       await expect(table.locateCell(1_000_001, 1)).toBeFocused();
     });
   });
