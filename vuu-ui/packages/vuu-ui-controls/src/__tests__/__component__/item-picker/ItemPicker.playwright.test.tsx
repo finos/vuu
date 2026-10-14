@@ -59,6 +59,31 @@ test.describe("ItemPicker", () => {
         ]);
       });
 
+      test("THEN available items are ordered alphabetically by label if defined, else name prop", async ({
+        browserName,
+        mount,
+        page,
+      }) => {
+        const component = await mount(
+          "UiControls/ItemPicker/LabelsDifferFromNames",
+        );
+
+        await expectListHeadings(
+          component,
+          "0 columns in view",
+          "7 available columns",
+        );
+        await expectAvailableItems(component, 7, [
+          { dataName: "price", displayLabel: "Price" },
+          { dataName: "volume", displayLabel: "QTY" },
+          { dataName: "sepRuleID", displayLabel: "SMP Rule ID" }, // Uppercase "MP" gets ordered before lowercase "ide"
+          { dataName: "side", displayLabel: "Side" },
+          { dataName: "stopPrice", displayLabel: "Stop Price" },
+          { dataName: "strikePrice", displayLabel: "Strike Price" },
+          { dataName: "settlementType", displayLabel: "settlementType" }, // Last in ordering since it starts with lowercase 's'
+        ], true);
+      });
+
       test.skip("THEN selected items can be reordered via drag and drop", async ({
         browserName,
         mount,
