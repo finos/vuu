@@ -1,6 +1,6 @@
 package org.finos.vuu.net.rpc.sessiontable
 
-import org.finos.vuu.core.table.{InMemSessionDataTable, TableContainer, ViewPortColumnCreator}
+import org.finos.vuu.core.table.{InMemSessionDataTable, RowData, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.sessiontable.SessionTableCopyOption.{All, Empty, Selected}
 import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams, RpcPermissionChecker}
@@ -132,17 +132,19 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
         val vpColumns = ViewPortColumnCreator.create(vp.table.asTable, columns)
         val iterator = vp.getKeys.iterator.take(tableContainer.rpcOptions.maxSessionTableSize)
         while (iterator.hasNext) {
-          sessionTable.processUpdate(vp.table.pullRow(iterator.next(), vpColumns))
+          sessionTable.processUpdate(customiseRowData(vp, vp.table.pullRow(iterator.next(), vpColumns)))
         }
       case Selected =>
         val vpColumns = ViewPortColumnCreator.create(vp.table.asTable, columns)
         val iterator = vp.getSelection.iterator.take(tableContainer.rpcOptions.maxSessionTableSize)
         while (iterator.hasNext) {
-          sessionTable.processUpdate(vp.table.pullRow(iterator.next(), vpColumns))
+          sessionTable.processUpdate(customiseRowData(vp, vp.table.pullRow(iterator.next(), vpColumns)))
         }
       case Empty =>
     }
   }
+
+  protected def customiseRowData(vp: ViewPort, rowData: RowData): RowData = rowData
 
   private def getColumnsToCopy(params: RpcParams, sourceTable: RowSource): List[String] = {
     val columnsToCopy = params.namedParams.get("columnsToCopy") match {
