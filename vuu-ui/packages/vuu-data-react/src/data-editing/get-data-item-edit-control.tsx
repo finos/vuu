@@ -251,6 +251,8 @@ export const getDataItemEditControl = ({
         className={className}
         column={dataDescriptor.name}
         data-edit-control
+        // typeahead only supports string columns
+        disableTypeahead
         labels={labels}
         onCommit={onCommit}
         table={table}

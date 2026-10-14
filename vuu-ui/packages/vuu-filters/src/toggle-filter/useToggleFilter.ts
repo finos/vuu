@@ -1,5 +1,6 @@
 import { useTypeaheadSuggestions } from "@vuu-ui/vuu-data-react";
 import type {
+  DataSource,
   DataSourceConfigChangeHandler,
   DataSourceFilter,
   TableSchemaTable,
@@ -35,6 +36,14 @@ const hasFilterOnColumn = (
 export interface ToggleFilterHookProps {
   column: string;
   /**
+   * Typeahead is used to determine which toggle values have matching
+   * data. Set disableTypeahead to opt out of this check, all values
+   * will then be treated as available. Typeahead only supports string
+   * lookups, so it is always disabled if the serverDataType of column
+   * (from the DataSource tableSchema) is boolean.
+   */
+  disableTypeahead?: boolean;
+  /**
    * table must be provided to enable validation
    * of values using server data.
    */
@@ -53,6 +62,13 @@ export interface ToggleFilterHookResult {
   unavailableValues: string[];
 }
 
+const isBooleanColumn = (
+  dataSource: DataSource | undefined,
+  column: string,
+) =>
+  dataSource?.tableSchema?.columns.find((col) => col.name === column)
+    ?.serverDataType === "boolean";
+
 /**
  * Determines which toggle values have matching data, using typeahead
  * against the DataSource. Typeahead respects the filter applied to the
@@ -63,6 +79,7 @@ export interface ToggleFilterHookResult {
  */
 export const useToggleFilter = ({
   column,
+  disableTypeahead = false,
   table,
   values,
 }: ToggleFilterHookProps): ToggleFilterHookResult => {
@@ -85,9 +102,11 @@ export const useToggleFilter = ({
 
   const checkAvailability = useCallback(() => {
     if (
+      disableTypeahead ||
       tableModule === undefined ||
       tableName === undefined ||
-      dataSource === undefined
+      dataSource === undefined ||
+      isBooleanColumn(dataSource, column)
     ) {
       return;
     }
@@ -106,7 +125,14 @@ export const useToggleFilter = ({
       assertValid(valuesRef.current, suggestions);
       setTypeaheadValues(suggestions);
     });
-  }, [column, dataSource, getSuggestions, tableModule, tableName]);
+  }, [
+    column,
+    dataSource,
+    disableTypeahead,
+    getSuggestions,
+    tableModule,
+    tableName,
+  ]);
 
   useEffect(() => {
     checkAvailability();
@@ -133,6 +159,14 @@ export const useToggleFilter = ({
       };
     }
   }, [checkAvailability, dataSource]);
+
+  useEffect(() => {
+    if (disableTypeahead) {
+      // discard any result from a check made before typeahead was disabled
+      requestIdRef.current += 1;
+      setTypeaheadValues(undefined);
+    }
+  }, [disableTypeahead]);
 
   return useMemo<ToggleFilterHookResult>(() => {
     if (typeaheadValues === undefined) {
