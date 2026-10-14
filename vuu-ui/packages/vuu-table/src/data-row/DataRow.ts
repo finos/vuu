@@ -183,10 +183,12 @@ function DataRowImpl(data: VuuDataRow, columnMap: DataRowColumnMap): DataRow {
       }
 
       if (isStringNumericType(columnMapEntry.type)) {
-        return formatStringNumeric(
-          data[columnMapEntry.index] as string,
-          columnMapEntry.type,
-        );
+        const value = data[columnMapEntry.index];
+        // value may be undefined if a column has just been added and data
+        // for that column has not yet been received.
+        return typeof value === "string"
+          ? formatStringNumeric(value, columnMapEntry.type)
+          : value;
       }
 
       return data[columnMapEntry.index];

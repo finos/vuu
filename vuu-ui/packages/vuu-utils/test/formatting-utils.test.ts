@@ -98,6 +98,23 @@ describe("formatting-utils", () => {
     });
   });
 
+  it("returns empty string for a scaleddecimal value that is not yet available", () => {
+    const format = numericFormatter({
+      serverDataType: "scaleddecimal6",
+      type: { name: "number", formatting: { decimals: 2 } },
+    });
+    expect(format(undefined)).toEqual("");
+    expect(format(null)).toEqual("");
+  });
+
+  it("throws for a scaleddecimal value of an invalid type", () => {
+    const format = numericFormatter({
+      serverDataType: "scaleddecimal6",
+      type: { name: "number", formatting: { decimals: 2 } },
+    });
+    expect(() => format(123)).toThrow();
+  });
+
   it("supports truncation rather than rounding of decimals", () => {
     const format = numericFormatter({
       type: {

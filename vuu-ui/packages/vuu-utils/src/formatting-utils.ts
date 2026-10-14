@@ -142,7 +142,11 @@ export const numericFormatter = ({
     } = type.formatting ?? DEFAULT_NUMERIC_FORMAT;
     return (value: unknown) => {
       if (serverDataType?.startsWith("scaleddecimal")) {
-        if (typeof value === "string") {
+        if (value === undefined || value === null) {
+          // Value not yet available, e.g. a column has just been added and
+          // we render before data for that column has been received.
+          return "";
+        } else if (typeof value === "string") {
           return roundScaledDecimal(
             value,
             align,

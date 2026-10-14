@@ -132,4 +132,20 @@ describe("DataRow", () => {
     const dataRowNegativeValueEightDigits = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "-12345678"]);
     expect(dataRowNegativeValueEightDigits.price).toEqual("-0.12345678");
   });
+
+  it("returns undefined for a scaleddecimal column whose data has not yet been received", () => {
+    const [DataRow, setColumns] = dataRowFactory(
+      ["bbg"],
+      [
+        { name: "bbg", serverDataType: "string" },
+        { name: "price", serverDataType: "scaleddecimal6" },
+      ],
+    );
+    // column added at runtime, existing row data has no value for it yet
+    setColumns(["bbg", "price"]);
+    // prettier-ignore
+    const dataRow = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "AAO L"]);
+    expect(dataRow.bbg).toEqual("AAO L");
+    expect(dataRow.price).toBeUndefined();
+  });
 });
