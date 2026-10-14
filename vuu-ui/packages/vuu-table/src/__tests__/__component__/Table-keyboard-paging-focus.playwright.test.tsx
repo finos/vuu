@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "../../../../../playwright/fixtures";
-import { TableOM } from "@vuu-ui/vuu-playwright-helpers";
+import { PwTable } from "@vuu-ui/vuu-playwright-helpers";
 
 // Chromium at a device scale factor of 2 (e.g. a Retina display) and Firefox
 // virtualise this table, WebKit does not.
@@ -21,7 +21,7 @@ const mountTable = async (
   page: Page,
 ) => {
   await mount("Table/BigData/SimpleTableMillionRows");
-  return new TableOM(page.getByRole("table"));
+  return new PwTable(page);
 };
 
 /**

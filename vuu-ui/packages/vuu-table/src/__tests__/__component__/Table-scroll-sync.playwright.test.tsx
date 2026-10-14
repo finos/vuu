@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "../../../../../playwright/fixtures";
-import { TableOM } from "@vuu-ui/vuu-playwright-helpers";
+import { PwTable } from "@vuu-ui/vuu-playwright-helpers";
 
 const getScrollTops = (page: Page) =>
   page.evaluate(() => {
@@ -30,7 +30,7 @@ test.describe("Table scrollbar and content containers stay in sync", () => {
       page,
     }) => {
       await mount("Table/BigData/SimpleTableMillionRows");
-      const table = new TableOM(page.getByRole("table"));
+      const table = new PwTable(page);
       const cell = table.locateCell(2, 1);
       await cell.click();
 
@@ -57,7 +57,7 @@ test.describe("Table scrollbar and content containers stay in sync", () => {
       page,
     }) => {
       await mount("Table/BigData/SimpleTableMillionRows");
-      const table = new TableOM(page.getByRole("table"));
+      const table = new PwTable(page);
       await expect(table.locateCell(2, 1)).toBeVisible();
 
       await page.evaluate(() => {

@@ -1,12 +1,12 @@
 import { expect, test } from "../../../../../playwright/fixtures";
-import { TableOM } from "@vuu-ui/vuu-playwright-helpers";
+import { PwTable } from "@vuu-ui/vuu-playwright-helpers";
 
 test.describe("WHEN context menu is configured on table", () => {
   test.describe("WHEN cell is right clicked", () => {
     test("THEN context menu is displayed", async ({ mount, page }) => {
       await mount("Table/ContextMenu/LocalContextMenu");
 
-      const table = new TableOM(page.getByRole("table"));
+      const table = new PwTable(page);
       await table.locateCell("AAOP N").click({ button: "right" });
 
       const menu = page.getByRole("menu");
@@ -21,7 +21,7 @@ test.describe("WHEN context menu is configured on table", () => {
     }) => {
       await mount("Table/ContextMenu/LocalContextMenu");
 
-      const table = new TableOM(page.getByRole("table"));
+      const table = new PwTable(page);
       const cell = table.locateCell("AAOP N");
       await cell.click({ button: "right" });
       await expect(cell).toContainClass("ContextOpen");
@@ -37,7 +37,7 @@ test.describe("WHEN no context menu is configured on table", () => {
     test("THEN no context menu is displayed", async ({ mount, page }) => {
       await mount("Table/Modules/SIMUL/ParentOrders");
 
-      const table = new TableOM(page.getByRole("table"));
+      const table = new PwTable(page);
       const cell = table.locateCell("GBP").nth(0);
       await cell.click({ button: "right" });
       await expect(page.getByRole("menu")).not.toBeAttached();

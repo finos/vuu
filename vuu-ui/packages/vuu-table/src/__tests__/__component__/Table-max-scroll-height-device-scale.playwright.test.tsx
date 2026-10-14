@@ -1,5 +1,5 @@
 import { expect, test } from "../../../../../playwright/fixtures";
-import { TableOM } from "@vuu-ui/vuu-playwright-helpers";
+import { PwTable } from "@vuu-ui/vuu-playwright-helpers";
 
 // Reproduces a Retina display (device scale 2) zoomed to 150%. Emulated
 // deviceScaleFactor does not affect layout limits, this launch flag does.
@@ -22,7 +22,7 @@ test.describe("Table with more rows than browser can scroll through natively", (
       test.skip(browserName !== "chromium", "Chromium launch flag");
 
       await mount("Table/BigData/SimpleTableMillionRows");
-      const table = new TableOM(page.getByRole("table"));
+      const table = new PwTable(page);
 
       const cell = table.locateCell(2, 1);
       await cell.click();

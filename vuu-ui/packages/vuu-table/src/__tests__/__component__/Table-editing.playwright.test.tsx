@@ -1,5 +1,5 @@
 import { expect, test } from "../../../../../playwright/fixtures";
-import { TableOM } from "@vuu-ui/vuu-playwright-helpers";
+import { PwTable } from "@vuu-ui/vuu-playwright-helpers";
 
 const IS_EDITABLE = true;
 const NOT_EDITABLE = false;
@@ -384,7 +384,7 @@ test.describe("Test table editing", () => {
 test.describe("Editable table navigation", () => {
   test("smoke test", async ({ mount, page }) => {
     await mount("Table/Editing/EditableInstruments");
-    const table1 = new TableOM(page.getByTestId("table-1"));
+    const table1 = new PwTable(page, '[data-testid="table-1"]');
     const editButton = page.getByRole("radio", { name: "Edit" });
 
     await table1.assertRenderedRows({ from: 0, to: 10 }, 10, 10_000, 1);
@@ -400,7 +400,7 @@ test.describe("Editable table navigation", () => {
     page,
   }) => {
     await mount("Table/Editing/EditableInstruments");
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
@@ -421,7 +421,7 @@ test.describe("Editable table navigation", () => {
     page,
   }) => {
     await mount("Table/Editing/EditableInstruments");
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
@@ -456,7 +456,7 @@ test.describe("Editable table navigation", () => {
     page,
   }) => {
     await mount("Table/Editing/EditableInstruments");
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
@@ -478,7 +478,7 @@ test.describe("Editable table navigation", () => {
     test.skip(browserName === "webkit");
 
     await mount("Table/Editing/EditableInstruments");
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
@@ -503,7 +503,7 @@ test.describe("Editable table navigation", () => {
     page,
   }) => {
     await mount("Table/Editing/EditableInstruments");
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
@@ -523,7 +523,7 @@ test.describe("Editable table navigation", () => {
     page,
   }) => {
     await mount("Table/Editing/EditableInstruments");
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
@@ -560,7 +560,7 @@ test.describe("Cell editing", () => {
     page,
   }) => {
     await mount("Table/Editing/EditableInstruments");
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     const cell = await table.locateCell(2, "lotSize");
     const originalValue = await cell.textContent();
     const editButton = page.getByRole("radio", { name: "Edit" });
@@ -581,7 +581,7 @@ test.describe("Cell editing", () => {
     page,
   }) => {
     await mount("Table/Editing/EditableInstruments");
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
@@ -607,7 +607,7 @@ test.describe("Cell editing", () => {
     page,
   }) => {
     await mount("Table/Editing/EditableInstruments");
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
@@ -633,7 +633,7 @@ test.describe("Cell editing", () => {
     page,
   }) => {
     await mount("Table/Editing/EditableInstruments");
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
@@ -665,7 +665,7 @@ test.describe("Cell editing", () => {
     page,
   }) => {
     await mount("Table/Editing/EditableInstruments");
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     const editButton = page.getByRole("radio", { name: "Edit" });
     await editButton.click();
 
@@ -699,11 +699,11 @@ test.describe("Edit conflicts", () => {
   test.describe("View mode", () => {
     test("smoke test", async ({ mount, page }) => {
       await mount("Table/Editing/TwoEditableInstruments");
-      const table1 = new TableOM(page.getByTestId("table-1"));
+      const table1 = new PwTable(page, '[data-testid="table-1"]');
       await table1.assertRenderedRows({ from: 0, to: 10 }, 10, 10_000, 1);
       await table1.assertCellIsEditable(2, 1, NOT_EDITABLE, "AAOO L");
 
-      const table2 = new TableOM(page.getByTestId("table-2"));
+      const table2 = new PwTable(page, '[data-testid="table-2"]');
       await table2.assertRenderedRows({ from: 0, to: 10 }, 10, 10_000, 1);
       await table2.assertCellIsEditable(2, 1, NOT_EDITABLE, "AAOO L");
     });
@@ -713,7 +713,7 @@ test.describe("Edit conflicts", () => {
       page,
     }) => {
       await mount("Table/Editing/TwoEditableInstruments");
-      const table = new TableOM(page.getByTestId("table-1"));
+      const table = new PwTable(page, '[data-testid="table-1"]');
       // get the first data cell
 
       let cell = table.locateCell(2, 1);
@@ -735,14 +735,14 @@ test.describe("Edit conflicts", () => {
       await mount("Table/Editing/TwoEditableInstruments");
 
       const editButton = page.getByTestId("toggle-edit-1");
-      const table1 = new TableOM(page.getByTestId("table-1"));
+      const table1 = new PwTable(page, '[data-testid="table-1"]');
 
       await editButton.click();
 
       await table1.assertRenderedRows({ from: 0, to: 10 }, 10, 10_000, 1);
       await table1.assertCellIsEditable(2, 1, IS_EDITABLE, "AAOO L");
 
-      const table2 = new TableOM(page.getByTestId("table-2"));
+      const table2 = new PwTable(page, '[data-testid="table-2"]');
       await table2.assertRenderedRows({ from: 0, to: 10 }, 10, 10_000, 1);
       await table2.assertCellIsEditable(2, 1, NOT_EDITABLE, "AAOO L");
     });
@@ -756,8 +756,14 @@ test.describe("Edit conflicts", () => {
       const first = page.getByTestId("edit-table-1");
       const second = page.getByTestId("edit-table-2");
       const firstTableElement = first.getByTestId("table-1");
-      const firstTable = new TableOM(firstTableElement);
-      const secondTable = new TableOM(second.getByTestId("table-2"));
+      const firstTable = new PwTable(
+        page,
+        '[data-testid="edit-table-1"] [data-testid="table-1"]',
+      );
+      const secondTable = new PwTable(
+        page,
+        '[data-testid="edit-table-2"] [data-testid="table-2"]',
+      );
 
       const sourceViewport =
         (await firstTableElement.getAttribute("data-viewport")) ?? "";
@@ -801,7 +807,7 @@ test.describe("Edit conflicts", () => {
       page,
     }) => {
       await mount("Table/Editing/EditableInstruments");
-      const table = new TableOM(page.getByTestId("table-1"));
+      const table = new PwTable(page, '[data-testid="table-1"]');
       const editButton = page.getByRole("radio", { name: "Edit" });
       await editButton.click();
 
@@ -833,7 +839,7 @@ test.describe("Edit conflicts", () => {
       page,
     }) => {
       await mount("Table/Editing/EditableInstruments");
-      const table = new TableOM(page.getByTestId("table-1"));
+      const table = new PwTable(page, '[data-testid="table-1"]');
       await page.getByRole("radio", { name: "Edit" }).click();
 
       const saveButton = page.getByRole("button", { name: "Save" });
@@ -859,7 +865,7 @@ test.describe("Edit conflicts", () => {
       page,
     }) => {
       await mount("Table/Editing/EditableInstruments");
-      const table = new TableOM(page.getByTestId("table-1"));
+      const table = new PwTable(page, '[data-testid="table-1"]');
       await page.getByRole("radio", { name: "Edit" }).click();
 
       const saveButton = page.getByRole("button", { name: "Save" });
@@ -887,7 +893,7 @@ test.describe("Edit conflicts", () => {
 
     test("Save disabled whilst rejected edits", async ({ mount, page }) => {
       await mount("Table/Editing/EditableInstruments");
-      const table = new TableOM(page.getByTestId("table-1"));
+      const table = new PwTable(page, '[data-testid="table-1"]');
       const editButton = page.getByRole("radio", { name: "Edit" });
       await editButton.click();
 
@@ -1008,13 +1014,16 @@ test.describe("Inline row editing (session)", () => {
     const submitButton = page.getByRole("button", { name: "Submit" });
     await expect(submitButton).toBeDisabled();
 
-    const table = new TableOM(page.getByRole("table"));
-    // Column 2 = bbg (column 1 is the checkbox selector)
-    const cell = table.locateCell(2, 2);
-    await cell.dblclick();
-    await cell.pressSequentially("X");
-    await cell.press("Enter");
+    const table = new PwTable(page);
+    const cell = await table.cell("bbg", 2);
+    const originalValue = await cell.getByRole("textbox").inputValue();
+    await table.editCell("bbg", 2, "X", "cancel");
+    await expect(cell.getByRole("textbox")).toHaveValue(originalValue);
+    await expect(submitButton).toBeDisabled();
 
+    await table.editCell("bbg", 2, "X");
+
+    await expect(cell.getByRole("textbox")).toHaveValue("X");
     await expect(submitButton).toBeEnabled();
   });
 
@@ -1027,7 +1036,7 @@ test.describe("Inline row editing (session)", () => {
     await page.getByRole("radio", { name: "Edit" }).click();
 
     const tableLocator = page.getByRole("table");
-    const table = new TableOM(tableLocator);
+    const table = new PwTable(page);
     const editedCell = table.locateCell(2, 2);
     await editedCell.dblclick();
     await editedCell.pressSequentially("X");
@@ -1065,7 +1074,7 @@ test.describe("Inline row editing (session)", () => {
     await mount("Table/Editing/EditableInstrumentsInlineEdit");
     await page.getByRole("radio", { name: "Edit" }).click();
 
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
 
     // Select first data row via checkbox
     const checkboxCell = table.locateCell(2, 1);
@@ -1091,7 +1100,7 @@ test.describe("Inline row editing (session)", () => {
     await mount("Table/Editing/EditableInstrumentsInlineEdit");
     await page.getByRole("radio", { name: "Edit" }).click();
 
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     const checkboxCell = table.locateCell(2, 1);
     await checkboxCell.click();
     await page.getByRole("button", { name: "Delete" }).click();
@@ -1112,7 +1121,7 @@ test.describe("Inline row editing (session)", () => {
     await mount("Table/Editing/EditableInstrumentsInlineEdit");
     await page.getByRole("radio", { name: "Edit" }).click();
 
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     // Column 2 = bbg (column 1 is the checkbox selector)
     const cell = table.locateCell(2, 2);
     await cell.dblclick();
@@ -1137,7 +1146,7 @@ test.describe("Session table editing (createSessionTable)", () => {
     page,
   }) => {
     await mount("Table/Editing/CreateSessionTableInstruments");
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
 
     await page.getByRole("radio", { name: "Edit" }).click();
     await expect(
@@ -1160,7 +1169,7 @@ test.describe("Session table editing (createSessionTable)", () => {
       page.getByRole("status", { name: "Loading session table" }),
     ).not.toBeVisible();
 
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     // Column 2 = bbg
     const cell = table.locateCell(2, 2);
     await cell.dblclick();
@@ -1182,7 +1191,7 @@ test.describe("Session table editing (createSessionTable)", () => {
       page.getByRole("status", { name: "Loading session table" }),
     ).not.toBeVisible();
 
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     const deleteButton = page.getByRole("button", { name: "Delete" });
     await expect(deleteButton).toBeDisabled();
 
@@ -1202,7 +1211,7 @@ test.describe("Session table editing (createSessionTable)", () => {
       page.getByRole("status", { name: "Loading session table" }),
     ).not.toBeVisible();
 
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     const checkboxCell = table.locateCell(2, 1);
     await checkboxCell.click();
     await page.getByRole("button", { name: "Delete" }).click();
@@ -1222,7 +1231,7 @@ test.describe("Session table editing (createSessionTable)", () => {
       page.getByRole("status", { name: "Loading session table" }),
     ).not.toBeVisible();
 
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
 
     // Select row 2 and soft-delete it
     const checkboxRow2 = table.locateCell(2, 1).getByRole("checkbox");
@@ -1253,7 +1262,7 @@ test.describe("Session table editing (createSessionTable)", () => {
       page.getByRole("status", { name: "Loading session table" }),
     ).not.toBeVisible();
 
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     const checkboxRow2 = table.locateCell(2, 1).getByRole("checkbox");
     const checkboxRow3 = table.locateCell(3, 1).getByRole("checkbox");
 
@@ -1280,7 +1289,7 @@ test.describe("Session table editing (createSessionTable)", () => {
       page.getByRole("status", { name: "Loading session table" }),
     ).not.toBeVisible();
 
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
     const deleteButton = page.getByRole("button", {
       exact: true,
       name: "Delete",
@@ -1301,7 +1310,7 @@ test.describe("Session table editing (createSessionTable)", () => {
       page.getByRole("status", { name: "Loading session table" }),
     ).not.toBeVisible();
 
-    const table = new TableOM(page.getByRole("table"));
+    const table = new PwTable(page);
 
     // Soft-delete row 3
     await table.locateCell(3, 1).click();

@@ -1,5 +1,7 @@
-import { expect, type Locator } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { PlaywrightPageObject } from "./PlaywrightPageObject";
+import { PwTableHeaderCell } from "./PwTableHeaderCell";
 
 type AriaRole = "cell" | "textbox" | "combobox";
 
@@ -16,10 +18,22 @@ const xpathStringLiteral = (value: string) => {
   return `concat('${value.split("'").join(`', "'", '`)}')`;
 };
 
-export class TableOM {
-  #locator: Locator;
-  constructor(locator: Locator) {
-    this.#locator = locator;
+export class PwTable extends PlaywrightPageObject {
+  protected readonly defaultCssSelector = ".vuuTable";
+
+  /**
+   * @param page the Playwright page
+   * @param cssSelector optional selector for the Table, overrides defaultCssSelector
+   */
+  constructor(
+    page: Page,
+    private readonly cssSelector?: string,
+  ) {
+    super(page);
+  }
+
+  get #locator(): Locator {
+    return this.page.locator(this.cssSelector ?? this.defaultCssSelector);
   }
 
   get contentContainer() {
@@ -35,6 +49,40 @@ export class TableOM {
    */
   row(row: number) {
     return this.#locator.locator(`[aria-rowindex="${row}"]`);
+  }
+
+  /**
+   * Locate cell by column name and 1-based aria row index, including headers.
+   */
+  cell(colName: string, ariaRowIndex: number): Promise<Locator> {
+    return this.locateCell(ariaRowIndex, colName);
+  }
+
+  async editCell(
+    columnName: string,
+    ariaRowIndex: number,
+    value: string,
+    action: "commit" | "cancel" = "commit",
+  ): Promise<void> {
+    const cell = await this.cell(columnName, ariaRowIndex);
+    await cell.dblclick();
+    const textbox = cell.getByRole("textbox");
+    await textbox.fill(value);
+    await expect(textbox).toHaveValue(value);
+    await textbox.press(action === "commit" ? "Enter" : "Escape");
+  }
+
+  headerCell(columnName: string): PwTableHeaderCell {
+    const escapedColumnName = Array.from(columnName, (character) => {
+      const code = character.charCodeAt(0);
+      return character === '"' || character === "\\" || code < 32 || code === 127
+        ? `\\${code.toString(16)} `
+        : character;
+    }).join("");
+    return new PwTableHeaderCell(
+      this.page,
+      `${this.cssSelector ?? this.defaultCssSelector} >> .vuuTableHeaderCell[data-column-name="${escapedColumnName}"]`,
+    );
   }
 
   /**
@@ -63,7 +111,7 @@ export class TableOM {
       return columnHeader.getAttribute("aria-colindex").then((ariaColIndex) => {
         if (ariaColIndex === null) {
           throw Error(
-            `TableOM, locateCell, column "${column}" does not have an aria-colindex`,
+            `PwTable, locateCell, column "${column}" does not have an aria-colindex`,
           );
         }
         return this.#locator.locator(
@@ -136,7 +184,7 @@ export class TableOM {
     if (target) {
       await expect(target).toHaveValue(text);
     } else {
-      throw Error("TableOM, assertCellValue, invalid parameters");
+      throw Error("PwTable, assertCellValue, invalid parameters");
     }
   }
 
@@ -163,7 +211,7 @@ export class TableOM {
     if (target) {
       await expect(target).toHaveText(text);
     } else {
-      throw Error("TableOM, assertCellContent, invalid parameters");
+      throw Error("PwTable, assertCellContent, invalid parameters");
     }
   }
 
@@ -192,7 +240,7 @@ export class TableOM {
     if (target) {
       await expect(target).toBeFocused();
     } else {
-      throw Error("TableOM, assertCellIsFocused, invalid parameters");
+      throw Error("PwTable, assertCellIsFocused, invalid parameters");
     }
   }
 
@@ -230,7 +278,7 @@ export class TableOM {
         );
       }
     } else {
-      throw Error("TableOM, assertCellIsEditing, invalid parameters");
+      throw Error("PwTable, assertCellIsEditing, invalid parameters");
     }
   }
 
