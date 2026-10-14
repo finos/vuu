@@ -52,7 +52,7 @@ import toggleFilterCss from "./ToggleFilter.css";
  * behaving like a regular ToggleButtonGroup.
  * Validation of values uses the typeahead service, which only supports
  * string columns. It can be disabled with disableTypeahead and is always
- * disabled for a boolean column.
+ * disabled for a non-string (e.g. boolean or numeric) column.
  */
 export interface ToggleFilterProps
   extends

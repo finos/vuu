@@ -40,7 +40,7 @@ export interface ToggleFilterHookProps {
    * data. Set disableTypeahead to opt out of this check, all values
    * will then be treated as available. Typeahead only supports string
    * lookups, so it is always disabled if the serverDataType of column
-   * (from the DataSource tableSchema) is boolean.
+   * (from the DataSource tableSchema) is anything other than string.
    */
   disableTypeahead?: boolean;
   /**
@@ -62,12 +62,19 @@ export interface ToggleFilterHookResult {
   unavailableValues: string[];
 }
 
-const isBooleanColumn = (
+/**
+ * Typeahead only supports string columns. If the column type is not known
+ * (tableSchema not yet available) we assume string.
+ */
+const isNonStringColumn = (
   dataSource: DataSource | undefined,
   column: string,
-) =>
-  dataSource?.tableSchema?.columns.find((col) => col.name === column)
-    ?.serverDataType === "boolean";
+) => {
+  const serverDataType = dataSource?.tableSchema?.columns.find(
+    (col) => col.name === column,
+  )?.serverDataType;
+  return serverDataType !== undefined && serverDataType !== "string";
+};
 
 /**
  * Determines which toggle values have matching data, using typeahead
@@ -106,7 +113,7 @@ export const useToggleFilter = ({
       tableModule === undefined ||
       tableName === undefined ||
       dataSource === undefined ||
-      isBooleanColumn(dataSource, column)
+      isNonStringColumn(dataSource, column)
     ) {
       return;
     }
