@@ -50,6 +50,9 @@ import toggleFilterCss from "./ToggleFilter.css";
  * values from dataSource.
  * With neither of these Providers available, the ToggleFilter is
  * behaving like a regular ToggleButtonGroup.
+ * Validation of values uses the typeahead service, which only supports
+ * string columns. It can be disabled with disableTypeahead and is always
+ * disabled for a non-string (e.g. boolean or numeric) column.
  */
 export interface ToggleFilterProps
   extends
@@ -79,6 +82,7 @@ export const ToggleFilter = forwardRef(function ToggleFilter(
     className,
     column,
     defaultValue: defaultValueProp,
+    disableTypeahead,
     labels,
     onCommit,
     table,
@@ -107,6 +111,7 @@ export const ToggleFilter = forwardRef(function ToggleFilter(
 
   const { onlyAvailableValue, unavailableValues } = useToggleFilter({
     column,
+    disableTypeahead,
     table,
     values: stringValues,
   });
