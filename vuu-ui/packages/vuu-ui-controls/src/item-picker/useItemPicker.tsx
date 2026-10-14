@@ -60,9 +60,13 @@ const itemName = (target: EventTarget): string => {
 };
 
 const byItemName = (
-  { name: n1 }: ItemDescriptor,
-  { name: n2 }: ItemDescriptor,
-) => (n1 > n2 ? 1 : n2 > n1 ? -1 : 0);
+  item1: ItemDescriptor,
+  item2: ItemDescriptor,
+) => {
+  const n1 = item1.label ? item1.label : item1.name;
+  const n2 = item2.label ? item2.label : item2.name;
+  return (n1 > n2 ? 1 : n2 > n1 ? -1 : 0);
+}
 
 export const useItemPicker = ({
   allItems,
