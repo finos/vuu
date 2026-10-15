@@ -1,17 +1,17 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import cx from "clsx";
-import { getInstanceByDom, init } from "echarts";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useChartContextMenu } from "./useChartContextMenu";
-import { ChartOptionsProps, useChartOptions } from "./useChartOptions";
-import { useChartSelection } from "./useChartSelection";
-import { buildColumnMap } from "@vuu-ui/vuu-utils";
 import {
   MeasuredContainer,
   type MeasuredContainerProps,
   type MeasuredSize,
 } from "@vuu-ui/vuu-ui-controls";
+import { buildColumnMap } from "@vuu-ui/vuu-utils";
+import cx from "clsx";
+import { getInstanceByDom, init } from "echarts";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useChartContextMenu } from "./useChartContextMenu";
+import { type ChartOptionsProps, useChartOptions } from "./useChartOptions";
+import { useChartSelection } from "./useChartSelection";
 
 import chartCss from "./Chart.css";
 
@@ -35,7 +35,7 @@ type ChartSettings = {
 
 export interface ChartProps
   extends ChartOptionsProps,
-  Omit<MeasuredContainerProps, "children" | "onResize"> {
+    Omit<MeasuredContainerProps, "children" | "onResize"> {
   chartSettings?: Partial<ChartSettings>;
   optionSettings?: OptionSettings;
   /**
@@ -122,7 +122,6 @@ export const Chart = ({
     chart.on("click", onClick);
     chart.on("mouseover", onMouseOver);
     chart.on("mouseout", onMouseOut);
-
 
     return () => {
       chart?.dispose();
