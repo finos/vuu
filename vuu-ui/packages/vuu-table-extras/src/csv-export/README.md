@@ -63,6 +63,12 @@ import { exportCsvTemplate } from "@vuu-ui/vuu-table-extras";
 await exportCsvTemplate(dataSource, {
   filename: "instruments-template.csv",
   columns: ["ric", "currency", "isin"],
+  // Optional headerMapping or custom labels to match CsvUpload expectations:
+  headerMapping: {
+    "RIC Code": "ric",
+    "Currency": "currency",
+    "ISIN": "isin",
+  },
 });
 ```
 
@@ -87,6 +93,7 @@ Options (`ExportToCsvOptions`):
 | `maxRows` | `number` | `10_000` | Row limit for the export. Fails if the server reports more rows than this before requesting data. |
 | `columnDescriptors` | `(ExportColumnDescriptor \| ColumnDescriptor)[]` | `undefined` | Custom labels, formatters, or client columns (alias for `columns`). |
 | `columns` | `(string \| ExportColumnDescriptor \| ColumnDescriptor)[]` | `undefined` | Columns to include in export and their order. Accepts table `ColumnDescriptor[]`. |
+| `headerMapping` | `Record<string, string> \| ((header: string) => string)` | `undefined` | Optional mapping or resolver function from schema column names to exported CSV header names (supports direct, reverse, or function mapping). |
 | `overrides` | `SessionDataSourceOverrides` | `undefined` | Divergent export table or column overrides. |
 | `timeout` | `number` | `30_000` | Milliseconds before the export times out (0 to disable). |
 | `onError` | `(error: Error) => void` | `undefined` | Callback invoked on error. |
@@ -109,7 +116,8 @@ Options (`ExportCsvTemplateOptions`):
 |---|---|---|---|
 | `filename` | `string` | `"template.csv"` | Downloaded filename. |
 | `excludeColumns` | `string[]` | `[]` | Columns to omit from the template. |
-| `columns` | `(string \| ColumnDescriptor)[]` | `undefined` | Specific subset and order of columns to include. Client columns and hidden columns are automatically excluded. |
+| `columns` | `(string \| ColumnDescriptor)[]` | `undefined` | Specific subset and order of columns to include. Client columns and hidden columns are automatically excluded. When `ColumnDescriptor` objects with a `label` property are provided, the `label` is used as the exported header. |
+| `headerMapping` | `Record<string, string> \| ((header: string) => string)` | `undefined` | Optional mapping or resolver function from schema column names to exported CSV header names (supports direct, reverse, or function mapping). |
 | `overrides` | `SessionDataSourceOverrides` | `undefined` | Divergent table schema overrides. |
 | `timeout` | `number` | `10_000` | Milliseconds before template creation times out (0 to disable). |
 | `onError` | `(error: Error) => void` | `undefined` | Callback invoked on error. |

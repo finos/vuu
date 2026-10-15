@@ -15,24 +15,35 @@ import {
   Range,
   type ColumnMap,
 } from "@vuu-ui/vuu-utils";
+import type { CsvHeaderMapping } from "../csv-upload/parse/csv-upload-utils";
 
-export type { RowAccessor };
+export type { RowAccessor, CsvHeaderMapping };
 
 export type ExportServerColumnDescriptor =
   Omit<ColumnDescriptor, "source" | "exportFormatter"> & {
+    /** Unique identifier of the column. */
     name: string;
+    /** Marks the column as backed by the server. */
     source?: "server";
+    /** Display label for the CSV header row. If omitted, `name` is used. */
     label?: string;
+    /** Whether to include this column in the CSV export. Defaults to true. */
     exportable?: boolean;
+    /** Custom formatter function for transforming cell values during export. */
     exportFormatter?: (value: unknown, row: RowAccessor) => string;
   };
 
 export type ExportClientColumnDescriptor =
   Omit<ColumnDescriptor, "source" | "exportFormatter"> & {
+    /** Unique identifier of the column. */
     name: string;
+    /** Marks the column as client-side calculated. */
     source: "client";
+    /** Display label for the CSV header row. If omitted, `name` is used. */
     label?: string;
+    /** Whether to include this column in the CSV export. Defaults to true. */
     exportable?: boolean;
+    /** Required formatter function for deriving client column values from row data. */
     exportFormatter: (value: unknown, row: RowAccessor) => string;
   };
 
@@ -41,27 +52,52 @@ export type ExportColumnDescriptor =
   | ExportClientColumnDescriptor;
 
 export interface ExportToCsvOptions {
+  /** Downloaded filename. Defaults to `"export.csv"`. */
   filename?: string;
+  /** Row copy mode: `"All"` exports every row, `"Selected"` exports only selected rows. Defaults to `"All"`. */
   copyOption?: CopyOption;
+  /** Specific column names to exclude from export in addition to internal session columns (`vuuMsg`, `vuuAction`, `vuuRowNum`). */
   excludeColumns?: string[];
+  /** Maximum number of data rows allowed to export. Throws if the server reports more rows. Defaults to `10_000`. */
   maxRows?: number;
+  /** Explicit column definitions or overrides. Alias for `columns`. */
   columnDescriptors?: readonly (ExportColumnDescriptor | ColumnDescriptor)[];
+  /** Specific subset, order, or descriptors of columns to include in the export. */
   columns?: readonly (string | ExportColumnDescriptor | ColumnDescriptor)[];
+  /**
+   * Optional mapping from schema column name to exported header name,
+   * or a resolver function `(col: string) => string`.
+   */
+  headerMapping?: CsvHeaderMapping;
+  /** Session datasource overrides passed to `createSessionDataSource`. */
   overrides?: SessionDataSourceOverrides;
   /** Timeout in milliseconds before the export times out. Default: 30_000ms (0 to disable). */
   timeout?: number;
+  /** Callback invoked when an export error occurs. */
   onError?: (error: Error) => void;
+  /** Callback invoked once the CSV download is triggered in the browser. */
   onSuccess?: () => void;
 }
 
 export interface ExportCsvTemplateOptions {
+  /** Downloaded filename. Defaults to `"template.csv"`. */
   filename?: string;
+  /** Specific column names to exclude from the template. */
   excludeColumns?: string[];
+  /** Specific subset and order of columns to include in the template. When descriptors are passed, `label` is used as the header. */
   columns?: readonly (string | ColumnDescriptor)[];
+  /**
+   * Optional mapping from schema column name to exported header name,
+   * or a resolver function `(col: string) => string`.
+   */
+  headerMapping?: CsvHeaderMapping;
+  /** Divergent table schema overrides passed to `createSessionDataSource`. */
   overrides?: SessionDataSourceOverrides;
   /** Timeout in milliseconds before template generation times out. Default: 10_000ms (0 to disable). */
   timeout?: number;
+  /** Callback invoked when a template export error occurs. */
   onError?: (error: Error) => void;
+  /** Callback invoked once the template download is triggered in the browser. */
   onSuccess?: () => void;
 }
 
@@ -70,6 +106,49 @@ const MAX_EXPORT_ROWS = 10_000;
 const CHUNK_SIZE = 1_000;
 const DEFAULT_EXPORT_TIMEOUT = 30_000;
 const DEFAULT_TEMPLATE_TIMEOUT = 10_000;
+
+/**
+ * Resolves an exported CSV column header label, checking headerMapping (direct or reverse)
+ * before falling back to the column descriptor's label or column name.
+ */
+export const resolveHeaderLabel = (
+  colName: string,
+  headerMapping?: CsvHeaderMapping,
+  fallbackLabel?: string,
+): string => {
+  if (headerMapping) {
+    if (typeof headerMapping === "function") {
+      const mapped = headerMapping(colName);
+      if (mapped) return mapped;
+    } else {
+      if (headerMapping[colName]) {
+        return headerMapping[colName];
+      }
+      const reverseKey = Object.keys(headerMapping).find(
+        (key) => headerMapping[key] === colName,
+      );
+      if (reverseKey) {
+        return reverseKey;
+      }
+    }
+  }
+  return fallbackLabel ?? colName;
+};
+
+/**
+ * Maps a column name to its underlying schema column name if present in headerMapping.
+ */
+export const resolveSchemaColumn = (
+  colName: string,
+  headerMapping?: CsvHeaderMapping,
+): string => {
+  if (headerMapping && typeof headerMapping !== "function") {
+    if (headerMapping[colName]) {
+      return headerMapping[colName];
+    }
+  }
+  return colName;
+};
 
 const csvCell = (value: unknown): string => {
   const s = value == null ? "" : String(value);
@@ -135,11 +214,22 @@ export const exportCsvTemplate = async (
     filename = "template.csv",
     excludeColumns = [],
     columns,
+    headerMapping,
     overrides,
     timeout = DEFAULT_TEMPLATE_TIMEOUT,
     onError,
     onSuccess,
   } = options;
+
+  // Build a map of column name -> label for custom header display
+  const labelMap = new Map<string, string>();
+  if (columns) {
+    for (const col of columns) {
+      if (typeof col !== "string" && col.label) {
+        labelMap.set(col.name, col.label);
+      }
+    }
+  }
 
   // Extract column names, filtering out client-only and hidden columns if ColumnDescriptor objects were passed
   const targetColumnNames: string[] | undefined = columns
@@ -153,9 +243,12 @@ export const exportCsvTemplate = async (
     : undefined;
 
   const targetColumns = targetColumnNames ?? overrides?.columns;
+  const serverTargetColumns = targetColumns?.map((col) =>
+    resolveSchemaColumn(col, headerMapping),
+  );
 
   const sessionOverrides: SessionDataSourceOverrides | undefined =
-    overrides ?? (targetColumns ? { columns: targetColumns } : undefined);
+    overrides ?? (serverTargetColumns ? { columns: serverTargetColumns } : undefined);
 
   if (
     !isSessionTable(dataSource.table) &&
@@ -221,7 +314,16 @@ export const exportCsvTemplate = async (
                   return;
                 }
 
-                const header = exportCols.map(csvCell).join(",");
+                const header = exportCols
+                  .map((colName) =>
+                    resolveHeaderLabel(
+                      colName,
+                      headerMapping,
+                      labelMap.get(colName),
+                    ),
+                  )
+                  .map(csvCell)
+                  .join(",");
                 triggerCsvDownload(`${header}\r\n`, filename);
                 cleanup();
                 onSuccess?.();
@@ -279,7 +381,16 @@ export const exportCsvTemplate = async (
     throw error;
   }
 
-  const header = exportCols.map(csvCell).join(",");
+  const header = exportCols
+    .map((colName) =>
+      resolveHeaderLabel(
+        colName,
+        headerMapping,
+        labelMap.get(colName),
+      ),
+    )
+    .map(csvCell)
+    .join(",");
   triggerCsvDownload(`${header}\r\n`, filename);
   onSuccess?.();
 };
@@ -301,6 +412,7 @@ export const exportSessionTableToCsv = async (
     maxRows = MAX_EXPORT_ROWS,
     columnDescriptors: rawColumnDescriptors,
     columns: rawColumns,
+    headerMapping,
     overrides,
     timeout = DEFAULT_EXPORT_TIMEOUT,
     onError,
@@ -477,7 +589,15 @@ export const exportSessionTableToCsv = async (
           if (totalSize === 0) {
             cleanup();
             const header = exportCols
-              .map((name) => csvCell(descriptorMap[name]?.label ?? name))
+              .map((name) =>
+                csvCell(
+                  resolveHeaderLabel(
+                    name,
+                    headerMapping,
+                    descriptorMap[name]?.label,
+                  ),
+                ),
+              )
               .join(",");
             triggerCsvDownload(`${header}\r\n`, filename);
             onSuccess?.();
@@ -514,7 +634,15 @@ export const exportSessionTableToCsv = async (
             cleanup();
             const lines: string[] = [
               exportCols
-                .map((name) => csvCell(descriptorMap[name]?.label ?? name))
+                .map((name) =>
+                  csvCell(
+                    resolveHeaderLabel(
+                      name,
+                      headerMapping,
+                      descriptorMap[name]?.label,
+                    ),
+                  ),
+                )
                 .join(","),
             ];
             // Assemble rows in strict index order (0 .. totalSize - 1)

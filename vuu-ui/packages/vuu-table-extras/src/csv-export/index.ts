@@ -3,6 +3,8 @@ export {
   exportSessionTableToCsv,
   exportToCsv,
   isExportableColumn,
+  resolveHeaderLabel,
+  resolveSchemaColumn,
   type ExportClientColumnDescriptor,
   type ExportColumnDescriptor,
   type ExportCsvTemplateOptions,
