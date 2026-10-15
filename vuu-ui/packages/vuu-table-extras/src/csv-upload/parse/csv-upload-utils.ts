@@ -14,6 +14,32 @@ export type CsvUploadTableData = {
   rows: VuuRowDataItemType[][];
 };
 
+/**
+ * Optional mapping from CSV header column names to schema column names,
+ * or a resolver function `(header: string) => string`.
+ */
+export type CsvHeaderMapping =
+  | Record<string, string>
+  | ((header: string) => string);
+
+/**
+ * Maps raw CSV header column names to their corresponding schema column names
+ * using a mapping dictionary or resolver function.
+ */
+export const mapCsvHeaders = (
+  headers: readonly string[],
+  headerMapping?: CsvHeaderMapping,
+): string[] => {
+  if (!headerMapping) {
+    return [...headers];
+  }
+  return headers.map((col) =>
+    typeof headerMapping === "function"
+      ? headerMapping(col)
+      : headerMapping[col] ?? col,
+  );
+};
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 

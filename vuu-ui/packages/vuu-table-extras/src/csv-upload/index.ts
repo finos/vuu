@@ -48,3 +48,8 @@ export {
   CSV_FIRST_DATA_ROW_NUMBER,
   CSV_HEADER_ROW_NUMBER,
 } from "./parse/csv-constants";
+export {
+  mapCsvHeaders,
+  type CsvHeaderMapping,
+  type CsvUploadTableData,
+} from "./parse/csv-upload-utils";

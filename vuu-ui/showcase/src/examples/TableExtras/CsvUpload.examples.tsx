@@ -419,3 +419,97 @@ export const CsvUploadWithExternalErrorDialog = () => {
   );
 };
 
+export const CsvUploadWithCustomHeaders = () => {
+  const [capturedRows, setCapturedRows] = useState<
+    Record<string, VuuRowDataItemType>[]
+  >([]);
+
+  const dataSource = useMemo(() => {
+    const sessionDs = {
+      table: { module: "TEST", table: "session-items" },
+      tableSchema: mockSchema,
+      columns: ["id", "name", "price"],
+      addRow: async (rowData: Record<string, VuuRowDataItemType>) => {
+        setCapturedRows((prev) => [...prev, rowData]);
+        return { data: undefined, type: "SUCCESS_RESULT" as const };
+      },
+      endEditSession: async () => void 0,
+    };
+    return {
+      table: { module: "TEST", table: "instruments" },
+      tableSchema: mockSchema,
+      createSessionDataSource: async () => sessionDs as unknown as DataSource,
+      subscribe: async () => void 0,
+      unsubscribe: () => void 0,
+    } as unknown as DataSource;
+  }, []);
+
+  return (
+    <div>
+      <CsvUpload
+        dataSource={dataSource}
+        customHeaders={["id", "name", "price"]}
+        hasHeaderRow={false}
+      />
+      {capturedRows.length > 0 && (
+        <ul data-testid="captured-rows">
+          {capturedRows.map((row, i) => (
+            <li key={i} data-testid={`captured-row-${i}`}>
+              {JSON.stringify(row)}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+export const CsvUploadWithHeaderMapping = () => {
+  const [capturedRows, setCapturedRows] = useState<
+    Record<string, VuuRowDataItemType>[]
+  >([]);
+
+  const dataSource = useMemo(() => {
+    const sessionDs = {
+      table: { module: "TEST", table: "session-items" },
+      tableSchema: mockSchema,
+      columns: ["id", "name", "price"],
+      addRow: async (rowData: Record<string, VuuRowDataItemType>) => {
+        setCapturedRows((prev) => [...prev, rowData]);
+        return { data: undefined, type: "SUCCESS_RESULT" as const };
+      },
+      endEditSession: async () => void 0,
+    };
+    return {
+      table: { module: "TEST", table: "instruments" },
+      tableSchema: mockSchema,
+      createSessionDataSource: async () => sessionDs as unknown as DataSource,
+      subscribe: async () => void 0,
+      unsubscribe: () => void 0,
+    } as unknown as DataSource;
+  }, []);
+
+  return (
+    <div>
+      <CsvUpload
+        dataSource={dataSource}
+        headerMapping={{
+          Identifier: "id",
+          Description: "name",
+          Cost: "price",
+        }}
+      />
+      {capturedRows.length > 0 && (
+        <ul data-testid="captured-rows">
+          {capturedRows.map((row, i) => (
+            <li key={i} data-testid={`captured-row-${i}`}>
+              {JSON.stringify(row)}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+

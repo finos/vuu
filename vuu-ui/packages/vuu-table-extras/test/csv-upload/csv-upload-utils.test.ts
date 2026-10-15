@@ -4,6 +4,7 @@ import {
   executeBatchRpcCalls,
   getInlineRowErrorMessage,
   getRowVuuMsgError,
+  mapCsvHeaders,
   mergeValidationWithParseErrors,
   normalizeTableData,
   toValidationErrorsFromParseRowErrors,
@@ -226,6 +227,25 @@ describe("csv-upload-utils", () => {
 
       expect(errors).toEqual(["x: server rejected"]);
       expect(results).toHaveLength(0);
+    });
+  });
+
+  describe("mapCsvHeaders", () => {
+    it("returns headers unchanged when no headerMapping is provided", () => {
+      const headers = ["col1", "col2"];
+      expect(mapCsvHeaders(headers)).toEqual(["col1", "col2"]);
+    });
+
+    it("maps header names using a dictionary mapping", () => {
+      const headers = ["Code", "Description", "Unknown"];
+      const mapping = { Code: "isin", Description: "name" };
+      expect(mapCsvHeaders(headers, mapping)).toEqual(["isin", "name", "Unknown"]);
+    });
+
+    it("maps header names using a mapping function", () => {
+      const headers = ["COL_A", "COL_B"];
+      const mappingFn = (col: string) => col.toLowerCase();
+      expect(mapCsvHeaders(headers, mappingFn)).toEqual(["col_a", "col_b"]);
     });
   });
 
