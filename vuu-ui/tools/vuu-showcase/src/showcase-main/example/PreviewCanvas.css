@@ -12,7 +12,7 @@
   flex-direction: column;
   min-height: 0;
   overflow: auto;
-  padding: var(--sc-space-6) var(--sc-space-8) var(--sc-space-2);
+  padding: var(--sc-space-3) var(--sc-space-4) var(--sc-space-1);
 }
 
 .ShowcasePreviewCanvas-device {

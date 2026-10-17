@@ -19,7 +19,7 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
-  padding: var(--sc-space-6) var(--sc-space-8);
+  padding: var(--sc-space-3) var(--sc-space-4);
 }
 
 .ShowcaseCompare-grid {
