@@ -22,6 +22,7 @@
     --tb-f: #8a5cf6;
     --tb-p: #0d9488;
     --tb-c: #e2730f;
+    --tb-k: #475569;
     /* chrome tokens consumed by the Salt controls (see salt-chrome.css) */
     --sc-font: var(--tb-font);
     --sc-radius-sm: var(--tb-radius);
@@ -141,6 +142,10 @@
   .tier-mark.characteristics {
     background: var(--tb-c);
   }
+  .tier-mark.components {
+    background: var(--tb-k);
+    border-radius: 50%;
+  }
 
   /* header ----------------------------------------------------------------- */
   .app-header {
@@ -207,7 +212,11 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: conic-gradient(var(--tb-f) 0 33%, var(--tb-p) 0 66%, var(--tb-c) 0);
+    background: conic-gradient(
+      var(--tb-f) 0 33%,
+      var(--tb-p) 0 66%,
+      var(--tb-c) 0
+    );
   }
   .tabs {
     align-self: stretch;
@@ -258,6 +267,12 @@
   .seg {
     text-transform: capitalize;
   }
+  .components-switch {
+    margin-left: auto;
+  }
+  .components-switch + .axes-note {
+    margin-left: 0;
+  }
   .axes-note {
     margin-left: auto;
     font-size: 12px;
@@ -287,7 +302,8 @@
     border-radius: 10px;
   }
   .checker {
-    background: repeating-conic-gradient(#d8d8d8 0 25%, #fff 0 50%) 0 0 / 8px 8px;
+    background: repeating-conic-gradient(#d8d8d8 0 25%, #fff 0 50%) 0 0 / 8px
+      8px;
   }
   .preview .fill {
     position: absolute;
@@ -347,6 +363,9 @@
     gap: 40px;
     padding: 16px 20px;
     min-width: 0;
+  }
+  .columns.with-components {
+    grid-template-columns: minmax(160px, 0.6fr) repeat(3, 1fr);
   }
   .tier {
     display: flex;
@@ -460,6 +479,47 @@
     font-weight: 600;
   }
   .token-row.selected {
+    box-shadow: inset 0 0 0 1px var(--tb-accent);
+  }
+  .library-header {
+    background: var(--tb-surface);
+    font-size: 11px;
+  }
+  .library-header .group-name {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--tb-text-2);
+  }
+  .component-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 30px;
+    padding: 0 10px 0 16px;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+  }
+  .component-row .component-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .component-row .token-value {
+    font-family: var(--tb-mono);
+    font-size: 11px;
+    color: var(--tb-text-2);
+  }
+  .component-row:not(.in-lineage):hover {
+    background: var(--tb-canvas);
+  }
+  .component-row.in-lineage {
+    background: var(--tb-accent-soft);
+    border-left-color: var(--tb-accent);
+    font-weight: 600;
+  }
+  .component-row.selected {
     box-shadow: inset 0 0 0 1px var(--tb-accent);
   }
   .ramps {
@@ -724,6 +784,46 @@
   .used-chip.more {
     color: var(--tb-text-2);
     border-style: dashed;
+  }
+  .used-chip.static {
+    max-width: 100%;
+  }
+  .used-chip.static .mono {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .token-tier + .token-tier {
+    margin-top: 10px;
+  }
+  .token-tier-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    font-size: 12px;
+    color: var(--tb-text-2);
+  }
+  .declarations {
+    list-style: none;
+    margin: 0 0 8px;
+    padding: 0;
+  }
+  .declarations li {
+    padding: 5px 0;
+    border-bottom: 1px solid var(--tb-border);
+  }
+  .declarations .mono {
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .declaration-selector {
+    color: var(--tb-text-2);
+  }
+  .declaration-body .property {
+    color: var(--tb-accent);
   }
   .source-row {
     display: flex;

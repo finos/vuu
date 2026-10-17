@@ -1,11 +1,13 @@
+import type { ComponentModel } from "@vuu-ui/vuu-theme-model/src/component-model-types";
 import type { ThemeModel } from "@vuu-ui/vuu-theme-model/src/theme-model-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CharacteristicView } from "./CharacteristicView";
+import { ComponentIndex } from "./component-utils";
 import { DiagnosticsView } from "./DiagnosticsView";
 import { FoundationsView } from "./FoundationsView";
 import { Header } from "./Header";
-import { Axes, defaultAxes, ThemeIndex } from "./model-utils";
-import { ThemeSource, themeSources } from "./theme-sources";
+import { Axes, defaultAxes, ThemeIndex, TIERS } from "./model-utils";
+import { loadComponentModel, ThemeSource, themeSources } from "./theme-sources";
 import {
   ThemeBrowserContext,
   ThemeBrowserContextProps,
@@ -19,6 +21,15 @@ import "./ThemeBrowser.css";
 
 const SUPPORTED_SCHEMA_VERSION = 1;
 const DEFAULT_SELECTION = "--salt-actionable-bold-background";
+const SHOW_COMPONENTS_KEY = "vuu-theme-browser:show-components";
+
+const readShowComponents = () => {
+  try {
+    return localStorage.getItem(SHOW_COMPONENTS_KEY) === "true";
+  } catch {
+    return false;
+  }
+};
 
 type LoadState =
   | { status: "loading" }
@@ -60,6 +71,34 @@ export const ThemeBrowser = ({
   const [view, setView] = useState<ThemeBrowserViewId>("tiers");
   const [selected, setSelected] = useState<string | undefined>();
   const [characteristic, setCharacteristic] = useState<string | undefined>();
+  const [componentModel, setComponentModel] = useState<ComponentModel>();
+  const [selectedComponent, setSelectedComponent] = useState<string>();
+  const [showComponents, setShowComponentsState] = useState(readShowComponents);
+
+  const setShowComponents = useCallback((show: boolean) => {
+    setShowComponentsState(show);
+    if (!show) {
+      // the token selected before the component is restored
+      setSelectedComponent(undefined);
+    }
+    try {
+      localStorage.setItem(SHOW_COMPONENTS_KEY, String(show));
+    } catch {
+      // persistence is optional
+    }
+  }, []);
+
+  useEffect(() => {
+    // the component model is optional, without it the components column is
+    // not offered
+    loadComponentModel()
+      .then(({ model }) => {
+        if (model?.schemaVersion === SUPPORTED_SCHEMA_VERSION) {
+          setComponentModel(model);
+        }
+      })
+      .catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     let sandbox: ThemeSandbox | undefined;
@@ -95,11 +134,20 @@ export const ThemeBrowser = ({
 
   const ready = loadState.status === "ready" ? loadState : undefined;
 
+  const components = useMemo(
+    () =>
+      ready && componentModel
+        ? new ComponentIndex(componentModel, ready.index, TIERS)
+        : undefined,
+    [componentModel, ready],
+  );
+
   const select = useCallback(
     (name: string, targetView?: ThemeBrowserViewId) => {
       const token = ready?.index.token(name);
       if (!token) return;
       setSelected(name);
+      setSelectedComponent(undefined);
       if (targetView) {
         setView(targetView);
       } else if (view === "characteristic") {
@@ -112,6 +160,17 @@ export const ThemeBrowser = ({
       }
     },
     [ready, view],
+  );
+
+  const selectComponent = useCallback(
+    (id: string) => {
+      if (components?.usage(id)) {
+        setSelectedComponent(id);
+        setShowComponentsState(true);
+        setView("tiers");
+      }
+    },
+    [components],
   );
 
   // a requested token is selected once, the user can then browse away from it
@@ -128,6 +187,7 @@ export const ThemeBrowser = ({
       ready
         ? {
             axes,
+            components,
             index: ready.index,
             model: ready.model,
             resolve: (name: string, scopeAxes = axes) =>
@@ -135,10 +195,25 @@ export const ThemeBrowser = ({
             sandbox: ready.sandbox,
             select,
             selected,
+            selectComponent,
+            selectedComponent:
+              components && showComponents ? selectedComponent : undefined,
             setAxes,
+            setShowComponents,
+            showComponents: showComponents && components !== undefined,
           }
         : undefined,
-    [axes, ready, select, selected],
+    [
+      axes,
+      components,
+      ready,
+      select,
+      selectComponent,
+      selected,
+      selectedComponent,
+      setShowComponents,
+      showComponents,
+    ],
   );
 
   if (!contextValue || !source) {

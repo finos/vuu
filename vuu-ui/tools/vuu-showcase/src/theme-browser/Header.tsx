@@ -3,6 +3,7 @@ import {
   Dropdown,
   Input,
   Option,
+  Switch,
   Tab,
   TabList,
   TabTrigger,
@@ -119,7 +120,14 @@ export const Header = ({
   sources,
   view,
 }: HeaderProps) => {
-  const { axes, model, setAxes } = useThemeBrowser();
+  const {
+    axes,
+    components,
+    model,
+    setAxes,
+    setShowComponents,
+    showComponents,
+  } = useThemeBrowser();
   const issues = model.diagnostics.length;
   const axesShown = model.axes
     .filter((axis) => axis.values.length > 1)
@@ -204,6 +212,14 @@ export const Header = ({
             </ToggleButtonGroup>
           </div>
         ))}
+        {components && view === "tiers" ? (
+          <Switch
+            checked={showComponents}
+            className="components-switch"
+            label={`Components (${components.size})`}
+            onChange={(e) => setShowComponents(e.target.checked)}
+          />
+        ) : null}
         <span
           className="axes-note"
           title="The theme under observation is loaded into an isolated sandbox. Axes change the previews, never the browser itself."
