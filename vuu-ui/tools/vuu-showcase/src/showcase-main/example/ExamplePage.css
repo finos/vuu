@@ -140,6 +140,10 @@
   padding: 0 var(--sc-space-8);
 }
 
+.ShowcaseExampleTabs-bar {
+  min-width: 0;
+}
+
 .ShowcaseExampleTabs-count {
   background: var(--sc-surface-2);
   border-radius: 999px;

@@ -35,22 +35,26 @@ export const ExampleTabs = <T extends string = string>({
     onChange={(_: SyntheticEvent | null, tab: string) => onChange(tab as T)}
     value={value}
   >
-    <TabList
-      appearance="transparent"
-      aria-label="Example views"
-      className={classBase}
-    >
-      {tabs.map(({ count, id, label }) => (
-        <Tab key={id} value={id}>
-          <TabTrigger>
-            {label}
-            {count !== undefined ? (
-              <span className={`${classBase}-count`}>{count}</span>
-            ) : null}
-          </TabTrigger>
-        </Tab>
-      ))}
-    </TabList>
+    {/* Salt's TabList overflow measures available width as parent width minus
+        siblings, so it must not share a parent with the (full width) panels.
+        The parent must also have no padding, else the overflow menu closes
+        immediately on open (Salt compares border-box to content-box widths). */}
+    <div className={classBase}>
+      <div className={`${classBase}-bar`}>
+        <TabList appearance="transparent" aria-label="Example views">
+          {tabs.map(({ count, id, label }) => (
+            <Tab key={id} value={id}>
+              <TabTrigger>
+                {label}
+                {count !== undefined ? (
+                  <span className={`${classBase}-count`}>{count}</span>
+                ) : null}
+              </TabTrigger>
+            </Tab>
+          ))}
+        </TabList>
+      </div>
+    </div>
     {children}
   </Tabs>
 );
