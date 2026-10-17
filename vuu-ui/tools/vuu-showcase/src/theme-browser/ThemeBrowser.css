@@ -367,7 +367,7 @@
     flex: 1;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
+    gap: 34px;
     padding: 16px 20px;
     min-width: 0;
   }
