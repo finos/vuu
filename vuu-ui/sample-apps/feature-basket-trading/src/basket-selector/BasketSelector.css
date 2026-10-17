@@ -1,7 +1,7 @@
 .vuuBasketSelector {
   --basket-selector-height: 61px;
   align-items: center;
-  border: solid 1px var(--vuu-color-gray-45);
+  border: solid 1px var(--salt-color-gray-500);
   border-radius: 6px;
   display: inline-block;
   height: var(--basket-selector-height);
@@ -32,7 +32,7 @@
   top: 0px;
   width: 1px;
   height: calc(var(--basket-selector-height) - 16px);
-  background-color: var(--vuu-color-gray-05);
+  background-color: var(--salt-color-gray-100);
 }
 
 .vuuBasketSelector-basketName {

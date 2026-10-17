@@ -43,7 +43,7 @@
   .vuuToolbarItem:focus,
   .vuuToolbarItem:focus-visible {
 
-    outline-color: var(--vuuToolbarItem-outlineColor, var(--vuu-color-purple-10));
+    outline-color: var(--vuuToolbarItem-outlineColor, var(--vuu-color-purple));
     outline-style: dashed;
     outline-width: 1px;
     outline-offset: 0px;

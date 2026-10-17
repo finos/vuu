@@ -3,11 +3,21 @@ import { useState } from "react";
 import { displayValue, TIER_INFO, withoutPrefix } from "./model-utils";
 import { TokenPreview } from "./TokenPreview";
 import { useStageStyle, useThemeBrowser } from "./ThemeBrowserContext";
+import { TileButton } from "./TileButton";
 
 const USED_BY_LIMIT = 10;
 
 export const TokenDetail = ({ name }: { name?: string }) => {
-  const { axes, index, resolve, select, setAxes } = useThemeBrowser();
+  const {
+    axes,
+    components,
+    index,
+    resolve,
+    select,
+    selectComponent,
+    setAxes,
+    showComponents,
+  } = useThemeBrowser();
   const [showAllUsers, setShowAllUsers] = useState<string | undefined>();
   const stageStyle = useStageStyle();
   const token = name ? index.token(name) : undefined;
@@ -28,6 +38,8 @@ export const TokenDetail = ({ name }: { name?: string }) => {
   const visibleUsers =
     showAllUsers === token.name ? usedBy : usedBy.slice(0, USED_BY_LIMIT);
   const location = (value ?? token.values[0])?.location;
+  const componentUsers =
+    showComponents && components ? components.componentsUsing(token.name) : [];
 
   return (
     <aside className="detail">
@@ -164,7 +176,7 @@ export const TokenDetail = ({ name }: { name?: string }) => {
         {usedBy.length ? (
           <div className="used-by">
             {visibleUsers.map((t) => (
-              <button
+              <TileButton
                 className="used-chip"
                 key={t.name}
                 onClick={() => select(t.name)}
@@ -172,15 +184,15 @@ export const TokenDetail = ({ name }: { name?: string }) => {
               >
                 <span className={cx("tier-mark xs", t.tier)} />
                 <span className="mono">{withoutPrefix(t.name)}</span>
-              </button>
+              </TileButton>
             ))}
             {usedBy.length > visibleUsers.length ? (
-              <button
+              <TileButton
                 className="used-chip more"
                 onClick={() => setShowAllUsers(token.name)}
               >
                 +{usedBy.length - visibleUsers.length} more
-              </button>
+              </TileButton>
             ) : null}
           </div>
         ) : (
@@ -190,18 +202,44 @@ export const TokenDetail = ({ name }: { name?: string }) => {
         )}
       </section>
 
+      {showComponents ? (
+        <section className="panel-section">
+          <h4>
+            Components <span className="count">{componentUsers.length}</span>
+          </h4>
+          {componentUsers.length ? (
+            <div className="used-by">
+              {componentUsers.map(({ component }) => (
+                <TileButton
+                  className="used-chip"
+                  key={component.id}
+                  onClick={() => selectComponent(component.id)}
+                >
+                  <span className="tier-mark xs components" />
+                  {component.label}
+                </TileButton>
+              ))}
+            </div>
+          ) : (
+            <div className="empty">
+              Not referenced directly by the listed components
+            </div>
+          )}
+        </section>
+      ) : null}
+
       <section className="panel-section source">
         <h4>Source</h4>
         <div className="source-row">
           <span className="mono">
             {location ? `${location.file}:${location.line}` : "—"}
           </span>
-          <button className="ghost" disabled>
+          <TileButton className="ghost" disabled>
             Open in VS Code
-          </button>
-          <button className="ghost" disabled>
+          </TileButton>
+          <TileButton className="ghost" disabled>
             Edit value
-          </button>
+          </TileButton>
         </div>
         <div className="roadmap">
           Editing &amp; VS Code integration – roadmap

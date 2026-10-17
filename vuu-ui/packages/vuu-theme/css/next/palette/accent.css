@@ -10,7 +10,6 @@
   --salt-palette-accent-weakest: var(--salt-color-blue-100);
 }
 
-
 .salt-theme.salt-theme-next.vuu-theme[data-mode="dark"] {
   --salt-palette-accent: var(--vuu-color-purple);
   --salt-palette-accent-disabled: var(--salt-color-teal-500-40a);
@@ -22,4 +21,3 @@
   --salt-palette-accent-weaker-disabled: var(--salt-color-teal-200-40a);
   --salt-palette-accent-weakest: var(--salt-color-teal-100);
 }
-

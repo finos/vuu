@@ -1,0 +1,25 @@
+/* Shared chrome helpers, styled with --sc-* tokens only. Controls are Salt components (see salt-chrome.css). */
+
+.ShowcaseControlLabel {
+  color: var(--sc-text-3);
+  font: 600 11px/1 var(--sc-font);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ShowcaseStatusDot {
+  background: var(--sc-text-4);
+  border-radius: 50%;
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 8px;
+  width: 8px;
+
+  &[data-status="ok"] {
+    background: var(--sc-ok);
+    box-shadow: 0 0 0 3px var(--sc-ok-halo);
+  }
+  &[data-status="warn"] {
+    background: var(--sc-warn);
+  }
+}

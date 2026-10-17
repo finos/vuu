@@ -1,6 +1,18 @@
 import type { ThemeToken } from "@vuu-ui/vuu-theme-model/src/theme-model-types";
+import {
+  Dropdown,
+  Input,
+  Option,
+  Switch,
+  Tab,
+  TabList,
+  TabTrigger,
+  Tabs,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@salt-ds/core";
 import cx from "clsx";
-import { KeyboardEvent, useEffect, useRef, useState } from "react";
+import { KeyboardEvent, useRef, useState } from "react";
 import { PRIMARY_AXES, TIER_INFO } from "./model-utils";
 import { ThemeBrowserViewId, useThemeBrowser } from "./ThemeBrowserContext";
 import type { ThemeSource } from "./theme-sources";
@@ -20,18 +32,6 @@ const SearchBox = () => {
   const [open, setOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(0);
   const results = open ? index.search(query) : [];
-
-  useEffect(() => {
-    const focusSearch = (e: globalThis.KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        inputRef.current?.focus();
-        inputRef.current?.select();
-      }
-    };
-    window.addEventListener("keydown", focusSearch);
-    return () => window.removeEventListener("keydown", focusSearch);
-  }, []);
 
   const choose = (token: ThemeToken) => {
     select(token.name, "tiers");
@@ -55,24 +55,25 @@ const SearchBox = () => {
 
   return (
     <div className="search-container">
-      <label className="search">
-        <span className="search-icon">⌕</span>
-        <input
-          aria-label="Search tokens"
-          onBlur={() => setOpen(false)}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setHighlighted(0);
-            setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
-          onKeyDown={handleKeyDown}
-          placeholder={`Search ${Object.keys(model.tokens).length} tokens`}
-          ref={inputRef}
-          value={query}
-        />
-        <kbd>⌘K</kbd>
-      </label>
+      <Input
+        bordered
+        className="search"
+        inputProps={{
+          "aria-label": "Search tokens",
+          onBlur: () => setOpen(false),
+          onFocus: () => setOpen(true),
+          onKeyDown: handleKeyDown,
+        }}
+        inputRef={inputRef}
+        onChange={(e) => {
+          setQuery((e.target as HTMLInputElement).value);
+          setHighlighted(0);
+          setOpen(true);
+        }}
+        placeholder={`Search ${Object.keys(model.tokens).length} tokens`}
+        startAdornment={<span className="search-icon">⌕</span>}
+        value={query}
+      />
       {results.length ? (
         <ul className="search-results" role="listbox">
           {results.map((token, i) => (
@@ -119,7 +120,17 @@ export const Header = ({
   sources,
   view,
 }: HeaderProps) => {
-  const { axes, model, setAxes } = useThemeBrowser();
+  const {
+    axes,
+    components,
+    model,
+    selectedComponent,
+    setAxes,
+    setShowAllTokens,
+    setShowComponents,
+    showAllTokens,
+    showComponents,
+  } = useThemeBrowser();
   const issues = model.diagnostics.length;
   const axesShown = model.axes
     .filter((axis) => axis.values.length > 1)
@@ -143,40 +154,44 @@ export const Header = ({
             <h1>Theme Browser</h1>
           </div>
         </div>
-        <label className="theme-picker">
-          <span className="theme-dot" />
-          <select
+        <div className="theme-picker">
+          <Dropdown
             aria-label="Theme"
-            onChange={(e) => onChangeTheme(e.target.value)}
-            value={sourceId}
+            bordered
+            onSelectionChange={(_, [id]) => id && onChangeTheme(id)}
+            selected={[sourceId]}
+            startAdornment={<span className="theme-dot" />}
+            value={
+              sources.find((source) => source.id === sourceId)?.label ?? ""
+            }
           >
             {sources.map((source) => (
-              <option key={source.id} value={source.id}>
+              <Option key={source.id} value={source.id}>
                 {source.label}
-              </option>
+              </Option>
             ))}
-          </select>
+          </Dropdown>
           <span className="muted">
             {Object.keys(model.tokens).length} tokens
           </span>
-          <span className="chev">▾</span>
-        </label>
-        <nav className="tabs" role="tablist">
-          {VIEWS.map(([id, label]) => (
-            <button
-              aria-selected={view === id}
-              className={cx("tab", { selected: view === id })}
-              key={id}
-              onClick={() => onChangeView(id)}
-              role="tab"
-            >
-              {label}
-              {id === "diagnostics" && issues ? (
-                <span className="badge warn">{issues}</span>
-              ) : null}
-            </button>
-          ))}
-        </nav>
+        </div>
+        <Tabs
+          onChange={(_, id) => onChangeView(id as ThemeBrowserViewId)}
+          value={view}
+        >
+          <TabList appearance="transparent" className="tabs">
+            {VIEWS.map(([id, label]) => (
+              <Tab key={id} value={id}>
+                <TabTrigger>
+                  {label}
+                  {id === "diagnostics" && issues ? (
+                    <span className="badge warn">{issues}</span>
+                  ) : null}
+                </TabTrigger>
+              </Tab>
+            ))}
+          </TabList>
+        </Tabs>
         <SearchBox />
       </div>
       <div className="axes-row">
@@ -184,21 +199,40 @@ export const Header = ({
         {axesShown.map((axis) => (
           <div className="axis" key={axis.name}>
             <span className="axis-label">{axis.name.replace("-", " ")}</span>
-            <div className="segmented" role="radiogroup" aria-label={axis.name}>
+            <ToggleButtonGroup
+              aria-label={axis.name}
+              className="segmented"
+              onChange={(e) =>
+                setAxes({ ...axes, [axis.name]: e.currentTarget.value })
+              }
+              value={axes[axis.name]}
+            >
               {axis.values.map((value) => (
-                <button
-                  aria-checked={axes[axis.name] === value}
-                  className={cx("seg", { selected: axes[axis.name] === value })}
-                  key={value}
-                  onClick={() => setAxes({ ...axes, [axis.name]: value })}
-                  role="radio"
-                >
+                <ToggleButton className="seg" key={value} value={value}>
                   {value}
-                </button>
+                </ToggleButton>
               ))}
-            </div>
+            </ToggleButtonGroup>
           </div>
         ))}
+        {components && view === "tiers" ? (
+          <Switch
+            checked={showComponents}
+            className="components-switch"
+            label={`Components (${components.size})`}
+            onChange={(e) => setShowComponents(e.target.checked)}
+          />
+        ) : null}
+        {showComponents && view === "tiers" ? (
+          <Switch
+            checked={showAllTokens}
+            className="all-tokens-switch"
+            disabled={!selectedComponent}
+            label="Show all tokens"
+            onChange={(e) => setShowAllTokens(e.target.checked)}
+            title="With a component selected, show every theme token rather than only those the component references"
+          />
+        ) : null}
         <span
           className="axes-note"
           title="The theme under observation is loaded into an isolated sandbox. Axes change the previews, never the browser itself."

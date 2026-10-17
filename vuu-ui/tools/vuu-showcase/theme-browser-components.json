@@ -1,0 +1,49 @@
+{
+  "$comment": "Components listed in the Theme Browser components column. Paths are relative to root (vuu-ui). Regenerate with 'npm run build:theme-model'.",
+  "root": "../..",
+  "libraries": [
+    {
+      "id": "vuu",
+      "label": "Vuu",
+      "components": [
+        {
+          "label": "Table",
+          "css": [
+            "packages/vuu-table/src/Table.css",
+            "packages/vuu-table/src/table-cell/TableCell.css",
+            "packages/vuu-table/src/table-cell/TableGroupCell.css",
+            "packages/vuu-table/src/header-cell/HeaderCell.css",
+            "packages/vuu-table/src/header-cell/GroupHeaderCell.css",
+            "packages/vuu-table/src/column-resizing/ColumnResizer.css"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "salt",
+      "label": "Salt",
+      "css": ["node_modules/@salt-ds/core/css/salt-core.css"],
+      "components": [
+        { "label": "Button", "classes": ["saltButton"] },
+        {
+          "label": "Checkbox",
+          "classes": ["saltCheckbox", "saltCheckboxIcon"]
+        },
+        {
+          "label": "ComboBox",
+          "classes": [
+            "saltComboBox",
+            "saltPillInput",
+            "saltPill",
+            "saltOptionList",
+            "saltOption"
+          ]
+        },
+        {
+          "label": "Dropdown",
+          "classes": ["saltDropdown", "saltOptionList", "saltOption"]
+        }
+      ]
+    }
+  ]
+}

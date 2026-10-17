@@ -9,11 +9,22 @@ import Watcher from "watcher";
 
 import { createFolder, linkSourceDirectory, writeFile } from "./utils";
 import { treeSourceFromFileSystem } from "./treeSourceFromFileSystem";
+import { syncExampleHistory } from "./example-history";
+import { applyFixtureUsage } from "./test-fixtures";
+import {
+  highlightSource,
+  resolveSourcePath,
+  SOURCE_URL_PREFIX,
+} from "./highlight-source";
+import { buildDocsSearchIndex, DOCS_INDEX_URL } from "./docs-search-index";
 
 const pathToExhibits = "./src/examples";
 
 // 1) Build the exhibit structure that will be used to create nav tree in showcase GUI
 const [treeSourceJson /*, tags*/] = treeSourceFromFileSystem(pathToExhibits);
+syncExampleHistory(treeSourceJson, pathToExhibits);
+// the vuu-ui folder, test files are found in packages and playwright
+applyFixtureUsage(treeSourceJson, path.resolve(".."));
 
 const watcher = new Watcher(pathToExhibits, {
   recursive: true,
@@ -68,6 +79,55 @@ function cssInline(): PluginOption {
   };
 }
 
+/**
+ * Serves highlighted example source, see highlight-source.ts. In dev this is
+ * done on request, so the source is always current. The prod build writes
+ * every file up front.
+ */
+function exampleSource(): PluginOption {
+  return {
+    name: "vuu-showcase-example-source",
+    configureServer(server) {
+      server.middlewares.use(SOURCE_URL_PREFIX, async (req, res, next) => {
+        const urlPath = (req.url ?? "").split("?")[0].replace(/^\//, "");
+        const filePath = urlPath.endsWith(".json")
+          ? resolveSourcePath(cwd, urlPath.slice(0, -".json".length))
+          : undefined;
+        if (filePath === undefined || !fs.existsSync(filePath)) {
+          return next();
+        }
+        try {
+          const code = fs.readFileSync(filePath, "utf8");
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify(await highlightSource(code)));
+        } catch (err) {
+          next(err);
+        }
+      });
+    },
+  };
+}
+
+/**
+ * Serves the docs search index, built on request so it reflects the current
+ * mdx content. The prod build writes it up front.
+ */
+function docsSearchIndex(): PluginOption {
+  return {
+    name: "vuu-showcase-docs-search-index",
+    configureServer(server) {
+      server.middlewares.use(DOCS_INDEX_URL, (_req, res, next) => {
+        try {
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify(buildDocsSearchIndex(treeSourceJson, cwd)));
+        } catch (err) {
+          next(err);
+        }
+      });
+    },
+  };
+}
+
 // 2) Create the .showcase working directory
 if (!fs.existsSync(".showcase/dev")) {
   createFolder(".showcase/dev");
@@ -101,6 +161,8 @@ const server = await createServer({
   configFile: false,
   define: {
     "process.env.NODE_DEBUG": false,
+    // enables Open in VS Code links, dev only
+    "process.env.SHOWCASE_SOURCE_ROOT": JSON.stringify(cwd),
   },
   esbuild: {
     jsx: `automatic`,
@@ -110,7 +172,7 @@ const server = await createServer({
     include: ["@salt-ds/core", "@salt-ds/lab", "@salt-ds/icons"],
   },
   root: __dirname,
-  plugins: [cssInline(), mdx(mdxOptions)],
+  plugins: [cssInline(), docsSearchIndex(), exampleSource(), mdx(mdxOptions)],
   server: {
     proxy: {
       "/api/authn": {

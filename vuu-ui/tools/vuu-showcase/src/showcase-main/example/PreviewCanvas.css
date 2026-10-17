@@ -1,0 +1,46 @@
+.ShowcasePreviewCanvas {
+  --showcasePreviewCanvas-dot: var(--sc-border-strong);
+  background-color: var(--sc-bg);
+  background-image: radial-gradient(
+    var(--showcasePreviewCanvas-dot) 1px,
+    transparent 1px
+  );
+  background-size: 16px 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--sc-space-6) var(--sc-space-8) var(--sc-space-2);
+}
+
+.ShowcasePreviewCanvas-device {
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius-lg);
+  box-shadow: var(--sc-shadow-2);
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 240px;
+  overflow: hidden;
+
+  .ShowCaseIFrame {
+    display: block;
+  }
+}
+
+.ShowcasePreviewCanvas:not([data-viewport="fill"])
+  > .ShowcasePreviewCanvas-device {
+  /* auto margins centre the device, but overflow safely to the right */
+  flex-shrink: 0;
+  margin-inline: auto;
+}
+
+.ShowcasePreviewCanvas-size {
+  align-self: flex-end;
+  color: var(--sc-text-3);
+  font: 500 11px/1 var(--sc-font);
+  font-variant-numeric: tabular-nums;
+  padding: var(--sc-space-2) var(--sc-space-1) 0;
+}

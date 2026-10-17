@@ -1,0 +1,36 @@
+diff --git a/node_modules/@salt-ds/core/dist-cjs/tabs/internal/registry/useRenderedTabsRegistry.js b/node_modules/@salt-ds/core/dist-cjs/tabs/internal/registry/useRenderedTabsRegistry.js
+index 7c84359..8f858e1 100644
+--- a/node_modules/@salt-ds/core/dist-cjs/tabs/internal/registry/useRenderedTabsRegistry.js
++++ b/node_modules/@salt-ds/core/dist-cjs/tabs/internal/registry/useRenderedTabsRegistry.js
+@@ -178,6 +178,13 @@ function useRenderedTabsRegistry() {
+   const renderedTabs = React.useMemo(() => {
+     return sortRenderedTabs(Array.from(renderedTabMap.values()));
+   }, [renderedTabMap]);
++  useIsomorphicLayoutEffect.useIsomorphicLayoutEffect(() => {
++    // Reordering keyed children moves markers without changing their identities.
++    const sortedTabs = sortRenderedTabs(Array.from(renderedTabMap.values()));
++    if (sortedTabs.some((tab, index) => tab !== renderedTabs[index])) {
++      setRenderedTabMap((map) => new Map(map));
++    }
++  });
+   const renderedTabOrderMap = React.useMemo(() => {
+     return new Map(
+       renderedTabs.map((tab, index) => [tab.value, index])
+diff --git a/node_modules/@salt-ds/core/dist-es/tabs/internal/registry/useRenderedTabsRegistry.js b/node_modules/@salt-ds/core/dist-es/tabs/internal/registry/useRenderedTabsRegistry.js
+index e49f115..44f45b5 100644
+--- a/node_modules/@salt-ds/core/dist-es/tabs/internal/registry/useRenderedTabsRegistry.js
++++ b/node_modules/@salt-ds/core/dist-es/tabs/internal/registry/useRenderedTabsRegistry.js
+@@ -176,6 +176,13 @@ function useRenderedTabsRegistry() {
+   const renderedTabs = useMemo(() => {
+     return sortRenderedTabs(Array.from(renderedTabMap.values()));
+   }, [renderedTabMap]);
++  useIsomorphicLayoutEffect(() => {
++    // Reordering keyed children moves markers without changing their identities.
++    const sortedTabs = sortRenderedTabs(Array.from(renderedTabMap.values()));
++    if (sortedTabs.some((tab, index) => tab !== renderedTabs[index])) {
++      setRenderedTabMap((map) => new Map(map));
++    }
++  });
+   const renderedTabOrderMap = useMemo(() => {
+     return new Map(
+       renderedTabs.map((tab, index) => [tab.value, index])

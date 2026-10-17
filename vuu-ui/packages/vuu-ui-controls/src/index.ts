@@ -14,7 +14,10 @@ export * from "./drag-drop";
 export * from "./editable";
 export * from "./editable-label";
 export * from "./expando-input";
-export { HoverOverlay } from "./hover-overlay/HoverOverlay";
+export {
+  HoverOverlay,
+  type HoverOverlayProps,
+} from "./hover-overlay/HoverOverlay";
 export * from "./icon-button";
 export * from "./instrument-picker";
 export { ItemPicker, type ItemPickerProps } from "./item-picker/ItemPicker";

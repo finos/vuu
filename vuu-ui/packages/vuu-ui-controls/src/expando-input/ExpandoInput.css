@@ -34,7 +34,7 @@
   white-space: pre-wrap;
 }
 .vuuExpandoInput-error {
-  border-color: var(--vuu-color-red-50);
+  border-color: var(--salt-color-red-500);
 }
 
 .vuuExpandoInput .saltInput {

@@ -1,6 +1,10 @@
 import { GroupColumnDescriptor, TableCellProps } from "@vuu-ui/vuu-table-types";
 import { Icon, ToggleIconButton } from "@vuu-ui/vuu-ui-controls";
-import { getGroupIcon, getGroupValue } from "@vuu-ui/vuu-utils";
+import {
+  getGroupAdornment,
+  getGroupIcon,
+  getGroupValue,
+} from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -36,6 +40,7 @@ export const TableGroupCell = ({
   const valueWithHighlighting = applyHighlighting(value || "", searchPattern);
 
   const icon = getGroupIcon(columns, dataRow);
+  const adornment = getGroupAdornment(columns, dataRow);
   const { className, style } = useCell(column, classBase);
 
   const handleClick = useCallback(
@@ -63,6 +68,9 @@ export const TableGroupCell = ({
       {isLeafNode ? null : <ToggleIconButton isExpanded={isExpanded} />}
       {icon ? <Icon name={icon} /> : null}
       <span className={`${classBase}-label`}>{valueWithHighlighting}</span>
+      {adornment ? (
+        <span className={`${classBase}-adornment`}>{adornment}</span>
+      ) : null}
     </div>
   );
 };
