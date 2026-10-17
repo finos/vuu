@@ -387,6 +387,14 @@
     padding: 12px 14px 10px;
     border-bottom: 1px solid var(--tb-border);
   }
+  /* the column the current selection is driven from */
+  .tier.driving {
+    border-color: var(--tb-accent);
+    box-shadow: 0 0 0 1px var(--tb-accent);
+  }
+  .tier.driving .tier-header {
+    background: var(--tb-accent-soft);
+  }
   .tier-title {
     display: flex;
     align-items: center;
