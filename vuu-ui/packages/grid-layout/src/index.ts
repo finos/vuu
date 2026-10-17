@@ -4,6 +4,7 @@ export { GridLayoutStackedItem } from "./GridLayoutStackedtem";
 export {
   GridLayoutProvider,
   type SerializedGridLayout,
+  type SerializedGridLayoutChangeHandler,
 } from "./GridLayoutProvider";
 export type {
   GridLayoutChangeHandler,
