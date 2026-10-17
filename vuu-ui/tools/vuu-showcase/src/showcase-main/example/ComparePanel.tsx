@@ -242,7 +242,9 @@ export const ComparePanel = ({ onPromote, title }: ComparePanelProps) => {
     [matrixKey],
   );
 
-  const hasRows = layout.rows !== "none";
+  // light/dark is self evident from the cells, so mode gets no headers
+  const hasRows = layout.rows !== "none" && layout.rows !== "mode";
+  const hasColHeaders = layout.cols !== "mode";
   const colValues = axisValues(layout.cols);
   const rowValues =
     layout.rows === "none" ? [undefined] : axisValues(layout.rows);
@@ -322,12 +324,14 @@ export const ComparePanel = ({ onPromote, title }: ComparePanelProps) => {
             gridTemplateColumns: `${hasRows ? "auto " : ""}repeat(${colValues.length}, minmax(${layout.size === "actual" ? 320 : 200}px, 1fr))`,
           }}
         >
-          {hasRows ? <span /> : null}
-          {colValues.map((col) => (
-            <div className={`${classBase}-colHeader`} key={col}>
-              {axisValueLabel(layout.cols, col)}
-            </div>
-          ))}
+          {hasRows && hasColHeaders ? <span /> : null}
+          {hasColHeaders
+            ? colValues.map((col) => (
+                <div className={`${classBase}-colHeader`} key={col}>
+                  {axisValueLabel(layout.cols, col)}
+                </div>
+              ))
+            : null}
           {rowValues.map((row, rowIndex) => [
             hasRows && row ? (
               <div className={`${classBase}-rowHeader`} key={`row:${row}`}>
