@@ -25,7 +25,7 @@
 .ShowcaseCompare-grid {
   align-items: start;
   display: grid;
-  gap: var(--sc-space-4) var(--sc-space-6);
+  gap: var(--sc-space-3) var(--sc-space-6);
   min-width: 0;
 }
 
