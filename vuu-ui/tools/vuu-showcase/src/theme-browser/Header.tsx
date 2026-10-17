@@ -124,8 +124,11 @@ export const Header = ({
     axes,
     components,
     model,
+    selectedComponent,
     setAxes,
+    setShowAllTokens,
     setShowComponents,
+    showAllTokens,
     showComponents,
   } = useThemeBrowser();
   const issues = model.diagnostics.length;
@@ -218,6 +221,16 @@ export const Header = ({
             className="components-switch"
             label={`Components (${components.size})`}
             onChange={(e) => setShowComponents(e.target.checked)}
+          />
+        ) : null}
+        {showComponents && view === "tiers" ? (
+          <Switch
+            checked={showAllTokens}
+            className="all-tokens-switch"
+            disabled={!selectedComponent}
+            label="Show all tokens"
+            onChange={(e) => setShowAllTokens(e.target.checked)}
+            title="With a component selected, show every theme token rather than only those the component references"
           />
         ) : null}
         <span

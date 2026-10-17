@@ -73,6 +73,7 @@ export const ThemeBrowser = ({
   const [characteristic, setCharacteristic] = useState<string | undefined>();
   const [componentModel, setComponentModel] = useState<ComponentModel>();
   const [selectedComponent, setSelectedComponent] = useState<string>();
+  const [showAllTokens, setShowAllTokens] = useState(false);
   const [showComponents, setShowComponentsState] = useState(readShowComponents);
 
   const setShowComponents = useCallback((show: boolean) => {
@@ -199,7 +200,9 @@ export const ThemeBrowser = ({
             selectedComponent:
               components && showComponents ? selectedComponent : undefined,
             setAxes,
+            setShowAllTokens,
             setShowComponents,
+            showAllTokens,
             showComponents: showComponents && components !== undefined,
           }
         : undefined,
@@ -212,6 +215,7 @@ export const ThemeBrowser = ({
       selected,
       selectedComponent,
       setShowComponents,
+      showAllTokens,
       showComponents,
     ],
   );

@@ -22,7 +22,10 @@ export interface ThemeBrowserContextProps {
   selectComponent: (id: string) => void;
   selectedComponent?: string;
   setAxes: (axes: Axes) => void;
+  setShowAllTokens: (show: boolean) => void;
   setShowComponents: (show: boolean) => void;
+  /** with a component selected, show all theme tokens, not only those it references */
+  showAllTokens: boolean;
   showComponents: boolean;
 }
 

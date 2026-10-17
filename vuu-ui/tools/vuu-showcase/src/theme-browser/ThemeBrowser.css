@@ -23,6 +23,9 @@
     --tb-p: #0d9488;
     --tb-c: #e2730f;
     --tb-k: #475569;
+    /* tokens referenced by the selected component */
+    --tb-ref: #0f9d58;
+    --tb-ref-soft: #e3f6ec;
     /* chrome tokens consumed by the Salt controls (see salt-chrome.css) */
     --sc-font: var(--tb-font);
     --sc-radius-sm: var(--tb-radius);
@@ -93,6 +96,10 @@
   .chip.accent {
     background: var(--tb-accent);
     color: var(--tb-on-accent);
+  }
+  .chip.referenced {
+    background: var(--tb-ref);
+    color: #ffffff;
   }
   .chip.warn {
     background: var(--tb-warn-soft);
@@ -480,6 +487,19 @@
   }
   .token-row.selected {
     box-shadow: inset 0 0 0 1px var(--tb-accent);
+  }
+  .token-row.referenced {
+    background: var(--tb-ref-soft);
+    border-left-color: var(--tb-ref);
+    font-weight: 600;
+  }
+  .ramp-cell.referenced {
+    outline: 2px solid var(--tb-ref);
+    outline-offset: 1px;
+    z-index: 1;
+  }
+  .tier-empty {
+    padding: 12px 14px;
   }
   .library-header {
     background: var(--tb-surface);
@@ -1522,7 +1542,7 @@
   .ramp-cell {
     cursor: pointer;
   }
-  .token-row:not(.in-lineage):hover {
+  .token-row:not(.in-lineage, .referenced):hover {
     background: var(--tb-canvas);
   }
   .ramp-cell:hover {
