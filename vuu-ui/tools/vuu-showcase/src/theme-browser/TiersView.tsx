@@ -24,6 +24,12 @@ import { useThemeBrowser } from "./ThemeBrowserContext";
 import { TileButton } from "./TileButton";
 
 /**
+ * in-lineage: on the path of the selected token
+ * referenced: referenced by the selected component
+ */
+type Highlight = "in-lineage" | "referenced";
+
+/**
  * [referenced token, referencing token, kind], components are identified by
  * componentKey
  */
@@ -53,16 +59,18 @@ const MINI_STRIP_COUNT = 14;
 const TokenRow = ({
   token,
   lineage,
+  highlight,
 }: {
   token: ThemeToken;
   lineage: boolean;
+  highlight: Highlight;
 }) => {
   const { resolve, select, selected, selectedComponent } = useThemeBrowser();
   const value = resolve(token.name);
   return (
     <div
       className={cx("token-row", {
-        "in-lineage": lineage,
+        [highlight]: lineage,
         selected: !selectedComponent && token.name === selected,
       })}
       data-token={token.name}
@@ -88,9 +96,11 @@ const TokenRow = ({
 const Ramps = ({
   tokens,
   lineage,
+  highlight,
 }: {
   tokens: ThemeToken[];
   lineage: Set<string>;
+  highlight: Highlight;
 }) => {
   const { resolve, select } = useThemeBrowser();
   const ramps = new Map<string, { step: number; token: ThemeToken }[]>();
@@ -113,7 +123,7 @@ const Ramps = ({
               .map(({ step, token }) => (
                 <span
                   className={cx("ramp-cell", {
-                    "in-lineage": lineage.has(token.name),
+                    [highlight]: lineage.has(token.name),
                   })}
                   data-token={token.name}
                   key={step}
@@ -133,8 +143,8 @@ interface GroupSectionProps {
   expanded: boolean;
   group: ThemeGroup;
   lineage: Set<string>;
-  /** describes the highlighted tokens, e.g. "in path" */
-  lineageLabel: string;
+  /** how tokens in the lineage are highlighted */
+  highlight: Highlight;
   onToggle: (key: string) => void;
   onShowAll: (key: string, showAll: boolean) => void;
   showAll: boolean;
@@ -144,7 +154,7 @@ const GroupSection = ({
   expanded,
   group,
   lineage,
-  lineageLabel,
+  highlight,
   onShowAll,
   onToggle,
   showAll,
@@ -162,11 +172,17 @@ const GroupSection = ({
       const restShown = all ? rest : rest.filter((t) => lineage.has(t.name));
       body = (
         <div className="group-body">
-          <Ramps tokens={tokens} lineage={lineage} />
+          <Ramps tokens={tokens} lineage={lineage} highlight={highlight} />
           {restShown.map((t) => (
-            <TokenRow key={t.name} token={t} lineage={lineage.has(t.name)} />
+            <TokenRow
+              highlight={highlight}
+              key={t.name}
+              lineage={lineage.has(t.name)}
+              token={t}
+            />
           ))}
-          {restShown.length < rest.length ? (
+          {highlight === "referenced" ? null : restShown.length <
+            rest.length ? (
             <TileButton
               className="more-row"
               onClick={() => onShowAll(key, true)}
@@ -181,9 +197,14 @@ const GroupSection = ({
       body = (
         <div className="group-body">
           {shown.map((t) => (
-            <TokenRow key={t.name} token={t} lineage={lineage.has(t.name)} />
+            <TokenRow
+              highlight={highlight}
+              key={t.name}
+              lineage={lineage.has(t.name)}
+              token={t}
+            />
           ))}
-          {shown.length < tokens.length ? (
+          {highlight === "referenced" ? null : shown.length < tokens.length ? (
             <TileButton
               className="more-row"
               onClick={() => onShowAll(key, true)}
@@ -225,8 +246,13 @@ const GroupSection = ({
           {group.layer}
         </span>
         {onPath.length ? (
-          <span className="chip accent">
-            {onPath.length} {lineageLabel}
+          <span
+            className={cx(
+              "chip",
+              highlight === "referenced" ? "referenced" : "accent",
+            )}
+          >
+            {onPath.length} {highlight === "referenced" ? "used" : "in path"}
           </span>
         ) : null}
         <span className="group-count">{tokens.length}</span>
@@ -440,6 +466,7 @@ export const TiersView = () => {
     model,
     selected,
     selectedComponent,
+    showAllTokens,
     showComponents,
   } = useThemeBrowser();
   const columnsRef = useRef<HTMLDivElement>(null);
@@ -458,17 +485,18 @@ export const TiersView = () => {
     setPrevSelected(selected);
     setPrevComponent(selectedComponent);
     setUserCollapsed(new Set());
+    if (selectedComponent !== prevComponent) {
+      // a component's groups are presented collapsed
+      setUserExpanded(new Set());
+    }
   }
 
   const { edges, lineage } = useMemo(() => {
     if (componentUsage) {
-      // only edges to the adjacent characteristics column are drawn
+      // no connectors, a component may reference hundreds of tokens
       const key = componentKey(componentUsage.component.id);
-      const edges: Edge[] = componentUsage.tokens
-        .filter((t) => t.tier === "characteristics")
-        .map((t) => [t.name, key, "fan"]);
       return {
-        edges,
+        edges: [] as Edge[],
         lineage: new Set([key, ...componentUsage.tokens.map((t) => t.name)]),
       };
     }
@@ -501,6 +529,7 @@ export const TiersView = () => {
   const isExpanded = (group: ThemeGroup) => {
     const key = groupKey(group);
     if (userCollapsed.has(key)) return false;
+    if (componentUsage) return userExpanded.has(key);
     return (
       userExpanded.has(key) || group.tokens.some((name) => lineage.has(name))
     );
@@ -539,10 +568,18 @@ export const TiersView = () => {
   }, [edges]);
 
   useLayoutEffect(() => {
-    if (columnsRef.current) {
-      scrollPathIntoView(columnsRef.current);
+    const container = columnsRef.current;
+    if (!container) return;
+    if (selectedComponent) {
+      for (const scroller of container.querySelectorAll<HTMLElement>(
+        ".tier:not([data-tier='components']) .tier-scroll",
+      )) {
+        scroller.scrollTop = 0;
+      }
+    } else {
+      scrollPathIntoView(container);
     }
-  }, [selected, selectedComponent, showComponents]);
+  }, [selected, selectedComponent, showAllTokens, showComponents]);
 
   useLayoutEffect(() => {
     redraw();
@@ -579,8 +616,16 @@ export const TiersView = () => {
           />
         ) : null}
         {TIERS.map((tier) => {
-          const groups = model.groups[tier];
-          const count = groups.reduce((n, g) => n + g.tokens.length, 0);
+          const allGroups = model.groups[tier];
+          const count = allGroups.reduce((n, g) => n + g.tokens.length, 0);
+          const used = componentUsage?.tokens.filter(
+            (t) => t.tier === tier,
+          ).length;
+          // a component shows only the groups it references, unless all are requested
+          const groups =
+            componentUsage && !showAllTokens
+              ? allGroups.filter((g) => g.tokens.some((n) => lineage.has(n)))
+              : allGroups;
           const hidden = lineageState.hidden[tier];
           return (
             <div
@@ -592,7 +637,9 @@ export const TiersView = () => {
                 <div className="tier-title">
                   <span className={cx("tier-mark", tier)} />
                   <h2>{TIER_INFO[tier].label}</h2>
-                  <span className="tier-count">{count}</span>
+                  <span className="tier-count">
+                    {used === undefined ? count : `${used} / ${count}`}
+                  </span>
                 </div>
                 <p className="tier-blurb">{TIER_INFO[tier].blurb}</p>
               </div>
@@ -605,13 +652,20 @@ export const TiersView = () => {
                       group={group}
                       key={key}
                       lineage={lineage}
-                      lineageLabel={componentUsage ? "used" : "in path"}
+                      highlight={componentUsage ? "referenced" : "in-lineage"}
                       onShowAll={handleShowAll}
                       onToggle={toggleGroup}
-                      showAll={showAll.has(key)}
+                      showAll={
+                        componentUsage ? showAllTokens : showAll.has(key)
+                      }
                     />
                   );
                 })}
+                {groups.length === 0 ? (
+                  <div className="empty tier-empty">
+                    No {TIER_INFO[tier].label.toLowerCase()} tokens referenced
+                  </div>
+                ) : null}
               </div>
               <PathMarkers hidden={hidden} />
             </div>
