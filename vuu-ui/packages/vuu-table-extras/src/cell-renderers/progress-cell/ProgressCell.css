@@ -12,7 +12,7 @@
 }
 
 .vuuProgressCell-bg {
-    background-color: var(--salt-measured-background);
+    background-color: var(--salt-sentiment-neutral-track);
     display: inline-block;
     height: 2px;
     left: 0;
@@ -23,7 +23,7 @@
 
 
 .vuuProgressCell-bar {
-    background-color: var(--salt-measured-fill);
+    background-color: var(--salt-sentiment-accent-background);
     display: inline-block;
     height: 100%;
     left: 0;

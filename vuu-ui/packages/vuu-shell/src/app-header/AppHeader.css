@@ -5,7 +5,7 @@
   --vuuToolbarItem-height: 26px;
   --vuuOverflowContainer-gap: 8px;
   --vuuOverflowContainer-height: var(--vuuAppHeader-height, 42px);
-  --vuu-icon-color: var(--vuu-color-gray-45);
+  --vuu-icon-color: var(--salt-color-gray-500);
   --vuu-icon-size: 16px;
   --vuuToolbar-borderWidth: 1px;
   --vuuToolbar-borderStyle: solid;

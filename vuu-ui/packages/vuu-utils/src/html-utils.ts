@@ -160,6 +160,18 @@ export const hasOpenOptionList = (el: HTMLElement | EventTarget | null) => {
   }
 };
 
+/**
+ * Test whether viewport coordinates (e.g. clientX, clientY from a pointer
+ * event) fall within the bounding rect of an element.
+ */
+export const containsPoint = (el: HTMLElement | null, x: number, y: number) => {
+  if (el) {
+    const { left, right, top, bottom } = el.getBoundingClientRect();
+    return x >= left && x <= right && y >= top && y <= bottom;
+  }
+  return false;
+};
+
 let size: number;
 
 export function getScrollbarSize() {

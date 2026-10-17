@@ -14,28 +14,28 @@
 }
 
 .vuuPriceTicker.up1 {
-  --vuu-icon-color: var(--vuu-color-green-50);
-  color: var(--vuu-color-green-50);
+  --vuu-icon-color: var(--salt-color-green-500);
+  color: var(--salt-color-green-500);
     animation-duration: 30s;
   }
   
   .vuuPriceTicker.up2 {
-    --vuu-icon-color: var(--vuu-color-green-50);
-    color: var(--vuu-color-green-50);
+    --vuu-icon-color: var(--salt-color-green-500);
+    color: var(--salt-color-green-500);
     animation-duration: 30s;
   }
   
   .vuuPriceTicker.down1 {
     --vuu-icon-transform: rotate(180deg);
-  --vuu-icon-color: var(--vuu-color-red-50);
-    color: var(--vuu-color-red-50);
+  --vuu-icon-color: var(--salt-color-red-500);
+    color: var(--salt-color-red-500);
     animation-duration: 30s;
   }
   
   .vuuPriceTicker.down2 {
     --vuu-icon-transform: rotate(180deg);
-    --vuu-icon-color: var(--vuu-color-red-50);
-    color: var(--vuu-color-red-50);
+    --vuu-icon-color: var(--salt-color-red-500);
+    color: var(--salt-color-red-500);
     animation-duration: 30s;
   }
   

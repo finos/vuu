@@ -1306,7 +1306,7 @@ const AddRowPanel = ({
         />
       </div>
       {insertErrorMessage && (
-        <div style={{ color: "var(--salt-status-error-foreground)" }}>
+        <div style={{ color: "var(--salt-status-error-foreground-informative)" }}>
           {insertErrorMessage}
         </div>
       )}

@@ -1,18 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 import { createFilter } from "vite";
 import MagicString from "magic-string";
-import tsconfigPaths from "vite-tsconfig-paths";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Path Resolution Strategy for Playwright Component Tests
  *
- * We use vite-tsconfig-paths to resolve @vuu-ui/* imports.
- * It resolves through npm workspaces to each package's "main" field, which
- * points to source files (src/index.ts) rather than built files.
+ * Vite resolves @vuu-ui/* imports through npm workspaces to each package's
+ * "main" field, which points to source files (src/index.ts) rather than built files.
  *
  * This approach:
  * - Keeps path configuration isolated from the main tsconfig.json
@@ -63,9 +57,6 @@ export default defineConfig({
         conditions: ["import", "module", "browser", "default"],
       },
       plugins: [
-        tsconfigPaths({
-          projects: [path.join(__dirname, "playwright/tsconfig.json")],
-        }),
         cssInline(), // Use the custom CSS inline plugin
       ],
       build: {
