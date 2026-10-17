@@ -1537,6 +1537,12 @@
     overflow: auto;
     overscroll-behavior: contain;
   }
+  /* thin scrollbars throughout the browser */
+  &,
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #c3c8d2 transparent;
+  }
   .group-header {
     width: 100%;
     border: none;
