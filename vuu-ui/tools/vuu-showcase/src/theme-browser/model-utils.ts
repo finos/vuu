@@ -9,7 +9,8 @@ import type {
 
 export type Axes = Record<string, string>;
 
-export const TIERS: ThemeTier[] = ["foundations", "palette", "characteristics"];
+// Display order: consumer-facing tier first, raw values last
+export const TIERS: ThemeTier[] = ["characteristics", "palette", "foundations"];
 
 export const TIER_INFO: Record<ThemeTier, { label: string; blurb: string }> = {
   foundations: {
