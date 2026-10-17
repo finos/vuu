@@ -1,6 +1,5 @@
 import type {
   ThemeGroup,
-  ThemeTier,
   ThemeToken,
 } from "@vuu-ui/vuu-theme-model/src/theme-model-types";
 import cx from "clsx";
@@ -13,12 +12,21 @@ import {
   TIERS,
   toHex,
 } from "./model-utils";
+import { ComponentDetail } from "./ComponentDetail";
+import {
+  COMPONENT_ID_PREFIX,
+  componentKey,
+  type ComponentUsage,
+} from "./component-utils";
 import { TokenDetail } from "./TokenDetail";
 import { TokenPreview } from "./TokenPreview";
 import { useThemeBrowser } from "./ThemeBrowserContext";
 import { TileButton } from "./TileButton";
 
-/** [referenced token, referencing token, kind] */
+/**
+ * [referenced token, referencing token, kind], components are identified by
+ * componentKey
+ */
 type Edge = [string, string, "chain" | "fan"];
 
 interface LineagePath {
@@ -31,7 +39,7 @@ interface LineageState {
   paths: LineagePath[];
   width: number;
   height: number;
-  hidden: Partial<Record<ThemeTier, { above: number; below: number }>>;
+  hidden: Partial<Record<string, { above: number; below: number }>>;
 }
 
 const groupKey = (group: ThemeGroup) =>
@@ -49,13 +57,13 @@ const TokenRow = ({
   token: ThemeToken;
   lineage: boolean;
 }) => {
-  const { resolve, select, selected } = useThemeBrowser();
+  const { resolve, select, selected, selectedComponent } = useThemeBrowser();
   const value = resolve(token.name);
   return (
     <div
       className={cx("token-row", {
         "in-lineage": lineage,
-        selected: token.name === selected,
+        selected: !selectedComponent && token.name === selected,
       })}
       data-token={token.name}
       onClick={() => select(token.name)}
@@ -125,6 +133,8 @@ interface GroupSectionProps {
   expanded: boolean;
   group: ThemeGroup;
   lineage: Set<string>;
+  /** describes the highlighted tokens, e.g. "in path" */
+  lineageLabel: string;
   onToggle: (key: string) => void;
   onShowAll: (key: string, showAll: boolean) => void;
   showAll: boolean;
@@ -134,6 +144,7 @@ const GroupSection = ({
   expanded,
   group,
   lineage,
+  lineageLabel,
   onShowAll,
   onToggle,
   showAll,
@@ -214,7 +225,9 @@ const GroupSection = ({
           {group.layer}
         </span>
         {onPath.length ? (
-          <span className="chip accent">{onPath.length} in path</span>
+          <span className="chip accent">
+            {onPath.length} {lineageLabel}
+          </span>
         ) : null}
         <span className="group-count">{tokens.length}</span>
       </TileButton>
@@ -252,9 +265,13 @@ const measureLineage = (container: HTMLElement, edges: Edge[]) => {
   };
   // a token in a collapsed group is anchored to its group header
   const find = (name: string) =>
-    container.querySelector<HTMLElement>(
-      `[data-token="${CSS.escape(name)}"]`,
-    ) ??
+    (name.startsWith(COMPONENT_ID_PREFIX)
+      ? container.querySelector<HTMLElement>(
+          `[data-component="${CSS.escape(name.slice(COMPONENT_ID_PREFIX.length))}"]`,
+        )
+      : container.querySelector<HTMLElement>(
+          `[data-token="${CSS.escape(name)}"]`,
+        )) ??
     container.querySelector<HTMLElement>(
       `[data-members~="${CSS.escape(name)}"] > .group-header`,
     );
@@ -267,7 +284,7 @@ const measureLineage = (container: HTMLElement, edges: Edge[]) => {
     return "visible";
   };
   const tierOf = (el: HTMLElement) =>
-    el.closest<HTMLElement>("[data-tier]")?.dataset.tier as ThemeTier;
+    el.closest<HTMLElement>("[data-tier]")?.dataset.tier ?? "";
 
   for (const [fromName, toName, kind] of edges) {
     const from = find(fromName);
@@ -317,7 +334,7 @@ const scrollPathIntoView = (container: HTMLElement) => {
     ".tier-scroll",
   )) {
     const target = scroller.querySelector<HTMLElement>(
-      ".token-row.in-lineage, .ramp-cell.in-lineage",
+      ".component-row.in-lineage, .token-row.in-lineage, .ramp-cell.in-lineage",
     );
     if (!target) continue;
     const s = scroller.getBoundingClientRect();
@@ -328,22 +345,133 @@ const scrollPathIntoView = (container: HTMLElement) => {
   }
 };
 
+const PathMarkers = ({
+  hidden,
+}: {
+  hidden?: { above: number; below: number };
+}) => (
+  <>
+    {hidden?.above ? (
+      <div className="path-marker above">
+        ↑ {hidden.above} more on path above
+      </div>
+    ) : null}
+    {hidden?.below ? (
+      <div className="path-marker below">
+        ↓ {hidden.below} more on path below
+      </div>
+    ) : null}
+  </>
+);
+
+const ComponentRow = ({
+  lineage,
+  usage,
+}: {
+  lineage: boolean;
+  usage: ComponentUsage;
+}) => {
+  const { selectComponent, selectedComponent } = useThemeBrowser();
+  const { component, tokens } = usage;
+  return (
+    <div
+      className={cx("component-row", {
+        "in-lineage": lineage,
+        selected: component.id === selectedComponent,
+      })}
+      data-component={component.id}
+      onClick={() => selectComponent(component.id)}
+      title={`${component.label}: references ${tokens.length} theme tokens`}
+    >
+      <span className="component-name">{component.label}</span>
+      <span className="token-value">{tokens.length}</span>
+    </div>
+  );
+};
+
+const ComponentsColumn = ({
+  hidden,
+  lineage,
+}: {
+  hidden?: { above: number; below: number };
+  lineage: Set<string>;
+}) => {
+  const { components } = useThemeBrowser();
+  if (!components) return null;
+  return (
+    <div className="tier tier-components" data-tier="components">
+      <div className="tier-header">
+        <div className="tier-title">
+          <span className="tier-mark components" />
+          <h2>Components</h2>
+          <span className="tier-count">{components.size}</span>
+        </div>
+        <p className="tier-blurb">Theme tokens referenced by component css</p>
+      </div>
+      <div className="tier-scroll">
+        {components.libraries.map((library) => (
+          <section className="group expanded" key={library.id}>
+            <div className="group-header library-header">
+              <span className="group-name">{library.label}</span>
+              <span className="group-count">{library.components.length}</span>
+            </div>
+            <div className="group-body">
+              {library.components.map((usage) => (
+                <ComponentRow
+                  key={usage.component.id}
+                  lineage={lineage.has(componentKey(usage.component.id))}
+                  usage={usage}
+                />
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+      <PathMarkers hidden={hidden} />
+    </div>
+  );
+};
+
 export const TiersView = () => {
-  const { axes, index, model, selected } = useThemeBrowser();
+  const {
+    axes,
+    components,
+    index,
+    model,
+    selected,
+    selectedComponent,
+    showComponents,
+  } = useThemeBrowser();
   const columnsRef = useRef<HTMLDivElement>(null);
   const [userExpanded, setUserExpanded] = useState<Set<string>>(new Set());
   const [userCollapsed, setUserCollapsed] = useState<Set<string>>(new Set());
   const [showAll, setShowAll] = useState<Set<string>>(new Set());
   const [lineageState, setLineageState] = useState(LINEAGE_NONE);
   const [prevSelected, setPrevSelected] = useState(selected);
+  const [prevComponent, setPrevComponent] = useState(selectedComponent);
+  const componentUsage = selectedComponent
+    ? components?.usage(selectedComponent)
+    : undefined;
 
-  if (selected !== prevSelected) {
+  if (selected !== prevSelected || selectedComponent !== prevComponent) {
     // a new selection always reveals its path
     setPrevSelected(selected);
+    setPrevComponent(selectedComponent);
     setUserCollapsed(new Set());
   }
 
   const { edges, lineage } = useMemo(() => {
+    if (componentUsage) {
+      // only edges to the adjacent characteristics column are drawn
+      const key = componentKey(componentUsage.component.id);
+      const edges: Edge[] = componentUsage.tokens
+        .filter((t) => t.tier === "characteristics")
+        .map((t) => [t.name, key, "fan"]);
+      return {
+        edges,
+        lineage: new Set([key, ...componentUsage.tokens.map((t) => t.name)]),
+      };
+    }
     if (!selected || !index.token(selected)) {
       return { edges: [] as Edge[], lineage: new Set<string>() };
     }
@@ -357,8 +485,18 @@ export const TiersView = () => {
     for (const consumer of consumers) {
       edges.push([selected, consumer, "fan"]);
     }
-    return { edges, lineage: new Set([...chain, ...consumers]) };
-  }, [axes, index, selected]);
+    const users = showComponents
+      ? (components?.componentsUsing(selected) ?? []).map((u) =>
+          componentKey(u.component.id),
+        )
+      : [];
+    if (index.token(selected)?.tier === "characteristics") {
+      for (const user of users) {
+        edges.push([selected, user, "fan"]);
+      }
+    }
+    return { edges, lineage: new Set([...chain, ...consumers, ...users]) };
+  }, [axes, componentUsage, components, index, selected, showComponents]);
 
   const isExpanded = (group: ThemeGroup) => {
     const key = groupKey(group);
@@ -404,7 +542,7 @@ export const TiersView = () => {
     if (columnsRef.current) {
       scrollPathIntoView(columnsRef.current);
     }
-  }, [selected]);
+  }, [selected, selectedComponent, showComponents]);
 
   useLayoutEffect(() => {
     redraw();
@@ -430,7 +568,16 @@ export const TiersView = () => {
 
   return (
     <main className="tiers-view">
-      <div className="columns" ref={columnsRef}>
+      <div
+        className={cx("columns", { "with-components": showComponents })}
+        ref={columnsRef}
+      >
+        {showComponents ? (
+          <ComponentsColumn
+            hidden={lineageState.hidden.components}
+            lineage={lineage}
+          />
+        ) : null}
         {TIERS.map((tier) => {
           const groups = model.groups[tier];
           const count = groups.reduce((n, g) => n + g.tokens.length, 0);
@@ -458,6 +605,7 @@ export const TiersView = () => {
                       group={group}
                       key={key}
                       lineage={lineage}
+                      lineageLabel={componentUsage ? "used" : "in path"}
                       onShowAll={handleShowAll}
                       onToggle={toggleGroup}
                       showAll={showAll.has(key)}
@@ -465,16 +613,7 @@ export const TiersView = () => {
                   );
                 })}
               </div>
-              {hidden?.above ? (
-                <div className="path-marker above">
-                  ↑ {hidden.above} more on path above
-                </div>
-              ) : null}
-              {hidden?.below ? (
-                <div className="path-marker below">
-                  ↓ {hidden.below} more on path below
-                </div>
-              ) : null}
+              <PathMarkers hidden={hidden} />
             </div>
           );
         })}
@@ -493,7 +632,11 @@ export const TiersView = () => {
           ))}
         </svg>
       </div>
-      <TokenDetail name={selected} />
+      {componentUsage ? (
+        <ComponentDetail usage={componentUsage} />
+      ) : (
+        <TokenDetail name={selected} />
+      )}
     </main>
   );
 };
