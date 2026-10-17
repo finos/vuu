@@ -23,6 +23,8 @@
     --tb-p: #0d9488;
     --tb-c: #e2730f;
     --tb-k: #475569;
+    /* the column driving the selection, muted relative to the accent */
+    --tb-driving: #9aa3b5;
     /* tokens referenced by the selected component */
     --tb-ref: #0f9d58;
     --tb-ref-soft: #e3f6ec;
@@ -389,11 +391,11 @@
   }
   /* the column the current selection is driven from */
   .tier.driving {
-    border-color: var(--tb-accent);
-    box-shadow: 0 0 0 1px var(--tb-accent);
+    border-color: var(--tb-driving);
+    box-shadow: 0 0 0 1px var(--tb-driving);
   }
   .tier.driving .tier-header {
-    background: var(--tb-accent-soft);
+    background: var(--tb-subtle);
   }
   .tier-title {
     display: flex;
