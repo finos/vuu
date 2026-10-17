@@ -8,7 +8,16 @@ import { TileButton } from "./TileButton";
 const USED_BY_LIMIT = 10;
 
 export const TokenDetail = ({ name }: { name?: string }) => {
-  const { axes, index, resolve, select, setAxes } = useThemeBrowser();
+  const {
+    axes,
+    components,
+    index,
+    resolve,
+    select,
+    selectComponent,
+    setAxes,
+    showComponents,
+  } = useThemeBrowser();
   const [showAllUsers, setShowAllUsers] = useState<string | undefined>();
   const stageStyle = useStageStyle();
   const token = name ? index.token(name) : undefined;
@@ -29,6 +38,8 @@ export const TokenDetail = ({ name }: { name?: string }) => {
   const visibleUsers =
     showAllUsers === token.name ? usedBy : usedBy.slice(0, USED_BY_LIMIT);
   const location = (value ?? token.values[0])?.location;
+  const componentUsers =
+    showComponents && components ? components.componentsUsing(token.name) : [];
 
   return (
     <aside className="detail">
@@ -190,6 +201,32 @@ export const TokenDetail = ({ name }: { name?: string }) => {
           </div>
         )}
       </section>
+
+      {showComponents ? (
+        <section className="panel-section">
+          <h4>
+            Components <span className="count">{componentUsers.length}</span>
+          </h4>
+          {componentUsers.length ? (
+            <div className="used-by">
+              {componentUsers.map(({ component }) => (
+                <TileButton
+                  className="used-chip"
+                  key={component.id}
+                  onClick={() => selectComponent(component.id)}
+                >
+                  <span className="tier-mark xs components" />
+                  {component.label}
+                </TileButton>
+              ))}
+            </div>
+          ) : (
+            <div className="empty">
+              Not referenced directly by the listed components
+            </div>
+          )}
+        </section>
+      ) : null}
 
       <section className="panel-section source">
         <h4>Source</h4>

@@ -21,3 +21,10 @@ export {
   buildTokenSearchIndex,
   type TokenSearchEntry,
 } from "./token-search-index.ts";
+export * from "./component-model-types.ts";
+export {
+  buildComponentModel,
+  componentReferences,
+  extractComponentDeclarations,
+  referencesIn,
+} from "./build-component-model.ts";
