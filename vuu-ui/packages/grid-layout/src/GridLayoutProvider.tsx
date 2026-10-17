@@ -6,6 +6,7 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useRef,
 } from "react";
 import { GridLayoutChangeHandler, GridLayoutDescriptor } from "./GridModel";
 import { GridLayoutItem, GridLayoutItemProps } from "./GridLayoutItem";
@@ -62,8 +63,17 @@ const GridLayoutProviderContext = createContext<GridLayoutProviderContext>({});
 
 export type GridLayoutDragEndHandler = (evt: DragEvent<HTMLElement>) => void;
 
+export type SerializedGridLayoutChangeHandler = (
+  serializedLayout: SerializedGridLayout,
+) => void;
+
 export interface GridLayoutProviderProps {
   children: ReactNode;
+  /**
+   * Invoked whenever the layout or the child components of a GridLayout
+   * change, with the serialized form of that GridLayout.
+   */
+  onChange?: SerializedGridLayoutChangeHandler;
   options?: GridLayoutOptions;
   serializedLayout?: SerializedGridLayout;
 }
@@ -71,7 +81,9 @@ export interface GridLayoutProviderProps {
 export const GridLayoutProvider = (
   props: GridLayoutProviderProps,
 ): ReactElement => {
-  const { children, serializedLayout, options } = props;
+  const { children, onChange, serializedLayout, options } = props;
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
   const [gridLayoutMap, gridChildItemsMap] = useMemo<
     [Map<string, GridLayoutDescriptor>, Map<string, SerializedComponentMap>]
   >(() => {
@@ -86,13 +98,25 @@ export const GridLayoutProvider = (
     return [layoutMap, componentMap];
   }, [serializedLayout]);
 
+  const notifyChange = useCallback(
+    (id: string) => {
+      const components = gridChildItemsMap.get(id);
+      const layout = gridLayoutMap.get(id);
+      if (components && layout) {
+        onChangeRef.current?.({ components, id, layout });
+      }
+    },
+    [gridChildItemsMap, gridLayoutMap],
+  );
+
   const onChangeLayout = useCallback<GridLayoutChangeHandler>(
     (id, gridLayoutDescriptor) => {
       console.log(`[GridLayoutProvider] ${id} onChangeLayout
       ${JSON.stringify(gridLayoutDescriptor, null, 2)}`);
       gridLayoutMap.set(id, gridLayoutDescriptor);
+      notifyChange(id);
     },
-    [gridLayoutMap],
+    [gridLayoutMap, notifyChange],
   );
 
   /**
@@ -118,8 +142,9 @@ export const GridLayoutProvider = (
           return map;
         }, {});
       gridChildItemsMap.set(layoutId, serializedComponentMap);
+      notifyChange(layoutId);
     },
-    [gridChildItemsMap],
+    [gridChildItemsMap, notifyChange],
   );
   const getChildElements = useCallback(
     (/*id: string, children?: ReactNode*/) => {
