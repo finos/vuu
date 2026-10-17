@@ -416,16 +416,21 @@ const ComponentRow = ({
 };
 
 const ComponentsColumn = ({
+  driving,
   hidden,
   lineage,
 }: {
+  driving: boolean;
   hidden?: { above: number; below: number };
   lineage: Set<string>;
 }) => {
   const { components } = useThemeBrowser();
   if (!components) return null;
   return (
-    <div className="tier tier-components" data-tier="components">
+    <div
+      className={cx("tier tier-components", { driving })}
+      data-tier="components"
+    >
       <div className="tier-header">
         <div className="tier-title">
           <span className="tier-mark components" />
@@ -490,6 +495,13 @@ export const TiersView = () => {
       setUserExpanded(new Set());
     }
   }
+
+  // the column the selection is made from
+  const drivingTier = componentUsage
+    ? "components"
+    : selected
+      ? index.token(selected)?.tier
+      : undefined;
 
   const { edges, lineage } = useMemo(() => {
     if (componentUsage) {
@@ -611,6 +623,7 @@ export const TiersView = () => {
       >
         {showComponents ? (
           <ComponentsColumn
+            driving={drivingTier === "components"}
             hidden={lineageState.hidden.components}
             lineage={lineage}
           />
@@ -629,7 +642,9 @@ export const TiersView = () => {
           const hidden = lineageState.hidden[tier];
           return (
             <div
-              className={cx("tier", `tier-${tier}`)}
+              className={cx("tier", `tier-${tier}`, {
+                driving: tier === drivingTier,
+              })}
               data-tier={tier}
               key={tier}
             >
