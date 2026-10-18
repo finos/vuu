@@ -86,6 +86,66 @@ body {
   }
 }
 
+/* draggable examples, the grip is positioned before the label */
+.ShowcaseShell-nav .vuuTableGroupCell:has(.ShowcaseNavRowAdornment-grip) {
+  .vuuTableGroupCell-adornment {
+    display: contents;
+  }
+  .ShowcaseNavRowAdornment-grip {
+    order: 1;
+  }
+  .vuuTableGroupCell-label {
+    flex: 1 1 auto;
+    order: 2;
+  }
+  .vuuTableGroupCell-adornment > :not(.ShowcaseNavRowAdornment-grip) {
+    order: 3;
+  }
+}
+
+.ShowcaseNavRowAdornment-grip {
+  align-items: center;
+  color: var(--sc-text-4);
+  cursor: grab;
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin: 0 4px 0 -4px;
+
+  &:hover {
+    color: var(--sc-text-2);
+  }
+}
+
+.ShowcaseDragSource .vuuTableGroupCell.vuuTableCell {
+  opacity: 0.55;
+  outline: 1px dashed var(--sc-accent);
+  outline-offset: -1px;
+}
+
+/* the drag image, rendered offscreen */
+.ShowcaseDragChip {
+  align-items: baseline;
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-accent);
+  border-radius: var(--sc-radius);
+  box-shadow: var(--sc-shadow-2);
+  color: var(--sc-text);
+  display: inline-flex;
+  font: 600 13px/1 var(--sc-font);
+  gap: 8px;
+  left: -1000px;
+  padding: 8px 12px;
+  position: fixed;
+  top: -1000px;
+  white-space: nowrap;
+}
+
+.ShowcaseDragChip-path {
+  color: var(--sc-text-3);
+  font-size: 11.5px;
+  font-weight: 400;
+}
+
 .ShowcaseNavRowAdornment-ordinal {
   color: var(--sc-text-4);
   font-size: 12px;
