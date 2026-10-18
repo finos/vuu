@@ -25,6 +25,8 @@ const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
  */
 const classMatcher = (classes?: string[]) => {
   if (!classes?.length) return () => true;
+  // Every class name is escaped, so the pattern is a fixed alternation of literals
+  // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
   const pattern = new RegExp(
     `\\.(?:${classes.map(escapeRegExp).join("|")})(?![\\w])`,
   );
