@@ -2,6 +2,7 @@ import type { DataRow } from "@vuu-ui/vuu-table-types";
 import { ToggleButton } from "@salt-ds/core";
 import type { MouseEvent } from "react";
 import { ChromeIcon } from "../chrome/ChromeIcon";
+import { useDocTabs } from "../doc-tabs/doc-tabs-store";
 import { useExampleDragSource } from "../workspace/workspace-drag";
 import { isWorkspaceExample } from "../workspace/workspace-model";
 import { favouritesStore, useFavourites } from "./nav-store";
@@ -58,6 +59,24 @@ const DragGrip = ({ label, path }: { label: string; path: string }) => {
   );
 };
 
+/**
+ * Identifies the example a row represents, for the context menu etc, and
+ * marks the row if the example is open in a tab other than the active tab.
+ */
+const DocumentMarker = ({ label, path }: { label: string; path: string }) => {
+  const { activeId, tabs } = useDocTabs();
+  const tab = tabs.find((t) => t.path === path);
+  const inTab = tabs.length > 1 && tab !== undefined && tab.id !== activeId;
+  return (
+    <span
+      className={inTab ? `${classBase}-inTab` : `${classBase}-doc`}
+      data-nav-label={label}
+      data-nav-path={path}
+      hidden
+    />
+  );
+};
+
 export const NavRowAdornment = ({ dataRow, path }: NavRowAdornmentProps) => {
   const nodeData = (dataRow.nodeData ?? {}) as NavNodeData;
   const isFolder = dataRow.childCount > 0;
@@ -79,8 +98,11 @@ export const NavRowAdornment = ({ dataRow, path }: NavRowAdornmentProps) => {
   return (
     <>
       {path && isWorkspaceExample(nodeData) ? (
-        // positioned before the label by css
-        <DragGrip label={title} path={path} />
+        <>
+          <DocumentMarker label={title} path={path} />
+          {/* positioned before the label by css */}
+          <DragGrip label={title} path={path} />
+        </>
       ) : null}
       {nodeData.fixtureFor?.length ? (
         <span

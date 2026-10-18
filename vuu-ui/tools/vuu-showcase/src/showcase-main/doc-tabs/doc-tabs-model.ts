@@ -24,7 +24,10 @@ export const EMPTY_DOC_TABS: DocTabsState = { tabs: [] };
 export const docTabKind = (path: string): DocTabKind =>
   workspaceIdFromPath(path) === undefined ? "example" : "workspace";
 
-export const docTabHref = ({ path, search }: Pick<DocTab, "path" | "search">) =>
+export const docTabHref = ({
+  path,
+  search,
+}: Pick<DocTab, "path" | "search">) =>
   search && search !== "?"
     ? `${path}${search.startsWith("?") ? "" : "?"}${search}`
     : path;
