@@ -1,0 +1,89 @@
+.ShowcaseToast {
+  align-items: center;
+  animation: showcase-toast-in 160ms ease-out;
+  background: var(--sc-text);
+  border-radius: var(--sc-radius);
+  bottom: 22px;
+  box-shadow: var(--sc-shadow-3);
+  color: var(--sc-bg);
+  display: flex;
+  font-size: 13px;
+  gap: 12px;
+  left: 50%;
+  max-width: calc(100% - 48px);
+  padding: 8px 8px 8px 14px;
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 40;
+
+  b {
+    font-weight: 650;
+  }
+}
+
+.ShowcaseToast-message {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ShowcaseToast-muted {
+  opacity: 0.65;
+}
+
+.ShowcaseToast-ok {
+  color: #57d7a1;
+}
+
+.ShowcaseToast .saltButton.ShowcaseToast-action {
+  --saltButton-text-color: #c7b6ff;
+  --saltButton-text-color-hover: #c7b6ff;
+  --saltButton-background-hover: rgba(255, 255, 255, 0.12);
+  --saltButton-background-active: rgba(255, 255, 255, 0.18);
+  font-weight: 650;
+}
+
+.ShowcaseShell[data-chrome-mode="dark"]
+  .ShowcaseToast
+  .saltButton.ShowcaseToast-action {
+  --saltButton-text-color: #5b3fc4;
+  --saltButton-text-color-hover: #5b3fc4;
+  --saltButton-background-hover: rgba(0, 0, 0, 0.08);
+}
+
+.ShowcaseToast .saltButton.ShowcaseToast-close {
+  --saltButton-text-color: currentColor;
+  --saltButton-background-hover: rgba(127, 127, 127, 0.2);
+  opacity: 0.65;
+  padding: 0;
+  width: 24px;
+}
+
+/* a hint shown during a drag, at the top of the drop area */
+.ShowcaseToast-hint {
+  animation: none;
+  border-radius: 999px;
+  bottom: auto;
+  font-size: 12.5px;
+  padding: 7px 14px;
+  pointer-events: none;
+  top: 18px;
+}
+
+.ShowcaseKbd {
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-size: 10.5px;
+  opacity: 0.7;
+  padding: 0 5px;
+}
+
+@keyframes showcase-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+}
