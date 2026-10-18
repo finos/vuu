@@ -19,6 +19,8 @@ import {
   writePreviewParams,
 } from "./preview-state";
 import { usePreviewSource } from "./usePreviewSource";
+import { ExampleDropOverlay } from "../workspace/ExampleDropOverlay";
+import { isWorkspaceExample } from "../workspace/workspace-model";
 
 import "./ExamplePage.css";
 
@@ -118,6 +120,13 @@ export const ExamplePage = ({ treeNode, treeSource }: ExamplePageProps) => {
           <PreviewCanvas
             density={preview.density}
             key={reloadKey}
+            overlay={
+              isWorkspaceExample(treeNode.nodeData) ? (
+                <ExampleDropOverlay
+                  target={{ path: routeOf(treeNode), title: treeNode.label }}
+                />
+              ) : null
+            }
             src={src}
             title={treeNode.label}
             viewport={preview.vp}
