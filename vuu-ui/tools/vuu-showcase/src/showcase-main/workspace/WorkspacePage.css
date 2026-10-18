@@ -79,9 +79,20 @@
   .vuuGridLayoutItem:has(
     > .vuuGridLayoutItemContent > .ShowcaseWorkspacePanel-maximised
   ) {
-  inset: var(--vuu-grid-gap);
+  /* an absolute grid child is positioned within its grid-area (set inline),
+     auto makes the containing block the whole grid */
+  grid-area: auto !important;
+  inset: 0;
   position: absolute;
   z-index: 10;
+}
+
+/* other panels stay mounted, but are hidden */
+.ShowcaseWorkspacePage-canvas-maximised
+  .vuuGridLayoutItem:not(
+    :has(> .vuuGridLayoutItemContent > .ShowcaseWorkspacePanel-maximised)
+  ) {
+  visibility: hidden;
 }
 
 .ShowcaseWorkspacePage-canvas-maximised .vuuGridSplitter {
