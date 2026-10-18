@@ -1,0 +1,205 @@
+.ShowcaseWorkspacesNav {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--sc-font);
+  max-height: 40vh;
+  padding: var(--sc-space-3) var(--sc-space-2) var(--sc-space-2);
+}
+
+.ShowcaseWorkspacesNav-header {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--sc-space-2);
+  padding: 0 4px var(--sc-space-2) 6px;
+}
+
+.ShowcaseWorkspacesNav-heading {
+  color: var(--sc-text-3);
+  flex: 1 1 auto;
+  font: 600 11px/1 var(--sc-font);
+  letter-spacing: 0.08em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.ShowcaseWorkspacesNav-total {
+  color: var(--sc-text-3);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ShowcaseWorkspacesNav-add.saltButton {
+  --saltButton-height: 22px;
+  --saltButton-padding: 0;
+  --saltButton-width: 22px;
+  border-radius: var(--sc-radius-sm);
+}
+
+.ShowcaseWorkspacesNav-empty {
+  border: 1px dashed var(--sc-border-strong);
+  border-radius: var(--sc-radius);
+  color: var(--sc-text-3);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 2px 4px;
+  padding: 10px 12px;
+
+  b {
+    color: var(--sc-text-2);
+    font-weight: 550;
+  }
+}
+
+.ShowcaseWorkspacesNav-emptyAction {
+  align-items: center;
+  background: none;
+  border: 0;
+  color: var(--sc-accent-text);
+  cursor: pointer;
+  display: flex;
+  font: 550 12.5px/1 var(--sc-font);
+  gap: 4px;
+  margin-top: 6px;
+  padding: 0;
+}
+
+.ShowcaseWorkspacesNav-list,
+.ShowcaseWorkspacesNav-panels {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ShowcaseWorkspacesNav-list {
+  min-height: 0;
+  overflow: auto;
+}
+
+.ShowcaseWorkspacesNav-row {
+  align-items: center;
+  border-radius: var(--sc-radius-sm);
+  color: var(--sc-text);
+  cursor: pointer;
+  display: flex;
+  font-size: 13px;
+  gap: 6px;
+  height: 30px;
+  padding: 0 4px 0 2px;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--sc-surface-2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--sc-focus);
+    outline-offset: -2px;
+  }
+}
+
+.ShowcaseWorkspacesNav-row-selected,
+.ShowcaseWorkspacesNav-row-selected:hover {
+  background: var(--sc-accent-soft);
+  color: var(--sc-accent-text);
+
+  .ShowcaseWorkspacesNav-icon {
+    color: var(--sc-accent);
+  }
+}
+
+.ShowcaseWorkspacesNav-toggle {
+  align-items: center;
+  background: none;
+  border: 0;
+  color: var(--sc-text-3);
+  cursor: pointer;
+  display: flex;
+  flex: none;
+  justify-content: center;
+  padding: 0;
+  width: 16px;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.4;
+  }
+}
+
+.ShowcaseWorkspacesNav-icon {
+  color: var(--sc-text-3);
+  flex: none;
+}
+
+.ShowcaseWorkspacesNav-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ShowcaseWorkspacesNav-renameInput {
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-accent);
+  border-radius: 4px;
+  color: var(--sc-text);
+  flex: 1 1 auto;
+  font: inherit;
+  min-width: 0;
+  padding: 2px 4px;
+}
+
+.ShowcaseWorkspacesNav-count {
+  color: var(--sc-text-3);
+  flex: none;
+  font-size: 11px;
+}
+
+.ShowcaseWorkspacesNav-menu {
+  display: none;
+  flex: none;
+}
+
+.ShowcaseWorkspacesNav-menuButton.saltButton {
+  --saltButton-height: 22px;
+  --saltButton-padding: 0;
+  --saltButton-width: 22px;
+}
+
+.ShowcaseWorkspacesNav-row:hover,
+.ShowcaseWorkspacesNav-row:focus-within,
+.ShowcaseWorkspacesNav-row:has([aria-expanded="true"].saltButton) {
+  .ShowcaseWorkspacesNav-menu {
+    display: flex;
+  }
+  .ShowcaseWorkspacesNav-count {
+    display: none;
+  }
+}
+
+.ShowcaseWorkspacesNav-panel {
+  align-items: center;
+  border-radius: var(--sc-radius-sm);
+  color: var(--sc-text-2);
+  cursor: pointer;
+  display: flex;
+  font-size: 12.5px;
+  gap: 8px;
+  height: 28px;
+  overflow: hidden;
+  padding-left: 30px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--sc-surface-2);
+  }
+}
+
+.ShowcaseWorkspacesNav-panelDot {
+  border: 1.5px solid var(--sc-text-4);
+  border-radius: 3px;
+  flex: none;
+  height: 9px;
+  width: 9px;
+}
