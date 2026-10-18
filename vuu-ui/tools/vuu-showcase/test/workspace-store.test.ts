@@ -78,7 +78,11 @@ describe("WorkspaceStore", () => {
     const { id } = store.create({ panels: [a] });
     const layout = layoutForDrop(a, b, "east");
     store.syncFromGrid(id, [a, b], layout);
-    expect(store.get(id)).toMatchObject({ layout, panels: [a, b], revision: 0 });
+    expect(store.get(id)).toMatchObject({
+      layout,
+      panels: [a, b],
+      revision: 0,
+    });
   });
 
   it("resets the layout and removes panels", () => {
