@@ -26,13 +26,13 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
     }
   }
 
-  def createSessionTableForEdit(params: RpcParams): RpcFunctionResult = {
+  private def createSessionTableForEdit(params: RpcParams): RpcFunctionResult = {
     if (!rpcPermissionChecker.isRpcAllowed(RpcNames.CreateSessionTableRpc, params.ctx.user)) {
       logger.warn(s"User ${params.ctx.user.name} does not have permission to call ${RpcNames.CreateSessionTableRpc} for edit")
       return new RpcFunctionFailure("No permission to create session table for edit.")
     }
 
-    val session: ClientSessionId = params.ctx.session
+    val viewPort = params.viewPort
     val sourceTable = params.viewPort.table
 
     if (!sourceTable.asTable.getTableDef.options.isEditable) {
@@ -59,20 +59,19 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
       }
 
     val sessionTableSource = tableContainer.getTable(sessionTableName)
-    val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)
-    copyDataToSessionTable(copyOption, params.viewPort, sessionTable, columnsToCopy)
+    val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, params.ctx.session)
+    sourceTable.asTable.getSessionTableExportProvider.exportData(viewPort, sessionTable, columnsToCopy, copyOption)
+
     RpcFunctionSuccess(Some(OpenDialogViewPortAction(ViewPortTable(sessionTable.name, sessionTable.tableDef.getModule().name), "")))
   }
 
-  def createSessionTableForImport(params: RpcParams): RpcFunctionResult = {
+  private def createSessionTableForImport(params: RpcParams): RpcFunctionResult = {
     if (!rpcPermissionChecker.isRpcAllowed(RpcNames.CreateSessionTableRpc, params.ctx.user)) {
       logger.warn(s"User ${params.ctx.user.name} does not have permission to call ${RpcNames.CreateSessionTableRpc} for import")
       return new RpcFunctionFailure("No permission to create session table for import.")
     }
 
-    val session: ClientSessionId = params.ctx.session
     val sourceTable = params.viewPort.table
-
     if (!sourceTable.asTable.getTableDef.options.isEditable) {
       logger.warn(s"Table ${sourceTable.name} is not editable")
       return new RpcFunctionFailure("Table not editable")
@@ -83,24 +82,16 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
       case _ => s"import-${sourceTable.name}"
     }
 
-    val columnsToCopy =
-      try {
-        getColumnsToCopy(params, sourceTable)
-      } catch {
-        case _: IllegalArgumentException =>
-          return new RpcFunctionFailure("Column(s) not found in source table.")
-      }
-
     val sessionTableSource = tableContainer.getTable(sessionTableName)
-    val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)
-    copyDataToSessionTable(Empty, params.viewPort, sessionTable, columnsToCopy)
+    val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, params.ctx.session)
+
     RpcFunctionSuccess(Some(OpenDialogViewPortAction(ViewPortTable(sessionTable.name, sessionTable.tableDef.getModule().name), "")))
   }
 
   private def createSessionTableForExport(params: RpcParams): RpcFunctionResult = {
-    val session: ClientSessionId = params.ctx.session
-    val sourceTable = params.viewPort.table
-
+    val viewPort = params.viewPort
+    
+    val sourceTable = viewPort.table
     val sessionTableName = params.namedParams.get("sessionTableName") match {
       case Some(value: String) => value
       case _ => s"export-${sourceTable.name}"
@@ -120,33 +111,10 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
       }
 
     val sessionTableSource = tableContainer.getTable(sessionTableName)
-    val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)
-    copyDataToSessionTable(copyOption, params.viewPort, sessionTable, columnsToCopy)
+    val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, params.ctx.session)
+    sourceTable.asTable.getSessionTableExportProvider.exportData(viewPort, sessionTable, columnsToCopy, copyOption)
 
     RpcFunctionSuccess(Some(OpenDialogViewPortAction(ViewPortTable(sessionTable.name, sessionTable.tableDef.getModule().name), "")))
-  }
-
-  private def copyDataToSessionTable(copyOption: SessionTableCopyOption, vp: ViewPort, sessionTable: InMemSessionDataTable, columns: List[String]): Unit = {
-    vp.table match {
-      case exporter: SessionTableDataExporter =>
-        exporter.exportData(copyOption, vp, sessionTable, columns)
-      case _ =>
-        copyOption match {
-          case All =>
-            val vpColumns = ViewPortColumnCreator.create(vp.table.asTable, columns)
-            val iterator = vp.getKeys.iterator.take(tableContainer.rpcOptions.maxSessionTableSize)
-            while (iterator.hasNext) {
-              sessionTable.processUpdate(vp.table.pullRow(iterator.next(), vpColumns))
-            }
-          case Selected =>
-            val vpColumns = ViewPortColumnCreator.create(vp.table.asTable, columns)
-            val iterator = vp.getSelection.iterator.take(tableContainer.rpcOptions.maxSessionTableSize)
-            while (iterator.hasNext) {
-              sessionTable.processUpdate(vp.table.pullRow(iterator.next(), vpColumns))
-            }
-          case Empty =>
-        }
-    }
   }
 
   private def getColumnsToCopy(params: RpcParams, sourceTable: RowSource): List[String] = {

@@ -9,6 +9,7 @@ import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.index.{InMemColumnIndices, IndexedField}
 import org.finos.vuu.core.row.{InMemMapRowBuilder, RowBuilder}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
+import org.finos.vuu.net.rpc.sessiontable.{DefaultSessionTableDataExportProvider, SessionTableDataExportProvider}
 import org.finos.vuu.provider.{JoinTableProvider, Provider}
 import org.finos.vuu.viewport.{RowProcessor, RowSource, ViewPortColumns}
 
@@ -37,6 +38,8 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
   def getColumnValueProvider: ColumnValueProvider
 
+  def getSessionTableExportProvider: SessionTableDataExportProvider
+  
   def asTable: DataTable = this
 
   def columnForName(name: String): Column = getTableDef.columnForName(name)
@@ -212,6 +215,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
 
   private final val indices = InMemColumnIndices(tableDef)
   private final val columnValueProvider = InMemColumnValueProvider(this)
+  private final val sessionTableDataExportProvider = DefaultSessionTableDataExportProvider(this)
   private final val inMemRowDataMerger = InMemRowDataMerger(timeProvider, tableDef.defaultColumnNames)
 
   override def newRow(key: String): RowBuilder = {
@@ -435,4 +439,6 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   }
 
   override def getColumnValueProvider: ColumnValueProvider = columnValueProvider
+
+  override def getSessionTableExportProvider: SessionTableDataExportProvider = sessionTableDataExportProvider
 }

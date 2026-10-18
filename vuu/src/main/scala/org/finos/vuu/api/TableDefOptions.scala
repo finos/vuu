@@ -19,6 +19,7 @@ trait BaseTableDefOptions {
   def permissionFunction: (ViewPort, TableContainer) => PermissionFilter
   def defaultSort: SortSpec
   def rangeSettings: RangeSettings
+  def maxSize: Int
 
   def withJoinFields(joinFields: Seq[String]): Self
 
@@ -35,6 +36,8 @@ trait BaseTableDefOptions {
   def withDefaultSort(defaultSort: SortSpec): Self
 
   def withRangeSettings(rangeSettings: RangeSettings): Self
+  
+  def withMaxSize(maxSize: Int): Self
 }
 
 trait TableDefOptions extends BaseTableDefOptions {
@@ -66,12 +69,13 @@ object TableDefOptions {
             isEditable: Boolean = false,
             permissionFunction: (ViewPort, TableContainer) => PermissionFilter = (_, _) => AllowAllPermissionFilter,
             defaultSort: SortSpec = SortSpec(List.empty),
-            rangeSettings: RangeSettings = RangeSettings()
+            rangeSettings: RangeSettings = RangeSettings(),
+            maxSize: Int = Int.MaxValue
            ): TableDefOptions = {
     TableDefOptionsImpl(
       joinFields, autoSubscribe,
       links, indices, visibility, includeDefaultColumns, isEditable,
-      permissionFunction, defaultSort, rangeSettings
+      permissionFunction, defaultSort, rangeSettings, maxSize
     )
   }
 }
@@ -85,7 +89,8 @@ case class TableDefOptionsImpl(joinFields: Seq[String],
                                isEditable: Boolean,
                                permissionFunction: (ViewPort, TableContainer) => PermissionFilter,
                                defaultSort: SortSpec,
-                               rangeSettings: RangeSettings
+                               rangeSettings: RangeSettings,
+                               maxSize: Int
                               ) extends TableDefOptions {
 
   override def withJoinFields(joinFields: Seq[String]): TableDefOptions = copy(joinFields = joinFields)
@@ -107,6 +112,8 @@ case class TableDefOptionsImpl(joinFields: Seq[String],
   override def withDefaultSort(defaultSort: SortSpec): TableDefOptions = copy(defaultSort = defaultSort)
 
   override def withRangeSettings(rangeSettings: RangeSettings): TableDefOptions = copy(rangeSettings = rangeSettings)
+
+  override def withMaxSize(maxSize: Int): TableDefOptions = copy(maxSize = maxSize)
 }
 
 object JoinTableDefOptions {
@@ -120,11 +127,12 @@ object JoinTableDefOptions {
             isEditable: Boolean = false,
             permissionFunction: (ViewPort, TableContainer) => PermissionFilter = (_, _) => AllowAllPermissionFilter,
             defaultSort: SortSpec = SortSpec(List.empty),
-            rangeSettings: RangeSettings = RangeSettings()
+            rangeSettings: RangeSettings = RangeSettings(),
+            maxSize: Int = Int.MaxValue
            ): JoinTableDefOptions = {
     JoinTableDefOptionsImpl(
       joinFields, links, indices, visibility, isEditable,
-      permissionFunction, defaultSort, rangeSettings
+      permissionFunction, defaultSort, rangeSettings, maxSize
     )
   }
 }
@@ -136,7 +144,8 @@ case class JoinTableDefOptionsImpl(joinFields: Seq[String],
                                    isEditable: Boolean,
                                    permissionFunction: (ViewPort, TableContainer) => PermissionFilter,
                                    defaultSort: SortSpec,
-                                   rangeSettings: RangeSettings
+                                   rangeSettings: RangeSettings,
+                                   maxSize: Int
                                   ) extends JoinTableDefOptions {
 
   override def withJoinFields(joinFields: Seq[String]): JoinTableDefOptions = copy(joinFields = joinFields)
@@ -154,4 +163,6 @@ case class JoinTableDefOptionsImpl(joinFields: Seq[String],
   override def withDefaultSort(defaultSort: SortSpec): JoinTableDefOptions = copy(defaultSort = defaultSort)
 
   override def withRangeSettings(rangeSettings: RangeSettings): JoinTableDefOptions = copy(rangeSettings = rangeSettings)
+
+  override def withMaxSize(maxSize: Int): JoinTableDefOptions = copy(maxSize = maxSize)
 }

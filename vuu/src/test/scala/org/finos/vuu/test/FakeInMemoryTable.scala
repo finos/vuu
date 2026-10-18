@@ -4,6 +4,7 @@ import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.index.IndexedField
 import org.finos.vuu.core.row.RowBuilder
 import org.finos.vuu.core.table.{Column, ColumnValueProvider, DataTable, KeyObserver, RowData, RowKeyUpdate, RowWithData, TableData, TablePrimaryKeys}
+import org.finos.vuu.net.rpc.sessiontable.SessionTableDataExportProvider
 import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 
 class FakeInMemoryTable(val instanceName: String, val tableDef: TableDef) extends DataTable {
@@ -36,6 +37,8 @@ class FakeInMemoryTable(val instanceName: String, val tableDef: TableDef) extend
 
   override def getColumnValueProvider: ColumnValueProvider = ???
 
+  override def getSessionTableExportProvider: SessionTableDataExportProvider = ???
+  
   override def processDelete(rowKey: String): Unit = ???
 
   override def notifyListeners(rowKey: String, isDelete: Boolean): Unit = ???

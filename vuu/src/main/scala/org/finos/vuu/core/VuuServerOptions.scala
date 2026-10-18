@@ -48,12 +48,6 @@ object VuuJoinTableProviderOptions {
   }
 }
 
-object VuuRpcOptions {
-  def apply(): VuuRpcOptions = {
-    VuuRpcOptionsImpl.apply(maxSessionTableSize = 10_000)
-  }
-}
-
 trait VuuWebSocketOptions {
   def wsPort: Int
 
@@ -116,12 +110,6 @@ trait VuuJoinTableProviderOptions {
   def withMaxQueueDepth(maxQueueDepth: Int): VuuJoinTableProviderOptions
 }
 
-trait VuuRpcOptions {
-  def maxSessionTableSize: Int
-
-  def withMaxSessionTableSize(maxSessionTableSize: Int): VuuRpcOptions
-}
-
 private case class VuuWebSocketOptionsImpl(wsPort: Int,
                                            uri: String,
                                            bindAddress: String,
@@ -176,10 +164,6 @@ case class VuuJoinProviderOptionsImpl(batchSize: Int, maxQueueSize: Int) extends
   override def withMaxQueueDepth(maxQueueSize: Int): VuuJoinTableProviderOptions = this.copy(maxQueueSize = maxQueueSize)
 }
 
-case class VuuRpcOptionsImpl(maxSessionTableSize: Int) extends VuuRpcOptions {
-  override def withMaxSessionTableSize(maxSessionTableSize: Int): VuuRpcOptions = this.copy(maxSessionTableSize = maxSessionTableSize)
-}
-
 case class VuuSecurityOptionsImpl(loginTokenService: LoginTokenService) extends VuuSecurityOptions {
   override def withLoginTokenService(loginTokenService: LoginTokenService): VuuSecurityOptions =
     this.copy(loginTokenService = loginTokenService)
@@ -190,7 +174,6 @@ case class VuuServerConfig(wsOptions: VuuWebSocketOptions = VuuWebSocketOptions(
                            threading: VuuThreadingOptions = VuuThreadingOptions(),
                            clientConnection: VuuClientConnectionOptions = VuuClientConnectionOptions(),
                            joinProvider: VuuJoinTableProviderOptions = VuuJoinTableProviderOptions(),
-                           rpcOptions: VuuRpcOptions = VuuRpcOptions(),
                            modules: List[ViewServerModule] = List(),
                            plugins: List[Plugin] = List(),
                            httpServerFactory: HttpServerFactory = NoHttpServerFactory) {

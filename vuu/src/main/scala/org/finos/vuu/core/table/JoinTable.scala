@@ -7,6 +7,7 @@ import org.finos.vuu.api.JoinTableDef
 import org.finos.vuu.core.index.IndexedField
 import org.finos.vuu.core.row.{NoRowBuilder, RowBuilder}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
+import org.finos.vuu.net.rpc.sessiontable.{DefaultSessionTableDataExportProvider, SessionTableDataExportProvider}
 import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 
@@ -41,6 +42,9 @@ class JoinTable(val tableDef: JoinTableDef,
                 val sourceTables: Map[String, DataTable],
                 joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider, timeProvider: Clock) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 
+  private final val columnValueProvider = InMemColumnValueProvider(this)
+  private final val sessionTableDataExportProvider = DefaultSessionTableDataExportProvider(this)
+  
   override protected def createDataTableData(): TableData = ???
 
   override def name: String = tableDef.name
@@ -330,8 +334,10 @@ class JoinTable(val tableDef: JoinTableDef,
     }
   }
 
-  override def getColumnValueProvider: ColumnValueProvider = InMemColumnValueProvider(this)
+  override def getColumnValueProvider: ColumnValueProvider = columnValueProvider
 
+  override def getSessionTableExportProvider: SessionTableDataExportProvider = sessionTableDataExportProvider
+  
   override def newRow(key: String): RowBuilder = ???
 
   override def rowBuilder: RowBuilder = NoRowBuilder
