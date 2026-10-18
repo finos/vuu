@@ -102,7 +102,12 @@ export const copyName = (name: string, existing: string[]) => {
   return `${base} ${n}`;
 };
 
-type Area = [rowStart: number, colStart: number, rowEnd: number, colEnd: number];
+type Area = [
+  rowStart: number,
+  colStart: number,
+  rowEnd: number,
+  colEnd: number,
+];
 
 export const parseGridArea = (gridArea: string): Area => {
   const [rowStart, colStart, rowEnd, colEnd] = gridArea

@@ -93,7 +93,9 @@ export const useExampleDragSource = (drag: ExampleDrag) => {
       evt.dataTransfer.setDragImage(chip, 12, 16);
       requestAnimationFrame(() => chip.remove());
       document.body.classList.add("ShowcaseExampleDragging");
-      evt.currentTarget.closest(".vuuTableRow")?.classList.add("ShowcaseDragSource");
+      evt.currentTarget
+        .closest(".vuuTableRow")
+        ?.classList.add("ShowcaseDragSource");
       // deferred, changing the DOM during dragstart can abort the drag
       requestAnimationFrame(() => exampleDragStore.set(drag));
     },

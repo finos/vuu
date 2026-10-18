@@ -7,6 +7,7 @@ import { DataSourceSelect } from "./DataSourceSelect";
 import {
   DENSITIES,
   type Density,
+  type PreviewState,
   THEME_OPTIONS,
   type ThemeMode,
   VIEWPORT_PRESETS,
@@ -47,8 +48,17 @@ export interface PreviewBarProps {
   onReload: () => void;
   onToggleSourceDock?: () => void;
   sourceDockOpen?: boolean;
+  /**
+   * Preview settings and their change handler, by default those of the
+   * showcase (held in the url). A workspace holds its own preview settings.
+   */
+  onPreviewChange?: (changes: Partial<PreviewState>) => void;
+  preview?: Pick<PreviewState, "density" | "mode" | "theme"> &
+    Partial<PreviewState>;
+  /** additional controls, rendered at the start of the end group */
+  endContent?: ReactNode;
   /** url of the content rendered standalone, opened in a new window */
-  standaloneHref: string;
+  standaloneHref?: string;
   /** examples can be sized within the canvas, documents always fill */
   viewportControls?: boolean;
 }
@@ -71,13 +81,18 @@ const Group = ({ children, label }: { children: ReactNode; label: string }) => (
  */
 export const PreviewBar = ({
   dataConsumer = false,
+  endContent,
+  onPreviewChange,
   onReload,
   onToggleSourceDock,
   sourceDockOpen,
+  preview: previewProp,
   standaloneHref,
   viewportControls = false,
 }: PreviewBarProps) => {
-  const { preview, setPreview } = useShowcaseContext();
+  const showcase = useShowcaseContext();
+  const preview = previewProp ?? showcase.preview;
+  const setPreview = onPreviewChange ?? showcase.setPreview;
 
   return (
     <div className={classBase} role="toolbar" aria-label="Preview settings">
@@ -122,7 +137,7 @@ export const PreviewBar = ({
           ))}
         </ToggleButtonGroup>
       </Group>
-      {dataConsumer ? (
+      {dataConsumer && preview.ds ? (
         <>
           <Separator />
           <Group label="Data">
@@ -135,7 +150,8 @@ export const PreviewBar = ({
       ) : null}
 
       <div className={`${classBase}-end`}>
-        {viewportControls ? (
+        {endContent}
+        {viewportControls && preview.vp ? (
           <ToggleButtonGroup
             aria-label="Viewport"
             className={`${classBase}-segmented`}
@@ -176,15 +192,17 @@ export const PreviewBar = ({
         >
           <ChromeIcon name="refresh" />
         </Button>
-        <Button
-          appearance="transparent"
-          aria-label="Open in new window"
-          className={`${classBase}-iconButton`}
-          onClick={() => window.open(standaloneHref, "_blank", "noopener")}
-          title="Open in new window"
-        >
-          <ChromeIcon name="external" />
-        </Button>
+        {standaloneHref ? (
+          <Button
+            appearance="transparent"
+            aria-label="Open in new window"
+            className={`${classBase}-iconButton`}
+            onClick={() => window.open(standaloneHref, "_blank", "noopener")}
+            title="Open in new window"
+          >
+            <ChromeIcon name="external" />
+          </Button>
+        ) : null}
       </div>
     </div>
   );

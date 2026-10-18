@@ -1,0 +1,55 @@
+.ShowcaseMenu.saltMenuPanel {
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border);
+  border-radius: var(--sc-radius);
+  box-shadow: var(--sc-shadow-2);
+  color: var(--sc-text);
+  font-family: var(--sc-font);
+  min-width: 220px;
+  padding: 4px;
+
+  .saltMenuItem {
+    border-radius: var(--sc-radius-sm);
+    color: var(--sc-text);
+    font-size: 13px;
+    gap: 10px;
+    min-height: 32px;
+    padding: 0 10px;
+
+    .ShowcaseChromeIcon {
+      color: var(--sc-text-2);
+      flex: none;
+    }
+
+    &:hover,
+    &:focus-visible,
+    &.saltMenuItem-focusVisible {
+      background: var(--sc-surface-2);
+    }
+  }
+
+  .saltMenuItem.ShowcaseMenu-danger {
+    border-top: 1px solid var(--sc-border);
+    border-radius: 0 0 var(--sc-radius-sm) var(--sc-radius-sm);
+    color: var(--sc-danger);
+    margin-top: 4px;
+
+    .ShowcaseChromeIcon {
+      color: var(--sc-danger);
+    }
+
+    &:hover,
+    &:focus-visible {
+      background: var(--sc-danger-soft);
+    }
+  }
+}
+
+.ShowcaseMenu-heading {
+  color: var(--sc-text-3);
+  font-size: 11.5px;
+  overflow: hidden;
+  padding: 6px 10px 4px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

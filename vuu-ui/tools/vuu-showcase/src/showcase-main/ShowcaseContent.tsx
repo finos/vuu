@@ -11,7 +11,9 @@ import { DocsPage } from "./docs";
 import { ExamplePage } from "./example";
 import { FolderIndex } from "./folder-index";
 import { HomePage } from "./home";
+import { ToastHost } from "./toast";
 import { type NavNodeData, THEME_PATH } from "./tree-nav/nav-tree";
+import { WorkspacePage, workspaceIdFromPath } from "./workspace";
 
 export interface ShowcaseContentProps {
   /** invoked from the home page search field */
@@ -33,17 +35,22 @@ export const ShowcaseContent = ({
   const path = pathname.replace(/\/$/, "");
   const isHomeRoute = path === "";
   const isThemeRoute = path === THEME_PATH;
+  const isWorkspaceRoute = workspaceIdFromPath(path) !== undefined;
   const treeNode = useMemo(
     () =>
-      isHomeRoute
+      isHomeRoute || isWorkspaceRoute
         ? undefined
         : findTreeNode(pathname, treeSource as TreeSourceNode<NavNodeData>[]),
-    [isHomeRoute, pathname, treeSource],
+    [isHomeRoute, isWorkspaceRoute, pathname, treeSource],
   );
   return (
     <div className="ShowcaseContent">
       {isHomeRoute ? (
         <HomePage onSearch={onSearch} treeSource={treeSource} />
+      ) : isWorkspaceRoute ? (
+        <WorkspacePage
+          treeSource={treeSource as TreeSourceNode<NavNodeData>[]}
+        />
       ) : isThemeRoute ? (
         <ThemeBrowser token={searchParams.get("token") ?? undefined} />
       ) : treeNode && isIndexNode(treeNode) ? (
@@ -59,6 +66,7 @@ export const ShowcaseContent = ({
           treeSource={treeSource as TreeSourceNode<NavNodeData>[]}
         />
       ) : null}
+      <ToastHost />
     </div>
   );
 };
