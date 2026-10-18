@@ -149,11 +149,11 @@ toolbar, table and footer. Give it `children` to lay out the pieces yourself.
 With `children`, `EditableTable` takes only the editing props (`editModel`,
 `mode`/`defaultMode`, `allowDelete`, `confirmCancel`, `onSaved`, ...) and
 `className`/`style`. The table props, plus `editable`, `readOnly`,
-`undoColumn` and `showInlineAddRow`, go on `EditableTableTable`.
+`undoColumn` and `showInlineAddRow`, go on `TableEditorTable`.
 
 | Component | Role |
 | --------- | ---- |
-| `EditableTableTable` | The table, sized to fill the space left by the toolbar and footer. In session edit mode it shows the session table, with editable cells and row styling for changes. |
+| `TableEditorTable` | The table. In a flex column it fills the space left by the toolbar and footer. In session edit mode it shows the session table, with editable cells and row styling for changes. |
 | `EditableTableFooter` | A table footer: Save and Cancel (and Delete) while a session is being edited, otherwise its `children`, by default the row count. With direct editing it always shows `children`. |
 | `TableEditorToolbar` | A row for controls above the table. |
 | `TableEditorModeToggle` | View/Edit toggle. |
@@ -163,8 +163,8 @@ With `children`, `EditableTable` takes only the editing props (`editModel`,
 import {
   EditableTable,
   EditableTableFooter,
-  EditableTableTable,
   TableEditorModeToggle,
+  TableEditorTable,
   TableEditorToolbar,
 } from "@vuu-ui/vuu-table-extras";
 
@@ -173,7 +173,7 @@ import {
     <H2>Instruments</H2>
     <TableEditorModeToggle />
   </TableEditorToolbar>
-  <EditableTableTable config={config} readOnly={["ric"]} showInlineAddRow />
+  <TableEditorTable config={config} readOnly={["ric"]} showInlineAddRow />
   <EditableTableFooter saveLabel="Apply" />
 </EditableTable>;
 ```

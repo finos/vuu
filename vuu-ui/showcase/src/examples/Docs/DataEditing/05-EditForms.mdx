@@ -68,7 +68,7 @@ editing props (`dataSource`, `confirmCancel`, `panelVisibility`, `rowDefaults`,
 | Component | Role |
 | --------- | ---- |
 | `TableWithEditFormTablePanel` | A column holding the table and anything above or below it, such as a header or toolbar. Fills the space beside the side panel. |
-| `TableWithEditFormTable` | The table, sized to fill the rest of `TableWithEditFormTablePanel`. Selecting a row selects it for the form; selection is locked while editing. Takes `Table` props. |
+| `TableEditorTable` | The table. It fills the rest of `TableWithEditFormTablePanel`. Selecting a row selects it for the form; selection is locked while editing. Takes `Table` props. |
 | `TableWithEditFormPanel` | The Salt `SidePanel` for the form, on the right. Opens and closes with the selection. Takes `SidePanel` props, such as `className` and `style`; set its width with `--saltSidePanel-width` (any CSS length). Compose `TableWithEditFormPanelHeader` and `SidePanelContent` inside it. |
 | `TableWithEditFormPanelHeader` | The panel's `SidePanelHeader`. Its first child fills the width and a close button follows; pass `canClose={false}` to leave the close button out. Takes `SidePanelHeader` props. |
 | `TableEditorForm` | The form for the selected row. Renders `children`, or an `EditField` per entry in `fields`. Renders nothing when no row is selected. Takes `EditForm` props such as `validate` and `title`. Renders its own Save and Cancel only without `children`; with `children`, place `TableEditorButtons` yourself. |
@@ -97,10 +97,10 @@ import {
   TableEditorModeToggle,
   TableEditorNewButton,
   TableEditorPlaceholder,
+  TableEditorTable,
   TableEditorToolbar,
   TableWithEditFormTablePanel,
   TableWithEditForm,
-  TableWithEditFormTable,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
 
@@ -122,7 +122,7 @@ const InstrumentEditor = ({ dataSource }) => (
         <H2>Instruments</H2>
         <TableEditorNewButton>New instrument</TableEditorNewButton>
       </TableEditorToolbar>
-      <TableWithEditFormTable config={config} />
+      <TableEditorTable config={config} />
     </TableWithEditFormTablePanel>
     <TableWithEditFormPanel>
       <PanelHeader />

@@ -12,6 +12,7 @@ import type { CSSProperties, ReactNode } from "react";
 import {
   type TableEditorEditModel,
   TableEditorModeToggle,
+  TableEditorTable,
   TableEditorToolbar,
   useTableEditor,
 } from "../table-editor";
@@ -21,7 +22,7 @@ import {
 } from "../table-editor/TableEditorProvider";
 
 import editableTableCss from "./EditableTable.css";
-import { EditableTableFooter, EditableTableTable } from "./EditableTableLayout";
+import { EditableTableFooter } from "./EditableTableLayout";
 
 export type EditableTableMode = "view" | "edit";
 
@@ -83,7 +84,7 @@ export type EditableTableDirectProps = EditableTableCommonProps & {
 } & { [K in keyof SessionOnlyProps]?: never };
 
 /**
- * Your own layout: compose `EditableTableTable`, `EditableTableFooter`,
+ * Your own layout: compose `TableEditorTable`, `EditableTableFooter`,
  * `TableEditorToolbar`, `TableEditorModeToggle`, `TableEditorButtons` etc.
  */
 export interface EditableTableComposedProps {
@@ -166,7 +167,7 @@ const DefaultContent = ({
         <TableEditorModeToggle testId={testId} />
       </TableEditorToolbar>
     ) : null}
-    <EditableTableTable data-testid={`table${testId}`} {...tableProps} />
+    <TableEditorTable data-testid={`table${testId}`} {...tableProps} />
     <EditableTableFooter saveLabel={saveLabel} />
   </>
 );
@@ -215,7 +216,7 @@ const Container = ({
  *
  * Renders a flex column container that fills its parent. Without `children`
  * it holds an optional View/Edit toggle, the table and a footer. Otherwise
- * it holds `children`: compose `EditableTableTable`, `EditableTableFooter`,
+ * it holds `children`: compose `TableEditorTable`, `EditableTableFooter`,
  * `TableEditorToolbar`, `TableEditorModeToggle` etc. Read the state with
  * `useTableEditor`.
  */

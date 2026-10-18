@@ -7,11 +7,7 @@ import {
 } from "@salt-ds/core";
 import cx from "clsx";
 import { forwardRef, type HTMLAttributes } from "react";
-import {
-  TableEditorPanelCloseButton,
-  TableEditorTable,
-  type TableEditorTableProps,
-} from "../table-editor";
+import { TableEditorPanelCloseButton } from "../table-editor";
 
 const classBase = "vuuTableWithEditForm";
 
@@ -19,7 +15,7 @@ export type TableWithEditFormTablePanelProps = HTMLAttributes<HTMLDivElement>;
 
 /**
  * The table side of a `TableWithEditForm`: a flex column that fills the
- * space beside the `TableWithEditFormPanel`. Holds a `TableWithEditFormTable` and
+ * space beside the `TableWithEditFormPanel`. Holds a `TableEditorTable` and
  * whatever headers or toolbars belong with it.
  */
 export const TableWithEditFormTablePanel = forwardRef<
@@ -37,18 +33,6 @@ export const TableWithEditFormTablePanel = forwardRef<
     />
   );
 });
-
-export type TableWithEditFormTableProps = TableEditorTableProps;
-
-/**
- * The table of a `TableWithEditForm`, sized to fill the rest of its
- * `TableWithEditFormTablePanel`. Selecting a row selects it for the form.
- */
-export const TableWithEditFormTable = (props: TableWithEditFormTableProps) => (
-  <div className={`${classBase}-table`}>
-    <TableEditorTable {...props} />
-  </div>
-);
 
 export type TableWithEditFormPanelProps = Omit<SidePanelProps, "position">;
 

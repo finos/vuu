@@ -19,6 +19,7 @@ import {
   TableEditorNewButton,
   type TableEditorPanelVisibility,
   TableEditorPlaceholder,
+  TableEditorTable,
   TableEditorToolbar,
   useTableEditor,
 } from "../table-editor";
@@ -29,7 +30,6 @@ import {
   TableWithEditFormPanel,
   TableWithEditFormPanelHeader,
   TableWithEditFormTablePanel,
-  TableWithEditFormTable,
 } from "./TableWithEditFormLayout";
 import tableWithEditFormCss from "./TableWithEditForm.css";
 
@@ -168,7 +168,7 @@ const DefaultContent = ({
           <TableEditorNewButton data-testid={`new-button${testId}`} />
         ) : null}
       </TableEditorToolbar>
-      <TableWithEditFormTable
+      <TableEditorTable
         data-testid={`table${testId}`}
         {...tableProps}
         config={config}
@@ -243,7 +243,7 @@ const Container = ({
  * Renders a flex row container and provides a Salt `SidePanelProvider`.
  * Without `children` it holds a toolbar, the table and a form generated from
  * `fields`. Otherwise it holds `children`: a `TableWithEditFormTablePanel` holding a
- * `TableWithEditFormTable`, and an `TableWithEditFormPanel` (opened and closed for
+ * `TableEditorTable`, and an `TableWithEditFormPanel` (opened and closed for
  * you) holding `TableEditorForm`, `TableEditorCreateForm`,
  * `TableEditorPlaceholder` etc. Read the state with `useTableEditor`.
  */

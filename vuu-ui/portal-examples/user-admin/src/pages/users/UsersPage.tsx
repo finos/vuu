@@ -4,8 +4,8 @@ import {
   TableWithEditFormPanelHeader,
   TableEditorForm,
   TableWithEditFormTablePanel,
+  TableEditorTable,
   TableWithEditForm,
-  TableWithEditFormTable,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
 import {
@@ -72,7 +72,9 @@ export const UsersPage = () => {
           />
           <RowCount dataSource={dataSource} noun="user" />
         </AdminToolbar>
-        <TableWithEditFormTable config={config} rowHeight={USER_ROW_HEIGHT} />
+        <div className="vuuIdentityAdmin-tableCard">
+          <TableEditorTable config={config} rowHeight={USER_ROW_HEIGHT} />
+        </div>
       </TableWithEditFormTablePanel>
       <TableWithEditFormPanel className="vuuIdentityAdmin-panel">
         <TableWithEditFormPanelHeader>

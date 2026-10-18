@@ -1,27 +1,8 @@
 import type { HTMLAttributes } from "react";
 import { DataSourceStats } from "../datasource-stats/DatasourceStats";
-import {
-  TableEditorButtons,
-  TableEditorTable,
-  type TableEditorTableProps,
-} from "../table-editor";
+import { TableEditorButtons } from "../table-editor";
 import { useTableEditorContext } from "../table-editor/TableEditorContext";
 import { TableFooter, TableFooterTray } from "../table-footer/TableFooter";
-
-const classBase = "vuuEditableTable";
-
-export type EditableTableTableProps = TableEditorTableProps;
-
-/**
- * The table of an `EditableTable`, sized to fill the rest of the
- * `EditableTable`, beside any toolbar or footer. Cells are editable in edit
- * mode.
- */
-export const EditableTableTable = (props: EditableTableTableProps) => (
-  <div className={`${classBase}-table`}>
-    <TableEditorTable {...props} />
-  </div>
-);
 
 export interface EditableTableFooterProps
   extends HTMLAttributes<HTMLDivElement> {
