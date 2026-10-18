@@ -320,5 +320,54 @@ test.describe("Client columns and automatic action column exclusion", () => {
   });
 });
 
+test.describe("export with headerMapping", () => {
+  test("WHEN headerMapping is passed to exportCsvTemplate THEN template header contains mapped names", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvExport/CsvExportWithHeaderMapping");
+
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      page
+        .locator("button", { hasText: "Download mapped template" })
+        .click(),
+    ]);
+
+    expect(download.suggestedFilename()).toBe("mapped-template.csv");
+    const filePath = await download.path();
+    if (!filePath) throw new Error("download path not available");
+    const content = fs.readFileSync(filePath, "utf-8");
+    const [header] = content.split("\r\n");
+
+    expect(header).toBe("RIC Identifier,Currency Code,ISIN Code");
+  });
+
+  test("WHEN headerMapping is passed to exportToCsv THEN data CSV contains mapped header and data rows", async ({
+    mount,
+    page,
+  }) => {
+    await mount("TableExtras/CsvExport/CsvExportWithHeaderMapping");
+
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      page
+        .locator("button", { hasText: "Export mapped data" })
+        .click(),
+    ]);
+
+    expect(download.suggestedFilename()).toBe("mapped-data.csv");
+    const filePath = await download.path();
+    if (!filePath) throw new Error("download path not available");
+    const content = fs.readFileSync(filePath, "utf-8");
+    const lines = content.split("\r\n").filter(Boolean);
+    const [header, firstRow] = lines;
+
+    expect(header).toBe("RIC Identifier,Currency Code,ISIN Code");
+    expect(lines.length).toBeGreaterThan(1);
+    expect(firstRow.split(",")).toHaveLength(3);
+  });
+});
+
 
 

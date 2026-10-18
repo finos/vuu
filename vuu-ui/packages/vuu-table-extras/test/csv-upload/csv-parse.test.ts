@@ -73,4 +73,47 @@ describe("parseCsv", () => {
       },
     });
   });
+
+  describe("customHeaders and hasHeaderRow", () => {
+    it("uses customHeaders when provided and skips the header row by default", () => {
+      const csv = ["col_a,col_b", "1,Alice", "2,Bob"].join("\n");
+      const result = parseCsv(csv, { customHeaders: ["id", "name"] });
+
+      expect(result.error).toBeUndefined();
+      expect(result.header).toEqual(["id", "name"]);
+      expect(result.rows).toEqual([
+        ["1", "Alice"],
+        ["2", "Bob"],
+      ]);
+    });
+
+    it("treats all rows as data rows when hasHeaderRow is false", () => {
+      const csv = ["1,Alice", "2,Bob"].join("\n");
+      const result = parseCsv(csv, {
+        customHeaders: ["id", "name"],
+        hasHeaderRow: false,
+      });
+
+      expect(result.error).toBeUndefined();
+      expect(result.header).toEqual(["id", "name"]);
+      expect(result.rows).toEqual([
+        ["1", "Alice"],
+        ["2", "Bob"],
+      ]);
+    });
+
+    it("reports ROW_COLUMN_COUNT_MISMATCH starting from row 1 when hasHeaderRow is false", () => {
+      const csv = ["1,Alice", "2"].join("\n");
+      const result = parseCsv(csv, {
+        customHeaders: ["id", "name"],
+        hasHeaderRow: false,
+      });
+
+      expect(result.error?.errorMap.rowErrors).toEqual({
+        2: {
+          "*": [CsvParseErrorEnum.ROW_COLUMN_COUNT_MISMATCH],
+        },
+      });
+    });
+  });
 });

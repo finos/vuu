@@ -26,13 +26,23 @@ export {
 } from "./csv-errors";
 
 export interface ImportSchemaColumn extends SchemaColumn {
+  /** When true, flags an error if a cell in this column is left empty in the CSV. */
   required?: boolean;
 }
 
 export interface ImportTableSchema extends Omit<TableSchema, "columns"> {
+  /** Columns definition for the import table schema. */
   readonly columns: readonly ImportSchemaColumn[];
 }
 
+/**
+ * Custom validation function for a specific column cell value.
+ *
+ * @param value - The raw string value from the CSV cell.
+ * @param columnName - The schema column name.
+ * @param row - Key-value map of all raw column values in the same row.
+ * @returns `true` if valid, `false` for generic error, or an error message string.
+ */
 export type CsvColumnValidator = (
   value: string,
   columnName: string,
@@ -40,15 +50,22 @@ export type CsvColumnValidator = (
 ) => boolean | string;
 
 export type CsvValidationResult = {
+  /** Validated column names from the CSV header. */
   columns: string[];
+  /** Two-level map of errors (fileErrors and rowErrors). */
   errorMap: CsvValidationErrorMap;
+  /** Flat array of all validation error descriptors. */
   errors: CsvValidationError[];
+  /** Parse error from the raw CSV parser, if any occurred. */
   parseRowError?: CsvParseError;
+  /** Parsed rows coerced to typed Vuu values. */
   rows: Record<string, VuuRowDataItemType>[];
 };
 
 export type CsvValidationOptions = {
+  /** Maximum number of data rows permitted in the CSV. Defaults to `10000`. */
   maxRows?: number;
+  /** Custom validation functions keyed by column name. */
   validators?: Record<string, CsvColumnValidator>;
 };
 

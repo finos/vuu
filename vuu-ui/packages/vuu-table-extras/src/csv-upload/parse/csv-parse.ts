@@ -24,13 +24,30 @@ export {
 } from "./csv-errors";
 
 export type CsvParseResult = {
+  /** Error object if file parsing or structure validation failed. */
   error?: CsvParseError;
+  /** Resolved header column names. */
   header: string[];
+  /** 2D array of string cell values for data rows. */
   rows: string[][];
 };
 
 export type CsvParseOptions = {
+  /**
+   * When true, any field containing commas, quotes, or newlines must be enclosed in double quotes.
+   */
   requireQuotedValues?: boolean;
+  /**
+   * Optional custom column headers to use. If provided and hasHeaderRow is false,
+   * all rows in the CSV are treated as data rows. If hasHeaderRow is true (or omitted),
+   * the first row is discarded and customHeaders are used.
+   */
+  customHeaders?: string[];
+  /**
+   * Whether the CSV file contains a header row. Defaults to true.
+   * When false, customHeaders must be provided.
+   */
+  hasHeaderRow?: boolean;
 };
 
 const normaliseLineEndings = (input: string) =>
@@ -178,7 +195,18 @@ export const parseCsv = (
     );
   }
 
-  const header = records[0].map((value) => value.trim());
+  let header: string[];
+  let rows: string[][];
+
+  if (options?.customHeaders && options.customHeaders.length > 0) {
+    header = options.customHeaders.map((value) => value.trim());
+    const hasHeaderRow = options.hasHeaderRow ?? true;
+    rows = hasHeaderRow ? records.slice(1) : records;
+  } else {
+    header = records[0].map((value) => value.trim());
+    rows = records.slice(1);
+  }
+
   if (header.length === 0) {
     addCsvFileError(
       errorState,
@@ -227,13 +255,16 @@ export const parseCsv = (
     );
   }
 
-  const rows = records.slice(1);
+  const firstDataRowNumber =
+    options?.customHeaders && options.hasHeaderRow === false
+      ? 1
+      : CSV_FIRST_DATA_ROW_NUMBER;
 
   rows.forEach((row, rowIndex) => {
     if (row.length !== header.length) {
       addCsvRowError(
         errorState,
-        rowIndex + CSV_FIRST_DATA_ROW_NUMBER,
+        rowIndex + firstDataRowNumber,
         "*",
         CsvParseErrorEnum.ROW_COLUMN_COUNT_MISMATCH,
         "This row has too many or too few columns compared to the header line. Check for extra or missing commas.",

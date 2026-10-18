@@ -457,3 +457,52 @@ export const CsvExportWithClientColumns = () => (
   </LocalDataSourceProvider>
 );
 
+const CsvExportWithHeaderMappingContent = () => {
+  const dataSource = useMemo(
+    () => simulModule.createDataSource(TABLE_NAME),
+    [],
+  );
+
+  const handleDownloadMappedTemplate = useCallback(() => {
+    exportCsvTemplate(dataSource as DataSource, {
+      filename: "mapped-template.csv",
+      columns: ["ric", "currency", "isin"],
+      headerMapping: {
+        "RIC Identifier": "ric",
+        "Currency Code": "currency",
+        "ISIN Code": "isin",
+      },
+    });
+  }, [dataSource]);
+
+  const handleExportMappedData = useCallback(async () => {
+    await exportToCsv(dataSource as DataSource, {
+      filename: "mapped-data.csv",
+      columns: ["ric", "currency", "isin"],
+      headerMapping: {
+        "RIC Identifier": "ric",
+        "Currency Code": "currency",
+        "ISIN Code": "isin",
+      },
+    });
+  }, [dataSource]);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: 12 }}>
+      <Button onClick={handleDownloadMappedTemplate}>
+        Download mapped template
+      </Button>
+      <Button onClick={handleExportMappedData}>
+        Export mapped data
+      </Button>
+    </div>
+  );
+};
+
+export const CsvExportWithHeaderMapping = () => (
+  <LocalDataSourceProvider>
+    <CsvExportWithHeaderMappingContent />
+  </LocalDataSourceProvider>
+);
+
+
