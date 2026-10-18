@@ -1,0 +1,93 @@
+.ShowcaseExampleDropOverlay {
+  background: rgba(108, 75, 216, 0.04);
+  font-family: var(--sc-font);
+  inset: 0;
+  position: absolute;
+  z-index: 5;
+}
+
+.ShowcaseExampleDropOverlay-ghost {
+  background: rgba(108, 75, 216, 0.12);
+  border: 2px solid var(--sc-accent);
+  border-radius: var(--sc-radius);
+  box-sizing: border-box;
+  pointer-events: none;
+  position: absolute;
+  transition: inset 120ms ease-out;
+}
+
+.ShowcaseExampleDropOverlay-label {
+  background: var(--sc-accent);
+  border-radius: 999px;
+  color: var(--sc-on-accent);
+  font: 600 12.5px/1 var(--sc-font);
+  left: 50%;
+  padding: 7px 14px;
+  position: absolute;
+  top: 18px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.ShowcaseExampleDropOverlay-compass {
+  display: grid;
+  gap: 6px;
+  grid-template-areas:
+    ". north ."
+    "west centre east"
+    ". south .";
+  grid-template-columns: repeat(3, 30px);
+  grid-template-rows: repeat(3, 30px);
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.ShowcaseExampleDropOverlay-compassButton {
+  align-items: center;
+  background: var(--sc-surface);
+  border: 1px solid var(--sc-border-strong);
+  border-radius: var(--sc-radius-sm);
+  box-shadow: var(--sc-shadow-1);
+  color: var(--sc-text-2);
+  display: flex;
+  justify-content: center;
+
+  &[data-position="north"] {
+    grid-area: north;
+    .ShowcaseChromeIcon {
+      transform: rotate(90deg);
+    }
+  }
+  &[data-position="south"] {
+    grid-area: south;
+    .ShowcaseChromeIcon {
+      transform: rotate(90deg);
+    }
+  }
+  &[data-position="west"] {
+    grid-area: west;
+  }
+  &[data-position="east"] {
+    grid-area: east;
+  }
+  &[data-position="centre"] {
+    grid-area: centre;
+  }
+
+  .ShowcaseChromeIcon {
+    pointer-events: none;
+  }
+}
+
+.ShowcaseExampleDropOverlay-compassButton-active {
+  background: var(--sc-accent);
+  border-color: var(--sc-accent);
+  color: var(--sc-on-accent);
+}
+
+.ShowcaseExampleDropOverlay .ShowcaseToast-hint {
+  bottom: 18px;
+  top: auto;
+}

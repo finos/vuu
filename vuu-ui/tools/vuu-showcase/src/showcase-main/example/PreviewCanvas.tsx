@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { IFrame } from "../iframe";
 import type { Density, ViewportPreset } from "./preview-state";
 
@@ -8,6 +8,8 @@ const classBase = "ShowcasePreviewCanvas";
 
 export interface PreviewCanvasProps {
   density: Density;
+  /** rendered over the example, e.g a drop target */
+  overlay?: ReactNode;
   src: string;
   title: string;
   viewport: ViewportPreset;
@@ -35,6 +37,7 @@ const useElementSize = () => {
  */
 export const PreviewCanvas = ({
   density,
+  overlay,
   src,
   title,
   viewport,
@@ -48,6 +51,7 @@ export const PreviewCanvas = ({
         style={viewport === "fill" ? undefined : { width: Number(viewport) }}
       >
         <IFrame src={src} title={title} />
+        {overlay}
       </div>
       {size ? (
         <span className={`${classBase}-size`}>
