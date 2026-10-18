@@ -424,6 +424,20 @@ export abstract class VuuModule<T extends string = string>
     }
   }
 
+  /**
+   * Soft-deletes a session table row, unless the row is an uncommitted insert
+   * (vuuAction === "addRow"), in which case it is removed outright — there is
+   * no prior state to restore.
+   */
+  #softDeleteSessionRow(sessionTable: Table, key: string) {
+    const row = sessionTable.findByKey(key);
+    if (row && row[sessionTable.map.vuuAction] === "addRow") {
+      sessionTable.delete(key);
+    } else {
+      sessionTable.update(key, "vuuAction", "deleteRow");
+    }
+  }
+
   protected deleteRow: ServiceHandler = async (rpcRequest) => {
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
       const { viewPortId } = rpcRequest.context;
@@ -434,7 +448,7 @@ export abstract class VuuModule<T extends string = string>
       const sessionTable = this.getSessionTable(viewPortId, false);
       if (sessionTable) {
         if (mode === "soft") {
-          sessionTable.update(key, "vuuAction", "deleteRow");
+          this.#softDeleteSessionRow(sessionTable, key);
         } else {
           sessionTable.delete(key);
         }
@@ -474,14 +488,17 @@ export abstract class VuuModule<T extends string = string>
         if (selectedRowIds.length > 0) {
           for (const key of selectedRowIds) {
             if ((mode as DeleteRowMode) === "soft") {
-              sessionTable.update(key, "vuuAction", "deleteRow");
+              this.#softDeleteSessionRow(sessionTable, key);
             } else {
               sessionTable.delete(key);
             }
           }
           dataSource.select?.({ type: "DESELECT_ALL" });
         }
-        return { type: "SUCCESS_RESULT", data: undefined };
+        return {
+          type: "SUCCESS_RESULT",
+          data: { deletedKeys: selectedRowIds },
+        };
       }
       return {
         type: "ERROR_RESULT",
