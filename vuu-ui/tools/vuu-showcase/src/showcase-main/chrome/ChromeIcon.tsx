@@ -164,6 +164,24 @@ const paths = {
       <path d="M8 3v12M8 9h7.5" />
     </>
   ),
+  cube: (
+    <>
+      <path d="m9 2.25 6 3.375v6.75L9 15.75l-6-3.375v-6.75z" />
+      <path d="m3 5.625 6 3.375 6-3.375M9 9v6.75" />
+    </>
+  ),
+  tabs: (
+    <>
+      <rect x="2.625" y="5.25" width="12.75" height="9.75" rx="1.5" />
+      <path d="M2.625 5.25v-1.5A.75.75 0 0 1 3.375 3h4.5l1.125 2.25" />
+    </>
+  ),
+  layers: (
+    <>
+      <path d="m9 2.25 6.75 3.75L9 9.75 2.25 6z" />
+      <path d="m2.25 9.75 6.75 3.75 6.75-3.75" />
+    </>
+  ),
 } as const;
 
 export type ChromeIconName = keyof typeof paths;

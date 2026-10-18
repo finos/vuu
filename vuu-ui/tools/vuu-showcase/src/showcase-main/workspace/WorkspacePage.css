@@ -425,3 +425,7 @@ body.ShowcaseExampleDragging iframe {
   color: var(--sc-text-2);
   font: 400 12.5px/1 var(--sc-mono);
 }
+
+.ShowcaseWorkspacePage-meta-inline {
+  margin-left: var(--sc-space-1);
+}

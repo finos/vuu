@@ -1,4 +1,7 @@
 import type { NavigateFunction } from "react-router-dom";
+import { docTabHref } from "../doc-tabs/doc-tabs-model";
+import { docTabsStore } from "../doc-tabs/doc-tabs-store";
+import { openInNewTab } from "../doc-tabs/doc-tabs-actions";
 import { toastStore } from "../toast";
 import {
   createPanel,
@@ -20,7 +23,8 @@ export const copyWorkspaceLink = (id: string) =>
 
 /**
  * Deletes a workspace immediately, a toast offers to undo. If the workspace
- * is open, `navigate` moves away from it, undo returns to it.
+ * is open, `navigate` moves away from it, to the tab that replaces its tab
+ * if there is one, undo re-opens it in a tab.
  */
 export const deleteWorkspace = (
   id: string,
@@ -29,14 +33,18 @@ export const deleteWorkspace = (
 ) => {
   const workspace = workspaceStore.get(id);
   if (workspace) {
+    const route = workspaceRoute(id);
     const undo = workspaceStore.delete(id);
-    navigate?.(navigateTo);
+    const nextTab = docTabsStore.closePath(route);
+    navigate?.(nextTab ? docTabHref(nextTab) : navigateTo);
     toastStore.show({
       action: {
         label: "Undo",
         onClick: () => {
           undo();
-          navigate?.(workspaceRoute(id));
+          if (navigate) {
+            openInNewTab(route, navigate);
+          }
         },
       },
       message: (
@@ -101,5 +109,40 @@ export const createWorkspaceFromDrop = (
       </>
     ),
   });
+  return workspace;
+};
+
+/** Adds an example to a workspace, the toast offers to open the workspace */
+export const addExampleToWorkspace = (
+  id: string,
+  example: ExampleRef,
+  navigate: NavigateFunction,
+) => {
+  const workspace = workspaceStore.get(id);
+  if (workspace) {
+    workspaceStore.addExample(id, example.path, example.title);
+    toastStore.show({
+      action: {
+        label: "Open",
+        onClick: () => openInNewTab(workspaceRoute(id), navigate),
+      },
+      message: (
+        <>
+          Added <b>{example.title}</b> to <b>{workspace.name}</b>
+        </>
+      ),
+    });
+  }
+};
+
+/** Creates a workspace containing a single example, opened in a new tab */
+export const createWorkspaceFromExample = (
+  example: ExampleRef,
+  navigate: NavigateFunction,
+) => {
+  const workspace = workspaceStore.create({
+    panels: [createPanel(example.path, example.title)],
+  });
+  openInNewTab(workspaceRoute(workspace.id), navigate);
   return workspace;
 };
