@@ -194,13 +194,10 @@ export const ShowcaseNav = ({
     [navIndex, navState.key, navigate, onSelectExample, route],
   );
 
+  // Opened from a menu or modified click, the row has not been selected by
+  // the tree, the route change re-mounts the tree to select it.
   const openExample = useCallback(
     (path: string, newTab = false) => {
-      const key = navIndex?.keyForNearestPath(path);
-      if (path !== route) {
-        // the nav will reflect this route, the tree need not be re-mounted
-        setNavState((state) => ({ ...state, key, route: path }));
-      }
       if (newTab) {
         openInNewTab(path, navigate);
       } else {
@@ -208,7 +205,7 @@ export const ShowcaseNav = ({
         navigate(tab ? docTabHref(tab) : path);
       }
     },
-    [navIndex, navigate, route],
+    [navigate],
   );
 
   const [menu, setMenu] = useState<TreeItemMenuState>();
@@ -216,7 +213,9 @@ export const ShowcaseNav = ({
   const handleContextMenu = useCallback((evt: MouseEvent) => {
     const example = exampleFromEvent(evt);
     if (example) {
+      // captured, the table would otherwise show its own context menu
       evt.preventDefault();
+      evt.stopPropagation();
       setMenu({ ...example, position: { x: evt.clientX, y: evt.clientY } });
     }
   }, []);
@@ -275,7 +274,7 @@ export const ShowcaseNav = ({
       className="ShowcaseNav-events"
       onAuxClick={handleAuxClick}
       onClickCapture={handleClickCapture}
-      onContextMenu={handleContextMenu}
+      onContextMenuCapture={handleContextMenu}
       onKeyDownCapture={handleKeyDownCapture}
       onMouseDown={handleMouseDown}
     >
