@@ -176,3 +176,31 @@
   --saltButton-padding: 0;
   --saltButton-width: 28px;
 }
+
+/* documents open in tabs, the tab names the example, so the header is
+   reduced to a single row of breadcrumbs (with pills) and actions */
+.ShowcaseExampleHeader-compact {
+  align-items: center;
+  padding: 12px var(--sc-space-8) 0;
+
+  .ShowcaseExampleHeader-main {
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--sc-space-3);
+  }
+
+  .ShowcaseExampleHeader-title {
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+}
+
+.ShowcaseExampleHeader-compact + .ShowcaseExampleTabs-root .ShowcaseExampleTabs,
+.ShowcaseExampleHeader-compact + * .ShowcaseExampleTabs {
+  margin-top: 10px;
+}

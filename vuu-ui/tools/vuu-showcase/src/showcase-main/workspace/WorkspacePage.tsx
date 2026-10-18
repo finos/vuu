@@ -24,6 +24,7 @@ import {
   ExampleTabs,
 } from "../example/ExampleTabs";
 import { PreviewBar } from "../example/PreviewBar";
+import { useTabbedDocuments } from "../doc-tabs/doc-tabs-store";
 import { useRecent } from "../tree-nav/nav-store";
 import type { NavNodeData } from "../tree-nav/nav-tree";
 import { ExamplePicker } from "./ExamplePicker";
@@ -67,20 +68,29 @@ export interface WorkspacePageProps {
   treeSource: TreeSourceNode<NavNodeData>[];
 }
 
-const WorkspaceName = ({ workspace }: { workspace: Workspace }) => {
-  const [editing, setEditing] = useState(false);
+interface WorkspaceNameProps {
+  editing: boolean;
+  onEditingChange: (editing: boolean) => void;
+  workspace: Workspace;
+}
+
+const WorkspaceName = ({
+  editing,
+  onEditingChange,
+  workspace,
+}: WorkspaceNameProps) => {
   const [value, setValue] = useState(workspace.name);
   const startEditing = () => {
     setValue(workspace.name);
-    setEditing(true);
+    onEditingChange(true);
   };
   const handleKeyDown = (evt: KeyboardEvent<HTMLInputElement>) => {
     if (evt.key === "Enter") {
       workspaceStore.rename(workspace.id, value);
-      setEditing(false);
+      onEditingChange(false);
     } else if (evt.key === "Escape") {
       evt.stopPropagation();
-      setEditing(false);
+      onEditingChange(false);
     }
   };
   return editing ? (
@@ -92,7 +102,7 @@ const WorkspaceName = ({ workspace }: { workspace: Workspace }) => {
           autoFocus: true,
           onBlur: () => {
             workspaceStore.rename(workspace.id, value);
-            setEditing(false);
+            onEditingChange(false);
           },
           onFocus: (evt) => evt.target.select(),
           onKeyDown: handleKeyDown,
@@ -120,9 +130,36 @@ const WorkspaceName = ({ workspace }: { workspace: Workspace }) => {
 
 const WorkspaceHeader = ({ workspace }: { workspace: Workspace }) => {
   const navigate = useNavigate();
+  // once documents open in tabs, the tab names the workspace
+  const compact = useTabbedDocuments();
+  const [editing, setEditing] = useState(false);
   const count = workspace.panels.length;
+  const meta = (
+    <div
+      className={cx(`${classBase}-meta`, { [`${classBase}-meta-inline`]: compact })}
+    >
+      <span>{count === 0 ? "Empty" : exampleCountLabel(count)}</span>
+      <span aria-hidden>·</span>
+      <span className={`${classBase}-saved`}>
+        <ChromeIcon name="check" size={13} />
+        Saved locally
+      </span>
+    </div>
+  );
+  const name = (
+    <WorkspaceName
+      editing={editing}
+      key={workspace.id}
+      onEditingChange={setEditing}
+      workspace={workspace}
+    />
+  );
   return (
-    <header className="ShowcaseExampleHeader">
+    <header
+      className={cx("ShowcaseExampleHeader", {
+        "ShowcaseExampleHeader-compact": compact,
+      })}
+    >
       <div className="ShowcaseExampleHeader-main">
         <nav
           aria-label="Breadcrumb"
@@ -133,17 +170,25 @@ const WorkspaceHeader = ({ workspace }: { workspace: Workspace }) => {
           <ChromeIcon name="chevron-right" size={12} />
           <span className="ShowcaseExampleHeader-crumb">{workspace.name}</span>
         </nav>
-        <WorkspaceName key={workspace.id} workspace={workspace} />
-        <div className={`${classBase}-meta`}>
-          <span>{count === 0 ? "Empty" : exampleCountLabel(count)}</span>
-          <span aria-hidden>·</span>
-          <span className={`${classBase}-saved`}>
-            <ChromeIcon name="check" size={13} />
-            Saved locally
-          </span>
-        </div>
+        {compact ? (
+          <>
+            {meta}
+            {editing ? name : null}
+          </>
+        ) : (
+          <>
+            {name}
+            {meta}
+          </>
+        )}
       </div>
       <div className="ShowcaseExampleHeader-actions">
+        {compact ? (
+          <Button appearance="bordered" onClick={() => setEditing(true)}>
+            <ChromeIcon name="pencil" />
+            Rename
+          </Button>
+        ) : null}
         <Button
           appearance="bordered"
           onClick={() => duplicateWorkspace(workspace.id, navigate)}

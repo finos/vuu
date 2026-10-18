@@ -1,0 +1,137 @@
+.ShowcaseDocTabs {
+  align-items: flex-end;
+  background: var(--sc-surface-2);
+  border-bottom: 1px solid var(--sc-border);
+  display: flex;
+  flex: none;
+  gap: 8px;
+  height: 46px;
+  padding: 0 20px;
+  position: relative;
+}
+
+.ShowcaseDocTabs-list {
+  align-items: flex-end;
+  display: flex;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ShowcaseDocTabs-tab {
+  align-items: center;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  color: var(--sc-text-2);
+  cursor: pointer;
+  display: flex;
+  flex: none;
+  font-size: 13px;
+  font-weight: 550;
+  gap: 8px;
+  height: 36px;
+  max-width: 230px;
+  outline: none;
+  padding: 0 8px 0 12px;
+  position: relative;
+  white-space: nowrap;
+}
+
+.ShowcaseDocTabs-tab + .ShowcaseDocTabs-tab:not(.ShowcaseDocTabs-tab-active):not(:hover)::before {
+  background: var(--sc-border-strong);
+  content: "";
+  height: 16px;
+  left: -2px;
+  position: absolute;
+  top: 10px;
+  width: 1px;
+}
+
+.ShowcaseDocTabs-tab-active + .ShowcaseDocTabs-tab::before,
+.ShowcaseDocTabs-tab:hover + .ShowcaseDocTabs-tab::before {
+  display: none;
+}
+
+.ShowcaseDocTabs-tab:hover:not(.ShowcaseDocTabs-tab-active) {
+  background: var(--sc-surface-3);
+}
+
+.ShowcaseDocTabs-tab:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--sc-focus);
+}
+
+.ShowcaseDocTabs-tab-active {
+  background: var(--sc-surface);
+  border-color: var(--sc-border);
+  color: var(--sc-text);
+  height: 37px;
+  margin-bottom: -1px;
+}
+
+.ShowcaseDocTabs-tab-active::after {
+  background: var(--sc-accent);
+  border-radius: 8px 8px 0 0;
+  content: "";
+  height: 2px;
+  left: -1px;
+  position: absolute;
+  right: -1px;
+  top: -1px;
+}
+
+.ShowcaseDocTabs-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ShowcaseDocTabs-icon {
+  color: var(--sc-text-3);
+  display: flex;
+}
+
+.ShowcaseDocTabs-tab-active .ShowcaseDocTabs-icon {
+  color: var(--sc-accent);
+}
+
+.ShowcaseDocTabs-close {
+  border-radius: 4px;
+  color: var(--sc-text-3);
+  display: flex;
+  padding: 2px;
+  visibility: hidden;
+}
+
+.ShowcaseDocTabs-tab-active .ShowcaseDocTabs-close,
+.ShowcaseDocTabs-tab:hover .ShowcaseDocTabs-close {
+  visibility: visible;
+}
+
+.ShowcaseDocTabs-close:hover {
+  background: var(--sc-border);
+  color: var(--sc-text);
+}
+
+.ShowcaseDocTabs .ShowcaseDocTabs-overflow {
+  align-self: center;
+  border-radius: 6px;
+  flex: none;
+  font-size: 12px;
+  font-weight: 650;
+  gap: 3px;
+  height: 28px;
+  margin-left: auto;
+  padding: 0 6px 0 9px;
+}
+
+/* tabs are measured here, all of them, at their natural width */
+.ShowcaseDocTabs-measure {
+  display: flex;
+  height: 0;
+  left: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  visibility: hidden;
+  width: max-content;
+}
