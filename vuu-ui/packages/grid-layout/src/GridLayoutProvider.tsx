@@ -171,9 +171,15 @@ export const GridLayoutProvider = (
                 `[GridLayoutProvider] no saved gridLayoutItem details for #${id}`,
               );
             }
-            const { gridArea, ...props } = gridItem;
+            const { dropTarget, gridArea, ...props } = gridItem;
             map[id] = (
-              <GridLayoutItem {...props} id={id} key={id} style={{ gridArea }}>
+              <GridLayoutItem
+                {...props}
+                data-drop-target={dropTarget}
+                id={id}
+                key={id}
+                style={{ gridArea }}
+              >
                 {layoutFromJson(layoutJSON, "")}
               </GridLayoutItem>
             );
