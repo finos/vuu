@@ -44,7 +44,7 @@
         <!-- Dependencies -->
         <vuu.antlr.version>4.13.2</vuu.antlr.version>
         <vuu.assertj.version>3.27.7</vuu.assertj.version>
-        <vuu.jackson.version>3.1.7</vuu.jackson.version>
+        <vuu.jackson.version>3.1.8</vuu.jackson.version>
         <vuu.junit.jupiter.version>6.1.3</vuu.junit.jupiter.version>
         <vuu.logback.version>1.6.5</vuu.logback.version>
         <vuu.metrics.version>4.2.40</vuu.metrics.version>
