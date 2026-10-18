@@ -1,4 +1,4 @@
-import { ECElementEvent } from "echarts";
+import type { ECElementEvent } from "echarts/core";
 import { useCallback, useRef, useState } from "react";
 import {
   ChartSelectionModel,
