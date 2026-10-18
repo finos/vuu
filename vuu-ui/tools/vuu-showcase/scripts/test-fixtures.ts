@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
+import { resolveWithin } from "./safe-path";
 import type { NodeData } from "./treeSourceFromFileSystem";
 
 /**
@@ -23,12 +24,15 @@ export const findTestFiles = (root: string) => {
   const files: string[] = [];
   const visit = (dir: string) => {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      // entry.name is a single directory entry name, it cannot contain separators
+      // nosemgrep: javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal
+      const entryPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
         if (!IGNORED_DIRS.has(entry.name)) {
-          visit(path.join(dir, entry.name));
+          visit(entryPath);
         }
       } else if (TEST_FILE_PATTERN.test(entry.name)) {
-        files.push(path.relative(root, path.join(dir, entry.name)));
+        files.push(path.relative(root, entryPath));
       }
     }
   };
@@ -80,7 +84,7 @@ export const applyFixtureUsage = (
   const exampleIds = new Set(examples.keys());
   let fixtureCount = 0;
   for (const file of testFiles) {
-    const text = fs.readFileSync(path.join(root, file), "utf8");
+    const text = fs.readFileSync(resolveWithin(root, file), "utf8");
     for (const id of findExampleIds(text, exampleIds)) {
       const nodeData = examples.get(id)?.nodeData;
       if (nodeData) {
