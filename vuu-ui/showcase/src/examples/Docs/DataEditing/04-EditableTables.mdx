@@ -3,9 +3,15 @@
 ## EditableTable
 
 `EditableTable` (`@vuu-ui/vuu-table-extras`) is a `Table` with View and Edit
-modes. Switching to Edit begins an edit session and shows the session table;
-the footer shows Save and Cancel (and Delete, with `allowDelete`). Saving or
-cancelling returns to View.
+modes. It supports both [editing models](./03-ChoosingAModel.mdx), chosen with
+`editModel`:
+
+- `session` (the default): switching to Edit begins an edit session and shows
+  the session table; the footer shows Save and Cancel (and Delete, with
+  `allowDelete`). Saving or cancelling returns to View.
+- `direct`: each cell edit is sent straight to `dataSource` as it is
+  committed. There is no Save or Cancel, and nothing to discard. By default
+  the table is always editable; see [Direct editing](#direct-editing).
 
 ```tsx
 <EditableTable config={config} dataSource={dataSource} readOnly={["ric"]} />
@@ -18,7 +24,17 @@ cancelling returns to View.
 | `config`, `dataSource` | As for `Table`. `config.columns` are the view-mode columns; edit-mode columns are derived from them. |
 | `editable` | Which columns can be edited, and how. See [Editable columns](#editable-columns). |
 | `readOnly` | Columns that can never be edited. Defaults to the server-maintained `vuuCreatedTimestamp`, `vuuUpdatedTimestamp` and `vuuMsg`. |
-| `editMode`, `defaultEditMode`, `onEditModeChange` | `"view"` or `"edit"`. Use `editMode` with `onEditModeChange` to control the mode from the parent. |
+| `editModel` | `session` (default) or `direct`. |
+| `mode`, `defaultMode`, `onModeChange` | `"view"` or `"edit"`. Use `mode` with `onModeChange` to control the mode from the parent. `defaultMode` defaults to `view`, or `edit` for direct editing. |
+| `showEditModeToggle` | Show the View/Edit toggle. Defaults to `true`, or `false` for direct editing. |
+| `className`, `style` | For the container. |
+| `testId` | Suffix for the `data-testid` of the parts, for tests. |
+
+These props apply to session editing only. With `editModel="direct"` they are
+type errors.
+
+| Prop | Description |
+| ---- | ----------- |
 | `allowDelete` | Adds checkbox selection and a Delete button. |
 | `showInlineAddRow` | Shows an empty row at the top of the table for adding rows. |
 | `undoColumn` | Adds a column with an undo button on each changed row. Pass a partial column descriptor to customise it. |
@@ -27,16 +43,43 @@ cancelling returns to View.
 | `rowDefaults` | Values for columns the user doesn't fill in when adding a row. Pass a stable reference. |
 | `editSessionApi` | `createSessionDataSource` (default) or `beginEditSession`. |
 | `confirmCancel` | `() => Promise<boolean>`, called before discarding unsaved changes. |
-| `onSave`, `onCancel` | Called after a successful save or cancel. |
+| `onSaved`, `onCancelled` | Called after a successful save or cancel. |
 | `onError` | Called when begin, save, cancel or delete fails. See [Error handling](./09-ErrorHandling.mdx). |
-| `showEditModeToggle` | Show the View/Edit toggle. Default `true`. |
 | `saveLabel` | Label for the Save button. |
-| `className`, `style` | For the container. |
-| `testId` | Suffix for the `data-testid` of the parts, for tests. |
 
 Other `Table` props are passed through. To add your own toolbar or footer
 content, compose the layout instead; see
 [Composing your own layout](#composing-your-own-layout).
+
+## Direct editing
+
+With `editModel="direct"`, `EditableTable` sends each committed cell edit
+straight to `dataSource`, through its `editCell` RPC. Once an edit is made it
+is committed; there is no session table, no Save and no Cancel.
+
+```tsx
+<EditableTable
+  config={config}
+  dataSource={dataSource}
+  editModel="direct"
+  editable={{ notes: true, status: true }}
+/>
+```
+
+The table is always editable by default. To have View and Edit modes
+instead, show the toggle (or control `mode` yourself). Switching back to View
+just makes the cells read-only again; there is nothing to save or discard.
+
+```tsx
+<EditableTable
+  config={config}
+  dataSource={dataSource}
+  defaultMode="view"
+  editModel="direct"
+  editable={{ notes: true, status: true }}
+  showEditModeToggle
+/>
+```
 
 ## Editable columns
 
@@ -100,29 +143,28 @@ The dialog only appears when there are changes to lose.
 
 ## Composing your own layout
 
-`EditableTable` is built from the `TableEditor` components in
-`@vuu-ui/vuu-table-extras`. It always renders its container, a flex column,
-and owns the editing state. Without `children` it lays out a default toolbar,
-table and footer. Give it `children` to lay out the pieces yourself. With
-`children`, `EditableTable` takes only the editing props (`allowDelete`,
-`confirmCancel`, `copyOption`, `rowDefaults`, `editMode`/`defaultEditMode`,
-`onSave`, ...) and `className`/`style`. The table props, plus `editable`,
-`readOnly`, `undoColumn` and `showInlineAddRow`, go on `TableEditorTable`.
+`EditableTable` always renders its container, a flex column that fills its
+parent, and owns the editing state. Without `children` it lays out a default
+toolbar, table and footer. Give it `children` to lay out the pieces yourself.
+With `children`, `EditableTable` takes only the editing props (`editModel`,
+`mode`/`defaultMode`, `allowDelete`, `confirmCancel`, `onSaved`, ...) and
+`className`/`style`. The table props, plus `editable`, `readOnly`,
+`undoColumn` and `showInlineAddRow`, go on `EditableTableTable`.
 
 | Component | Role |
 | --------- | ---- |
-| `TableEditorTable` | The table. In edit mode it shows the session table, with editable cells and row styling for changes. |
+| `EditableTableTable` | The table, sized to fill the space left by the toolbar and footer. In session edit mode it shows the session table, with editable cells and row styling for changes. |
+| `EditableTableFooter` | A table footer: Save and Cancel (and Delete) while a session is being edited, otherwise its `children`, by default the row count. With direct editing it always shows `children`. |
 | `TableEditorToolbar` | A row for controls above the table. |
 | `TableEditorModeToggle` | View/Edit toggle. |
-| `TableEditorFooter` | A table footer: Save and Cancel (and Delete) while editing, otherwise its `children`, by default the row count. |
-| `TableEditorButtons` | Save and Cancel, for when you want them somewhere other than the footer. |
+| `TableEditorButtons` | Save and Cancel, for when you want them somewhere other than the footer. Renders nothing with direct editing. |
 
 ```tsx
 import {
   EditableTable,
-  TableEditorFooter,
+  EditableTableFooter,
+  EditableTableTable,
   TableEditorModeToggle,
-  TableEditorTable,
   TableEditorToolbar,
 } from "@vuu-ui/vuu-table-extras";
 
@@ -131,16 +173,14 @@ import {
     <H2>Instruments</H2>
     <TableEditorModeToggle />
   </TableEditorToolbar>
-  <div style={{ flex: 1, minHeight: 0 }}>
-    <TableEditorTable config={config} readOnly={["ric"]} showInlineAddRow />
-  </div>
-  <TableEditorFooter saveLabel="Apply" />
+  <EditableTableTable config={config} readOnly={["ric"]} showInlineAddRow />
+  <EditableTableFooter saveLabel="Apply" />
 </EditableTable>;
 ```
 
 Components inside `EditableTable` can call `useTableEditor()` for `mode`,
-`isEditing`, `startEdit()` and `cancel()`. Form editing uses the same
-components; see [Composing your own layout](./05-EditForms.mdx#composing-your-own-layout).
+`editModel`, `isEditing`, `startEdit()` and `cancel()`. Form editing uses the
+same components; see [Composing your own layout](./05-EditForms.mdx#composing-your-own-layout).
 
 ## Building your own editable table
 

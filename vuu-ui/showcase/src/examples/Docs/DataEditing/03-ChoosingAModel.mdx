@@ -9,7 +9,7 @@ Not every edit needs a session table. There are two models.
 | Insert and delete | yes | no |
 | Other users see changes | on Save | on each edit |
 | Server needs | session-table and edit RPC handlers | `editCell` on the source table |
-| Use | `EditableTable`, `TableWithEditForm`, `EditForm`, `useEditableTable` | `DirectEditSession` |
+| Use | `EditableTable`, `TableWithEditForm`, `EditForm`, `useEditableTable` | `EditableTable editModel="direct"`, `DirectEditSession` |
 
 ## Staged session
 
@@ -22,6 +22,22 @@ user can review and cancel them, and stale updates are detected. See
 Use this when every cell edit stands alone and should take effect straight
 away, like a spreadsheet: a status flag or a note. There is no session table,
 no Save step and nothing to undo.
+
+```tsx
+<EditableTable
+  config={config}
+  dataSource={dataSource}
+  editModel="direct"
+  editable={{ notes: true, status: true }}
+/>
+```
+
+The table is always editable unless you ask for View and Edit modes; see
+[Direct editing](./04-EditableTables.mdx#direct-editing). The source table's
+service must support `editCell`.
+
+To wire it up yourself, for example in a `Table` with its own features, put a
+`DirectEditSession` in a `DataEditingProvider`:
 
 ```tsx
 import {
@@ -44,5 +60,3 @@ const columns = useEditableColumns({
   <Table config={{ ...config, columns }} dataSource={dataSource} />
 </DataEditingProvider>;
 ```
-
-The source table's service must support `editCell`.

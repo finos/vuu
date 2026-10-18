@@ -1,6 +1,7 @@
 import { SidePanelProvider } from "@salt-ds/core";
 import {
   DataEditingProvider,
+  DirectEditSession,
   type EditableTableHookProps,
   type EditFormValues,
   getDataRowValues,
@@ -13,6 +14,7 @@ import {
   TableEditorContext,
   type TableEditorContextValue,
   type TableEditorEditIn,
+  type TableEditorEditModel,
   type TableEditorFormHandle,
   type TableEditorMode,
   type TableEditorPanelVisibility,
@@ -38,6 +40,11 @@ export interface TableEditorProviderProps
   defaultMode?: TableEditorMode;
   /** @default "table" */
   editIn?: TableEditorEditIn;
+  /**
+   * Table editing: `session` stages edits until Save, `direct` sends each
+   * edit straight to `dataSource`. @default "session"
+   */
+  editModel?: TableEditorEditModel;
   /** Controlled mode. Pair with `onModeChange`. */
   mode?: TableEditorMode;
   /** Called once changes have been discarded. */
@@ -100,7 +107,10 @@ const TableCellEditorProvider = ({
   onSaved,
   rowDefaults,
   ...modeProps
-}: Omit<TableEditorProviderProps, "editIn" | "panelVisibility">) => {
+}: Omit<
+  TableEditorProviderProps,
+  "editIn" | "editModel" | "panelVisibility"
+>) => {
   const [mode, setMode] = useModeState(modeProps);
   const isEditing = mode !== "view";
 
@@ -149,6 +159,7 @@ const TableCellEditorProvider = ({
       createKey: 0,
       dataSource,
       editIn: "table",
+      editModel: "session",
       editSession,
       editableTable,
       formHandleRef: NO_FORM,
@@ -185,6 +196,59 @@ const TableCellEditorProvider = ({
   );
 };
 
+const DirectCellEditorProvider = ({
+  children,
+  dataSource,
+  ...modeProps
+}: Pick<
+  TableEditorProviderProps,
+  "children" | "dataSource" | "defaultMode" | "mode" | "onModeChange"
+>) => {
+  const [mode, setMode] = useModeState(modeProps);
+  const isEditing = mode !== "view";
+
+  const editSession = useMemo(
+    () => new DirectEditSession({ dataSource }),
+    [dataSource],
+  );
+
+  // edits are committed as they are made, so there is nothing to discard
+  const cancel = useCallback(async () => setMode("view"), [setMode]);
+  const startEdit = useCallback(() => setMode("edit"), [setMode]);
+
+  const value = useMemo<TableEditorContextValue>(
+    () => ({
+      allowDelete: false,
+      canClosePanel: true,
+      cancel,
+      createKey: 0,
+      dataSource,
+      editIn: "table",
+      editModel: "direct",
+      formHandleRef: NO_FORM,
+      isEditing,
+      mode,
+      onCreateDone: noop,
+      onEditCancelled: noop,
+      onEditSaved: noop,
+      onSelect: noop,
+      panelOpen: false,
+      setPanelOpen: noop,
+      startCreate: noop,
+      startEdit,
+    }),
+    [cancel, dataSource, isEditing, mode, startEdit],
+  );
+
+  return (
+    <TableEditorContext.Provider value={value}>
+      <DataEditingProvider editSession={editSession}>
+        {children}
+      </DataEditingProvider>
+    </TableEditorContext.Provider>
+  );
+};
+
 const FormEditorProvider = ({
   children,
   confirmCancel,
@@ -197,7 +261,10 @@ const FormEditorProvider = ({
   panelVisibility = "on-select",
   rowDefaults,
   ...modeProps
-}: Omit<TableEditorProviderProps, "allowDelete" | "copyOption" | "editIn">) => {
+}: Omit<
+  TableEditorProviderProps,
+  "allowDelete" | "copyOption" | "editIn" | "editModel"
+>) => {
   const [mode, setMode] = useModeState(modeProps);
   const [selectedRow, setSelectedRow] = useState<DataRow | undefined>();
   const [createKey, setCreateKey] = useState(0);
@@ -294,6 +361,7 @@ const FormEditorProvider = ({
       createKey,
       dataSource,
       editIn: "form",
+      editModel: "session",
       formHandleRef,
       formSessionProps: { deleteMode, editSessionApi, onError, rowDefaults },
       isEditing,
@@ -350,8 +418,10 @@ const FormEditorProvider = ({
  * `TableEditorForm`, `TableEditorButtons` etc anywhere inside it; read its
  * state with `useTableEditor`.
  *
- * - `editIn="table"`: cells are edited in `TableEditorTable`. Edits are
- *   staged in a session table and applied on Save.
+ * - `editIn="table"`: cells are edited in `TableEditorTable`. With
+ *   `editModel="session"` edits are staged in a session table and applied
+ *   on Save; with `editModel="direct"` each edit is sent straight to
+ *   `dataSource`.
  * - `editIn="form"`: selecting a row in `TableEditorTable` shows it in
  *   `TableEditorForm`. The provider drives a Salt `SidePanelProvider`, so a
  *   `SidePanel` placed inside opens on selection. Row selection is locked,
@@ -359,10 +429,20 @@ const FormEditorProvider = ({
  */
 export const TableEditorProvider = ({
   editIn = "table",
+  editModel = "session",
   ...props
 }: TableEditorProviderProps) =>
   editIn === "form" ? (
     <FormEditorProvider {...props} />
+  ) : editModel === "direct" ? (
+    <DirectCellEditorProvider
+      dataSource={props.dataSource}
+      defaultMode={props.defaultMode}
+      mode={props.mode}
+      onModeChange={props.onModeChange}
+    >
+      {props.children}
+    </DirectCellEditorProvider>
   ) : (
     <TableCellEditorProvider {...props} />
   );
