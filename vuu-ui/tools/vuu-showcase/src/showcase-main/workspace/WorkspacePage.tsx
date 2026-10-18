@@ -136,7 +136,9 @@ const WorkspaceHeader = ({ workspace }: { workspace: Workspace }) => {
   const count = workspace.panels.length;
   const meta = (
     <div
-      className={cx(`${classBase}-meta`, { [`${classBase}-meta-inline`]: compact })}
+      className={cx(`${classBase}-meta`, {
+        [`${classBase}-meta-inline`]: compact,
+      })}
     >
       <span>{count === 0 ? "Empty" : exampleCountLabel(count)}</span>
       <span aria-hidden>·</span>

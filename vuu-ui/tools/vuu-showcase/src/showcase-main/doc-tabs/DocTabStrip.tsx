@@ -94,7 +94,9 @@ const DocTabItem = ({
   return (
     <div
       aria-selected={active}
-      className={cx(`${classBase}-tab`, { [`${classBase}-tab-active`]: active })}
+      className={cx(`${classBase}-tab`, {
+        [`${classBase}-tab-active`]: active,
+      })}
       data-tab-id={tab.id}
       onAuxClick={(evt) => {
         // middle click closes, as in a browser
@@ -243,8 +245,7 @@ export const DocTabStrip = ({ treeSource }: DocTabStripProps) => {
   useLayoutEffect(() => {
     const container = containerRef.current;
     if (container) {
-      const measure = () =>
-        setAvailable(container.clientWidth - STRIP_PADDING);
+      const measure = () => setAvailable(container.clientWidth - STRIP_PADDING);
       measure();
       const observer = new ResizeObserver(measure);
       observer.observe(container);
@@ -258,9 +259,7 @@ export const DocTabStrip = ({ treeSource }: DocTabStripProps) => {
   useLayoutEffect(() => {
     const measured = measureRef.current?.children;
     if (measured) {
-      setWidths(
-        Array.from(measured, (el) => (el as HTMLElement).offsetWidth),
-      );
+      setWidths(Array.from(measured, (el) => (el as HTMLElement).offsetWidth));
     }
   }, [labelKey]);
 

@@ -63,13 +63,13 @@ export const deleteWorkspace = (
 export const duplicateWorkspace = (id: string, navigate: NavigateFunction) => {
   const copy = workspaceStore.duplicate(id);
   if (copy) {
-    navigate(workspaceRoute(copy.id));
+    openInNewTab(workspaceRoute(copy.id), navigate);
   }
 };
 
 export const createEmptyWorkspace = (navigate: NavigateFunction) => {
   const workspace = workspaceStore.create();
-  navigate(workspaceRoute(workspace.id));
+  openInNewTab(workspaceRoute(workspace.id), navigate);
   return workspace;
 };
 

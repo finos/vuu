@@ -53,9 +53,7 @@ export const ShowcaseContent = ({
   return (
     <div className="ShowcaseContent">
       {isDocument && tabbed ? (
-        <DocTabStrip
-          treeSource={treeSource as TreeSourceNode<NavNodeData>[]}
-        />
+        <DocTabStrip treeSource={treeSource as TreeSourceNode<NavNodeData>[]} />
       ) : null}
       {isHomeRoute ? (
         <HomePage onSearch={onSearch} treeSource={treeSource} />
