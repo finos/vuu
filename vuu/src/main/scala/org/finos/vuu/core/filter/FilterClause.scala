@@ -28,8 +28,8 @@ sealed trait FilterClause {
   private def buildKeys(keys: Iterable[String]): InMemTablePrimaryKeys = {
     keys match {
       case tableKeys: InMemTablePrimaryKeys => tableKeys
-      case ia: ImmutableArray[String] => InMemTablePrimaryKeys(ia)
-      case ias: ImmutableArraySet[String] => InMemTablePrimaryKeys(ias.toImmutableArray)
+      case ia: ImmutableArray[String @unchecked] => InMemTablePrimaryKeys(ia)
+      case ias: ImmutableArraySet[String @unchecked] => InMemTablePrimaryKeys(ias.toImmutableArray)
       case iter => InMemTablePrimaryKeys(ImmutableArray.from(iter))
     }
   }
@@ -79,7 +79,7 @@ case class NotClause(decorated: FilterClause) extends FilterClause {
   override def filterAll(rows: RowSource, rowKeys: Iterable[String],
                          vpColumns: ViewPortColumns, firstInChain: Boolean): Iterable[String] = {
     decorated.filterAll(rows, rowKeys, vpColumns, firstInChain) match {
-      case ias: ImmutableArraySet[String] =>
+      case ias: ImmutableArraySet[String @unchecked] =>
         rowKeys.view.filterNot(f => ias.contains(f))
       case other =>
         val set = scala.collection.mutable.HashSet.from(other)
