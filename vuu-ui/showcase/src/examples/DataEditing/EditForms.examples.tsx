@@ -20,10 +20,10 @@ import {
   TableEditorModeToggle,
   TableEditorNewButton,
   TableEditorPlaceholder,
+  TableEditorTable,
   TableEditorToolbar,
   TableWithEditFormTablePanel,
   TableWithEditForm,
-  TableWithEditFormTable,
   type TableWithEditFormPanelVisibility,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
@@ -206,7 +206,7 @@ const TableWithCustomFormTemplate = () => {
           </Text>
           <TableEditorNewButton>New instrument</TableEditorNewButton>
         </TableEditorToolbar>
-        <TableWithEditFormTable config={instrumentsTableConfig} />
+        <TableEditorTable config={instrumentsTableConfig} />
       </TableWithEditFormTablePanel>
       <TableWithEditFormPanel
         style={{ "--saltSidePanel-width": "360px" } as CSSProperties}

@@ -146,7 +146,7 @@
 }
 
 /* Vuu tables presented as a card. */
-:is(.vuuIdentityAdmin-tableCard, .vuuIdentityAdmin-page > .vuuTableWithEditForm-table) {
+.vuuIdentityAdmin-tableCard {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -158,7 +158,7 @@
   background: var(--salt-container-primary-background);
 }
 
-:is(.vuuIdentityAdmin-tableCard, .vuuIdentityAdmin-page > .vuuTableWithEditForm-table) .vuuTable {
+.vuuIdentityAdmin-tableCard .vuuTable {
   --vuuTable-background: var(--salt-container-primary-background);
   --vuuTableHeaderCell-background: var(--salt-container-primary-background);
 }
@@ -171,12 +171,12 @@
 
 /* Cells with a custom renderer are centred vertically; plain text cells keep
    Vuu's inline-block layout (and its text-overflow ellipsis). */
-:is(.vuuIdentityAdmin-tableCard, .vuuIdentityAdmin-page > .vuuTableWithEditForm-table) .vuuTableCell:has(> *) {
+.vuuIdentityAdmin-tableCard .vuuTableCell:has(> *) {
   align-items: center;
   display: inline-flex;
 }
 
-:is(.vuuIdentityAdmin-tableCard, .vuuIdentityAdmin-page > .vuuTableWithEditForm-table) .vuuTableCell > * {
+.vuuIdentityAdmin-tableCard .vuuTableCell > * {
   line-height: var(--salt-text-lineHeight);
   min-width: 0;
 }

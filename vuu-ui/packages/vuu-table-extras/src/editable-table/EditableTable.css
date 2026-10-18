@@ -5,10 +5,6 @@
   height: 100%;
   min-height: 0;
   min-width: 0;
-}
-
-.vuuEditableTable-table {
-  flex: 1 1 auto;
-  min-height: 0;
-  min-width: 0;
+  /* The Table (a MeasuredContainer) fills the space beside toolbar and footer. */
+  --vuuMeasuredContainer-flex: 1 1 1px;
 }

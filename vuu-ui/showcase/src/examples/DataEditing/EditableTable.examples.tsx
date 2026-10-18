@@ -4,8 +4,8 @@ import {
   EditableTable,
   EditableTableFooter,
   type EditableTableMode,
-  EditableTableTable,
   TableEditorModeToggle,
+  TableEditorTable,
   TableEditorToolbar,
 } from "@vuu-ui/vuu-table-extras";
 import { ModalProvider } from "@vuu-ui/core";
@@ -179,7 +179,7 @@ const UnsavedChangesTemplate = () => {
           <TableEditorModeToggle />
           <span>Mode: {mode}</span>
         </TableEditorToolbar>
-        <EditableTableTable
+        <TableEditorTable
           config={instrumentsTableConfig}
           readOnly={["ric", "vuuMsg"]}
         />

@@ -62,8 +62,6 @@ export {
 export {
   EditableTableFooter,
   type EditableTableFooterProps,
-  EditableTableTable,
-  type EditableTableTableProps,
 } from "./editable-table/EditableTableLayout";
 export {
   TableWithEditForm,
@@ -82,7 +80,5 @@ export {
   type TableWithEditFormPanelProps,
   TableWithEditFormTablePanel,
   type TableWithEditFormTablePanelProps,
-  TableWithEditFormTable,
-  type TableWithEditFormTableProps,
 } from "./table-with-edit-form/TableWithEditFormLayout";
 export * from "./table-editor";

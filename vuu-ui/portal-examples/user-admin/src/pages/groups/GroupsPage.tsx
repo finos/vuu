@@ -3,10 +3,10 @@ import { AddIcon, UserGroupIcon } from "@salt-ds/icons";
 import {
   TableEditorForm,
   TableEditorNewButton,
+  TableEditorTable,
   TableWithEditForm,
   TableWithEditFormPanel,
   TableWithEditFormPanelHeader,
-  TableWithEditFormTable,
   TableWithEditFormTablePanel,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
@@ -105,7 +105,9 @@ export const GroupsPage = () => {
           <ApplicationFilter onChange={setApplication} value={application} />
           <RowCount dataSource={dataSource} noun="group" />
         </AdminToolbar>
-        <TableWithEditFormTable config={config} rowHeight={GROUP_ROW_HEIGHT} />
+        <div className="vuuIdentityAdmin-tableCard">
+          <TableEditorTable config={config} rowHeight={GROUP_ROW_HEIGHT} />
+        </div>
       </TableWithEditFormTablePanel>
       <TableWithEditFormPanel className="vuuIdentityAdmin-panel">
         <TableWithEditFormPanelHeader>

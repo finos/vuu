@@ -7,15 +7,11 @@
 }
 
 .vuuTableWithEditForm-tablePanel {
+  /* The Table (a MeasuredContainer) fills the space left by any header. */
+  --vuuMeasuredContainer-flex: 1 1 1px;
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  min-height: 0;
-  min-width: 0;
-}
-
-.vuuTableWithEditForm-table {
-  flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
 }

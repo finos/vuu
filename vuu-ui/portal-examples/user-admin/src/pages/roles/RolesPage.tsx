@@ -3,10 +3,10 @@ import { KeyIcon } from "@salt-ds/icons";
 import {
   TableEditorForm,
   TableEditorNewButton,
+  TableEditorTable,
   TableWithEditForm,
   TableWithEditFormPanel,
   TableWithEditFormPanelHeader,
-  TableWithEditFormTable,
   TableWithEditFormTablePanel,
   useTableEditor,
 } from "@vuu-ui/vuu-table-extras";
@@ -116,7 +116,9 @@ export const RolesPage = () => {
           <ApplicationFilter onChange={setApplication} value={application} />
           <RowCount dataSource={dataSource} noun="role" />
         </AdminToolbar>
-        <TableWithEditFormTable config={config} rowHeight={ROLE_ROW_HEIGHT} />
+        <div className="vuuIdentityAdmin-tableCard">
+          <TableEditorTable config={config} rowHeight={ROLE_ROW_HEIGHT} />
+        </div>
       </TableWithEditFormTablePanel>
       <TableWithEditFormPanel className="vuuIdentityAdmin-panel">
         <TableWithEditFormPanelHeader>

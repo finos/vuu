@@ -1,4 +1,7 @@
-import { DirectEditSession, useTableEditSession } from "@vuu-ui/vuu-data-editing";
+import {
+  DirectEditSession,
+  useTableEditSession,
+} from "@vuu-ui/vuu-data-editing";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
 import type { TableProps } from "@vuu-ui/vuu-table";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
@@ -6,8 +9,10 @@ import { act, type ReactElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EditableTable } from "../../src/editable-table/EditableTable";
-import { EditableTableTable } from "../../src/editable-table/EditableTableLayout";
-import { TableEditorModeToggle } from "../../src/table-editor";
+import {
+  TableEditorModeToggle,
+  TableEditorTable,
+} from "../../src/table-editor";
 
 const rendered = vi.hoisted(() => ({
   editSession: undefined as unknown,
@@ -114,7 +119,7 @@ describe("EditableTable, direct editing", () => {
     expect(editableColumns()).toEqual([]);
   });
 
-  it("composes EditableTableTable, with a controlled mode", async () => {
+  it("composes TableEditorTable, with a controlled mode", async () => {
     const onModeChange = vi.fn();
     await render(
       <EditableTable
@@ -124,11 +129,10 @@ describe("EditableTable, direct editing", () => {
         onModeChange={onModeChange}
       >
         <TableEditorModeToggle />
-        <EditableTableTable config={config} readOnly={["ric"]} />
+        <TableEditorTable config={config} readOnly={["ric"]} />
       </EditableTable>,
     );
     expect(editableColumns()).toEqual([]);
-    expect(container.querySelector(".vuuEditableTable-table")).not.toBeNull();
 
     await click("toggle-edit");
     expect(onModeChange).toHaveBeenCalledWith("edit");
@@ -137,7 +141,7 @@ describe("EditableTable, direct editing", () => {
 
     await render(
       <EditableTable dataSource={dataSource} editModel="direct" mode="edit">
-        <EditableTableTable config={config} readOnly={["ric"]} />
+        <TableEditorTable config={config} readOnly={["ric"]} />
       </EditableTable>,
     );
     expect(editableColumns()).toEqual(["description", "lotSize"]);
