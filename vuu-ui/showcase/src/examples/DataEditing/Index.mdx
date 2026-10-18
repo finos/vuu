@@ -12,6 +12,7 @@ down a layer only when you need to.
 | 2   | Insert / update / delete + undo | Users maintain a reference table: add, change and remove rows            | `EditableTable / InsertUpdateDelete`          |
 | 3   | Custom cell editors             | Some columns need a dropdown or other editor; only some are editable     | `EditableTable / CustomEditors`               |
 | 4   | Direct edit                     | Each cell edit should be applied immediately, with no Save/Cancel        | `EditableTable / DirectEdit`                  |
+| 4b  | Direct edit with View/Edit      | As 4, but users switch to Edit mode first, to avoid accidental edits      | `EditableTable / DirectEditWithModes`         |
 | 5   | Master–detail form              | Rows have many fields, or fields that do not fit in a cell               | `EditForms / TableWithForm`                   |
 | 6   | Create row form                 | Rows are added through a form, with client and server validation         | `EditForms / CreateRowWithValidation`         |
 | 7   | Custom edit field               | A field needs a non standard editor (list, picker, permissions …)        | `EditForms / CustomEditField`                 |

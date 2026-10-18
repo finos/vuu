@@ -1,20 +1,13 @@
-import {
-  DataEditingProvider,
-  DirectEditSession,
-  useConfirmDiscard,
-  useEditableColumns,
-} from "@vuu-ui/vuu-data-editing";
+import { useConfirmDiscard } from "@vuu-ui/vuu-data-editing";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { Table } from "@vuu-ui/vuu-table";
 import {
   EditableTable,
+  EditableTableFooter,
   type EditableTableMode,
-  TableEditorFooter,
+  EditableTableTable,
   TableEditorModeToggle,
-  TableEditorTable,
   TableEditorToolbar,
 } from "@vuu-ui/vuu-table-extras";
-import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import { ModalProvider } from "@vuu-ui/core";
 import { useData } from "@vuu-ui/vuu-utils";
 import { useMemo, useState } from "react";
@@ -22,7 +15,6 @@ import {
   CURRENCIES,
   INSTRUMENTS,
   instrumentColumnNames,
-  instrumentColumns,
   instrumentsTableConfig,
 } from "./instruments";
 
@@ -121,24 +113,14 @@ export const CustomEditors = () => (
 
 const DirectEditTemplate = () => {
   const dataSource = useInstrumentsDataSource();
-  const editSession = useMemo(
-    () => new DirectEditSession({ dataSource }),
-    [dataSource],
-  );
-  const columns = useEditableColumns({
-    columns: instrumentColumns,
-    editable: { description: true, lotSize: true },
-    isEditing: true,
-  });
-  const config = useMemo<TableConfig>(
-    () => ({ ...instrumentsTableConfig, columns }),
-    [columns],
-  );
   return (
     <div style={{ height: 400, width: 900 }}>
-      <DataEditingProvider editSession={editSession}>
-        <Table config={config} dataSource={dataSource} />
-      </DataEditingProvider>
+      <EditableTable
+        config={instrumentsTableConfig}
+        dataSource={dataSource}
+        editModel="direct"
+        editable={{ description: true, lotSize: true }}
+      />
     </div>
   );
 };
@@ -154,29 +136,54 @@ export const DirectEdit = () => (
   </LocalDataSourceProvider>
 );
 
+const DirectEditWithModesTemplate = () => {
+  const dataSource = useInstrumentsDataSource();
+  return (
+    <div style={{ height: 400, width: 900 }}>
+      <EditableTable
+        config={instrumentsTableConfig}
+        dataSource={dataSource}
+        defaultMode="view"
+        editModel="direct"
+        editable={{ description: true, lotSize: true }}
+        showEditModeToggle
+      />
+    </div>
+  );
+};
+
+/**
+ * Pattern 4b. Direct edit with View/Edit modes. Cells are only editable in
+ * Edit mode, but each edit is still sent straight to the source table, so
+ * switching back to View has nothing to save or discard.
+ */
+export const DirectEditWithModes = () => (
+  <LocalDataSourceProvider>
+    <DirectEditWithModesTemplate />
+  </LocalDataSourceProvider>
+);
+
 const UnsavedChangesTemplate = () => {
   const dataSource = useInstrumentsDataSource();
-  const [editMode, setEditMode] = useState<EditableTableMode>("view");
+  const [mode, setMode] = useState<EditableTableMode>("view");
   const confirmDiscard = useConfirmDiscard();
   return (
     <div style={{ height: 400, width: 900 }}>
       <EditableTable
         confirmCancel={confirmDiscard}
         dataSource={dataSource}
-        editMode={editMode}
-        onEditModeChange={setEditMode}
+        mode={mode}
+        onModeChange={setMode}
       >
         <TableEditorToolbar>
           <TableEditorModeToggle />
-          <span>Mode: {editMode}</span>
+          <span>Mode: {mode}</span>
         </TableEditorToolbar>
-        <div style={{ flex: 1, minHeight: 0 }}>
-          <TableEditorTable
-            config={instrumentsTableConfig}
-            readOnly={["ric", "vuuMsg"]}
-          />
-        </div>
-        <TableEditorFooter />
+        <EditableTableTable
+          config={instrumentsTableConfig}
+          readOnly={["ric", "vuuMsg"]}
+        />
+        <EditableTableFooter />
       </EditableTable>
     </div>
   );

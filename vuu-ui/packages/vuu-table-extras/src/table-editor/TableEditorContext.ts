@@ -16,6 +16,15 @@ import { createContext, useContext } from "react";
  */
 export type TableEditorEditIn = "table" | "form";
 
+/**
+ * Table editing only.
+ * - `session`: edits are staged in a session table and applied on Save, or
+ *   discarded on Cancel.
+ * - `direct`: each committed cell edit is sent straight to the source
+ *   table. There is no Save or Cancel.
+ */
+export type TableEditorEditModel = "session" | "direct";
+
 /** `create` is only used when editing in a form. */
 export type TableEditorMode = "view" | "edit" | "create";
 
@@ -36,12 +45,15 @@ export interface TableEditorState {
   canClosePanel: boolean;
   /**
    * Leaves edit (or create) mode, discarding changes. Asks `confirmCancel`
-   * first when there are unsaved changes.
+   * first when there are unsaved changes. With direct editing, edits are
+   * already committed, so this just makes the table read-only.
    */
   cancel: () => Promise<void>;
   /** The dataSource passed to the provider. */
   dataSource: DataSource;
   editIn: TableEditorEditIn;
+  /** Always `session` when editing in a form. */
+  editModel: TableEditorEditModel;
   /** True in edit and create modes. */
   isEditing: boolean;
   mode: TableEditorMode;

@@ -56,7 +56,11 @@ export interface TableWithEditFormBaseProps
   /** Asked before a form with unsaved changes is discarded. */
   confirmCancel?: () => boolean | Promise<boolean>;
   dataSource: DataSource;
+  /** Called once an edit, or a new row, has been discarded. */
+  onCancelled?: () => void;
   onModeChange?: (mode: TableWithEditFormMode) => void;
+  /** Called once an edit, or a new row, has been saved. */
+  onSaved?: () => void;
   /** @default "on-select" */
   panelVisibility?: TableWithEditFormPanelVisibility;
   style?: CSSProperties;
@@ -251,8 +255,10 @@ export const TableWithEditForm = (props: TableWithEditFormProps) => {
     dataSource,
     deleteMode,
     editSessionApi,
+    onCancelled,
     onError,
     onModeChange,
+    onSaved,
     panelVisibility = "on-select",
     rowDefaults,
     style,
@@ -267,8 +273,10 @@ export const TableWithEditForm = (props: TableWithEditFormProps) => {
       deleteMode={deleteMode}
       editIn="form"
       editSessionApi={editSessionApi}
+      onCancelled={onCancelled}
       onError={onError}
       onModeChange={onModeChange}
+      onSaved={onSaved}
       panelVisibility={panelVisibility}
       rowDefaults={rowDefaults}
     >

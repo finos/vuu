@@ -2,9 +2,6 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import type { HTMLAttributes } from "react";
-import { DataSourceStats } from "../datasource-stats/DatasourceStats";
-import { TableFooter, TableFooterTray } from "../table-footer/TableFooter";
-import { TableEditorButtons } from "./TableEditorControls";
 import { useTableEditorContext } from "./TableEditorContext";
 
 import tableEditorLayoutCss from "./TableEditorLayout.css";
@@ -54,33 +51,4 @@ export const TableEditorPlaceholder = ({
       className={cx("vuuTableEditorPlaceholder", className)}
     />
   ) : null;
-};
-
-export interface TableEditorFooterProps extends HTMLAttributes<HTMLDivElement> {
-  /** @default "Save" */
-  saveLabel?: string;
-}
-
-/**
- * Table editing: a table footer showing Save/Cancel (and Delete) while
- * editing, and `children` otherwise. `children` default to row count stats.
- */
-export const TableEditorFooter = ({
-  children,
-  saveLabel,
-  ...htmlAttributes
-}: TableEditorFooterProps) => {
-  const { dataSource, editableTable } =
-    useTableEditorContext("TableEditorFooter");
-  return (
-    <TableFooter {...htmlAttributes}>
-      {editableTable?.isEditSessionReady ? (
-        <TableFooterTray position="center">
-          <TableEditorButtons saveLabel={saveLabel} />
-        </TableFooterTray>
-      ) : (
-        (children ?? <DataSourceStats dataSource={dataSource} />)
-      )}
-    </TableFooter>
-  );
 };

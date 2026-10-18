@@ -51,12 +51,20 @@ export {
 } from "./bulk-edit-dialog/useBulkEditDialog";
 export {
   EditableTable,
-  type EditableTableBaseProps,
   type EditableTableComposedProps,
   type EditableTableDefaultProps,
+  type EditableTableDirectProps,
+  type EditableTableEditModel,
   type EditableTableMode,
   type EditableTableProps,
+  type EditableTableSessionProps,
 } from "./editable-table/EditableTable";
+export {
+  EditableTableFooter,
+  type EditableTableFooterProps,
+  EditableTableTable,
+  type EditableTableTableProps,
+} from "./editable-table/EditableTableLayout";
 export {
   TableWithEditForm,
   type TableWithEditFormBaseProps,

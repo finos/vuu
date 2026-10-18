@@ -1,5 +1,6 @@
 export {
   type TableEditorEditIn,
+  type TableEditorEditModel,
   type TableEditorMode,
   type TableEditorPanelVisibility,
   type TableEditorState,
@@ -24,8 +25,6 @@ export {
   type TableEditorFormProps,
 } from "./TableEditorForm";
 export {
-  TableEditorFooter,
-  type TableEditorFooterProps,
   TableEditorPlaceholder,
   type TableEditorPlaceholderProps,
   TableEditorToolbar,

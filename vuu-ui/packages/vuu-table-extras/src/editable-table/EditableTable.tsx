@@ -10,9 +10,8 @@ import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
 import type { CSSProperties, ReactNode } from "react";
 import {
-  TableEditorFooter,
+  type TableEditorEditModel,
   TableEditorModeToggle,
-  TableEditorTable,
   TableEditorToolbar,
   useTableEditor,
 } from "../table-editor";
@@ -22,60 +21,89 @@ import {
 } from "../table-editor/TableEditorProvider";
 
 import editableTableCss from "./EditableTable.css";
+import { EditableTableFooter, EditableTableTable } from "./EditableTableLayout";
 
 export type EditableTableMode = "view" | "edit";
 
-/** Props for the editing state and container, with or without `children`. */
-export interface EditableTableBaseProps
-  extends Pick<
-    EditableTableHookProps,
-    "copyOption" | "deleteMode" | "editSessionApi" | "onError" | "rowDefaults"
-  > {
-  /**
-   * Show a checkbox column and a Delete button in edit mode, so selected
-   * rows can be deleted. Rows already marked for deletion cannot be selected.
-   */
-  allowDelete?: boolean;
+/**
+ * - `session`: edits are staged in a session table and applied on Save, or
+ *   discarded on Cancel.
+ * - `direct`: each committed cell edit is sent straight to `dataSource`.
+ *   There is no Save or Cancel.
+ */
+export type EditableTableEditModel = TableEditorEditModel;
+
+interface EditableTableCommonProps {
   className?: string;
-  /** Asked before an edit session with unsaved changes is discarded. */
-  confirmCancel?: () => boolean | Promise<boolean>;
-  /** The source (view) dataSource. Edits are staged in a session table. */
+  /** The source (view) dataSource. */
   dataSource: DataSource;
-  /** Uncontrolled initial mode. */
-  defaultEditMode?: EditableTableMode;
-  /** Controlled mode. Pair with `onEditModeChange`. */
-  editMode?: EditableTableMode;
-  onCancel?: () => void;
-  onEditModeChange?: (editMode: EditableTableMode) => void;
-  onSave?: () => void;
+  /**
+   * Uncontrolled initial mode. Defaults to `view` for session editing and to
+   * `edit` (always editable) for direct editing.
+   */
+  defaultMode?: EditableTableMode;
+  /** Controlled mode. Pair with `onModeChange`. */
+  mode?: EditableTableMode;
+  onModeChange?: (mode: EditableTableMode) => void;
   style?: CSSProperties;
   /** Suffix appended to built-in test ids (`edit-table`, `toggle-edit` …). */
   testId?: string;
 }
 
+/** Session editing: edits are staged in a session table until Save. */
+export interface EditableTableSessionProps
+  extends EditableTableCommonProps,
+    Pick<
+      EditableTableHookProps,
+      "copyOption" | "deleteMode" | "editSessionApi" | "onError" | "rowDefaults"
+    > {
+  /**
+   * Show a checkbox column and a Delete button in edit mode, so selected
+   * rows can be deleted. Rows already marked for deletion cannot be selected.
+   */
+  allowDelete?: boolean;
+  /** Asked before an edit session with unsaved changes is discarded. */
+  confirmCancel?: () => boolean | Promise<boolean>;
+  /** @default "session" */
+  editModel?: "session";
+  /** Called once changes have been discarded. */
+  onCancelled?: () => void;
+  /** Called once changes have been saved. */
+  onSaved?: () => void;
+}
+
+type SessionOnlyProps = Omit<
+  EditableTableSessionProps,
+  keyof EditableTableCommonProps | "editModel"
+>;
+
+/** Direct editing: each cell edit is sent straight to `dataSource`. */
+export type EditableTableDirectProps = EditableTableCommonProps & {
+  editModel: "direct";
+} & { [K in keyof SessionOnlyProps]?: never };
+
 /**
- * Your own layout: compose `TableEditorTable`, `TableEditorToolbar`,
- * `TableEditorModeToggle`, `TableEditorFooter`, `TableEditorButtons` etc.
+ * Your own layout: compose `EditableTableTable`, `EditableTableFooter`,
+ * `TableEditorToolbar`, `TableEditorModeToggle`, `TableEditorButtons` etc.
  */
-export interface EditableTableComposedProps extends EditableTableBaseProps {
+export interface EditableTableComposedProps {
   children: ReactNode;
 }
 
-/** The default layout: a toolbar, the table and a footer with the buttons. */
+/** The default layout: a toolbar, the table and a footer. */
 export interface EditableTableDefaultProps
-  extends EditableTableBaseProps,
-    Omit<
-      TableProps,
-      | "children"
-      | "className"
-      | "config"
-      | "customHeader"
-      | "dataSource"
-      | "isRowSelectable"
-      | "onError"
-      | "selectionModel"
-      | "style"
-    > {
+  extends Omit<
+    TableProps,
+    | "children"
+    | "className"
+    | "config"
+    | "customHeader"
+    | "dataSource"
+    | "isRowSelectable"
+    | "onError"
+    | "selectionModel"
+    | "style"
+  > {
   children?: undefined;
   /** Table config used in view mode. Edit mode columns are derived from it. */
   config: TableConfig;
@@ -86,28 +114,49 @@ export interface EditableTableDefaultProps
   editable?: EditableColumnsConfig;
   /** Columns that can never be edited. */
   readOnly?: readonly string[];
+  /** Session editing only. @default "Save" */
   saveLabel?: string;
+  /**
+   * Show a View/Edit toggle above the table. Defaults to true for session
+   * editing and false (always editable) for direct editing.
+   */
   showEditModeToggle?: boolean;
-  /** Show an inline row, above the column headers, for adding new rows. */
+  /**
+   * Session editing only: show an inline row, above the column headers, for
+   * adding new rows.
+   */
   showInlineAddRow?: boolean;
-  /** Adds a column with an undo button for edited rows. */
+  /** Session editing only: adds a column with an undo button for edited rows. */
   undoColumn?: boolean;
 }
 
+type DirectDefaultProps = EditableTableDefaultProps & {
+  saveLabel?: never;
+  showInlineAddRow?: never;
+  undoColumn?: never;
+};
+
 export type EditableTableProps =
-  | EditableTableComposedProps
-  | EditableTableDefaultProps;
+  | (EditableTableSessionProps &
+      (EditableTableComposedProps | EditableTableDefaultProps))
+  | (EditableTableDirectProps &
+      (EditableTableComposedProps | DirectDefaultProps));
+
+/** Every prop, for destructuring. */
+type AllProps = Omit<EditableTableSessionProps, "editModel"> & {
+  editModel?: EditableTableEditModel;
+} & Partial<EditableTableComposedProps> &
+  Omit<Partial<EditableTableDefaultProps>, "children">;
 
 const classBase = "vuuEditableTable";
 
-type DefaultContentProps = Omit<
-  EditableTableDefaultProps,
-  keyof EditableTableBaseProps | "children"
-> & { testId: string };
+type DefaultContentProps = Omit<EditableTableDefaultProps, "children"> & {
+  testId: string;
+};
 
 const DefaultContent = ({
   saveLabel,
-  showEditModeToggle = true,
+  showEditModeToggle,
   testId,
   ...tableProps
 }: DefaultContentProps) => (
@@ -117,10 +166,8 @@ const DefaultContent = ({
         <TableEditorModeToggle testId={testId} />
       </TableEditorToolbar>
     ) : null}
-    <div className={`${classBase}-table`}>
-      <TableEditorTable data-testid={`table${testId}`} {...tableProps} />
-    </div>
-    <TableEditorFooter saveLabel={saveLabel} />
+    <EditableTableTable data-testid={`table${testId}`} {...tableProps} />
+    <EditableTableFooter saveLabel={saveLabel} />
   </>
 );
 
@@ -129,7 +176,7 @@ const Container = ({
   className,
   style,
   testId,
-}: Pick<EditableTableBaseProps, "className" | "style"> & {
+}: Pick<EditableTableCommonProps, "className" | "style"> & {
   children: ReactNode;
   testId: string;
 }) => {
@@ -154,39 +201,48 @@ const Container = ({
 };
 
 /**
- * A Table with View/Edit modes. Entering edit mode starts an edit session
- * against a session copy of `dataSource`; edits are only applied when the
- * user saves. All the wiring (session lifecycle, editable columns, row
- * styling for edited/added/deleted rows, Save/Cancel/Delete buttons, the
- * inline add row) is handled internally.
+ * A Table with View/Edit modes. All the wiring (edit session, editable
+ * columns, row styling, Save/Cancel/Delete buttons, the inline add row) is
+ * handled internally.
  *
- * Renders a flex column container. Without `children` it holds a toolbar
- * with a View/Edit toggle, the table and a footer with Save/Cancel.
- * Otherwise it holds `children`: compose `TableEditorTable`,
- * `TableEditorToolbar`, `TableEditorModeToggle`, `TableEditorFooter` etc.
- * Read the state with `useTableEditor`.
+ * - `editModel="session"` (the default): entering edit mode starts an edit
+ *   session against a session copy of `dataSource`; edits are only applied
+ *   when the user saves.
+ * - `editModel="direct"`: each committed cell edit is sent straight to
+ *   `dataSource`. There is no Save or Cancel; View just makes the table
+ *   read-only. Always editable unless you show the mode toggle or set
+ *   `defaultMode`/`mode`.
+ *
+ * Renders a flex column container that fills its parent. Without `children`
+ * it holds an optional View/Edit toggle, the table and a footer. Otherwise
+ * it holds `children`: compose `EditableTableTable`, `EditableTableFooter`,
+ * `TableEditorToolbar`, `TableEditorModeToggle` etc. Read the state with
+ * `useTableEditor`.
  */
 export const EditableTable = (props: EditableTableProps) => {
   const {
     allowDelete = false,
     children,
+    className,
     confirmCancel,
     copyOption,
     dataSource,
-    defaultEditMode = "view",
+    defaultMode,
     deleteMode,
-    editMode,
+    editModel = "session",
     editSessionApi,
-    onCancel,
-    onEditModeChange,
+    mode,
+    onCancelled,
     onError,
-    onSave,
+    onModeChange,
+    onSaved,
     rowDefaults,
-    className,
     style,
     testId = "",
     ...contentProps
-  } = props;
+  } = props as AllProps;
+
+  const isDirect = editModel === "direct";
 
   return (
     <TableEditorProvider
@@ -194,22 +250,22 @@ export const EditableTable = (props: EditableTableProps) => {
       confirmCancel={confirmCancel}
       copyOption={copyOption}
       dataSource={dataSource}
-      defaultMode={defaultEditMode}
+      defaultMode={defaultMode ?? (isDirect ? "edit" : "view")}
       deleteMode={deleteMode}
       editIn="table"
+      editModel={editModel}
       editSessionApi={editSessionApi}
-      mode={editMode}
-      onCancelled={onCancel}
+      mode={mode}
+      onCancelled={onCancelled}
       onError={onError}
-      onModeChange={
-        onEditModeChange as TableEditorProviderProps["onModeChange"]
-      }
-      onSaved={onSave}
+      onModeChange={onModeChange as TableEditorProviderProps["onModeChange"]}
+      onSaved={onSaved}
       rowDefaults={rowDefaults}
     >
       <Container className={className} style={style} testId={testId}>
         {children ?? (
           <DefaultContent
+            showEditModeToggle={!isDirect}
             {...(contentProps as Omit<DefaultContentProps, "testId">)}
             testId={testId}
           />

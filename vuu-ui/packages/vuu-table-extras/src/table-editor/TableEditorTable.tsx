@@ -16,7 +16,10 @@ export interface TableEditorTableProps
     Partial<
       Pick<EditableColumnsHookProps, "editable" | "readOnly" | "undoColumn">
     > {
-  /** Table editing: show a row, above the column headers, for adding rows. */
+  /**
+   * Session table editing: show a row, above the column headers, for adding
+   * rows.
+   */
   showInlineAddRow?: boolean;
 }
 
@@ -82,6 +85,38 @@ const TableCellEditorTable = ({
   );
 };
 
+const DirectCellEditorTable = ({
+  config,
+  editable,
+  readOnly,
+  showInlineAddRow: _showInlineAddRow,
+  undoColumn: _undoColumn,
+  ...tableProps
+}: TableEditorTableProps) => {
+  const { dataSource, isEditing } = useTableEditorContext("TableEditorTable");
+
+  const columns = useEditableColumns({
+    columns: config.columns,
+    editable,
+    isEditing,
+    readOnly,
+  });
+
+  const tableConfig = useMemo<TableConfig>(
+    () => ({ ...config, columns }),
+    [columns, config],
+  );
+
+  return (
+    <Table
+      renderBufferSize={10}
+      {...tableProps}
+      config={tableConfig}
+      dataSource={dataSource}
+    />
+  );
+};
+
 const FormEditorTable = ({
   editable: _editable,
   onSelect,
@@ -119,16 +154,21 @@ const FormEditorTable = ({
 /**
  * The Table of the enclosing `EditableTable` or `TableWithEditForm`, bound to its dataSource and mode.
  *
- * - Table editing: cells become editable in edit mode, edited, added and
- *   deleted rows are styled, and rows can be checked for deletion when
- *   `allowDelete` is set on the provider.
+ * - Session table editing: cells become editable in edit mode, edited,
+ *   added and deleted rows are styled, and rows can be checked for deletion
+ *   when `allowDelete` is set on the provider.
+ * - Direct table editing: cells are editable in edit mode, and each edit is
+ *   sent straight to the dataSource. `showInlineAddRow` and `undoColumn`
+ *   are ignored.
  * - Form editing: single selection, which selects the row shown in
  *   `TableEditorForm`. Selection is locked while the form is being edited.
  */
 export const TableEditorTable = (props: TableEditorTableProps) => {
-  const { editIn } = useTableEditorContext("TableEditorTable");
+  const { editIn, editModel } = useTableEditorContext("TableEditorTable");
   return editIn === "form" ? (
     <FormEditorTable {...props} />
+  ) : editModel === "direct" ? (
+    <DirectCellEditorTable {...props} />
   ) : (
     <TableCellEditorTable {...props} />
   );
