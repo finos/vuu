@@ -190,6 +190,10 @@
     gap: var(--sc-space-3);
   }
 
+  .ShowcaseExampleHeader-actions {
+    padding-top: 0;
+  }
+
   .ShowcaseExampleHeader-title {
     clip-path: inset(50%);
     height: 1px;

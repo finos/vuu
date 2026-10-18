@@ -117,6 +117,28 @@ body {
   width: 3px;
 }
 
+/* nested leaves are marked on their indent guide, matching the selection bar */
+.ShowcaseShell-nav
+  .vuuTreeNavPanel-indentGuides
+  .vuuTableRow:not([aria-selected="true"]):not([aria-expanded]):not(
+    [aria-level="1"]
+  ):has(.ShowcaseNavRowAdornment-inTab)
+  .vuuTableGroupCell.vuuTableCell::after {
+  left: calc(
+    4px + var(--treeNavPanel-spacerWidth) - 2 * var(--treeNavPanel-guideWidth) +
+      5.5px
+  );
+}
+
+.ShowcaseShell-nav
+  .vuuTreeNavPanel-indentGuides.vuuTreeNavPanel-headings
+  .vuuTableRow:not([aria-selected="true"])[aria-level="2"]:not([aria-expanded]):has(
+    .ShowcaseNavRowAdornment-inTab
+  )
+  .vuuTableGroupCell.vuuTableCell::after {
+  left: calc(-1 * var(--treeNavPanel-padding));
+}
+
 .ShowcaseNavRowAdornment-grip {
   align-items: center;
   color: var(--sc-text-4);
