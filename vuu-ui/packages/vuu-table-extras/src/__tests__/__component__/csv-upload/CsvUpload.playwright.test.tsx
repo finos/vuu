@@ -244,7 +244,7 @@ test.describe("Given a DataUploadPreview", () => {
       .getByRole("checkbox", { name: "Press space to select row" })
       .click();
     await page.getByRole("button", { name: "Delete", exact: true }).click();
-    await expect(deletedRow).toContainClass("vuuTableRow-deleted");
+    await expect(deletedRow).toHaveCount(0);
 
     await page.getByRole("button", { name: "Submit", exact: true }).click();
 
