@@ -74,13 +74,7 @@ const combineColumnsWithAutosubscribeColumns = (
   if (autosubscribeColumns.length === 0) {
     return columns;
   } else {
-    const out = columns.slice();
-    autosubscribeColumns.forEach((name) => {
-      if (!out.includes(name)) {
-        out.push(name);
-      }
-    });
-    return out;
+    return Array.from(new Set([...columns, ...autosubscribeColumns]));
   }
 };
 
@@ -92,10 +86,6 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   private server: ServerAPI | null = null;
   rangeRequest: RangeRequest;
 
-  /**
-   * this is the combined set of regular columns and autosubscribe columns
-   */
-  #allColumns: undefined | string[];
   #autosubscribeColumns: string[] = [];
   #pendingVisualLink?: LinkDescriptorWithLabel;
   #links: LinkDescriptorWithLabel[] | undefined;
@@ -114,11 +104,21 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   public table: VuuTable;
 
   constructor({
+    autosubscribeColumns,
+    columns,
     session,
     sessionTableMessageColumn,
     ...props
   }: DataSourceConstructorProps) {
-    super(props);
+    super({
+      ...props,
+      columns: autosubscribeColumns
+        ? combineColumnsWithAutosubscribeColumns(
+            columns ?? [],
+            autosubscribeColumns,
+          )
+        : columns,
+    });
 
     const { bufferSize = 100, table, visualLink } = props;
 
@@ -134,12 +134,8 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     // this.rangeRequest = this.throttleRangeRequest;
     this.rangeRequest = this.rawRangeRequest;
 
-    if (props.autosubscribeColumns) {
-      this.#autosubscribeColumns = props.autosubscribeColumns;
-      this.#allColumns = combineColumnsWithAutosubscribeColumns(
-        super.columns,
-        props.autosubscribeColumns,
-      );
+    if (autosubscribeColumns) {
+      this.#autosubscribeColumns = autosubscribeColumns;
     }
   }
 
@@ -148,7 +144,18 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     callback: DataSourceSubscribeCallback,
   ) {
     // super.subscribe(subscribeProps, this.handleMessageFromServer);
-    super.subscribe(subscribeProps, callback);
+    super.subscribe(
+      subscribeProps.columns && this.#autosubscribeColumns.length
+        ? {
+            ...subscribeProps,
+            columns: combineColumnsWithAutosubscribeColumns(
+              subscribeProps.columns,
+              this.#autosubscribeColumns,
+            ),
+          }
+        : subscribeProps,
+      callback,
+    );
     // biome-ignore lint/suspicious/noAssignInExpressions: <ignore>
     const { viewport = this.viewport || (this.viewport = uuid()) } =
       subscribeProps;
@@ -435,21 +442,15 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
     }
   }
 
-  //TODO is this going to be confusing - the lack of symmetry between set and get columns
-  // when there are autoSubscribe columns ?
-  // alternative would be an allColumns prop, but every datasource would then have to add it.
   get columns() {
-    return this.#allColumns ?? super.columns;
+    return super.columns;
   }
 
   set columns(columns: string[]) {
-    super.columns = columns;
-    if (this.#autosubscribeColumns.length) {
-      this.#allColumns = combineColumnsWithAutosubscribeColumns(
-        columns,
-        this.#autosubscribeColumns,
-      );
-    }
+    super.columns = combineColumnsWithAutosubscribeColumns(
+      columns,
+      this.#autosubscribeColumns,
+    );
   }
 
   get tableSchema() {
@@ -542,30 +543,23 @@ export class VuuDataSource extends BaseDataSource implements DataSourceBase {
   }
 
   set config(config: WithBaseFilter<WithFullConfig>) {
-    const { noChanges, columnsChanged } = isConfigChanged(this.config, config);
+    const nextConfig = this.#autosubscribeColumns.length
+      ? {
+          ...config,
+          columns: combineColumnsWithAutosubscribeColumns(
+            config.columns,
+            this.#autosubscribeColumns,
+          ),
+        }
+      : config;
+    const { noChanges } = isConfigChanged(this.config, nextConfig);
     if (!noChanges) {
-      super.config = config;
-
-      const { columns, ...dataSourceConfig } = combineFilters(this.config);
-      const serverConfig: WithFullConfig = {
-        ...dataSourceConfig,
-        columns: combineColumnsWithAutosubscribeColumns(
-          columns,
-          this.#autosubscribeColumns,
-        ),
-      };
-
-      if (columnsChanged && this.#autosubscribeColumns.length) {
-        this.#allColumns = combineColumnsWithAutosubscribeColumns(
-          columns,
-          this.#autosubscribeColumns,
-        );
-      }
+      super.config = nextConfig;
 
       this.server?.send({
         viewport: this.viewport,
         type: "config",
-        config: serverConfig,
+        config: combineFilters(this.config),
       });
     }
   }
