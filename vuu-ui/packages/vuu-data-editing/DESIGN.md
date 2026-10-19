@@ -169,9 +169,14 @@ Tracking keys separately from the `addCount` counter allows `EditSession` to ide
 ### Deletions and selection clearing
 
 `deleteSelectedRows` captures `selectedRowsCount` from the data source and issues the delete RPC against the active session table. On success:
-1. `deleteCount` is incremented.
+1. If the server returns `response.data.deletedKeys`, `EditSession` checks each key against `#addedRowKeys`:
+   - Deleting an uncommitted added row cancels out the addition (`#addedRowKeys.delete(key)`, any cell edits on that row in `#rowEdits` are discarded, and `addCount` decrements).
+   - Deleting an existing source row increments `deleteCount`.
+   - If `deletedKeys` is omitted, `deleteCount` increments by `selectedRowsCount` as a fallback.
 2. Selection is explicitly cleared via `dataSource.select({ type: "DESELECT_ALL" })`. This ensures that rows marked for deletion do not remain selected, immediately disabling the Delete button and preventing duplicate deletions that would artificially inflate `deleteCount`.
 3. In addition, `useEditableTable` exports `isRowSelectable: (row) => !isEditRowReadOnly(row)` so consumers can prevent soft-deleted rows from being re-selected in the table.
+
+Server-side contract: when soft-deleting a row whose `vuuAction` is `"addRow"` (an uncommitted insert), the server should remove the row outright rather than mark it `"deleteRow"` — there is no prior state to restore, and a pending-delete marker would leave a ghost row that can neither be saved nor undone. The mock server (`VuuModule` in `vuu-data-test`) implements this rule.
 
 ### Undo reconciliation
 

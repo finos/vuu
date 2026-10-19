@@ -398,6 +398,119 @@ describe("EditSession", () => {
     expect(session.deleteCount).toBe(0);
   });
 
+  it("decrements addCount and leaves deleteCount at 0 when an added row is deleted via deleteSelectedRows with deletedKeys", async () => {
+    const editApi: DataSource = {
+      addRow: vi.fn().mockResolvedValue({
+        data: { key: "new-row-1" },
+        type: "SUCCESS_RESULT",
+      }),
+      createSessionDataSource: vi.fn(
+        async () => editApi as unknown as DataSource,
+      ),
+      deleteSelectedRows: vi.fn().mockResolvedValue({
+        data: { deletedKeys: ["new-row-1"] },
+        type: "SUCCESS_RESULT",
+      }),
+      endEditSession: vi.fn(),
+      select: vi.fn(),
+      selectedRowsCount: 1,
+    } as unknown as DataSource;
+
+    const session = new EditSession({ dataSource: editApi });
+    await session.begin();
+    await session.addRow({});
+    expect(session.addCount).toBe(1);
+    expect(session.deleteCount).toBe(0);
+    expect(session.editState).toBe("dirty");
+
+    // Deleting the newly added row via deleteSelectedRows
+    await session.deleteSelectedRows();
+
+    // Since the row was newly added, deleting it cancels out the addition
+    expect(session.addCount).toBe(0);
+    expect(session.deleteCount).toBe(0);
+    expect(session.editState).toBe("clean");
+  });
+
+  it("partitions deletedKeys between added rows and existing source rows in deleteSelectedRows", async () => {
+    const editApi: DataSource = {
+      addRow: vi.fn().mockResolvedValue({
+        data: { key: "new-row-1" },
+        type: "SUCCESS_RESULT",
+      }),
+      createSessionDataSource: vi.fn(
+        async () => editApi as unknown as DataSource,
+      ),
+      deleteSelectedRows: vi.fn().mockResolvedValue({
+        data: { deletedKeys: ["new-row-1", "source-row-2", "source-row-3"] },
+        type: "SUCCESS_RESULT",
+      }),
+      endEditSession: vi.fn(),
+      select: vi.fn(),
+      selectedRowsCount: 3,
+    } as unknown as DataSource;
+
+    const session = new EditSession({ dataSource: editApi });
+    await session.begin();
+    await session.addRow({});
+    expect(session.addCount).toBe(1);
+
+    // Deleting 3 rows: 1 newly added row, 2 existing source rows
+    await session.deleteSelectedRows();
+
+    expect(session.addCount).toBe(0);
+    expect(session.deleteCount).toBe(2);
+    expect(session.editState).toBe("dirty");
+  });
+
+  it("discards cell edits on an added row when it is deleted via deleteSelectedRows", async () => {
+    const editApi: DataSource = {
+      addRow: vi.fn().mockResolvedValue({
+        data: { key: "new-row-1" },
+        type: "SUCCESS_RESULT",
+      }),
+      createSessionDataSource: vi.fn(
+        async () => editApi as unknown as DataSource,
+      ),
+      deleteSelectedRows: vi.fn().mockResolvedValue({
+        data: { deletedKeys: ["new-row-1"] },
+        type: "SUCCESS_RESULT",
+      }),
+      editCell: vi.fn().mockResolvedValue({
+        data: undefined,
+        type: "SUCCESS_RESULT",
+      }),
+      endEditSession: vi.fn(),
+      select: vi.fn(),
+      selectedRowsCount: 1,
+    } as unknown as DataSource;
+
+    const session = new EditSession({ dataSource: editApi });
+    const cellEditChanged = vi.fn();
+    session.on("cellEditChanged", cellEditChanged);
+    await session.begin();
+
+    await session.addRow({});
+    await session.commit("new-row-1", "name", "Alice", "Alicia", true);
+    await session.commit("new-row-1", "qty", 10, "bad", false);
+    expect(session.addCount).toBe(1);
+    expect(session.editCount).toBe(1);
+    expect(session.invalidCount).toBe(1);
+    expect(session.editState).toBe("invalid");
+    cellEditChanged.mockClear();
+
+    await session.deleteSelectedRows();
+
+    expect(session.addCount).toBe(0);
+    expect(session.editCount).toBe(0);
+    expect(session.invalidCount).toBe(0);
+    expect(session.deleteCount).toBe(0);
+    expect(session.hasRowChanges("new-row-1")).toBe(false);
+    expect(session.isCellEdited("new-row-1", "name")).toBe(false);
+    expect(cellEditChanged).toHaveBeenCalledWith("new-row-1", "name");
+    expect(session.editState).toBe("clean");
+  });
+
   it("clears cell markers after undoing row changes", async () => {
     const undoRowChange = vi.fn().mockResolvedValue({
       data: undefined,

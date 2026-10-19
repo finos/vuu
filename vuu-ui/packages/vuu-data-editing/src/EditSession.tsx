@@ -35,6 +35,10 @@ export type AddRowResultData = {
   key?: string | number;
 };
 
+export type DeleteSelectedRowsResultData = {
+  deletedKeys?: string[];
+};
+
 const toEditSessionMode = (copyOption: CopyOption): EditSessionMode => {
   switch (copyOption) {
     case "All":
@@ -376,6 +380,7 @@ export class EditSession
       return { data: undefined, type: "SUCCESS_RESULT" };
     }
 
+    const deleteRevision = this.#commitRevision;
     const response = await deleteSelectedRows.call(
       this.dataSource,
       this.#deleteMode,
@@ -387,7 +392,29 @@ export class EditSession
     }
     if (isRpcError(response)) return response;
 
-    if (selectedRowsCount > 0) {
+    const deletedKeys = (
+      response.data as DeleteSelectedRowsResultData | undefined
+    )?.deletedKeys;
+
+    if (deletedKeys && deletedKeys.length > 0) {
+      const oldState = this.editState;
+      let addedRowsDeleted = 0;
+      for (const key of deletedKeys) {
+        if (this.#addedRowKeys.has(key)) {
+          this.#addedRowKeys.delete(key);
+          this.#discardRowEdits(key, deleteRevision);
+          addedRowsDeleted++;
+        }
+      }
+      const sourceRowsDeleted = deletedKeys.length - addedRowsDeleted;
+      if (sourceRowsDeleted > 0) {
+        this.#deleteCount += sourceRowsDeleted;
+      }
+      if (addedRowsDeleted > 0) {
+        this.#addCount = Math.max(0, this.#addCount - addedRowsDeleted);
+      }
+      this.#emitEditStateChange(oldState);
+    } else if (selectedRowsCount > 0) {
       this.#setDeleteCount(this.#deleteCount + selectedRowsCount);
     }
     await this.dataSource?.select?.({ type: "DESELECT_ALL" });
@@ -433,6 +460,51 @@ export class EditSession
     );
   }
 
+  #discardRowEdits(
+    key: string,
+    maxRevision: number,
+    columnsToDiscard?: ReadonlySet<string>,
+  ) {
+    const rowEdits = this.#rowEdits.get(key);
+    if (!rowEdits) return;
+
+    const columns = columnsToDiscard ?? new Set(rowEdits.cellEdits.keys());
+    const changedColumns: string[] = [];
+    let removedValidCount = 0;
+    let removedInvalidCount = 0;
+
+    for (const columnName of columns) {
+      const latestRevision =
+        this.#cellCommitRevisions.get(key)?.get(columnName) ?? 0;
+      if (latestRevision > maxRevision) {
+        continue;
+      }
+      const existing = rowEdits.cellEdits.get(columnName);
+      if (existing) {
+        if (existing.isValid) {
+          removedValidCount++;
+        } else {
+          removedInvalidCount++;
+        }
+      }
+      if (this.isCellEdited(key, columnName)) {
+        changedColumns.push(columnName);
+      }
+      rowEdits.cellEdits.delete(columnName);
+      this.#setCellCommitRevision(key, columnName);
+    }
+    if (rowEdits.cellEdits.size === 0) {
+      this.#rowEdits.delete(key);
+    }
+
+    this.#editCount -= removedValidCount;
+    this.#invalidCount -= removedInvalidCount;
+
+    for (const columnName of changedColumns) {
+      this.emit("cellEditChanged", key, columnName);
+    }
+  }
+
   async undoRowChange(
     key: string,
     action: EditActionType,
@@ -453,43 +525,7 @@ export class EditSession
 
     const oldState = this.editState;
 
-    const rowEdits = this.#rowEdits.get(key);
-    if (rowEdits) {
-      const changedColumns: string[] = [];
-      let removedValidCount = 0;
-      let removedInvalidCount = 0;
-
-      for (const columnName of columnsAtRequest) {
-        const latestRevision =
-          this.#cellCommitRevisions.get(key)?.get(columnName) ?? 0;
-        if (latestRevision > undoRevision) {
-          continue;
-        }
-        const existing = rowEdits.cellEdits.get(columnName);
-        if (existing) {
-          if (existing.isValid) {
-            removedValidCount++;
-          } else {
-            removedInvalidCount++;
-          }
-        }
-        if (this.isCellEdited(key, columnName)) {
-          changedColumns.push(columnName);
-        }
-        rowEdits.cellEdits.delete(columnName);
-        this.#setCellCommitRevision(key, columnName);
-      }
-      if (rowEdits.cellEdits.size === 0) {
-        this.#rowEdits.delete(key);
-      }
-
-      this.#editCount -= removedValidCount;
-      this.#invalidCount -= removedInvalidCount;
-
-      for (const columnName of changedColumns) {
-        this.emit("cellEditChanged", key, columnName);
-      }
-    }
+    this.#discardRowEdits(key, undoRevision, columnsAtRequest);
 
     if (action === "deleteRow") {
       this.#deleteCount = Math.max(0, this.#deleteCount - 1);

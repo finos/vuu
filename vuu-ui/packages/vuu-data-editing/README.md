@@ -162,7 +162,10 @@ A cell is considered edited only when `originalValue !== editedValue && isValid 
 - Exits early if `selectedRowsCount === 0`.
 - Calls `dataSource.deleteSelectedRows(deleteMode)`.
 - On success:
-  - Increments `deleteCount` by `selectedRowsCount`.
+  - If the server returns `response.data.deletedKeys`, keys are partitioned against `#addedRowKeys`:
+    - Deleting a newly added row cancels out the addition (`addCount` decrements, key removed from `#addedRowKeys`, any cell edits on that row are discarded, and `deleteCount` remains unaffected).
+    - Deleting an existing source row increments `deleteCount`.
+  - Fallback: if `deletedKeys` is not returned, increments `deleteCount` by `selectedRowsCount`.
   - **Clears selection**: Dispatches `dataSource.select({ type: "DESELECT_ALL" })` so deleted rows are immediately deselected, preventing accidental double-deletion and disabling the Delete button.
 
 ### Undo Flow (`undoRowChange`)

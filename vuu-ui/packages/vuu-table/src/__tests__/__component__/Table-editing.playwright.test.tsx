@@ -381,6 +381,126 @@ test.describe("Test table editing", () => {
   });
 });
 
+test.describe("Added row deletion reconciles edit counters", () => {
+  const addRowInline = async (
+    page: import("@playwright/test").Page,
+    values: readonly [string, string, string, string, string],
+  ) => {
+    const inlineAddRow = page.locator(".vuuInlineAddRow");
+    const editors = [
+      inlineAddRow.getByRole("textbox", { name: "id", exact: true }),
+      inlineAddRow.getByRole("textbox", { name: "description" }),
+      inlineAddRow.getByRole("textbox", { name: "quantity" }),
+      inlineAddRow.getByRole("textbox", { name: "price" }),
+      inlineAddRow.getByRole("textbox", { name: "externalId" }),
+    ];
+    for (const [index, editor] of editors.entries()) {
+      await editor.fill(values[index]);
+      await editor.press("Enter");
+    }
+  };
+
+  test("deleting a newly added row removes it outright and disables Submit", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/TestTableEmpty");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const submitButton = page.getByRole("button", { name: "Submit" });
+    const deleteButton = page.getByRole("button", {
+      exact: true,
+      name: "Delete",
+    });
+    const insertedRow = page.locator(".vuuTableRow-inserted");
+
+    await addRowInline(page, ["TEST-006", "Foxtrot", "72", "607.5", "1006"]);
+    await expect(insertedRow).toHaveCount(1);
+    await expect(submitButton).toBeEnabled();
+
+    await insertedRow
+      .getByRole("checkbox", { name: "Press space to select row" })
+      .click();
+    await expect(deleteButton).toBeEnabled();
+    await deleteButton.click();
+
+    // The added row had no prior state: it is removed outright, not left
+    // behind as a soft-deleted ghost row with an Undo button.
+    await expect(insertedRow).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Undo" })).toHaveCount(0);
+
+    // The addition and the deletion cancel out - session is clean again.
+    await expect(submitButton).toBeDisabled();
+    await expect(deleteButton).toBeDisabled();
+  });
+
+  test("undoing an inserted row via its Undo button removes it and disables Submit", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/TestTableEmpty");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const submitButton = page.getByRole("button", { name: "Submit" });
+    const insertedRow = page.locator(".vuuTableRow-inserted");
+
+    await addRowInline(page, ["TEST-006", "Foxtrot", "72", "607.5", "1006"]);
+    await expect(insertedRow).toHaveCount(1);
+    await expect(submitButton).toBeEnabled();
+
+    await insertedRow
+      .getByRole("button", { name: "Undo insert row" })
+      .click();
+
+    await expect(insertedRow).toHaveCount(0);
+    await expect(submitButton).toBeDisabled();
+  });
+
+  test("mixed deletes: added row cancels out, source row soft-delete persists until undone", async ({
+    mount,
+    page,
+  }) => {
+    await mount("Table/Editing/TestTableFIveRows");
+    await page.getByRole("radio", { name: "Edit" }).click();
+
+    const submitButton = page.getByRole("button", { name: "Submit" });
+    const deleteButton = page.getByRole("button", {
+      exact: true,
+      name: "Delete",
+    });
+    const insertedRow = page.locator(".vuuTableRow-inserted");
+    const deletedRow = page.locator(".vuuTableRow-deleted");
+
+    await addRowInline(page, ["TEST-006", "Foxtrot", "72", "607.5", "1006"]);
+    await expect(insertedRow).toHaveCount(1);
+    await expect(submitButton).toBeEnabled();
+
+    // Soft-delete a pre-existing source row - it stays, marked for deletion
+    await page
+      .getByRole("checkbox", { name: "Press space to select row" })
+      .first()
+      .click();
+    await deleteButton.click();
+    await expect(deletedRow).toHaveCount(1);
+    await expect(submitButton).toBeEnabled();
+
+    // Delete the added row - it is removed outright
+    await insertedRow
+      .getByRole("checkbox", { name: "Press space to select row" })
+      .click();
+    await deleteButton.click();
+    await expect(insertedRow).toHaveCount(0);
+
+    // deleteCount for the source row still pending - Submit stays enabled
+    await expect(submitButton).toBeEnabled();
+
+    // Undo the source-row delete - all changes reconciled, session clean
+    await deletedRow.getByRole("button", { name: "Undo delete row" }).click();
+    await expect(deletedRow).toHaveCount(0);
+    await expect(submitButton).toBeDisabled();
+  });
+});
+
 test.describe("Editable table navigation", () => {
   test("smoke test", async ({ mount, page }) => {
     await mount("Table/Editing/EditableInstruments");
