@@ -18,6 +18,18 @@ const xpathStringLiteral = (value: string) => {
   return `concat('${value.split("'").join(`', "'", '`)}')`;
 };
 
+// escape a value for use inside a double-quoted CSS attribute selector
+const cssAttributeValue = (value: string) =>
+  Array.from(value, (character) => {
+    const code = character.charCodeAt(0);
+    return character === '"' || character === "\\" || code < 32 || code === 127
+      ? `\\${code.toString(16)} `
+      : character;
+  }).join("");
+
+const byDataIcon = (iconName: string) =>
+  `[data-icon="${cssAttributeValue(iconName)}"]`;
+
 export class PwTable extends PlaywrightPageObject {
   protected readonly defaultCssSelector = ".vuuTable";
 
@@ -72,16 +84,80 @@ export class PwTable extends PlaywrightPageObject {
     await textbox.press(action === "commit" ? "Enter" : "Escape");
   }
 
+  /**
+   * The labels displayed in the column headers, in rendered order.
+   * Header cells without a label (e.g. the checkbox selection column) are omitted.
+   *
+   * @example
+   * test("renders expected columns", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   expect(await table.columnNames()).toEqual(["Ccy", "Exchange", "Price"]);
+   * });
+   */
+  async columnNames(): Promise<string[]> {
+    return this.#locator
+      .locator(".vuuTableHeaderCell .vuuTableHeaderCell-label")
+      .allTextContents();
+  }
+
+  /**
+   * The total row count, read from aria-rowcount on the element with role="table".
+   * This is the dataSource size, not the number of rendered rows.
+   *
+   * @example
+   * test("loads all instruments", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   expect(await table.rowCount()).toEqual(1000);
+   * });
+   */
+  async rowCount(): Promise<number> {
+    const ariaRowCount = await this.#locator
+      .getByRole("table")
+      .getAttribute("aria-rowcount");
+    if (ariaRowCount === null) {
+      throw Error("PwTable, rowCount, table does not have an aria-rowcount");
+    }
+    return parseInt(ariaRowCount, 10);
+  }
+
+  /**
+   * Locate the icon with the given data-icon name within a cell.
+   *
+   * @example
+   * test("flags stale prices", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await expect(await table.cellIcon("status", 3, "warning")).toBeVisible();
+   * });
+   */
+  async cellIcon(
+    columnName: string,
+    ariaRowIndex: number,
+    iconName: string,
+  ): Promise<Locator> {
+    const cell = await this.cell(columnName, ariaRowIndex);
+    return cell.locator(byDataIcon(iconName));
+  }
+
+  /**
+   * Locate all rendered (non header) cells containing an icon with the given
+   * data-icon name. Each matching cell is counted once, however many such icons it holds.
+   *
+   * @example
+   * test("flags stale prices", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await expect(table.cellsWithIcon("warning")).toHaveCount(4);
+   * });
+   */
+  cellsWithIcon(iconName: string): Locator {
+    return this.#locator
+      .getByRole("cell")
+      .filter({ has: this.page.locator(byDataIcon(iconName)) });
+  }
+
   headerCell(columnName: string): PwTableHeaderCell {
-    const escapedColumnName = Array.from(columnName, (character) => {
-      const code = character.charCodeAt(0);
-      return character === '"' || character === "\\" || code < 32 || code === 127
-        ? `\\${code.toString(16)} `
-        : character;
-    }).join("");
     return new PwTableHeaderCell(
       this.page,
-      `${this.cssSelector ?? this.defaultCssSelector} >> .vuuTableHeaderCell[data-column-name="${escapedColumnName}"]`,
+      `${this.cssSelector ?? this.defaultCssSelector} >> .vuuTableHeaderCell[data-column-name="${cssAttributeValue(columnName)}"]`,
     );
   }
 
