@@ -10,7 +10,7 @@ import type {
   TableCellProps,
 } from "@vuu-ui/vuu-table-types";
 import { isDataValueEditable } from "@vuu-ui/vuu-utils";
-import { type MouseEventHandler, useCallback } from "react";
+import { type MouseEventHandler, memo, useCallback } from "react";
 import { applyHighlighting } from "../applyHighlighting";
 import { useCell } from "../useCell";
 
@@ -18,12 +18,31 @@ import tableCellCss from "./TableCell.css";
 
 const classBase = "vuuTableCell";
 
-export const TableCell = ({
+/**
+ * Rows receive a new dataRow whenever the data source sends their range,
+ * which happens on every scroll step, so without this every visible cell
+ * re-rendered (and re-formatted its value) on every frame. A cell with the
+ * default renderer depends only on its column, its own value and the row
+ * key, so it can skip rendering when those are unchanged. A custom
+ * CellRenderer may read any part of the row, so those cells still render
+ * whenever the row object changes. Edit-session state reaches the cell
+ * through context, which a memo does not block.
+ */
+const tableCellUnchanged = (prev: TableCellProps, next: TableCellProps) =>
+  prev.column === next.column &&
+  prev.onClick === next.onClick &&
+  prev.searchPattern === next.searchPattern &&
+  (prev.dataRow === next.dataRow ||
+    (next.column.CellRenderer === undefined &&
+      prev.dataRow.key === next.dataRow.key &&
+      prev.dataRow[prev.column.name] === next.dataRow[next.column.name]));
+
+export const TableCell = memo(function TableCell({
   column,
   dataRow,
   onClick,
   searchPattern = "",
-}: TableCellProps) => {
+}: TableCellProps) {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-table-cell",
@@ -120,4 +139,4 @@ export const TableCell = ({
       )}
     </div>
   );
-};
+}, tableCellUnchanged);
