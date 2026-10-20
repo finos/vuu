@@ -35,6 +35,12 @@ export const SCENARIOS: Scenario[] = [
     run: { kind: "scroll-smooth", axis: "vertical", step: 3, frames: 300 },
   },
   {
+    id: "scroll-fast-100k-20",
+    description: "Scroll 10 rows per frame for 300 frames, 20 columns",
+    dataset: { rows: 100_000, cols: 20, cellType: "formatted", seed: SEED },
+    run: { kind: "scroll-smooth", axis: "vertical", step: 10, frames: 300 },
+  },
+  {
     id: "scroll-smooth-100k-50",
     description: "Scroll 3 rows per frame for 300 frames, 50 columns",
     dataset: { rows: 100_000, cols: 50, cellType: "formatted", seed: SEED },
@@ -100,7 +106,7 @@ export const KEY_METRICS: Record<Scenario["run"]["kind"], string[]> = {
     "frames.p95",
     "frames.jankyPct",
     "longFrames.blockingMs",
-    "cdp.scriptMs",
+    "perUnit.scriptMsPerFrame",
     "cdp.layoutCount",
   ],
   "scroll-jump": ["blankRowMs.p50", "blankRowMs.p95", "frames.p95"],
@@ -108,6 +114,7 @@ export const KEY_METRICS: Record<Scenario["run"]["kind"], string[]> = {
     "updateToPaintMs.p50",
     "updateToPaintMs.p95",
     "frames.p95",
-    "cdp.scriptMs",
+    "perUnit.scriptMsPerFrame",
+    "perUnit.taskMsPerFrame",
   ],
 };
