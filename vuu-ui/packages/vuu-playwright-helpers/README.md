@@ -41,8 +41,16 @@ The existing `locateCell` overloads remain available for gradual migration.
 const menu = await table.showContextMenu("ric", 2);
 
 expect(await menu.hasMenuItems()).toBe(true);
-expect(await menu.hasMenuItems(["Copy text", "Filter"])).toBe(true); // exact, in order
-expect(await menu.menuItemLabels()).toEqual(["Copy text", "Filter"]);
+// exact match, in order - a partial list is false
+expect(
+  await menu.hasMenuItems(["Copy text", "Filter", "Sort", "Delete row"]),
+).toBe(true);
+expect(await menu.menuItemLabels()).toEqual([
+  "Copy text",
+  "Filter",
+  "Sort",
+  "Delete row",
+]);
 
 const copy = menu.menuItem("Copy text"); // or by 0 based index, menu.menuItem(0)
 expect(await copy.hasIcon("edit")).toBe(true);
