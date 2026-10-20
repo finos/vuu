@@ -15,6 +15,46 @@ Vuu also supports `MultiValueFilterClause`
 
 ## ColumnFilter
 
+Set `showOperatorPicker` to render a compact operator dropdown before the value.
+It is opt-in; existing fixed-operator filters are unchanged.
+
+```tsx
+<ColumnFilter
+  column={{ name: "price", serverDataType: "double" }}
+  showOperatorPicker
+  operators={["=", ">", ">=", "between-inclusive"]}
+  defaultValue=""
+  onCommit={handleCommit}
+/>
+```
+
+`operators` replaces the default options and preserves their order. Numeric
+(including scaled-decimal) and temporal columns default to `=`, `!=`, `>`, `>=`,
+`<`, `<=`; text columns to `=`, `!=`, `starts`, `ends`, `contains`; boolean
+columns to `=`, `!=`. Numeric and temporal filters can also opt into `between`
+and `between-inclusive`. Multi-value `in` filters are not supported by this
+control. Empty lists, incompatible operators, and selections outside the list
+raise an error.
+
+Use `defaultOperator` for an uncontrolled picker, or `operator` together with
+`onOperatorChange(event, operator)` for a controlled picker. The initial operator
+is `=` if allowed, otherwise the first option. Operator control is independent
+of value control (`value` / `defaultValue`).
+
+Selecting a different operator preserves the value and immediately commits a
+populated, valid filter using the new operator. An already empty value only changes the
+selection. Switching to a range retains the lower value and starts with an empty
+upper value; switching back retains the lower value (and clears a filter if only
+the upper value was populated). Incomplete ranges use the
+existing partial-range commit behaviour. The operator picker respects
+`InputProps.disabled` and `InputProps.readOnly`.
+
+`FilterContainerColumnFilter` accepts the same picker options, manages selection
+internally, and restores operators and values from externally loaded or saved
+filters. A loaded operator must be included in the configured options. Clearing
+an external filter resets the operator to its default; clearing a value locally
+keeps the selected operator.
+
 onCommit is a `ColumnFilterCommitHandler`
 
 ```typescript

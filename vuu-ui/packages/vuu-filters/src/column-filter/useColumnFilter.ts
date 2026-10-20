@@ -7,13 +7,25 @@ import {
 } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { InputProps, useControlled } from "@salt-ds/core";
-import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
+import {
+  ChangeEventHandler,
+  SyntheticEvent,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 import {
   CommitHandler,
   isBetweenOperator,
   isValidRange,
 } from "@vuu-ui/vuu-utils";
 import { DataItemEditControlProps } from "@vuu-ui/vuu-data-react";
+import {
+  getColumnFilterOperators,
+  getDefaultColumnFilterOperator,
+  normalizeColumnFilterValue,
+  type SelectableColumnFilterOp,
+} from "./column-filter-utils";
 
 const injectInputProps = (
   InputProps: InputProps | undefined,
@@ -61,7 +73,16 @@ export interface ColumnFilterHookProps
    * tabbing away from control or making selection from list
    */
   onCommit: ColumnFilterCommitHandler;
+  /** Controlled operator. Defaults to '=' when the picker is hidden. */
   operator?: ColumnFilterOp;
+  /** Initial operator for an uncontrolled picker. Defaults to '=' or the first option. */
+  defaultOperator?: ColumnFilterOp;
+  /** Render an operator dropdown before the value. Defaults to false. */
+  showOperatorPicker?: boolean;
+  /** Ordered operator options, replacing the column-type defaults. 'in' is not supported. */
+  operators?: readonly SelectableColumnFilterOp[];
+  /** Called before committing the current value with the newly selected operator. */
+  onOperatorChange?: (event: SyntheticEvent, operator: ColumnFilterOp) => void;
   /**
    * Filter value. Pair of values expected when operator is
    * 'between'. If provided, component is controlled.
@@ -73,26 +94,88 @@ export const useColumnFilter = ({
   InputProps: InputPropsProp,
   column,
   defaultValue,
+  defaultOperator,
   extendedFilterOptions,
   onColumnFilterChange,
   onColumnRangeFilterChange,
   onCommit,
-  operator = "=",
+  onOperatorChange,
+  operator: operatorProp,
+  operators: operatorsProp,
+  showOperatorPicker = false,
   value: valueProp,
 }: ColumnFilterHookProps) => {
   const [isInvalid, setIsInvalid] = useState(false);
-  const [value, setValue] = useControlled({
+  const operators = useMemo(
+    () =>
+      showOperatorPicker
+        ? getColumnFilterOperators(column, operatorsProp)
+        : undefined,
+    [column, operatorsProp, showOperatorPicker],
+  );
+  const [selectedOperator, setOperator] = useControlled({
+    controlled: operatorProp,
+    default: operators
+      ? getDefaultColumnFilterOperator(operators, defaultOperator)
+      : (defaultOperator ?? "="),
+    name: "ColumnFilter",
+    state: "operator",
+  });
+  const operator = operators
+    ? getDefaultColumnFilterOperator(operators, selectedOperator)
+    : selectedOperator;
+  const [rawValue, setValue] = useControlled({
     controlled: valueProp,
     default: defaultValue,
-    name: "ColumnFilterNext",
+    name: "ColumnFilter",
     state: "value",
   });
+  const value = showOperatorPicker
+    ? normalizeColumnFilterValue(operator, rawValue)
+    : rawValue;
+
+  const handleOperatorSelect = useCallback(
+    (event: SyntheticEvent, newOperator: ColumnFilterOp) => {
+      if (newOperator === operator) return;
+      const newValue = normalizeColumnFilterValue(newOperator, value);
+      setOperator(newOperator);
+      setValue(newValue);
+      setIsInvalid(false);
+      onOperatorChange?.(event, newOperator);
+      const hadValue = Array.isArray(value)
+        ? value.some((v) => v !== "")
+        : value !== undefined && value !== "";
+      if (hadValue) {
+        const valid = !Array.isArray(newValue) || isValidRange(newValue);
+        setIsInvalid(!valid);
+        if (valid) {
+          onCommit(column, newOperator, newValue, extendedFilterOptions);
+        }
+      }
+    },
+    [
+      column,
+      extendedFilterOptions,
+      onCommit,
+      onOperatorChange,
+      operator,
+      setOperator,
+      setValue,
+      value,
+    ],
+  );
 
   const handleCommit = useCallback<CommitHandler<HTMLElement>>(
     (_e, newValue = "") => {
       if (Array.isArray(value)) {
         if (isBetweenOperator(operator)) {
-          setValue([`${newValue}`, value[1]]);
+          const newRange: [string, string] = [`${newValue}`, value[1]];
+          setValue(newRange);
+          if (showOperatorPicker && !isValidRange(newRange)) {
+            setIsInvalid(true);
+            return;
+          }
+          setIsInvalid(false);
           onCommit?.(
             column,
             operator,
@@ -109,7 +192,15 @@ export const useColumnFilter = ({
         onCommit?.(column, operator, `${newValue}`, extendedFilterOptions);
       }
     },
-    [value, operator, setValue, onCommit, column, extendedFilterOptions],
+    [
+      value,
+      operator,
+      setValue,
+      onCommit,
+      column,
+      extendedFilterOptions,
+      showOperatorPicker,
+    ],
   );
 
   const handleRangeCommit = useCallback<CommitHandler<HTMLElement>>(
@@ -151,20 +242,30 @@ export const useColumnFilter = ({
   const onChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (e) => {
       const { value = "" } = e.target;
-      setValue((v) => (Array.isArray(v) ? [value, v[1]] : value));
+      setValue((v) => {
+        const current = showOperatorPicker
+          ? normalizeColumnFilterValue(operator, v)
+          : v;
+        return Array.isArray(current) ? [value, current[1]] : value;
+      });
       onColumnFilterChange?.(e.target.value, column, operator);
     },
-    [column, onColumnFilterChange, operator, setValue],
+    [column, onColumnFilterChange, operator, setValue, showOperatorPicker],
   );
 
   const onRangeInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (e) => {
       const { value = "" } = e.target;
-      setValue((v) => (Array.isArray(v) ? [v[0], value] : value));
+      setValue((v) => {
+        const current = showOperatorPicker
+          ? normalizeColumnFilterValue(operator, v)
+          : v;
+        return Array.isArray(current) ? [current[0], value] : value;
+      });
 
       onColumnRangeFilterChange?.(value, column, operator);
     },
-    [setValue, onColumnRangeFilterChange, column, operator],
+    [setValue, onColumnRangeFilterChange, column, operator, showOperatorPicker],
   );
 
   const InputProps = useMemo(
@@ -193,8 +294,13 @@ export const useColumnFilter = ({
   return {
     InputProps,
     InputPropsRange,
-    isInvalid,
+    isInvalid: showOperatorPicker
+      ? Array.isArray(value) && !isValidRange(value)
+      : isInvalid,
     onCommit: handleCommit,
     onCommitRange: handleRangeCommit,
+    operator,
+    operators,
+    onOperatorSelect: handleOperatorSelect,
   };
 };

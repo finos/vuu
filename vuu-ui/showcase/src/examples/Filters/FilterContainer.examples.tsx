@@ -17,12 +17,19 @@ import {
   IconButton,
   useContextPanel,
 } from "@vuu-ui/vuu-ui-controls";
-import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
+import {
+  DataSourceProvider,
+  filterAsQuery,
+  getColumnsByNameForFilter,
+  toColumnName,
+  useData,
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 import { DemoTableContainer } from "../Table/DemoTableContainer";
 import { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
 
 const schema = getSchema("instruments");
+const filterColumnsByName = getColumnsByNameForFilter(schema);
 
 const typeaheadPropsZero: ColumnFilterProps["TypeaheadProps"] = {
   minCharacterCountToTriggerSuggestions: 0,
@@ -35,7 +42,9 @@ const typeaheadPropsOne: ColumnFilterProps["TypeaheadProps"] = {
 
 const SimpleFilterContainerTemplate = ({
   filter: filterProp,
-}: Pick<FilterContainerProps, "filter">) => {
+  showOperatorPicker = false,
+}: Pick<FilterContainerProps, "filter"> &
+  Pick<ColumnFilterProps, "showOperatorPicker">) => {
   const { VuuDataSource } = useData();
   const [filter, setFilter] =
     useState<FilterContainerProps["filter"]>(filterProp);
@@ -92,6 +101,10 @@ const SimpleFilterContainerTemplate = ({
         onFilterApplied={onFilterApplied}
         onFilterCleared={onFilterCleared}
         style={{
+          boxSizing: "border-box",
+          height: "100%",
+          minHeight: 0,
+          overflow: "auto",
           justifyContent: "flex-start",
           display: "flex",
           flexDirection: "column",
@@ -104,7 +117,10 @@ const SimpleFilterContainerTemplate = ({
           <FilterContainerColumnFilter
             TypeaheadProps={typeaheadPropsOne}
             column={vuuCreatedTime}
-            operator="between"
+            defaultOperator={showOperatorPicker ? ">=" : undefined}
+            operator={showOperatorPicker ? undefined : "between"}
+            operators={["=", ">=", "<=", "between", "between-inclusive"]}
+            showOperatorPicker={showOperatorPicker}
             table={table}
           />
         </FormField>
@@ -113,6 +129,9 @@ const SimpleFilterContainerTemplate = ({
           <FilterContainerColumnFilter
             TypeaheadProps={typeaheadPropsOne}
             column={bbg}
+            defaultOperator={showOperatorPicker ? "starts" : undefined}
+            operators={["=", "!=", "starts", "contains"]}
+            showOperatorPicker={showOperatorPicker}
             table={table}
           />
         </FormField>
@@ -121,6 +140,8 @@ const SimpleFilterContainerTemplate = ({
           <FilterContainerColumnFilter
             TypeaheadProps={typeaheadPropsZero}
             column={currency}
+            operators={["=", "!="]}
+            showOperatorPicker={showOperatorPicker}
             table={table}
           />
         </FormField>
@@ -129,17 +150,47 @@ const SimpleFilterContainerTemplate = ({
           <FilterContainerColumnFilter
             TypeaheadProps={typeaheadPropsZero}
             column={exchange}
+            defaultOperator={showOperatorPicker ? "contains" : undefined}
+            showOperatorPicker={showOperatorPicker}
             table={table}
           />
         </FormField>
         <FormField>
           <FormFieldLabel>Lot Size</FormFieldLabel>
-          <FilterContainerColumnFilter column={lotSize} operator="between" />
+          <FilterContainerColumnFilter
+            column={lotSize}
+            defaultOperator={showOperatorPicker ? ">" : undefined}
+            operator={showOperatorPicker ? undefined : "between"}
+            operators={[
+              "=", "!=", ">", ">=", "<", "<=", "between", "between-inclusive",
+            ]}
+            showOperatorPicker={showOperatorPicker}
+          />
         </FormField>
         <FilterDisplay columns={columns} filter={filter} />
         <DataSourceStats dataSource={dataSource} />
-        <div style={{ background: "lightgray", whiteSpace: "preserve" }}>
+        <pre
+          data-testid="aggregated-filter-json"
+          style={{
+            background: "lightgray",
+            flexShrink: 0,
+            margin: 0,
+            maxHeight: 240,
+            overflow: "auto",
+          }}
+        >
           {JSON.stringify(filter, null, 2)}
+        </pre>
+        <div style={{ flexShrink: 0, minWidth: 0 }}>
+          <strong>Vuu filter query</strong>
+          <pre
+            data-testid="vuu-filter-query"
+            style={{ maxHeight: 160, overflow: "auto" }}
+          >
+            {filter
+              ? filterAsQuery(filter, { columnsByName: filterColumnsByName })
+              : ""}
+          </pre>
         </div>
       </FilterContainer>
     </DataSourceProvider>
@@ -170,6 +221,38 @@ export const WithMultiCLauseFilter = () => (
         },
       ],
     }}
+  />
+);
+
+export const SimpleFilterContainerEmptyWithOperators = () => (
+  <SimpleFilterContainerTemplate showOperatorPicker />
+);
+
+export const WithSimpleFilterAndOperators = () => (
+  <SimpleFilterContainerTemplate
+    filter={{ column: "currency", op: "!=", value: "GBP" }}
+    showOperatorPicker
+  />
+);
+
+export const WithMultiClauseFilterAndOperators = () => (
+  <SimpleFilterContainerTemplate
+    filter={{
+      op: "and",
+      filters: [
+        { column: "bbg", op: "starts", value: "AA" },
+        { column: "currency", op: "!=", value: "GBP" },
+        { column: "exchange", op: "contains", value: "XLON" },
+        {
+          op: "and",
+          filters: [
+            { column: "lotSize", op: ">=", value: 100 },
+            { column: "lotSize", op: "<=", value: 200 },
+          ],
+        },
+      ],
+    }}
+    showOperatorPicker
   />
 );
 

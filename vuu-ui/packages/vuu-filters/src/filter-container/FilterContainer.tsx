@@ -18,6 +18,7 @@ import {
   ColumnFilterChangeHandler,
   ColumnFilterCommitHandler,
   ColumnFilterValue,
+  ColumnFilterOp,
 } from "@vuu-ui/vuu-filter-types";
 import { ColumnFilter, ColumnFilterProps } from "../column-filter/ColumnFilter";
 import {
@@ -25,6 +26,7 @@ import {
   isNullFilter,
   useColumnFilterRegistry,
   useSavedFilters,
+  UNSAVED_FILTER,
 } from "../filter-provider/FilterContext";
 import {
   filtersAreEqual,
@@ -35,6 +37,14 @@ import {
   isBetweenOperator,
   type DateTimePattern,
 } from "@vuu-ui/vuu-utils";
+import { useControlled } from "@salt-ds/core";
+import {
+  getColumnFilterOperator,
+  getColumnFilterClause,
+  getColumnFilterOperators,
+  getDefaultColumnFilterOperator,
+  normalizeColumnFilterValue,
+} from "../column-filter/column-filter-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
@@ -46,15 +56,14 @@ const notEmpty = (value: ColumnFilterValue) =>
   Array.isArray(value) ? value[0] !== "" && value[1] !== "" : value !== "";
 
 export interface FilterContainerProps
-  extends HTMLAttributes<HTMLDivElement>, ColumnFilterContainerHookProps {
+  extends HTMLAttributes<HTMLDivElement>,
+    ColumnFilterContainerHookProps {
   children: ReactNode;
   filterProviderKey?: string;
 }
 
-export interface FilterContainerColumnFilterProps extends Omit<
-  ColumnFilterProps,
-  "defaultValue" | "onCommit" | "value"
-> {
+export interface FilterContainerColumnFilterProps
+  extends Omit<ColumnFilterProps, "defaultValue" | "onCommit" | "value"> {
   defaultValue?: ColumnFilterValue;
   /**
    * See ColumnFilter pattern. Defaults to the pattern configured for the
@@ -66,7 +75,11 @@ export interface FilterContainerColumnFilterProps extends Omit<
 
 export const FilterContainerColumnFilter = ({
   column: columnProp,
-  operator = "=",
+  operator: operatorProp,
+  defaultOperator,
+  showOperatorPicker = false,
+  operators,
+  onOperatorChange,
   pattern: patternProp,
   variant,
   ...props
@@ -83,11 +96,37 @@ export const FilterContainerColumnFilter = ({
     [columnProp, date, time],
   );
   const {
+    filter: containerFilter,
+    getFilter,
     filterProviderKey,
     onChange: onFilterContextChange,
     onCommit: onFilterContextCommit,
     register,
   } = useFilterContext(column, true);
+  const availableOperators = useMemo(
+    () =>
+      showOperatorPicker
+        ? getColumnFilterOperators(column, operators)
+        : undefined,
+    [column, operators, showOperatorPicker],
+  );
+  const [initialOperator] = useState(() =>
+    availableOperators
+      ? getDefaultColumnFilterOperator(
+          availableOperators,
+          operatorProp ??
+            getColumnFilterOperator(column, containerFilter) ??
+            defaultOperator,
+        )
+      : (defaultOperator ?? "="),
+  );
+  const [selectedOperator, setOperator] = useControlled<ColumnFilterOp>({
+    controlled: operatorProp,
+    default: initialOperator,
+    name: "FilterContainerColumnFilter",
+    state: "operator",
+  });
+  const operator = selectedOperator;
 
   const { registerColumnFilterColumn } =
     useColumnFilterRegistry(filterProviderKey);
@@ -103,16 +142,85 @@ export const FilterContainerColumnFilter = ({
 
   const [value, setValue] = useState(initialValue);
   const valueRef = useRef<ColumnFilterValue>(initialValue);
+  if (showOperatorPicker) {
+    const normalizedValue = normalizeColumnFilterValue(operator, value);
+    if (normalizedValue !== value) {
+      valueRef.current = normalizedValue;
+      setValue(normalizedValue);
+    }
+  }
   const { currentFilter } = useSavedFilters(filterProviderKey);
 
   // This is primarily to guard against client passing non-stable 'column' reference
   // which would trigger the commit check below.
   const currentFilterRef = useRef(currentFilter);
+  const containerFilterRef = useRef(containerFilter);
+  const localFilterRef = useRef(containerFilter);
+
+  useMemo(() => {
+    if (!showOperatorPicker) return;
+    const containerChanged = !filtersAreEqual(
+      containerFilterRef.current,
+      containerFilter,
+    );
+    const savedChanged =
+      currentFilterRef.current.id !== currentFilter.id ||
+      !filtersAreEqual(currentFilterRef.current.filter, currentFilter.filter);
+    if (containerChanged || savedChanged) {
+      const savedIdChanged = currentFilterRef.current.id !== currentFilter.id;
+      const filter = containerChanged
+        ? containerFilter
+        : (currentFilter.filter ?? undefined);
+      containerFilterRef.current = containerFilter;
+      currentFilterRef.current = currentFilter;
+      // Local changes already update the draft, including incomplete ranges and uncommitted values.
+      const savedFilterActivated =
+        savedIdChanged &&
+        filterDescriptorHasFilter(currentFilter) &&
+        currentFilter.id !== UNSAVED_FILTER;
+      const clause = getColumnFilterClause(column, filter);
+      if (
+        savedFilterActivated ||
+        !filtersAreEqual(
+          clause,
+          getColumnFilterClause(column, localFilterRef.current),
+        )
+      ) {
+        const nextOperator =
+          operatorProp ??
+          (availableOperators
+            ? getDefaultColumnFilterOperator(
+                availableOperators,
+                getColumnFilterOperator(column, filter) ?? defaultOperator,
+              )
+            : operator);
+        const nextValue = normalizeColumnFilterValue(
+          nextOperator,
+          getColumnValueFromFilter(column, nextOperator, clause),
+        );
+        setOperator(nextOperator);
+        valueRef.current = nextValue;
+        setValue(nextValue);
+        localFilterRef.current = filter;
+      }
+    }
+  }, [
+    availableOperators,
+    column,
+    containerFilter,
+    currentFilter,
+    defaultOperator,
+    operator,
+    operatorProp,
+    setOperator,
+    showOperatorPicker,
+  ]);
 
   useMemo(() => {
     if (
-      currentFilterRef.current.id !== currentFilter.id ||
-      !filtersAreEqual(currentFilterRef.current.filter, currentFilter.filter)
+      !showOperatorPicker &&
+      (currentFilterRef.current.id !== currentFilter.id ||
+        !filtersAreEqual(currentFilterRef.current.filter, currentFilter.filter))
     ) {
       currentFilterRef.current = currentFilter;
 
@@ -156,15 +264,16 @@ export const FilterContainerColumnFilter = ({
     // We only want this to run when the filter id changes, not when
     // filter instance changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [column, currentFilter]);
+  }, [column, currentFilter, showOperatorPicker]);
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
     (column, op, value, extendedFilterOptions) => {
       valueRef.current = value;
       setValue(value);
       onFilterContextCommit(column, op, value, extendedFilterOptions);
+      localFilterRef.current = getFilter();
     },
-    [onFilterContextCommit],
+    [getFilter, onFilterContextCommit],
   );
 
   const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
@@ -173,8 +282,9 @@ export const FilterContainerColumnFilter = ({
       valueRef.current = Array.isArray(v) ? [`${value}`, v[1]] : value;
       setValue(valueRef.current);
       onFilterContextChange(valueRef.current, column, op);
+      localFilterRef.current = getFilter();
     },
-    [onFilterContextChange],
+    [getFilter, onFilterContextChange],
   );
 
   const handleColumnRangeFilterChange = useCallback<ColumnFilterChangeHandler>(
@@ -183,8 +293,9 @@ export const FilterContainerColumnFilter = ({
       valueRef.current = Array.isArray(v) ? [v[0], `${value}`] : value;
       setValue(valueRef.current);
       onFilterContextChange(valueRef.current, column, op);
+      localFilterRef.current = getFilter();
     },
-    [onFilterContextChange],
+    [getFilter, onFilterContextChange],
   );
 
   return (
@@ -195,6 +306,14 @@ export const FilterContainerColumnFilter = ({
       onColumnRangeFilterChange={handleColumnRangeFilterChange}
       onCommit={handleCommit}
       operator={operator}
+      onOperatorChange={(event, op) => {
+        setOperator(op);
+        valueRef.current = normalizeColumnFilterValue(op, valueRef.current);
+        setValue(valueRef.current);
+        onOperatorChange?.(event, op);
+      }}
+      operators={operators}
+      showOperatorPicker={showOperatorPicker}
       value={value}
       variant={variant}
     />

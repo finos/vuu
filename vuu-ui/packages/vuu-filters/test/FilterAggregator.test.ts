@@ -4,6 +4,55 @@ import { filterAsQuery, Time } from "@vuu-ui/vuu-utils";
 import type { Filter } from "@vuu-ui/vuu-filter-types";
 
 describe("FilterAggregator", () => {
+  it.each([
+    ">",
+    ">=",
+    "<",
+    "<=",
+    "!=",
+  ] as const)("honours %s for a numeric column and replaces its previous clause", (op) => {
+    const aggregator = new FilterAggregator({
+      column: "price",
+      op: "=",
+      value: 10,
+    });
+    aggregator.add({ name: "price", serverDataType: "double" }, "20", op);
+    expect(aggregator.count).toBe(1);
+    expect(aggregator.filter).toEqual({ column: "price", op, value: 20 });
+    expect(filterAsQuery(aggregator.filter!)).toContain(`price ${op} 20`);
+  });
+
+  it.each([
+    "!=",
+    "starts",
+    "ends",
+    "contains",
+  ] as const)("honours %s for text", (op) => {
+    const aggregator = new FilterAggregator();
+    aggregator.add({ name: "name", serverDataType: "string" }, "abc", op);
+    expect(aggregator.filter).toEqual({ column: "name", op, value: "abc" });
+  });
+
+  it("honours inequality for a boolean column", () => {
+    const aggregator = new FilterAggregator();
+    aggregator.add({ name: "flag", serverDataType: "boolean" }, "true", "!=");
+    expect(aggregator.filter).toEqual({
+      column: "flag",
+      op: "!=",
+      value: true,
+    });
+  });
+
+  it("rejects multi-value operators with a scalar value", () => {
+    expect(() =>
+      new FilterAggregator().add(
+        { name: "name", serverDataType: "string" },
+        "abc",
+        "in",
+      ),
+    ).toThrow("unsupported single-value operator");
+  });
+
   describe("returns correct 'filter'", () => {
     it("WHEN created empty", () => {
       const aggregator = new FilterAggregator();
@@ -236,9 +285,9 @@ describe("FilterAggregator", () => {
 
       describe("WHEN a value tuple is added for a time column", () => {
         const tradeTime = {
-              name: "tradeTime",
-              serverDataType: "epochtimestamp",
-              type: "time",
+          name: "tradeTime",
+          serverDataType: "epochtimestamp",
+          type: "time",
         } as const;
         const extendedOptions = {
           type: "TimeString",
