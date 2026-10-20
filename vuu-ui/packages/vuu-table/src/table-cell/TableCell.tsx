@@ -19,14 +19,12 @@ import tableCellCss from "./TableCell.css";
 const classBase = "vuuTableCell";
 
 /**
- * Rows receive a new dataRow whenever the data source sends their range,
- * which happens on every scroll step, so without this every visible cell
- * re-rendered (and re-formatted its value) on every frame. A cell with the
- * default renderer depends only on its column, its own value and the row
- * key, so it can skip rendering when those are unchanged. A custom
- * CellRenderer may read any part of the row, so those cells still render
- * whenever the row object changes. Edit-session state reaches the cell
- * through context, which a memo does not block.
+ * A cell with the default renderer depends only on its column, its own
+ * value and the row key, so it skips rendering when those are unchanged,
+ * even if the row object is new. A custom CellRenderer may read any part of
+ * the row, so those cells render whenever the row object changes.
+ * Edit-session state reaches the cell through context, which memo does not
+ * block.
  */
 const tableCellUnchanged = (prev: TableCellProps, next: TableCellProps) =>
   prev.column === next.column &&

@@ -5,10 +5,9 @@ const DIGIT_STR = String.fromCharCode(8199);
 const DECIMALS_AUTO = -1;
 
 /**
- * Number.prototype.toLocaleString sets up locale formatting on every call,
- * which made it the single biggest cost when scrolling a table of numbers.
- * A cached Intl.NumberFormat with default options produces the same output
- * about 30x faster.
+ * Formats with the default locale and options, the same output as
+ * Number.prototype.toLocaleString(), which sets up locale formatting on
+ * every call and is about 30x slower.
  */
 const integerFormat = new Intl.NumberFormat();
 const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER.toString();
