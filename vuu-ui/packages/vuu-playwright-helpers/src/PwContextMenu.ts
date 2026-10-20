@@ -1,6 +1,7 @@
-import { expect, type Locator } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import { PwComponent } from "./PwComponent";
 import { PwMenuItem } from "./PwMenuItem";
+import { byId } from "./selector-utils";
 
 /**
  * A context menu (or one of its sub menus). Usually obtained from
@@ -20,6 +21,67 @@ import { PwMenuItem } from "./PwMenuItem";
  */
 export class PwContextMenu extends PwComponent {
   protected readonly defaultCssSelector = '.vuuContextMenuPanel[role="menu"]';
+
+  /**
+   * Perform the action that opens a context menu (e.g. a right click), then
+   * resolve with the menu once it is visible and has focus. Component helpers
+   * use this to implement showContextMenu.
+   *
+   * @example
+   * test("context menu from custom element", async ({ page }) => {
+   *   const menu = await PwContextMenu.open(page, () =>
+   *     page.getByTestId("panel").click({ button: "right" }),
+   *   );
+   *   expect(await menu.hasMenuItems()).toBe(true);
+   * });
+   */
+  static async open(
+    page: Page,
+    openAction: () => Promise<unknown>,
+  ): Promise<PwContextMenu> {
+    await openAction();
+    // Sub menus are not yet open, so the only context menu is the one just opened.
+    // Bind to it by id so later sub menus are not matched.
+    const menu = await new PwContextMenu(page).isReady();
+    const menuId = await menu.locator.getAttribute("id");
+    const contextMenu = menuId ? new PwContextMenu(page, byId(menuId)) : menu;
+    // The menu is visible before focus moves into it. Wait for focus, else
+    // a key pressed immediately would be handled by the component.
+    await expect(
+      contextMenu.locator.and(page.locator(":focus-within")),
+    ).toHaveCount(1);
+    return contextMenu;
+  }
+
+  /**
+   * Perform the action that would open a context menu (e.g. a right click),
+   * then assert that no context menu is shown.
+   *
+   * A negative assertion passes as soon as the menu is absent, which may be
+   * before a menu would have rendered. To avoid false passes we wait for two
+   * animation frames after the action, allowing React to commit and the menu
+   * to be positioned, before asserting.
+   *
+   * @example
+   * test("no context menu on panel", async ({ page }) => {
+   *   await PwContextMenu.assertNotOpened(page, () =>
+   *     page.getByTestId("panel").click({ button: "right" }),
+   *   );
+   * });
+   */
+  static async assertNotOpened(
+    page: Page,
+    openAction: () => Promise<unknown>,
+  ): Promise<void> {
+    await openAction();
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+    await new PwContextMenu(page).assertNotAttached();
+  }
 
   /**
    * Locator for the menu items of this menu. Sub menus are rendered in their

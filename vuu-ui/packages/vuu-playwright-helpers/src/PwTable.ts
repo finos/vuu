@@ -3,7 +3,7 @@ import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { PwComponent } from "./PwComponent";
 import { PwContextMenu } from "./PwContextMenu";
 import { PwTableHeaderCell } from "./PwTableHeaderCell";
-import { byDataIcon, byId, cssAttributeValue } from "./selector-utils";
+import { byDataIcon, cssAttributeValue } from "./selector-utils";
 
 type AriaRole = "cell" | "textbox" | "combobox";
 
@@ -229,20 +229,7 @@ export class PwTable extends PwComponent {
     ariaRowIndex: number,
   ): Promise<PwContextMenu> {
     const cell = await this.cell(columnName, ariaRowIndex);
-    await cell.click({ button: "right" });
-    // Sub menus are not yet open, so the only context menu is the one just opened.
-    // Bind to it by id so later sub menus are not matched.
-    const menu = await new PwContextMenu(this.page).isReady();
-    const menuId = await menu.locator.getAttribute("id");
-    const contextMenu = menuId
-      ? new PwContextMenu(this.page, byId(menuId))
-      : menu;
-    // The menu is visible before focus moves into it. Wait for focus, else
-    // a key pressed immediately would be handled by the table.
-    await expect(
-      contextMenu.locator.and(this.page.locator(":focus-within")),
-    ).toHaveCount(1);
-    return contextMenu;
+    return PwContextMenu.open(this.page, () => cell.click({ button: "right" }));
   }
 
   /**
@@ -268,14 +255,9 @@ export class PwTable extends PwComponent {
     ariaRowIndex: number,
   ): Promise<void> {
     const cell = await this.cell(columnName, ariaRowIndex);
-    await cell.click({ button: "right" });
-    await this.page.evaluate(
-      () =>
-        new Promise<void>((resolve) =>
-          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-        ),
+    await PwContextMenu.assertNotOpened(this.page, () =>
+      cell.click({ button: "right" }),
     );
-    await new PwContextMenu(this.page).assertNotAttached();
     await expect(cell).not.toContainClass("ContextOpen");
   }
 
