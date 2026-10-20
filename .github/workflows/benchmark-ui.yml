@@ -1,0 +1,182 @@
+name: UI Benchmarks
+
+# Vuu Table benchmarks. Informational only: nothing is gated on the results.
+#
+# - nightly on main: skipped when nothing in BENCH_PATHS changed since the
+#   last published run, otherwise results are appended to the history on the
+#   gh-pages branch (benchmarks/ folder, https://finos.github.io/vuu/benchmarks/)
+# - pull requests touching the Table, its runtime dependencies or the
+#   benchmarks: a short run, results in the job summary and as an artifact
+# - manual: always runs, publishes only when asked and only from main
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  pull_request:
+    # keep in step with BENCH_PATHS below
+    paths:
+      - ".github/workflows/benchmark-ui.yml"
+      - "vuu-ui/package-lock.json"
+      - "vuu-ui/benchmarks/**"
+      - "vuu-ui/packages/vuu-table/**"
+      - "vuu-ui/packages/vuu-context-menu/**"
+      - "vuu-ui/packages/vuu-data-editing/**"
+      - "vuu-ui/packages/vuu-data-react/**"
+      - "vuu-ui/packages/vuu-popups/**"
+      - "vuu-ui/packages/vuu-table-extras/**"
+      - "vuu-ui/packages/vuu-ui-controls/**"
+      - "vuu-ui/packages/vuu-utils/**"
+      - "vuu-ui/packages/vuu-data-local/**"
+      - "vuu-ui/packages/vuu-theme/**"
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish results to gh-pages (main only)"
+        required: true
+        default: false
+        type: boolean
+      iterations:
+        description: "Timing iterations per scenario"
+        required: true
+        default: "5"
+        type: string
+
+# read-only by default, only the publish job can write
+permissions:
+  contents: read
+
+concurrency:
+  group: ui-benchmarks-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # vuu-table, its runtime @vuu-ui dependencies, the packages the benchmark
+  # app uses (vuu-data-local, vuu-theme), the benchmarks and the lock file
+  BENCH_PATHS: >-
+    .github/workflows/benchmark-ui.yml
+    vuu-ui/package-lock.json
+    vuu-ui/benchmarks
+    vuu-ui/packages/vuu-table
+    vuu-ui/packages/vuu-context-menu
+    vuu-ui/packages/vuu-data-editing
+    vuu-ui/packages/vuu-data-react
+    vuu-ui/packages/vuu-popups
+    vuu-ui/packages/vuu-table-extras
+    vuu-ui/packages/vuu-ui-controls
+    vuu-ui/packages/vuu-utils
+    vuu-ui/packages/vuu-data-local
+    vuu-ui/packages/vuu-theme
+
+jobs:
+  changes:
+    if: ${{ github.event.repository.fork == false || github.event_name != 'schedule' }}
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - name: Checkout
+        if: ${{ github.event_name == 'schedule' }}
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          fetch-depth: 0
+
+      - name: Compare with last published run
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          run=true
+          git fetch --no-tags --depth=1 origin gh-pages
+          if index=$(git show origin/gh-pages:benchmarks/data/index.json 2>/dev/null); then
+            last=$(echo "$index" | node -e '
+              const index = JSON.parse(require("fs").readFileSync(0, "utf8"));
+              const run = index.runs.at(-1);
+              console.log(run ? run.gitSha.replace(/-dirty$/, "") : "");')
+            if [ -n "$last" ] && git cat-file -e "$last^{commit}" 2>/dev/null \
+              && git diff --quiet "$last" HEAD -- $BENCH_PATHS; then
+              echo "No benchmark-relevant changes since $last, skipping"
+              run=false
+            fi
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+
+  benchmark:
+    needs: changes
+    if: ${{ needs.changes.outputs.run == 'true' }}
+    # nightly runs use a fixed-size runner so the machine is constant between
+    # runs. Pull requests (which may come from forks) use the standard runner:
+    # their numbers are noisier and only show the pipeline works.
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'ubuntu-latest-16-cores' }}
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+
+      - name: Install Node & dependencies
+        uses: ./.github/actions/setup-vuu-ui
+
+      - name: Build worker
+        run: cd ./vuu-ui && npm run build:worker
+
+      - name: Install Chromium
+        run: cd ./vuu-ui && npx playwright install --with-deps --no-shell chromium
+
+      - name: Build benchmark app
+        run: cd ./vuu-ui && npm run bench:build
+
+      - name: Run benchmarks
+        env:
+          BENCH_ITERATIONS: ${{ github.event_name == 'pull_request' && '2' || inputs.iterations || '5' }}
+          BENCH_MACHINE_ID: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'ubuntu-latest-16-cores' }}
+        run: cd ./vuu-ui && npm run bench
+
+      - name: Job summary
+        if: always()
+        run: cd ./vuu-ui && npm run -s bench:report -- benchmarks/results/current >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: ui-benchmark-results
+          path: vuu-ui/benchmarks/results
+          retention-days: 90
+
+  publish:
+    needs: benchmark
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || inputs.publish) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+
+      - name: Checkout gh-pages
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Install Node & dependencies
+        uses: ./.github/actions/setup-vuu-ui
+
+      - name: Download results
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: ui-benchmark-results
+          path: results
+
+      - name: Add run to history
+        run: cd ./vuu-ui && npm run bench:publish -- ../results/current ../gh-pages
+
+      - name: Push to gh-pages
+        working-directory: gh-pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add benchmarks
+          git commit -m "UI benchmarks: ${GITHUB_SHA::10}"
+          git push origin gh-pages

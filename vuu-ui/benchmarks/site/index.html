@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vuu Table benchmarks</title>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --surface: #f6f7f9;
+        --text: #1d2125;
+        --muted: #5e6670;
+        --grid: #e1e4e8;
+        --line: #2563c9;
+        --border: #d6dae0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #15181c;
+          --surface: #1d2126;
+          --text: #e8eaed;
+          --muted: #9aa1aa;
+          --grid: #2c3238;
+          --line: #6ea8ff;
+          --border: #353b42;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 24px 16px 48px;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          14px/1.45 system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 22px;
+        margin: 0 0 4px;
+      }
+      h2 {
+        font-size: 16px;
+        margin: 32px 0 2px;
+      }
+      p {
+        margin: 0;
+        color: var(--muted);
+      }
+      .env {
+        margin-top: 8px;
+        font-size: 13px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .chart {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 12px;
+      }
+      .chart h3 {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .chart h3 span {
+        color: var(--muted);
+        font-weight: 400;
+      }
+      svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        margin-top: 6px;
+      }
+      code {
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Vuu Table benchmarks</h1>
+      <p>
+        Nightly runs on <code>main</code>, local data scenarios. Lower is better
+        for every metric. Each point is the median of the run's timing
+        iterations; hover a point for its commit.
+      </p>
+      <p class="env" id="env"></p>
+      <div id="charts"></div>
+    </main>
+    <script>
+      const MAX_RUNS = 90;
+
+      const fmt = (v) =>
+        Math.abs(v) >= 100 ? Math.round(v).toString() : v.toFixed(1);
+
+      function lineChart(points) {
+        const w = 320;
+        const h = 120;
+        const pad = { l: 36, r: 8, t: 8, b: 18 };
+        const values = points.map((p) => p.value);
+        const max = Math.max(...values) * 1.1 || 1;
+        const x = (i) =>
+          pad.l +
+          (points.length < 2
+            ? (w - pad.l - pad.r) / 2
+            : (i / (points.length - 1)) * (w - pad.l - pad.r));
+        const y = (v) => pad.t + (1 - v / max) * (h - pad.t - pad.b);
+        const ns = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(ns, "svg");
+        svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+        const add = (tag, attrs, text) => {
+          const el = document.createElementNS(ns, tag);
+          for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+          if (text !== undefined) el.textContent = text;
+          svg.append(el);
+          return el;
+        };
+        for (const t of [0, max / 2, max]) {
+          add("line", {
+            x1: pad.l,
+            x2: w - pad.r,
+            y1: y(t),
+            y2: y(t),
+            stroke: "var(--grid)",
+          });
+          add(
+            "text",
+            {
+              x: pad.l - 4,
+              y: y(t) + 3,
+              "text-anchor": "end",
+              "font-size": 9,
+              fill: "var(--muted)",
+            },
+            fmt(t),
+          );
+        }
+        add("polyline", {
+          points: points.map((p, i) => `${x(i)},${y(p.value)}`).join(" "),
+          fill: "none",
+          stroke: "var(--line)",
+          "stroke-width": 1.5,
+        });
+        points.forEach((p, i) => {
+          const dot = add("circle", {
+            cx: x(i),
+            cy: y(p.value),
+            r: 2.5,
+            fill: "var(--line)",
+          });
+          const title = document.createElementNS(ns, "title");
+          title.textContent = `${fmt(p.value)} · ${p.date.slice(0, 10)} · ${p.sha.slice(0, 10)}`;
+          dot.append(title);
+        });
+        if (points.length) {
+          add(
+            "text",
+            { x: pad.l, y: h - 4, "font-size": 9, fill: "var(--muted)" },
+            points[0].date.slice(0, 10),
+          );
+          add(
+            "text",
+            {
+              x: w - pad.r,
+              y: h - 4,
+              "text-anchor": "end",
+              "font-size": 9,
+              fill: "var(--muted)",
+            },
+            points[points.length - 1].date.slice(0, 10),
+          );
+        }
+        return svg;
+      }
+
+      async function main() {
+        const container = document.getElementById("charts");
+        const index = await fetch("data/index.json").then((r) => r.json());
+        const entries = index.runs.slice(-MAX_RUNS);
+        const runs = await Promise.all(
+          entries.map((e) => fetch(`data/${e.file}`).then((r) => r.json())),
+        );
+        if (runs.length === 0) {
+          container.textContent = "No runs recorded yet.";
+          return;
+        }
+        const latest = runs[runs.length - 1];
+        const env = latest.env;
+        document.getElementById("env").textContent =
+          `${runs.length} runs. Latest ${latest.date.slice(0, 16).replace("T", " ")} UTC, ` +
+          `${env.gitSha.slice(0, 10)}, ${env.browser} ${env.browserVersion}, ` +
+          `CPU throttle ${env.cpuThrottle}x, ${env.hardwareConcurrency} cores, ${env.platform}`;
+
+        for (const [id, scenario] of Object.entries(latest.scenarios)) {
+          const section = document.createElement("section");
+          const h2 = document.createElement("h2");
+          h2.textContent = id;
+          const desc = document.createElement("p");
+          desc.textContent = scenario.description;
+          const grid = document.createElement("div");
+          grid.className = "grid";
+          for (const metric of scenario.keyMetrics) {
+            const points = runs
+              .filter((r) => r.scenarios[id]?.summary[metric] !== undefined)
+              .map((r) => ({
+                value: r.scenarios[id].summary[metric],
+                date: r.date,
+                sha: r.env.gitSha,
+              }));
+            const card = document.createElement("div");
+            card.className = "chart";
+            const h3 = document.createElement("h3");
+            h3.textContent = metric;
+            const last = document.createElement("span");
+            last.textContent = points.length
+              ? fmt(points[points.length - 1].value)
+              : "";
+            h3.append(last);
+            card.append(h3, lineChart(points));
+            grid.append(card);
+          }
+          section.append(h2, desc, grid);
+          container.append(section);
+        }
+      }
+
+      main().catch((err) => {
+        document.getElementById("charts").textContent =
+          `Could not load benchmark history: ${err.message}`;
+      });
+    </script>
+  </body>
+</html>
