@@ -123,6 +123,8 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
     val sessionTable = tableContainer.createSimpleSessionTable(sessionTableSource, session)
     copyDataToSessionTable(copyOption, params.viewPort, sessionTable, columnsToCopy)
 
+    logger.info(s"Export session table ${sessionTable.name} created for user ${params.ctx.user.name} in session ${params.ctx.session.sessionId} based on source table ${sourceTable.name}");
+    logger.info(s"${sessionTable.size()} keys added to export session table ${sessionTable.name}");
     RpcFunctionSuccess(Some(OpenDialogViewPortAction(ViewPortTable(sessionTable.name, sessionTable.tableDef.getModule().name), "")))
   }
 
