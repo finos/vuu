@@ -125,7 +125,6 @@ trait CreateSessionTableRpcHandler extends RpcHandler {
 
     logger.info(s"Export session table ${sessionTable.name} created for user ${params.ctx.user.name} in session ${params.ctx.session.sessionId} based on source table ${sourceTable.name}");
     logger.info(s"${sessionTable.size()} keys added to export session table ${sessionTable.name}");
-    logger.info(s"Keys in export session table ${sessionTable.name}: ${sessionTable.primaryKeys.mkString(", ")}")
     RpcFunctionSuccess(Some(OpenDialogViewPortAction(ViewPortTable(sessionTable.name, sessionTable.tableDef.getModule().name), "")))
   }
 
