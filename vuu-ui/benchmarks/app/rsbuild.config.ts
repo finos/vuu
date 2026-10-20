@@ -26,6 +26,9 @@ export default defineConfig({
     },
     define: {
       __BENCH_GIT_SHA__: JSON.stringify(gitSha()),
+      __BENCH_LABEL__: JSON.stringify(
+        process.env.BENCH_LABEL ?? gitSha().slice(0, 10),
+      ),
     },
   },
   html: {

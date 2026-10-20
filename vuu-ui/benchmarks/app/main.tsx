@@ -20,6 +20,7 @@ import {
   KEY_COLUMN,
   type Row,
 } from "./data";
+import { startDemo } from "./demo";
 import { runScenario, type ScenarioContext } from "./scenarios";
 
 for (const css of [themeCss, iconsCss]) {
@@ -119,3 +120,12 @@ window.__vuuBench = {
   },
   unmount,
 };
+
+const params = new URLSearchParams(location.search);
+if (params.has("demo")) {
+  startDemo(params, async (scenario, layout) => {
+    const result = await mount(scenario, layout);
+    if (!context) throw Error("[benchmarks] demo table did not mount");
+    return { mount: result, context };
+  });
+}

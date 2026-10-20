@@ -21,6 +21,18 @@ await __vuuBench.mount(s, { width: 1200, height: 700, rowHeight: 20, renderBuffe
 await __vuuBench.run(s, { instrument: false, keepSamples: false });
 ```
 
+## Demo mode: comparing by eye
+
+`?demo` mounts a table with a continuous, seeded update feed and a bar showing live fps, frame p95, update-to-paint latency and updates/s, with controls for the feed. Use it to judge rendering changes the way users will see them.
+
+```bash
+BENCH_LABEL="main" npm run bench:build      # label shown in the page
+```
+
+Parameters: `rate` (updates/s, default 1000), `mode` (`steady`, or `burst` to copy the Vuu simulation's price feed), `cells` (`flash`, `plain`, `formatted`), `rows`, `cols`, `tickingRows`, `columnsPerUpdate`.
+
+To compare two builds, serve each and open them side by side in two Chrome windows on different sites, e.g. `http://localhost:3321/?demo` and `http://127.0.0.1:3322/?demo`, so each gets its own renderer process. Set DevTools → Performance → CPU 4x slowdown in each to approximate enterprise hardware. Close the demo pages before running benchmarks, they keep ticking.
+
 ## Comparing two builds (A/B)
 
 Build each version of the app into its own folder, then run both in one job. Iterations alternate between targets so that machine drift affects both equally.
