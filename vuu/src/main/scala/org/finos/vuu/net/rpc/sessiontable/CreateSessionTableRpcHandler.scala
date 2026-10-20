@@ -1,10 +1,8 @@
 package org.finos.vuu.net.rpc.sessiontable
 
-import org.finos.vuu.core.table.{InMemSessionDataTable, TableContainer, ViewPortColumnCreator}
-import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.sessiontable.SessionTableCopyOption.{All, Empty, Selected}
+import org.finos.vuu.core.table.TableContainer
 import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcNames, RpcParams, RpcPermissionChecker}
-import org.finos.vuu.viewport.{OpenDialogViewPortAction, RowSource, ViewPort, ViewPortTable}
+import org.finos.vuu.viewport.{OpenDialogViewPortAction, RowSource, ViewPortTable}
 
 trait CreateSessionTableRpcHandler extends RpcHandler {
 

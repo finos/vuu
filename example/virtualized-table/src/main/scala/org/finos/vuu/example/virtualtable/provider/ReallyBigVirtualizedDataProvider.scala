@@ -4,8 +4,10 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
 import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.vuu.core.table.{RowWithData, SessionTable}
-import org.finos.vuu.example.virtualtable.bigdatacache.FakeBigDataCache
+import org.finos.vuu.example.virtualtable.bigdatacache.FakeBigDataCache.DATASET_SIZE
+import org.finos.vuu.example.virtualtable.bigdatacache.{BigDataOrder, FakeBigDataCache}
 import org.finos.vuu.net.rpc.sessiontable.SessionTableCopyOption
+import org.finos.vuu.net.rpc.sessiontable.SessionTableCopyOption.{All, Empty, Selected}
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
 import org.finos.vuu.plugin.virtualized.provider.VirtualizedProvider
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedSessionTable, VirtualizedViewPortKeys}
@@ -45,11 +47,8 @@ class ReallyBigVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef)(imp
     logger.trace("[ReallyBigVirtualizedDataProvider] Adding rows ")
     val (millisRows, _) = timeIt {
       bigOrders.foreach({ case (index, order) => {
-        val rowWithData = RowWithData(order.orderId.toString,
-          Map("orderId" -> order.orderId.toString, "quantity" -> order.quantity, "price" -> order.price,
-            "side" -> order.side, "trader" -> order.trader)
-        )
-        table.processUpdateForIndex(index, order.orderId.toString, rowWithData, clock.now())
+        val rowWithData = convertToRowData(order)
+        table.processUpdateForIndex(index, order.orderId, rowWithData, clock.now())
       }
       })
     }
@@ -92,7 +91,34 @@ class ReallyBigVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef)(imp
 
   override def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPort: ViewPort): Array[String] = Array.empty
 
-  override def exportData(vp: ViewPort, sessionTable: SessionTable, columns: List[String], copyOption: SessionTableCopyOption): Unit = {
-    //TODO
+  override def exportData(vp: ViewPort,
+                          sessionTable: SessionTable,
+                          columns: List[String],
+                          copyOption: SessionTableCopyOption): Unit = {
+    copyOption match {
+      case All =>
+        //In this example, it's just 0 to dataset size
+        val keys = (0 to DATASET_SIZE).view.map(_.toString)
+        copyData(keys, sessionTable, columns)
+      case Selected =>
+        copyData(vp.getSelection, sessionTable, columns)
+      case Empty => //Nothing to do
+    }
   }
+
+  private def copyData(keys: Iterable[String], sessionTable: SessionTable, columns: List[String]): Unit = {
+    val rowDataIterator = cache.loadOrdersForKeys(keys).take(sessionTable.getTableDef.options.maxSize)
+    while (rowDataIterator.hasNext) {
+      val rowData = convertToRowData(rowDataIterator.next())
+      sessionTable.processUpdate(rowData)
+    }
+  }
+
+  private def convertToRowData(bigDataOrder: BigDataOrder): RowWithData = {
+    RowWithData(bigDataOrder.orderId,
+      Map("orderId" -> bigDataOrder.orderId, "quantity" -> bigDataOrder.quantity, "price" -> bigDataOrder.price,
+        "side" -> bigDataOrder.side, "trader" -> bigDataOrder.trader)
+    )
+  }
+
 }
