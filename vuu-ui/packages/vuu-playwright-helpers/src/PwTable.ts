@@ -3,7 +3,7 @@ import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { PwComponent } from "./PwComponent";
 import { PwContextMenu } from "./PwContextMenu";
 import { PwTableHeaderCell } from "./PwTableHeaderCell";
-import { byDataIcon, byId, cssAttributeValue } from "./selector-utils";
+import { byDataIcon, cssAttributeValue } from "./selector-utils";
 
 type AriaRole = "cell" | "textbox" | "combobox";
 
@@ -20,19 +20,57 @@ const xpathStringLiteral = (value: string) => {
   return `concat('${value.split("'").join(`', "'", '`)}')`;
 };
 
+/**
+ * A Vuu Table. Rows are located by 1-based aria row index, which includes
+ * header rows (with one header, the first data row is 2).
+ *
+ * @example
+ * test("table renders instruments", async ({ mount, page }) => {
+ *   await mount("Table/ContextMenu/LocalContextMenu");
+ *   const table = new PwTable(page);
+ *   await table.assertVisible();
+ *   await expect(await table.cell("ric", 2)).toHaveText("AAOO.L");
+ * });
+ */
 export class PwTable extends PwComponent {
   protected readonly defaultCssSelector = ".vuuTable";
 
+  /**
+   * Locator for the scrollable content container (the rendered rows).
+   *
+   * @example
+   * test("rows are zebra striped", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await expect(table.contentContainer).toContainClass("vuuTable-zebra");
+   * });
+   */
   get contentContainer() {
     return this.locator.locator(".vuuTable-contentContainer");
   }
 
+  /**
+   * Locator for the scrollbar container, the element that scrolls.
+   *
+   * @example
+   * test("scrolls vertically", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await table.scrollbarContainer.evaluate((el) => el.scrollTo(0, 1000));
+   *   await expect(table.row(2)).not.toBeInViewport();
+   * });
+   */
   get scrollbarContainer() {
     return this.locator.locator(".vuuTable-scrollbarContainer");
   }
 
   /**
-   * row Locator by aria-index
+   * Row Locator by 1-based aria row index, including headers.
+   *
+   * @example
+   * test("first data row is selected", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await (await table.cell("ric", 2)).click();
+   *   await expect(table.row(2)).toHaveAttribute("aria-selected", "true");
+   * });
    */
   row(row: number) {
     return this.locator.locator(`[aria-rowindex="${row}"]`);
@@ -40,11 +78,34 @@ export class PwTable extends PwComponent {
 
   /**
    * Locate cell by column name and 1-based aria row index, including headers.
+   * Preferred over locateCell for new usage.
+   *
+   * @example
+   * test("first ric", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await expect(await table.cell("ric", 2)).toHaveText("AAOO.L");
+   * });
    */
   cell(colName: string, ariaRowIndex: number): Promise<Locator> {
     return this.locateCell(ariaRowIndex, colName);
   }
 
+  /**
+   * Double click a cell to edit it, fill the editor with value, then commit
+   * (Enter) or cancel (Escape) the edit.
+   *
+   * @example
+   * test("edit bbg", async ({ mount, page }) => {
+   *   await mount("Table/Editing/EditableInstrumentsInlineEdit");
+   *   await page.getByRole("radio", { name: "Edit" }).click();
+   *   const table = new PwTable(page);
+   *   const textbox = (await table.cell("bbg", 2)).getByRole("textbox");
+   *   await table.editCell("bbg", 2, "X", "cancel");
+   *   await expect(textbox).not.toHaveValue("X");
+   *   await table.editCell("bbg", 2, "X");
+   *   await expect(textbox).toHaveValue("X");
+   * });
+   */
   async editCell(
     columnName: string,
     ariaRowIndex: number,
@@ -129,6 +190,15 @@ export class PwTable extends PwComponent {
       .filter({ has: this.page.locator(byDataIcon(iconName)) });
   }
 
+  /**
+   * The column header cell for the named column.
+   *
+   * @example
+   * test("currency column not selected", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   expect(await table.headerCell("currency").isSelected).toBe(false);
+   * });
+   */
   headerCell(columnName: string): PwTableHeaderCell {
     return new PwTableHeaderCell(
       this.page,
@@ -140,7 +210,9 @@ export class PwTable extends PwComponent {
 
   /**
    * Right click a cell to invoke the context menu. Resolves once the menu is
-   * visible. Rejects if no context menu is shown.
+   * visible and has focus, so keyboard navigation can begin immediately.
+   * Waits until the test timeout if no context menu is shown, use
+   * assertNoContextMenu to test for that.
    *
    * @param columnName name of the column
    * @param ariaRowIndex 1-based aria row index, including headers (with one header, the first data row is 2)
@@ -157,26 +229,67 @@ export class PwTable extends PwComponent {
     ariaRowIndex: number,
   ): Promise<PwContextMenu> {
     const cell = await this.cell(columnName, ariaRowIndex);
-    await cell.click({ button: "right" });
-    // Sub menus are not yet open, so the only context menu is the one just opened.
-    // Bind to it by id so later sub menus are not matched.
-    const menu = await new PwContextMenu(this.page).isReady();
-    const menuId = await menu.locator.getAttribute("id");
-    return menuId ? new PwContextMenu(this.page, byId(menuId)) : menu;
+    return PwContextMenu.open(this.page, () => cell.click({ button: "right" }));
   }
 
   /**
-   * Locate cell by cell contents
-   * @param text
+   * Right click a cell and assert that no context menu is shown and the cell
+   * is not marked as having an open context menu.
+   *
+   * A negative assertion passes as soon as the menu is absent, which may be
+   * before a menu would have rendered. To avoid false passes we wait for two
+   * animation frames after the right click, allowing React to commit and the
+   * menu to be positioned, before asserting.
+   *
+   * @param columnName name of the column
+   * @param ariaRowIndex 1-based aria row index, including headers (with one header, the first data row is 2)
+   *
+   * @example
+   * test("no menu when none configured", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await table.assertNoContextMenu("ccy", 2);
+   * });
+   */
+  async assertNoContextMenu(
+    columnName: string,
+    ariaRowIndex: number,
+  ): Promise<void> {
+    const cell = await this.cell(columnName, ariaRowIndex);
+    await PwContextMenu.assertNotOpened(this.page, () =>
+      cell.click({ button: "right" }),
+    );
+    await expect(cell).not.toContainClass("ContextOpen");
+  }
+
+  /**
+   * Locate cell(s) by accessible name (cell contents). May match several cells.
+   *
+   * @example
+   * test("right click ric", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await table.locateCell("AAOP N").click({ button: "right" });
+   * });
    */
   locateCell(text: string): Locator;
   /**
-   * Locate cell by aria row index and aria col index
-   * @param text
+   * Locate cell by 1-based aria row index and 1-based aria col index.
+   *
+   * @example
+   * test("down arrow from header focuses first cell", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await table.locateColumnHeader(1).press("ArrowDown");
+   *   await expect(table.locateCell(2, 1)).toBeFocused();
+   * });
    */
   locateCell(row: number, column: number): Locator;
   /**
-   * Locate cell by aria row index and column name
+   * Locate cell by 1-based aria row index and column name. Prefer cell(columnName, ariaRowIndex).
+   *
+   * @example
+   * test("first ric", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await expect(await table.locateCell(2, "ric")).toHaveText("AAOO.L");
+   * });
    */
   locateCell(row: number, columnName: string): Promise<Locator>;
   locateCell(rowOrText: number | string, column?: number | string) {
@@ -203,10 +316,34 @@ export class PwTable extends PwComponent {
     }
   }
 
+  /**
+   * Locate a column header cell by 1-based aria col index.
+   *
+   * @example
+   * test("click header focuses it", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   const header = table.locateColumnHeader(1);
+   *   await header.click();
+   *   await expect(header).toBeFocused();
+   * });
+   */
   locateColumnHeader(column: number) {
     return this.locateCell(1, column);
   }
 
+  /**
+   * When isEditable is true, assert the cell is editable but not currently in
+   * edit mode and, if value is passed, that its textbox has that value. When
+   * isEditable is false or undefined, nothing is asserted.
+   *
+   * @example
+   * test("first cell is editable", async ({ mount, page }) => {
+   *   await mount("Table/Editing/EditableInstruments");
+   *   await page.getByRole("radio", { name: "Edit" }).click();
+   *   const table = new PwTable(page);
+   *   await table.assertCellIsEditable(2, 1, true, "AAOO L");
+   * });
+   */
   async assertCellIsEditable(
     row: number,
     column: number,
@@ -237,6 +374,19 @@ export class PwTable extends PwComponent {
     return [arg1 as Locator, arg2 as string, arg3 as AriaRole | undefined];
   }
 
+  /**
+   * Assert the value of a cell input (toHaveValue). Pass a role to target an
+   * element within the cell, e.g. "textbox" for an editable cell.
+   *
+   * @example
+   * test("editable cell value", async ({ mount, page }) => {
+   *   await mount("Table/Editing/EditableInstruments");
+   *   await page.getByRole("radio", { name: "Edit" }).click();
+   *   const table = new PwTable(page);
+   *   await table.assertCellValue(2, 1, "AAOO L", "textbox");
+   *   await table.assertCellValue(table.locateCell(2, 1), "AAOO L", "textbox");
+   * });
+   */
   async assertCellValue(
     cell: Locator,
     text: string,
@@ -264,6 +414,17 @@ export class PwTable extends PwComponent {
     }
   }
 
+  /**
+   * Assert the text content of a cell (toHaveText). Pass a role to target an
+   * element within the cell, e.g. "combobox" for a dropdown cell.
+   *
+   * @example
+   * test("first cell text", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await table.assertCellContent(2, 1, "AAOO L");
+   *   await table.assertCellContent(table.locateCell(2, 1), "AAOO L");
+   * });
+   */
   async assertCellContent(
     cell: Locator,
     text: string,
@@ -291,6 +452,20 @@ export class PwTable extends PwComponent {
     }
   }
 
+  /**
+   * Assert a cell, or an element within it with the given role, is focused.
+   *
+   * @example
+   * test("click focuses editable cell", async ({ mount, page }) => {
+   *   await mount("Table/Editing/EditableInstruments");
+   *   await page.getByRole("radio", { name: "Edit" }).click();
+   *   const table = new PwTable(page);
+   *   const cell = table.locateCell(3, 3);
+   *   await cell.click();
+   *   await table.assertCellIsFocused(cell, "textbox");
+   *   await table.assertCellIsFocused(3, 3, "textbox");
+   * });
+   */
   async assertCellIsFocused(cell: Locator, role?: AriaRole): Promise<void>;
   async assertCellIsFocused(
     row: number,
@@ -320,6 +495,22 @@ export class PwTable extends PwComponent {
     }
   }
 
+  /**
+   * Assert a cell is (default) or is not in edit mode.
+   *
+   * @example
+   * test("Enter starts editing, Escape stops", async ({ mount, page }) => {
+   *   await mount("Table/Editing/EditableInstruments");
+   *   await page.getByRole("radio", { name: "Edit" }).click();
+   *   const table = new PwTable(page);
+   *   const cell = table.locateCell(3, 3);
+   *   await cell.click();
+   *   await cell.press("Enter");
+   *   await table.assertCellIsEditing(cell);
+   *   await cell.press("Escape");
+   *   await table.assertCellIsEditing(cell, false);
+   * });
+   */
   async assertCellIsEditing(cell: Locator, isEditing?: boolean): Promise<void>;
   async assertCellIsEditing(
     row: number,
@@ -358,6 +549,22 @@ export class PwTable extends PwComponent {
     }
   }
 
+  /**
+   * Assert which rows are rendered, given the visible range of data rows.
+   * Checks the rendered row count includes the leading and trailing buffers
+   * and that buffered rows beyond the viewport are not in view.
+   *
+   * @param range the visible range of (0-based) data rows
+   * @param renderBufferSize number of rows rendered beyond each end of the viewport
+   * @param totalRowCount size of the dataSource
+   * @param headerCount number of header rows, default 1
+   *
+   * @example
+   * test("initial render", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await table.assertRenderedRows({ from: 0, to: 30 }, 5, 1000);
+   * });
+   */
   async assertRenderedRows(
     { from, to }: VuuRange,
     renderBufferSize: number,
@@ -407,6 +614,19 @@ export class PwTable extends PwComponent {
     }
   }
 
+  /**
+   * Assert which columns are rendered and which are in the viewport, checked
+   * against the first data row. Ranges are inclusive, 1-based aria col indexes.
+   *
+   * @example
+   * test("column virtualization", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await table.assertRenderedColumns({
+   *     rendered: { from: 1, to: 8 },
+   *     visible: { from: 1, to: 6 },
+   *   });
+   * });
+   */
   async assertRenderedColumns({
     rendered,
     visible,

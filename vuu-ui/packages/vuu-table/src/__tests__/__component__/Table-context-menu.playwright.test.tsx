@@ -38,10 +38,7 @@ test.describe("WHEN no context menu is configured on table", () => {
       await mount("Table/Modules/SIMUL/ParentOrders");
 
       const table = new PwTable(page);
-      const cell = table.locateCell("GBP").nth(0);
-      await cell.click({ button: "right" });
-      await expect(page.getByRole("menu")).not.toBeAttached();
-      await expect(cell).not.toContainClass("ContextOpen");
+      await table.assertNoContextMenu("ccy", 2);
     });
   });
 });

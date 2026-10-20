@@ -41,8 +41,16 @@ The existing `locateCell` overloads remain available for gradual migration.
 const menu = await table.showContextMenu("ric", 2);
 
 expect(await menu.hasMenuItems()).toBe(true);
-expect(await menu.hasMenuItems(["Copy text", "Filter"])).toBe(true); // exact, in order
-expect(await menu.menuItemLabels()).toEqual(["Copy text", "Filter"]);
+// exact match, in order - a partial list is false
+expect(
+  await menu.hasMenuItems(["Copy text", "Filter", "Sort", "Delete row"]),
+).toBe(true);
+expect(await menu.menuItemLabels()).toEqual([
+  "Copy text",
+  "Filter",
+  "Sort",
+  "Delete row",
+]);
 
 const copy = menu.menuItem("Copy text"); // or by 0 based index, menu.menuItem(0)
 expect(await copy.hasIcon("edit")).toBe(true);
@@ -61,6 +69,46 @@ await menu.press("Enter");
 await menu.close(); // Escape
 ```
 
+To assert that right clicking a cell does not show a context menu, use
+`assertNoContextMenu`. It waits for the page to render after the right click
+before asserting, so it cannot pass before a menu would have appeared.
+
+```ts
+await table.assertNoContextMenu("ccy", 2);
+```
+
 When a key press depends on the focus change made by the previous key, call
 `assertFocusedMenuItem` in between. Keys pressed before the menu has processed a
 focus change may be delivered to the previously focused item.
+
+## PwChart, PwChartDataPoint
+
+`PwChart` wraps a Vuu `Chart` (ECharts, svg renderer). Data points are located by
+series name (the Vuu column name) and 0 based data index, or category (x axis)
+value, mirroring `PwTable.cell(colName, ariaRowIndex)`.
+
+```ts
+const chart = await new PwChart(page).isReady();
+expect(await chart.seriesNames()).toEqual(["price", "volume"]);
+expect(await chart.categories()).toHaveLength(25);
+
+const point = await chart.dataPoint("price", 3); // or chart.dataPoint("price", "2026-04-05")
+expect(point.value).toEqual(103);
+expect(point.isExcluded).toBe(false);
+await point.hover();
+await point.click(); // selects, with a chart selectionModel
+await expect(point.symbol).toHaveAttribute("fill", "purple");
+
+const menu = await chart.showContextMenu("price", 3); // or point.showContextMenu()
+await menu.menuItem("Exclude Item").click();
+await chart.assertNoContextMenu("price", 3); // when no menu is configured
+```
+
+The data point properties (`value`, `x`, `y`, `isExcluded`) are a snapshot, taken
+when the data point is obtained. Mouse actions resolve the position again and wait
+until it is stable, so they work while the chart is resizing. To assert a change to
+the data, obtain the data point again, e.g.
+`await expect.poll(async () => (await chart.dataPoint("price", 3)).isExcluded).toBe(true)`.
+
+The Vuu `Chart` exposes its ECharts instance on the chart canvas element
+(`echartsInstance`), which `PwChart` uses to map data points to pixel positions.
