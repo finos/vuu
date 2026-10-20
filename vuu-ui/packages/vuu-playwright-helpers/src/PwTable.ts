@@ -166,6 +166,40 @@ export class PwTable extends PwComponent {
   }
 
   /**
+   * Right click a cell and assert that no context menu is shown and the cell
+   * is not marked as having an open context menu.
+   *
+   * A negative assertion passes as soon as the menu is absent, which may be
+   * before a menu would have rendered. To avoid false passes we wait for two
+   * animation frames after the right click, allowing React to commit and the
+   * menu to be positioned, before asserting.
+   *
+   * @param columnName name of the column
+   * @param ariaRowIndex 1-based aria row index, including headers (with one header, the first data row is 2)
+   *
+   * @example
+   * test("no menu when none configured", async ({ page }) => {
+   *   const table = new PwTable(page);
+   *   await table.assertNoContextMenu("ccy", 2);
+   * });
+   */
+  async assertNoContextMenu(
+    columnName: string,
+    ariaRowIndex: number,
+  ): Promise<void> {
+    const cell = await this.cell(columnName, ariaRowIndex);
+    await cell.click({ button: "right" });
+    await this.page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+    await new PwContextMenu(this.page).assertNotAttached();
+    await expect(cell).not.toContainClass("ContextOpen");
+  }
+
+  /**
    * Locate cell by cell contents
    * @param text
    */

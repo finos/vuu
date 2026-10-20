@@ -61,6 +61,14 @@ await menu.press("Enter");
 await menu.close(); // Escape
 ```
 
+To assert that right clicking a cell does not show a context menu, use
+`assertNoContextMenu`. It waits for the page to render after the right click
+before asserting, so it cannot pass before a menu would have appeared.
+
+```ts
+await table.assertNoContextMenu("ccy", 2);
+```
+
 When a key press depends on the focus change made by the previous key, call
 `assertFocusedMenuItem` in between. Keys pressed before the menu has processed a
 focus change may be delivered to the previously focused item.
