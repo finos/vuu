@@ -60,13 +60,13 @@ export const BackgroundCell = memo(function BackgroundCell({
   const { name, type, valueFormatter } = column;
   const value = dataRow[name];
   const flashStyle = getFlashStyle(type);
-  const direction = useDirection(dataRow.key, value, column);
+  const { direction, hot, cooling } = useDirection(dataRow.key, value, column);
   const arrow =
     flashStyle === FlashStyle.ArrowOnly ||
     flashStyle === FlashStyle.ArrowBackground
-      ? direction === UP1 || direction === UP2
+      ? hot === "up" || direction === UP1 || direction === UP2
         ? CHAR_ARROW_UP
-        : direction === DOWN1 || direction === DOWN2
+        : hot === "down" || direction === DOWN1 || direction === DOWN2
           ? CHAR_ARROW_DOWN
           : null
       : null;
@@ -77,14 +77,24 @@ export const BackgroundCell = memo(function BackgroundCell({
     [`${classBase}-backgroundOnly`]: flashStyle === FlashStyle.BackgroundOnly,
     [`${classBase}-arrowOnly`]: flashStyle === FlashStyle.ArrowOnly,
     [`${classBase}-arrowBackground`]: flashStyle === FlashStyle.ArrowBackground,
+    [`${classBase}-hotUp`]: hot === "up",
+    [`${classBase}-hotDown`]: hot === "down",
+    [`${classBase}-coolUp`]: cooling === "up",
+    [`${classBase}-coolDown`]: cooling === "down",
   });
+
+  const formattedValue = valueFormatter(value);
 
   return (
     <div className={className} tabIndex={-1}>
-      <div className={`${classBase}-arrow`}>{arrow}</div>
-      <span className={`${classBase}-value`}>
-        {valueFormatter(dataRow[name])}
-      </span>
+      {flashStyle === FlashStyle.BackgroundOnly ? (
+        // the flash colour sits on an overlay whose opacity fades, which
+        // Chrome runs on the compositor
+        <span aria-hidden className={`${classBase}-flash`} />
+      ) : (
+        <div className={`${classBase}-arrow`}>{arrow}</div>
+      )}
+      <span className={`${classBase}-value`}>{formattedValue}</span>
     </div>
   );
 }, dataAndColumnUnchanged);
