@@ -72,8 +72,8 @@ const getRendererSetting = (
 /**
  * A hot cell gets no further renders once its value stops changing, so
  * something has to re-render it when its hot period ends. One shared
- * interval serves every hot cell: re-arming a timer per cell on every update
- * was a measurable cost at high update rates. Cells cool down up to
+ * interval serves every hot cell, so an update only records the cell's new
+ * deadline rather than re-arming a timer. Cells cool down up to
  * COOL_DOWN_RESOLUTION ms after their hot period ends.
  */
 const COOL_DOWN_RESOLUTION = 100;
