@@ -77,6 +77,18 @@ Each scenario runs a **timing pass** (`BENCH_ITERATIONS` times, each in a fresh 
 
 Update-to-paint latency works by writing the update batch's sequence number into the `seq` column of every row it updates, then watching for that value in the DOM.
 
+## Reading the numbers
+
+Lower is better for every key metric, but totals over a run need care. `cdp.scriptMs`, `cdp.taskMs`, `cdp.recalcStyleMs` and `cdp.layoutMs` are totals for the whole run, so they grow when the table renders more often. In the tick scenarios a faster build renders more often, batching fewer updates into each render, so its totals can rise even though each frame is cheaper and updates reach the screen sooner. Dividing by the number of updates does not help, a tick run emits the same number of updates whatever the build. Compare builds on per-frame figures instead:
+
+- `perUnit.scriptMsPerFrame`, `perUnit.styleMsPerFrame`, `perUnit.layoutMsPerFrame`: costs per rendered frame
+- `perUnit.taskMsPerFrame`: main-thread time per frame, all work included; above about 16.7ms the table cannot keep up with 60fps
+- `updateToPaintMs.*`, `frames.*`: what users experience
+
+The scroll scenarios render a fixed number of frames, so their totals are comparable between builds, but the per-frame figures read the same way everywhere. Use the totals to see where time goes within one build.
+
+Results from single nightly runs vary from run to run with the cloud runner; a change shows up reliably only when it persists across several nightly runs or in an interleaved A/B.
+
 ## Files
 
 - `app/` the benchmark host page (rsbuild), scenario data and scenario runners

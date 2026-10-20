@@ -24,6 +24,16 @@ export const flattenRun = (run: BenchRun): MetricSummary => {
     metrics["updates.batches"] = result.updateBatches ?? 0;
   }
   metrics.durationMs = result.durationMs;
+
+  // Totals over a run grow when the table renders more often, even if each
+  // render is cheaper. Per-frame costs compare like for like.
+  const frames = result.frames.count;
+  if (frames > 0) {
+    metrics["perUnit.scriptMsPerFrame"] = round(run.cdp.scriptMs / frames);
+    metrics["perUnit.styleMsPerFrame"] = round(run.cdp.recalcStyleMs / frames);
+    metrics["perUnit.layoutMsPerFrame"] = round(run.cdp.layoutMs / frames);
+    metrics["perUnit.taskMsPerFrame"] = round(run.cdp.taskMs / frames);
+  }
   return metrics;
 };
 
