@@ -3,11 +3,13 @@ package org.finos.vuu.plugin.virtualized.provider
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.ColumnValueProvider
+import org.finos.vuu.net.rpc.sessiontable.SessionTableDataExportProvider
 import org.finos.vuu.plugin.virtualized.table.VirtualizedSessionTable
 import org.finos.vuu.provider.Provider
 import org.finos.vuu.viewport.ViewPort
 
-trait VirtualizedProvider(using clock: Clock) extends Provider with ColumnValueProvider with StrictLogging {
+trait VirtualizedProvider(using clock: Clock) extends Provider
+  with ColumnValueProvider with SessionTableDataExportProvider with StrictLogging {
 
   def runOnce(viewPort: ViewPort): Unit = {
     viewPort.table.asTable match {

@@ -5,7 +5,9 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.{ColumnValueProvider, InMemSessionDataTable, RowWithData, TableData}
 import org.finos.vuu.net.ClientSessionId
+import org.finos.vuu.net.rpc.sessiontable.SessionTableDataExportProvider
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
+import org.finos.vuu.plugin.virtualized.provider.VirtualizedProvider
 import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{EmptyRange, ViewPort, ViewPortRange}
 
@@ -72,8 +74,12 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
     }
   }
 
-  override def getColumnValueProvider: ColumnValueProvider =
-    this.getProvider.asInstanceOf[ColumnValueProvider]
+  override def getProvider: VirtualizedProvider =
+    super.getProvider.asInstanceOf[VirtualizedProvider]
+
+  override def getColumnValueProvider: ColumnValueProvider = this.getProvider
+
+  override def getSessionTableExportProvider: SessionTableDataExportProvider = this.getProvider
 
   def isWithinRange(index: Int): Boolean = {
     this.data match {
@@ -84,5 +90,4 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
     }
   }
 
-  
 }

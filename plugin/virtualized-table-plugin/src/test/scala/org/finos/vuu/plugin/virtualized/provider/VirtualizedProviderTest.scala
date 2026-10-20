@@ -1,8 +1,9 @@
 package org.finos.vuu.plugin.virtualized.provider
 
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
-import org.finos.vuu.core.table.DataTable
+import org.finos.vuu.core.table.{DataTable, SessionTable}
 import org.finos.vuu.net.ClientSessionId
+import org.finos.vuu.net.rpc.sessiontable.SessionTableCopyOption
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
 import org.finos.vuu.plugin.virtualized.table.VirtualizedSessionTable
 import org.finos.vuu.viewport.{ViewPort, ViewPortRange}
@@ -149,4 +150,6 @@ private class TestVirtualizedProvider(using clock: Clock) extends VirtualizedPro
   override def doDestroy(): Unit = ???
 
   override val lifecycleId: String = "TestVirtualizedProvider"
+
+  override def exportData(vp: ViewPort, sessionTable: SessionTable, columns: List[String], copyOption: SessionTableCopyOption): Unit = ???
 }

@@ -3,8 +3,9 @@ package org.finos.vuu.example.virtualtable.provider
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
 import org.finos.toolbox.time.TimeIt.timeIt
-import org.finos.vuu.core.table.RowWithData
+import org.finos.vuu.core.table.{RowWithData, SessionTable}
 import org.finos.vuu.example.virtualtable.bigdatacache.FakeBigDataCache
+import org.finos.vuu.net.rpc.sessiontable.SessionTableCopyOption
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
 import org.finos.vuu.plugin.virtualized.provider.VirtualizedProvider
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedSessionTable, VirtualizedViewPortKeys}
@@ -90,4 +91,8 @@ class ReallyBigVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef)(imp
   override def getUniqueValuesVPColumn(columnName: String, viewPort: ViewPort): Array[String] = Array.empty
 
   override def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPort: ViewPort): Array[String] = Array.empty
+
+  override def exportData(vp: ViewPort, sessionTable: SessionTable, columns: List[String], copyOption: SessionTableCopyOption): Unit = {
+    //TODO
+  }
 }

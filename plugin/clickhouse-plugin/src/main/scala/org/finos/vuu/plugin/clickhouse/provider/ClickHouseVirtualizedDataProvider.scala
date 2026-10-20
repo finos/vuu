@@ -3,7 +3,10 @@ package org.finos.vuu.plugin.clickhouse.provider
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
 import org.finos.toolbox.time.TimeIt.timeIt
+import org.finos.vuu.core.table.SessionTable
+import org.finos.vuu.net.rpc.sessiontable.SessionTableCopyOption
 import org.finos.vuu.plugin.clickhouse.client.ClickHouseClient
+import org.finos.vuu.plugin.clickhouse.provider.`export`.ClickHouseExportProvider
 import org.finos.vuu.plugin.clickhouse.provider.data.{ClickHouseRowDataProvider, ClickHouseTableSizeProvider}
 import org.finos.vuu.plugin.clickhouse.provider.filter.ClickHouseFilterFactory
 import org.finos.vuu.plugin.clickhouse.provider.sort.ClickHouseSortFactory
@@ -20,6 +23,7 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
   private val rowDataProvider = ClickHouseRowDataProvider(client, tableDef)
   private val filterFactory = ClickHouseFilterFactory(tableDef)
   private val typeAheadProvider = ClickHouseTypeAheadProvider(client, tableDef, filterFactory)
+  private val exportDataProvider = ClickHouseExportProvider(tableDef)
   private val sortFactory = ClickHouseSortFactory(tableDef)
   private val permissionFunction = tableDef.getRemotePermissionFilterSpecFunction
 
@@ -108,5 +112,9 @@ class ClickHouseVirtualizedDataProvider(tableDef: VirtualizedSessionTableDef, cl
 
   override def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPort: ViewPort): Array[String] = {
     typeAheadProvider.getUniqueValuesStartingWithVPColumn(columnName, starts, viewPort)
+  }
+
+  override def exportData(vp: ViewPort, sessionTable: SessionTable, columns: List[String], copyOption: SessionTableCopyOption): Unit = {
+    exportDataProvider.exportData(vp, sessionTable, columns, copyOption)
   }
 }
